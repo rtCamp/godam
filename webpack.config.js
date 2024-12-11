@@ -1,81 +1,160 @@
 /**
- * Webpack configuration file.
- *
- * @package transcoder
+ * External dependencies
  */
+const fs = require( 'fs' );
+const path = require( 'path' );
+const CssMinimizerPlugin = require( 'css-minimizer-webpack-plugin' );
+const RemoveEmptyScriptsPlugin = require( 'webpack-remove-empty-scripts' );
 
-/* global process */
+/**
+ * WordPress dependencies
+ */
+const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 
-const webpack = require( 'webpack' );
-const glob = require( 'glob' );
-const UglifyJsPlugin = require( 'uglifyjs-webpack-plugin' );
-
-const externals = {
-	react: 'React',
-	'react-dom': 'ReactDOM',
-	'react-dom/server': 'ReactDOMServer',
-	tinymce: 'tinymce',
-	moment: 'moment',
-	jquery: 'jQuery',
-	'@wordpress/components': 'wp.components' // Not really a package.
+// Extend the default config.
+const sharedConfig = {
+	...defaultConfig,
+	output: {
+		path: path.resolve( process.cwd(), 'assets', 'build', 'js' ),
+		filename: '[name].js',
+		chunkFilename: '[name].js',
+	},
+	plugins: [
+		...defaultConfig.plugins
+			.map(
+				( plugin ) => {
+					if ( plugin.constructor.name === 'MiniCssExtractPlugin' ) {
+						plugin.options.filename = '../css/[name].css';
+					}
+					return plugin;
+				},
+			),
+		new RemoveEmptyScriptsPlugin(),
+	],
+	optimization: {
+		...defaultConfig.optimization,
+		splitChunks: {
+			...defaultConfig.optimization.splitChunks,
+		},
+		minimizer: defaultConfig.optimization.minimizer.concat( [ new CssMinimizerPlugin() ] ),
+	},
 };
 
-module.exports = [
-	{
-		entry: {
-			blocks: glob.sync( './admin/js/rt-transcoder-block-editor-support.js' )
-		},
-		output: {
-			filename: './admin/js/build/rt-transcoder-block-editor-support.build.js',
-			path: __dirname
-		},
-		externals,
-		resolve: {
-			modules: [
-				__dirname,
-				'node_modules'
-			]
-		},
-		module: {
-			rules: [
-				{
-					test: /.js?$/,
-					loader: 'babel-loader',
-					exclude: /node_modules/
-				}
-			]
-		},
-		plugins: [
-			new webpack.DefinePlugin( {
-				'process.env.NODE_ENV': JSON.stringify( process.env.NODE_ENV || 'development' )
-			} )
-		]
-	},
-	{
-		entry: './public-assets/js/transcoder.js',
-		output: {
-			filename: './public-assets/js/build/transcoder.min.js',
-			path: __dirname
-		}
-	}
-];
+// Generate a webpack config which includes setup for CSS extraction.
+// Look for css/scss files and extract them into a build/css directory.
+const styles = {
+	...sharedConfig,
+	entry: () => {
+		const entries = {};
 
-if ( process.env.NODE_ENV === 'production' ) {
-	for ( var moduleConfig of module.exports ) {
-		moduleConfig.plugins = (
-			moduleConfig.plugins || []
-		).concat(
-			[
-				new UglifyJsPlugin( {
-					sourceMap: true,
-					uglifyOptions: {
-						ecma: 8,
-						compress: {
-							warnings: false
-						}
-					}
-				} )
-			]
-		);
-	}
-}
+		const dir = './assets/src/css';
+		fs.readdirSync( dir ).forEach( ( fileName ) => {
+			const fullPath = `${ dir }/${ fileName }`;
+			if ( ! fs.lstatSync( fullPath ).isDirectory() ) {
+				entries[ fileName.replace( /\.[^/.]+$/, '' ) ] = fullPath;
+			}
+		} );
+
+		return entries;
+	},
+	module: {
+		...sharedConfig.module,
+	},
+	plugins: [
+		...sharedConfig.plugins.filter(
+			( plugin ) => plugin.constructor.name !== 'DependencyExtractionWebpackPlugin',
+		),
+	],
+
+};
+
+// Example of how to add a new entry point for JS file.
+const mainJS = {
+	...sharedConfig,
+	entry: {
+		main: path.resolve( process.cwd(), 'assets', 'src', 'js', 'main.js' ),
+	},
+};
+
+const adminJS = {
+	...sharedConfig,
+	entry: {
+		admin: path.resolve( process.cwd(), 'assets', 'src', 'js', 'admin.js' ),
+	},
+};
+
+// Example of how to add a new entry point for JS file.
+const easyDAM = {
+	...sharedConfig,
+	entry: {
+		main: path.resolve( process.cwd(), 'assets', 'src', 'js', 'easydam', 'index.js' ),
+	},
+};
+
+// // Define the `pages` directory
+// const pagesDir = path.resolve( __dirname, './pages' );
+
+// // Create an entry object, mapping each subdirectory to its `index.js`
+// const entryPoints = {};
+// fs.readdirSync( pagesDir ).forEach( ( folder ) => {
+// 	const folderPath = path.join( pagesDir, folder );
+// 	const entryFile = path.join( folderPath, 'index.js' );
+// 	if ( fs.statSync( folderPath ).isDirectory() && fs.existsSync( entryFile ) ) {
+// 		entryPoints[ folder ] = entryFile; // Use the folder name as the key
+// 	}
+// } );
+
+// const pages = {
+// 	mode: 'development',
+// 	entry: entryPoints, // Dynamic entry points for each page
+// 	output: {
+// 		path: path.resolve( __dirname, './pages/build' ), // Output directory
+// 		filename: '[name].js', // Each entry gets its own output file
+// 	},
+// 	module: {
+// 		rules: [
+// 			{
+// 				test: /\.(js|jsx)$/, // Handle JS/JSX files
+// 				exclude: /node_modules/,
+// 				use: {
+// 					loader: 'babel-loader',
+// 					options: {
+// 						presets: [ '@babel/preset-env', '@babel/preset-react' ],
+// 					},
+// 				},
+// 			},
+// 			{
+// 				test: /\.css$/, // Handle CSS files
+// 				use: [ 'style-loader', 'css-loader', 'postcss-loader' ],
+// 			},
+// 			{
+// 				test: /\.(png|jpg|jpeg|gif|svg)$/, // Handle image files
+// 				use: [
+// 					{
+// 						loader: 'file-loader',
+// 						options: {
+// 							name: '[name].[hash].[ext]',
+// 							outputPath: 'images',
+// 						},
+// 					},
+// 				],
+// 			},
+// 		],
+// 	},
+// 	externals: {
+// 		react: 'React',
+// 		'react-dom': 'ReactDOM',
+// 		'@wordpress/element': [ 'wp', 'element' ], // For WordPress compatibility
+// 	},
+// 	resolve: {
+// 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
+// 	},
+// };
+
+module.exports = [
+	mainJS,
+	adminJS,
+	easyDAM,
+	styles, // Do not remove this.
+	// pages,
+];
