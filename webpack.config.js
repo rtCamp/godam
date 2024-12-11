@@ -91,70 +91,70 @@ const easyDAM = {
 	},
 };
 
-// // Define the `pages` directory
-// const pagesDir = path.resolve( __dirname, './pages' );
+// Define the `pages` directory
+const pagesDir = path.resolve( __dirname, './pages' );
 
-// // Create an entry object, mapping each subdirectory to its `index.js`
-// const entryPoints = {};
-// fs.readdirSync( pagesDir ).forEach( ( folder ) => {
-// 	const folderPath = path.join( pagesDir, folder );
-// 	const entryFile = path.join( folderPath, 'index.js' );
-// 	if ( fs.statSync( folderPath ).isDirectory() && fs.existsSync( entryFile ) ) {
-// 		entryPoints[ folder ] = entryFile; // Use the folder name as the key
-// 	}
-// } );
+// Create an entry object, mapping each subdirectory to its `index.js`
+const entryPoints = {};
+fs.readdirSync( pagesDir ).forEach( ( folder ) => {
+	const folderPath = path.join( pagesDir, folder );
+	const entryFile = path.join( folderPath, 'index.js' );
+	if ( fs.statSync( folderPath ).isDirectory() && fs.existsSync( entryFile ) ) {
+		entryPoints[ folder ] = entryFile; // Use the folder name as the key
+	}
+} );
 
-// const pages = {
-// 	mode: 'development',
-// 	entry: entryPoints, // Dynamic entry points for each page
-// 	output: {
-// 		path: path.resolve( __dirname, './pages/build' ), // Output directory
-// 		filename: '[name].js', // Each entry gets its own output file
-// 	},
-// 	module: {
-// 		rules: [
-// 			{
-// 				test: /\.(js|jsx)$/, // Handle JS/JSX files
-// 				exclude: /node_modules/,
-// 				use: {
-// 					loader: 'babel-loader',
-// 					options: {
-// 						presets: [ '@babel/preset-env', '@babel/preset-react' ],
-// 					},
-// 				},
-// 			},
-// 			{
-// 				test: /\.css$/, // Handle CSS files
-// 				use: [ 'style-loader', 'css-loader', 'postcss-loader' ],
-// 			},
-// 			{
-// 				test: /\.(png|jpg|jpeg|gif|svg)$/, // Handle image files
-// 				use: [
-// 					{
-// 						loader: 'file-loader',
-// 						options: {
-// 							name: '[name].[hash].[ext]',
-// 							outputPath: 'images',
-// 						},
-// 					},
-// 				],
-// 			},
-// 		],
-// 	},
-// 	externals: {
-// 		react: 'React',
-// 		'react-dom': 'ReactDOM',
-// 		'@wordpress/element': [ 'wp', 'element' ], // For WordPress compatibility
-// 	},
-// 	resolve: {
-// 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
-// 	},
-// };
+const pages = {
+	mode: 'development',
+	entry: entryPoints, // Dynamic entry points for each page
+	output: {
+		path: path.resolve( __dirname, './pages/build' ), // Output directory
+		filename: '[name].js', // Each entry gets its own output file
+	},
+	module: {
+		rules: [
+			{
+				test: /\.(js|jsx)$/, // Handle JS/JSX files
+				exclude: /node_modules/,
+				use: {
+					loader: 'babel-loader',
+					options: {
+						presets: [ '@babel/preset-env', '@babel/preset-react' ],
+					},
+				},
+			},
+			{
+				test: /\.css$/, // Handle CSS files
+				use: [ 'style-loader', 'css-loader', 'postcss-loader' ],
+			},
+			{
+				test: /\.(png|jpg|jpeg|gif|svg)$/, // Handle image files
+				use: [
+					{
+						loader: 'file-loader',
+						options: {
+							name: '[name].[hash].[ext]',
+							outputPath: 'images',
+						},
+					},
+				],
+			},
+		],
+	},
+	externals: {
+		react: 'React',
+		'react-dom': 'ReactDOM',
+		'@wordpress/element': [ 'wp', 'element' ], // For WordPress compatibility
+	},
+	resolve: {
+		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
+	},
+};
 
 module.exports = [
 	mainJS,
 	adminJS,
 	easyDAM,
 	styles, // Do not remove this.
-	// pages,
+	pages,
 ];
