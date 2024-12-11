@@ -61,6 +61,11 @@ global $rt_transcoder_admin;
 $rt_transcoder_admin = new RT_Transcoder_Admin();
 
 /**
+ * Initiate blocks.
+ */
+\Transcoder\Inc\Plugin::get_instance();
+
+/**
  * Add Settings/Docs link to plugins area.
  *
  * @since 1.1.2

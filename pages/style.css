@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.sticky-navbar {
+  position: sticky;
+  top: var(--wp-admin--admin-bar--height, 0);
+}
+
+/* Forms */
+input, textarea, select {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid #ccc;
+}
+
+/* Video Editor Set up */
+
+#root-video-editor {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100vh;
+  margin-left: -20px;
+  padding-top: var(--wp-admin--admin-bar--height, 0);
+}
+
+.video-editor-container {
+  @apply flex h-full bg-gray-100;
+}
+
+.video-editor-container aside {
+  @apply h-full w-[320px];
+}
+
+.video-editor-container aside #sidebar-content {
+  @apply overflow-auto bg-white rounded-xl py-3 drop-shadow;
+  min-height: calc(100vh - var(--wp-admin--admin-bar--height, 0) - 24px);
+  max-height: calc(100vh - var(--wp-admin--admin-bar--height, 0) - 24px);
+  padding: 25px;
+}
+
+.video-editor-container main {
+  @apply h-full flex-1;
+}
+
+
+/* Sidebar */
+.sidebar-accordion {
+}
+/* .sidebar-accordion .accordion-item {
+  @apply last:border-b;
+} */
+.sidebar-accordion .accordion-item--title {
+  @apply p-4 cursor-pointer font-bold;
+}
+.sidebar-accordion .accordion-item--content {
+  @apply p-4 bg-gray-50;
+}
+
+.hide {
+  display: none !important;
+}
+
+.show {
+  display: flex !important;
+}
