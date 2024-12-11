@@ -48,7 +48,7 @@ class Assets {
 		wp_register_script(
 			'easydam-script',
 			RT_TRANSCODER_URL . '/assets/build/js/main.js',
-			[],
+			array(),
 			filemtime( RT_TRANSCODER_PATH . '/assets/build/js/main.js' ),
 			true
 		);
@@ -56,7 +56,7 @@ class Assets {
 		wp_register_style(
 			'easydam-style',
 			RT_TRANSCODER_URL . '/assets/build/css/main.css',
-			[],
+			array(),
 			filemtime( RT_TRANSCODER_PATH . '/assets/build/css/main.css' )
 		);
 
@@ -72,12 +72,12 @@ class Assets {
 	 *
 	 * @return void
 	 */
-	public function admin_enqueue_scripts( $hook_suffix ) {
+	public function admin_enqueue_scripts() {
 
 		wp_register_script(
 			'easydam-script',
 			RT_TRANSCODER_URL . '/assets/build/js/admin.js',
-			[],
+			array(),
 			filemtime( RT_TRANSCODER_PATH . '/assets/build/js/admin.js' ),
 			true
 		);
@@ -85,7 +85,7 @@ class Assets {
 		wp_register_style(
 			'easydam-style',
 			RT_TRANSCODER_URL . '/assets/build/css/admin.css',
-			[],
+			array(),
 			filemtime( RT_TRANSCODER_PATH . '/assets/build/css/admin.css' )
 		);
 
