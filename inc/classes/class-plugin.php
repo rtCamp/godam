@@ -2,7 +2,7 @@
 /**
  * Plugin manifest class.
  *
- * @package react-pages-features
+ * @package transcoder
  */
 
 namespace Transcoder\Inc;

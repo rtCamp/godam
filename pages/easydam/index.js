@@ -74,8 +74,6 @@ const App = () => {
 							) )
 						}
 					</nav>
-
-					<MyTextControl />
 				</div>
 				<div id="main-content" className="w-full p-5 bg-white rounded-lg border">
 					<div className="flex gap-5">
