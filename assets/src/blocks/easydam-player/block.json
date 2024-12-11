@@ -1,0 +1,82 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "easydam/video",
+	"title": "EasyDAM Video",
+	"category": "media",
+	"description": "Embed a video from your media library or upload a new one.",
+	"keywords": [ "movie", "video", "player" ],
+	"textdomain": "transcoder",
+	"attributes": {
+		"autoplay": {
+			"type": "boolean",
+			"attribute": "autoplay"
+		},
+		"controls": {
+			"type": "boolean",
+			"default": true
+		},
+		"id": {
+			"type": "number",
+			"role": "content"
+		},
+		"loop": {
+			"type": "boolean"
+		},
+		"muted": {
+			"type": "boolean"
+		},
+		"poster": {
+			"type": "string"
+		},
+		"preload": {
+			"type": "string",
+			"default": "metadata"
+		},
+		"blob": {
+			"type": "string",
+			"role": "local"
+		},
+		"src": {
+			"type": "string",
+			"role": "content"
+		},
+		"sources": {
+			"type": "array",
+			"items": {
+				"type": "object"
+			},
+			"default": []
+		},
+		"playsInline": {
+			"type": "boolean"
+		},
+		"tracks": {
+			"role": "content",
+			"type": "array",
+			"items": {
+				"type": "object"
+			},
+			"default": []
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"align": true,
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"__experimentalDefaultControls": {
+				"margin": false,
+				"padding": false
+			}
+		},
+		"interactivity": {
+			"clientNavigation": true
+		}
+	},
+    "editorStyle": ["file:./index.css", "file:./frontend.css"],
+	"style": ["file:./style-index.css", "file:./frontend.css"],
+    "editorScript": ["file:./index.js"],
+    "viewScript": "file:./frontend.js"
+}
