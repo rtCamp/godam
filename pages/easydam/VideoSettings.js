@@ -2,12 +2,11 @@
  * WordPress dependencies
  */
 import { ToggleControl, SelectControl, Modal, Button } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 
-const VideoSettings = () => {
+const VideoSettings = ( { isPremiumUser } ) => {
 	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( false );
 	const [ videoFormat, setVideoFormat ] = useState( { value: '', name: 'Not set' } );
-	const [ isPremiumUser, setIsPremiumUser ] = useState( false );
 	const [ disableWatermark, setDisableWatermark ] = useState( isPremiumUser );
 	const [ adaptiveBitrate, setAdaptiveBitrate ] = useState( false );
 	const [ optimizeVideos, setOptimizeVideos ] = useState( false );
@@ -39,7 +38,6 @@ const VideoSettings = () => {
 
 	// Function to handle opening the modal
 	const handleOpenModal = () => {
-		console.log("OPENING MODAL");
 		setIsModalOpen( true );
 	};
 
@@ -47,6 +45,30 @@ const VideoSettings = () => {
 	const handleCloseModal = () => {
 		setIsModalOpen( false );
 	};
+
+	useEffect( () => {
+		const fetchUserStatus = async () => {
+			const apiKey = '7130b8ec614c12246ad7c31558d58e46'; // Fetch the key dynamically.
+			const endpoint = `http://frappe-transcoder-api.rt.gw/api/resource/Transcoder License/${ apiKey }`;
+
+			try {
+				const response = await fetch( endpoint );
+				if ( ! response.ok ) {
+					throw new Error( 'Network response was not ok' );
+				}
+				const data = await response.json();
+
+				// Update isPremiumUser based on "plan" or "status"
+				const isVerified = data?.data?.status === 'Active' && data?.data?.plan !== 'Free';
+				console.error( 'User verification result:', isVerified );
+				setIsPremiumUser( isVerified );
+			} catch ( error ) {
+				console.error( 'Error fetching user status:', error );
+			}
+		};
+
+		fetchUserStatus();
+	}, [] );
 
 	return (
 		<div>
@@ -140,13 +162,13 @@ const VideoSettings = () => {
 						label="Disable video watermark"
 						checked={ disableWatermark }
 						onChange={ ( value ) => setDisableWatermark( value ) }
+						disabled={ ! isPremiumUser }
 					/>
 					<div className="text-slate-500">If enabled, Transcoder will add a watermark to the transcoded video. This feature is only available for paid subscriptions.</div>
 					{ isModalOpen && (
 						<Modal
 							title="Upgrade to Premium"
 							onRequestClose={ handleCloseModal }
-							className="p-4"
 						>
 							<p className="text-base text-gray-700">
 								To access this feature, please upgrade to our premium subscription plan.

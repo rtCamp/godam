@@ -11,10 +11,14 @@ import VideoSettings from './VideoSettings';
 import ImageSettings from './ImageSettings';
 import Analytics from './Analytics';
 
-import { useState } from '@wordpress/element';
+/**
+ * WordPress dependencies
+ */
+import { useState, useEffect } from '@wordpress/element';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'video-settings' );
+	const [ isPremiumUser, setIsPremiumUser ] = useState( false ); // Should be initially set to false.
 
 	const tabs = [
 		// {
@@ -38,6 +42,30 @@ const App = () => {
 		// 	component: Analytics,
 		// },
 	];
+
+	useEffect( () => {
+		const fetchUserStatus = async () => { // Update the FETCH FUNCTION
+			const apiKey = '7130b8ec614c12246ad7c31558d58e46';
+			// Fetch from internal API endpoint, which will already have the license key, instead of the frappe-transcoder endpoint.
+			const endpoint = `http://frappe-transcoder-api.rt.gw/api/resource/Transcoder License/${ apiKey }`;
+
+			try {
+				const response = await fetch( endpoint );
+				if ( ! response.ok ) {
+					throw new Error( 'Network response was not ok' );
+				}
+				const data = await response.json();
+
+				// Update isPremiumUser based on "plan" or "status"
+				const isVerified = data?.data?.status === 'Active' && data?.data?.plan !== 'Free';
+				setIsPremiumUser( isVerified );
+			} catch ( error ) {
+				console.error( 'Error fetching user status:', error );
+			}
+		};
+
+		fetchUserStatus();
+	}, [] );
 
 	return (
 		<>
@@ -65,7 +93,7 @@ const App = () => {
 						<div className="w-full">
 							{
 								tabs.map( ( tab ) => (
-									activeTab === tab.id && <tab.component key={ tab.id } />
+									activeTab === tab.id && <tab.component key={ tab.id } isPremiumUser={ isPremiumUser } />
 								) )
 							}
 						</div>
