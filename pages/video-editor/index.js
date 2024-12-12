@@ -127,8 +127,6 @@ const App = () => {
 								<div className="accordion-item--title">Interactivity</div>
 								<div className="accordion-item--content">
 
-									<FormLayer />
-
 									<ul>
 										{
 											layers.map( ( layer ) => (
