@@ -11,22 +11,7 @@ import VideoSettings from './VideoSettings';
 import ImageSettings from './ImageSettings';
 import Analytics from './Analytics';
 
-import { TextControl } from '@wordpress/components';
 import { useState } from '@wordpress/element';
-
-const MyTextControl = () => {
-  const [ className, setClassName ] = useState( '' );
-
-  return (
-    <TextControl
-      __nextHasNoMarginBottom
-      __next40pxDefaultSize
-      label="Additional CSS Class"
-      value={ className }
-      onChange={ ( value ) => setClassName( value ) }
-    />
-  );
-};
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'video-settings' );
