@@ -43,30 +43,6 @@ const App = () => {
 		// },
 	];
 
-	useEffect( () => {
-		const fetchUserStatus = async () => { // Update the FETCH FUNCTION
-			const apiKey = '7130b8ec614c12246ad7c31558d58e46';
-			// Fetch from internal API endpoint, which will already have the license key, instead of the frappe-transcoder endpoint.
-			const endpoint = `http://frappe-transcoder-api.rt.gw/api/resource/Transcoder License/${ apiKey }`;
-
-			try {
-				const response = await fetch( endpoint );
-				if ( ! response.ok ) {
-					throw new Error( 'Network response was not ok' );
-				}
-				const data = await response.json();
-
-				// Update isPremiumUser based on "plan" or "status"
-				const isVerified = data?.data?.status === 'Active' && data?.data?.plan !== 'Free';
-				setIsPremiumUser( isVerified );
-			} catch ( error ) {
-				console.error( 'Error fetching user status:', error );
-			}
-		};
-
-		fetchUserStatus();
-	}, [] );
-
 	return (
 		<>
 			<div className="wrap flex min-h-[80vh] gap-4 my-4">

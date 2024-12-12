@@ -2,16 +2,17 @@
  * WordPress dependencies
  */
 import { ToggleControl, SelectControl, Modal, Button } from '@wordpress/components';
-import { useState, useEffect } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 
 const VideoSettings = ( { isPremiumUser } ) => {
 	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( false );
-	const [ videoFormat, setVideoFormat ] = useState( { value: '', name: 'Not set' } );
+	const [ videoFormat, setVideoFormat ] = useState( { value: 'auto', name: 'Auto' } );
 	const [ disableWatermark, setDisableWatermark ] = useState( isPremiumUser );
 	const [ adaptiveBitrate, setAdaptiveBitrate ] = useState( false );
 	const [ optimizeVideos, setOptimizeVideos ] = useState( false );
-	const [ videoQuality, setVideoQuality ] = useState( { value: '', name: 'Not set' } );
+	const [ videoQuality, setVideoQuality ] = useState( { value: '20', name: '20' } );
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
+	const [ selectedMedia, setSelectedMedia ] = useState( null );
 
 	const videoFormatOptions = [
 		{ label: 'Not set', value: '' },
@@ -46,29 +47,26 @@ const VideoSettings = ( { isPremiumUser } ) => {
 		setIsModalOpen( false );
 	};
 
-	useEffect( () => {
-		const fetchUserStatus = async () => {
-			const apiKey = '7130b8ec614c12246ad7c31558d58e46'; // Fetch the key dynamically.
-			const endpoint = `http://frappe-transcoder-api.rt.gw/api/resource/Transcoder License/${ apiKey }`;
+	const openMediaPicker = () => {
+		const fileFrame = wp.media( {
+			title: 'Select a Watermark',
+			button: {
+				text: 'Use this watermark',
+			},
+			library: {
+				type: 'image', // Restrict to images only
+			},
+			multiple: false, // Disable multiple selection
+		} );
 
-			try {
-				const response = await fetch( endpoint );
-				if ( ! response.ok ) {
-					throw new Error( 'Network response was not ok' );
-				}
-				const data = await response.json();
+		fileFrame.on( 'select', function() {
+			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
+			setSelectedMedia( attachment ); // Save the selected media
+			console.log( 'Selected media:', attachment );
+		} );
 
-				// Update isPremiumUser based on "plan" or "status"
-				const isVerified = data?.data?.status === 'Active' && data?.data?.plan !== 'Free';
-				console.error( 'User verification result:', isVerified );
-				setIsPremiumUser( isVerified );
-			} catch ( error ) {
-				console.error( 'Error fetching user status:', error );
-			}
-		};
-
-		fetchUserStatus();
-	}, [] );
+		fileFrame.open();
+	};
 
 	return (
 		<div>
@@ -164,25 +162,40 @@ const VideoSettings = ( { isPremiumUser } ) => {
 						onChange={ ( value ) => setDisableWatermark( value ) }
 						disabled={ ! isPremiumUser }
 					/>
-					<div className="text-slate-500">If enabled, Transcoder will add a watermark to the transcoded video. This feature is only available for paid subscriptions.</div>
-					{ isModalOpen && (
-						<Modal
-							title="Upgrade to Premium"
-							onRequestClose={ handleCloseModal }
-						>
-							<p className="text-base text-gray-700">
-								To access this feature, please upgrade to our premium subscription plan.
-							</p>
-							<Button
-								isPrimary
-								className="mt-4"
-							>
-								Go to Payment Page
+					{ isPremiumUser && ! disableWatermark && (
+						<div className="mt-4">
+							<Button isPrimary onClick={ openMediaPicker }>
+								{ selectedMedia ? 'Change Watermark' : 'Select Watermark' }
 							</Button>
-						</Modal>
+							{ selectedMedia && (
+								<div className="mt-2">
+									<img
+										src={ selectedMedia.url }
+										alt={ selectedMedia.alt || 'Selected watermark' }
+										className="max-w-[200px]"
+									/>
+								</div>
+							) }
+						</div>
 					) }
+					<div className="text-slate-500">If enabled, Transcoder will add a watermark to the transcoded video. This feature is only available for paid subscriptions.</div>
 				</div>
-
+				{ isModalOpen && (
+					<Modal
+						title="Upgrade to Premium"
+						onRequestClose={ handleCloseModal }
+					>
+						<p className="text-base text-gray-700">
+							To access this feature, please upgrade to our premium subscription plan.
+						</p>
+						<Button
+							isPrimary
+							className="mt-4"
+						>
+							Go to Payment Page
+						</Button>
+					</Modal>
+				) }
 			</form>
 		</div>
 	);
