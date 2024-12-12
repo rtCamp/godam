@@ -6,11 +6,11 @@ import { useState } from '@wordpress/element';
 
 const VideoSettings = ( { isPremiumUser } ) => {
 	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( false );
-	const [ videoFormat, setVideoFormat ] = useState( { value: 'auto', name: 'Auto' } );
+	const [ videoFormat, setVideoFormat ] = useState( 'auto' );
 	const [ disableWatermark, setDisableWatermark ] = useState( isPremiumUser );
 	const [ adaptiveBitrate, setAdaptiveBitrate ] = useState( false );
 	const [ optimizeVideos, setOptimizeVideos ] = useState( false );
-	const [ videoQuality, setVideoQuality ] = useState( { value: '20', name: '20' } );
+	const [ videoQuality, setVideoQuality ] = useState( '20' );
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
 	const [ selectedMedia, setSelectedMedia ] = useState( null );
 
@@ -120,7 +120,9 @@ const VideoSettings = ( { isPremiumUser } ) => {
 							options={ videoFormatOptions }
 							onChange={ ( { selectedItem } ) => setVideoFormat( selectedItem ) }
 							describedBy="The video format to use for delivery"
-							showSelectedHint={ true }
+							showSelectedHint
+							size="compact"
+							className="max-w-[400px] w-full"
 						/>
 						<div className="text-slate-500">The video format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user's browser and device..</div>
 					</div>
@@ -135,6 +137,8 @@ const VideoSettings = ( { isPremiumUser } ) => {
 							onChange={ ( { selectedItem } ) => setVideoQuality( selectedItem ) }
 							describedBy="The quality of the video for delivery."
 							showSelectedHint
+							size="compact"
+							className="max-w-[400px] w-full"
 						/>
 						<div className="text-slate-500">Videos will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
 					</div>

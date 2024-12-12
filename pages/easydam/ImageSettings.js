@@ -7,8 +7,8 @@ import { useState } from '@wordpress/element';
 const ImageSettings = () => {
 	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( false );
 	const [ optimizeImages, setOptimizeImages ] = useState( false );
-	const [ imageFormat, setImageFormat ] = useState( { value: '', name: 'Not set' } );
-	const [ imageQuality, setImageQuality ] = useState( { value: '', name: 'Not set' } );
+	const [ imageFormat, setImageFormat ] = useState( 'auto' );
+	const [ imageQuality, setImageQuality ] = useState( '20' );
 
 	const imageFormatOptions = [
 		{ label: 'Not set', value: '' },
@@ -38,7 +38,7 @@ const ImageSettings = () => {
 		<div>
 			<h2 className="py-2 border-b text-xl font-bold">Image - Global Settings</h2>
 
-			<form id="easydam-video-settings" className="flex flex-col">
+			<form id="easydam-image-settings" className="flex flex-col">
 				<div className="py-3 flex flex-col gap-2">
 					<label className="block text-base font-semibold" htmlFor="sync_from_easydam">Image delivery</label>
 					<ToggleControl
@@ -69,30 +69,30 @@ const ImageSettings = () => {
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
-						value={ imageFormat.value }
+						value={ imageFormat }
 						options={ imageFormatOptions }
-						onChange={ ( value ) =>
-							setImageFormat( imageFormatOptions.find( ( option ) => option.value === value ) )
-						}
+						onChange={ ( value ) => setImageFormat( value ) }
+						size="compact"
+						className="max-w-[400px] w-full"
 					/>
 
 					<div className="text-slate-500">The image format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user's browser and device.</div>
 				</div>
 
 				<div className="pt-3 flex flex-col gap-1">
-					<label className="block text-base font-semibold" htmlFor="image_quality">Video quality</label>
+					<label className="block text-base font-semibold" htmlFor="image_quality">Image quality</label>
 
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
-						value={ imageQuality.value }
+						value={ imageQuality }
 						options={ imageQualityOptions }
-						onChange={ ( value ) =>
-							setImageQuality( imageQualityOptions.find( ( option ) => option.value === value ) )
-						}
+						onChange={ ( value ) => setImageQuality( value ) }
+						size="compact"
+						className="max-w-[400px] w-full"
 					/>
 
-					<div className="text-slate-500">Videos will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
+					<div className="text-slate-500">Images will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
 				</div>
 			</form>
 		</div>
