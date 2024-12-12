@@ -1,15 +1,53 @@
+/**
+ * WordPress dependencies
+ */
+import { ToggleControl, SelectControl } from '@wordpress/components';
+import { useState } from '@wordpress/element';
+
 const VideoSettings = () => {
+	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( false );
+	const [ videoFormat, setVideoFormat ] = useState( { value: '', name: 'Not set' } );
+	const [ isPremiumUser, setIsPremiumUser ] = useState( false );
+	const [ disableWatermark, setDisableWatermark ] = useState( isPremiumUser );
+	const [ adaptiveBitrate, setAdaptiveBitrate ] = useState( false );
+	const [ optimizeVideos, setOptimizeVideos ] = useState( false );
+	const [ videoQuality, setVideoQuality ] = useState( { value: '', name: 'Not set' } );
+
+	const videoFormatOptions = [
+		{ label: 'Not set', value: '' },
+		{ label: 'Auto', value: 'auto' },
+	];
+
+	const videoQualityOptions = [
+		{ label: 'Not set', value: '' },
+		{ label: 'Auto', value: 'auto' },
+		{ label: 'Auto best', value: 'auto-best' },
+		{ label: 'Auto good', value: 'auto-good' },
+		{ label: 'Auto eco', value: 'auto-eco' },
+		{ label: 'Auto low', value: 'auto-low' },
+		{ label: '100', value: '100' },
+		{ label: '80', value: '80' },
+		{ label: '60', value: '60' },
+		{ label: '40', value: '40' },
+		{ label: '20', value: '20' },
+	];
+
+	const handleSubmit = ( e ) => {
+		e.preventDefault();
+	};
+
 	return (
 		<div>
 			<h2 className="py-2 border-b text-xl font-bold">Video - Global Settings</h2>
 
-			<form id="easydam-video-settings" className="flex flex-col">
+			<form id="easydam-video-settings" className="flex flex-col" onSubmit={ handleSubmit }>
 				<div className="py-3 flex flex-col gap-2">
 					<label className="block text-base font-semibold" htmlFor="sync_from_easydam">Video delivery</label>
-					<label className="font-semibold text-[14px] text-base" htmlFor="sync_from_easydam">
-						<input id="sync_from_easydam" type="checkbox" name="sync_from_easydam" value="direct" />
-						Sync and deliver videos from EasyDAM.
-					</label>
+					<ToggleControl
+						label="Sync and deliver videos from EasyDAM."
+						checked={ syncFromEasyDAM }
+						onChange={ ( value ) => setSyncFromEasyDAM( value ) }
+					/>
 					<div className="text-slate-500">If you turn this setting off, your videos will be delivered from WordPress.</div>
 				</div>
 
@@ -17,10 +55,11 @@ const VideoSettings = () => {
 
 				<div className="py-3 flex flex-col gap-2">
 					<label className="block text-base font-semibold" htmlFor="abs">Adaptive Bitrate Streaming</label>
-					<label className="font-semibold text-[14px] text-base" htmlFor="abs">
-						<input id="abs" type="checkbox" name="abs" value="direct" />
-						Enable Adaptive Bitrate Streaming.
-					</label>
+					<ToggleControl
+						label="Enable Adaptive Bitrate Streaming."
+						checked={ adaptiveBitrate }
+						onChange={ ( value ) => setAdaptiveBitrate( value ) }
+					/>
 					<div className="text-slate-500">If enabled, Transcoder will generate multiple video files with different bitrates for adaptive streaming. This feature is only available for paid subscriptions.</div>
 				</div>
 
@@ -29,48 +68,38 @@ const VideoSettings = () => {
 				<div>
 					<div className="py-3 flex flex-col gap-1">
 						<label className="block text-base font-semibold" htmlFor="optimize_video">Video optimization</label>
-						<label className="font-semibold text-[14px]" htmlFor="optimize_video">
-							<input className="mr-4" id="optimize_video" type="checkbox" name="optimize_video" value="direct" />
-							Optimize videos on my site.
-						</label>
+						<ToggleControl
+							label="Optimize videos on my site."
+							checked={ optimizeVideos }
+							onChange={ ( value ) => setOptimizeVideos( value ) }
+						/>
 						<div className="text-slate-500">Videos will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
 					</div>
 
 					<div className="flex flex-col gap-1">
 						<label className="block text-base font-semibold" htmlFor="video_format">Video format</label>
-
-						<select
-							className="form-select form-select-lg"
-							name="video_format"
-							id="video_format"
-						>
-							<option>Not set</option>
-							<option selected value="auto">Auto</option>
-						</select>
-
+						<SelectControl
+							label="Video Format"
+							value={ videoFormat }
+							options={ videoFormatOptions }
+							onChange={ ( { selectedItem } ) => setVideoFormat( selectedItem ) }
+							describedBy="The video format to use for delivery"
+							showSelectedHint={ true }
+						/>
 						<div className="text-slate-500">The video format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user's browser and device..</div>
 					</div>
 
 					<div className="py-3 flex flex-col gap-1">
 						<label className="block text-base font-semibold" htmlFor="video_quality">Video quality</label>
 
-						<select
-							className="form-select form-select-lg"
-							name="video_quality"
-							id="video_quality"
-						>
-							<option>Not set</option>
-							<option selected value="auto">Auto</option>
-							<option selected value="auto-best">Auto best</option>
-							<option selected value="auto-good">Auto good</option>
-							<option selected value="auto-eco">Auto eco</option>
-							<option selected value="auto-low">Auto low</option>
-							<option selected value="100">100</option>
-							<option selected value="80">80</option>
-							<option selected value="60">60</option>
-							<option selected value="40">40</option>
-							<option selected value="20">20</option>
-						</select>
+						<SelectControl
+							label="Video Quality"
+							value={ videoQuality }
+							options={ videoQualityOptions }
+							onChange={ ( { selectedItem } ) => setVideoQuality( selectedItem ) }
+							describedBy="The quality of the video for delivery."
+							showSelectedHint
+						/>
 
 						<div className="text-slate-500">Videos will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
 					</div>
@@ -79,14 +108,17 @@ const VideoSettings = () => {
 				<hr />
 
 				<div className="py-3 flex flex-col gap-2 opacity-90 relative px-3 mt-3">
-					<div className="absolute bg-orange-400 bg-opacity-10 inset-0 rounded-lg border border-orange-200">
-						<button className="px-3 py-2 rounded font-semibold border border-orange-300 bg-orange-200 border-500 absolute top-0 right-0">Premium feature</button>
-					</div>
+					{ ! isPremiumUser && (
+						<div className="absolute bg-orange-400 bg-opacity-10 inset-0 rounded-lg border border-orange-200">
+							<button className="px-3 py-2 rounded font-semibold border border-orange-300 bg-orange-200 border-500 absolute top-0 right-0">Premium feature</button>
+						</div>
+					) }
 					<label className="block text-base font-semibold" htmlFor="abs">Watermark</label>
-					<label className="font-semibold text-[14px] text-base" htmlFor="video_watermark">
-						<input id="video_watermark" type="checkbox" name="video_watermark" checked />
-						Disable video watermark
-					</label>
+					<ToggleControl
+						label="Disable video watermark"
+						checked={ disableWatermark }
+						onChange={ ( value ) => setDisableWatermark( value ) }
+					/>
 					<div className="text-slate-500">If enabled, Transcoder will add a watermark to the transcoded video. This feature is only available for paid subscriptions.</div>
 				</div>
 

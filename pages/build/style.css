@@ -788,6 +788,12 @@ video {
   gap: 1.25rem;
 }
 
+.\!truncate {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
 .truncate {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1037,6 +1043,10 @@ video {
 
 .paused {
   animation-play-state: paused;
+}
+
+.\[variable\:string\] {
+  variable: string;
 }
 
 .sticky-navbar {
