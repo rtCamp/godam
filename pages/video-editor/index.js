@@ -61,8 +61,6 @@ const App = () => {
 			} );
 	}, [] );
 
-	console.log( 'togglePlay', togglePlay );
-
 	const handleTimeUpdate = ( player, time ) => {
 		// Round the current time to 2 decimal places
 		setCurrentTime( time.toFixed( 2 ) );
@@ -108,53 +106,6 @@ const App = () => {
 			<div className="video-editor-container">
 				<aside className="py-3">
 					<div id="sidebar-content">
-						<div className="sidebar-accordion bg-white">
-							<div className="accordion-item">
-								<div className="accordion-item--title">Player Appearance & Controls</div>
-								<div className="accordion-item--content">
-									<div className="form-group">
-										<label htmlFor="togglePlay">Display play button</label>
-										<input type="checkbox" id="togglePlay"
-											onChange={ () => setTogglePlay( ! togglePlay ) }
-											checked={ togglePlay }
-										/>
-									</div>
-									<div className="form-group">
-									</div>
-								</div>
-							</div>
-							<div className="accordion-item">
-								<div className="accordion-item--title">Interactivity</div>
-								<div className="accordion-item--content">
-
-									<ul>
-										{
-											layers.map( ( layer ) => (
-												<li
-													key={ layer.id }
-													className="border rounded p-3 flex justify-between items-center"
-												>
-													<div>
-														<b>{ layer.type }</b> at { layer.timestamp }s
-													</div>
-													<button
-														className="p-2 hover:bg-red-50 rounded hover:text-red-500"
-														onClick={ () => setLayers( layers.filter( ( l ) => l.id !== layer.id ) ) }
-													><Trash /></button>
-												</li>
-											) ) }
-									</ul>
-
-									<button
-										className="bg-blue-300 hover:bg-blue-400 rounded p-3 w-full font-semibold text-slate-900 disabled:bg-gray-200"
-										onClick={ () => addLayer( currentTime ) }
-										disabled={ layers.some( ( layer ) => layer.timestamp === currentTime ) }
-									>
-										Add layers <span className="font-normal text-slate-700">at { currentTime }s</span>
-									</button>
-								</div>
-							</div>
-						</div>
 					</div>
 				</aside>
 
