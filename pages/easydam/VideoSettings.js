@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { ToggleControl, SelectControl } from '@wordpress/components';
+import { ToggleControl, SelectControl, Modal, Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
 const VideoSettings = () => {
@@ -12,6 +12,7 @@ const VideoSettings = () => {
 	const [ adaptiveBitrate, setAdaptiveBitrate ] = useState( false );
 	const [ optimizeVideos, setOptimizeVideos ] = useState( false );
 	const [ videoQuality, setVideoQuality ] = useState( { value: '', name: 'Not set' } );
+	const [ isModalOpen, setIsModalOpen ] = useState( false );
 
 	const videoFormatOptions = [
 		{ label: 'Not set', value: '' },
@@ -34,6 +35,17 @@ const VideoSettings = () => {
 
 	const handleSubmit = ( e ) => {
 		e.preventDefault();
+	};
+
+	// Function to handle opening the modal
+	const handleOpenModal = () => {
+		console.log("OPENING MODAL");
+		setIsModalOpen( true );
+	};
+
+	// Function to handle closing the modal
+	const handleCloseModal = () => {
+		setIsModalOpen( false );
 	};
 
 	return (
@@ -113,7 +125,13 @@ const VideoSettings = () => {
 				<div className="py-3 flex flex-col gap-2 opacity-90 relative px-3 mt-3">
 					{ ! isPremiumUser && (
 						<div className="absolute bg-orange-400 bg-opacity-10 inset-0 rounded-lg border border-orange-200">
-							<button className="px-3 py-2 rounded font-semibold border border-orange-300 bg-orange-200 border-500 absolute top-0 right-0">Premium feature</button>
+							<button
+								type="button"
+								className="px-3 py-2 rounded font-semibold border border-orange-300 bg-orange-200 border-500 absolute top-0 right-0"
+								onClick={ handleOpenModal }
+							>
+								Premium feature
+							</button>
 						</div>
 					) }
 					<label className="block text-base font-semibold" htmlFor="abs">Watermark</label>
@@ -124,6 +142,23 @@ const VideoSettings = () => {
 						onChange={ ( value ) => setDisableWatermark( value ) }
 					/>
 					<div className="text-slate-500">If enabled, Transcoder will add a watermark to the transcoded video. This feature is only available for paid subscriptions.</div>
+					{ isModalOpen && (
+						<Modal
+							title="Upgrade to Premium"
+							onRequestClose={ handleCloseModal }
+							className="p-4"
+						>
+							<p className="text-base text-gray-700">
+								To access this feature, please upgrade to our premium subscription plan.
+							</p>
+							<Button
+								isPrimary
+								className="mt-4"
+							>
+								Go to Payment Page
+							</Button>
+						</Modal>
+					) }
 				</div>
 
 			</form>
