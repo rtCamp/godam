@@ -44,6 +44,7 @@ const VideoSettings = () => {
 				<div className="py-3 flex flex-col gap-2">
 					<label className="block text-base font-semibold" htmlFor="sync_from_easydam">Video delivery</label>
 					<ToggleControl
+						__nextHasNoMarginBottom
 						label="Sync and deliver videos from EasyDAM."
 						checked={ syncFromEasyDAM }
 						onChange={ ( value ) => setSyncFromEasyDAM( value ) }
@@ -56,6 +57,7 @@ const VideoSettings = () => {
 				<div className="py-3 flex flex-col gap-2">
 					<label className="block text-base font-semibold" htmlFor="abs">Adaptive Bitrate Streaming</label>
 					<ToggleControl
+						__nextHasNoMarginBottom
 						label="Enable Adaptive Bitrate Streaming."
 						checked={ adaptiveBitrate }
 						onChange={ ( value ) => setAdaptiveBitrate( value ) }
@@ -69,6 +71,7 @@ const VideoSettings = () => {
 					<div className="py-3 flex flex-col gap-1">
 						<label className="block text-base font-semibold" htmlFor="optimize_video">Video optimization</label>
 						<ToggleControl
+							__nextHasNoMarginBottom
 							label="Optimize videos on my site."
 							checked={ optimizeVideos }
 							onChange={ ( value ) => setOptimizeVideos( value ) }
@@ -79,7 +82,8 @@ const VideoSettings = () => {
 					<div className="flex flex-col gap-1">
 						<label className="block text-base font-semibold" htmlFor="video_format">Video format</label>
 						<SelectControl
-							label="Video Format"
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
 							value={ videoFormat }
 							options={ videoFormatOptions }
 							onChange={ ( { selectedItem } ) => setVideoFormat( selectedItem ) }
@@ -91,16 +95,15 @@ const VideoSettings = () => {
 
 					<div className="py-3 flex flex-col gap-1">
 						<label className="block text-base font-semibold" htmlFor="video_quality">Video quality</label>
-
 						<SelectControl
-							label="Video Quality"
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
 							value={ videoQuality }
 							options={ videoQualityOptions }
 							onChange={ ( { selectedItem } ) => setVideoQuality( selectedItem ) }
 							describedBy="The quality of the video for delivery."
 							showSelectedHint
 						/>
-
 						<div className="text-slate-500">Videos will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
 					</div>
 				</div>
@@ -115,6 +118,7 @@ const VideoSettings = () => {
 					) }
 					<label className="block text-base font-semibold" htmlFor="abs">Watermark</label>
 					<ToggleControl
+						__nextHasNoMarginBottom
 						label="Disable video watermark"
 						checked={ disableWatermark }
 						onChange={ ( value ) => setDisableWatermark( value ) }
