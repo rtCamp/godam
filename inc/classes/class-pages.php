@@ -164,7 +164,7 @@ class Pages {
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
-		} elseif (  $screen && 'toplevel_page_easydam' === $screen->id ) {
+		} elseif ( $screen && 'toplevel_page_easydam' === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-easydam',
 				RT_TRANSCODER_URL . '/pages/build/easydam.js',
@@ -174,7 +174,7 @@ class Pages {
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-easydam' );
-		} elseif (  $screen && 'easydam_page_components' === $screen->id ) {
+		} elseif ( $screen && 'easydam_page_components' === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-wp-components',
 				RT_TRANSCODER_URL . '/pages/build/wp-components.js',
