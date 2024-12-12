@@ -142,7 +142,7 @@ class Pages {
 		}
 
 		// Check if this is your custom admin page.
-		if ( 'easydam_page_video_editor' === $screen && $screen->id ) {
+		if ( $screen && 'easydam_page_video_editor' === $screen->id ) {
 
 			wp_register_script(
 				'transcoder-page-script-video-editor',
@@ -164,7 +164,7 @@ class Pages {
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
-		} elseif ( 'toplevel_page_easydam' === $screen && $screen->id ) {
+		} elseif ( $screen && 'toplevel_page_easydam' === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-easydam',
 				RT_TRANSCODER_URL . '/pages/build/easydam.js',
@@ -174,7 +174,7 @@ class Pages {
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-easydam' );
-		} elseif ( 'easydam_page_components' === $screen && $screen->id ) {
+		} elseif ( $screen && 'easydam_page_components' === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-wp-components',
 				RT_TRANSCODER_URL . '/pages/build/wp-components.js',
