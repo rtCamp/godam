@@ -134,7 +134,7 @@ class Pages {
 			wp_register_style(
 				'transcoder-page-style-easydam',
 				RT_TRANSCODER_URL . '/pages/build/style.css',
-				array(),
+				array( 'wp-components' ),
 				filemtime( RT_TRANSCODER_PATH . '/pages/build/style.css' )
 			);
 

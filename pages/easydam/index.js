@@ -11,7 +11,12 @@ import VideoSettings from './VideoSettings';
 import ImageSettings from './ImageSettings';
 import Analytics from './Analytics';
 
+/**
+ * WordPress dependencies
+ */
 import { useState } from '@wordpress/element';
+import { TextControl, TabPanel, SelectControl } from '@wordpress/components';
+import '@wordpress/components/build-style/style.css';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'video-settings' );

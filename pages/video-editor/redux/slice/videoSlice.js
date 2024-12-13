@@ -37,8 +37,14 @@ const slice = createSlice( {
 			state.layers = state.layers.filter( ( layer ) => layer.id !== layerId );
 			state.isChanged = true;
 		},
+		updateLayerField: ( state, action ) => {
+			const { id, field, value } = action.payload;
+			const ind = state.layers.findIndex( ( l ) => l.id === id );
+			state.layers[ ind ][ field ] = value;
+			state.isChanged = true;
+		},
 	},
 } );
 
-export const { initializeStore, addLayer, removeLayer } = slice.actions;
+export const { initializeStore, addLayer, removeLayer, updateLayerField } = slice.actions;
 export default slice.reducer;

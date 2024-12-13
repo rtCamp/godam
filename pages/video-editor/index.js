@@ -1,18 +1,22 @@
-// "start:pages-css": "npx tailwindcss -i ./pages/style.css -o ./pages/build/style.css --watch",
-
 /**
  * External dependencies
  */
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { v4 as uuidv4 } from 'uuid';
-import { FastForwardFill, Forward, Trash } from 'react-bootstrap-icons';
+import { FastForwardFill } from 'react-bootstrap-icons';
 /**
  * Internal dependencies
  */
 import VideoJSPlayer from './VideoJSPlayer';
 
-const App = () => {
+/**
+ * WordPress dependencies
+ */
+import { Button, TabPanel } from '@wordpress/components';
+import SidebarLayers from './components/SidebarLayers';
+
+const VideoEditor = () => {
 	// Get the current post ID from the URL query string
 	const urlParams = new URLSearchParams( window.location.search );
 	const attachmentID = urlParams.get( 'id' );
@@ -30,7 +34,6 @@ const App = () => {
 			submitted: false,
 		},
 	] );
-	const [ togglePlay, setTogglePlay ] = useState( true );
 	const [ formHTML, setFormHTML ] = useState( null ); // Store fetched form HTML
 	const [ showForm, setShowForm ] = useState( false );
 
@@ -105,11 +108,33 @@ const App = () => {
 
 			<div className="video-editor-container">
 				<aside className="py-3">
-					<div id="sidebar-content">
+					<div id="sidebar-content" className="border-b">
+						<TabPanel
+							onSelect={ () => {
+							} }
+							className="sidebar-tabs"
+							tabs={ [
+								{
+									name: 'layers',
+									title: 'Layers',
+									className: 'flex-1 justify-center items-center',
+									component: <SidebarLayers />,
+								},
+								{
+									name: 'video-settings',
+									title: 'Video appearance & controls',
+									component: null,
+								},
+							] }
+						>
+							{ ( tab ) => tab.component }
+						</TabPanel>
 					</div>
 				</aside>
 
-				<main className="flex justify-center items-center p-4">
+				<main className="flex justify-center items-center p-4 relative">
+					{/* <Button className="absolute right-4 top-5" variant="primary" >{ __( 'Save', 'transcoder' ) }</Button> */}
+
 					{ video && (
 						<div className="max-w-[740px] w-full">
 							<h1 className="text-slate-700 mb-1">{ video.title.rendered }</h1>
@@ -191,6 +216,18 @@ const App = () => {
 			</div>
 
 		</>
+	);
+};
+
+import { Provider } from 'react-redux';
+import store from './redux/store';
+import { __ } from '@wordpress/i18n';
+
+const App = () => {
+	return (
+		<Provider store={ store }>
+			<VideoEditor />
+		</Provider>
 	);
 };
 
