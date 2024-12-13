@@ -90,8 +90,5 @@ class Assets {
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );
 
-		wp_enqueue_style( 'wp-components' );
-		wp_enqueue_media();
-
 	}
 }
