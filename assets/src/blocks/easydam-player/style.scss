@@ -1,0 +1,25 @@
+/**
+ * The following styles get applied both on the front of your site
+ * and in the editor.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+
+
+ .wp-block-trascoder-rt-player {
+	// Add your styles here.
+}
+
+.easydam-video-block {
+    video {
+        width: 100%;
+        height: auto;
+    }
+}
+
+.wp-block-easydam-video {
+    video {
+        width: 100%;
+        height: auto;
+    }
+}

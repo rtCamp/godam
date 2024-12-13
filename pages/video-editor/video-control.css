@@ -1,0 +1,54 @@
+.hover-control-input-container {
+    display: flex;
+    align-content: center;
+}
+
+.toggle-color{
+  height: 50px;
+}
+
+.left-align {
+    left: 3em !important;
+}
+
+.right-align {
+    left:auto !important;
+    right:1.5em;
+}
+
+.top-align {
+    top: 1.5em !important;
+}
+
+.bottom-align {
+    top:auto !important;
+    bottom:1.5em;
+}
+
+.vjs-big-play-button {
+    background-size: 100% 100% !important;
+}
+
+.vjs-control-bar-vertical {
+    width: 10% !important;
+    height: 100% !important;
+    flex-direction: column;
+    overflow: scroll;
+}
+
+.vjs-control-vertical, .vjs-volume-control-vertical {
+    height: 6em !important;
+    width: 6em !important;
+}
+
+.vjs-volume-panel-vertical {
+    flex-direction: column;
+}
+
+.vjs-volume-vertical {
+    left: 0px !important;
+}
+
+.components-custom-select-control__item-icon {
+    display: none;
+}

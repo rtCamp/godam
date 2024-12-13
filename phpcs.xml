@@ -48,5 +48,9 @@
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>.github/</exclude-pattern>
 	<exclude-pattern>*/index.php</exclude-pattern>
+	<exclude-pattern>*/assets/*</exclude-pattern>
+	<exclude-pattern>*.asset.php</exclude-pattern>
+	<exclude-pattern>*/.github/*</exclude-pattern>
+	<exclude-pattern>*/.lando/*</exclude-pattern>
 
 </ruleset>

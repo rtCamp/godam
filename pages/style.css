@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.sticky-navbar {
+  position: sticky;
+  top: var(--wp-admin--admin-bar--height, 0);
+}
+
+/* Forms */
+input, textarea, select {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid #ccc;
+}
+
+/* Video Editor Set up */
+
+#root-video-editor {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100vh;
+  margin-left: -20px;
+  padding-left: 20px;
+  padding-top: var(--wp-admin--admin-bar--height, 0);
+}
+
+.video-editor-container {
+  @apply flex h-full bg-gray-100;
+}
+
+.video-editor-container aside {
+  @apply h-full w-[320px];
+}
+
+.video-editor-container aside #sidebar-content {
+  @apply overflow-auto bg-white rounded-xl shadow;
+  min-height: calc(100vh - var(--wp-admin--admin-bar--height, 0) - 24px);
+  max-height: calc(100vh - var(--wp-admin--admin-bar--height, 0) - 24px);
+}
+
+.sidebar-tabs .components-tab-panel__tabs {
+  @apply border-b w-full sticky top-0 bg-white z-10;
+}
+
+.sidebar-tabs .is-active {
+  /* @apply text-blue-500; */
+}
+
+#add-layer-btn {
+  @apply w-full justify-center;
+}
+
+.components-tooltip {
+  @apply whitespace-nowrap;
+}
+
+.gravity-form-selector .components-combobox-control__suggestions-container {
+  position: relative;
+}
+.gravity-form-selector ul {
+  position: absolute;
+  top: 102%;
+  left: 0;
+  width: 100%;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: var(--radius);
+  z-index: 9;
+  border: 1px solid;
+  border-top: 0;
+  border-color: var(--wp-admin-theme-color);
+  box-shadow: 0 0 0 .5px var(--wp-admin-theme-color);
+}
+
+
+.video-editor-container main {
+  @apply h-full flex-1;
+}
+
+
+/* Sidebar */
+.sidebar-accordion {
+}
+/* .sidebar-accordion .accordion-item {
+  @apply last:border-b;
+} */
+.sidebar-accordion .accordion-item--title {
+  @apply p-4 cursor-pointer font-bold;
+}
+.sidebar-accordion .accordion-item--content {
+  @apply p-4 bg-gray-50;
+}
+
+.hide {
+  display: none !important;
+}
+
+.show {
+  display: flex !important;
+}
