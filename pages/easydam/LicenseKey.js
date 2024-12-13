@@ -2,11 +2,12 @@
  * WordPress dependencies
  */
 import { useState } from '@wordpress/element';
-import { TextControl } from '@wordpress/components';
+import { TextControl, Spinner, Button } from '@wordpress/components';
 
 const LicenseKey = () => {
 	const [ licenseKey, setLicenseKey ] = useState( '' );
 	const [ status, setStatus ] = useState( null );
+	const [ isLoading, setIsLoading ] = useState( false ); // State for loading indicator.
 
 	const saveLicenseKey = async () => {
 		if ( ! licenseKey.trim() ) {
@@ -14,12 +15,14 @@ const LicenseKey = () => {
 			return;
 		}
 
+		setIsLoading( true ); // Show loading indicator.
+
 		try {
 			const response = await fetch( '/wp-json/transcoder/v1/verify-license', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					'X-WP-Nonce': window.wpApiSettings.nonce, // Ensure wpApiSettings.nonce is available.
+					'X-WP-Nonce': window.wpApiSettings.nonce,
 				},
 				body: JSON.stringify( { license_key: licenseKey } ),
 			} );
@@ -33,6 +36,8 @@ const LicenseKey = () => {
 			}
 		} catch ( error ) {
 			setStatus( { type: 'error', message: 'An error occurred. Please try again later.' } );
+		} finally {
+			setIsLoading( false ); // Hide loading indicator.
 		}
 	};
 
@@ -49,12 +54,14 @@ const LicenseKey = () => {
 					className="max-w-[400px]"
 				/>
 			</div>
-			<button
-				className="p-2 bg-indigo-500 text-white rounded"
+			<Button
+				className="max-w-[140px] w-full flex justify-center items-center" // Add a fixed width style
 				onClick={ saveLicenseKey }
+				disabled={ isLoading } // Disable the button while loading.
+				variant="primary"
 			>
-				Save License Key
-			</button>
+				{ isLoading ? <Spinner /> : 'Save License Key' }
+			</Button>
 			{ status && (
 				<p
 					className={ `mt-2 text-sm ${

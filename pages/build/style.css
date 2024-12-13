@@ -744,6 +744,14 @@ video {
   max-width: 740px;
 }
 
+.max-w-\[160px\] {
+  max-width: 160px;
+}
+
+.max-w-\[140px\] {
+  max-width: 140px;
+}
+
 .flex-shrink {
   flex-shrink: 1;
 }
@@ -1002,6 +1010,11 @@ video {
 .text-red-600 {
   --tw-text-opacity: 1;
   color: rgb(220 38 38 / var(--tw-text-opacity, 1));
+}
+
+.text-blue-500 {
+  --tw-text-opacity: 1;
+  color: rgb(59 130 246 / var(--tw-text-opacity, 1));
 }
 
 .underline {
