@@ -43,8 +43,13 @@ const slice = createSlice( {
 			state.layers[ ind ][ field ] = value;
 			state.isChanged = true;
 		},
+		updateVideoConfig: ( state, action ) => {
+			const { field, value } = action.payload;
+			state.videoConfig[ field ] = value;
+			state.isChanged = true;
+		},
 	},
 } );
 
-export const { initializeStore, addLayer, removeLayer, updateLayerField } = slice.actions;
+export const { initializeStore, addLayer, removeLayer, updateLayerField, updateVideoConfig } = slice.actions;
 export default slice.reducer;
