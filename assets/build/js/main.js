@@ -1,16 +1,20 @@
 /******/ (() => { // webpackBootstrap
-/*!*******************************!*\
-  !*** ./assets/src/js/main.js ***!
-  \*******************************/
-/**
- * Write your JS code here for frontend.
- */
-/* eslint-disable no-console */
-console.log('Hello from Features Plugin');
-/* eslint-enable no-console */
-/******/ })()
-;
-//# sourceMappingURL=main.js.mapternal ["wp","element"] ***!
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "react":
+/*!************************!*\
+  !*** external "React" ***!
+  \************************/
+/***/ ((module) => {
+
+module.exports = window["React"];
+
+/***/ }),
+
+/***/ "@wordpress/element":
+/*!*********************************!*\
+  !*** external ["wp","element"] ***!
   \*********************************/
 /***/ ((module) => {
 

@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
@@ -9,7 +10,7 @@ export const VideoJS = ( props ) => {
 	const videoRef = useRef( null );
 	const playerRef = useRef( null );
 	const { options, onReady, onTimeupdate } = props;
-
+	const skipTime = useSelector( ( state ) => state.videoReducer.skipTime );
 	useEffect( () => {
 		// Make sure Video.js player is only initialized once
 		if ( ! playerRef.current ) {
@@ -19,10 +20,10 @@ export const VideoJS = ( props ) => {
 			videoElement.classList.add( 'vjs-big-play-centered' );
 			videoRef.current.appendChild( videoElement );
 
-			const player = playerRef.current = videojs( videoElement, options, () => {
+			const player = ( playerRef.current = videojs( videoElement, options, () => {
 				videojs.log( 'player is ready' );
 				onReady && onReady( player );
-			} );
+			} ) );
 
 			// Add a 'timeupdate' event listener
 			if ( onTimeupdate ) {
@@ -31,8 +32,32 @@ export const VideoJS = ( props ) => {
 					onTimeupdate( player, currentTime );
 				} );
 			}
+		} else {
+			//handle skip timer control
+			const player = playerRef.current;
+			const skipBackwardButton = player.controlBar.getChild( 'skipBackward' );
+			const skipForwardButton = player.controlBar.getChild( 'skipForward' );
+			if ( skipForwardButton ) {
+				skipForwardButton.off( 'click' ); // Remove default click behavior
+				skipForwardButton.on( 'click', () => {
+					const newTime = Math.min(
+						player.currentTime() + skipTime,
+						player.duration(),
+					);
+					player.currentTime( newTime );
+				} );
+			}
+
+			// Override default skip backward button
+			if ( skipBackwardButton ) {
+				skipBackwardButton.off( 'click' ); // Remove default click behavior
+				skipBackwardButton.on( 'click', () => {
+					const newTime = Math.max( player.currentTime() - skipTime, 0 );
+					player.currentTime( newTime );
+				} );
+			}
 		}
-	}, [ videoRef ] );
+	}, [ videoRef, skipTime ] );
 
 	useEffect( () => {
 		if ( playerRef.current ) {

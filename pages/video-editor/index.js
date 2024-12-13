@@ -123,7 +123,7 @@ const VideoEditor = () => {
 								{
 									name: 'video-settings',
 									title: 'Video appearance & controls',
-									component: null,
+									component: <Appearance/>,
 								},
 							] }
 						>
@@ -222,6 +222,7 @@ const VideoEditor = () => {
 import { Provider } from 'react-redux';
 import store from './redux/store';
 import { __ } from '@wordpress/i18n';
+import Appearance from './components/appearance/Appearance';
 
 const App = () => {
 	return (
