@@ -37,11 +37,45 @@ input, textarea, select {
 }
 
 .video-editor-container aside #sidebar-content {
-  @apply overflow-auto bg-white rounded-xl py-3 drop-shadow;
+  @apply overflow-auto bg-white rounded-xl shadow;
   min-height: calc(100vh - var(--wp-admin--admin-bar--height, 0) - 24px);
   max-height: calc(100vh - var(--wp-admin--admin-bar--height, 0) - 24px);
-  padding: 25px;
 }
+
+.sidebar-tabs .components-tab-panel__tabs {
+  @apply border-b w-full sticky top-0 bg-white z-10;
+}
+
+.sidebar-tabs .is-active {
+  /* @apply text-blue-500; */
+}
+
+#add-layer-btn {
+  @apply w-full justify-center;
+}
+
+.components-tooltip {
+  @apply whitespace-nowrap;
+}
+
+.gravity-form-selector .components-combobox-control__suggestions-container {
+  position: relative;
+}
+.gravity-form-selector ul {
+  position: absolute;
+  top: 102%;
+  left: 0;
+  width: 100%;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: var(--radius);
+  z-index: 9;
+  border: 1px solid;
+  border-top: 0;
+  border-color: var(--wp-admin-theme-color);
+  box-shadow: 0 0 0 .5px var(--wp-admin-theme-color);
+}
+
 
 .video-editor-container main {
   @apply h-full flex-1;
