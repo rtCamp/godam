@@ -11,6 +11,7 @@ use \Transcoder\Inc\Traits\Singleton;
 use \Transcoder\Inc\Pages;
 use \Transcoder\Inc\Blocks;
 use \Transcoder\Inc\Assets;
+use \Transcoder\Inc\REST_API;
 
 /**
  * Class Plugin.
@@ -33,7 +34,7 @@ class Plugin {
 		$this->load_plugin_configs();
 		Blocks::get_instance();
 		Pages::get_instance();
-
+		REST_API::get_instance();
 
 		// Add a custom "Edit Video" button for video files in the Media Library.
 		add_filter(

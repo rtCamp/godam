@@ -8,14 +8,31 @@ const LicenseKey = () => {
 	const [ licenseKey, setLicenseKey ] = useState( '' );
 	const [ status, setStatus ] = useState( null );
 
-	const saveLicenseKey = () => {
-		// Logic to save the license key, e.g., make a REST API call
-		// Example placeholder logic:
-		if ( licenseKey.trim() ) {
-			// Replace with actual save logic
-			setStatus( { type: 'success', message: 'License key saved successfully!' } );
-		} else {
+	const saveLicenseKey = async () => {
+		if ( ! licenseKey.trim() ) {
 			setStatus( { type: 'error', message: 'Please enter a valid license key.' } );
+			return;
+		}
+
+		try {
+			const response = await fetch( '/wp-json/transcoder/v1/verify-license', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.wpApiSettings.nonce, // Ensure wpApiSettings.nonce is available.
+				},
+				body: JSON.stringify( { license_key: licenseKey } ),
+			} );
+
+			const result = await response.json();
+
+			if ( response.ok ) {
+				setStatus( { type: 'success', message: result.message || 'License key verified successfully!' } );
+			} else {
+				setStatus( { type: 'error', message: result.message || 'Failed to verify the license key.' } );
+			}
+		} catch ( error ) {
+			setStatus( { type: 'error', message: 'An error occurred. Please try again later.' } );
 		}
 	};
 
