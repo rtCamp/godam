@@ -6,6 +6,7 @@ import ReactDOM from 'react-dom';
 /**
  * Internal dependencies
  */
+import LicenseKey from './LicenseKey';
 import EasyDAM from './EasyDAM';
 import VideoSettings from './VideoSettings';
 import ImageSettings from './ImageSettings';
@@ -21,6 +22,11 @@ const App = () => {
 	const [ isPremiumUser, setIsPremiumUser ] = useState( false ); // Should be initially set to false.
 
 	const tabs = [
+		{
+			id: 'license-key',
+			label: 'License Key',
+			component: LicenseKey,
+		},
 		// {
 		// 	id: 'easydam',
 		// 	label: 'EasyDAM',
