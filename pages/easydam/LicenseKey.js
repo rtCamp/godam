@@ -1,13 +1,36 @@
 /**
  * WordPress dependencies
  */
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import { TextControl, Spinner, Button } from '@wordpress/components';
 
 const LicenseKey = () => {
 	const [ licenseKey, setLicenseKey ] = useState( '' );
 	const [ status, setStatus ] = useState( null );
 	const [ isLoading, setIsLoading ] = useState( false ); // State for loading indicator.
+
+	// Fetch the saved license key on component mount.
+	useEffect( () => {
+		const fetchLicenseKey = async () => {
+			try {
+				const response = await fetch( '/wp-json/transcoder/v1/get-license-key', {
+					method: 'GET',
+					headers: {
+						'X-WP-Nonce': window.wpApiSettings.nonce,
+					},
+				} );
+
+				if ( response.ok ) {
+					const result = await response.json();
+					setLicenseKey( result.license_key || '' );
+				}
+			} catch ( error ) {
+				console.error( 'Failed to fetch the license key.', error );
+			}
+		};
+
+		fetchLicenseKey();
+	}, [] );
 
 	const saveLicenseKey = async () => {
 		if ( ! licenseKey.trim() ) {
@@ -55,9 +78,9 @@ const LicenseKey = () => {
 				/>
 			</div>
 			<Button
-				className="max-w-[140px] w-full flex justify-center items-center" // Add a fixed width style
+				className="max-w-[140px] w-full flex justify-center items-center"
 				onClick={ saveLicenseKey }
-				disabled={ isLoading } // Disable the button while loading.
+				disabled={ isLoading }
 				variant="primary"
 			>
 				{ isLoading ? <Spinner /> : 'Save License Key' }

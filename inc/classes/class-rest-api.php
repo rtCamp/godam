@@ -57,6 +57,18 @@ class Rest_API {
 				),
 			)
 		);
+
+		register_rest_route(
+			'transcoder/v1',
+			'/get-license-key',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_license_key' ),
+				'permission_callback' => function() {
+					return current_user_can( 'manage_options' );
+				},
+			)
+		);
 	}
 
 	/**
@@ -103,7 +115,7 @@ class Rest_API {
 
 		// Handle success response.
 		if ( 200 === $status_code && isset( $body['data'] ) ) {
-			// Save the license key in the site options.
+			// Save the license key in the site options only if it is verified.
 			update_site_option( 'rt-transcoding-api-key', $license_key );
 
 			return new \WP_REST_Response(
@@ -134,6 +146,22 @@ class Rest_API {
 				'message' => 'An unexpected error occurred. Please try again later.',
 			),
 			500
+		);
+	}
+
+	/**
+	 * Fetch the saved license key.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function get_license_key() {
+		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+
+		return new \WP_REST_Response(
+			array(
+				'license_key' => $license_key,
+			),
+			200
 		);
 	}
 }
