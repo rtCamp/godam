@@ -6,7 +6,7 @@ import ReactDOM from 'react-dom';
 /**
  * Internal dependencies
  */
-import LicenseKey from './LicenseKey';
+import GeneralSettings from './GeneralSettings';
 import EasyDAM from './EasyDAM';
 import VideoSettings from './VideoSettings';
 import ImageSettings from './ImageSettings';
@@ -18,15 +18,15 @@ import Analytics from './Analytics';
 import { useState, useEffect } from '@wordpress/element';
 
 const App = () => {
-	const [ activeTab, setActiveTab ] = useState( 'license-key' );
+	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
 	const [ isPremiumUser, setIsPremiumUser ] = useState( false ); // Should be initially set to false.
 	const [ mediaSettings, setMediaSettings ] = useState( null );
 
 	const tabs = [
 		{
-			id: 'license-key',
-			label: 'License Key',
-			component: LicenseKey,
+			id: 'general-settings',
+			label: 'General Settings',
+			component: GeneralSettings,
 		},
 		// {
 		// 	id: 'easydam',

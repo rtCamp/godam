@@ -207,12 +207,17 @@ class Rest_API {
 				'optimize_videos'    => false,
 				'video_format'       => 'auto',
 				'video_quality'      => '20',
+				'video_thumbnails'   => 5,
+				'overwrite_thumbnails' => false,
 			),
 			'image' => array(
 				'sync_from_easydam'  => false,
 				'optimize_images'    => false,
 				'image_format'       => 'auto',
 				'image_quality'      => '20',
+			),
+			'general' => array(
+				'track_status' => false,
 			),
 		);
 
@@ -252,17 +257,23 @@ class Rest_API {
 	public function sanitize_settings( $settings ) {
 		$sanitized_settings = array(
 			'video' => array(
-				'sync_from_easydam'  => filter_var( $settings['video']['sync_from_easydam'], FILTER_VALIDATE_BOOLEAN ),
-				'adaptive_bitrate'   => filter_var( $settings['video']['adaptive_bitrate'], FILTER_VALIDATE_BOOLEAN ),
-				'optimize_videos'    => filter_var( $settings['video']['optimize_videos'], FILTER_VALIDATE_BOOLEAN ),
-				'video_format'       => sanitize_text_field( $settings['video']['video_format'] ),
-				'video_quality'      => sanitize_text_field( $settings['video']['video_quality'] ),
+				'sync_from_easydam'    => filter_var( $settings['video']['sync_from_easydam'], FILTER_VALIDATE_BOOLEAN ),
+				'adaptive_bitrate'     => filter_var( $settings['video']['adaptive_bitrate'], FILTER_VALIDATE_BOOLEAN ),
+				'optimize_videos'      => filter_var( $settings['video']['optimize_videos'], FILTER_VALIDATE_BOOLEAN ),
+				'video_format'         => sanitize_text_field( $settings['video']['video_format'] ),
+				'video_quality'        => sanitize_text_field( $settings['video']['video_quality'] ),
+				'video_thumbnails'     => filter_var( $settings['video']['video_thumbnails'], 
+					FILTER_VALIDATE_INT, array( "options" => array( "default" => 5, "min_range" => 1, "max_range" => 10 ) ) ),
+				'overwrite_thumbnails' => filter_var( $settings['video']['overwrite_thumbnails'], FILTER_VALIDATE_BOOLEAN)
 			),
 			'image' => array(
 				'sync_from_easydam'  => filter_var( $settings['image']['sync_from_easydam'], FILTER_VALIDATE_BOOLEAN ),
 				'optimize_images'    => filter_var( $settings['image']['optimize_images'], FILTER_VALIDATE_BOOLEAN ),
 				'image_format'       => sanitize_text_field( $settings['image']['image_format'] ),
 				'image_quality'      => sanitize_text_field( $settings['image']['image_quality'] ),
+			),
+			'general' => array(
+				'track_status' => filter_var( $settings['general']['track_status'], FILTER_VALIDATE_BOOLEAN ),
 			),
 		);
 
