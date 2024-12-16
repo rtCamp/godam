@@ -69,6 +69,35 @@ class Rest_API {
 				},
 			)
 		);
+
+		register_rest_route(
+			'transcoder/v1',
+			'/easydam-settings',
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'get_easydam_settings' ),
+					'permission_callback' => function() {
+						return current_user_can( 'manage_options' );
+					},
+				),
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( $this, 'update_easydam_settings' ),
+					'permission_callback' => function() {
+						return current_user_can( 'manage_options' );
+					},
+					'args'                => array(
+						'settings' => array(
+							'required'          => true,
+							'type'              => 'object',
+							'description'       => 'The easydam settings to save.',
+							'sanitize_callback' => array( $this, 'sanitize_settings' ),
+						),
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -116,7 +145,7 @@ class Rest_API {
 		// Handle success response.
 		if ( 200 === $status_code && isset( $body['data'] ) ) {
 			// Save the license key in the site options only if it is verified.
-			update_site_option( 'rt-transcoding-api-key', $license_key );
+			update_site_option( 'rt-easydam-api-key', $license_key );
 
 			return new \WP_REST_Response(
 				array(
@@ -155,7 +184,7 @@ class Rest_API {
 	 * @return \WP_REST_Response
 	 */
 	public function get_license_key() {
-		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+		$license_key = get_site_option( 'rt-easydam-api-key', '' );
 
 		return new \WP_REST_Response(
 			array(
@@ -163,5 +192,80 @@ class Rest_API {
 			),
 			200
 		);
+	}
+
+	/**
+	 * Fetch the EasyDAM settings.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function get_easydam_settings() {
+		$default_settings = array(
+			'video' => array(
+				'sync_from_easydam'  => false,
+				'adaptive_bitrate'   => false,
+				'optimize_videos'    => false,
+				'video_format'       => 'auto',
+				'video_quality'      => '20',
+			),
+			'image' => array(
+				'sync_from_easydam'  => false,
+				'optimize_images'    => false,
+				'image_format'       => 'auto',
+				'image_quality'      => '20',
+			),
+		);
+
+		// Retrieve settings from the database.
+		$easydam_settings = get_option( 'rt-easydam-settings', $default_settings );
+
+		return new \WP_REST_Response( $easydam_settings, 200 );
+	}
+
+	/**
+	 * Update the easydam settings.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function update_easydam_settings( $request ) {
+		$settings = $request->get_param( 'settings' );
+
+		// Save settings to the database.
+		update_option( 'rt-easydam-settings', $settings );
+
+		return new \WP_REST_Response(
+			array(
+				'status'  => 'success',
+				'message' => 'EasyDAM settings updated successfully!',
+			),
+			200
+		);
+	}
+
+	/**
+	 * Sanitize easydam settings.
+	 *
+	 * @param array $settings EasyDAM settings to sanitize.
+	 * @return array
+	 */
+	public function sanitize_settings( $settings ) {
+		$sanitized_settings = array(
+			'video' => array(
+				'sync_from_easydam'  => filter_var( $settings['video']['sync_from_easydam'], FILTER_VALIDATE_BOOLEAN ),
+				'adaptive_bitrate'   => filter_var( $settings['video']['adaptive_bitrate'], FILTER_VALIDATE_BOOLEAN ),
+				'optimize_videos'    => filter_var( $settings['video']['optimize_videos'], FILTER_VALIDATE_BOOLEAN ),
+				'video_format'       => sanitize_text_field( $settings['video']['video_format'] ),
+				'video_quality'      => sanitize_text_field( $settings['video']['video_quality'] ),
+			),
+			'image' => array(
+				'sync_from_easydam'  => filter_var( $settings['image']['sync_from_easydam'], FILTER_VALIDATE_BOOLEAN ),
+				'optimize_images'    => filter_var( $settings['image']['optimize_images'], FILTER_VALIDATE_BOOLEAN ),
+				'image_format'       => sanitize_text_field( $settings['image']['image_format'] ),
+				'image_quality'      => sanitize_text_field( $settings['image']['image_quality'] ),
+			),
+		);
+
+		return $sanitized_settings;
 	}
 }

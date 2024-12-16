@@ -4,23 +4,24 @@
 import { ToggleControl, SelectControl, Modal, Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
-const VideoSettings = ( { isPremiumUser } ) => {
-	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( false );
-	const [ videoFormat, setVideoFormat ] = useState( 'auto' );
+const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) => {
+	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( mediaSettings?.video?.sync_from_easydam || false );
+	const [ videoFormat, setVideoFormat ] = useState( mediaSettings?.video?.video_format || 'auto' );
 	const [ disableWatermark, setDisableWatermark ] = useState( isPremiumUser );
-	const [ adaptiveBitrate, setAdaptiveBitrate ] = useState( false );
-	const [ optimizeVideos, setOptimizeVideos ] = useState( false );
-	const [ videoQuality, setVideoQuality ] = useState( '20' );
-	const [ isModalOpen, setIsModalOpen ] = useState( false );
+	const [ adaptiveBitrate, setAdaptiveBitrate ] = useState( mediaSettings?.video?.adaptive_bitrate || false );
+	const [ optimizeVideos, setOptimizeVideos ] = useState( mediaSettings?.video?.optimize_videos || false );
+	const [ videoQuality, setVideoQuality ] = useState( mediaSettings?.video?.video_quality || '20' );
 	const [ selectedMedia, setSelectedMedia ] = useState( null );
 
+	const [ isModalOpen, setIsModalOpen ] = useState( false );
+
 	const videoFormatOptions = [
-		{ label: 'Not set', value: '' },
+		{ label: 'Not set', value: 'not-set' },
 		{ label: 'Auto', value: 'auto' },
 	];
 
 	const videoQualityOptions = [
-		{ label: 'Not set', value: '' },
+		{ label: 'Not set', value: 'not-set' },
 		{ label: 'Auto', value: 'auto' },
 		{ label: 'Auto best', value: 'auto-best' },
 		{ label: 'Auto good', value: 'auto-good' },
@@ -66,6 +67,20 @@ const VideoSettings = ( { isPremiumUser } ) => {
 		} );
 
 		fileFrame.open();
+	};
+
+	const handleSaveSettings = () => {
+		const updatedSettings = {
+			...mediaSettings, // Spread the existing media settings to retain other properties
+			video: {
+				sync_from_easydam: syncFromEasyDAM,
+				video_format: videoFormat,
+				adaptive_bitrate: adaptiveBitrate,
+				optimize_videos: optimizeVideos,
+				video_quality: videoQuality,
+			},
+		};
+		saveMediaSettings( updatedSettings ); // Pass updated settings to the parent function
 	};
 
 	return (
@@ -118,7 +133,7 @@ const VideoSettings = ( { isPremiumUser } ) => {
 							__nextHasNoMarginBottom
 							value={ videoFormat }
 							options={ videoFormatOptions }
-							onChange={ ( { selectedItem } ) => setVideoFormat( selectedItem ) }
+							onChange={ ( value ) => setVideoFormat( value ) }
 							describedBy="The video format to use for delivery"
 							showSelectedHint
 							size="compact"
@@ -134,7 +149,7 @@ const VideoSettings = ( { isPremiumUser } ) => {
 							__nextHasNoMarginBottom
 							value={ videoQuality }
 							options={ videoQualityOptions }
-							onChange={ ( { selectedItem } ) => setVideoQuality( selectedItem ) }
+							onChange={ ( value ) => setVideoQuality( value ) }
 							describedBy="The quality of the video for delivery."
 							showSelectedHint
 							size="compact"
@@ -200,6 +215,13 @@ const VideoSettings = ( { isPremiumUser } ) => {
 						</Button>
 					</Modal>
 				) }
+				<Button
+					isPrimary
+					className="mt-4"
+					onClick={ handleSaveSettings }
+				>
+					Save Settings
+				</Button>
 			</form>
 		</div>
 	);

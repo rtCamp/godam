@@ -1,17 +1,17 @@
 /**
  * WordPress dependencies
  */
-import { ToggleControl, SelectControl } from '@wordpress/components';
+import { ToggleControl, SelectControl, Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
-const ImageSettings = () => {
-	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( false );
-	const [ optimizeImages, setOptimizeImages ] = useState( false );
-	const [ imageFormat, setImageFormat ] = useState( 'auto' );
-	const [ imageQuality, setImageQuality ] = useState( '20' );
+const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
+	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( mediaSettings?.image?.sync_from_easydam || false );
+	const [ optimizeImages, setOptimizeImages ] = useState( mediaSettings?.image?.optimize_images || false );
+	const [ imageFormat, setImageFormat ] = useState( mediaSettings?.image?.image_format || 'auto' );
+	const [ imageQuality, setImageQuality ] = useState( mediaSettings?.image?.image_quality || '20' );
 
 	const imageFormatOptions = [
-		{ label: 'Not set', value: '' },
+		{ label: 'Not set', value: 'not-set' },
 		{ label: 'Auto', value: 'auto' },
 		{ label: 'PNG', value: 'png' },
 		{ label: 'JPG', value: 'jpg' },
@@ -21,7 +21,7 @@ const ImageSettings = () => {
 	];
 
 	const imageQualityOptions = [
-		{ label: 'Not set', value: '' },
+		{ label: 'Not set', value: 'not-set' },
 		{ label: 'Auto', value: 'auto' },
 		{ label: 'Auto best', value: 'auto-best' },
 		{ label: 'Auto good', value: 'auto-good' },
@@ -33,6 +33,19 @@ const ImageSettings = () => {
 		{ label: '40', value: '40' },
 		{ label: '20', value: '20' },
 	];
+
+	const handleSaveSettings = () => {
+		const updatedSettings = {
+			...mediaSettings, // Preserve other settings
+			image: {
+				sync_from_easydam: syncFromEasyDAM,
+				optimize_images: optimizeImages,
+				image_format: imageFormat,
+				image_quality: imageQuality,
+			},
+		};
+		saveMediaSettings( updatedSettings ); // Pass updated settings to the parent function
+	};
 
 	return (
 		<div>
@@ -94,6 +107,14 @@ const ImageSettings = () => {
 
 					<div className="text-slate-500">Images will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
 				</div>
+
+				<Button
+					isPrimary
+					className="mt-4"
+					onClick={ handleSaveSettings }
+				>
+					Save Settings
+				</Button>
 			</form>
 		</div>
 	);

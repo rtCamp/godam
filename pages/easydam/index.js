@@ -18,8 +18,9 @@ import Analytics from './Analytics';
 import { useState, useEffect } from '@wordpress/element';
 
 const App = () => {
-	const [ activeTab, setActiveTab ] = useState( 'video-settings' );
+	const [ activeTab, setActiveTab ] = useState( 'license-key' );
 	const [ isPremiumUser, setIsPremiumUser ] = useState( false ); // Should be initially set to false.
+	const [ mediaSettings, setMediaSettings ] = useState( null );
 
 	const tabs = [
 		{
@@ -49,6 +50,49 @@ const App = () => {
 		// },
 	];
 
+	useEffect( () => {
+		const fetchSettings = async () => {
+			try {
+				const response = await fetch( '/wp-json/transcoder/v1/easydam-settings', {
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': window.wpApiSettings.nonce,
+					},
+				} );
+
+				const data = await response.json();
+				console.log("Fetched data: ", data);
+				setMediaSettings( data );
+			} catch ( error ) {
+				console.error( 'Failed to fetch media settings:', error );
+			}
+		};
+
+		fetchSettings();
+	}, [] );
+
+	const saveMediaSettings = async ( updatedSettings ) => {
+		try {
+			const response = await fetch( '/wp-json/transcoder/v1/easydam-settings', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.wpApiSettings.nonce,
+				},
+				body: JSON.stringify( { settings: updatedSettings } ),
+			} );
+
+			const result = await response.json();
+			if ( result.status === 'success' ) {
+				setMediaSettings( updatedSettings ); // Update local state
+			} else {
+				console.error( result.message );
+			}
+		} catch ( error ) {
+			console.error( 'Failed to save media settings:', error );
+		}
+	};
+
 	return (
 		<>
 			<div className="wrap flex min-h-[80vh] gap-4 my-4">
@@ -75,7 +119,13 @@ const App = () => {
 						<div className="w-full">
 							{
 								tabs.map( ( tab ) => (
-									activeTab === tab.id && <tab.component key={ tab.id } isPremiumUser={ isPremiumUser } />
+									activeTab === tab.id &&
+									<tab.component
+										key={ tab.id }
+										isPremiumUser={ isPremiumUser }
+										mediaSettings={ mediaSettings }
+										saveMediaSettings={ saveMediaSettings }
+									/>
 								) )
 							}
 						</div>
@@ -83,7 +133,6 @@ const App = () => {
 							<a href="https://www.google.com" target="_blank" rel="noreferrer">Quick Analytics Share Link</a>
 						</div>
 					</div>
-
 				</div>
 			</div>
 		</>
