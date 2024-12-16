@@ -1,0 +1,17 @@
+#wpbody {
+	display: flex;
+}
+
+#wpcontent {
+	padding-left: 0 !important;
+}
+
+#rt-transcoder-media-library-root {
+	min-width: 300px;
+	padding: 24px 12px;
+
+}
+
+.components-button.has-icon.has-text {
+	justify-content: center !important;
+}

@@ -129,7 +129,7 @@ class Pages {
 	public function admin_enqueue_scripts( $hook_suffix ) {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( 'toplevel_page_easydam', 'easydam_page_video_editor' ) ) ) {
+		if ( $screen && in_array( $screen->id, array( 'toplevel_page_easydam', 'easydam_page_video_editor', 'upload' ) ) ) {
 			wp_register_style(
 				'transcoder-page-style-easydam',
 				RT_TRANSCODER_URL . '/pages/build/style.css',
@@ -183,6 +183,19 @@ class Pages {
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-wp-components' );
+		}
+
+		if ( $screen && 'upload' === $screen->id ) {
+
+			wp_register_script(
+				'media-library-react',
+				RT_TRANSCODER_URL . '/pages/build/media-library.js',
+				array( 'wp-element' ),
+				filemtime( RT_TRANSCODER_PATH . '/pages/build/media-library.js' ),
+				true
+			);
+
+			wp_enqueue_script( 'media-library-react' );
 		}
 	}
 }

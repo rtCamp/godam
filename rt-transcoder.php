@@ -104,3 +104,17 @@ function rtt_action_links( $links, $file ) {
 
 add_filter( 'plugin_action_links', 'rtt_action_links', 11, 2 );
 add_filter( 'network_admin_plugin_action_links', 'rtt_action_links', 11, 2 );
+
+add_action('admin_head', 'inject_media_library_react_root');
+function inject_media_library_react_root() {
+    ?>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var mediaLibraryRoot = document.createElement('div');
+            mediaLibraryRoot.id = 'rt-transcoder-media-library-root';
+            const wpbody = document.querySelector('#wpbody');
+            wpbody.insertBefore(mediaLibraryRoot, wpbody.firstChild);
+        });
+    </script>
+    <?php
+}
