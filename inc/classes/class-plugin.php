@@ -11,7 +11,9 @@ use \Transcoder\Inc\Traits\Singleton;
 use \Transcoder\Inc\Pages;
 use \Transcoder\Inc\Blocks;
 use \Transcoder\Inc\Assets;
-use \Transcoder\Inc\REST_API;
+
+use \Transcoder\Inc\REST_API\GF;
+use \Transcoder\Inc\REST_API\Settings;
 
 /**
  * Class Plugin.
@@ -27,14 +29,16 @@ class Plugin {
 	 * Construct method.
 	 */
 	protected function __construct() {
+
 		// Load plugin classes.
 		Assets::get_instance();
 		$this->load_post_types();
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
+		$this->load_rest_api();
 		Blocks::get_instance();
 		Pages::get_instance();
-		REST_API::get_instance();
+
 
 		// Add a custom "Edit Video" button for video files in the Media Library.
 		add_filter(
@@ -77,5 +81,15 @@ class Plugin {
 	 * Load Plugin Configs.
 	 */
 	public function load_plugin_configs() {
+	}
+
+	/**
+	 * Load REST API.
+	 *
+	 * @return void
+	 */
+	public function load_rest_api() {
+		GF::get_instance();
+		Settings::get_instance();
 	}
 }

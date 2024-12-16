@@ -25,7 +25,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 		setIsLicenseKeyLoading( true );
 
 		try {
-			const response = await fetch( '/wp-json/transcoder/v1/verify-license', {
+			const response = await fetch( '/wp-json/easydam/v1/settings/verify-license', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 		setIsLicenseKeyLoading( true );
 
 		try {
-			const response = await fetch( '/wp-json/transcoder/v1/deactivate-license', {
+			const response = await fetch( '/wp-json/easydam/v1/settings/deactivate-license', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

@@ -7,10 +7,8 @@ import ReactDOM from 'react-dom';
  * Internal dependencies
  */
 import GeneralSettings from './GeneralSettings';
-import EasyDAM from './EasyDAM';
 import VideoSettings from './VideoSettings';
 import ImageSettings from './ImageSettings';
-import Analytics from './Analytics';
 
 /**
  * WordPress dependencies
@@ -30,11 +28,6 @@ const App = () => {
 			label: 'General Settings',
 			component: GeneralSettings,
 		},
-		// {
-		// 	id: 'easydam',
-		// 	label: 'EasyDAM',
-		// 	component: EasyDAM,
-		// },
 		{
 			id: 'video-settings',
 			label: 'Video settings',
@@ -45,23 +38,18 @@ const App = () => {
 			label: 'Image settings',
 			component: ImageSettings,
 		},
-		// {
-		// 	id: 'analytics',
-		// 	label: 'Analytics',
-		// 	component: Analytics,
-		// },
 	];
 
 	useEffect( () => {
 		const fetchSettings = async () => {
 			try {
-				const settingsResponse = await fetch( '/wp-json/transcoder/v1/easydam-settings', {
+				const settingsResponse = await fetch( '/wp-json/easydam/v1/settings/easydam-settings', {
 					headers: {
 						'Content-Type': 'application/json',
 						'X-WP-Nonce': window.wpApiSettings.nonce,
 					},
 				} );
-				const licenseResponse = await fetch( '/wp-json/transcoder/v1/get-license-key', {
+				const licenseResponse = await fetch( '/wp-json/easydam/v1/settings/get-license-key', {
 					method: 'GET',
 					headers: {
 						'X-WP-Nonce': window.wpApiSettings.nonce,
@@ -70,8 +58,6 @@ const App = () => {
 
 				const settingsData = await settingsResponse.json();
 				const licenseData = await licenseResponse.json();
-
-				console.log( 'Fetched data:', settingsData );
 
 				setMediaSettings( settingsData );
 				setLicenseKey( licenseData.license_key || '' ); // Save the license key
@@ -86,7 +72,7 @@ const App = () => {
 
 	const saveMediaSettings = async ( updatedSettings ) => {
 		try {
-			const response = await fetch( '/wp-json/transcoder/v1/easydam-settings', {
+			const response = await fetch( '/wp-json/easydam/v1/settings/easydam-settings', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
