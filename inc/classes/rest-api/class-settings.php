@@ -5,12 +5,12 @@
  * @package transcoder
  */
 
- namespace Transcoder\Inc\REST_API;
+namespace Transcoder\Inc\REST_API;
 
 /**
  * Class Settings
  */
-class Settings extends Base  {
+class Settings extends Base {
 
 	/**
 	 * REST route base.
@@ -22,14 +22,14 @@ class Settings extends Base  {
 	/**
 	 * Register custom REST API routes for Settings Pages.
 	 *
-	 * @return void
+	 * @return array Array of registered REST API routes
 	 */
 	public function get_rest_routes() {
 		return array(
 			array(
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/verify-license',
-				'args' => array(
+				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'verify_license' ),
 					'permission_callback' => function () {
@@ -43,34 +43,34 @@ class Settings extends Base  {
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 					),
-				)
+				),
 			),
 			array(
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/deactivate-license',
-				'args' => array(
+				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'deactivate_license' ),
 					'permission_callback' => function () {
 						return current_user_can( 'manage_options' );
 					},
-				)
+				),
 			),
 			array(
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/get-license-key',
-				'args' => array(
+				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_license_key' ),
 					'permission_callback' => function () {
 						return current_user_can( 'manage_options' );
 					},
-				)
+				),
 			),
 			array(
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/easydam-settings',
-				'args' => array(
+				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_easydam_settings' ),
 					'permission_callback' => function () {
@@ -81,7 +81,7 @@ class Settings extends Base  {
 			array(
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/easydam-settings',
-				'args' => array(
+				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'update_easydam_settings' ),
 					'permission_callback' => function () {
@@ -96,7 +96,7 @@ class Settings extends Base  {
 						),
 					),
 				),
-			)
+			),
 		);
 	}
 
