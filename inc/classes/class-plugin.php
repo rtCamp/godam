@@ -7,13 +7,13 @@
 
 namespace Transcoder\Inc;
 
-use \Transcoder\Inc\Traits\Singleton;
-use \Transcoder\Inc\Pages;
-use \Transcoder\Inc\Blocks;
-use \Transcoder\Inc\Assets;
+use Transcoder\Inc\Traits\Singleton;
+use Transcoder\Inc\Pages;
+use Transcoder\Inc\Blocks;
+use Transcoder\Inc\Assets;
 
-use \Transcoder\Inc\REST_API\GF;
-use \Transcoder\Inc\REST_API\Settings;
+use Transcoder\Inc\REST_API\GF;
+use Transcoder\Inc\REST_API\Settings;
 
 /**
  * Class Plugin.
