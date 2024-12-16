@@ -85,9 +85,10 @@ const App = () => {
 			const result = await response.json();
 			if ( result.status === 'success' ) {
 				setMediaSettings( updatedSettings ); // Update local state
-			} else {
-				console.error( result.message );
+				return true;
 			}
+			console.error( result.message );
+			return false;
 		} catch ( error ) {
 			console.error( 'Failed to save media settings:', error );
 		}

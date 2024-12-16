@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { ToggleControl, SelectControl, Modal, Button } from '@wordpress/components';
+import { ToggleControl, SelectControl, Modal, Button, Notice } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
 const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) => {
@@ -14,6 +14,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 	const [ selectedMedia, setSelectedMedia ] = useState( null );
 
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
+	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
 	const videoFormatOptions = [
 		{ label: 'Not set', value: 'not-set' },
@@ -69,7 +70,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 		fileFrame.open();
 	};
 
-	const handleSaveSettings = () => {
+	const handleSaveSettings = async () => {
 		const updatedSettings = {
 			...mediaSettings, // Spread the existing media settings to retain other properties
 			video: {
@@ -80,12 +81,35 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 				video_quality: videoQuality,
 			},
 		};
-		saveMediaSettings( updatedSettings ); // Pass updated settings to the parent function
+
+		const isSaved = await saveMediaSettings( updatedSettings ); // Use the updated function
+
+		if ( isSaved ) {
+			// Success notice
+			setNotice( { message: 'Settings saved successfully!', status: 'success', isVisible: true } );
+		} else {
+			// Error notice
+			setNotice( { message: 'Failed to save settings. Please try again.', status: 'error', isVisible: true } );
+		}
+		window.scrollTo( { top: 0, behavior: 'smooth' } );
+		// Hide the notice after 5 seconds
+		setTimeout( () => {
+			setNotice( { ...notice, isVisible: false } );
+		}, 5000 );
 	};
 
 	return (
 		<div>
 			<h2 className="py-2 border-b text-xl font-bold">Video - Global Settings</h2>
+
+			{ notice.isVisible && (
+				<Notice
+					status={ notice.status }
+					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+				>
+					{ notice.message }
+				</Notice>
+			) }
 
 			<form id="easydam-video-settings" className="flex flex-col" onSubmit={ handleSubmit }>
 				<div className="py-3 flex flex-col gap-2">
@@ -217,7 +241,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 				) }
 				<Button
 					isPrimary
-					className="mt-4"
+					className="mt-4 max-w-[140px] w-full flex justify-center items-center"
 					onClick={ handleSaveSettings }
 				>
 					Save Settings
