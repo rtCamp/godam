@@ -7,7 +7,7 @@
 
 namespace Transcoder\Inc\REST_API;
 
-use \Transcoder\Inc\Traits\Singleton;
+use Transcoder\Inc\Traits\Singleton;
 
 /**
  * Base class for REST API endpoints with register_meta support.
@@ -42,13 +42,6 @@ abstract class Base extends \WP_REST_Controller {
 	 */
 	protected function setup_hooks() {
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
-		add_action( 'rest_api_init', function() {
-			error_log( 'Registering REST API routes' );
-			$routes = $this->get_rest_routes();
-			foreach ( $routes as $route ) {
-				error_log( 'Registering route: ' . $route['namespace'] . $route['route'] );
-			}
-		});
 	}
 
 	/**
