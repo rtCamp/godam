@@ -109,6 +109,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 		const updatedSettings = {
 			...mediaSettings,
 			general: {
+				...mediaSettings.general,
 				track_status: trackStatusOnUserProfile,
 			},
 		};
@@ -147,7 +148,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 				<TextControl
 					value={ licenseKey }
 					onChange={ ( value ) => setLicenseKey( value ) }
-					help="Your license key is required to access premium features."
+					help="Your license key is required to access the features."
 					placeholder="Enter your license key here"
 					className="max-w-[400px]"
 					disabled={ mediaSettings?.general?.is_verified }
