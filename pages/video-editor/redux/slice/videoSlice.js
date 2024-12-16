@@ -49,14 +49,25 @@ const slice = createSlice( {
 		layers: [],
 		isChanged: false,
 		skipTime: 10,
+		cta: {
+			id: 0,
+			type: 'text', // text, image, html
+			text: '',
+			imageID: 0,
+			link: '',
+			html: '',
+			duration: 0, //time in seconds
+		},
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
-			const { videoConfig, layers } = action.payload;
+			const { videoConfig, layers, skipTime, cta } = action.payload;
 
 			state.videoConfig = videoConfig;
 			state.layers = layers;
 			state.isChanged = false;
+			state.skipTime = skipTime;
+			state.cta = cta;
 		},
 		addLayer: ( state, action ) => {
 			const newLayer = action.payload;
@@ -83,8 +94,16 @@ const slice = createSlice( {
 			state.skipTime = action.payload.selectedSkipVal;
 			state.isChanged = true;
 		},
+		updateCtaLayer: (state, action) => {
+			// console.log(action);
+			state.cta = { ...state.cta, ...action.payload };
+			state.isChanged = true;
+			// console.log(state.cta);
+		},
 	},
-} );
+});
+
+
 
 export const {
 	initializeStore,
@@ -93,5 +112,6 @@ export const {
 	updateLayerField,
 	updateVideoConfig,
 	updateSkipTime,
+	updateCtaLayer,
 } = slice.actions;
 export default slice.reducer;

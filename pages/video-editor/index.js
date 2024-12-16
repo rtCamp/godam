@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { FastForwardFill } from 'react-bootstrap-icons';
@@ -36,6 +36,7 @@ const VideoEditor = () => {
 	] );
 	const [ formHTML, setFormHTML ] = useState( null ); // Store fetched form HTML
 	const [ showForm, setShowForm ] = useState( false );
+	const cta = useSelector( ( state ) => state.videoReducer.cta );
 
 	useEffect( () => {
 		// Make sure the post ID is passed in the URL
@@ -75,6 +76,18 @@ const VideoEditor = () => {
 		}
 	};
 
+	const handleCtaTimeUpdate =
+		( player, time ) => {
+			setCurrentTime( time.toFixed( 2 ) );
+			// console.log("from function:", cta);
+
+			// Show CTA at a specific timestamp
+			if ( Math.floor( time ) >= 10 ) {
+				player.pause();
+				setShowForm( true );
+			}
+		};
+
 	// Fetch the Gravity Form HTML
 	const fetchGravityForm = async ( formId ) => {
 		try {
@@ -92,6 +105,17 @@ const VideoEditor = () => {
 		}
 	};
 
+	useEffect( () => {
+		if ( 'text' === cta.type ) {
+			const html = `<a href="${ cta.link }">${ cta.text }</a>`;
+			setFormHTML( html );
+		} else if ( 'html' === cta.type ) {
+			setFormHTML( cta.html );
+		} else {
+			setFormHTML( '' );
+		}
+	}, [ cta ] );
+
 	const addLayer = ( time ) => {
 		const newLayer = {
 			id: uuidv4(),
@@ -105,13 +129,11 @@ const VideoEditor = () => {
 
 	return (
 		<>
-
 			<div className="video-editor-container">
 				<aside className="py-3">
 					<div id="sidebar-content" className="border-b">
 						<TabPanel
-							onSelect={ () => {
-							} }
+							onSelect={ () => {} }
 							className="sidebar-tabs"
 							tabs={ [
 								{
@@ -123,7 +145,7 @@ const VideoEditor = () => {
 								{
 									name: 'video-settings',
 									title: 'Video appearance & controls',
-									component: <Appearance/>,
+									component: <Appearance />,
 								},
 							] }
 						>
@@ -133,7 +155,7 @@ const VideoEditor = () => {
 				</aside>
 
 				<main className="flex justify-center items-center p-4 relative">
-					{/* <Button className="absolute right-4 top-5" variant="primary" >{ __( 'Save', 'transcoder' ) }</Button> */}
+					{ /* <Button className="absolute right-4 top-5" variant="primary" >{ __( 'Save', 'transcoder' ) }</Button> */ }
 
 					{ video && (
 						<div className="max-w-[740px] w-full">
@@ -141,33 +163,32 @@ const VideoEditor = () => {
 
 							<div className="relative">
 								<VideoJSPlayer
-									options={
-										{
-											controls: true,
-											fluid: true,
-											preload: 'auto',
-											width: '100%',
-											sources: [ { src: video.source_url, type: video.mimeType } ],
-											muted: true,
-											controlBar: {
-												playToggle: true, // Play/Pause button
-												volumePanel: true,
-												currentTimeDisplay: true, // Current time
-												timeDivider: true, // Divider between current time and duration
-												durationDisplay: true, // Total duration
-												fullscreenToggle: true, // Full-screen button
-												subsCapsButton: true,
-												skipButtons: {
-													forward: 10,
-													backward: 10,
-												},
-												progressControl: {
-													vertical: true, // Prevent horizontal volume slider
-												},
+									options={ {
+										controls: true,
+										fluid: true,
+										preload: 'auto',
+										width: '100%',
+										sources: [ { src: video.source_url, type: video.mimeType } ],
+										muted: true,
+										controlBar: {
+											playToggle: true, // Play/Pause button
+											volumePanel: true,
+											currentTimeDisplay: true, // Current time
+											timeDivider: true, // Divider between current time and duration
+											durationDisplay: true, // Total duration
+											fullscreenToggle: true, // Full-screen button
+											subsCapsButton: true,
+											skipButtons: {
+												forward: 10,
+												backward: 10,
 											},
-										}
-									}
-									onTimeupdate={ handleTimeUpdate }
+											progressControl: {
+												vertical: true, // Prevent horizontal volume slider
+											},
+										},
+									} }
+									// onTimeupdate={ handleTimeUpdate }
+									onTimeupdate={ handleCtaTimeUpdate }
 								/>
 								{ /* Form Overlay */ }
 								{ showForm && (
@@ -179,7 +200,7 @@ const VideoEditor = () => {
 											right: '0',
 											bottom: '0',
 											zIndex: 999,
-											background: 'rgba(255, 255, 255, 0.8)',
+											background: '#211F1F',
 											padding: '20px',
 											border: '2px solid black',
 											display: 'flex',
@@ -189,17 +210,20 @@ const VideoEditor = () => {
 										} }
 									>
 										<div className="max-w-[700px]">
-											<div dangerouslySetInnerHTML={ { __html: formHTML } }></div>
+											<div className="overlay-content" dangerouslySetInnerHTML={ { __html: formHTML } }></div>
+											{ /* <Out /> */ }
 											<button
 												className="absolute bottom-6 flex justify-center items-center gap-2 right-0 px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white"
 												onClick={ () => {
 													setShowForm( false ); // Hide form overlay
-													setLayers( layers.map( ( layer ) => {
-														if ( layer.timestamp === 5 ) {
-															return { ...layer, viewed: true };
-														}
-														return layer;
-													} ) );
+													setLayers(
+														layers.map( ( layer ) => {
+															if ( layer.timestamp === 5 ) {
+																return { ...layer, viewed: true };
+															}
+															return layer;
+														} ),
+													);
 												} }
 											>
 												Skip <FastForwardFill />
@@ -209,17 +233,15 @@ const VideoEditor = () => {
 								) }
 							</div>
 							<div className="mt-2">Timestamp: { currentTime }</div>
-
 						</div>
 					) }
 				</main>
 			</div>
-
 		</>
 	);
 };
 
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import store from './redux/store';
 import { __ } from '@wordpress/i18n';
 import Appearance from './components/appearance/Appearance';
