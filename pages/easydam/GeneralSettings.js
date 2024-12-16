@@ -150,7 +150,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 					help="Your license key is required to access premium features."
 					placeholder="Enter your license key here"
 					className="max-w-[400px]"
-					type="password"
+					disabled={ mediaSettings?.general?.is_verified }
 				/>
 				<div className="flex gap-2">
 					<Button

@@ -44,7 +44,7 @@ class Rest_API {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'verify_license' ),
-				'permission_callback' => function() {
+				'permission_callback' => function () {
 					return current_user_can( 'manage_options' );
 				},
 				'args'                => array(
@@ -64,7 +64,7 @@ class Rest_API {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'deactivate_license' ),
-				'permission_callback' => function() {
+				'permission_callback' => function () {
 					return current_user_can( 'manage_options' );
 				},
 			)
@@ -76,7 +76,7 @@ class Rest_API {
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'get_license_key' ),
-				'permission_callback' => function() {
+				'permission_callback' => function () {
 					return current_user_can( 'manage_options' );
 				},
 			)
@@ -89,14 +89,14 @@ class Rest_API {
 				array(
 					'methods'             => 'GET',
 					'callback'            => array( $this, 'get_easydam_settings' ),
-					'permission_callback' => function() {
+					'permission_callback' => function () {
 						return current_user_can( 'manage_options' );
 					},
 				),
 				array(
 					'methods'             => 'POST',
 					'callback'            => array( $this, 'update_easydam_settings' ),
-					'permission_callback' => function() {
+					'permission_callback' => function () {
 						return current_user_can( 'manage_options' );
 					},
 					'args'                => array(
@@ -134,12 +134,12 @@ class Rest_API {
 		// API endpoint to verify the license.
 		$api_url = sprintf( 'http://frappe-transcoder-api.rt.gw/api/resource/Transcoder License/%s', $license_key );
 
-		// Make the GET request to the API.
-		$response = wp_remote_get(
-			$api_url
-		);
-
-		error_log( 'API full response: ' . print_r( $response, true ) );
+		// Use vip_safe_wp_remote_get as the primary method and wp_safe_remote_get as fallback.
+		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
+			$response = vip_safe_wp_remote_get( $api_url, 3, 3 ); // Timeout of 3 seconds, retries 3 times.
+		} else {
+			$response = wp_safe_remote_get( $api_url ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
+		}
 
 		if ( is_wp_error( $response ) ) {
 			return new \WP_REST_Response(
@@ -241,20 +241,20 @@ class Rest_API {
 	 */
 	public function get_easydam_settings() {
 		$default_settings = array(
-			'video' => array(
-				'sync_from_easydam'  => false,
-				'adaptive_bitrate'   => false,
-				'optimize_videos'    => false,
-				'video_format'       => 'auto',
-				'video_quality'      => '20',
-				'video_thumbnails'   => 5,
+			'video'   => array(
+				'sync_from_easydam'    => false,
+				'adaptive_bitrate'     => false,
+				'optimize_videos'      => false,
+				'video_format'         => 'auto',
+				'video_quality'        => '20',
+				'video_thumbnails'     => 5,
 				'overwrite_thumbnails' => false,
 			),
-			'image' => array(
-				'sync_from_easydam'  => false,
-				'optimize_images'    => false,
-				'image_format'       => 'auto',
-				'image_quality'      => '20',
+			'image'   => array(
+				'sync_from_easydam' => false,
+				'optimize_images'   => false,
+				'image_format'      => 'auto',
+				'image_quality'     => '20',
 			),
 			'general' => array(
 				'track_status' => false,
@@ -297,25 +297,34 @@ class Rest_API {
 	 */
 	public function sanitize_settings( $settings ) {
 		$sanitized_settings = array(
-			'video' => array(
+			'video'   => array(
 				'sync_from_easydam'    => filter_var( $settings['video']['sync_from_easydam'], FILTER_VALIDATE_BOOLEAN ),
 				'adaptive_bitrate'     => filter_var( $settings['video']['adaptive_bitrate'], FILTER_VALIDATE_BOOLEAN ),
 				'optimize_videos'      => filter_var( $settings['video']['optimize_videos'], FILTER_VALIDATE_BOOLEAN ),
 				'video_format'         => sanitize_text_field( $settings['video']['video_format'] ),
 				'video_quality'        => sanitize_text_field( $settings['video']['video_quality'] ),
-				'video_thumbnails'     => filter_var( $settings['video']['video_thumbnails'], 
-					FILTER_VALIDATE_INT, array( "options" => array( "default" => 5, "min_range" => 1, "max_range" => 10 ) ) ),
-				'overwrite_thumbnails' => filter_var( $settings['video']['overwrite_thumbnails'], FILTER_VALIDATE_BOOLEAN)
+				'video_thumbnails'     => filter_var(
+					$settings['video']['video_thumbnails'], 
+					FILTER_VALIDATE_INT,
+					array(
+						'options' => array(
+							'default'   => 5,
+							'min_range' => 1,
+							'max_range' => 10,
+						),
+					) 
+				),
+				'overwrite_thumbnails' => filter_var( $settings['video']['overwrite_thumbnails'], FILTER_VALIDATE_BOOLEAN ),
 			),
-			'image' => array(
-				'sync_from_easydam'  => filter_var( $settings['image']['sync_from_easydam'], FILTER_VALIDATE_BOOLEAN ),
-				'optimize_images'    => filter_var( $settings['image']['optimize_images'], FILTER_VALIDATE_BOOLEAN ),
-				'image_format'       => sanitize_text_field( $settings['image']['image_format'] ),
-				'image_quality'      => sanitize_text_field( $settings['image']['image_quality'] ),
+			'image'   => array(
+				'sync_from_easydam' => filter_var( $settings['image']['sync_from_easydam'], FILTER_VALIDATE_BOOLEAN ),
+				'optimize_images'   => filter_var( $settings['image']['optimize_images'], FILTER_VALIDATE_BOOLEAN ),
+				'image_format'      => sanitize_text_field( $settings['image']['image_format'] ),
+				'image_quality'     => sanitize_text_field( $settings['image']['image_quality'] ),
 			),
 			'general' => array(
 				'track_status' => filter_var( $settings['general']['track_status'], FILTER_VALIDATE_BOOLEAN ),
-				'is_verified' => filter_var( $settings['general']['is_verified'], FILTER_VALIDATE_BOOLEAN ),
+				'is_verified'  => filter_var( $settings['general']['is_verified'], FILTER_VALIDATE_BOOLEAN ),
 			),
 		);
 

@@ -118,7 +118,7 @@ const App = () => {
 								<a
 									key={ tab.id }
 									href={ `#${ tab.id }` }
-									className={ `outline-none block p-4 border-gray-200 font-bold first:rounded-t-lg ${ activeTab === tab.id ? 'bg-indigo-500 text-white font-bold border-r-0 hover:text-white focus:text-white focus:ring-2' : '' } ${
+									className={ `outline-none block p-4 border-gray-200 font-bold first:rounded-t-lg ${ activeTab === tab.id ? 'bg-blue-700 text-white font-bold border-r-0 hover:text-white focus:text-white focus:ring-2' : '' } ${
 										tab.id !== 'general-settings' && ! isVerified ? 'opacity-50 pointer-events-none' : ''
 									}` }
 									onClick={ () => {
