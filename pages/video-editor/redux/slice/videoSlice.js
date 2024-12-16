@@ -103,8 +103,6 @@ const slice = createSlice( {
 	},
 });
 
-
-
 export const {
 	initializeStore,
 	addLayer,
