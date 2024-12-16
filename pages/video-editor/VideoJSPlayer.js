@@ -5,10 +5,17 @@ import { useState, useEffect, useRef } from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
+import { useSelector, useDispatch } from 'react-redux';
+
 export const VideoJS = ( props ) => {
 	const videoRef = useRef( null );
 	const playerRef = useRef( null );
 	const { options, onReady, onTimeupdate } = props;
+
+	const dispatch = useDispatch();
+	const videoMeta = useSelector( ( state ) => state.videoReducer );
+	const videoConfig = videoMeta.videoConfig;
+	const layers = videoMeta.layers;
 
 	useEffect( () => {
 		// Make sure Video.js player is only initialized once
@@ -33,6 +40,23 @@ export const VideoJS = ( props ) => {
 			}
 		}
 	}, [ videoRef ] );
+
+	useEffect( () => {
+		if ( playerRef.current ) {
+			const player = playerRef.current;
+
+			// Remove the old event listener on 'timeupdate' event.
+			player.off( 'timeupdate' );
+
+			// Add a new 'timeupdate' event listener
+			if ( onTimeupdate ) {
+				player.on( 'timeupdate', () => {
+					const currentTime = player.currentTime();
+					onTimeupdate( player, currentTime );
+				} );
+			}
+		}
+	}, [ layers ] );
 
 	useEffect( () => {
 		if ( playerRef.current ) {

@@ -5,16 +5,24 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { FastForwardFill } from 'react-bootstrap-icons';
+import { useSelector, useDispatch, Provider } from 'react-redux';
+import axios from 'axios';
+/**
+ * Internal dependencies
+ */
+import store from './redux/store';
+
 /**
  * Internal dependencies
  */
 import VideoJSPlayer from './VideoJSPlayer';
+import SidebarLayers from './components/SidebarLayers';
 
 /**
  * WordPress dependencies
  */
 import { Button, TabPanel } from '@wordpress/components';
-import SidebarLayers from './components/SidebarLayers';
+import { __ } from '@wordpress/i18n';
 
 const VideoEditor = () => {
 	// Get the current post ID from the URL query string
@@ -24,18 +32,13 @@ const VideoEditor = () => {
 
 	const [ video, setVideo ] = useState( null );
 	const [ currentTime, setCurrentTime ] = useState( 0 );
-	const [ layers, setLayers ] = useState( [
-		{
-			id: uuidv4(),
-			timestamp: 5,
-			type: 'Ad',
-			gf_id: 1,
-			viewed: false,
-			submitted: false,
-		},
-	] );
 	const [ formHTML, setFormHTML ] = useState( null ); // Store fetched form HTML
 	const [ showForm, setShowForm ] = useState( false );
+
+	const dispatch = useDispatch();
+	const layers = useSelector( ( state ) => state.videoReducer.layers );
+
+	const [ viewedLayers, setViewedLayers ] = useState( [] );
 
 	useEffect( () => {
 		// Make sure the post ID is passed in the URL
@@ -68,39 +71,26 @@ const VideoEditor = () => {
 		// Round the current time to 2 decimal places
 		setCurrentTime( time.toFixed( 2 ) );
 
-		if ( Math.floor( time ) >= 5 ) {
+		// Check if the current time is greater than or equal to layer's display time.
+		const activeGFLayer = layers.find( ( layer ) => layer.type === 'form' && time.toFixed( 2 ) >= layer.displayTime && viewedLayers.indexOf( layer.id ) === -1 );
+
+		if ( activeGFLayer ) {
 			player.pause(); // Pause the video
 			fetchGravityForm( 1 ); // Fetch Gravity Form with ID 1
 			setShowForm( true ); // Show overlay
+			setViewedLayers( [ ...viewedLayers, activeGFLayer.id ] );
 		}
 	};
 
 	// Fetch the Gravity Form HTML
 	const fetchGravityForm = async ( formId ) => {
-		try {
-			const response = await fetch(
-				`/wp-admin/admin-ajax.php?action=get_gravity_form&form_id=${ formId }`,
-			);
-			const result = await response.json();
-			if ( result.success ) {
-				setFormHTML( result.data ); // Update form HTML
-			} else {
-				console.error( 'Error fetching form:', result.data );
-			}
-		} catch ( error ) {
-			console.error( 'AJAX request failed:', error );
-		}
-	};
-
-	const addLayer = ( time ) => {
-		const newLayer = {
-			id: uuidv4(),
-			timestamp: time,
-			type: [ 'Form', 'Layer', 'Ad' ][ Math.floor( Math.random() * 3 ) ],
-			content: 'New layer',
-		};
-
-		setLayers( [ ...layers, newLayer ] );
+		axios.get( `/wp-json/easydam/v1/gforms/${ formId }` )
+			.then( ( response ) => {
+				setFormHTML( response.data );
+			} )
+			.catch( ( error ) => {
+				console.error( error );
+			} );
 	};
 
 	return (
@@ -118,7 +108,7 @@ const VideoEditor = () => {
 									name: 'layers',
 									title: 'Layers',
 									className: 'flex-1 justify-center items-center',
-									component: <SidebarLayers />,
+									component: <SidebarLayers currentTime={ currentTime } />,
 								},
 								{
 									name: 'video-settings',
@@ -133,7 +123,7 @@ const VideoEditor = () => {
 				</aside>
 
 				<main className="flex justify-center items-center p-4 relative">
-					{/* <Button className="absolute right-4 top-5" variant="primary" >{ __( 'Save', 'transcoder' ) }</Button> */}
+					{ /* <Button className="absolute right-4 top-5" variant="primary" >{ __( 'Save', 'transcoder' ) }</Button> */ }
 
 					{ video && (
 						<div className="max-w-[740px] w-full">
@@ -172,24 +162,10 @@ const VideoEditor = () => {
 								{ /* Form Overlay */ }
 								{ showForm && (
 									<div
-										style={ {
-											position: 'absolute',
-											top: '0',
-											left: '0',
-											right: '0',
-											bottom: '0',
-											zIndex: 999,
-											background: 'rgba(255, 255, 255, 0.8)',
-											padding: '20px',
-											border: '2px solid black',
-											display: 'flex',
-											flexDirection: 'column',
-											justifyContent: 'center',
-											alignItems: 'center',
-										} }
+										className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center overflow-y-auto"
 									>
-										<div className="max-w-[700px]">
-											<div dangerouslySetInnerHTML={ { __html: formHTML } }></div>
+										<div className="max-w-[400px]">
+											<RenderDynamicContent content={ formHTML } />
 											<button
 												className="absolute bottom-6 flex justify-center items-center gap-2 right-0 px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white"
 												onClick={ () => {
@@ -219,9 +195,51 @@ const VideoEditor = () => {
 	);
 };
 
-import { Provider } from 'react-redux';
-import store from './redux/store';
-import { __ } from '@wordpress/i18n';
+const RenderDynamicContent = ( { content } ) => {
+	// useEffect( () => {
+	// 	// Extract and execute scripts from the content.
+	// 	const div = document.createElement( 'div' );
+	// 	div.innerHTML = content;
+
+	// 	// Extract all <script> tags.
+	// 	const scripts = div.querySelectorAll( 'script' );
+	// 	const styles = div.querySelectorAll( 'style' );
+
+	// 	scripts.forEach( ( script ) => {
+	// 		const newScript = document.createElement( 'script' );
+	// 		newScript.type = 'text/javascript';
+	// 		if ( script.src ) {
+	// 			// For external scripts, copy the src.
+	// 			newScript.src = script.src;
+	// 		} else {
+	// 			// For inline scripts, copy the content.
+	// 			newScript.textContent = script.textContent;
+	// 		}
+	// 		// Append the script to the document head or body.
+	// 		document.body.appendChild( newScript );
+
+	// 		// Clean up after script is appended.
+	// 		newScript.onload = () => {
+	// 			newScript.remove();
+	// 		};
+	// 	} );
+
+	// 	styles.forEach( ( style ) => {
+	// 		console.log( style.textContent );
+
+	// 		const newStyle = document.createElement( 'style' );
+	// 		newStyle.textContent = style.textContent;
+	// 		document.head.appendChild( newStyle );
+	// 	} );
+	// }, [ content ] ); // Run this effect whenever content changes
+
+	return (
+		<div
+			dangerouslySetInnerHTML={ { __html: content } }
+			style={ { overflow: 'hidden' } }
+		></div>
+	);
+};
 
 const App = () => {
 	return (

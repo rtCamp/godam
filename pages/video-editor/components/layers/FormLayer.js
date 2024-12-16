@@ -1,8 +1,9 @@
 /**
  * External dependencies
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
 
 /**
  * WordPress dependencies
@@ -79,7 +80,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 			<TextareaControl
 				className="mb-4"
 				label={ __( 'Custom CSS', 'transcoder' ) }
-                placeholder={ __( '.classname { border: 1px solid blue; }', 'transcoder' ) }
+				placeholder={ __( '.classname { border: 1px solid blue; }', 'transcoder' ) }
 				value={ layer.custom_css }
 				onChange={ ( value ) =>
 					dispatch( updateLayerField( { id: layer.id, field: 'custom_css', value } ) )
@@ -98,29 +99,38 @@ const FormLayer = ( { layerID, goBack } ) => {
 	);
 };
 
-const forms = [
-	{
-		value: 1, // Gravity form ID
-		label: 'Small', // Gravity form title
-	},
-	{
-		value: 2,
-		label: 'Normal',
-	},
-	{
-		value: 3,
-		label: 'Large',
-	},
-];
-
 function GravityFormSelector( { className, formID, handleChange } ) {
 	const [ form, setForm ] = useState( formID );
-	const [ filteredOptions, setFilteredOptions ] = useState( forms );
+	const [ filteredOptions, setFilteredOptions ] = useState( [] );
+	const [ forms, setForms ] = useState( [] );
 
 	const setFormData = ( value ) => {
 		setForm( value );
 		handleChange( value );
 	};
+
+	useEffect( () => {
+		// Fetch Gravity Forms from the server
+		axios.get( '/wp-json/easydam/v1/gforms?fields=id,title,description' )
+			.then( ( response ) => {
+				const data = response.data;
+				setForms( data.map( ( _form ) => {
+					return {
+						value: _form.id,
+						label: _form.title,
+					};
+				} ) );
+			} )
+			.catch( ( error ) => {
+				if ( error.status === 404 && error.response.data.code === 'gravity_forms_not_active' ) {
+					// Gravity Forms is not active.
+					console.log( 'Gravity Forms is not active.' );
+				}
+			} )
+			.finally( function() {
+				// always executed
+			} );
+	}, [] );
 
 	return (
 		<ComboboxControl

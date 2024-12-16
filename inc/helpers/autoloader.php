@@ -54,6 +54,7 @@ function autoloader( $resource = '' ) {
 			case 'meta-boxes': // phpcs:ignore
 			case 'rest-controller': // phpcs:ignore
 			case 'taxonomies': // phpcs:ignore
+			case 'rest-api': // phpcs:ignore
 				/**
 				 * If there is class name provided for specific directory then load that.
 				 * otherwise find in inc/ directory.
