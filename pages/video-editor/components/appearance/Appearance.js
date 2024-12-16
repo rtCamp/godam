@@ -289,7 +289,7 @@ const Appearance = () => {
 							name="hover-slider"
 							className="font-bold"
 						>
-							Custom Brand Image:
+							Custom Brand Image
 						</label>
 						<input
 							type="file"
@@ -301,7 +301,7 @@ const Appearance = () => {
 				) }
 				<div className="form-group">
 					<label htmlFor="control-position" className="font-bold">
-						Select Play Button Alignment:
+						Select Play Button Alignment
 					</label>
 					<CustomSelectControl
 						__next40pxDefaultSize
@@ -331,21 +331,9 @@ const Appearance = () => {
 					/>
 				</div>
 				<div className="form-group">
-					<label name="toggle-color" className="font-bold">
-						Player Appearance:
-					</label>
-					<ColorPicker d="toggle-color" onChange={ handleControlColorChange } />
-				</div>
-				<div className="form-group">
-					<label name="hover-color" className="font-bold">
-						Select color on hover:
-					</label>
-					<ColorPicker d="toggle-color" onChange={ handleControlsHoverColor } />
-				</div>
-				<div className="form-group">
 					<div id="hover-control-container">
 						<label name="hover-slider" className="font-bold">
-							Icon zoom slider:
+							Icon zoom slider
 						</label>
 						<div className="hover-control-input-container">
 							<RangeControl
@@ -367,7 +355,7 @@ const Appearance = () => {
 						name="hover-slider"
 						className="font-bold"
 					>
-						Custom Play Button:
+						Custom Play Button
 					</label>
 					<input
 						type="file"
@@ -377,8 +365,8 @@ const Appearance = () => {
 					/>
 				</div>
 				<div className="form-group">
-					<label htmlFor="control-bar-position">
-						Adjust position of control bar :
+					<label htmlFor="control-bar-position" className="font-bold">
+						Adjust position of control bar
 					</label>
 
 					<CustomSelectControl
@@ -398,7 +386,7 @@ const Appearance = () => {
 				</div>
 				<div className="form-group">
 					<label htmlFor="control-skip-position" className="font-bold">
-						Adjust skip duration :
+						Adjust skip duration
 					</label>
 					<CustomSelectControl
 						__next40pxDefaultSize
@@ -418,6 +406,18 @@ const Appearance = () => {
 							},
 						] }
 					/>
+				</div>
+				<div className="form-group">
+					<label name="toggle-color" className="font-bold">
+						Player Appearance
+					</label>
+					<ColorPicker d="toggle-color" onChange={ handleControlColorChange } />
+				</div>
+				<div className="form-group">
+					<label name="hover-color" className="font-bold">
+						Select color on hover
+					</label>
+					<ColorPicker d="toggle-color" onChange={ handleControlsHoverColor } />
 				</div>
 			</div>
 		</div>

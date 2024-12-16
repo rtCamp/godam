@@ -156,7 +156,7 @@ const VideoEditor = () => {
 								},
 								{
 									name: 'video-settings',
-									title: 'Video appearance & controls',
+									title: 'Player Settings',
 									component: <Appearance />,
 								},
 							] }
