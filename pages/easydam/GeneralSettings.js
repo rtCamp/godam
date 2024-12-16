@@ -4,8 +4,7 @@
 import { useState, useEffect } from '@wordpress/element';
 import { TextControl, ToggleControl, Spinner, Button, Notice } from '@wordpress/components';
 
-const GeneralSettings = ( { mediaSettings, saveMediaSettings } ) => {
-	const [ licenseKey, setLicenseKey ] = useState( '' );
+const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLicenseKey } ) => {
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 	const [ isLicenseKeyLoading, setIsLicenseKeyLoading ] = useState( false ); // Loading indicator for saving license key.
 
@@ -17,36 +16,13 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings } ) => {
 		}
 	}, [ mediaSettings ] );
 
-	// Fetch the saved license key on component mount.
-	useEffect( () => {
-		const fetchLicenseKey = async () => {
-			try {
-				const response = await fetch( '/wp-json/transcoder/v1/get-license-key', {
-					method: 'GET',
-					headers: {
-						'X-WP-Nonce': window.wpApiSettings.nonce,
-					},
-				} );
-
-				if ( response.ok ) {
-					const result = await response.json();
-					setLicenseKey( result.license_key || '' );
-				}
-			} catch ( error ) {
-				console.error( 'Failed to fetch the license key.', error );
-			}
-		};
-
-		fetchLicenseKey();
-	}, [ ] );
-
 	const saveLicenseKey = async () => {
 		if ( ! licenseKey.trim() ) {
 			setNotice( { message: 'Please enter a valid license key.', status: 'error', isVisible: true } );
 			return;
 		}
 
-		setIsLicenseKeyLoading( true ); // Show loading indicator.
+		setIsLicenseKeyLoading( true );
 
 		try {
 			const response = await fetch( '/wp-json/transcoder/v1/verify-license', {
@@ -62,11 +38,61 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings } ) => {
 
 			if ( response.ok ) {
 				setNotice( { message: result.message || 'License key verified successfully!', status: 'success', isVisible: true } );
+				const updatedSettings = {
+					...mediaSettings,
+					general: {
+						...mediaSettings.general,
+						is_verified: true,
+					},
+				};
+
+				saveMediaSettings( updatedSettings );
 			} else {
 				setNotice( { message: result.message || 'Failed to verify the license key.', status: 'error', isVisible: true } );
 			}
 		} catch ( error ) {
 			setNotice( { message: 'An error occurred. Please try again later.', status: 'error', isVisible: true } );
+		} finally {
+			setIsLicenseKeyLoading( false ); // Hide loading indicator.
+		}
+
+		window.scrollTo( { top: 0, behavior: 'smooth' } );
+
+		// Hide the notice after 5 seconds
+		setTimeout( () => {
+			setNotice( { ...notice, isVisible: false } );
+		}, 5000 );
+	};
+
+	const deactivateLicenseKey = async () => {
+		setIsLicenseKeyLoading( true );
+
+		try {
+			const response = await fetch( '/wp-json/transcoder/v1/deactivate-license', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.wpApiSettings.nonce,
+				},
+			} );
+
+			if ( response.ok ) {
+				setLicenseKey( '' ); // Clear the license key from state.
+				setNotice( { message: 'License key deactivated successfully.', status: 'success', isVisible: true } );
+				const updatedSettings = {
+					...mediaSettings,
+					general: {
+						...mediaSettings.general,
+						is_verified: false,
+					},
+				};
+
+				saveMediaSettings( updatedSettings );
+			} else {
+				setNotice( { message: 'Failed to deactivate license key. Please try again.', status: 'error', isVisible: true } );
+			}
+		} catch ( error ) {
+			setNotice( { message: 'An error occurred while deactivating the license key.', status: 'error', isVisible: true } );
 		} finally {
 			setIsLicenseKeyLoading( false ); // Hide loading indicator.
 		}
@@ -124,15 +150,27 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings } ) => {
 					help="Your license key is required to access premium features."
 					placeholder="Enter your license key here"
 					className="max-w-[400px]"
+					type="password"
 				/>
-				<Button
-					className="max-w-[140px] w-full flex justify-center items-center"
-					onClick={ saveLicenseKey }
-					disabled={ isLicenseKeyLoading }
-					variant="primary"
-				>
-					{ isLicenseKeyLoading ? <Spinner /> : 'Save License Key' }
-				</Button>
+				<div className="flex gap-2">
+					<Button
+						className="max-w-[140px] w-full flex justify-center items-center"
+						onClick={ saveLicenseKey }
+						disabled={ isLicenseKeyLoading || mediaSettings?.general?.is_verified }
+						variant="primary"
+					>
+						{ isLicenseKeyLoading ? <Spinner /> : 'Save License Key' }
+					</Button>
+					<Button
+						className="max-w-[160px] w-full flex justify-center items-center"
+						onClick={ deactivateLicenseKey }
+						disabled={ isLicenseKeyLoading || ! mediaSettings?.general?.is_verified } // Disable if no license key is present
+						variant="secondary"
+						isDestructive
+					>
+						Deactivate License Key
+					</Button>
+				</div>
 			</div>
 
 			<hr />
@@ -145,6 +183,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings } ) => {
 					label="Display 'Check Status' button on user profiles"
 					checked={ trackStatusOnUserProfile }
 					onChange={ ( value ) => setTrackStatusOnUserProfile( value ) }
+					disabled={ ! mediaSettings?.general?.is_verified }
 				/>
 				<div className="text-slate-500">
 					If enabled, It will display check status button to know the status of the transcoding process at the client side if that user has administrator rights.
@@ -155,6 +194,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings } ) => {
 				className="max-w-[140px] w-full flex justify-center items-center"
 				onClick={ saveGeneralSettings }
 				variant="primary"
+				disabled={ ! mediaSettings?.general?.is_verified }
 			>
 				Save Settings
 			</Button>

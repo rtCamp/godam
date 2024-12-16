@@ -60,6 +60,18 @@ class Rest_API {
 
 		register_rest_route(
 			'transcoder/v1',
+			'/deactivate-license',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'deactivate_license' ),
+				'permission_callback' => function() {
+					return current_user_can( 'manage_options' );
+				},
+			)
+		);
+
+		register_rest_route(
+			'transcoder/v1',
 			'/get-license-key',
 			array(
 				'methods'             => 'GET',
@@ -179,6 +191,34 @@ class Rest_API {
 	}
 
 	/**
+	 * Deactivate the license key.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function deactivate_license() {
+		// Delete the license key from the database.
+		$deleted = delete_site_option( 'rt-easydam-api-key' );
+
+		if ( $deleted ) {
+			return new \WP_REST_Response(
+				array(
+					'status'  => 'success',
+					'message' => 'License key deactivated successfully.',
+				),
+				200
+			);
+		}
+
+		return new \WP_REST_Response(
+			array(
+				'status'  => 'error',
+				'message' => 'Failed to deactivate the license key. It might not exist.',
+			),
+			400
+		);
+	}
+
+	/**
 	 * Fetch the saved license key.
 	 *
 	 * @return \WP_REST_Response
@@ -218,6 +258,7 @@ class Rest_API {
 			),
 			'general' => array(
 				'track_status' => false,
+				'is_verified'  => false,
 			),
 		);
 
@@ -274,6 +315,7 @@ class Rest_API {
 			),
 			'general' => array(
 				'track_status' => filter_var( $settings['general']['track_status'], FILTER_VALIDATE_BOOLEAN ),
+				'is_verified' => filter_var( $settings['general']['is_verified'], FILTER_VALIDATE_BOOLEAN ),
 			),
 		);
 

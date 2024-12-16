@@ -21,6 +21,8 @@ const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
 	const [ isPremiumUser, setIsPremiumUser ] = useState( false ); // Should be initially set to false.
 	const [ mediaSettings, setMediaSettings ] = useState( null );
+	const [ licenseKey, setLicenseKey ] = useState( '' );
+	const [ isVerified, setIsVerified ] = useState( false ); // Tracks if the license is verified.
 
 	const tabs = [
 		{
@@ -53,18 +55,29 @@ const App = () => {
 	useEffect( () => {
 		const fetchSettings = async () => {
 			try {
-				const response = await fetch( '/wp-json/transcoder/v1/easydam-settings', {
+				const settingsResponse = await fetch( '/wp-json/transcoder/v1/easydam-settings', {
 					headers: {
 						'Content-Type': 'application/json',
 						'X-WP-Nonce': window.wpApiSettings.nonce,
 					},
 				} );
+				const licenseResponse = await fetch( '/wp-json/transcoder/v1/get-license-key', {
+					method: 'GET',
+					headers: {
+						'X-WP-Nonce': window.wpApiSettings.nonce,
+					},
+				} );
 
-				const data = await response.json();
-				console.log("Fetched data: ", data);
-				setMediaSettings( data );
+				const settingsData = await settingsResponse.json();
+				const licenseData = await licenseResponse.json();
+
+				console.log( 'Fetched data:', settingsData );
+
+				setMediaSettings( settingsData );
+				setLicenseKey( licenseData.license_key || '' ); // Save the license key
+				setIsVerified( settingsData?.general?.is_verified || false );
 			} catch ( error ) {
-				console.error( 'Failed to fetch media settings:', error );
+				console.error( 'Failed to fetch data:', error );
 			}
 		};
 
@@ -85,6 +98,7 @@ const App = () => {
 			const result = await response.json();
 			if ( result.status === 'success' ) {
 				setMediaSettings( updatedSettings ); // Update local state
+				setIsVerified( updatedSettings?.general?.is_verified );
 				return true;
 			}
 			console.error( result.message );
@@ -104,7 +118,9 @@ const App = () => {
 								<a
 									key={ tab.id }
 									href={ `#${ tab.id }` }
-									className={ `outline-none block p-4 border-gray-200 font-bold first:rounded-t-lg ${ activeTab === tab.id ? 'bg-indigo-500 text-white font-bold border-r-0 hover:text-white focus:text-white focus:ring-2' : '' }` }
+									className={ `outline-none block p-4 border-gray-200 font-bold first:rounded-t-lg ${ activeTab === tab.id ? 'bg-indigo-500 text-white font-bold border-r-0 hover:text-white focus:text-white focus:ring-2' : '' } ${
+										tab.id !== 'general-settings' && ! isVerified ? 'opacity-50 pointer-events-none' : ''
+									}` }
 									onClick={ () => {
 										setActiveTab( tab.id );
 									} }
@@ -126,6 +142,8 @@ const App = () => {
 										isPremiumUser={ isPremiumUser }
 										mediaSettings={ mediaSettings }
 										saveMediaSettings={ saveMediaSettings }
+										licenseKey={ licenseKey }
+										setLicenseKey={ setLicenseKey }
 									/>
 								) )
 							}
