@@ -35,7 +35,7 @@ const layerTypes = [
 	// },
 ];
 
-const SidebarLayers = () => {
+const SidebarLayers = ( { currentTime } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const openModal = () => setOpen( true );
 	const closeModal = () => setOpen( false );
@@ -48,9 +48,8 @@ const SidebarLayers = () => {
 	const addNewLayer = ( type ) => {
 		dispatch( addLayer( {
 			id: uuidv4(),
-			displayTime: 5,
+			displayTime: currentTime,
 			type,
-			viewed: false,
 			submitted: false,
 			allow_skip: true,
 			custom_css: '',
@@ -92,7 +91,7 @@ const SidebarLayers = () => {
 							icon={ plus }
 							iconPosition="left"
 							onClick={ openModal }
-						>{ __( 'Add layer at ', 'transcoder' ) } { 5 }s</Button>
+						>{ __( 'Add layer at ', 'transcoder' ) } { currentTime }s</Button>
 
 						{ /* Add layer modal */ }
 						{ isOpen && (

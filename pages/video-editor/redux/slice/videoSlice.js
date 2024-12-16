@@ -51,5 +51,5 @@ const slice = createSlice( {
 	},
 } );
 
-export const { initializeStore, addLayer, removeLayer, updateLayerField, updateVideoConfig } = slice.actions;
+export const { initializeStore, addLayer, removeLayer, updateLayerField, updateVideoConfig, setPlayerCurrentTime } = slice.actions;
 export default slice.reducer;
