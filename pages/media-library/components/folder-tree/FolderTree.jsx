@@ -14,89 +14,7 @@ import TreeItem from './TreeItem.jsx';
 import TreeItemPreview from './TreeItemPreview.jsx';
 
 import { setTree } from '../../redux/slice/folders.js';
-import { tree, newTree } from '../../data/utilities';
-
-/** UTILITY FUNCTION START */
-
-function getDragDepth( offset, indentationWidth ) {
-	return Math.round( offset / indentationWidth );
-}
-
-function getProjection( items, activeId, overId, dragOffset, indentationWidth = 20 ) {
-	const overItemIndex = items.findIndex( ( { id } ) => id === overId );
-	const activeItemIndex = items.findIndex( ( { id } ) => id === activeId );
-	const activeItem = items[ activeItemIndex ];
-	const newItems = arrayMove( items, activeItemIndex, overItemIndex );
-	const previousItem = newItems[ overItemIndex - 1 ];
-	const nextItem = newItems[ overItemIndex + 1 ];
-	const dragDepth = getDragDepth( dragOffset, indentationWidth );
-	const projectedDepth = activeItem.depth + dragDepth;
-	const maxDepth = getMaxDepth( { previousItem } );
-	const minDepth = getMinDepth( { nextItem } );
-	let depth = projectedDepth;
-
-	if ( projectedDepth >= maxDepth ) {
-		depth = maxDepth;
-	} else if ( projectedDepth < minDepth ) {
-		depth = minDepth;
-	}
-
-	return { depth, maxDepth, minDepth, parent: getParentId() };
-
-	function getParentId() {
-		if ( depth === 0 || ! previousItem ) {
-			return null;
-		}
-
-		if ( depth === previousItem.depth ) {
-			return previousItem.parent;
-		}
-
-		if ( depth > previousItem.depth ) {
-			return previousItem.id;
-		}
-
-		const newParent = newItems
-			.slice( 0, overItemIndex )
-			.reverse()
-			.find( ( item ) => item.depth === depth )?.parent;
-
-		return newParent ?? null;
-	}
-}
-
-function getMaxDepth( { previousItem } ) {
-	if ( previousItem ) {
-		return previousItem.depth + 1;
-	}
-
-	return 0;
-}
-
-function getMinDepth( { nextItem } ) {
-	if ( nextItem ) {
-		return nextItem.depth;
-	}
-
-	return 0;
-}
-
-function removeChildrenOf( items, ids ) {
-	const excludeParentIds = [ ...ids ];
-
-	return items.filter( ( item ) => {
-		if ( item.parentId && excludeParentIds.includes( item.parentId ) ) {
-			if ( item.children.length ) {
-				excludeParentIds.push( item.id );
-			}
-			return false;
-		}
-
-		return true;
-	} );
-}
-
-/** UTILITY FUNCTION END */
+import { utilities } from '../../data/utilities';
 
 const FolderTree = () => {
 	const data = useSelector( ( state ) => state.FolderReducer.folders );
@@ -107,11 +25,10 @@ const FolderTree = () => {
 
 	const dispatch = useDispatch();
 
-	const flattenData = useMemo( () => {
-		const flattenedTree = tree.flattenTree( newTree.buildTree( data ) );
+	const flattenData = useMemo( () => utilities.flattenTree( utilities.buildTree( data ) ), [ data ] );
 
-		// get the children Id of the element where isOpen is false.
-		const collapsedItems = flattenedTree.reduce( ( acc, item ) => {
+	const filteredData = useMemo( () => {
+		const collapsedItems = flattenData.reduce( ( acc, item ) => {
 			const { children, isOpen, id } = item;
 			if ( ! isOpen && children.length ) {
 				acc.push( id );
@@ -119,12 +36,12 @@ const FolderTree = () => {
 			return acc;
 		}, [] );
 
-		return removeChildrenOf( flattenedTree, [ activeId, ...collapsedItems ] );
-	}, [ data, activeId ] );
+		return utilities.removeChildrenOf( flattenData, [ activeId, ...collapsedItems ] );
+	}, [ activeId, flattenData ] );
 
-	const sortedIds = useMemo( () => flattenData.map( ( { id } ) => id ), [ flattenData ] );
+	const sortedIds = useMemo( () => filteredData.map( ( { id } ) => id ), [ filteredData ] );
 
-	const projected = activeId && overId ? getProjection( flattenData, activeId, overId, offsetLeft ) : null;
+	const projected = activeId && overId ? utilities.getProjection( filteredData, activeId, overId, offsetLeft ) : null;
 
 	function handleDragStart( { active: { id: activeId } } ) {
 		setActiveId( activeId );
@@ -146,7 +63,7 @@ const FolderTree = () => {
 			}
 
 			const clonedItems = JSON.parse(
-				JSON.stringify( tree.flattenTree( newTree.buildTree( data ) ) ),
+				JSON.stringify( utilities.flattenTree( utilities.buildTree( data ) ) ),
 			);
 
 			const overIndex = clonedItems.findIndex( ( { id } ) => id === over.id );
@@ -198,7 +115,7 @@ const FolderTree = () => {
 						items={ sortedIds }
 						strategy={ verticalListSortingStrategy }
 					>
-						{ flattenData.map( ( item ) => {
+						{ filteredData.map( ( item ) => {
 							return <TreeItem
 								item={ item }
 								key={ item.id }
@@ -212,7 +129,7 @@ const FolderTree = () => {
 			<DragOverlay>
 				{ activeId ? (
 					<div>
-						{ flattenData.map( ( item ) =>
+						{ filteredData.map( ( item ) =>
 							item.id === activeId ? (
 								<TreeItemPreview item={ item } key={ item.id } />
 							) : null,
