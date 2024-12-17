@@ -7,12 +7,13 @@
 
 namespace Transcoder\Inc;
 
-use \Transcoder\Inc\Traits\Singleton;
-use \Transcoder\Inc\Pages;
-use \Transcoder\Inc\Blocks;
-use \Transcoder\Inc\Assets;
+use Transcoder\Inc\Traits\Singleton;
+use Transcoder\Inc\Pages;
+use Transcoder\Inc\Blocks;
+use Transcoder\Inc\Assets;
 
-use \Transcoder\Inc\REST_API\GF;
+use Transcoder\Inc\REST_API\GF;
+use Transcoder\Inc\REST_API\Settings;
 
 /**
  * Class Plugin.
@@ -37,7 +38,6 @@ class Plugin {
 		$this->load_rest_api();
 		Blocks::get_instance();
 		Pages::get_instance();
-
 
 
 		// Add a custom "Edit Video" button for video files in the Media Library.
@@ -90,5 +90,6 @@ class Plugin {
 	 */
 	public function load_rest_api() {
 		GF::get_instance();
+		Settings::get_instance();
 	}
 }

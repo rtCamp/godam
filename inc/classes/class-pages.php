@@ -138,6 +138,7 @@ class Pages {
 			);
 
 			wp_enqueue_style( 'transcoder-page-style-easydam' );
+			wp_enqueue_media();
 		}
 
 		// Check if this is your custom admin page.
