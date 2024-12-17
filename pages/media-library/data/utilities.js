@@ -1,55 +1,13 @@
-
-function find( data, ID ) {
-	for ( let i = 0; i < data.length; i++ ) {
-		if ( data[ i ].id === ID ) {
-			return data[ i ];
-		}
-		if ( data[ i ].children.length > 0 ) {
-			const found = find( data[ i ].children, ID );
-			if ( found ) {
-				return found;
-			}
-		}
-	}
-}
-
-function hasChildren( item ) {
-	return item.children.length > 0;
-}
-
-function toggle( item, action ) {
-	if ( ! hasChildren( item ) ) {
-		return item;
-	}
-
-	if ( item.id === action.payload.id ) {
-		return { ...item, isOpen: ! item.isOpen };
-	}
-
-	return { ...item, children: item.children.map( ( childItem ) => toggle( childItem, action ) ) };
-}
-
-function create( item, newItem, parentId ) {
-	if ( item.id === parentId ) {
-		item.children.push( newItem );
-	}
-
-	if ( item.children.length > 0 ) {
-		item.children = item.children.map( ( childItem ) => create( childItem, newItem, parentId ) );
-	}
-
-	return item;
-}
-
 const tree = {
-
 	findAndUpdate( item, conditionFunction, updateFunction ) {
 		if ( conditionFunction( item ) ) {
 			return updateFunction( item );
 		}
 
 		if ( item.children && item.children.length > 0 ) {
-			item.children = item.children.map( ( childItem ) => tree.findAndUpdate( childItem, conditionFunction, updateFunction ) );
+			item.children = item.children.map( ( childItem ) =>
+				tree.findAndUpdate( childItem, conditionFunction, updateFunction ),
+			);
 		}
 
 		return item;
@@ -60,10 +18,47 @@ const tree = {
 		}
 
 		if ( item.children && item.children.length > 0 ) {
-			item.children = item.children.filter( ( childItem ) => tree.delete( childItem, ID ) );
+			item.children = item.children.filter( ( childItem ) =>
+				tree.delete( childItem, ID ),
+			);
 		}
 
 		return item;
+	},
+	flattenTree( items, parentId = null, depth = 0 ) {
+		return items.reduce( ( acc, item ) => {
+			acc.push( { ...item, parentId, depth } );
+			if ( item.children ) {
+				acc.push( ...tree.flattenTree( item.children, item.id, depth + 1 ) );
+			}
+			return acc;
+		}, [] );
+	},
+
+	buildTree( flattenedItems ) {
+		const root = [];
+		const childrenMap = {};
+
+		for ( const item of flattenedItems ) {
+			const { parentId, ...rest } = item;
+			const newItem = { ...rest, children: [] };
+			if ( parentId === null ) {
+				root.push( newItem );
+			} else {
+				childrenMap[ parentId ] = childrenMap[ parentId ] || [];
+				childrenMap[ parentId ].push( newItem );
+			}
+			newItem.children = childrenMap[ item.id ] || [];
+		}
+
+		return root;
+	},
+
+	arrayMove( array, from, to ) {
+		const newArray = array.slice();
+		const [ moved ] = newArray.splice( from, 1 );
+		newArray.splice( to, 0, moved );
+		return newArray;
 	},
 };
 

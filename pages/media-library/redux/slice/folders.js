@@ -8,6 +8,7 @@ import { createSlice } from '@reduxjs/toolkit';
  */
 import data from '../../data/treeArray';
 import { tree } from '../../data/utilities';
+import { arrayMove } from '@dnd-kit/sortable';
 
 const slice = createSlice( {
 	name: 'folder',
@@ -87,6 +88,20 @@ const slice = createSlice( {
 
 			state.folders = state.folders.filter( ( item ) => tree.delete( item, state.selectedFolder.id ) );
 		},
+		handleDrop: ( state, action ) => {
+			const { active, over } = action.payload;
+
+			const activeIndex = state.folders.findIndex( ( item ) => item.id === active.id );
+			const overIndex = state.folders.findIndex( ( item ) => item.id === over.id );
+
+			state.folders = arrayMove( state.folders, activeIndex, overIndex );
+		},
+		setTree: ( state, action ) => {
+
+			console.log( 'action.payload', action.payload );
+
+			state.folders = action.payload;
+		},
 	},
 } );
 
@@ -99,6 +114,8 @@ export const {
 	clearSelectedFolder,
 	toggleOpenClose,
 	deleteFolder,
+	handleDrop,
+	setTree,
 } = slice.actions;
 
 export default slice.reducer;

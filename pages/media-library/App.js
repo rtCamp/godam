@@ -27,24 +27,24 @@ const App = () => {
 
 	const folderRef = useRef( null );
 
-	/**
-	 * This logic does work, but I am not a fan of this one, so I will refactor it.
-	 */
-	useEffect( () => {
-		const handleClickOutside = ( event ) => {
-			if ( folderRef.current && ! folderRef.current.contains( event.target ) ) {
-				if ( ! Object.values( modals ).some( ( modal ) => modal ) ) {
-					dispatch( clearSelectedFolder() );
-				}
-			}
-		};
+	// /**
+	//  * This logic does work, but I am not a fan of this one, so I will refactor it.
+	//  */
+	// useEffect( () => {
+	// 	const handleClickOutside = ( event ) => {
+	// 		if ( folderRef.current && ! folderRef.current.contains( event.target ) ) {
+	// 			if ( ! Object.values( modals ).some( ( modal ) => modal ) ) {
+	// 				dispatch( clearSelectedFolder() );
+	// 			}
+	// 		}
+	// 	};
 
-		document.addEventListener( 'mousedown', handleClickOutside );
+	// 	document.addEventListener( 'mousedown', handleClickOutside );
 
-		return () => {
-			document.removeEventListener( 'mousedown', handleClickOutside );
-		};
-	}, [ dispatch, modals ] );
+	// 	return () => {
+	// 		document.removeEventListener( 'mousedown', handleClickOutside );
+	// 	};
+	// }, [ dispatch, modals ] );
 
 	return (
 		<div ref={ folderRef }>
