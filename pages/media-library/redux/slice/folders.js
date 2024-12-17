@@ -42,12 +42,15 @@ const slice = createSlice( {
 			}
 		},
 		toggleOpenClose: ( state, action ) => {
-			state.folders = state.folders.map( ( item ) =>
-				tree.findAndUpdate( item,
-					( item ) => item.id === action.payload.id,
-					( item ) => ( { ...item, isOpen: ! item.isOpen } ),
-				),
-			);
+			state.folders = state.folders.map( ( item ) => {
+				if ( item.id === action.payload.id ) {
+					return {
+						...item,
+						isOpen: ! item.isOpen,
+					};
+				}
+				return item;
+			} );
 		},
 		createFolder: ( state, action ) => {
 			const newItem = {
@@ -55,6 +58,7 @@ const slice = createSlice( {
 				name: action.payload.name,
 				isOpen: false,
 				children: [],
+				parent: 0,
 			};
 
 			if ( ! state.selectedFolder ) {
@@ -62,44 +66,56 @@ const slice = createSlice( {
 				return;
 			}
 
-			state.folders = state.folders.map( ( item ) =>
-				tree.findAndUpdate( item,
-					( item ) => item.id === state.selectedFolder.id,
-					( item ) => ( { ...item, children: [ ...item.children, newItem ] } ),
-				),
-			);
+			const newChildItem = {
+				...newItem,
+				parent: state.selectedFolder.id,
+			};
+
+			state.folders.push( newChildItem );
 		},
 		renameFolder: ( state, action ) => {
 			if ( ! state.selectedFolder ) {
 				return;
 			}
 
-			state.folders = state.folders.map( ( item ) =>
-				tree.findAndUpdate( item,
-					( item ) => item.id === state.selectedFolder.id,
-					( item ) => ( { ...item, name: action.payload.name } ),
-				),
-			);
+			state.folders.map( ( item ) => {
+				if ( item.id === state.selectedFolder.id ) {
+					item.name = action.payload.name;
+				}
+				return item;
+			} );
 		},
 		deleteFolder: ( state ) => {
 			if ( ! state.selectedFolder ) {
 				return;
 			}
 
-			state.folders = state.folders.filter( ( item ) => tree.delete( item, state.selectedFolder.id ) );
+			const idsToDelete = new Set();
+
+			function findChildren( id ) {
+				idsToDelete.add( id );
+				state.folders.forEach( ( item ) => {
+					if ( item.parent === id ) {
+						findChildren( item.id );
+					}
+				} );
+			}
+
+			findChildren( state.selectedFolder.id );
+
+			state.folders = state.folders.filter( ( item ) => ! idsToDelete.has( item.id ) );
 		},
 		handleDrop: ( state, action ) => {
 			const { active, over } = action.payload;
 
-			const activeIndex = state.folders.findIndex( ( item ) => item.id === active.id );
+			const activeIndex = state.folders.findIndex(
+				( item ) => item.id === active.id,
+			);
 			const overIndex = state.folders.findIndex( ( item ) => item.id === over.id );
 
 			state.folders = arrayMove( state.folders, activeIndex, overIndex );
 		},
 		setTree: ( state, action ) => {
-
-			console.log( 'action.payload', action.payload );
-
 			state.folders = action.payload;
 		},
 	},

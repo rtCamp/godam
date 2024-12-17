@@ -57,7 +57,12 @@
 // 	{ id: 15, name: 'Anakin Skywalker', isOpen: true },
 // ];
 
-const data = [
+/**
+ * Internal dependencies
+ */
+import { newTree } from './utilities';
+
+let data = [
 	{ id: 7, name: 'Ave', parent: 0 },
 	{ id: 4, name: 'Carnivota', parent: 3 },
 	{ id: 3, name: 'Mammalia', parent: 0 },
@@ -66,5 +71,9 @@ const data = [
 	{ id: 8, name: 'Passeriformes', parent: 7 },
 	{ id: 1, name: 'Uncategorized', parent: 0 },
 ];
+
+data = data.map( ( item ) => {
+	return { ...item, isOpen: true };
+} );
 
 export default data;

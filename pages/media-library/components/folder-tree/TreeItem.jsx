@@ -4,6 +4,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+
 /**
  * WordPress dependencies
  */
@@ -13,11 +14,12 @@ import { Icon, file, chevronDown, chevronUp } from '@wordpress/icons';
  * Internal dependencies
  */
 import { toggleOpenClose, changeSelectedFolder } from '../../redux/slice/folders';
+import './css/indicator.css';
 
 const indentPerLevel = 12;
 
-const TreeItem = ( { item, index } ) => {
-	const { attributes, listeners, transform, transition, setNodeRef } = useSortable( { id: item.id } );
+const TreeItem = ( { item, index, depth } ) => {
+	const { attributes, listeners, transform, transition, setNodeRef, isDragging } = useSortable( { id: item.id } );
 
 	const dispatch = useDispatch();
 
@@ -27,25 +29,31 @@ const TreeItem = ( { item, index } ) => {
 		dispatch( toggleOpenClose( { id: item.id } ) );
 		dispatch( changeSelectedFolder( { item } ) );
 	};
+
 	const style = {
 		transform: CSS.Transform.toString( transform ),
 		transition,
+		'--spacing': `${ indentPerLevel * depth }px`,
 	};
 
 	return (
 		<>
 			<div
-				className={ `w-full py-2 px-2 hover:bg-gray-200 rounded-sm relative ${
-					item.id === selectedFolder?.id ? 'border-2 border-blue-500' : ''
-				}` }
+				className={ `w-full py-2 px-2 rounded-md relative hover:bg-gray-200 
+					${ item.id === selectedFolder?.id ? 'bg-gray-200' : '' } 
+					${ isDragging ? 'indicator-parent' : '' }
+
+				` }
 				ref={ setNodeRef }
 				{ ...attributes }
 				{ ...listeners }
 				style={ style }
 			>
 				<button
-					style={ { paddingLeft: `${ item.depth * indentPerLevel }px` } }
-					className="w-full text-left flex items-center justify-between"
+					style={ { paddingLeft: `${ depth * indentPerLevel }px` } }
+					className={ `w-full text-left flex items-center justify-between
+							${ isDragging ? 'indicator' : '' }
+						` }
 					data-index={ index }
 					onClick={ () => handleClick() }
 				>

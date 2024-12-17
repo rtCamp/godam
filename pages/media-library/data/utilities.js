@@ -62,4 +62,26 @@ const tree = {
 	},
 };
 
-export { tree };
+const newTree = {
+
+	buildTree( data, parent = 0, depth = 0 ) {
+		const tree = [];
+		const children = data.filter( ( item ) => item.parent === parent );
+
+		if ( children.length > 0 ) {
+			children.forEach( ( child ) => {
+				const childWithChildren = {
+					...child,
+					depth,
+					children: newTree.buildTree( data, child.id, depth + 1 ),
+				};
+				tree.push( childWithChildren );
+			} );
+		}
+
+		return tree;
+	},
+
+};
+
+export { tree, newTree };
