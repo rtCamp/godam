@@ -30,8 +30,6 @@ class Meta_Rest_Fields {
 	 * @return void
 	 */
 	public function add_meta_rest_fields() {
-        error_log( 'hiii' );
-
 		register_rest_field(
 			'attachment',
 			'easydam_meta',
@@ -40,7 +38,7 @@ class Meta_Rest_Fields {
 					return get_post_meta( $post['id'], 'easydam_meta', true );
 				},
 				'update_callback' => function ( $value, $post ) {
-                    $value = wp_json_encode( $value );
+					$value = wp_json_encode( $value );
 					return update_post_meta( $post->ID, 'easydam_meta', $value );
 				},
 			)
