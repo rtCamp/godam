@@ -75,6 +75,19 @@ function easyDAMPlayer() {
 			skipButton.textContent = 'Skip';
 			skipButton.classList.add( 'skip-button' );
 
+			// Observe changes in the layer's DOM for the confirmation message
+			const observer = new MutationObserver( ( mutations ) => {
+				mutations.forEach( ( mutation ) => {
+					if ( layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ) {
+						// Update the Skip button to Continue
+						skipButton.textContent = 'Continue';
+					}
+				} );
+			} );
+
+			// Start observing the layer's element for child list changes
+			observer.observe( layerObj.layerElement, { childList: true, subtree: true } );
+
 			skipButton.addEventListener( 'click', () => {
 				layerObj.show = false; // Set to false to prevent re-displaying
 				layerObj.layerElement.classList.add( 'hidden' );
