@@ -7,6 +7,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { FastForwardFill } from 'react-bootstrap-icons';
 import { useSelector, useDispatch, Provider } from 'react-redux';
 import axios from 'axios';
+/**
+ * Internal dependencies
+ */
 import { initializeStore, saveVideoMeta } from './redux/slice/videoSlice';
 /**
  * Internal dependencies
@@ -69,7 +72,6 @@ const VideoEditor = () => {
 					easydamMeta = JSON.parse( easydamMeta );
 					dispatch( initializeStore( easydamMeta ) );
 				}
-				
 			} )
 			.catch( ( error ) => {
 				console.error( error );
@@ -196,12 +198,17 @@ const VideoEditor = () => {
 						variant="primary"
 						disabled={ ! isChanged }
 						onClick={ saveAttachmentMeta }
-					>{ __( 'Save', 'transcoder' ) }</Button>
+					>
+						{ __( 'Save', 'transcoder' ) }
+					</Button>
 
 					{
 						// Display a success message when video changes are saved
-						showSaveMessage &&
-						<Snackbar className="absolute bottom-4 right-4 opacity-70">{ __( 'Video changes saved successfully', 'transcoder' ) }</Snackbar>
+						showSaveMessage && (
+							<Snackbar className="absolute bottom-4 right-4 opacity-70">
+								{ __( 'Video changes saved successfully', 'transcoder' ) }
+							</Snackbar>
+						)
 					}
 
 					{ video && (
@@ -234,11 +241,11 @@ const VideoEditor = () => {
 											},
 										},
 									} }
-									// onTimeupdate={ handleTimeUpdate }
-									onTimeupdate={ handleCtaTimeUpdate }
+									onTimeupdate={ handleTimeUpdate }
+									// onTimeupdate={ handleCtaTimeUpdate }
 								/>
 								{ /* Form Overlay */ }
-								{ showForm && (
+								{ /* { showForm && (
 									<div
 										style={ {
 											position: 'absolute',
@@ -278,7 +285,7 @@ const VideoEditor = () => {
 											</button>
 										</div>
 									</div>
-								) }
+								) } */ }
 							</div>
 							<div className="mt-2">Timestamp: { currentTime }</div>
 						</div>
@@ -337,6 +344,8 @@ const RenderDynamicContent = ( { content } ) => {
 };
 
 import Appearance from './components/appearance/Appearance';
+import LayerControls from './components/LayerControls';
+import { chevronRight } from '@wordpress/icons';
 
 const App = () => {
 	return (

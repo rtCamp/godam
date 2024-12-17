@@ -7,9 +7,9 @@ import { useDispatch, useSelector } from 'react-redux';
  * WordPress dependencies
  */
 import { Button, CustomSelectControl, Modal } from '@wordpress/components';
-import { arrowLeft, trash } from '@wordpress/icons';
+import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -18,10 +18,12 @@ import { removeLayer, updateCtaLayer } from '../../redux/slice/videoSlice';
 import TextCTA from '../cta/TextCTA';
 import ImageCTA from '../cta/ImageCTA';
 import HtmlCTA from '../cta/HtmlCTA';
+import LayerControls from '../LayerControls';
 
 const CTALayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const cta = useSelector( ( state ) => state.videoReducer.cta );
+	const [ formHTML, setFormHTML ] = useState( '' );
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
@@ -31,8 +33,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 		goBack();
 	};
 
-	const handleCTATypeSelect = (e) => {
-		console.log(e);
+	const handleCTATypeSelect = ( e ) => {
 		dispatch(
 			updateCtaLayer( {
 				type: e.selectedItem.key,
@@ -49,6 +50,17 @@ const CTALayer = ( { layerID, goBack } ) => {
 			default: <TextCTA />;
 		}
 	};
+
+	useEffect( () => {
+		if ( 'text' === cta?.type ) {
+			const html = `<a href="${ cta.link }">${ cta.text }</a>`;
+			setFormHTML( html );
+		} else if ( 'html' === cta?.type ) {
+			setFormHTML( cta.html );
+		} else {
+			setFormHTML( '' );
+		}
+	}, [ cta ] );
 
 	return (
 		<>
@@ -109,6 +121,28 @@ const CTALayer = ( { layerID, goBack } ) => {
 				/>
 				{ renderSelectedCTAInputs() }
 			</div>
+			<LayerControls>
+				<>
+					<div className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70 my-auto">
+						<div className="h-full flex items-center">
+							<div
+								className="max-w-[400px] mx-auto text-white text-5xl"
+								dangerouslySetInnerHTML={ { __html: formHTML } }
+							/>
+						</div>
+					</div>
+					<Button
+						className="absolute bottom-6 right-0"
+						variant="primary"
+						icon={ chevronRight }
+						iconSize="18"
+						iconPosition="right"
+						// onClick={ () => showForm( false ) }
+					>
+						{ __( 'Skip', 'transcoder' ) }
+					</Button>
+				</>
+			</LayerControls>
 		</>
 	);
 };
