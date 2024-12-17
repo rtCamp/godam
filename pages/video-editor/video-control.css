@@ -53,7 +53,7 @@
     display: none;
 }
 
-.overlay-content {
+.overlay-content * {
     font-size: 4rem;
-    color: #fff !important;
+    color: #fff;
 }

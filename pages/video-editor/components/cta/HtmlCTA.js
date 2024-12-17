@@ -18,14 +18,14 @@ const HtmlCTA = () => {
 	const cta = useSelector( ( state ) => state.videoReducer.cta );
 	const dispatch = useDispatch();
 
-	const handleUpdateCta = () => {
+	const handleUpdateCta = ( value ) => {
 		dispatch(
 			updateCtaLayer( {
 				id: cta.id,
 				type: 'html',
 				text: '',
 				link: '',
-				html: htmlInput,
+				html: value,
 				duration: parseInt( 5, 10 ),
 			} ),
 		);
@@ -39,7 +39,8 @@ const HtmlCTA = () => {
 				label="HTML"
 				value={ htmlInput }
 				onChange={ ( value ) => {
-					setHtmlInput( value ); handleUpdateCta();
+					setHtmlInput( value );
+					handleUpdateCta( value );
 				} }
 				placeholder="Your HTML"
 			/>

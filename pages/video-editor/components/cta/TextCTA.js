@@ -19,13 +19,13 @@ const TextCTA = () => {
 	const cta = useSelector( ( state ) => state.videoReducer.cta );
 	const dispatch = useDispatch();
 
-	const handleUpdateCta = () => {
+	const handleUpdateCta = ( key, value ) => {
+		console.log( textInput );
 		dispatch(
 			updateCtaLayer( {
 				id: cta.id,
 				type: 'text',
-				text: textInput,
-				link: urlInput,
+				[ key ]: value,
 				html: '',
 				duration: parseInt( 5, 10 ),
 			} ),
@@ -40,7 +40,7 @@ const TextCTA = () => {
 				value={ textInput }
 				onChange={ ( value ) => {
 					setTextInput( value );
-					handleUpdateCta();
+					handleUpdateCta( 'text', value );
 				} }
 				placeholder="Your text"
 			/>
@@ -51,7 +51,7 @@ const TextCTA = () => {
 				value={ urlInput }
 				onChange={ ( value ) => {
 					setUrlInput( value );
-					handleUpdateCta();
+					handleUpdateCta( 'link', value );
 				} }
 				placeholder="https://rtcamp.com"
 			/>
