@@ -23,25 +23,25 @@ $caption      = ! empty( $attributes['caption'] ) ? esc_html( $attributes['capti
 $src          = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $sources      = ! empty( $attributes['sources'] ) ? $attributes['sources'] : array();
 $tracks       = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
-$id           = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$attachment_id           = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 
 // Retrieve easydam_meta for the attachment id.
-$easydam_meta = $id ? get_post_meta( $id, 'easydam_meta', true ) : '';
+$easydam_meta      = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : '';
 $easydam_meta_data = $easydam_meta ? json_decode( $easydam_meta, true ) : array();
 
 // Build the video setup options for data-setup.
 $video_setup = wp_json_encode(
 	array(
-		'controls' => $controls,
-		'autoplay' => $autoplay,
-		'loop'     => $loop,
-		'muted'    => $muted,
-		'preload'  => $preload,
-		'poster'   => $poster,
-		'fluid'    => true,
-		'sources'  => $sources,
-		'id'       => $id,
-		'easydam_meta'     => $easydam_meta_data,
+		'controls'     => $controls,
+		'autoplay'     => $autoplay,
+		'loop'         => $loop,
+		'muted'        => $muted,
+		'preload'      => $preload,
+		'poster'       => $poster,
+		'fluid'        => true,
+		'sources'      => $sources,
+		'id'           => $attachment_id,
+		'easydam_meta' => $easydam_meta_data,
 	)
 );
 
@@ -63,9 +63,9 @@ $video_setup = wp_json_encode(
 					<track
 						src="<?php echo esc_url( $track['src'] ); ?>"
 						kind="<?php echo esc_attr( $track['kind'] ); ?>"
-						<?php 
+						<?php
 						echo ! empty( $track['srclang'] ) ? sprintf( 'srclang="%s"', esc_attr( $track['srclang'] ) ) : '';
-						echo ! empty( $track['label'] ) ? sprintf( 'label="%s"', esc_attr( $track['label'] ) ) : ''; 
+						echo ! empty( $track['label'] ) ? sprintf( 'label="%s"', esc_attr( $track['label'] ) ) : '';
 						?>
 					/>
 					<?php
@@ -79,25 +79,32 @@ $video_setup = wp_json_encode(
 	<?php endif; ?>
 
 	<!-- Dynamically render shortcodes for form layers -->
-	<?php if ( ! empty( $easydam_meta_data['layers'] ) ) :
+	<?php
+	if ( ! empty( $easydam_meta_data['layers'] ) ) :
 		foreach ( $easydam_meta_data['layers'] as $layer ) :
-			if ( isset( $layer['type'] ) && $layer['type'] === 'form' && ! empty( $layer['gf_id'] ) ) : ?>
+			if ( isset( $layer['type'] ) && 'form' === $layer['type'] && ! empty( $layer['gf_id'] ) ) :
+				?>
 				<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
-					<?php 
-						echo do_shortcode( sprintf(
-							"[gravityform id='%d' title='false' description='false' ajax='true']",
-							intval( $layer['gf_id'] )
-						) );
+					<?php
+						echo do_shortcode(
+							sprintf(
+								"[gravityform id='%d' title='false' description='false' ajax='true']",
+								intval( $layer['gf_id'] )
+							)
+						);
 					?>
 				</div>
-			<?php elseif ( isset( $layer['type'] ) && $layer['type'] === 'cta' ) : ?>
+			<?php elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) : ?>
 				<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
 					<!-- Add sample button for now -->
 					<button class="cta-button">Call To Action</button>
 				</div>
-			<?php endif; 
+				<?php
+			endif;
 		endforeach;
-	endif; ?>
+	endif;
+	?>
 	</div>
 </figure>
-<?php endif;
+	<?php
+endif;
