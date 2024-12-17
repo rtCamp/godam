@@ -49,29 +49,30 @@ $video_setup = wp_json_encode(
 
 <?php if ( $src ) : ?>
 <figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
-	<video
-		class="easydam-player video-js vjs-big-play-centered"
-		data-setup="<?php echo esc_attr( $video_setup ); ?>"
-	>
-		<source src="<?php echo esc_url( $src ); ?>" type="video/mp4" />
+	<div class="easydam-video-container">
+		<video
+			class="easydam-player video-js vjs-big-play-centered"
+			data-setup="<?php echo esc_attr( $video_setup ); ?>"
+		>
+			<source src="<?php echo esc_url( $src ); ?>" type="video/mp4" />
 
-		<?php
-		foreach ( $tracks as $track ) :
-			if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
-				?>
-				<track
-					src="<?php echo esc_url( $track['src'] ); ?>"
-					kind="<?php echo esc_attr( $track['kind'] ); ?>"
-					<?php 
-					echo ! empty( $track['srclang'] ) ? sprintf( 'srclang="%s"', esc_attr( $track['srclang'] ) ) : '';
-					echo ! empty( $track['label'] ) ? sprintf( 'label="%s"', esc_attr( $track['label'] ) ) : ''; 
+			<?php
+			foreach ( $tracks as $track ) :
+				if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
 					?>
-				/>
-				<?php
-			endif;
-		endforeach;
-		?>
-	</video>
+					<track
+						src="<?php echo esc_url( $track['src'] ); ?>"
+						kind="<?php echo esc_attr( $track['kind'] ); ?>"
+						<?php 
+						echo ! empty( $track['srclang'] ) ? sprintf( 'srclang="%s"', esc_attr( $track['srclang'] ) ) : '';
+						echo ! empty( $track['label'] ) ? sprintf( 'label="%s"', esc_attr( $track['label'] ) ) : ''; 
+						?>
+					/>
+					<?php
+				endif;
+			endforeach;
+			?>
+		</video>
 
 	<?php if ( $caption ) : ?>
 		<figcaption><?php echo esc_html( $caption ); ?></figcaption>
@@ -81,7 +82,7 @@ $video_setup = wp_json_encode(
 	<?php if ( ! empty( $easydam_meta_data['layers'] ) ) :
 		foreach ( $easydam_meta_data['layers'] as $layer ) :
 			if ( isset( $layer['type'] ) && $layer['type'] === 'form' && ! empty( $layer['gf_id'] ) ) : ?>
-				<div class="easydam-form-layer">
+				<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
 					<?php 
 						echo do_shortcode( sprintf(
 							"[gravityform id='%d' title='false' description='false' ajax='true']",
@@ -89,9 +90,14 @@ $video_setup = wp_json_encode(
 						) );
 					?>
 				</div>
-			<?php 
-			endif; 
-		endforeach; 
+			<?php elseif ( isset( $layer['type'] ) && $layer['type'] === 'cta' ) : ?>
+				<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
+					<!-- Add sample button for now -->
+					<button class="cta-button">Call To Action</button>
+				</div>
+			<?php endif; 
+		endforeach;
 	endif; ?>
+	</div>
 </figure>
 <?php endif;
