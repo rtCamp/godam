@@ -7,8 +7,6 @@ import { createSlice } from '@reduxjs/toolkit';
  * Internal dependencies
  */
 import data from '../../data/treeArray';
-import { tree } from '../../data/utilities';
-import { arrayMove } from '@dnd-kit/sortable';
 
 const slice = createSlice( {
 	name: 'folder',
@@ -25,9 +23,6 @@ const slice = createSlice( {
 	reducers: {
 		changeSelectedFolder: ( state, action ) => {
 			state.selectedFolder = action.payload.item;
-		},
-		clearSelectedFolder: ( state ) => {
-			state.selectedFolder = null;
 		},
 		openModal: ( state, action ) => {
 			const modalName = action.payload;
@@ -53,25 +48,16 @@ const slice = createSlice( {
 			} );
 		},
 		createFolder: ( state, action ) => {
+			const { name } = action.payload;
 			const newItem = {
-				id: Math.floor( Math.random() * 1000 ), // Refactor this later to use actual taxonomy ID.
-				name: action.payload.name,
+				id: state.folders.length + 1,
+				name,
 				isOpen: false,
 				children: [],
-				parent: 0,
+				parent: state.selectedFolder ? state.selectedFolder.id : 0,
 			};
 
-			if ( ! state.selectedFolder ) {
-				state.folders.push( newItem );
-				return;
-			}
-
-			const newChildItem = {
-				...newItem,
-				parent: state.selectedFolder.id,
-			};
-
-			state.folders.push( newChildItem );
+			state.folders = [ ...state.folders, newItem ];
 		},
 		renameFolder: ( state, action ) => {
 			if ( ! state.selectedFolder ) {
@@ -105,16 +91,6 @@ const slice = createSlice( {
 
 			state.folders = state.folders.filter( ( item ) => ! idsToDelete.has( item.id ) );
 		},
-		handleDrop: ( state, action ) => {
-			const { active, over } = action.payload;
-
-			const activeIndex = state.folders.findIndex(
-				( item ) => item.id === active.id,
-			);
-			const overIndex = state.folders.findIndex( ( item ) => item.id === over.id );
-
-			state.folders = arrayMove( state.folders, activeIndex, overIndex );
-		},
 		setTree: ( state, action ) => {
 			state.folders = action.payload;
 		},
@@ -122,15 +98,13 @@ const slice = createSlice( {
 } );
 
 export const {
+	changeSelectedFolder,
 	openModal,
 	closeModal,
+	toggleOpenClose,
 	createFolder,
 	renameFolder,
-	changeSelectedFolder,
-	clearSelectedFolder,
-	toggleOpenClose,
 	deleteFolder,
-	handleDrop,
 	setTree,
 } = slice.actions;
 

@@ -25,7 +25,5 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	if ( rootElement ) {
 		const root = ReactDOM.createRoot( rootElement );
 		root.render( <Index /> );
-	} else {
-		console.error( 'Root element not found' );
 	}
 } );

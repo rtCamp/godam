@@ -1,3 +1,9 @@
+/**
+ * Styles for the Media Library component.
+ * 
+ * Used to style and display the custom media library.
+ */
+
 #wpbody {
 	display: flex;
 }
@@ -9,7 +15,6 @@
 #rt-transcoder-media-library-root {
 	min-width: 300px;
 	padding: 24px 12px;
-
 }
 
 .components-button.has-icon.has-text {

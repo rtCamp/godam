@@ -1,14 +1,14 @@
 /**
  * External dependencies
  */
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
  * WordPress dependencies
  */
 import { Button, ButtonGroup } from '@wordpress/components';
-
+const { __ } = wp.i18n;
 /**
  * Internal dependencies
  */
@@ -17,18 +17,14 @@ import FolderTree from './components/folder-tree/FolderTree.jsx';
 
 import { changeSelectedFolder, openModal } from './redux/slice/folders';
 
-import FolderCreationModal from './components/modal/FolderCreationModal.jsx';
-import RenameModal from './components/modal/RenameModal.jsx';
-import DeleteModal from './components/modal/DeleteModal.jsx';
+import { FolderCreationModal, RenameModal, DeleteModal } from './components/modal/index.jsx';
 
 const App = () => {
 	const dispatch = useDispatch();
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
 
-	const folderRef = useRef( null );
-
 	return (
-		<div ref={ folderRef }>
+		<div>
 			<Button
 				icon="plus"
 				__next40pxDefaultSize
@@ -65,7 +61,7 @@ const App = () => {
 					className="flex justify-between items-center w-full"
 					onClick={ () => dispatch( changeSelectedFolder( { item: null } ) ) }
 				>
-					<p className="text-sm text-black">All Media</p>
+					<p className="text-sm text-black">{ __( 'All Media', 'transcoder' ) }</p>
 					<span className="text-sm text-gray-500 p-1 rounded bg-gray-300">
 						1,000
 					</span>
@@ -75,7 +71,7 @@ const App = () => {
 					className="flex justify-between items-center w-full"
 					onClick={ () => dispatch( changeSelectedFolder( { item: null } ) ) }
 				>
-					<p className="text-sm text-black">Uncategorized</p>
+					<p className="text-sm text-black">{ __( 'Uncategorized', 'transcoder' ) }</p>
 					<span className="text-sm text-gray-500 p-1 rounded bg-gray-300">
 						55
 					</span>
