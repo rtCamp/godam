@@ -45,6 +45,7 @@ function easyDAMPlayer() {
 						layerElement,
 						displayTime: parseFloat( layer.displayTime ),
 						show: true,
+						allowSkip: layer.allow_skip !== undefined ? layer.allow_skip : true,
 					} );
 				}
 			}
@@ -66,7 +67,6 @@ function easyDAMPlayer() {
 					// Pause the video
 					player.pause();
 					player.controls( false ); // Disable player controls
-					player.userActive( false );
 				}
 			} );
 		} );
@@ -88,12 +88,17 @@ function easyDAMPlayer() {
 			skipButton.textContent = 'Skip';
 			skipButton.classList.add( 'skip-button' );
 
+			if ( ! layerObj.allowSkip ) {
+				skipButton.classList.add( 'hidden' );
+			}
+
 			// Observe changes in the layer's DOM for the confirmation message
 			const observer = new MutationObserver( ( mutations ) => {
 				mutations.forEach( ( mutation ) => {
 					if ( layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ) {
 						// Update the Skip button to Continue
 						skipButton.textContent = 'Continue';
+						skipButton.classList.remove( 'hidden' );
 						observer.disconnect();
 					}
 				} );
@@ -106,7 +111,6 @@ function easyDAMPlayer() {
 				layerObj.show = false; // Set to false to prevent re-displaying
 				layerObj.layerElement.classList.add( 'hidden' );
 				player.controls( true ); // Re-enable player controls
-				player.userActive( true );
 				player.play();
 			} );
 
