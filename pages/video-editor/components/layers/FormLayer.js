@@ -8,27 +8,24 @@ import axios from 'axios';
 /**
  * WordPress dependencies
  */
-import { Button, SelectControl, ToggleControl, ComboboxControl, TextareaControl, Modal } from '@wordpress/components';
-import { arrowLeft, trash } from '@wordpress/icons';
+import { Button, SelectControl, ToggleControl, ComboboxControl, TextareaControl, Modal, Icon, ColorPalette } from '@wordpress/components';
+import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
+import LayerControl from '../LayerControls';
 
 const templateOptions = [
 	{
-		value: 'default',
-		label: 'Default',
+		value: 'orbital',
+		label: 'Orbital',
 	},
 	{
-		value: 'variant1',
-		label: 'Variant 1',
-	},
-	{
-		value: 'variant2',
-		label: 'Variant 2',
+		value: 'gravity',
+		label: 'Gravity 1',
 	},
 ];
 
@@ -36,6 +33,8 @@ const FormLayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
+
+	const [ formHTML, setFormHTML ] = useState( '' );
 
 	const handleDeleteLayer = () => {
 		dispatch( removeLayer( { id: layer.id } ) );
@@ -46,11 +45,31 @@ const FormLayer = ( { layerID, goBack } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'gf_id', value: formID } ) );
 	};
 
+	useEffect( () => {
+		console.log( 'Form ID:', layer.gf_id );
+		if ( layer.gf_id ) {
+			fetchGravityForm( layer.gf_id );
+		}
+	}, [
+		layer.gf_id,
+	] );
+
+	// Fetch the Gravity Form HTML
+	const fetchGravityForm = ( formId ) => {
+		axios.get( `/wp-json/easydam/v1/gforms/${ formId }` )
+			.then( ( response ) => {
+				setFormHTML( response.data );
+			} )
+			.catch( ( error ) => {
+				console.error( error );
+			} );
+	};
+
 	return (
 		<>
 			<div className="flex justify-between items-center pb-3 border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="font-semibold">{ __( 'Form layer at', 'transcoder' ) } { 5 }s</p>
+				<p className="font-semibold">{ __( 'Form layer at', 'transcoder' ) } { layer.displayTime }s</p>
 				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
 				{ isOpen && (
 					<Modal title={ __( 'Delete layer', 'transcoder' ) } onRequestClose={ () => setOpen( false ) }>
@@ -77,12 +96,9 @@ const FormLayer = ( { layerID, goBack } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'template', value } ) )
 				}
 			/>
-			<TextareaControl
-				className="mb-4"
-				label={ __( 'Custom CSS', 'transcoder' ) }
-				placeholder={ __( '.classname { border: 1px solid blue; }', 'transcoder' ) }
+			<CustomCssInjector
 				value={ layer.custom_css }
-				onChange={ ( value ) =>
+				handleChange={ ( value ) =>
 					dispatch( updateLayerField( { id: layer.id, field: 'custom_css', value } ) )
 				}
 			/>
@@ -95,6 +111,26 @@ const FormLayer = ( { layerID, goBack } ) => {
 				}
 				help={ __( 'If enabled, the user will be able to skip the form submission.', 'transcoder' ) }
 			/>
+
+			<LayerControl>
+				<>
+					<div className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70">
+						<div>
+							<div className="max-w-[400px] mx-auto" dangerouslySetInnerHTML={ { __html: formHTML } } />
+						</div>
+					</div>
+					<Button
+						className="absolute bottom-6 right-0"
+						variant="primary"
+						icon={ chevronRight }
+						iconSize="18"
+						iconPosition="right"
+						onClick={ () => setOpen( false ) }
+					>
+						{ __( 'Skip', 'transcoder' ) }
+					</Button>
+				</>
+			</LayerControl>
 		</>
 	);
 };
@@ -151,6 +187,51 @@ function GravityFormSelector( { className, formID, handleChange } ) {
 				);
 			} }
 		/>
+	);
+}
+
+function CustomCssInjector( { value, handleChange } ) {
+	const [ customCss, setCustomCss ] = useState( value );
+
+	useEffect( () => {
+		// Create a <style> element
+		const styleElement = document.createElement( 'style' );
+		styleElement.type = 'text/css';
+		styleElement.id = 'custom-css';
+
+		// Append the <style> element to the <head>
+		document.head.appendChild( styleElement );
+
+		// Cleanup: Remove <style> on component unmount
+		return () => {
+			const existingStyle = document.getElementById( 'custom-css' );
+			if ( existingStyle ) {
+				document.head.removeChild( existingStyle );
+			}
+		};
+	}, [] );
+
+	useEffect( () => {
+		// Inject CSS whenever it changes
+		const styleElement = document.getElementById( 'custom-css' );
+		if ( styleElement ) {
+			styleElement.innerHTML = customCss;
+		}
+	}, [ customCss ] );
+
+	return (
+		<>
+			<TextareaControl
+				className="mb-4"
+				label={ __( 'Custom CSS', 'transcoder' ) }
+				placeholder={ __( '.classname { border: 1px solid blue; }', 'transcoder' ) }
+				value={ customCss }
+				onChange={ ( val ) => {
+					setCustomCss( val );
+					handleChange( val );
+				} }
+			/>
+		</>
 	);
 }
 
