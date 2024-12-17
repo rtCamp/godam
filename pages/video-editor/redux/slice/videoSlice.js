@@ -67,7 +67,10 @@ const slice = createSlice( {
 			state.layers = layers;
 			state.isChanged = false;
 			state.skipTime = skipTime;
-			state.cta = cta;
+      		state.cta = cta;
+		},
+		saveVideoMeta: ( state, action ) => {
+			state.isChanged = false;
 		},
 		addLayer: ( state, action ) => {
 			const newLayer = action.payload;
@@ -94,17 +97,17 @@ const slice = createSlice( {
 			state.skipTime = action.payload.selectedSkipVal;
 			state.isChanged = true;
 		},
-		updateCtaLayer: (state, action) => {
+		updateCtaLayer: ( state, action ) => {
 			// console.log(action);
 			state.cta = { ...state.cta, ...action.payload };
 			state.isChanged = true;
 			// console.log(state.cta);
 		},
 	},
-});
+} );
 
 export const {
-	initializeStore,
+	initializeStore, saveVideoMeta,
 	addLayer,
 	removeLayer,
 	updateLayerField,

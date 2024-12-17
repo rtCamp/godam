@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
  */
 import { __ } from '@wordpress/i18n';
 import { Button, Icon, Modal, DropdownMenu } from '@wordpress/components';
-import { plus, preformatted, customLink, video, arrowRight } from '@wordpress/icons';
+import { plus, preformatted, customLink, arrowRight } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
 import Layer from './layers/Layer';
 

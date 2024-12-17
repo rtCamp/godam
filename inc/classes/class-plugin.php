@@ -14,6 +14,8 @@ use Transcoder\Inc\Assets;
 
 use Transcoder\Inc\REST_API\GF;
 use Transcoder\Inc\REST_API\Settings;
+use Transcoder\Inc\REST_API\Meta_Rest_Fields;
+
 
 /**
  * Class Plugin.
@@ -91,5 +93,6 @@ class Plugin {
 	public function load_rest_api() {
 		GF::get_instance();
 		Settings::get_instance();
+		Meta_Rest_Fields::get_instance();
 	}
 }

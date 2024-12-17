@@ -114,6 +114,8 @@ class Pages {
 			wp_die( 'Invalid URL! please check that you are trying to edit correct media.' );
 		}
 
+
+
 		?>
 		<div id="root-video-editor">video editor root</div>
 		<?php

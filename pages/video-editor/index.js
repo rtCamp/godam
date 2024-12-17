@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { FastForwardFill } from 'react-bootstrap-icons';
 import { useSelector, useDispatch, Provider } from 'react-redux';
 import axios from 'axios';
+import { initializeStore, saveVideoMeta } from './redux/slice/videoSlice';
 /**
  * Internal dependencies
  */
@@ -21,7 +22,7 @@ import SidebarLayers from './components/SidebarLayers';
 /**
  * WordPress dependencies
  */
-import { Button, TabPanel } from '@wordpress/components';
+import { Button, TabPanel, Snackbar } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 const VideoEditor = () => {
@@ -34,10 +35,13 @@ const VideoEditor = () => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ formHTML, setFormHTML ] = useState( null ); // Store fetched form HTML
 	const [ showForm, setShowForm ] = useState( false );
+	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const cta = useSelector( ( state ) => state.videoReducer.cta );
 
 	const dispatch = useDispatch();
+	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
+	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
 
 	const [ viewedLayers, setViewedLayers ] = useState( [] );
 
@@ -62,6 +66,12 @@ const VideoEditor = () => {
 			.then( ( response ) => response.json() )
 			.then( ( data ) => {
 				setVideo( data );
+				let easydamMeta = data.easydam_meta;
+				if ( easydamMeta ) {
+					easydamMeta = JSON.parse( easydamMeta );
+					dispatch( initializeStore( easydamMeta ) );
+				}
+				
 			} )
 			.catch( ( error ) => {
 				console.error( error );
@@ -69,6 +79,11 @@ const VideoEditor = () => {
 	}, [] );
 
 	const handleTimeUpdate = ( player, time ) => {
+
+		console.log('currentTime', currentTime);
+		console.log('layer', layers);
+		
+
 		// Round the current time to 2 decimal places
 		setCurrentTime( time.toFixed( 2 ) );
 
@@ -77,7 +92,7 @@ const VideoEditor = () => {
 
 		if ( activeGFLayer ) {
 			player.pause(); // Pause the video
-			fetchGravityForm( 1 ); // Fetch Gravity Form with ID 1
+			fetchGravityForm( activeGFLayer.gf_id ); // Fetch Gravity Form with ID 1
 			setShowForm( true ); // Show overlay
 			setViewedLayers( [ ...viewedLayers, activeGFLayer.id ] );
 		}
@@ -95,8 +110,35 @@ const VideoEditor = () => {
 			}
 		};
 
+	const saveAttachmentMeta = () => {
+		// Update the attchment meta
+		const data = {
+			easydam_meta: { videoConfig, layers },
+		};
+
+		// update media meta via REST API
+		axios.post( `/wp-json/wp/v2/media/${ attachmentID }`, data, {
+			headers: {
+				'X-WP-Nonce': videoData.nonce,
+			},
+		} )
+			.then( ( response ) => {
+				if ( response.status === 200 ) {
+					// Dispatch the action to update the store
+					dispatch( saveVideoMeta() );
+					setShowSaveMessage( true );
+					setTimeout( () => {
+						setShowSaveMessage( false );
+					}, 2500 );
+				}
+			} )
+			.catch( ( error ) => {
+				console.error( error );
+			} );
+	};
+
 	// Fetch the Gravity Form HTML
-	const fetchGravityForm = async ( formId ) => {
+	const fetchGravityForm = ( formId ) => {
 		axios.get( `/wp-json/easydam/v1/gforms/${ formId }` )
 			.then( ( response ) => {
 				setFormHTML( response.data );
@@ -167,7 +209,18 @@ const VideoEditor = () => {
 				</aside>
 
 				<main className="flex justify-center items-center p-4 relative">
-					{ /* <Button className="absolute right-4 top-5" variant="primary" >{ __( 'Save', 'transcoder' ) }</Button> */ }
+					<Button
+						className="absolute right-4 top-5"
+						variant="primary"
+						disabled={ ! isChanged }
+						onClick={ saveAttachmentMeta }
+					>{ __( 'Save', 'transcoder' ) }</Button>
+
+					{
+						// Display a success message when video changes are saved
+						showSaveMessage &&
+						<Snackbar className="absolute bottom-4 right-4 opacity-70">Video changes saved successfully</Snackbar>
+					}
 
 					{ video && (
 						<div className="max-w-[740px] w-full">

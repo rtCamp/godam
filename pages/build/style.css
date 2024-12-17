@@ -643,6 +643,10 @@ video {
   inset: 0px;
 }
 
+.bottom-4 {
+  bottom: 1rem;
+}
+
 .bottom-6 {
   bottom: 1.5rem;
 }
@@ -1057,6 +1061,10 @@ video {
   opacity: 0.5;
 }
 
+.opacity-70 {
+  opacity: 0.7;
+}
+
 .opacity-90 {
   opacity: 0.9;
 }
@@ -1158,13 +1166,30 @@ input, textarea, select {
 
 /* Video Editor Set up */
 
+@media screen and (max-width: 782px) {
+  .auto-fold #root-video-editor {
+    margin-left: 0 !important;
+  }
+}
+
+@media screen and (max-width: 960px) {
+  .auto-fold #root-video-editor {
+    margin-left: 36px;
+  }
+}
+
+.folded #root-video-editor {
+  margin-left: 36px;
+}
+
 #root-video-editor {
   position: fixed;
   top: 0;
   bottom: 0;
-  width: 100%;
+  left: 0;
+  right: 0;
   height: 100vh;
-  margin-left: -20px;
+  margin-left: 160px;
   padding-left: 20px;
   padding-top: var(--wp-admin--admin-bar--height, 0);
 }

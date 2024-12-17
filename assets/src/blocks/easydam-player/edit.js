@@ -17,14 +17,11 @@ import {
 } from '@wordpress/components';
 import {
 	BlockControls,
-	BlockIcon,
 	InspectorControls,
-	MediaPlaceholder,
 	MediaUpload,
 	MediaUploadCheck,
 	MediaReplaceFlow,
 	useBlockProps,
-    RichText
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
@@ -49,17 +46,12 @@ function VideoEdit( {
 	attributes,
 	className,
 	setAttributes,
-	insertBlocksAfter,
-	onReplace,
 } ) {
 	const instanceId = useInstanceId( VideoEdit );
 	const videoPlayer = useRef();
 	const posterImageButton = useRef();
 	const { id, controls, autoplay, poster, src, tracks, sources, muted, loop, playsInline, preload } = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
-
-	console.log(attributes);
-	
 
 	useEffect( () => {
 		// Placeholder may be rendered.
@@ -100,50 +92,49 @@ function VideoEdit( {
 			caption: media.caption,
 		} );
 
-
 		// Fetch transcoded URL from media meta.
-		(async () => {
+		( async () => {
 			try {
 				const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
 				if ( response && response.meta && response.meta._rt_transcoded_url ) {
 					const transcodedUrl = response.meta._rt_transcoded_url;
 
-					setAttributes({
+					setAttributes( {
 						sources: [
 							{
 								src: transcodedUrl,
-								type: transcodedUrl.endsWith('.mpd') ? 'application/dash+xml' : media.mime
+								type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : media.mime,
 							},
 							{
 								src: media.url,
-								type: media.mime
-							}
-						]
-					});
+								type: media.mime,
+							},
+						],
+					} );
 				} else {
 					// If meta not present, use media url.
-					setAttributes({
+					setAttributes( {
 						sources: [
 							{
 								src: media.url,
-								type: media.mime
-							}
-						]
-					});
+								type: media.mime,
+							},
+						],
+					} );
 				}
 			} catch ( error ) {
 				console.error( 'Error fetching media meta:', error );
 				// On error, use media url.
-				setAttributes({
+				setAttributes( {
 					sources: [
 						{
 							src: media.url,
-							type: media.mime
-						}
-					]
-				});
+							type: media.mime,
+						},
+					],
+				} );
 			}
-		})();
+		} )();
 
 		setTemporaryURL();
 	}
@@ -183,7 +174,7 @@ function VideoEdit( {
 					icon={ icon }
 					label={ __( 'EasyDAM video' ) }
 					instructions={ __(
-						'Drag and drop a video, upload, or choose from your library.'
+						'Drag and drop a video, upload, or choose from your library.',
 					) }
 				>
 					<MediaUpload
@@ -267,15 +258,15 @@ function VideoEdit( {
 							<p id={ videoPosterDescription } hidden>
 								{ poster
 									? sprintf(
-											/* translators: %s: poster image URL. */
-											__(
-												'The current poster image url is %s'
-											),
-											poster
-									  )
+										/* translators: %s: poster image URL. */
+										__(
+											'The current poster image url is %s',
+										),
+										poster,
+									)
 									: __(
-											'There is no poster image currently selected'
-									  ) }
+										'There is no poster image currently selected',
+									) }
 							</p>
 							{ !! poster && (
 								<Button
@@ -297,9 +288,8 @@ function VideoEdit( {
                     video when the controls are enabled.
                 */ }
 				<Disabled isDisabled={ ! isSingleSelected }>
-					<H1>HELLO</H1>
-					<Video 
-						options={{
+					<Video
+						options={ {
 							controls,
 							autoplay,
 							preload,
@@ -308,8 +298,8 @@ function VideoEdit( {
 							loop,
 							muted,
 							poster,
-							sources
-						}}
+							sources,
+						} }
 					/>
 				</Disabled>
 				{ !! temporaryURL && <Spinner /> }
