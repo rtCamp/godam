@@ -55,5 +55,5 @@
 
 .overlay-content {
     font-size: 4rem;
-    color: #fff;
+    color: #fff !important;
 }

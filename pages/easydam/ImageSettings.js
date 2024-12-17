@@ -1,15 +1,91 @@
-const ImageSettings = () => {
+/**
+ * WordPress dependencies
+ */
+import { ToggleControl, SelectControl, Button, Notice } from '@wordpress/components';
+import { useState } from '@wordpress/element';
+
+const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
+	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( mediaSettings?.image?.sync_from_easydam || false );
+	const [ optimizeImages, setOptimizeImages ] = useState( mediaSettings?.image?.optimize_images || false );
+	const [ imageFormat, setImageFormat ] = useState( mediaSettings?.image?.image_format || 'auto' );
+	const [ imageQuality, setImageQuality ] = useState( mediaSettings?.image?.image_quality || '20' );
+
+	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
+
+	const imageFormatOptions = [
+		{ label: 'Not set', value: 'not-set' },
+		{ label: 'Auto', value: 'auto' },
+		{ label: 'PNG', value: 'png' },
+		{ label: 'JPG', value: 'jpg' },
+		{ label: 'WebP', value: 'webp' },
+		{ label: 'AVIF', value: 'avif' },
+		{ label: 'GIF', value: 'gif' },
+	];
+
+	const imageQualityOptions = [
+		{ label: 'Not set', value: 'not-set' },
+		{ label: 'Auto', value: 'auto' },
+		{ label: 'Auto best', value: 'auto-best' },
+		{ label: 'Auto good', value: 'auto-good' },
+		{ label: 'Auto eco', value: 'auto-eco' },
+		{ label: 'Auto low', value: 'auto-low' },
+		{ label: '100', value: '100' },
+		{ label: '80', value: '80' },
+		{ label: '60', value: '60' },
+		{ label: '40', value: '40' },
+		{ label: '20', value: '20' },
+	];
+
+	const handleSaveSettings = async () => {
+		const updatedSettings = {
+			...mediaSettings, // Preserve other settings
+			image: {
+				sync_from_easydam: syncFromEasyDAM,
+				optimize_images: optimizeImages,
+				image_format: imageFormat,
+				image_quality: imageQuality,
+			},
+		};
+		saveMediaSettings( updatedSettings ); // Pass updated settings to the parent function
+
+		const isSaved = await saveMediaSettings( updatedSettings ); // Use the updated function
+
+		if ( isSaved ) {
+			// Success notice
+			setNotice( { message: 'Settings saved successfully!', status: 'success', isVisible: true } );
+		} else {
+			// Error notice
+			setNotice( { message: 'Failed to save settings. Please try again.', status: 'error', isVisible: true } );
+		}
+		window.scrollTo( { top: 0, behavior: 'smooth' } );
+		// Hide the notice after 5 seconds
+		setTimeout( () => {
+			setNotice( { ...notice, isVisible: false } );
+		}, 5000 );
+	};
+
 	return (
 		<div>
 			<h2 className="py-2 border-b text-xl font-bold">Image - Global Settings</h2>
 
-			<form id="easydam-video-settings" className="flex flex-col">
+			{ notice.isVisible && (
+				<Notice
+					status={ notice.status }
+					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+				>
+					{ notice.message }
+				</Notice>
+			) }
+
+			<form id="easydam-image-settings" className="flex flex-col">
 				<div className="py-3 flex flex-col gap-2">
 					<label className="block text-base font-semibold" htmlFor="sync_from_easydam">Image delivery</label>
-					<label className="font-semibold text-[14px] text-base" htmlFor="sync_from_easydam">
-						<input id="sync_from_easydam" type="checkbox" name="sync_from_easydam" value="direct" />
-						Sync and deliver images from EasyDAM.
-					</label>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label="Sync and deliver images from EasyDAM."
+						checked={ syncFromEasyDAM }
+						onChange={ ( value ) => setSyncFromEasyDAM( value ) }
+					/>
 					<div className="text-slate-500">If you turn this setting off, your images will be delivered from WordPress.</div>
 				</div>
 
@@ -17,56 +93,54 @@ const ImageSettings = () => {
 
 				<div className="pt-3 flex flex-col gap-1">
 					<label className="block text-base font-semibold" htmlFor="optimize_image">Image optimization</label>
-					<label className="font-semibold text-[14px]" htmlFor="optimize_image">
-						<input className="mr-4" id="optimize_image" type="checkbox" name="optimize_image" value="direct" />
-						Optimize images on my site.
-					</label>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label="Optimize images on my site."
+						checked={ optimizeImages }
+						onChange={ ( value ) => setOptimizeImages( value ) }
+					/>
 					<div className="text-slate-500">Images will be delivered using Cloudinary’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
 				</div>
 
 				<div className="pt-3 flex flex-col gap-1">
 					<label className="block text-base font-semibold" htmlFor="image_format">Image format</label>
 
-					<select
-						className="form-select form-select-lg"
-						name="image_format"
-						id="image_format"
-					>
-						<option>Not set</option>
-						<option selected value="auto">Auto</option>
-						<option value="png">PNG</option>
-						<option value="jpg">JPG</option>
-						<option value="webp">WebP</option>
-						<option value="avif">AVIF</option>
-						<option value="gif">GIF</option>
-					</select>
+					<SelectControl
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						value={ imageFormat }
+						options={ imageFormatOptions }
+						onChange={ ( value ) => setImageFormat( value ) }
+						size="compact"
+						className="max-w-[400px] w-full"
+					/>
 
 					<div className="text-slate-500">The image format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user's browser and device.</div>
 				</div>
 
 				<div className="pt-3 flex flex-col gap-1">
-					<label className="block text-base font-semibold" htmlFor="image_quality">Video quality</label>
+					<label className="block text-base font-semibold" htmlFor="image_quality">Image quality</label>
 
-					<select
-						className="form-select form-select-lg"
-						name="image_quality"
-						id="image_quality"
-					>
-						<option>Not set</option>
-						<option selected value="auto">Auto</option>
-						<option selected value="auto-best">Auto best</option>
-						<option selected value="auto-good">Auto good</option>
-						<option selected value="auto-eco">Auto eco</option>
-						<option selected value="auto-low">Auto low</option>
-						<option selected value="100">100</option>
-						<option selected value="80">80</option>
-						<option selected value="60">60</option>
-						<option selected value="40">40</option>
-						<option selected value="20">20</option>
-					</select>
+					<SelectControl
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						value={ imageQuality }
+						options={ imageQualityOptions }
+						onChange={ ( value ) => setImageQuality( value ) }
+						size="compact"
+						className="max-w-[400px] w-full"
+					/>
 
-					<div className="text-slate-500">Videos will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
+					<div className="text-slate-500">Images will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
 				</div>
+
+				<Button
+					isPrimary
+					className="mt-4 max-w-[140px] w-full flex justify-center items-center"
+					onClick={ handleSaveSettings }
+				>
+					Save Settings
+				</Button>
 			</form>
 		</div>
 	);
