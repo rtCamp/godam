@@ -65,8 +65,21 @@ function easyDAMPlayer() {
 
 					// Pause the video
 					player.pause();
+					player.controls( false ); // Disable player controls
+					player.userActive( false );
 				}
 			} );
+		} );
+
+		// Prevent video resume from external interactions
+		player.on( 'play', () => {
+			const isAnyLayerVisible = formLayers.some(
+				( layerObj ) => ! layerObj.layerElement.classList.contains( 'hidden' ) && layerObj.show,
+			);
+
+			if ( isAnyLayerVisible ) {
+				player.pause();
+			}
 		} );
 
 		// Allow closing or skipping layers
@@ -81,6 +94,7 @@ function easyDAMPlayer() {
 					if ( layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ) {
 						// Update the Skip button to Continue
 						skipButton.textContent = 'Continue';
+						observer.disconnect();
 					}
 				} );
 			} );
@@ -91,6 +105,8 @@ function easyDAMPlayer() {
 			skipButton.addEventListener( 'click', () => {
 				layerObj.show = false; // Set to false to prevent re-displaying
 				layerObj.layerElement.classList.add( 'hidden' );
+				player.controls( true ); // Re-enable player controls
+				player.userActive( true );
 				player.play();
 			} );
 
