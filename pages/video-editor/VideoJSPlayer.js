@@ -116,8 +116,9 @@ export const VideoJS = ( props ) => {
 	}, [ playerRef ] );
 
 	return (
-		<div data-vjs-player>
+		<div className="relative" data-vjs-player>
 			<div ref={ videoRef } />
+			<div id="easydam-layer-placeholder" />
 		</div>
 	);
 };
