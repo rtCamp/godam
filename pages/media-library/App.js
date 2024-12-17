@@ -24,7 +24,7 @@ const App = () => {
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
 
 	return (
-		<div>
+		<>
 			<Button
 				icon="plus"
 				__next40pxDefaultSize
@@ -83,7 +83,7 @@ const App = () => {
 			<FolderCreationModal />
 			<RenameModal />
 			<DeleteModal />
-		</div>
+		</>
 	);
 };
 

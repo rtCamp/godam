@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -16,17 +16,18 @@ import { closeModal, createFolder } from '../../redux/slice/folders';
 
 const FolderCreationModal = () => {
 	const [ folderName, setFolderName ] = useState( '' );
-	const [ error, setError ] = useState( '' );
 
 	const dispatch = useDispatch();
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.folderCreation );
 
-	const handleSubmit = () => {
-		if ( ! folderName.trim() ) {
-			setError( 'Folder name cannot be empty' );
+	useEffect( () => {
+		if ( isOpen ) {
+			setFolderName( '' );
 		}
+	}, [ isOpen ] );
 
+	const handleSubmit = () => {
 		dispatch( createFolder( { name: folderName } ) );
 		dispatch( closeModal( 'folderCreation' ) );
 	};
@@ -43,13 +44,12 @@ const FolderCreationModal = () => {
 					onChange={ ( value ) => setFolderName( value ) }
 				/>
 
-				{ error && <p className="text-red-500 text-sm mt-2">{ error }</p> }
-
 				<ButtonGroup className="w-full flex gap-2 mt-4">
 					<Button
 						text="Create"
 						variant="primary"
 						onClick={ () => handleSubmit() }
+						disabled={ ! folderName }
 					/>
 					<Button
 						text="Cancel"

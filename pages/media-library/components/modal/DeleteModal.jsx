@@ -18,6 +18,7 @@ const DeleteModal = () => {
 	const dispatch = useDispatch();
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.delete );
+	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
 
 	const handleSubmit = () => {
 		dispatch( deleteFolder() );
@@ -30,8 +31,12 @@ const DeleteModal = () => {
 				title="Confirm Delete"
 				onRequestClose={ () => dispatch( closeModal( 'delete' ) ) }
 			>
-
-				<p>Are you sure you want to delete this folder?</p>
+				<p className="text-sm text-gray-700">
+					Deleting the folder <span className="font-semibold">{ selectedFolder.name }</span> will remove it and all its subfolders, but <span className="font-semibold">media associated with it will not be deleted</span>.
+				</p>
+				<p className="text-sm text-gray-600 mt-2">
+					Are you sure you want to proceed? This action cannot be undone.
+				</p>
 
 				<ButtonGroup className="w-full flex gap-2 mt-4">
 					<Button

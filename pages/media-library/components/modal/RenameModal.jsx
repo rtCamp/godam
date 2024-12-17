@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -16,17 +16,19 @@ import { closeModal, renameFolder } from '../../redux/slice/folders';
 
 const RenameModal = () => {
 	const [ folderName, setFolderName ] = useState( '' );
-	const [ error, setError ] = useState( '' );
 
 	const dispatch = useDispatch();
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.rename );
+	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+
+	useEffect( () => {
+		if ( isOpen ) {
+			setFolderName( selectedFolder.name );
+		}
+	}, [ isOpen, selectedFolder ] );
 
 	const handleSubmit = () => {
-		if ( ! folderName.trim() ) {
-			setError( 'Folder name cannot be empty' );
-		}
-
 		dispatch( renameFolder( { name: folderName } ) );
 		dispatch( closeModal( 'rename' ) );
 	};
@@ -43,13 +45,12 @@ const RenameModal = () => {
 					onChange={ ( value ) => setFolderName( value ) }
 				/>
 
-				{ error && <p className="text-red-500 text-sm mt-2">{ error }</p> }
-
 				<ButtonGroup className="w-full flex gap-2 mt-4">
 					<Button
 						text="Rename"
 						variant="primary"
 						onClick={ () => handleSubmit() }
+						disabled={ ! folderName }
 					/>
 					<Button
 						text="Cancel"
