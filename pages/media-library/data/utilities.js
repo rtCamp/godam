@@ -84,4 +84,16 @@ const newTree = {
 
 };
 
-export { tree, newTree };
+const utilities = {
+
+	countChildren: ( item ) => {
+		if ( ! item || ! item.children || ! Array.isArray( item.children ) ) {
+			return 1;
+		}
+
+		return item.children.reduce( ( acc, child ) => acc + utilities.countChildren( child ), 1 );
+	},
+
+};
+
+export { tree, newTree, utilities };

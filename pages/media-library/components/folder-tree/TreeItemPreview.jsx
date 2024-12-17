@@ -1,23 +1,21 @@
 /**
+ * External dependencies
+ */
+import { useMemo } from 'react';
+
+/**
  * WordPress dependencies
  */
 import { Icon, file } from '@wordpress/icons';
 
-function countItems( item ) {
-	if ( ! item || ! item.children || ! Array.isArray( item.children ) ) {
-		return 1;
-	}
-
-	let count = 1;
-
-	for ( const child of item.children ) {
-		count += countItems( child );
-	}
-
-	return count;
-}
+/**
+ * Internal dependencies
+ */
+import { utilities } from '../../data/utilities';
 
 const TreeItemPreview = ( { item, index } ) => {
+	const itemCount = useMemo( () => utilities.countChildren( item ), [ item ] );
+
 	return (
 		<>
 			<div
@@ -34,7 +32,7 @@ const TreeItemPreview = ( { item, index } ) => {
 				</button>
 
 				<div className="absolute top-0 right-0 bg-gray-500 text-white text-xs px-2 py-1 rounded-bl">
-					{ countItems( item ) }
+					{ itemCount }
 				</div>
 			</div>
 		</>

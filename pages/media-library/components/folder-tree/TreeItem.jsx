@@ -23,7 +23,7 @@ const TreeItem = ( { item, index, depth } ) => {
 
 	const dispatch = useDispatch();
 
-	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const selectedFolderID = useSelector( ( state ) => state.FolderReducer.selectedFolder?.id );
 
 	const handleClick = () => {
 		dispatch( toggleOpenClose( { id: item.id } ) );
@@ -40,14 +40,14 @@ const TreeItem = ( { item, index, depth } ) => {
 		<>
 			<div
 				className={ `w-full py-2 px-2 rounded-md relative hover:bg-gray-200 
-					${ item.id === selectedFolder?.id ? 'bg-gray-200' : '' } 
+					${ item.id === selectedFolderID ? 'bg-gray-200' : '' } 
 					${ isDragging ? 'indicator-parent' : '' }
 
 				` }
 				ref={ setNodeRef }
+				style={ style }
 				{ ...attributes }
 				{ ...listeners }
-				style={ style }
 			>
 				<button
 					style={ { paddingLeft: `${ depth * indentPerLevel }px` } }
@@ -63,7 +63,7 @@ const TreeItem = ( { item, index, depth } ) => {
 						<span className="text-sm text-gray-700">{ item.name }</span>
 					</div>
 
-					{ item.children && item.children.length > 0 &&
+					{ item.children?.length > 0 &&
 						<Icon icon={ item.isOpen ? chevronUp : chevronDown } />
 					}
 				</button>
