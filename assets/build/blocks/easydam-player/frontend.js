@@ -71967,6 +71967,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var video_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! video.js */ "./node_modules/video.js/dist/video.es.js");
 /* harmony import */ var video_js_dist_video_js_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! video.js/dist/video-js.css */ "./node_modules/video.js/dist/video-js.css");
 /* harmony import */ var videojs_contrib_quality_menu__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! videojs-contrib-quality-menu */ "./node_modules/videojs-contrib-quality-menu/dist/videojs-contrib-quality-menu.es.js");
+/**
+ * External dependencies
+ */
 
 
 
@@ -71979,7 +71982,7 @@ document.addEventListener('DOMContentLoaded', () => easyDAMPlayer());
  *
  */
 function easyDAMPlayer() {
-  const videos = document.querySelectorAll(".easydam-player.video-js");
+  const videos = document.querySelectorAll('.easydam-player.video-js');
   videos.forEach(video => {
     // read the data-setup attribute
     const videoSetupOptions = video.dataset.setup ? JSON.parse(video.dataset.setup) : {
