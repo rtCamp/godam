@@ -14,14 +14,14 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { removeLayer } from '../../redux/slice/videoSlice';
+import { removeLayer, updateCtaLayer } from '../../redux/slice/videoSlice';
 import TextCTA from '../cta/TextCTA';
 import ImageCTA from '../cta/ImageCTA';
 import HtmlCTA from '../cta/HtmlCTA';
 
 const CTALayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
-	const [ selectedCtaType, setSelectedCtaType ] = useState( 'text' );
+	const cta = useSelector( ( state ) => state.videoReducer.cta );
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
@@ -31,13 +31,18 @@ const CTALayer = ( { layerID, goBack } ) => {
 		goBack();
 	};
 
-	const handleCTATypeSelect = ( e ) => {
-		const selectedtype = e.selectedItem.key;
-		setSelectedCtaType( selectedtype );
+	const handleCTATypeSelect = (e) => {
+		console.log(e);
+		dispatch(
+			updateCtaLayer( {
+				type: e.selectedItem.key,
+				name: e.selectedItem.name,
+			} ),
+		);
 	};
 
 	const renderSelectedCTAInputs = () => {
-		switch ( selectedCtaType ) {
+		switch ( cta?.type ) {
 			case 'text': return <TextCTA />;
 			case 'image': return <ImageCTA />;
 			case 'html': return <HtmlCTA />;
@@ -97,6 +102,10 @@ const CTALayer = ( { layerID, goBack } ) => {
 							name: 'Image',
 						},
 					] }
+					value={ {
+						key: cta.type,
+						name: cta.name,
+					} }
 				/>
 				{ renderSelectedCTAInputs() }
 			</div>

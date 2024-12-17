@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 /**
  * Internal dependencies
@@ -17,17 +17,22 @@ import {
 	CustomSelectControl,
 	RangeControl,
 } from '@wordpress/components';
-import { useDispatch } from 'react-redux';
-import { updateSkipTime } from '../../redux/slice/videoSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateSkipTime, updateVideoConfig } from '../../redux/slice/videoSlice';
 
 const Appearance = () => {
-	const [ volumePanel, setVolumePanel ] = useState( true );
-	const [ showBrandingIcon, setShowBrandingIcon ] = useState( false );
-	const [ showCaptions, setShowCaptions ] = useState( false );
 	const dispatch = useDispatch();
+	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 
 	function handleVolumeToggle() {
-		setVolumePanel( ! volumePanel );
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					volumePanel: ! videoConfig.controlBar.volumePanel,
+				},
+			} ),
+		);
 		const volumeSlider = document.querySelector( '.vjs-volume-panel' );
 		if ( volumeSlider.classList.contains( 'hide' ) ) {
 			volumeSlider.classList.remove( 'hide' );
@@ -39,7 +44,12 @@ const Appearance = () => {
 	}
 
 	function handleCaptionsToggle() {
-		setShowCaptions( ! showCaptions );
+		dispatch(
+			updateVideoConfig( { controlBar: {
+				...videoConfig.controlBar,
+				 subsCapsButton: ! videoConfig.controlBar.subsCapsButton,
+			} } ),
+		);
 		const captionsButton = document.querySelector( '.vjs-subs-caps-button' );
 		captionsButton.classList.remove( 'vjs-hidden' ); //temp
 		if ( captionsButton.classList.contains( 'show' ) ) {
@@ -52,7 +62,14 @@ const Appearance = () => {
 	}
 
 	function handleBrandingToggle( e ) {
-		setShowBrandingIcon( ! showBrandingIcon );
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					brandingIcon: ! videoConfig.controlBar.brandingIcon,
+				},
+			} ),
+		);
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 		const img = document.createElement( 'img' );
 		img.src = EasyDAM;
@@ -69,6 +86,14 @@ const Appearance = () => {
 
 	function handleControlColorChange( e ) {
 		const selectedColor = e;
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					appearanceColor: selectedColor,
+				},
+			} ),
+		);
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 		const bigPlayButton = document.querySelector( '.vjs-big-play-button' );
 		controlBar.style.setProperty(
@@ -85,6 +110,14 @@ const Appearance = () => {
 
 	function handleControlsHoverColor( e ) {
 		const selectedColor = e;
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					hoverColor: selectedColor,
+				},
+			} ),
+		);
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 		const controls = controlBar.querySelectorAll( '.vjs-control' );
 		controls.forEach( ( control ) => {
@@ -115,6 +148,15 @@ const Appearance = () => {
 	function handleControlsHoverZoomColor( e ) {
 		const selectedZoomVal = 1 + parseFloat( e );
 
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					zoomLevel: parseFloat( e ),
+				},
+			} ),
+		);
+
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 		const controls = controlBar.querySelectorAll( '.vjs-control' );
 
@@ -134,6 +176,15 @@ const Appearance = () => {
 
 	function handlePlayButtonPosition( e ) {
 		const playButton = document.querySelector( '.vjs-big-play-button' );
+
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					playButtonPosition: e.selectedItem.key,
+				},
+			} ),
+		);
 
 		if ( playButton ) {
 			const alignments = [
@@ -184,7 +235,18 @@ const Appearance = () => {
 
 	function handleSkipTimeSettings( e ) {
 		const selectedSkipVal = parseFloat( e.selectedItem.name );
-		dispatch( updateSkipTime( { selectedSkipVal } ) );
+		// dispatch( updateSkipTime( { selectedSkipVal } ) );
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+			  	skipButtons: {
+				  forward: selectedSkipVal,
+				  backward: selectedSkipVal,
+		  		},
+				},
+			} ),
+		);
 		const skipBackwardButton = document.querySelector(
 			'[class^="vjs-skip-backward-"]',
 		);
@@ -219,6 +281,14 @@ const Appearance = () => {
 
 	function handleControlBarPosition( e ) {
 		const selectedValue = e.selectedItem.key;
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					controlBarPosition: selectedValue,
+				},
+			} ),
+		);
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 		controlBar.classList.add( 'vjs-control-bar-vertical' );
 
@@ -261,7 +331,7 @@ const Appearance = () => {
 						<CheckboxControl
 							__nextHasNoMarginBottom
 							label="Show Volume Slider"
-							checked={ volumePanel }
+							checked={ videoConfig.controlBar.volumePanel }
 							onChange={ handleVolumeToggle }
 						/>
 					</div>
@@ -270,7 +340,7 @@ const Appearance = () => {
 							__nextHasNoMarginBottom
 							label="Display Captions"
 							onChange={ handleCaptionsToggle }
-							checked={ showCaptions }
+							checked={ videoConfig.controlBar.subsCapsButton }
 						/>
 					</div>
 					<div className="form-group flex items-center gap-10">
@@ -278,11 +348,11 @@ const Appearance = () => {
 							__nextHasNoMarginBottom
 							label="Show Branding"
 							onChange={ handleBrandingToggle }
-							checked={ showBrandingIcon }
+							checked={ videoConfig.controlBar.brandingIcon }
 						/>
 					</div>
 				</div>
-				{ showBrandingIcon && (
+				{ videoConfig.controlBar.brandingIcon && (
 					<div className="form-group">
 						<label
 							htmlFor="custom-play-button"
@@ -328,6 +398,10 @@ const Appearance = () => {
 								name: 'Right',
 							},
 						] }
+						value={ {
+							key: videoConfig.controlBar.playButtonPosition,
+							name: videoConfig.controlBar.playButtonPosition,
+						} }
 					/>
 				</div>
 				<div className="form-group">
@@ -345,6 +419,7 @@ const Appearance = () => {
 								min={ 0 }
 								onChange={ handleControlsHoverZoomColor }
 								step={ 0.1 }
+								value={ videoConfig.controlBar.zoomLevel }
 							/>
 						</div>
 					</div>
@@ -382,6 +457,10 @@ const Appearance = () => {
 								name: 'Vertical',
 							},
 						] }
+						value={ {
+							key: videoConfig.controlBar.controlBarPosition,
+							name: videoConfig.controlBar.controlBarPosition,
+						} }
 					/>
 				</div>
 				<div className="form-group">
@@ -405,19 +484,31 @@ const Appearance = () => {
 								name: '30',
 							},
 						] }
+						value={ {
+							key: videoConfig.controlBar.skipButtons.forward.toString(),
+							name: videoConfig.controlBar.skipButtons.forward.toString(),
+						} }
 					/>
 				</div>
 				<div className="form-group">
 					<label name="toggle-color" className="font-bold">
 						Player Appearance
 					</label>
-					<ColorPicker d="toggle-color" onChange={ handleControlColorChange } />
+					<ColorPicker
+						d="toggle-color"
+						onChange={ handleControlColorChange }
+						color={ videoConfig.controlBar.appearanceColor }
+					/>
 				</div>
 				<div className="form-group">
 					<label name="hover-color" className="font-bold">
 						Select color on hover
 					</label>
-					<ColorPicker d="toggle-color" onChange={ handleControlsHoverColor } />
+					<ColorPicker
+						d="toggle-color"
+						onChange={ handleControlsHoverColor }
+						color={ videoConfig.controlBar.hoverColor }
+					/>
 				</div>
 			</div>
 		</div>

@@ -44,6 +44,15 @@ const slice = createSlice( {
 				progressControl: {
 					vertical: true, // Prevent horizontal volume slider
 				},
+				//custom controls
+				brandingIcon: false,
+				appearanceColor: '',
+				hoverColor: '',
+				zoomLevel: 1,
+				playButtonPosition: 'center',
+				controlBarPosition: 'horizontal',
+				customBrandImg: '',
+				customPlayBtnImg: '',
 			},
 		},
 		layers: [],
@@ -57,6 +66,7 @@ const slice = createSlice( {
 			link: '',
 			html: '',
 			duration: 0, //time in seconds
+			name: 'Text',
 		},
 	},
 	reducers: {
@@ -67,7 +77,16 @@ const slice = createSlice( {
 			state.layers = layers;
 			state.isChanged = false;
 			state.skipTime = skipTime;
-      		state.cta = cta;
+			state.cta = {
+				id: 0,
+				type: 'text', // text, image, html
+				text: '',
+				imageID: 0,
+				link: '',
+				html: '',
+				duration: 0, //time in seconds
+				name: 'Text',
+			};
 		},
 		saveVideoMeta: ( state, action ) => {
 			state.isChanged = false;
@@ -90,7 +109,9 @@ const slice = createSlice( {
 		},
 		updateVideoConfig: ( state, action ) => {
 			const { field, value } = action.payload;
-			state.videoConfig[ field ] = value;
+			// state.videoConfig[ field ] = value;
+			console.log( action.payload );
+			state.videoConfig = { ...state.videoConfig, ...action.payload };
 			state.isChanged = true;
 		},
 		updateSkipTime: ( state, action ) => {

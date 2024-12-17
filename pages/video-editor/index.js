@@ -149,21 +149,10 @@ const VideoEditor = () => {
 	};
 
 	useEffect( () => {
-		if ( 'text' === cta.type ) {
+		if ( 'text' === cta?.type ) {
 			const html = `<a href="${ cta.link }">${ cta.text }</a>`;
 			setFormHTML( html );
-		} else if ( 'html' === cta.type ) {
-			setFormHTML( cta.html );
-		} else {
-			setFormHTML( '' );
-		}
-	}, [ cta ] );
-
-	useEffect( () => {
-		if ( 'text' === cta.type ) {
-			const html = `<a href="${ cta.link }">${ cta.text }</a>`;
-			setFormHTML( html );
-		} else if ( 'html' === cta.type ) {
+		} else if ( 'html' === cta?.type ) {
 			setFormHTML( cta.html );
 		} else {
 			setFormHTML( '' );

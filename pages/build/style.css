@@ -860,6 +860,10 @@ video {
   gap: 1.5rem;
 }
 
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
 .\!truncate {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -938,6 +942,10 @@ video {
 
 .bg-opacity-10 {
   --tw-bg-opacity: 0.1;
+}
+
+.bg-opacity-80 {
+  --tw-bg-opacity: 0.8;
 }
 
 .p-2 {

@@ -14,7 +14,7 @@ export const VideoJS = ( props ) => {
 	const videoMeta = useSelector( ( state ) => state.videoReducer );
 	const videoConfig = videoMeta.videoConfig;
 	const layers = videoMeta.layers;
-	const skipTime = useSelector( ( state ) => state.videoReducer.skipTime );
+
 	useEffect( () => {
 		// Make sure Video.js player is only initialized once
 		if ( ! playerRef.current ) {
@@ -38,6 +38,7 @@ export const VideoJS = ( props ) => {
 			}
 		} else {
 			//handle skip timer control
+			const skipTime = videoConfig.controlBar.skipButtons.forward;
 			const player = playerRef.current;
 			const skipBackwardButton = player.controlBar.getChild( 'skipBackward' );
 			const skipForwardButton = player.controlBar.getChild( 'skipForward' );
@@ -61,7 +62,7 @@ export const VideoJS = ( props ) => {
 				} );
 			}
 		}
-	}, [ videoRef, skipTime ] );
+	}, [ videoRef, videoConfig ] );
 
 	useEffect( () => {
 		if ( playerRef.current ) {

@@ -13,14 +13,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateCtaLayer } from '../../redux/slice/videoSlice';
 
 const TextCTA = () => {
-	const [ textInput, setTextInput ] = useState( '' );
-	const [ urlInput, setUrlInput ] = useState( '' );
 	const [ allowSkip, setAllowSkip ] = useState( true );
 	const cta = useSelector( ( state ) => state.videoReducer.cta );
 	const dispatch = useDispatch();
 
 	const handleUpdateCta = ( key, value ) => {
-		console.log( textInput );
 		dispatch(
 			updateCtaLayer( {
 				id: cta.id,
@@ -37,9 +34,8 @@ const TextCTA = () => {
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
 				label="Text"
-				value={ textInput }
+				value={ cta.text }
 				onChange={ ( value ) => {
-					setTextInput( value );
 					handleUpdateCta( 'text', value );
 				} }
 				placeholder="Your text"
@@ -48,9 +44,8 @@ const TextCTA = () => {
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
 				label="URL"
-				value={ urlInput }
+				value={ cta.link }
 				onChange={ ( value ) => {
-					setUrlInput( value );
 					handleUpdateCta( 'link', value );
 				} }
 				placeholder="https://rtcamp.com"

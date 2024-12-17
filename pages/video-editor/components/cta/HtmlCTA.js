@@ -13,7 +13,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateCtaLayer } from '../../redux/slice/videoSlice';
 
 const HtmlCTA = () => {
-	const [ htmlInput, setHtmlInput ] = useState( '' );
 	const [ allowSkip, setAllowSkip ] = useState( true );
 	const cta = useSelector( ( state ) => state.videoReducer.cta );
 	const dispatch = useDispatch();
@@ -37,9 +36,8 @@ const HtmlCTA = () => {
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
 				label="HTML"
-				value={ htmlInput }
+				value={ cta.html }
 				onChange={ ( value ) => {
-					setHtmlInput( value );
 					handleUpdateCta( value );
 				} }
 				placeholder="Your HTML"
