@@ -47,18 +47,27 @@ class Assets {
 
 		wp_register_script(
 			'easydam-script',
-			RT_TRANSCODER_URL . '/assets/build/js/main.js',
+			RT_TRANSCODER_URL . 'assets/build/js/main.js',
 			array(),
-			filemtime( RT_TRANSCODER_PATH . '/assets/build/js/main.js' ),
+			filemtime( RT_TRANSCODER_PATH . 'assets/build/js/main.js' ),
 			true
 		);
 
 		wp_register_style(
 			'easydam-style',
-			RT_TRANSCODER_URL . '/assets/build/css/main.css',
+			RT_TRANSCODER_URL . 'assets/build/css/main.css',
 			array(),
-			filemtime( RT_TRANSCODER_PATH . '/assets/build/css/main.css' )
+			filemtime( RT_TRANSCODER_PATH . 'assets/build/css/main.css' )
 		);
+
+		// wp_register_script(
+		// 	'easydam-video-js',
+		// 	RT_TRANSCODER_URL . 'assets/build/blocks/easydam-player/frontend.js',
+		// 	array(),
+		// 	filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/easydam-player/frontend.js' ),
+		// 	true
+		// );
+		// wp_enqueue_script( 'easydam-video-js' );
 
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );

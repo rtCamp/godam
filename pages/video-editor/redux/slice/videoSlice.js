@@ -27,6 +27,9 @@ const slice = createSlice( {
 			state.layers = layers;
 			state.isChanged = false;
 		},
+		saveVideoMeta: ( state, action ) => {
+			state.isChanged = false;
+		},
 		addLayer: ( state, action ) => {
 			const newLayer = action.payload;
 			state.layers.push( newLayer );
@@ -51,5 +54,5 @@ const slice = createSlice( {
 	},
 } );
 
-export const { initializeStore, addLayer, removeLayer, updateLayerField, updateVideoConfig, setPlayerCurrentTime } = slice.actions;
+export const { initializeStore, saveVideoMeta, addLayer, removeLayer, updateLayerField, updateVideoConfig, setPlayerCurrentTime } = slice.actions;
 export default slice.reducer;
