@@ -24,6 +24,8 @@ function easyDAMPlayer() {
 			fluid: true,
 		};
 
+		console.log( 'Parsed options:', videoSetupOptions );
+
 		const player = videojs( video, videoSetupOptions );
 
 		player.qualityMenu();

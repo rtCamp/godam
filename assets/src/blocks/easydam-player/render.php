@@ -23,6 +23,11 @@ $caption      = ! empty( $attributes['caption'] ) ? esc_html( $attributes['capti
 $src          = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $sources      = ! empty( $attributes['sources'] ) ? $attributes['sources'] : array();
 $tracks       = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
+$id           = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+
+// Retrieve easydam_meta for the attachment id.
+$easydam_meta = $id ? get_post_meta( $id, 'easydam_meta', true ) : '';
+$easydam_meta_data = $easydam_meta ? json_decode( $easydam_meta, true ) : array();
 
 // Build the video setup options for data-setup.
 $video_setup = wp_json_encode(
@@ -35,8 +40,11 @@ $video_setup = wp_json_encode(
 		'poster'   => $poster,
 		'fluid'    => true,
 		'sources'  => $sources,
+		'id'       => $id,
+		'easydam_meta'     => $easydam_meta_data,
 	)
 );
+
 ?>
 
 <?php if ( $src ) : ?>
@@ -68,5 +76,22 @@ $video_setup = wp_json_encode(
 	<?php if ( $caption ) : ?>
 		<figcaption><?php echo esc_html( $caption ); ?></figcaption>
 	<?php endif; ?>
+
+	<!-- Dynamically render shortcodes for form layers -->
+	<?php if ( ! empty( $easydam_meta_data['layers'] ) ) :
+		foreach ( $easydam_meta_data['layers'] as $layer ) :
+			if ( isset( $layer['type'] ) && $layer['type'] === 'form' && ! empty( $layer['gf_id'] ) ) : ?>
+				<div class="easydam-form-layer">
+					<?php 
+						echo do_shortcode( sprintf(
+							"[gravityform id='%d' title='false' description='false' ajax='true']",
+							intval( $layer['gf_id'] )
+						) );
+					?>
+				</div>
+			<?php 
+			endif; 
+		endforeach; 
+	endif; ?>
 </figure>
-<?php endif; ?>
+<?php endif;
