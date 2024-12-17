@@ -86,7 +86,7 @@ const utilities = {
 	 * @param {number} indentationWidth - The width of each indentation level.
 	 * @return {Object} The depth, maxDepth, minDepth, and parent ID of the item.
 	 */
-	getProjection: ( items, activeId, overId, dragOffset, indentationWidth = 20 ) => {
+	getProjection: ( items, activeId, overId, dragOffset, indentationWidth = 12 ) => {
 		const overItemIndex = items.findIndex( ( { id } ) => id === overId );
 		const activeItemIndex = items.findIndex( ( { id } ) => id === activeId );
 		const activeItem = items[ activeItemIndex ];
