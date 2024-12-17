@@ -42,8 +42,6 @@ const VideoEditor = () => {
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
 
-	const [ viewedLayers, setViewedLayers ] = useState( [] );
-
 	useEffect( () => {
 		// Make sure the post ID is passed in the URL
 		if ( ! attachmentID ) {
@@ -78,23 +76,8 @@ const VideoEditor = () => {
 	}, [] );
 
 	const handleTimeUpdate = ( player, time ) => {
-
-		console.log('currentTime', currentTime);
-		console.log('layer', layers);
-		
-
 		// Round the current time to 2 decimal places
 		setCurrentTime( time.toFixed( 2 ) );
-
-		// Check if the current time is greater than or equal to layer's display time.
-		const activeGFLayer = layers.find( ( layer ) => layer.type === 'form' && time.toFixed( 2 ) >= layer.displayTime && viewedLayers.indexOf( layer.id ) === -1 );
-
-		if ( activeGFLayer ) {
-			player.pause(); // Pause the video
-			fetchGravityForm( activeGFLayer.gf_id ); // Fetch Gravity Form with ID 1
-			setShowForm( true ); // Show overlay
-			setViewedLayers( [ ...viewedLayers, activeGFLayer.id ] );
-		}
 	};
 
 	const saveAttachmentMeta = () => {
@@ -118,17 +101,6 @@ const VideoEditor = () => {
 						setShowSaveMessage( false );
 					}, 2500 );
 				}
-			} )
-			.catch( ( error ) => {
-				console.error( error );
-			} );
-	};
-
-	// Fetch the Gravity Form HTML
-	const fetchGravityForm = ( formId ) => {
-		axios.get( `/wp-json/easydam/v1/gforms/${ formId }` )
-			.then( ( response ) => {
-				setFormHTML( response.data );
 			} )
 			.catch( ( error ) => {
 				console.error( error );
@@ -175,7 +147,7 @@ const VideoEditor = () => {
 					{
 						// Display a success message when video changes are saved
 						showSaveMessage &&
-						<Snackbar className="absolute bottom-4 right-4 opacity-70">Video changes saved successfully</Snackbar>
+						<Snackbar className="absolute bottom-4 right-4 opacity-70">{ __( 'Video changes saved successfully', 'transcoder' ) }</Snackbar>
 					}
 
 					{ video && (
