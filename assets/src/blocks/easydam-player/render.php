@@ -44,16 +44,6 @@ $video_attributes = array_filter(
 		<source src="<?php echo esc_url( $src ); ?>" type="video/mp4" />
 
 		<?php
-		foreach ( $sources as $source ) :
-			if ( ! empty( $source['src'] ) && ! empty( $source['type'] ) ) :
-				?>
-				<source src="<?php echo esc_url( $source['src'] ); ?>" type="<?php echo esc_attr( $source['type'] ); ?>" />
-				<?php
-			endif;
-		endforeach;
-		?>
-
-		<?php
 		foreach ( $tracks as $track ) :
 			if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
 				?>
