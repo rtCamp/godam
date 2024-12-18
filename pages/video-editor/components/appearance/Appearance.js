@@ -6,25 +6,39 @@ import React, { useEffect, useState } from 'react';
 /**
  * Internal dependencies
  */
-import EasyDAM from '../../../../assets/src/images/EasyDAM.png';
 import '../../video-control.css';
 /**
  * WordPress dependencies
  */
 import {
+	Button,
 	CheckboxControl,
 	ColorPicker,
 	CustomSelectControl,
 	RangeControl,
 } from '@wordpress/components';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateSkipTime, updateVideoConfig } from '../../redux/slice/videoSlice';
+import { updateVideoConfig } from '../../redux/slice/videoSlice';
 
 const Appearance = () => {
 	const dispatch = useDispatch();
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
+	const [ selectedBrandImage, setSelectedBrandImage ] = useState( videoConfig.controlBar.customBrandImg.length > 0 );
+	const [ selectedCustomBgImg, setSelectedCustomBgImg ] = useState(
+		videoConfig.controlBar.customPlayBtnImg.length > 0,
+	);
+
+	useEffect(() => {
+		//class gets re added upon component load, so we need to remove it.
+		if ( videoConfig.controlBar.subsCapsButton ) {
+			document
+				.querySelector( '.vjs-subs-caps-button' )
+				.classList.remove( 'vjs-hidden' );
+		}
+	}, [] );
 
 	function handleVolumeToggle() {
+		const volumeSlider = document.querySelector( '.vjs-volume-panel' );
 		dispatch(
 			updateVideoConfig( {
 				controlBar: {
@@ -33,7 +47,6 @@ const Appearance = () => {
 				},
 			} ),
 		);
-		const volumeSlider = document.querySelector( '.vjs-volume-panel' );
 		if ( volumeSlider.classList.contains( 'hide' ) ) {
 			volumeSlider.classList.remove( 'hide' );
 			volumeSlider.classList.add( 'show' );
@@ -44,14 +57,16 @@ const Appearance = () => {
 	}
 
 	function handleCaptionsToggle() {
-		dispatch(
-			updateVideoConfig( { controlBar: {
-				...videoConfig.controlBar,
-				 subsCapsButton: ! videoConfig.controlBar.subsCapsButton,
-			} } ),
-		);
 		const captionsButton = document.querySelector( '.vjs-subs-caps-button' );
-		captionsButton.classList.remove( 'vjs-hidden' ); //temp
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					subsCapsButton: ! videoConfig.controlBar.subsCapsButton,
+				},
+			} ),
+		);
+
 		if ( captionsButton.classList.contains( 'show' ) ) {
 			captionsButton.classList.add( 'hide' );
 			captionsButton.classList.remove( 'show' );
@@ -62,6 +77,9 @@ const Appearance = () => {
 	}
 
 	function handleBrandingToggle( e ) {
+		const brandingLogo = document.querySelector( '#branding-icon' );
+		const controlBar = document.querySelector( '.vjs-control-bar' );
+
 		dispatch(
 			updateVideoConfig( {
 				controlBar: {
@@ -70,17 +88,11 @@ const Appearance = () => {
 				},
 			} ),
 		);
-		const controlBar = document.querySelector( '.vjs-control-bar' );
-		const img = document.createElement( 'img' );
-		img.src = EasyDAM;
-		img.id = 'branding-icon';
-		img.alt = 'Branding';
-		const brandingLogo = document.querySelector( '#branding-icon' );
 
 		if ( brandingLogo ) {
 			controlBar.removeChild( brandingLogo );
 		} else {
-			controlBar.appendChild( img );
+			controlBar.appendChild( brandingLogo );
 		}
 	}
 
@@ -201,22 +213,73 @@ const Appearance = () => {
 		}
 	}
 
-	function handleUploadCustomBtnBg( e ) {
-		const file = e.target.files[ 0 ];
-		if ( file ) {
-			const reader = new FileReader();
-			reader.onload = function( e ) {
-				const playButtonElement = document.querySelector(
-					'.vjs-big-play-button',
-				);
+	const openCustomBtnImg = () => {
+		setSelectedCustomBgImg( true );
+		const fileFrame = wp.media( {
+			title: 'Select Custom Background Image',
+			button: {
+				text: 'Use this Background Image',
+			},
+			library: {
+				type: 'image', // Restrict to images only
+			},
+			multiple: false, // Disable multiple selection
+		} );
 
-				// Apply custom background via class
-				playButtonElement.style.backgroundImage = `url(${ e.target.result })`;
-				playButtonElement.classList.add( 'custom-bg' ); // Add the custom CSS class
-			};
-			reader.readAsDataURL( file );
-		}
-	}
+		fileFrame.on( 'select', function() {
+			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
+			const playButtonElement = document.querySelector( '.vjs-big-play-button' );
+
+			dispatch(
+				updateVideoConfig( {
+					controlBar: {
+						...videoConfig.controlBar,
+						customPlayBtnImg: attachment.url,
+					},
+				} ),
+			);
+
+			// Apply custom background via class
+			playButtonElement.style.backgroundImage = `url(${ attachment.url })`;
+			playButtonElement.classList.add( 'custom-bg' ); // Add the custom CSS class
+		} );
+
+		fileFrame.open();
+	};
+
+	const openBrandMediaPicker = () => {
+		setSelectedBrandImage( true );
+		const fileFrame = wp.media( {
+			title: 'Select Brand Image',
+			button: {
+				text: 'Use this brand image',
+			},
+			library: {
+				type: 'image', // Restrict to images only
+			},
+			multiple: false, // Disable multiple selection
+		} );
+
+		fileFrame.on( 'select', function() {
+			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
+			const brandImg = document.querySelector( '#branding-icon' );
+
+			dispatch(
+				updateVideoConfig( {
+					controlBar: {
+						...videoConfig.controlBar,
+						customBrandImg: attachment.url,
+					},
+				} ),
+			);
+
+			if ( brandImg ) {
+				brandImg.src = `${ attachment.url }`;
+			}
+		} );
+
+		fileFrame.open();
+	};
 
 	function handleUploadCustomBrandImg( e ) {
 		const file = e.target.files[ 0 ];
@@ -235,7 +298,6 @@ const Appearance = () => {
 
 	function handleSkipTimeSettings( e ) {
 		const selectedSkipVal = parseFloat( e.selectedItem.name );
-		// dispatch( updateSkipTime( { selectedSkipVal } ) );
 		dispatch(
 			updateVideoConfig( {
 				controlBar: {
@@ -361,12 +423,13 @@ const Appearance = () => {
 						>
 							Custom Brand Image
 						</label>
-						<input
-							type="file"
-							id="custom-play-button"
-							accept="image/*"
-							onChange={ handleUploadCustomBrandImg }
-						/>
+						<Button
+							onClick={ openBrandMediaPicker }
+							variant="primary"
+							className="ml-2"
+						>
+							{ selectedBrandImage ? 'Replace' : 'Upload' }
+						</Button>
 					</div>
 				) }
 				<div className="form-group">
@@ -432,12 +495,13 @@ const Appearance = () => {
 					>
 						Custom Play Button
 					</label>
-					<input
-						type="file"
-						id="custom-play-button"
-						accept="image/*"
-						onChange={ handleUploadCustomBtnBg }
-					/>
+					<Button
+						onClick={ openCustomBtnImg }
+						variant="primary"
+						className="ml-2"
+					>
+						{ selectedCustomBgImg ? 'Replace' : 'Upload' }
+					</Button>
 				</div>
 				<div className="form-group">
 					<label htmlFor="control-bar-position" className="font-bold">
