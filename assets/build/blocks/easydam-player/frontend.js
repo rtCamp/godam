@@ -72004,6 +72004,20 @@ function easyDAMPlayer() {
         const layerElement = document.querySelector(`#${layerId}`);
         if (layerElement) {
           layerElement.classList.add('hidden'); // Initially hidden
+
+          if (layer.type === 'cta' && layer.cta_type === 'text') {
+            const ctaButton = document.createElement('a');
+            ctaButton.textContent = layer.text || 'Click Here';
+            ctaButton.href = layer.link || '#';
+            ctaButton.target = '_blank';
+            ctaButton.rel = 'noopener noreferrer';
+            ctaButton.classList.add('cta-button');
+            layerElement.appendChild(ctaButton);
+          } else if (layer.custom_css) {
+            const styleElement = document.createElement('style');
+            styleElement.textContent = layer.custom_css;
+            layerElement.appendChild(styleElement);
+          }
           formLayers.push({
             layerElement,
             displayTime: parseFloat(layer.displayTime),
@@ -72013,22 +72027,27 @@ function easyDAMPlayer() {
         }
       }
     });
+    let isDisplayingLayer = false;
 
     // Listen for the timeupdate event and display layers at specific display times.
     player.on('timeupdate', () => {
       const currentTime = player.currentTime();
-      formLayers.forEach(layerObj => {
-        if (layerObj.show &&
-        // Only display if 'show' is true
-        currentTime >= layerObj.displayTime && layerObj.layerElement.classList.contains('hidden')) {
-          // Show the layer
-          layerObj.layerElement.classList.remove('hidden');
+      if (!isDisplayingLayer) {
+        for (const layerObj of formLayers) {
+          if (layerObj.show &&
+          // Only display if 'show' is true
+          currentTime >= layerObj.displayTime && layerObj.layerElement.classList.contains('hidden')) {
+            // Show the layer
+            layerObj.layerElement.classList.remove('hidden');
 
-          // Pause the video
-          player.pause();
-          player.controls(false); // Disable player controls
+            // Pause the video
+            player.pause();
+            player.controls(false); // Disable player controls
+            isDisplayingLayer = true; // Set flag to true to prevent further layer display.
+            break; // Exit the loop after displaying the first layer
+          }
         }
-      });
+      }
     });
 
     // Prevent video resume from external interactions
@@ -72070,6 +72089,7 @@ function easyDAMPlayer() {
         layerObj.layerElement.classList.add('hidden');
         player.controls(true); // Re-enable player controls
         player.play();
+        isDisplayingLayer = false; // Reset flag to false for future layer display.
       });
       layerObj.layerElement.appendChild(skipButton);
     });
