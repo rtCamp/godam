@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, CustomSelectControl, Modal } from '@wordpress/components';
+import { Button, CheckboxControl, CustomSelectControl, Modal, SelectControl } from '@wordpress/components';
 import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
@@ -14,15 +14,25 @@ import { useState, useEffect } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { removeLayer, updateCtaLayer } from '../../redux/slice/videoSlice';
+import { removeLayer, updateLayerField } from '../../redux/slice/videoSlice';
 import TextCTA from '../cta/TextCTA';
 import ImageCTA from '../cta/ImageCTA';
 import HtmlCTA from '../cta/HtmlCTA';
 import LayerControls from '../LayerControls';
 
+const CTATypes = [
+	{
+		value: 'text',
+		label: 'Text',
+	},
+	{
+		value: 'html',
+		label: 'HTML',
+	},
+];
+
 const CTALayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
-	const cta = useSelector( ( state ) => state.videoReducer.cta );
 	const [ formHTML, setFormHTML ] = useState( '' );
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
@@ -33,9 +43,14 @@ const CTALayer = ( { layerID, goBack } ) => {
 		goBack();
 	};
 
+	console.log( 'Layer:', layer );
+
 	const handleCTATypeSelect = ( e ) => {
 		dispatch(
-			updateCtaLayer( {
+			updateLayerField( {
+				id: layer.id,
+				field: 'cta_type',
+				value: e.selectedItem.key,
 				type: e.selectedItem.key,
 				name: e.selectedItem.name,
 			} ),
@@ -43,24 +58,24 @@ const CTALayer = ( { layerID, goBack } ) => {
 	};
 
 	const renderSelectedCTAInputs = () => {
-		switch ( cta?.type ) {
-			case 'text': return <TextCTA />;
-			case 'image': return <ImageCTA />;
-			case 'html': return <HtmlCTA />;
-			default: <TextCTA />;
+		switch ( layer?.cta_type ) {
+			case 'text': return <TextCTA layerID={ layer.id } />;
+			case 'image': return <ImageCTA layerID={ layer.id } />;
+			case 'html': return <HtmlCTA layerID={ layer.id } />;
+			default: <TextCTA layerID={ layer.id } />;
 		}
 	};
 
 	useEffect( () => {
-		if ( 'text' === cta?.type ) {
-			const html = `<a href="${ cta.link }">${ cta.text }</a>`;
+		if ( 'text' === layer?.cta_type ) {
+			const html = `<a href="${ layer.link }" target="_blank">${ layer.text }</a>`;
 			setFormHTML( html );
-		} else if ( 'html' === cta?.type ) {
-			setFormHTML( cta.html );
+		} else if ( 'html' === layer?.cta_type ) {
+			setFormHTML( layer.html );
 		} else {
 			setFormHTML( '' );
 		}
-	}, [ cta ] );
+	}, [ layer ] );
 
 	return (
 		<>
@@ -97,7 +112,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 			</div>
 			<div className="flex gap-2 flex-col">
 				<p>Call to Action</p>
-				<CustomSelectControl
+				{ /* <CustomSelectControl
 					__next40pxDefaultSize
 					onChange={ handleCTATypeSelect }
 					options={ [
@@ -118,29 +133,49 @@ const CTALayer = ( { layerID, goBack } ) => {
 						key: cta.type,
 						name: cta.name,
 					} }
+				/> */ }
+				<SelectControl
+					label={ __( 'Select CTA Type', 'transcoder' ) }
+					options={ CTATypes }
+					value={ layer.cta_type }
+					onChange={ ( value ) => {
+						dispatch( updateLayerField( { id: layer.id, field: 'cta_type', value } ) );
+					} }
 				/>
 				{ renderSelectedCTAInputs() }
+
+				{ /* Common settings */ }
+				<CheckboxControl
+					__nextHasNoMarginBottom
+					label="Allow to Skip"
+					checked={ layer.allow_skip }
+					onChange={ ( value ) =>
+						dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
+					}
+				/>
 			</div>
 			<LayerControls>
 				<>
 					<div className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70 my-auto">
 						<div className="h-full flex items-center">
 							<div
-								className="max-w-[400px] mx-auto text-white text-5xl"
+								className="max-w-[400px] mx-auto text-black text-5xl"
 								dangerouslySetInnerHTML={ { __html: formHTML } }
 							/>
 						</div>
 					</div>
-					<Button
-						className="absolute bottom-6 right-0"
-						variant="primary"
-						icon={ chevronRight }
-						iconSize="18"
-						iconPosition="right"
-						// onClick={ () => showForm( false ) }
-					>
-						{ __( 'Skip', 'transcoder' ) }
-					</Button>
+					{
+						layer.allow_skip &&
+						<Button
+							className="absolute bottom-6 right-0"
+							variant="primary"
+							icon={ chevronRight }
+							iconSize="18"
+							iconPosition="right"
+						>
+							{ __( 'Skip', 'transcoder' ) }
+						</Button>
+					}
 				</>
 			</LayerControls>
 		</>

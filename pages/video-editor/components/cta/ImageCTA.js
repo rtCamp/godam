@@ -1,9 +1,12 @@
-import React from 'react'
+/**
+ * External dependencies
+ */
+import React from 'react';
 
 const ImageCTA = () => {
-  return (
-    <div>ImageCTA</div>
-  )
-}
+	return (
+		<div>ImageCTA</div>
+	);
+};
 
-export default ImageCTA
+export default ImageCTA;

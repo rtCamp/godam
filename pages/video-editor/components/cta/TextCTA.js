@@ -5,38 +5,28 @@
  * WordPress dependencies
  */
 import { CheckboxControl, TextControl } from '@wordpress/components';
-import React, { useState } from 'react';
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 /**
  * Internal dependencies
  */
-import { updateCtaLayer } from '../../redux/slice/videoSlice';
+import { updateLayerField } from '../../redux/slice/videoSlice';
 
-const TextCTA = () => {
-	const [ allowSkip, setAllowSkip ] = useState( true );
-	const cta = useSelector( ( state ) => state.videoReducer.cta );
+const TextCTA = ( { layerID } ) => {
+	const layer = useSelector( ( state ) =>
+		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
+	);
 	const dispatch = useDispatch();
 
-	const handleUpdateCta = ( key, value ) => {
-		dispatch(
-			updateCtaLayer( {
-				id: cta.id,
-				type: 'text',
-				[ key ]: value,
-				html: '',
-				duration: parseInt( 5, 10 ),
-			} ),
-		);
-	};
 	return (
 		<>
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
 				label="Text"
-				value={ cta.text }
+				value={ layer.text }
 				onChange={ ( value ) => {
-					handleUpdateCta( 'text', value );
+					dispatch( updateLayerField( { id: layer.id, field: 'text', value } ) );
 				} }
 				placeholder="Your text"
 			/>
@@ -44,17 +34,11 @@ const TextCTA = () => {
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
 				label="URL"
-				value={ cta.link }
+				value={ layer.link }
 				onChange={ ( value ) => {
-					handleUpdateCta( 'link', value );
+					dispatch( updateLayerField( { id: layer.id, field: 'link', value } ) );
 				} }
 				placeholder="https://rtcamp.com"
-			/>
-			<CheckboxControl
-				__nextHasNoMarginBottom
-				label="Allow to Skip"
-				checked={ allowSkip }
-				onChange={ () => setAllowSkip( ! allowSkip ) }
 			/>
 		</>
 	);

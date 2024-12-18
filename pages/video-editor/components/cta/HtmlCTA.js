@@ -10,25 +10,13 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * Internal dependencies
  */
-import { updateCtaLayer } from '../../redux/slice/videoSlice';
+import { updateLayerField } from '../../redux/slice/videoSlice';
 
-const HtmlCTA = () => {
-	const [ allowSkip, setAllowSkip ] = useState( true );
-	const cta = useSelector( ( state ) => state.videoReducer.cta );
+const HtmlCTA = ( { layerID } ) => {
+	const layer = useSelector( ( state ) =>
+		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
+	);
 	const dispatch = useDispatch();
-
-	const handleUpdateCta = ( value ) => {
-		dispatch(
-			updateCtaLayer( {
-				id: cta.id,
-				type: 'html',
-				text: '',
-				link: '',
-				html: value,
-				duration: parseInt( 5, 10 ),
-			} ),
-		);
-	};
 
 	return (
 		<>
@@ -36,17 +24,11 @@ const HtmlCTA = () => {
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
 				label="HTML"
-				value={ cta.html }
+				value={ layer.html }
 				onChange={ ( value ) => {
-					handleUpdateCta( value );
+					dispatch( updateLayerField( { id: layer.id, field: 'html', value } ) );
 				} }
 				placeholder="Your HTML"
-			/>
-			<CheckboxControl
-				__nextHasNoMarginBottom
-				label="Allow to Skip"
-				checked={ allowSkip }
-				onChange={ () => setAllowSkip( ! allowSkip ) }
 			/>
 		</>
 	);
