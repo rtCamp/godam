@@ -12,18 +12,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Block attributes.
-$autoplay     = ! empty( $attributes['autoplay'] );
-$controls     = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
-$loop         = ! empty( $attributes['loop'] );
-$muted        = ! empty( $attributes['muted'] );
-$poster       = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
-$preload      = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$plays_inline = ! empty( $attributes['playsInline'] );
-$caption      = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
-$src          = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
-$sources      = ! empty( $attributes['sources'] ) ? $attributes['sources'] : array();
-$tracks       = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
-$attachment_id           = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$autoplay      = ! empty( $attributes['autoplay'] );
+$controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
+$loop          = ! empty( $attributes['loop'] );
+$muted         = ! empty( $attributes['muted'] );
+$poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
+$preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
+$plays_inline  = ! empty( $attributes['playsInline'] );
+$caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
+$src           = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
+$sources       = ! empty( $attributes['sources'] ) ? $attributes['sources'] : array();
+$tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
+$attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 
 // Retrieve easydam_meta for the attachment id.
 $easydam_meta      = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : '';
