@@ -39,7 +39,7 @@ const TreeItem = ( { item, index, depth } ) => {
 	return (
 		<>
 			<div
-				className={ `w-full py-2 px-2 rounded-md relative hover:bg-gray-200 
+				className={ `w-full py-2 px-2 rounded-md relative hover:bg-gray-200 tree-item
 					${ item.id === selectedFolderID ? 'bg-gray-200' : '' } 
 					${ isDragging ? 'indicator-parent' : '' }
 

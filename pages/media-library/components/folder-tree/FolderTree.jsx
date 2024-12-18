@@ -90,7 +90,7 @@ const FolderTree = () => {
 	const pointerSensor = useSensor( PointerSensor, {
 		activationConstraint: {
 			// Allow items to be clicked instead of activated by dragging
-			distance: 0.01,
+			distance: 10,
 		},
 	} );
 
