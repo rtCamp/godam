@@ -1,1 +1,1 @@
-(()=>{"use strict";window.wp.element,window.React})();
+console.log("Hello from Features Plugin");w.React})();

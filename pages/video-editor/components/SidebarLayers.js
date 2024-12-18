@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
  */
 import { __ } from '@wordpress/i18n';
 import { Button, Icon, Modal, DropdownMenu } from '@wordpress/components';
-import { plus, preformatted, customLink, arrowRight } from '@wordpress/icons';
+import { plus, preformatted, customLink, arrowRight, html } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
 import Layer from './layers/Layer';
 
@@ -46,15 +46,33 @@ const SidebarLayers = ( { currentTime } ) => {
 	const dispatch = useDispatch();
 
 	const addNewLayer = ( type ) => {
-		dispatch( addLayer( {
-			id: uuidv4(),
-			displayTime: currentTime,
-			type,
-			submitted: false,
-			allow_skip: true,
-			custom_css: '',
-			template: 'default',
-		} ) );
+		switch ( type ) {
+			case 'form':
+				dispatch( addLayer( {
+					id: uuidv4(),
+					displayTime: currentTime,
+					type,
+					submitted: false,
+					allow_skip: true,
+					custom_css: '',
+					theme: 'orbital',
+				} ) );
+				break;
+			case 'cta':
+				dispatch( addLayer( {
+					id: uuidv4(),
+					displayTime: currentTime,
+					type,
+					cta_type: 'text',
+					text: '',
+					html: '',
+					link: '',
+					allow_skip: true,
+				} ) );
+				break;
+			default:
+				break;
+		}
 	};
 
 	return (

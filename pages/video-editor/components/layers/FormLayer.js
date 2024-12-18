@@ -25,7 +25,7 @@ const templateOptions = [
 	},
 	{
 		value: 'gravity',
-		label: 'Gravity 1',
+		label: 'Gravity',
 	},
 ];
 
@@ -89,11 +89,11 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 			<SelectControl
 				className="mb-4"
-				label={ __( 'Select template', 'transcoder' ) }
+				label={ __( 'Select form theme', 'transcoder' ) }
 				options={ templateOptions }
-				value={ layer.template }
+				value={ layer.theme }
 				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'template', value } ) )
+					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
 				}
 			/>
 			<CustomCssInjector
@@ -119,16 +119,19 @@ const FormLayer = ( { layerID, goBack } ) => {
 							<div className="max-w-[400px] mx-auto" dangerouslySetInnerHTML={ { __html: formHTML } } />
 						</div>
 					</div>
-					<Button
-						className="absolute bottom-6 right-0"
-						variant="primary"
-						icon={ chevronRight }
-						iconSize="18"
-						iconPosition="right"
-						onClick={ () => setOpen( false ) }
-					>
-						{ __( 'Skip', 'transcoder' ) }
-					</Button>
+					{
+						layer.allow_skip &&
+						<Button
+							className="absolute bottom-6 right-0"
+							variant="primary"
+							icon={ chevronRight }
+							iconSize="18"
+							iconPosition="right"
+							onClick={ () => setOpen( false ) }
+						>
+							{ __( 'Skip', 'transcoder' ) }
+						</Button>
+					}
 				</>
 			</LayerControl>
 		</>
