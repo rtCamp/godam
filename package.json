@@ -28,6 +28,7 @@
 		"@wordpress/server-side-render": "4.9.0",
 		"axios": "1.7.9",
 		"clsx": "2.1.1",
+		"isomorphic-dompurify": "2.19.0",
 		"react": "^18.2.0",
 		"react-bootstrap-icons": "1.11.4",
 		"react-dom": "^18.2.0",

@@ -1,12 +1,13 @@
 /**
  * WordPress dependencies
  */
-import { CheckboxControl, TextareaControl } from '@wordpress/components';
+import { TextareaControl } from '@wordpress/components';
 /**
  * External dependencies
  */
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
 /**
  * Internal dependencies
  */
