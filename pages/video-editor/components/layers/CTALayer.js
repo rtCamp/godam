@@ -112,7 +112,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 			</div>
 			<div className="flex gap-2 flex-col">
 				<p>Call to Action</p>
-				{ /* <CustomSelectControl
+				<CustomSelectControl
 					__next40pxDefaultSize
 					onChange={ handleCTATypeSelect }
 					options={ [
@@ -129,18 +129,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 							name: 'Image',
 						},
 					] }
-					value={ {
-						key: cta.type,
-						name: cta.name,
-					} }
-				/> */ }
-				<SelectControl
-					label={ __( 'Select CTA Type', 'transcoder' ) }
-					options={ CTATypes }
 					value={ layer.cta_type }
-					onChange={ ( value ) => {
-						dispatch( updateLayerField( { id: layer.id, field: 'cta_type', value } ) );
-					} }
 				/>
 				{ renderSelectedCTAInputs() }
 
