@@ -85,14 +85,16 @@ $video_setup = wp_json_encode(
 			if ( isset( $layer['type'] ) && 'form' === $layer['type'] && ! empty( $layer['gf_id'] ) ) :
 				?>
 				<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
-					<?php
-						echo do_shortcode(
-							sprintf(
-								"[gravityform id='%d' title='false' description='false' ajax='true']",
-								intval( $layer['gf_id'] )
-							)
-						);
-					?>
+					<div class="form-container">
+						<?php
+							echo do_shortcode(
+								sprintf(
+									"[gravityform id='%d' title='false' description='false' ajax='true']",
+									intval( $layer['gf_id'] )
+								)
+							);
+						?>
+					</div>
 				</div>
 			<?php elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) : ?>
 				<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
