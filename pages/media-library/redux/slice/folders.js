@@ -37,15 +37,11 @@ const slice = createSlice( {
 			}
 		},
 		toggleOpenClose: ( state, action ) => {
-			state.folders = state.folders.map( ( item ) => {
-				if ( item.id === action.payload.id ) {
-					return {
-						...item,
-						isOpen: ! item.isOpen,
-					};
-				}
-				return item;
-			} );
+			const folder = state.folders.find( ( item ) => item.id === action.payload.id );
+
+			if ( folder ) {
+				folder.isOpen = ! folder.isOpen;
+			}
 		},
 		createFolder: ( state, action ) => {
 			const { name } = action.payload;
@@ -57,19 +53,18 @@ const slice = createSlice( {
 				parent: state.selectedFolder ? state.selectedFolder.id : 0,
 			};
 
-			state.folders = [ ...state.folders, newItem ];
+			state.folders.push( newItem );
 		},
 		renameFolder: ( state, action ) => {
 			if ( ! state.selectedFolder ) {
 				return;
 			}
 
-			state.folders.map( ( item ) => {
-				if ( item.id === state.selectedFolder.id ) {
-					item.name = action.payload.name;
-				}
-				return item;
-			} );
+			const folder = state.folders.find( ( item ) => item.id === state.selectedFolder.id );
+
+			if ( folder ) {
+				folder.name = action.payload.name;
+			}
 		},
 		deleteFolder: ( state ) => {
 			if ( ! state.selectedFolder ) {
