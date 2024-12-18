@@ -41,6 +41,13 @@ function easyDAMPlayer() {
 
 				if ( layerElement ) {
 					layerElement.classList.add( 'hidden' ); // Initially hidden
+
+					if ( layer.custom_css ) {
+						const styleElement = document.createElement( 'style' );
+						styleElement.textContent = layer.custom_css;
+						layerElement.appendChild( styleElement );
+					}
+
 					formLayers.push( {
 						layerElement,
 						displayTime: parseFloat( layer.displayTime ),
