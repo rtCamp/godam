@@ -70,3 +70,14 @@
 	background: none;
 	border-radius: 8px;
 }
+
+.cta-button {
+	font-weight: bold;
+	font-size: 3rem;
+	text-decoration: none;
+	outline: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}

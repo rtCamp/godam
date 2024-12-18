@@ -87,7 +87,7 @@ $video_setup = wp_json_encode(
 				<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
 					<div class="form-container">
 						<?php
-							$theme = ! empty( $layer['template'] ) ? esc_attr( $layer['template'] ) : '';
+							$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
 							echo do_shortcode(
 								sprintf(
 									"[gravityform id='%d' title='false' description='false' ajax='true'%s]",
@@ -100,8 +100,6 @@ $video_setup = wp_json_encode(
 				</div>
 			<?php elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) : ?>
 				<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
-					<!-- Add sample button for now -->
-					<button class="cta-button">Call To Action</button>
 				</div>
 				<?php
 			endif;
