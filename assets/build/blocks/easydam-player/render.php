@@ -74,38 +74,38 @@ $video_setup = wp_json_encode(
 			?>
 		</video>
 
-	<?php if ( $caption ) : ?>
-		<figcaption><?php echo esc_html( $caption ); ?></figcaption>
-	<?php endif; ?>
+		<?php if ( $caption ) : ?>
+			<figcaption><?php echo esc_html( $caption ); ?></figcaption>
+		<?php endif; ?>
 
-	<!-- Dynamically render shortcodes for form layers -->
-	<?php
-	if ( ! empty( $easydam_meta_data['layers'] ) ) :
-		foreach ( $easydam_meta_data['layers'] as $layer ) :
-			if ( isset( $layer['type'] ) && 'form' === $layer['type'] && ! empty( $layer['gf_id'] ) ) :
-				?>
-				<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
-					<div class="form-container">
-						<?php
-							$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
-							echo do_shortcode(
-								sprintf(
-									"[gravityform id='%d' title='false' description='false' ajax='true'%s]",
-									intval( $layer['gf_id'] ),
-									$theme ? " theme='$theme'" : ''
-								)
-							);
-						?>
+		<!-- Dynamically render shortcodes for form layers -->
+		<?php
+		if ( ! empty( $easydam_meta_data['layers'] ) ) :
+			foreach ( $easydam_meta_data['layers'] as $layer ) :
+				if ( isset( $layer['type'] ) && 'form' === $layer['type'] && ! empty( $layer['gf_id'] ) ) :
+					?>
+					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
+						<div class="form-container">
+							<?php
+								$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
+								echo do_shortcode(
+									sprintf(
+										"[gravityform id='%d' title='false' description='false' ajax='true'%s]",
+										intval( $layer['gf_id'] ),
+										$theme ? " theme='$theme'" : ''
+									)
+								);
+							?>
+						</div>
 					</div>
-				</div>
-			<?php elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) : ?>
-				<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
-				</div>
-				<?php
-			endif;
-		endforeach;
-	endif;
-	?>
+				<?php elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) : ?>
+					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
+					</div>
+					<?php
+				endif;
+			endforeach;
+		endif;
+		?>
 	</div>
 </figure>
 	<?php

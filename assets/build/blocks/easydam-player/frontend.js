@@ -72050,6 +72050,21 @@ function easyDAMPlayer() {
       }
     });
 
+    // Handle fullscreen mode for layers
+    player.on('fullscreenchange', () => {
+      const isFullscreen = player.isFullscreen();
+      const videoContainer = player.el();
+      formLayers.forEach(layerObj => {
+        if (isFullscreen) {
+          // Append layer to fullscreen container
+          videoContainer.appendChild(layerObj.layerElement);
+          layerObj.layerElement.classList.add('fullscreen-layer');
+        } else {
+          layerObj.layerElement.classList.remove('fullscreen-layer');
+        }
+      });
+    });
+
     // Prevent video resume from external interactions
     player.on('play', () => {
       const isAnyLayerVisible = formLayers.some(layerObj => !layerObj.layerElement.classList.contains('hidden') && layerObj.show);

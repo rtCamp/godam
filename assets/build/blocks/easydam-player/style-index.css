@@ -74,4 +74,29 @@
   text-decoration: underline;
 }
 
+.fullscreen-layer {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+}
+
+.fullscreen-layer .form-container {
+  width: fit-content;
+}
+
+.fullscreen-layer .form-container .gform_wrapper input[type=text],
+.fullscreen-layer .form-container .gform_wrapper input[type=email],
+.fullscreen-layer .form-container .gform_wrapper input[type=url],
+.fullscreen-layer .form-container .gform_wrapper input[type=password],
+.fullscreen-layer .form-container .gform_wrapper textarea {
+  width: 500px;
+  max-width: 500px;
+  box-sizing: border-box;
+}
+
+.form-container,
+.cta-button {
+  color: black;
+}
+
 /*# sourceMappingURL=style-index.css.map*/
