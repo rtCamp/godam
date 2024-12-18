@@ -50,7 +50,7 @@ const slice = createSlice( {
 		createFolder: ( state, action ) => {
 			const { name } = action.payload;
 			const newItem = {
-				id: state.folders.length + 1,
+				id: state.folders.length + 20, // This is temp ID, replace it with real ID from database.
 				name,
 				isOpen: false,
 				children: [],
