@@ -27,21 +27,21 @@ export default function save( { attributes } ) {
 		tracks,
 	} = attributes;
 
-	const videoSetupOptions = {
-		controls,
-		autoplay,
+    const videoSetupOptions = {
+        controls,
+        autoplay,
 		loop,
 		muted,
-		preload,
+        preload,
 		poster,
-		fluid: true,
+        fluid: true,
 		sources,
-	};
-
+    };
+	
 	return (
 		<figure { ...useBlockProps.save() }>
 			{ src && (
-				<video
+                <video
 					className="easydam-player video-js vjs-big-play-centered"
 					data-setup={ JSON.stringify( videoSetupOptions ) }
 				>
