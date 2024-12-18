@@ -32,7 +32,6 @@ function easyDAMPlayer() {
 		// Find and initialize layers from easydam_meta
 		const layers = videoSetupOptions.easydam_meta?.layers || [];
 		const formLayers = []; // Store references to form layers for future visibility.
-		const pendingQueue = []; // Queue to manage pending layers.
 
 		// Hide all the layers initially.
 		layers.forEach( ( layer ) => {
@@ -52,89 +51,76 @@ function easyDAMPlayer() {
 			}
 		} );
 
-		// Function to display a layer and pause video
-		const showLayer = ( layerObj ) => {
-			layerObj.layerElement.classList.remove( 'hidden' );
-			player.pause();
-			player.controls( false ); // Disable player controls
-		};
+		let isDisplayingLayer = false;
 
-		// Function to process the next layer in the queue
-		const processQueue = () => {
-			if ( pendingQueue.length > 0 ) {
-				const layerObj = pendingQueue.shift(); // Get the next layer
-				showLayer( layerObj );
-
-				// Allow closing or skipping the layer
-				const skipButton = document.createElement( 'button' );
-				skipButton.textContent = layerObj.allowSkip ? 'Skip' : 'Continue';
-				skipButton.classList.add( 'skip-button' );
-
-				if ( ! layerObj.allowSkip ) {
-					skipButton.classList.add( 'hidden' ); // Hide skip button if not allowed
-				}
-
-				layerObj.layerElement.appendChild( skipButton );
-
-				// Observe for confirmation message changes
-				const observer = new MutationObserver( ( mutations ) => {
-					mutations.forEach( ( mutation ) => {
-						if ( layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ) {
-							skipButton.textContent = 'Continue';
-							skipButton.classList.remove( 'hidden' );
-							observer.disconnect();
-						}
-					} );
-				} );
-
-				observer.observe( layerObj.layerElement, { childList: true, subtree: true } );
-
-				skipButton.addEventListener( 'click', () => {
-					layerObj.show = false; // Mark layer as handled
-					layerObj.layerElement.classList.add( 'hidden' );
-					skipButton.remove(); // Clean up button
-
-					// Process the next layer in the queue
-					processQueue();
-				} );
-			} else {
-				// Re-enable controls when no layers are pending
-				player.controls( true );
-				player.play();
-			}
-		};
-
-		// Listen for the timeupdate event and enqueue layers at specific display times.
+		// Listen for the timeupdate event and display layers at specific display times.
 		player.on( 'timeupdate', () => {
 			const currentTime = player.currentTime();
+			if ( ! isDisplayingLayer ) {
+				for ( const layerObj of formLayers ) {
+					if (
+						layerObj.show && // Only display if 'show' is true
+						currentTime >= layerObj.displayTime &&
+						layerObj.layerElement.classList.contains( 'hidden' )
+					) {
+						// Show the layer
+						layerObj.layerElement.classList.remove( 'hidden' );
 
-			formLayers.forEach( ( layerObj ) => {
-				if (
-					layerObj.show && // Only display if 'show' is true
-					currentTime >= layerObj.displayTime &&
-					layerObj.layerElement.classList.contains( 'hidden' )
-				) {
-					pendingQueue.push( layerObj ); // Add to queue
-					layerObj.show = false; // Mark as queued
+						// Pause the video
+						player.pause();
+						player.controls( false ); // Disable player controls
+						isDisplayingLayer = true; // Set flag to true to prevent further layer display.
+						break; // Exit the loop after displaying the first layer
+					}
 				}
-			} );
-
-			// If no layers are currently displayed, process the queue
-			if ( pendingQueue.length > 0 && ! player.paused() ) {
-				processQueue();
 			}
 		} );
 
 		// Prevent video resume from external interactions
 		player.on( 'play', () => {
 			const isAnyLayerVisible = formLayers.some(
-				( layerObj ) =>
-					! layerObj.layerElement.classList.contains( 'hidden' ) && layerObj.show,
+				( layerObj ) => ! layerObj.layerElement.classList.contains( 'hidden' ) && layerObj.show,
 			);
 
 			if ( isAnyLayerVisible ) {
 				player.pause();
 			}
+		} );
+
+		// Allow closing or skipping layers
+		formLayers.forEach( ( layerObj ) => {
+			const skipButton = document.createElement( 'button' );
+			skipButton.textContent = 'Skip';
+			skipButton.classList.add( 'skip-button' );
+
+			if ( ! layerObj.allowSkip ) {
+				skipButton.classList.add( 'hidden' );
+			}
+
+			// Observe changes in the layer's DOM for the confirmation message
+			const observer = new MutationObserver( ( mutations ) => {
+				mutations.forEach( ( mutation ) => {
+					if ( layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ) {
+						// Update the Skip button to Continue
+						skipButton.textContent = 'Continue';
+						skipButton.classList.remove( 'hidden' );
+						observer.disconnect();
+					}
+				} );
+			} );
+
+			// Start observing the layer's element for child list changes
+			observer.observe( layerObj.layerElement, { childList: true, subtree: true } );
+
+			skipButton.addEventListener( 'click', () => {
+				layerObj.show = false; // Set to false to prevent re-displaying
+				layerObj.layerElement.classList.add( 'hidden' );
+				player.controls( true ); // Re-enable player controls
+				player.play();
+				isDisplayingLayer = false; // Reset flag to false for future layer display.
+			} );
+
+			layerObj.layerElement.appendChild( skipButton );
 		} );
 
 		player.qualityMenu();
