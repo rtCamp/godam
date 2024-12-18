@@ -26,8 +26,7 @@ $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : arra
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 
 // Retrieve easydam_meta for the attachment id.
-$easydam_meta      = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : '';
-$easydam_meta_data = $easydam_meta ? json_decode( $easydam_meta, true ) : array();
+$easydam_meta_data      = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : '';
 
 // Build the video setup options for data-setup.
 $video_setup = wp_json_encode(
@@ -100,6 +99,18 @@ $video_setup = wp_json_encode(
 					</div>
 				<?php elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) : ?>
 					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
+						<?php if ( 'text' === $layer['cta_type'] ) : ?>
+							<a 
+								href="<?php echo esc_url( $layer['link'] ); ?>" 
+								target="_blank" 
+								rel="noopener noreferrer" 
+								class="cta-button"
+							>
+								<?php echo esc_html( $layer['text'] ); ?>
+							</a>
+						<?php elseif ( 'html' === $layer['cta_type'] && ! empty( $layer['html'] ) ) : ?>
+							<?php echo wp_kses_post( $layer['html'] ); ?>
+						<?php endif; ?>
 					</div>
 					<?php
 				endif;

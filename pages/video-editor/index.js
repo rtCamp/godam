@@ -132,7 +132,7 @@ const VideoEditor = () => {
 					</div>
 				</aside>
 
-				<main className="flex justify-center items-center p-4 relative">
+				<main className="flex justify-center items-center p-4 relative overflow-y-auto">
 					<Button
 						className="absolute right-4 top-5"
 						variant="primary"

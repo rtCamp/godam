@@ -62,16 +62,22 @@
   box-sizing: border-box;
   background: none;
   border-radius: 8px;
+  align-items: center;
 }
 
 .cta-button {
-  font-weight: bold;
   font-size: 3rem;
   text-decoration: none;
   outline: none;
 }
 .cta-button:hover {
   text-decoration: underline;
+}
+
+.easydam-layer {
+  color: black;
+  font-size: 3rem;
+  font-weight: 500;
 }
 
 .fullscreen-layer {
@@ -81,22 +87,7 @@
 }
 
 .fullscreen-layer .form-container {
-  width: fit-content;
-}
-
-.fullscreen-layer .form-container .gform_wrapper input[type=text],
-.fullscreen-layer .form-container .gform_wrapper input[type=email],
-.fullscreen-layer .form-container .gform_wrapper input[type=url],
-.fullscreen-layer .form-container .gform_wrapper input[type=password],
-.fullscreen-layer .form-container .gform_wrapper textarea {
-  width: 500px;
-  max-width: 500px;
-  box-sizing: border-box;
-}
-
-.form-container,
-.cta-button {
-  color: black;
+  width: max-content;
 }
 
 /*# sourceMappingURL=style-index.css.map*/
