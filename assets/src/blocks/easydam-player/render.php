@@ -87,10 +87,12 @@ $video_setup = wp_json_encode(
 				<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
 					<div class="form-container">
 						<?php
+							$theme = ! empty( $layer['template'] ) ? esc_attr( $layer['template'] ) : '';
 							echo do_shortcode(
 								sprintf(
-									"[gravityform id='%d' title='false' description='false' ajax='true']",
-									intval( $layer['gf_id'] )
+									"[gravityform id='%d' title='false' description='false' ajax='true'%s]",
+									intval( $layer['gf_id'] ),
+									$theme ? " theme='$theme'" : ''
 								)
 							);
 						?>
