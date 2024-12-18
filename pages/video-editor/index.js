@@ -1,12 +1,16 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { FastForwardFill } from 'react-bootstrap-icons';
 import { useSelector, useDispatch, Provider } from 'react-redux';
 import axios from 'axios';
+/**
+ * Internal dependencies
+ */
+import { initializeStore, saveVideoMeta } from './redux/slice/videoSlice';
 /**
  * Internal dependencies
  */
@@ -21,7 +25,7 @@ import SidebarLayers from './components/SidebarLayers';
 /**
  * WordPress dependencies
  */
-import { Button, TabPanel } from '@wordpress/components';
+import { Button, TabPanel, Snackbar } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 const VideoEditor = () => {
@@ -34,11 +38,13 @@ const VideoEditor = () => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ formHTML, setFormHTML ] = useState( null ); // Store fetched form HTML
 	const [ showForm, setShowForm ] = useState( false );
+	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
+	const cta = useSelector( ( state ) => state.videoReducer.cta );
 
 	const dispatch = useDispatch();
+	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
-
-	const [ viewedLayers, setViewedLayers ] = useState( [] );
+	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
 
 	useEffect( () => {
 		// Make sure the post ID is passed in the URL
@@ -61,6 +67,11 @@ const VideoEditor = () => {
 			.then( ( response ) => response.json() )
 			.then( ( data ) => {
 				setVideo( data );
+				let easydamMeta = data.easydam_meta;
+				if ( easydamMeta ) {
+					easydamMeta = JSON.parse( easydamMeta );
+					dispatch( initializeStore( easydamMeta ) );
+				}
 			} )
 			.catch( ( error ) => {
 				console.error( error );
@@ -76,14 +87,53 @@ const VideoEditor = () => {
 
 		if ( activeGFLayer ) {
 			player.pause(); // Pause the video
-			fetchGravityForm( 1 ); // Fetch Gravity Form with ID 1
+			fetchGravityForm( activeGFLayer.gf_id ); // Fetch Gravity Form with ID 1
 			setShowForm( true ); // Show overlay
 			setViewedLayers( [ ...viewedLayers, activeGFLayer.id ] );
 		}
 	};
 
+	const handleCtaTimeUpdate =
+		( player, time ) => {
+			setCurrentTime( time.toFixed( 2 ) );
+			// console.log("from function:", cta);
+
+			// Show CTA at a specific timestamp
+			if ( Math.floor( time ) >= 10 ) {
+				player.pause();
+				setShowForm( true );
+			}
+		};
+
+	const saveAttachmentMeta = () => {
+		// Update the attchment meta
+		const data = {
+			easydam_meta: { videoConfig, layers },
+		};
+
+		// update media meta via REST API
+		axios.post( `/wp-json/wp/v2/media/${ attachmentID }`, data, {
+			headers: {
+				'X-WP-Nonce': videoData.nonce,
+			},
+		} )
+			.then( ( response ) => {
+				if ( response.status === 200 ) {
+					// Dispatch the action to update the store
+					dispatch( saveVideoMeta() );
+					setShowSaveMessage( true );
+					setTimeout( () => {
+						setShowSaveMessage( false );
+					}, 2500 );
+				}
+			} )
+			.catch( ( error ) => {
+				console.error( error );
+			} );
+	};
+
 	// Fetch the Gravity Form HTML
-	const fetchGravityForm = async ( formId ) => {
+	const fetchGravityForm = ( formId ) => {
 		axios.get( `/wp-json/easydam/v1/gforms/${ formId }` )
 			.then( ( response ) => {
 				setFormHTML( response.data );
@@ -93,15 +143,35 @@ const VideoEditor = () => {
 			} );
 	};
 
+	useEffect( () => {
+		if ( 'text' === cta?.type ) {
+			const html = `<a href="${ cta.link }">${ cta.text }</a>`;
+			setFormHTML( html );
+		} else if ( 'html' === cta?.type ) {
+			setFormHTML( cta.html );
+		} else {
+			setFormHTML( '' );
+		}
+	}, [ cta ] );
+
+	const addLayer = ( time ) => {
+		const newLayer = {
+			id: uuidv4(),
+			timestamp: time,
+			type: [ 'Form', 'Layer', 'Ad' ][ Math.floor( Math.random() * 3 ) ],
+			content: 'New layer',
+		};
+
+		setLayers( [ ...layers, newLayer ] );
+	};
+
 	return (
 		<>
-
 			<div className="video-editor-container">
 				<aside className="py-3">
 					<div id="sidebar-content" className="border-b">
 						<TabPanel
-							onSelect={ () => {
-							} }
+							onSelect={ () => {} }
 							className="sidebar-tabs"
 							tabs={ [
 								{
@@ -112,8 +182,8 @@ const VideoEditor = () => {
 								},
 								{
 									name: 'video-settings',
-									title: 'Video appearance & controls',
-									component: null,
+									title: 'Player Settings',
+									component: <Appearance />,
 								},
 							] }
 						>
@@ -123,7 +193,23 @@ const VideoEditor = () => {
 				</aside>
 
 				<main className="flex justify-center items-center p-4 relative">
-					{ /* <Button className="absolute right-4 top-5" variant="primary" >{ __( 'Save', 'transcoder' ) }</Button> */ }
+					<Button
+						className="absolute right-4 top-5"
+						variant="primary"
+						disabled={ ! isChanged }
+						onClick={ saveAttachmentMeta }
+					>
+						{ __( 'Save', 'transcoder' ) }
+					</Button>
+
+					{
+						// Display a success message when video changes are saved
+						showSaveMessage && (
+							<Snackbar className="absolute bottom-4 right-4 opacity-70">
+								{ __( 'Video changes saved successfully', 'transcoder' ) }
+							</Snackbar>
+						)
+					}
 
 					{ video && (
 						<div className="max-w-[740px] w-full">
@@ -131,66 +217,81 @@ const VideoEditor = () => {
 
 							<div className="relative">
 								<VideoJSPlayer
-									options={
-										{
-											controls: true,
-											fluid: true,
-											preload: 'auto',
-											width: '100%',
-											sources: [ { src: video.source_url, type: video.mimeType } ],
-											muted: true,
-											controlBar: {
-												playToggle: true, // Play/Pause button
-												volumePanel: true,
-												currentTimeDisplay: true, // Current time
-												timeDivider: true, // Divider between current time and duration
-												durationDisplay: true, // Total duration
-												fullscreenToggle: true, // Full-screen button
-												subsCapsButton: true,
-												skipButtons: {
-													forward: 10,
-													backward: 10,
-												},
-												progressControl: {
-													vertical: true, // Prevent horizontal volume slider
-												},
+									options={ {
+										controls: true,
+										fluid: true,
+										preload: 'auto',
+										width: '100%',
+										sources: [ { src: video.source_url, type: video.mimeType } ],
+										muted: true,
+										controlBar: {
+											playToggle: true, // Play/Pause button
+											volumePanel: true,
+											currentTimeDisplay: true, // Current time
+											timeDivider: true, // Divider between current time and duration
+											durationDisplay: true, // Total duration
+											fullscreenToggle: true, // Full-screen button
+											subsCapsButton: true,
+											skipButtons: {
+												forward: 10,
+												backward: 10,
 											},
-										}
-									}
+											progressControl: {
+												vertical: true, // Prevent horizontal volume slider
+											},
+										},
+									} }
 									onTimeupdate={ handleTimeUpdate }
+									// onTimeupdate={ handleCtaTimeUpdate }
 								/>
 								{ /* Form Overlay */ }
-								{ showForm && (
+								{ /* { showForm && (
 									<div
-										className="absolute inset-0 bg-white bg-opacity-80 flex justify-center items-center overflow-y-auto"
+										style={ {
+											position: 'absolute',
+											top: '0',
+											left: '0',
+											right: '0',
+											bottom: '0',
+											zIndex: 999,
+											background: '#211F1F',
+											padding: '20px',
+											border: '2px solid black',
+											display: 'flex',
+											flexDirection: 'column',
+											justifyContent: 'center',
+											alignItems: 'center',
+										} }
 									>
 										<div className="max-w-[400px]">
-											<RenderDynamicContent content={ formHTML } />
+											<RenderDynamicContent
+												content={ formHTML }
+											/>
 											<button
 												className="absolute bottom-6 flex justify-center items-center gap-2 right-0 px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white"
 												onClick={ () => {
 													setShowForm( false ); // Hide form overlay
-													setLayers( layers.map( ( layer ) => {
-														if ( layer.timestamp === 5 ) {
-															return { ...layer, viewed: true };
-														}
-														return layer;
-													} ) );
+													setLayers(
+														layers.map( ( layer ) => {
+															if ( layer.timestamp === 5 ) {
+																return { ...layer, viewed: true };
+															}
+															return layer;
+														} ),
+													);
 												} }
 											>
 												Skip <FastForwardFill />
 											</button>
 										</div>
 									</div>
-								) }
+								) } */ }
 							</div>
 							<div className="mt-2">Timestamp: { currentTime }</div>
-
 						</div>
 					) }
 				</main>
 			</div>
-
 		</>
 	);
 };
@@ -237,9 +338,14 @@ const RenderDynamicContent = ( { content } ) => {
 		<div
 			dangerouslySetInnerHTML={ { __html: content } }
 			style={ { overflow: 'hidden' } }
+			className="overlay-content"
 		></div>
 	);
 };
+
+import Appearance from './components/appearance/Appearance';
+import LayerControls from './components/LayerControls';
+import { chevronRight } from '@wordpress/icons';
 
 const App = () => {
 	return (

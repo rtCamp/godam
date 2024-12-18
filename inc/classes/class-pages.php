@@ -114,6 +114,8 @@ class Pages {
 			wp_die( 'Invalid URL! please check that you are trying to edit correct media.' );
 		}
 
+
+
 		?>
 		<div id="root-video-editor">video editor root</div>
 		<?php
@@ -138,6 +140,7 @@ class Pages {
 			);
 
 			wp_enqueue_style( 'transcoder-page-style-easydam' );
+			wp_enqueue_media();
 		}
 
 		// Check if this is your custom admin page.
