@@ -61,22 +61,18 @@ const slice = createSlice( {
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
-			const { videoConfig, layers, skipTime, cta } = action.payload;
-
-			state.videoConfig = videoConfig;
+			const { videoConfig, layers, skipTime } = action.payload;
+			state.videoConfig = {
+				...state.videoConfig,
+				...videoConfig,
+				controlBar: {
+					...state.videoConfig.controlBar,
+					...videoConfig.controlBar, // Nested merge for controlBar
+				},
+			};
 			state.layers = layers;
 			state.isChanged = false;
 			state.skipTime = skipTime;
-			state.cta = {
-				id: 0,
-				type: 'text', // text, image, html
-				text: '',
-				imageID: 0,
-				link: '',
-				html: '',
-				duration: 0, //time in seconds
-				name: 'Text',
-			};
 		},
 		saveVideoMeta: ( state, action ) => {
 			state.isChanged = false;
@@ -98,9 +94,6 @@ const slice = createSlice( {
 			state.isChanged = true;
 		},
 		updateVideoConfig: ( state, action ) => {
-			const { field, value } = action.payload;
-			// state.videoConfig[ field ] = value;
-			console.log( action.payload );
 			state.videoConfig = { ...state.videoConfig, ...action.payload };
 			state.isChanged = true;
 		},
