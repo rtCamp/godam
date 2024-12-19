@@ -14,7 +14,7 @@ const slice = createSlice( {
 			width: '100%',
 			sources: [],
 			playbackRates: [ 0.5, 1, 1.5, 2 ],
-			captions: [
+			tracks: [
 				{
 					kind: 'captions',
 					src: 'https://dotsub.com/media/5d5f008c-b5d5-466f-bb83-2b3cfa997992/c/chi_hans/vtt',

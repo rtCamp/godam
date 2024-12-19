@@ -4,8 +4,6 @@
  *
  * Replace them with your own styles or remove the file completely.
  */
-
-
  .wp-block-trascoder-rt-player {
 	// Add your styles here.
 }
@@ -96,4 +94,71 @@
 
 .fullscreen-layer  .form-container{
 	width:max-content;
+}
+
+.vjs-control-bar {
+	background-color: var(--easydam-control-bar-color) !important;
+}
+
+.vjs-control:hover {
+	color: var(--easydam-control-hover-color) !important;
+	transform: scale(var(--easydam-control-hover-zoom));
+}
+
+.vjs-progress-control:hover {
+	transform: scale(1);
+}
+
+.vjs-big-play-button {
+	background-color: var(--easydam-control-bar-color) !important;
+	background-size: 100% 100% !important;
+	background-image: var(--easydam-custom-play-button-url) !important; //not working need to pass url() in php
+}
+
+.left-align {
+    left: 3em !important;
+}
+
+.right-align {
+    left:auto !important;
+    right:1.5em;
+}
+
+.top-align {
+    top: 1.5em !important;
+}
+
+.bottom-align {
+    top:auto !important;
+    bottom:1.5em;
+}
+
+.vjs-control-bar-vertical {
+    width: 10% !important;
+    height: 100% !important;
+    flex-direction: column;
+    overflow: scroll;
+}
+
+.vjs-control-vertical, .vjs-volume-control-vertical {
+    height: 6em !important;
+    width: 6em !important;
+}
+
+.vjs-volume-panel-vertical {
+    flex-direction: column;
+
+	button {
+		height: 50% !important;
+		left: 10px !important;
+	}
+}
+
+.vjs-custom-play-button {
+	// height: 6rem !important;
+	width: unset;
+
+	img {
+		width: 100%;
+	}
 }

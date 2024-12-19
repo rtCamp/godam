@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// header("Content-type: text/css; charset: UTF-8");
+
 // Block attributes.
 $autoplay      = ! empty( $attributes['autoplay'] );
 $controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
@@ -26,7 +28,9 @@ $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : arra
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 
 // Retrieve easydam_meta for the attachment id.
-$easydam_meta_data      = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : '';
+$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : 'empty';
+
+print_r( 'array' === gettype( $easydam_meta_data ) );
 
 // Build the video setup options for data-setup.
 $video_setup = wp_json_encode(
@@ -44,10 +48,23 @@ $video_setup = wp_json_encode(
 	)
 );
 
+if ( 'array' === gettype( $easydam_meta_data ) ) {
+	$easydam__control_bar_color      = $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'];
+	$easydam__control_hover_color    = $easydam_meta_data['videoConfig']['controlBar']['hoverColor'];
+	$easydam__control_hover_zoom     = $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'];
+	$easydam__custom_play_button_url = $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'];
+}
+
 ?>
 
 <?php if ( $src ) : ?>
-<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
+<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?> 
+	style="
+	--easydam-control-bar-color: <?php echo esc_textarea($easydam_meta_data['videoConfig']['controlBar']['appearanceColor']); ?>;
+	--easydam-control-hover-color: <?php echo esc_textarea($easydam_meta_data['videoConfig']['controlBar']['hoverColor']); ?>;
+	--easydam-control-hover-zoom: <?php echo esc_textarea(1 + $easydam_meta_data['videoConfig']['controlBar']['zoomLevel']); ?>;
+	--easydam-custom-play-button-url: <?php echo esc_url($easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg']); ?>
+	">
 	<div class="easydam-video-container">
 		<video
 			class="easydam-player video-js vjs-big-play-centered"
@@ -121,3 +138,7 @@ $video_setup = wp_json_encode(
 </figure>
 	<?php
 endif;
+?>
+<style>
+	
+</style>
