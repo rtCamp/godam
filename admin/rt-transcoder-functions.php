@@ -383,6 +383,23 @@ function rtt_generate_video_shortcode( $html, $send_id, $attachment ) {
 add_filter( 'media_send_to_editor', 'rtt_generate_video_shortcode', 100, 3 );
 
 /**
+ * Check if track status setting is enabled.
+ *
+ * This function retrieves the EasyDAM settings and checks the `track_status` value under the `general` section.
+ *
+ * @since 1.0.0
+ *
+ * @return boolean TRUE if track status is enabled, FALSE otherwise.
+ */
+function rtt_is_track_status_enabled() {
+	// Fetch EasyDAM settings from the database.
+	$easydam_settings = get_option( 'rt-easydam-settings', array() );
+
+	// Check and return the track_status value, defaulting to false if not set.
+	return ! empty( $easydam_settings['general']['track_status'] ) && $easydam_settings['general']['track_status'];
+}
+
+/**
  * Add the notice when file is sent for the transcoding and adds the poster thumbnail if poster tag is empty
  * This function also works as a backward compatibility for the rtAmazon S3 plugin
  *
@@ -458,7 +475,7 @@ function rtt_bp_get_activity_content( $content, $activity = null ) {
 			}
 			// If media is sent to the transcoder then show the message.
 			if ( is_file_being_transcoded( $media->media_id ) ) {
-				if ( current_user_can( 'manage_options' ) && '1' === get_option( 'rtt_client_check_status_button', false ) ) {
+				if ( current_user_can( 'manage_options' ) && rtt_is_track_status_enabled() ) {
 
 					$check_button_text = __( 'Check Status', 'transcoder' );
 
@@ -795,7 +812,7 @@ function rtt_enqueue_scripts() {
 	}
 }
 
-if ( '1' === get_option( 'rtt_client_check_status_button', false ) ) {
+if ( rtt_is_track_status_enabled() ) {
 	add_action( 'wp_enqueue_scripts', 'rtt_enqueue_scripts' );
 }
 add_action( 'admin_enqueue_scripts', 'rtt_enqueue_scripts' );
@@ -915,7 +932,7 @@ function rtt_add_transcoding_process_status_button_single_media_page( $rtmedia_i
 
 	if ( is_file_being_transcoded( $post_id ) ) {
 
-		if ( current_user_can( 'manage_options' ) && '1' === get_option( 'rtt_client_check_status_button', false ) ) {
+		if ( current_user_can( 'manage_options' ) && rtt_is_track_status_enabled() ) {
 			$message = sprintf(
 				'<div class="transcoding-in-progress"><button id="btn_check_status%1$s" class="btn_check_transcode_status" name="check_status_btn" data-value="%1$s">%2$s</button> <div class="transcode_status_box" id="span_status%1$s">%3$s</div></div>',
 				esc_attr( $post_id ),

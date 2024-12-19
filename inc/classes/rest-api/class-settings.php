@@ -237,6 +237,8 @@ class Settings extends Base {
 				'video_quality'        => '20',
 				'video_thumbnails'     => 5,
 				'overwrite_thumbnails' => false,
+				'watermark'            => false,
+				'watermark_text'       => '',
 			),
 			'image'   => array(
 				'sync_from_easydam' => false,
@@ -286,9 +288,9 @@ class Settings extends Base {
 	public function sanitize_settings( $settings ) {
 		$sanitized_settings = array(
 			'video'   => array(
-				'sync_from_easydam'    => filter_var( $settings['video']['sync_from_easydam'], FILTER_VALIDATE_BOOLEAN ),
-				'adaptive_bitrate'     => filter_var( $settings['video']['adaptive_bitrate'], FILTER_VALIDATE_BOOLEAN ),
-				'optimize_videos'      => filter_var( $settings['video']['optimize_videos'], FILTER_VALIDATE_BOOLEAN ),
+				'sync_from_easydam'    => rest_sanitize_boolean( $settings['video']['sync_from_easydam'] ),
+				'adaptive_bitrate'     => rest_sanitize_boolean( $settings['video']['adaptive_bitrate'] ),
+				'optimize_videos'      => rest_sanitize_boolean( $settings['video']['optimize_videos'] ),
 				'video_format'         => sanitize_text_field( $settings['video']['video_format'] ),
 				'video_quality'        => sanitize_text_field( $settings['video']['video_quality'] ),
 				'video_thumbnails'     => filter_var(
@@ -302,17 +304,19 @@ class Settings extends Base {
 						),
 					) 
 				),
-				'overwrite_thumbnails' => filter_var( $settings['video']['overwrite_thumbnails'], FILTER_VALIDATE_BOOLEAN ),
+				'overwrite_thumbnails' => rest_sanitize_boolean( $settings['video']['overwrite_thumbnails'] ),
+				'watermark'            => rest_sanitize_boolean( $settings['video']['watermark'] ),
+				'watermark_text'       => sanitize_text_field( $settings['video']['watermark_text'] ),
 			),
 			'image'   => array(
-				'sync_from_easydam' => filter_var( $settings['image']['sync_from_easydam'], FILTER_VALIDATE_BOOLEAN ),
-				'optimize_images'   => filter_var( $settings['image']['optimize_images'], FILTER_VALIDATE_BOOLEAN ),
+				'sync_from_easydam' => rest_sanitize_boolean( $settings['image']['sync_from_easydam'] ),
+				'optimize_images'   => rest_sanitize_boolean( $settings['image']['optimize_images'] ),
 				'image_format'      => sanitize_text_field( $settings['image']['image_format'] ),
 				'image_quality'     => sanitize_text_field( $settings['image']['image_quality'] ),
 			),
 			'general' => array(
-				'track_status' => filter_var( $settings['general']['track_status'], FILTER_VALIDATE_BOOLEAN ),
-				'is_verified'  => filter_var( $settings['general']['is_verified'], FILTER_VALIDATE_BOOLEAN ),
+				'track_status' => rest_sanitize_boolean( $settings['general']['track_status'] ),
+				'is_verified'  => rest_sanitize_boolean( $settings['general']['is_verified'] ),
 			),
 		);
 

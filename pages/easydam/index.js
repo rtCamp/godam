@@ -17,7 +17,7 @@ import { useState, useEffect } from '@wordpress/element';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
-	const [ isPremiumUser, setIsPremiumUser ] = useState( false ); // Should be initially set to false.
+	const [ isPremiumUser, setIsPremiumUser ] = useState( true ); // Should be initially set to false.
 	const [ mediaSettings, setMediaSettings ] = useState( null );
 	const [ licenseKey, setLicenseKey ] = useState( '' );
 	const [ isVerified, setIsVerified ] = useState( false ); // Tracks if the license is verified.
