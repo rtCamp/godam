@@ -145,7 +145,7 @@ class Settings extends Base {
 		// Handle success response.
 		if ( 200 === $status_code && isset( $body['data'] ) ) {
 			// Save the license key in the site options only if it is verified.
-			update_site_option( 'rt-easydam-api-key', $license_key );
+			update_site_option( 'rt-transcoding-api-key', $license_key );
 
 			return new \WP_REST_Response(
 				array(
@@ -185,7 +185,7 @@ class Settings extends Base {
 	 */
 	public function deactivate_license() {
 		// Delete the license key from the database.
-		$deleted = delete_site_option( 'rt-easydam-api-key' );
+		$deleted = delete_site_option( 'rt-transcoding-api-key' );
 
 		if ( $deleted ) {
 			return new \WP_REST_Response(
@@ -212,7 +212,7 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_license_key() {
-		$license_key = get_site_option( 'rt-easydam-api-key', '' );
+		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
 
 		return new \WP_REST_Response(
 			array(
