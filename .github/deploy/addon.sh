@@ -9,9 +9,9 @@ function main() {
     setup_hosts_file
 		check_branch_in_hosts_file
 		setup_ssh_access
+		maybe_install_submodules
 		maybe_install_node_dep
 		maybe_run_node_build
-		maybe_install_submodules
 		setup_wordpress_files
 		block_emails
 		deploy

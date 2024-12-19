@@ -16,10 +16,18 @@ jobs:
           echo 'Going to own a dir above the working dir.'
           bash -c "sudo chown -R $(whoami):$(whoami) \"$(dirname '${{ github.workspace }}')\""
       - uses: actions/checkout@v4
+      - name: Get node version
+        id: node-version
+        run: |
+          cd '${{ github.workspace }}'
+          NODE_VERSION="$(cat .nvmrc)"
+          echo "node_version=${NODE_VERSION}" >> "$GITHUB_ENV"
       - name: Deploy
         uses: rtcamp/action-deploy-wordpress@master
         env:
           SSH_PRIVATE_KEY: ${{ secrets.ED_DEPLOYMENT_KEY }}
+          NODE_VERISON: "${{ env.node_version }}"
+          NODE_BUILD_COMMAND: npm run build:prod
       - name: Cleanup
         if: always()
         uses: rtcamp/action-cleanup@master
