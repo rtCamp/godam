@@ -62,16 +62,32 @@
   box-sizing: border-box;
   background: none;
   border-radius: 8px;
+  align-items: center;
 }
 
 .cta-button {
-  font-weight: bold;
   font-size: 3rem;
   text-decoration: none;
   outline: none;
 }
 .cta-button:hover {
   text-decoration: underline;
+}
+
+.easydam-layer {
+  color: black;
+  font-size: 3rem;
+  font-weight: 500;
+}
+
+.fullscreen-layer {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+}
+
+.fullscreen-layer .form-container {
+  width: max-content;
 }
 
 /*# sourceMappingURL=style-index.css.map*/

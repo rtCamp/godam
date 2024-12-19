@@ -882,6 +882,10 @@ video {
   overflow: auto;
 }
 
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
 .\!truncate {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -931,11 +935,6 @@ video {
 .border-orange-300 {
   --tw-border-opacity: 1;
   border-color: rgb(253 186 116 / var(--tw-border-opacity, 1));
-}
-
-.bg-blue-500 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(59 130 246 / var(--tw-bg-opacity, 1));
 }
 
 .bg-blue-700 {
@@ -1342,11 +1341,6 @@ input, textarea, select {
 .first\:rounded-t-lg:first-child {
   border-top-left-radius: var(--radius);
   border-top-right-radius: var(--radius);
-}
-
-.hover\:bg-blue-700:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(29 78 216 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:bg-gray-50:hover {
