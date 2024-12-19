@@ -1,0 +1,8 @@
+master:
+  hostname: "easydam.rt.gw"
+  user: "root"
+  deploy_path: "/opt/easyengie/sites/easydam.rt.gw/app/htdocs/plugin"
+develop:
+  hostname: "easydam.rt.gw"
+  user: "root"
+  deploy_path: "/opt/easyengie/sites/easydam.rt.gw/app/htdocs/plugin"

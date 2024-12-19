@@ -1,0 +1,25 @@
+on:
+  push:
+    branches:
+      - master
+      - develop
+name: Deploy on Push
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: self-hosted
+    steps:
+      - name: Own the dir if not owned
+        shell: bash
+        run: |
+          echo "Current working dir: '$(pwd)'"
+          echo 'Going to own a dir above the working dir.'
+          bash -c "sudo chown -R $(whoami):$(whoami) \"$(dirname '${{ github.workspace }}')\""
+      - uses: actions/checkout@v4
+      - name: Deploy
+        uses: rtcamp/action-deploy-wordpress@master
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.ED_DEPLOYMENT_KEY }}
+      - name: Cleanup
+        if: always()
+        uses: rtcamp/action-cleanup@master
