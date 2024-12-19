@@ -658,7 +658,11 @@ function rtt_get_upload_dir() {
  */
 function rtt_is_override_thumbnail( $attachment_id = '' ) {
 
-	$rtt_override_thumbnail = get_option( 'rtt_override_thumbnail', false );
+	// Fetch EasyDAM settings directly.
+	$easydam_settings = get_option( 'rt-easydam-settings', array() );
+
+	// Return the 'overwrite_thumbnails' value, defaulting to false if not set.
+	$rtt_override_thumbnail = ! empty( $easydam_settings['video']['overwrite_thumbnails'] );
 
 	/**
 	 * Allow user to override the setting.

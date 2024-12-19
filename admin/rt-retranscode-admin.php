@@ -48,6 +48,8 @@ class RetranscodeMedia {
 		$this->stored_api_key = get_site_option( 'rt-transcoding-api-key-stored' );
 
 		$this->usage_info = get_site_option( 'rt-transcoding-usage' );
+		// Load Rest Endpoints.
+		$this->load_rest_endpoints();
 
 		// Do not activate re-transcoding without valid license key
 		// Or usage are fully utilized.
@@ -80,9 +82,6 @@ class RetranscodeMedia {
 
 		// Allow people to change what capability is required to use this feature.
 		$this->capability = apply_filters( 'retranscode_media_cap', 'manage_options' );
-
-		// Load Rest Endpoints.
-		$this->load_rest_endpoints();
 	}
 
 	/**

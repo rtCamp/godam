@@ -37,9 +37,9 @@
 		 The minimum version set here should be in line with the minimum WP version
 		 as set in the "Requires at least" tag in the readme.txt file. -->
 	<rule ref="WordPress.WP.DeprecatedFunctions">
-		<properties>
+		<!-- <properties>
 			<property name="minimum_supported_version" value="4.1" />
-		</properties>
+		</properties> -->
 	</rule>
 
 	<exclude-pattern>*/node_modules/*</exclude-pattern>
