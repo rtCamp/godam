@@ -42,15 +42,7 @@ function easyDAMPlayer() {
 				if ( layerElement ) {
 					layerElement.classList.add( 'hidden' ); // Initially hidden
 
-					if ( layer.type === 'cta' && layer.cta_type === 'text' ) {
-						const ctaButton = document.createElement( 'a' );
-						ctaButton.textContent = layer.text || 'Click Here';
-						ctaButton.href = layer.link || '#';
-						ctaButton.target = '_blank';
-						ctaButton.rel = 'noopener noreferrer';
-						ctaButton.classList.add( 'cta-button' );
-						layerElement.appendChild( ctaButton );
-					} else if ( layer.custom_css ) {
+					if ( layer.custom_css ) {
 						const styleElement = document.createElement( 'style' );
 						styleElement.textContent = layer.custom_css;
 						layerElement.appendChild( styleElement );
@@ -89,6 +81,22 @@ function easyDAMPlayer() {
 					}
 				}
 			}
+		} );
+
+		// Handle fullscreen mode for layers
+		player.on( 'fullscreenchange', () => {
+			const isFullscreen = player.isFullscreen();
+			const videoContainer = player.el();
+
+			formLayers.forEach( ( layerObj ) => {
+				if ( isFullscreen ) {
+					// Append layer to fullscreen container
+					videoContainer.appendChild( layerObj.layerElement );
+					layerObj.layerElement.classList.add( 'fullscreen-layer' );
+				} else {
+					layerObj.layerElement.classList.remove( 'fullscreen-layer' );
+				}
+			} );
 		} );
 
 		// Prevent video resume from external interactions
