@@ -33,7 +33,6 @@ class Pages {
 		 */
 		add_action( 'admin_menu', array( $this, 'add_admin_pages' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
 	}
 
@@ -103,18 +102,6 @@ class Pages {
 	 * @return void
 	 */
 	public function render_video_editor_page() {
-		// Check if the attachment_id is set.
-		$attachment_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore
-		if ( empty( $attachment_id ) ) {
-			wp_die( 'Invalid URL! please check that you are trying to edit correct media.' );
-		}
-
-		// Check if the attachment is video.
-		$attachment = get_post( $attachment_id );
-		if ( 'video' !== substr( $attachment->post_mime_type, 0, 5 ) ) {
-			wp_die( 'Invalid URL! please check that you are trying to edit correct media.' );
-		}
-
 		?>
 		<div id="root-video-editor">video editor root</div>
 		<?php
@@ -139,6 +126,7 @@ class Pages {
 			);
 
 			wp_enqueue_style( 'transcoder-page-style-easydam' );
+			wp_enqueue_media();
 		}
 
 		// Check if this is your custom admin page.

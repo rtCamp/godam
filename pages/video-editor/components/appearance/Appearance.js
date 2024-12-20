@@ -1,34 +1,52 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 /**
  * Internal dependencies
  */
-import EasyDAM from '../../../../assets/src/images/EasyDAM.png';
 import '../../video-control.css';
 /**
  * WordPress dependencies
  */
 import {
+	Button,
 	CheckboxControl,
 	ColorPicker,
 	CustomSelectControl,
 	RangeControl,
 } from '@wordpress/components';
-import { useDispatch } from 'react-redux';
-import { updateSkipTime } from '../../redux/slice/videoSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateVideoConfig } from '../../redux/slice/videoSlice';
 
 const Appearance = () => {
-	const [ volumePanel, setVolumePanel ] = useState( true );
-	const [ showBrandingIcon, setShowBrandingIcon ] = useState( false );
-	const [ showCaptions, setShowCaptions ] = useState( false );
 	const dispatch = useDispatch();
+	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
+	const [ selectedBrandImage, setSelectedBrandImage ] = useState( videoConfig.controlBar.customBrandImg.length > 0 );
+	const [ selectedCustomBgImg, setSelectedCustomBgImg ] = useState(
+		videoConfig.controlBar.customPlayBtnImg.length > 0,
+	);
+
+	useEffect(() => {
+		//class gets re added upon component load, so we need to remove it.
+		if ( videoConfig.controlBar.subsCapsButton ) {
+			document
+				.querySelector( '.vjs-subs-caps-button' )
+				.classList.remove( 'vjs-hidden' );
+		}
+	}, [] );
 
 	function handleVolumeToggle() {
-		setVolumePanel( ! volumePanel );
 		const volumeSlider = document.querySelector( '.vjs-volume-panel' );
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					volumePanel: ! videoConfig.controlBar.volumePanel,
+				},
+			} ),
+		);
 		if ( volumeSlider.classList.contains( 'hide' ) ) {
 			volumeSlider.classList.remove( 'hide' );
 			volumeSlider.classList.add( 'show' );
@@ -39,9 +57,16 @@ const Appearance = () => {
 	}
 
 	function handleCaptionsToggle() {
-		setShowCaptions( ! showCaptions );
 		const captionsButton = document.querySelector( '.vjs-subs-caps-button' );
-		captionsButton.classList.remove( 'vjs-hidden' ); //temp
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					subsCapsButton: ! videoConfig.controlBar.subsCapsButton,
+				},
+			} ),
+		);
+
 		if ( captionsButton.classList.contains( 'show' ) ) {
 			captionsButton.classList.add( 'hide' );
 			captionsButton.classList.remove( 'show' );
@@ -52,23 +77,35 @@ const Appearance = () => {
 	}
 
 	function handleBrandingToggle( e ) {
-		setShowBrandingIcon( ! showBrandingIcon );
-		const controlBar = document.querySelector( '.vjs-control-bar' );
-		const img = document.createElement( 'img' );
-		img.src = EasyDAM;
-		img.id = 'branding-icon';
-		img.alt = 'Branding';
 		const brandingLogo = document.querySelector( '#branding-icon' );
+		const controlBar = document.querySelector( '.vjs-control-bar' );
+
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					brandingIcon: ! videoConfig.controlBar.brandingIcon,
+				},
+			} ),
+		);
 
 		if ( brandingLogo ) {
 			controlBar.removeChild( brandingLogo );
 		} else {
-			controlBar.appendChild( img );
+			controlBar.appendChild( brandingLogo );
 		}
 	}
 
 	function handleControlColorChange( e ) {
 		const selectedColor = e;
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					appearanceColor: selectedColor,
+				},
+			} ),
+		);
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 		const bigPlayButton = document.querySelector( '.vjs-big-play-button' );
 		controlBar.style.setProperty(
@@ -85,6 +122,14 @@ const Appearance = () => {
 
 	function handleControlsHoverColor( e ) {
 		const selectedColor = e;
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					hoverColor: selectedColor,
+				},
+			} ),
+		);
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 		const controls = controlBar.querySelectorAll( '.vjs-control' );
 		controls.forEach( ( control ) => {
@@ -115,6 +160,15 @@ const Appearance = () => {
 	function handleControlsHoverZoomColor( e ) {
 		const selectedZoomVal = 1 + parseFloat( e );
 
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					zoomLevel: parseFloat( e ),
+				},
+			} ),
+		);
+
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 		const controls = controlBar.querySelectorAll( '.vjs-control' );
 
@@ -135,6 +189,15 @@ const Appearance = () => {
 	function handlePlayButtonPosition( e ) {
 		const playButton = document.querySelector( '.vjs-big-play-button' );
 
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					playButtonPosition: e.selectedItem.key,
+				},
+			} ),
+		);
+
 		if ( playButton ) {
 			const alignments = [
 				'left-align',
@@ -150,22 +213,73 @@ const Appearance = () => {
 		}
 	}
 
-	function handleUploadCustomBtnBg( e ) {
-		const file = e.target.files[ 0 ];
-		if ( file ) {
-			const reader = new FileReader();
-			reader.onload = function( e ) {
-				const playButtonElement = document.querySelector(
-					'.vjs-big-play-button',
-				);
+	const openCustomBtnImg = () => {
+		setSelectedCustomBgImg( true );
+		const fileFrame = wp.media( {
+			title: 'Select Custom Background Image',
+			button: {
+				text: 'Use this Background Image',
+			},
+			library: {
+				type: 'image', // Restrict to images only
+			},
+			multiple: false, // Disable multiple selection
+		} );
 
-				// Apply custom background via class
-				playButtonElement.style.backgroundImage = `url(${ e.target.result })`;
-				playButtonElement.classList.add( 'custom-bg' ); // Add the custom CSS class
-			};
-			reader.readAsDataURL( file );
-		}
-	}
+		fileFrame.on( 'select', function() {
+			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
+			const playButtonElement = document.querySelector( '.vjs-big-play-button' );
+
+			dispatch(
+				updateVideoConfig( {
+					controlBar: {
+						...videoConfig.controlBar,
+						customPlayBtnImg: attachment.url,
+					},
+				} ),
+			);
+
+			// Apply custom background via class
+			playButtonElement.style.backgroundImage = `url(${ attachment.url })`;
+			playButtonElement.classList.add( 'custom-bg' ); // Add the custom CSS class
+		} );
+
+		fileFrame.open();
+	};
+
+	const openBrandMediaPicker = () => {
+		setSelectedBrandImage( true );
+		const fileFrame = wp.media( {
+			title: 'Select Brand Image',
+			button: {
+				text: 'Use this brand image',
+			},
+			library: {
+				type: 'image', // Restrict to images only
+			},
+			multiple: false, // Disable multiple selection
+		} );
+
+		fileFrame.on( 'select', function() {
+			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
+			const brandImg = document.querySelector( '#branding-icon' );
+
+			dispatch(
+				updateVideoConfig( {
+					controlBar: {
+						...videoConfig.controlBar,
+						customBrandImg: attachment.url,
+					},
+				} ),
+			);
+
+			if ( brandImg ) {
+				brandImg.src = `${ attachment.url }`;
+			}
+		} );
+
+		fileFrame.open();
+	};
 
 	function handleUploadCustomBrandImg( e ) {
 		const file = e.target.files[ 0 ];
@@ -184,7 +298,17 @@ const Appearance = () => {
 
 	function handleSkipTimeSettings( e ) {
 		const selectedSkipVal = parseFloat( e.selectedItem.name );
-		dispatch( updateSkipTime( { selectedSkipVal } ) );
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+			  	skipButtons: {
+				  forward: selectedSkipVal,
+				  backward: selectedSkipVal,
+		  		},
+				},
+			} ),
+		);
 		const skipBackwardButton = document.querySelector(
 			'[class^="vjs-skip-backward-"]',
 		);
@@ -219,6 +343,14 @@ const Appearance = () => {
 
 	function handleControlBarPosition( e ) {
 		const selectedValue = e.selectedItem.key;
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					controlBarPosition: selectedValue,
+				},
+			} ),
+		);
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 		controlBar.classList.add( 'vjs-control-bar-vertical' );
 
@@ -261,7 +393,7 @@ const Appearance = () => {
 						<CheckboxControl
 							__nextHasNoMarginBottom
 							label="Show Volume Slider"
-							checked={ volumePanel }
+							checked={ videoConfig.controlBar.volumePanel }
 							onChange={ handleVolumeToggle }
 						/>
 					</div>
@@ -270,7 +402,7 @@ const Appearance = () => {
 							__nextHasNoMarginBottom
 							label="Display Captions"
 							onChange={ handleCaptionsToggle }
-							checked={ showCaptions }
+							checked={ videoConfig.controlBar.subsCapsButton }
 						/>
 					</div>
 					<div className="form-group flex items-center gap-10">
@@ -278,30 +410,31 @@ const Appearance = () => {
 							__nextHasNoMarginBottom
 							label="Show Branding"
 							onChange={ handleBrandingToggle }
-							checked={ showBrandingIcon }
+							checked={ videoConfig.controlBar.brandingIcon }
 						/>
 					</div>
 				</div>
-				{ showBrandingIcon && (
+				{ videoConfig.controlBar.brandingIcon && (
 					<div className="form-group">
 						<label
 							htmlFor="custom-play-button"
 							name="hover-slider"
 							className="font-bold"
 						>
-							Custom Brand Image:
+							Custom Brand Image
 						</label>
-						<input
-							type="file"
-							id="custom-play-button"
-							accept="image/*"
-							onChange={ handleUploadCustomBrandImg }
-						/>
+						<Button
+							onClick={ openBrandMediaPicker }
+							variant="primary"
+							className="ml-2"
+						>
+							{ selectedBrandImage ? 'Replace' : 'Upload' }
+						</Button>
 					</div>
 				) }
 				<div className="form-group">
 					<label htmlFor="control-position" className="font-bold">
-						Select Play Button Alignment:
+						Select Play Button Alignment
 					</label>
 					<CustomSelectControl
 						__next40pxDefaultSize
@@ -328,24 +461,16 @@ const Appearance = () => {
 								name: 'Right',
 							},
 						] }
+						value={ {
+							key: videoConfig.controlBar.playButtonPosition,
+							name: videoConfig.controlBar.playButtonPosition,
+						} }
 					/>
-				</div>
-				<div className="form-group">
-					<label name="toggle-color" className="font-bold">
-						Player Appearance:
-					</label>
-					<ColorPicker d="toggle-color" onChange={ handleControlColorChange } />
-				</div>
-				<div className="form-group">
-					<label name="hover-color" className="font-bold">
-						Select color on hover:
-					</label>
-					<ColorPicker d="toggle-color" onChange={ handleControlsHoverColor } />
 				</div>
 				<div className="form-group">
 					<div id="hover-control-container">
 						<label name="hover-slider" className="font-bold">
-							Icon zoom slider:
+							Icon zoom slider
 						</label>
 						<div className="hover-control-input-container">
 							<RangeControl
@@ -357,6 +482,7 @@ const Appearance = () => {
 								min={ 0 }
 								onChange={ handleControlsHoverZoomColor }
 								step={ 0.1 }
+								value={ videoConfig.controlBar.zoomLevel }
 							/>
 						</div>
 					</div>
@@ -367,18 +493,19 @@ const Appearance = () => {
 						name="hover-slider"
 						className="font-bold"
 					>
-						Custom Play Button:
+						Custom Play Button
 					</label>
-					<input
-						type="file"
-						id="custom-play-button"
-						accept="image/*"
-						onChange={ handleUploadCustomBtnBg }
-					/>
+					<Button
+						onClick={ openCustomBtnImg }
+						variant="primary"
+						className="ml-2"
+					>
+						{ selectedCustomBgImg ? 'Replace' : 'Upload' }
+					</Button>
 				</div>
 				<div className="form-group">
-					<label htmlFor="control-bar-position">
-						Adjust position of control bar :
+					<label htmlFor="control-bar-position" className="font-bold">
+						Adjust position of control bar
 					</label>
 
 					<CustomSelectControl
@@ -394,11 +521,15 @@ const Appearance = () => {
 								name: 'Vertical',
 							},
 						] }
+						value={ {
+							key: videoConfig.controlBar.controlBarPosition,
+							name: videoConfig.controlBar.controlBarPosition,
+						} }
 					/>
 				</div>
 				<div className="form-group">
 					<label htmlFor="control-skip-position" className="font-bold">
-						Adjust skip duration :
+						Adjust skip duration
 					</label>
 					<CustomSelectControl
 						__next40pxDefaultSize
@@ -417,6 +548,30 @@ const Appearance = () => {
 								name: '30',
 							},
 						] }
+						value={ {
+							key: videoConfig.controlBar.skipButtons.forward.toString(),
+							name: videoConfig.controlBar.skipButtons.forward.toString(),
+						} }
+					/>
+				</div>
+				<div className="form-group">
+					<label name="toggle-color" className="font-bold">
+						Player Appearance
+					</label>
+					<ColorPicker
+						d="toggle-color"
+						onChange={ handleControlColorChange }
+						color={ videoConfig.controlBar.appearanceColor }
+					/>
+				</div>
+				<div className="form-group">
+					<label name="hover-color" className="font-bold">
+						Select color on hover
+					</label>
+					<ColorPicker
+						d="toggle-color"
+						onChange={ handleControlsHoverColor }
+						color={ videoConfig.controlBar.hoverColor }
 					/>
 				</div>
 			</div>

@@ -52,3 +52,8 @@
 .components-custom-select-control__item-icon {
     display: none;
 }
+
+.overlay-content * {
+    font-size: 4rem;
+    color: #fff;
+}

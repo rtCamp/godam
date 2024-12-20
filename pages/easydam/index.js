@@ -6,27 +6,28 @@ import ReactDOM from 'react-dom';
 /**
  * Internal dependencies
  */
-import EasyDAM from './EasyDAM';
+import GeneralSettings from './GeneralSettings';
 import VideoSettings from './VideoSettings';
 import ImageSettings from './ImageSettings';
-import Analytics from './Analytics';
 
 /**
  * WordPress dependencies
  */
-import { useState } from '@wordpress/element';
-import { TextControl, TabPanel, SelectControl } from '@wordpress/components';
-import '@wordpress/components/build-style/style.css';
+import { useState, useEffect } from '@wordpress/element';
 
 const App = () => {
-	const [ activeTab, setActiveTab ] = useState( 'video-settings' );
+	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
+	const [ isPremiumUser, setIsPremiumUser ] = useState( false ); // Should be initially set to false.
+	const [ mediaSettings, setMediaSettings ] = useState( null );
+	const [ licenseKey, setLicenseKey ] = useState( '' );
+	const [ isVerified, setIsVerified ] = useState( false ); // Tracks if the license is verified.
 
 	const tabs = [
-		// {
-		// 	id: 'easydam',
-		// 	label: 'EasyDAM',
-		// 	component: EasyDAM,
-		// },
+		{
+			id: 'general-settings',
+			label: 'General Settings',
+			component: GeneralSettings,
+		},
 		{
 			id: 'video-settings',
 			label: 'Video settings',
@@ -37,12 +38,61 @@ const App = () => {
 			label: 'Image settings',
 			component: ImageSettings,
 		},
-		// {
-		// 	id: 'analytics',
-		// 	label: 'Analytics',
-		// 	component: Analytics,
-		// },
 	];
+
+	useEffect( () => {
+		const fetchSettings = async () => {
+			try {
+				const settingsResponse = await fetch( '/wp-json/easydam/v1/settings/easydam-settings', {
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': window.wpApiSettings.nonce,
+					},
+				} );
+				const licenseResponse = await fetch( '/wp-json/easydam/v1/settings/get-license-key', {
+					method: 'GET',
+					headers: {
+						'X-WP-Nonce': window.wpApiSettings.nonce,
+					},
+				} );
+
+				const settingsData = await settingsResponse.json();
+				const licenseData = await licenseResponse.json();
+
+				setMediaSettings( settingsData );
+				setLicenseKey( licenseData.license_key || '' ); // Save the license key
+				setIsVerified( settingsData?.general?.is_verified || false );
+			} catch ( error ) {
+				console.error( 'Failed to fetch data:', error );
+			}
+		};
+
+		fetchSettings();
+	}, [] );
+
+	const saveMediaSettings = async ( updatedSettings ) => {
+		try {
+			const response = await fetch( '/wp-json/easydam/v1/settings/easydam-settings', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.wpApiSettings.nonce,
+				},
+				body: JSON.stringify( { settings: updatedSettings } ),
+			} );
+
+			const result = await response.json();
+			if ( result.status === 'success' ) {
+				setMediaSettings( updatedSettings ); // Update local state
+				setIsVerified( updatedSettings?.general?.is_verified );
+				return true;
+			}
+			console.error( result.message );
+			return false;
+		} catch ( error ) {
+			console.error( 'Failed to save media settings:', error );
+		}
+	};
 
 	return (
 		<>
@@ -54,7 +104,9 @@ const App = () => {
 								<a
 									key={ tab.id }
 									href={ `#${ tab.id }` }
-									className={ `outline-none block p-4 border-gray-200 font-bold first:rounded-t-lg ${ activeTab === tab.id ? 'bg-indigo-500 text-white font-bold border-r-0 hover:text-white focus:text-white focus:ring-2' : '' }` }
+									className={ `outline-none block p-4 border-gray-200 font-bold first:rounded-t-lg ${ activeTab === tab.id ? 'bg-blue-700 text-white font-bold border-r-0 hover:text-white focus:text-white focus:ring-2' : '' } ${
+										tab.id !== 'general-settings' && ! isVerified ? 'opacity-50 pointer-events-none' : ''
+									}` }
 									onClick={ () => {
 										setActiveTab( tab.id );
 									} }
@@ -70,7 +122,15 @@ const App = () => {
 						<div className="w-full">
 							{
 								tabs.map( ( tab ) => (
-									activeTab === tab.id && <tab.component key={ tab.id } />
+									activeTab === tab.id &&
+									<tab.component
+										key={ tab.id }
+										isPremiumUser={ isPremiumUser }
+										mediaSettings={ mediaSettings }
+										saveMediaSettings={ saveMediaSettings }
+										licenseKey={ licenseKey }
+										setLicenseKey={ setLicenseKey }
+									/>
 								) )
 							}
 						</div>
@@ -78,7 +138,6 @@ const App = () => {
 							<a href="https://www.google.com" target="_blank" rel="noreferrer">Quick Analytics Share Link</a>
 						</div>
 					</div>
-
 				</div>
 			</div>
 		</>

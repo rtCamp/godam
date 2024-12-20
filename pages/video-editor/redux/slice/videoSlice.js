@@ -44,6 +44,15 @@ const slice = createSlice( {
 				progressControl: {
 					vertical: true, // Prevent horizontal volume slider
 				},
+				//custom controls
+				brandingIcon: false,
+				appearanceColor: '',
+				hoverColor: '',
+				zoomLevel: 1,
+				playButtonPosition: 'center',
+				controlBarPosition: 'horizontal',
+				customBrandImg: '',
+				customPlayBtnImg: '',
 			},
 		},
 		layers: [],
@@ -52,10 +61,20 @@ const slice = createSlice( {
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
-			const { videoConfig, layers } = action.payload;
-
-			state.videoConfig = videoConfig;
+			const { videoConfig, layers, skipTime } = action.payload;
+			state.videoConfig = {
+				...state.videoConfig,
+				...videoConfig,
+				controlBar: {
+					...state.videoConfig.controlBar,
+					...videoConfig.controlBar, // Nested merge for controlBar
+				},
+			};
 			state.layers = layers;
+			state.isChanged = false;
+			state.skipTime = skipTime;
+		},
+		saveVideoMeta: ( state, action ) => {
 			state.isChanged = false;
 		},
 		addLayer: ( state, action ) => {
@@ -75,8 +94,7 @@ const slice = createSlice( {
 			state.isChanged = true;
 		},
 		updateVideoConfig: ( state, action ) => {
-			const { field, value } = action.payload;
-			state.videoConfig[ field ] = value;
+			state.videoConfig = { ...state.videoConfig, ...action.payload };
 			state.isChanged = true;
 		},
 		updateSkipTime: ( state, action ) => {
@@ -87,7 +105,7 @@ const slice = createSlice( {
 } );
 
 export const {
-	initializeStore,
+	initializeStore, saveVideoMeta,
 	addLayer,
 	removeLayer,
 	updateLayerField,

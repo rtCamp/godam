@@ -8590,10 +8590,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var video_js_dist_video_js_css__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! video.js/dist/video-js.css */ "./node_modules/video.js/dist/video-js.css");
 /* harmony import */ var videojs_contrib_quality_menu__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! videojs-contrib-quality-menu */ "./node_modules/videojs-contrib-quality-menu/dist/videojs-contrib-quality-menu.es.js");
 
+/**
+ * External dependencies
+ */
 
 
 
 
+
+/**
+ * WordPress dependencies
+ */
 
 const VideoJS = props => {
   const videoRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
@@ -8606,9 +8613,9 @@ const VideoJS = props => {
     // Make sure Video.js player is only initialized once
     if (!playerRef.current) {
       // The Video.js player needs to be _inside_ the component el for React 18 Strict Mode.
-      const videoElement = document.createElement("video-js");
-      videoElement.classList.add("vjs-big-play-centered");
-      videoElement.classList.add("vjs-styles-dimensions");
+      const videoElement = document.createElement('video-js');
+      videoElement.classList.add('vjs-big-play-centered');
+      videoElement.classList.add('vjs-styles-dimensions');
       videoRef.current.appendChild(videoElement);
       const player = (playerRef.current = (0,video_js__WEBPACK_IMPORTED_MODULE_2__["default"])(videoElement, options), () => {
         onReady && onReady(player);
@@ -8637,8 +8644,8 @@ const VideoJS = props => {
     const player = playerRef.current;
     if (playerRef.current) {
       const playerEl = playerRef.current.el_;
-      let video = playerEl.querySelector('video');
-      video.addEventListener("loadedmetadata", () => {
+      const video = playerEl.querySelector('video');
+      video.addEventListener('loadedmetadata', () => {
         playerEl.style.paddingTop = `${video.videoHeight / video.videoWidth * 100}%`;
       });
     }
@@ -8841,9 +8848,7 @@ function VideoEdit({
   isSelected: isSingleSelected,
   attributes,
   className,
-  setAttributes,
-  insertBlocksAfter,
-  onReplace
+  setAttributes
 }) {
   const instanceId = (0,_wordpress_compose__WEBPACK_IMPORTED_MODULE_7__.useInstanceId)(VideoEdit);
   const videoPlayer = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)();
@@ -8862,7 +8867,6 @@ function VideoEdit({
     preload
   } = attributes;
   const [temporaryURL, setTemporaryURL] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(attributes.blob);
-  console.log(attributes);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     // Placeholder may be rendered.
     if (videoPlayer.current) {
@@ -9037,7 +9041,7 @@ function VideoEdit({
     variant: "tertiary"
   }, (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_6__.__)('Remove')))))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("figure", blockProps, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Disabled, {
     isDisabled: !isSingleSelected
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(H1, null, "HELLO"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_VideoJS__WEBPACK_IMPORTED_MODULE_12__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_VideoJS__WEBPACK_IMPORTED_MODULE_12__["default"], {
     options: {
       controls,
       autoplay,
