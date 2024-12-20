@@ -112,11 +112,21 @@ class Settings extends Base {
 		$blacklist   = rtt_get_blacklist_ip_addresses();
 		$remote_addr = rtt_get_remote_ip_address();
 
-		if ( empty( $license_key ) || in_array( wp_unslash( $remote_addr ), $blacklist, true ) ) {
+		if ( in_array( wp_unslash( $remote_addr ), $blacklist, true ) ) {
 			return new \WP_REST_Response(
 				array(
 					'status'  => 'error',
-					'message' => 'License key is required and Localhost not allowed.',
+					'message' => 'Localhost not allowed.',
+				),
+				400
+			);
+		}
+
+		if ( empty( $license_key ) ) {
+			return new \WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => 'License key is required.',
 				),
 				400
 			);
