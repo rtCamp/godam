@@ -7,12 +7,13 @@ import { useState } from '@wordpress/element';
 const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) => {
 	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( mediaSettings?.video?.sync_from_easydam || false );
 	const [ videoFormat, setVideoFormat ] = useState( mediaSettings?.video?.video_format || 'auto' );
-	const [ disableWatermark, setDisableWatermark ] = useState( isPremiumUser );
+	const [ disableWatermark, setDisableWatermark ] = useState( mediaSettings?.video?.watermark !== undefined ? ! mediaSettings.video.watermark : true );
 	const [ adaptiveBitrate, setAdaptiveBitrate ] = useState( mediaSettings?.video?.adaptive_bitrate || false );
 	const [ optimizeVideos, setOptimizeVideos ] = useState( mediaSettings?.video?.optimize_videos || false );
 	const [ videoQuality, setVideoQuality ] = useState( mediaSettings?.video?.video_quality || '20' );
 	const [ videoThumbnails, setVideoThumbnails ] = useState( mediaSettings?.video?.video_thumbnails || 5 );
 	const [ overwriteThumbnails, setOverwriteThumbnails ] = useState( mediaSettings?.video?.overwrite_thumbnails || false );
+	const [ watermarkText, setWatermarkText ] = useState( mediaSettings?.video?.watermark_text || '' );
 
 	const [ selectedMedia, setSelectedMedia ] = useState( null );
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
@@ -74,7 +75,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 
 	const handleSaveSettings = async () => {
 		const updatedSettings = {
-			...mediaSettings, // Spread the existing media settings to retain other properties
+			...mediaSettings,
 			video: {
 				sync_from_easydam: syncFromEasyDAM,
 				video_format: videoFormat,
@@ -83,6 +84,8 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 				video_quality: videoQuality,
 				video_thumbnails: videoThumbnails,
 				overwrite_thumbnails: overwriteThumbnails,
+				watermark: ! disableWatermark,
+				watermark_text: watermarkText,
 			},
 		};
 
@@ -224,7 +227,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 
 				<hr />
 
-				<div className="py-3 flex flex-col gap-2 opacity-90 relative px-3 mt-3">
+				<div className="py-3 flex flex-col gap-2 opacity-90 relative mt-3">
 					{ ! isPremiumUser && (
 						<div className="absolute bg-orange-400 bg-opacity-10 inset-0 rounded-lg border border-orange-200">
 							<button
@@ -244,23 +247,37 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 						onChange={ ( value ) => setDisableWatermark( value ) }
 						disabled={ ! isPremiumUser }
 					/>
-					{ isPremiumUser && ! disableWatermark && (
-						<div className="mt-4">
-							<Button isPrimary onClick={ openMediaPicker }>
-								{ selectedMedia ? 'Change Watermark' : 'Select Watermark' }
-							</Button>
-							{ selectedMedia && (
-								<div className="mt-2">
-									<img
-										src={ selectedMedia.url }
-										alt={ selectedMedia.alt || 'Selected watermark' }
-										className="max-w-[200px]"
-									/>
-								</div>
-							) }
-						</div>
-					) }
 					<div className="text-slate-500">If enabled, Transcoder will add a watermark to the transcoded video. This feature is only available for paid subscriptions.</div>
+					{ isPremiumUser && ! disableWatermark && (
+						<>
+							<div className="mt-4">
+								<Button isPrimary onClick={ openMediaPicker }>
+									{ selectedMedia ? 'Change Watermark' : 'Select Watermark' }
+								</Button>
+								{ selectedMedia && (
+									<div className="mt-2">
+										<img
+											src={ selectedMedia.url }
+											alt={ selectedMedia.alt || 'Selected watermark' }
+											className="max-w-[200px]"
+										/>
+									</div>
+								) }
+							</div>
+							<div className="py-3 flex flex-col gap-2">
+								<label className="block text-base font-semibold" htmlFor="watermark_text">Watermark Text</label>
+								<TextControl
+									__next40pxDefaultSize
+									__nextHasNoMarginBottom
+									value={ watermarkText }
+									onChange={ ( value ) => setWatermarkText( value ) }
+									placeholder="Enter watermark text"
+									className="max-w-[400px]"
+								/>
+								<div className="text-slate-500">Specify the watermark text that will be added to transcoded videos.</div>
+							</div>
+						</>
+					) }
 				</div>
 				{ isModalOpen && (
 					<Modal
