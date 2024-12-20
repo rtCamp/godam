@@ -53,5 +53,6 @@
 	<exclude-pattern>*.asset.php</exclude-pattern>
 	<exclude-pattern>*/.github/*</exclude-pattern>
 	<exclude-pattern>*/.lando/*</exclude-pattern>
-
+ 	<exclude-pattern>build/*</exclude-pattern>
+    <exclude-pattern>assets/build/*</exclude-pattern>
 </ruleset>
