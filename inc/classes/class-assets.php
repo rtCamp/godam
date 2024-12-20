@@ -80,6 +80,11 @@ class Assets {
 			true
 		);
 
+
+		wp_localize_script( 'easydam-script', 'MediaLibraryTaxonomyFilterData', array(
+			'terms'     => get_terms( 'media-folder', array( 'hide_empty' => false ) ),
+		) );
+
 		wp_register_style(
 			'easydam-style',
 			RT_TRANSCODER_URL . '/assets/build/css/admin.css',

@@ -193,7 +193,7 @@ class Pages {
 			wp_register_script(
 				'media-library-react',
 				RT_TRANSCODER_URL . '/pages/build/media-library.js',
-				array( 'wp-element' ),
+				array( 'wp-element', 'wp-i18n' ),
 				filemtime( RT_TRANSCODER_PATH . '/pages/build/media-library.js' ),
 				true
 			);

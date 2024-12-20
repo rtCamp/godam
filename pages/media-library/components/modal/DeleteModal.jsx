@@ -12,7 +12,8 @@ import { Button, ButtonGroup, Modal } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { closeModal, deleteFolder } from '../../redux/slice/folders';
+import { closeModal, deleteFolder, updateSnackbar } from '../../redux/slice/folders';
+import { useDeleteFolderMutation } from '../../redux/api/folders';
 
 const DeleteModal = () => {
 	const dispatch = useDispatch();
@@ -20,8 +21,29 @@ const DeleteModal = () => {
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.delete );
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
 
-	const handleSubmit = () => {
-		dispatch( deleteFolder() );
+	const [ deleteFolderMutation, { isError, isLoading } ] = useDeleteFolderMutation();
+
+	const handleSubmit = async () => {
+		try {
+			await deleteFolderMutation( selectedFolder.id );
+
+			dispatch( deleteFolder() );
+
+			dispatch( updateSnackbar(
+				{
+					message: 'Folder deleted successfully',
+					type: 'success',
+				},
+			) );
+		} catch ( error ) {
+			dispatch( updateSnackbar(
+				{
+					message: 'Failed to delete folder',
+					type: 'error',
+				},
+			) );
+		}
+
 		dispatch( closeModal( 'delete' ) );
 	};
 

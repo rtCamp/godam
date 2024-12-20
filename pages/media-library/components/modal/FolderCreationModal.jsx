@@ -12,10 +12,13 @@ import { TextControl, Button, ButtonGroup, Modal } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { closeModal, createFolder } from '../../redux/slice/folders';
+import { closeModal, createFolder, updateSnackbar } from '../../redux/slice/folders';
+import { useCreateFolderMutation } from '../../redux/api/folders';
 
 const FolderCreationModal = () => {
 	const [ folderName, setFolderName ] = useState( '' );
+
+	const [ createFolderMutation, { isError, isLoading } ] = useCreateFolderMutation();
 
 	const dispatch = useDispatch();
 
@@ -27,8 +30,27 @@ const FolderCreationModal = () => {
 		}
 	}, [ isOpen ] );
 
-	const handleSubmit = () => {
-		dispatch( createFolder( { name: folderName } ) );
+	const handleSubmit = async () => {
+		try {
+			await createFolderMutation( { name: folderName } ).unwrap();
+
+			dispatch( createFolder( { name: folderName } ) );
+
+			dispatch( updateSnackbar(
+				{
+					message: 'Folder created successfully',
+					type: 'success',
+				},
+			) );
+		} catch ( error ) {
+			dispatch( updateSnackbar(
+				{
+					message: 'Failed to create folder',
+					type: 'error',
+				},
+			) );
+		}
+
 		dispatch( closeModal( 'folderCreation' ) );
 	};
 

@@ -3,21 +3,21 @@
  */
 import { createSlice } from '@reduxjs/toolkit';
 
-/**
- * Internal dependencies
- */
-import data from '../../data/treeArray';
-
 const slice = createSlice( {
 	name: 'folder',
 	initialState: {
-		folders: data,
+		folders: [],
 		selectedFolder: null,
 
 		modals: {
 			folderCreation: false,
 			rename: false,
 			delete: false,
+		},
+
+		snackbar: {
+			message: '',
+			type: 'success',
 		},
 	},
 	reducers: {
@@ -35,6 +35,10 @@ const slice = createSlice( {
 			if ( state.modals.hasOwnProperty( modalName ) ) {
 				state.modals[ modalName ] = false;
 			}
+		},
+		updateSnackbar: ( state, action ) => {
+			state.snackbar.message = action.payload.message;
+			state.snackbar.type = action.payload.type;
 		},
 		toggleOpenClose: ( state, action ) => {
 			const folder = state.folders.find( ( item ) => item.id === action.payload.id );
@@ -96,6 +100,7 @@ export const {
 	changeSelectedFolder,
 	openModal,
 	closeModal,
+	updateSnackbar,
 	toggleOpenClose,
 	createFolder,
 	renameFolder,

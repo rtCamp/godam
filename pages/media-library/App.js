@@ -58,23 +58,17 @@ const App = () => {
 
 			<div className="w-full flex flex-col gap-2 mb-2">
 				<button
-					className="flex justify-between items-center w-full"
-					onClick={ () => dispatch( changeSelectedFolder( { item: null } ) ) }
+					className="flex justify-between items-center w-full p-2"
+					onClick={ () => dispatch( changeSelectedFolder( { item: -1 } ) ) }
 				>
 					<p className="text-sm text-black">{ __( 'All Media', 'transcoder' ) }</p>
-					<span className="text-sm text-gray-500 p-1 rounded bg-gray-300">
-						1,000
-					</span>
 				</button>
 
 				<button
-					className="flex justify-between items-center w-full"
-					onClick={ () => dispatch( changeSelectedFolder( { item: null } ) ) }
+					className="flex justify-between items-center w-full p-2 rounded-md bg-gray-200"
+					onClick={ () => dispatch( changeSelectedFolder( { item: 0 } ) ) }
 				>
 					<p className="text-sm text-black">{ __( 'Uncategorized', 'transcoder' ) }</p>
-					<span className="text-sm text-gray-500 p-1 rounded bg-gray-300">
-						55
-					</span>
 				</button>
 			</div>
 

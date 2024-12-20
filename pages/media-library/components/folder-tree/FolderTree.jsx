@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { closestCenter, DndContext, DragOverlay, MouseSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -16,14 +16,26 @@ import TreeItemPreview from './TreeItemPreview.jsx';
 import { setTree } from '../../redux/slice/folders.js';
 import { utilities } from '../../data/utilities';
 
+import { useGetFoldersQuery, useUpdateFolderMutation } from '../../redux/api/folders.js';
+import SnackbarComp from './SnackbarComp.jsx';
+
 const FolderTree = () => {
+	const { data: folders, error, isLoading } = useGetFoldersQuery();
+
+	const dispatch = useDispatch();
 	const data = useSelector( ( state ) => state.FolderReducer.folders );
+
+	const [ updateFolderMutation, { isError, isLoading: isUpdating } ] = useUpdateFolderMutation();
+
+	useEffect( () => {
+		if ( folders ) {
+			dispatch( setTree( folders ) );
+		}
+	}, [ dispatch, folders ] );
 
 	const [ activeId, setActiveId ] = useState( null );
 	const [ overId, setOverId ] = useState( null );
 	const [ offsetLeft, setOffsetLeft ] = useState( 0 );
-
-	const dispatch = useDispatch();
 
 	const flattenData = useMemo( () => utilities.flattenTree( utilities.buildTree( data ) ), [ data ] );
 
@@ -52,7 +64,7 @@ const FolderTree = () => {
 		setOverId( over?.id ?? null );
 	}
 
-	function handleDragEnd( { active, over } ) {
+	async function handleDragEnd( { active, over } ) {
 		resetState();
 
 		if ( projected && over ) {
@@ -69,6 +81,8 @@ const FolderTree = () => {
 			const overIndex = clonedItems.findIndex( ( { id } ) => id === over.id );
 			const activeIndex = clonedItems.findIndex( ( { id } ) => id === active.id );
 			const activeTreeItem = clonedItems[ activeIndex ];
+
+			await updateFolderMutation( { ...activeTreeItem, parent } );
 
 			clonedItems[ activeIndex ] = { ...activeTreeItem, depth, parent };
 
@@ -100,6 +114,14 @@ const FolderTree = () => {
 		mouseSensor,
 		pointerSensor,
 	);
+
+	if ( isLoading ) {
+		return <div>Loading...</div>;
+	}
+
+	if ( error ) {
+		return <div>Error: { error.message }</div>;
+	}
 
 	return (
 		<DndContext
@@ -138,6 +160,9 @@ const FolderTree = () => {
 					</div>
 				) : null }
 			</DragOverlay>
+
+			<SnackbarComp />
+
 		</DndContext>
 	);
 };
