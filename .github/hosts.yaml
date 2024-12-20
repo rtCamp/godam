@@ -3,6 +3,6 @@ master:
   user: "root"
   deploy_path: "/opt/easyengie/sites/easydam.rt.gw/app/htdocs/plugin"
 develop:
-  hostname: "easydam.rt.gw"
+  hostname: "easydam-dev.rt.gw"
   user: "root"
-  deploy_path: "/opt/easyengie/sites/easydam.rt.gw/app/htdocs/plugin"
+  deploy_path: "/opt/easyengie/sites/easydam-dev.rt.gw/app/htdocs/plugin"
