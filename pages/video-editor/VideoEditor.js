@@ -63,23 +63,6 @@ const VideoEditor = ( { attachmentID } ) => {
 			.catch( ( error ) => {
 				console.error( error );
 			} );
-
-		// const currentUrl = window.location.href;
-		// fetch( currentUrl, {
-		// 	method: 'POST',
-		// 	headers: {
-		// 		'X-WP-Nonce': videoData.nonce,
-		// 	},
-        //     body: JSON.stringify( { gf_id: 1 } ),
-		// } )
-		// 	.then( ( response ) => response.json() )
-		// 	.then( ( data ) => {
-		// 		console.log(data);
-                
-		// 	} )
-		// 	.catch( ( error ) => {
-		// 		console.error( error );
-		// 	} );
 	}, [] );
 
 	const handleTimeUpdate = ( player, time ) => {
@@ -191,7 +174,6 @@ const VideoEditor = ( { attachmentID } ) => {
 										},
 									} }
 									onTimeupdate={ handleTimeUpdate }
-									// onTimeupdate={ handleCtaTimeUpdate }
 								/>
 							</div>
 							<div className="mt-2">Timestamp: { currentTime }</div>
