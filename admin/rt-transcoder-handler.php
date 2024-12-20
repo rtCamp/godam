@@ -186,14 +186,10 @@ class RT_Transcoder_Handler {
 						// Enable re-transcoding.
 						include_once RT_TRANSCODER_PATH . 'admin/rt-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
-						// if ( $usage_info[ $this->api_key ]->remaining < 524288000 && ! get_site_option( 'rt-transcoding-usage-limit-mail' ) ) {
-						// $this->nearing_usage_limit( $usage_info );
-						// } elseif ( $usage_info[ $this->api_key ]->remaining > 524288000 && get_site_option( 'rt-transcoding-usage-limit-mail' ) ) {
-						// update_site_option( 'rt-transcoding-usage-limit-mail', 0 );
-						// }
-						// if ( strtotime( $usage_info[ $this->api_key ]->plan->expires ) > time() ) {
-						// add_filter( 'wp_generate_attachment_metadata', array( $this, 'wp_media_transcoding' ), 21, 2 );
-						// }
+						
+						if ( 'Active' === $usage_info[ $this->api_key ]->status ) {
+							add_filter( 'wp_generate_attachment_metadata', array( $this, 'wp_media_transcoding' ), 21, 2 );
+						}
 
 						/* Do not let the user to upload non supported media types on localhost */
 						$blacklist   = rtt_get_blacklist_ip_addresses();
@@ -213,10 +209,6 @@ class RT_Transcoder_Handler {
 		add_action( 'wp_ajax_rt_disable_transcoding', array( $this, 'disable_transcoding' ), 1 );
 		add_action( 'wp_ajax_rt_enable_transcoding', array( $this, 'enable_transcoding' ), 1 );
 		add_action( 'add_attachment', array( $this, 'after_upload_pdf' ) );
-		add_filter( 'wp_generate_attachment_metadata', array( $this, 'wp_media_transcoding' ), 21, 2 );
-		add_filter( 'rtmedia_plupload_files_filter', array( $this, 'allowed_types' ), 10, 1 );
-		add_filter( 'rtmedia_allowed_types', array( $this, 'allowed_types_admin_settings' ), 10, 1 );
-		add_filter( 'rtmedia_valid_type_check', array( $this, 'bypass_video_audio' ), 10, 2 );
 	}
 
 	/**
@@ -229,6 +221,7 @@ class RT_Transcoder_Handler {
 	 * @param string $autoformat        If true then generating thumbs only else trancode video.
 	 */
 	public function wp_media_transcoding( $wp_metadata, $attachment_id, $autoformat = true ) {
+
 		if ( empty( $wp_metadata['mime_type'] ) ) {
 			return $wp_metadata;
 		}

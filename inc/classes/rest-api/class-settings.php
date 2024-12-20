@@ -109,11 +109,14 @@ class Settings extends Base {
 	public function verify_license( $request ) {
 		$license_key = $request->get_param( 'license_key' );
 
-		if ( empty( $license_key ) ) {
+		$blacklist   = rtt_get_blacklist_ip_addresses();
+		$remote_addr = rtt_get_remote_ip_address();
+
+		if ( empty( $license_key ) || in_array( wp_unslash( $remote_addr ), $blacklist, true ) ) {
 			return new \WP_REST_Response(
 				array(
 					'status'  => 'error',
-					'message' => 'License key is required.',
+					'message' => 'License key is required and Localhost not allowed.',
 				),
 				400
 			);
@@ -146,6 +149,10 @@ class Settings extends Base {
 		if ( 200 === $status_code && isset( $body['data'] ) ) {
 			// Save the license key in the site options only if it is verified.
 			update_site_option( 'rt-transcoding-api-key', $license_key );
+			update_site_option( 'rt-transcoding-api-key-stored', $license_key );
+
+			$usage_data = $body['data'];
+			update_site_option( 'rt-transcoding-usage', array( $license_key => $usage_data ) );
 
 			return new \WP_REST_Response(
 				array(
