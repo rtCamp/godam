@@ -1,206 +1,106 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { v4 as uuidv4 } from 'uuid';
-import { FastForwardFill } from 'react-bootstrap-icons';
-import { useSelector, useDispatch, Provider } from 'react-redux';
-import axios from 'axios';
-/**
- * Internal dependencies
- */
-import { initializeStore, saveVideoMeta } from './redux/slice/videoSlice';
+import { Provider } from 'react-redux';
+
 /**
  * Internal dependencies
  */
 import store from './redux/store';
-
-/**
- * Internal dependencies
- */
-import VideoJSPlayer from './VideoJSPlayer';
-import SidebarLayers from './components/SidebarLayers';
+import VideoEditor from './VideoEditor';
 
 /**
  * WordPress dependencies
  */
-import { Button, TabPanel, Snackbar } from '@wordpress/components';
+import { Button, Icon } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { edit, media } from '@wordpress/icons';
 
-const VideoEditor = () => {
-	// Get the current post ID from the URL query string
-	const urlParams = new URLSearchParams( window.location.search );
-	const attachmentID = urlParams.get( 'id' );
-	const videoData = window.videoData;
-
-	const [ video, setVideo ] = useState( null );
-	const [ currentTime, setCurrentTime ] = useState( 0 );
-	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
-
-	const dispatch = useDispatch();
-	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
-	const layers = useSelector( ( state ) => state.videoReducer.layers );
-	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
+const Frontpage = () => {
+	const [ attachmentID, setAttachmentID ] = useState( null );
 
 	useEffect( () => {
-		// Make sure the post ID is passed in the URL
-		if ( ! attachmentID ) {
-			return;
-		}
+		// Check if the attachment ID is present in the URL
+		const urlParams = new URLSearchParams( window.location.search );
+		const id = urlParams.get( 'id' );
 
-		// Collapse the admin sidebar
-		const body = document.querySelector( 'body' );
-		if ( body ) {
-			body.classList.add( 'folded' );
+		// Check if valid attachment ID is present
+		if ( id && ! isNaN( id ) ) {
+			setAttachmentID( id );
 		}
-
-		// Get the post data
-		fetch( `/wp-json/wp/v2/media/${ attachmentID }`, {
-			headers: {
-				'X-WP-Nonce': videoData.nonce,
-			},
-		} )
-			.then( ( response ) => response.json() )
-			.then( ( data ) => {
-				setVideo( data );
-				let easydamMeta = data.easydam_meta;
-				if ( easydamMeta ) {
-					dispatch( initializeStore( easydamMeta ) );
-				}
-			} )
-			.catch( ( error ) => {
-				console.error( error );
-			} );
 	}, [] );
 
-	const handleTimeUpdate = ( player, time ) => {
-		// Round the current time to 2 decimal places
-		setCurrentTime( time.toFixed( 2 ) );
+	const OpenVideoSelector = () => {
+		const fileFrame = wp.media( {
+			title: 'Select Brand Image',
+			button: {
+				text: __( 'Edit video', 'transcoder' ),
+			},
+			library: {
+				type: 'video', // Restrict to images only
+			},
+			multiple: false, // Disable multiple selection
+		} );
+
+		fileFrame.on( 'select', function() {
+			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
+
+			// Create a new URLSearchParams object from the current URL
+			const urlParams = new URLSearchParams( window.location.search );
+
+			// Set or update the search parameter
+			urlParams.set( 'id', attachment.id );
+
+			// Update the browser's URL without reloading the page
+			const newUrl = `${ window.location.pathname }?${ urlParams.toString() }`;
+			window.history.replaceState( null, '', newUrl );
+
+			setAttachmentID( attachment.id );
+		} );
+
+		fileFrame.open();
 	};
 
-	const saveAttachmentMeta = () => {
-		// Update the attchment meta
-		const data = {
-			easydam_meta: { videoConfig, layers },
-		};
-		// update media meta via REST API
-		axios.post( `/wp-json/wp/v2/media/${ attachmentID }`, data, {
-			headers: {
-				'X-WP-Nonce': videoData.nonce,
-			},
-		} )
-			.then( ( response ) => {
-				if ( response.status === 200 ) {
-					// Dispatch the action to update the store
-					dispatch( saveVideoMeta() );
-					setShowSaveMessage( true );
-					setTimeout( () => {
-						setShowSaveMessage( false );
-					}, 2500 );
-				}
-			} )
-			.catch( ( error ) => {
-				console.error( error );
-			} );
-	};
+	if ( ! attachmentID ) {
+		return (
+			<>
+				<div className="flex justify-center items-center h-screen">
+					<div className="flex flex-col items-center justify-center">
+
+						<Icon style={ {
+							fill: '#6b7280',
+						} } icon={ media } size={ 140 } />
+						<h2 className="text-gray-500">{ __( 'No video is selected', 'transcoder' ) }</h2>
+
+						<Button
+							className="mt-4"
+							variant="primary"
+							onClick={ OpenVideoSelector }
+							icon={ edit }
+							iconPosition="right"
+						>
+							{ __( 'Select Video to Edit', 'transcoder' ) }
+						</Button>
+					</div>
+				</div>
+			</>
+		);
+	}
 
 	return (
 		<>
-			<div className="video-editor-container">
-				<aside className="py-3">
-					<div id="sidebar-content" className="border-b">
-						<TabPanel
-							onSelect={ () => {} }
-							className="sidebar-tabs"
-							tabs={ [
-								{
-									name: 'layers',
-									title: 'Layers',
-									className: 'flex-1 justify-center items-center',
-									component: <SidebarLayers currentTime={ currentTime } />,
-								},
-								{
-									name: 'video-settings',
-									title: 'Player Settings',
-									component: <Appearance />,
-								},
-							] }
-						>
-							{ ( tab ) => tab.component }
-						</TabPanel>
-					</div>
-				</aside>
-
-				<main className="flex justify-center items-center p-4 relative overflow-y-auto">
-					<Button
-						className="absolute right-4 top-5"
-						variant="primary"
-						disabled={ ! isChanged }
-						onClick={ saveAttachmentMeta }
-					>
-						{ __( 'Save', 'transcoder' ) }
-					</Button>
-
-					{
-						// Display a success message when video changes are saved
-						showSaveMessage && (
-							<Snackbar className="absolute bottom-4 right-4 opacity-70">
-								{ __( 'Video changes saved successfully', 'transcoder' ) }
-							</Snackbar>
-						)
-					}
-
-					{ video && (
-						<div className="max-w-[740px] w-full">
-							<h1 className="text-slate-700 mb-1">{ video.title.rendered }</h1>
-
-							<div className="relative">
-								<VideoJSPlayer
-									options={ {
-										controls: true,
-										fluid: true,
-										preload: 'auto',
-										width: '100%',
-										sources: [ { src: video.source_url, type: video.mimeType } ],
-										muted: true,
-										controlBar: {
-											playToggle: true, // Play/Pause button
-											volumePanel: true,
-											currentTimeDisplay: true, // Current time
-											timeDivider: true, // Divider between current time and duration
-											durationDisplay: true, // Total duration
-											fullscreenToggle: true, // Full-screen button
-											subsCapsButton: true,
-											skipButtons: {
-												forward: 10,
-												backward: 10,
-											},
-											progressControl: {
-												vertical: true, // Prevent horizontal volume slider
-											},
-										},
-									} }
-									onTimeupdate={ handleTimeUpdate }
-									// onTimeupdate={ handleCtaTimeUpdate }
-								/>
-							</div>
-							<div className="mt-2">Timestamp: { currentTime }</div>
-						</div>
-					) }
-				</main>
-			</div>
+			<Provider store={ store }>
+				<VideoEditor attachmentID={ attachmentID } />
+			</Provider>
 		</>
 	);
 };
 
-import Appearance from './components/appearance/Appearance';
-
 const App = () => {
 	return (
-		<Provider store={ store }>
-			<VideoEditor />
-		</Provider>
+		<Frontpage />
 	);
 };
 

@@ -28,9 +28,7 @@ $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : arra
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 
 // Retrieve easydam_meta for the attachment id.
-$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : 'empty';
-
-print_r( 'array' === gettype( $easydam_meta_data ) );
+$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : '';
 
 // Build the video setup options for data-setup.
 $video_setup = wp_json_encode(
