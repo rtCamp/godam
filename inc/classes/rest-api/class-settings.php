@@ -161,7 +161,7 @@ class Settings extends Base {
 			update_site_option( 'rt-transcoding-api-key', $license_key );
 			update_site_option( 'rt-transcoding-api-key-stored', $license_key );
 
-			$handler    = new \RT_Transcoder_Handler( false );
+			$handler = new \RT_Transcoder_Handler( false );
 			$handler->update_usage( $license_key );
 
 			return new \WP_REST_Response(
@@ -311,7 +311,7 @@ class Settings extends Base {
 				'video_format'         => sanitize_text_field( $settings['video']['video_format'] ),
 				'video_quality'        => sanitize_text_field( $settings['video']['video_quality'] ),
 				'video_thumbnails'     => filter_var(
-					$settings['video']['video_thumbnails'], 
+					$settings['video']['video_thumbnails'],
 					FILTER_VALIDATE_INT,
 					array(
 						'options' => array(
@@ -319,7 +319,7 @@ class Settings extends Base {
 							'min_range' => 1,
 							'max_range' => 10,
 						),
-					) 
+					)
 				),
 				'overwrite_thumbnails' => rest_sanitize_boolean( $settings['video']['overwrite_thumbnails'] ),
 				'watermark'            => rest_sanitize_boolean( $settings['video']['watermark'] ),
