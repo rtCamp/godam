@@ -26,6 +26,8 @@ const App = () => {
 	const handleClick = ( id ) => {
 		if ( id === -1 ) {
 			triggerFilterChange( 'all' );
+		} else if ( id === 0 ) {
+			triggerFilterChange( 'uncategorized' );
 		} else {
 			triggerFilterChange( id );
 		}

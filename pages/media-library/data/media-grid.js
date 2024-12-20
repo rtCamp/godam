@@ -5,7 +5,7 @@
  */
 function triggerFilterChange( itemId ) {
 	// Find the select box for the media library folder filter.
-	const selectBox = document.querySelector( '#media-attachment-taxonomy-filter' );
+	const selectBox = document.querySelector( '#media-folder-filter' );
 
 	if ( selectBox ) {
 		selectBox.value = itemId;

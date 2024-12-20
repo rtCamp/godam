@@ -35,6 +35,7 @@ class Plugin {
 		Assets::get_instance();
 		Blocks::get_instance();
 		Pages::get_instance();
+		Media_Library_Ajax::get_instance();
 
 		$this->load_post_types();
 		$this->load_taxonomies();
