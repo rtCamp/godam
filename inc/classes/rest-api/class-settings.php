@@ -161,8 +161,8 @@ class Settings extends Base {
 			update_site_option( 'rt-transcoding-api-key', $license_key );
 			update_site_option( 'rt-transcoding-api-key-stored', $license_key );
 
-			$usage_data = $body['data'];
-			update_site_option( 'rt-transcoding-usage', array( $license_key => $usage_data ) );
+			$handler    = new \RT_Transcoder_Handler( false );
+			$handler->update_usage( $license_key );
 
 			return new \WP_REST_Response(
 				array(
