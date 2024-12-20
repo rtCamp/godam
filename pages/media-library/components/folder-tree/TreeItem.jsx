@@ -14,6 +14,7 @@ import { Icon, file, chevronDown, chevronUp } from '@wordpress/icons';
  * Internal dependencies
  */
 import { toggleOpenClose, changeSelectedFolder } from '../../redux/slice/folders';
+import { triggerFilterChange } from '../../data/media-grid';
 import './css/indicator.css';
 
 const indentPerLevel = 12;
@@ -26,24 +27,6 @@ const TreeItem = ( { item, index, depth } ) => {
 	const selectedFolderID = useSelector( ( state ) => state.FolderReducer.selectedFolder?.id );
 
 	const handleClick = () => {
-		/**
-		 * This function triggers the select box change outside of the react component.
-		 *
-		 * @param {number} itemId The ID of the folder to be selected
-		 */
-		function triggerFilterChange( itemId ) {
-			// Find the select box for the media library folder filter.
-			const selectBox = document.querySelector( '#media-attachment-taxonomy-filter' );
-
-			if ( selectBox ) {
-				selectBox.value = itemId;
-
-				// Manually trigger the change event to update the media library.
-				const changeEvent = new Event( 'change', { bubbles: true } );
-				selectBox.dispatchEvent( changeEvent );
-			}
-		}
-
 		triggerFilterChange( item.id );
 
 		dispatch( toggleOpenClose( { id: item.id } ) );

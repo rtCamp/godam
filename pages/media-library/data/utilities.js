@@ -49,14 +49,14 @@ const utilities = {
 	/**
 	 * Flattens a hierarchical tree structure into a flat list of items.
 	 *
-	 * @param {Array}       items    - The hierarchical tree of items.
-	 * @param {number|null} parentId - The ID of the parent item (default is null for root items).
-	 * @param {number}      depth    - The depth level of the item in the tree (default is 0).
-	 * @return {Array} A flattened list of items, where each item includes its `parentId` and `depth`.
+	 * @param {Array}       items  - The hierarchical tree of items.
+	 * @param {number|null} parent - The ID of the parent item (default is null for root items).
+	 * @param {number}      depth  - The depth level of the item in the tree (default is 0).
+	 * @return {Array} A flattened list of items, where each item includes its `parent` and `depth`.
 	 */
-	flattenTree: ( items, parentId = null, depth = 0 ) => {
+	flattenTree: ( items, parent = 0, depth = 0 ) => {
 		return items.reduce( ( acc, item ) => {
-			acc.push( { ...item, parentId, depth } );
+			acc.push( { ...item, parent, depth } );
 
 			if ( item.children ) {
 				acc.push( ...utilities.flattenTree( item.children, item.id, depth + 1 ) );
@@ -180,7 +180,7 @@ const utilities = {
 		const excludeParentIds = [ ...ids ];
 
 		return items.filter( ( item ) => {
-			if ( item.parentId && excludeParentIds.includes( item.parentId ) ) {
+			if ( item.parent && excludeParentIds.includes( item.parent ) ) {
 				if ( item.children.length ) {
 					excludeParentIds.push( item.id );
 				}

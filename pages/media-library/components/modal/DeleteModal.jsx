@@ -21,7 +21,7 @@ const DeleteModal = () => {
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.delete );
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
 
-	const [ deleteFolderMutation, { isError, isLoading } ] = useDeleteFolderMutation();
+	const [ deleteFolderMutation ] = useDeleteFolderMutation();
 
 	const handleSubmit = async () => {
 		try {

@@ -16,12 +16,22 @@ import './index.css';
 import FolderTree from './components/folder-tree/FolderTree.jsx';
 
 import { changeSelectedFolder, openModal } from './redux/slice/folders';
-
 import { FolderCreationModal, RenameModal, DeleteModal } from './components/modal/index.jsx';
+import { triggerFilterChange } from './data/media-grid.js';
 
 const App = () => {
 	const dispatch = useDispatch();
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+
+	const handleClick = ( id ) => {
+		if ( id === -1 ) {
+			triggerFilterChange( 'all' );
+		} else {
+			triggerFilterChange( id );
+		}
+
+		dispatch( changeSelectedFolder( { item: { id } } ) );
+	};
 
 	return (
 		<>
@@ -42,7 +52,7 @@ const App = () => {
 					text="Rename"
 					className="w-1/2"
 					onClick={ () => dispatch( openModal( 'rename' ) ) }
-					disabled={ selectedFolder === null }
+					disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
 				/>
 				<Button
 					icon="trash"
@@ -52,21 +62,25 @@ const App = () => {
 					className="w-1/2"
 					isDestructive={ true }
 					onClick={ () => dispatch( openModal( 'delete' ) ) }
-					disabled={ selectedFolder === null }
+					disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
 				/>
 			</ButtonGroup>
 
 			<div className="w-full flex flex-col gap-2 mb-2">
 				<button
-					className="flex justify-between items-center w-full p-2"
-					onClick={ () => dispatch( changeSelectedFolder( { item: -1 } ) ) }
+					className={ `flex justify-between items-center w-full p-2 rounded-md ${
+						selectedFolder.id === -1 ? 'bg-gray-200' : ''
+					}` }
+					onClick={ () => handleClick( -1 ) }
 				>
 					<p className="text-sm text-black">{ __( 'All Media', 'transcoder' ) }</p>
 				</button>
 
 				<button
-					className="flex justify-between items-center w-full p-2 rounded-md bg-gray-200"
-					onClick={ () => dispatch( changeSelectedFolder( { item: 0 } ) ) }
+					className={ `flex justify-between items-center w-full p-2 rounded-md ${
+						selectedFolder.id === 0 ? 'bg-gray-200' : ''
+					}` }
+					onClick={ () => handleClick( 0 ) }
 				>
 					<p className="text-sm text-black">{ __( 'Uncategorized', 'transcoder' ) }</p>
 				</button>

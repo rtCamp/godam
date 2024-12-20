@@ -18,11 +18,12 @@ import { useCreateFolderMutation } from '../../redux/api/folders';
 const FolderCreationModal = () => {
 	const [ folderName, setFolderName ] = useState( '' );
 
-	const [ createFolderMutation, { isError, isLoading } ] = useCreateFolderMutation();
+	const [ createFolderMutation ] = useCreateFolderMutation();
 
 	const dispatch = useDispatch();
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.folderCreation );
+	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
 
 	useEffect( () => {
 		if ( isOpen ) {
@@ -32,9 +33,13 @@ const FolderCreationModal = () => {
 
 	const handleSubmit = async () => {
 		try {
-			await createFolderMutation( { name: folderName } ).unwrap();
+			let parent = selectedFolder.id;
 
-			dispatch( createFolder( { name: folderName } ) );
+			if ( selectedFolder.id === -1 || ! selectedFolder.id ) {
+				parent = 0;
+			}
+
+			const response = await createFolderMutation( { name: folderName, parent } ).unwrap();
 
 			dispatch( updateSnackbar(
 				{
@@ -42,6 +47,8 @@ const FolderCreationModal = () => {
 					type: 'success',
 				},
 			) );
+
+			dispatch( createFolder( { name: folderName, id: response.id, parent: response.parent } ) );
 		} catch ( error ) {
 			dispatch( updateSnackbar(
 				{

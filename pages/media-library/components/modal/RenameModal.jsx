@@ -23,7 +23,7 @@ const RenameModal = () => {
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.rename );
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
 
-	const [ updateFolder, { isError, isLoading } ] = useUpdateFolderMutation();
+	const [ updateFolder ] = useUpdateFolderMutation();
 
 	useEffect( () => {
 		if ( isOpen ) {
@@ -34,6 +34,7 @@ const RenameModal = () => {
 	const handleSubmit = async () => {
 		try {
 			await updateFolder( { id: selectedFolder.id, name: folderName } ).unwrap();
+
 			dispatch( renameFolder( { name: folderName } ) );
 
 			dispatch( updateSnackbar(

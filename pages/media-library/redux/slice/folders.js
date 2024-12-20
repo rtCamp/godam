@@ -7,7 +7,9 @@ const slice = createSlice( {
 	name: 'folder',
 	initialState: {
 		folders: [],
-		selectedFolder: null,
+		selectedFolder: {
+			id: -1,
+		},
 
 		modals: {
 			folderCreation: false,
@@ -50,11 +52,11 @@ const slice = createSlice( {
 		createFolder: ( state, action ) => {
 			const { name } = action.payload;
 			const newItem = {
-				id: state.folders.length + 20, // This is temp ID, replace it with real ID from database.
+				id: action.payload.id,
 				name,
 				isOpen: false,
 				children: [],
-				parent: state.selectedFolder ? state.selectedFolder.id : 0,
+				parent: action.payload.parent,
 			};
 
 			state.folders.push( newItem );

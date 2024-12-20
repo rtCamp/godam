@@ -25,7 +25,7 @@ const FolderTree = () => {
 	const dispatch = useDispatch();
 	const data = useSelector( ( state ) => state.FolderReducer.folders );
 
-	const [ updateFolderMutation, { isError, isLoading: isUpdating } ] = useUpdateFolderMutation();
+	const [ updateFolderMutation ] = useUpdateFolderMutation();
 
 	useEffect( () => {
 		if ( folders ) {
