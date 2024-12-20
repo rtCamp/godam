@@ -48,12 +48,13 @@ $video_setup = wp_json_encode(
 	)
 );
 
-if ( 'array' === gettype( $easydam_meta_data ) ) {
-	$easydam__control_bar_color      = $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'];
-	$easydam__control_hover_color    = $easydam_meta_data['videoConfig']['controlBar']['hoverColor'];
-	$easydam__control_hover_zoom     = $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'];
-	$easydam__custom_play_button_url = $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'];
-}
+$playerTrackSources = [
+    [
+        'sourceURL' => 'https://dotsub.com/media/5d5f008c-b5d5-466f-bb83-2b3cfa997992/c/chi_hans/vtt',
+        'srcLang' => 'zh',
+        'label' => 'Chinese',
+    ],
+];
 
 ?>
 
@@ -63,15 +64,23 @@ if ( 'array' === gettype( $easydam_meta_data ) ) {
 	--easydam-control-bar-color: <?php echo esc_textarea($easydam_meta_data['videoConfig']['controlBar']['appearanceColor']); ?>;
 	--easydam-control-hover-color: <?php echo esc_textarea($easydam_meta_data['videoConfig']['controlBar']['hoverColor']); ?>;
 	--easydam-control-hover-zoom: <?php echo esc_textarea(1 + $easydam_meta_data['videoConfig']['controlBar']['zoomLevel']); ?>;
-	--easydam-custom-play-button-url: <?php echo esc_url($easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg']); ?>
+	--easydam-custom-play-button-url: url(<?php echo esc_url($easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg']); ?>);
 	">
 	<div class="easydam-video-container">
 		<video
 			class="easydam-player video-js vjs-big-play-centered"
 			data-setup="<?php echo esc_attr( $video_setup ); ?>"
 		>
-			<source src="<?php echo esc_url( $src ); ?>" type="video/mp4" />
-
+		<source src="<?php echo esc_url( $src ); ?>" type="video/mp4" />
+		<?php
+			if ( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) {
+				foreach ( $playerTrackSources as $source ) { 
+					?>
+					<track kind="captions" src="<?php echo $source['sourceURL']; ?>" srclang="<?php echo $source['srcLang']; ?>" label="<?php echo $source['label']; ?>" default />
+					<?php
+				}
+			}
+			?>
 			<?php
 			foreach ( $tracks as $track ) :
 				if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :

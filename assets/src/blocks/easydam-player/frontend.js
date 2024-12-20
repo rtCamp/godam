@@ -193,13 +193,6 @@ function easyDAMPlayer() {
 			player.controlBar.removeChild( 'volumePanel' );
 		}
 
-		//work upon
-		if ( ! controlBarSettings.subsCapsButton ) {
-			player.controlBar.removeChild( 'subsCapsButton' );
-		} else {
-			player.controlBar.addChild( 'subsCapsButton' );
-		}
-
 		const CustomPlayButton = videojs.getComponent( 'Button' );
 		class CustomButton extends CustomPlayButton {
 			constructor( p, options ) {
@@ -252,5 +245,34 @@ function easyDAMPlayer() {
 				}
 			}
 		}
+
+		const skipTime = controlBarSettings.skipButtons.forward;
+
+
+		const skipBackwardButton = player.controlBar.getChild( 'skipBackward' );
+		const skipForwardButton = player.controlBar.getChild( 'skipForward' );
+
+		if ( skipBackwardButton ) {
+			skipBackwardButton.skipTime = skipTime;
+		}
+
+		if ( skipForwardButton ) {
+			skipForwardButton.skipTime = skipTime;
+		}
+
+		skipBackwardButton.el_.classList.replace(
+			'vjs-skip-backward-undefined',
+			`vjs-skip-backward-${ skipTime }`,
+		);
+
+		skipForwardButton.el_.classList.replace(
+			'vjs-skip-forward-undefined',
+			`vjs-skip-forward-${ skipTime }`,
+		);
+
+		skipBackwardButton.el_.classList.remove(
+			'vjs-hidden' );
+
+		skipForwardButton.el_.classList.remove( 'vjs-hidden' );
 	} );
 }

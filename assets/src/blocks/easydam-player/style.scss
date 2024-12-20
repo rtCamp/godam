@@ -112,7 +112,7 @@
 .vjs-big-play-button {
 	background-color: var(--easydam-control-bar-color) !important;
 	background-size: 100% 100% !important;
-	background-image: var(--easydam-custom-play-button-url) !important; //not working need to pass url() in php
+	background-image: var(--easydam-custom-play-button-url) !important;
 }
 
 .left-align {
@@ -155,7 +155,6 @@
 }
 
 .vjs-custom-play-button {
-	// height: 6rem !important;
 	width: unset;
 
 	img {

@@ -14,21 +14,6 @@ const slice = createSlice( {
 			width: '100%',
 			sources: [],
 			playbackRates: [ 0.5, 1, 1.5, 2 ],
-			tracks: [
-				{
-					kind: 'captions',
-					src: 'https://dotsub.com/media/5d5f008c-b5d5-466f-bb83-2b3cfa997992/c/chi_hans/vtt',
-					srclang: 'zh',
-					label: 'Chinese',
-					default: true,
-				},
-				{
-					kind: 'captions',
-					src: 'https://example.com/captions-en.vtt',
-					srclang: 'en',
-					label: 'English',
-				},
-			],
 			controlBar: {
 				playToggle: true, // Play/Pause button
 				volumePanel: true,
@@ -36,7 +21,7 @@ const slice = createSlice( {
 				timeDivider: true, // Divider between current time and duration
 				durationDisplay: true, // Total duration
 				fullscreenToggle: true, // Full-screen button
-				subsCapsButton: true,
+				subsCapsButton: false,
 				skipButtons: {
 					forward: 10,
 					backward: 10,
