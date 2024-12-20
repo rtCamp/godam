@@ -122,95 +122,10 @@ function inject_media_library_react_root()
 }
 
 // Register a taxonomy called 'Media Folders' for the attachment post type.
-function register_media_folders_taxonomy()
-{
-	// Arguments for the taxonomy.
-	$args = array(
-		'labels' => array(
-			'name'              => _x('Media Folders', 'taxonomy general name', 'text-domain'),
-			'singular_name'     => _x('Media Folder', 'taxonomy singular name', 'text-domain'),
-			'search_items'      => __('Search Media Folders', 'text-domain'),
-			'all_items'         => __('All Media Folders', 'text-domain'),
-			'parent_item'       => __('Parent Folder', 'text-domain'),
-			'parent_item_colon' => __('Parent Folder:', 'text-domain'),
-			'edit_item'         => __('Edit Media Folder', 'text-domain'),
-			'update_item'       => __('Update Media Folder', 'text-domain'),
-			'add_new_item'      => __('Add New Media Folder', 'text-domain'),
-			'new_item_name'     => __('New Media Folder Name', 'text-domain'),
-			'menu_name'         => __('Media Folders', 'text-domain'),
-		),
-		'hierarchical'      => true, // Enables folder hierarchy.
-		'show_ui'           => true, // Show the taxonomy UI in the admin.
-		'show_admin_column' => true, // Display taxonomy in the admin list table.
-		'query_var'         => true, // Enable taxonomy querying.
-		'rewrite'           => array('slug' => 'media-folder'), // Set the URL slug for folders.
-		'show_in_rest'      => true, // Enable the taxonomy in the REST API.
-		'query_var'         => true,
-	);
-
-	// Register the taxonomy and associate it with the attachment post type.
-	register_taxonomy('media-folder', array('attachment'), $args);
-}
-add_action('init', 'register_media_folders_taxonomy');
-
-add_action( 'rest_api_init', function () {
-    register_rest_route( 'media-folders/v1', '/assign-folder', array(
-        'methods'             => 'POST',
-        'callback'            => 'assign_images_to_folder',
-        'permission_callback' => function () {
-            return current_user_can( 'edit_posts' ); // Adjust capability as needed
-        },
-        'args'                => array(
-            'attachment_ids' => array(
-                'required' => true,
-                'type'     => 'array',
-                'items'    => array( 'type' => 'integer' ),
-                'description' => 'Array of attachment IDs to associate.',
-            ),
-            'folder_term_id' => array(
-                'required' => true,
-                'type'     => 'integer',
-                'description' => 'ID of the folder term to associate with the attachments.',
-            ),
-        ),
-    ) );
-} );
-
-function assign_images_to_folder( WP_REST_Request $request ) {
-    $attachment_ids = $request->get_param( 'attachment_ids' );
-    $folder_term_id = $request->get_param( 'folder_term_id' );
-
-    // Validate folder term ID
-    $term = get_term( $folder_term_id, 'media-folder' ); // Replace 'media_folders' with your taxonomy name
-    if ( ! $term || is_wp_error( $term ) ) {
-        return new WP_Error( 'invalid_term', 'Invalid folder term ID.', array( 'status' => 400 ) );
-    }
-
-    // Validate attachment IDs and update terms
-    foreach ( $attachment_ids as $attachment_id ) {
-        if ( get_post_type( $attachment_id ) !== 'attachment' ) {
-            return new WP_Error( 'invalid_attachment', 'Invalid attachment ID.', array( 'status' => 400 ) );
-        }
-
-        $return = wp_set_object_terms( $attachment_id, $folder_term_id, 'media-folder' );
-
-		if ( is_wp_error( $return ) ) {
-			return new WP_Error( 'term_assignment_failed', 'Failed to associate attachments with the folder.', array( 'status' => 500 ) );
-		}
-    }
-
-    return rest_ensure_response( array(
-        'success' => true,
-        'message' => 'Attachments successfully associated with the folder.',
-    ) );
-}
 
 add_filter( 'ajax_query_attachments_args', 'filter_media_library_by_taxonomy' );
 
 function filter_media_library_by_taxonomy( $query_args ) {
-
-	// var_dump( $query_args );
-	// die;
 
     // Check if the 'media-folder' parameter is set in the query arguments
     if ( isset( $_REQUEST['query']['media-folder'] ) && ! empty( $_REQUEST['query']['media-folder'] ) ) {
@@ -231,59 +146,4 @@ function filter_media_library_by_taxonomy( $query_args ) {
     }
 
     return $query_args;
-}
-
-
-
-// add_action( 'init', 'test_query' );
-
-function test_query() {
-	$args = array(
-		'orderby'        => 'date',
-		'order'          => 'DESC',
-		'posts_per_page' => 80,
-		'paged'          => 1,
-		'post_type'      => 'attachment',
-		'post_status'    => array( 'inherit', 'private' ),
-		'media-folder'   => 'pacciformes', // Replace with the desired term slug
-	);
-
-	$args = array(
-		'orderby'        => 'date',
-		'order'          => 'DESC',
-		'posts_per_page' => 80,
-		'paged'          => 1,
-		'post_type'      => 'attachment',
-		'post_status'    => array( 'inherit', 'private' ),
-		'tax_query'      => array( // This must be an array of arrays
-			array(
-				'taxonomy' => 'media-folder',
-				'field'    => 'term_id', // Use 'slug' if passing the term slug
-				'terms'    => 10, // Replace with the desired term slug
-			),
-		),
-	);
-
-	$args = array(
-		'orderby'        => 'date',
-		'order'          => 'DESC',
-		'posts_per_page' => 80,
-		'paged'          => 1,
-		'post_type'      => 'attachment',
-		'post_status'    => array( 'inherit', 'private' ),
-		'tax_query'      => array(
-			array(
-				'taxonomy' => 'media-folder',
-				'field'    => 'term_id', // Using 'term_id' for the taxonomy query
-				'terms'    => 10,        // Replace with the desired term ID
-			),
-		),
-	);
-	
-	// // Create a new WP_Query instance
-	$query = new WP_Query( $args );
-	
-	var_dump( $query->posts );
-	die;
-	
 }
