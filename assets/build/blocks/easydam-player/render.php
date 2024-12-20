@@ -11,8 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// header("Content-type: text/css; charset: UTF-8");
-
 // Block attributes.
 $autoplay      = ! empty( $attributes['autoplay'] );
 $controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
@@ -46,12 +44,9 @@ $video_setup = wp_json_encode(
 	)
 );
 
-$playerTrackSources = [
-    [
-        'sourceURL' => 'https://dotsub.com/media/5d5f008c-b5d5-466f-bb83-2b3cfa997992/c/chi_hans/vtt',
-        'srcLang' => 'zh',
-        'label' => 'Chinese',
-    ],
+$player_track_sources = [
+	['sourceURL' => 'https://example.com/captions-en.vtt', 'srcLang' => 'en', 'label' => 'English'],
+	['sourceURL' => 'https://example.com/captions-fr.vtt', 'srcLang' => 'fr', 'label' => 'French'],
 ];
 
 ?>
@@ -59,9 +54,9 @@ $playerTrackSources = [
 <?php if ( $src ) : ?>
 <figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?> 
 	style="
-	--easydam-control-bar-color: <?php echo esc_textarea($easydam_meta_data['videoConfig']['controlBar']['appearanceColor']); ?>;
-	--easydam-control-hover-color: <?php echo esc_textarea($easydam_meta_data['videoConfig']['controlBar']['hoverColor']); ?>;
-	--easydam-control-hover-zoom: <?php echo esc_textarea(1 + $easydam_meta_data['videoConfig']['controlBar']['zoomLevel']); ?>;
+	--easydam-control-bar-color: <?php echo esc_attr($easydam_meta_data['videoConfig']['controlBar']['appearanceColor']); ?>;
+	--easydam-control-hover-color: <?php echo esc_attr($easydam_meta_data['videoConfig']['controlBar']['hoverColor']); ?>;
+	--easydam-control-hover-zoom: <?php echo esc_attr(1 + $easydam_meta_data['videoConfig']['controlBar']['zoomLevel']); ?>;
 	--easydam-custom-play-button-url: url(<?php echo esc_url($easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg']); ?>);
 	">
 	<div class="easydam-video-container">
@@ -72,9 +67,9 @@ $playerTrackSources = [
 		<source src="<?php echo esc_url( $src ); ?>" type="video/mp4" />
 		<?php
 			if ( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) {
-				foreach ( $playerTrackSources as $source ) { 
+				foreach ( $player_track_sources as $source ) { 
 					?>
-					<track kind="captions" src="<?php echo $source['sourceURL']; ?>" srclang="<?php echo $source['srcLang']; ?>" label="<?php echo $source['label']; ?>" default />
+					<track kind="captions" src="<?php echo esc_url($source['sourceURL']); ?>" srclang="<?php esc_attr_e($source['srcLang']); ?>" label="<?php esc_attr_e($source['label']); ?>" default />
 					<?php
 				}
 			}

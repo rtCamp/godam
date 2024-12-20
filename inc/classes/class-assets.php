@@ -35,7 +35,6 @@ class Assets {
 		 */
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
-
 	}
 
 	/**
@@ -62,7 +61,6 @@ class Assets {
 
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );
-
 	}
 
 	/**
@@ -89,6 +87,5 @@ class Assets {
 
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );
-
 	}
 }

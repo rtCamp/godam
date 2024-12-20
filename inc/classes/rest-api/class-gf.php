@@ -67,7 +67,7 @@ class GF extends Base {
 		if ( ! empty( $fields ) ) {
 			$fields = explode( ',', $fields );
 			$gforms = array_map(
-				function( $gform ) use ( $fields ) {
+				function ( $gform ) use ( $fields ) {
 					return array_intersect_key( $gform, array_flip( $fields ) );
 				},
 				$gforms 

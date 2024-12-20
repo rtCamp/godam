@@ -164,8 +164,6 @@ function easyDAMPlayer() {
 		const controlBarSettings =
       videoSetupOptions.easydam_meta.videoConfig.controlBar;
 
-		console.log( 'controlBarSettings', controlBarSettings );
-
 		// Play button position
 		const playButton = player.getChild( 'bigPlayButton' );
 
