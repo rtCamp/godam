@@ -3,6 +3,10 @@
  */
 import '../../libs/jquery-ui-1.14.1/jquery-ui';
 
+const $ = jQuery;
+
+console.log( 'Media Library JS loaded' );
+
 document.addEventListener( 'DOMContentLoaded', function() {
 	const mediaLibraryRoot = document.createElement( 'div' );
 	mediaLibraryRoot.id = 'rt-transcoder-media-library-root';
@@ -11,7 +15,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 } );
 
 async function assignToFolder( attachmentIds, folderTermId ) {
-	await fetch( '/wp-json/media-folders/v1/assign-folder', {
+	await fetch( '/wp-json/easydam/v1/media-library/assign-folder', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -25,8 +29,6 @@ async function assignToFolder( attachmentIds, folderTermId ) {
 }
 
 const attachDragEvent = () => {
-	const $ = jQuery;
-
 	// Initialize draggable items
 	$( 'li.attachment' ).draggable( {
 		cursor: 'move',
@@ -62,7 +64,7 @@ const attachDragEvent = () => {
 
 	// Initialize droppable tree items
 	$( '.tree-item' ).droppable( {
-		accept: 'li.attachment',
+		accept: 'li.attachment, th.check-column',
 		hoverClass: 'droppable-hover',
 		tolerance: 'pointer',
 		drop( event, ui ) {
@@ -89,6 +91,42 @@ const attachDragEvent = () => {
 	}
 };
 
+setTimeout( attachDragEvent, 1000 );
+
+$( 'th.check-column' ).draggable( {
+	cursor: 'move',
+	helper( event ) {
+		const hoverItem = $( event.currentTarget );
+		const hoveredCheckbox = $( event.target ).closest( 'th.check-column' ).find( 'input[type="checkbox"]' );
+		const selectedCheckboxes = $( '.table-view-list th.check-column input[type="checkbox"]:checked' );
+
+		const elementsToDrag = selectedCheckboxes.add( hoveredCheckbox );
+
+		const draggedItemIds = elementsToDrag.map( function() {
+			return Number.parseInt( $( this ).val() ); // Fetch the `value` attribute of the input element
+		} ).get();
+
+		hoverItem.data( 'draggedItems', draggedItemIds );
+
+		return $( '<div>', {
+			text: `Moving ${ draggedItemIds.length } item${ draggedItemIds.length > 1 ? 's' : '' }`,
+			css: {
+				background: '#333',
+				color: '#fff',
+				padding: '8px 12px',
+				borderRadius: '4px',
+				fontSize: '14px',
+				fontWeight: 'bold',
+				boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
+				zIndex: 1000,
+			},
+		} );
+	},
+	opacity: 0.7,
+	zIndex: 1000,
+	appendTo: 'body',
+} );
+
 /**
  * On AJAX complete, check if the request is for 'query-attachments' and attach the drag event
  */
@@ -103,52 +141,83 @@ jQuery( document ).ajaxComplete( function( event, jqXHR, ajaxOptions ) {
 	}
 } );
 
-( function() {
-	const MediaLibraryTaxonomyFilter = wp.media.view.AttachmentFilters.extend( {
-		id: 'media-folder-filter',
+if ( wp.media?.view ) {
+	( function() {
+		const MediaLibraryTaxonomyFilter = wp.media.view.AttachmentFilters.extend( {
+			id: 'media-folder-filter',
 
-		createFilters() {
-			const filters = {};
-			_.each( MediaLibraryTaxonomyFilterData.terms || {}, function( value, index ) {
-				filters[ value.term_id ] = {
-					text: value.name,
+			events: {
+				change: 'change',
+			},
+
+			change( event ) {
+				if ( event.detail ) {
+					this.filters[ event.detail.term_id ] = {
+						text: event.detail.name,
+						props: {
+							'media-folder': event.detail.term_id,
+						},
+					};
+				} else {
+					const props = this.filters[ this.el.value ].props;
+					this.model.set( props );
+				}
+			},
+
+			createFilters() {
+				const filters = {};
+				_.each( MediaLibraryTaxonomyFilterData.terms || {}, function( value, index ) {
+					filters[ value.term_id ] = {
+						text: value.name,
+						props: {
+							'media-folder': value.term_id,
+						},
+					};
+				} );
+
+				filters.uncategorized = {
+					text: 'Uncategorized',
 					props: {
-						'media-folder': value.term_id,
+						'media-folder': 0,
 					},
+					priority: 5,
 				};
-			} );
 
-			filters.uncategorized = {
-				text: 'Uncategorized',
-				props: {
-					'media-folder': 0,
-				},
-				priority: 5,
-			};
+				filters.all = {
+					text: 'All collections',
+					props: {
+						'media-folder': -1,
+					},
+					priority: 10,
+				};
+				this.filters = filters;
+			},
 
-			filters.all = {
-				text: 'All collections',
-				props: {
-					'media-folder': '',
-				},
-				priority: 10,
-			};
-			this.filters = filters;
-		},
-	} );
-	/**
-	 * Extend and override wp.media.view.AttachmentsBrowser to include our new filter
-	 */
-	const AttachmentsBrowser = wp.media.view.AttachmentsBrowser;
-	wp.media.view.AttachmentsBrowser = wp.media.view.AttachmentsBrowser.extend( {
-		createToolbar() {
-			// Make sure to load the original toolbar
-			AttachmentsBrowser.prototype.createToolbar.call( this );
-			this.toolbar.set( 'MediaLibraryTaxonomyFilter', new MediaLibraryTaxonomyFilter( {
-				controller: this.controller,
-				model: this.collection.props,
-				priority: -75,
-			} ).render() );
-		},
-	} );
-}() );
+			addOption( e ) {
+				console.log( 'New folder created:', e.detail );
+			},
+		} );
+
+		// Extend and override wp.media.view.AttachmentsBrowser to include our new filter
+		const AttachmentsBrowser = wp.media.view.AttachmentsBrowser;
+		wp.media.view.AttachmentsBrowser = wp.media.view.AttachmentsBrowser.extend( {
+			createToolbar() {
+				// Make sure to load the original toolbar
+				AttachmentsBrowser.prototype.createToolbar.call( this );
+				this.toolbar.set(
+					'MediaLibraryTaxonomyFilter',
+					new MediaLibraryTaxonomyFilter( {
+						controller: this.controller,
+						model: this.collection.props,
+						priority: -75,
+					} ).render(),
+				);
+
+				// this.toolbar.unset( 'MediaLibraryTaxonomyFilter' );
+			},
+		} );
+	}() );
+}
+
+// Add Button to Dynamically Add Terms
+

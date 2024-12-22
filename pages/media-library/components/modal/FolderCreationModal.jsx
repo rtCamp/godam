@@ -14,6 +14,7 @@ import { TextControl, Button, ButtonGroup, Modal } from '@wordpress/components';
  */
 import { closeModal, createFolder, updateSnackbar } from '../../redux/slice/folders';
 import { useCreateFolderMutation } from '../../redux/api/folders';
+import { updateSelectDropdown } from '../../data/media-grid';
 
 const FolderCreationModal = () => {
 	const [ folderName, setFolderName ] = useState( '' );
@@ -49,6 +50,8 @@ const FolderCreationModal = () => {
 			) );
 
 			dispatch( createFolder( { name: folderName, id: response.id, parent: response.parent } ) );
+
+			updateSelectDropdown( response.id, folderName );
 		} catch ( error ) {
 			dispatch( updateSnackbar(
 				{
