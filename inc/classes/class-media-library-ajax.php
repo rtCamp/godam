@@ -5,6 +5,8 @@
  * @package transcoder
  */
 
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Using default nonce verification so disabling for this file.
+
 namespace Transcoder\Inc;
 
 use Transcoder\Inc\Traits\Singleton;
@@ -49,8 +51,8 @@ class Media_Library_Ajax {
 			$media_folder_id = intval( $_REQUEST['query']['media-folder'] );
 	
 			if ( 0 === $media_folder_id ) {
-				// Handling uncategorized attachments (no term selected for attachment).
-				$query_args['tax_query'] = array(
+				// Filter attachments by uncategorized folder.
+				$query_args['tax_query'] = array( // phpcs:ignore -- tax_query is required here to filter by taxonomy.
 					array(
 						'taxonomy'         => 'media-folder',
 						'field'            => 'term_id',
@@ -69,8 +71,7 @@ class Media_Library_Ajax {
 			} elseif ( -1 === $media_folder_id ) {
 				return $query_args;
 			} elseif ( ! empty( $media_folder_id ) ) {
-				// Filter attachments by selected folder.
-				$query_args['tax_query'] = array(
+				$query_args['tax_query'] = array( // phpcs:ignore -- tax_query is required here to filter by taxonomy.
 					array(
 						'taxonomy'         => 'media-folder',
 						'field'            => 'term_id',
