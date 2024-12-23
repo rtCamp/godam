@@ -288,6 +288,21 @@ function VideoEdit( {
 							) }
 						</div>
 					</MediaUploadCheck>
+					<div className="editor-video-customisation-cta">
+						<BaseControl.VisualLabel>
+							{ __( 'Customise Video' ) }
+						</BaseControl.VisualLabel>
+						<Button
+							__next40pxDefaultSize
+							onClick={ () =>
+								window.location.href = `/wp-admin/admin.php?page=video_editor&id=${ id }`
+							}
+							variant="primary"
+							className=""
+						>
+							{ __( 'Customise' ) }
+						</Button>
+					</div>
 				</PanelBody>
 			</InspectorControls>
 			<figure { ...blockProps }>
