@@ -49,18 +49,6 @@ const TextCTA = ( { layerID } ) => {
 		<>
 			<div className="mb-2 flex items-end justify-between">
 				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium">{ __( 'Content', 'transcoder' ) }</label>
-				<ToggleControl
-					__nextHasNoMarginBottom
-					checked={ layer.FullEditor }
-					label={ __( 'Full Editor', 'transcoder' ) }
-					onChange={ () => {
-						dispatch( updateLayerField( {
-							id: layer.id,
-							field: 'FullEditor',
-							value: ! layer.FullEditor,
-						} ) );
-					} }
-				/>
 			</div>
 			<QuillEditor
 				intialValue={ layer.text }

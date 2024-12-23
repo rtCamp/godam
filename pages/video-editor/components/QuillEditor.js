@@ -39,7 +39,7 @@ const QuillEditor = ( { className, intialValue, onHTMLChange, toolbarOptions } )
 				wrapperRef.current.innerHTML = '';
 			}
 		};
-	}, [ toolbarOptions ] );
+	}, [] );
 
 	return (
 		<div className={ className } ref={ wrapperRef } />
