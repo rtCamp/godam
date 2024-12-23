@@ -453,7 +453,7 @@ const Appearance = () => {
 							name="hover-slider"
 							className="font-bold"
 						>
-							Custom Brand Image
+							Custom Brand Logo
 						</label>
 						<Button
 							onClick={ openBrandMediaPicker }
@@ -614,23 +614,59 @@ const Appearance = () => {
 					<label name="toggle-color" className="font-bold">
 						Player Appearance
 					</label>
-					<ColorPicker
-						d="toggle-color"
-						onChange={ handleControlColorChange }
-						color={ videoConfig.controlBar.appearanceColor }
-						className="mt-2.5"
-					/>
+					<div className="flex items-end">
+						<ColorPicker
+							d="toggle-color"
+							onChange={ handleControlColorChange }
+							color={ videoConfig.controlBar.appearanceColor }
+							className="mt-2.5"
+						/>
+						<Button
+							onClick={ () =>
+								dispatch(
+									updateVideoConfig( {
+										controlBar: {
+											...videoConfig.controlBar,
+											appearanceColor: '#2b333fb3',
+										},
+									} ),
+								)
+							}
+							variant="primary"
+							className="mb-[20px] ml-[-75px] p-[20px] cursor-pointer"
+						>
+							Reset
+						</Button>
+					</div>
 				</div>
 				<div className="form-group">
 					<label name="hover-color" className="font-bold">
 						Select color on hover
 					</label>
-					<ColorPicker
-						d="toggle-color"
-						onChange={ handleControlsHoverColor }
-						color={ videoConfig.controlBar.hoverColor }
-						className="m-2.5"
-					/>
+					<div className="flex items-end">
+						<ColorPicker
+							d="toggle-color"
+							onChange={ handleControlsHoverColor }
+							color={ videoConfig.controlBar.hoverColor }
+							className="m-2.5"
+						/>
+						<Button
+							onClick={ () =>
+								dispatch(
+									updateVideoConfig( {
+										controlBar: {
+											...videoConfig.controlBar,
+											hoverColor: '#fff',
+										},
+									} ),
+								)
+							}
+							variant="primary"
+							className="mt-2 mb-[30px] ml-[-75px] p-[20px] cursor-pointer"
+						>
+							Reset
+						</Button>
+					</div>
 				</div>
 			</div>
 		</div>
