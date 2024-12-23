@@ -3,17 +3,28 @@
  */
 import { createSlice } from '@reduxjs/toolkit';
 
-const localStorageData = JSON.parse( localStorage.getItem( 'easyDam' ) ) || {
-	selectedItem: -1,
-	openItems: [],
-};
+/**
+ * Internal dependencies
+ */
+import { checkIfListSelected } from '../../data/media-grid';
+
+let selectedFolderId = -1;
+
+if ( checkIfListSelected() ) {
+	const localStorageData = JSON.parse( localStorage.getItem( 'easyDam' ) ) || {
+		selectedItem: -1,
+		openItems: [],
+	};
+
+	selectedFolderId = localStorageData.selectedItem;
+}
 
 const slice = createSlice( {
 	name: 'folder',
 	initialState: {
 		folders: [],
 		selectedFolder: {
-			id: localStorageData.selectedItem,
+			id: selectedFolderId,
 		},
 
 		modals: {

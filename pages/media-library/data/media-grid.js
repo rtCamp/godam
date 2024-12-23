@@ -23,6 +23,12 @@ function triggerFilterChange( itemId ) {
 	}
 }
 
+/**
+ * Update the select dropdown with the new term.
+ *
+ * @param {number} itemId   Term ID
+ * @param {string} itemName Term Name
+ */
 function updateSelectDropdown( itemId, itemName ) {
 	const selectBox = document.querySelector( '#media-folder-filter' );
 
@@ -44,4 +50,14 @@ function updateSelectDropdown( itemId, itemName ) {
 	selectBox.dispatchEvent( changeEvent );
 }
 
-export { triggerFilterChange, updateSelectDropdown };
+function checkIfListSelected() {
+	const anchorTag = document.querySelector( '.wp-filter .filter-items .view-switch a.current' );
+
+	if ( anchorTag && anchorTag.id === 'view-switch-list' ) {
+		return true;
+	}
+
+	return false;
+}
+
+export { triggerFilterChange, updateSelectDropdown, checkIfListSelected };
