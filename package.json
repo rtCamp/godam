@@ -71,6 +71,7 @@
 		"build:prod": "cross-env NODE_ENV=production npm-run-all 'build:!(dev|prod)'",
 		"build:blocks": "wp-scripts build --config ./node_modules/@wordpress/scripts/config/webpack.config.js --webpack-src-dir=./assets/src/blocks/ --output-path=./assets/build/blocks/",
 		"build:js": "wp-scripts build --config ./webpack.config.js",
+		"build:page-css": "tailwindcss -i ./pages/style.css -o ./pages/build/style.css",
 		"create:block": "./bin/block-scaffold/block.js",
 		"init": "./bin/init.js",
 		"install:husky": "./bin/husky.sh --install",
