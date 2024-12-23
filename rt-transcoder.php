@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Plugin Name: Transcoder
  * Plugin URI: https://rtmedia.io/transcoder/?utm_source=dashboard&utm_medium=plugin&utm_campaign=transcoder
@@ -103,5 +102,5 @@ function rtt_action_links( $links, $file ) {
 	);
 }
 
-add_filter('plugin_action_links', 'rtt_action_links', 11, 2);
-add_filter('network_admin_plugin_action_links', 'rtt_action_links', 11, 2);
+add_filter( 'plugin_action_links', 'rtt_action_links', 11, 2 );
+add_filter( 'network_admin_plugin_action_links', 'rtt_action_links', 11, 2 );

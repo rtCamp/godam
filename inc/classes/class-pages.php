@@ -117,7 +117,7 @@ class Pages {
 	public function admin_enqueue_scripts( $hook_suffix ) {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( 'toplevel_page_easydam', 'easydam_page_video_editor', 'upload' ) ) ) {
+		if ( $screen && in_array( $screen->id, array( 'toplevel_page_easydam', 'easydam_page_video_editor', 'upload' ), true ) ) {
 			wp_register_style(
 				'transcoder-page-style-easydam',
 				RT_TRANSCODER_URL . '/pages/build/style.css',

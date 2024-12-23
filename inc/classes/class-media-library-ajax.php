@@ -35,7 +35,6 @@ class Media_Library_Ajax {
 		add_action( 'pre_get_posts', array( $this, 'pre_get_post_filter' ) );
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
-
 	}
 
 	/**

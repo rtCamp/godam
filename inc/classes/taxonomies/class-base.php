@@ -7,7 +7,7 @@
 
 namespace Transcoder\Inc\Taxonomies;
 
-use \Transcoder\Inc\Traits\Singleton;
+use Transcoder\Inc\Traits\Singleton;
 
 /**
  * Class Base
@@ -22,7 +22,6 @@ abstract class Base {
 	protected function __construct() {
 
 		$this->setup_hooks();
-
 	}
 
 	/**
@@ -33,7 +32,6 @@ abstract class Base {
 	protected function setup_hooks() {
 
 		add_action( 'init', array( $this, 'register_taxonomy' ) );
-
 	}
 
 	/**
@@ -64,7 +62,6 @@ abstract class Base {
 		}
 
 		register_taxonomy( static::SLUG, $post_types, $args );
-
 	}
 
 	/**
@@ -81,7 +78,6 @@ abstract class Base {
 			'query_var'         => true,
 			'show_in_rest'      => true,
 		);
-
 	}
 
 	/**
@@ -97,5 +93,4 @@ abstract class Base {
 	 * @return array
 	 */
 	abstract public function get_post_types();
-
 }

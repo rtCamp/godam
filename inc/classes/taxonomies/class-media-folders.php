@@ -39,7 +39,6 @@ class Media_Folders extends Base {
 			'new_item_name'     => __( 'New Media Folder Name', 'transcoder' ),
 			'menu_name'         => __( 'Media Folders', 'transcoder' ),
 		);
-
 	}
 
 	/**
@@ -68,13 +67,11 @@ class Media_Folders extends Base {
 			'hierarchical'      => true,
 			'show_ui'           => false,
 			'show_admin_column' => false,
-			'query_var'         => true,
 			'rewrite'           => array( 'slug' => 'media-folder' ),
 			'show_in_rest'      => true,
 			'query_var'         => true,
 		);
 
 		return array_merge( $args, $extra );
-
 	}
 }

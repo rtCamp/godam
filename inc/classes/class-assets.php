@@ -101,8 +101,11 @@ class Assets {
 			'easydam-media-library',
 			'MediaLibraryTaxonomyFilterData',
 			array(
-				'terms' => get_terms( 'media-folder', array( 'hide_empty' => false ) ),
-			) 
+				'terms' => get_terms( array(
+					'taxonomy'   => 'media-folder',
+					'hide_empty' => false,
+				) ),
+			)
 		);
 
 		wp_register_style(
