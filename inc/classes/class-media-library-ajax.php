@@ -69,6 +69,7 @@ class Media_Library_Ajax {
 				);
 	
 			} elseif ( -1 === $media_folder_id ) {
+				unset( $query_args['media-folder'] );
 				return $query_args;
 			} elseif ( ! empty( $media_folder_id ) ) {
 				$query_args['tax_query'] = array( // phpcs:ignore -- tax_query is required here to filter by taxonomy.
