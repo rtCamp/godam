@@ -174,7 +174,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 				</div>
 			</div>
 
-			<hr />
+			{/* <hr />
 
 			<div className="py-3 flex flex-col gap-2">
 				<label className="block text-base font-semibold" htmlFor="track_status">
@@ -198,7 +198,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 				disabled={ ! mediaSettings?.general?.is_verified }
 			>
 				Save Settings
-			</Button>
+			</Button> */}
 		</div>
 	);
 };

@@ -119,7 +119,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 			) }
 
 			<form id="easydam-video-settings" className="flex flex-col" onSubmit={ handleSubmit }>
-				<div className="py-3 flex flex-col gap-2">
+				{/* <div className="py-3 flex flex-col gap-2">
 					<label className="block text-base font-semibold" htmlFor="sync_from_easydam">Video delivery</label>
 					<ToggleControl
 						__nextHasNoMarginBottom
@@ -130,7 +130,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					<div className="text-slate-500">If you turn this setting off, your videos will be delivered from WordPress.</div>
 				</div>
 
-				<hr />
+				<hr /> */}
 
 				<div className="py-3 flex flex-col gap-2">
 					<label className="block text-base font-semibold" htmlFor="abs">Adaptive Bitrate Streaming</label>
@@ -140,12 +140,12 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 						checked={ adaptiveBitrate }
 						onChange={ ( value ) => setAdaptiveBitrate( value ) }
 					/>
-					<div className="text-slate-500">If enabled, Transcoder will generate multiple video files with different bitrates for adaptive streaming. This feature is only available for paid subscriptions.</div>
+					<div className="text-slate-500">If enabled, Transcoder will generate multiple video files with different bitrates for adaptive streaming.</div>
 				</div>
 
 				<hr />
 
-				<div>
+				{/* <div>
 					<div className="py-3 flex flex-col gap-1">
 						<label className="block text-base font-semibold" htmlFor="optimize_video">Video optimization</label>
 						<ToggleControl
@@ -188,7 +188,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 						/>
 						<div className="text-slate-500">Videos will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
 					</div>
-				</div>
+				</div> */}
 
 				<div className="py-3 flex flex-col gap-2">
 					<label className="block text-base font-semibold" htmlFor="video_thumbnails_count">
@@ -247,7 +247,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 						onChange={ ( value ) => setDisableWatermark( value ) }
 						disabled={ ! isPremiumUser }
 					/>
-					<div className="text-slate-500">If enabled, Transcoder will add a watermark to the transcoded video. This feature is only available for paid subscriptions.</div>
+					<div className="text-slate-500">If enabled, Transcoder will add a watermark to the transcoded video.</div>
 					{ isPremiumUser && ! disableWatermark && (
 						<>
 							<div className="mt-4">
