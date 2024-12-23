@@ -133,6 +133,7 @@ class RT_Transcoder_Handler {
 				'adaptive_bitrate'     => false,
 				'watermark'            => false,
 				'watermark_text'       => '',
+				'watermark_url'       => '',
 				'video_thumbnails'     => 5,
 				'overwrite_thumbnails' => false,
 			),
@@ -287,23 +288,27 @@ class RT_Transcoder_Handler {
 			$rtt_adaptive_bitrate_streaming = $this->easydam_settings['video']['adaptive_bitrate'];
 			$rtt_watermark                  = $this->easydam_settings['video']['watermark'];
 			$rtt_watermark_text             = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
+			$rtt_watermark_url              = esc_url_raw( $this->easydam_settings['video']['watermark_url'] );
+			$watermark_to_use = $rtt_watermark_url ? array( 'watermark_url' => $rtt_watermark_url ) : array( 'watermark_text' => $rtt_watermark_text );
 
 			$args = array(
 				'method'    => 'POST',
 				'sslverify' => false,
 				'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
-				'body'      => array(
-					'api_token'       => $this->api_key,
-					'job_type'        => $job_type,
-					'job_for'         => $job_for,
-					'file_origin'     => rawurlencode( $url ),
-					'callback_url'    => rawurlencode( trailingslashit( home_url() ) . 'index.php' ),
-					'force'           => 0,
-					'formats'         => ( true === $autoformat ) ? ( ( 'video' === $type_array[0] ) ? 'mp4' : 'mp3' ) : $autoformat,
-					'thumbnail_count' => $options_video_thumb,
-					'stream'          => boolval( $rtt_adaptive_bitrate_streaming ),
-					'watermark'       => boolval( $rtt_watermark ),
-					'watermark_text'  => $rtt_watermark_text,
+				'body'      => array_merge(
+					array(
+						'api_token'       => $this->api_key,
+						'job_type'        => $job_type,
+						'job_for'         => $job_for,
+						'file_origin'     => rawurlencode( $url ),
+						'callback_url'    => rawurlencode( trailingslashit( home_url() ) . 'index.php' ),
+						'force'           => 0,
+						'formats'         => ( true === $autoformat ) ? ( ( 'video' === $type_array[0] ) ? 'mp4' : 'mp3' ) : $autoformat,
+						'thumbnail_count' => $options_video_thumb,
+						'stream'          => boolval( $rtt_adaptive_bitrate_streaming ),
+						'watermark'       => boolval( $rtt_watermark ),
+					),
+					$watermark_to_use
 				),
 			);
 

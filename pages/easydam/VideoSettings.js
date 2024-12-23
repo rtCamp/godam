@@ -15,7 +15,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 	const [ overwriteThumbnails, setOverwriteThumbnails ] = useState( mediaSettings?.video?.overwrite_thumbnails || false );
 	const [ watermarkText, setWatermarkText ] = useState( mediaSettings?.video?.watermark_text || '' );
 
-	const [ selectedMedia, setSelectedMedia ] = useState( null );
+	const [ selectedMedia, setSelectedMedia ] = useState( { url: mediaSettings?.video?.watermark_url } );
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
@@ -66,11 +66,16 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
-			setSelectedMedia( attachment ); // Save the selected media
+			setSelectedMedia( { url: attachment.url } );
 			console.log( 'Selected media:', attachment );
 		} );
 
 		fileFrame.open();
+	};
+
+	const removeWatermark = () => {
+		setSelectedMedia( null );
+		setWatermarkText( '' );
 	};
 
 	const handleSaveSettings = async () => {
@@ -86,6 +91,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 				overwrite_thumbnails: overwriteThumbnails,
 				watermark: ! disableWatermark,
 				watermark_text: watermarkText,
+				watermark_url: selectedMedia?.url || '',
 			},
 		};
 
@@ -119,7 +125,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 			) }
 
 			<form id="easydam-video-settings" className="flex flex-col" onSubmit={ handleSubmit }>
-				{/* <div className="py-3 flex flex-col gap-2">
+				{ /* <div className="py-3 flex flex-col gap-2">
 					<label className="block text-base font-semibold" htmlFor="sync_from_easydam">Video delivery</label>
 					<ToggleControl
 						__nextHasNoMarginBottom
@@ -130,7 +136,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					<div className="text-slate-500">If you turn this setting off, your videos will be delivered from WordPress.</div>
 				</div>
 
-				<hr /> */}
+				<hr /> */ }
 
 				<div className="py-3 flex flex-col gap-2">
 					<label className="block text-base font-semibold" htmlFor="abs">Adaptive Bitrate Streaming</label>
@@ -145,7 +151,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 
 				<hr />
 
-				{/* <div>
+				{ /* <div>
 					<div className="py-3 flex flex-col gap-1">
 						<label className="block text-base font-semibold" htmlFor="optimize_video">Video optimization</label>
 						<ToggleControl
@@ -188,7 +194,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 						/>
 						<div className="text-slate-500">Videos will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
 					</div>
-				</div> */}
+				</div> */ }
 
 				<div className="py-3 flex flex-col gap-2">
 					<label className="block text-base font-semibold" htmlFor="video_thumbnails_count">
@@ -261,6 +267,14 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 											alt={ selectedMedia.alt || 'Selected watermark' }
 											className="max-w-[200px]"
 										/>
+										<Button
+											isDestructive
+											className="mt-2"
+											onClick={ removeWatermark }
+											variant="secondary"
+										>
+											Remove Watermark
+										</Button>
 									</div>
 								) }
 							</div>
