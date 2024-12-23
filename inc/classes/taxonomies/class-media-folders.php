@@ -26,19 +26,19 @@ class Media_Folders extends Base {
 	 */
 	public function get_labels() {
 
-		return [
-			'name'              => _x('Media Folders', 'Media Folder', 'transcoder'),
-			'singular_name'     => _x('Media Folder', 'Media Folder', 'transcoder'),
-			'search_items'      => __('Search Media Folders', 'transcoder'),
-			'all_items'         => __('All Media Folders', 'transcoder'),
-			'parent_item'       => __('Parent Folder', 'transcoder'),
-			'parent_item_colon' => __('Parent Folder:', 'transcoder'),
-			'edit_item'         => __('Edit Media Folder', 'transcoder'),
-			'update_item'       => __('Update Media Folder', 'transcoder'),
-			'add_new_item'      => __('Add New Media Folder', 'transcoder'),
-			'new_item_name'     => __('New Media Folder Name', 'transcoder'),
-			'menu_name'         => __('Media Folders', 'transcoder'),
-		];
+		return array(
+			'name'              => _x( 'Media Folders', 'Media Folder', 'transcoder' ),
+			'singular_name'     => _x( 'Media Folder', 'Media Folder', 'transcoder' ),
+			'search_items'      => __( 'Search Media Folders', 'transcoder' ),
+			'all_items'         => __( 'All Media Folders', 'transcoder' ),
+			'parent_item'       => __( 'Parent Folder', 'transcoder' ),
+			'parent_item_colon' => __( 'Parent Folder:', 'transcoder' ),
+			'edit_item'         => __( 'Edit Media Folder', 'transcoder' ),
+			'update_item'       => __( 'Update Media Folder', 'transcoder' ),
+			'add_new_item'      => __( 'Add New Media Folder', 'transcoder' ),
+			'new_item_name'     => __( 'New Media Folder Name', 'transcoder' ),
+			'menu_name'         => __( 'Media Folders', 'transcoder' ),
+		);
 
 	}
 
@@ -49,9 +49,9 @@ class Media_Folders extends Base {
 	 */
 	public function get_post_types() {
 
-		return [
+		return array(
 			'attachment',
-		];
+		);
 	}
 
 
@@ -64,15 +64,15 @@ class Media_Folders extends Base {
 
 		$args = parent::get_args();
 
-		$extra = [
+		$extra = array(
 			'hierarchical'      => true,
 			'show_ui'           => false,
 			'show_admin_column' => false,
 			'query_var'         => true,
-			'rewrite'           => array('slug' => 'media-folder'),
+			'rewrite'           => array( 'slug' => 'media-folder' ),
 			'show_in_rest'      => true,
 			'query_var'         => true,
-		];
+		);
 
 		return array_merge( $args, $extra );
 

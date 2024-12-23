@@ -97,9 +97,13 @@ class Assets {
 			filemtime( RT_TRANSCODER_PATH . '/assets/build/css/media-library.css' )
 		);
 
-		wp_localize_script( 'easydam-media-library', 'MediaLibraryTaxonomyFilterData', array(
-			'terms'     => get_terms( 'media-folder', array( 'hide_empty' => false ) ),
-		) );
+		wp_localize_script(
+			'easydam-media-library',
+			'MediaLibraryTaxonomyFilterData',
+			array(
+				'terms' => get_terms( 'media-folder', array( 'hide_empty' => false ) ),
+			) 
+		);
 
 		wp_register_style(
 			'easydam-style',

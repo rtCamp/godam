@@ -32,7 +32,7 @@ abstract class Base {
 	 */
 	protected function setup_hooks() {
 
-		add_action( 'init', [ $this, 'register_taxonomy' ] );
+		add_action( 'init', array( $this, 'register_taxonomy' ) );
 
 	}
 
@@ -54,10 +54,10 @@ abstract class Base {
 		}
 
 		$args = $this->get_args();
-		$args = ( ! empty( $args ) && is_array( $args ) ) ? $args : [];
+		$args = ( ! empty( $args ) && is_array( $args ) ) ? $args : array();
 
 		$labels = $this->get_labels();
-		$labels = ( ! empty( $labels ) && is_array( $labels ) ) ? $labels : [];
+		$labels = ( ! empty( $labels ) && is_array( $labels ) ) ? $labels : array();
 
 		if ( ! empty( $labels ) && is_array( $labels ) ) {
 			$args['labels'] = $labels;
@@ -74,13 +74,13 @@ abstract class Base {
 	 */
 	public function get_args() {
 
-		return [
+		return array(
 			'hierarchical'      => true,
 			'show_ui'           => true,
 			'show_admin_column' => true,
 			'query_var'         => true,
 			'show_in_rest'      => true,
-		];
+		);
 
 	}
 

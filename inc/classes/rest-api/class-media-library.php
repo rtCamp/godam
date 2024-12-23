@@ -37,20 +37,20 @@ class Media_Library extends Base {
 					},
 					'args'                => array(
 						'attachment_ids' => array(
-							'required' => true,
-							'type'     => 'array',
-							'items'    => array( 'type' => 'integer' ),
+							'required'    => true,
+							'type'        => 'array',
+							'items'       => array( 'type' => 'integer' ),
 							'description' => 'Array of attachment IDs to associate.',
 						),
 						'folder_term_id' => array(
-							'required' => true,
-							'type'     => 'integer',
+							'required'    => true,
+							'type'        => 'integer',
 							'description' => 'ID of the folder term to associate with the attachments.',
 						),
 					),
 			
 				),
-			)
+			),
 		);
 	}
 
@@ -60,7 +60,7 @@ class Media_Library extends Base {
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response
 	 */
-	function assign_images_to_folder( $request ) {
+	public function assign_images_to_folder( $request ) {
 		$attachment_ids = $request->get_param( 'attachment_ids' );
 		$folder_term_id = $request->get_param( 'folder_term_id' );
 	
@@ -82,9 +82,11 @@ class Media_Library extends Base {
 			}
 		}
 	
-		return rest_ensure_response( array(
-			'success' => true,
-			'message' => 'Attachments successfully associated with the folder.',
-		) );
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => 'Attachments successfully associated with the folder.',
+			) 
+		);
 	}
 }
