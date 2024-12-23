@@ -66,8 +66,8 @@ class Media_Folders extends Base {
 
 		$extra = [
 			'hierarchical'      => true,
-			'show_ui'           => true,
-			'show_admin_column' => true,
+			'show_ui'           => false,
+			'show_admin_column' => false,
 			'query_var'         => true,
 			'rewrite'           => array('slug' => 'media-folder'),
 			'show_in_rest'      => true,
