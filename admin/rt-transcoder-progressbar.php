@@ -27,7 +27,6 @@ class RT_Progress {
 	 * @return void
 	 */
 	public function __construct() {
-
 	}
 
 	/**

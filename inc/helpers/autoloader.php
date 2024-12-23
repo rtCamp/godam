@@ -80,7 +80,6 @@ function autoloader( $resource = '' ) {
 		// We already making sure that file is exists and valid.
 		require_once $resource_path; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable
 	}
-
 }
 
 spl_autoload_register( __NAMESPACE__ . '\autoloader' );

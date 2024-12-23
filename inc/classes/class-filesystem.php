@@ -22,7 +22,6 @@ class FileSystem {
 	protected function __construct() {
 
 		$this->init_file_system();
-
 	}
 
 	/**
@@ -76,7 +75,5 @@ class FileSystem {
 		global $wp_filesystem;
 
 		return $wp_filesystem->delete( $file );
-
 	}
-
 }

@@ -7,7 +7,7 @@
 
 namespace Transcoder\Inc\REST_API;
 
-use \Transcoder\Inc\Traits\Singleton;
+use Transcoder\Inc\Traits\Singleton;
 
 
 /**
