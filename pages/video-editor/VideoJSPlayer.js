@@ -5,6 +5,10 @@ import { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
+/**
+ * Internal dependencies
+ */
+import EasyDAM from '../../assets/src/images/EasyDAM.png';
 
 export const VideoJS = ( props ) => {
 	const videoRef = useRef( null );
@@ -63,6 +67,138 @@ export const VideoJS = ( props ) => {
 			}
 		}
 	}, [ videoRef, videoConfig ] );
+
+	useEffect( () => {
+		const captionsButton = document.querySelector( '.vjs-subs-caps-button' );
+		const volumeSlider = document.querySelector( '.vjs-volume-panel' );
+		const brandingLogo = document.querySelector( '#branding-icon' );
+
+		if ( ! videoConfig.controlBar.volumePanel ) {
+			volumeSlider.classList.add( 'hide' );
+		}
+
+		if ( videoConfig.controlBar.subsCapsButton ) {
+			captionsButton.classList.remove( 'vjs-hidden' );
+			captionsButton.classList.add( 'show' );
+		}
+
+		if ( videoConfig.controlBar.brandingIcon ) {
+			const img = document.createElement( 'img' );
+
+			if ( ! brandingLogo ) {
+				img.src =
+          videoConfig.controlBar.customBrandImg.length > 0
+          	? videoConfig.controlBar.customBrandImg
+          	: EasyDAM;
+				img.id = 'branding-icon';
+				img.alt = 'Branding';
+				document.querySelector( '.vjs-control-bar' ).appendChild( img );
+			}
+		}
+
+		//change appearance color
+		const controlBar = document.querySelector( '.vjs-control-bar' );
+		const bigPlayButton = document.querySelector( '.vjs-big-play-button' );
+		controlBar.style.setProperty(
+			'background-color',
+			videoConfig.controlBar.appearanceColor,
+			'important',
+		);
+		bigPlayButton.style.setProperty(
+			'background-color',
+			videoConfig.controlBar.appearanceColor,
+			'important',
+		);
+
+		//change hover color and zoom level
+		const controls = controlBar.querySelectorAll( '.vjs-control' );
+		controls.forEach( ( control ) => {
+			// On hover
+			control.addEventListener( 'mouseenter', function() {
+				control.style.color = videoConfig.controlBar.hoverColor;
+				if ( ! control.className.includes( 'vjs-progress-control' ) ) {
+					this.style.transform = `scale(${ 1 + parseFloat( videoConfig.controlBar.zoomLevel ) })`;
+				}
+			} );
+
+			control.addEventListener( 'mouseleave', function() {
+				control.style.color = '#fff'; // Reset to default
+				this.style.transform = 'scale(1)';
+			} );
+		} );
+
+		document
+			.querySelector( '.vjs-slider-bar' )
+			.addEventListener( 'mouseenter', function() {
+				this.style.backgroundColor = videoConfig.controlBar.hoverColor;
+			} );
+
+		document
+			.querySelector( '.vjs-control-bar' )
+			.addEventListener( 'mouseleave', function() {
+				document.querySelector( '.vjs-slider-bar' ).style.backgroundColor =
+          '#fff';
+			} );
+
+		//play button position
+		const playButton = document.querySelector( '.vjs-big-play-button' );
+
+		playButton.classList.add(
+			`${ videoConfig.controlBar.playButtonPosition }-align`,
+		);
+
+		//skip buttons
+		const skipBackwardButton = document.querySelector(
+			'[class^="vjs-skip-backward-"]',
+		);
+		const skipForwardButton = document.querySelector(
+			'[class^="vjs-skip-forward-"]',
+		);
+
+		const backwardClasses = Array.from( skipBackwardButton.classList );
+		const existingBackwardClass = backwardClasses.find( ( cls ) =>
+			cls.startsWith( 'vjs-skip-backward-' ),
+		);
+
+		if ( existingBackwardClass ) {
+			skipBackwardButton.classList.replace(
+				existingBackwardClass,
+				`vjs-skip-backward-${ videoConfig.controlBar.skipButtons.forward }`,
+			);
+		}
+
+		const forwardClasses = Array.from( skipForwardButton.classList );
+		const existingForwardClass = forwardClasses.find( ( cls ) =>
+			cls.startsWith( 'vjs-skip-forward-' ),
+		);
+
+		if ( existingForwardClass ) {
+			skipForwardButton.classList.replace(
+				existingForwardClass,
+				`vjs-skip-forward-${ videoConfig.controlBar.skipButtons.forward }`,
+			);
+		}
+
+		//play button image
+		const playButtonElement = document.querySelector( '.vjs-big-play-button' );
+		playButtonElement.style.backgroundImage = `url(${ videoConfig.controlBar.customPlayBtnImg })`;
+
+		//control bar position
+		if ('vertical' === videoConfig.controlBar.controlBarPosition) {
+			controlBar.classList.add("vjs-control-bar-vertical");
+			for ( const control of controls ) {
+				control.classList.add( 'vjs-control-vertical' );
+				if ( control.classList.contains( 'vjs-volume-panel' ) ) {
+					control.classList.add( 'vjs-volume-panel-vertical' );
+					control.classList.remove( 'vjs-volume-panel-horizontal' );
+				}
+
+				if ( control.classList.contains( 'vjs-volume-horizontal' ) ) {
+					control.classList.add( 'vjs-volume-vertical' );
+				}
+			}
+		}
+	}, [ videoConfig ] );
 
 	useEffect( () => {
 		if ( playerRef.current ) {
