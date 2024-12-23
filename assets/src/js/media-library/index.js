@@ -15,7 +15,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 } );
 
 async function assignToFolder( attachmentIds, folderTermId ) {
-	await fetch( '/wp-json/easydam/v1/media-library/assign-folder', {
+	const response = await fetch( '/wp-json/easydam/v1/media-library/assign-folder', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -26,6 +26,13 @@ async function assignToFolder( attachmentIds, folderTermId ) {
 			folder_term_id: folderTermId,
 		} ),
 	} );
+
+	if ( response.ok ) {
+		// Remove the dragged items from the list
+		attachmentIds.forEach( id => {
+			$( `li.attachment[data-id="${ id }"]` ).remove();
+		} );
+	}
 }
 
 const attachDragEvent = () => {
@@ -218,6 +225,4 @@ if ( wp.media?.view ) {
 		} );
 	}() );
 }
-
-// Add Button to Dynamically Add Terms
 

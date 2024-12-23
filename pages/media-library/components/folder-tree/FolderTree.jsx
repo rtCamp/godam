@@ -19,6 +19,28 @@ import { utilities } from '../../data/utilities';
 import { useGetFoldersQuery, useUpdateFolderMutation } from '../../redux/api/folders.js';
 import SnackbarComp from './SnackbarComp.jsx';
 
+const openLocalStorageItem = ( folders ) => {
+	const localStorageOpenItem = JSON.parse( localStorage.getItem( 'easyDam' ) ) || {};
+
+	if ( localStorageOpenItem.openItems ) {
+		const openItems = localStorageOpenItem.openItems;
+
+		folders = folders.map( ( folder ) => {
+			const folderCopy = { ...folder };
+
+			if ( openItems.includes( folderCopy.id ) ) {
+				folderCopy.isOpen = true;
+			} else {
+				folderCopy.isOpen = false;
+			}
+
+			return folderCopy;
+		} );
+	}
+
+	return folders;
+};
+
 const FolderTree = () => {
 	const { data: folders, error, isLoading } = useGetFoldersQuery();
 
@@ -29,7 +51,7 @@ const FolderTree = () => {
 
 	useEffect( () => {
 		if ( folders ) {
-			dispatch( setTree( folders ) );
+			dispatch( setTree( openLocalStorageItem( folders ) ) );
 		}
 	}, [ dispatch, folders ] );
 

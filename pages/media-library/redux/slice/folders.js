@@ -3,12 +3,17 @@
  */
 import { createSlice } from '@reduxjs/toolkit';
 
+const localStorageData = JSON.parse( localStorage.getItem( 'easyDam' ) ) || {
+	selectedItem: -1,
+	openItems: [],
+};
+
 const slice = createSlice( {
 	name: 'folder',
 	initialState: {
 		folders: [],
 		selectedFolder: {
-			id: -1,
+			id: localStorageData.selectedItem,
 		},
 
 		modals: {
@@ -25,6 +30,10 @@ const slice = createSlice( {
 	reducers: {
 		changeSelectedFolder: ( state, action ) => {
 			state.selectedFolder = action.payload.item;
+
+			const appState = JSON.parse( localStorage.getItem( 'easyDam' ) ) || {};
+			appState.selectedItem = state.selectedFolder.id;
+			localStorage.setItem( 'easyDam', JSON.stringify( appState ) );
 		},
 		openModal: ( state, action ) => {
 			const modalName = action.payload;
@@ -47,6 +56,23 @@ const slice = createSlice( {
 
 			if ( folder ) {
 				folder.isOpen = ! folder.isOpen;
+
+				const appState = JSON.parse( localStorage.getItem( 'easyDam' ) ) || {};
+				let openFolders = appState.openItems || [];
+
+				if ( folder.isOpen ) {
+					// Add the folder ID to the list if it's opened
+					if ( ! openFolders.includes( folder.id ) ) {
+						openFolders.push( folder.id );
+					}
+				} else {
+					// Remove the folder ID from the list if it's closed
+					openFolders = openFolders.filter( ( id ) => id !== folder.id );
+				}
+
+				appState.openItems = openFolders;
+
+				localStorage.setItem( 'easyDam', JSON.stringify( appState ) );
 			}
 		},
 		createFolder: ( state, action ) => {
