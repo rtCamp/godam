@@ -35,3 +35,5 @@ sftp-config.json
 .editorconfig
 .cache/
 vendor/
+/assets/build/
+/pages/build/
