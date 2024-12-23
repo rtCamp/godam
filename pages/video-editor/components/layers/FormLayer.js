@@ -4,11 +4,12 @@
 
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
+import Editor from '@monaco-editor/react';
 
 /**
  * WordPress dependencies
  */
-import { Button, SelectControl, ToggleControl, ComboboxControl, TextareaControl, Modal, Icon, ColorPalette } from '@wordpress/components';
+import { Button, SelectControl, ToggleControl, ComboboxControl, TextareaControl, Modal, ColorPalette } from '@wordpress/components';
 import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
@@ -124,12 +125,23 @@ const FormLayer = ( { layerID, goBack } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
 				}
 			/>
-			<CustomCssInjector
-				value={ layer.custom_css }
-				handleChange={ ( value ) =>
+			<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom CSS', 'transcoder' ) }</label>
+			<Editor
+				id="custom-css"
+				className="code-editor"
+				defaultLanguage="css"
+				defaultValue={ layer.custom_css }
+				onChange={ ( value ) =>
 					dispatch( updateLayerField( { id: layer.id, field: 'custom_css', value } ) )
 				}
 			/>
+
+			<ColorPalette
+				value={ layer.bg_color ?? '#FFFFFFB3' }
+				enableAlpha={ true }
+				onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
+			/>
+
 			<ToggleControl
 				className="mb-4"
 				label={ __( 'Allow user to skip', 'transcoder' ) }
@@ -142,7 +154,12 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 			<LayerControl>
 				<>
-					<div className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70">
+					<div
+						style={ {
+							backgroundColor: layer.bg_color,
+						} }
+						className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70 my-auto"
+					>
 						<div>
 							<div className="max-w-[400px] mx-auto" dangerouslySetInnerHTML={ { __html: formHTML } } />
 						</div>

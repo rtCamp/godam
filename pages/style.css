@@ -50,7 +50,7 @@ input, textarea, select {
 }
 
 .video-editor-container aside {
-  @apply h-full w-[320px];
+  @apply h-full w-[400px];
 }
 
 .video-editor-container aside #sidebar-content {
@@ -118,4 +118,23 @@ input, textarea, select {
 
 .show {
   display: flex !important;
+}
+
+.code-editor {
+  @apply min-h-[200px] border mb-4;
+  border: 1px solid var(--wp-components-color-gray-600, #949494);
+}
+
+
+/* WYSIWYG editor */
+.wysiwyg-editor .ql-toolbar.ql-snow {
+  @apply flex items-center justify-center flex-wrap gap-2;
+
+}
+.wysiwyg-editor .ql-toolbar.ql-snow .ql-formats {
+  margin-right: 0;
+}
+
+.wysiwyg-editor .ql-editor {
+  @apply min-h-[200px];
 }

@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, CheckboxControl, CustomSelectControl, Modal, SelectControl } from '@wordpress/components';
+import { Button, Modal, SelectControl, ToggleControl, ColorPalette } from '@wordpress/components';
 import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
@@ -20,17 +20,6 @@ import ImageCTA from '../cta/ImageCTA';
 import HtmlCTA from '../cta/HtmlCTA';
 import LayerControls from '../LayerControls';
 
-const CTATypes = [
-	{
-		value: 'text',
-		label: 'Text',
-	},
-	{
-		value: 'html',
-		label: 'HTML',
-	},
-];
-
 const CTALayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const [ formHTML, setFormHTML ] = useState( '' );
@@ -43,16 +32,12 @@ const CTALayer = ( { layerID, goBack } ) => {
 		goBack();
 	};
 
-	console.log( 'Layer:', layer );
-
-	const handleCTATypeSelect = ( e ) => {
+	const handleCTATypeSelect = ( val ) => {
 		dispatch(
 			updateLayerField( {
 				id: layer.id,
 				field: 'cta_type',
-				value: e.selectedItem.key,
-				type: e.selectedItem.key,
-				name: e.selectedItem.name,
+				value: val,
 			} ),
 		);
 	};
@@ -68,8 +53,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 
 	useEffect( () => {
 		if ( 'text' === layer?.cta_type ) {
-			const html = `<a href="${ layer.link }" target="_blank">${ layer.text }</a>`;
-			setFormHTML( html );
+			setFormHTML( layer.text );
 		} else if ( 'html' === layer?.cta_type ) {
 			setFormHTML( layer.html );
 		} else {
@@ -110,45 +94,57 @@ const CTALayer = ( { layerID, goBack } ) => {
 					</Modal>
 				) }
 			</div>
-			<div className="flex gap-2 flex-col">
-				<p>Call to Action</p>
-				<CustomSelectControl
+			<div className="flex flex-col">
+				<p className="mb-4">{ __( 'Call to Action', 'transcoder' ) }</p>
+				<SelectControl
 					__next40pxDefaultSize
-					onChange={ handleCTATypeSelect }
+					label={ __( 'Select type', 'transcoder' ) }
+					className="mb-4"
 					options={ [
 						{
-							key: 'text',
-							name: 'Text',
+							label: 'Text',
+							value: 'text',
 						},
 						{
-							key: 'html',
-							name: 'HTML',
-						},
-						{
-							key: 'image',
-							name: 'Image',
+							label: 'HTML',
+							value: 'html',
 						},
 					] }
 					value={ layer.cta_type }
+					onChange={ handleCTATypeSelect }
 				/>
 				{ renderSelectedCTAInputs() }
 
+				{ /* Layer background color */ }
+				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Layer background color', 'transcoder' ) }</label>
+				<ColorPalette
+					value={ layer.bg_color }
+					enableAlpha={ true }
+					onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
+				/>
+
 				{ /* Common settings */ }
-				<CheckboxControl
-					__nextHasNoMarginBottom
-					label="Allow to Skip"
+				<ToggleControl
+					label={ __( 'Allow user to skip', 'transcoder' ) }
 					checked={ layer.allow_skip }
 					onChange={ ( value ) =>
 						dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
 					}
+					help={ __( 'If enabled, the user will be able to skip the form submission.', 'transcoder' ) }
+					className="mb-4"
 				/>
 			</div>
 			<LayerControls>
 				<>
-					<div className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70 my-auto">
+					<div
+						style={ {
+							backgroundColor: layer.bg_color,
+						} }
+						className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70 my-auto"
+					>
 						<div className="h-full flex items-center">
 							<div
-								className="max-w-[400px] mx-auto text-black text-5xl"
+								className="max-w-[400px] mx-auto prose"
 								dangerouslySetInnerHTML={ { __html: formHTML } }
 							/>
 						</div>
