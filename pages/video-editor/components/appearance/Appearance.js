@@ -618,6 +618,7 @@ const Appearance = () => {
 						d="toggle-color"
 						onChange={ handleControlColorChange }
 						color={ videoConfig.controlBar.appearanceColor }
+						className="mt-2.5"
 					/>
 				</div>
 				<div className="form-group">
@@ -628,6 +629,7 @@ const Appearance = () => {
 						d="toggle-color"
 						onChange={ handleControlsHoverColor }
 						color={ videoConfig.controlBar.hoverColor }
+						className="m-2.5"
 					/>
 				</div>
 			</div>
