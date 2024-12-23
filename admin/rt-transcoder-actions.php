@@ -278,7 +278,7 @@ function save_transcoded_url_field( $post, $attachment ) {
 	$easydam_settings = get_option( 'rt-easydam-settings', array() );
 
 	$adaptive_bitrate_enabled = ! empty( $easydam_settings['video']['adaptive_bitrate'] );
-	
+
 	if ( ! $adaptive_bitrate_enabled ) {
 		return $post;
 	}
@@ -311,7 +311,7 @@ function register_rt_transcoded_url_meta() {
 			'auth_callback' => function () {
 				return current_user_can( 'edit_posts' );
 			},
-		) 
+		)
 	);
 }
 add_action( 'init', 'register_rt_transcoded_url_meta' );

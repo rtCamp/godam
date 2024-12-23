@@ -256,7 +256,7 @@ class Settings extends Base {
 				'overwrite_thumbnails' => false,
 				'watermark'            => false,
 				'watermark_text'       => '',
-				'watermark_url'       => '',
+				'watermark_url'        => '',
 			),
 			'image'   => array(
 				'sync_from_easydam' => false,

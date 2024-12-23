@@ -133,7 +133,7 @@ class RT_Transcoder_Handler {
 				'adaptive_bitrate'     => false,
 				'watermark'            => false,
 				'watermark_text'       => '',
-				'watermark_url'       => '',
+				'watermark_url'        => '',
 				'video_thumbnails'     => 5,
 				'overwrite_thumbnails' => false,
 			),
@@ -289,7 +289,7 @@ class RT_Transcoder_Handler {
 			$rtt_watermark                  = $this->easydam_settings['video']['watermark'];
 			$rtt_watermark_text             = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
 			$rtt_watermark_url              = esc_url_raw( $this->easydam_settings['video']['watermark_url'] );
-			$watermark_to_use = $rtt_watermark_url ? array( 'watermark_url' => $rtt_watermark_url ) : array( 'watermark_text' => $rtt_watermark_text );
+			$watermark_to_use               = $rtt_watermark_url ? array( 'watermark_url' => $rtt_watermark_url ) : array( 'watermark_text' => $rtt_watermark_text );
 
 			$args = array(
 				'method'    => 'POST',
