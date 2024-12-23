@@ -1,0 +1,39 @@
+.tree-item-preview {
+	width: fit-content;
+	padding: 0.5rem 0.5rem;
+	background-color: #e5e7eb;
+	position: relative;
+
+	&__button {
+		all: unset;
+		box-sizing: border-box;
+		text-align: left;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding-right: 1.5rem;
+		width: 100%;
+	}
+
+	&__content {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	&__text {
+		font-size: 0.875rem;
+		color: #4a4a4a;
+	}
+
+	&__badge {
+	position: absolute;
+	top: 0;
+	right: 0;
+	background-color: #6b7280;
+	color: white;
+	font-size: 0.75rem;
+	padding: 0.25rem 0.5rem;
+	border-bottom-left-radius: 0.375rem;
+	}
+}

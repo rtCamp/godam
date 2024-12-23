@@ -12,6 +12,7 @@ import { Icon, file } from '@wordpress/icons';
  * Internal dependencies
  */
 import { utilities } from '../../data/utilities';
+import './css/tree-item-preview.scss';
 
 const TreeItemPreview = ( { item, index } ) => {
 	const itemCount = useMemo( () => utilities.countChildren( item ), [ item ] );
@@ -19,19 +20,19 @@ const TreeItemPreview = ( { item, index } ) => {
 	return (
 		<>
 			<div
-				className="w-fit py-2 px-2 bg-gray-200 relative"
+				className="tree-item-preview"
 			>
 				<button
-					className="text-left flex items-center justify-between pr-6"
+					className="tree-item-preview__button"
 					data-index={ index }
 				>
-					<div className="flex items-center gap-2">
+					<div className="tree-item-preview__content">
 						<Icon icon={ file } />
-						<span className="text-sm text-gray-700">{ item.name }</span>
+						<span className="tree-item-preview__text">{ item.name }</span>
 					</div>
 				</button>
 
-				<div className="absolute top-0 right-0 bg-gray-500 text-white text-xs px-2 py-1 rounded-bl">
+				<div className="tree-item-preview__badge">
 					{ itemCount }
 				</div>
 			</div>

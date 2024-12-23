@@ -131,8 +131,8 @@ const pages = {
 				},
 			},
 			{
-				test: /\.css$/, // Handle CSS files
-				use: [ 'style-loader', 'css-loader', 'postcss-loader' ],
+				test: /\.(css|scss)$/, // Handle CSS files
+				use: [ 'style-loader', 'css-loader', 'postcss-loader', 'sass-loader' ],
 			},
 			{
 				test: /\.(png|jpg|jpeg|gif|svg)$/, // Handle image files

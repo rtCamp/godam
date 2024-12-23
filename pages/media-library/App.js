@@ -12,7 +12,6 @@ const { __ } = wp.i18n;
 /**
  * Internal dependencies
  */
-import './index.css';
 import FolderTree from './components/folder-tree/FolderTree.jsx';
 
 import { changeSelectedFolder, openModal } from './redux/slice/folders';
@@ -42,17 +41,17 @@ const App = () => {
 				__next40pxDefaultSize
 				variant="primary"
 				text="New Folder"
-				className="w-full flex mb-2"
+				className="button--full mb-spacing"
 				onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
 			/>
 
-			<ButtonGroup className="w-full flex gap-2 mb-2">
+			<ButtonGroup className="button-group mb-spacing">
 				<Button
 					icon="edit"
 					__next40pxDefaultSize
 					variant="secondary"
 					text="Rename"
-					className="w-1/2"
+					className="button--half"
 					onClick={ () => dispatch( openModal( 'rename' ) ) }
 					disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
 				/>
@@ -61,30 +60,30 @@ const App = () => {
 					__next40pxDefaultSize
 					variant="primary"
 					text="Delete"
-					className="w-1/2"
+					className="button--half"
 					isDestructive={ true }
 					onClick={ () => dispatch( openModal( 'delete' ) ) }
 					disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
 				/>
 			</ButtonGroup>
 
-			<div className="w-full flex flex-col gap-2 mb-2">
+			<div className="folder-list">
 				<button
-					className={ `flex justify-between items-center w-full p-2 rounded-md ${
-						selectedFolder.id === -1 ? 'bg-gray-200' : ''
+					className={ `folder-list__item ${
+						selectedFolder.id === -1 ? 'folder-list__item--active' : ''
 					}` }
 					onClick={ () => handleClick( -1 ) }
 				>
-					<p className="text-sm text-black">{ __( 'All Media', 'transcoder' ) }</p>
+					<p className="folder-list__text">{ __( 'All Media', 'transcoder' ) }</p>
 				</button>
 
 				<button
-					className={ `flex justify-between items-center w-full p-2 rounded-md ${
-						selectedFolder.id === 0 ? 'bg-gray-200' : ''
+					className={ `folder-list__item ${
+						selectedFolder.id === 0 ? 'folder-list__item--active' : ''
 					}` }
 					onClick={ () => handleClick( 0 ) }
 				>
-					<p className="text-sm text-black">{ __( 'Uncategorized', 'transcoder' ) }</p>
+					<p className="folder-list__text">{ __( 'Uncategorized', 'transcoder' ) }</p>
 				</button>
 			</div>
 

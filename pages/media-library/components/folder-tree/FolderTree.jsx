@@ -19,6 +19,8 @@ import { utilities } from '../../data/utilities';
 import { useGetFoldersQuery, useUpdateFolderMutation } from '../../redux/api/folders.js';
 import SnackbarComp from './SnackbarComp.jsx';
 
+import './css/tree.scss';
+
 const openLocalStorageItem = ( folders ) => {
 	const localStorageOpenItem = JSON.parse( localStorage.getItem( 'easyDam' ) ) || {};
 
@@ -154,18 +156,20 @@ const FolderTree = () => {
 			onDragMove={ handleDragMove }
 			sensors={ sensors }
 		>
-			<div className="flex justify-center w-full">
-				<div className="w-full flex flex-col justify-end" id="tree">
+			<div className="tree-container">
+				<div className="tree" id="tree">
 					<SortableContext
 						items={ sortedIds }
 						strategy={ verticalListSortingStrategy }
 					>
 						{ filteredData.map( ( item ) => {
-							return <TreeItem
-								item={ item }
-								key={ item.id }
-								depth={ item.id === activeId && projected ? projected.depth : item.depth }
-							/>;
+							return (
+								<TreeItem
+									item={ item }
+									key={ item.id }
+									depth={ item.id === activeId && projected ? projected.depth : item.depth }
+								/>
+							);
 						} ) }
 					</SortableContext>
 				</div>

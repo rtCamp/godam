@@ -1,0 +1,77 @@
+/**
+ * Styles for the Media Library component.
+ * 
+ * Used to style and display the custom media library.
+ */
+
+#wpbody {
+	display: flex;
+}
+
+#wpcontent {
+	padding-left: 0 !important;
+}
+
+#rt-transcoder-media-library-root {
+	min-width: 300px;
+	padding: 24px 12px;
+	
+	* {
+		box-sizing: border-box;
+	}
+
+	.button--full {
+		width: 100%; 
+		display: flex;
+	}
+
+	.button--half {
+		width: 50%; 
+	}
+
+	.button-group {
+		display: flex;
+		gap: 0.5rem; 
+		width: 100%; 
+	}
+
+	
+	.mb-spacing {
+		margin-bottom: 0.5rem; 
+	}
+
+	
+	.folder-list {
+		display: flex;
+		flex-direction: column; 
+		gap: 0.5rem; 
+		margin-bottom: 0.5rem; 
+	}
+
+	.folder-list__item {
+		all: unset; 
+		box-sizing: border-box;
+		padding: 0; 
+		display: flex;
+		justify-content: space-between; 
+		align-items: center; 
+		width: 100%; 
+		padding: 0.5rem; 
+		border-radius: 0.375rem; 
+		background-color: transparent;
+
+		&--active {
+			background-color: #e5e7eb; 
+		}
+	}
+
+	.folder-list__text {
+		font-size: 0.875rem; 
+		color: #000; 
+		margin: 0;
+	}
+}
+
+.components-button.has-icon.has-text {
+	justify-content: center !important;
+}

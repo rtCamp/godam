@@ -14,6 +14,7 @@ import { TextControl, Button, ButtonGroup, Modal } from '@wordpress/components';
  */
 import { closeModal, renameFolder, updateSnackbar } from '../../redux/slice/folders';
 import { useUpdateFolderMutation } from '../../redux/api/folders';
+import './scss/modal.scss';
 
 const RenameModal = () => {
 	const [ folderName, setFolderName ] = useState( '' );
@@ -67,7 +68,7 @@ const RenameModal = () => {
 					onChange={ ( value ) => setFolderName( value ) }
 				/>
 
-				<ButtonGroup className="w-full flex gap-2 mt-4">
+				<ButtonGroup className="modal__button-group">
 					<Button
 						text="Rename"
 						variant="primary"

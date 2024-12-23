@@ -15,7 +15,7 @@ import { Icon, file, chevronDown, chevronUp } from '@wordpress/icons';
  */
 import { toggleOpenClose, changeSelectedFolder } from '../../redux/slice/folders';
 import { triggerFilterChange } from '../../data/media-grid';
-import './css/indicator.css';
+import './css/tree-item.scss';
 
 const indentPerLevel = 12;
 
@@ -42,11 +42,9 @@ const TreeItem = ( { item, index, depth } ) => {
 	return (
 		<>
 			<div
-				className={ `w-full py-2 px-2 rounded-md relative hover:bg-gray-200 tree-item
-					${ item.id === selectedFolderID ? 'bg-gray-200' : '' } 
-					${ isDragging ? 'indicator-parent' : '' }
-
-				` }
+				className={ `tree-item ${
+					item.id === selectedFolderID ? 'tree-item--active' : ''
+				} ${ isDragging ? 'tree-item--dragging' : '' }` }
 				data-id={ item.id }
 				ref={ setNodeRef }
 				style={ style }
@@ -55,20 +53,19 @@ const TreeItem = ( { item, index, depth } ) => {
 			>
 				<button
 					style={ { paddingLeft: `${ depth * indentPerLevel }px` } }
-					className={ `w-full text-left flex items-center justify-between
-							${ isDragging ? 'indicator' : '' }
-						` }
+					className={ `tree-item__button ${
+						isDragging ? 'tree-item__button--dragging' : ''
+					}` }
 					data-index={ index }
 					onClick={ () => handleClick() }
 				>
-
-					<div className="flex items-center gap-2">
+					<div className="tree-item__content">
 						<Icon icon={ file } />
-						<span className="text-sm text-gray-700">{ item.name }</span>
+						<span className="tree-item__text">{ item.name }</span>
 					</div>
 
 					{ item.children?.length > 0 &&
-						<Icon icon={ item.isOpen ? chevronUp : chevronDown } />
+					<Icon icon={ item.isOpen ? chevronUp : chevronDown } />
 					}
 				</button>
 			</div>

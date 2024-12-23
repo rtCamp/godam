@@ -15,6 +15,7 @@ import { TextControl, Button, ButtonGroup, Modal } from '@wordpress/components';
 import { closeModal, createFolder, updateSnackbar } from '../../redux/slice/folders';
 import { useCreateFolderMutation } from '../../redux/api/folders';
 import { updateSelectDropdown } from '../../data/media-grid';
+import './scss/modal.scss';
 
 const FolderCreationModal = () => {
 	const [ folderName, setFolderName ] = useState( '' );
@@ -76,7 +77,7 @@ const FolderCreationModal = () => {
 					onChange={ ( value ) => setFolderName( value ) }
 				/>
 
-				<ButtonGroup className="w-full flex gap-2 mt-4">
+				<ButtonGroup className="modal__button-group">
 					<Button
 						text="Create"
 						variant="primary"

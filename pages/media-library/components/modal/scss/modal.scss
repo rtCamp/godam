@@ -1,0 +1,25 @@
+.modal {
+	&__description {
+		font-size: 0.875rem;
+		color: #4a4a4a;
+	}
+	
+	&__warning {
+		font-size: 0.875rem;
+		color: #757575;
+		margin-top: 0.5rem;
+	}
+	
+	&__highlight {
+		font-weight: 600;
+	}
+	
+	&__button-group {
+		display: flex;
+		gap: 0.5rem;
+		margin-top: 1rem;
+		width: 100%;
+	}
+}
+
+
