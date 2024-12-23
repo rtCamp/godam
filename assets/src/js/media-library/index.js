@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import '../../libs/jquery-ui-1.14.1/jquery-ui';
+import '../../libs/jquery-ui-1.14.1.draggable/jquery-ui';
 
 const $ = jQuery;
 
