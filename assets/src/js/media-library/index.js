@@ -5,8 +5,6 @@ import '../../libs/jquery-ui-1.14.1.draggable/jquery-ui';
 
 const $ = jQuery;
 
-console.log( 'Media Library JS loaded' );
-
 document.addEventListener( 'DOMContentLoaded', function() {
 	const mediaLibraryRoot = document.createElement( 'div' );
 	mediaLibraryRoot.id = 'rt-transcoder-media-library-root';
@@ -199,10 +197,6 @@ if ( wp.media?.view ) {
 				};
 				this.filters = filters;
 			},
-
-			addOption( e ) {
-				console.log( 'New folder created:', e.detail );
-			},
 		} );
 
 		// Extend and override wp.media.view.AttachmentsBrowser to include our new filter
@@ -219,8 +213,6 @@ if ( wp.media?.view ) {
 						priority: -75,
 					} ).render(),
 				);
-
-				// this.toolbar.unset( 'MediaLibraryTaxonomyFilter' );
 			},
 		} );
 	}() );
