@@ -73,11 +73,6 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 		fileFrame.open();
 	};
 
-	const removeWatermark = () => {
-		setSelectedMedia( null );
-		setWatermarkText( '' );
-	};
-
 	const handleSaveSettings = async () => {
 		const updatedSettings = {
 			...mediaSettings,
@@ -270,7 +265,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 										<Button
 											isDestructive
 											className="mt-2"
-											onClick={ removeWatermark }
+											onClick={ () => setSelectedMedia( null ) }
 											variant="secondary"
 										>
 											Remove Watermark
