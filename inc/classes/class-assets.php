@@ -108,6 +108,15 @@ class Assets {
 			)
 		);
 
+		wp_localize_script(
+			'easydam-media-library',
+			'transcoderSettings',
+			array(
+				'restUrl' => esc_url_raw( rest_url( 'easydam/v1/transcoding/transcoding-status' ) ),
+				'nonce'   => wp_create_nonce( 'wp_rest' ),
+			)
+		);
+
 		wp_register_style(
 			'easydam-style',
 			RT_TRANSCODER_URL . '/assets/build/css/admin.css',

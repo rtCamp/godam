@@ -3,6 +3,8 @@
  */
 import '../../libs/jquery-ui-1.14.1.draggable/jquery-ui';
 
+import './transcoding-status';
+
 const $ = jQuery;
 
 document.addEventListener( 'DOMContentLoaded', function() {
