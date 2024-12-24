@@ -12,18 +12,17 @@ use Transcoder\Inc\Pages;
 use Transcoder\Inc\Blocks;
 use Transcoder\Inc\Assets;
 
+use Transcoder\Inc\Taxonomies\Media_Folders;
+
 use Transcoder\Inc\REST_API\GF;
 use Transcoder\Inc\REST_API\Settings;
 use Transcoder\Inc\REST_API\Meta_Rest_Fields;
-
+use Transcoder\Inc\REST_API\Media_Library;
 
 /**
  * Class Plugin.
  */
 class Plugin {
-
-
-
 
 	use Singleton;
 
@@ -34,12 +33,15 @@ class Plugin {
 
 		// Load plugin classes.
 		Assets::get_instance();
+		Blocks::get_instance();
+		Pages::get_instance();
+		Media_Library_Ajax::get_instance();
+
 		$this->load_post_types();
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 		$this->load_rest_api();
-		Blocks::get_instance();
-		Pages::get_instance();
+
 
 
 		// Add a custom "Edit Video" button for video files in the Media Library.
@@ -77,6 +79,7 @@ class Plugin {
 	 * Load Taxonomies.
 	 */
 	public function load_taxonomies() {
+		Media_Folders::get_instance();
 	}
 
 	/**
@@ -94,5 +97,6 @@ class Plugin {
 		GF::get_instance();
 		Settings::get_instance();
 		Meta_Rest_Fields::get_instance();
+		Media_Library::get_instance();
 	}
 }
