@@ -4,4 +4,3 @@
 /* eslint-disable no-console */
 console.log( 'Hello from Features Plugin Admin' );
 /* eslint-enable no-console */
-

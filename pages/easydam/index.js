@@ -59,6 +59,10 @@ const App = () => {
 				const settingsData = await settingsResponse.json();
 				const licenseData = await licenseResponse.json();
 
+				if ( ! licenseData.license_key ) {
+					settingsData.general.is_verified = false;
+				}
+
 				setMediaSettings( settingsData );
 				setLicenseKey( licenseData.license_key || '' ); // Save the license key
 				setIsVerified( settingsData?.general?.is_verified || false );
