@@ -204,19 +204,6 @@ function VideoEdit( {
 
 	const videoPosterDescription = `video-block__poster-image-description-${ instanceId }`;
 
-	const onSelectTrack = ( media ) => {
-		setAttributes( {
-			tracks: [
-				...tracks,
-				{
-					src: media.url,
-					kind: 'subtitles',
-					label: media.filename,
-				},
-			],
-		} );
-	};
-
 	return (
 		<>
 			{ isSingleSelected && (
