@@ -44,7 +44,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 	};
 
 	const fetchOverlayMediaURL = ( mediaId ) => {
-		if ( 0 === mediaId ) {
+		if ( 0 === mediaId || ! mediaId ) {
 			setImageCtaUrl( '' );
 			return;
 		}
@@ -80,9 +80,20 @@ const CTALayer = ( { layerID, goBack } ) => {
 			setFormHTML( layer.html );
 		} else if ( 'image' === layer?.cta_type ) {
 			fetchOverlayMediaURL( layer?.image );
-			if ( 0 !== imageCtaUrl.length ) {
-				const html = `<img src="${ imageCtaUrl }"alt="Image Cta Overlay" style="opacity: ${ layer?.imageOpacity }"/>`;
-        		setFormHTML( html );
+			if ( imageCtaUrl.length !== 0 ) {
+				const html = `
+				<img 
+					src="${ imageCtaUrl }" 
+					alt="Image CTA Overlay" 
+					style="opacity: ${ layer?.imageOpacity || 1 }" 
+				/>
+				${
+	layer?.imageLink && layer?.imageText
+		? `<a class="image-overlay-text" href="${ layer?.imageLink }">${ layer?.imageText }</a>`
+		: ''
+}
+			`;
+				setFormHTML( html );
 			} else {
 				setFormHTML( '' );
 			}
@@ -138,16 +149,11 @@ const CTALayer = ( { layerID, goBack } ) => {
 							value: 'html',
 						},
 						{
-							key: 'image',
-							name: 'Image',
+							label: 'Image',
+							value: 'image',
 						},
 					] }
-					value={ {
-						key: layer.cta_type,
-						name:
-              String( layer.cta_type ).charAt( 0 ).toUpperCase() +
-              String( layer.cta_type ).slice( 1 ),
-					} }
+					value={ layer.cta_type }
 					onChange={ handleCTATypeSelect }
 				/>
 				{ renderSelectedCTAInputs() }

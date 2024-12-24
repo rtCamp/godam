@@ -53,7 +53,9 @@
     display: none;
 }
 
-.overlay-content * {
-    font-size: 4rem;
-    color: #fff;
+.image-overlay-text {
+    font-size: 15px;
+    background: white;
+    padding: 10px;
+    border-radius: 12px;
 }

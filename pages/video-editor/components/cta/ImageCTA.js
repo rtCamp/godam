@@ -79,6 +79,8 @@ const ImageCTA = ( { layerID } ) => {
 		setSelectedImageUrl( '' );
 	};
 
+	console.log( 'Layer', layer );
+
 	return (
 		<div className="mt-2 flex flex-col gap-6">
 			<div>
@@ -94,7 +96,7 @@ const ImageCTA = ( { layerID } ) => {
 					variant="primary"
 					className="ml-2"
 				>
-					{ 0 === layer?.image ? 'Upload' : 'Replace' }
+					{ 0 === layer?.image || ! layer?.image ? 'Upload' : 'Replace' }
 				</Button>
 				{ selectedImageUrl && (
 					<div className="mt-2">
