@@ -79,7 +79,23 @@ class Transcoding extends Base {
 			);
 		}
 
-		$status_url = 'https://frappe-transcoder-api.rt.gw/api/method/frappe_transcoder.frappe_transcoder.api.transcoding_progress.get_transcoding_status?job_id=jhpta3375q';
+		$license = get_option( 'rt-transcoding-api-key' );
+
+		if ( empty( $license ) ) {
+			return new \WP_Error(
+				'invalid_license',
+				__( 'Invalid license key', 'transcoder' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$status_url = add_query_arg(
+			array(
+				'job_id'  => $job_id,
+				'license' => $license,
+			),
+			'https://frappe-transcoder-api.rt.gw/api/method/frappe_transcoder.frappe_transcoder.api.transcoding_progress.get_transcoding_status'
+		);
 
 		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
 			$status_page = vip_safe_wp_remote_get( $status_url, '', 3, 3 );
