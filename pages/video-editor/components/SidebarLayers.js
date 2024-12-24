@@ -45,6 +45,9 @@ const SidebarLayers = ( { currentTime } ) => {
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const dispatch = useDispatch();
 
+	// Sort the array (ascending order)
+	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
+
 	const addNewLayer = ( type ) => {
 		switch ( type ) {
 			case 'form':
@@ -81,7 +84,7 @@ const SidebarLayers = ( { currentTime } ) => {
 				! selectedLayer ? (
 					<div id="sidebar-layers" className="p-4">
 						{
-							layers?.map( ( layer ) => (
+							sortedLayers?.map( ( layer ) => (
 								<button
 									key={ layer.id }
 									className="w-full flex justify-between items-center p-2 border rounded mb-2 hover:bg-gray-50 cursor-pointer"

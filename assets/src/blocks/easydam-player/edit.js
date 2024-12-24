@@ -35,8 +35,8 @@ import { store as noticesStore } from '@wordpress/notices';
  * Internal dependencies
  */
 import VideoCommonSettings from './edit-common-settings';
-import Tracks from './tracks';
 import Video from './VideoJS';
+import TracksEditor from './track-uploader';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -219,6 +219,12 @@ function VideoEdit( {
 							onError={ onUploadError }
 							onReset={ () => onSelectVideo( undefined ) }
 						/>
+						<TracksEditor
+							tracks={ tracks }
+							onChange={ ( newTracks ) => {
+								setAttributes( { tracks: newTracks } );
+							} }
+						/>
 					</BlockControls>
 				</>
 			) }
@@ -236,22 +242,16 @@ function VideoEdit( {
 							<MediaUpload
 								title={ __( 'Select poster image' ) }
 								onSelect={ onSelectPoster }
-								allowedTypes={
-									VIDEO_POSTER_ALLOWED_MEDIA_TYPES
-								}
+								allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
 								render={ ( { open } ) => (
 									<Button
 										__next40pxDefaultSize
 										variant="primary"
 										onClick={ open }
 										ref={ posterImageButton }
-										aria-describedby={
-											videoPosterDescription
-										}
+										aria-describedby={ videoPosterDescription }
 									>
-										{ ! poster
-											? __( 'Select' )
-											: __( 'Replace' ) }
+										{ ! poster ? __( 'Select' ) : __( 'Replace' ) }
 									</Button>
 								) }
 							/>
@@ -259,14 +259,10 @@ function VideoEdit( {
 								{ poster
 									? sprintf(
 										/* translators: %s: poster image URL. */
-										__(
-											'The current poster image url is %s',
-										),
+										__( 'The current poster image url is %s' ),
 										poster,
 									)
-									: __(
-										'There is no poster image currently selected',
-									) }
+									: __( 'There is no poster image currently selected' ) }
 							</p>
 							{ !! poster && (
 								<Button
@@ -279,6 +275,21 @@ function VideoEdit( {
 							) }
 						</div>
 					</MediaUploadCheck>
+					<div className="editor-video-customisation-cta">
+						<BaseControl.VisualLabel>
+							{ __( 'Customise Video' ) }
+						</BaseControl.VisualLabel>
+						<Button
+							__next40pxDefaultSize
+							onClick={ () =>
+								window.location.href = `/wp-admin/admin.php?page=video_editor&id=${ id }`
+							}
+							variant="primary"
+							className=""
+						>
+							{ __( 'Customise' ) }
+						</Button>
+					</div>
 				</PanelBody>
 			</InspectorControls>
 			<figure { ...blockProps }>
