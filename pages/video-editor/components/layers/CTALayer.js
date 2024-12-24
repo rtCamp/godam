@@ -34,6 +34,7 @@ const CTATypes = [
 const CTALayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const [ formHTML, setFormHTML ] = useState( '' );
+	const [ imageCtaUrl, setImageCtaUrl ] = useState( '' );
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
@@ -57,6 +58,23 @@ const CTALayer = ( { layerID, goBack } ) => {
 		);
 	};
 
+	const fetchOverlayMediaURL = ( mediaId ) => {
+		if ( 0 === mediaId ) {
+			setImageCtaUrl( '' );
+			return;
+		}
+		fetch( `/wp-json/wp/v2/media/${ mediaId }` )
+			.then( ( response ) => {
+				if ( ! response.ok ) {
+					throw new Error( 'Media not found' );
+				}
+				return response.json();
+			} )
+			.then( ( media ) => {
+				setImageCtaUrl( media.source_url ); // URL of the media file
+			} );
+	};
+
 	const renderSelectedCTAInputs = () => {
 		switch ( layer?.cta_type ) {
 			case 'text': return <TextCTA layerID={ layer.id } />;
@@ -67,15 +85,25 @@ const CTALayer = ( { layerID, goBack } ) => {
 	};
 
 	useEffect( () => {
+		if ( ! layer ) {
+			return;
+		}
+
 		if ( 'text' === layer?.cta_type ) {
 			const html = `<a href="${ layer.link }" target="_blank">${ layer.text }</a>`;
 			setFormHTML( html );
 		} else if ( 'html' === layer?.cta_type ) {
 			setFormHTML( layer.html );
-		} else {
-			setFormHTML( '' );
+		} else if ( 'image' === layer?.cta_type ) {
+			fetchOverlayMediaURL( layer?.image );
+			if ( 0 !== imageCtaUrl.length ) {
+				const html = `<img src="${ imageCtaUrl }"alt="Image Cta Overlay"/>`;
+        		setFormHTML( html );
+			} else {
+				setFormHTML( '' );
+			}
 		}
-	}, [ layer ] );
+	}, [ layer, imageCtaUrl ] );
 
 	return (
 		<>
@@ -129,7 +157,10 @@ const CTALayer = ( { layerID, goBack } ) => {
 							name: 'Image',
 						},
 					] }
-					value={ layer.cta_type }
+					value={ {
+						key: layer.cta_type,
+						name: String( layer.cta_type ).charAt( 0 ).toUpperCase() + String( layer.cta_type ).slice( 1 ),
+					} }
 				/>
 				{ renderSelectedCTAInputs() }
 
@@ -139,7 +170,9 @@ const CTALayer = ( { layerID, goBack } ) => {
 					label="Allow to Skip"
 					checked={ layer.allow_skip }
 					onChange={ ( value ) =>
-						dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
+						dispatch(
+							updateLayerField( { id: layer.id, field: 'allow_skip', value } ),
+						)
 					}
 				/>
 			</div>
@@ -153,8 +186,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 							/>
 						</div>
 					</div>
-					{
-						layer.allow_skip &&
+					{ layer.allow_skip && (
 						<Button
 							className="absolute bottom-6 right-0"
 							variant="primary"
@@ -164,7 +196,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 						>
 							{ __( 'Skip', 'transcoder' ) }
 						</Button>
-					}
+					) }
 				</>
 			</LayerControls>
 		</>
