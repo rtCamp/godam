@@ -101,10 +101,12 @@ class Assets {
 			'easydam-media-library',
 			'MediaLibraryTaxonomyFilterData',
 			array(
-				'terms' => get_terms( array(
-					'taxonomy'   => 'media-folder',
-					'hide_empty' => false,
-				) ),
+				'terms' => get_terms(
+					array(
+						'taxonomy'   => 'media-folder',
+						'hide_empty' => false,
+					)
+				),
 			)
 		);
 
