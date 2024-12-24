@@ -4,10 +4,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
-/**
- * Internal dependencies
- */
-import { initializeStore, saveVideoMeta } from './redux/slice/videoSlice';
 
 /**
  * Internal dependencies
@@ -15,6 +11,7 @@ import { initializeStore, saveVideoMeta } from './redux/slice/videoSlice';
 import VideoJSPlayer from './VideoJSPlayer';
 import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
+import { initializeStore, saveVideoMeta } from './redux/slice/videoSlice';
 
 /**
  * WordPress dependencies

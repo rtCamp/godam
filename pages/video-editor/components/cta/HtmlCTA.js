@@ -2,11 +2,12 @@
  * WordPress dependencies
  */
 import { TextareaControl } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import Editor from '@monaco-editor/react';
 
 /**
  * Internal dependencies
@@ -21,15 +22,18 @@ const HtmlCTA = ( { layerID } ) => {
 
 	return (
 		<>
-			<TextareaControl
-				__nextHasNoMarginBottom
-				__next40pxDefaultSize
-				label="HTML"
-				value={ layer.html }
-				onChange={ ( value ) => {
-					dispatch( updateLayerField( { id: layer.id, field: 'html', value } ) );
+			<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom HTML', 'transcoder' ) }</label>
+			<Editor
+				id="custom-css"
+				className="code-editor"
+				defaultLanguage="html"
+				defaultValue={ layer.html }
+				options={ {
+					minimap: { enabled: false },
 				} }
-				placeholder="Your HTML"
+				onChange={ ( value ) =>
+					dispatch( updateLayerField( { id: layer.id, field: 'html', value } ) )
+				}
 			/>
 		</>
 	);
