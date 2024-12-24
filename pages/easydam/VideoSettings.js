@@ -16,7 +16,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 	const [ watermarkText, setWatermarkText ] = useState( mediaSettings?.video?.watermark_text || '' );
 
 	const [ selectedMedia, setSelectedMedia ] = useState( { url: mediaSettings?.video?.watermark_url } );
-	const [ useImage, setUseImage ] = useState( !! selectedMedia?.url );
+	const [ useImage, setUseImage ] = useState( mediaSettings?.video?.use_watermark_image || false );
 
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
@@ -87,8 +87,9 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 				video_thumbnails: videoThumbnails,
 				overwrite_thumbnails: overwriteThumbnails,
 				watermark: ! disableWatermark,
-				watermark_text: ! useImage ? watermarkText : '',
-				watermark_url: useImage ? selectedMedia?.url : '',
+				use_watermark_image: useImage,
+				watermark_url: selectedMedia?.url || '',
+				watermark_text: watermarkText || '',
 			},
 		};
 
