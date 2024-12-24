@@ -1,0 +1,12 @@
+.tree-container {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+
+	.tree {
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		width: 100%;
+	}
+}
