@@ -5,8 +5,6 @@ import '../../libs/jquery-ui-1.14.1.draggable/jquery-ui';
 
 const $ = jQuery;
 
-console.log( 'Media Library JS loaded' );
-
 document.addEventListener( 'DOMContentLoaded', function() {
 	const mediaLibraryRoot = document.createElement( 'div' );
 	mediaLibraryRoot.id = 'rt-transcoder-media-library-root';
@@ -29,7 +27,7 @@ async function assignToFolder( attachmentIds, folderTermId ) {
 
 	if ( response.ok ) {
 		// Remove the dragged items from the list
-		attachmentIds.forEach( id => {
+		attachmentIds.forEach( ( id ) => {
 			$( `li.attachment[data-id="${ id }"]` ).remove();
 		} );
 	}
@@ -61,12 +59,14 @@ const attachDragEvent = () => {
 					fontWeight: 'bold',
 					boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
 					zIndex: 1000,
+					PointerEvent: 'none',
 				},
 			} );
 		},
 		opacity: 0.7,
 		zIndex: 1000,
 		appendTo: 'body',
+		cursorAt: { top: 5, left: 5 },
 	} );
 
 	// Initialize droppable tree items
@@ -199,10 +199,6 @@ if ( wp.media?.view ) {
 				};
 				this.filters = filters;
 			},
-
-			addOption( e ) {
-				console.log( 'New folder created:', e.detail );
-			},
 		} );
 
 		// Extend and override wp.media.view.AttachmentsBrowser to include our new filter
@@ -219,8 +215,6 @@ if ( wp.media?.view ) {
 						priority: -75,
 					} ).render(),
 				);
-
-				// this.toolbar.unset( 'MediaLibraryTaxonomyFilter' );
 			},
 		} );
 	}() );
