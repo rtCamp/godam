@@ -20,7 +20,6 @@ $poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster
 $preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
 $plays_inline  = ! empty( $attributes['playsInline'] );
 $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
-$src           = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $sources       = ! empty( $attributes['sources'] ) ? $attributes['sources'] : array();
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
@@ -46,14 +45,25 @@ $video_setup = wp_json_encode(
 
 ?>
 
-<?php if ( $src ) : ?>
+<?php if ( ! empty( $sources ) ) : ?>
 <figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
 	<div class="easydam-video-container">
 		<video
 			class="easydam-player video-js vjs-big-play-centered"
 			data-setup="<?php echo esc_attr( $video_setup ); ?>"
 		>
-			<source src="<?php echo esc_url( $src ); ?>" type="video/mp4" />
+			<?php
+			foreach ( $sources as $source ) :
+				if ( ! empty( $source['src'] ) && ! empty( $source['type'] ) ) :
+					?>
+						<source
+							src="<?php echo esc_url( $source['src'] ); ?>"
+							type="<?php echo esc_attr( $source['type'] ); ?>"
+						/>
+						<?php
+					endif;
+				endforeach;
+			?>
 
 			<?php
 			foreach ( $tracks as $track ) :
