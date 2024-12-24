@@ -144,7 +144,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 					>
 						<div className="h-full flex items-center">
 							<div
-								className="max-w-[400px] mx-auto prose"
+								className="max-w-[400px] w-full mx-auto ql-editor prose"
 								dangerouslySetInnerHTML={ { __html: formHTML } }
 							/>
 						</div>
