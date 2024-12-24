@@ -251,9 +251,9 @@ function add_transcoded_url_field( $form_fields, $post ) {
 	$form_fields['transcoded_url'] = array(
 		'label' => __( 'Transcoded MPD URL', 'transcoder' ),
 		'input' => 'html',
-		'html'  => '<input type="text" name="attachments[' . $post->ID . '][transcoded_url]" id="attachments-' . $post->ID . '-transcoded_url" value="' . esc_url( $transcoded_url ) . '" ' . disabled( ! $adaptive_bitrate_enabled, true, false ) . '>',
+		'html'  => '<input type="text" name="attachments[' . $post->ID . '][transcoded_url]" id="attachments-' . $post->ID . '-transcoded_url" value="' . esc_url( $transcoded_url ) . '" readonly>',
 		'value' => esc_url( $transcoded_url ),
-		'helps' => __( 'Enter or edit the URL of the transcoded .mpd file stored on Amazon S3.', 'transcoder' ),
+		'helps' => __( 'The URL of the transcoded .mpd file is generated automatically and cannot be edited.', 'transcoder' ),
 	);
 
 	// Add a note if adaptive bitrate streaming is disabled.
