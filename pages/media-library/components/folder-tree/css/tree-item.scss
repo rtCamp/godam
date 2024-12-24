@@ -1,0 +1,81 @@
+.tree-item {
+	all: unset;
+	box-sizing: border-box;
+	display: block;
+	width: 100%;
+	padding: 0.5rem;
+	border-radius: 0.375rem;
+	position: relative;
+	background-color: transparent;
+	cursor: pointer;
+
+	&:hover {
+		background-color: #e5e7eb;
+	}
+
+	&--active {
+		background-color: #e5e7eb;
+	}
+
+	&--dragging {
+		padding-top: 0px;
+		padding-bottom: 0px;
+	
+		display: flex;
+		justify-content: end;
+	}
+
+	&__button {
+		all: unset;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		text-align: left;
+		padding: 0;
+
+		&--dragging {
+			opacity: 1;
+			position: relative;
+			z-index: 1;
+			margin-bottom: -1px;
+
+			padding: 0;
+			height: 4px;
+			border-color: #2389ff;
+			background-color: #56a1f8;
+
+			width: calc( 100% - ( var(--spacing) + 8px ) );
+
+			&::before {
+				position: absolute;
+				left: -8px;
+				top: -4px;
+				display: block;
+				content: '';
+				width: 12px;
+				height: 12px;
+				border-radius: 50%;
+				border: 1px solid #2389ff;
+				background-color: #ffffff;
+			}
+
+			& > * {
+				height: 0;
+				opacity: 0;
+			}
+		}
+	}
+
+	&__content {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	&__text {
+		font-size: 0.875rem;
+		color: #4a4a4a;
+	}
+}
