@@ -266,10 +266,21 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 								<div className="text-slate-500">If enabled, Transcoder will use an image instead of text as the watermark for the transcoded video.</div>
 
 								{ useImage && (
-									<div>
-										<Button isPrimary onClick={ openMediaPicker }>
-											{ selectedMedia && selectedMedia.url ? 'Change Watermark' : 'Select Watermark' }
-										</Button>
+									<div className="mt-2">
+										<div className="flex gap-2">
+											<Button variant="primary" onClick={ openMediaPicker }>
+												{ selectedMedia && selectedMedia.url ? 'Change Watermark' : 'Select Watermark' }
+											</Button>
+											{ selectedMedia && selectedMedia.url && (
+												<Button
+													isDestructive
+													onClick={ () => setSelectedMedia( null ) }
+													variant="secondary"
+												>
+													Remove Watermark
+												</Button>
+											) }
+										</div>
 										{ selectedMedia && selectedMedia.url && (
 											<div className="mt-2">
 												<img
@@ -277,14 +288,6 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 													alt={ selectedMedia.alt || 'Selected watermark' }
 													className="max-w-[200px]"
 												/>
-												<Button
-													isDestructive
-													className="mt-2"
-													onClick={ () => setSelectedMedia( null ) }
-													variant="secondary"
-												>
-													Remove Watermark
-												</Button>
 											</div>
 										) }
 									</div>
