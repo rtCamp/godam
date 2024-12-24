@@ -39,7 +39,6 @@ const TextCTA = ( { layerID } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'link', value } ) );
 				} }
 				placeholder="https://rtcamp.com"
-				
 			/>
 		</>
 	);

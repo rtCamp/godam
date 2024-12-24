@@ -4,7 +4,7 @@
 /**
  * WordPress dependencies
  */
-import { Button, Icon } from '@wordpress/components';
+import { Button, Icon, RangeControl, TextControl } from '@wordpress/components';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -80,31 +80,90 @@ const ImageCTA = ( { layerID } ) => {
 	};
 
 	return (
-		<div className="form-group">
-			<label
-				htmlFor="custom-play-button"
-				name="hover-slider"
-				className="font-bold"
-			>
-				Add Image
-			</label>
-			<Button onClick={ openImageCTAUploader } variant="primary" className="ml-2">
-				{ 0 === layer?.image ? 'Upload' : 'Replace' }
-			</Button>
-			{ selectedImageUrl && (
-				<div className="mt-2">
-					<Icon
-						icon={ 'no' }
-						className="relative top-[25px] left-[60%] cursor-pointer"
-						onClick={ removeCTAImage }
-					/>
-					<img
-						src={ selectedImageUrl }
-						alt={ 'Selected custom brand' }
-						className="max-w-[200px]"
+		<div className="mt-2 flex flex-col gap-6">
+			<div>
+				<label
+					htmlFor="custom-play-button"
+					name="hover-slider"
+					className="font-bold"
+				>
+					Add Image
+				</label>
+				<Button
+					onClick={ openImageCTAUploader }
+					variant="primary"
+					className="ml-2"
+				>
+					{ 0 === layer?.image ? 'Upload' : 'Replace' }
+				</Button>
+				{ selectedImageUrl && (
+					<div className="mt-2">
+						<Icon
+							icon={ 'no' }
+							className="relative top-[25px] left-[60%] cursor-pointer"
+							onClick={ removeCTAImage }
+						/>
+						<img
+							src={ selectedImageUrl }
+							alt={ 'Selected custom brand' }
+							className="max-w-[200px]"
+						/>
+					</div>
+				) }
+			</div>
+
+			<TextControl
+				__nextHasNoMarginBottom
+				__next40pxDefaultSize
+				label="Text"
+				value={ layer.imageText }
+				onChange={ ( value ) => {
+					dispatch(
+						updateLayerField( { id: layer.id, field: 'imageText', value } ),
+					);
+				} }
+				placeholder="Your text"
+			/>
+
+			<TextControl
+				__nextHasNoMarginBottom
+				__next40pxDefaultSize
+				label="URL"
+				value={ layer.imageLink }
+				onChange={ ( value ) => {
+					dispatch(
+						updateLayerField( { id: layer.id, field: 'imageLink', value } ),
+					);
+				} }
+				placeholder="https://rtcamp.com"
+			/>
+
+			<div className="mt-4">
+				<label name="hover-slider" className="font-bold">
+					Opacity of background image
+				</label>
+				<div className="hover-control-input-container">
+					<RangeControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						help="Please select how transparent you would like this."
+						initialPosition={ 0 }
+						max={ 1 }
+						min={ 0 }
+						onChange={ ( e ) =>
+							dispatch(
+								updateLayerField( {
+									id: layer.id,
+									field: 'imageOpacity',
+									value: e,
+								} ),
+							)
+						}
+						step={ 0.1 }
+						value={ layer.imageOpacity }
 					/>
 				</div>
-			) }
+			</div>
 		</div>
 	);
 };

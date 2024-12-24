@@ -97,7 +97,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 		} else if ( 'image' === layer?.cta_type ) {
 			fetchOverlayMediaURL( layer?.image );
 			if ( 0 !== imageCtaUrl.length ) {
-				const html = `<img src="${ imageCtaUrl }"alt="Image Cta Overlay"/>`;
+				const html = `<img src="${ imageCtaUrl }"alt="Image Cta Overlay" style="opacity: ${ layer?.imageOpacity }"/>`;
         		setFormHTML( html );
 			} else {
 				setFormHTML( '' );
@@ -159,7 +159,9 @@ const CTALayer = ( { layerID, goBack } ) => {
 					] }
 					value={ {
 						key: layer.cta_type,
-						name: String( layer.cta_type ).charAt( 0 ).toUpperCase() + String( layer.cta_type ).slice( 1 ),
+						name:
+              String( layer.cta_type ).charAt( 0 ).toUpperCase() +
+              String( layer.cta_type ).slice( 1 ),
 					} }
 				/>
 				{ renderSelectedCTAInputs() }
@@ -178,10 +180,14 @@ const CTALayer = ( { layerID, goBack } ) => {
 			</div>
 			<LayerControls>
 				<>
-					<div className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70 my-auto">
-						<div className="h-full flex items-center">
+					<div
+						className={ `absolute inset-0 overflow-auto ${ 'image' === layer?.cta_type ? '' : 'px-4 py-8 ' }bg-white bg-opacity-70 my-auto` }
+					>
+						<div
+							className={ `h-full flex items-center ${ 'image' === layer?.cta_type ? 'overflow-hidden' : '' }` }
+						>
 							<div
-								className="max-w-[400px] mx-auto text-black text-5xl"
+								className={ `${ 'image' === layer?.cta_type ? 'flex justify-center w-full items-center' : 'max-w-[400px] ' }mx-auto text-black text-5xl` }
 								dangerouslySetInnerHTML={ { __html: formHTML } }
 							/>
 						</div>
