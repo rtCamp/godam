@@ -130,6 +130,9 @@ const FormLayer = ( { layerID, goBack } ) => {
 				id="custom-css"
 				className="code-editor"
 				defaultLanguage="css"
+				options={ {
+					minimap: { enabled: false },
+				} }
 				defaultValue={ layer.custom_css }
 				onChange={ ( value ) =>
 					dispatch( updateLayerField( { id: layer.id, field: 'custom_css', value } ) )

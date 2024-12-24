@@ -28,6 +28,9 @@ const HtmlCTA = ( { layerID } ) => {
 				className="code-editor"
 				defaultLanguage="html"
 				defaultValue={ layer.html }
+				options={ {
+					minimap: { enabled: false },
+				} }
 				onChange={ ( value ) =>
 					dispatch( updateLayerField( { id: layer.id, field: 'html', value } ) )
 				}
