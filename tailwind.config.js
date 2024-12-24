@@ -13,5 +13,12 @@ module.exports = {
 	plugins: [
 		require( 'tailwindcss-animate' ),
 		require( '@tailwindcss/typography' ),
+		function( { addBase } ) {
+			addBase( {
+				'.notailwind': {
+					all: 'unset', // Resets all styles in this section
+				},
+			} );
+		},
 	],
 };

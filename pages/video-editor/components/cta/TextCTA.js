@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import QuillEditor from '../QuillEditor';
-import { ToggleControl } from '@wordpress/components';
+import DOMPurify from 'isomorphic-dompurify';
 
 const TextCTA = ( { layerID } ) => {
 	const layer = useSelector( ( state ) =>
@@ -56,7 +56,7 @@ const TextCTA = ( { layerID } ) => {
 					dispatch( updateLayerField( {
 						id: layer.id,
 						field: 'text',
-						value: val,
+						value: DOMPurify.sanitize( val ),
 					} ) );
 				} }
 				toolbarOptions={ layer.FullEditor ? allToolbarOptions : minmalToolbarOptions }

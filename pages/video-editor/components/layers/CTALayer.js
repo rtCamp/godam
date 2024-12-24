@@ -143,10 +143,12 @@ const CTALayer = ( { layerID, goBack } ) => {
 						className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70 my-auto"
 					>
 						<div className="h-full flex items-center">
-							<div
-								className="max-w-[400px] mx-auto prose"
-								dangerouslySetInnerHTML={ { __html: formHTML } }
-							/>
+							<div className="max-w-[400px] w-full mx-auto">
+								<div
+									className="ql-editor prose"
+									dangerouslySetInnerHTML={ { __html: formHTML } }
+								/>
+							</div>
 						</div>
 					</div>
 					{

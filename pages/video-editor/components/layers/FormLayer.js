@@ -136,6 +136,8 @@ const FormLayer = ( { layerID, goBack } ) => {
 				}
 			/>
 
+			{ /* Layer background color */ }
+			<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Layer background color', 'transcoder' ) }</label>
 			<ColorPalette
 				value={ layer.bg_color ?? '#FFFFFFB3' }
 				enableAlpha={ true }
