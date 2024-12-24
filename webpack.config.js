@@ -83,6 +83,13 @@ const adminJS = {
 	},
 };
 
+const mediaLibrary = {
+	...sharedConfig,
+	entry: {
+		'media-library': path.resolve( process.cwd(), 'assets', 'src', 'js', 'media-library', 'index.js' ),
+	},
+};
+
 // Example of how to add a new entry point for JS file.
 const easyDAM = {
 	...sharedConfig,
@@ -124,8 +131,8 @@ const pages = {
 				},
 			},
 			{
-				test: /\.css$/, // Handle CSS files
-				use: [ 'style-loader', 'css-loader', 'postcss-loader' ],
+				test: /\.(css|scss)$/, // Handle CSS files
+				use: [ 'style-loader', 'css-loader', 'postcss-loader', 'sass-loader' ],
 			},
 			{
 				test: /\.(png|jpg|jpeg|gif|svg)$/, // Handle image files
@@ -154,6 +161,7 @@ const pages = {
 module.exports = [
 	mainJS,
 	adminJS,
+	mediaLibrary,
 	easyDAM,
 	styles, // Do not remove this.
 	pages,

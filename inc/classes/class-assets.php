@@ -35,7 +35,6 @@ class Assets {
 		 */
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
-
 	}
 
 	/**
@@ -62,7 +61,6 @@ class Assets {
 
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );
-
 	}
 
 	/**
@@ -72,12 +70,42 @@ class Assets {
 	 */
 	public function admin_enqueue_scripts() {
 
+		$screen = get_current_screen();
+
 		wp_register_script(
 			'easydam-script',
 			RT_TRANSCODER_URL . '/assets/build/js/admin.js',
 			array(),
 			filemtime( RT_TRANSCODER_PATH . '/assets/build/js/admin.js' ),
 			true
+		);
+
+		wp_register_script(
+			'easydam-media-library',
+			RT_TRANSCODER_URL . '/assets/build/js/media-library.js',
+			array(),
+			filemtime( RT_TRANSCODER_PATH . '/assets/build/js/media-library.js' ),
+			true
+		);
+
+		wp_register_style(
+			'easydam-media-library',
+			RT_TRANSCODER_URL . '/assets/build/css/media-library.css',
+			array(),
+			filemtime( RT_TRANSCODER_PATH . '/assets/build/css/media-library.css' )
+		);
+
+		wp_localize_script(
+			'easydam-media-library',
+			'MediaLibraryTaxonomyFilterData',
+			array(
+				'terms' => get_terms(
+					array(
+						'taxonomy'   => 'media-folder',
+						'hide_empty' => false,
+					)
+				),
+			)
 		);
 
 		wp_register_style(
@@ -89,6 +117,9 @@ class Assets {
 
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );
-
+		if ( $screen && 'upload' === $screen->id ) {
+			wp_enqueue_script( 'easydam-media-library' );
+			wp_enqueue_style( 'easydam-media-library' );
+		}
 	}
 }
