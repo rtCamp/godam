@@ -288,7 +288,7 @@ class RT_Transcoder_Handler {
 			$rtt_adaptive_bitrate_streaming = $this->easydam_settings['video']['adaptive_bitrate'];
 			$rtt_watermark                  = $this->easydam_settings['video']['watermark'];
 			$rtt_watermark_text             = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
-			$rtt_watermark_url              = esc_url_raw( $this->easydam_settings['video']['watermark_url'] );
+			$rtt_watermark_url              = esc_url( $this->easydam_settings['video']['watermark_url'] );
 			$watermark_to_use               = $rtt_watermark_url ? array( 'watermark_url' => $rtt_watermark_url ) : array( 'watermark_text' => $rtt_watermark_text );
 
 			$args = array(
