@@ -16,6 +16,8 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 	const [ watermarkText, setWatermarkText ] = useState( mediaSettings?.video?.watermark_text || '' );
 
 	const [ selectedMedia, setSelectedMedia ] = useState( { url: mediaSettings?.video?.watermark_url } );
+	const [ useImage, setUseImage ] = useState( !! selectedMedia?.url );
+
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
@@ -85,8 +87,8 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 				video_thumbnails: videoThumbnails,
 				overwrite_thumbnails: overwriteThumbnails,
 				watermark: ! disableWatermark,
-				watermark_text: watermarkText,
-				watermark_url: selectedMedia?.url || '',
+				watermark_text: ! useImage ? watermarkText : '',
+				watermark_url: useImage ? selectedMedia?.url : '',
 			},
 		};
 
@@ -252,39 +254,55 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					{ isPremiumUser && ! disableWatermark && (
 						<>
 							<div className="mt-4">
-								<Button isPrimary onClick={ openMediaPicker }>
-									{ selectedMedia ? 'Change Watermark' : 'Select Watermark' }
-								</Button>
-								{ selectedMedia && (
-									<div className="mt-2">
-										<img
-											src={ selectedMedia.url }
-											alt={ selectedMedia.alt || 'Selected watermark' }
-											className="max-w-[200px]"
-										/>
-										<Button
-											isDestructive
-											className="mt-2"
-											onClick={ () => setSelectedMedia( null ) }
-											variant="secondary"
-										>
-											Remove Watermark
+
+								<ToggleControl
+									label="Use image watermark"
+									checked={ useImage }
+									onChange={ ( value ) => {
+										setUseImage( value );
+									} }
+								/>
+								<div className="text-slate-500">If enabled, Transcoder will use an image instead of text as the watermark for the transcoded video.</div>
+
+								{ useImage && (
+									<div>
+										<Button isPrimary onClick={ openMediaPicker }>
+											{ selectedMedia && selectedMedia.url ? 'Change Watermark' : 'Select Watermark' }
 										</Button>
+										{ selectedMedia && selectedMedia.url && (
+											<div className="mt-2">
+												<img
+													src={ selectedMedia.url }
+													alt={ selectedMedia.alt || 'Selected watermark' }
+													className="max-w-[200px]"
+												/>
+												<Button
+													isDestructive
+													className="mt-2"
+													onClick={ () => setSelectedMedia( null ) }
+													variant="secondary"
+												>
+													Remove Watermark
+												</Button>
+											</div>
+										) }
 									</div>
 								) }
 							</div>
-							<div className="py-3 flex flex-col gap-2">
-								<label className="block text-base font-semibold" htmlFor="watermark_text">Watermark Text</label>
-								<TextControl
-									__next40pxDefaultSize
-									__nextHasNoMarginBottom
-									value={ watermarkText }
-									onChange={ ( value ) => setWatermarkText( value ) }
-									placeholder="Enter watermark text"
-									className="max-w-[400px]"
-								/>
-								<div className="text-slate-500">Specify the watermark text that will be added to transcoded videos.</div>
-							</div>
+							{ ! useImage && (
+								<div className="py-3 flex flex-col gap-2">
+									<label className="block text-base font-semibold" htmlFor="watermark_text">Watermark Text</label>
+									<TextControl
+										__next40pxDefaultSize
+										__nextHasNoMarginBottom
+										value={ watermarkText }
+										onChange={ ( value ) => setWatermarkText( value ) }
+										placeholder="Enter watermark text"
+										className="max-w-[400px]"
+									/>
+									<div className="text-slate-500">Specify the watermark text that will be added to transcoded videos.</div>
+								</div>
+							) }
 						</>
 					) }
 				</div>
