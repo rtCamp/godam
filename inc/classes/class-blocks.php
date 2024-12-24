@@ -44,6 +44,5 @@ class Blocks {
 		register_block_type(
 			RT_TRANSCODER_PATH . '/assets/build/blocks/easydam-player/'
 		);
-
 	}
 }
