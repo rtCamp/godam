@@ -257,6 +257,7 @@ class Settings extends Base {
 				'watermark'            => false,
 				'watermark_text'       => '',
 				'watermark_url'        => '',
+				'use_watermark_image'  => false,
 			),
 			'image'   => array(
 				'sync_from_easydam' => false,
@@ -326,6 +327,7 @@ class Settings extends Base {
 				'watermark'            => rest_sanitize_boolean( $settings['video']['watermark'] ),
 				'watermark_text'       => sanitize_text_field( $settings['video']['watermark_text'] ),
 				'watermark_url'        => esc_url_raw( $settings['video']['watermark_url'] ),
+				'use_watermark_image'  => rest_sanitize_boolean( $settings['video']['use_watermark_image'] ),
 			),
 			'image'   => array(
 				'sync_from_easydam' => rest_sanitize_boolean( $settings['image']['sync_from_easydam'] ),
