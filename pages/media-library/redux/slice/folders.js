@@ -128,6 +128,10 @@ const slice = createSlice( {
 			findChildren( state.selectedFolder.id );
 
 			state.folders = state.folders.filter( ( item ) => ! idsToDelete.has( item.id ) );
+
+			state.selectedFolder = {
+				id: -1,
+			};
 		},
 		setTree: ( state, action ) => {
 			state.folders = action.payload;

@@ -15,10 +15,13 @@ import {
 	CheckboxControl,
 	ColorPicker,
 	CustomSelectControl,
+	Icon,
 	RangeControl,
+	ColorPalette,
 } from '@wordpress/components';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateVideoConfig } from '../../redux/slice/videoSlice';
+import EasyDAM from '../../../../assets/src/images/EasyDAM.png';
 
 const Appearance = () => {
 	const dispatch = useDispatch();
@@ -28,7 +31,7 @@ const Appearance = () => {
 		videoConfig.controlBar.customPlayBtnImg.length > 0,
 	);
 
-	useEffect(() => {
+	useEffect( () => {
 		//class gets re added upon component load, so we need to remove it.
 		if ( videoConfig.controlBar.subsCapsButton ) {
 			document
@@ -281,6 +284,36 @@ const Appearance = () => {
 		fileFrame.open();
 	};
 
+	const removeBrandImage = () => {
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					customBrandImg: '',
+				},
+			} ),
+		);
+		setSelectedBrandImage( false );
+		const brandImg = document.querySelector( '#branding-icon' );
+		if ( brandImg ) {
+			brandImg.src = EasyDAM;
+		}
+	};
+
+	const removeCustomPlayBtnImage = () => {
+		dispatch(
+			updateVideoConfig( {
+				controlBar: {
+					...videoConfig.controlBar,
+					customPlayBtnImg: '',
+				},
+			} ),
+		);
+		setSelectedCustomBgImg( false );
+		const playButtonElement = document.querySelector( '.vjs-big-play-button' );
+		playButtonElement.style.backgroundImage = '';
+	};
+
 	function handleUploadCustomBrandImg( e ) {
 		const file = e.target.files[ 0 ];
 		if ( file ) {
@@ -421,15 +454,29 @@ const Appearance = () => {
 							name="hover-slider"
 							className="font-bold"
 						>
-							Custom Brand Image
+							Custom Brand Logo
 						</label>
 						<Button
 							onClick={ openBrandMediaPicker }
 							variant="primary"
-							className="ml-2"
+							className="ml-2 mt-2"
 						>
 							{ selectedBrandImage ? 'Replace' : 'Upload' }
 						</Button>
+						{ selectedBrandImage && (
+							<div className="mt-2">
+								<Icon
+									icon={ 'no' }
+									className="relative top-[25px] left-[60%] cursor-pointer"
+									onClick={ removeBrandImage }
+								/>
+								<img
+									src={ videoConfig.controlBar.customBrandImg }
+									alt={ 'Selected custom brand' }
+									className="max-w-[200px]"
+								/>
+							</div>
+						) }
 					</div>
 				) }
 				<div className="form-group">
@@ -495,13 +542,23 @@ const Appearance = () => {
 					>
 						Custom Play Button
 					</label>
-					<Button
-						onClick={ openCustomBtnImg }
-						variant="primary"
-						className="ml-2"
-					>
+					<Button onClick={ openCustomBtnImg } variant="primary" className="ml-2">
 						{ selectedCustomBgImg ? 'Replace' : 'Upload' }
 					</Button>
+					{ selectedCustomBgImg && (
+						<div className="mt-2">
+							<Icon
+								icon={ 'no' }
+								className="relative top-[30px] left-[60%] cursor-pointer"
+								onClick={ removeCustomPlayBtnImage }
+							/>
+							<img
+								src={ videoConfig.controlBar.customPlayBtnImg }
+								alt={ 'Selected custom play button' }
+								className="max-w-[200px] mt-2"
+							/>
+						</div>
+					) }
 				</div>
 				<div className="form-group">
 					<label htmlFor="control-bar-position" className="font-bold">
@@ -555,23 +612,53 @@ const Appearance = () => {
 					/>
 				</div>
 				<div className="form-group">
-					<label name="toggle-color" className="font-bold">
+					<label
+						htmlFor="custom-hover-color"
+						className="text-[11px] uppercase font-bold mb-2"
+					>
 						Player Appearance
 					</label>
-					<ColorPicker
-						d="toggle-color"
-						onChange={ handleControlColorChange }
-						color={ videoConfig.controlBar.appearanceColor }
+					<ColorPalette
+						value={ videoConfig.controlBar.appearanceColor }
+						enableAlpha={ true }
+						onChange={ ( value ) => {
+							if ( ! value ) {
+								value = '#2b333fb3';
+							}
+							dispatch(
+								updateVideoConfig( {
+									controlBar: {
+										...videoConfig.controlBar,
+										appearanceColor: value,
+									},
+								} ),
+							);
+						} }
 					/>
 				</div>
 				<div className="form-group">
-					<label name="hover-color" className="font-bold">
+					<label
+						htmlFor="custom-hover-color"
+						className="text-[11px] uppercase font-bold mb-2"
+					>
 						Select color on hover
 					</label>
-					<ColorPicker
-						d="toggle-color"
-						onChange={ handleControlsHoverColor }
-						color={ videoConfig.controlBar.hoverColor }
+					<ColorPalette
+						value={ videoConfig.controlBar.hoverColor }
+						enableAlpha={ true }
+						onChange={ ( value ) => {
+							if ( ! value ) {
+								value = '#fff';
+							}
+							dispatch(
+								updateVideoConfig( {
+									controlBar: {
+										...videoConfig.controlBar,
+										hoverColor: value,
+									},
+								} ),
+							);
+						} }
 					/>
 				</div>
 			</div>

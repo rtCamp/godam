@@ -10,5 +10,15 @@ module.exports = {
 			colors: {},
 		},
 	},
-	plugins: [ require( 'tailwindcss-animate' ) ],
+	plugins: [
+		require( 'tailwindcss-animate' ),
+		require( '@tailwindcss/typography' ),
+		function( { addBase } ) {
+			addBase( {
+				'.notailwind': {
+					all: 'unset', // Resets all styles in this section
+				},
+			} );
+		},
+	],
 };

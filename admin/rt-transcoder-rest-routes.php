@@ -151,5 +151,4 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 			'transcodedMedia' => $final_file_url,
 		);
 	}
-
 }
