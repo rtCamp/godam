@@ -17,6 +17,7 @@ import {
 	CustomSelectControl,
 	Icon,
 	RangeControl,
+	ColorPalette,
 } from '@wordpress/components';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateVideoConfig } from '../../redux/slice/videoSlice';
@@ -611,62 +612,54 @@ const Appearance = () => {
 					/>
 				</div>
 				<div className="form-group">
-					<label name="toggle-color" className="font-bold">
+					<label
+						htmlFor="custom-hover-color"
+						className="text-[11px] uppercase font-bold mb-2"
+					>
 						Player Appearance
 					</label>
-					<div className="flex items-end">
-						<ColorPicker
-							d="toggle-color"
-							onChange={ handleControlColorChange }
-							color={ videoConfig.controlBar.appearanceColor }
-							className="mt-2.5"
-						/>
-						<Button
-							onClick={ () =>
-								dispatch(
-									updateVideoConfig( {
-										controlBar: {
-											...videoConfig.controlBar,
-											appearanceColor: '#2b333fb3',
-										},
-									} ),
-								)
+					<ColorPalette
+						value={ videoConfig.controlBar.appearanceColor }
+						enableAlpha={ true }
+						onChange={ ( value ) => {
+							if ( ! value ) {
+								value = '#2b333fb3';
 							}
-							variant="primary"
-							className="mb-[20px] ml-[-75px] p-[20px] cursor-pointer"
-						>
-							Reset
-						</Button>
-					</div>
+							dispatch(
+								updateVideoConfig( {
+									controlBar: {
+										...videoConfig.controlBar,
+										appearanceColor: value,
+									},
+								} ),
+							);
+						} }
+					/>
 				</div>
 				<div className="form-group">
-					<label name="hover-color" className="font-bold">
+					<label
+						htmlFor="custom-hover-color"
+						className="text-[11px] uppercase font-bold mb-2"
+					>
 						Select color on hover
 					</label>
-					<div className="flex items-end">
-						<ColorPicker
-							d="toggle-color"
-							onChange={ handleControlsHoverColor }
-							color={ videoConfig.controlBar.hoverColor }
-							className="m-2.5"
-						/>
-						<Button
-							onClick={ () =>
-								dispatch(
-									updateVideoConfig( {
-										controlBar: {
-											...videoConfig.controlBar,
-											hoverColor: '#fff',
-										},
-									} ),
-								)
+					<ColorPalette
+						value={ videoConfig.controlBar.hoverColor }
+						enableAlpha={ true }
+						onChange={ ( value ) => {
+							if ( ! value ) {
+								value = '#fff';
 							}
-							variant="primary"
-							className="mt-2 mb-[30px] ml-[-75px] p-[20px] cursor-pointer"
-						>
-							Reset
-						</Button>
-					</div>
+							dispatch(
+								updateVideoConfig( {
+									controlBar: {
+										...videoConfig.controlBar,
+										hoverColor: value,
+									},
+								} ),
+							);
+						} }
+					/>
 				</div>
 			</div>
 		</div>
