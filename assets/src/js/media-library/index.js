@@ -27,7 +27,7 @@ async function assignToFolder( attachmentIds, folderTermId ) {
 
 	if ( response.ok ) {
 		// Remove the dragged items from the list
-		attachmentIds.forEach( id => {
+		attachmentIds.forEach( ( id ) => {
 			$( `li.attachment[data-id="${ id }"]` ).remove();
 		} );
 	}
@@ -59,12 +59,14 @@ const attachDragEvent = () => {
 					fontWeight: 'bold',
 					boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
 					zIndex: 1000,
+					PointerEvent: 'none',
 				},
 			} );
 		},
 		opacity: 0.7,
 		zIndex: 1000,
 		appendTo: 'body',
+		cursorAt: { top: 5, left: 5 },
 	} );
 
 	// Initialize droppable tree items
