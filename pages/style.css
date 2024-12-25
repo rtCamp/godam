@@ -139,28 +139,94 @@ input, textarea, select {
   @apply min-h-[200px];
 }
 
-
-/* Video Hotspot */
+/* Hotspot layer */
 .hotspot {
 	position: absolute;
-	background-color: rgba(255, 255, 255, 0.8);
-	border: 1px solid #ccc;
+	z-index: 100;
+	background-color: rgba(12, 128, 223, 0.65);
+	box-sizing: border-box;
 	cursor: pointer;
+
+	&.circle {
+		border-radius: 50%;
+	}
+
+	&:hover {
+		border: 2px solid rgb(35, 136, 251);
+		box-shadow: 0 0 1px 1px rgba(35, 136, 251, 0.5);
+		background-color: rgba(12, 128, 223, 0.55);
+	}
 }
 
-.hotspot-tooltip {
-	display: none;
+/* Content inside the hotspot */
+.hotspot-content {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+/* Center dot in the middle of the circle */
+.hotspot-content::after {
+	content: "";
 	position: absolute;
-	background: #000;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 20px;
+	height: 20px;
+	background-color: #fff;
+	border-radius: 50%;
+}
+
+/* Index for the hotspot */
+.hotspot-content .index {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: inline-block;
+	background-color: #333;
 	color: #fff;
-	padding: 5px;
+	padding: 0.25rem 0.4rem;
+	font-size: 14px;
+	line-height: 1;
+	border-radius: 2px;
+}
+
+/* Tooltip */
+.hotspot-tooltip {
+	position: absolute;
+	bottom: 120%;
+	left: 50%;
+	transform: translateX(-50%);
+	visibility: hidden;
+	background-color: rgba(0, 0, 0, 0.8);
+	color: #fff;
+	text-align: center;
+	padding: 8px;
 	border-radius: 5px;
+	width: max-content;
+	max-width: 200px;
+	z-index: 200;
+	pointer-events: none;
+	font-size: 14px;
+	line-height: 1.2;
+}
+
+/* Tooltip arrow */
+.hotspot-tooltip::after {
+	content: "";
+	position: absolute;
 	top: 100%;
 	left: 50%;
 	transform: translateX(-50%);
-	z-index: 10;
+	border-width: 5px;
+	border-style: solid;
+	border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
 }
 
+/* Show tooltip on hover */
 .hotspot:hover .hotspot-tooltip {
-	display: block;
+	visibility: visible;
+	opacity: 1;
+	transition: opacity 0.2s ease;
 }

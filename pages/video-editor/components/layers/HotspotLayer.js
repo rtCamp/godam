@@ -18,7 +18,7 @@ import { useState } from '@wordpress/element';
 import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
 import LayerControls from '../LayerControls';
 
-const HotspotLayer = ( { layerID, goBack } ) => {
+const HotspotLayer = ( { layerID, goBack, index } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
@@ -79,6 +79,11 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 						position={ layer.position }
 						size={ layer.size }
 						bounds="parent"
+						maxWidth={ 100 }
+						maxHeight={ 100 }
+						minWidth={ 20 }
+						minHeight={ 20 }
+						lockAspectRatio
 						onDragStop={ ( e, d ) => {
 							updateField( 'position', { x: d.x, y: d.y } );
 						} }
@@ -88,9 +93,25 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 								height: ref.offsetHeight,
 							} );
 						} }
-						className="hotspot"
+						className="hotspot circle"
 					>
-						<div className="hotspot-tooltip">{ layer.tooltipText }</div>
+						<div className="hotspot-content">
+							<span className="index">{ 1 }</span>
+							<div className="hotspot-tooltip">
+								{ layer.link ? (
+									<a
+										href={ layer.link }
+										target="_blank"
+										rel="noopener noreferrer"
+										style={ { color: '#fff', textDecoration: 'underline' } }
+									>
+										{ __( 'Visit Product', 'transcoder' ) }
+									</a>
+								) : (
+									__( 'No Link Provided', 'transcoder' )
+								) }
+							</div>
+						</div>
 					</Rnd>
 				</div>
 			</LayerControls>
