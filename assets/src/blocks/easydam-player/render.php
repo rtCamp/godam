@@ -130,12 +130,6 @@ $video_setup = wp_json_encode(
 					<div
 						id="layer-<?php echo esc_attr( $layer['id'] ); ?>"
 						class="easydam-layer hidden hotspot-layer"
-						data-hotspots="<?php
-							// Pass hotspots data to the front end in JSON form.
-							if ( ! empty( $layer['hotspots'] ) ) {
-								echo esc_attr( wp_json_encode( $layer['hotspots'] ) );
-							}
-						?>"
 					>
 					</div>
 					<?php
