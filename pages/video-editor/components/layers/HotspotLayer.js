@@ -10,7 +10,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Button, Modal, TextControl } from '@wordpress/components';
 import { arrowLeft, trash, plus, chevronDown, chevronUp, chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useRef, useEffect } from '@wordpress/element';
+
 /**
  * Internal dependencies
  */
@@ -28,17 +29,39 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 	const [ isDeleteModalOpen, setDeleteModalOpen ] = useState( false );
 	const [ expandedHotspotIndex, setExpandedHotspotIndex ] = useState( null );
 
+	// Use a ref for the container in which Rnd is bounded
+	const containerRef = useRef( null );
+
+	// We'll store ratioX & ratioY in state
+	const [ ratio, setRatio ] = useState( { x: 1, y: 1 } );
+
+	// Helper to dispatch updates
 	const updateField = ( field, value ) => {
 		dispatch( updateLayerField( { id: layer.id, field, value } ) );
 	};
 
+	// ---- Convert from px to ratio-based or ratio-based to px ----
+	const pxToRatio = ( px, dimension ) => {
+		// dimension is 'x' or 'y'
+		return px * ratio[ dimension ];
+	};
+
+	const ratioToPx = ( val, dimension ) => {
+		// dimension is 'x' or 'y'
+		return val / ratio[ dimension ];
+	};
+
+	// Add a new hotspot with default original position/size
 	const handleAddHotspot = () => {
 		const newHotspot = {
 			id: uuidv4(),
 			tooltipText: 'New Hotspot',
+			link: '',
+			// Store pixel-based for initial states
 			position: { x: 50, y: 50 },
 			size: { width: 48, height: 48 },
-			link: '',
+			// Original positions in ratio form
+			oPosition: { x: 50, y: 50 },
 		};
 		updateField( 'hotspots', [ ...hotspots, newHotspot ] );
 	};
@@ -56,6 +79,27 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 	const toggleHotspotExpansion = ( index ) => {
 		setExpandedHotspotIndex( expandedHotspotIndex === index ? null : index );
 	};
+
+	// Recalculate ratio whenever container size changes
+	const recalcRatio = () => {
+		if ( containerRef.current ) {
+			const { offsetWidth, offsetHeight } = containerRef.current;
+			// Natural size of the video
+			const baseWidth = 800;
+			const baseHeight = 600;
+
+			setRatio( {
+				x: baseWidth / offsetWidth,
+				y: baseHeight / offsetHeight,
+			} );
+		}
+	};
+
+	useEffect( () => {
+		recalcRatio();
+		window.addEventListener( 'resize', recalcRatio );
+		return () => window.removeEventListener( 'resize', recalcRatio );
+	}, [] );
 
 	return (
 		<>
@@ -157,64 +201,81 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 
 			<LayerControls>
 				<div
+					ref={ containerRef }
 					className="absolute inset-0 px-4 py-8 bg-white bg-opacity-70 my-auto"
 					style={ { backgroundColor: layer.bg_color || 'transparent' } }
 				>
-					{ hotspots.map( ( hotspot, index ) => (
-						<Rnd
-							key={ hotspot.id }
-							position={ hotspot.position }
-							size={ hotspot.size }
-							bounds="parent"
-							maxWidth={ 100 }
-							maxHeight={ 100 }
-							minWidth={ 20 }
-							minHeight={ 20 }
-							lockAspectRatio
-							onDragStop={ ( e, d ) =>
-								updateField(
-									'hotspots',
-									hotspots.map( ( h, i ) =>
-										i === index ? { ...h, position: { x: d.x, y: d.y } } : h,
-									),
-								)
-							}
-							onResizeStop={ ( e, direction, ref ) =>
-								updateField(
-									'hotspots',
-									hotspots.map( ( h, i ) =>
-										i === index
-											? {
+					{ hotspots.map( ( hotspot, index ) => {
+						const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
+						const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;
+
+						return (
+							<Rnd
+								key={ hotspot.id }
+								position={ {
+									x: ratioToPx( fallbackPosX, 'x' ),
+									y: ratioToPx( fallbackPosY, 'y' ),
+								} }
+								size={ hotspot.size }
+								bounds="parent"
+								maxWidth={ 100 }
+								maxHeight={ 100 }
+								minWidth={ 20 }
+								minHeight={ 20 }
+								lockAspectRatio
+								onDragStop={ ( e, d ) => {
+									const newHotspots = hotspots.map( ( h, i ) => {
+										if ( i === index ) {
+											return {
 												...h,
-												size: {
-													width: ref.offsetWidth,
-													height: ref.offsetHeight,
+												// Ensure we store back to oPosition
+												oPosition: {
+													x: pxToRatio( d.x, 'x' ),
+													y: pxToRatio( d.y, 'y' ),
 												},
-											}
-											: h,
-									),
-								)
-							}
-							className="hotspot circle"
-						>
-							<div className="hotspot-content">
-								<span className="index">{ index + 1 }</span>
-								<div className="hotspot-tooltip">
-									{ hotspot.link ? (
-										<a
-											href={ hotspot.link }
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											{ hotspot.tooltipText }
-										</a>
-									) : (
-										hotspot.tooltipText
-									) }
+											};
+										}
+										return h;
+									} );
+									updateField( 'hotspots', newHotspots );
+								} }
+								onResizeStop={ ( e, direction, ref ) =>
+									updateField(
+										'hotspots',
+										hotspots.map( ( h, i ) =>
+											i === index
+												? {
+													...h,
+													size: {
+														width: ref.offsetWidth,
+														height: ref.offsetHeight,
+													},
+												}
+												: h,
+										),
+									)
+								}
+								className="hotspot circle"
+							>
+								<div className="hotspot-content">
+									<span className="index">{ index + 1 }</span>
+									<div className="hotspot-tooltip">
+										{ hotspot.link ? (
+											<a
+												href={ hotspot.link }
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												{ hotspot.tooltipText }
+											</a>
+										) : (
+											hotspot.tooltipText
+										) }
+									</div>
 								</div>
-							</div>
-						</Rnd>
-					) ) }
+							</Rnd>
+						);
+					} ) }
 				</div>
 				<Button
 					className="absolute bottom-6 right-0"
