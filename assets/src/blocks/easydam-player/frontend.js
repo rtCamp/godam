@@ -150,7 +150,7 @@ function easyDAMPlayer() {
 
 						// Add a skip button for the hotspot layer
 						const skipButton = document.createElement( 'button' );
-						skipButton.textContent = 'Skip';
+						skipButton.textContent = 'Next';
 						skipButton.classList.add( 'skip-button' );
 
 						if ( ! layerObj.allowSkip ) {
