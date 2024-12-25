@@ -79,15 +79,22 @@ const SidebarLayers = ( { currentTime } ) => {
 				} ) );
 				break;
 			case 'hotspot':
-				dispatch( addLayer( {
-					id: uuidv4(),
-					displayTime: currentTime,
-					type,
-					tooltipText: 'Click me!',
-					position: { x: 50, y: 50 },
-					size: { width: 48, height: 48 },
-					link: '',
-				} ) );
+				dispatch(
+					addLayer( {
+						id: uuidv4(),
+						displayTime: currentTime,
+						type,
+						hotspots: [
+							{
+								id: uuidv4(),
+								tooltipText: 'Click me!',
+								position: { x: 50, y: 50 },
+								size: { width: 48, height: 48 },
+								link: '',
+							},
+						],
+					} ),
+				);
 				break;
 			default:
 				break;
