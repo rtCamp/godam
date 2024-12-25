@@ -55,16 +55,14 @@ $video_setup = wp_json_encode(
 			foreach ( $sources as $source ) :
 				if ( ! empty( $source['src'] ) && ! empty( $source['type'] ) ) :
 					?>
-						<source
-							src="<?php echo esc_url( $source['src'] ); ?>"
-							type="<?php echo esc_attr( $source['type'] ); ?>"
-						/>
-						<?php
-					endif;
-				endforeach;
-			?>
-
-			<?php
+					<source
+						src="<?php echo esc_url( $source['src'] ); ?>"
+						type="<?php echo esc_attr( $source['type'] ); ?>"
+					/>
+					<?php
+				endif;
+			endforeach;
+			
 			foreach ( $tracks as $track ) :
 				if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
 					?>
@@ -90,6 +88,7 @@ $video_setup = wp_json_encode(
 		<?php
 		if ( ! empty( $easydam_meta_data['layers'] ) ) :
 			foreach ( $easydam_meta_data['layers'] as $layer ) :
+				// FORM layer
 				if ( isset( $layer['type'] ) && 'form' === $layer['type'] && ! empty( $layer['gf_id'] ) ) :
 					?>
 					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
@@ -106,13 +105,16 @@ $video_setup = wp_json_encode(
 							?>
 						</div>
 					</div>
-				<?php elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) : ?>
+					<?php
+				// CTA layer
+				elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) :
+					?>
 					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
 						<?php if ( 'text' === $layer['cta_type'] ) : ?>
-							<a 
-								href="<?php echo esc_url( $layer['link'] ); ?>" 
-								target="_blank" 
-								rel="noopener noreferrer" 
+							<a
+								href="<?php echo esc_url( $layer['link'] ); ?>"
+								target="_blank"
+								rel="noopener noreferrer"
 								class="cta-button"
 							>
 								<?php echo esc_html( $layer['text'] ); ?>
@@ -122,11 +124,25 @@ $video_setup = wp_json_encode(
 						<?php endif; ?>
 					</div>
 					<?php
+				// HOTSPOT layer
+				elseif ( isset( $layer['type'] ) && 'hotspot' === $layer['type'] ) :
+					?>
+					<div
+						id="layer-<?php echo esc_attr( $layer['id'] ); ?>"
+						class="easydam-layer hidden hotspot-layer"
+						data-hotspots="<?php
+							// Pass hotspots data to the front end in JSON form.
+							if ( ! empty( $layer['hotspots'] ) ) {
+								echo esc_attr( wp_json_encode( $layer['hotspots'] ) );
+							}
+						?>"
+					>
+					</div>
+					<?php
 				endif;
-			endforeach;
-		endif;
-		?>
+				?>
+			<?php endforeach; ?>
+		<?php endif; ?>
 	</div>
 </figure>
-	<?php
-endif;
+<?php endif; ?>
