@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
  * WordPress dependencies
  */
 import { Button, Modal, TextControl } from '@wordpress/components';
-import { arrowLeft, trash, plus, chevronDown, chevronUp } from '@wordpress/icons';
+import { arrowLeft, trash, plus, chevronDown, chevronUp, chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 /**
@@ -216,6 +216,15 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 						</Rnd>
 					) ) }
 				</div>
+				<Button
+					className="absolute bottom-6 right-0"
+					variant="primary"
+					icon={ chevronRight }
+					iconSize="18"
+					iconPosition="right"
+				>
+					{ __( 'Next', 'transcoder' ) }
+				</Button>
 			</LayerControls>
 		</>
 	);

@@ -204,6 +204,8 @@ input, textarea, select {
 
 .hotspot-tooltip a {
 	text-decoration: underline;
+	overflow-wrap: break-word; /* Handle long URLs */
+	word-break: break-word; /* Additional word break for very long text */
 }
 
 /* Tooltip */
@@ -218,14 +220,15 @@ input, textarea, select {
 	text-align: center;
 	padding: 8px;
 	border-radius: 5px;
-	width: max-content;
-	max-width: 200px;
+	min-width: 110px;
+	max-width: 180px;
 	z-index: 200;
 	pointer-events: none;
 	font-size: 14px;
 	line-height: 1.2;
 	opacity: 0;
 	transition: opacity 0.2s ease, visibility 0.2s ease;
+	word-wrap: break-word;
 }
 
 /* Tooltip arrow */
