@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
  */
 import { __ } from '@wordpress/i18n';
 import { Button, Icon, Modal, DropdownMenu } from '@wordpress/components';
-import { plus, preformatted, customLink, arrowRight, html } from '@wordpress/icons';
+import { plus, preformatted, customLink, arrowRight, html, customPostType } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
 import Layer from './layers/Layer';
 
@@ -27,6 +27,11 @@ const layerTypes = [
 		title: __( 'CTA', 'transcoder' ),
 		icon: customLink,
 		type: 'cta',
+	},
+	{
+		title: __( 'Hotspot', 'transcoder' ),
+		icon: customPostType,
+		type: 'hotspot',
 	},
 	// {
 	// 	title: __( 'Ad', 'transcoder' ),
@@ -71,6 +76,17 @@ const SidebarLayers = ( { currentTime } ) => {
 					html: '',
 					link: '',
 					allow_skip: true,
+				} ) );
+				break;
+			case 'hotspot':
+				dispatch( addLayer( {
+					id: uuidv4(),
+					displayTime: currentTime,
+					type,
+					tooltipText: 'Click me!',
+					position: { x: 50, y: 50 },
+					size: { width: 48, height: 48 },
+					link: '',
 				} ) );
 				break;
 			default:
