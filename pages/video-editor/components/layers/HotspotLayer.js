@@ -173,7 +173,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 													width: ref.offsetWidth,
 													height: ref.offsetHeight,
 												},
-											  }
+											}
 											: h,
 									),
 								)
@@ -188,12 +188,11 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 											href={ hotspot.link }
 											target="_blank"
 											rel="noopener noreferrer"
-											style={ { color: '#fff', textDecoration: 'underline' } }
 										>
 											{ hotspot.tooltipText }
 										</a>
 									) : (
-										__( 'No Link Provided', 'transcoder' )
+										<span style={ { color: '#fff' } }>{ hotspot.tooltipText }</span>
 									) }
 								</div>
 							</div>

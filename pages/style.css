@@ -156,6 +156,15 @@ input, textarea, select {
 		box-shadow: 0 0 1px 1px rgba(35, 136, 251, 0.5);
 		background-color: rgba(12, 128, 223, 0.55);
 	}
+
+	/* Keep tooltip visible when hovering over hotspot or tooltip */
+	&:hover .hotspot-tooltip,
+	.hotspot-tooltip:hover {
+		visibility: visible;
+		opacity: 1;
+		transition: opacity 0.4s ease;
+		pointer-events: auto; /* Allow interaction with the tooltip */
+	}
 }
 
 /* Content inside the hotspot */
@@ -192,6 +201,10 @@ input, textarea, select {
 	border-radius: 2px;
 }
 
+.hotspot-tooltip a {
+	text-decoration: underline;
+}
+
 /* Tooltip */
 .hotspot-tooltip {
 	position: absolute;
@@ -210,6 +223,8 @@ input, textarea, select {
 	pointer-events: none;
 	font-size: 14px;
 	line-height: 1.2;
+	opacity: 0;
+	transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
 /* Tooltip arrow */
@@ -222,11 +237,4 @@ input, textarea, select {
 	border-width: 5px;
 	border-style: solid;
 	border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
-}
-
-/* Show tooltip on hover */
-.hotspot:hover .hotspot-tooltip {
-	visibility: visible;
-	opacity: 1;
-	transition: opacity 0.2s ease;
 }
