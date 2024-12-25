@@ -8,10 +8,9 @@ import { useDispatch, useSelector } from 'react-redux';
  * WordPress dependencies
  */
 import { Button, Modal, TextControl } from '@wordpress/components';
-import { arrowLeft, trash, plus } from '@wordpress/icons';
+import { arrowLeft, trash, plus, chevronDown, chevronUp } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-
 /**
  * Internal dependencies
  */
@@ -26,8 +25,8 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 	);
 
 	const hotspots = layer?.hotspots || [];
-
 	const [ isDeleteModalOpen, setDeleteModalOpen ] = useState( false );
+	const [ expandedHotspotIndex, setExpandedHotspotIndex ] = useState( null );
 
 	const updateField = ( field, value ) => {
 		dispatch( updateLayerField( { id: layer.id, field, value } ) );
@@ -41,7 +40,6 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			size: { width: 48, height: 48 },
 			link: '',
 		};
-
 		updateField( 'hotspots', [ ...hotspots, newHotspot ] );
 	};
 
@@ -55,16 +53,16 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 		goBack();
 	};
 
+	const toggleHotspotExpansion = ( index ) => {
+		setExpandedHotspotIndex( expandedHotspotIndex === index ? null : index );
+	};
+
 	return (
 		<>
 			<div className="flex justify-between items-center pb-3 border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
 				<p className="font-semibold">{ __( 'Hotspot Layer', 'transcoder' ) }</p>
-				<Button
-					icon={ trash }
-					isDestructive
-					onClick={ () => setDeleteModalOpen( true ) }
-				/>
+				<Button icon={ trash } isDestructive onClick={ () => setDeleteModalOpen( true ) } />
 				{ isDeleteModalOpen && (
 					<Modal
 						title={ __( 'Delete Hotspot Layer', 'transcoder' ) }
@@ -95,49 +93,68 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			</div>
 
 			<div className="flex flex-col gap-4">
-				<Button icon={ plus } isPrimary onClick={ handleAddHotspot }>
-					{ __( 'Add Hotspot', 'transcoder' ) }
-				</Button>
-
-				{ /* Render and Edit Existing Hotspots */ }
 				{ hotspots.map( ( hotspot, index ) => (
 					<div key={ hotspot.id } className="p-2 border rounded">
-						<h4>{ `Hotspot ${ index + 1 }` }</h4>
-						<TextControl
-							label={ __( 'Tooltip Text', 'transcoder' ) }
-							value={ hotspot.tooltipText }
-							onChange={ ( value ) =>
-								updateField(
-									'hotspots',
-									hotspots.map( ( h, i ) =>
-										i === index ? { ...h, tooltipText: value } : h,
-									),
-								)
-							}
-						/>
-						<TextControl
-							label={ __( 'Link', 'transcoder' ) }
-							value={ hotspot.link }
-							onChange={ ( value ) =>
-								updateField(
-									'hotspots',
-									hotspots.map( ( h, i ) =>
-										i === index ? { ...h, link: value } : h,
-									),
-								)
-							}
-						/>
 						<Button
-							isDestructive
-							onClick={ () => handleDeleteHotspot( index ) }
+							icon={ expandedHotspotIndex === index ? chevronUp : chevronDown }
+							className="flex justify-between w-full"
+							onClick={ () => toggleHotspotExpansion( index ) }
 						>
-							{ __( 'Delete', 'transcoder' ) }
+							<div className="flex-1">
+								{ `Hotspot ${ index + 1 }` }
+							</div>
+							<Button
+								icon={ trash }
+								isDestructive
+								onClick={ ( e ) => {
+									e.stopPropagation(); // Prevent triggering the expansion toggle
+									handleDeleteHotspot( index );
+								} }
+							/>
 						</Button>
+						{ expandedHotspotIndex === index && (
+							<div className="mt-3">
+								<TextControl
+									label={ __( 'Tooltip Text', 'transcoder' ) }
+									placeholder="Click Me!"
+									value={ hotspot.tooltipText }
+									onChange={ ( value ) =>
+										updateField(
+											'hotspots',
+											hotspots.map( ( h, i ) =>
+												i === index ? { ...h, tooltipText: value } : h,
+											),
+										)
+									}
+								/>
+								<TextControl
+									label={ __( 'Link', 'transcoder' ) }
+									placeholder="https://www.example.com"
+									value={ hotspot.link }
+									onChange={ ( value ) =>
+										updateField(
+											'hotspots',
+											hotspots.map( ( h, i ) =>
+												i === index ? { ...h, link: value } : h,
+											),
+										)
+									}
+								/>
+							</div>
+						) }
 					</div>
 				) ) }
+				<Button
+					isPrimary
+					id="add-hotspot-btn"
+					icon={ plus }
+					iconPosition="left"
+					onClick={ handleAddHotspot }
+				>
+					{ __( 'Add Hotspot', 'transcoder' ) }
+				</Button>
 			</div>
 
-			{ /* Render Hotspots on Video */ }
 			<LayerControls>
 				<div
 					className="absolute inset-0 px-4 py-8 bg-white bg-opacity-70 my-auto"
@@ -192,7 +209,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 											{ hotspot.tooltipText }
 										</a>
 									) : (
-										<span style={ { color: '#fff' } }>{ hotspot.tooltipText }</span>
+										hotspot.tooltipText
 									) }
 								</div>
 							</div>

@@ -67,7 +67,8 @@ input, textarea, select {
   /* @apply text-blue-500; */
 }
 
-#add-layer-btn {
+#add-layer-btn,
+#add-hotspot-btn {
   @apply w-full justify-center;
 }
 
@@ -162,7 +163,7 @@ input, textarea, select {
 	.hotspot-tooltip:hover {
 		visibility: visible;
 		opacity: 1;
-		transition: opacity 0.4s ease;
+		transition: opacity 0.6s ease;
 		pointer-events: auto; /* Allow interaction with the tooltip */
 	}
 }
