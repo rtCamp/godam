@@ -6,7 +6,13 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Modal, SelectControl, ToggleControl, ColorPalette } from '@wordpress/components';
+import {
+	Button,
+	Modal,
+	SelectControl,
+	ToggleControl,
+	ColorPalette,
+} from '@wordpress/components';
 import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
@@ -62,11 +68,36 @@ const CTALayer = ( { layerID, goBack } ) => {
 
 	const renderSelectedCTAInputs = () => {
 		switch ( layer?.cta_type ) {
-			case 'text': return <TextCTA layerID={ layer.id } />;
-			case 'image': return <ImageCTA layerID={ layer.id } />;
-			case 'html': return <HtmlCTA layerID={ layer.id } />;
-			default: <TextCTA layerID={ layer.id } />;
+			case 'text':
+				return <TextCTA layerID={ layer.id } />;
+			case 'image':
+				return <ImageCTA layerID={ layer.id } />;
+			case 'html':
+				return <HtmlCTA layerID={ layer.id } />;
+			default:
+	<TextCTA layerID={ layer.id } />;
 		}
+	};
+
+	const imageCtaHtml = () => {
+		return `<div class="${ layer?.imageCtaOrientation === 'vertical' ? 'vertical-image-cta-container' : 'image-cta-container' }">
+					<img
+						src="${ imageCtaUrl }" 
+						alt="CTA ad"
+						height="300"
+						width="250"
+						style="opacity: ${ layer?.imageOpacity || 1 }" 
+					/>
+					<div class="image-cta-description">
+						<h2>${ layer?.imageText }</h2>
+						<p>
+						${ layer?.imageDescription }
+						</p>
+						<a href="${ layer?.imageLink }" target="_blank">
+							<button class="image-cta-btn">${ layer?.imageCtaButtonText || 'Buy Now' }</button>
+						</a>
+					</div>
+   				 </div>`;
 	};
 
 	useEffect( () => {
@@ -81,19 +112,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 		} else if ( 'image' === layer?.cta_type ) {
 			fetchOverlayMediaURL( layer?.image );
 			if ( imageCtaUrl.length !== 0 ) {
-				const html = `
-				<img 
-					src="${ imageCtaUrl }" 
-					alt="Image CTA Overlay" 
-					style="opacity: ${ layer?.imageOpacity || 1 }" 
-				/>
-				${
-	layer?.imageLink && layer?.imageText
-		? `<a class="image-overlay-text" href="${ layer?.imageLink }">${ layer?.imageText }</a>`
-		: ''
-}
-			`;
-				setFormHTML( html );
+				setFormHTML( imageCtaHtml );
 			} else {
 				setFormHTML( '' );
 			}
@@ -196,7 +215,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 					<div className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70 my-auto">
 						<div className="h-full flex items-center">
 							<div
-								className="max-w-[400px] mx-auto text-black text-5xl"
+								className={ `${ 'image' === layer?.cta_type ? 'm-auto' : 'max-w-[400px]' } mx-auto text-black text-5xl` }
 								dangerouslySetInnerHTML={ { __html: formHTML } }
 							/>
 						</div>

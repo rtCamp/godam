@@ -4,7 +4,7 @@
 /**
  * WordPress dependencies
  */
-import { Button, Icon, RangeControl, TextControl } from '@wordpress/components';
+import { Button, Icon, RangeControl, SelectControl, TextareaControl, TextControl } from '@wordpress/components';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -138,6 +138,62 @@ const ImageCTA = ( { layerID } ) => {
 					);
 				} }
 				placeholder="https://rtcamp.com"
+			/>
+
+			<TextareaControl
+				__nextHasNoMarginBottom
+				__next40pxDefaultSize
+				label="Description"
+				value={ layer.imageDescription }
+				onChange={ ( value ) => {
+					dispatch(
+						updateLayerField( { id: layer.id, field: 'imageDescription', value } ),
+					);
+				} }
+				placeholder="Your Description"
+			/>
+
+			<TextControl
+				__nextHasNoMarginBottom
+				__next40pxDefaultSize
+				label="CTA Button Text"
+				value={ layer.imageCtaButtonText }
+				onChange={ ( value ) => {
+					dispatch(
+						updateLayerField( {
+							id: layer.id,
+							field: 'imageCtaButtonText',
+							value,
+						} ),
+					);
+				} }
+				placeholder="Buy Now"
+			/>
+
+			<SelectControl
+				__next40pxDefaultSize
+				label="Select orientation"
+				className="mb-4"
+				options={ [
+					{
+						label: 'Horizontal',
+						value: 'horizontal',
+					},
+					{
+						label: 'Vertical',
+						value: 'vertical',
+					},
+				] }
+				value={ layer.imageCtaOrientation }
+				onChange={ ( value ) => {
+					dispatch(
+						updateLayerField( {
+							id: layer.id,
+							field: 'imageCtaOrientation',
+							value,
+						} ),
+					);
+				} }
 			/>
 
 			<div className="mt-4">
