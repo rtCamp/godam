@@ -35,7 +35,8 @@ function easyDAMPlayer() {
 		const player = videojs( video, videoSetupOptions );
 
 		// Find and initialize layers from easydam_meta
-		const layers = videoSetupOptions.easydam_meta?.layers || [];
+		const layers = videoSetupOptions.layers || [];
+
 		const formLayers = []; // Store references to form layers for future visibility.
 
 		// Hide all the layers initially.
