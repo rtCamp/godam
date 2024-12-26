@@ -28,7 +28,7 @@ $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : nu
 $easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : '';
 
 // Build the video setup options for data-setup.
-$video_setup                = wp_json_encode(
+$video_setup               = wp_json_encode(
 	array(
 		'controls'   => $controls,
 		'autoplay'   => $autoplay,
@@ -42,18 +42,19 @@ $video_setup                = wp_json_encode(
 		'layers'     => 0 < count( $easydam_meta_data ) ? $easydam_meta_data['layers'] : '',
 	)
 );
-$easydam_control_bar_color = 0 < strlen( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : '#2b333fb3';
-$easydam_hover_color        = 0 < strlen( $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
-
+$easydam_control_bar_color = ! empty( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : '#2b333fb3';
+$easydam_hover_color       = ! empty( $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
+$easydam_hover_zoom = ! empty( $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
+$easydam_custom_btn_img = ! empty( $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg']) ? $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg']: '';
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
 <figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>
 	style="
-	--easydam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color); ?>;
-	--easydam-control-hover-color: <?php echo esc_attr( $easydam_hover_color); ?>;
-	--easydam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] ); ?>;
-	--easydam-custom-play-button-url: url(<?php echo esc_url( $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ); ?>);
+	--easydam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
+	--easydam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
+	--easydam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
+	--easydam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
 	">
 	<div class="easydam-video-container">
 		<video
