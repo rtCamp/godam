@@ -38,6 +38,7 @@ $video_setup = wp_json_encode(
 		'poster'       => $poster,
 		'fluid'        => true,
 		'sources'      => $sources,
+		'easydam_meta' => $easydam_meta_data,
 	)
 );
 ?>
