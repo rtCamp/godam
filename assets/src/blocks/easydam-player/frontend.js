@@ -141,11 +141,15 @@ function easyDAMPlayer() {
 
 				hotspotDiv.style.left = `${ pixelX }px`;
 				hotspotDiv.style.top = `${ pixelY }px`;
-				hotspotDiv.style.width = `${ hotspot.size.width }px`;
-				hotspotDiv.style.height = `${ hotspot.size.height }px`;
+
+				const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
+
+				const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
+
+				hotspotDiv.style.width = `${ pixelDiameter }px`;
+				hotspotDiv.style.height = `${ pixelDiameter }px`;
 				hotspotDiv.style.backgroundColor = hotspot.backgroundColor || '#0c80dfa6';
 
-				// Build content
 				const hotspotContent = document.createElement( 'div' );
 				hotspotContent.classList.add( 'hotspot-content' );
 
@@ -190,6 +194,15 @@ function easyDAMPlayer() {
 
 						hotspotDiv.style.left = `${ pixelX }px`;
 						hotspotDiv.style.top = `${ pixelY }px`;
+
+						const fallbackDiameter =
+							hotspot.oSize?.diameter ??
+							hotspot.size?.diameter ??
+							48;
+						const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
+
+						hotspotDiv.style.width = `${ pixelDiameter }px`;
+						hotspotDiv.style.height = `${ pixelDiameter }px`;
 					} );
 				}
 			} );

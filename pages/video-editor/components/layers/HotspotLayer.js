@@ -48,7 +48,8 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			tooltipText: 'New Hotspot',
 			link: '',
 			position: { x: 50, y: 50 },
-			size: { width: 48, height: 48 },
+			size: { diameter: 48 },
+			oSize: { diameter: 48 },
 			oPosition: { x: 50, y: 50 },
 			backgroundColor: '#0c80dfa6',
 		};
@@ -279,7 +280,10 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 									x: ratioToPx( fallbackPosX, 'x' ),
 									y: ratioToPx( fallbackPosY, 'y' ),
 								} }
-								size={ hotspot.size }
+								size={ {
+									width: ratioToPx( hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48, 'x' ),
+									height: ratioToPx( hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48, 'x' ),
+								} }
 								bounds="parent"
 								maxWidth={ 100 }
 								maxHeight={ 100 }
@@ -302,13 +306,13 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 									updateField( 'hotspots', newHotspots );
 								} }
 								onResizeStop={ ( e, direction, ref ) => {
+									const newDiameterPx = ref.offsetWidth;
 									const newHotspots = hotspots.map( ( h, i ) => {
 										if ( i === index ) {
 											return {
 												...h,
-												size: {
-													width: ref.offsetWidth,
-													height: ref.offsetHeight,
+												oSize: {
+													diameter: pxToRatio( newDiameterPx, 'x' ),
 												},
 											};
 										}
