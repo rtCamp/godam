@@ -264,7 +264,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 									} }
 								/>
 								<div className="text-slate-500">If enabled, Transcoder will use an image instead of text as the watermark for the transcoded video.</div>
-
+								<span className="font-semibold">Recommended dimensions:</span> 200 px width × 70 px height.
 								{ useImage && (
 									<div className="mt-2">
 										<div className="flex gap-2">
@@ -282,7 +282,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 											) }
 										</div>
 										{ selectedMedia && selectedMedia.url && (
-											<div className="mt-2">
+											<div className="mt-2 border-2 border-blue-700 rounded-lg p-2 inline-block bg-gray-200">
 												<img
 													src={ selectedMedia.url }
 													alt={ selectedMedia.alt || 'Selected watermark' }
