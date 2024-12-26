@@ -143,7 +143,7 @@ class Transcoding extends Base {
 		$status_info = $status_info->message;
 
 		if ( ! empty( $status_info->error ) || ! empty( $status_info->error_msg ) ) {
-			$response['message']  = esc_html( $status_info->error_msg );
+			$response['message']  = esc_html( $messages['failed'] );
 			$response['status']   = 'failed';
 			$response['progress'] = $progress;
 	
