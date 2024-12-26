@@ -213,7 +213,7 @@ input, textarea, select {
 /* Tooltip */
 .hotspot-tooltip {
 	position: absolute;
-	bottom: 120%;
+	bottom: 100%;
 	left: 50%;
 	transform: translateX(-50%);
 	visibility: hidden;

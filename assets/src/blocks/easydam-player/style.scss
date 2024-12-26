@@ -182,7 +182,7 @@
 /* Tooltip styling */
 .hotspot-tooltip {
 	position: absolute;
-	bottom: 120%; /* Above the hotspot */
+	bottom: 100%; /* Above the hotspot */
 	left: 50%;
 	transform: translateX(-50%);
 	visibility: hidden; /* Hidden by default */
