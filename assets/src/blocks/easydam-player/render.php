@@ -44,8 +44,8 @@ $video_setup               = wp_json_encode(
 );
 $easydam_control_bar_color = ! empty( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : '#2b333fb3';
 $easydam_hover_color       = ! empty( $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
-$easydam_hover_zoom = ! empty( $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
-$easydam_custom_btn_img = ! empty( $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg']) ? $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg']: '';
+$easydam_hover_zoom        = ! empty( $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
+$easydam_custom_btn_img    = ! empty( $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
