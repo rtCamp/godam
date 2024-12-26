@@ -38,11 +38,8 @@ $video_setup = wp_json_encode(
 		'poster'       => $poster,
 		'fluid'        => true,
 		'sources'      => $sources,
-		'id'           => $attachment_id,
-		'easydam_meta' => $easydam_meta_data,
 	)
 );
-
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
@@ -61,8 +58,8 @@ $video_setup = wp_json_encode(
 							type="<?php echo esc_attr( $source['type'] ); ?>"
 						/>
 						<?php
-					endif;
-				endforeach;
+				endif;
+			endforeach;
 			?>
 
 			<?php

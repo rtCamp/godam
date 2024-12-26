@@ -7,6 +7,7 @@
  */
 import FormLayer from './FormLayer';
 import CTALayer from './CTALayer';
+import Ads from './AdsLayer';
 
 const Layer = ( { layer, goBack } ) => {
 	return (
@@ -16,6 +17,9 @@ const Layer = ( { layer, goBack } ) => {
 			}
 			{
 				layer.type === 'cta' && <CTALayer layerID={ layer.id } goBack={ goBack } />
+			}
+			{
+				layer.type === 'ads' && <Ads layerID={ layer.id } goBack={ goBack } />
 			}
 		</>
 	);

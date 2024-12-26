@@ -25,8 +25,6 @@ function easyDAMPlayer() {
 				fluid: true,
 			};
 
-		console.log( 'Parsed options:', videoSetupOptions );
-
 		const player = videojs( video, videoSetupOptions );
 
 		// Find and initialize layers from easydam_meta
