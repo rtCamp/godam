@@ -40,7 +40,7 @@ const layerTypes = [
 	// },
 ];
 
-const SidebarLayers = ( { currentTime } ) => {
+const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const openModal = () => setOpen( true );
 	const closeModal = () => setOpen( false );
@@ -112,7 +112,10 @@ const SidebarLayers = ( { currentTime } ) => {
 								<button
 									key={ layer.id }
 									className="w-full flex justify-between items-center p-2 border rounded mb-2 hover:bg-gray-50 cursor-pointer"
-									onClick={ () => setSelectedLayer( layer ) }
+									onClick={ () => {
+										setSelectedLayer( layer );
+										onSelectLayer( layer.displayTime );
+									} }
 								>
 									<div className="flex items-center gap-2">
 										<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type ).icon } />
