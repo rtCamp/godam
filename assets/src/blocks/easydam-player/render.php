@@ -119,6 +119,8 @@ $video_setup = wp_json_encode(
 							</a>
 						<?php elseif ( 'html' === $layer['cta_type'] && ! empty( $layer['html'] ) ) : ?>
 							<?php echo wp_kses_post( $layer['html'] ); ?>
+						<?php elseif ( 'image' === $layer['cta_type'] && ! empty( $layer['image'] ) ) : ?>
+							<?php echo wp_kses_post( image_cta_html( $layer ) ); ?>
 						<?php endif; ?>
 					</div>
 					<?php

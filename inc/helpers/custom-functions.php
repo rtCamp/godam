@@ -119,3 +119,84 @@ function transcoder_filter_input( $type, $variable_name, $filter = FILTER_DEFAUL
 
 	return filter_var( $input, $filter );
 }
+
+if ( ! function_exists( 'fetch_overlay_media_url' ) ) {
+	/**
+	 * Fetch the URL of a media file by its ID.
+	 *
+	 * This function retrieves the URL of a media attachment in WordPress based on the provided media ID.
+	 * It validates the ID, ensures the media exists, and is of the correct type (attachment).
+	 *
+	 * @param int $media_id The ID of the media attachment.
+	 * @return string The URL of the media file, or an empty string if invalid or not found.
+	 * @throws Exception If the media is not found or is not an attachment.
+	 */
+	function fetch_overlay_media_url( $media_id ) {
+		if ( empty( $media_id ) || 0 === intval( $media_id ) ) {
+			return '';
+		}
+
+		$media = get_post( $media_id );
+
+		if ( ! $media || 'attachment' !== $media->post_type ) {
+			throw new Exception( 'Media not found' );
+		}
+
+		$media_url = wp_get_attachment_url( $media_id );
+
+		return $media_url ? $media_url : '';
+	}
+}
+
+/**
+ * Generate the HTML for an image-based call-to-action (CTA) overlay.
+ *
+ * This function creates a dynamic HTML structure for displaying an image CTA overlay.
+ * It uses the provided `$layer` data to populate the content, including image, text, and links.
+ *
+ * @param array $layer Associative array containing CTA details:
+ *     - 'image' (int): Media ID for the image.
+ *     - 'imageCtaOrientation' (string): Orientation of the CTA ('portrait' or other).
+ *     - 'imageOpacity' (float): Opacity of the image (default is 1).
+ *     - 'imageText' (string): Heading text for the CTA.
+ *     - 'imageDescription' (string): Description text for the CTA.
+ *     - 'imageLink' (string): URL for the CTA link.
+ *     - 'imageCtaButtonText' (string): Text for the CTA button.
+ * @return string The generated HTML string for the image CTA overlay.
+ */
+function image_cta_html( $layer ) {
+	$image_url = fetch_overlay_media_url( $layer['image'] );
+	// Ensure $layer is an associative array and has required fields.
+	$orientation_class = isset( $layer['imageCtaOrientation'] ) && 'portrait' === $layer['imageCtaOrientation']
+		? 'vertical-image-cta-container'
+		: 'image-cta-container';
+
+	$image_opacity     = isset( $layer['imageOpacity'] ) ? $layer['imageOpacity'] : 1;
+	$image_text        = isset( $layer['imageText'] ) ? $layer['imageText'] : '';
+	$image_description = isset( $layer['imageDescription'] ) ? $layer['imageDescription'] : '';
+	$image_link        = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '/';
+	$cta_button_text   = isset( $layer['imageCtaButtonText'] ) ? $layer['imageCtaButtonText'] : 'Buy Now';
+
+	return "
+	<div class= \"image-cta-overlay-container\">
+		<div class=\"image-cta-parent-container\">
+			<div class=\"{$orientation_class}\">
+				<img 
+					src=\"{$image_url}\" 
+					alt=\"CTA ad\" 
+					height=\"300\" 
+					width=\"250\" 
+					style=\"opacity: {$image_opacity};\" 
+				/>
+				<div class=\"image-cta-description\">
+					" . ( ! empty( $image_text ) ? "<h2>{$image_text}</h2>" : '' ) . '
+					' . ( ! empty( $image_description ) ? "<p>{$image_description}</p>" : '' ) . "
+					<a href=\"{$image_link}\" target=\"_blank\">
+						<button class=\"image-cta-btn\">{$cta_button_text}</button>
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+    ";
+}
