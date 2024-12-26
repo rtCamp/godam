@@ -47,6 +47,10 @@ const ImageCTA = ( { layerID } ) => {
 		fileFrame.open();
 	};
 
+	const updateField = ( field, value ) => {
+		dispatch( updateLayerField( { id: layer.id, field, value } ) );
+	};
+
 	const fetchOverlayMediaURL = ( mediaId ) => {
 		if ( ! mediaId ) {
 			return;
@@ -68,18 +72,10 @@ const ImageCTA = ( { layerID } ) => {
 	}, [ layer ] );
 
 	const removeCTAImage = () => {
-		dispatch(
-			updateLayerField( {
-				id: layer.id,
-				field: 'image',
-				value: 0,
-			} ),
-		);
+		updateField( 'image', 0 );
 
 		setSelectedImageUrl( '' );
 	};
-
-	console.log( 'Layer', layer );
 
 	return (
 		<div className="mt-2 flex flex-col gap-6">
@@ -87,7 +83,7 @@ const ImageCTA = ( { layerID } ) => {
 				<label
 					htmlFor="custom-play-button"
 					name="hover-slider"
-					className="font-bold"
+					className="custom-label"
 				>
 					Add Image
 				</label>
@@ -95,6 +91,7 @@ const ImageCTA = ( { layerID } ) => {
 					onClick={ openImageCTAUploader }
 					variant="primary"
 					className="ml-2"
+					aria-label="Upload or Replace CTA Image"
 				>
 					{ 0 === layer?.image || ! layer?.image ? 'Upload' : 'Replace' }
 				</Button>
@@ -120,9 +117,7 @@ const ImageCTA = ( { layerID } ) => {
 				label="Text"
 				value={ layer.imageText }
 				onChange={ ( value ) => {
-					dispatch(
-						updateLayerField( { id: layer.id, field: 'imageText', value } ),
-					);
+					updateField( 'imageText', value );
 				} }
 				placeholder="Your text"
 			/>
@@ -133,9 +128,7 @@ const ImageCTA = ( { layerID } ) => {
 				label="URL"
 				value={ layer.imageLink }
 				onChange={ ( value ) => {
-					dispatch(
-						updateLayerField( { id: layer.id, field: 'imageLink', value } ),
-					);
+					updateField( 'imageLink', value );
 				} }
 				placeholder="https://rtcamp.com"
 			/>
@@ -146,9 +139,7 @@ const ImageCTA = ( { layerID } ) => {
 				label="Description"
 				value={ layer.imageDescription }
 				onChange={ ( value ) => {
-					dispatch(
-						updateLayerField( { id: layer.id, field: 'imageDescription', value } ),
-					);
+					updateField( 'imageDescription', value );
 				} }
 				placeholder="Your Description"
 			/>
@@ -159,13 +150,7 @@ const ImageCTA = ( { layerID } ) => {
 				label="CTA Button Text"
 				value={ layer.imageCtaButtonText }
 				onChange={ ( value ) => {
-					dispatch(
-						updateLayerField( {
-							id: layer.id,
-							field: 'imageCtaButtonText',
-							value,
-						} ),
-					);
+					updateField( 'imageCtaButtonText', value );
 				} }
 				placeholder="Buy Now"
 			/>
@@ -186,20 +171,11 @@ const ImageCTA = ( { layerID } ) => {
 				] }
 				value={ layer.imageCtaOrientation }
 				onChange={ ( value ) => {
-					dispatch(
-						updateLayerField( {
-							id: layer.id,
-							field: 'imageCtaOrientation',
-							value,
-						} ),
-					);
+					updateField( 'imageCtaOrientation', value );
 				} }
 			/>
 
-			<div className="mt-4">
-				<label name="hover-slider" className="font-bold">
-					Opacity of background image
-				</label>
+			<div className="mb-4">
 				<div className="hover-control-input-container">
 					<RangeControl
 						__nextHasNoMarginBottom
@@ -208,17 +184,10 @@ const ImageCTA = ( { layerID } ) => {
 						initialPosition={ 0 }
 						max={ 1 }
 						min={ 0 }
-						onChange={ ( e ) =>
-							dispatch(
-								updateLayerField( {
-									id: layer.id,
-									field: 'imageOpacity',
-									value: e,
-								} ),
-							)
-						}
+						onChange={ ( value ) => updateField( 'imageOpacity', value ) }
 						step={ 0.1 }
 						value={ layer.imageOpacity }
+						label="Opacity of background image"
 					/>
 				</div>
 			</div>

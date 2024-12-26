@@ -138,3 +138,10 @@ input, textarea, select {
 .wysiwyg-editor .ql-editor {
   @apply min-h-[200px];
 }
+
+.custom-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
