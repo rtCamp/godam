@@ -176,7 +176,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 												);
 											} }
 										>
-											Show Style
+											{ __( 'Show Style', 'transcoder' ) }
 										</MenuItem>
 										<MenuItem
 											icon={ trash }
@@ -185,7 +185,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 											} }
 											className="text-red-500"
 										>
-											Delete Hotspot
+											{ __( 'Delete Hotspot', 'transcoder' ) }
 										</MenuItem>
 									</>
 								) }
