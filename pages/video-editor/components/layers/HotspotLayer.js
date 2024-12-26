@@ -29,38 +29,26 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 	const [ isDeleteModalOpen, setDeleteModalOpen ] = useState( false );
 	const [ expandedHotspotIndex, setExpandedHotspotIndex ] = useState( null );
 
-	// Use a ref for the container in which Rnd is bounded
 	const containerRef = useRef( null );
 
-	// We'll store ratioX & ratioY in state
+	// ratio {x, y} for px -> ratio
 	const [ ratio, setRatio ] = useState( { x: 1, y: 1 } );
 
-	// Helper to dispatch updates
 	const updateField = ( field, value ) => {
 		dispatch( updateLayerField( { id: layer.id, field, value } ) );
 	};
 
-	// ---- Convert from px to ratio-based or ratio-based to px ----
-	const pxToRatio = ( px, dimension ) => {
-		// dimension is 'x' or 'y'
-		return px * ratio[ dimension ];
-	};
+	const pxToRatio = ( px, dimension ) => px * ratio[ dimension ];
+	const ratioToPx = ( val, dimension ) => val / ratio[ dimension ];
 
-	const ratioToPx = ( val, dimension ) => {
-		// dimension is 'x' or 'y'
-		return val / ratio[ dimension ];
-	};
-
-	// Add a new hotspot with default original position/size
+	// Add a new hotspot with default position/size
 	const handleAddHotspot = () => {
 		const newHotspot = {
 			id: uuidv4(),
 			tooltipText: 'New Hotspot',
 			link: '',
-			// Store pixel-based for initial states
 			position: { x: 50, y: 50 },
 			size: { width: 48, height: 48 },
-			// Original positions in ratio form
 			oPosition: { x: 50, y: 50 },
 		};
 		updateField( 'hotspots', [ ...hotspots, newHotspot ] );
@@ -80,11 +68,9 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 		setExpandedHotspotIndex( expandedHotspotIndex === index ? null : index );
 	};
 
-	// Recalculate ratio whenever container size changes
 	const recalcRatio = () => {
 		if ( containerRef.current ) {
 			const { offsetWidth, offsetHeight } = containerRef.current;
-			// Natural size of the video
 			const baseWidth = 800;
 			const baseHeight = 600;
 
@@ -105,8 +91,14 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 		<>
 			<div className="flex justify-between items-center pb-3 border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="font-semibold">{ __( 'Hotspot Layer', 'transcoder' ) }</p>
-				<Button icon={ trash } isDestructive onClick={ () => setDeleteModalOpen( true ) } />
+				<p className="font-semibold">
+					{ __( 'Hotspot Layer', 'transcoder' ) }
+				</p>
+				<Button
+					icon={ trash }
+					isDestructive
+					onClick={ () => setDeleteModalOpen( true ) }
+				/>
 				{ isDeleteModalOpen && (
 					<Modal
 						title={ __( 'Delete Hotspot Layer', 'transcoder' ) }
@@ -136,6 +128,19 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 				) }
 			</div>
 
+			<div className="mb-4">
+				<TextControl
+					label={ __( 'Layer Duration (seconds)', 'transcoder' ) }
+					type="number"
+					min="1"
+					value={ layer?.duration || '' }
+					onChange={ ( value ) => {
+						const newValue = parseInt( value, 10 ) || 0;
+						updateField( 'duration', newValue );
+					} }
+				/>
+			</div>
+
 			<div className="flex flex-col gap-4">
 				{ hotspots.map( ( hotspot, index ) => (
 					<div key={ hotspot.id } className="p-2 border rounded">
@@ -151,22 +156,25 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 								icon={ trash }
 								isDestructive
 								onClick={ ( e ) => {
-									e.stopPropagation(); // Prevent triggering the expansion toggle
+									e.stopPropagation();
 									handleDeleteHotspot( index );
 								} }
 							/>
 						</Button>
+
 						{ expandedHotspotIndex === index && (
 							<div className="mt-3">
 								<TextControl
 									label={ __( 'Tooltip Text', 'transcoder' ) }
 									placeholder="Click Me!"
 									value={ hotspot.tooltipText }
-									onChange={ ( value ) =>
+									onChange={ ( val ) =>
 										updateField(
 											'hotspots',
 											hotspots.map( ( h, i ) =>
-												i === index ? { ...h, tooltipText: value } : h,
+												i === index
+													? { ...h, tooltipText: val }
+													: h,
 											),
 										)
 									}
@@ -175,11 +183,11 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 									label={ __( 'Link', 'transcoder' ) }
 									placeholder="https://www.example.com"
 									value={ hotspot.link }
-									onChange={ ( value ) =>
+									onChange={ ( val ) =>
 										updateField(
 											'hotspots',
 											hotspots.map( ( h, i ) =>
-												i === index ? { ...h, link: value } : h,
+												i === index ? { ...h, link: val } : h,
 											),
 										)
 									}
@@ -228,7 +236,6 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 										if ( i === index ) {
 											return {
 												...h,
-												// Ensure we store back to oPosition
 												oPosition: {
 													x: pxToRatio( d.x, 'x' ),
 													y: pxToRatio( d.y, 'y' ),
@@ -239,22 +246,21 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 									} );
 									updateField( 'hotspots', newHotspots );
 								} }
-								onResizeStop={ ( e, direction, ref ) =>
-									updateField(
-										'hotspots',
-										hotspots.map( ( h, i ) =>
-											i === index
-												? {
-													...h,
-													size: {
-														width: ref.offsetWidth,
-														height: ref.offsetHeight,
-													},
-												}
-												: h,
-										),
-									)
-								}
+								onResizeStop={ ( e, direction, ref ) => {
+									const newHotspots = hotspots.map( ( h, i ) => {
+										if ( i === index ) {
+											return {
+												...h,
+												size: {
+													width: ref.offsetWidth,
+													height: ref.offsetHeight,
+												},
+											};
+										}
+										return h;
+									} );
+									updateField( 'hotspots', newHotspots );
+								} }
 								className="hotspot circle"
 							>
 								<div className="hotspot-content">

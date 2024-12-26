@@ -103,11 +103,13 @@
 }
 
 .easydam-layer.hotspot-layer {
+	pointer-events: none;
 	background: transparent;
 }
 
 /* Hotspot layer */
 .hotspot {
+	pointer-events: auto;
 	position: absolute;
 	z-index: 100;
 	background-color: rgba(12, 128, 223, 0.65);

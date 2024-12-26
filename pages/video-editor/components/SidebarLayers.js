@@ -84,6 +84,7 @@ const SidebarLayers = ( { currentTime } ) => {
 						id: uuidv4(),
 						displayTime: currentTime,
 						type,
+						duration: 5,
 						hotspots: [
 							{
 								id: uuidv4(),
