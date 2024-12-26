@@ -128,46 +128,44 @@ import DOMPurify from 'isomorphic-dompurify';
  */
 ( function() {
 	document.addEventListener( 'DOMContentLoaded', function() {
-		if ( transcoding_status.load_flag ) {
-			const checkStatusBtns = document.querySelectorAll( '[name="check_status_btn"]' );
+		const checkStatusBtns = document.querySelectorAll( '[name="check_status_btn"]' );
 
-			checkStatusBtns.forEach( function( btn ) {
-				btn.addEventListener( 'click', function() {
-					const postId = btn.dataset.value;
-					const btnText = document.querySelector( `#btn_check_status${ postId }` ).textContent;
-					const spanStatusElement = document.querySelector( `#span_status${ postId }` );
-					const checkStatusElement = document.querySelector( `#btn_check_status${ postId }` );
+		checkStatusBtns.forEach( function( btn ) {
+			btn.addEventListener( 'click', function() {
+				const postId = btn.dataset.value;
+				const btnText = document.querySelector( `#btn_check_status${ postId }` ).textContent;
+				const spanStatusElement = document.querySelector( `#span_status${ postId }` );
+				const checkStatusElement = document.querySelector( `#btn_check_status${ postId }` );
 
-					spanStatusElement.textContent = '';
-					checkStatusElement.textContent = 'Checking...';
-					spanStatusElement.style.display = 'none';
-					checkStatusElement.disabled = true;
+				spanStatusElement.textContent = '';
+				checkStatusElement.textContent = 'Checking...';
+				spanStatusElement.style.display = 'none';
+				checkStatusElement.disabled = true;
 
-					fetch( `${ transcoderSettings.restUrl }/${ postId }`, {
-						method: 'GET',
-						headers: {
-							'Content-Type': 'application/json',
-							'X-WP-Nonce': transcoderSettings.nonce,
-						},
+				fetch( `${ transcoderSettings.restUrl }/${ postId }`, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': transcoderSettings.nonce,
+					},
+				} )
+					.then( ( response ) => response.json() )
+					.then( ( data ) => {
+						if ( data.status === 'Success' ) {
+							checkStatusElement.style.display = 'none';
+						}
+
+						spanStatusElement.textContent = data.message;
+						spanStatusElement.style.display = 'block';
+						checkStatusElement.textContent = btnText;
+						checkStatusElement.disabled = false;
 					} )
-						.then( ( response ) => response.json() )
-						.then( ( data ) => {
-							if ( data.status === 'Success' ) {
-								checkStatusElement.style.display = 'none';
-							}
-
-							spanStatusElement.textContent = data.message;
-							spanStatusElement.style.display = 'block';
-							checkStatusElement.textContent = btnText;
-							checkStatusElement.disabled = false;
-						} )
-						.catch( ( error ) => {
-							console.error( 'Error:', error );
-							checkStatusElement.textContent = btnText;
-							checkStatusElement.disabled = false;
-						} );
-				} );
+					.catch( ( error ) => {
+						console.error( 'Error:', error );
+						checkStatusElement.textContent = btnText;
+						checkStatusElement.disabled = false;
+					} );
 			} );
-		}
+		} );
 	} );
 }() );
