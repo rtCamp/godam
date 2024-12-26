@@ -138,6 +138,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 						const newValue = parseInt( value, 10 ) || 0;
 						updateField( 'duration', newValue );
 					} }
+					help="Duration (in seconds) this layer will stay visible"
 				/>
 			</div>
 
@@ -261,6 +262,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 									} );
 									updateField( 'hotspots', newHotspots );
 								} }
+								onClick={ () => setExpandedHotspotIndex( index ) }
 								className="hotspot circle"
 							>
 								<div className="hotspot-content">
