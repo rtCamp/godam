@@ -7,8 +7,8 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Modal, TextControl } from '@wordpress/components';
-import { arrowLeft, trash, plus, chevronDown, chevronUp, chevronRight } from '@wordpress/icons';
+import { Button, Modal, TextControl, DropdownMenu, MenuItem, ColorPalette } from '@wordpress/components';
+import { arrowLeft, trash, plus, chevronDown, chevronUp, chevronRight, moreVertical, check } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useRef, useEffect } from '@wordpress/element';
 
@@ -50,6 +50,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			position: { x: 50, y: 50 },
 			size: { width: 48, height: 48 },
 			oPosition: { x: 50, y: 50 },
+			backgroundColor: '#0c80dfa6',
 		};
 		updateField( 'hotspots', [ ...hotspots, newHotspot ] );
 	};
@@ -145,23 +146,50 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			<div className="flex flex-col gap-4">
 				{ hotspots.map( ( hotspot, index ) => (
 					<div key={ hotspot.id } className="p-2 border rounded">
-						<Button
-							icon={ expandedHotspotIndex === index ? chevronUp : chevronDown }
-							className="flex justify-between w-full"
-							onClick={ () => toggleHotspotExpansion( index ) }
-						>
-							<div className="flex-1">
-								{ `Hotspot ${ index + 1 }` }
-							</div>
+						<div className="flex justify-between items-center">
 							<Button
-								icon={ trash }
-								isDestructive
-								onClick={ ( e ) => {
-									e.stopPropagation();
-									handleDeleteHotspot( index );
-								} }
-							/>
-						</Button>
+								icon={ expandedHotspotIndex === index ? chevronUp : chevronDown }
+								className="flex-1 text-left"
+								onClick={ () => toggleHotspotExpansion( index ) }
+							>
+								{ `Hotspot ${ index + 1 }` }
+							</Button>
+
+							<DropdownMenu
+								icon={ moreVertical }
+								label={ `Hotspot ${ index + 1 } options` }
+								toggleProps={ { 'aria-label': `Options for Hotspot ${ index + 1 }` } }
+							>
+								{ () => (
+									<>
+										<MenuItem
+											icon={ hotspot.showStyle ? check : '' }
+											onClick={ () => {
+												updateField(
+													'hotspots',
+													hotspots.map( ( h, i ) =>
+														i === index
+															? { ...h, showStyle: ! h.showStyle }
+															: h,
+													),
+												);
+											} }
+										>
+											Show Style
+										</MenuItem>
+										<MenuItem
+											icon={ trash }
+											onClick={ () => {
+												handleDeleteHotspot( index );
+											} }
+											className="text-red-500"
+										>
+											Delete Hotspot
+										</MenuItem>
+									</>
+								) }
+							</DropdownMenu>
+						</div>
 
 						{ expandedHotspotIndex === index && (
 							<div className="mt-3">
@@ -193,6 +221,32 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 										)
 									}
 								/>
+								{ hotspot.showStyle && (
+									<div className="flex flex-col gap-2">
+										<label
+											htmlFor={ `hotspot-color-${ index }` }
+											className="text-xs text-gray-700"
+										>
+											{ __( 'BACKGROUND COLOR', 'transcoder' ) }
+										</label>
+
+										<ColorPalette
+											id={ `hotspot-color-${ index }` }
+											value={ hotspot.backgroundColor || '#0c80dfa6' }
+											onChange={ ( newColor ) => {
+												updateField(
+													'hotspots',
+													hotspots.map( ( h, i ) =>
+														i === index
+															? { ...h, backgroundColor: newColor }
+															: h,
+													),
+												);
+											} }
+											enableAlpha
+										/>
+									</div>
+								) }
 							</div>
 						) }
 					</div>
@@ -264,6 +318,9 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 								} }
 								onClick={ () => setExpandedHotspotIndex( index ) }
 								className="hotspot circle"
+								style={ {
+									backgroundColor: hotspot.backgroundColor || '#0c80dfa6',
+								} }
 							>
 								<div className="hotspot-content">
 									<span className="index">{ index + 1 }</span>

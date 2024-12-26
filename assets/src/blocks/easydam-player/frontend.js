@@ -143,6 +143,7 @@ function easyDAMPlayer() {
 				hotspotDiv.style.top = `${ pixelY }px`;
 				hotspotDiv.style.width = `${ hotspot.size.width }px`;
 				hotspotDiv.style.height = `${ hotspot.size.height }px`;
+				hotspotDiv.style.backgroundColor = hotspot.backgroundColor || '#0c80dfa6';
 
 				// Build content
 				const hotspotContent = document.createElement( 'div' );
