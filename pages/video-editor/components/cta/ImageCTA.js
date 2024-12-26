@@ -176,12 +176,12 @@ const ImageCTA = ( { layerID } ) => {
 				className="mb-4"
 				options={ [
 					{
-						label: 'Horizontal',
-						value: 'horizontal',
+						label: 'Landscape',
+						value: 'landscape',
 					},
 					{
-						label: 'Vertical',
-						value: 'vertical',
+						label: 'Portrait',
+						value: 'portrait',
 					},
 				] }
 				value={ layer.imageCtaOrientation }

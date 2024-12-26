@@ -80,7 +80,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 	};
 
 	const imageCtaHtml = () => {
-		return `<div class="${ layer?.imageCtaOrientation === 'vertical' ? 'vertical-image-cta-container' : 'image-cta-container' }">
+		return `<div class="${ 'portrait' === layer?.imageCtaOrientation ? 'vertical-image-cta-container' : 'image-cta-container' }">
 					<img
 						src="${ imageCtaUrl }" 
 						alt="CTA ad"
@@ -89,11 +89,9 @@ const CTALayer = ( { layerID, goBack } ) => {
 						style="opacity: ${ layer?.imageOpacity || 1 }" 
 					/>
 					<div class="image-cta-description">
-						<h2>${ layer?.imageText }</h2>
-						<p>
-						${ layer?.imageDescription }
-						</p>
-						<a href="${ layer?.imageLink }" target="_blank">
+						${ layer?.imageText ? `<h2>${ layer.imageText }</h2>` : '' }
+						${ layer?.imageDescription ? `<p>${ layer.imageDescription }</p>` : '' }
+						<a href="${ layer?.imageLink || '/' }" target="_blank">
 							<button class="image-cta-btn">${ layer?.imageCtaButtonText || 'Buy Now' }</button>
 						</a>
 					</div>

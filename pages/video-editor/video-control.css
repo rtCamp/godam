@@ -85,7 +85,9 @@
     flex-direction: column;
     gap: 20px;
     padding: 20px;
-
+    align-content: center;
+    justify-content: center;
+    padding-left: 0;
 }
 
 .image-cta-btn {
