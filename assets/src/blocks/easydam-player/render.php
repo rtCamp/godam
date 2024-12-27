@@ -28,34 +28,24 @@ $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : nu
 $easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : '';
 
 // Build the video setup options for data-setup.
-$video_setup               = wp_json_encode(
+$video_setup = wp_json_encode(
 	array(
-		'controls'   => $controls,
-		'autoplay'   => $autoplay,
-		'loop'       => $loop,
-		'muted'      => $muted,
-		'preload'    => $preload,
-		'poster'     => $poster,
-		'fluid'      => true,
-		'sources'    => $sources,
-		'controlBar' => 0 < count( $easydam_meta_data ) ? $easydam_meta_data['videoConfig']['controlBar'] : '',
-		'layers'     => 0 < count( $easydam_meta_data ) ? $easydam_meta_data['layers'] : '',
+		'controls'     => $controls,
+		'autoplay'     => $autoplay,
+		'loop'         => $loop,
+		'muted'        => $muted,
+		'preload'      => $preload,
+		'poster'       => $poster,
+		'fluid'        => true,
+		'sources'      => $sources,
+		'easydam_meta' => $easydam_meta_data,
 	)
 );
-$easydam_control_bar_color = ! empty( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : '#2b333fb3';
-$easydam_hover_color       = ! empty( $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
-$easydam_hover_zoom        = ! empty( $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
-$easydam_custom_btn_img    = ! empty( $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
+
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>
-	style="
-	--easydam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
-	--easydam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
-	--easydam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
-	--easydam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
-	">
+<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
 	<div class="easydam-video-container">
 		<video
 			class="easydam-player video-js vjs-big-play-centered"
@@ -75,22 +65,20 @@ $easydam_custom_btn_img    = ! empty( $easydam_meta_data['videoConfig']['control
 			?>
 
 			<?php
-			if ( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) {
-				foreach ( $tracks as $track ) :
-					if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
-						?>
-						<track
-							src="<?php echo esc_url( $track['src'] ); ?>"
-							kind="<?php echo esc_attr( $track['kind'] ); ?>"
-							<?php
-							echo ! empty( $track['srclang'] ) ? sprintf( 'srclang="%s"', esc_attr( $track['srclang'] ) ) : '';
-							echo ! empty( $track['label'] ) ? sprintf( 'label="%s"', esc_attr( $track['label'] ) ) : '';
-							?>
-						/>
+			foreach ( $tracks as $track ) :
+				if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
+					?>
+					<track
+						src="<?php echo esc_url( $track['src'] ); ?>"
+						kind="<?php echo esc_attr( $track['kind'] ); ?>"
 						<?php
-					endif;
-				endforeach;
-			}
+						echo ! empty( $track['srclang'] ) ? sprintf( 'srclang="%s"', esc_attr( $track['srclang'] ) ) : '';
+						echo ! empty( $track['label'] ) ? sprintf( 'label="%s"', esc_attr( $track['label'] ) ) : '';
+						?>
+					/>
+					<?php
+				endif;
+			endforeach;
 			?>
 		</video>
 
