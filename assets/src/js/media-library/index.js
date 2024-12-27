@@ -2,8 +2,26 @@
  * Internal dependencies
  */
 import '../../libs/jquery-ui-1.14.1.draggable/jquery-ui';
-
 import './transcoding-status';
+
+import AttachmentsBrowser from './views/attachment-browser.js';
+
+/**
+ * MediaLibrary class.
+ */
+class MediaLibrary {
+	constructor() {
+		this.setupAttachmentBrowser();
+	}
+
+	setupAttachmentBrowser() {
+		wp.media.view.AttachmentsBrowser = AttachmentsBrowser;
+	}
+}
+
+const mediaLibrary = new MediaLibrary();
+
+export default mediaLibrary;
 
 const $ = jQuery;
 
@@ -102,40 +120,6 @@ const attachDragEvent = () => {
 
 setTimeout( attachDragEvent, 1000 );
 
-$( 'th.check-column' ).draggable( {
-	cursor: 'move',
-	helper( event ) {
-		const hoverItem = $( event.currentTarget );
-		const hoveredCheckbox = $( event.target ).closest( 'th.check-column' ).find( 'input[type="checkbox"]' );
-		const selectedCheckboxes = $( '.table-view-list th.check-column input[type="checkbox"]:checked' );
-
-		const elementsToDrag = selectedCheckboxes.add( hoveredCheckbox );
-
-		const draggedItemIds = elementsToDrag.map( function() {
-			return Number.parseInt( $( this ).val() ); // Fetch the `value` attribute of the input element
-		} ).get();
-
-		hoverItem.data( 'draggedItems', draggedItemIds );
-
-		return $( '<div>', {
-			text: `Moving ${ draggedItemIds.length } item${ draggedItemIds.length > 1 ? 's' : '' }`,
-			css: {
-				background: '#333',
-				color: '#fff',
-				padding: '8px 12px',
-				borderRadius: '4px',
-				fontSize: '14px',
-				fontWeight: 'bold',
-				boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
-				zIndex: 1000,
-			},
-		} );
-	},
-	opacity: 0.7,
-	zIndex: 1000,
-	appendTo: 'body',
-} );
-
 /**
  * On AJAX complete, check if the request is for 'query-attachments' and attach the drag event
  */
@@ -149,76 +133,3 @@ jQuery( document ).ajaxComplete( function( event, jqXHR, ajaxOptions ) {
 		}
 	}
 } );
-
-if ( wp.media?.view ) {
-	( function() {
-		const MediaLibraryTaxonomyFilter = wp.media.view.AttachmentFilters.extend( {
-			id: 'media-folder-filter',
-
-			events: {
-				change: 'change',
-			},
-
-			change( event ) {
-				if ( event.detail ) {
-					this.filters[ event.detail.term_id ] = {
-						text: event.detail.name,
-						props: {
-							'media-folder': event.detail.term_id,
-						},
-					};
-				} else {
-					const props = this.filters[ this.el.value ].props;
-					this.model.set( props );
-				}
-			},
-
-			createFilters() {
-				const filters = {};
-				_.each( MediaLibraryTaxonomyFilterData.terms || {}, function( value, index ) {
-					filters[ value.term_id ] = {
-						text: value.name,
-						props: {
-							'media-folder': value.term_id,
-						},
-					};
-				} );
-
-				filters.uncategorized = {
-					text: 'Uncategorized',
-					props: {
-						'media-folder': 0,
-					},
-					priority: 5,
-				};
-
-				filters.all = {
-					text: 'All collections',
-					props: {
-						'media-folder': -1,
-					},
-					priority: 10,
-				};
-				this.filters = filters;
-			},
-		} );
-
-		// Extend and override wp.media.view.AttachmentsBrowser to include our new filter
-		const AttachmentsBrowser = wp.media.view.AttachmentsBrowser;
-		wp.media.view.AttachmentsBrowser = wp.media.view.AttachmentsBrowser.extend( {
-			createToolbar() {
-				// Make sure to load the original toolbar
-				AttachmentsBrowser.prototype.createToolbar.call( this );
-				this.toolbar.set(
-					'MediaLibraryTaxonomyFilter',
-					new MediaLibraryTaxonomyFilter( {
-						controller: this.controller,
-						model: this.collection.props,
-						priority: -75,
-					} ).render(),
-				);
-			},
-		} );
-	}() );
-}
-

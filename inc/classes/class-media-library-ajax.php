@@ -85,6 +85,10 @@ class Media_Library_Ajax {
 
 		}
 
+		if ( isset( $_REQUEST['query']['date_query'] ) && is_array( $_REQUEST['query']['date_query'] ) ) {
+			$query_args['date_query'] = $this->sanitize_date( $_REQUEST['query']['date_query'] ); // phpcs:ignore -- date_query is getting sanitized by custom function.
+		}
+
 		return $query_args;
 	}
 
@@ -186,5 +190,43 @@ class Media_Library_Ajax {
 			}
 			echo '</select>';
 		}
+	}
+
+	/**
+	 * Sanitize the date query.
+	 * 
+	 * Filter the date_query to only allow specific date formats and the valid relation.
+	 *
+	 * @param array $date_query Date query.
+	 * 
+	 * @return array $date_query sanitized date query.
+	 */
+	private function sanitize_date( $date_query ) {
+		return array_filter(
+			array_map(
+				function( $item ) {
+					if ( is_array( $item ) ) {
+						$sanitized_item = array();
+						foreach ( $item as $key => $value ) {
+							if ( 'after' === $key || 'before' === $key ) {
+								// Validate date format (YYYY-MM-DD).
+								if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ) {
+									$sanitized_item[ $key ] = $value;
+								}
+							} else {
+								// Sanitize any other keys.
+								$sanitized_item[ $key ] = sanitize_text_field( $value );
+							}
+						}
+						return $sanitized_item;
+					} else {
+						$valid_relations = array( 'AND', 'OR' );
+						return in_array( $item, $valid_relations, true ) ? sanitize_text_field( $item ) : null;
+					}
+					return null;
+				},
+				$date_query
+			)
+		);
 	}
 }
