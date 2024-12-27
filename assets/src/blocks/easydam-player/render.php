@@ -62,7 +62,7 @@ $video_setup = wp_json_encode(
 					<?php
 				endif;
 			endforeach;
-			
+
 			foreach ( $tracks as $track ) :
 				if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
 					?>
@@ -84,11 +84,11 @@ $video_setup = wp_json_encode(
 			<figcaption><?php echo esc_html( $caption ); ?></figcaption>
 		<?php endif; ?>
 
-		<!-- Dynamically render shortcodes for form layers -->
+		<!-- Dynamically render shortcodes for form layers. -->
 		<?php
 		if ( ! empty( $easydam_meta_data['layers'] ) ) :
 			foreach ( $easydam_meta_data['layers'] as $layer ) :
-				// FORM layer
+				// FORM layer.
 				if ( isset( $layer['type'] ) && 'form' === $layer['type'] && ! empty( $layer['gf_id'] ) ) :
 					?>
 					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
@@ -106,7 +106,7 @@ $video_setup = wp_json_encode(
 						</div>
 					</div>
 					<?php
-				// CTA layer
+					// CTA layer.
 				elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) :
 					?>
 					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
@@ -124,7 +124,7 @@ $video_setup = wp_json_encode(
 						<?php endif; ?>
 					</div>
 					<?php
-				// HOTSPOT layer
+					// HOTSPOT layer.
 				elseif ( isset( $layer['type'] ) && 'hotspot' === $layer['type'] ) :
 					?>
 					<div
