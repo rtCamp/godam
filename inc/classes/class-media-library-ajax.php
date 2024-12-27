@@ -48,29 +48,30 @@ class Media_Library_Ajax {
 
 		if ( isset( $_REQUEST['query']['media-folder'] ) ) {
 			$media_folder_id = intval( $_REQUEST['query']['media-folder'] );
-	
+		
+			// Handle uncategorized folder (media-folder ID = 0).
 			if ( 0 === $media_folder_id ) {
-				// Filter attachments by uncategorized folder.
+				$uncategorized_ids = get_terms(
+					array(
+						'taxonomy'   => 'media-folder',
+						'fields'     => 'ids',
+						'hide_empty' => false,
+					)
+				);
+		
 				$query_args['tax_query'] = array( // phpcs:ignore -- tax_query is required here to filter by taxonomy.
 					array(
 						'taxonomy'         => 'media-folder',
 						'field'            => 'term_id',
-						'terms'            => get_terms(
-							array(
-								'taxonomy'   => 'media-folder',
-								'fields'     => 'ids',
-								'hide_empty' => false,
-							)
-						),
+						'terms'            => $uncategorized_ids,
 						'operator'         => 'NOT IN',
 						'include_children' => false,
 					),
 				);
-	
-			} elseif ( -1 === $media_folder_id ) {
-				unset( $query_args['media-folder'] );
-				return $query_args;
-			} elseif ( ! empty( $media_folder_id ) ) {
+			} 
+			
+			// Handle specific media-folder filtering.
+			elseif ( -1 !== $media_folder_id && ! empty( $media_folder_id ) ) {
 				$query_args['tax_query'] = array( // phpcs:ignore -- tax_query is required here to filter by taxonomy.
 					array(
 						'taxonomy'         => 'media-folder',
@@ -80,9 +81,9 @@ class Media_Library_Ajax {
 					),
 				);
 			}
-
+		
+			// Unset the 'media-folder' query arg regardless of the case.
 			unset( $query_args['media-folder'] );
-
 		}
 
 		if ( isset( $_REQUEST['query']['date_query'] ) && is_array( $_REQUEST['query']['date_query'] ) ) {
