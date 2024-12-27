@@ -48,29 +48,27 @@ class Media_Library_Ajax {
 
 		if ( isset( $_REQUEST['query']['media-folder'] ) ) {
 			$media_folder_id = intval( $_REQUEST['query']['media-folder'] );
-	
+		
+			// Handle uncategorized folder (media-folder ID = 0).
 			if ( 0 === $media_folder_id ) {
-				// Filter attachments by uncategorized folder.
+				$uncategorized_ids = get_terms(
+					array(
+						'taxonomy'   => 'media-folder',
+						'fields'     => 'ids',
+						'hide_empty' => false,
+					)
+				);
+		
 				$query_args['tax_query'] = array( // phpcs:ignore -- tax_query is required here to filter by taxonomy.
 					array(
 						'taxonomy'         => 'media-folder',
 						'field'            => 'term_id',
-						'terms'            => get_terms(
-							array(
-								'taxonomy'   => 'media-folder',
-								'fields'     => 'ids',
-								'hide_empty' => false,
-							)
-						),
+						'terms'            => $uncategorized_ids,
 						'operator'         => 'NOT IN',
 						'include_children' => false,
 					),
 				);
-	
-			} elseif ( -1 === $media_folder_id ) {
-				unset( $query_args['media-folder'] );
-				return $query_args;
-			} elseif ( ! empty( $media_folder_id ) ) {
+			} elseif ( -1 !== $media_folder_id && ! empty( $media_folder_id ) ) {
 				$query_args['tax_query'] = array( // phpcs:ignore -- tax_query is required here to filter by taxonomy.
 					array(
 						'taxonomy'         => 'media-folder',
@@ -80,9 +78,13 @@ class Media_Library_Ajax {
 					),
 				);
 			}
-
+		
+			// Unset the 'media-folder' query arg regardless of the case.
 			unset( $query_args['media-folder'] );
+		}
 
+		if ( isset( $_REQUEST['query']['date_query'] ) && is_array( $_REQUEST['query']['date_query'] ) ) {
+			$query_args['date_query'] = $this->sanitize_date( $_REQUEST['query']['date_query'] ); // phpcs:ignore -- date_query is getting sanitized by custom function.
 		}
 
 		return $query_args;
@@ -186,5 +188,43 @@ class Media_Library_Ajax {
 			}
 			echo '</select>';
 		}
+	}
+
+	/**
+	 * Sanitize the date query.
+	 * 
+	 * Filter the date_query to only allow specific date formats and the valid relation.
+	 *
+	 * @param array $date_query Date query.
+	 * 
+	 * @return array $date_query sanitized date query.
+	 */
+	private function sanitize_date( $date_query ) {
+		return array_filter(
+			array_map(
+				function ( $item ) {
+					if ( is_array( $item ) ) {
+						$sanitized_item = array();
+						foreach ( $item as $key => $value ) {
+							if ( 'after' === $key || 'before' === $key ) {
+								// Validate date format (YYYY-MM-DD).
+								if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ) {
+									$sanitized_item[ $key ] = $value;
+								}
+							} else {
+								// Sanitize any other keys.
+								$sanitized_item[ $key ] = sanitize_text_field( $value );
+							}
+						}
+						return $sanitized_item;
+					} else {
+						$valid_relations = array( 'AND', 'OR' );
+						return in_array( $item, $valid_relations, true ) ? sanitize_text_field( $item ) : null;
+					}
+					return null;
+				},
+				$date_query
+			)
+		);
 	}
 }
