@@ -46,9 +46,9 @@ const slice = createSlice( {
 				},
 				//custom controls
 				brandingIcon: false,
-				appearanceColor: '#2b333fb3',
-				hoverColor: '#fff',
-				zoomLevel: 0,
+				appearanceColor: '',
+				hoverColor: '',
+				zoomLevel: 1,
 				playButtonPosition: 'center',
 				controlBarPosition: 'horizontal',
 				customBrandImg: '',
