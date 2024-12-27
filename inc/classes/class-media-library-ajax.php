@@ -68,10 +68,7 @@ class Media_Library_Ajax {
 						'include_children' => false,
 					),
 				);
-			} 
-			
-			// Handle specific media-folder filtering.
-			elseif ( -1 !== $media_folder_id && ! empty( $media_folder_id ) ) {
+			} elseif ( -1 !== $media_folder_id && ! empty( $media_folder_id ) ) {
 				$query_args['tax_query'] = array( // phpcs:ignore -- tax_query is required here to filter by taxonomy.
 					array(
 						'taxonomy'         => 'media-folder',
@@ -205,7 +202,7 @@ class Media_Library_Ajax {
 	private function sanitize_date( $date_query ) {
 		return array_filter(
 			array_map(
-				function( $item ) {
+				function ( $item ) {
 					if ( is_array( $item ) ) {
 						$sanitized_item = array();
 						foreach ( $item as $key => $value ) {
