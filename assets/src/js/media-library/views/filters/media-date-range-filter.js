@@ -49,13 +49,18 @@ export default MediaDateRangeFilter.extend( {
 		this.model.set( {
 			date_query: dateQuery.length > 0 ? { relation: 'AND', ...dateQuery } : undefined,
 		} );
+
+		// update the input value to show the selected date range.
+		this.$el.val( dateRangePicker.chosenLabel );
 	},
 
 	clearFilter() {
 		// set it at intial date range.
 		this.model.set( 'date_query', undefined );
+
 		this.$el.data( 'daterangepicker' ).setStartDate( moment() );
 		this.$el.data( 'daterangepicker' ).setEndDate( moment() );
+		this.$el.val( 'Date Range' );
 	},
 
 	render() {
@@ -75,9 +80,11 @@ export default MediaDateRangeFilter.extend( {
 					'This Month': [ moment().startOf( 'month' ), moment().endOf( 'month' ) ],
 					'Last Month': [ moment().subtract( 1, 'month' ).startOf( 'month' ), moment().subtract( 1, 'month' ).endOf( 'month' ) ],
 				},
-				alwaysShowCalendars: true,
+				autoUpdateInput: false,
 			},
 		);
+
+		this.$el.val( 'Date Range' );
 
 		return this;
 	},
