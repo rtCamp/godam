@@ -75,6 +75,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			oSize: { diameter: 48 },
 			oPosition: { x: 50, y: 50 },
 			backgroundColor: '#0c80dfa6',
+			icon: '',
 		};
 		updateField( 'hotspots', [ ...hotspots, newHotspot ] );
 	};
@@ -333,15 +334,11 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 								} }
 								size={ {
 									width: ratioToPx(
-										hotspot.oSize?.diameter ??
-											hotspot.size?.diameter ??
-											48,
+										hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48,
 										'x',
 									),
 									height: ratioToPx(
-										hotspot.oSize?.diameter ??
-											hotspot.size?.diameter ??
-											48,
+										hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48,
 										'x',
 									),
 								} }
@@ -373,10 +370,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 											return {
 												...h2,
 												oSize: {
-													diameter: pxToRatio(
-														newDiameterPx,
-														'x',
-													),
+													diameter: pxToRatio( newDiameterPx, 'x' ),
 												},
 											};
 										}
@@ -387,37 +381,38 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 								onClick={ () => setExpandedHotspotIndex( index ) }
 								className="hotspot circle"
 								style={ {
-									backgroundColor:
-										hotspot.backgroundColor || '#0c80dfa6',
+									backgroundColor: hotspot.icon ? 'white' : hotspot.backgroundColor || '#0c80dfa6',
 								} }
 							>
-								<div className="hotspot-content flex items-center justify-center">
-									{ /* Show chosen FA icon or fallback index */ }
-									{ hotspot.icon ? (
+								{ hotspot.icon ? (
+									<div className="hotspot-content flex items-center justify-center">
 										<FontAwesomeIcon
 											icon={ [ 'fas', hotspot.icon ] }
 											className="pointer-events-none"
+											style={ {
+												fontSize: `${ ratioToPx( hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48, 'x' ) * 0.6 }px`,
+											} }
 										/>
-									) : (
-										<span className="index">
-											{ index + 1 }
-										</span>
-									) }
-
-									<div className="hotspot-tooltip">
-										{ hotspot.link ? (
-											<a
-												href={ hotspot.link }
-												target="_blank"
-												rel="noopener noreferrer"
-											>
-												{ hotspot.tooltipText }
-											</a>
-										) : (
-											hotspot.tooltipText
-										) }
 									</div>
-								</div>
+								) : (
+									<div className="hotspot-content no-icon flex items-center justify-center">
+										<span className="index">{ index + 1 }</span>
+
+										<div className="hotspot-tooltip">
+											{ hotspot.link ? (
+												<a
+													href={ hotspot.link }
+													target="_blank"
+													rel="noopener noreferrer"
+												>
+													{ hotspot.tooltipText }
+												</a>
+											) : (
+												hotspot.tooltipText
+											) }
+										</div>
+									</div>
+								) }
 							</Rnd>
 						);
 					} ) }

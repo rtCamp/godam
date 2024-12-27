@@ -176,7 +176,7 @@ input, textarea, select {
 }
 
 /* Center dot in the middle of the circle */
-.hotspot-content::after {
+.hotspot-content.no-icon::after {
 	content: "";
 	position: absolute;
 	top: 50%;
