@@ -384,35 +384,34 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 									backgroundColor: hotspot.icon ? 'white' : hotspot.backgroundColor || '#0c80dfa6',
 								} }
 							>
-								{ hotspot.icon ? (
-									<div className="hotspot-content flex items-center justify-center">
+								<div className={ `hotspot-content flex items-center justify-center ${ ! hotspot.icon ? 'no-icon' : '' }` }>
+									{ hotspot.icon ? (
 										<FontAwesomeIcon
 											icon={ [ 'fas', hotspot.icon ] }
 											className="pointer-events-none"
 											style={ {
-												fontSize: `${ ratioToPx( hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48, 'x' ) * 0.6 }px`,
+												width: '50%',
+												height: '50%',
 											} }
 										/>
-									</div>
-								) : (
-									<div className="hotspot-content no-icon flex items-center justify-center">
-										<span className="index">{ index + 1 }</span>
+									) : null }
 
-										<div className="hotspot-tooltip">
-											{ hotspot.link ? (
-												<a
-													href={ hotspot.link }
-													target="_blank"
-													rel="noopener noreferrer"
-												>
-													{ hotspot.tooltipText }
-												</a>
-											) : (
-												hotspot.tooltipText
-											) }
-										</div>
+									<span className="index">{ index + 1 }</span>
+
+									<div className="hotspot-tooltip">
+										{ hotspot.link ? (
+											<a
+												href={ hotspot.link }
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												{ hotspot.tooltipText }
+											</a>
+										) : (
+											hotspot.tooltipText
+										) }
 									</div>
-								) }
+								</div>
 							</Rnd>
 						);
 					} ) }

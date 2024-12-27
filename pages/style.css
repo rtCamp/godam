@@ -204,12 +204,6 @@ input, textarea, select {
 	border-radius: 2px;
 }
 
-.hotspot-tooltip a {
-	text-decoration: underline;
-	overflow-wrap: break-word; /* Handle long URLs */
-	word-break: break-word; /* Additional word break for very long text */
-}
-
 /* Tooltip */
 .hotspot-tooltip {
 	position: absolute;
@@ -231,6 +225,16 @@ input, textarea, select {
 	opacity: 0;
 	transition: opacity 0.2s ease, visibility 0.2s ease;
 	word-wrap: break-word;
+}
+
+.hotspot-tooltip a {
+	overflow-wrap: break-word;
+	word-break: break-word;
+}
+
+.hotspot-tooltip a:hover {
+	color: #fff;
+	text-decoration: underline;
 }
 
 /* Tooltip arrow */
