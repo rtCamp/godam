@@ -12,8 +12,8 @@ import { v4 as uuidv4 } from 'uuid';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, Icon, Modal, DropdownMenu } from '@wordpress/components';
-import { plus, preformatted, customLink, arrowRight, html, video } from '@wordpress/icons';
+import { Button, Icon, Modal } from '@wordpress/components';
+import { plus, preformatted, customLink, arrowRight, video } from '@wordpress/icons';
 import { useEffect, useState } from '@wordpress/element';
 import Layer from './layers/Layer';
 
@@ -79,6 +79,9 @@ const SidebarLayers = ( { currentTime } ) => {
 					displayTime: currentTime,
 					type,
 					adTagUrl: '',
+					adVideoUrl: '',
+					skippable: false,
+					skipTime: 5,
 				} ) );
 				break;
 			default:

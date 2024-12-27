@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Modal, SelectControl, ToggleControl, ColorPalette, TextareaControl } from '@wordpress/components';
+import { Button, Modal, SelectControl, ToggleControl, ColorPalette, TextareaControl, TabPanel } from '@wordpress/components';
 import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
@@ -16,6 +16,7 @@ import { useState, useEffect } from '@wordpress/element';
  */
 import { removeLayer, updateLayerField } from '../../redux/slice/videoSlice';
 import LayerControls from '../LayerControls';
+import CustomAdSettings from '../ads/CustomAdSettings';
 
 const CTALayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
@@ -33,7 +34,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 			<div className="flex justify-between items-center pb-3 border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
 				<p className="font-semibold">
-					{ __( 'Form layer at', 'transcoder' ) } { 5 }s
+					{ __( 'Ad layer at', 'transcoder' ) } { layer.displayTime }s
 				</p>
 				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
 				{ isOpen && (
@@ -63,11 +64,32 @@ const CTALayer = ( { layerID, goBack } ) => {
 			</div>
 
 			<div>
-				<TextareaControl
-					label={ __( 'AdTag URL', 'transcoder' ) }
-					value={ layer?.adTagUrl }
-					onChange={ ( val ) => dispatch( updateLayerField( { id: layer.id, field: 'adTagUrl', value: val } ) ) }
-				/>
+				<TabPanel
+					onSelect={ () => {} }
+					className="sidebar-tabs"
+					tabs={ [
+						{
+							name: 'adTagUrl',
+							title: 'AdTag URL',
+							className: 'flex-1 justify-center items-center',
+							component: <TextareaControl
+								label={ __( 'AdTag URL', 'transcoder' ) }
+								help={ __( 'Enter the ad tag URL from your Ad server, check ', 'transcoder' ) }
+								value={ layer?.adTagUrl }
+								onChange={ ( val ) => dispatch( updateLayerField( { id: layer.id, field: 'adTagUrl', value: val } ) ) }
+							/>,
+						},
+						{
+							name: 'selfHostedVideoAd',
+							title: 'Self Hosted Video Ad',
+							className: 'flex-1 justify-center items-center',
+							component: <CustomAdSettings layerID={ layer.id } />,
+						},
+					] }
+				>
+					{ ( tab ) => <div className="py-4">{ tab.component }</div> }
+				</TabPanel>
+
 			</div>
 
 			<LayerControls>
