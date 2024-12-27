@@ -7,8 +7,25 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Modal, TextControl, ToggleControl, DropdownMenu, MenuItem, ColorPalette } from '@wordpress/components';
-import { arrowLeft, trash, plus, chevronDown, chevronUp, chevronRight, moreVertical, check } from '@wordpress/icons';
+import {
+	Button,
+	Modal,
+	TextControl,
+	ToggleControl,
+	DropdownMenu,
+	MenuItem,
+	ColorPalette,
+} from '@wordpress/components';
+import {
+	arrowLeft,
+	trash,
+	plus,
+	chevronDown,
+	chevronUp,
+	chevronRight,
+	moreVertical,
+	check,
+} from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useRef, useEffect } from '@wordpress/element';
 
@@ -18,6 +35,8 @@ import { useState, useRef, useEffect } from '@wordpress/element';
 import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import LayerControls from '../LayerControls';
+import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const HotspotLayer = ( { layerID, goBack } ) => {
 	const dispatch = useDispatch();
@@ -26,14 +45,18 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 	);
 
 	const hotspots = layer?.hotspots || [];
+
+	// Delete modal
 	const [ isDeleteModalOpen, setDeleteModalOpen ] = useState( false );
+	// Track expanded hotspot
 	const [ expandedHotspotIndex, setExpandedHotspotIndex ] = useState( null );
 
 	const containerRef = useRef( null );
 
-	// ratio {x, y} for px -> ratio
+	// ratio { x, y } for px <-> ratio
 	const [ ratio, setRatio ] = useState( { x: 1, y: 1 } );
 
+	// Helper to dispatch updates
 	const updateField = ( field, value ) => {
 		dispatch( updateLayerField( { id: layer.id, field, value } ) );
 	};
@@ -41,7 +64,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 	const pxToRatio = ( px, dimension ) => px * ratio[ dimension ];
 	const ratioToPx = ( val, dimension ) => val / ratio[ dimension ];
 
-	// Add a new hotspot with default position/size
+	// Add a new hotspot
 	const handleAddHotspot = () => {
 		const newHotspot = {
 			id: uuidv4(),
@@ -57,8 +80,10 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 	};
 
 	const handleDeleteHotspot = ( index ) => {
-		const updatedHotspots = hotspots.filter( ( _, i ) => i !== index );
-		updateField( 'hotspots', updatedHotspots );
+		updateField(
+			'hotspots',
+			hotspots.filter( ( _, i ) => i !== index ),
+		);
 	};
 
 	const handleDeleteLayer = () => {
@@ -66,6 +91,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 		goBack();
 	};
 
+	// Expand/hide a hotspot’s panel
 	const toggleHotspotExpansion = ( index ) => {
 		setExpandedHotspotIndex( expandedHotspotIndex === index ? null : index );
 	};
@@ -130,20 +156,22 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 				) }
 			</div>
 
+			{ /* Duration */ }
 			<div className="mb-4">
 				<TextControl
 					label={ __( 'Layer Duration (seconds)', 'transcoder' ) }
 					type="number"
 					min="1"
 					value={ layer?.duration || '' }
-					onChange={ ( value ) => {
-						const newValue = parseInt( value, 10 ) || 0;
-						updateField( 'duration', newValue );
+					onChange={ ( val ) => {
+						const newVal = parseInt( val, 10 ) || 0;
+						updateField( 'duration', newVal );
 					} }
 					help="Duration (in seconds) this layer will stay visible"
 				/>
 			</div>
 
+			{ /* Pause on hover */ }
 			<div className="mb-4">
 				<ToggleControl
 					label={ __( 'Pause video on hover', 'transcoder' ) }
@@ -151,10 +179,14 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 					onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
 				/>
 				<p className="text-xs text-gray-500 mt-1">
-					{ __( 'Player will pause the video while the layer is displayed and users hover over the hotspots.', 'transcoder' ) }
+					{ __(
+						'Player will pause the video while the layer is displayed and users hover over the hotspots.',
+						'transcoder',
+					) }
 				</p>
 			</div>
 
+			{ /* Hotspots list */ }
 			<div className="flex flex-col gap-4">
 				{ hotspots.map( ( hotspot, index ) => (
 					<div key={ hotspot.id } className="p-2 border rounded">
@@ -166,7 +198,6 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 							>
 								{ `Hotspot ${ index + 1 }` }
 							</Button>
-
 							<DropdownMenu
 								icon={ moreVertical }
 								label={ `Hotspot ${ index + 1 } options` }
@@ -179,10 +210,13 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 											onClick={ () => {
 												updateField(
 													'hotspots',
-													hotspots.map( ( h, i ) =>
-														i === index
-															? { ...h, showStyle: ! h.showStyle }
-															: h,
+													hotspots.map( ( h2, j ) =>
+														j === index
+															? {
+																...h2,
+																showStyle: ! h2.showStyle,
+															}
+															: h2,
 													),
 												);
 											} }
@@ -191,9 +225,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 										</MenuItem>
 										<MenuItem
 											icon={ trash }
-											onClick={ () => {
-												handleDeleteHotspot( index );
-											} }
+											onClick={ () => handleDeleteHotspot( index ) }
 											className="text-red-500"
 										>
 											{ __( 'Delete Hotspot', 'transcoder' ) }
@@ -212,10 +244,8 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 									onChange={ ( val ) =>
 										updateField(
 											'hotspots',
-											hotspots.map( ( h, i ) =>
-												i === index
-													? { ...h, tooltipText: val }
-													: h,
+											hotspots.map( ( h2, j ) =>
+												j === index ? { ...h2, tooltipText: val } : h2,
 											),
 										)
 									}
@@ -227,31 +257,39 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 									onChange={ ( val ) =>
 										updateField(
 											'hotspots',
-											hotspots.map( ( h, i ) =>
-												i === index ? { ...h, link: val } : h,
+											hotspots.map( ( h2, j ) =>
+												j === index ? { ...h2, link: val } : h2,
 											),
 										)
 									}
 								/>
+								<FontAwesomeIconPicker
+									hotspot={ hotspot }
+									index={ index }
+									updateField={ updateField }
+									hotspots={ hotspots }
+								/>
 								{ hotspot.showStyle && (
-									<div className="flex flex-col gap-2">
+									<div className="flex flex-col gap-2 mt-2">
 										<label
 											htmlFor={ `hotspot-color-${ index }` }
 											className="text-xs text-gray-700"
 										>
 											{ __( 'BACKGROUND COLOR', 'transcoder' ) }
 										</label>
-
 										<ColorPalette
 											id={ `hotspot-color-${ index }` }
 											value={ hotspot.backgroundColor || '#0c80dfa6' }
 											onChange={ ( newColor ) => {
 												updateField(
 													'hotspots',
-													hotspots.map( ( h, i ) =>
-														i === index
-															? { ...h, backgroundColor: newColor }
-															: h,
+													hotspots.map( ( h2, j ) =>
+														j === index
+															? {
+																...h2,
+																backgroundColor: newColor,
+															}
+															: h2,
 													),
 												);
 											} }
@@ -263,6 +301,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 						) }
 					</div>
 				) ) }
+
 				<Button
 					isPrimary
 					id="add-hotspot-btn"
@@ -274,6 +313,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 				</Button>
 			</div>
 
+			{ /* The actual layer content */ }
 			<LayerControls>
 				<div
 					ref={ containerRef }
@@ -292,8 +332,18 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 									y: ratioToPx( fallbackPosY, 'y' ),
 								} }
 								size={ {
-									width: ratioToPx( hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48, 'x' ),
-									height: ratioToPx( hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48, 'x' ),
+									width: ratioToPx(
+										hotspot.oSize?.diameter ??
+											hotspot.size?.diameter ??
+											48,
+										'x',
+									),
+									height: ratioToPx(
+										hotspot.oSize?.diameter ??
+											hotspot.size?.diameter ??
+											48,
+										'x',
+									),
 								} }
 								bounds="parent"
 								maxWidth={ 100 }
@@ -302,43 +352,58 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 								minHeight={ 20 }
 								lockAspectRatio
 								onDragStop={ ( e, d ) => {
-									const newHotspots = hotspots.map( ( h, i ) => {
-										if ( i === index ) {
+									const newHotspots = hotspots.map( ( h2, j ) => {
+										if ( j === index ) {
 											return {
-												...h,
+												...h2,
 												oPosition: {
 													x: pxToRatio( d.x, 'x' ),
 													y: pxToRatio( d.y, 'y' ),
 												},
 											};
 										}
-										return h;
+										return h2;
 									} );
 									updateField( 'hotspots', newHotspots );
 								} }
 								onResizeStop={ ( e, direction, ref ) => {
 									const newDiameterPx = ref.offsetWidth;
-									const newHotspots = hotspots.map( ( h, i ) => {
-										if ( i === index ) {
+									const newHotspots = hotspots.map( ( h2, j ) => {
+										if ( j === index ) {
 											return {
-												...h,
+												...h2,
 												oSize: {
-													diameter: pxToRatio( newDiameterPx, 'x' ),
+													diameter: pxToRatio(
+														newDiameterPx,
+														'x',
+													),
 												},
 											};
 										}
-										return h;
+										return h2;
 									} );
 									updateField( 'hotspots', newHotspots );
 								} }
 								onClick={ () => setExpandedHotspotIndex( index ) }
 								className="hotspot circle"
 								style={ {
-									backgroundColor: hotspot.backgroundColor || '#0c80dfa6',
+									backgroundColor:
+										hotspot.backgroundColor || '#0c80dfa6',
 								} }
 							>
-								<div className="hotspot-content">
-									<span className="index">{ index + 1 }</span>
+								<div className="hotspot-content flex items-center justify-center">
+									{ /* Show chosen FA icon or fallback index */ }
+									{ hotspot.icon ? (
+										<FontAwesomeIcon
+											icon={ [ 'fas', hotspot.icon ] }
+											className="pointer-events-none"
+										/>
+									) : (
+										<span className="index">
+											{ index + 1 }
+										</span>
+									) }
+
 									<div className="hotspot-tooltip">
 										{ hotspot.link ? (
 											<a
