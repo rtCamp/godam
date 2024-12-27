@@ -216,6 +216,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 															? {
 																...h2,
 																showStyle: ! h2.showStyle,
+																showIcon: ! h2.showStyle ? false : h2.showIcon,
 															}
 															: h2,
 													),
@@ -223,6 +224,25 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 											} }
 										>
 											{ __( 'Show Style', 'transcoder' ) }
+										</MenuItem>
+										<MenuItem
+											icon={ hotspot.showIcon ? check : '' }
+											onClick={ () => {
+												updateField(
+													'hotspots',
+													hotspots.map( ( h2, j ) =>
+														j === index
+															? {
+																...h2,
+																showIcon: ! h2.showIcon, // Enable icon
+																showStyle: ! h2.showIcon ? false : h2.showStyle, // Disable style
+															}
+															: h2,
+													),
+												);
+											} }
+										>
+											{ __( 'Show Icon', 'transcoder' ) }
 										</MenuItem>
 										<MenuItem
 											icon={ trash }
@@ -264,12 +284,16 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 										)
 									}
 								/>
-								<FontAwesomeIconPicker
-									hotspot={ hotspot }
-									index={ index }
-									updateField={ updateField }
-									hotspots={ hotspots }
-								/>
+								{ hotspot.showIcon && (
+									<div className="flex flex-col gap-2 mt-2">
+										<FontAwesomeIconPicker
+											hotspot={ hotspot }
+											index={ index }
+											updateField={ updateField }
+											hotspots={ hotspots }
+										/>
+									</div>
+								) }
 								{ hotspot.showStyle && (
 									<div className="flex flex-col gap-2 mt-2">
 										<label
