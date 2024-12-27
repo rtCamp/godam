@@ -175,6 +175,9 @@ function easyDAMPlayer() {
 					hotspotDiv.addEventListener( 'mouseenter', () => {
 						currentPlayer.pause();
 					} );
+					hotspotDiv.addEventListener( 'mouseleave', () => {
+						currentPlayer.play();
+					} );
 				}
 			} );
 		}
