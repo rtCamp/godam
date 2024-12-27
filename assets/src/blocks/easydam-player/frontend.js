@@ -115,7 +115,9 @@ function easyDAMPlayer() {
 			} );
 		} );
 
-		// A helper function to create hotspots. We'll only do this once per layer.
+		// Add a flag to track the playback state before hover
+		let wasPlayingBeforeHover = false;
+
 		function createHotspots( layerObj, currentPlayer ) {
 			const videoContainer = currentPlayer.el();
 			const containerWidth = videoContainer.offsetWidth;
@@ -140,20 +142,16 @@ function easyDAMPlayer() {
 				hotspotDiv.style.top = `${ pixelY }px`;
 
 				// Sizing
-				const fallbackDiameter =
-					hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
+				const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
 				const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
 				hotspotDiv.style.width = `${ pixelDiameter }px`;
 				hotspotDiv.style.height = `${ pixelDiameter }px`;
 
-				// If there's an icon, we might want a white background
+				// Background color
 				if ( hotspot.icon ) {
-					// Provide a white background or custom
 					hotspotDiv.style.backgroundColor = 'white';
 				} else {
-					// fallback background color
-					hotspotDiv.style.backgroundColor =
-						hotspot.backgroundColor || '#0c80dfa6';
+					hotspotDiv.style.backgroundColor = hotspot.backgroundColor || '#0c80dfa6';
 				}
 
 				// Inner content
@@ -173,6 +171,7 @@ function easyDAMPlayer() {
 					iconEl.style.alignItems = 'center';
 					iconEl.style.justifyContent = 'center';
 					iconEl.style.margin = 'auto';
+					iconEl.style.color = '#000';
 					hotspotContent.appendChild( iconEl );
 				} else {
 					hotspotContent.classList.add( 'no-icon' );
@@ -196,12 +195,18 @@ function easyDAMPlayer() {
 				hotspotDiv.appendChild( hotspotContent );
 				layerObj.layerElement.appendChild( hotspotDiv );
 
+				// Pause on hover
 				if ( layerObj.pauseOnHover ) {
 					hotspotDiv.addEventListener( 'mouseenter', () => {
+						// Check if the video is currently playing before pausing
+						wasPlayingBeforeHover = ! currentPlayer.paused();
 						currentPlayer.pause();
 					} );
 					hotspotDiv.addEventListener( 'mouseleave', () => {
-						currentPlayer.play();
+						// Resume playback only if the video was playing before hover
+						if ( wasPlayingBeforeHover ) {
+							currentPlayer.play();
+						}
 					} );
 				}
 			} );
