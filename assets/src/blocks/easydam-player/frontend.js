@@ -62,9 +62,10 @@ function easyDAMPlayer() {
 				hotspotLayers.push( {
 					layerElement,
 					displayTime: parseFloat( layer.displayTime ),
-					duration: durationVal, // store layer-wide duration
+					duration: durationVal,
 					show: true,
 					hotspots: layer.hotspots || [],
+					pauseOnHover: layer.pauseOnHover || false,
 				} );
 			}
 		} );
@@ -169,6 +170,12 @@ function easyDAMPlayer() {
 				hotspotContent.appendChild( tooltipDiv );
 				hotspotDiv.appendChild( hotspotContent );
 				layerObj.layerElement.appendChild( hotspotDiv );
+
+				if ( layerObj.pauseOnHover ) {
+					hotspotDiv.addEventListener( 'mouseenter', () => {
+						currentPlayer.pause();
+					} );
+				}
 			} );
 		}
 
@@ -229,8 +236,11 @@ function easyDAMPlayer() {
 
 			// Also re-attach hotspot layers to the container
 			hotspotLayers.forEach( ( layerObj ) => {
-				videoContainer.appendChild( layerObj.layerElement );
+				if ( isFullscreen && ! videoContainer.contains( layerObj.layerElement ) ) {
+					videoContainer.appendChild( layerObj.layerElement );
+				}
 			} );
+			updateHotspotPositions( player, hotspotLayers );
 		} );
 
 		// Prevent video resume if a form/CTA is visible

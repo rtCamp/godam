@@ -85,6 +85,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 						displayTime: currentTime,
 						type,
 						duration: 5,
+						pauseOnHover: false,
 						hotspots: [
 							{
 								id: uuidv4(),

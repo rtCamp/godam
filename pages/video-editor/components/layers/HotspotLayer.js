@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Modal, TextControl, DropdownMenu, MenuItem, ColorPalette } from '@wordpress/components';
+import { Button, Modal, TextControl, ToggleControl, DropdownMenu, MenuItem, ColorPalette } from '@wordpress/components';
 import { arrowLeft, trash, plus, chevronDown, chevronUp, chevronRight, moreVertical, check } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useRef, useEffect } from '@wordpress/element';
@@ -142,6 +142,17 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 					} }
 					help="Duration (in seconds) this layer will stay visible"
 				/>
+			</div>
+
+			<div className="mb-4">
+				<ToggleControl
+					label={ __( 'Pause video on hover', 'transcoder' ) }
+					checked={ layer?.pauseOnHover || false }
+					onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
+				/>
+				<p className="text-xs text-gray-500 mt-1">
+					{ __( 'Player will pause the video while the layer is displayed and users hover over the hotspots.', 'transcoder' ) }
+				</p>
 			</div>
 
 			<div className="flex flex-col gap-4">
