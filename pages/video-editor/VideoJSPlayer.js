@@ -3,8 +3,12 @@
  */
 import { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
+import "video.js/dist/video-js.css";
+import "videojs-contrib-ads/dist/videojs.ads.css";
+import "videojs-ima/dist/videojs.ima.css";
 import videojs from 'video.js';
-import 'video.js/dist/video-js.css';
+import 'videojs-contrib-ads';
+import 'videojs-ima';
 /**
  * Internal dependencies
  */
@@ -18,6 +22,7 @@ export const VideoJS = ( props ) => {
 	const videoMeta = useSelector( ( state ) => state.videoReducer );
 	const videoConfig = videoMeta.videoConfig;
 	const layers = videoMeta.layers;
+	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 
 	useEffect( () => {
 		// Make sure Video.js player is only initialized once
@@ -184,8 +189,8 @@ export const VideoJS = ( props ) => {
 		playButtonElement.style.backgroundImage = `url(${ videoConfig.controlBar.customPlayBtnImg })`;
 
 		//control bar position
-		if ('vertical' === videoConfig.controlBar.controlBarPosition) {
-			controlBar.classList.add("vjs-control-bar-vertical");
+		if ( 'vertical' === videoConfig.controlBar.controlBarPosition ) {
+			controlBar.classList.add( 'vjs-control-bar-vertical' );
 			for ( const control of controls ) {
 				control.classList.add( 'vjs-control-vertical' );
 				if ( control.classList.contains( 'vjs-volume-panel' ) ) {
@@ -238,8 +243,26 @@ export const VideoJS = ( props ) => {
 		}
 	}, [ options ] );
 
-	// Dispose the Video.js player when the functional component unmounts
+	useEffect( () => {
+		console.log( 'currentLayer:', currentLayer );
 
+		if ( playerRef.current ) {
+			const player = playerRef.current;
+
+			if ( currentLayer?.adTagUrl ) {
+				const imaOptions = {
+					adTagUrl: currentLayer?.adTagUrl,
+					debug: true,
+				};
+
+				player.ima( imaOptions );
+
+				player.pause();
+			}
+		}
+	}, [ currentLayer ] );
+
+	// Dispose the Video.js player when the functional component unmounts
 	useEffect( () => {
 		const player = playerRef.current;
 

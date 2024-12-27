@@ -145,6 +145,7 @@ const VideoEditor = ( { attachmentID } ) => {
 							<h1 className="text-slate-700 mb-1">{ video.title.rendered }</h1>
 
 							<div className="relative">
+
 								<VideoJSPlayer
 									options={ {
 										controls: true,
@@ -172,6 +173,7 @@ const VideoEditor = ( { attachmentID } ) => {
 									} }
 									onTimeupdate={ handleTimeUpdate }
 								/>
+
 							</div>
 							<div className="mt-2">Timestamp: { currentTime }</div>
 						</div>
