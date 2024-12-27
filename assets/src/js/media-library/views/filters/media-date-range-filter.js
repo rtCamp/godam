@@ -11,6 +11,7 @@ export default MediaDateRangeFilter.extend( {
 	events: {
 		'apply.daterangepicker': 'updateFilter',
 		'show.daterangepicker': 'updatePickerPosition',
+		'cancel.daterangepicker': 'clearFilter',
 	},
 
 	/**
@@ -48,6 +49,13 @@ export default MediaDateRangeFilter.extend( {
 		this.model.set( {
 			date_query: dateQuery.length > 0 ? { relation: 'AND', ...dateQuery } : undefined,
 		} );
+	},
+
+	clearFilter() {
+		// set it at intial date range.
+		this.model.set( 'date_query', undefined );
+		this.$el.data( 'daterangepicker' ).setStartDate( moment() );
+		this.$el.data( 'daterangepicker' ).setEndDate( moment() );
 	},
 
 	render() {
