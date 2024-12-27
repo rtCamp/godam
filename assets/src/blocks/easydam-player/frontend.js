@@ -4,6 +4,12 @@
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import 'videojs-contrib-quality-menu';
+import { library, dom } from '@fortawesome/fontawesome-svg-core';
+import { fas } from '@fortawesome/free-solid-svg-icons';
+
+library.add( fas );
+
+dom.watch();
 
 document.addEventListener( 'DOMContentLoaded', () => easyDAMPlayer() );
 
@@ -11,7 +17,7 @@ function easyDAMPlayer() {
 	const videos = document.querySelectorAll( '.easydam-player.video-js' );
 
 	videos.forEach( ( video ) => {
-		// Parse data-setup
+		// read the data-setup attribute.
 		const videoSetupOptions = video.dataset.setup
 			? JSON.parse( video.dataset.setup )
 			: {
@@ -25,29 +31,27 @@ function easyDAMPlayer() {
 
 		const player = videojs( video, videoSetupOptions );
 
+		// Find and initialize layers from easydam_meta
 		const layers = videoSetupOptions.easydam_meta?.layers || [];
-
 		const formLayers = [];
 		const hotspotLayers = [];
 
-		// Hide all layers initially
+		// Hide all layers initially.
 		layers.forEach( ( layer ) => {
 			const layerId = `layer-${ layer.id }`;
 			const layerElement = document.querySelector( `#${ layerId }` );
+
 			if ( ! layerElement ) {
 				return;
 			}
-
-			layerElement.classList.add( 'hidden' );
+			layerElement.classList.add( 'hidden' ); // Initially hidden
 
 			if ( layer.type === 'form' || layer.type === 'cta' ) {
-				// If there's custom CSS, attach it
 				if ( layer.custom_css ) {
 					const styleElement = document.createElement( 'style' );
 					styleElement.textContent = layer.custom_css;
 					layerElement.appendChild( styleElement );
 				}
-
 				formLayers.push( {
 					layerElement,
 					displayTime: parseFloat( layer.displayTime ),
@@ -55,14 +59,10 @@ function easyDAMPlayer() {
 					allowSkip: layer.allow_skip !== undefined ? layer.allow_skip : true,
 				} );
 			} else if ( layer.type === 'hotspot' ) {
-				const durationVal = layer.duration
-					? parseInt( layer.duration )
-					: 0;
-
 				hotspotLayers.push( {
 					layerElement,
 					displayTime: parseFloat( layer.displayTime ),
-					duration: durationVal,
+					duration: layer.duration ? parseInt( layer.duration ) : 0,
 					show: true,
 					hotspots: layer.hotspots || [],
 					pauseOnHover: layer.pauseOnHover || false,
@@ -70,12 +70,13 @@ function easyDAMPlayer() {
 			}
 		} );
 
-		// isDisplayingLayer is used only for forms/CTAs that pause the video
 		let isDisplayingLayer = false;
 
+		// Time update
 		player.on( 'timeupdate', () => {
 			const currentTime = player.currentTime();
 
+			// form/cta handling
 			if ( ! isDisplayingLayer ) {
 				for ( const layerObj of formLayers ) {
 					if (
@@ -83,10 +84,7 @@ function easyDAMPlayer() {
 						currentTime >= layerObj.displayTime &&
 						layerObj.layerElement.classList.contains( 'hidden' )
 					) {
-						// Show the form/CTA layer
 						layerObj.layerElement.classList.remove( 'hidden' );
-
-						// Pause the video for form/CTA
 						player.pause();
 						player.controls( false );
 						isDisplayingLayer = true;
@@ -95,23 +93,20 @@ function easyDAMPlayer() {
 				}
 			}
 
+			// hotspot handling
 			hotspotLayers.forEach( ( layerObj ) => {
-				const { displayTime, duration, show } = layerObj;
-				if ( ! show ) {
+				if ( ! layerObj.show ) {
 					return;
 				}
 
-				const endTime = displayTime + duration;
-				// Show if currentTime in [displayTime, endTime)
-				if (
-					currentTime >= displayTime &&
-					( currentTime < endTime )
-				) {
-					if ( layerObj.layerElement.classList.contains( 'hidden' ) ) {
-						// Render the hotspots only once on first show
-						layerObj.layerElement.classList.remove( 'hidden' );
+				const endTime = layerObj.displayTime + layerObj.duration;
+				const isActive =
+					currentTime >= layerObj.displayTime && currentTime < endTime;
 
-						// If needed, dynamically create the hotspots
+				if ( isActive ) {
+					if ( layerObj.layerElement.classList.contains( 'hidden' ) ) {
+						// first time show
+						layerObj.layerElement.classList.remove( 'hidden' );
 						createHotspots( layerObj, player );
 					}
 				} else if ( ! layerObj.layerElement.classList.contains( 'hidden' ) ) {
@@ -130,30 +125,60 @@ function easyDAMPlayer() {
 			const baseHeight = 600;
 
 			layerObj.hotspots.forEach( ( hotspot, index ) => {
+				// Create the outer div
 				const hotspotDiv = document.createElement( 'div' );
 				hotspotDiv.classList.add( 'hotspot', 'circle' );
 				hotspotDiv.style.position = 'absolute';
 
+				// Positioning
 				const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
 				const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;
-
 				const pixelX = ( fallbackPosX / baseWidth ) * containerWidth;
 				const pixelY = ( fallbackPosY / baseHeight ) * containerHeight;
 
 				hotspotDiv.style.left = `${ pixelX }px`;
 				hotspotDiv.style.top = `${ pixelY }px`;
 
-				const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
-
+				// Sizing
+				const fallbackDiameter =
+					hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
 				const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
-
 				hotspotDiv.style.width = `${ pixelDiameter }px`;
 				hotspotDiv.style.height = `${ pixelDiameter }px`;
-				hotspotDiv.style.backgroundColor = hotspot.backgroundColor || '#0c80dfa6';
 
+				// If there's an icon, we might want a white background
+				if ( hotspot.icon ) {
+					// Provide a white background or custom
+					hotspotDiv.style.backgroundColor = 'white';
+				} else {
+					// fallback background color
+					hotspotDiv.style.backgroundColor =
+						hotspot.backgroundColor || '#0c80dfa6';
+				}
+
+				// Inner content
 				const hotspotContent = document.createElement( 'div' );
 				hotspotContent.classList.add( 'hotspot-content' );
+				hotspotContent.style.position = 'relative';
+				hotspotContent.style.width = '100%';
+				hotspotContent.style.height = '100%';
 
+				if ( hotspot.icon ) {
+					const iconEl = document.createElement( 'i' );
+					iconEl.className = `fa-solid fa-${ hotspot.icon }`;
+					iconEl.style.width = '50%';
+					iconEl.style.height = '50%';
+					iconEl.style.fontSize = '1.6em';
+					iconEl.style.display = 'flex';
+					iconEl.style.alignItems = 'center';
+					iconEl.style.justifyContent = 'center';
+					iconEl.style.margin = 'auto';
+					hotspotContent.appendChild( iconEl );
+				} else {
+					hotspotContent.classList.add( 'no-icon' );
+				}
+
+				// Tooltip
 				const tooltipDiv = document.createElement( 'div' );
 				tooltipDiv.classList.add( 'hotspot-tooltip' );
 				tooltipDiv.textContent = hotspot.tooltipText || `Hotspot ${ index + 1 }`;
@@ -182,7 +207,7 @@ function easyDAMPlayer() {
 			} );
 		}
 
-		// Reposition hotspots on resize
+		// Reposition hotspots on resize or fullscreen
 		function updateHotspotPositions( currentPlayer, currentHotspotLayers ) {
 			const videoContainer = currentPlayer.el();
 			const containerWidth = videoContainer.offsetWidth;
@@ -192,29 +217,27 @@ function easyDAMPlayer() {
 			const baseHeight = 600;
 
 			currentHotspotLayers.forEach( ( layerObj ) => {
-				if ( ! layerObj.layerElement.classList.contains( 'hidden' ) ) {
-					const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
-					hotspotDivs.forEach( ( hotspotDiv, index ) => {
-						const hotspot = layerObj.hotspots[ index ];
-						const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
-						const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;
-
-						const pixelX = ( fallbackPosX / baseWidth ) * containerWidth;
-						const pixelY = ( fallbackPosY / baseHeight ) * containerHeight;
-
-						hotspotDiv.style.left = `${ pixelX }px`;
-						hotspotDiv.style.top = `${ pixelY }px`;
-
-						const fallbackDiameter =
-							hotspot.oSize?.diameter ??
-							hotspot.size?.diameter ??
-							48;
-						const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
-
-						hotspotDiv.style.width = `${ pixelDiameter }px`;
-						hotspotDiv.style.height = `${ pixelDiameter }px`;
-					} );
+				if ( layerObj.layerElement.classList.contains( 'hidden' ) ) {
+					return;
 				}
+				const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
+				hotspotDivs.forEach( ( hotspotDiv, index ) => {
+					const hotspot = layerObj.hotspots[ index ];
+					// Recalc pos
+					const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
+					const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;
+					const pixelX = ( fallbackPosX / baseWidth ) * containerWidth;
+					const pixelY = ( fallbackPosY / baseHeight ) * containerHeight;
+					hotspotDiv.style.left = `${ pixelX }px`;
+					hotspotDiv.style.top = `${ pixelY }px`;
+
+					// Recalc size
+					const fallbackDiameter =
+						hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
+					const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
+					hotspotDiv.style.width = `${ pixelDiameter }px`;
+					hotspotDiv.style.height = `${ pixelDiameter }px`;
+				} );
 			} );
 		}
 
@@ -222,12 +245,10 @@ function easyDAMPlayer() {
 			updateHotspotPositions( player, hotspotLayers );
 		} );
 
-		// Fullscreen logic for forms
 		player.on( 'fullscreenchange', () => {
 			const isFullscreen = player.isFullscreen();
 			const videoContainer = player.el();
 
-			// Move form layers in/out
 			formLayers.forEach( ( layerObj ) => {
 				if ( isFullscreen ) {
 					videoContainer.appendChild( layerObj.layerElement );
@@ -237,7 +258,6 @@ function easyDAMPlayer() {
 				}
 			} );
 
-			// Also re-attach hotspot layers to the container
 			hotspotLayers.forEach( ( layerObj ) => {
 				if ( isFullscreen && ! videoContainer.contains( layerObj.layerElement ) ) {
 					videoContainer.appendChild( layerObj.layerElement );
@@ -258,7 +278,7 @@ function easyDAMPlayer() {
 			}
 		} );
 
-		// Add skip logic for forms
+		// Allow closing or skipping layers
 		formLayers.forEach( ( layerObj ) => {
 			const skipButton = document.createElement( 'button' );
 			skipButton.textContent = 'Skip';

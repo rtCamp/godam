@@ -392,6 +392,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 											style={ {
 												width: '50%',
 												height: '50%',
+												color: '#000',
 											} }
 										/>
 									) : null }
