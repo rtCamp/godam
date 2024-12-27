@@ -107,7 +107,10 @@ function easyDAMPlayer() {
 					if ( layerObj.layerElement.classList.contains( 'hidden' ) ) {
 						// first time show
 						layerObj.layerElement.classList.remove( 'hidden' );
-						createHotspots( layerObj, player );
+						if ( ! layerObj.layerElement.dataset?.hotspotsInitialized ) {
+							createHotspots( layerObj, player );
+							layerObj.layerElement.dataset.hotspotsInitialized = true;
+						}
 					}
 				} else if ( ! layerObj.layerElement.classList.contains( 'hidden' ) ) {
 					layerObj.layerElement.classList.add( 'hidden' );
