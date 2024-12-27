@@ -68,8 +68,16 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
-			setSelectedMedia( { url: attachment.url } );
-			console.log( 'Selected media:', attachment );
+			if ( attachment.type === 'image' ) {
+				setSelectedMedia( { url: attachment.url } );
+			} else {
+				// Show a notice for invalid selection
+				setNotice( { message: 'Please select a valid image file.', status: 'error', isVisible: true } );
+				window.scrollTo( { top: 0, behavior: 'smooth' } );
+				setTimeout( () => {
+					setNotice( { message: '', status: '', isVisible: false } );
+				}, 5000 );
+			}
 		} );
 
 		fileFrame.open();
