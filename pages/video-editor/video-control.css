@@ -67,6 +67,7 @@
     max-width: 600px;
     background-color: #fff;
     align-items: center;
+    padding: 20px;
 
     h2 {
         font-size: 32px;
@@ -84,10 +85,13 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    padding: 20px;
     align-content: center;
     justify-content: center;
     padding-left: 0;
+
+    a {
+        text-decoration: none;
+    }
 }
 
 .image-cta-btn {
@@ -98,6 +102,7 @@
     border: none;
     font-size: 16px;
     text-transform: uppercase;
+    width: fit-content;
 }
 
 .vertical-image-cta-container {
@@ -112,5 +117,9 @@
 
     .image-cta-description {
         text-align: center;
+    }
+
+    .image-cta-btn {
+        margin: 0 auto;
     }
 }

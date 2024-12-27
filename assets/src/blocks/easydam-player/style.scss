@@ -117,6 +117,7 @@
     max-width: 600px;
     background-color: #fff;
     align-items: center;
+	padding: 20px;
 
     h2 {
         font-size: 32px;
@@ -127,6 +128,11 @@
         color: #8c8c8c;
 		font-size: 16px;
     }
+
+	.image-cta-btn {
+		width: fit-content;
+		text-decoration: none;
+	}
 }
 
 .image-cta-description {
@@ -135,7 +141,6 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    padding: 20px;
     align-content: center;
     justify-content: center;
     padding-left: 0;
@@ -155,7 +160,6 @@
     flex-direction: column;
     width: 300px;
     border-radius: 36px;
-    padding: 20px;
 
     img {
         border-radius: 25px;
@@ -166,6 +170,11 @@
         text-align: center;
 		padding: 0;
     }
+
+	.image-cta-btn {
+		text-decoration: none;
+		margin: 0 auto;
+	}
 }
 
 .image-cta-parent-container {
@@ -195,6 +204,7 @@
 
 	a {
 		margin-top: -25px;
+		text-decoration: none;
 	}
 
 	.image-cta-description {

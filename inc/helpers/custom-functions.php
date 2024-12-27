@@ -191,9 +191,11 @@ function image_cta_html( $layer ) {
 				<div class=\"image-cta-description\">
 					" . ( ! empty( $image_text ) ? "<h2>{$image_text}</h2>" : '' ) . '
 					' . ( ! empty( $image_description ) ? "<p>{$image_description}</p>" : '' ) . "
-					<a href=\"{$image_link}\" target=\"_blank\">
-						<button class=\"image-cta-btn\">{$cta_button_text}</button>
-					</a>
+					<button class=\"image-cta-btn\">
+						<a href=\"{$image_link}\" target=\"_blank\">
+							{$cta_button_text}
+						</a>
+					</button>
 				</div>
 			</div>
 		</div>
