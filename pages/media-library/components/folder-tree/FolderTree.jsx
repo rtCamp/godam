@@ -1,4 +1,4 @@
-
+/* global jQuery -- from WordPress context */
 /**
  * External dependencies
  */
@@ -13,10 +13,10 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-ki
 import TreeItem from './TreeItem.jsx';
 import TreeItemPreview from './TreeItemPreview.jsx';
 
-import { setTree } from '../../redux/slice/folders.js';
+import { setTree, updateSnackbar } from '../../redux/slice/folders.js';
 import { utilities } from '../../data/utilities';
 
-import { useGetFoldersQuery, useUpdateFolderMutation } from '../../redux/api/folders.js';
+import { useAssignFolderMutation, useGetFoldersQuery, useUpdateFolderMutation } from '../../redux/api/folders.js';
 import SnackbarComp from './SnackbarComp.jsx';
 
 import './css/tree.scss';
@@ -60,6 +60,8 @@ const FolderTree = () => {
 	const [ activeId, setActiveId ] = useState( null );
 	const [ overId, setOverId ] = useState( null );
 	const [ offsetLeft, setOffsetLeft ] = useState( 0 );
+
+	const [ assignFolderMutation ] = useAssignFolderMutation();
 
 	const flattenData = useMemo( () => utilities.flattenTree( utilities.buildTree( data ) ), [ data ] );
 
@@ -138,6 +140,62 @@ const FolderTree = () => {
 		mouseSensor,
 		pointerSensor,
 	);
+
+	useEffect( () => {
+		/**
+		 * Initialize and manage droppable functionality for tree items.
+		 *
+		 * This setup uses jQuery UI's `draggable` and `droppable` to enable drag-and-drop interactions.
+		 * It includes error handling and safe cleanup.
+		 */
+		const setupDroppable = () => {
+			jQuery( '.tree-item' ).droppable( {
+				accept: 'li.attachment, th.check-column',
+				hoverClass: 'droppable-hover',
+				tolerance: 'pointer',
+				drop: async ( event, ui ) => {
+					const draggedItems = ui.draggable.data( 'draggedItems' );
+					if ( draggedItems ) {
+						const targetFolderId = jQuery( event.target ).data( 'id' );
+						try {
+							const response = await assignFolderMutation( {
+								attachmentIds: draggedItems,
+								folderTermId: targetFolderId,
+							} ).unwrap();
+
+							if ( response ) {
+								dispatch( updateSnackbar( {
+									message: 'Items assigned successfully',
+									type: 'success',
+								},
+								) );
+							}
+						} catch ( error ) {
+							dispatch( updateSnackbar( {
+								message: 'Failed to assign items',
+								type: 'error',
+							},
+							) );
+						}
+					}
+				},
+			} );
+		};
+
+		setupDroppable();
+
+		// Cleanup to avoid multiple event bindings
+		return () => {
+			if ( jQuery.fn.droppable ) {
+				jQuery( '.tree-item' ).each( function() {
+					const $this = jQuery( this );
+					if ( $this.data( 'ui-droppable' ) ) {
+						$this.droppable( 'destroy' );
+					}
+				} );
+			}
+		};
+	}, [ data, assignFolderMutation, dispatch ] );
 
 	if ( isLoading ) {
 		return <div>Loading...</div>;
