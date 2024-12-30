@@ -108,14 +108,9 @@ $video_setup = wp_json_encode(
 				<?php elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) : ?>
 					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
 						<?php if ( 'text' === $layer['cta_type'] ) : ?>
-							<a 
-								href="<?php echo esc_url( $layer['link'] ); ?>" 
-								target="_blank" 
-								rel="noopener noreferrer" 
-								class="cta-button"
-							>
-								<?php echo esc_html( $layer['text'] ); ?>
-							</a>
+							<div class="ql-editor easydam-layer--cta-text">
+								<?php echo wp_kses_post( $layer['text'] ); ?>
+							</div>
 						<?php elseif ( 'html' === $layer['cta_type'] && ! empty( $layer['html'] ) ) : ?>
 							<?php echo wp_kses_post( $layer['html'] ); ?>
 						<?php endif; ?>
