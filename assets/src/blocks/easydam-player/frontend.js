@@ -10,6 +10,7 @@ import { fas } from '@fortawesome/free-solid-svg-icons';
 library.add( fas );
 
 dom.watch();
+import 'quill/dist/quill.snow.css';
 
 document.addEventListener( 'DOMContentLoaded', () => easyDAMPlayer() );
 
