@@ -211,7 +211,31 @@ function easyDAMPlayer() {
 						}
 					} );
 				}
+
+				requestAnimationFrame( () => {
+					positionTooltip( hotspotDiv, tooltipDiv );
+				} );
 			} );
+		}
+
+		function positionTooltip( hotspotDiv, tooltipDiv ) {
+			const hotspotRect = hotspotDiv.getBoundingClientRect();
+			const tooltipRect = tooltipDiv.getBoundingClientRect();
+
+			const spaceAbove = hotspotRect.top;
+			if ( spaceAbove < tooltipRect.height + 10 ) {
+			// Place below
+				tooltipDiv.style.bottom = 'auto';
+				tooltipDiv.style.top = '100%';
+				tooltipDiv.classList.add( 'tooltip-bottom' );
+				tooltipDiv.classList.remove( 'tooltip-top' );
+			} else {
+				// Place above
+				tooltipDiv.style.bottom = '100%';
+				tooltipDiv.style.top = 'auto';
+				tooltipDiv.classList.add( 'tooltip-top' );
+				tooltipDiv.classList.remove( 'tooltip-bottom' );
+			}
 		}
 
 		// Reposition hotspots on resize or fullscreen
