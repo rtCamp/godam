@@ -4,6 +4,7 @@
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import 'videojs-contrib-quality-menu';
+import 'quill/dist/quill.snow.css';
 
 // Adding an event listener for the 'DOMContentLoaded' event to ensure the script runs after the complete page is loaded.
 document.addEventListener( 'DOMContentLoaded', () => easyDAMPlayer() );
