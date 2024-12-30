@@ -109,7 +109,7 @@ import DOMPurify from 'isomorphic-dompurify';
 					}
 
 					if ( progress < 100 ) {
-						setTimeout( () => monitorProgress( attachmentId ), 5000 );
+						setTimeout( () => monitorProgress( attachmentId ), 1000 );
 					} else {
 						progressBar.remove();
 						progressBars.delete( attachmentId );
@@ -117,7 +117,7 @@ import DOMPurify from 'isomorphic-dompurify';
 				} )
 				.catch( ( error ) => {
 					console.error( 'Error monitoring progress:', error );
-					setTimeout( () => monitorProgress( attachmentId ), 5000 );
+					setTimeout( () => monitorProgress( attachmentId ), 1000 );
 				} );
 		}
 	} );
