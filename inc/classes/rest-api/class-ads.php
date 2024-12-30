@@ -27,13 +27,24 @@ class Ads extends Base {
 		return array(
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/ad',
+				'route'     => '/' . $this->rest_base . '/adTagURL',
 				'args'      => array(
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_ad_tag_url' ),
 						'permission_callback' => array( $this, 'get_ad_permissions_check' ),
 						'args'                => $this->get_collection_params(),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/adTagURL/(?P<id>\d+)',
+				'args'      => array(
+					array(
+						'methods'             => \WP_REST_Server::READABLE,
+						'callback'            => array( $this, 'get_video_ad_tag_url' ),
+						'permission_callback' => array( $this, 'get_ad_permissions_check' ),
 					),
 				),
 			),
@@ -52,11 +63,13 @@ class Ads extends Base {
 	 * @return bool
 	 */
 	public function maybe_ad_url_tag_request( $served, $result, $request, $server ) {
+
 		// Check if the route of the current REST API request matches your custom route.
-		if ( '/easydam/v1/ad' !== $request->get_route() ) {
+		if ( ! str_contains( $request->get_route(), '/easydam/v1/adTagURL' ) ) {
 			return $served;
 		}
 	
+
 		// Set necessary CORS headers.
 		header( 'Access-Control-Allow-Origin: *' ); // Allow all origins.
 		header( 'Access-Control-Allow-Methods: GET, POST, OPTIONS' ); // Allow specific methods.
@@ -146,12 +159,12 @@ class Ads extends Base {
 		// Prepare GET request for VMAP.
 		$vast_url = add_query_arg(
 			array(
-				'duration'     => $ad_duration,
-				'title'        => $ad_title,
-				'skippable'    => $skippable,
-				'skip_offset'  => $skip_offset,
-				'ad_url'       => $ad_url,
-				'click_link'   => $click_link,
+				'duration'    => $ad_duration,
+				'title'       => $ad_title,
+				'skippable'   => $skippable,
+				'skip_offset' => $skip_offset,
+				'ad_url'      => $ad_url,
+				'click_link'  => $click_link,
 			),
 			$endpoint_url 
 		);
@@ -174,6 +187,90 @@ class Ads extends Base {
 			return $vamp_xml;
 		}
 		return $vast_xml;
+	}
+
+	/**
+	 * Get a single Gravity Form.
+	 *
+	 * @param \WP_REST_Request $request Request Object.
+	 * @return \WP_REST_Response
+	 */
+	public function get_video_ad_tag_url( $request ) {
+
+		$video_id = $request->get_param( 'id' );
+		$video_id = intval( $video_id );
+
+
+		if ( empty( $video_id ) ) {
+			return new \WP_Error( 'invalid_video_id', 'Invalid video ID.', array( 'status' => 404 ) );
+		}
+
+		// Check if the video exists.
+		$video = get_post( $video_id );
+		if ( empty( $video ) || 'attachment' !== $video->post_type ) {
+			return new \WP_Error( 'invalid_video_id', 'Invalid video ID.', array( 'status' => 404 ) );
+		}
+
+		// Get easydam_meta data.
+		$easydam_meta = get_post_meta( $video_id, 'easydam_meta', true );
+
+		if ( empty( $easydam_meta ) ) {
+			return new \WP_Error( 'no_easydam_meta', 'No EasyDAM meta data found.', array( 'status' => 404 ) );
+		}
+
+		// Retrieve and sanitize input parameters.
+		$layers = $easydam_meta['layers'] ?? array();
+
+		// Get all layers with type `ads`.
+		$ads_layers = array_filter(
+			$layers,
+			function( $layer ) {
+				return 'ad' === $layer['type'];
+			}
+		);
+
+		// Prepare the VAST XML response.
+		$vamp_xml = '';
+		ob_start();
+		?>
+			<vmap:VMAP xmlns:vmap="http://www.iab.net/videosuite/vmap" version="1.0">
+				<?php 
+				foreach ( $ads_layers as $layer ) :
+					// Current endpoint URL.
+					$display_time = intval( $layer['display_time'] ?? 0 );
+					$ad_duration  = intval( $layer['duration'] ?? 0 );
+					$ad_title     = $layer['title'] ?? '';
+					$skippable    = $layer['skippable'] ?? false;
+					$skip_offset  = intval( $layer['skip_offset'] ?? 0 );
+					$ad_url       = esc_url( $layer['ad_url'] ) ?? '';
+					$click_link   = esc_url( $layer['click_link'] ) ?? '';
+					
+					$endpoint_url = rest_url( $this->namespace . sprintf( '/%s', empty( $this->rest_base ) ? 'ad' : $this->rest_base . 'ad' ) );
+					$vast_url     = add_query_arg(
+						array(
+							'duration'    => $ad_duration,
+							'title'       => $ad_title,
+							'skippable'   => $skippable,
+							'skip_offset' => $skip_offset,
+							'ad_url'      => $ad_url,
+							'click_link'  => $click_link,
+						),
+						$endpoint_url 
+					);
+					?>
+					<vmap:AdBreak timeOffset="<?php echo esc_attr( 0 === $display_time ? 'start' : gmdate( 'H:i:s', $display_time ) ); ?>" breakType="linear">
+						<vmap:AdSource allowMultipleAds="false" followRedirects="true">
+							<vmap:AdTagURI templateType="vast4">
+								<![CDATA[ <?php echo $vast_url; // phpcs:ignore ?> ]]>
+							</vmap:AdTagURI>
+						</vmap:AdSource>
+					</vmap:AdBreak>
+				<?php endforeach; ?>
+			</vmap:VMAP>
+		<?php
+		$vamp_xml = ob_get_clean();
+
+		return $vamp_xml;
 	}
 
 

@@ -73,6 +73,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 							title: 'AdTag URL',
 							className: 'flex-1 justify-center items-center',
 							component: <TextareaControl
+								__nextHasNoMarginBottom
 								label={ __( 'AdTag URL', 'transcoder' ) }
 								help={ __( 'Enter the ad tag URL from your Ad server, check ', 'transcoder' ) }
 								value={ layer?.adTagUrl }

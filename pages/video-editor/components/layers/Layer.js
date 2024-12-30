@@ -19,7 +19,7 @@ const Layer = ( { layer, goBack } ) => {
 				layer.type === 'cta' && <CTALayer layerID={ layer.id } goBack={ goBack } />
 			}
 			{
-				layer.type === 'ads' && <Ads layerID={ layer.id } goBack={ goBack } />
+				layer.type === 'ad' && <Ads layerID={ layer.id } goBack={ goBack } />
 			}
 		</>
 	);

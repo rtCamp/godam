@@ -29,9 +29,9 @@ const layerTypes = [
 		type: 'cta',
 	},
 	{
-		title: __( 'Ads', 'transcoder' ),
+		title: __( 'Ad', 'transcoder' ),
 		icon: video,
-		type: 'ads',
+		type: 'ad',
 	},
 ];
 
@@ -73,15 +73,15 @@ const SidebarLayers = ( { currentTime } ) => {
 					allow_skip: true,
 				} ) );
 				break;
-			case 'ads':
+			case 'ad':
 				dispatch( addLayer( {
 					id: uuidv4(),
 					displayTime: currentTime,
 					type,
 					adTagUrl: '',
-					adVideoUrl: '',
+					ad_url: '',
 					skippable: false,
-					skipTime: 5,
+					skip_offset: 5,
 				} ) );
 				break;
 			default:
