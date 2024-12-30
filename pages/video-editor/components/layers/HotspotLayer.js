@@ -217,6 +217,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 																...h2,
 																showStyle: ! h2.showStyle,
 																showIcon: ! h2.showStyle ? false : h2.showIcon,
+																icon: ! h2.showStyle ? '' : h2.icon,
 															}
 															: h2,
 													),
