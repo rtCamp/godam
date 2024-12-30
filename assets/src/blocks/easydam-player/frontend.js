@@ -10,6 +10,7 @@ import { fas } from '@fortawesome/free-solid-svg-icons';
 library.add( fas );
 
 dom.watch();
+import 'quill/dist/quill.snow.css';
 
 document.addEventListener( 'DOMContentLoaded', () => easyDAMPlayer() );
 
@@ -26,8 +27,6 @@ function easyDAMPlayer() {
 				preload: 'auto',
 				fluid: true,
 			};
-
-		console.log( 'Parsed options:', videoSetupOptions );
 
 		const player = videojs( video, videoSetupOptions );
 
