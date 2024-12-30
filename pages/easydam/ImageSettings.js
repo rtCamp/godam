@@ -55,7 +55,7 @@ const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
 			setNotice( { message: 'Settings saved successfully!', status: 'success', isVisible: true } );
 		} else {
 			// Error notice
-			setNotice( { message: 'Failed to save settings. Please try again.', status: 'error', isVisible: true } );
+			setNotice( { message: 'Failed to save settings. Please try again', status: 'error', isVisible: true } );
 		}
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
 		// Hide the notice after 5 seconds
@@ -82,11 +82,11 @@ const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
 					<label className="block text-base font-semibold" htmlFor="sync_from_easydam">Image delivery</label>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label="Sync and deliver images from EasyDAM."
+						label="Sync and deliver images from EasyDAM"
 						checked={ syncFromEasyDAM }
 						onChange={ ( value ) => setSyncFromEasyDAM( value ) }
 					/>
-					<div className="text-slate-500">If you turn this setting off, your images will be delivered from WordPress.</div>
+					<div className="text-slate-500">If you turn this setting off, your images will be delivered from WordPress</div>
 				</div>
 
 				<hr />
@@ -95,11 +95,11 @@ const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
 					<label className="block text-base font-semibold" htmlFor="optimize_image">Image optimization</label>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label="Optimize images on my site."
+						label="Optimize images on my site"
 						checked={ optimizeImages }
 						onChange={ ( value ) => setOptimizeImages( value ) }
 					/>
-					<div className="text-slate-500">Images will be delivered using Cloudinary’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
+					<div className="text-slate-500">Images will be delivered using Cloudinary’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality</div>
 				</div>
 
 				<div className="pt-3 flex flex-col gap-1">
@@ -115,7 +115,7 @@ const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
 						className="max-w-[400px] w-full"
 					/>
 
-					<div className="text-slate-500">The image format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user's browser and device.</div>
+					<div className="text-slate-500">The image format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user's browser and device</div>
 				</div>
 
 				<div className="pt-3 flex flex-col gap-1">
@@ -131,7 +131,7 @@ const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
 						className="max-w-[400px] w-full"
 					/>
 
-					<div className="text-slate-500">Images will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
+					<div className="text-slate-500">Images will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality</div>
 				</div>
 
 				<Button

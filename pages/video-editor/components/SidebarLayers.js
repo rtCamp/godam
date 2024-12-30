@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
  */
 import { __ } from '@wordpress/i18n';
 import { Button, Icon, Modal, DropdownMenu } from '@wordpress/components';
-import { plus, preformatted, customLink, arrowRight, html } from '@wordpress/icons';
+import { plus, preformatted, customLink, arrowRight, html, customPostType } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
 import Layer from './layers/Layer';
 
@@ -28,6 +28,11 @@ const layerTypes = [
 		icon: customLink,
 		type: 'cta',
 	},
+	{
+		title: __( 'Hotspot', 'transcoder' ),
+		icon: customPostType,
+		type: 'hotspot',
+	},
 	// {
 	// 	title: __( 'Ad', 'transcoder' ),
 	// 	icon: video,
@@ -35,7 +40,7 @@ const layerTypes = [
 	// },
 ];
 
-const SidebarLayers = ( { currentTime } ) => {
+const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const openModal = () => setOpen( true );
 	const closeModal = () => setOpen( false );
@@ -73,6 +78,32 @@ const SidebarLayers = ( { currentTime } ) => {
 					allow_skip: true,
 				} ) );
 				break;
+			case 'hotspot':
+				dispatch(
+					addLayer( {
+						id: uuidv4(),
+						displayTime: currentTime,
+						type,
+						duration: 5,
+						pauseOnHover: false,
+						hotspots: [
+							{
+								id: uuidv4(),
+								tooltipText: 'Click me!',
+								position: { x: 50, y: 50 },
+								size: { diameter: 48 },
+								oSize: { diameter: 48 },
+								oPosition: { x: 50, y: 50 },
+								link: '',
+								backgroundColor: '#0c80dfa6',
+								showStyle: false,
+								showIcon: false,
+								icon: '',
+							},
+						],
+					} ),
+				);
+				break;
 			default:
 				break;
 		}
@@ -88,7 +119,10 @@ const SidebarLayers = ( { currentTime } ) => {
 								<button
 									key={ layer.id }
 									className="w-full flex justify-between items-center p-2 border rounded mb-2 hover:bg-gray-50 cursor-pointer"
-									onClick={ () => setSelectedLayer( layer ) }
+									onClick={ () => {
+										setSelectedLayer( layer );
+										onSelectLayer( layer.displayTime );
+									} }
 								>
 									<div className="flex items-center gap-2">
 										<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type ).icon } />

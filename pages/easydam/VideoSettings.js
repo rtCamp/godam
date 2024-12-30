@@ -68,8 +68,16 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
-			setSelectedMedia( { url: attachment.url } );
-			console.log( 'Selected media:', attachment );
+			if ( attachment.type === 'image' ) {
+				setSelectedMedia( { url: attachment.url } );
+			} else {
+				// Show a notice for invalid selection
+				setNotice( { message: 'Please select a valid image file.', status: 'error', isVisible: true } );
+				window.scrollTo( { top: 0, behavior: 'smooth' } );
+				setTimeout( () => {
+					setNotice( { message: '', status: '', isVisible: false } );
+				}, 5000 );
+			}
 		} );
 
 		fileFrame.open();
@@ -100,7 +108,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 			setNotice( { message: 'Settings saved successfully!', status: 'success', isVisible: true } );
 		} else {
 			// Error notice
-			setNotice( { message: 'Failed to save settings. Please try again.', status: 'error', isVisible: true } );
+			setNotice( { message: 'Failed to save settings. Please try again', status: 'error', isVisible: true } );
 		}
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
 		// Hide the notice after 5 seconds
@@ -127,11 +135,11 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					<label className="block text-base font-semibold" htmlFor="sync_from_easydam">Video delivery</label>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label="Sync and deliver videos from EasyDAM."
+						label="Sync and deliver videos from EasyDAM"
 						checked={ syncFromEasyDAM }
 						onChange={ ( value ) => setSyncFromEasyDAM( value ) }
 					/>
-					<div className="text-slate-500">If you turn this setting off, your videos will be delivered from WordPress.</div>
+					<div className="text-slate-500">If you turn this setting off, your videos will be delivered from WordPress</div>
 				</div>
 
 				<hr /> */ }
@@ -140,11 +148,11 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					<label className="block text-base font-semibold" htmlFor="abs">Adaptive Bitrate Streaming</label>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label="Enable Adaptive Bitrate Streaming."
+						label="Enable Adaptive Bitrate Streaming"
 						checked={ adaptiveBitrate }
 						onChange={ ( value ) => setAdaptiveBitrate( value ) }
 					/>
-					<div className="text-slate-500">If enabled, Transcoder will generate multiple video files with different bitrates for adaptive streaming.</div>
+					<div className="text-slate-500">If enabled, Transcoder will generate multiple video files with different bitrates for adaptive streaming</div>
 				</div>
 
 				<hr />
@@ -154,11 +162,11 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 						<label className="block text-base font-semibold" htmlFor="optimize_video">Video optimization</label>
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label="Optimize videos on my site."
+							label="Optimize videos on my site"
 							checked={ optimizeVideos }
 							onChange={ ( value ) => setOptimizeVideos( value ) }
 						/>
-						<div className="text-slate-500">Videos will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
+						<div className="text-slate-500">Videos will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality</div>
 					</div>
 
 					<div className="flex flex-col gap-1">
@@ -174,7 +182,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 							size="compact"
 							className="max-w-[400px] w-full"
 						/>
-						<div className="text-slate-500">The video format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user's browser and device..</div>
+						<div className="text-slate-500">The video format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user's browser and device</div>
 					</div>
 
 					<div className="py-3 flex flex-col gap-1">
@@ -185,12 +193,12 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 							value={ videoQuality }
 							options={ videoQualityOptions }
 							onChange={ ( value ) => setVideoQuality( value ) }
-							describedBy="The quality of the video for delivery."
+							describedBy="The quality of the video for delivery"
 							showSelectedHint
 							size="compact"
 							className="max-w-[400px] w-full"
 						/>
-						<div className="text-slate-500">Videos will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality.</div>
+						<div className="text-slate-500">Videos will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality</div>
 					</div>
 				</div> */ }
 
@@ -209,7 +217,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					<div className="text-slate-500">
 						This field specifies the number of video thumbnails that will be generated by the Transcoder. To choose
 						from the generated thumbnails for a video, go to Media &gt; Edit &gt; Video Thumbnails. Thumbnails are only
-						generated when the video is first uploaded. Maximum value is 10.
+						generated when the video is first uploaded. Maximum value is 10
 					</div>
 				</div>
 
@@ -225,7 +233,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					/>
 					<div className="text-slate-500">
 						If enabled, Transcoder will replace existing media thumbnails with regenerated ones after retranscoding.
-						If disabled, media thumbnails will remain untouched.
+						If disabled, media thumbnails will remain untouched
 					</div>
 				</div>
 
@@ -251,7 +259,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 						onChange={ ( value ) => setDisableWatermark( value ) }
 						disabled={ ! isPremiumUser }
 					/>
-					<div className="text-slate-500">If enabled, Transcoder will add a watermark to the transcoded video.</div>
+					<div className="text-slate-500">If enabled, Transcoder will add a watermark to the transcoded video</div>
 					{ isPremiumUser && ! disableWatermark && (
 						<>
 							<div className="mt-4">
@@ -263,8 +271,8 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 										setUseImage( value );
 									} }
 								/>
-								<div className="text-slate-500">If enabled, Transcoder will use an image instead of text as the watermark for the transcoded video.</div>
-
+								<div className="text-slate-500">If enabled, Transcoder will use an image instead of text as the watermark for the transcoded video</div>
+								<span className="font-semibold">(Recommended dimensions:</span> 200 px width × 70 px height)
 								{ useImage && (
 									<div className="mt-2">
 										<div className="flex gap-2">
@@ -282,7 +290,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 											) }
 										</div>
 										{ selectedMedia && selectedMedia.url && (
-											<div className="mt-2">
+											<div className="mt-2 border-2 border-blue-700 rounded-lg p-2 inline-block bg-gray-200">
 												<img
 													src={ selectedMedia.url }
 													alt={ selectedMedia.alt || 'Selected watermark' }
@@ -304,7 +312,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 										placeholder="Enter watermark text"
 										className="max-w-[400px]"
 									/>
-									<div className="text-slate-500">Specify the watermark text that will be added to transcoded videos.</div>
+									<div className="text-slate-500">Specify the watermark text that will be added to transcoded videos</div>
 								</div>
 							) }
 						</>
@@ -316,7 +324,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 						onRequestClose={ handleCloseModal }
 					>
 						<p className="text-base text-gray-700">
-							To access this feature, please upgrade to our premium subscription plan.
+							To access this feature, please upgrade to our premium subscription plan
 						</p>
 						<Button
 							isPrimary
