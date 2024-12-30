@@ -3,7 +3,10 @@
  */
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
+import 'videojs-ima/dist/videojs.ima.css';
 import 'videojs-contrib-quality-menu';
+import 'videojs-contrib-ads';
+import 'videojs-ima';
 
 // Adding an event listener for the 'DOMContentLoaded' event to ensure the script runs after the complete page is loaded.
 document.addEventListener( 'DOMContentLoaded', () => easyDAMPlayer() );
@@ -16,6 +19,9 @@ function easyDAMPlayer() {
 
 	videos.forEach( ( video ) => {
 		// read the data-setup attribute.
+
+		const adTagUrl = video.dataset.ad_tag_url;
+
 		const videoSetupOptions = video.dataset.setup
 			? JSON.parse( video.dataset.setup )
 			: {
@@ -143,6 +149,14 @@ function easyDAMPlayer() {
 
 			layerObj.layerElement.appendChild( skipButton );
 		} );
+
+		if ( adTagUrl ) {
+			player.ima( {
+				id: 'content_video',
+				// autoPlayAdBreaks: false,
+				adTagUrl,
+			} );
+		}
 
 		player.qualityMenu();
 	} );

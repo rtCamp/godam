@@ -202,20 +202,20 @@ class Ads extends Base {
 
 
 		if ( empty( $video_id ) ) {
-			return new \WP_Error( 'invalid_video_id', 'Invalid video ID.', array( 'status' => 404 ) );
+			return '';
 		}
 
 		// Check if the video exists.
 		$video = get_post( $video_id );
 		if ( empty( $video ) || 'attachment' !== $video->post_type ) {
-			return new \WP_Error( 'invalid_video_id', 'Invalid video ID.', array( 'status' => 404 ) );
+			return '';
 		}
 
 		// Get easydam_meta data.
 		$easydam_meta = get_post_meta( $video_id, 'easydam_meta', true );
 
 		if ( empty( $easydam_meta ) ) {
-			return new \WP_Error( 'no_easydam_meta', 'No EasyDAM meta data found.', array( 'status' => 404 ) );
+			return '';
 		}
 
 		// Retrieve and sanitize input parameters.

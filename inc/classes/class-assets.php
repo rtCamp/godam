@@ -61,6 +61,10 @@ class Assets {
 
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );
+
+		wp_enqueue_script( 'ima-sdk', 'https://imasdk.googleapis.com/js/sdkloader/ima3.js' );
+		wp_enqueue_script( 'videojs-ads', 'https://googleads.github.io/videojs-ima/node_modules/videojs-contrib-ads/dist/videojs.ads.min.js' );
+		wp_enqueue_script( 'videojs-ima', 'https://googleads.github.io/videojs-ima/dist/videojs.ima.js' );
 	}
 
 	/**
