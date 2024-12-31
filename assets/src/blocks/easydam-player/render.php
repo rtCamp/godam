@@ -64,16 +64,14 @@ $ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
 			foreach ( $sources as $source ) :
 				if ( ! empty( $source['src'] ) && ! empty( $source['type'] ) ) :
 					?>
-						<source
-							src="<?php echo esc_url( $source['src'] ); ?>"
-							type="<?php echo esc_attr( $source['type'] ); ?>"
-						/>
-						<?php
+					<source
+						src="<?php echo esc_url( $source['src'] ); ?>"
+						type="<?php echo esc_attr( $source['type'] ); ?>"
+					/>
+					<?php
 				endif;
 			endforeach;
-			?>
 
-			<?php
 			foreach ( $tracks as $track ) :
 				if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
 					?>
@@ -95,10 +93,11 @@ $ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
 			<figcaption><?php echo esc_html( $caption ); ?></figcaption>
 		<?php endif; ?>
 
-		<!-- Dynamically render shortcodes for form layers -->
+		<!-- Dynamically render shortcodes for form layers. -->
 		<?php
 		if ( ! empty( $easydam_meta_data['layers'] ) ) :
 			foreach ( $easydam_meta_data['layers'] as $layer ) :
+				// FORM layer.
 				if ( isset( $layer['type'] ) && 'form' === $layer['type'] && ! empty( $layer['gf_id'] ) ) :
 					?>
 					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
@@ -115,27 +114,33 @@ $ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
 							?>
 						</div>
 					</div>
-				<?php elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) : ?>
+					<?php
+					// CTA layer.
+				elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) :
+					?>
 					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
 						<?php if ( 'text' === $layer['cta_type'] ) : ?>
-							<a 
-								href="<?php echo esc_url( $layer['link'] ); ?>" 
-								target="_blank" 
-								rel="noopener noreferrer" 
-								class="cta-button"
-							>
-								<?php echo esc_html( $layer['text'] ); ?>
-							</a>
+							<div class="ql-editor easydam-layer--cta-text">
+								<?php echo wp_kses_post( $layer['text'] ); ?>
+							</div>
 						<?php elseif ( 'html' === $layer['cta_type'] && ! empty( $layer['html'] ) ) : ?>
 							<?php echo wp_kses_post( $layer['html'] ); ?>
 						<?php endif; ?>
 					</div>
 					<?php
+					// HOTSPOT layer.
+				elseif ( isset( $layer['type'] ) && 'hotspot' === $layer['type'] ) :
+					?>
+					<div
+						id="layer-<?php echo esc_attr( $layer['id'] ); ?>"
+						class="easydam-layer hidden hotspot-layer"
+					>
+					</div>
+					<?php
 				endif;
-			endforeach;
-		endif;
-		?>
+				?>
+			<?php endforeach; ?>
+		<?php endif; ?>
 	</div>
 </figure>
-	<?php
-endif;
+<?php endif; ?>
