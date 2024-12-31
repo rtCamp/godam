@@ -97,6 +97,66 @@ class Settings extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/aws',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_aws_settings' ),
+					'permission_callback' => function () {
+						return current_user_can( 'manage_options' );
+					},
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/aws',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'update_aws_settings' ),
+					'permission_callback' => function () {
+						return current_user_can( 'manage_options' );
+					},
+					'args'                => array(
+						'bucketPath' => array(
+							'type'              => 'string',
+							'description'       => 'The bucket path to save.',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'offLoadMedia' => array(
+							'type'              => 'boolean',
+							'description'       => 'The offload media to save.',
+							'sanitize_callback' => 'rest_sanitize_boolean',
+						),
+						'removeLocalMedia' => array(
+							'type'              => 'boolean',
+							'description'       => 'The remove local media to save.',
+							'sanitize_callback' => 'rest_sanitize_boolean',
+						),
+						'aws' => array(
+							'type'              => 'object',
+							'description'       => 'AWS credentials and settings.',
+							'properties'        => array(
+								'accessKey' => array(
+									'type'              => 'string',
+									'description'       => 'The AWS access key.',
+									'sanitize_callback' => 'sanitize_text_field',
+								),
+								'bucket' => array(
+									'type'              => 'string',
+									'description'       => 'The AWS bucket name.',
+									'sanitize_callback' => 'sanitize_text_field',
+								),
+								'secretKey' => array(
+									'type'              => 'string',
+									'description'       => 'The AWS secret key.',
+									'sanitize_callback' => 'sanitize_text_field',
+								),
+							),
+						),
+					),
+				),
+			),
 		);
 	}
 
@@ -342,5 +402,68 @@ class Settings extends Base {
 		);
 
 		return $sanitized_settings;
+	}
+
+	/**
+	 * Update the AWS settings.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function get_aws_settings( $request ) {
+		// Get the AWS settings from the options table.
+		$settings = get_option( 'easydam_storage_aws' );
+	
+		// If settings are not found, return a default empty array.
+		if ( false === $settings ) {
+			$settings = array();
+		}
+	
+		// Return the settings as the response.
+		return new \WP_REST_Response( $settings, 200 );
+	}
+
+	/**
+	 * Update AWS settings.
+	 *
+	 * @param array $data AWS settings to update.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function update_aws_settings( $data ) {
+		// Fetch existing settings from the database.
+		$existing_settings = get_option( 'easydam_storage_aws', array(
+			'bucketPath'       => '',
+			'offLoadMedia'     => false,
+			'removeLocalMedia' => false,
+			'aws'              => array(
+				'accessKey' => '',
+				'secretKey' => '',
+				'bucket'    => '',
+			),
+		) );
+
+		// Merge existing settings with new data, ensuring only updated values are replaced.
+		$updated_settings = array_merge(
+			$existing_settings,
+			array_filter(
+				array(
+					'bucketPath'       => $data['bucketPath'] ?? null,
+					'offLoadMedia'     => $data['offLoadMedia'] ?? null,
+					'removeLocalMedia' => $data['removeLocalMedia'] ?? null,
+					'aws'              => isset( $data['aws'] ) && is_array( $data['aws'] )
+						? array_merge( $existing_settings['aws'], $data['aws'] )
+						: null,
+				),
+				function ( $value ) {
+					return $value !== null;
+				}
+			)
+		);
+
+		// Update the option in the database.
+		update_option( 'easydam_storage_aws', $updated_settings );
+
+		return new \WP_REST_Response( array( 'message' => 'AWS settings updated successfully.' ), 200 );
 	}
 }

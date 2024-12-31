@@ -19,5 +19,8 @@
     "pre-commit": [
       "npm run lint:staged"
     ]
+  },
+  "require": {
+    "aws/aws-sdk-php": "^3.336"
   }
 }
