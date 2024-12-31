@@ -62,7 +62,7 @@ class Ads extends Base {
 	 * 
 	 * @return bool
 	 */
-	public function maybe_ad_url_tag_request( $served, $result, $request, $server ) {
+	public function maybe_ad_url_tag_request( $served, $result, $request, $server ) { // phpcs:ignore
 
 		// Check if the route of the current REST API request matches your custom route.
 		if ( ! str_contains( $request->get_route(), '/easydam/v1/adTagURL' ) ) {
@@ -80,7 +80,7 @@ class Ads extends Base {
 		header( 'Content-Type: text/xml; charset=utf-8' );
 	
 		// Output the XML response and terminate the script.
-		echo $result->get_data();
+		echo $result->get_data(); // phpcs:ignore
 		exit;
 	}
 
