@@ -106,8 +106,7 @@ class Ads extends Base {
 		$ad_duration  = gmdate( 'H:i:s', $ad_duration );
 
 		// Current endpoint URL.
-		$endpoint_url = rest_url( $this->namespace . sprintf( '/%s', empty( $this->rest_base ) ? 'ad' : $this->rest_base . 'ad' ) );
-
+		$endpoint_url = rest_url( $this->namespace . sprintf( '/%s', empty( $this->rest_base ) ? 'adTagURL' : $this->rest_base . 'adTagURL' ) );
 		
 		ob_start();
 		?>
