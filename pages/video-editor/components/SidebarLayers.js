@@ -5,16 +5,17 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * Internal dependencies
  */
-import { addLayer } from '../redux/slice/videoSlice';
+import { addLayer, setCurrentLayer } from '../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, Icon, Modal, DropdownMenu } from '@wordpress/components';
-import { plus, preformatted, customLink, arrowRight, html, customPostType } from '@wordpress/icons';
-import { useState } from '@wordpress/element';
+import { Button, Icon, Modal } from '@wordpress/components';
+import { plus, preformatted, customLink, arrowRight, video, customPostType } from '@wordpress/icons';
+import { useEffect, useState } from '@wordpress/element';
+
 import Layer from './layers/Layer';
 
 const layerTypes = [
@@ -33,11 +34,11 @@ const layerTypes = [
 		icon: customPostType,
 		type: 'hotspot',
 	},
-	// {
-	// 	title: __( 'Ad', 'transcoder' ),
-	// 	icon: video,
-	// 	type: 'ad',
-	// },
+	{
+		title: __( 'Ad', 'transcoder' ),
+		icon: video,
+		type: 'ad',
+	},
 ];
 
 const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
@@ -104,10 +105,25 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 					} ),
 				);
 				break;
+			case 'ad':
+				dispatch( addLayer( {
+					id: uuidv4(),
+					displayTime: currentTime,
+					type,
+					adTagUrl: '',
+					ad_url: '',
+					skippable: false,
+					skip_offset: 5,
+				} ) );
+				break;
 			default:
 				break;
 		}
 	};
+
+	useEffect( () => {
+		dispatch( setCurrentLayer( selectedLayer ) );
+	}, [ selectedLayer ] );
 
 	return (
 		<>

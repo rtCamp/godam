@@ -63,6 +63,25 @@ class Media_Library extends Base {
 	public function assign_images_to_folder( $request ) {
 		$attachment_ids = $request->get_param( 'attachment_ids' );
 		$folder_term_id = $request->get_param( 'folder_term_id' );
+
+		// if folder id is 0, remove the folder from the attachments.
+		if ( 0 === $folder_term_id ) {
+			foreach ( $attachment_ids as $attachment_id ) {
+
+				$return = $this->remove_all_terms_from_id( $attachment_id, 'media-folder' );
+	
+				if ( is_wp_error( $return ) ) {
+					return new \WP_Error( 'term_assignment_failed', 'Failed to remove folder from the attachments.', array( 'status' => 500 ) );
+				}
+			}
+	
+			return rest_ensure_response(
+				array(
+					'success' => true,
+					'message' => 'Attachments successfully removed from the folder.',
+				) 
+			);
+		}
 	
 		$term = get_term( $folder_term_id, 'media-folder' );
 
@@ -88,5 +107,28 @@ class Media_Library extends Base {
 				'message' => 'Attachments successfully associated with the folder.',
 			) 
 		);
+	}
+
+	/**
+	 * Remove all terms of a specific taxonomy for a given post ID.
+	 *
+	 * @param int    $post_id   The ID of the post or object.
+	 * @param string $taxonomy  The taxonomy to remove terms from.
+	 *
+	 * @return bool|WP_ERROR True if terms are successfully removed, WP_Error otherwise.
+	 */
+	private function remove_all_terms_from_id( $post_id, $taxonomy ) {
+		if ( ! taxonomy_exists( $taxonomy ) ) {
+			return new \WP_Error( 'invalid_taxonomy', 'Invalid taxonomy.', array( 'status' => 400 ) );
+		}
+
+		// Get all terms associated with the post ID for the taxonomy.
+		$terms = wp_get_object_terms( $post_id, $taxonomy, array( 'fields' => 'ids' ) );
+
+		if ( is_wp_error( $terms ) ) {
+			return $terms;
+		}
+
+		return wp_remove_object_terms( $post_id, $terms, $taxonomy );
 	}
 }

@@ -59,6 +59,10 @@
 		background-color: transparent;
 		cursor: pointer;
 
+		&:hover {
+			background-color: #e5e7eb;
+		}
+
 		&--active {
 			background-color: #e5e7eb;
 		}

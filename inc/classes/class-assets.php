@@ -61,6 +61,10 @@ class Assets {
 
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );
+
+		wp_enqueue_script( 'ima-sdk', 'https://imasdk.googleapis.com/js/sdkloader/ima3.js', array(), RT_TRANSCODER_VERSION, false );
+		wp_enqueue_script( 'videojs-ads', 'https://googleads.github.io/videojs-ima/node_modules/videojs-contrib-ads/dist/videojs.ads.min.js', array(), RT_TRANSCODER_VERSION, false );
+		wp_enqueue_script( 'videojs-ima', 'https://googleads.github.io/videojs-ima/dist/videojs.ima.js', array(), RT_TRANSCODER_VERSION, false );
 	}
 
 	/**
@@ -126,9 +130,18 @@ class Assets {
 
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );
+
 		if ( $screen && 'upload' === $screen->id ) {
 			wp_enqueue_script( 'easydam-media-library' );
 			wp_enqueue_style( 'easydam-media-library' );
+
+			/**
+			 * Dependency library for date range picker.
+			 */
+			wp_enqueue_script( 'moment-js', 'https://cdn.jsdelivr.net/momentjs/latest/moment.min.js', array(), '1.0.0', true );
+			wp_enqueue_script( 'daterangepicker-js', 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js', array( 'moment-js' ), '1.0.0', true );
+			wp_enqueue_style( 'daterangepicker-css', 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css', array(), '1.0.0' );
+
 		}
 	}
 }
