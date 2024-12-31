@@ -106,8 +106,7 @@ class Ads extends Base {
 		$ad_duration  = gmdate( 'H:i:s', $ad_duration );
 
 		// Current endpoint URL.
-		$endpoint_url = rest_url( $this->namespace . sprintf( '/%s', empty( $this->rest_base ) ? 'ad' : $this->rest_base . 'ad' ) );
-
+		$endpoint_url = rest_url( $this->namespace . sprintf( '/%s', empty( $this->rest_base ) ? 'adTagURL' : $this->rest_base . 'adTagURL' ) );
 		
 		ob_start();
 		?>
@@ -237,7 +236,7 @@ class Ads extends Base {
 				<?php 
 				foreach ( $ads_layers as $layer ) :
 					// Current endpoint URL.
-					$display_time = intval( $layer['display_time'] ?? 0 );
+					$display_time = intval( $layer['displayTime'] ?? 0 );
 					$ad_duration  = intval( $layer['duration'] ?? 0 );
 					$ad_title     = $layer['title'] ?? '';
 					$skippable    = $layer['skippable'] ?? false;
@@ -245,7 +244,7 @@ class Ads extends Base {
 					$ad_url       = esc_url( $layer['ad_url'] ) ?? '';
 					$click_link   = esc_url( $layer['click_link'] ) ?? '';
 					
-					$endpoint_url = rest_url( $this->namespace . sprintf( '/%s', empty( $this->rest_base ) ? 'ad' : $this->rest_base . 'ad' ) );
+					$endpoint_url = rest_url( $this->namespace . sprintf( '/%s', empty( $this->rest_base ) ? 'adTagURL' : $this->rest_base . 'adTagURL' ) );
 					$vast_url     = add_query_arg(
 						array(
 							'duration'    => $ad_duration,
