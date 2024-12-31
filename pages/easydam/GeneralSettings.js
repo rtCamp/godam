@@ -18,7 +18,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 
 	const saveLicenseKey = async () => {
 		if ( ! licenseKey.trim() ) {
-			setNotice( { message: 'Please enter a valid license key.', status: 'error', isVisible: true } );
+			setNotice( { message: 'Please enter a valid license key', status: 'error', isVisible: true } );
 			return;
 		}
 
@@ -48,10 +48,10 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 
 				saveMediaSettings( updatedSettings );
 			} else {
-				setNotice( { message: result.message || 'Failed to verify the license key.', status: 'error', isVisible: true } );
+				setNotice( { message: result.message || 'Failed to verify the license key', status: 'error', isVisible: true } );
 			}
 		} catch ( error ) {
-			setNotice( { message: 'An error occurred. Please try again later.', status: 'error', isVisible: true } );
+			setNotice( { message: 'An error occurred. Please try again later', status: 'error', isVisible: true } );
 		} finally {
 			setIsLicenseKeyLoading( false ); // Hide loading indicator.
 		}
@@ -78,7 +78,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 
 			if ( response.ok ) {
 				setLicenseKey( '' ); // Clear the license key from state.
-				setNotice( { message: 'License key deactivated successfully.', status: 'success', isVisible: true } );
+				setNotice( { message: 'License key deactivated successfully', status: 'success', isVisible: true } );
 				const updatedSettings = {
 					...mediaSettings,
 					general: {
@@ -89,10 +89,10 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 
 				saveMediaSettings( updatedSettings );
 			} else {
-				setNotice( { message: 'Failed to deactivate license key. Please try again.', status: 'error', isVisible: true } );
+				setNotice( { message: 'Failed to deactivate license key. Please try again', status: 'error', isVisible: true } );
 			}
 		} catch ( error ) {
-			setNotice( { message: 'An error occurred while deactivating the license key.', status: 'error', isVisible: true } );
+			setNotice( { message: 'An error occurred while deactivating the license key', status: 'error', isVisible: true } );
 		} finally {
 			setIsLicenseKeyLoading( false ); // Hide loading indicator.
 		}
@@ -119,7 +119,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 		if ( isSaved ) {
 			setNotice( { message: 'Settings saved successfully!', status: 'success', isVisible: true } );
 		} else {
-			setNotice( { message: 'Failed to save settings. Please try again.', status: 'error', isVisible: true } );
+			setNotice( { message: 'Failed to save settings. Please try again', status: 'error', isVisible: true } );
 		}
 
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
@@ -148,7 +148,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 				<TextControl
 					value={ licenseKey }
 					onChange={ ( value ) => setLicenseKey( value ) }
-					help="Your license key is required to access the features."
+					help="Your license key is required to access the features"
 					placeholder="Enter your license key here"
 					className="max-w-[400px]"
 					disabled={ mediaSettings?.general?.is_verified }
