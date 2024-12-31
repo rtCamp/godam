@@ -6,15 +6,15 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Modal, SelectControl, ToggleControl, ColorPalette, TextareaControl, TabPanel } from '@wordpress/components';
-import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
+import { Button, Modal } from '@wordpress/components';
+import { arrowLeft, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import { removeLayer, updateLayerField } from '../../redux/slice/videoSlice';
+import { removeLayer } from '../../redux/slice/videoSlice';
 import LayerControls from '../LayerControls';
 import CustomAdSettings from '../ads/CustomAdSettings';
 
@@ -64,23 +64,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 			</div>
 
 			<div>
-				{/* <TabPanel
-					onSelect={ () => {} }
-					className="sidebar-tabs"
-					tabs={ [
-						{
-							name: 'selfHostedVideoAd',
-							title: 'Self Hosted Video Ad',
-							className: 'flex-1 justify-center items-center',
-							component: <CustomAdSettings layerID={ layer.id } />,
-						},
-					] }
-				>
-					{ ( tab ) => <div className="py-4">{ tab.component }</div> }
-				</TabPanel> */}
-
 				<CustomAdSettings layerID={ layer.id } />
-
 			</div>
 
 			<LayerControls>

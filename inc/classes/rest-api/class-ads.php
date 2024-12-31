@@ -223,7 +223,7 @@ class Ads extends Base {
 		// Get all layers with type `ads`.
 		$ads_layers = array_filter(
 			$layers,
-			function( $layer ) {
+			function ( $layer ) {
 				return 'ad' === $layer['type'];
 			}
 		);

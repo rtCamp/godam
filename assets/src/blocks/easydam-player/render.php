@@ -45,7 +45,7 @@ $video_setup = wp_json_encode(
 $layers     = $easydam_meta_data['layers'] ?? array();
 $ads_layers = array_filter(
 	$layers,
-	function( $layer ) {
+	function ( $layer ) {
 		return 'ad' === $layer['type'];
 	}
 );
