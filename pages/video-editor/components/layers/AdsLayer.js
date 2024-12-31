@@ -64,22 +64,10 @@ const CTALayer = ( { layerID, goBack } ) => {
 			</div>
 
 			<div>
-				<TabPanel
+				{/* <TabPanel
 					onSelect={ () => {} }
 					className="sidebar-tabs"
 					tabs={ [
-						{
-							name: 'adTagUrl',
-							title: 'AdTag URL',
-							className: 'flex-1 justify-center items-center',
-							component: <TextareaControl
-								__nextHasNoMarginBottom
-								label={ __( 'AdTag URL', 'transcoder' ) }
-								help={ __( 'Enter the ad tag URL from your Ad server, check ', 'transcoder' ) }
-								value={ layer?.adTagUrl }
-								onChange={ ( val ) => dispatch( updateLayerField( { id: layer.id, field: 'adTagUrl', value: val } ) ) }
-							/>,
-						},
 						{
 							name: 'selfHostedVideoAd',
 							title: 'Self Hosted Video Ad',
@@ -89,7 +77,9 @@ const CTALayer = ( { layerID, goBack } ) => {
 					] }
 				>
 					{ ( tab ) => <div className="py-4">{ tab.component }</div> }
-				</TabPanel>
+				</TabPanel> */}
+
+				<CustomAdSettings layerID={ layer.id } />
 
 			</div>
 
