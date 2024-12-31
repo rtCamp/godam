@@ -146,5 +146,60 @@ function easyDAMPlayer() {
 		} );
 
 		player.qualityMenu();
+
+		// store heatmap information
+		const existingRanges = [];
+
+		// let duration = video.duration;
+		// video.addEventListener( 'durationchange', function() {
+		// 	duration = video.duration;
+		// } );
+
+		video.addEventListener( 'timeupdate', function() {
+			const ranges = existingRanges.slice();
+
+			ranges.push( copyRanges( video.played ) );
+
+			// updateHeatmap( ranges );
+		} );
+
+		function copyRanges( timeRanges ) {
+			const copy = [];
+
+			console.log(timeRanges);
+
+			for ( let i = 0; i < timeRanges.length; i++ ) {
+				copy.push( [ timeRanges.start( i ), timeRanges.end( i ) ] );
+			}
+
+			return copy;
+		}
+
+		function updateHeatmap( ranges ) {
+			const videoId = video.getAttribute( 'data-id' );
+			const url = `/wp-json/wp/v2/media/${ videoId }`;
+			const metadata = JSON.stringify( ranges );
+			// console.log(window);
+
+			fetch( url, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: metadata,
+			} )
+				.then( ( response ) => {
+					if ( ! response.ok ) {
+						throw new Error( `HTTP error! Status: ${ response.status }` );
+					}
+					return response.json();
+				} )
+				.then( ( data ) => {
+					console.log( 'Metadata updated successfully:', data );
+				} )
+				.catch( ( error ) => {
+					console.error( 'Error saving metadata:', error );
+				} );
+		}
 	} );
 }
