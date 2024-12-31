@@ -55,7 +55,7 @@ const AWSEdit = () => {
 						{ __( 'AWS S3 Bucket', 'transcoder' ) }
 					</h3>
 					<p className="text-gray-500 mt-1">
-						<strong>{ __( 'my-example-bucket', 'transcoder' ) }</strong>
+						<strong>{ aws.bucket }</strong>
 					</p>
 				</div>
 				<Button
