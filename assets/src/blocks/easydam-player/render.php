@@ -42,14 +42,23 @@ $video_setup = wp_json_encode(
 	)
 );
 
+$layers     = $easydam_meta_data['layers'] ?? array();
+$ads_layers = array_filter(
+	$layers,
+	function ( $layer ) {
+		return 'ad' === $layer['type'];
+	}
+);
+$ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
+	<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
 	<div class="easydam-video-container">
 		<video
 			class="easydam-player video-js vjs-big-play-centered"
 			data-setup="<?php echo esc_attr( $video_setup ); ?>"
+			data-ad_tag_url="<?php echo esc_url( ! empty( $ads_layers ) ? esc_url( $ad_tag_url ) : '' ); ?>"
 		>
 			<?php
 			foreach ( $sources as $source ) :
@@ -116,6 +125,8 @@ $video_setup = wp_json_encode(
 							</div>
 						<?php elseif ( 'html' === $layer['cta_type'] && ! empty( $layer['html'] ) ) : ?>
 							<?php echo wp_kses_post( $layer['html'] ); ?>
+						<?php elseif ( 'image' === $layer['cta_type'] && ! empty( $layer['image'] ) ) : ?>
+							<?php echo wp_kses_post( image_cta_html( $layer ) ); ?>
 						<?php endif; ?>
 					</div>
 					<?php

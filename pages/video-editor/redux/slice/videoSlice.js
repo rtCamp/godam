@@ -57,7 +57,7 @@ const slice = createSlice( {
 		},
 		layers: [],
 		isChanged: false,
-		skipTime: 10,
+		currentLayer: null,
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
@@ -101,6 +101,9 @@ const slice = createSlice( {
 			state.skipTime = action.payload.selectedSkipVal;
 			state.isChanged = true;
 		},
+		setCurrentLayer: ( state, action ) => {
+			state.currentLayer = action.payload;
+		},
 	},
 } );
 
@@ -111,5 +114,6 @@ export const {
 	updateLayerField,
 	updateVideoConfig,
 	updateSkipTime,
+	setCurrentLayer,
 } = slice.actions;
 export default slice.reducer;

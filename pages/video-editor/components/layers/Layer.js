@@ -8,6 +8,7 @@
 import FormLayer from './FormLayer';
 import CTALayer from './CTALayer';
 import HotspotLayer from './HotspotLayer';
+import Ads from './AdsLayer';
 
 const Layer = ( { layer, goBack } ) => {
 	return (
@@ -20,6 +21,9 @@ const Layer = ( { layer, goBack } ) => {
 			}
 			{
 				layer.type === 'hotspot' && <HotspotLayer layerID={ layer.id } goBack={ goBack } />
+			}
+			{
+				layer.type === 'ad' && <Ads layerID={ layer.id } goBack={ goBack } />
 			}
 		</>
 	);

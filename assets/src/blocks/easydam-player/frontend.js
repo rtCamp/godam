@@ -3,7 +3,10 @@
  */
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
+import 'videojs-ima/dist/videojs.ima.css';
 import 'videojs-contrib-quality-menu';
+import 'videojs-contrib-ads';
+import 'videojs-ima';
 import { library, dom } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 
@@ -19,6 +22,9 @@ function easyDAMPlayer() {
 
 	videos.forEach( ( video ) => {
 		// read the data-setup attribute.
+
+		const adTagUrl = video.dataset.ad_tag_url;
+
 		const videoSetupOptions = video.dataset.setup
 			? JSON.parse( video.dataset.setup )
 			: {
@@ -27,8 +33,6 @@ function easyDAMPlayer() {
 				preload: 'auto',
 				fluid: true,
 			};
-
-		console.log( 'Parsed options:', videoSetupOptions );
 
 		const player = videojs( video, videoSetupOptions );
 
@@ -340,6 +344,14 @@ function easyDAMPlayer() {
 
 			layerObj.layerElement.appendChild( skipButton );
 		} );
+
+		if ( adTagUrl ) {
+			player.ima( {
+				id: 'content_video',
+				// autoPlayAdBreaks: false,
+				adTagUrl,
+			} );
+		}
 
 		player.qualityMenu();
 	} );
