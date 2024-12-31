@@ -803,8 +803,14 @@ function rtt_enqueue_scripts() {
 			'security_nonce' => esc_js( wp_create_nonce( 'check-transcoding-status-ajax-nonce' ) ),
 		);
 
-		wp_localize_script( 'rt_transcoder_js', 'transcoding_status', $translation_array );
-		wp_enqueue_script( 'rt_transcoder_js' );
+		// phpcs:disable
+
+		// comment out this code as the functionality is being shifted to block editor.
+
+		// wp_localize_script( 'rt_transcoder_js', 'transcoding_status', $translation_array );
+		// wp_enqueue_script( 'rt_transcoder_js' );
+
+		// phpcs:enable
 
 		if ( ! is_admin() ) {
 			wp_enqueue_style( 'rt-transcoder-client-style', plugins_url( 'css/rt-transcoder-client.min.css', __FILE__ ), array(), RT_TRANSCODER_VERSION );

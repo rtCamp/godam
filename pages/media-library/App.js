@@ -69,7 +69,7 @@ const App = () => {
 
 			<div className="folder-list">
 				<button
-					className={ `folder-list__item ${
+					className={ `folder-list__item all-media ${
 						selectedFolder.id === -1 ? 'folder-list__item--active' : ''
 					}` }
 					onClick={ () => handleClick( -1 ) }
@@ -78,10 +78,11 @@ const App = () => {
 				</button>
 
 				<button
-					className={ `folder-list__item ${
+					className={ `folder-list__item tree-item ${
 						selectedFolder.id === 0 ? 'folder-list__item--active' : ''
 					}` }
 					onClick={ () => handleClick( 0 ) }
+					data-id={ 0 }
 				>
 					<p className="folder-list__text">{ __( 'Uncategorized', 'transcoder' ) }</p>
 				</button>
