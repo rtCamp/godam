@@ -125,6 +125,8 @@ $ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
 							</div>
 						<?php elseif ( 'html' === $layer['cta_type'] && ! empty( $layer['html'] ) ) : ?>
 							<?php echo wp_kses_post( $layer['html'] ); ?>
+						<?php elseif ( 'image' === $layer['cta_type'] && ! empty( $layer['image'] ) ) : ?>
+							<?php echo wp_kses_post( image_cta_html( $layer ) ); ?>
 						<?php endif; ?>
 					</div>
 					<?php

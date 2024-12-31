@@ -6,7 +6,13 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Modal, SelectControl, ToggleControl, ColorPalette } from '@wordpress/components';
+import {
+	Button,
+	Modal,
+	SelectControl,
+	ToggleControl,
+	ColorPalette,
+} from '@wordpress/components';
 import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
@@ -23,6 +29,7 @@ import LayerControls from '../LayerControls';
 const CTALayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const [ formHTML, setFormHTML ] = useState( '' );
+	const [ imageCtaUrl, setImageCtaUrl ] = useState( '' );
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
@@ -42,24 +49,75 @@ const CTALayer = ( { layerID, goBack } ) => {
 		);
 	};
 
+	const fetchOverlayMediaURL = ( mediaId ) => {
+		if ( 0 === mediaId || ! mediaId ) {
+			setImageCtaUrl( '' );
+			return;
+		}
+		fetch( `/wp-json/wp/v2/media/${ mediaId }` )
+			.then( ( response ) => {
+				if ( ! response.ok ) {
+					throw new Error( 'Media not found' );
+				}
+				return response.json();
+			} )
+			.then( ( media ) => {
+				setImageCtaUrl( media.source_url ); // URL of the media file
+			} );
+	};
+
 	const renderSelectedCTAInputs = () => {
 		switch ( layer?.cta_type ) {
-			case 'text': return <TextCTA layerID={ layer.id } />;
-			case 'image': return <ImageCTA layerID={ layer.id } />;
-			case 'html': return <HtmlCTA layerID={ layer.id } />;
-			default: <TextCTA layerID={ layer.id } />;
+			case 'text':
+				return <TextCTA layerID={ layer.id } />;
+			case 'image':
+				return <ImageCTA layerID={ layer.id } />;
+			case 'html':
+				return <HtmlCTA layerID={ layer.id } />;
+			default:
+	<TextCTA layerID={ layer.id } />;
 		}
 	};
 
+	const imageCtaHtml = () => {
+		return `<div class="${ 'portrait' === layer?.imageCtaOrientation ? 'vertical-image-cta-container' : 'image-cta-container' }">
+					<img
+						src="${ imageCtaUrl }" 
+						alt="CTA ad"
+						height="300"
+						width="250"
+						style="opacity: ${ layer?.imageOpacity || 1 }" 
+					/>
+					<div class="image-cta-description">
+						${ layer?.imageText ? `<h2>${ layer.imageText }</h2>` : '' }
+						${ layer?.imageDescription ? `<p>${ layer.imageDescription }</p>` : '' }
+						<button class="image-cta-btn">
+							<a href="${ layer?.imageLink || '/' }" target="_blank">
+								${ layer?.imageCtaButtonText || 'Buy Now' }
+							</a>
+						</button>
+					</div>
+   				 </div>`;
+	};
+
 	useEffect( () => {
+		if ( ! layer ) {
+			return;
+		}
+
 		if ( 'text' === layer?.cta_type ) {
 			setFormHTML( layer.text );
 		} else if ( 'html' === layer?.cta_type ) {
 			setFormHTML( layer.html );
-		} else {
-			setFormHTML( '' );
+		} else if ( 'image' === layer?.cta_type ) {
+			fetchOverlayMediaURL( layer?.image );
+			if ( imageCtaUrl.length !== 0 ) {
+				setFormHTML( imageCtaHtml );
+			} else {
+				setFormHTML( '' );
+			}
 		}
-	}, [ layer ] );
+	}, [ layer, imageCtaUrl ] );
 
 	return (
 		<>
@@ -109,6 +167,10 @@ const CTALayer = ( { layerID, goBack } ) => {
 							label: 'HTML',
 							value: 'html',
 						},
+						{
+							label: 'Image',
+							value: 'image',
+						},
 					] }
 					value={ layer.cta_type }
 					onChange={ handleCTATypeSelect }
@@ -116,11 +178,20 @@ const CTALayer = ( { layerID, goBack } ) => {
 				{ renderSelectedCTAInputs() }
 
 				{ /* Layer background color */ }
-				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Layer background color', 'transcoder' ) }</label>
+				<label
+					htmlFor="custom-css"
+					className="text-[11px] uppercase font-medium mb-2"
+				>
+					{ __( 'Layer background color', 'transcoder' ) }
+				</label>
 				<ColorPalette
 					value={ layer.bg_color }
 					enableAlpha={ true }
-					onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
+					onChange={ ( value ) =>
+						dispatch(
+							updateLayerField( { id: layer.id, field: 'bg_color', value } ),
+						)
+					}
 				/>
 
 				{ /* Common settings */ }
@@ -128,31 +199,28 @@ const CTALayer = ( { layerID, goBack } ) => {
 					label={ __( 'Allow user to skip', 'transcoder' ) }
 					checked={ layer.allow_skip }
 					onChange={ ( value ) =>
-						dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
+						dispatch(
+							updateLayerField( { id: layer.id, field: 'allow_skip', value } ),
+						)
 					}
-					help={ __( 'If enabled, the user will be able to skip the form submission.', 'transcoder' ) }
+					help={ __(
+						'If enabled, the user will be able to skip the form submission.',
+						'transcoder',
+					) }
 					className="mb-4"
 				/>
 			</div>
 			<LayerControls>
 				<>
-					<div
-						style={ {
-							backgroundColor: layer.bg_color,
-						} }
-						className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70 my-auto"
-					>
+					<div className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70 my-auto">
 						<div className="h-full flex items-center">
-							<div className="max-w-[400px] w-full mx-auto">
-								<div
-									className="ql-editor prose"
-									dangerouslySetInnerHTML={ { __html: formHTML } }
-								/>
-							</div>
+							<div
+								className={ `${ 'image' === layer?.cta_type ? 'm-auto' : 'max-w-[400px]' } mx-auto text-black text-5xl` }
+								dangerouslySetInnerHTML={ { __html: formHTML } }
+							/>
 						</div>
 					</div>
-					{
-						layer.allow_skip &&
+					{ layer.allow_skip && (
 						<Button
 							className="absolute bottom-6 right-0"
 							variant="primary"
@@ -162,7 +230,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 						>
 							{ __( 'Skip', 'transcoder' ) }
 						</Button>
-					}
+					) }
 				</>
 			</LayerControls>
 		</>
