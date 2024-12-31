@@ -34,7 +34,7 @@ const CustomAdSettings = ( { layerID } ) => {
 
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
-			dispatch( updateLayerField( { id: layerID, field: 'adVideoUrl', value: attachment.url } ) );
+			dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: attachment.url } ) );
 		} );
 
 		fileFrame.open();
@@ -46,27 +46,29 @@ const CustomAdSettings = ( { layerID } ) => {
 				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom Ad', 'transcoder' ) }</label>
 				<div className="flex gap-2">
 					<Button
+						__nextHasNoMarginBottom
 						className="mb-2"
 						variant="primary"
 						onClick={ () => OpenVideoSelector() }
-					>{ layer?.adVideoUrl ? __( 'Replace Ad video', 'transcoder' ) : __( 'Select Ad video', 'transcoder' ) }</Button>
+					>{ layer?.ad_url ? __( 'Replace Ad video', 'transcoder' ) : __( 'Select Ad video', 'transcoder' ) }</Button>
 					{
-						layer?.adVideoUrl &&
+						layer?.ad_url &&
 						<Button
 							variant="secondary"
 							isDestructive
-							onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'adVideoUrl', value: '' } ) ) }
+							onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) }
 						>{ __( 'Remove Ad video', 'transcoder' ) }</Button>
 
 					}
 				</div>
 				{
-					layer?.adVideoUrl &&
-					<video src={ layer.adVideoUrl } controls />
+					layer?.ad_url &&
+					<video src={ layer.ad_url } controls />
 				}
 			</div>
 
 			<ToggleControl
+				__nextHasNoMarginBottom
 				className="mb-4"
 				label={ __( 'Skippable', 'transcoder' ) }
 				checked={ layer?.skippable ?? false }
@@ -80,13 +82,22 @@ const CustomAdSettings = ( { layerID } ) => {
 				<TextControl
 					label={ __( 'Skip time', 'transcoder' ) }
 					help={ __( 'Time in seconds after which the skip button will appear', 'transcoder' ) }
-					value={ layer?.skipTime }
+					value={ layer?.skip_offset }
 					className="mb-4"
-					onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'skipTime', value } ) ) }
+					onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'skip_offset', value } ) ) }
 					type="number"
 					min="0"
 				/>
 			}
+
+			<TextControl
+				label={ __( 'Click link', 'transcoder' ) }
+				placeholder="https://example"
+				help={ __( 'Enter the URL to redirect when the ad is clicked', 'transcoder' ) }
+				value={ layer?.click_link }
+				className="mb-4"
+				onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'click_link', value } ) ) }
+			/>
 
 		</>
 	);

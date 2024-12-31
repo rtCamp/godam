@@ -23,7 +23,7 @@ const Layer = ( { layer, goBack } ) => {
 				layer.type === 'hotspot' && <HotspotLayer layerID={ layer.id } goBack={ goBack } />
 			}
 			{
-				layer.type === 'ads' && <Ads layerID={ layer.id } goBack={ goBack } />
+				layer.type === 'ad' && <Ads layerID={ layer.id } goBack={ goBack } />
 			}
 		</>
 	);
