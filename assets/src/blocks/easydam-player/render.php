@@ -41,30 +41,47 @@ $video_setup = wp_json_encode(
 		'easydam_meta' => $easydam_meta_data,
 	)
 );
+
+$layers     = $easydam_meta_data['layers'] ?? array();
+$ads_layers = array_filter(
+	$layers,
+	function ( $layer ) {
+		return 'ad' === $layer['type'];
+	}
+);
+$ad_tag_url = '';
+
+$ad_server = isset( $easydam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $easydam_meta_data['videoConfig']['adServer'] ) : '';
+
+if ( 'ad-server' === $ad_server ) :
+	$ad_tag_url = isset( $easydam_meta_data['videoConfig']['adTagURL'] ) ? $easydam_meta_data['videoConfig']['adTagURL'] : '';
+elseif ( 'self-hosted' === $ad_server && ! empty( $ads_layers ) ) :
+	$ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
+endif;
+
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
+	<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
 	<div class="easydam-video-container">
 		<video
 			class="easydam-player video-js vjs-big-play-centered"
 			data-setup="<?php echo esc_attr( $video_setup ); ?>"
+			data-ad_tag_url="<?php echo esc_url_raw( $ad_tag_url ); ?>"
 			data-id="<?php echo esc_attr( $attachment_id ); ?>" 
 		>
 			<?php
 			foreach ( $sources as $source ) :
 				if ( ! empty( $source['src'] ) && ! empty( $source['type'] ) ) :
 					?>
-						<source
-							src="<?php echo esc_url( $source['src'] ); ?>"
-							type="<?php echo esc_attr( $source['type'] ); ?>"
-						/>
-						<?php
+					<source
+						src="<?php echo esc_url( $source['src'] ); ?>"
+						type="<?php echo esc_attr( $source['type'] ); ?>"
+					/>
+					<?php
 				endif;
 			endforeach;
-			?>
 
-			<?php
 			foreach ( $tracks as $track ) :
 				if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
 					?>
@@ -86,10 +103,11 @@ $video_setup = wp_json_encode(
 			<figcaption><?php echo esc_html( $caption ); ?></figcaption>
 		<?php endif; ?>
 
-		<!-- Dynamically render shortcodes for form layers -->
+		<!-- Dynamically render shortcodes for form layers. -->
 		<?php
 		if ( ! empty( $easydam_meta_data['layers'] ) ) :
 			foreach ( $easydam_meta_data['layers'] as $layer ) :
+				// FORM layer.
 				if ( isset( $layer['type'] ) && 'form' === $layer['type'] && ! empty( $layer['gf_id'] ) ) :
 					?>
 					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
@@ -106,7 +124,10 @@ $video_setup = wp_json_encode(
 							?>
 						</div>
 					</div>
-				<?php elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) : ?>
+					<?php
+					// CTA layer.
+				elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) :
+					?>
 					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
 						<?php if ( 'text' === $layer['cta_type'] ) : ?>
 							<div class="ql-editor easydam-layer--cta-text">
@@ -114,14 +135,24 @@ $video_setup = wp_json_encode(
 							</div>
 						<?php elseif ( 'html' === $layer['cta_type'] && ! empty( $layer['html'] ) ) : ?>
 							<?php echo wp_kses_post( $layer['html'] ); ?>
+						<?php elseif ( 'image' === $layer['cta_type'] && ! empty( $layer['image'] ) ) : ?>
+							<?php echo wp_kses_post( image_cta_html( $layer ) ); ?>
 						<?php endif; ?>
 					</div>
 					<?php
+					// HOTSPOT layer.
+				elseif ( isset( $layer['type'] ) && 'hotspot' === $layer['type'] ) :
+					?>
+					<div
+						id="layer-<?php echo esc_attr( $layer['id'] ); ?>"
+						class="easydam-layer hidden hotspot-layer"
+					>
+					</div>
+					<?php
 				endif;
-			endforeach;
-		endif;
-		?>
+				?>
+			<?php endforeach; ?>
+		<?php endif; ?>
 	</div>
 </figure>
-	<?php
-endif;
+<?php endif; ?>

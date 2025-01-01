@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 
@@ -26,6 +26,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	const [ video, setVideo ] = useState( null );
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
+	const playerInstance = useRef( null );
 
 	const dispatch = useDispatch();
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
@@ -71,7 +72,7 @@ const VideoEditor = ( { attachmentID } ) => {
 									name: 'layers',
 									title: 'Layers',
 									className: 'flex-1 justify-center items-center',
-									component: <SidebarLayers currentTime={ currentTime } />,
+									component: <SidebarLayers currentTime={ currentTime } onSelectLayer={ ( layerTime ) => seekToLayerTime( layerTime ) } />,
 								},
 								{
 									name: 'video-settings',
