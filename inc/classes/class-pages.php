@@ -38,7 +38,7 @@ class Pages {
 	}
 
 	/**
-	 * To enqueue scripts and styles. in block editor and frontend.
+	 * To enqueue scripts and styles in block editor and frontend.
 	 *
 	 * @return void
 	 */
