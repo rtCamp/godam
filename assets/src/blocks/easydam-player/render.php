@@ -49,7 +49,16 @@ $ads_layers = array_filter(
 		return 'ad' === $layer['type'];
 	}
 );
-$ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
+$ad_tag_url = '';
+
+$ad_server = isset( $easydam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $easydam_meta_data['videoConfig']['adServer'] ) : '';
+
+if ( 'ad-server' === $ad_server ) :
+	$ad_tag_url = isset( $easydam_meta_data['videoConfig']['adTagURL'] ) ? $easydam_meta_data['videoConfig']['adTagURL'] : '';
+elseif ( 'self-hosted' === $ad_server && ! empty( $ads_layers ) ) :
+	$ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
+endif;
+
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
@@ -58,7 +67,7 @@ $ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
 		<video
 			class="easydam-player video-js vjs-big-play-centered"
 			data-setup="<?php echo esc_attr( $video_setup ); ?>"
-			data-ad_tag_url="<?php echo esc_url( ! empty( $ads_layers ) ? esc_url( $ad_tag_url ) : '' ); ?>"
+			data-ad_tag_url="<?php echo esc_url_raw( $ad_tag_url ); ?>"
 		>
 			<?php
 			foreach ( $sources as $source ) :
