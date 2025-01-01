@@ -146,12 +146,12 @@ class Ads extends Base {
 		// Prepare GET request for VMAP.
 		$vast_url = add_query_arg(
 			array(
-				'duration'     => $ad_duration,
-				'title'        => $ad_title,
-				'skippable'    => $skippable,
-				'skip_offset'  => $skip_offset,
-				'ad_url'       => $ad_url,
-				'click_link'   => $click_link,
+				'duration'    => $ad_duration,
+				'title'       => $ad_title,
+				'skippable'   => $skippable,
+				'skip_offset' => $skip_offset,
+				'ad_url'      => $ad_url,
+				'click_link'  => $click_link,
 			),
 			$endpoint_url 
 		);

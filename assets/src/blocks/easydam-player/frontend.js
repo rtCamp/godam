@@ -66,8 +66,8 @@ function easyDAMPlayer() {
 				for ( const layerObj of formLayers ) {
 					if (
 						layerObj.show && // Only display if 'show' is true
-						currentTime >= layerObj.displayTime &&
-						layerObj.layerElement.classList.contains( 'hidden' )
+            currentTime >= layerObj.displayTime &&
+            layerObj.layerElement.classList.contains( 'hidden' )
 					) {
 						// Show the layer
 						layerObj.layerElement.classList.remove( 'hidden' );
@@ -101,7 +101,8 @@ function easyDAMPlayer() {
 		// Prevent video resume from external interactions
 		player.on( 'play', () => {
 			const isAnyLayerVisible = formLayers.some(
-				( layerObj ) => ! layerObj.layerElement.classList.contains( 'hidden' ) && layerObj.show,
+				( layerObj ) =>
+					! layerObj.layerElement.classList.contains( 'hidden' ) && layerObj.show,
 			);
 
 			if ( isAnyLayerVisible ) {
@@ -122,7 +123,9 @@ function easyDAMPlayer() {
 			// Observe changes in the layer's DOM for the confirmation message
 			const observer = new MutationObserver( ( mutations ) => {
 				mutations.forEach( ( mutation ) => {
-					if ( layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ) {
+					if (
+						layerObj.layerElement.querySelector( '.gform_confirmation_message' )
+					) {
 						// Update the Skip button to Continue
 						skipButton.textContent = 'Continue';
 						skipButton.classList.remove( 'hidden' );
@@ -132,7 +135,10 @@ function easyDAMPlayer() {
 			} );
 
 			// Start observing the layer's element for child list changes
-			observer.observe( layerObj.layerElement, { childList: true, subtree: true } );
+			observer.observe( layerObj.layerElement, {
+				childList: true,
+				subtree: true,
+			} );
 
 			skipButton.addEventListener( 'click', () => {
 				layerObj.show = false; // Set to false to prevent re-displaying
@@ -149,24 +155,28 @@ function easyDAMPlayer() {
 
 		// store heatmap information
 		const existingRanges = [];
+		let lastTime = 0;
 
-		// let duration = video.duration;
-		// video.addEventListener( 'durationchange', function() {
-		// 	duration = video.duration;
-		// } );
+		player.on( 'timeupdate', function() {
+			const currentTime = player.currentTime();
+			const played = player.played();
 
-		video.addEventListener( 'timeupdate', function() {
-			const ranges = existingRanges.slice();
+			// Check if we've jumped backwards (replay)
+			if ( currentTime < lastTime ) {
+				// Add new range entry when user jumps back
+				existingRanges.push( copyRanges( played ) );
+			} else if ( existingRanges.length === 0 ) {
+				existingRanges.push( copyRanges( played ) );
+			} else {
+				existingRanges[ existingRanges.length - 1 ] = copyRanges( played );
+			}
 
-			ranges.push( copyRanges( video.played ) );
-
-			// updateHeatmap( ranges );
+			updateHeatmap( existingRanges );
+			lastTime = currentTime;
 		} );
 
 		function copyRanges( timeRanges ) {
 			const copy = [];
-
-			console.log(timeRanges);
 
 			for ( let i = 0; i < timeRanges.length; i++ ) {
 				copy.push( [ timeRanges.start( i ), timeRanges.end( i ) ] );
@@ -178,27 +188,24 @@ function easyDAMPlayer() {
 		function updateHeatmap( ranges ) {
 			const videoId = video.getAttribute( 'data-id' );
 			const url = `/wp-json/wp/v2/media/${ videoId }`;
-			const metadata = JSON.stringify( ranges );
-			// console.log(window);
+
+			const data = JSON.stringify( {
+				easydam_analytics: ranges,
+			} );
 
 			fetch( url, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.nonceData.nonce,
 				},
-				body: metadata,
+				body: data,
 			} )
 				.then( ( response ) => {
 					if ( ! response.ok ) {
 						throw new Error( `HTTP error! Status: ${ response.status }` );
 					}
 					return response.json();
-				} )
-				.then( ( data ) => {
-					console.log( 'Metadata updated successfully:', data );
-				} )
-				.catch( ( error ) => {
-					console.error( 'Error saving metadata:', error );
 				} );
 		}
 	} );

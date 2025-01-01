@@ -34,6 +34,31 @@ class Pages {
 		add_action( 'admin_menu', array( $this, 'add_admin_pages' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
+		add_action( 'enqueue_block_assets', array( $this, 'handle_block_assets' ) );
+	}
+
+	/**
+	 * To enqueue scripts and styles. in block editor and frontend.
+	 *
+	 * @return void
+	 */
+	public function handle_block_assets() {
+	
+		wp_enqueue_script(
+			'block-frontend-script',
+			RT_TRANSCODER_URL . 'assets/build/blocks/easydam-player/frontend.js',
+			array( 'wp-element' ),
+			filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/easydam-player/frontend.js' ),
+			true
+		);
+
+		wp_localize_script(
+			'block-frontend-script',
+			'nonceData',
+			array(
+				'nonce' => wp_create_nonce( 'wp_rest' ),
+			)
+		);
 	}
 
 	/**
@@ -137,8 +162,6 @@ class Pages {
 	public function admin_enqueue_scripts( $hook_suffix ) {
 		$screen = get_current_screen();
 
-		print_r($screen);
-
 		if ( $screen && in_array( $screen->id, array( 'toplevel_page_easydam', 'easydam_page_video_editor', 'easydam_page_analytics' ), true ) ) {
 			wp_register_style(
 				'transcoder-page-style-easydam',
@@ -201,6 +224,17 @@ class Pages {
 				array( 'wp-element' ),
 				filemtime( RT_TRANSCODER_PATH . 'pages/build/analytics.js' ),
 				true
+			);
+
+			// Pass dynamic data to React using wp_localize_script.
+			wp_localize_script(
+				'transcoder-page-script-analytics',
+				'videoData',
+				array(
+					'nonce'            => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
+					'currentUserId'    => get_current_user_id(),            // Current user ID.
+					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
+				)
 			);
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 		}

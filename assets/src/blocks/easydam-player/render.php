@@ -49,7 +49,7 @@ $video_setup = wp_json_encode(
 		<video
 			class="easydam-player video-js vjs-big-play-centered"
 			data-setup="<?php echo esc_attr( $video_setup ); ?>"
-			data-id="<?php echo esc_attr( $attachment_id); ?>" 
+			data-id="<?php echo esc_attr( $attachment_id ); ?>" 
 		>
 			<?php
 			foreach ( $sources as $source ) :
