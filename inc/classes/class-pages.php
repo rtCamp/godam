@@ -159,7 +159,7 @@ class Pages {
 	 *
 	 * @return void
 	 */
-	public function admin_enqueue_scripts( $hook_suffix ) {
+	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
 		if ( $screen && in_array( $screen->id, array( 'toplevel_page_easydam', 'easydam_page_video_editor', 'easydam_page_analytics' ), true ) ) {
