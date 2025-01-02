@@ -49,7 +49,7 @@ const Video = ( { attachmentID, videoData, currentTime, setCurrentTime } ) => {
 	};
 	return (
 		video && (
-			<div className="max-w-[740px] w-full">
+			<div className="max-w-[640px] w-full">
 				<h1 className="text-slate-700 mb-1">{ video.title.rendered }</h1>
 
 				<div className="relative">

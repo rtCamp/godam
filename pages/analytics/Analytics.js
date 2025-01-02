@@ -14,8 +14,8 @@ const Chart = ( { data, duration, width } ) => {
 	const opacity = ( 100 / data.length ) / 100;
 
 	return (
-		<div id="chart" className="chart" style={ { width } }>
-			{ data.map( ( ranges, rangeIndex ) =>
+		<div id="chart" className="chart mt-4" style={ { width } }>
+			{ data && data.map( ( ranges, rangeIndex ) =>
 				ranges.map( ( range, index ) => (
 					<div
 						key={ `${ rangeIndex }-${ index }` }
