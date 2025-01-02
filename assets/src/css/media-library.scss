@@ -41,3 +41,52 @@
 		}
 	}
 }
+
+/**
+ * AWS S3 upload status styles.
+ */
+.attachment-s3-status {
+	position: absolute;
+	top: 8px; /* Adjust positioning */
+	right: 8px;
+	display: flex;
+	align-items: center;
+	z-index: 10;
+	transition: transform 0.2s ease, opacity 0.3s ease;
+}
+
+.attachment-s3-status:hover::after {
+	content: "Uploaded to S3";
+	position: absolute;
+	top: 100%;
+	right: 0;
+	background-color: #333;
+	color: #fff;
+	padding: 5px 8px;
+	border-radius: 4px;
+	font-size: 12px;
+	white-space: nowrap;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Add animation and hover effect */
+.attachment-s3-status:hover {
+	transform: scale(1.1); /* Slightly enlarges the icon on hover */
+	opacity: 0.9; /* Adds slight fade effect */
+}
+
+/* Gradient and glow for Dashicon */
+.attachment-s3-status .dashicons {
+	font-size: 20px; /* Increase icon size */
+	background: linear-gradient(45deg, #28a745, #85e085); /* Gradient effect */
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	color: #28a745; /* Fallback for browsers that don't support text gradients */
+}
+
+/* Slightly increase glow on hover */
+.attachment-s3-status .dashicons:hover {
+	text-shadow: 0 0 12px rgba(40, 167, 69, 0.7), 0 0 16px rgba(40, 167, 69, 1);
+	transform: scale(1.2); /* Adds a slight bounce effect */
+}
+

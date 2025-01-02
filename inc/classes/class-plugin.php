@@ -21,6 +21,8 @@ use Transcoder\Inc\REST_API\Media_Library;
 use Transcoder\Inc\REST_API\Ads;
 use Transcoder\Inc\REST_API\Transcoding;
 
+use \Transcoder\Inc\Providers\Media_Filters;
+
 /**
  * Class Plugin.
  */
@@ -44,7 +46,7 @@ class Plugin {
 		$this->load_plugin_configs();
 		$this->load_rest_api();
 
-
+		Media_Filters::get_instance();
 
 		// Add a custom "Edit Video" button for video files in the Media Library.
 		add_filter(

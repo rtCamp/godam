@@ -1,11 +1,9 @@
 
 /* global jQuery */
 
-const Attachments = wp.media.view.Attachments;
-
 const $ = jQuery;
 
-const Attachment = wp.media.view.Attachment.extend( {
+const Attachment = wp?.media?.view?.Attachment?.extend( {
 
 	initialize() {
 		wp.media.view.Attachment.prototype.initialize.call( this );
@@ -21,7 +19,7 @@ const Attachment = wp.media.view.Attachment.extend( {
 			 * Using arrow function here is necessary to bind the context of `this` to the parent view.
 			 * Otherwise, `this` will refer to the draggable instance.
 			 *
-			 * Otherwise you would have ot use timeout function to wait for the initialization of the view.
+			 * not using it here would result in you having to use timeout function to wait for the initialization of the view.
 			 */
 			helper: () => {
 				// Get the current selection from Backbone's state
@@ -61,20 +59,24 @@ const Attachment = wp.media.view.Attachment.extend( {
 		} );
 	},
 
-} );
-
-export default Attachments.extend( {
-
-	initialize() {
-		// Call the parent initialize method
-		Attachments.prototype.initialize.call( this );
-
+	render() {
 		/**
-		 * Override the default AttachmentView with our custom view.
+		 * Finish the parent's render method call before making custom modifications.
 		 *
-		 * This custom view will attach the draggable event to the attachment element.
+		 * This is necessary because the parent's render method will set up the view's element and other properties.
 		 */
-		this.options.AttachmentView = Attachment;
-	},
+		wp.media.view.Attachment.prototype.render.call( this );
 
+		if ( this.model.get( 's3_url' ) ) {
+			this.$el.append( `
+				<div class="attachment-s3-status">
+					<span class="dashicons dashicons-cloud"></span>
+				</div>
+			` );
+		}
+
+		return this;
+	},
 } );
+
+export default Attachment;
