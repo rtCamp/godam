@@ -10,7 +10,7 @@ export default Attachments?.extend( {
 
 	initialize() {
 		// Call the parent initialize method
-		Attachments.prototype.initialize.call( this );
+		Attachments.prototype.initialize.apply( this, arguments );
 
 		if ( Attachment ) {
 			/**

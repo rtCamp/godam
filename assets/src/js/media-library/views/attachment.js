@@ -5,6 +5,16 @@ const $ = jQuery;
 
 const Attachment = wp?.media?.view?.Attachment?.extend( {
 
+	/**
+	 * Enables the checkmark for bulk selection of items.
+	 *
+	 * While the exact cause and effect of this implementation are unclear, it is required to ensure the checkmark appears during bulk selection.
+	 * If any issues arise, this functionality should be reviewed as a potential source.
+	 */
+	buttons: {
+		check: true,
+	},
+
 	initialize() {
 		wp.media.view.Attachment.prototype.initialize.call( this );
 
