@@ -48,7 +48,7 @@ const slice = createSlice( {
 				brandingIcon: false,
 				appearanceColor: '',
 				hoverColor: '',
-				zoomLevel: 1,
+				zoomLevel: 0,
 				playButtonPosition: 'center',
 				controlBarPosition: 'horizontal',
 				customBrandImg: '',
@@ -80,6 +80,7 @@ const slice = createSlice( {
 		addLayer: ( state, action ) => {
 			const newLayer = action.payload;
 			state.layers.push( newLayer );
+			state.currentLayer = newLayer;
 			state.isChanged = true;
 		},
 		removeLayer: ( state, action ) => {

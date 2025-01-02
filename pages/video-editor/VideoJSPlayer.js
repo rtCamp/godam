@@ -1,11 +1,12 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 /**
  * External dependencies
  */
-import { useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
-import "video.js/dist/video-js.css";
-import "videojs-contrib-ads/dist/videojs.ads.css";
-import "videojs-ima/dist/videojs.ima.css";
+import { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import 'video.js/dist/video-js.css';
+import 'videojs-contrib-ads/dist/videojs.ads.css';
+import 'videojs-ima/dist/videojs.ima.css';
 import videojs from 'video.js';
 import 'videojs-contrib-ads';
 import 'videojs-ima';
@@ -13,16 +14,56 @@ import 'videojs-ima';
  * Internal dependencies
  */
 import EasyDAM from '../../assets/src/images/EasyDAM.png';
+import { setCurrentLayer } from './redux/slice/videoSlice';
+
+/**
+ * WordPress dependencies
+ */
+import { customLink, customPostType, preformatted, video } from '@wordpress/icons';
+import { __ } from '@wordpress/i18n';
+import { Icon } from '@wordpress/components';
+
+const layerTypes = [
+	{
+		title: __( 'Gravity Forms', 'transcoder' ),
+		icon: preformatted,
+		type: 'form',
+	},
+	{
+		title: __( 'CTA', 'transcoder' ),
+		icon: customLink,
+		type: 'cta',
+	},
+	{
+		title: __( 'Hotspot', 'transcoder' ),
+		icon: customPostType,
+		type: 'hotspot',
+	},
+	{
+		title: __( 'Ad', 'transcoder' ),
+		icon: video,
+		type: 'ad',
+	},
+];
 
 export const VideoJS = ( props ) => {
 	const videoRef = useRef( null );
 	const playerRef = useRef( null );
-	const { options, onReady, onTimeupdate } = props;
+	const { options, onReady, onTimeupdate, playbackTime } = props;
+
+	const [ duration, setDuration ] = useState( 0 );
+	const [ sliderValue, setSliderValue ] = useState( 0 );
+
+	const dispatch = useDispatch();
 
 	const videoMeta = useSelector( ( state ) => state.videoReducer );
 	const videoConfig = videoMeta.videoConfig;
 	const layers = videoMeta.layers;
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
+
+	const setCurrentTime = ( timeInSeconds ) => {
+		setSliderValue( timeInSeconds );
+	};
 
 	useEffect( () => {
 		// Make sure Video.js player is only initialized once
@@ -43,8 +84,13 @@ export const VideoJS = ( props ) => {
 				player.on( 'timeupdate', () => {
 					const currentTime = player.currentTime();
 					onTimeupdate( player, currentTime );
+					setCurrentTime( currentTime );
 				} );
 			}
+
+			player.on( 'loadedmetadata', () => {
+				setDuration( player.duration() );
+			} );
 		} else {
 			//handle skip timer control
 			const skipTime = videoConfig.controlBar.skipButtons.forward;
@@ -244,8 +290,6 @@ export const VideoJS = ( props ) => {
 	}, [ options ] );
 
 	useEffect( () => {
-		console.log( 'currentLayer:', currentLayer );
-
 		if ( playerRef.current ) {
 			const player = playerRef.current;
 
@@ -275,9 +319,124 @@ export const VideoJS = ( props ) => {
 	}, [ playerRef ] );
 
 	return (
-		<div className="relative" data-vjs-player>
-			<div ref={ videoRef } />
-			<div id="easydam-layer-placeholder" />
+		<>
+			<div className="relative" data-vjs-player>
+				<div ref={ videoRef } />
+				<div id="easydam-layer-placeholder" />
+			</div>
+
+			<div className="mt-2">Time: { playbackTime }</div>
+
+			<Slider
+				className="mt-8 mb-6"
+				value={ sliderValue }
+				onChange={ ( value ) => {
+					setSliderValue( value );
+					if ( playerRef.current ) {
+						playerRef.current.currentTime( value );
+						playerRef.current.pause();
+					}
+				} }
+				max={ duration }
+				layers={ layers }
+				onLayerSelect={ ( layer ) => {
+					dispatch( setCurrentLayer( layer ) );
+				} }
+			/>
+		</>
+	);
+};
+
+const Slider = ( props ) => {
+	const { max, value, onChange, className, layers, onLayerSelect } = props;
+
+	const [ sliderValue, setSliderValue ] = useState( value );
+	const [ hoverValue, setHoverValue ] = useState( null ); // Hover value
+
+	// Sort the array (ascending order)
+	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
+
+	const handleHover = ( e ) => {
+		const rect = e.target.getBoundingClientRect();
+		const offsetX = e.clientX - rect.left;
+		const percentage = offsetX / rect.width;
+		const val = percentage * max;
+		setHoverValue( val.toFixed( 2 ) );
+	};
+
+	const handleLeave = () => {
+		setHoverValue( null ); // Hide tooltip when not hovering
+	};
+
+	const formatTime = ( seconds ) => {
+		const minutes = Math.floor( seconds / 60 );
+		const remainingSeconds = Math.floor( seconds % 60 );
+		return `${ minutes }:${ remainingSeconds < 10 ? '0' : '' }${ remainingSeconds }`;
+	};
+
+	return (
+		<div className={ `slider ${ className }` }>
+			<input
+				style={ {
+					'--progress-value': `${ sliderValue / max * 100 }%`,
+				} }
+				type="range"
+				min="0"
+				step={ 0.01 }
+				max={ max }
+				className="slider-input"
+				value={ sliderValue }
+				onChange={ ( e ) => {
+					if ( onChange ) {
+						onChange( e.target.value );
+					}
+					setSliderValue( e.target.value );
+				} }
+				onMouseMove={ handleHover }
+				onMouseLeave={ handleLeave }
+			/>
+			{
+				hoverValue && hoverValue >= 0 && hoverValue <= max && (
+					<div className="tooltip" style={ { left: `${ hoverValue / max * 100 }%` } }>
+						{ formatTime( hoverValue ) }
+					</div>
+				)
+			}
+			{
+				sortedLayers.map( ( layer ) => {
+					const layerLeft = layer.displayTime / max * 100;
+
+					return (
+						// eslint-disable-next-line jsx-a11y/click-events-have-key-events
+						<div
+							key={ layer.id }
+							className="layer-indicator"
+							style={ {
+								left: `${ layerLeft }%`,
+								'--hover-width': layer?.duration ? `${ Math.min( ( layer.duration / max ) * 100, 100 - layerLeft ) }%` : '8px',
+							} }
+							onClick={ () => onLayerSelect( layer ) }
+						>
+							<div className="layer-indicator--container">
+								<div className="icon">
+									<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type ).icon } />
+									<div>
+										{ layer?.type?.toUpperCase() }
+										{
+											layer?.duration && (
+												<div className="duration">
+													for { layer.duration }s
+												</div>
+											)
+										}
+									</div>
+								</div>
+								<div className="info">{ formatTime( layer.displayTime ) }</div>
+							</div>
+						</div>
+					);
+				} )
+			}
 		</div>
 	);
 };

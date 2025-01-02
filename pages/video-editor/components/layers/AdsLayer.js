@@ -68,8 +68,9 @@ const CTALayer = ( { layerID, goBack } ) => {
 			</div>
 
 			<LayerControls>
-				<>
-				</>
+				<div className="absolute inset-0 px-4 py-8 bg-white bg-opacity-70 my-auto">
+					<h3 className="text-2xl font-semibold text-gray-500 absolute bottom-4 right-6">{ __( 'Self hosted video Ad', 'transcoder' ) }</h3>
+				</div>
 			</LayerControls>
 		</>
 	);
