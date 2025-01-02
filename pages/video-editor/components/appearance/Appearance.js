@@ -13,12 +13,14 @@ import '../../video-control.css';
 import {
 	Button,
 	CheckboxControl,
-	ColorPicker,
 	CustomSelectControl,
 	Icon,
 	RangeControl,
 	ColorPalette,
+	TabPanel,
+	TextareaControl,
 } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateVideoConfig } from '../../redux/slice/videoSlice';
 import EasyDAM from '../../../../assets/src/images/EasyDAM.png';
@@ -660,6 +662,61 @@ const Appearance = () => {
 							);
 						} }
 					/>
+				</div>
+
+				<div className="form-group">
+					<label
+						htmlFor="custom-hover-color"
+						className="text-[11px] uppercase font-bold mb-2"
+					>
+						{ __( 'Select Ad server', 'transcoder' ) }
+					</label>
+					<TabPanel
+						onSelect={ ( val ) => {
+							dispatch(
+								updateVideoConfig( {
+									adServer: val,
+								} ),
+							);
+						} }
+						initialTabName={ videoConfig.adServer ?? 'self-hosted' }
+						className="button-tabs"
+						tabs={ [
+							{
+								name: 'self-hosted',
+								title: 'Self Hosted Ads',
+								className: 'flex-1 justify-center items-center',
+								component: null,
+							},
+							{
+								name: 'ad-server',
+								title: "Ad Server\'s Ads",
+								className: 'flex-1 justify-center items-center',
+								component: <div className="mt-2">
+									<TextareaControl
+										label={ __( 'adTag URL', 'transcoder' ) }
+										help={ <>
+											<div>
+												{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads ', 'transcoder' ) }
+												<a href="https://support.google.com/admanager/answer/177207?hl=en" target="_blank" rel="noreferrer noopener" className="text-blue-500 underline">{ __( 'Learn more.', 'transcoder' ) }</a>
+											</div>
+										</>
+										}
+										value={ videoConfig.adTagURL }
+										onChange={ ( val ) => {
+											dispatch(
+												updateVideoConfig( {
+													adTagURL: val,
+												} ),
+											);
+										} }
+									/>
+								</div>,
+							},
+						] }
+					>
+						{ ( tab ) => tab.component }
+					</TabPanel>
 				</div>
 			</div>
 		</div>
