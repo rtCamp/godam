@@ -206,7 +206,6 @@ class RT_Transcoder_Handler {
 		}
 		// phpcs:enable
 
-		add_action( 'init', array( $this, 'handle_callback' ), 20 );
 		add_action( 'wp_ajax_rt_disable_transcoding', array( $this, 'disable_transcoding' ), 1 );
 		add_action( 'wp_ajax_rt_enable_transcoding', array( $this, 'enable_transcoding' ), 1 );
 		add_action( 'add_attachment', array( $this, 'after_upload_pdf' ) );
@@ -302,6 +301,12 @@ class RT_Transcoder_Handler {
 				}
 			}
 
+			$callback_url = RT_TRANSCODER_CALLBACK_URL;
+
+			if ( ! defined( 'RT_TRANSCODER_CALLBACK_URL' ) || empty( RT_TRANSCODER_CALLBACK_URL ) ) {
+				return;
+			}
+
 			$args = array(
 				'method'    => 'POST',
 				'sslverify' => false,
@@ -312,7 +317,7 @@ class RT_Transcoder_Handler {
 						'job_type'        => $job_type,
 						'job_for'         => $job_for,
 						'file_origin'     => rawurlencode( $url ),
-						'callback_url'    => rawurlencode( trailingslashit( home_url() ) . 'index.php' ),
+						'callback_url'    => rawurlencode( $callback_url ),
 						'force'           => 0,
 						'formats'         => ( true === $autoformat ) ? ( ( 'video' === $type_array[0] ) ? 'mp4' : 'mp3' ) : $autoformat,
 						'thumbnail_count' => $options_video_thumb,
@@ -1158,166 +1163,6 @@ class RT_Transcoder_Handler {
 	}
 
 	/**
-	 * Function to handle the callback request by the FFMPEG transcoding server.
-	 *
-	 * @since 1.0.0
-	 */
-	public function handle_callback() {
-		require_once ABSPATH . 'wp-admin/includes/image.php';
-
-		$job_id      = transcoder_filter_input( INPUT_POST, 'job_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$file_status = transcoder_filter_input( INPUT_POST, 'file_status', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$error_msg   = transcoder_filter_input( INPUT_POST, 'error_msg', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$job_for     = transcoder_filter_input( INPUT_POST, 'job_for', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$thumbnail   = transcoder_filter_input( INPUT_POST, 'thumbnail', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$format      = transcoder_filter_input( INPUT_POST, 'format', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-
-		if ( ! empty( $job_id ) && ! empty( $file_status ) && ( 'error' === $file_status ) ) {
-			$this->nofity_transcoding_failed( $job_id, $error_msg );
-			echo esc_html__( 'Something went wrong. Invalid post request.', 'transcoder' );
-			die();
-		}
-
-		$mail = defined( 'RT_TRANSCODER_NO_MAIL' ) ? false : true;
-
-		$attachment_id = '';
-
-		if ( isset( $job_for ) && ( 'wp-media' === $job_for ) ) {
-			if ( isset( $job_id ) ) {
-				$has_thumbs = isset( $thumbnail ) ? true : false;
-				$flag       = false;
-
-				$id = $this->get_post_id_by_meta_key_and_value( '_rt_transcoding_job_id', $job_id );
-
-				if ( ! empty( $id ) && is_numeric( $id ) ) {
-					$attachment_id         = $id;
-					$post_array            = $this->filter_transcoder_response();
-					$post_array['post_id'] = $attachment_id;
-
-					if ( $has_thumbs && ! empty( $post_array['thumbnail'] ) ) {
-						$thumbnail = $this->add_media_thumbnails( $post_array );
-					}
-
-					if ( isset( $format ) && 'thumbnail' === sanitize_text_field( wp_unslash( $format ) ) ) {
-						die();
-					}
-
-					if ( ! empty( $post_array['files'] ) ) {
-						if ( ! empty( $post_array['files']['mpd'] ) ) {
-							update_post_meta( $attachment_id, '_rt_transcoded_url', $post_array['download_url'] );
-						} else {
-							$this->add_transcoded_files( $post_array['files'], $attachment_id, $job_for );
-						}
-					}
-				} else {
-					$flag = esc_html__( 'Something went wrong. The required attachment id does not exists. It must have been deleted.', 'transcoder' );
-				}
-
-				$this->update_usage( $this->api_key );
-
-				if ( $flag && $mail ) {
-					$subject = esc_html__( 'Transcoding: Download Failed', 'transcoder' );
-					$message = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'transcoder' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'transcoder' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p>';
-					$users   = get_users( array( 'role' => 'administrator' ) );
-					if ( $users ) {
-						$admin_email_ids = array();
-						foreach ( $users as $user ) {
-							$admin_email_ids[] = $user->user_email;
-						}
-						add_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-						wp_mail( $admin_email_ids, $subject, $message ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_mail_wp_mail
-						remove_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-					}
-					echo esc_html( $flag );
-				} else {
-					esc_html_e( 'Done', 'transcoder' );
-				}
-				die();
-			}
-		} else {
-
-			// To check if request is sumitted from the WP Job Manager plugin ( https://wordpress.org/plugins/wp-job-manager/ ).
-			$job_manager_form = transcoder_filter_input( INPUT_POST, 'job_manager_form', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-
-			if ( isset( $job_id ) && ! empty( $job_id ) && class_exists( 'RTDBModel' ) && empty( $job_manager_form ) ) {
-
-				$has_thumbs = isset( $thumbnail ) ? true : false;
-				$flag       = false;
-				$model      = new RTDBModel( 'rtm_media_meta', false, 10, true );
-
-				$meta_details = $model->get(
-					array(
-						'meta_value' => sanitize_text_field( wp_unslash( $job_id ) ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-						'meta_key'   => 'rtmedia-transcoding-job-id', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-					)
-				);
-
-				if ( ! isset( $meta_details[0] ) ) {
-					$id = $this->get_post_id_by_meta_key_and_value( '_rt_transcoding_job_id', $job_id );
-				} else {
-					$id = $meta_details[0]->media_id;
-				}
-
-				if ( isset( $id ) && is_numeric( $id ) ) {
-					$model              = new RTMediaModel();
-					$media              = $model->get_media( array( 'media_id' => $id ), 0, 1 );
-					$this->media_author = $media[0]->media_author;
-					$attachment_id      = $media[0]->media_id;
-
-					$post_array            = $this->filter_transcoder_response();
-					$post_array['post_id'] = $attachment_id;
-
-					if ( $has_thumbs ) {
-						$this->add_media_thumbnails( $post_array );
-					}
-
-					if ( isset( $format ) && 'thumbnail' === sanitize_text_field( wp_unslash( $format ) ) ) {
-						die();
-					}
-
-					if ( ! empty( $post_array['files'] ) ) {
-						$this->add_transcoded_files( $post_array['files'], $attachment_id, $job_for );
-					}
-				} else {
-					$flag = esc_html__( 'Something went wrong. The required attachment id does not exists. It must have been deleted.', 'transcoder' );
-				}
-
-				$this->update_usage( $this->api_key );
-
-				if ( $flag && $mail ) {
-					$subject = esc_html__( 'Transcoding: Download Failed', 'transcoder' );
-					$message = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'transcoder' ) . '</a> ' . esc_html__( ' was successfully transcoded but there was an error while downloading:', 'transcoder' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p><p>';
-					$users   = get_users( array( 'role' => 'administrator' ) );
-					if ( $users ) {
-						$admin_email_ids = array();
-						foreach ( $users as $user ) {
-							$admin_email_ids[] = $user->user_email;
-						}
-						add_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-						wp_mail( $admin_email_ids, $subject, $message ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_mail_wp_mail
-						remove_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-					}
-					echo esc_html( $flag );
-				} else {
-					esc_html_e( 'Done', 'transcoder' );
-				}
-				die();
-			}
-		}
-
-		/**
-		 * Allow users/plugins to perform action after response received from the transcoder is
-		 * processed
-		 *
-		 * @since 1.0.9
-		 *
-		 * @param number    $attachment_id  Attachment ID for which the callback has sent from the transcoder
-		 * @param number    $job_id         The transcoding job ID
-		 */
-		do_action( 'rtt_handle_callback_finished', $attachment_id, $job_id );
-	}
-
-	/**
 	 * Disable transcoding.
 	 *
 	 * @since 1.0.0
@@ -1661,44 +1506,5 @@ class RT_Transcoder_Handler {
 		}
 
 		$this->wp_media_transcoding( array( 'mime_type' => 'application/pdf' ), $post_id );
-	}
-
-	/**
-	 * Sanitize transcoder post respopnse array.
-	 */
-	private function filter_transcoder_response() {
-		$post_var = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-
-		$filter_post_args = array(
-			'job_id'       => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-			'job_type'     => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-			'job_for'      => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-			'format'       => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-			'download_url' => FILTER_SANITIZE_URL,
-			'file_name'    => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-			'thumb_count'  => FILTER_SANITIZE_NUMBER_INT,
-			'status'       => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-			'error_msg'    => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-			'error_code'   => FILTER_SANITIZE_FULL_SPECIAL_CHARS,
-		);
-
-		$post_array          = filter_input_array( INPUT_POST, $filter_post_args );
-		$post_array['files'] = array();
-		if ( ! empty( $post_var['files']['mp4'][0] ) ) {
-			$post_array['files']['mp4'][] = filter_var( $post_var['files']['mp4'][0], FILTER_SANITIZE_URL );
-		} elseif ( ! empty( $post_var['files']['mp3'][0] ) ) {
-			$post_array['files']['mp3'][] = filter_var( $post_var['files']['mp3'][0], FILTER_SANITIZE_URL );
-		} elseif ( ! empty( $post_var['files']['mpd'][0] ) ) {
-			$post_array['files']['mpd'][] = filter_var( $post_var['files']['mpd'][0], FILTER_SANITIZE_URL );
-		}
-
-		$post_array['thumbnail'] = array();
-		if ( ! empty( $post_var['thumbnail'] ) && is_array( $post_var['thumbnail'] ) ) {
-			foreach ( $post_var['thumbnail'] as $thumbnail_url ) {
-				$post_array['thumbnail'][] = filter_var( $thumbnail_url, FILTER_SANITIZE_URL );
-			}
-		}
-
-		return $post_array;
 	}
 }
