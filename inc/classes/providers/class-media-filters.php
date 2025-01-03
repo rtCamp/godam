@@ -85,7 +85,7 @@ class Media_Filters {
 
 			try {
 				$item_handler = new Item_Handler();
-				$uploaded = $item_handler->upload_item( $post_id );
+				$uploaded     = $item_handler->upload_item( $post_id );
 			} catch ( \Exception $e ) {
 				$uploaded = false;
 			}
@@ -96,10 +96,13 @@ class Media_Filters {
 		}
 	
 		// Add query args to the redirect URL for feedback
-		$redirect_to = add_query_arg( array(
-			'bulk_upload_to_s3' => $success_count,
-			'bulk_upload_to_s3_error' => count( $post_ids ) - $success_count,
-		), $redirect_to );
+		$redirect_to = add_query_arg(
+			array(
+				'bulk_upload_to_s3'       => $success_count,
+				'bulk_upload_to_s3_error' => count( $post_ids ) - $success_count,
+			),
+			$redirect_to 
+		);
 	
 		return $redirect_to;
 	}
@@ -171,25 +174,25 @@ class Media_Filters {
 
 		// Verify user permissions
 		if ( ! current_user_can( 'upload_files' ) ) {
-			wp_send_json_error( [ 'error' => __( 'Permission denied.', 'transcoder' ) ] );
+			wp_send_json_error( array( 'error' => __( 'Permission denied.', 'transcoder' ) ) );
 		}
 
 		// Get the post ID from the request
 		$post_id = isset( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : 0;
 
 		if ( ! $post_id ) {
-			wp_send_json_error( [ 'error' => __( 'Invalid Post ID.', 'transcoder' ) ] );
+			wp_send_json_error( array( 'error' => __( 'Invalid Post ID.', 'transcoder' ) ) );
 		}
 
-		$this->handle_media_upload( [], $post_id );
+		$this->handle_media_upload( array(), $post_id );
 
 		$s3_url = get_post_meta( $post_id, 's3_url', true );
 
 		if ( empty( $s3_url ) ) {
-			wp_send_json_error( [ 'error' => __( 'Failed to upload to S3.', 'transcoder' ) ] );
+			wp_send_json_error( array( 'error' => __( 'Failed to upload to S3.', 'transcoder' ) ) );
 		}
 
-		wp_send_json_success( [ 'url' => esc_url( $s3_url ) ] );
+		wp_send_json_success( array( 'url' => esc_url( $s3_url ) ) );
 
 	}
 }

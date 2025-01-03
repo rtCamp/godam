@@ -46,8 +46,8 @@ class EasyDamException extends Exception {
 		parent::__construct( $message, $code );
 
 		$this->show_notice    = $show_notice;
-		$this->notice_type    = $notice_type;
 		$this->notice_message = $notice_message;
+		$this->notice_type    = $notice_type;
 	}
 
 	/**

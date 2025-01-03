@@ -4,18 +4,27 @@
  *
  * @package transcoder
  */
+
 namespace Transcoder\Inc\Providers\Storage;
 
-use Transcoder\Inc\Providers\Storage\AWS;
-
+use Transcoder\Inc\EasyDAM_Constants;
 use Transcoder\Inc\Traits\Singleton;
+use Transcoder\Inc\Providers\Storage\AWS;
+use Transcoder\Inc\Providers\Exceptions\EasyDamException;
 
+/**
+ * A factory class to create storage provider clients.
+ * 
+ * This class is a singleton and should be used to get the storage provider client.
+ */
 class StorageFactory {
 
 	use Singleton;
 
 	/**
 	 * Provider client.
+	 * 
+	 * @var \Transcoder\Inc\Providers\Storage\Base
 	 */
 	private $provider_client = null; 
 
@@ -35,7 +44,6 @@ class StorageFactory {
 	 * Create a storage provider client based on database settings.
 	 *
 	 * @return \Transcoder\Inc\Providers\Storage\Base The storage provider client.
-	 * @throws \Exception If the provider is not supported.
 	 */
 	private function create() {
 		$provider_name = 'aws';
@@ -52,14 +60,13 @@ class StorageFactory {
 	 *
 	 * @return array The provider configuration.
 	 *
-	 * @throws \Exception If the configuration is missing or incomplete.
+	 * @throws EasyDamException If the configuration is missing or incomplete.
 	 */
 	private function get_config( $provider_name ) {
-		// TODO: store the database setting key name in some constant.
-		$options = get_option( 'easydam_storage_aws' );
+		$options = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
 	
 		if ( ! $options || ! isset( $options[ $provider_name ] ) ) {
-			throw new \Exception( "Configuration for provider $provider_name is missing." );
+			throw new EasyDamException( "Configuration for provider $provider_name is missing.", 404 );
 		}
 	
 		$provider_config = $options[ $provider_name ];
@@ -68,7 +75,7 @@ class StorageFactory {
 		$required_keys = array( 'accessKey', 'secretKey' );
 		foreach ( $required_keys as $key ) {
 			if ( empty( $provider_config[ $key ] ) ) {
-				throw new \Exception( "Missing '$key' for provider." );
+				throw new EasyDamException( "Missing '$key' for provider.", 404 );
 			}
 		}
 	

@@ -56,7 +56,7 @@ class AWS extends Base {
 	public function upload( $file, $name ) {
 		try {
 			if ( empty( $this->bucket ) ) {
-				throw new \RuntimeException(
+				throw new EasyDamException(
 					'Bucket name is missing.',
 					400
 				);
@@ -105,39 +105,70 @@ class AWS extends Base {
 	 * Get the list of buckets from the storage provider.
 	 *
 	 * @return array
+	 * @throws EasyDamException If the operation fails.
 	 */
 	public function get_buckets() {
-		$buckets     = $this->client->listBuckets();
-		$bucket_list = array();
-		foreach ( $buckets['Buckets'] as $bucket ) {
-			$bucket_list[] = $bucket['Name'];
+
+		try {
+			$buckets     = $this->client->listBuckets();
+			$bucket_list = array();
+			foreach ( $buckets['Buckets'] as $bucket ) {
+				$bucket_list[] = $bucket['Name'];
+			}
+			return $bucket_list;
+		} catch ( AwsException $e ) {
+			throw new EasyDamException(
+				$e->getAwsErrorMessage(),
+				$e->getCode(),
+				true
+			);
 		}
-		return $bucket_list;
 	}
 
 	/**
 	 * Check whether the provided credentials can read from the storage provider.
 	 * 
-	 * @return void
+	 * @return bool True if the credentials can read, false otherwise.
+	 * @throws EasyDamException If the operation fails.
 	 */
 	public function can_write() {
 		try {
-			$this->client->putObject([
-				'Bucket' => $this->bucket,
-				'Key'    => 'test-file.txt',
-				'Body'   => 'THIS IS A DUMMY TEXT FILE FROM EASYDAM PLUGIN. THIS FILE CAN BE DELETED.',
-			]);
 
-			$this->client->deleteObject([
-				'Bucket' => $this->bucket,
-				'Key'    => 'test-file.txt',
-			]);
+			if ( empty( $this->bucket ) ) {
+				throw new EasyDamException(
+					'Bucket name is missing.',
+					400
+				);
+			}
+
+			$this->client->putObject(
+				array(
+					'Bucket' => $this->bucket,
+					'Key'    => 'test-file.txt',
+					'Body'   => 'THIS IS A DUMMY TEXT FILE FROM EASYDAM PLUGIN. THIS FILE CAN BE DELETED.',
+				)
+			);
+
+			$this->client->deleteObject(
+				array(
+					'Bucket' => $this->bucket,
+					'Key'    => 'test-file.txt',
+				)
+			);
+
+			return true;
 
 		} catch ( AwsException $e ) {
 			throw new EasyDamException(
 				$e->getAwsErrorMessage(),
 				$e->getCode(),
-				true,
+				true
+			);
+		} catch ( \Exception $e ) {
+			throw new EasyDamException(
+				$e->getMessage(),
+				404,
+				true
 			);
 		}
 	}

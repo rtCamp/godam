@@ -7,7 +7,8 @@
 
 namespace Transcoder\Inc\REST_API;
 
-use Transcoder\Inc\Providers\Storage\StorageFactory;
+use Transcoder\Inc\EasyDAM_Constants;
+use Transcoder\Inc\Providers\Handlers\Storage_Handler;
 
 /**
  * Class Settings
@@ -120,7 +121,7 @@ class Settings extends Base {
 						return current_user_can( 'manage_options' );
 					},
 					'args'                => array(
-						'bucketPath' => array(
+						'bucketPath'   => array(
 							'type'              => 'string',
 							'description'       => 'The bucket path to save.',
 							'sanitize_callback' => 'sanitize_text_field',
@@ -130,21 +131,16 @@ class Settings extends Base {
 							'description'       => 'The offload media to save.',
 							'sanitize_callback' => 'rest_sanitize_boolean',
 						),
-						'removeLocalMedia' => array(
-							'type'              => 'boolean',
-							'description'       => 'The remove local media to save.',
-							'sanitize_callback' => 'rest_sanitize_boolean',
-						),
-						'aws' => array(
-							'type'              => 'object',
-							'description'       => 'AWS credentials and settings.',
-							'properties'        => array(
+						'aws'          => array(
+							'type'        => 'object',
+							'description' => 'AWS credentials and settings.',
+							'properties'  => array(
 								'accessKey' => array(
 									'type'              => 'string',
 									'description'       => 'The AWS access key.',
 									'sanitize_callback' => 'sanitize_text_field',
 								),
-								'bucket' => array(
+								'bucket'    => array(
 									'type'              => 'string',
 									'description'       => 'The AWS bucket name.',
 									'sanitize_callback' => 'sanitize_text_field',
@@ -180,7 +176,7 @@ class Settings extends Base {
 						return current_user_can( 'manage_options' );
 					},
 				),
-			)
+			),
 		);
 	}
 
@@ -435,7 +431,6 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_aws_settings( $request ) {
-		// Get the AWS settings from the options table.
 		$settings = get_option( 'easydam_storage_aws' );
 	
 		// If settings are not found, return a default empty array.
@@ -443,7 +438,6 @@ class Settings extends Base {
 			$settings = array();
 		}
 	
-		// Return the settings as the response.
 		return new \WP_REST_Response( $settings, 200 );
 	}
 
@@ -457,36 +451,37 @@ class Settings extends Base {
 	public function update_aws_settings( $data ) {
 		// Fetch existing settings from the database.
 		$existing_settings = get_option(
-			'easydam_storage_aws',
+			EasyDAM_Constants::S3_STORAGE_OPTIONS,
 			array(
-				'bucketPath'       => '',
-				'offLoadMedia'     => false,
-				'aws'              => array(
+				'bucketPath'   => '',
+				'offLoadMedia' => false,
+				'aws'          => array(
 					'accessKey' => '',
 					'secretKey' => '',
 					'bucket'    => '',
 				),
-		) );
+			) 
+		);
 
 		// Merge existing settings with new data, ensuring only updated values are replaced.
 		$updated_settings = array_merge(
 			$existing_settings,
 			array_filter(
 				array(
-					'bucketPath'       => $data['bucketPath'] ?? null,
-					'offLoadMedia'     => $data['offLoadMedia'] ?? null,
-					'aws'              => isset( $data['aws'] ) && is_array( $data['aws'] )
+					'bucketPath'   => $data['bucketPath'] ?? null,
+					'offLoadMedia' => $data['offLoadMedia'] ?? null,
+					'aws'          => isset( $data['aws'] ) && is_array( $data['aws'] )
 						? array_merge( $existing_settings['aws'], $data['aws'] )
 						: null,
 				),
 				function ( $value ) {
-					return $value !== null;
+					return null !== $value;
 				}
 			)
 		);
 
 		// Update the option in the database.
-		update_option( 'easydam_storage_aws', $updated_settings );
+		update_option( EasyDAM_Constants::S3_STORAGE_OPTIONS, $updated_settings );
 
 		return new \WP_REST_Response(
 			array(
@@ -497,41 +492,23 @@ class Settings extends Base {
 		);
 	}
 
+	/**
+	 * Get the list of buckets.
+	 *
+	 * @return \WP_REST_Response
+	 */
 	public function get_buckets() {
-		try {
-			$client = StorageFactory::get_instance()->get_provider();
-
-			$buckets = $client->get_buckets();
-	
-			return new \WP_REST_Response( $buckets, 200 );
-
-		} catch ( \Exception $e ) {
-			return new \WP_REST_Response( array( 'message' => $e->getMessage() ), 500 );
-		}
+		return Storage_Handler::get_buckets();
 	}
 
+	/**
+	 * Test the credentials.
+	 * 
+	 * Test the credentials for the storage provider.
+	 *
+	 * @return \WP_REST_Response
+	 */
 	public function test_credentials() {
-		try {
-			$client = StorageFactory::get_instance()->get_provider();
-
-			$client->can_write();
-	
-			return new \WP_REST_Response(
-				array(
-					'status'  => 'success',
-					'message' => 'Credentials are valid and can write successfully.',
-				),
-				200
-			);
-
-		} catch ( \Exception $e ) {
-			return new \WP_REST_Response(
-				array(
-					'status'  => 'failed',
-					'message' => $e->getMessage(),
-				),
-				200
-			);
-		}
+		return Storage_Handler::check_credentials();
 	}
 }

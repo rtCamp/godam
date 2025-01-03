@@ -102,11 +102,11 @@ class Item_Handler {
 	 */
 	public function delete_item( $attachment_id ) {
 
-		$s3_url = get_post_meta( $attachment_id, 's3_url', true );
+		$s3_url   = get_post_meta( $attachment_id, 's3_url', true );
 		$provider = StorageFactory::get_instance()->get_provider();
 
 		// get only the file name from the URL.
-		$s3_url = basename( $s3_url );
+		$s3_url    = basename( $s3_url );
 		$base_path = $this->get_settings_base_path();
 
 		$s3_url = $base_path . $s3_url;
