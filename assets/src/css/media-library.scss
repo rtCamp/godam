@@ -26,6 +26,13 @@
 	display: none !important;
 }
 
+.media-library-upload-to-s3 {
+
+	&.hidden {
+		display: none;
+	}
+}
+
 /**
  * Transcoding status bar for media library styles.
  */

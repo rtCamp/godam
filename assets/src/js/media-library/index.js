@@ -40,7 +40,9 @@ document.addEventListener( 'DOMContentLoaded', function() {
 } );
 
 /**
- * Temp
+ * Temporary
+ *
+ * TODO: Figure out how to merge this and the attachment browser together nicely to follow the DRY principle.
  */
 document.addEventListener( 'DOMContentLoaded', () => {
 	const inputElement = document.getElementById( 'media-date-range-filter' );
@@ -69,8 +71,6 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	const initializeDateRangeFromQueryParams = () => {
 		const startDateParam = getQueryParam( 'date-start' );
 		const endDateParam = getQueryParam( 'date-end' );
-
-
 
 		if ( startDateParam && endDateParam ) {
 			const startDate = parseDate( startDateParam );
@@ -175,4 +175,3 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	// Set initial placeholder value
 	inputElement.value = 'Date Range';
 } );
-
