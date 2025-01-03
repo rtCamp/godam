@@ -15,7 +15,10 @@
 	vertical-align: middle;
 }
 
-#media-attachment-date-filters {
+#media-attachment-date-filters,
+#filter-by-date,
+#media-date-range-filter-start,
+#media-date-range-filter-end {
 	display: none !important;
 }
 
@@ -51,7 +54,7 @@
 	right: 8px;
 	display: flex;
 	align-items: center;
-	z-index: 10;
+	z-index: 9;
 	transition: transform 0.2s ease, opacity 0.3s ease;
 }
 

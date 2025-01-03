@@ -14,12 +14,11 @@ const { __ } = wp.i18n;
  * Internal dependencies
  */
 import AWSEdit from './components/AWSEdit.jsx';
-import { setBucketPath, setNotice, setOffLoadMedia, setRemoveLocalMedia, setSettings } from '../redux/slice/settings.js';
+import { setBucketPath, setNotice, setOffLoadMedia, setSettings } from '../redux/slice/settings.js';
 import { useGetAWSSettingsQuery, useSaveAWSSettingsMutation } from '../redux/api/settings.js';
 
 const StorageSettings = () => {
 	const offLoadMedia = useSelector( ( state ) => state.settings.offLoadMedia );
-	const removeLocalMedia = useSelector( ( state ) => state.settings.removeLocalMedia );
 	const bucketPath = useSelector( ( state ) => state.settings.bucketPath );
 	const awsBucket = useSelector( ( state ) => state.settings.aws.bucket );
 
@@ -44,19 +43,34 @@ const StorageSettings = () => {
 	const handleSaveSettings = async () => {
 		const data = {
 			offLoadMedia,
-			removeLocalMedia,
 			bucketPath,
 		};
 
-		try {
-			await saveMediaSettings( data ).unwrap();
+		dispatch(
+			setNotice( {
+				status: 'info',
+				message: '',
+			} ),
+		);
 
-			dispatch(
-				setNotice( {
-					status: 'success',
-					message: __( 'Settings saved successfully.', 'transcoder' ),
-				} ),
-			);
+		try {
+			const response = await saveMediaSettings( data ).unwrap();
+
+			if ( response.validated ) {
+				dispatch(
+					setNotice( {
+						status: 'success',
+						message: __( 'Settings saved successfully.', 'transcoder' ),
+					} ),
+				);
+			} else {
+				dispatch(
+					setNotice( {
+						status: 'error',
+						message: response.error || __( 'Failed to save settings. Please try different settings.', 'transcoder' ),
+					} ),
+				);
+			}
 		} catch {
 			dispatch(
 				setNotice( {
@@ -101,15 +115,6 @@ const StorageSettings = () => {
 						help={ __( 'Synchronizes newly added media files from WordPress local storage to the configured storage provider.', 'transcoder' ) }
 						checked={ offLoadMedia }
 						onChange={ () => dispatch( setOffLoadMedia( ! offLoadMedia ) ) }
-					/>
-				</div>
-
-				<div className="mb-4">
-					<ToggleControl
-						label={ __( 'Remove from Local Storage', 'transcoder' ) }
-						help={ 'Remove the media from local storage after it has been successfully uploaded to the configured storage provider.' }
-						checked={ removeLocalMedia }
-						onChange={ () => dispatch( setRemoveLocalMedia( ! removeLocalMedia ) ) }
 					/>
 				</div>
 

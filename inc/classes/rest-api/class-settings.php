@@ -7,6 +7,8 @@
 
 namespace Transcoder\Inc\REST_API;
 
+use Transcoder\Inc\Providers\Storage\StorageFactory;
+
 /**
  * Class Settings
  */
@@ -155,6 +157,17 @@ class Settings extends Base {
 							),
 						),
 					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/get-buckets',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_buckets' ),
+					'permission_callback' => function () {
+						return true;
+					},
 				),
 			),
 		);
@@ -435,7 +448,6 @@ class Settings extends Base {
 		$existing_settings = get_option( 'easydam_storage_aws', array(
 			'bucketPath'       => '',
 			'offLoadMedia'     => false,
-			'removeLocalMedia' => false,
 			'aws'              => array(
 				'accessKey' => '',
 				'secretKey' => '',
@@ -450,7 +462,6 @@ class Settings extends Base {
 				array(
 					'bucketPath'       => $data['bucketPath'] ?? null,
 					'offLoadMedia'     => $data['offLoadMedia'] ?? null,
-					'removeLocalMedia' => $data['removeLocalMedia'] ?? null,
 					'aws'              => isset( $data['aws'] ) && is_array( $data['aws'] )
 						? array_merge( $existing_settings['aws'], $data['aws'] )
 						: null,
@@ -464,6 +475,47 @@ class Settings extends Base {
 		// Update the option in the database.
 		update_option( 'easydam_storage_aws', $updated_settings );
 
-		return new \WP_REST_Response( array( 'message' => 'AWS settings updated successfully.' ), 200 );
+		return $this->test_credentials();
+	}
+
+	public function get_buckets() {
+		try {
+			$client = StorageFactory::get_instance()->get_provider();
+
+			$buckets = $client->get_buckets();
+	
+			return new \WP_REST_Response( $buckets, 200 );
+
+		} catch ( \Exception $e ) {
+			return new \WP_REST_Response( array( 'message' => $e->getMessage() ), 500 );
+		}
+	}
+
+	public function test_credentials() {
+		try {
+			$client = StorageFactory::get_instance()->get_provider();
+
+			$client->can_write();
+	
+			return new \WP_REST_Response(
+				array(
+					'status'    => 'success',
+					'validated' => true,
+					'message'   => 'Credentials are valid and can write successfully.',
+				),
+				200
+			);
+
+		} catch ( \Exception $e ) {
+			return new \WP_REST_Response(
+				array(
+					'status'    => 'success', // Still return 200 as per your requirement.
+					'validated' => false,
+					'message'   => 'Credentials validation failed.',
+					'error'     => $e->getMessage(),
+				),
+				200
+			);
+		}
 	}
 }

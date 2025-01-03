@@ -13,8 +13,9 @@ const { __ } = wp.i18n;
 /**
  * Internal dependencies
  */
-import { setAWSAccessKey, setAWSBucket, setAWSSecretKey, setNotice } from '../../redux/slice/settings';
+import { setAWSAccessKey, setAWSSecretKey, setNotice } from '../../redux/slice/settings';
 import { useSaveAWSSettingsMutation } from '../../redux/api/settings';
+import BucketSelector from './BucketSelector.jsx';
 
 const AWSEdit = () => {
 	const [ isEditOpen, setIsEditOpen ] = useState( false );
@@ -26,17 +27,33 @@ const AWSEdit = () => {
 	const [ saveMediaSettings ] = useSaveAWSSettingsMutation();
 
 	const handleSaveSettings = async () => {
+		dispatch(
+			setNotice( {
+				status: 'info',
+				message: '',
+			} ),
+		);
+
 		try {
 			const data = { aws };
 
-			await saveMediaSettings( data ).unwrap();
+			const response = await saveMediaSettings( data ).unwrap();
 
-			dispatch(
-				setNotice( {
-					status: 'success',
-					message: __( 'Settings saved successfully.', 'transcoder' ),
-				} ),
-			);
+			if ( response.validated ) {
+				dispatch(
+					setNotice( {
+						status: 'success',
+						message: __( 'Settings saved successfully.', 'transcoder' ),
+					} ),
+				);
+			} else {
+				dispatch(
+					setNotice( {
+						status: 'error',
+						message: response.error || __( 'Failed to save settings. Please try different settings.', 'transcoder' ),
+					} ),
+				);
+			}
 		} catch {
 			dispatch(
 				setNotice( {
@@ -87,12 +104,9 @@ const AWSEdit = () => {
 						value={ aws.secretKey }
 						onChange={ ( value ) => dispatch( setAWSSecretKey( value ) ) }
 					/>
-					<TextControl
-						label={ __( 'Bucket Name', 'transcoder' ) }
-						placeholder={ __( 'Enter your AWS S3 Bucket Name', 'transcoder' ) }
-						value={ aws.bucket }
-						onChange={ ( value ) => dispatch( setAWSBucket( value ) ) }
-					/>
+
+					<BucketSelector />
+
 					<div className="flex justify-end space-x-4">
 						<Button
 							variant="secondary"

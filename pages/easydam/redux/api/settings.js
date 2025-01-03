@@ -15,6 +15,14 @@ export const settingsApi = createApi( {
 				},
 			} ),
 		} ),
+		getBuckets: builder.query( {
+			query: () => ( {
+				url: 'get-buckets',
+				headers: {
+					'X-WP-Nonce': window.wpApiSettings.nonce,
+				},
+			} ),
+		} ),
 		saveAWSSettings: builder.mutation( {
 			query: ( settings ) => ( {
 				url: 'aws',
@@ -25,7 +33,16 @@ export const settingsApi = createApi( {
 				body: settings,
 			} ),
 		} ),
+		validateSettings: builder.query( {
+			query: () => ( {
+				url: 'validate-settings',
+				method: 'GET',
+				headers: {
+					'X-WP-Nonce': window.wpApiSettings.nonce,
+				},
+			} ),
+		} ),
 	} ),
 } );
 
-export const { useGetAWSSettingsQuery, useSaveAWSSettingsMutation } = settingsApi;
+export const { useGetAWSSettingsQuery, useGetBucketsQuery, useSaveAWSSettingsMutation } = settingsApi;

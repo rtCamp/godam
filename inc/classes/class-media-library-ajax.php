@@ -35,6 +35,28 @@ class Media_Library_Ajax {
 		add_action( 'pre_get_posts', array( $this, 'pre_get_post_filter' ) );
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
+
+		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_folder_to_attachment' ), 10, 3 );
+		add_filter( 'bulk_actions-upload', array( $this, 'add_bulk_actions' ) );
+	}
+
+	public function add_bulk_actions( $actions ) {
+		$actions['upload_to_s3'] = __( 'Upload to S3', 'transcoder' );
+		return $actions;
+	}
+
+	public function add_media_folder_to_attachment( $response, $attachment, $meta ) {
+		
+		// Check if S3 url is present to S3 attachment meta.
+		$s3_url = get_post_meta( $attachment->ID, 's3_url', true );
+
+		if ( ! empty( $s3_url ) ) {
+			$response['s3_url'] = $s3_url;
+		} else {
+			$response['s3_url'] = false;
+		}
+
+		return $response;
 	}
 
 	/**
@@ -133,6 +155,21 @@ class Media_Library_Ajax {
 			}
 
 			unset( $query->query_vars['media-folder'] );
+
+			if ( isset( $_GET['date-start'] ) && isset( $_GET['date-end'] ) ) {
+				$query->set(
+					'date_query',
+					array(
+						'relation' => 'AND',
+						array(
+							'after' => sanitize_text_field( $_GET['date-start'] ),
+						),
+						array(
+							'before' => sanitize_text_field( $_GET['date-end'] ),
+						),
+					)
+				);
+			}
 		}
 	}
 
@@ -187,6 +224,11 @@ class Media_Library_Ajax {
 				);
 			}
 			echo '</select>';
+
+			// Render the date range filter.
+			echo '<input id="media-date-range-filter" />';
+			echo '<input id="media-date-range-filter-start" name="date-start" />';
+			echo '<input id="media-date-range-filter-end" name="date-end" />';
 		}
 	}
 

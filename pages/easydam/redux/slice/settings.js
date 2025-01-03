@@ -12,7 +12,6 @@ const slice = createSlice( {
 			bucket: '',
 		},
 		offLoadMedia: false,
-		removeLocalMedia: false,
 		bucketPath: 'wp-content/uploads',
 
 		notice: {
@@ -23,12 +22,11 @@ const slice = createSlice( {
 	reducers: {
 		setSettings( state, action ) {
 			state.offLoadMedia = action.payload.offLoadMedia ?? false;
-			state.removeLocalMedia = action.payload.removeLocalMedia ?? false;
 			state.bucketPath = action.payload.bucketPath ?? 'wp-content/uploads';
 
-			state.aws.accessKey = action.payload.aws.accessKey ?? '';
-			state.aws.secretKey = action.payload.aws.secretKey ?? '';
-			state.aws.bucket = action.payload.aws.bucket ?? '';
+			state.aws.accessKey = action.payload.aws?.accessKey ?? '';
+			state.aws.secretKey = action.payload.aws?.secretKey ?? '';
+			state.aws.bucket = action.payload.aws?.bucket ?? '';
 		},
 		setAWSAccessKey( state, action ) {
 			state.aws.accessKey = action.payload;
@@ -60,7 +58,6 @@ export const {
 	setAWSSecretKey,
 	setAWSBucket,
 	setOffLoadMedia,
-	setRemoveLocalMedia,
 	setBucketPath,
 	setNotice,
 } = slice.actions;
