@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useSelector, useDispatch } from 'react-redux';
+import { useEffect } from 'react';
 
 /**
  * WordPress dependencies
@@ -12,16 +13,21 @@ const { __ } = wp.i18n;
 /**
  * Internal dependencies
  */
-import { setAWSBucket } from '../../redux/slice/settings';
-import { useGetBucketsQuery } from '../../redux/api/settings';
+import { setAWSBucket } from '../../redux/slice/storage';
+import { useGetBucketsQuery } from '../../redux/api/storage';
 
 const BucketSelector = () => {
-	const { data, isLoading, isSuccess } = useGetBucketsQuery();
+	const { data, isLoading, isSuccess, refetch, isRefetching } = useGetBucketsQuery();
+	const shouldRefetch = useSelector( ( state ) => state.storage.shouldRefetch );
 
-	const aws = useSelector( ( state ) => state.settings.aws );
+	const aws = useSelector( ( state ) => state.storage.aws );
 	const dispatch = useDispatch();
 
-	if ( isLoading ) {
+	useEffect( () => {
+		refetch();
+	}, [ shouldRefetch, refetch ] );
+
+	if ( isLoading || isRefetching ) {
 		return <p>Loading...</p>;
 	}
 

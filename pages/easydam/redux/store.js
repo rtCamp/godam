@@ -6,13 +6,13 @@ import { configureStore } from '@reduxjs/toolkit';
 /**
  * Internal dependencies
  */
-import SettingsReducer from './slice/settings';
-import { settingsApi } from './api/settings';
+import StorageReducer from './slice/storage';
+import { storageAPI } from './api/storage';
 
 export default configureStore( {
 	reducer: {
-		settings: SettingsReducer,
-		[ settingsApi.reducerPath ]: settingsApi.reducer,
+		storage: StorageReducer,
+		[ storageAPI.reducerPath ]: storageAPI.reducer,
 	},
-	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat( settingsApi.middleware ),
+	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat( storageAPI.middleware ),
 } );

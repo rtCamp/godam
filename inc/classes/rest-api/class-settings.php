@@ -166,10 +166,21 @@ class Settings extends Base {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_buckets' ),
 					'permission_callback' => function () {
-						return true;
+						return current_user_can( 'manage_options' );
 					},
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/validate-credentials',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'test_credentials' ),
+					'permission_callback' => function () {
+						return current_user_can( 'manage_options' );
+					},
+				),
+			)
 		);
 	}
 
@@ -445,14 +456,16 @@ class Settings extends Base {
 	 */
 	public function update_aws_settings( $data ) {
 		// Fetch existing settings from the database.
-		$existing_settings = get_option( 'easydam_storage_aws', array(
-			'bucketPath'       => '',
-			'offLoadMedia'     => false,
-			'aws'              => array(
-				'accessKey' => '',
-				'secretKey' => '',
-				'bucket'    => '',
-			),
+		$existing_settings = get_option(
+			'easydam_storage_aws',
+			array(
+				'bucketPath'       => '',
+				'offLoadMedia'     => false,
+				'aws'              => array(
+					'accessKey' => '',
+					'secretKey' => '',
+					'bucket'    => '',
+				),
 		) );
 
 		// Merge existing settings with new data, ensuring only updated values are replaced.
@@ -475,7 +488,13 @@ class Settings extends Base {
 		// Update the option in the database.
 		update_option( 'easydam_storage_aws', $updated_settings );
 
-		return $this->test_credentials();
+		return new \WP_REST_Response(
+			array(
+				'status'  => 'success',
+				'message' => 'AWS settings updated successfully!',
+			),
+			200
+		);
 	}
 
 	public function get_buckets() {
@@ -499,9 +518,8 @@ class Settings extends Base {
 	
 			return new \WP_REST_Response(
 				array(
-					'status'    => 'success',
-					'validated' => true,
-					'message'   => 'Credentials are valid and can write successfully.',
+					'status'  => 'success',
+					'message' => 'Credentials are valid and can write successfully.',
 				),
 				200
 			);
@@ -509,10 +527,8 @@ class Settings extends Base {
 		} catch ( \Exception $e ) {
 			return new \WP_REST_Response(
 				array(
-					'status'    => 'success', // Still return 200 as per your requirement.
-					'validated' => false,
-					'message'   => 'Credentials validation failed.',
-					'error'     => $e->getMessage(),
+					'status'  => 'failed',
+					'message' => $e->getMessage(),
 				),
 				200
 			);

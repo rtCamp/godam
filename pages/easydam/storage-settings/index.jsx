@@ -13,16 +13,20 @@ const { __ } = wp.i18n;
 /**
  * Internal dependencies
  */
+import { setBucketPath, setNotice, setOffLoadMedia, setSettings, triggerRefresh } from '../redux/slice/storage.js';
+import { useGetAWSSettingsQuery, useSaveAWSSettingsMutation } from '../redux/api/storage.js';
+
 import AWSEdit from './components/AWSEdit.jsx';
-import { setBucketPath, setNotice, setOffLoadMedia, setSettings } from '../redux/slice/settings.js';
-import { useGetAWSSettingsQuery, useSaveAWSSettingsMutation } from '../redux/api/settings.js';
+import ValidationStatus from './components/ValidationStatus.jsx';
+import BucketSelector from './components/BucketSelector.jsx';
 
 const StorageSettings = () => {
-	const offLoadMedia = useSelector( ( state ) => state.settings.offLoadMedia );
-	const bucketPath = useSelector( ( state ) => state.settings.bucketPath );
-	const awsBucket = useSelector( ( state ) => state.settings.aws.bucket );
+	const offLoadMedia = useSelector( ( state ) => state.storage.offLoadMedia );
+	const bucketPath = useSelector( ( state ) => state.storage.bucketPath );
+	const aws = useSelector( ( state ) => state.storage.aws );
 
-	const notice = useSelector( ( state ) => state.settings.notice );
+	const notice = useSelector( ( state ) => state.storage.notice );
+	const validation = useSelector( ( state ) => state.storage.validation );
 
 	const [ saveMediaSettings ] = useSaveAWSSettingsMutation();
 
@@ -40,37 +44,21 @@ const StorageSettings = () => {
 		}
 	}, [ error, dispatch, settings ] );
 
-	const handleSaveSettings = async () => {
-		const data = {
-			offLoadMedia,
-			bucketPath,
-		};
-
-		dispatch(
-			setNotice( {
-				status: 'info',
-				message: '',
-			} ),
-		);
+	const handleSaveSettings = async ( data ) => {
+		// Clear any existing notices
+		dispatch( setNotice( { ...notice, message: '' } ) );
 
 		try {
-			const response = await saveMediaSettings( data ).unwrap();
+			await saveMediaSettings( data ).unwrap();
 
-			if ( response.validated ) {
-				dispatch(
-					setNotice( {
-						status: 'success',
-						message: __( 'Settings saved successfully.', 'transcoder' ),
-					} ),
-				);
-			} else {
-				dispatch(
-					setNotice( {
-						status: 'error',
-						message: response.error || __( 'Failed to save settings. Please try different settings.', 'transcoder' ),
-					} ),
-				);
-			}
+			dispatch(
+				setNotice( {
+					status: 'success',
+					message: __( 'Settings saved successfully.', 'transcoder' ),
+				} ),
+			);
+
+			dispatch( triggerRefresh() );
 		} catch {
 			dispatch(
 				setNotice( {
@@ -106,13 +94,21 @@ const StorageSettings = () => {
 				)
 			}
 
-			<AWSEdit />
+			<AWSEdit handleSaveSettings={ handleSaveSettings } />
+
+			<ValidationStatus />
 
 			<div className="mt-6 mx-2">
+
+				<div className="mb-6">
+					<BucketSelector />
+				</div>
+
 				<div className="mb-4">
 					<ToggleControl
 						label={ __( 'Offload Media', 'transcoder' ) }
 						help={ __( 'Synchronizes newly added media files from WordPress local storage to the configured storage provider.', 'transcoder' ) }
+						disabled={ ! validation.isValid }
 						checked={ offLoadMedia }
 						onChange={ () => dispatch( setOffLoadMedia( ! offLoadMedia ) ) }
 					/>
@@ -123,6 +119,7 @@ const StorageSettings = () => {
 						label={ __( 'Base Path', 'transcoder' ) }
 						help={ __( 'Specify the base path for storing media files in AWS S3.', 'transcoder' ) }
 						value={ bucketPath }
+						disabled={ ! validation.isValid }
 						onChange={ ( value ) => dispatch( setBucketPath( value ) ) }
 					/>
 				</div>
@@ -133,7 +130,7 @@ const StorageSettings = () => {
 					</h4>
 					<p className="text-gray-600">
 						<span className="text-blue-600 font-mono">
-							{ `https://${ awsBucket }.s3.amazonaws.com${ bucketPath }/my-image.jpg` }
+							{ `https://${ aws.bucket }.s3.amazonaws.com${ bucketPath }/my-image.jpg` }
 						</span>
 					</p>
 				</div>
@@ -143,7 +140,7 @@ const StorageSettings = () => {
 				<Button
 					variant="primary"
 					className="max-w-[140px] w-full flex justify-center items-center"
-					onClick={ handleSaveSettings }
+					onClick={ () => handleSaveSettings( { offLoadMedia, bucketPath, aws } ) }
 				>
 					{ __( 'Save settings', 'transcoder' ) }
 				</Button>

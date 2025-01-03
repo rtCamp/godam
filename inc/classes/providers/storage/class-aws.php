@@ -55,6 +55,13 @@ class AWS extends Base {
 	 */
 	public function upload( $file, $name ) {
 		try {
+			if ( empty( $this->bucket ) ) {
+				throw new \RuntimeException(
+					'Bucket name is missing.',
+					400
+				);
+			}
+
 			$result = $this->client->putObject(
 				array(
 					'Bucket'     => $this->bucket,
@@ -69,7 +76,7 @@ class AWS extends Base {
 			throw new EasyDamException(
 				$e->getAwsErrorMessage(),
 				$e->getCode(),
-				true,
+				true
 			);
 		}
 	}
@@ -100,7 +107,7 @@ class AWS extends Base {
 	 * @return array
 	 */
 	public function get_buckets() {
-		$buckets = $this->client->listBuckets();
+		$buckets     = $this->client->listBuckets();
 		$bucket_list = array();
 		foreach ( $buckets['Buckets'] as $bucket ) {
 			$bucket_list[] = $bucket['Name'];
@@ -115,14 +122,12 @@ class AWS extends Base {
 	 */
 	public function can_write() {
 		try {
-
 			$this->client->putObject([
 				'Bucket' => $this->bucket,
 				'Key'    => 'test-file.txt',
 				'Body'   => 'THIS IS A DUMMY TEXT FILE FROM EASYDAM PLUGIN. THIS FILE CAN BE DELETED.',
 			]);
 
-			// try to delete this file if it was created
 			$this->client->deleteObject([
 				'Bucket' => $this->bucket,
 				'Key'    => 'test-file.txt',

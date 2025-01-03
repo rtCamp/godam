@@ -13,56 +13,14 @@ const { __ } = wp.i18n;
 /**
  * Internal dependencies
  */
-import { setAWSAccessKey, setAWSSecretKey, setNotice } from '../../redux/slice/settings';
-import { useSaveAWSSettingsMutation } from '../../redux/api/settings';
-import BucketSelector from './BucketSelector.jsx';
+import { setAWSAccessKey, setAWSSecretKey } from '../../redux/slice/storage';
 
-const AWSEdit = () => {
+const AWSEdit = ( { handleSaveSettings } ) => {
 	const [ isEditOpen, setIsEditOpen ] = useState( false );
 
-	const aws = useSelector( ( state ) => state.settings.aws );
+	const aws = useSelector( ( state ) => state.storage.aws );
 
 	const dispatch = useDispatch();
-
-	const [ saveMediaSettings ] = useSaveAWSSettingsMutation();
-
-	const handleSaveSettings = async () => {
-		dispatch(
-			setNotice( {
-				status: 'info',
-				message: '',
-			} ),
-		);
-
-		try {
-			const data = { aws };
-
-			const response = await saveMediaSettings( data ).unwrap();
-
-			if ( response.validated ) {
-				dispatch(
-					setNotice( {
-						status: 'success',
-						message: __( 'Settings saved successfully.', 'transcoder' ),
-					} ),
-				);
-			} else {
-				dispatch(
-					setNotice( {
-						status: 'error',
-						message: response.error || __( 'Failed to save settings. Please try different settings.', 'transcoder' ),
-					} ),
-				);
-			}
-		} catch {
-			dispatch(
-				setNotice( {
-					status: 'error',
-					message: __( 'Failed to save settings. Please try again.', 'transcoder' ),
-				} ),
-			);
-		}
-	};
 
 	return (
 		<div className="mx-auto bg-white shadow-lg border border-gray-200 rounded-lg p-6 mt-4">
@@ -105,8 +63,6 @@ const AWSEdit = () => {
 						onChange={ ( value ) => dispatch( setAWSSecretKey( value ) ) }
 					/>
 
-					<BucketSelector />
-
 					<div className="flex justify-end space-x-4">
 						<Button
 							variant="secondary"
@@ -118,9 +74,14 @@ const AWSEdit = () => {
 						<Button
 							variant="primary"
 							className="bg-blue-500 text-white px-4 py-2 rounded"
-							onClick={ handleSaveSettings }
+							onClick={ () => handleSaveSettings( {
+								aws: {
+									accessKey: aws.accessKey,
+									secretKey: aws.secretKey,
+								},
+							} ) }
 						>
-							{ __( 'Save', 'transcoder' ) }
+							{ __( 'Connect', 'transcoder' ) }
 						</Button>
 					</div>
 				</div>

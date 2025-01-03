@@ -3,8 +3,8 @@
  */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-export const settingsApi = createApi( {
-	reducerPath: 'settingsApi',
+export const storageAPI = createApi( {
+	reducerPath: 'storageApi',
 	baseQuery: fetchBaseQuery( { baseUrl: '/wp-json/easydam/v1/settings/' } ),
 	endpoints: ( builder ) => ( {
 		getAWSSettings: builder.query( {
@@ -33,9 +33,9 @@ export const settingsApi = createApi( {
 				body: settings,
 			} ),
 		} ),
-		validateSettings: builder.query( {
+		validateCredentials: builder.query( {
 			query: () => ( {
-				url: 'validate-settings',
+				url: 'validate-credentials',
 				method: 'GET',
 				headers: {
 					'X-WP-Nonce': window.wpApiSettings.nonce,
@@ -45,4 +45,4 @@ export const settingsApi = createApi( {
 	} ),
 } );
 
-export const { useGetAWSSettingsQuery, useGetBucketsQuery, useSaveAWSSettingsMutation } = settingsApi;
+export const { useGetAWSSettingsQuery, useGetBucketsQuery, useSaveAWSSettingsMutation, useValidateCredentialsQuery } = storageAPI;

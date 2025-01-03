@@ -4,7 +4,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const slice = createSlice( {
-	name: 'settings',
+	name: 'storage',
 	initialState: {
 		aws: {
 			accessKey: '',
@@ -17,6 +17,13 @@ const slice = createSlice( {
 		notice: {
 			type: '',
 			message: '',
+		},
+
+		shouldRefetch: false,
+
+		validation: {
+			isValid: false,
+			errorMessage: '',
 		},
 	},
 	reducers: {
@@ -49,6 +56,12 @@ const slice = createSlice( {
 		setNotice( state, action ) {
 			state.notice = action.payload;
 		},
+		setValidation( state, action ) {
+			state.validation = action.payload;
+		},
+		triggerRefresh( state ) {
+			state.shouldRefetch = ! state.shouldRefetch;
+		},
 	},
 } );
 
@@ -60,6 +73,8 @@ export const {
 	setOffLoadMedia,
 	setBucketPath,
 	setNotice,
+	setValidation,
+	triggerRefresh,
 } = slice.actions;
 
 export default slice.reducer;

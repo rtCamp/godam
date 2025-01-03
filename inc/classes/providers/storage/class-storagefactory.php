@@ -38,17 +38,10 @@ class StorageFactory {
 	 * @throws \Exception If the provider is not supported.
 	 */
 	private function create() {
-
 		$provider_name = 'aws';
 
-		// Fetch configuration from the database (using Settings or similar class)
 		$config = $this->get_config( $provider_name );
 
-		if ( ! $config ) {
-			throw new \Exception( "Configuration for provider '$provider_name' is missing." );
-		}
-
-		// Create a new instance of the provider class
 		return new AWS( $config );
 	}
 
@@ -66,24 +59,24 @@ class StorageFactory {
 		$options = get_option( 'easydam_storage_aws' );
 	
 		if ( ! $options || ! isset( $options[ $provider_name ] ) ) {
-			throw new \Exception( "Configuration for provider '$provider_name' is missing." );
+			throw new \Exception( "Configuration for provider $provider_name is missing." );
 		}
 	
 		$provider_config = $options[ $provider_name ];
 	
 		// Ensure all necessary keys are present.
-		$required_keys = ['accessKey', 'secretKey', 'bucket'];
-		foreach ($required_keys as $key) {
-			if ( empty( $provider_config[$key] ) ) {
-				throw new \Exception( "Missing '$key' for provider '$provider_name'." );
+		$required_keys = array( 'accessKey', 'secretKey' );
+		foreach ( $required_keys as $key ) {
+			if ( empty( $provider_config[ $key ] ) ) {
+				throw new \Exception( "Missing '$key' for provider." );
 			}
 		}
 	
-		return [
+		return array(
 			'key'    => $provider_config['accessKey'],
 			'secret' => $provider_config['secretKey'],
-			'bucket' => $provider_config['bucket'],
-			'region' => 'us-east-1', // TODO: make this configurable
-		];
+			'bucket' => $provider_config['bucket'] ?? null,
+			'region' => 'us-east-1', // TODO: make this configurable.
+		);
 	}
 }
