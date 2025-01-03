@@ -85,6 +85,7 @@ export const VideoJS = ( props ) => {
 					const currentTime = player.currentTime();
 					onTimeupdate( player, currentTime );
 					setCurrentTime( currentTime );
+					setSliderValue( currentTime );
 				} );
 			}
 
@@ -263,6 +264,7 @@ export const VideoJS = ( props ) => {
 				player.on( 'timeupdate', () => {
 					const currentTime = player.currentTime();
 					onTimeupdate( player, currentTime );
+					setSliderValue( currentTime );
 				} );
 			}
 		}
@@ -334,7 +336,6 @@ export const VideoJS = ( props ) => {
 					setSliderValue( value );
 					if ( playerRef.current ) {
 						playerRef.current.currentTime( value );
-						playerRef.current.pause();
 					}
 				} }
 				max={ duration }
@@ -352,6 +353,10 @@ const Slider = ( props ) => {
 
 	const [ sliderValue, setSliderValue ] = useState( value );
 	const [ hoverValue, setHoverValue ] = useState( null ); // Hover value
+
+	useEffect( () => {
+		setSliderValue( value );
+	}, [ value ] );
 
 	// Sort the array (ascending order)
 	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
