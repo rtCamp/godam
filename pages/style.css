@@ -364,3 +364,30 @@ input, textarea, select {
   font-weight: 500;
   margin-bottom: 0.5rem;
 }
+
+.button-tabs {
+	border-bottom: none;
+}
+.button-tabs .components-tab-panel__tabs {
+	display: flex;
+	gap: 0.5rem;
+	border: none;
+}
+
+.button-tabs .is-active {
+	background-color: #1e1e1e;
+	color: #fff !important;
+}
+
+.button-tabs .is-active::after {
+	display: none;
+}
+
+.button-tabs .components-tab-panel__tabs-item {
+	border-radius: 2px;
+	box-shadow: inset 0 0 0 1px #ddd;
+}
+
+.button-tabs .components-tab-panel__tabs-item.is-active {
+	box-shadow: inset 0 0 0 1px #1e1e1e;
+}
