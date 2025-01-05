@@ -21,19 +21,15 @@ class Storage_Handler {
 	 * Get the list of all the buckets if accessKey and secretKey are provided.
 	 * Currently just returns REST response as that is where it is being used.
 	 *
-	 * @return \WP_REST_Response
+	 * @return array
+	 * @throws EasyDamException If cannot get buckets.
 	 */
 	public static function get_buckets() {
 
-		try {
-			$provider = StorageFactory::get_instance()->get_provider();
-			$buckets  = $provider->get_buckets();
+		$provider = StorageFactory::get_instance()->get_provider();
+		$buckets  = $provider->get_buckets();
 
-			return new \WP_REST_Response( $buckets, 200 );
-
-		} catch ( EasyDamException $e ) {
-			return Error_Handler::handle_exception( $e, true );
-		}
+		return $buckets;
 	}
 
 	/**
@@ -42,22 +38,13 @@ class Storage_Handler {
 	 * Check if the credentials are valid and can write to the storage.
 	 * Currently just returns REST response as that is where it is being used.
 	 *
-	 * @return \WP_REST_Response
+	 * @return void
+	 * @throws EasyDamException If the credentials are not valid.
 	 */
 	public static function check_credentials() {
-		try {
-			$provider = StorageFactory::get_instance()->get_provider();
-			$provider->can_write();
-			
-			$response = array(
-				'status'  => 'success',
-				'message' => 'Credentials are valid and can write storage.',
-			);
 
-			return new \WP_REST_Response( $response, 200 );
+		$provider = StorageFactory::get_instance()->get_provider();
+		$provider->can_write();
 
-		} catch ( EasyDamException $e ) {
-			return Error_Handler::handle_exception( $e, true );
-		}
 	}
 }

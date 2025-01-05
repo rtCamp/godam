@@ -41,12 +41,39 @@ class Media_Filters {
 		/*
 		 * Media column management.
 		 */
-		add_filter( 'manage_media_columns', array( $this, 'add_media_column' ) );
-		add_action( 'manage_media_custom_column', array( $this, 'media_column_value' ), 10, 2 );
 		add_action( 'wp_ajax_upload_to_s3', array( $this, 'handle_upload_to_s3' ) );
 
 		add_filter( 'handle_bulk_actions-upload', array( $this, 'handle_bulk_action_upload_to_s3' ), 10, 3 );
 		add_action( 'admin_notices', array( $this, 'bulk_action_notices' ) );
+	}
+
+
+	/**
+	 * Handle the upload to S3 request.
+	 *
+	 * @return void
+	 */
+	public function handle_upload_to_s3() {
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			wp_send_json_error( array( 'error' => __( 'Permission denied.', 'transcoder' ) ) );
+		}
+
+		$post_id = isset( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : 0;
+
+		if ( ! $post_id ) {
+			wp_send_json_error( array( 'error' => __( 'Invalid Post ID.', 'transcoder' ) ) );
+		}
+
+		$this->handle_media_upload( array(), $post_id );
+
+		$s3_url = get_post_meta( $post_id, 's3_url', true );
+
+		if ( empty( $s3_url ) ) {
+			wp_send_json_error( array( 'error' => __( 'Failed to upload to S3.', 'transcoder' ) ) );
+		}
+
+		wp_send_json_success( array( 'url' => esc_url( $s3_url ) ) );
 	}
 
 	public function bulk_action_notices() {
@@ -71,6 +98,7 @@ class Media_Filters {
 	}
 
 	public function handle_bulk_action_upload_to_s3( $redirect_to, $action, $post_ids ) {
+
 		if ( 'upload_to_s3' !== $action ) {
 			return $redirect_to; // Exit if not the correct bulk action
 		}
@@ -145,54 +173,5 @@ class Media_Filters {
 		}
 
 		return $url;
-	}
-
-	public function add_media_column( $columns ) {
-		$columns['s3_url'] = 'S3 URL';
-
-		return $columns;
-	}
-
-	public function media_column_value( $column_name, $post_id ) {
-		if ( 's3_url' === $column_name ) {
-			$s3_url = get_post_meta( $post_id, 's3_url', true );
-
-			if ( empty( $s3_url ) ) {
-				?>
-					<a class="upload-to-s3" href="#" data-post-id="<?php echo esc_attr( $post_id ); ?>"><i class="dashicons dashicons-upload"></i></a>
-				<?php
-				return;
-			}
-			
-			?>
-				<a href="<?php echo esc_url( $s3_url ); ?>" target="_blank"><?php echo __( 'LINK', 'transcoder' ); ?></a>
-			<?php
-		}
-	}
-
-	public function handle_upload_to_s3() {
-
-		// Verify user permissions
-		if ( ! current_user_can( 'upload_files' ) ) {
-			wp_send_json_error( array( 'error' => __( 'Permission denied.', 'transcoder' ) ) );
-		}
-
-		// Get the post ID from the request
-		$post_id = isset( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : 0;
-
-		if ( ! $post_id ) {
-			wp_send_json_error( array( 'error' => __( 'Invalid Post ID.', 'transcoder' ) ) );
-		}
-
-		$this->handle_media_upload( array(), $post_id );
-
-		$s3_url = get_post_meta( $post_id, 's3_url', true );
-
-		if ( empty( $s3_url ) ) {
-			wp_send_json_error( array( 'error' => __( 'Failed to upload to S3.', 'transcoder' ) ) );
-		}
-
-		wp_send_json_success( array( 'url' => esc_url( $s3_url ) ) );
-
 	}
 }

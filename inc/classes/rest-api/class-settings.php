@@ -9,6 +9,8 @@ namespace Transcoder\Inc\REST_API;
 
 use Transcoder\Inc\EasyDAM_Constants;
 use Transcoder\Inc\Providers\Handlers\Storage_Handler;
+use Transcoder\Inc\Providers\Exceptions\EasyDamException;
+use Transcoder\Inc\Providers\Handlers\Error_Handler;
 
 /**
  * Class Settings
@@ -498,7 +500,14 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_buckets() {
-		return Storage_Handler::get_buckets();
+
+		try {
+			$buckets = Storage_Handler::get_buckets();
+			return new \WP_REST_Response( $buckets, 200 );
+
+		} catch ( EasyDamException $e ) {
+			return Error_Handler::handle_exception( $e, true );
+		}
 	}
 
 	/**
@@ -509,6 +518,19 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function test_credentials() {
-		return Storage_Handler::check_credentials();
+
+		try {
+			Storage_Handler::check_credentials();
+			
+			$response = array(
+				'status'  => 'success',
+				'message' => 'Credentials are valid and can write storage.',
+			);
+
+			return new \WP_REST_Response( $response, 200 );
+
+		} catch ( EasyDamException $e ) {
+			return Error_Handler::handle_exception( $e, true );
+		}
 	}
 }

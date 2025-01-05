@@ -175,3 +175,52 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	// Set initial placeholder value
 	inputElement.value = 'Date Range';
 } );
+
+/**
+ * TOOD: Find some good place to put this code.
+ */
+document.addEventListener( 'DOMContentLoaded', function() {
+	// Select all 'upload-to-s3' links
+	const uploadLinks = document.querySelectorAll( '.upload-to-s3' );
+
+	uploadLinks.forEach( function( link ) {
+		link.addEventListener( 'click', function( e ) {
+			e.preventDefault(); // Prevent default link action
+
+			// Disable the link and change the text to "UPLOADING..."
+			const postId = this.getAttribute( 'data-post-id' );
+			this.innerHTML = 'UPLOADING...'; // Change text
+			this.style.pointerEvents = 'none'; // Disable further clicks
+
+			// Send AJAX request to handle the upload
+			const data = new FormData();
+			data.append( 'action', 'upload_to_s3' );
+			data.append( 'post_id', postId );
+
+			// Send the AJAX request
+			fetch( ajaxurl, {
+				method: 'POST',
+				body: data,
+			} )
+				.then( ( response ) => response.json() )
+				.then( ( data ) => {
+					// Re-enable the link after the upload is done
+					this.style.pointerEvents = 'auto'; // Enable the link again
+
+
+					if ( data.success ) {
+						// If the upload is successful, update the link
+						this.innerHTML = `<a href="${ data.data.url }" target="_blank">${ 'LINK' }</a>`;
+					} else {
+						// If the upload fails, show the error message
+						this.innerHTML = 'Upload Failed';
+						console.error( data.data.error ); // Log error for debugging
+					}
+				} )
+				.catch( ( error ) => {
+					this.innerHTML = 'Upload Failed';
+					console.error( 'Error:', error );
+				} );
+		} );
+	} );
+} );

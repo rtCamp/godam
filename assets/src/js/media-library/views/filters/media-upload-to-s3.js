@@ -3,6 +3,10 @@ let MediaUploadToS3 = wp?.media?.view?.Button;
 
 MediaUploadToS3 = MediaUploadToS3?.extend( {
 
+	events: {
+		click: 'uploadToS3',
+	},
+
 	initialize() {
 		wp.media.view.Button.prototype.initialize.apply( this, arguments );
 
@@ -27,6 +31,61 @@ MediaUploadToS3 = MediaUploadToS3?.extend( {
 
 	toggleDisabled() {
 		this.model.set( 'disabled', ! this.controller.state().get( 'selection' ).length );
+	},
+
+	uploadToS3() {
+		const selection = this.controller.state().get( 'selection' );
+
+		const attachmentIds = selection.map( ( model ) => model.get( 'id' ) );
+
+		if ( attachmentIds.length === 0 ) {
+			return;
+		}
+
+		this.restRequestToS3( attachmentIds ).then( ( data ) => {
+			this.refreshAttachments( data.uploaded );
+		} );
+	},
+
+	async restRequestToS3( attachmentIds ) {
+		if ( ! attachmentIds || ! Array.isArray( attachmentIds ) || attachmentIds.length === 0 ) {
+			return null;
+		}
+
+		try {
+			const response = await fetch(
+				`${ window.location.origin }/wp-json/easydam/v1/media-library/upload-to-s3`,
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': window.wpApiSettings?.nonce || '',
+					},
+					body: JSON.stringify( { attachment_ids: attachmentIds } ),
+				} );
+
+			if ( ! response.ok ) {
+				throw new Error( `HTTP error! Status: ${ response.status }` );
+			}
+
+			const data = await response.json();
+
+			return data;
+		} catch ( error ) {
+			return null;
+		}
+	},
+
+	refreshAttachments( attachmentIds ) {
+		attachmentIds.forEach( ( id ) => {
+			const attachment = wp.media.attachment( id );
+
+			// refetch the attachment so that the new URL of S3 is fetched.
+			attachment.fetch().then( () => {
+				// Remove the selection globally.
+				this.controller.state().get( 'selection' ).remove( attachment );
+			} );
+		} );
 	},
 
 	render() {

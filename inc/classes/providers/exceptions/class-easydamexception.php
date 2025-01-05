@@ -42,6 +42,15 @@ class EasyDamException extends Exception {
 	private $notice_message = '';
 
 
+	/**
+	 * Constructor.
+	 *
+	 * @param string  $message Message from the /Exception.
+	 * @param integer $code Code from the /Exception.
+	 * @param boolean $show_notice Show notice.
+	 * @param string  $notice_message Notice message.
+	 * @param string  $notice_type Notice type.
+	 */
 	public function __construct( $message, $code = 0, $show_notice = false, $notice_message = '', $notice_type = 'error' ) {
 		parent::__construct( $message, $code );
 
