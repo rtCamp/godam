@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
  * Internal dependencies
  */
 import './analytics.css';
+import '../video-editor/style.scss';
 import Video from '../video-editor/Video';
 
 const Chart = ( { data, duration, width } ) => {
