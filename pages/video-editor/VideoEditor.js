@@ -72,7 +72,10 @@ const VideoEditor = ( { attachmentID } ) => {
 									name: 'layers',
 									title: 'Layers',
 									className: 'flex-1 justify-center items-center',
-									component: <SidebarLayers currentTime={ currentTime } onSelectLayer={ ( layerTime ) => seekToLayerTime( layerTime ) } />,
+									component: <SidebarLayers
+										currentTime={ currentTime }
+										onSelectLayer={ ( layerTime ) => seekToLayerTime( layerTime ) }
+									/>,
 								},
 								{
 									name: 'video-settings',
