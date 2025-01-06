@@ -397,12 +397,39 @@ function easyDAMPlayer() {
 			return copy;
 		}
 
-		function updateHeatmap( ranges ) {
+		let licenseKey = null;
+
+		async function getLicenseKey() {
+			if ( licenseKey ) {
+				return licenseKey; //prevents multiple requests
+			}
+
+			const licenseResponse = await fetch(
+				'/wp-json/easydam/v1/settings/get-license-key',
+				{
+					method: 'GET',
+					headers: {
+						'X-WP-Nonce': window.nonceData.nonce,
+					},
+				},
+			);
+
+			const licenseData = await licenseResponse.json();
+
+			return licenseData.license_key || '';
+		}
+
+		async function updateHeatmap( ranges ) {
 			const videoId = video.getAttribute( 'data-id' );
 			const url = `/wp-json/wp/v2/media/${ videoId }`;
 
+			licenseKey = await getLicenseKey();
+
 			const data = JSON.stringify( {
-				easydam_analytics: ranges,
+				easydam_analytics: {
+					ranges,
+					license: licenseKey, // to associate range with the user
+				},
 			} );
 
 			fetch( url, {
