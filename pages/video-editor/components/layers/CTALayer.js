@@ -26,6 +26,8 @@ import ImageCTA from '../cta/ImageCTA';
 import HtmlCTA from '../cta/HtmlCTA';
 import LayerControls from '../LayerControls';
 
+import '../../../../assets/build/blocks/easydam-player/style-index.css';
+
 const CTALayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const [ formHTML, setFormHTML ] = useState( '' );
@@ -212,14 +214,24 @@ const CTALayer = ( { layerID, goBack } ) => {
 			</div>
 			<LayerControls>
 				<>
-					<div className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70 my-auto">
-						<div className="h-full flex items-center">
+					{ layer?.cta_type === 'text' && (
+						<div className="easydam-layer">
+							<div className="ql-editor easydam-layer--cta-text" dangerouslySetInnerHTML={ { __html: formHTML } } />
+						</div>
+					) }
+					{ layer?.cta_type === 'html' && (
+						<div className="easydam-layer" dangerouslySetInnerHTML={ { __html: formHTML } } />
+					) }
+					{ layer?.cta_type === 'image' && (
+						<div className="easydam-layer">
 							<div
-								className={ `${ 'image' === layer?.cta_type ? 'm-auto' : 'max-w-[400px]' } mx-auto text-black text-5xl` }
+								className={ layer?.imageCtaOrientation === 'portrait'
+									? 'vertical-image-cta-container'
+									: 'image-cta-container' }
 								dangerouslySetInnerHTML={ { __html: formHTML } }
 							/>
 						</div>
-					</div>
+					) }
 					{ layer.allow_skip && (
 						<Button
 							className="absolute bottom-6 right-0"
