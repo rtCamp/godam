@@ -8,8 +8,10 @@
 namespace Transcoder\Inc\Providers;
 
 use Transcoder\Inc\Traits\Singleton;
-
 use Transcoder\Inc\Providers\Handlers\Item_Handler;
+use Transcoder\Inc\Providers\Exceptions\EasyDamException;
+use Transcoder\Inc\Providers\Handlers\Error_Handler;
+
 /**
  * Class Media_Filters
  */
@@ -40,6 +42,8 @@ class Media_Filters {
 
 		/*
 		 * Media column management.
+		 * 
+		 * TODO: we are also using REST API to upload media items, and AJAX call to do the same, so we can merge those two calls.
 		 */
 		add_action( 'wp_ajax_upload_to_s3', array( $this, 'handle_upload_to_s3' ) );
 
@@ -59,6 +63,8 @@ class Media_Filters {
 			wp_send_json_error( array( 'error' => __( 'Permission denied.', 'transcoder' ) ) );
 		}
 
+		check_admin_referer( 'easydam_media_library', 'nonce' );
+
 		$post_id = isset( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : 0;
 
 		if ( ! $post_id ) {
@@ -76,46 +82,65 @@ class Media_Filters {
 		wp_send_json_success( array( 'url' => esc_url( $s3_url ) ) );
 	}
 
+	/**
+	 * Display bulk action notices.
+	 *
+	 * @return void
+	 */
 	public function bulk_action_notices() {
+
+		check_admin_referer( 'bulk-upload-to-s3', 'nonce' );
+
 		if ( isset( $_REQUEST['bulk_upload_to_s3'] ) ) {
 			$success_count = intval( $_REQUEST['bulk_upload_to_s3'] );
-			$error_count   = intval( $_REQUEST['bulk_upload_to_s3_error'] );
-	
+
 			if ( $success_count > 0 ) {
 				printf(
 					'<div class="notice notice-success"><p>%s</p></div>',
-					sprintf( __( '%d files successfully uploaded to S3.', 'transcoder' ), $success_count )
+					/* translators: %d: number of files */
+					sprintf( esc_html__( '%d files successfully uploaded to S3.', 'transcoder' ), intval( $success_count ) )
 				);
 			}
-	
+		}
+
+		if ( isset( $_REQUEST['bulk_upload_to_s3_error'] ) ) {
+			$error_count = intval( $_REQUEST['bulk_upload_to_s3_error'] );
+
 			if ( $error_count > 0 ) {
 				printf(
 					'<div class="notice notice-error"><p>%s</p></div>',
-					sprintf( __( 'Failed to upload %d files to S3.', 'transcoder' ), $error_count )
+					/* translators: %d: number of files */
+					sprintf( esc_html__( 'Failed to upload %d files to S3.', 'transcoder' ), intval( $error_count ) )
 				);
 			}
 		}
 	}
 
+	/**
+	 * Handle bulk action upload to S3.
+	 *
+	 * @param string $redirect_to Redirect URL.
+	 * @param string $action      Action.
+	 * @param array  $post_ids    Post IDs.
+	 *
+	 * @return string
+	 */
 	public function handle_bulk_action_upload_to_s3( $redirect_to, $action, $post_ids ) {
-
 		if ( 'upload_to_s3' !== $action ) {
-			return $redirect_to; // Exit if not the correct bulk action
+			return $redirect_to;
 		}
 	
 		$success_count = 0;
-
-		error_log( 'Bulk action upload to S3' . print_r( $post_ids, true ) );
 	
-		// Loop through the selected media attachments
 		foreach ( $post_ids as $post_id ) {
-			// Your logic to upload the attachment to S3
+
+			$uploaded = false;
 
 			try {
-				$item_handler = new Item_Handler();
-				$uploaded     = $item_handler->upload_item( $post_id );
-			} catch ( \Exception $e ) {
-				$uploaded = false;
+				Item_Handler::upload_item( $post_id );
+				$uploaded = true;
+			} catch ( EasyDamException $e ) {
+				Error_Handler::handle_exception( $e );
 			}
 
 			if ( $uploaded ) {
@@ -123,11 +148,12 @@ class Media_Filters {
 			}
 		}
 	
-		// Add query args to the redirect URL for feedback
+		// Add query args to the redirect URL for feedback.
 		$redirect_to = add_query_arg(
 			array(
 				'bulk_upload_to_s3'       => $success_count,
 				'bulk_upload_to_s3_error' => count( $post_ids ) - $success_count,
+				'nonce'                   => wp_create_nonce( 'bulk-upload-to-s3' ),
 			),
 			$redirect_to 
 		);
@@ -138,22 +164,35 @@ class Media_Filters {
 
 	/**
 	 * Handle media upload.
+	 * 
+	 * Use of the wp_update_attachment_metadata to insure that different images sizes are generated.
 	 *
 	 * @param array $data    Data to be saved.
 	 * @param int   $post_id Post ID.
 	 *
-	 * @return void
+	 * @return array
 	 */
 	public function handle_media_upload( $data, $post_id ) {
-		$item_handler = new Item_Handler();
-		$item_handler->upload_item( $post_id );
+		try {
+			Item_Handler::upload_item( $post_id );
+		} catch ( EasyDamException $e ) {
+			Error_Handler::handle_exception( $e );
+		}
 
 		return $data;
 	}
 
+	/**|
+	 * Delete the attachment media from S3 on hook delete_attachment.
+	 * 
+	 * @param int $post_id Post ID.
+	 */
 	public function delete_media( $post_id ) {
-		$item_handler = new Item_Handler();
-		$item_handler->delete_item( $post_id );
+		try {
+			Item_Handler::delete_item( $post_id );
+		} catch ( EasyDamException $e ) {
+			Error_Handler::handle_exception( $e );
+		}
 	}
 
 	/**
@@ -164,7 +203,6 @@ class Media_Filters {
 	 * @return string
 	 */
 	public function get_s3_url( $url, $post_id ) {
-
 		$s3_url = get_post_meta( $post_id, 's3_url', true );
 
 		if ( ! empty( $s3_url ) ) {

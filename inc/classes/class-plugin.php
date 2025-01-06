@@ -46,8 +46,15 @@ class Plugin {
 		$this->load_plugin_configs();
 		$this->load_rest_api();
 
-		Media_Filters::get_instance();
+		// TODO: think of a better place to put this.
+		$offload_media = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
+		$offload_media = isset( $offload_media['offLoadMedia'] ) ? $offload_media['offLoadMedia'] : false;
+		
+		if ( $offload_media ) {
+			Media_Filters::get_instance();
+		}
 
+		// TODO: think of a better place to put this.
 		// Add a custom "Edit Video" button for video files in the Media Library.
 		add_filter(
 			'attachment_fields_to_edit',

@@ -171,7 +171,7 @@ class Media_Library extends Base {
 		foreach ( $attachment_ids as $attachment_id ) {
 
 			try {
-				Item_Handler::upload_item_x( $attachment_id );
+				Item_Handler::upload_item( $attachment_id );
 				$successful_uploads[] = $attachment_id;
 			} catch ( EasyDamException $e ) {
 				Error_Handler::handle_exception( $e );

@@ -1,3 +1,5 @@
+/* global jQuery, moment, easydamMediaLibrary */
+
 /**
  * Internal dependencies
  */
@@ -40,7 +42,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 } );
 
 /**
- * Temporary
+ * Media Library date range filter for the list view.
  *
  * TODO: Figure out how to merge this and the attachment browser together nicely to follow the DRY principle.
  */
@@ -50,7 +52,6 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	const endDateField = document.getElementById( 'media-date-range-filter-end' );
 
 	if ( ! inputElement || ! startDateField || ! endDateField ) {
-		console.error( 'Required input elements not found.' );
 		return;
 	}
 
@@ -90,7 +91,6 @@ document.addEventListener( 'DOMContentLoaded', () => {
 					{ after: startDate.format( 'YYYY-MM-DD' ) },
 					{ before: endDate.format( 'YYYY-MM-DD' ) },
 				];
-				console.log( 'Initialized dateQuery from URL:', dateQuery );
 			}
 		}
 	};
@@ -129,8 +129,6 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
 		// Update the input value to show the selected date range
 		inputElement.value = dateRangePicker.chosenLabel;
-
-		console.log( 'Updated dateQuery:', dateQuery );
 	};
 
 	// Clear the filter
@@ -145,8 +143,6 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		endDateField.value = '';
 
 		inputElement.value = 'Date Range';
-
-		console.log( 'Cleared dateQuery:', dateQuery );
 	};
 
 	// Initialize the date picker
@@ -180,47 +176,50 @@ document.addEventListener( 'DOMContentLoaded', () => {
  * TOOD: Find some good place to put this code.
  */
 document.addEventListener( 'DOMContentLoaded', function() {
-	// Select all 'upload-to-s3' links
 	const uploadLinks = document.querySelectorAll( '.upload-to-s3' );
 
 	uploadLinks.forEach( function( link ) {
 		link.addEventListener( 'click', function( e ) {
 			e.preventDefault(); // Prevent default link action
 
-			// Disable the link and change the text to "UPLOADING..."
 			const postId = this.getAttribute( 'data-post-id' );
-			this.innerHTML = 'UPLOADING...'; // Change text
-			this.style.pointerEvents = 'none'; // Disable further clicks
+			this.textContent = 'UPLOADING...';
+			this.style.pointerEvents = 'none';
 
 			// Send AJAX request to handle the upload
 			const data = new FormData();
 			data.append( 'action', 'upload_to_s3' );
 			data.append( 'post_id', postId );
+			data.append( 'nonce', easydamMediaLibrary.nonce );
 
-			// Send the AJAX request
-			fetch( ajaxurl, {
+			fetch( easydamMediaLibrary.ajaxUrl, {
 				method: 'POST',
 				body: data,
 			} )
-				.then( ( response ) => response.json() )
+				.then( ( response ) => {
+					if ( ! response.ok ) {
+						throw new Error( 'Network response was not ok' );
+					}
+					return response.json();
+				} )
 				.then( ( data ) => {
-					// Re-enable the link after the upload is done
-					this.style.pointerEvents = 'auto'; // Enable the link again
-
+					this.style.pointerEvents = 'auto';
 
 					if ( data.success ) {
-						// If the upload is successful, update the link
-						this.innerHTML = `<a href="${ data.data.url }" target="_blank">${ 'LINK' }</a>`;
+						const newLink = document.createElement( 'a' );
+						newLink.href = data.data.url;
+						newLink.target = '_blank';
+						newLink.textContent = 'LINK';
+						this.textContent = '';
+						this.appendChild( newLink );
 					} else {
-						// If the upload fails, show the error message
-						this.innerHTML = 'Upload Failed';
-						console.error( data.data.error ); // Log error for debugging
+						this.textContent = 'Upload Failed';
 					}
 				} )
-				.catch( ( error ) => {
-					this.innerHTML = 'Upload Failed';
-					console.error( 'Error:', error );
+				.catch( () => {
+					this.textContent = 'Upload Failed';
 				} );
 		} );
 	} );
 } );
+

@@ -51,7 +51,9 @@ class AWS extends Base {
 	 *
 	 * @param string $file The file path.
 	 * @param string $name The file name.
+	 *
 	 * @return string The file url.
+	 * @throws EasyDamException If the operation fails.
 	 */
 	public function upload( $file, $name ) {
 		try {
@@ -87,6 +89,7 @@ class AWS extends Base {
 	 * @param string $name The file name.
 	 * 
 	 * @return void
+	 * @throws EasyDamException If the operation fails.
 	 */
 	public function delete( $name ) {
 		try {
@@ -97,7 +100,11 @@ class AWS extends Base {
 				)
 			);
 		} catch ( AwsException $e ) {
-			error_log( $e->getMessage() );
+			throw new EasyDamException(
+				$e->getAwsErrorMessage(),
+				$e->getCode(),
+				true
+			);
 		}
 	}
 

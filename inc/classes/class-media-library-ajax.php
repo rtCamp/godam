@@ -36,10 +36,16 @@ class Media_Library_Ajax {
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
 
-		add_filter( 'manage_media_columns', array( $this, 'add_media_column' ) );
-		add_action( 'manage_media_custom_column', array( $this, 'media_column_value' ), 10, 2 );
-		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_folder_to_attachment' ), 10, 2 );
-		add_filter( 'bulk_actions-upload', array( $this, 'add_bulk_actions' ) );
+		// TODO: think about merging this hooks and other to media-filters, as they are related to media library.
+		$offload_media = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
+		$offload_media = isset( $offload_media['offLoadMedia'] ) ? $offload_media['offLoadMedia'] : false;
+
+		if ( $offload_media ) {
+			add_filter( 'manage_media_columns', array( $this, 'add_media_column' ) );
+			add_action( 'manage_media_custom_column', array( $this, 'media_column_value' ), 10, 2 );
+			add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_folder_to_attachment' ), 10, 2 );
+			add_filter( 'bulk_actions-upload', array( $this, 'add_bulk_actions' ) );
+		}
 	}
 
 	/**
