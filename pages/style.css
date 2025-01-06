@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+*, ::before, ::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+}
+
 .sticky-navbar {
   position: sticky;
   top: var(--wp-admin--admin-bar--height, 0);
@@ -399,4 +406,7 @@ input, textarea, select {
 
 #easydam-player-settings .easydam-label {
 	@apply text-[11px] uppercase font-semibold mb-2 block;
+}
+.easydam-label {
+	@apply text-[11px] uppercase font-medium mb-2 block;
 }

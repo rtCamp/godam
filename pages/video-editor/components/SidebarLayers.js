@@ -46,7 +46,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer, layer } ) => {
 	const openModal = () => setOpen( true );
 	const closeModal = () => setOpen( false );
 
-
 	const dispatch = useDispatch();
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );

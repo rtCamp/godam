@@ -19,11 +19,13 @@ import {
 	ColorPalette,
 	TabPanel,
 	TextareaControl,
+	ToggleControl,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateVideoConfig } from '../../redux/slice/videoSlice';
+import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice';
 import EasyDAM from '../../../../assets/src/images/EasyDAM.png';
+import ColorPickerButton from '../ColorPickerButton';
 
 const Appearance = () => {
 	const dispatch = useDispatch();
@@ -40,6 +42,7 @@ const Appearance = () => {
 				.querySelector( '.vjs-subs-caps-button' )
 				.classList.remove( 'vjs-hidden' );
 		}
+		dispatch( setCurrentLayer( null ) );
 	}, [] );
 
 	function handleVolumeToggle() {
@@ -423,32 +426,37 @@ const Appearance = () => {
 	return (
 		<div id="easydam-player-settings" className="p-4 pb-20">
 			<div className="accordion-item--content mt-2 flex flex-col gap-6">
-				<div className="flex flex-col gap-5">
-					<div className="form-group flex items-center gap-10">
-						<CheckboxControl
+				<div className="display-settings">
+					<label
+						htmlFor="custom-brand-logo"
+						className="easydam-label"
+					>
+						{ __( 'Display settings', 'transcoder' ) }
+					</label>
+
+					<div className="flex flex-col gap-3">
+						<ToggleControl
 							__nextHasNoMarginBottom
 							label="Show Volume Slider"
 							checked={ videoConfig.controlBar.volumePanel }
 							onChange={ handleVolumeToggle }
 						/>
-					</div>
-					<div className="form-group flex items-center gap-10">
-						<CheckboxControl
+						<ToggleControl
 							__nextHasNoMarginBottom
 							label="Display Captions"
 							onChange={ handleCaptionsToggle }
 							checked={ videoConfig.controlBar.subsCapsButton }
 						/>
-					</div>
-					<div className="form-group flex items-center gap-10">
-						<CheckboxControl
+						<ToggleControl
 							__nextHasNoMarginBottom
 							label="Show Branding"
 							onChange={ handleBrandingToggle }
 							checked={ videoConfig.controlBar.brandingIcon }
 						/>
 					</div>
+
 				</div>
+
 				{ videoConfig.controlBar.brandingIcon && (
 					<div className="form-group">
 						<label
@@ -605,12 +613,15 @@ const Appearance = () => {
 				<div className="form-group">
 					<label
 						htmlFor="appearance-color"
-						className="text-[11px] uppercase font-medium mb-2 block"
+						className="easydam-label"
 					>
-						{ __( 'Player Appearance', 'transcoder' ) }
+						{ __( 'Player Theme', 'transcoder' ) }
 					</label>
-					<ColorPalette
+					<ColorPickerButton
 						value={ videoConfig.controlBar.appearanceColor }
+						label={ __( 'Player Appearance', 'transcoder' ) }
+						className="mb-0"
+						contentClassName="border-b-0"
 						enableAlpha={ true }
 						onChange={ ( value ) => {
 							if ( ! value ) {
@@ -626,20 +637,13 @@ const Appearance = () => {
 							);
 						} }
 					/>
-				</div>
-				<div className="form-group">
-					<label
-						htmlFor="custom-hover-color"
-						className="text-[11px] uppercase font-medium mb-2 block"
-					>
-						{ __( 'Select color on hover', 'transcoder' ) }
-					</label>
-					<ColorPalette
+					<ColorPickerButton
 						value={ videoConfig.controlBar.hoverColor }
+						label={ __( 'Icons hover color', 'transcoder' ) }
 						enableAlpha={ true }
 						onChange={ ( value ) => {
 							if ( ! value ) {
-								value = '#fff';
+								value = '#2b333fb3';
 							}
 							dispatch(
 								updateVideoConfig( {
@@ -656,56 +660,44 @@ const Appearance = () => {
 				<div className="form-group">
 					<label
 						htmlFor="custom-hover-color"
-						className="text-[11px] uppercase font-medium mb-2 block"
+						className="easydam-label"
 					>
 						{ __( 'Select Ad server', 'transcoder' ) }
 					</label>
-					<TabPanel
-						onSelect={ ( val ) => {
+					<ToggleControl
+						label={ __( 'Use ad server\'s ads', 'transcoder' ) }
+						help={ __( 'Enable this option to use ads from the ad server. This option will disable the ads layer', 'transcoder' ) }
+						checked={ videoConfig.adServer === 'ad-server' }
+						onChange={ ( checked ) => {
 							dispatch(
 								updateVideoConfig( {
-									adServer: val,
+									adServer: checked ? 'ad-server' : 'self-hosted',
 								} ),
 							);
 						} }
-						initialTabName={ videoConfig.adServer ?? 'self-hosted' }
-						className="button-tabs"
-						tabs={ [
-							{
-								name: 'self-hosted',
-								title: 'Self Hosted Ads',
-								className: 'flex-1 justify-center items-center',
-								component: null,
-							},
-							{
-								name: 'ad-server',
-								title: "Ad Server\'s Ads",
-								className: 'flex-1 justify-center items-center',
-								component: <div className="mt-2">
-									<TextareaControl
-										label={ __( 'adTag URL', 'transcoder' ) }
-										help={ <>
-											<div>
-												{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads ', 'transcoder' ) }
-												<a href="https://support.google.com/admanager/answer/177207?hl=en" target="_blank" rel="noreferrer noopener" className="text-blue-500 underline">{ __( 'Learn more.', 'transcoder' ) }</a>
-											</div>
-										</>
-										}
-										value={ videoConfig.adTagURL }
-										onChange={ ( val ) => {
-											dispatch(
-												updateVideoConfig( {
-													adTagURL: val,
-												} ),
-											);
-										} }
-									/>
-								</div>,
-							},
-						] }
-					>
-						{ ( tab ) => tab.component }
-					</TabPanel>
+					/>
+					{
+						videoConfig.adServer === 'ad-server' && (
+							<TextareaControl
+								label={ __( 'adTag URL', 'transcoder' ) }
+								help={ <>
+									<div>
+										{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads ', 'transcoder' ) }
+										<a href="https://support.google.com/admanager/answer/177207?hl=en" target="_blank" rel="noreferrer noopener" className="text-blue-500 underline">{ __( 'Learn more.', 'transcoder' ) }</a>
+									</div>
+								</>
+								}
+								value={ videoConfig.adTagURL }
+								onChange={ ( val ) => {
+									dispatch(
+										updateVideoConfig( {
+											adTagURL: val,
+										} ),
+									);
+								} }
+							/>
+						)
+					}
 				</div>
 			</div>
 		</div>
