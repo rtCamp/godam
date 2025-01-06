@@ -18,6 +18,8 @@ const CustomAdSettings = ( { layerID } ) => {
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
+	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
+	const adServer = videoConfig?.adServer ?? 'self-hosted';
 	const dispatch = useDispatch();
 
 	const OpenVideoSelector = () => {
@@ -50,6 +52,7 @@ const CustomAdSettings = ( { layerID } ) => {
 						className="mb-2"
 						variant="primary"
 						onClick={ () => OpenVideoSelector() }
+						disabled={ adServer === 'ad-server' }
 					>{ layer?.ad_url ? __( 'Replace Ad video', 'transcoder' ) : __( 'Select Ad video', 'transcoder' ) }</Button>
 					{
 						layer?.ad_url &&
@@ -62,8 +65,15 @@ const CustomAdSettings = ( { layerID } ) => {
 					}
 				</div>
 				{
-					layer?.ad_url &&
-					<video src={ layer.ad_url } controls />
+					layer?.ad_url && (
+						<div className={ `sidebar-video-container ${ adServer === 'ad-server' ? 'disabled-video' : '' }` }>
+							<video
+								src={ layer.ad_url }
+								controls={ adServer !== 'ad-server' }
+							/>
+							{ adServer === 'ad-server' && <div className="video-overlay" /> }
+						</div>
+					)
 				}
 			</div>
 
