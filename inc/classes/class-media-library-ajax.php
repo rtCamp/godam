@@ -70,17 +70,27 @@ class Media_Library_Ajax {
 	 * @return void
 	 */
 	public function media_column_value( $column_name, $post_id ) {
-		if ( 's3_url' === $column_name ) {
-			$s3_url = get_post_meta( $post_id, 's3_url', true );
 
-			if ( empty( $s3_url ) ) {
-				?>
-					<a class="upload-to-s3" href="#" data-post-id="<?php echo esc_attr( $post_id ); ?>"><i class="dashicons dashicons-upload"></i></a>
-				<?php
-			} else {
-				?>
-					<a href="<?php echo esc_url( $s3_url ); ?>" target="_blank"><?php esc_html_e( 'LINK', 'transcoder' ); ?></a>
-				<?php
+		// Check if post_id is attachment type and is an image.
+		if ( 'attachment' === get_post_type( $post_id ) ) {
+			$attachment = get_post( $post_id );
+
+			if ( 'image' !== substr( $attachment->post_mime_type, 0, 5 ) ) {
+				return;
+			}
+
+			if ( 's3_url' === $column_name ) {
+				$s3_url = get_post_meta( $post_id, 's3_url', true );
+
+				if ( empty( $s3_url ) ) {
+					?>
+						<a class="upload-to-s3" href="#" data-post-id="<?php echo esc_attr( $post_id ); ?>"><i class="dashicons dashicons-upload"></i></a>
+					<?php
+				} else {
+					?>
+						<a href="<?php echo esc_url( $s3_url ); ?>" target="_blank"><?php esc_html_e( 'LINK', 'transcoder' ); ?></a>
+					<?php
+				}
 			}
 		}
 	}

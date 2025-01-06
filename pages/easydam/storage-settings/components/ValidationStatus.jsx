@@ -42,7 +42,7 @@ const ValidationStatus = () => {
 	return (
 		<div className="flex items-center justify-between p-4 bg-gray-50 border rounded-md shadow-sm mt-4">
 			<div className="text-gray-800">
-				{ isSuccess ? (
+				{ isSuccess && data.status === 'success' ? (
 					<span className="text-green-600 font-medium">
 						{ data?.message || 'Plugin is ready for usage.' }
 					</span>

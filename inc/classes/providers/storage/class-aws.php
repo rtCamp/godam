@@ -144,7 +144,7 @@ class AWS extends Base {
 			if ( empty( $this->bucket ) ) {
 				throw new EasyDamException(
 					'Bucket name is missing.',
-					400
+					404
 				);
 			}
 
@@ -168,7 +168,7 @@ class AWS extends Base {
 		} catch ( AwsException $e ) {
 			throw new EasyDamException(
 				esc_html( $e->getAwsErrorMessage() ),
-				esc_html( $e->getCode() ),
+				404,
 				true
 			);
 		} catch ( \Exception $e ) {

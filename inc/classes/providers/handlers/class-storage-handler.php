@@ -19,7 +19,6 @@ class Storage_Handler {
 	 * Get buckets.
 	 *
 	 * Get the list of all the buckets if accessKey and secretKey are provided.
-	 * Currently just returns REST response as that is where it is being used.
 	 *
 	 * @return array
 	 * @throws EasyDamException If cannot get buckets.
@@ -36,7 +35,6 @@ class Storage_Handler {
 	 * Check credentials.
 	 *
 	 * Check if the credentials are valid and can write to the storage.
-	 * Currently just returns REST response as that is where it is being used.
 	 *
 	 * @return void
 	 * @throws EasyDamException If the credentials are not valid.
