@@ -41,15 +41,15 @@ const layerTypes = [
 	},
 ];
 
-const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
+const SidebarLayers = ( { currentTime, onSelectLayer, layer } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const openModal = () => setOpen( true );
 	const closeModal = () => setOpen( false );
 
-	const [ selectedLayer, setSelectedLayer ] = useState( null );
-	const dispatch = useDispatch();
 
+	const dispatch = useDispatch();
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
+	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 
@@ -123,30 +123,24 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 		}
 	};
 
-	useEffect( () => {
-		dispatch( setCurrentLayer( selectedLayer ) );
-	}, [ selectedLayer ] );
-
 	return (
 		<>
 			{
-				! selectedLayer ? (
+				! currentLayer ? (
 					<div id="sidebar-layers" className="p-4">
 						{
 							sortedLayers?.map( ( layer ) => (
 								<Tooltip
 									key={ layer.id }
+									className="w-full flex justify-between items-center p-2 border rounded mb-2 hover:bg-gray-50 cursor-pointer"
 									text={ adServer === 'ad-server' && layer.type === 'ad' ? __( 'This ad will be override by Ad server\'s ads', 'transcoder' ) : '' }
 									placement="right"
 								>
 									<div className="border rounded mb-2">
 										<Button
 											className={ `w-full flex justify-between items-center p-2 border-1 rounded hover:bg-gray-50 cursor-pointer border-[#e5e7eb] ${ adServer === 'ad-server' && layer.type === 'ad' ? 'bg-orange-50 hover:bg-orange-50' : '' }` }
-											label={
-												adServer === 'ad-server' && layer.type === 'ad' ? __( 'This ad will be override by Ad server\'s ads', 'transcoder' ) : ''
-											}
 											onClick={ () => {
-												setSelectedLayer( layer );
+												dispatch( setCurrentLayer( layer ) );
 												onSelectLayer( layer.displayTime );
 											} }
 										>
@@ -174,6 +168,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 							icon={ plus }
 							iconPosition="left"
 							onClick={ openModal }
+							disabled={ ! currentTime && layers.find( ( l ) => l.displayTime === currentTime ) }
 						>{ __( 'Add layer at ', 'transcoder' ) } { currentTime }s</Button>
 
 						{ /* Add layer modal */ }
@@ -214,7 +209,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 					</div>
 				) : (
 					<div id="sidebar-layers" className="p-4">
-						<Layer layer={ selectedLayer } goBack={ () => setSelectedLayer( null ) } />
+						<Layer layer={ currentLayer } goBack={ () => dispatch( setCurrentLayer( null ) ) } />
 					</div>
 				)
 			}
