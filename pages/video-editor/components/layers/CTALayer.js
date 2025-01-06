@@ -26,8 +26,6 @@ import ImageCTA from '../cta/ImageCTA';
 import HtmlCTA from '../cta/HtmlCTA';
 import LayerControls from '../LayerControls';
 
-import '../../../../assets/build/blocks/easydam-player/style-index.css';
-
 const CTALayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const [ formHTML, setFormHTML ] = useState( '' );
@@ -215,15 +213,15 @@ const CTALayer = ( { layerID, goBack } ) => {
 			<LayerControls>
 				<>
 					{ layer?.cta_type === 'text' && (
-						<div className="easydam-layer">
+						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
 							<div className="ql-editor easydam-layer--cta-text" dangerouslySetInnerHTML={ { __html: formHTML } } />
 						</div>
 					) }
 					{ layer?.cta_type === 'html' && (
-						<div className="easydam-layer" dangerouslySetInnerHTML={ { __html: formHTML } } />
+						<div className="easydam-layer" dangerouslySetInnerHTML={ { __html: formHTML } } style={ { backgroundColor: layer.bg_color } } />
 					) }
 					{ layer?.cta_type === 'image' && (
-						<div className="easydam-layer">
+						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
 							<div className="image-cta-overlay-container">
 								<div className="image-cta-parent-container">
 									<div
@@ -238,7 +236,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 					) }
 					{ layer.allow_skip && (
 						<Button
-							className="absolute bottom-6 right-0"
+							className="skip-button"
 							variant="primary"
 							icon={ chevronRight }
 							iconSize="18"

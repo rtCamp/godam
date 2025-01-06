@@ -325,6 +325,10 @@ function easyDAMPlayer() {
 				skipButton.classList.add( 'hidden' );
 			}
 
+			const arrowIcon = document.createElement( 'i' );
+			arrowIcon.className = 'fa-solid fa-chevron-right';
+			skipButton.appendChild( arrowIcon );
+
 			const observer = new MutationObserver( () => {
 				if ( layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ) {
 					skipButton.textContent = 'Continue';
