@@ -14,13 +14,25 @@ const { __ } = wp.i18n;
  * Internal dependencies
  */
 import { setAWSAccessKey, setAWSSecretKey } from '../../redux/slice/storage';
+import { useEffect } from 'react';
 
 const AWSEdit = ( { handleSaveSettings } ) => {
 	const [ isEditOpen, setIsEditOpen ] = useState( false );
+	const [ isConnectEnabled, setIsConnectEnabled ] = useState( true );
 
 	const aws = useSelector( ( state ) => state.storage.aws );
+	const validation = useSelector( ( state ) => state.storage.validation );
+	const shouldRefetch = useSelector( ( state ) => state.storage.shouldRefetch );
 
 	const dispatch = useDispatch();
+
+	useEffect( () => {
+		if ( validation.isValid ) {
+			setIsConnectEnabled( false );
+		} else {
+			setIsConnectEnabled( true );
+		}
+	}, [ validation, shouldRefetch ] );
 
 	return (
 		<div className="mx-auto bg-white shadow-lg border border-gray-200 rounded-lg p-6 mt-4">
@@ -53,12 +65,14 @@ const AWSEdit = ( { handleSaveSettings } ) => {
 					<TextControl
 						label={ __( 'Access Key', 'transcoder' ) }
 						placeholder={ __( 'Enter your AWS Access Key', 'transcoder' ) }
+						disabled={ ! isConnectEnabled }
 						value={ aws.accessKey }
 						onChange={ ( value ) => dispatch( setAWSAccessKey( value ) ) }
 					/>
 					<TextControl
 						label={ __( 'Secret Key', 'transcoder' ) }
 						placeholder={ __( 'Enter your AWS Secret Key', 'transcoder' ) }
+						disabled={ ! isConnectEnabled }
 						value={ aws.secretKey }
 						onChange={ ( value ) => dispatch( setAWSSecretKey( value ) ) }
 					/>
@@ -71,18 +85,32 @@ const AWSEdit = ( { handleSaveSettings } ) => {
 						>
 							{ __( 'Cancel', 'transcoder' ) }
 						</Button>
-						<Button
-							variant="primary"
-							className="bg-blue-500 text-white px-4 py-2 rounded"
-							onClick={ () => handleSaveSettings( {
-								aws: {
-									accessKey: aws.accessKey,
-									secretKey: aws.secretKey,
-								},
-							} ) }
-						>
-							{ __( 'Connect', 'transcoder' ) }
-						</Button>
+						{ isConnectEnabled && (
+							<Button
+								variant="primary"
+								className="bg-blue-500 text-white px-4 py-2 rounded"
+								onClick={ () => handleSaveSettings( {
+									aws: {
+										accessKey: aws.accessKey,
+										secretKey: aws.secretKey,
+									},
+								} ) }
+							>
+								{ __( 'Connect', 'transcoder' ) }
+							</Button>
+						) }
+
+						{ ! isConnectEnabled && (
+							<Button
+								className="text-white px-4 py-2 rounded"
+								variant="primary"
+								isDestructive={ true }
+								onClick={ () => setIsConnectEnabled( true ) }
+							>
+								{ __( 'Disconnect', 'transcoder' ) }
+							</Button>
+						) }
+
 					</div>
 				</div>
 			</div>

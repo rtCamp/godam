@@ -39,8 +39,8 @@ class Item_Handler {
 
 		$s3_filename = $base_path . $s3_filename;
 
-		if ( ! empty( $s3_url ) ) {
-			$provider->delete( $s3_url );
+		if ( ! empty( $s3_filename ) ) {
+			$provider->delete( $s3_filename );
 		}
 
 		// Get all image sizes metadata.
@@ -87,31 +87,36 @@ class Item_Handler {
 			throw new EasyDamException( esc_html( "Attachment is not an image for attachment ID: $attachment_id" ) );
 		}
 
-		$s3_url = get_post_meta( $attachment_id, 's3_url', true );
+		$bucket_path = self::get_settings_base_path_x();
 
-		if ( ! empty( $s3_url ) ) {
-			throw new EasyDamException( esc_html( "S3 URL already present for attachment ID: $attachment_id" ) );
-		}
+		$s3_url = get_post_meta( $attachment_id, 's3_url', true );
+		$file_path = get_attached_file( $attachment_id );
 
 		$provider = StorageFactory::get_instance()->get_provider();
 
-		$file_path = get_attached_file( $attachment_id );
+		if ( empty( $s3_url ) ) {
 
-		if ( ! file_exists( $file_path ) ) {
-			throw new EasyDamException( esc_html( "File not found for attachment ID: $attachment_id" ) );
+			if ( ! file_exists( $file_path ) ) {
+				throw new EasyDamException( esc_html( "File not found for attachment ID: $attachment_id" ) );
+			}
+
+			$file_name = $bucket_path . basename( $file_path );
+
+			$s3_url = $provider->upload( $file_path, $file_name );
+			update_post_meta( $attachment_id, 's3_url', $s3_url );
 		}
-
-		$bucket_path = self::get_settings_base_path_x();
-
-		$file_name = $bucket_path . basename( $file_path );
-
-		$s3_url = $provider->upload( $file_path, $file_name );
-		update_post_meta( $attachment_id, 's3_url', $s3_url );
 
 		$failed_count = 0;
 
 		if ( ! empty( $image_sizes['sizes'] ) ) {
 			foreach ( $image_sizes['sizes'] as $size => $size_data ) {
+
+				$s3_url = get_post_meta( $attachment_id, "s3_url_{$size}", true );
+
+				if ( ! empty( $s3_url ) ) {
+					continue;
+				}
+
 				// Generate the file path for each size.
 				$resized_file_path = path_join( dirname( $file_path ), $size_data['file'] );
 	

@@ -130,7 +130,7 @@ const StorageSettings = () => {
 					</h4>
 					<p className="text-gray-600">
 						<span className="text-blue-600 font-mono">
-							{ `https://${ aws.bucket }.s3.amazonaws.com${ bucketPath }/my-image.jpg` }
+							{ `https://${ aws.bucket ?? '{bucket_name}' }.s3.amazonaws.com/${ bucketPath }/my-image.jpg` }
 						</span>
 					</p>
 				</div>
