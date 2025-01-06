@@ -14,7 +14,7 @@ const Chart = ( { data, duration, width } ) => {
 	const opacity = ( 100 / data.length ) / 100;
 
 	return (
-		<div id="chart" className="chart mt-4" style={ { width } }>
+		<div id="chart" className="chart mt-6 h-24" style={ { width } }>
 			{ data && data.map( ( ranges, rangeIndex ) =>
 				ranges.map( ( range, index ) => (
 					<div
@@ -59,7 +59,32 @@ const Analytics = ( { attachmentID } ) => {
 	}, [ attachmentID ] );
 
 	return (
-		<div className="analytics-container">
+		<div className="analytics-container flex flex-col items-center">
+			<div className="video-info-container">
+				<div className="analytics-info-container">
+					<div className="analytics-info">
+						<span>62%</span>
+						<p>Average Engagement</p>
+					</div>
+					<hr />
+					<div className="analytics-info">
+						<span>104</span>
+						<p>Total Plays</p>
+					</div>
+					<hr />
+					<div className="analytics-info">
+						<span>28%</span>
+						<p>Play Rate</p>
+					</div>
+					<hr />
+				</div>
+				<Video
+					currentTime={ currentTime }
+					setCurrentTime={ setCurrentTime }
+					attachmentID={ attachmentID }
+					videoData={ window.videoData }
+				/>
+			</div>
 			{ analyticsData && (
 				<Chart
 					data={ analyticsData.easydam_analytics }
@@ -67,13 +92,6 @@ const Analytics = ( { attachmentID } ) => {
 					width={ analyticsData.media_details.width || 1 }
 				/>
 			) }
-
-			<Video
-				currentTime={ currentTime }
-				setCurrentTime={ setCurrentTime }
-				attachmentID={ attachmentID }
-				videoData={ window.videoData }
-			/>
 		</div>
 	);
 };
