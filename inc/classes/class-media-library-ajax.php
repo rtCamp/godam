@@ -79,7 +79,7 @@ class Media_Library_Ajax {
 				<?php
 			} else {
 				?>
-					<a href="<?php echo esc_url( $s3_url ); ?>" target="_blank"><?php _e( 'LINK', 'transcoder' ); ?></a>
+					<a href="<?php echo esc_url( $s3_url ); ?>" target="_blank"><?php esc_html_e( 'LINK', 'transcoder' ); ?></a>
 				<?php
 			}
 		}

@@ -53,7 +53,6 @@ class Media_Folders extends Base {
 		);
 	}
 
-
 	/**
 	 * To get argument to register taxonomy.
 	 *

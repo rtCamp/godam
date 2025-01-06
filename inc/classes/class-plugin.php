@@ -21,7 +21,7 @@ use Transcoder\Inc\REST_API\Media_Library;
 use Transcoder\Inc\REST_API\Ads;
 use Transcoder\Inc\REST_API\Transcoding;
 
-use \Transcoder\Inc\Providers\Media_Filters;
+use Transcoder\Inc\Providers\Media_Filters;
 
 /**
  * Class Plugin.

@@ -41,7 +41,6 @@ class EasyDamException extends Exception {
 	 */
 	private $notice_message = '';
 
-
 	/**
 	 * Constructor.
 	 *

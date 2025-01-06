@@ -272,7 +272,6 @@ class Ads extends Base {
 		return $vamp_xml;
 	}
 
-
 	/**
 	 * Get item permissions check.
 	 *

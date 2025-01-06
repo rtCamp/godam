@@ -14,6 +14,7 @@
  */
 
 if ( ! function_exists( 'rtt_video_editor_title' ) ) {
+
 	/**
 	 * Add the video thumbnail tab on video edit page.
 	 *
@@ -50,6 +51,7 @@ if ( ! function_exists( 'rtt_video_editor_title' ) ) {
 add_action( 'rtmedia_add_edit_tab_title', 'rtt_video_editor_title', 1000 );
 
 if ( ! function_exists( 'rtt_rtmedia_vedio_editor_content' ) ) {
+
 	/**
 	 * Display the HTML to set the thumbnail for video.
 	 *
@@ -232,7 +234,6 @@ function rtt_update_wp_media_thumbnail( $thumb_url, $attachment_id ) {
 
 add_action( 'transcoded_thumb_added', 'rtt_update_wp_media_thumbnail', 10, 2 );
 
-
 /**
  * Add a field for the transcoded URL to the media attachment edit screen.
  *
@@ -314,4 +315,5 @@ function register_rt_transcoded_url_meta() {
 		)
 	);
 }
+
 add_action( 'init', 'register_rt_transcoded_url_meta' );

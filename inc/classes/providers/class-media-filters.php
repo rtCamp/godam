@@ -51,7 +51,6 @@ class Media_Filters {
 		add_action( 'admin_notices', array( $this, 'bulk_action_notices' ) );
 	}
 
-
 	/**
 	 * Handle the upload to S3 request.
 	 *
@@ -89,7 +88,7 @@ class Media_Filters {
 	 */
 	public function bulk_action_notices() {
 
-		check_admin_referer( 'bulk-upload-to-s3', 'nonce' );
+		// phpcs:disable WordPress.Security.NonceVerification -- Nonce verification is not required to show the admin notices.
 
 		if ( isset( $_REQUEST['bulk_upload_to_s3'] ) ) {
 			$success_count = intval( $_REQUEST['bulk_upload_to_s3'] );
@@ -114,6 +113,8 @@ class Media_Filters {
 				);
 			}
 		}
+
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 
 	/**
@@ -160,7 +161,6 @@ class Media_Filters {
 	
 		return $redirect_to;
 	}
-
 
 	/**
 	 * Handle media upload.

@@ -77,5 +77,4 @@ abstract class Base {
 	 * @throws EasyDamException If the credentials are invalid.
 	 */
 	abstract public function can_write();
-
 }

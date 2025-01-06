@@ -168,5 +168,4 @@ class Item_Handler {
 	
 		return $bucket_path;
 	}
-
 }
