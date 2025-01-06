@@ -42,5 +42,18 @@ class Meta_Rest_Fields {
 				},
 			)
 		);
+
+		register_rest_field(
+			'attachment',
+			'easydam_analytics',
+			array(
+				'get_callback'    => function ( $post ) {
+					return get_post_meta( $post['id'], 'easydam_analytics', true );
+				},
+				'update_callback' => function ( $value, $post ) {
+					return update_post_meta( $post->ID, 'easydam_analytics', $value );
+				},
+			)
+		);
 	}
 }
