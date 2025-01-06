@@ -156,7 +156,6 @@ class RetranscodeMedia {
 		wp_enqueue_style( 'jquery-ui-retranscodemedia', plugins_url( 'css/jquery-ui-1.7.2.custom.css', __FILE__ ), array(), '1.7.2' );
 	}
 
-
 	/**
 	 * Add a "Re Transcode Media" link to the media row actions
 	 *
@@ -217,7 +216,6 @@ class RetranscodeMedia {
 		return $actions;
 	}
 
-
 	/**
 	 * Add new items to the Bulk Actions using Javascript
 	 */
@@ -268,7 +266,6 @@ class RetranscodeMedia {
 		wp_safe_redirect( $redirect_url );
 		exit();
 	}
-
 
 	/**
 	 * The user interface
@@ -605,7 +602,6 @@ class RetranscodeMedia {
 		<?php
 	}
 
-
 	/**
 	 * Process a single image ID (this is an AJAX handler)
 	 */
@@ -699,7 +695,6 @@ class RetranscodeMedia {
 		die( wp_json_encode( array( 'success' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) was successfully sent in %3$s seconds.', 'transcoder' ), esc_html( get_the_title( $media->ID ) ), $media->ID, timer_stop() ) ) ) );
 	}
 
-
 	/**
 	 * Helper to make a JSON error message
 	 *
@@ -710,7 +705,6 @@ class RetranscodeMedia {
 		// translators: Media name, Media ID and message for failed transcode.
 		die( wp_json_encode( array( 'error' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) failed to sent. The error message was: %3$s', 'transcoder' ), esc_html( get_the_title( $id ) ), $id, $message ) ) ) );
 	}
-
 
 	/**
 	 * Helper function to escape quotes in strings for use in Javascript

@@ -44,7 +44,6 @@ class GF extends Base {
 		);
 	}
 
-
 	/**
 	 * Get all Gravity Forms.
 	 *
@@ -100,8 +99,6 @@ class GF extends Base {
 
 		return rest_ensure_response( $gform );
 	}
-
-
 
 	/**
 	 * Get item permissions check.

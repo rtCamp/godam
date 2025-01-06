@@ -35,6 +35,88 @@ class Media_Library_Ajax {
 		add_action( 'pre_get_posts', array( $this, 'pre_get_post_filter' ) );
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
+
+		// TODO: think about merging this hooks and other to media-filters, as they are related to media library.
+		$offload_media = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
+		$offload_media = isset( $offload_media['offLoadMedia'] ) ? $offload_media['offLoadMedia'] : false;
+
+		if ( $offload_media ) {
+			add_filter( 'manage_media_columns', array( $this, 'add_media_column' ) );
+			add_action( 'manage_media_custom_column', array( $this, 'media_column_value' ), 10, 2 );
+			add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_folder_to_attachment' ), 10, 2 );
+			add_filter( 'bulk_actions-upload', array( $this, 'add_bulk_actions' ) );
+		}
+	}
+
+	/**
+	 * Add media column.
+	 *
+	 * @param array $columns Columns.
+	 *
+	 * @return array $columns Columns.
+	 */
+	public function add_media_column( $columns ) {
+		$columns['s3_url'] = 'S3 URL';
+
+		return $columns;
+	}
+
+	/**
+	 * Add media column value.
+	 *
+	 * @param string $column_name Column name.
+	 * @param int    $post_id     Post ID.
+	 *
+	 * @return void
+	 */
+	public function media_column_value( $column_name, $post_id ) {
+		if ( 's3_url' === $column_name ) {
+			$s3_url = get_post_meta( $post_id, 's3_url', true );
+
+			if ( empty( $s3_url ) ) {
+				?>
+					<a class="upload-to-s3" href="#" data-post-id="<?php echo esc_attr( $post_id ); ?>"><i class="dashicons dashicons-upload"></i></a>
+				<?php
+			} else {
+				?>
+					<a href="<?php echo esc_url( $s3_url ); ?>" target="_blank"><?php esc_html_e( 'LINK', 'transcoder' ); ?></a>
+				<?php
+			}
+		}
+	}
+
+	/**
+	 * Add bulk actions.
+	 *
+	 * @param array $actions Bulk actions.
+	 *
+	 * @return array $actions Bulk actions.
+	 */
+	public function add_bulk_actions( $actions ) {
+		$actions['upload_to_s3'] = __( 'Upload to S3', 'transcoder' );
+		return $actions;
+	}
+
+	/**
+	 * Upload media to S3.
+	 *
+	 * @param array   $response Attachment response.
+	 * @param WP_Post $attachment Attachment object.
+	 *
+	 * @return array $response Attachment response.
+	 */
+	public function add_media_folder_to_attachment( $response, $attachment ) {
+		
+		// Check if S3 url is present to S3 attachment meta.
+		$s3_url = get_post_meta( $attachment->ID, 's3_url', true );
+
+		if ( ! empty( $s3_url ) ) {
+			$response['s3_url'] = $s3_url;
+		} else {
+			$response['s3_url'] = false;
+		}
+
+		return $response;
 	}
 
 	/**
@@ -133,6 +215,21 @@ class Media_Library_Ajax {
 			}
 
 			unset( $query->query_vars['media-folder'] );
+
+			if ( isset( $_GET['date-start'] ) && isset( $_GET['date-end'] ) ) {
+				$query->set(
+					'date_query',
+					array(
+						'relation' => 'AND',
+						array(
+							'after' => sanitize_text_field( $_GET['date-start'] ),
+						),
+						array(
+							'before' => sanitize_text_field( $_GET['date-end'] ),
+						),
+					)
+				);
+			}
 		}
 	}
 
@@ -187,6 +284,11 @@ class Media_Library_Ajax {
 				);
 			}
 			echo '</select>';
+
+			// Render the date range filter.
+			echo '<input id="media-date-range-filter" />';
+			echo '<input id="media-date-range-filter-start" name="date-start" />';
+			echo '<input id="media-date-range-filter-end" name="date-end" />';
 		}
 	}
 

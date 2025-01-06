@@ -121,6 +121,7 @@ function transcoder_filter_input( $type, $variable_name, $filter = FILTER_DEFAUL
 }
 
 if ( ! function_exists( 'fetch_overlay_media_url' ) ) {
+
 	/**
 	 * Fetch the URL of a media file by its ID.
 	 *

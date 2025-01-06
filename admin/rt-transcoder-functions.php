@@ -206,6 +206,7 @@ function rtt_get_media_url( $attachment_id, $media_type = 'mp4' ) {
 }
 
 if ( ! function_exists( 'rtt_update_activity_after_thumb_set' ) ) {
+
 	/**
 	 * Update the activity after thumb is set to the video.
 	 *
@@ -260,6 +261,7 @@ if ( ! function_exists( 'rtt_update_activity_after_thumb_set' ) ) {
 }
 
 if ( ! function_exists( 'rtt_get_edit_post_link' ) ) {
+
 	/**
 	 * Retrieve edit posts link for post. Derived from WordPress core
 	 *
@@ -303,6 +305,7 @@ if ( ! function_exists( 'rtt_get_edit_post_link' ) ) {
 }
 
 if ( ! function_exists( 'rtt_get_job_id_by_attachment_id' ) ) {
+
 	/**
 	 * Get the job id of attachment
 	 *
@@ -534,6 +537,7 @@ function rtt_bp_get_activity_content( $content, $activity = null ) {
 		return $content;
 	}
 }
+
 add_filter( 'bp_get_activity_content_body', 'rtt_bp_get_activity_content', 99, 2 );
 
 /**
@@ -769,7 +773,6 @@ function rtt_add_status_columns_content( $column_name, $post_id ) {
 
 add_action( 'manage_media_custom_column', 'rtt_add_status_columns_content', 10, 2 );
 
-
 /**
  * Set sortable status column in media admin page
  *
@@ -786,7 +789,6 @@ function rtt_status_column_register_sortable( $columns ) {
 }
 
 add_filter( 'manage_upload_sortable_columns', 'rtt_status_column_register_sortable' );
-
 
 /**
  * Method to add js function.
@@ -841,6 +843,7 @@ function rtt_enqueue_frontend_scripts() {
 		wp_localize_script( 'rt-transcoder-front-js', 'rtTranscoder', array( 'restURLPrefix' => $rest_url_prefix ) );
 	}
 }
+
 add_action( 'wp_enqueue_scripts', 'rtt_enqueue_frontend_scripts' );
 
 /**
