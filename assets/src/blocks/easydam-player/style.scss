@@ -126,6 +126,7 @@ a {
     h2 {
         font-size: 32px;
         font-weight: 700;
+		line-height: 1.125;
     }
 
     p {
@@ -153,11 +154,15 @@ a {
 .image-cta-btn {
     padding: 10px 15px;
     border-radius: 4px;
-    color: #ffffff;
+    color: #fff;
     background-color: #eeab95;
     border: none;
     font-size: 16px;
     text-transform: uppercase;
+
+	a {
+		color: #fff;
+	}
 }
 
 .vertical-image-cta-container {

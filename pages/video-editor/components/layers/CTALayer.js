@@ -224,12 +224,16 @@ const CTALayer = ( { layerID, goBack } ) => {
 					) }
 					{ layer?.cta_type === 'image' && (
 						<div className="easydam-layer">
-							<div
-								className={ layer?.imageCtaOrientation === 'portrait'
-									? 'vertical-image-cta-container'
-									: 'image-cta-container' }
-								dangerouslySetInnerHTML={ { __html: formHTML } }
-							/>
+							<div className="image-cta-overlay-container">
+								<div className="image-cta-parent-container">
+									<div
+										className={ layer?.imageCtaOrientation === 'portrait'
+											? 'vertical-image-cta-container'
+											: 'image-cta-container' }
+										dangerouslySetInnerHTML={ { __html: formHTML } }
+									/>
+								</div>
+							</div>
 						</div>
 					) }
 					{ layer.allow_skip && (
