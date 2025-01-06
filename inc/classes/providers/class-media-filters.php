@@ -145,7 +145,7 @@ class Media_Filters {
 			}
 
 			if ( $uploaded ) {
-				$success_count++;
+				++$success_count;
 			}
 		}
 	

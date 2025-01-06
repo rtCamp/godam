@@ -9,7 +9,7 @@ namespace Transcoder\Inc\Providers\Handlers;
 
 use Transcoder\Inc\EasyDAM_Constants;
 use Transcoder\Inc\Providers\Storage\StorageFactory;
-use \Transcoder\Inc\Providers\Exceptions\EasyDamException;
+use Transcoder\Inc\Providers\Exceptions\EasyDamException;
 
 /**
  * Class Item_Handler
@@ -61,7 +61,7 @@ class Item_Handler {
 					try {
 						$provider->delete( $s3_url );
 					} catch ( EasyDamException $e ) {
-						$failed_count++;
+						++$failed_count;
 					}
 				}
 			}
@@ -80,17 +80,17 @@ class Item_Handler {
 		$image_sizes = wp_get_attachment_metadata( $attachment_id );
 
 		if ( ! $image_sizes ) {
-			throw new EasyDamException( "Metadata not found for attachment ID: $attachment_id" );
+			throw new EasyDamException( esc_html( "Metadata not found for attachment ID: $attachment_id" ) );
 		}
 
 		if ( 'image' !== substr( get_post_mime_type( $attachment_id ), 0, 5 ) ) {
-			throw new EasyDamException( "Attachment is not an image for attachment ID: $attachment_id" );
+			throw new EasyDamException( esc_html( "Attachment is not an image for attachment ID: $attachment_id" ) );
 		}
 
 		$s3_url = get_post_meta( $attachment_id, 's3_url', true );
 
 		if ( ! empty( $s3_url ) ) {
-			throw new EasyDamException( "S3 URL already present for attachment ID: $attachment_id" );
+			throw new EasyDamException( esc_html( "S3 URL already present for attachment ID: $attachment_id" ) );
 		}
 
 		$provider = StorageFactory::get_instance()->get_provider();
@@ -98,7 +98,7 @@ class Item_Handler {
 		$file_path = get_attached_file( $attachment_id );
 
 		if ( ! file_exists( $file_path ) ) {
-			throw new EasyDamException( "File not found for attachment ID: $attachment_id" );
+			throw new EasyDamException( esc_html( "File not found for attachment ID: $attachment_id" ) );
 		}
 
 		$bucket_path = self::get_settings_base_path_x();
@@ -123,10 +123,10 @@ class Item_Handler {
 	
 						update_post_meta( $attachment_id, "s3_url_{$size}", $resized_object_url );
 					} catch ( EasyDamException $e ) {
-						$failed_count++;
+						++$failed_count;
 					}
 				} else {
-					$failed_count++;
+					++$failed_count;
 				}
 			}
 		}
@@ -147,25 +147,6 @@ class Item_Handler {
 		$bucket_path = trim( $options['bucketPath'], '/' );
 		$bucket_path = trailingslashit( $bucket_path );
 
-		return $bucket_path;
-	}
-
-	/**
-	 * Get the base path from the settings.
-	 *
-	 * @return string|bool
-	 */
-	private function get_settings_base_path() {
-		$options = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
-	
-		if ( ! $options || empty( $options['bucketPath'] ) ) {
-			return false;
-		}
-	
-		// Ensure the bucketPath has no leading slash and exactly one trailing slash.
-		$bucket_path = trim( $options['bucketPath'], '/' );
-		$bucket_path = trailingslashit( $bucket_path );
-	
 		return $bucket_path;
 	}
 }

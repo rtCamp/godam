@@ -45,6 +45,5 @@ class Storage_Handler {
 
 		$provider = StorageFactory::get_instance()->get_provider();
 		$provider->can_write();
-
 	}
 }

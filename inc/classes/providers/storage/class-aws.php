@@ -76,8 +76,8 @@ class AWS extends Base {
 
 		} catch ( AwsException $e ) {
 			throw new EasyDamException(
-				$e->getAwsErrorMessage(),
-				$e->getCode(),
+				esc_html( $e->getAwsErrorMessage() ),
+				esc_html( $e->getCode() ),
 				true
 			);
 		}
@@ -101,8 +101,8 @@ class AWS extends Base {
 			);
 		} catch ( AwsException $e ) {
 			throw new EasyDamException(
-				$e->getAwsErrorMessage(),
-				$e->getCode(),
+				esc_html( $e->getAwsErrorMessage() ),
+				esc_html( $e->getCode() ),
 				true
 			);
 		}
@@ -125,8 +125,8 @@ class AWS extends Base {
 			return $bucket_list;
 		} catch ( AwsException $e ) {
 			throw new EasyDamException(
-				$e->getAwsErrorMessage(),
-				$e->getCode(),
+				esc_html( $e->getAwsErrorMessage() ),
+				esc_html( $e->getCode() ),
 				true
 			);
 		}
@@ -167,13 +167,13 @@ class AWS extends Base {
 
 		} catch ( AwsException $e ) {
 			throw new EasyDamException(
-				$e->getAwsErrorMessage(),
-				$e->getCode(),
+				esc_html( $e->getAwsErrorMessage() ),
+				esc_html( $e->getCode() ),
 				true
 			);
 		} catch ( \Exception $e ) {
 			throw new EasyDamException(
-				$e->getMessage(),
+				esc_html( $e->getMessage() ),
 				404,
 				true
 			);

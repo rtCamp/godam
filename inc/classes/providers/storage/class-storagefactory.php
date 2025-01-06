@@ -66,7 +66,7 @@ class StorageFactory {
 		$options = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
 	
 		if ( ! $options || ! isset( $options[ $provider_name ] ) ) {
-			throw new EasyDamException( "Configuration for provider $provider_name is missing.", 404 );
+			throw new EasyDamException( esc_html( "Configuration for provider $provider_name is missing." ), 404 );
 		}
 	
 		$provider_config = $options[ $provider_name ];
@@ -75,7 +75,7 @@ class StorageFactory {
 		$required_keys = array( 'accessKey', 'secretKey' );
 		foreach ( $required_keys as $key ) {
 			if ( empty( $provider_config[ $key ] ) ) {
-				throw new EasyDamException( "Missing '$key' for provider.", 404 );
+				throw new EasyDamException( esc_html( "Missing '$key' for provider." ), 404 );
 			}
 		}
 	
