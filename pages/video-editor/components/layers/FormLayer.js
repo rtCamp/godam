@@ -9,7 +9,7 @@ import Editor from '@monaco-editor/react';
 /**
  * WordPress dependencies
  */
-import { Button, SelectControl, ToggleControl, ComboboxControl, TextareaControl, Modal, ColorPalette } from '@wordpress/components';
+import { Button, SelectControl, ToggleControl, ComboboxControl, TextareaControl, Modal, Panel, PanelBody, PanelRow } from '@wordpress/components';
 import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
@@ -19,6 +19,7 @@ import { useState, useEffect } from '@wordpress/element';
  */
 import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
 import LayerControl from '../LayerControls';
+import ColorPickerButton from '../ColorPickerButton';
 
 const templateOptions = [
 	{
@@ -91,6 +92,8 @@ const FormLayer = ( { layerID, goBack } ) => {
 			} );
 	};
 
+	console.log( 'Layer:', layer );
+
 	return (
 		<>
 			<div className="flex justify-between items-center pb-3 border-b mb-3">
@@ -125,27 +128,6 @@ const FormLayer = ( { layerID, goBack } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
 				}
 			/>
-			<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom CSS', 'transcoder' ) }</label>
-			<Editor
-				id="custom-css"
-				className="code-editor"
-				defaultLanguage="css"
-				options={ {
-					minimap: { enabled: false },
-				} }
-				defaultValue={ layer.custom_css }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'custom_css', value } ) )
-				}
-			/>
-
-			{ /* Layer background color */ }
-			<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Layer background color', 'transcoder' ) }</label>
-			<ColorPalette
-				value={ layer.bg_color ?? '#FFFFFFB3' }
-				enableAlpha={ true }
-				onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
-			/>
 
 			<ToggleControl
 				className="mb-4"
@@ -156,6 +138,38 @@ const FormLayer = ( { layerID, goBack } ) => {
 				}
 				help={ __( 'If enabled, the user will be able to skip the form submission.', 'transcoder' ) }
 			/>
+
+			<Panel className="-mx-4 border-x-0">
+				<PanelBody
+					title={ __( 'Advance', 'transcoder' ) }
+					initialOpen={ false }
+				>
+
+					{ /* Layer background color */ }
+					<label htmlFor="color" className="easydam-label">{ __( 'Color', 'transcoder' ) }</label>
+					<ColorPickerButton
+						className="mb-4"
+						value={ layer?.bg_color ?? '#FFFFFFB3' }
+						label={ __( 'Layer background color', 'transcoder' ) }
+						enableAlpha={ true }
+						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
+					/>
+
+					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'transcoder' ) }</label>
+					<Editor
+						id="custom-css"
+						className="code-editor"
+						defaultLanguage="css"
+						options={ {
+							minimap: { enabled: false },
+						} }
+						defaultValue={ layer.custom_css }
+						onChange={ ( value ) =>
+							dispatch( updateLayerField( { id: layer.id, field: 'custom_css', value } ) )
+						}
+					/>
+				</PanelBody>
+			</Panel>
 
 			<LayerControl>
 				<>

@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+*, ::before, ::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+}
+
 .sticky-navbar {
   position: sticky;
   top: var(--wp-admin--admin-bar--height, 0);
@@ -393,6 +400,11 @@ input, textarea, select {
 }
 
 /* Player settings */
+
+.easydam-label {
+	@apply text-[11px] uppercase font-medium mb-2 block;
+}
+
 #easydam-player-settings .components-base-control__label {
 	@apply font-semibold;
 }
@@ -401,6 +413,7 @@ input, textarea, select {
 	@apply text-[11px] uppercase font-semibold mb-2 block;
 }
 
+/* Sidebar Ad Layer Settings */
 .sidebar-video-container {
 	position: relative;
 }

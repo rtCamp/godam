@@ -12,6 +12,8 @@ import {
 	SelectControl,
 	ToggleControl,
 	ColorPalette,
+	Panel,
+	PanelBody,
 } from '@wordpress/components';
 import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
@@ -25,6 +27,7 @@ import TextCTA from '../cta/TextCTA';
 import ImageCTA from '../cta/ImageCTA';
 import HtmlCTA from '../cta/HtmlCTA';
 import LayerControls from '../LayerControls';
+import ColorPickerButton from '../ColorPickerButton';
 
 const CTALayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
@@ -124,7 +127,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 			<div className="flex justify-between items-center pb-3 border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
 				<p className="font-semibold">
-					{ __( 'Form layer at', 'transcoder' ) } { 5 }s
+					{ __( 'Form layer at', 'transcoder' ) } { layer.displayTime }s
 				</p>
 				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
 				{ isOpen && (
@@ -177,23 +180,6 @@ const CTALayer = ( { layerID, goBack } ) => {
 				/>
 				{ renderSelectedCTAInputs() }
 
-				{ /* Layer background color */ }
-				<label
-					htmlFor="custom-css"
-					className="text-[11px] uppercase font-medium mb-2"
-				>
-					{ __( 'Layer background color', 'transcoder' ) }
-				</label>
-				<ColorPalette
-					value={ layer.bg_color }
-					enableAlpha={ true }
-					onChange={ ( value ) =>
-						dispatch(
-							updateLayerField( { id: layer.id, field: 'bg_color', value } ),
-						)
-					}
-				/>
-
 				{ /* Common settings */ }
 				<ToggleControl
 					label={ __( 'Allow user to skip', 'transcoder' ) }
@@ -209,6 +195,24 @@ const CTALayer = ( { layerID, goBack } ) => {
 					) }
 					className="mb-4"
 				/>
+
+				<Panel className="-mx-4 border-x-0">
+					<PanelBody
+						title={ __( 'Advance', 'transcoder' ) }
+						initialOpen={ false }
+					>
+						{ /* Layer background color */ }
+						<label htmlFor="color" className="easydam-label">{ __( 'Color', 'transcoder' ) }</label>
+						<ColorPickerButton
+							className="mb-4"
+							value={ layer?.bg_color ?? '#FFFFFFB3' }
+							label={ __( 'Layer background color', 'transcoder' ) }
+							enableAlpha={ true }
+							onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
+						/>
+					</PanelBody>
+				</Panel>
+
 			</div>
 			<LayerControls>
 				<>

@@ -121,7 +121,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			<div className="flex justify-between items-center pb-3 border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
 				<p className="font-semibold">
-					{ __( 'Hotspot Layer', 'transcoder' ) }
+					{ __( 'Hotspot Layer at', 'transcoder' ) } { layer.displayTime }s
 				</p>
 				<Button
 					icon={ trash }
