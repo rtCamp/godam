@@ -20,15 +20,12 @@
 	padding-top: 100px;
 }
 
-.analytics-info-container {
-	padding-top: 50px;
-}
-
 .video-info-container {
 	display: flex;
 	width: 100%;
 	gap: 50px;
 	justify-content: center;
+	align-items: center;
 
 	hr {
 		border-top: dashed 2px;
@@ -58,6 +55,7 @@
 .easydam-analytics-video-player {
 	max-width: 640px;
 	width: 100%;
+	aspect-ratio: 16 / 9;
 
 	div,
 	.video-js {
