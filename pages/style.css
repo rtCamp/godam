@@ -1,4 +1,10 @@
 @tailwind base;
+@layer base {
+	a {
+		color: inherit;
+		text-decoration: none;
+	}
+}
 @tailwind components;
 @tailwind utilities;
 

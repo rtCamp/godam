@@ -185,6 +185,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, layer } ) => {
 													addNewLayer( layerType.type );
 													closeModal();
 												} }
+												disabled={ adServer === 'ad-server' && layerType.type === 'ad' }
 											>{ layerType.title }</Button>
 										) )
 									}
