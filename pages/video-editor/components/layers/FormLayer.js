@@ -50,12 +50,13 @@ const FormLayer = ( { layerID, goBack } ) => {
 	};
 
 	useEffect( () => {
-		console.log( 'Form ID:', layer.gf_id );
+		console.log( 'Form ID:', layer.gf_id, 'Form theme:', layer.theme );
 		if ( layer.gf_id ) {
-			fetchGravityForm( layer.gf_id );
+			fetchGravityForm( layer.gf_id, layer.theme );
 		}
 	}, [
 		layer.gf_id,
+		layer.theme,
 	] );
 
 	useEffect( () => {
@@ -82,14 +83,14 @@ const FormLayer = ( { layerID, goBack } ) => {
 	}, [] );
 
 	// Fetch the Gravity Form HTML
-	const fetchGravityForm = ( formId ) => {
-		axios.get( `/wp-json/easydam/v1/gforms/${ formId }` )
-			.then( ( response ) => {
-				setFormHTML( response.data );
-			} )
-			.catch( ( error ) => {
-				console.error( error );
-			} );
+	const fetchGravityForm = ( formId, theme ) => {
+		axios.get( `/wp-json/easydam/v1/gform`, {
+			params: { id: formId, theme },
+		} ).then( ( response ) => {
+			setFormHTML( response.data );
+		} ).catch( ( error ) => {
+			console.error( error );
+		} );
 	};
 
 	console.log( 'Layer:', layer );
