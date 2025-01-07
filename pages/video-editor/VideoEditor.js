@@ -11,14 +11,13 @@ import axios from 'axios';
 import VideoJSPlayer from './VideoJSPlayer';
 import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
-import { initializeStore, saveVideoMeta } from './redux/slice/videoSlice';
+import { initializeStore, saveVideoMeta, setCurrentTab } from './redux/slice/videoSlice';
 
 /**
  * WordPress dependencies
  */
 import { Button, TabPanel, Snackbar } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import Video from './Video';
 
 const VideoEditor = ( { attachmentID } ) => {
 	const videoData = window.videoData;
@@ -32,6 +31,52 @@ const VideoEditor = ( { attachmentID } ) => {
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
+
+	useEffect( () => {
+		// Make sure the post ID is passed in the URL
+		if ( ! attachmentID ) {
+			return;
+		}
+
+		// Collapse the admin sidebar
+		const body = document.querySelector( 'body' );
+		if ( body ) {
+			body.classList.add( 'folded' );
+		}
+
+		// Get the post data
+		fetch( `/wp-json/wp/v2/media/${ attachmentID }`, {
+			headers: {
+				'X-WP-Nonce': videoData.nonce,
+			},
+		} )
+			.then( ( response ) => response.json() )
+			.then( ( data ) => {
+				setVideo( data );
+				const easydamMeta = data.easydam_meta;
+				if ( easydamMeta ) {
+					dispatch( initializeStore( easydamMeta ) );
+				}
+			} )
+			.catch( ( error ) => {
+				console.error( error );
+			} );
+	}, [] );
+
+	const handleTimeUpdate = ( player, time ) => {
+		// Round the current time to 2 decimal places
+		setCurrentTime( time.toFixed( 2 ) );
+	};
+
+	const handlePlayerReady = ( player ) => {
+		playerInstance.current = player;
+	};
+
+	const seekToLayerTime = ( time ) => {
+		if ( playerInstance.current ) {
+			playerInstance.current.currentTime( time );
+		}
+	};
 
 	const saveAttachmentMeta = () => {
 		// Update the attchment meta
@@ -65,7 +110,9 @@ const VideoEditor = ( { attachmentID } ) => {
 				<aside className="py-3">
 					<div id="sidebar-content" className="border-b">
 						<TabPanel
-							onSelect={ () => {} }
+							onSelect={ ( tabName ) => {
+								dispatch( setCurrentTab( tabName ) );
+							} }
 							className="sidebar-tabs"
 							tabs={ [
 								{
@@ -78,7 +125,7 @@ const VideoEditor = ( { attachmentID } ) => {
 									/>,
 								},
 								{
-									name: 'video-settings',
+									name: 'player-settings',
 									title: 'Player Settings',
 									className: 'flex-1 justify-center items-center',
 									component: <Appearance />,
@@ -109,7 +156,44 @@ const VideoEditor = ( { attachmentID } ) => {
 						)
 					}
 
-					<Video currentTime={ currentTime } setCurrentTime={ setCurrentTime } attachmentID={ attachmentID } videoData={ videoData } />
+					{ video && (
+						<div className="max-w-[740px] w-full">
+							<h1 className="text-slate-700 text-base mb-1">{ video.title.rendered }</h1>
+
+							<div className="relative">
+
+								<VideoJSPlayer
+									options={ {
+										controls: true,
+										fluid: true,
+										preload: 'auto',
+										width: '100%',
+										sources: [ { src: video.source_url, type: video.mimeType } ],
+										muted: true,
+										controlBar: {
+											playToggle: true, // Play/Pause button
+											volumePanel: true,
+											currentTimeDisplay: true, // Current time
+											timeDivider: true, // Divider between current time and duration
+											durationDisplay: true, // Total duration
+											fullscreenToggle: true, // Full-screen button
+											subsCapsButton: true,
+											skipButtons: {
+												forward: 10,
+												backward: 10,
+											},
+											progressControl: {
+												vertical: true, // Prevent horizontal volume slider
+											},
+										},
+									} }
+									onTimeupdate={ handleTimeUpdate }
+									onReady={ handlePlayerReady }
+									playbackTime={ currentTime }
+								/>
+							</div>
+						</div>
+					) }
 				</main>
 			</div>
 		</>

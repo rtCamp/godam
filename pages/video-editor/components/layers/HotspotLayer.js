@@ -121,7 +121,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			<div className="flex justify-between items-center pb-3 border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
 				<p className="font-semibold">
-					{ __( 'Hotspot Layer', 'transcoder' ) }
+					{ __( 'Hotspot Layer at', 'transcoder' ) } { layer.displayTime }s
 				</p>
 				<Button
 					icon={ trash }
@@ -343,7 +343,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			<LayerControls>
 				<div
 					ref={ containerRef }
-					className="absolute inset-0 px-4 py-8 bg-white bg-opacity-70 my-auto"
+					className="easydam-layer hotspot-layer"
 					style={ { backgroundColor: layer.bg_color || 'transparent' } }
 				>
 					{ hotspots.map( ( hotspot, index ) => {
@@ -443,7 +443,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 					} ) }
 				</div>
 				<Button
-					className="absolute bottom-6 right-0"
+					className="skip-button"
 					variant="primary"
 					icon={ chevronRight }
 					iconSize="18"
