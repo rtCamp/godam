@@ -133,7 +133,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, layer } ) => {
 								<Tooltip
 									key={ layer.id }
 									className="w-full flex justify-between items-center p-2 border rounded mb-2 hover:bg-gray-50 cursor-pointer"
-									text={ adServer === 'ad-server' && layer.type === 'ad' ? __( 'This ad will be override by Ad server\'s ads', 'transcoder' ) : '' }
+									text={ adServer === 'ad-server' && layer.type === 'ad' ? __( 'This ad will be overriden by Ad server\'s ads', 'transcoder' ) : '' }
 									placement="right"
 								>
 									<div className="border rounded mb-2">
