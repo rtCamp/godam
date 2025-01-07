@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
 /**
  * External dependencies
  */
@@ -53,6 +52,7 @@ export const VideoJS = ( props ) => {
 
 	const [ duration, setDuration ] = useState( 0 );
 	const [ sliderValue, setSliderValue ] = useState( 0 );
+	const [ displayVideoControls, setDisplayVideoControls ] = useState( true );
 
 	const dispatch = useDispatch();
 
@@ -60,6 +60,7 @@ export const VideoJS = ( props ) => {
 	const videoConfig = videoMeta.videoConfig;
 	const layers = videoMeta.layers;
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
+	const currentTab = useSelector( ( state ) => state.videoReducer.currentTab );
 
 	const setCurrentTime = ( timeInSeconds ) => {
 		setSliderValue( timeInSeconds );
@@ -295,6 +296,13 @@ export const VideoJS = ( props ) => {
 		if ( playerRef.current ) {
 			const player = playerRef.current;
 
+			if ( currentLayer ) {
+				setDisplayVideoControls( false );
+				player.pause();
+			} else {
+				setDisplayVideoControls( true );
+			}
+
 			if ( currentLayer?.adTagUrl ) {
 				const imaOptions = {
 					adTagUrl: currentLayer?.adTagUrl,
@@ -322,34 +330,47 @@ export const VideoJS = ( props ) => {
 
 	return (
 		<>
-			<div className="relative" data-vjs-player>
-				<div ref={ videoRef } />
-				<div id="easydam-layer-placeholder" />
+			<div
+				style={ {
+					'--is-controls-visible': displayVideoControls ? '' : 'none',
+				} }
+			>
+				<div id="easydam-video-player" className="relative" data-vjs-player>
+					<div ref={ videoRef } />
+					<div id="easydam-layer-placeholder" />
+				</div>
 			</div>
 
 			<div className="mt-2">Time: { playbackTime }</div>
 
-			<Slider
-				className="mt-8 mb-6"
-				value={ sliderValue }
-				onChange={ ( value ) => {
-					setSliderValue( value );
-					if ( playerRef.current ) {
-						playerRef.current.currentTime( value );
-					}
-				} }
-				max={ duration }
-				layers={ layers }
-				onLayerSelect={ ( layer ) => {
-					dispatch( setCurrentLayer( layer ) );
-				} }
-			/>
+			{
+				currentTab === 'layers' && (
+					<Slider
+						className="mt-12 mb-6"
+						value={ sliderValue }
+						onChange={ ( value ) => {
+							setSliderValue( value );
+							if ( playerRef.current ) {
+								playerRef.current.currentTime( value );
+							}
+						} }
+						max={ duration }
+						layers={ layers }
+						onLayerSelect={ ( layer ) => {
+							dispatch( setCurrentLayer( layer ) );
+							playerRef.current.currentTime( layer.displayTime );
+						} }
+						disabled={ currentLayer }
+						currentLayerID={ currentLayer?.id }
+					/>
+				)
+			}
 		</>
 	);
 };
 
 const Slider = ( props ) => {
-	const { max, value, onChange, className, layers, onLayerSelect } = props;
+	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID } = props;
 
 	const [ sliderValue, setSliderValue ] = useState( value );
 	const [ hoverValue, setHoverValue ] = useState( null ); // Hover value
@@ -385,6 +406,7 @@ const Slider = ( props ) => {
 				style={ {
 					'--progress-value': `${ sliderValue / max * 100 }%`,
 				} }
+				disabled={ disabled }
 				type="range"
 				min="0"
 				step={ 0.01 }
@@ -415,7 +437,7 @@ const Slider = ( props ) => {
 						// eslint-disable-next-line jsx-a11y/click-events-have-key-events
 						<div
 							key={ layer.id }
-							className="layer-indicator"
+							className={ `layer-indicator ${ layer.type === 'hotspot' ? 'hotspot-indicator' : '' }` }
 							style={ {
 								left: `${ layerLeft }%`,
 								'--hover-width': layer?.duration ? `${ Math.min( ( layer.duration / max ) * 100, 100 - layerLeft ) }%` : '8px',
@@ -423,7 +445,7 @@ const Slider = ( props ) => {
 							onClick={ () => onLayerSelect( layer ) }
 						>
 							<div className="layer-indicator--container">
-								<div className="icon">
+								<div className={ `icon ${ layer.id === currentLayerID ? 'active' : '' }` }>
 									<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type ).icon } />
 									<div>
 										{ layer?.type?.toUpperCase() }

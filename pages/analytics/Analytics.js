@@ -7,7 +7,6 @@ import React, { useState, useEffect } from 'react';
  */
 import './analytics.css';
 import '../video-editor/style.scss';
-import Video from '../video-editor/Video';
 
 const Chart = ( { data, duration, width } ) => {
 	// Calculate the adjuster and opacity once
@@ -79,12 +78,6 @@ const Analytics = ( { attachmentID } ) => {
 					</div>
 					<hr />
 				</div>
-				<Video
-					currentTime={ currentTime }
-					setCurrentTime={ setCurrentTime }
-					attachmentID={ attachmentID }
-					videoData={ window.videoData }
-				/>
 			</div>
 			{ analyticsData && (
 				<Chart
