@@ -49,7 +49,16 @@ $ads_layers = array_filter(
 		return 'ad' === $layer['type'];
 	}
 );
-$ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
+$ad_tag_url = '';
+
+$ad_server = isset( $easydam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $easydam_meta_data['videoConfig']['adServer'] ) : '';
+
+if ( 'ad-server' === $ad_server ) :
+	$ad_tag_url = isset( $easydam_meta_data['videoConfig']['adTagURL'] ) ? $easydam_meta_data['videoConfig']['adTagURL'] : '';
+elseif ( 'self-hosted' === $ad_server && ! empty( $ads_layers ) ) :
+	$ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
+endif;
+
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
@@ -58,7 +67,8 @@ $ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
 		<video
 			class="easydam-player video-js vjs-big-play-centered"
 			data-setup="<?php echo esc_attr( $video_setup ); ?>"
-			data-ad_tag_url="<?php echo esc_url( ! empty( $ads_layers ) ? esc_url( $ad_tag_url ) : '' ); ?>"
+			data-ad_tag_url="<?php echo esc_url_raw( $ad_tag_url ); ?>"
+			data-id="<?php echo esc_attr( $attachment_id ); ?>" 
 		>
 			<?php
 			foreach ( $sources as $source ) :
@@ -100,7 +110,7 @@ $ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
 				// FORM layer.
 				if ( isset( $layer['type'] ) && 'form' === $layer['type'] && ! empty( $layer['gf_id'] ) ) :
 					?>
-					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
+					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>">
 						<div class="form-container">
 							<?php
 								$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
@@ -118,7 +128,7 @@ $ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
 					// CTA layer.
 				elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) :
 					?>
-					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
+					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>">
 						<?php if ( 'text' === $layer['cta_type'] ) : ?>
 							<div class="ql-editor easydam-layer--cta-text">
 								<?php echo wp_kses_post( $layer['text'] ); ?>
@@ -136,6 +146,7 @@ $ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
 					<div
 						id="layer-<?php echo esc_attr( $layer['id'] ); ?>"
 						class="easydam-layer hidden hotspot-layer"
+						style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>"
 					>
 					</div>
 					<?php

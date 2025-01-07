@@ -1,9 +1,9 @@
 
 /* global MediaLibraryTaxonomyFilterData, _ */
 
-const MediaLibraryTaxonomyFilter = wp.media.view.AttachmentFilters;
+let MediaLibraryTaxonomyFilter = wp?.media?.view?.AttachmentFilters;
 
-export default MediaLibraryTaxonomyFilter.extend( {
+MediaLibraryTaxonomyFilter = MediaLibraryTaxonomyFilter?.extend( {
 
 	id: 'media-folder-filter',
 
@@ -54,3 +54,5 @@ export default MediaLibraryTaxonomyFilter.extend( {
 		this.filters = filters;
 	},
 } );
+
+export default MediaLibraryTaxonomyFilter;

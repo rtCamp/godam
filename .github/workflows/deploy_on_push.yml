@@ -28,7 +28,7 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.ED_DEPLOYMENT_KEY }}
           NODE_VERISON: "${{ env.node_version }}"
-          NODE_BUILD_COMMAND: 'npm i && npm run build:prod'
+          NODE_BUILD_COMMAND: 'npm i && npm run build:prod && composer install --no-dev --optimize-autoloader'
       - name: Cleanup
         if: always()
         uses: rtcamp/action-cleanup@master

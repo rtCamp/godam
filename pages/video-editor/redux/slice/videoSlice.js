@@ -14,21 +14,7 @@ const slice = createSlice( {
 			width: '100%',
 			sources: [],
 			playbackRates: [ 0.5, 1, 1.5, 2 ],
-			captions: [
-				{
-					kind: 'captions',
-					src: 'https://dotsub.com/media/5d5f008c-b5d5-466f-bb83-2b3cfa997992/c/chi_hans/vtt',
-					srclang: 'zh',
-					label: 'Chinese',
-					default: true,
-				},
-				{
-					kind: 'captions',
-					src: 'https://example.com/captions-en.vtt',
-					srclang: 'en',
-					label: 'English',
-				},
-			],
+			captions: [],
 			controlBar: {
 				playToggle: true, // Play/Pause button
 				volumePanel: true,
@@ -48,7 +34,7 @@ const slice = createSlice( {
 				brandingIcon: false,
 				appearanceColor: '',
 				hoverColor: '',
-				zoomLevel: 1,
+				zoomLevel: 0,
 				playButtonPosition: 'center',
 				controlBarPosition: 'horizontal',
 				customBrandImg: '',
@@ -58,6 +44,7 @@ const slice = createSlice( {
 		layers: [],
 		isChanged: false,
 		currentLayer: null,
+		currentTab: 'layers',
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
@@ -80,6 +67,7 @@ const slice = createSlice( {
 		addLayer: ( state, action ) => {
 			const newLayer = action.payload;
 			state.layers.push( newLayer );
+			state.currentLayer = newLayer;
 			state.isChanged = true;
 		},
 		removeLayer: ( state, action ) => {
@@ -104,6 +92,12 @@ const slice = createSlice( {
 		setCurrentLayer: ( state, action ) => {
 			state.currentLayer = action.payload;
 		},
+		setCurrentTab: ( state, action ) => {
+			// check if action.payload is either 'layers' or 'player-settings'.
+			if ( action.payload === 'layers' || action.payload === 'player-settings' ) {
+				state.currentTab = action.payload;
+			}
+		},
 	},
 } );
 
@@ -115,5 +109,6 @@ export const {
 	updateVideoConfig,
 	updateSkipTime,
 	setCurrentLayer,
+	setCurrentTab,
 } = slice.actions;
 export default slice.reducer;

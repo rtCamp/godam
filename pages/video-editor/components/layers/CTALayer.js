@@ -12,6 +12,8 @@ import {
 	SelectControl,
 	ToggleControl,
 	ColorPalette,
+	Panel,
+	PanelBody,
 } from '@wordpress/components';
 import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
@@ -25,6 +27,7 @@ import TextCTA from '../cta/TextCTA';
 import ImageCTA from '../cta/ImageCTA';
 import HtmlCTA from '../cta/HtmlCTA';
 import LayerControls from '../LayerControls';
+import ColorPickerButton from '../ColorPickerButton';
 
 const CTALayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
@@ -124,7 +127,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 			<div className="flex justify-between items-center pb-3 border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
 				<p className="font-semibold">
-					{ __( 'Form layer at', 'transcoder' ) } { 5 }s
+					{ __( 'Form layer at', 'transcoder' ) } { layer.displayTime }s
 				</p>
 				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
 				{ isOpen && (
@@ -177,23 +180,6 @@ const CTALayer = ( { layerID, goBack } ) => {
 				/>
 				{ renderSelectedCTAInputs() }
 
-				{ /* Layer background color */ }
-				<label
-					htmlFor="custom-css"
-					className="text-[11px] uppercase font-medium mb-2"
-				>
-					{ __( 'Layer background color', 'transcoder' ) }
-				</label>
-				<ColorPalette
-					value={ layer.bg_color }
-					enableAlpha={ true }
-					onChange={ ( value ) =>
-						dispatch(
-							updateLayerField( { id: layer.id, field: 'bg_color', value } ),
-						)
-					}
-				/>
-
 				{ /* Common settings */ }
 				<ToggleControl
 					label={ __( 'Allow user to skip', 'transcoder' ) }
@@ -209,20 +195,52 @@ const CTALayer = ( { layerID, goBack } ) => {
 					) }
 					className="mb-4"
 				/>
+
+				<Panel className="-mx-4 border-x-0">
+					<PanelBody
+						title={ __( 'Advance', 'transcoder' ) }
+						initialOpen={ false }
+					>
+						{ /* Layer background color */ }
+						<label htmlFor="color" className="easydam-label">{ __( 'Color', 'transcoder' ) }</label>
+						<ColorPickerButton
+							className="mb-4"
+							value={ layer?.bg_color ?? '#FFFFFFB3' }
+							label={ __( 'Layer background color', 'transcoder' ) }
+							enableAlpha={ true }
+							onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
+						/>
+					</PanelBody>
+				</Panel>
+
 			</div>
 			<LayerControls>
 				<>
-					<div className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70 my-auto">
-						<div className="h-full flex items-center">
-							<div
-								className={ `${ 'image' === layer?.cta_type ? 'm-auto' : 'max-w-[400px]' } mx-auto text-black text-5xl` }
-								dangerouslySetInnerHTML={ { __html: formHTML } }
-							/>
+					{ layer?.cta_type === 'text' && (
+						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
+							<div className="ql-editor easydam-layer--cta-text" dangerouslySetInnerHTML={ { __html: formHTML } } />
 						</div>
-					</div>
+					) }
+					{ layer?.cta_type === 'html' && (
+						<div className="easydam-layer" dangerouslySetInnerHTML={ { __html: formHTML } } style={ { backgroundColor: layer.bg_color } } />
+					) }
+					{ layer?.cta_type === 'image' && (
+						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
+							<div className="image-cta-overlay-container">
+								<div className="image-cta-parent-container">
+									<div
+										className={ layer?.imageCtaOrientation === 'portrait'
+											? 'vertical-image-cta-container'
+											: 'image-cta-container' }
+										dangerouslySetInnerHTML={ { __html: formHTML } }
+									/>
+								</div>
+							</div>
+						</div>
+					) }
 					{ layer.allow_skip && (
 						<Button
-							className="absolute bottom-6 right-0"
+							className="skip-button"
 							variant="primary"
 							icon={ chevronRight }
 							iconSize="18"

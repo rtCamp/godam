@@ -13,15 +13,19 @@ import '../../video-control.css';
 import {
 	Button,
 	CheckboxControl,
-	ColorPicker,
 	CustomSelectControl,
 	Icon,
 	RangeControl,
 	ColorPalette,
+	TabPanel,
+	TextareaControl,
+	ToggleControl,
 } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateVideoConfig } from '../../redux/slice/videoSlice';
+import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice';
 import EasyDAM from '../../../../assets/src/images/EasyDAM.png';
+import ColorPickerButton from '../ColorPickerButton';
 
 const Appearance = () => {
 	const dispatch = useDispatch();
@@ -38,6 +42,7 @@ const Appearance = () => {
 				.querySelector( '.vjs-subs-caps-button' )
 				.classList.remove( 'vjs-hidden' );
 		}
+		dispatch( setCurrentLayer( null ) );
 	}, [] );
 
 	function handleVolumeToggle() {
@@ -419,57 +424,61 @@ const Appearance = () => {
 	}
 
 	return (
-		<div className="p-4 pb-20">
+		<div id="easydam-player-settings" className="p-4 pb-20">
 			<div className="accordion-item--content mt-2 flex flex-col gap-6">
-				<div className="flex flex-col gap-5">
-					<div className="form-group flex items-center gap-10">
-						<CheckboxControl
+				<div className="display-settings">
+					<label
+						htmlFor="custom-brand-logo"
+						className="easydam-label"
+					>
+						{ __( 'Display settings', 'transcoder' ) }
+					</label>
+
+					<div className="flex flex-col gap-3">
+						<ToggleControl
 							__nextHasNoMarginBottom
 							label="Show Volume Slider"
 							checked={ videoConfig.controlBar.volumePanel }
 							onChange={ handleVolumeToggle }
 						/>
-					</div>
-					<div className="form-group flex items-center gap-10">
-						<CheckboxControl
+						<ToggleControl
 							__nextHasNoMarginBottom
 							label="Display Captions"
 							onChange={ handleCaptionsToggle }
 							checked={ videoConfig.controlBar.subsCapsButton }
 						/>
-					</div>
-					<div className="form-group flex items-center gap-10">
-						<CheckboxControl
+						<ToggleControl
 							__nextHasNoMarginBottom
 							label="Show Branding"
 							onChange={ handleBrandingToggle }
 							checked={ videoConfig.controlBar.brandingIcon }
 						/>
 					</div>
+
 				</div>
+
 				{ videoConfig.controlBar.brandingIcon && (
 					<div className="form-group">
 						<label
-							htmlFor="custom-play-button"
-							name="hover-slider"
-							className="font-bold"
+							htmlFor="custom-brand-logo"
+							className="easydam-label"
 						>
-							Custom Brand Logo
+							{ __( 'Custom Brand Logo', 'transcoder' ) }
 						</label>
 						<Button
 							onClick={ openBrandMediaPicker }
 							variant="primary"
-							className="ml-2 mt-2"
+							className="mr-2"
 						>
 							{ selectedBrandImage ? 'Replace' : 'Upload' }
 						</Button>
 						{ selectedBrandImage && (
+							<Button onClick={ removeBrandImage } variant="secondary" isDestructive>
+								{ __( 'Remove', 'transcoder' ) }
+							</Button>
+						) }
+						{ selectedBrandImage && (
 							<div className="mt-2">
-								<Icon
-									icon={ 'no' }
-									className="relative top-[25px] left-[60%] cursor-pointer"
-									onClick={ removeBrandImage }
-								/>
 								<img
 									src={ videoConfig.controlBar.customBrandImg }
 									alt={ 'Selected custom brand' }
@@ -480,11 +489,9 @@ const Appearance = () => {
 					</div>
 				) }
 				<div className="form-group">
-					<label htmlFor="control-position" className="font-bold">
-						Select Play Button Alignment
-					</label>
 					<CustomSelectControl
 						__next40pxDefaultSize
+						label={ __( 'Play Button Position', 'transcoder' ) }
 						onChange={ handlePlayButtonPosition }
 						options={ [
 							{
@@ -516,17 +523,15 @@ const Appearance = () => {
 				</div>
 				<div className="form-group">
 					<div id="hover-control-container">
-						<label name="hover-slider" className="font-bold">
-							Icon zoom slider
-						</label>
 						<div className="hover-control-input-container">
 							<RangeControl
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
-								help="Please select how transparent you would like this."
+								help={ __( 'scale up the player controls icons on hover', 'transcoder' ) }
 								initialPosition={ 0 }
 								max={ 1 }
 								min={ 0 }
+								label={ __( 'Zoom Level', 'transcoder' ) }
 								onChange={ handleControlsHoverZoomColor }
 								step={ 0.1 }
 								value={ videoConfig.controlBar.zoomLevel }
@@ -536,22 +541,21 @@ const Appearance = () => {
 				</div>
 				<div className="form-group">
 					<label
-						htmlFor="custom-play-button"
-						name="hover-slider"
-						className="font-bold"
+						htmlFor="custom-hover-color"
+						className="easydam-label"
 					>
-						Custom Play Button
+						{ __( 'Custom Play Button', 'transcoder' ) }
 					</label>
-					<Button onClick={ openCustomBtnImg } variant="primary" className="ml-2">
-						{ selectedCustomBgImg ? 'Replace' : 'Upload' }
+					<Button onClick={ openCustomBtnImg } variant="primary" className="mr-2">
+						{ selectedCustomBgImg ? __( 'Replace', 'transcoder' ) : __( 'Upload', 'transcoder' ) }
 					</Button>
 					{ selectedCustomBgImg && (
+						<Button onClick={ removeCustomPlayBtnImage } variant="secondary" isDestructive>
+							{ __( 'Remove', 'transcoder' ) }
+						</Button>
+					) }
+					{ selectedCustomBgImg && (
 						<div className="mt-2">
-							<Icon
-								icon={ 'no' }
-								className="relative top-[30px] left-[60%] cursor-pointer"
-								onClick={ removeCustomPlayBtnImage }
-							/>
 							<img
 								src={ videoConfig.controlBar.customPlayBtnImg }
 								alt={ 'Selected custom play button' }
@@ -561,13 +565,10 @@ const Appearance = () => {
 					) }
 				</div>
 				<div className="form-group">
-					<label htmlFor="control-bar-position" className="font-bold">
-						Adjust position of control bar
-					</label>
-
 					<CustomSelectControl
 						__next40pxDefaultSize
 						onChange={ handleControlBarPosition }
+						label={ __( 'Adjust position of control bar', 'transcoder' ) }
 						options={ [
 							{
 								key: 'horizontal',
@@ -585,9 +586,6 @@ const Appearance = () => {
 					/>
 				</div>
 				<div className="form-group">
-					<label htmlFor="control-skip-position" className="font-bold">
-						Adjust skip duration
-					</label>
 					<CustomSelectControl
 						__next40pxDefaultSize
 						onChange={ handleSkipTimeSettings }
@@ -605,6 +603,7 @@ const Appearance = () => {
 								name: '30',
 							},
 						] }
+						label={ __( 'Adjust skip duration', 'transcoder' ) }
 						value={ {
 							key: videoConfig.controlBar.skipButtons.forward.toString(),
 							name: videoConfig.controlBar.skipButtons.forward.toString(),
@@ -613,13 +612,16 @@ const Appearance = () => {
 				</div>
 				<div className="form-group">
 					<label
-						htmlFor="custom-hover-color"
-						className="text-[11px] uppercase font-bold mb-2"
+						htmlFor="appearance-color"
+						className="easydam-label"
 					>
-						Player Appearance
+						{ __( 'Player Theme', 'transcoder' ) }
 					</label>
-					<ColorPalette
+					<ColorPickerButton
 						value={ videoConfig.controlBar.appearanceColor }
+						label={ __( 'Player Appearance', 'transcoder' ) }
+						className="mb-0"
+						contentClassName="border-b-0"
 						enableAlpha={ true }
 						onChange={ ( value ) => {
 							if ( ! value ) {
@@ -635,20 +637,13 @@ const Appearance = () => {
 							);
 						} }
 					/>
-				</div>
-				<div className="form-group">
-					<label
-						htmlFor="custom-hover-color"
-						className="text-[11px] uppercase font-bold mb-2"
-					>
-						Select color on hover
-					</label>
-					<ColorPalette
+					<ColorPickerButton
 						value={ videoConfig.controlBar.hoverColor }
+						label={ __( 'Icons hover color', 'transcoder' ) }
 						enableAlpha={ true }
 						onChange={ ( value ) => {
 							if ( ! value ) {
-								value = '#fff';
+								value = '#2b333fb3';
 							}
 							dispatch(
 								updateVideoConfig( {
@@ -660,6 +655,49 @@ const Appearance = () => {
 							);
 						} }
 					/>
+				</div>
+
+				<div className="form-group">
+					<label
+						htmlFor="custom-hover-color"
+						className="easydam-label"
+					>
+						{ __( 'Select Ad server', 'transcoder' ) }
+					</label>
+					<ToggleControl
+						label={ __( 'Use ad server\'s ads', 'transcoder' ) }
+						help={ __( 'Enable this option to use ads from the ad server. This option will disable the ads layer', 'transcoder' ) }
+						checked={ videoConfig.adServer === 'ad-server' }
+						onChange={ ( checked ) => {
+							dispatch(
+								updateVideoConfig( {
+									adServer: checked ? 'ad-server' : 'self-hosted',
+								} ),
+							);
+						} }
+					/>
+					{
+						videoConfig.adServer === 'ad-server' && (
+							<TextareaControl
+								label={ __( 'adTag URL', 'transcoder' ) }
+								help={ <>
+									<div>
+										{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads ', 'transcoder' ) }
+										<a href="https://support.google.com/admanager/answer/177207?hl=en" target="_blank" rel="noreferrer noopener" className="text-blue-500 underline">{ __( 'Learn more.', 'transcoder' ) }</a>
+									</div>
+								</>
+								}
+								value={ videoConfig.adTagURL }
+								onChange={ ( val ) => {
+									dispatch(
+										updateVideoConfig( {
+											adTagURL: val,
+										} ),
+									);
+								} }
+							/>
+						)
+					}
 				</div>
 			</div>
 		</div>

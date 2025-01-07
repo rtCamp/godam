@@ -11,7 +11,7 @@ import axios from 'axios';
 import VideoJSPlayer from './VideoJSPlayer';
 import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
-import { initializeStore, saveVideoMeta } from './redux/slice/videoSlice';
+import { initializeStore, saveVideoMeta, setCurrentTab } from './redux/slice/videoSlice';
 
 /**
  * WordPress dependencies
@@ -110,17 +110,22 @@ const VideoEditor = ( { attachmentID } ) => {
 				<aside className="py-3">
 					<div id="sidebar-content" className="border-b">
 						<TabPanel
-							onSelect={ () => {} }
+							onSelect={ ( tabName ) => {
+								dispatch( setCurrentTab( tabName ) );
+							} }
 							className="sidebar-tabs"
 							tabs={ [
 								{
 									name: 'layers',
 									title: 'Layers',
 									className: 'flex-1 justify-center items-center',
-									component: <SidebarLayers currentTime={ currentTime } onSelectLayer={ ( layerTime ) => seekToLayerTime( layerTime ) } />,
+									component: <SidebarLayers
+										currentTime={ currentTime }
+										onSelectLayer={ ( layerTime ) => seekToLayerTime( layerTime ) }
+									/>,
 								},
 								{
-									name: 'video-settings',
+									name: 'player-settings',
 									title: 'Player Settings',
 									className: 'flex-1 justify-center items-center',
 									component: <Appearance />,
@@ -153,7 +158,7 @@ const VideoEditor = ( { attachmentID } ) => {
 
 					{ video && (
 						<div className="max-w-[740px] w-full">
-							<h1 className="text-slate-700 mb-1">{ video.title.rendered }</h1>
+							<h1 className="text-slate-700 text-base mb-1">{ video.title.rendered }</h1>
 
 							<div className="relative">
 
@@ -184,10 +189,9 @@ const VideoEditor = ( { attachmentID } ) => {
 									} }
 									onTimeupdate={ handleTimeUpdate }
 									onReady={ handlePlayerReady }
+									playbackTime={ currentTime }
 								/>
-
 							</div>
-							<div className="mt-2">Timestamp: { currentTime }</div>
 						</div>
 					) }
 				</main>

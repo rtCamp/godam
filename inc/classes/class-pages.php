@@ -34,6 +34,31 @@ class Pages {
 		add_action( 'admin_menu', array( $this, 'add_admin_pages' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
+		add_action( 'enqueue_block_assets', array( $this, 'handle_block_assets' ) );
+	}
+
+	/**
+	 * To enqueue scripts and styles in block editor and frontend.
+	 *
+	 * @return void
+	 */
+	public function handle_block_assets() {
+	
+		wp_enqueue_script(
+			'block-frontend-script',
+			RT_TRANSCODER_URL . 'assets/build/blocks/easydam-player/frontend.js',
+			array( 'wp-element' ),
+			filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/easydam-player/frontend.js' ),
+			true
+		);
+
+		wp_localize_script(
+			'block-frontend-script',
+			'nonceData',
+			array(
+				'nonce' => wp_create_nonce( 'wp_rest' ),
+			)
+		);
 	}
 
 	/**
@@ -59,6 +84,15 @@ class Pages {
 			'edit_posts',
 			'video_editor',
 			array( $this, 'render_video_editor_page' )
+		);
+
+		add_submenu_page(
+			'easydam',
+			__( 'Analytics', 'transcoder' ),
+			__( 'Analytics', 'transcoder' ),
+			'edit_posts',
+			'analytics',
+			array( $this, 'render_analytics_page' )
 		);
 	}
 
@@ -108,16 +142,27 @@ class Pages {
 	}
 
 	/**
+	 * To render the analytics page.
+	 * 
+	 * @return void
+	 */
+	public function render_analytics_page() {
+		?>
+		<div id="root-analytics">analytics root</div>
+		<?php
+	}
+
+	/**
 	 * To enqueue scripts and styles. in admin.
 	 *
 	 * @param string $hook_suffix Admin page name.
 	 *
 	 * @return void
 	 */
-	public function admin_enqueue_scripts( $hook_suffix ) {
+	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( 'toplevel_page_easydam', 'easydam_page_video_editor' ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( 'toplevel_page_easydam', 'easydam_page_video_editor', 'easydam_page_analytics' ), true ) ) {
 			wp_register_style(
 				'transcoder-page-style-easydam',
 				RT_TRANSCODER_URL . '/pages/build/style.css',
@@ -172,6 +217,26 @@ class Pages {
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-wp-components' );
+		} elseif ( $screen && 'easydam_page_analytics' === $screen->id ) {
+			wp_register_script(
+				'transcoder-page-script-analytics',
+				RT_TRANSCODER_URL . 'pages/build/analytics.js',
+				array( 'wp-element' ),
+				filemtime( RT_TRANSCODER_PATH . 'pages/build/analytics.js' ),
+				true
+			);
+
+			// Pass dynamic data to React using wp_localize_script.
+			wp_localize_script(
+				'transcoder-page-script-analytics',
+				'videoData',
+				array(
+					'nonce'            => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
+					'currentUserId'    => get_current_user_id(),            // Current user ID.
+					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
+				)
+			);
+			wp_enqueue_script( 'transcoder-page-script-analytics' );
 		}
 
 		if ( $screen && 'upload' === $screen->id ) {

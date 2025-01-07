@@ -1,6 +1,19 @@
 @tailwind base;
+@layer base {
+	a {
+		color: inherit;
+		text-decoration: none;
+	}
+}
 @tailwind components;
 @tailwind utilities;
+
+*, ::before, ::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+}
 
 .sticky-navbar {
   position: sticky;
@@ -363,4 +376,66 @@ input, textarea, select {
   text-transform: uppercase;
   font-weight: 500;
   margin-bottom: 0.5rem;
+}
+
+.button-tabs {
+	border-bottom: none;
+}
+.button-tabs .components-tab-panel__tabs {
+	display: flex;
+	gap: 0.5rem;
+	border: none;
+}
+
+.button-tabs .is-active {
+	background-color: #1e1e1e;
+	color: #fff !important;
+}
+
+.button-tabs .is-active::after {
+	display: none;
+}
+
+.button-tabs .components-tab-panel__tabs-item {
+	border-radius: 2px;
+	box-shadow: inset 0 0 0 1px #ddd;
+}
+
+.button-tabs .components-tab-panel__tabs-item.is-active {
+	box-shadow: inset 0 0 0 1px #1e1e1e;
+}
+
+/* Player settings */
+
+.easydam-label {
+	@apply text-[11px] uppercase font-medium mb-2 block;
+}
+
+#easydam-player-settings .components-base-control__label {
+	@apply font-semibold;
+}
+
+#easydam-player-settings .easydam-label {
+	@apply text-[11px] uppercase font-semibold mb-2 block;
+}
+
+/* Sidebar Ad Layer Settings */
+.sidebar-video-container {
+	position: relative;
+}
+
+.sidebar-video-container.disabled-video video {
+	pointer-events: none;
+	opacity: 0.6;
+}
+
+.sidebar-video-container .video-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.4);
+	z-index: 10;
+	pointer-events: none;
 }

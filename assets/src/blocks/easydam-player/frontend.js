@@ -85,9 +85,9 @@ function easyDAMPlayer() {
 			if ( ! isDisplayingLayer ) {
 				for ( const layerObj of formLayers ) {
 					if (
-						layerObj.show &&
-						currentTime >= layerObj.displayTime &&
-						layerObj.layerElement.classList.contains( 'hidden' )
+						layerObj.show && // Only display if 'show' is true
+            currentTime >= layerObj.displayTime &&
+            layerObj.layerElement.classList.contains( 'hidden' )
 					) {
 						layerObj.layerElement.classList.remove( 'hidden' );
 						player.pause();
@@ -305,10 +305,9 @@ function easyDAMPlayer() {
 
 		// Prevent video resume if a form/CTA is visible
 		player.on( 'play', () => {
-			const isAnyFormVisible = formLayers.some(
+			const isAnyLayerVisible = formLayers.some(
 				( layerObj ) =>
-					! layerObj.layerElement.classList.contains( 'hidden' ) &&
-					layerObj.show,
+					! layerObj.layerElement.classList.contains( 'hidden' ) && layerObj.show,
 			);
 			if ( isAnyFormVisible ) {
 				player.pause();
@@ -325,14 +324,29 @@ function easyDAMPlayer() {
 				skipButton.classList.add( 'hidden' );
 			}
 
-			const observer = new MutationObserver( () => {
-				if ( layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ) {
-					skipButton.textContent = 'Continue';
-					skipButton.classList.remove( 'hidden' );
-					observer.disconnect();
-				}
+			const arrowIcon = document.createElement( 'i' );
+			arrowIcon.className = 'fa-solid fa-chevron-right';
+			skipButton.appendChild( arrowIcon );
+
+			// Observe changes in the layer's DOM for the confirmation message
+			const observer = new MutationObserver( ( mutations ) => {
+				mutations.forEach( ( mutation ) => {
+					if (
+						layerObj.layerElement.querySelector( '.gform_confirmation_message' )
+					) {
+						// Update the Skip button to Continue
+						skipButton.textContent = 'Continue';
+						skipButton.classList.remove( 'hidden' );
+						observer.disconnect();
+					}
+				} );
 			} );
-			observer.observe( layerObj.layerElement, { childList: true, subtree: true } );
+
+			// Start observing the layer's element for child list changes
+			observer.observe( layerObj.layerElement, {
+				childList: true,
+				subtree: true,
+			} );
 
 			skipButton.addEventListener( 'click', () => {
 				layerObj.show = false;
@@ -354,5 +368,61 @@ function easyDAMPlayer() {
 		}
 
 		player.qualityMenu();
+
+		// store heatmap information
+		const existingRanges = [];
+		let lastTime = 0;
+
+		player.on( 'timeupdate', function() {
+			const currentTime = player.currentTime();
+			const played = player.played();
+
+			// Check if we've jumped backwards (replay)
+			if ( currentTime < lastTime ) {
+				// Add new range entry when user jumps back
+				existingRanges.push( copyRanges( played ) );
+			} else if ( existingRanges.length === 0 ) {
+				existingRanges.push( copyRanges( played ) );
+			} else {
+				existingRanges[ existingRanges.length - 1 ] = copyRanges( played );
+			}
+
+			updateHeatmap( existingRanges );
+			lastTime = currentTime;
+		} );
+
+		function copyRanges( timeRanges ) {
+			const copy = [];
+
+			for ( let i = 0; i < timeRanges.length; i++ ) {
+				copy.push( [ timeRanges.start( i ), timeRanges.end( i ) ] );
+			}
+
+			return copy;
+		}
+
+		function updateHeatmap( ranges ) {
+			const videoId = video.getAttribute( 'data-id' );
+			const url = `/wp-json/wp/v2/media/${ videoId }`;
+
+			const data = JSON.stringify( {
+				easydam_analytics: ranges,
+			} );
+
+			fetch( url, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.nonceData.nonce,
+				},
+				body: data,
+			} )
+				.then( ( response ) => {
+					if ( ! response.ok ) {
+						throw new Error( `HTTP error! Status: ${ response.status }` );
+					}
+					return response.json();
+				} );
+		}
 	} );
 }

@@ -1,9 +1,9 @@
 
 /* global moment */
 
-const MediaDateRangeFilter = wp.media.View;
+let MediaDateRangeFilter = wp?.media?.View;
 
-export default MediaDateRangeFilter.extend( {
+MediaDateRangeFilter = MediaDateRangeFilter?.extend( {
 
 	tagName: 'input',
 	id: 'media-date-range-filter',
@@ -89,3 +89,5 @@ export default MediaDateRangeFilter.extend( {
 		return this;
 	},
 } );
+
+export default MediaDateRangeFilter;
