@@ -40,16 +40,16 @@ class GF extends Base {
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
 							array(
-								'id' => array(
-									'description' => 'The ID of the Gravity Form.',
-									'type'        => 'integer',
-									'required'    => true,
+								'id'    => array(
+									'description'       => 'The ID of the Gravity Form.',
+									'type'              => 'integer',
+									'required'          => true,
 									'sanitize_callback' => 'absint',
 								),
 								'theme' => array(
-									'description' => 'The theme to be applied to the Gravity Form.',
-									'type'        => 'string',
-									'required'    => false,
+									'description'       => 'The theme to be applied to the Gravity Form.',
+									'type'              => 'string',
+									'required'          => false,
 									'sanitize_callback' => 'sanitize_text_field',
 								),
 							)
@@ -85,7 +85,7 @@ class GF extends Base {
 				function ( $gform ) use ( $fields ) {
 					return array_intersect_key( $gform, array_flip( $fields ) );
 				},
-				$gforms 
+				$gforms
 			);
 		}
 
@@ -105,7 +105,7 @@ class GF extends Base {
 		}
 
 		$form_id = $request->get_param( 'id' );
-		$theme = $request->get_param( 'theme' );
+		$theme   = $request->get_param( 'theme' );
 		$form_id = absint( $form_id );
 
 		if ( empty( $form_id ) ) {
