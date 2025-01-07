@@ -139,12 +139,7 @@ class Assets {
 				'gravity-forms-theme'            => 'gravityforms/assets/css/dist/theme.min.css',
 				'gravity-forms-theme-components' => 'gravityforms/assets/css/dist/theme-components.min.css',
 				'gravity-forms-basic'            => 'gravityforms/assets/css/dist/basic.min.css',
-				'admin-components'               => 'gravityforms/assets/css/dist/admin-components.min.css',
-				'admin-css-utilities'            => 'gravityforms/assets/css/dist/admin-css-utilities.min.css',
-				'admin-icons'                    => 'gravityforms/assets/css/dist/admin-icons.min.css',
 				'common-css-utilities'           => 'gravityforms/assets/css/dist/common-css-utilities.min.css',
-				'font-awesome'                   => 'gravityforms/assets/css/dist/font-awesome.min.css',
-				'gravity-forms-common-icons'     => 'gravityforms/assets/css/dist/gravity-forms-common-icons.min.css',
 			);
 
 			foreach ( $gravity_forms_styles as $handle => $path ) {
