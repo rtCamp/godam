@@ -110,7 +110,7 @@ endif;
 				// FORM layer.
 				if ( isset( $layer['type'] ) && 'form' === $layer['type'] && ! empty( $layer['gf_id'] ) ) :
 					?>
-					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
+					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>">
 						<div class="form-container">
 							<?php
 								$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
@@ -128,7 +128,7 @@ endif;
 					// CTA layer.
 				elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) :
 					?>
-					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden">
+					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>">
 						<?php if ( 'text' === $layer['cta_type'] ) : ?>
 							<div class="ql-editor easydam-layer--cta-text">
 								<?php echo wp_kses_post( $layer['text'] ); ?>
@@ -146,6 +146,7 @@ endif;
 					<div
 						id="layer-<?php echo esc_attr( $layer['id'] ); ?>"
 						class="easydam-layer hidden hotspot-layer"
+						style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>"
 					>
 					</div>
 					<?php

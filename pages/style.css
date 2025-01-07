@@ -1,4 +1,10 @@
 @tailwind base;
+@layer base {
+	a {
+		color: inherit;
+		text-decoration: none;
+	}
+}
 @tailwind components;
 @tailwind utilities;
 
@@ -400,6 +406,11 @@ input, textarea, select {
 }
 
 /* Player settings */
+
+.easydam-label {
+	@apply text-[11px] uppercase font-medium mb-2 block;
+}
+
 #easydam-player-settings .components-base-control__label {
 	@apply font-semibold;
 }
@@ -407,6 +418,24 @@ input, textarea, select {
 #easydam-player-settings .easydam-label {
 	@apply text-[11px] uppercase font-semibold mb-2 block;
 }
-.easydam-label {
-	@apply text-[11px] uppercase font-medium mb-2 block;
+
+/* Sidebar Ad Layer Settings */
+.sidebar-video-container {
+	position: relative;
+}
+
+.sidebar-video-container.disabled-video video {
+	pointer-events: none;
+	opacity: 0.6;
+}
+
+.sidebar-video-container .video-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.4);
+	z-index: 10;
+	pointer-events: none;
 }

@@ -176,25 +176,20 @@ const FormLayer = ( { layerID, goBack } ) => {
 					<div
 						style={ {
 							backgroundColor: layer.bg_color,
-						} }
-						className="absolute inset-0 overflow-auto px-4 py-8 bg-white bg-opacity-70 my-auto"
-					>
-						<div>
-							<div className="max-w-[400px] mx-auto" dangerouslySetInnerHTML={ { __html: formHTML } } />
-						</div>
+						} } className="easydam-layer">
+						<div className="form-container" dangerouslySetInnerHTML={ { __html: formHTML } } />
 					</div>
-					{
-						layer.allow_skip &&
-						<Button
-							className="absolute bottom-6 right-0"
-							variant="primary"
-							icon={ chevronRight }
-							iconSize="18"
-							iconPosition="right"
-							onClick={ () => setOpen( false ) }
-						>
-							{ __( 'Skip', 'transcoder' ) }
-						</Button>
+					{ layer.allow_skip &&
+					<Button
+						className="skip-button"
+						variant="primary"
+						icon={ chevronRight }
+						iconSize="18"
+						iconPosition="right"
+						onClick={ () => setOpen( false ) }
+					>
+						{ __( 'Skip', 'transcoder' ) }
+					</Button>
 					}
 				</>
 			</LayerControl>

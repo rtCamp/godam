@@ -324,6 +324,10 @@ function easyDAMPlayer() {
 				skipButton.classList.add( 'hidden' );
 			}
 
+			const arrowIcon = document.createElement( 'i' );
+			arrowIcon.className = 'fa-solid fa-chevron-right';
+			skipButton.appendChild( arrowIcon );
+
 			// Observe changes in the layer's DOM for the confirmation message
 			const observer = new MutationObserver( ( mutations ) => {
 				mutations.forEach( ( mutation ) => {

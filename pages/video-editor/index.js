@@ -11,6 +11,7 @@ import { Provider } from 'react-redux';
 import store from './redux/store';
 import VideoEditor from './VideoEditor';
 import './style.scss';
+import '../../assets/build/blocks/easydam-player/style-index.css';
 
 /**
  * WordPress dependencies
