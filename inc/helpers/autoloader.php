@@ -51,6 +51,7 @@ function autoloader( $resource = '' ) {
 				$directory = 'traits';
 				$file_name = sprintf( 'trait-%s', trim( strtolower( $path[2] ) ) );
 				break;
+			case 'providers':
 			case 'meta-boxes': // phpcs:ignore
 			case 'rest-controller': // phpcs:ignore
 			case 'taxonomies': // phpcs:ignore
@@ -60,8 +61,9 @@ function autoloader( $resource = '' ) {
 				 * otherwise find in inc/ directory.
 				 */
 				if ( ! empty( $path[2] ) ) {
-					$directory = sprintf( 'classes/%s', $path[1] );
-					$file_name = sprintf( 'class-%s', trim( strtolower( $path[2] ) ) );
+					$sub_directories = implode( '/', array_slice( $path, 2, -1 ) ); // Handle nested items.
+					$directory       = sprintf( 'classes/%s/%s', $path[1], $sub_directories );
+					$file_name       = sprintf( 'class-%s', trim( strtolower( end( $path ) ) ) );
 					break;
 				}
 			default:

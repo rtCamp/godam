@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
 /**
  * External dependencies
  */
@@ -62,9 +61,6 @@ export const VideoJS = ( props ) => {
 	const layers = videoMeta.layers;
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const currentTab = useSelector( ( state ) => state.videoReducer.currentTab );
-
-	console.log( 'currentTab', currentTab );
-	
 
 	const setCurrentTime = ( timeInSeconds ) => {
 		setSliderValue( timeInSeconds );

@@ -65,7 +65,7 @@ const TreeItem = ( { item, index, depth } ) => {
 					</div>
 
 					{ item.children?.length > 0 &&
-					<Icon icon={ item.isOpen ? chevronUp : chevronDown } />
+						<Icon icon={ item.isOpen ? chevronUp : chevronDown } />
 					}
 				</button>
 			</div>

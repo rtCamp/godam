@@ -15,6 +15,7 @@ import { Button, ButtonGroup, Modal } from '@wordpress/components';
 import { closeModal, deleteFolder, updateSnackbar } from '../../redux/slice/folders';
 import { useDeleteFolderMutation } from '../../redux/api/folders';
 import './scss/modal.scss';
+import { triggerFilterChange } from '../../data/media-grid';
 
 const DeleteModal = () => {
 	const dispatch = useDispatch();
@@ -36,6 +37,8 @@ const DeleteModal = () => {
 					type: 'success',
 				},
 			) );
+
+			triggerFilterChange( 'all' );
 		} catch ( error ) {
 			dispatch( updateSnackbar(
 				{
