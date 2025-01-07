@@ -21,6 +21,8 @@ use Transcoder\Inc\REST_API\Media_Library;
 use Transcoder\Inc\REST_API\Ads;
 use Transcoder\Inc\REST_API\Transcoding;
 
+use Transcoder\Inc\Providers\Media_Filters;
+
 /**
  * Class Plugin.
  */
@@ -44,8 +46,15 @@ class Plugin {
 		$this->load_plugin_configs();
 		$this->load_rest_api();
 
+		// TODO: think of a better place to put this.
+		$offload_media = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
+		$offload_media = isset( $offload_media['offLoadMedia'] ) ? $offload_media['offLoadMedia'] : false;
+		
+		if ( $offload_media ) {
+			Media_Filters::get_instance();
+		}
 
-
+		// TODO: think of a better place to put this.
 		// Add a custom "Edit Video" button for video files in the Media Library.
 		add_filter(
 			'attachment_fields_to_edit',
@@ -61,6 +70,30 @@ class Plugin {
 						'label' => '',
 						'input' => 'html',
 						'html'  => '<a href="' . esc_url( $edit_url ) . '" class="button button-primary" target="_blank">Edit Video</a>',
+					);
+				}
+
+				return $form_fields;
+			},
+			10,
+			2
+		);
+
+		// Add a custom "View Analytics" button for video files in the Media Library.
+		add_filter(
+			'attachment_fields_to_edit',
+			function ( $form_fields, $post ) {
+				// Check if the file is a video.
+				$mime_type = get_post_mime_type( $post->ID );
+				if ( strpos( $mime_type, 'video/' ) !== false ) {
+					// Generate the analytics page link (adjust URL as needed).
+					$edit_url = admin_url( 'admin.php?page=analytics&id=' . $post->ID );
+
+					// Add a new field for the View Analysis button.
+					$form_fields['analysis'] = array(
+						'label' => '',
+						'input' => 'html',
+						'html'  => '<a href="' . esc_url( $edit_url ) . '" class="button button-primary" target="_blank">View Analytics</a>',
 					);
 				}
 

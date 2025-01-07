@@ -1,3 +1,5 @@
+/* global jQuery, moment, easydamMediaLibrary */
+
 /**
  * Internal dependencies
  */
@@ -5,6 +7,9 @@ import '../../libs/jquery-ui-1.14.1.draggable/jquery-ui';
 import './transcoding-status';
 
 import AttachmentsBrowser from './views/attachment-browser.js';
+import Attachments from './views/attachments.js';
+
+const $ = jQuery;
 
 /**
  * MediaLibrary class.
@@ -15,15 +20,19 @@ class MediaLibrary {
 	}
 
 	setupAttachmentBrowser() {
-		wp.media.view.AttachmentsBrowser = AttachmentsBrowser;
+		if ( wp?.media?.view?.AttachmentsBrowser && AttachmentsBrowser ) {
+			wp.media.view.AttachmentsBrowser = AttachmentsBrowser;
+		}
+
+		if ( wp?.media?.view?.Attachments && Attachments ) {
+			wp.media.view.Attachments = Attachments;
+		}
 	}
 }
 
 const mediaLibrary = new MediaLibrary();
 
 export default mediaLibrary;
-
-const $ = jQuery;
 
 document.addEventListener( 'DOMContentLoaded', function() {
 	const mediaLibraryRoot = document.createElement( 'div' );
@@ -32,104 +41,185 @@ document.addEventListener( 'DOMContentLoaded', function() {
 	wpbody.insertBefore( mediaLibraryRoot, wpbody.firstChild );
 } );
 
-async function assignToFolder( attachmentIds, folderTermId ) {
-	const response = await fetch( '/wp-json/easydam/v1/media-library/assign-folder', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'X-WP-Nonce': wpApiSettings.nonce,
-		},
-		body: JSON.stringify( {
-			attachment_ids: attachmentIds,
-			folder_term_id: folderTermId,
-		} ),
-	} );
+/**
+ * Media Library date range filter for the list view.
+ *
+ * TODO: Figure out how to merge this and the attachment browser together nicely to follow the DRY principle.
+ */
+document.addEventListener( 'DOMContentLoaded', () => {
+	const inputElement = document.getElementById( 'media-date-range-filter' );
+	const startDateField = document.getElementById( 'media-date-range-filter-start' );
+	const endDateField = document.getElementById( 'media-date-range-filter-end' );
 
-	if ( response.ok ) {
-		// Remove the dragged items from the list
-		attachmentIds.forEach( ( id ) => {
-			$( `li.attachment[data-id="${ id }"]` ).remove();
-		} );
+	if ( ! inputElement || ! startDateField || ! endDateField ) {
+		return;
 	}
-}
 
-const attachDragEvent = () => {
-	// Initialize draggable items
-	$( 'li.attachment' ).draggable( {
-		cursor: 'move',
-		helper( event ) {
-			const hoveredElement = $( event.currentTarget );
-			const selectedElements = $( '.attachments-wrapper li.attachment.selected' );
-			const elementsToDrag = selectedElements.add( hoveredElement );
+	let dateQuery;
 
-			const draggedItemIds = elementsToDrag.map( function() {
-				return $( this ).data( 'id' );
-			} ).get();
+	// Function to get query parameters from the URL
+	const getQueryParam = ( param ) => {
+		const urlParams = new URLSearchParams( window.location.search );
+		return urlParams.get( param );
+	};
 
-			hoveredElement.data( 'draggedItems', draggedItemIds );
+	// Function to parse date from query parameter
+	const parseDate = ( dateString ) => {
+		return moment( dateString, 'YYYY-MM-DD', true ); // Use strict parsing
+	};
 
-			return $( '<div>', {
-				text: `Moving ${ draggedItemIds.length } item${ draggedItemIds.length > 1 ? 's' : '' }`,
-				css: {
-					background: '#333',
-					color: '#fff',
-					padding: '8px 12px',
-					borderRadius: '4px',
-					fontSize: '14px',
-					fontWeight: 'bold',
-					boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
-					zIndex: 1000,
-					PointerEvent: 'none',
-				},
-			} );
-		},
-		opacity: 0.7,
-		zIndex: 1000,
-		appendTo: 'body',
-		cursorAt: { top: 5, left: 5 },
-	} );
+	// Set initial date range based on the query parameters in the URL
+	const initializeDateRangeFromQueryParams = () => {
+		const startDateParam = getQueryParam( 'date-start' );
+		const endDateParam = getQueryParam( 'date-end' );
 
-	// Initialize droppable tree items
-	$( '.tree-item' ).droppable( {
-		accept: 'li.attachment, th.check-column',
-		hoverClass: 'droppable-hover',
-		tolerance: 'pointer',
-		drop( event, ui ) {
-			const draggedItems = ui.draggable.data( 'draggedItems' );
+		if ( startDateParam && endDateParam ) {
+			const startDate = parseDate( startDateParam );
+			const endDate = parseDate( endDateParam );
 
-			if ( draggedItems ) {
-				const targetFolderId = $( event.target ).data( 'id' );
-				assignToFolder( draggedItems, targetFolderId );
+			if ( startDate.isValid() && endDate.isValid() ) {
+				// Set the date range on the daterangepicker
+				$( inputElement ).data( 'daterangepicker' ).setStartDate( startDate );
+				$( inputElement ).data( 'daterangepicker' ).setEndDate( endDate );
+
+				// Set the date fields
+				startDateField.value = startDate.format( 'YYYY-MM-DD' );
+				endDateField.value = endDate.format( 'YYYY-MM-DD' );
+
+				// Update the custom date query
+				dateQuery = [
+					{ after: startDate.format( 'YYYY-MM-DD' ) },
+					{ before: endDate.format( 'YYYY-MM-DD' ) },
+				];
 			}
+		}
+	};
+
+	// Update picker position
+	const updatePickerPosition = () => {
+		const daterangepickerElement = $( inputElement ).data( 'daterangepicker' ).container;
+		const currentTop = parseInt( daterangepickerElement.css( 'top' ), 10 );
+		const newTop = currentTop - 30;
+		daterangepickerElement.css( 'top', `${ newTop }px` );
+	};
+
+	// Update filter with selected date range
+	const updateFilter = () => {
+		const dateRangePicker = $( inputElement ).data( 'daterangepicker' );
+
+		if ( ! dateRangePicker ) {
+			return;
+		}
+
+		const startDate = dateRangePicker.startDate.format( 'YYYY-MM-DD' );
+		const endDate = dateRangePicker.endDate.format( 'YYYY-MM-DD' );
+
+		dateQuery = [];
+
+		if ( startDate ) {
+			dateQuery.push( { after: startDate } );
+			startDateField.value = startDate;
+		}
+		if ( endDate ) {
+			dateQuery.push( { before: endDate } );
+			endDateField.value = endDate;
+		}
+
+		dateQuery = dateQuery.length > 0 ? { relation: 'AND', ...dateQuery } : undefined;
+
+		// Update the input value to show the selected date range
+		inputElement.value = dateRangePicker.chosenLabel;
+	};
+
+	// Clear the filter
+	const clearFilter = () => {
+		dateQuery = undefined;
+
+		const daterangepicker = $( inputElement ).data( 'daterangepicker' );
+		daterangepicker.setStartDate( moment() );
+		daterangepicker.setEndDate( moment() );
+
+		startDateField.value = '';
+		endDateField.value = '';
+
+		inputElement.value = 'Date Range';
+	};
+
+	// Initialize the date picker
+	$( inputElement ).daterangepicker( {
+		locale: {
+			cancelLabel: 'Clear',
 		},
+		ranges: {
+			Today: [ moment(), moment() ],
+			Yesterday: [ moment().subtract( 1, 'days' ), moment().subtract( 1, 'days' ) ],
+			'Last 7 Days': [ moment().subtract( 6, 'days' ), moment() ],
+			'Last 30 Days': [ moment().subtract( 29, 'days' ), moment() ],
+			'This Month': [ moment().startOf( 'month' ), moment().endOf( 'month' ) ],
+			'Last Month': [ moment().subtract( 1, 'month' ).startOf( 'month' ), moment().subtract( 1, 'month' ).endOf( 'month' ) ],
+		},
+		autoUpdateInput: false,
 	} );
 
-	// Add hover effect styles dynamically
-	if ( ! $( '#drag-drop-styles' ).length ) {
-		$( '<style>', {
-			id: 'drag-drop-styles',
-			text: `
-				.droppable-hover {
-					background: #e0f7fa !important;
-					border: 2px dashed #00796b;
-				}
-			`,
-		} ).appendTo( 'head' );
-	}
-};
+	$( inputElement ).on( 'apply.daterangepicker', updateFilter );
+	$( inputElement ).on( 'show.daterangepicker', updatePickerPosition );
+	$( inputElement ).on( 'cancel.daterangepicker', clearFilter );
 
-setTimeout( attachDragEvent, 1000 );
+	// Initialize the date range filter from URL query parameters
+	initializeDateRangeFromQueryParams();
+
+	// Set initial placeholder value
+	inputElement.value = 'Date Range';
+} );
 
 /**
- * On AJAX complete, check if the request is for 'query-attachments' and attach the drag event
+ * TOOD: Find some good place to put this code.
  */
-jQuery( document ).ajaxComplete( function( event, jqXHR, ajaxOptions ) {
-	if ( ajaxOptions.url === '/wp-admin/admin-ajax.php' ) {
-		const params = new URLSearchParams( ajaxOptions.data );
-		const action = params.get( 'action' );
+document.addEventListener( 'DOMContentLoaded', function() {
+	const uploadLinks = document.querySelectorAll( '.upload-to-s3' );
 
-		if ( action === 'query-attachments' ) {
-			attachDragEvent();
-		}
-	}
+	uploadLinks.forEach( function( link ) {
+		link.addEventListener( 'click', function( e ) {
+			e.preventDefault(); // Prevent default link action
+
+			const postId = this.getAttribute( 'data-post-id' );
+			this.textContent = 'UPLOADING...';
+			this.style.pointerEvents = 'none';
+
+			// Send AJAX request to handle the upload
+			const data = new FormData();
+			data.append( 'action', 'upload_to_s3' );
+			data.append( 'post_id', postId );
+			data.append( 'nonce', easydamMediaLibrary.nonce );
+
+			fetch( easydamMediaLibrary.ajaxUrl, {
+				method: 'POST',
+				body: data,
+			} )
+				.then( ( response ) => {
+					if ( ! response.ok ) {
+						throw new Error( 'Network response was not ok' );
+					}
+					return response.json();
+				} )
+				.then( ( data ) => {
+					this.style.pointerEvents = 'auto';
+
+					if ( data.success ) {
+						const newLink = document.createElement( 'a' );
+						newLink.href = data.data.url;
+						newLink.target = '_blank';
+						newLink.textContent = 'LINK';
+						this.textContent = '';
+						this.appendChild( newLink );
+					} else {
+						this.textContent = 'Upload Failed';
+					}
+				} )
+				.catch( () => {
+					this.textContent = 'Upload Failed';
+				} );
+		} );
+	} );
 } );
+

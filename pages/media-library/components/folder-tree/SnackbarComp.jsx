@@ -12,7 +12,7 @@ import { Snackbar } from '@wordpress/components';
  * Internal dependencies
  */
 import { updateSnackbar } from '../../redux/slice/folders';
-import './css/snackbar.css';
+import './css/snackbar.scss';
 
 const SnackbarComp = () => {
 	const message = useSelector( ( state ) => state.FolderReducer.snackbar.message );
