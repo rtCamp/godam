@@ -58,4 +58,10 @@
 .easydam-analytics-video-player {
 	max-width: 640px;
 	width: 100%;
+
+	div,
+	.video-js {
+		height: 100%;
+		max-width: 640px;
+	}
 }
