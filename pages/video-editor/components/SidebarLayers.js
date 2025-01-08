@@ -43,6 +43,8 @@ const layerTypes = [
 
 const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	const [ isOpen, setOpen ] = useState( false );
+	const loading = useSelector( ( state ) => state.videoReducer.loading );
+
 	const openModal = () => setOpen( true );
 	const closeModal = () => setOpen( false );
 
@@ -174,12 +176,27 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 							} )
 						}
 						{
-							layers.length === 0 && (
+							! loading && layers.length === 0 && (
 								<p className="text-center py-4 text-gray-400">{ __( 'No layers added.', 'transcoder' ) }</p>
 							)
 						}
+						{
+							loading && (
+								<div className="loading-skeleton">
+									<div className="skeleton-container skeleton-container-short">
+										<div className="skeleton-header"></div>
+									</div>
+									<div className="skeleton-container skeleton-container-short">
+										<div className="skeleton-header"></div>
+									</div>
+									<div className="skeleton-container skeleton-container-short">
+										<div className="skeleton-header"></div>
+									</div>
+								</div>
+							)
+						}
 
-						<Button
+						{ ! loading && <Button
 							isPrimary
 							id="add-layer-btn"
 							icon={ plus }
@@ -187,8 +204,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 							onClick={ openModal }
 							disabled={ ! currentTime && layers.find( ( l ) => l.displayTime === currentTime ) }
 						>{ __( 'Add layer at ', 'transcoder' ) } { currentTime }s</Button>
-
-						{ /* Add layer modal */ }
+						}
 						{ isOpen && (
 							<Modal title={ __( 'Select layer type', 'transcoder' ) } onRequestClose={ closeModal }>
 								<div className="flex flex-col gap-1">

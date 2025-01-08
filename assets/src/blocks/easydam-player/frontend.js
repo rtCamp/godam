@@ -75,26 +75,28 @@ function easyDAMPlayer() {
 			}
 		} );
 
+		formLayers.sort( ( a, b ) => a.displayTime - b.displayTime );
+
+		let currentFormLayerIndex = 0;
 		let isDisplayingLayer = false;
 
 		// Time update
 		player.on( 'timeupdate', () => {
 			const currentTime = player.currentTime();
 
-			// form/cta handling
-			if ( ! isDisplayingLayer ) {
-				for ( const layerObj of formLayers ) {
-					if (
-						layerObj.show && // Only display if 'show' is true
-            currentTime >= layerObj.displayTime &&
-            layerObj.layerElement.classList.contains( 'hidden' )
-					) {
-						layerObj.layerElement.classList.remove( 'hidden' );
-						player.pause();
-						player.controls( false );
-						isDisplayingLayer = true;
-						break;
-					}
+			// form/cta handling only the current form layer (if any)
+			if ( ! isDisplayingLayer && currentFormLayerIndex < formLayers.length ) {
+				const layerObj = formLayers[ currentFormLayerIndex ];
+				// If we've reached its displayTime, show it
+				if (
+					layerObj.show &&
+					currentTime >= layerObj.displayTime &&
+					layerObj.layerElement.classList.contains( 'hidden' )
+				) {
+					layerObj.layerElement.classList.remove( 'hidden' );
+					player.pause();
+					player.controls( false );
+					isDisplayingLayer = true;
 				}
 			}
 
@@ -309,13 +311,13 @@ function easyDAMPlayer() {
 				( layerObj ) =>
 					! layerObj.layerElement.classList.contains( 'hidden' ) && layerObj.show,
 			);
-			if ( isAnyFormVisible ) {
+			if ( isAnyLayerVisible ) {
 				player.pause();
 			}
 		} );
 
 		// Allow closing or skipping layers
-		formLayers.forEach( ( layerObj ) => {
+		formLayers.forEach( ( layerObj, index ) => {
 			const skipButton = document.createElement( 'button' );
 			skipButton.textContent = 'Skip';
 			skipButton.classList.add( 'skip-button' );
@@ -354,6 +356,10 @@ function easyDAMPlayer() {
 				player.controls( true );
 				player.play();
 				isDisplayingLayer = false;
+				// Increment the current form layer.
+				if ( index === currentFormLayerIndex ) {
+					currentFormLayerIndex++;
+				}
 			} );
 
 			layerObj.layerElement.appendChild( skipButton );

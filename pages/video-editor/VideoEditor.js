@@ -11,7 +11,7 @@ import axios from 'axios';
 import VideoJSPlayer from './VideoJSPlayer';
 import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
-import { initializeStore, saveVideoMeta, setCurrentTab, setGravityForms, setGravityFormsPluginActive } from './redux/slice/videoSlice';
+import { initializeStore, saveVideoMeta, setCurrentTab, setLoading, setGravityForms, setGravityFormsPluginActive } from './redux/slice/videoSlice';
 
 /**
  * WordPress dependencies
@@ -25,12 +25,14 @@ const VideoEditor = ( { attachmentID } ) => {
 	const [ video, setVideo ] = useState( null );
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
+	const [ isSaving, setIsSaving ] = useState( false );
 	const playerInstance = useRef( null );
 
 	const dispatch = useDispatch();
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
+	const loading = useSelector( ( state ) => state.videoReducer.loading );
 
 	useEffect( () => {
 		// Make sure the post ID is passed in the URL
@@ -43,6 +45,8 @@ const VideoEditor = ( { attachmentID } ) => {
 		if ( body ) {
 			body.classList.add( 'folded' );
 		}
+
+		dispatch( setLoading( true ) );
 
 		// Get the post data
 		fetch( `/wp-json/wp/v2/media/${ attachmentID }`, {
@@ -60,6 +64,9 @@ const VideoEditor = ( { attachmentID } ) => {
 			} )
 			.catch( ( error ) => {
 				console.error( error );
+			} )
+			.finally( () => {
+				dispatch( setLoading( false ) );
 			} );
 
 		// Fetch Gravity Forms
@@ -82,6 +89,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	};
 
 	const saveAttachmentMeta = () => {
+		setIsSaving( true );
 		// Update the attchment meta
 		const data = {
 			easydam_meta: { videoConfig, layers },
@@ -104,6 +112,9 @@ const VideoEditor = ( { attachmentID } ) => {
 			} )
 			.catch( ( error ) => {
 				console.error( error );
+			} )
+			.finally( () => {
+				setIsSaving( false );
 			} );
 	};
 
@@ -155,14 +166,21 @@ const VideoEditor = ( { attachmentID } ) => {
 				</aside>
 
 				<main className="flex justify-center items-center p-4 relative overflow-y-auto">
-					<Button
-						className="absolute right-4 top-5"
-						variant="primary"
-						disabled={ ! isChanged }
-						onClick={ saveAttachmentMeta }
-					>
-						{ __( 'Save', 'transcoder' ) }
-					</Button>
+					{ loading
+						? <div className="absolute right-4 top-5 loading-skeleton">
+							<div className="skeleton-button"></div>
+						</div>
+						: (
+							<Button
+								className="absolute right-4 top-5"
+								variant="primary"
+								disabled={ ! isChanged }
+								onClick={ saveAttachmentMeta }
+								isBusy={ isSaving }
+							>
+								{ __( 'Save', 'transcoder' ) }
+							</Button> )
+					}
 
 					{
 						// Display a success message when video changes are saved
@@ -173,7 +191,7 @@ const VideoEditor = ( { attachmentID } ) => {
 						)
 					}
 
-					{ video && (
+					{ ! loading && video && (
 						<div className="max-w-[740px] w-full">
 							<h1 className="text-slate-700 text-base mb-1">{ video.title.rendered }</h1>
 
@@ -211,6 +229,15 @@ const VideoEditor = ( { attachmentID } ) => {
 							</div>
 						</div>
 					) }
+
+					{
+						loading && (
+							<div className="max-w-[740px] w-full loading-skeleton">
+								<div className="skeleton-video-container"></div>
+								<div className="skeleton-line"></div>
+							</div>
+						)
+					}
 				</main>
 			</div>
 		</>
