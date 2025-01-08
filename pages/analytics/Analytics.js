@@ -73,6 +73,9 @@ const Analytics = ( { attachmentID } ) => {
 		<div className="analytics-container flex flex-col items-center">
 			<div className="video-info-container">
 				<div className="analytics-info-container">
+					{ analyticsData?.title?.rendered && (
+						<h1 className="mb-4">{ analyticsData?.title?.rendered }</h1>
+					) }
 					<div className="analytics-info">
 						<span>62%</span>
 						<p>{ __( 'Average Engagement', 'transcoder' ) }</p>

@@ -25,7 +25,6 @@
 	width: 100%;
 	gap: 50px;
 	justify-content: center;
-	align-items: center;
 
 	hr {
 		border-top: dashed 2px;
@@ -37,7 +36,7 @@
 
 .analytics-info {
 	display: flex;
-	padding: 25px;
+	padding: 0 25px;
 	align-items: center;
 	gap: 30px;
 
