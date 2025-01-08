@@ -55,11 +55,4 @@
 .easydam-analytics-video-player {
 	max-width: 640px;
 	width: 100%;
-	aspect-ratio: 16 / 9;
-
-	> div,
-	.video-js {
-		height: 100% !important;
-		max-width: 640px !important;
-	}
 }

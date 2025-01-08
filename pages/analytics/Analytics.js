@@ -59,11 +59,15 @@ const Analytics = ( { attachmentID } ) => {
 			} );
 	}, [ attachmentID ] );
 
-	const metadata = analyticsData?.easydam_meta?.videoConfig ? analyticsData.easydam_meta.videoConfig : {
-		controls: true,
-		autoplay: false,
-		preload: 'auto',
-	};
+	const metadata = analyticsData?.easydam_meta?.videoConfig
+		? analyticsData.easydam_meta.videoConfig
+		: {
+			controls: true,
+			autoplay: false,
+			preload: 'auto',
+			fluid: true,
+			aspectRatio: '16:9',
+		};
 
 	return (
 		<div className="analytics-container flex flex-col items-center">
