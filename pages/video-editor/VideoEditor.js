@@ -11,7 +11,7 @@ import axios from 'axios';
 import VideoJSPlayer from './VideoJSPlayer';
 import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
-import { initializeStore, saveVideoMeta, setCurrentTab } from './redux/slice/videoSlice';
+import { initializeStore, saveVideoMeta, setCurrentTab, setGravityForms, setGravityFormsPluginActive } from './redux/slice/videoSlice';
 
 /**
  * WordPress dependencies
@@ -61,6 +61,9 @@ const VideoEditor = ( { attachmentID } ) => {
 			.catch( ( error ) => {
 				console.error( error );
 			} );
+
+		// Fetch Gravity Forms
+		fetchGravityForms();
 	}, [] );
 
 	const handleTimeUpdate = ( player, time ) => {
@@ -101,6 +104,20 @@ const VideoEditor = ( { attachmentID } ) => {
 			} )
 			.catch( ( error ) => {
 				console.error( error );
+			} );
+	};
+
+	const fetchGravityForms = () => {
+		axios.get( '/wp-json/easydam/v1/gforms?fields=id,title,description' )
+			.then( ( response ) => {
+				const data = response.data;
+				dispatch( setGravityForms( data ) );
+			} )
+			.catch( ( error ) => {
+				if ( error.status === 404 && error.response.data.code === 'gravity_forms_not_active' ) {
+					// Gravity Forms is not active.
+					dispatch( setGravityFormsPluginActive( false ) );
+				}
 			} );
 	};
 
