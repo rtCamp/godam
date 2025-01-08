@@ -1,3 +1,69 @@
 /*
 Write your Sass code here for admin.
 */
+
+$media-frame-width: calc( 300px + 2 * 24px );
+
+.media-frame-menu {
+	width: $media-frame-width;
+}
+
+.media-frame-title {
+	left: $media-frame-width;
+}
+
+.media-frame-router {
+	left: $media-frame-width;
+}
+
+.media-frame-content {
+	left: $media-frame-width;
+}
+
+// #rt-transcoder-media-library-root {
+// 	margin-top: 140px;
+// }
+
+#menu-item-library {
+	display: none;
+}
+
+.media-frame-menu-heading {
+	display: none;
+}
+
+/**
+ * CSS for custom filtering options for the media library.
+ */
+ #media-date-range-filter {
+	display: inline-block;
+	margin: 0 10px 0 0;
+
+	font-size: 14px;
+	line-height: 2;
+	color: #2c3338;
+	box-shadow: none;
+	padding: 0 24px 0 8px;
+	min-height: 30px;
+	max-width: 25rem;
+	vertical-align: middle;
+}
+
+#media-attachment-date-filters,
+#filter-by-date,
+#media-date-range-filter-start,
+#media-date-range-filter-end {
+	display: none !important;
+}
+
+#media-folder-filter {
+	display: none !important;
+}
+
+.media-attachments-filter-heading + #media-date-range-filter {
+	margin-top: 32px;
+}
+
+.daterangepicker {
+	z-index: calc( 160000 + 1) !important; // for some reason media-model z-index is 160000
+}

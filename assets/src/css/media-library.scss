@@ -1,29 +1,12 @@
 /**
- * CSS for custom filtering options for the media library.
+ * global CSS for the media library.
  */
-#media-date-range-filter {
-	display: inline-block;
-	margin: 0 10px 0 0;
-
-	font-size: 14px;
-	line-height: 2;
-	color: #2c3338;
-	box-shadow: none;
-	padding: 0 24px 0 8px;
-	min-height: 30px;
-	max-width: 25rem;
-	vertical-align: middle;
+ #wpbody {
+	display: flex;
 }
 
-#media-attachment-date-filters,
-#filter-by-date,
-#media-date-range-filter-start,
-#media-date-range-filter-end {
-	display: none !important;
-}
-
-#media-folder-filter {
-	display: none !important;
+#wpcontent {
+	padding-left: 0 !important;
 }
 
 .media-library-upload-to-s3 {
@@ -57,7 +40,7 @@
  */
 .attachment-s3-status {
 	position: absolute;
-	top: 8px; /* Adjust positioning */
+	top: 8px;
 	right: 8px;
 	display: flex;
 	align-items: center;
@@ -79,24 +62,21 @@
 	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-/* Add animation and hover effect */
 .attachment-s3-status:hover {
-	transform: scale(1.1); /* Slightly enlarges the icon on hover */
-	opacity: 0.9; /* Adds slight fade effect */
+	transform: scale(1.1);
+	opacity: 0.9;
 }
 
-/* Gradient and glow for Dashicon */
 .attachment-s3-status .dashicons {
-	font-size: 20px; /* Increase icon size */
-	background: linear-gradient(45deg, #28a745, #85e085); /* Gradient effect */
+	font-size: 20px;
+	background: linear-gradient(45deg, #28a745, #85e085);
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
-	color: #28a745; /* Fallback for browsers that don't support text gradients */
+	color: #28a745;
 }
 
-/* Slightly increase glow on hover */
 .attachment-s3-status .dashicons:hover {
 	text-shadow: 0 0 12px rgba(40, 167, 69, 0.7), 0 0 16px rgba(40, 167, 69, 1);
-	transform: scale(1.2); /* Adds a slight bounce effect */
+	transform: scale(1.2);
 }
 

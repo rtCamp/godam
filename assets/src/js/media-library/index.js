@@ -35,6 +35,11 @@ const mediaLibrary = new MediaLibrary();
 export default mediaLibrary;
 
 document.addEventListener( 'DOMContentLoaded', function() {
+	// Check if URL ends with /upload.php
+	if ( ! window.location.href.endsWith( '/upload.php' ) ) {
+		return;
+	}
+
 	const mediaLibraryRoot = document.createElement( 'div' );
 	mediaLibraryRoot.id = 'rt-transcoder-media-library-root';
 	const wpbody = document.querySelector( '#wpbody' );
