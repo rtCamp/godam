@@ -27,7 +27,7 @@ class Pages {
 	 *
 	 * @return void
 	 */
-	protected function setup_hooks() { 
+	protected function setup_hooks() {
 		/**
 		 * Action
 		 */
@@ -43,7 +43,7 @@ class Pages {
 	 * @return void
 	 */
 	public function handle_block_assets() {
-	
+
 		wp_enqueue_script(
 			'block-frontend-script',
 			RT_TRANSCODER_URL . 'assets/build/blocks/easydam-player/frontend.js',
@@ -106,7 +106,7 @@ class Pages {
 
 	/**
 	 * Handle admin head to remove admin notices.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function handle_admin_head() {
@@ -129,7 +129,7 @@ class Pages {
 
 	/**
 	 * To render the easydam page.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function render_easydam_page() {
@@ -181,7 +181,7 @@ class Pages {
 
 	/**
 	 * To render the video-editor page.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function render_video_editor_page() {
@@ -200,7 +200,7 @@ class Pages {
 
 	/**
 	 * To render the analytics page.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function render_analytics_page() {
