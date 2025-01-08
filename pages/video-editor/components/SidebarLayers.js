@@ -12,9 +12,9 @@ import { v4 as uuidv4 } from 'uuid';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, Icon, Modal, Tooltip } from '@wordpress/components';
+import { BaseControl, Button, Icon, Modal, Tooltip } from '@wordpress/components';
 import { plus, preformatted, customLink, arrowRight, video, customPostType } from '@wordpress/icons';
-import { useEffect, useState } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 
 import Layer from './layers/Layer';
 
@@ -41,7 +41,7 @@ const layerTypes = [
 	},
 ];
 
-const SidebarLayers = ( { currentTime, onSelectLayer, layer } ) => {
+const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
 
@@ -52,6 +52,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, layer } ) => {
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
+	const isGFPluginActive = useSelector( ( state ) => state.videoReducer.gformPluginActive );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 
 	// Sort the array (ascending order)
@@ -130,32 +131,49 @@ const SidebarLayers = ( { currentTime, onSelectLayer, layer } ) => {
 				! currentLayer ? (
 					<div id="sidebar-layers" className="p-4">
 						{
-							sortedLayers?.map( ( layer ) => (
-								<Tooltip
-									key={ layer.id }
-									className="w-full flex justify-between items-center p-2 border rounded mb-2 hover:bg-gray-50 cursor-pointer"
-									text={ adServer === 'ad-server' && layer.type === 'ad' ? __( 'This ad will be overriden by Ad server\'s ads', 'transcoder' ) : '' }
-									placement="right"
-								>
-									<div className="border rounded mb-2">
-										<Button
-											className={ `w-full flex justify-between items-center p-2 border-1 rounded hover:bg-gray-50 cursor-pointer border-[#e5e7eb] ${ adServer === 'ad-server' && layer.type === 'ad' ? 'bg-orange-50 hover:bg-orange-50' : '' }` }
-											onClick={ () => {
-												dispatch( setCurrentLayer( layer ) );
-												onSelectLayer( layer.displayTime );
-											} }
-										>
-											<div className="flex items-center gap-2">
-												<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type ).icon } />
-												<p>{ layer?.type?.toUpperCase() } layer at <b>{ layer.displayTime }s</b></p>
-											</div>
-											<div>
-												<Icon icon={ arrowRight } />
-											</div>
-										</Button>
-									</div>
-								</Tooltip>
-							) )
+							sortedLayers?.map( ( layer ) => {
+								const isAdServerAd = adServer === 'ad-server' && layer.type === 'ad';
+								const isGFPluginNotActive = layer.type === 'form' && ! isGFPluginActive;
+								let addWarning = false;
+								let toolTipMessage = '';
+
+								if ( isAdServerAd ) {
+									toolTipMessage = __( 'This ad will be overriden by Ad server\'s ads', 'transcoder' );
+									addWarning = true;
+								} else if ( isGFPluginNotActive ) {
+									toolTipMessage = __( 'Gravity Forms plugin is not active', 'transcoder' );
+									addWarning = true;
+								} else {
+									toolTipMessage = '';
+								}
+
+								return (
+									<Tooltip
+										key={ layer.id }
+										className="w-full flex justify-between items-center p-2 border rounded mb-2 hover:bg-gray-50 cursor-pointer"
+										text={ toolTipMessage }
+										placement="right"
+									>
+										<div className="border rounded mb-2">
+											<Button
+												className={ `w-full flex justify-between items-center p-2 border-1 rounded hover:bg-gray-50 cursor-pointer border-[#e5e7eb] ${ addWarning ? 'bg-orange-50 hover:bg-orange-50' : '' }` }
+												onClick={ () => {
+													dispatch( setCurrentLayer( layer ) );
+													onSelectLayer( layer.displayTime );
+												} }
+											>
+												<div className="flex items-center gap-2">
+													<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type ).icon } />
+													<p>{ layer?.type?.toUpperCase() } layer at <b>{ layer.displayTime }s</b></p>
+												</div>
+												<div>
+													<Icon icon={ arrowRight } />
+												</div>
+											</Button>
+										</div>
+									</Tooltip>
+								);
+							} )
 						}
 						{
 							! loading && layers.length === 0 && (
@@ -191,37 +209,44 @@ const SidebarLayers = ( { currentTime, onSelectLayer, layer } ) => {
 							<Modal title={ __( 'Select layer type', 'transcoder' ) } onRequestClose={ closeModal }>
 								<div className="flex flex-col gap-1">
 									{
-										layerTypes.map( ( layerType ) => (
-											<Button
-												icon={ layerType.icon }
+										layerTypes.map( ( layerType ) => {
+											const isAdServerAd = adServer === 'ad-server' && layerType.type === 'ad';
+											const isGFPluginNotActive = layerType.type === 'form' && ! isGFPluginActive;
+											let isDisabled = false;
+											let message = '';
+
+											if ( isAdServerAd ) {
+												message = __( 'This ad will be overriden by Ad server\'s ads', 'transcoder' );
+												isDisabled = true;
+											} else if ( isGFPluginNotActive ) {
+												message = __( 'Gravity Forms plugin is not active', 'transcoder' );
+												isDisabled = true;
+											} else {
+												message = '';
+											}
+
+											return <BaseControl
 												key={ layerType.type }
-												variant="secondary"
-												className="w-full mb-2"
-												onClick={ () => {
-													addNewLayer( layerType.type );
-													closeModal();
-												} }
-												disabled={ adServer === 'ad-server' && layerType.type === 'ad' }
-											>{ layerType.title }</Button>
-										) )
+												help={ message }
+												className="w-full"
+											>
+												<Button
+													icon={ layerType.icon }
+													key={ layerType.type }
+													variant="secondary"
+													className="w-full"
+													onClick={ () => {
+														addNewLayer( layerType.type );
+														closeModal();
+													} }
+													disabled={ isDisabled }
+												>{ layerType.title }</Button>
+											</BaseControl>;
+										} )
 									}
 								</div>
 							</Modal>
 						) }
-
-						{ /* <DropdownMenu
-                        icon={ plus }
-                        label={ __( 'Add new layer', 'transcoder' ) }
-                        controls={
-                            layerTypes.map( ( layerType ) => (
-                                {
-                                    title: layerType.title,
-                                    icon: layerType.icon,
-                                    onClick: () => addNewLayer( layerType.type ),
-                                }
-                            ) )
-                        }
-                    /> */ }
 					</div>
 				) : (
 					<div id="sidebar-layers" className="p-4">

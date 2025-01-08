@@ -46,6 +46,8 @@ const slice = createSlice( {
 		currentLayer: null,
 		currentTab: 'layers',
 		loading: false,
+		gforms: [],
+		gformPluginActive: true,
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
@@ -102,7 +104,13 @@ const slice = createSlice( {
 		setLoading: ( state, action ) => {
 			state.loading = action.payload;
 		},
-	},
+		setGravityForms: ( state, action ) => {
+			state.gforms = action.payload;
+		},
+		setGravityFormsPluginActive: ( state, action ) => {
+			state.gformPluginActive = action.payload;
+		},
+	}
 } );
 
 export const {
@@ -115,5 +123,7 @@ export const {
 	setCurrentLayer,
 	setCurrentTab,
 	setLoading,
+	setGravityForms,
+	setGravityFormsPluginActive,
 } = slice.actions;
 export default slice.reducer;
