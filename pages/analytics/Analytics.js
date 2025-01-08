@@ -59,6 +59,12 @@ const Analytics = ( { attachmentID } ) => {
 			} );
 	}, [ attachmentID ] );
 
+	const metadata = analyticsData?.easydam_meta?.videoConfig ? analyticsData.easydam_meta.videoConfig : {
+		controls: true,
+		autoplay: false,
+		preload: 'auto',
+	};
+
 	return (
 		<div className="analytics-container flex flex-col items-center">
 			<div className="video-info-container">
@@ -82,11 +88,11 @@ const Analytics = ( { attachmentID } ) => {
 				{ analyticsData && (
 					<VideoJS
 						options={ {
-							...analyticsData.easydam_meta.videoConfig,
+							...metadata,
 							sources: [
 								{
-									src: analyticsData.source_url,
-									type: analyticsData.mime_type,
+									src: analyticsData.source_url || '',
+									type: analyticsData.mime_type || 'video/mp4',
 								},
 							],
 						} }
