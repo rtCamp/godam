@@ -561,3 +561,32 @@ input, textarea, select {
 		transform: scaleX(2);
 	}
 }
+
+/* Mobile Overlay for video-editor-container */
+@media screen and (max-width: 600px) {
+	.video-editor-container {
+		position: relative;
+	}
+
+	#root-video-editor {
+		padding-left: 0;
+	}
+
+	.video-editor-container::before {
+		content: "Please use a desktop to access this feature";
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.8);
+		color: white;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		text-align: center;
+		font-size: 1.2rem;
+		font-weight: bold;
+		z-index: 99;
+	}
+}
