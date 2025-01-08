@@ -145,7 +145,34 @@ class Pages {
 	 */
 	public function render_video_editor_page() {
 		?>
-		<div id="root-video-editor">video editor root</div>
+		<div id="root-video-editor">
+			<div class="video-editor-container">
+				<!-- Sidebar Skeleton -->
+				<aside class="py-3 mt-3 bg-white shadow-md border border-gray-200 rounded-md p-4">
+					<div class="loading-skeleton">
+						<div class="skeleton-container skeleton-container-short">
+							<div class="skeleton-header"></div>
+						</div>
+						<div class="skeleton-container skeleton-container-short">
+							<div class="skeleton-header"></div>
+						</div>
+						<div class="skeleton-container skeleton-container-short">
+							<div class="skeleton-header"></div>
+						</div>
+					</div>
+				</aside>
+				<!-- Main Video Section Skeleton -->
+				<main class="flex justify-center items-center p-4 relative overflow-y-auto">
+					<div class="absolute right-4 top-5 loading-skeleton">
+						<div class="skeleton-button"></div>
+					</div>
+					<div class="max-w-[740px] w-full loading-skeleton">
+						<div class="skeleton-video-container"></div>
+						<div class="skeleton-line"></div>
+					</div>
+				</main>
+			</div>
+		</div>
 		<?php
 	}
 
