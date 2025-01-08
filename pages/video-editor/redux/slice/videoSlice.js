@@ -45,6 +45,7 @@ const slice = createSlice( {
 		isChanged: false,
 		currentLayer: null,
 		currentTab: 'layers',
+		loading: false,
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
@@ -98,6 +99,9 @@ const slice = createSlice( {
 				state.currentTab = action.payload;
 			}
 		},
+		setLoading: ( state, action ) => {
+			state.loading = action.payload;
+		},
 	},
 } );
 
@@ -110,5 +114,6 @@ export const {
 	updateSkipTime,
 	setCurrentLayer,
 	setCurrentTab,
+	setLoading,
 } = slice.actions;
 export default slice.reducer;
