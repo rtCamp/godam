@@ -520,3 +520,44 @@ input, textarea, select {
         opacity: 1;
     }
 }
+
+/* Progress Bar Loading Animation */
+.progress-bar-wrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+	background-color: #f9fafb;
+}
+
+.progress-bar-container {
+	width: 100%;
+	max-width: 400px;
+	height: 2px;
+	background-color: #e5e7eb;
+	border-radius: 2px;
+	overflow: hidden;
+	position: relative;
+}
+
+.progress-bar-inner {
+	width: 20%;
+	height: 100%;
+	background-color: #6b7280;
+	position: absolute;
+	animation: oscillate 2.5s infinite ease-in-out;
+}
+
+@keyframes oscillate {
+	0%, 100% {
+		left: 0%;
+		transform: scaleX(1);
+	}
+	50% {
+		left: 80%;
+		transform: scaleX(1);
+	}
+	25%, 75% {
+		transform: scaleX(2);
+	}
+}

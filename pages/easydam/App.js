@@ -17,7 +17,7 @@ import StorageSettings from './storage-settings/index';
 import { useState, useEffect } from '@wordpress/element';
 
 const App = () => {
-	const [ activeTab, setActiveTab ] = useState( 'storage-settings' );
+	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
 	const [ isPremiumUser, setIsPremiumUser ] = useState( true ); // Should be initially set to false.
 	const [ mediaSettings, setMediaSettings ] = useState( null );
 	const [ licenseKey, setLicenseKey ] = useState( '' );

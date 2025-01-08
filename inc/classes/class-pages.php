@@ -134,7 +134,48 @@ class Pages {
 	 */
 	public function render_easydam_page() {
 		?>
-		<div id="root-easydam">easydam root</div>
+		<div id="root-easydam">
+			<div class="wrap flex min-h-[80vh] gap-4 my-4">
+				<!-- Sidebar Skeleton -->
+				<div class="max-w-[220px] w-full rounded-lg bg-white shadow-md border border-gray-200">
+					<nav class="loading-skeleton flex flex-col gap-4 p-4">
+						<!-- Sidebar Tabs -->
+						<div class="skeleton-container skeleton-container-short">
+							<div class="skeleton-header w-3/4"></div>
+						</div>
+						<div class="skeleton-container skeleton-container-short">
+							<div class="skeleton-header w-3/4"></div>
+						</div>
+						<div class="skeleton-container skeleton-container-short">
+							<div class="skeleton-header w-3/4"></div>
+						</div>
+					</nav>
+				</div>
+
+				<!-- Main Content Skeleton -->
+				<div id="main-content" class="w-full p-5 bg-white rounded-lg border">
+					<!-- General Settings Form Skeleton -->
+					<div class="loading-skeleton flex flex-col gap-4">
+						<!-- Title -->
+						<div class="skeleton-container skeleton-container-short">
+							<div class="skeleton-header w-1/2"></div>
+						</div>
+
+						<!-- Input Field Skeleton -->
+						<div class="skeleton-container">
+							<div class="skeleton-line w-3/4"></div>
+							<div class="skeleton-line short w-1/2"></div>
+						</div>
+
+						<!-- Buttons Skeleton -->
+						<div class="flex gap-2">
+							<div class="skeleton-button w-32 h-10"></div>
+							<div class="skeleton-button w-40 h-10"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 		<?php
 	}
 
@@ -146,31 +187,12 @@ class Pages {
 	public function render_video_editor_page() {
 		?>
 		<div id="root-video-editor">
-			<div class="video-editor-container">
-				<!-- Sidebar Skeleton -->
-				<aside class="py-3 mt-3 bg-white shadow-md border border-gray-200 rounded-md p-4">
-					<div class="loading-skeleton">
-						<div class="skeleton-container skeleton-container-short">
-							<div class="skeleton-header"></div>
-						</div>
-						<div class="skeleton-container skeleton-container-short">
-							<div class="skeleton-header"></div>
-						</div>
-						<div class="skeleton-container skeleton-container-short">
-							<div class="skeleton-header"></div>
-						</div>
+			<div class="progress-bar-wrapper">
+				<div class="progress-bar-container">
+					<div class="progress-bar">
+						<div class="progress-bar-inner"></div>
 					</div>
-				</aside>
-				<!-- Main Video Section Skeleton -->
-				<main class="flex justify-center items-center p-4 relative overflow-y-auto">
-					<div class="absolute right-4 top-5 loading-skeleton">
-						<div class="skeleton-button"></div>
-					</div>
-					<div class="max-w-[740px] w-full loading-skeleton">
-						<div class="skeleton-video-container"></div>
-						<div class="skeleton-line"></div>
-					</div>
-				</main>
+				</div>
 			</div>
 		</div>
 		<?php
@@ -183,7 +205,15 @@ class Pages {
 	 */
 	public function render_analytics_page() {
 		?>
-		<div id="root-analytics">analytics root</div>
+		<div id="root-analytics">
+			<div class="progress-bar-wrapper">
+				<div class="progress-bar-container">
+					<div class="progress-bar">
+						<div class="progress-bar-inner"></div>
+					</div>
+				</div>
+			</div>
+		</div>
 		<?php
 	}
 

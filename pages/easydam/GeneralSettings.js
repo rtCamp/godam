@@ -159,8 +159,9 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 						onClick={ saveLicenseKey }
 						disabled={ isLicenseKeyLoading || mediaSettings?.general?.is_verified }
 						variant="primary"
+						isBusy={isLicenseKeyLoading}
 					>
-						{ isLicenseKeyLoading ? <Spinner /> : 'Save License Key' }
+						Save License Key
 					</Button>
 					<Button
 						className="max-w-[160px] w-full flex justify-center items-center"
