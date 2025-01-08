@@ -31,13 +31,29 @@ class GF extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/gforms/(?P<id>\d+)',
+				'route'     => '/' . $this->rest_base . '/gform',
 				'args'      => array(
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_gform' ),
 						'permission_callback' => array( $this, 'get_gforms_permissions_check' ),
-						'args'                => $this->get_collection_params(),
+						'args'                => array_merge(
+							$this->get_collection_params(), // Default collection params.
+							array(
+								'id'    => array(
+									'description'       => 'The ID of the Gravity Form.',
+									'type'              => 'integer',
+									'required'          => true,
+									'sanitize_callback' => 'absint',
+								),
+								'theme' => array(
+									'description'       => 'The theme to be applied to the Gravity Form.',
+									'type'              => 'string',
+									'required'          => false,
+									'sanitize_callback' => 'sanitize_text_field',
+								),
+							)
+						),
 					),
 				),
 			),
@@ -69,7 +85,7 @@ class GF extends Base {
 				function ( $gform ) use ( $fields ) {
 					return array_intersect_key( $gform, array_flip( $fields ) );
 				},
-				$gforms 
+				$gforms
 			);
 		}
 
@@ -89,13 +105,14 @@ class GF extends Base {
 		}
 
 		$form_id = $request->get_param( 'id' );
+		$theme   = $request->get_param( 'theme' );
 		$form_id = absint( $form_id );
 
 		if ( empty( $form_id ) ) {
 			return new \WP_Error( 'invalid_form_id', 'Invalid form ID.', array( 'status' => 404 ) );
 		}
 
-		$gform = do_shortcode( "[gravityform id='{$form_id}' title='false' description='false' ajax='true']" );
+		$gform = do_shortcode( "[gravityform id='{$form_id}' title='false' description='false' ajax='true' theme='{$theme}']" );
 
 		return rest_ensure_response( $gform );
 	}

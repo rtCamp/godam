@@ -439,3 +439,7 @@ input, textarea, select {
 	z-index: 10;
 	pointer-events: none;
 }
+
+.gform_wrapper {
+	pointer-events: none;
+}
