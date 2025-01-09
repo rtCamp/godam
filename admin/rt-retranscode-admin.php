@@ -114,13 +114,76 @@ class RetranscodeMedia {
 		);
 
 		$this->menu_id = add_submenu_page(
-			'rt-transcoder',
-			__( 'Retranscode Media', 'transcoder' ),
-			__( 'Retranscode Media', 'transcoder' ),
+			'easydam',
+			__( 'Tools', 'transcoder' ),
+			__( 'Tools', 'transcoder' ),
 			$this->capability,
-			'rt-retranscoder',
-			array( $this, 'retranscode_interface' )
+			'easydam-tools',
+			array( $this, 'render_tools_page' )
 		);
+	}
+
+	/**
+	 * Add the Retranscode Media meta box to the EasyDam Tools page.
+	 */
+	public function render_tools_page() {
+		$this->add_easydam_meta_boxes()
+		?>
+		<div>
+			<h1><?php esc_html_e( 'EasyDAM Tools', 'transcoder' ); ?></h1>
+			<div id="easydam-tools-widget">
+				<?php
+				do_meta_boxes('easydam-tools', 'normal', null);
+				?>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Register the meta box for the EasyDam Tools page.
+	 */
+	public function add_easydam_meta_boxes() {
+
+		add_meta_box(
+			'retranscode_media_widget',                 // ID of the meta box
+			__( 'Retranscode Media', 'transcoder' ),    // Title of the meta box
+			array($this, 'render_retranscode_dashboard_widget'), // Callback to render the meta box
+			'easydam-tools',                            // Screen (matches submenu slug)
+			'normal',                                   // Context (main column)
+			'high'                                      // Priority
+		);
+	}
+
+
+	/**
+	 * Render the Retranscode Media meta box.
+	 */
+	public function render_retranscode_dashboard_widget() {
+		?>
+			<p><?php esc_html_e( 'This tool will retranscode ALL audio/video media uploaded to your website. This can be handy if you need to transcode media files uploaded in the past.', 'transcoder' ); ?></p>
+			<p><em><?php esc_html_e( 'Sending your entire media library for retranscoding can consume a lot of your bandwidth allowance, so use this tool with care.', 'transcoder' ); ?></em></p>
+			<p>
+				<?php
+				printf(
+					wp_kses(
+						__( "You can retranscode specific media files (rather than ALL media) from the <a href='%s'>Media</a> page using Bulk Action via drop down or mouse hover a specific media (audio/video) file.", 'transcoder' ),
+						array('a' => array('href' => array()))
+					),
+					esc_url(admin_url('upload.php'))
+				);
+				?>
+			</p>
+			<form method="post" action="">
+				<?php wp_nonce_field('rt-retranscoder'); ?>
+				<p>
+					<input type="submit" class="button button-primary" name="rt-retranscoder" id="rt-retranscoder" value="<?php esc_attr_e( 'Retranscode All Media', 'transcoder' ); ?>" />
+				</p>
+			</form>
+			<noscript>
+				<p><em><?php esc_html_e( 'You must enable Javascript in order to proceed!', 'transcoder' ); ?></em></p>
+			</noscript>
+		<?php
 	}
 
 	/**
