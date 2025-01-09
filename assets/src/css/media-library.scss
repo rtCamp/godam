@@ -80,3 +80,21 @@
 	transform: scale(1.2);
 }
 
+/**
+ * EXIF data styles.
+ */
+.exif-details {
+
+	h4 {
+		margin-top: 16px;
+		margin-bottom: 4px;
+	}
+
+	ul {
+		margin: 0;
+
+		li {
+			margin-bottom: 0;
+		}
+	}
+}
