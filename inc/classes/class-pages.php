@@ -304,19 +304,17 @@ class Pages {
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 		}
 
-		if ( $screen && 'upload' === $screen->id ) {
 
-			wp_enqueue_style( 'wp-components' );
+		wp_enqueue_style( 'wp-components' );
 
-			wp_register_script(
-				'media-library-react',
-				RT_TRANSCODER_URL . '/pages/build/media-library.js',
-				array( 'wp-element', 'wp-i18n' ),
-				filemtime( RT_TRANSCODER_PATH . '/pages/build/media-library.js' ),
-				true
-			);
+		wp_register_script(
+			'media-library-react',
+			RT_TRANSCODER_URL . '/pages/build/media-library.js',
+			array( 'wp-element', 'wp-i18n' ),
+			filemtime( RT_TRANSCODER_PATH . '/pages/build/media-library.js' ),
+			true
+		);
 
-			wp_enqueue_script( 'media-library-react' );
-		}
+		wp_enqueue_script( 'media-library-react' );
 	}
 }

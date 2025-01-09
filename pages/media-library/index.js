@@ -20,11 +20,19 @@ const Index = () => {
 	);
 };
 
-document.addEventListener( 'DOMContentLoaded', () => {
+document.addEventListener( 'DOMContentLoaded', initializeMediaLibrary );
+document.addEventListener( 'media-frame-opened', initializeMediaLibrary );
+
+function initializeMediaLibrary() {
 	const rootElement = document.getElementById( 'rt-transcoder-media-library-root' );
 
 	if ( rootElement ) {
-		const root = ReactDOM.createRoot( rootElement );
-		root.render( <Index /> );
+		// Check if React is already mounted to avoid reinitializing
+		if ( ! rootElement._reactRoot ) {
+			const root = ReactDOM.createRoot( rootElement );
+			rootElement._reactRoot = root; // Store the root in a custom property
+			root.render( <Index /> );
+		}
 	}
-} );
+}
+
