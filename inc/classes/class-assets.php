@@ -153,24 +153,25 @@ class Assets {
 		}
 
 		if ( $screen && 'upload' === $screen->id ) {
-			wp_enqueue_script( 'easydam-media-library' );
 			wp_enqueue_style( 'easydam-media-library' );
-
-			/**
-			 * Dependency library for date range picker.
-			 */
-			wp_enqueue_script( 'moment-js', 'https://cdn.jsdelivr.net/momentjs/latest/moment.min.js', array(), '1.0.0', true );
-			wp_enqueue_script( 'daterangepicker-js', 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js', array( 'moment-js' ), '1.0.0', true );
-			wp_enqueue_style( 'daterangepicker-css', 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css', array(), '1.0.0' );
-
-			wp_localize_script(
-				'easydam-media-library',
-				'easydamMediaLibrary',
-				array(
-					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-					'nonce'   => wp_create_nonce( 'easydam_media_library' ),
-				)
-			);
 		}
+
+		wp_enqueue_script( 'easydam-media-library' );
+
+		/**
+		 * Dependency library for date range picker.
+		 */
+		wp_enqueue_script( 'moment-js', 'https://cdn.jsdelivr.net/momentjs/latest/moment.min.js', array(), '1.0.0', true );
+		wp_enqueue_script( 'daterangepicker-js', 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js', array( 'moment-js' ), '1.0.0', true );
+		wp_enqueue_style( 'daterangepicker-css', 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css', array(), '1.0.0' );
+
+		wp_localize_script(
+			'easydam-media-library',
+			'easydamMediaLibrary',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'easydam_media_library' ),
+			)
+		);
 	}
 }
