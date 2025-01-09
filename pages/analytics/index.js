@@ -25,8 +25,6 @@ const Frontpage = () => {
 		// Check if valid attachment ID is present
 		if ( id && ! isNaN( id ) ) {
 			setAttachmentID( id );
-		} else {
-			OpenVideoSelector();
 		}
 	}, [] );
 
