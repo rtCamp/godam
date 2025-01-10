@@ -333,7 +333,7 @@ class Settings extends Base {
 				'adaptive_bitrate'     => false,
 				'optimize_videos'      => false,
 				'video_format'         => 'auto',
-				'video_quality'        => '20',
+				'video_quality'        => array(),
 				'video_thumbnails'     => 5,
 				'overwrite_thumbnails' => false,
 				'watermark'            => false,
@@ -393,7 +393,7 @@ class Settings extends Base {
 				'adaptive_bitrate'     => rest_sanitize_boolean( $settings['video']['adaptive_bitrate'] ),
 				'optimize_videos'      => rest_sanitize_boolean( $settings['video']['optimize_videos'] ),
 				'video_format'         => sanitize_text_field( $settings['video']['video_format'] ),
-				'video_quality'        => sanitize_text_field( $settings['video']['video_quality'] ),
+				'video_quality'        => array_map( 'sanitize_text_field', $settings['video']['video_quality'] ),
 				'video_thumbnails'     => filter_var(
 					$settings['video']['video_thumbnails'],
 					FILTER_VALIDATE_INT,

@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { ToggleControl, TextControl, SelectControl, Modal, Button, Notice } from '@wordpress/components';
+import { ToggleControl, TextControl, SelectControl, Modal, Button, Notice, CheckboxControl } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
 const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) => {
@@ -10,7 +10,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 	const [ disableWatermark, setDisableWatermark ] = useState( mediaSettings?.video?.watermark !== undefined ? ! mediaSettings.video.watermark : true );
 	const [ adaptiveBitrate, setAdaptiveBitrate ] = useState( mediaSettings?.video?.adaptive_bitrate || false );
 	const [ optimizeVideos, setOptimizeVideos ] = useState( mediaSettings?.video?.optimize_videos || false );
-	const [ videoQuality, setVideoQuality ] = useState( mediaSettings?.video?.video_quality || '20' );
+	const [ videoQuality, setVideoQuality ] = useState( mediaSettings?.video?.video_quality || [] );
 	const [ videoThumbnails, setVideoThumbnails ] = useState( mediaSettings?.video?.video_thumbnails || 5 );
 	const [ overwriteThumbnails, setOverwriteThumbnails ] = useState( mediaSettings?.video?.overwrite_thumbnails || false );
 	const [ watermarkText, setWatermarkText ] = useState( mediaSettings?.video?.watermark_text || '' );
@@ -29,15 +29,13 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 	const videoQualityOptions = [
 		{ label: 'Not set', value: 'not-set' },
 		{ label: 'Auto', value: 'auto' },
-		{ label: 'Auto best', value: 'auto-best' },
-		{ label: 'Auto good', value: 'auto-good' },
-		{ label: 'Auto eco', value: 'auto-eco' },
-		{ label: 'Auto low', value: 'auto-low' },
-		{ label: '100', value: '100' },
-		{ label: '80', value: '80' },
-		{ label: '60', value: '60' },
-		{ label: '40', value: '40' },
-		{ label: '20', value: '20' },
+		{ label: '240p (352 x 240)', value: '240p' },
+		{ label: '360p (640 x 360)', value: '360p' },
+		{ label: '480p (842 x 480)', value: '480p' },
+		{ label: '720p (1280 x 720)', value: '720p' },
+		{ label: '1080p (1920 x 1080) (HD)', value: '1080p' },
+		{ label: '1440p (2560 x 1440) (HD)', value: '1440p' },
+		{ label: '2160p (3840 x 2160) (4K)', value: '2160p' },
 	];
 
 	const handleSubmit = ( e ) => {
@@ -142,7 +140,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					<div className="text-slate-500">If you turn this setting off, your videos will be delivered from WordPress</div>
 				</div>
 
-				<hr /> */ }
+				 */ }
 
 				<div className="py-3 flex flex-col gap-2">
 					<label className="block text-base font-semibold" htmlFor="abs">Adaptive Bitrate Streaming</label>
@@ -155,9 +153,8 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					<div className="text-slate-500">If enabled, Transcoder will generate multiple video files with different bitrates for adaptive streaming</div>
 				</div>
 
-				<hr />
-
-				{ /* <div>
+				<div>
+					{ /*
 					<div className="py-3 flex flex-col gap-1">
 						<label className="block text-base font-semibold" htmlFor="optimize_video">Video optimization</label>
 						<ToggleControl
@@ -184,23 +181,31 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 						/>
 						<div className="text-slate-500">The video format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user's browser and device</div>
 					</div>
-
+					*/ }
 					<div className="py-3 flex flex-col gap-1">
 						<label className="block text-base font-semibold" htmlFor="video_quality">Video quality</label>
-						<SelectControl
-							__next40pxDefaultSize
-							__nextHasNoMarginBottom
-							value={ videoQuality }
-							options={ videoQualityOptions }
-							onChange={ ( value ) => setVideoQuality( value ) }
-							describedBy="The quality of the video for delivery"
-							showSelectedHint
-							size="compact"
-							className="max-w-[400px] w-full"
-						/>
-						<div className="text-slate-500">Videos will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality</div>
+						<div className="max-h-[150px] overflow-y-auto border rounded p-2">
+							{ videoQualityOptions.map( ( option ) => (
+								<div key={ option.value } className="py-1">
+									<CheckboxControl
+										label={ option.label }
+										checked={ videoQuality.includes( option.value ) }
+										onChange={ ( isChecked ) => {
+											setVideoQuality( ( prev ) =>
+												isChecked
+													? [ ...prev, option.value ]
+													: prev.filter( ( val ) => val !== option.value ),
+											);
+										} }
+									/>
+								</div>
+							) ) }
+						</div>
+						<div className="text-slate-500">
+							Select one or more video qualities for delivery. Transcoder will generate videos with selected resolutions.
+						</div>
 					</div>
-				</div> */ }
+				</div>
 
 				<div className="py-3 flex flex-col gap-2">
 					<label className="block text-base font-semibold" htmlFor="video_thumbnails_count">
@@ -237,9 +242,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					</div>
 				</div>
 
-				<hr />
-
-				<div className="py-3 flex flex-col gap-2 opacity-90 relative mt-3">
+				<div className="py-3 flex flex-col gap-2 opacity-90 relative">
 					{ ! isPremiumUser && (
 						<div className="absolute bg-orange-400 bg-opacity-10 inset-0 rounded-lg border border-orange-200">
 							<button
