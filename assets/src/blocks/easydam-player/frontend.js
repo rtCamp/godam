@@ -256,9 +256,6 @@ function easyDAMPlayer() {
 			const baseHeight = 600;
 
 			currentHotspotLayers.forEach( ( layerObj ) => {
-				if ( layerObj.layerElement.classList.contains( 'hidden' ) ) {
-					return;
-				}
 				const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
 				hotspotDivs.forEach( ( hotspotDiv, index ) => {
 					const hotspot = layerObj.hotspots[ index ];
