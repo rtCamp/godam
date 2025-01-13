@@ -59,7 +59,7 @@ elseif ( 'self-hosted' === $ad_server && ! empty( $ads_layers ) ) :
 	$ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
 endif;
 
-$instance_id = 'video_' . bin2hex(random_bytes(8));
+$instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>

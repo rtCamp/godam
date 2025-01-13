@@ -133,7 +133,7 @@ class RetranscodeMedia {
 			<h1><?php esc_html_e( 'EasyDAM Tools', 'transcoder' ); ?></h1>
 			<div id="easydam-tools-widget">
 				<?php
-				do_meta_boxes('easydam-tools', 'normal', null);
+				do_meta_boxes( 'easydam-tools', 'normal', null );
 				?>
 			</div>
 		</div>
@@ -148,7 +148,7 @@ class RetranscodeMedia {
 		add_meta_box(
 			'retranscode_media_widget',                 // ID of the meta box
 			__( 'Retranscode Media', 'transcoder' ),    // Title of the meta box
-			array($this, 'retranscode_interface'), // Callback to render the meta box
+			array( $this, 'retranscode_interface' ), // Callback to render the meta box
 			'easydam-tools',                            // Screen (matches submenu slug)
 			'normal',                                   // Context (main column)
 			'high'                                      // Priority
@@ -432,7 +432,6 @@ class RetranscodeMedia {
 				<?php
 				$count = count( $media );
 
-
 				// translators: Count of media which were successfully transcoded with the time in seconds.
 				$text_goback = ( ! empty( $_GET['goback'] ) ) ? __( 'To go back to the previous page, <a id="retranscode-goback" href="#">click here</a>.', 'transcoder' ) : '';
 
@@ -602,11 +601,11 @@ class RetranscodeMedia {
 			// ]]>
 			</script>
 					<?php
-				} else {
-					// No button click? Display the form.
-					?>
+			} else {
+				// No button click? Display the form.
+				?>
 			<form method="post" action="">
-					<?php wp_nonce_field( 'rt-retranscoder' ); ?>
+				<?php wp_nonce_field( 'rt-retranscoder' ); ?>
 
 			<p><?php printf( esc_html__( 'This tool will retranscode ALL audio/video media uploaded to your website. This can be handy if you need to transcode media files uploaded in the past.', 'transcoder' ) ); ?>
 
@@ -627,8 +626,8 @@ class RetranscodeMedia {
 
 			</form>
 					<?php
-				} // End if button
-				?>
+			} // End if button
+			?>
 		</div>
 
 		<?php

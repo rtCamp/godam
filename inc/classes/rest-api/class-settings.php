@@ -434,12 +434,12 @@ class Settings extends Base {
 	 */
 	public function get_aws_settings( $request ) {
 		$settings = get_option( 'easydam_storage_aws' );
-	
+
 		// If settings are not found, return a default empty array.
 		if ( false === $settings ) {
 			$settings = array();
 		}
-	
+
 		return new \WP_REST_Response( $settings, 200 );
 	}
 
@@ -462,7 +462,7 @@ class Settings extends Base {
 					'secretKey' => '',
 					'bucket'    => '',
 				),
-			) 
+			)
 		);
 
 		// Merge existing settings with new data, ensuring only updated values are replaced.
@@ -512,7 +512,7 @@ class Settings extends Base {
 
 	/**
 	 * Test the credentials.
-	 * 
+	 *
 	 * Test the credentials for the storage provider.
 	 *
 	 * @return \WP_REST_Response
@@ -521,7 +521,7 @@ class Settings extends Base {
 
 		try {
 			Storage_Handler::check_credentials();
-			
+
 			$response = array(
 				'status'  => 'success',
 				'message' => 'Credentials are valid and can write storage.',
