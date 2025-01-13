@@ -59,6 +59,7 @@ elseif ( 'self-hosted' === $ad_server && ! empty( $ads_layers ) ) :
 	$ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
 endif;
 
+$instance_id = 'video_' . bin2hex(random_bytes(8));
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
@@ -66,9 +67,10 @@ endif;
 	<div class="easydam-video-container">
 		<video
 			class="easydam-player video-js vjs-big-play-centered"
-			data-setup="<?php echo esc_attr( $video_setup ); ?>"
+			data-options="<?php echo esc_attr( $video_setup ); ?>"
 			data-ad_tag_url="<?php echo esc_url_raw( $ad_tag_url ); ?>"
 			data-id="<?php echo esc_attr( $attachment_id ); ?>" 
+			data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 		>
 			<?php
 			foreach ( $sources as $source ) :
@@ -110,7 +112,7 @@ endif;
 				// FORM layer.
 				if ( isset( $layer['type'] ) && 'form' === $layer['type'] && ! empty( $layer['gf_id'] ) ) :
 					?>
-					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>">
+					<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>">
 						<div class="form-container">
 							<?php
 								$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
@@ -128,7 +130,7 @@ endif;
 					// CTA layer.
 				elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) :
 					?>
-					<div id="layer-<?php echo esc_attr( $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>">
+					<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>">
 						<?php if ( 'text' === $layer['cta_type'] ) : ?>
 							<div class="ql-editor easydam-layer--cta-text">
 								<?php echo wp_kses_post( $layer['text'] ); ?>
@@ -144,7 +146,7 @@ endif;
 				elseif ( isset( $layer['type'] ) && 'hotspot' === $layer['type'] ) :
 					?>
 					<div
-						id="layer-<?php echo esc_attr( $layer['id'] ); ?>"
+						id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
 						class="easydam-layer hidden hotspot-layer"
 						style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>"
 					>

@@ -52,13 +52,6 @@ class Pages {
 			true
 		);
 
-		wp_enqueue_script(
-			'block-analytics-script',
-			RT_TRANSCODER_URL . 'assets/build/blocks/easydam-player/analytics.js',
-			array( 'wp-element' ),
-			filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/easydam-player/analytics.js' ),
-			true
-		);
 
 		wp_localize_script(
 			'block-frontend-script',
@@ -283,13 +276,6 @@ class Pages {
 
 			wp_enqueue_script( 'transcoder-page-script-wp-components' );
 		} elseif ( $screen && 'easydam_page_analytics' === $screen->id ) {
-			wp_register_script(
-				'transcoder-page-script-analytics',
-				RT_TRANSCODER_URL . 'pages/build/analytics.js',
-				array( 'wp-element' ),
-				filemtime( RT_TRANSCODER_PATH . 'pages/build/analytics.js' ),
-				true
-			);
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(

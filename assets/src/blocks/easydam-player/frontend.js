@@ -21,12 +21,10 @@ function easyDAMPlayer() {
 	const videos = document.querySelectorAll( '.easydam-player.video-js' );
 
 	videos.forEach( ( video ) => {
-		// read the data-setup attribute.
-
 		const adTagUrl = video.dataset.ad_tag_url;
 
-		const videoSetupOptions = video.dataset.setup
-			? JSON.parse( video.dataset.setup )
+		const videoSetupOptions = video.dataset.options
+			? JSON.parse( video.dataset.options )
 			: {
 				controls: true,
 				autoplay: false,
@@ -43,7 +41,8 @@ function easyDAMPlayer() {
 
 		// Hide all layers initially.
 		layers.forEach( ( layer ) => {
-			const layerId = `layer-${ layer.id }`;
+			const instanceId = video.dataset.instanceId;
+			const layerId = `layer-${ instanceId }-${ layer.id }`;
 			const layerElement = document.querySelector( `#${ layerId }` );
 
 			if ( ! layerElement ) {
