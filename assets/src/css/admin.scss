@@ -2,6 +2,15 @@
 Write your Sass code here for admin.
 */
 
+/* EasyDAM Tools Submenu Page */
+#easydam-tools-widget .hndle {
+    padding-left: 12px;
+}
+
+#easydam-tools-widget {
+	margin-right: 20px;
+}
+
 $media-frame-width: calc( 300px + 2 * 24px );
 
 .media-frame-menu {

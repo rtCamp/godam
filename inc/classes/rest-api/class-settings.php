@@ -333,7 +333,7 @@ class Settings extends Base {
 				'adaptive_bitrate'     => false,
 				'optimize_videos'      => false,
 				'video_format'         => 'auto',
-				'video_quality'        => '20',
+				'video_quality'        => array(),
 				'video_thumbnails'     => 5,
 				'overwrite_thumbnails' => false,
 				'watermark'            => false,
@@ -393,7 +393,7 @@ class Settings extends Base {
 				'adaptive_bitrate'     => rest_sanitize_boolean( $settings['video']['adaptive_bitrate'] ),
 				'optimize_videos'      => rest_sanitize_boolean( $settings['video']['optimize_videos'] ),
 				'video_format'         => sanitize_text_field( $settings['video']['video_format'] ),
-				'video_quality'        => sanitize_text_field( $settings['video']['video_quality'] ),
+				'video_quality'        => array_map( 'sanitize_text_field', $settings['video']['video_quality'] ),
 				'video_thumbnails'     => filter_var(
 					$settings['video']['video_thumbnails'],
 					FILTER_VALIDATE_INT,
@@ -434,12 +434,12 @@ class Settings extends Base {
 	 */
 	public function get_aws_settings( $request ) {
 		$settings = get_option( 'easydam_storage_aws' );
-	
+
 		// If settings are not found, return a default empty array.
 		if ( false === $settings ) {
 			$settings = array();
 		}
-	
+
 		return new \WP_REST_Response( $settings, 200 );
 	}
 
@@ -462,7 +462,7 @@ class Settings extends Base {
 					'secretKey' => '',
 					'bucket'    => '',
 				),
-			) 
+			)
 		);
 
 		// Merge existing settings with new data, ensuring only updated values are replaced.
@@ -512,7 +512,7 @@ class Settings extends Base {
 
 	/**
 	 * Test the credentials.
-	 * 
+	 *
 	 * Test the credentials for the storage provider.
 	 *
 	 * @return \WP_REST_Response
@@ -521,7 +521,7 @@ class Settings extends Base {
 
 		try {
 			Storage_Handler::check_credentials();
-			
+
 			$response = array(
 				'status'  => 'success',
 				'message' => 'Credentials are valid and can write storage.',

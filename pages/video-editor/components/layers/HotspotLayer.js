@@ -442,15 +442,6 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 						);
 					} ) }
 				</div>
-				<Button
-					className="skip-button"
-					variant="primary"
-					icon={ chevronRight }
-					iconSize="18"
-					iconPosition="right"
-				>
-					{ __( 'Next', 'transcoder' ) }
-				</Button>
 			</LayerControls>
 		</>
 	);
