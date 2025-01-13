@@ -39,11 +39,11 @@ const App = () => {
 			label: 'Image settings',
 			component: ImageSettings,
 		},
-		{
-			id: 'storage-settings',
-			label: 'Storage settings',
-			component: StorageSettings,
-		},
+		// {
+		// 	id: 'storage-settings', // Disable this tab for now
+		// 	label: 'Storage settings',
+		// 	component: StorageSettings,
+		// },
 	];
 
 	useEffect( () => {

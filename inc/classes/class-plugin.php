@@ -50,6 +50,8 @@ class Plugin {
 		$offload_media = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
 		$offload_media = isset( $offload_media['offLoadMedia'] ) ? $offload_media['offLoadMedia'] : false;
 		
+		$offload_media = false; // disabling the S3 bucket for now
+
 		if ( $offload_media ) {
 			Media_Filters::get_instance();
 		}

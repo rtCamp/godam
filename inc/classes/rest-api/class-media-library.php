@@ -61,7 +61,7 @@ class Media_Library extends Base {
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'upload_to_s3' ),
 					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
+						return false; // disable REST API for now.
 					},
 					'args'                => array(
 						'attachment_ids' => array(
@@ -73,6 +73,24 @@ class Media_Library extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/get-exif-data',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_exif_data' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+					'args'                => array(
+						'attachment_id' => array(
+							'required'    => true,
+							'type'        => 'integer',
+							'description' => 'Attachment ID to get EXIF data for.',
+						),
+					),
+				),
+			)
 		);
 	}
 
@@ -185,5 +203,78 @@ class Media_Library extends Base {
 				'uploaded' => $successful_uploads,
 			) 
 		);
+	}
+
+	/**
+	 * Get EXIF data.
+	 * 
+	 * Get the EXIF data for the attachment ID.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function get_exif_data( $request ) {
+		$attachment_id = $request->get_param( 'attachment_id' );
+
+		// Get the file path of the image
+		$file_path = get_attached_file( $attachment_id );
+
+		if ( ! file_exists( $file_path ) ) {
+			return new \WP_Error( 'image_not_found', 'Image file not found.', array( 'status' => 404 ) );
+		}
+
+		// Read EXIF data from the image
+		$exif_data = @exif_read_data( $file_path, 0, true );
+
+		if ( false === $exif_data ) {
+			return new \WP_Error( 'exif_data_not_found', 'No EXIF data found.', array( 'status' => 404 ) );
+		}
+
+		// Extract and filter the desired EXIF data fields.
+		$filtered_data = array();
+
+		if ( isset( $exif_data['EXIF']['DateTimeOriginal'] ) ) {
+			$filtered_data['DateTimeOriginal'] = $exif_data['EXIF']['DateTimeOriginal'];
+		}
+	
+		if ( isset( $exif_data['IFD0']['Make'] ) ) {
+			$filtered_data['Make'] = $exif_data['IFD0']['Make'];
+		}
+	
+		if ( isset( $exif_data['IFD0']['Model'] ) ) {
+			$filtered_data['Model'] = $exif_data['IFD0']['Model'];
+		}
+	
+		if ( isset( $exif_data['EXIF']['ExposureTime'] ) ) {
+			$filtered_data['ExposureTime'] = $exif_data['EXIF']['ExposureTime'];
+		}
+	
+		if ( isset( $exif_data['EXIF']['FNumber'] ) ) {
+			$filtered_data['FNumber'] = $this->format_fnumber( $exif_data['EXIF']['FNumber'] );
+		}
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'data'    => $filtered_data,
+			) 
+		);
+	}
+
+	/**
+	 * Format FNumber value.
+	 *
+	 * @param string|int $fnumber The FNumber value.
+	 * @return string Formatted FNumber value.
+	 */
+	private function format_fnumber( $fnumber ) {
+		if ( is_string( $fnumber ) && strpos( $fnumber, '/' ) !== false ) {
+			list( $numerator, $denominator ) = explode( '/', $fnumber );
+			if ( is_numeric( $numerator ) && is_numeric( $denominator ) && $denominator != 0 ) {
+				return 'f/' . round( $numerator / $denominator, 1 );
+			}
+		}
+
+		return $fnumber;
 	}
 }
