@@ -109,7 +109,7 @@ class Settings extends Base {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_aws_settings' ),
 					'permission_callback' => function () {
-						return current_user_can( 'manage_options' );
+						return false; // disable REST API for now.
 					},
 				),
 			),
@@ -120,7 +120,7 @@ class Settings extends Base {
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'update_aws_settings' ),
 					'permission_callback' => function () {
-						return current_user_can( 'manage_options' );
+						return false; // disable REST API for now.
 					},
 					'args'                => array(
 						'bucketPath'   => array(
@@ -164,7 +164,7 @@ class Settings extends Base {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_buckets' ),
 					'permission_callback' => function () {
-						return current_user_can( 'manage_options' );
+						return false; // disable REST API for now.
 					},
 				),
 			),
@@ -175,7 +175,7 @@ class Settings extends Base {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'test_credentials' ),
 					'permission_callback' => function () {
-						return current_user_can( 'manage_options' );
+						return false; // disable REST API for now.
 					},
 				),
 			),
