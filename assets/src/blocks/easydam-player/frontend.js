@@ -229,6 +229,8 @@ function easyDAMPlayer() {
 			const hotspotRect = hotspotDiv.getBoundingClientRect();
 			const tooltipRect = tooltipDiv.getBoundingClientRect();
 
+			const viewportWidth = window.innerWidth;
+
 			const spaceAbove = hotspotRect.top;
 			if ( spaceAbove < tooltipRect.height + 10 ) {
 			// Place below
@@ -242,6 +244,31 @@ function easyDAMPlayer() {
 				tooltipDiv.style.top = 'auto';
 				tooltipDiv.classList.add( 'tooltip-top' );
 				tooltipDiv.classList.remove( 'tooltip-bottom' );
+			}
+			const spaceLeft = hotspotRect.left;
+			const spaceRight = viewportWidth - hotspotRect.right;
+
+			if ( spaceLeft < 10 ) {
+				// Adjust to the right
+				tooltipDiv.style.left = '0';
+				tooltipDiv.style.transform = 'translateX(0)';
+				tooltipDiv.classList.add( 'tooltip-left' );
+				tooltipDiv.classList.remove( 'tooltip-right' );
+				tooltipDiv.classList.add( 'no-arrow' );
+			} else if ( spaceRight < 10 ) {
+				// Adjust to the left
+				tooltipDiv.style.left = 'auto';
+				tooltipDiv.style.right = '0';
+				tooltipDiv.style.transform = 'translateX(0)';
+				tooltipDiv.classList.add( 'tooltip-right' );
+				tooltipDiv.classList.remove( 'tooltip-left' );
+				tooltipDiv.classList.add( 'no-arrow' );
+			} else {
+				// Centered horizontally
+				tooltipDiv.style.left = '50%';
+				tooltipDiv.style.right = 'auto';
+				tooltipDiv.style.transform = 'translateX(-50%)';
+				tooltipDiv.classList.remove( 'tooltip-left', 'tooltip-right', 'no-arrow' );
 			}
 		}
 
@@ -272,6 +299,13 @@ function easyDAMPlayer() {
 					const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
 					hotspotDiv.style.width = `${ pixelDiameter }px`;
 					hotspotDiv.style.height = `${ pixelDiameter }px`;
+
+					const tooltipDiv = hotspotDiv.querySelector( '.hotspot-tooltip' );
+					if ( tooltipDiv ) {
+						requestAnimationFrame( () => {
+							positionTooltip( hotspotDiv, tooltipDiv );
+						} );
+					}
 				} );
 			} );
 		}
