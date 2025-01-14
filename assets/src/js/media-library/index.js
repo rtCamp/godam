@@ -8,6 +8,7 @@ import './transcoding-status';
 
 import AttachmentsBrowser from './views/attachment-browser.js';
 import Attachments from './views/attachments.js';
+import AttachmentDetailsTwoColumn from './views/attachment-detail-two-column.js';
 
 const $ = jQuery;
 
@@ -27,6 +28,10 @@ class MediaLibrary {
 		if ( wp?.media?.view?.Attachments && Attachments ) {
 			wp.media.view.Attachments = Attachments;
 		}
+
+		if ( wp?.media?.view?.Attachment?.Details?.TwoColumn && AttachmentDetailsTwoColumn ) {
+			wp.media.view.Attachment.Details.TwoColumn = AttachmentDetailsTwoColumn;
+		}
 	}
 }
 
@@ -35,6 +40,12 @@ const mediaLibrary = new MediaLibrary();
 export default mediaLibrary;
 
 document.addEventListener( 'DOMContentLoaded', function() {
+	// Check if URL ends with /upload.php
+	const currentPath = new URL( window.location.href ).pathname;
+	if ( ! currentPath.endsWith( '/upload.php' ) ) {
+		return;
+	}
+
 	const mediaLibraryRoot = document.createElement( 'div' );
 	mediaLibraryRoot.id = 'rt-transcoder-media-library-root';
 	const wpbody = document.querySelector( '#wpbody' );
@@ -202,12 +213,12 @@ document.addEventListener( 'DOMContentLoaded', function() {
 					}
 					return response.json();
 				} )
-				.then( ( data ) => {
+				.then( ( responseData ) => {
 					this.style.pointerEvents = 'auto';
 
-					if ( data.success ) {
+					if ( responseData.success ) {
 						const newLink = document.createElement( 'a' );
-						newLink.href = data.data.url;
+						newLink.href = responseData.data.url;
 						newLink.target = '_blank';
 						newLink.textContent = 'LINK';
 						this.textContent = '';
@@ -222,4 +233,3 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		} );
 	} );
 } );
-

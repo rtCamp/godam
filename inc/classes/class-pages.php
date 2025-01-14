@@ -27,7 +27,7 @@ class Pages {
 	 *
 	 * @return void
 	 */
-	protected function setup_hooks() { 
+	protected function setup_hooks() {
 		/**
 		 * Action
 		 */
@@ -43,12 +43,12 @@ class Pages {
 	 * @return void
 	 */
 	public function handle_block_assets() {
-	
+
 		wp_enqueue_script(
-			'block-frontend-script',
-			RT_TRANSCODER_URL . 'assets/build/blocks/easydam-player/frontend.js',
+			'block-analytics-script',
+			RT_TRANSCODER_URL . 'assets/build/blocks/easydam-player/analytics.js',
 			array( 'wp-element' ),
-			filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/easydam-player/frontend.js' ),
+			filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/easydam-player/analytics.js' ),
 			true
 		);
 
@@ -98,7 +98,7 @@ class Pages {
 
 	/**
 	 * Handle admin head to remove admin notices.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function handle_admin_head() {
@@ -121,34 +121,91 @@ class Pages {
 
 	/**
 	 * To render the easydam page.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function render_easydam_page() {
 		?>
-		<div id="root-easydam">easydam root</div>
+		<div id="root-easydam">
+			<div class="wrap flex min-h-[80vh] gap-4 my-4">
+				<!-- Sidebar Skeleton -->
+				<div class="max-w-[220px] w-full rounded-lg bg-white shadow-md border border-gray-200">
+					<nav class="loading-skeleton flex flex-col gap-4 p-4">
+						<!-- Sidebar Tabs -->
+						<div class="skeleton-container skeleton-container-short">
+							<div class="skeleton-header w-3/4"></div>
+						</div>
+						<div class="skeleton-container skeleton-container-short">
+							<div class="skeleton-header w-3/4"></div>
+						</div>
+						<div class="skeleton-container skeleton-container-short">
+							<div class="skeleton-header w-3/4"></div>
+						</div>
+					</nav>
+				</div>
+
+				<!-- Main Content Skeleton -->
+				<div id="main-content" class="w-full p-5 bg-white rounded-lg border">
+					<!-- General Settings Form Skeleton -->
+					<div class="loading-skeleton flex flex-col gap-4">
+						<!-- Title -->
+						<div class="skeleton-container skeleton-container-short">
+							<div class="skeleton-header w-1/2"></div>
+						</div>
+
+						<!-- Input Field Skeleton -->
+						<div class="skeleton-container">
+							<div class="skeleton-line w-3/4"></div>
+							<div class="skeleton-line short w-1/2"></div>
+						</div>
+
+						<!-- Buttons Skeleton -->
+						<div class="flex gap-2">
+							<div class="skeleton-button w-32 h-10"></div>
+							<div class="skeleton-button w-40 h-10"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 		<?php
 	}
 
 	/**
 	 * To render the video-editor page.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function render_video_editor_page() {
 		?>
-		<div id="root-video-editor">video editor root</div>
+		<div id="root-video-editor">
+			<div class="progress-bar-wrapper">
+				<div class="progress-bar-container">
+					<div class="progress-bar">
+						<div class="progress-bar-inner"></div>
+					</div>
+				</div>
+			</div>
+		</div>
 		<?php
 	}
 
 	/**
 	 * To render the analytics page.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function render_analytics_page() {
 		?>
-		<div id="root-analytics">analytics root</div>
+		<div id="root-analytics">
+			<div class="progress-bar-wrapper">
+				<div class="progress-bar-container">
+					<div class="progress-bar">
+						<div class="progress-bar-inner"></div>
+					</div>
+				</div>
+			</div>
+		</div>
 		<?php
 	}
 
@@ -239,19 +296,17 @@ class Pages {
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 		}
 
-		if ( $screen && 'upload' === $screen->id ) {
 
-			wp_enqueue_style( 'wp-components' );
+		wp_enqueue_style( 'wp-components' );
 
-			wp_register_script(
-				'media-library-react',
-				RT_TRANSCODER_URL . '/pages/build/media-library.js',
-				array( 'wp-element', 'wp-i18n' ),
-				filemtime( RT_TRANSCODER_PATH . '/pages/build/media-library.js' ),
-				true
-			);
+		wp_register_script(
+			'media-library-react',
+			RT_TRANSCODER_URL . '/pages/build/media-library.js',
+			array( 'wp-element', 'wp-i18n' ),
+			filemtime( RT_TRANSCODER_PATH . '/pages/build/media-library.js' ),
+			true
+		);
 
-			wp_enqueue_script( 'media-library-react' );
-		}
+		wp_enqueue_script( 'media-library-react' );
 	}
 }

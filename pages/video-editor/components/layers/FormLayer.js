@@ -36,9 +36,13 @@ const FormLayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
+	const gforms = useSelector( ( state ) => state.videoReducer.gforms );
+	const forms = gforms.map( ( form ) => ( {
+		value: form.id,
+		label: form.title,
+	} ) );
 
 	const [ formHTML, setFormHTML ] = useState( '' );
-	const [ forms, setForms ] = useState( [] );
 
 	const handleDeleteLayer = () => {
 		dispatch( removeLayer( { id: layer.id } ) );
@@ -50,49 +54,24 @@ const FormLayer = ( { layerID, goBack } ) => {
 	};
 
 	useEffect( () => {
-		console.log( 'Form ID:', layer.gf_id );
 		if ( layer.gf_id ) {
-			fetchGravityForm( layer.gf_id );
+			fetchGravityForm( layer.gf_id, layer.theme );
 		}
 	}, [
 		layer.gf_id,
+		layer.theme,
 	] );
 
-	useEffect( () => {
-		// Fetch Gravity Forms from the server
-		axios.get( '/wp-json/easydam/v1/gforms?fields=id,title,description' )
-			.then( ( response ) => {
-				const data = response.data;
-				setForms( data.map( ( _form ) => {
-					return {
-						value: _form.id,
-						label: _form.title,
-					};
-				} ) );
-			} )
-			.catch( ( error ) => {
-				if ( error.status === 404 && error.response.data.code === 'gravity_forms_not_active' ) {
-					// Gravity Forms is not active.
-					console.log( 'Gravity Forms is not active.' );
-				}
-			} )
-			.finally( function() {
-				// always executed
-			} );
-	}, [] );
-
 	// Fetch the Gravity Form HTML
-	const fetchGravityForm = ( formId ) => {
-		axios.get( `/wp-json/easydam/v1/gforms/${ formId }` )
-			.then( ( response ) => {
-				setFormHTML( response.data );
-			} )
-			.catch( ( error ) => {
-				console.error( error );
-			} );
+	const fetchGravityForm = ( formId, theme ) => {
+		axios.get( `/wp-json/easydam/v1/gform`, {
+			params: { id: formId, theme },
+		} ).then( ( response ) => {
+			setFormHTML( response.data );
+		} ).catch( ( error ) => {
+			console.error( error );
+		} );
 	};
-
-	console.log( 'Layer:', layer );
 
 	return (
 		<>

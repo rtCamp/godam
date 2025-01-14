@@ -1,19 +1,30 @@
 /**
  * External dependencies
  */
-import videojs from 'video.js';
+/**
+ * VideoJs dependencies
+ */
 import 'video.js/dist/video-js.css';
+import 'videojs-contrib-ads/dist/videojs.ads.css';
 import 'videojs-ima/dist/videojs.ima.css';
-import 'videojs-contrib-quality-menu';
+import videojs from 'video.js';
 import 'videojs-contrib-ads';
 import 'videojs-ima';
+import 'videojs-contrib-quality-menu';
+
+/**
+ * FontAwesome dependencies
+ */
 import { library, dom } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 
-library.add( fas );
-
-dom.watch();
+/**
+ * Quill dependencies dependencies for the CTA text layer
+ */
 import 'quill/dist/quill.snow.css';
+
+library.add( fas );
+dom.watch();
 
 document.addEventListener( 'DOMContentLoaded', () => easyDAMPlayer() );
 
@@ -21,12 +32,10 @@ function easyDAMPlayer() {
 	const videos = document.querySelectorAll( '.easydam-player.video-js' );
 
 	videos.forEach( ( video ) => {
-		// read the data-setup attribute.
-
 		const adTagUrl = video.dataset.ad_tag_url;
 
-		const videoSetupOptions = video.dataset.setup
-			? JSON.parse( video.dataset.setup )
+		const videoSetupOptions = video.dataset.options
+			? JSON.parse( video.dataset.options )
 			: {
 				controls: true,
 				autoplay: false,
@@ -43,7 +52,8 @@ function easyDAMPlayer() {
 
 		// Hide all layers initially.
 		layers.forEach( ( layer ) => {
-			const layerId = `layer-${ layer.id }`;
+			const instanceId = video.dataset.instanceId;
+			const layerId = `layer-${ instanceId }-${ layer.id }`;
 			const layerElement = document.querySelector( `#${ layerId }` );
 
 			if ( ! layerElement ) {
@@ -75,26 +85,28 @@ function easyDAMPlayer() {
 			}
 		} );
 
+		formLayers.sort( ( a, b ) => a.displayTime - b.displayTime );
+
+		let currentFormLayerIndex = 0;
 		let isDisplayingLayer = false;
 
 		// Time update
 		player.on( 'timeupdate', () => {
 			const currentTime = player.currentTime();
 
-			// form/cta handling
-			if ( ! isDisplayingLayer ) {
-				for ( const layerObj of formLayers ) {
-					if (
-						layerObj.show && // Only display if 'show' is true
-            currentTime >= layerObj.displayTime &&
-            layerObj.layerElement.classList.contains( 'hidden' )
-					) {
-						layerObj.layerElement.classList.remove( 'hidden' );
-						player.pause();
-						player.controls( false );
-						isDisplayingLayer = true;
-						break;
-					}
+			// form/cta handling only the current form layer (if any)
+			if ( ! isDisplayingLayer && currentFormLayerIndex < formLayers.length ) {
+				const layerObj = formLayers[ currentFormLayerIndex ];
+				// If we've reached its displayTime, show it
+				if (
+					layerObj.show &&
+					currentTime >= layerObj.displayTime &&
+					layerObj.layerElement.classList.contains( 'hidden' )
+				) {
+					layerObj.layerElement.classList.remove( 'hidden' );
+					player.pause();
+					player.controls( false );
+					isDisplayingLayer = true;
 				}
 			}
 
@@ -228,6 +240,8 @@ function easyDAMPlayer() {
 			const hotspotRect = hotspotDiv.getBoundingClientRect();
 			const tooltipRect = tooltipDiv.getBoundingClientRect();
 
+			const viewportWidth = window.innerWidth;
+
 			const spaceAbove = hotspotRect.top;
 			if ( spaceAbove < tooltipRect.height + 10 ) {
 			// Place below
@@ -242,6 +256,31 @@ function easyDAMPlayer() {
 				tooltipDiv.classList.add( 'tooltip-top' );
 				tooltipDiv.classList.remove( 'tooltip-bottom' );
 			}
+			const spaceLeft = hotspotRect.left;
+			const spaceRight = viewportWidth - hotspotRect.right;
+
+			if ( spaceLeft < 10 ) {
+				// Adjust to the right
+				tooltipDiv.style.left = '0';
+				tooltipDiv.style.transform = 'translateX(0)';
+				tooltipDiv.classList.add( 'tooltip-left' );
+				tooltipDiv.classList.remove( 'tooltip-right' );
+				tooltipDiv.classList.add( 'no-arrow' );
+			} else if ( spaceRight < 10 ) {
+				// Adjust to the left
+				tooltipDiv.style.left = 'auto';
+				tooltipDiv.style.right = '0';
+				tooltipDiv.style.transform = 'translateX(0)';
+				tooltipDiv.classList.add( 'tooltip-right' );
+				tooltipDiv.classList.remove( 'tooltip-left' );
+				tooltipDiv.classList.add( 'no-arrow' );
+			} else {
+				// Centered horizontally
+				tooltipDiv.style.left = '50%';
+				tooltipDiv.style.right = 'auto';
+				tooltipDiv.style.transform = 'translateX(-50%)';
+				tooltipDiv.classList.remove( 'tooltip-left', 'tooltip-right', 'no-arrow' );
+			}
 		}
 
 		// Reposition hotspots on resize or fullscreen
@@ -254,9 +293,6 @@ function easyDAMPlayer() {
 			const baseHeight = 600;
 
 			currentHotspotLayers.forEach( ( layerObj ) => {
-				if ( layerObj.layerElement.classList.contains( 'hidden' ) ) {
-					return;
-				}
 				const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
 				hotspotDivs.forEach( ( hotspotDiv, index ) => {
 					const hotspot = layerObj.hotspots[ index ];
@@ -274,6 +310,13 @@ function easyDAMPlayer() {
 					const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
 					hotspotDiv.style.width = `${ pixelDiameter }px`;
 					hotspotDiv.style.height = `${ pixelDiameter }px`;
+
+					const tooltipDiv = hotspotDiv.querySelector( '.hotspot-tooltip' );
+					if ( tooltipDiv ) {
+						requestAnimationFrame( () => {
+							positionTooltip( hotspotDiv, tooltipDiv );
+						} );
+					}
 				} );
 			} );
 		}
@@ -309,13 +352,13 @@ function easyDAMPlayer() {
 				( layerObj ) =>
 					! layerObj.layerElement.classList.contains( 'hidden' ) && layerObj.show,
 			);
-			if ( isAnyFormVisible ) {
+			if ( isAnyLayerVisible ) {
 				player.pause();
 			}
 		} );
 
 		// Allow closing or skipping layers
-		formLayers.forEach( ( layerObj ) => {
+		formLayers.forEach( ( layerObj, index ) => {
 			const skipButton = document.createElement( 'button' );
 			skipButton.textContent = 'Skip';
 			skipButton.classList.add( 'skip-button' );
@@ -354,75 +397,29 @@ function easyDAMPlayer() {
 				player.controls( true );
 				player.play();
 				isDisplayingLayer = false;
+				// Increment the current form layer.
+				if ( index === currentFormLayerIndex ) {
+					currentFormLayerIndex++;
+				}
 			} );
 
 			layerObj.layerElement.appendChild( skipButton );
 		} );
 
 		if ( adTagUrl ) {
+			console.log( 'player.ima is about to call' );
+			
 			player.ima( {
 				id: 'content_video',
-				// autoPlayAdBreaks: false,
 				adTagUrl,
 			} );
 		}
 
 		player.qualityMenu();
 
-		// store heatmap information
-		const existingRanges = [];
-		let lastTime = 0;
-
-		player.on( 'timeupdate', function() {
-			const currentTime = player.currentTime();
-			const played = player.played();
-
-			// Check if we've jumped backwards (replay)
-			if ( currentTime < lastTime ) {
-				// Add new range entry when user jumps back
-				existingRanges.push( copyRanges( played ) );
-			} else if ( existingRanges.length === 0 ) {
-				existingRanges.push( copyRanges( played ) );
-			} else {
-				existingRanges[ existingRanges.length - 1 ] = copyRanges( played );
-			}
-
-			updateHeatmap( existingRanges );
-			lastTime = currentTime;
+		player.ready( function() {
+			// player.ima.initializeAdDisplayContainer();
+			// player.ima.requestAds();
 		} );
-
-		function copyRanges( timeRanges ) {
-			const copy = [];
-
-			for ( let i = 0; i < timeRanges.length; i++ ) {
-				copy.push( [ timeRanges.start( i ), timeRanges.end( i ) ] );
-			}
-
-			return copy;
-		}
-
-		function updateHeatmap( ranges ) {
-			const videoId = video.getAttribute( 'data-id' );
-			const url = `/wp-json/wp/v2/media/${ videoId }`;
-
-			const data = JSON.stringify( {
-				easydam_analytics: ranges,
-			} );
-
-			fetch( url, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-WP-Nonce': window.nonceData.nonce,
-				},
-				body: data,
-			} )
-				.then( ( response ) => {
-					if ( ! response.ok ) {
-						throw new Error( `HTTP error! Status: ${ response.status }` );
-					}
-					return response.json();
-				} );
-		}
 	} );
 }

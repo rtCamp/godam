@@ -2,7 +2,6 @@
 	position: relative;
 	background-color: #fff;
 	margin-bottom: 10px;
-	border: 1px solid #b7b4b4;
 }
 
 .chart div {
@@ -18,10 +17,7 @@
 .analytics-container {
 	min-height: 100vh;
 	background-color: #fff;
-}
-
-.analytics-info-container {
-	padding-top: 50px;
+	padding-top: 100px;
 }
 
 .video-info-container {
@@ -40,7 +36,7 @@
 
 .analytics-info {
 	display: flex;
-	padding: 25px;
+	padding: 0 25px;
 	align-items: center;
 	gap: 30px;
 
@@ -53,4 +49,9 @@
 	p {
 		font-size: 18px;
 	}
+}
+
+.easydam-analytics-video-player {
+	max-width: 640px;
+	width: 100%;
 }

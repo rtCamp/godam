@@ -1,3 +1,4 @@
+/* global jQuery */
 
 /**
  * Internal dependencies
@@ -7,6 +8,8 @@ import MediaDateRangeFilter from './filters/media-date-range-filter';
 import MediaUploadToS3 from './filters/media-upload-to-s3';
 
 const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
+
+const $ = jQuery;
 
 /**
  * Attachment Browser with Custom Filters
@@ -42,7 +45,7 @@ export default AttachmentsBrowser?.extend( {
 			);
 		}
 
-		if ( MediaUploadToS3 ) {
+		if ( MediaUploadToS3 && ! wp?.media?.frame?.el ) {
 			this.toolbar.set(
 				'MediaUploadToS3',
 				new MediaUploadToS3( {
@@ -52,5 +55,18 @@ export default AttachmentsBrowser?.extend( {
 				} ).render(),
 			);
 		}
+
+		setTimeout( () => {
+			$( '.media-frame' ).removeClass( 'hide-menu' );
+
+			const menu = $( '.media-frame' ).find( '.media-frame-menu' );
+
+			if ( menu.length ) {
+				menu.append( '<div id="rt-transcoder-media-library-root"></div>' );
+			}
+
+			const event = new CustomEvent( 'media-frame-opened' );
+			document.dispatchEvent( event );
+		}, 50 );
 	},
 } );

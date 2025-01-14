@@ -56,13 +56,13 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 						fontSize: '14px',
 						fontWeight: 'bold',
 						boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
-						zIndex: 1000,
+						zIndex: 160001, // Ensure that the helper is above media library popup
 						PointerEvent: 'none',
+						position: 'relative',
 					},
 				} );
 			},
 			opacity: 0.7,
-			zIndex: 1000,
 			appendTo: 'body',
 			cursorAt: { top: 5, left: 5 },
 
