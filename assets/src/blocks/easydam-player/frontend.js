@@ -1,19 +1,30 @@
 /**
  * External dependencies
  */
-import videojs from 'video.js';
+/**
+ * VideoJs dependencies
+ */
 import 'video.js/dist/video-js.css';
+import 'videojs-contrib-ads/dist/videojs.ads.css';
 import 'videojs-ima/dist/videojs.ima.css';
-import 'videojs-contrib-quality-menu';
+import videojs from 'video.js';
 import 'videojs-contrib-ads';
 import 'videojs-ima';
+import 'videojs-contrib-quality-menu';
+
+/**
+ * FontAwesome dependencies
+ */
 import { library, dom } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 
-library.add( fas );
-
-dom.watch();
+/**
+ * Quill dependencies dependencies for the CTA text layer
+ */
 import 'quill/dist/quill.snow.css';
+
+library.add( fas );
+dom.watch();
 
 document.addEventListener( 'DOMContentLoaded', () => easyDAMPlayer() );
 
@@ -396,13 +407,19 @@ function easyDAMPlayer() {
 		} );
 
 		if ( adTagUrl ) {
+			console.log( 'player.ima is about to call' );
+			
 			player.ima( {
 				id: 'content_video',
-				// autoPlayAdBreaks: false,
 				adTagUrl,
 			} );
 		}
 
 		player.qualityMenu();
+
+		player.ready( function() {
+			// player.ima.initializeAdDisplayContainer();
+			// player.ima.requestAds();
+		} );
 	} );
 }
