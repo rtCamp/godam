@@ -41,7 +41,8 @@
 	display: none;
 }
 
-.skip-button {
+.skip-button,
+.video-js .skip-button {
 	position: absolute;
 	bottom: 10%;
 	right: 20px;
@@ -353,4 +354,7 @@
 }
 .fullscreen-layer .hotspot-tooltip {
 	font-size: 16px;
+}
+.no-arrow::after {
+	display: none;
 }

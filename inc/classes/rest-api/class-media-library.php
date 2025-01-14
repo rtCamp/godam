@@ -61,7 +61,7 @@ class Media_Library extends Base {
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'upload_to_s3' ),
 					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
+						return false; // disable REST API for now.
 					},
 					'args'                => array(
 						'attachment_ids' => array(

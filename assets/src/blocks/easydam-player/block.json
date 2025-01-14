@@ -78,6 +78,6 @@
     "editorStyle": ["file:./index.css", "file:./frontend.css"],
 	"style": ["file:./style-index.css", "file:./frontend.css"],
     "editorScript": ["file:./index.js"],
-    "viewScript": ["file:./frontend.js", "file:./analytics.js"],
+    "viewScript": ["file:./frontend.js"],
     "render": "file:./render.php"
 }

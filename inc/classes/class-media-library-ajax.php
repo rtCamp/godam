@@ -40,6 +40,8 @@ class Media_Library_Ajax {
 		$offload_media = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
 		$offload_media = isset( $offload_media['offLoadMedia'] ) ? $offload_media['offLoadMedia'] : false;
 
+		$offload_media = false; // disabling the S3 bucket for now
+
 		if ( $offload_media ) {
 			add_filter( 'manage_media_columns', array( $this, 'add_media_column' ) );
 			add_action( 'manage_media_custom_column', array( $this, 'media_column_value' ), 10, 2 );
