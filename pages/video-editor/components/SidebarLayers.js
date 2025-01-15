@@ -196,14 +196,23 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 							)
 						}
 
-						{ ! loading && <Button
-							isPrimary
-							id="add-layer-btn"
-							icon={ plus }
-							iconPosition="left"
-							onClick={ openModal }
-							disabled={ ! currentTime && layers.find( ( l ) => l.displayTime === currentTime ) }
-						>{ __( 'Add layer at ', 'transcoder' ) } { currentTime }s</Button>
+						{ ! loading &&
+						<div>
+							<Button
+								isPrimary
+								id="add-layer-btn"
+								icon={ plus }
+								iconPosition="left"
+								onClick={ openModal }
+								disabled={ ! currentTime || layers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
+							>{ __( 'Add layer at ', 'transcoder' ) } { currentTime }s
+							</Button>
+							{ layers.find( ( l ) => l.displayTime === currentTime ) && (
+								<p className="text-slate-500">
+									{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'transcoder' ) }
+								</p>
+							) }
+						</div>
 						}
 						{ isOpen && (
 							<Modal title={ __( 'Select layer type', 'transcoder' ) } onRequestClose={ closeModal }>
