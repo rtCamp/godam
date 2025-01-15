@@ -182,12 +182,12 @@ class RT_Transcoder_Handler {
 				// $usage_info = $this->update_usage( $this->api_key );
 				// }
 				if ( array_key_exists( $this->api_key, $usage_info ) && is_object( $usage_info[ $this->api_key ] ) && isset( $usage_info[ $this->api_key ]->status ) && 'Active' === $usage_info[ $this->api_key ]->status ) {
-					if ( isset( $usage_info[ $this->api_key ]->remaining ) && $usage_info[ $this->api_key ]->remaining > 0 ) {
+					// if ( isset( $usage_info[ $this->api_key ]->remaining ) && $usage_info[ $this->api_key ]->remaining > 0 ) {
 
 						// Enable re-transcoding.
 						include_once RT_TRANSCODER_PATH . 'admin/rt-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
-						
+
 						if ( 'Active' === $usage_info[ $this->api_key ]->status ) {
 							add_filter( 'wp_generate_attachment_metadata', array( $this, 'wp_media_transcoding' ), 21, 2 );
 						}
@@ -200,7 +200,7 @@ class RT_Transcoder_Handler {
 							add_filter( 'rtmedia_allowed_types', array( $this, 'allowed_types_admin_settings' ), 10, 1 );
 							add_filter( 'rtmedia_valid_type_check', array( $this, 'bypass_video_audio' ), 10, 2 );
 						}
-					}
+					// }
 				}
 			}
 		}
