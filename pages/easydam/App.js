@@ -15,6 +15,8 @@ import StorageSettings from './storage-settings/index';
  * WordPress dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
+import { useDispatch, useSelector } from 'react-redux';
+import { setLoading } from './redux/slice/storage';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
@@ -22,6 +24,8 @@ const App = () => {
 	const [ mediaSettings, setMediaSettings ] = useState( null );
 	const [ licenseKey, setLicenseKey ] = useState( '' );
 	const [ isVerified, setIsVerified ] = useState( false ); // Tracks if the license is verified.
+
+	const dispatch = useDispatch();
 
 	const tabs = [
 		{
@@ -48,6 +52,7 @@ const App = () => {
 
 	useEffect( () => {
 		const fetchSettings = async () => {
+			dispatch( setLoading( true ) );
 			try {
 				const settingsResponse = await fetch( '/wp-json/easydam/v1/settings/easydam-settings', {
 					headers: {
@@ -74,11 +79,13 @@ const App = () => {
 				setIsVerified( settingsData?.general?.is_verified || false );
 			} catch ( error ) {
 				console.error( 'Failed to fetch data:', error );
+			} finally {
+				dispatch( setLoading( false ) ); // Set loading to false
 			}
 		};
 
 		fetchSettings();
-	}, [] );
+	}, [ dispatch ] );
 
 	const saveMediaSettings = async ( updatedSettings ) => {
 		try {
