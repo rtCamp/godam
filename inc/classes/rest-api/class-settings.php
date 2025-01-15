@@ -215,7 +215,7 @@ class Settings extends Base {
 		}
 
 		// API endpoint to verify the license.
-		$api_url = sprintf( 'http://frappe-transcoder-api.rt.gw/api/resource/Transcoder License/%s', $license_key );
+		$api_url = sprintf( 'http://frappe-transcoder-api.rt.gw/api/resource/License/%s', $license_key );
 
 		// Use vip_safe_wp_remote_get as the primary method and wp_safe_remote_get as fallback.
 		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {

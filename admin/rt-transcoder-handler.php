@@ -406,7 +406,7 @@ class RT_Transcoder_Handler {
 	 * @return boolean $status  If true then key is valid else key is not valid.
 	 */
 	public function is_valid_key( $key ) {
-		$validate_url = trailingslashit( $this->store_url ) . '/resource/Transcoder License/' . $key;
+		$validate_url = trailingslashit( $this->store_url ) . '/resource/License/' . $key;
 		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
 			$validation_page = vip_safe_wp_remote_get( $validate_url, '', 3, 3 );
 		} else {
@@ -434,7 +434,7 @@ class RT_Transcoder_Handler {
 	 * @return array $usage_info  An array containing usage information.
 	 */
 	public function update_usage( $key ) {
-		$usage_url = trailingslashit( $this->transcoding_api_url ) . 'resource/Transcoder License/' . $key;
+		$usage_url = trailingslashit( $this->transcoding_api_url ) . 'resource/License/' . $key;
 		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
 			$usage_page = vip_safe_wp_remote_get( $usage_url, '', 3, 3 );
 		} else {
