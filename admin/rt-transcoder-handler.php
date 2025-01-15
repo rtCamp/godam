@@ -182,12 +182,12 @@ class RT_Transcoder_Handler {
 				// $usage_info = $this->update_usage( $this->api_key );
 				// }
 				if ( array_key_exists( $this->api_key, $usage_info ) && is_object( $usage_info[ $this->api_key ] ) && isset( $usage_info[ $this->api_key ]->status ) && 'Active' === $usage_info[ $this->api_key ]->status ) {
-					if ( isset( $usage_info[ $this->api_key ]->remaining ) && $usage_info[ $this->api_key ]->remaining > 0 ) {
+					// if ( isset( $usage_info[ $this->api_key ]->remaining ) && $usage_info[ $this->api_key ]->remaining > 0 ) {
 
 						// Enable re-transcoding.
 						include_once RT_TRANSCODER_PATH . 'admin/rt-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
-						
+
 						if ( 'Active' === $usage_info[ $this->api_key ]->status ) {
 							add_filter( 'wp_generate_attachment_metadata', array( $this, 'wp_media_transcoding' ), 21, 2 );
 						}
@@ -200,7 +200,7 @@ class RT_Transcoder_Handler {
 							add_filter( 'rtmedia_allowed_types', array( $this, 'allowed_types_admin_settings' ), 10, 1 );
 							add_filter( 'rtmedia_valid_type_check', array( $this, 'bypass_video_audio' ), 10, 2 );
 						}
-					}
+					// }
 				}
 			}
 		}
@@ -406,7 +406,7 @@ class RT_Transcoder_Handler {
 	 * @return boolean $status  If true then key is valid else key is not valid.
 	 */
 	public function is_valid_key( $key ) {
-		$validate_url = trailingslashit( $this->store_url ) . '/resource/Transcoder License/' . $key;
+		$validate_url = trailingslashit( $this->store_url ) . '/resource/License/' . $key;
 		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
 			$validation_page = vip_safe_wp_remote_get( $validate_url, '', 3, 3 );
 		} else {
@@ -434,7 +434,7 @@ class RT_Transcoder_Handler {
 	 * @return array $usage_info  An array containing usage information.
 	 */
 	public function update_usage( $key ) {
-		$usage_url = trailingslashit( $this->transcoding_api_url ) . 'resource/Transcoder License/' . $key;
+		$usage_url = trailingslashit( $this->transcoding_api_url ) . 'resource/License/' . $key;
 		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
 			$usage_page = vip_safe_wp_remote_get( $usage_url, '', 3, 3 );
 		} else {
