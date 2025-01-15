@@ -184,9 +184,9 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					*/ }
 					<div className="py-3 flex flex-col gap-1">
 						<label className="block text-base font-semibold" htmlFor="video_quality">Video quality</label>
-						<div className="max-h-[150px] overflow-y-auto border rounded p-2">
+						<div className="grid grid-cols-2 gap-2 border rounded p-5">
 							{ videoQualityOptions.map( ( option ) => (
-								<div key={ option.value } className="py-1">
+								<div key={ option.value } className="py-1 w-fit">
 									<CheckboxControl
 										label={ option.label }
 										checked={ videoQuality.includes( option.value ) }
@@ -202,7 +202,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 							) ) }
 						</div>
 						<div className="text-slate-500">
-							Select one or more video qualities for delivery. Transcoder will generate videos with selected resolutions.
+							Select one or more video qualities for delivery. Transcoder will generate videos with selected resolutions. Transcoding will be done to the appropriate resolution supported by the video, up to the max resolution of each video
 						</div>
 					</div>
 				</div>
