@@ -87,9 +87,9 @@ class RT_Transcoder_Admin {
 				add_action( 'init', array( $this, 'disable_encoding' ) );
 			}
 			if ( is_multisite() ) {
-				add_action( 'network_admin_notices', array( $this, 'subscribe_transcoder_admin_notice' ) );
+				add_action( 'network_admin_notices', array( $this, 'license_activation_admin_notice' ) );
 			}
-			add_action( 'admin_notices', array( $this, 'subscribe_transcoder_admin_notice' ) );
+			add_action( 'admin_notices', array( $this, 'license_activation_admin_notice' ) );
 		}
 
 		if ( class_exists( 'RTMedia' ) ) {
@@ -443,25 +443,6 @@ class RT_Transcoder_Admin {
 	}
 
 	/**
-	 * Display subscribe to the transcoding service
-	 */
-	public function subscribe_transcoder_admin_notice() {
-		if ( ! empty( $this->api_key ) ) {
-			return false;
-		}
-		$settings_page_link = 'admin.php?page=rt-transcoder';
-		$class              = 'notice notice-error';
-		$valid_tags         = array(
-			'div'    => array( 'class' => array() ),
-			'p'      => array(),
-			'strong' => array(),
-			'a'      => array( 'href' => array() ),
-		);
-		// translators: Markup to show the info about plugin subscription if no API key is there.
-		printf( wp_kses( __( '<div class="%1$s"><p><strong>IMPORTANT!</strong> The Transcoder plugin works with active transcoding services subscription plan. <a href="%2$s">Click here</a> to subscribe or enable.</p></div>', 'transcoder' ), $valid_tags ), esc_attr( $class ), esc_url( admin_url( $settings_page_link ) ) );
-	}
-
-	/**
 	 * Set option to hide admin notice when user click on dismiss button.
 	 *
 	 * @since   1.0.0
@@ -500,5 +481,52 @@ class RT_Transcoder_Admin {
 	 */
 	public function mediaelement_add_class( $output, $url ) {
 		return sprintf( '<a class="no-popup" href="%1$s">%1$s</a>', esc_url( $url ) );
+	}
+
+	/**
+	 * Display admin notice for activating the license and handle dismissal.
+	 *
+	 * @since 1.0.0
+	 */
+	public function license_activation_admin_notice() {
+	
+		// Get the license key from the site options.
+		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+
+		// If no license key is stored, show the notice.
+		if ( empty( $license_key ) ) {
+			$this->render_license_notice();
+			return;
+		}
+	
+		// Use the global helper function to verify the license key.
+		$result = rtt_verify_license( $license_key );
+	
+		// Check if the result is an error and show the notice if the license is invalid.
+		if ( is_wp_error( $result ) ) {
+			error_log( 'License verification failed: ' . $result->get_error_message() );
+			$this->render_license_notice();
+		}
+	}
+
+	/**
+	 * Render the license activation admin notice.
+	 */
+	private function render_license_notice() {
+		?>
+		<div class="notice notice-warning is-dismissible rt-transcoder-license-notice">
+			<p>
+				<?php esc_html_e( 'The Transcoder plugin requires an active license to work fully. Please activate your license.', 'transcoder' ); ?>
+			</p>
+			<p>
+				<a href="https://rtmedia.io/transcoder/" class="button button-secondary" target="_blank">
+					<?php esc_html_e( 'Learn More', 'transcoder' ); ?>
+				</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=easydam' ) ); ?>" class="button button-primary">
+					<?php esc_html_e( 'Activate License', 'transcoder' ); ?>
+				</a>
+			</p>
+		</div>
+		<?php
 	}
 }
