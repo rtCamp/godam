@@ -516,14 +516,17 @@ class RT_Transcoder_Admin {
 		?>
 		<div class="notice notice-warning is-dismissible rt-transcoder-license-notice">
 			<p>
-				<?php esc_html_e( 'The Transcoder plugin requires an active license to work fully. Please activate your license.', 'transcoder' ); ?>
+				<?php esc_html_e( 'Good News! Transcoder is now updated to GoDAM with many more exciting features to enhance your media management experience.', 'transcoder' ); ?>
 			</p>
 			<p>
-				<a href="https://rtmedia.io/transcoder/" class="button button-secondary" target="_blank">
-					<?php esc_html_e( 'Learn More', 'transcoder' ); ?>
-				</a>
+				<?php esc_html_e( 'The plugin requires an active license to work fully. Please activate your license.', 'transcoder' ); ?>
+			</p>
+			<p>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=easydam' ) ); ?>" class="button button-primary">
 					<?php esc_html_e( 'Activate License', 'transcoder' ); ?>
+				</a>
+				<a href="https://rtmedia.io/transcoder/" class="button button-secondary" target="_blank">
+					<?php esc_html_e( 'Learn More', 'transcoder' ); ?>
 				</a>
 			</p>
 		</div>
