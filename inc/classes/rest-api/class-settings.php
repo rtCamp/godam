@@ -190,10 +190,10 @@ class Settings extends Base {
 	 */
 	public function verify_license( $request ) {
 		$license_key = $request->get_param( 'license_key' );
-	
+
 		// Use the helper function to verify the license key.
 		$result = rtt_verify_license( $license_key );
-	
+
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response(
 				array(
@@ -204,7 +204,7 @@ class Settings extends Base {
 				$result->get_error_data( 'status' ) ?? 500
 			);
 		}
-	
+
 		return new \WP_REST_Response(
 			array(
 				'status'  => 'success',
