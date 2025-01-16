@@ -174,7 +174,20 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 				<TextControl
 					value={ licenseKey }
 					onChange={ ( value ) => setLicenseKey( value ) }
-					help="Your license key is required to access the features"
+					help={
+						<>
+							Your license key is required to access the features.
+							You can get your active license key from your { ' ' }
+							<a
+								href="https://example.com/subscriptions"
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-blue-500 underline"
+							>
+								Subscription
+							</a>.
+						</>
+					}
 					placeholder="Enter your license key here"
 					className="max-w-[400px]"
 					disabled={ mediaSettings?.general?.is_verified }
@@ -197,7 +210,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 						isDestructive
 						isBusy={ isDeactivateLoading }
 					>
-						Deactivate License Key
+						Remove License Key
 					</Button>
 				</div>
 			</div>
