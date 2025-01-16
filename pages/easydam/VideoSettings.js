@@ -183,7 +183,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					*/ }
 					<div className="py-3 flex flex-col gap-1">
 						<label className="block text-base font-semibold" htmlFor="video_quality">Video quality</label>
-						<div className="grid grid-cols-2 gap-2 border rounded p-5">
+						<div className="grid grid-rows-4 grid-flow-col gap-2 border rounded p-5 h-[250px]">
 							{ videoQualityOptions.map( ( option ) => (
 								<div key={ option.value } className="py-1 w-fit">
 									<CheckboxControl
