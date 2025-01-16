@@ -184,7 +184,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								rel="noopener noreferrer"
 								className="text-blue-500 underline"
 							>
-								Subscription
+								Account
 							</a>.
 						</>
 					}
