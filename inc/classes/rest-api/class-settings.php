@@ -191,89 +191,27 @@ class Settings extends Base {
 	public function verify_license( $request ) {
 		$license_key = $request->get_param( 'license_key' );
 
-		$blacklist   = rtt_get_blacklist_ip_addresses();
-		$remote_addr = rtt_get_remote_ip_address();
+		// Use the helper function to verify the license key.
+		$result = rtt_verify_license( $license_key );
 
-		if ( in_array( wp_unslash( $remote_addr ), $blacklist, true ) ) {
+		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response(
 				array(
 					'status'  => 'error',
-					'message' => 'Localhost not allowed.',
+					'message' => $result->get_error_message(),
+					'code'    => $result->get_error_code(),
 				),
-				400
+				$result->get_error_data( 'status' ) ?? 500
 			);
 		}
 
-		if ( empty( $license_key ) ) {
-			return new \WP_REST_Response(
-				array(
-					'status'  => 'error',
-					'message' => 'License key is required.',
-				),
-				400
-			);
-		}
-
-		// API endpoint to verify the license.
-		$api_url = sprintf( 'http://frappe-transcoder-api.rt.gw/api/resource/License/%s', $license_key );
-
-		// Use vip_safe_wp_remote_get as the primary method and wp_safe_remote_get as fallback.
-		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
-			$response = vip_safe_wp_remote_get( $api_url, 3, 3 ); // Timeout of 3 seconds, retries 3 times.
-		} else {
-			$response = wp_safe_remote_get( $api_url ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
-		}
-
-		if ( is_wp_error( $response ) ) {
-			return new \WP_REST_Response(
-				array(
-					'status'  => 'error',
-					'message' => 'An error occurred while verifying the license. Please try again.',
-				),
-				500
-			);
-		}
-
-		$status_code = wp_remote_retrieve_response_code( $response );
-		$body        = json_decode( wp_remote_retrieve_body( $response ), true );
-
-		// Handle success response.
-		if ( 200 === $status_code && isset( $body['data'] ) ) {
-			// Save the license key in the site options only if it is verified.
-			update_site_option( 'rt-transcoding-api-key', $license_key );
-			update_site_option( 'rt-transcoding-api-key-stored', $license_key );
-
-			$handler = new \RT_Transcoder_Handler( false );
-			$handler->update_usage( $license_key );
-
-			return new \WP_REST_Response(
-				array(
-					'status'  => 'success',
-					'message' => 'License key verified and stored successfully!',
-					'data'    => $body['data'],
-				),
-				200
-			);
-		}
-
-		// Handle failure response.
-		if ( 404 === $status_code ) {
-			return new \WP_REST_Response(
-				array(
-					'status'  => 'error',
-					'message' => 'Invalid license key. Please try again.',
-				),
-				404
-			);
-		}
-
-		// Handle unexpected responses.
 		return new \WP_REST_Response(
 			array(
-				'status'  => 'error',
-				'message' => 'An unexpected error occurred. Please try again later.',
+				'status'  => 'success',
+				'message' => $result['message'],
+				'data'    => $result['data'],
 			),
-			500
+			200
 		);
 	}
 

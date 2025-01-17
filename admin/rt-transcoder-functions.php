@@ -1066,3 +1066,64 @@ function rtt_get_blacklist_ip_addresses() {
 
 	return array( '127.0.0.1', '::1' );
 }
+
+/**
+ * Helper function to verify the license key.
+ *
+ * @param string $license_key The license key to verify.
+ * @return array|WP_Error Array with status and data on success, WP_Error on failure.
+ */
+function rtt_verify_license( $license_key ) {
+	if ( empty( $license_key ) ) {
+		return new \WP_Error( 'missing_license_key', 'License key is required.', array( 'status' => 400 ) );
+	}
+
+	$blacklist   = rtt_get_blacklist_ip_addresses();
+	$remote_addr = rtt_get_remote_ip_address();
+
+	if ( in_array( wp_unslash( $remote_addr ), $blacklist, true ) ) {
+		return new \WP_Error( 'forbidden', 'Localhost not allowed.', array( 'status' => 400 ) );
+	}
+
+	// API endpoint to verify the license.
+	$api_url = sprintf( 'http://frappe-transcoder-api.rt.gw/api/resource/License/%s', $license_key );
+
+	// Use vip_safe_wp_remote_get as the primary method and wp_safe_remote_get as fallback.
+	if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
+		$response = vip_safe_wp_remote_get( $api_url, 3, 3 ); // Timeout of 3 seconds, retries 3 times.
+	} else {
+		$response = wp_safe_remote_get( $api_url ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
+	}
+
+	if ( is_wp_error( $response ) ) {
+		return new \WP_Error( 'api_error', 'An error occurred while verifying the license. Please try again.', array( 'status' => 500 ) );
+	}
+
+	$status_code = wp_remote_retrieve_response_code( $response );
+	$body        = json_decode( wp_remote_retrieve_body( $response ), true );
+
+	// Handle success response.
+	if ( 200 === $status_code && isset( $body['data'] ) ) {
+		// Save the license key in the site options only if it is verified.
+		update_site_option( 'rt-transcoding-api-key', $license_key );
+		update_site_option( 'rt-transcoding-api-key-stored', $license_key );
+
+		// Update usage data.
+		$handler = new \RT_Transcoder_Handler( false );
+		$handler->update_usage( $license_key );
+
+		return array(
+			'status'  => 'success',
+			'message' => 'License key verified and stored successfully!',
+			'data'    => $body['data'],
+		);
+	}
+
+	// Handle failure response.
+	if ( 404 === $status_code ) {
+		return new \WP_Error( 'invalid_license', 'Invalid license key. Please try again.', array( 'status' => 404 ) );
+	}
+
+	// Handle unexpected responses.
+	return new \WP_Error( 'unexpected_error', 'An unexpected error occurred. Please try again later.', array( 'status' => 500 ) );
+}

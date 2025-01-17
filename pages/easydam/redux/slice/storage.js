@@ -25,6 +25,7 @@ const slice = createSlice( {
 			isValid: false,
 			errorMessage: '',
 		},
+		loading: false,
 	},
 	reducers: {
 		setSettings( state, action ) {
@@ -62,6 +63,9 @@ const slice = createSlice( {
 		triggerRefresh( state ) {
 			state.shouldRefetch = ! state.shouldRefetch;
 		},
+		setLoading: ( state, action ) => {
+			state.loading = action.payload;
+		},
 	},
 } );
 
@@ -75,6 +79,7 @@ export const {
 	setNotice,
 	setValidation,
 	triggerRefresh,
+	setLoading,
 } = slice.actions;
 
 export default slice.reducer;
