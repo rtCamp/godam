@@ -300,6 +300,9 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								<Button
 									className="mb-5 w-full"
 									variant="primary"
+									href={ `https://frappe-transcoder-api.rt.gw/subscription/account-creation?plan_name=${ encodeURIComponent( plan.name ) }` }
+									target="_blank"
+									rel="noopener noreferrer"
 								>
 									Subscribe
 								</Button>
