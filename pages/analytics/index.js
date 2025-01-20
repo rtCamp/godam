@@ -30,7 +30,7 @@ const Frontpage = () => {
 
 	const OpenVideoSelector = () => {
 		const fileFrame = wp.media( {
-			title: 'Select Video',
+			title: __( 'Select video', 'transcoder' ),
 			button: {
 				text: __( 'View analytics', 'transcoder' ),
 			},
