@@ -285,15 +285,17 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 						{ plans.map( ( plan ) => (
 							<div
 								key={ plan.name }
-								className="plan border px-6 rounded-lg shadow-md bg-white transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col gap-2"
+								className="plan border px-6 rounded-lg shadow-md bg-white transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col gap-2 w-[200px]"
 							>
 								<div className="text-center">
-									<h3 className="text-lg font-bold text-gray-800">{ plan.name } Plan</h3>
+									<h3 className="text-lg font-bold text-gray-800 mt-5 mb-0">{ plan.name } Plan</h3>
 								</div>
-								<p className="text-xl font-semibold text-gray-800 my-2 text-center">${ plan.cost } <span className="text-sm text-gray-500">Per { plan.billing_interval }</span></p>
-								<ul className="text-sm text-gray-600 my-2 text-center">
+								<p className="text-xl font-semibold text-gray-800 my-1 text-center">${ plan.cost } <span className="text-sm text-gray-500">Per { plan.billing_interval }</span></p>
+								<ul className="text-xs text-gray-600 my-2 text-center">
 									<li>{ plan.bandwidth }GB bandwidth</li>
 									<li>{ plan.storage }GB storage</li>
+									<li>High-quality transcoding</li>
+									<li>Access to advanced analytics</li>
 								</ul>
 								<Button
 									className="mb-5 w-full"
