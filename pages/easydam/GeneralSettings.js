@@ -14,12 +14,40 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 	const [ isDeactivateLoading, setIsDeactivateLoading ] = useState( false );
 	const loading = useSelector( ( state ) => state.storage.loading );
 	const [ trackStatusOnUserProfile, setTrackStatusOnUserProfile ] = useState( mediaSettings?.general?.track_status || false );
+	const [ plans, setPlans ] = useState( [] );
 
 	useEffect( () => {
 		if ( mediaSettings?.general?.track_status !== undefined ) {
 			setTrackStatusOnUserProfile( mediaSettings.general.track_status );
 		}
 	}, [ mediaSettings ] );
+
+	useEffect( () => {
+		const fetchPlans = async () => {
+			try {
+				const response = await fetch(
+					'/wp-json/easydam/v1/settings/subscription-plans',
+					{
+						method: 'GET',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+					},
+				);
+				const result = await response.json();
+
+				if ( response.ok ) {
+					setPlans( result.data );
+				} else {
+					console.error( 'Failed to fetch subscription plans:', result.message );
+				}
+			} catch ( error ) {
+				console.error( 'Error fetching subscription plans:', error );
+			}
+		};
+
+		fetchPlans();
+	}, [] );
 
 	const saveLicenseKey = async () => {
 		if ( ! licenseKey.trim() ) {
@@ -241,49 +269,43 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 				Save Settings
 			</Button> */ }
 
-			{
-				! mediaSettings?.general?.is_verified && (
-					<div className="subscription-plans">
-						<h2 className="py-2 border-b text-xl font-bold">Subscription Plans</h2>
-						<p className="mb-4">
-							To enable transcoding, you will need to subscribe to one of the following plans after
-							downloading Transcoder. We encourage you to explore the service with the free subscription
-							plan.
-						</p>
-						<div className="flex gap-4">
-							<div className="plan free-plan p-4 border rounded shadow">
-								<h3 className="text-lg font-bold">Free Plan</h3>
-								<p>$0 Per month</p>
-								<ul className="list-disc list-inside text-sm">
-									<li>100MB upload file size limit</li>
-									<li>5GB bandwidth (per month)</li>
-									<li>Overage not allowed</li>
-									<li>rtAmazon S3 support</li>
-									<li>No HD Profiling</li>
+			{ ! mediaSettings?.general?.is_verified && (
+				<div className="subscription-plans">
+					<h2 className="py-2 border-b text-xl font-bold">
+						Subscription Plans
+					</h2>
+
+					<p className="mb-4">
+						To enable transcoding, you will need to subscribe to one of the following plans after
+						downloading Transcoder. We encourage you to explore the service with the free subscription
+						plan.
+					</p>
+
+					<div className="flex gap-4 flex-wrap">
+						{ plans.map( ( plan ) => (
+							<div
+								key={ plan.name }
+								className="plan border px-6 rounded-lg shadow-md bg-white transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col gap-2"
+							>
+								<div className="text-center">
+									<h3 className="text-lg font-bold text-gray-800">{ plan.name } Plan</h3>
+								</div>
+								<p className="text-xl font-semibold text-gray-800 my-2 text-center">${ plan.cost } <span className="text-sm text-gray-500">Per { plan.billing_interval }</span></p>
+								<ul className="text-sm text-gray-600 my-2 text-center">
+									<li>{ plan.bandwidth }GB bandwidth</li>
+									<li>{ plan.storage }GB storage</li>
 								</ul>
-								<Button className="mt-4 w-full" variant="primary">
-									Try Now
-								</Button>
-							</div>
-							<div className="plan silver-plan p-4 border rounded shadow">
-								<h3 className="text-lg font-bold">Silver Plan</h3>
-								<p>$9 Per Month</p>
-								<ul className="list-disc list-inside text-sm">
-									<li>16GB upload file size limit</li>
-									<li>100GB bandwidth (per month)</li>
-									<li>Overage not currently charged</li>
-									<li>rtAmazon S3 support</li>
-									<li>HD Profiling coming soon</li>
-								</ul>
-								<Button className="mt-4 w-full" variant="secondary">
+								<Button
+									className="mb-5 w-full"
+									variant="primary"
+								>
 									Subscribe
 								</Button>
 							</div>
-						</div>
-						<hr className="my-4" />
+						) ) }
 					</div>
-				)
-			}
+				</div>
+			) }
 		</div>
 	);
 };
