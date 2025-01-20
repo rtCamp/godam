@@ -190,7 +190,7 @@ class Settings extends Base {
 					},
 				),
 			),
-			
+
 		);
 	}
 
@@ -485,47 +485,47 @@ class Settings extends Base {
 	}
 
 
-/**
- * Fetch subscription plans from the external API.
- *
- * @return \WP_REST_Response
- */
-public function fetch_subscription_plans() {
-	$api_url = 'https://frappe-transcoder-api.rt.gw/api/resource/Subscription Plan?fields=["name", "cost", "bandwidth", "storage", "billing_interval"]';
+	/**
+	 * Fetch subscription plans from the external API.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function fetch_subscription_plans() {
+		$api_url = 'https://frappe-transcoder-api.rt.gw/api/resource/Subscription Plan?fields=["name", "cost", "bandwidth", "storage", "billing_interval"]';
 
-	// Fetch data from the external API
-	$response = wp_remote_get( $api_url );
+		// Fetch data from the external API
+		$response = wp_remote_get( $api_url );
 
-	if ( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) ) {
+			return new \WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => 'Failed to fetch subscription plans.',
+				),
+				500
+			);
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			return new \WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => 'Invalid JSON response from the external API.',
+				),
+				500
+			);
+		}
+
+		// Return the subscription plans
 		return new \WP_REST_Response(
 			array(
-				'status'  => 'error',
-				'message' => 'Failed to fetch subscription plans.',
+				'status' => 'success',
+				'data'   => $data['data'],
 			),
-			500
+			200
 		);
 	}
-
-	$body = wp_remote_retrieve_body( $response );
-	$data = json_decode( $body, true );
-
-	if ( json_last_error() !== JSON_ERROR_NONE ) {
-		return new \WP_REST_Response(
-			array(
-				'status'  => 'error',
-				'message' => 'Invalid JSON response from the external API.',
-			),
-			500
-		);
-	}
-
-	// Return the subscription plans
-	return new \WP_REST_Response(
-		array(
-			'status' => 'success',
-			'data'   => $data['data'],
-		),
-		200
-	);
-}
 }
