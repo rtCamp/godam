@@ -108,4 +108,4 @@ add_filter( 'network_admin_plugin_action_links', 'rtt_action_links', 11, 2 );
 /**
  * Autoloader for the vendor directory.
  */
-require RT_TRANSCODER_PATH . '/vendor/autoload.php';
+require RT_TRANSCODER_PATH . 'vendor/autoload.php';
