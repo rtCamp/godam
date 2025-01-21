@@ -1078,12 +1078,12 @@ function rtt_verify_license( $license_key ) {
 		return new \WP_Error( 'missing_license_key', 'License key is required.', array( 'status' => 400 ) );
 	}
 
-	$blacklist   = rtt_get_blacklist_ip_addresses();
-	$remote_addr = rtt_get_remote_ip_address();
+	// $blacklist   = rtt_get_blacklist_ip_addresses();
+	// $remote_addr = rtt_get_remote_ip_address();
 
-	if ( in_array( wp_unslash( $remote_addr ), $blacklist, true ) ) {
-		return new \WP_Error( 'forbidden', 'Localhost not allowed.', array( 'status' => 400 ) );
-	}
+	// if ( in_array( wp_unslash( $remote_addr ), $blacklist, true ) ) {
+	// 	return new \WP_Error( 'forbidden', 'Localhost not allowed.', array( 'status' => 400 ) );
+	// }
 
 	// API endpoint to verify the license.
 	$api_url = sprintf( 'http://frappe-transcoder-api.rt.gw/api/resource/License/%s', $license_key );
