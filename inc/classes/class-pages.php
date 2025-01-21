@@ -44,14 +44,6 @@ class Pages {
 	 */
 	public function handle_block_assets() {
 
-		wp_enqueue_script(
-			'block-analytics-script',
-			RT_TRANSCODER_URL . 'assets/build/blocks/easydam-player/analytics.js',
-			array( 'wp-element' ),
-			filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/easydam-player/analytics.js' ),
-			true
-		);
-
 		wp_localize_script(
 			'block-frontend-script',
 			'nonceData',
