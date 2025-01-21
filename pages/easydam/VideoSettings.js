@@ -27,7 +27,6 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 	];
 
 	const videoQualityOptions = [
-		{ label: 'Not set', value: 'not-set' },
 		{ label: 'Auto', value: 'auto' },
 		{ label: '240p (352 x 240)', value: '240p' },
 		{ label: '360p (640 x 360)', value: '360p' },
@@ -184,25 +183,41 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					*/ }
 					<div className="py-3 flex flex-col gap-1">
 						<label className="block text-base font-semibold" htmlFor="video_quality">Video quality</label>
-						<div className="max-h-[150px] overflow-y-auto border rounded p-2">
+						<div className="grid grid-rows-4 grid-flow-col gap-2 border rounded p-5">
 							{ videoQualityOptions.map( ( option ) => (
-								<div key={ option.value } className="py-1">
+								<div key={ option.value } className="py-1 w-fit">
 									<CheckboxControl
 										label={ option.label }
 										checked={ videoQuality.includes( option.value ) }
 										onChange={ ( isChecked ) => {
-											setVideoQuality( ( prev ) =>
-												isChecked
+											setVideoQuality( ( prev ) => {
+												if ( option.value === 'auto' ) {
+													// If "Auto" is toggled on, select all options
+													return isChecked ? videoQualityOptions.map( ( opt ) => opt.value ) : prev.filter( ( val ) => val !== 'auto' );
+												}
+												// Update other options
+												const updated = isChecked
 													? [ ...prev, option.value ]
-													: prev.filter( ( val ) => val !== option.value ),
-											);
+													: prev.filter( ( val ) => val !== option.value );
+
+												// Automatically toggle "Auto" based on selection of all other options
+												const allOthersSelected = videoQualityOptions
+													.filter( ( opt ) => opt.value !== 'auto' ) // Exclude "auto"
+													.every( ( opt ) => updated.includes( opt.value ) );
+
+												// Add "Auto" if all other options are selected, remove otherwise
+												return allOthersSelected
+													? [ 'auto', ...updated.filter( ( v ) => v !== 'auto' ) ]
+													: updated.filter( ( v ) => v !== 'auto' );
+											} );
 										} }
 									/>
 								</div>
 							) ) }
 						</div>
 						<div className="text-slate-500">
-							Select one or more video qualities for delivery. Transcoder will generate videos with selected resolutions.
+							Select one or more video qualities for delivery. Transcoder will generate videos with selected resolutions. Transcoding will be done to the appropriate resolution supported by the video, up to the max resolution of each video.
+							<strong> Note:</strong> Selecting Auto will automatically include all available resolutions for delivery.
 						</div>
 					</div>
 				</div>

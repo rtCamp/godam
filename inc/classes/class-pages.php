@@ -44,14 +44,6 @@ class Pages {
 	 */
 	public function handle_block_assets() {
 
-		wp_enqueue_script(
-			'block-analytics-script',
-			RT_TRANSCODER_URL . 'assets/build/blocks/easydam-player/analytics.js',
-			array( 'wp-element' ),
-			filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/easydam-player/analytics.js' ),
-			true
-		);
-
 		wp_localize_script(
 			'block-frontend-script',
 			'nonceData',
@@ -106,7 +98,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( 'toplevel_page_easydam', 'easydam_page_video_editor' ) ) ) {
+		if ( $screen && in_array( $screen->id, array( 'toplevel_page_easydam', 'easydam_page_video_editor', 'easydam_page_analytics' ) ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );

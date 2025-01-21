@@ -1,6 +1,10 @@
 /*
 Write your Sass code here for admin.
 */
+#toplevel_page_easydam .wp-submenu li:nth-child(4) { /** Hide the "Settings" submenu ***/
+	display: none;
+}
+
 
 /* EasyDAM Tools Submenu Page */
 #easydam-tools-widget .hndle {

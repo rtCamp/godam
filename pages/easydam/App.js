@@ -15,6 +15,9 @@ import StorageSettings from './storage-settings/index';
  * WordPress dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
+import { useDispatch, useSelector } from 'react-redux';
+import { setLoading } from './redux/slice/storage';
+import { __ } from '@wordpress/i18n';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
@@ -22,6 +25,8 @@ const App = () => {
 	const [ mediaSettings, setMediaSettings ] = useState( null );
 	const [ licenseKey, setLicenseKey ] = useState( '' );
 	const [ isVerified, setIsVerified ] = useState( false ); // Tracks if the license is verified.
+
+	const dispatch = useDispatch();
 
 	const tabs = [
 		{
@@ -48,6 +53,7 @@ const App = () => {
 
 	useEffect( () => {
 		const fetchSettings = async () => {
+			dispatch( setLoading( true ) );
 			try {
 				const settingsResponse = await fetch( '/wp-json/easydam/v1/settings/easydam-settings', {
 					headers: {
@@ -74,11 +80,13 @@ const App = () => {
 				setIsVerified( settingsData?.general?.is_verified || false );
 			} catch ( error ) {
 				console.error( 'Failed to fetch data:', error );
+			} finally {
+				dispatch( setLoading( false ) ); // Set loading to false
 			}
 		};
 
 		fetchSettings();
-	}, [] );
+	}, [ dispatch ] );
 
 	const saveMediaSettings = async ( updatedSettings ) => {
 		try {
@@ -144,9 +152,11 @@ const App = () => {
 								) )
 							}
 						</div>
-						<div className="quick-analytics-share-link max-w-[400px] w-full">
-							<a href="https://www.google.com" target="_blank" rel="noreferrer">Quick Analytics Share Link</a>
-						</div>
+						{ isVerified && (
+							<div className="quick-analytics-share-link max-w-[400px] w-full">
+								<a href="https://www.google.com" target="_blank" rel="noreferrer">{ __( 'Quick Analytics Share Link', 'transcoder' ) }</a>
+							</div>
+						) }
 					</div>
 				</div>
 			</div>
