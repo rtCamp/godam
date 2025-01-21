@@ -3,6 +3,7 @@
  */
 import { useState, useEffect } from '@wordpress/element';
 import { TextControl, Button, Notice } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 /**
  * External dependencies
  */
@@ -187,7 +188,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 
 	return (
 		<div>
-			<h2 className="py-2 border-b text-xl font-bold">General Settings</h2>
+			<h2 className="py-2 border-b text-xl font-bold">{ __( 'General Settings', 'transcoder' ) }</h2>
 			{ notice?.isVisible && (
 				<Notice
 					status={ notice.status }
@@ -198,22 +199,21 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 			) }
 			<div className="py-3 flex flex-col gap-2">
 				<label className="block text-base font-semibold" htmlFor="license_key">
-					License Key
+					{ __( 'License Key', 'transcoder' ) }
 				</label>
 				<TextControl
 					value={ licenseKey }
 					onChange={ ( value ) => setLicenseKey( value ) }
 					help={
 						<>
-							Your license key is required to access the features.
-							You can get your active license key from your { ' ' }
+							{ __( 'Your license key is required to access the features. You can get your active license key from your ', 'transcoder' ) }
 							<a
 								href="https://example.com/subscriptions"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="text-blue-500 underline"
 							>
-								Account
+								{ __( 'Account', 'transcoder' ) }
 							</a>.
 						</>
 					}
@@ -229,7 +229,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 						variant="primary"
 						isBusy={ isLicenseKeyLoading }
 					>
-						Save License Key
+						{ __( 'Save License Key', 'transcoder' ) }
 					</Button>
 					<Button
 						className="max-w-[160px] w-full flex justify-center items-center"
@@ -239,7 +239,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 						isDestructive
 						isBusy={ isDeactivateLoading }
 					>
-						Remove License Key
+						{ __( 'Remove License Key', 'transcoder' ) }
 					</Button>
 				</div>
 			</div>
@@ -271,11 +271,10 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 			</Button> */ }
 			{ ! mediaSettings?.general?.is_verified && (
 				<div className="subscription-plans">
-					<h2 className="py-2 border-b text-xl font-bold">Subscription Plans</h2>
+					<h2 className="py-2 border-b text-xl font-bold"> { __( 'Subscription Plans', 'transcoder' ) }</h2>
 
 					<p className="mb-4">
-						To enable transcoding, you will need to subscribe to one of the following plans after downloading
-						Transcoder. We encourage you to explore the service with the free subscription plan.
+						{ __( 'To enable transcoding, you will need to subscribe to one of the following plans after downloading Transcoder. We encourage you to explore the service with the free subscription plan.', 'transcoder' ) }
 					</p>
 
 					<div className="flex gap-4 overflow-x-auto pb-4">
@@ -285,16 +284,16 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								className="plan flex-shrink-0 border px-6 rounded-lg shadow-sm bg-white transition-transform transform hover:shadow-lg flex flex-col justify-center items-center gap-2"
 							>
 								<div className="text-center">
-									<h3 className="text-lg font-bold text-gray-800 mt-5 mb-0">{ plan.name } Plan</h3>
+									<h3 className="text-lg font-bold text-gray-800 mt-5 mb-0">{ plan.name } { __( 'Plan', 'transcoder' ) }</h3>
 								</div>
 								<p className="text-xl font-semibold text-gray-800 my-1 text-center">
-									${ plan.cost } <span className="text-sm text-gray-500">Per { plan.billing_interval }</span>
+									${ plan.cost } <span className="text-sm text-gray-500">{ __( 'Per', 'transcoder' ) } { plan.billing_interval }</span>
 								</p>
 								<ul className="text-xs text-gray-600 my-2 text-center">
-									<li>{ plan.bandwidth }GB bandwidth</li>
-									<li>{ plan.storage }GB storage</li>
-									<li>High-quality transcoding</li>
-									<li>Access to advanced analytics</li>
+									<li>{ plan.bandwidth }{ __( 'GB bandwidth', 'transcoder' ) }</li>
+									<li>{ plan.storage }{ __( 'GB storage', 'transcoder' ) }</li>
+									<li>{ __( 'High-quality transcoding', 'transcoder' ) }</li>
+									<li>{ __( 'Access to advanced analytics', 'transcoder' ) }</li>
 								</ul>
 								<Button
 									className="mb-5"
@@ -303,7 +302,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 									target="_blank"
 									rel="noopener noreferrer"
 								>
-									Subscribe
+									{ __( 'Subscribe', 'transcoder' ) }
 								</Button>
 							</div>
 						) ) }
