@@ -151,9 +151,11 @@ const App = () => {
 								) )
 							}
 						</div>
-						<div className="quick-analytics-share-link max-w-[400px] w-full">
-							<a href="https://www.google.com" target="_blank" rel="noreferrer">Quick Analytics Share Link</a>
-						</div>
+						{ isVerified && (
+							<div className="quick-analytics-share-link max-w-[400px] w-full">
+								<a href="https://www.google.com" target="_blank" rel="noreferrer">Quick Analytics Share Link</a>
+							</div>
+						) }
 					</div>
 				</div>
 			</div>

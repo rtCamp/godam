@@ -269,29 +269,27 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 			>
 				Save Settings
 			</Button> */ }
-
 			{ ! mediaSettings?.general?.is_verified && (
 				<div className="subscription-plans">
-					<h2 className="py-2 border-b text-xl font-bold">
-						Subscription Plans
-					</h2>
+					<h2 className="py-2 border-b text-xl font-bold">Subscription Plans</h2>
 
 					<p className="mb-4">
-						To enable transcoding, you will need to subscribe to one of the following plans after
-						downloading Transcoder. We encourage you to explore the service with the free subscription
-						plan.
+						To enable transcoding, you will need to subscribe to one of the following plans after downloading
+						Transcoder. We encourage you to explore the service with the free subscription plan.
 					</p>
 
-					<div className="flex gap-4 flex-wrap justify-center">
+					<div className="flex gap-4 overflow-x-auto pb-4">
 						{ plans.map( ( plan ) => (
 							<div
 								key={ plan.name }
-								className="plan border px-6 rounded-lg shadow-md bg-white transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col justify-center items-center gap-2 w-[200px]"
+								className="plan flex-shrink-0 border px-6 rounded-lg shadow-sm bg-white transition-transform transform hover:shadow-lg flex flex-col justify-center items-center gap-2"
 							>
 								<div className="text-center">
 									<h3 className="text-lg font-bold text-gray-800 mt-5 mb-0">{ plan.name } Plan</h3>
 								</div>
-								<p className="text-xl font-semibold text-gray-800 my-1 text-center">${ plan.cost } <span className="text-sm text-gray-500">Per { plan.billing_interval }</span></p>
+								<p className="text-xl font-semibold text-gray-800 my-1 text-center">
+									${ plan.cost } <span className="text-sm text-gray-500">Per { plan.billing_interval }</span>
+								</p>
 								<ul className="text-xs text-gray-600 my-2 text-center">
 									<li>{ plan.bandwidth }GB bandwidth</li>
 									<li>{ plan.storage }GB storage</li>
