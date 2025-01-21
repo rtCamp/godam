@@ -17,6 +17,7 @@ import StorageSettings from './storage-settings/index';
 import { useState, useEffect } from '@wordpress/element';
 import { useDispatch, useSelector } from 'react-redux';
 import { setLoading } from './redux/slice/storage';
+import { __ } from '@wordpress/i18n';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
@@ -153,7 +154,7 @@ const App = () => {
 						</div>
 						{ isVerified && (
 							<div className="quick-analytics-share-link max-w-[400px] w-full">
-								<a href="https://www.google.com" target="_blank" rel="noreferrer">Quick Analytics Share Link</a>
+								<a href="https://www.google.com" target="_blank" rel="noreferrer">{ __( 'Quick Analytics Share Link', 'transcoder' ) }</a>
 							</div>
 						) }
 					</div>
