@@ -37,7 +37,8 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 				const result = await response.json();
 
 				if ( response.ok ) {
-					setPlans( result.data );
+					const sortedPlans = result.data.sort( ( a, b ) => a.cost - b.cost );
+					setPlans( sortedPlans );
 				} else {
 					console.error( 'Failed to fetch subscription plans:', result.message );
 				}
@@ -281,11 +282,11 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 						plan.
 					</p>
 
-					<div className="flex gap-4 flex-wrap">
+					<div className="flex gap-4 flex-wrap justify-center">
 						{ plans.map( ( plan ) => (
 							<div
 								key={ plan.name }
-								className="plan border px-6 rounded-lg shadow-md bg-white transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col gap-2 w-[200px]"
+								className="plan border px-6 rounded-lg shadow-md bg-white transition-transform transform hover:scale-105 hover:shadow-lg flex flex-col justify-center items-center gap-2 w-[200px]"
 							>
 								<div className="text-center">
 									<h3 className="text-lg font-bold text-gray-800 mt-5 mb-0">{ plan.name } Plan</h3>
@@ -298,7 +299,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 									<li>Access to advanced analytics</li>
 								</ul>
 								<Button
-									className="mb-5 w-full"
+									className="mb-5"
 									variant="primary"
 									href={ `https://frappe-transcoder-api.rt.gw/subscription/account-creation?plan_name=${ encodeURIComponent( plan.name ) }` }
 									target="_blank"
