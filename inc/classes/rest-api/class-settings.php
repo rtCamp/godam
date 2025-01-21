@@ -179,6 +179,18 @@ class Settings extends Base {
 					},
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/subscription-plans',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_subscription_plans' ),
+					'permission_callback' => function () {
+						return true; // Allow public access
+					},
+				),
+			),
+
 		);
 	}
 
@@ -470,5 +482,50 @@ class Settings extends Base {
 		} catch ( EasyDamException $e ) {
 			return Error_Handler::handle_exception( $e, true );
 		}
+	}
+
+
+	/**
+	 * Fetch subscription plans from the external API.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function fetch_subscription_plans() {
+		$api_url = 'https://frappe-transcoder-api.rt.gw/api/resource/Subscription Plan?fields=["name", "cost", "bandwidth", "storage", "billing_interval"]';
+
+		// Fetch data from the external API
+		$response = wp_remote_get( $api_url );
+
+		if ( is_wp_error( $response ) ) {
+			return new \WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => 'Failed to fetch subscription plans.',
+				),
+				500
+			);
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			return new \WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => 'Invalid JSON response from the external API.',
+				),
+				500
+			);
+		}
+
+		// Return the subscription plans
+		return new \WP_REST_Response(
+			array(
+				'status' => 'success',
+				'data'   => $data['data'],
+			),
+			200
+		);
 	}
 }
