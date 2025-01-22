@@ -284,7 +284,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 					>
 						<div className="subscription-plans">
 
-							<p className="mb-4">
+							<p className="mb-4 mt-0">
 								{ __( 'To enable transcoding, you will need to subscribe to one of the following plans after downloading Transcoder. We encourage you to explore the service with the free subscription plan.', 'transcoder' ) }
 							</p>
 
@@ -292,10 +292,10 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								{ plans.map( ( plan ) => (
 									<div
 										key={ plan.name }
-										className="plan flex-shrink-0 border px-6 rounded-lg shadow-sm bg-white transition-transform transform hover:shadow-lg flex flex-col justify-center items-center gap-2"
+										className="plan w-[25%] flex-shrink-0 border px-6 rounded-lg shadow-sm bg-white transition-transform transform hover:shadow-lg flex flex-col justify-center items-center gap-2"
 									>
 										<div className="text-center">
-											<h3 className="text-lg font-bold text-gray-800 mt-5 mb-0">{ plan.name } { __( 'Plan', 'transcoder' ) }</h3>
+											<h3 className="text-lg font-bold text-gray-800 pt-5 mb-0">{ plan.name } { __( 'Plan', 'transcoder' ) }</h3>
 										</div>
 										<p className="text-xl font-semibold text-gray-800 my-1 text-center">
 											${ plan.cost } <span className="text-sm text-gray-500">{ __( 'Per', 'transcoder' ) } { plan.billing_interval }</span>
