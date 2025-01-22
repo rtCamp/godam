@@ -331,18 +331,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 					>
 						<PanelBody
 							opened={ true }
-							title={ __( 'Usage', 'transcoder' ) }
 						>
-							<table className="w-full">
-								<tr>
-									<td className="w-[100px]"><strong>Bandwidth</strong></td>
-									<td>2.73GB / 500GB</td>
-								</tr>
-								<tr>
-									<td><strong>Storage</strong></td>
-									<td>0.8GB / 100GB</td>
-								</tr>
-							</table>
 
 						</PanelBody>
 					</Panel>

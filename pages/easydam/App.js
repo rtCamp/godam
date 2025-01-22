@@ -18,7 +18,7 @@ import { useState, useEffect } from '@wordpress/element';
 import { useDispatch, useSelector } from 'react-redux';
 import { setLoading } from './redux/slice/storage';
 import { __ } from '@wordpress/i18n';
-import { cog, video, image, trendingUp } from '@wordpress/icons';
+import { cog, video, image, help } from '@wordpress/icons';
 import { Button, Icon, Panel, PanelBody } from '@wordpress/components';
 
 const App = () => {
@@ -48,13 +48,16 @@ const App = () => {
 			label: 'Image settings',
 			component: ImageSettings,
 			icon: image,
-		}
+		},
 		// {
 		// 	id: 'storage-settings', // Disable this tab for now
 		// 	label: 'Storage settings',
 		// 	component: StorageSettings,
 		// },
 	];
+
+	const helpLink = 'https://godam.io/';
+	const upgradePlanLink = 'https://godam.io/';
 
 	useEffect( () => {
 		const fetchSettings = async () => {
@@ -118,21 +121,34 @@ const App = () => {
 	};
 
 	return (
-		<>
+		<div id="easydam-settings">
 			<header>
 				<div className="easydam-settings-header border-b -ml-[32px] pl-[32px]">
 					<div className="max-w-[1200px] mx-auto px-4 flex items-center justify-between">
-						<h1 className="py-6 m-0 font-semibold text-slate-900 flex items-start">
+						<h1 className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-center">
 							{ __( 'GoDAM', 'transcoder' ) }
-							<spa className="text-sm font-normal ml-1">1.0.3</spa>
+							<div className="ml-2">
+								<div className="text-xs font-normal leading-4">1.0.3</div>
+								<div className="text-xs font-bold py-[2px] px-2 rounded bg-indigo-100 mt-1">Pro</div>
+							</div>
 						</h1>
-						<div>
+						<div className="flex items-center">
 							<Button
+								variant="tertiary"
+								// size="compact"
+								href={ helpLink }
+								target="_blank"
+								className="rounded-full"
+								label={ __( 'Need help?', 'transcoder' ) }
+								icon={ help }
+							/>
+							<Button
+								className="ml-2"
 								variant="primary"
 								size="compact"
-								href="https://godam.io/"
+								href={ upgradePlanLink }
 								target="_blank"
-								text={ __( 'Need help?', 'transcoder' ) }
+								text={ __( 'Upgrade plan', 'transcoder' ) }
 							/>
 						</div>
 					</div>
@@ -146,7 +162,7 @@ const App = () => {
 								<a
 									key={ tab.id }
 									href={ `#${ tab.id }` }
-									className={ `flex items-center gap-2 p-2 font-medium rounded-md text-slate-700 hover:text-slate-900 border border-transparent transition-all ${ activeTab === tab.id ? 'border bg-white font-semibold focus:ring-2 text-slate-900 drop-shadow' : '' } ${
+									className={ `sidebar-nav-item ${ activeTab === tab.id ? 'active' : '' } ${
 										tab.id !== 'general-settings' && ! isVerified ? 'opacity-50 pointer-events-none' : ''
 									}` }
 									onClick={ () => {
@@ -180,7 +196,7 @@ const App = () => {
 					</div>
 				</div>
 			</div>
-		</>
+		</div>
 	);
 };
 
