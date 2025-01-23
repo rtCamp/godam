@@ -45,45 +45,203 @@ function easyDAMPlayer() {
 
 		const player = videojs( video, videoSetupOptions );
 
+		let isPreview = null;
+
+		const watcher = {
+			set value( newValue ) {
+				if ( isPreview !== newValue ) {
+					isPreview = newValue;
+					handlePreviewStateChange( newValue ); // Call the function whenever the value changes
+				}
+			},
+			get value() {
+				return isPreview;
+			},
+		};
+
+		function startPreview() {
+			video.muted = true;
+			video.currentTime = 0;
+			video.playbackRate = 1;
+			const controlBarElement = player.controlBar.el();
+			if ( controlBarElement ) {
+				controlBarElement.classList.add( 'hide' );
+			}
+			watcher.value = true;
+			video.play();
+		}
+
+		function stopPreview() {
+			video.playbackRate = 1;
+			const controlBarElement = player.controlBar.el();
+			if ( controlBarElement ) {
+				controlBarElement.classList.remove( 'hide' );
+			}
+			video.pause();
+		}
+
+		let previewTimeout = null;
+
+		video.addEventListener( 'click', () => {
+			watcher.value = false;
+			const controlBarElement = player.controlBar.el();
+			if ( controlBarElement.classList.contains( 'hide' ) ) {
+				controlBarElement.classList.remove( 'hide' );
+			}
+		} );
+
+		video.addEventListener( 'mouseenter', () => {
+			if ( video.currentTime > 0 ) {
+				return;
+			}
+			startPreview();
+			previewTimeout = setTimeout( () => {
+				stopPreview();
+				watcher.value = false; //set isPreview to false to show layers.
+			}, 10000 );
+		} );
+
+		video.addEventListener( 'mouseleave', () => {
+			clearTimeout( previewTimeout );
+			previewTimeout = null;
+			stopPreview();
+		} );
+
 		// Find and initialize layers from easydam_meta
 		const layers = videoSetupOptions.easydam_meta?.layers || [];
 		const formLayers = [];
 		const hotspotLayers = [];
 
 		// Hide all layers initially.
-		layers.forEach( ( layer ) => {
-			const instanceId = video.dataset.instanceId;
-			const layerId = `layer-${ instanceId }-${ layer.id }`;
-			const layerElement = document.querySelector( `#${ layerId }` );
+		// layers.forEach( ( layer ) => {
+		// 	const instanceId = video.dataset.instanceId;
+		// 	const layerId = `layer-${ instanceId }-${ layer.id }`;
+		// 	const layerElement = document.querySelector( `#${ layerId }` );
 
-			if ( ! layerElement ) {
-				return;
-			}
-			layerElement.classList.add( 'hidden' ); // Initially hidden
+		// 	console.log( isPreview );
 
-			if ( layer.type === 'form' || layer.type === 'cta' ) {
-				if ( layer.custom_css ) {
-					const styleElement = document.createElement( 'style' );
-					styleElement.textContent = layer.custom_css;
-					layerElement.appendChild( styleElement );
+		// 	if ( ! layerElement || isPreview ) {
+		// 		return;
+		// 	}
+		// 	layerElement.classList.add( 'hidden' ); // Initially hidden
+
+		// 	if ( layer.type === 'form' || layer.type === 'cta' ) {
+		// 		if ( layer.custom_css ) {
+		// 			const styleElement = document.createElement( 'style' );
+		// 			styleElement.textContent = layer.custom_css;
+		// 			layerElement.appendChild( styleElement );
+		// 		}
+		// 		formLayers.push( {
+		// 			layerElement,
+		// 			displayTime: parseFloat( layer.displayTime ),
+		// 			show: true,
+		// 			allowSkip: layer.allow_skip !== undefined ? layer.allow_skip : true,
+		// 		} );
+		// 	} else if ( layer.type === 'hotspot' ) {
+		// 		hotspotLayers.push( {
+		// 			layerElement,
+		// 			displayTime: parseFloat( layer.displayTime ),
+		// 			duration: layer.duration ? parseInt( layer.duration ) : 0,
+		// 			show: true,
+		// 			hotspots: layer.hotspots || [],
+		// 			pauseOnHover: layer.pauseOnHover || false,
+		// 		} );
+		// 	}
+		// } );
+
+		// Function to handle `isPreview` state changes
+		function handlePreviewStateChange( newValue ) {
+			layers.forEach( ( layer ) => {
+				const instanceId = video.dataset.instanceId;
+				const layerId = `layer-${ instanceId }-${ layer.id }`;
+				const layerElement = document.querySelector( `#${ layerId }` );
+
+				console.log( isPreview );
+
+				if ( ! layerElement || newValue ) {
+					console.log( 'object' );
+					return;
 				}
-				formLayers.push( {
-					layerElement,
-					displayTime: parseFloat( layer.displayTime ),
-					show: true,
-					allowSkip: layer.allow_skip !== undefined ? layer.allow_skip : true,
+
+				console.log( layerElement );
+				layerElement.classList.add( 'hidden' ); // Initially hidden
+				console.log( layer );
+
+				if ( layer.type === 'form' || layer.type === 'cta' ) {
+					if ( layer.custom_css ) {
+						const styleElement = document.createElement( 'style' );
+						styleElement.textContent = layer.custom_css;
+						layerElement.appendChild( styleElement );
+					}
+					formLayers.push( {
+						layerElement,
+						displayTime: parseFloat( layer.displayTime ),
+						show: true,
+						allowSkip: layer.allow_skip !== undefined ? layer.allow_skip : true,
+					} );
+				} else if ( layer.type === 'hotspot' ) {
+					hotspotLayers.push( {
+						layerElement,
+						displayTime: parseFloat( layer.displayTime ),
+						duration: layer.duration ? parseInt( layer.duration ) : 0,
+						show: true,
+						hotspots: layer.hotspots || [],
+						pauseOnHover: layer.pauseOnHover || false,
+					} );
+				}
+
+				// Allow closing or skipping layers
+				formLayers.forEach( ( layerObj, index ) => {
+					const skipButton = document.createElement( 'button' );
+					skipButton.textContent = 'Skip';
+					skipButton.classList.add( 'skip-button' );
+					console.log( layerObj.allowSkip );
+					if ( ! layerObj.allowSkip ) {
+						skipButton.classList.add( 'hidden' );
+					}
+
+					const arrowIcon = document.createElement( 'i' );
+					arrowIcon.className = 'fa-solid fa-chevron-right';
+					skipButton.appendChild( arrowIcon );
+
+					// Observe changes in the layer's DOM for the confirmation message
+					const observer = new MutationObserver( ( mutations ) => {
+						mutations.forEach( ( mutation ) => {
+							if (
+								layerObj.layerElement.querySelector(
+									'.gform_confirmation_message',
+								)
+							) {
+								// Update the Skip button to Continue
+								skipButton.textContent = 'Continue';
+								skipButton.classList.remove( 'hidden' );
+								observer.disconnect();
+							}
+						} );
+					} );
+
+					// Start observing the layer's element for child list changes
+					observer.observe( layerObj.layerElement, {
+						childList: true,
+						subtree: true,
+					} );
+
+					skipButton.addEventListener( 'click', () => {
+						layerObj.show = false;
+						layerObj.layerElement.classList.add( 'hidden' );
+						player.controls( true );
+						player.play();
+						isDisplayingLayer = false;
+						// Increment the current form layer.
+						if ( index === currentFormLayerIndex ) {
+							currentFormLayerIndex++;
+						}
+					} );
+
+					layerObj.layerElement.appendChild( skipButton );
 				} );
-			} else if ( layer.type === 'hotspot' ) {
-				hotspotLayers.push( {
-					layerElement,
-					displayTime: parseFloat( layer.displayTime ),
-					duration: layer.duration ? parseInt( layer.duration ) : 0,
-					show: true,
-					hotspots: layer.hotspots || [],
-					pauseOnHover: layer.pauseOnHover || false,
-				} );
-			}
-		} );
+			} );
+		}
 
 		formLayers.sort( ( a, b ) => a.displayTime - b.displayTime );
 
@@ -100,8 +258,8 @@ function easyDAMPlayer() {
 				// If we've reached its displayTime, show it
 				if (
 					layerObj.show &&
-					currentTime >= layerObj.displayTime &&
-					layerObj.layerElement.classList.contains( 'hidden' )
+          currentTime >= layerObj.displayTime &&
+          layerObj.layerElement.classList.contains( 'hidden' )
 				) {
 					layerObj.layerElement.classList.remove( 'hidden' );
 					player.pause();
@@ -118,7 +276,7 @@ function easyDAMPlayer() {
 
 				const endTime = layerObj.displayTime + layerObj.duration;
 				const isActive =
-					currentTime >= layerObj.displayTime && currentTime < endTime;
+          currentTime >= layerObj.displayTime && currentTime < endTime;
 
 				if ( isActive ) {
 					if ( layerObj.layerElement.classList.contains( 'hidden' ) ) {
@@ -162,7 +320,8 @@ function easyDAMPlayer() {
 				hotspotDiv.style.top = `${ pixelY }px`;
 
 				// Sizing
-				const fallbackDiameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
+				const fallbackDiameter =
+          hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
 				const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
 				hotspotDiv.style.width = `${ pixelDiameter }px`;
 				hotspotDiv.style.height = `${ pixelDiameter }px`;
@@ -171,7 +330,8 @@ function easyDAMPlayer() {
 				if ( hotspot.icon ) {
 					hotspotDiv.style.backgroundColor = 'white';
 				} else {
-					hotspotDiv.style.backgroundColor = hotspot.backgroundColor || '#0c80dfa6';
+					hotspotDiv.style.backgroundColor =
+            hotspot.backgroundColor || '#0c80dfa6';
 				}
 
 				// Inner content
@@ -206,7 +366,8 @@ function easyDAMPlayer() {
 					const hotspotLink = document.createElement( 'a' );
 					hotspotLink.href = hotspot.link;
 					hotspotLink.target = '_blank';
-					hotspotLink.textContent = hotspot.tooltipText || `Hotspot ${ index + 1 }`;
+					hotspotLink.textContent =
+            hotspot.tooltipText || `Hotspot ${ index + 1 }`;
 					tooltipDiv.textContent = '';
 					tooltipDiv.appendChild( hotspotLink );
 				}
@@ -244,7 +405,7 @@ function easyDAMPlayer() {
 
 			const spaceAbove = hotspotRect.top;
 			if ( spaceAbove < tooltipRect.height + 10 ) {
-			// Place below
+				// Place below
 				tooltipDiv.style.bottom = 'auto';
 				tooltipDiv.style.top = '100%';
 				tooltipDiv.classList.add( 'tooltip-bottom' );
@@ -279,7 +440,11 @@ function easyDAMPlayer() {
 				tooltipDiv.style.left = '50%';
 				tooltipDiv.style.right = 'auto';
 				tooltipDiv.style.transform = 'translateX(-50%)';
-				tooltipDiv.classList.remove( 'tooltip-left', 'tooltip-right', 'no-arrow' );
+				tooltipDiv.classList.remove(
+					'tooltip-left',
+					'tooltip-right',
+					'no-arrow',
+				);
 			}
 		}
 
@@ -306,7 +471,7 @@ function easyDAMPlayer() {
 
 					// Recalc size
 					const fallbackDiameter =
-						hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
+            hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
 					const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
 					hotspotDiv.style.width = `${ pixelDiameter }px`;
 					hotspotDiv.style.height = `${ pixelDiameter }px`;
@@ -357,58 +522,9 @@ function easyDAMPlayer() {
 			}
 		} );
 
-		// Allow closing or skipping layers
-		formLayers.forEach( ( layerObj, index ) => {
-			const skipButton = document.createElement( 'button' );
-			skipButton.textContent = 'Skip';
-			skipButton.classList.add( 'skip-button' );
-
-			if ( ! layerObj.allowSkip ) {
-				skipButton.classList.add( 'hidden' );
-			}
-
-			const arrowIcon = document.createElement( 'i' );
-			arrowIcon.className = 'fa-solid fa-chevron-right';
-			skipButton.appendChild( arrowIcon );
-
-			// Observe changes in the layer's DOM for the confirmation message
-			const observer = new MutationObserver( ( mutations ) => {
-				mutations.forEach( ( mutation ) => {
-					if (
-						layerObj.layerElement.querySelector( '.gform_confirmation_message' )
-					) {
-						// Update the Skip button to Continue
-						skipButton.textContent = 'Continue';
-						skipButton.classList.remove( 'hidden' );
-						observer.disconnect();
-					}
-				} );
-			} );
-
-			// Start observing the layer's element for child list changes
-			observer.observe( layerObj.layerElement, {
-				childList: true,
-				subtree: true,
-			} );
-
-			skipButton.addEventListener( 'click', () => {
-				layerObj.show = false;
-				layerObj.layerElement.classList.add( 'hidden' );
-				player.controls( true );
-				player.play();
-				isDisplayingLayer = false;
-				// Increment the current form layer.
-				if ( index === currentFormLayerIndex ) {
-					currentFormLayerIndex++;
-				}
-			} );
-
-			layerObj.layerElement.appendChild( skipButton );
-		} );
-
 		if ( adTagUrl ) {
 			console.log( 'player.ima is about to call' );
-			
+
 			player.ima( {
 				id: 'content_video',
 				adTagUrl,
