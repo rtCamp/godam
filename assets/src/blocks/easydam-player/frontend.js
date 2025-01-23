@@ -113,11 +113,11 @@ function easyDAMPlayer() {
 				controlBarElement.classList.remove( 'hide' );
 			}
 			const muteButton = document.querySelector( '.mute-button' );
-			muteButton.classList.remove( 'mute-button' );
+			if ( muteButton.classList.contains( 'mute-button' ) ) {
+				muteButton.classList.remove( 'mute-button' );
+			}
 			video.pause();
 		}
-
-		let previewTimeout = null;
 
 		video.addEventListener( 'click', () => {
 			watcher.value = false;
@@ -126,7 +126,9 @@ function easyDAMPlayer() {
 				controlBarElement.classList.remove( 'hide' );
 			}
 			const muteButton = document.querySelector( '.mute-button' );
-			muteButton.classList.remove( 'mute-button' );
+			if ( muteButton.classList.contains( 'mute-button' ) ) {
+				muteButton.classList.remove( 'mute-button' );
+			}
 		} );
 
 		video.addEventListener( 'mouseenter', () => {
@@ -134,7 +136,7 @@ function easyDAMPlayer() {
 				return;
 			}
 			startPreview();
-			previewTimeout = setTimeout( () => {
+			setTimeout( () => {
 				stopPreview();
 				watcher.value = false; //set isPreview to false to show layers.
 			}, 10000 );
