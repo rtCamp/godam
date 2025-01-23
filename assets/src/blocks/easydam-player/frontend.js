@@ -59,6 +59,41 @@ function easyDAMPlayer() {
 			},
 		};
 
+		function addMuteButton() {
+			const muteButton = document.createElement( 'button' );
+			muteButton.classList.add( 'mute-button' );
+
+			const icon = document.createElement( 'i' );
+			icon.classList.add( 'fas', 'fa-volume-up' );
+			muteButton.appendChild( icon );
+
+			muteButton.addEventListener( 'click', ( e ) => {
+				e.stopPropagation();
+				video.muted = ! video.muted;
+
+				// Complete reset of icon classes
+				icon.classList.remove( 'fa-volume-mute', 'fa-volume-up' );
+
+				// Add correct icon based on muted state
+				if ( video.muted ) {
+					icon.classList.add( 'fa-volume-up' );
+				} else {
+					icon.classList.add( 'fa-volume-mute' );
+				}
+
+				let child = muteButton.lastElementChild;
+				while ( child ) {
+					muteButton.removeChild( child );
+					child = muteButton.lastElementChild;
+				}
+
+				muteButton.appendChild( icon );
+			} );
+
+			const videoContainer = video.parentElement;
+			videoContainer.appendChild( muteButton );
+		}
+
 		function startPreview() {
 			video.muted = true;
 			video.currentTime = 0;
@@ -68,15 +103,17 @@ function easyDAMPlayer() {
 				controlBarElement.classList.add( 'hide' );
 			}
 			watcher.value = true;
+			addMuteButton();
 			video.play();
 		}
 
 		function stopPreview() {
-			video.playbackRate = 1;
 			const controlBarElement = player.controlBar.el();
 			if ( controlBarElement ) {
 				controlBarElement.classList.remove( 'hide' );
 			}
+			const muteButton = document.querySelector( '.mute-button' );
+			muteButton.classList.remove( 'mute-button' );
 			video.pause();
 		}
 
@@ -88,6 +125,8 @@ function easyDAMPlayer() {
 			if ( controlBarElement.classList.contains( 'hide' ) ) {
 				controlBarElement.classList.remove( 'hide' );
 			}
+			const muteButton = document.querySelector( '.mute-button' );
+			muteButton.classList.remove( 'mute-button' );
 		} );
 
 		video.addEventListener( 'mouseenter', () => {
@@ -99,12 +138,6 @@ function easyDAMPlayer() {
 				stopPreview();
 				watcher.value = false; //set isPreview to false to show layers.
 			}, 10000 );
-		} );
-
-		video.addEventListener( 'mouseleave', () => {
-			clearTimeout( previewTimeout );
-			previewTimeout = null;
-			stopPreview();
 		} );
 
 		// Find and initialize layers from easydam_meta
