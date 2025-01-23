@@ -64,7 +64,7 @@ function easyDAMPlayer() {
 			muteButton.classList.add( 'mute-button' );
 
 			const icon = document.createElement( 'i' );
-			icon.classList.add( 'fas', 'fa-volume-up' );
+			icon.classList.add( 'fas', 'fa-volume-mute' );
 			muteButton.appendChild( icon );
 
 			muteButton.addEventListener( 'click', ( e ) => {
@@ -76,9 +76,9 @@ function easyDAMPlayer() {
 
 				// Add correct icon based on muted state
 				if ( video.muted ) {
-					icon.classList.add( 'fa-volume-up' );
-				} else {
 					icon.classList.add( 'fa-volume-mute' );
+				} else {
+					icon.classList.add( 'fa-volume-up' );
 				}
 
 				let child = muteButton.lastElementChild;
