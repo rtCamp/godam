@@ -1,8 +1,9 @@
 /**
  * WordPress dependencies
  */
-import { ToggleControl, SelectControl, Button, Notice } from '@wordpress/components';
+import { ToggleControl, SelectControl, Button, Notice, Panel, PanelBody } from '@wordpress/components';
 import { useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
 	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( mediaSettings?.image?.sync_from_easydam || false );
@@ -66,82 +67,88 @@ const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
 
 	return (
 		<div>
-			<h2 className="py-2 border-b text-xl font-bold">Image - Global Settings</h2>
-
 			{ notice.isVisible && (
 				<Notice
 					status={ notice.status }
 					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+					className="mb-2"
 				>
 					{ notice.message }
 				</Notice>
 			) }
-
-			<form id="easydam-image-settings" className="flex flex-col">
-				<div className="py-3 flex flex-col gap-2">
-					<label className="block text-base font-semibold" htmlFor="sync_from_easydam">Image delivery</label>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label="Sync and deliver images from EasyDAM"
-						checked={ syncFromEasyDAM }
-						onChange={ ( value ) => setSyncFromEasyDAM( value ) }
-					/>
-					<div className="text-slate-500">If you turn this setting off, your images will be delivered from WordPress</div>
-				</div>
-
-				<hr />
-
-				<div className="pt-3 flex flex-col gap-1">
-					<label className="block text-base font-semibold" htmlFor="optimize_image">Image optimization</label>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label="Optimize images on my site"
-						checked={ optimizeImages }
-						onChange={ ( value ) => setOptimizeImages( value ) }
-					/>
-					<div className="text-slate-500">Images will be delivered using Cloudinary’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality</div>
-				</div>
-
-				<div className="pt-3 flex flex-col gap-1">
-					<label className="block text-base font-semibold" htmlFor="image_format">Image format</label>
-
-					<SelectControl
-						__next40pxDefaultSize
-						__nextHasNoMarginBottom
-						value={ imageFormat }
-						options={ imageFormatOptions }
-						onChange={ ( value ) => setImageFormat( value ) }
-						size="compact"
-						className="max-w-[400px] w-full"
-					/>
-
-					<div className="text-slate-500">The image format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user's browser and device</div>
-				</div>
-
-				<div className="pt-3 flex flex-col gap-1">
-					<label className="block text-base font-semibold" htmlFor="image_quality">Image quality</label>
-
-					<SelectControl
-						__next40pxDefaultSize
-						__nextHasNoMarginBottom
-						value={ imageQuality }
-						options={ imageQualityOptions }
-						onChange={ ( value ) => setImageQuality( value ) }
-						size="compact"
-						className="max-w-[400px] w-full"
-					/>
-
-					<div className="text-slate-500">Images will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality</div>
-				</div>
-
-				<Button
-					isPrimary
-					className="mt-4 max-w-[140px] w-full flex justify-center items-center"
-					onClick={ handleSaveSettings }
+			<Panel
+				header={ __( 'Image - Global Settings', 'transcoder' ) }
+			>
+				<PanelBody
+					opened={ true }
 				>
-					Save Settings
-				</Button>
-			</form>
+					<form id="easydam-image-settings" className="flex flex-col">
+						<div className="flex flex-col">
+							<label className="easydam-settings-label" htmlFor="sync_from_easydam">{ __( 'Image delivery', 'transcoder' ) }</label>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={ __( 'Sync and deliver images from EasyDAM', 'transcoder' ) }
+								help={ __( 'If you turn this setting off, your images will be delivered from WordPress', 'transcoder' ) }
+								checked={ syncFromEasyDAM }
+								onChange={ ( value ) => setSyncFromEasyDAM( value ) }
+							/>
+						</div>
+
+						<hr />
+
+						<div className="flex flex-col">
+							<label className="easydam-settings-label" htmlFor="optimize_image">{ __( 'Image optimization', 'transcoder' ) }</label>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={ __( 'Optimize images on my site', 'transcoder' ) }
+								help={ __( 'Images will be delivered using Cloudinary’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality', 'transcoder' ) }
+								checked={ optimizeImages }
+								onChange={ ( value ) => setOptimizeImages( value ) }
+							/>
+						</div>
+
+						<hr />
+
+						<div className="flex flex-col">
+							<label className="easydam-settings-label" htmlFor="image_format">{ __( 'Image format', 'transcoder' ) }</label>
+							<SelectControl
+								__next40pxDefaultSize
+								__nextHasNoMarginBottom
+								value={ imageFormat }
+								options={ imageFormatOptions }
+								onChange={ ( value ) => setImageFormat( value ) }
+								size="compact"
+								className="max-w-[400px] w-full"
+								help={ __( 'The image format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user\'s browser and device', 'transcoder' ) }
+							/>
+						</div>
+
+						<hr />
+
+						<div className="flex flex-col">
+							<label className="easydam-settings-label" htmlFor="image_quality">{ __( 'Image quality', 'transcoder' ) }</label>
+							<SelectControl
+								__next40pxDefaultSize
+								__nextHasNoMarginBottom
+								value={ imageQuality }
+								options={ imageQualityOptions }
+								onChange={ ( value ) => setImageQuality( value ) }
+								size="compact"
+								className="max-w-[400px] w-full"
+								help={ __( 'Images will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality', 'transcoder' ) }
+							/>
+						</div>
+					</form>
+				</PanelBody>
+			</Panel>
+
+			<Button
+				variant="primary"
+				className="mt-4 max-w-[140px] w-full flex justify-center items-center"
+				onClick={ handleSaveSettings }
+			>
+				{ __( 'Save Settings', 'transcoder' ) }
+			</Button>
 		</div>
 	);
 };

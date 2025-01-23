@@ -18,6 +18,8 @@ import { useState, useEffect } from '@wordpress/element';
 import { useDispatch, useSelector } from 'react-redux';
 import { setLoading } from './redux/slice/storage';
 import { __ } from '@wordpress/i18n';
+import { cog, video, image, help } from '@wordpress/icons';
+import { Button, Icon, Panel, PanelBody } from '@wordpress/components';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
@@ -33,16 +35,19 @@ const App = () => {
 			id: 'general-settings',
 			label: 'General Settings',
 			component: GeneralSettings,
+			icon: cog,
 		},
 		{
 			id: 'video-settings',
 			label: 'Video settings',
 			component: VideoSettings,
+			icon: video,
 		},
 		{
 			id: 'image-settings',
 			label: 'Image settings',
 			component: ImageSettings,
+			icon: image,
 		},
 		// {
 		// 	id: 'storage-settings', // Disable this tab for now
@@ -50,6 +55,9 @@ const App = () => {
 		// 	component: StorageSettings,
 		// },
 	];
+
+	const helpLink = 'https://godam.io/';
+	const upgradePlanLink = 'https://godam.io/';
 
 	useEffect( () => {
 		const fetchSettings = async () => {
@@ -113,29 +121,62 @@ const App = () => {
 	};
 
 	return (
-		<>
-			<div className="wrap flex min-h-[80vh] gap-4 my-4">
-				<div className="max-w-[220px] w-full rounded-lg bg-white">
-					<nav className="sticky-navbar">
+		<div id="easydam-settings">
+			<header>
+				<div className="easydam-settings-header border-b -ml-[32px] pl-[32px]">
+					<div className="max-w-[1200px] mx-auto px-4 flex items-center justify-between">
+						<h1 className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-center">
+							{ __( 'GoDAM', 'transcoder' ) }
+							<div className="ml-2">
+								<div className="text-xs font-normal leading-4">1.0.3</div>
+								<div className="text-xs font-bold py-[2px] px-2 rounded bg-indigo-100 mt-1">Pro</div>
+							</div>
+						</h1>
+						<div className="flex items-center">
+							<Button
+								variant="tertiary"
+								// size="compact"
+								href={ helpLink }
+								target="_blank"
+								className="rounded-full"
+								label={ __( 'Need help?', 'transcoder' ) }
+								icon={ help }
+							/>
+							<Button
+								className="ml-2"
+								variant="primary"
+								size="compact"
+								href={ upgradePlanLink }
+								target="_blank"
+								text={ __( 'Upgrade plan', 'transcoder' ) }
+							/>
+						</div>
+					</div>
+				</div>
+			</header>
+			<div className="wrap flex gap-4 my-8 max-w-[1200px] px-4 mx-auto">
+				<div className="max-w-[220px] w-full">
+					<nav className="sticky-navbar pt-8 -mt-8">
 						{
 							tabs.map( ( tab ) => (
 								<a
 									key={ tab.id }
 									href={ `#${ tab.id }` }
-									className={ `outline-none block p-4 border-gray-200 font-bold first:rounded-t-lg ${ activeTab === tab.id ? 'bg-blue-700 text-white font-bold border-r-0 hover:text-white focus:text-white focus:ring-2' : '' } ${
+									className={ `sidebar-nav-item ${ activeTab === tab.id ? 'active' : '' } ${
 										tab.id !== 'general-settings' && ! isVerified ? 'opacity-50 pointer-events-none' : ''
 									}` }
 									onClick={ () => {
 										setActiveTab( tab.id );
 									} }
 								>
+									<Icon icon={ tab.icon } />
 									{ tab.label }
 								</a>
 							) )
 						}
 					</nav>
 				</div>
-				<div id="main-content" className="w-full p-5 bg-white rounded-lg border">
+				<div id="main-content" className="w-full">
 					<div className="flex gap-5">
 						<div className="w-full">
 							{
@@ -152,15 +193,10 @@ const App = () => {
 								) )
 							}
 						</div>
-						{ isVerified && (
-							<div className="quick-analytics-share-link max-w-[400px] w-full">
-								<a href="https://www.google.com" target="_blank" rel="noreferrer">{ __( 'Quick Analytics Share Link', 'transcoder' ) }</a>
-							</div>
-						) }
 					</div>
 				</div>
 			</div>
-		</>
+		</div>
 	);
 };
 
