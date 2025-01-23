@@ -1120,3 +1120,110 @@ function rtt_verify_license( $license_key ) {
 	// Handle unexpected responses.
 	return new \WP_Error( 'unexpected_error', 'An unexpected error occurred. Please try again later.', array( 'status' => 500 ) );
 }
+
+
+/**
+ * Get the List of Categories for the post.
+ *
+ * @param int $post_id Current Post Id.
+ *
+ * @return void
+ */
+function rt_get_categories_list( $post_id ) {
+
+	$categories     = get_the_category( $post_id );
+	$category_names = array();
+
+	if( is_array( $categories ) && ! empty( $categories ) ) {
+
+		foreach ( $categories as $category ) {
+			$category_names[] = $category->name;
+		}
+
+		$comma_separated = implode(', ', $category_names);
+
+		return $comma_separated;
+	}
+
+	return '';
+}
+
+/**
+ * Get the List of Categories for the post.
+ *
+ * @param int $post_id Current Post Id.
+ *
+ * @return void
+ */
+function rt_get_tags_list( $post_id ) {
+
+	$tags      = get_the_tags( $post_id );
+	$tag_names = array();
+
+	if ( ! is_array( $tags ) && ! empty( $tags ) ) {
+
+		foreach ( $tags as $tag ) {
+			$tag_names[] = $tag->name;
+		}
+
+		$comma_separated = implode(', ', $tag_names);
+		return $comma_separated;
+	}
+
+	return '';
+}
+
+/**
+ * Utility function to get the array to localize.
+ *
+ * @return array The array to localize
+ */
+function rt_get_localize_array() {
+
+	$localize_array = [];
+
+	$localize_array['token']      = 'this_is_a_sample_token';
+	$localize_array['endpoint']   = 'https://this_is_a_sample_endpoint.com';
+	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
+	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
+	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
+	$localize_array['postTitle'] = get_the_title();
+
+	/**
+	 * Get Current User.
+	 */
+	$current_user = wp_get_current_user();
+	$email_id     = '';
+
+	$localize_array['userId'] = $current_user->ID;
+
+	if ( ! empty( ( array ) $current_user->data ) ) {
+
+		$email_id = $current_user->data->user_email;
+		$localize_array['emailId'] = $email_id;
+	}
+
+	$localize_array['siteId'] = get_current_blog_id();
+
+	if ( get_post_type() ) {
+
+		$localize_array['postType'] = get_post_type();
+	}
+
+	$post_id = get_the_ID();
+
+	if ( $post_id ) {
+
+		$localize_array['postId']     = $post_id;
+		$localize_array['categories'] = rt_get_categories_list( $post_id );
+		$localize_array['tags']       = rt_get_tags_list( $post_id );
+
+	}
+
+	if ( null !== get_the_author() ) {
+
+		$localize_array['author'] = get_the_author();
+	}
+
+	return $localize_array;
+}
