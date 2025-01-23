@@ -20,7 +20,6 @@ const analytics = Analytics( {
 window.analytics = analytics;
 
 document.addEventListener( 'DOMContentLoaded', () => {
-	console.log( 'DOM LOADED!!!' );
 	analytics.page( {
 		meta: { ts: Date.now() }, // Timestamp
 		properties: {
@@ -56,62 +55,19 @@ function playerAnalytics() {
 
 		const player = videojs( video, videoSetupOptions );
 
-		const existingRanges = [];
-		let lastTime = 0;
-
-		let rangeStart = 0; // To track the start of the current range
-		let debounceTimer = null; // Timer for debouncing
-		let seeking = false;
-		const debounceDelay = 1000;
-
-		let backupLastTime = 0;
-
-		player.on( 'seeked', function() {
-			const currentTime = player.currentTime();
-
-			console.log( 'Seeked to: ', currentTime );
-
-			// Clear the debounce timer (if any)
-			clearTimeout( debounceTimer );
-
-			// If this is the start of seeking, send the previous range.
-			if ( ! seeking ) {
-				console.log( 'Sending Range: ', rangeStart, lastTime );
-				console.log("Using backup, sending range: ", rangeStart, backupLastTime);
-			}
-			seeking = true;
-
-			// Debounce updating the rangeStart
-			debounceTimer = setTimeout( () => {
-				rangeStart = currentTime; // Update range start
-				seeking = false;
-				console.log( 'New range start after seeked: ', rangeStart );
-			}, debounceDelay );
-		} );
-
-		let wasPaused = false;
-
-		player.on( 'timeupdate', function() {
-			const currentTime = player.currentTime();
+		window.addEventListener( 'beforeunload', ( e ) => {
 			const played = player.played();
+			const ranges = [];
 
-			console.log( currentTime, played, player.seeking(), player.paused(), wasPaused, lastTime, backupLastTime );
+			e.preventDefault();
 
-			if ( ! seeking ) {
-				if ( currentTime !== lastTime && ! player.paused() ) {
-					backupLastTime = lastTime;
-				}
-				lastTime = currentTime;
+			// Extract time ranges from the player.played() object
+			for ( let i = 0; i < played.length; i++ ) {
+				ranges.push( [ played.start( i ), played.end( i ) ] );
 			}
-			else if(player.paused()) {
-				clearTimeout( debounceTimer );
-				debounceTimer = setTimeout( () => {
-					rangeStart = currentTime; // Update range start
-					seeking = false;
-					console.log( 'New range start after seeked: ', rangeStart );
-				}, debounceDelay );
-			}
-			wasPaused = player.paused();
+
+			// Send the ranges using updateHeatmap
+			updateHeatmap( ranges );
 		} );
 
 		async function updateHeatmap( ranges ) {
@@ -122,7 +78,6 @@ function playerAnalytics() {
 					type: 'Heatmap', // Could be anything like "Heatmap"
 					video_id: parseInt( videoId, 10 ),
 					ranges,
-					license: licenseKey,
 				} );
 			}
 		}

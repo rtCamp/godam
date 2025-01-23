@@ -5,7 +5,6 @@ const videoAnalyticsPlugin = ( userConfig = {} ) => {
 		// The 'page' method is invoked by analytics.page(properties)
 		page: async ( { payload } ) => {
 			const { properties, meta, anonymousId } = payload;
-			console.log( 'payload: ', payload );
 			try {
 				// Example: We’ll POST the data to userConfig.endpoint + 'page_view_log/'
 				const response = await fetch( userConfig.endpoint + 'page_view_log/', {
@@ -53,35 +52,32 @@ const videoAnalyticsPlugin = ( userConfig = {} ) => {
 				const { ranges = [], videoId, license, type } = properties;
 
 				// Iterate over each range and send a POST request for it
-				for ( const [ rangeStart, rangeEnd ] of ranges[0] ) {
-					const response = await fetch( userConfig.endpoint + 'video_log/', {
-						method: 'POST',
-						headers: {
-							Authorization: 'Token ' + ( userConfig.token || '' ),
-							'Content-Type': 'application/json',
-						},
-						body: JSON.stringify( {
-							// Below are the columns from your “Video Analytics” table structure
-							site_url: window.location.origin,
-							user_token: anonymousId,
-							account_token: userConfig.token || '',
-							email: '', // Fill in if you have an email
-							visitor_timestamp: meta?.ts || Date.now(), // Use meta.ts or current timestamp
-							visit_entry_action_url: window.location.href,
-							visit_entry_action_name: document.title,
-							type: type || 'Heatmap',
-							video_id: videoId,
-							range_start: rangeStart, // Start timestamp of the range
-							range_end: rangeEnd, // End timestamp of the range
-							license: license || '',
-						} ),
-					} );
+				const response = await fetch( userConfig.endpoint + 'video_log/', {
+					method: 'POST',
+					headers: {
+						Authorization: 'Token ' + ( userConfig.token || '' ),
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify( {
+						// Below are the columns from your “Video Analytics” table structure
+						site_url: window.location.origin,
+						user_token: anonymousId,
+						account_token: userConfig.token || '',
+						email: '', // Fill in if you have an email
+						visitor_timestamp: meta?.ts || Date.now(), // Use meta.ts or current timestamp
+						visit_entry_action_url: window.location.href,
+						visit_entry_action_name: document.title,
+						type: type || 'Heatmap',
+						video_id: videoId,
+						ranges,
+						license: license || '',
+					} ),
+				} );
 
-					if ( ! response.ok ) {
-						throw new Error(
-							`Video analytics POST failed with status ${ response.status }`,
-						);
-					}
+				if ( ! response.ok ) {
+					throw new Error(
+						`Video analytics POST failed with status ${ response.status }`,
+					);
 				}
 			} catch ( err ) {
 				console.error( 'Video analytics plugin track error:', err );
