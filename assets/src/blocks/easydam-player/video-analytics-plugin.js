@@ -43,7 +43,7 @@ const videoAnalyticsPlugin = ( userConfig = {} ) => {
 				const response = await fetch( endpoint + 'analytics/', {
 					method: 'POST',
 					headers: {
-						Authorization: 'Token ' + ( token || '' ),
+						Authorization: 'Bearer ' + ( token || '' ),
 						'Content-Type': 'application/json',
 					},
 					body: JSON.stringify( {
