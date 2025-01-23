@@ -112,43 +112,6 @@ function easyDAMPlayer() {
 		const formLayers = [];
 		const hotspotLayers = [];
 
-		// Hide all layers initially.
-		// layers.forEach( ( layer ) => {
-		// 	const instanceId = video.dataset.instanceId;
-		// 	const layerId = `layer-${ instanceId }-${ layer.id }`;
-		// 	const layerElement = document.querySelector( `#${ layerId }` );
-
-		// 	console.log( isPreview );
-
-		// 	if ( ! layerElement || isPreview ) {
-		// 		return;
-		// 	}
-		// 	layerElement.classList.add( 'hidden' ); // Initially hidden
-
-		// 	if ( layer.type === 'form' || layer.type === 'cta' ) {
-		// 		if ( layer.custom_css ) {
-		// 			const styleElement = document.createElement( 'style' );
-		// 			styleElement.textContent = layer.custom_css;
-		// 			layerElement.appendChild( styleElement );
-		// 		}
-		// 		formLayers.push( {
-		// 			layerElement,
-		// 			displayTime: parseFloat( layer.displayTime ),
-		// 			show: true,
-		// 			allowSkip: layer.allow_skip !== undefined ? layer.allow_skip : true,
-		// 		} );
-		// 	} else if ( layer.type === 'hotspot' ) {
-		// 		hotspotLayers.push( {
-		// 			layerElement,
-		// 			displayTime: parseFloat( layer.displayTime ),
-		// 			duration: layer.duration ? parseInt( layer.duration ) : 0,
-		// 			show: true,
-		// 			hotspots: layer.hotspots || [],
-		// 			pauseOnHover: layer.pauseOnHover || false,
-		// 		} );
-		// 	}
-		// } );
-
 		// Function to handle `isPreview` state changes
 		function handlePreviewStateChange( newValue ) {
 			layers.forEach( ( layer ) => {
@@ -156,16 +119,11 @@ function easyDAMPlayer() {
 				const layerId = `layer-${ instanceId }-${ layer.id }`;
 				const layerElement = document.querySelector( `#${ layerId }` );
 
-				console.log( isPreview );
-
 				if ( ! layerElement || newValue ) {
-					console.log( 'object' );
 					return;
 				}
 
-				console.log( layerElement );
 				layerElement.classList.add( 'hidden' ); // Initially hidden
-				console.log( layer );
 
 				if ( layer.type === 'form' || layer.type === 'cta' ) {
 					if ( layer.custom_css ) {
@@ -195,7 +153,7 @@ function easyDAMPlayer() {
 					const skipButton = document.createElement( 'button' );
 					skipButton.textContent = 'Skip';
 					skipButton.classList.add( 'skip-button' );
-					console.log( layerObj.allowSkip );
+
 					if ( ! layerObj.allowSkip ) {
 						skipButton.classList.add( 'hidden' );
 					}
