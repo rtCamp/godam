@@ -1183,7 +1183,7 @@ function rt_get_localize_array() {
 	$localize_array = [];
 
 	$localize_array['token']      = 'this_is_a_sample_token';
-	$localize_array['endpoint']   = 'https://this_is_a_sample_endpoint.com';
+	$localize_array['endpoint']   = 'http://127.0.0.1:8000/'; // Temporarily on localhost.
 	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
 	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
 	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();

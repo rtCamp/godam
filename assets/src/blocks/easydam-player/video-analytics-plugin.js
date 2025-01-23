@@ -10,49 +10,13 @@ const {
 	categories,
 	tags,
 	author,
+	endpoint,
+	token,
 } = window.videoAnalyticsParams || {};
 
 const videoAnalyticsPlugin = ( userConfig = {} ) => {
 	return {
 		name: 'video-analytics-plugin',
-
-		// The 'page' method is invoked by analytics.page(properties)
-		page: async ( { payload } ) => {
-			const { properties, meta, anonymousId } = payload;
-			try {
-				// Example: We’ll POST the data to userConfig.endpoint + 'page_view_log/'
-				const response = await fetch( userConfig.endpoint + 'page_view_log/', {
-					method: 'POST',
-					headers: {
-						Authorization: 'Token ' + ( userConfig.token || '' ),
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify( {
-						// Below are various columns for "Page Analytics"
-						site_url: window.location.origin,
-						user_token: anonymousId,
-						account_token: userConfig.token || '',
-						email: '',
-						visitor_timestamp: meta && meta.ts ? meta.ts : Date.now(),
-						visit_entry_action_url: properties.url || window.location.href,
-						visit_entry_action_name: properties.title || document.title,
-						referrer: properties.referrer || document.referrer || '',
-						screen_width: properties.width || window.innerWidth,
-						screen_height: properties.height || window.innerHeight,
-						campaign_data: properties.campaign_data || {},
-					} ),
-				} );
-
-				if ( ! response.ok ) {
-					throw new Error( `Page view POST failed with status ${ response.status }` );
-				}
-				// Handle response if needed:
-				// const data = await response.json();
-			} catch ( err ) {
-				console.error( 'Video analytics plugin page error:', err );
-			}
-		},
-
 		track: async ( { payload } ) => {
 			let { event, properties, meta, anonymousId } = payload;
 
@@ -76,10 +40,10 @@ const videoAnalyticsPlugin = ( userConfig = {} ) => {
 				const { ranges = [], videoId, license, type } = properties;
 				const userAgentData = getUserAgent( window.navigator.userAgent );
 				// Iterate over each range and send a POST request for it
-				const response = await fetch( userConfig.endpoint + 'video_log/', {
+				const response = await fetch( endpoint + 'analytics/', {
 					method: 'POST',
 					headers: {
-						Authorization: 'Token ' + ( userConfig.token || '' ),
+						Authorization: 'Token ' + ( token || '' ),
 						'Content-Type': 'application/json',
 					},
 					body: JSON.stringify( {
@@ -101,25 +65,26 @@ const videoAnalyticsPlugin = ( userConfig = {} ) => {
 						campaign_source: ( undefined !== window.campaign_data && undefined !== window.campaign_data.source ) ? window.campaign_data.source : '',
 						campaign_content: ( undefined !== window.campaign_data && undefined !== window.campaign_data.content ) ? window.campaign_data.content : '',
 						campaign_token: ( undefined !== window.campaign_data && undefined !== window.campaign_data.id ) ? window.campaign_data.id : '',
-						config_id: userAgentData.userAgent,
+						config_token: userAgentData.userAgent,
 						config_os: userAgentData.platform,
 						config_browser_name: userAgentData.name,
 						config_browser_version: userAgentData.version,
 						config_resolution: properties.width + 'x' + properties.height,
 						location_browser_lang: navigator.language,
+						location_ip: '',
 						config_cookie: navigator.cookieEnabled,
 						param_vars: '',
-						is_post: isPost,
-						is_page: isPage,
-						is_archive: isArchive,
+						is_post: isPost === '1',
+						is_page: isPage === '1',
+						is_archive: isArchive === '1',
 						post_type: postType,
-						post_id: postId,
+						post_id: parseInt( postId, 0 ),
 						post_title: postTitle,
 						categories,
 						tags,
 						author,
 						type: type || 0,
-						video_id: videoId,
+						video_id: videoId ? parseInt( videoId, 0 ) : 0,
 						ranges,
 						license: license || '',
 					} ),
