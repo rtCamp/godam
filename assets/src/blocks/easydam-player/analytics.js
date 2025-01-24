@@ -76,7 +76,7 @@ function playerAnalytics() {
 			if ( window.analytics ) {
 				window.analytics.track( 'video_heatmap', {
 					type: 1, // Enum: 1 = Heatmap
-					video_id: parseInt( videoId, 10 ),
+					videoId: parseInt( videoId, 10 ),
 					ranges,
 				} );
 			}
