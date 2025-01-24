@@ -11,7 +11,7 @@ const {
 	tags,
 	author,
 	endpoint,
-	token,
+	locationIP,
 } = window.videoAnalyticsParams || {};
 
 const videoAnalyticsPlugin = ( userConfig = {} ) => {
@@ -43,7 +43,6 @@ const videoAnalyticsPlugin = ( userConfig = {} ) => {
 				const response = await fetch( endpoint + 'analytics/', {
 					method: 'POST',
 					headers: {
-						Authorization: 'Bearer ' + ( token || '' ),
 						'Content-Type': 'application/json',
 					},
 					body: JSON.stringify( {
@@ -71,7 +70,7 @@ const videoAnalyticsPlugin = ( userConfig = {} ) => {
 						config_browser_version: userAgentData.version,
 						config_resolution: properties.width + 'x' + properties.height,
 						location_browser_lang: navigator.language,
-						location_ip: '',
+						location_ip: locationIP || '',
 						config_cookie: navigator.cookieEnabled,
 						param_vars: '',
 						is_post: isPost === '1',

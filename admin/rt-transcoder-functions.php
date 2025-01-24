@@ -1182,13 +1182,13 @@ function rt_get_localize_array() {
 
 	$localize_array = [];
 
-	$localize_array['token']      = 'this_is_a_sample_token';
 	$localize_array['endpoint']   = 'http://127.0.0.1:8000/'; // Temporarily on localhost.
 	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
 	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
 	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
 	$localize_array['postTitle'] = get_the_title();
-
+	$localize_array['locationIP'] = rtt_get_user_ip();
+	
 	/**
 	 * Get Current User.
 	 */
@@ -1226,4 +1226,24 @@ function rt_get_localize_array() {
 	}
 
 	return $localize_array;
+}
+
+/**
+ * Get the user's IP address.
+ *
+ * @return string The user's IP address.
+ */
+function rtt_get_user_ip() {
+    $ip_address = '';
+
+    if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+        $ip_address = $_SERVER['HTTP_CLIENT_IP'];
+    } elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+        // Handle multiple IPs (e.g., in proxies).
+        $ip_address = explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] )[0];
+    } elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+        $ip_address = $_SERVER['REMOTE_ADDR'];
+    }
+
+    return esc_attr( $ip_address );
 }
