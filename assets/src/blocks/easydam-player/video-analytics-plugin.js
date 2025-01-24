@@ -30,14 +30,9 @@ const videoAnalyticsPlugin = ( userConfig = {} ) => {
 				campaign_data: window.campaign_data || {}, // Include campaign data if available
 			};
 
-			// Only handle events of type "video_heatmap"
-			if ( event !== 'video_heatmap' ) {
-				return;
-			}
-
 			try {
 				// Destructure the ranges array from properties
-				const { ranges = [], videoId, license, type } = properties;
+				const { ranges = [], videoId, type } = properties;
 				const userAgentData = getUserAgent( window.navigator.userAgent );
 				// Iterate over each range and send a POST request for it
 				const response = await fetch( endpoint + 'analytics/', {
@@ -85,7 +80,6 @@ const videoAnalyticsPlugin = ( userConfig = {} ) => {
 						type: type || 0,
 						video_id: videoId ? parseInt( videoId, 0 ) : 0,
 						ranges,
-						license: license || '',
 					} ),
 				} );
 

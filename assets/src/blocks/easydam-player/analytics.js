@@ -19,24 +19,21 @@ const analytics = Analytics( {
 } );
 window.analytics = analytics;
 
-document.addEventListener( 'DOMContentLoaded', () => {
-	analytics.page( {
-		meta: { ts: Date.now() }, // Timestamp
-		properties: {
-			url: window.location.href,
-			title: document.title,
-			referrer: document.referrer || '', // Include referrer
-			width: window.innerWidth, // Screen width
-			height: window.innerHeight, // Screen height
-			campaign_data: window.campaign_data || {}, // Include campaign data if available
-		},
+if ( ! window.pageLoadEventTracked ) {
+	window.pageLoadEventTracked = true; // Mark as tracked to avoid duplicate execution
+
+	document.addEventListener( 'DOMContentLoaded', () => {
+		// Track a "page_load" event when the page loads
+		if ( window.analytics ) {
+			window.analytics.track( 'page_load', {
+				type: 1, // Enum: 1 = Page Load
+			} );
+		}
+
+		// Initialize video analytics
+		playerAnalytics();
 	} );
-
-	// Initialize video analytics
-	playerAnalytics();
-} );
-
-document.addEventListener( 'DOMContentLoaded', () => playerAnalytics() );
+}
 
 function playerAnalytics() {
 	const videos = document.querySelectorAll( '.easydam-player.video-js' );
@@ -75,7 +72,7 @@ function playerAnalytics() {
 
 			if ( window.analytics ) {
 				window.analytics.track( 'video_heatmap', {
-					type: 1, // Enum: 1 = Heatmap
+					type: 2, // Enum: 2 = Heatmap
 					videoId: parseInt( videoId, 10 ),
 					ranges,
 				} );
