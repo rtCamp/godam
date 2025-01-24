@@ -67,6 +67,11 @@ function easyDAMPlayer() {
 			icon.classList.add( 'fas', 'fa-volume-mute' );
 			muteButton.appendChild( icon );
 
+			muteButton.addEventListener( 'mouseenter', ( e ) => {
+				e.stopPropagation();
+				video.play();
+			} );
+
 			muteButton.addEventListener( 'click', ( e ) => {
 				e.stopPropagation();
 				video.muted = ! video.muted;
@@ -113,33 +118,60 @@ function easyDAMPlayer() {
 				controlBarElement.classList.remove( 'hide' );
 			}
 			const muteButton = document.querySelector( '.mute-button' );
-			if ( muteButton.classList.contains( 'mute-button' ) ) {
+			if ( muteButton && muteButton.classList.contains( 'mute-button' ) ) {
 				muteButton.classList.remove( 'mute-button' );
 			}
 			video.pause();
+			video.currentTime = 0;
 		}
 
 		video.addEventListener( 'click', () => {
 			watcher.value = false;
+			console.log( watcher.value );
+			if ( previewTimeoutId ) {
+				clearTimeout( previewTimeoutId );
+			}
 			const controlBarElement = player.controlBar.el();
 			if ( controlBarElement.classList.contains( 'hide' ) ) {
 				controlBarElement.classList.remove( 'hide' );
 			}
 			const muteButton = document.querySelector( '.mute-button' );
-			if ( muteButton.classList.contains( 'mute-button' ) ) {
+			if ( muteButton && muteButton.classList.contains( 'mute-button' ) ) {
 				muteButton.classList.remove( 'mute-button' );
 			}
 		} );
+
+		let previewTimeoutId;
 
 		video.addEventListener( 'mouseenter', () => {
 			if ( video.currentTime > 0 ) {
 				return;
 			}
+			console.log( 'mousenter' );
 			startPreview();
-			setTimeout( () => {
-				stopPreview();
-				watcher.value = false; //set isPreview to false to show layers.
+			previewTimeoutId = setTimeout( () => {
+				if ( watcher.value ) {
+					console.log( 'timeout applying' );
+					stopPreview();
+					watcher.value = false; //set isPreview to false to show layers.
+				}
 			}, 10000 );
+		} );
+
+		video.addEventListener( 'mouseleave', ( e ) => {
+			console.log( e.relatedTarget.parentElement.className );
+			if (
+				! watcher.value ||
+        e.relatedTarget.parentElement.className.indexOf( 'easydam-player' ) !== -1 ||
+        e.toElement.parentElement.className.indexOf( 'easydam-player' ) !== -1
+			) {
+				return;
+			}
+			if ( previewTimeoutId ) {
+				clearTimeout( previewTimeoutId );
+			}
+			video.currentTime = 0;
+			stopPreview();
 		} );
 
 		// Find and initialize layers from easydam_meta
@@ -166,12 +198,19 @@ function easyDAMPlayer() {
 						styleElement.textContent = layer.custom_css;
 						layerElement.appendChild( styleElement );
 					}
-					formLayers.push( {
-						layerElement,
-						displayTime: parseFloat( layer.displayTime ),
-						show: true,
-						allowSkip: layer.allow_skip !== undefined ? layer.allow_skip : true,
-					} );
+					const existingLayer = formLayers.some(
+						() => layer.layerElement === layerElement,
+					);
+
+					if ( ! existingLayer ) {
+						formLayers.push( {
+							layerElement,
+							displayTime: parseFloat( layer.displayTime ),
+							show: true,
+							allowSkip:
+                layer.allow_skip !== undefined ? layer.allow_skip : true,
+						} );
+					}
 				} else if ( layer.type === 'hotspot' ) {
 					hotspotLayers.push( {
 						layerElement,
@@ -220,6 +259,7 @@ function easyDAMPlayer() {
 					} );
 
 					skipButton.addEventListener( 'click', () => {
+						console.log( 'skipButton' );
 						layerObj.show = false;
 						layerObj.layerElement.classList.add( 'hidden' );
 						player.controls( true );
@@ -227,6 +267,7 @@ function easyDAMPlayer() {
 						isDisplayingLayer = false;
 						// Increment the current form layer.
 						if ( index === currentFormLayerIndex ) {
+							console.log( 'index === currentFormLayerIndex' );
 							currentFormLayerIndex++;
 						}
 					} );
