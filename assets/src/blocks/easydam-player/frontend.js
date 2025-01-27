@@ -183,6 +183,7 @@ function easyDAMPlayer() {
 				clearTimeout( previewTimeoutId );
 			}
 			video.currentTime = 0;
+			video.pause();
 			stopPreview();
 		} );
 
