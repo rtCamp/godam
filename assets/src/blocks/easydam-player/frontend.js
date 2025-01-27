@@ -173,11 +173,10 @@ function easyDAMPlayer() {
 			}
 			if (
 				! watcher.value ||
-        e.relatedTarget.parentElement && ( e.relatedTarget.parentElement.className.indexOf(
-        	'easydam-player',
-        ) !== -1 ||
-        e.toElement.parentElement.className.indexOf( 'easydam-player' ) !== -1
-        ) ) {
+        e.relatedTarget?.parentElement?.className?.indexOf( 'easydam-player' ) !==
+          -1 ||
+        e.toElement?.parentElement?.className?.indexOf( 'easydam-player' ) !== -1
+			) {
 				return;
 			}
 			if ( previewTimeoutId ) {
