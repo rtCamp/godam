@@ -62,46 +62,6 @@ function easyDAMPlayer() {
 			},
 		};
 
-		function addMuteButton() {
-			const muteButton = document.createElement( 'button' );
-			muteButton.classList.add( 'mute-button' );
-
-			const icon = document.createElement( 'i' );
-			icon.classList.add( 'fas', 'fa-volume-mute' );
-			muteButton.appendChild( icon );
-
-			muteButton.addEventListener( 'mouseenter', ( e ) => {
-				e.stopPropagation();
-				video.play();
-			} );
-
-			muteButton.addEventListener( 'click', ( e ) => {
-				e.stopPropagation();
-				video.muted = ! video.muted;
-
-				// Complete reset of icon classes
-				icon.classList.remove( 'fa-volume-mute', 'fa-volume-up' );
-
-				// Add correct icon based on muted state
-				if ( video.muted ) {
-					icon.classList.add( 'fa-volume-mute' );
-				} else {
-					icon.classList.add( 'fa-volume-up' );
-				}
-
-				let child = muteButton.lastElementChild;
-				while ( child ) {
-					muteButton.removeChild( child );
-					child = muteButton.lastElementChild;
-				}
-
-				muteButton.appendChild( icon );
-			} );
-
-			const videoContainer = video.parentElement;
-			videoContainer.appendChild( muteButton );
-		}
-
 		function startPreview() {
 			video.muted = true;
 			video.currentTime = 0;
@@ -111,7 +71,6 @@ function easyDAMPlayer() {
 				controlBarElement.classList.add( 'hide' );
 			}
 			watcher.value = true;
-			addMuteButton();
 			video.play();
 		}
 
