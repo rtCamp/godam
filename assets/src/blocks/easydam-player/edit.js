@@ -296,7 +296,7 @@ function VideoEdit( {
 							{ __( 'Enable Preview' ) }
 						</BaseControl.VisualLabel>
 						<ToggleControl
-							label="Show a preview of 10 seconds when user hovers over a video"
+							label={ __( 'Show a preview of 10 seconds when user hovers over a video' ) }
 							checked={ attributes.preview }
 							onChange={ ( value ) => setAttributes( { preview: value } ) }
 						/>
