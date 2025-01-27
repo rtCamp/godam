@@ -52,11 +52,9 @@ function playerAnalytics() {
 
 		const player = videojs( video, videoSetupOptions );
 
-		window.addEventListener( 'beforeunload', ( e ) => {
+		window.addEventListener( 'beforeunload', () => {
 			const played = player.played();
 			const ranges = [];
-
-			e.preventDefault();
 
 			// Extract time ranges from the player.played() object
 			for ( let i = 0; i < played.length; i++ ) {
