@@ -8,7 +8,7 @@ import { TextControl, Button, Notice } from '@wordpress/components';
  */
 import { useSelector } from 'react-redux';
 
-const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLicenseKey } ) => {
+const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLicenseKey, verifyLicenseFromUrl } ) => {
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 	const [ isLicenseKeyLoading, setIsLicenseKeyLoading ] = useState( false ); // Loading indicator for saving license key.
 	const [ isDeactivateLoading, setIsDeactivateLoading ] = useState( false );
@@ -20,6 +20,13 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 			setTrackStatusOnUserProfile( mediaSettings.general.track_status );
 		}
 	}, [ mediaSettings ] );
+
+	useEffect( () => {
+		// Trigger verification if the flag is true
+		if ( verifyLicenseFromUrl && licenseKey ) {
+			saveLicenseKey(); // Use the existing saveLicenseKey function
+		}
+	}, [ verifyLicenseFromUrl, licenseKey ] );
 
 	const saveLicenseKey = async () => {
 		if ( ! licenseKey.trim() ) {

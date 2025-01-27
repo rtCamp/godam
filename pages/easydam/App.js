@@ -24,6 +24,7 @@ const App = () => {
 	const [ mediaSettings, setMediaSettings ] = useState( null );
 	const [ licenseKey, setLicenseKey ] = useState( '' );
 	const [ isVerified, setIsVerified ] = useState( false ); // Tracks if the license is verified.
+	const [ verifyLicenseFromUrl, setVerifyLicenseFromUrl ] = useState( false );
 
 	const dispatch = useDispatch();
 
@@ -70,12 +71,23 @@ const App = () => {
 				const settingsData = await settingsResponse.json();
 				const licenseData = await licenseResponse.json();
 
-				if ( ! licenseData.license_key ) {
-					settingsData.general.is_verified = false;
+				let licenseFromUrl = '';
+				const urlParams = new URLSearchParams( window.location.search );
+				if ( urlParams.has( 'license_key' ) ) {
+					licenseFromUrl = urlParams.get( 'license_key' );
+				}
+
+				if ( ! licenseData.license_key && licenseFromUrl ) {
+					// Set license key from URL and trigger verification in GeneralSettings
+					setLicenseKey( licenseFromUrl );
+					settingsData.general.is_verified = false; // Mark as not verified initially
+					setVerifyLicenseFromUrl( true ); // Pass this flag to GeneralSettings
+				} else {
+					setLicenseKey( licenseData.license_key || '' );
+					settingsData.general.is_verified = licenseData.license_key ? true : false;
 				}
 
 				setMediaSettings( settingsData );
-				setLicenseKey( licenseData.license_key || '' ); // Save the license key
 				setIsVerified( settingsData?.general?.is_verified || false );
 			} catch ( error ) {
 				console.error( 'Failed to fetch data:', error );
@@ -147,6 +159,7 @@ const App = () => {
 										saveMediaSettings={ saveMediaSettings }
 										licenseKey={ licenseKey }
 										setLicenseKey={ setLicenseKey }
+										verifyLicenseFromUrl={ verifyLicenseFromUrl }
 									/>
 								) )
 							}
