@@ -25,6 +25,7 @@ export default function save( { attributes } ) {
 		sources,
 		playsInline,
 		tracks,
+		preview,
 	} = attributes;
 
     const videoSetupOptions = {
@@ -36,8 +37,9 @@ export default function save( { attributes } ) {
 		poster,
         fluid: true,
 		sources,
+		preview: false,
     };
-	
+	console.log("videoSetupOptions", videoSetupOptions);
 	return (
 		<figure { ...useBlockProps.save() }>
 			{ src && (

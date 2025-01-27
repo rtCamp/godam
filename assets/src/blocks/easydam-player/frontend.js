@@ -41,7 +41,10 @@ function easyDAMPlayer() {
 				autoplay: false,
 				preload: 'auto',
 				fluid: true,
+				preview: false,
 			};
+
+		const isPreviewEnabled = videoSetupOptions.preview;
 
 		const player = videojs( video, videoSetupOptions );
 
@@ -126,8 +129,13 @@ function easyDAMPlayer() {
 		}
 
 		video.addEventListener( 'click', () => {
+			if ( ! isPreviewEnabled ) {
+				return;
+			}
+			if ( watcher.value ) {
+				video.currentTime = 0;
+			}
 			watcher.value = false;
-			console.log( watcher.value );
 			if ( previewTimeoutId ) {
 				clearTimeout( previewTimeoutId );
 			}
@@ -144,14 +152,15 @@ function easyDAMPlayer() {
 		let previewTimeoutId;
 
 		video.addEventListener( 'mouseenter', () => {
+			if ( ! isPreviewEnabled ) {
+				return;
+			}
 			if ( video.currentTime > 0 ) {
 				return;
 			}
-			console.log( 'mousenter' );
 			startPreview();
 			previewTimeoutId = setTimeout( () => {
 				if ( watcher.value ) {
-					console.log( 'timeout applying' );
 					stopPreview();
 					watcher.value = false; //set isPreview to false to show layers.
 				}
@@ -159,12 +168,16 @@ function easyDAMPlayer() {
 		} );
 
 		video.addEventListener( 'mouseleave', ( e ) => {
-			console.log( e.relatedTarget.parentElement.className );
+			if ( ! isPreviewEnabled ) {
+				return;
+			}
 			if (
 				! watcher.value ||
-        e.relatedTarget.parentElement.className.indexOf( 'easydam-player' ) !== -1 ||
+        e.relatedTarget.parentElement && ( e.relatedTarget.parentElement.className.indexOf(
+        	'easydam-player',
+        ) !== -1 ||
         e.toElement.parentElement.className.indexOf( 'easydam-player' ) !== -1
-			) {
+        ) ) {
 				return;
 			}
 			if ( previewTimeoutId ) {
@@ -182,98 +195,109 @@ function easyDAMPlayer() {
 		// Function to handle `isPreview` state changes
 		function handlePreviewStateChange( newValue ) {
 			layers.forEach( ( layer ) => {
-				const instanceId = video.dataset.instanceId;
-				const layerId = `layer-${ instanceId }-${ layer.id }`;
-				const layerElement = document.querySelector( `#${ layerId }` );
-
-				if ( ! layerElement || newValue ) {
+				if ( newValue ) {
 					return;
 				}
+				handleLayerDisplay( layer );
+			} );
+		}
 
-				layerElement.classList.add( 'hidden' ); // Initially hidden
+		const handleLayerDisplay = ( layer ) => {
+			const instanceId = video.dataset.instanceId;
+			const layerId = `layer-${ instanceId }-${ layer.id }`;
+			const layerElement = document.querySelector( `#${ layerId }` );
 
-				if ( layer.type === 'form' || layer.type === 'cta' ) {
-					if ( layer.custom_css ) {
-						const styleElement = document.createElement( 'style' );
-						styleElement.textContent = layer.custom_css;
-						layerElement.appendChild( styleElement );
-					}
-					const existingLayer = formLayers.some(
-						() => layer.layerElement === layerElement,
-					);
+			if ( ! layerElement ) {
+				return;
+			}
 
-					if ( ! existingLayer ) {
-						formLayers.push( {
-							layerElement,
-							displayTime: parseFloat( layer.displayTime ),
-							show: true,
-							allowSkip:
-                layer.allow_skip !== undefined ? layer.allow_skip : true,
-						} );
-					}
-				} else if ( layer.type === 'hotspot' ) {
-					hotspotLayers.push( {
+			layerElement.classList.add( 'hidden' ); // Initially hidden
+
+			if ( layer.type === 'form' || layer.type === 'cta' ) {
+				if ( layer.custom_css ) {
+					const styleElement = document.createElement( 'style' );
+					styleElement.textContent = layer.custom_css;
+					layerElement.appendChild( styleElement );
+				}
+				const existingLayer = formLayers.some(
+					() => layer.layerElement === layerElement,
+				);
+
+				if ( ! existingLayer ) {
+					formLayers.push( {
 						layerElement,
 						displayTime: parseFloat( layer.displayTime ),
-						duration: layer.duration ? parseInt( layer.duration ) : 0,
 						show: true,
-						hotspots: layer.hotspots || [],
-						pauseOnHover: layer.pauseOnHover || false,
+						allowSkip:
+                layer.allow_skip !== undefined ? layer.allow_skip : true,
 					} );
 				}
+			} else if ( layer.type === 'hotspot' ) {
+				hotspotLayers.push( {
+					layerElement,
+					displayTime: parseFloat( layer.displayTime ),
+					duration: layer.duration ? parseInt( layer.duration ) : 0,
+					show: true,
+					hotspots: layer.hotspots || [],
+					pauseOnHover: layer.pauseOnHover || false,
+				} );
+			}
 
-				// Allow closing or skipping layers
-				formLayers.forEach( ( layerObj, index ) => {
-					const skipButton = document.createElement( 'button' );
-					skipButton.textContent = 'Skip';
-					skipButton.classList.add( 'skip-button' );
+			// Allow closing or skipping layers
+			formLayers.forEach( ( layerObj, index ) => {
+				const skipButton = document.createElement( 'button' );
+				skipButton.textContent = 'Skip';
+				skipButton.classList.add( 'skip-button' );
 
-					if ( ! layerObj.allowSkip ) {
-						skipButton.classList.add( 'hidden' );
-					}
+				if ( ! layerObj.allowSkip ) {
+					skipButton.classList.add( 'hidden' );
+				}
 
-					const arrowIcon = document.createElement( 'i' );
-					arrowIcon.className = 'fa-solid fa-chevron-right';
-					skipButton.appendChild( arrowIcon );
+				const arrowIcon = document.createElement( 'i' );
+				arrowIcon.className = 'fa-solid fa-chevron-right';
+				skipButton.appendChild( arrowIcon );
 
-					// Observe changes in the layer's DOM for the confirmation message
-					const observer = new MutationObserver( ( mutations ) => {
-						mutations.forEach( ( mutation ) => {
-							if (
-								layerObj.layerElement.querySelector(
-									'.gform_confirmation_message',
-								)
-							) {
-								// Update the Skip button to Continue
-								skipButton.textContent = 'Continue';
-								skipButton.classList.remove( 'hidden' );
-								observer.disconnect();
-							}
-						} );
-					} );
-
-					// Start observing the layer's element for child list changes
-					observer.observe( layerObj.layerElement, {
-						childList: true,
-						subtree: true,
-					} );
-
-					skipButton.addEventListener( 'click', () => {
-						console.log( 'skipButton' );
-						layerObj.show = false;
-						layerObj.layerElement.classList.add( 'hidden' );
-						player.controls( true );
-						player.play();
-						isDisplayingLayer = false;
-						// Increment the current form layer.
-						if ( index === currentFormLayerIndex ) {
-							console.log( 'index === currentFormLayerIndex' );
-							currentFormLayerIndex++;
+				// Observe changes in the layer's DOM for the confirmation message
+				const observer = new MutationObserver( ( mutations ) => {
+					mutations.forEach( ( mutation ) => {
+						if (
+							layerObj.layerElement.querySelector(
+								'.gform_confirmation_message',
+							)
+						) {
+							// Update the Skip button to Continue
+							skipButton.textContent = 'Continue';
+							skipButton.classList.remove( 'hidden' );
+							observer.disconnect();
 						}
 					} );
-
-					layerObj.layerElement.appendChild( skipButton );
 				} );
+
+				// Start observing the layer's element for child list changes
+				observer.observe( layerObj.layerElement, {
+					childList: true,
+					subtree: true,
+				} );
+
+				skipButton.addEventListener( 'click', () => {
+					layerObj.show = false;
+					layerObj.layerElement.classList.add( 'hidden' );
+					player.controls( true );
+					player.play();
+					isDisplayingLayer = false;
+					// Increment the current form layer.
+					if ( index === currentFormLayerIndex ) {
+						currentFormLayerIndex++;
+					}
+				} );
+
+				layerObj.layerElement.appendChild( skipButton );
+			} );
+		};
+
+		if ( ! isPreviewEnabled ) {
+			layers.forEach( ( layer ) => {
+				handleLayerDisplay( layer );
 			} );
 		}
 

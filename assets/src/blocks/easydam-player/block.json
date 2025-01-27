@@ -58,6 +58,10 @@
 				"type": "object"
 			},
 			"default": []
+		},
+		"preview": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {
