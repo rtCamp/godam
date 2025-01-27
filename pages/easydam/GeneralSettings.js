@@ -220,7 +220,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								<>
 									{ __( 'Your license key is required to access the features. You can get your active license key from your ', 'transcoder' ) }
 									<a
-										href="https://example.com/subscriptions"
+										href="https://frappe-transcoder-api.rt.gw/"
 										target="_blank"
 										rel="noopener noreferrer"
 										className="text-blue-500 underline"
