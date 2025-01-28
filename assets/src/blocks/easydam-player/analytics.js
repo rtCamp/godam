@@ -11,10 +11,7 @@ import videoAnalyticsPlugin from './video-analytics-plugin';
 const analytics = Analytics( {
 	app: 'analytics-cdp-plugin',
 	plugins: [
-		videoAnalyticsPlugin( {
-			token: 'example_token',
-			endpoint: '/example-endpoint/',
-		} ),
+		videoAnalyticsPlugin(),
 	],
 } );
 window.analytics = analytics;

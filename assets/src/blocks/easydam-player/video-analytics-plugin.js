@@ -12,9 +12,10 @@ const {
 	author,
 	endpoint,
 	locationIP,
+	token,
 } = window.videoAnalyticsParams || {};
 
-const videoAnalyticsPlugin = ( userConfig = {} ) => {
+const videoAnalyticsPlugin = () => {
 	return {
 		name: 'video-analytics-plugin',
 		track: async ( { payload } ) => {
@@ -44,7 +45,7 @@ const videoAnalyticsPlugin = ( userConfig = {} ) => {
 						site_url: window.location.origin,
 						user_token: anonymousId,
 						wp_user_id: userId || '',
-						account_token: userConfig.token || '',
+						account_token: token || '',
 						email: emailId || '',
 						visitor_timestamp: meta?.ts || Date.now(),
 						visit_entry_action_url: window.location.href,

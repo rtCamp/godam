@@ -1225,6 +1225,8 @@ function rt_get_localize_array() {
 		$localize_array['author'] = get_the_author();
 	}
 
+	$localize_array['token'] = get_site_option( 'rt-transcoding-api-key', '' );
+
 	return $localize_array;
 }
 
