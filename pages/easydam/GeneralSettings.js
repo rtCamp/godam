@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { useSelector } from 'react-redux';
 
-const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLicenseKey } ) => {
+const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLicenseKey, verifyLicenseFromUrl } ) => {
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 	const [ isLicenseKeyLoading, setIsLicenseKeyLoading ] = useState( false ); // Loading indicator for saving license key.
 	const [ isDeactivateLoading, setIsDeactivateLoading ] = useState( false );
@@ -22,6 +22,13 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 			setTrackStatusOnUserProfile( mediaSettings.general.track_status );
 		}
 	}, [ mediaSettings ] );
+
+	useEffect( () => {
+		// Trigger verification if the flag is true
+		if ( verifyLicenseFromUrl && licenseKey ) {
+			saveLicenseKey(); // Use the existing saveLicenseKey function
+		}
+	}, [ verifyLicenseFromUrl, licenseKey ] );
 
 	useEffect( () => {
 		const fetchPlans = async () => {
@@ -213,7 +220,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								<>
 									{ __( 'Your license key is required to access the features. You can get your active license key from your ', 'transcoder' ) }
 									<a
-										href="https://example.com/subscriptions"
+										href="https://frappe-transcoder-api.rt.gw/"
 										target="_blank"
 										rel="noopener noreferrer"
 										className="text-blue-500 underline"
