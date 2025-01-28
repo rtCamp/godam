@@ -58,6 +58,10 @@
 				"type": "object"
 			},
 			"default": []
+		},
+		"preview": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {
@@ -78,6 +82,6 @@
     "editorStyle": ["file:./index.css", "file:./frontend.css"],
 	"style": ["file:./style-index.css", "file:./frontend.css"],
     "editorScript": ["file:./index.js"],
-    "viewScript": ["file:./frontend.js"],
+    "viewScript": ["file:./frontend.js", "file:./analytics.js"],
     "render": "file:./render.php"
 }

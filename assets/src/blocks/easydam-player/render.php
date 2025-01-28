@@ -23,6 +23,7 @@ $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['capt
 $sources       = ! empty( $attributes['sources'] ) ? $attributes['sources'] : array();
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$preview       = isset($attributes['preview'])? $attributes['preview'] : false;
 
 // Retrieve easydam_meta for the attachment id.
 $easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : '';
@@ -38,6 +39,7 @@ $video_setup = wp_json_encode(
 		'poster'       => $poster,
 		'fluid'        => true,
 		'sources'      => $sources,
+		'preview'      => $preview,
 		'easydam_meta' => $easydam_meta_data,
 	)
 );

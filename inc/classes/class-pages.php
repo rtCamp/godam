@@ -44,6 +44,25 @@ class Pages {
 	 */
 	public function handle_block_assets() {
 
+		wp_register_script(
+			'block-analytics-script',
+			RT_TRANSCODER_URL . 'assets/build/blocks/easydam-player/analytics.js',
+			array( 'wp-element' ),
+			filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/easydam-player/analytics.js' ),
+			true
+		);
+
+		$localize_array = rt_get_localize_array();
+
+		wp_localize_script(
+			'block-analytics-script',
+			'videoAnalyticsParams',
+			$localize_array
+		);
+
+		
+		wp_enqueue_script('block-analytics-script');
+
 		wp_localize_script(
 			'block-frontend-script',
 			'nonceData',
@@ -66,7 +85,7 @@ class Pages {
 			'easydam',
 			array( $this, 'render_easydam_page' ),
 			'dashicons-admin-generic',
-			6
+			30
 		);
 
 		add_submenu_page(
