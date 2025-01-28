@@ -85,7 +85,7 @@ class Pages {
 			'easydam',
 			array( $this, 'render_easydam_page' ),
 			'dashicons-admin-generic',
-			6
+			30
 		);
 
 		add_submenu_page(
