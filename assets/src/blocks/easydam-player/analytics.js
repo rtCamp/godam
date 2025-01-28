@@ -63,6 +63,9 @@ function playerAnalytics() {
 		} );
 
 		async function updateHeatmap( ranges ) {
+			if ( ! ranges.length ) {
+				return;
+			}
 			const videoId = video.getAttribute( 'data-id' );
 
 			if ( window.analytics ) {
