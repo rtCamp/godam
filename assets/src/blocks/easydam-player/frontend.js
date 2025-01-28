@@ -63,15 +63,15 @@ function easyDAMPlayer() {
 		};
 
 		function startPreview() {
-			video.muted = true;
-			video.currentTime = 0;
-			video.playbackRate = 1;
+			player.muted = true;
+			player.currentTime = 0;
+			player.playbackRate = 1;
 			const controlBarElement = player.controlBar.el();
 			if ( controlBarElement ) {
 				controlBarElement.classList.add( 'hide' );
 			}
 			watcher.value = true;
-			video.play();
+			player.play();
 		}
 
 		function stopPreview() {
@@ -83,8 +83,8 @@ function easyDAMPlayer() {
 			if ( muteButton && muteButton.classList.contains( 'mute-button' ) ) {
 				muteButton.classList.remove( 'mute-button' );
 			}
-			video.pause();
-			video.currentTime = 0;
+			player.pause();
+			player.currentTime = 0;
 		}
 
 		video.addEventListener( 'click', () => {
@@ -92,7 +92,7 @@ function easyDAMPlayer() {
 				return;
 			}
 			if ( watcher.value ) {
-				video.currentTime = 0;
+				player.currentTime = 0;
 			}
 			watcher.value = false;
 			if ( previewTimeoutId ) {
@@ -114,7 +114,7 @@ function easyDAMPlayer() {
 			if ( ! isPreviewEnabled ) {
 				return;
 			}
-			if ( video.currentTime > 0 ) {
+			if ( player.currentTime > 0 ) {
 				return;
 			}
 			startPreview();
@@ -141,8 +141,8 @@ function easyDAMPlayer() {
 			if ( previewTimeoutId ) {
 				clearTimeout( previewTimeoutId );
 			}
-			video.currentTime = 0;
-			video.pause();
+			player.currentTime = 0;
+			player.pause();
 			stopPreview();
 		} );
 
