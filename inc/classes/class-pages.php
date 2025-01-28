@@ -189,7 +189,7 @@ class Pages {
 	 */
 	public function render_analytics_page() {
 		?>
-		<div id="root-analytics">
+		<div id="root-video-analytics">
 			<div class="progress-bar-wrapper">
 				<div class="progress-bar-container">
 					<div class="progress-bar">
@@ -256,22 +256,28 @@ class Pages {
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-easydam' );
-		} elseif ( $screen && 'easydam_page_components' === $screen->id ) {
-			wp_register_script(
-				'transcoder-page-script-wp-components',
-				RT_TRANSCODER_URL . '/pages/build/wp-components.js',
-				array( 'wp-element' ),
-				filemtime( RT_TRANSCODER_PATH . '/pages/build/wp-components.js' ),
-				true
-			);
-
-			wp_enqueue_script( 'transcoder-page-script-wp-components' );
 		} elseif ( $screen && 'easydam_page_analytics' === $screen->id ) {
+			// wp_enqueue_script(
+			// 	'd3-js',
+			// 	'https://d3js.org/d3.v7.min.js',
+			// 	array(),
+			// 	'7.0.0',
+			// 	false
+			// );
+
 			wp_register_script(
 				'transcoder-page-script-analytics',
 				RT_TRANSCODER_URL . 'pages/build/analytics.js',
 				array( 'wp-element' ),
 				filemtime( RT_TRANSCODER_PATH . 'pages/build/analytics.js' ),
+				true
+			);
+
+			wp_register_script(
+				'video-analytics-charts',
+				RT_TRANSCODER_URL . 'assets/build/js/video-analytics.js',
+				array( 'wp-element' ),
+				filemtime( RT_TRANSCODER_PATH . 'assets/build/js/video-analytics.js' ),
 				true
 			);
 
@@ -286,6 +292,7 @@ class Pages {
 				)
 			);
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
+			wp_enqueue_script( 'video-analytics-charts' );
 		}
 
 
