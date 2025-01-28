@@ -14,6 +14,7 @@ import {
 	PanelBody,
 	Spinner,
 	Placeholder,
+	ToggleControl,
 } from '@wordpress/components';
 import {
 	BlockControls,
@@ -282,13 +283,23 @@ function VideoEdit( {
 						<Button
 							__next40pxDefaultSize
 							onClick={ () =>
-								window.location.href = `/wp-admin/admin.php?page=video_editor&id=${ id }`
+								( window.location.href = `/wp-admin/admin.php?page=video_editor&id=${ id }` )
 							}
 							variant="primary"
 							className=""
 						>
 							{ __( 'Customise' ) }
 						</Button>
+					</div>
+					<div className="editor-enable-preview">
+						<BaseControl.VisualLabel>
+							{ __( 'Enable Preview' ) }
+						</BaseControl.VisualLabel>
+						<ToggleControl
+							label={ __( 'Show a preview of 10 seconds when user hovers over a video' ) }
+							checked={ attributes.preview }
+							onChange={ ( value ) => setAttributes( { preview: value } ) }
+						/>
 					</div>
 				</PanelBody>
 			</InspectorControls>
