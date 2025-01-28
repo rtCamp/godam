@@ -2,8 +2,38 @@
  * External dependencies
  */
 import videojs from 'video.js';
+import { Analytics } from 'analytics';
+/**
+ * Internal dependencies
+ */
+import videoAnalyticsPlugin from './video-analytics-plugin';
 
-document.addEventListener( 'DOMContentLoaded', () => playerAnalytics() );
+const analytics = Analytics( {
+	app: 'analytics-cdp-plugin',
+	plugins: [
+		videoAnalyticsPlugin( {
+			token: 'example_token',
+			endpoint: '/example-endpoint/',
+		} ),
+	],
+} );
+window.analytics = analytics;
+
+if ( ! window.pageLoadEventTracked ) {
+	window.pageLoadEventTracked = true; // Mark as tracked to avoid duplicate execution
+
+	document.addEventListener( 'DOMContentLoaded', () => {
+		// Track a "page_load" event when the page loads
+		if ( window.analytics ) {
+			window.analytics.track( 'page_load', {
+				type: 1, // Enum: 1 = Page Load
+			} );
+		}
+
+		// Initialize video analytics
+		playerAnalytics();
+	} );
+}
 
 function playerAnalytics() {
 	const videos = document.querySelectorAll( '.easydam-player.video-js' );
@@ -22,85 +52,29 @@ function playerAnalytics() {
 
 		const player = videojs( video, videoSetupOptions );
 
-		const existingRanges = [];
-		let lastTime = 0;
-
-		player.on( 'timeupdate', function() {
-			const currentTime = player.currentTime();
+		window.addEventListener( 'beforeunload', () => {
 			const played = player.played();
+			const ranges = [];
 
-			// Check if we've jumped backwards (replay)
-			if ( currentTime < lastTime ) {
-				// Add new range entry when user jumps back
-				existingRanges.push( copyRanges( played ) );
-			} else if ( existingRanges.length === 0 ) {
-				existingRanges.push( copyRanges( played ) );
-			} else {
-				existingRanges[ existingRanges.length - 1 ] = copyRanges( played );
+			// Extract time ranges from the player.played() object
+			for ( let i = 0; i < played.length; i++ ) {
+				ranges.push( [ played.start( i ), played.end( i ) ] );
 			}
 
-			updateHeatmap( existingRanges );
-			lastTime = currentTime;
+			// Send the ranges using updateHeatmap
+			updateHeatmap( ranges );
 		} );
-
-		function copyRanges( timeRanges ) {
-			const copy = [];
-
-			for ( let i = 0; i < timeRanges.length; i++ ) {
-				copy.push( [ timeRanges.start( i ), timeRanges.end( i ) ] );
-			}
-
-			return copy;
-		}
-
-		let licenseKey = null;
-
-		async function getLicenseKey() {
-			if ( licenseKey ) {
-				return licenseKey; //prevents multiple requests
-			}
-
-			const licenseResponse = await fetch(
-				'/wp-json/easydam/v1/settings/get-license-key',
-				{
-					method: 'GET',
-					headers: {
-						'X-WP-Nonce': window.nonceData.nonce,
-					},
-				},
-			);
-
-			const licenseData = await licenseResponse.json();
-
-			return licenseData.license_key || '';
-		}
 
 		async function updateHeatmap( ranges ) {
 			const videoId = video.getAttribute( 'data-id' );
-			const url = `/wp-json/wp/v2/media/${ videoId }`;
 
-			licenseKey = await getLicenseKey();
-
-			const data = JSON.stringify( {
-				easydam_analytics: {
+			if ( window.analytics ) {
+				window.analytics.track( 'video_heatmap', {
+					type: 2, // Enum: 2 = Heatmap
+					videoId: parseInt( videoId, 10 ),
 					ranges,
-					license: licenseKey, // to associate range with the user
-				},
-			} );
-
-			fetch( url, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-WP-Nonce': window.nonceData.nonce,
-				},
-				body: data,
-			} ).then( ( response ) => {
-				if ( ! response.ok ) {
-					throw new Error( `HTTP error! Status: ${ response.status }` );
-				}
-				return response.json();
-			} );
+				} );
+			}
 		}
 	} );
 }

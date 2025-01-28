@@ -59,6 +59,24 @@ class Assets {
 			filemtime( RT_TRANSCODER_PATH . '/assets/build/css/main.css' )
 		);
 
+
+		wp_enqueue_script(
+			'analytics-library',
+			'https://unpkg.com/analytics/dist/analytics.min.js',
+			array(),
+			RT_TRANSCODER_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'easydam-script',
+			'nonceData',
+			array(
+				'nonce' => wp_create_nonce( 'wp_rest' ),
+			)
+		);
+		
+
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );
 

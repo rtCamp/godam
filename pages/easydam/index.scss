@@ -1,0 +1,60 @@
+#easydam-settings {
+
+    .easydam-settings {
+    
+        &-header {
+            background: #fff;
+        }
+    
+        &-shadow {
+            box-shadow: 0 1px 4px rgba(18,25,97,.0779552);
+        }
+    
+        &-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: calc(4px* 2);
+            padding: 0;
+            text-transform: none;
+        }
+    
+        &-help {
+            margin-top: calc(4px* 2);
+            margin-bottom: 0;
+            font-size: 12px;
+            font-style: normal;
+            color: #757575;
+        }
+    }
+    
+    input[type="number"] {
+        max-width: 100px;
+    }
+    
+    .sidebar-nav-item {
+        @apply flex items-center gap-2 p-2 font-medium rounded-md text-gray-600 hover:text-gray-900 border border-transparent transition-all;
+    
+        &.active {
+            @apply bg-white font-semibold focus:ring-2 ring-indigo-200 text-gray-900 drop-shadow-sm;
+            border: 1px solid #ddd;
+        }
+    }
+    
+    
+    .components-panel {
+        box-shadow: 0 1px 4px rgba(18,25,97,.0779552);
+        border-radius: 0.25rem;
+    }
+    
+    .components-panel__header {
+        font-size: 14px;
+    }
+    
+    .components-base-control__label {
+        font-size: 13px !important;
+        text-transform: none !important;
+    }
+}
+

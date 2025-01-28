@@ -1078,13 +1078,6 @@ function rtt_verify_license( $license_key ) {
 		return new \WP_Error( 'missing_license_key', 'License key is required.', array( 'status' => 400 ) );
 	}
 
-	$blacklist   = rtt_get_blacklist_ip_addresses();
-	$remote_addr = rtt_get_remote_ip_address();
-
-	if ( in_array( wp_unslash( $remote_addr ), $blacklist, true ) ) {
-		return new \WP_Error( 'forbidden', 'Localhost not allowed.', array( 'status' => 400 ) );
-	}
-
 	// API endpoint to verify the license.
 	$api_url = sprintf( 'http://frappe-transcoder-api.rt.gw/api/resource/License/%s', $license_key );
 
@@ -1126,4 +1119,131 @@ function rtt_verify_license( $license_key ) {
 
 	// Handle unexpected responses.
 	return new \WP_Error( 'unexpected_error', 'An unexpected error occurred. Please try again later.', array( 'status' => 500 ) );
+}
+
+
+/**
+ * Get the List of Categories for the post.
+ *
+ * @param int $post_id Current Post Id.
+ *
+ * @return void
+ */
+function rt_get_categories_list( $post_id ) {
+
+	$categories     = get_the_category( $post_id );
+	$category_names = array();
+
+	if( is_array( $categories ) && ! empty( $categories ) ) {
+
+		foreach ( $categories as $category ) {
+			$category_names[] = $category->name;
+		}
+
+		$comma_separated = implode(', ', $category_names);
+
+		return $comma_separated;
+	}
+
+	return '';
+}
+
+/**
+ * Get the List of Categories for the post.
+ *
+ * @param int $post_id Current Post Id.
+ *
+ * @return void
+ */
+function rt_get_tags_list( $post_id ) {
+
+	$tags      = get_the_tags( $post_id );
+	$tag_names = array();
+
+	if ( ! is_array( $tags ) && ! empty( $tags ) ) {
+
+		foreach ( $tags as $tag ) {
+			$tag_names[] = $tag->name;
+		}
+
+		$comma_separated = implode(', ', $tag_names);
+		return $comma_separated;
+	}
+
+	return '';
+}
+
+/**
+ * Utility function to get the array to localize.
+ *
+ * @return array The array to localize
+ */
+function rt_get_localize_array() {
+
+	$localize_array = [];
+
+	$localize_array['endpoint']   = 'http://127.0.0.1:8000/'; // Temporarily on localhost.
+	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
+	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
+	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
+	$localize_array['postTitle'] = get_the_title();
+	$localize_array['locationIP'] = rtt_get_user_ip();
+	
+	/**
+	 * Get Current User.
+	 */
+	$current_user = wp_get_current_user();
+	$email_id     = '';
+
+	$localize_array['userId'] = $current_user->ID;
+
+	if ( ! empty( ( array ) $current_user->data ) ) {
+
+		$email_id = $current_user->data->user_email;
+		$localize_array['emailId'] = $email_id;
+	}
+
+	$localize_array['siteId'] = get_current_blog_id();
+
+	if ( get_post_type() ) {
+
+		$localize_array['postType'] = get_post_type();
+	}
+
+	$post_id = get_the_ID();
+
+	if ( $post_id ) {
+
+		$localize_array['postId']     = $post_id;
+		$localize_array['categories'] = rt_get_categories_list( $post_id );
+		$localize_array['tags']       = rt_get_tags_list( $post_id );
+
+	}
+
+	if ( null !== get_the_author() ) {
+
+		$localize_array['author'] = get_the_author();
+	}
+
+	return $localize_array;
+}
+
+/**
+ * Get the user's IP address.
+ *
+ * @return string The user's IP address.
+ */
+function rtt_get_user_ip() {
+    $ip_address = '';
+
+    if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+        $ip_address = $_SERVER['HTTP_CLIENT_IP'];
+    } elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+        // Handle multiple IPs (e.g., in proxies).
+        $ip_address = explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] )[0];
+    } elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+        $ip_address = $_SERVER['REMOTE_ADDR'];
+    }
+
+    return esc_attr( $ip_address );
 }
