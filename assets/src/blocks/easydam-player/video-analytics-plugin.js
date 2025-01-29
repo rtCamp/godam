@@ -33,7 +33,16 @@ const videoAnalyticsPlugin = () => {
 
 			try {
 				// Destructure the ranges array from properties
-				const { ranges = [], videoId, type } = properties;
+				const { ranges = [], videoId, type, videoLength, videoIds } = properties;
+
+				if ( ! type ) {
+					return;
+				}
+
+				if ( type === 1 && ( ! videoIds || videoIds.length === 0 ) ) {
+					return;
+				}
+
 				const userAgentData = getUserAgent( window.navigator.userAgent );
 				// Iterate over each range and send a POST request for it
 				const response = await fetch( endpoint + 'analytics/', {
@@ -80,7 +89,9 @@ const videoAnalyticsPlugin = () => {
 						author,
 						type: type || 0,
 						video_id: videoId ? parseInt( videoId, 0 ) : 0,
+						video_ids: type === 1 ? videoIds : [],
 						ranges,
+						video_length: videoLength || 0,
 					} ),
 				} );
 
