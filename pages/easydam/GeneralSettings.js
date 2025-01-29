@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
-import { TextControl, Button, Notice, Panel, PanelBody } from '@wordpress/components';
+import { TextControl, Button, Notice, Panel, PanelBody, PanelRow, FlexItem } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 /**
  * External dependencies
@@ -172,6 +172,19 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 		}, 5000 );
 	};
 
+	const calculatePercentage = ( used, total ) => {
+		if ( total === 0 ) {
+			return 0;
+		}
+		try {
+			const result = ( used / total ) * 100;
+			return result.toFixed( 2 );
+		} catch ( error ) {
+			console.error( 'Error calculating percentage:', error );
+			return 0;
+		}
+	};
+
 	if ( loading ) {
 		// Skeleton loader when data is loading
 		return (
@@ -339,7 +352,30 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 						<PanelBody
 							opened={ true }
 						>
-
+							<div className="flex gap-4 flex-col md:flex-row">
+								<div className="w-full md:w-1/2 flex gap-3 items-center">
+									<div className="circle-container">
+										<div className="data text-xs">{ calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) }%</div>
+										<div className="circle" style={ { '--percentage': calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) + '%' } }></div>
+									</div>
+									<div className="leading-6">
+										<strong>{ __( 'Used Bandwidth: ', 'godam' ) }</strong>{ userData.bandwidth_used }{ __( 'GB', 'godam' ) }
+										<br />
+										<strong>{ __( 'Total Bandwidth: ', 'godam' ) }</strong>{ userData.total_bandwidth }{ __( 'GB', 'godam' ) }
+									</div>
+								</div>
+								<div className="w-full md:w-1/2 flex gap-3 items-center">
+									<div className="circle-container">
+										<div className="data text-xs">{ calculatePercentage( userData.storage_used, userData.total_storage ) }%</div>
+										<div className="circle" style={ { '--percentage': calculatePercentage( userData.storage_used, userData.total_storage ) + '%' } }></div>
+									</div>
+									<div className="leading-6">
+										<strong>{ __( 'Used Storage: ', 'godam' ) }</strong>{ userData.storage_used }{ __( 'GB', 'godam' ) }
+										<br />
+										<strong>{ __( 'Total Storage: ', 'godam' ) }</strong>{ userData.total_storage }{ __( 'GB', 'godam' ) }
+									</div>
+								</div>
+							</div>
 						</PanelBody>
 					</Panel>
 				</>

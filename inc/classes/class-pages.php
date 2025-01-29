@@ -274,6 +274,18 @@ class Pages {
 				true
 			);
 
+			wp_localize_script(
+				'transcoder-page-script-easydam',
+				'userData',
+				array(
+					'currentUserId'   => get_current_user_id(), // Current user ID.
+					'storage_used'    => 25.39,
+					'total_storage'   => 100,
+					'bandwidth_used'  => 98.94,
+					'total_bandwidth' => 200,
+				)
+			);
+
 			wp_enqueue_script( 'transcoder-page-script-easydam' );
 		} elseif ( $screen && 'easydam_page_components' === $screen->id ) {
 			wp_register_script(
