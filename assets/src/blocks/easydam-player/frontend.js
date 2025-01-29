@@ -547,6 +547,12 @@ function easyDAMPlayer() {
 			} );
 		}
 
+		try {
+			player.qualityMenu();
+		} catch ( e ) {
+			console.log( e );
+		}
+
 		player.ready( function() {
 			// player.ima.initializeAdDisplayContainer();
 			// player.ima.requestAds();
