@@ -79,8 +79,8 @@ class Pages {
 	 */
 	public function add_admin_pages() {
 		add_menu_page(
-			__( 'EasyDAM', 'transcoder' ),
-			__( 'EasyDAM', 'transcoder' ),
+			__( 'GoDAM', 'transcoder' ),
+			__( 'GoDAM', 'transcoder' ),
 			'manage_options',
 			'easydam',
 			array( $this, 'render_easydam_page' ),

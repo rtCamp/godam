@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Transcoder
+ * Plugin Name: GoDAM
  * Plugin URI: https://rtmedia.io/transcoder/?utm_source=dashboard&utm_medium=plugin&utm_campaign=transcoder
  * Description: Audio & video transcoding services for ANY WordPress website. Allows you to convert audio/video files of any format to a web-friendly format (mp3/mp4).
  * Version: 1.3.6
@@ -11,7 +11,7 @@
  * License: GPLv2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  *
- * @package Transcoder
+ * @package GoDAM
  */
 
 if ( ! defined( 'RT_TRANSCODER_PATH' ) ) {
