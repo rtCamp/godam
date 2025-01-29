@@ -70,8 +70,8 @@ class RT_Transcoder_Admin {
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts_styles' ) );
 
-		add_filter( 'attachment_fields_to_edit', array( $this, 'edit_video_thumbnail' ), 11, 2 );
-		add_filter( 'attachment_fields_to_save', array( $this, 'save_video_thumbnail' ), 11, 1 );
+		// add_filter( 'attachment_fields_to_edit', array( $this, 'edit_video_thumbnail' ), 11, 2 );
+		// add_filter( 'attachment_fields_to_save', array( $this, 'save_video_thumbnail' ), 11, 1 );
 		add_action( 'admin_notices', array( $this, 'add_settings_errors' ) );
 
 		$this->transcoder_handler = new RT_Transcoder_Handler();
