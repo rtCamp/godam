@@ -22,17 +22,19 @@
 	bottom: 0;
 	left: 0;
 	right: 0;
-	height: 100vh;
+	min-height: calc( 100vh - var(--wp-admin--admin-bar--height, 0) );
 	margin-left: 160px;
 	padding-left: 20px;
+	padding-right: 20px;
 	padding-top: var(--wp-admin--admin-bar--height, 0);
+	overflow: auto;
 }
 
 #root-video-analytics {
 
 	// Video JS styles
 	.video-analytics-container {
-		@apply flex justify-center py-6 bg-slate-100 overflow-auto px-10 pt-20;
+		@apply flex justify-center py-6 bg-slate-100 overflow-auto md:px-10 pt-20;
 	}
 
 	.analytics-info-container {
@@ -72,6 +74,11 @@
 		width: 640px;
 		font-family: sans-serif;
 
+		svg {
+			position: relative;
+			top: 4px;
+		}
+
 		.line {
 			fill: none;
 			stroke: rgb(59, 95, 255);
@@ -80,7 +87,6 @@
 
 		.area {
 			fill: rgba(255, 165, 0, 0.5);
-			/* Light orange fill */
 		}
 
 		.tooltip {
@@ -94,7 +100,7 @@
 			font-size: 12px;
 			box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
 			text-align: center;
-			display: none;
+			opacity: 0;
 		}
 
 		.tooltip::after {

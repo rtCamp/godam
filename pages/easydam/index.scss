@@ -56,5 +56,41 @@
         font-size: 13px !important;
         text-transform: none !important;
     }
+
+    // Circular progress bar
+    .circle-container {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        
+        .circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: conic-gradient(var(--wp-components-color-accent,var(--wp-admin-theme-color,#3858e9)) var(--percentage), #e0e0e0 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .data {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50px;
+            height: 50px;
+            border-radius: 1000px;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;         
+        }
+    }
+    
+
 }
 

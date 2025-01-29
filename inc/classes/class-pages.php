@@ -266,6 +266,7 @@ class Pages {
 
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
 		} elseif ( $screen && 'toplevel_page_easydam' === $screen->id ) {
+
 			wp_register_script(
 				'transcoder-page-script-easydam',
 				RT_TRANSCODER_URL . '/pages/build/easydam.js',
@@ -276,13 +277,14 @@ class Pages {
 
 			wp_enqueue_script( 'transcoder-page-script-easydam' );
 		} elseif ( $screen && 'easydam_page_analytics' === $screen->id ) {
-			// wp_enqueue_script(
-			// 	'd3-js',
-			// 	'https://d3js.org/d3.v7.min.js',
-			// 	array(),
-			// 	'7.0.0',
-			// 	false
-			// );
+
+			wp_register_script(
+				'd3-js',
+				'https://d3js.org/d3.v7.min.js',
+				array(),
+				'7.0.0',
+				false
+			);
 
 			wp_register_script(
 				'transcoder-page-script-analytics',
@@ -295,7 +297,7 @@ class Pages {
 			wp_register_script(
 				'video-analytics-charts',
 				RT_TRANSCODER_URL . 'assets/build/js/video-analytics.js',
-				array( 'wp-element' ),
+				array( 'transcoder-page-script-analytics', 'd3-js' ),
 				filemtime( RT_TRANSCODER_PATH . 'assets/build/js/video-analytics.js' ),
 				true
 			);
@@ -311,6 +313,7 @@ class Pages {
 				)
 			);
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
+			wp_enqueue_script( 'd3-js' );
 			wp_enqueue_script( 'video-analytics-charts' );
 		}
 

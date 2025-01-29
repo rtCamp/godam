@@ -38,8 +38,8 @@ const Analytics = ( { attachmentID } ) => {
 			<div className="overflow-auto">
 
 				<div className="flex gap-8 items-start">
-					<div className="w-[30%]">
-						<h2 className="text-lg m-0 mb-2 w-[30%]">{ __( 'Analytics', 'transcoder' ) }</h2>
+					<div className="min-w-[350px] max-w-[350px] flex-grow">
+						<h2 className="text-lg m-0 mb-2">{ __( 'Analytics', 'transcoder' ) }</h2>
 
 						<div className="analytics-info-container border-t border-gray-500">
 							<div className="analytics-info">
@@ -59,8 +59,8 @@ const Analytics = ( { attachmentID } ) => {
 							<hr />
 						</div>
 					</div>
-					<div className="w-[70%] min-w-[640px]">
-						<h2 className="text-lg m-0 mb-2 w-[70%] min-w-[640px]">{ analyticsData?.title?.rendered }</h2>
+					<div className="min-w-[640px]">
+						<h2 className="text-lg m-0 mb-2 min-w-[640px]">{ analyticsData?.title?.rendered }</h2>
 						{ analyticsData && (
 							<div>
 								<div className="video-container">
@@ -79,7 +79,7 @@ const Analytics = ( { attachmentID } ) => {
 								</div>
 								<div className="video-container">
 									<div id="heatmap-container">
-										<svg id="heatmap" width="800" height="100"></svg>
+										<svg id="heatmap" width="640" height="100"></svg>
 										<div className="heatmap-tooltip"></div>
 									</div>
 								</div>
