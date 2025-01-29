@@ -46,9 +46,9 @@ class Pages {
 
 		wp_register_script(
 			'block-analytics-script',
-			RT_TRANSCODER_URL . 'assets/build/blocks/easydam-player/analytics.js',
+			RT_TRANSCODER_URL . 'assets/build/blocks/godam-player/analytics.js',
 			array( 'wp-element' ),
-			filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/easydam-player/analytics.js' ),
+			filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/godam-player/analytics.js' ),
 			true
 		);
 

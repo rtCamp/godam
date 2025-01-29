@@ -1,10 +1,10 @@
 <?php
 /**
- * Render template for the EasyDAM Player Block.
+ * Render template for the GoDAM Player Block.
  *
  * This file dynamically renders the video player block on the frontend.
  *
- * @package EasyDAM
+ * @package GoDAM
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

@@ -173,7 +173,7 @@ function VideoEdit( {
 					className="block-editor-media-placeholder"
 					withIllustration={ ! isSingleSelected }
 					icon={ icon }
-					label={ __( 'EasyDAM video' ) }
+					label={ __( 'GoDAM video' ) }
 					instructions={ __(
 						'Drag and drop a video, upload, or choose from your library.',
 					) }

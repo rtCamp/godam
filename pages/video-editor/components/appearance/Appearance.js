@@ -12,12 +12,8 @@ import '../../video-control.css';
  */
 import {
 	Button,
-	CheckboxControl,
 	CustomSelectControl,
-	Icon,
 	RangeControl,
-	ColorPalette,
-	TabPanel,
 	TextareaControl,
 	ToggleControl,
 } from '@wordpress/components';

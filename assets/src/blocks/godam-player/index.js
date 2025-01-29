@@ -32,7 +32,7 @@ import save from './save';
  *
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
  */
-registerBlockType( 'easydam/video', {
+registerBlockType( 'godam/video', {
 	icon,
 	/**
 	 * @see ./edit.js

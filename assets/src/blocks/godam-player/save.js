@@ -2,9 +2,7 @@
  * WordPress dependencies
  */
 import {
-	RichText,
 	useBlockProps,
-	__experimentalGetElementClassName,
 } from '@wordpress/block-editor';
 
 /**
