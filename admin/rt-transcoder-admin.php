@@ -70,6 +70,12 @@ class RT_Transcoder_Admin {
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts_styles' ) );
 
+		/**
+		 * Commented our this code as changing the thumbnail logic.
+		 * 
+		 * Now the thumbnail will show below the video in the video attachment.
+		 * The thumbnail setting and getting logic is moved to REST API.
+		 */
 		// add_filter( 'attachment_fields_to_edit', array( $this, 'edit_video_thumbnail' ), 11, 2 );
 		// add_filter( 'attachment_fields_to_save', array( $this, 'save_video_thumbnail' ), 11, 1 );
 		add_action( 'admin_notices', array( $this, 'add_settings_errors' ) );
