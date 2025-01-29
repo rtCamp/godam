@@ -14,6 +14,7 @@ import { Provider } from 'react-redux';
  */
 import store from '../video-editor/redux/store';
 import Analytics from './Analytics';
+import './index.scss';
 
 const Frontpage = () => {
 	const [ attachmentID, setAttachmentID ] = useState( null );
@@ -105,4 +106,4 @@ const App = () => {
 
 export default App;
 
-ReactDOM.render( <App />, document.getElementById( 'root-analytics' ) );
+ReactDOM.render( <App />, document.getElementById( 'root-video-analytics' ) );
