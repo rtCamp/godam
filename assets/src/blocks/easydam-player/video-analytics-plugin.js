@@ -93,6 +93,7 @@ const videoAnalyticsPlugin = () => {
 						ranges,
 						video_length: videoLength || 0,
 					} ),
+					keepalive: true,
 				} );
 
 				if ( ! response.ok ) {
