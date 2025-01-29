@@ -539,8 +539,6 @@ function easyDAMPlayer() {
 		} );
 
 		if ( adTagUrl ) {
-			console.log( 'player.ima is about to call' );
-
 			player.ima( {
 				id: 'content_video',
 				adTagUrl,
@@ -554,8 +552,8 @@ function easyDAMPlayer() {
 		}
 
 		player.ready( function() {
-			// player.ima.initializeAdDisplayContainer();
-			// player.ima.requestAds();
+			player.ima.initializeAdDisplayContainer();
+			player.ima.requestAds();
 		} );
 	} );
 }
