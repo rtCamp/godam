@@ -1182,7 +1182,7 @@ function rt_get_localize_array() {
 
 	$localize_array = [];
 
-	$localize_array['endpoint']   = 'https://analytics.godam.rt.gw/';
+	$localize_array['endpoint']   = \Transcoder\Inc\EasyDAM_Constants::ANALYTICS_ENDPOINT_DEV ;
 	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
 	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
 	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
