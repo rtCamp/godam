@@ -208,15 +208,7 @@ class Pages {
 	 */
 	public function render_analytics_page() {
 		?>
-		<div id="root-video-analytics">
-			<div class="progress-bar-wrapper">
-				<div class="progress-bar-container">
-					<div class="progress-bar">
-						<div class="progress-bar-inner"></div>
-					</div>
-				</div>
-			</div>
-		</div>
+		<div id="root-video-analytics"></div>
 		<?php
 	}
 

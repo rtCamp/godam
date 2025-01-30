@@ -20,6 +20,7 @@ use Transcoder\Inc\REST_API\Meta_Rest_Fields;
 use Transcoder\Inc\REST_API\Media_Library;
 use Transcoder\Inc\REST_API\Ads;
 use Transcoder\Inc\REST_API\Transcoding;
+use Transcoder\Inc\REST_API\Analytics;
 
 use Transcoder\Inc\Providers\Media_Filters;
 
@@ -88,5 +89,6 @@ class Plugin {
 		Media_Library::get_instance();
 		Ads::get_instance();
 		Transcoding::get_instance();
+		Analytics::get_instance();
 	}
 }
