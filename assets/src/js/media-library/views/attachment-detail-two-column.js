@@ -102,7 +102,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	renderThumbnail( data ) {
 		const { thumbnails, selected } = data;
 		const attachmentID = this.model.get( 'id' );
-		const buttons = this.getButtonsHTML();
 
 		const thumbnailsHTML = thumbnails.map( ( thumbnail ) =>
 			`<li class="${ thumbnail === selected ? 'selected' : '' }">
@@ -111,7 +110,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		const thumbnailDiv = `
 		<div class="attachment-video-thumbnails">
-			<div class="attachment-video-actions">${ buttons }</div>
 			<div class="attachment-video-title"><h4>Video Thumbnails</h4></div>
 			<ul>${ thumbnailsHTML }</ul>
 		</div>`;
@@ -150,6 +148,14 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	},
 
 	/**
+	 * Renders the Edit Video and Analytics buttons in the attachment details view.
+	 */
+	renderVideoActions() {
+		const buttonsHTML = this.getButtonsHTML();
+		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-video-actions">${ buttonsHTML }</div>` ) );
+	},
+
+	/**
 	 * Generates HTML for the Edit Video and Analytics buttons.
 	 *
 	 * @return {string} - The generated button HTML.
@@ -162,5 +168,15 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>
 		<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>
 	`;
+	},
+
+	render() {
+		// Call the parent render method.
+		AttachmentDetailsTwoColumn.prototype.render.apply( this, arguments );
+
+		this.renderVideoActions();
+
+		// Return this view.
+		return this;
 	},
 } );
