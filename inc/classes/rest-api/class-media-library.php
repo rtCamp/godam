@@ -339,6 +339,14 @@ class Media_Library extends Base {
 
 		$thumbnail_array = get_post_meta( $attachment_id, 'rtmedia_media_thumbnails', true );
 
+		if ( ! is_array( $thumbnail_array ) ) {
+			$thumbnail_array = get_post_meta( $attachment_id, '_rt_media_thumbnails', true );
+		}
+
+		if ( ! is_array( $thumbnail_array ) ) {
+			return new \WP_Error( 'thumbnails_not_found', 'No thumbnails found.', array( 'status' => 404 ) );
+		}
+
 		$selected_thumbnail = get_post_meta( $attachment_id, '_rt_media_video_thumbnail', true );
 
 		$data = [];
@@ -349,14 +357,12 @@ class Media_Library extends Base {
 
 		$data['thumbnails'] = $thumbnail_array;
 
-		if ( ! empty( $thumbnail_array ) ) {
-			return rest_ensure_response(
-				array(
-					'success'    => true,
-					'data'  => $data,
-				) 
-			);
-		}
+		return rest_ensure_response(
+			array(
+				'success'    => true,
+				'data'  => $data,
+			) 
+		);
 	}
 
 	/**
