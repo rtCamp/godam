@@ -114,7 +114,7 @@ class RetranscodeMedia {
 		);
 
 		$this->menu_id = add_submenu_page(
-			'easydam',
+			'godam',
 			__( 'Tools', 'transcoder' ),
 			__( 'Tools', 'transcoder' ),
 			$this->capability,
