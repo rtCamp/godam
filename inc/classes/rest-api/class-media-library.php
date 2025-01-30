@@ -131,7 +131,7 @@ class Media_Library extends Base {
 						),
 					),
 				),
-			)
+			),
 		);
 	}
 

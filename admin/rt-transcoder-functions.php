@@ -1073,7 +1073,7 @@ function rtt_get_blacklist_ip_addresses() {
  * @param string $license_key The license key to verify.
  * @return array|WP_Error Array with status and data on success, WP_Error on failure.
  */
-function rtt_verify_license( $license_key ) {
+function rtt_verify_license( $license_key, $save = false ) {
 	if ( empty( $license_key ) ) {
 		return new \WP_Error( 'missing_license_key', 'License key is required.', array( 'status' => 400 ) );
 	}
@@ -1097,13 +1097,16 @@ function rtt_verify_license( $license_key ) {
 
 	// Handle success response.
 	if ( 200 === $status_code && isset( $body['data'] ) ) {
-		// Save the license key in the site options only if it is verified.
-		update_site_option( 'rt-transcoding-api-key', $license_key );
-		update_site_option( 'rt-transcoding-api-key-stored', $license_key );
 
-		// Update usage data.
-		$handler = new \RT_Transcoder_Handler( false );
-		$handler->update_usage( $license_key );
+		if ( $save ) {
+			// Save the license key in the site options only if it is verified.
+			update_site_option( 'rt-transcoding-api-key', $license_key );
+			update_site_option( 'rt-transcoding-api-key-stored', $license_key );
+	
+			// Update usage data.
+			$handler = new \RT_Transcoder_Handler( false );
+			$handler->update_usage( $license_key );
+		}
 
 		return array(
 			'status'  => 'success',
@@ -1121,6 +1124,23 @@ function rtt_verify_license( $license_key ) {
 	return new \WP_Error( 'unexpected_error', 'An unexpected error occurred. Please try again later.', array( 'status' => 500 ) );
 }
 
+/**
+ * Mask string.
+ *
+ * @param string $input  Input string.
+ * @param int    $offset Offset.
+ *
+ * @return string
+ */
+function rtt_mask_string( $input, $offset = 4 ) {
+	$length = strlen( $input );
+	if ( $length <= $offset ) {
+		return $input; // If string length is equal or less than $offset, return as is.
+	}
+		
+	$masked = str_repeat( '*', $length - $offset ) . substr( $input, -$offset );
+	return $masked;
+}
 
 /**
  * Get the List of Categories for the post.
@@ -1134,13 +1154,13 @@ function rt_get_categories_list( $post_id ) {
 	$categories     = get_the_category( $post_id );
 	$category_names = array();
 
-	if( is_array( $categories ) && ! empty( $categories ) ) {
+	if ( is_array( $categories ) && ! empty( $categories ) ) {
 
 		foreach ( $categories as $category ) {
 			$category_names[] = $category->name;
 		}
 
-		$comma_separated = implode(', ', $category_names);
+		$comma_separated = implode( ', ', $category_names );
 
 		return $comma_separated;
 	}
@@ -1166,7 +1186,7 @@ function rt_get_tags_list( $post_id ) {
 			$tag_names[] = $tag->name;
 		}
 
-		$comma_separated = implode(', ', $tag_names);
+		$comma_separated = implode( ', ', $tag_names );
 		return $comma_separated;
 	}
 
@@ -1182,11 +1202,11 @@ function rt_get_localize_array() {
 
 	$localize_array = [];
 
-	$localize_array['endpoint']   = 'http://127.0.0.1:8000/'; // Temporarily on localhost.
+	$localize_array['endpoint']   = \Transcoder\Inc\EasyDAM_Constants::ANALYTICS_ENDPOINT_DEV ;
 	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
 	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
 	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
-	$localize_array['postTitle'] = get_the_title();
+	$localize_array['postTitle']  = get_the_title();
 	$localize_array['locationIP'] = rtt_get_user_ip();
 	
 	/**
@@ -1197,9 +1217,9 @@ function rt_get_localize_array() {
 
 	$localize_array['userId'] = $current_user->ID;
 
-	if ( ! empty( ( array ) $current_user->data ) ) {
+	if ( ! empty( (array) $current_user->data ) ) {
 
-		$email_id = $current_user->data->user_email;
+		$email_id                  = $current_user->data->user_email;
 		$localize_array['emailId'] = $email_id;
 	}
 
@@ -1225,6 +1245,8 @@ function rt_get_localize_array() {
 		$localize_array['author'] = get_the_author();
 	}
 
+	$localize_array['token'] = get_site_option( 'rt-transcoding-api-key', 'unverified' );
+
 	return $localize_array;
 }
 
@@ -1234,16 +1256,16 @@ function rt_get_localize_array() {
  * @return string The user's IP address.
  */
 function rtt_get_user_ip() {
-    $ip_address = '';
+	$ip_address = '';
 
-    if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-        $ip_address = $_SERVER['HTTP_CLIENT_IP'];
-    } elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-        // Handle multiple IPs (e.g., in proxies).
-        $ip_address = explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] )[0];
-    } elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-        $ip_address = $_SERVER['REMOTE_ADDR'];
-    }
+	if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+		$ip_address = $_SERVER['HTTP_CLIENT_IP'];
+	} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+		// Handle multiple IPs (e.g., in proxies).
+		$ip_address = explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] )[0];
+	} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+		$ip_address = $_SERVER['REMOTE_ADDR'];
+	}
 
-    return esc_attr( $ip_address );
+	return esc_attr( $ip_address );
 }
