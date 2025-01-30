@@ -82,14 +82,14 @@ class Pages {
 			__( 'GoDAM', 'transcoder' ),
 			__( 'GoDAM', 'transcoder' ),
 			'manage_options',
-			'easydam',
-			array( $this, 'render_easydam_page' ),
+			'godam',
+			array( $this, 'render_godam_page' ),
 			'dashicons-admin-generic',
 			30
 		);
 
 		add_submenu_page(
-			'easydam',
+			'godam',
 			__( 'Video editor', 'transcoder' ),
 			__( 'Video editor', 'transcoder' ),
 			'edit_posts',
@@ -98,7 +98,7 @@ class Pages {
 		);
 
 		add_submenu_page(
-			'easydam',
+			'godam',
 			__( 'Analytics', 'transcoder' ),
 			__( 'Analytics', 'transcoder' ),
 			'edit_posts',
@@ -117,7 +117,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( 'toplevel_page_easydam', 'easydam_page_video_editor', 'easydam_page_analytics' ) ) ) {
+		if ( $screen && in_array( $screen->id, array( 'toplevel_page_godam', 'godam_page_video_editor', 'godam_page_analytics' ) ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
@@ -131,11 +131,11 @@ class Pages {
 	}
 
 	/**
-	 * To render the easydam page.
+	 * To render the godam page.
 	 *
 	 * @return void
 	 */
-	public function render_easydam_page() {
+	public function render_godam_page() {
 		?>
 		<div id="root-easydam">
 			<div class="wrap flex min-h-[80vh] gap-4 my-4">
@@ -188,6 +188,7 @@ class Pages {
 	 * @return void
 	 */
 	public function render_video_editor_page() {
+
 		?>
 		<div id="root-video-editor">
 			<div class="progress-bar-wrapper">
@@ -229,22 +230,20 @@ class Pages {
 	 */
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
-
-		if ( $screen && in_array( $screen->id, array( 'toplevel_page_easydam', 'easydam_page_video_editor', 'easydam_page_analytics' ), true ) ) {
+		// echo "++++++++++++++++++++++", $screen->id;
+		if ( $screen && in_array( $screen->id, array( 'toplevel_page_godam', 'godam_page_video_editor', 'godam_page_analytics' ), true ) ) {
 			wp_register_style(
-				'transcoder-page-style-easydam',
+				'transcoder-page-style-godam',
 				RT_TRANSCODER_URL . '/pages/build/style.css',
 				array( 'wp-components' ),
 				filemtime( RT_TRANSCODER_PATH . '/pages/build/style.css' )
 			);
 
-			wp_enqueue_style( 'transcoder-page-style-easydam' );
+			wp_enqueue_style( 'transcoder-page-style-godam' );
 			wp_enqueue_media();
 		}
-
 		// Check if this is your custom admin page.
-		if ( $screen && 'easydam_page_video_editor' === $screen->id ) {
-
+		if ( $screen && 'godam_page_video_editor' === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
 				RT_TRANSCODER_URL . '/pages/build/video-editor.js',
@@ -265,18 +264,18 @@ class Pages {
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
-		} elseif ( $screen && 'toplevel_page_easydam' === $screen->id ) {
+		} elseif ( $screen && 'toplevel_page_godam' === $screen->id ) {
 
 			wp_register_script(
-				'transcoder-page-script-easydam',
-				RT_TRANSCODER_URL . '/pages/build/easydam.js',
+				'transcoder-page-script-godam',
+				RT_TRANSCODER_URL . '/pages/build/godam.js',
 				array( 'wp-element' ),
-				filemtime( RT_TRANSCODER_PATH . '/pages/build/easydam.js' ),
+				filemtime( RT_TRANSCODER_PATH . '/pages/build/godam.js' ),
 				true
 			);
 
-			wp_enqueue_script( 'transcoder-page-script-easydam' );
-		} elseif ( $screen && 'easydam_page_analytics' === $screen->id ) {
+			wp_enqueue_script( 'transcoder-page-script-godam' );
+		} elseif ( $screen && 'godam_page_analytics' === $screen->id ) {
 
 			wp_register_script(
 				'd3-js',

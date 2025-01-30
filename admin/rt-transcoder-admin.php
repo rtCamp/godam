@@ -521,7 +521,7 @@ class RT_Transcoder_Admin {
 				<?php esc_html_e( 'The plugin requires an active license to work fully. Please activate your license.', 'transcoder' ); ?>
 			</p>
 			<p>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=easydam' ) ); ?>" class="button button-primary">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=godam' ) ); ?>" class="button button-primary">
 					<?php esc_html_e( 'Activate License', 'transcoder' ); ?>
 				</a>
 				<a href="https://rtmedia.io/transcoder/" class="button button-secondary" target="_blank">

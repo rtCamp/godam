@@ -135,7 +135,7 @@ const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
 								onChange={ ( value ) => setImageQuality( value ) }
 								size="compact"
 								className="max-w-[400px] w-full"
-								help={ __( 'Images will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality', 'transcoder' ) }
+								help={ __( 'Images will be delivered using GoDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality', 'transcoder' ) }
 							/>
 						</div>
 					</form>
