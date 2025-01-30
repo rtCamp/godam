@@ -1202,7 +1202,7 @@ function rt_get_localize_array() {
 
 	$localize_array = [];
 
-	$localize_array['endpoint']   = 'http://127.0.0.1:8000/'; // Temporarily on localhost.
+	$localize_array['endpoint']   = \Transcoder\Inc\EasyDAM_Constants::ANALYTICS_ENDPOINT_DEV ;
 	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
 	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
 	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
@@ -1244,6 +1244,8 @@ function rt_get_localize_array() {
 
 		$localize_array['author'] = get_the_author();
 	}
+
+	$localize_array['token'] = get_site_option( 'rt-transcoding-api-key', 'unverified' );
 
 	return $localize_array;
 }
