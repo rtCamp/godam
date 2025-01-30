@@ -28,22 +28,22 @@ function generateHeatmap( data, selector, videoPlayer ) {
 		.range( [ 0, width ] )
 		.padding( 0 ); // No space between rectangles
 
-	// const colorScale = d3.scaleSequential(d3.interpolateReds)
-	// 	.domain([d3.min(data), d3.max(data)]);
+	const colorScale = d3.scaleSequential( d3.interpolateReds )
+		.domain( [ 0, d3.max( data ) ] );
 
-	const colorScale = d3.scaleLinear()
-		.domain( [ 0, 100, 200, 400, 700, 1100, 1600, 3000, 4000, 5000 ] ) // Exact breakpoints for sequential scaling
-		.range( [
-			'#eab308', // Lime with low opacity
-			'#f59e0b', // Yellow with medium opacity
-			'#f97316', // Orange with higher opacity
-			'#dc2626', //  Red with full opacity
-			'#991b1b', // Dark red with full opacity
-			'#450a0a', // Bold dark red with full opacity
-			'#4c1d95',
-			'#4c1d95',
-			'#3730a3',
-		] );
+	// const colorScale = d3.scaleLinear()
+	// 	.domain( [ 0, 100, 200, 400, 700, 1100, 1600, 3000, 4000, 5000 ] ) // Exact breakpoints for sequential scaling
+	// 	.range( [
+	// 		'#eab308', // Lime with low opacity
+	// 		'#f59e0b', // Yellow with medium opacity
+	// 		'#f97316', // Orange with higher opacity
+	// 		'#dc2626', //  Red with full opacity
+	// 		'#991b1b', // Dark red with full opacity
+	// 		'#450a0a', // Bold dark red with full opacity
+	// 		'#4c1d95',
+	// 		'#4c1d95',
+	// 		'#3730a3',
+	// 	] );
 
 	// Add rectangles for the heatmap
 	heatmapSvg.selectAll( 'rect' )
@@ -201,17 +201,86 @@ function generateLineChart( data, selector, videoPlayer ) {
 		} );
 }
 
-function main() {
+async function fetchAnalyticsData( videoId, siteUrl ) {
+	try {
+		const params = new URLSearchParams( {
+			video_id: videoId,
+			site_url: siteUrl,
+		} );
+
+		const response = await fetch(
+			`/wp-json/easydam/v1/analytics/fetch?${ params.toString() }`,
+			{
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.wpApiSettings.nonce,
+				},
+			},
+		);
+
+		const result = await response.json();
+		if ( result.status !== 'success' ) {
+			throw new Error( result.message );
+		}
+
+		return result.data;
+	} catch ( error ) {
+		console.error( 'Error fetching analytics:', error );
+		return null;
+	}
+}
+
+async function main() {
+	const videoElement = document.getElementById( 'analytics-video' );
+	const videoId = videoElement?.dataset.id;
+	const siteUrl = window.location.origin;
+
+	const analyticsData = await fetchAnalyticsData( videoId, siteUrl );
+
+	if ( ! analyticsData ) {
+		console.warn( 'No analytics data available.' );
+		return;
+	}
+
+	console.log( 'Analytics data: ', analyticsData );
+
+	// Extract values from the analytics response
+	const { plays, page_load: pageLoad, play_time: playTime, video_length: videoLength, heatmap } = analyticsData;
+
+	// Calculate analytics metrics
+	const playRate = pageLoad ? ( plays / pageLoad ) * 100 : 0; // Convert to percentage
+	const totalPlays = plays;
+	const engagementRate = plays && videoLength ? ( playTime / ( plays * videoLength ) ) * 100 : 0;
+
+	// Update the UI with computed analytics
+	document.getElementById( 'play-rate' ).innerText = `${ playRate.toFixed( 2 ) }%`;
+	document.getElementById( 'total-plays' ).innerText = totalPlays;
+	document.getElementById( 'engagement-rate' ).innerText = `${ engagementRate.toFixed( 2 ) }%`;
+
+	// Convert heatmap string into an array
+	const heatmapData = JSON.parse( heatmap );
+
 	const videoPlayer = videojs( 'analytics-video', {
 		fluid: true,
 		mute: true,
 		controls: false,
 	} );
 
-	const data = Array.from( { length: 162 }, ( _, i ) => i + 1 );
+	// Generate visualizations
+	generateLineChart( heatmapData, '#line-chart', videoPlayer );
+	generateHeatmap( heatmapData, '#heatmap', videoPlayer );
 
-	generateLineChart( data, '#line-chart', videoPlayer );
-	generateHeatmap( data, '#heatmap', videoPlayer );
+	const analyticsContainer = document.getElementById( 'video-analytics-container' );
+	if ( analyticsContainer ) {
+		analyticsContainer.classList.remove( 'hidden' );
+	}
+
+	// Hide the loading animation
+	const loadingElement = document.getElementById( 'loading-analytics-animation' );
+	if ( loadingElement ) {
+		loadingElement.style.display = 'none';
+	}
 }
 
 document.addEventListener( 'DOMContentLoaded', setTimeout( main, 500 ) );
