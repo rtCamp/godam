@@ -35,11 +35,7 @@ const videoAnalyticsPlugin = () => {
 				// Destructure the ranges array from properties
 				const { ranges = [], videoId, type, videoLength, videoIds } = properties;
 
-				if ( ! type ) {
-					return;
-				}
-
-				if ( type === 1 && ( ! videoIds || videoIds.length === 0 ) ) {
+				if ( ! type || ( type === 1 && ( ! videoIds || videoIds.length === 0 ) ) || token === 'unverified' ) {
 					return;
 				}
 
