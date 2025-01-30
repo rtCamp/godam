@@ -155,7 +155,6 @@ class RetranscodeMedia {
 		);
 	}
 
-
 	/**
 	 * Transcoder settings render.
 	 *

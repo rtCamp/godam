@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
-import { TextControl, Button, Notice, Panel, PanelBody } from '@wordpress/components';
+import { TextControl, Button, Notice, Panel, PanelBody, PanelRow, FlexItem } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 /**
  * External dependencies
@@ -66,6 +66,8 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 
 		setIsLicenseKeyLoading( true );
 
+		let result = {};
+
 		try {
 			const response = await fetch( '/wp-json/easydam/v1/settings/verify-license', {
 				method: 'POST',
@@ -76,7 +78,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 				body: JSON.stringify( { license_key: licenseKey } ),
 			} );
 
-			const result = await response.json();
+			result = await response.json();
 
 			if ( response.ok ) {
 				setNotice( { message: result.message || 'License key verified successfully!', status: 'success', isVisible: true } );
@@ -96,6 +98,9 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 			setNotice( { message: 'An error occurred. Please try again later', status: 'error', isVisible: true } );
 		} finally {
 			setIsLicenseKeyLoading( false ); // Hide loading indicator.
+
+			window.userData.valid_license = true; // Set the flag to true.
+			window.userData.user_data = result.data; // Set the flag to true.
 		}
 
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
@@ -137,6 +142,9 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 			setNotice( { message: 'An error occurred while deactivating the license key', status: 'error', isVisible: true } );
 		} finally {
 			setIsDeactivateLoading( false );
+			// reload the page.
+			window.userData.valid_license = false; // Set the flag to true.
+			window.userData.user_data = {}; // Set the flag to true.
 		}
 
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
@@ -172,6 +180,19 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 		}, 5000 );
 	};
 
+	const calculatePercentage = ( used, total ) => {
+		if ( total === 0 ) {
+			return 0;
+		}
+		try {
+			const result = ( used / total ) * 100;
+			return result.toFixed( 2 );
+		} catch ( error ) {
+			console.error( 'Error calculating percentage:', error );
+			return 0;
+		}
+	};
+
 	if ( loading ) {
 		// Skeleton loader when data is loading
 		return (
@@ -195,92 +216,123 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 
 	return (
 		<div>
-			<Panel
-				header={ __( 'General Settings', 'transcoder' ) }
-				className="mb-4"
-			>
-				<PanelBody
-					opened={ true }
+
+			<div className="flex flex-col lg:flex-row gap-4 items-start mb-4">
+				<Panel
+					header={ __( 'General Settings', 'transcoder' ) }
+					className="w-full"
 				>
-					{ notice?.isVisible && (
-						<Notice
-							className="mb-2"
-							status={ notice.status }
-							onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
-						>
-							{ notice.message }
-						</Notice>
-					) }
-					<div className="flex flex-col gap-2">
-						<TextControl
-							label={ __( 'License Key', 'transcoder' ) }
-							value={ licenseKey }
-							onChange={ ( value ) => setLicenseKey( value ) }
-							help={
-								<>
-									{ __( 'Your license key is required to access the features. You can get your active license key from your ', 'transcoder' ) }
-									<a
-										href="https://frappe-transcoder-api.rt.gw/"
-										target="_blank"
-										rel="noopener noreferrer"
-										className="text-blue-500 underline"
-									>
-										{ __( 'Account', 'transcoder' ) }
-									</a>.
-								</>
-							}
-							placeholder="Enter your license key here"
-							className="max-w-[400px]"
-							disabled={ mediaSettings?.general?.is_verified }
-						/>
-						<div className="flex gap-2">
-							<Button
-								className="max-w-[140px] w-full flex justify-center items-center"
-								onClick={ saveLicenseKey }
-								disabled={ isLicenseKeyLoading || mediaSettings?.general?.is_verified }
-								variant="primary"
-								isBusy={ isLicenseKeyLoading }
+					<PanelBody
+						opened={ true }
+					>
+						{ notice?.isVisible && (
+							<Notice
+								className="mb-2"
+								status={ notice.status }
+								onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
 							>
-								{ __( 'Save License Key', 'transcoder' ) }
-							</Button>
-							<Button
-								className="max-w-[160px] w-full flex justify-center items-center"
-								onClick={ deactivateLicenseKey }
-								disabled={ isLicenseKeyLoading || ! mediaSettings?.general?.is_verified } // Disable if no license key is present
-								variant="secondary"
-								isDestructive
-								isBusy={ isDeactivateLoading }
-							>
-								{ __( 'Remove License Key', 'transcoder' ) }
-							</Button>
+								{ notice.message }
+							</Notice>
+						) }
+						<div className="flex flex-col gap-2">
+							<TextControl
+								label={ __( 'License Key', 'transcoder' ) }
+								value={ licenseKey }
+								onChange={ ( value ) => setLicenseKey( value ) }
+								help={
+									<>
+										{ __( 'Your license key is required to access the features. You can get your active license key from your ', 'transcoder' ) }
+										<a
+											href="https://frappe-transcoder-api.rt.gw/"
+											target="_blank"
+											rel="noopener noreferrer"
+											className="text-blue-500 underline"
+										>
+											{ __( 'Account', 'transcoder' ) }
+										</a>.
+									</>
+								}
+								placeholder="Enter your license key here"
+								className="max-w-[400px]"
+								disabled={ mediaSettings?.general?.is_verified }
+							/>
+							<div className="flex gap-2">
+								<Button
+									className="max-w-[140px] w-full flex justify-center items-center"
+									onClick={ saveLicenseKey }
+									disabled={ isLicenseKeyLoading || mediaSettings?.general?.is_verified }
+									variant="primary"
+									isBusy={ isLicenseKeyLoading }
+								>
+									{ __( 'Save License Key', 'transcoder' ) }
+								</Button>
+								<Button
+									className="max-w-[160px] w-full flex justify-center items-center"
+									onClick={ deactivateLicenseKey }
+									disabled={ isLicenseKeyLoading || ! mediaSettings?.general?.is_verified } // Disable if no license key is present
+									variant="secondary"
+									isDestructive
+									isBusy={ isDeactivateLoading }
+								>
+									{ __( 'Remove License Key', 'transcoder' ) }
+								</Button>
+							</div>
 						</div>
-					</div>
-				</PanelBody>
-			</Panel>
+					</PanelBody>
+				</Panel>
 
-			{ /* <div className="py-3 flex flex-col gap-2">
-				<label className="block text-base font-semibold" htmlFor="track_status">
-					Allow admin to track real-time transcoding status on user profile
-				</label>
-				<ToggleControl
-					label="Display 'Check Status' button on user profiles"
-					checked={ trackStatusOnUserProfile }
-					onChange={ ( value ) => setTrackStatusOnUserProfile( value ) }
-					disabled={ ! mediaSettings?.general?.is_verified }
-				/>
-				<div className="text-slate-500">
-					If enabled, It will display check status button to know the status of the transcoding process at the client side if that user has administrator rights.
-				</div>
+				{ mediaSettings?.general?.is_verified && (
+					<>
+						<Panel
+							header={ __( 'Quick overview', 'transcoder' ) }
+							className="w-full"
+						>
+							<PanelBody
+								opened={ true }
+							>
+								<div className="flex gap-4 flex-wrap">
+									<div className="flex gap-3 items-center">
+										<div className="circle-container">
+											<div className="data text-xs">{ calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) }%</div>
+											<div
+												className={ `circle ${
+													calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) > 90 ? 'red' : ''
+												}` }
+												style={
+													{ '--percentage': calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) + '%' }
+												}
+											></div>
+										</div>
+										<div className="leading-6">
+											<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
+											<strong>{ __( 'Available: ', 'godam' ) }</strong>{ userData.total_bandwidth - userData.bandwidth_used }{ __( 'GB', 'godam' ) }
+											<br />
+											<strong>{ __( 'Used: ', 'godam' ) }</strong>{ userData.bandwidth_used }{ __( 'GB', 'godam' ) }
+										</div>
+									</div>
+									<div className="flex gap-3 items-center">
+										<div className="circle-container">
+											<div className="data text-xs">{ calculatePercentage( userData.storage_used, userData.total_storage ) }%</div>
+											<div
+												className={ `circle ${
+													calculatePercentage( userData.storage_used, userData.total_storage ) > 90 ? 'red' : ''
+												}` }
+												style={ { '--percentage': calculatePercentage( userData.storage_used, userData.total_storage ) + '%' } }
+											></div>
+										</div>
+										<div className="leading-6">
+											<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
+											<strong>{ __( 'Available: ', 'godam' ) }</strong>{ userData.total_storage - userData.storage_used }{ __( 'GB', 'godam' ) }
+											<br />
+											<strong>{ __( 'Used: ', 'godam' ) }</strong>{ userData.storage_used }{ __( 'GB', 'godam' ) }
+										</div>
+									</div>
+								</div>
+							</PanelBody>
+						</Panel>
+					</>
+				) }
 			</div>
-
-			<Button
-				className="max-w-[140px] w-full flex justify-center items-center"
-				onClick={ saveGeneralSettings }
-				variant="primary"
-				disabled={ ! mediaSettings?.general?.is_verified }
-			>
-				Save Settings
-			</Button> */ }
 
 			{ ! mediaSettings?.general?.is_verified && (
 				<Panel
@@ -328,22 +380,8 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 						</div>
 					</PanelBody>
 				</Panel>
-
 			) }
 
-			{ mediaSettings?.general?.is_verified && (
-				<>
-					<Panel
-						header={ __( 'Quick overview', 'transcoder' ) }
-					>
-						<PanelBody
-							opened={ true }
-						>
-
-						</PanelBody>
-					</Panel>
-				</>
-			) }
 		</div>
 	);
 };

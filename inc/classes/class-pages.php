@@ -61,7 +61,7 @@ class Pages {
 		);
 
 		
-		wp_enqueue_script('block-analytics-script');
+		wp_enqueue_script( 'block-analytics-script' );
 
 		wp_localize_script(
 			'block-frontend-script',
@@ -273,6 +273,35 @@ class Pages {
 				array( 'wp-element' ),
 				filemtime( RT_TRANSCODER_PATH . '/pages/build/easydam.js' ),
 				true
+			);
+
+			// Verify the user's license.
+			$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+			$result      = rtt_verify_license( $license_key );
+
+			$valid_license = false;
+			$user_data     = [];
+
+			if ( is_wp_error( $result ) ) {
+				$valid_license = false;
+			} else {
+				$valid_license            = true;
+				$user_data                = $result['data'] ?? [];
+				$user_data['license_key'] = rtt_mask_string( $user_data['license_key'] );
+			}
+
+			wp_localize_script(
+				'transcoder-page-script-easydam',
+				'userData',
+				array(
+					'currentUserId'   => get_current_user_id(), // Current user ID.
+					'storage_used'    => 75,
+					'total_storage'   => 100,
+					'bandwidth_used'  => 98.94,
+					'total_bandwidth' => 200,
+					'valid_license'   => $valid_license,
+					'user_data'       => $user_data,
+				)
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-easydam' );

@@ -89,7 +89,7 @@ class Item_Handler {
 
 		$bucket_path = self::get_settings_base_path_x();
 
-		$s3_url = get_post_meta( $attachment_id, 's3_url', true );
+		$s3_url    = get_post_meta( $attachment_id, 's3_url', true );
 		$file_path = get_attached_file( $attachment_id );
 
 		$provider = StorageFactory::get_instance()->get_provider();
