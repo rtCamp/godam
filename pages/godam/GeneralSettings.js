@@ -196,7 +196,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 	return (
 		<div>
 			<Panel
-				header={ __( 'General Settings', 'transcoder' ) }
+				header={ __( 'General Settings', 'godam' ) }
 				className="mb-4"
 			>
 				<PanelBody
@@ -213,19 +213,19 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 					) }
 					<div className="flex flex-col gap-2">
 						<TextControl
-							label={ __( 'License Key', 'transcoder' ) }
+							label={ __( 'License Key', 'godam' ) }
 							value={ licenseKey }
 							onChange={ ( value ) => setLicenseKey( value ) }
 							help={
 								<>
-									{ __( 'Your license key is required to access the features. You can get your active license key from your ', 'transcoder' ) }
+									{ __( 'Your license key is required to access the features. You can get your active license key from your ', 'godam' ) }
 									<a
 										href="https://frappe-transcoder-api.rt.gw/"
 										target="_blank"
 										rel="noopener noreferrer"
 										className="text-blue-500 underline"
 									>
-										{ __( 'Account', 'transcoder' ) }
+										{ __( 'Account', 'godam' ) }
 									</a>.
 								</>
 							}
@@ -241,7 +241,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								variant="primary"
 								isBusy={ isLicenseKeyLoading }
 							>
-								{ __( 'Save License Key', 'transcoder' ) }
+								{ __( 'Save License Key', 'godam' ) }
 							</Button>
 							<Button
 								className="max-w-[160px] w-full flex justify-center items-center"
@@ -251,7 +251,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								isDestructive
 								isBusy={ isDeactivateLoading }
 							>
-								{ __( 'Remove License Key', 'transcoder' ) }
+								{ __( 'Remove License Key', 'godam' ) }
 							</Button>
 						</div>
 					</div>
@@ -284,7 +284,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 
 			{ ! mediaSettings?.general?.is_verified && (
 				<Panel
-					header={ __( 'General Settings', 'transcoder' ) }
+					header={ __( 'General Settings', 'godam' ) }
 				>
 					<PanelBody
 						opened={ true }
@@ -292,7 +292,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 						<div className="subscription-plans">
 
 							<p className="mb-4 mt-0">
-								{ __( 'To enable transcoding, you will need to subscribe to one of the following plans after downloading Transcoder. We encourage you to explore the service with the free subscription plan.', 'transcoder' ) }
+								{ __( 'To enable transcoding, you will need to subscribe to one of the following plans after downloading GoDAM. We encourage you to explore the service with the free subscription plan.', 'godam' ) }
 							</p>
 
 							<div className="flex gap-4 overflow-x-auto pb-4">
@@ -302,16 +302,16 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 										className="plan w-[25%] flex-shrink-0 border px-6 rounded-lg shadow-sm bg-white transition-transform transform hover:shadow-lg flex flex-col justify-center items-center gap-2"
 									>
 										<div className="text-center">
-											<h3 className="text-lg font-bold text-gray-800 pt-5 mb-0">{ plan.name } { __( 'Plan', 'transcoder' ) }</h3>
+											<h3 className="text-lg font-bold text-gray-800 pt-5 mb-0">{ plan.name } { __( 'Plan', 'godam' ) }</h3>
 										</div>
 										<p className="text-xl font-semibold text-gray-800 my-1 text-center">
-											${ plan.cost } <span className="text-sm text-gray-500">{ __( 'Per', 'transcoder' ) } { plan.billing_interval }</span>
+											${ plan.cost } <span className="text-sm text-gray-500">{ __( 'Per', 'godam' ) } { plan.billing_interval }</span>
 										</p>
 										<ul className="text-xs text-gray-600 my-2 text-center">
-											<li>{ plan.bandwidth }{ __( 'GB bandwidth', 'transcoder' ) }</li>
-											<li>{ plan.storage }{ __( 'GB storage', 'transcoder' ) }</li>
-											<li>{ __( 'High-quality transcoding', 'transcoder' ) }</li>
-											<li>{ __( 'Access to advanced analytics', 'transcoder' ) }</li>
+											<li>{ plan.bandwidth }{ __( 'GB bandwidth', 'godam' ) }</li>
+											<li>{ plan.storage }{ __( 'GB storage', 'godam' ) }</li>
+											<li>{ __( 'High-quality transcoding', 'godam' ) }</li>
+											<li>{ __( 'Access to advanced analytics', 'godam' ) }</li>
 										</ul>
 										<Button
 											className="mb-5"
@@ -320,7 +320,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 											target="_blank"
 											rel="noopener noreferrer"
 										>
-											{ __( 'Subscribe', 'transcoder' ) }
+											{ __( 'Subscribe', 'godam' ) }
 										</Button>
 									</div>
 								) ) }
@@ -334,7 +334,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 			{ mediaSettings?.general?.is_verified && (
 				<>
 					<Panel
-						header={ __( 'Quick overview', 'transcoder' ) }
+						header={ __( 'Quick overview', 'godam' ) }
 					>
 						<PanelBody
 							opened={ true }

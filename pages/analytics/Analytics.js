@@ -39,22 +39,22 @@ const Analytics = ( { attachmentID } ) => {
 
 				<div className="flex gap-8 items-start">
 					<div className="min-w-[350px] max-w-[350px] flex-grow">
-						<h2 className="text-lg m-0 mb-2">{ __( 'Analytics', 'transcoder' ) }</h2>
+						<h2 className="text-lg m-0 mb-2">{ __( 'Analytics', 'godam' ) }</h2>
 
 						<div className="analytics-info-container border-t border-gray-500">
 							<div className="analytics-info">
 								<span>62%</span>
-								<p>{ __( 'Average Engagement', 'transcoder' ) }</p>
+								<p>{ __( 'Average Engagement', 'godam' ) }</p>
 							</div>
 							<hr />
 							<div className="analytics-info">
 								<span>104</span>
-								<p>{ __( 'Total Plays', 'transcoder' ) }</p>
+								<p>{ __( 'Total Plays', 'godam' ) }</p>
 							</div>
 							<hr />
 							<div className="analytics-info">
 								<span>28%</span>
-								<p>{ __( 'Play Rate', 'transcoder' ) }</p>
+								<p>{ __( 'Play Rate', 'godam' ) }</p>
 							</div>
 							<hr />
 						</div>

@@ -90,7 +90,7 @@ class Media_Library_Ajax {
 					<?php
 				} else {
 					?>
-						<a href="<?php echo esc_url( $s3_url ); ?>" target="_blank"><?php esc_html_e( 'LINK', 'transcoder' ); ?></a>
+						<a href="<?php echo esc_url( $s3_url ); ?>" target="_blank"><?php esc_html_e( 'LINK', 'godam' ); ?></a>
 					<?php
 				}
 			}
@@ -105,7 +105,7 @@ class Media_Library_Ajax {
 	 * @return array $actions Bulk actions.
 	 */
 	public function add_bulk_actions( $actions ) {
-		$actions['upload_to_s3'] = __( 'Upload to S3', 'transcoder' );
+		$actions['upload_to_s3'] = __( 'Upload to S3', 'godam' );
 		return $actions;
 	}
 
@@ -269,11 +269,11 @@ class Media_Library_Ajax {
 			$folders = array(
 				(object) array(
 					'id'   => 'uncategorized',
-					'name' => __( 'Uncategorized', 'transcoder' ),
+					'name' => __( 'Uncategorized', 'godam' ),
 				),
 				(object) array(
 					'id'   => 'all',
-					'name' => __( 'All collections', 'transcoder' ),
+					'name' => __( 'All collections', 'godam' ),
 				),
 			);
 	

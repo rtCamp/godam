@@ -465,8 +465,8 @@ class RT_Transcoder_Handler {
 			return;
 		}
 
-		$subject = esc_html__( 'Transcoding: Nearing quota limit.', 'transcoder' );
-		$message = '<p>' . esc_html__( 'You are nearing the quota limit for your transcoding service.', 'transcoder' ) . '</p><p>' . esc_html__( 'Following are the details:', 'transcoder' ) . '</p><p><strong>Used:</strong> %s</p><p><strong>' . esc_html__( 'Remaining', 'transcoder' ) . '</strong>: %s</p><p><strong>' . esc_html__( 'Total:', 'transcoder' ) . '</strong> %s</p>';
+		$subject = esc_html__( 'Transcoding: Nearing quota limit.', 'godam' );
+		$message = '<p>' . esc_html__( 'You are nearing the quota limit for your transcoding service.', 'godam' ) . '</p><p>' . esc_html__( 'Following are the details:', 'godam' ) . '</p><p><strong>Used:</strong> %s</p><p><strong>' . esc_html__( 'Remaining', 'godam' ) . '</strong>: %s</p><p><strong>' . esc_html__( 'Total:', 'godam' ) . '</strong> %s</p>';
 		$users   = get_users( array( 'role' => 'administrator' ) );
 
 		if ( $users ) {
@@ -496,8 +496,8 @@ class RT_Transcoder_Handler {
 		$usage_details = get_site_option( 'rt-transcoding-usage' );
 
 		if ( ! $usage_details[ $this->api_key ]->remaining ) {
-			$subject = esc_html__( 'Transcoding: Usage quota over.', 'transcoder' );
-			$message = '<p>' . esc_html__( 'Your usage quota is over. Upgrade your plan', 'transcoder' ) . '</p><p>' . esc_html__( 'Following are the details:', 'transcoder' ) . '</p><p><strong>' . esc_html__( 'Used:', 'transcoder' ) . '</strong> %s</p><p><strong>' . esc_html__( 'Remaining', 'transcoder' ) . '</strong>: %s</p><p><strong>' . esc_html__( 'Total:', 'transcoder' ) . '</strong> %s</p>';
+			$subject = esc_html__( 'Transcoding: Usage quota over.', 'godam' );
+			$message = '<p>' . esc_html__( 'Your usage quota is over. Upgrade your plan', 'godam' ) . '</p><p>' . esc_html__( 'Following are the details:', 'godam' ) . '</p><p><strong>' . esc_html__( 'Used:', 'godam' ) . '</strong> %s</p><p><strong>' . esc_html__( 'Remaining', 'godam' ) . '</strong>: %s</p><p><strong>' . esc_html__( 'Total:', 'godam' ) . '</strong> %s</p>';
 			$users   = get_users( array( 'role' => 'administrator' ) );
 			if ( $users ) {
 				$admin_email_ids = array();
@@ -646,7 +646,7 @@ class RT_Transcoder_Handler {
 				$api_key_updated = transcoder_filter_input( INPUT_GET, 'api-key-updated', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				printf(
 					wp_kses(
-						__( 'You have successfully subscribed.', 'transcoder' ),
+						__( 'You have successfully subscribed.', 'godam' ),
 						array(
 							'strong' => array(),
 						)
@@ -668,7 +668,7 @@ class RT_Transcoder_Handler {
 		?>
 		<div class="error">
 			<p>
-				<?php esc_html_e( 'This license key is invalid.', 'transcoder' ); ?>
+				<?php esc_html_e( 'This license key is invalid.', 'godam' ); ?>
 			</p>
 		</div>
 		<?php
@@ -683,7 +683,7 @@ class RT_Transcoder_Handler {
 		?>
 		<div class="error">
 			<p>
-				<?php esc_html_e( 'Transcoding service can not be activated on the localhost', 'transcoder' ); ?>
+				<?php esc_html_e( 'Transcoding service can not be activated on the localhost', 'godam' ); ?>
 			</p>
 		</div>
 		<?php
@@ -710,20 +710,20 @@ class RT_Transcoder_Handler {
 
 				if ( isset( $usage_details[ $api_key ]->plan->name ) ) {
 					$plan_name = strtolower( $usage_details[ $api_key ]->plan->name );
-					$content  .= '<p><strong>' . esc_html__( 'Current Plan', 'transcoder' ) . ':</strong> ' . esc_html( ucfirst( $plan_name ) ) . ( $usage_details[ $api_key ]->sub_status ? '' : ' (' . esc_html__( 'Unsubscribed', 'transcoder' ) . ')' ) . '</p>';
+					$content  .= '<p><strong>' . esc_html__( 'Current Plan', 'godam' ) . ':</strong> ' . esc_html( ucfirst( $plan_name ) ) . ( $usage_details[ $api_key ]->sub_status ? '' : ' (' . esc_html__( 'Unsubscribed', 'godam' ) . ')' ) . '</p>';
 				} else {
 					$plan_name = '';
 				}
 
 				if ( isset( $usage_details[ $api_key ]->plan->expires ) && 'free' !== $plan_name ) {
-					$content .= '<p><strong>' . esc_html__( 'Expires On', 'transcoder' ) . ':</strong> ' . date_i18n( 'F j, Y', strtotime( $usage_details[ $api_key ]->plan->expires ) ) . '</p>';
+					$content .= '<p><strong>' . esc_html__( 'Expires On', 'godam' ) . ':</strong> ' . date_i18n( 'F j, Y', strtotime( $usage_details[ $api_key ]->plan->expires ) ) . '</p>';
 				}
 				if ( isset( $usage_details[ $api_key ]->used ) ) {
 					$used_size = size_format( $usage_details[ $api_key ]->used, 2 );
-					$content  .= '<p><span class="transcoding-used"></span><strong>' . esc_html__( 'Used', 'transcoder' ) . ':</strong> ' . ( ( ! empty( $used_size ) ) ? esc_html( $used_size ) : '0MB' ) . '</p>';
+					$content  .= '<p><span class="transcoding-used"></span><strong>' . esc_html__( 'Used', 'godam' ) . ':</strong> ' . ( ( ! empty( $used_size ) ) ? esc_html( $used_size ) : '0MB' ) . '</p>';
 				}
 				if ( isset( $usage_details[ $api_key ]->remaining ) ) {
-					$content .= '<p><span class="transcoding-remaining"></span><strong>' . esc_html__( 'Remaining', 'transcoder' ) . ':</strong> ';
+					$content .= '<p><span class="transcoding-remaining"></span><strong>' . esc_html__( 'Remaining', 'godam' ) . ':</strong> ';
 					if ( $usage_details[ $api_key ]->remaining >= 0 ) {
 						$content .= size_format( $usage_details[ $api_key ]->remaining, 2 );
 					} else {
@@ -731,7 +731,7 @@ class RT_Transcoder_Handler {
 					}
 				}
 				if ( isset( $usage_details[ $api_key ]->total ) ) {
-					$content .= '<p><strong>' . esc_html__( 'Total', 'transcoder' ) . ':</strong> ';
+					$content .= '<p><strong>' . esc_html__( 'Total', 'godam' ) . ':</strong> ';
 					if ( $usage_details[ $api_key ]->total >= 0 ) {
 						$content .= size_format( $usage_details[ $api_key ]->total, 2 );
 					} elseif ( $usage_details[ $api_key ]->total <= -1 ) {
@@ -756,30 +756,30 @@ class RT_Transcoder_Handler {
 
 				$content .= $usage->progress_ui( $usage->progress( $usage_details[ $api_key ]->used, $usage_details[ $api_key ]->total ), false );
 
-				$content .= '<p>' . esc_html__( 'Usage will automatically reset at the end of every month.', 'transcoder' ) . '</p>';
+				$content .= '<p>' . esc_html__( 'Usage will automatically reset at the end of every month.', 'godam' ) . '</p>';
 
 				if ( 'free' === $plan_name ) {
-					$content .= '<p>' . esc_html__( 'Upgrade for more bandwidth.', 'transcoder' ) . '</p>';
+					$content .= '<p>' . esc_html__( 'Upgrade for more bandwidth.', 'godam' ) . '</p>';
 				}
 
 				if ( ( 0 >= $usage_details[ $api_key ]->remaining ) ) {
-					$content .= '<div class="error below-h2"><p>' . esc_html__( 'Your usage limit has been reached. Upgrade your plan.', 'transcoder' ) . '</p></div>';
+					$content .= '<div class="error below-h2"><p>' . esc_html__( 'Your usage limit has been reached. Upgrade your plan.', 'godam' ) . '</p></div>';
 				}
 
 				if ( ( isset( $usage_details[ $api_key ]->plan->expires ) && strtotime( $usage_details[ $api_key ]->plan->expires ) < time() ) ) {
-					$content .= '<div class="error below-h2"><p>' . esc_html__( 'Your plan has expired. Please consider upgrading if you need more bandwidth.', 'transcoder' ) . '</p></div>';
+					$content .= '<div class="error below-h2"><p>' . esc_html__( 'Your plan has expired. Please consider upgrading if you need more bandwidth.', 'godam' ) . '</p></div>';
 				}
 			} else {
-				$content .= '<div class="error below-h2"><p>' . esc_html__( 'Your API key is not valid or is expired.', 'transcoder' ) . '</p></div>';
+				$content .= '<div class="error below-h2"><p>' . esc_html__( 'Your API key is not valid or is expired.', 'godam' ) . '</p></div>';
 			}
 		} else {
-			$content .= '<p>' . esc_html__( 'Currently, You are not subscribed to transcoding service. Please subscribe.', 'transcoder' ) . '</p>';
+			$content .= '<p>' . esc_html__( 'Currently, You are not subscribed to transcoding service. Please subscribe.', 'godam' ) . '</p>';
 		}
 		?>
 		<div class="postbox" id="transcoder-usage">
 			<h3 class="hndle">
 				<span>
-					<?php esc_html_e( 'Transcoding usage this month', 'transcoder' ); ?>
+					<?php esc_html_e( 'Transcoding usage this month', 'godam' ); ?>
 				</span>
 			</h3>
 			<div class="inside">
@@ -846,7 +846,7 @@ class RT_Transcoder_Handler {
 			 *
 			 * @deprecated 1.3.2. Use the {@see 'transcoded_thumb_filename'} filter instead.
 			 */
-			$thumbinfo['basename'] = apply_filters_deprecated( 'transcoded_temp_filename', array( $thumbinfo['basename'] ), '1.3.2', 'transcoded_thumb_filename', __( 'Use transcoded_thumb_filename filter to modify video thumbnail name and transcoded_video_filename filter to modify video file name.', 'transcoder' ) );
+			$thumbinfo['basename'] = apply_filters_deprecated( 'transcoded_temp_filename', array( $thumbinfo['basename'] ), '1.3.2', 'transcoded_thumb_filename', __( 'Use transcoded_thumb_filename filter to modify video thumbnail name and transcoded_video_filename filter to modify video file name.', 'godam' ) );
 
 			/**
 			 * Allows users/plugins to filter the thumbnail Name
@@ -1050,7 +1050,7 @@ class RT_Transcoder_Handler {
 									update_post_meta( $attachment_id, '_wp_attached_file', $uploaded_file );
 								}
 							} else {
-								$flag = esc_html__( 'Could not read file.', 'transcoder' );
+								$flag = esc_html__( 'Could not read file.', 'godam' );
 
 								if ( $flag && $mail ) {
 									$download_link = esc_url(
@@ -1063,8 +1063,8 @@ class RT_Transcoder_Handler {
 											home_url()
 										)
 									);
-									$subject       = esc_html__( 'Transcoding: Download Failed', 'transcoder' );
-									$message       = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'transcoder' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'transcoder' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p><p>' . esc_html__( 'You can ', 'transcoder' ) . '<a href="' . esc_url( $download_link ) . '">' . esc_html__( 'retry the download', 'transcoder' ) . '</a>.</p>';
+									$subject       = esc_html__( 'Transcoding: Download Failed', 'godam' );
+									$message       = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p><p>' . esc_html__( 'You can ', 'godam' ) . '<a href="' . esc_url( $download_link ) . '">' . esc_html__( 'retry the download', 'godam' ) . '</a>.</p>';
 									$users         = get_users( array( 'role' => 'administrator' ) );
 									if ( $users ) {
 										$admin_email_ids = array();
@@ -1077,7 +1077,7 @@ class RT_Transcoder_Handler {
 									}
 									echo esc_html( $flag );
 								} else {
-									esc_html_e( 'Done', 'transcoder' );
+									esc_html_e( 'Done', 'godam' );
 								}
 							}
 						}
@@ -1085,10 +1085,10 @@ class RT_Transcoder_Handler {
 					if ( 'rtmedia' === $job_for ) {
 						$activity_id = $media[0]->activity_id;
 						if ( $activity_id ) {
-							$content = wp_cache_get( 'activity_' . $activity_id, 'transcoder' );
+							$content = wp_cache_get( 'activity_' . $activity_id, 'godam' );
 							if ( empty( $content ) ) {
 								$content = $wpdb->get_var( $wpdb->prepare( "SELECT content FROM {$wpdb->base_prefix}bp_activity WHERE id = %d", $activity_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-								wp_cache_set( 'activity_' . $activity_id, $content, 'transcoder', 3600 );
+								wp_cache_set( 'activity_' . $activity_id, $content, 'godam', 3600 );
 							}
 
 							/* for WordPress backward compatibility */
@@ -1146,10 +1146,10 @@ class RT_Transcoder_Handler {
 		global $wpdb;
 		$cache_key = md5( 'meta_key_' . $key . '_meta_value_' . $value );
 
-		$meta = wp_cache_get( $cache_key, 'transcoder' );
+		$meta = wp_cache_get( $cache_key, 'godam' );
 		if ( empty( $meta ) ) {
 			$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			wp_cache_set( $cache_key, $meta, 'transcoder', 3600 );
+			wp_cache_set( $cache_key, $meta, 'godam', 3600 );
 		}
 
 		if ( is_array( $meta ) && ! empty( $meta ) && isset( $meta[0] ) ) {
@@ -1170,7 +1170,7 @@ class RT_Transcoder_Handler {
 	public function disable_transcoding() {
 		check_ajax_referer( 'rt_disable_transcoding', 'rt_transcoder_nonce', true );
 		update_site_option( 'rt-transcoding-api-key', '' );
-		esc_html_e( 'Transcoding disabled successfully.', 'transcoder' );
+		esc_html_e( 'Transcoding disabled successfully.', 'godam' );
 		die();
 	}
 
@@ -1182,7 +1182,7 @@ class RT_Transcoder_Handler {
 	public function enable_transcoding() {
 		check_ajax_referer( 'rt_enable_transcoding', 'rt_transcoder_nonce', true );
 		update_site_option( 'rt-transcoding-api-key', $this->stored_api_key );
-		esc_html_e( 'Transcoding enabled successfully.', 'transcoder' );
+		esc_html_e( 'Transcoding enabled successfully.', 'godam' );
 		die();
 	}
 
@@ -1301,15 +1301,15 @@ class RT_Transcoder_Handler {
 		if ( empty( $job_id ) ) {
 			return false;
 		}
-		$subject       = esc_html__( 'Transcoding: Something went wrong.', 'transcoder' );
+		$subject       = esc_html__( 'Transcoding: Something went wrong.', 'godam' );
 		$attachment_id = $this->get_post_id_by_meta_key_and_value( '_rt_transcoding_job_id', $job_id );
 		if ( ! empty( $error_msg ) ) {
-			$message  = '<p>' . esc_html__( ' There was unexpected error occurred while transcoding this following media.', 'transcoder' ) . '</p>';
-			$message .= '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'transcoder' ) . '</a></p>';
+			$message  = '<p>' . esc_html__( ' There was unexpected error occurred while transcoding this following media.', 'godam' ) . '</p>';
+			$message .= '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a></p>';
 			$message .= '<p>Error message: ' . esc_html( $error_msg ) . '</p>';
 		} else {
-			$message = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'transcoder' ) . '</a> ' .
-				esc_html__( ' there was unexpected error occurred while transcoding this media.', 'transcoder' ) . '</p>';
+			$message = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' .
+				esc_html__( ' there was unexpected error occurred while transcoding this media.', 'godam' ) . '</p>';
 		}
 
 		$email_ids = array();
@@ -1344,7 +1344,7 @@ class RT_Transcoder_Handler {
 			return wp_json_encode(
 				array(
 					'status'  => 'Error',
-					'message' => esc_html__( 'Something went wrong. Please try again!', 'transcoder' ),
+					'message' => esc_html__( 'Something went wrong. Please try again!', 'godam' ),
 				)
 			);
 		}
@@ -1362,7 +1362,7 @@ class RT_Transcoder_Handler {
 
 		if ( ! empty( $transcoded_files ) && ! empty( $transcoded_thumbs ) ) {
 
-			$message    = __( 'Your file is transcoded successfully. Please refresh the page.', 'transcoder' );
+			$message    = __( 'Your file is transcoded successfully. Please refresh the page.', 'godam' );
 			$status     = 'Success';
 			$upload_dir = wp_upload_dir();
 
@@ -1370,11 +1370,11 @@ class RT_Transcoder_Handler {
 			$response['thumbnail'] = $upload_dir['baseurl'] . '/' . $thumbnail;
 
 			global $wpdb;
-			$media_id = wp_cache_get( 'post_' . $post_id, 'transcoder' );
+			$media_id = wp_cache_get( 'post_' . $post_id, 'godam' );
 			if ( empty( $post_id ) ) {
 				$results  = $wpdb->get_results( $wpdb->prepare( 'SELECT id FROM {$wpdb->prefix}rt_rtm_media WHERE media_id = %d', $post_id ), OBJECT ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 				$media_id = $results[0]->media_id;
-				wp_cache_set( 'post_' . $post_id, $media_id, 'transcoder', 3600 );
+				wp_cache_set( 'post_' . $post_id, $media_id, 'godam', 3600 );
 			}
 			$response['media_id'] = $media_id;
 
@@ -1393,12 +1393,12 @@ class RT_Transcoder_Handler {
 			}
 
 			$messages = array(
-				'null-response'  => __( 'Looks like the server is taking too long to respond, Please try again in sometime.', 'transcoder' ),
-				'failed'         => __( 'Unfortunately, Transcoder failed to transcode this file.', 'transcoder' ),
-				'running'        => __( 'Your file is getting transcoded. Please refresh after some time.', 'transcoder' ),
-				'in-queue'       => __( 'This file is still in the queue. Please refresh after some time.', 'transcoder' ),
-				'receiving-back' => __( 'Your server should be ready to receive the transcoded file.', 'transcoder' ),
-				'success'        => __( 'Your file is transcoded successfully. Please refresh the page.', 'transcoder' ),
+				'null-response'  => __( 'Looks like the server is taking too long to respond, Please try again in sometime.', 'godam' ),
+				'failed'         => __( 'Unfortunately, Transcoder failed to transcode this file.', 'godam' ),
+				'running'        => __( 'Your file is getting transcoded. Please refresh after some time.', 'godam' ),
+				'in-queue'       => __( 'This file is still in the queue. Please refresh after some time.', 'godam' ),
+				'receiving-back' => __( 'Your server should be ready to receive the transcoded file.', 'godam' ),
+				'success'        => __( 'Your file is transcoded successfully. Please refresh the page.', 'godam' ),
 			);
 
 			/**

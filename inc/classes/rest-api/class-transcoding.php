@@ -64,7 +64,7 @@ class Transcoding extends Base {
 		if ( empty( $post_id ) ) {
 			return new \WP_Error(
 				'invalid_post_id',
-				__( 'Something went wrong. Please try again!', 'transcoder' ),
+				__( 'Something went wrong. Please try again!', 'godam' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -74,7 +74,7 @@ class Transcoding extends Base {
 		if ( empty( $job_id ) ) {
 			return new \WP_Error(
 				'invalid job id',
-				__( 'Invalid job id', 'transcoder' ),
+				__( 'Invalid job id', 'godam' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -84,7 +84,7 @@ class Transcoding extends Base {
 		if ( empty( $license ) ) {
 			return new \WP_Error(
 				'invalid_license',
-				__( 'Invalid license key', 'transcoder' ),
+				__( 'Invalid license key', 'godam' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -110,12 +110,12 @@ class Transcoding extends Base {
 		}
 
 		$messages = array(
-			'null-response' => __( 'Looks like the server is taking too long to respond, Please try again in sometime.', 'transcoder' ),
-			'failed'        => __( 'Unfortunately, Transcoder failed to transcode this file.', 'transcoder' ),
-			'downloading'   => __( 'Your file is getting transcoded. Please refresh after some time.', 'transcoder' ),
-			'downloaded'    => __( 'Your file is downloaded successfully. Please refresh the page.', 'transcoder' ),
-			'transcoding'   => __( 'Your file is getting transcoded. Please refresh after some time.', 'transcoder' ),
-			'transcoded'    => __( 'Your file is transcoded successfully. Please refresh the page.', 'transcoder' ),
+			'null-response' => __( 'Looks like the server is taking too long to respond, Please try again in sometime.', 'godam' ),
+			'failed'        => __( 'Unfortunately, Transcoder failed to transcode this file.', 'godam' ),
+			'downloading'   => __( 'Your file is getting transcoded. Please refresh after some time.', 'godam' ),
+			'downloaded'    => __( 'Your file is downloaded successfully. Please refresh the page.', 'godam' ),
+			'transcoding'   => __( 'Your file is getting transcoded. Please refresh after some time.', 'godam' ),
+			'transcoded'    => __( 'Your file is transcoded successfully. Please refresh the page.', 'godam' ),
 		);
 
 		/**

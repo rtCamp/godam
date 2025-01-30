@@ -50,7 +50,7 @@ const FontAwesomeIconPicker = ( { hotspot, index, hotspots, updateField } ) => {
 				htmlFor={ `hotspot-icon-${ index }` }
 				className="text-xs text-gray-700"
 			>
-				{ __( 'HOTSPOT ICON', 'transcoder' ) }
+				{ __( 'HOTSPOT ICON', 'godam' ) }
 			</label>
 
 			<div className="flex items-center gap-2">
@@ -71,7 +71,7 @@ const FontAwesomeIconPicker = ( { hotspot, index, hotspots, updateField } ) => {
 									<span>{ hotspot.icon }</span>
 								</>
 							) : (
-								<span>{ __( 'Select Icon', 'transcoder' ) }</span>
+								<span>{ __( 'Select Icon', 'godam' ) }</span>
 							) }
 						</Button>
 					) }
@@ -87,7 +87,7 @@ const FontAwesomeIconPicker = ( { hotspot, index, hotspots, updateField } ) => {
 							} }
 						>
 							<TextControl
-								placeholder={ __( 'Search icons…', 'transcoder' ) }
+								placeholder={ __( 'Search icons…', 'godam' ) }
 								value={ searchQuery }
 								onChange={ ( val ) => setSearchQuery( val ) }
 							/>
@@ -149,7 +149,7 @@ const FontAwesomeIconPicker = ( { hotspot, index, hotspots, updateField } ) => {
 						onClick={ handleReset }
 						className="flex-shrink-0"
 					>
-						{ __( 'Reset', 'transcoder' ) }
+						{ __( 'Reset', 'godam' ) }
 					</Button>
 				) }
 			</div>

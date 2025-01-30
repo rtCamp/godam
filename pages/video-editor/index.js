@@ -39,9 +39,9 @@ const Frontpage = () => {
 
 	const OpenVideoSelector = () => {
 		const fileFrame = wp.media( {
-			title: __( 'Select video to edit', 'transcoder' ),
+			title: __( 'Select video to edit', 'godam' ),
 			button: {
-				text: __( 'Edit video', 'transcoder' ),
+				text: __( 'Edit video', 'godam' ),
 			},
 			library: {
 				type: 'video', // Restrict to images only
@@ -66,7 +66,7 @@ const Frontpage = () => {
 				setAttachmentID( attachment.id );
 			} else {
 				// Show a notice for invalid selection
-				setNotice( { message: __( 'Please select a valid image file.', 'transcoder' ), status: 'error', isVisible: true } );
+				setNotice( { message: __( 'Please select a valid image file.', 'godam' ), status: 'error', isVisible: true } );
 				window.scrollTo( { top: 0, behavior: 'smooth' } );
 				setTimeout( () => {
 					setNotice( { message: '', status: '', isVisible: false } );
@@ -96,7 +96,7 @@ const Frontpage = () => {
 						<Icon style={ {
 							fill: '#6b7280',
 						} } icon={ media } size={ 140 } />
-						<h2 className="text-gray-500">{ __( 'No video is selected', 'transcoder' ) }</h2>
+						<h2 className="text-gray-500">{ __( 'No video is selected', 'godam' ) }</h2>
 
 						<Button
 							className="mt-4"
@@ -105,7 +105,7 @@ const Frontpage = () => {
 							icon={ edit }
 							iconPosition="right"
 						>
-							{ __( 'Select Video to Edit', 'transcoder' ) }
+							{ __( 'Select Video to Edit', 'godam' ) }
 						</Button>
 					</div>
 				</div>

@@ -31,9 +31,9 @@ const Frontpage = () => {
 
 	const OpenVideoSelector = () => {
 		const fileFrame = wp.media( {
-			title: __( 'Select video', 'transcoder' ),
+			title: __( 'Select video', 'godam' ),
 			button: {
-				text: __( 'View analytics', 'transcoder' ),
+				text: __( 'View analytics', 'godam' ),
 			},
 			library: {
 				type: 'video',
@@ -73,7 +73,7 @@ const Frontpage = () => {
 							size={ 140 }
 						/>
 						<h2 className="text-gray-500">
-							{ __( 'No video is selected', 'transcoder' ) }
+							{ __( 'No video is selected', 'godam' ) }
 						</h2>
 
 						<Button
@@ -83,7 +83,7 @@ const Frontpage = () => {
 							icon={ edit }
 							iconPosition="right"
 						>
-							{ __( 'Select Video to Edit', 'transcoder' ) }
+							{ __( 'Select Video to Edit', 'godam' ) }
 						</Button>
 					</div>
 				</div>

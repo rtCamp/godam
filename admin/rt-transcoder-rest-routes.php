@@ -169,7 +169,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 				return esc_url_raw( $value );
 			}
 			// translators: Return an error if the value is neither a string nor an array.
-			return new WP_Error( 'invalid_param', sprintf( __( '%s must be a valid URL or an array of URLs.', 'transcoder' ), $param ) );
+			return new WP_Error( 'invalid_param', sprintf( __( '%s must be a valid URL or an array of URLs.', 'godam' ), $param ) );
 		}
 
 		// Initialize the sanitized array.
@@ -340,7 +340,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 					}
 
 					if ( isset( $format ) && 'thumbnail' === $format ) {
-						return new WP_REST_Response( esc_html_e( 'Thumbnail created successfully.', 'transcoder' ), 200 );
+						return new WP_REST_Response( esc_html_e( 'Thumbnail created successfully.', 'godam' ), 200 );
 					}
 
 					if ( ! empty( $post_array['files'] ) ) {
@@ -358,7 +358,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 
 				if ( $flag && $mail ) {
 					$subject = 'Transcoding: Download Failed';
-					$message = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'transcoder' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'transcoder' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p>';
+					$message = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p>';
 					$users   = get_users( array( 'role' => 'administrator' ) );
 					if ( $users ) {
 						$admin_email_ids = array();
@@ -371,7 +371,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 					}
 					return new WP_Error( 'transcoder_error', $flag, array( 'status' => 500 ) );
 				} else {
-					return new WP_REST_Response( esc_html_e( 'Media transcoded successfully.', 'transcoder' ), 200 );
+					return new WP_REST_Response( esc_html_e( 'Media transcoded successfully.', 'godam' ), 200 );
 				}
 			}
 		} else {
@@ -412,7 +412,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 					}
 
 					if ( isset( $format ) && 'thumbnail' === $format ) {
-						return new WP_REST_Response( esc_html_e( 'Thumbnail created successfully.', 'transcoder' ), 200 );
+						return new WP_REST_Response( esc_html_e( 'Thumbnail created successfully.', 'godam' ), 200 );
 					}
 
 					if ( ! empty( $post_array['files'] ) ) {
@@ -426,7 +426,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 
 				if ( $flag && $mail ) {
 					$subject = 'Transcoding: Download Failed';
-					$message = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'transcoder' ) . '</a> ' . esc_html__( ' was successfully transcoded but there was an error while downloading:', 'transcoder' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p><p>';
+					$message = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully transcoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p><p>';
 					$users   = get_users( array( 'role' => 'administrator' ) );
 					if ( $users ) {
 						$admin_email_ids = array();
@@ -440,7 +440,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 					return new WP_Error( 'transcoder_error', $flag, array( 'status' => 500 ) );
 
 				} else {
-					return new WP_REST_Response( esc_html_e( 'Media transcoded successfully.', 'transcoder' ), 200 );
+					return new WP_REST_Response( esc_html_e( 'Media transcoded successfully.', 'godam' ), 200 );
 				}
 			}
 		}

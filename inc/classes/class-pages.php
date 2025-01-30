@@ -89,8 +89,8 @@ class Pages {
 	 */
 	public function add_admin_pages() {
 		add_menu_page(
-			__( 'GoDAM', 'transcoder' ),
-			__( 'GoDAM', 'transcoder' ),
+			__( 'GoDAM', 'godam' ),
+			__( 'GoDAM', 'godam' ),
 			'manage_options',
 			$this->menu_slug,
 			array( $this, 'render_godam_page' ),
@@ -100,8 +100,8 @@ class Pages {
 
 		add_submenu_page(
 			$this->menu_slug,
-			__( 'Video editor', 'transcoder' ),
-			__( 'Video editor', 'transcoder' ),
+			__( 'Video editor', 'godam' ),
+			__( 'Video editor', 'godam' ),
 			'edit_posts',
 			$this->video_editor_slug,
 			array( $this, 'render_video_editor_page' )
@@ -109,8 +109,8 @@ class Pages {
 
 		add_submenu_page(
 			$this->menu_slug,
-			__( 'Analytics', 'transcoder' ),
-			__( 'Analytics', 'transcoder' ),
+			__( 'Analytics', 'godam' ),
+			__( 'Analytics', 'godam' ),
 			'edit_posts',
 			$this->analytics_slug,
 			array( $this, 'render_analytics_page' )

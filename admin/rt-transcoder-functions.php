@@ -84,12 +84,12 @@ function rt_media_shortcode( $attrs, $content = '' ) {
 
 	} elseif ( 'image' === $mime_type[0] ) {
 
-		$content = '<p>' . esc_html__( 'Image attachments are not handled by Transcoder plugin.', 'transcoder' ) . '</p>';
+		$content = '<p>' . esc_html__( 'Image attachments are not handled by Transcoder plugin.', 'godam' ) . '</p>';
 
 	}
 
 	if ( is_file_being_transcoded( $attachment_id ) ) {
-		$content .= '<p class="transcoding-in-progress"> ' . esc_html__( 'This file is being transcoded. Please wait.', 'transcoder' ) . '</p>';
+		$content .= '<p class="transcoding-in-progress"> ' . esc_html__( 'This file is being transcoded. Please wait.', 'godam' ) . '</p>';
 	}
 
 	/**
@@ -480,7 +480,7 @@ function rtt_bp_get_activity_content( $content, $activity = null ) {
 			if ( is_file_being_transcoded( $media->media_id ) ) {
 				if ( current_user_can( 'manage_options' ) && rtt_is_track_status_enabled() ) {
 
-					$check_button_text = __( 'Check Status', 'transcoder' );
+					$check_button_text = __( 'Check Status', 'godam' );
 
 					/**
 					 * Filters the text of transcoding process status check button.
@@ -495,13 +495,13 @@ function rtt_bp_get_activity_content( $content, $activity = null ) {
 						'<div class="transcoding-in-progress"><button id="btn_check_status%1$s" class="btn_check_transcode_status" name="check_status_btn" data-value="%1$s">%2$s</button> <div class="transcode_status_box" id="span_status%1$s">%3$s</div></div>',
 						esc_attr( $media->media_id ),
 						esc_html( $check_button_text ),
-						esc_html__( 'This file is converting. Please refresh the page after some time.', 'transcoder' )
+						esc_html__( 'This file is converting. Please refresh the page after some time.', 'godam' )
 					);
 
 				} else {
 					$message = sprintf(
 						'<p class="transcoding-in-progress">%s</p>',
-						esc_html__( 'This file is converting. Please refresh the page after some time.', 'transcoder' )
+						esc_html__( 'This file is converting. Please refresh the page after some time.', 'godam' )
 					);
 				}
 				/**
@@ -727,7 +727,7 @@ function rtt_get_remote_ip_address() {
  */
 function rtt_add_status_columns_head( $defaults ) {
 
-	$defaults['convert_status'] = __( 'Transcode Status', 'transcoder' );
+	$defaults['convert_status'] = __( 'Transcode Status', 'godam' );
 	return $defaults;
 }
 
@@ -750,7 +750,7 @@ function rtt_add_status_columns_content( $column_name, $post_id ) {
 	$transcoded_thumbs = get_post_meta( $post_id, '_rt_media_thumbnails', true );
 
 	if ( empty( $transcoded_files ) && is_file_being_transcoded( $post_id ) ) {
-		$check_button_text = __( 'Check Status', 'transcoder' );
+		$check_button_text = __( 'Check Status', 'godam' );
 
 		/**
 		 * Filters the text of transcoding process status check button.
@@ -767,7 +767,7 @@ function rtt_add_status_columns_content( $column_name, $post_id ) {
 		<?php
 
 	} elseif ( ! empty( $transcoded_files ) && ! empty( $transcoded_thumbs ) ) {
-		echo esc_html__( 'File is transcoded.', 'transcoder' );
+		echo esc_html__( 'File is transcoded.', 'godam' );
 	}
 }
 
@@ -921,14 +921,14 @@ function rtt_add_transcoding_process_status_button_single_media_page( $rtmedia_i
 	global $wpdb;
 	$rtmedia_media_table = $wpdb->prefix . 'rt_rtm_media';
 
-	$post_id = wp_cache_get( 'media_' . $rtmedia_id, 'transcoder' );
+	$post_id = wp_cache_get( 'media_' . $rtmedia_id, 'godam' );
 	if ( empty( $post_id ) ) {
 		$results = $wpdb->get_results( $wpdb->prepare( "SELECT media_id FROM $rtmedia_media_table WHERE id = %d", $rtmedia_id ), OBJECT ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- %s adds '' around table name.
 		$post_id = $results[0]->media_id;
-		wp_cache_set( 'media_' . $rtmedia_id, $post_id, 'transcoder', 3600 );
+		wp_cache_set( 'media_' . $rtmedia_id, $post_id, 'godam', 3600 );
 	}
 
-	$check_button_text = __( 'Check Status', 'transcoder' );
+	$check_button_text = __( 'Check Status', 'godam' );
 
 	/**
 	 * Filters the text of transcoding process status check button.
@@ -946,12 +946,12 @@ function rtt_add_transcoding_process_status_button_single_media_page( $rtmedia_i
 				'<div class="transcoding-in-progress"><button id="btn_check_status%1$s" class="btn_check_transcode_status" name="check_status_btn" data-value="%1$s">%2$s</button> <div class="transcode_status_box" id="span_status%1$s">%3$s</div></div>',
 				esc_attr( $post_id ),
 				esc_html( $check_button_text ),
-				esc_html__( 'This file is converting. Please click on check status button to know current status or refresh the page after some time. ', 'transcoder' )
+				esc_html__( 'This file is converting. Please click on check status button to know current status or refresh the page after some time. ', 'godam' )
 			);
 		} else {
 			$message = sprintf(
 				'<p class="transcoding-in-progress">%s</p>',
-				esc_html__( 'This file is converting. Please refresh the page after some time.', 'transcoder' )
+				esc_html__( 'This file is converting. Please refresh the page after some time.', 'godam' )
 			);
 		}
 

@@ -77,16 +77,16 @@ const FormLayer = ( { layerID, goBack } ) => {
 		<>
 			<div className="flex justify-between items-center pb-3 border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="font-semibold">{ __( 'Form layer at', 'transcoder' ) } { layer.displayTime }s</p>
+				<p className="font-semibold">{ __( 'Form layer at', 'godam' ) } { layer.displayTime }s</p>
 				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
 				{ isOpen && (
-					<Modal title={ __( 'Delete layer', 'transcoder' ) } onRequestClose={ () => setOpen( false ) }>
+					<Modal title={ __( 'Delete layer', 'godam' ) } onRequestClose={ () => setOpen( false ) }>
 						<div className="flex justify-between items-center gap-3">
 							<Button className="w-full justify-center" isDestructive variant="primary" onClick={ handleDeleteLayer }>
-								{ __( 'Delete layer', 'transcoder' ) }
+								{ __( 'Delete layer', 'godam' ) }
 							</Button>
 							<Button className="w-full justify-center" variant="secondary" onClick={ () => setOpen( false ) }>
-								{ __( 'Cancel', 'transcoder' ) }
+								{ __( 'Cancel', 'godam' ) }
 							</Button>
 						</div>
 					</Modal>
@@ -100,7 +100,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 			<SelectControl
 				className="mb-4"
-				label={ __( 'Select form theme', 'transcoder' ) }
+				label={ __( 'Select form theme', 'godam' ) }
 				options={ templateOptions }
 				value={ layer.theme }
 				onChange={ ( value ) =>
@@ -110,31 +110,31 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 			<ToggleControl
 				className="mb-4"
-				label={ __( 'Allow user to skip', 'transcoder' ) }
+				label={ __( 'Allow user to skip', 'godam' ) }
 				checked={ layer.allow_skip }
 				onChange={ ( value ) =>
 					dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
 				}
-				help={ __( 'If enabled, the user will be able to skip the form submission.', 'transcoder' ) }
+				help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
 			/>
 
 			<Panel className="-mx-4 border-x-0">
 				<PanelBody
-					title={ __( 'Advance', 'transcoder' ) }
+					title={ __( 'Advance', 'godam' ) }
 					initialOpen={ false }
 				>
 
 					{ /* Layer background color */ }
-					<label htmlFor="color" className="easydam-label">{ __( 'Color', 'transcoder' ) }</label>
+					<label htmlFor="color" className="easydam-label">{ __( 'Color', 'godam' ) }</label>
 					<ColorPickerButton
 						className="mb-4"
 						value={ layer?.bg_color ?? '#FFFFFFB3' }
-						label={ __( 'Layer background color', 'transcoder' ) }
+						label={ __( 'Layer background color', 'godam' ) }
 						enableAlpha={ true }
 						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
 					/>
 
-					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'transcoder' ) }</label>
+					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'godam' ) }</label>
 					<Editor
 						id="custom-css"
 						className="code-editor"
@@ -167,7 +167,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 						iconPosition="right"
 						onClick={ () => setOpen( false ) }
 					>
-						{ __( 'Skip', 'transcoder' ) }
+						{ __( 'Skip', 'godam' ) }
 					</Button>
 					}
 				</>
@@ -190,7 +190,7 @@ function GravityFormSelector( { className, formID, forms, handleChange } ) {
 			<ComboboxControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
-				label={ __( 'Select gravity form', 'transcoder' ) }
+				label={ __( 'Select gravity form', 'godam' ) }
 				className={ className }
 				value={ form }
 				onChange={ setFormData }
@@ -242,8 +242,8 @@ function CustomCssInjector( { value, handleChange } ) {
 		<>
 			<TextareaControl
 				className="mb-4"
-				label={ __( 'Custom CSS', 'transcoder' ) }
-				placeholder={ __( '.classname { border: 1px solid blue; }', 'transcoder' ) }
+				label={ __( 'Custom CSS', 'godam' ) }
+				placeholder={ __( '.classname { border: 1px solid blue; }', 'godam' ) }
 				value={ customCss }
 				onChange={ ( val ) => {
 					setCustomCss( val );
