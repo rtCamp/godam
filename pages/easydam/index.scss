@@ -74,6 +74,10 @@
             font-size: 20px;
             font-weight: bold;
             color: #333;
+
+            &.red {
+                background: conic-gradient(#d14949 var(--percentage), #e0e0e0 0);
+            }
         }
 
         .data {

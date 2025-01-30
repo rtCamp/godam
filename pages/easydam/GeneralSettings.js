@@ -290,29 +290,41 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 							<PanelBody
 								opened={ true }
 							>
-								<div className="flex gap-8 flex-wrap">
+								<div className="flex gap-4 flex-wrap">
 									<div className="flex gap-3 items-center">
 										<div className="circle-container">
 											<div className="data text-xs">{ calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) }%</div>
-											<div className="circle" style={ { '--percentage': calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) + '%' } }></div>
+											<div
+												className={ `circle ${
+													calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) > 90 ? 'red' : ''
+												}` }
+												style={
+													{ '--percentage': calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) + '%' }
+												}
+											></div>
 										</div>
 										<div className="leading-6">
 											<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
-											<strong>{ __( 'Used: ', 'godam' ) }</strong>{ userData.bandwidth_used }{ __( 'GB', 'godam' ) }
+											<strong>{ __( 'Available: ', 'godam' ) }</strong>{ userData.total_bandwidth - userData.bandwidth_used }{ __( 'GB', 'godam' ) }
 											<br />
-											<strong>{ __( 'Total: ', 'godam' ) }</strong>{ userData.total_bandwidth }{ __( 'GB', 'godam' ) }
+											<strong>{ __( 'Used: ', 'godam' ) }</strong>{ userData.bandwidth_used }{ __( 'GB', 'godam' ) }
 										</div>
 									</div>
 									<div className="flex gap-3 items-center">
 										<div className="circle-container">
 											<div className="data text-xs">{ calculatePercentage( userData.storage_used, userData.total_storage ) }%</div>
-											<div className="circle" style={ { '--percentage': calculatePercentage( userData.storage_used, userData.total_storage ) + '%' } }></div>
+											<div
+												className={ `circle ${
+													calculatePercentage( userData.storage_used, userData.total_storage ) > 90 ? 'red' : ''
+												}` }
+												style={ { '--percentage': calculatePercentage( userData.storage_used, userData.total_storage ) + '%' } }
+											></div>
 										</div>
 										<div className="leading-6">
 											<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
-											<strong>{ __( 'Used: ', 'godam' ) }</strong>{ userData.storage_used }{ __( 'GB', 'godam' ) }
+											<strong>{ __( 'Available: ', 'godam' ) }</strong>{ userData.total_storage - userData.storage_used }{ __( 'GB', 'godam' ) }
 											<br />
-											<strong>{ __( 'Total: ', 'godam' ) }</strong>{ userData.total_storage }{ __( 'GB', 'godam' ) }
+											<strong>{ __( 'Used: ', 'godam' ) }</strong>{ userData.storage_used }{ __( 'GB', 'godam' ) }
 										</div>
 									</div>
 								</div>

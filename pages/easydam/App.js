@@ -124,7 +124,7 @@ const App = () => {
 		<div id="easydam-settings">
 			<header>
 				<div className="easydam-settings-header border-b -ml-[32px] pl-[32px]">
-					<div className="max-w-[1200px] mx-auto pr-9 flex items-center justify-between">
+					<div className="max-w-[1260px] mx-auto pl-4 pr-9 flex items-center justify-between">
 						<h1 className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-center">
 							{ __( 'GoDAM', 'transcoder' ) }
 							<div className="ml-2">
@@ -154,7 +154,7 @@ const App = () => {
 					</div>
 				</div>
 			</header>
-			<div className="wrap flex gap-4 my-8 max-w-[1200px] pl-4 pr-9 mx-auto">
+			<div className="wrap flex gap-4 my-8 max-w-[1260px] pl-4 pr-9 mx-auto">
 				<div className="max-w-[220px] w-full">
 					<nav className="sticky-navbar pt-8 -mt-8">
 						{

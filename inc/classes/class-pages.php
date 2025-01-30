@@ -294,7 +294,7 @@ class Pages {
 				'userData',
 				array(
 					'currentUserId'   => get_current_user_id(), // Current user ID.
-					'storage_used'    => 25.39,
+					'storage_used'    => 75,
 					'total_storage'   => 100,
 					'bandwidth_used'  => 98.94,
 					'total_bandwidth' => 200,
