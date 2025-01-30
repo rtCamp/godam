@@ -16,6 +16,16 @@ class Pages {
 	use Singleton;
 
 	/**
+	 * Hardcoded Slugs
+	 */
+	private $menu_slug = 'godam';
+	private $video_editor_slug = 'video_editor';
+	private $analytics_slug = 'analytics';
+	private $menu_page_id = 'toplevel_page_godam';
+	private $video_editor_page_id = 'godam_page_video_editor';
+	private $analytics_page_id = 'godam_page_analytics';
+
+	/**
 	 * Construct method.
 	 */
 	protected function __construct() {
@@ -82,27 +92,27 @@ class Pages {
 			__( 'GoDAM', 'transcoder' ),
 			__( 'GoDAM', 'transcoder' ),
 			'manage_options',
-			'godam',
+			$this->menu_slug,
 			array( $this, 'render_godam_page' ),
 			'dashicons-admin-generic',
 			30
 		);
 
 		add_submenu_page(
-			'godam',
+			$this->menu_slug,
 			__( 'Video editor', 'transcoder' ),
 			__( 'Video editor', 'transcoder' ),
 			'edit_posts',
-			'video_editor',
+			$this->video_editor_slug,
 			array( $this, 'render_video_editor_page' )
 		);
 
 		add_submenu_page(
-			'godam',
+			$this->menu_slug,
 			__( 'Analytics', 'transcoder' ),
 			__( 'Analytics', 'transcoder' ),
 			'edit_posts',
-			'analytics',
+			$this->analytics_slug,
 			array( $this, 'render_analytics_page' )
 		);
 	}
@@ -117,7 +127,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( 'toplevel_page_godam', 'godam_page_video_editor', 'godam_page_analytics' ) ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id ) ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
@@ -231,7 +241,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 		// echo "++++++++++++++++++++++", $screen->id;
-		if ( $screen && in_array( $screen->id, array( 'toplevel_page_godam', 'godam_page_video_editor', 'godam_page_analytics' ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id ), true ) ) {
 			wp_register_style(
 				'transcoder-page-style-godam',
 				RT_TRANSCODER_URL . '/pages/build/style.css',
@@ -243,7 +253,7 @@ class Pages {
 			wp_enqueue_media();
 		}
 		// Check if this is your custom admin page.
-		if ( $screen && 'godam_page_video_editor' === $screen->id ) {
+		if ( $screen && $this->video_editor_page_id === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
 				RT_TRANSCODER_URL . '/pages/build/video-editor.js',
@@ -264,7 +274,7 @@ class Pages {
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
-		} elseif ( $screen && 'toplevel_page_godam' === $screen->id ) {
+		} elseif ( $screen && $this->menu_page_id === $screen->id ) {
 
 			wp_register_script(
 				'transcoder-page-script-godam',
@@ -275,7 +285,7 @@ class Pages {
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-godam' );
-		} elseif ( $screen && 'godam_page_analytics' === $screen->id ) {
+		} elseif ( $screen && $this->analytics_page_id === $screen->id ) {
 
 			wp_register_script(
 				'd3-js',
