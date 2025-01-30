@@ -60,12 +60,12 @@
     // Circular progress bar
     .circle-container {
         position: relative;
-        width: 60px;
-        height: 60px;
+        width: 80px;
+        height: 80px;
 
         .circle {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background: conic-gradient(var(--wp-components-color-accent,var(--wp-admin-theme-color,#3858e9)) var(--percentage), #e0e0e0 0);
             display: flex;
@@ -80,8 +80,8 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 50px;
-            height: 50px;
+            width: 65px;
+            height: 65px;
             border-radius: 1000px;
             transform: translate(-50%, -50%);
             background: #fff;
