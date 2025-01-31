@@ -1,7 +1,7 @@
 /**
  * global CSS for the media library.
  */
- #wpbody {
+#wpbody {
 	display: flex;
 }
 
@@ -95,6 +95,92 @@
 
 		li {
 			margin-bottom: 0;
+		}
+	}
+}
+
+/**
+ * Attachment Thumbnail styles.
+ */
+
+.attachment-actions {
+
+	.attachment-video-actions {
+		display: flex;
+		justify-content: start;
+		gap: 0.5rem;
+		margin-bottom: 0.5rem;
+
+		.button {
+
+			font-size: .75rem;
+			padding: .5rem 1rem;
+			text-transform: uppercase;
+			font-weight: 700;
+			transition: transform 0.2s ease;
+
+			&:hover {
+				transform: scale(1.1);
+			}
+
+			&-primary {
+				background: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
+				border: none;
+			}
+
+			&-secondary {
+				-webkit-text-fill-color: #0000;
+				background: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
+				background-clip: text;
+				-webkit-background-clip: text;
+				outline: .0625rem solid #ab3a6c;
+				outline-offset: -.0625rem;
+				overflow: hidden;
+			}
+		}
+	}
+}
+
+.attachment-video-thumbnails {
+
+	h4 {
+		text-align: left;
+		margin: 0;
+	}
+
+	ul {
+		display: flex;
+		gap: 1rem;
+		overflow-x: auto;
+		padding: 0.5rem 0;
+		list-style: none;
+		margin: 0;
+
+		li {
+			flex: 0 0 auto;
+			cursor: pointer;
+			transition: transform 0.2s ease, box-shadow 0.2s ease;
+			position: relative;
+			border-radius: 8px;
+			overflow: hidden;
+
+			&:hover img {
+				transform: scale(1.1);
+			}
+
+			&.selected {
+				border: 4px solid #007bff;
+			}
+
+			img {
+				max-width: 8rem;
+				display: block;
+				border-radius: 4px;
+				transition: opacity 0.2s ease;
+				display: block;
+				object-fit: cover;
+				transition: transform 0.2s ease;
+			}
 		}
 	}
 }

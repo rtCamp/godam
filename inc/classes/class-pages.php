@@ -71,7 +71,7 @@ class Pages {
 		);
 
 		
-		wp_enqueue_script('block-analytics-script');
+		wp_enqueue_script( 'block-analytics-script' );
 
 		wp_localize_script(
 			'block-frontend-script',
@@ -219,15 +219,7 @@ class Pages {
 	 */
 	public function render_analytics_page() {
 		?>
-		<div id="root-video-analytics">
-			<div class="progress-bar-wrapper">
-				<div class="progress-bar-container">
-					<div class="progress-bar">
-						<div class="progress-bar-inner"></div>
-					</div>
-				</div>
-			</div>
-		</div>
+		<div id="root-video-analytics"></div>
 		<?php
 	}
 
@@ -240,7 +232,7 @@ class Pages {
 	 */
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
-		// echo "++++++++++++++++++++++", $screen->id;
+
 		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id ), true ) ) {
 			wp_register_style(
 				'transcoder-page-style-godam',
@@ -282,6 +274,35 @@ class Pages {
 				array( 'wp-element' ),
 				filemtime( RT_TRANSCODER_PATH . '/pages/build/godam.js' ),
 				true
+			);
+
+			// Verify the user's license.
+			$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+			$result      = rtt_verify_license( $license_key );
+
+			$valid_license = false;
+			$user_data     = [];
+
+			if ( is_wp_error( $result ) ) {
+				$valid_license = false;
+			} else {
+				$valid_license            = true;
+				$user_data                = $result['data'] ?? [];
+				$user_data['license_key'] = rtt_mask_string( $user_data['license_key'] );
+			}
+
+			wp_localize_script(
+				'transcoder-page-script-godam',
+				'userData',
+				array(
+					'currentUserId'   => get_current_user_id(), // Current user ID.
+					'storage_used'    => 75,
+					'total_storage'   => 100,
+					'bandwidth_used'  => 98.94,
+					'total_bandwidth' => 200,
+					'valid_license'   => $valid_license,
+					'user_data'       => $user_data,
+				)
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-godam' );

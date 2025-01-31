@@ -204,7 +204,7 @@ class Settings extends Base {
 		$license_key = $request->get_param( 'license_key' );
 
 		// Use the helper function to verify the license key.
-		$result = rtt_verify_license( $license_key );
+		$result = rtt_verify_license( $license_key, true );
 
 		if ( is_wp_error( $result ) ) {
 			return new \WP_REST_Response(
@@ -215,6 +215,10 @@ class Settings extends Base {
 				),
 				$result->get_error_data( 'status' ) ?? 500
 			);
+		}
+
+		if ( ! empty( $result['data']['license_key'] ) ) {
+			$result['data']['license_key'] = rtt_mask_string( $result['data']['license_key'] );
 		}
 
 		return new \WP_REST_Response(
@@ -483,7 +487,6 @@ class Settings extends Base {
 			return Error_Handler::handle_exception( $e, true );
 		}
 	}
-
 
 	/**
 	 * Fetch subscription plans from the external API.

@@ -23,7 +23,7 @@ $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['capt
 $sources       = ! empty( $attributes['sources'] ) ? $attributes['sources'] : array();
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
-$preview       = isset($attributes['preview'])? $attributes['preview'] : false;
+$preview       = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
 
 // Retrieve easydam_meta for the attachment id.
 $easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : '';
