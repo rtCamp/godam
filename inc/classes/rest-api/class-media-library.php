@@ -347,7 +347,35 @@ class Media_Library extends Base {
 			return new \WP_Error( 'thumbnails_not_found', 'No thumbnails found.', array( 'status' => 404 ) );
 		}
 
+		if ( function_exists( 'wp_get_upload_dir' ) ) {
+			$uploads = wp_get_upload_dir();
+		} else {
+			$uploads = wp_upload_dir();
+		}
+
+		foreach ( $thumbnail_array as $key => $thumbnail_src ) {
+			$file_url = $thumbnail_src;
+
+			if ( 0 === strpos( $file_url, $uploads['baseurl'] ) ) {
+				$thumbnail_src = $file_url;
+			} else {
+				$thumbnail_src = $uploads['baseurl'] . '/' . $file_url;
+			}
+
+			$thumbnail_array[ $key ] = $thumbnail_src;
+		}
+
 		$selected_thumbnail = get_post_meta( $attachment_id, '_rt_media_video_thumbnail', true );
+
+		if ( ! empty( $selected_thumbnail ) ) {
+			$file_url = $selected_thumbnail;
+
+			if ( 0 === strpos( $file_url, $uploads['baseurl'] ) ) {
+				$selected_thumbnail = $file_url;
+			} else {
+				$selected_thumbnail = $uploads['baseurl'] . '/' . $file_url;
+			}
+		}
 
 		$data = [];
 
