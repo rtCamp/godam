@@ -18,12 +18,12 @@ class Pages {
 	/**
 	 * Hardcoded Slugs
 	 */
-	private $menu_slug = 'godam';
-	private $video_editor_slug = 'video_editor';
-	private $analytics_slug = 'analytics';
-	private $menu_page_id = 'toplevel_page_godam';
+	private $menu_slug            = 'godam';
+	private $video_editor_slug    = 'video_editor';
+	private $analytics_slug       = 'analytics';
+	private $menu_page_id         = 'toplevel_page_godam';
 	private $video_editor_page_id = 'godam_page_video_editor';
-	private $analytics_page_id = 'godam_page_analytics';
+	private $analytics_page_id    = 'godam_page_analytics';
 
 	/**
 	 * Construct method.
@@ -281,13 +281,13 @@ class Pages {
 			$result      = rtt_verify_license( $license_key );
 
 			$valid_license = false;
-			$user_data     = [];
+			$user_data     = array();
 
 			if ( is_wp_error( $result ) ) {
 				$valid_license = false;
 			} else {
 				$valid_license            = true;
-				$user_data                = $result['data'] ?? [];
+				$user_data                = $result['data'] ?? array();
 				$user_data['license_key'] = rtt_mask_string( $user_data['license_key'] );
 			}
 
