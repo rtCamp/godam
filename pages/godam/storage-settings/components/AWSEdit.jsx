@@ -39,7 +39,7 @@ const AWSEdit = ( { handleSaveSettings } ) => {
 			<div className="flex justify-between items-center">
 				<div>
 					<h3 className="text-lg font-medium">
-						{ __( 'AWS S3 Bucket', 'transcoder' ) }
+						{ __( 'AWS S3 Bucket', 'godam' ) }
 					</h3>
 					<p className="text-gray-500 mt-1">
 						<strong>{ aws.bucket }</strong>
@@ -51,7 +51,7 @@ const AWSEdit = ( { handleSaveSettings } ) => {
 					className="bg-blue-500 text-white font-medium px-4 py-2 rounded"
 					disabled={ isEditOpen }
 				>
-					{ __( 'Edit', 'transcoder' ) }
+					{ __( 'Edit', 'godam' ) }
 				</Button>
 			</div>
 
@@ -63,15 +63,15 @@ const AWSEdit = ( { handleSaveSettings } ) => {
 			>
 				<div className="py-6 space-y-4">
 					<TextControl
-						label={ __( 'Access Key', 'transcoder' ) }
-						placeholder={ __( 'Enter your AWS Access Key', 'transcoder' ) }
+						label={ __( 'Access Key', 'godam' ) }
+						placeholder={ __( 'Enter your AWS Access Key', 'godam' ) }
 						disabled={ ! isConnectEnabled }
 						value={ aws.accessKey }
 						onChange={ ( value ) => dispatch( setAWSAccessKey( value ) ) }
 					/>
 					<TextControl
-						label={ __( 'Secret Key', 'transcoder' ) }
-						placeholder={ __( 'Enter your AWS Secret Key', 'transcoder' ) }
+						label={ __( 'Secret Key', 'godam' ) }
+						placeholder={ __( 'Enter your AWS Secret Key', 'godam' ) }
 						disabled={ ! isConnectEnabled }
 						value={ aws.secretKey }
 						onChange={ ( value ) => dispatch( setAWSSecretKey( value ) ) }
@@ -83,7 +83,7 @@ const AWSEdit = ( { handleSaveSettings } ) => {
 							onClick={ () => setIsEditOpen( ! isEditOpen ) }
 							className="bg-gray-200 text-gray-800 px-4 py-2 rounded"
 						>
-							{ __( 'Cancel', 'transcoder' ) }
+							{ __( 'Cancel', 'godam' ) }
 						</Button>
 						{ isConnectEnabled && (
 							<Button
@@ -96,7 +96,7 @@ const AWSEdit = ( { handleSaveSettings } ) => {
 									},
 								} ) }
 							>
-								{ __( 'Connect', 'transcoder' ) }
+								{ __( 'Connect', 'godam' ) }
 							</Button>
 						) }
 
@@ -107,7 +107,7 @@ const AWSEdit = ( { handleSaveSettings } ) => {
 								isDestructive={ true }
 								onClick={ () => setIsConnectEnabled( true ) }
 							>
-								{ __( 'Disconnect', 'transcoder' ) }
+								{ __( 'Disconnect', 'godam' ) }
 							</Button>
 						) }
 

@@ -160,7 +160,7 @@ class RT_Transcoder_Admin {
 	 * @since    1.0.0
 	 */
 	public function load_translation() {
-		load_plugin_textdomain( 'transcoder', false, basename( RT_TRANSCODER_PATH ) . '/languages/' );
+		load_plugin_textdomain( 'godam', false, basename( RT_TRANSCODER_PATH ) . '/languages/' );
 	}
 
 	/**
@@ -204,10 +204,10 @@ class RT_Transcoder_Admin {
 		$localize_script_data = array(
 			'admin_url'                             => esc_url( admin_url() ),
 			'loader_image'                          => esc_url( admin_url( 'images/loading.gif' ) ),
-			'disable_encoding'                      => esc_html__( 'Are you sure you want to disable the transcoding service?', 'transcoder' ),
-			'enable_encoding'                       => esc_html__( 'Are you sure you want to enable the transcoding service?', 'transcoder' ),
-			'something_went_wrong'                  => esc_html__( 'Something went wrong. Please ', 'transcoder' ) . '<a href onclick="location.reload();">' . esc_html__( 'refresh', 'transcoder' ) . '</a>' . esc_html__( ' page.', 'transcoder' ),
-			'error_empty_key'                       => esc_html__( 'Please enter the license key.', 'transcoder' ),
+			'disable_encoding'                      => esc_html__( 'Are you sure you want to disable the transcoding service?', 'godam' ),
+			'enable_encoding'                       => esc_html__( 'Are you sure you want to enable the transcoding service?', 'godam' ),
+			'something_went_wrong'                  => esc_html__( 'Something went wrong. Please ', 'godam' ) . '<a href onclick="location.reload();">' . esc_html__( 'refresh', 'godam' ) . '</a>' . esc_html__( ' page.', 'godam' ),
+			'error_empty_key'                       => esc_html__( 'Please enter the license key.', 'godam' ),
 			'security_nonce_for_enabling_encoding'  => wp_create_nonce( 'rt_enable_transcoding' ),
 			'security_nonce_for_disabling_encoding' => wp_create_nonce( 'rt_disable_transcoding' ),
 		);
@@ -235,7 +235,7 @@ class RT_Transcoder_Admin {
 		$usage_details = get_site_option( 'rt-transcoding-usage' );
 
 		if ( isset( $usage_details[ $this->api_key ]->plan->name ) && ( strtolower( $usage_details[ $this->api_key ]->plan->name ) === strtolower( $name ) ) && $usage_details[ $this->api_key ]->sub_status && ! $force ) {
-			$form = '<button disabled="disabled" type="submit" class="button button-primary bpm-unsubscribe">' . esc_html__( 'Current Plan', 'transcoder' ) . '</button>';
+			$form = '<button disabled="disabled" type="submit" class="button button-primary bpm-unsubscribe">' . esc_html__( 'Current Plan', 'godam' ) . '</button>';
 		} else {
 			$plan_name = 'free' === $name ? 'Try Now' : 'Subscribe';
 			$form      = '<a href="https://rtmedia.io/?transcoding-plan=' . $name . '" target="_blank" class="button button-primary">
@@ -428,7 +428,7 @@ class RT_Transcoder_Admin {
 		<div class="notice notice-info transcoder-notice is-dismissible">
 			<?php wp_nonce_field( '_transcoder_hide_notice_', 'transcoder_hide_notice_nonce' ); ?>
 			<p>
-				<?php esc_html_e( 'rtMedia encoding service has been disabled because you are using Transcoder plugin.', 'transcoder' ); ?>
+				<?php esc_html_e( 'rtMedia encoding service has been disabled because you are using Transcoder plugin.', 'godam' ); ?>
 			</p>
 		</div>
 		<script type="text/javascript">
@@ -521,17 +521,17 @@ class RT_Transcoder_Admin {
 		?>
 		<div class="notice notice-warning is-dismissible rt-transcoder-license-notice">
 			<p>
-				<?php esc_html_e( 'Good News! Transcoder is now updated to GoDAM with many more exciting features to enhance your media management experience.', 'transcoder' ); ?>
+				<?php esc_html_e( 'Good News! Transcoder is now updated to GoDAM with many more exciting features to enhance your media management experience.', 'godam' ); ?>
 			</p>
 			<p>
-				<?php esc_html_e( 'The plugin requires an active license to work fully. Please activate your license.', 'transcoder' ); ?>
+				<?php esc_html_e( 'The plugin requires an active license to work fully. Please activate your license.', 'godam' ); ?>
 			</p>
 			<p>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=easydam' ) ); ?>" class="button button-primary">
-					<?php esc_html_e( 'Activate License', 'transcoder' ); ?>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=godam' ) ); ?>" class="button button-primary">
+					<?php esc_html_e( 'Activate License', 'godam' ); ?>
 				</a>
 				<a href="https://rtmedia.io/transcoder/" class="button button-secondary" target="_blank">
-					<?php esc_html_e( 'Learn More', 'transcoder' ); ?>
+					<?php esc_html_e( 'Learn More', 'godam' ); ?>
 				</a>
 			</p>
 		</div>

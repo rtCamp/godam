@@ -47,24 +47,24 @@ const Analytics = ( { attachmentID } ) => {
 				<div id="video-analytics-container" className="video-analytics-container hidden">
 					<div className="overflow-auto">
 
-						<div className="flex gap-8 items-start">
-							<div className="min-w-[350px] max-w-[350px] flex-grow">
-								<h2 className="text-lg m-0 mb-2">{ __( 'Analytics', 'transcoder' ) }</h2>
+				<div className="flex gap-8 items-start">
+					<div className="min-w-[350px] max-w-[350px] flex-grow">
+						<h2 className="text-lg m-0 mb-2">{ __( 'Analytics', 'godam' ) }</h2>
 
 								<div className="analytics-info-container border-t border-gray-500">
 									<div className="analytics-info">
 										<span id="engagement-rate">0%</span>
-										<p>{ __( 'Average Engagement', 'transcoder' ) }</p>
+										<p>{ __( 'Average Engagement', 'godam' ) }</p>
 									</div>
 									<hr />
 									<div className="analytics-info">
 										<span id="total-plays">0</span>
-										<p>{ __( 'Total Plays', 'transcoder' ) }</p>
+										<p>{ __( 'Total Plays', 'godam' ) }</p>
 									</div>
 									<hr />
 									<div className="analytics-info">
 										<span id="play-rate">0%</span>
-										<p>{ __( 'Play Rate', 'transcoder' ) }</p>
+										<p>{ __( 'Play Rate', 'godam' ) }</p>
 									</div>
 									<hr />
 								</div>

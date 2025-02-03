@@ -12,12 +12,8 @@ import '../../video-control.css';
  */
 import {
 	Button,
-	CheckboxControl,
 	CustomSelectControl,
-	Icon,
 	RangeControl,
-	ColorPalette,
-	TabPanel,
 	TextareaControl,
 	ToggleControl,
 } from '@wordpress/components';
@@ -431,7 +427,7 @@ const Appearance = () => {
 						htmlFor="custom-brand-logo"
 						className="easydam-label"
 					>
-						{ __( 'Display settings', 'transcoder' ) }
+						{ __( 'Display settings', 'godam' ) }
 					</label>
 
 					<div className="flex flex-col gap-3">
@@ -463,7 +459,7 @@ const Appearance = () => {
 							htmlFor="custom-brand-logo"
 							className="easydam-label"
 						>
-							{ __( 'Custom Brand Logo', 'transcoder' ) }
+							{ __( 'Custom Brand Logo', 'godam' ) }
 						</label>
 						<Button
 							onClick={ openBrandMediaPicker }
@@ -474,7 +470,7 @@ const Appearance = () => {
 						</Button>
 						{ selectedBrandImage && (
 							<Button onClick={ removeBrandImage } variant="secondary" isDestructive>
-								{ __( 'Remove', 'transcoder' ) }
+								{ __( 'Remove', 'godam' ) }
 							</Button>
 						) }
 						{ selectedBrandImage && (
@@ -491,7 +487,7 @@ const Appearance = () => {
 				<div className="form-group">
 					<CustomSelectControl
 						__next40pxDefaultSize
-						label={ __( 'Play Button Position', 'transcoder' ) }
+						label={ __( 'Play Button Position', 'godam' ) }
 						onChange={ handlePlayButtonPosition }
 						options={ [
 							{
@@ -527,11 +523,11 @@ const Appearance = () => {
 							<RangeControl
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
-								help={ __( 'scale up the player controls icons on hover', 'transcoder' ) }
+								help={ __( 'scale up the player controls icons on hover', 'godam' ) }
 								initialPosition={ 0 }
 								max={ 1 }
 								min={ 0 }
-								label={ __( 'Zoom Level', 'transcoder' ) }
+								label={ __( 'Zoom Level', 'godam' ) }
 								onChange={ handleControlsHoverZoomColor }
 								step={ 0.1 }
 								value={ videoConfig.controlBar.zoomLevel }
@@ -544,14 +540,14 @@ const Appearance = () => {
 						htmlFor="custom-hover-color"
 						className="easydam-label"
 					>
-						{ __( 'Custom Play Button', 'transcoder' ) }
+						{ __( 'Custom Play Button', 'godam' ) }
 					</label>
 					<Button onClick={ openCustomBtnImg } variant="primary" className="mr-2">
-						{ selectedCustomBgImg ? __( 'Replace', 'transcoder' ) : __( 'Upload', 'transcoder' ) }
+						{ selectedCustomBgImg ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 					</Button>
 					{ selectedCustomBgImg && (
 						<Button onClick={ removeCustomPlayBtnImage } variant="secondary" isDestructive>
-							{ __( 'Remove', 'transcoder' ) }
+							{ __( 'Remove', 'godam' ) }
 						</Button>
 					) }
 					{ selectedCustomBgImg && (
@@ -568,7 +564,7 @@ const Appearance = () => {
 					<CustomSelectControl
 						__next40pxDefaultSize
 						onChange={ handleControlBarPosition }
-						label={ __( 'Adjust position of control bar', 'transcoder' ) }
+						label={ __( 'Adjust position of control bar', 'godam' ) }
 						options={ [
 							{
 								key: 'horizontal',
@@ -603,7 +599,7 @@ const Appearance = () => {
 								name: '30',
 							},
 						] }
-						label={ __( 'Adjust skip duration', 'transcoder' ) }
+						label={ __( 'Adjust skip duration', 'godam' ) }
 						value={ {
 							key: videoConfig.controlBar.skipButtons.forward.toString(),
 							name: videoConfig.controlBar.skipButtons.forward.toString(),
@@ -615,11 +611,11 @@ const Appearance = () => {
 						htmlFor="appearance-color"
 						className="easydam-label"
 					>
-						{ __( 'Player Theme', 'transcoder' ) }
+						{ __( 'Player Theme', 'godam' ) }
 					</label>
 					<ColorPickerButton
 						value={ videoConfig.controlBar.appearanceColor }
-						label={ __( 'Player Appearance', 'transcoder' ) }
+						label={ __( 'Player Appearance', 'godam' ) }
 						className="mb-0"
 						contentClassName="border-b-0"
 						enableAlpha={ true }
@@ -639,7 +635,7 @@ const Appearance = () => {
 					/>
 					<ColorPickerButton
 						value={ videoConfig.controlBar.hoverColor }
-						label={ __( 'Icons hover color', 'transcoder' ) }
+						label={ __( 'Icons hover color', 'godam' ) }
 						enableAlpha={ true }
 						onChange={ ( value ) => {
 							if ( ! value ) {
@@ -662,11 +658,11 @@ const Appearance = () => {
 						htmlFor="custom-hover-color"
 						className="easydam-label"
 					>
-						{ __( 'Select Ad server', 'transcoder' ) }
+						{ __( 'Select Ad server', 'godam' ) }
 					</label>
 					<ToggleControl
-						label={ __( 'Use ad server\'s ads', 'transcoder' ) }
-						help={ __( 'Enable this option to use ads from the ad server. This option will disable the ads layer', 'transcoder' ) }
+						label={ __( 'Use ad server\'s ads', 'godam' ) }
+						help={ __( 'Enable this option to use ads from the ad server. This option will disable the ads layer', 'godam' ) }
 						checked={ videoConfig.adServer === 'ad-server' }
 						onChange={ ( checked ) => {
 							dispatch(
@@ -679,11 +675,11 @@ const Appearance = () => {
 					{
 						videoConfig.adServer === 'ad-server' && (
 							<TextareaControl
-								label={ __( 'adTag URL', 'transcoder' ) }
+								label={ __( 'adTag URL', 'godam' ) }
 								help={ <>
 									<div>
-										{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads ', 'transcoder' ) }
-										<a href="https://support.google.com/admanager/answer/177207?hl=en" target="_blank" rel="noreferrer noopener" className="text-blue-500 underline">{ __( 'Learn more.', 'transcoder' ) }</a>
+										{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads ', 'godam' ) }
+										<a href="https://support.google.com/admanager/answer/177207?hl=en" target="_blank" rel="noreferrer noopener" className="text-blue-500 underline">{ __( 'Learn more.', 'godam' ) }</a>
 									</div>
 								</>
 								}

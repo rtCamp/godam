@@ -178,7 +178,7 @@ const VideoEditor = ( { attachmentID } ) => {
 								onClick={ saveAttachmentMeta }
 								isBusy={ isSaving }
 							>
-								{ __( 'Save', 'transcoder' ) }
+								{ __( 'Save', 'godam' ) }
 							</Button> )
 					}
 
@@ -186,7 +186,7 @@ const VideoEditor = ( { attachmentID } ) => {
 						// Display a success message when video changes are saved
 						showSaveMessage && (
 							<Snackbar className="absolute bottom-4 right-4 opacity-70">
-								{ __( 'Video changes saved successfully', 'transcoder' ) }
+								{ __( 'Video changes saved successfully', 'godam' ) }
 							</Snackbar>
 						)
 					}

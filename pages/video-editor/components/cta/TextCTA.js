@@ -48,7 +48,7 @@ const TextCTA = ( { layerID } ) => {
 	return (
 		<>
 			<div className="mb-2 flex items-end justify-between">
-				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium">{ __( 'Content', 'transcoder' ) }</label>
+				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium">{ __( 'Content', 'godam' ) }</label>
 			</div>
 			<QuillEditor
 				intialValue={ layer.text }

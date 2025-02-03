@@ -73,7 +73,7 @@ module.exports = function( grunt ) {
         // Ref. https://www.npmjs.com/package/grunt-checktextdomain
         checktextdomain: {
             options: {
-                text_domain: 'transcoder', //Specify allowed domain(s)
+                text_domain: 'godam', //Specify allowed domain(s)
                 keywords: [ //List keyword specifications
                     '__:1,2d',
                     '_e:1,2d',

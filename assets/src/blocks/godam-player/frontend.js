@@ -33,6 +33,7 @@ function easyDAMPlayer() {
 
 	videos.forEach( ( video ) => {
 		const adTagUrl = video.dataset.ad_tag_url;
+		let isVideoClicked = false;
 
 		const videoSetupOptions = video.dataset.options
 			? JSON.parse( video.dataset.options )
@@ -86,17 +87,23 @@ function easyDAMPlayer() {
 			player.currentTime( 0 );
 		}
 
+		function clearPreviewTimeout() {
+			if ( previewTimeoutId ) {
+				clearTimeout( previewTimeoutId );
+				previewTimeoutId = null;
+			}
+		}
+
 		video.addEventListener( 'click', () => {
 			if ( ! isPreviewEnabled ) {
 				return;
 			}
+			isVideoClicked = true;
+			clearPreviewTimeout();
 			if ( watcher.value ) {
 				player.currentTime( 0 );
 			}
 			watcher.value = false;
-			if ( previewTimeoutId ) {
-				clearTimeout( previewTimeoutId );
-			}
 			const controlBarElement = player.controlBar.el();
 			if ( controlBarElement.classList.contains( 'hide' ) ) {
 				controlBarElement.classList.remove( 'hide' );
@@ -113,12 +120,14 @@ function easyDAMPlayer() {
 			if ( ! isPreviewEnabled ) {
 				return;
 			}
-			if ( video.currentTime > 0 ) {
+
+			if ( video.currentTime > 0 || isVideoClicked ) {
 				return;
 			}
+
 			startPreview();
 			previewTimeoutId = setTimeout( () => {
-				if ( watcher.value ) {
+				if ( watcher.value && isPreviewEnabled ) {
 					stopPreview();
 					watcher.value = false; //set isPreview to false to show layers.
 				}
@@ -136,9 +145,6 @@ function easyDAMPlayer() {
         e.toElement?.parentElement?.className?.indexOf( 'easydam-player' ) !== -1
 			) {
 				return;
-			}
-			if ( previewTimeoutId ) {
-				clearTimeout( previewTimeoutId );
 			}
 			player.currentTime( 0 );
 			player.pause();
@@ -253,11 +259,6 @@ function easyDAMPlayer() {
 			} );
 		};
 
-		if ( ! isPreviewEnabled ) {
-			layers.forEach( ( layer ) => {
-				handleLayerDisplay( layer );
-			} );
-		}
 
 		formLayers.sort( ( a, b ) => a.displayTime - b.displayTime );
 

@@ -74,7 +74,7 @@ const App = () => {
 					}` }
 					onClick={ () => handleClick( -1 ) }
 				>
-					<p className="folder-list__text">{ __( 'All Media', 'transcoder' ) }</p>
+					<p className="folder-list__text">{ __( 'All Media', 'godam' ) }</p>
 				</button>
 
 				<button
@@ -84,7 +84,7 @@ const App = () => {
 					onClick={ () => handleClick( 0 ) }
 					data-id={ 0 }
 				>
-					<p className="folder-list__text">{ __( 'Uncategorized', 'transcoder' ) }</p>
+					<p className="folder-list__text">{ __( 'Uncategorized', 'godam' ) }</p>
 				</button>
 			</div>
 

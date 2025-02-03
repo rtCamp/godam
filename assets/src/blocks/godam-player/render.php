@@ -1,10 +1,10 @@
 <?php
 /**
- * Render template for the EasyDAM Player Block.
+ * Render template for the GoDAM Player Block.
  *
  * This file dynamically renders the video player block on the frontend.
  *
- * @package EasyDAM
+ * @package GoDAM
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -114,7 +114,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 				// FORM layer.
 				if ( isset( $layer['type'] ) && 'form' === $layer['type'] && ! empty( $layer['gf_id'] ) ) :
 					?>
-					<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>">
+					<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset($layer['bg_color']) ? esc_attr($layer['bg_color']) : '#FFFFFFB3'; ?>">
 						<div class="form-container">
 							<?php
 								$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
@@ -132,7 +132,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 					// CTA layer.
 				elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) :
 					?>
-					<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>">
+					<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset($layer['bg_color']) ? esc_attr($layer['bg_color']) : '#FFFFFFB3'; ?>">
 						<?php if ( 'text' === $layer['cta_type'] ) : ?>
 							<div class="ql-editor easydam-layer--cta-text">
 								<?php echo wp_kses_post( $layer['text'] ); ?>
@@ -150,7 +150,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 					<div
 						id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
 						class="easydam-layer hidden hotspot-layer"
-						style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>"
+						 <?php if ( ! empty( $layer['bg_color'] ) ) : ?>style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>"<?php endif; ?>
 					>
 					</div>
 					<?php

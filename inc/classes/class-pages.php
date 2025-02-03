@@ -16,6 +16,16 @@ class Pages {
 	use Singleton;
 
 	/**
+	 * Hardcoded Slugs
+	 */
+	private $menu_slug = 'godam';
+	private $video_editor_slug = 'video_editor';
+	private $analytics_slug = 'analytics';
+	private $menu_page_id = 'toplevel_page_godam';
+	private $video_editor_page_id = 'godam_page_video_editor';
+	private $analytics_page_id = 'godam_page_analytics';
+
+	/**
 	 * Construct method.
 	 */
 	protected function __construct() {
@@ -46,9 +56,9 @@ class Pages {
 
 		wp_register_script(
 			'block-analytics-script',
-			RT_TRANSCODER_URL . 'assets/build/blocks/easydam-player/analytics.js',
+			RT_TRANSCODER_URL . 'assets/build/blocks/godam-player/analytics.js',
 			array( 'wp-element' ),
-			filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/easydam-player/analytics.js' ),
+			filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/godam-player/analytics.js' ),
 			true
 		);
 
@@ -79,30 +89,30 @@ class Pages {
 	 */
 	public function add_admin_pages() {
 		add_menu_page(
-			__( 'EasyDAM', 'transcoder' ),
-			__( 'EasyDAM', 'transcoder' ),
+			__( 'GoDAM', 'godam' ),
+			__( 'GoDAM', 'godam' ),
 			'manage_options',
-			'easydam',
-			array( $this, 'render_easydam_page' ),
+			$this->menu_slug,
+			array( $this, 'render_godam_page' ),
 			'dashicons-admin-generic',
 			30
 		);
 
 		add_submenu_page(
-			'easydam',
-			__( 'Video editor', 'transcoder' ),
-			__( 'Video editor', 'transcoder' ),
+			$this->menu_slug,
+			__( 'Video editor', 'godam' ),
+			__( 'Video editor', 'godam' ),
 			'edit_posts',
-			'video_editor',
+			$this->video_editor_slug,
 			array( $this, 'render_video_editor_page' )
 		);
 
 		add_submenu_page(
-			'easydam',
-			__( 'Analytics', 'transcoder' ),
-			__( 'Analytics', 'transcoder' ),
+			$this->menu_slug,
+			__( 'Analytics', 'godam' ),
+			__( 'Analytics', 'godam' ),
 			'edit_posts',
-			'analytics',
+			$this->analytics_slug,
 			array( $this, 'render_analytics_page' )
 		);
 	}
@@ -117,7 +127,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( 'toplevel_page_easydam', 'easydam_page_video_editor', 'easydam_page_analytics' ) ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id ) ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
@@ -131,11 +141,11 @@ class Pages {
 	}
 
 	/**
-	 * To render the easydam page.
+	 * To render the godam page.
 	 *
 	 * @return void
 	 */
-	public function render_easydam_page() {
+	public function render_godam_page() {
 		?>
 		<div id="root-easydam">
 			<div class="wrap flex min-h-[80vh] gap-4 my-4">
@@ -188,6 +198,7 @@ class Pages {
 	 * @return void
 	 */
 	public function render_video_editor_page() {
+
 		?>
 		<div id="root-video-editor">
 			<div class="progress-bar-wrapper">
@@ -222,21 +233,19 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( 'toplevel_page_easydam', 'easydam_page_video_editor', 'easydam_page_analytics' ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id ), true ) ) {
 			wp_register_style(
-				'transcoder-page-style-easydam',
+				'transcoder-page-style-godam',
 				RT_TRANSCODER_URL . '/pages/build/style.css',
 				array( 'wp-components' ),
 				filemtime( RT_TRANSCODER_PATH . '/pages/build/style.css' )
 			);
 
-			wp_enqueue_style( 'transcoder-page-style-easydam' );
+			wp_enqueue_style( 'transcoder-page-style-godam' );
 			wp_enqueue_media();
 		}
-
 		// Check if this is your custom admin page.
-		if ( $screen && 'easydam_page_video_editor' === $screen->id ) {
-
+		if ( $screen && $this->video_editor_page_id === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
 				RT_TRANSCODER_URL . '/pages/build/video-editor.js',
@@ -257,13 +266,13 @@ class Pages {
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
-		} elseif ( $screen && 'toplevel_page_easydam' === $screen->id ) {
+		} elseif ( $screen && $this->menu_page_id === $screen->id ) {
 
 			wp_register_script(
-				'transcoder-page-script-easydam',
-				RT_TRANSCODER_URL . '/pages/build/easydam.js',
+				'transcoder-page-script-godam',
+				RT_TRANSCODER_URL . '/pages/build/godam.js',
 				array( 'wp-element' ),
-				filemtime( RT_TRANSCODER_PATH . '/pages/build/easydam.js' ),
+				filemtime( RT_TRANSCODER_PATH . '/pages/build/godam.js' ),
 				true
 			);
 
@@ -283,7 +292,7 @@ class Pages {
 			}
 
 			wp_localize_script(
-				'transcoder-page-script-easydam',
+				'transcoder-page-script-godam',
 				'userData',
 				array(
 					'currentUserId'   => get_current_user_id(), // Current user ID.
@@ -296,8 +305,8 @@ class Pages {
 				)
 			);
 
-			wp_enqueue_script( 'transcoder-page-script-easydam' );
-		} elseif ( $screen && 'easydam_page_analytics' === $screen->id ) {
+			wp_enqueue_script( 'transcoder-page-script-godam' );
+		} elseif ( $screen && $this->analytics_page_id === $screen->id ) {
 
 			wp_register_script(
 				'd3-js',

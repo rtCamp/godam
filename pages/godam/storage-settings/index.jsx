@@ -54,7 +54,7 @@ const StorageSettings = () => {
 			dispatch(
 				setNotice( {
 					status: 'success',
-					message: __( 'Settings saved successfully.', 'transcoder' ),
+					message: __( 'Settings saved successfully.', 'godam' ),
 				} ),
 			);
 
@@ -63,7 +63,7 @@ const StorageSettings = () => {
 			dispatch(
 				setNotice( {
 					status: 'error',
-					message: __( 'Failed to save settings. Please try again.', 'transcoder' ),
+					message: __( 'Failed to save settings. Please try again.', 'godam' ),
 				} ),
 			);
 		}
@@ -80,7 +80,7 @@ const StorageSettings = () => {
 	return (
 		<>
 			<h2 className="py-2 border-b text-xl font-bold">
-				{ __( 'Storage Settings', 'transcoder' ) }
+				{ __( 'Storage Settings', 'godam' ) }
 			</h2>
 
 			{
@@ -106,8 +106,8 @@ const StorageSettings = () => {
 
 				<div className="mb-4">
 					<ToggleControl
-						label={ __( 'Offload Media', 'transcoder' ) }
-						help={ __( 'Synchronizes newly added media files from WordPress local storage to the configured storage provider.', 'transcoder' ) }
+						label={ __( 'Offload Media', 'godam' ) }
+						help={ __( 'Synchronizes newly added media files from WordPress local storage to the configured storage provider.', 'godam' ) }
 						disabled={ ! validation.isValid }
 						checked={ offLoadMedia }
 						onChange={ () => dispatch( setOffLoadMedia( ! offLoadMedia ) ) }
@@ -116,8 +116,8 @@ const StorageSettings = () => {
 
 				<div className="mb-6">
 					<TextControl
-						label={ __( 'Base Path', 'transcoder' ) }
-						help={ __( 'Specify the base path for storing media files in AWS S3.', 'transcoder' ) }
+						label={ __( 'Base Path', 'godam' ) }
+						help={ __( 'Specify the base path for storing media files in AWS S3.', 'godam' ) }
 						value={ bucketPath }
 						disabled={ ! validation.isValid }
 						onChange={ ( value ) => dispatch( setBucketPath( value ) ) }
@@ -126,7 +126,7 @@ const StorageSettings = () => {
 
 				<div className="bg-gray-100 p-4 rounded-lg border border-gray-200">
 					<h4 className="text-md font-semibold mb-2">
-						{ __( 'URL Preview', 'transcoder' ) }
+						{ __( 'URL Preview', 'godam' ) }
 					</h4>
 					<p className="text-gray-600">
 						<span className="text-blue-600 font-mono">
@@ -142,7 +142,7 @@ const StorageSettings = () => {
 					className="max-w-[140px] w-full flex justify-center items-center"
 					onClick={ () => handleSaveSettings( { offLoadMedia, bucketPath, aws } ) }
 				>
-					{ __( 'Save settings', 'transcoder' ) }
+					{ __( 'Save settings', 'godam' ) }
 				</Button>
 			</div>
 

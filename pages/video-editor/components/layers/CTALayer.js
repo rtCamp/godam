@@ -127,12 +127,12 @@ const CTALayer = ( { layerID, goBack } ) => {
 			<div className="flex justify-between items-center pb-3 border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
 				<p className="font-semibold">
-					{ __( 'Form layer at', 'transcoder' ) } { layer.displayTime }s
+					{ __( 'Form layer at', 'godam' ) } { layer.displayTime }s
 				</p>
 				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
 				{ isOpen && (
 					<Modal
-						title={ __( 'Delete layer', 'transcoder' ) }
+						title={ __( 'Delete layer', 'godam' ) }
 						onRequestClose={ () => setOpen( false ) }
 					>
 						<div className="flex justify-between items-center gap-3">
@@ -142,24 +142,24 @@ const CTALayer = ( { layerID, goBack } ) => {
 								variant="primary"
 								onClick={ handleDeleteLayer }
 							>
-								{ __( 'Delete layer', 'transcoder' ) }
+								{ __( 'Delete layer', 'godam' ) }
 							</Button>
 							<Button
 								className="w-full justify-center"
 								variant="secondary"
 								onClick={ () => setOpen( false ) }
 							>
-								{ __( 'Cancel', 'transcoder' ) }
+								{ __( 'Cancel', 'godam' ) }
 							</Button>
 						</div>
 					</Modal>
 				) }
 			</div>
 			<div className="flex flex-col">
-				<p className="mb-4">{ __( 'Call to Action', 'transcoder' ) }</p>
+				<p className="mb-4">{ __( 'Call to Action', 'godam' ) }</p>
 				<SelectControl
 					__next40pxDefaultSize
-					label={ __( 'Select type', 'transcoder' ) }
+					label={ __( 'Select type', 'godam' ) }
 					className="mb-4"
 					options={ [
 						{
@@ -182,7 +182,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 
 				{ /* Common settings */ }
 				<ToggleControl
-					label={ __( 'Allow user to skip', 'transcoder' ) }
+					label={ __( 'Allow user to skip', 'godam' ) }
 					checked={ layer.allow_skip }
 					onChange={ ( value ) =>
 						dispatch(
@@ -191,22 +191,22 @@ const CTALayer = ( { layerID, goBack } ) => {
 					}
 					help={ __(
 						'If enabled, the user will be able to skip the form submission.',
-						'transcoder',
+						'godam',
 					) }
 					className="mb-4"
 				/>
 
 				<Panel className="-mx-4 border-x-0">
 					<PanelBody
-						title={ __( 'Advance', 'transcoder' ) }
+						title={ __( 'Advance', 'godam' ) }
 						initialOpen={ false }
 					>
 						{ /* Layer background color */ }
-						<label htmlFor="color" className="easydam-label">{ __( 'Color', 'transcoder' ) }</label>
+						<label htmlFor="color" className="easydam-label">{ __( 'Color', 'godam' ) }</label>
 						<ColorPickerButton
 							className="mb-4"
 							value={ layer?.bg_color ?? '#FFFFFFB3' }
-							label={ __( 'Layer background color', 'transcoder' ) }
+							label={ __( 'Layer background color', 'godam' ) }
 							enableAlpha={ true }
 							onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
 						/>
@@ -246,7 +246,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 							iconSize="18"
 							iconPosition="right"
 						>
-							{ __( 'Skip', 'transcoder' ) }
+							{ __( 'Skip', 'godam' ) }
 						</Button>
 					) }
 				</>
