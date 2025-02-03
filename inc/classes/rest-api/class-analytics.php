@@ -126,18 +126,18 @@ class Analytics extends Base {
 		// If no data found, return empty response.
 		return new WP_REST_Response(
 			array(
-				'status'  => 'success',
+				'status' => 'success',
 				'data'   => array(
-					'account_token'  => '',
-					'all_time_heatmap' => json_encode([]),
-					'date' => date('Y-m-d'),
-					'heatmap' => json_encode([]),
-					'page_load' => 0,
-					'play_time' => 0.0,
-					'plays' => 0,
-					'site_url' => '',
-					'video_id' => 0,
-					'video_length' => 0.0,
+					'account_token'    => '',
+					'all_time_heatmap' => wp_json_encode( array() ),
+					'date'             => gmdate( 'Y-m-d' ),
+					'heatmap'          => wp_json_encode( array() ),
+					'page_load'        => 0,
+					'play_time'        => 0.0,
+					'plays'            => 0,
+					'site_url'         => '',
+					'video_id'         => 0,
+					'video_length'     => 0.0,
 				),
 			),
 			200
