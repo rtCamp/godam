@@ -104,15 +104,6 @@ class RetranscodeMedia {
 	 */
 	public function add_admin_menu() {
 
-		add_submenu_page(
-			'rt-transcoder',
-			'Transcoder',
-			'Settings',
-			'manage_options',
-			'rt-transcoder',
-			array( $this, '_transcoder_settings_page' )
-		);
-
 		$this->menu_id = add_submenu_page(
 			'godam',
 			__( 'Tools', 'godam' ),
