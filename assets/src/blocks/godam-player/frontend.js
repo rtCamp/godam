@@ -259,11 +259,6 @@ function easyDAMPlayer() {
 			} );
 		};
 
-		if ( ! isPreviewEnabled ) {
-			layers.forEach( ( layer ) => {
-				handleLayerDisplay( layer );
-			} );
-		}
 
 		formLayers.sort( ( a, b ) => a.displayTime - b.displayTime );
 
