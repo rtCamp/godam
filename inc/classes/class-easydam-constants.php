@@ -23,4 +23,5 @@ class EasyDAM_Constants {
 	 * Analytics Microservice URLs
 	 */
 	const ANALYTICS_ENDPOINT_DEV = 'https://analytics.godam.rt.gw/';
+	// const ANALYTICS_ENDPOINT_DEV = 'http://127.0.0.1:8000/';
 }
