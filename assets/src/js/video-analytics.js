@@ -283,5 +283,7 @@ async function main() {
 	}
 }
 
-document.addEventListener( 'DOMContentLoaded', setTimeout( main, 500 ) );
+document.addEventListener( 'DOMContentLoaded', () => {
+	setTimeout( main, 500 );
+} );
 
