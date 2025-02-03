@@ -377,7 +377,7 @@ class Media_Library extends Base {
 			}
 		}
 
-		$data = [];
+		$data = array();
 
 		if ( ! empty( $selected_thumbnail ) ) {
 			$data['selected'] = $selected_thumbnail;
@@ -387,8 +387,8 @@ class Media_Library extends Base {
 
 		return rest_ensure_response(
 			array(
-				'success'    => true,
-				'data'  => $data,
+				'success' => true,
+				'data'    => $data,
 			) 
 		);
 	}
