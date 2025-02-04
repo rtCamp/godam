@@ -558,8 +558,10 @@ function easyDAMPlayer() {
 		}
 
 		player.ready( function() {
-			player.ima.initializeAdDisplayContainer();
-			player.ima.requestAds();
+			// if ( adTagUrl ) {
+			// 	player.ima.initializeAdDisplayContainer();
+			// 	player.ima.requestAds();
+			// }
 		} );
 	} );
 }
