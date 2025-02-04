@@ -246,7 +246,7 @@ async function main() {
 	console.log( 'Analytics data: ', analyticsData );
 
 	// Extract values from the analytics response
-	const { plays, page_load: pageLoad, play_time: playTime, video_length: videoLength, heatmap } = analyticsData;
+	const { plays, page_load: pageLoad, play_time: playTime, video_length: videoLength, all_time_heatmap: allTimeHeatmap } = analyticsData;
 
 	// Calculate analytics metrics
 	const playRate = pageLoad ? ( plays / pageLoad ) * 100 : 0; // Convert to percentage
@@ -259,7 +259,7 @@ async function main() {
 	document.getElementById( 'engagement-rate' ).innerText = `${ engagementRate.toFixed( 2 ) }%`;
 
 	// Convert heatmap string into an array
-	const heatmapData = JSON.parse( heatmap );
+	const heatmapData = JSON.parse( allTimeHeatmap );
 
 	const videoPlayer = videojs( 'analytics-video', {
 		fluid: true,
@@ -283,5 +283,7 @@ async function main() {
 	}
 }
 
-document.addEventListener( 'DOMContentLoaded', setTimeout( main, 500 ) );
+document.addEventListener( 'DOMContentLoaded', () => {
+	setTimeout( main, 500 );
+} );
 

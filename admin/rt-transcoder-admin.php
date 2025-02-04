@@ -83,7 +83,6 @@ class RT_Transcoder_Admin {
 		$this->transcoder_handler = new RT_Transcoder_Handler();
 
 		if ( is_admin() ) {
-			add_action( 'admin_menu', array( $this, 'menu' ) );
 			add_action( 'admin_init', array( $this, 'register_transcoder_settings' ) );
 			if ( class_exists( 'RTMediaEncoding' ) ) {
 				$old_rtmedia_encoding_key = get_site_option( 'rtmedia-encoding-api-key' );
@@ -126,15 +125,6 @@ class RT_Transcoder_Admin {
 	}
 
 	/**
-	 * Create menu.
-	 *
-	 * @since    1.0.0
-	 */
-	public function menu() {
-		add_menu_page( 'Transcoder', 'Transcoder', 'manage_options', 'rt-transcoder', array( $this, 'settings_page' ), RT_TRANSCODER_URL . 'admin/images/menu-icon.png', '40.2222' );
-	}
-
-	/**
 	 * Register transcoder settings.
 	 *
 	 * @since    1.0.0
@@ -143,15 +133,6 @@ class RT_Transcoder_Admin {
 		register_setting( 'rt-transcoder-settings-group', 'number_of_thumbs' );
 		register_setting( 'rt-transcoder-settings-group', 'rtt_override_thumbnail' );
 		register_setting( 'rt-transcoder-settings-group', 'rtt_client_check_status_button' );
-	}
-
-	/**
-	 * Display settings page.
-	 *
-	 * @since    1.0.0
-	 */
-	public function settings_page() {
-		include_once RT_TRANSCODER_PATH . 'admin/partials/rt-transcoder-admin-display.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 	}
 
 	/**

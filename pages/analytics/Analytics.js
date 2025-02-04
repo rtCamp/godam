@@ -47,24 +47,24 @@ const Analytics = ( { attachmentID } ) => {
 				<div id="video-analytics-container" className="video-analytics-container hidden">
 					<div className="overflow-auto">
 
-				<div className="flex gap-8 items-start">
-					<div className="min-w-[350px] max-w-[350px] flex-grow">
-						<h2 className="text-lg m-0 mb-2">{ __( 'Analytics', 'godam' ) }</h2>
+						<div className="flex gap-8 items-start">
+							<div className="min-w-[350px] max-w-[350px] flex-grow">
+								<h2 className="text-lg m-0 mb-2">{ __( 'Analytics', 'godam' ) }</h2>
 
 								<div className="analytics-info-container border-t border-gray-500">
-									<div className="analytics-info">
-										<span id="engagement-rate">0%</span>
+									<div className="analytics-info flex justify-between">
 										<p>{ __( 'Average Engagement', 'godam' ) }</p>
+										<span id="engagement-rate" className="min-w-[90px]">0%</span>
 									</div>
 									<hr />
-									<div className="analytics-info">
-										<span id="total-plays">0</span>
+									<div className="analytics-info flex justify-between">
 										<p>{ __( 'Total Plays', 'godam' ) }</p>
+										<span id="total-plays" className="min-w-[90px]">0</span>
 									</div>
 									<hr />
-									<div className="analytics-info">
-										<span id="play-rate">0%</span>
+									<div className="analytics-info flex justify-between">
 										<p>{ __( 'Play Rate', 'godam' ) }</p>
+										<span id="play-rate" className="min-w-[90px]">0%</span>
 									</div>
 									<hr />
 								</div>
@@ -89,7 +89,13 @@ const Analytics = ( { attachmentID } ) => {
 										</div>
 									</div>
 									<div className="video-container">
-										<div id="heatmap-container">
+										<div id="heatmap-container" className="mt-4">
+											<h3 className="text-md font-semibold text-gray-700 mb-2">
+												{ __( 'Heatmap Analysis', 'godam' ) }
+											</h3>
+											<p className="text-sm text-gray-500 mb-2">
+												{ __( 'The heatmap visualizes the most-watched portions of your video. Darker areas indicate higher engagement.', 'godam' ) }
+											</p>
 											<svg id="heatmap" width="640" height="100"></svg>
 											<div className="heatmap-tooltip"></div>
 										</div>
