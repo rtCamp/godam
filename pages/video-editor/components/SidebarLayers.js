@@ -20,22 +20,22 @@ import Layer from './layers/Layer';
 
 const layerTypes = [
 	{
-		title: __( 'Gravity Forms', 'transcoder' ),
+		title: __( 'Gravity Forms', 'godam' ),
 		icon: preformatted,
 		type: 'form',
 	},
 	{
-		title: __( 'CTA', 'transcoder' ),
+		title: __( 'CTA', 'godam' ),
 		icon: customLink,
 		type: 'cta',
 	},
 	{
-		title: __( 'Hotspot', 'transcoder' ),
+		title: __( 'Hotspot', 'godam' ),
 		icon: customPostType,
 		type: 'hotspot',
 	},
 	{
-		title: __( 'Ad', 'transcoder' ),
+		title: __( 'Ad', 'godam' ),
 		icon: video,
 		type: 'ad',
 	},
@@ -138,10 +138,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 								let toolTipMessage = '';
 
 								if ( isAdServerAd ) {
-									toolTipMessage = __( 'This ad will be overriden by Ad server\'s ads', 'transcoder' );
+									toolTipMessage = __( 'This ad will be overriden by Ad server\'s ads', 'godam' );
 									addWarning = true;
 								} else if ( isGFPluginNotActive ) {
-									toolTipMessage = __( 'Gravity Forms plugin is not active', 'transcoder' );
+									toolTipMessage = __( 'Gravity Forms plugin is not active', 'godam' );
 									addWarning = true;
 								} else {
 									toolTipMessage = '';
@@ -177,7 +177,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 						}
 						{
 							! loading && layers.length === 0 && (
-								<p className="text-center py-4 text-gray-400">{ __( 'No layers added.', 'transcoder' ) }</p>
+								<p className="text-center py-4 text-gray-400">{ __( 'No layers added.', 'godam' ) }</p>
 							)
 						}
 						{
@@ -205,17 +205,17 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 								iconPosition="left"
 								onClick={ openModal }
 								disabled={ ! currentTime || layers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
-							>{ __( 'Add layer at ', 'transcoder' ) } { currentTime }s
+							>{ __( 'Add layer at ', 'godam' ) } { currentTime }s
 							</Button>
 							{ layers.find( ( l ) => l.displayTime === currentTime ) && (
 								<p className="text-slate-500">
-									{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'transcoder' ) }
+									{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
 								</p>
 							) }
 						</div>
 						}
 						{ isOpen && (
-							<Modal title={ __( 'Select layer type', 'transcoder' ) } onRequestClose={ closeModal }>
+							<Modal title={ __( 'Select layer type', 'godam' ) } onRequestClose={ closeModal }>
 								<div className="flex flex-col gap-1">
 									{
 										layerTypes.map( ( layerType ) => {
@@ -225,10 +225,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 											let message = '';
 
 											if ( isAdServerAd ) {
-												message = __( 'This ad will be overriden by Ad server\'s ads', 'transcoder' );
+												message = __( 'This ad will be overriden by Ad server\'s ads', 'godam' );
 												isDisabled = true;
 											} else if ( isGFPluginNotActive ) {
-												message = __( 'Gravity Forms plugin is not active', 'transcoder' );
+												message = __( 'Gravity Forms plugin is not active', 'godam' );
 												isDisabled = true;
 											} else {
 												message = '';

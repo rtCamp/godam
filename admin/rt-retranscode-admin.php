@@ -104,21 +104,12 @@ class RetranscodeMedia {
 	 */
 	public function add_admin_menu() {
 
-		add_submenu_page(
-			'rt-transcoder',
-			'Transcoder',
-			'Settings',
-			'manage_options',
-			'rt-transcoder',
-			array( $this, '_transcoder_settings_page' )
-		);
-
 		$this->menu_id = add_submenu_page(
-			'easydam',
-			__( 'Tools', 'transcoder' ),
-			__( 'Tools', 'transcoder' ),
+			'godam',
+			__( 'Tools', 'godam' ),
+			__( 'Tools', 'godam' ),
 			$this->capability,
-			'easydam-tools',
+			'godam-tools',
 			array( $this, 'render_tools_page' )
 		);
 	}
@@ -130,10 +121,10 @@ class RetranscodeMedia {
 		$this->add_easydam_meta_boxes()
 		?>
 		<div>
-			<h1><?php esc_html_e( 'EasyDAM Tools', 'transcoder' ); ?></h1>
+			<h1><?php esc_html_e( 'GoDAM Tools', 'godam' ); ?></h1>
 			<div id="easydam-tools-widget">
 				<?php
-				do_meta_boxes( 'easydam-tools', 'normal', null );
+				do_meta_boxes( 'godam-tools', 'normal', null );
 				?>
 			</div>
 		</div>
@@ -147,14 +138,13 @@ class RetranscodeMedia {
 
 		add_meta_box(
 			'retranscode_media_widget',                 // ID of the meta box
-			__( 'Retranscode Media', 'transcoder' ),    // Title of the meta box
+			__( 'Retranscode Media', 'godam' ),    // Title of the meta box
 			array( $this, 'retranscode_interface' ), // Callback to render the meta box
-			'easydam-tools',                            // Screen (matches submenu slug)
+			'godam-tools',                            // Screen (matches submenu slug)
 			'normal',                                   // Context (main column)
 			'high'                                      // Priority
 		);
 	}
-
 
 	/**
 	 * Transcoder settings render.
@@ -218,8 +208,8 @@ class RetranscodeMedia {
 		$actions['retranscode_media'] = sprintf(
 			'<a href="%s" title="%s">%s</a>',
 			esc_url( $url ),
-			esc_attr__( 'Retranscode this single media', 'transcoder' ),
-			__( 'Retranscode Media', 'transcoder' )
+			esc_attr__( 'Retranscode this single media', 'godam' ),
+			__( 'Retranscode Media', 'godam' )
 		);
 
 		return $actions;
@@ -240,7 +230,7 @@ class RetranscodeMedia {
 			unset( $actions['delete'] );
 		}
 
-		$actions['bulk_retranscode_media'] = __( 'Retranscode Media', 'transcoder' );
+		$actions['bulk_retranscode_media'] = __( 'Retranscode Media', 'godam' );
 
 		if ( $delete ) {
 			$actions['delete'] = $delete;
@@ -259,7 +249,7 @@ class RetranscodeMedia {
 		?>
 		<script type="text/javascript">
 			jQuery(document).ready(function($){
-				$('select[name^="action"] option:last-child').before('<option value="bulk_retranscode_media"><?php esc_html_e( 'Retranscode Media', 'transcoder' ); ?></option>');
+				$('select[name^="action"] option:last-child').before('<option value="bulk_retranscode_media"><?php esc_html_e( 'Retranscode Media', 'godam' ); ?></option>');
 			});
 		</script>
 		<?php
@@ -316,7 +306,7 @@ class RetranscodeMedia {
 			if ( ! empty( $_POST['rt-retranscoder'] ) || ! empty( $_REQUEST['ids'] ) ) {
 				// Capability check.
 				if ( ! current_user_can( $this->capability ) ) {
-					wp_die( esc_html__( 'Cheatin&#8217; uh?', 'transcoder' ) );
+					wp_die( esc_html__( 'Cheatin&#8217; uh?', 'godam' ) );
 				}
 
 				// Form nonce check.
@@ -350,7 +340,7 @@ class RetranscodeMedia {
 					if ( empty( $media ) || is_wp_error( $media ) ) {
 
 						// translators: Link to the media page.
-						echo '	<p>' . sprintf( esc_html__( "Unable to find any media. Are you sure <a href='%s'>some exist</a>?", 'transcoder' ), esc_url( admin_url( 'upload.php' ) ) ) . '</p></div>';
+						echo '	<p>' . sprintf( esc_html__( "Unable to find any media. Are you sure <a href='%s'>some exist</a>?", 'godam' ), esc_url( admin_url( 'upload.php' ) ) ) . '</p></div>';
 						return;
 					}
 
@@ -376,7 +366,7 @@ class RetranscodeMedia {
 				}
 
 				if ( empty( $ids ) ) {
-					echo '	<p>' . esc_html__( 'There are no media available to send for transcoding.', 'transcoder' ) . '</p>';
+					echo '	<p>' . esc_html__( 'There are no media available to send for transcoding.', 'godam' ) . '</p>';
 					return;
 				}
 
@@ -386,20 +376,20 @@ class RetranscodeMedia {
 							if ( $usage_info[ $this->api_key ]->remaining < $file_size ) {
 								$this->retranscode_admin_error_notice();
 								// User doesn't have enough bandwidth remaining for re-transcoding.
-								echo '	<p>' . esc_html__( 'You do not have sufficient bandwidth remaining to perform the transcoding.', 'transcoder' ) . '</p>';
-								echo '	<p><b>' . esc_html__( 'Your remaining bandwidth is : ', 'transcoder' ) . esc_html( size_format( $usage_info[ $this->api_key ]->remaining, 2 ) ) . '</b></p>';
-								echo '	<p><b>' . esc_html__( 'Required bandwidth is: ', 'transcoder' ) . esc_html( size_format( $file_size, 2 ) ) . '</b></p></div>';
+								echo '	<p>' . esc_html__( 'You do not have sufficient bandwidth remaining to perform the transcoding.', 'godam' ) . '</p>';
+								echo '	<p><b>' . esc_html__( 'Your remaining bandwidth is : ', 'godam' ) . esc_html( size_format( $usage_info[ $this->api_key ]->remaining, 2 ) ) . '</b></p>';
+								echo '	<p><b>' . esc_html__( 'Required bandwidth is: ', 'godam' ) . esc_html( size_format( $file_size, 2 ) ) . '</b></p></div>';
 								if ( $usage_info[ $this->api_key ]->remaining > 0 ) {
 									if ( is_array( $files ) && count( $files ) > 0 ) {
 										?>
-										<div><p><?php esc_html_e( 'You can select the files manually and try again.', 'transcoder' ); ?></p>
+										<div><p><?php esc_html_e( 'You can select the files manually and try again.', 'godam' ); ?></p>
 										<form method="POST" action="<?php esc_url( admin_url( 'admin.php' ) ); ?>">
 										<?php wp_nonce_field( 'rt-retranscoder' ); ?>
 										<input type="hidden" name="page" value="rt-retranscoder">
 										<table border=0>
 										?>
 											<tr>
-												<td><input type="submit" class="button button-primary button-small" value="<?php esc_attr_e( 'Proceed with retranscoding', 'transcoder' ); ?>"></td>
+												<td><input type="submit" class="button button-primary button-small" value="<?php esc_attr_e( 'Proceed with retranscoding', 'godam' ); ?>"></td>
 												<td></td>
 											</tr>
 										<?php
@@ -413,7 +403,7 @@ class RetranscodeMedia {
 										}
 										?>
 											<tr>
-												<td><input type="submit" class="button button-primary button-small" value="<?php esc_attr_e( 'Proceed with retranscoding', 'transcoder' ); ?>" ></td>
+												<td><input type="submit" class="button button-primary button-small" value="<?php esc_attr_e( 'Proceed with retranscoding', 'godam' ); ?>" ></td>
 												<td></td>
 											</tr>
 										</table>
@@ -427,45 +417,45 @@ class RetranscodeMedia {
 					}
 				}
 				?>
-				<p><?php esc_html_e( 'Your files are being re-transcoded. Do not navigate away from this page until the process is completed, as doing so will prematurely abort the script. Retranscoding can take a while, especially for larger files. You can view the progress below.', 'transcoder' ); ?></p>
+				<p><?php esc_html_e( 'Your files are being re-transcoded. Do not navigate away from this page until the process is completed, as doing so will prematurely abort the script. Retranscoding can take a while, especially for larger files. You can view the progress below.', 'godam' ); ?></p>
 
 				<?php
 				$count = count( $media );
 
 				// translators: Count of media which were successfully transcoded with the time in seconds.
-				$text_goback = ( ! empty( $_GET['goback'] ) ) ? __( 'To go back to the previous page, <a id="retranscode-goback" href="#">click here</a>.', 'transcoder' ) : '';
+				$text_goback = ( ! empty( $_GET['goback'] ) ) ? __( 'To go back to the previous page, <a id="retranscode-goback" href="#">click here</a>.', 'godam' ) : '';
 
 				// translators: Count of media which were successfully and media which were failed transcoded with the time in seconds and previout page link.
-				$text_failures = sprintf( __( 'All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were %3$s failure(s). To try transcoding the failed media again, <a href="%4$s">click here</a>. %5$s', 'transcoder' ), "' + rt_successes + '", "' + rt_totaltime + '", "' + rt_errors + '", esc_url( wp_nonce_url( admin_url( 'admin.php?page=rt-retranscoder&goback=1' ), 'rt-retranscoder' ) . '&ids=' ) . "' + rt_failedlist + '", $text_goback );
+				$text_failures = sprintf( __( 'All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were %3$s failure(s). To try transcoding the failed media again, <a href="%4$s">click here</a>. %5$s', 'godam' ), "' + rt_successes + '", "' + rt_totaltime + '", "' + rt_errors + '", esc_url( wp_nonce_url( admin_url( 'admin.php?page=rt-retranscoder&goback=1' ), 'rt-retranscoder' ) . '&ids=' ) . "' + rt_failedlist + '", $text_goback );
 				// translators: Count of media which were successfully transcoded with the time in seconds and previout page link.
-				$text_nofailures = sprintf( __( 'All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were 0 failures. %3$s', 'transcoder' ), "' + rt_successes + '", "' + rt_totaltime + '", $text_goback );
+				$text_nofailures = sprintf( __( 'All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were 0 failures. %3$s', 'godam' ), "' + rt_successes + '", "' + rt_totaltime + '", $text_goback );
 				?>
 
 
-			<noscript><p><em><?php esc_html_e( 'You must enable Javascript in order to proceed!', 'transcoder' ); ?></em></p></noscript>
+			<noscript><p><em><?php esc_html_e( 'You must enable Javascript in order to proceed!', 'godam' ); ?></em></p></noscript>
 
 			<div id="retranscodemedia-bar" style="position:relative;height:25px;">
 				<div id="retranscodemedia-bar-percent" style="position:absolute;left:50%;top:50%;width:300px;margin-left:-150px;height:25px;margin-top:-9px;font-weight:bold;text-align:center;"></div>
 			</div>
 
-			<p><input type="button" class="button hide-if-no-js" name="retranscodemedia-stop" id="retranscodemedia-stop" value="<?php esc_attr_e( 'Abort the Operation', 'transcoder' ); ?>" /></p>
+			<p><input type="button" class="button hide-if-no-js" name="retranscodemedia-stop" id="retranscodemedia-stop" value="<?php esc_attr_e( 'Abort the Operation', 'godam' ); ?>" /></p>
 
-			<h3 class="title"><?php esc_html_e( 'Debugging Information', 'transcoder' ); ?></h3>
+			<h3 class="title"><?php esc_html_e( 'Debugging Information', 'godam' ); ?></h3>
 
 			<p>
 					<?php
 					// translators: Total count of the media.
-					printf( esc_html__( 'Total Media: %s', 'transcoder' ), esc_html( $count ) );
+					printf( esc_html__( 'Total Media: %s', 'godam' ), esc_html( $count ) );
 					?>
 					<br />
 					<?php
 					// translators: Count of media which were successfully sent to the transcoder server.
-					printf( esc_html__( 'Media Sent for Retranscoding: %s', 'transcoder' ), '<span id="retranscodemedia-debug-successcount">0</span>' );
+					printf( esc_html__( 'Media Sent for Retranscoding: %s', 'godam' ), '<span id="retranscodemedia-debug-successcount">0</span>' );
 					?>
 					<br />
 					<?php
 					// translators: Count of media which were failed while sending to the transcoder server.
-					printf( esc_html__( 'Failed While Sending: %s', 'transcoder' ), '<span id="retranscodemedia-debug-failurecount">0</span>' );
+					printf( esc_html__( 'Failed While Sending: %s', 'godam' ), '<span id="retranscodemedia-debug-failurecount">0</span>' );
 					?>
 			</p>
 
@@ -497,7 +487,7 @@ class RetranscodeMedia {
 					// Stop button
 					$("#retranscodemedia-stop").click(function() {
 						rt_continue = false;
-						$('#retranscodemedia-stop').val("<?php echo esc_js( $this->esc_quotes( __( 'Stopping...', 'transcoder' ) ) ); ?>");
+						$('#retranscodemedia-stop').val("<?php echo esc_js( $this->esc_quotes( __( 'Stopping...', 'godam' ) ) ); ?>");
 					});
 
 					// Clear out the empty list element that's there for HTML validation purposes
@@ -554,7 +544,7 @@ class RetranscodeMedia {
 					}
 					<?php
 						// translators: Media ID.
-						$error_response = sprintf( __( 'The resize request was abnormally terminated (ID %s). This is likely due to the media exceeding available memory or some other type of fatal error.', 'transcoder' ), '" + id + "' );
+						$error_response = sprintf( __( 'The resize request was abnormally terminated (ID %s). This is likely due to the media exceeding available memory or some other type of fatal error.', 'godam' ), '" + id + "' );
 					?>
 					// Regenerate a specified image via AJAX
 					function RetranscodeMedia( id ) {
@@ -607,22 +597,22 @@ class RetranscodeMedia {
 			<form method="post" action="">
 				<?php wp_nonce_field( 'rt-retranscoder' ); ?>
 
-			<p><?php printf( esc_html__( 'This tool will retranscode ALL audio/video media uploaded to your website. This can be handy if you need to transcode media files uploaded in the past.', 'transcoder' ) ); ?>
+			<p><?php printf( esc_html__( 'This tool will retranscode ALL audio/video media uploaded to your website. This can be handy if you need to transcode media files uploaded in the past.', 'godam' ) ); ?>
 
-			<i><?php printf( esc_html__( 'Sending your entire media library for retranscoding can consume a lot of your bandwidth allowance, so use this tool with care.', 'transcoder' ) ); ?></i></p>
+			<i><?php printf( esc_html__( 'Sending your entire media library for retranscoding can consume a lot of your bandwidth allowance, so use this tool with care.', 'godam' ) ); ?></i></p>
 
 			<p>
 					<?php
 					// translators: Placeholder is for admin media section link.
-					printf( wp_kses( __( "You can retranscode specific media files (rather than ALL media) from the <a href='%s'>Media</a> page using Bulk Action via drop down or mouse hover a specific media (audio/video) file.", 'transcoder' ), array( 'a' => array( 'href' => array() ) ) ), esc_url( admin_url( 'upload.php' ) ) );
+					printf( wp_kses( __( "You can retranscode specific media files (rather than ALL media) from the <a href='%s'>Media</a> page using Bulk Action via drop down or mouse hover a specific media (audio/video) file.", 'godam' ), array( 'a' => array( 'href' => array() ) ) ), esc_url( admin_url( 'upload.php' ) ) );
 					?>
 			</p>
 
-			<p><?php esc_html_e( 'To begin, just press the button below.', 'transcoder' ); ?></p>
+			<p><?php esc_html_e( 'To begin, just press the button below.', 'godam' ); ?></p>
 
-			<p><input type="submit" class="button hide-if-no-js button button-primary" name="rt-retranscoder" id="rt-retranscoder" value="<?php esc_attr_e( 'Retranscode All Media', 'transcoder' ); ?>" /></p>
+			<p><input type="submit" class="button hide-if-no-js button button-primary" name="rt-retranscoder" id="rt-retranscoder" value="<?php esc_attr_e( 'Retranscode All Media', 'godam' ); ?>" /></p>
 
-			<noscript><p><em><?php esc_html_e( 'You must enable Javascript in order to proceed!', 'transcoder' ); ?></em></p></noscript>
+			<noscript><p><em><?php esc_html_e( 'You must enable Javascript in order to proceed!', 'godam' ); ?></em></p></noscript>
 
 			</form>
 					<?php
@@ -656,21 +646,21 @@ class RetranscodeMedia {
 			)
 		) {
 			// translators: Media id of the invalid media type.
-			die( wp_json_encode( array( 'error' => sprintf( __( 'Sending Failed: %d is an invalid media ID/type.', 'transcoder' ), intval( $id ) ) ) ) );
+			die( wp_json_encode( array( 'error' => sprintf( __( 'Sending Failed: %d is an invalid media ID/type.', 'godam' ), intval( $id ) ) ) ) );
 		}
 
 		if ( 'audio/mpeg' === $media->post_mime_type ) {
 			// translators: Placeholder is for Media Name and ID of media.
-			die( wp_json_encode( array( 'error' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) is MP3 file already. No need to send for transcoding', 'transcoder' ), esc_html( get_the_title( $media->ID ) ), $media->ID ) ) ) );
+			die( wp_json_encode( array( 'error' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) is MP3 file already. No need to send for transcoding', 'godam' ), esc_html( get_the_title( $media->ID ) ), $media->ID ) ) ) );
 		}
 
 		if ( ! current_user_can( $this->capability ) ) {
-			$this->die_json_error_msg( $media->ID, __( "Your user account doesn't have permission to transcode", 'transcoder' ) );
+			$this->die_json_error_msg( $media->ID, __( "Your user account doesn't have permission to transcode", 'godam' ) );
 		}
 
 		// Check if media is already being transcoded.
 		if ( is_file_being_transcoded( $media->ID ) ) {
-			$this->die_json_error_msg( $media->ID, sprintf( __( 'The media is already being transcoded', 'transcoder' ) ) );
+			$this->die_json_error_msg( $media->ID, sprintf( __( 'The media is already being transcoded', 'godam' ) ) );
 		}
 
 		/**
@@ -717,13 +707,13 @@ class RetranscodeMedia {
 		$is_sent = get_post_meta( $media->ID, '_rt_transcoding_job_id', true );
 
 		if ( ! $is_sent ) {
-			$this->die_json_error_msg( $media->ID, __( 'Unknown failure reason.', 'transcoder' ) );
+			$this->die_json_error_msg( $media->ID, __( 'Unknown failure reason.', 'godam' ) );
 		}
 
 		update_post_meta( $media->ID, '_rt_retranscoding_sent', $is_sent );
 
 		// translators: Media name, Media id and success message for successfull transcode.
-		die( wp_json_encode( array( 'success' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) was successfully sent in %3$s seconds.', 'transcoder' ), esc_html( get_the_title( $media->ID ) ), $media->ID, timer_stop() ) ) ) );
+		die( wp_json_encode( array( 'success' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) was successfully sent in %3$s seconds.', 'godam' ), esc_html( get_the_title( $media->ID ) ), $media->ID, timer_stop() ) ) ) );
 	}
 
 	/**
@@ -734,7 +724,7 @@ class RetranscodeMedia {
 	 */
 	public function die_json_error_msg( $id, $message ) {
 		// translators: Media name, Media ID and message for failed transcode.
-		die( wp_json_encode( array( 'error' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) failed to sent. The error message was: %3$s', 'transcoder' ), esc_html( get_the_title( $id ) ), $id, $message ) ) ) );
+		die( wp_json_encode( array( 'error' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) failed to sent. The error message was: %3$s', 'godam' ), esc_html( get_the_title( $id ) ), $id, $message ) ) ) );
 	}
 
 	/**
@@ -755,7 +745,7 @@ class RetranscodeMedia {
 		?>
 		<div class="error error-info retranscode-notice is-dismissible">
 			<p>
-				<?php esc_html_e( 'Insufficient bandwidth!', 'transcoder' ); ?>
+				<?php esc_html_e( 'Insufficient bandwidth!', 'godam' ); ?>
 			</p>
 		</div>
 		<?php

@@ -548,15 +548,20 @@ input, textarea, select {
 }
 
 @keyframes oscillate {
-	0%, 100% {
+
+	0%,
+	100% {
 		left: 0%;
 		transform: scaleX(1);
 	}
+
 	50% {
 		left: 80%;
 		transform: scaleX(1);
 	}
-	25%, 75% {
+
+	25%,
+	75% {
 		transform: scaleX(2);
 	}
 }

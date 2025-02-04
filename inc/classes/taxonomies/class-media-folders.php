@@ -27,17 +27,17 @@ class Media_Folders extends Base {
 	public function get_labels() {
 
 		return array(
-			'name'              => _x( 'Media Folders', 'Media Folder', 'transcoder' ),
-			'singular_name'     => _x( 'Media Folder', 'Media Folder', 'transcoder' ),
-			'search_items'      => __( 'Search Media Folders', 'transcoder' ),
-			'all_items'         => __( 'All Media Folders', 'transcoder' ),
-			'parent_item'       => __( 'Parent Folder', 'transcoder' ),
-			'parent_item_colon' => __( 'Parent Folder:', 'transcoder' ),
-			'edit_item'         => __( 'Edit Media Folder', 'transcoder' ),
-			'update_item'       => __( 'Update Media Folder', 'transcoder' ),
-			'add_new_item'      => __( 'Add New Media Folder', 'transcoder' ),
-			'new_item_name'     => __( 'New Media Folder Name', 'transcoder' ),
-			'menu_name'         => __( 'Media Folders', 'transcoder' ),
+			'name'              => _x( 'Media Folders', 'Media Folder', 'godam' ),
+			'singular_name'     => _x( 'Media Folder', 'Media Folder', 'godam' ),
+			'search_items'      => __( 'Search Media Folders', 'godam' ),
+			'all_items'         => __( 'All Media Folders', 'godam' ),
+			'parent_item'       => __( 'Parent Folder', 'godam' ),
+			'parent_item_colon' => __( 'Parent Folder:', 'godam' ),
+			'edit_item'         => __( 'Edit Media Folder', 'godam' ),
+			'update_item'       => __( 'Update Media Folder', 'godam' ),
+			'add_new_item'      => __( 'Add New Media Folder', 'godam' ),
+			'new_item_name'     => __( 'New Media Folder Name', 'godam' ),
+			'menu_name'         => __( 'Media Folders', 'godam' ),
 		);
 	}
 

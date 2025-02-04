@@ -1,7 +1,7 @@
 /*
 Write your Sass code here for admin.
 */
-#toplevel_page_easydam .wp-submenu li:nth-child(4) { /** Hide the "Settings" submenu ***/
+#toplevel_page_godam .wp-submenu li:nth-child(4) { /** Hide the "Settings" submenu ***/
 	display: none;
 }
 
@@ -75,4 +75,27 @@ $media-frame-width: calc( 300px + 2 * 24px );
 
 .daterangepicker {
 	z-index: calc( 160000 + 1) !important; // for some reason media-model z-index is 160000
+}
+
+/**
+ * Admin page CSS changes for the top-level EasyDAM page.
+ */
+.toplevel_page_godam, .godam_page_video_editor {
+	--wp-admin-theme-color: #ab3a6c;
+
+	button, a, input {
+		--wp-components-color-accent: #ab3a6c;
+
+		&:hover {
+			--wp-components-color-accent-darker-10: #9a2d5e;
+		}
+
+		&:active {
+			--wp-components-color-accent-darker-20: #8a1f4f;
+		}
+	}
+
+	.circle {
+		--wp-components-color-accent: #E6533A;
+	}
 }

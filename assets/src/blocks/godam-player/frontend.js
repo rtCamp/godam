@@ -33,6 +33,7 @@ function easyDAMPlayer() {
 
 	videos.forEach( ( video ) => {
 		const adTagUrl = video.dataset.ad_tag_url;
+		let isVideoClicked = false;
 
 		const videoSetupOptions = video.dataset.options
 			? JSON.parse( video.dataset.options )
@@ -63,15 +64,14 @@ function easyDAMPlayer() {
 		};
 
 		function startPreview() {
-			video.muted = true;
-			video.currentTime = 0;
-			video.playbackRate = 1;
+			player.volume( 0 );
+			player.currentTime( 0 );
 			const controlBarElement = player.controlBar.el();
 			if ( controlBarElement ) {
 				controlBarElement.classList.add( 'hide' );
 			}
 			watcher.value = true;
-			video.play();
+			player.play();
 		}
 
 		function stopPreview() {
@@ -83,21 +83,27 @@ function easyDAMPlayer() {
 			if ( muteButton && muteButton.classList.contains( 'mute-button' ) ) {
 				muteButton.classList.remove( 'mute-button' );
 			}
-			video.pause();
-			video.currentTime = 0;
+			player.pause();
+			player.currentTime( 0 );
+		}
+
+		function clearPreviewTimeout() {
+			if ( previewTimeoutId ) {
+				clearTimeout( previewTimeoutId );
+				previewTimeoutId = null;
+			}
 		}
 
 		video.addEventListener( 'click', () => {
 			if ( ! isPreviewEnabled ) {
 				return;
 			}
+			isVideoClicked = true;
+			clearPreviewTimeout();
 			if ( watcher.value ) {
-				video.currentTime = 0;
+				player.currentTime( 0 );
 			}
 			watcher.value = false;
-			if ( previewTimeoutId ) {
-				clearTimeout( previewTimeoutId );
-			}
 			const controlBarElement = player.controlBar.el();
 			if ( controlBarElement.classList.contains( 'hide' ) ) {
 				controlBarElement.classList.remove( 'hide' );
@@ -114,12 +120,14 @@ function easyDAMPlayer() {
 			if ( ! isPreviewEnabled ) {
 				return;
 			}
-			if ( video.currentTime > 0 ) {
+
+			if ( video.currentTime > 0 || isVideoClicked ) {
 				return;
 			}
+
 			startPreview();
 			previewTimeoutId = setTimeout( () => {
-				if ( watcher.value ) {
+				if ( watcher.value && isPreviewEnabled ) {
 					stopPreview();
 					watcher.value = false; //set isPreview to false to show layers.
 				}
@@ -138,11 +146,8 @@ function easyDAMPlayer() {
 			) {
 				return;
 			}
-			if ( previewTimeoutId ) {
-				clearTimeout( previewTimeoutId );
-			}
-			video.currentTime = 0;
-			video.pause();
+			player.currentTime( 0 );
+			player.pause();
 			stopPreview();
 		} );
 
@@ -540,19 +545,23 @@ function easyDAMPlayer() {
 		} );
 
 		if ( adTagUrl ) {
-			console.log( 'player.ima is about to call' );
-
 			player.ima( {
 				id: 'content_video',
 				adTagUrl,
 			} );
 		}
 
-		player.qualityMenu();
+		try {
+			player.qualityMenu();
+		} catch ( e ) {
+			console.log( e );
+		}
 
 		player.ready( function() {
-			// player.ima.initializeAdDisplayContainer();
-			// player.ima.requestAds();
+			// if ( adTagUrl ) {
+			// 	player.ima.initializeAdDisplayContainer();
+			// 	player.ima.requestAds();
+			// }
 		} );
 	} );
 }

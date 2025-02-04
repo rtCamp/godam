@@ -84,12 +84,12 @@ function rt_media_shortcode( $attrs, $content = '' ) {
 
 	} elseif ( 'image' === $mime_type[0] ) {
 
-		$content = '<p>' . esc_html__( 'Image attachments are not handled by Transcoder plugin.', 'transcoder' ) . '</p>';
+		$content = '<p>' . esc_html__( 'Image attachments are not handled by Transcoder plugin.', 'godam' ) . '</p>';
 
 	}
 
 	if ( is_file_being_transcoded( $attachment_id ) ) {
-		$content .= '<p class="transcoding-in-progress"> ' . esc_html__( 'This file is being transcoded. Please wait.', 'transcoder' ) . '</p>';
+		$content .= '<p class="transcoding-in-progress"> ' . esc_html__( 'This file is being transcoded. Please wait.', 'godam' ) . '</p>';
 	}
 
 	/**
@@ -480,7 +480,7 @@ function rtt_bp_get_activity_content( $content, $activity = null ) {
 			if ( is_file_being_transcoded( $media->media_id ) ) {
 				if ( current_user_can( 'manage_options' ) && rtt_is_track_status_enabled() ) {
 
-					$check_button_text = __( 'Check Status', 'transcoder' );
+					$check_button_text = __( 'Check Status', 'godam' );
 
 					/**
 					 * Filters the text of transcoding process status check button.
@@ -495,13 +495,13 @@ function rtt_bp_get_activity_content( $content, $activity = null ) {
 						'<div class="transcoding-in-progress"><button id="btn_check_status%1$s" class="btn_check_transcode_status" name="check_status_btn" data-value="%1$s">%2$s</button> <div class="transcode_status_box" id="span_status%1$s">%3$s</div></div>',
 						esc_attr( $media->media_id ),
 						esc_html( $check_button_text ),
-						esc_html__( 'This file is converting. Please refresh the page after some time.', 'transcoder' )
+						esc_html__( 'This file is converting. Please refresh the page after some time.', 'godam' )
 					);
 
 				} else {
 					$message = sprintf(
 						'<p class="transcoding-in-progress">%s</p>',
-						esc_html__( 'This file is converting. Please refresh the page after some time.', 'transcoder' )
+						esc_html__( 'This file is converting. Please refresh the page after some time.', 'godam' )
 					);
 				}
 				/**
@@ -727,7 +727,7 @@ function rtt_get_remote_ip_address() {
  */
 function rtt_add_status_columns_head( $defaults ) {
 
-	$defaults['convert_status'] = __( 'Transcode Status', 'transcoder' );
+	$defaults['convert_status'] = __( 'Transcode Status', 'godam' );
 	return $defaults;
 }
 
@@ -750,7 +750,7 @@ function rtt_add_status_columns_content( $column_name, $post_id ) {
 	$transcoded_thumbs = get_post_meta( $post_id, '_rt_media_thumbnails', true );
 
 	if ( empty( $transcoded_files ) && is_file_being_transcoded( $post_id ) ) {
-		$check_button_text = __( 'Check Status', 'transcoder' );
+		$check_button_text = __( 'Check Status', 'godam' );
 
 		/**
 		 * Filters the text of transcoding process status check button.
@@ -767,7 +767,7 @@ function rtt_add_status_columns_content( $column_name, $post_id ) {
 		<?php
 
 	} elseif ( ! empty( $transcoded_files ) && ! empty( $transcoded_thumbs ) ) {
-		echo esc_html__( 'File is transcoded.', 'transcoder' );
+		echo esc_html__( 'File is transcoded.', 'godam' );
 	}
 }
 
@@ -921,14 +921,14 @@ function rtt_add_transcoding_process_status_button_single_media_page( $rtmedia_i
 	global $wpdb;
 	$rtmedia_media_table = $wpdb->prefix . 'rt_rtm_media';
 
-	$post_id = wp_cache_get( 'media_' . $rtmedia_id, 'transcoder' );
+	$post_id = wp_cache_get( 'media_' . $rtmedia_id, 'godam' );
 	if ( empty( $post_id ) ) {
 		$results = $wpdb->get_results( $wpdb->prepare( "SELECT media_id FROM $rtmedia_media_table WHERE id = %d", $rtmedia_id ), OBJECT ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- %s adds '' around table name.
 		$post_id = $results[0]->media_id;
-		wp_cache_set( 'media_' . $rtmedia_id, $post_id, 'transcoder', 3600 );
+		wp_cache_set( 'media_' . $rtmedia_id, $post_id, 'godam', 3600 );
 	}
 
-	$check_button_text = __( 'Check Status', 'transcoder' );
+	$check_button_text = __( 'Check Status', 'godam' );
 
 	/**
 	 * Filters the text of transcoding process status check button.
@@ -946,12 +946,12 @@ function rtt_add_transcoding_process_status_button_single_media_page( $rtmedia_i
 				'<div class="transcoding-in-progress"><button id="btn_check_status%1$s" class="btn_check_transcode_status" name="check_status_btn" data-value="%1$s">%2$s</button> <div class="transcode_status_box" id="span_status%1$s">%3$s</div></div>',
 				esc_attr( $post_id ),
 				esc_html( $check_button_text ),
-				esc_html__( 'This file is converting. Please click on check status button to know current status or refresh the page after some time. ', 'transcoder' )
+				esc_html__( 'This file is converting. Please click on check status button to know current status or refresh the page after some time. ', 'godam' )
 			);
 		} else {
 			$message = sprintf(
 				'<p class="transcoding-in-progress">%s</p>',
-				esc_html__( 'This file is converting. Please refresh the page after some time.', 'transcoder' )
+				esc_html__( 'This file is converting. Please refresh the page after some time.', 'godam' )
 			);
 		}
 
@@ -1073,7 +1073,7 @@ function rtt_get_blacklist_ip_addresses() {
  * @param string $license_key The license key to verify.
  * @return array|WP_Error Array with status and data on success, WP_Error on failure.
  */
-function rtt_verify_license( $license_key ) {
+function rtt_verify_license( $license_key, $save = false ) {
 	if ( empty( $license_key ) ) {
 		return new \WP_Error( 'missing_license_key', 'License key is required.', array( 'status' => 400 ) );
 	}
@@ -1097,13 +1097,16 @@ function rtt_verify_license( $license_key ) {
 
 	// Handle success response.
 	if ( 200 === $status_code && isset( $body['data'] ) ) {
-		// Save the license key in the site options only if it is verified.
-		update_site_option( 'rt-transcoding-api-key', $license_key );
-		update_site_option( 'rt-transcoding-api-key-stored', $license_key );
 
-		// Update usage data.
-		$handler = new \RT_Transcoder_Handler( false );
-		$handler->update_usage( $license_key );
+		if ( $save ) {
+			// Save the license key in the site options only if it is verified.
+			update_site_option( 'rt-transcoding-api-key', $license_key );
+			update_site_option( 'rt-transcoding-api-key-stored', $license_key );
+	
+			// Update usage data.
+			$handler = new \RT_Transcoder_Handler( false );
+			$handler->update_usage( $license_key );
+		}
 
 		return array(
 			'status'  => 'success',
@@ -1121,6 +1124,23 @@ function rtt_verify_license( $license_key ) {
 	return new \WP_Error( 'unexpected_error', 'An unexpected error occurred. Please try again later.', array( 'status' => 500 ) );
 }
 
+/**
+ * Mask string.
+ *
+ * @param string $input  Input string.
+ * @param int    $offset Offset.
+ *
+ * @return string
+ */
+function rtt_mask_string( $input, $offset = 4 ) {
+	$length = strlen( $input );
+	if ( $length <= $offset ) {
+		return $input; // If string length is equal or less than $offset, return as is.
+	}
+		
+	$masked = str_repeat( '*', $length - $offset ) . substr( $input, -$offset );
+	return $masked;
+}
 
 /**
  * Get the List of Categories for the post.
@@ -1134,13 +1154,13 @@ function rt_get_categories_list( $post_id ) {
 	$categories     = get_the_category( $post_id );
 	$category_names = array();
 
-	if( is_array( $categories ) && ! empty( $categories ) ) {
+	if ( is_array( $categories ) && ! empty( $categories ) ) {
 
 		foreach ( $categories as $category ) {
 			$category_names[] = $category->name;
 		}
 
-		$comma_separated = implode(', ', $category_names);
+		$comma_separated = implode( ', ', $category_names );
 
 		return $comma_separated;
 	}
@@ -1166,7 +1186,7 @@ function rt_get_tags_list( $post_id ) {
 			$tag_names[] = $tag->name;
 		}
 
-		$comma_separated = implode(', ', $tag_names);
+		$comma_separated = implode( ', ', $tag_names );
 		return $comma_separated;
 	}
 
@@ -1180,13 +1200,13 @@ function rt_get_tags_list( $post_id ) {
  */
 function rt_get_localize_array() {
 
-	$localize_array = [];
+	$localize_array = array();
 
-	$localize_array['endpoint']   = 'http://127.0.0.1:8000/'; // Temporarily on localhost.
+	$localize_array['endpoint']   = \Transcoder\Inc\EasyDAM_Constants::ANALYTICS_ENDPOINT_DEV;
 	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
 	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
 	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
-	$localize_array['postTitle'] = get_the_title();
+	$localize_array['postTitle']  = get_the_title();
 	$localize_array['locationIP'] = rtt_get_user_ip();
 	
 	/**
@@ -1197,9 +1217,9 @@ function rt_get_localize_array() {
 
 	$localize_array['userId'] = $current_user->ID;
 
-	if ( ! empty( ( array ) $current_user->data ) ) {
+	if ( ! empty( (array) $current_user->data ) ) {
 
-		$email_id = $current_user->data->user_email;
+		$email_id                  = $current_user->data->user_email;
 		$localize_array['emailId'] = $email_id;
 	}
 
@@ -1225,6 +1245,8 @@ function rt_get_localize_array() {
 		$localize_array['author'] = get_the_author();
 	}
 
+	$localize_array['token'] = get_site_option( 'rt-transcoding-api-key', 'unverified' );
+
 	return $localize_array;
 }
 
@@ -1234,16 +1256,16 @@ function rt_get_localize_array() {
  * @return string The user's IP address.
  */
 function rtt_get_user_ip() {
-    $ip_address = '';
+	$ip_address = '';
 
-    if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-        $ip_address = $_SERVER['HTTP_CLIENT_IP'];
-    } elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-        // Handle multiple IPs (e.g., in proxies).
-        $ip_address = explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] )[0];
-    } elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-        $ip_address = $_SERVER['REMOTE_ADDR'];
-    }
+	if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+		$ip_address = $_SERVER['HTTP_CLIENT_IP'];
+	} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+		// Handle multiple IPs (e.g., in proxies).
+		$ip_address = explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] )[0];
+	} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+		$ip_address = $_SERVER['REMOTE_ADDR'];
+	}
 
-    return esc_attr( $ip_address );
+	return esc_attr( $ip_address );
 }

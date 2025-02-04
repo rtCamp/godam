@@ -59,7 +59,7 @@ class Media_Filters {
 	public function handle_upload_to_s3() {
 
 		if ( ! current_user_can( 'upload_files' ) ) {
-			wp_send_json_error( array( 'error' => __( 'Permission denied.', 'transcoder' ) ) );
+			wp_send_json_error( array( 'error' => __( 'Permission denied.', 'godam' ) ) );
 		}
 
 		check_admin_referer( 'easydam_media_library', 'nonce' );
@@ -67,7 +67,7 @@ class Media_Filters {
 		$post_id = isset( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : 0;
 
 		if ( ! $post_id ) {
-			wp_send_json_error( array( 'error' => __( 'Invalid Post ID.', 'transcoder' ) ) );
+			wp_send_json_error( array( 'error' => __( 'Invalid Post ID.', 'godam' ) ) );
 		}
 
 		$this->handle_media_upload( array(), $post_id );
@@ -75,7 +75,7 @@ class Media_Filters {
 		$s3_url = get_post_meta( $post_id, 's3_url', true );
 
 		if ( empty( $s3_url ) ) {
-			wp_send_json_error( array( 'error' => __( 'Failed to upload to S3.', 'transcoder' ) ) );
+			wp_send_json_error( array( 'error' => __( 'Failed to upload to S3.', 'godam' ) ) );
 		}
 
 		wp_send_json_success( array( 'url' => esc_url( $s3_url ) ) );
@@ -97,7 +97,7 @@ class Media_Filters {
 				printf(
 					'<div class="notice notice-success"><p>%s</p></div>',
 					/* translators: %d: number of files */
-					sprintf( esc_html__( '%d files successfully uploaded to S3.', 'transcoder' ), intval( $success_count ) )
+					sprintf( esc_html__( '%d files successfully uploaded to S3.', 'godam' ), intval( $success_count ) )
 				);
 			}
 		}
@@ -109,7 +109,7 @@ class Media_Filters {
 				printf(
 					'<div class="notice notice-error"><p>%s</p></div>',
 					/* translators: %d: number of files */
-					sprintf( esc_html__( 'Failed to upload %d files to S3.', 'transcoder' ), intval( $error_count ) )
+					sprintf( esc_html__( 'Failed to upload %d files to S3.', 'godam' ), intval( $error_count ) )
 				);
 			}
 		}

@@ -22,7 +22,7 @@ const HtmlCTA = ( { layerID } ) => {
 
 	return (
 		<>
-			<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom HTML', 'transcoder' ) }</label>
+			<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom HTML', 'godam' ) }</label>
 			<Editor
 				id="custom-css"
 				className="code-editor"

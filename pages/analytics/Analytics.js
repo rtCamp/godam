@@ -2,118 +2,111 @@
  * External dependencies
  */
 import React, { useState, useEffect } from 'react';
+import 'video.js/dist/video-js.css';
+
 /**
  * Internal dependencies
  */
-import './analytics.css';
 import '../video-editor/style.scss';
-import VideoJS from './Video';
 import axios from 'axios';
 /**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
 
-const Chart = ( { data, duration, width } ) => {
-	const updatedWidth = 640 < width ? 640 : width;
-	const adjuster = updatedWidth / duration;
-	const opacity = ( 100 / data.length ) / 100;
-
-	return (
-		<div id="chart" className="chart mt-6 h-24" style={ {
-			width: updatedWidth,
-			border: data && data.ranges ? 'none' : '1px solid #b7b4b4', // Add border if no data
-		} }>
-			{ data && data.ranges &&
-			data.ranges.map( ( ranges, rangeIndex ) =>
-				ranges.map( ( range, index ) => (
-					<div
-						key={ `${ rangeIndex }-${ index }` }
-						className="chart-bar"
-						style={ {
-							left: `${ range[ 0 ] * adjuster }px`,
-							width: `${ ( range[ 1 ] - range[ 0 ] ) * adjuster }px`,
-							opacity,
-						} }
-					/>
-				) ),
-			) }
-		</div>
-	);
-};
-
 const Analytics = ( { attachmentID } ) => {
 	const [ analyticsData, setAnalyticsData ] = useState( null );
 
 	useEffect( () => {
-		const url = `/wp-json/wp/v2/media/${ attachmentID }`;
+		if ( attachmentID ) {
+			const url = `/wp-json/wp/v2/media/${ attachmentID }`;
 
-		axios
-			.get( url )
-			.then( ( response ) => {
-				const data = response.data;
-				setAnalyticsData( data );
-			} )
-			.catch( ( error ) => {
-				console.error( 'Failed to fetch data:', error );
-			} );
-	}, [ attachmentID ] );
-
-	const metadata = analyticsData?.easydam_meta?.videoConfig
-		? analyticsData.easydam_meta.videoConfig
-		: {
-			controls: true,
-			autoplay: false,
-			preload: 'auto',
-			fluid: true,
-			aspectRatio: '16:9',
-		};
+			axios
+				.get( url )
+				.then( ( response ) => {
+					const data = response.data;
+					setAnalyticsData( data );
+				} )
+				.catch( ( error ) => {
+					console.log( error );
+				} );
+		}
+	}, [] );
 
 	return (
-		<div className="analytics-container flex flex-col items-center">
-			<div className="video-info-container">
-				<div className="analytics-info-container">
-					{ analyticsData?.title?.rendered && (
-						<h1 className="mb-4">{ analyticsData?.title?.rendered }</h1>
-					) }
-					<div className="analytics-info">
-						<span>62%</span>
-						<p>{ __( 'Average Engagement', 'transcoder' ) }</p>
+		<>
+			<div id="loading-analytics-animation" className="progress-bar-wrapper">
+				<div className="progress-bar-container">
+					<div className="progress-bar">
+						<div className="progress-bar-inner"></div>
 					</div>
-					<hr />
-					<div className="analytics-info">
-						<span>104</span>
-						<p>{ __( 'Total Plays', 'transcoder' ) }</p>
-					</div>
-					<hr />
-					<div className="analytics-info">
-						<span>28%</span>
-						<p>{ __( 'Play Rate', 'transcoder' ) }</p>
-					</div>
-					<hr />
 				</div>
-				{ analyticsData && (
-					<VideoJS
-						options={ {
-							...metadata,
-							sources: [
-								{
-									src: analyticsData.source_url || '',
-									type: analyticsData.mime_type || 'video/mp4',
-								},
-							],
-						} }
-					/>
-				) }
 			</div>
+
 			{ analyticsData && (
-				<Chart
-					data={ analyticsData.easydam_analytics }
-					duration={ analyticsData.media_details.length || 1 }
-					width={ analyticsData.media_details.width || 1 }
-				/>
+				<div id="video-analytics-container" className="video-analytics-container hidden">
+					<div className="overflow-auto">
+
+						<div className="flex gap-8 items-start">
+							<div className="min-w-[350px] max-w-[350px] flex-grow">
+								<h2 className="text-lg m-0 mb-2">{ __( 'Analytics', 'godam' ) }</h2>
+
+								<div className="analytics-info-container border-t border-gray-500">
+									<div className="analytics-info flex justify-between">
+										<p>{ __( 'Average Engagement', 'godam' ) }</p>
+										<span id="engagement-rate" className="min-w-[90px]">0%</span>
+									</div>
+									<hr />
+									<div className="analytics-info flex justify-between">
+										<p>{ __( 'Total Plays', 'godam' ) }</p>
+										<span id="total-plays" className="min-w-[90px]">0</span>
+									</div>
+									<hr />
+									<div className="analytics-info flex justify-between">
+										<p>{ __( 'Play Rate', 'godam' ) }</p>
+										<span id="play-rate" className="min-w-[90px]">0%</span>
+									</div>
+									<hr />
+								</div>
+							</div>
+							<div className="min-w-[750px]">
+								<h2 className="text-lg m-0 mb-2 min-w-[640px]">{ analyticsData?.title?.rendered }</h2>
+
+								<div>
+									<div className="video-container">
+										<video
+											id="analytics-video"
+											className="video-js"
+											data-id={ attachmentID }
+										>
+											<source src={ analyticsData.source_url || '' } type={ analyticsData.mime_type || 'video/mp4' } />
+										</video>
+										<div className="video-chart-container">
+											<div id="chart-container">
+												<svg id="line-chart" width="640" height="300"></svg>
+												<div className="tooltip"></div>
+											</div>
+										</div>
+									</div>
+									<div className="video-container">
+										<div id="heatmap-container" className="mt-4">
+											<h3 className="text-md font-semibold text-gray-700 mb-2">
+												{ __( 'Heatmap Analysis', 'godam' ) }
+											</h3>
+											<p className="text-sm text-gray-500 mb-2">
+												{ __( 'The heatmap visualizes the most-watched portions of your video. Darker areas indicate higher engagement.', 'godam' ) }
+											</p>
+											<svg id="heatmap" width="640" height="100"></svg>
+											<div className="heatmap-tooltip"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
 			) }
-		</div>
+		</>
 	);
 };
 

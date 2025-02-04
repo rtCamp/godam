@@ -90,7 +90,48 @@ class Media_Library extends Base {
 						),
 					),
 				),
-			)
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/set-video-thumbnail',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'set_video_thumbnail' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+					'args'                => array(
+						'attachment_id' => array(
+							'required'    => true,
+							'type'        => 'integer',
+							'description' => 'Attachment ID to set video thumbnail for.',
+						),
+						'thumbnail_url' => array(
+							'required'    => true,
+							'type'        => 'string',
+							'description' => 'Attachment URL to set as the thumbnail.',
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/get-video-thumbnail',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_video_thumbnails' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+					'args'                => array(
+						'attachment_id' => array(
+							'required'    => true,
+							'type'        => 'integer',
+							'description' => 'Attachment ID to get video thumbnail for.',
+						),
+					),
+				),
+			),
 		);
 	}
 
@@ -276,5 +317,114 @@ class Media_Library extends Base {
 		}
 
 		return $fnumber;
+	}
+
+	/**
+	 * Get video thumbnails.
+	 * 
+	 * Get the video thumbnail for the attachment ID.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function get_video_thumbnails( $request ) {
+		$attachment_id = $request->get_param( 'attachment_id' );
+
+		// Check if attachment is of type video
+		$mime_type = get_post_mime_type( $attachment_id );
+
+		if ( ! preg_match( '/^video\//', $mime_type ) ) {
+			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 400 ) );
+		}
+
+		$thumbnail_array = get_post_meta( $attachment_id, 'rtmedia_media_thumbnails', true );
+
+		if ( ! is_array( $thumbnail_array ) ) {
+			$thumbnail_array = get_post_meta( $attachment_id, '_rt_media_thumbnails', true );
+		}
+
+		if ( ! is_array( $thumbnail_array ) ) {
+			return new \WP_Error( 'thumbnails_not_found', 'No thumbnails found.', array( 'status' => 404 ) );
+		}
+
+		if ( function_exists( 'wp_get_upload_dir' ) ) {
+			$uploads = wp_get_upload_dir();
+		} else {
+			$uploads = wp_upload_dir();
+		}
+
+		foreach ( $thumbnail_array as $key => $thumbnail_src ) {
+			$file_url = $thumbnail_src;
+
+			if ( 0 === strpos( $file_url, $uploads['baseurl'] ) ) {
+				$thumbnail_src = $file_url;
+			} else {
+				$thumbnail_src = $uploads['baseurl'] . '/' . $file_url;
+			}
+
+			$thumbnail_array[ $key ] = $thumbnail_src;
+		}
+
+		$selected_thumbnail = get_post_meta( $attachment_id, '_rt_media_video_thumbnail', true );
+
+		if ( ! empty( $selected_thumbnail ) ) {
+			$file_url = $selected_thumbnail;
+
+			if ( 0 === strpos( $file_url, $uploads['baseurl'] ) ) {
+				$selected_thumbnail = $file_url;
+			} else {
+				$selected_thumbnail = $uploads['baseurl'] . '/' . $file_url;
+			}
+		}
+
+		$data = array();
+
+		if ( ! empty( $selected_thumbnail ) ) {
+			$data['selected'] = $selected_thumbnail;
+		}
+
+		$data['thumbnails'] = $thumbnail_array;
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'data'    => $data,
+			) 
+		);
+	}
+
+	/**
+	 * Set video thumbnail.
+	 * 
+	 * Set the video thumbnail for the attachment ID.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function set_video_thumbnail( $request ) {
+		$attachment_id = $request->get_param( 'attachment_id' );
+		$thumbnail_url = $request->get_param( 'thumbnail_url' );
+
+		// Check if attachment is of type video
+		$mime_type = get_post_mime_type( $attachment_id );
+
+		if ( ! preg_match( '/^video\//', $mime_type ) ) {
+			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 400 ) );
+		}
+
+		// Check if the thumbnail URL is valid
+		if ( ! filter_var( $thumbnail_url, FILTER_VALIDATE_URL ) ) {
+			return new \WP_Error( 'invalid_thumbnail_url', 'Invalid thumbnail URL.', array( 'status' => 400 ) );
+		}
+
+		// Update the video thumbnail
+		update_post_meta( $attachment_id, '_rt_media_video_thumbnail', $thumbnail_url );
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => 'Video thumbnail successfully set.',
+			) 
+		);
 	}
 }

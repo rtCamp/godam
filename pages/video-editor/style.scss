@@ -35,7 +35,7 @@
 	margin-left: 160px;
 	margin-top: var(--wp-admin--admin-bar--height, 32px);
 	background-color: #fff;
-	z-index: 90;
+	z-index: 90 !important;
 }
 
 #easydam-video-player {

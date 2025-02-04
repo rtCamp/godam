@@ -26,7 +26,6 @@ const App = () => {
 	const [ isPremiumUser, setIsPremiumUser ] = useState( true ); // Should be initially set to false.
 	const [ mediaSettings, setMediaSettings ] = useState( null );
 	const [ licenseKey, setLicenseKey ] = useState( '' );
-	const [ isVerified, setIsVerified ] = useState( false ); // Tracks if the license is verified.
 	const [ verifyLicenseFromUrl, setVerifyLicenseFromUrl ] = useState( false );
 
 	const dispatch = useDispatch();
@@ -70,15 +69,8 @@ const App = () => {
 						'X-WP-Nonce': window.wpApiSettings.nonce,
 					},
 				} );
-				const licenseResponse = await fetch( '/wp-json/easydam/v1/settings/get-license-key', {
-					method: 'GET',
-					headers: {
-						'X-WP-Nonce': window.wpApiSettings.nonce,
-					},
-				} );
 
 				const settingsData = await settingsResponse.json();
-				const licenseData = await licenseResponse.json();
 
 				let licenseFromUrl = '';
 				const urlParams = new URLSearchParams( window.location.search );
@@ -86,18 +78,15 @@ const App = () => {
 					licenseFromUrl = urlParams.get( 'license_key' );
 				}
 
-				if ( ! licenseData.license_key && licenseFromUrl ) {
+				if ( ! window.userData.valid_license && licenseFromUrl ) {
 					// Set license key from URL and trigger verification in GeneralSettings
 					setLicenseKey( licenseFromUrl );
-					settingsData.general.is_verified = false; // Mark as not verified initially
 					setVerifyLicenseFromUrl( true ); // Pass this flag to GeneralSettings
 				} else {
-					setLicenseKey( licenseData.license_key || '' );
-					settingsData.general.is_verified = licenseData.license_key ? true : false;
+					setLicenseKey( window?.userData?.user_data?.license_key || '' );
 				}
 
 				setMediaSettings( settingsData );
-				setIsVerified( settingsData?.general?.is_verified || false );
 			} catch ( error ) {
 				console.error( 'Failed to fetch data:', error );
 			} finally {
@@ -122,7 +111,6 @@ const App = () => {
 			const result = await response.json();
 			if ( result.status === 'success' ) {
 				setMediaSettings( updatedSettings ); // Update local state
-				setIsVerified( updatedSettings?.general?.is_verified );
 				return true;
 			}
 			console.error( result.message );
@@ -136,9 +124,9 @@ const App = () => {
 		<div id="easydam-settings">
 			<header>
 				<div className="easydam-settings-header border-b -ml-[32px] pl-[32px]">
-					<div className="max-w-[1200px] mx-auto px-4 flex items-center justify-between">
+					<div className="max-w-[1260px] mx-auto pl-4 pr-9 flex items-center justify-between">
 						<h1 className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-center">
-							{ __( 'GoDAM', 'transcoder' ) }
+							{ __( 'GoDAM', 'godam' ) }
 							<div className="ml-2">
 								<div className="text-xs font-normal leading-4">1.0.3</div>
 								<div className="text-xs font-bold py-[2px] px-2 rounded bg-indigo-100 mt-1">Pro</div>
@@ -151,7 +139,7 @@ const App = () => {
 								href={ helpLink }
 								target="_blank"
 								className="rounded-full"
-								label={ __( 'Need help?', 'transcoder' ) }
+								label={ __( 'Need help?', 'godam' ) }
 								icon={ help }
 							/>
 							<Button
@@ -160,13 +148,13 @@ const App = () => {
 								size="compact"
 								href={ upgradePlanLink }
 								target="_blank"
-								text={ __( 'Upgrade plan', 'transcoder' ) }
+								text={ __( 'Upgrade plan', 'godam' ) }
 							/>
 						</div>
 					</div>
 				</div>
 			</header>
-			<div className="wrap flex gap-4 my-8 max-w-[1200px] px-4 mx-auto">
+			<div className="wrap flex gap-4 my-8 max-w-[1260px] pl-4 pr-9 mx-auto">
 				<div className="max-w-[220px] w-full">
 					<nav className="sticky-navbar pt-8 -mt-8">
 						{
@@ -175,7 +163,7 @@ const App = () => {
 									key={ tab.id }
 									href={ `#${ tab.id }` }
 									className={ `sidebar-nav-item ${ activeTab === tab.id ? 'active' : '' } ${
-										tab.id !== 'general-settings' && ! isVerified ? 'opacity-50 pointer-events-none' : ''
+										tab.id !== 'general-settings' && ! window.userData.valid_license ? 'opacity-50 pointer-events-none' : ''
 									}` }
 									onClick={ () => {
 										setActiveTab( tab.id );

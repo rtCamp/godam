@@ -12,9 +12,10 @@ const {
 	author,
 	endpoint,
 	locationIP,
+	token,
 } = window.videoAnalyticsParams || {};
 
-const videoAnalyticsPlugin = ( userConfig = {} ) => {
+const videoAnalyticsPlugin = () => {
 	return {
 		name: 'video-analytics-plugin',
 		track: async ( { payload } ) => {
@@ -32,7 +33,12 @@ const videoAnalyticsPlugin = ( userConfig = {} ) => {
 
 			try {
 				// Destructure the ranges array from properties
-				const { ranges = [], videoId, type } = properties;
+				const { ranges = [], videoId, type, videoLength, videoIds } = properties;
+
+				if ( ! type || ( type === 1 && ( ! videoIds || videoIds.length === 0 ) ) || token === 'unverified' ) {
+					return;
+				}
+
 				const userAgentData = getUserAgent( window.navigator.userAgent );
 				// Iterate over each range and send a POST request for it
 				const response = await fetch( endpoint + 'analytics/', {
@@ -43,8 +49,8 @@ const videoAnalyticsPlugin = ( userConfig = {} ) => {
 					body: JSON.stringify( {
 						site_url: window.location.origin,
 						user_token: anonymousId,
-						wp_user_id: userId || '',
-						account_token: userConfig.token || '',
+						wp_user_id: parseInt( userId, 0 ) || '',
+						account_token: token || '',
 						email: emailId || '',
 						visitor_timestamp: meta?.ts || Date.now(),
 						visit_entry_action_url: window.location.href,
@@ -79,8 +85,11 @@ const videoAnalyticsPlugin = ( userConfig = {} ) => {
 						author,
 						type: type || 0,
 						video_id: videoId ? parseInt( videoId, 0 ) : 0,
+						video_ids: type === 1 ? videoIds : [],
 						ranges,
+						video_length: videoLength || 0,
 					} ),
+					keepalive: true,
 				} );
 
 				if ( ! response.ok ) {
