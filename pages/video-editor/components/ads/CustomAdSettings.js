@@ -26,7 +26,7 @@ const CustomAdSettings = ( { layerID } ) => {
 		const fileFrame = wp.media( {
 			title: 'Select Brand Image',
 			button: {
-				text: __( 'Edit video', 'transcoder' ),
+				text: __( 'Edit video', 'godam' ),
 			},
 			library: {
 				type: 'video', // Restrict to images only
@@ -51,11 +51,11 @@ const CustomAdSettings = ( { layerID } ) => {
 				status="warning"
 				isDismissible={ false }
 			>
-				{ __( 'This ad will be overriden by Ad server\'s ads', 'transcoder' ) }
+				{ __( 'This ad will be overriden by Ad server\'s ads', 'godam' ) }
 			</Notice>
 			}
 			<div className="flex flex-col items-start mb-4">
-				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom Ad', 'transcoder' ) }</label>
+				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom Ad', 'godam' ) }</label>
 				<div className="flex gap-2">
 					<Button
 						__nextHasNoMarginBottom
@@ -63,7 +63,7 @@ const CustomAdSettings = ( { layerID } ) => {
 						variant="primary"
 						onClick={ () => OpenVideoSelector() }
 						disabled={ adServer === 'ad-server' }
-					>{ layer?.ad_url ? __( 'Replace Ad video', 'transcoder' ) : __( 'Select Ad video', 'transcoder' ) }</Button>
+					>{ layer?.ad_url ? __( 'Replace Ad video', 'godam' ) : __( 'Select Ad video', 'godam' ) }</Button>
 					{
 						layer?.ad_url &&
 						<Button
@@ -71,7 +71,7 @@ const CustomAdSettings = ( { layerID } ) => {
 							isDestructive
 							onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) }
 							disabled={ adServer === 'ad-server' }
-						>{ __( 'Remove Ad video', 'transcoder' ) }</Button>
+						>{ __( 'Remove Ad video', 'godam' ) }</Button>
 
 					}
 				</div>
@@ -91,19 +91,19 @@ const CustomAdSettings = ( { layerID } ) => {
 			<ToggleControl
 				__nextHasNoMarginBottom
 				className="mb-4"
-				label={ __( 'Skippable', 'transcoder' ) }
+				label={ __( 'Skippable', 'godam' ) }
 				checked={ layer?.skippable ?? false }
 				onChange={ ( value ) =>
 					dispatch( updateLayerField( { id: layer.id, field: 'skippable', value } ) )
 				}
-				help={ __( 'Allow user to skip ad', 'transcoder' ) }
+				help={ __( 'Allow user to skip ad', 'godam' ) }
 				disabled={ adServer === 'ad-server' }
 			/>
 			{
 				layer?.skippable &&
 				<TextControl
-					label={ __( 'Skip time', 'transcoder' ) }
-					help={ __( 'Time in seconds after which the skip button will appear', 'transcoder' ) }
+					label={ __( 'Skip time', 'godam' ) }
+					help={ __( 'Time in seconds after which the skip button will appear', 'godam' ) }
 					value={ layer?.skip_offset }
 					className="mb-4"
 					onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'skip_offset', value } ) ) }
@@ -114,9 +114,9 @@ const CustomAdSettings = ( { layerID } ) => {
 			}
 
 			<TextControl
-				label={ __( 'Click link', 'transcoder' ) }
+				label={ __( 'Click link', 'godam' ) }
 				placeholder="https://example"
-				help={ __( 'Enter the URL to redirect when the ad is clicked', 'transcoder' ) }
+				help={ __( 'Enter the URL to redirect when the ad is clicked', 'godam' ) }
 				value={ layer?.click_link }
 				className="mb-4"
 				onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'click_link', value } ) ) }

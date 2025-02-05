@@ -24,22 +24,22 @@ import { Icon } from '@wordpress/components';
 
 const layerTypes = [
 	{
-		title: __( 'Gravity Forms', 'transcoder' ),
+		title: __( 'Gravity Forms', 'godam' ),
 		icon: preformatted,
 		type: 'form',
 	},
 	{
-		title: __( 'CTA', 'transcoder' ),
+		title: __( 'CTA', 'godam' ),
 		icon: customLink,
 		type: 'cta',
 	},
 	{
-		title: __( 'Hotspot', 'transcoder' ),
+		title: __( 'Hotspot', 'godam' ),
 		icon: customPostType,
 		type: 'hotspot',
 	},
 	{
-		title: __( 'Ad', 'transcoder' ),
+		title: __( 'Ad', 'godam' ),
 		icon: video,
 		type: 'ad',
 	},

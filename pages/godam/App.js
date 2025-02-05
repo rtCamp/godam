@@ -126,7 +126,7 @@ const App = () => {
 				<div className="easydam-settings-header border-b -ml-[32px] pl-[32px]">
 					<div className="max-w-[1260px] mx-auto pl-4 pr-9 flex items-center justify-between">
 						<h1 className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-center">
-							{ __( 'GoDAM', 'transcoder' ) }
+							{ __( 'GoDAM', 'godam' ) }
 							<div className="ml-2">
 								<div className="text-xs font-normal leading-4">1.0.3</div>
 								<div className="text-xs font-bold py-[2px] px-2 rounded bg-indigo-100 mt-1">Pro</div>
@@ -139,7 +139,7 @@ const App = () => {
 								href={ helpLink }
 								target="_blank"
 								className="rounded-full"
-								label={ __( 'Need help?', 'transcoder' ) }
+								label={ __( 'Need help?', 'godam' ) }
 								icon={ help }
 							/>
 							<Button
@@ -148,7 +148,7 @@ const App = () => {
 								size="compact"
 								href={ upgradePlanLink }
 								target="_blank"
-								text={ __( 'Upgrade plan', 'transcoder' ) }
+								text={ __( 'Upgrade plan', 'godam' ) }
 							/>
 						</div>
 					</div>

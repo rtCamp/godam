@@ -121,7 +121,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			<div className="flex justify-between items-center pb-3 border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
 				<p className="font-semibold">
-					{ __( 'Hotspot Layer at', 'transcoder' ) } { layer.displayTime }s
+					{ __( 'Hotspot Layer at', 'godam' ) } { layer.displayTime }s
 				</p>
 				<Button
 					icon={ trash }
@@ -130,7 +130,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 				/>
 				{ isDeleteModalOpen && (
 					<Modal
-						title={ __( 'Delete Hotspot Layer', 'transcoder' ) }
+						title={ __( 'Delete Hotspot Layer', 'godam' ) }
 						onRequestClose={ () => setDeleteModalOpen( false ) }
 					>
 						<div className="flex justify-between items-center gap-3">
@@ -143,14 +143,14 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 									setDeleteModalOpen( false );
 								} }
 							>
-								{ __( 'Delete Layer', 'transcoder' ) }
+								{ __( 'Delete Layer', 'godam' ) }
 							</Button>
 							<Button
 								className="w-full justify-center"
 								variant="secondary"
 								onClick={ () => setDeleteModalOpen( false ) }
 							>
-								{ __( 'Cancel', 'transcoder' ) }
+								{ __( 'Cancel', 'godam' ) }
 							</Button>
 						</div>
 					</Modal>
@@ -160,7 +160,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			{ /* Duration */ }
 			<div className="mb-4">
 				<TextControl
-					label={ __( 'Layer Duration (seconds)', 'transcoder' ) }
+					label={ __( 'Layer Duration (seconds)', 'godam' ) }
 					type="number"
 					min="1"
 					value={ layer?.duration || '' }
@@ -175,14 +175,14 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			{ /* Pause on hover */ }
 			<div className="mb-4">
 				<ToggleControl
-					label={ __( 'Pause video on hover', 'transcoder' ) }
+					label={ __( 'Pause video on hover', 'godam' ) }
 					checked={ layer?.pauseOnHover || false }
 					onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
 				/>
 				<p className="text-xs text-gray-500 mt-1">
 					{ __(
 						'Player will pause the video while the layer is displayed and users hover over the hotspots.',
-						'transcoder',
+						'godam',
 					) }
 				</p>
 			</div>
@@ -224,7 +224,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 												);
 											} }
 										>
-											{ __( 'Show Style', 'transcoder' ) }
+											{ __( 'Show Style', 'godam' ) }
 										</MenuItem>
 										<MenuItem
 											icon={ hotspot.showIcon ? check : '' }
@@ -243,14 +243,14 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 												);
 											} }
 										>
-											{ __( 'Show Icon', 'transcoder' ) }
+											{ __( 'Show Icon', 'godam' ) }
 										</MenuItem>
 										<MenuItem
 											icon={ trash }
 											onClick={ () => handleDeleteHotspot( index ) }
 											className="text-red-500"
 										>
-											{ __( 'Delete Hotspot', 'transcoder' ) }
+											{ __( 'Delete Hotspot', 'godam' ) }
 										</MenuItem>
 									</>
 								) }
@@ -260,7 +260,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 						{ expandedHotspotIndex === index && (
 							<div className="mt-3">
 								<TextControl
-									label={ __( 'Tooltip Text', 'transcoder' ) }
+									label={ __( 'Tooltip Text', 'godam' ) }
 									placeholder="Click Me!"
 									value={ hotspot.tooltipText }
 									onChange={ ( val ) =>
@@ -273,7 +273,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 									}
 								/>
 								<TextControl
-									label={ __( 'Link', 'transcoder' ) }
+									label={ __( 'Link', 'godam' ) }
 									placeholder="https://www.example.com"
 									value={ hotspot.link }
 									onChange={ ( val ) =>
@@ -301,7 +301,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 											htmlFor={ `hotspot-color-${ index }` }
 											className="text-xs text-gray-700"
 										>
-											{ __( 'BACKGROUND COLOR', 'transcoder' ) }
+											{ __( 'BACKGROUND COLOR', 'godam' ) }
 										</label>
 										<ColorPalette
 											id={ `hotspot-color-${ index }` }
@@ -335,7 +335,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 					iconPosition="left"
 					onClick={ handleAddHotspot }
 				>
-					{ __( 'Add Hotspot', 'transcoder' ) }
+					{ __( 'Add Hotspot', 'godam' ) }
 				</Button>
 			</div>
 

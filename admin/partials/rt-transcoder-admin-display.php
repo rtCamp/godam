@@ -12,12 +12,12 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 ?>
 <div class="wrap">
 	<h1 class="rtm-option-title">
-		<?php esc_html_e( 'Transcoder Service Settings', 'transcoder' ); ?>
+		<?php esc_html_e( 'Transcoder Service Settings', 'godam' ); ?>
 		<span class="alignright by">
 			<a class="rt-link"
 				href="https://rtmedia.io/?utm_source=dashboard&utm_medium=plugin&utm_campaign=transcoder"
 				target="_blank"
-				title="rtCamp : <?php esc_attr_e( 'Empowering The Web With WordPress', 'transcoder' ); ?>">
+				title="rtCamp : <?php esc_attr_e( 'Empowering The Web With WordPress', 'godam' ); ?>">
 				<img src="<?php echo esc_url( RT_TRANSCODER_URL ); ?>admin/images/rtcamp-logo.png" alt="rtCamp"/>
 			</a>
 		</span>
@@ -25,7 +25,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 	<div id="rtt-settings_updated" class="updated settings-error notice is-dismissible hide">
 		<p></p>
 		<button type="button" class="notice-dismiss">
-			<span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice', 'transcoder' ); ?>.</span>
+			<span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice', 'godam' ); ?>.</span>
 		</button>
 	</div>
 	<div class="transcoder-settings-boxes-wrapper">
@@ -33,11 +33,11 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 			<p>
 			<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>">
 				<label for="new-api-key">
-					<?php esc_html_e( 'Enter License Key', 'transcoder' ); ?>
+					<?php esc_html_e( 'Enter License Key', 'godam' ); ?>
 				</label>
 				<input type="hidden" name="page" value="<?php echo esc_attr( $current_page ); ?>">
 				<input id="new-api-key" type="text" name="apikey" value="<?php echo esc_attr( $this->stored_api_key ); ?>" size="60"/>
-				<button type="submit" id="api-key-submit" name="update" value="true" class="button-primary"><?php esc_html_e( 'Save Key', 'transcoder' ); ?></button>
+				<button type="submit" id="api-key-submit" name="update" value="true" class="button-primary"><?php esc_html_e( 'Save Key', 'godam' ); ?></button>
 			</form>
 			</p>
 
@@ -62,13 +62,13 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 				<thead>
 				<tr>
 					<th>
-						<?php esc_html_e( 'Feature\Plan', 'transcoder' ); ?>
+						<?php esc_html_e( 'Feature\Plan', 'godam' ); ?>
 					</th>
 					<th>
-						<?php esc_html_e( 'Free', 'transcoder' ); ?>
+						<?php esc_html_e( 'Free', 'godam' ); ?>
 					</th>
 					<th>
-						<?php esc_html_e( 'Silver', 'transcoder' ); ?>
+						<?php esc_html_e( 'Silver', 'godam' ); ?>
 					</th>
 				</tr>
 				</thead>
@@ -76,68 +76,68 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 				<tbody>
 				<tr>
 					<th>
-						<?php esc_html_e( 'File Size Limit', 'transcoder' ); ?>
+						<?php esc_html_e( 'File Size Limit', 'godam' ); ?>
 					</th>
 					<td>
-						<?php esc_html_e( '100MB', 'transcoder' ); ?>
+						<?php esc_html_e( '100MB', 'godam' ); ?>
 					</td>
 					<td>
-						<?php esc_html_e( '16GB', 'transcoder' ); ?>
+						<?php esc_html_e( '16GB', 'godam' ); ?>
 					</td>
 				</tr>
 				<tr>
 					<th>
-						<?php esc_html_e( 'Bandwidth (monthly)', 'transcoder' ); ?>
+						<?php esc_html_e( 'Bandwidth (monthly)', 'godam' ); ?>
 					</th>
 					<td>
-						<?php esc_html_e( '5GB', 'transcoder' ); ?>
+						<?php esc_html_e( '5GB', 'godam' ); ?>
 					</td>
 					<td>
-						<?php esc_html_e( '100GB', 'transcoder' ); ?>
+						<?php esc_html_e( '100GB', 'godam' ); ?>
 					</td>
 				</tr>
 				<tr>
 					<th>
-						<?php esc_html_e( 'Overage Bandwidth', 'transcoder' ); ?>
+						<?php esc_html_e( 'Overage Bandwidth', 'godam' ); ?>
 					</th>
 					<td>
-						<?php esc_html_e( 'Not Available', 'transcoder' ); ?>
+						<?php esc_html_e( 'Not Available', 'godam' ); ?>
 					</td>
 					<td>
-						<?php esc_html_e( 'Currently not charged', 'transcoder' ); ?>
+						<?php esc_html_e( 'Currently not charged', 'godam' ); ?>
 					</td>
 				</tr>
 				<tr>
 					<th>
-						<?php esc_html_e( 'Amazon S3 Support', 'transcoder' ); ?>
+						<?php esc_html_e( 'Amazon S3 Support', 'godam' ); ?>
 					</th>
 					<td>
-						<?php esc_html_e( 'Not Available', 'transcoder' ); ?>
+						<?php esc_html_e( 'Not Available', 'godam' ); ?>
 					</td>
 					<td>
-						<?php esc_html_e( 'Coming Soon', 'transcoder' ); ?>
+						<?php esc_html_e( 'Coming Soon', 'godam' ); ?>
 					</td>
 				</tr>
 				<tr>
 					<th>
-						<?php esc_html_e( 'HD Profile', 'transcoder' ); ?>
+						<?php esc_html_e( 'HD Profile', 'godam' ); ?>
 					</th>
 					<td>
-						<?php esc_html_e( 'Not Available', 'transcoder' ); ?>
+						<?php esc_html_e( 'Not Available', 'godam' ); ?>
 					</td>
 					<td>
-						<?php esc_html_e( 'Coming Soon', 'transcoder' ); ?>
+						<?php esc_html_e( 'Coming Soon', 'godam' ); ?>
 					</td>
 				</tr>
 				<tr>
 					<th>
-						<?php esc_html_e( 'Pricing', 'transcoder' ); ?>
+						<?php esc_html_e( 'Pricing', 'godam' ); ?>
 					</th>
 					<td>
-						<?php esc_html_e( 'Free', 'transcoder' ); ?>
+						<?php esc_html_e( 'Free', 'godam' ); ?>
 					</td>
 					<td>
-						<?php esc_html_e( '$9/month', 'transcoder' ); ?>
+						<?php esc_html_e( '$9/month', 'godam' ); ?>
 					</td>
 				</tr>
 				<tr>
@@ -196,7 +196,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 						'i'      => array(),
 						'strong' => array(),
 					);
-					printf( wp_kses( __( '<strong>Note</strong>: Transcoder will only work on publicly accessible websites. If you are using Transcoder on a <strong>locally hosted website</strong> (i.e. <strong>localhost</strong>), we will be unable to identify the source of your audio/video transcoding requests.', 'transcoder' ), $allowed_tags ) );
+					printf( wp_kses( __( '<strong>Note</strong>: Transcoder will only work on publicly accessible websites. If you are using Transcoder on a <strong>locally hosted website</strong> (i.e. <strong>localhost</strong>), we will be unable to identify the source of your audio/video transcoding requests.', 'godam' ), $allowed_tags ) );
 					?>
 
 				</p>
@@ -212,7 +212,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 					<table class="form-table">
 						<tr valign="top">
 							<td scope="row">
-								<?php esc_html_e( 'Number of video thumbnails generated', 'transcoder' ); ?>
+								<?php esc_html_e( 'Number of video thumbnails generated', 'godam' ); ?>
 							</td>
 							<td>
 								<?php
@@ -228,7 +228,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 									<span class="rtm-tip">
 										<?php
 
-										esc_html_e( 'This field specifies the number of video thumbnails that will be generated by the Transcoder. To choose from the generated thumbnails for a video, go to ​Media > Edit > Video Thumbnails. Thumbnails are only generated when the video is first uploaded. Maximum value is 10.', 'transcoder' );
+										esc_html_e( 'This field specifies the number of video thumbnails that will be generated by the GoDAM. To choose from the generated thumbnails for a video, go to ​Media > Edit > Video Thumbnails. Thumbnails are only generated when the video is first uploaded. Maximum value is 10.', 'godam' );
 										?>
 									</span>
 								</span>
@@ -236,7 +236,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 						</tr>
 						<tr valign="top">
 							<td scope="row">
-								<?php esc_html_e( 'Over-write video thumbnails after retranscoding', 'transcoder' ); ?>
+								<?php esc_html_e( 'Over-write video thumbnails after retranscoding', 'godam' ); ?>
 							</td>
 							<td>
 								<?php
@@ -249,7 +249,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 									<span class="rtm-tip">
 										<?php
 
-										esc_html_e( 'If enabled, Transcoder will replace existing media thumbnails with regenerated ones after retranscoding. If disabled, media thumbnails will remain untouched.', 'transcoder' );
+										esc_html_e( 'If enabled, GoDAM will replace existing media thumbnails with regenerated ones after retranscoding. If disabled, media thumbnails will remain untouched.', 'godam' );
 										?>
 									</span>
 								</span>
@@ -257,7 +257,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 						</tr>
 						<tr valign="top">
 							<td scope="row">
-								<?php esc_html_e( 'Allow admin to track real-time transcoding status on user profile', 'transcoder' ); ?>
+								<?php esc_html_e( 'Allow admin to track real-time transcoding status on user profile', 'godam' ); ?>
 							</td>
 							<td>
 								<?php
@@ -270,7 +270,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 									<span class="rtm-tip">
 										<?php
 
-										esc_html_e( 'If enabled, It will display check status button to know status of transcoding process at client side if that user have administrator rights.', 'transcoder' );
+										esc_html_e( 'If enabled, It will display check status button to know status of transcoding process at client side if that user have administrator rights.', 'godam' );
 										?>
 									</span>
 								</span>
@@ -283,7 +283,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 						echo wp_kses(
 							sprintf(
 								/* translators: 1. URL of documentation page. */
-								__( 'Visit our <a href="%1$s">documentation page</a> for more details', 'transcoder' ),
+								__( 'Visit our <a href="%1$s">documentation page</a> for more details', 'godam' ),
 								'https://rtmedia.io/docs/transcoder/'
 							),
 							array(
@@ -321,7 +321,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 		<div class="postbox" id="rt-spread-the-word">
 			<h3 class="hndle">
 				<span>
-					<?php esc_html_e( 'Spread the Word', 'transcoder' ); ?>
+					<?php esc_html_e( 'Spread the Word', 'godam' ); ?>
 				</span>
 			</h3>
 			<div class="inside">
@@ -329,29 +329,29 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 					<?php
 
 					// translators: Placeholde contains link of the home url.
-					$message = sprintf( esc_html__( 'I use @rtMediaWP http://rt.cx/rtmedia on %s', 'transcoder' ), home_url() );
+					$message = sprintf( esc_html__( 'I use @rtMediaWP http://rt.cx/rtmedia on %s', 'godam' ), home_url() );
 					?>
 					<p>
-						<a href="http://twitter.com/home/?status=<?php echo esc_attr( $message ); ?>" class="button twitter" target= "_blank" title="<?php esc_attr_e( 'Post to Twitter Now', 'transcoder' ); ?>">
-							<?php esc_html_e( 'Post to Twitter', 'transcoder' ); ?>
+						<a href="http://twitter.com/home/?status=<?php echo esc_attr( $message ); ?>" class="button twitter" target= "_blank" title="<?php esc_attr_e( 'Post to Twitter Now', 'godam' ); ?>">
+							<?php esc_html_e( 'Post to Twitter', 'godam' ); ?>
 							<span class="dashicons dashicons-twitter"></span>
 						</a>
 					</p>
 					<p>
-						<a href="https://www.facebook.com/sharer/sharer.php?u=https://rtmedia.io/" class="button facebook" target="_blank" title="<?php esc_attr_e( 'Share on Facebook Now', 'transcoder' ); ?>">
-							<?php esc_html_e( 'Share on Facebook', 'transcoder' ); ?>
+						<a href="https://www.facebook.com/sharer/sharer.php?u=https://rtmedia.io/" class="button facebook" target="_blank" title="<?php esc_attr_e( 'Share on Facebook Now', 'godam' ); ?>">
+							<?php esc_html_e( 'Share on Facebook', 'godam' ); ?>
 							<span class="dashicons dashicons-facebook"></span>
 						</a>
 					</p>
 					<p>
-						<a href="http://wordpress.org/support/view/plugin-reviews/transcoder?rate=5#postform" class="button wordpress" target= "_blank" title="<?php esc_attr_e( 'Rate rtMedia on Wordpress.org', 'transcoder' ); ?>">
-							<?php esc_html_e( 'Rate on Wordpress.org', 'transcoder' ); ?>
+						<a href="http://wordpress.org/support/view/plugin-reviews/transcoder?rate=5#postform" class="button wordpress" target= "_blank" title="<?php esc_attr_e( 'Rate rtMedia on Wordpress.org', 'godam' ); ?>">
+							<?php esc_html_e( 'Rate on Wordpress.org', 'godam' ); ?>
 							<span class="dashicons dashicons-wordpress"></span>
 						</a>
 					</p>
 					<p>
-						<a href="https://rtmedia.io/feed/" class="button rss" target="_blank" title="<?php esc_attr_e( 'Subscribe to our Feeds', 'transcoder' ); ?>">
-							<?php esc_html_e( 'Subscribe to our Feeds', 'transcoder' ); ?>
+						<a href="https://rtmedia.io/feed/" class="button rss" target="_blank" title="<?php esc_attr_e( 'Subscribe to our Feeds', 'godam' ); ?>">
+							<?php esc_html_e( 'Subscribe to our Feeds', 'godam' ); ?>
 							<span class="dashicons dashicons-rss"></span>
 						</a>
 					</p>
@@ -361,7 +361,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 		<div class="postbox" id="rt-subscribe">
 			<h3 class="hndle">
 				<span>
-					<?php esc_html_e( 'Subscribe', 'transcoder' ); ?>
+					<?php esc_html_e( 'Subscribe', 'godam' ); ?>
 				</span>
 			</h3>
 			<div class="inside">
@@ -373,7 +373,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 					<div class="mc-field-group">
 						<input type="email" value="<?php echo esc_attr( $the_current_user->user_email ); ?>" name="EMAIL" placeholder="Email" class="required email" id="mce-EMAIL" />
 						<input style="display:none;" type="checkbox" checked="checked" value="1" name="group[1721][1]" id="mce-group[1721]-1721-0" />
-						<input type="submit" value="<?php esc_attr_e( 'Subscribe', 'transcoder' ); ?>" name="subscribe" id="mc-embedded-subscribe" class="button" />
+						<input type="submit" value="<?php esc_attr_e( 'Subscribe', 'godam' ); ?>" name="subscribe" id="mc-embedded-subscribe" class="button" />
 						<div id="mce-responses" class="clear">
 							<div class="response" id="mce-error-response" style="display:none"></div>
 							<div class="response" id="mce-success-response" style="display:none"></div>

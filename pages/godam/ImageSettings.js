@@ -77,18 +77,18 @@ const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
 				</Notice>
 			) }
 			<Panel
-				header={ __( 'Image - Global Settings', 'transcoder' ) }
+				header={ __( 'Image - Global Settings', 'godam' ) }
 			>
 				<PanelBody
 					opened={ true }
 				>
 					<form id="easydam-image-settings" className="flex flex-col">
 						<div className="flex flex-col">
-							<label className="easydam-settings-label" htmlFor="sync_from_easydam">{ __( 'Image delivery', 'transcoder' ) }</label>
+							<label className="easydam-settings-label" htmlFor="sync_from_easydam">{ __( 'Image delivery', 'godam' ) }</label>
 							<ToggleControl
 								__nextHasNoMarginBottom
-								label={ __( 'Sync and deliver images from EasyDAM', 'transcoder' ) }
-								help={ __( 'If you turn this setting off, your images will be delivered from WordPress', 'transcoder' ) }
+								label={ __( 'Sync and deliver images from EasyDAM', 'godam' ) }
+								help={ __( 'If you turn this setting off, your images will be delivered from WordPress', 'godam' ) }
 								checked={ syncFromEasyDAM }
 								onChange={ ( value ) => setSyncFromEasyDAM( value ) }
 							/>
@@ -97,11 +97,11 @@ const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
 						<hr />
 
 						<div className="flex flex-col">
-							<label className="easydam-settings-label" htmlFor="optimize_image">{ __( 'Image optimization', 'transcoder' ) }</label>
+							<label className="easydam-settings-label" htmlFor="optimize_image">{ __( 'Image optimization', 'godam' ) }</label>
 							<ToggleControl
 								__nextHasNoMarginBottom
-								label={ __( 'Optimize images on my site', 'transcoder' ) }
-								help={ __( 'Images will be delivered using Cloudinary’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality', 'transcoder' ) }
+								label={ __( 'Optimize images on my site', 'godam' ) }
+								help={ __( 'Images will be delivered using Cloudinary’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality', 'godam' ) }
 								checked={ optimizeImages }
 								onChange={ ( value ) => setOptimizeImages( value ) }
 							/>
@@ -110,7 +110,7 @@ const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
 						<hr />
 
 						<div className="flex flex-col">
-							<label className="easydam-settings-label" htmlFor="image_format">{ __( 'Image format', 'transcoder' ) }</label>
+							<label className="easydam-settings-label" htmlFor="image_format">{ __( 'Image format', 'godam' ) }</label>
 							<SelectControl
 								__next40pxDefaultSize
 								__nextHasNoMarginBottom
@@ -119,14 +119,14 @@ const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
 								onChange={ ( value ) => setImageFormat( value ) }
 								size="compact"
 								className="max-w-[400px] w-full"
-								help={ __( 'The image format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user\'s browser and device', 'transcoder' ) }
+								help={ __( 'The image format to use for delivery. Leave as Auto to automatically deliver the most optimal format based on the user\'s browser and device', 'godam' ) }
 							/>
 						</div>
 
 						<hr />
 
 						<div className="flex flex-col">
-							<label className="easydam-settings-label" htmlFor="image_quality">{ __( 'Image quality', 'transcoder' ) }</label>
+							<label className="easydam-settings-label" htmlFor="image_quality">{ __( 'Image quality', 'godam' ) }</label>
 							<SelectControl
 								__next40pxDefaultSize
 								__nextHasNoMarginBottom
@@ -135,7 +135,7 @@ const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
 								onChange={ ( value ) => setImageQuality( value ) }
 								size="compact"
 								className="max-w-[400px] w-full"
-								help={ __( 'Images will be delivered using EasyDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality', 'transcoder' ) }
+								help={ __( 'Images will be delivered using GoDAM’s automatic format and quality algorithms for the best tradeoff between visual quality and file size. Use Advanced Optimization options to manually tune format and quality', 'godam' ) }
 							/>
 						</div>
 					</form>
@@ -147,7 +147,7 @@ const ImageSettings = ( { mediaSettings, saveMediaSettings } ) => {
 				className="mt-4 max-w-[140px] w-full flex justify-center items-center"
 				onClick={ handleSaveSettings }
 			>
-				{ __( 'Save Settings', 'transcoder' ) }
+				{ __( 'Save Settings', 'godam' ) }
 			</Button>
 		</div>
 	);

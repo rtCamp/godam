@@ -34,7 +34,7 @@ const BucketSelector = () => {
 	if ( isSuccess && data?.length > 0 ) {
 		return (
 			<SelectControl
-				label={ __( 'Bucket Name', 'transcoder' ) }
+				label={ __( 'Bucket Name', 'godam' ) }
 				value={ aws.bucket }
 				options={ data.map( ( bucket ) => ( { label: bucket, value: bucket } ) ) }
 				onChange={ ( value ) => dispatch( setAWSBucket( value ) ) }
@@ -45,8 +45,8 @@ const BucketSelector = () => {
 	// If no buckets are available or an error occurs, show the input field
 	return (
 		<TextControl
-			label={ __( 'Bucket Name', 'transcoder' ) }
-			placeholder={ __( 'Enter your AWS S3 Bucket Name ( required incase bucket selection not provided', 'transcoder' ) }
+			label={ __( 'Bucket Name', 'godam' ) }
+			placeholder={ __( 'Enter your AWS S3 Bucket Name ( required incase bucket selection not provided', 'godam' ) }
 			value={ aws.bucket }
 			onChange={ ( value ) => dispatch( setAWSBucket( value ) ) }
 		/>

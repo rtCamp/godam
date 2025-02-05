@@ -174,7 +174,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		// Call the parent render method.
 		AttachmentDetailsTwoColumn.prototype.render.apply( this, arguments );
 
-		this.renderVideoActions();
+		// Check if the attachment is a video and render the edit buttons.
+		if ( this.model.get( 'type' ) === 'video' ) {
+			this.renderVideoActions();
+		}
 
 		// Return this view.
 		return this;

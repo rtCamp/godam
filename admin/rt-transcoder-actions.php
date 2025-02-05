@@ -42,7 +42,7 @@ if ( ! function_exists( 'rtt_video_editor_title' ) ) {
 				}
 			}
 			if ( $flag ) {
-				echo '<li><a href="#panel2"><i class="dashicons dashicons-format-image rtmicon"></i>' . esc_html__( 'Video Thumbnail', 'transcoder' ) . '</a></li>';
+				echo '<li><a href="#panel2"><i class="dashicons dashicons-format-image rtmicon"></i>' . esc_html__( 'Video Thumbnail', 'godam' ) . '</a></li>';
 			}
 		}
 	}
@@ -70,7 +70,7 @@ if ( ! function_exists( 'rtt_rtmedia_vedio_editor_content' ) ) {
 			if ( is_array( $rtmedia_transcoded_video_thumbs ) ) {
 				?>
 				<div class="rtmedia-change-cover-arts">
-					<p><?php esc_html_e( 'Video Thumbnail:', 'transcoder' ); ?></p>
+					<p><?php esc_html_e( 'Video Thumbnail:', 'godam' ); ?></p>
 					<ul>
 						<?php
 						/* for WordPress backward compatibility */
@@ -131,7 +131,7 @@ if ( ! function_exists( 'rtt_rtmedia_vedio_editor_content' ) ) {
 					if ( is_array( $rtmedia_video_thumbs ) ) {
 						?>
 						<div class="rtmedia-change-cover-arts">
-							<p><?php esc_html_e( 'Video Thumbnail:', 'transcoder' ); ?></p>
+							<p><?php esc_html_e( 'Video Thumbnail:', 'godam' ); ?></p>
 							<ul>
 								<?php
 								foreach ( $rtmedia_video_thumbs as $key => $attachment_id ) {
@@ -250,16 +250,16 @@ function add_transcoded_url_field( $form_fields, $post ) {
 
 	// Add the transcoded URL field.
 	$form_fields['transcoded_url'] = array(
-		'label' => __( 'Transcoded MPD URL', 'transcoder' ),
+		'label' => __( 'Transcoded MPD URL', 'godam' ),
 		'input' => 'html',
 		'html'  => '<input type="text" name="attachments[' . $post->ID . '][transcoded_url]" id="attachments-' . $post->ID . '-transcoded_url" value="' . esc_url( $transcoded_url ) . '" readonly>',
 		'value' => esc_url( $transcoded_url ),
-		'helps' => __( 'The URL of the transcoded .mpd file is generated automatically and cannot be edited.', 'transcoder' ),
+		'helps' => __( 'The URL of the transcoded .mpd file is generated automatically and cannot be edited.', 'godam' ),
 	);
 
 	// Add a note if adaptive bitrate streaming is disabled.
 	if ( ! $adaptive_bitrate_enabled ) {
-		$form_fields['transcoded_url']['helps'] = __( 'This feature is available only when adaptive bitrate streaming is enabled.', 'transcoder' );
+		$form_fields['transcoded_url']['helps'] = __( 'This feature is available only when adaptive bitrate streaming is enabled.', 'godam' );
 	}
 
 	return $form_fields;

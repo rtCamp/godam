@@ -59,7 +59,7 @@ const ValidationStatus = () => {
 				disabled={ isFetching }
 				isBusy={ isFetching }
 			>
-				{ __( 'Check again', 'transcoder' ) }
+				{ __( 'Check again', 'godam' ) }
 			</Button>
 		</div>
 	);
