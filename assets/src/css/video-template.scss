@@ -1,0 +1,86 @@
+
+.wp-block-comments {
+    max-height: calc(100vh - var(--wp-admin--admin-bar--height, 0));
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+
+    .comment-header {
+        position: sticky;
+        top: 0;
+        background-color: #fff;
+        padding-bottom: 0.5rem;
+    }
+
+    .wp-block-comment-template {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 1rem;
+    }
+    
+    .comment-form {
+        position: relative;
+    }
+    
+    .comment-reply-title {
+        display: none;
+    }
+    
+    .logged-in-as {
+        display: none;
+    }
+    
+    .wp-block-button__link.wp-element-button#submit {
+        padding: 10px 20px;
+    }
+
+    .comment-form-comment {
+        label {
+            display: none;
+        }
+        textarea {
+            height: 100px;
+        }
+    }
+
+    .form-submit {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .comment-respond, .wp-block-post-comments-form {
+        order: 1;
+    }
+
+    .wp-block-comments-title {
+        margin-top: 0;
+        order: 2;
+    }
+
+    .wp-block-comment-template {
+        order: 3;
+    }
+
+}
+
+.godam-attachment {
+    .vjs-progress-control {
+        .vjs-progress-holder {
+            .godam-reactions {
+                position: absolute;
+                left: 0;
+                width: 100%;
+                bottom: 100%;
+
+                .reaction-wrapper {
+                    position: relative;
+
+                    .video-reaction-item {
+                        font-size: 16px;
+                        z-index: 999;
+                    }
+                }
+            }
+        }
+    }
+}

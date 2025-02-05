@@ -21,6 +21,7 @@ use Transcoder\Inc\REST_API\Media_Library;
 use Transcoder\Inc\REST_API\Ads;
 use Transcoder\Inc\REST_API\Transcoding;
 use Transcoder\Inc\REST_API\Analytics;
+use Transcoder\Inc\REST_API\Video_Comments;
 
 use Transcoder\Inc\Providers\Media_Filters;
 
@@ -90,5 +91,6 @@ class Plugin {
 		Ads::get_instance();
 		Transcoding::get_instance();
 		Analytics::get_instance();
+		Video_Comments::get_instance();
 	}
 }

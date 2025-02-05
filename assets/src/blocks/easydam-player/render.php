@@ -28,6 +28,33 @@ $preview       = isset( $attributes['preview'] ) ? $attributes['preview'] : fals
 // Retrieve easydam_meta for the attachment id.
 $easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : '';
 
+if ( empty( $source ) ) {
+	$transcoded_url    = $attachment_id ? get_post_meta( $attachment_id, '_rt_transcoded_url', true ) : '';
+	$video_src         = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
+	$video_src_type    = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
+	
+	if ( ! empty( $transcoded_url ) ) {
+		$sources = array(
+			array(
+				'src'  => $video_src,
+				'type' => $video_src_type,
+			),
+			array(
+				'src'  => $transcoded_url,
+				'type' => 'application/dash+xml',
+			),
+		);
+	} else {
+		$sources = array(
+			array(
+				'src'  => $video_src,
+				'type' => $video_src_type,
+			)
+		);
+	}
+}
+
+
 // Build the video setup options for data-setup.
 $video_setup = wp_json_encode(
 	array(
@@ -65,9 +92,10 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
+<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
 	<div class="easydam-video-container">
 		<video
+			id="<?php echo 'godam_video_' . esc_attr( $attachment_id ); ?>"
 			class="easydam-player video-js vjs-big-play-centered"
 			data-options="<?php echo esc_attr( $video_setup ); ?>"
 			data-ad_tag_url="<?php echo esc_url_raw( $ad_tag_url ); ?>"
@@ -159,5 +187,32 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 			<?php endforeach; ?>
 		<?php endif; ?>
 	</div>
+
+	<?php if ( is_attachment() ) : 
+		global $wpdb;
+		
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT 
+					c.comment_ID, 
+					c.comment_post_ID, 
+					c.comment_author, 
+					c.comment_content, 
+					cm.meta_value AS reaction_time,
+					u.user_login AS username,
+					u.display_name 
+				 FROM {$wpdb->comments} c
+				 LEFT JOIN {$wpdb->commentmeta} cm ON c.comment_ID = cm.comment_id AND cm.meta_key = '_godam_reaction_time'
+				 LEFT JOIN {$wpdb->users} u ON c.comment_author = u.ID
+				 WHERE c.comment_post_ID = %d AND c.comment_approved = 1",
+				$attachment_id
+			)
+		);
+		
+
+		$results = json_encode( $results );
+		?>
+		<div id="root-player-reactions" data-reactions="<?php echo esc_attr( $results ); ?>" data-attachment_id="<?php echo esc_attr( $attachment_id ); ?>"></div>
+	<?php endif; ?>
 </figure>
 <?php endif; ?>

@@ -383,3 +383,50 @@
     background-color: rgba(255, 255, 255, 0.9);
     color: #000;
 }
+
+// Reaction picker
+.godam-reaction-picker {
+	display: flex;
+	justify-content: center;
+	margin-top: 20px;
+	position: relative;
+
+	.reaction-bar {
+		margin-top: 0.5rem;
+		display: flex;
+		align-items: center;
+		background-color: #fff;
+		box-shadow: 0 0 2px 0px rgba(0, 0, 0, 0.3);
+		padding: 0.5rem 1rem;
+		border-radius: 999px;
+	}
+
+	.reaction-item, .emoji-picker-btn {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 40px;
+		height: 40px;
+		line-height: 1;
+		border-radius: 999px;
+		cursor: pointer;
+		transition: all ease-in-out 150ms;
+		border: none;
+		outline: none;
+		background-color: transparent;
+		font-size: 1.5rem;
+	}
+	
+	.reaction-item:hover {
+		background-color: #f2f2f2;
+		scale: 1.1;
+		transform: translateY(-8%);
+	}
+	
+	.emoji-picker {
+		position: absolute;
+		bottom: 100%;
+		right: 0;
+	}
+}
+
