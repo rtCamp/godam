@@ -82,7 +82,7 @@ class Analytics extends Base {
 					'status'  => 'error',
 					'message' => 'Invalid or unverified license key.',
 				),
-				403
+				200
 			);
 		}
 
