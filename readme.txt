@@ -69,6 +69,13 @@ Whether you’re running an e-learning site, an eCommerce store with product vid
 
 Get started today and revolutionize the way you manage and deliver video content on WordPress!
 
+= Pricing Plans =
+[View Pricing Plans](https://godam.io/#pricing)
+
+- **7-Day Free Trial** available for each subscription plan.
+- Flexible pricing options to suit different needs.
+- Upgrade or cancel anytime based on usage.
+
 == Installation ==
 Method 1: WordPress Dashboard
 1. Log in to WordPress (your-site.com/wp-admin).
