@@ -1,19 +1,20 @@
 === GoDAM ===
-Contributors: rtcamp, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar
 Tags: transcoder, DAM, audio video conversion, digital asset management
 Donate link: https://godam.io/#pricing
 Requires at least: 6.5
 Tested up to: 6.7.1
 Requires PHP: 7.4
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Seamlessly manage and optimize video content on WordPress with GoDAM – featuring transcoding, adaptive streaming, and interactive video layers.
+Seamlessly manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, gravity forms integration, and ad integration.
 
 == Description ==
-GoDAM Transcoder is a powerful video management solution designed for WordPress, providing automatic transcoding, adaptive bitrate streaming, and interactive video layers to enhance viewer engagement. It simplifies the entire video workflow, from upload to optimized playback, ensuring smooth delivery across all devices and network conditions.
+[GoDAM](https://godam.io/) is a powerful digital asset management solution designed to provide automatic transcoding, adaptive bitrate streaming, and interactive video layers to enhance viewer engagement. It simplifies the entire video workflow, from upload to optimized playback, ensuring smooth delivery across all devices and network conditions.
 
-With GoDAM Transcoder, WordPress users can leverage advanced video capabilities without requiring extensive technical expertise. It automates the conversion of uploaded videos into multiple resolutions, enabling seamless playback with adaptive bitrate streaming. The integration of interactive elements such as CTAs, forms, and hotspots makes GoDAM an all-in-one solution for content creators, marketers, and eCommerce businesses.
+With GoDAM, WordPress users can leverage advanced video capabilities without requiring extensive technical expertise. It automates the conversion of uploaded videos into multiple resolutions, enabling seamless playback with adaptive bitrate streaming. The integration of interactive elements such as CTAs, forms, hotspots and ads makes GoDAM an all-in-one solution for content creators, marketers, and eCommerce businesses.
 
 Key Features
 
@@ -24,18 +25,18 @@ Key Features
 
 📌 Interactive Video Layers for Engagement
 - Embed clickable CTAs to drive actions like sign-ups and purchases.
-- Add hotspots for product tagging and interactive learning experiences.
+- Enhance your videos with customizable hotspots that deliver additional context, links, and information exactly when and where your viewers need it.
 - Integrate Gravity Forms to collect user feedback and lead data within videos.
 
 📌 Seamless Ad Monetization
 - Supports self-hosted ads and third-party ad networks.
 - Flexible ad placements (pre-roll, mid-roll, post-roll) to maximize revenue.
-- Tracks ad performance with built-in analytics.
+- Boost revenue and engagement with clickable ad redirections
 
 📌 Optimized Video Management & Storage
+- The DAM functionality streamlines file organization for websites with large libraries of images, videos, documents, and more.
 - Organize media assets efficiently with enhanced WordPress Media Library integration.
 - Direct integration with cloud storage providers.
-- Automated storage optimization to reduce costs and improve performance.
 
 📌 Customizable Video Player Experience
 - Fully customizable playback controls, branding, and player themes.
@@ -43,11 +44,28 @@ Key Features
 - Watermarking support to protect video content.
 
 📌 Advanced Video Analytics
-- Monitor viewer behavior and engagement through detailed reports.
+- Monitor viewer behavior and engagement through detailed metrics and heatmaps.
 - Track video interactions to optimize content strategy.
 - Gain insights into user retention and conversion rates.
 
-GoDAM Transcoder is ideal for businesses, content creators, educators, and media platforms looking to streamline video management while offering high-quality streaming experiences. Whether you’re running an e-learning site, an eCommerce store with product videos, or a media-heavy blog, GoDAM Transcoder ensures your videos are delivered efficiently and engagingly.
+Primary Benefits:
+- Simplifies asset management with automated transcoding and adaptive streaming.
+- Enhances viewer engagement with interactive layers like forms, CTAs, and hotspots.
+- Integrates seamlessly with WordPress for a familiar and user-friendly experience.
+
+Secondary Benefits:
+- Cost-efficient pricing tailored to your actual usage.
+- Scalable features suitable for small businesses, educators, and enterprise-level users.
+- Monetization opportunities through ad placement and e-commerce integrations.
+
+Use Cases:
+- Education: Deliver interactive video lessons with forms for quizzes or feedback.
+- E-commerce: Use video hotspots to enable in-video product purchases.
+- Marketing: Engage viewers with CTAs and lead capture forms.
+- Content Platforms: Stream high-quality videos with minimal buffering and downtime.
+
+GoDAM is ideal for businesses, content creators, educators, and media platforms looking to streamline digital asset management while offering high-quality streaming experiences.
+Whether you’re running an e-learning site, an eCommerce store with product videos, or a media-heavy blog, GoDAM ensures your videos are delivered efficiently and engagingly.
 
 Get started today and revolutionize the way you manage and deliver video content on WordPress!
 
@@ -98,7 +116,21 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 1. General Settings
 2. Video Settings
 3. Video Editor
+4. Gravity Forms integration
+5. CTA Layer
+6. Hotspot Layer
+7. Ads integration
+8. Player Settings
+9. Enhanced Media Library
 
-== Upgrade Notice ==
-= 1.0.0 =
-This is the initial release of GoDAM. Ensure you have a valid license key before activating the plugin. Upgrade to a premium plan for advanced features like adaptive streaming, interactive video layers, and cloud storage integration.
+== Changelog ==
+= v1.0.0 (Feb 2025) =
+
+- Initial release of GoDAM plugin.
+- Automatic transcoding for audio and video files.
+- Adaptive bitrate streaming for smooth playback.
+- Interactive video layers (CTAs, forms, hotspots, ads).
+- Customizable video player with branding options.
+- Cloud storage and CDN integration.
+- Advanced analytics and engagement tracking.
+- Enhanced WordPress Media Library for better asset management.
