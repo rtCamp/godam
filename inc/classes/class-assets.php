@@ -83,14 +83,14 @@ class Assets {
 		// Register IMA SDK
 		wp_enqueue_script( 'ima-sdk', 'https://imasdk.googleapis.com/js/sdkloader/ima3.js', RT_TRANSCODER_VERSION, true );
 
-		if ( is_singular( 'video' ) ) {
+		// if ( is_singular( 'video' ) ) {
 			wp_enqueue_style(
 				'easydam-video-template', 
 				RT_TRANSCODER_URL . '/assets/build/css/video-template.css', 
 				array(), 
 				filemtime( RT_TRANSCODER_PATH . '/assets/build/css/video-template.css' )
 			);
-		}
+		// }
 	}
 
 	/**

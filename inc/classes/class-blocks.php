@@ -40,9 +40,12 @@ class Blocks {
 	 */
 	public function register_blocks() {
 
-		// Register example-block Block.
 		register_block_type(
 			RT_TRANSCODER_PATH . '/assets/build/blocks/godam-player/'
 		);
+
+		// register_block_type(
+		// 	RT_TRANSCODER_PATH . '/assets/build/blocks/godam-comments/'
+		// );
 	}
 }

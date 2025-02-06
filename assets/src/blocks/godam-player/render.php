@@ -211,7 +211,6 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 				$attachment_id
 			)
 		);
-		
 
 		$results = json_encode( $results );
 		?>

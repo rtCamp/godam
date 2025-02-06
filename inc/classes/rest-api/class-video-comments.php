@@ -29,6 +29,18 @@ class Video_Comments extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/video-reactions/(?P<attachment_id>\d+)',
+				'args'      => array(
+					array(
+						'methods'             => \WP_REST_Server::READABLE,
+						'callback'            => array( $this, 'get_video_reaction' ),
+						'permission_callback' => array( $this, 'reaction_permissions_check' ),
+						'args'                => $this->get_collection_params(),
+					),
+				),
+			),
 		);
 	}
 
@@ -85,6 +97,46 @@ class Video_Comments extends Base {
 			);
 		}
 
+	}
+
+	public function get_video_reaction( $request ) {
+		$attachment_id = intval( $request['attachment_id'] );
+
+		global $wpdb;
+		
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT 
+					c.comment_ID, 
+					c.comment_post_ID, 
+					c.comment_author, 
+					c.comment_content, 
+					cm.meta_value AS reaction_time,
+					u.user_login AS username,
+					u.display_name 
+				 FROM {$wpdb->comments} c
+				 LEFT JOIN {$wpdb->commentmeta} cm ON c.comment_ID = cm.comment_id AND cm.meta_key = '_godam_reaction_time'
+				 LEFT JOIN {$wpdb->users} u ON c.comment_author = u.ID
+				 WHERE c.comment_post_ID = %d AND c.comment_approved = 1",
+				$attachment_id
+			)
+		);
+
+		if ( $results ) {
+			return new \WP_REST_Response(
+				$results,
+				200
+			);
+		}
+		else {
+			return new \WP_REST_Response(
+				array(
+					'success'     => false,
+					'message'     => 'No reactions found.',
+				),
+				400
+			);
+		}
 	}
 
 	/**

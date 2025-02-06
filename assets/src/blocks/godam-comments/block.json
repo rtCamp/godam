@@ -1,0 +1,36 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "godam/comments",
+	"title": "GoDAM Comments",
+	"category": "media",
+	"description": "Embed a video from your media library or upload a new one.",
+	"keywords": [ "comments", "video", "share", "reactions" ],
+	"textdomain": "godam",
+	"attributes": {
+		"post_id": {
+			"type": "number",
+			"role": "content"
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"align": true,
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"__experimentalDefaultControls": {
+				"margin": false,
+				"padding": false
+			}
+		},
+		"interactivity": {
+			"clientNavigation": true
+		}
+	},
+    "editorStyle": ["file:./index.css", "file:./frontend.css"],
+	"style": ["file:./style-index.css", "file:./frontend.css"],
+    "editorScript": ["file:./index.js"],
+    "viewScript": ["file:./frontend.js", "file:./analytics.js", "file:./video-reactions.js"],
+    "render": "file:./render.php"
+}

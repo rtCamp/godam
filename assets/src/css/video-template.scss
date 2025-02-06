@@ -64,20 +64,97 @@
 }
 
 .godam-attachment {
+    .vjs-control-bar {
+        background-color: rgba(0, 0, 0, 0.3);
+    }
+
+    .vjs-fullscreen-control {
+        position: absolute;
+        right: 0;
+        width: 40px;
+    }
+
+    .vjs-picture-in-picture-control {
+        position: absolute;
+        right: 40px;
+    }
+
+    .vjs-mouse-display {
+        display: none !important;
+    }
+
+    .vjs-time-control {
+        font-size: 12px;
+
+        &.vjs-current-time {
+            padding: 0;
+            display: block;
+        }
+        &.vjs-time-divider {
+            display: block;
+        }
+        &.vjs-duration {
+            padding: 0;
+            display: block;
+        }
+        &.vjs-remaining-time  {
+            display: none;
+        }
+    }
+
     .vjs-progress-control {
+        position: absolute;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: auto;
+        top: -2px;
+        border-radius: 1em;
+        transition: top 150ms linear, opacity 150ms linear, transform 150ms linear, -webkit-transform 150ms linear, -moz-transform 150ms linear, -o-transform 150ms linear;
+
         .vjs-progress-holder {
+            margin: 0;
+
+            .vjs-play-progress, 
+            .vjs-slider-bar {
+                background-color: #ab3a6c;
+            }
+
             .godam-reactions {
                 position: absolute;
                 left: 0;
                 width: 100%;
                 bottom: 100%;
 
-                .reaction-wrapper {
+                .reactions-wrapper {
                     position: relative;
 
                     .video-reaction-item {
                         font-size: 16px;
                         z-index: 999;
+
+                        .reaction-content {
+                            position: relative;
+
+                            &:hover {
+                                .reaction-tooltip {
+                                    display: block;
+                                }
+                            }
+
+                            .reaction-tooltip {
+                                display: none;
+                                position: absolute;
+                                top: -36px;
+                                left: 50%;
+                                transform: translateX(-50%);
+                                background-color: #111;
+                                color: #f2f2f2;
+                                font-size: 12px;
+                                padding: 0.5rem 0.75rem;
+                                border-radius: 4px;
+                            }
+                        }
                     }
                 }
             }

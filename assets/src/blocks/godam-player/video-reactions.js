@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import EmojiPicker from 'emoji-picker-react';
 import videojs from 'video.js';
@@ -11,6 +11,7 @@ import axios from 'axios';
  */
 import { Icon } from '@wordpress/components';
 import { plus, lineSolid } from '@wordpress/icons';
+import { __ } from '@wordpress/i18n';
 
 const ReactionControls = ( { children } ) => {
 	return ReactDOM.createPortal(
@@ -21,28 +22,36 @@ const ReactionControls = ( { children } ) => {
 	);
 };
 
-const VideoReactions = ( { attachmentId, reactionsData } ) => {
-	let initialReactions = [];
-	try {
-		initialReactions = JSON.parse( reactionsData );
-	} catch ( error ) {
-		initialReactions = [];
-	}
-
+const VideoReactions = ( { attachmentId } ) => {
 	const [ open, setOpen ] = React.useState( false );
 	const [ videoDuration, setVideoDuration ] = useState( 0 );
-	const [ reactions, setReactions ] = useState( initialReactions );
+	const [ reactions, setReactions ] = useState( );
 
 	const defaultReactions = [ '👍', '😮', '❤️', '😂', '🤩', '🙁', '👎' ];
+
+	const playerRef = useRef();
 
 	useEffect( () => {
 		const playerId = 'godam_video_' + attachmentId + '_html5_api';
 		const player = videojs( playerId );
+		playerRef.current = player;
+
 		player.addClass( 'godam-attachment' );
 
 		player.on( 'loadedmetadata', () => {
 			setVideoDuration( player.duration() );
 		} );
+
+		const url = '/wp-json/easydam/v1/video-reactions/' + attachmentId;
+
+		axios.get( url )
+			.then( ( response ) => {
+				console.log( response.data );
+				setReactions( response.data );
+			} )
+			.catch( ( error ) => {
+				console.log( error );
+			} );
 	}, [] );
 
 	const handleReactionClick = ( reaction ) => {
@@ -50,11 +59,7 @@ const VideoReactions = ( { attachmentId, reactionsData } ) => {
 
 		const url = '/wp-json/easydam/v1/video-reactions';
 
-		const playerId = 'godam_video_' + attachmentId + '_html5_api';
-
-		const player = videojs( playerId );
-
-		const reactionTime = player.currentTime();
+		const reactionTime = playerRef.current.currentTime();
 
 		axios.post( url,
 			{
@@ -124,28 +129,37 @@ const VideoReactions = ( { attachmentId, reactionsData } ) => {
 					</div>
 				}
 			</div>
-			<ReactionControls>
-				<div className="godam-reactions">
-					<div className="reactions-wrapper">
-						{
-							reactions.map( ( reaction, index ) => {
-								return (
-									<div key={ index }
-										className="video-reaction-item"
-										style={ {
-											zIndex: 1000,
-											fontSize: '1rem',
-											position: 'absolute',
-											top: '-2rem',
-											left: `${ reaction.reaction_time / videoDuration * 100 }%`,
-										} }
-									>{ reaction.comment_content }</div>
-								);
-							} )
-						}
+			{
+				reactions && reactions.length > 0 &&
+				<ReactionControls>
+					<div className="godam-reactions">
+						<div className="reactions-wrapper">
+							{
+								reactions.map( ( reaction, index ) => {
+									return (
+										<div key={ index }
+											className="video-reaction-item"
+											style={ {
+												fontSize: '1rem',
+												position: 'absolute',
+												top: '-1.75rem',
+												left: `${ reaction.reaction_time / videoDuration * 100 }%`,
+											} }
+										>
+											<div className="reaction-content">
+												{ reaction.comment_content }
+												<div className="reaction-tooltip">
+													{ reaction.username ?? __( 'Anonymous', 'godam' ) }
+												</div>
+											</div>
+										</div>
+									);
+								} )
+							}
+						</div>
 					</div>
-				</div>
-			</ReactionControls>
+				</ReactionControls>
+			}
 		</>
 	);
 };
