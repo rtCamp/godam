@@ -288,7 +288,7 @@ class Pages {
 			} else {
 				$valid_license            = true;
 				$user_data                = $result['data'] ?? array();
-				$user_data['license_key'] = rtt_mask_string( $user_data['license_key'] );
+				$user_data['license_key'] = rtt_mask_string( $license_key );
 			}
 
 			wp_localize_script(
