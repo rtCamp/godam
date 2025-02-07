@@ -238,7 +238,6 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 }
 
 function showLicenseActivationMessage() {
-	console.log("Showing license activation message");
 	// Remove loading animation
 	const loadingElement = document.getElementById( 'loading-analytics-animation' );
 	if ( loadingElement ) {
@@ -253,15 +252,10 @@ function showLicenseActivationMessage() {
 	}
 
 	// Add a message overlay
-	const messageOverlay = document.createElement( 'div' );
-	messageOverlay.classList.add( 'license-overlay' );
-	messageOverlay.innerHTML = `
-		<div class="license-message">
-			<p>Please activate your license to access the Analytics feature.</p>
-		</div>
-	`;
-
-	document.body.appendChild( messageOverlay );
+	const licenseOverlay = document.getElementById( 'license-overlay' );
+	if ( licenseOverlay ) {
+		licenseOverlay.classList.remove( 'hidden' );
+	}
 }
 
 async function main() {
