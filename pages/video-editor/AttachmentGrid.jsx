@@ -4,6 +4,11 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { useGetVideosMutation } from './redux/api/video';
@@ -20,16 +25,20 @@ const AttachmentGrid = ( { handleAttachmentClick } ) => {
 	 * fetch the videos when the component mounts and when values are changed.
 	 */
 	useEffect( () => {
+		if ( attachments.length > 0 && attachments.length !== 40 ) {
+			return;
+		}
+
 		const videoTimeout = setTimeout( () => {
 			getVideos( { search, page } ).then( ( response ) => {
 				const newVideos = response?.data?.data || [];
 				setAttachments( ( prev ) => ( page === 1 ? newVideos : [ ...prev, ...newVideos ] ) );
-				setHasMore( newVideos.length > 0 ); // Stop if no more videos
+				setHasMore( newVideos.length > 0 );
 			} );
 		}, 500 );
 
 		return () => clearTimeout( videoTimeout );
-	}, [ search, page, getVideos ] );
+	}, [ search, page, getVideos, attachments ] );
 
 	/**
 	 * Intersection observer to load more videos when user scrolls to the bottom
@@ -59,29 +68,37 @@ const AttachmentGrid = ( { handleAttachmentClick } ) => {
 
 	return (
 		<>
-			<div className="flex gap-8 items-center px-4">
-				<h1>Video Editor</h1>
+			<header>
+				<div className="bg-white border-b -ml-[32px] pl-[32px] flex gap-4">
+					<div className="pl-4 pr-9 flex items-center justify-between">
+						<h1 className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-center">
+							{ __( 'Video Editor', 'godam' ) }
+						</h1>
+					</div>
 
-				<input
-					type="text"
-					placeholder="Search for media"
-					className="p-2 border border-gray-300 w-60 dark:border-gray-700 rounded-lg focus:outline-none focus:ring focus:ring-blue-500"
-					onChange={ ( e ) => {
-						setSearch( e.target.value );
-						setPage( 1 );
-						setAttachments( [] );
-					} }
-					value={ search }
-				/>
-			</div>
+					<div className="flex items-center">
+						<input
+							type="text"
+							placeholder="Search for media"
+							className="bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md h-10 min-w-64 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
+							onChange={ ( e ) => {
+								setSearch( e.target.value );
+								setPage( 1 );
+								setAttachments( [] );
+							} }
+							value={ search }
+						/>
+					</div>
+				</div>
+			</header>
 
 			<div className="p-4 bg-gray-100 dark:bg-gray-800">
-				{ isLoading && page === 1 && (
-					<p className="text-center text-gray-500 dark:text-gray-400">Loading videos...</p>
+				{ isLoading && attachments.length === 0 && page === 1 && (
+					<p className="text-center text-gray-500 text-2xl dark:text-gray-400">Loading videos...</p>
 				) }
 
 				{ ! isLoading && attachments.length === 0 && (
-					<p className="text-center text-gray-500 dark:text-gray-400">No videos found.</p>
+					<p className="text-center text-gray-500 text-2xl dark:text-gray-400">No videos found.</p>
 				) }
 
 				{ attachments.length > 0 && (

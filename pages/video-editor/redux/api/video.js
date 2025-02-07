@@ -12,7 +12,6 @@ export const videosAPI = createApi( {
 			query: ( data ) => {
 				const params = new URLSearchParams();
 				params.append( 'action', 'query-attachments' );
-				params.append( 'post_id', '0' );
 				params.append( 'query[post_mime_type]', 'video' );
 				params.append( 'query[posts_per_page]', '40' );
 				params.append( 'query[orderby]', 'date' );
