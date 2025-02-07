@@ -43,6 +43,12 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
+			<div id="license-overlay" className="license-overlay hidden">
+				<div className="license-message">
+					<p>{ __( 'Please activate your license to access the Analytics feature.', 'godam' ) }</p>
+				</div>
+			</div>
+
 			{ analyticsData && (
 				<div id="video-analytics-container" className="video-analytics-container hidden">
 					<div className="overflow-auto">

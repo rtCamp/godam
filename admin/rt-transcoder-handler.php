@@ -244,7 +244,7 @@ class RT_Transcoder_Handler {
 		$type_arry        = explode( '.', $url );
 		$type             = strtolower( $type_arry[ count( $type_arry ) - 1 ] );
 		$extension        = pathinfo( $path, PATHINFO_EXTENSION );
-		$not_allowed_type = array( 'mp3' );
+		$not_allowed_type = array();
 		preg_match( '/video|audio/i', $metadata['mime_type'], $type_array );
 
 		if ( (

@@ -73,7 +73,7 @@ class Analytics extends Base {
 		// Define API URL for fetching analytics.
 		$analytics_endpoint = EasyDAM_Constants::ANALYTICS_ENDPOINT_DEV . 'processed-analytics/fetch/';
 
-		$account_token = get_site_option( 'rt-transcoding-api-key', 'unverified' );
+		$account_token = get_site_option( 'rt-transcoding-account-token', 'unverified' );
 
 		// Check if license key is valid.
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
@@ -82,7 +82,7 @@ class Analytics extends Base {
 					'status'  => 'error',
 					'message' => 'Invalid or unverified license key.',
 				),
-				403
+				200
 			);
 		}
 
