@@ -238,9 +238,10 @@ class Settings extends Base {
 	 */
 	public function deactivate_license() {
 		// Delete the license key from the database.
-		$deleted = delete_site_option( 'rt-transcoding-api-key' );
+		$deleted_key = delete_site_option( 'rt-transcoding-api-key' );
+		$deleted_token = delete_site_option( 'rt-transcoding-account-token' );
 
-		if ( $deleted ) {
+		if ( $deleted_key || $deleted_token ) {
 			return new \WP_REST_Response(
 				array(
 					'status'  => 'success',
