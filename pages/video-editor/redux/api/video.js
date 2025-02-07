@@ -14,10 +14,15 @@ export const videosAPI = createApi( {
 				params.append( 'action', 'query-attachments' );
 				params.append( 'post_id', '0' );
 				params.append( 'query[post_mime_type]', 'video' );
-				params.append( 'query[posts_per_page]', '80' );
+				params.append( 'query[posts_per_page]', '40' );
 				params.append( 'query[orderby]', 'date' );
 				params.append( 'query[order]', 'DESC' );
-				params.append( 'query[paged]', '1' );
+
+				if ( data.page ) {
+					params.append( 'query[paged]', data.page );
+				} else {
+					params.append( 'query[paged]', '1' );
+				}
 
 				if ( data.search ) {
 					params.append( 'query[s]', data.search );
