@@ -186,7 +186,7 @@ class Settings extends Base {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_subscription_plans' ),
 					'permission_callback' => function () {
-						return true; // Allow public access
+						return true; // Allow public access.
 					},
 				),
 			),
@@ -238,7 +238,7 @@ class Settings extends Base {
 	 */
 	public function deactivate_license() {
 		// Delete the license key from the database.
-		$deleted_key = delete_site_option( 'rt-transcoding-api-key' );
+		$deleted_key   = delete_site_option( 'rt-transcoding-api-key' );
 		$deleted_token = delete_site_option( 'rt-transcoding-account-token' );
 
 		if ( $deleted_key || $deleted_token ) {
@@ -497,7 +497,7 @@ class Settings extends Base {
 	public function fetch_subscription_plans() {
 		$api_url = 'https://frappe-transcoder-api.rt.gw/api/resource/Subscription Plan?fields=["name", "cost", "bandwidth", "storage", "billing_interval"]';
 
-		// Fetch data from the external API
+		// Fetch data from the external API.
 		$response = wp_remote_get( $api_url );
 
 		if ( is_wp_error( $response ) ) {
@@ -523,7 +523,7 @@ class Settings extends Base {
 			);
 		}
 
-		// Return the subscription plans
+		// Return the subscription plans.
 		return new \WP_REST_Response(
 			array(
 				'status' => 'success',

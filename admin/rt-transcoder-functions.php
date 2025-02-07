@@ -1081,7 +1081,7 @@ function rtt_verify_license( $license_key, $save = false ) {
 	$api_url = 'https://frappe-transcoder-api.rt.gw/api/method/godam_core.api.verification.verify_license';
 
 	// Prepare request body.
-	$site_url = get_site_url();
+	$site_url     = get_site_url();
 	$request_body = array(
 		'license_key' => $license_key,
 		'site_url'    => $site_url,
@@ -1115,7 +1115,7 @@ function rtt_verify_license( $license_key, $save = false ) {
 
 	// Handle success response.
 	if ( 200 === $status_code && isset( $body['message']['account_token'] ) ) {
-		
+
 		$account_token = $body['message']['account_token'];
 		if ( $save ) {
 			// Save the license key in the site options only if it is verified.
@@ -1153,14 +1153,12 @@ function rtt_verify_license( $license_key, $save = false ) {
  * @return string
  */
 function rtt_mask_string( $input, $offset = 4 ) {
-	error_log(print_r($input, true));
 	$length = strlen( $input );
 	if ( $length <= $offset ) {
 		return $input; // If string length is equal or less than $offset, return as is.
 	}
-		
+
 	$masked = str_repeat( '*', $length - $offset ) . substr( $input, -$offset );
-	error_log(print_r($masked, true));
 	return $masked;
 }
 
@@ -1230,7 +1228,7 @@ function rt_get_localize_array() {
 	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
 	$localize_array['postTitle']  = get_the_title();
 	$localize_array['locationIP'] = rtt_get_user_ip();
-	
+
 	/**
 	 * Get Current User.
 	 */
