@@ -75,7 +75,7 @@ const AttachmentGrid = ( { handleAttachmentClick } ) => {
 					<div className="bg-white border-b flex px-6 gap-8">
 						<div className="flex items-center justify-between">
 							<h1 className="py-6 m-0 text-xl whitespace-nowrap font-semibold text-slate-900 flex items-center">
-								{ __( 'Video Editor', 'godam' ) }
+								{ __( 'Select video to edit', 'godam' ) }
 							</h1>
 						</div>
 
