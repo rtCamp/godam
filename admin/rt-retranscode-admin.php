@@ -40,6 +40,13 @@ class RetranscodeMedia {
 	public $usage_info;
 
 	/**
+	 * Slug for help page
+	 *
+	 *  @var array
+	 */
+	private $help_slug = 'help';
+
+	/**
 	 * Functinallity initialization
 	 */
 	public function __construct() {
@@ -110,8 +117,30 @@ class RetranscodeMedia {
 			__( 'Tools', 'godam' ),
 			$this->capability,
 			'godam-tools',
-			array( $this, 'render_tools_page' )
+			array( $this, 'render_tools_page' ),
+			90
 		);
+
+		add_submenu_page(
+			'godam',
+			__( 'Help', 'godam' ),
+			__( 'Help', 'godam' ),
+			'edit_posts',
+			$this->help_slug,
+			array( $this, 'render_help_page' ),
+			900
+		);
+	}
+
+	/**
+	 * To render the help page.
+	 *
+	 * @return void
+	 */
+	public function render_help_page() {
+		?>
+		<div id="root-video-help"></div>
+		<?php
 	}
 
 	/**

@@ -21,7 +21,6 @@ class Pages {
 	private $menu_slug            = 'godam';
 	private $video_editor_slug    = 'video_editor';
 	private $analytics_slug       = 'analytics';
-	private $help_slug            = 'help';
 	private $menu_page_id         = 'toplevel_page_godam';
 	private $video_editor_page_id = 'godam_page_video_editor';
 	private $analytics_page_id    = 'godam_page_analytics';
@@ -116,16 +115,6 @@ class Pages {
 			'edit_posts',
 			$this->analytics_slug,
 			array( $this, 'render_analytics_page' )
-		);
-
-		add_submenu_page(
-			$this->menu_slug,
-			__( 'Help', 'godam' ),
-			__( 'Help', 'godam' ),
-			'edit_posts',
-			$this->help_slug,
-			array( $this, 'render_help_page' ),
-			500
 		);
 	}
 
@@ -232,17 +221,6 @@ class Pages {
 	public function render_analytics_page() {
 		?>
 		<div id="root-video-analytics"></div>
-		<?php
-	}
-
-	/**
-	 * To render the help page.
-	 *
-	 * @return void
-	 */
-	public function render_help_page() {
-		?>
-		<div id="root-video-help"></div>
 		<?php
 	}
 
