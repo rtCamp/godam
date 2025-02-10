@@ -1078,7 +1078,7 @@ function rtt_verify_license( $license_key, $save = false ) {
 		return new \WP_Error( 'missing_license_key', 'License key is required.', array( 'status' => 400 ) );
 	}
 
-	$api_url = 'https://frappe-transcoder-api.rt.gw/api/method/godam_core.api.verification.verify_license';
+	$api_url = GODAM_API_BASE . '/api/method/godam_core.api.verification.verify_license';
 
 	// Prepare request body.
 	$site_url     = get_site_url();
