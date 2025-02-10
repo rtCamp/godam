@@ -36,7 +36,7 @@ import save from './save';
  *
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
  */
-registerBlockType( 'godam/video', {
+registerBlockType( 'godam/comments', {
 	icon,
 	/**
 	 * @see ./edit.js

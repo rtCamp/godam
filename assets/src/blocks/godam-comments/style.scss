@@ -1,0 +1,93 @@
+.godam-comment-form {
+    position: relative;
+
+    .components-textarea-control__input {
+        padding-bottom: 40px;
+        border-radius: 0.5rem;
+    }
+
+    .godam-comment-form-btns {
+        display: flex;
+        border-radius: 0.5rem;
+        gap: 0.5rem;
+
+        position: absolute;
+        right: 0.5rem;
+        bottom: 0.5rem;
+    }
+
+    .godam-comment-submit-btn {
+    }
+}
+.godam-comments-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    margin-top: 1rem;
+    max-height: 80vh;
+    overflow-y: auto;
+
+    &.child {
+        padding-left: 1.5rem;
+        margin-top: 0;
+    }
+    
+    &--item {
+        padding: 1rem;
+        border-radius: 0.5rem;
+
+        h1, h2, h3, h4, h5, h6, p {
+            margin: 0;
+        }
+
+        &:hover {
+            background-color: #f9f9f9;
+        }
+
+        &--header {
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            &--author {
+                font-weight: 500;
+            }
+            &--date {
+                color: #666;
+            }
+            &--controls {
+                margin-left: auto;
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+            }
+        }
+
+        &--content {
+            font-size: 14px;
+        }
+
+        &--footer {
+            display: flex;
+            align-items: center;
+
+            .replay {
+                margin: 0 0 0 -0.5rem;
+            }
+        }
+    }
+}
+
+.pl-6 {
+    padding-left: 1.5rem;
+}
+
+.pb-6 {
+    padding-bottom: 1.5rem;
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}

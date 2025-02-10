@@ -68,15 +68,22 @@ class Assets {
 			true
 		);
 
+		$current_user = wp_get_current_user();
+		$user_data = array(
+			'ID'           => $current_user->ID,
+			'username'     => $current_user->user_login,
+			'email'        => $current_user->user_email,
+			'display_name' => $current_user->display_name,
+			'logged_in'    => is_user_logged_in(),
+			'nonce'        => wp_create_nonce( 'wp_rest' ),
+		);
+
 		wp_localize_script(
 			'easydam-script',
-			'nonceData',
-			array(
-				'nonce' => wp_create_nonce( 'wp_rest' ),
-			)
+			'wpUser',
+			$user_data,
 		);
 		
-
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );
 

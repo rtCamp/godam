@@ -75,7 +75,7 @@ class Pages {
 
 		wp_localize_script(
 			'block-frontend-script',
-			'nonceData',
+			'wpUser',
 			array(
 				'nonce' => wp_create_nonce( 'wp_rest' ),
 			)

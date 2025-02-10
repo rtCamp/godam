@@ -6,7 +6,7 @@
 	"category": "media",
 	"description": "Embed a video from your media library or upload a new one.",
 	"keywords": [ "movie", "video", "player" ],
-	"textdomain": "transcoder",
+	"textdomain": "godam",
 	"attributes": {
 		"autoplay": {
 			"type": "boolean",

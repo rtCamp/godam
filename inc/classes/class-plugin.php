@@ -47,7 +47,7 @@ class Plugin {
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 		$this->load_rest_api();
-		// $this->load_attachment_templates();
+		$this->load_attachment_templates();
 
 		// TODO: think of a better place to put this.
 		$offload_media = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
@@ -117,7 +117,9 @@ class Plugin {
 
 		ob_start();
 
-		load_template( $located, true );
+		load_template( $located, true, [
+			'post_id' => $instance->context['postId']
+		] );
 
 		$block_markup = ob_get_clean();
 

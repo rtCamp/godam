@@ -28,9 +28,8 @@
 			"clientNavigation": true
 		}
 	},
-    "editorStyle": ["file:./index.css", "file:./frontend.css"],
-	"style": ["file:./style-index.css", "file:./frontend.css"],
+    "editorStyle": ["file:./index.css"],
+	"style": ["file:./style-index.css", "wp-components"],
     "editorScript": ["file:./index.js"],
-    "viewScript": ["file:./frontend.js", "file:./analytics.js", "file:./video-reactions.js"],
-    "render": "file:./render.php"
+    "viewScript": ["file:./comments.js"]
 }

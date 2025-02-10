@@ -70,7 +70,7 @@ const VideoReactions = ( { attachmentId } ) => {
 			{
 				headers: {
 					'Content-Type': 'application/json',
-					'X-WP-Nonce': window.nonceData.nonce,
+					'X-WP-Nonce': window.wpUser.nonce,
 				},
 			},
 		)
