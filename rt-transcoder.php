@@ -46,6 +46,10 @@ if ( ! defined( 'RT_TRANSCODER_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' )
 	define( 'RT_TRANSCODER_NO_MAIL', true );
 }
 
+if ( ! defined( 'GODAM_API_BASE' ) ) {
+	define( 'GODAM_API_BASE', 'https://app.godam.io' );
+}
+
 require_once RT_TRANSCODER_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RT_TRANSCODER_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RT_TRANSCODER_PATH . 'admin/rt-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant

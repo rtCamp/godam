@@ -495,7 +495,7 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function fetch_subscription_plans() {
-		$api_url = 'https://frappe-transcoder-api.rt.gw/api/resource/Subscription Plan?fields=["name", "cost", "bandwidth", "storage", "billing_interval"]';
+		$api_url = GODAM_API_BASE . '/api/resource/Subscription Plan?fields=["name", "cost", "bandwidth", "storage", "billing_interval"]';
 
 		// Fetch data from the external API.
 		$response = wp_remote_get( $api_url );
