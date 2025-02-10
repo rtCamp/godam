@@ -117,8 +117,7 @@ class RetranscodeMedia {
 			__( 'Tools', 'godam' ),
 			$this->capability,
 			'godam-tools',
-			array( $this, 'render_tools_page' ),
-			90
+			array( $this, 'render_tools_page' )
 		);
 
 		add_submenu_page(
@@ -127,8 +126,7 @@ class RetranscodeMedia {
 			__( 'Help', 'godam' ),
 			'edit_posts',
 			$this->help_slug,
-			array( $this, 'render_help_page' ),
-			900
+			array( $this, 'render_help_page' )
 		);
 	}
 
