@@ -21,9 +21,11 @@ class Pages {
 	private $menu_slug            = 'godam';
 	private $video_editor_slug    = 'video_editor';
 	private $analytics_slug       = 'analytics';
+	private $help_slug            = 'help';
 	private $menu_page_id         = 'toplevel_page_godam';
 	private $video_editor_page_id = 'godam_page_video_editor';
 	private $analytics_page_id    = 'godam_page_analytics';
+	private $help_page_id         = 'godam_page_help';
 
 	/**
 	 * Construct method.
@@ -114,6 +116,16 @@ class Pages {
 			'edit_posts',
 			$this->analytics_slug,
 			array( $this, 'render_analytics_page' )
+		);
+
+		add_submenu_page(
+			$this->menu_slug,
+			__( 'Help', 'godam' ),
+			__( 'Help', 'godam' ),
+			'edit_posts',
+			$this->help_slug,
+			array( $this, 'render_help_page' ),
+			500
 		);
 	}
 
@@ -220,6 +232,17 @@ class Pages {
 	public function render_analytics_page() {
 		?>
 		<div id="root-video-analytics"></div>
+		<?php
+	}
+
+	/**
+	 * To render the help page.
+	 *
+	 * @return void
+	 */
+	public function render_help_page() {
+		?>
+		<div id="root-video-help"></div>
 		<?php
 	}
 
@@ -345,6 +368,16 @@ class Pages {
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 			wp_enqueue_script( 'd3-js' );
 			wp_enqueue_script( 'video-analytics-charts' );
+		} elseif ( $screen && $this->help_page_id === $screen->id ) {
+			wp_register_script(
+				'godam-page-script-help',
+				RT_TRANSCODER_URL . 'pages/build/help.js',
+				array( 'wp-element' ),
+				filemtime( RT_TRANSCODER_PATH . 'pages/build/help.js' ),
+				true
+			);
+
+			wp_enqueue_script( 'godam-page-script-help' );
 		}
 
 
