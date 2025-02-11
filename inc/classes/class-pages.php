@@ -25,6 +25,7 @@ class Pages {
 	private $video_editor_page_id = 'godam_page_video_editor';
 	private $analytics_page_id    = 'godam_page_analytics';
 	private $help_page_id         = 'godam_page_help';
+	private $help_slug            = 'help';
 
 	/**
 	 * Construct method.
@@ -95,8 +96,7 @@ class Pages {
 			'manage_options',
 			$this->menu_slug,
 			array( $this, 'render_godam_page' ),
-			'dashicons-admin-generic',
-			30
+			'dashicons-admin-generic'
 		);
 
 		add_submenu_page(
@@ -105,7 +105,8 @@ class Pages {
 			__( 'Video editor', 'godam' ),
 			'edit_posts',
 			$this->video_editor_slug,
-			array( $this, 'render_video_editor_page' )
+			array( $this, 'render_video_editor_page' ),
+			1
 		);
 
 		add_submenu_page(
@@ -114,8 +115,30 @@ class Pages {
 			__( 'Analytics', 'godam' ),
 			'edit_posts',
 			$this->analytics_slug,
-			array( $this, 'render_analytics_page' )
+			array( $this, 'render_analytics_page' ),
+			2
 		);
+
+		add_submenu_page(
+			'godam',
+			__( 'Help', 'godam' ),
+			__( 'Help', 'godam' ),
+			'edit_posts',
+			$this->help_slug,
+			array( $this, 'render_help_page' ),
+			4
+		);
+	}
+
+	/**
+	 * To render the help page.
+	 *
+	 * @return void
+	 */
+	public function render_help_page() {
+		?>
+		<div id="root-video-help"></div>
+		<?php
 	}
 
 	/**

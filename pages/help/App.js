@@ -95,7 +95,7 @@ const App = () => {
 				</div>
 				<section>
 					<div className="hero-content">
-						<h1 className="hero-text">Hi, How can we help?</h1>
+						<h1 className="hero-text">{ __( 'Hi, How can we help?', 'godam' ) }</h1>
 						<p>
 							{ __( 'Please review the documentation first. If you still can\'t find the answer, open a support ticket and we will be happy to answer your questions and assist you with any problems.', 'godam' ) }
 						</p>
