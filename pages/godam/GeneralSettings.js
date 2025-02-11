@@ -9,6 +9,8 @@ import { __ } from '@wordpress/i18n';
  */
 import { useSelector } from 'react-redux';
 
+/* global userData */
+
 const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLicenseKey, verifyLicenseFromUrl } ) => {
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 	const [ isLicenseKeyLoading, setIsLicenseKeyLoading ] = useState( false ); // Loading indicator for saving license key.
@@ -280,40 +282,49 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 						</div>
 						{ mediaSettings?.general?.is_verified && (
 							<div className="flex gap-4 flex-wrap">
-								<div className="flex gap-3 items-center">
-									<div className="circle-container">
-										<div className="data text-xs">{ calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) }%</div>
-										<div
-											className={ `circle ${
-												calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) > 90 ? 'red' : ''
-											}` }
-											style={ { '--percentage': calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) + '%' } }
-										></div>
-									</div>
-									<div className="leading-6">
-										<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
-										<strong>{ __( 'Available: ', 'godam' ) }</strong>{ userData.total_bandwidth - userData.bandwidth_used }{ __( 'GB', 'godam' ) }
-										<br />
-										<strong>{ __( 'Used: ', 'godam' ) }</strong>{ userData.bandwidth_used }{ __( 'GB', 'godam' ) }
-									</div>
-								</div>
-								<div className="flex gap-3 items-center">
-									<div className="circle-container">
-										<div className="data text-xs">{ calculatePercentage( userData.storage_used, userData.total_storage ) }%</div>
-										<div
-											className={ `circle ${
-												calculatePercentage( userData.storage_used, userData.total_storage ) > 90 ? 'red' : ''
-											}` }
-											style={ { '--percentage': calculatePercentage( userData.storage_used, userData.total_storage ) + '%' } }
-										></div>
-									</div>
-									<div className="leading-6">
-										<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
-										<strong>{ __( 'Available: ', 'godam' ) }</strong>{ userData.total_storage - userData.storage_used }{ __( 'GB', 'godam' ) }
-										<br />
-										<strong>{ __( 'Used: ', 'godam' ) }</strong>{ userData.storage_used }{ __( 'GB', 'godam' ) }
-									</div>
-								</div>
+
+								{
+									userData.storageBandwidthError ? (
+										<p className="text-red-500 text-center text-lg h-max">{ userData.storageBandwidthError }</p>
+									) : (
+										<>
+											<div className="flex gap-3 items-center">
+												<div className="circle-container">
+													<div className="data text-xs">{ calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) }%</div>
+													<div
+														className={ `circle ${
+															calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) > 90 ? 'red' : ''
+														}` }
+														style={ { '--percentage': calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) + '%' } }
+													></div>
+												</div>
+												<div className="leading-6">
+													<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
+													<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_bandwidth - userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+													<br />
+													<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+												</div>
+											</div>
+											<div className="flex gap-3 items-center">
+												<div className="circle-container">
+													<div className="data text-xs">{ calculatePercentage( userData.storage_used, userData.total_storage ) }%</div>
+													<div
+														className={ `circle ${
+															calculatePercentage( userData.storage_used, userData.total_storage ) > 90 ? 'red' : ''
+														}` }
+														style={ { '--percentage': calculatePercentage( userData.storage_used, userData.total_storage ) + '%' } }
+													></div>
+												</div>
+												<div className="leading-6">
+													<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
+													<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_storage - userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+													<br />
+													<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+												</div>
+											</div>
+										</>
+									)
+								}
 							</div>
 						) }
 					</PanelBody>

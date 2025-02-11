@@ -291,18 +291,23 @@ class Pages {
 				$user_data['license_key'] = rtt_mask_string( $license_key );
 			}
 
+			$user_data = array(
+				'currentUserId' => get_current_user_id(),
+				'valid_license' => $valid_license,
+			);
+
+			$usage_data = $this->get_usage_data();
+
+			if ( ! is_wp_error( $usage_data ) ) {
+				$user_data = array_merge( $user_data, $usage_data );
+			} else {
+				$user_data['storageBandwidthError'] = $usage_data->get_error_message();
+			}
+
 			wp_localize_script(
 				'transcoder-page-script-godam',
 				'userData',
-				array(
-					'currentUserId'   => get_current_user_id(), // Current user ID.
-					'storage_used'    => 75,
-					'total_storage'   => 100,
-					'bandwidth_used'  => 98.94,
-					'total_bandwidth' => 200,
-					'valid_license'   => $valid_license,
-					'user_data'       => $user_data,
-				)
+				$user_data
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-godam' );
@@ -359,5 +364,44 @@ class Pages {
 		);
 
 		wp_enqueue_script( 'media-library-react' );
+	}
+
+
+	/**
+	 * Get the storage and bandwidth usage data.
+	 * 
+	 * @return array|WP_Error
+	 */
+	public function get_usage_data() {
+
+		$endpoint = GODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
+
+		$url = add_query_arg(
+			array(
+				'license' => get_site_option( 'rt-transcoding-api-key', '' ),
+			),
+			$endpoint
+		);
+
+		$response = wp_safe_remote_get( $url );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+
+		$data = json_decode( $body, true );
+
+		if ( ! $data ) {
+			return new \WP_Error( 'godam_api_error', 'Error fetching data from GoDAM API' );
+		}
+
+		return array(
+			'storage_used'    => floatval( $data['message']['storage_used'] ),
+			'total_storage'   => floatval( $data['message']['total_storage'] ),
+			'bandwidth_used'  => floatval( $data['message']['bandwidth_used'] ),
+			'total_bandwidth' => floatval( $data['message']['toatal_bandwidth'] ),
+		);
 	}
 }
