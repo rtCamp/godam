@@ -310,7 +310,7 @@ class Pages {
 				$user_data['license_key'] = rtt_mask_string( $license_key );
 			}
 
-			$localizeData = array(
+			$localize_data = array(
 				'currentUserId' => get_current_user_id(),
 				'valid_license' => $valid_license,
 				'user_data'     => $user_data,
@@ -318,16 +318,16 @@ class Pages {
 
 			$usage_data = $this->get_usage_data();
 
-			if ( ! is_wp_error( $localizeData ) ) {
-				$localizeData = array_merge( $localizeData, $usage_data );
+			if ( ! is_wp_error( $usage_data ) ) {
+				$localize_data = array_merge( $localize_data, $usage_data );
 			} else {
-				$localizeData['storageBandwidthError'] = $usage_data->get_error_message();
+				$localize_data['storageBandwidthError'] = $usage_data->get_error_message();
 			}
 
 			wp_localize_script(
 				'transcoder-page-script-godam',
 				'userData',
-				$localizeData
+				$localize_data
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-godam' );
@@ -394,11 +394,17 @@ class Pages {
 	 */
 	public function get_usage_data() {
 
+		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+
+		if ( empty( $license_key ) ) {
+			return new \WP_Error( 'godam_api_error', 'license key not found ( try refreshing the page )' );
+		}
+
 		$endpoint = GODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
 
 		$url = add_query_arg(
 			array(
-				'license' => get_site_option( 'rt-transcoding-api-key', '' ),
+				'license' => $license_key,
 			),
 			$endpoint
 		);
@@ -413,15 +419,16 @@ class Pages {
 
 		$data = json_decode( $body, true );
 
-		if ( ! $data ) {
-			return new \WP_Error( 'godam_api_error', 'Error fetching data from GoDAM API' );
+		// Validate response structure
+		if ( ! isset( $data['message'] ) || ! isset( $data['message']['storage_used'] ) || empty( $data['message']['storage_used'] ) ) {
+			return new \WP_Error( 'godam_api_error', 'Error fetching data for storage and bandwidth' );
 		}
 
 		return array(
-			'storage_used'    => floatval( $data['message']['storage_used'] ),
-			'total_storage'   => floatval( $data['message']['total_storage'] ),
-			'bandwidth_used'  => floatval( $data['message']['bandwidth_used'] ),
-			'total_bandwidth' => floatval( $data['message']['total_bandwidth'] ),
+			'storage_used'    => floatval( $data['message']['storage_used'] ?? 0 ),
+			'total_storage'   => floatval( $data['message']['total_storage'] ?? 0 ),
+			'bandwidth_used'  => floatval( $data['message']['bandwidth_used'] ?? 0 ),
+			'total_bandwidth' => floatval( $data['message']['total_bandwidth'] ?? 0 ),
 		);
 	}
 }
