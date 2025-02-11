@@ -2,12 +2,14 @@
  * WordPress dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
-import { TextControl, Button, Notice, Panel, PanelBody, PanelRow, FlexItem } from '@wordpress/components';
+import { TextControl, Button, Notice, Panel, PanelBody } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 /**
  * External dependencies
  */
 import { useSelector } from 'react-redux';
+
+/* global userData */
 
 const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLicenseKey, verifyLicenseFromUrl } ) => {
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
@@ -219,24 +221,22 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 	return (
 		<div>
 
-			<div className="flex flex-col lg:flex-row gap-4 items-start mb-4">
-				<Panel
-					header={ __( 'General Settings', 'godam' ) }
-					className="w-full"
+			{ notice?.isVisible && (
+				<Notice
+					className="mb-2"
+					status={ notice.status }
+					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
 				>
+					{ notice.message }
+				</Notice>
+			) }
+			<div className="flex flex-col lg:flex-row gap-4 items-start mb-4">
+				<Panel header={ __( 'Settings Overview', 'godam' ) } className="w-full">
 					<PanelBody
 						opened={ true }
+						className="flex gap-8"
 					>
-						{ notice?.isVisible && (
-							<Notice
-								className="mb-2"
-								status={ notice.status }
-								onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
-							>
-								{ notice.message }
-							</Notice>
-						) }
-						<div className="flex flex-col gap-2">
+						<div className="flex flex-col gap-2 b-4m">
 							<TextControl
 								label={ __( 'License Key', 'godam' ) }
 								value={ licenseKey }
@@ -271,7 +271,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								<Button
 									className="max-w-[160px] w-full flex justify-center items-center"
 									onClick={ deactivateLicenseKey }
-									disabled={ isLicenseKeyLoading || ! mediaSettings?.general?.is_verified } // Disable if no license key is present
+									disabled={ isLicenseKeyLoading || ! mediaSettings?.general?.is_verified }
 									variant="secondary"
 									isDestructive
 									isBusy={ isDeactivateLoading }
@@ -280,60 +280,55 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								</Button>
 							</div>
 						</div>
+						{ mediaSettings?.general?.is_verified && (
+							<div className="flex gap-4 flex-wrap">
+
+								{
+									userData.storageBandwidthError ? (
+										<p className="text-red-500 text-center text-lg h-max">{ userData.storageBandwidthError }</p>
+									) : (
+										<>
+											<div className="flex gap-3 items-center">
+												<div className="circle-container">
+													<div className="data text-xs">{ calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) }%</div>
+													<div
+														className={ `circle ${
+															calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) > 90 ? 'red' : ''
+														}` }
+														style={ { '--percentage': calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) + '%' } }
+													></div>
+												</div>
+												<div className="leading-6">
+													<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
+													<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_bandwidth - userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+													<br />
+													<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+												</div>
+											</div>
+											<div className="flex gap-3 items-center">
+												<div className="circle-container">
+													<div className="data text-xs">{ calculatePercentage( userData.storage_used, userData.total_storage ) }%</div>
+													<div
+														className={ `circle ${
+															calculatePercentage( userData.storage_used, userData.total_storage ) > 90 ? 'red' : ''
+														}` }
+														style={ { '--percentage': calculatePercentage( userData.storage_used, userData.total_storage ) + '%' } }
+													></div>
+												</div>
+												<div className="leading-6">
+													<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
+													<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_storage - userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+													<br />
+													<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+												</div>
+											</div>
+										</>
+									)
+								}
+							</div>
+						) }
 					</PanelBody>
 				</Panel>
-
-				{ mediaSettings?.general?.is_verified && (
-					<>
-						<Panel
-							header={ __( 'Quick overview', 'godam' ) }
-							className="w-full"
-						>
-							<PanelBody
-								opened={ true }
-							>
-								<div className="flex gap-4 flex-wrap">
-									<div className="flex gap-3 items-center">
-										<div className="circle-container">
-											<div className="data text-xs">{ calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) }%</div>
-											<div
-												className={ `circle ${
-													calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) > 90 ? 'red' : ''
-												}` }
-												style={
-													{ '--percentage': calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) + '%' }
-												}
-											></div>
-										</div>
-										<div className="leading-6">
-											<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
-											<strong>{ __( 'Available: ', 'godam' ) }</strong>{ userData.total_bandwidth - userData.bandwidth_used }{ __( 'GB', 'godam' ) }
-											<br />
-											<strong>{ __( 'Used: ', 'godam' ) }</strong>{ userData.bandwidth_used }{ __( 'GB', 'godam' ) }
-										</div>
-									</div>
-									<div className="flex gap-3 items-center">
-										<div className="circle-container">
-											<div className="data text-xs">{ calculatePercentage( userData.storage_used, userData.total_storage ) }%</div>
-											<div
-												className={ `circle ${
-													calculatePercentage( userData.storage_used, userData.total_storage ) > 90 ? 'red' : ''
-												}` }
-												style={ { '--percentage': calculatePercentage( userData.storage_used, userData.total_storage ) + '%' } }
-											></div>
-										</div>
-										<div className="leading-6">
-											<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
-											<strong>{ __( 'Available: ', 'godam' ) }</strong>{ userData.total_storage - userData.storage_used }{ __( 'GB', 'godam' ) }
-											<br />
-											<strong>{ __( 'Used: ', 'godam' ) }</strong>{ userData.storage_used }{ __( 'GB', 'godam' ) }
-										</div>
-									</div>
-								</div>
-							</PanelBody>
-						</Panel>
-					</>
-				) }
 			</div>
 
 			{ ! mediaSettings?.general?.is_verified && (
