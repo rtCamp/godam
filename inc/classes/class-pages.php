@@ -291,23 +291,24 @@ class Pages {
 				$user_data['license_key'] = rtt_mask_string( $license_key );
 			}
 
-			$user_data = array(
+			$localizeData = array(
 				'currentUserId' => get_current_user_id(),
 				'valid_license' => $valid_license,
+				'user_data'     => $user_data,
 			);
 
 			$usage_data = $this->get_usage_data();
 
-			if ( ! is_wp_error( $usage_data ) ) {
-				$user_data = array_merge( $user_data, $usage_data );
+			if ( ! is_wp_error( $localizeData ) ) {
+				$localizeData = array_merge( $localizeData, $usage_data );
 			} else {
-				$user_data['storageBandwidthError'] = $usage_data->get_error_message();
+				$localizeData['storageBandwidthError'] = $usage_data->get_error_message();
 			}
 
 			wp_localize_script(
 				'transcoder-page-script-godam',
 				'userData',
-				$user_data
+				$localizeData
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-godam' );
