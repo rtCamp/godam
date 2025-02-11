@@ -220,6 +220,12 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 		);
 
 		const result = await response.json();
+
+		if ( result.status === 'error' && result.message.includes( 'Invalid or unverified license key' ) ) {
+			showLicenseActivationMessage();
+			return null;
+		}
+
 		if ( result.status !== 'success' ) {
 			throw new Error( result.message );
 		}
@@ -231,6 +237,27 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 	}
 }
 
+function showLicenseActivationMessage() {
+	// Remove loading animation
+	const loadingElement = document.getElementById( 'loading-analytics-animation' );
+	if ( loadingElement ) {
+		loadingElement.style.display = 'none';
+	}
+
+	// Show analytics container
+	const analyticsContainer = document.getElementById( 'video-analytics-container' );
+	if ( analyticsContainer ) {
+		analyticsContainer.classList.remove( 'hidden' );
+		analyticsContainer.classList.add( 'blurred' ); // Apply blur effect
+	}
+
+	// Add a message overlay
+	const licenseOverlay = document.getElementById( 'license-overlay' );
+	if ( licenseOverlay ) {
+		licenseOverlay.classList.remove( 'hidden' );
+	}
+}
+
 async function main() {
 	const videoElement = document.getElementById( 'analytics-video' );
 	const videoId = videoElement?.dataset.id;
@@ -239,7 +266,6 @@ async function main() {
 	const analyticsData = await fetchAnalyticsData( videoId, siteUrl );
 
 	if ( ! analyticsData ) {
-		console.warn( 'No analytics data available.' );
 		return;
 	}
 

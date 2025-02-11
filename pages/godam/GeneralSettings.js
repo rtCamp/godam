@@ -17,6 +17,8 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 	const [ trackStatusOnUserProfile, setTrackStatusOnUserProfile ] = useState( mediaSettings?.general?.track_status || false );
 	const [ plans, setPlans ] = useState( [] );
 
+	const GODAM_API_BASE = 'https://app.godam.io';
+
 	useEffect( () => {
 		if ( mediaSettings?.general?.track_status !== undefined ) {
 			setTrackStatusOnUserProfile( mediaSettings.general.track_status );
@@ -241,7 +243,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 									<>
 										{ __( 'Your license key is required to access the features. You can get your active license key from your ', 'godam' ) }
 										<a
-											href="https://frappe-transcoder-api.rt.gw/"
+											href={ GODAM_API_BASE }
 											target="_blank"
 											rel="noopener noreferrer"
 											className="text-blue-500 underline"
@@ -352,7 +354,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 										<Button
 											className="mb-5"
 											variant="primary"
-											href={ `https://frappe-transcoder-api.rt.gw/subscription/account-creation?plan_name=${ encodeURIComponent( plan.name ) }` }
+											href={ `${ GODAM_API_BASE }/subscription/account-creation?plan_name=${ encodeURIComponent( plan.name ) }&ref=${ encodeURIComponent( window.location.href ) }` }
 											target="_blank"
 											rel="noopener noreferrer"
 										>
