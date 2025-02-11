@@ -1078,14 +1078,28 @@ function rtt_verify_license( $license_key, $save = false ) {
 		return new \WP_Error( 'missing_license_key', 'License key is required.', array( 'status' => 400 ) );
 	}
 
-	// API endpoint to verify the license.
-	$api_url = sprintf( 'http://frappe-transcoder-api.rt.gw/api/resource/License/%s', $license_key );
+	$api_url = GODAM_API_BASE . '/api/method/godam_core.api.verification.verify_license';
 
-	// Use vip_safe_wp_remote_get as the primary method and wp_safe_remote_get as fallback.
-	if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
-		$response = vip_safe_wp_remote_get( $api_url, 3, 3 ); // Timeout of 3 seconds, retries 3 times.
+	// Prepare request body.
+	$site_url     = get_site_url();
+	$request_body = array(
+		'license_key' => $license_key,
+		'site_url'    => $site_url,
+	);
+
+	$args = array(
+		'body'    => json_encode( $request_body ),
+		'headers' => array(
+			'Content-Type' => 'application/json',
+		),
+		'timeout' => 10,
+	);
+
+	// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
+	if ( function_exists( 'vip_safe_wp_remote_post' ) ) {
+		$response = vip_safe_wp_remote_post( $api_url, $args, 3, 3 );
 	} else {
-		$response = wp_safe_remote_get( $api_url ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
+		$response = wp_safe_remote_post( $api_url, $args );
 	}
 
 	if ( is_wp_error( $response ) ) {
@@ -1095,14 +1109,20 @@ function rtt_verify_license( $license_key, $save = false ) {
 	$status_code = wp_remote_retrieve_response_code( $response );
 	$body        = json_decode( wp_remote_retrieve_body( $response ), true );
 
-	// Handle success response.
-	if ( 200 === $status_code && isset( $body['data'] ) ) {
+	if ( isset( $body['message']['error'] ) ) {
+		return new \WP_Error( 'invalid_license', $body['message']['error'], array( 'status' => 400 ) );
+	}
 
+	// Handle success response.
+	if ( 200 === $status_code && isset( $body['message']['account_token'] ) ) {
+
+		$account_token = $body['message']['account_token'];
 		if ( $save ) {
 			// Save the license key in the site options only if it is verified.
 			update_site_option( 'rt-transcoding-api-key', $license_key );
 			update_site_option( 'rt-transcoding-api-key-stored', $license_key );
-	
+			update_site_option( 'rt-transcoding-account-token', $account_token );
+
 			// Update usage data.
 			$handler = new \RT_Transcoder_Handler( false );
 			$handler->update_usage( $license_key );
@@ -1111,7 +1131,7 @@ function rtt_verify_license( $license_key, $save = false ) {
 		return array(
 			'status'  => 'success',
 			'message' => 'License key verified and stored successfully!',
-			'data'    => $body['data'],
+			'data'    => $body['message'],
 		);
 	}
 
@@ -1137,7 +1157,7 @@ function rtt_mask_string( $input, $offset = 4 ) {
 	if ( $length <= $offset ) {
 		return $input; // If string length is equal or less than $offset, return as is.
 	}
-		
+
 	$masked = str_repeat( '*', $length - $offset ) . substr( $input, -$offset );
 	return $masked;
 }
@@ -1208,7 +1228,7 @@ function rt_get_localize_array() {
 	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
 	$localize_array['postTitle']  = get_the_title();
 	$localize_array['locationIP'] = rtt_get_user_ip();
-	
+
 	/**
 	 * Get Current User.
 	 */
@@ -1245,7 +1265,7 @@ function rt_get_localize_array() {
 		$localize_array['author'] = get_the_author();
 	}
 
-	$localize_array['token'] = get_site_option( 'rt-transcoding-api-key', 'unverified' );
+	$localize_array['token'] = get_site_option( 'rt-transcoding-account-token', 'unverified' );
 
 	return $localize_array;
 }

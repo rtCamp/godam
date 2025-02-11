@@ -167,7 +167,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		return `
 		<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>
 		<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>
-	`;
+		`;
 	},
 
 	render() {

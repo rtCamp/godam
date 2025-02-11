@@ -36,10 +36,10 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 				const selection = wp.media.frame.state().get( 'selection' );
 
 				// Map through the selection to extract IDs
-				let draggedItemIds = selection.map( ( model ) => model.get( 'id' ) );
+				let draggedItemIds = selection?.map( ( model ) => model.get( 'id' ) );
 
 				// If no items are selected, use the current item's ID
-				if ( draggedItemIds.length === 0 ) {
+				if ( ! draggedItemIds || draggedItemIds.length === 0 ) {
 					const currentItemId = this.model.get( 'id' ); // Get the ID of the current attachment
 					draggedItemIds = [ currentItemId ];
 				}

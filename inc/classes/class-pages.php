@@ -96,7 +96,8 @@ class Pages {
 			'manage_options',
 			$this->menu_slug,
 			array( $this, 'render_godam_page' ),
-			'dashicons-admin-generic'
+			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDIiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0MiA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI0Ljc1MTQgMTEuMjk5NUgwVjQuODA1NTdDMCAxLjA2NDM0IDQuMDkxMDIgLTEuMjM5NzEgNy4yOTIzNiAwLjcwNjk0OEwyNC43NTE0IDExLjMwNzFWMTEuMjk5NVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0zOC45MTAzIDI3Ljk5ODFMMzIuMzA5OSAzMi4wMDU1SDBWMTUuODMxNUgzMi4zOTM2TDM4LjkxMDMgMTkuNzg1N0M0MS45OSAyMS42NTYzIDQxLjk5IDI2LjEyNzUgMzguOTEwMyAyNy45OTA1VjI3Ljk5ODFaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMjQuNzA1OCAzNi43Mjc1TDcuMjkyMzYgNDcuMjk3M0M0LjA5MTAyIDQ5LjIzNjMgMCA0Ni45MzIzIDAgNDMuMTkxVjM2LjcyNzVIMjQuNzA1OFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=',
+			30
 		);
 
 		add_submenu_page(
@@ -312,21 +313,27 @@ class Pages {
 			} else {
 				$valid_license            = true;
 				$user_data                = $result['data'] ?? array();
-				$user_data['license_key'] = rtt_mask_string( $user_data['license_key'] );
+				$user_data['license_key'] = rtt_mask_string( $license_key );
+			}
+
+			$localizeData = array(
+				'currentUserId' => get_current_user_id(),
+				'valid_license' => $valid_license,
+				'user_data'     => $user_data,
+			);
+
+			$usage_data = $this->get_usage_data();
+
+			if ( ! is_wp_error( $localizeData ) ) {
+				$localizeData = array_merge( $localizeData, $usage_data );
+			} else {
+				$localizeData['storageBandwidthError'] = $usage_data->get_error_message();
 			}
 
 			wp_localize_script(
 				'transcoder-page-script-godam',
 				'userData',
-				array(
-					'currentUserId'   => get_current_user_id(), // Current user ID.
-					'storage_used'    => 75,
-					'total_storage'   => 100,
-					'bandwidth_used'  => 98.94,
-					'total_bandwidth' => 200,
-					'valid_license'   => $valid_license,
-					'user_data'       => $user_data,
-				)
+				$localizeData
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-godam' );
@@ -393,5 +400,44 @@ class Pages {
 		);
 
 		wp_enqueue_script( 'media-library-react' );
+	}
+
+
+	/**
+	 * Get the storage and bandwidth usage data.
+	 * 
+	 * @return array|WP_Error
+	 */
+	public function get_usage_data() {
+
+		$endpoint = GODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
+
+		$url = add_query_arg(
+			array(
+				'license' => get_site_option( 'rt-transcoding-api-key', '' ),
+			),
+			$endpoint
+		);
+
+		$response = wp_safe_remote_get( $url );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+
+		$data = json_decode( $body, true );
+
+		if ( ! $data ) {
+			return new \WP_Error( 'godam_api_error', 'Error fetching data from GoDAM API' );
+		}
+
+		return array(
+			'storage_used'    => floatval( $data['message']['storage_used'] ),
+			'total_storage'   => floatval( $data['message']['total_storage'] ),
+			'bandwidth_used'  => floatval( $data['message']['bandwidth_used'] ),
+			'total_bandwidth' => floatval( $data['message']['total_bandwidth'] ),
+		);
 	}
 }

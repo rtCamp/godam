@@ -85,17 +85,18 @@ $media-frame-width: calc( 300px + 2 * 24px );
 
 	button, a, input {
 		--wp-components-color-accent: #ab3a6c;
-
-		&:hover {
-			--wp-components-color-accent-darker-10: #9a2d5e;
-		}
-
-		&:active {
-			--wp-components-color-accent-darker-20: #8a1f4f;
-		}
+		--wp-components-color-accent-darker-10: #9a2d5e;
+		--wp-components-color-accent-darker-20: #6e2445;
 	}
 
 	.circle {
 		--wp-components-color-accent: #E6533A;
 	}
+}
+
+// GoDAM admin menu icon.
+.toplevel_page_godam {
+    .wp-menu-image.svg {
+        background-size: 16px !important;
+    }
 }
