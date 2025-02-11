@@ -58,6 +58,9 @@ export default AttachmentsBrowser?.extend( {
 		// 	);
 		// }
 
+		/**
+		 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.
+		 */
 		setTimeout( () => {
 			$( '.media-frame' ).removeClass( 'hide-menu' );
 
