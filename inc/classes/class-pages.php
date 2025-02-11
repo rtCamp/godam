@@ -401,7 +401,7 @@ class Pages {
 			'storage_used'    => floatval( $data['message']['storage_used'] ),
 			'total_storage'   => floatval( $data['message']['total_storage'] ),
 			'bandwidth_used'  => floatval( $data['message']['bandwidth_used'] ),
-			'total_bandwidth' => floatval( $data['message']['toatal_bandwidth'] ),
+			'total_bandwidth' => floatval( $data['message']['total_bandwidth'] ),
 		);
 	}
 }
