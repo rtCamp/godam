@@ -242,6 +242,19 @@ add_action( 'transcoded_thumb_added', 'rtt_update_wp_media_thumbnail', 10, 2 );
  * @return array The modified array of attachment form fields.
  */
 function add_transcoded_url_field( $form_fields, $post ) {
+
+	// Check if post is of type attachment.
+	if ( 'attachment' !== $post->post_type ) {
+		return $form_fields;
+	}
+
+	// Check if attachment is of type video.
+	$mime_type = get_post_mime_type( $post->ID );
+
+	if ( ! preg_match( '/^video\//', $mime_type ) ) {
+		return $form_fields;
+	}
+
 	$transcoded_url = get_post_meta( $post->ID, '_rt_transcoded_url', true );
 
 	$easydam_settings = get_option( 'rt-easydam-settings', array() );

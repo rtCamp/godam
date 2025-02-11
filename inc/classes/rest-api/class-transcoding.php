@@ -94,7 +94,7 @@ class Transcoding extends Base {
 				'job_id'  => $job_id,
 				'license' => $license,
 			),
-			'https://frappe-transcoder-api.rt.gw/api/method/frappe_transcoder.frappe_transcoder.api.transcoding_progress.get_transcoding_status'
+			GODAM_API_BASE . '/api/method/frappe_transcoder.frappe_transcoder.api.transcoding_progress.get_transcoding_status'
 		);
 
 		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
