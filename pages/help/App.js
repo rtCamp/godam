@@ -9,7 +9,6 @@ import { __ } from '@wordpress/i18n';
 import Customize from '../../assets/src/images/customize.png';
 import Folder from '../../assets/src/images/folder.png';
 import WebDesign from '../../assets/src/images/web-design.png';
-import Arrow from '../../assets/src/images/arrow.png';
 
 const App = () => {
 	const content = [
@@ -96,8 +95,12 @@ const App = () => {
 				<section>
 					<div className="hero-content">
 						<h1 className="hero-text">{ __( 'Hi, How can we help?', 'godam' ) }</h1>
+						<h2>{ __( 'Welcome to the GoDAM Help Center!', 'godam' ) }</h2>
 						<p>
-							{ __( 'Please review the documentation first. If you still can\'t find the answer, open a support ticket and we will be happy to answer your questions and assist you with any problems.', 'godam' ) }
+							{ __(
+								'Click on the documentation links below to find step-by-step guides, FAQs, and troubleshooting tips for the features you need help with.',
+								'godam',
+							) }
 						</p>
 						<div className="search">
 							<form
@@ -153,7 +156,18 @@ const App = () => {
 							<ul>
 								{ section.articles_list.map( ( article ) => (
 									<li key={ article.section_name }>
-										<img src={ Arrow } height={ 8 } width={ 8 } alt="right arrow" />
+										<svg
+											width="800px"
+											height="800px"
+											viewBox="0 0 16 16"
+											fill="none"
+											xmlns="http://www.w3.org/2000/svg"
+										>
+											<path
+												d="M8.1716 8.00003L3.58582 3.41424L6.41424 0.585815L13.8285 8.00003L6.41424 15.4142L3.58582 12.5858L8.1716 8.00003Z"
+												fill="#000000"
+											/>
+										</svg>
 										<a
 											target="_blank"
 											href={ `https://godam.io/docs/${ article.link }` }
