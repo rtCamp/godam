@@ -264,8 +264,27 @@ class Pages {
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 				)
 			);
-
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
+
+			$gravity_forms_styles = array(
+				'gravity-forms-orbital-theme'    => 'gravityforms/assets/css/dist/gravity-forms-orbital-theme.min.css',
+				'gravity-forms-theme-foundation' => 'gravityforms/assets/css/dist/gravity-forms-theme-foundation.min.css',
+				'gravity-forms-theme-framework'  => 'gravityforms/assets/css/dist/gravity-forms-theme-framework.min.css',
+				'gravity-forms-theme'            => 'gravityforms/assets/css/dist/theme.min.css',
+				'gravity-forms-theme-components' => 'gravityforms/assets/css/dist/theme-components.min.css',
+				'gravity-forms-basic'            => 'gravityforms/assets/css/dist/basic.min.css',
+				'common-css-utilities'           => 'gravityforms/assets/css/dist/common-css-utilities.min.css',
+			);
+
+			foreach ( $gravity_forms_styles as $handle => $path ) {
+				wp_enqueue_style(
+					$handle,
+					plugins_url( $path ),
+					array(),
+					'1.0.0'
+				);
+			}
+
 		} elseif ( $screen && $this->menu_page_id === $screen->id ) {
 
 			wp_register_script(
