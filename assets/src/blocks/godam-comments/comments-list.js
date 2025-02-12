@@ -1,18 +1,21 @@
 /**
+ * External dependencies
+ */
+import axios from 'axios';
+
+/**
  * WordPress dependencies
  */
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { edit, trash } from '@wordpress/icons';
-import { useState } from '@wordpress/element';
+
 /**
  * Internal dependencies
  */
 import CommentForm from './comment-form';
 
-const CommentsList = ( { postId, comments, setComments, editCommentId, setEditCommentId, replayCommentId, setReplayCommentId, isChild } ) => {
-    console.log( `${ isChild ? 'Child' : '' }comments`, comments );
-
+const CommentsList = ( { postId, comments, updateComments, editCommentId, setEditCommentId, replayCommentId, setReplayCommentId, isChild } ) => {
 	// Function to calculate time ago.
 	function timeAgo( gmtDateString ) {
 		const date = new Date( gmtDateString );
@@ -43,6 +46,26 @@ const CommentsList = ( { postId, comments, setComments, editCommentId, setEditCo
 		return `${ years }y`;
 	}
 
+	const deleteComment = ( commentId ) => {
+		// Delete a comment.
+		// Update a comment.
+		axios.delete( `/wp-json/wp/v2/comments/${ commentId }`, {
+			headers: {
+				'Content-Type': 'application/json',
+				'X-WP-Nonce': window.wpUser.nonce,
+			},
+		} )
+			.then( ( response ) => {
+				updateComments( 'delete', { id: commentId } );
+			} )
+			.catch( ( error ) => {
+				console.error( error );
+			} );
+	};
+
+	console.log( window.wpUser );
+	
+
 	return (
 		<>
 			<ul className={ `godam-comments-list ${ isChild ? 'child' : '' }` }>
@@ -60,13 +83,7 @@ const CommentsList = ( { postId, comments, setComments, editCommentId, setEditCo
 											onClose={ () => setEditCommentId( null ) }
 											value={ comment.content.raw }
 											onEdit={ ( data ) => {
-												const newComments = comments.map( ( c ) => {
-													if ( c.id === data.id ) {
-														return { ...data, children: c.children };
-													}
-													return c;
-												} );
-												setComments( newComments );
+												updateComments( 'edit', { ...data, children: comment.children } );
 												setEditCommentId( null );
 											} }
 										/>
@@ -77,19 +94,30 @@ const CommentsList = ( { postId, comments, setComments, editCommentId, setEditCo
 													<div className="godam-comments-list--item--header--author">{ comment.author_name }</div>
 													<div className="godam-comments-list--item--header--date">{ timeAgo( comment.date_gmt ) }</div>
 													<div className="godam-comments-list--item--header--controls">
-														<Button
-															icon={ edit }
-															size="small"
-															onClick={ () => {
-																setReplayCommentId( null );
-																setEditCommentId( comment.id );
-															} }
-														/>
-														<Button
-															icon={ trash }
-															isDestructive
-															size="small"
-														/>
+														{
+															Number( window?.wpUser?.ID ) === comment.author && (
+																<Button
+																	icon={ edit }
+																	size="small"
+																	onClick={ () => {
+																		setReplayCommentId( null );
+																		setEditCommentId( comment.id );
+																	} }
+																/>
+															)
+														}
+														{
+															Number( window?.wpUser?.ID ) === comment.author && (
+																<Button
+																	icon={ trash }
+																	isDestructive
+																	size="small"
+																	onClick={ () => {
+																		deleteComment( comment.id );
+																	} }
+																/>
+															)
+														}
 													</div>
 												</div>
 
@@ -119,13 +147,7 @@ const CommentsList = ( { postId, comments, setComments, editCommentId, setEditCo
 															parentCommentId={ comment.id }
 															onClose={ () => setReplayCommentId( null ) }
 															onReply={ ( data ) => {
-																const newComments = comments.map( ( c ) => {
-																	if ( c.id === data.parent ) {
-																		c.children.push( { ...data, children: [] } );
-																	}
-																	return c;
-																} );
-																setComments( newComments );
+																updateComments( 'addReply', { ...data, Children: [] } );
 																setReplayCommentId( null );
 															} }
 														/>
@@ -140,6 +162,7 @@ const CommentsList = ( { postId, comments, setComments, editCommentId, setEditCo
 										<CommentsList
 											postId={ postId }
 											comments={ comment.children }
+											updateComments={ updateComments }
 											editCommentId={ editCommentId }
 											setEditCommentId={ setEditCommentId }
 											replayCommentId={ replayCommentId }
