@@ -68,20 +68,36 @@ class Assets {
 			true
 		);
 
+		$current_user = wp_get_current_user();
+		$user_data = array(
+			'ID'           => $current_user->ID,
+			'username'     => $current_user->user_login,
+			'email'        => $current_user->user_email,
+			'display_name' => $current_user->display_name,
+			'logged_in'    => is_user_logged_in(),
+			'nonce'        => wp_create_nonce( 'wp_rest' ),
+		);
+
 		wp_localize_script(
 			'easydam-script',
-			'nonceData',
-			array(
-				'nonce' => wp_create_nonce( 'wp_rest' ),
-			)
+			'wpUser',
+			$user_data,
 		);
 		
-
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );
 
 		// Register IMA SDK.
 		wp_enqueue_script( 'ima-sdk', 'https://imasdk.googleapis.com/js/sdkloader/ima3.js', RT_TRANSCODER_VERSION, true );
+
+		// if ( is_singular( 'video' ) ) {
+			wp_enqueue_style(
+				'easydam-video-template', 
+				RT_TRANSCODER_URL . '/assets/build/css/video-template.css', 
+				array(), 
+				filemtime( RT_TRANSCODER_PATH . '/assets/build/css/video-template.css' )
+			);
+		// }
 	}
 
 	/**

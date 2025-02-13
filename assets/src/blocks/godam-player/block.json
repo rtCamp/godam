@@ -6,7 +6,7 @@
 	"category": "media",
 	"description": "Embed a video from your media library or upload a new one.",
 	"keywords": [ "movie", "video", "player" ],
-	"textdomain": "transcoder",
+	"textdomain": "godam",
 	"attributes": {
 		"autoplay": {
 			"type": "boolean",
@@ -82,6 +82,6 @@
     "editorStyle": ["file:./index.css", "file:./frontend.css"],
 	"style": ["file:./style-index.css", "file:./frontend.css"],
     "editorScript": ["file:./index.js"],
-    "viewScript": ["file:./frontend.js", "file:./analytics.js"],
+    "viewScript": ["file:./frontend.js", "file:./analytics.js", "file:./video-reactions.js"],
     "render": "file:./render.php"
 }

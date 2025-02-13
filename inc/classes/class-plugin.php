@@ -21,6 +21,7 @@ use Transcoder\Inc\REST_API\Media_Library;
 use Transcoder\Inc\REST_API\Ads;
 use Transcoder\Inc\REST_API\Transcoding;
 use Transcoder\Inc\REST_API\Analytics;
+use Transcoder\Inc\REST_API\Video_Comments;
 
 use Transcoder\Inc\Providers\Media_Filters;
 
@@ -46,6 +47,7 @@ class Plugin {
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 		$this->load_rest_api();
+		$this->load_attachment_templates();
 
 		// TODO: think of a better place to put this.
 		$offload_media = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
@@ -90,5 +92,45 @@ class Plugin {
 		Ads::get_instance();
 		Transcoding::get_instance();
 		Analytics::get_instance();
+		Video_Comments::get_instance();
+	}
+
+	public function load_attachment_templates() {
+		add_filter( 'pre_option_wp_attachment_pages_enabled', '__return_true' );
+		remove_filter( 'the_content', 'prepend_attachment' );
+
+		add_filter( 'render_block_core/post-content', array( $this, 'godam_render_block' ), 10, 3 );
+	}
+
+	public function godam_render_block( $block_content, $block, $instance ) {
+
+		// Custom code will go here.
+		if (
+			empty( $instance->context['postId'] )
+			|| ! is_attachment( $instance->context['postId'] )
+		) {
+			return $block_content;
+		}
+
+		$html     = '';
+		$located  = RT_TRANSCODER_PATH . 'inc/classes/templates/attachment-media-video.php';
+
+		ob_start();
+
+		load_template( $located, true, [
+			'post_id' => $instance->context['postId']
+		] );
+
+		$block_markup = ob_get_clean();
+
+		if ( ! $block_markup ) {
+			return $block_content;
+		}
+
+		foreach ( parse_blocks( $block_markup ) as $parsed_block ) {
+			$html .= render_block( $parsed_block );
+		}
+		
+		return $html . $block_content;
 	}
 }
