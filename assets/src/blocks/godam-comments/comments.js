@@ -23,7 +23,7 @@ const Comments = ( { attachmentId } ) => {
 	const [ replayCommentId, setReplayCommentId ] = useState( null );
 
 	useEffect( () => {
-		const url = `/wp-json/wp/v2/comments?post=${ attachmentId }&context=edit`;
+		const url = `/wp-json/wp/v2/comments?post=${ attachmentId }&context=edit&per_page=100`;
 		axios.get( url, {
 			headers: {
 				'Content-Type': 'application/json',
@@ -59,22 +59,31 @@ const Comments = ( { attachmentId } ) => {
 
 	return (
 		<>
-			<CommentForm
-				postId={ attachmentId }
-				onAdd={ ( comment ) => updateComments( 'add', { ...comment, children: [] } ) }
-			/>
+			<div className="godam-comments-wrapper">
+				<h2 className="godam-header">{ __( 'Comments', 'godam' ) }</h2>
 
-			{ /* Comments */ }
-			<CommentsList
-				postId={ attachmentId }
-				comments={ convertToTree( comments ) }
-				updateComments={ updateComments }
-				editCommentId={ editCommentId }
-				setEditCommentId={ setEditCommentId }
-				replayCommentId={ replayCommentId }
-				setReplayCommentId={ setReplayCommentId }
-				isChild={ false }
-			/>
+				{ /* Comments */ }
+				<div className="godam-comments">
+					<CommentsList
+						postId={ attachmentId }
+						comments={ convertToTree( comments ) }
+						updateComments={ updateComments }
+						editCommentId={ editCommentId }
+						setEditCommentId={ setEditCommentId }
+						replayCommentId={ replayCommentId }
+						setReplayCommentId={ setReplayCommentId }
+						isChild={ false }
+					/>
+				</div>
+
+				{ /* Comment Form */ }
+				<div>
+					<CommentForm
+						postId={ attachmentId }
+						onAdd={ ( comment ) => updateComments( 'add', { ...comment, children: [] } ) }
+					/>
+				</div>
+			</div>
 		</>
 	);
 };

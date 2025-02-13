@@ -1,84 +1,243 @@
 .godam-comment-form {
-    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    border: 1px solid #E1E1E1;
+    border-radius: 0.5rem;
+    padding-right: 0.5rem;
 
-    .components-textarea-control__input {
-        padding-bottom: 40px;
+    &-input {
+        flex-grow: 1;;
+        padding: 0.5rem;
+        resize: none;
+        border: none;
+        outline: none;
+        box-shadow: none;
+        font-family: var(--wp--preset--font-family--manrope, sans-serif);
         border-radius: 0.5rem;
+
+        &:hover {
+            border: none;
+            outline: none;
+            box-shadow: none;
+        }
     }
 
     .godam-comment-form-btns {
         display: flex;
-        border-radius: 0.5rem;
-        gap: 0.5rem;
-
-        position: absolute;
-        right: 0.5rem;
-        bottom: 0.5rem;
+        .godam-comment-submit-btn {
+        }
     }
 
-    .godam-comment-submit-btn {
+}
+
+.godam-comments-wrapper {
+    min-height: calc( 100vh - var( --wp-admin--admin-bar--height, 32px ) );
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+
+    .godam-header {
+        margin: 0;
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 22.4px;
+        letter-spacing: 0px;
     }
+
+    .godam-comments {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+
 }
 .godam-comments-list {
     list-style-type: none;
-    padding: 0;
+    padding: 0.5rem 0;
     margin: 0;
     margin-top: 1rem;
     max-height: 80vh;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: end;
+    gap: 24px;
 
     &.child {
-        padding-left: 1.5rem;
+        display: none;
+        padding: 0;
+        padding-left: 20px;
         margin-top: 0;
+        border-left: 3px solid #E1E1E1;
+        gap: 12px;
     }
-    
+
     &--item {
-        padding: 1rem;
-        border-radius: 0.5rem;
+        display: flex;
+        justify-content: flex-start;
+        gap: 10px;
 
-        h1, h2, h3, h4, h5, h6, p {
-            margin: 0;
+        // &:hover {
+        //     background-color: #f2f2f2;
+        // }
+        
+        &--avatar {
+            width: 28px;
+
+            img {
+                min-width: 28px;
+                min-height: 28px;
+                max-width: 28px;
+                max-height: 28px;
+                border-radius: 50%;
+            }
         }
 
-        &:hover {
-            background-color: #f9f9f9;
-        }
-
-        &--header {
-            font-size: 14px;
-            font-weight: 500;
+        &--main {
+            border-radius: 0.5rem;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 0.5rem;
-
-            &--author {
+            flex-grow: 1;
+    
+            &:hover {
+                .godam-comment-btn.edit, .godam-comment-btn.delete {
+                    display: flex;
+                }
+            }
+    
+            h1, h2, h3, h4, h5, h6, p {
+                margin: 0;
+            }
+    
+            &--header {
+                font-size: 14px;
                 font-weight: 500;
-            }
-            &--date {
-                color: #666;
-            }
-            &--controls {
-                margin-left: auto;
                 display: flex;
                 align-items: center;
-                gap: 0.25rem;
+                gap: 0.5rem;
+    
+                &--author {
+                    font-family: Inter;
+                    font-weight: 600;
+                    font-size: 14px;
+                    line-height: 22.4px;
+                    letter-spacing: 0px;
+                }
+                &--time {
+                    color: #D01A68;
+                    font-weight: 400;
+                    font-size: 12px;
+                    line-height: 18px;
+                    letter-spacing: 0px;
+                }
+                &--date {
+                    font-weight: 400;
+                    font-size: 12px;
+                    line-height: 18px;
+                    letter-spacing: 0px;
+                    text-align: center;
+                    color: #777777;
+                }
+                &--controls {
+                    margin-left: auto;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.25rem;
+                }
             }
-        }
+    
+            &--content {
+                font-weight: 400;
+                font-size: 14px;
+                line-height: 22.4px;
+                letter-spacing: 0px;
+            }
+    
+            &--footer {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+    
+                .godam-comment-btn {
+                    position: relative;
+    
+                    &::after {
+                        content: '';
+                        display: block;
+                        position: absolute;
+                        top: 50%;
+                        left: -8px;
+                        transform: translateY(-50%);
+                        min-width: 3px;
+                        min-height: 3px;
+                        max-width: 3px;
+                        max-height: 3px;
+                        background: #C7C7C7;
+                        border-radius: 50%;
+                    }
+    
+                    &:first-child {
+                        &::after {
+                            display: none;
+                        }
+                    }
+                }
+            }
+    
+            .godam-comment-btn {
+                margin: 0 0 0 -0.25rem;
+                padding: 0.25rem;
+                font-weight: 500;
+                font-size: 12px;
+                line-height: 18px;
+                letter-spacing: 0px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                white-space: nowrap;
+                gap: 0.25rem;
+                background-color: transparent;
+                border: none;
+                outline: none;
+                color: #777777;
+                cursor: pointer;
+    
+                &:hover {
+                    color: #D01A68;
+                }
+    
+                &.edit, &.delete {
+                    display: none;
+                }
+            }
 
-        &--content {
-            font-size: 14px;
-        }
+            .view-replies-btn {
+                font-weight: 400;
+                font-size: 12px;
+                line-height: 24px;
+                letter-spacing: 0px;
+                display: inline-flex;
+                background: transparent;
+                border: none;
+                outline: none;
+                cursor: pointer;
+                border-left: 3px solid #E1E1E1;
 
-        &--footer {
-            display: flex;
-            align-items: center;
-
-            .replay {
-                margin: 0 0 0 -0.5rem;
+                &:hover {
+                    color: #D01A68;
+                }
             }
         }
     }
+    
 }
+
 
 .pl-6 {
     padding-left: 1.5rem;

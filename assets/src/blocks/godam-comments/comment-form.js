@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  * External dependencies
  */
 import axios from 'axios';
+import { send } from '@wordpress/icons';
 
 const CommentForm = ( { className, value, onChange, postId, commentId, parentCommentId, onClose, onAdd, onEdit, onReply } ) => {
 	const [ commentText, setCommentText ] = useState( value );
@@ -127,12 +128,12 @@ const CommentForm = ( { className, value, onChange, postId, commentId, parentCom
 			className={ className }
 		>
 			<div className="godam-comment-form">
-				<TextareaControl
-					__nextHasNoMarginBottom
+				<textarea
+					className="godam-comment-form-input"
 					placeholder={ text.placeholder }
 					value={ commentText }
-					onChange={ setCommentText }
-					rows={ 2 }
+					rows={ 1 }
+					onChange={ ( e ) => setCommentText( e.target.value ) }
 				/>
 				<div
 					className="godam-comment-form-btns"
@@ -152,7 +153,8 @@ const CommentForm = ( { className, value, onChange, postId, commentId, parentCom
 							className="godam-comment-submit-btn"
 							onClick={ handleSubmit }
 							disabled={ ! commentText || commentText.trim().length < 1 }
-						>{ text.btnText }</Button>
+							icon={ send }
+						/>
 					}
 				</div>
 			</div>
