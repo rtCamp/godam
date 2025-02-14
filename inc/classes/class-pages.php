@@ -91,8 +91,8 @@ class Pages {
 	 */
 	public function add_admin_pages() {
 		add_menu_page(
-			__( 'GoDAM', 'godam' ),
-			__( 'GoDAM', 'godam' ),
+			__( 'Settings', 'godam' ),
+			__( 'Settings', 'godam' ),
 			'manage_options',
 			$this->menu_slug,
 			array( $this, 'render_godam_page' ),
