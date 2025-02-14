@@ -44,42 +44,6 @@ class Pages {
 		add_action( 'admin_menu', array( $this, 'add_admin_pages' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
-		add_action( 'enqueue_block_assets', array( $this, 'handle_block_assets' ) );
-	}
-
-	/**
-	 * To enqueue scripts and styles in block editor and frontend.
-	 *
-	 * @return void
-	 */
-	public function handle_block_assets() {
-
-		wp_register_script(
-			'block-analytics-script',
-			RT_TRANSCODER_URL . 'assets/build/blocks/godam-player/analytics.js',
-			array( 'wp-element' ),
-			filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/godam-player/analytics.js' ),
-			true
-		);
-
-		$localize_array = rt_get_localize_array();
-
-		wp_localize_script(
-			'block-analytics-script',
-			'videoAnalyticsParams',
-			$localize_array
-		);
-
-		
-		wp_enqueue_script( 'block-analytics-script' );
-
-		wp_localize_script(
-			'block-frontend-script',
-			'nonceData',
-			array(
-				'nonce' => wp_create_nonce( 'wp_rest' ),
-			)
-		);
 	}
 
 	/**
