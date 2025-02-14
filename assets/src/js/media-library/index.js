@@ -1,4 +1,4 @@
-/* global jQuery, moment, easydamMediaLibrary */
+/* global jQuery, moment */
 
 /**
  * Internal dependencies
@@ -186,50 +186,50 @@ document.addEventListener( 'DOMContentLoaded', () => {
 /**
  * TOOD: Find some good place to put this code.
  */
-document.addEventListener( 'DOMContentLoaded', function() {
-	const uploadLinks = document.querySelectorAll( '.upload-to-s3' );
+// document.addEventListener( 'DOMContentLoaded', function() {
+// 	const uploadLinks = document.querySelectorAll( '.upload-to-s3' );
 
-	uploadLinks.forEach( function( link ) {
-		link.addEventListener( 'click', function( e ) {
-			e.preventDefault(); // Prevent default link action
+// 	uploadLinks.forEach( function( link ) {
+// 		link.addEventListener( 'click', function( e ) {
+// 			e.preventDefault(); // Prevent default link action
 
-			const postId = this.getAttribute( 'data-post-id' );
-			this.textContent = 'UPLOADING...';
-			this.style.pointerEvents = 'none';
+// 			const postId = this.getAttribute( 'data-post-id' );
+// 			this.textContent = 'UPLOADING...';
+// 			this.style.pointerEvents = 'none';
 
-			// Send AJAX request to handle the upload
-			const data = new FormData();
-			data.append( 'action', 'upload_to_s3' );
-			data.append( 'post_id', postId );
-			data.append( 'nonce', easydamMediaLibrary.nonce );
+// 			// Send AJAX request to handle the upload
+// 			const data = new FormData();
+// 			data.append( 'action', 'upload_to_s3' );
+// 			data.append( 'post_id', postId );
+// 			data.append( 'nonce', easydamMediaLibrary.nonce );
 
-			fetch( easydamMediaLibrary.ajaxUrl, {
-				method: 'POST',
-				body: data,
-			} )
-				.then( ( response ) => {
-					if ( ! response.ok ) {
-						throw new Error( 'Network response was not ok' );
-					}
-					return response.json();
-				} )
-				.then( ( responseData ) => {
-					this.style.pointerEvents = 'auto';
+// 			fetch( easydamMediaLibrary.ajaxUrl, {
+// 				method: 'POST',
+// 				body: data,
+// 			} )
+// 				.then( ( response ) => {
+// 					if ( ! response.ok ) {
+// 						throw new Error( 'Network response was not ok' );
+// 					}
+// 					return response.json();
+// 				} )
+// 				.then( ( responseData ) => {
+// 					this.style.pointerEvents = 'auto';
 
-					if ( responseData.success ) {
-						const newLink = document.createElement( 'a' );
-						newLink.href = responseData.data.url;
-						newLink.target = '_blank';
-						newLink.textContent = 'LINK';
-						this.textContent = '';
-						this.appendChild( newLink );
-					} else {
-						this.textContent = 'Upload Failed';
-					}
-				} )
-				.catch( () => {
-					this.textContent = 'Upload Failed';
-				} );
-		} );
-	} );
-} );
+// 					if ( responseData.success ) {
+// 						const newLink = document.createElement( 'a' );
+// 						newLink.href = responseData.data.url;
+// 						newLink.target = '_blank';
+// 						newLink.textContent = 'LINK';
+// 						this.textContent = '';
+// 						this.appendChild( newLink );
+// 					} else {
+// 						this.textContent = 'Upload Failed';
+// 					}
+// 				} )
+// 				.catch( () => {
+// 					this.textContent = 'Upload Failed';
+// 				} );
+// 		} );
+// 	} );
+// } );
