@@ -155,27 +155,29 @@ const App = () => {
 							<h3>{ section.section_name }</h3>
 							<ul>
 								{ section.articles_list.map( ( article ) => (
-									<li key={ article.section_name }>
-										<svg
-											width="800px"
-											height="800px"
-											viewBox="0 0 16 16"
-											fill="none"
-											xmlns="http://www.w3.org/2000/svg"
-										>
-											<path
-												d="M8.1716 8.00003L3.58582 3.41424L6.41424 0.585815L13.8285 8.00003L6.41424 15.4142L3.58582 12.5858L8.1716 8.00003Z"
-												fill="#000000"
-											/>
-										</svg>
-										<a
-											target="_blank"
-											href={ `https://godam.io/docs/${ article.link }` }
-											rel="noreferrer"
-										>
+									<a
+										target="_blank"
+										href={ `https://godam.io/docs/${ article.link }` }
+										rel="noreferrer"
+										key={ article.section_name }
+									>
+										<li>
+											<svg
+												width="800px"
+												height="800px"
+												viewBox="0 0 16 16"
+												fill="none"
+												xmlns="http://www.w3.org/2000/svg"
+											>
+												<path
+													d="M8.1716 8.00003L3.58582 3.41424L6.41424 0.585815L13.8285 8.00003L6.41424 15.4142L3.58582 12.5858L8.1716 8.00003Z"
+													fill="#000000"
+												/>
+											</svg>
+
 											{ article.title }
-										</a>
-									</li>
+										</li>
+									</a>
 								) ) }
 							</ul>
 						</div>
