@@ -17,14 +17,14 @@ export const videosAPI = createApi( {
 				params.append( 'query[orderby]', 'date' );
 				params.append( 'query[order]', 'DESC' );
 
-				if ( data.page ) {
-					params.append( 'query[paged]', data.page );
+				if ( data?.page ) {
+					params.append( 'query[paged]', data?.page );
 				} else {
 					params.append( 'query[paged]', '1' );
 				}
 
-				if ( data.search ) {
-					params.append( 'query[s]', data.search );
+				if ( data?.search ) {
+					params.append( 'query[s]', data?.search );
 				}
 
 				return {
