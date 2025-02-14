@@ -206,14 +206,16 @@ function image_cta_html( $layer ) {
 
 /**
  * Verify the license key for the plugin and return user data. 
+ * 
+ * @param int $timeout The time in seconds after which the user data should be refreshed.
  */
-function godam_get_user_data() {
+function godam_get_user_data( $timeout = 300 ) {
 	$godam_user_data = get_site_option( 'godam_user_data', false );
 	$license_key = get_site_option( 'rt-transcoding-api-key', '' );
 
-	if ( 
+	if (
 		( empty( $godam_user_data ) && ! empty( $license_key ) ) ||
-		( isset( $godam_user_data['timestamp'] ) && ( time() - $godam_user_data['timestamp'] ) > 40 )
+		( isset( $godam_user_data['timestamp'] ) && ( time() - $godam_user_data['timestamp'] ) > $timeout )
 	) {
 		// Verify the user's license.
 		$result      = rtt_verify_license( $license_key );
