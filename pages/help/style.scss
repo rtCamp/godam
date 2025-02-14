@@ -142,10 +142,29 @@
       }
     }
 
-    a {
+    li {
       color: #ab3a6c;
       font-weight: 600;
     }
+  }
+}
+
+.cards-container li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+
+  svg {
+    border: 1px solid #ab3a6c;
+    border-radius: 50%;
+    box-shadow: 0px 0px 3px #ab3a6c;
+    padding: 5px;
+    position: relative;
+    top: 0;
+    cursor: pointer;
+    height: 10px;
+    width: 10px;
   }
 }
 
