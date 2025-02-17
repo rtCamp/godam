@@ -204,7 +204,7 @@ class RetranscodeMedia {
 
 		$actions = ( ! empty( $actions ) && is_array( $actions ) ) ? $actions : array();
 
-		$url = wp_nonce_url( admin_url( 'admin.php?page=rt-retranscoder&goback=1&ids=' . $post->ID ), 'rt-retranscoder' );
+		$url = wp_nonce_url( admin_url( 'admin.php?page=godam-tools&goback=1&ids=' . $post->ID ), 'godam-tools' );
 
 		$actions['retranscode_media'] = sprintf(
 			'<a href="%s" title="%s">%s</a>',
@@ -283,8 +283,8 @@ class RetranscodeMedia {
 		// Can't use wp_nonce_url() as it escapes HTML entities.
 		$redirect_url = add_query_arg(
 			'_wpnonce',
-			wp_create_nonce( 'rt-retranscoder' ),
-			admin_url( 'admin.php?page=rt-retranscoder&goback=1&ids=' . $ids )
+			wp_create_nonce( 'godam-tools' ),
+			admin_url( 'admin.php?page=godam-tools&goback=1&ids=' . $ids )
 		);
 
 		wp_safe_redirect( $redirect_url );
@@ -304,14 +304,14 @@ class RetranscodeMedia {
 			<?php
 
 			// If the button was clicked.
-			if ( ! empty( $_POST['rt-retranscoder'] ) || ! empty( $_REQUEST['ids'] ) ) {
+			if ( ! empty( $_POST['godam-tools'] ) || ! empty( $_REQUEST['ids'] ) ) {
 				// Capability check.
 				if ( ! current_user_can( $this->capability ) ) {
 					wp_die( esc_html__( 'Cheatin&#8217; uh?', 'godam' ) );
 				}
 
 				// Form nonce check.
-				check_admin_referer( 'rt-retranscoder' );
+				check_admin_referer( 'godam-tools' );
 
 				$file_size = 0;
 				$files     = array();
@@ -385,8 +385,8 @@ class RetranscodeMedia {
 										?>
 										<div><p><?php esc_html_e( 'You can select the files manually and try again.', 'godam' ); ?></p>
 										<form method="POST" action="<?php esc_url( admin_url( 'admin.php' ) ); ?>">
-										<?php wp_nonce_field( 'rt-retranscoder' ); ?>
-										<input type="hidden" name="page" value="rt-retranscoder">
+										<?php wp_nonce_field( 'godam-tools' ); ?>
+										<input type="hidden" name="page" value="godam-tools">
 										<table border=0>
 										?>
 											<tr>
@@ -427,7 +427,7 @@ class RetranscodeMedia {
 				$text_goback = ( ! empty( $_GET['goback'] ) ) ? __( 'To go back to the previous page, <a id="retranscode-goback" href="#">click here</a>.', 'godam' ) : '';
 
 				// translators: Count of media which were successfully and media which were failed transcoded with the time in seconds and previout page link.
-				$text_failures = sprintf( __( 'All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were %3$s failure(s). To try transcoding the failed media again, <a href="%4$s">click here</a>. %5$s', 'godam' ), "' + rt_successes + '", "' + rt_totaltime + '", "' + rt_errors + '", esc_url( wp_nonce_url( admin_url( 'admin.php?page=rt-retranscoder&goback=1' ), 'rt-retranscoder' ) . '&ids=' ) . "' + rt_failedlist + '", $text_goback );
+				$text_failures = sprintf( __( 'All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were %3$s failure(s). To try transcoding the failed media again, <a href="%4$s">click here</a>. %5$s', 'godam' ), "' + rt_successes + '", "' + rt_totaltime + '", "' + rt_errors + '", esc_url( wp_nonce_url( admin_url( 'admin.php?page=godam-tools&goback=1' ), 'godam-tools' ) . '&ids=' ) . "' + rt_failedlist + '", $text_goback );
 				// translators: Count of media which were successfully transcoded with the time in seconds and previout page link.
 				$text_nofailures = sprintf( __( 'All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were 0 failures. %3$s', 'godam' ), "' + rt_successes + '", "' + rt_totaltime + '", $text_goback );
 				?>
@@ -596,7 +596,7 @@ class RetranscodeMedia {
 				// No button click? Display the form.
 				?>
 			<form method="post" action="">
-				<?php wp_nonce_field( 'rt-retranscoder' ); ?>
+				<?php wp_nonce_field( 'godam-tools' ); ?>
 
 			<p><?php printf( esc_html__( 'This tool will retranscode ALL audio/video media uploaded to your website. This can be handy if you need to transcode media files uploaded in the past.', 'godam' ) ); ?>
 
@@ -611,7 +611,7 @@ class RetranscodeMedia {
 
 			<p><?php esc_html_e( 'To begin, just press the button below.', 'godam' ); ?></p>
 
-			<p><input type="submit" class="button hide-if-no-js button button-primary" name="rt-retranscoder" id="rt-retranscoder" value="<?php esc_attr_e( 'Retranscode All Media', 'godam' ); ?>" /></p>
+			<p><input type="submit" class="button hide-if-no-js button button-primary" name="godam-tools" id="godam-tools" value="<?php esc_attr_e( 'Retranscode All Media', 'godam' ); ?>" /></p>
 
 			<noscript><p><em><?php esc_html_e( 'You must enable Javascript in order to proceed!', 'godam' ); ?></em></p></noscript>
 
