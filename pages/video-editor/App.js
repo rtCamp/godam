@@ -14,7 +14,7 @@ import '../../assets/build/blocks/godam-player/style-index.css';
  * WordPress dependencies
  */
 import AttachmentPicker from './AttachmentPicker.jsx';
-import GodamHeader from '../godam/GodamHeader.js';
+import GodamHeader from '../godam/GodamHeader';
 
 const App = () => {
 	const [ attachmentID, setAttachmentID ] = useState( null );
