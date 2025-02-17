@@ -53,6 +53,12 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 
 			const data = response?.data?.data || [];
 
+			const totalPages = Number( response?.data?.totalNumPage );
+
+			if ( totalPages && page >= totalPages ) {
+				setHasMore( false );
+			}
+
 			if ( data.length === 0 ) {
 				setHasMore( false );
 			}
