@@ -76,6 +76,14 @@ class Assets {
 			)
 		);
 		
+		$localize_array = rt_get_localize_array();
+
+		wp_localize_script(
+			'easydam-script',
+			'videoAnalyticsParams',
+			$localize_array
+		);
+
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );
 
