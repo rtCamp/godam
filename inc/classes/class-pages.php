@@ -55,13 +55,21 @@ class Pages {
 	 */
 	public function add_admin_pages() {
 		add_menu_page(
-			__( 'Settings', 'godam' ),
-			__( 'Settings', 'godam' ),
+			__( 'GoDAM', 'godam' ),
+			__( 'GoDAM', 'godam' ),
 			'manage_options',
 			$this->menu_slug,
 			array( $this, 'render_godam_page' ),
 			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1LjU1NzggMjAuMDkxMUw4LjA1NTg3IDM3LjU5M0wzLjQ2Mzk3IDMzLjAwMTFDMC44MTg1MjEgMzAuMzU1NiAyLjA4MjEgMjUuODMzNiA1LjcyMjI4IDI0Ljk0NjRMMjUuNTYzMiAyMC4wOTY0TDI1LjU1NzggMjAuMDkxMVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00Ny4zNzczIDIxLjg4NjdMNDUuNTQzOCAyOS4zODc1TDIyLjY5NzIgNTIuMjM0MUwxMS4yNjA1IDQwLjc5NzRMMzQuMTY2MiAxNy44OTE2TDQxLjU3MDMgMTYuMDc5NkM0NS4wNzA2IDE1LjIyNDcgNDguMjMyMyAxOC4zODYzIDQ3LjM3MiAyMS44ODEzTDQ3LjM3NzMgMjEuODg2N1oiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00My41MDU5IDM4LjEwMzZMMzguNjY2NyA1Ny44OTA3QzM3Ljc3NDEgNjEuNTI1NSAzMy4yNTIxIDYyLjc4OTEgMzAuNjA2NiA2MC4xNDM2TDI2LjAzNjMgNTUuNTczMkw0My41MDU5IDM4LjEwMzZaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K',
 			30
+		);
+
+		add_submenu_page(
+			$this->menu_slug,
+			__( 'Settings', 'godam' ),
+			__( 'Settings', 'godam' ),
+			'manage_options',
+			$this->menu_slug,
 		);
 
 		add_submenu_page(

@@ -13,8 +13,8 @@ import '../../assets/build/blocks/godam-player/style-index.css';
 /**
  * WordPress dependencies
  */
-import AttachmentGrid from './AttachmentGrid.jsx';
-import GodamHeader from '../godam/GodamHeader.js';
+import AttachmentPicker from './AttachmentPicker.jsx';
+import GodamHeader from '../godam/GodamHeader';
 
 const App = () => {
 	const [ attachmentID, setAttachmentID ] = useState( null );
@@ -38,15 +38,13 @@ const App = () => {
 		return (
 			<>
 				<GodamHeader />
-				<AttachmentGrid handleAttachmentClick={ handleAttachmentClick } />
+				<AttachmentPicker handleAttachmentClick={ handleAttachmentClick } />
 			</>
 		);
 	}
 
 	return (
-		<>
-			<VideoEditor attachmentID={ attachmentID } />
-		</>
+		<VideoEditor attachmentID={ attachmentID } />
 	);
 };
 

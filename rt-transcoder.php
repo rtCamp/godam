@@ -92,17 +92,10 @@ function rtt_action_links( $links, $file ) {
 		esc_html__( 'Settings', 'godam' )
 	);
 
-	$help_url = sprintf(
-		'<a href="%1$s">%2$s</a>',
-		esc_url( admin_url( 'admin.php?page=help' ) ),
-		esc_html__( 'Help', 'godam' )
-	);
-
 	return array_merge(
 		$links,
 		array(
 			'settings' => $settings_url,
-			'help'     => $help_url,
 		)
 	);
 }

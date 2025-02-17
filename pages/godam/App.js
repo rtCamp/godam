@@ -21,7 +21,7 @@ import { __ } from '@wordpress/i18n';
 import { cog, video, image, help } from '@wordpress/icons';
 import { Button, Icon, Panel, PanelBody } from '@wordpress/components';
 
-import GodamHeader from './GoDAMHeader';
+import GodamHeader from './GodamHeader';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );

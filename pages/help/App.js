@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import Customize from '../../assets/src/images/customize.png';
 import Folder from '../../assets/src/images/folder.png';
 import WebDesign from '../../assets/src/images/web-design.png';
-import GodamHeader from '../godam/GoDAMHeader';
+import GodamHeader from '../godam/GodamHeader';
 import { Icon } from '@wordpress/components';
 import { chevronRight } from '@wordpress/icons';
 

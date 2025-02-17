@@ -12,19 +12,19 @@ export const videosAPI = createApi( {
 			query: ( data ) => {
 				const params = new URLSearchParams();
 				params.append( 'action', 'query-attachments' );
-				params.append( 'query[post_mime_type]', 'video' );
+				// params.append( 'query[post_mime_type]', 'video' );
 				params.append( 'query[posts_per_page]', '40' );
 				params.append( 'query[orderby]', 'date' );
 				params.append( 'query[order]', 'DESC' );
 
-				if ( data.page ) {
-					params.append( 'query[paged]', data.page );
+				if ( data?.page ) {
+					params.append( 'query[paged]', data?.page );
 				} else {
 					params.append( 'query[paged]', '1' );
 				}
 
-				if ( data.search ) {
-					params.append( 'query[s]', data.search );
+				if ( data?.search ) {
+					params.append( 'query[s]', data?.search );
 				}
 
 				return {
