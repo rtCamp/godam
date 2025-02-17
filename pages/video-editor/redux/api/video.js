@@ -12,7 +12,7 @@ export const videosAPI = createApi( {
 			query: ( data ) => {
 				const params = new URLSearchParams();
 				params.append( 'action', 'query-attachments' );
-				// params.append( 'query[post_mime_type]', 'video' );
+				params.append( 'query[post_mime_type]', 'video' );
 				params.append( 'query[posts_per_page]', '40' );
 				params.append( 'query[orderby]', 'date' );
 				params.append( 'query[order]', 'DESC' );
@@ -35,6 +35,12 @@ export const videosAPI = createApi( {
 					},
 					body: params.toString(),
 				};
+			},
+			transformResponse: async ( response, meta ) => {
+				const totalNumPage = meta.response.headers.get( 'x-wp-totalpages' );
+				const data = await response;
+				data.totalNumPage = totalNumPage;
+				return data;
 			},
 		} ),
 	} ),
