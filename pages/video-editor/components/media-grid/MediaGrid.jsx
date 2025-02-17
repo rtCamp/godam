@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 
 /**
  * WordPress dependencies
@@ -14,52 +14,76 @@ import { __ } from '@wordpress/i18n';
 import { useGetVideosMutation } from '../../redux/api/video';
 import MediaItem from './MediaItem.jsx';
 
-const MediaGrid = ( { search, page, handleAttachmentClick } ) => {
-	const [ getVideos, { isLoading, isUninitialized } ] = useGetVideosMutation();
-	const [ attachments, setAttachments ] = useState( [] );
+const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments, setAttachments } ) => {
+	const [ getVideos, { isLoading } ] = useGetVideosMutation();
+	const [ hasMore, setHasMore ] = useState( true );
+	const [ fetching, setFetching ] = useState( false );
+	const observer = useRef();
 
-	const isFirstRender = useRef( true );
+	const lastItemRef = useCallback(
+		( node ) => {
+			if ( fetching ) {
+				return;
+			}
 
-	/**
-	 * Make another request for the videos when the search term or page changes.
-	 */
-	useEffect( () => {
-		if ( isFirstRender.current ) {
-			return;
-		}
+			if ( observer.current ) {
+				observer.current.disconnect();
+			}
 
-		const debounce = setTimeout( () => {
-			getVideos( { search, page } ).then( ( response ) => {
-				setAttachments( response?.data?.data || [] );
+			observer.current = new IntersectionObserver( ( entries ) => {
+				if ( entries[ 0 ].isIntersecting && hasMore ) {
+					setPage( ( prev ) => prev + 1 );
+				}
 			} );
-		}, 500 );
 
-		return () => clearTimeout( debounce );
-	}, [ getVideos, search, page ] );
+			if ( node ) {
+				observer.current.observe( node );
+			}
+		}, [ hasMore, fetching, setPage ],
+	);
 
 	/**
-	 * Fetch the videos from the API using POST request.
+	 * Search item for the videos.
 	 */
 	useEffect( () => {
-		getVideos().then( ( response ) => {
-			setAttachments( response?.data?.data || [] );
-		} );
+		setFetching( true );
 
-		isFirstRender.current = false;
-	}, [ getVideos ] );
+		const fetch = async () => {
+			const response = await getVideos( { search, page } );
 
-	if ( isLoading || isUninitialized ) {
-		return <p>{ __( 'Loading…', 'godam' ) }</p>;
-	}
+			const data = response?.data?.data || [];
 
-	if ( ! isLoading && attachments.length === 0 ) {
+			if ( data.length === 0 ) {
+				setHasMore( false );
+			}
+
+			setAttachments( ( prev ) => [ ...prev, ...data ] );
+			setFetching( false );
+		};
+
+		const debounce = setTimeout( fetch, 500 );
+		return () => clearTimeout( debounce );
+	}, [ getVideos, setAttachments, search, page ] );
+
+	if ( ! fetching && attachments.length === 0 ) {
 		return <p className="text-2xl">{ __( 'No videos found.', 'godam' ) }</p>;
 	}
 
 	return (
-		<div className="godam-video-list-videos">
-			{ attachments.map( ( item ) => ( <MediaItem key={ item.id } item={ item } handleAttachmentClick={ handleAttachmentClick } /> ) ) }
-		</div>
+		<>
+			<div className="godam-video-list-videos py-2">
+				{ attachments.map( ( item, index ) => (
+					<MediaItem
+						key={ item.id }
+						item={ item }
+						handleAttachmentClick={ handleAttachmentClick }
+						ref={ index === attachments.length - 1 ? lastItemRef : null }
+					/>
+				) ) }
+			</div>
+
+			{ ( isLoading || fetching ) && <p>{ __( 'Loading…', 'godam' ) }</p> }
+		</>
 	);
 };
 

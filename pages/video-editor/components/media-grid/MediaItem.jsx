@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 
 /**
  * WordPress dependencies
@@ -14,7 +14,7 @@ import { Icon, moreHorizontalMobile, seen, link } from '@wordpress/icons';
  */
 import NoThumbnailImage from '../../assets/no-thumbnail.jpg';
 
-const MediaItem = ( { item, handleAttachmentClick } ) => {
+const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 	const [ isActionOpen, setIsActionOpen ] = useState( false );
 	const [ isCopied, setIsCopied ] = useState( false );
 
@@ -47,6 +47,7 @@ const MediaItem = ( { item, handleAttachmentClick } ) => {
 			className="godam-video-list__video"
 			onClick={ handleItemClick }
 			role="button"
+			ref={ ref }
 			tabIndex={ 0 }
 			onKeyDown={ ( e ) => {
 				if ( e.key === 'Enter' ) {
@@ -99,6 +100,6 @@ const MediaItem = ( { item, handleAttachmentClick } ) => {
 			</div>
 		</div>
 	);
-};
+} );
 
 export default MediaItem;

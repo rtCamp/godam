@@ -17,6 +17,7 @@ import MediaGrid from './components/media-grid/MediaGrid.jsx';
 const AttachmentPicker = ( { handleAttachmentClick } ) => {
 	const [ searchTerm, setSearchTerm ] = useState( '' );
 	const [ page, setPage ] = useState( 1 );
+	const [ attachments, setAttachments ] = useState( [] );
 
 	return (
 		<div className="h-full overflow-auto godam-video-list-wrapper px-10">
@@ -36,13 +37,14 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 							onChange={ ( e ) => {
 								setSearchTerm( e.target.value );
 								setPage( 1 );
+								setAttachments( [] );
 							} }
 						/>
 					</div>
 				</div>
 			</div>
 
-			<MediaGrid search={ searchTerm } page={ page } handleAttachmentClick={ handleAttachmentClick } />
+			<MediaGrid search={ searchTerm } page={ page } handleAttachmentClick={ handleAttachmentClick } setPage={ setPage } setAttachments={ setAttachments } attachments={ attachments } />
 		</div>
 	);
 };

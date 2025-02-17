@@ -304,6 +304,22 @@
 			display: grid;
 			grid-template-columns: repeat(5, 1fr);
 			gap: 1.5rem;
+		
+			@media (max-width: 1200px) {
+				grid-template-columns: repeat(4, 1fr);
+			}
+		
+			@media (max-width: 992px) {
+				grid-template-columns: repeat(3, 1fr);
+			}
+		
+			@media (max-width: 768px) {
+				grid-template-columns: repeat(2, 1fr);
+			}
+		
+			@media (max-width: 480px) {
+				grid-template-columns: repeat(1, 1fr);
+			}
 		}
 
 		&__video {
@@ -322,7 +338,6 @@
 			&__thumbnail {
 				position: relative;
 				max-height: 260px;
-				min-height: 200px;
 				overflow: hidden;
 				aspect-ratio: 16 / 9;
 
