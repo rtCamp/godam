@@ -24,6 +24,8 @@ class Pages {
 	private $menu_page_id         = 'toplevel_page_godam';
 	private $video_editor_page_id = 'godam_page_video_editor';
 	private $analytics_page_id    = 'godam_page_analytics';
+	private $help_page_id         = 'godam_page_help';
+	private $help_slug            = 'help';
 
 	/**
 	 * Construct method.
@@ -53,12 +55,12 @@ class Pages {
 	 */
 	public function add_admin_pages() {
 		add_menu_page(
-			__( 'GoDAM', 'godam' ),
-			__( 'GoDAM', 'godam' ),
+			__( 'Settings', 'godam' ),
+			__( 'Settings', 'godam' ),
 			'manage_options',
 			$this->menu_slug,
 			array( $this, 'render_godam_page' ),
-			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDIiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0MiA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI0Ljc1MTQgMTEuMjk5NUgwVjQuODA1NTdDMCAxLjA2NDM0IDQuMDkxMDIgLTEuMjM5NzEgNy4yOTIzNiAwLjcwNjk0OEwyNC43NTE0IDExLjMwNzFWMTEuMjk5NVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0zOC45MTAzIDI3Ljk5ODFMMzIuMzA5OSAzMi4wMDU1SDBWMTUuODMxNUgzMi4zOTM2TDM4LjkxMDMgMTkuNzg1N0M0MS45OSAyMS42NTYzIDQxLjk5IDI2LjEyNzUgMzguOTEwMyAyNy45OTA1VjI3Ljk5ODFaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMjQuNzA1OCAzNi43Mjc1TDcuMjkyMzYgNDcuMjk3M0M0LjA5MTAyIDQ5LjIzNjMgMCA0Ni45MzIzIDAgNDMuMTkxVjM2LjcyNzVIMjQuNzA1OFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=',
+			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1LjU1NzggMjAuMDkxMUw4LjA1NTg3IDM3LjU5M0wzLjQ2Mzk3IDMzLjAwMTFDMC44MTg1MjEgMzAuMzU1NiAyLjA4MjEgMjUuODMzNiA1LjcyMjI4IDI0Ljk0NjRMMjUuNTYzMiAyMC4wOTY0TDI1LjU1NzggMjAuMDkxMVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00Ny4zNzczIDIxLjg4NjdMNDUuNTQzOCAyOS4zODc1TDIyLjY5NzIgNTIuMjM0MUwxMS4yNjA1IDQwLjc5NzRMMzQuMTY2MiAxNy44OTE2TDQxLjU3MDMgMTYuMDc5NkM0NS4wNzA2IDE1LjIyNDcgNDguMjMyMyAxOC4zODYzIDQ3LjM3MiAyMS44ODEzTDQ3LjM3NzMgMjEuODg2N1oiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00My41MDU5IDM4LjEwMzZMMzguNjY2NyA1Ny44OTA3QzM3Ljc3NDEgNjEuNTI1NSAzMy4yNTIxIDYyLjc4OTEgMzAuNjA2NiA2MC4xNDM2TDI2LjAzNjMgNTUuNTczMkw0My41MDU5IDM4LjEwMzZaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K',
 			30
 		);
 
@@ -68,7 +70,8 @@ class Pages {
 			__( 'Video editor', 'godam' ),
 			'edit_posts',
 			$this->video_editor_slug,
-			array( $this, 'render_video_editor_page' )
+			array( $this, 'render_video_editor_page' ),
+			1
 		);
 
 		add_submenu_page(
@@ -77,8 +80,30 @@ class Pages {
 			__( 'Analytics', 'godam' ),
 			'edit_posts',
 			$this->analytics_slug,
-			array( $this, 'render_analytics_page' )
+			array( $this, 'render_analytics_page' ),
+			2
 		);
+
+		add_submenu_page(
+			'godam',
+			__( 'Help', 'godam' ),
+			__( 'Help', 'godam' ),
+			'edit_posts',
+			$this->help_slug,
+			array( $this, 'render_help_page' ),
+			4
+		);
+	}
+
+	/**
+	 * To render the help page.
+	 *
+	 * @return void
+	 */
+	public function render_help_page() {
+		?>
+		<div id="root-video-help"></div>
+		<?php
 	}
 
 	/**
@@ -91,7 +116,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id ) ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id ) ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
@@ -197,7 +222,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id ), true ) ) {
 			wp_register_style(
 				'transcoder-page-style-godam',
 				RT_TRANSCODER_URL . '/pages/build/style.css',
@@ -229,7 +254,35 @@ class Pages {
 				)
 			);
 
+			$godam_user_data = godam_get_user_data();
+
+			wp_localize_script(
+				'transcoder-page-script-video-editor',
+				'userData',
+				$godam_user_data
+			);
+
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
+
+			$gravity_forms_styles = array(
+				'gravity-forms-orbital-theme'    => 'gravityforms/assets/css/dist/gravity-forms-orbital-theme.min.css',
+				'gravity-forms-theme-foundation' => 'gravityforms/assets/css/dist/gravity-forms-theme-foundation.min.css',
+				'gravity-forms-theme-framework'  => 'gravityforms/assets/css/dist/gravity-forms-theme-framework.min.css',
+				'gravity-forms-theme'            => 'gravityforms/assets/css/dist/theme.min.css',
+				'gravity-forms-theme-components' => 'gravityforms/assets/css/dist/theme-components.min.css',
+				'gravity-forms-basic'            => 'gravityforms/assets/css/dist/basic.min.css',
+				'common-css-utilities'           => 'gravityforms/assets/css/dist/common-css-utilities.min.css',
+			);
+
+			foreach ( $gravity_forms_styles as $handle => $path ) {
+				wp_enqueue_style(
+					$handle,
+					plugins_url( $path ),
+					array(),
+					'1.0.0'
+				);
+			}
+
 		} elseif ( $screen && $this->menu_page_id === $screen->id ) {
 
 			wp_register_script(
@@ -240,39 +293,12 @@ class Pages {
 				true
 			);
 
-			// Verify the user's license.
-			$license_key = get_site_option( 'rt-transcoding-api-key', '' );
-			$result      = rtt_verify_license( $license_key );
-
-			$valid_license = false;
-			$user_data     = array();
-
-			if ( is_wp_error( $result ) ) {
-				$valid_license = false;
-			} else {
-				$valid_license            = true;
-				$user_data                = $result['data'] ?? array();
-				$user_data['license_key'] = rtt_mask_string( $license_key );
-			}
-
-			$localizeData = array(
-				'currentUserId' => get_current_user_id(),
-				'valid_license' => $valid_license,
-				'user_data'     => $user_data,
-			);
-
-			$usage_data = $this->get_usage_data();
-
-			if ( ! is_wp_error( $localizeData ) ) {
-				$localizeData = array_merge( $localizeData, $usage_data );
-			} else {
-				$localizeData['storageBandwidthError'] = $usage_data->get_error_message();
-			}
+			$godam_user_data = godam_get_user_data();
 
 			wp_localize_script(
 				'transcoder-page-script-godam',
 				'userData',
-				$localizeData
+				$godam_user_data
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-godam' );
@@ -315,6 +341,24 @@ class Pages {
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 			wp_enqueue_script( 'd3-js' );
 			wp_enqueue_script( 'video-analytics-charts' );
+		} elseif ( $screen && $this->help_page_id === $screen->id ) {
+			wp_register_script(
+				'godam-page-script-help',
+				RT_TRANSCODER_URL . 'pages/build/help.js',
+				array( 'wp-element' ),
+				filemtime( RT_TRANSCODER_PATH . 'pages/build/help.js' ),
+				true
+			);
+
+			$godam_user_data = godam_get_user_data();
+
+			wp_localize_script(
+				'godam-page-script-help',
+				'userData',
+				$godam_user_data
+			);
+
+			wp_enqueue_script( 'godam-page-script-help' );
 		}
 
 
@@ -329,44 +373,5 @@ class Pages {
 		);
 
 		wp_enqueue_script( 'media-library-react' );
-	}
-
-
-	/**
-	 * Get the storage and bandwidth usage data.
-	 * 
-	 * @return array|WP_Error
-	 */
-	public function get_usage_data() {
-
-		$endpoint = GODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
-
-		$url = add_query_arg(
-			array(
-				'license' => get_site_option( 'rt-transcoding-api-key', '' ),
-			),
-			$endpoint
-		);
-
-		$response = wp_safe_remote_get( $url );
-
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		$body = wp_remote_retrieve_body( $response );
-
-		$data = json_decode( $body, true );
-
-		if ( ! $data ) {
-			return new \WP_Error( 'godam_api_error', 'Error fetching data from GoDAM API' );
-		}
-
-		return array(
-			'storage_used'    => floatval( $data['message']['storage_used'] ),
-			'total_storage'   => floatval( $data['message']['total_storage'] ),
-			'bandwidth_used'  => floatval( $data['message']['bandwidth_used'] ),
-			'total_bandwidth' => floatval( $data['message']['total_bandwidth'] ),
-		);
 	}
 }

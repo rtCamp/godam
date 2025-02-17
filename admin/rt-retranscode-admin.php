@@ -110,7 +110,8 @@ class RetranscodeMedia {
 			__( 'Tools', 'godam' ),
 			$this->capability,
 			'godam-tools',
-			array( $this, 'render_tools_page' )
+			array( $this, 'render_tools_page' ),
+			3
 		);
 	}
 
