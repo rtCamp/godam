@@ -31,18 +31,30 @@ $easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_me
 // Build the video setup options for data-setup.
 $video_setup = wp_json_encode(
 	array(
-		'controls'     => $controls,
-		'autoplay'     => $autoplay,
-		'loop'         => $loop,
-		'muted'        => $muted,
-		'preload'      => $preload,
-		'poster'       => $poster,
-		'fluid'        => true,
-		'sources'      => $sources,
-		'preview'      => $video_preview,
-		'easydam_meta' => $easydam_meta_data,
+		'controls'   => $controls,
+		'autoplay'   => $autoplay,
+		'loop'       => $loop,
+		'muted'      => $muted,
+		'preload'    => $preload,
+		'poster'     => $poster,
+		'fluid'      => true,
+		'sources'    => $sources,
+		'controlBar' => 0 < count( $easydam_meta_data ) ? $easydam_meta_data['videoConfig']['controlBar'] : '', // contains settings specific to control bar
 	)
 );
+
+$video_config = wp_json_encode(
+	array(
+		'preview' => $video_preview,
+		'layers'  => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers
+	)
+);
+
+$easydam_control_bar_color  = ! empty( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : '#2b333fb3';
+$easydam_hover_color        = ! empty( $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
+$easydam_hover_zoom         = ! empty( $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
+$easydam_custom_btn_img     = ! empty( $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
+$easydam_control_bar_config = ! empty( $easydam_meta_data['videoConfig']['controlBar'] ) ? $easydam_meta_data['videoConfig']['controlBar'] : array();
 
 $layers     = $easydam_meta_data['layers'] ?? array();
 $ads_layers = array_filter(
@@ -65,14 +77,21 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
+	<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>
+	style="
+	--easydam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
+	--easydam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
+	--easydam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
+	--easydam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
+	">
 	<div class="easydam-video-container">
 		<video
 			class="easydam-player video-js vjs-big-play-centered"
-			data-options="<?php echo esc_attr( $video_setup ); ?>"
+			data-options="<?php echo esc_attr( $video_config ); ?>"
 			data-ad_tag_url="<?php echo esc_url_raw( $ad_tag_url ); ?>"
 			data-id="<?php echo esc_attr( $attachment_id ); ?>" 
 			data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
+			data-controls = "<?php echo esc_attr( $video_setup ); ?>"
 		>
 			<?php
 			foreach ( $sources as $source ) :
@@ -86,20 +105,22 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 				endif;
 			endforeach;
 
-			foreach ( $tracks as $track ) :
-				if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
-					?>
-					<track
-						src="<?php echo esc_url( $track['src'] ); ?>"
-						kind="<?php echo esc_attr( $track['kind'] ); ?>"
-						<?php
-						echo ! empty( $track['srclang'] ) ? sprintf( 'srclang="%s"', esc_attr( $track['srclang'] ) ) : '';
-						echo ! empty( $track['label'] ) ? sprintf( 'label="%s"', esc_attr( $track['label'] ) ) : '';
+			if ( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) {
+				foreach ( $tracks as $track ) :
+					if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
 						?>
-					/>
-					<?php
-				endif;
-			endforeach;
+						<track
+							src="<?php echo esc_url( $track['src'] ); ?>"
+							kind="<?php echo esc_attr( $track['kind'] ); ?>"
+							<?php
+							echo ! empty( $track['srclang'] ) ? sprintf( 'srclang="%s"', esc_attr( $track['srclang'] ) ) : '';
+							echo ! empty( $track['label'] ) ? sprintf( 'label="%s"', esc_attr( $track['label'] ) ) : '';
+							?>
+						/>
+						<?php
+					endif;
+				endforeach;
+			}
 			?>
 		</video>
 

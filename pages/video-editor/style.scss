@@ -238,11 +238,39 @@
 	}
 }
 
+.godam-video-list-wrapper {
+	margin-left: -20px;
+
+	@media screen and (max-width: 782px) {
+		margin-left: 0;
+	}
+}
+
+.easydam-settings {
+	&-header {
+		background: #fff;
+	}
+}
+
+.video-search-input {
+	width: 100%;
+	padding: 0.25rem 0.5rem !important;
+	padding-left: 2rem !important;
+	border-radius: 0.25rem !important;
+	border: 1px solid #E1E1E1 !important;
+	outline: none !important;
+	box-shadow: none !important;
+
+	&:focus {
+		border-color: #D01A68 !important;
+	}
+}
+
 /**
  * Video Editor New Changes.
  */
 
-#root-video-editor {
+ #root-video-editor {
 	background-color: #ffffff;
 
 	.godam-video-list {

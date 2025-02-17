@@ -28,6 +28,12 @@
             color: #757575;
         }
     }
+
+    .invalid-license-key {
+        input {
+            border-color: #fb2c36;
+        }
+    }
     
     input[type="number"] {
         max-width: 100px;
