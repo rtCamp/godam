@@ -14,7 +14,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		AttachmentDetailsTwoColumn.prototype.initialize.apply( this, arguments );
 		const attachmentId = this.model.get( 'id' );
 
-		this.fetchAndRender( this.getVideoThumbnails( attachmentId ), this.renderThumbnail );
+		if ( this.model.get( 'type' ) === 'video' ) {
+			this.fetchAndRender( this.getVideoThumbnails( attachmentId ), this.renderThumbnail );
+		}
+
 		this.fetchAndRender( this.getExifDetails( attachmentId ), this.renderExifDetails );
 	},
 
