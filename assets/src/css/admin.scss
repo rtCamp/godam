@@ -41,6 +41,12 @@ $media-frame-width: calc( 300px + 2 * 24px );
 	display: none;
 }
 
+.search-form {
+	label {
+		white-space: nowrap;
+	}
+}
+
 /**
  * CSS for custom filtering options for the media library.
  */
@@ -54,7 +60,7 @@ $media-frame-width: calc( 300px + 2 * 24px );
 	box-shadow: none;
 	padding: 0 24px 0 8px;
 	min-height: 30px;
-	max-width: 25rem;
+	max-width: 10rem;
 	vertical-align: middle;
 }
 

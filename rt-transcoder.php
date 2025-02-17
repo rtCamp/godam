@@ -81,27 +81,28 @@ $rt_transcoder_admin = new RT_Transcoder_Admin();
  */
 function rtt_action_links( $links, $file ) {
 	// Return normal links if not plugin.
-	if ( plugin_basename( 'transcoder/rt-transcoder.php' ) !== $file ) {
+	if ( plugin_basename( 'easydam/rt-transcoder.php' ) !== $file ) {
 		return $links;
 	}
 
 	// Add a few links to the existing links array.
 	$settings_url = sprintf(
 		'<a href="%1$s">%2$s</a>',
-		esc_url( admin_url( 'admin.php?page=rt-transcoder' ) ),
+		esc_url( admin_url( 'admin.php?page=godam' ) ),
 		esc_html__( 'Settings', 'godam' )
 	);
 
-	$docs_url = sprintf(
-		'<a target="_blank" href="https://rtmedia.io/docs/transcoder/">%1$s</a>',
-		esc_html__( 'Docs', 'godam' )
+	$help_url = sprintf(
+		'<a href="%1$s">%2$s</a>',
+		esc_url( admin_url( 'admin.php?page=help' ) ),
+		esc_html__( 'Help', 'godam' )
 	);
 
 	return array_merge(
 		$links,
 		array(
 			'settings' => $settings_url,
-			'docs'     => $docs_url,
+			'help'     => $help_url,
 		)
 	);
 }
