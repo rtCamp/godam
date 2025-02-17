@@ -17,32 +17,32 @@ With GoDAM, WordPress users can leverage advanced video capabilities without req
 
 Key Features
 
-📌 Smart Transcoding & Adaptive Bitrate Streaming
+📌 Media Management
+- The DAM functionality streamlines file organization for websites with large libraries of images, videos, documents, and more.
+- Organize media assets efficiently with enhanced WordPress Media Library integration.
+
+📌 Interactive Video Layers for Engagement
+- Embed clickable CTAs to drive actions like sign-ups and purchases.
+- Enhance your videos with customizable hotspots that deliver additional context, links, and information exactly when and where your viewers need it. (Pro)
+- Integrate Gravity Forms to collect user feedback and lead data within videos. (Pro)
+
+📌 Smart Transcoding & Adaptive Bitrate Streaming (Pro)
 - Automatically converts videos into multiple resolutions (240p to 4K).
 - Ensures smooth playback by dynamically adjusting quality based on network speed.
 - Supports MP4, WebM, and other common video formats for maximum compatibility.
 
-📌 Interactive Video Layers for Engagement
-- Embed clickable CTAs to drive actions like sign-ups and purchases.
-- Enhance your videos with customizable hotspots that deliver additional context, links, and information exactly when and where your viewers need it.
-- Integrate Gravity Forms to collect user feedback and lead data within videos.
 
-📌 Seamless Ad Monetization
+📌 Seamless Ad Monetization (Pro)
 - Supports self-hosted ads and third-party ad networks.
 - Flexible ad placements (pre-roll, mid-roll, post-roll) to maximize revenue.
 - Boost revenue and engagement with clickable ad redirections
 
-📌 Optimized Video Management & Storage
-- The DAM functionality streamlines file organization for websites with large libraries of images, videos, documents, and more.
-- Organize media assets efficiently with enhanced WordPress Media Library integration.
-- Direct integration with cloud storage providers.
-
 📌 Customizable Video Player Experience
 - Fully customizable playback controls, branding, and player themes.
 - Enable video looping, autoplay, and inline play for better user experience.
-- Watermarking support to protect video content.
+- Watermarking support to protect video content. (Pro)
 
-📌 Advanced Video Analytics
+📌 Video Analytics (Pro)
 - Monitor viewer behavior and engagement through detailed metrics and heatmaps.
 - Track video interactions to optimize content strategy.
 - Gain insights into user retention and conversion rates.
