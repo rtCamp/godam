@@ -9,6 +9,9 @@ import { __ } from '@wordpress/i18n';
 import Customize from '../../assets/src/images/customize.png';
 import Folder from '../../assets/src/images/folder.png';
 import WebDesign from '../../assets/src/images/web-design.png';
+import GodamHeader from '../godam/GodamHeader';
+import { Icon } from '@wordpress/components';
+import { chevronRight } from '@wordpress/icons';
 
 const App = () => {
 	const content = [
@@ -88,10 +91,8 @@ const App = () => {
 	};
 	return (
 		<div className="godam-help-container">
-			<div className="godam-hero-container">
-				<div className="navbar">
-					<h1>GoDAM</h1>
-				</div>
+			<GodamHeader />
+			<div className="godam-hero-container max-w-[1260px] mx-auto px-4">
 				<section>
 					<div className="hero-content">
 						<h1 className="hero-text">{ __( 'Hi, How can we help?', 'godam' ) }</h1>
@@ -105,10 +106,11 @@ const App = () => {
 						<div className="search">
 							<form
 								role="search"
-								className="form-field shadow-search rounded bg-white p-1 mb-0 transition"
+								className="form-field shadow-search rounded w-full p-1 mb-0"
 								onSubmit={ handleSearchSubmit }
 							>
 								<input
+									className="search-field w-full"
 									type="search"
 									placeholder="Search using keywords"
 									autoComplete="off"
@@ -136,7 +138,7 @@ const App = () => {
 					</div>
 				</section>
 			</div>
-			<div className="cards-container">
+			<div className="flex justify-center flex-wrap gap-8 py-6 max-w-[1260px] mx-auto px-4">
 				{ content.map( ( section, index ) => (
 					<div key={ index } className="single-container">
 						<div
@@ -156,18 +158,7 @@ const App = () => {
 							<ul>
 								{ section.articles_list.map( ( article ) => (
 									<li key={ article.section_name }>
-										<svg
-											width="800px"
-											height="800px"
-											viewBox="0 0 16 16"
-											fill="none"
-											xmlns="http://www.w3.org/2000/svg"
-										>
-											<path
-												d="M8.1716 8.00003L3.58582 3.41424L6.41424 0.585815L13.8285 8.00003L6.41424 15.4142L3.58582 12.5858L8.1716 8.00003Z"
-												fill="#000000"
-											/>
-										</svg>
+										<Icon className="icon" icon={ chevronRight } />
 										<a
 											target="_blank"
 											href={ `https://godam.io/docs/${ article.link }` }

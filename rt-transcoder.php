@@ -3,7 +3,7 @@
  * Plugin Name: GoDAM
  * Plugin URI: https://rtmedia.io/transcoder/?utm_source=dashboard&utm_medium=plugin&utm_campaign=transcoder
  * Description: Audio & video transcoding services for ANY WordPress website. Allows you to convert audio/video files of any format to a web-friendly format (mp3/mp4).
- * Version: 1.3.6
+ * Version: 1.0.0
  * Text Domain: godam
  * Author: rtCamp
  * Author URI: https://rtcamp.com/?utm_source=dashboard&utm_medium=plugin&utm_campaign=transcoder
@@ -39,7 +39,7 @@ if ( ! defined( 'RT_TRANSCODER_VERSION' ) ) {
 	/**
 	 * The version of the plugin
 	 */
-	define( 'RT_TRANSCODER_VERSION', '1.3.6' );
+	define( 'RT_TRANSCODER_VERSION', '1.0.0' );
 }
 
 if ( ! defined( 'RT_TRANSCODER_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' ) ) {
@@ -81,27 +81,21 @@ $rt_transcoder_admin = new RT_Transcoder_Admin();
  */
 function rtt_action_links( $links, $file ) {
 	// Return normal links if not plugin.
-	if ( plugin_basename( 'transcoder/rt-transcoder.php' ) !== $file ) {
+	if ( plugin_basename( 'easydam/rt-transcoder.php' ) !== $file ) {
 		return $links;
 	}
 
 	// Add a few links to the existing links array.
 	$settings_url = sprintf(
 		'<a href="%1$s">%2$s</a>',
-		esc_url( admin_url( 'admin.php?page=rt-transcoder' ) ),
+		esc_url( admin_url( 'admin.php?page=godam' ) ),
 		esc_html__( 'Settings', 'godam' )
-	);
-
-	$docs_url = sprintf(
-		'<a target="_blank" href="https://rtmedia.io/docs/transcoder/">%1$s</a>',
-		esc_html__( 'Docs', 'godam' )
 	);
 
 	return array_merge(
 		$links,
 		array(
 			'settings' => $settings_url,
-			'docs'     => $docs_url,
 		)
 	);
 }

@@ -41,6 +41,12 @@ $media-frame-width: calc( 300px + 2 * 24px );
 	display: none;
 }
 
+.search-form {
+	label {
+		white-space: nowrap;
+	}
+}
+
 /**
  * CSS for custom filtering options for the media library.
  */
@@ -54,7 +60,7 @@ $media-frame-width: calc( 300px + 2 * 24px );
 	box-shadow: none;
 	padding: 0 24px 0 8px;
 	min-height: 30px;
-	max-width: 25rem;
+	max-width: 10rem;
 	vertical-align: middle;
 }
 
@@ -80,7 +86,7 @@ $media-frame-width: calc( 300px + 2 * 24px );
 /**
  * Admin page CSS changes for the top-level EasyDAM page.
  */
-.toplevel_page_godam, .godam_page_video_editor {
+.toplevel_page_godam, .godam_page_video_editor, .godam_page_help {
 	--wp-admin-theme-color: #ab3a6c;
 
 	button, a, input {
@@ -92,11 +98,4 @@ $media-frame-width: calc( 300px + 2 * 24px );
 	.circle {
 		--wp-components-color-accent: #E6533A;
 	}
-}
-
-// GoDAM admin menu icon.
-.toplevel_page_godam {
-    .wp-menu-image.svg {
-        background-size: 16px !important;
-    }
 }

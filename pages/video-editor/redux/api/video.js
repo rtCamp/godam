@@ -17,14 +17,14 @@ export const videosAPI = createApi( {
 				params.append( 'query[orderby]', 'date' );
 				params.append( 'query[order]', 'DESC' );
 
-				if ( data.page ) {
-					params.append( 'query[paged]', data.page );
+				if ( data?.page ) {
+					params.append( 'query[paged]', data?.page );
 				} else {
 					params.append( 'query[paged]', '1' );
 				}
 
-				if ( data.search ) {
-					params.append( 'query[s]', data.search );
+				if ( data?.search ) {
+					params.append( 'query[s]', data?.search );
 				}
 
 				return {
@@ -35,6 +35,12 @@ export const videosAPI = createApi( {
 					},
 					body: params.toString(),
 				};
+			},
+			transformResponse: async ( response, meta ) => {
+				const totalNumPage = meta.response.headers.get( 'x-wp-totalpages' );
+				const data = await response;
+				data.totalNumPage = totalNumPage;
+				return data;
 			},
 		} ),
 	} ),
