@@ -1,7 +1,6 @@
 === GoDAM ===
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar
 Tags: media, multimedia, audio, songs, music, video, ffmpeg, media-node, rtMedia, WordPress, transcode, transcoder, encoding, encode, transcoder, DAM, audio video conversion, digital asset management
-Donate link: https://godam.io/#pricing
 Requires at least: 6.5
 Tested up to: 6.7.1
 Requires PHP: 7.4
