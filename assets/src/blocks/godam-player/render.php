@@ -25,8 +25,12 @@ $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : arra
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 $video_preview = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
 
-// Retrieve easydam_meta for the attachment id.
-$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : '';
+// Retrieve 'easydam_meta' for the given attachment ID, defaulting to an empty array if not found.
+$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : [];
+$easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : [];
+
+// Extract control bar settings with a fallback to an empty array.
+$control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? [];
 
 // Build the video setup options for data-setup.
 $video_setup = wp_json_encode(
@@ -39,7 +43,7 @@ $video_setup = wp_json_encode(
 		'poster'     => $poster,
 		'fluid'      => true,
 		'sources'    => $sources,
-		'controlBar' => 0 < count( $easydam_meta_data ) ? $easydam_meta_data['videoConfig']['controlBar'] : '', // contains settings specific to control bar
+		'controlBar' => $control_bar_settings, // contains settings specific to control bar
 	)
 );
 
