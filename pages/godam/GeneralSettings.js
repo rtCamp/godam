@@ -290,7 +290,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 							</div>
 						</div>
 						{
-							( mediaSettings?.general?.is_verified && window?.userData?.valid_license ) && (
+							( window?.userData?.valid_license && ! window?.userData?.storageBandwidthError ) && (
 								<div className="flex gap-4 flex-wrap">
 
 									{
@@ -336,7 +336,13 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 										)
 									}
 								</div>
-							) }
+							)
+						}
+						{
+							window?.userData?.storageBandwidthError && window?.userData?.valid_license && (
+								<p className="text-yellow-600 text-xs h-max">{ __( 'Something went wrong! Please remove and re-add the license key to access the usage analytics.', 'godam' ) }</p>
+							)
+						}
 					</PanelBody>
 				</Panel>
 			</div>
