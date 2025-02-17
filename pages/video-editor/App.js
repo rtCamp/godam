@@ -14,6 +14,7 @@ import '../../assets/build/blocks/godam-player/style-index.css';
  * WordPress dependencies
  */
 import AttachmentGrid from './AttachmentGrid.jsx';
+import GodamHeader from '../godam/GodamHeader.js';
 
 const App = () => {
 	const [ attachmentID, setAttachmentID ] = useState( null );
@@ -35,7 +36,10 @@ const App = () => {
 
 	if ( ! attachmentID ) {
 		return (
-			<AttachmentGrid handleAttachmentClick={ handleAttachmentClick } />
+			<>
+				<GodamHeader />
+				<AttachmentGrid handleAttachmentClick={ handleAttachmentClick } />
+			</>
 		);
 	}
 

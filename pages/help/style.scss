@@ -8,6 +8,12 @@
   height: 100%;
 }
 
+.easydam-settings {
+  &-header {
+      background: #fff;
+  }
+}
+
 .navbar {
   position: relative;
   display: flex;
@@ -37,19 +43,27 @@
   background-color: #fff;
   border-radius: 2rem;
   width: 40%;
-  padding: 0 1rem;
   border: 2px solid #ab3a6c;
   cursor: pointer;
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+
+  svg {
+    position: absolute;
+    left: 1rem;
+  }
 
   input[type="search"] {
-    padding-left: 2.5em;
+    padding-left: 3em;
     border-style: none;
     background-color: transparent;
     -webkit-appearance: none;
     appearance: none;
     outline: none;
-    width: 100%;
     background-color: #fff;
+    width: 100% !important;
+    border-radius: 2rem;
 
     &::-webkit-search-cancel-button {
       display: none;
@@ -69,16 +83,16 @@
   text-align: center;
 }
 
-.cards-container {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  margin: 50px;
-}
+// .cards-container {
+//   display: flex;
+//   justify-content: center;
+//   flex-wrap: wrap;
+//   gap: 1.5rem;
+// }
 
 .single-container {
   background-color: #fff;
   width: 310px;
-  margin: 0 auto;
   border-radius: 12px;
   box-shadow: 3px 4px 4px #d3d3d3;
 
@@ -101,13 +115,26 @@
   padding: 0 1.5rem 1.5rem 1.5rem;
 }
 
-.cards-container a {
-  color: #000;
-  text-decoration: none;
+.single-container ul li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+
+  a {
+    color: #000;
+    text-decoration: none;
+  }
+
+  .icon {
+    border-radius: 999px;
+    border: 1px solid #ab3a6c;
+  }
 
   &:hover {
     svg {
       background-color: #ab3a6c;
+      border-radius: 999px;
       left: 2px;
 
       path {
@@ -144,10 +171,5 @@
 @media (max-width: 768px) {
   #wpcontent {
     padding-left: 0 !important;
-  }
-  .cards-container {
-    grid-template-columns: unset;
-    grid-template-rows: repeat(3, 1fr);
-    margin: 20px auto;
   }
 }
