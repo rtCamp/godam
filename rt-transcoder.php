@@ -46,8 +46,6 @@ if ( ! defined( 'RT_TRANSCODER_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' )
 	define( 'RT_TRANSCODER_NO_MAIL', true );
 }
 
-define( 'GODAM_API_BASE', 'https://frappe-transcoder-api.rt.gw' );
-
 if ( ! defined( 'GODAM_API_BASE' ) ) {
 	define( 'GODAM_API_BASE', 'https://app.godam.io' );
 }
