@@ -308,8 +308,7 @@ class Pages {
 					array(),
 					'1.0.0'
 				);
-			}
-
+			}       
 		} elseif ( $screen && $this->menu_page_id === $screen->id ) {
 
 			wp_register_script(
@@ -420,7 +419,6 @@ class Pages {
 
 		wp_enqueue_script( 'media-library-react' );
 	}
-
 
 	/**
 	 * Get the storage and bandwidth usage data.
