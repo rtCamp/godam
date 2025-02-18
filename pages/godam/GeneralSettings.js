@@ -294,8 +294,8 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								<div className="flex gap-4 flex-wrap">
 
 									{
-										userData.storageBandwidthError && ! userData.valid_license ? (
-											<p className="text-red-500 text-center text-lg h-max">{ userData.storageBandwidthError }</p>
+										userData.storageBandwidthError ? (
+											<p className="text-yellow-700 text-xs h-max">{ userData.storageBandwidthError }</p>
 										) : (
 											<>
 												<div className="flex gap-3 items-center">

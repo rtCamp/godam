@@ -289,7 +289,7 @@ function godam_get_usage_data() {
 
 	// Validate response structure
 	if ( ! isset( $data['message'] ) || ! isset( $data['message']['storage_used'] ) || empty( $data['message']['storage_used'] ) ) {
-		return new \WP_Error( 'godam_api_error', 'Error fetching data for storage and bandwidth' );
+		return new \WP_Error( 'godam_api_error', 'Error fetching data for storage and bandwidth ( remove and readd the license key to get usage analytics )' );
 	}
 
 	return array(
