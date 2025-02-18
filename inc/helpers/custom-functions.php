@@ -288,7 +288,7 @@ function godam_get_usage_data() {
 	$data = json_decode( $body, true );
 
 	// Validate response structure
-	if ( ! isset( $data['message'] ) || ! isset( $data['message']['storage_used'] ) || empty( $data['message']['storage_used'] ) ) {
+	if ( ! isset( $data['message'] ) || ! isset( $data['message']['storage_used'] ) || ! isset( $data['message']['bandwidth_used'] ) ) {
 		return new \WP_Error( 'godam_api_error', 'Error fetching data for storage and bandwidth ( remove and add again the license key to get usage analytics )' );
 	}
 
