@@ -11,6 +11,7 @@ use Transcoder\Inc\Traits\Singleton;
 use Transcoder\Inc\Pages;
 use Transcoder\Inc\Blocks;
 use Transcoder\Inc\Assets;
+use Transcoder\Inc\Deactivation;
 
 use Transcoder\Inc\Taxonomies\Media_Folders;
 
@@ -90,5 +91,6 @@ class Plugin {
 		Ads::get_instance();
 		Transcoding::get_instance();
 		Analytics::get_instance();
+		Deactivation::get_instance();
 	}
 }
