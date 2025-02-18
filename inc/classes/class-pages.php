@@ -369,7 +369,6 @@ class Pages {
 			wp_enqueue_script( 'godam-page-script-help' );
 		}
 
-
 		wp_enqueue_style( 'wp-components' );
 
 		wp_register_script(
@@ -381,5 +380,14 @@ class Pages {
 		);
 
 		wp_enqueue_script( 'media-library-react' );
+
+		// Add a localized script for the rest nonce.
+		wp_localize_script(
+			'media-library-react',
+			'MediaLibrary',
+			array(
+				'nonce' => wp_create_nonce( 'wp_rest' ),
+			)
+		);
 	}
 }

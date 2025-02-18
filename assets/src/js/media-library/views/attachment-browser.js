@@ -6,6 +6,7 @@
 import MediaLibraryTaxonomyFilter from './filters/media-library-taxonomy-filter';
 import MediaDateRangeFilter from './filters/media-date-range-filter';
 // import MediaUploadToS3 from './filters/media-upload-to-s3';
+import MediaRetranscode from './filters/media-retranscode';
 
 const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
 
@@ -71,6 +72,17 @@ export default AttachmentsBrowser?.extend( {
 		// 		} ).render(),
 		// 	);
 		// }
+
+		if ( MediaRetranscode ) {
+			this.toolbar.set(
+				'MediaRetranscode',
+				new MediaRetranscode( {
+					controller: this.controller,
+					model: this.collection.props,
+					priority: -75,
+				} ).render(),
+			);
+		}
 
 		/**
 		 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.

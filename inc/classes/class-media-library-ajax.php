@@ -167,8 +167,17 @@ class Media_Library_Ajax {
 	public function filter_media_library_by_taxonomy( $query_args ) {
 
 		if ( isset( $_REQUEST['query']['media-folder'] ) ) {
-			$media_folder_id = intval( $_REQUEST['query']['media-folder'] );
-		
+
+			$media_folder_id = sanitize_text_field( $_REQUEST['query']['media-folder'] );
+
+			if ( 'uncategorized' === $media_folder_id ) {
+				$media_folder_id = 0;
+			} else if ( 'all' === $media_folder_id ) {
+				$media_folder_id = -1;
+			} else {
+				$media_folder_id = intval( $media_folder_id );
+			}
+
 			// Handle uncategorized folder (media-folder ID = 0).
 			if ( 0 === $media_folder_id ) {
 				$uncategorized_ids = get_terms(
