@@ -172,8 +172,9 @@ class Assets {
 			'easydam-media-library',
 			'easydamMediaLibrary',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'easydam_media_library' ),
+				'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
+				'nonce'           => wp_create_nonce( 'easydam_media_library' ),
+				'godamToolsNonce' => wp_create_nonce( 'godam-tools' ),
 			)
 		);
 
