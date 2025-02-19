@@ -207,13 +207,17 @@ class Settings extends Base {
 		$result = rtt_verify_license( $license_key, true );
 
 		if ( is_wp_error( $result ) ) {
+
+			$error_data = $result->get_error_data();
+			$status_code = is_array($error_data) && isset($error_data['status']) ? $error_data['status'] : 500;
+
 			return new \WP_REST_Response(
 				array(
 					'status'  => 'error',
 					'message' => $result->get_error_message(),
 					'code'    => $result->get_error_code(),
 				),
-				$result->get_error_data( 'status' ) ?? 500
+				$status_code
 			);
 		}
 

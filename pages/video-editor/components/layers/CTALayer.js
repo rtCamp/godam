@@ -181,20 +181,6 @@ const CTALayer = ( { layerID, goBack } ) => {
 				{ renderSelectedCTAInputs() }
 
 				{ /* Common settings */ }
-				<ToggleControl
-					label={ __( 'Allow user to skip', 'godam' ) }
-					checked={ layer.allow_skip }
-					onChange={ ( value ) =>
-						dispatch(
-							updateLayerField( { id: layer.id, field: 'allow_skip', value } ),
-						)
-					}
-					help={ __(
-						'If enabled, the user will be able to skip the form submission.',
-						'godam',
-					) }
-					className="mb-4"
-				/>
 
 				<Panel className="-mx-4 border-x-0">
 					<PanelBody
