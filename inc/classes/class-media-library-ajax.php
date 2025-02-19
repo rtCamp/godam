@@ -35,6 +35,7 @@ class Media_Library_Ajax {
 		add_action( 'pre_get_posts', array( $this, 'pre_get_post_filter' ) );
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
+		add_action( 'add_attachment', array( $this, 'add_media_library_taxonomy_on_media_upload' ), 10, 1 );
 
 		// TODO: think about merging this hooks and other to media-filters, as they are related to media library.
 		$offload_media = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
@@ -48,6 +49,31 @@ class Media_Library_Ajax {
 			add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_folder_to_attachment' ), 10, 2 );
 			add_filter( 'bulk_actions-upload', array( $this, 'add_bulk_actions' ) );
 		}
+	}
+
+	/**
+	 * Add the media library taxonomy to the uploaded media.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return void
+	 */
+	public function add_media_library_taxonomy_on_media_upload( $attachment_id ) {
+		if ( ! isset( $_REQUEST['media-folder'] ) || empty( $_REQUEST['media-folder'] ) || $_REQUEST['media-folder'] <= 0 ) {
+			return;
+		}
+	
+		// Get the media folder.
+		$media_folder = intval( $_REQUEST['media-folder'] ); // Ensure it's an integer
+	
+		// Check if the term exists
+		$term = get_term( $media_folder, 'media-folder' );
+	
+		if ( is_wp_error( $term ) || ! $term || $term->term_id !== $media_folder ) {
+			return;
+		}
+
+		// Assign the existing term
+		wp_set_object_terms( $attachment_id, (int) $media_folder, 'media-folder' );
 	}
 
 	/**
@@ -141,8 +167,17 @@ class Media_Library_Ajax {
 	public function filter_media_library_by_taxonomy( $query_args ) {
 
 		if ( isset( $_REQUEST['query']['media-folder'] ) ) {
-			$media_folder_id = intval( $_REQUEST['query']['media-folder'] );
-		
+
+			$media_folder_id = sanitize_text_field( $_REQUEST['query']['media-folder'] );
+
+			if ( 'uncategorized' === $media_folder_id ) {
+				$media_folder_id = 0;
+			} else if ( 'all' === $media_folder_id ) {
+				$media_folder_id = -1;
+			} else {
+				$media_folder_id = intval( $media_folder_id );
+			}
+
 			// Handle uncategorized folder (media-folder ID = 0).
 			if ( 0 === $media_folder_id ) {
 				$uncategorized_ids = get_terms(

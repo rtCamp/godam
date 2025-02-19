@@ -76,6 +76,13 @@ class Assets {
 			)
 		);
 		
+		$localize_array = rt_get_localize_array();
+
+		wp_localize_script(
+			'easydam-script',
+			'videoAnalyticsParams',
+			$localize_array
+		);
 
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );
@@ -165,8 +172,17 @@ class Assets {
 			'easydam-media-library',
 			'easydamMediaLibrary',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'easydam_media_library' ),
+				'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
+				'nonce'           => wp_create_nonce( 'easydam_media_library' ),
+				'godamToolsNonce' => wp_create_nonce( 'godam-tools' ),
+			)
+		);
+
+		wp_localize_script(
+			'easydam-script',
+			'pluginInfo',
+			array(
+				'version' => RT_TRANSCODER_VERSION,
 			)
 		);
 	}

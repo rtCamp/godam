@@ -203,3 +203,99 @@ function image_cta_html( $layer ) {
 	</div>
     ";
 }
+
+/**
+ * Verify the license key for the plugin and return user data. 
+ * 
+ * @param int $timeout The time in seconds after which the user data should be refreshed.
+ */
+function godam_get_user_data( $timeout = 300 ) {
+	$godam_user_data = get_site_option( 'godam_user_data', false );
+	$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+
+	if (
+		( empty( $godam_user_data ) && ! empty( $license_key ) ) ||
+		( isset( $godam_user_data['timestamp'] ) && ( time() - $godam_user_data['timestamp'] ) > $timeout )
+	) {
+		// Verify the user's license.
+		$result      = rtt_verify_license( $license_key );
+
+		$valid_license = false;
+		$user_data     = array();
+
+		if ( is_wp_error( $result ) ) {
+			$valid_license = false;
+			$user_data['license_key'] = rtt_mask_string( $license_key );
+		} else {
+			$valid_license            = true;
+			$user_data                = $result['data'] ?? array();
+			$user_data['license_key'] = rtt_mask_string( $license_key );
+		}
+
+		$godam_user_data = array(
+			'currentUserId' => get_current_user_id(),
+			'valid_license' => $valid_license,
+			'user_data'     => $user_data,
+		);
+
+		$usage_data = godam_get_usage_data();
+
+		if ( ! is_wp_error( $usage_data ) ) {
+			$godam_user_data = array_merge( $godam_user_data, $usage_data );
+		} else {
+			$godam_user_data['storageBandwidthError'] = $usage_data->get_error_message();
+		}
+
+		$godam_user_data['timestamp'] = time();
+
+		// Save the userData in wp_options.
+		update_site_option( 'godam_user_data', $godam_user_data );
+	}
+
+	return $godam_user_data;
+}
+
+/**
+ * Get the storage and bandwidth usage data.
+ * 
+ * @return array|WP_Error
+ */
+function godam_get_usage_data() {
+
+	$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+
+	if ( empty( $license_key ) ) {
+		return new \WP_Error( 'godam_api_error', 'license key not found ( try refreshing the page )' );
+	}
+
+	$endpoint = GODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
+
+	$url = add_query_arg(
+		array(
+			'license' => $license_key,
+		),
+		$endpoint
+	);
+
+	$response = wp_safe_remote_get( $url );
+
+	if ( is_wp_error( $response ) ) {
+		return $response;
+	}
+
+	$body = wp_remote_retrieve_body( $response );
+
+	$data = json_decode( $body, true );
+
+	// Validate response structure
+	if ( ! isset( $data['message'] ) || ! isset( $data['message']['storage_used'] ) || ! isset( $data['message']['bandwidth_used'] ) ) {
+		return new \WP_Error( 'godam_api_error', 'Error fetching data for storage and bandwidth ( remove and add again the license key to get usage analytics )' );
+	}
+
+	return array(
+		'storage_used'    => floatval( $data['message']['storage_used'] ?? 0 ),
+		'total_storage'   => floatval( $data['message']['total_storage'] ?? 0 ),
+		'bandwidth_used'  => floatval( $data['message']['bandwidth_used'] ?? 0 ),
+		'total_bandwidth' => floatval( $data['message']['total_bandwidth'] ?? 0 ),
+	);
+}

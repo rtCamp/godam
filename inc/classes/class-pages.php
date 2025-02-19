@@ -46,42 +46,6 @@ class Pages {
 		add_action( 'admin_menu', array( $this, 'add_admin_pages' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
-		add_action( 'enqueue_block_assets', array( $this, 'handle_block_assets' ) );
-	}
-
-	/**
-	 * To enqueue scripts and styles in block editor and frontend.
-	 *
-	 * @return void
-	 */
-	public function handle_block_assets() {
-
-		wp_register_script(
-			'block-analytics-script',
-			RT_TRANSCODER_URL . 'assets/build/blocks/godam-player/analytics.js',
-			array( 'wp-element' ),
-			filemtime( RT_TRANSCODER_PATH . 'assets/build/blocks/godam-player/analytics.js' ),
-			true
-		);
-
-		$localize_array = rt_get_localize_array();
-
-		wp_localize_script(
-			'block-analytics-script',
-			'videoAnalyticsParams',
-			$localize_array
-		);
-
-		
-		wp_enqueue_script( 'block-analytics-script' );
-
-		wp_localize_script(
-			'block-frontend-script',
-			'nonceData',
-			array(
-				'nonce' => wp_create_nonce( 'wp_rest' ),
-			)
-		);
 	}
 
 	/**
@@ -96,8 +60,16 @@ class Pages {
 			'manage_options',
 			$this->menu_slug,
 			array( $this, 'render_godam_page' ),
-			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDIiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0MiA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI0Ljc1MTQgMTEuMjk5NUgwVjQuODA1NTdDMCAxLjA2NDM0IDQuMDkxMDIgLTEuMjM5NzEgNy4yOTIzNiAwLjcwNjk0OEwyNC43NTE0IDExLjMwNzFWMTEuMjk5NVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0zOC45MTAzIDI3Ljk5ODFMMzIuMzA5OSAzMi4wMDU1SDBWMTUuODMxNUgzMi4zOTM2TDM4LjkxMDMgMTkuNzg1N0M0MS45OSAyMS42NTYzIDQxLjk5IDI2LjEyNzUgMzguOTEwMyAyNy45OTA1VjI3Ljk5ODFaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMjQuNzA1OCAzNi43Mjc1TDcuMjkyMzYgNDcuMjk3M0M0LjA5MTAyIDQ5LjIzNjMgMCA0Ni45MzIzIDAgNDMuMTkxVjM2LjcyNzVIMjQuNzA1OFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=',
+			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1LjU1NzggMjAuMDkxMUw4LjA1NTg3IDM3LjU5M0wzLjQ2Mzk3IDMzLjAwMTFDMC44MTg1MjEgMzAuMzU1NiAyLjA4MjEgMjUuODMzNiA1LjcyMjI4IDI0Ljk0NjRMMjUuNTYzMiAyMC4wOTY0TDI1LjU1NzggMjAuMDkxMVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00Ny4zNzczIDIxLjg4NjdMNDUuNTQzOCAyOS4zODc1TDIyLjY5NzIgNTIuMjM0MUwxMS4yNjA1IDQwLjc5NzRMMzQuMTY2MiAxNy44OTE2TDQxLjU3MDMgMTYuMDc5NkM0NS4wNzA2IDE1LjIyNDcgNDguMjMyMyAxOC4zODYzIDQ3LjM3MiAyMS44ODEzTDQ3LjM3NzMgMjEuODg2N1oiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00My41MDU5IDM4LjEwMzZMMzguNjY2NyA1Ny44OTA3QzM3Ljc3NDEgNjEuNTI1NSAzMy4yNTIxIDYyLjc4OTEgMzAuNjA2NiA2MC4xNDM2TDI2LjAzNjMgNTUuNTczMkw0My41MDU5IDM4LjEwMzZaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K',
 			30
+		);
+
+		add_submenu_page(
+			$this->menu_slug,
+			__( 'Settings', 'godam' ),
+			__( 'Settings', 'godam' ),
+			'manage_options',
+			$this->menu_slug,
 		);
 
 		add_submenu_page(
@@ -152,7 +124,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id ) ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id ) ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
@@ -258,7 +230,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id ), true ) ) {
 			wp_register_style(
 				'transcoder-page-style-godam',
 				RT_TRANSCODER_URL . '/pages/build/style.css',
@@ -289,6 +261,15 @@ class Pages {
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 				)
 			);
+
+			$godam_user_data = godam_get_user_data();
+
+			wp_localize_script(
+				'transcoder-page-script-video-editor',
+				'userData',
+				$godam_user_data
+			);
+
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
 
 			$gravity_forms_styles = array(
@@ -320,39 +301,12 @@ class Pages {
 				true
 			);
 
-			// Verify the user's license.
-			$license_key = get_site_option( 'rt-transcoding-api-key', '' );
-			$result      = rtt_verify_license( $license_key );
-
-			$valid_license = false;
-			$user_data     = array();
-
-			if ( is_wp_error( $result ) ) {
-				$valid_license = false;
-			} else {
-				$valid_license            = true;
-				$user_data                = $result['data'] ?? array();
-				$user_data['license_key'] = rtt_mask_string( $license_key );
-			}
-
-			$localize_data = array(
-				'currentUserId' => get_current_user_id(),
-				'valid_license' => $valid_license,
-				'user_data'     => $user_data,
-			);
-
-			$usage_data = $this->get_usage_data();
-
-			if ( ! is_wp_error( $usage_data ) ) {
-				$localize_data = array_merge( $localize_data, $usage_data );
-			} else {
-				$localize_data['storageBandwidthError'] = $usage_data->get_error_message();
-			}
+			$godam_user_data = godam_get_user_data();
 
 			wp_localize_script(
 				'transcoder-page-script-godam',
 				'userData',
-				$localize_data
+				$godam_user_data
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-godam' );
@@ -404,9 +358,16 @@ class Pages {
 				true
 			);
 
+			$godam_user_data = godam_get_user_data();
+
+			wp_localize_script(
+				'godam-page-script-help',
+				'userData',
+				$godam_user_data
+			);
+
 			wp_enqueue_script( 'godam-page-script-help' );
 		}
-
 
 		wp_enqueue_style( 'wp-components' );
 
@@ -419,51 +380,14 @@ class Pages {
 		);
 
 		wp_enqueue_script( 'media-library-react' );
-	}
 
-
-	/**
-	 * Get the storage and bandwidth usage data.
-	 * 
-	 * @return array|WP_Error
-	 */
-	public function get_usage_data() {
-
-		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
-
-		if ( empty( $license_key ) ) {
-			return new \WP_Error( 'godam_api_error', 'license key not found ( try refreshing the page )' );
-		}
-
-		$endpoint = GODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
-
-		$url = add_query_arg(
+		// Add a localized script for the rest nonce.
+		wp_localize_script(
+			'media-library-react',
+			'MediaLibrary',
 			array(
-				'license' => $license_key,
-			),
-			$endpoint
-		);
-
-		$response = wp_safe_remote_get( $url );
-
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		$body = wp_remote_retrieve_body( $response );
-
-		$data = json_decode( $body, true );
-
-		// Validate response structure
-		if ( ! isset( $data['message'] ) || ! isset( $data['message']['storage_used'] ) || empty( $data['message']['storage_used'] ) ) {
-			return new \WP_Error( 'godam_api_error', 'Error fetching data for storage and bandwidth' );
-		}
-
-		return array(
-			'storage_used'    => floatval( $data['message']['storage_used'] ?? 0 ),
-			'total_storage'   => floatval( $data['message']['total_storage'] ?? 0 ),
-			'bandwidth_used'  => floatval( $data['message']['bandwidth_used'] ?? 0 ),
-			'total_bandwidth' => floatval( $data['message']['total_bandwidth'] ?? 0 ),
+				'nonce' => wp_create_nonce( 'wp_rest' ),
+			)
 		);
 	}
 }
