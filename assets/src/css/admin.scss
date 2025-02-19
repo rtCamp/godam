@@ -86,13 +86,16 @@ $media-frame-width: calc( 300px + 2 * 24px );
 /**
  * Admin page CSS changes for the top-level EasyDAM page.
  */
-.toplevel_page_godam, .godam_page_video_editor, .godam_page_help {
+.toplevel_page_godam, .godam_page_video_editor, .godam_page_help, #rt-transcoder-media-library-root {
 	--wp-admin-theme-color: #ab3a6c;
 
 	button, a, input {
-		--wp-components-color-accent: #ab3a6c;
-		--wp-components-color-accent-darker-10: #9a2d5e;
-		--wp-components-color-accent-darker-20: #6e2445;
+
+		&:not( .is-destructive ) {
+			--wp-components-color-accent: #ab3a6c;
+			--wp-components-color-accent-darker-10: #9a2d5e;
+			--wp-components-color-accent-darker-20: #6e2445;
+		}
 	}
 
 	.circle {
