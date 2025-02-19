@@ -100,13 +100,6 @@ $media-frame-width: calc( 300px + 2 * 24px );
 	}
 }
 
-// GoDAM admin menu icon.
-.toplevel_page_godam {
-    .wp-menu-image.svg {
-        background-size: 16px !important;
-    }
-}
-
 .rt-godam-modal {
     display: flex;
     flex-direction: column;

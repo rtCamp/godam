@@ -389,49 +389,4 @@ class Pages {
 			)
 		);
 	}
-
-	/**
-	 * Get the storage and bandwidth usage data.
-	 * 
-	 * @return array|WP_Error
-	 */
-	public function get_usage_data() {
-
-		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
-
-		if ( empty( $license_key ) ) {
-			return new \WP_Error( 'godam_api_error', 'license key not found ( try refreshing the page )' );
-		}
-
-		$endpoint = GODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
-
-		$url = add_query_arg(
-			array(
-				'license' => $license_key,
-			),
-			$endpoint
-		);
-
-		$response = wp_safe_remote_get( $url );
-
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		$body = wp_remote_retrieve_body( $response );
-
-		$data = json_decode( $body, true );
-
-		// Validate response structure
-		if ( ! isset( $data['message'] ) || ! isset( $data['message']['storage_used'] ) || empty( $data['message']['storage_used'] ) ) {
-			return new \WP_Error( 'godam_api_error', 'Error fetching data for storage and bandwidth' );
-		}
-
-		return array(
-			'storage_used'    => floatval( $data['message']['storage_used'] ?? 0 ),
-			'total_storage'   => floatval( $data['message']['total_storage'] ?? 0 ),
-			'bandwidth_used'  => floatval( $data['message']['bandwidth_used'] ?? 0 ),
-			'total_bandwidth' => floatval( $data['message']['total_bandwidth'] ?? 0 ),
-		);
-	}
 }
