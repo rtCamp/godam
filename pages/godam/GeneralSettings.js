@@ -95,16 +95,20 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 				};
 
 				saveMediaSettings( updatedSettings );
+
+				// Reload the page to reflect the changes
+				window.location.reload();
 			} else {
 				setNotice( { message: result.message || 'Failed to verify the license key', status: 'error', isVisible: true } );
+				window.userData.valid_license = false;
+				window.userData.user_data = {};
 			}
 		} catch ( error ) {
 			setNotice( { message: 'An error occurred. Please try again later', status: 'error', isVisible: true } );
+			window.userData.valid_license = false;
+			window.userData.user_data = {};
 		} finally {
 			setIsLicenseKeyLoading( false ); // Hide loading indicator.
-
-			window.userData.valid_license = true; // Set the flag to true.
-			window.userData.user_data = result.data; // Set the flag to true.
 		}
 
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
@@ -243,26 +247,31 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								onChange={ ( value ) => setLicenseKey( value ) }
 								help={
 									<>
-										{ __( 'Your license key is required to access the features. You can get your active license key from your ', 'godam' ) }
-										<a
-											href={ GODAM_API_BASE }
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-blue-500 underline"
-										>
-											{ __( 'Account', 'godam' ) }
-										</a>.
+										{
+											( ! window?.userData?.valid_license ) &&
+											<>
+												{ __( 'Your license key is required to access the features. You can get your active license key from your ', 'godam' ) }
+												<a
+													href={ GODAM_API_BASE + '/#licenses' }
+													target="_blank"
+													rel="noopener noreferrer"
+													className="text-blue-500 underline"
+												>
+													{ __( 'Account', 'godam' ) }
+												</a>.
+											</>
+										}
 									</>
 								}
 								placeholder="Enter your license key here"
-								className="max-w-[400px]"
-								disabled={ mediaSettings?.general?.is_verified }
+								className={ `max-w-[400px] ${ ( ! window?.userData?.valid_license && window?.userData?.user_data?.license_key ) ? 'invalid-license-key' : '' }` }
+								disabled={ window?.userData?.valid_license }
 							/>
 							<div className="flex gap-2">
 								<Button
 									className="max-w-[140px] w-full flex justify-center items-center"
 									onClick={ saveLicenseKey }
-									disabled={ isLicenseKeyLoading || mediaSettings?.general?.is_verified }
+									disabled={ isLicenseKeyLoading || window?.userData?.valid_license }
 									variant="primary"
 									isBusy={ isLicenseKeyLoading }
 								>
@@ -271,7 +280,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								<Button
 									className="max-w-[160px] w-full flex justify-center items-center"
 									onClick={ deactivateLicenseKey }
-									disabled={ isLicenseKeyLoading || ! mediaSettings?.general?.is_verified }
+									disabled={ isLicenseKeyLoading }
 									variant="secondary"
 									isDestructive
 									isBusy={ isDeactivateLoading }
@@ -280,58 +289,59 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								</Button>
 							</div>
 						</div>
-						{ mediaSettings?.general?.is_verified && (
-							<div className="flex gap-4 flex-wrap">
+						{
+							( mediaSettings?.general?.is_verified && window?.userData?.valid_license ) && (
+								<div className="flex gap-4 flex-wrap">
 
-								{
-									userData.storageBandwidthError ? (
-										<p className="text-red-500 text-center text-lg h-max">{ userData.storageBandwidthError }</p>
-									) : (
-										<>
-											<div className="flex gap-3 items-center">
-												<div className="circle-container">
-													<div className="data text-xs">{ calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) }%</div>
-													<div
-														className={ `circle ${
-															calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) > 90 ? 'red' : ''
-														}` }
-														style={ { '--percentage': calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) + '%' } }
-													></div>
+									{
+										userData.storageBandwidthError ? (
+											<p className="text-yellow-700 text-xs h-max">{ userData.storageBandwidthError }</p>
+										) : (
+											<>
+												<div className="flex gap-3 items-center">
+													<div className="circle-container">
+														<div className="data text-xs">{ calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) }%</div>
+														<div
+															className={ `circle ${
+																calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) > 90 ? 'red' : ''
+															}` }
+															style={ { '--percentage': calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) + '%' } }
+														></div>
+													</div>
+													<div className="leading-6">
+														<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
+														<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_bandwidth - userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+														<br />
+														<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+													</div>
 												</div>
-												<div className="leading-6">
-													<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
-													<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_bandwidth - userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
-													<br />
-													<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+												<div className="flex gap-3 items-center">
+													<div className="circle-container">
+														<div className="data text-xs">{ calculatePercentage( userData.storage_used, userData.total_storage ) }%</div>
+														<div
+															className={ `circle ${
+																calculatePercentage( userData.storage_used, userData.total_storage ) > 90 ? 'red' : ''
+															}` }
+															style={ { '--percentage': calculatePercentage( userData.storage_used, userData.total_storage ) + '%' } }
+														></div>
+													</div>
+													<div className="leading-6">
+														<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
+														<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_storage - userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+														<br />
+														<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+													</div>
 												</div>
-											</div>
-											<div className="flex gap-3 items-center">
-												<div className="circle-container">
-													<div className="data text-xs">{ calculatePercentage( userData.storage_used, userData.total_storage ) }%</div>
-													<div
-														className={ `circle ${
-															calculatePercentage( userData.storage_used, userData.total_storage ) > 90 ? 'red' : ''
-														}` }
-														style={ { '--percentage': calculatePercentage( userData.storage_used, userData.total_storage ) + '%' } }
-													></div>
-												</div>
-												<div className="leading-6">
-													<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
-													<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_storage - userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
-													<br />
-													<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
-												</div>
-											</div>
-										</>
-									)
-								}
-							</div>
-						) }
+											</>
+										)
+									}
+								</div>
+							) }
 					</PanelBody>
 				</Panel>
 			</div>
 
-			{ ! mediaSettings?.general?.is_verified && (
+			{ ! window?.userData?.valid_license && (
 				<Panel
 					header={ __( 'General Settings', 'godam' ) }
 				>

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -22,7 +22,7 @@ const App = () => {
 	const dispatch = useDispatch();
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
 
-	const handleClick = ( id ) => {
+	const handleClick = useCallback( ( id ) => {
 		if ( id === -1 ) {
 			triggerFilterChange( 'all' );
 		} else if ( id === 0 ) {
@@ -32,7 +32,31 @@ const App = () => {
 		}
 
 		dispatch( changeSelectedFolder( { item: { id } } ) );
-	};
+	}, [ dispatch ] );
+
+	useEffect( () => {
+		const urlParams = new URLSearchParams( window.location.search );
+
+		const mode = urlParams.get( 'mode' );
+
+		if ( 'grid' !== mode ) {
+			return;
+		}
+
+		const folderId = urlParams.get( 'media-folder' );
+
+		if ( ! folderId ) {
+			return;
+		}
+
+		if ( 'all' === folderId ) {
+			dispatch( changeSelectedFolder( { item: { id: -1 } } ) );
+		} else if ( 'uncategorized' === folderId ) {
+			dispatch( changeSelectedFolder( { item: { id: 0 } } ) );
+		} else {
+			dispatch( changeSelectedFolder( { item: { id: parseInt( folderId ) } } ) );
+		}
+	}, [ dispatch ] );
 
 	return (
 		<>

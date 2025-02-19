@@ -21,7 +21,7 @@ export const folderApi = createApi( {
 				method: 'POST',
 				body: data,
 				headers: {
-					'X-WP-Nonce': window.wpApiSettings.nonce,
+					'X-WP-Nonce': window.MediaLibrary.nonce,
 				},
 			} ),
 		} ),
@@ -31,7 +31,7 @@ export const folderApi = createApi( {
 				method: 'POST',
 				body: data,
 				headers: {
-					'X-WP-Nonce': window.wpApiSettings.nonce,
+					'X-WP-Nonce': window.MediaLibrary.nonce,
 				},
 			} ),
 		} ),
@@ -43,7 +43,7 @@ export const folderApi = createApi( {
 				},
 				method: 'DELETE',
 				headers: {
-					'X-WP-Nonce': window.wpApiSettings.nonce,
+					'X-WP-Nonce': window.MediaLibrary.nonce,
 				},
 			} ),
 		} ),
@@ -56,7 +56,7 @@ export const folderApi = createApi( {
 					folder_term_id: folderTermId,
 				},
 				headers: {
-					'X-WP-Nonce': window.wpApiSettings.nonce,
+					'X-WP-Nonce': window.MediaLibrary.nonce,
 				},
 			} ),
 		} ),
