@@ -145,7 +145,7 @@ class RT_Transcoder_Handler {
 		);
 
 		// Temporarily inclduing rt-retranscode-admin.php file here.
-		include_once RT_TRANSCODER_PATH . 'admin/rt-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		include_once GODAM_PATH . 'admin/rt-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 		/**
 		 * Allow other plugin and wp-config to overwrite API URL.
@@ -185,7 +185,7 @@ class RT_Transcoder_Handler {
 					// if ( isset( $usage_info[ $this->api_key ]->remaining ) && $usage_info[ $this->api_key ]->remaining > 0 ) {
 
 						// Enable re-transcoding.
-						include_once RT_TRANSCODER_PATH . 'admin/rt-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+						include_once GODAM_PATH . 'admin/rt-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 
 						if ( 'Active' === $usage_info[ $this->api_key ]->status ) {
@@ -453,7 +453,7 @@ class RT_Transcoder_Handler {
 	 */
 	public function nearing_usage_limit( $usage_details ) {
 
-		if ( defined( 'RT_TRANSCODER_NO_MAIL' ) ) {
+		if ( defined( 'GODAM_NO_MAIL' ) ) {
 			return;
 		}
 
@@ -481,7 +481,7 @@ class RT_Transcoder_Handler {
 	 */
 	public function usage_quota_over() {
 
-		if ( defined( 'RT_TRANSCODER_NO_MAIL' ) ) {
+		if ( defined( 'GODAM_NO_MAIL' ) ) {
 			return;
 		}
 
@@ -957,7 +957,7 @@ class RT_Transcoder_Handler {
 	public function add_transcoded_files( $file_post_array, $attachment_id, $job_for = '' ) {
 		$transcoded_files = false;
 		$mail             = true;
-		if ( defined( 'RT_TRANSCODER_NO_MAIL' ) ) {
+		if ( defined( 'GODAM_NO_MAIL' ) ) {
 			$mail = false;
 		}
 		global $wpdb;
@@ -1232,7 +1232,7 @@ class RT_Transcoder_Handler {
 	 * @param  boolean $include_admin   If true then send an email to admin also else not.
 	 */
 	public function send_notification( $email_ids, $subject, $message, $include_admin = true ) {
-		if ( defined( 'RT_TRANSCODER_NO_MAIL' ) ) {
+		if ( defined( 'GODAM_NO_MAIL' ) ) {
 			return;
 		}
 

@@ -798,7 +798,7 @@ add_filter( 'manage_upload_sortable_columns', 'rtt_status_column_register_sortab
 function rtt_enqueue_scripts() {
 
 	if ( current_user_can( 'manage_options' ) ) {
-		wp_register_script( 'rt_transcoder_js', plugins_url( 'js/rt-transcoder.min.js', __FILE__ ), array(), RT_TRANSCODER_VERSION, false );
+		wp_register_script( 'rt_transcoder_js', plugins_url( 'js/rt-transcoder.min.js', __FILE__ ), array(), GODAM_VERSION, false );
 
 		$translation_array = array(
 			'load_flag'      => true,
@@ -815,7 +815,7 @@ function rtt_enqueue_scripts() {
 		// phpcs:enable
 
 		if ( ! is_admin() ) {
-			wp_enqueue_style( 'rt-transcoder-client-style', plugins_url( 'css/rt-transcoder-client.min.css', __FILE__ ), array(), RT_TRANSCODER_VERSION );
+			wp_enqueue_style( 'rt-transcoder-client-style', plugins_url( 'css/rt-transcoder-client.min.css', __FILE__ ), array(), GODAM_VERSION );
 		}
 	}
 }
@@ -835,9 +835,9 @@ add_action( 'enqueue_block_editor_assets', 'rt_transcoder_enqueue_block_editor_a
 function rtt_enqueue_frontend_scripts() {
 	$file_to_use = 'public-assets/js/build/transcoder.min.js';
 
-	$file = path_join( RT_TRANSCODER_PATH, $file_to_use );
+	$file = path_join( GODAM_PATH, $file_to_use );
 	if ( file_exists( $file ) && class_exists( 'RTMedia' ) ) {
-		wp_enqueue_script( 'rt-transcoder-front-js', RT_TRANSCODER_URL . $file_to_use, array( 'jquery', 'rtmedia-backbone' ), filemtime( $file ), true );
+		wp_enqueue_script( 'rt-transcoder-front-js', GODAM_URL . $file_to_use, array( 'jquery', 'rtmedia-backbone' ), filemtime( $file ), true );
 
 		$rest_url_prefix = get_site_url() . '/' . rest_get_url_prefix();
 		wp_localize_script( 'rt-transcoder-front-js', 'rtTranscoder', array( 'restURLPrefix' => $rest_url_prefix ) );
@@ -853,9 +853,9 @@ function rt_transcoder_enqueue_block_editor_assets() {
 	// Enqueue our script.
 	wp_enqueue_script(
 		'rt-transcoder-block-editor-support',
-		esc_url( RT_TRANSCODER_URL . '/assets/build/js/rt-transcoder-block-editor-support.js' ),
+		esc_url( GODAM_URL . '/assets/build/js/rt-transcoder-block-editor-support.js' ),
 		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor' ),
-		RT_TRANSCODER_VERSION,
+		GODAM_VERSION,
 		true
 	);
 
@@ -901,7 +901,7 @@ add_action( 'wp_ajax_checkstatus', 'rtt_ajax_process_check_status_request' );
  */
 function rtt_get_transcoding_status( $post_id ) {
 
-	require_once RT_TRANSCODER_PATH . 'admin/rt-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+	require_once GODAM_PATH . 'admin/rt-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 	$obj    = new RT_Transcoder_Handler( true );
 	$status = $obj->get_transcoding_status( $post_id );
