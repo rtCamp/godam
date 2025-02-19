@@ -28,10 +28,23 @@ const App = () => {
 		if ( id && ! isNaN( id ) ) {
 			setAttachmentID( id );
 		}
+
+		// Handle back/forward navigation
+		const handlePopState = () => {
+			const newParams = new URLSearchParams( window.location.search );
+			const newId = newParams.get( 'id' );
+			setAttachmentID( newId && ! isNaN( newId ) ? newId : null );
+		};
+
+		window.addEventListener( 'popstate', handlePopState );
+		return () => window.removeEventListener( 'popstate', handlePopState );
 	}, [] );
 
 	const handleAttachmentClick = ( id ) => {
 		setAttachmentID( id );
+		const newUrl = new URL( window.location );
+		newUrl.searchParams.set( 'id', id );
+		window.history.pushState( {}, '', newUrl );
 	};
 
 	if ( ! attachmentID ) {
