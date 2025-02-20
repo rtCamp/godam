@@ -9,7 +9,7 @@ jQuery( document ).ready( function( $ ) {
             <div class="rt-godam-modal-wrapper">
                 <div id="deactivation-feedback-popup" class="rt-godam-modal">
                     <div>
-                        <h2>${ rtGoDAM.header_text }</h2>
+                        <h2>${ GoDAMDeactivation.header_text }</h2>
                     </div>
                     <select id="deactivation-reason">
                         <option value="">Select a reason</option>
@@ -27,7 +27,7 @@ jQuery( document ).ready( function( $ ) {
                     </button>
                     <div>
                         <button class="cancel-deactivation" id="cancel-deactivation">Cancel</button>
-                        <button class="submit-feedback" id="submit-feedback">Submit & Deactivate</button>
+                        <button class="submit-feedback" id="submit-feedback" disabled>Submit & Deactivate</button>
                     </div>
                     </div>
                 </div>
@@ -54,6 +54,7 @@ jQuery( document ).ready( function( $ ) {
 		} else {
 			$( '#deactivation-feedback' ).hide();
 		}
+		$( '#submit-feedback' ).prop( 'disabled', false );
 	} );
 
 	// Handle form submission
@@ -64,24 +65,19 @@ jQuery( document ).ready( function( $ ) {
 		const additionalFeedback = document.getElementById( 'deactivation-feedback' );
 		const feedback = additionalFeedback.value; // Get the selected value
 
-		if ( ! selectedReason ) {
-			alert( 'Please select a reason.' );
-			return;
-		}
-
 		const data = {
 			reason: selectedReason,
-			site_url: rtGoDAM.site_url,
+			site_url: GoDAMDeactivation.site_url,
 			user: {
-				name: rtGoDAM.user_name,
-				email: rtGoDAM.user_email,
+				name: GoDAMDeactivation.user_name,
+				email: GoDAMDeactivation.user_email,
 			},
-			nonce: rtGoDAM.nonce,
+			nonce: GoDAMDeactivation.nonce,
 			additional_feedback: feedback,
 		};
 
 		$.ajax( {
-			url: rtGoDAM.api_url,
+			url: GoDAMDeactivation.api_url,
 			method: 'POST',
 			data: JSON.stringify( data ),
 			contentType: 'application/json',

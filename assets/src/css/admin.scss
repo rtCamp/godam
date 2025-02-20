@@ -8,7 +8,7 @@ Write your Sass code here for admin.
 
 /* EasyDAM Tools Submenu Page */
 #easydam-tools-widget .hndle {
-    padding-left: 12px;
+	padding-left: 12px;
 }
 
 #easydam-tools-widget {
@@ -203,11 +203,11 @@ $media-frame-width: calc( 300px + 2 * 24px );
 
 
 .rt-godam-modal {
-    display: flex;
-    flex-direction: column;
+	display: flex;
+	flex-direction: column;
 	gap: 20px;
 	padding: 20px 30px;
-    border-radius: 20px;
+	border-radius: 20px;
 	position: fixed;
 	width: 400px;
 	height: auto;
@@ -217,7 +217,7 @@ $media-frame-width: calc( 300px + 2 * 24px );
 	margin: auto auto;
 	bottom: auto;
 	right: 0;
-    box-shadow: 0 10px 20px rgb(0 0 0 / 19%), 0 6px 6px rgb(0 0 0 / 23%);
+	box-shadow: 0 10px 20px rgb(0 0 0 / 19%), 0 6px 6px rgb(0 0 0 / 23%);
 
 	.button-container {
 		display: flex;
@@ -230,6 +230,10 @@ $media-frame-width: calc( 300px + 2 * 24px );
 			padding: 5px 12px;
 			border-radius: 4px;
 			cursor: pointer;
+
+			&:disabled {
+				background-color: #959292;
+			}
 		}
 
 		.skip-feedback, .cancel-deactivation {

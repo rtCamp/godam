@@ -33,26 +33,26 @@ class Deactivation {
 	public function load_scripts() {
 		global $pagenow;
 
-		wp_register_style( 'godam-deactivation-survey', RT_TRANSCODER_URL . '/assets/src/js/deactivation-feedback.js', array(), wp_rand(), 'all' );
-		wp_register_script( 'godam-deactivation-survey', RT_TRANSCODER_URL . '/assets/src/js/deactivation-feedback.js', array( 'jquery' ), wp_rand(), true );
+		wp_register_style( 'godam-deactivation-survey-style', RT_TRANSCODER_URL . '/assets/src/js/deactivation-feedback.js', filemtime( RT_TRANSCODER_PATH . '/assets/src/js/deactivation-feedback.js' ), wp_rand(), 'all' );
+		wp_register_script( 'godam-deactivation-survey-script', RT_TRANSCODER_URL . '/assets/src/js/deactivation-feedback.js', filemtime( RT_TRANSCODER_PATH . '/assets/src/js/deactivation-feedback.js' ), wp_rand(), true );
 
 		if ( is_admin() && 'plugins.php' === $pagenow ) {
 
-			wp_enqueue_style( 'godam-deactivation-survey' );
-			wp_enqueue_script( 'godam-deactivation-survey' ); 
+			wp_enqueue_style( 'godam-deactivation-survey-style' );
+			wp_enqueue_script( 'godam-deactivation-survey-script' ); 
 
 			$current_user = wp_get_current_user();
 
 			$rt_deactivate = array(
 				'site_url'    => home_url(),
-				'nonce'       => wp_create_nonce( 'godam' ),
+				'nonce'       => wp_create_nonce( 'GoDAMDeactivationFeedback' ),
 				'user_name'   => $current_user->user_nicename,
 				'user_email'  => $current_user->user_email,
 				'header_text' => esc_html__( 'Please let us know why you are deactivating ', 'godam' ),
 				'api_url'     => esc_url( $this->api_url ),
 			);
 
-			wp_localize_script( 'godam-deactivation-survey', 'rtGoDAM', $rt_deactivate );
+			wp_localize_script( 'godam-deactivation-survey-script', 'GoDAMDeactivation', $rt_deactivate );
 		}
 	}
 
@@ -63,7 +63,7 @@ class Deactivation {
 	 */
 	public function godam_send_deactivation_feedback() {
 		// Checking ajax referer.
-		check_ajax_referer( 'godam', 'nonce' );
+		check_ajax_referer( 'GoDAMDeactivationFeedback', 'nonce' );
 
 		if ( ! $_POST['reason'] && empty( $_POST['user'] && ! $_POST['site_url'] ) ) {
 			return;
@@ -87,28 +87,20 @@ class Deactivation {
 			'additional_feedback' => $feedback,
 		);
 
-
-		$api_response = wp_remote_get( $this->api_url );
-
 		$options = array(
-			'body'        => $data,
-			'timeout'     => 60,
-			'redirection' => 5,
-			'httpversion' => '1.0',
-			'sslverify'   => false,
-			'data_format' => 'body',
+			'body' => $data,
 		);
+
 
 		$api_response = wp_remote_post( $this->api_url, $options );
 		$response     = json_decode( wp_remote_retrieve_body( $api_response ) );
 
-		if ( 'integer' === gettype( $response ) ) {
-			echo wp_json_encode( 'success' );
-			wp_die();
+
+		if ( is_int( $response ) ) {
+			wp_send_json_success();
 		}
 
-		echo wp_json_encode( 'failed' );
-		wp_die();
+		wp_send_json_error();
 	}
 }
 
