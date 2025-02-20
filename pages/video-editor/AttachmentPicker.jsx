@@ -13,6 +13,7 @@ import { Icon, search } from '@wordpress/icons';
  * Internal dependencies
  */
 import MediaGrid from './components/media-grid/MediaGrid.jsx';
+import './attachment-picker.scss';
 
 const AttachmentPicker = ( { handleAttachmentClick } ) => {
 	const [ searchTerm, setSearchTerm ] = useState( '' );

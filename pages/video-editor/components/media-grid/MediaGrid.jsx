@@ -77,7 +77,7 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 
 	return (
 		<>
-			<div className="godam-video-list-videos py-2">
+			<div className="godam-video-list-videos">
 				{ attachments.map( ( item, index ) => (
 					<MediaItem
 						key={ item.id }

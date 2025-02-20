@@ -33,7 +33,7 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 
 	const copyLink = ( e ) => {
 		e.preventDefault();
-		navigator.clipboard.writeText( item.link );
+		navigator.clipboard.writeText( item?.url );
 
 		setIsCopied( true );
 
@@ -91,12 +91,12 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 					</div>
 				) }
 
-				<span className="godam-video-list__video__thumbnail__time text-xs text-white font-bold">{ item?.fileLength }</span>
+				{ item?.fileLength && <span className="godam-video-list__video__thumbnail__time text-xs text-white font-bold">{ item?.fileLength }</span> }
 			</div>
 
 			<div className="godam-video-list__video__info">
 				<h3 className="text-sm">{ item?.title }</h3>
-				{ item?.description && <p className="text-xs">{ item.description }</p> }
+				{ item?.description && <p className="text-xs">{ item?.description }</p> }
 			</div>
 		</div>
 	);
