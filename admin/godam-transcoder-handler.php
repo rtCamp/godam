@@ -144,8 +144,8 @@ class RT_Transcoder_Handler {
 			$default_settings
 		);
 
-		// Temporarily inclduing rt-retranscode-admin.php file here.
-		include_once GODAM_PATH . 'admin/rt-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		// Temporarily inclduing godam-retranscode-admin.php file here.
+		include_once GODAM_PATH . 'admin/godam-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 		/**
 		 * Allow other plugin and wp-config to overwrite API URL.
@@ -185,7 +185,7 @@ class RT_Transcoder_Handler {
 					// if ( isset( $usage_info[ $this->api_key ]->remaining ) && $usage_info[ $this->api_key ]->remaining > 0 ) {
 
 						// Enable re-transcoding.
-						include_once GODAM_PATH . 'admin/rt-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+						include_once GODAM_PATH . 'admin/godam-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 
 						if ( 'Active' === $usage_info[ $this->api_key ]->status ) {
