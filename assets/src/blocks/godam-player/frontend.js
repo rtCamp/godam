@@ -23,6 +23,11 @@ import { fas } from '@fortawesome/free-solid-svg-icons';
  */
 import 'quill/dist/quill.snow.css';
 
+/**
+ * Internal dependencies
+ */
+import EasyDAM from '../../../../assets/src/images/EasyDAM.png';
+
 library.add( fas );
 dom.watch();
 
@@ -37,6 +42,10 @@ function easyDAMPlayer() {
 
 		const videoSetupOptions = video.dataset.options
 			? JSON.parse( video.dataset.options )
+			: {};
+
+		const videoSetupControls = video.dataset.controls
+			? JSON.parse( video.dataset.controls )
 			: {
 				controls: true,
 				autoplay: false,
@@ -47,7 +56,7 @@ function easyDAMPlayer() {
 
 		const isPreviewEnabled = videoSetupOptions.preview;
 
-		const player = videojs( video, videoSetupOptions );
+		const player = videojs( video, videoSetupControls );
 
 		let isPreview = null;
 
@@ -151,8 +160,95 @@ function easyDAMPlayer() {
 			stopPreview();
 		} );
 
+		player.ready( function() {
+			const controlBarSettings =
+				videoSetupControls.controlBar;
+
+			// Appearance settings
+
+			// Play button position handling
+			const playButton = player.getChild( 'bigPlayButton' );
+			const alignments = [
+				'left-align',
+				'center-align',
+				'right-align',
+				'top-align',
+				'bottom-align',
+			];
+
+			// Update classes
+			playButton.removeClass( ...alignments ); // Remove all alignment classes
+			if (
+				alignments.includes( `${ controlBarSettings.playButtonPosition }-align` )
+			) {
+				playButton.addClass( `${ controlBarSettings.playButtonPosition }-align` ); // Add the selected alignment class
+			}
+
+			// Control bar and volume panel handling
+			const controlBar = player.controlBar;
+
+			if ( ! controlBarSettings.volumePanel ) {
+				controlBar.removeChild( 'volumePanel' );
+			}
+
+			if ( controlBarSettings.brandingIcon ) {
+				const CustomPlayButton = videojs.getComponent( 'Button' );
+
+				class CustomButton extends CustomPlayButton {
+					constructor( p, options ) {
+						super( p, options );
+						this.controlText( 'Branding' );
+					}
+					// Set the button content
+					createEl() {
+						const el = super.createEl();
+						el.className += ' vjs-custom-play-button';
+						const img = document.createElement( 'img' );
+						if ( 0 === controlBarSettings.customBrandImg.length ) {
+							img.src = EasyDAM;
+						} else {
+							img.src = controlBarSettings.customBrandImg;
+						}
+						img.id = 'branding-icon';
+						img.alt = 'Branding';
+						img.className = 'branding-icon';
+						el.appendChild( img );
+						return el;
+					}
+
+					// Add click event for playback
+					handleClick( event ) {
+						event.preventDefault();
+					}
+				}
+
+				// Register the component before using it
+				videojs.registerComponent( 'CustomButton', CustomButton );
+				controlBar.addChild( 'CustomButton', {} );
+			}
+
+			// Vertical control bar handling
+			if ( controlBarSettings.controlBarPosition === 'vertical' ) {
+				controlBar.addClass( 'vjs-control-bar-vertical' );
+
+				controlBar.children().forEach( ( control ) => {
+					const el = control.el();
+					el.classList.add( 'vjs-control-vertical' );
+
+					if ( el.classList.contains( 'vjs-volume-panel' ) ) {
+						el.classList.add( 'vjs-volume-panel-vertical' );
+						el.classList.remove( 'vjs-volume-panel-horizontal' );
+					}
+
+					if ( el.classList.contains( 'vjs-volume-horizontal' ) ) {
+						el.classList.add( 'vjs-volume-vertical' );
+					}
+				} );
+			}
+		} );
+
 		// Find and initialize layers from easydam_meta
-		const layers = videoSetupOptions.easydam_meta?.layers || [];
+		const layers = videoSetupOptions.layers || [];
 		const formLayers = [];
 		const hotspotLayers = [];
 
@@ -192,8 +288,7 @@ function easyDAMPlayer() {
 						layerElement,
 						displayTime: parseFloat( layer.displayTime ),
 						show: true,
-						allowSkip:
-                layer.allow_skip !== undefined ? layer.allow_skip : true,
+						allowSkip: layer.allow_skip !== undefined ? layer.allow_skip : true,
 					} );
 				}
 			} else if ( layer.type === 'hotspot' ) {
@@ -225,9 +320,7 @@ function easyDAMPlayer() {
 				const observer = new MutationObserver( ( mutations ) => {
 					mutations.forEach( ( mutation ) => {
 						if (
-							layerObj.layerElement.querySelector(
-								'.gform_confirmation_message',
-							)
+							layerObj.layerElement.querySelector( '.gform_confirmation_message' )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';

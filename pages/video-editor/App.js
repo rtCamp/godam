@@ -13,7 +13,8 @@ import '../../assets/build/blocks/godam-player/style-index.css';
 /**
  * WordPress dependencies
  */
-import AttachmentGrid from './AttachmentGrid.jsx';
+import AttachmentPicker from './AttachmentPicker.jsx';
+import GodamHeader from '../godam/GodamHeader';
 
 const App = () => {
 	const [ attachmentID, setAttachmentID ] = useState( null );
@@ -27,22 +28,36 @@ const App = () => {
 		if ( id && ! isNaN( id ) ) {
 			setAttachmentID( id );
 		}
+
+		// Handle back/forward navigation
+		const handlePopState = () => {
+			const newParams = new URLSearchParams( window.location.search );
+			const newId = newParams.get( 'id' );
+			setAttachmentID( newId && ! isNaN( newId ) ? newId : null );
+		};
+
+		window.addEventListener( 'popstate', handlePopState );
+		return () => window.removeEventListener( 'popstate', handlePopState );
 	}, [] );
 
 	const handleAttachmentClick = ( id ) => {
 		setAttachmentID( id );
+		const newUrl = new URL( window.location );
+		newUrl.searchParams.set( 'id', id );
+		window.history.pushState( {}, '', newUrl );
 	};
 
 	if ( ! attachmentID ) {
 		return (
-			<AttachmentGrid handleAttachmentClick={ handleAttachmentClick } />
+			<>
+				<GodamHeader />
+				<AttachmentPicker handleAttachmentClick={ handleAttachmentClick } />
+			</>
 		);
 	}
 
 	return (
-		<>
-			<VideoEditor attachmentID={ attachmentID } />
-		</>
+		<VideoEditor attachmentID={ attachmentID } />
 	);
 };
 

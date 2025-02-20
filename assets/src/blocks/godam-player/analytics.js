@@ -46,17 +46,7 @@ function playerAnalytics() {
 
 	videos.forEach( ( video ) => {
 		// read the data-setup attribute.
-
-		const videoSetupOptions = video.dataset.setup
-			? JSON.parse( video.dataset.setup )
-			: {
-				controls: true,
-				autoplay: false,
-				preload: 'auto',
-				fluid: true,
-			};
-
-		const player = videojs( video, videoSetupOptions );
+		const player = videojs( video );
 
 		window.addEventListener( 'beforeunload', () => {
 			const played = player.played();

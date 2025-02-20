@@ -1,232 +1,146 @@
-# Transcoder #
+![Banner V3](https://github.com/user-attachments/assets/1c2cdf13-5cab-432a-b548-34cd3876e93f)
+# GoDAM
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar
 
-Transcoding services for ANY WordPress website. Convert audio/video files of any format to a web-friendly format (mp3/mp4).
+Tags: media, multimedia, audio, songs, music, video, ffmpeg, media-node, rtMedia, WordPress, transcode, transcoder, encoding, encode, transcoder, DAM, audio video conversion, digital asset management
 
+Requires at least: 6.5
 
-<a href="https://rtcamp.com/?utm_source=github&utm_medium=readme" rel="nofollow"><img src="https://rtcamp.com/wp-content/uploads/sites/2/2019/04/github-banner@2x.png" alt="Handcrafted Enterprise WordPress Solutions by rtCamp" /></a>
+Tested up to: 6.7.1
 
-<p align="center">
- <img src="https://rtmedia.io/wp-content/uploads/2016/08/trancoder-banner-01.png" alt="Transcoder Banner"/>
-</p>
+Requires PHP: 7.4
 
-* **Contributors:** [rtcamp](http://profiles.wordpress.org/rtcamp), [mangeshp](http://profiles.wordpress.org/mangeshp), [chandrapatel](http://profiles.wordpress.org/chandrapatel), [manishsongirkar36](http://profiles.wordpress.org/manishsongirkar36), [bhargavbhandari90](http://profiles.wordpress.org/bhargavbhandari90), [kiranpotphode](http://profiles.wordpress.org/kiranpotphode), [thrijith](http://profiles.wordpress.org/thrijith), [devikvekariya](http://profiles.wordpress.org/devikvekariya), [sagarnasit](http://profiles.wordpress.org/sagarnasit), [sudhiryadav](http://profiles.wordpress.org/sudhiryadav), [sid177](https://profiles.wordpress.org/sid177/), [pooja1210](https://profiles.wordpress.org/pooja1210/), [vaishu.agola27](https://profiles.wordpress.org/vaishuagola27/), [ravatparmar](https://profiles.wordpress.org/ravatparmar/), [tremidkhar](https://profiles.wordpress.org/tremidkhar/), [utsavladani](https://profiles.wordpress.org/utsavladani/), [vishalkakadiya](https://profiles.wordpress.org/vishalkakadiya/), [pavanpatil1](https://profiles.wordpress.org/pavanpatil1/), [akrocks](https://profiles.wordpress.org/akrocks/), [hrithikd](https://profiles.wordpress.org/hrithikd/), [sohampate1](https://profiles.wordpress.org/sohampate1/)
+Stable tag: 1.0.0
 
-* **License:** [GPL v2 or later]( http://www.gnu.org/licenses/gpl-2.0.html)
+License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
-## Description ##
-Transcoder easily converts all audio and video files uploaded to your website to a web-friendly format.
+Seamlessly manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, gravity forms integration, and ad integration.
 
-Transcoder eliminates the need for a dedicated media node- no fiddling with installation, managing dependancies or renting servers! Transcoder also works on shared hosting- just install, subscribe and go!
+## Description
+[GoDAM](https://godam.io/) is a powerful digital asset management solution designed to provide automatic transcoding, adaptive bitrate streaming, and interactive video layers to enhance viewer engagement. It simplifies the entire video workflow, from upload to optimized playback, ensuring smooth delivery across all devices and network conditions.
 
-All transcoding services are available via a subscription plan through this plugin.
-Subscribe to our free plan from the plugin's settings or from our [product page](https://rtmedia.io/transcoder/?utm_source=readme&utm_medium=plugin&utm_campaign=transcoder). Note that Transcoder will not provide any services without a subscription plan.
+With GoDAM, WordPress users can leverage advanced video capabilities without requiring extensive technical expertise. It automates the conversion of uploaded videos into multiple resolutions, enabling seamless playback with adaptive bitrate streaming. The integration of interactive elements such as CTAs, forms, hotspots and ads makes GoDAM an all-in-one solution for content creators, marketers, and eCommerce businesses.
 
-#### Supported input media types: ####
-* Audio: mp3, m4a, wav, ogg, wma
-* Video: 3g2, 3gp, avi, flv, m4v, mp4, mpg, ogv, webm, wmv
+### Key Features
 
-#### Supported output media types: ####
-* Audio: mp3
-* Video: mp4
+📌 Media Management
+- The DAM functionality streamlines file organization for websites with large libraries of images, videos, documents, and more.
+- Organize media assets efficiently with enhanced WordPress Media Library integration.
 
-Create the ultimate niche community by combining Transcoder with our [rtMedia](https://wordpress.org/plugins/buddypress-media/) plugin. Transcoder works perfectly with rtMedia to create a social experience that is accessible across all desktop and mobile devices.
+📌 Interactive Video Layers for Engagement
+- Embed clickable CTAs to drive actions like sign-ups and purchases.
+- Enhance your videos with customizable hotspots that deliver additional context, links, and information exactly when and where your viewers need it. (Pro)
+- Integrate Gravity Forms to collect user feedback and lead data within videos. (Pro)
 
-#### Transcoder Features ####
-1. **Works with ANY WordPress website** - Transcoder plugs into your current website seamlessly, instantly improving user audio/video experience.
-2. **rtMedia integration** - Works perfectly with our own [rtMedia](https://rtmedia.io/?utm_source=readme&utm_medium=plugin&utm_campaign=transcoder), for a complete social media platform.
-3. **Thumbnail generation** - Automatically generate up to 10 thumbnails for every video, from which your users can choose one.
-4. **[rt_media] shortcode** - Use our shortcode to display transcoded audio/video file on any post or page. For example, [rt_media attachment_id=xx] the attachment_id parameter specifies the file to be displayed.
+📌 Smart Transcoding & Adaptive Bitrate Streaming (Pro)
+- Automatically converts videos into multiple resolutions (240p to 4K).
+- Ensures smooth playback by dynamically adjusting quality based on network speed.
+- Supports MP4, WebM, and other common video formats for maximum compatibility.
 
-#### Privacy Warning ####
-In order for us to transcode your media files, we need to copy it over to our server.
-After transcoding is completed, the media can reside on our server for a maximum of 24 hours, before it is permanently and irreversibly removed by a Cron job.
+📌 Seamless Ad Monetization (Pro)
+- Supports self-hosted ads and third-party ad networks.
+- Flexible ad placements (pre-roll, mid-roll, post-roll) to maximize revenue.
+- Boost revenue and engagement with clickable ad redirections
 
-#### Future Roadmap ####
-* Additional output formats for video- ogg, webm
-* Downsampling capabilities for output video resolution
-* RESTful API
+📌 Customizable Video Player Experience
+- Fully customizable playback controls, branding, and player themes.
+- Enable video looping, autoplay, and inline play for better user experience.
+- Watermarking support to protect video content. (Pro)
 
-#### Important Links ####
-* [Project Homepage](https://rtmedia.io/transcoder/?utm_source=readme&utm_medium=plugin&utm_campaign=transcoder "Visit Transcoder's Homepage")
-* [Documentation](https://rtmedia.io/docs/transcoder/?utm_source=readme&utm_medium=plugin&utm_campaign=transcoder "Visit Transcoder's Documentation page")
-* [FAQ](https://rtmedia.io/transcoder/?utm_source=readme&utm_medium=plugin&utm_campaign=transcoder#frequently-asked-questions "Visit FAQ page")
-* [GitHub](https://github.com/rtCamp/transcoder/) - Please mention your wordpress.org username when sending pull requests.
+📌 Video Analytics (Pro)
+- Monitor viewer behavior and engagement through detailed metrics and heatmaps.
+- Track video interactions to optimize content strategy.
+- Gain insights into user retention and conversion rates.
 
-## Installation ##
-* Install the plugin from the 'Plugins' section in your dashboard (Go to `Plugins > Add New > Search` and search for "Transcoder").
-* Alternatively, you can download the plugin from this [plugin directory](http://downloads.wordpress.org/plugin/transcoder.zip "Download Transcoder"). After downloading, unzip and upload it to the plugins folder of your WordPress installation (`wp-content/plugins/` directory of your WordPress installation).
-* Activate it through the 'Plugins' section.
+### Primary Benefits:
+- Simplifies asset management with automated transcoding and adaptive streaming.
+- Enhances viewer engagement with interactive layers like forms, CTAs, and hotspots.
+- Integrates seamlessly with WordPress for a familiar and user-friendly experience.
 
-## Frequently Asked Questions ##
-Please visit [FAQ page](https://rtmedia.io/transcoder/?utm_source=readme&utm_medium=plugin&utm_campaign=transcoder#frequently-asked-questions "Visit FAQ page").
-Read [Documentation](https://rtmedia.io/docs/transcoder/?utm_source=readme&utm_medium=plugin&utm_campaign=transcoder "Visit Transcoder's Documentation page")
+### Secondary Benefits:
+- Cost-efficient pricing tailored to your actual usage.
+- Scalable features suitable for small businesses, educators, and enterprise-level users.
+- Monetization opportunities through ad placement and e-commerce integrations.
 
-## Screenshots ##
-1. Transcoder Settings
+### Use Cases:
+- Education: Deliver interactive video lessons with forms for quizzes or feedback.
+- E-commerce: Use video hotspots to enable in-video product purchases.
+- Marketing: Engage viewers with CTAs and lead capture forms.
+- Content Platforms: Stream high-quality videos with minimal buffering and downtime.
 
-## Changelog ##
-#### 1.3.6 [February 27, 2024] ####
+GoDAM is ideal for businesses, content creators, educators, and media platforms looking to streamline digital asset management while offering high-quality streaming experiences.
+Whether you’re running an e-learning site, an eCommerce store with product videos, or a media-heavy blog, GoDAM ensures your videos are delivered efficiently and engagingly.
 
-* FIXED
+Get started today and revolutionize the way you manage and deliver video content on WordPress!
 
- * Enhance security checks.
+### Pricing Plans
+[View Pricing Plans](https://godam.io/#pricing)
 
+- **7-Day Free Trial** available for each subscription plan.
+- Flexible pricing options to suit different needs.
+- Upgrade or cancel anytime based on usage.
 
-#### 1.3.5 [October 20, 2023] ####
+## Installation
+Method 1: WordPress Dashboard
+1. Log in to WordPress (your-site.com/wp-admin).
+2. Go to Plugins → Add New.
+3. Search for GoDAM, click Install Now, then Activate.
 
-* FIXED
+Method 2: Manual Upload
+1. Download the GoDAM plugin ZIP.
+2. In WordPress, go to Plugins → Add New → Upload Plugin.
+3. Select the ZIP file, click Install Now, then Activate.
 
- * Compatible with PHP8.1
- * Enhance security checks and fixed deprecation errors.
- * Fixed rtMedia attachment shortcode issue.
- * Fixed cancelled the subscription message issue.
- * Add support for custom API endpoint to transcode media.
+The GoDAM menu should appear on your admin dashboard!
 
-#### 1.3.4 [August 17, 2021] ####
+## Frequently Asked Questions
+Q. What is GoDAM, and how does it work?
+A. GoDAM is a media management service that seamlessly integrates with your WordPress site to optimize and enhance your audio and video content. It automatically converts uploaded audio files to MP3 and video files to MP4 formats. Additionally, GoDAM offers a suite of powerful features, including thumbnail generation, shortcode support, customizable video layers (like Gravity Forms, text/image CTAs, video hotspots, and ads), adaptive bitrate streaming for smooth playback, and advanced asset management tools.
 
-* FIXED
+To get started, you just need to install the GoDAM plugin on your WordPress website and subscribe to a plan. Once set up, GoDAM helps you manage, edit, and deliver media content more efficiently, making it a perfect solution for creators, educators, and businesses.
 
- * Transcoder plugin preventing read more from expanding
- * Compatibility with WordPress 5.8 and PHP 8.0
-
-#### 1.3.3 [April 13, 2021] ####
-
-* FIXED
-
- * License cannot be saved if the WordPress installation is in the sub-directory
-
-#### 1.3.2 [January 12, 2021] ####
-
-* FIXED
-
- * The conflict with temp_filename filter and modified the filter
- * Compatibility issues with WordPress 5.6
- * Conflicts with WP Job Manager plugin
- * PHP Notices and Warnings
-
-#### 1.3.1 [August 14, 2020] ####
-
-* ENHANCEMENTS
-
- * Update thumbnails after video is transcoded on BuddyPress’ activity and rtMedia’s media page.
-
-* FIXED
-
- * Compatibility issues with WordPress 5.5
- * PHP Notices and Warnings
- * PHPCS issues
-
-#### 1.3 [October 8, 2019] ####
-
-* NEW FEATURES
-
- * Extend Video mime types, to facilitate selection and transcoding of Videos in AMP Stories.
-
-#### 1.2.2 [July 12, 2018] ####
-
-* FIXED
-
- * Issue with Transcoding service on load balancing server
-
-#### 1.2.1 [June 26, 2018] ####
-* ENHANCEMENTS
-
- * Updated usage of existing filter 'rtt_transcoder_status_message' [Documentation](https://rtmedia.io/docs/transcoder/developers-documentation/filters/#rtttranscoderstatusmessage)
-
-* FIXED
-
- * Issue with Transcoding service usage update
- * Issue with Transcoding process callback
-
-#### 1.2 [April 24, 2018] ####
-* NEW FEATURES
-
- * Added feature to track real-time transcoding process status on BuddyPress activity, media library page and media single page for administrators
- * Added option in transcoder settings page to enable/disable tracking of real-time transcoding process status feature
- * Added filter to change text of check status button [Documentation](https://rtmedia.io/docs/transcoder/developers-documentation/filters/#rtttranscodercheckstatusbuttontext)
- * Added filter to manage transcoding process status messages [Documentation](https://rtmedia.io/docs/transcoder/developers-documentation/filters/#rtttranscoderstatusmessage)
-
-* ENHANCEMENTS
-
- * Improved security of callback handler for transcoded media
-
-* FIXED
-
- * PHP notices generated while activating product license key
- * Transcoding issue for MOV file formats
- * Transcoding issue for the files having QuickTime MIME type
- * Issue with transcoded video files getting swapped in BuddyPress activity
-
-#### 1.1.2 [July 21, 2017] ####
-* ENHANCEMENTS
-
- * Added: Filter to allow adding a custom filename for the transcoded files [Documentation](https://rtmedia.io/docs/transcoder/developers-documentation/filters/#transcodedtempfilename)
- * Replaced file_get_contents() with wp_remote_get() to have better server compatibility
-
-#### 1.1.1 [Jan 10, 2017] ####
-* FIXED
-
- * False positive result of localhost checking
-
-#### 1.1 [Dec 27, 2016] ####
-* NEW FEATURES
-
- * Retranscoding service to regenerate media thumbnails and retranscode media
- * Added option in settings to override the current video thumbnail after retranscoding
-
-* ENHANCEMENTS
-
- * Added filters to disable the emails getting sent to users and administrators [Documentation](https://rtmedia.io/docs/transcoder/developers-documentation/filters/#rttsendnotification)
- * Added action before the transcoded thumbnails are stored
- * Added action before transcoded media is stored
- * Added action after callback response is processed
-
-* FIXED
-
- * Improved the condition checking and fixed several bugs
- * Fixed transcoded media not getting deleted bug
-
-#### 1.0.8 [Oct 05, 2016] ####
-* Update the notice messages
-* Fix broken media URL on multisite
-
-#### 1.0.7 [Sep 27, 2016] ####
-* Fix language directory path
-* Fix localhost check bug
-* Update URLs of multiple media present in single activity
-* Fix waiting message for files sent to the transcoder
-* Remove all the actions from function file and moved them to the actions file
-* Add new action when video thumbnail is set for video
-* Add thumbnail automatically for the videos uploaded from the rtmedia shortcode
-
-#### 1.0.6 [Sep 12, 2016] ####
-* Fix usage bar style issue
-* Display notice message when user trie to activate the transcoding service on local host
-* Add filters for transcoded media URLs
-* Transcoded thumbnails for videos uploaded from rtMedia plugin will get stored in respective members upload folder
-
-#### 1.0.5 [Sep 01, 2016] ####
-* Fix backward compatibility for PHP v5.3
-* Delete transcoded files when attachment is deleted
-* Display notice message to subscribe the transcoding service
-
-#### 1.0.4 [Aug 31, 2016] ####
-* Add rtt_wp_parse_url function to parse URL to add backward compatibility
-* Fix media is transcoding message bug
-
-#### 1.0.3 [Aug 30, 2016] ####
-* Remove warnings and notices related to the activity and media related pages
-* Show default media thumbnail when poster attribute is empty
-
-#### 1.0.2 [Aug 25, 2016] ####
-* Show message in rtMedia buddypress activity when media is sent to the transcoder
-* Remove notices and warnings
-* Update transcoded audio file URL in rtMedia activity
-
-#### 1.0.1 [Aug 24, 2016] ####
-* Add backward compatibility
-
-#### 1.0.0 ####
-Initial release
-
-Transcoder 1.3.2, with WordPress 5.6 compatibility and some minor fixes and modification of transcoded_temp_filename filter.
+Q. Which file types are supported?
+A. GoDAM converts all supported audio files to MP3 format and video files to MP4 format.
+Supported input formats:
+• Audio: MP3, M4A, WAV, OGG, WMA
+• Video: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, MPG, OGV, WEBM, WMV
+
+Q. Who is GoDAM designed for?
+A. Our solution is perfect for content creators, marketers, educators, e-commerce businesses, and anyone looking to enhance their video strategy with customizable and interactive features.
+
+Q. What are Video Layers, and how do they work?
+A. Video Layers allow you to add interactive elements like forms, CTAs, ads, and hotspots directly onto your videos. For example, you can pause a video to collect leads using Gravity Forms or display a call-to-action at a specific timestamp.
+
+Q. What is adaptive bitrate streaming?
+A. Adaptive bitrate streaming ensures that viewers get the best possible video quality based on their network conditions. It adjusts the resolution dynamically, providing a seamless viewing experience even on slower connections.
+
+Q. Can I customize the video player?
+A. Yes, our customizable player allows you to tailor the controls, branding, and features to match your unique requirements and branding guidelines.
+
+Q. Is there a free trial available?
+A. Yes! You can start with a 7-day free trial to explore all features. If you decide not to continue with the subscribed plan, you can cancel anytime and remove your credit card.
+
+Q. Can I track video engagement and analytics?
+A. Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and heatmaps to see which parts of your videos are most engaging. These insights help you optimize your content strategy.
+
+### Screenshots
+1. General Settings
+2. Video Settings
+3. Video Editor
+4. Gravity Forms integration
+5. CTA Layer
+6. Hotspot Layer
+7. Ads integration
+8. Player Settings
+9. Enhanced Media Library
+
+## Changelog
+1.0.0 [Feb 2025]
+- Initial release of GoDAM plugin.
+- Automatic transcoding for audio and video files.
+- Adaptive bitrate streaming for smooth playback.
+- Interactive video layers (CTAs, forms, hotspots, ads).
+- Customizable video player with branding options.
+- Cloud storage and CDN integration.
+- Advanced analytics and engagement tracking.
+- Enhanced WordPress Media Library for better asset management.

@@ -1,18 +1,21 @@
 @media screen and (max-width: 782px) {
-	.auto-fold .media-modal.wp-core-ui, .media-modal-backdrop {
-	  margin-left: 0 !important;
+	.auto-fold .media-modal.wp-core-ui,
+	.media-modal-backdrop {
+		margin-left: 0 !important;
 	}
 }
-  
+
 @media screen and (max-width: 960px) {
-	.auto-fold .media-modal.wp-core-ui, .media-modal-backdrop {
-	  margin-left: 36px;
+	.auto-fold .media-modal.wp-core-ui,
+	.media-modal-backdrop {
+		margin-left: 36px;
 	}
 }
-  
+
 .folded .media-modal.wp-core-ui {
 	margin-left: 36px;
 }
+
 .folded .media-modal-backdrop {
 	margin-left: 36px;
 }
@@ -31,6 +34,7 @@
 		border-radius: 0.5rem;
 	}
 }
+
 .media-modal-backdrop {
 	margin-left: 160px;
 	margin-top: var(--wp-admin--admin-bar--height, 32px);
@@ -66,7 +70,8 @@
 
 		&::before {
 			content: '';
-			background-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));;
+			background-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+			;
 			position: absolute;
 			left: 0;
 			top: 0;
@@ -85,15 +90,17 @@
 			appearance: none;
 			width: 0;
 			height: 12px;
-			background: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));;
+			background: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+			;
 			cursor: pointer;
 		}
-	
+
 		&::-moz-range-thumb {
 			width: 0;
 			height: 12px;
 			border-radius: 50%;
-			background: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));;
+			background: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+			;
 			cursor: pointer;
 		}
 	}
@@ -131,17 +138,22 @@
 			background-color: rgb(255, 177, 31);
 			box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 			z-index: 99;
-			.layer-indicator--container{
+
+			.layer-indicator--container {
 				display: block;
 			}
+
 			width: var(--hover-width, 8px);
+
 			.layer-indicator--container {
 				.icon {
 					border-radius: 0.5rem;
+
 					div {
 						display: flex;
 					}
 				}
+
 				.info {
 					display: flex;
 				}
@@ -231,5 +243,11 @@
 
 	@media screen and (max-width: 782px) {
 		margin-left: 0;
+	}
+}
+
+.easydam-settings {
+	&-header {
+		background: #fff;
 	}
 }

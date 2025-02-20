@@ -346,6 +346,9 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 					className="easydam-layer hotspot-layer"
 					style={ { backgroundColor: layer.bg_color || 'transparent' } }
 				>
+					<div
+						className="absolute inset-0 bg-transparent z-10 pointer-events-auto"
+					></div>
 					{ hotspots.map( ( hotspot, index ) => {
 						const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
 						const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;

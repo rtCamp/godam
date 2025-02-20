@@ -289,6 +289,8 @@ class RT_Transcoder_Handler {
 			$rtt_use_watermark_image        = $this->easydam_settings['video']['use_watermark_image'];
 			$rtt_watermark_text             = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
 			$rtt_watermark_url              = esc_url( $this->easydam_settings['video']['watermark_url'] );
+			$rtt_abs_resolutions            = $this->easydam_settings['video']['video_quality'] ?? [];
+			$rtt_abs_resolutions			= array_map( 'intval', $rtt_abs_resolutions );
 
 			$watermark_to_use = array();
 
@@ -323,6 +325,7 @@ class RT_Transcoder_Handler {
 						'thumbnail_count' => $options_video_thumb,
 						'stream'          => boolval( $rtt_adaptive_bitrate_streaming ),
 						'watermark'       => boolval( $rtt_watermark ),
+						'resolutions'     => $rtt_abs_resolutions,
 					),
 					$watermark_to_use
 				),
@@ -434,22 +437,11 @@ class RT_Transcoder_Handler {
 	 * @return array $usage_info  An array containing usage information.
 	 */
 	public function update_usage( $key ) {
-		$usage_url = trailingslashit( $this->transcoding_api_url ) . 'resource/License/' . $key;
-		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
-			$usage_page = vip_safe_wp_remote_get( $usage_url, '', 3, 3 );
-		} else {
-			$usage_page = wp_safe_remote_get( $usage_url ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
-		}
-		if ( ! is_wp_error( $usage_page ) ) {
-			$usage_info = json_decode( $usage_page['body'] );
-			$usage_info = $usage_info->data;
-		} else {
-			$usage_info = null;
-		}
 
-		update_site_option( 'rt-transcoding-usage', array( $key => $usage_info ) );
+		$response = rtt_verify_license($key);
+		update_site_option( 'rt-transcoding-usage', array( $key => (object) $response['data'] ) );
 
-		return $usage_info;
+		return $response;
 	}
 
 	/**

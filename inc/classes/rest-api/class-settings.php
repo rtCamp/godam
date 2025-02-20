@@ -207,13 +207,17 @@ class Settings extends Base {
 		$result = rtt_verify_license( $license_key, true );
 
 		if ( is_wp_error( $result ) ) {
+
+			$error_data = $result->get_error_data();
+			$status_code = is_array($error_data) && isset($error_data['status']) ? $error_data['status'] : 500;
+
 			return new \WP_REST_Response(
 				array(
 					'status'  => 'error',
 					'message' => $result->get_error_message(),
 					'code'    => $result->get_error_code(),
 				),
-				$result->get_error_data( 'status' ) ?? 500
+				$status_code
 			);
 		}
 
@@ -240,6 +244,9 @@ class Settings extends Base {
 		// Delete the license key from the database.
 		$deleted_key   = delete_site_option( 'rt-transcoding-api-key' );
 		$deleted_token = delete_site_option( 'rt-transcoding-account-token' );
+		
+		// Delete the user data from the site_option.
+		delete_site_option( 'godam_user_data' );
 
 		if ( $deleted_key || $deleted_token ) {
 			return new \WP_REST_Response(
