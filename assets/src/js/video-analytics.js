@@ -209,7 +209,7 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 		} );
 
 		const response = await fetch(
-			`/wp-json/easydam/v1/analytics/fetch?${ params.toString() }`,
+			`/wp-json/godam/v1/analytics/fetch?${ params.toString() }`,
 			{
 				method: 'GET',
 				headers: {

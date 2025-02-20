@@ -140,7 +140,7 @@ class Assets {
 			'easydam-media-library',
 			'transcoderSettings',
 			array(
-				'restUrl' => esc_url_raw( rest_url( 'easydam/v1/transcoding/transcoding-status' ) ),
+				'restUrl' => esc_url_raw( rest_url( 'godam/v1/transcoding/transcoding-status' ) ),
 				'nonce'   => wp_create_nonce( 'wp_rest' ),
 			)
 		);

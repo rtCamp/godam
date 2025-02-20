@@ -119,7 +119,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	};
 
 	const fetchGravityForms = () => {
-		axios.get( '/wp-json/easydam/v1/gforms?fields=id,title,description' )
+		axios.get( '/wp-json/godam/v1/gforms?fields=id,title,description' )
 			.then( ( response ) => {
 				const data = response.data;
 				dispatch( setGravityForms( data ) );

@@ -70,7 +70,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		if ( attachment?.attributes?.type !== 'video' ) {
 			return null;
 		}
-		return this.fetchData( '/wp-json/easydam/v1/media-library/get-video-thumbnail', attachmentId );
+		return this.fetchData( '/wp-json/godam/v1/media-library/get-video-thumbnail', attachmentId );
 	},
 
 	/**
@@ -80,7 +80,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @return {Promise<Object|null>} - The fetched EXIF data or null.
 	 */
 	getExifDetails( attachmentId ) {
-		return this.fetchData( '/wp-json/easydam/v1/media-library/get-exif-data', attachmentId );
+		return this.fetchData( '/wp-json/godam/v1/media-library/get-exif-data', attachmentId );
 	},
 
 	/**
@@ -138,7 +138,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				/**
 				 * Send a POST request to the server to set the selected thumbnail for the video.
 				 */
-				fetch( `${ window.location.origin }/wp-json/easydam/v1/media-library/set-video-thumbnail`, {
+				fetch( `${ window.location.origin }/wp-json/godam/v1/media-library/set-video-thumbnail`, {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
