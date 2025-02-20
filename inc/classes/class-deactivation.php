@@ -33,12 +33,10 @@ class Deactivation {
 	public function load_scripts() {
 		global $pagenow;
 
-		wp_register_style( 'godam-deactivation-survey-style', RT_TRANSCODER_URL . '/assets/src/js/deactivation-feedback.js', filemtime( RT_TRANSCODER_PATH . '/assets/src/js/deactivation-feedback.js' ), wp_rand(), 'all' );
 		wp_register_script( 'godam-deactivation-survey-script', RT_TRANSCODER_URL . '/assets/src/js/deactivation-feedback.js', filemtime( RT_TRANSCODER_PATH . '/assets/src/js/deactivation-feedback.js' ), wp_rand(), true );
 
 		if ( is_admin() && 'plugins.php' === $pagenow ) {
-
-			wp_enqueue_style( 'godam-deactivation-survey-style' );
+			
 			wp_enqueue_script( 'godam-deactivation-survey-script' ); 
 
 			$current_user = wp_get_current_user();
