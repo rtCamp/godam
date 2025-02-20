@@ -3,8 +3,8 @@
 # The difference is that this script lives in the plugin's git repo & doesn't require an existing SVN repo.
 
 # main config
-export PLUGINSLUG="transcoder"  #must match with wordpress.org plugin slug
-export MAINFILE="rt-transcoder.php" # this should be the name of your main php file in the wordpress plugin
+export PLUGINSLUG="godam"  #must match with wordpress.org plugin slug
+export MAINFILE="godam.php" # this should be the name of your main php file in the wordpress plugin
 #SVNUSER="rtcamp" # your svn username
 
 ##### YOU CAN STOP EDITING HERE #####

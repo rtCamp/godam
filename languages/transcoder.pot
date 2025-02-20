@@ -662,10 +662,10 @@ msgstr ""
 msgid "Your server should be ready to receive the transcoded file."
 msgstr ""
 
-#: rt-transcoder.php:83
+#: godam.php:83
 msgid "Settings"
 msgstr ""
 
-#: rt-transcoder.php:88
+#: godam.php:88
 msgid "Docs"
 msgstr ""

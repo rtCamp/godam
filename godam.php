@@ -6,7 +6,7 @@
  * Version: 1.0.0
  * Text Domain: godam
  * Author: rtCamp
- * Author URI: https://rtcamp.com/?utm_source=dashboard&utm_medium=plugin&utm_campaign=transcoder
+ * Author URI: https://rtcamp.com/?utm_source=dashboard&utm_medium=plugin&utm_campaign=godam
  * Domain Path: /languages/
  * License: GPLv2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -81,7 +81,7 @@ $rt_transcoder_admin = new RT_Transcoder_Admin();
  */
 function rtt_action_links( $links, $file ) {
 	// Return normal links if not plugin.
-	if ( plugin_basename( 'easydam/rt-transcoder.php' ) !== $file ) {
+	if ( plugin_basename( 'godam/godam.php' ) !== $file ) {
 		return $links;
 	}
 
