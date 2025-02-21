@@ -182,7 +182,7 @@ $media-frame-width: calc( 300px + 2 * 24px );
 	&--failed {
 
 		.transcoding-status__loader {
-			--status-text: "Failed";
+			--status-text: "Transcoding Failed";
 
 			svg {
 				// Change the svg to red.
