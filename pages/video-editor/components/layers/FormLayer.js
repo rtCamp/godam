@@ -9,7 +9,7 @@ import Editor from '@monaco-editor/react';
 /**
  * WordPress dependencies
  */
-import { Button, SelectControl, ToggleControl, ComboboxControl, TextareaControl, Modal, Panel, PanelBody, PanelRow } from '@wordpress/components';
+import { Button, SelectControl, ToggleControl, ComboboxControl, TextareaControl, Modal, Panel, PanelBody, Notice, TextControl } from '@wordpress/components';
 import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
@@ -73,6 +73,8 @@ const FormLayer = ( { layerID, goBack } ) => {
 		} );
 	};
 
+	const isValidLicense = window?.videoData?.valid_license;
+
 	return (
 		<>
 			<div className="flex justify-between items-center pb-3 border-b mb-3">
@@ -94,8 +96,19 @@ const FormLayer = ( { layerID, goBack } ) => {
 			</div>
 
 			{
+				! isValidLicense &&
+				<Notice
+					className="mb-4"
+					status="warning"
+					isDismissible={ false }
+				>
+					{ __( 'This features is available in premium version', 'godam' ) }
+				</Notice>
+			}
+
+			{
 				forms.length > 0 &&
-					<GravityFormSelector className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
+					<GravityFormSelector disabled={ ! isValidLicense } className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<SelectControl
@@ -106,6 +119,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 				onChange={ ( value ) =>
 					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
 				}
+				disabled={ ! isValidLicense }
 			/>
 
 			<ToggleControl
@@ -116,6 +130,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
 				}
 				help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
+				disabled={ ! isValidLicense }
 			/>
 
 			<Panel className="-mx-4 border-x-0">
@@ -132,21 +147,25 @@ const FormLayer = ( { layerID, goBack } ) => {
 						label={ __( 'Layer background color', 'godam' ) }
 						enableAlpha={ true }
 						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
+						disabled={ ! isValidLicense }
 					/>
 
 					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'godam' ) }</label>
-					<Editor
-						id="custom-css"
-						className="code-editor"
-						defaultLanguage="css"
-						options={ {
-							minimap: { enabled: false },
-						} }
-						defaultValue={ layer.custom_css }
-						onChange={ ( value ) =>
-							dispatch( updateLayerField( { id: layer.id, field: 'custom_css', value } ) )
-						}
-					/>
+
+					<div className={ ! isValidLicense ? 'pointer-events-none opacity-50' : '' }>
+						<Editor
+							id="custom-css"
+							className="code-editor"
+							defaultLanguage="css"
+							options={ {
+								minimap: { enabled: false },
+							} }
+							defaultValue={ layer.custom_css }
+							onChange={ ( value ) =>
+								dispatch( updateLayerField( { id: layer.id, field: 'custom_css', value } ) )
+							}
+						/>
+					</div>
 				</PanelBody>
 			</Panel>
 
@@ -176,7 +195,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 	);
 };
 
-function GravityFormSelector( { className, formID, forms, handleChange } ) {
+function GravityFormSelector( { className, disabled, formID, forms, handleChange } ) {
 	const [ form, setForm ] = useState( formID );
 	const [ filteredOptions, setFilteredOptions ] = useState( forms );
 
@@ -191,7 +210,7 @@ function GravityFormSelector( { className, formID, forms, handleChange } ) {
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 				label={ __( 'Select gravity form', 'godam' ) }
-				className={ className }
+				className={ `${ className } ${ disabled ? 'disabled' : '' }` }
 				value={ form }
 				onChange={ setFormData }
 				options={ filteredOptions }

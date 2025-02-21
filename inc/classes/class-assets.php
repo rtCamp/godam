@@ -83,6 +83,14 @@ class Assets {
 			'videoAnalyticsParams',
 			$localize_array
 		);
+		
+		wp_localize_script(
+			'easydam-script',
+			'godamLicenseData',
+			array(
+				'valid_license' => godam_is_license_valid(),
+			)
+		);
 
 		wp_enqueue_script( 'easydam-script' );
 		wp_enqueue_style( 'easydam-style' );
