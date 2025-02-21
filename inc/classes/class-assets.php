@@ -46,17 +46,17 @@ class Assets {
 
 		wp_register_script(
 			'easydam-script',
-			RT_TRANSCODER_URL . '/assets/build/js/main.js',
+			GODAM_URL . '/assets/build/js/main.js',
 			array(),
-			filemtime( RT_TRANSCODER_PATH . '/assets/build/js/main.js' ),
+			filemtime( GODAM_PATH . '/assets/build/js/main.js' ),
 			true
 		);
 
 		wp_register_style(
 			'easydam-style',
-			RT_TRANSCODER_URL . '/assets/build/css/main.css',
+			GODAM_URL . '/assets/build/css/main.css',
 			array(),
-			filemtime( RT_TRANSCODER_PATH . '/assets/build/css/main.css' )
+			filemtime( GODAM_PATH . '/assets/build/css/main.css' )
 		);
 
 
@@ -64,7 +64,7 @@ class Assets {
 			'analytics-library',
 			'https://unpkg.com/analytics/dist/analytics.min.js',
 			array(),
-			RT_TRANSCODER_VERSION,
+			GODAM_VERSION,
 			true
 		);
 
@@ -88,7 +88,7 @@ class Assets {
 		wp_enqueue_style( 'easydam-style' );
 
 		// Register IMA SDK.
-		wp_enqueue_script( 'ima-sdk', 'https://imasdk.googleapis.com/js/sdkloader/ima3.js', RT_TRANSCODER_VERSION, true );
+		wp_enqueue_script( 'ima-sdk', 'https://imasdk.googleapis.com/js/sdkloader/ima3.js', GODAM_VERSION, true );
 	}
 
 	/**
@@ -102,25 +102,25 @@ class Assets {
 
 		wp_register_script(
 			'easydam-script',
-			RT_TRANSCODER_URL . '/assets/build/js/admin.js',
+			GODAM_URL . '/assets/build/js/admin.js',
 			array(),
-			filemtime( RT_TRANSCODER_PATH . '/assets/build/js/admin.js' ),
+			filemtime( GODAM_PATH . '/assets/build/js/admin.js' ),
 			true
 		);
 
 		wp_register_script(
 			'easydam-media-library',
-			RT_TRANSCODER_URL . '/assets/build/js/media-library.js',
+			GODAM_URL . '/assets/build/js/media-library.js',
 			array(),
-			filemtime( RT_TRANSCODER_PATH . '/assets/build/js/media-library.js' ),
+			filemtime( GODAM_PATH . '/assets/build/js/media-library.js' ),
 			true
 		);
 
 		wp_register_style(
 			'easydam-media-library',
-			RT_TRANSCODER_URL . '/assets/build/css/media-library.css',
+			GODAM_URL . '/assets/build/css/media-library.css',
 			array(),
-			filemtime( RT_TRANSCODER_PATH . '/assets/build/css/media-library.css' )
+			filemtime( GODAM_PATH . '/assets/build/css/media-library.css' )
 		);
 
 		wp_localize_script(
@@ -140,16 +140,16 @@ class Assets {
 			'easydam-media-library',
 			'transcoderSettings',
 			array(
-				'restUrl' => esc_url_raw( rest_url( 'easydam/v1/transcoding/transcoding-status' ) ),
+				'restUrl' => esc_url_raw( rest_url( 'godam/v1/transcoding/transcoding-status' ) ),
 				'nonce'   => wp_create_nonce( 'wp_rest' ),
 			)
 		);
 
 		wp_register_style(
 			'easydam-style',
-			RT_TRANSCODER_URL . '/assets/build/css/admin.css',
+			GODAM_URL . '/assets/build/css/admin.css',
 			array(),
-			filemtime( RT_TRANSCODER_PATH . '/assets/build/css/admin.css' )
+			filemtime( GODAM_PATH . '/assets/build/css/admin.css' )
 		);
 
 		wp_enqueue_script( 'easydam-script' );
@@ -182,7 +182,7 @@ class Assets {
 			'easydam-script',
 			'pluginInfo',
 			array(
-				'version' => RT_TRANSCODER_VERSION,
+				'version' => GODAM_VERSION,
 			)
 		);
 	}

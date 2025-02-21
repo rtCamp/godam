@@ -21,7 +21,7 @@ abstract class Base extends \WP_REST_Controller {
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'easydam/v1';
+	protected $namespace = 'godam/v1';
 
 	/**
 	 * Route base.

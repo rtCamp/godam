@@ -54,7 +54,7 @@ MediaUploadToS3 = MediaUploadToS3?.extend( {
 
 		try {
 			const response = await fetch(
-				`${ window.location.origin }/wp-json/easydam/v1/media-library/upload-to-s3`,
+				`${ window.location.origin }/wp-json/godam/v1/media-library/upload-to-s3`,
 				{
 					method: 'POST',
 					headers: {

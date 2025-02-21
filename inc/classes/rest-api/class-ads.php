@@ -52,7 +52,7 @@ class Ads extends Base {
 	}
 
 	/**
-	 * Check if request  is for /easydam/v1/ad endpoint.
+	 * Check if request  is for /godam/v1/ad endpoint.
 	 * Return the XML response if it is.
 	 * 
 	 * @param bool              $served Whether the request has already been served.
@@ -65,7 +65,7 @@ class Ads extends Base {
 	public function maybe_ad_url_tag_request( $served, $result, $request, $server ) { // phpcs:ignore
 
 		// Check if the route of the current REST API request matches your custom route.
-		if ( ! str_contains( $request->get_route(), '/easydam/v1/adTagURL' ) ) {
+		if ( ! str_contains( $request->get_route(), '/godam/v1/adTagURL' ) ) {
 			return $served;
 		}
 	

@@ -64,7 +64,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 	// Fetch the Gravity Form HTML
 	const fetchGravityForm = ( formId, theme ) => {
-		axios.get( `/wp-json/easydam/v1/gform`, {
+		axios.get( `/wp-json/godam/v1/gform`, {
 			params: { id: formId, theme },
 		} ).then( ( response ) => {
 			setFormHTML( response.data );

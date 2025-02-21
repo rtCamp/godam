@@ -18,7 +18,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 				href="https://rtmedia.io/?utm_source=dashboard&utm_medium=plugin&utm_campaign=transcoder"
 				target="_blank"
 				title="rtCamp : <?php esc_attr_e( 'Empowering The Web With WordPress', 'godam' ); ?>">
-				<img src="<?php echo esc_url( RT_TRANSCODER_URL ); ?>admin/images/rtcamp-logo.png" alt="rtCamp"/>
+				<img src="<?php echo esc_url( GODAM_URL ); ?>admin/images/rtcamp-logo.png" alt="rtCamp"/>
 			</a>
 		</span>
 	</h1>
