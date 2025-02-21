@@ -22,4 +22,13 @@ function checkMediaLibraryView() {
 	return 'grid';
 }
 
-export { isLicenseValid, checkMediaLibraryView };
+/**
+ * Check if in the upload page.
+ *
+ * @return {boolean} True if in the upload page, false otherwise.
+ */
+function isUploadPage() {
+	return document.querySelector( '.upload-php' ) ? true : false;
+}
+
+export { isLicenseValid, checkMediaLibraryView, isUploadPage };

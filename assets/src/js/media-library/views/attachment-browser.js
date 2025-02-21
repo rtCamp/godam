@@ -8,7 +8,7 @@ import MediaDateRangeFilter from './filters/media-date-range-filter';
 // import MediaUploadToS3 from './filters/media-upload-to-s3';
 import MediaRetranscode from './filters/media-retranscode';
 
-import { isLicenseValid } from '../utility';
+import { isLicenseValid, isUploadPage } from '../utility';
 
 const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
 
@@ -75,7 +75,7 @@ export default AttachmentsBrowser?.extend( {
 		// 	);
 		// }
 
-		if ( isLicenseValid() ) {
+		if ( isLicenseValid() && isUploadPage() ) {
 			if ( MediaRetranscode ) {
 				this.toolbar.set(
 					'MediaRetranscode',
