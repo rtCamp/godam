@@ -251,3 +251,8 @@
 		background: #fff;
 	}
 }
+
+.disabled .components-combobox-control__suggestions-container {
+	pointer-events: none;
+	opacity: 0.5;
+}

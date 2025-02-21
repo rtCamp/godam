@@ -42,17 +42,30 @@ const CustomAdSettings = ( { layerID } ) => {
 		fileFrame.open();
 	};
 
+	const isValidLicense = window?.videoData?.valid_license;
+
 	return (
 		<div className="relative">
 
-			{ adServer === 'ad-server' &&
-			<Notice
-				className="mb-4"
-				status="warning"
-				isDismissible={ false }
-			>
-				{ __( 'This ad will be overriden by Ad server\'s ads', 'godam' ) }
-			</Notice>
+			{
+				( adServer === 'ad-server' && isValidLicense ) &&
+				<Notice
+					className="mb-4"
+					status="warning"
+					isDismissible={ false }
+				>
+					{ __( 'This ad will be overriden by Ad server\'s ads', 'godam' ) }
+				</Notice>
+			}
+			{
+				( ! isValidLicense ) &&
+				<Notice
+					className="mb-4"
+					status="warning"
+					isDismissible={ false }
+				>
+					{ __( 'This features is available in premium version', 'godam' ) }
+				</Notice>
 			}
 			<div className="flex flex-col items-start mb-4">
 				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom Ad', 'godam' ) }</label>
@@ -62,7 +75,7 @@ const CustomAdSettings = ( { layerID } ) => {
 						className="mb-2"
 						variant="primary"
 						onClick={ () => OpenVideoSelector() }
-						disabled={ adServer === 'ad-server' }
+						disabled={ adServer === 'ad-server' || ! isValidLicense }
 					>{ layer?.ad_url ? __( 'Replace Ad video', 'godam' ) : __( 'Select Ad video', 'godam' ) }</Button>
 					{
 						layer?.ad_url &&
@@ -70,19 +83,19 @@ const CustomAdSettings = ( { layerID } ) => {
 							variant="secondary"
 							isDestructive
 							onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) }
-							disabled={ adServer === 'ad-server' }
+							disabled={ adServer === 'ad-server' || ! isValidLicense }
 						>{ __( 'Remove Ad video', 'godam' ) }</Button>
 
 					}
 				</div>
 				{
 					layer?.ad_url && (
-						<div className={ `sidebar-video-container ${ adServer === 'ad-server' ? 'disabled-video' : '' }` }>
+						<div className={ `sidebar-video-container ${ adServer === 'ad-server' || ! isValidLicense ? 'disabled-video' : '' }` }>
 							<video
 								src={ layer.ad_url }
 								controls={ adServer !== 'ad-server' }
 							/>
-							{ adServer === 'ad-server' && <div className="video-overlay" /> }
+							{ adServer === 'ad-server' || ! isValidLicense && <div className="video-overlay" /> }
 						</div>
 					)
 				}
@@ -97,7 +110,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'skippable', value } ) )
 				}
 				help={ __( 'Allow user to skip ad', 'godam' ) }
-				disabled={ adServer === 'ad-server' }
+				disabled={ adServer === 'ad-server' || ! isValidLicense }
 			/>
 			{
 				layer?.skippable &&
@@ -109,7 +122,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'skip_offset', value } ) ) }
 					type="number"
 					min="0"
-					disabled={ adServer === 'ad-server' }
+					disabled={ adServer === 'ad-server' || ! isValidLicense }
 				/>
 			}
 
@@ -120,7 +133,7 @@ const CustomAdSettings = ( { layerID } ) => {
 				value={ layer?.click_link }
 				className="mb-4"
 				onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'click_link', value } ) ) }
-				disabled={ adServer === 'ad-server' }
+				disabled={ adServer === 'ad-server' || ! isValidLicense }
 			/>
 
 		</div>

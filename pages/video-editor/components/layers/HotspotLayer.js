@@ -15,6 +15,7 @@ import {
 	DropdownMenu,
 	MenuItem,
 	ColorPalette,
+	Notice,
 } from '@wordpress/components';
 import {
 	arrowLeft,
@@ -116,6 +117,8 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 		return () => window.removeEventListener( 'resize', recalcRatio );
 	}, [] );
 
+	const isValidLicense = window?.videoData?.valid_license;
+
 	return (
 		<>
 			<div className="flex justify-between items-center pb-3 border-b mb-3">
@@ -157,6 +160,17 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 				) }
 			</div>
 
+			{
+				! isValidLicense &&
+				<Notice
+					className="mb-4"
+					status="warning"
+					isDismissible={ false }
+				>
+					{ __( 'This features is available in premium version', 'godam' ) }
+				</Notice>
+			}
+
 			{ /* Duration */ }
 			<div className="mb-4">
 				<TextControl
@@ -169,6 +183,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 						updateField( 'duration', newVal );
 					} }
 					help="Duration (in seconds) this layer will stay visible"
+					disabled={ ! isValidLicense }
 				/>
 			</div>
 
@@ -178,6 +193,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 					label={ __( 'Pause video on hover', 'godam' ) }
 					checked={ layer?.pauseOnHover || false }
 					onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
+					disabled={ ! isValidLicense }
 				/>
 				<p className="text-xs text-gray-500 mt-1">
 					{ __(
@@ -271,6 +287,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 											),
 										)
 									}
+									disabled={ ! isValidLicense }
 								/>
 								<TextControl
 									label={ __( 'Link', 'godam' ) }
@@ -284,6 +301,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 											),
 										)
 									}
+									disabled={ ! isValidLicense }
 								/>
 								{ hotspot.showIcon && (
 									<div className="flex flex-col gap-2 mt-2">
@@ -292,6 +310,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 											index={ index }
 											updateField={ updateField }
 											hotspots={ hotspots }
+											disabled={ ! isValidLicense }
 										/>
 									</div>
 								) }
@@ -306,6 +325,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 										<ColorPalette
 											id={ `hotspot-color-${ index }` }
 											value={ hotspot.backgroundColor || '#0c80dfa6' }
+											className={ ! isValidLicense ? 'pointer-events-none opacity-50' : '' }
 											onChange={ ( newColor ) => {
 												updateField(
 													'hotspots',
@@ -334,6 +354,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 					icon={ plus }
 					iconPosition="left"
 					onClick={ handleAddHotspot }
+					disabled={ ! isValidLicense }
 				>
 					{ __( 'Add Hotspot', 'godam' ) }
 				</Button>
