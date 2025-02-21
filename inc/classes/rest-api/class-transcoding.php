@@ -28,20 +28,60 @@ class Transcoding extends Base {
 		return array(
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/transcoding-status/(?P<id>\d+)',
+				'route'     => '/' . $this->rest_base . '/transcoding-status',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'update_transcoding_status' ),
+					'permission_callback' => '__return_true',
+					'args'                => array(
+						'job_id'     => array(
+							'required'          => true,
+							'type'              => 'string',
+							'description'       => 'The jobID of transcoding job.',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'status'     => array(
+							'required'          => true,
+							'type'              => 'string',
+							'description'       => 'The status of the transcoding job.',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'progress'   => array(
+							'required'          => false,
+							'type'              => 'integer',
+							'description'       => 'The progress of the transcoding job.',
+							'sanitize_callback' => 'absint',
+						),
+						'error_msg'  => array(
+							'required'          => false,
+							'type'              => 'string',
+							'description'       => 'The error message of the transcoding job.',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'error_code' => array(
+							'required'          => false,
+							'type'              => 'string',
+							'description'       => 'The error code of the transcoding job.',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/transcoding-status/',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_transcoding_status' ),
 					'permission_callback' => '__return_true',
 					'args'                => array(
-						'id' => array(
+						'ids' => array(
 							'required'          => true,
-							'type'              => 'integer',
-							'description'       => 'The ID of the transcoding job.',
+							'type'              => 'array',
+							'description'       => 'The array of attachment IDs.',
 							'validate_callback' => function ( $param ) {
-								return is_numeric( $param ) && $param > 0;
+								return is_array( $param );
 							},
-							'sanitize_callback' => 'absint',
 						),
 					),
 				),
@@ -50,114 +90,159 @@ class Transcoding extends Base {
 	}
 
 	/**
-	 * Return transcoding status of a media.
+	 * Update transcoding status of a media.
 	 *
-	 * @since 1.2
+	 * @param \WP_REST_Request $request REST request object.
+	 */
+	public function update_transcoding_status( \WP_REST_Request $request ) {
+
+		$job_id     = $request->get_param( 'job_id' );
+		$status     = $request->get_param( 'status' );
+		$progress   = $request->get_param( 'progress' );
+		$error_msg  = $request->get_param( 'error_msg' );
+		$error_code = $request->get_param( 'error_code' );
+
+		$attachment_id = $this->get_post_id_by_meta_key_and_value( '_rt_transcoding_job_id', $job_id );
+
+		if ( ! $attachment_id ) {
+			wp_send_json_error(
+				array(
+					'message' => 'Attachment not found.',
+				)
+			);
+		}
+
+		if ( ! empty( $error_msg ) || ! empty( $error_code ) ) {
+			
+			update_post_meta( $attachment_id, '_godam_transcoding_error_msg', $error_msg );
+			update_post_meta( $attachment_id, '_godam_transcoding_error_code', $error_code );
+
+			$progress = 0;
+		}
+
+		update_post_meta( $attachment_id, '_godam_transcoding_status', $status );
+		update_post_meta( $attachment_id, '_godam_transcoding_progress', $progress );
+
+		wp_send_json_success(
+			array(
+				'message' => 'Transcoding status updated successfully.',
+			)
+		);
+	}
+
+	/**
+	 * Return transcoding status of a media.
 	 *
 	 * @param \WP_REST_Request $request REST request object.
 	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_transcoding_status( \WP_REST_Request $request ) {
-		$post_id = (int) $request['id'];
+		
+		$attachment_ids = $request->get_param( 'ids' );
 
-		if ( empty( $post_id ) ) {
-			return new \WP_Error(
-				'invalid_post_id',
-				__( 'Something went wrong. Please try again!', 'godam' ),
-				array( 'status' => 400 )
-			);
+		$response_object = array();
+
+		foreach ( $attachment_ids as $attachment_id ) {
+			$status_object                     = $this->get_status_object_from_attachment( $attachment_id );
+			$response_object[ $attachment_id ] = $status_object;
 		}
 
-		$job_id = get_post_meta( $post_id, '_rt_transcoding_job_id', true );
+		return rest_ensure_response( $response_object );
+	}
+
+	/**
+	 * Get transcoding status of an attachment.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 *
+	 * @return string
+	 */
+	private function get_status_object_from_attachment( int $attachment_id ) {
+
+		// Check if video has a transcoding job ID.
+		$job_id = sanitize_text_field( get_post_meta( $attachment_id, '_rt_transcoding_job_id', true ) );
 
 		if ( empty( $job_id ) ) {
-			return new \WP_Error(
-				'invalid job id',
-				__( 'Invalid job id', 'godam' ),
-				array( 'status' => 400 )
+			return array(
+				'status' => 'not_transcoding',
+				'message' => __( 'Video has not been transcoded.', 'godam' ),
 			);
 		}
 
-		$license = get_option( 'rt-transcoding-api-key' );
+		// Get and sanitize the transcoding status.
+		$status = sanitize_text_field( get_post_meta( $attachment_id, '_godam_transcoding_status', true ) );
 
-		if ( empty( $license ) ) {
-			return new \WP_Error(
-				'invalid_license',
-				__( 'Invalid license key', 'godam' ),
-				array( 'status' => 400 )
+		if ( empty( $status ) ) {
+			return array(
+				'status' => 'not_started',
+				'message' => __( 'Transcoding has not started.', 'godam' ),
 			);
 		}
 
-		$status_url = add_query_arg(
-			array(
-				'job_id'  => $job_id,
-				'license' => $license,
-			),
-			GODAM_API_BASE . '/api/method/frappe_transcoder.frappe_transcoder.api.transcoding_progress.get_transcoding_status'
+		// Handle failure case with error details.
+		if ( 'Failed' === $status ) {
+			$error_code = sanitize_text_field( get_post_meta( $attachment_id, '_godam_transcoding_error_code', true ) );
+			$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, '_godam_transcoding_error_msg', true ) );
+
+			return array(
+				'status'     => 'failed',
+				'error_code' => $error_code,
+				'error_msg'  => $error_msg,
+			);
+		}
+
+		// Get and sanitize transcoding progress.
+		$progress = intval( get_post_meta( $attachment_id, '_godam_transcoding_progress', true ) );
+
+		// Define status messages.
+		$status_messages = array(
+			'Queued'      => __( 'Video is queued for transcoding.', 'godam' ),
+			'Downloading' => __( 'Video is downloading for transcoding.', 'godam' ),
+			'Downloaded'  => __( 'Video is downloaded for transcoding.', 'godam' ),
+			'Transcoding' => __( 'Video is transcoding.', 'godam' ),
+			'Transcoded'  => __( 'Video is transcoded.', 'godam' ),
 		);
 
-		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
-			$status_page = vip_safe_wp_remote_get( $status_url, '', 3, 3 );
-		} else {
-			$status_page = wp_safe_remote_get( $status_url, array( 'timeout' => 120 ) ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get, WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
-		}
+		// Set default message for unknown status.
+		$message = isset( $status_messages[ $status ] ) ? $status_messages[ $status ] : __( 'Unknown transcoding status.', 'godam' );
 
-		if ( ! is_wp_error( $status_page ) ) {
-			$status_info = json_decode( $status_page['body'] );
-		} else {
-			$status_info = null;
-		}
-
-		$messages = array(
-			'null-response' => __( 'Looks like the server is taking too long to respond, Please try again in sometime.', 'godam' ),
-			'failed'        => __( 'Unfortunately, Transcoder failed to transcode this file.', 'godam' ),
-			'downloading'   => __( 'Your file is getting transcoded. Please refresh after some time.', 'godam' ),
-			'downloaded'    => __( 'Your file is downloaded successfully. Please refresh the page.', 'godam' ),
-			'transcoding'   => __( 'Your file is getting transcoded. Please refresh after some time.', 'godam' ),
-			'transcoded'    => __( 'Your file is transcoded successfully. Please refresh the page.', 'godam' ),
+		return array(
+			'status'   => strtolower( $status ),
+			'progress' => $progress,
+			'message'  => $message,
 		);
+	}
 
-		/**
-		 * Filters the transcoding process status messages.
-		 *
-		 * @since 1.2
-		 *
-		 * @param array $messages Default transcoding process status messages.
-		 */
-		$messages = apply_filters( 'rtt_transcoder_status_message', $messages );
+	/**
+	 * Get post id from meta key and value.
+	 * 
+	 * Taken the function from the rt-transcoder-handler.php file.
+	 *
+	 * @param string $key   Meta key.
+	 * @param mixed  $value Meta value.
+	 *
+	 * @return int|bool     Return post id if found else false.
+	 */
+	private function get_post_id_by_meta_key_and_value( $key, $value ) {
+		global $wpdb;
+		$cache_key = md5( 'meta_key_' . $key . '_meta_value_' . $value );
 
-		$message  = '';
-		$response = array();
-		$status   = 'running';
-		$progress = 0;
+		$meta = wp_cache_get( $cache_key, 'godam' );
 
-		if ( empty( $status_info ) || ! is_object( $status_info ) || empty( $status_info->message ) ) {
-			$response['message']  = esc_html( $messages['null-response'] );
-			$response['status']   = 'null-response';
-			$response['progress'] = $progress;
-	
-			return rest_ensure_response( $response );
+		if ( empty( $meta ) ) {
+			$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			wp_cache_set( $cache_key, $meta, 'godam', 3600 );
 		}
 
-		$status_info = $status_info->message;
-
-		if ( ! empty( $status_info->error ) || ! empty( $status_info->error_msg ) ) {
-			$response['message']  = esc_html( $messages['failed'] );
-			$response['status']   = 'failed';
-			$response['progress'] = $progress;
-	
-			return rest_ensure_response( $response );
+		if ( is_array( $meta ) && ! empty( $meta ) && isset( $meta[0] ) ) {
+			$meta = $meta[0];
 		}
 
-		$message  = ! empty( $messages[ strtolower( $status_info->status ) ] ) ? $messages[ strtolower( $status_info->status ) ] : '';
-		$progress = ! empty( $status_info->progress ) ? floatval( $status_info->progress ) : 0;
-		$status   = ! empty( $status_info->status ) ? strtolower( $status_info->status ) : 'running';
-
-		$response['message']  = esc_html( $message );
-		$response['status']   = esc_html( $status );
-		$response['progress'] = $progress;
-
-		return rest_ensure_response( $response );
+		if ( is_object( $meta ) ) {
+			return $meta->post_id;
+		} else {
+			return false;
+		}
 	}
 }

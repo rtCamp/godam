@@ -36,6 +36,7 @@ class Media_Library_Ajax {
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
 		add_action( 'add_attachment', array( $this, 'add_media_library_taxonomy_on_media_upload' ), 10, 1 );
+		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
 
 		// TODO: think about merging this hooks and other to media-filters, as they are related to media library.
 		$offload_media = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
@@ -152,6 +153,31 @@ class Media_Library_Ajax {
 			$response['s3_url'] = $s3_url;
 		} else {
 			$response['s3_url'] = false;
+		}
+
+		return $response;
+	}
+
+
+	/**
+	 * Add transcoding URL to the media JS Object.
+	 *
+	 * @param array $response
+	 * @param WP_Post $attachment
+	 * @return void
+	 */
+	public function add_media_transcoding_status_js( $response, $attachment ) {
+		// Check if attachment type is video.
+		if ( 'video' !== substr( $attachment->post_mime_type, 0, 5 ) ) {
+			return $response;
+		}
+
+		$transcoded_url = get_post_meta( $attachment->ID, '_rt_transcoded_url', true );
+
+		if ( ! empty( $transcoded_url ) ) {
+			$response['transcoded_url'] = $transcoded_url;
+		} else {
+			$response['transcoded_url'] = false;
 		}
 
 		return $response;
