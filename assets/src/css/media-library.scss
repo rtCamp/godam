@@ -19,65 +19,102 @@
 /**
  * Transcoding status bar for media library styles.
  */
-.attachment-preview {
-
+.transcoding-status {
 	position: relative;
 
-	.transcoder-progress-bar {
+	&__loader {
 		position: absolute;
-		width: 100%;
+		width: 1.5rem;
+		aspect-ratio: 1;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 1;
+		top: 0.75rem;
+		right: 0.75rem;
 
-		.progress {
-			color: #ffffff;
-			background-color: #2145e6;
-			min-height: 18px;
+		--status-text: "Not Started";
+
+		&__progress {
+			transform: rotate(-90deg); /* Rotates the circle so progress starts from top */
+			width: 100%;
+			height: 100%;
+			transition: transform 0.2s ease;
+
+			circle {
+				fill: none;
+				stroke-width: 2;
+
+				&.background {
+					stroke: #98c8e2;
+				}
+
+				&.progress {
+					stroke: rgb(0, 69, 114);
+					transition: stroke-dashoffset 0.5s ease;
+
+					/* To Hide the progress bar initially we have to set the stroke-dashoffset to the circumference of the circle */
+					stroke-dasharray: 100;
+					stroke-dashoffset: 100;
+				}
+			}
+		}
+
+		&::after {
+			content: var( --status-text, "" );
+			position: absolute;
+			top: calc( 100% + 0.25rem );
+			right: 0;
+			background-color: #333;
+			color: #fff;
+			padding: 0.25rem 0.5rem;
+			border-radius: 0.25rem;
+			font-size: 0.75rem;
+			white-space: nowrap;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+			opacity: 0;
+		}
+
+		&:hover::after {
+			opacity: 1;
 		}
 	}
-}
 
-/**
- * AWS S3 upload status styles.
- */
-.attachment-s3-status {
-	position: absolute;
-	top: 8px;
-	right: 8px;
-	display: flex;
-	align-items: center;
-	z-index: 9;
-	transition: transform 0.2s ease, opacity 0.3s ease;
-}
+	&--completed {
 
-.attachment-s3-status:hover::after {
-	content: "Uploaded to S3";
-	position: absolute;
-	top: 100%;
-	right: 0;
-	background-color: #333;
-	color: #fff;
-	padding: 5px 8px;
-	border-radius: 4px;
-	font-size: 12px;
-	white-space: nowrap;
-	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
+		.transcoding-status__loader {
+			--status-text: "Transcoded";
 
-.attachment-s3-status:hover {
-	transform: scale(1.1);
-	opacity: 0.9;
-}
+			svg {
+				// Change the svg to green.
+				fill: green;
+			}
+		}
+	}
 
-.attachment-s3-status .dashicons {
-	font-size: 20px;
-	background: linear-gradient(45deg, #28a745, #85e085);
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
-	color: #28a745;
-}
+	&--failed {
 
-.attachment-s3-status .dashicons:hover {
-	text-shadow: 0 0 12px rgba(40, 167, 69, 0.7), 0 0 16px rgba(40, 167, 69, 1);
-	transform: scale(1.2);
+		.transcoding-status__loader {
+			--status-text: "Failed";
+
+			svg {
+				// Change the svg to red.
+				fill: red;
+			}
+		}
+	}
+
+	&--not-started {
+
+		.transcoding-status__loader {
+			--status-text: "Not Transcoded";
+
+			svg {
+				// Change the svg to grey.
+				fill: lightblue;
+			}
+		}
+	}
 }
 
 /**

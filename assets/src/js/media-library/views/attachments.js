@@ -21,5 +21,4 @@ export default Attachments?.extend( {
 			this.options.AttachmentView = Attachment;
 		}
 	},
-
 } );
