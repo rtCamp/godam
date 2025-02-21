@@ -309,6 +309,11 @@ class RT_Transcoder_Handler {
 				return;
 			}
 
+			/**
+			 * manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
+			 */
+			$status_callback_url = get_home_url() . '/wp-json/godam/v1/transcoding/transcoding-status';
+
 			$args = array(
 				'method'    => 'POST',
 				'sslverify' => false,
@@ -320,6 +325,7 @@ class RT_Transcoder_Handler {
 						'job_for'         => $job_for,
 						'file_origin'     => rawurlencode( $url ),
 						'callback_url'    => rawurlencode( $callback_url ),
+						'status_callback' => rawurlencode( $status_callback_url ),
 						'force'           => 0,
 						'formats'         => ( true === $autoformat ) ? ( ( 'video' === $type_array[0] ) ? 'mp4' : 'mp3' ) : $autoformat,
 						'thumbnail_count' => $options_video_thumb,
