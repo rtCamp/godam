@@ -386,7 +386,8 @@ class Pages {
 			'media-library-react',
 			'MediaLibrary',
 			array(
-				'nonce' => wp_create_nonce( 'wp_rest' ),
+				'nonce'    => wp_create_nonce( 'wp_rest' ),
+				'userData' => godam_get_user_data(),
 			)
 		);
 	}
