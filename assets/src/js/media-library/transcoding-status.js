@@ -6,9 +6,9 @@
 import ListViewTranscodingStatus from './transcoding-status/list-view-transcoding-status';
 import GridViewTranscodingStatus from './transcoding-status/grid-view-transcoding-status';
 
-import { isLicenseValid, checkMediaLibraryView } from './utility';
+import { checkMediaLibraryView } from './utility';
 
-if ( 'list' === checkMediaLibraryView() && isLicenseValid() ) {
+if ( 'list' === checkMediaLibraryView() ) {
 	new ListViewTranscodingStatus();
 } else {
 	let gridView;
@@ -26,12 +26,14 @@ if ( 'list' === checkMediaLibraryView() && isLicenseValid() ) {
 		}, 500 );
 	} );
 
-	( function( $ ) {
-		$.extend( wp.Uploader.prototype, {
-			success( fileAttachment ) {
-				// Add this new attachment to the collection.
-				gridView.addAttachment( fileAttachment?.id );
-			},
-		} );
-	}( jQuery ) );
+	if ( wp?.Uploader ) {
+		( function( $ ) {
+			$.extend( wp.Uploader.prototype, {
+				success( fileAttachment ) {
+					// Add this new attachment to the collection.
+					gridView.addAttachment( fileAttachment?.id );
+				},
+			} );
+		}( jQuery ) );
+	}
 }

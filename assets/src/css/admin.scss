@@ -173,7 +173,6 @@ $media-frame-width: calc( 300px + 2 * 24px );
 			--status-text: "Transcoded";
 
 			svg {
-				// Change the svg to green.
 				fill: green;
 			}
 		}
@@ -185,7 +184,6 @@ $media-frame-width: calc( 300px + 2 * 24px );
 			--status-text: "Transcoding Failed";
 
 			svg {
-				// Change the svg to red.
 				fill: red;
 			}
 		}
@@ -197,7 +195,6 @@ $media-frame-width: calc( 300px + 2 * 24px );
 			--status-text: "Not Transcoded";
 
 			svg {
-				// Change the svg to grey.
 				fill: lightblue;
 			}
 		}

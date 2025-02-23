@@ -731,8 +731,6 @@ function rtt_add_status_columns_head( $defaults ) {
 	return $defaults;
 }
 
-add_filter( 'manage_media_columns', 'rtt_add_status_columns_head' );
-
 /**
  * Set status column content in media admin page
  *
@@ -771,7 +769,13 @@ function rtt_add_status_columns_content( $column_name, $post_id ) {
 	}
 }
 
-add_action( 'manage_media_custom_column', 'rtt_add_status_columns_content', 10, 2 );
+$user_data = godam_get_user_data();
+$is_license_verified = isset( $user_data['valid_license'] ) ? $user_data['valid_license'] : false;
+
+if ( $is_license_verified ) {
+	add_filter( 'manage_media_columns', 'rtt_add_status_columns_head' );
+	add_action( 'manage_media_custom_column', 'rtt_add_status_columns_content', 10, 2 );
+}
 
 /**
  * Set sortable status column in media admin page
