@@ -7,7 +7,7 @@ import React, { useState, forwardRef } from 'react';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Icon, moreHorizontalMobile, seen, link } from '@wordpress/icons';
+import { Icon, moreHorizontalMobile, seen, link, chartBar } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -88,6 +88,11 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 								<span>{ __( 'Copy video Link', 'godam' ) }</span>
 							) }
 						</button>
+
+						<a href={ `/wp-admin/admin.php?page=analytics&id=${ item?.id }` } target="_blank" className="godam-video-list__video__thumbnail__actions__action" rel="noreferrer">
+							<Icon icon={ chartBar } />
+							<span>{ __( 'View analytics', 'godam' ) }</span>
+						</a>
 					</div>
 				) }
 
