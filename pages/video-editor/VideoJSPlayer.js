@@ -12,7 +12,7 @@ import 'videojs-ima';
 /**
  * Internal dependencies
  */
-import GoDAM from "../../assets/src/images/godam-logo.png";
+import GoDAM from '../../assets/src/images/godam-logo.png';
 import { setCurrentLayer } from './redux/slice/videoSlice';
 
 /**
@@ -168,7 +168,12 @@ export const VideoJS = ( props ) => {
 		controls.forEach( ( control ) => {
 			// On hover
 			control.addEventListener( 'mouseenter', function() {
-				control.style.color = videoConfig.controlBar.hoverColor;
+				control.style.setProperty(
+					'color',
+					videoConfig.controlBar.hoverColor,
+					'important',
+				);
+
 				if ( ! control.className.includes( 'vjs-progress-control' ) ) {
 					this.style.transform = `scale(${ 1 + parseFloat( videoConfig.controlBar.zoomLevel ) })`;
 				}
@@ -190,7 +195,7 @@ export const VideoJS = ( props ) => {
 			.querySelector( '.vjs-control-bar' )
 			.addEventListener( 'mouseleave', function() {
 				document.querySelector( '.vjs-slider-bar' ).style.backgroundColor =
-          '#fff';
+		'#fff'; // Reset to default
 			} );
 
 		//play button position
@@ -235,6 +240,12 @@ export const VideoJS = ( props ) => {
 		//play button image
 		const playButtonElement = document.querySelector( '.vjs-big-play-button' );
 		playButtonElement.style.backgroundImage = `url(${ videoConfig.controlBar.customPlayBtnImg })`;
+
+		playButtonElement.style.setProperty(
+			'background-image',
+			`url(${ videoConfig.controlBar.customPlayBtnImg })`,
+			'important',
+		);
 
 		//control bar position
 		if ( 'vertical' === videoConfig.controlBar.controlBarPosition ) {

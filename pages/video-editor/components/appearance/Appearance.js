@@ -20,7 +20,7 @@ import {
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice';
-import GoDAM from '../../../../assets/src/images/godam-icon-16.svg';
+import GoDAM from '../../../../assets/src/images/godam-logo.png';
 import ColorPickerButton from '../ColorPickerButton';
 
 const Appearance = () => {
