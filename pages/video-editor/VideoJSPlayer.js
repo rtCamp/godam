@@ -12,7 +12,7 @@ import 'videojs-ima';
 /**
  * Internal dependencies
  */
-import GoDAM from '../../assets/src/images/godam-logo.png';
+import GoDAM from "../../assets/src/images/GoDAM.png";
 import { setCurrentLayer } from './redux/slice/videoSlice';
 
 /**

@@ -26,7 +26,7 @@ import 'quill/dist/quill.snow.css';
 /**
  * Internal dependencies
  */
-import GoDAM from '../../../../assets/src/images/godam-logo.png';
+import GoDAM from '../../../../assets/src/images/GoDAM.png';
 
 /**
  * Global variables
