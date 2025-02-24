@@ -8,7 +8,7 @@ name: Deploy on Push
 jobs:
   deploy:
     name: Deploy
-    runs-on: high-performance
+    runs-on: ubuntu-latest
     steps:
       - name: Own the dir if not owned
         shell: bash
