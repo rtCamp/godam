@@ -15,6 +15,7 @@ const slice = createSlice( {
 			sources: [],
 			playbackRates: [ 0.5, 1, 1.5, 2 ],
 			captions: [],
+			adServer: false,
 			controlBar: {
 				playToggle: true, // Play/Pause button
 				volumePanel: true,

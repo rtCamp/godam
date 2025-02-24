@@ -34,6 +34,8 @@ const VideoEditor = ( { attachmentID } ) => {
 	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
 
+	console.log(videoConfig);
+
 	useEffect( () => {
 		// Make sure the post ID is passed in the URL
 		if ( ! attachmentID ) {
