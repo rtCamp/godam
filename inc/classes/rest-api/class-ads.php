@@ -113,25 +113,14 @@ class Ads extends Base {
 			<VAST version="4.1" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.iab.com/VAST">
 				<Ad id="20001" sequence="1" conditionalAd="false">
 					<InLine>
-					<AdSystem version="4.1">EasyDAM</AdSystem>
-					<Error><![CDATA[<?php echo esc_url( $endpoint_url ); ?>/error]]></Error>
-					<Impression id="Impression-ID"><![CDATA[<?php echo esc_url( $endpoint_url ); ?>/track/impression]]></Impression>
-					<AdServingId>a532d16d-4d7f-4440-bd29-2ec0e693fc80</AdServingId>
+					<AdSystem version="4.1">GoDAM</AdSystem>
 					<AdTitle><?php echo esc_html( $ad_title ); ?></AdTitle>
 					<AdVerifications></AdVerifications>
-					<Advertiser>EasyDAM</Advertiser>
+					<Advertiser>GoDAM</Advertiser>
 					<Creatives>
 						<Creative id="5480" sequence="1" adId="2447226">
 							<UniversalAdId idRegistry="Ad-ID">8465</UniversalAdId>
 							<Linear <?php echo $skippable ? ' skipoffset="' . esc_attr( gmdate( 'H:i:s', $skip_offset ) ) . '"' : ''; ?>>
-								<TrackingEvents>
-									<Tracking event="start" ><![CDATA[<?php echo esc_url( $endpoint_url ); ?>/tracking/start]]></Tracking>
-									<Tracking event="progress" offset="00:00:10"><![CDATA[http://example.com/tracking/progress-10]]></Tracking>
-									<Tracking event="firstQuartile"><![CDATA[<?php echo esc_url( $endpoint_url ); ?>/tracking/firstQuartile]]></Tracking>
-									<Tracking event="midpoint"><![CDATA[<?php echo esc_url( $endpoint_url ); ?>/tracking/midpoint]]></Tracking>
-									<Tracking event="thirdQuartile"><![CDATA[<?php echo esc_url( $endpoint_url ); ?>/tracking/thirdQuartile]]></Tracking>
-									<Tracking event="complete"><![CDATA[<?php echo esc_url( $endpoint_url ); ?>/tracking/complete]]></Tracking>
-								</TrackingEvents>
 								<Duration><?php echo esc_html( $ad_duration ); ?></Duration>
 								<MediaFiles>
 									<MediaFile id="5241" delivery="progressive" type="video/mp4" bitrate="2000" width="1280" height="720" minBitrate="1500" maxBitrate="2500" scalable="1" maintainAspectRatio="1" codec="H.264">
