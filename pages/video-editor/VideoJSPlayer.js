@@ -12,7 +12,7 @@ import 'videojs-ima';
 /**
  * Internal dependencies
  */
-import EasyDAM from '../../assets/src/images/EasyDAM.png';
+import GoDAM from "../../assets/src/images/godam-logo.png";
 import { setCurrentLayer } from './redux/slice/videoSlice';
 
 /**
@@ -142,7 +142,7 @@ export const VideoJS = ( props ) => {
 				img.src =
           videoConfig.controlBar.customBrandImg.length > 0
           	? videoConfig.controlBar.customBrandImg
-          	: EasyDAM;
+          	: GoDAM;
 				img.id = 'branding-icon';
 				img.alt = 'Branding';
 				document.querySelector( '.vjs-control-bar' ).appendChild( img );
