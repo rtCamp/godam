@@ -50,6 +50,8 @@ class Media_Library_Ajax {
 			add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_folder_to_attachment' ), 10, 2 );
 			add_filter( 'bulk_actions-upload', array( $this, 'add_bulk_actions' ) );
 		}
+
+		add_action( 'delete_attachment', array( $this, 'handle_media_deletion' ), 10, 1 );
 	}
 
 	/**
@@ -401,5 +403,43 @@ class Media_Library_Ajax {
 				$date_query
 			)
 		);
+	}
+
+	/**
+	 * Handle media deletion and notify the external API.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return void
+	 */
+	public function handle_media_deletion( $attachment_id ) {
+		$job_id = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
+		$account_token = get_site_option( 'rt-transcoding-account-token', '' );
+		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+
+		// Ensure all required data is available.
+		if ( empty( $job_id ) || empty( $account_token ) || empty( $license_key ) ) {
+			return;
+		}
+
+		// API URL using GODAM_API_BASE
+		$api_url = GODAM_API_BASE . '/api/method/godam_core.api.mutate.delete_attachment';
+
+		// Request params
+		$params = array(
+			'job_id'       => $job_id,
+			'license_key'  => $license_key,
+			'account_token' => $account_token,
+		);
+
+		// Send POST request
+		$response = wp_remote_post( $api_url, array(
+			'body'    => json_encode( $params ),
+			'headers' => array( 'Content-Type' => 'application/json' ),
+			'timeout' => 10,
+		));
+
+		if ( is_wp_error( $response ) ) {
+			error_log( 'Error deleting media from GoDAM: ' . $response->get_error_message() );
+		}
 	}
 }
