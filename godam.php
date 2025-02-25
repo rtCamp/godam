@@ -50,6 +50,10 @@ if ( ! defined( 'GODAM_API_BASE' ) ) {
 	define( 'GODAM_API_BASE', 'https://app.godam.io' );
 }
 
+if ( ! defined( 'GODAMIO_API_BASE' ) ) {
+	define( 'GODAMIO_API_BASE', 'https://godam.io' );
+}
+
 require_once GODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once GODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once GODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant

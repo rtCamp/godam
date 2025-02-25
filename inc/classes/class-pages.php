@@ -290,8 +290,7 @@ class Pages {
 					array(),
 					'1.0.0'
 				);
-			}
-
+			}       
 		} elseif ( $screen && $this->menu_page_id === $screen->id ) {
 
 			wp_register_script(
