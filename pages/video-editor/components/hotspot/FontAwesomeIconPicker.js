@@ -14,7 +14,7 @@ import { __ } from '@wordpress/i18n';
 // Add all free solid icons to the library
 library.add( fas );
 
-const FontAwesomeIconPicker = ( { hotspot, index, hotspots, updateField } ) => {
+const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, updateField } ) => {
 	const [ searchQuery, setSearchQuery ] = useState( '' );
 	const [ isOpen, setIsOpen ] = useState( false );
 
@@ -61,6 +61,7 @@ const FontAwesomeIconPicker = ( { hotspot, index, hotspots, updateField } ) => {
 							aria-expanded={ isDropDownOpen }
 							variant="secondary"
 							className="flex-grow flex items-center gap-2"
+							disabled={ disabled }
 						>
 							{ hotspot.icon ? (
 								<>

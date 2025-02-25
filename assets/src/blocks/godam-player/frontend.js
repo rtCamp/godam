@@ -26,7 +26,13 @@ import 'quill/dist/quill.snow.css';
 /**
  * Internal dependencies
  */
-import EasyDAM from '../../../../assets/src/images/EasyDAM.png';
+import GoDAM from '../../../../assets/src/images/GoDAM.png';
+
+/**
+ * Global variables
+ */
+const PREMIUM_LAYERS = [ 'form', 'hotspot', 'ad' ];
+const validLicense = window?.godamLicenseData?.valid_license;
 
 library.add( fas );
 dom.watch();
@@ -205,7 +211,7 @@ function easyDAMPlayer() {
 						el.className += ' vjs-custom-play-button';
 						const img = document.createElement( 'img' );
 						if ( 0 === controlBarSettings.customBrandImg.length ) {
-							img.src = EasyDAM;
+							img.src = GoDAM;
 						} else {
 							img.src = controlBarSettings.customBrandImg;
 						}
@@ -268,6 +274,11 @@ function easyDAMPlayer() {
 			const layerElement = document.querySelector( `#${ layerId }` );
 
 			if ( ! layerElement ) {
+				return;
+			}
+
+			if ( ! validLicense && PREMIUM_LAYERS.includes( layer.type ) ) {
+				console.log( 'Premium layer found without a valid license' );
 				return;
 			}
 
@@ -637,7 +648,7 @@ function easyDAMPlayer() {
 			}
 		} );
 
-		if ( adTagUrl ) {
+		if ( adTagUrl && validLicense ) {
 			player.ima( {
 				id: 'content_video',
 				adTagUrl,
@@ -646,15 +657,8 @@ function easyDAMPlayer() {
 
 		try {
 			player.qualityMenu();
-		} catch ( e ) {
-			console.log( e );
+		} catch ( error ) {
+			console.log( error );
 		}
-
-		player.ready( function() {
-			// if ( adTagUrl ) {
-			// 	player.ima.initializeAdDisplayContainer();
-			// 	player.ima.requestAds();
-			// }
-		} );
 	} );
 }

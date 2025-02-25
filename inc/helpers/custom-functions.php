@@ -299,3 +299,14 @@ function godam_get_usage_data() {
 		'total_bandwidth' => floatval( $data['message']['total_bandwidth'] ?? 0 ),
 	);
 }
+
+/**
+ * Check if the license is valid.
+ * 
+ * @return bool
+ */
+function godam_is_license_valid() {
+	$user_data = godam_get_user_data();
+
+	return !empty ( $user_data['valid_license'] ) ? true : false;
+}

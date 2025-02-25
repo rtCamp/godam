@@ -62,7 +62,7 @@ const App = () => {
 		const fetchSettings = async () => {
 			dispatch( setLoading( true ) );
 			try {
-				const settingsResponse = await fetch( '/wp-json/easydam/v1/settings/easydam-settings', {
+				const settingsResponse = await fetch( '/wp-json/godam/v1/settings/easydam-settings', {
 					headers: {
 						'Content-Type': 'application/json',
 						'X-WP-Nonce': window.wpApiSettings.nonce,
@@ -98,7 +98,7 @@ const App = () => {
 
 	const saveMediaSettings = async ( updatedSettings ) => {
 		try {
-			const response = await fetch( '/wp-json/easydam/v1/settings/easydam-settings', {
+			const response = await fetch( '/wp-json/godam/v1/settings/easydam-settings', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

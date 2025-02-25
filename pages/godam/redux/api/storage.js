@@ -5,7 +5,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const storageAPI = createApi( {
 	reducerPath: 'storageApi',
-	baseQuery: fetchBaseQuery( { baseUrl: '/wp-json/easydam/v1/settings/' } ),
+	baseQuery: fetchBaseQuery( { baseUrl: '/wp-json/godam/v1/settings/' } ),
 	endpoints: ( builder ) => ( {
 		getAWSSettings: builder.query( {
 			query: () => ( {

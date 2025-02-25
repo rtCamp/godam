@@ -447,5 +447,20 @@
 
 	img {
 		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
+}
+
+.vjs-control.vjs-custom-play-button {
+	width: auto !important;
+
+	@media screen and (max-width: 768px) {
+		display: none;
+	}
+
+	#branding-icon {
+		height: 100%;
+		object-fit: fill;
 	}
 }

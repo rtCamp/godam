@@ -20,14 +20,14 @@ import Layer from './layers/Layer';
 
 const layerTypes = [
 	{
-		title: __( 'Gravity Forms', 'godam' ),
-		icon: preformatted,
-		type: 'form',
-	},
-	{
 		title: __( 'CTA', 'godam' ),
 		icon: customLink,
 		type: 'cta',
+	},
+	{
+		title: __( 'Gravity Forms', 'godam' ),
+		icon: preformatted,
+		type: 'form',
 	},
 	{
 		title: __( 'Hotspot', 'godam' ),
@@ -40,6 +40,8 @@ const layerTypes = [
 		type: 'ad',
 	},
 ];
+
+const premiumLayers = [ 'form', 'hotspot', 'ad' ];
 
 const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	const [ isOpen, setOpen ] = useState( false );
@@ -59,6 +61,12 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
 
 	const addNewLayer = ( type ) => {
+		const isValidLicense = window.videoData?.valid_license;
+
+		if ( premiumLayers.includes( type ) && ! isValidLicense ) {
+			return;
+		}
+
 		switch ( type ) {
 			case 'form':
 				dispatch( addLayer( {
@@ -134,10 +142,14 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 							sortedLayers?.map( ( layer ) => {
 								const isAdServerAd = adServer === 'ad-server' && layer.type === 'ad';
 								const isGFPluginNotActive = layer.type === 'form' && ! isGFPluginActive;
+								const isValidLicense = window.videoData?.valid_license;
 								let addWarning = false;
 								let toolTipMessage = '';
 
-								if ( isAdServerAd ) {
+								if ( premiumLayers.includes( layer.type ) && ! isValidLicense ) {
+									toolTipMessage = __( 'This feature is available in the premium version', 'godam' );
+									addWarning = true;
+								} else if ( isAdServerAd ) {
 									toolTipMessage = __( 'This ad will be overriden by Ad server\'s ads', 'godam' );
 									addWarning = true;
 								} else if ( isGFPluginNotActive ) {
@@ -221,10 +233,16 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 										layerTypes.map( ( layerType ) => {
 											const isAdServerAd = adServer === 'ad-server' && layerType.type === 'ad';
 											const isGFPluginNotActive = layerType.type === 'form' && ! isGFPluginActive;
+											const isValidLicense = window.videoData?.valid_license;
 											let isDisabled = false;
+											let isPremium = false;
 											let message = '';
 
-											if ( isAdServerAd ) {
+											if ( premiumLayers.includes( layerType.type ) && ! isValidLicense ) {
+												message = __( 'This feature is available in the premium version', 'godam' );
+												isDisabled = true;
+												isPremium = true;
+											} else if ( isAdServerAd ) {
 												message = __( 'This ad will be overriden by Ad server\'s ads', 'godam' );
 												isDisabled = true;
 											} else if ( isGFPluginNotActive ) {
@@ -234,23 +252,34 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 												message = '';
 											}
 
-											return <BaseControl
-												key={ layerType.type }
-												help={ message }
-												className="w-full"
-											>
-												<Button
-													icon={ layerType.icon }
+											return (
+												<Tooltip
 													key={ layerType.type }
-													variant="secondary"
-													className="w-full"
-													onClick={ () => {
-														addNewLayer( layerType.type );
-														closeModal();
-													} }
-													disabled={ isDisabled }
-												>{ layerType.title }</Button>
-											</BaseControl>;
+													text={ message }
+													placement="top"
+													delay={ 0 }
+													hideOnClick={ true }
+												>
+													<div>
+														<Button
+															icon={ layerType.icon }
+															key={ layerType.type }
+															variant="secondary"
+															className={ `w-full ${ isPremium && isDisabled ? 'opacity-40' : '' }` }
+															onClick={ () => {
+																if ( isPremium && isDisabled ) {
+																	window.open( 'https://godam.io/#pricing', '_blank' );
+																	return;
+																}
+
+																addNewLayer( layerType.type );
+																closeModal();
+															} }
+															disabled={ ! isPremium && isDisabled }
+														>{ layerType.title }</Button>
+													</div>
+												</Tooltip>
+											);
 										} )
 									}
 								</div>

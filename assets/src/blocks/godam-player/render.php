@@ -71,10 +71,10 @@ $ad_tag_url = '';
 
 $ad_server = isset( $easydam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $easydam_meta_data['videoConfig']['adServer'] ) : '';
 
-if ( 'ad-server' === $ad_server ) :
+if ( ! empty( $ad_server ) ) :
 	$ad_tag_url = isset( $easydam_meta_data['videoConfig']['adTagURL'] ) ? $easydam_meta_data['videoConfig']['adTagURL'] : '';
-elseif ( 'self-hosted' === $ad_server && ! empty( $ads_layers ) ) :
-	$ad_tag_url = rest_url( '/easydam/v1/adTagURL/' ) . $attachment_id;
+elseif ( ! empty( $ads_layers ) ) :
+	$ad_tag_url = rest_url( '/godam/v1/adTagURL/' ) . $attachment_id;
 endif;
 
 $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );

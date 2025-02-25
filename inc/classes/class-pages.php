@@ -233,9 +233,9 @@ class Pages {
 		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id ), true ) ) {
 			wp_register_style(
 				'transcoder-page-style-godam',
-				RT_TRANSCODER_URL . '/pages/build/style.css',
+				GODAM_URL . '/pages/build/style.css',
 				array( 'wp-components' ),
-				filemtime( RT_TRANSCODER_PATH . '/pages/build/style.css' )
+				filemtime( GODAM_PATH . '/pages/build/style.css' )
 			);
 
 			wp_enqueue_style( 'transcoder-page-style-godam' );
@@ -245,9 +245,9 @@ class Pages {
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
-				RT_TRANSCODER_URL . '/pages/build/video-editor.js',
+				GODAM_URL . '/pages/build/video-editor.js',
 				array( 'wp-element' ),
-				filemtime( RT_TRANSCODER_PATH . '/pages/build/video-editor.js' ),
+				filemtime( GODAM_PATH . '/pages/build/video-editor.js' ),
 				true
 			);
 
@@ -259,6 +259,7 @@ class Pages {
 					'nonce'            => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
+					'valid_license'    => godam_is_license_valid(),
 				)
 			);
 
@@ -289,15 +290,14 @@ class Pages {
 					array(),
 					'1.0.0'
 				);
-			}
-
+			}       
 		} elseif ( $screen && $this->menu_page_id === $screen->id ) {
 
 			wp_register_script(
 				'transcoder-page-script-godam',
-				RT_TRANSCODER_URL . '/pages/build/godam.js',
+				GODAM_URL . '/pages/build/godam.js',
 				array( 'wp-element' ),
-				filemtime( RT_TRANSCODER_PATH . '/pages/build/godam.js' ),
+				filemtime( GODAM_PATH . '/pages/build/godam.js' ),
 				true
 			);
 
@@ -322,17 +322,17 @@ class Pages {
 
 			wp_register_script(
 				'transcoder-page-script-analytics',
-				RT_TRANSCODER_URL . 'pages/build/analytics.js',
+				GODAM_URL . 'pages/build/analytics.js',
 				array( 'wp-element' ),
-				filemtime( RT_TRANSCODER_PATH . 'pages/build/analytics.js' ),
+				filemtime( GODAM_PATH . 'pages/build/analytics.js' ),
 				true
 			);
 
 			wp_register_script(
 				'video-analytics-charts',
-				RT_TRANSCODER_URL . 'assets/build/js/video-analytics.js',
+				GODAM_URL . 'assets/build/js/video-analytics.js',
 				array( 'transcoder-page-script-analytics', 'd3-js' ),
-				filemtime( RT_TRANSCODER_PATH . 'assets/build/js/video-analytics.js' ),
+				filemtime( GODAM_PATH . 'assets/build/js/video-analytics.js' ),
 				true
 			);
 
@@ -352,9 +352,9 @@ class Pages {
 		} elseif ( $screen && $this->help_page_id === $screen->id ) {
 			wp_register_script(
 				'godam-page-script-help',
-				RT_TRANSCODER_URL . 'pages/build/help.js',
+				GODAM_URL . 'pages/build/help.js',
 				array( 'wp-element' ),
-				filemtime( RT_TRANSCODER_PATH . 'pages/build/help.js' ),
+				filemtime( GODAM_PATH . 'pages/build/help.js' ),
 				true
 			);
 
@@ -373,9 +373,9 @@ class Pages {
 
 		wp_register_script(
 			'media-library-react',
-			RT_TRANSCODER_URL . '/pages/build/media-library.js',
+			GODAM_URL . '/pages/build/media-library.js',
 			array( 'wp-element', 'wp-i18n' ),
-			filemtime( RT_TRANSCODER_PATH . '/pages/build/media-library.js' ),
+			filemtime( GODAM_PATH . '/pages/build/media-library.js' ),
 			true
 		);
 
@@ -386,7 +386,8 @@ class Pages {
 			'media-library-react',
 			'MediaLibrary',
 			array(
-				'nonce' => wp_create_nonce( 'wp_rest' ),
+				'nonce'    => wp_create_nonce( 'wp_rest' ),
+				'userData' => godam_get_user_data(),
 			)
 		);
 	}

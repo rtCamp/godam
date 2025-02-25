@@ -20,13 +20,14 @@ const ColorPickerButton = ( props ) => {
 		className = '',
 		contentClassName = '',
 		onChange,
+		disabled,
 	} = props;
 
 	const [ color, setColor ] = useState( value );
 
 	return (
 		<Dropdown
-			className={ `w-full ${ className }` }
+			className={ `w-full ${ className } ${ disabled ? 'pointer-events-none opacity-50' : '' }` }
 			popoverProps={ { placement, flip, resize, offset } }
 			renderToggle={ ( { isOpen, onToggle } ) => (
 				<button

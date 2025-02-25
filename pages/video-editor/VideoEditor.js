@@ -34,6 +34,8 @@ const VideoEditor = ( { attachmentID } ) => {
 	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
 
+	console.log(videoConfig);
+
 	useEffect( () => {
 		// Make sure the post ID is passed in the URL
 		if ( ! attachmentID ) {
@@ -119,7 +121,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	};
 
 	const fetchGravityForms = () => {
-		axios.get( '/wp-json/easydam/v1/gforms?fields=id,title,description' )
+		axios.get( '/wp-json/godam/v1/gforms?fields=id,title,description' )
 			.then( ( response ) => {
 				const data = response.data;
 				dispatch( setGravityForms( data ) );

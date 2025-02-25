@@ -37,3 +37,5 @@ sftp-config.json
 vendor/
 /assets/build/
 /pages/build/
+godam-build.zip
+godam-build

@@ -49,7 +49,7 @@ export const folderApi = createApi( {
 		} ),
 		assignFolder: builder.mutation( {
 			query: ( { attachmentIds, folderTermId } ) => ( {
-				url: 'easydam/v1/media-library/assign-folder',
+				url: 'godam/v1/media-library/assign-folder',
 				method: 'POST',
 				body: {
 					attachment_ids: attachmentIds,

@@ -21,7 +21,7 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 	const [ attachments, setAttachments ] = useState( [] );
 
 	return (
-		<div className="h-full overflow-auto godam-video-list-wrapper px-10">
+		<div className="h-full overflow-auto godam-video-list-wrapper px-10 bg-white">
 
 			<div className="godam-video-list-header py-10">
 				<h1 className="godam-video-list__title">

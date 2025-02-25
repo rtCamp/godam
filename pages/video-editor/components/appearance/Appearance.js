@@ -20,7 +20,7 @@ import {
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice';
-import EasyDAM from '../../../../assets/src/images/EasyDAM.png';
+import GoDAM from "../../../../assets/src/images/GoDAM.png";
 import ColorPickerButton from '../ColorPickerButton';
 
 const Appearance = () => {
@@ -297,7 +297,7 @@ const Appearance = () => {
 		setSelectedBrandImage( false );
 		const brandImg = document.querySelector( '#branding-icon' );
 		if ( brandImg ) {
-			brandImg.src = EasyDAM;
+			brandImg.src = GoDAM;
 		}
 	};
 

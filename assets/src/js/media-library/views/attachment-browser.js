@@ -8,6 +8,8 @@ import MediaDateRangeFilter from './filters/media-date-range-filter';
 // import MediaUploadToS3 from './filters/media-upload-to-s3';
 import MediaRetranscode from './filters/media-retranscode';
 
+import { isLicenseValid, isUploadPage } from '../utility';
+
 const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
 
 const $ = jQuery;
@@ -73,15 +75,17 @@ export default AttachmentsBrowser?.extend( {
 		// 	);
 		// }
 
-		if ( MediaRetranscode ) {
-			this.toolbar.set(
-				'MediaRetranscode',
-				new MediaRetranscode( {
-					controller: this.controller,
-					model: this.collection.props,
-					priority: -75,
-				} ).render(),
-			);
+		if ( isLicenseValid() && isUploadPage() ) {
+			if ( MediaRetranscode ) {
+				this.toolbar.set(
+					'MediaRetranscode',
+					new MediaRetranscode( {
+						controller: this.controller,
+						model: this.collection.props,
+						priority: -75,
+					} ).render(),
+				);
+			}
 		}
 
 		/**
@@ -158,5 +162,9 @@ export default AttachmentsBrowser?.extend( {
 		multipartParams = _.extend( uploader.getOption( 'multipart_params' ), multipartParams );
 
 		uploader.setOption( 'multipart_params', multipartParams );
+
+		// Fire a event notifying that the collection param has been changed.
+		const event = new CustomEvent( 'godam-attachment-browser:changed' );
+		document.dispatchEvent( event );
 	},
 } );

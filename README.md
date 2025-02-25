@@ -21,6 +21,8 @@ Seamlessly manage and optimize digital assets with GoDAM – featuring transcodi
 
 With GoDAM, WordPress users can leverage advanced video capabilities without requiring extensive technical expertise. It automates the conversion of uploaded videos into multiple resolutions, enabling seamless playback with adaptive bitrate streaming. The integration of interactive elements such as CTAs, forms, hotspots and ads makes GoDAM an all-in-one solution for content creators, marketers, and eCommerce businesses.
 
+See Our Official GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam)
+
 ### Key Features
 
 📌 Media Management
@@ -127,12 +129,17 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 1. General Settings
 2. Video Settings
 3. Video Editor
-4. Gravity Forms integration
+4. Gravity Forms Integration
 5. CTA Layer
 6. Hotspot Layer
-7. Ads integration
+7. Ads Integration
 8. Player Settings
-9. Enhanced Media Library
+9. Enhanced Media Library (DAM)
+10. GoDAM Video Block
+11. Post-Specific Video Settings
+12. Video Layer Selection
+13. Attachment Video Details
+14. Video Analytics
 
 ## Changelog
 1.0.0 [Feb 2025]

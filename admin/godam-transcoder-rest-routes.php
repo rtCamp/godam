@@ -319,7 +319,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 			return new WP_Error( 'transcoder_error', 'Something went wrong. Invalid post request.', array( 'status' => 400 ) );
 		}
 
-		$mail = defined( 'RT_TRANSCODER_NO_MAIL' ) ? false : true;
+		$mail = defined( 'GODAM_NO_MAIL' ) ? false : true;
 
 		$attachment_id = '';
 
