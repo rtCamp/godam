@@ -269,8 +269,6 @@ async function main() {
 		return;
 	}
 
-	console.log( 'Analytics data: ', analyticsData );
-
 	// Extract values from the analytics response
 	const { plays, page_load: pageLoad, play_time: playTime, video_length: videoLength, all_time_heatmap: allTimeHeatmap } = analyticsData;
 
@@ -310,6 +308,13 @@ async function main() {
 }
 
 document.addEventListener( 'DOMContentLoaded', () => {
-	setTimeout( main, 500 );
-} );
+	const videoCheckInterval = setInterval( () => {
+		const videoElement = document.getElementById( 'analytics-video' );
+		const videoId = videoElement?.dataset.id;
 
+		if ( videoId ) {
+			clearInterval( videoCheckInterval );
+			main();
+		}
+	}, 500 );
+} );
