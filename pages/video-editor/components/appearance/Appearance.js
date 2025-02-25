@@ -563,27 +563,6 @@ const Appearance = () => {
 				<div className="form-group">
 					<CustomSelectControl
 						__next40pxDefaultSize
-						onChange={ handleControlBarPosition }
-						label={ __( 'Adjust position of control bar', 'godam' ) }
-						options={ [
-							{
-								key: 'horizontal',
-								name: 'Horizontal',
-							},
-							{
-								key: 'vertical',
-								name: 'Vertical',
-							},
-						] }
-						value={ {
-							key: videoConfig.controlBar.controlBarPosition,
-							name: videoConfig.controlBar.controlBarPosition,
-						} }
-					/>
-				</div>
-				<div className="form-group">
-					<CustomSelectControl
-						__next40pxDefaultSize
 						onChange={ handleSkipTimeSettings }
 						options={ [
 							{
