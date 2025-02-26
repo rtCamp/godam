@@ -346,6 +346,15 @@ class Pages {
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 				)
 			);
+
+			$godam_user_data = godam_get_user_data();
+
+			wp_localize_script(
+				'transcoder-page-script-analytics',
+				'userData',
+				$godam_user_data
+			);
+
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 			wp_enqueue_script( 'd3-js' );
 			wp_enqueue_script( 'video-analytics-charts' );

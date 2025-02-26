@@ -86,7 +86,7 @@ $media-frame-width: calc( 300px + 2 * 24px );
 /**
  * Admin page CSS changes for the top-level EasyDAM page.
  */
-.toplevel_page_godam, .godam_page_video_editor, .godam_page_help, #rt-transcoder-media-library-root {
+.toplevel_page_godam, .godam_page_video_editor, .godam_page_help, .godam-analytics-container, .modal__button-group, #rt-transcoder-media-library-root {
 	--wp-admin-theme-color: #ab3a6c;
 
 	button, a, input {
@@ -267,4 +267,20 @@ $media-frame-width: calc( 300px + 2 * 24px );
 	bottom: 0;
 	right: 0;
 	background-color: rgba( 0,0,0, 0.5 );
+}
+
+.godam-notice-header {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+}
+
+.godam-logo {
+	width: 150px;
+	height: auto;
+	margin: 20px;
+}
+
+.godam-notice-content {
+	flex: 1;
 }

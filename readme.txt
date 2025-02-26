@@ -2,7 +2,7 @@
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar
 Tags: media, multimedia, audio, songs, music, video, ffmpeg, media-node, rtMedia, WordPress, transcode, transcoder, encoding, encode, transcoder, DAM, audio video conversion, digital asset management
 Requires at least: 6.5
-Tested up to: 6.7.1
+Tested up to: 6.7.2
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -31,8 +31,8 @@ Key Features
 📌 Smart Transcoding & Adaptive Bitrate Streaming (Pro)
 - Automatically converts videos into multiple resolutions (240p to 4K).
 - Ensures smooth playback by dynamically adjusting quality based on network speed.
-- Supports MP4, WebM, and other common video formats for maximum compatibility.
-
+- Supported audio formats: MP3, M4A, WAV, OGG, WMA
+- Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, MPG, OGV, WEBM, WMV
 
 📌 Seamless Ad Monetization (Pro)
 - Supports self-hosted ads and third-party ad networks.

@@ -71,7 +71,7 @@ class Analytics extends Base {
 		$site_url = $request->get_param( 'site_url' );
 
 		// Define API URL for fetching analytics.
-		$analytics_endpoint = EasyDAM_Constants::ANALYTICS_ENDPOINT_DEV . 'processed-analytics/fetch/';
+		$analytics_endpoint = GODAM_ANALYTICS_BASE . '/processed-analytics/fetch/';
 
 		$account_token = get_site_option( 'rt-transcoding-account-token', 'unverified' );
 
