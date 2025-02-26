@@ -18,9 +18,4 @@ class EasyDAM_Constants {
 	 * @var string
 	 */
 	const S3_STORAGE_OPTIONS = 'easydam_storage_aws';
-
-	/**
-	 * Analytics Microservice URLs
-	 */
-	const ANALYTICS_ENDPOINT_DEV = 'https://analytics.godam.rt.gw/';
 }

@@ -41,7 +41,7 @@ const videoAnalyticsPlugin = () => {
 
 				const userAgentData = getUserAgent( window.navigator.userAgent );
 				// Iterate over each range and send a POST request for it
-				const response = await fetch( endpoint + 'analytics/', {
+				const response = await fetch( endpoint + '/analytics/', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
@@ -91,6 +91,8 @@ const videoAnalyticsPlugin = () => {
 					} ),
 					keepalive: true,
 				} );
+
+				console.log( 'Video analytics POST response:', response );
 
 				if ( ! response.ok ) {
 					throw new Error(
