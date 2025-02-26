@@ -37,7 +37,7 @@ const Analytics = ( { attachmentID } ) => {
 	}, [ attachmentID ] );
 
 	return (
-		<>
+		<div className="godam-analytics-container">
 			<GodamHeader />
 
 			<div id="loading-analytics-animation" className="progress-bar-wrapper">
@@ -123,7 +123,7 @@ const Analytics = ( { attachmentID } ) => {
 					</div>
 				</div>
 			) }
-		</>
+		</div>
 	);
 };
 
