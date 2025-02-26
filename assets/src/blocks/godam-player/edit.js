@@ -14,7 +14,6 @@ import {
 	PanelBody,
 	Spinner,
 	Placeholder,
-	ToggleControl,
 } from '@wordpress/components';
 import {
 	BlockControls,
@@ -29,7 +28,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
-import { media as icon } from '@wordpress/icons';
+import { external, media as icon } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
 /**
@@ -97,6 +96,13 @@ function VideoEdit( {
 		( async () => {
 			try {
 				const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
+
+				if ( response.meta._rt_media_video_thumbnail !== '' ) {
+					setAttributes( {
+						poster: response.meta._rt_media_video_thumbnail,
+					} );
+				}
+
 				if ( response && response.meta && response.meta._rt_transcoded_url ) {
 					const transcodedUrl = response.meta._rt_transcoded_url;
 
@@ -108,7 +114,7 @@ function VideoEdit( {
 							},
 							{
 								src: media.url,
-								type: media.mime,
+								type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
 							},
 						],
 					} );
@@ -118,7 +124,7 @@ function VideoEdit( {
 						sources: [
 							{
 								src: media.url,
-								type: media.mime,
+								type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
 							},
 						],
 					} );
@@ -230,7 +236,7 @@ function VideoEdit( {
 				</>
 			) }
 			<InspectorControls>
-				<PanelBody title={ __( 'Settings' ) }>
+				<PanelBody title={ __( 'Settings', 'godam' ) }>
 					<VideoCommonSettings
 						setAttributes={ setAttributes }
 						attributes={ attributes }
@@ -241,7 +247,7 @@ function VideoEdit( {
 								{ __( 'Poster image' ) }
 							</BaseControl.VisualLabel>
 							<MediaUpload
-								title={ __( 'Select poster image' ) }
+								title={ __( 'Select poster image', 'godam' ) }
 								onSelect={ onSelectPoster }
 								allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
 								render={ ( { open } ) => (
@@ -252,7 +258,7 @@ function VideoEdit( {
 										ref={ posterImageButton }
 										aria-describedby={ videoPosterDescription }
 									>
-										{ ! poster ? __( 'Select' ) : __( 'Replace' ) }
+										{ ! poster ? __( 'Select', 'godam' ) : __( 'Replace', 'godam' ) }
 									</Button>
 								) }
 							/>
@@ -271,27 +277,29 @@ function VideoEdit( {
 									onClick={ onRemovePoster }
 									variant="tertiary"
 								>
-									{ __( 'Remove' ) }
+									{ __( 'Remove', 'godam' ) }
 								</Button>
 							) }
 						</div>
 					</MediaUploadCheck>
 					<div className="editor-video-customisation-cta">
 						<BaseControl.VisualLabel>
-							{ __( 'Customise Video' ) }
+							{ __( 'Customise Video', 'godam' ) }
 						</BaseControl.VisualLabel>
 						<Button
 							__next40pxDefaultSize
-							onClick={ () =>
-								( window.location.href = `/wp-admin/admin.php?page=video_editor&id=${ id }` )
-							}
+							href={ `/wp-admin/admin.php?page=video_editor&id=${ id }` }
+							target="_blank"
 							variant="primary"
 							className=""
+							icon={ external }
+							iconPosition="right"
 						>
-							{ __( 'Customise' ) }
+							{ __( 'Customise', 'godam' ) }
 						</Button>
 					</div>
-					<div className="editor-enable-preview">
+					{ /* Temporary hide the partially implemented video preview feature */ }
+					{ /* <div className="editor-enable-preview">
 						<BaseControl.VisualLabel>
 							{ __( 'Enable Preview' ) }
 						</BaseControl.VisualLabel>
@@ -300,7 +308,7 @@ function VideoEdit( {
 							checked={ attributes.preview }
 							onChange={ ( value ) => setAttributes( { preview: value } ) }
 						/>
-					</div>
+					</div>*/ }
 				</PanelBody>
 			</InspectorControls>
 			<figure { ...blockProps }>

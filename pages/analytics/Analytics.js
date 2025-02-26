@@ -98,7 +98,7 @@ const Analytics = ( { attachmentID } ) => {
 											className="video-js"
 											data-id={ attachmentID }
 										>
-											<source src={ analyticsData.source_url || '' } type={ analyticsData.mime_type || 'video/mp4' } />
+											<source src={ analyticsData.source_url || '' } type={ analyticsData.mime_type === 'video/quicktime' ? 'video/mp4' : analyticsData.mime_type || 'video/mp4' } />
 										</video>
 										<div className="video-chart-container">
 											<div id="chart-container">
