@@ -55,5 +55,18 @@ class Meta_Rest_Fields {
 				},
 			)
 		);
+
+		register_post_meta(
+			'attachment',
+			'_rt_media_video_thumbnail',
+			array(
+				'type'          => 'string',
+				'single'        => true,
+				'show_in_rest'  => true,
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
 	}
 }
