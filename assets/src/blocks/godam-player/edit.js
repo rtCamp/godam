@@ -14,7 +14,6 @@ import {
 	PanelBody,
 	Spinner,
 	Placeholder,
-	ToggleControl,
 } from '@wordpress/components';
 import {
 	BlockControls,
