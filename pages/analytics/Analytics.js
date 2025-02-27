@@ -20,6 +20,8 @@ import { __ } from '@wordpress/i18n';
 const Analytics = ( { attachmentID } ) => {
 	const [ analyticsData, setAnalyticsData ] = useState( null );
 
+	const adminUrl = window.videoData?.adminUrl || '/wp-admin/admin.php?page=godam';
+
 	useEffect( () => {
 		if ( attachmentID ) {
 			const url = `/wp-json/wp/v2/media/${ attachmentID }`;
@@ -58,7 +60,13 @@ const Analytics = ( { attachmentID } ) => {
 
 			<div id="license-overlay" className="license-overlay hidden">
 				<div className="license-message">
-					<p>{ __( 'Please activate your license to access the Analytics feature.', 'godam' ) }</p>
+					<p>
+						{ __( 'Please ', 'godam' ) }
+						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+							{ __( 'activate your license', 'godam' ) }
+						</a>
+						{ __( ' to access the Analytics feature.', 'godam' ) }
+					</p>
 				</div>
 			</div>
 
@@ -106,12 +114,12 @@ const Analytics = ( { attachmentID } ) => {
 											className="video-js"
 											data-id={ attachmentID }
 										>
-											<source src={ analyticsData.source_url || '' } type={ getMimiType( analyticsData.mime_type ) || 'video/mp4' } />
 											{
 												analyticsData?.meta?._rt_transcoded_url && (
 													<source src={ analyticsData?.meta?._rt_transcoded_url || '' } type={ analyticsData?.meta?._rt_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } />
 												)
 											}
+											<source src={ analyticsData.source_url || '' } type={ getMimiType( analyticsData.mime_type ) || 'video/mp4' } />
 										</video>
 										<div className="video-chart-container">
 											<div id="chart-container">
