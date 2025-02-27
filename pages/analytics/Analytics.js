@@ -60,11 +60,12 @@ const Analytics = ( { attachmentID } ) => {
 
 			<div id="license-overlay" className="license-overlay hidden">
 				<div className="license-message">
-					<p>{ __( 'Please activate your license to access the Analytics feature.', 'godam' ) }</p>
 					<p>
+						{ __( 'Please ', 'godam' ) }
 						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( 'Activate your license here.', 'godam' ) }
+							{ __( 'activate your license', 'godam' ) }
 						</a>
+						{ __( ' to access the Analytics feature.', 'godam' ) }
 					</p>
 				</div>
 			</div>
