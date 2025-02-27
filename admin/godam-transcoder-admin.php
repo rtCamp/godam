@@ -513,7 +513,7 @@ class RT_Transcoder_Admin {
 		$grace_period_days  = 30;
 
 		// If the user is in trial mode, show trial expiry notice.
-		if ( 'Trialing' === $subscription_status && $trial_end ) {
+		if ( 'Trialling' === $subscription_status && $trial_end ) {
 			$days_until_trial_end = ceil( ( $trial_end - $current_time ) / DAY_IN_SECONDS );
 
 			if ( $days_until_trial_end > 0 ) {
