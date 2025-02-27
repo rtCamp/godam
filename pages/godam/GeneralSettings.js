@@ -280,7 +280,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								<Button
 									className="max-w-[160px] w-full flex justify-center items-center"
 									onClick={ deactivateLicenseKey }
-									disabled={ isLicenseKeyLoading }
+									disabled={ isLicenseKeyLoading || ! window?.userData?.valid_license }
 									variant="secondary"
 									isDestructive
 									isBusy={ isDeactivateLoading }

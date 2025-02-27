@@ -54,6 +54,51 @@ function VideoEdit( {
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 
 	useEffect( () => {
+		if ( id ) {
+			( async () => {
+				try {
+					const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
+
+					if ( response.meta._rt_media_video_thumbnail !== '' ) {
+						setAttributes( {
+							poster: response.meta._rt_media_video_thumbnail,
+						} );
+					}
+
+					if ( response && response.meta && response.meta._rt_transcoded_url ) {
+						const transcodedUrl = response.meta._rt_transcoded_url;
+
+						setAttributes( {
+							sources: [
+								{
+									src: transcodedUrl,
+									type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : response.mime_type,
+								},
+								{
+									src: response.source_url,
+									type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
+								},
+							],
+						} );
+					} else {
+						// If meta not present, use media url.
+						setAttributes( {
+							sources: [
+								{
+									src: response.source_url,
+									type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
+								},
+							],
+						} );
+					}
+				} catch ( error ) {
+					console.error( 'Error fetching media meta:', error );
+				}
+			} )();
+		}
+	}, [] );
+
+	useEffect( () => {
 		// Placeholder may be rendered.
 		if ( videoPlayer.current ) {
 			videoPlayer.current.load();
