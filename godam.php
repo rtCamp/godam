@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: GoDAM
+ * Plugin Name: DAM
  * Plugin URI: https://godam.io
  * Description: Seamlessly manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, gravity forms integration, and ad integration.
  * Version: 1.0.0
