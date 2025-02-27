@@ -114,12 +114,12 @@ const Analytics = ( { attachmentID } ) => {
 											className="video-js"
 											data-id={ attachmentID }
 										>
-											<source src={ analyticsData.source_url || '' } type={ getMimiType( analyticsData.mime_type ) || 'video/mp4' } />
 											{
 												analyticsData?.meta?._rt_transcoded_url && (
 													<source src={ analyticsData?.meta?._rt_transcoded_url || '' } type={ analyticsData?.meta?._rt_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } />
 												)
 											}
+											<source src={ analyticsData.source_url || '' } type={ getMimiType( analyticsData.mime_type ) || 'video/mp4' } />
 										</video>
 										<div className="video-chart-container">
 											<div id="chart-container">
