@@ -268,3 +268,19 @@ $media-frame-width: calc( 300px + 2 * 24px );
 	right: 0;
 	background-color: rgba( 0,0,0, 0.5 );
 }
+
+.godam-notice-header {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+}
+
+.godam-logo {
+	width: 150px;
+	height: auto;
+	margin: 20px;
+}
+
+.godam-notice-content {
+	flex: 1;
+}

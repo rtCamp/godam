@@ -290,7 +290,7 @@ class RT_Transcoder_Handler {
 			$rtt_watermark_text             = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
 			$rtt_watermark_url              = esc_url( $this->easydam_settings['video']['watermark_url'] );
 			$rtt_abs_resolutions            = $this->easydam_settings['video']['video_quality'] ?? [];
-			$rtt_abs_resolutions			= array_map( 'intval', $rtt_abs_resolutions );
+			$rtt_abs_resolutions			= json_encode( $rtt_abs_resolutions );
 
 			$watermark_to_use = array();
 
