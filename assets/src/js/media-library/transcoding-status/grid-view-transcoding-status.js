@@ -22,7 +22,7 @@ const icons = {
 class GridViewTranscodingStatus {
 	constructor() {
 		const transcodingStatus = document.querySelectorAll( '.transcoding-status--in-progress' );
-		const postIds = Array.from( transcodingStatus ).map( ( status ) => status.dataset.id );
+		const postIds = Array.from( transcodingStatus ).map( ( status ) => parseInt( status.dataset.id ) );
 
 		if ( postIds.length > 0 ) {
 			this.checker = new TranscodingChecker( transcoderSettings.restUrl, this.updateCallback.bind( this ), postIds );
@@ -127,7 +127,7 @@ class GridViewTranscodingStatus {
 
 		const transcodingStatus = document.querySelectorAll( '.transcoding-status--in-progress' );
 
-		const postIds = Array.from( transcodingStatus ).map( ( status ) => status.dataset.id );
+		const postIds = Array.from( transcodingStatus ).map( ( status ) => parseInt( status.dataset.id ) );
 
 		if ( postIds.length > 0 ) {
 			this.checker = new TranscodingChecker( transcoderSettings.restUrl, this.updateCallback.bind( this ), postIds );
@@ -137,7 +137,11 @@ class GridViewTranscodingStatus {
 
 	addAttachment( attachmentId ) {
 		if ( this.checker ) {
-			this.checker.postIds.push( attachmentId );
+			this.checker.postIds.push( parseInt( attachmentId ) );
+
+			if ( ! this.checker.polling ) {
+				this.checker.startPolling();
+			}
 		} else {
 			this.checker = new TranscodingChecker( transcoderSettings.restUrl, this.updateCallback.bind( this ), [ attachmentId ] );
 			this.checker.startPolling();
