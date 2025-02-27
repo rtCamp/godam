@@ -480,41 +480,137 @@ class RT_Transcoder_Admin {
 		// Get the license key from the site options.
 		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
 
-		// If no license key is stored, show the notice.
+		// If no license key is stored, show the activation notice with the GoDAM update message.
 		if ( empty( $license_key ) ) {
-			$this->render_license_notice();
+			$this->render_admin_notice( 
+				'The plugin requires an active license to work fully. Please activate your license to start transcoding media and access all features.', 
+				'warning', 
+				true, 
+				true 
+			);
 			return;
 		}
 
-		// Use the global helper function to verify the license key.
-		$result = rtt_verify_license( $license_key );
+		// Get stored usage data.
+		$usage_data = get_site_option( 'rt-transcoding-usage', [] );
+		$usage_data = isset( $usage_data[ $license_key ] ) ? (array) $usage_data[ $license_key ] : null;
 
-		// Check if the result is an error and show the notice if the license is invalid.
-		if ( is_wp_error( $result ) ) {
-			$this->render_license_notice();
+		if ( empty( $usage_data ) ) {
+			$this->render_admin_notice( 
+				'The plugin requires an active license to work fully. Please activate your license to start transcoding media and access all features.',
+				'warning',
+				true,
+				false
+			);
+			return;
 		}
+
+		$status             = $usage_data['status'] ?? '';
+		$subscription_status = $usage_data['subscription_status'] ?? '';
+		$subscription_end   = isset( $usage_data['end_date'] ) ? strtotime( $usage_data['end_date'] ) : null;
+		$trial_end          = isset( $usage_data['trial_end_date'] ) ? strtotime( $usage_data['trial_end_date'] ) : null;
+		$current_time       = time();
+		$grace_period_days  = 30;
+
+		// If the user is in trial mode, show trial expiry notice.
+		if ( 'Trialling' === $subscription_status && $trial_end ) {
+			$days_until_trial_end = ceil( ( $trial_end - $current_time ) / DAY_IN_SECONDS );
+
+			if ( $days_until_trial_end > 0 ) {
+				$this->render_admin_notice( 
+					sprintf( 
+						'Your product is under trial. You will be charged after <strong>%d days</strong>. 
+						If you wish to cancel, please visit <a href="https://app.godam.io/subscription/my-account" target="_blank">your subscription settings</a>.', 
+						$days_until_trial_end 
+					), 
+					'warning', 
+					false, 
+					false 
+				);
+				return;
+			}
+		}
+
+		// If the license is Active, no need to show any notice.
+		if ( 'Active' === $status ) {
+			return;
+		}
+
+		// Check subscription expiry and display appropriate messages.
+		if ( $subscription_end ) {
+			$days_until_deletion = floor( ( $subscription_end + ( $grace_period_days * DAY_IN_SECONDS ) - $current_time ) / DAY_IN_SECONDS );
+
+			if ( $days_until_deletion > 0 ) {
+				$this->render_admin_notice( 
+					sprintf( 
+						'Your subscription has ended. No further transcoding can be done. 
+						Transcoded videos will be removed after <strong>%d days</strong>, and advanced video layers will not be accessible. 
+						After the 30-day grace period, already transcoded videos will no longer be served from the CDN. 
+						Renew your subscription to keep it up and running.', 
+						$days_until_deletion
+					), 
+					'error', 
+					true, 
+					false 
+				);
+				return;
+			} else {
+				$this->render_admin_notice( 
+					'Transcoding is not available. Please activate your license key to start transcoding media and access all features.', 
+					'error', 
+					true, 
+					false 
+				);
+				return;
+			}
+		}
+
+		// Default fallback notice (if none of the above conditions are met).
+		$this->render_admin_notice( 
+			'The plugin requires an active license to work fully. Please activate your license to start transcoding media and access all features.', 
+			'warning', 
+			true, 
+			false 
+		);
 	}
 
 	/**
-	 * Render the license activation admin notice.
+	 * Render an admin notice for license activation or expiry warnings.
+	 *
+	 * @param string $message The message to display.
+	 * @param string $notice_type Type of notice (warning, error, etc.).
+	 * @param bool   $include_buttons Whether to include action buttons (default: false).
+	 * @param bool   $show_godam_message Whether to show the GoDAM update message (default: false).
 	 */
-	private function render_license_notice() {
+	private function render_admin_notice( $message, $notice_type = 'warning', $include_buttons = false, $show_godam_message = false ) {
+		// Get the GoDAM logo URL
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', dirname(__FILE__) );
 		?>
-		<div class="notice notice-warning is-dismissible rt-transcoder-license-notice">
-			<p>
-				<?php esc_html_e( 'Good News! Transcoder is now updated to GoDAM with many more exciting features to enhance your media management experience.', 'godam' ); ?>
-			</p>
-			<p>
-				<?php esc_html_e( 'The plugin requires an active license to work fully. Please activate your license.', 'godam' ); ?>
-			</p>
-			<p>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=godam' ) ); ?>" class="button button-primary">
-					<?php esc_html_e( 'Activate License', 'godam' ); ?>
-				</a>
-				<a href="https://rtmedia.io/transcoder/" class="button button-secondary" target="_blank">
-					<?php esc_html_e( 'Learn More', 'godam' ); ?>
-				</a>
-			</p>
+		<div class="notice notice-<?php echo esc_attr( $notice_type ); ?> is-dismissible rt-transcoder-license-notice">
+
+		<div class="godam-notice-header">
+			<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
+			<div>
+				<?php if ( $show_godam_message ) : ?>
+					<p>
+						<?php esc_html_e( 'Welcome to GoDAM! Thank you for using our product.', 'godam' ); ?>
+					</p>
+				<?php endif; ?>
+
+				<p><?php echo wp_kses( $message, array( 'strong' => array(), 'a' => array( 'href' => array(), 'target' => array() ) ) ); ?></p>
+
+				<?php if ( $include_buttons ) : ?>
+					<p>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=godam' ) ); ?>" class="button button-primary">
+							<?php esc_html_e( 'Activate License', 'godam' ); ?>
+						</a>
+						<a href="https://godam.io/" class="button button-secondary" target="_blank">
+							<?php esc_html_e( 'Learn More', 'godam' ); ?>
+						</a>
+					</p>
+				<?php endif; ?>
+			</div>
+		</div>
 		</div>
 		<?php
 	}

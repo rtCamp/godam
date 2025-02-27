@@ -29,9 +29,9 @@ if ( 'list' === checkMediaLibraryView() ) {
 	if ( wp?.Uploader ) {
 		( function( $ ) {
 			$.extend( wp.Uploader.prototype, {
-				success( fileAttachment ) {
+				success() {
 					// Add this new attachment to the collection.
-					gridView.addAttachment( fileAttachment?.id );
+					gridView.reAttachEvent();
 				},
 			} );
 		}( jQuery ) );

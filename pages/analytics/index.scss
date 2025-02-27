@@ -24,8 +24,6 @@
 	right: 0;
 	min-height: calc( 100vh - var(--wp-admin--admin-bar--height, 0) );
 	margin-left: 160px;
-	padding-left: 20px;
-	padding-right: 20px;
 	padding-top: var(--wp-admin--admin-bar--height, 0);
 	overflow: auto;
 }
@@ -196,4 +194,54 @@
 
 #root-video-analytics .hidden{
 	display: none;
+}
+
+#tooltip-container {
+	position: relative;
+	display: inline-block;
+	cursor: pointer;
+}
+
+#root-video-analytics #tooltip-container .tooltip-icon {
+	background-color: #a6a6a6;
+	color: white;
+	font-size: 12px;
+	font-weight: bold;
+	border-radius: 50%;
+	width: 18px;
+	height: 18px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-left: 5px;
+	line-height: 0;
+	opacity: 0.5;
+}
+
+#root-video-analytics #tooltip-container .tooltip-text {
+	position: absolute;
+	bottom: 50%;
+	left: 50%;
+	visibility: hidden;
+	background-color: rgba(0, 0, 0, 0.8);
+	color: #fff;
+	text-align: center;
+	padding: 8px;
+	border-radius: 5px;
+	min-width: 110px;
+	width: max-content;
+	max-width: 300px;
+	z-index: 100;
+	pointer-events: none;
+	font-size: 12px;
+	line-height: 1.2;
+	opacity: 0;
+	transition: opacity 0.2s ease, visibility 0.2s ease;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+#root-video-analytics #tooltip-container:hover .tooltip-text {
+	visibility: visible;
+	opacity: 1;
 }

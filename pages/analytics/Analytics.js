@@ -9,6 +9,9 @@ import 'video.js/dist/video-js.css';
  */
 import '../video-editor/style.scss';
 import axios from 'axios';
+import GodamHeader from '../godam/GodamHeader';
+import Tooltip from './Tooltip';
+
 /**
  * WordPress dependencies
  */
@@ -31,10 +34,20 @@ const Analytics = ( { attachmentID } ) => {
 					console.log( error );
 				} );
 		}
-	}, [] );
+	}, [ attachmentID ] );
+
+	const getMimiType = ( mime ) => {
+		if ( mime === 'video/quicktime' ) {
+			return 'video/mp4';
+		}
+
+		return mime;
+	};
 
 	return (
-		<>
+		<div className="godam-analytics-container">
+			<GodamHeader />
+
 			<div id="loading-analytics-animation" className="progress-bar-wrapper">
 				<div className="progress-bar-container">
 					<div className="progress-bar">
@@ -52,24 +65,32 @@ const Analytics = ( { attachmentID } ) => {
 			{ analyticsData && (
 				<div id="video-analytics-container" className="video-analytics-container hidden">
 					<div className="overflow-auto">
-
 						<div className="flex gap-8 items-start">
 							<div className="min-w-[350px] max-w-[350px] flex-grow">
 								<h2 className="text-lg m-0 mb-2">{ __( 'Analytics', 'godam' ) }</h2>
 
 								<div className="analytics-info-container border-t border-gray-500">
 									<div className="analytics-info flex justify-between">
-										<p>{ __( 'Average Engagement', 'godam' ) }</p>
+										<p>
+											{ __( 'Average Engagement', 'godam' ) }
+											<Tooltip text="Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)" />
+										</p>
 										<span id="engagement-rate" className="min-w-[90px]">0%</span>
 									</div>
 									<hr />
 									<div className="analytics-info flex justify-between">
-										<p>{ __( 'Total Plays', 'godam' ) }</p>
+										<p>
+											{ __( 'Total Plays', 'godam' ) }
+											<Tooltip text="Plays represent the total number of times the video has been viewed" />
+										</p>
 										<span id="total-plays" className="min-w-[90px]">0</span>
 									</div>
 									<hr />
 									<div className="analytics-info flex justify-between">
-										<p>{ __( 'Play Rate', 'godam' ) }</p>
+										<p>
+											{ __( 'Play Rate', 'godam' ) }
+											<Tooltip text="Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads" />
+										</p>
 										<span id="play-rate" className="min-w-[90px]">0%</span>
 									</div>
 									<hr />
@@ -85,7 +106,12 @@ const Analytics = ( { attachmentID } ) => {
 											className="video-js"
 											data-id={ attachmentID }
 										>
-											<source src={ analyticsData.source_url || '' } type={ analyticsData.mime_type || 'video/mp4' } />
+											<source src={ analyticsData.source_url || '' } type={ getMimiType( analyticsData.mime_type ) || 'video/mp4' } />
+											{
+												analyticsData?.meta?._rt_transcoded_url && (
+													<source src={ analyticsData?.meta?._rt_transcoded_url || '' } type={ analyticsData?.meta?._rt_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } />
+												)
+											}
 										</video>
 										<div className="video-chart-container">
 											<div id="chart-container">
@@ -98,10 +124,8 @@ const Analytics = ( { attachmentID } ) => {
 										<div id="heatmap-container" className="mt-4">
 											<h3 className="text-md font-semibold text-gray-700 mb-2">
 												{ __( 'Heatmap Analysis', 'godam' ) }
+												<Tooltip text="Heatmap visualizes per-second view density, identifying peaks of plays, skipped sections, and audience drop-offs. Darker areas indicate higher engagement" />
 											</h3>
-											<p className="text-sm text-gray-500 mb-2">
-												{ __( 'The heatmap visualizes the most-watched portions of your video. Darker areas indicate higher engagement.', 'godam' ) }
-											</p>
 											<svg id="heatmap" width="640" height="100"></svg>
 											<div className="heatmap-tooltip"></div>
 										</div>
@@ -112,7 +136,7 @@ const Analytics = ( { attachmentID } ) => {
 					</div>
 				</div>
 			) }
-		</>
+		</div>
 	);
 };
 

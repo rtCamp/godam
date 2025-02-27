@@ -50,6 +50,10 @@ if ( ! defined( 'GODAM_API_BASE' ) ) {
 	define( 'GODAM_API_BASE', 'https://app.godam.io' );
 }
 
+if ( ! defined( 'GODAM_ANALYTICS_BASE' ) ) {
+	define( 'GODAM_ANALYTICS_BASE', 'https://analytics.godam.io' );
+}
+
 if ( ! defined( 'GODAMIO_API_BASE' ) ) {
 	define( 'GODAMIO_API_BASE', 'https://godam.io' );
 }
