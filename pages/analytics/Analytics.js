@@ -20,6 +20,8 @@ import { __ } from '@wordpress/i18n';
 const Analytics = ( { attachmentID } ) => {
 	const [ analyticsData, setAnalyticsData ] = useState( null );
 
+	const adminUrl = window.videoData?.adminUrl || '/wp-admin/admin.php?page=godam';
+
 	useEffect( () => {
 		if ( attachmentID ) {
 			const url = `/wp-json/wp/v2/media/${ attachmentID }`;
@@ -59,6 +61,11 @@ const Analytics = ( { attachmentID } ) => {
 			<div id="license-overlay" className="license-overlay hidden">
 				<div className="license-message">
 					<p>{ __( 'Please activate your license to access the Analytics feature.', 'godam' ) }</p>
+					<p>
+						<a href={ adminUrl } className="button button-primary">
+							{ __( 'Activate License', 'godam' ) }
+						</a>
+					</p>
 				</div>
 			</div>
 
