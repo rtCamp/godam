@@ -483,7 +483,7 @@ class RT_Transcoder_Admin {
 		// If no license key is stored, show the activation notice with the GoDAM update message.
 		if ( empty( $license_key ) ) {
 			$this->render_admin_notice( 
-				'The plugin requires an active license to work fully. Please activate your license.', 
+				'The plugin requires an active license to work fully. Please activate your license to start transcoding media and access all features.', 
 				'warning', 
 				true, 
 				true 
@@ -497,7 +497,7 @@ class RT_Transcoder_Admin {
 
 		if ( empty( $usage_data ) ) {
 			$this->render_admin_notice( 
-				'The plugin requires an active license to work fully. Please activate your license.',
+				'The plugin requires an active license to work fully. Please activate your license to start transcoding media and access all features.',
 				'warning',
 				true,
 				false
@@ -556,7 +556,7 @@ class RT_Transcoder_Admin {
 				return;
 			} else {
 				$this->render_admin_notice( 
-					'Transcoding is not available. Please activate your license key.', 
+					'Transcoding is not available. Please activate your license key to start transcoding media and access all features.', 
 					'error', 
 					true, 
 					false 
@@ -567,7 +567,7 @@ class RT_Transcoder_Admin {
 
 		// Default fallback notice (if none of the above conditions are met).
 		$this->render_admin_notice( 
-			'The plugin requires an active license to work fully. Please activate your license.', 
+			'The plugin requires an active license to work fully. Please activate your license to start transcoding media and access all features.', 
 			'warning', 
 			true, 
 			false 
@@ -593,7 +593,7 @@ class RT_Transcoder_Admin {
 			<div>
 				<?php if ( $show_godam_message ) : ?>
 					<p>
-						<?php esc_html_e( 'Good News! Transcoder is now updated to GoDAM with many more exciting features to enhance your media management experience.', 'godam' ); ?>
+						<?php esc_html_e( 'Welcome to GoDAM! Thank you for using our product.', 'godam' ); ?>
 					</p>
 				<?php endif; ?>
 
