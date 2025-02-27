@@ -20,7 +20,6 @@ $poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster
 $preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
 $plays_inline  = ! empty( $attributes['playsInline'] );
 $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
-$sources       = ! empty( $attributes['sources'] ) ? $attributes['sources'] : array();
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 $video_preview = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
@@ -32,6 +31,34 @@ $easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : [];
 // Extract control bar settings with a fallback to an empty array.
 $control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? [];
 
+$poster_image = get_post_meta( $attachment_id, '_rt_media_video_thumbnail', true );
+$poster_image = ! empty( $poster_image ) ? $poster_image : '';
+
+$sources = [];
+$transcoded_url    = $attachment_id ? get_post_meta( $attachment_id, '_rt_transcoded_url', true ) : '';
+$video_src         = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
+$video_src_type    = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
+
+if ( ! empty( $transcoded_url ) ) {
+	$sources = array(
+		array(
+			'src'  => $transcoded_url,
+			'type' => 'application/dash+xml',
+		),
+		array(
+			'src'  => $video_src,
+			'type' => $video_src_type === 'video/quicktime' ? 'video/mp4' : $video_src_type,
+		),
+	);
+} else {
+	$sources = array(
+		array(
+			'src'  => $video_src,
+			'type' => $video_src_type === 'video/quicktime' ? 'video/mp4' : $video_src_type,
+		)
+	);
+}
+
 // Build the video setup options for data-setup.
 $video_setup = wp_json_encode(
 	array(
@@ -40,7 +67,7 @@ $video_setup = wp_json_encode(
 		'loop'       => $loop,
 		'muted'      => $muted,
 		'preload'    => $preload,
-		'poster'     => $poster,
+		'poster'     => empty( $poster ) ? $poster_image : $poster,
 		'fluid'      => true,
 		'sources'    => $sources,
 		'controlBar' => $control_bar_settings, // contains settings specific to control bar
@@ -78,6 +105,7 @@ elseif ( ! empty( $ads_layers ) ) :
 endif;
 
 $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
+
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>

@@ -97,12 +97,6 @@ function VideoEdit( {
 			try {
 				const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
 
-				if ( response.meta._rt_media_video_thumbnail !== '' ) {
-					setAttributes( {
-						poster: response.meta._rt_media_video_thumbnail,
-					} );
-				}
-
 				if ( response && response.meta && response.meta._rt_transcoded_url ) {
 					const transcodedUrl = response.meta._rt_transcoded_url;
 
