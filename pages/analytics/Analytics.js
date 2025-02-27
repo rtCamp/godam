@@ -62,8 +62,8 @@ const Analytics = ( { attachmentID } ) => {
 				<div className="license-message">
 					<p>{ __( 'Please activate your license to access the Analytics feature.', 'godam' ) }</p>
 					<p>
-						<a href={ adminUrl } className="button button-primary">
-							{ __( 'Activate License', 'godam' ) }
+						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+							{ __( 'Activate your license here.', 'godam' ) }
 						</a>
 					</p>
 				</div>
