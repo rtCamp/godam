@@ -495,8 +495,6 @@ class RT_Transcoder_Admin {
 		$usage_data = get_site_option( 'rt-transcoding-usage', [] );
 		$usage_data = isset( $usage_data[ $license_key ] ) ? (array) $usage_data[ $license_key ] : null;
 
-		error_log( print_r( $usage_data, true ) );
-
 		if ( empty( $usage_data ) ) {
 			$this->render_admin_notice( 
 				'The plugin requires an active license to work fully. Please activate your license.',
