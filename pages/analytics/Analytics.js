@@ -36,6 +36,14 @@ const Analytics = ( { attachmentID } ) => {
 		}
 	}, [ attachmentID ] );
 
+	const getMimiType = ( mime ) => {
+		if ( mime === 'video/quicktime' ) {
+			return 'video/mp4';
+		}
+
+		return mime;
+	};
+
 	return (
 		<div className="godam-analytics-container">
 			<GodamHeader />
@@ -98,7 +106,12 @@ const Analytics = ( { attachmentID } ) => {
 											className="video-js"
 											data-id={ attachmentID }
 										>
-											<source src={ analyticsData.source_url || '' } type={ analyticsData.mime_type === 'video/quicktime' ? 'video/mp4' : analyticsData.mime_type || 'video/mp4' } />
+											<source src={ analyticsData.source_url || '' } type={ getMimiType( analyticsData.mime_type ) || 'video/mp4' } />
+											{
+												analyticsData?.meta?._rt_transcoded_url && (
+													<source src={ analyticsData?.meta?._rt_transcoded_url || '' } type={ analyticsData?.meta?._rt_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } />
+												)
+											}
 										</video>
 										<div className="video-chart-container">
 											<div id="chart-container">
