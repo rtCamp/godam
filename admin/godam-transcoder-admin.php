@@ -483,7 +483,7 @@ class RT_Transcoder_Admin {
 		// If no license key is stored, show the activation notice with the GoDAM update message.
 		if ( empty( $license_key ) ) {
 			$this->render_admin_notice( 
-				'The plugin requires an active license to work fully. Please activate your license to start transcoding media and access all features.', 
+				'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your license', 
 				'warning', 
 				true, 
 				true 
@@ -497,7 +497,7 @@ class RT_Transcoder_Admin {
 
 		if ( empty( $usage_data ) ) {
 			$this->render_admin_notice( 
-				'The plugin requires an active license to work fully. Please activate your license to start transcoding media and access all features.',
+				'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your license',
 				'warning',
 				true,
 				false
@@ -556,7 +556,7 @@ class RT_Transcoder_Admin {
 				return;
 			} else {
 				$this->render_admin_notice( 
-					'Transcoding is not available. Please activate your license key to start transcoding media and access all features.', 
+					'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your license', 
 					'error', 
 					true, 
 					false 
@@ -567,8 +567,8 @@ class RT_Transcoder_Admin {
 
 		// Default fallback notice (if none of the above conditions are met).
 		$this->render_admin_notice( 
-			'The plugin requires an active license to work fully. Please activate your license to start transcoding media and access all features.', 
-			'warning', 
+			'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your license', 
+			'warning',
 			true, 
 			false 
 		);
@@ -601,8 +601,8 @@ class RT_Transcoder_Admin {
 
 				<?php if ( $include_buttons ) : ?>
 					<p>
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=godam' ) ); ?>" class="button button-primary">
-							<?php esc_html_e( 'Activate License', 'godam' ); ?>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=video_editor' ) ); ?>" class="button button-primary">
+							<?php esc_html_e( 'Use Video Editor', 'godam' ); ?>
 						</a>
 						<a href="https://godam.io/" class="button button-secondary" target="_blank">
 							<?php esc_html_e( 'Learn More', 'godam' ); ?>
