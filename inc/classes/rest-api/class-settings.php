@@ -310,8 +310,9 @@ class Settings extends Base {
 				'image_quality'     => '20',
 			),
 			'general' => array(
-				'track_status' => false,
-				'is_verified'  => false,
+				'track_status'                => false,
+				'is_verified'                 => false,
+				'disable_folder_organization' => false,
 			),
 		);
 
@@ -380,8 +381,9 @@ class Settings extends Base {
 				'image_quality'     => sanitize_text_field( $settings['image']['image_quality'] ),
 			),
 			'general' => array(
-				'track_status' => rest_sanitize_boolean( $settings['general']['track_status'] ),
-				'is_verified'  => rest_sanitize_boolean( $settings['general']['is_verified'] ),
+				'track_status'                => rest_sanitize_boolean( $settings['general']['track_status'] ),
+				'is_verified'                 => rest_sanitize_boolean( $settings['general']['is_verified'] ),
+				'disable_folder_organization' => rest_sanitize_boolean( $settings['general']['disable_folder_organization'] ),
 			),
 		);
 

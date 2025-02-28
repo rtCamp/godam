@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
-import { TextControl, Button, Notice, Panel, PanelBody } from '@wordpress/components';
+import { TextControl, ToggleControl, Button, Notice, Panel, PanelBody } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 /**
  * External dependencies
@@ -61,6 +61,18 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 
 		fetchPlans();
 	}, [] );
+
+	const handleMediaFolderOrganization = ( value ) => {
+		const updatedSettings = {
+			...mediaSettings,
+			general: {
+				...mediaSettings.general,
+				disable_folder_organization: value,
+			},
+		};
+
+		saveMediaSettings( updatedSettings );
+	};
 
 	const saveLicenseKey = async () => {
 		if ( ! licenseKey.trim() ) {
@@ -235,7 +247,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 				</Notice>
 			) }
 			<div className="flex flex-col lg:flex-row gap-4 items-start mb-4">
-				<Panel header={ __( 'Settings Overview', 'godam' ) } className="w-full">
+				<Panel header={ __( 'License Settings', 'godam' ) } className="w-full">
 					<PanelBody
 						opened={ true }
 						className="flex gap-8"
@@ -343,7 +355,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 
 			{ ! window?.userData?.valid_license && (
 				<Panel
-					header={ __( 'General Settings', 'godam' ) }
+					header={ __( 'Pricing Plan', 'godam' ) }
 				>
 					<PanelBody
 						opened={ true }
@@ -388,6 +400,27 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 					</PanelBody>
 				</Panel>
 			) }
+
+			<div className="mt-4">
+				<Panel
+					header={ __( 'General Settings', 'godam' ) }
+				>
+					<PanelBody
+						opened={ true }
+					>
+						<div className="flex flex-col gap-4">
+							<ToggleControl
+								__nextHasNoMarginBottom
+								className="mb-4"
+								label={ __( 'Disable Folder Organization in Media Library', 'godam' ) }
+								help={ __( 'Enable this option to disable folder organization in the media library.', 'godam' ) }
+								checked={ mediaSettings?.general?.disable_folder_organization || false }
+								onChange={ handleMediaFolderOrganization }
+							/>
+						</div>
+					</PanelBody>
+				</Panel>
+			</div>
 
 		</div>
 	);
