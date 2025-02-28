@@ -65,7 +65,7 @@ const Analytics = ( { attachmentID } ) => {
 						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
 							{ __( 'activate your license', 'godam' ) }
 						</a>
-						{ __( ' to access the Analytics feature.', 'godam' ) }
+						{ __( ' to access the Analytics feature', 'godam' ) }
 					</p>
 				</div>
 			</div>
