@@ -105,7 +105,6 @@ elseif ( ! empty( $ads_layers ) ) :
 endif;
 
 $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
-
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
