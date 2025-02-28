@@ -32,7 +32,7 @@ const slice = createSlice( {
 					vertical: true, // Prevent horizontal volume slider
 				},
 				//custom controls
-				brandingIcon: true,
+				brandingIcon: false,
 				appearanceColor: '#2b333fb3',
 				hoverColor: '#fff',
 				zoomLevel: 0,

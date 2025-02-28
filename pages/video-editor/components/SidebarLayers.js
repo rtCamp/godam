@@ -60,9 +60,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	// Sort the array (ascending order)
 	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
 
-	const addNewLayer = ( type ) => {
-		const isValidLicense = window.videoData?.valid_license;
+	// If we want to disable the premium layers the we can use this code
+	// const isValidLicense = window?.videoData?.valid_license;
 
+	// For now we are enabling all the features
+	const isValidLicense = true;
+
+	const addNewLayer = ( type ) => {
 		if ( premiumLayers.includes( type ) && ! isValidLicense ) {
 			return;
 		}
@@ -142,7 +146,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 							sortedLayers?.map( ( layer ) => {
 								const isAdServerAd = adServer === 'ad-server' && layer.type === 'ad';
 								const isGFPluginNotActive = layer.type === 'form' && ! isGFPluginActive;
-								const isValidLicense = window.videoData?.valid_license;
 								let addWarning = false;
 								let toolTipMessage = '';
 
@@ -233,7 +236,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 										layerTypes.map( ( layerType ) => {
 											const isAdServerAd = adServer === 'ad-server' && layerType.type === 'ad';
 											const isGFPluginNotActive = layerType.type === 'form' && ! isGFPluginActive;
-											const isValidLicense = window.videoData?.valid_license;
 											let isDisabled = false;
 											let isPremium = false;
 											let message = '';
