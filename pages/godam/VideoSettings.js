@@ -29,13 +29,13 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 
 	const videoQualityOptions = [
 		{ label: 'Auto', value: 'auto' },
-		{ label: '240p (352 x 240)', value: '240p' },
-		{ label: '360p (640 x 360)', value: '360p' },
-		{ label: '480p (842 x 480)', value: '480p' },
-		{ label: '720p (1280 x 720)', value: '720p' },
-		{ label: '1080p (1920 x 1080) (HD)', value: '1080p' },
-		{ label: '1440p (2560 x 1440) (HD)', value: '1440p' },
-		{ label: '2160p (3840 x 2160) (4K)', value: '2160p' },
+		{ label: '240p (352 x 240)', value: '240' },
+		{ label: '360p (640 x 360)', value: '360' },
+		{ label: '480p (842 x 480)', value: '480' },
+		{ label: '720p (1280 x 720)', value: '720' },
+		{ label: '1080p (1920 x 1080) (HD)', value: '1080' },
+		{ label: '1440p (2560 x 1440) (HD)', value: '1440' },
+		{ label: '2160p (3840 x 2160) (4K)', value: '2160' },
 	];
 
 	const handleSubmit = ( e ) => {
