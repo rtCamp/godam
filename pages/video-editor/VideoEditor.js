@@ -27,6 +27,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ isSaving, setIsSaving ] = useState( false );
 	const playerInstance = useRef( null );
+	const [ sources, setSources ] = useState( [] );
 
 	const dispatch = useDispatch();
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
@@ -61,6 +62,12 @@ const VideoEditor = ( { attachmentID } ) => {
 				if ( easydamMeta ) {
 					dispatch( initializeStore( easydamMeta ) );
 				}
+				// Set video sources
+				const videoSources = [ { src: data.source_url, type: data.mimeType } ];
+				if ( data?.meta?._rt_transcoded_url !== '' ) {
+					videoSources.push( { src: data.meta._rt_transcoded_url, type: data?.meta?._rt_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } );
+				}
+				setSources( videoSources );
 			} )
 			.catch( ( error ) => {
 				console.error( error );
@@ -203,7 +210,7 @@ const VideoEditor = ( { attachmentID } ) => {
 										fluid: true,
 										preload: 'auto',
 										width: '100%',
-										sources: [ { src: video.source_url, type: video.mimeType } ],
+										sources,
 										muted: true,
 										controlBar: {
 											playToggle: true, // Play/Pause button

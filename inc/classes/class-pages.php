@@ -312,6 +312,11 @@ class Pages {
 			wp_enqueue_script( 'transcoder-page-script-godam' );
 		} elseif ( $screen && $this->analytics_page_id === $screen->id ) {
 
+			/**
+			 * We are using the D3.js library for the analytics page.
+			 * 
+			 * License: https://github.com/d3/d3/blob/main/LICENSE
+			 */
 			wp_register_script(
 				'd3-js',
 				'https://d3js.org/d3.v7.min.js',

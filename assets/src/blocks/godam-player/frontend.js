@@ -197,7 +197,7 @@ function easyDAMPlayer() {
 				controlBar.removeChild( 'volumePanel' );
 			}
 
-			if ( controlBarSettings.brandingIcon ) {
+			if ( controlBarSettings.brandingIcon || ! validLicense ) {
 				const CustomPlayButton = videojs.getComponent( 'Button' );
 
 				class CustomButton extends CustomPlayButton {
@@ -274,11 +274,6 @@ function easyDAMPlayer() {
 			const layerElement = document.querySelector( `#${ layerId }` );
 
 			if ( ! layerElement ) {
-				return;
-			}
-
-			if ( ! validLicense && PREMIUM_LAYERS.includes( layer.type ) ) {
-				console.log( 'Premium layer found without a valid license' );
 				return;
 			}
 
@@ -648,7 +643,7 @@ function easyDAMPlayer() {
 			}
 		} );
 
-		if ( adTagUrl && validLicense ) {
+		if ( adTagUrl ) {
 			player.ima( {
 				id: 'content_video',
 				adTagUrl,
