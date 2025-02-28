@@ -115,3 +115,11 @@ add_filter( 'network_admin_plugin_action_links', 'rtt_action_links', 11, 2 );
  * Autoloader for the vendor directory.
  */
 require GODAM_PATH . 'vendor/autoload.php';
+
+/**
+ * Runs when the plugin is deactivated.
+ */
+function godam_plugin_deactivate() {
+	\Transcoder\Inc\Cron::get_instance()->unschedule_video_cleanup();
+}
+register_deactivation_hook( __FILE__, 'godam_plugin_deactivate' );

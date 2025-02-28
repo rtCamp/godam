@@ -12,6 +12,7 @@ use Transcoder\Inc\Pages;
 use Transcoder\Inc\Blocks;
 use Transcoder\Inc\Assets;
 use Transcoder\Inc\Deactivation;
+use Transcoder\Inc\Cron;
 
 use Transcoder\Inc\Taxonomies\Media_Folders;
 
@@ -42,6 +43,7 @@ class Plugin {
 		Blocks::get_instance();
 		Pages::get_instance();
 		Media_Library_Ajax::get_instance();
+		Cron::get_instance();
 
 		$this->load_post_types();
 		$this->load_taxonomies();
