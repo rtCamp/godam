@@ -25,7 +25,7 @@ import GodamHeader from './GodamHeader';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
-	const [ isPremiumUser, setIsPremiumUser ] = useState( true ); // Should be initially set to false.
+	const isPremiumUser = window.userData?.user_data?.active_plan !== 'Starter';
 	const [ mediaSettings, setMediaSettings ] = useState( null );
 	const [ licenseKey, setLicenseKey ] = useState( '' );
 	const [ verifyLicenseFromUrl, setVerifyLicenseFromUrl ] = useState( false );
