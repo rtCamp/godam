@@ -22,8 +22,9 @@ Seamlessly manage and optimize digital assets with GoDAM – featuring transcodi
 With GoDAM, WordPress users can leverage advanced video capabilities without requiring extensive technical expertise. It automates the conversion of uploaded videos into multiple resolutions, enabling seamless playback with adaptive bitrate streaming. The integration of interactive elements such as CTAs, forms, hotspots and ads makes GoDAM an all-in-one solution for content creators, marketers, and eCommerce businesses.
 
 See Our Official GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam)
+Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 
-### Key Features
+### Free Features
 
 📌 Media Management
 - The DAM functionality streamlines file organization for websites with large libraries of images, videos, documents, and more.
@@ -31,16 +32,18 @@ See Our Official GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam
 
 📌 Interactive Video Layers for Engagement
 - Embed clickable CTAs to drive actions like sign-ups and purchases.
-- Enhance your videos with customizable hotspots that deliver additional context, links, and information exactly when and where your viewers need it. (Pro)
-- Integrate Gravity Forms to collect user feedback and lead data within videos. (Pro)
+- Enhance your videos with customizable hotspots that deliver additional context, links, and information exactly when and where your viewers need it.
+- Integrate Gravity Forms to collect user feedback and lead data within videos.
 
-📌 Smart Transcoding & Adaptive Bitrate Streaming (Pro)
+### Pro Features
+
+📌 Smart Transcoding & Adaptive Bitrate Streaming
 - Automatically converts videos into multiple resolutions (240p to 4K).
 - Ensures smooth playback by dynamically adjusting quality based on network speed.
 - Supported audio formats: MP3, M4A, WAV, OGG, WMA
 - Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, MPG, OGV, WEBM, WMV
 
-📌 Seamless Ad Monetization (Pro)
+📌 Seamless Ad Monetization
 - Supports self-hosted ads and third-party ad networks.
 - Flexible ad placements (pre-roll, mid-roll, post-roll) to maximize revenue.
 - Boost revenue and engagement with clickable ad redirections
@@ -48,9 +51,9 @@ See Our Official GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam
 📌 Customizable Video Player Experience
 - Fully customizable playback controls, branding, and player themes.
 - Enable video looping, autoplay, and inline play for better user experience.
-- Watermarking support to protect video content. (Pro)
+- Watermarking support to protect video content.
 
-📌 Video Analytics (Pro)
+📌 Video Analytics
 - Monitor viewer behavior and engagement through detailed metrics and heatmaps.
 - Track video interactions to optimize content strategy.
 - Gain insights into user retention and conversion rates.

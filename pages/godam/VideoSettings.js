@@ -280,7 +280,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					opened={ true }
 				>
 
-					<div className="py-3 flex flex-col gap-2 opacity-90 relative">
+					<div className={ `${ ! isPremiumUser ? 'px-2' : '' } py-3 flex flex-col gap-2 opacity-90 relative`}>
 						{ ! isPremiumUser && (
 							<div className="absolute bg-orange-400 bg-opacity-10 inset-0 rounded-lg border border-orange-200">
 								<button
@@ -288,18 +288,18 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 									className="px-3 py-2 rounded font-semibold border border-orange-300 bg-orange-200 border-500 absolute top-0 right-0"
 									onClick={ handleOpenModal }
 								>
-									{ __( 'Premium feature', 'godam' ) }
+									{ __( 'Upgrade plan', 'godam' ) }
 								</button>
 							</div>
 						) }
 						{ /* <label className="easydam-settings-label" htmlFor="abs">{ __( 'Watermark', 'godam' ) }</label> */ }
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label="Disable video watermark"
+							label="Remove video watermark"
 							checked={ disableWatermark }
 							onChange={ ( value ) => setDisableWatermark( value ) }
 							disabled={ ! isPremiumUser }
-							help={ __( 'If enabled, GoDAM will add a watermark to the transcoded video', 'godam' ) }
+							help={ __( 'Enable to remove watermark on the transcoded video and add custom watermark', 'godam' ) }
 						/>
 						{ isPremiumUser && ! disableWatermark && (
 							<>
@@ -365,17 +365,20 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					</div>
 					{ isModalOpen && (
 						<Modal
-							title="Upgrade to Premium"
+							title="Upgrade Your Plan"
 							onRequestClose={ handleCloseModal }
 						>
 							<p className="text-base text-gray-700">
-								To access this feature, please upgrade to our premium subscription plan
+								{ __( 'To access this feature, please upgrade your plan.', 'godam' ) }
 							</p>
 							<Button
-								isPrimary
+								variant="primary"
 								className="mt-4"
+								href="https://app.godam.io/subscription/plans"
+								target="_blank"
+								rel="noopener noreferrer"
 							>
-								Go to Payment Page
+								{ __( 'Upgrade Now', 'godam' ) }
 							</Button>
 						</Modal>
 					) }
