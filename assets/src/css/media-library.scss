@@ -1,11 +1,11 @@
 /**
  * global CSS for the media library.
  */
-#wpbody {
+#wpbody:has( #rt-transcoder-media-library-root ){
 	display: flex;
 }
 
-#wpcontent {
+#wpcontent:has( #rt-transcoder-media-library-root ) {
 	padding-left: 0 !important;
 }
 
@@ -37,7 +37,6 @@
 /**
  * Attachment Thumbnail styles.
  */
-
 .attachment-actions {
 
 	.attachment-video-actions {
