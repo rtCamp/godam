@@ -52,6 +52,7 @@ function VideoEdit( {
 	const posterImageButton = useRef();
 	const { id, controls, autoplay, poster, src, tracks, sources, muted, loop, playsInline, preload } = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
+	const [ defaultPoster, setDefaultPoster ] = useState( '' );
 
 	useEffect( () => {
 		// Placeholder may be rendered.
@@ -59,6 +60,49 @@ function VideoEdit( {
 			videoPlayer.current.load();
 		}
 	}, [ poster ] );
+
+	useEffect( () => {
+		if ( id ) {
+			( async () => {
+				try {
+					const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
+
+					if ( response.meta._rt_media_video_thumbnail !== '' ) {
+						setDefaultPoster( response.meta._rt_media_video_thumbnail );
+					}
+
+					if ( response && response.meta && response.meta._rt_transcoded_url ) {
+						const transcodedUrl = response.meta._rt_transcoded_url;
+
+						setAttributes( {
+							sources: [
+								{
+									src: transcodedUrl,
+									type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : response.mime_type,
+								},
+								{
+									src: response.source_url,
+									type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
+								},
+							],
+						} );
+					} else {
+						// If meta not present, use media url.
+						setAttributes( {
+							sources: [
+								{
+									src: response.source_url,
+									type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
+								},
+							],
+						} );
+					}
+				} catch ( error ) {
+					console.error( 'Error fetching media meta:', error );
+				}
+			} )();
+		}
+	}, [] );
 
 	function onSelectVideo( media ) {
 		if ( ! media || ! media.url ) {
@@ -87,24 +131,25 @@ function VideoEdit( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
-			poster:
-				media.image?.src !== media.icon ? media.image?.src : undefined,
+			poster: undefined,
 			caption: media.caption,
 		} );
+
+		if ( media.image?.src !== media.icon ) {
+			setDefaultPoster( media.image?.src );
+		}
 
 		// Fetch transcoded URL from media meta.
 		( async () => {
 			try {
 				const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
 
-				if ( response.meta._rt_media_video_thumbnail !== '' ) {
-					setAttributes( {
-						poster: response.meta._rt_media_video_thumbnail,
-					} );
-				}
-
 				if ( response && response.meta && response.meta._rt_transcoded_url ) {
 					const transcodedUrl = response.meta._rt_transcoded_url;
+
+					if ( response.meta._rt_media_video_thumbnail !== '' ) {
+						setDefaultPoster( response.meta._rt_media_video_thumbnail );
+					}
 
 					setAttributes( {
 						sources: [
@@ -311,6 +356,7 @@ function VideoEdit( {
 					</div>*/ }
 				</PanelBody>
 			</InspectorControls>
+
 			<figure { ...blockProps }>
 				{ /*
                     Disable the video tag if the block is not selected
@@ -327,7 +373,7 @@ function VideoEdit( {
 							playsinline: playsInline,
 							loop,
 							muted,
-							poster,
+							poster: poster || defaultPoster,
 							sources,
 						} }
 					/>
