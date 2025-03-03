@@ -13,7 +13,7 @@ const slice = createSlice( {
 			preload: 'auto',
 			width: '100%',
 			sources: [],
-			playbackRates: [ 0.5, 1, 1.5, 2 ],
+			playbackRates: [ 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 6 ],
 			captions: [],
 			adServer: false,
 			controlBar: {
@@ -24,6 +24,7 @@ const slice = createSlice( {
 				durationDisplay: true, // Total duration
 				fullscreenToggle: true, // Full-screen button
 				subsCapsButton: true,
+				playbackRateMenuButton: true,
 				skipButtons: {
 					forward: 10,
 					backward: 10,

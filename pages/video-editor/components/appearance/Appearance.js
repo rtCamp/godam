@@ -13,6 +13,7 @@ import '../../video-control.css';
 import {
 	Button,
 	CustomSelectControl,
+	FormTokenField,
 	RangeControl,
 	TextareaControl,
 	ToggleControl,
@@ -20,7 +21,7 @@ import {
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice';
-import GoDAM from "../../../../assets/src/images/GoDAM.png";
+import GoDAM from '../../../../assets/src/images/GoDAM.png';
 import ColorPickerButton from '../ColorPickerButton';
 
 const Appearance = () => {
@@ -30,6 +31,12 @@ const Appearance = () => {
 	const [ selectedCustomBgImg, setSelectedCustomBgImg ] = useState(
 		videoConfig.controlBar.customPlayBtnImg.length > 0,
 	);
+	const [ selectedPlaybackRates, setSelectedPlaybackRates ] = useState(
+		Array.isArray( videoConfig.playbackRates )
+			? videoConfig.playbackRates.map( String )
+			: [],
+	);
+	const commonRates = [ '0.25', '0.5', '0.75', '1', '1.5', '2', '2.5', '6' ];
 
 	useEffect( () => {
 		//class gets re added upon component load, so we need to remove it.
@@ -97,6 +104,29 @@ const Appearance = () => {
 			controlBar.removeChild( brandingLogo );
 		} else {
 			controlBar.appendChild( brandingLogo );
+		}
+	}
+
+	function handlePlaybackToggle() {
+		const playbackRateBtn = document.querySelector( '.vjs-playback-rate' );
+		const controlBar = document.querySelector( '.vjs-control-bar' );
+
+		dispatch(
+			updateVideoConfig( {
+				playbackRates: ! videoConfig.controlBar.playbackRateMenuButton ? selectedPlaybackRates : [],
+				controlBar: {
+					...videoConfig.controlBar,
+					playbackRateMenuButton: ! videoConfig.controlBar.playbackRateMenuButton,
+				},
+			} ),
+		);
+
+		if ( playbackRateBtn.classList.contains( 'hide' ) ) {
+			playbackRateBtn.classList.remove( 'hide' );
+			playbackRateBtn.classList.add( 'show' );
+		} else {
+			playbackRateBtn.classList.add( 'hide' );
+			playbackRateBtn.classList.remove( 'show' );
 		}
 	}
 
@@ -449,9 +479,32 @@ const Appearance = () => {
 							onChange={ handleBrandingToggle }
 							checked={ videoConfig.controlBar.brandingIcon }
 						/>
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label="Show Playback rate"
+							onChange={ handlePlaybackToggle }
+							checked={ videoConfig.controlBar.playbackRateMenuButton }
+						/>
 					</div>
 
 				</div>
+
+				<FormTokenField
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
+					label="Select all playback rates"
+					onChange={ ( rates ) => {
+						const newRates = rates.sort();
+						setSelectedPlaybackRates( newRates );
+						dispatch(
+							updateVideoConfig( {
+								playbackRates: newRates.map( Number ),
+							} ),
+						);
+					} }
+					suggestions={ commonRates }
+					value={ selectedPlaybackRates }
+				/>
 
 				{ videoConfig.controlBar.brandingIcon && (
 					<div className="form-group">

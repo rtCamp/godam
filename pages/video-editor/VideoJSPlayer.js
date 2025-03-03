@@ -12,7 +12,7 @@ import 'videojs-ima';
 /**
  * Internal dependencies
  */
-import GoDAM from "../../assets/src/images/GoDAM.png";
+import GoDAM from '../../assets/src/images/GoDAM.png';
 import { setCurrentLayer } from './redux/slice/videoSlice';
 
 /**
@@ -125,9 +125,14 @@ export const VideoJS = ( props ) => {
 		const captionsButton = document.querySelector( '.vjs-subs-caps-button' );
 		const volumeSlider = document.querySelector( '.vjs-volume-panel' );
 		const brandingLogo = document.querySelector( '#branding-icon' );
+		const playbackRateMenuButton = document.querySelector( '.vjs-playback-rate' );
 
 		if ( ! videoConfig.controlBar.volumePanel ) {
 			volumeSlider.classList.add( 'hide' );
+		}
+
+		if ( ! videoConfig.controlBar.playbackRateMenuButton ) {
+			playbackRateMenuButton.classList.add( 'hide' );
 		}
 
 		if ( videoConfig.controlBar.subsCapsButton ) {
@@ -293,6 +298,7 @@ export const VideoJS = ( props ) => {
 			player.loop( options.loop );
 			player.controls( options.controls );
 			player.preload( options.preload );
+			player.playbackRates( videoConfig.playbackRates );
 
 			const volumePanel = player.controlBar.getChild( 'volumePanel' );
 			if ( options.controlBar.playToggle && ! volumePanel ) {
