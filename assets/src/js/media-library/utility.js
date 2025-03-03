@@ -31,4 +31,13 @@ function isUploadPage() {
 	return document.querySelector( '.upload-php' ) ? true : false;
 }
 
-export { isLicenseValid, checkMediaLibraryView, isUploadPage };
+/**
+ * Check if folder organization is disabled.
+ *
+ * @return {boolean} True if folder organization is disabled, false otherwise.
+ */
+function isFolderOrgDisabled() {
+	return window.easydamMediaLibrary?.disableFolderOrganization || false;
+}
+
+export { isLicenseValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled };
