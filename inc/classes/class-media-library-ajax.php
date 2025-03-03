@@ -38,6 +38,8 @@ class Media_Library_Ajax {
 		add_action( 'add_attachment', array( $this, 'add_media_library_taxonomy_on_media_upload' ), 10, 1 );
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
 
+		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
+
 		// TODO: think about merging this hooks and other to media-filters, as they are related to media library.
 		$offload_media = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
 		$offload_media = isset( $offload_media['offLoadMedia'] ) ? $offload_media['offLoadMedia'] : false;
@@ -77,6 +79,37 @@ class Media_Library_Ajax {
 
 		// Assign the existing term
 		wp_set_object_terms( $attachment_id, (int) $media_folder, 'media-folder' );
+	}
+
+	/**
+	 * Recursively delete child media folders.
+	 *
+	 * @param int    $term     Term ID.
+	 * @param string $taxonomy Taxonomy.
+	 *
+	 * @return void
+	 */
+	public function delete_child_media_folder( $term, $taxonomy ) {
+		if ( 'media-folder' !== $taxonomy ) {
+			return;
+		}
+
+		$children = get_terms(
+			array(
+				'taxonomy'   => $taxonomy,
+				'parent'     => $term,
+				'hide_empty' => false,
+			)
+		);
+
+		/**
+		 * As we use the wp_delete_term and hook get's called again,
+		 * hence we can safely delete that and child of child will also be deleted.
+		 */
+		foreach( $children as $child ) {
+			wp_delete_term( $child->term_id, $taxonomy );
+		}
+
 	}
 
 	/**
@@ -195,7 +228,6 @@ class Media_Library_Ajax {
 	public function filter_media_library_by_taxonomy( $query_args ) {
 
 		if ( isset( $_REQUEST['query']['media-folder'] ) ) {
-
 			$media_folder_id = sanitize_text_field( $_REQUEST['query']['media-folder'] );
 
 			if ( 'uncategorized' === $media_folder_id ) {
@@ -275,15 +307,15 @@ class Media_Library_Ajax {
 						),
 					)
 				);
-
 			} elseif ( $media_folder && 'all' !== $media_folder ) {
 				$query->set( // phpcs:ignore
 					'tax_query',
 					array(
 						array(
-							'taxonomy' => 'media-folder',
-							'field'    => 'term_id',
-							'terms'    => (int) $media_folder,
+							'taxonomy'         => 'media-folder',
+							'field'            => 'term_id',
+							'terms'            => (int) $media_folder,
+							'include_children' => false,
 						),
 					)
 				);

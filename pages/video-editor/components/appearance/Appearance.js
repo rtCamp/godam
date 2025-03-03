@@ -471,12 +471,15 @@ const Appearance = () => {
 							onChange={ handleCaptionsToggle }
 							checked={ videoConfig.controlBar.subsCapsButton }
 						/>
-						<ToggleControl
-							__nextHasNoMarginBottom
-							label="Show Branding"
-							onChange={ handleBrandingToggle }
-							checked={ videoConfig.controlBar.brandingIcon }
-						/>
+						{
+							window.videoData?.valid_license &&
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label="Show Branding"
+								onChange={ handleBrandingToggle }
+								checked={ videoConfig.controlBar.brandingIcon }
+							/>
+						}
 						<ToggleControl
 							__nextHasNoMarginBottom
 							label="Show Playback rate"

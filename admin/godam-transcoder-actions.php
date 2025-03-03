@@ -263,17 +263,12 @@ function add_transcoded_url_field( $form_fields, $post ) {
 
 	// Add the transcoded URL field.
 	$form_fields['transcoded_url'] = array(
-		'label' => __( 'Transcoded MPD URL', 'godam' ),
+		'label' => __( 'Transcoded CDN URL', 'godam' ),
 		'input' => 'html',
 		'html'  => '<input type="text" name="attachments[' . $post->ID . '][transcoded_url]" id="attachments-' . $post->ID . '-transcoded_url" value="' . esc_url( $transcoded_url ) . '" readonly>',
 		'value' => esc_url( $transcoded_url ),
-		'helps' => __( 'The URL of the transcoded .mpd file is generated automatically and cannot be edited.', 'godam' ),
+		'helps' => __( 'The URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
 	);
-
-	// Add a note if adaptive bitrate streaming is disabled.
-	if ( ! $adaptive_bitrate_enabled ) {
-		$form_fields['transcoded_url']['helps'] = __( 'This feature is available only when adaptive bitrate streaming is enabled.', 'godam' );
-	}
 
 	return $form_fields;
 }

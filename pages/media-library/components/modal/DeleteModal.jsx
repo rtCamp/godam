@@ -56,6 +56,7 @@ const DeleteModal = () => {
 			<Modal
 				title="Confirm Delete"
 				onRequestClose={ () => dispatch( closeModal( 'delete' ) ) }
+				className="modal__container"
 			>
 				<p className="modal__description">
 					Deleting the folder <span className="modal__highlight">{ selectedFolder.name }</span> will remove it and all its subfolders, but <span className="modal__highlight">media associated with it will not be deleted</span>.

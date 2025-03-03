@@ -37,10 +37,14 @@ const validLicense = window?.godamLicenseData?.valid_license;
 library.add( fas );
 dom.watch();
 
-document.addEventListener( 'DOMContentLoaded', () => easyDAMPlayer() );
+document.addEventListener( 'DOMContentLoaded', () => GODAMPlayer() );
 
-function easyDAMPlayer() {
-	const videos = document.querySelectorAll( '.easydam-player.video-js' );
+function GODAMPlayer( videoRef = null ) {
+	let videos = document.querySelectorAll( '.easydam-player.video-js' );
+
+	if ( videoRef ) {
+		videos = videoRef.querySelectorAll( '.easydam-player.video-js' );
+	}
 
 	videos.forEach( ( video ) => {
 		const adTagUrl = video.dataset.ad_tag_url;
@@ -197,7 +201,7 @@ function easyDAMPlayer() {
 				controlBar.removeChild( 'volumePanel' );
 			}
 
-			if ( controlBarSettings.brandingIcon ) {
+			if ( controlBarSettings.brandingIcon || ! validLicense ) {
 				const CustomPlayButton = videojs.getComponent( 'Button' );
 
 				class CustomButton extends CustomPlayButton {
@@ -274,11 +278,6 @@ function easyDAMPlayer() {
 			const layerElement = document.querySelector( `#${ layerId }` );
 
 			if ( ! layerElement ) {
-				return;
-			}
-
-			if ( ! validLicense && PREMIUM_LAYERS.includes( layer.type ) ) {
-				console.log( 'Premium layer found without a valid license' );
 				return;
 			}
 
@@ -648,7 +647,7 @@ function easyDAMPlayer() {
 			}
 		} );
 
-		if ( adTagUrl && validLicense ) {
+		if ( adTagUrl ) {
 			player.ima( {
 				id: 'content_video',
 				adTagUrl,
@@ -662,3 +661,5 @@ function easyDAMPlayer() {
 		}
 	} );
 }
+
+window.GODAMPlayer = GODAMPlayer;

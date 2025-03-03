@@ -52,6 +52,14 @@ function VideoEdit( {
 	const posterImageButton = useRef();
 	const { id, controls, autoplay, poster, src, tracks, sources, muted, loop, playsInline, preload } = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
+	const [ defaultPoster, setDefaultPoster ] = useState( '' );
+
+	useEffect( () => {
+		// Placeholder may be rendered.
+		if ( videoPlayer.current ) {
+			videoPlayer.current.load();
+		}
+	}, [ poster ] );
 
 	useEffect( () => {
 		if ( id ) {
@@ -60,9 +68,7 @@ function VideoEdit( {
 					const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
 
 					if ( response.meta._rt_media_video_thumbnail !== '' ) {
-						setAttributes( {
-							poster: response.meta._rt_media_video_thumbnail,
-						} );
+						setDefaultPoster( response.meta._rt_media_video_thumbnail );
 					}
 
 					if ( response && response.meta && response.meta._rt_transcoded_url ) {
@@ -98,13 +104,6 @@ function VideoEdit( {
 		}
 	}, [] );
 
-	useEffect( () => {
-		// Placeholder may be rendered.
-		if ( videoPlayer.current ) {
-			videoPlayer.current.load();
-		}
-	}, [ poster ] );
-
 	function onSelectVideo( media ) {
 		if ( ! media || ! media.url ) {
 			// In this case there was an error
@@ -132,24 +131,25 @@ function VideoEdit( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
-			poster:
-				media.image?.src !== media.icon ? media.image?.src : undefined,
+			poster: undefined,
 			caption: media.caption,
 		} );
+
+		if ( media.image?.src !== media.icon ) {
+			setDefaultPoster( media.image?.src );
+		}
 
 		// Fetch transcoded URL from media meta.
 		( async () => {
 			try {
 				const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
 
-				if ( response.meta._rt_media_video_thumbnail !== '' ) {
-					setAttributes( {
-						poster: response.meta._rt_media_video_thumbnail,
-					} );
-				}
-
 				if ( response && response.meta && response.meta._rt_transcoded_url ) {
 					const transcodedUrl = response.meta._rt_transcoded_url;
+
+					if ( response.meta._rt_media_video_thumbnail !== '' ) {
+						setDefaultPoster( response.meta._rt_media_video_thumbnail );
+					}
 
 					setAttributes( {
 						sources: [
@@ -356,6 +356,7 @@ function VideoEdit( {
 					</div>*/ }
 				</PanelBody>
 			</InspectorControls>
+
 			<figure { ...blockProps }>
 				{ /*
                     Disable the video tag if the block is not selected
@@ -372,7 +373,7 @@ function VideoEdit( {
 							playsinline: playsInline,
 							loop,
 							muted,
-							poster,
+							poster: poster || defaultPoster,
 							sources,
 						} }
 					/>

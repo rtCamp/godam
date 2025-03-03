@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: GoDAM
+ * Plugin Name: DAM
  * Plugin URI: https://godam.io
  * Description: Seamlessly manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, gravity forms integration, and ad integration.
  * Version: 1.0.0
@@ -115,3 +115,20 @@ add_filter( 'network_admin_plugin_action_links', 'rtt_action_links', 11, 2 );
  * Autoloader for the vendor directory.
  */
 require GODAM_PATH . 'vendor/autoload.php';
+
+/**
+ * Runs when the plugin is activated.
+ */
+function godam_plugin_activate() {
+	update_site_option( 'godam_plugin_activation_time', time() );
+}
+register_activation_hook( __FILE__, 'godam_plugin_activate' );
+
+/**
+ * Runs when the plugin is deactivated.
+ */
+function godam_plugin_deactivate() {
+	\Transcoder\Inc\Cron::get_instance()->unschedule_video_cleanup();
+	delete_site_option( 'godam_plugin_activation_time' );
+}
+register_deactivation_hook( __FILE__, 'godam_plugin_deactivate' );
