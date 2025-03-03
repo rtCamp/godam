@@ -1,3 +1,8 @@
+
+.components-modal__screen-overlay:has( .modal__container ) {
+	z-index: calc(160000 * 2) !important; // for some reason media-model z-index is 160000
+}
+
 .modal {
 	&__description {
 		font-size: 0.875rem;

@@ -61,6 +61,7 @@ const RenameModal = () => {
 			<Modal
 				title="Rename folder"
 				onRequestClose={ () => dispatch( closeModal( 'rename' ) ) }
+				className="modal__container"
 			>
 				<TextControl
 					label="Folder Name"
@@ -68,7 +69,7 @@ const RenameModal = () => {
 					onChange={ ( value ) => setFolderName( value ) }
 				/>
 
-				<ButtonGroup className="modal__button-group">
+				<div className="modal__button-group">
 					<Button
 						text="Rename"
 						variant="primary"
@@ -80,7 +81,7 @@ const RenameModal = () => {
 						onClick={ () => dispatch( closeModal( 'rename' ) ) }
 						isDestructive
 					/>
-				</ButtonGroup>
+				</div>
 			</Modal>
 		)
 	);

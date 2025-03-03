@@ -70,6 +70,7 @@ const FolderCreationModal = () => {
 			<Modal
 				title="Create a new folder"
 				onRequestClose={ () => dispatch( closeModal( 'folderCreation' ) ) }
+				className="modal__container"
 			>
 				<TextControl
 					label="Folder Name"
