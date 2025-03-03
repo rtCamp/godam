@@ -72,7 +72,7 @@ class RT_Transcoder_Admin {
 
 		/**
 		 * Commented our this code as changing the thumbnail logic.
-		 * 
+		 *
 		 * Now the thumbnail will show below the video in the video attachment.
 		 * The thumbnail setting and getting logic is moved to REST API.
 		 */
@@ -480,33 +480,33 @@ class RT_Transcoder_Admin {
 		// Get the license key from the site options.
 		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
 
-		// Get plugin activation time
-		$activation_time = get_site_option( 'godam_plugin_activation_time', 0 );
+		// Get plugin activation time.
+		$activation_time       = get_site_option( 'godam_plugin_activation_time', 0 );
 		$days_since_activation = ( time() - $activation_time ) / DAY_IN_SECONDS;
 
-		// If more than 3 days have passed and no license is activated, show scheduled notice
+		// If more than 3 days have passed and no license is activated, show scheduled notice.
 		if ( empty( $license_key ) && $days_since_activation >= 3 ) {
 			$this->scheduled_admin_notice();
 			return;
 		}
 
-		// Otherwise, show regular admin notice
+		// Otherwise, show regular admin notice.
 		if ( empty( $license_key ) ) {
-			$this->render_admin_notice( 
-				esc_html__( 'Enjoy using our DAM and Video Editor features for free! To unlock transcoding and other features, please activate your license.', 'godam' ), 
-				'warning', 
-				true, 
-				true 
+			$this->render_admin_notice(
+				esc_html__( 'Enjoy using our DAM and Video Editor features for free! To unlock transcoding and other features, please activate your license.', 'godam' ),
+				'warning',
+				true,
+				true
 			);
 			return;
 		}
 
 		// Get stored usage data.
-		$usage_data = get_site_option( 'rt-transcoding-usage', [] );
+		$usage_data = get_site_option( 'rt-transcoding-usage', array() );
 		$usage_data = isset( $usage_data[ $license_key ] ) ? (array) $usage_data[ $license_key ] : null;
 
 		if ( empty( $usage_data ) ) {
-			$this->render_admin_notice( 
+			$this->render_admin_notice(
 				'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your license',
 				'warning',
 				true,
@@ -515,27 +515,27 @@ class RT_Transcoder_Admin {
 			return;
 		}
 
-		$status             = $usage_data['status'] ?? '';
+		$status              = $usage_data['status'] ?? '';
 		$subscription_status = $usage_data['subscription_status'] ?? '';
-		$subscription_end   = isset( $usage_data['end_date'] ) ? strtotime( $usage_data['end_date'] ) : null;
-		$trial_end          = isset( $usage_data['trial_end_date'] ) ? strtotime( $usage_data['trial_end_date'] ) : null;
-		$current_time       = time();
-		$grace_period_days  = 30;
+		$subscription_end    = isset( $usage_data['end_date'] ) ? strtotime( $usage_data['end_date'] ) : null;
+		$trial_end           = isset( $usage_data['trial_end_date'] ) ? strtotime( $usage_data['trial_end_date'] ) : null;
+		$current_time        = time();
+		$grace_period_days   = 30;
 
 		// If the user is in trial mode, show trial expiry notice.
 		if ( 'Trialling' === $subscription_status && $trial_end ) {
 			$days_until_trial_end = ceil( ( $trial_end - $current_time ) / DAY_IN_SECONDS );
 
 			if ( $days_until_trial_end > 0 ) {
-				$this->render_admin_notice( 
-					sprintf( 
+				$this->render_admin_notice(
+					sprintf(
 						'Your product is under trial. You will be charged after <strong>%d days</strong>. 
-						If you wish to cancel, please visit <a href="https://app.godam.io/subscription/my-account" target="_blank">your subscription settings</a>.', 
-						$days_until_trial_end 
-					), 
-					'warning', 
-					false, 
-					false 
+						If you wish to cancel, please visit <a href="https://app.godam.io/subscription/my-account" target="_blank">your subscription settings</a>.',
+						$days_until_trial_end
+					),
+					'warning',
+					false,
+					false
 				);
 				return;
 			}
@@ -551,36 +551,36 @@ class RT_Transcoder_Admin {
 			$days_until_deletion = floor( ( $subscription_end + ( $grace_period_days * DAY_IN_SECONDS ) - $current_time ) / DAY_IN_SECONDS );
 
 			if ( $days_until_deletion > 0 ) {
-				$this->render_admin_notice( 
-					sprintf( 
+				$this->render_admin_notice(
+					sprintf(
 						'Your subscription has ended. No further transcoding can be done. 
 						Transcoded videos will be removed after <strong>%d days</strong>, and advanced video layers will not be accessible. 
 						After the 30-day grace period, already transcoded videos will no longer be served from the CDN. 
-						Renew your subscription to keep it up and running.', 
+						Renew your subscription to keep it up and running.',
 						$days_until_deletion
-					), 
-					'error', 
-					true, 
-					false 
+					),
+					'error',
+					true,
+					false
 				);
 				return;
 			} else {
-				$this->render_admin_notice( 
-					'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your license', 
-					'error', 
-					true, 
-					false 
+				$this->render_admin_notice(
+					'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your license',
+					'error',
+					true,
+					false
 				);
 				return;
 			}
 		}
 
 		// Default fallback notice (if none of the above conditions are met).
-		$this->render_admin_notice( 
-			'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your license', 
+		$this->render_admin_notice(
+			'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your license',
 			'warning',
-			true, 
-			false 
+			true,
+			false
 		);
 	}
 
@@ -593,8 +593,8 @@ class RT_Transcoder_Admin {
 	 * @param bool   $show_godam_message Whether to show the GoDAM update message (default: false).
 	 */
 	private function render_admin_notice( $message, $notice_type = 'warning', $include_buttons = false, $show_godam_message = false ) {
-		// Get the GoDAM logo URL
-		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', dirname(__FILE__) );
+		// Get the GoDAM logo URL.
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
 		?>
 		<div class="notice notice-<?php echo esc_attr( $notice_type ); ?> is-dismissible rt-transcoder-license-notice">
 
@@ -607,7 +607,20 @@ class RT_Transcoder_Admin {
 					</p>
 				<?php endif; ?>
 
-				<p><?php echo wp_kses( $message, array( 'strong' => array(), 'a' => array( 'href' => array(), 'target' => array() ) ) ); ?></p>
+				<p>
+				<?php
+				echo wp_kses(
+					$message,
+					array(
+						'strong' => array(),
+						'a'      => array(
+							'href'   => array(),
+							'target' => array(),
+						),
+					)
+				);
+				?>
+					</p>
 
 				<?php if ( $include_buttons ) : ?>
 					<p>
@@ -629,7 +642,7 @@ class RT_Transcoder_Admin {
 	 * Display the scheduled admin notice for activating the license.
 	 */
 	public function scheduled_admin_notice() {
-		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', dirname(__FILE__) );
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
 
 		?>
 		<div class="notice notice-warning is-dismissible rt-transcoder-license-notice">
