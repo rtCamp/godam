@@ -109,11 +109,9 @@ const Appearance = () => {
 
 	function handlePlaybackToggle() {
 		const playbackRateBtn = document.querySelector( '.vjs-playback-rate' );
-		const controlBar = document.querySelector( '.vjs-control-bar' );
 
 		dispatch(
 			updateVideoConfig( {
-				playbackRates: ! videoConfig.controlBar.playbackRateMenuButton ? selectedPlaybackRates : [],
 				controlBar: {
 					...videoConfig.controlBar,
 					playbackRateMenuButton: ! videoConfig.controlBar.playbackRateMenuButton,
