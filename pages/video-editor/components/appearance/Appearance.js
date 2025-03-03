@@ -36,7 +36,7 @@ const Appearance = () => {
 			? videoConfig.playbackRates.map( String )
 			: [],
 	);
-	const commonRates = [ '0.25', '0.5', '0.75', '1', '1.5', '2', '2.5', '6' ];
+	const commonRates = [ '0.25', '0.5', '0.75', '1', '1.5', '2' ];
 
 	useEffect( () => {
 		//class gets re added upon component load, so we need to remove it.
@@ -489,22 +489,29 @@ const Appearance = () => {
 
 				</div>
 
-				<FormTokenField
-					__next40pxDefaultSize
-					__nextHasNoMarginBottom
-					label="Select all playback rates"
-					onChange={ ( rates ) => {
-						const newRates = rates.sort();
-						setSelectedPlaybackRates( newRates );
-						dispatch(
-							updateVideoConfig( {
-								playbackRates: newRates.map( Number ),
-							} ),
-						);
-					} }
-					suggestions={ commonRates }
-					value={ selectedPlaybackRates }
-				/>
+				{
+					videoConfig.controlBar.playbackRateMenuButton && (
+						<FormTokenField
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
+							label="Select all playback rates"
+							onChange={ ( rates ) => {
+								const newRates = rates.sort().filter( ( rate ) => {
+									return ! isNaN( rate ) && rate >= 0.25 && rate <= 2;
+								} );
+
+								setSelectedPlaybackRates( newRates );
+								dispatch(
+									updateVideoConfig( {
+										playbackRates: newRates.map( Number ),
+									} ),
+								);
+							} }
+							suggestions={ commonRates }
+							value={ selectedPlaybackRates }
+						/>
+					)
+				}
 
 				{ videoConfig.controlBar.brandingIcon && (
 					<div className="form-group">

@@ -13,7 +13,7 @@ const slice = createSlice( {
 			preload: 'auto',
 			width: '100%',
 			sources: [],
-			playbackRates: [ 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 6 ],
+			playbackRates: [ 0.25, 0.5, 0.75, 1, 1.5, 2 ],
 			captions: [],
 			adServer: false,
 			controlBar: {
