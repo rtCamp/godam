@@ -144,20 +144,22 @@ const App = () => {
 				</div>
 				<div id="main-content" className="flex-grow">
 					<div className="flex gap-5">
-						{
-							tabs.map( ( tab ) => (
-								activeTab === tab.id &&
-									<tab.component
-										key={ tab.id }
-										isPremiumUser={ isPremiumUser }
-										mediaSettings={ mediaSettings }
-										saveMediaSettings={ saveMediaSettings }
-										licenseKey={ licenseKey }
-										setLicenseKey={ setLicenseKey }
-										verifyLicenseFromUrl={ verifyLicenseFromUrl }
-									/>
-							) )
-						}
+						<div className="w-full">
+							{
+								tabs.map( ( tab ) => (
+									activeTab === tab.id &&
+										<tab.component
+											key={ tab.id }
+											isPremiumUser={ isPremiumUser }
+											mediaSettings={ mediaSettings }
+											saveMediaSettings={ saveMediaSettings }
+											licenseKey={ licenseKey }
+											setLicenseKey={ setLicenseKey }
+											verifyLicenseFromUrl={ verifyLicenseFromUrl }
+										/>
+								) )
+							}
+						</div>
 					</div>
 				</div>
 			</div>
