@@ -12,7 +12,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 	const [ disableWatermark, setDisableWatermark ] = useState( mediaSettings?.video?.watermark !== undefined ? ! mediaSettings.video.watermark : true );
 	const [ adaptiveBitrate, setAdaptiveBitrate ] = useState( mediaSettings?.video?.adaptive_bitrate || false );
 	const [ optimizeVideos, setOptimizeVideos ] = useState( mediaSettings?.video?.optimize_videos || false );
-	const [ videoQuality, setVideoQuality ] = useState( mediaSettings?.video?.video_quality || [] );
+	const [ videoQuality, setVideoQuality ] = useState( mediaSettings?.video?.video_quality || [ 'auto' ] );
 	const [ videoThumbnails, setVideoThumbnails ] = useState( mediaSettings?.video?.video_thumbnails || 5 );
 	const [ overwriteThumbnails, setOverwriteThumbnails ] = useState( mediaSettings?.video?.overwrite_thumbnails || false );
 	const [ watermarkText, setWatermarkText ] = useState( mediaSettings?.video?.watermark_text || '' );
