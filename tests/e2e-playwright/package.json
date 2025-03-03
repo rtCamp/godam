@@ -22,7 +22,7 @@
 	"dependencies": {
 		"@wordpress/api-fetch": "6.10.0",
 		"@wordpress/keycodes": "3.13.0",
-		"@wordpress/scripts": "23.5.0",
+		"@wordpress/scripts": "^30.11.0",
 		"@wordpress/url": "3.14.0",
 		"form-data": "^4.0.0",
 		"lodash": "^4.17.21"
@@ -33,8 +33,8 @@
 		"@wordpress/e2e-test-utils-playwright": "file:e2e-test-utils-playwright",
 		"eslint-plugin-playwright": "0.8.0",
 		"filenamify": "4.2.0",
-		"worker-farm": "1.7.0",
-		"typescript": "4.4.2"
+		"typescript": "4.4.2",
+		"worker-farm": "1.7.0"
 	},
 	"peerDependencies": {
 		"@playwright/test": ">=1"

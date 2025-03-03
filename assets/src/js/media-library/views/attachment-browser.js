@@ -8,7 +8,7 @@ import MediaDateRangeFilter from './filters/media-date-range-filter';
 // import MediaUploadToS3 from './filters/media-upload-to-s3';
 import MediaRetranscode from './filters/media-retranscode';
 
-import { isLicenseValid, isUploadPage } from '../utility';
+import { isLicenseValid, isUploadPage, isFolderOrgDisabled } from '../utility';
 
 const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
 
@@ -88,21 +88,23 @@ export default AttachmentsBrowser?.extend( {
 			}
 		}
 
-		/**
-		 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.
-		 */
-		setTimeout( () => {
-			$( '.media-frame' ).removeClass( 'hide-menu' );
+		if ( ! isUploadPage() && ! isFolderOrgDisabled() ) {
+			/**
+			 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.
+			 */
+			setTimeout( () => {
+				$( '.media-frame' ).removeClass( 'hide-menu' );
 
-			const menu = $( '.media-frame' ).find( '.media-frame-menu' );
+				const menu = $( '.media-frame' ).find( '.media-frame-menu' );
 
-			if ( menu.length ) {
-				menu.append( '<div id="rt-transcoder-media-library-root"></div>' );
-			}
+				if ( menu.length ) {
+					menu.append( '<div id="rt-transcoder-media-library-root"></div>' );
+				}
 
-			const event = new CustomEvent( 'media-frame-opened' );
-			document.dispatchEvent( event );
-		}, 50 );
+				const event = new CustomEvent( 'media-frame-opened' );
+				document.dispatchEvent( event );
+			}, 50 );
+		}
 	},
 
 	/**

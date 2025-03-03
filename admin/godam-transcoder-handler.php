@@ -922,13 +922,13 @@ class RT_Transcoder_Handler {
 
 		do_action( 'transcoded_thumbnails_added', $post_id );
 
-		if ( $largest_thumb_url ) {
+		if ( $largest_thumb ) {
 
 			$is_retranscoding_job = get_post_meta( $post_id, '_rt_retranscoding_sent', true );
 
 			if ( ! $is_retranscoding_job || rtt_is_override_thumbnail() ) {
 
-				update_post_meta( $post_id, '_rt_media_video_thumbnail', $largest_thumb_url );
+				update_post_meta( $post_id, '_rt_media_video_thumbnail', $largest_thumb );
 
 				if ( 'rtmedia' === $post_thumbs_array['job_for'] && class_exists( 'RTMediaModel' ) ) {
 
@@ -1046,6 +1046,14 @@ class RT_Transcoder_Handler {
 								if ( ! empty( $uploaded_file ) ) {
 									$transcoded_files[ $key ][] = $uploaded_file;
 									update_post_meta( $attachment_id, '_wp_attached_file', $uploaded_file );
+									update_post_meta( $attachment_id, '_rt_transcoded_url', $download_url );
+
+									$wpdb->update(
+										$wpdb->posts,
+										array( 'post_mime_type' => 'video/mp4' ),
+										array( 'ID' => $attachment_id )
+									);
+									
 								}
 							} else {
 								$flag = esc_html__( 'Could not read file.', 'godam' );

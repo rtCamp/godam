@@ -6,7 +6,8 @@ import { createListenerMiddleware } from '@reduxjs/toolkit';
 /**
  * Internal dependencies
  */
-import { changeSelectedFolder, toggleOpenClose } from '../slice/folders';
+import { toggleOpenClose } from '../slice/folders';
+import { checkIfListSelected } from '../../data/media-grid';
 
 /**
  * Middleware to save the selected folder and open folders in local storage
@@ -17,20 +18,12 @@ import { changeSelectedFolder, toggleOpenClose } from '../slice/folders';
 const localStorageMiddleware = createListenerMiddleware();
 
 localStorageMiddleware.startListening( {
-	actionCreator: changeSelectedFolder,
-	effect: ( action ) => {
-		const selectedItemId = action.payload.item.id;
-
-		const localStorageData = JSON.parse( localStorage.getItem( 'easyDam' ) ) || {};
-		localStorageData.selectedItem = selectedItemId;
-
-		localStorage.setItem( 'easyDam', JSON.stringify( localStorageData ) );
-	},
-} );
-
-localStorageMiddleware.startListening( {
 	actionCreator: toggleOpenClose,
 	effect: ( action, listenerApi ) => {
+		if ( ! checkIfListSelected() ) {
+			return;
+		}
+
 		const state = listenerApi.getState();
 
 		const folder = state.FolderReducer.folders.find( ( item ) => item.id === action.payload.id );

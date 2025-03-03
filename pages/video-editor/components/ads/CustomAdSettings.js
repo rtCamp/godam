@@ -42,7 +42,11 @@ const CustomAdSettings = ( { layerID } ) => {
 		fileFrame.open();
 	};
 
-	const isValidLicense = window?.videoData?.valid_license;
+	// If we want to disable the premium layers the we can use this code
+	// const isValidLicense = window?.videoData?.valid_license;
+
+	// For now we are enabling all the features
+	const isValidLicense = true;
 
 	return (
 		<div className="relative">

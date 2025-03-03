@@ -100,5 +100,20 @@
             align-items: center;         
         }
     }
+
+    .premium-feature-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 99;
+        background-color: rgb(255, 255, 255, 0.4);
+        border-radius: 0.25rem;
+
+        button {
+            box-shadow: 0 0 10px var(--wp-components-color-accent, #ab3a6d49);
+        }
+    }
 }
 
