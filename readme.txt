@@ -1,4 +1,4 @@
-=== GoDAM ===
+=== DAM ===
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar
 Tags: media, multimedia, audio, songs, music, video, ffmpeg, media-node, rtMedia, WordPress, transcode, transcoder, encoding, encode, transcoder, DAM, audio video conversion, digital asset management
 Requires at least: 6.5
