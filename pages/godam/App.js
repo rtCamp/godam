@@ -130,9 +130,7 @@ const App = () => {
 								<a
 									key={ tab.id }
 									href={ `#${ tab.id }` }
-									className={ `sidebar-nav-item ${ activeTab === tab.id ? 'active' : '' } ${
-										tab.id !== 'general-settings' && ! window.userData.valid_license ? 'opacity-50 pointer-events-none' : ''
-									}` }
+									className={ `sidebar-nav-item ${ activeTab === tab.id ? 'active' : '' }` }
 									onClick={ () => {
 										setActiveTab( tab.id );
 									} }

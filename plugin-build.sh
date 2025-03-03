@@ -16,7 +16,10 @@ CHECKOUT_BRANCH="git checkout $GIT_BRANCH"
 # Define unwanted files and folders to remove after build
 UNWANTED_ITEMS=(
     "node_modules"          # Remove node_modules
-    "assets/src"            # Remove source code files
+    "assets/src/blocks"     # Remove source code files
+    "assets/src/css"     # Remove source code files
+    "assets/src/js"     # Remove source code files
+    "assets/src/libs"     # Remove source code files
     "pages/analytics"       # Remove source code files
     "pages/godam"           # Remove source code files
     "pages/help"            # Remove source code files

@@ -4,6 +4,7 @@
 import { ToggleControl, TextControl, SelectControl, Modal, Button, Notice, CheckboxControl, Panel, PanelBody } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { lock, unlock } from '@wordpress/icons';
 
 const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) => {
 	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( mediaSettings?.video?.sync_from_easydam || false );
@@ -115,6 +116,9 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 		}, 5000 );
 	};
 
+	const isValidLicense = window.userData.valid_license;
+	const isStarterPlan = window.userData.user_data?.active_plan === 'Starter';
+
 	return (
 		<div>
 
@@ -128,15 +132,23 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 				</Notice>
 			) }
 
-			<Panel
-				header={ __( 'Adaptive Bitrate Streaming', 'godam' ) }
-				className="mb-4"
-			>
-				<PanelBody
-					opened={ true }
+			<div className="relative">
+				{
+					! isValidLicense && (
+						<div className="premium-feature-overlay">
+							<Button icon={ unlock } href="https://godam.io/#pricing" target="_blank" variant="primary">{ __( 'Unlock with GoDAM pro', 'godam' ) }</Button>
+						</div>
+					)
+				}
+				<Panel
+					header={ __( 'Adaptive Bitrate Streaming', 'godam' ) }
+					className="mb-4"
 				>
-					<form id="easydam-video-settings" className="flex flex-col" onSubmit={ handleSubmit }>
-						{ /* <div className="py-3 flex flex-col gap-2">
+					<PanelBody
+						opened={ true }
+					>
+						<form id="easydam-video-settings" className="flex flex-col" onSubmit={ handleSubmit }>
+							{ /* <div className="py-3 flex flex-col gap-2">
 							<label className="block text-base font-semibold" htmlFor="sync_from_easydam">Video delivery</label>
 							<ToggleControl
 								__nextHasNoMarginBottom
@@ -148,19 +160,19 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 						</div>
 
 						*/ }
-						<div>
-							<label className="easydam-settings-label" htmlFor="abs">{ __( 'Adaptive Bitrate Streaming', 'godam' ) }</label>
-							<ToggleControl
-								__nextHasNoMarginBottom
-								label={ __( 'Enable Adaptive Bitrate Streaming', 'godam' ) }
-								help={ __( 'If enabled, GoDAM will generate multiple video files with different bitrates for adaptive streaming', 'godam' ) }
-								checked={ adaptiveBitrate }
-								onChange={ ( value ) => setAdaptiveBitrate( value ) }
-							/>
-						</div>
+							<div>
+								<label className="easydam-settings-label" htmlFor="abs">{ __( 'Adaptive Bitrate Streaming', 'godam' ) }</label>
+								<ToggleControl
+									__nextHasNoMarginBottom
+									label={ __( 'Enable Adaptive Bitrate Streaming', 'godam' ) }
+									help={ __( 'If enabled, GoDAM will generate multiple video files with different bitrates for adaptive streaming', 'godam' ) }
+									checked={ adaptiveBitrate }
+									onChange={ ( value ) => setAdaptiveBitrate( value ) }
+								/>
+							</div>
 
-						<div>
-							{ /*
+							<div>
+								{ /*
 							<div className="py-3 flex flex-col gap-1">
 								<label className="block text-base font-semibold" htmlFor="optimize_video">Video optimization</label>
 								<ToggleControl
@@ -189,198 +201,217 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 							</div>
 							*/ }
 
-							<div className="mt-4">
-								<label className="easydam-settings-label" htmlFor="video_quality">{ __( 'Video quality', 'godam' ) }</label>
-								<div className="grid grid-rows-4 grid-flow-col gap-2 border rounded p-5">
-									{ videoQualityOptions.map( ( option ) => (
-										<div key={ option.value } className="py-1 w-fit">
-											<CheckboxControl
-												label={ option.label }
-												checked={ videoQuality.includes( option.value ) }
-												onChange={ ( isChecked ) => {
-													setVideoQuality( ( prev ) => {
-														if ( option.value === 'auto' ) {
+								<div className="mt-4">
+									<label className="easydam-settings-label" htmlFor="video_quality">{ __( 'Video quality', 'godam' ) }</label>
+									<div className="grid grid-rows-4 grid-flow-col gap-2 border rounded p-5">
+										{ videoQualityOptions.map( ( option ) => (
+											<div key={ option.value } className="py-1 w-fit">
+												<CheckboxControl
+													label={ option.label }
+													checked={ videoQuality.includes( option.value ) }
+													onChange={ ( isChecked ) => {
+														setVideoQuality( ( prev ) => {
+															if ( option.value === 'auto' ) {
 															// If "Auto" is toggled on, select all options
-															return isChecked ? videoQualityOptions.map( ( opt ) => opt.value ) : prev.filter( ( val ) => val !== 'auto' );
-														}
-														// Update other options
-														const updated = isChecked
-															? [ ...prev, option.value ]
-															: prev.filter( ( val ) => val !== option.value );
+																return isChecked ? videoQualityOptions.map( ( opt ) => opt.value ) : prev.filter( ( val ) => val !== 'auto' );
+															}
+															// Update other options
+															const updated = isChecked
+																? [ ...prev, option.value ]
+																: prev.filter( ( val ) => val !== option.value );
 
-														// Automatically toggle "Auto" based on selection of all other options
-														const allOthersSelected = videoQualityOptions
-															.filter( ( opt ) => opt.value !== 'auto' ) // Exclude "auto"
-															.every( ( opt ) => updated.includes( opt.value ) );
+															// Automatically toggle "Auto" based on selection of all other options
+															const allOthersSelected = videoQualityOptions
+																.filter( ( opt ) => opt.value !== 'auto' ) // Exclude "auto"
+																.every( ( opt ) => updated.includes( opt.value ) );
 
-														// Add "Auto" if all other options are selected, remove otherwise
-														return allOthersSelected
-															? [ 'auto', ...updated.filter( ( v ) => v !== 'auto' ) ]
-															: updated.filter( ( v ) => v !== 'auto' );
-													} );
-												} }
-											/>
-										</div>
-									) ) }
-								</div>
-								<div className="easydam-settings-help">
-									{ __( 'Select one or more video qualities for delivery. GoDAM will generate videos with selected resolutions. Transcoding will be done to the appropriate resolution supported by the video, up to the max resolution of each video.', 'godam' ) }
-									<br />
-									<strong>{ __( 'Note: ', 'godam' ) }</strong>
-									{ __( 'Selecting Auto will automatically include all available resolutions for delivery.', 'godam' ) }
+															// Add "Auto" if all other options are selected, remove otherwise
+															return allOthersSelected
+																? [ 'auto', ...updated.filter( ( v ) => v !== 'auto' ) ]
+																: updated.filter( ( v ) => v !== 'auto' );
+														} );
+													} }
+												/>
+											</div>
+										) ) }
+									</div>
+									<div className="easydam-settings-help">
+										{ __( 'Select one or more video qualities for delivery. GoDAM will generate videos with selected resolutions. Transcoding will be done to the appropriate resolution supported by the video, up to the max resolution of each video.', 'godam' ) }
+										<br />
+										<strong>{ __( 'Note: ', 'godam' ) }</strong>
+										{ __( 'Selecting Auto will automatically include all available resolutions for delivery.', 'godam' ) }
+									</div>
 								</div>
 							</div>
+
+						</form>
+					</PanelBody>
+				</Panel>
+			</div>
+
+			<div className="relative">
+				{
+					! isValidLicense && (
+						<div className="premium-feature-overlay">
+							<Button icon={ unlock } href="https://godam.io/#pricing" target="_blank" variant="primary">{ __( 'Unlock with GoDAM pro', 'godam' ) }</Button>
+						</div>
+					)
+				}
+				<Panel
+					header={ __( 'Video Thumbnails', 'godam' ) }
+					className="mb-4"
+				>
+					<PanelBody
+						opened={ true }
+					>
+						<div>
+							<label className="easydam-settings-label" htmlFor="video_thumbnails_count">
+								{ __( 'Number of video thumbnails generated', 'godam' ) }
+							</label>
+							<TextControl
+								type="number"
+								min="1"
+								max="10"
+								value={ videoThumbnails }
+								onChange={ ( value ) => setVideoThumbnails( value ) }
+								help={ __( `This field specifies the number of video thumbnails that will be generated by the GoDAM. To choose from the generated thumbnails for a video, go to Media > Edit > Video Thumbnails. Thumbnails are only generated when the video is first uploaded. Maximum value is 10`, 'godam' ) }
+							/>
 						</div>
 
-					</form>
-				</PanelBody>
-			</Panel>
+						<div className="mt-4">
+							<label className="easydam-settings-label" htmlFor="overwrite_thumbnails">
+								{ __( 'Over-write video thumbnails after retranscoding', 'godam' ) }
+							</label>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label="Over-write video thumbnails"
+								checked={ overwriteThumbnails }
+								onChange={ ( value ) => setOverwriteThumbnails( value ) }
+								help={ __( 'If enabled, GoDAM will replace existing media thumbnails with regenerated ones after retranscoding. If disabled, media thumbnails will remain untouched', 'godam' ) }
+							/>
+						</div>
+					</PanelBody>
+				</Panel>
+			</div>
 
-			<Panel
-				header={ __( 'Video Thumbnails', 'godam' ) }
-				className="mb-4"
-			>
-				<PanelBody
-					opened={ true }
+			<div className="relative">
+				{
+					( ! isValidLicense || isStarterPlan ) && (
+						<div className="premium-feature-overlay">
+							<Button icon={ unlock } href="https://godam.io/#pricing" target="_blank" variant="primary">{ __( 'Unlock with GoDAM pro', 'godam' ) }</Button>
+						</div>
+					)
+				}
+				<Panel
+					header={ __( 'Video watermark', 'godam' ) }
+					className="mb-4"
 				>
-					<div>
-						<label className="easydam-settings-label" htmlFor="video_thumbnails_count">
-							{ __( 'Number of video thumbnails generated', 'godam' ) }
-						</label>
-						<TextControl
-							type="number"
-							min="1"
-							max="10"
-							value={ videoThumbnails }
-							onChange={ ( value ) => setVideoThumbnails( value ) }
-							help={ __( `This field specifies the number of video thumbnails that will be generated by the GoDAM. To choose from the generated thumbnails for a video, go to Media > Edit > Video Thumbnails. Thumbnails are only generated when the video is first uploaded. Maximum value is 10`, 'godam' ) }
-						/>
-					</div>
+					<PanelBody
+						opened={ true }
+					>
 
-					<div className="mt-4">
-						<label className="easydam-settings-label" htmlFor="overwrite_thumbnails">
-							{ __( 'Over-write video thumbnails after retranscoding', 'godam' ) }
-						</label>
-						<ToggleControl
-							__nextHasNoMarginBottom
-							label="Over-write video thumbnails"
-							checked={ overwriteThumbnails }
-							onChange={ ( value ) => setOverwriteThumbnails( value ) }
-							help={ __( 'If enabled, GoDAM will replace existing media thumbnails with regenerated ones after retranscoding. If disabled, media thumbnails will remain untouched', 'godam' ) }
-						/>
-					</div>
-				</PanelBody>
-			</Panel>
+						<div className="py-3 flex flex-col gap-2 opacity-90 relative">
+							{ ! isPremiumUser && (
+								<div className="absolute bg-orange-400 bg-opacity-10 inset-0 rounded-lg border border-orange-200">
+									<button
+										type="button"
+										className="px-3 py-2 rounded font-semibold border border-orange-300 bg-orange-200 border-500 absolute top-0 right-0"
+										onClick={ handleOpenModal }
+									>
+										{ __( 'Premium feature', 'godam' ) }
+									</button>
+								</div>
+							) }
+							{ /* <label className="easydam-settings-label" htmlFor="abs">{ __( 'Watermark', 'godam' ) }</label> */ }
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label="Disable video watermark"
+								checked={ disableWatermark }
+								onChange={ ( value ) => setDisableWatermark( value ) }
+								disabled={ ! isPremiumUser }
+								help={ __( 'If enabled, GoDAM will add a watermark to the transcoded video', 'godam' ) }
+							/>
+							{ isPremiumUser && ! disableWatermark && (
+								<>
+									<div>
+										<ToggleControl
+											label={ __( 'Use image watermark', 'godam' ) }
+											checked={ useImage }
+											onChange={ ( value ) => {
+												setUseImage( value );
+											} }
+											help={
+												<>
+													{ __( 'If enabled, Transcoder will use an image instead of text as the watermark for the transcoded video', 'godam' ) }
+													<strong className="font-semibold">{ __( '(Recommended dimensions: 200 px width × 70 px height)', 'godam' ) }</strong>
+												</>
+											}
+										/>
 
-			<Panel
-				header={ __( 'Video watermark', 'godam' ) }
-				className="mb-4"
-			>
-				<PanelBody
-					opened={ true }
-				>
-
-					<div className="py-3 flex flex-col gap-2 opacity-90 relative">
-						{ ! isPremiumUser && (
-							<div className="absolute bg-orange-400 bg-opacity-10 inset-0 rounded-lg border border-orange-200">
-								<button
-									type="button"
-									className="px-3 py-2 rounded font-semibold border border-orange-300 bg-orange-200 border-500 absolute top-0 right-0"
-									onClick={ handleOpenModal }
-								>
-									{ __( 'Premium feature', 'godam' ) }
-								</button>
-							</div>
-						) }
-						{ /* <label className="easydam-settings-label" htmlFor="abs">{ __( 'Watermark', 'godam' ) }</label> */ }
-						<ToggleControl
-							__nextHasNoMarginBottom
-							label="Disable video watermark"
-							checked={ disableWatermark }
-							onChange={ ( value ) => setDisableWatermark( value ) }
-							disabled={ ! isPremiumUser }
-							help={ __( 'If enabled, GoDAM will add a watermark to the transcoded video', 'godam' ) }
-						/>
-						{ isPremiumUser && ! disableWatermark && (
-							<>
-								<div>
-									<ToggleControl
-										label={ __( 'Use image watermark', 'godam' ) }
-										checked={ useImage }
-										onChange={ ( value ) => {
-											setUseImage( value );
-										} }
-										help={
-											<>
-												{ __( 'If enabled, Transcoder will use an image instead of text as the watermark for the transcoded video', 'godam' ) }
-												<strong className="font-semibold">{ __( '(Recommended dimensions: 200 px width × 70 px height)', 'godam' ) }</strong>
-											</>
-										}
-									/>
-
-									{ useImage && (
-										<div className="mt-2">
-											<div className="flex gap-2">
-												<Button variant="primary" onClick={ openMediaPicker }>
-													{ selectedMedia && selectedMedia.url ? 'Change Watermark' : 'Select Watermark' }
-												</Button>
-												{ selectedMedia && selectedMedia.url && (
-													<Button
-														isDestructive
-														onClick={ () => setSelectedMedia( null ) }
-														variant="secondary"
-													>
-														{ __( 'Remove Watermark', 'godam' ) }
+										{ useImage && (
+											<div className="mt-2">
+												<div className="flex gap-2">
+													<Button variant="primary" onClick={ openMediaPicker }>
+														{ selectedMedia && selectedMedia.url ? 'Change Watermark' : 'Select Watermark' }
 													</Button>
+													{ selectedMedia && selectedMedia.url && (
+														<Button
+															isDestructive
+															onClick={ () => setSelectedMedia( null ) }
+															variant="secondary"
+														>
+															{ __( 'Remove Watermark', 'godam' ) }
+														</Button>
+													) }
+												</div>
+												{ selectedMedia && selectedMedia.url && (
+													<div className="mt-2 border-2 border-blue-700 rounded-lg p-2 inline-block bg-gray-200">
+														<img
+															src={ selectedMedia.url }
+															alt={ selectedMedia.alt || 'Selected watermark' }
+															className="max-w-[200px]"
+														/>
+													</div>
 												) }
 											</div>
-											{ selectedMedia && selectedMedia.url && (
-												<div className="mt-2 border-2 border-blue-700 rounded-lg p-2 inline-block bg-gray-200">
-													<img
-														src={ selectedMedia.url }
-														alt={ selectedMedia.alt || 'Selected watermark' }
-														className="max-w-[200px]"
-													/>
-												</div>
-											) }
+										) }
+									</div>
+									{ ! useImage && (
+										<div>
+											<label className="easydam-settings-label" htmlFor="watermark_text">{ __( 'Watermark Text', 'godam' ) }</label>
+											<TextControl
+												__next40pxDefaultSize
+												__nextHasNoMarginBottom
+												value={ watermarkText }
+												onChange={ ( value ) => setWatermarkText( value ) }
+												placeholder="Enter watermark text"
+												className="max-w-[400px]"
+												help={ __( 'Specify the watermark text that will be added to transcoded videos', 'godam' ) }
+											/>
 										</div>
 									) }
-								</div>
-								{ ! useImage && (
-									<div>
-										<label className="easydam-settings-label" htmlFor="watermark_text">{ __( 'Watermark Text', 'godam' ) }</label>
-										<TextControl
-											__next40pxDefaultSize
-											__nextHasNoMarginBottom
-											value={ watermarkText }
-											onChange={ ( value ) => setWatermarkText( value ) }
-											placeholder="Enter watermark text"
-											className="max-w-[400px]"
-											help={ __( 'Specify the watermark text that will be added to transcoded videos', 'godam' ) }
-										/>
-									</div>
-								) }
-							</>
-						) }
-					</div>
-					{ isModalOpen && (
-						<Modal
-							title="Upgrade to Premium"
-							onRequestClose={ handleCloseModal }
-						>
-							<p className="text-base text-gray-700">
-								To access this feature, please upgrade to our premium subscription plan
-							</p>
-							<Button
-								isPrimary
-								className="mt-4"
+								</>
+							) }
+						</div>
+						{ isModalOpen && (
+							<Modal
+								title="Upgrade to Premium"
+								onRequestClose={ handleCloseModal }
 							>
-								Go to Payment Page
-							</Button>
-						</Modal>
-					) }
-				</PanelBody>
-			</Panel>
+								<p className="text-base text-gray-700">
+									To access this feature, please upgrade to our premium subscription plan
+								</p>
+								<Button
+									isPrimary
+									className="mt-4"
+								>
+									Go to Payment Page
+								</Button>
+							</Modal>
+						) }
+					</PanelBody>
+				</Panel>
+			</div>
 
 			<Button
 				variant="primary"
