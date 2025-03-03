@@ -175,7 +175,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 				{
 					! isValidLicense && (
 						<div className="premium-feature-overlay">
-							<Button icon={ unlock } href="https://godam.io/#pricing" target="_blank" variant="primary">{ __( 'Unlock with GoDAM pro', 'godam' ) }</Button>
+							<Button icon={ unlock } href="https://app.godam.io/subscription/plans" target="_blank" variant="primary">{ __( 'Unlock with GoDAM pro', 'godam' ) }</Button>
 						</div>
 					)
 				}
@@ -292,7 +292,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 				{
 					! isValidLicense && (
 						<div className="premium-feature-overlay">
-							<Button icon={ unlock } href="https://godam.io/#pricing" target="_blank" variant="primary">{ __( 'Unlock with GoDAM pro', 'godam' ) }</Button>
+							<Button icon={ unlock } href="https://app.godam.io/subscription/plans" target="_blank" variant="primary">{ __( 'Unlock with GoDAM pro', 'godam' ) }</Button>
 						</div>
 					)
 				}
@@ -347,7 +347,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 				{
 					( ! isValidLicense || isStarterPlan ) && (
 						<div className="premium-feature-overlay">
-							<Button icon={ unlock } href="https://godam.io/#pricing" target="_blank" variant="primary">{ __( 'Unlock with GoDAM pro', 'godam' ) }</Button>
+							<Button icon={ unlock } href="https://app.godam.io/subscription/plans" target="_blank" variant="primary">{ __( 'Unlock with GoDAM pro', 'godam' ) }</Button>
 						</div>
 					)
 				}
