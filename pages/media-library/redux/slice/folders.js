@@ -3,20 +3,23 @@
  */
 import { createSlice } from '@reduxjs/toolkit';
 
-/**
- * Internal dependencies
- */
-import { checkIfListSelected } from '../../data/media-grid';
-
 let selectedFolderId = -1;
 
-if ( checkIfListSelected() ) {
-	const localStorageData = JSON.parse( localStorage.getItem( 'easyDam' ) ) || {
-		selectedItem: -1,
-		openItems: [],
-	};
+const urlParams = new URLSearchParams( window.location.search );
+const folderId = urlParams.get( 'media-folder' );
 
-	selectedFolderId = localStorageData.selectedItem;
+if ( folderId ) {
+	switch ( folderId.toLowerCase() ) {
+		case 'all':
+			selectedFolderId = -1;
+			break;
+		case 'uncategorized':
+			selectedFolderId = 0;
+			break;
+		default:
+			selectedFolderId = parseInt( folderId );
+			break;
+	}
 }
 
 const slice = createSlice( {
