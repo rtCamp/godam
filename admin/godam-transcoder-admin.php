@@ -561,7 +561,8 @@ class RT_Transcoder_Admin {
 					),
 					'error',
 					true,
-					false
+					false,
+					'activate'
 				);
 				return;
 			} else {
@@ -592,9 +593,13 @@ class RT_Transcoder_Admin {
 	 * @param bool   $include_buttons Whether to include action buttons (default: false).
 	 * @param bool   $show_godam_message Whether to show the GoDAM update message (default: false).
 	 */
-	private function render_admin_notice( $message, $notice_type = 'warning', $include_buttons = false, $show_godam_message = false ) {
+	private function render_admin_notice( $message, $notice_type = 'warning', $include_buttons = false, $show_godam_message = false, $button_type = 'editor' ) {
 		// Get the GoDAM logo URL.
 		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
+
+		$button_label = ( $button_type === 'activate' ) ? esc_html__( 'Activate License', 'godam' ) : esc_html__( 'Use Video Editor', 'godam' );
+		$button_link  = ( $button_type === 'activate' ) ? admin_url( 'admin.php?page=godam' ) : admin_url( 'admin.php?page=video_editor' );
+
 		?>
 		<div class="notice notice-<?php echo esc_attr( $notice_type ); ?> is-dismissible rt-transcoder-license-notice">
 
@@ -624,8 +629,8 @@ class RT_Transcoder_Admin {
 
 				<?php if ( $include_buttons ) : ?>
 					<p>
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=video_editor' ) ); ?>" class="button button-primary">
-							<?php esc_html_e( 'Use Video Editor', 'godam' ); ?>
+						<a href="<?php echo esc_url( $button_link ); ?>" class="button button-primary">
+							<?php echo esc_html( $button_label ); ?>
 						</a>
 						<a href="https://godam.io/" class="button button-secondary" target="_blank">
 							<?php esc_html_e( 'Learn More', 'godam' ); ?>
