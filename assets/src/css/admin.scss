@@ -125,6 +125,9 @@ $media-frame-width: calc(300px + 2 * 24px);
 		z-index: 1;
 		top: 0.75rem;
 		right: 0.75rem;
+		background-color: #fff;
+		padding: 2px;
+		border-radius: 50%;
 
 		--status-text: "Not Started";
 

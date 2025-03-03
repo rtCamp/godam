@@ -370,10 +370,10 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 								{ plans.map( ( plan ) => (
 									<div
 										key={ plan.name }
-										className="plan w-[25%] flex-shrink-0 border px-6 rounded-lg shadow-sm bg-white transition-transform transform hover:shadow-lg flex flex-col justify-center items-center gap-2"
+										className="plan min-w-[200px] flex-shrink-0 border px-6 py-5 rounded-lg shadow-sm bg-white transition-transform transform hover:shadow-lg flex flex-col justify-center items-center gap-2"
 									>
 										<div className="text-center">
-											<h3 className="text-lg font-bold text-gray-800 pt-5 mb-0">{ plan.name } { __( 'Plan', 'godam' ) }</h3>
+											<h3 className="text-lg font-bold text-gray-800 mb-0">{ plan.name } { __( 'Plan', 'godam' ) }</h3>
 										</div>
 										<p className="text-xl font-semibold text-gray-800 my-1 text-center">
 											${ plan.cost } <span className="text-sm text-gray-500">{ __( 'Per', 'godam' ) } { plan.billing_interval }</span>
@@ -385,13 +385,22 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 											<li>{ __( 'Access to advanced analytics', 'godam' ) }</li>
 										</ul>
 										<Button
-											className="mb-5"
+											className="mb-2 w-full justify-center"
 											variant="primary"
 											href={ `${ GODAM_API_BASE }/subscription/account-creation?plan_name=${ encodeURIComponent( plan.name ) }&ref=${ encodeURIComponent( window.location.href ) }` }
 											target="_blank"
 											rel="noopener noreferrer"
 										>
 											{ __( 'Subscribe', 'godam' ) }
+										</Button>
+										<Button
+											className="w-full justify-center"
+											variant="secondary"
+											href={ `${ GODAM_API_BASE }/subscription/account-creation?plan_name=${ encodeURIComponent( plan.name ) }&ref=${ encodeURIComponent( window.location.href ) }&billing=trial` }
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											{ __( 'Start 7 Days Free Trial', 'godam' ) }
 										</Button>
 									</div>
 								) ) }

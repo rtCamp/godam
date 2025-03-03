@@ -123,16 +123,14 @@ const App = () => {
 		<div id="easydam-settings">
 			<GodamHeader />
 			<div className="wrap flex gap-4 my-8 max-w-[1260px] pl-4 pr-9 mx-auto">
-				<div className="max-w-[220px] w-full">
+				<div className="max-w-[220px] min-w-[160px]">
 					<nav className="sticky-navbar pt-8 -mt-8">
 						{
 							tabs.map( ( tab ) => (
 								<a
 									key={ tab.id }
 									href={ `#${ tab.id }` }
-									className={ `sidebar-nav-item ${ activeTab === tab.id ? 'active' : '' } ${
-										tab.id !== 'general-settings' && ! window.userData.valid_license ? 'opacity-50 pointer-events-none' : ''
-									}` }
+									className={ `sidebar-nav-item ${ activeTab === tab.id ? 'active' : '' }` }
 									onClick={ () => {
 										setActiveTab( tab.id );
 									} }
@@ -144,12 +142,11 @@ const App = () => {
 						}
 					</nav>
 				</div>
-				<div id="main-content" className="w-full">
+				<div id="main-content" className="flex-grow">
 					<div className="flex gap-5">
-						<div className="w-full">
-							{
-								tabs.map( ( tab ) => (
-									activeTab === tab.id &&
+						{
+							tabs.map( ( tab ) => (
+								activeTab === tab.id &&
 									<tab.component
 										key={ tab.id }
 										isPremiumUser={ isPremiumUser }
@@ -159,9 +156,8 @@ const App = () => {
 										setLicenseKey={ setLicenseKey }
 										verifyLicenseFromUrl={ verifyLicenseFromUrl }
 									/>
-								) )
-							}
-						</div>
+							) )
+						}
 					</div>
 				</div>
 			</div>
