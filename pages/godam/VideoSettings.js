@@ -247,7 +247,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 											<div key={ option.value } className="py-1 w-fit">
 												<CheckboxControl
 													label={ option.label }
-													checked={ videoQuality.includes( option.value ) }
+													checked={ videoQuality.includes( option.value ) || videoQuality.includes( 'auto' ) }
 													onChange={ ( isChecked ) => {
 														setVideoQuality( ( prev ) => {
 															if ( option.value === 'auto' ) {
