@@ -36,6 +36,20 @@ const VideoEditor = ( { attachmentID } ) => {
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
 
 	useEffect( () => {
+		const handleBeforeUnload = ( event ) => {
+			if ( isChanged ) {
+				event.preventDefault();
+				event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+			}
+		};
+
+		window.addEventListener( 'beforeunload', handleBeforeUnload );
+		return () => {
+			window.removeEventListener( 'beforeunload', handleBeforeUnload );
+		};
+	}, [ isChanged ] );
+
+	useEffect( () => {
 		// Make sure the post ID is passed in the URL
 		if ( ! attachmentID ) {
 			return;
