@@ -25,7 +25,7 @@ import GodamHeader from './GodamHeader';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
-	const [ isPremiumUser, setIsPremiumUser ] = useState( true ); // Should be initially set to false.
+	const isPremiumUser = window.userData?.user_data?.active_plan !== 'Starter';
 	const [ mediaSettings, setMediaSettings ] = useState( null );
 	const [ licenseKey, setLicenseKey ] = useState( '' );
 	const [ verifyLicenseFromUrl, setVerifyLicenseFromUrl ] = useState( false );
@@ -123,7 +123,7 @@ const App = () => {
 		<div id="easydam-settings">
 			<GodamHeader />
 			<div className="wrap flex gap-4 my-8 max-w-[1260px] pl-4 pr-9 mx-auto">
-				<div className="max-w-[220px] w-full">
+				<div className="max-w-[220px] min-w-[160px]">
 					<nav className="sticky-navbar pt-8 -mt-8">
 						{
 							tabs.map( ( tab ) => (
@@ -142,12 +142,11 @@ const App = () => {
 						}
 					</nav>
 				</div>
-				<div id="main-content" className="w-full">
+				<div id="main-content" className="flex-grow">
 					<div className="flex gap-5">
-						<div className="w-full">
-							{
-								tabs.map( ( tab ) => (
-									activeTab === tab.id &&
+						{
+							tabs.map( ( tab ) => (
+								activeTab === tab.id &&
 									<tab.component
 										key={ tab.id }
 										isPremiumUser={ isPremiumUser }
@@ -157,9 +156,8 @@ const App = () => {
 										setLicenseKey={ setLicenseKey }
 										verifyLicenseFromUrl={ verifyLicenseFromUrl }
 									/>
-								) )
-							}
-						</div>
+							) )
+						}
 					</div>
 				</div>
 			</div>

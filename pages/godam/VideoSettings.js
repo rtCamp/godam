@@ -119,6 +119,10 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 	const isValidLicense = window.userData.valid_license;
 	const isStarterPlan = window.userData.user_data?.active_plan === 'Starter';
 
+	console.log(  'isValidLicense', isValidLicense );
+	console.log(  'isStarterPlan', isStarterPlan );
+	
+
 	return (
 		<div>
 
@@ -311,27 +315,16 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					>
 
 						<div className="py-3 flex flex-col gap-2 opacity-90 relative">
-							{ ! isPremiumUser && (
-								<div className="absolute bg-orange-400 bg-opacity-10 inset-0 rounded-lg border border-orange-200">
-									<button
-										type="button"
-										className="px-3 py-2 rounded font-semibold border border-orange-300 bg-orange-200 border-500 absolute top-0 right-0"
-										onClick={ handleOpenModal }
-									>
-										{ __( 'Premium feature', 'godam' ) }
-									</button>
-								</div>
-							) }
 							{ /* <label className="easydam-settings-label" htmlFor="abs">{ __( 'Watermark', 'godam' ) }</label> */ }
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label="Disable video watermark"
-								checked={ disableWatermark }
+								checked={ ( ! isValidLicense || isStarterPlan ) ? false : disableWatermark }
 								onChange={ ( value ) => setDisableWatermark( value ) }
-								disabled={ ! isPremiumUser }
+								disabled={ isStarterPlan || ! isValidLicense }
 								help={ __( 'If enabled, GoDAM will add a watermark to the transcoded video', 'godam' ) }
 							/>
-							{ isPremiumUser && ! disableWatermark && (
+							{ ! isStarterPlan && ! disableWatermark && (
 								<>
 									<div>
 										<ToggleControl

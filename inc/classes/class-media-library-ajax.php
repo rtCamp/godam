@@ -228,7 +228,6 @@ class Media_Library_Ajax {
 	public function filter_media_library_by_taxonomy( $query_args ) {
 
 		if ( isset( $_REQUEST['query']['media-folder'] ) ) {
-
 			$media_folder_id = sanitize_text_field( $_REQUEST['query']['media-folder'] );
 
 			if ( 'uncategorized' === $media_folder_id ) {
@@ -308,15 +307,15 @@ class Media_Library_Ajax {
 						),
 					)
 				);
-
 			} elseif ( $media_folder && 'all' !== $media_folder ) {
 				$query->set( // phpcs:ignore
 					'tax_query',
 					array(
 						array(
-							'taxonomy' => 'media-folder',
-							'field'    => 'term_id',
-							'terms'    => (int) $media_folder,
+							'taxonomy'         => 'media-folder',
+							'field'            => 'term_id',
+							'terms'            => (int) $media_folder,
+							'include_children' => false,
 						),
 					)
 				);
