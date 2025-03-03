@@ -480,10 +480,20 @@ class RT_Transcoder_Admin {
 		// Get the license key from the site options.
 		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
 
-		// If no license key is stored, show the activation notice with the GoDAM update message.
+		// Get plugin activation time
+		$activation_time = get_site_option( 'godam_plugin_activation_time', 0 );
+		$days_since_activation = ( time() - $activation_time ) / DAY_IN_SECONDS;
+
+		// If more than 3 days have passed and no license is activated, show scheduled notice
+		if ( empty( $license_key ) && $days_since_activation >= 3 ) {
+			$this->scheduled_admin_notice();
+			return;
+		}
+
+		// Otherwise, show regular admin notice
 		if ( empty( $license_key ) ) {
 			$this->render_admin_notice( 
-				'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your license', 
+				esc_html__( 'Enjoy using our DAM and Video Editor features for free! To unlock transcoding and other features, please activate your license.', 'godam' ), 
 				'warning', 
 				true, 
 				true 
@@ -611,6 +621,33 @@ class RT_Transcoder_Admin {
 				<?php endif; ?>
 			</div>
 		</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Display the scheduled admin notice for activating the license.
+	 */
+	public function scheduled_admin_notice() {
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', dirname(__FILE__) );
+
+		?>
+		<div class="notice notice-warning is-dismissible rt-transcoder-license-notice">
+			<div class="godam-notice-header">
+				<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" class="godam-logo" />
+				<div>
+					<p><strong><?php echo esc_html__( 'Hey, you’re missing out on our advanced features!', 'godam' ); ?></strong></p>
+					<p><?php echo esc_html__( 'Unlock high-speed transcoding, advanced analytics, adaptive streaming, and more by activating your license.', 'godam' ); ?></p>
+					<p>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=godam' ) ); ?>" class="button button-primary">
+							<?php echo esc_html__( 'Activate License', 'godam' ); ?>
+						</a>
+						<a href="https://godam.io/adaptive-bitrate-streaming/" class="button button-secondary" target="_blank">
+							<?php echo esc_html__( 'Learn More', 'godam' ); ?>
+						</a>
+					</p>
+				</div>
+			</div>
 		</div>
 		<?php
 	}
