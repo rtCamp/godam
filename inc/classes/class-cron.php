@@ -31,7 +31,7 @@ class Cron {
 			function ( $schedules ) {
 				$schedules['twelve_hours'] = array(
 					'interval' => 12 * HOUR_IN_SECONDS,
-					'display'  => __( 'Every 12 Hours' ),
+					'display'  => __( 'Every 12 Hours', 'godam' ),
 				);
 				return $schedules;
 			}
