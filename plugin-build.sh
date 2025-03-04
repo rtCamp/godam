@@ -9,7 +9,7 @@ BUILD_DIR="godam-build"
 # Define the build commands
 NPM_INSTALL="npm install"
 BUILD_COMMAND="npm run build:prod"
-BUILD_COMPOSER="composer install --no-dev"
+BUILD_COMPOSER="composer install --optimize-autoloader --no-dev"
 CLONE_REPO="git clone git@github.com:rtCamp/godam.git $BUILD_DIR"
 CHECKOUT_BRANCH="git checkout $GIT_BRANCH"
 
@@ -26,6 +26,7 @@ UNWANTED_ITEMS=(
     "pages/media-library"   # Remove source code files
     "pages/video-editor"    # Remove source code files
     "pages/style.css"          # Remove source code files
+    "tests"
     ".browserslistrc"       # Remove log files
     ".eslintignore"        
     ".eslintrc"
@@ -38,8 +39,6 @@ UNWANTED_ITEMS=(
     ".stylelintignore"
     ".stylelintrc.json"
     "babel.config.js"
-    "composer.json"
-    "composer.lock"
     "deploy.sh"
     "Gulpfile.js"
     "package-lock.json"
