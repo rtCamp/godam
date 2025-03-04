@@ -33,7 +33,13 @@ class Deactivation {
 	public function load_scripts() {
 		global $pagenow;
 
-		wp_register_script( 'godam-deactivation-survey-script', GODAM_URL . '/assets/src/js/deactivation-feedback.js', filemtime( GODAM_PATH . '/assets/src/js/deactivation-feedback.js' ), wp_rand(), true );
+		wp_register_script(
+			'godam-deactivation-survey-script',
+			GODAM_URL . '/assets/build/js/deactivation-feedback.js', 
+			array(),
+			filemtime( GODAM_PATH . '/assets/build/js/deactivation-feedback.js' ),
+			true
+		);
 
 		if ( is_admin() && 'plugins.php' === $pagenow ) {
 
