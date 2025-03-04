@@ -364,6 +364,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 
 							<p className="mb-4 mt-0">
 								{ __( 'To enable transcoding, you will need to subscribe to one of the following plans after downloading GoDAM. We encourage you to explore the service with the free subscription plan.', 'godam' ) }
+								<a href="https://godam.io/#pricing">{ __( 'See all the available features', 'godam' ) }</a>
 							</p>
 
 							<div className="flex gap-4 overflow-x-auto pb-4">
