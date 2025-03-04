@@ -347,7 +347,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 				{
 					( ! isValidLicense || isStarterPlan ) && (
 						<div className="premium-feature-overlay">
-							<Button icon={ unlock } href="https://app.godam.io/subscription/plans" target="_blank" variant="primary">{ __( 'Unlock with GoDAM pro', 'godam' ) }</Button>
+							<Button icon={ unlock } href="https://app.godam.io/subscription/plans" target="_blank" variant="primary">{ __( 'Upgrade to unlock', 'godam' ) }</Button>
 						</div>
 					)
 				}
@@ -437,13 +437,13 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 								onRequestClose={ handleCloseModal }
 							>
 								<p className="text-base text-gray-700">
-									To access this feature, please upgrade to our premium subscription plan
+									{ __( 'To access this feature, please upgrade to our premium subscription plan', 'godam' ) }
 								</p>
 								<Button
 									isPrimary
 									className="mt-4"
 								>
-									Go to Payment Page
+									{ __( 'Go to Payment Page', 'godam' ) }
 								</Button>
 							</Modal>
 						) }
