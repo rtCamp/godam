@@ -225,6 +225,7 @@ const VideoEditor = ( { attachmentID } ) => {
 										preload: 'auto',
 										width: '100%',
 										sources,
+										playbackRates: [ 0.25, 0.5, 0.75, 1, 1.5, 2 ],
 										muted: true,
 										controlBar: {
 											playToggle: true, // Play/Pause button
@@ -241,6 +242,7 @@ const VideoEditor = ( { attachmentID } ) => {
 											progressControl: {
 												vertical: true, // Prevent horizontal volume slider
 											},
+											playbackRateMenuButton: true,
 										},
 									} }
 									onTimeupdate={ handleTimeUpdate }
