@@ -19,7 +19,6 @@ UNWANTED_ITEMS=(
     "assets/src/blocks"     # Remove source code files
     "assets/src/css"     # Remove source code files
     "assets/src/js"     # Remove source code files
-    "assets/src/libs"     # Remove source code files
     "pages/analytics"       # Remove source code files
     "pages/godam"           # Remove source code files
     "pages/help"            # Remove source code files
