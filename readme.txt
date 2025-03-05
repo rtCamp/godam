@@ -142,13 +142,13 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 14. Video Analytics
 
 == Changelog ==
-= v1.0.0 (Feb 2025) =
+= v1.0.0 (March 2025) =
 
-- Initial release of GoDAM plugin.
-- Automatic transcoding for audio and video files.
-- Adaptive bitrate streaming for smooth playback.
-- Interactive video layers (CTAs, forms, hotspots, ads).
-- Customizable video player with branding options.
-- Cloud storage and CDN integration.
-- Advanced analytics and engagement tracking.
-- Enhanced WordPress Media Library for better asset management.
+- **Feat:** Initial release of GoDAM plugin.
+- **Feat:** Automatic transcoding for audio and video files.
+- **Feat:** Adaptive bitrate streaming for smooth playback.
+- **Feat:** Interactive video layers (CTAs, forms, hotspots, ads).
+- **Feat:** Customizable video player with branding option.
+- **Feat:** Cloud storage and CDN integration.
+- **Feat:** Advanced analytics and engagement tracking.
+- **Feat:** Enhanced WordPress Media Library for better asset management.
