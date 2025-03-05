@@ -71,78 +71,86 @@ const Analytics = ( { attachmentID } ) => {
 			</div>
 
 			{ analyticsData && (
-				<div id="video-analytics-container" className="video-analytics-container hidden">
-					<div className="overflow-auto">
-						<div className="flex gap-8 items-start">
-							<div className="min-w-[350px] max-w-[350px] flex-grow">
-								<h2 className="text-lg m-0 mb-2">{ __( 'Analytics', 'godam' ) }</h2>
+				<>
+					<div id="video-analytics-container" className="video-analytics-container hidden">
+						<div className="overflow-auto">
+							<div className="flex gap-8 items-start">
+								<div className="min-w-[350px] max-w-[350px] flex-grow">
+									<h2 className="text-lg m-0 mb-2">{ __( 'Analytics', 'godam' ) }</h2>
 
-								<div className="analytics-info-container border-t border-gray-500">
-									<div className="analytics-info flex justify-between">
-										<p>
-											{ __( 'Average Engagement', 'godam' ) }
-											<Tooltip text="Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)" />
-										</p>
-										<span id="engagement-rate" className="min-w-[90px]">0%</span>
+									<div className="analytics-info-container border-t border-gray-500">
+										<div className="analytics-info flex justify-between">
+											<p>
+												{ __( 'Average Engagement', 'godam' ) }
+												<Tooltip text="Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)" />
+											</p>
+											<span id="engagement-rate" className="min-w-[90px]">0%</span>
+										</div>
+										<hr />
+										<div className="analytics-info flex justify-between">
+											<p>
+												{ __( 'Total Plays', 'godam' ) }
+												<Tooltip text="Plays represent the total number of times the video has been viewed" />
+											</p>
+											<span id="total-plays" className="min-w-[90px]">0</span>
+										</div>
+										<hr />
+										<div className="analytics-info flex justify-between">
+											<p>
+												{ __( 'Play Rate', 'godam' ) }
+												<Tooltip text="Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads" />
+											</p>
+											<span id="play-rate" className="min-w-[90px]">0%</span>
+										</div>
+										<hr />
 									</div>
-									<hr />
-									<div className="analytics-info flex justify-between">
-										<p>
-											{ __( 'Total Plays', 'godam' ) }
-											<Tooltip text="Plays represent the total number of times the video has been viewed" />
-										</p>
-										<span id="total-plays" className="min-w-[90px]">0</span>
-									</div>
-									<hr />
-									<div className="analytics-info flex justify-between">
-										<p>
-											{ __( 'Play Rate', 'godam' ) }
-											<Tooltip text="Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads" />
-										</p>
-										<span id="play-rate" className="min-w-[90px]">0%</span>
-									</div>
-									<hr />
 								</div>
-							</div>
-							<div className="min-w-[750px]">
-								<h2 className="text-lg m-0 mb-2 min-w-[640px]">{ analyticsData?.title?.rendered }</h2>
+								<div className="min-w-[750px]">
+									<h2 className="text-lg m-0 mb-2 min-w-[640px]">{ analyticsData?.title?.rendered }</h2>
 
-								<div>
-									<div className="video-container">
-										<video
-											id="analytics-video"
-											className="video-js"
-											data-id={ attachmentID }
-										>
-											<source src={ analyticsData.source_url || '' } type={ getMimiType( analyticsData.mime_type ) || 'video/mp4' } />
-											{
-												analyticsData?.meta?._rt_transcoded_url && (
-													<source src={ analyticsData?.meta?._rt_transcoded_url || '' } type={ analyticsData?.meta?._rt_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } />
-												)
-											}
-										</video>
-										<div className="video-chart-container">
-											<div id="chart-container">
-												<svg id="line-chart" width="640" height="300"></svg>
-												<div className="tooltip"></div>
+									<div>
+										<div className="video-container">
+											<video
+												id="analytics-video"
+												className="video-js"
+												data-id={ attachmentID }
+											>
+												<source src={ analyticsData.source_url || '' } type={ getMimiType( analyticsData.mime_type ) || 'video/mp4' } />
+												{
+													analyticsData?.meta?._rt_transcoded_url && (
+														<source src={ analyticsData?.meta?._rt_transcoded_url || '' } type={ analyticsData?.meta?._rt_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } />
+													)
+												}
+											</video>
+											<div className="video-chart-container">
+												<div id="chart-container">
+													<svg id="line-chart" width="640" height="300"></svg>
+													<div className="tooltip"></div>
+												</div>
 											</div>
 										</div>
-									</div>
-									<div className="video-container">
-										<div id="heatmap-container" className="mt-4">
-											<h3 className="text-md font-semibold text-gray-700 mb-2">
-												{ __( 'Heatmap Analysis', 'godam' ) }
-												<Tooltip text="Heatmap visualizes per-second view density, identifying peaks of plays, skipped sections, and audience drop-offs. Darker areas indicate higher engagement" />
-											</h3>
-											<svg id="heatmap" width="640" height="100"></svg>
-											<div className="heatmap-tooltip"></div>
+										<div className="video-container">
+											<div id="heatmap-container" className="mt-4">
+												<h3 className="text-md font-semibold text-gray-700 mb-2">
+													{ __( 'Heatmap Analysis', 'godam' ) }
+													<Tooltip text="Heatmap visualizes per-second view density, identifying peaks of plays, skipped sections, and audience drop-offs. Darker areas indicate higher engagement" />
+												</h3>
+												<svg id="heatmap" width="640" height="100"></svg>
+												<div className="heatmap-tooltip"></div>
+											</div>
 										</div>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-				</div>
+					<div className="country-heatmap-container" id="country-heatmap-container">
+						<h3 className="text-md font-semibold text-gray-700 mb-2">
+							{ __( 'Geographical Heatmap', 'godam' ) }
+						</h3>
+						<svg id="country-heatmap" width="800" height="500"></svg>
+					</div>
+				</>
 			) }
 		</div>
 	);

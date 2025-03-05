@@ -208,6 +208,19 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 			site_url: siteUrl,
 		} );
 
+		const sampleCountryData = {
+			'USA': 120,
+			'India': 95,
+			'United Kingdom': 45,
+			'Germany': 30,
+			'Canada': 25,
+			'Australia': 20,
+			'France': 18,
+			'Brazil': 15,
+			'Japan': 10,
+			'South Africa': 8,
+		};
+
 		const response = await fetch(
 			`/wp-json/godam/v1/analytics/fetch?${ params.toString() }`,
 			{
@@ -229,6 +242,8 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 		if ( result.status !== 'success' ) {
 			throw new Error( result.message );
 		}
+
+		result.data.country_views = sampleCountryData;
 
 		return result.data;
 	} catch ( error ) {
@@ -258,6 +273,36 @@ function showLicenseActivationMessage() {
 	}
 }
 
+function generateCountryHeatmap( countryData, selector ) {
+	const width = 800,
+		height = 500;
+
+	const svg = d3.select( selector )
+		.attr( 'width', width )
+		.attr( 'height', height );
+
+	const projection = d3.geoNaturalEarth1()
+		.scale( 150 )
+		.translate( [ width / 2, height / 2 ] );
+
+	const path = d3.geoPath().projection( projection );
+
+	d3.json( 'https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson' ).then( ( worldData ) => {
+		const colorScale = d3.scaleSequential( d3.interpolateBlues )
+			.domain( [ 0, d3.max( Object.values( countryData ) ) ] );
+
+		svg.selectAll( 'path' )
+			.data( worldData.features )
+			.enter().append( 'path' )
+			.attr( 'd', path )
+			.attr( 'fill', ( d ) => {
+				const countryName = d.properties.name;
+				return countryData[ countryName ] ? colorScale( countryData[ countryName ] ) : '#ddd';
+			} )
+			.attr( 'stroke', '#333' );
+	} );
+}
+
 async function main() {
 	const videoElement = document.getElementById( 'analytics-video' );
 	const videoId = videoElement?.dataset.id;
@@ -270,7 +315,7 @@ async function main() {
 	}
 
 	// Extract values from the analytics response
-	const { plays, page_load: pageLoad, play_time: playTime, video_length: videoLength, all_time_heatmap: allTimeHeatmap } = analyticsData;
+	const { plays, page_load: pageLoad, play_time: playTime, video_length: videoLength, all_time_heatmap: allTimeHeatmap, country_views: countryViews } = analyticsData;
 
 	// Calculate analytics metrics
 	const playRate = pageLoad ? ( plays / pageLoad ) * 100 : 0; // Convert to percentage
@@ -294,6 +339,10 @@ async function main() {
 	// Generate visualizations
 	generateLineChart( heatmapData, '#line-chart', videoPlayer );
 	generateHeatmap( heatmapData, '#heatmap', videoPlayer );
+
+	if ( countryViews ) {
+		generateCountryHeatmap( countryViews, '#country-heatmap' );
+	}
 
 	const analyticsContainer = document.getElementById( 'video-analytics-container' );
 	if ( analyticsContainer ) {

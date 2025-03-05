@@ -35,6 +35,10 @@
 		@apply flex justify-center py-6 bg-slate-100 overflow-auto md:px-10 pt-20;
 	}
 
+	.country-heatmap-container {
+		@apply text-center bg-slate-100 overflow-auto md:px-10;
+	}
+
 	.analytics-info-container {
 		hr {
 			@apply border-0 border-t-2 border-dashed ml-auto border-slate-400;
