@@ -18,6 +18,8 @@ With GoDAM, WordPress users can leverage advanced video capabilities without req
 See Our Official GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam)
 Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 
+[youtube https://www.youtube.com/watch?v=UGmKa6aLSgU]
+
 Free Features
 
 📌 Media Management
