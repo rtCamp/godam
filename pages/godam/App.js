@@ -1,27 +1,21 @@
 /**
  * External dependencies
  */
-import ReactDOM from 'react-dom';
-
-/**
- * Internal dependencies
- */
-import GeneralSettings from './GeneralSettings';
-import VideoSettings from './VideoSettings';
-// import ImageSettings from './ImageSettings';
-// import StorageSettings from './storage-settings/index';
+import { useDispatch } from 'react-redux';
 
 /**
  * WordPress dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
-import { useDispatch, useSelector } from 'react-redux';
+
+/**
+ * Internal dependencies
+ */
 import { setLoading } from './redux/slice/storage';
-import { __ } from '@wordpress/i18n';
-import { cog, video, image, help } from '@wordpress/icons';
-import { Button, Icon, Panel, PanelBody } from '@wordpress/components';
 
 import GodamHeader from './GodamHeader';
+import GeneralSettings from './general-settings/index.jsx';
+import VideoSettings from './VideoSettings';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
@@ -37,25 +31,12 @@ const App = () => {
 			id: 'general-settings',
 			label: 'General Settings',
 			component: GeneralSettings,
-			icon: cog,
 		},
 		{
 			id: 'video-settings',
 			label: 'Video settings',
 			component: VideoSettings,
-			icon: video,
 		},
-		// {
-		// 	id: 'image-settings',
-		// 	label: 'Image settings',
-		// 	component: ImageSettings,
-		// 	icon: image,
-		// },
-		// {
-		// 	id: 'storage-settings', // Disable this tab for now
-		// 	label: 'Storage settings',
-		// 	component: StorageSettings,
-		// },
 	];
 
 	useEffect( () => {
@@ -122,45 +103,40 @@ const App = () => {
 	return (
 		<div id="easydam-settings">
 			<GodamHeader />
-			<div className="wrap flex gap-4 my-8 max-w-[1260px] pl-4 pr-9 mx-auto">
-				<div className="max-w-[220px] min-w-[160px]">
-					<nav className="sticky-navbar pt-8 -mt-8">
+			<div className="easydam-settings__container">
+				<div className="easydam-settings__container__tabs">
+					<nav>
 						{
 							tabs.map( ( tab ) => (
 								<a
 									key={ tab.id }
 									href={ `#${ tab.id }` }
-									className={ `sidebar-nav-item ${ activeTab === tab.id ? 'active' : '' }` }
+									className={ `${ activeTab === tab.id ? 'active' : '' }` }
 									onClick={ () => {
 										setActiveTab( tab.id );
 									} }
 								>
-									<Icon icon={ tab.icon } />
 									{ tab.label }
 								</a>
 							) )
 						}
 					</nav>
 				</div>
-				<div id="main-content" className="flex-grow">
-					<div className="flex gap-5">
-						<div className="w-full">
-							{
-								tabs.map( ( tab ) => (
-									activeTab === tab.id &&
-										<tab.component
-											key={ tab.id }
-											isPremiumUser={ isPremiumUser }
-											mediaSettings={ mediaSettings }
-											saveMediaSettings={ saveMediaSettings }
-											licenseKey={ licenseKey }
-											setLicenseKey={ setLicenseKey }
-											verifyLicenseFromUrl={ verifyLicenseFromUrl }
-										/>
-								) )
-							}
-						</div>
-					</div>
+				<div id="main-content" className="easydam-settings__container__content">
+					{
+						tabs.map( ( tab ) => (
+							activeTab === tab.id &&
+								<tab.component
+									key={ tab.id }
+									isPremiumUser={ isPremiumUser }
+									mediaSettings={ mediaSettings }
+									saveMediaSettings={ saveMediaSettings }
+									licenseKey={ licenseKey }
+									setLicenseKey={ setLicenseKey }
+									verifyLicenseFromUrl={ verifyLicenseFromUrl }
+								/>
+						) )
+					}
 				</div>
 			</div>
 		</div>
