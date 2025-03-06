@@ -1,6 +1,9 @@
 
 let MediaUploadToS3 = wp?.media?.view?.Button;
 
+const restURL = window.godamRestRoute.url || '';
+const pathJoin = ( parts, sep = '/' ) => parts.join( sep ).replace( new RegExp( sep + '{1,}', 'g' ), sep );
+
 MediaUploadToS3 = MediaUploadToS3?.extend( {
 
 	events: {
@@ -54,7 +57,7 @@ MediaUploadToS3 = MediaUploadToS3?.extend( {
 
 		try {
 			const response = await fetch(
-				`${ window.location.origin }/wp-json/godam/v1/media-library/upload-to-s3`,
+				pathJoin( restURL, '/godam/v1/media-library/upload-to-s3' ),
 				{
 					method: 'POST',
 					headers: {

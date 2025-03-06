@@ -208,8 +208,10 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 			site_url: siteUrl,
 		} );
 
+		const url = `${ window.godamRestRoute.url }godam/v1/analytics/fetch?${ params.toString() }`;
+
 		const response = await fetch(
-			`/wp-json/godam/v1/analytics/fetch?${ params.toString() }`,
+			url,
 			{
 				method: 'GET',
 				headers: {

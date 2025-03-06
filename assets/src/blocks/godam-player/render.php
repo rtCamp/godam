@@ -101,7 +101,11 @@ $ad_server = isset( $easydam_meta_data['videoConfig']['adServer'] ) ? sanitize_t
 if ( ! empty( $ad_server ) ) :
 	$ad_tag_url = isset( $easydam_meta_data['videoConfig']['adTagURL'] ) ? $easydam_meta_data['videoConfig']['adTagURL'] : '';
 elseif ( ! empty( $ads_layers ) ) :
-	$ad_tag_url = rest_url( '/godam/v1/adTagURL/' ) . $attachment_id;
+	$site_id = null;
+	if ( is_multisite() ) {
+		$site_id = get_current_blog_id();
+	}
+	$ad_tag_url = get_rest_url( $site_id, '/godam/v1/adTagURL/' ) . $attachment_id;
 endif;
 
 $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );

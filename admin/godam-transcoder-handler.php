@@ -312,7 +312,11 @@ class RT_Transcoder_Handler {
 			/**
 			 * manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
 			 */
-			$status_callback_url = get_home_url() . '/wp-json/godam/v1/transcoding/transcoding-status';
+			$site_id = null;
+			if ( is_multisite() ) {
+				$site_id = get_current_blog_id();
+			}
+			$status_callback_url = get_rest_url( $site_id, '/godam/v1/transcoding/transcoding-status' );
 
 			$args = array(
 				'method'    => 'POST',

@@ -44,6 +44,9 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 	const [ formHTML, setFormHTML ] = useState( '' );
 
+	const restURL = window.godamRestRoute.url || '';
+	const pathJoin = ( parts, sep = '/' ) => parts.join( sep ).replace( new RegExp( sep + '{1,}', 'g' ), sep );
+
 	const handleDeleteLayer = () => {
 		dispatch( removeLayer( { id: layer.id } ) );
 		goBack();
@@ -64,7 +67,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 	// Fetch the Gravity Form HTML
 	const fetchGravityForm = ( formId, theme ) => {
-		axios.get( `/wp-json/godam/v1/gform`, {
+		axios.get( pathJoin( restURL, '/godam/v1/gform' ), {
 			params: { id: formId, theme },
 		} ).then( ( response ) => {
 			setFormHTML( response.data );

@@ -92,6 +92,19 @@ class Assets {
 			)
 		);
 
+		$site_id = null;
+		if ( is_multisite() ) {
+			$site_id = get_current_blog_id();
+		}
+
+		wp_localize_script(
+			'godam-script',
+			'godamRestRoute',
+			array(
+				'url' => get_rest_url( $site_id )
+			)
+		);
+
 		wp_enqueue_script( 'godam-script' );
 		wp_enqueue_style( 'godam-style' );
 
@@ -121,6 +134,20 @@ class Assets {
 			'pluginInfo',
 			array(
 				'version' => GODAM_VERSION,
+			)
+		);
+
+		$site_id = null;
+		if ( is_multisite() ) {
+			$site_id = get_current_blog_id();
+		}
+
+		wp_localize_script(
+			'godam-script',
+			'godamRestRoute',
+			array(
+				'url' => get_rest_url( $site_id ),
+				'nonce' => wp_create_nonce( 'wp_rest' ),
 			)
 		);
 
