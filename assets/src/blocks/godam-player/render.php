@@ -43,7 +43,7 @@ if ( ! empty( $transcoded_url ) ) {
 	$sources = array(
 		array(
 			'src'  => $transcoded_url,
-			'type' => 'application/dash+xml',
+			'type' => strtolower(end(explode('.', $transcoded_url)))=== 'mp4' ? 'video/mp4' : 'application/dash+xml',
 		),
 		array(
 			'src'  => $video_src,
