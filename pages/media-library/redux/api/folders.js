@@ -3,9 +3,11 @@
  */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+const restURL = window.godamRestRoute.url || '';
+
 export const folderApi = createApi( {
 	reducerPath: 'folderApi',
-	baseQuery: fetchBaseQuery( { baseUrl: '/wp-json/' } ),
+	baseQuery: fetchBaseQuery( { baseUrl: restURL } ),
 	endpoints: ( builder ) => ( {
 		getFolders: builder.query( {
 			query: () => ( {

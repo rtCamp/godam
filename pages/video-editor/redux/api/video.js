@@ -5,7 +5,9 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const videosAPI = createApi( {
 	reducerPath: 'videoAPI',
-	baseQuery: fetchBaseQuery( { baseUrl: '/wp-admin' } ),
+	baseQuery: fetchBaseQuery( {
+		baseUrl: window.ajaxurl ? window.ajaxurl.replace( '/admin-ajax.php', '' ) : '/wp-admin', // Dynamically set the base URL
+	} ),
 	endpoints: ( builder ) => ( {
 
 		getVideos: builder.mutation( {

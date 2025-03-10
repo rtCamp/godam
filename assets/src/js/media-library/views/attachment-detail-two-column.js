@@ -5,6 +5,20 @@ import DOMPurify from 'isomorphic-dompurify';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
+const restURL = window.godamRestRoute.url || '';
+
+function pathJoin( parts, sep = '/' ) {
+	return parts
+		.map( ( part, index ) => {
+			// Don't modify 'http://' or 'https://' at the beginning
+			if ( index === 0 ) {
+				return part.replace( new RegExp( sep + '+$', 'g' ), '' ); // Remove trailing `/`
+			}
+			return part.replace( new RegExp( '^' + sep + '+|' + sep + '+$', 'g' ), '' ); // Trim leading and trailing `/`
+		} )
+		.join( sep );
+}
+
 export default AttachmentDetailsTwoColumn?.extend( {
 
 	/**
@@ -46,7 +60,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			return null;
 		}
 		try {
-			const response = await fetch( `${ window.location.origin }${ url }?attachment_id=${ attachmentId }`, {
+			const response = await fetch( `${ url }?attachment_id=${ attachmentId }`, {
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json',
@@ -70,7 +84,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		if ( attachment?.attributes?.type !== 'video' ) {
 			return null;
 		}
-		return this.fetchData( '/wp-json/godam/v1/media-library/get-video-thumbnail', attachmentId );
+		return this.fetchData( pathJoin( [ restURL, '/godam/v1/media-library/get-video-thumbnail' ] ), attachmentId );
 	},
 
 	/**
@@ -80,7 +94,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @return {Promise<Object|null>} - The fetched EXIF data or null.
 	 */
 	getExifDetails( attachmentId ) {
-		return this.fetchData( '/wp-json/godam/v1/media-library/get-exif-data', attachmentId );
+		return this.fetchData( pathJoin( [ restURL, '/godam/v1/media-library/get-exif-data' ] ), attachmentId );
 	},
 
 	/**
@@ -138,7 +152,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				/**
 				 * Send a POST request to the server to set the selected thumbnail for the video.
 				 */
-				fetch( `${ window.location.origin }/wp-json/godam/v1/media-library/set-video-thumbnail`, {
+				fetch( pathJoin( [ restURL, '/godam/v1/media-library/set-video-thumbnail' ] ), {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',

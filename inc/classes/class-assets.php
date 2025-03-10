@@ -64,7 +64,7 @@ class Assets {
 			'analytics-library',
 			GODAM_URL . '/assets/src/libs/analytics.min.js',
 			array(),
-			filemtime( GODAM_URL . '/assets/src/libs/analytics.min.js' ),
+			filemtime( GODAM_PATH . '/assets/src/libs/analytics.min.js' ),
 			true
 		);
 
@@ -89,6 +89,19 @@ class Assets {
 			'godamLicenseData',
 			array(
 				'valid_license' => godam_is_license_valid(),
+			)
+		);
+
+		$site_id = null;
+		if ( is_multisite() ) {
+			$site_id = get_current_blog_id();
+		}
+
+		wp_localize_script(
+			'godam-script',
+			'godamRestRoute',
+			array(
+				'url' => get_rest_url( $site_id )
 			)
 		);
 
@@ -121,6 +134,21 @@ class Assets {
 			'pluginInfo',
 			array(
 				'version' => GODAM_VERSION,
+			)
+		);
+
+		$site_id = null;
+		if ( is_multisite() ) {
+			$site_id = get_current_blog_id();
+		}
+
+		wp_localize_script(
+			'godam-script',
+			'godamRestRoute',
+			array(
+				'url' => get_rest_url( $site_id ),
+				'home_url' => get_home_url( $site_id ),
+				'nonce' => wp_create_nonce( 'wp_rest' ),
 			)
 		);
 
@@ -193,8 +221,8 @@ class Assets {
 		/**
 		 * Dependency library for date range picker.
 		 */
-		wp_enqueue_script( 'moment-js', GODAM_URL . '/assets/src/libs/moment-js.min.js', array(), filemtime( GODAM_URL . '/assets/src/libs/moment-js.min.js' ), true );
-		wp_enqueue_script( 'daterangepicker-js', GODAM_URL . '/assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( GODAM_URL . '/assets/src/libs/daterangepicker.min.js' ), true );
-		wp_enqueue_style( 'daterangepicker-css', GODAM_URL . '/assets/src/libs/daterangepicker.css', array(), filemtime( GODAM_URL . '/assets/src/libs/daterangepicker.css' ) );
+		wp_enqueue_script( 'moment-js', GODAM_URL . '/assets/src/libs/moment-js.min.js', array(), filemtime( GODAM_PATH . '/assets/src/libs/moment-js.min.js' ), true );
+		wp_enqueue_script( 'daterangepicker-js', GODAM_URL . '/assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( GODAM_PATH . '/assets/src/libs/daterangepicker.min.js' ), true );
+		wp_enqueue_style( 'daterangepicker-css', GODAM_URL . '/assets/src/libs/daterangepicker.css', array(), filemtime( GODAM_PATH . '/assets/src/libs/daterangepicker.css' ) );
 	}
 }
