@@ -22,7 +22,17 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 	const GODAM_API_BASE = 'https://app.godam.io';
 
 	const restURL = window.godamRestRoute.url || '';
-	const pathJoin = ( parts, sep = '/' ) => parts.join( sep ).replace( new RegExp( sep + '{1,}', 'g' ), sep );
+	function pathJoin( parts, sep = '/' ) {
+		return parts
+			.map( ( part, index ) => {
+				// Don't modify 'http://' or 'https://' at the beginning
+				if ( index === 0 ) {
+					return part.replace( new RegExp( sep + '+$', 'g' ), '' ); // Remove trailing `/`
+				}
+				return part.replace( new RegExp( '^' + sep + '+|' + sep + '+$', 'g' ), '' ); // Trim leading and trailing `/`
+			} )
+			.join( sep );
+	}
 
 	useEffect( () => {
 		if ( mediaSettings?.general?.track_status !== undefined ) {
@@ -41,7 +51,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 		const fetchPlans = async () => {
 			try {
 				const response = await fetch(
-					pathJoin( restURL, '/godam/v1/settings/subscription-plans' ),
+					pathJoin( [ restURL, '/godam/v1/settings/subscription-plans' ] ),
 					{
 						method: 'GET',
 						headers: {
@@ -87,8 +97,10 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 
 		let result = {};
 
+		console.log( 'base url:', pathJoin( [ restURL, '/godam/v1/settings/verify-license' ] ) );
+
 		try {
-			const response = await fetch( pathJoin( restURL, '/godam/v1/settings/verify-license' ), {
+			const response = await fetch( pathJoin( [ restURL, '/godam/v1/settings/verify-license' ] ), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -138,7 +150,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 		setIsDeactivateLoading( true );
 
 		try {
-			const response = await fetch( pathJoin( restURL, '/godam/v1/settings/deactivate-license' ), {
+			const response = await fetch( pathJoin( [ restURL, '/godam/v1/settings/deactivate-license' ] ), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

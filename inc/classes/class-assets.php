@@ -147,6 +147,7 @@ class Assets {
 			'godamRestRoute',
 			array(
 				'url' => get_rest_url( $site_id ),
+				'home_url' => get_home_url( $site_id ),
 				'nonce' => wp_create_nonce( 'wp_rest' ),
 			)
 		);

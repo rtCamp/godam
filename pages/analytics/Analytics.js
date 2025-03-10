@@ -22,11 +22,21 @@ const Analytics = ( { attachmentID } ) => {
 
 	const adminUrl = window.videoData?.adminUrl || '/wp-admin/admin.php?page=godam';
 	const restURL = window.godamRestRoute.url || '';
-	const pathJoin = ( parts, sep = '/' ) => parts.join( sep ).replace( new RegExp( sep + '{1,}', 'g' ), sep );
+	function pathJoin( parts, sep = '/' ) {
+		return parts
+			.map( ( part, index ) => {
+				// Don't modify 'http://' or 'https://' at the beginning
+				if ( index === 0 ) {
+					return part.replace( new RegExp( sep + '+$', 'g' ), '' ); // Remove trailing `/`
+				}
+				return part.replace( new RegExp( '^' + sep + '+|' + sep + '+$', 'g' ), '' ); // Trim leading and trailing `/`
+			} )
+			.join( sep );
+	}
 
 	useEffect( () => {
 		if ( attachmentID ) {
-			const url = pathJoin( restURL, `/wp/v2/media/${ attachmentID }` );
+			const url = pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] );
 
 			axios
 				.get( url )

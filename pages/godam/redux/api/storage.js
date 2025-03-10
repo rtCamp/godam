@@ -4,11 +4,21 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const restURL = window.godamRestRoute.url || '';
-const pathJoin = ( parts, sep = '/' ) => parts.join( sep ).replace( new RegExp( sep + '{1,}', 'g' ), sep );
+function pathJoin( parts, sep = '/' ) {
+	return parts
+		.map( ( part, index ) => {
+			// Don't modify 'http://' or 'https://' at the beginning
+			if ( index === 0 ) {
+				return part.replace( new RegExp( sep + '+$', 'g' ), '' ); // Remove trailing `/`
+			}
+			return part.replace( new RegExp( '^' + sep + '+|' + sep + '+$', 'g' ), '' ); // Trim leading and trailing `/`
+		} )
+		.join( sep );
+}
 
 export const storageAPI = createApi( {
 	reducerPath: 'storageApi',
-	baseQuery: fetchBaseQuery( { baseUrl: pathJoin( restURL, '/godam/v1/settings/' ) } ),
+	baseQuery: fetchBaseQuery( { baseUrl: pathJoin( [ restURL, '/godam/v1/settings/' ] ) } ),
 	endpoints: ( builder ) => ( {
 		getAWSSettings: builder.query( {
 			query: () => ( {
