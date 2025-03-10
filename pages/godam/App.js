@@ -12,9 +12,9 @@ import { cog, Icon, video } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { setLoading } from './redux/slice/storage';
-
 import GodamHeader from './GodamHeader';
+import Skeleton from './common/Skeleton.jsx';
+
 import GeneralSettings from './general-settings/index.jsx';
 import VideoSettings from './video-settings/index.jsx';
 
@@ -26,7 +26,7 @@ const App = () => {
 	const [ licenseKey, setLicenseKey ] = useState( '' );
 	const [ verifyLicenseFromUrl, setVerifyLicenseFromUrl ] = useState( false );
 
-	const { data: mediaSettingsData } = useGetMediaSettingsQuery();
+	const { data: mediaSettingsData, isLoading: isMediaSettingLoading } = useGetMediaSettingsQuery();
 
 	const dispatch = useDispatch();
 
@@ -68,28 +68,9 @@ const App = () => {
 		}
 	}, [] );
 
-	const saveMediaSettings = async ( updatedSettings ) => {
-		try {
-			const response = await fetch( '/wp-json/godam/v1/settings/easydam-settings', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-WP-Nonce': window.wpApiSettings.nonce,
-				},
-				body: JSON.stringify( { settings: updatedSettings } ),
-			} );
-
-			const result = await response.json();
-			if ( result.status === 'success' ) {
-				setMediaSettings( updatedSettings ); // Update local state
-				return true;
-			}
-			console.error( result.message );
-			return false;
-		} catch ( error ) {
-			console.error( 'Failed to save media settings:', error );
-		}
-	};
+	if ( isMediaSettingLoading ) {
+		return <Skeleton />;
+	}
 
 	return (
 		<div id="easydam-settings">

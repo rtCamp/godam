@@ -20,7 +20,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import Skeleton from './components/Skeleton.jsx';
 import PricingPlan from './components/PricingPlan.jsx';
 import UsageData from './components/UsageData.jsx';
 
@@ -41,7 +40,6 @@ const GeneralSettings = ( {
 	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
 	const dispatch = useDispatch();
 
-	const loading = useSelector( ( state ) => state.storage.loading );
 	const [ saveMediaSettings ] = useSaveMediaSettingsMutation();
 
 	const [ verifyLicense, { isLoading: isLicenseKeyLoading } ] = useVerifyLicenseKeyMutation();
@@ -183,10 +181,6 @@ const GeneralSettings = ( {
 			saveLicenseKey(); // Use the existing saveLicenseKey function
 		}
 	}, [ verifyLicenseFromUrl, licenseKey ] );
-
-	if ( loading ) {
-		return <Skeleton />;
-	}
 
 	return (
 		<div>
