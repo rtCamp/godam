@@ -106,6 +106,11 @@
 
 		max-width: 80rem;
 		margin: 2rem auto;
+		padding-right: 20px;
+
+		display: flex;
+		justify-content: space-between;
+		gap: 2em;
 
 		&__tabs {
 
@@ -113,24 +118,27 @@
 
 			nav {
 				display: flex;
-				gap: 1.5rem;
-
-				border-bottom: 2px solid rgba(228, 228, 228, 1);
+				flex-direction: column;
+				gap: 0.5rem;
 
 				a {
+
+					display: flex;
+					align-items: center;
+					gap: 0.5rem;
 
 					font-size: 1rem;
 					line-height: 1.375rem;
 					font-weight: 500;
 					color: rgba(119, 119, 119, 1);
 
-					padding-bottom: 1rem;
+					padding: 0.5rem;
+					border-radius: 0.5rem;
 
 					&.active {
 						color: rgba(33, 33, 33, 1);
-						border-bottom: 2px solid;
-						border-image-slice: 1;
-						border-image-source: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);	
+
+						background-color: #ffffff;
 					}
 
 					&:focus {
@@ -138,6 +146,10 @@
 					}
 				}
 			}
+		}
+
+		&__content {
+			flex: 1;
 		}
 	}
 

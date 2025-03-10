@@ -7,6 +7,7 @@ import { useDispatch } from 'react-redux';
  * WordPress dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
+import { cog, Icon, video } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -31,11 +32,14 @@ const App = () => {
 			id: 'general-settings',
 			label: 'General Settings',
 			component: GeneralSettings,
+			icon: cog,
+
 		},
 		{
 			id: 'video-settings',
 			label: 'Video settings',
 			component: VideoSettings,
+			icon: video,
 		},
 	];
 
@@ -116,6 +120,7 @@ const App = () => {
 										setActiveTab( tab.id );
 									} }
 								>
+									<Icon icon={ tab.icon } />
 									{ tab.label }
 								</a>
 							) )
