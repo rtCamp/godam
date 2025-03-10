@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useGetSubscriptionPlansQuery } from '../../redux/api/general';
+import { useGetSubscriptionPlansQuery } from '../../redux/api/media-settings';
 
 const GODAM_API_BASE = 'https://godam.io';
 

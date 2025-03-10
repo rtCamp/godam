@@ -17,7 +17,7 @@ import AdaptiveBitrateStreaming from './components/AdaptiveBitrateStreaming.jsx'
 import VideoThumbnails from './components/VideoThumbnails.jsx';
 import VideoWatermark from './components/VideoWatermark.jsx';
 
-import { useSaveMediaSettingsMutation } from '../redux/api/general.js';
+import { useSaveMediaSettingsMutation } from '../redux/api/media-settings.js';
 
 const VideoSettings = () => {
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );

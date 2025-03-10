@@ -10,7 +10,7 @@ import StorageReducer from './slice/storage';
 import MediaSettingsReducer from './slice/media-settings';
 
 import { storageAPI } from './api/storage';
-import { generalAPI } from './api/general';
+import { generalAPI } from './api/media-settings';
 
 export default configureStore( {
 	reducer: {

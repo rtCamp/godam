@@ -1,9 +1,7 @@
-/* global userData */
-
 /**
  * External dependencies
  */
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 /**
  * WordPress dependencies
@@ -22,25 +20,14 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import Skeleton from './skeleton.jsx';
-import PricingPlan from './components/pricing-plan.jsx';
-import { useVerifyLicenseKeyMutation, useDeactiveLicenseKeyMutation } from '../redux/api/general';
+import Skeleton from './components/Skeleton.jsx';
+import PricingPlan from './components/PricingPlan.jsx';
+import UsageData from './components/UsageData.jsx';
 
-const calculatePercentage = ( used, total ) => {
-	if ( total === 0 ) {
-		return 0;
-	}
-	try {
-		const result = ( used / total ) * 100;
-		return result.toFixed( 2 );
-	} catch ( error ) {
-		return 0;
-	}
-};
+import { useVerifyLicenseKeyMutation, useDeactiveLicenseKeyMutation, useSaveMediaSettingsMutation } from '../redux/api/media-settings.js';
+import { updateMediaSetting } from '../redux/slice/media-settings.js';
 
 const GeneralSettings = ( {
-	mediaSettings,
-	saveMediaSettings,
 	licenseKey,
 	setLicenseKey,
 	verifyLicenseFromUrl,
@@ -50,21 +37,19 @@ const GeneralSettings = ( {
 		status: 'success',
 		isVisible: false,
 	} );
+
+	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
+	const dispatch = useDispatch();
+
 	const loading = useSelector( ( state ) => state.storage.loading );
+	const [ saveMediaSettings ] = useSaveMediaSettingsMutation();
 
 	const [ verifyLicense, { isLoading: isLicenseKeyLoading } ] = useVerifyLicenseKeyMutation();
 	const [ deactiveLicense, { isLoading: isDeactivateLoading } ] = useDeactiveLicenseKeyMutation();
 
 	const GODAM_API_BASE = 'https://app.godam.io';
 
-	useEffect( () => {
-		// Trigger verification if the flag is true
-		if ( verifyLicenseFromUrl && licenseKey ) {
-			saveLicenseKey(); // Use the existing saveLicenseKey function
-		}
-	}, [ verifyLicenseFromUrl, licenseKey ] );
-
-	const handleMediaFolderOrganization = ( value ) => {
+	const handleMediaFolderOrganization = async ( value ) => {
 		const updatedSettings = {
 			...mediaSettings,
 			general: {
@@ -73,7 +58,29 @@ const GeneralSettings = ( {
 			},
 		};
 
-		saveMediaSettings( updatedSettings );
+		try {
+			await saveMediaSettings( { settings: updatedSettings } ).unwrap();
+
+			setNotice( {
+				message: 'Settings saved successfully!',
+				status: 'success',
+				isVisible: true,
+			} );
+
+			dispatch( updateMediaSetting(
+				{
+					category: 'general',
+					key: 'disable_folder_organization',
+					value,
+				},
+			) );
+		} catch ( e ) {
+			setNotice( {
+				message: 'An error occurred while saving the settings',
+				status: 'error',
+				isVisible: true,
+			} );
+		}
 	};
 
 	const saveLicenseKey = async () => {
@@ -103,7 +110,7 @@ const GeneralSettings = ( {
 				},
 			};
 
-			saveMediaSettings( updatedSettings );
+			await saveMediaSettings( updatedSettings );
 
 			// Reload the page to reflect the changes
 			window.location.reload();
@@ -170,6 +177,13 @@ const GeneralSettings = ( {
 		}, 5000 );
 	};
 
+	useEffect( () => {
+		// Trigger verification if the flag is true
+		if ( verifyLicenseFromUrl && licenseKey ) {
+			saveLicenseKey(); // Use the existing saveLicenseKey function
+		}
+	}, [ verifyLicenseFromUrl, licenseKey ] );
+
 	if ( loading ) {
 		return <Skeleton />;
 	}
@@ -216,7 +230,6 @@ const GeneralSettings = ( {
 								</>
 							}
 							placeholder="Enter your license key here"
-							// className={ `max-w-[400px] ${ ( ! window?.userData?.valid_license && window?.userData?.user_data?.license_key ) ? 'invalid-license-key' : '' }` }
 							disabled={ window?.userData?.valid_license }
 						/>
 						<div className="flex gap-2">
@@ -245,54 +258,8 @@ const GeneralSettings = ( {
 							</Button>
 						</div>
 					</div>
-					{
-						( mediaSettings?.general?.is_verified && window?.userData?.valid_license ) && (
-							<div className="flex gap-4 flex-wrap">
 
-								{
-									userData.storageBandwidthError ? (
-										<p className="text-yellow-700 text-xs h-max">{ userData.storageBandwidthError }</p>
-									) : (
-										<>
-											<div className="flex gap-3 items-center">
-												<div className="circle-container">
-													<div className="data text-xs">{ calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) }%</div>
-													<div
-														className={ `circle ${
-															calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) > 90 ? 'red' : ''
-														}` }
-														style={ { '--percentage': calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) + '%' } }
-													></div>
-												</div>
-												<div className="leading-6">
-													<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
-													<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_bandwidth - userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
-													<br />
-													<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
-												</div>
-											</div>
-											<div className="flex gap-3 items-center">
-												<div className="circle-container">
-													<div className="data text-xs">{ calculatePercentage( userData.storage_used, userData.total_storage ) }%</div>
-													<div
-														className={ `circle ${
-															calculatePercentage( userData.storage_used, userData.total_storage ) > 90 ? 'red' : ''
-														}` }
-														style={ { '--percentage': calculatePercentage( userData.storage_used, userData.total_storage ) + '%' } }
-													></div>
-												</div>
-												<div className="leading-6">
-													<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
-													<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_storage - userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
-													<br />
-													<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
-												</div>
-											</div>
-										</>
-									)
-								}
-							</div>
-						) }
+					<UsageData />
 				</PanelBody>
 			</Panel>
 

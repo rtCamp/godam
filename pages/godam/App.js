@@ -18,13 +18,11 @@ import GodamHeader from './GodamHeader';
 import GeneralSettings from './general-settings/index.jsx';
 import VideoSettings from './video-settings/index.jsx';
 
-import { useGetMediaSettingsQuery } from './redux/api/general.js';
+import { useGetMediaSettingsQuery } from './redux/api/media-settings.js';
 import { setMediaSettings } from './redux/slice/media-settings.js';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
-	const isPremiumUser = window.userData?.user_data?.active_plan !== 'Starter';
-	// const [ mediaSettings, setMediaSettings ] = useState( null );
 	const [ licenseKey, setLicenseKey ] = useState( '' );
 	const [ verifyLicenseFromUrl, setVerifyLicenseFromUrl ] = useState( false );
 
@@ -55,42 +53,20 @@ const App = () => {
 	}, [ dispatch, mediaSettingsData ] );
 
 	useEffect( () => {
-		const fetchSettings = async () => {
-			dispatch( setLoading( true ) );
-			try {
-				const settingsResponse = await fetch( '/wp-json/godam/v1/settings/easydam-settings', {
-					headers: {
-						'Content-Type': 'application/json',
-						'X-WP-Nonce': window.wpApiSettings.nonce,
-					},
-				} );
+		let licenseFromUrl = '';
+		const urlParams = new URLSearchParams( window.location.search );
+		if ( urlParams.has( 'license_key' ) ) {
+			licenseFromUrl = urlParams.get( 'license_key' );
+		}
 
-				const settingsData = await settingsResponse.json();
-
-				let licenseFromUrl = '';
-				const urlParams = new URLSearchParams( window.location.search );
-				if ( urlParams.has( 'license_key' ) ) {
-					licenseFromUrl = urlParams.get( 'license_key' );
-				}
-
-				if ( ! window.userData.valid_license && licenseFromUrl ) {
-					// Set license key from URL and trigger verification in GeneralSettings
-					setLicenseKey( licenseFromUrl );
-					setVerifyLicenseFromUrl( true ); // Pass this flag to GeneralSettings
-				} else {
-					setLicenseKey( window?.userData?.user_data?.license_key || '' );
-				}
-
-				setMediaSettings( settingsData );
-			} catch ( error ) {
-				console.error( 'Failed to fetch data:', error );
-			} finally {
-				dispatch( setLoading( false ) ); // Set loading to false
-			}
-		};
-
-		fetchSettings();
-	}, [ dispatch ] );
+		if ( ! window.userData.valid_license && licenseFromUrl ) {
+			// Set license key from URL and trigger verification in GeneralSettings
+			setLicenseKey( licenseFromUrl );
+			setVerifyLicenseFromUrl( true ); // Pass this flag to GeneralSettings
+		} else {
+			setLicenseKey( window?.userData?.user_data?.license_key || '' );
+		}
+	}, [] );
 
 	const saveMediaSettings = async ( updatedSettings ) => {
 		try {
@@ -144,9 +120,6 @@ const App = () => {
 							activeTab === tab.id &&
 								<tab.component
 									key={ tab.id }
-									isPremiumUser={ isPremiumUser }
-									mediaSettings={ mediaSettingsData }
-									saveMediaSettings={ saveMediaSettings }
 									licenseKey={ licenseKey }
 									setLicenseKey={ setLicenseKey }
 									verifyLicenseFromUrl={ verifyLicenseFromUrl }

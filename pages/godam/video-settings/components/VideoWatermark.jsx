@@ -56,7 +56,7 @@ const VideoWatermark = () => {
 		<GodamPanel
 			heading={ __( 'Video Watermark', 'godam' ) }
 			isPremiumFeature={ true }
-			upgradeFromStarterPlan={ true }
+			isUpgradeRequired={ true }
 		>
 			<div className="flex flex-col gap-2 opacity-90 relative">
 				<ToggleControl
