@@ -132,6 +132,13 @@
 	}
 }
 
+.godam-checkbox {
+
+	.components-checkbox-control__input[type="checkbox"]:checked {
+		background: variables.$godam-primary-gradient !important;
+	}
+}
+
 .godam-panel {
 	border-radius: 0.75rem;
 	margin-bottom: 2rem;

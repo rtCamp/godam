@@ -1,10 +1,10 @@
 /**
  * WordPress dependencies
  */
-import { ToggleControl, TextControl, SelectControl, Modal, Button, Notice, CheckboxControl, Panel, PanelBody } from '@wordpress/components';
+import { ToggleControl, TextControl, Modal, Button, Notice, CheckboxControl, Panel, PanelBody } from '@wordpress/components';
 import { useState, useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { lock, unlock } from '@wordpress/icons';
+import { unlock } from '@wordpress/icons';
 
 const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) => {
 	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( mediaSettings?.video?.sync_from_easydam || false );
@@ -24,11 +24,6 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
 	const isFirstRender = useRef( true );
-
-	const videoFormatOptions = [
-		{ label: 'Not set', value: 'not-set' },
-		{ label: 'Auto', value: 'auto' },
-	];
 
 	const videoQualityOptions = [
 		{ label: 'Auto', value: 'auto' },

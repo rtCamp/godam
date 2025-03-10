@@ -24,6 +24,26 @@ export const generalAPI = createApi( {
 				return response;
 			},
 		} ),
+		getMediaSettings: builder.query( {
+			query: () => ( {
+				url: 'easydam-settings',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.wpApiSettings.nonce,
+				},
+			} ),
+		} ),
+		saveMediaSettings: builder.mutation( {
+			query: ( data ) => ( {
+				url: 'easydam-settings',
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.wpApiSettings.nonce,
+				},
+				body: data,
+			} ),
+		} ),
 		verifyLicenseKey: builder.mutation( {
 			query: ( licenseKey ) => ( {
 				url: 'verify-license',
@@ -48,4 +68,10 @@ export const generalAPI = createApi( {
 	} ),
 } );
 
-export const { useGetSubscriptionPlansQuery, useVerifyLicenseKeyMutation, useDeactiveLicenseKeyMutation } = generalAPI;
+export const {
+	useGetSubscriptionPlansQuery,
+	useVerifyLicenseKeyMutation,
+	useDeactiveLicenseKeyMutation,
+	useGetMediaSettingsQuery,
+	useSaveMediaSettingsMutation,
+} = generalAPI;

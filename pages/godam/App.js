@@ -16,14 +16,19 @@ import { setLoading } from './redux/slice/storage';
 
 import GodamHeader from './GodamHeader';
 import GeneralSettings from './general-settings/index.jsx';
-import VideoSettings from './VideoSettings';
+import VideoSettings from './video-settings/index.jsx';
+
+import { useGetMediaSettingsQuery } from './redux/api/general.js';
+import { setMediaSettings } from './redux/slice/media-settings.js';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
 	const isPremiumUser = window.userData?.user_data?.active_plan !== 'Starter';
-	const [ mediaSettings, setMediaSettings ] = useState( null );
+	// const [ mediaSettings, setMediaSettings ] = useState( null );
 	const [ licenseKey, setLicenseKey ] = useState( '' );
 	const [ verifyLicenseFromUrl, setVerifyLicenseFromUrl ] = useState( false );
+
+	const { data: mediaSettingsData } = useGetMediaSettingsQuery();
 
 	const dispatch = useDispatch();
 
@@ -42,6 +47,12 @@ const App = () => {
 			icon: video,
 		},
 	];
+
+	useEffect( () => {
+		if ( mediaSettingsData ) {
+			dispatch( setMediaSettings( mediaSettingsData ) );
+		}
+	}, [ dispatch, mediaSettingsData ] );
 
 	useEffect( () => {
 		const fetchSettings = async () => {
@@ -134,7 +145,7 @@ const App = () => {
 								<tab.component
 									key={ tab.id }
 									isPremiumUser={ isPremiumUser }
-									mediaSettings={ mediaSettings }
+									mediaSettings={ mediaSettingsData }
 									saveMediaSettings={ saveMediaSettings }
 									licenseKey={ licenseKey }
 									setLicenseKey={ setLicenseKey }
