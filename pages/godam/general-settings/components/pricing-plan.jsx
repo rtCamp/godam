@@ -27,18 +27,18 @@ const PricingPlan = () => {
 			<PanelBody
 				opened={ true }
 			>
-				<div className="subscription-plans">
+				<div className="subscription-plans max-w-full">
 
 					<p className="mb-6 mt-0 text-base">
 						{ __( 'To enable transcoding, you will need to subscribe to one of the following plans after downloading GoDAM. We encourage you to explore the service with the free subscription plan.', 'godam' ) }
 						<a href="https://godam.io/#pricing">{ __( 'See all the available features', 'godam' ) }</a>
 					</p>
 
-					<div className="flex gap-4 overflow-x-auto pb-4">
+					<div className="flex gap-4 flex-wrap justify-center pb-4 max-w-full">
 						{ plans?.data?.map( ( plan ) => (
 							<div
 								key={ plan.name }
-								className="plan min-w-[200px] flex-shrink-0 border px-6 py-5 rounded-xl shadow-sm bg-white transition-transform transform hover:shadow-lg flex flex-col justify-center items-center gap-2"
+								className="plan flex-shrink-0 border px-6 py-5 rounded-xl shadow-sm bg-white transition-transform transform hover:shadow-lg flex flex-col justify-center items-center gap-2"
 							>
 								<div className="text-center">
 									<h3 className="text-lg font-bold text-gray-800 mb-0">{ plan.name } { __( 'Plan', 'godam' ) }</h3>

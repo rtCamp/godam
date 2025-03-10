@@ -24,7 +24,28 @@ export const generalAPI = createApi( {
 				return response;
 			},
 		} ),
+		verifyLicenseKey: builder.mutation( {
+			query: ( licenseKey ) => ( {
+				url: 'verify-license',
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.wpApiSettings.nonce,
+				},
+				body: { license_key: licenseKey },
+			} ),
+		} ),
+		deactiveLicenseKey: builder.mutation( {
+			query: () => ( {
+				url: 'deactivate-license',
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.wpApiSettings.nonce,
+				},
+			} ),
+		} ),
 	} ),
 } );
 
-export const { useGetSubscriptionPlansQuery } = generalAPI;
+export const { useGetSubscriptionPlansQuery, useVerifyLicenseKeyMutation, useDeactiveLicenseKeyMutation } = generalAPI;
