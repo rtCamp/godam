@@ -5,6 +5,7 @@ import React from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import 'videojs-contrib-quality-menu';
+import SpriteThumbnails from 'videojs-sprite-thumbnails';
 
 /**
  * WordPress dependencies
@@ -47,6 +48,31 @@ export const VideoJS = ( props ) => {
 			player.playsinline( options.playsinline );
 			player.src( options.sources );
 		}
+
+		const pluginName = 'spriteThumbnails';
+
+		if ( typeof videojs.getPlugin( pluginName ) === 'undefined' ) {
+			videojs.registerPlugin( pluginName, SpriteThumbnails );
+		}
+
+		let spriteUrl = '';
+
+		if ( 2 === options.sources.length ) {
+			const source = options.sources[ 0 ].src;
+			const urlParts = source.split( '/' );
+			urlParts[ urlParts.length - 1 ] = 'sprite.png'; // Replace the filename with 'sprite.png'
+
+			spriteUrl = urlParts.join( '/' ); // Reconstruct the URL
+		}
+
+		playerRef.current.spriteThumbnails?.( {
+			url: spriteUrl,
+			width: 320,
+			height: 180,
+			interval: 10,
+			columns: 10,
+			downlink: 0,
+		} );
 	}, [ options, videoRef ] );
 
 	// Dispose the Video.js player when the functional component unmounts

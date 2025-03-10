@@ -25,25 +25,25 @@ $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : nu
 $video_preview = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
 
 // Retrieve 'easydam_meta' for the given attachment ID, defaulting to an empty array if not found.
-$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : [];
-$easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : [];
+$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : array();
+$easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : array();
 
 // Extract control bar settings with a fallback to an empty array.
-$control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? [];
+$control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? array();
 
 $poster_image = get_post_meta( $attachment_id, '_rt_media_video_thumbnail', true );
 $poster_image = ! empty( $poster_image ) ? $poster_image : '';
 
-$sources = [];
-$transcoded_url    = $attachment_id ? get_post_meta( $attachment_id, '_rt_transcoded_url', true ) : '';
-$video_src         = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
-$video_src_type    = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
+$sources        = array();
+$transcoded_url = $attachment_id ? get_post_meta( $attachment_id, '_rt_transcoded_url', true ) : '';
+$video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
+$video_src_type = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
 
 if ( ! empty( $transcoded_url ) ) {
 	$sources = array(
 		array(
 			'src'  => $transcoded_url,
-			'type' => 'application/dash+xml',
+			'type' => strtolower( end( explode( '.', $transcoded_url ) ) ) === 'mp4' ? 'video/mp4' : 'application/dash+xml',
 		),
 		array(
 			'src'  => $video_src,
@@ -55,7 +55,7 @@ if ( ! empty( $transcoded_url ) ) {
 		array(
 			'src'  => $video_src,
 			'type' => $video_src_type === 'video/quicktime' ? 'video/mp4' : $video_src_type,
-		)
+		),
 	);
 }
 
