@@ -32,6 +32,8 @@ const App = () => {
 
 	const dispatch = useDispatch();
 
+	const restURL = window.godamRestRoute.url || '';
+
 	const tabs = [
 		{
 			id: 'general-settings',
@@ -62,7 +64,8 @@ const App = () => {
 		const fetchSettings = async () => {
 			dispatch( setLoading( true ) );
 			try {
-				const settingsResponse = await fetch( '/wp-json/godam/v1/settings/easydam-settings', {
+				const url = window.pathJoin( [ restURL, '/godam/v1/settings/easydam-settings' ] );
+				const settingsResponse = await fetch( url, {
 					headers: {
 						'Content-Type': 'application/json',
 						'X-WP-Nonce': window.wpApiSettings.nonce,
@@ -98,7 +101,8 @@ const App = () => {
 
 	const saveMediaSettings = async ( updatedSettings ) => {
 		try {
-			const response = await fetch( '/wp-json/godam/v1/settings/easydam-settings', {
+			const url = window.pathJoin( [ restURL, '/godam/v1/settings/easydam-settings' ] );
+			const response = await fetch( url, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
