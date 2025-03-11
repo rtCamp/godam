@@ -6,6 +6,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 
 /**
+ * WordPress dependencies
+ */
+import { Button, TabPanel, Snackbar } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import VideoJSPlayer from './VideoJSPlayer';
@@ -13,11 +19,7 @@ import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
 import { initializeStore, saveVideoMeta, setCurrentTab, setLoading, setGravityForms, setGravityFormsPluginActive } from './redux/slice/videoSlice';
 
-/**
- * WordPress dependencies
- */
-import { Button, TabPanel, Snackbar } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import './video-editor.scss';
 
 const VideoEditor = ( { attachmentID } ) => {
 	const videoData = window.videoData;
@@ -158,13 +160,13 @@ const VideoEditor = ( { attachmentID } ) => {
 	return (
 		<>
 			<div className="video-editor-container">
-				<aside className="py-3">
-					<div id="sidebar-content" className="border-b">
+				<div className="py-3 aside">
+					<div id="sidebar-content" className="godam-video-editor">
 						<TabPanel
 							onSelect={ ( tabName ) => {
 								dispatch( setCurrentTab( tabName ) );
 							} }
-							className="sidebar-tabs"
+							className="godam-video-editor-tabs"
 							tabs={ [
 								{
 									name: 'layers',
@@ -186,7 +188,7 @@ const VideoEditor = ( { attachmentID } ) => {
 							{ ( tab ) => tab.component }
 						</TabPanel>
 					</div>
-				</aside>
+				</div>
 
 				<main className="flex justify-center items-center p-4 relative overflow-y-auto">
 					{ loading

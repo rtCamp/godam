@@ -1,0 +1,25 @@
+@use '../../assets/src/css/variables.scss';
+
+.godam-video-editor {
+
+	padding: 1rem;
+	height: 100%;
+
+	&-tabs {
+
+		height: 100%;
+
+		.components-tab-panel__tabs {
+			border-bottom: 1px solid rgba(228, 228, 228, 1);
+
+			button {
+				white-space: nowrap;
+				flex-grow: 0;
+
+				&::after {
+					background: variables.$godam-primary-gradient;
+				}
+			}
+		}
+	}
+}

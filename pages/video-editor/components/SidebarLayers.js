@@ -12,11 +12,12 @@ import { v4 as uuidv4 } from 'uuid';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { BaseControl, Button, Icon, Modal, Tooltip } from '@wordpress/components';
+import { Button, Icon, Modal, Tooltip } from '@wordpress/components';
 import { plus, preformatted, customLink, arrowRight, video, customPostType } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
 
 import Layer from './layers/Layer';
+import LayerSelector from './LayerSelector.jsx';
 
 const layerTypes = [
 	{
@@ -141,7 +142,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 		<>
 			{
 				! currentLayer ? (
-					<div id="sidebar-layers" className="p-4">
+					<div id="sidebar-layers" className="p-4 h-max">
 						{
 							sortedLayers?.map( ( layer ) => {
 								const isAdServerAd = adServer === 'ad-server' && layer.type === 'ad';
@@ -192,7 +193,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 						}
 						{
 							! loading && layers.length === 0 && (
-								<p className="text-center py-4 text-gray-400">{ __( 'No layers added.', 'godam' ) }</p>
+								<>
+									<h3 className="text-2xl m-0 text-center">{ __( 'No layers added', 'godam' ) }</h3>
+									<p className="text-center mb-10 text-gray-400">{ __( 'Play video to add layer.', 'godam' ) }</p>
+								</>
 							)
 						}
 						{
@@ -214,7 +218,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 						{ ! loading &&
 						<div>
 							<Button
-								isPrimary
+								className="godam-button w-fit"
+								variant="primary"
 								id="add-layer-btn"
 								icon={ plus }
 								iconPosition="left"
@@ -229,7 +234,16 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 							) }
 						</div>
 						}
+
 						{ isOpen && (
+							<LayerSelector
+								isGFPluginActive={ isGFPluginActive }
+								closeModal={ closeModal }
+								addNewLayer={ addNewLayer }
+							/>
+						) }
+
+						{/* { isOpen && (
 							<Modal title={ __( 'Select layer type', 'godam' ) } onRequestClose={ closeModal }>
 								<div className="flex flex-col gap-1">
 									{
@@ -286,7 +300,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 									}
 								</div>
 							</Modal>
-						) }
+						) } */}
 					</div>
 				) : (
 					<div id="sidebar-layers" className="p-4">

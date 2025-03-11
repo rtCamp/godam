@@ -62,11 +62,12 @@ input, textarea, select {
   @apply flex h-full bg-gray-100;
 }
 
-.video-editor-container aside {
+.video-editor-container .aside {
   @apply h-full w-[400px];
+  background-color: #ffffff
 }
 
-.video-editor-container aside #sidebar-content {
+.video-editor-container .aside #sidebar-content {
   @apply overflow-auto bg-white rounded-xl shadow;
   min-height: calc(100vh - var(--wp-admin--admin-bar--height, 0) - 24px);
   max-height: calc(100vh - var(--wp-admin--admin-bar--height, 0) - 24px);
