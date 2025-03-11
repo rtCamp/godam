@@ -287,16 +287,11 @@ class RetranscodeMedia {
 
 		$ids = implode( ',', $media );
 
-		$current_blog_id = null;
-		if ( is_multisite() ) {
-			$current_blog_id = get_current_blog_id();
-		}
-
 		// Can't use wp_nonce_url() as it escapes HTML entities.
 		$redirect_url = add_query_arg(
 			'_wpnonce',
 			wp_create_nonce( 'godam-tools' ),
-			get_admin_url( $current_blog_id, 'admin.php?page=godam-tools&goback=1&ids=' . $ids )
+			get_admin_url( get_current_blog_id(), 'admin.php?page=godam-tools&goback=1&ids=' . $ids )
 		);
 
 		wp_safe_redirect( $redirect_url );
