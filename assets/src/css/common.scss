@@ -12,6 +12,10 @@
 
 	height: auto;
 
+	&.is-primary.has-icon {
+		padding: 0.75rem 1.5rem;
+	}
+
 	&.is-primary.is-busy:disabled {
 		background: linear-gradient(-45deg, #AB3A6C 20%, #E6533A 50%, #AB3A6C 80%);
 
