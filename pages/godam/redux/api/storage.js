@@ -3,9 +3,11 @@
  */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+const restURL = window.godamRestRoute.url || '';
+
 export const storageAPI = createApi( {
 	reducerPath: 'storageApi',
-	baseQuery: fetchBaseQuery( { baseUrl: '/wp-json/godam/v1/settings/' } ),
+	baseQuery: fetchBaseQuery( { baseUrl: window.pathJoin( [ restURL, '/godam/v1/settings/' ] ) } ),
 	endpoints: ( builder ) => ( {
 		getAWSSettings: builder.query( {
 			query: () => ( {

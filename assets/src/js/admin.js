@@ -5,6 +5,18 @@
 console.log( 'Hello from Features Plugin Admin' );
 /* eslint-enable no-console */
 
+window.pathJoin = function( parts, sep = '/' ) {
+	return parts
+		.map( ( part, index ) => {
+			// Don't modify 'http://' or 'https://' at the beginning
+			if ( index === 0 ) {
+				return part.replace( new RegExp( sep + '+$', 'g' ), '' ); // Remove trailing `/`
+			}
+			return part.replace( new RegExp( '^' + sep + '+|' + sep + '+$', 'g' ), '' ); // Trim leading and trailing `/`
+		} )
+		.join( sep );
+};
+
 document.addEventListener( 'DOMContentLoaded', function() {
 	const toggleButtons = document.querySelectorAll( '#easydam-tools-widget .handlediv' );
 

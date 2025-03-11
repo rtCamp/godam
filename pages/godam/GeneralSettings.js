@@ -21,6 +21,8 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 
 	const GODAM_API_BASE = 'https://app.godam.io';
 
+	const restURL = window.godamRestRoute.url || '';
+
 	useEffect( () => {
 		if ( mediaSettings?.general?.track_status !== undefined ) {
 			setTrackStatusOnUserProfile( mediaSettings.general.track_status );
@@ -38,7 +40,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 		const fetchPlans = async () => {
 			try {
 				const response = await fetch(
-					'/wp-json/godam/v1/settings/subscription-plans',
+					window.pathJoin( [ restURL, '/godam/v1/settings/subscription-plans' ] ),
 					{
 						method: 'GET',
 						headers: {
@@ -85,7 +87,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 		let result = {};
 
 		try {
-			const response = await fetch( '/wp-json/godam/v1/settings/verify-license', {
+			const response = await fetch( window.pathJoin( [ restURL, '/godam/v1/settings/verify-license' ] ), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -135,7 +137,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings, licenseKey, setLic
 		setIsDeactivateLoading( true );
 
 		try {
-			const response = await fetch( '/wp-json/godam/v1/settings/deactivate-license', {
+			const response = await fetch( window.pathJoin( [ restURL, '/godam/v1/settings/deactivate-license' ] ), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

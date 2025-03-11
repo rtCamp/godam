@@ -1,5 +1,6 @@
 
 let MediaRetranscode = wp?.media?.view?.Button;
+const homeUrl = window.godamRestRoute.home_url || window.location.origin;
 
 MediaRetranscode = MediaRetranscode?.extend( {
 
@@ -45,7 +46,7 @@ MediaRetranscode = MediaRetranscode?.extend( {
 		const nonce = window.easydamMediaLibrary?.godamToolsNonce;
 
 		// Redirect to the retranscode page.
-		window.location.href = `${ window.location.origin }/wp-admin/admin.php?page=godam-tools&ids=${ attachmentIds.join( ',' ) }&goback=1&_wpnonce=${ nonce }`;
+		window.location.href = `${ homeUrl }/wp-admin/admin.php?page=godam-tools&ids=${ attachmentIds.join( ',' ) }&goback=1&_wpnonce=${ nonce }`;
 	},
 
 	render() {

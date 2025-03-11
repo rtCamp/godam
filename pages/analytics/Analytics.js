@@ -21,10 +21,11 @@ const Analytics = ( { attachmentID } ) => {
 	const [ analyticsData, setAnalyticsData ] = useState( null );
 
 	const adminUrl = window.videoData?.adminUrl || '/wp-admin/admin.php?page=godam';
+	const restURL = window.godamRestRoute.url || '';
 
 	useEffect( () => {
 		if ( attachmentID ) {
-			const url = `/wp-json/wp/v2/media/${ attachmentID }`;
+			const url = pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] );
 
 			axios
 				.get( url )
