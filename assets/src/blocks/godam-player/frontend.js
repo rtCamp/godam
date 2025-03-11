@@ -11,6 +11,7 @@ import videojs from 'video.js';
 import 'videojs-contrib-ads';
 import 'videojs-ima';
 import 'videojs-contrib-quality-menu';
+import SpriteThumbnails from 'videojs-sprite-thumbnails';
 
 /**
  * FontAwesome dependencies
@@ -68,6 +69,30 @@ function GODAMPlayer( videoRef = null ) {
 
 		const player = videojs( video, videoSetupControls );
 
+		const pluginName = 'spriteThumbnails';
+
+		let spriteUrl = '';
+
+		if ( 2 === videoSetupControls.sources.length ) {
+			const source = videoSetupControls.sources[ 0 ].src;
+			const urlParts = source.split( '/' );
+			urlParts[ urlParts.length - 1 ] = 'sprite.png'; // Replace the filename with 'sprite.png'
+
+			spriteUrl = urlParts.join( '/' ); // Reconstruct the URL
+		}
+
+		if ( typeof videojs.getPlugin( pluginName ) === 'undefined' ) {
+			videojs.registerPlugin( pluginName, SpriteThumbnails );
+		}
+
+		player.spriteThumbnails( {
+			url: spriteUrl,
+			width: 320,
+			height: 180,
+			interval: 10,
+			columns: 10,
+			downlink: 0,
+		} );
 		let isPreview = null;
 
 		const watcher = {
