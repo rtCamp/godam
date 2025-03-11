@@ -45,17 +45,6 @@ const FormLayer = ( { layerID, goBack } ) => {
 	const [ formHTML, setFormHTML ] = useState( '' );
 
 	const restURL = window.godamRestRoute.url || '';
-	function pathJoin( parts, sep = '/' ) {
-		return parts
-			.map( ( part, index ) => {
-				// Don't modify 'http://' or 'https://' at the beginning
-				if ( index === 0 ) {
-					return part.replace( new RegExp( sep + '+$', 'g' ), '' ); // Remove trailing `/`
-				}
-				return part.replace( new RegExp( '^' + sep + '+|' + sep + '+$', 'g' ), '' ); // Trim leading and trailing `/`
-			} )
-			.join( sep );
-	}
 
 	const handleDeleteLayer = () => {
 		dispatch( removeLayer( { id: layer.id } ) );
@@ -77,7 +66,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 	// Fetch the Gravity Form HTML
 	const fetchGravityForm = ( formId, theme ) => {
-		axios.get( pathJoin( [ restURL, '/godam/v1/gform' ] ), {
+		axios.get( window.pathJoin( [ restURL, '/godam/v1/gform' ] ), {
 			params: { id: formId, theme },
 		} ).then( ( response ) => {
 			setFormHTML( response.data );

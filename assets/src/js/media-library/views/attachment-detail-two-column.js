@@ -7,18 +7,6 @@ const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColu
 
 const restURL = window.godamRestRoute.url || '';
 
-function pathJoin( parts, sep = '/' ) {
-	return parts
-		.map( ( part, index ) => {
-			// Don't modify 'http://' or 'https://' at the beginning
-			if ( index === 0 ) {
-				return part.replace( new RegExp( sep + '+$', 'g' ), '' ); // Remove trailing `/`
-			}
-			return part.replace( new RegExp( '^' + sep + '+|' + sep + '+$', 'g' ), '' ); // Trim leading and trailing `/`
-		} )
-		.join( sep );
-}
-
 export default AttachmentDetailsTwoColumn?.extend( {
 
 	/**
@@ -84,7 +72,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		if ( attachment?.attributes?.type !== 'video' ) {
 			return null;
 		}
-		return this.fetchData( pathJoin( [ restURL, '/godam/v1/media-library/get-video-thumbnail' ] ), attachmentId );
+		return this.fetchData( window.pathJoin( [ restURL, '/godam/v1/media-library/get-video-thumbnail' ] ), attachmentId );
 	},
 
 	/**
@@ -94,7 +82,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @return {Promise<Object|null>} - The fetched EXIF data or null.
 	 */
 	getExifDetails( attachmentId ) {
-		return this.fetchData( pathJoin( [ restURL, '/godam/v1/media-library/get-exif-data' ] ), attachmentId );
+		return this.fetchData( window.pathJoin( [ restURL, '/godam/v1/media-library/get-exif-data' ] ), attachmentId );
 	},
 
 	/**
@@ -152,7 +140,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				/**
 				 * Send a POST request to the server to set the selected thumbnail for the video.
 				 */
-				fetch( pathJoin( [ restURL, '/godam/v1/media-library/set-video-thumbnail' ] ), {
+				fetch( window.pathJoin( [ restURL, '/godam/v1/media-library/set-video-thumbnail' ] ), {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',

@@ -36,17 +36,6 @@ const CTALayer = ( { layerID, goBack } ) => {
 	const dispatch = useDispatch();
 
 	const restURL = window.godamRestRoute.url || '';
-	function pathJoin( parts, sep = '/' ) {
-		return parts
-			.map( ( part, index ) => {
-				// Don't modify 'http://' or 'https://' at the beginning
-				if ( index === 0 ) {
-					return part.replace( new RegExp( sep + '+$', 'g' ), '' ); // Remove trailing `/`
-				}
-				return part.replace( new RegExp( '^' + sep + '+|' + sep + '+$', 'g' ), '' ); // Trim leading and trailing `/`
-			} )
-			.join( sep );
-	}
 
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
@@ -71,7 +60,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 			setImageCtaUrl( '' );
 			return;
 		}
-		fetch( pathJoin( [ restURL, `/wp/v2/media/${ mediaId }` ] ) )
+		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ mediaId }` ] ) )
 			.then( ( response ) => {
 				if ( ! response.ok ) {
 					throw new Error( 'Media not found' );

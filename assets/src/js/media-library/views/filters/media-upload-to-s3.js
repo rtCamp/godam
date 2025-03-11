@@ -2,17 +2,6 @@
 let MediaUploadToS3 = wp?.media?.view?.Button;
 
 const restURL = window.godamRestRoute.url || '';
-function pathJoin( parts, sep = '/' ) {
-	return parts
-		.map( ( part, index ) => {
-			// Don't modify 'http://' or 'https://' at the beginning
-			if ( index === 0 ) {
-				return part.replace( new RegExp( sep + '+$', 'g' ), '' ); // Remove trailing `/`
-			}
-			return part.replace( new RegExp( '^' + sep + '+|' + sep + '+$', 'g' ), '' ); // Trim leading and trailing `/`
-		} )
-		.join( sep );
-}
 
 MediaUploadToS3 = MediaUploadToS3?.extend( {
 
@@ -67,7 +56,7 @@ MediaUploadToS3 = MediaUploadToS3?.extend( {
 
 		try {
 			const response = await fetch(
-				pathJoin( [ restURL, '/godam/v1/media-library/upload-to-s3' ] ),
+				window.pathJoin( [ restURL, '/godam/v1/media-library/upload-to-s3' ] ),
 				{
 					method: 'POST',
 					headers: {

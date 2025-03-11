@@ -92,16 +92,11 @@ class Assets {
 			)
 		);
 
-		$site_id = null;
-		if ( is_multisite() ) {
-			$site_id = get_current_blog_id();
-		}
-
 		wp_localize_script(
 			'godam-script',
 			'godamRestRoute',
 			array(
-				'url' => get_rest_url( $site_id )
+				'url' => get_rest_url( get_current_blog_id() )
 			)
 		);
 
@@ -137,17 +132,12 @@ class Assets {
 			)
 		);
 
-		$site_id = null;
-		if ( is_multisite() ) {
-			$site_id = get_current_blog_id();
-		}
-
 		wp_localize_script(
 			'godam-script',
 			'godamRestRoute',
 			array(
-				'url' => get_rest_url( $site_id ),
-				'home_url' => get_home_url( $site_id ),
+				'url' => get_rest_url( get_current_blog_id() ),
+				'home_url' => get_home_url( get_current_blog_id() ),
 				'nonce' => wp_create_nonce( 'wp_rest' ),
 			)
 		);

@@ -22,17 +22,6 @@ const Analytics = ( { attachmentID } ) => {
 
 	const adminUrl = window.videoData?.adminUrl || '/wp-admin/admin.php?page=godam';
 	const restURL = window.godamRestRoute.url || '';
-	function pathJoin( parts, sep = '/' ) {
-		return parts
-			.map( ( part, index ) => {
-				// Don't modify 'http://' or 'https://' at the beginning
-				if ( index === 0 ) {
-					return part.replace( new RegExp( sep + '+$', 'g' ), '' ); // Remove trailing `/`
-				}
-				return part.replace( new RegExp( '^' + sep + '+|' + sep + '+$', 'g' ), '' ); // Trim leading and trailing `/`
-			} )
-			.join( sep );
-	}
 
 	useEffect( () => {
 		if ( attachmentID ) {

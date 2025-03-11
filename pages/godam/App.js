@@ -33,17 +33,6 @@ const App = () => {
 	const dispatch = useDispatch();
 
 	const restURL = window.godamRestRoute.url || '';
-	function pathJoin( parts, sep = '/' ) {
-		return parts
-			.map( ( part, index ) => {
-				// Don't modify 'http://' or 'https://' at the beginning
-				if ( index === 0 ) {
-					return part.replace( new RegExp( sep + '+$', 'g' ), '' ); // Remove trailing `/`
-				}
-				return part.replace( new RegExp( '^' + sep + '+|' + sep + '+$', 'g' ), '' ); // Trim leading and trailing `/`
-			} )
-			.join( sep );
-	}
 
 	const tabs = [
 		{
@@ -75,7 +64,7 @@ const App = () => {
 		const fetchSettings = async () => {
 			dispatch( setLoading( true ) );
 			try {
-				const url = pathJoin( [ restURL, '/godam/v1/settings/easydam-settings' ] );
+				const url = window.pathJoin( [ restURL, '/godam/v1/settings/easydam-settings' ] );
 				const settingsResponse = await fetch( url, {
 					headers: {
 						'Content-Type': 'application/json',
@@ -112,7 +101,7 @@ const App = () => {
 
 	const saveMediaSettings = async ( updatedSettings ) => {
 		try {
-			const url = pathJoin( [ restURL, '/godam/v1/settings/easydam-settings' ] );
+			const url = window.pathJoin( [ restURL, '/godam/v1/settings/easydam-settings' ] );
 			const response = await fetch( url, {
 				method: 'POST',
 				headers: {
