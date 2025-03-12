@@ -15,19 +15,19 @@ CHECKOUT_BRANCH="git checkout $GIT_BRANCH"
 
 # Define unwanted files and folders to remove after build
 UNWANTED_ITEMS=(
-    "node_modules"          # Remove node_modules
-    "assets/src/blocks"     # Remove source code files
-    "assets/src/css"     # Remove source code files
-    "assets/src/js"     # Remove source code files
-    "assets/src/libs"     # Remove source code files
-    "pages/analytics"       # Remove source code files
-    "pages/godam"           # Remove source code files
-    "pages/help"            # Remove source code files
-    "pages/media-library"   # Remove source code files
-    "pages/video-editor"    # Remove source code files
-    "pages/style.css"          # Remove source code files
-    "tests"
-    ".browserslistrc"       # Remove log files
+    "node_modules"                          # Remove node_modules
+    "assets/src/blocks"                     # Remove source code files
+    "assets/src/css"                        # Remove source code files
+    "assets/src/js"                         # Remove source code files
+    "assets/src/jquery-ui-1.14.1.draggable" # Remove source code files
+    "pages/analytics"                       # Remove source code files
+    "pages/godam"                           # Remove source code files
+    "pages/help"                            # Remove source code files
+    "pages/media-library"                   # Remove source code files
+    "pages/video-editor"                    # Remove source code files
+    "pages/style.css"                       # Remove source code files
+    "tests"                                 # Remove test files 
+    ".browserslistrc"                       # Remove log files
     ".eslintignore"        
     ".eslintrc"
     ".gitignore"

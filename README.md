@@ -2,7 +2,7 @@
 # GoDAM
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar
 
-Tags: media, multimedia, audio, songs, music, video, ffmpeg, media-node, rtMedia, WordPress, transcode, transcoder, encoding, encode, transcoder, DAM, audio video conversion, digital asset management
+Tags: Transcoder, DAM, Interactive Video Layers, Adaptive Bitrate Streaming, Video Analytics
 
 Requires at least: 6.5
 
@@ -14,7 +14,7 @@ Stable tag: 1.0.0
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
-Seamlessly manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, gravity forms integration, and ad integration.
+Manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, and video analytics.
 
 ## Description
 [GoDAM](https://godam.io/) is a powerful digital asset management solution designed to provide automatic transcoding, adaptive bitrate streaming, and interactive video layers to enhance viewer engagement. It simplifies the entire video workflow, from upload to optimized playback, ensuring smooth delivery across all devices and network conditions.
@@ -146,12 +146,13 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 14. Video Analytics
 
 ## Changelog
-1.0.0 [Feb 2025]
-- Initial release of GoDAM plugin.
-- Automatic transcoding for audio and video files.
-- Adaptive bitrate streaming for smooth playback.
-- Interactive video layers (CTAs, forms, hotspots, ads).
-- Customizable video player with branding options.
-- Cloud storage and CDN integration.
-- Advanced analytics and engagement tracking.
-- Enhanced WordPress Media Library for better asset management.
+## v1.0.0 (March 05, 2025)
+
+- **Feat:** Initial release of GoDAM plugin.
+- **Feat:** Automatic transcoding for audio and video files.
+- **Feat:** Adaptive bitrate streaming for smooth playback.
+- **Feat:** Interactive video layers (CTAs, forms, hotspots, ads).
+- **Feat:** Customizable video player with branding option.
+- **Feat:** Cloud storage and CDN integration.
+- **Feat:** Advanced analytics and engagement tracking.
+- **Feat:** Enhanced WordPress Media Library for better asset management.

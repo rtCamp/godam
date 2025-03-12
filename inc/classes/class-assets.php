@@ -62,9 +62,9 @@ class Assets {
 
 		wp_enqueue_script(
 			'analytics-library',
-			'https://unpkg.com/analytics/dist/analytics.min.js',
+			GODAM_URL . '/assets/src/libs/analytics.min.js',
 			array(),
-			GODAM_VERSION,
+			filemtime( GODAM_PATH . '/assets/src/libs/analytics.min.js' ),
 			true
 		);
 
@@ -89,6 +89,14 @@ class Assets {
 			'godamLicenseData',
 			array(
 				'valid_license' => godam_is_license_valid(),
+			)
+		);
+
+		wp_localize_script(
+			'godam-script',
+			'godamRestRoute',
+			array(
+				'url' => get_rest_url( get_current_blog_id() )
 			)
 		);
 
@@ -121,6 +129,16 @@ class Assets {
 			'pluginInfo',
 			array(
 				'version' => GODAM_VERSION,
+			)
+		);
+
+		wp_localize_script(
+			'godam-script',
+			'godamRestRoute',
+			array(
+				'url' => get_rest_url( get_current_blog_id() ),
+				'home_url' => get_home_url( get_current_blog_id() ),
+				'nonce' => wp_create_nonce( 'wp_rest' ),
 			)
 		);
 
@@ -193,8 +211,8 @@ class Assets {
 		/**
 		 * Dependency library for date range picker.
 		 */
-		wp_enqueue_script( 'moment-js', 'https://cdn.jsdelivr.net/momentjs/latest/moment.min.js', array(), '1.0.0', true );
-		wp_enqueue_script( 'daterangepicker-js', 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js', array( 'moment-js' ), '1.0.0', true );
-		wp_enqueue_style( 'daterangepicker-css', 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css', array(), '1.0.0' );
+		wp_enqueue_script( 'moment-js', GODAM_URL . '/assets/src/libs/moment-js.min.js', array(), filemtime( GODAM_PATH . '/assets/src/libs/moment-js.min.js' ), true );
+		wp_enqueue_script( 'daterangepicker-js', GODAM_URL . '/assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( GODAM_PATH . '/assets/src/libs/daterangepicker.min.js' ), true );
+		wp_enqueue_style( 'daterangepicker-css', GODAM_URL . '/assets/src/libs/daterangepicker.css', array(), filemtime( GODAM_PATH . '/assets/src/libs/daterangepicker.css' ) );
 	}
 }

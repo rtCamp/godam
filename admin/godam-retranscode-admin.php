@@ -40,6 +40,13 @@ class RetranscodeMedia {
 	public $usage_info;
 
 	/**
+	 * Capability required to use this feature.
+	 * 
+	 * @var string
+	 */
+	public $capability;
+
+	/**
 	 * Functinallity initialization
 	 */
 	public function __construct() {
@@ -284,7 +291,7 @@ class RetranscodeMedia {
 		$redirect_url = add_query_arg(
 			'_wpnonce',
 			wp_create_nonce( 'godam-tools' ),
-			admin_url( 'admin.php?page=godam-tools&goback=1&ids=' . $ids )
+			get_admin_url( get_current_blog_id(), 'admin.php?page=godam-tools&goback=1&ids=' . $ids )
 		);
 
 		wp_safe_redirect( $redirect_url );

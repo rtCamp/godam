@@ -50,7 +50,8 @@
 		"video.js": "^8.21.0",
 		"videojs-contrib-ads": "^7.5.2",
 		"videojs-contrib-quality-menu": "^1.0.3",
-		"videojs-ima": "^2.3.0"
+		"videojs-ima": "^2.3.0",
+		"videojs-sprite-thumbnails": "2.2.3"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.21.8",
@@ -75,7 +76,7 @@
 		"style-loader": "^4.0.0",
 		"tailwindcss": "^3.4.15",
 		"webpack-remove-empty-scripts": "^1.0.3"
-  	},
+	},
 	"scripts": {
 		"build:dev": "cross-env NODE_ENV=development npm-run-all 'build:!(dev|prod)'",
 		"build:prod": "cross-env NODE_ENV=production npm-run-all 'build:!(dev|prod)'",
