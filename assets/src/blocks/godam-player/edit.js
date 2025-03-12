@@ -376,6 +376,16 @@ function VideoEdit( {
 							poster: poster || defaultPoster,
 							sources,
 						} }
+						onPlayerReady={ ( player ) => {
+							if ( player ) {
+								const playerEl = player.el_;
+								const video = playerEl.querySelector( 'video' );
+
+								video.addEventListener( 'loadedmetadata', () => {
+									setAttributes( { aspectRatio: `${ video.videoWidth } / ${ video.videoHeight }` } );
+								} );
+							}
+						} }
 					/>
 				</Disabled>
 				{ !! temporaryURL && <Spinner /> }

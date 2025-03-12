@@ -62,6 +62,14 @@
 		"preview": {
 			"type": "boolean",
 			"default": false
+		},
+		"aspectRatio": {
+			"type": "string",
+			"default": "16/9"
+		},
+		"borderColor": {
+			"type": "string",
+			"default": "contrast"
 		}
 	},
 	"supports": {
@@ -75,6 +83,19 @@
 				"padding": false
 			}
 		},
+		"__experimentalBorder": {
+			"color": true,
+			"radius": false,
+			"style": true,
+			"width": true,
+			"__experimentalDefaultControls": {
+				"color": true,
+				"radius": false,
+				"style": true,
+				"width": true
+			}
+		},
+		"shadow": true,
 		"interactivity": {
 			"clientNavigation": true
 		}

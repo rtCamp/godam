@@ -114,10 +114,11 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 	--easydam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
 	--easydam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
 	--easydam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
+	--godam-video-aspect-ratio: <?php echo esc_attr( $attributes['aspectRatio'] ); ?>;
 	">
 	<div class="easydam-video-container">
 		<video
-			class="easydam-player video-js vjs-big-play-centered"
+			class="easydam-player video-js vjs-big-play-centered vjs-hidden"
 			data-options="<?php echo esc_attr( $video_config ); ?>"
 			data-ad_tag_url="<?php echo esc_url_raw( $ad_tag_url ); ?>"
 			data-id="<?php echo esc_attr( $attachment_id ); ?>" 

@@ -62,6 +62,13 @@
 
 .easydam-video-container {
 	position: relative;
+	aspect-ratio: var(--godam-video-aspect-ratio);
+	background-color: rgba(255, 255, 255, 0.2);
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.easydam-player.video-js {
+	aspect-ratio: var(--godam-video-aspect-ratio);
 }
 
 .form-container {
@@ -382,6 +389,14 @@
 .mute-button:hover {
     background-color: rgba(255, 255, 255, 0.9);
     color: #000;
+}
+
+.vjs-menu ul.vjs-menu-content {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: auto;
+    font-size: 12px !important;
 }
 
 .vjs-control-bar {
