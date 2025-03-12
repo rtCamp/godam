@@ -63,8 +63,7 @@ input, textarea, select {
 }
 
 .video-editor-container .aside {
-  @apply h-full w-[400px];
-  background-color: #ffffff
+  @apply h-full w-[480px];
 }
 
 .video-editor-container .aside #sidebar-content {
@@ -412,9 +411,9 @@ input, textarea, select {
 	@apply text-[11px] uppercase font-medium mb-2 block;
 }
 
-#easydam-player-settings .components-base-control__label {
+/* #easydam-player-settings .components-base-control__label {
 	@apply font-semibold;
-}
+} */
 
 #easydam-player-settings .easydam-label {
 	@apply text-[11px] uppercase font-semibold mb-2 block;

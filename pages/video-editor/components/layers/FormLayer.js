@@ -83,9 +83,9 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 	return (
 		<>
-			<div className="flex justify-between items-center pb-3 border-b mb-3">
+			<div className="flex justify-between items-center border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="font-semibold">{ __( 'Form layer at', 'godam' ) } { layer.displayTime }s</p>
+				<p className="text-base">{ __( 'Form layer at', 'godam' ) } { layer.displayTime }s</p>
 				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
 				{ isOpen && (
 					<Modal title={ __( 'Delete layer', 'godam' ) } onRequestClose={ () => setOpen( false ) }>
@@ -114,11 +114,11 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 			{
 				forms.length > 0 &&
-					<GravityFormSelector disabled={ ! isValidLicense } className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
+					<GravityFormSelector disabled={ ! isValidLicense } className="godam-combobox mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<SelectControl
-				className="mb-4"
+				className="mb-4 godam-select"
 				label={ __( 'Select form theme', 'godam' ) }
 				options={ templateOptions }
 				value={ layer.theme }
@@ -129,7 +129,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 			/>
 
 			<ToggleControl
-				className="mb-4"
+				className="mb-4 godam-toggle"
 				label={ __( 'Allow user to skip', 'godam' ) }
 				checked={ layer.allow_skip }
 				onChange={ ( value ) =>
