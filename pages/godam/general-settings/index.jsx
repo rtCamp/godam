@@ -52,7 +52,7 @@ const GeneralSettings = ( {
 			...mediaSettings,
 			general: {
 				...mediaSettings.general,
-				disable_folder_organization: value,
+				enable_folder_organization: value,
 			},
 		};
 
@@ -68,7 +68,7 @@ const GeneralSettings = ( {
 			dispatch( updateMediaSetting(
 				{
 					category: 'general',
-					key: 'disable_folder_organization',
+					key: 'enable_folder_organization',
 					value,
 				},
 			) );
@@ -266,15 +266,15 @@ const GeneralSettings = ( {
 							__nextHasNoMarginBottom
 							className="godam-toggle"
 							label={ __(
-								'Disable Folder Organization in Media Library',
+								'Enable Folder Organization in Media Library',
 								'godam',
 							) }
 							help={ __(
-								'Enable this option to disable folder organization in the media library.',
+								'Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization.',
 								'godam',
 							) }
 							checked={
-								mediaSettings?.general?.disable_folder_organization || false
+								mediaSettings?.general?.enable_folder_organization || false
 							}
 							onChange={ handleMediaFolderOrganization }
 						/>

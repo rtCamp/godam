@@ -16,7 +16,7 @@ const initialState = {
 	},
 	general: {
 		is_verified: false,
-		disable_folder_organization: false,
+		enable_folder_organization: true,
 	},
 };
 

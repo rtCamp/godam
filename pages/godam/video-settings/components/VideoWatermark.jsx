@@ -23,7 +23,7 @@ const VideoWatermark = () => {
 
 	const useImage = useSelector( ( state ) => state.mediaSettings.video.use_watermark_image );
 	const watermarkText = useSelector( ( state ) => state.mediaSettings.video.watermark_text );
-	const disableWatermark = useSelector( ( state ) => ! state.mediaSettings.video.watermark );
+	const enableWatermark = useSelector( ( state ) => state.mediaSettings.video.watermark );
 	const selectedMedia = useSelector( ( state ) => state.mediaSettings.video.watermark_url );
 
 	const openMediaPicker = () => {
@@ -62,17 +62,17 @@ const VideoWatermark = () => {
 				<ToggleControl
 					__nextHasNoMarginBottom
 					className="godam-toggle"
-					label="Disable video watermark"
-					checked={ ( ! isValidLicense || isStarterPlan ) ? false : disableWatermark }
+					label="Enable video watermark"
+					checked={ ( ! isValidLicense || isStarterPlan ) ? false : enableWatermark }
 					onChange={ ( value ) => dispatch( updateMediaSetting( {
 						category: 'video',
 						key: 'watermark',
-						value: ! value,
+						value,
 					} ) ) }
 					disabled={ isStarterPlan || ! isValidLicense }
 					help={ __( 'If enabled, GoDAM will add a watermark to the transcoded video', 'godam' ) }
 				/>
-				{ ! isStarterPlan && ! disableWatermark && (
+				{ ! isStarterPlan && enableWatermark && (
 					<>
 						<div>
 							<ToggleControl

@@ -189,7 +189,7 @@ class Assets {
 			)
 		);
 
-		$disable_folder_organization = get_option( 'rt-easydam-settings', array() )['general']['disable_folder_organization'] ?? false;
+		$enable_folder_organization = get_option( 'rt-easydam-settings', array() )['general']['enable_folder_organization'] ?? true;
 
 		wp_localize_script(
 			'easydam-media-library',
@@ -198,7 +198,7 @@ class Assets {
 				'ajaxUrl'                   => admin_url( 'admin-ajax.php' ),
 				'nonce'                     => wp_create_nonce( 'easydam_media_library' ),
 				'godamToolsNonce'           => wp_create_nonce( 'godam-tools' ),
-				'disableFolderOrganization' => $disable_folder_organization,
+				'enableFolderOrganization'  => $enable_folder_organization,
 			)
 		);
 
