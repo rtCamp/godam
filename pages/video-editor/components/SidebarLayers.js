@@ -12,7 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, Icon, Modal, Tooltip } from '@wordpress/components';
+import { Button, Icon, Tooltip } from '@wordpress/components';
 import { plus, preformatted, customLink, arrowRight, video, customPostType } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
 
@@ -242,68 +242,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 								addNewLayer={ addNewLayer }
 							/>
 						) }
-
-						{/* { isOpen && (
-							<Modal title={ __( 'Select layer type', 'godam' ) } onRequestClose={ closeModal }>
-								<div className="flex flex-col gap-1">
-									{
-										layerTypes.map( ( layerType ) => {
-											const isAdServerAd = adServer === 'ad-server' && layerType.type === 'ad';
-											const isGFPluginNotActive = layerType.type === 'form' && ! isGFPluginActive;
-											let isDisabled = false;
-											let isPremium = false;
-											let message = '';
-
-											if ( premiumLayers.includes( layerType.type ) && ! isValidLicense ) {
-												message = __( 'This feature is available in the premium version', 'godam' );
-												isDisabled = true;
-												isPremium = true;
-											} else if ( isAdServerAd ) {
-												message = __( 'This ad will be overriden by Ad server\'s ads', 'godam' );
-												isDisabled = true;
-											} else if ( isGFPluginNotActive ) {
-												message = __( 'Gravity Forms plugin is not active', 'godam' );
-												isDisabled = true;
-											} else {
-												message = '';
-											}
-
-											return (
-												<Tooltip
-													key={ layerType.type }
-													text={ message }
-													placement="top"
-													delay={ 0 }
-													hideOnClick={ true }
-												>
-													<div>
-														<Button
-															icon={ layerType.icon }
-															key={ layerType.type }
-															variant="secondary"
-															className={ `w-full ${ isPremium && isDisabled ? 'opacity-40' : '' }` }
-															onClick={ () => {
-																if ( isPremium && isDisabled ) {
-																	window.open( 'https://godam.io/#pricing', '_blank' );
-																	return;
-																}
-
-																addNewLayer( layerType.type );
-																closeModal();
-															} }
-															disabled={ ! isPremium && isDisabled }
-														>{ layerType.title }</Button>
-													</div>
-												</Tooltip>
-											);
-										} )
-									}
-								</div>
-							</Modal>
-						) } */}
 					</div>
 				) : (
-					<div id="sidebar-layers" className="p-4">
+					<div id="sidebar-layers">
 						<Layer layer={ currentLayer } goBack={ () => dispatch( setCurrentLayer( null ) ) } />
 					</div>
 				)

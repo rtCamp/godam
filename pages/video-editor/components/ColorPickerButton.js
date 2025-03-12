@@ -33,7 +33,7 @@ const ColorPickerButton = ( props ) => {
 				<button
 					onClick={ onToggle }
 					aria-expanded={ isOpen }
-					className={ `w-full border rounded-sm flex items-center p-2 gap-2 ${ contentClassName } ${
+					className={ `w-full border rounded-md text-base flex items-center p-4 gap-2 ${ contentClassName } ${
 						isOpen ? 'bg-gray-100' : 'bg-transparent'
 					}` }
 				>
