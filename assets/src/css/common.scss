@@ -174,7 +174,6 @@
 .godam-range {
 	width: 100%;
 
-
 	label,
 	.components-base-control__label {
 		font-size: 1rem !important;
@@ -235,6 +234,74 @@
 	.components-panel__body {
 		padding: 1.5rem;
 	}
-	
+}
 
+.godam-advance-panel {	
+	.components-panel__body-title button {
+		font-size: 1rem;
+		line-height: 1.375rem;
+		font-weight: 500;
+	}
+}
+
+.godam-combobox {
+	label,
+	.components-base-control__label {
+		font-size: 1rem !important;
+		line-height: 1.375rem !important;
+		font-weight: 500;
+		color: variables.$godam-black-color;
+		text-transform: none !important;
+	}
+
+	.components-combobox-control__suggestions-container {
+		border: 1px solid rgba(225, 225, 225, 1);
+		border-radius: 0.5rem;
+
+		display: flex;
+		align-items: center;
+
+		& > div {
+			height: 48px;
+		}
+	}
+
+	.components-form-token-field__suggestions-list {
+		background: rgba(255, 255, 255, 1);
+		border: 1px solid rgba(225, 225, 225, 1);
+		box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+
+		border-radius: 0.5rem;
+
+		top: calc( 48px + 4px );
+
+		z-index: 5;
+	}
+
+	.components-form-token-field__suggestion {
+		font-size: 0.875rem;
+		line-height: 1.375rem;
+		font-weight: 500;
+		padding: 1rem 1.5rem;
+
+		&[data-active-item="true"] {
+			background: rgba(245, 245, 245, 1);
+		}
+
+		&[data-autofocus="true"] {
+			color: rgba(172, 58, 107, 1);
+		}
+
+		&.is-selected {
+			background: rgba(245, 245, 245, 1);
+			color: rgba(172, 58, 107, 1);
+		}
+	}
+
+}
+
+.godam-label {
+	font-size: 1rem;
+	display: block;
+	font-weight: 500;
 }

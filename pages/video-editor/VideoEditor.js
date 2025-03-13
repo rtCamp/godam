@@ -160,7 +160,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	return (
 		<>
 			<div className="video-editor-container">
-				<div className="py-3 aside">
+				<div className="py-3 aside relative">
 					<div id="sidebar-content" className="godam-video-editor">
 						<TabPanel
 							onSelect={ ( tabName ) => {
@@ -188,16 +188,14 @@ const VideoEditor = ( { attachmentID } ) => {
 							{ ( tab ) => tab.component }
 						</TabPanel>
 					</div>
-				</div>
 
-				<main className="flex justify-center items-center p-4 relative overflow-y-auto">
 					{ loading
 						? <div className="absolute right-4 top-5 loading-skeleton">
 							<div className="skeleton-button"></div>
 						</div>
 						: (
 							<Button
-								className="absolute right-4 top-5"
+								className="godam-button absolute right-4 bottom-8"
 								variant="primary"
 								disabled={ ! isChanged }
 								onClick={ saveAttachmentMeta }
@@ -206,6 +204,9 @@ const VideoEditor = ( { attachmentID } ) => {
 								{ __( 'Save', 'godam' ) }
 							</Button> )
 					}
+				</div>
+
+				<main className="flex justify-center items-center p-4 relative overflow-y-auto">
 
 					{
 						// Display a success message when video changes are saved

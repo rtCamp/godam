@@ -142,7 +142,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 		<>
 			{
 				! currentLayer ? (
-					<div id="sidebar-layers" className="p-4 h-max">
+					<div id="sidebar-layers" className="pt-4 h-max">
 						{
 							sortedLayers?.map( ( layer ) => {
 								const isAdServerAd = adServer === 'ad-server' && layer.type === 'ad';
@@ -166,13 +166,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 								return (
 									<Tooltip
 										key={ layer.id }
-										className="w-full flex justify-between items-center p-2 border rounded mb-2 hover:bg-gray-50 cursor-pointer"
+										className="w-full flex justify-between items-center px-2 py-3 border rounded-md mb-2 hover:bg-gray-50 cursor-pointer"
 										text={ toolTipMessage }
 										placement="right"
 									>
-										<div className="border rounded mb-2">
+										<div className="border rounded-lg mb-2">
 											<Button
-												className={ `w-full flex justify-between items-center p-2 border-1 rounded hover:bg-gray-50 cursor-pointer border-[#e5e7eb] ${ addWarning ? 'bg-orange-50 hover:bg-orange-50' : '' }` }
+												className={ `w-full flex justify-between items-center px-2 py-3 border-1 rounded-lg h-auto hover:bg-gray-50 cursor-pointer border-[#e5e7eb] ${ addWarning ? 'bg-orange-50 hover:bg-orange-50' : '' }` }
 												onClick={ () => {
 													dispatch( setCurrentLayer( layer ) );
 													onSelectLayer( layer.displayTime );
@@ -180,7 +180,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 											>
 												<div className="flex items-center gap-2">
 													<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type ).icon } />
-													<p>{ layer?.type?.toUpperCase() } layer at <b>{ layer.displayTime }s</b></p>
+													<p className="m-0 text-base">{ layer?.type?.toUpperCase() } layer at <b>{ layer.displayTime }s</b></p>
 												</div>
 												<div>
 													<Icon icon={ arrowRight } />
@@ -215,24 +215,26 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 							)
 						}
 
-						{ ! loading &&
-						<div>
-							<Button
-								className="godam-button w-fit"
-								variant="primary"
-								id="add-layer-btn"
-								icon={ plus }
-								iconPosition="left"
-								onClick={ openModal }
-								disabled={ ! currentTime || layers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
-							>{ __( 'Add layer at ', 'godam' ) } { currentTime }s
-							</Button>
-							{ layers.find( ( l ) => l.displayTime === currentTime ) && (
-								<p className="text-slate-500">
-									{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
-								</p>
-							) }
-						</div>
+						{
+							! loading && (
+								<div className="mt-10 flex justify-center flex-col items-center">
+									<Button
+										className="godam-button w-fit"
+										variant="primary"
+										id="add-layer-btn"
+										icon={ plus }
+										iconPosition="left"
+										onClick={ openModal }
+										disabled={ ! currentTime || layers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
+									>{ __( 'Add layer at ', 'godam' ) } { currentTime }s
+									</Button>
+									{ layers.find( ( l ) => l.displayTime === currentTime ) && (
+										<p className="text-slate-500 text-center">
+											{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
+										</p>
+									) }
+								</div>
+							)
 						}
 
 						{ isOpen && (

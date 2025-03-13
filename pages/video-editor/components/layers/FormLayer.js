@@ -139,14 +139,20 @@ const FormLayer = ( { layerID, goBack } ) => {
 				disabled={ ! isValidLicense }
 			/>
 
-			<Panel className="-mx-4 border-x-0">
+			<Panel
+				className="-mx-4 border-x-0 godam-advance-panel">
 				<PanelBody
 					title={ __( 'Advance', 'godam' ) }
 					initialOpen={ false }
 				>
 
 					{ /* Layer background color */ }
-					<label htmlFor="color" className="easydam-label">{ __( 'Color', 'godam' ) }</label>
+					<label
+						htmlFor="color"
+						className="text-base font-medium block mb-2"
+					>
+						{ __( 'Color', 'godam' ) }
+					</label>
 					<ColorPickerButton
 						className="mb-4"
 						value={ layer?.bg_color ?? '#FFFFFFB3' }
@@ -156,7 +162,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 						disabled={ ! isValidLicense }
 					/>
 
-					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'godam' ) }</label>
+					<label htmlFor="custom-css" className="text-base font-medium block mb-2">{ __( 'Custom CSS', 'godam' ) }</label>
 
 					<div className={ ! isValidLicense ? 'pointer-events-none opacity-50' : '' }>
 						<Editor
@@ -228,51 +234,6 @@ function GravityFormSelector( { className, disabled, formID, forms, handleChange
 								.startsWith( inputValue.toLowerCase() ),
 						),
 					);
-				} }
-			/>
-		</>
-	);
-}
-
-function CustomCssInjector( { value, handleChange } ) {
-	const [ customCss, setCustomCss ] = useState( value );
-
-	useEffect( () => {
-		// Create a <style> element
-		const styleElement = document.createElement( 'style' );
-		styleElement.type = 'text/css';
-		styleElement.id = 'custom-css';
-
-		// Append the <style> element to the <head>
-		document.head.appendChild( styleElement );
-
-		// Cleanup: Remove <style> on component unmount
-		return () => {
-			const existingStyle = document.getElementById( 'custom-css' );
-			if ( existingStyle ) {
-				document.head.removeChild( existingStyle );
-			}
-		};
-	}, [] );
-
-	useEffect( () => {
-		// Inject CSS whenever it changes
-		const styleElement = document.getElementById( 'custom-css' );
-		if ( styleElement ) {
-			styleElement.innerHTML = customCss;
-		}
-	}, [ customCss ] );
-
-	return (
-		<>
-			<TextareaControl
-				className="mb-4"
-				label={ __( 'Custom CSS', 'godam' ) }
-				placeholder={ __( '.classname { border: 1px solid blue; }', 'godam' ) }
-				value={ customCss }
-				onChange={ ( val ) => {
-					setCustomCss( val );
-					handleChange( val );
 				} }
 			/>
 		</>
