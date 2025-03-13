@@ -346,7 +346,7 @@ export const VideoJS = ( props ) => {
 					'--is-controls-visible': displayVideoControls ? '' : 'none',
 				} }
 			>
-				<div id="easydam-video-player" className="relative" data-vjs-player>
+				<div id="easydam-video-player" className="relative rounded-lg overflow-hidden" data-vjs-player>
 					<div ref={ videoRef } />
 					<div id="easydam-layer-placeholder" />
 				</div>
@@ -433,6 +433,13 @@ const Slider = ( props ) => {
 				onMouseMove={ handleHover }
 				onMouseLeave={ handleLeave }
 			/>
+			<span
+				className="slider-progress"
+				style={ {
+					width: `${ sliderValue / max * 100 }%`,
+				} }
+			>
+			</span>
 			{
 				hoverValue && hoverValue >= 0 && hoverValue <= max && (
 					<div className="tooltip" style={ { left: `${ hoverValue / max * 100 }%` } }>
@@ -448,6 +455,8 @@ const Slider = ( props ) => {
 						// eslint-disable-next-line jsx-a11y/click-events-have-key-events
 						<div
 							key={ layer.id }
+							role="button"
+							tabIndex="0"
 							className={ `layer-indicator ${ layer.type === 'hotspot' ? 'hotspot-indicator' : '' }` }
 							style={ {
 								left: `${ layerLeft }%`,

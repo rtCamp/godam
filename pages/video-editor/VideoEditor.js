@@ -218,11 +218,8 @@ const VideoEditor = ( { attachmentID } ) => {
 					}
 
 					{ ! loading && video && (
-						<div className="max-w-[740px] w-full">
-							<h1 className="text-slate-700 text-base mb-1">{ video.title.rendered }</h1>
-
+						<div className="w-full">
 							<div className="relative">
-
 								<VideoJSPlayer
 									options={ {
 										controls: true,
