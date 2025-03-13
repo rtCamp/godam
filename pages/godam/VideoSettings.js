@@ -10,7 +10,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( mediaSettings?.video?.sync_from_easydam || false );
 	const [ videoFormat, setVideoFormat ] = useState( mediaSettings?.video?.video_format || 'auto' );
 	const [ disableWatermark, setDisableWatermark ] = useState( mediaSettings?.video?.watermark !== undefined ? ! mediaSettings.video.watermark : true );
-	const [ adaptiveBitrate, setAdaptiveBitrate ] = useState( mediaSettings?.video?.adaptive_bitrate || false );
+	const [ adaptiveBitrate, setAdaptiveBitrate ] = useState( mediaSettings?.video?.adaptive_bitrate || true );
 	const [ optimizeVideos, setOptimizeVideos ] = useState( mediaSettings?.video?.optimize_videos || false );
 	const [ videoQuality, setVideoQuality ] = useState( mediaSettings?.video?.video_quality || [ 'auto' ] );
 	const [ videoThumbnails, setVideoThumbnails ] = useState( mediaSettings?.video?.video_thumbnails || 5 );
@@ -180,7 +180,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 					)
 				}
 				<Panel
-					header={ __( 'Adaptive Bitrate Streaming', 'godam' ) }
+					header={ __( 'Video Quality', 'godam' ) }
 					className="mb-4"
 				>
 					<PanelBody
@@ -199,7 +199,9 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 						</div>
 
 						*/ }
-							<div>
+
+							{ /* Removing the ABS features toggle */ }
+							{ /* <div className="mt-4">
 								<label className="easydam-settings-label" htmlFor="abs">{ __( 'Adaptive Bitrate Streaming', 'godam' ) }</label>
 								<ToggleControl
 									__nextHasNoMarginBottom
@@ -208,7 +210,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 									checked={ adaptiveBitrate }
 									onChange={ ( value ) => setAdaptiveBitrate( value ) }
 								/>
-							</div>
+							</div> */ }
 
 							<div>
 								{ /*
@@ -240,8 +242,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 							</div>
 							*/ }
 
-								<div className="mt-4">
-									<label className="easydam-settings-label" htmlFor="video_quality">{ __( 'Video quality', 'godam' ) }</label>
+								<div>
 									<div className="grid grid-rows-4 grid-flow-col gap-2 border rounded p-5">
 										{ videoQualityOptions.map( ( option ) => (
 											<div key={ option.value } className="py-1 w-fit">

@@ -14,7 +14,7 @@ import { useRef, useEffect } from '@wordpress/element';
 export const VideoJS = ( props ) => {
 	const videoRef = useRef( null );
 	const playerRef = useRef( null );
-	const { options, onReady } = props;
+	const { options, onReady, onPlayerReady } = props;
 
 	useEffect( () => {
 		// Make sure Video.js player is only initialized once
@@ -27,7 +27,7 @@ export const VideoJS = ( props ) => {
 			videoRef.current.appendChild( videoElement );
 
 			const player = ( playerRef.current = videojs( videoElement, options ), () => {
-				onReady && onReady( player );
+				onReady && onReady( playerRef.current );
 			} );
 
 			// Add quality menu
@@ -52,6 +52,8 @@ export const VideoJS = ( props ) => {
 	// Dispose the Video.js player when the functional component unmounts
 	useEffect( () => {
 		const player = playerRef.current;
+
+		onPlayerReady( player );
 
 		if ( playerRef.current ) {
 			const playerEl = playerRef.current.el_;
