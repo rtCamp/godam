@@ -63,7 +63,7 @@ input, textarea, select {
 }
 
 .video-editor-container .aside {
-  @apply h-full w-[480px];
+  @apply h-full w-[400px];
 }
 
 .video-editor-container .aside #sidebar-content {
@@ -80,10 +80,10 @@ input, textarea, select {
   /* @apply text-blue-500; */
 }
 
-#add-layer-btn,
+/* #add-layer-btn,
 #add-hotspot-btn {
   @apply w-full justify-center;
-}
+} */
 
 .components-tooltip {
   @apply whitespace-nowrap;

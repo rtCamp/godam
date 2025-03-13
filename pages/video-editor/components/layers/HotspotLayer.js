@@ -16,6 +16,9 @@ import {
 	MenuItem,
 	ColorPalette,
 	Notice,
+	Panel,
+	PanelBody,
+	SelectControl,
 } from '@wordpress/components';
 import {
 	arrowLeft,
@@ -23,7 +26,6 @@ import {
 	plus,
 	chevronDown,
 	chevronUp,
-	chevronRight,
 	moreVertical,
 	check,
 } from '@wordpress/icons';
@@ -38,6 +40,7 @@ import { v4 as uuidv4 } from 'uuid';
 import LayerControls from '../LayerControls';
 import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import ColorPickerButton from '../ColorPickerButton';
 
 const HotspotLayer = ( { layerID, goBack } ) => {
 	const dispatch = useDispatch();
@@ -48,7 +51,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 	const hotspots = layer?.hotspots || [];
 
 	// Delete modal
-	const [ isDeleteModalOpen, setDeleteModalOpen ] = useState( false );
+	const [ isOpen, setOpen ] = useState( false );
 	// Track expanded hotspot
 	const [ expandedHotspotIndex, setExpandedHotspotIndex ] = useState( null );
 
@@ -125,38 +128,17 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 
 	return (
 		<>
-			<div className="flex justify-between items-center pb-3 border-b mb-3">
+			<div className="flex justify-between items-center border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="font-semibold">
-					{ __( 'Hotspot Layer at', 'godam' ) } { layer.displayTime }s
-				</p>
-				<Button
-					icon={ trash }
-					isDestructive
-					onClick={ () => setDeleteModalOpen( true ) }
-				/>
-				{ isDeleteModalOpen && (
-					<Modal
-						title={ __( 'Delete Hotspot Layer', 'godam' ) }
-						onRequestClose={ () => setDeleteModalOpen( false ) }
-					>
+				<p className="text-base">{ __( 'Hotspot layer at', 'godam' ) } { layer.displayTime }s</p>
+				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
+				{ isOpen && (
+					<Modal title={ __( 'Delete layer', 'godam' ) } onRequestClose={ () => setOpen( false ) }>
 						<div className="flex justify-between items-center gap-3">
-							<Button
-								className="w-full justify-center"
-								isDestructive
-								variant="primary"
-								onClick={ () => {
-									handleDeleteLayer();
-									setDeleteModalOpen( false );
-								} }
-							>
-								{ __( 'Delete Layer', 'godam' ) }
+							<Button className="w-full justify-center" isDestructive variant="primary" onClick={ handleDeleteLayer }>
+								{ __( 'Delete layer', 'godam' ) }
 							</Button>
-							<Button
-								className="w-full justify-center"
-								variant="secondary"
-								onClick={ () => setDeleteModalOpen( false ) }
-							>
+							<Button className="w-full justify-center" variant="secondary" onClick={ () => setOpen( false ) }>
 								{ __( 'Cancel', 'godam' ) }
 							</Button>
 						</div>
@@ -179,6 +161,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			<div className="mb-4">
 				<TextControl
 					label={ __( 'Layer Duration (seconds)', 'godam' ) }
+					className="godam-input"
 					type="number"
 					min="1"
 					value={ layer?.duration || '' }
@@ -186,7 +169,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 						const newVal = parseInt( val, 10 ) || 0;
 						updateField( 'duration', newVal );
 					} }
-					help="Duration (in seconds) this layer will stay visible"
+					help="Duration this layer will stay visible for."
 					disabled={ ! isValidLicense }
 				/>
 			</div>
@@ -194,12 +177,13 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			{ /* Pause on hover */ }
 			<div className="mb-4">
 				<ToggleControl
+					className="godam-toggle"
 					label={ __( 'Pause video on hover', 'godam' ) }
 					checked={ layer?.pauseOnHover || false }
 					onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
 					disabled={ ! isValidLicense }
 				/>
-				<p className="text-xs text-gray-500 mt-1">
+				<p className="text-md text-gray-500 mt-2">
 					{ __(
 						'Player will pause the video while the layer is displayed and users hover over the hotspots.',
 						'godam',
@@ -207,161 +191,137 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 				</p>
 			</div>
 
-			{ /* Hotspots list */ }
-			<div className="flex flex-col gap-4">
+			{ /* Hotspots List */ }
+			<div className="flex flex-col">
 				{ hotspots.map( ( hotspot, index ) => (
-					<div key={ hotspot.id } className="p-2 border rounded">
-						<div className="flex justify-between items-center">
-							<Button
-								icon={ expandedHotspotIndex === index ? chevronUp : chevronDown }
-								className="flex-1 text-left"
-								onClick={ () => toggleHotspotExpansion( index ) }
-							>
-								{ `Hotspot ${ index + 1 }` }
-							</Button>
-							<DropdownMenu
-								icon={ moreVertical }
-								label={ `Hotspot ${ index + 1 } options` }
-								toggleProps={ { 'aria-label': `Options for Hotspot ${ index + 1 }` } }
-							>
-								{ () => (
-									<>
-										<MenuItem
-											icon={ hotspot.showStyle ? check : '' }
-											onClick={ () => {
-												updateField(
-													'hotspots',
-													hotspots.map( ( h2, j ) =>
-														j === index
-															? {
-																...h2,
-																showStyle: ! h2.showStyle,
-																showIcon: ! h2.showStyle ? false : h2.showIcon,
-																icon: ! h2.showStyle ? '' : h2.icon,
-															}
-															: h2,
-													),
-												);
-											} }
-										>
-											{ __( 'Show Style', 'godam' ) }
-										</MenuItem>
-										<MenuItem
-											icon={ hotspot.showIcon ? check : '' }
-											onClick={ () => {
-												updateField(
-													'hotspots',
-													hotspots.map( ( h2, j ) =>
-														j === index
-															? {
-																...h2,
-																showIcon: ! h2.showIcon, // Enable icon
-																showStyle: ! h2.showIcon ? false : h2.showStyle, // Disable style
-															}
-															: h2,
-													),
-												);
-											} }
-										>
-											{ __( 'Show Icon', 'godam' ) }
-										</MenuItem>
-										<MenuItem
-											icon={ trash }
-											onClick={ () => handleDeleteHotspot( index ) }
-											className="text-red-500"
-										>
-											{ __( 'Delete Hotspot', 'godam' ) }
-										</MenuItem>
-									</>
-								) }
-							</DropdownMenu>
-						</div>
+					<Panel
+						key={ hotspot.id }
+						className="-mx-4 border-x-0 godam-advance-panel"
+					>
+						<PanelBody
+							title={ `Hotspot ${ index + 1 }` }
+							initialOpen={ false }
+						>
+							<TextControl
+								label={ __( 'Tooltip Text', 'godam' ) }
+								placeholder="Click Me!"
+								className="godam-input mb-4"
+								value={ hotspot.tooltipText }
+								onChange={ ( val ) =>
+									updateField(
+										'hotspots',
+										hotspots.map( ( h2, j ) =>
+											j === index ? { ...h2, tooltipText: val } : h2,
+										),
+									)
+								}
+								disabled={ ! isValidLicense }
+							/>
+							<TextControl
+								label={ __( 'URL', 'godam' ) }
+								placeholder="https://www.example.com"
+								className="godam-input"
+								value={ hotspot.link }
+								onChange={ ( val ) =>
+									updateField(
+										'hotspots',
+										hotspots.map( ( h2, j ) =>
+											j === index ? { ...h2, link: val } : h2,
+										),
+									)
+								}
+								disabled={ ! isValidLicense }
+							/>
+							<SelectControl
+								label={ __( 'Style', 'godam' ) }
+								className="godam-select"
+								options={ [
+									{ label: 'Color', value: 'color' },
+									{ label: 'Icon', value: 'icon' },
+								] }
+								value={ hotspot.showIcon ? 'icon' : 'color' }
+								onChange={ ( val ) => {
+									updateField(
+										'hotspots',
+										hotspots.map( ( h2, j ) =>
+											j === index
+												? {
+													...h2,
+													showStyle: val === 'color',
+													showIcon: val === 'icon',
+												}
+												: h2,
+										),
+									);
+								} }
+							/>
+							{ ( hotspot.showStyle || ! hotspot.showIcon ) && (
+								<div className="flex flex-col gap-2 mt-2">
+									<label
+										htmlFor={ `hotspot-color-${ index }` }
+										className="godam-label"
+									>
+										{ __( 'Color', 'godam' ) }
+									</label>
 
-						{ expandedHotspotIndex === index && (
-							<div className="mt-3">
-								<TextControl
-									label={ __( 'Tooltip Text', 'godam' ) }
-									placeholder="Click Me!"
-									value={ hotspot.tooltipText }
-									onChange={ ( val ) =>
-										updateField(
-											'hotspots',
-											hotspots.map( ( h2, j ) =>
-												j === index ? { ...h2, tooltipText: val } : h2,
-											),
-										)
-									}
-									disabled={ ! isValidLicense }
-								/>
-								<TextControl
-									label={ __( 'Link', 'godam' ) }
-									placeholder="https://www.example.com"
-									value={ hotspot.link }
-									onChange={ ( val ) =>
-										updateField(
-											'hotspots',
-											hotspots.map( ( h2, j ) =>
-												j === index ? { ...h2, link: val } : h2,
-											),
-										)
-									}
-									disabled={ ! isValidLicense }
-								/>
-								{ hotspot.showIcon && (
-									<div className="flex flex-col gap-2 mt-2">
-										<FontAwesomeIconPicker
-											hotspot={ hotspot }
-											index={ index }
-											updateField={ updateField }
-											hotspots={ hotspots }
-											disabled={ ! isValidLicense }
-										/>
-									</div>
-								) }
-								{ hotspot.showStyle && (
-									<div className="flex flex-col gap-2 mt-2">
-										<label
-											htmlFor={ `hotspot-color-${ index }` }
-											className="text-xs text-gray-700"
-										>
-											{ __( 'BACKGROUND COLOR', 'godam' ) }
-										</label>
-										<ColorPalette
-											id={ `hotspot-color-${ index }` }
-											value={ hotspot.backgroundColor || '#0c80dfa6' }
-											className={ ! isValidLicense ? 'pointer-events-none opacity-50' : '' }
-											onChange={ ( newColor ) => {
-												updateField(
-													'hotspots',
-													hotspots.map( ( h2, j ) =>
-														j === index
-															? {
-																...h2,
-																backgroundColor: newColor,
-															}
-															: h2,
-													),
-												);
-											} }
-											enableAlpha
-										/>
-									</div>
-								) }
-							</div>
-						) }
-					</div>
+									<ColorPickerButton
+										id={ `hotspot-color-${ index }` }
+										value={ hotspot.backgroundColor || '#0c80dfa6' }
+										label={ hotspot.backgroundColor || '#0c80dfa6' }
+										onChange={ ( newColor ) => {
+											updateField(
+												'hotspots',
+												hotspots.map( ( h2, j ) =>
+													j === index
+														? {
+															...h2,
+															backgroundColor: newColor,
+														}
+														: h2,
+												),
+											);
+										} }
+										enableAlpha={ true }
+									/>
+								</div>
+							) }
+							{ hotspot.showIcon && (
+								<div className="flex flex-col gap-2 mt-2">
+									<FontAwesomeIconPicker
+										hotspot={ hotspot }
+										index={ index }
+										updateField={ updateField }
+										hotspots={ hotspots }
+										disabled={ ! isValidLicense }
+									/>
+								</div>
+							) }
+
+							<Button
+								variant="secondary"
+								className="mt-4 godam-button"
+								isDestructive
+								onClick={ () => handleDeleteHotspot( index ) }
+							>
+								{ __( 'Delete Hotspot', 'godam' ) }
+							</Button>
+						</PanelBody>
+					</Panel>
 				) ) }
 
-				<Button
-					isPrimary
-					id="add-hotspot-btn"
-					icon={ plus }
-					iconPosition="left"
-					onClick={ handleAddHotspot }
-					disabled={ ! isValidLicense }
-				>
-					{ __( 'Add Hotspot', 'godam' ) }
-				</Button>
+				<div className="flex justify-center mt-4">
+					<Button
+						variant="primary"
+						id="add-hotspot-btn"
+						className="godam-button w-fit"
+						icon={ plus }
+						iconPosition="left"
+						onClick={ handleAddHotspot }
+						disabled={ ! isValidLicense }
+					>
+						{ __( 'Add Hotspot', 'godam' ) }
+					</Button>
+				</div>
 			</div>
 
 			{ /* The actual layer content */ }

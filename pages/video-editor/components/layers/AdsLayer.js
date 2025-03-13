@@ -31,31 +31,17 @@ const CTALayer = ( { layerID, goBack } ) => {
 
 	return (
 		<>
-			<div className="flex justify-between items-center pb-3 border-b mb-3">
+			<div className="flex justify-between items-center border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="font-semibold">
-					{ __( 'Ad layer at', 'godam' ) } { layer.displayTime }s
-				</p>
+				<p className="text-base">{ __( 'Ads layer at', 'godam' ) } { layer.displayTime }s</p>
 				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
 				{ isOpen && (
-					<Modal
-						title={ __( 'Delete layer', 'godam' ) }
-						onRequestClose={ () => setOpen( false ) }
-					>
+					<Modal title={ __( 'Delete layer', 'godam' ) } onRequestClose={ () => setOpen( false ) }>
 						<div className="flex justify-between items-center gap-3">
-							<Button
-								className="w-full justify-center"
-								isDestructive
-								variant="primary"
-								onClick={ handleDeleteLayer }
-							>
+							<Button className="w-full justify-center" isDestructive variant="primary" onClick={ handleDeleteLayer }>
 								{ __( 'Delete layer', 'godam' ) }
 							</Button>
-							<Button
-								className="w-full justify-center"
-								variant="secondary"
-								onClick={ () => setOpen( false ) }
-							>
+							<Button className="w-full justify-center" variant="secondary" onClick={ () => setOpen( false ) }>
 								{ __( 'Cancel', 'godam' ) }
 							</Button>
 						</div>

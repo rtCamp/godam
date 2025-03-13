@@ -427,7 +427,7 @@ const Appearance = () => {
 				<div className="display-settings">
 					<label
 						htmlFor="custom-brand-logo"
-						className="text-base mb-4 block font-medium"
+						className="godam-label mb-4"
 					>
 						{ __( 'Display settings', 'godam' ) }
 					</label>
@@ -464,7 +464,7 @@ const Appearance = () => {
 					<div className="form-group">
 						<label
 							htmlFor="custom-brand-logo"
-							className="text-base mb-4 block font-medium"
+							className="godam-label mb-4"
 						>
 							{ __( 'Custom Brand Logo', 'godam' ) }
 						</label>
@@ -552,7 +552,7 @@ const Appearance = () => {
 				<div className="form-group">
 					<label
 						htmlFor="custom-hover-color"
-						className="text-base mb-2 block font-medium"
+						className="godam-label mb-4"
 					>
 						{ __( 'Custom Play Button', 'godam' ) }
 					</label>
@@ -612,7 +612,7 @@ const Appearance = () => {
 				<div className="form-group">
 					<label
 						htmlFor="appearance-color"
-						className="text-base mb-4 block font-medium"
+						className="godam-label mb-4"
 					>
 						{ __( 'Player Theme', 'godam' ) }
 					</label>
@@ -660,7 +660,7 @@ const Appearance = () => {
 				<div className="form-group">
 					<label
 						htmlFor="custom-hover-color"
-						className="text-base block font-medium mb-2"
+						className="godam-label mb-2"
 					>
 						{ __( 'Select Ad server', 'godam' ) }
 					</label>

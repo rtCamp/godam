@@ -83,14 +83,14 @@ const ImageCTA = ( { layerID } ) => {
 				<label
 					htmlFor="custom-play-button"
 					name="hover-slider"
-					className="custom-label"
+					className="godam-label mb-2"
 				>
 					Add Image
 				</label>
 				<Button
 					onClick={ openImageCTAUploader }
 					variant="primary"
-					className="ml-2"
+					className="godam-button"
 					aria-label="Upload or Replace CTA Image"
 				>
 					{ 0 === layer?.image || ! layer?.image ? 'Upload' : 'Replace' }
@@ -114,6 +114,7 @@ const ImageCTA = ( { layerID } ) => {
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
+				className="godam-input"
 				label="Text"
 				value={ layer.imageText }
 				onChange={ ( value ) => {
@@ -125,6 +126,7 @@ const ImageCTA = ( { layerID } ) => {
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
+				className="godam-input"
 				label="URL"
 				value={ layer.imageLink }
 				onChange={ ( value ) => {
@@ -136,6 +138,7 @@ const ImageCTA = ( { layerID } ) => {
 			<TextareaControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
+				className="godam-input"
 				label="Description"
 				value={ layer.imageDescription }
 				onChange={ ( value ) => {
@@ -147,6 +150,7 @@ const ImageCTA = ( { layerID } ) => {
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
+				className="godam-input"
 				label="CTA Button Text"
 				value={ layer.imageCtaButtonText }
 				onChange={ ( value ) => {
@@ -158,7 +162,7 @@ const ImageCTA = ( { layerID } ) => {
 			<SelectControl
 				__next40pxDefaultSize
 				label="Select orientation"
-				className="mb-4"
+				className="mb-4 godam-select"
 				options={ [
 					{
 						label: 'Landscape',
@@ -180,6 +184,7 @@ const ImageCTA = ( { layerID } ) => {
 					<RangeControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
+						className="godam-range"
 						help="Please select how transparent you would like this."
 						initialPosition={ 0 }
 						max={ 1 }
