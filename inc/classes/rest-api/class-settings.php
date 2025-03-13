@@ -312,7 +312,7 @@ class Settings extends Base {
 			'general' => array(
 				'track_status'                => false,
 				'is_verified'                 => false,
-				'disable_folder_organization' => false,
+				'enable_folder_organization'  => true,
 			),
 		);
 
@@ -383,7 +383,7 @@ class Settings extends Base {
 			'general' => array(
 				'track_status'                => rest_sanitize_boolean( $settings['general']['track_status'] ),
 				'is_verified'                 => rest_sanitize_boolean( $settings['general']['is_verified'] ),
-				'disable_folder_organization' => rest_sanitize_boolean( $settings['general']['disable_folder_organization'] ),
+				'enable_folder_organization'  => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ),
 			),
 		);
 
