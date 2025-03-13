@@ -63,9 +63,49 @@
 .easydam-video-container {
 	position: relative;
 	aspect-ratio: var(--godam-video-aspect-ratio);
-	background-color: rgba(255, 255, 255, 0.2);
+	background-color: rgba(149, 149, 149, 0.2);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
+.animate-play-btn {
+	display: none;
+}
+
+.animate-video-loading {
+	position: relative;
+	animation: pulse 2s cubic-bezier(.4,0,.6,1) infinite;
+
+	.animate-play-btn {
+		display: block;
+		width: 100px;
+		height: 60px;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		border-radius: 0.75rem;
+		background-color: #aaa;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		svg {
+			width: 28px;
+			height: 28px;
+		}
+
+		@media screen and (max-width: 768px) {
+			width: 50px;
+			height: 30px;
+
+			svg {
+				width: 20px;
+				height: 20px;
+			}
+		}
+	}
+}
+
 
 .easydam-player.video-js {
 	aspect-ratio: var(--godam-video-aspect-ratio);
@@ -477,5 +517,11 @@
 	#branding-icon {
 		height: 100%;
 		object-fit: fill;
+	}
+}
+
+@keyframes pulse {
+	50% {
+	  opacity: 0.5;
 	}
 }

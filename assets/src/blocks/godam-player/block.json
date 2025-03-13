@@ -66,10 +66,6 @@
 		"aspectRatio": {
 			"type": "string",
 			"default": "16/9"
-		},
-		"borderColor": {
-			"type": "string",
-			"default": "contrast"
 		}
 	},
 	"supports": {
