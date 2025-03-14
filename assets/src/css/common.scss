@@ -12,6 +12,10 @@
 
 	height: auto;
 
+	&.is-primary.has-icon {
+		padding: 0.75rem 1.5rem;
+	}
+
 	&.is-primary.is-busy:disabled {
 		background: linear-gradient(-45deg, #AB3A6C 20%, #E6533A 50%, #AB3A6C 80%);
 
@@ -52,12 +56,13 @@
 		line-height: 1.375rem !important;
 		font-weight: 500;
 		color: variables.$godam-black-color;
-		margin-bottom: 0.75rem !important;
 		text-transform: none !important;
 	}
 
 	input,
-	button {
+	select,
+	button,
+	textarea {
 		border: 1px solid rgba(225, 225, 225, 1) !important;
 		background: rgba(255, 255, 255, 1) !important;
 		border-radius: 0.5rem !important;
@@ -107,6 +112,33 @@
 
 }
 
+.godam-select {
+	label,
+	.components-base-control__label {
+		font-size: 1rem !important;
+		line-height: 1.375rem !important;
+		font-weight: 500;
+		color: variables.$godam-black-color;
+		text-transform: none !important;
+	}
+
+	select {
+		border: 1px solid rgba(225, 225, 225, 1) !important;
+		background: rgba(255, 255, 255, 1) !important;
+		border-radius: 0.5rem !important;
+		padding: 0.75rem !important;
+		height: auto !important;
+
+		font-size: 0.875rem !important;
+		line-height: 1.375rem !important;
+		font-weight: 400;
+	}
+
+	.components-input-control__backdrop {
+		display: none;
+	}
+}
+
 .godam-toggle {
 
 	.components-form-toggle {
@@ -121,7 +153,7 @@
 	label{
 		font-size: 1rem !important;
 		line-height: 1.375rem !important;
-		font-weight: 500;
+		font-weight: 400;
 		color: variables.$godam-black-color;
 	}
 
@@ -138,6 +170,51 @@
 		background: variables.$godam-primary-gradient !important;
 	}
 }
+
+.godam-range {
+	width: 100%;
+
+	label,
+	.components-base-control__label {
+		font-size: 1rem !important;
+		line-height: 1.375rem !important;
+		font-weight: 500;
+		color: variables.$godam-black-color;
+		text-transform: none !important;
+	}
+
+	.components-range-control__root {
+		width: 100%;
+
+		.components-range-control__thumb-wrapper span {
+			background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+		}
+	}
+
+	.components-input-control__input {
+		border: 1px solid rgba(225, 225, 225, 1) !important;
+		background: rgba(255, 255, 255, 1) !important;
+		border-radius: 0.5rem !important;
+		padding: 0.75rem !important;
+		height: auto !important;
+
+		font-size: 0.875rem !important;
+		line-height: 1.375rem !important;
+		font-weight: 400;
+	}
+
+	.components-input-control__backdrop {
+		display: none;
+	}
+
+	.components-base-control__help {
+		font-size: 0.875rem;
+		line-height: 1.375rem;
+		font-weight: 400;
+	}
+}
+
+.godam-colorpicker {}
 
 .godam-panel {
 	border-radius: 0.75rem;
@@ -157,6 +234,74 @@
 	.components-panel__body {
 		padding: 1.5rem;
 	}
-	
+}
 
+.godam-advance-panel {	
+	.components-panel__body-title button {
+		font-size: 1rem;
+		line-height: 1.375rem;
+		font-weight: 500;
+	}
+}
+
+.godam-combobox {
+	label,
+	.components-base-control__label {
+		font-size: 1rem !important;
+		line-height: 1.375rem !important;
+		font-weight: 500;
+		color: variables.$godam-black-color;
+		text-transform: none !important;
+	}
+
+	.components-combobox-control__suggestions-container {
+		border: 1px solid rgba(225, 225, 225, 1);
+		border-radius: 0.5rem;
+
+		display: flex;
+		align-items: center;
+
+		& > div {
+			height: 48px;
+		}
+	}
+
+	.components-form-token-field__suggestions-list {
+		background: rgba(255, 255, 255, 1);
+		border: 1px solid rgba(225, 225, 225, 1);
+		box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+
+		border-radius: 0.5rem;
+
+		top: calc( 48px + 4px );
+
+		z-index: 5;
+	}
+
+	.components-form-token-field__suggestion {
+		font-size: 0.875rem;
+		line-height: 1.375rem;
+		font-weight: 500;
+		padding: 1rem 1.5rem;
+
+		&[data-active-item="true"] {
+			background: rgba(245, 245, 245, 1);
+		}
+
+		&[data-autofocus="true"] {
+			color: rgba(172, 58, 107, 1);
+		}
+
+		&.is-selected {
+			background: rgba(245, 245, 245, 1);
+			color: rgba(172, 58, 107, 1);
+		}
+	}
+
+}
+
+.godam-label {
+	font-size: 1rem;
+	display: block;
+	font-weight: 500;
 }

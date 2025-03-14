@@ -2,11 +2,8 @@
  * External dependencies
  */
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-/**
- * Internal dependencies
- */
-import '../../video-control.css';
 /**
  * WordPress dependencies
  */
@@ -18,14 +15,19 @@ import {
 	ToggleControl,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useDispatch, useSelector } from 'react-redux';
+
+/**
+ * Internal dependencies
+ */
+import '../../video-control.css';
 import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice';
-import GoDAM from "../../../../assets/src/images/GoDAM.png";
+import GoDAM from '../../../../assets/src/images/GoDAM.png';
 import ColorPickerButton from '../ColorPickerButton';
 
 const Appearance = () => {
 	const dispatch = useDispatch();
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
+
 	const [ selectedBrandImage, setSelectedBrandImage ] = useState( videoConfig.controlBar.customBrandImg.length > 0 );
 	const [ selectedCustomBgImg, setSelectedCustomBgImg ] = useState(
 		videoConfig.controlBar.customPlayBtnImg.length > 0,
@@ -336,10 +338,10 @@ const Appearance = () => {
 			updateVideoConfig( {
 				controlBar: {
 					...videoConfig.controlBar,
-			  	skipButtons: {
-				  forward: selectedSkipVal,
-				  backward: selectedSkipVal,
-		  		},
+					skipButtons: {
+						forward: selectedSkipVal,
+						backward: selectedSkipVal,
+					},
 				},
 			} ),
 		);
@@ -420,12 +422,12 @@ const Appearance = () => {
 	}
 
 	return (
-		<div id="easydam-player-settings" className="p-4 pb-20">
+		<div id="easydam-player-settings" className="pb-20 pt-4">
 			<div className="accordion-item--content mt-2 flex flex-col gap-6">
 				<div className="display-settings">
 					<label
 						htmlFor="custom-brand-logo"
-						className="easydam-label"
+						className="godam-label mb-4"
 					>
 						{ __( 'Display settings', 'godam' ) }
 					</label>
@@ -433,19 +435,21 @@ const Appearance = () => {
 					<div className="flex flex-col gap-3">
 						<ToggleControl
 							__nextHasNoMarginBottom
+							className="godam-toggle"
 							label="Show Volume Slider"
 							checked={ videoConfig.controlBar.volumePanel }
 							onChange={ handleVolumeToggle }
 						/>
 						<ToggleControl
 							__nextHasNoMarginBottom
+							className="godam-toggle"
 							label="Display Captions"
 							onChange={ handleCaptionsToggle }
 							checked={ videoConfig.controlBar.subsCapsButton }
 						/>
-						{
-							window.videoData?.valid_license &&
+						{ window.videoData?.valid_license &&
 							<ToggleControl
+								className="godam-toggle"
 								__nextHasNoMarginBottom
 								label="Show Branding"
 								onChange={ handleBrandingToggle }
@@ -460,19 +464,24 @@ const Appearance = () => {
 					<div className="form-group">
 						<label
 							htmlFor="custom-brand-logo"
-							className="easydam-label"
+							className="godam-label mb-4"
 						>
 							{ __( 'Custom Brand Logo', 'godam' ) }
 						</label>
 						<Button
 							onClick={ openBrandMediaPicker }
+							className="godam-button mr-2"
 							variant="primary"
-							className="mr-2"
 						>
 							{ selectedBrandImage ? 'Replace' : 'Upload' }
 						</Button>
 						{ selectedBrandImage && (
-							<Button onClick={ removeBrandImage } variant="secondary" isDestructive>
+							<Button
+								onClick={ removeBrandImage }
+								variant="secondary"
+								isDestructive
+								className="godam-button"
+							>
 								{ __( 'Remove', 'godam' ) }
 							</Button>
 						) }
@@ -492,6 +501,7 @@ const Appearance = () => {
 						__next40pxDefaultSize
 						label={ __( 'Play Button Position', 'godam' ) }
 						onChange={ handlePlayButtonPosition }
+						className="godam-input"
 						options={ [
 							{
 								key: 'center',
@@ -526,6 +536,7 @@ const Appearance = () => {
 							<RangeControl
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
+								className="godam-range"
 								help={ __( 'scale up the player controls icons on hover', 'godam' ) }
 								initialPosition={ 0 }
 								max={ 1 }
@@ -541,15 +552,24 @@ const Appearance = () => {
 				<div className="form-group">
 					<label
 						htmlFor="custom-hover-color"
-						className="easydam-label"
+						className="godam-label mb-4"
 					>
 						{ __( 'Custom Play Button', 'godam' ) }
 					</label>
-					<Button onClick={ openCustomBtnImg } variant="primary" className="mr-2">
+					<Button
+						onClick={ openCustomBtnImg }
+						variant="primary"
+						className="godam-button mr-2"
+					>
 						{ selectedCustomBgImg ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 					</Button>
 					{ selectedCustomBgImg && (
-						<Button onClick={ removeCustomPlayBtnImage } variant="secondary" isDestructive>
+						<Button
+							onClick={ removeCustomPlayBtnImage }
+							variant="secondary"
+							isDestructive
+							className="godam-button"
+						>
 							{ __( 'Remove', 'godam' ) }
 						</Button>
 					) }
@@ -565,6 +585,7 @@ const Appearance = () => {
 				</div>
 				<div className="form-group">
 					<CustomSelectControl
+						className="godam-input"
 						__next40pxDefaultSize
 						onChange={ handleSkipTimeSettings }
 						options={ [
@@ -591,14 +612,14 @@ const Appearance = () => {
 				<div className="form-group">
 					<label
 						htmlFor="appearance-color"
-						className="easydam-label"
+						className="godam-label mb-4"
 					>
 						{ __( 'Player Theme', 'godam' ) }
 					</label>
 					<ColorPickerButton
 						value={ videoConfig.controlBar.appearanceColor }
 						label={ __( 'Player Appearance', 'godam' ) }
-						className="mb-0"
+						className="godam-colorpicker"
 						contentClassName="border-b-0"
 						enableAlpha={ true }
 						onChange={ ( value ) => {
@@ -618,6 +639,7 @@ const Appearance = () => {
 					<ColorPickerButton
 						value={ videoConfig.controlBar.hoverColor }
 						label={ __( 'Icons hover color', 'godam' ) }
+						className="godam-colorpicker"
 						enableAlpha={ true }
 						onChange={ ( value ) => {
 							if ( ! value ) {
@@ -638,13 +660,14 @@ const Appearance = () => {
 				<div className="form-group">
 					<label
 						htmlFor="custom-hover-color"
-						className="easydam-label"
+						className="godam-label mb-2"
 					>
 						{ __( 'Select Ad server', 'godam' ) }
 					</label>
 					<ToggleControl
 						label={ __( 'Use ad server\'s ads', 'godam' ) }
 						help={ __( 'Enable this option to use ads from the ad server. This option will disable the ads layer', 'godam' ) }
+						className="godam-toggle"
 						checked={ videoConfig.adServer === 'ad-server' }
 						onChange={ ( checked ) => {
 							dispatch(
@@ -658,6 +681,7 @@ const Appearance = () => {
 						videoConfig.adServer === 'ad-server' && (
 							<TextareaControl
 								label={ __( 'adTag URL', 'godam' ) }
+								className="godam-input"
 								help={ <>
 									<div>
 										{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads ', 'godam' ) }

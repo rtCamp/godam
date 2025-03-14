@@ -16,7 +16,6 @@ library.add( fas );
 
 const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, updateField } ) => {
 	const [ searchQuery, setSearchQuery ] = useState( '' );
-	const [ isOpen, setIsOpen ] = useState( false );
 
 	const iconList = Object.values( fas )
 		.map( ( icon ) => ( {
@@ -48,9 +47,9 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 		<div className="flex flex-col gap-2 mt-3">
 			<label
 				htmlFor={ `hotspot-icon-${ index }` }
-				className="text-xs text-gray-700"
+				className="godam-label"
 			>
-				{ __( 'HOTSPOT ICON', 'godam' ) }
+				{ __( 'Icon', 'godam' ) }
 			</label>
 
 			<div className="flex items-center gap-2">
@@ -59,8 +58,8 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 						<Button
 							onClick={ onToggle }
 							aria-expanded={ isDropDownOpen }
-							variant="secondary"
-							className="flex-grow flex items-center gap-2"
+							variant="primary"
+							className="flex-grow flex items-center gap-2 godam-button"
 							disabled={ disabled }
 						>
 							{ hotspot.icon ? (
@@ -120,7 +119,6 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 															: h2,
 													),
 												);
-												setIsOpen( false ); // Close the dropdown
 											} }
 											style={ {
 												border: isSelected
@@ -147,8 +145,9 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 				{ hotspot.icon && (
 					<Button
 						variant="secondary"
+						isDestructive
 						onClick={ handleReset }
-						className="flex-shrink-0"
+						className="flex-shrink-0 godam-button"
 					>
 						{ __( 'Reset', 'godam' ) }
 					</Button>

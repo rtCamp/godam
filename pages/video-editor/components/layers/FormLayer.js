@@ -83,9 +83,9 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 	return (
 		<>
-			<div className="flex justify-between items-center pb-3 border-b mb-3">
+			<div className="flex justify-between items-center border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="font-semibold">{ __( 'Form layer at', 'godam' ) } { layer.displayTime }s</p>
+				<p className="text-base">{ __( 'Form layer at', 'godam' ) } { layer.displayTime }s</p>
 				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
 				{ isOpen && (
 					<Modal title={ __( 'Delete layer', 'godam' ) } onRequestClose={ () => setOpen( false ) }>
@@ -114,11 +114,11 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 			{
 				forms.length > 0 &&
-					<GravityFormSelector disabled={ ! isValidLicense } className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
+					<GravityFormSelector disabled={ ! isValidLicense } className="godam-combobox mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<SelectControl
-				className="mb-4"
+				className="mb-4 godam-select"
 				label={ __( 'Select form theme', 'godam' ) }
 				options={ templateOptions }
 				value={ layer.theme }
@@ -129,7 +129,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 			/>
 
 			<ToggleControl
-				className="mb-4"
+				className="mb-4 godam-toggle"
 				label={ __( 'Allow user to skip', 'godam' ) }
 				checked={ layer.allow_skip }
 				onChange={ ( value ) =>
@@ -139,14 +139,20 @@ const FormLayer = ( { layerID, goBack } ) => {
 				disabled={ ! isValidLicense }
 			/>
 
-			<Panel className="-mx-4 border-x-0">
+			<Panel
+				className="-mx-4 border-x-0 godam-advance-panel">
 				<PanelBody
 					title={ __( 'Advance', 'godam' ) }
 					initialOpen={ false }
 				>
 
 					{ /* Layer background color */ }
-					<label htmlFor="color" className="easydam-label">{ __( 'Color', 'godam' ) }</label>
+					<label
+						htmlFor="color"
+						className="text-base font-medium block mb-2"
+					>
+						{ __( 'Color', 'godam' ) }
+					</label>
 					<ColorPickerButton
 						className="mb-4"
 						value={ layer?.bg_color ?? '#FFFFFFB3' }
@@ -156,7 +162,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 						disabled={ ! isValidLicense }
 					/>
 
-					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'godam' ) }</label>
+					<label htmlFor="custom-css" className="text-base font-medium block mb-2">{ __( 'Custom CSS', 'godam' ) }</label>
 
 					<div className={ ! isValidLicense ? 'pointer-events-none opacity-50' : '' }>
 						<Editor
@@ -228,51 +234,6 @@ function GravityFormSelector( { className, disabled, formID, forms, handleChange
 								.startsWith( inputValue.toLowerCase() ),
 						),
 					);
-				} }
-			/>
-		</>
-	);
-}
-
-function CustomCssInjector( { value, handleChange } ) {
-	const [ customCss, setCustomCss ] = useState( value );
-
-	useEffect( () => {
-		// Create a <style> element
-		const styleElement = document.createElement( 'style' );
-		styleElement.type = 'text/css';
-		styleElement.id = 'custom-css';
-
-		// Append the <style> element to the <head>
-		document.head.appendChild( styleElement );
-
-		// Cleanup: Remove <style> on component unmount
-		return () => {
-			const existingStyle = document.getElementById( 'custom-css' );
-			if ( existingStyle ) {
-				document.head.removeChild( existingStyle );
-			}
-		};
-	}, [] );
-
-	useEffect( () => {
-		// Inject CSS whenever it changes
-		const styleElement = document.getElementById( 'custom-css' );
-		if ( styleElement ) {
-			styleElement.innerHTML = customCss;
-		}
-	}, [ customCss ] );
-
-	return (
-		<>
-			<TextareaControl
-				className="mb-4"
-				label={ __( 'Custom CSS', 'godam' ) }
-				placeholder={ __( '.classname { border: 1px solid blue; }', 'godam' ) }
-				value={ customCss }
-				onChange={ ( val ) => {
-					setCustomCss( val );
-					handleChange( val );
 				} }
 			/>
 		</>
