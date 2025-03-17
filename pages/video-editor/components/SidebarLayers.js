@@ -40,6 +40,11 @@ const layerTypes = [
 		icon: video,
 		type: 'ad',
 	},
+	{
+		title: __( 'Poll', 'godam' ),
+		icon: customPostType,
+		type: 'poll',
+	},
 ];
 
 const premiumLayers = [ 'form', 'hotspot', 'ad' ];
@@ -131,6 +136,16 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 					ad_url: '',
 					skippable: false,
 					skip_offset: 5,
+				} ) );
+				break;
+			case 'poll':
+				dispatch( addLayer( {
+					id: uuidv4(),
+					displayTime: currentTime,
+					type,
+					poll_id: '',
+					allow_skip: true,
+					custom_css: '',
 				} ) );
 				break;
 			default:

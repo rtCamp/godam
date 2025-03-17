@@ -49,6 +49,13 @@ const Layers = [
 		image: Ad,
 		type: 'ad',
 	},
+	{
+		id: 5,
+		title: __( 'Poll', 'godam' ),
+		description: 'Collect user feedback using polls',
+		image: Form,
+		type: 'poll',
+	},
 ];
 
 const LayerSelector = ( { isGFPluginActive, closeModal, addNewLayer } ) => {

@@ -12,7 +12,7 @@ import 'videojs-ima';
 /**
  * Internal dependencies
  */
-import GoDAM from "../../assets/src/images/GoDAM.png";
+import GoDAM from '../../assets/src/images/GoDAM.png';
 import { setCurrentLayer } from './redux/slice/videoSlice';
 
 /**
@@ -42,6 +42,11 @@ const layerTypes = [
 		title: __( 'Ad', 'godam' ),
 		icon: video,
 		type: 'ad',
+	},
+	{
+		title: __( 'Poll', 'godam' ),
+		icon: customPostType,
+		type: 'poll',
 	},
 ];
 
