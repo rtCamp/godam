@@ -7,6 +7,8 @@
 
 namespace Transcoder\Inc\Taxonomies;
 
+defined( 'ABSPATH' ) || exit;
+
 use Transcoder\Inc\Traits\Singleton;
 
 /**

@@ -7,6 +7,8 @@
 
 namespace Transcoder\Inc\Providers;
 
+defined( 'ABSPATH' ) || exit;
+
 use Transcoder\Inc\Traits\Singleton;
 use Transcoder\Inc\Providers\Handlers\Item_Handler;
 use Transcoder\Inc\Providers\Exceptions\EasyDamException;

@@ -7,6 +7,8 @@
 
 namespace Transcoder\Inc\Helpers;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Auto loader function.
  *

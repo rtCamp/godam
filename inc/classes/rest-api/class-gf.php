@@ -7,6 +7,8 @@
 
 namespace Transcoder\Inc\REST_API;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Class LocationAPI
  */

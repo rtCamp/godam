@@ -8,9 +8,7 @@
  * @subpackage Transcoder/Admin
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 /**
  * The admin-specific functionality of the plugin.

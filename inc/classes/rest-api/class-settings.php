@@ -7,6 +7,8 @@
 
 namespace Transcoder\Inc\REST_API;
 
+defined( 'ABSPATH' ) || exit;
+
 use Transcoder\Inc\EasyDAM_Constants;
 use Transcoder\Inc\Providers\Handlers\Storage_Handler;
 use Transcoder\Inc\Providers\Exceptions\EasyDamException;

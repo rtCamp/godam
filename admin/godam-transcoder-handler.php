@@ -8,9 +8,7 @@
  * @subpackage Transcoder/TranscoderHandler
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Handle request/response with trancoder api.

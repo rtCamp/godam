@@ -8,6 +8,8 @@
  * @subpackage Transcoder/Functions
  */
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Return instance of RT_Transcoder_Admin Class.
  *

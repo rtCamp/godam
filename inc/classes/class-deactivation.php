@@ -4,6 +4,8 @@
  */
 namespace Transcoder\Inc;
 
+defined( 'ABSPATH' ) || exit;
+
 use Transcoder\Inc\Traits\Singleton;
 
 class Deactivation {

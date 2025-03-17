@@ -5,6 +5,8 @@
  * @package transcoder
  */
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * This method is an improved version of PHP's filter_input() and
  * works well on PHP CLI as well which PHP default method does not.

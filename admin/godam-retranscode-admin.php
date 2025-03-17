@@ -6,6 +6,9 @@
  * @package transcoder
  */
 
+defined( 'ABSPATH' ) || exit;
+
+
 /**
  * Media retranscode module.
  */
