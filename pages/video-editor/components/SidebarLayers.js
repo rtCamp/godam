@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
  */
 import { __ } from '@wordpress/i18n';
 import { Button, Icon, Tooltip } from '@wordpress/components';
-import { plus, preformatted, customLink, arrowRight, video, customPostType } from '@wordpress/icons';
+import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
 
 import Layer from './layers/Layer';
@@ -42,7 +42,7 @@ const layerTypes = [
 	},
 	{
 		title: __( 'Poll', 'godam' ),
-		icon: customPostType,
+		icon: thumbsUp,
 		type: 'poll',
 	},
 ];

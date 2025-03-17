@@ -18,6 +18,7 @@ import Ad from '../assets/layers/Ad.png';
 import CTA from '../assets/layers/CTA.png';
 import Form from '../assets/layers/Form.png';
 import Hotspot from '../assets/layers/Hotspot.png';
+import Poll from '../assets/layers/Poll.png';
 
 const Layers = [
 	{
@@ -52,8 +53,8 @@ const Layers = [
 	{
 		id: 5,
 		title: __( 'Poll', 'godam' ),
-		description: 'Collect user feedback using polls',
-		image: Form,
+		description: 'Gather opinions through interactive voting',
+		image: Poll,
 		type: 'poll',
 	},
 ];
