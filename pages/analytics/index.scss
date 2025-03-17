@@ -26,33 +26,81 @@
 	margin-left: 160px;
 	padding-top: var(--wp-admin--admin-bar--height, 0);
 	overflow: auto;
+	color: #000;
 }
 
 #root-video-analytics {
 
 	// Video JS styles
 	.video-analytics-container {
-		@apply flex justify-center py-6 bg-slate-100 overflow-auto md:px-10 pt-20;
+		@apply flex justify-between py-6 bg-slate-100 overflow-auto md:px-10 pt-8;
 	}
 
 	.analytics-info-container {
-		hr {
-			@apply border-0 border-t-2 border-dashed ml-auto border-slate-400;
-		}
+		display: flex;
+		flex-direction: column;
+		gap: 27px;
+		height: 100%;
+		// overflow-y: scroll;
+		// overflow-x: hidden;
+		// -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    	// scrollbar-width: none;  /* Firefox */
+
+		// &::-webkit-scrollbar { 
+		// 	display: none;  /* Safari and Chrome */
+		// }
+		
+		// hr {
+		// 	@apply border-0 border-t-2 border-dashed ml-auto border-slate-400;
+		// }
 
 		.analytics-info {
 			display: flex;
 			align-items: center;
-			gap: 30px;
+			background-color: #fff;
+			padding: 20px;
+			border-radius: 12px;
 
-			span {
-				font-size: 20px;
-				font-weight: 600;
-				width: 50px;
+			.analytics-single-info {
+				display: flex;
+				flex-direction: column;
+				gap: 24px;
+			}
+
+			.analytics-info-heading {
+				font-size: 16px;
+				display: flex;
+				align-items: center;
+				font-weight: 500;
+				gap: 5px;
+
+				.tooltip-container {
+					display: flex;
+					align-items: center;
+				}
 			}
 
 			p {
-				font-size: 18px;
+				margin-block-end: unset;
+				margin-block-start: unset;
+			}
+
+			.engagement-rate {
+				font-weight: 600;
+				font-size: 36px;
+				// margin-top: 24px;
+			}
+
+			.analytics-stats {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				margin-top: auto;
+
+				img {
+					height: 10px;
+					width: 10px;
+				}
 			}
 		}
 	}
@@ -60,7 +108,9 @@
 	// Video Chart styles
 	.video-container {
 		position: relative;
-		max-width: 640px;
+		width: 100%;
+		width: 830px;
+		// max-width: 640px;
 	}
 
 	.video-chart-container {
@@ -69,7 +119,7 @@
 	}
 
 	#chart-container {
-		width: 640px;
+		width: 100%;
 
 		svg {
 			position: relative;
@@ -78,12 +128,15 @@
 
 		.line {
 			fill: none;
-			stroke: rgb(59, 95, 255);
+			stroke: rgba(255, 246, 0, 1);
 			stroke-width: 2px;
 		}
 
 		.area {
-			fill: rgba(255, 165, 0, 0.5);
+			// fill:  linear-gradient(180deg, #ACAA3A 4.5%, rgba(255, 238, 0, 0.1) 66.71%);
+			fill: #ACAA3AB3;
+			// background: linear-gradient(180deg, #ACAA3A 4.5%, rgba(255, 238, 0, 0.3) 66.71%), #ACAA3AB3;
+			opacity: 0.7;
 		}
 
 		.tooltip {
@@ -106,53 +159,87 @@
 			border-width: 8px;
 			border-style: solid;
 			border-color: white transparent transparent transparent;
-			right: 100%;
-			top: 50%;
-			transform: translateY(-50%) rotate(90deg);
+			left: 50%;
+			bottom: -16px; /* Moves triangle below the tooltip */
+			transform: translateX(-50%);
+			// box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
 		}
 
 		.hover-line {
-			stroke: orange;
+			stroke: #fff;
 			stroke-width: 1.5px;
 			stroke-dasharray: 4 2;
 			opacity: 0;
 		}
 
 		.focus-circle {
-			fill: #3858e9;
+			fill: rgba(255, 200, 0, 1);
 			stroke: white;
 			stroke-width: 2px;
-			r: 6;
+			r: 3.5;
 		}
 	}
 
 	#heatmap-container {
-		max-width: 640px;
-		margin: auto;
+		max-width: 830px;
+		// margin: auto;
 		margin-top: 2rem;
 
 		.heatmap-tooltip {
 			position: absolute;
-			padding: 0 5px;
+			position: absolute;
+			background-color: white;
+			border: 1px solid #ccc;
+			padding: 5px;
 			border-radius: 4px;
 			pointer-events: none;
+			white-space: nowrap;
 			font-size: 12px;
+			box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
 			text-align: center;
+			opacity: 0;
+			z-index: 999;
+
+			&::after {
+				content: "";
+				position: absolute;
+				border-width: 8px;
+				border-style: solid;
+				border-color: white transparent transparent transparent;
+				left: 50%;
+				bottom: -16px; /* Moves triangle below the tooltip */
+				transform: translateX(-50%);
+				// box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+			}
+
+			&::before {
+				content: "";
+				position: absolute;
+				border-width: 9px; /* Slightly larger for shadow */
+				border-style: solid;
+				border-color: rgba(0, 0, 0, 0.2) transparent transparent transparent; /* Light shadow */
+				left: 50%;
+				bottom: -21px; /* Places it behind the triangle */
+				transform: translateX(-50%);
+				filter: blur(2px); /* Soft shadow effect */
+				z-index: -1; /* Ensures it's behind the triangle */
+   			 }
 		}
 
-		.heatmap-tooltip-html {
-			padding: 5px 10px;
-			line-height: 1.5;
-			white-space: nowrap;
-			transform: translateX(-50%);
-			background-color: #fff;
-			border: 1px solid #ccc;
-			box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
-			border-radius: 4px;
-		}
+		// .heatmap-tooltip-html {
+		// 	padding: 5px 10px;
+		// 	line-height: 1.5;
+		// 	white-space: nowrap;
+		// 	transform: translateX(-50%);
+		// 	background-color: #fff;
+		// 	border: 1px solid #ccc;
+		// 	box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+		// 	border-radius: 4px;
+		// 	color: #000;
+		// } 
 
 		.heatmap-vertical-line {
-			stroke: #aaa;
+			stroke: #000;
 			stroke-dasharray: 4;
 			stroke-width: 2px;
 		}
@@ -211,26 +298,26 @@
 	cursor: pointer;
 }
 
-#root-video-analytics #tooltip-container .tooltip-icon {
-	background-color: #a6a6a6;
-	color: white;
-	font-size: 12px;
-	font-weight: bold;
-	border-radius: 50%;
-	width: 18px;
-	height: 18px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	margin-left: 5px;
-	line-height: 0;
-	opacity: 0.5;
+#root-video-analytics #tooltip-container {
+	// background-color: #a6a6a6;
+	// color: white;
+	// font-size: 12px;
+	// font-weight: bold;
+	// border-radius: 50%;
+	// width: 18px;
+	// height: 18px;
+	// display: flex;
+	// justify-content: center;
+	// align-items: center;
+	// margin-left: 5px;
+	// line-height: 0;
+	// opacity: 0.5;
 }
 
 #root-video-analytics #tooltip-container .tooltip-text {
 	position: absolute;
-	bottom: 50%;
-	left: 50%;
+	top: 100%;
+    left: -95%;
 	visibility: hidden;
 	background-color: rgba(0, 0, 0, 0.8);
 	color: #fff;
@@ -239,7 +326,7 @@
 	border-radius: 5px;
 	min-width: 110px;
 	width: max-content;
-	max-width: 300px;
+	max-width: 200px;
 	z-index: 100;
 	pointer-events: none;
 	font-size: 12px;
@@ -253,4 +340,30 @@
 #root-video-analytics #tooltip-container:hover .tooltip-text {
 	visibility: visible;
 	opacity: 1;
+}
+
+.subheading-container {
+	display: flex;
+	align-items: center;
+	position: relative;
+	border-bottom: 1px solid #ddd; /* Gray separator */
+	margin: 0 0 0 40px;
+	padding-bottom: 16px;
+}
+
+.subheading {
+	margin-right: 20px;
+	cursor: pointer;
+	position: relative;
+	font-weight: 500;
+
+	&::after {
+		content: "";
+		position: absolute;
+		left: 0;
+		bottom: -17px;
+		width: 100%;
+		height: 2px;
+		background-color: #AB3A6C; /* Active red underline */
+	}
 }
