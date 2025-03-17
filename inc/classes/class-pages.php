@@ -294,7 +294,12 @@ class Pages {
 
 			$poll_ajax_style = get_option('poll_ajax_style');
 
-			if ( isset( $poll_ajax_style['loading'] ) && $poll_ajax_style['loading'] ) {
+			if ( is_plugin_active( 'wp-polls/wp-polls.php' ) && isset( $poll_ajax_style['loading'] ) && $poll_ajax_style['loading'] ) {
+
+				if ( ! defined( 'WP_POLLS_VERSION' ) ) {
+					define( 'WP_POLLS_VERSION', '2.77.3' );
+				}
+
 				wp_enqueue_script('wp-polls', plugins_url('wp-polls/polls-js.js'), array('jquery'), WP_POLLS_VERSION, true);
 				wp_enqueue_style('wp-polls', plugins_url('wp-polls/polls-css.css'), false, WP_POLLS_VERSION, 'all');
 

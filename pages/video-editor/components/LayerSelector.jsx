@@ -56,6 +56,7 @@ const Layers = [
 		description: 'Gather opinions through interactive voting',
 		image: Poll,
 		type: 'poll',
+		requiresWpPolls: true,
 	},
 ];
 
@@ -84,7 +85,7 @@ const LayerSelector = ( { isGFPluginActive, closeModal, addNewLayer } ) => {
 						key={ layer.id }
 						className={ `godam-layer-selector__item ${ selectedLayer?.id === layer.id ? 'selected' : '' }` }
 						onClick={ () => handleLayerSelect( layer ) }
-						disabled={ layer.requiresGf && ! isGFPluginActive }
+						disabled={ ( layer.requiresGf && ! isGFPluginActive ) || ( layer.requiresWpPolls && ! window.easydamMediaLibrary.isPollPluginActive ) }
 					>
 						<img
 							className="godam-layer-selector__item__image"

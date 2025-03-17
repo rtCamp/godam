@@ -162,6 +162,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 							sortedLayers?.map( ( layer ) => {
 								const isAdServerAd = adServer === 'ad-server' && layer.type === 'ad';
 								const isGFPluginNotActive = layer.type === 'form' && ! isGFPluginActive;
+								const isPollPluginNotActive = layer.type === 'poll' && ! window.easydamMediaLibrary.isPollPluginActive;
 								let addWarning = false;
 								let toolTipMessage = '';
 
@@ -173,6 +174,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 									addWarning = true;
 								} else if ( isGFPluginNotActive ) {
 									toolTipMessage = __( 'Gravity Forms plugin is not active', 'godam' );
+									addWarning = true;
+								} else if ( isPollPluginNotActive ) {
+									toolTipMessage = __( 'Poll plugin is not active', 'godam' );
 									addWarning = true;
 								} else {
 									toolTipMessage = '';

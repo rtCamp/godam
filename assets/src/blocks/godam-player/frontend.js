@@ -322,8 +322,6 @@ function GODAMPlayer( videoRef = null ) {
 					() => layer.layerElement === layerElement,
 				);
 
-				console.log( 'layer', layer );
-
 				if ( ! existingLayer ) {
 					formLayers.push( {
 						layerElement,
