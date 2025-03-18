@@ -5,8 +5,6 @@
  * @package transcoder
  */
 
-// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Using default nonce verification so disabling for this file.
-
 namespace Transcoder\Inc;
 
 defined( 'ABSPATH' ) || exit;
