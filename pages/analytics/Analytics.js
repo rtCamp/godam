@@ -48,7 +48,6 @@ const Analytics = ( { attachmentID } ) => {
 
 		return mime;
 	};
-	console.log( analyticsData );
 	return (
 		<div className="godam-analytics-container">
 			<GodamHeader />
@@ -79,17 +78,14 @@ const Analytics = ( { attachmentID } ) => {
 						<h2 className="text-2xl m-0 capitalize">{ analyticsData?.title?.rendered }</h2>
 						<span className="h-[26px] px-2 bg-white flex items-center rounded-sm">{ analyticsData?.media_details?.length_formatted }</span>
 					</div>
-					{ /* <div>
-						<h3>Overview</h3>
-					</div> */ }
+
 					<div className="subheading-container">
-						<div className="subheading">Overview</div>
+						<div className="subheading">{ __( 'Overview', 'godam' ) }</div>
 					</div>
 					<div id="video-analytics-container" className="video-analytics-container hidden">
 						<div className="overflow-auto">
 							<div className="flex gap-10 items-start max-lg:flex-col">
 								<div className="min-w-[350px] max-w-[350px] flex-grow">
-									{ /* <h2 className="text-lg m-0 mb-2">{ __( 'Analytics', 'godam' ) }</h2> */ }
 
 									<div className="analytics-info-container max-lg:flex-row flex-col">
 										<div className="analytics-info flex justify-between max-lg:flex-col">
@@ -104,7 +100,7 @@ const Analytics = ( { attachmentID } ) => {
 											</div>
 											<div className="analytics-stats">
 												<img src={ DownArrow } height={ 20 } width={ 20 } alt="Stats dropped indicating icon" />
-												<p>-0.91% this week</p>
+												<p>{ __( '-0.91% this week', 'godam' ) }</p>
 											</div>
 										</div>
 										<div className="analytics-info flex justify-between  max-lg:flex-col">
@@ -119,7 +115,7 @@ const Analytics = ( { attachmentID } ) => {
 											</div>
 											<div className="analytics-stats">
 												<img src={ DownArrow } height={ 20 } width={ 20 } alt="Stats dropped indicating icon" />
-												<p>-0.91% this week</p>
+												<p>{ __( '-0.91% this week', 'godam' ) }</p>
 											</div>
 										</div>
 										<div className="analytics-info flex justify-between  max-lg:flex-col">
@@ -134,7 +130,7 @@ const Analytics = ( { attachmentID } ) => {
 											</div>
 											<div className="analytics-stats">
 												<img src={ TopArrow } height={ 20 } width={ 20 } alt="Stats dropped indicating icon" />
-												<p>+0.91% this week</p>
+												<p>{ __( '+0.91% this week', 'godam' ) }</p>
 											</div>
 										</div>
 										<div className="analytics-info flex justify-between  max-lg:flex-col">
@@ -149,13 +145,12 @@ const Analytics = ( { attachmentID } ) => {
 											</div>
 											<div className="analytics-stats">
 												<img src={ TopArrow } height={ 20 } width={ 20 } alt="Stats dropped indicating icon" />
-												<p>+0.91% this week</p>
+												<p>{ __( '+0.91% this week', 'godam' ) }</p>
 											</div>
 										</div>
 									</div>
 								</div>
 								<div className="min-w-[750px]">
-									{ /* <h2 className="text-lg m-0 mb-2 min-w-[640px]">{ analyticsData?.title?.rendered }</h2> */ }
 
 									<div>
 										<div className="video-container">
