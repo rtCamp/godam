@@ -65,6 +65,8 @@ require_once GODAM_PATH . 'admin/godam-transcoder-admin.php'; // phpcs:ignore Wo
 
 global $rt_transcoder_admin;
 
+godam_pre_init();
+
 /**
  * Initiate file system.
  */
@@ -122,6 +124,7 @@ require GODAM_PATH . 'vendor/autoload.php';
 function godam_plugin_activate() {
 	update_site_option( 'godam_plugin_activation_time', time() );
 }
+
 register_activation_hook( __FILE__, 'godam_plugin_activate' );
 
 /**
@@ -131,4 +134,35 @@ function godam_plugin_deactivate() {
 	\Transcoder\Inc\Cron::get_instance()->unschedule_video_cleanup();
 	delete_site_option( 'godam_plugin_activation_time' );
 }
+
 register_deactivation_hook( __FILE__, 'godam_plugin_deactivate' );
+
+
+// Function to check if required build folders exist
+function godam_check_build_folders() {
+	$plugin_dir    = plugin_dir_path( __FILE__ );
+	$assets_folder = $plugin_dir . 'assets/build';
+	$pages_folder  = $plugin_dir . 'pages/build';
+
+	if ( ! is_dir( $assets_folder ) || ! is_dir( $pages_folder ) ) {
+		return false;
+	}
+	return true;
+}
+
+function godam_pre_init() {
+
+	if ( ! godam_check_build_folders() ) {
+
+		wp_die(
+			'<h2>GoDAM Plugin Activation Failed</h2>
+            <p>Required build folders are missing.</p>
+            <p>Please run <code>npm install && npm run build:dev</code> before activating the plugin.</p>
+			<p>For more details, check out <a href="https://github.com/rtCamp/godam/blob/master/README.md">README.md</a></p>
+            <p><a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">Go back to Plugins</a></p>',
+			'Plugin Activation Error',
+			array( 'back_link' => true )
+		);
+		return;
+	}
+}
