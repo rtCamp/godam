@@ -218,18 +218,18 @@ function godam_get_user_data( $timeout = 300 ) {
 		( isset( $godam_user_data['timestamp'] ) && ( time() - $godam_user_data['timestamp'] ) > $timeout )
 	) {
 		// Verify the user's license.
-		$result      = rtt_verify_license( $license_key );
+		$result      = rtgodam_verify_license( $license_key );
 
 		$valid_license = false;
 		$user_data     = array();
 
 		if ( is_wp_error( $result ) ) {
 			$valid_license = false;
-			$user_data['license_key'] = rtt_mask_string( $license_key );
+			$user_data['license_key'] = rtgodam_mask_string( $license_key );
 		} else {
 			$valid_license            = true;
 			$user_data                = $result['data'] ?? array();
-			$user_data['license_key'] = rtt_mask_string( $license_key );
+			$user_data['license_key'] = rtgodam_mask_string( $license_key );
 		}
 
 		$godam_user_data = array(

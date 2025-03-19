@@ -87,7 +87,7 @@ $rtgodam_transcoder_admin = new RT_Transcoder_Admin();
  *
  * @return array Processed links.
  */
-function rtt_action_links( $links, $file ) {
+function rtgodam_action_links( $links, $file ) {
 	// Return normal links if not plugin.
 	if ( plugin_basename( 'godam/godam.php' ) !== $file ) {
 		return $links;
@@ -108,8 +108,8 @@ function rtt_action_links( $links, $file ) {
 	);
 }
 
-add_filter( 'plugin_action_links', 'rtt_action_links', 11, 2 );
-add_filter( 'network_admin_plugin_action_links', 'rtt_action_links', 11, 2 );
+add_filter( 'plugin_action_links', 'rtgodam_action_links', 11, 2 );
+add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 );
 
 /**
  * Autoloader for the vendor directory.

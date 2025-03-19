@@ -374,7 +374,7 @@ class RT_Transcoder_Admin {
 				$media         = $rtmedia_model->get( array( 'media_id' => $id ) );
 				$media_id      = $media[0]->id;
 				$rtmedia_model->update( array( 'cover_art' => $final_file_url ), array( 'media_id' => $id ) );
-				rtt_update_activity_after_thumb_set( $media_id );
+				rtgodam_update_activity_after_thumb_set( $media_id );
 			}
 			update_post_meta( $id, '_rt_media_video_thumbnail', $rtmedia_thumbnail );
 		}

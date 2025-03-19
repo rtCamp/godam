@@ -57,7 +57,7 @@ function rtgodam_media_shortcode( $attrs, $content = '' ) {
 	if ( 'video' === $mime_type[0] ) {
 
 		$video_shortcode_attributes = '';
-		$media_url                  = rtt_get_media_url( $attachment_id );
+		$media_url                  = rtgodam_get_media_url( $attachment_id );
 
 		$poster = rtgodam_media_get_video_thumbnail( $attachment_id );
 
@@ -72,7 +72,7 @@ function rtgodam_media_shortcode( $attrs, $content = '' ) {
 
 	} elseif ( 'audio' === $mime_type[0] ) {
 
-		$media_url = rtt_get_media_url( $attachment_id, 'mp3' );
+		$media_url = rtgodam_get_media_url( $attachment_id, 'mp3' );
 
 		$audio_shortcode_attributes = 'src="' . $media_url . '"';
 
@@ -176,7 +176,7 @@ function rtgodam_media_get_video_thumbnail( $attachment_id ) {
  * @param  string $media_type        Type of media i.e mp4, mp3. By default it mp4 is passed.
  * @return string                    Returns audio file url on success.
  */
-function rtt_get_media_url( $attachment_id, $media_type = 'mp4' ) {
+function rtgodam_get_media_url( $attachment_id, $media_type = 'mp4' ) {
 
 	if ( empty( $attachment_id ) ) {
 		return;
@@ -205,7 +205,7 @@ function rtt_get_media_url( $attachment_id, $media_type = 'mp4' ) {
 	return $final_file_url;
 }
 
-if ( ! function_exists( 'rtt_update_activity_after_thumb_set' ) ) {
+if ( ! function_exists( 'rtgodam_update_activity_after_thumb_set' ) ) {
 
 	/**
 	 * Update the activity after thumb is set to the video.
@@ -216,7 +216,7 @@ if ( ! function_exists( 'rtt_update_activity_after_thumb_set' ) ) {
 	 *
 	 * @return void
 	 */
-	function rtt_update_activity_after_thumb_set( $id ) {
+	function rtgodam_update_activity_after_thumb_set( $id ) {
 
 		$model       = new RTMediaModel();
 		$media_obj   = new RTMediaMedia();
@@ -260,7 +260,7 @@ if ( ! function_exists( 'rtt_update_activity_after_thumb_set' ) ) {
 	}
 }
 
-if ( ! function_exists( 'rtt_get_edit_post_link' ) ) {
+if ( ! function_exists( 'rtgodam_get_edit_post_link' ) ) {
 
 	/**
 	 * Retrieve edit posts link for post. Derived from WordPress core
@@ -275,7 +275,7 @@ if ( ! function_exists( 'rtt_get_edit_post_link' ) ) {
 	 * @return string|null The edit post link for the given post. null if the post type is invalid or does
 	 *                     not allow an editing UI.
 	 */
-	function rtt_get_edit_post_link( $id = 0, $context = 'display' ) {
+	function rtgodam_get_edit_post_link( $id = 0, $context = 'display' ) {
 		$_post = get_post( $id );
 		if ( empty( $_post ) ) {
 			return;
@@ -304,7 +304,7 @@ if ( ! function_exists( 'rtt_get_edit_post_link' ) ) {
 	}
 }
 
-if ( ! function_exists( 'rtt_get_job_id_by_attachment_id' ) ) {
+if ( ! function_exists( 'rtgodam_get_job_id_by_attachment_id' ) ) {
 
 	/**
 	 * Get the job id of attachment
@@ -315,7 +315,7 @@ if ( ! function_exists( 'rtt_get_job_id_by_attachment_id' ) ) {
 	 *
 	 * @return number On success it returns the job id otherwise it returns the false.
 	 */
-	function rtt_get_job_id_by_attachment_id( $attachment_id ) {
+	function rtgodam_get_job_id_by_attachment_id( $attachment_id ) {
 
 		if ( empty( $attachment_id ) ) {
 			return 0;
@@ -338,7 +338,7 @@ if ( ! function_exists( 'rtt_get_job_id_by_attachment_id' ) ) {
  *
  * @return string
  */
-function rtt_generate_video_shortcode( $html, $send_id, $attachment ) {
+function rtgodam_generate_video_shortcode( $html, $send_id, $attachment ) {
 
 	if ( empty( $attachment ) ) {
 		return $html;
@@ -358,7 +358,7 @@ function rtt_generate_video_shortcode( $html, $send_id, $attachment ) {
 	}
 
 	if ( ! empty( $mime_type ) && 0 === strpos( $post_mime_type, 'video' ) ) {
-		$transcoded_file_url = rtt_get_media_url( $attachment['id'] );
+		$transcoded_file_url = rtgodam_get_media_url( $attachment['id'] );
 		if ( empty( $transcoded_file_url ) ) {
 			return $html;
 		}
@@ -372,7 +372,7 @@ function rtt_generate_video_shortcode( $html, $send_id, $attachment ) {
 
 		$html = '[video src="' . $transcoded_file_url . '" ' . $poster . ' ]';
 	} elseif ( ! empty( $mime_type ) && 0 === strpos( $post_mime_type, 'audio' ) ) {
-		$transcoded_file_url = rtt_get_media_url( $attachment['id'] );
+		$transcoded_file_url = rtgodam_get_media_url( $attachment['id'] );
 		if ( empty( $transcoded_file_url ) ) {
 			return $html;
 		}
@@ -383,7 +383,7 @@ function rtt_generate_video_shortcode( $html, $send_id, $attachment ) {
 	return $html;
 }
 
-add_filter( 'media_send_to_editor', 'rtt_generate_video_shortcode', 100, 3 );
+add_filter( 'media_send_to_editor', 'rtgodam_generate_video_shortcode', 100, 3 );
 
 /**
  * Check if track status setting is enabled.
@@ -394,7 +394,7 @@ add_filter( 'media_send_to_editor', 'rtt_generate_video_shortcode', 100, 3 );
  *
  * @return boolean TRUE if track status is enabled, FALSE otherwise.
  */
-function rtt_is_track_status_enabled() {
+function rtgodam_is_track_status_enabled() {
 	// Fetch EasyDAM settings from the database.
 	$easydam_settings = get_option( 'rt-easydam-settings', array() );
 
@@ -413,7 +413,7 @@ function rtt_is_track_status_enabled() {
  *
  * @return string
  */
-function rtt_bp_get_activity_content( $content, $activity = null ) {
+function rtgodam_bp_get_activity_content( $content, $activity = null ) {
 
 	if ( empty( $activity ) || empty( $content ) ) {
 		return $content;
@@ -453,7 +453,7 @@ function rtt_bp_get_activity_content( $content, $activity = null ) {
 
 			if ( ! empty( $video_src_url[2] ) ) {
 
-				$transcoded_media_url = rtt_get_media_url( $media->media_id );
+				$transcoded_media_url = rtgodam_get_media_url( $media->media_id );
 
 				if ( ! empty( $transcoded_media_url ) ) {
 					$content = preg_replace( '/' . str_replace( '/', '\/', $video_src_url[2][ $key ] ) . '/', $transcoded_media_url, $content, 1 );
@@ -478,7 +478,7 @@ function rtt_bp_get_activity_content( $content, $activity = null ) {
 			}
 			// If media is sent to the transcoder then show the message.
 			if ( is_file_being_transcoded( $media->media_id ) ) {
-				if ( current_user_can( 'manage_options' ) && rtt_is_track_status_enabled() ) {
+				if ( current_user_can( 'manage_options' ) && rtgodam_is_track_status_enabled() ) {
 
 					$check_button_text = __( 'Check Status', 'godam' );
 
@@ -489,7 +489,7 @@ function rtt_bp_get_activity_content( $content, $activity = null ) {
 					 *
 					 * @param string $check_button_text Default text of transcoding process status check button.
 					 */
-					$check_button_text = apply_filters( 'rtt_transcoder_check_status_button_text', $check_button_text );
+					$check_button_text = apply_filters( 'rtgodam_transcoder_check_status_button_text', $check_button_text );
 
 					$message = sprintf(
 						'<div class="transcoding-in-progress"><button id="btn_check_status%1$s" class="btn_check_transcode_status" name="check_status_btn" data-value="%1$s">%2$s</button> <div class="transcode_status_box" id="span_status%1$s">%3$s</div></div>',
@@ -512,7 +512,7 @@ function rtt_bp_get_activity_content( $content, $activity = null ) {
 				 * @param string $message   Message to be displayed.
 				 * @param object $activity  Activity object.
 				 */
-				$message  = apply_filters( 'rtt_transcoding_in_progress_message', $message, $activity );
+				$message  = apply_filters( 'rtgodam_transcoding_in_progress_message', $message, $activity );
 				$message .= '</div>';
 				// Add this message to the particular media (there can be multiple medias in the activity).
 				$search     = '/(rtgodam_media_video_' . $media->id . ")['\"](.*?)(<\/a><\/div>)/s";
@@ -538,7 +538,7 @@ function rtt_bp_get_activity_content( $content, $activity = null ) {
 	}
 }
 
-add_filter( 'bp_get_activity_content_body', 'rtt_bp_get_activity_content', 99, 2 );
+add_filter( 'bp_get_activity_content_body', 'rtgodam_bp_get_activity_content', 99, 2 );
 
 /**
  * Parse the URL - Derived from the WordPress core
@@ -548,7 +548,7 @@ add_filter( 'bp_get_activity_content_body', 'rtt_bp_get_activity_content', 99, 2
  * @param  string $url The URL to be parsed.
  * @return array       Array containing the information about the URL.
  */
-function rtt_wp_parse_url( $url ) {
+function rtgodam_wp_parse_url( $url ) {
 	if ( function_exists( 'wp_parse_url' ) ) {
 		return wp_parse_url( $url );
 	}
@@ -588,7 +588,7 @@ function rtt_wp_parse_url( $url ) {
  *
  * @param  int $post_id Attachment ID.
  */
-function rtt_delete_related_transcoded_files( $post_id ) {
+function rtgodam_delete_related_transcoded_files( $post_id ) {
 	if ( empty( $post_id ) ) {
 		return false;
 	}
@@ -598,7 +598,7 @@ function rtt_delete_related_transcoded_files( $post_id ) {
 	if ( ! empty( $transcoded_files ) && is_array( $transcoded_files ) ) {
 		foreach ( $transcoded_files as $files ) {
 			if ( ! empty( $files ) && is_array( $files ) ) {
-				rtt_delete_transcoded_files( $files );
+				rtgodam_delete_transcoded_files( $files );
 			}
 		}
 	}
@@ -606,12 +606,12 @@ function rtt_delete_related_transcoded_files( $post_id ) {
 
 	$thumbnails = get_post_meta( $post_id, '_rt_media_thumbnails', true );
 	if ( ! empty( $thumbnails ) && is_array( $thumbnails ) ) {
-		rtt_delete_transcoded_files( $thumbnails );
+		rtgodam_delete_transcoded_files( $thumbnails );
 	}
 	delete_post_meta( $post_id, '_rt_media_thumbnails' );
 }
 
-add_action( 'delete_attachment', 'rtt_delete_related_transcoded_files', 99, 1 );
+add_action( 'delete_attachment', 'rtgodam_delete_related_transcoded_files', 99, 1 );
 
 /**
  * Deletes/Unlinks the files given in the array
@@ -622,7 +622,7 @@ add_action( 'delete_attachment', 'rtt_delete_related_transcoded_files', 99, 1 );
  *
  * @return void
  */
-function rtt_delete_transcoded_files( $files ) {
+function rtgodam_delete_transcoded_files( $files ) {
 
 	if ( empty( $files ) ) {
 		return;
@@ -632,7 +632,7 @@ function rtt_delete_transcoded_files( $files ) {
 		$files = array( $files );
 	}
 
-	$uploadpath = rtt_get_upload_dir();
+	$uploadpath = rtgodam_get_upload_dir();
 
 	foreach ( $files as $file ) {
 		if ( ! empty( $file ) ) {
@@ -657,7 +657,7 @@ function rtt_delete_transcoded_files( $files ) {
  *
  * @return array See above for description.
  */
-function rtt_get_upload_dir() {
+function rtgodam_get_upload_dir() {
 	// for WordPress backward compatibility.
 	if ( function_exists( 'wp_get_upload_dir' ) ) {
 		$uploads = wp_get_upload_dir();
@@ -677,25 +677,25 @@ function rtt_get_upload_dir() {
  *
  * @return boolean TRUE if override is ON, FALSE is OFF
  */
-function rtt_is_override_thumbnail( $attachment_id = '' ) {
+function rtgodam_is_override_thumbnail( $attachment_id = '' ) {
 
 	// Fetch EasyDAM settings directly.
 	$easydam_settings = get_option( 'rt-easydam-settings', array() );
 
 	// Return the 'overwrite_thumbnails' value, defaulting to false if not set.
-	$rtt_override_thumbnail = ! empty( $easydam_settings['video']['overwrite_thumbnails'] );
+	$rtgodam_override_thumbnail = ! empty( $easydam_settings['video']['overwrite_thumbnails'] );
 
 	/**
 	 * Allow user to override the setting.
 	 *
 	 * @since 1.1.0
 	 *
-	 * @param boolean   $rtt_override_thumbnail     Number of thumbnails set in setting.
+	 * @param boolean   $rtgodam_override_thumbnail     Number of thumbnails set in setting.
 	 * @param int       $attachment_id              ID of attachment.
 	 */
-	$rtt_override_thumbnail = apply_filters( 'rtt_is_override_thumbnail', $rtt_override_thumbnail, $attachment_id );
+	$rtgodam_override_thumbnail = apply_filters( 'rtgodam_is_override_thumbnail', $rtgodam_override_thumbnail, $attachment_id );
 
-	return $rtt_override_thumbnail;
+	return $rtgodam_override_thumbnail;
 }
 
 /**
@@ -703,7 +703,7 @@ function rtt_is_override_thumbnail( $attachment_id = '' ) {
  *
  * @return string Remote IP address
  */
-function rtt_get_remote_ip_address() {
+function rtgodam_get_remote_ip_address() {
 	$client_ip = get_server_var( 'HTTP_CLIENT_IP' );
 	$xff       = get_server_var( 'HTTP_X_FORWARDED_FOR' );
 	if ( ! empty( $client_ip ) ) {
@@ -725,7 +725,7 @@ function rtt_get_remote_ip_address() {
  *
  * @return array columns list
  */
-function rtt_add_status_columns_head( $defaults ) {
+function rtgodam_add_status_columns_head( $defaults ) {
 
 	$defaults['convert_status'] = __( 'Transcode Status', 'godam' );
 	return $defaults;
@@ -739,7 +739,7 @@ function rtt_add_status_columns_head( $defaults ) {
  * @param string $column_name column name.
  * @param int    $post_id Post ID.
  */
-function rtt_add_status_columns_content( $column_name, $post_id ) {
+function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 	if ( 'convert_status' !== $column_name ) {
 		return;
 	}
@@ -773,8 +773,8 @@ $user_data = godam_get_user_data();
 $is_license_verified = isset( $user_data['valid_license'] ) ? $user_data['valid_license'] : false;
 
 if ( $is_license_verified ) {
-	add_filter( 'manage_media_columns', 'rtt_add_status_columns_head' );
-	add_action( 'manage_media_custom_column', 'rtt_add_status_columns_content', 10, 2 );
+	add_filter( 'manage_media_columns', 'rtgodam_add_status_columns_head' );
+	add_action( 'manage_media_custom_column', 'rtgodam_add_status_columns_content', 10, 2 );
 }
 
 /**
@@ -786,20 +786,20 @@ if ( $is_license_verified ) {
  *
  * @return array columns list
  */
-function rtt_status_column_register_sortable( $columns ) {
+function rtgodam_status_column_register_sortable( $columns ) {
 
 	$columns['convert_status'] = 'convert_status';
 	return $columns;
 }
 
-add_filter( 'manage_upload_sortable_columns', 'rtt_status_column_register_sortable' );
+add_filter( 'manage_upload_sortable_columns', 'rtgodam_status_column_register_sortable' );
 
 /**
  * Method to add js function.
  *
  * @since 1.2
  */
-function rtt_enqueue_scripts() {
+function rtgodam_enqueue_scripts() {
 
 	if ( current_user_can( 'manage_options' ) ) {
 		wp_register_script( 'rtgodam_transcoder_js', plugins_url( 'js/rt-transcoder.min.js', __FILE__ ), array(), GODAM_VERSION, false );
@@ -824,10 +824,10 @@ function rtt_enqueue_scripts() {
 	}
 }
 
-if ( rtt_is_track_status_enabled() ) {
-	add_action( 'wp_enqueue_scripts', 'rtt_enqueue_scripts' );
+if ( rtgodam_is_track_status_enabled() ) {
+	add_action( 'wp_enqueue_scripts', 'rtgodam_enqueue_scripts' );
 }
-add_action( 'admin_enqueue_scripts', 'rtt_enqueue_scripts' );
+add_action( 'admin_enqueue_scripts', 'rtgodam_enqueue_scripts' );
 
 add_action( 'enqueue_block_editor_assets', 'rtgodam_transcoder_enqueue_block_editor_assets' );
 
@@ -836,7 +836,7 @@ add_action( 'enqueue_block_editor_assets', 'rtgodam_transcoder_enqueue_block_edi
  *
  * @return void
  */
-function rtt_enqueue_frontend_scripts() {
+function rtgodam_enqueue_frontend_scripts() {
 	$file_to_use = 'public-assets/js/build/transcoder.min.js';
 
 	$file = path_join( GODAM_PATH, $file_to_use );
@@ -848,7 +848,7 @@ function rtt_enqueue_frontend_scripts() {
 	}
 }
 
-add_action( 'wp_enqueue_scripts', 'rtt_enqueue_frontend_scripts' );
+add_action( 'wp_enqueue_scripts', 'rtgodam_enqueue_frontend_scripts' );
 
 /**
  * Enqueue required script for block editor.
@@ -879,20 +879,20 @@ function rtgodam_transcoder_enqueue_block_editor_assets() {
  *
  * @since 1.2
  */
-function rtt_ajax_process_check_status_request() {
+function rtgodam_ajax_process_check_status_request() {
 
 	check_ajax_referer( 'check-transcoding-status-ajax-nonce', 'security', true );
 	$post_id = transcoder_filter_input( INPUT_POST, 'postid', FILTER_SANITIZE_NUMBER_INT );
 
 	if ( ! empty( $post_id ) ) {
-		echo esc_html( rtt_get_transcoding_status( $post_id ) );
+		echo esc_html( rtgodam_get_transcoding_status( $post_id ) );
 	}
 
 	wp_die();
 }
 
 // Action added to handle check_status onclick request.
-add_action( 'wp_ajax_checkstatus', 'rtt_ajax_process_check_status_request' );
+add_action( 'wp_ajax_checkstatus', 'rtgodam_ajax_process_check_status_request' );
 
 /**
  * To get status of transcoding process
@@ -903,7 +903,7 @@ add_action( 'wp_ajax_checkstatus', 'rtt_ajax_process_check_status_request' );
  *
  * @return string transcoding process status
  */
-function rtt_get_transcoding_status( $post_id ) {
+function rtgodam_get_transcoding_status( $post_id ) {
 
 	require_once GODAM_PATH . 'admin/godam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
@@ -920,7 +920,7 @@ function rtt_get_transcoding_status( $post_id ) {
  *
  * @param int $rtmedia_id rtmedia ID.
  */
-function rtt_add_transcoding_process_status_button_single_media_page( $rtmedia_id ) {
+function rtgodam_add_transcoding_process_status_button_single_media_page( $rtmedia_id ) {
 
 	global $wpdb;
 	$rtmedia_media_table = $wpdb->prefix . 'rtgodam_rtm_media';
@@ -941,11 +941,11 @@ function rtt_add_transcoding_process_status_button_single_media_page( $rtmedia_i
 	 *
 	 * @param string $check_button_text Default text of transcoding process status check button.
 	 */
-	$check_button_text = apply_filters( 'rtt_transcoder_check_status_button_text', $check_button_text );
+	$check_button_text = apply_filters( 'rtgodam_transcoder_check_status_button_text', $check_button_text );
 
 	if ( is_file_being_transcoded( $post_id ) ) {
 
-		if ( current_user_can( 'manage_options' ) && rtt_is_track_status_enabled() ) {
+		if ( current_user_can( 'manage_options' ) && rtgodam_is_track_status_enabled() ) {
 			$message = sprintf(
 				'<div class="transcoding-in-progress"><button id="btn_check_status%1$s" class="btn_check_transcode_status" name="check_status_btn" data-value="%1$s">%2$s</button> <div class="transcode_status_box" id="span_status%1$s">%3$s</div></div>',
 				esc_attr( $post_id ),
@@ -966,7 +966,7 @@ function rtt_add_transcoding_process_status_button_single_media_page( $rtmedia_i
 }
 
 // Add action to media single page.
-add_action( 'rtmedia_actions_before_description', 'rtt_add_transcoding_process_status_button_single_media_page', 10, 1 );
+add_action( 'rtmedia_actions_before_description', 'rtgodam_add_transcoding_process_status_button_single_media_page', 10, 1 );
 
 /**
  * To resize video container of media single page when video is being transcoded .
@@ -978,7 +978,7 @@ add_action( 'rtmedia_actions_before_description', 'rtt_add_transcoding_process_s
  *
  * @return string html markup
  */
-function rtt_filter_single_media_page_video_markup( $html, $rtmedia_media ) {
+function rtgodam_filter_single_media_page_video_markup( $html, $rtmedia_media ) {
 	if ( empty( $rtmedia_media ) || empty( $rtmedia_media->media_type ) || empty( $rtmedia_media->media_id ) ) {
 		return $html;
 	}
@@ -1004,7 +1004,7 @@ function rtt_filter_single_media_page_video_markup( $html, $rtmedia_media ) {
 	return $html;
 }
 
-add_filter( 'rtmedia_single_content_filter', 'rtt_filter_single_media_page_video_markup', 10, 2 );
+add_filter( 'rtmedia_single_content_filter', 'rtgodam_filter_single_media_page_video_markup', 10, 2 );
 
 /**
  *
@@ -1017,10 +1017,10 @@ add_filter( 'rtmedia_single_content_filter', 'rtt_filter_single_media_page_video
  * @param int    $attachment_id  ID of attachment.
  * @param string $autoformat     If true then generating thumbs only else trancode video.
  */
-function rtt_media_update_usage( $wp_metadata, $attachment_id, $autoformat = true ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+function rtgodam_media_update_usage( $wp_metadata, $attachment_id, $autoformat = true ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 
 	$stored_key     = get_site_option( 'rt-transcoding-api-key' );
-	$transient_flag = get_transient( 'rtt_usage_update_flag' );
+	$transient_flag = get_transient( 'rtgodam_usage_update_flag' );
 
 	if ( ! empty( $stored_key ) && empty( $transient_flag ) ) {
 
@@ -1030,14 +1030,14 @@ function rtt_media_update_usage( $wp_metadata, $attachment_id, $autoformat = tru
 		if ( empty( $usage_info ) || empty( $usage_info[ $handler->api_key ]->remaining ) ) {
 
 			$handler->update_usage( $handler->api_key );
-			set_transient( 'rtt_usage_update_flag', '1', HOUR_IN_SECONDS );
+			set_transient( 'rtgodam_usage_update_flag', '1', HOUR_IN_SECONDS );
 		}
 	}
 
 	return $wp_metadata;
 }
 
-add_filter( 'wp_generate_attachment_metadata', 'rtt_media_update_usage', 10, 2 );
+add_filter( 'wp_generate_attachment_metadata', 'rtgodam_media_update_usage', 10, 2 );
 
 /**
  * To get sanitized server variables.
@@ -1062,7 +1062,7 @@ function get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FULL_SPECIA
  *
  * @return array
  */
-function rtt_get_blacklist_ip_addresses() {
+function rtgodam_get_blacklist_ip_addresses() {
 	// If custom API URL added then don't block local ips.
 	if ( defined( 'TRANSCODER_API_URL' ) ) {
 		return array();
@@ -1077,7 +1077,7 @@ function rtt_get_blacklist_ip_addresses() {
  * @param string $license_key The license key to verify.
  * @return array|WP_Error Array with status and data on success, WP_Error on failure.
  */
-function rtt_verify_license( $license_key, $save = false ) {
+function rtgodam_verify_license( $license_key, $save = false ) {
 	if ( empty( $license_key ) ) {
 		return new \WP_Error( 'missing_license_key', 'License key is required.', array( 'status' => 400 ) );
 	}
@@ -1156,7 +1156,7 @@ function rtt_verify_license( $license_key, $save = false ) {
  *
  * @return string
  */
-function rtt_mask_string( $input, $offset = 4 ) {
+function rtgodam_mask_string( $input, $offset = 4 ) {
 	$length = strlen( $input );
 	if ( $length <= $offset ) {
 		return $input; // If string length is equal or less than $offset, return as is.
@@ -1231,7 +1231,7 @@ function rtgodam_get_localize_array() {
 	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
 	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
 	$localize_array['postTitle']  = get_the_title();
-	$localize_array['locationIP'] = rtt_get_user_ip();
+	$localize_array['locationIP'] = rtgodam_get_user_ip();
 
 	/**
 	 * Get Current User.
@@ -1279,7 +1279,7 @@ function rtgodam_get_localize_array() {
  *
  * @return string The user's IP address.
  */
-function rtt_get_user_ip() {
+function rtgodam_get_user_ip() {
 	$ip_address = '';
 
 	$ip_address = filter_var( get_server_var( 'HTTP_CLIENT_IP' ), FILTER_VALIDATE_IP );

@@ -247,7 +247,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 			}
 
 			// Get transcoding status to detect if the site doesn't have HTTP auth or some other restrictions.
-			$status = json_decode( rtt_get_transcoding_status( $attachment_id ), true );
+			$status = json_decode( rtgodam_get_transcoding_status( $attachment_id ), true );
 			if ( ! empty( $status['message'] ) && false !== strpos( $status['message'], 'Transcoder failed to transcode this file' ) ) {
 				$response[ $media_id ] = 'invalid';
 			}
@@ -358,7 +358,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 
 				if ( $flag && $mail ) {
 					$subject = 'Transcoding: Download Failed';
-					$message = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p>';
+					$message = '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p>';
 					$users   = get_users( array( 'role' => 'administrator' ) );
 					if ( $users ) {
 						$admin_email_ids = array();
@@ -426,7 +426,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 
 				if ( $flag && $mail ) {
 					$subject = 'Transcoding: Download Failed';
-					$message = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully transcoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p><p>';
+					$message = '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully transcoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p><p>';
 					$users   = get_users( array( 'role' => 'administrator' ) );
 					if ( $users ) {
 						$admin_email_ids = array();
@@ -454,6 +454,6 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 		 * @param number    $attachment_id  Attachment ID for which the callback has sent from the transcoder
 		 * @param number    $job_id         The transcoding job ID
 		 */
-		do_action( 'rtt_handle_callback_finished', $attachment_id, $job_id );
+		do_action( 'rtgodam_handle_callback_finished', $attachment_id, $job_id );
 	}
 }

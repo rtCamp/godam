@@ -193,8 +193,8 @@ class RT_Transcoder_Handler {
 						}
 
 						/* Do not let the user to upload non supported media types on localhost */
-						$blacklist   = rtt_get_blacklist_ip_addresses();
-						$remote_addr = rtt_get_remote_ip_address();
+						$blacklist   = rtgodam_get_blacklist_ip_addresses();
+						$remote_addr = rtgodam_get_remote_ip_address();
 						if ( ! in_array( wp_unslash( $remote_addr ), $blacklist, true ) ) {
 							add_filter( 'rtmedia_plupload_files_filter', array( $this, 'allowed_types' ), 10, 1 );
 							add_filter( 'rtmedia_allowed_types', array( $this, 'allowed_types_admin_settings' ), 10, 1 );
@@ -284,22 +284,22 @@ class RT_Transcoder_Handler {
 			}
 
 			// Media settings.
-			$rtt_adaptive_bitrate_streaming = $this->easydam_settings['video']['adaptive_bitrate'];
-			$rtt_watermark                  = $this->easydam_settings['video']['watermark'];
-			$rtt_use_watermark_image        = $this->easydam_settings['video']['use_watermark_image'];
-			$rtt_watermark_text             = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
-			$rtt_watermark_url              = esc_url( $this->easydam_settings['video']['watermark_url'] );
-			$rtt_abs_resolutions            = $this->easydam_settings['video']['video_quality'] ?? [];
-			$rtt_abs_resolutions			= json_encode( $rtt_abs_resolutions );
+			$rtgodam_adaptive_bitrate_streaming = $this->easydam_settings['video']['adaptive_bitrate'];
+			$rtgodam_watermark                  = $this->easydam_settings['video']['watermark'];
+			$rtgodam_use_watermark_image        = $this->easydam_settings['video']['use_watermark_image'];
+			$rtgodam_watermark_text             = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
+			$rtgodam_watermark_url              = esc_url( $this->easydam_settings['video']['watermark_url'] );
+			$rtgodam_abs_resolutions            = $this->easydam_settings['video']['video_quality'] ?? [];
+			$rtgodam_abs_resolutions			= json_encode( $rtgodam_abs_resolutions );
 
 			$watermark_to_use = array();
 
 			// Include watermark settings only if watermark is enabled.
-			if ( $rtt_watermark ) {
-				if ( $rtt_use_watermark_image && ! empty( $rtt_watermark_url ) ) {
-					$watermark_to_use['watermark_url'] = $rtt_watermark_url;
-				} elseif ( ! $rtt_use_watermark_image && ! empty( $rtt_watermark_text ) ) {
-					$watermark_to_use['watermark_text'] = $rtt_watermark_text;
+			if ( $rtgodam_watermark ) {
+				if ( $rtgodam_use_watermark_image && ! empty( $rtgodam_watermark_url ) ) {
+					$watermark_to_use['watermark_url'] = $rtgodam_watermark_url;
+				} elseif ( ! $rtgodam_use_watermark_image && ! empty( $rtgodam_watermark_text ) ) {
+					$watermark_to_use['watermark_text'] = $rtgodam_watermark_text;
 				}
 			}
 
@@ -329,9 +329,9 @@ class RT_Transcoder_Handler {
 						'force'           => 0,
 						'formats'         => ( true === $autoformat ) ? ( ( 'video' === $type_array[0] ) ? 'mp4' : 'mp3' ) : $autoformat,
 						'thumbnail_count' => $options_video_thumb,
-						'stream'          => boolval( $rtt_adaptive_bitrate_streaming ),
-						'watermark'       => boolval( $rtt_watermark ),
-						'resolutions'     => $rtt_abs_resolutions,
+						'stream'          => boolval( $rtgodam_adaptive_bitrate_streaming ),
+						'watermark'       => boolval( $rtgodam_watermark ),
+						'resolutions'     => $rtgodam_abs_resolutions,
 					),
 					$watermark_to_use
 				),
@@ -444,7 +444,7 @@ class RT_Transcoder_Handler {
 	 */
 	public function update_usage( $key ) {
 
-		$response = rtt_verify_license($key);
+		$response = rtgodam_verify_license($key);
 		update_site_option( 'rt-transcoding-usage', array( $key => (object) $response['data'] ) );
 
 		return $response;
@@ -548,8 +548,8 @@ class RT_Transcoder_Handler {
 
 		if ( ! empty( $apikey ) && is_admin() && ! empty( $page ) && ( 'rt-transcoder' === $page ) ) {
 			/* Do not activate transcoding service on localhost */
-			$blacklist   = rtt_get_blacklist_ip_addresses();
-			$remote_addr = rtt_get_remote_ip_address();
+			$blacklist   = rtgodam_get_blacklist_ip_addresses();
+			$remote_addr = rtgodam_get_remote_ip_address();
 			if ( in_array( wp_unslash( $remote_addr ), $blacklist, true ) ) {
 				$return_page = add_query_arg(
 					array(
@@ -808,7 +808,7 @@ class RT_Transcoder_Handler {
 		// Parse incoming $post_array into an array and merge it with $defaults.
 		$post_array = wp_parse_args( $post_array, $defaults );
 
-		do_action( 'rtt_before_thumbnail_store', $post_array['post_id'], $post_array );
+		do_action( 'rtgodam_before_thumbnail_store', $post_array['post_id'], $post_array );
 
 		$post_id            = $post_array['post_id'];
 		$post_thumbs        = $post_array;
@@ -926,7 +926,7 @@ class RT_Transcoder_Handler {
 
 			$is_retranscoding_job = get_post_meta( $post_id, '_rt_retranscoding_sent', true );
 
-			if ( ! $is_retranscoding_job || rtt_is_override_thumbnail() ) {
+			if ( ! $is_retranscoding_job || rtgodam_is_override_thumbnail() ) {
 
 				update_post_meta( $post_id, '_rt_media_video_thumbnail', $largest_thumb );
 
@@ -968,7 +968,7 @@ class RT_Transcoder_Handler {
 		}
 		global $wpdb;
 
-		do_action( 'rtt_before_transcoded_media_store', $attachment_id, $file_post_array );
+		do_action( 'rtgodam_before_transcoded_media_store', $attachment_id, $file_post_array );
 
 		if ( isset( $file_post_array ) && is_array( $file_post_array ) && ( count( $file_post_array ) > 0 ) ) {
 			foreach ( $file_post_array as $key => $format ) {
@@ -1062,7 +1062,7 @@ class RT_Transcoder_Handler {
 									$download_link = esc_url(
 										add_query_arg(
 											array(
-												'job_id'  => rtt_get_job_id_by_attachment_id( $attachment_id ),
+												'job_id'  => rtgodam_get_job_id_by_attachment_id( $attachment_id ),
 												'job_for' => $job_for,
 												'files[' . $key . '][0]' => esc_url( $download_url ),
 											),
@@ -1070,7 +1070,7 @@ class RT_Transcoder_Handler {
 										)
 									);
 									$subject       = esc_html__( 'Transcoding: Download Failed', 'godam' );
-									$message       = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p><p>' . esc_html__( 'You can ', 'godam' ) . '<a href="' . esc_url( $download_link ) . '">' . esc_html__( 'retry the download', 'godam' ) . '</a>.</p>';
+									$message       = '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p><p>' . esc_html__( 'You can ', 'godam' ) . '<a href="' . esc_url( $download_link ) . '">' . esc_html__( 'retry the download', 'godam' ) . '</a>.</p>';
 									$users         = get_users( array( 'role' => 'administrator' ) );
 									if ( $users ) {
 										$admin_email_ids = array();
@@ -1264,7 +1264,7 @@ class RT_Transcoder_Handler {
 		 * @param boolean       By default it is true. If false is passed the email wont
 		 *                      get sent to the any user
 		 */
-		$send_notification = apply_filters( 'rtt_send_notification', true );
+		$send_notification = apply_filters( 'rtgodam_send_notification', true );
 
 		if ( false === $send_notification ) {
 			return true;
@@ -1311,10 +1311,10 @@ class RT_Transcoder_Handler {
 		$attachment_id = $this->get_post_id_by_meta_key_and_value( '_rt_transcoding_job_id', $job_id );
 		if ( ! empty( $error_msg ) ) {
 			$message  = '<p>' . esc_html__( ' There was unexpected error occurred while transcoding this following media.', 'godam' ) . '</p>';
-			$message .= '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a></p>';
+			$message .= '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a></p>';
 			$message .= '<p>Error message: ' . esc_html( $error_msg ) . '</p>';
 		} else {
-			$message = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' .
+			$message = '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' .
 				esc_html__( ' there was unexpected error occurred while transcoding this media.', 'godam' ) . '</p>';
 		}
 
@@ -1330,7 +1330,7 @@ class RT_Transcoder_Handler {
 		 * @param array $email_ids  Email id of the user who owns the media
 		 * @param string $job_id    Job ID sent by the transcoder
 		 */
-		$email_ids = apply_filters( 'rtt_nofity_transcoding_failed', $email_ids, $job_id );
+		$email_ids = apply_filters( 'rtgodam_nofity_transcoding_failed', $email_ids, $job_id );
 
 		$this->send_notification( $email_ids, $subject, $message, true );
 	}
@@ -1414,7 +1414,7 @@ class RT_Transcoder_Handler {
 			 *
 			 * @param array $message Default transcoding process status messages.
 			 */
-			$messages = apply_filters( 'rtt_transcoder_status_message', $messages );
+			$messages = apply_filters( 'rtgodam_transcoder_status_message', $messages );
 
 			if ( empty( $status_info ) || ! is_object( $status_info ) || empty( $status_info->job_id ) ) {
 

@@ -80,10 +80,10 @@ class RetranscodeMedia {
 		add_action( 'admin_head-upload.php', array( $this, 'add_bulk_actions_via_javascript' ) );
 		add_action( 'admin_action_bulk_retranscode_media', array( $this, 'bulk_action_handler' ) ); // Top drowndown.
 		add_action( 'admin_action_-1', array( $this, 'bulk_action_handler' ) ); // Bottom dropdown (assumes top dropdown = default value).
-		add_action( 'rtt_before_thumbnail_store', array( $this, 'rtt_before_thumbnail_store' ), 10, 2 ); // Delete old thumbs.
-		add_action( 'rtt_before_transcoded_media_store', array( $this, 'rtt_before_transcoded_media_store' ), 10, 2 ); // Delete old transcoded files.
+		add_action( 'rtgodam_before_thumbnail_store', array( $this, 'rtgodam_before_thumbnail_store' ), 10, 2 ); // Delete old thumbs.
+		add_action( 'rtgodam_before_transcoded_media_store', array( $this, 'rtgodam_before_transcoded_media_store' ), 10, 2 ); // Delete old transcoded files.
 		add_action( 'transcoded_thumbnails_added', array( $this, 'transcoded_thumbnails_added' ), 10, 1 ); // Add the current thumbnail to the newly added thumbnails.
-		add_action( 'rtt_handle_callback_finished', array( $this, 'rtt_handle_callback_finished' ), 10, 2 ); // Clean the extra meta that has been added while sending retranscoding request.
+		add_action( 'rtgodam_handle_callback_finished', array( $this, 'rtgodam_handle_callback_finished' ), 10, 2 ); // Clean the extra meta that has been added while sending retranscoding request.
 		add_filter( 'amp_story_allowed_video_types', array( $this, 'add_amp_video_extensions' ) ); // Extend allowed video mime type extensions for AMP Story Background.
 		add_filter( 'render_block', array( $this, 'update_amp_story_video_url' ), 10, 2 ); // Filter block content and replace video URLs.
 
@@ -698,11 +698,11 @@ class RetranscodeMedia {
 
 				/**
 				 * We can ask for the new fresh transcoded file even if it already present.
-				 * Use: add_filter( 'rtt_force_trancode_media', '__return_true' );
+				 * Use: add_filter( 'rtgodam_force_trancode_media', '__return_true' );
 				 *
 				 * @param bool FALSE by default. Pass TRUE if you want to request for new transcoded file
 				 */
-				$force_transcode = apply_filters( 'rtt_force_trancode_media', false );
+				$force_transcode = apply_filters( 'rtgodam_force_trancode_media', false );
 				if ( ! $force_transcode ) {
 					$attachment_meta['mime_type'] = 'video/mp4';
 				}
@@ -765,7 +765,7 @@ class RetranscodeMedia {
 	 * @param  number $media_id     Post ID of the media.
 	 * @param  array  $post_request Post request coming for the transcoder API.
 	 */
-	public function rtt_before_thumbnail_store( $media_id = '', $post_request = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+	public function rtgodam_before_thumbnail_store( $media_id = '', $post_request = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		if ( empty( $media_id ) ) {
 			return;
 		}
@@ -775,7 +775,7 @@ class RetranscodeMedia {
 		if ( ! empty( $previous_thumbs ) && is_array( $previous_thumbs ) ) {
 
 			// Do not delete the current thumbnail of the video.
-			if ( ! rtt_is_override_thumbnail() ) {
+			if ( ! rtgodam_is_override_thumbnail() ) {
 
 				$current_thumb = get_post_meta( $media_id, '_rt_media_video_thumbnail', true );
 
@@ -785,7 +785,7 @@ class RetranscodeMedia {
 				}
 			}
 
-			rtt_delete_transcoded_files( $previous_thumbs );
+			rtgodam_delete_transcoded_files( $previous_thumbs );
 		}
 		delete_post_meta( $media_id, '_rt_media_thumbnails' );
 	}
@@ -796,7 +796,7 @@ class RetranscodeMedia {
 	 * @param  number $media_id     Post ID of the media.
 	 * @param  array  $transcoded_files Post request coming for the transcoder API.
 	 */
-	public function rtt_before_transcoded_media_store( $media_id = '', $transcoded_files = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+	public function rtgodam_before_transcoded_media_store( $media_id = '', $transcoded_files = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		if ( empty( $media_id ) ) {
 			return;
 		}
@@ -806,7 +806,7 @@ class RetranscodeMedia {
 		if ( ! empty( $current_files ) && is_array( $current_files ) ) {
 			foreach ( $current_files as $files ) {
 				if ( ! empty( $files ) && is_array( $files ) ) {
-					rtt_delete_transcoded_files( $files );
+					rtgodam_delete_transcoded_files( $files );
 				}
 			}
 		}
@@ -826,7 +826,7 @@ class RetranscodeMedia {
 
 		$is_retranscoding_job = get_post_meta( $media_id, '_rt_retranscoding_sent', true );
 
-		if ( $is_retranscoding_job && ! rtt_is_override_thumbnail() ) {
+		if ( $is_retranscoding_job && ! rtgodam_is_override_thumbnail() ) {
 
 			$new_thumbs = get_post_meta( $media_id, '_rt_media_thumbnails', true );
 
@@ -891,7 +891,7 @@ class RetranscodeMedia {
 	 * @param  number $attachment_id      Post ID of the media.
 	 * @param  string $job_id             Unique job ID of the transcoding request.
 	 */
-	public function rtt_handle_callback_finished( $attachment_id = '', $job_id = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+	public function rtgodam_handle_callback_finished( $attachment_id = '', $job_id = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		if ( empty( $attachment_id ) ) {
 			return;
 		}

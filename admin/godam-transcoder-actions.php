@@ -13,14 +13,14 @@
  * set-custom-thumbnail addon.
  */
 
-if ( ! function_exists( 'rtt_video_editor_title' ) ) {
+if ( ! function_exists( 'rtgodam_video_editor_title' ) ) {
 
 	/**
 	 * Add the video thumbnail tab on video edit page.
 	 *
 	 * @since   1.0.0
 	 */
-	function rtt_video_editor_title() {
+	function rtgodam_video_editor_title() {
 		global $rtmedia_query;
 		if ( isset( $rtmedia_query->media[0]->media_type ) && 'video' === $rtmedia_query->media[0]->media_type ) {
 			$flag            = false;
@@ -48,16 +48,16 @@ if ( ! function_exists( 'rtt_video_editor_title' ) ) {
 	}
 }
 
-add_action( 'rtmedia_add_edit_tab_title', 'rtt_video_editor_title', 1000 );
+add_action( 'rtmedia_add_edit_tab_title', 'rtgodam_video_editor_title', 1000 );
 
-if ( ! function_exists( 'rtt_rtmedia_vedio_editor_content' ) ) {
+if ( ! function_exists( 'rtgodam_rtmedia_vedio_editor_content' ) ) {
 
 	/**
 	 * Display the HTML to set the thumbnail for video.
 	 *
 	 * @since   1.0.0
 	 */
-	function rtt_rtmedia_vedio_editor_content() {
+	function rtgodam_rtmedia_vedio_editor_content() {
 		global $rtmedia_query;
 		if ( isset( $rtmedia_query->media ) && is_array( $rtmedia_query->media ) && isset( $rtmedia_query->media[0]->media_type ) && 'video' === $rtmedia_query->media[0]->media_type ) {
 			$media_id                        = $rtmedia_query->media[0]->media_id;
@@ -162,9 +162,9 @@ if ( ! function_exists( 'rtt_rtmedia_vedio_editor_content' ) ) {
 	}
 }
 
-add_action( 'rtmedia_add_edit_tab_content', 'rtt_rtmedia_vedio_editor_content', 1000 );
+add_action( 'rtmedia_add_edit_tab_content', 'rtgodam_rtmedia_vedio_editor_content', 1000 );
 
-if ( ! function_exists( 'rtt_set_video_thumbnail' ) ) {
+if ( ! function_exists( 'rtgodam_set_video_thumbnail' ) ) {
 
 	/**
 	 * Set the video thumbnail
@@ -173,7 +173,7 @@ if ( ! function_exists( 'rtt_set_video_thumbnail' ) ) {
 	 *
 	 * @param number $id rtMedia activity ID.
 	 */
-	function rtt_set_video_thumbnail( $id ) {
+	function rtgodam_set_video_thumbnail( $id ) {
 		$media_type    = rtmedia_type( $id );
 		$attachment_id = rtmedia_media_id( $id );      // Get the wp attachment ID.
 		$thumbnail     = transcoder_filter_input( INPUT_POST, 'rtmedia-thumbnail', FILTER_SANITIZE_URL );
@@ -200,13 +200,13 @@ if ( ! function_exists( 'rtt_set_video_thumbnail' ) ) {
 
 			$model = new RTMediaModel();
 			$model->update( array( 'cover_art' => $final_file_url ), array( 'id' => intval( $id ) ) );
-			rtt_update_activity_after_thumb_set( $id );
+			rtgodam_update_activity_after_thumb_set( $id );
 
 		}
 	}
 }
 
-add_action( 'rtmedia_after_update_media', 'rtt_set_video_thumbnail', 12 );
+add_action( 'rtmedia_after_update_media', 'rtgodam_set_video_thumbnail', 12 );
 
 /**
  * Set the cover art/video thumbnail for the videos which are not uploaded from the rtMedia activity
@@ -215,7 +215,7 @@ add_action( 'rtmedia_after_update_media', 'rtt_set_video_thumbnail', 12 );
  * @param string $thumb_url     Video thumbnail URL.
  * @param int    $attachment_id Attachment ID of the media/video for which thumbnail has to be set.
  */
-function rtt_update_wp_media_thumbnail( $thumb_url, $attachment_id ) {
+function rtgodam_update_wp_media_thumbnail( $thumb_url, $attachment_id ) {
 	if ( class_exists( 'RTMediaModel' ) ) {
 		$model = new RTMediaModel();
 		$media = $model->get( array( 'media_id' => $attachment_id ) );
@@ -232,7 +232,7 @@ function rtt_update_wp_media_thumbnail( $thumb_url, $attachment_id ) {
 	}
 }
 
-add_action( 'transcoded_thumb_added', 'rtt_update_wp_media_thumbnail', 10, 2 );
+add_action( 'transcoded_thumb_added', 'rtgodam_update_wp_media_thumbnail', 10, 2 );
 
 /**
  * Add a field for the transcoded URL to the media attachment edit screen.
