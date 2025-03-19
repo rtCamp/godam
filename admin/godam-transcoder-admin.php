@@ -8,9 +8,7 @@
  * @subpackage Transcoder/Admin
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 /**
  * The admin-specific functionality of the plugin.
@@ -58,8 +56,6 @@ class RT_Transcoder_Admin {
 
 		$this->api_key        = get_site_option( 'rt-transcoding-api-key' );
 		$this->stored_api_key = get_site_option( 'rt-transcoding-api-key-stored' );
-
-		$this->load_translation();
 
 		if ( ! class_exists( 'RT_Progress' ) ) {
 			include_once GODAM_PATH . 'admin/godam-transcoder-progressbar.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
@@ -130,15 +126,6 @@ class RT_Transcoder_Admin {
 	 * @since    1.0.0
 	 */
 	public function register_transcoder_settings() {
-	}
-
-	/**
-	 * Load language translation.
-	 *
-	 * @since    1.0.0
-	 */
-	public function load_translation() {
-		load_plugin_textdomain( 'godam', false, basename( GODAM_PATH ) . '/languages/' );
 	}
 
 	/**

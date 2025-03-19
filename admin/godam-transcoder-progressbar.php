@@ -8,6 +8,8 @@
  * @subpackage Transcoder/Admin
  */
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Handle progress calculation and display of progress bar.
  *

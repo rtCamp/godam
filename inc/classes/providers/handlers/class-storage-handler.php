@@ -7,6 +7,8 @@
 
 namespace Transcoder\Inc\Providers\Handlers;
 
+defined( 'ABSPATH' ) || exit;
+
 use Transcoder\Inc\Providers\Exceptions\EasyDamException;
 use Transcoder\Inc\Providers\Storage\StorageFactory;
 

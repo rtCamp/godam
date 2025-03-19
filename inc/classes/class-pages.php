@@ -7,6 +7,8 @@
 
 namespace Transcoder\Inc;
 
+defined( 'ABSPATH' ) || exit;
+
 use Transcoder\Inc\Traits\Singleton;
 
 /**
@@ -319,9 +321,9 @@ class Pages {
 			 */
 			wp_register_script(
 				'd3-js',
-				'https://d3js.org/d3.v7.min.js',
+				GODAM_URL . '/assets/src/libs/d3.js',
 				array(),
-				'7.0.0',
+				GODAM_VERSION,
 				false
 			);
 

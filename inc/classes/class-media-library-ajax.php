@@ -5,9 +5,9 @@
  * @package transcoder
  */
 
-// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Using default nonce verification so disabling for this file.
-
 namespace Transcoder\Inc;
+
+defined( 'ABSPATH' ) || exit;
 
 use Transcoder\Inc\Traits\Singleton;
 
@@ -44,7 +44,7 @@ class Media_Library_Ajax {
 		$offload_media = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
 		$offload_media = isset( $offload_media['offLoadMedia'] ) ? $offload_media['offLoadMedia'] : false;
 
-		$offload_media = false; // disabling the S3 bucket for now
+		$offload_media = false; // disabling the S3 bucket for now.
 
 		if ( $offload_media ) {
 			add_filter( 'manage_media_columns', array( $this, 'add_media_column' ) );
@@ -68,16 +68,16 @@ class Media_Library_Ajax {
 		}
 
 		// Get the media folder.
-		$media_folder = intval( $_REQUEST['media-folder'] ); // Ensure it's an integer
+		$media_folder = intval( $_REQUEST['media-folder'] ); // Ensure it's an integer.
 
-		// Check if the term exists
+		// Check if the term exists.
 		$term = get_term( $media_folder, 'media-folder' );
 
 		if ( is_wp_error( $term ) || ! $term || $term->term_id !== $media_folder ) {
 			return;
 		}
 
-		// Assign the existing term
+		// Assign the existing term.
 		wp_set_object_terms( $attachment_id, (int) $media_folder, 'media-folder' );
 	}
 
@@ -106,7 +106,7 @@ class Media_Library_Ajax {
 		 * As we use the wp_delete_term and hook get's called again,
 		 * hence we can safely delete that and child of child will also be deleted.
 		 */
-		foreach( $children as $child ) {
+		foreach ( $children as $child ) {
 			wp_delete_term( $child->term_id, $taxonomy );
 		}
 
@@ -193,13 +193,12 @@ class Media_Library_Ajax {
 		return $response;
 	}
 
-
 	/**
 	 * Add transcoding URL to the media JS Object.
 	 *
-	 * @param array   $response
-	 * @param WP_Post $attachment
-	 * @return void
+	 * @param array   $response Attachment response.
+	 * @param WP_Post $attachment Attachment object.
+	 * @return array $response Attachment response.
 	 */
 	public function add_media_transcoding_status_js( $response, $attachment ) {
 		// Check if attachment type is video.
@@ -453,18 +452,18 @@ class Media_Library_Ajax {
 			return;
 		}
 
-		// API URL using GODAM_API_BASE
+		// API URL using GODAM_API_BASE.
 		$api_url = GODAM_API_BASE . '/api/method/godam_core.api.mutate.delete_attachment';
 
-		// Request params
+		// Request params.
 		$params = array(
 			'job_id'        => $job_id,
 			'license_key'   => $license_key,
 			'account_token' => $account_token,
 		);
 
-		// Send POST request
-		$response = wp_remote_post(
+		// Send POST request.
+		wp_remote_post(
 			$api_url,
 			array(
 				'body'    => wp_json_encode( $params ),

@@ -7,6 +7,8 @@
 
 namespace Transcoder\Inc;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Class Constants
  */
