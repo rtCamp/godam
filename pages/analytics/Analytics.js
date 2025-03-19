@@ -87,12 +87,12 @@ const Analytics = ( { attachmentID } ) => {
 					</div>
 					<div id="video-analytics-container" className="video-analytics-container hidden">
 						<div className="overflow-auto">
-							<div className="flex gap-10 items-start">
+							<div className="flex gap-10 items-start max-lg:flex-col">
 								<div className="min-w-[350px] max-w-[350px] flex-grow">
 									{ /* <h2 className="text-lg m-0 mb-2">{ __( 'Analytics', 'godam' ) }</h2> */ }
 
-									<div className="analytics-info-container">
-										<div className="analytics-info flex justify-between">
+									<div className="analytics-info-container max-lg:flex-row flex-col">
+										<div className="analytics-info flex justify-between max-lg:flex-col">
 											<div className="analytics-single-info">
 												<div className="analytics-info-heading">
 													<p>
@@ -107,7 +107,7 @@ const Analytics = ( { attachmentID } ) => {
 												<p>-0.91% this week</p>
 											</div>
 										</div>
-										<div className="analytics-info flex justify-between">
+										<div className="analytics-info flex justify-between  max-lg:flex-col">
 											<div className="analytics-single-info">
 												<div className="analytics-info-heading">
 													<p>
@@ -122,7 +122,7 @@ const Analytics = ( { attachmentID } ) => {
 												<p>-0.91% this week</p>
 											</div>
 										</div>
-										<div className="analytics-info flex justify-between">
+										<div className="analytics-info flex justify-between  max-lg:flex-col">
 											<div className="analytics-single-info">
 												<div className="analytics-info-heading">
 													<p>
@@ -137,7 +137,7 @@ const Analytics = ( { attachmentID } ) => {
 												<p>+0.91% this week</p>
 											</div>
 										</div>
-										<div className="analytics-info flex justify-between">
+										<div className="analytics-info flex justify-between  max-lg:flex-col">
 											<div className="analytics-single-info">
 												<div className="analytics-info-heading">
 													<p>
