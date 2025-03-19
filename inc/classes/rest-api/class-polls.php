@@ -52,7 +52,7 @@ class Polls extends Base {
 	}
 
 	/**
-	 * Get all Gravity Forms.
+	 * Get all Polls.
 	 *
 	 * @return \WP_REST_Response
 	 */
@@ -63,7 +63,14 @@ class Polls extends Base {
 			return new \WP_Error( 'poll_plugin_not_active', 'Poll plugin is not active.', array( 'status' => 404 ) );
 		}
 
-		$polls = $wpdb->get_results( "SELECT * FROM $wpdb->pollsq ORDER BY pollq_timestamp DESC" );
+		$cache_key = 'godam_polls';
+		$polls     = wp_cache_get( $cache_key );
+
+		if ( false === $polls ) {
+			$polls = $wpdb->get_results( "SELECT * FROM $wpdb->pollsq ORDER BY pollq_timestamp DESC" );
+
+			wp_cache_set( $cache_key, $polls );
+		}
 
 		return rest_ensure_response( $polls );
 	}
@@ -96,37 +103,15 @@ class Polls extends Base {
 	}
 
 	/**
-	 * Get a single Gravity Form.
-	 *
-	 * @param \WP_REST_Request $request Request Object.
-	 * @return \WP_REST_Response
-	 */
-	public function get_gform( $request ) {
-		// Check if Gravity Forms plugin is active.
-		if ( ! class_exists( 'GFAPI' ) ) {
-			return new \WP_Error( 'gravity_forms_not_active', 'Gravity Forms plugin is not active.', array( 'status' => 404 ) );
-		}
-
-		$form_id = $request->get_param( 'id' );
-		$theme   = $request->get_param( 'theme' );
-		$form_id = absint( $form_id );
-
-		if ( empty( $form_id ) ) {
-			return new \WP_Error( 'invalid_form_id', 'Invalid form ID.', array( 'status' => 404 ) );
-		}
-
-		$gform = do_shortcode( "[gravityform id='{$form_id}' title='false' description='false' ajax='true' theme='{$theme}']" );
-
-		return rest_ensure_response( $gform );
-	}
-
-	/**
 	 * Check if the Poll plugin is active.
 	 *
 	 * @return bool
 	 */
 	private function is_poll_plugin_active() {
-		// TODO: Implement this.
+		if ( ! function_exists( 'get_poll' ) ) {
+			return false;
+		}
+
 		return true;
 	}
 }
