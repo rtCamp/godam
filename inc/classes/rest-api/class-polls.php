@@ -63,14 +63,7 @@ class Polls extends Base {
 			return new \WP_Error( 'poll_plugin_not_active', 'Poll plugin is not active.', array( 'status' => 404 ) );
 		}
 
-		$cache_key = 'godam_polls';
-		$polls     = wp_cache_get( $cache_key );
-
-		if ( false === $polls ) {
-			$polls = $wpdb->get_results( "SELECT * FROM $wpdb->pollsq ORDER BY pollq_timestamp DESC" );
-
-			wp_cache_set( $cache_key, $polls );
-		}
+		$polls = $wpdb->get_results( "SELECT * FROM $wpdb->pollsq ORDER BY pollq_timestamp DESC" );
 
 		return rest_ensure_response( $polls );
 	}
