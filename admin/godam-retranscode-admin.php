@@ -437,9 +437,9 @@ class RetranscodeMedia {
 				$text_goback = ( ! empty( $_GET['goback'] ) ) ? __( 'To go back to the previous page, <a id="retranscode-goback" href="#">click here</a>.', 'godam' ) : '';
 
 				// translators: Count of media which were successfully and media which were failed transcoded with the time in seconds and previout page link.
-				$text_failures = sprintf( __( 'All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were %3$s failure(s). To try transcoding the failed media again, <a href="%4$s">click here</a>. %5$s', 'godam' ), "' + rt_successes + '", "' + rt_totaltime + '", "' + rt_errors + '", esc_url( wp_nonce_url( admin_url( 'admin.php?page=godam-tools&goback=1' ), 'godam-tools' ) . '&ids=' ) . "' + rt_failedlist + '", $text_goback );
+				$text_failures = sprintf( __( 'All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were %3$s failure(s). To try transcoding the failed media again, <a href="%4$s">click here</a>. %5$s', 'godam' ), "' + rtgodam_successes + '", "' + rtgodam_totaltime + '", "' + rtgodam_errors + '", esc_url( wp_nonce_url( admin_url( 'admin.php?page=godam-tools&goback=1' ), 'godam-tools' ) . '&ids=' ) . "' + rtgodam_failedlist + '", $text_goback );
 				// translators: Count of media which were successfully transcoded with the time in seconds and previout page link.
-				$text_nofailures = sprintf( __( 'All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were 0 failures. %3$s', 'godam' ), "' + rt_successes + '", "' + rt_totaltime + '", $text_goback );
+				$text_nofailures = sprintf( __( 'All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were 0 failures. %3$s', 'godam' ), "' + rtgodam_successes + '", "' + rtgodam_totaltime + '", $text_goback );
 				?>
 
 
@@ -478,18 +478,18 @@ class RetranscodeMedia {
 			// <![CDATA[
 				jQuery(document).ready(function($){
 					var i;
-					var rt_media = [<?php echo esc_js( $ids ); ?>];
-					var rt_total = rt_media.length;
-					var rt_count = 1;
-					var rt_percent = 0;
-					var rt_successes = 0;
-					var rt_errors = 0;
-					var rt_failedlist = '';
-					var rt_resulttext = '';
-					var rt_timestart = new Date().getTime();
-					var rt_timeend = 0;
-					var rt_totaltime = 0;
-					var rt_continue = true;
+					var rtgodam_media = [<?php echo esc_js( $ids ); ?>];
+					var rtgodam_total = rtgodam_media.length;
+					var rtgodam_count = 1;
+					var rtgodam_percent = 0;
+					var rtgodam_successes = 0;
+					var rtgodam_errors = 0;
+					var rtgodam_failedlist = '';
+					var rtgodam_resulttext = '';
+					var rtgodam_timestart = new Date().getTime();
+					var rtgodam_timeend = 0;
+					var rtgodam_totaltime = 0;
+					var rtgodam_continue = true;
 
 					// Create the progress bar
 					$("#retranscodemedia-bar").progressbar();
@@ -497,7 +497,7 @@ class RetranscodeMedia {
 
 					// Stop button
 					$("#retranscodemedia-stop").click(function() {
-						rt_continue = false;
+						rtgodam_continue = false;
 						$('#retranscodemedia-stop').val("<?php echo esc_js( $this->esc_quotes( __( 'Stopping...', 'godam' ) ) ); ?>");
 					});
 
@@ -506,27 +506,27 @@ class RetranscodeMedia {
 
 					// Called after each resize. Updates debug information and the progress bar.
 					function RetranscodeMediaUpdateStatus( id, success, response ) {
-						$("#retranscodemedia-bar").progressbar( "value", ( rt_count / rt_total ) * 100 );
-						$("#retranscodemedia-bar-percent").html( Math.round( ( rt_count / rt_total ) * 1000 ) / 10 + "%" );
-						rt_count = rt_count + 1;
+						$("#retranscodemedia-bar").progressbar( "value", ( rtgodam_count / rtgodam_total ) * 100 );
+						$("#retranscodemedia-bar-percent").html( Math.round( ( rtgodam_count / rtgodam_total ) * 1000 ) / 10 + "%" );
+						rtgodam_count = rtgodam_count + 1;
 
 						if ( success ) {
-							rt_successes = rt_successes + 1;
-							$("#retranscodemedia-debug-successcount").html(rt_successes);
+							rtgodam_successes = rtgodam_successes + 1;
+							$("#retranscodemedia-debug-successcount").html(rtgodam_successes);
 							$("#retranscodemedia-debuglist").append("<li>" + response.success + "</li>");
 						}
 						else {
-							rt_errors = rt_errors + 1;
-							rt_failedlist = rt_failedlist + ',' + id;
-							$("#retranscodemedia-debug-failurecount").html(rt_errors);
+							rtgodam_errors = rtgodam_errors + 1;
+							rtgodam_failedlist = rtgodam_failedlist + ',' + id;
+							$("#retranscodemedia-debug-failurecount").html(rtgodam_errors);
 							$("#retranscodemedia-debuglist").append("<li>" + response.error + "</li>");
 						}
 					}
 
 					// Called when all images have been processed. Shows the results and cleans up.
 					function RetranscodeMediaFinishUp() {
-						rt_timeend = new Date().getTime();
-						rt_totaltime = Math.round( ( rt_timeend - rt_timestart ) / 1000 );
+						rtgodam_timeend = new Date().getTime();
+						rtgodam_totaltime = Math.round( ( rtgodam_timeend - rtgodam_timestart ) / 1000 );
 
 						$('#retranscodemedia-stop').hide();
 
@@ -540,12 +540,12 @@ class RetranscodeMedia {
 						);
 						?>
 
-						if ( rt_errors > 0 ) {
-							rt_resulttext = '<?php echo wp_kses( $text_failures, $allowed_tags ); ?>';
+						if ( rtgodam_errors > 0 ) {
+							rtgodam_resulttext = '<?php echo wp_kses( $text_failures, $allowed_tags ); ?>';
 						} else {
-							rt_resulttext = '<?php echo wp_kses( $text_nofailures, $allowed_tags ); ?>';
+							rtgodam_resulttext = '<?php echo wp_kses( $text_nofailures, $allowed_tags ); ?>';
 						}
-						$("#message").html("<p><strong>" + rt_resulttext + "</strong></p>");
+						$("#message").html("<p><strong>" + rtgodam_resulttext + "</strong></p>");
 						$("#message").show();
 
 						$( '#retranscode-goback' ).on( 'click', function () {
@@ -577,8 +577,8 @@ class RetranscodeMedia {
 									RetranscodeMediaUpdateStatus( id, false, response );
 								}
 
-								if ( rt_media.length && rt_continue ) {
-									RetranscodeMedia( rt_media.shift() );
+								if ( rtgodam_media.length && rtgodam_continue ) {
+									RetranscodeMedia( rtgodam_media.shift() );
 								}
 								else {
 									RetranscodeMediaFinishUp();
@@ -587,8 +587,8 @@ class RetranscodeMedia {
 							error: function( response ) {
 								RetranscodeMediaUpdateStatus( id, false, response );
 
-								if ( rt_media.length && rt_continue ) {
-									RetranscodeMedia( rt_media.shift() );
+								if ( rtgodam_media.length && rtgodam_continue ) {
+									RetranscodeMedia( rtgodam_media.shift() );
 								}
 								else {
 									RetranscodeMediaFinishUp();
@@ -597,7 +597,7 @@ class RetranscodeMedia {
 						});
 					}
 
-					RetranscodeMedia( rt_media.shift() );
+					RetranscodeMedia( rtgodam_media.shift() );
 				});
 			// ]]>
 			</script>

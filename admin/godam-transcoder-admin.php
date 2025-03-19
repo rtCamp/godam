@@ -173,11 +173,11 @@ class RT_Transcoder_Admin {
 			'enable_encoding'                       => esc_html__( 'Are you sure you want to enable the transcoding service?', 'godam' ),
 			'something_went_wrong'                  => esc_html__( 'Something went wrong. Please ', 'godam' ) . '<a href onclick="location.reload();">' . esc_html__( 'refresh', 'godam' ) . '</a>' . esc_html__( ' page.', 'godam' ),
 			'error_empty_key'                       => esc_html__( 'Please enter the license key.', 'godam' ),
-			'security_nonce_for_enabling_encoding'  => wp_create_nonce( 'rt_enable_transcoding' ),
-			'security_nonce_for_disabling_encoding' => wp_create_nonce( 'rt_disable_transcoding' ),
+			'security_nonce_for_enabling_encoding'  => wp_create_nonce( 'rtgodam_enable_transcoding' ),
+			'security_nonce_for_disabling_encoding' => wp_create_nonce( 'rtgodam_disable_transcoding' ),
 		);
 
-		wp_localize_script( 'rt-transcoder-main', 'rt_transcoder_script', $localize_script_data );
+		wp_localize_script( 'rt-transcoder-main', 'rtgodam_transcoder_script', $localize_script_data );
 
 		wp_enqueue_script( 'rt-transcoder-main' );
 	}

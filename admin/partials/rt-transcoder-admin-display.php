@@ -317,7 +317,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 	</div>
 
 	<div class="metabox-holder transcoder-sidebar">
-		<?php do_action( 'rt_transcoder_before_widgets' ); ?>
+		<?php do_action( 'rtgodam_transcoder_before_widgets' ); ?>
 		<div class="postbox" id="rt-spread-the-word">
 			<h3 class="hndle">
 				<span>

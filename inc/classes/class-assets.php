@@ -78,7 +78,7 @@ class Assets {
 			)
 		);
 		
-		$localize_array = rt_get_localize_array();
+		$localize_array = rtgodam_get_localize_array();
 
 		wp_localize_script(
 			'godam-script',
