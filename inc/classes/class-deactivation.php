@@ -47,7 +47,7 @@ class Deactivation {
 
 			$current_user = wp_get_current_user();
 
-			$rt_deactivate = array(
+			$rtgodam_deactivate = array(
 				'site_url'    => home_url(),
 				'nonce'       => wp_create_nonce( 'GoDAMDeactivationFeedback' ),
 				'user_name'   => $current_user->user_nicename,
@@ -56,7 +56,7 @@ class Deactivation {
 				'api_url'     => esc_url( $this->api_url ),
 			);
 
-			wp_localize_script( 'godam-deactivation-survey-script', 'GoDAMDeactivation', $rt_deactivate );
+			wp_localize_script( 'godam-deactivation-survey-script', 'GoDAMDeactivation', $rtgodam_deactivate );
 		}
 	}
 

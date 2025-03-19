@@ -161,7 +161,7 @@ class RT_Transcoder_Handler {
 		}
 
 		if ( is_admin() ) {
-			add_action( 'rt_transcoder_before_widgets', array( $this, 'usage_widget' ) );
+			add_action( 'rtgodam_transcoder_before_widgets', array( $this, 'usage_widget' ) );
 		}
 
 		add_action( 'admin_init', array( $this, 'save_api_key' ), 10, 1 );
@@ -379,7 +379,7 @@ class RT_Transcoder_Handler {
 		 * @param int $thumb_count    Number of thumbnails set in setting.
 		 * @param int $attachment_id  ID of attachment.
 		 */
-		$thumb_count = apply_filters( 'rt_media_total_video_thumbnails', $thumb_count, $attachment_id );
+		$thumb_count = apply_filters( 'rtgodam_media_total_video_thumbnails', $thumb_count, $attachment_id );
 
 		return $thumb_count > 10 ? 10 : $thumb_count;
 	}
@@ -1174,7 +1174,7 @@ class RT_Transcoder_Handler {
 	 * @since 1.0.0
 	 */
 	public function disable_transcoding() {
-		check_ajax_referer( 'rt_disable_transcoding', 'rt_transcoder_nonce', true );
+		check_ajax_referer( 'rtgodam_disable_transcoding', 'rtgodam_transcoder_nonce', true );
 		update_site_option( 'rt-transcoding-api-key', '' );
 		esc_html_e( 'Transcoding disabled successfully.', 'godam' );
 		die();
@@ -1186,7 +1186,7 @@ class RT_Transcoder_Handler {
 	 * @since 1.0.0
 	 */
 	public function enable_transcoding() {
-		check_ajax_referer( 'rt_enable_transcoding', 'rt_transcoder_nonce', true );
+		check_ajax_referer( 'rtgodam_enable_transcoding', 'rtgodam_transcoder_nonce', true );
 		update_site_option( 'rt-transcoding-api-key', $this->stored_api_key );
 		esc_html_e( 'Transcoding enabled successfully.', 'godam' );
 		die();
@@ -1378,7 +1378,7 @@ class RT_Transcoder_Handler {
 			global $wpdb;
 			$media_id = wp_cache_get( 'post_' . $post_id, 'godam' );
 			if ( empty( $post_id ) ) {
-				$results  = $wpdb->get_results( $wpdb->prepare( 'SELECT id FROM {$wpdb->prefix}rt_rtm_media WHERE media_id = %d', $post_id ), OBJECT ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				$results  = $wpdb->get_results( $wpdb->prepare( 'SELECT id FROM {$wpdb->prefix}rtgodam_rtm_media WHERE media_id = %d', $post_id ), OBJECT ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 				$media_id = $results[0]->media_id;
 				wp_cache_set( 'post_' . $post_id, $media_id, 'godam', 3600 );
 			}
@@ -1445,7 +1445,7 @@ class RT_Transcoder_Handler {
 				$response['files']     = $upload_dir['baseurl'] . '/' . $transcoded_files['mp4'][0];
 				$response['thumbnail'] = $upload_dir['baseurl'] . '/' . $thumbnail;
 
-				$results              = $wpdb->get_results( $wpdb->prepare( 'SELECT id FROM %s WHERE media_id = %d', $wpdb->prefix . 'rt_rtm_media', $post_id ), OBJECT ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				$results              = $wpdb->get_results( $wpdb->prepare( 'SELECT id FROM %s WHERE media_id = %d', $wpdb->prefix . 'rtgodam_rtm_media', $post_id ), OBJECT ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 				$response['media_id'] = $results[0]->id;
 
 			} elseif ( ! empty( $status_info ) && 'processed' === $status_info->status && ( 'pdf' === $status_info->job_type ) ) {

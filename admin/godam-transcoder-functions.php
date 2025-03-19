@@ -16,12 +16,12 @@
  * @return object
  */
 function rta() {
-	global $rt_transcoder_admin;
-	return $rt_transcoder_admin;
+	global $rtgodam_transcoder_admin;
+	return $rtgodam_transcoder_admin;
 }
 
 /**
- * Builds the [rt_media] shortcode output.
+ * Builds the [rtgodam_media] shortcode output.
  *
  * If media type is video then display transcoded video (mp4 format) if any else original video.
  *
@@ -37,7 +37,7 @@ function rta() {
  * @param  string $content  Shortcode content.
  * @return string|void      HTML content to display video.
  */
-function rt_media_shortcode( $attrs, $content = '' ) {
+function rtgodam_media_shortcode( $attrs, $content = '' ) {
 
 	if ( empty( $attrs['attachment_id'] ) ) {
 		return false;
@@ -59,7 +59,7 @@ function rt_media_shortcode( $attrs, $content = '' ) {
 		$video_shortcode_attributes = '';
 		$media_url                  = rtt_get_media_url( $attachment_id );
 
-		$poster = rt_media_get_video_thumbnail( $attachment_id );
+		$poster = rtgodam_media_get_video_thumbnail( $attachment_id );
 
 		$attrs['src']    = $media_url;
 		$attrs['poster'] = $poster;
@@ -93,7 +93,7 @@ function rt_media_shortcode( $attrs, $content = '' ) {
 	}
 
 	/**
-	 * Allow user to filter [rt_media] short code content.
+	 * Allow user to filter [rtgodam_media] short code content.
 	 *
 	 * @since 1.0.0
 	 *
@@ -102,10 +102,10 @@ function rt_media_shortcode( $attrs, $content = '' ) {
 	 * @param string $media_url     URL of the media.
 	 * @param string $media_type    Mime type of the media.
 	 */
-	return apply_filters( 'rt_media_shortcode', $content, $attachment_id, $media_url, $mime_type[0] );
+	return apply_filters( 'rtgodam_media_shortcode', $content, $attachment_id, $media_url, $mime_type[0] );
 }
 
-add_shortcode( 'rt_media', 'rt_media_shortcode' );
+add_shortcode( 'rtgodam_media', 'rtgodam_media_shortcode' );
 
 /**
  * Check whether the file is sent to the transcoder or not.
@@ -135,7 +135,7 @@ function is_file_being_transcoded( $attachment_id ) {
  * @param  int $attachment_id   ID of attachment.
  * @return string               returns image file url on success.
  */
-function rt_media_get_video_thumbnail( $attachment_id ) {
+function rtgodam_media_get_video_thumbnail( $attachment_id ) {
 
 	if ( empty( $attachment_id ) ) {
 		return;
@@ -363,7 +363,7 @@ function rtt_generate_video_shortcode( $html, $send_id, $attachment ) {
 			return $html;
 		}
 
-		$transcoded_thumb_url = rt_media_get_video_thumbnail( $attachment['id'] );
+		$transcoded_thumb_url = rtgodam_media_get_video_thumbnail( $attachment['id'] );
 
 		$poster = '';
 		if ( ! empty( $transcoded_thumb_url ) ) {
@@ -420,8 +420,8 @@ function rtt_bp_get_activity_content( $content, $activity = null ) {
 	}
 
 	if ( class_exists( 'RTMediaModel' ) ) {
-		$rt_model  = new RTMediaModel();
-		$all_media = $rt_model->get( array( 'activity_id' => $activity->id ) );
+		$rtgodam_model  = new RTMediaModel();
+		$all_media = $rtgodam_model->get( array( 'activity_id' => $activity->id ) );
 		if ( empty( $all_media ) ) {
 			return $content;
 		}
@@ -515,7 +515,7 @@ function rtt_bp_get_activity_content( $content, $activity = null ) {
 				$message  = apply_filters( 'rtt_transcoding_in_progress_message', $message, $activity );
 				$message .= '</div>';
 				// Add this message to the particular media (there can be multiple medias in the activity).
-				$search     = '/(rt_media_video_' . $media->id . ")['\"](.*?)(<\/a><\/div>)/s";
+				$search     = '/(rtgodam_media_video_' . $media->id . ")['\"](.*?)(<\/a><\/div>)/s";
 				$text_found = array();
 				preg_match( $search, $content, $text_found );
 
@@ -802,7 +802,7 @@ add_filter( 'manage_upload_sortable_columns', 'rtt_status_column_register_sortab
 function rtt_enqueue_scripts() {
 
 	if ( current_user_can( 'manage_options' ) ) {
-		wp_register_script( 'rt_transcoder_js', plugins_url( 'js/rt-transcoder.min.js', __FILE__ ), array(), GODAM_VERSION, false );
+		wp_register_script( 'rtgodam_transcoder_js', plugins_url( 'js/rt-transcoder.min.js', __FILE__ ), array(), GODAM_VERSION, false );
 
 		$translation_array = array(
 			'load_flag'      => true,
@@ -813,8 +813,8 @@ function rtt_enqueue_scripts() {
 
 		// comment out this code as the functionality is being shifted to block editor.
 
-		// wp_localize_script( 'rt_transcoder_js', 'transcoding_status', $translation_array );
-		// wp_enqueue_script( 'rt_transcoder_js' );
+		// wp_localize_script( 'rtgodam_transcoder_js', 'transcoding_status', $translation_array );
+		// wp_enqueue_script( 'rtgodam_transcoder_js' );
 
 		// phpcs:enable
 
@@ -829,7 +829,7 @@ if ( rtt_is_track_status_enabled() ) {
 }
 add_action( 'admin_enqueue_scripts', 'rtt_enqueue_scripts' );
 
-add_action( 'enqueue_block_editor_assets', 'rt_transcoder_enqueue_block_editor_assets' );
+add_action( 'enqueue_block_editor_assets', 'rtgodam_transcoder_enqueue_block_editor_assets' );
 
 /**
  * Enqueues script on frontend.
@@ -853,7 +853,7 @@ add_action( 'wp_enqueue_scripts', 'rtt_enqueue_frontend_scripts' );
 /**
  * Enqueue required script for block editor.
  */
-function rt_transcoder_enqueue_block_editor_assets() {
+function rtgodam_transcoder_enqueue_block_editor_assets() {
 	// Enqueue our script.
 	wp_enqueue_script(
 		'rt-transcoder-block-editor-support',
@@ -923,7 +923,7 @@ function rtt_get_transcoding_status( $post_id ) {
 function rtt_add_transcoding_process_status_button_single_media_page( $rtmedia_id ) {
 
 	global $wpdb;
-	$rtmedia_media_table = $wpdb->prefix . 'rt_rtm_media';
+	$rtmedia_media_table = $wpdb->prefix . 'rtgodam_rtm_media';
 
 	$post_id = wp_cache_get( 'media_' . $rtmedia_id, 'godam' );
 	if ( empty( $post_id ) ) {
@@ -989,7 +989,7 @@ function rtt_filter_single_media_page_video_markup( $html, $rtmedia_media ) {
 
 		if ( empty( $youtube_url ) ) {
 
-			$html_video = '<video poster="%s" src="%s" type="video/mp4" class="wp-video-shortcode" id="rt_media_video_%s" controls="controls" preload="metadata"></video>';
+			$html_video = '<video poster="%s" src="%s" type="video/mp4" class="wp-video-shortcode" id="rtgodam_media_video_%s" controls="controls" preload="metadata"></video>';
 			$html      .= sprintf( $html_video, esc_url( $rtmedia_media->cover_art ), esc_url( wp_get_attachment_url( $rtmedia_media->media_id ) ), esc_attr( $rtmedia_media->id ) );
 
 		} else {
@@ -1173,7 +1173,7 @@ function rtt_mask_string( $input, $offset = 4 ) {
  *
  * @return void
  */
-function rt_get_categories_list( $post_id ) {
+function rtgodam_get_categories_list( $post_id ) {
 
 	$categories     = get_the_category( $post_id );
 	$category_names = array();
@@ -1199,7 +1199,7 @@ function rt_get_categories_list( $post_id ) {
  *
  * @return void
  */
-function rt_get_tags_list( $post_id ) {
+function rtgodam_get_tags_list( $post_id ) {
 
 	$tags      = get_the_tags( $post_id );
 	$tag_names = array();
@@ -1222,7 +1222,7 @@ function rt_get_tags_list( $post_id ) {
  *
  * @return array The array to localize
  */
-function rt_get_localize_array() {
+function rtgodam_get_localize_array() {
 
 	$localize_array = array();
 
@@ -1259,8 +1259,8 @@ function rt_get_localize_array() {
 	if ( $post_id ) {
 
 		$localize_array['postId']     = $post_id;
-		$localize_array['categories'] = rt_get_categories_list( $post_id );
-		$localize_array['tags']       = rt_get_tags_list( $post_id );
+		$localize_array['categories'] = rtgodam_get_categories_list( $post_id );
+		$localize_array['tags']       = rtgodam_get_tags_list( $post_id );
 
 	}
 

@@ -63,14 +63,14 @@ require_once GODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore Wo
 require_once GODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once GODAM_PATH . 'admin/godam-transcoder-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
-global $rt_transcoder_admin;
+global $rtgodam_transcoder_admin;
 
 /**
  * Initiate file system.
  */
 \Transcoder\Inc\FileSystem::get_instance();
 
-$rt_transcoder_admin = new RT_Transcoder_Admin();
+$rtgodam_transcoder_admin = new RT_Transcoder_Admin();
 
 /**
  * Initiate blocks.
