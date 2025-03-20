@@ -769,7 +769,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 	}
 }
 
-$user_data = godam_get_user_data();
+$user_data = rtgodam_get_user_data();
 $is_license_verified = isset( $user_data['valid_license'] ) ? $user_data['valid_license'] : false;
 
 if ( $is_license_verified ) {

@@ -467,7 +467,7 @@ class RT_Transcoder_Admin {
 		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
 
 		// Get plugin activation time.
-		$activation_time       = get_site_option( 'godam_plugin_activation_time', 0 );
+		$activation_time       = get_site_option( 'rtgodam_plugin_activation_time', 0 );
 		$days_since_activation = ( time() - $activation_time ) / DAY_IN_SECONDS;
 
 		// If more than 3 days have passed and no license is activated, show scheduled notice.

@@ -18,14 +18,14 @@ class Pages {
 	/**
 	 * Hardcoded Slugs
 	 */
-	private $menu_slug            = 'godam';
-	private $video_editor_slug    = 'video_editor';
-	private $analytics_slug       = 'analytics';
-	private $menu_page_id         = 'toplevel_page_godam';
-	private $video_editor_page_id = 'godam_page_video_editor';
-	private $analytics_page_id    = 'godam_page_analytics';
-	private $help_page_id         = 'godam_page_help';
-	private $help_slug            = 'help';
+	private $menu_slug            = 'rtgodam';
+	private $video_editor_slug    = 'rtgodam_video_editor';
+	private $analytics_slug       = 'rtgodam_analytics';
+	private $menu_page_id         = 'toplevel_page_rtgodam';
+	private $video_editor_page_id = 'rtgodam_page_video_editor';
+	private $analytics_page_id    = 'rtgodam_page_analytics';
+	private $help_page_id         = 'rtgodam_page_help';
+	private $help_slug            = 'rtgodam_help';
 
 	/**
 	 * Construct method.
@@ -93,7 +93,7 @@ class Pages {
 		);
 
 		add_submenu_page(
-			'godam',
+			'rtgodam',
 			__( 'Help', 'godam' ),
 			__( 'Help', 'godam' ),
 			'edit_posts',
@@ -259,16 +259,16 @@ class Pages {
 					'nonce'            => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
-					'valid_license'    => godam_is_license_valid(),
+					'valid_license'    => rtgodam_is_license_valid(),
 				)
 			);
 
-			$godam_user_data = godam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
 				'userData',
-				$godam_user_data
+				$rtgodam_user_data
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
@@ -301,12 +301,12 @@ class Pages {
 				true
 			);
 
-			$godam_user_data = godam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
 				'transcoder-page-script-godam',
 				'userData',
-				$godam_user_data
+				$rtgodam_user_data
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-godam' );
@@ -353,12 +353,12 @@ class Pages {
 				)
 			);
 
-			$godam_user_data = godam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
 				'transcoder-page-script-analytics',
 				'userData',
-				$godam_user_data
+				$rtgodam_user_data
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
@@ -373,12 +373,12 @@ class Pages {
 				true
 			);
 
-			$godam_user_data = godam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
 				'godam-page-script-help',
 				'userData',
-				$godam_user_data
+				$rtgodam_user_data
 			);
 
 			wp_enqueue_script( 'godam-page-script-help' );
@@ -402,7 +402,7 @@ class Pages {
 			'MediaLibrary',
 			array(
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'userData' => godam_get_user_data(),
+				'userData' => rtgodam_get_user_data(),
 			)
 		);
 	}

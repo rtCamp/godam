@@ -88,7 +88,7 @@ class Assets {
 			'godam-script',
 			'godamLicenseData',
 			array(
-				'valid_license' => godam_is_license_valid(),
+				'valid_license' => rtgodam_is_license_valid(),
 			)
 		);
 
