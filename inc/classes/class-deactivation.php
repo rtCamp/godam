@@ -24,7 +24,7 @@ class Deactivation {
 	 */
 	public function __construct() {
 		add_action( 'admin_enqueue_scripts', array( $this, 'load_scripts' ) );
-		add_action( 'wp_ajax_godam_send_deactivation_feedback', array( $this, 'godam_send_deactivation_feedback' ) );
+		add_action( 'wp_ajax_godam_send_deactivation_feedback', array( $this, 'rtgodam_send_deactivation_feedback' ) );
 	}
 
 	/**
@@ -67,7 +67,7 @@ class Deactivation {
 	 *
 	 * @return string.
 	 */
-	public function godam_send_deactivation_feedback() {
+	public function rtgodam_send_deactivation_feedback() {
 		// Checking ajax referer.
 		check_ajax_referer( 'GoDAMDeactivationFeedback', 'nonce' );
 

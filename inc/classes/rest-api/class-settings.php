@@ -248,7 +248,7 @@ class Settings extends Base {
 		$deleted_token = delete_site_option( 'rt-transcoding-account-token' );
 		
 		// Delete the user data from the site_option.
-		delete_site_option( 'godam_user_data' );
+		delete_site_option( 'rtgodam_user_data' );
 
 		if ( $deleted_key || $deleted_token ) {
 			return new \WP_REST_Response(
