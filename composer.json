@@ -3,9 +3,9 @@
   "description": "1.0.0",
   "type": "wordpress-plugin",
   "require-dev": {
-      "wp-coding-standards/wpcs": "^2.3",
+      "wp-coding-standards/wpcs": "^3.1",
       "phpcompatibility/phpcompatibility-wp": "^2.1",
-      "automattic/vipwpcs": "^2.3",
+      "automattic/vipwpcs": "^3.0",
       "phpunit/phpunit": "^9.6",
       "wp-phpunit/wp-phpunit": "^6.2",
       "yoast/phpunit-polyfills": "^1.0"
