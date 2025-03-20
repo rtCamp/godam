@@ -70,9 +70,9 @@
 
 		&::before {
 			content: '';
-			background-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
-			;
+			background-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));;
 			position: absolute;
+			pointer-events: none;
 			left: 0;
 			top: 0;
 			height: 100%;
@@ -103,6 +103,17 @@
 			;
 			cursor: pointer;
 		}
+	}
+
+	.slider-progress {
+		display: block;
+		position: absolute;
+		top: 2px; /* Currently the slider is somewhat off-center */
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);		;
+		border-radius: 4px;
 	}
 
 	.slider-input[disabled] {
@@ -147,7 +158,7 @@
 
 			.layer-indicator--container {
 				.icon {
-					border-radius: 0.5rem;
+					border-radius: 4rem;
 
 					div {
 						display: flex;
@@ -162,12 +173,10 @@
 
 		&--container {
 			position: relative;
-			// display: none;
-
 
 			.icon {
 				position: absolute;
-				top: -2.25rem;
+				top: -3rem;
 				left: 4px;
 				transform: translate(-50%, 0);
 				font-size: 12px;
@@ -201,18 +210,6 @@
 					gap: 0.25rem;
 					display: none;
 					padding-right: 1px;
-				}
-
-				&::after {
-					z-index: -1;
-					content: '';
-					position: absolute;
-					bottom: -4px;
-					left: 50%;
-					width: 12px;
-					height: 12px;
-					transform: translate(-50%, 0) rotate(45deg);
-					background-color: #fff;
 				}
 			}
 

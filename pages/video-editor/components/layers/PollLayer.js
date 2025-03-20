@@ -3,16 +3,15 @@
  */
 
 import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
 import Editor from '@monaco-editor/react';
 
 /**
  * WordPress dependencies
  */
-import { Button, SelectControl, ToggleControl, ComboboxControl, TextareaControl, Modal, Panel, PanelBody, Notice, TextControl } from '@wordpress/components';
+import { Button, ToggleControl, ComboboxControl, Modal, Panel, PanelBody } from '@wordpress/components';
 import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -21,68 +20,32 @@ import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
 import LayerControl from '../LayerControls';
 import ColorPickerButton from '../ColorPickerButton';
 
-const templateOptions = [
-	{
-		value: 'orbital',
-		label: 'Orbital',
-	},
-	{
-		value: 'gravity',
-		label: 'Gravity',
-	},
-];
+import { useGetPollsQuery, useGetPollQuery } from '../../redux/api/polls';
 
-const FormLayer = ( { layerID, goBack } ) => {
+const PollLayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
-	const gforms = useSelector( ( state ) => state.videoReducer.gforms );
-	const forms = gforms.map( ( form ) => ( {
-		value: form.id,
-		label: form.title,
-	} ) );
 
-	const [ formHTML, setFormHTML ] = useState( '' );
-
-	const restURL = window.godamRestRoute.url || '';
+	const { data: polls } = useGetPollsQuery();
+	const { data: currentPoll } = useGetPollQuery( layer.poll_id, { skip: ! layer.poll_id } );
 
 	const handleDeleteLayer = () => {
 		dispatch( removeLayer( { id: layer.id } ) );
 		goBack();
 	};
 
-	const changeFormID = ( formID ) => {
-		dispatch( updateLayerField( { id: layer.id, field: 'gf_id', value: formID } ) );
+	const handlePollChange = ( value ) => {
+		dispatch( updateLayerField( { id: layer.id, field: 'poll_id', value } ) );
 	};
 
-	useEffect( () => {
-		if ( layer.gf_id ) {
-			fetchGravityForm( layer.gf_id, layer.theme );
-		}
-	}, [ layer.gf_id, layer.theme ] );
-
-	// Fetch the Gravity Form HTML
-	const fetchGravityForm = ( formId, theme ) => {
-		axios.get( window.pathJoin( [ restURL, '/godam/v1/gform' ] ), {
-			params: { id: formId, theme },
-		} ).then( ( response ) => {
-			setFormHTML( response.data );
-		} ).catch( ( error ) => {
-			console.error( error );
-		} );
-	};
-
-	// If we want to disable the premium layers the we can use this code
-	// const isValidLicense = window?.videoData?.valid_license;
-
-	// For now we are enabling all the features
 	const isValidLicense = true;
 
 	return (
 		<>
 			<div className="flex justify-between items-center border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="text-base">{ __( 'Form layer at', 'godam' ) } { layer.displayTime }s</p>
+				<p className="text-base">{ __( 'Poll layer at', 'godam' ) } { layer.displayTime }s</p>
 				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
 				{ isOpen && (
 					<Modal title={ __( 'Delete layer', 'godam' ) } onRequestClose={ () => setOpen( false ) }>
@@ -99,31 +62,17 @@ const FormLayer = ( { layerID, goBack } ) => {
 			</div>
 
 			{
-				! isValidLicense &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'This features is available in premium version', 'godam' ) }
-				</Notice>
+				polls?.length > 0 &&
+					<ComboboxControl
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						label={ __( 'Select poll', 'godam' ) }
+						className="godam-combobox mb-4"
+						value={ layer.poll_id }
+						onChange={ handlePollChange }
+						options={ polls.map( ( poll ) => ( { value: poll.pollq_id, label: poll.pollq_question } ) ) }
+					/>
 			}
-
-			{
-				forms.length > 0 &&
-					<GravityFormSelector disabled={ ! isValidLicense } className="godam-combobox mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
-			}
-
-			<SelectControl
-				className="mb-4 godam-select"
-				label={ __( 'Select form theme', 'godam' ) }
-				options={ templateOptions }
-				value={ layer.theme }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
-				}
-				disabled={ ! isValidLicense }
-			/>
 
 			<ToggleControl
 				className="mb-4 godam-toggle"
@@ -184,7 +133,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 						style={ {
 							backgroundColor: layer.bg_color,
 						} } className="easydam-layer">
-						<div className="form-container" dangerouslySetInnerHTML={ { __html: formHTML } } />
+						<div className="form-container" dangerouslySetInnerHTML={ { __html: currentPoll?.html } } />
 					</div>
 					{ layer.allow_skip &&
 					<Button
@@ -204,37 +153,4 @@ const FormLayer = ( { layerID, goBack } ) => {
 	);
 };
 
-function GravityFormSelector( { className, disabled, formID, forms, handleChange } ) {
-	const [ form, setForm ] = useState( formID );
-	const [ filteredOptions, setFilteredOptions ] = useState( forms );
-
-	const setFormData = ( value ) => {
-		setForm( value );
-		handleChange( value );
-	};
-
-	return (
-		<>
-			<ComboboxControl
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-				label={ __( 'Select gravity form', 'godam' ) }
-				className={ `${ className } ${ disabled ? 'disabled' : '' }` }
-				value={ form }
-				onChange={ setFormData }
-				options={ filteredOptions }
-				onFilterValueChange={ ( inputValue ) => {
-					setFilteredOptions(
-						forms.filter( ( _form ) =>
-							_form.label
-								.toLowerCase()
-								.startsWith( inputValue.toLowerCase() ),
-						),
-					);
-				} }
-			/>
-		</>
-	);
-}
-
-export default FormLayer;
+export default PollLayer;

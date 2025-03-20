@@ -23,6 +23,7 @@ use Transcoder\Inc\REST_API\Media_Library;
 use Transcoder\Inc\REST_API\Ads;
 use Transcoder\Inc\REST_API\Transcoding;
 use Transcoder\Inc\REST_API\Analytics;
+use Transcoder\Inc\REST_API\Polls;
 
 use Transcoder\Inc\Providers\Media_Filters;
 
@@ -94,5 +95,6 @@ class Plugin {
 		Transcoding::get_instance();
 		Analytics::get_instance();
 		Deactivation::get_instance();
+		Polls::get_instance();
 	}
 }

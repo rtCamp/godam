@@ -72,11 +72,11 @@ const CustomAdSettings = ( { layerID } ) => {
 				</Notice>
 			}
 			<div className="flex flex-col items-start mb-4">
-				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom Ad', 'godam' ) }</label>
+				<label htmlFor="custom-css" className="godam-label mb-2">{ __( 'Custom Ad', 'godam' ) }</label>
 				<div className="flex gap-2">
 					<Button
 						__nextHasNoMarginBottom
-						className="mb-2"
+						className="mb-2 godam-button"
 						variant="primary"
 						onClick={ () => OpenVideoSelector() }
 						disabled={ adServer === 'ad-server' || ! isValidLicense }
@@ -85,6 +85,7 @@ const CustomAdSettings = ( { layerID } ) => {
 						layer?.ad_url &&
 						<Button
 							variant="secondary"
+							className="godam-button mb-2"
 							isDestructive
 							onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) }
 							disabled={ adServer === 'ad-server' || ! isValidLicense }
@@ -99,7 +100,7 @@ const CustomAdSettings = ( { layerID } ) => {
 								src={ layer.ad_url }
 								controls={ adServer !== 'ad-server' }
 							/>
-							{ adServer === 'ad-server' || ! isValidLicense && <div className="video-overlay" /> }
+							{ ( adServer === 'ad-server' || ! isValidLicense ) && <div className="video-overlay" /> }
 						</div>
 					)
 				}
@@ -107,7 +108,7 @@ const CustomAdSettings = ( { layerID } ) => {
 
 			<ToggleControl
 				__nextHasNoMarginBottom
-				className="mb-4"
+				className="mb-4 godam-toggle"
 				label={ __( 'Skippable', 'godam' ) }
 				checked={ layer?.skippable ?? false }
 				onChange={ ( value ) =>
@@ -122,7 +123,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					label={ __( 'Skip time', 'godam' ) }
 					help={ __( 'Time in seconds after which the skip button will appear', 'godam' ) }
 					value={ layer?.skip_offset }
-					className="mb-4"
+					className="mb-4 godam-input"
 					onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'skip_offset', value } ) ) }
 					type="number"
 					min="0"
@@ -135,7 +136,7 @@ const CustomAdSettings = ( { layerID } ) => {
 				placeholder="https://example"
 				help={ __( 'Enter the URL to redirect when the ad is clicked', 'godam' ) }
 				value={ layer?.click_link }
-				className="mb-4"
+				className="mb-4 godam-input"
 				onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'click_link', value } ) ) }
 				disabled={ adServer === 'ad-server' || ! isValidLicense }
 			/>
