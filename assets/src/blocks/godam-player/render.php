@@ -25,19 +25,19 @@ $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : nu
 $video_preview = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
 
 // Retrieve 'easydam_meta' for the given attachment ID, defaulting to an empty array if not found.
-$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : [];
-$easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : [];
+$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : array();
+$easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : array();
 
 // Extract control bar settings with a fallback to an empty array.
-$control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? [];
+$control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? array();
 
 $poster_image = get_post_meta( $attachment_id, '_rt_media_video_thumbnail', true );
 $poster_image = ! empty( $poster_image ) ? $poster_image : '';
 
-$sources = [];
-$transcoded_url    = $attachment_id ? get_post_meta( $attachment_id, '_rt_transcoded_url', true ) : '';
-$video_src         = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
-$video_src_type    = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
+$sources        = array();
+$transcoded_url = $attachment_id ? get_post_meta( $attachment_id, '_rt_transcoded_url', true ) : '';
+$video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
+$video_src_type = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
 
 if ( ! empty( $transcoded_url ) ) {
 	$sources = array(
@@ -47,15 +47,15 @@ if ( ! empty( $transcoded_url ) ) {
 		),
 		array(
 			'src'  => $video_src,
-			'type' => $video_src_type === 'video/quicktime' ? 'video/mp4' : $video_src_type,
+			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
 		),
 	);
 } else {
 	$sources = array(
 		array(
 			'src'  => $video_src,
-			'type' => $video_src_type === 'video/quicktime' ? 'video/mp4' : $video_src_type,
-		)
+			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
+		),
 	);
 }
 
@@ -70,21 +70,21 @@ $video_setup = wp_json_encode(
 		'poster'     => empty( $poster ) ? $poster_image : $poster,
 		'fluid'      => true,
 		'sources'    => $sources,
-		'controlBar' => $control_bar_settings, // contains settings specific to control bar
+		'controlBar' => $control_bar_settings, // contains settings specific to control bar.
 	)
 );
 
 $video_config = wp_json_encode(
 	array(
 		'preview' => $video_preview,
-		'layers'  => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers
+		'layers'  => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
 	)
 );
 
-$easydam_control_bar_color = '#2b333fb3'; // Default color
+$easydam_control_bar_color = '#2b333fb3'; // Default color.
 
-$godam_settings = get_option( 'rt-easydam-settings', [] );
-$brand_color = isset( $godam_settings['general']['brand_color'] ) ? $godam_settings['general']['brand_color'] : null;
+$godam_settings   = get_option( 'rt-easydam-settings', array() );
+$brand_color      = isset( $godam_settings['general']['brand_color'] ) ? $godam_settings['general']['brand_color'] : null;
 $appearance_color = isset( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
 
 if ( ! empty( $brand_color ) ) {

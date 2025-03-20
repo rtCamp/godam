@@ -210,8 +210,8 @@ class Settings extends Base {
 
 		if ( is_wp_error( $result ) ) {
 
-			$error_data = $result->get_error_data();
-			$status_code = is_array($error_data) && isset($error_data['status']) ? $error_data['status'] : 500;
+			$error_data  = $result->get_error_data();
+			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
 
 			return new \WP_REST_Response(
 				array(
@@ -316,7 +316,7 @@ class Settings extends Base {
 				'is_verified'                 => false,
 				'disable_folder_organization' => false,
 				'selected_brand_image'        => '',
-				'brand_color'                 => '#000000'
+				'brand_color'                 => '#000000',
 			),
 		);
 
