@@ -81,7 +81,18 @@ $video_config = wp_json_encode(
 	)
 );
 
-$easydam_control_bar_color  = ! empty( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : '#2b333fb3';
+$easydam_control_bar_color = '#2b333fb3'; // Default color
+
+$godam_settings = get_option( 'rt-easydam-settings', [] );
+$brand_color = isset( $godam_settings['general']['brand_color'] ) ? $godam_settings['general']['brand_color'] : null;
+$appearance_color = isset( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
+
+if ( ! empty( $brand_color ) ) {
+	$easydam_control_bar_color = $brand_color;
+} elseif ( ! empty( $appearance_color ) ) {
+	$easydam_control_bar_color = $appearance_color;
+}
+
 $easydam_hover_color        = ! empty( $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
 $easydam_hover_zoom         = ! empty( $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
 $easydam_custom_btn_img     = ! empty( $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';

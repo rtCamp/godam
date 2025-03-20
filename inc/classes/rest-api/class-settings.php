@@ -313,6 +313,8 @@ class Settings extends Base {
 				'track_status'                => false,
 				'is_verified'                 => false,
 				'disable_folder_organization' => false,
+				'selected_brand_image'        => '',
+				'brand_color'                 => '#000000'
 			),
 		);
 
@@ -384,6 +386,8 @@ class Settings extends Base {
 				'track_status'                => rest_sanitize_boolean( $settings['general']['track_status'] ),
 				'is_verified'                 => rest_sanitize_boolean( $settings['general']['is_verified'] ),
 				'disable_folder_organization' => rest_sanitize_boolean( $settings['general']['disable_folder_organization'] ),
+				'selected_brand_image'        => sanitize_text_field( $settings['general']['selected_brand_image'] ),
+				'brand_color'                 => sanitize_hex_color( $settings['general']['brand_color'] ),
 			),
 		);
 
