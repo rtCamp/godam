@@ -7,6 +7,8 @@
 
 namespace Transcoder\Inc\Providers\Storage;
 
+defined( 'ABSPATH' ) || exit;
+
 use Transcoder\Inc\EasyDAM_Constants;
 use Transcoder\Inc\Traits\Singleton;
 use Transcoder\Inc\Providers\Storage\AWS;

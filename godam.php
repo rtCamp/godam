@@ -14,6 +14,8 @@
  * @package GoDAM
  */
 
+defined( 'ABSPATH' ) || exit;
+
 if ( ! defined( 'GODAM_PATH' ) ) {
 	/**
 	 * The server file system path to the plugin directory
