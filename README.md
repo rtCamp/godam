@@ -156,3 +156,80 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - **Feat:** Cloud storage and CDN integration.
 - **Feat:** Advanced analytics and engagement tracking.
 - **Feat:** Enhanced WordPress Media Library for better asset management.
+
+## External services
+
+This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
+
+- **godam.io**:
+  Purpose: This service stores feedback submitted by users during plugin deactivation to help us improve the plugin and understand user concerns.
+
+  **Data Sent:**
+
+  - Site URL
+
+  - Reason for deactivation
+
+  - Name
+
+  - Email ID
+
+**When Data is Sent:**
+Data is sent only when a user submits the deactivation feedback form after clicking the deactivate button.
+
+**Service Provider:** godam.io
+
+[Terms of Service](https://godam.io/tos/)]
+[Privacy Policy](https://godam.io/privacy-policy/)
+
+- **app.godam.io**:
+
+This service is used for transcoding media uploaded by users and verifying the license key to ensure the plugin is authorized for use.
+
+**Data Sent:**
+
+- Site URL
+
+- License Key (to be confirmed with Nazmul)
+
+**When Data is Sent:**
+
+During media transcoding when the user uploads a video.
+
+When the plugin checks for a valid license key.
+
+**Service Provider**: app.godam.io
+
+[Terms of Service]()
+
+[Privacy Policy]()
+
+- **analytics.godam.io**:
+
+This service collects analytics data when a user watches a video on the frontend. It helps track video performance, user engagement, and campaign effectiveness.
+
+**Data Sent:**
+
+- IP Address
+
+- Email
+
+- Author of the post’s display name
+
+- Browser version, name, and browser language
+
+- User Agent String
+
+- The operating system of the user's device (e.g., Windows, macOS, Android)
+
+**When Data is Sent:**
+
+- When the page containing the video loads.
+
+- When the user exits the page after watching the video.
+
+**Service Provider**: analaytics.godam.io
+
+[Terms of Service]()
+
+[Privacy Policy]()
