@@ -47,7 +47,7 @@ class Assets {
 	public function enqueue_scripts() {
 
 		wp_register_script(
-			'godam-script',
+			'rtgodam-script',
 			GODAM_URL . '/assets/build/js/main.js',
 			array(),
 			filemtime( GODAM_PATH . '/assets/build/js/main.js' ),
@@ -55,7 +55,7 @@ class Assets {
 		);
 
 		wp_register_style(
-			'godam-style',
+			'rtgodam-style',
 			GODAM_URL . '/assets/build/css/main.css',
 			array(),
 			filemtime( GODAM_PATH . '/assets/build/css/main.css' )
@@ -71,7 +71,7 @@ class Assets {
 		);
 
 		wp_localize_script(
-			'godam-script',
+			'rtgodam-script',
 			'nonceData',
 			array(
 				'nonce' => wp_create_nonce( 'wp_rest' ),
@@ -81,13 +81,13 @@ class Assets {
 		$localize_array = rtgodam_get_localize_array();
 
 		wp_localize_script(
-			'godam-script',
+			'rtgodam-script',
 			'videoAnalyticsParams',
 			$localize_array
 		);
 		
 		wp_localize_script(
-			'godam-script',
+			'rtgodam-script',
 			'godamLicenseData',
 			array(
 				'valid_license' => rtgodam_is_license_valid(),
@@ -95,15 +95,15 @@ class Assets {
 		);
 
 		wp_localize_script(
-			'godam-script',
+			'rtgodam-script',
 			'godamRestRoute',
 			array(
 				'url' => get_rest_url( get_current_blog_id() )
 			)
 		);
 
-		wp_enqueue_script( 'godam-script' );
-		wp_enqueue_style( 'godam-style' );
+		wp_enqueue_script( 'rtgodam-script' );
+		wp_enqueue_style( 'rtgodam-style' );
 
 		// Register IMA SDK.
 		wp_enqueue_script(
@@ -124,7 +124,7 @@ class Assets {
 		$screen = get_current_screen();
 
 		wp_register_script(
-			'godam-script',
+			'rtgodam-script',
 			GODAM_URL . '/assets/build/js/admin.js',
 			array(),
 			filemtime( GODAM_PATH . '/assets/build/js/admin.js' ),
@@ -132,7 +132,7 @@ class Assets {
 		);
 
 		wp_localize_script(
-			'godam-script',
+			'rtgodam-script',
 			'pluginInfo',
 			array(
 				'version' => GODAM_VERSION,
@@ -140,7 +140,7 @@ class Assets {
 		);
 
 		wp_localize_script(
-			'godam-script',
+			'rtgodam-script',
 			'godamRestRoute',
 			array(
 				'url' => get_rest_url( get_current_blog_id() ),
@@ -150,14 +150,14 @@ class Assets {
 		);
 
 		wp_register_style(
-			'godam-style',
+			'rtgodam-style',
 			GODAM_URL . '/assets/build/css/admin.css',
 			array(),
 			filemtime( GODAM_PATH . '/assets/build/css/admin.css' )
 		);
 
-		wp_enqueue_script( 'godam-script' );
-		wp_enqueue_style( 'godam-style' );
+		wp_enqueue_script( 'rtgodam-script' );
+		wp_enqueue_style( 'rtgodam-style' );
 
 		wp_register_script(
 			'easydam-media-library',
