@@ -172,7 +172,7 @@ class RT_Transcoder_Handler {
 				update_site_option( 'rtgodam-api-key-stored', $this->stored_api_key );
 			}
 			add_filter( 'rtmedia_allowed_types', array( $this, 'allowed_types_admin_settings' ), 10, 1 );
-			$usage_info = get_site_option( 'rt-transcoding-usage' );
+			$usage_info = get_site_option( 'rtgodam-usage' );
 
 			if ( isset( $usage_info ) && is_array( $usage_info ) && array_key_exists( $this->api_key, $usage_info ) ) {
 				// if ( isset( $usage_info[ $this->api_key ]->plan->expires )
@@ -443,7 +443,7 @@ class RT_Transcoder_Handler {
 	public function update_usage( $key ) {
 
 		$response = rtgodam_verify_license($key);
-		update_site_option( 'rt-transcoding-usage', array( $key => (object) $response['data'] ) );
+		update_site_option( 'rtgodam-usage', array( $key => (object) $response['data'] ) );
 
 		return $response;
 	}
@@ -475,7 +475,7 @@ class RT_Transcoder_Handler {
 			remove_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
 		}
 
-		update_site_option( 'rt-transcoding-usage-limit-mail', 1 );
+		update_site_option( 'rtgodam-usage-limit-mail', 1 );
 	}
 
 	/**
@@ -489,7 +489,7 @@ class RT_Transcoder_Handler {
 			return;
 		}
 
-		$usage_details = get_site_option( 'rt-transcoding-usage' );
+		$usage_details = get_site_option( 'rtgodam-usage' );
 
 		if ( ! $usage_details[ $this->api_key ]->remaining ) {
 			$subject = esc_html__( 'Transcoding: Usage quota over.', 'godam' );
@@ -505,7 +505,7 @@ class RT_Transcoder_Handler {
 				remove_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
 			}
 
-			update_site_option( 'rt-transcoding-usage-limit-mail', 1 );
+			update_site_option( 'rtgodam-usage-limit-mail', 1 );
 		}
 	}
 
@@ -691,7 +691,7 @@ class RT_Transcoder_Handler {
 	 * @since 1.0.0
 	 */
 	public function usage_widget() {
-		$usage_details = get_site_option( 'rt-transcoding-usage' );
+		$usage_details = get_site_option( 'rtgodam-usage' );
 		$content       = '';
 		$api_key       = '';
 

@@ -57,7 +57,7 @@ class RetranscodeMedia {
 		$this->api_key        = get_site_option( 'rtgodam-api-key' );
 		$this->stored_api_key = get_site_option( 'rtgodam-api-key-stored' );
 
-		$this->usage_info = get_site_option( 'rt-transcoding-usage' );
+		$this->usage_info = get_site_option( 'rtgodam-usage' );
 		// Load Rest Endpoints.
 		$this->load_rest_endpoints();
 
@@ -327,7 +327,7 @@ class RetranscodeMedia {
 				$files     = array();
 
 				// Create the list of image IDs.
-				$usage_info = get_site_option( 'rt-transcoding-usage' );
+				$usage_info = get_site_option( 'rtgodam-usage' );
 				$ids        = transcoder_filter_input( INPUT_GET, 'ids', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				if ( ! empty( $ids ) ) {
 					$media = array_map( 'intval', explode( ',', trim( $ids, ',' ) ) );

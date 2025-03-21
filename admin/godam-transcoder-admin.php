@@ -197,7 +197,7 @@ class RT_Transcoder_Admin {
 			$this->transcoder_handler->update_usage( $this->api_key );
 		}
 
-		$usage_details = get_site_option( 'rt-transcoding-usage' );
+		$usage_details = get_site_option( 'rtgodam-usage' );
 
 		if ( isset( $usage_details[ $this->api_key ]->plan->name ) && ( strtolower( $usage_details[ $this->api_key ]->plan->name ) === strtolower( $name ) ) && $usage_details[ $this->api_key ]->sub_status && ! $force ) {
 			$form = '<button disabled="disabled" type="submit" class="button button-primary bpm-unsubscribe">' . esc_html__( 'Current Plan', 'godam' ) . '</button>';
@@ -486,7 +486,7 @@ class RT_Transcoder_Admin {
 		}
 
 		// Get stored usage data.
-		$usage_data = get_site_option( 'rt-transcoding-usage', array() );
+		$usage_data = get_site_option( 'rtgodam-usage', array() );
 		$usage_data = isset( $usage_data[ $license_key ] ) ? (array) $usage_data[ $license_key ] : null;
 
 		if ( empty( $usage_data ) ) {

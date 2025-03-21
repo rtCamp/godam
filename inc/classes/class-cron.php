@@ -58,7 +58,7 @@ class Cron {
 
 		$batch_size = 50; // Process in batches to avoid performance issues.
 
-		$usage_data  = get_site_option( 'rt-transcoding-usage', array() );
+		$usage_data  = get_site_option( 'rtgodam-usage', array() );
 		$license_key = get_site_option( 'rtgodam-api-key', '' );
 		$usage_data  = isset( $usage_data[ $license_key ] ) ? (array) $usage_data[ $license_key ] : null;
 

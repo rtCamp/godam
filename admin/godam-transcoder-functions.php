@@ -1026,7 +1026,7 @@ function rtgodam_media_update_usage( $wp_metadata, $attachment_id, $autoformat =
 
 	if ( ! empty( $stored_key ) && empty( $transient_flag ) ) {
 
-		$usage_info = get_site_option( 'rt-transcoding-usage' );
+		$usage_info = get_site_option( 'rtgodam-usage' );
 		$handler    = new RT_Transcoder_Handler( false );
 
 		if ( empty( $usage_info ) || empty( $usage_info[ $handler->api_key ]->remaining ) ) {
