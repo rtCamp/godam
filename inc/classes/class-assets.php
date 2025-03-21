@@ -204,7 +204,7 @@ class Assets {
 			array(
 				'ajaxUrl'                   => admin_url( 'admin-ajax.php' ),
 				'nonce'                     => wp_create_nonce( 'easydam_media_library' ),
-				'godamToolsNonce'           => wp_create_nonce( 'godam-tools' ),
+				'godamToolsNonce'           => wp_create_nonce( 'rtgodam_tools' ),
 				'disableFolderOrganization' => $disable_folder_organization,
 			)
 		);
