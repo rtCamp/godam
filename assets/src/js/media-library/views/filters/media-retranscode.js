@@ -51,11 +51,13 @@ MediaRetranscode = MediaRetranscode?.extend( {
 
 	render() {
 		wp.media.view.Button.prototype.render.apply( this, arguments );
+
 		if ( this.controller.isModeActive( 'select' ) ) {
-			this.$el.addClass( 'media-library-upload-to-s3' );
+			this.$el.addClass( 'media-library-bulk-actions' );
 		} else {
-			this.$el.addClass( 'media-library-upload-to-s3 hidden' );
+			this.$el.addClass( 'media-library-bulk-actions hidden' );
 		}
+
 		this.toggleDisabled();
 		return this;
 	},

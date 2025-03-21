@@ -5,7 +5,6 @@
  */
 import MediaLibraryTaxonomyFilter from './filters/media-library-taxonomy-filter';
 import MediaDateRangeFilter from './filters/media-date-range-filter';
-// import MediaUploadToS3 from './filters/media-upload-to-s3';
 import MediaRetranscode from './filters/media-retranscode';
 
 import { isLicenseValid, isUploadPage, isFolderOrgDisabled } from '../utility';
@@ -61,19 +60,6 @@ export default AttachmentsBrowser?.extend( {
 				} ).render(),
 			);
 		}
-
-		// Comment out the S3 button code until confirmed.
-
-		// if ( MediaUploadToS3 && ! wp?.media?.frame?.el ) {
-		// 	this.toolbar.set(
-		// 		'MediaUploadToS3',
-		// 		new MediaUploadToS3( {
-		// 			controller: this.controller,
-		// 			model: this.collection.props,
-		// 			priority: -75,
-		// 		} ).render(),
-		// 	);
-		// }
 
 		if ( isLicenseValid() && isUploadPage() ) {
 			if ( MediaRetranscode ) {
