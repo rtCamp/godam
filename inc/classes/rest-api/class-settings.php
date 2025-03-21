@@ -206,7 +206,7 @@ class Settings extends Base {
 		$license_key = $request->get_param( 'license_key' );
 
 		// Use the helper function to verify the license key.
-		$result = rtt_verify_license( $license_key, true );
+		$result = rtgodam_verify_license( $license_key, true );
 
 		if ( is_wp_error( $result ) ) {
 
@@ -224,7 +224,7 @@ class Settings extends Base {
 		}
 
 		if ( ! empty( $result['data']['license_key'] ) ) {
-			$result['data']['license_key'] = rtt_mask_string( $result['data']['license_key'] );
+			$result['data']['license_key'] = rtgodam_mask_string( $result['data']['license_key'] );
 		}
 
 		return new \WP_REST_Response(
@@ -248,7 +248,7 @@ class Settings extends Base {
 		$deleted_token = delete_site_option( 'rt-transcoding-account-token' );
 		
 		// Delete the user data from the site_option.
-		delete_site_option( 'godam_user_data' );
+		delete_site_option( 'rtgodam_user_data' );
 
 		if ( $deleted_key || $deleted_token ) {
 			return new \WP_REST_Response(

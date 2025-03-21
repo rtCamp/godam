@@ -78,7 +78,7 @@ class Assets {
 			)
 		);
 		
-		$localize_array = rt_get_localize_array();
+		$localize_array = rtgodam_get_localize_array();
 
 		wp_localize_script(
 			'godam-script',
@@ -90,7 +90,7 @@ class Assets {
 			'godam-script',
 			'godamLicenseData',
 			array(
-				'valid_license' => godam_is_license_valid(),
+				'valid_license' => rtgodam_is_license_valid(),
 			)
 		);
 

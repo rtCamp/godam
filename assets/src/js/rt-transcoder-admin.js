@@ -4,7 +4,7 @@
  * @package transcoder
  */
 
-/* global ajaxurl, rt_transcoder_script */
+/* global ajaxurl, rtgodam_transcoder_script */
 
 ( function ( $ ) {
 	$( document ).ready(
@@ -28,7 +28,7 @@
 							}
 						);
 
-						$( 'h1:first' ).after( error_div.html( $( '<p/>' ).text( rt_transcoder_script.error_empty_key ) ) );
+						$( 'h1:first' ).after( error_div.html( $( '<p/>' ).text( rtgodam_transcoder_script.error_empty_key ) ) );
 
 						e.preventDefault();
 					}
@@ -42,15 +42,15 @@
 
 					e.preventDefault();
 
-					if ( confirm( rt_transcoder_script.disable_encoding ) ) {
+					if ( confirm( rtgodam_transcoder_script.disable_encoding ) ) {
 
 						var data = {
-							action: 'rt_disable_transcoding',
-							rt_transcoder_nonce: rt_transcoder_script.security_nonce_for_disabling_encoding
+							action: 'rtgodam_disable_transcoding',
+							rtgodam_transcoder_nonce: rtgodam_transcoder_script.security_nonce_for_disabling_encoding
 						};
 
 						if ( $( this ).next( 'img' ).length === 0 ) {
-							$( this ).after( $( '<img />' ).attr( 'src', rt_transcoder_script.loader_image ).addClass( 'rtt-loader' ) );
+							$( this ).after( $( '<img />' ).attr( 'src', rtgodam_transcoder_script.loader_image ).addClass( 'rtt-loader' ) );
 						}
 
 						// Since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php.
@@ -82,15 +82,15 @@
 
 					e.preventDefault();
 
-					if ( confirm( rt_transcoder_script.enable_encoding ) ) {
+					if ( confirm( rtgodam_transcoder_script.enable_encoding ) ) {
 
 						var data = {
-							action: 'rt_enable_transcoding',
-							rt_transcoder_nonce: rt_transcoder_script.security_nonce_for_enabling_encoding
+							action: 'rtgodam_enable_transcoding',
+							rtgodam_transcoder_nonce: rtgodam_transcoder_script.security_nonce_for_enabling_encoding
 						};
 
 						if ( $( this ).next( 'img' ).length === 0 ) {
-							$( this ).after( $( '<img />' ).attr( 'src', rt_transcoder_script.loader_image ).addClass( 'rtt-loader' ) );
+							$( this ).after( $( '<img />' ).attr( 'src', rtgodam_transcoder_script.loader_image ).addClass( 'rtt-loader' ) );
 						}
 
 						$.post(

@@ -24,7 +24,7 @@ class Deactivation {
 	 */
 	public function __construct() {
 		add_action( 'admin_enqueue_scripts', array( $this, 'load_scripts' ) );
-		add_action( 'wp_ajax_godam_send_deactivation_feedback', array( $this, 'godam_send_deactivation_feedback' ) );
+		add_action( 'wp_ajax_godam_send_deactivation_feedback', array( $this, 'rtgodam_send_deactivation_feedback' ) );
 	}
 
 	/**
@@ -49,7 +49,7 @@ class Deactivation {
 
 			$current_user = wp_get_current_user();
 
-			$rt_deactivate = array(
+			$rtgodam_deactivate = array(
 				'site_url'    => home_url(),
 				'nonce'       => wp_create_nonce( 'GoDAMDeactivationFeedback' ),
 				'user_name'   => $current_user->user_nicename,
@@ -58,7 +58,7 @@ class Deactivation {
 				'api_url'     => esc_url( $this->api_url ),
 			);
 
-			wp_localize_script( 'godam-deactivation-survey-script', 'GoDAMDeactivation', $rt_deactivate );
+			wp_localize_script( 'godam-deactivation-survey-script', 'GoDAMDeactivation', $rtgodam_deactivate );
 		}
 	}
 
@@ -67,7 +67,7 @@ class Deactivation {
 	 *
 	 * @return string.
 	 */
-	public function godam_send_deactivation_feedback() {
+	public function rtgodam_send_deactivation_feedback() {
 		// Checking ajax referer.
 		check_ajax_referer( 'GoDAMDeactivationFeedback', 'nonce' );
 

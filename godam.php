@@ -65,14 +65,14 @@ require_once GODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore Wo
 require_once GODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once GODAM_PATH . 'admin/godam-transcoder-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
-global $rt_transcoder_admin;
+global $rtgodam_transcoder_admin;
 
 /**
  * Initiate file system.
  */
 \Transcoder\Inc\FileSystem::get_instance();
 
-$rt_transcoder_admin = new RT_Transcoder_Admin();
+$rtgodam_transcoder_admin = new RT_Transcoder_Admin();
 
 /**
  * Initiate blocks.
@@ -89,7 +89,7 @@ $rt_transcoder_admin = new RT_Transcoder_Admin();
  *
  * @return array Processed links.
  */
-function rtt_action_links( $links, $file ) {
+function rtgodam_action_links( $links, $file ) {
 	// Return normal links if not plugin.
 	if ( plugin_basename( 'godam/godam.php' ) !== $file ) {
 		return $links;
@@ -110,8 +110,8 @@ function rtt_action_links( $links, $file ) {
 	);
 }
 
-add_filter( 'plugin_action_links', 'rtt_action_links', 11, 2 );
-add_filter( 'network_admin_plugin_action_links', 'rtt_action_links', 11, 2 );
+add_filter( 'plugin_action_links', 'rtgodam_action_links', 11, 2 );
+add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 );
 
 /**
  * Autoloader for the vendor directory.
@@ -121,16 +121,16 @@ require GODAM_PATH . 'vendor/autoload.php';
 /**
  * Runs when the plugin is activated.
  */
-function godam_plugin_activate() {
-	update_site_option( 'godam_plugin_activation_time', time() );
+function rtgodam_plugin_activate() {
+	update_site_option( 'rtgodam_plugin_activation_time', time() );
 }
-register_activation_hook( __FILE__, 'godam_plugin_activate' );
+register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
 
 /**
  * Runs when the plugin is deactivated.
  */
-function godam_plugin_deactivate() {
+function rtgodam_plugin_deactivate() {
 	\Transcoder\Inc\Cron::get_instance()->unschedule_video_cleanup();
-	delete_site_option( 'godam_plugin_activation_time' );
+	delete_site_option( 'rtgodam_plugin_activation_time' );
 }
-register_deactivation_hook( __FILE__, 'godam_plugin_deactivate' );
+register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );

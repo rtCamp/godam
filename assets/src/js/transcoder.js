@@ -225,13 +225,13 @@ let isIntervalSet = false;
 			return;
 		}
 
-		const video = $( 'video#rt_media_video_' + mediaID );
+		const video = $( 'video#rtgodam_media_video_' + mediaID );
 		if ( video.length > 0 ) {
 			video.attr( 'poster', mediaThumbnails[ mediaID ].poster );
 			return;
 		}
 
-		const video1 = $( 'video#rt_media_video_' + mediaID + '_from_mejs' );
+		const video1 = $( 'video#rtgodam_media_video_' + mediaID + '_from_mejs' );
 		if ( video1.length > 0 ) {
 			video1.attr( 'poster', mediaThumbnails[ mediaID ].poster );
 

@@ -173,11 +173,11 @@ class RT_Transcoder_Admin {
 			'enable_encoding'                       => esc_html__( 'Are you sure you want to enable the transcoding service?', 'godam' ),
 			'something_went_wrong'                  => esc_html__( 'Something went wrong. Please ', 'godam' ) . '<a href onclick="location.reload();">' . esc_html__( 'refresh', 'godam' ) . '</a>' . esc_html__( ' page.', 'godam' ),
 			'error_empty_key'                       => esc_html__( 'Please enter the license key.', 'godam' ),
-			'security_nonce_for_enabling_encoding'  => wp_create_nonce( 'rt_enable_transcoding' ),
-			'security_nonce_for_disabling_encoding' => wp_create_nonce( 'rt_disable_transcoding' ),
+			'security_nonce_for_enabling_encoding'  => wp_create_nonce( 'rtgodam_enable_transcoding' ),
+			'security_nonce_for_disabling_encoding' => wp_create_nonce( 'rtgodam_disable_transcoding' ),
 		);
 
-		wp_localize_script( 'rt-transcoder-main', 'rt_transcoder_script', $localize_script_data );
+		wp_localize_script( 'rt-transcoder-main', 'rtgodam_transcoder_script', $localize_script_data );
 
 		wp_enqueue_script( 'rt-transcoder-main' );
 	}
@@ -372,7 +372,7 @@ class RT_Transcoder_Admin {
 				$media         = $rtmedia_model->get( array( 'media_id' => $id ) );
 				$media_id      = $media[0]->id;
 				$rtmedia_model->update( array( 'cover_art' => $final_file_url ), array( 'media_id' => $id ) );
-				rtt_update_activity_after_thumb_set( $media_id );
+				rtgodam_update_activity_after_thumb_set( $media_id );
 			}
 			update_post_meta( $id, '_rt_media_video_thumbnail', $rtmedia_thumbnail );
 		}
@@ -465,7 +465,7 @@ class RT_Transcoder_Admin {
 		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
 
 		// Get plugin activation time.
-		$activation_time       = get_site_option( 'godam_plugin_activation_time', 0 );
+		$activation_time       = get_site_option( 'rtgodam_plugin_activation_time', 0 );
 		$days_since_activation = ( time() - $activation_time ) / DAY_IN_SECONDS;
 
 		// If more than 3 days have passed and no license is activated, show scheduled notice.
