@@ -1127,7 +1127,7 @@ function rtgodam_verify_license( $license_key, $save = false ) {
 			// Save the license key in the site options only if it is verified.
 			update_site_option( 'rtgodam-api-key', $license_key );
 			update_site_option( 'rtgodam-api-key-stored', $license_key );
-			update_site_option( 'rt-transcoding-account-token', $account_token );
+			update_site_option( 'rtgodam-account-token', $account_token );
 
 			// Update usage data.
 			$handler = new \RT_Transcoder_Handler( false );
@@ -1271,7 +1271,7 @@ function rtgodam_get_localize_array() {
 		$localize_array['author'] = get_the_author();
 	}
 
-	$localize_array['token'] = get_site_option( 'rt-transcoding-account-token', 'unverified' );
+	$localize_array['token'] = get_site_option( 'rtgodam-account-token', 'unverified' );
 
 	return $localize_array;
 }

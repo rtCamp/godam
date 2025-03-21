@@ -206,8 +206,8 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 				<form method="post" action="options.php">
 					<?php
 
-					settings_fields( 'rt-transcoder-settings-group' );
-					do_settings_sections( 'rt-transcoder-settings-group' );
+					settings_fields( 'rtgodam-settings-group' );
+					do_settings_sections( 'rtgodam-settings-group' );
 					?>
 					<table class="form-table">
 						<tr valign="top">

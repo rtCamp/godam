@@ -245,7 +245,7 @@ class Settings extends Base {
 	public function deactivate_license() {
 		// Delete the license key from the database.
 		$deleted_key   = delete_site_option( 'rtgodam-api-key' );
-		$deleted_token = delete_site_option( 'rt-transcoding-account-token' );
+		$deleted_token = delete_site_option( 'rtgodam-account-token' );
 		
 		// Delete the user data from the site_option.
 		delete_site_option( 'rtgodam_user_data' );

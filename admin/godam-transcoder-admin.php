@@ -117,7 +117,7 @@ class RT_Transcoder_Admin {
 	 * Display errors if any while settings are save.
 	 */
 	public function add_settings_errors() {
-		settings_errors( 'rt-transcoder-settings-group' );
+		settings_errors( 'rtgodam-settings-group' );
 	}
 
 	/**
