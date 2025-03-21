@@ -244,7 +244,7 @@ class Settings extends Base {
 	 */
 	public function deactivate_license() {
 		// Delete the license key from the database.
-		$deleted_key   = delete_site_option( 'rt-transcoding-api-key' );
+		$deleted_key   = delete_site_option( 'rtgodam-api-key' );
 		$deleted_token = delete_site_option( 'rt-transcoding-account-token' );
 		
 		// Delete the user data from the site_option.
@@ -275,7 +275,7 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_license_key() {
-		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+		$license_key = get_site_option( 'rtgodam-api-key', '' );
 
 		return new \WP_REST_Response(
 			array(

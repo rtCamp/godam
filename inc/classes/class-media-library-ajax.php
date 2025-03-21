@@ -445,7 +445,7 @@ class Media_Library_Ajax {
 	public function handle_media_deletion( $attachment_id ) {
 		$job_id        = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
 		$account_token = get_site_option( 'rt-transcoding-account-token', '' );
-		$license_key   = get_site_option( 'rt-transcoding-api-key', '' );
+		$license_key   = get_site_option( 'rtgodam-api-key', '' );
 
 		// Ensure all required data is available.
 		if ( empty( $job_id ) || empty( $account_token ) || empty( $license_key ) ) {

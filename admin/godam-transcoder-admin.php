@@ -54,8 +54,8 @@ class RT_Transcoder_Admin {
 	 */
 	public function __construct() {
 
-		$this->api_key        = get_site_option( 'rt-transcoding-api-key' );
-		$this->stored_api_key = get_site_option( 'rt-transcoding-api-key-stored' );
+		$this->api_key        = get_site_option( 'rtgodam-api-key' );
+		$this->stored_api_key = get_site_option( 'rtgodam-api-key-stored' );
 
 		if ( ! class_exists( 'RT_Progress' ) ) {
 			include_once GODAM_PATH . 'admin/godam-transcoder-progressbar.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
@@ -462,7 +462,7 @@ class RT_Transcoder_Admin {
 	public function license_activation_admin_notice() {
 
 		// Get the license key from the site options.
-		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+		$license_key = get_site_option( 'rtgodam-api-key', '' );
 
 		// Get plugin activation time.
 		$activation_time       = get_site_option( 'rtgodam_plugin_activation_time', 0 );

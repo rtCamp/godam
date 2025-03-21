@@ -1021,7 +1021,7 @@ add_filter( 'rtmedia_single_content_filter', 'rtgodam_filter_single_media_page_v
  */
 function rtgodam_media_update_usage( $wp_metadata, $attachment_id, $autoformat = true ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 
-	$stored_key     = get_site_option( 'rt-transcoding-api-key' );
+	$stored_key     = get_site_option( 'rtgodam-api-key' );
 	$transient_flag = get_transient( 'rtgodam_usage_update_flag' );
 
 	if ( ! empty( $stored_key ) && empty( $transient_flag ) ) {
@@ -1125,8 +1125,8 @@ function rtgodam_verify_license( $license_key, $save = false ) {
 		$account_token = $body['message']['account_token'];
 		if ( $save ) {
 			// Save the license key in the site options only if it is verified.
-			update_site_option( 'rt-transcoding-api-key', $license_key );
-			update_site_option( 'rt-transcoding-api-key-stored', $license_key );
+			update_site_option( 'rtgodam-api-key', $license_key );
+			update_site_option( 'rtgodam-api-key-stored', $license_key );
 			update_site_option( 'rt-transcoding-account-token', $account_token );
 
 			// Update usage data.

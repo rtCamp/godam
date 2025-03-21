@@ -122,8 +122,8 @@ class RT_Transcoder_Handler {
 	 */
 	public function __construct( $no_init = false ) {
 
-		$this->api_key          = get_site_option( 'rt-transcoding-api-key' );
-		$this->stored_api_key   = get_site_option( 'rt-transcoding-api-key-stored' );
+		$this->api_key          = get_site_option( 'rtgodam-api-key' );
+		$this->stored_api_key   = get_site_option( 'rtgodam-api-key-stored' );
 		$this->easydam_settings = get_option( 'rt-easydam-settings', array() );
 
 		$default_settings = array(
@@ -169,7 +169,7 @@ class RT_Transcoder_Handler {
 			// Store api key as different db key if user disable transcoding service.
 			if ( ! $this->stored_api_key ) {
 				$this->stored_api_key = $this->api_key;
-				update_site_option( 'rt-transcoding-api-key-stored', $this->stored_api_key );
+				update_site_option( 'rtgodam-api-key-stored', $this->stored_api_key );
 			}
 			add_filter( 'rtmedia_allowed_types', array( $this, 'allowed_types_admin_settings' ), 10, 1 );
 			$usage_info = get_site_option( 'rt-transcoding-usage' );
@@ -560,8 +560,8 @@ class RT_Transcoder_Handler {
 				die();
 			}
 			if ( $this->is_valid_key( $apikey ) ) {
-				update_site_option( 'rt-transcoding-api-key', $apikey );
-				update_site_option( 'rt-transcoding-api-key-stored', $apikey );
+				update_site_option( 'rtgodam-api-key', $apikey );
+				update_site_option( 'rtgodam-api-key-stored', $apikey );
 
 				$usage_info  = $this->update_usage( $apikey );
 				$return_page = add_query_arg(
@@ -1173,7 +1173,7 @@ class RT_Transcoder_Handler {
 	 */
 	public function disable_transcoding() {
 		check_ajax_referer( 'rtgodam_disable_transcoding', 'rtgodam_transcoder_nonce', true );
-		update_site_option( 'rt-transcoding-api-key', '' );
+		update_site_option( 'rtgodam-api-key', '' );
 		esc_html_e( 'Transcoding disabled successfully.', 'godam' );
 		die();
 	}
@@ -1185,7 +1185,7 @@ class RT_Transcoder_Handler {
 	 */
 	public function enable_transcoding() {
 		check_ajax_referer( 'rtgodam_enable_transcoding', 'rtgodam_transcoder_nonce', true );
-		update_site_option( 'rt-transcoding-api-key', $this->stored_api_key );
+		update_site_option( 'rtgodam-api-key', $this->stored_api_key );
 		esc_html_e( 'Transcoding enabled successfully.', 'godam' );
 		die();
 	}
@@ -1358,7 +1358,7 @@ class RT_Transcoder_Handler {
 		$transcoded_thumbs = get_post_meta( $post_id, '_rt_media_thumbnails', true );
 		$thumbnail         = get_post_meta( $post_id, '_rt_media_video_thumbnail', true );
 
-		$status_url = trailingslashit( $this->transcoding_api_url ) . 'job/status/' . $job_id . '/' . get_site_option( 'rt-transcoding-api-key-stored' );
+		$status_url = trailingslashit( $this->transcoding_api_url ) . 'job/status/' . $job_id . '/' . get_site_option( 'rtgodam-api-key-stored' );
 
 		$message  = '';
 		$response = array();

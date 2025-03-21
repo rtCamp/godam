@@ -213,7 +213,7 @@ function image_cta_html( $layer ) {
  */
 function rtgodam_get_user_data( $timeout = 300 ) {
 	$rtgodam_user_data = get_site_option( 'rtgodam_user_data', false );
-	$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+	$license_key = get_site_option( 'rtgodam-api-key', '' );
 
 	if (
 		( empty( $rtgodam_user_data ) && ! empty( $license_key ) ) ||
@@ -264,7 +264,7 @@ function rtgodam_get_user_data( $timeout = 300 ) {
  */
 function rtgodam_get_usage_data() {
 
-	$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+	$license_key = get_site_option( 'rtgodam-api-key', '' );
 
 	if ( empty( $license_key ) ) {
 		return new \WP_Error( 'rtgodam_api_error', 'license key not found ( try refreshing the page )' );

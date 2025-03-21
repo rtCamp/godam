@@ -54,8 +54,8 @@ class RetranscodeMedia {
 	 */
 	public function __construct() {
 
-		$this->api_key        = get_site_option( 'rt-transcoding-api-key' );
-		$this->stored_api_key = get_site_option( 'rt-transcoding-api-key-stored' );
+		$this->api_key        = get_site_option( 'rtgodam-api-key' );
+		$this->stored_api_key = get_site_option( 'rtgodam-api-key-stored' );
 
 		$this->usage_info = get_site_option( 'rt-transcoding-usage' );
 		// Load Rest Endpoints.
