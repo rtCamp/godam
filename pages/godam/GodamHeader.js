@@ -30,17 +30,16 @@ const GodamHeader = () => {
 					</h1>
 					<div className="flex items-center">
 						<Button
-							variant="tertiary"
 							href={ helpLink }
 							target="_blank"
-							className="rounded-full"
+							className="rounded-full text-[#212121]"
 							label={ __( 'Need help?', 'godam' ) }
 							icon={ help }
 						/>
 						{
 							( window?.userData?.valid_license && window?.userData?.user_data?.active_plan && ( window?.userData?.user_data?.active_plan )?.toLowerCase() !== 'platinum' ) &&
 								<Button
-									className="ml-2"
+									className="ml-2 godam-button"
 									variant="primary"
 									size="compact"
 									href={ upgradePlanLink }
