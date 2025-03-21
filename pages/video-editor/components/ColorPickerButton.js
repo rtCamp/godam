@@ -7,6 +7,7 @@ import { useState } from '@wordpress/element';
 /**
  * External dependencies
  */
+import { useEffect } from 'react';
 
 const ColorPickerButton = ( props ) => {
 	const {
@@ -24,6 +25,10 @@ const ColorPickerButton = ( props ) => {
 	} = props;
 
 	const [ color, setColor ] = useState( value );
+
+	useEffect( () => {
+		setColor( value );
+	}, [ value ] );
 
 	return (
 		<Dropdown

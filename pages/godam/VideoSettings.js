@@ -1,12 +1,17 @@
+/* global userData */
+
 /**
  * WordPress dependencies
  */
-import { ToggleControl, TextControl, SelectControl, Modal, Button, Notice, CheckboxControl, Panel, PanelBody } from '@wordpress/components';
+import { ToggleControl, TextControl, SelectControl, Modal, Button, Notice, CheckboxControl, Panel, PanelBody, PanelRow } from '@wordpress/components';
 import { useState, useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { lock, unlock } from '@wordpress/icons';
 
-const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) => {
+const GODAM_API_BASE = 'https://app.godam.io';
+const restURL = window.godamRestRoute.url || '';
+
+const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKey, saveMediaSettings, verifyLicenseFromUrl } ) => {
 	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( mediaSettings?.video?.sync_from_easydam || false );
 	const [ videoFormat, setVideoFormat ] = useState( mediaSettings?.video?.video_format || 'auto' );
 	const [ disableWatermark, setDisableWatermark ] = useState( mediaSettings?.video?.watermark !== undefined ? ! mediaSettings.video.watermark : true );
@@ -22,6 +27,9 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
+
+	const [ isLicenseKeyLoading, setIsLicenseKeyLoading ] = useState( false ); // Loading indicator for saving license key.
+	const [ isDeactivateLoading, setIsDeactivateLoading ] = useState( false );
 
 	const isFirstRender = useRef( true );
 
@@ -55,6 +63,13 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 		setIsModalOpen( false );
 	};
 
+	useEffect( () => {
+		// Trigger verification if the flag is true
+		if ( verifyLicenseFromUrl && licenseKey ) {
+			saveLicenseKey(); // Use the existing saveLicenseKey function
+		}
+	}, [ verifyLicenseFromUrl, licenseKey ] );
+
 	const openMediaPicker = () => {
 		const fileFrame = wp.media( {
 			title: 'Select a Watermark',
@@ -82,6 +97,120 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 		} );
 
 		fileFrame.open();
+	};
+
+	const saveLicenseKey = async () => {
+		if ( ! licenseKey.trim() ) {
+			setNotice( { message: 'Please enter a valid API key', status: 'error', isVisible: true } );
+			return;
+		}
+
+		setIsLicenseKeyLoading( true );
+
+		let result = {};
+
+		try {
+			const response = await fetch( window.pathJoin( [ restURL, '/godam/v1/settings/verify-license' ] ), {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.wpApiSettings.nonce,
+				},
+				body: JSON.stringify( { license_key: licenseKey } ),
+			} );
+
+			result = await response.json();
+
+			if ( response.ok ) {
+				setNotice( { message: result.message || 'API key verified successfully!', status: 'success', isVisible: true } );
+				const updatedSettings = {
+					...mediaSettings,
+					general: {
+						...mediaSettings.general,
+						is_verified: true,
+					},
+				};
+
+				saveMediaSettings( updatedSettings );
+
+				// Reload the page to reflect the changes
+				window.location.reload();
+			} else {
+				setNotice( { message: result.message || 'Failed to verify the API key', status: 'error', isVisible: true } );
+				window.userData.valid_license = false;
+				window.userData.user_data = {};
+			}
+		} catch ( error ) {
+			setNotice( { message: 'An error occurred. Please try again later', status: 'error', isVisible: true } );
+			window.userData.valid_license = false;
+			window.userData.user_data = {};
+		} finally {
+			setIsLicenseKeyLoading( false ); // Hide loading indicator.
+		}
+
+		window.scrollTo( { top: 0, behavior: 'smooth' } );
+
+		// Hide the notice after 5 seconds
+		setTimeout( () => {
+			setNotice( { ...notice, isVisible: false } );
+		}, 5000 );
+	};
+
+	const deactivateLicenseKey = async () => {
+		setIsDeactivateLoading( true );
+
+		try {
+			const response = await fetch( window.pathJoin( [ restURL, '/godam/v1/settings/deactivate-license' ] ), {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.wpApiSettings.nonce,
+				},
+			} );
+
+			if ( response.ok ) {
+				setLicenseKey( '' ); // Clear the license key from state.
+				setNotice( { message: 'API key deactivated successfully', status: 'success', isVisible: true } );
+				const updatedSettings = {
+					...mediaSettings,
+					general: {
+						...mediaSettings.general,
+						is_verified: false,
+					},
+				};
+
+				saveMediaSettings( updatedSettings );
+			} else {
+				setNotice( { message: 'Failed to deactivate API key. Please try again', status: 'error', isVisible: true } );
+			}
+		} catch ( error ) {
+			setNotice( { message: 'An error occurred while deactivating the API key', status: 'error', isVisible: true } );
+		} finally {
+			setIsDeactivateLoading( false );
+			// reload the page.
+			window.userData.valid_license = false; // Set the flag to true.
+			window.userData.user_data = {}; // Set the flag to true.
+		}
+
+		window.scrollTo( { top: 0, behavior: 'smooth' } );
+
+		// Hide the notice after 5 seconds
+		setTimeout( () => {
+			setNotice( { ...notice, isVisible: false } );
+		}, 5000 );
+	};
+
+	const calculatePercentage = ( used, total ) => {
+		if ( total === 0 ) {
+			return 0;
+		}
+		try {
+			const result = ( used / total ) * 100;
+			return result.toFixed( 2 );
+		} catch ( error ) {
+			console.error( 'Error calculating percentage:', error );
+			return 0;
+		}
 	};
 
 	const handleSaveSettings = async () => {
@@ -171,7 +300,151 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, saveMediaSettings } ) =>
 				</Notice>
 			) }
 
-			<div className="relative">
+			{ ! window?.userData?.valid_license && (
+				<Panel
+					header={ __( 'Pricing Plan', 'godam' ) }
+					className="mb-4"
+				>
+					<PanelBody
+						opened={ true }
+					>
+						<h2
+							className="text-2xl font-semibold text-center"
+						>
+							{ __( 'Ensure Smooth Video Playback', 'godam' ) }
+						</h2>
+
+						<p
+							className="text-center text-gray-600"
+						>
+							{ __( 'Set up your video transcoding settings to optimize playback across all devices and network conditions. 🚀', 'godam' ) }
+						</p>
+
+						<div
+							className="w-full flex justify-center items-center mt-4 mb-4"
+						>
+							<Button
+								href="https://godam.io/#pricing"
+								target="_blank"
+								variant="primary"
+							>
+								{ __( 'Choose GoDAM plan', 'godam' ) }
+							</Button>
+						</div>
+					</PanelBody>
+				</Panel>
+			) }
+
+			<Panel
+				header={ __( 'API Settings', 'godam' ) }
+				className="w-full"
+			>
+				<PanelBody
+					initialOpen={ true }
+					className="flex gap-8"
+				>
+					<div className="flex flex-col gap-2 b-4m">
+						<TextControl
+							label={ __( 'API Key', 'godam' ) }
+							value={ licenseKey }
+							onChange={ ( value ) => setLicenseKey( value ) }
+							help={
+								<>
+									{
+										( ! window?.userData?.valid_license ) &&
+											<>
+												{ __( 'Your API key is required to access the features. You can get your active API key from your ', 'godam' ) }
+												<a
+													href={ GODAM_API_BASE + '/#licenses' }
+													target="_blank"
+													rel="noopener noreferrer"
+													className="text-blue-500 underline"
+												>
+													{ __( 'Account', 'godam' ) }
+												</a>.
+											</>
+									}
+								</>
+							}
+							placeholder="Enter your API key here"
+							className={ `max-w-[400px] ${ ( ! window?.userData?.valid_license && window?.userData?.user_data?.license_key ) ? 'invalid-license-key' : '' }` }
+							disabled={ window?.userData?.valid_license }
+						/>
+						<div className="flex gap-2">
+							<Button
+								className="max-w-[140px] w-full flex justify-center items-center"
+								onClick={ saveLicenseKey }
+								disabled={ isLicenseKeyLoading || window?.userData?.valid_license }
+								variant="primary"
+								isBusy={ isLicenseKeyLoading }
+							>
+								{ __( 'Save API Key', 'godam' ) }
+							</Button>
+							<Button
+								className="max-w-[160px] w-full flex justify-center items-center"
+								onClick={ deactivateLicenseKey }
+								disabled={ isLicenseKeyLoading || ! window?.userData?.valid_license }
+								variant="secondary"
+								isDestructive
+								isBusy={ isDeactivateLoading }
+							>
+								{ __( 'Remove API Key', 'godam' ) }
+							</Button>
+						</div>
+					</div>
+					{
+						( mediaSettings?.general?.is_verified || window?.userData?.valid_license ) && (
+							<div className="flex gap-4 flex-wrap">
+
+								{
+									userData.storageBandwidthError ? (
+										<p className="text-yellow-700 text-xs h-max">{ userData.storageBandwidthError }</p>
+									) : (
+										<>
+											<div className="flex gap-3 items-center">
+												<div className="circle-container">
+													<div className="data text-xs">{ calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) }%</div>
+													<div
+														className={ `circle ${
+															calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) > 90 ? 'red' : ''
+														}` }
+														style={ { '--percentage': calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) + '%' } }
+													></div>
+												</div>
+												<div className="leading-6">
+													<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
+													<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_bandwidth - userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+													<br />
+													<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+												</div>
+											</div>
+											<div className="flex gap-3 items-center">
+												<div className="circle-container">
+													<div className="data text-xs">{ calculatePercentage( userData.storage_used, userData.total_storage ) }%</div>
+													<div
+														className={ `circle ${
+															calculatePercentage( userData.storage_used, userData.total_storage ) > 90 ? 'red' : ''
+														}` }
+														style={ { '--percentage': calculatePercentage( userData.storage_used, userData.total_storage ) + '%' } }
+													></div>
+												</div>
+												<div className="leading-6">
+													<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
+													<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_storage - userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+													<br />
+													<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+												</div>
+											</div>
+										</>
+									)
+								}
+							</div>
+						)
+					}
+				</PanelBody>
+			</Panel>
+
+			<div className="relative mt-4">
 				{
 					! isValidLicense && (
 						<div className="premium-feature-overlay">
