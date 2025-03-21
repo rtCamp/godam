@@ -398,7 +398,7 @@ add_filter( 'media_send_to_editor', 'rtgodam_generate_video_shortcode', 100, 3 )
  */
 function rtgodam_is_track_status_enabled() {
 	// Fetch EasyDAM settings from the database.
-	$easydam_settings = get_option( 'rt-easydam-settings', array() );
+	$easydam_settings = get_option( 'rtgodam-settings', array() );
 
 	// Check and return the track_status value, defaulting to false if not set.
 	return ! empty( $easydam_settings['general']['track_status'] ) && $easydam_settings['general']['track_status'];
@@ -682,7 +682,7 @@ function rtgodam_get_upload_dir() {
 function rtgodam_is_override_thumbnail( $attachment_id = '' ) {
 
 	// Fetch EasyDAM settings directly.
-	$easydam_settings = get_option( 'rt-easydam-settings', array() );
+	$easydam_settings = get_option( 'rtgodam-settings', array() );
 
 	// Return the 'overwrite_thumbnails' value, defaulting to false if not set.
 	$rtgodam_override_thumbnail = ! empty( $easydam_settings['video']['overwrite_thumbnails'] );

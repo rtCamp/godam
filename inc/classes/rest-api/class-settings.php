@@ -319,7 +319,7 @@ class Settings extends Base {
 		);
 
 		// Retrieve settings from the database.
-		$easydam_settings = get_option( 'rt-easydam-settings', $default_settings );
+		$easydam_settings = get_option( 'rtgodam-settings', $default_settings );
 
 		return new \WP_REST_Response( $easydam_settings, 200 );
 	}
@@ -334,7 +334,7 @@ class Settings extends Base {
 		$settings = $request->get_param( 'settings' );
 
 		// Save settings to the database.
-		update_option( 'rt-easydam-settings', $settings );
+		update_option( 'rtgodam-settings', $settings );
 
 		return new \WP_REST_Response(
 			array(

@@ -196,7 +196,7 @@ class Assets {
 			)
 		);
 
-		$disable_folder_organization = get_option( 'rt-easydam-settings', array() )['general']['disable_folder_organization'] ?? false;
+		$disable_folder_organization = get_option( 'rtgodam-settings', array() )['general']['disable_folder_organization'] ?? false;
 
 		wp_localize_script(
 			'easydam-media-library',

@@ -124,7 +124,7 @@ class RT_Transcoder_Handler {
 
 		$this->api_key          = get_site_option( 'rtgodam-api-key' );
 		$this->stored_api_key   = get_site_option( 'rtgodam-api-key-stored' );
-		$this->easydam_settings = get_option( 'rt-easydam-settings', array() );
+		$this->easydam_settings = get_option( 'rtgodam-settings', array() );
 
 		$default_settings = array(
 			'video' => array(
@@ -138,7 +138,7 @@ class RT_Transcoder_Handler {
 		);
 
 		$this->easydam_settings = wp_parse_args(
-			get_option( 'rt-easydam-settings', array() ),
+			get_option( 'rtgodam-settings', array() ),
 			$default_settings
 		);
 
@@ -338,6 +338,7 @@ class RT_Transcoder_Handler {
 			$transcoding_url = $this->transcoding_api_url . 'resource/Transcoder Job';
 
 			$upload_page = wp_remote_post( $transcoding_url, $args );
+			error_log( print_r( $upload_page, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log, WordPress.WP.AlternativeFunctions.json_encode_json_encode
 			if ( ! is_wp_error( $upload_page ) &&
 				(
 					isset( $upload_page['response']['code'] ) &&

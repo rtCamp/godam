@@ -259,7 +259,7 @@ function add_transcoded_url_field( $form_fields, $post ) {
 
 	$transcoded_url = get_post_meta( $post->ID, '_rt_transcoded_url', true );
 
-	$easydam_settings = get_option( 'rt-easydam-settings', array() );
+	$easydam_settings = get_option( 'rtgodam-settings', array() );
 
 	$adaptive_bitrate_enabled = ! empty( $easydam_settings['video']['adaptive_bitrate'] );
 
@@ -286,7 +286,7 @@ add_filter( 'attachment_fields_to_edit', 'add_transcoded_url_field', 10, 2 );
  */
 function save_transcoded_url_field( $post, $attachment ) {
 	// Check if adaptive bitrate streaming is enabled.
-	$easydam_settings = get_option( 'rt-easydam-settings', array() );
+	$easydam_settings = get_option( 'rtgodam-settings', array() );
 
 	$adaptive_bitrate_enabled = ! empty( $easydam_settings['video']['adaptive_bitrate'] );
 
