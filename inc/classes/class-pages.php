@@ -21,11 +21,12 @@ class Pages {
 	private $menu_slug            = 'rtgodam';
 	private $video_editor_slug    = 'rtgodam_video_editor';
 	private $analytics_slug       = 'rtgodam_analytics';
+	private $help_slug			  = 'rtgodam_help';
+
 	private $menu_page_id         = 'toplevel_page_rtgodam';
-	private $video_editor_page_id = 'rtgodam_page_video_editor';
-	private $analytics_page_id    = 'rtgodam_page_analytics';
-	private $help_page_id         = 'rtgodam_page_help';
-	private $help_slug            = 'rtgodam_help';
+	private $video_editor_page_id = 'godam_page_' . 'rtgodam_video_editor';
+	private $analytics_page_id    = 'godam_page_' . 'rtgodam_analytics';
+	private $help_page_id         = 'godam_page_' . 'rtgodam_help';
 
 	/**
 	 * Construct method.
