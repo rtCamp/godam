@@ -87,9 +87,9 @@ $media-frame-width: calc(300px + 2 * 24px);
 /**
  * Admin page CSS changes for the top-level EasyDAM page.
  */
-.toplevel_page_godam,
-.rtgodam_page_video_editor,
-.rtgodam_page_help,
+.toplevel_page_rtgodam,
+.godam_page_rtgodam_video_editor,
+.godam_page_rtgodam_help,
 .godam-analytics-container {
 	--wp-admin-theme-color: #ab3a6c;
 
