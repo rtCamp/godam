@@ -9,6 +9,8 @@
 
 namespace Transcoder\Inc\Providers\Storage;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Base class for storage providers.
  */

@@ -4,6 +4,8 @@
  */
 namespace Transcoder\Inc;
 
+defined( 'ABSPATH' ) || exit;
+
 use Transcoder\Inc\Traits\Singleton;
 
 class Deactivation {
@@ -76,7 +78,7 @@ class Deactivation {
 		// Filter the inputs.
 		$site_url = filter_input( INPUT_POST, 'site_url', FILTER_SANITIZE_URL );
 		$reason   = filter_input( INPUT_POST, 'reason', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$user     = filter_input( INPUT_POST, 'user', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+		$user     = filter_input( INPUT_POST, 'user', FILTER_SANITIZE_FULL_SPECIAL_CHARS, FILTER_REQUIRE_ARRAY );
 		$feedback = filter_input( INPUT_POST, 'additional_feedback', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 		$data = array(

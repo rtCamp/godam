@@ -9,6 +9,8 @@
 
 namespace Transcoder\Inc\Providers\Exceptions;
 
+defined( 'ABSPATH' ) || exit;
+
 use Exception;
 
 /**

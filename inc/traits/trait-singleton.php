@@ -27,6 +27,8 @@
 
 namespace Transcoder\Inc\Traits;
 
+defined( 'ABSPATH' ) || exit;
+
 trait Singleton {
 
 	/**

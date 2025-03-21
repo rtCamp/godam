@@ -8,6 +8,8 @@
  * @subpackage Transcoder/Functions
  */
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Return instance of RT_Transcoder_Admin Class.
  *
@@ -1282,14 +1284,16 @@ function rt_get_localize_array() {
 function rtt_get_user_ip() {
 	$ip_address = '';
 
-	if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-		$ip_address = $_SERVER['HTTP_CLIENT_IP'];
-	} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-		// Handle multiple IPs (e.g., in proxies).
-		$ip_address = explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] )[0];
-	} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-		$ip_address = $_SERVER['REMOTE_ADDR'];
+	$ip_address = filter_var( get_server_var( 'HTTP_CLIENT_IP' ), FILTER_VALIDATE_IP );
+
+	if ( empty( $ip_address ) ) {
+		$forwarded_for = get_server_var( 'HTTP_X_FORWARDED_FOR' );
+		$ip_address = ! empty( $forwarded_for ) ? filter_var( explode( ',', $forwarded_for )[0], FILTER_VALIDATE_IP ) : false;
 	}
 
-	return esc_attr( $ip_address );
+	if ( empty( $ip_address ) ) {
+		$ip_address = filter_var( get_server_var( 'REMOTE_ADDR' ), FILTER_VALIDATE_IP );
+	}
+
+	return $ip_address; // Return an empty string if invalid
 }

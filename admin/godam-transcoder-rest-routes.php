@@ -5,6 +5,9 @@
  * @package transcoder
  */
 
+defined( 'ABSPATH' ) || exit;
+
+
 /**
  * Handle REST Routes for Transcoder.
  */

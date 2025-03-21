@@ -7,6 +7,8 @@
 
 namespace Transcoder\Inc;
 
+defined( 'ABSPATH' ) || exit;
+
 use Transcoder\Inc\Traits\Singleton;
 
 /**
@@ -104,7 +106,12 @@ class Assets {
 		wp_enqueue_style( 'godam-style' );
 
 		// Register IMA SDK.
-		wp_enqueue_script( 'ima-sdk', 'https://imasdk.googleapis.com/js/sdkloader/ima3.js', GODAM_VERSION, true );
+		wp_enqueue_script(
+			'ima-sdk',
+			GODAM_URL . '/assets/src/libs/ima3.js',
+			GODAM_VERSION,
+			true
+		);
 	}
 
 	/**

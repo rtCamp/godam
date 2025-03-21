@@ -9,6 +9,8 @@
 
 namespace Transcoder\Inc\Providers\Storage;
 
+defined( 'ABSPATH' ) || exit;
+
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 use Transcoder\Inc\Providers\Exceptions\EasyDamException;

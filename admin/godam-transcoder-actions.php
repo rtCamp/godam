@@ -8,6 +8,8 @@
  * @subpackage Transcoder/Actions
  */
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * This filter has been commented because it was conflicting  with the
  * set-custom-thumbnail addon.
