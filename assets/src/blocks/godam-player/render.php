@@ -87,10 +87,10 @@ $godam_settings   = get_option( 'rt-easydam-settings', array() );
 $brand_color      = isset( $godam_settings['general']['brand_color'] ) ? $godam_settings['general']['brand_color'] : null;
 $appearance_color = isset( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
 
-if ( ! empty( $brand_color ) ) {
-	$easydam_control_bar_color = $brand_color;
-} elseif ( ! empty( $appearance_color ) ) {
+if ( ! empty( $appearance_color ) ) {
 	$easydam_control_bar_color = $appearance_color;
+} elseif ( ! empty( $brand_color ) ) {
+	$easydam_control_bar_color = $brand_color;
 }
 
 $easydam_hover_color        = ! empty( $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';

@@ -150,6 +150,7 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings } ) => {
 								>
 									{ __( 'Custom Brand Logo', 'godam' ) }
 								</label>
+
 								<Button
 									onClick={ openBrandMediaPicker }
 									variant="primary"
@@ -171,6 +172,10 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings } ) => {
 										/>
 									</div>
 								) }
+
+								<p className="text-xsm text-gray-600 mb-2">
+									{ __( 'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos', 'godam' ) }
+								</p>
 							</div>
 
 							<div className="form-group">
@@ -187,6 +192,10 @@ const GeneralSettings = ( { mediaSettings, saveMediaSettings } ) => {
 									value={ brandColor }
 									onChange={ ( color ) => setBrandColor( color ) }
 								/>
+
+								<p className="text-xsm text-gray-600 mb-2">
+									{ __( 'Select a brand color to apply to the video block. This can be overridden for individual videos by the video editor', 'godam' ) }
+								</p>
 							</div>
 						</div>
 					</PanelBody>

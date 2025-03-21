@@ -3,7 +3,7 @@
 /**
  * WordPress dependencies
  */
-import { ToggleControl, TextControl, SelectControl, Modal, Button, Notice, CheckboxControl, Panel, PanelBody } from '@wordpress/components';
+import { ToggleControl, TextControl, SelectControl, Modal, Button, Notice, CheckboxControl, Panel, PanelBody, PanelRow } from '@wordpress/components';
 import { useState, useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { lock, unlock } from '@wordpress/icons';
@@ -28,7 +28,6 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
-	const [ plans, setPlans ] = useState( [] );
 	const [ isLicenseKeyLoading, setIsLicenseKeyLoading ] = useState( false ); // Loading indicator for saving license key.
 	const [ isDeactivateLoading, setIsDeactivateLoading ] = useState( false );
 
@@ -63,34 +62,6 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 	const handleCloseModal = () => {
 		setIsModalOpen( false );
 	};
-
-	useEffect( () => {
-		const fetchPlans = async () => {
-			try {
-				const response = await fetch(
-					window.pathJoin( [ restURL, '/godam/v1/settings/subscription-plans' ] ),
-					{
-						method: 'GET',
-						headers: {
-							'Content-Type': 'application/json',
-						},
-					},
-				);
-				const result = await response.json();
-
-				if ( response.ok ) {
-					const sortedPlans = result.data.sort( ( a, b ) => a.cost - b.cost );
-					setPlans( sortedPlans );
-				} else {
-					console.error( 'Failed to fetch subscription plans:', result.message );
-				}
-			} catch ( error ) {
-				console.error( 'Error fetching subscription plans:', error );
-			}
-		};
-
-		fetchPlans();
-	}, [] );
 
 	useEffect( () => {
 		// Trigger verification if the flag is true
@@ -130,7 +101,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 
 	const saveLicenseKey = async () => {
 		if ( ! licenseKey.trim() ) {
-			setNotice( { message: 'Please enter a valid license key', status: 'error', isVisible: true } );
+			setNotice( { message: 'Please enter a valid API key', status: 'error', isVisible: true } );
 			return;
 		}
 
@@ -151,7 +122,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 			result = await response.json();
 
 			if ( response.ok ) {
-				setNotice( { message: result.message || 'License key verified successfully!', status: 'success', isVisible: true } );
+				setNotice( { message: result.message || 'API key verified successfully!', status: 'success', isVisible: true } );
 				const updatedSettings = {
 					...mediaSettings,
 					general: {
@@ -165,7 +136,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 				// Reload the page to reflect the changes
 				window.location.reload();
 			} else {
-				setNotice( { message: result.message || 'Failed to verify the license key', status: 'error', isVisible: true } );
+				setNotice( { message: result.message || 'Failed to verify the API key', status: 'error', isVisible: true } );
 				window.userData.valid_license = false;
 				window.userData.user_data = {};
 			}
@@ -199,7 +170,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 
 			if ( response.ok ) {
 				setLicenseKey( '' ); // Clear the license key from state.
-				setNotice( { message: 'License key deactivated successfully', status: 'success', isVisible: true } );
+				setNotice( { message: 'API key deactivated successfully', status: 'success', isVisible: true } );
 				const updatedSettings = {
 					...mediaSettings,
 					general: {
@@ -210,40 +181,15 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 
 				saveMediaSettings( updatedSettings );
 			} else {
-				setNotice( { message: 'Failed to deactivate license key. Please try again', status: 'error', isVisible: true } );
+				setNotice( { message: 'Failed to deactivate API key. Please try again', status: 'error', isVisible: true } );
 			}
 		} catch ( error ) {
-			setNotice( { message: 'An error occurred while deactivating the license key', status: 'error', isVisible: true } );
+			setNotice( { message: 'An error occurred while deactivating the API key', status: 'error', isVisible: true } );
 		} finally {
 			setIsDeactivateLoading( false );
 			// reload the page.
 			window.userData.valid_license = false; // Set the flag to true.
 			window.userData.user_data = {}; // Set the flag to true.
-		}
-
-		window.scrollTo( { top: 0, behavior: 'smooth' } );
-
-		// Hide the notice after 5 seconds
-		setTimeout( () => {
-			setNotice( { ...notice, isVisible: false } );
-		}, 5000 );
-	};
-
-	const saveGeneralSettings = async () => {
-		const updatedSettings = {
-			...mediaSettings,
-			general: {
-				...mediaSettings.general,
-				track_status: trackStatusOnUserProfile,
-			},
-		};
-
-		const isSaved = await saveMediaSettings( updatedSettings );
-
-		if ( isSaved ) {
-			setNotice( { message: 'Settings saved successfully!', status: 'success', isVisible: true } );
-		} else {
-			setNotice( { message: 'Failed to save settings. Please try again', status: 'error', isVisible: true } );
 		}
 
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
@@ -354,21 +300,58 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 				</Notice>
 			) }
 
-			<div className="flex flex-col lg:flex-row gap-4 items-start mb-4">
-				<Panel header={ __( 'API Settings', 'godam' ) } className="w-full">
+			{ ! window?.userData?.valid_license && (
+				<Panel
+					header={ __( 'Pricing Plan', 'godam' ) }
+					className="mb-4"
+				>
 					<PanelBody
 						opened={ true }
-						className="flex gap-8"
 					>
-						<div className="flex flex-col gap-2 b-4m">
-							<TextControl
-								label={ __( 'API Key', 'godam' ) }
-								value={ licenseKey }
-								onChange={ ( value ) => setLicenseKey( value ) }
-								help={
-									<>
-										{
-											( ! window?.userData?.valid_license ) &&
+						<h2
+							className="text-2xl font-semibold text-center"
+						>
+							{ __( 'Ensure Smooth Video Playback', 'godam' ) }
+						</h2>
+
+						<p
+							className="text-center text-gray-600"
+						>
+							{ __( 'Set up your video transcoding settings to optimize playback across all devices and network conditions. 🚀', 'godam' ) }
+						</p>
+
+						<div
+							className="w-full flex justify-center items-center mt-4 mb-4"
+						>
+							<Button
+								href="https://godam.io/#pricing"
+								target="_blank"
+								variant="primary"
+							>
+								{ __( 'Choose GoDAM plan', 'godam' ) }
+							</Button>
+						</div>
+					</PanelBody>
+				</Panel>
+			) }
+
+			<Panel
+				header={ __( 'API Settings', 'godam' ) }
+				className="w-full"
+			>
+				<PanelBody
+					initialOpen={ true }
+					className="flex gap-8"
+				>
+					<div className="flex flex-col gap-2 b-4m">
+						<TextControl
+							label={ __( 'API Key', 'godam' ) }
+							value={ licenseKey }
+							onChange={ ( value ) => setLicenseKey( value ) }
+							help={
+								<>
+									{
+										( ! window?.userData?.valid_license ) &&
 											<>
 												{ __( 'Your API key is required to access the features. You can get your active API key from your ', 'godam' ) }
 												<a
@@ -380,144 +363,86 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 													{ __( 'Account', 'godam' ) }
 												</a>.
 											</>
-										}
-									</>
-								}
-								placeholder="Enter your license key here"
-								className={ `max-w-[400px] ${ ( ! window?.userData?.valid_license && window?.userData?.user_data?.license_key ) ? 'invalid-license-key' : '' }` }
-								disabled={ window?.userData?.valid_license }
-							/>
-							<div className="flex gap-2">
-								<Button
-									className="max-w-[140px] w-full flex justify-center items-center"
-									onClick={ saveLicenseKey }
-									disabled={ isLicenseKeyLoading || window?.userData?.valid_license }
-									variant="primary"
-									isBusy={ isLicenseKeyLoading }
-								>
-									{ __( 'Save License Key', 'godam' ) }
-								</Button>
-								<Button
-									className="max-w-[160px] w-full flex justify-center items-center"
-									onClick={ deactivateLicenseKey }
-									disabled={ isLicenseKeyLoading || ! window?.userData?.valid_license }
-									variant="secondary"
-									isDestructive
-									isBusy={ isDeactivateLoading }
-								>
-									{ __( 'Remove License Key', 'godam' ) }
-								</Button>
-							</div>
-						</div>
-						{
-							( mediaSettings?.general?.is_verified && window?.userData?.valid_license ) && (
-								<div className="flex gap-4 flex-wrap">
-
-									{
-										userData.storageBandwidthError ? (
-											<p className="text-yellow-700 text-xs h-max">{ userData.storageBandwidthError }</p>
-										) : (
-											<>
-												<div className="flex gap-3 items-center">
-													<div className="circle-container">
-														<div className="data text-xs">{ calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) }%</div>
-														<div
-															className={ `circle ${
-																calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) > 90 ? 'red' : ''
-															}` }
-															style={ { '--percentage': calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) + '%' } }
-														></div>
-													</div>
-													<div className="leading-6">
-														<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
-														<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_bandwidth - userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
-														<br />
-														<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
-													</div>
-												</div>
-												<div className="flex gap-3 items-center">
-													<div className="circle-container">
-														<div className="data text-xs">{ calculatePercentage( userData.storage_used, userData.total_storage ) }%</div>
-														<div
-															className={ `circle ${
-																calculatePercentage( userData.storage_used, userData.total_storage ) > 90 ? 'red' : ''
-															}` }
-															style={ { '--percentage': calculatePercentage( userData.storage_used, userData.total_storage ) + '%' } }
-														></div>
-													</div>
-													<div className="leading-6">
-														<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
-														<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_storage - userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
-														<br />
-														<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
-													</div>
-												</div>
-											</>
-										)
 									}
-								</div>
-							) }
-					</PanelBody>
-				</Panel>
-			</div>
-
-			{ ! window?.userData?.valid_license && (
-				<Panel
-					header={ __( 'Pricing Plan', 'godam' ) }
-				>
-					<PanelBody
-						opened={ true }
-					>
-						<div className="subscription-plans">
-
-							<p className="mb-4 mt-0">
-								{ __( 'To enable transcoding, you will need to subscribe to one of the following plans after downloading GoDAM. We encourage you to explore the service with the free subscription plan.', 'godam' ) }
-								<a href="https://godam.io/#pricing">{ __( 'See all the available features', 'godam' ) }</a>
-							</p>
-
-							<div className="flex gap-4 pb-4 flex-wrap">
-								{ plans.map( ( plan ) => (
-									<div
-										key={ plan.name }
-										className="plan min-w-[200px] flex-shrink-0 border px-6 py-5 rounded-lg shadow-sm bg-white transition-transform transform hover:shadow-lg flex flex-col justify-center items-center gap-2"
-									>
-										<div className="text-center">
-											<h3 className="text-lg font-bold text-gray-800 mb-0">{ plan.name } { __( 'Plan', 'godam' ) }</h3>
-										</div>
-										<p className="text-xl font-semibold text-gray-800 my-1 text-center">
-											${ plan.cost } <span className="text-sm text-gray-500">{ __( 'Per', 'godam' ) } { plan.billing_interval }</span>
-										</p>
-										<ul className="text-xs text-gray-600 my-2 text-center">
-											<li>{ plan.bandwidth }{ __( 'GB bandwidth', 'godam' ) }</li>
-											<li>{ plan.storage }{ __( 'GB storage', 'godam' ) }</li>
-											<li>{ __( 'High-quality transcoding', 'godam' ) }</li>
-											<li>{ __( 'Access to advanced analytics', 'godam' ) }</li>
-										</ul>
-										<Button
-											className="mb-2 w-full justify-center"
-											variant="primary"
-											href={ `${ GODAM_API_BASE }/subscription/account-creation?plan_name=${ encodeURIComponent( plan.name ) }&ref=${ encodeURIComponent( window.location.href ) }` }
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											{ __( 'Subscribe', 'godam' ) }
-										</Button>
-										<Button
-											className="w-full justify-center"
-											variant="secondary"
-											href={ `${ GODAM_API_BASE }/subscription/account-creation?plan_name=${ encodeURIComponent( plan.name ) }&ref=${ encodeURIComponent( window.location.href ) }&billing=trial` }
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											{ __( 'Start 7 Days Free Trial', 'godam' ) }
-										</Button>
-									</div>
-								) ) }
-							</div>
+								</>
+							}
+							placeholder="Enter your API key here"
+							className={ `max-w-[400px] ${ ( ! window?.userData?.valid_license && window?.userData?.user_data?.license_key ) ? 'invalid-license-key' : '' }` }
+							disabled={ window?.userData?.valid_license }
+						/>
+						<div className="flex gap-2">
+							<Button
+								className="max-w-[140px] w-full flex justify-center items-center"
+								onClick={ saveLicenseKey }
+								disabled={ isLicenseKeyLoading || window?.userData?.valid_license }
+								variant="primary"
+								isBusy={ isLicenseKeyLoading }
+							>
+								{ __( 'Save API Key', 'godam' ) }
+							</Button>
+							<Button
+								className="max-w-[160px] w-full flex justify-center items-center"
+								onClick={ deactivateLicenseKey }
+								disabled={ isLicenseKeyLoading || ! window?.userData?.valid_license }
+								variant="secondary"
+								isDestructive
+								isBusy={ isDeactivateLoading }
+							>
+								{ __( 'Remove API Key', 'godam' ) }
+							</Button>
 						</div>
-					</PanelBody>
-				</Panel>
-			) }
+					</div>
+					{
+						( mediaSettings?.general?.is_verified || window?.userData?.valid_license ) && (
+							<div className="flex gap-4 flex-wrap">
+
+								{
+									userData.storageBandwidthError ? (
+										<p className="text-yellow-700 text-xs h-max">{ userData.storageBandwidthError }</p>
+									) : (
+										<>
+											<div className="flex gap-3 items-center">
+												<div className="circle-container">
+													<div className="data text-xs">{ calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) }%</div>
+													<div
+														className={ `circle ${
+															calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) > 90 ? 'red' : ''
+														}` }
+														style={ { '--percentage': calculatePercentage( userData.bandwidth_used, userData.total_bandwidth ) + '%' } }
+													></div>
+												</div>
+												<div className="leading-6">
+													<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
+													<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_bandwidth - userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+													<br />
+													<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+												</div>
+											</div>
+											<div className="flex gap-3 items-center">
+												<div className="circle-container">
+													<div className="data text-xs">{ calculatePercentage( userData.storage_used, userData.total_storage ) }%</div>
+													<div
+														className={ `circle ${
+															calculatePercentage( userData.storage_used, userData.total_storage ) > 90 ? 'red' : ''
+														}` }
+														style={ { '--percentage': calculatePercentage( userData.storage_used, userData.total_storage ) + '%' } }
+													></div>
+												</div>
+												<div className="leading-6">
+													<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
+													<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_storage - userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+													<br />
+													<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+												</div>
+											</div>
+										</>
+									)
+								}
+							</div>
+						)
+					}
+				</PanelBody>
+			</Panel>
 
 			<div className="relative mt-4">
 				{
