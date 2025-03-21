@@ -95,7 +95,6 @@ class Media_Library_Ajax {
 		foreach ( $children as $child ) {
 			wp_delete_term( $child->term_id, $taxonomy );
 		}
-
 	}
 
 	/**
