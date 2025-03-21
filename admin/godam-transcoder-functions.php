@@ -961,8 +961,7 @@ function rtt_add_transcoding_process_status_button_single_media_page( $rtmedia_i
 			);
 		}
 
-		// Message already escaped.
-		echo $message; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $message; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Message already escaped.
 
 	}
 }

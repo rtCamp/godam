@@ -188,6 +188,81 @@ class RetranscodeMedia {
 		}
 
 		wp_enqueue_style( 'jquery-ui-retranscodemedia', plugins_url( 'css/jquery-ui-1.7.2.custom.css', __FILE__ ), array(), '1.7.2' );
+
+		$ids = array();
+		if ( ! empty( $_POST['godam-tools'] ) || ! empty( $_REQUEST['ids'] ) ) {
+			// Capability check.
+			if ( ! current_user_can( $this->capability ) ) {
+				wp_die( esc_html__( 'Cheatin&#8217; uh?', 'godam' ) );
+			}
+
+			// Form nonce check.
+			check_admin_referer( 'godam-tools' );
+			
+			$file_size = 0;
+			$files     = array();
+	
+			// Get the list of media IDs.
+			$ids = transcoder_filter_input( INPUT_GET, 'ids', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+			if ( ! empty( $ids ) ) {
+				$ids = explode( ',', $ids );
+			} else {
+				add_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
+				$query = new WP_Query( array( 'post_type' => 'attachments' ) );
+				$media = $query->get_posts();
+				remove_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
+				if ( empty( $media ) || is_wp_error( $media ) ) {
+	
+					// translators: Link to the media page.
+					echo '	<p>' . sprintf( esc_html__( "Unable to find any media. Are you sure <a href='%s'>some exist</a>?", 'godam' ), esc_url( admin_url( 'upload.php' ) ) ) . '</p></div>';
+					return;
+				}
+	
+				// Generate the list of IDs.
+				$ids = array();
+				foreach ( $media as $i => $each ) {
+					if ( ! in_array( $each->post_mime_type, array( 'audio/mp3', 'audio/mpeg' ), true ) ) {
+						$ids[] = $each->ID;
+						$path  = get_attached_file( $each->ID );
+						if ( file_exists( $path ) ) {
+							$current_file_size  = filesize( $path );
+							$file_size          = $file_size + $current_file_size;
+							$files[ $each->ID ] = array(
+								'name' => esc_html( get_the_title( $each->ID ) ),
+								'size' => $current_file_size,
+							);
+						}
+					} elseif ( in_array( $each->post_mime_type, array( 'audio/mp3', 'audio/mpeg' ), true ) ) {
+						unset( $media[ $i ] );
+					}
+				}
+			}
+
+			$stopping_text = esc_html__( 'Stopping...', 'godam' );
+			$text_goback = ( ! empty( $_GET['goback'] ) ) ? __( 'To go back to the previous page, <a id="retranscode-goback" href="#">click here</a>.', 'godam' ) : '';
+			$adminUrl = esc_url( wp_nonce_url( admin_url( 'admin.php?page=godam-tools&goback=1' ), 'godam-tools' ) . '&ids=' );
+	
+			wp_register_script( 
+				'godam-retranscode-admin',
+				GODAM_URL . '/admin/js/godam-retranscode-admin.js',
+				array( 'jquery' ),
+				filemtime( GODAM_PATH . '/admin/js/godam-retranscode-admin.js' ),
+				true
+			);
+	
+			wp_localize_script(
+				'godam-retranscode-admin',
+				'rtgodam_retranscode',
+				array(
+					'ids'           => $ids,
+					'stopping_text' => $stopping_text,
+					'text_goback'   => $text_goback,
+					'admin_url'     => $adminUrl,
+				)
+			);
+	
+			wp_enqueue_script( 'godam-retranscode-admin' );
+		}
 	}
 
 	/**
@@ -257,13 +332,14 @@ class RetranscodeMedia {
 		if ( ! current_user_can( $this->capability ) ) {
 			return;
 		}
-		?>
-		<script type="text/javascript">
-			jQuery(document).ready(function($){
-				$('select[name^="action"] option:last-child').before('<option value="bulk_retranscode_media"><?php esc_html_e( 'Retranscode Media', 'godam' ); ?></option>');
-			});
-		</script>
-		<?php
+
+		wp_enqueue_script(
+			'godam-retranscode-media',
+			GODAM_URL . '/admin/js/godam-retranscode-media.js',
+			array( 'jquery' ),
+			filemtime( GODAM_PATH . '/admin/js/godam-retranscode-media.js' ),
+			true
+		);
 	}
 
 	/**
@@ -474,133 +550,6 @@ class RetranscodeMedia {
 				<li style="display:none"></li>
 			</ol>
 
-			<script type="text/javascript">
-			// <![CDATA[
-				jQuery(document).ready(function($){
-					var i;
-					var rt_media = [<?php echo esc_js( $ids ); ?>];
-					var rt_total = rt_media.length;
-					var rt_count = 1;
-					var rt_percent = 0;
-					var rt_successes = 0;
-					var rt_errors = 0;
-					var rt_failedlist = '';
-					var rt_resulttext = '';
-					var rt_timestart = new Date().getTime();
-					var rt_timeend = 0;
-					var rt_totaltime = 0;
-					var rt_continue = true;
-
-					// Create the progress bar
-					$("#retranscodemedia-bar").progressbar();
-					$("#retranscodemedia-bar-percent").html( "0%" );
-
-					// Stop button
-					$("#retranscodemedia-stop").click(function() {
-						rt_continue = false;
-						$('#retranscodemedia-stop').val("<?php echo esc_js( $this->esc_quotes( __( 'Stopping...', 'godam' ) ) ); ?>");
-					});
-
-					// Clear out the empty list element that's there for HTML validation purposes
-					$("#retranscodemedia-debuglist li").remove();
-
-					// Called after each resize. Updates debug information and the progress bar.
-					function RetranscodeMediaUpdateStatus( id, success, response ) {
-						$("#retranscodemedia-bar").progressbar( "value", ( rt_count / rt_total ) * 100 );
-						$("#retranscodemedia-bar-percent").html( Math.round( ( rt_count / rt_total ) * 1000 ) / 10 + "%" );
-						rt_count = rt_count + 1;
-
-						if ( success ) {
-							rt_successes = rt_successes + 1;
-							$("#retranscodemedia-debug-successcount").html(rt_successes);
-							$("#retranscodemedia-debuglist").append("<li>" + response.success + "</li>");
-						}
-						else {
-							rt_errors = rt_errors + 1;
-							rt_failedlist = rt_failedlist + ',' + id;
-							$("#retranscodemedia-debug-failurecount").html(rt_errors);
-							$("#retranscodemedia-debuglist").append("<li>" + response.error + "</li>");
-						}
-					}
-
-					// Called when all images have been processed. Shows the results and cleans up.
-					function RetranscodeMediaFinishUp() {
-						rt_timeend = new Date().getTime();
-						rt_totaltime = Math.round( ( rt_timeend - rt_timestart ) / 1000 );
-
-						$('#retranscodemedia-stop').hide();
-
-						<?php
-						// Allowed tags for notice.
-						$allowed_tags = array(
-							'a' => array(
-								'href' => array(),
-								'id'   => array(),
-							),
-						);
-						?>
-
-						if ( rt_errors > 0 ) {
-							rt_resulttext = '<?php echo wp_kses( $text_failures, $allowed_tags ); ?>';
-						} else {
-							rt_resulttext = '<?php echo wp_kses( $text_nofailures, $allowed_tags ); ?>';
-						}
-						$("#message").html("<p><strong>" + rt_resulttext + "</strong></p>");
-						$("#message").show();
-
-						$( '#retranscode-goback' ).on( 'click', function () {
-							window.history.go( -1 );
-						} );
-
-					}
-					<?php
-						// translators: Media ID.
-						$error_response = sprintf( __( 'The resize request was abnormally terminated (ID %s). This is likely due to the media exceeding available memory or some other type of fatal error.', 'godam' ), '" + id + "' );
-					?>
-					// Regenerate a specified image via AJAX
-					function RetranscodeMedia( id ) {
-						$.ajax({
-							type: 'POST',
-							url: ajaxurl,
-							data: { action: "retranscodemedia", id: id },
-							success: function( response ) {
-								if ( response !== Object( response ) || ( typeof response.success === "undefined" && typeof response.error === "undefined" ) ) {
-									response = new Object;
-									response.success = false;
-									response.error = '<?php echo esc_js( $error_response ); ?>';
-								}
-
-								if ( response.success ) {
-									RetranscodeMediaUpdateStatus( id, true, response );
-								}
-								else {
-									RetranscodeMediaUpdateStatus( id, false, response );
-								}
-
-								if ( rt_media.length && rt_continue ) {
-									RetranscodeMedia( rt_media.shift() );
-								}
-								else {
-									RetranscodeMediaFinishUp();
-								}
-							},
-							error: function( response ) {
-								RetranscodeMediaUpdateStatus( id, false, response );
-
-								if ( rt_media.length && rt_continue ) {
-									RetranscodeMedia( rt_media.shift() );
-								}
-								else {
-									RetranscodeMediaFinishUp();
-								}
-							}
-						});
-					}
-
-					RetranscodeMedia( rt_media.shift() );
-				});
-			// ]]>
-			</script>
 					<?php
 			} else {
 				// No button click? Display the form.

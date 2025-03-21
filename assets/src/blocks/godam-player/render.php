@@ -125,7 +125,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 		<video
 			class="easydam-player video-js vjs-big-play-centered vjs-hidden"
 			data-options="<?php echo esc_attr( $video_config ); ?>"
-			data-ad_tag_url="<?php echo esc_url_raw( $ad_tag_url ); ?>"
+			data-ad_tag_url="<?php echo esc_url( $ad_tag_url ); ?>"
 			data-id="<?php echo esc_attr( $attachment_id ); ?>" 
 			data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 			data-controls = "<?php echo esc_attr( $video_setup ); ?>"

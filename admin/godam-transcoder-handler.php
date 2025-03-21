@@ -780,8 +780,7 @@ class RT_Transcoder_Handler {
 			</h3>
 			<div class="inside">
 				<?php
-				// Already escaped variable.
-				echo $content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Safe because data is sanitized above.
 				?>
 			</div>
 		</div>
