@@ -355,14 +355,14 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 			) }
 
 			<div className="flex flex-col lg:flex-row gap-4 items-start mb-4">
-				<Panel header={ __( 'License Settings', 'godam' ) } className="w-full">
+				<Panel header={ __( 'API Settings', 'godam' ) } className="w-full">
 					<PanelBody
 						opened={ true }
 						className="flex gap-8"
 					>
 						<div className="flex flex-col gap-2 b-4m">
 							<TextControl
-								label={ __( 'License Key', 'godam' ) }
+								label={ __( 'API Key', 'godam' ) }
 								value={ licenseKey }
 								onChange={ ( value ) => setLicenseKey( value ) }
 								help={
@@ -370,7 +370,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 										{
 											( ! window?.userData?.valid_license ) &&
 											<>
-												{ __( 'Your license key is required to access the features. You can get your active license key from your ', 'godam' ) }
+												{ __( 'Your API key is required to access the features. You can get your active API key from your ', 'godam' ) }
 												<a
 													href={ GODAM_API_BASE + '/#licenses' }
 													target="_blank"
