@@ -5,3 +5,7 @@
 build/*
 node_modules
 Gruntfile.js
+assets/src/libs
+pages/build
+.lintstagedrc.js
+**config.js
