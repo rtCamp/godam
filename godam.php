@@ -98,7 +98,7 @@ function rtgodam_action_links( $links, $file ) {
 	// Add a few links to the existing links array.
 	$settings_url = sprintf(
 		'<a href="%1$s">%2$s</a>',
-		esc_url( admin_url( 'admin.php?page=godam' ) ),
+		esc_url( admin_url( 'admin.php?page=rtgodam' ) ),
 		esc_html__( 'Settings', 'godam' )
 	);
 

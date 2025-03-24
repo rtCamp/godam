@@ -166,8 +166,8 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @return {string} - The generated button HTML.
 	 */
 	getButtonsHTML() {
-		const editVideoURL = `admin.php?page=video_editor&id=${ this.model.get( 'id' ) }`;
-		const analyticsURL = `admin.php?page=analytics&id=${ this.model.get( 'id' ) }`;
+		const editVideoURL = `admin.php?page=rtgodam_video_editor&id=${ this.model.get( 'id' ) }`;
+		const analyticsURL = `admin.php?page=rtgodam_analytics&id=${ this.model.get( 'id' ) }`;
 
 		return `
 		<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>

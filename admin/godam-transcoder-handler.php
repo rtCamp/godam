@@ -303,7 +303,7 @@ class RTGODAM_Transcoder_Handler {
 
 			$callback_url = RTGODAM_TRANSCODER_CALLBACK_URL;
 
-			if ( ! defined( 'GODAMTRANSCODER_CALLBACK_URL' ) || empty( RTGODAM_TRANSCODER_CALLBACK_URL ) ) {
+			if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) || empty( RTGODAM_TRANSCODER_CALLBACK_URL ) ) {
 				return;
 			}
 

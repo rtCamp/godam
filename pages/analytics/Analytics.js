@@ -20,7 +20,7 @@ import { __ } from '@wordpress/i18n';
 const Analytics = ( { attachmentID } ) => {
 	const [ analyticsData, setAnalyticsData ] = useState( null );
 
-	const adminUrl = window.videoData?.adminUrl || '/wp-admin/admin.php?page=godam';
+	const adminUrl = window.videoData?.adminUrl || '/wp-admin/admin.php?page=rtgodam';
 	const restURL = window.godamRestRoute.url || '';
 
 	useEffect( () => {
