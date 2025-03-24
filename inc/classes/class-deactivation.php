@@ -2,11 +2,11 @@
 /**
  * Plguin Deactivation Survey Class.
  */
-namespace Transcoder\Inc;
+namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\Traits\Singleton;
+use RTGODAM\Inc\Traits\Singleton;
 
 class Deactivation {
 
@@ -17,14 +17,14 @@ class Deactivation {
 	 *
 	 * @var string
 	 */
-	private $api_url = GODAMIO_API_BASE . '/wp-json/godam/v1/feedback/'; // Replace the API Url by the production API Url.
+	private $api_url = RTGODAM_IO_API_BASE . '/wp-json/godam/v1/feedback/'; // Replace the API Url by the production API Url.
 
 	/**
 	 * Constructor function.
 	 */
 	public function __construct() {
 		add_action( 'admin_enqueue_scripts', array( $this, 'load_scripts' ) );
-		add_action( 'wp_ajax_godam_send_deactivation_feedback', array( $this, 'godam_send_deactivation_feedback' ) );
+		add_action( 'wp_ajax_godam_send_deactivation_feedback', array( $this, 'rtgodam_send_deactivation_feedback' ) );
 	}
 
 	/**
@@ -37,9 +37,9 @@ class Deactivation {
 
 		wp_register_script(
 			'godam-deactivation-survey-script',
-			GODAM_URL . '/assets/build/js/deactivation-feedback.js', 
+			RTGODAM_URL . '/assets/build/js/deactivation-feedback.js', 
 			array(),
-			filemtime( GODAM_PATH . '/assets/build/js/deactivation-feedback.js' ),
+			filemtime( RTGODAM_PATH . '/assets/build/js/deactivation-feedback.js' ),
 			true
 		);
 
@@ -49,7 +49,7 @@ class Deactivation {
 
 			$current_user = wp_get_current_user();
 
-			$rt_deactivate = array(
+			$rtgodam_deactivate = array(
 				'site_url'    => home_url(),
 				'nonce'       => wp_create_nonce( 'GoDAMDeactivationFeedback' ),
 				'user_name'   => $current_user->user_nicename,
@@ -58,7 +58,7 @@ class Deactivation {
 				'api_url'     => esc_url( $this->api_url ),
 			);
 
-			wp_localize_script( 'godam-deactivation-survey-script', 'GoDAMDeactivation', $rt_deactivate );
+			wp_localize_script( 'godam-deactivation-survey-script', 'GoDAMDeactivation', $rtgodam_deactivate );
 		}
 	}
 
@@ -67,7 +67,7 @@ class Deactivation {
 	 *
 	 * @return string.
 	 */
-	public function godam_send_deactivation_feedback() {
+	public function rtgodam_send_deactivation_feedback() {
 		// Checking ajax referer.
 		check_ajax_referer( 'GoDAMDeactivationFeedback', 'nonce' );
 

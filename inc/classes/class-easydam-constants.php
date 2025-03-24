@@ -5,7 +5,7 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc;
+namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 

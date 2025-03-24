@@ -5,14 +5,14 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\REST_API;
+namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
 use WP_REST_Server;
 use WP_REST_Request;
 use WP_REST_Response;
-use Transcoder\Inc\EasyDAM_Constants;
+use RTGODAM\Inc\EasyDAM_Constants;
 
 /**
  * Class Analytics.
@@ -73,9 +73,9 @@ class Analytics extends Base {
 		$site_url = $request->get_param( 'site_url' );
 
 		// Define API URL for fetching analytics.
-		$analytics_endpoint = GODAM_ANALYTICS_BASE . '/processed-analytics/fetch/';
+		$analytics_endpoint = RTGODAM_ANALYTICS_BASE . '/processed-analytics/fetch/';
 
-		$account_token = get_site_option( 'rt-transcoding-account-token', 'unverified' );
+		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
 
 		// Check if license key is valid.
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {

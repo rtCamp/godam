@@ -5,14 +5,14 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\Providers;
+namespace RTGODAM\Inc\Providers;
 
 defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\Traits\Singleton;
-use Transcoder\Inc\Providers\Handlers\Item_Handler;
-use Transcoder\Inc\Providers\Exceptions\EasyDamException;
-use Transcoder\Inc\Providers\Handlers\Error_Handler;
+use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\Providers\Handlers\Item_Handler;
+use RTGODAM\Inc\Providers\Exceptions\EasyDamException;
+use RTGODAM\Inc\Providers\Handlers\Error_Handler;
 
 /**
  * Class Media_Filters

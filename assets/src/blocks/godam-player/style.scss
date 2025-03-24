@@ -62,7 +62,7 @@
 
 .easydam-video-container {
 	position: relative;
-	aspect-ratio: var(--godam-video-aspect-ratio);
+	aspect-ratio: var(--rtgodam-video-aspect-ratio);
 	background-color: rgba(149, 149, 149, 0.2);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
@@ -108,7 +108,7 @@
 
 
 .easydam-player.video-js {
-	aspect-ratio: var(--godam-video-aspect-ratio);
+	aspect-ratio: var(--rtgodam-video-aspect-ratio);
 }
 
 .form-container {
@@ -440,12 +440,12 @@
 }
 
 .vjs-control-bar {
-	background-color: var(--easydam-control-bar-color) !important;
+	background-color: var(--rtgodam-control-bar-color) !important;
 }
 
 .vjs-control:hover {
-	color: var(--easydam-control-hover-color) !important;
-	transform: scale(var(--easydam-control-hover-zoom));
+	color: var(--rtgodam-control-hover-color) !important;
+	transform: scale(var(--rtgodam-control-hover-zoom));
 }
 
 .vjs-progress-control:hover {
@@ -453,9 +453,9 @@
 }
 
 .vjs-big-play-button {
-	background-color: var(--easydam-control-bar-color) !important;
+	background-color: var(--rtgodam-control-bar-color) !important;
 	background-size: 100% 100% !important;
-	background-image: var(--easydam-custom-play-button-url) !important;
+	background-image: var(--rtgodam-custom-play-button-url) !important;
 }
 
 .left-align {
