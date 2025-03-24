@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Media retranscode module.
  */
-class RetranscodeMedia {
+class RTGODAM_RetranscodeMedia {
 	/**
 	 * ID of the menu.
 	 *
@@ -100,10 +100,10 @@ class RetranscodeMedia {
 	 * @return void
 	 */
 	public function load_rest_endpoints() {
-		include_once GODAM_PATH . 'admin/godam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		include_once RTGODAM_PATH . 'admin/godam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 		// Create class object and register routes.
-		$transcoder_rest_routes = new Transcoder_Rest_Routes();
+		$transcoder_rest_routes = new RTGODAM_Transcoder_Rest_Routes();
 		add_action( 'rest_api_init', array( $transcoder_rest_routes, 'register_routes' ) );
 	}
 
@@ -165,7 +165,7 @@ class RetranscodeMedia {
 	 * @return void
 	 */
 	public function _transcoder_settings_page() {
-		include_once GODAM_PATH . 'admin/partials/rt-transcoder-admin-display.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		include_once RTGODAM_PATH . 'admin/partials/rt-transcoder-admin-display.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 	}
 
 	/**
@@ -687,7 +687,7 @@ class RetranscodeMedia {
 		}
 
 		// Get the transcoder object.
-		$transcoder = new RT_Transcoder_Handler( true );
+		$transcoder = new RTGODAM_Transcoder_Handler( true );
 
 		$attachment_meta = array( 'mime_type' => $media->post_mime_type );
 
@@ -1048,5 +1048,5 @@ function rtgodam_retranscode_media() { // phpcs:ignore Universal.Files.SeparateF
 
 	global $RetranscodeMedia; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 
-	$RetranscodeMedia = new RetranscodeMedia(); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+	$RetranscodeMedia = new RTGODAM_RetranscodeMedia(); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 }

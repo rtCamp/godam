@@ -18,14 +18,14 @@ defined( 'ABSPATH' ) || exit;
  * @package     Transcoder
  * @subpackage  Transcoder/Admin
  */
-class RT_Transcoder_Admin {
+class RTGODAM_Transcoder_Admin {
 
 	/**
-	 * The object of RT_Transcoder_Handler class.
+	 * The object of RTGODAM_Transcoder_Handler class.
 	 *
 	 * @since    1.0.0
 	 * @access   private
-	 * @var      object    $transcoder_handler    The object of RT_Transcoder_Handler class.
+	 * @var      object    $transcoder_handler    The object of RTGODAM_Transcoder_Handler class.
 	 */
 	private $transcoder_handler;
 
@@ -57,12 +57,12 @@ class RT_Transcoder_Admin {
 		$this->api_key        = get_site_option( 'rtgodam-api-key' );
 		$this->stored_api_key = get_site_option( 'rtgodam-api-key-stored' );
 
-		if ( ! class_exists( 'RT_Progress' ) ) {
-			include_once GODAM_PATH . 'admin/godam-transcoder-progressbar.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		if ( ! class_exists( 'RTGODAM_Progress' ) ) {
+			include_once RTGODAM_PATH . 'admin/godam-transcoder-progressbar.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 		}
 
-		include_once GODAM_PATH . 'admin/godam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-		include_once GODAM_PATH . 'admin/godam-transcoder-actions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		include_once RTGODAM_PATH . 'admin/godam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		include_once RTGODAM_PATH . 'admin/godam-transcoder-actions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts_styles' ) );
 
@@ -76,7 +76,7 @@ class RT_Transcoder_Admin {
 		// add_filter( 'attachment_fields_to_save', array( $this, 'save_video_thumbnail' ), 11, 1 );
 		add_action( 'admin_notices', array( $this, 'add_settings_errors' ) );
 
-		$this->transcoder_handler = new RT_Transcoder_Handler();
+		$this->transcoder_handler = new RTGODAM_Transcoder_Handler();
 
 		if ( is_admin() ) {
 			add_action( 'admin_init', array( $this, 'register_transcoder_settings' ) );

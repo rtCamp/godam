@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Transcoder_Rest_Routes
+ * Class RTGODAM_Transcoder_Rest_Routes
  *
  * @package transcoder
  */
@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Handle REST Routes for Transcoder.
  */
-class Transcoder_Rest_Routes extends WP_REST_Controller {
+class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 	/**
 	 * Version of REST route.
@@ -30,7 +30,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 	/**
 	 * RT Transcoder Handler object.
 	 *
-	 * @var RT_Transcoder_Handler
+	 * @var RTGODAM_Transcoder_Handler
 	 */
 	public $rtgodam_transcoder_handler;
 
@@ -43,10 +43,10 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 	 * @return void
 	 */
 	public function __construct() {
-		$this->rtgodam_transcoder_handler = new RT_Transcoder_Handler( true );
+		$this->rtgodam_transcoder_handler = new RTGODAM_Transcoder_Handler( true );
 
-		if ( ! defined( 'RT_TRANSCODER_CALLBACK_URL' ) ) {
-			define( 'RT_TRANSCODER_CALLBACK_URL', $this->get_callback_url() );
+		if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) ) {
+			define( 'RTGODAM_TRANSCODER_CALLBACK_URL', $this->get_callback_url() );
 		}
 	}
 

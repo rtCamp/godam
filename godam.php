@@ -16,11 +16,11 @@
 
 defined( 'ABSPATH' ) || exit;
 
-if ( ! defined( 'GODAM_PATH' ) ) {
+if ( ! defined( 'RTGODAM_PATH' ) ) {
 	/**
 	 * The server file system path to the plugin directory
 	 */
-	define( 'GODAM_PATH', plugin_dir_path( __FILE__ ) );
+	define( 'RTGODAM_PATH', plugin_dir_path( __FILE__ ) );
 }
 
 if ( ! defined( 'GODAM_URL' ) ) {
@@ -60,10 +60,10 @@ if ( ! defined( 'GODAMIO_API_BASE' ) ) {
 	define( 'GODAMIO_API_BASE', 'https://godam.io' );
 }
 
-require_once GODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-require_once GODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-require_once GODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-require_once GODAM_PATH . 'admin/godam-transcoder-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+require_once RTGODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+require_once RTGODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+require_once RTGODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+require_once RTGODAM_PATH . 'admin/godam-transcoder-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 global $rtgodam_transcoder_admin;
 
@@ -72,7 +72,7 @@ global $rtgodam_transcoder_admin;
  */
 \Transcoder\Inc\FileSystem::get_instance();
 
-$rtgodam_transcoder_admin = new RT_Transcoder_Admin();
+$rtgodam_transcoder_admin = new RTGODAM_Transcoder_Admin();
 
 /**
  * Initiate blocks.
@@ -116,7 +116,7 @@ add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 )
 /**
  * Autoloader for the vendor directory.
  */
-require GODAM_PATH . 'vendor/autoload.php';
+require RTGODAM_PATH . 'vendor/autoload.php';
 
 /**
  * Runs when the plugin is activated.

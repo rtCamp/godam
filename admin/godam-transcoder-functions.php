@@ -11,7 +11,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Return instance of RT_Transcoder_Admin Class.
+ * Return instance of RTGODAM_Transcoder_Admin Class.
  *
  * @since   1.0.0
  *
@@ -832,7 +832,7 @@ add_action( 'enqueue_block_editor_assets', 'rtgodam_transcoder_enqueue_block_edi
 function rtgodam_enqueue_frontend_scripts() {
 	$file_to_use = 'public-assets/js/build/transcoder.min.js';
 
-	$file = path_join( GODAM_PATH, $file_to_use );
+	$file = path_join( RTGODAM_PATH, $file_to_use );
 	if ( file_exists( $file ) && class_exists( 'RTMedia' ) ) {
 		wp_enqueue_script( 'rt-transcoder-front-js', GODAM_URL . $file_to_use, array( 'jquery', 'rtmedia-backbone' ), filemtime( $file ), true );
 
@@ -898,9 +898,9 @@ add_action( 'wp_ajax_checkstatus', 'rtgodam_ajax_process_check_status_request' )
  */
 function rtgodam_get_transcoding_status( $post_id ) {
 
-	require_once GODAM_PATH . 'admin/godam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+	require_once RTGODAM_PATH . 'admin/godam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
-	$obj    = new RT_Transcoder_Handler( true );
+	$obj    = new RTGODAM_Transcoder_Handler( true );
 	$status = $obj->get_transcoding_status( $post_id );
 
 	return $status;
@@ -1018,7 +1018,7 @@ function rtgodam_media_update_usage( $wp_metadata, $attachment_id, $autoformat =
 	if ( ! empty( $stored_key ) && empty( $transient_flag ) ) {
 
 		$usage_info = get_site_option( 'rtgodam-usage' );
-		$handler    = new RT_Transcoder_Handler( false );
+		$handler    = new RTGODAM_Transcoder_Handler( false );
 
 		if ( empty( $usage_info ) || empty( $usage_info[ $handler->api_key ]->remaining ) ) {
 
@@ -1057,7 +1057,7 @@ function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FUL
  */
 function rtgodam_get_blacklist_ip_addresses() {
 	// If custom API URL added then don't block local ips.
-	if ( defined( 'TRANSCODER_API_URL' ) ) {
+	if ( defined( 'RTGODAM_TRANSCODER_API_URL' ) ) {
 		return array();
 	}
 
@@ -1121,7 +1121,7 @@ function rtgodam_verify_license( $license_key, $save = false ) {
 			update_site_option( 'rtgodam-account-token', $account_token );
 
 			// Update usage data.
-			$handler = new \RT_Transcoder_Handler( false );
+			$handler = new \RTGODAM_Transcoder_Handler( false );
 			$handler->update_usage( $license_key );
 		}
 

@@ -238,7 +238,7 @@ class Pages {
 				'transcoder-page-style-godam',
 				GODAM_URL . '/pages/build/style.css',
 				array( 'wp-components' ),
-				filemtime( GODAM_PATH . '/pages/build/style.css' )
+				filemtime( RTGODAM_PATH . '/pages/build/style.css' )
 			);
 
 			wp_enqueue_style( 'transcoder-page-style-godam' );
@@ -250,7 +250,7 @@ class Pages {
 				'transcoder-page-script-video-editor',
 				GODAM_URL . '/pages/build/video-editor.js',
 				array( 'wp-element' ),
-				filemtime( GODAM_PATH . '/pages/build/video-editor.js' ),
+				filemtime( RTGODAM_PATH . '/pages/build/video-editor.js' ),
 				true
 			);
 
@@ -300,7 +300,7 @@ class Pages {
 				'transcoder-page-script-godam',
 				GODAM_URL . '/pages/build/godam.js',
 				array( 'wp-element' ),
-				filemtime( GODAM_PATH . '/pages/build/godam.js' ),
+				filemtime( RTGODAM_PATH . '/pages/build/godam.js' ),
 				true
 			);
 
@@ -332,7 +332,7 @@ class Pages {
 				'transcoder-page-script-analytics',
 				GODAM_URL . 'pages/build/analytics.js',
 				array( 'wp-element' ),
-				filemtime( GODAM_PATH . 'pages/build/analytics.js' ),
+				filemtime( RTGODAM_PATH . 'pages/build/analytics.js' ),
 				true
 			);
 
@@ -340,7 +340,7 @@ class Pages {
 				'video-analytics-charts',
 				GODAM_URL . 'assets/build/js/video-analytics.js',
 				array( 'transcoder-page-script-analytics', 'd3-js' ),
-				filemtime( GODAM_PATH . 'assets/build/js/video-analytics.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/video-analytics.js' ),
 				true
 			);
 
@@ -372,7 +372,7 @@ class Pages {
 				'godam-page-script-help',
 				GODAM_URL . 'pages/build/help.js',
 				array( 'wp-element' ),
-				filemtime( GODAM_PATH . 'pages/build/help.js' ),
+				filemtime( RTGODAM_PATH . 'pages/build/help.js' ),
 				true
 			);
 
@@ -393,7 +393,7 @@ class Pages {
 			'media-library-react',
 			GODAM_URL . '/pages/build/media-library.js',
 			array( 'wp-element', 'wp-i18n' ),
-			filemtime( GODAM_PATH . '/pages/build/media-library.js' ),
+			filemtime( RTGODAM_PATH . '/pages/build/media-library.js' ),
 			true
 		);
 

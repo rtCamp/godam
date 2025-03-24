@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  * @package    Transcoder
  * @subpackage Transcoder/TranscoderHandler
  */
-class RT_Transcoder_Handler {
+class RTGODAM_Transcoder_Handler {
 
 	/**
 	 * The transcoder API URL.
@@ -143,13 +143,13 @@ class RT_Transcoder_Handler {
 		);
 
 		// Temporarily inclduing godam-retranscode-admin.php file here.
-		include_once GODAM_PATH . 'admin/godam-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		include_once RTGODAM_PATH . 'admin/godam-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 		/**
 		 * Allow other plugin and wp-config to overwrite API URL.
 		 */
-		if ( defined( 'TRANSCODER_API_URL' ) && ! empty( TRANSCODER_API_URL ) ) {
-			$this->transcoding_api_url = TRANSCODER_API_URL;
+		if ( defined( 'RTGODAM_TRANSCODER_API_URL' ) && ! empty( RTGODAM_TRANSCODER_API_URL ) ) {
+			$this->transcoding_api_url = RTGODAM_TRANSCODER_API_URL;
 		}
 
 		$this->transcoding_api_url = apply_filters( 'transcoding_api_url', $this->transcoding_api_url );
@@ -183,7 +183,7 @@ class RT_Transcoder_Handler {
 					// if ( isset( $usage_info[ $this->api_key ]->remaining ) && $usage_info[ $this->api_key ]->remaining > 0 ) {
 
 						// Enable re-transcoding.
-						include_once GODAM_PATH . 'admin/godam-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+						include_once RTGODAM_PATH . 'admin/godam-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 
 						if ( 'Active' === $usage_info[ $this->api_key ]->status ) {
@@ -301,9 +301,9 @@ class RT_Transcoder_Handler {
 				}
 			}
 
-			$callback_url = RT_TRANSCODER_CALLBACK_URL;
+			$callback_url = RTGODAM_TRANSCODER_CALLBACK_URL;
 
-			if ( ! defined( 'RT_TRANSCODER_CALLBACK_URL' ) || empty( RT_TRANSCODER_CALLBACK_URL ) ) {
+			if ( ! defined( 'GODAMTRANSCODER_CALLBACK_URL' ) || empty( RTGODAM_TRANSCODER_CALLBACK_URL ) ) {
 				return;
 			}
 
@@ -737,7 +737,7 @@ class RT_Transcoder_Handler {
 						$content .= '';
 					}
 				}
-				$usage = new RT_Progress();
+				$usage = new RTGODAM_Progress();
 
 				if ( empty( $usage_details[ $api_key ]->used ) ) {
 					$usage_details[ $api_key ]->used = 0;

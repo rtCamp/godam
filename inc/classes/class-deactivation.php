@@ -39,7 +39,7 @@ class Deactivation {
 			'godam-deactivation-survey-script',
 			GODAM_URL . '/assets/build/js/deactivation-feedback.js', 
 			array(),
-			filemtime( GODAM_PATH . '/assets/build/js/deactivation-feedback.js' ),
+			filemtime( RTGODAM_PATH . '/assets/build/js/deactivation-feedback.js' ),
 			true
 		);
 

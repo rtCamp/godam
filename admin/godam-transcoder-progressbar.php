@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  * @package    Transcoder
  * @subpackage Transcoder/Admin
  */
-class RT_Progress {
+class RTGODAM_Progress {
 
 	/**
 	 * Constructor
