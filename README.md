@@ -179,7 +179,7 @@ Data is sent only when a user submits the deactivation feedback form after click
 
 **Service Provider:** godam.io
 
-[Terms of Service](https://godam.io/tos/)]
+[Terms of Service](https://godam.io/tos/)
 [Privacy Policy](https://godam.io/privacy-policy/)
 
 - **app.godam.io**:
@@ -200,7 +200,7 @@ When the plugin checks for a valid API Key.
 
 **Service Provider**: app.godam.io
 
-[Terms of Service](https://godam.io/tos/)]
+[Terms of Service](https://godam.io/tos/)
 [Privacy Policy](https://godam.io/privacy-policy/)
 
 - **analytics.godam.io**:
@@ -227,7 +227,7 @@ This service collects analytics data when a user watches a video on the frontend
 
 - When the user exits the page after watching the video.
 
-**Service Provider**: analaytics.godam.io
+**Service Provider**: analytics.godam.io
 
-[Terms of Service](https://godam.io/tos/)]
+[Terms of Service](https://godam.io/tos/)
 [Privacy Policy](https://godam.io/privacy-policy/)

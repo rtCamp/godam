@@ -175,7 +175,7 @@ Data is sent only when a user submits the deactivation feedback form after click
 
 Service Provider: godam.io
 
-[Terms of Service](https://godam.io/tos/)]
+[Terms of Service](https://godam.io/tos/)
 [Privacy Policy](https://godam.io/privacy-policy/)
 
 === app.godam.io ===
@@ -195,7 +195,7 @@ When Data is Sent:
 
 Service Provider: app.godam.io
 
-[Terms of Service](https://godam.io/tos/)]
+[Terms of Service](https://godam.io/tos/)
 [Privacy Policy](https://godam.io/privacy-policy/)
 
 === analytics.godam.io ===
@@ -223,5 +223,5 @@ When Data is Sent:
 
 Service Provider: analytics.godam.io
 
-[Terms of Service](https://godam.io/tos/)]
+[Terms of Service](https://godam.io/tos/)
 [Privacy Policy](https://godam.io/privacy-policy/)
