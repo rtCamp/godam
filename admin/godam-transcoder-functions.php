@@ -207,126 +207,117 @@ function rtgodam_get_media_url( $attachment_id, $media_type = 'mp4' ) {
 	return $final_file_url;
 }
 
-if ( ! function_exists( 'rtgodam_update_activity_after_thumb_set' ) ) {
+/**
+ * Update the activity after thumb is set to the video.
+ *
+ * @since 1.0.0
+ *
+ * @param number $id media id.
+ *
+ * @return void
+ */
+function rtgodam_update_activity_after_thumb_set( $id ) {
 
-	/**
-	 * Update the activity after thumb is set to the video.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param number $id media id.
-	 *
-	 * @return void
-	 */
-	function rtgodam_update_activity_after_thumb_set( $id ) {
-
-		$model       = new RTMediaModel();
-		$media_obj   = new RTMediaMedia();
-		$media       = $model->get( array( 'id' => $id ) );
-		$privacy     = $media[0]->privacy;
-		$activity_id = rtmedia_activity_id( $id );
-		if ( ! empty( $activity_id ) ) {
-			$same_medias           = $media_obj->model->get( array( 'activity_id' => $activity_id ) );
-			$update_activity_media = array();
-			foreach ( $same_medias as $a_media ) {
-				$update_activity_media[] = $a_media->id;
-			}
-			$obj_activity = new RTMediaActivity( $update_activity_media, $privacy, false );
-			global $bp;
-			$activity_old_content = bp_activity_get_meta( $activity_id, 'bp_old_activity_content' );
-			$activity_text        = bp_activity_get_meta( $activity_id, 'bp_activity_text' );
-			if ( ! empty( $activity_old_content ) ) {
-				// get old activity content and save in activity meta.
-				$activity_get  = bp_activity_get_specific( array( 'activity_ids' => $activity_id ) );
-				$activity      = $activity_get['activities'][0];
-				$activity_body = $activity->content;
-				bp_activity_update_meta( $activity_id, 'bp_old_activity_content', $activity_body );
-				// extract activity text from old content.
-				$activity_text = wp_kses( $activity_body, array( '<span>' => array() ) );
-				$activity_text = explode( '</span>', $activity_text );
-				$activity_text = wp_strip_all_tags( $activity_text[0] );
-				bp_activity_update_meta( $activity_id, 'bp_activity_text', $activity_text );
-			}
-			$activity_text               = bp_activity_get_meta( $activity_id, 'bp_activity_text' );
-			$obj_activity->activity_text = $activity_text;
-			global $wpdb;
-			$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-				$bp->activity->table_name,
-				array(
-					'type'    => 'rtmedia_update',
-					'content' => $obj_activity->create_activity_html(),
-				),
-				array( 'id' => $activity_id )
-			);
+	$model       = new RTMediaModel();
+	$media_obj   = new RTMediaMedia();
+	$media       = $model->get( array( 'id' => $id ) );
+	$privacy     = $media[0]->privacy;
+	$activity_id = rtmedia_activity_id( $id );
+	if ( ! empty( $activity_id ) ) {
+		$same_medias           = $media_obj->model->get( array( 'activity_id' => $activity_id ) );
+		$update_activity_media = array();
+		foreach ( $same_medias as $a_media ) {
+			$update_activity_media[] = $a_media->id;
 		}
+		$obj_activity = new RTMediaActivity( $update_activity_media, $privacy, false );
+		global $bp;
+		$activity_old_content = bp_activity_get_meta( $activity_id, 'bp_old_activity_content' );
+		$activity_text        = bp_activity_get_meta( $activity_id, 'bp_activity_text' );
+		if ( ! empty( $activity_old_content ) ) {
+			// get old activity content and save in activity meta.
+			$activity_get  = bp_activity_get_specific( array( 'activity_ids' => $activity_id ) );
+			$activity      = $activity_get['activities'][0];
+			$activity_body = $activity->content;
+			bp_activity_update_meta( $activity_id, 'bp_old_activity_content', $activity_body );
+			// extract activity text from old content.
+			$activity_text = wp_kses( $activity_body, array( '<span>' => array() ) );
+			$activity_text = explode( '</span>', $activity_text );
+			$activity_text = wp_strip_all_tags( $activity_text[0] );
+			bp_activity_update_meta( $activity_id, 'bp_activity_text', $activity_text );
+		}
+		$activity_text               = bp_activity_get_meta( $activity_id, 'bp_activity_text' );
+		$obj_activity->activity_text = $activity_text;
+		global $wpdb;
+		$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$bp->activity->table_name,
+			array(
+				'type'    => 'rtmedia_update',
+				'content' => $obj_activity->create_activity_html(),
+			),
+			array( 'id' => $activity_id )
+		);
 	}
 }
 
-if ( ! function_exists( 'rtgodam_get_edit_post_link' ) ) {
-
-	/**
-	 * Retrieve edit posts link for post. Derived from WordPress core
-	 *
-	 * Can be used within the WordPress loop or outside of it. Can be used with
-	 * pages, posts, attachments, and revisions.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param int    $id      Optional. Post ID.
-	 * @param string $context Optional, defaults to display.
-	 * @return string|null The edit post link for the given post. null if the post type is invalid or does
-	 *                     not allow an editing UI.
-	 */
-	function rtgodam_get_edit_post_link( $id = 0, $context = 'display' ) {
-		$_post = get_post( $id );
-		if ( empty( $_post ) ) {
-			return;
-		}
-
-		if ( 'revision' === $_post->post_type ) {
-			$action = '';
-		} elseif ( 'display' === $context ) {
-			$action = '&amp;action=edit';
-		} else {
-			$action = '&action=edit';
-		}
-
-		$post_type_object = get_post_type_object( $_post->post_type );
-		if ( ! $post_type_object ) {
-			return;
-		}
-
-		if ( $post_type_object->_edit_link ) {
-			$link = admin_url( sprintf( $post_type_object->_edit_link . $action, $_post->ID ) );
-		} else {
-			$link = '';
-		}
-
-		return $link;
+/**
+ * Retrieve edit posts link for post. Derived from WordPress core
+ *
+ * Can be used within the WordPress loop or outside of it. Can be used with
+ * pages, posts, attachments, and revisions.
+ *
+ * @since 1.0.0
+ *
+ * @param int    $id      Optional. Post ID.
+ * @param string $context Optional, defaults to display.
+ * @return string|null The edit post link for the given post. null if the post type is invalid or does
+ *                     not allow an editing UI.
+ */
+function rtgodam_get_edit_post_link( $id = 0, $context = 'display' ) {
+	$_post = get_post( $id );
+	if ( empty( $_post ) ) {
+		return;
 	}
+
+	if ( 'revision' === $_post->post_type ) {
+		$action = '';
+	} elseif ( 'display' === $context ) {
+		$action = '&amp;action=edit';
+	} else {
+		$action = '&action=edit';
+	}
+
+	$post_type_object = get_post_type_object( $_post->post_type );
+	if ( ! $post_type_object ) {
+		return;
+	}
+
+	if ( $post_type_object->_edit_link ) {
+		$link = admin_url( sprintf( $post_type_object->_edit_link . $action, $_post->ID ) );
+	} else {
+		$link = '';
+	}
+
+	return $link;
 }
 
-if ( ! function_exists( 'rtgodam_get_job_id_by_attachment_id' ) ) {
+/**
+ * Get the job id of attachment
+ *
+ * @since 1.0.0
+ *
+ * @param number $attachment_id Attachment id.
+ *
+ * @return number On success it returns the job id otherwise it returns the false.
+ */
+function rtgodam_get_job_id_by_attachment_id( $attachment_id ) {
 
-	/**
-	 * Get the job id of attachment
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param number $attachment_id Attachment id.
-	 *
-	 * @return number On success it returns the job id otherwise it returns the false.
-	 */
-	function rtgodam_get_job_id_by_attachment_id( $attachment_id ) {
-
-		if ( empty( $attachment_id ) ) {
-			return 0;
-		}
-
-		$job_id = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
-
-		return $job_id ? $job_id : 0;
+	if ( empty( $attachment_id ) ) {
+		return 0;
 	}
+
+	$job_id = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
+
+	return $job_id ? $job_id : 0;
 }
 
 /**

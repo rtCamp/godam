@@ -919,7 +919,7 @@ class RT_Transcoder_Handler {
 		update_post_meta( $post_id, '_rt_media_source', $post_thumbs_array['job_for'] );
 		update_post_meta( $post_id, '_rt_media_thumbnails', $upload_thumbnail_array );
 
-		do_action( 'transcoded_thumbnails_added', $post_id );
+		do_action( 'rtgodam_transcoded_thumbnails_added', $post_id );
 
 		if ( $largest_thumb ) {
 
