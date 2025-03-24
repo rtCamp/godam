@@ -184,25 +184,24 @@ Data is sent only when a user submits the deactivation feedback form after click
 
 - **app.godam.io**:
 
-This service is used for transcoding media uploaded by users and verifying the license key to ensure the plugin is authorized for use.
+This service is used for transcoding media uploaded by users and verifying the API Key to ensure the plugin is authorized for use.
 
 **Data Sent:**
 
 - Site URL
 
-- License Key (to be confirmed with Nazmul)
+- API Key
 
 **When Data is Sent:**
 
 During media transcoding when the user uploads a video.
 
-When the plugin checks for a valid license key.
+When the plugin checks for a valid API Key.
 
 **Service Provider**: app.godam.io
 
-[Terms of Service]()
-
-[Privacy Policy]()
+[Terms of Service](https://godam.io/tos/)]
+[Privacy Policy](https://godam.io/privacy-policy/)
 
 - **analytics.godam.io**:
 
@@ -230,6 +229,5 @@ This service collects analytics data when a user watches a video on the frontend
 
 **Service Provider**: analaytics.godam.io
 
-[Terms of Service]()
-
-[Privacy Policy]()
+[Terms of Service](https://godam.io/tos/)]
+[Privacy Policy](https://godam.io/privacy-policy/)
