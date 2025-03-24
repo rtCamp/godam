@@ -161,7 +161,7 @@ function rtgodam_media_get_video_thumbnail( $attachment_id ) {
 			$final_file_url = $uploads['baseurl'] . '/' . $file_url;
 		}
 
-		$final_file_url = apply_filters( 'transcoded_file_url', $final_file_url, $attachment_id );
+		$final_file_url = apply_filters( 'rtgodam_transcoded_file_url', $final_file_url, $attachment_id );
 
 		return $final_file_url;
 	}
@@ -199,7 +199,7 @@ function rtgodam_get_media_url( $attachment_id, $media_type = 'mp4' ) {
 		} else {
 			$final_file_url = $uploads['baseurl'] . '/' . $file_url;
 		}
-		$final_file_url = apply_filters( 'transcoded_file_url', $final_file_url, $attachment_id );
+		$final_file_url = apply_filters( 'rtgodam_transcoded_file_url', $final_file_url, $attachment_id );
 	} else {
 		$final_file_url = wp_get_attachment_url( $attachment_id );
 	}
@@ -463,7 +463,7 @@ function rtgodam_bp_get_activity_content( $content, $activity = null ) {
 					$final_file_url = $uploads['baseurl'] . '/' . $file_url;
 				}
 				// Thumbnail/poster URL.
-				$final_file_url = apply_filters( 'transcoded_file_url', $final_file_url, $media->media_id );
+				$final_file_url = apply_filters( 'rtgodam_transcoded_file_url', $final_file_url, $media->media_id );
 				// Replace the first poster (assuming activity has multiple medias in it).
 				if ( rtgodam_is_file_being_transcoded( $media->media_id ) ) {
 					$content = preg_replace( '/' . str_replace( '/', '\/', $poster_url[1][ $key ] ) . '/', 'poster="' . $final_file_url . '"', $content, 1 );
