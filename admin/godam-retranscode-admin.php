@@ -190,20 +190,21 @@ class RTGODAM_RetranscodeMedia {
 		wp_enqueue_style( 'jquery-ui-retranscodemedia', plugins_url( 'css/jquery-ui-1.7.2.custom.css', __FILE__ ), array(), '1.7.2' );
 
 		$ids = array();
-		if ( ! empty( $_POST['godam-tools'] ) || ! empty( $_REQUEST['ids'] ) ) {
+		if ( ! empty( $_POST['rtgodam_tools'] ) || ! empty( $_REQUEST['ids'] ) ) {
 			// Capability check.
 			if ( ! current_user_can( $this->capability ) ) {
 				wp_die( esc_html__( 'Cheatin&#8217; uh?', 'godam' ) );
 			}
 
 			// Form nonce check.
-			check_admin_referer( 'godam-tools' );
+			check_admin_referer( 'rtgodam_tools' );
 			
 			$file_size = 0;
 			$files     = array();
 	
 			// Get the list of media IDs.
-			$ids = transcoder_filter_input( INPUT_GET, 'ids', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+			$ids = rtgodam_filter_input( INPUT_GET, 'ids', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+			
 			if ( ! empty( $ids ) ) {
 				$ids = explode( ',', $ids );
 			} else {
@@ -240,14 +241,13 @@ class RTGODAM_RetranscodeMedia {
 
 			$stopping_text = esc_html__( 'Stopping...', 'godam' );
 			$text_goback = ( ! empty( $_GET['goback'] ) ) ? __( 'To go back to the previous page, <a id="retranscode-goback" href="#">click here</a>.', 'godam' ) : '';
-			$adminUrl = esc_url( wp_nonce_url( admin_url( 'admin.php?page=godam-tools&goback=1' ), 'godam-tools' ) . '&ids=' );
+			$adminUrl = esc_url( wp_nonce_url( admin_url( 'admin.php?page=rtgodam_tools&goback=1' ), 'rtgodam_tools' ) . '&ids=' );
 	
 			wp_register_script( 
 				'rtgodam-retranscode-admin',
 				RTGODAM_URL . '/admin/js/godam-retranscode-admin.js',
 				array( 'jquery' ),
 				filemtime( RTGODAM_PATH . '/admin/js/godam-retranscode-admin.js' ),
-				true
 			);
 	
 			wp_localize_script(
@@ -261,7 +261,7 @@ class RTGODAM_RetranscodeMedia {
 				)
 			);
 	
-			wp_enqueue_script( 'godam-retranscode-admin' );
+			wp_enqueue_script( 'rtgodam-retranscode-admin' );
 		}
 	}
 
@@ -518,64 +518,63 @@ class RTGODAM_RetranscodeMedia {
 				$text_nofailures = sprintf( __( 'All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were 0 failures. %3$s', 'godam' ), "' + rtgodam_successes + '", "' + rtgodam_totaltime + '", $text_goback );
 				?>
 
+				<noscript><p><em><?php esc_html_e( 'You must enable Javascript in order to proceed!', 'godam' ); ?></em></p></noscript>
 
-			<noscript><p><em><?php esc_html_e( 'You must enable Javascript in order to proceed!', 'godam' ); ?></em></p></noscript>
+				<div id="retranscodemedia-bar" style="position:relative;height:25px;">
+					<div id="retranscodemedia-bar-percent" style="position:absolute;left:50%;top:50%;width:300px;margin-left:-150px;height:25px;margin-top:-9px;font-weight:bold;text-align:center;"></div>
+				</div>
 
-			<div id="retranscodemedia-bar" style="position:relative;height:25px;">
-				<div id="retranscodemedia-bar-percent" style="position:absolute;left:50%;top:50%;width:300px;margin-left:-150px;height:25px;margin-top:-9px;font-weight:bold;text-align:center;"></div>
-			</div>
+				<p><input type="button" class="button hide-if-no-js" name="retranscodemedia-stop" id="retranscodemedia-stop" value="<?php esc_attr_e( 'Abort the Operation', 'godam' ); ?>" /></p>
 
-			<p><input type="button" class="button hide-if-no-js" name="retranscodemedia-stop" id="retranscodemedia-stop" value="<?php esc_attr_e( 'Abort the Operation', 'godam' ); ?>" /></p>
+				<h3 class="title"><?php esc_html_e( 'Debugging Information', 'godam' ); ?></h3>
 
-			<h3 class="title"><?php esc_html_e( 'Debugging Information', 'godam' ); ?></h3>
+				<p>
+						<?php
+						// translators: Total count of the media.
+						printf( esc_html__( 'Total Media: %s', 'godam' ), esc_html( $count ) );
+						?>
+						<br />
+						<?php
+						// translators: Count of media which were successfully sent to the transcoder server.
+						printf( esc_html__( 'Media Sent for Retranscoding: %s', 'godam' ), '<span id="retranscodemedia-debug-successcount">0</span>' );
+						?>
+						<br />
+						<?php
+						// translators: Count of media which were failed while sending to the transcoder server.
+						printf( esc_html__( 'Failed While Sending: %s', 'godam' ), '<span id="retranscodemedia-debug-failurecount">0</span>' );
+						?>
+				</p>
 
-			<p>
-					<?php
-					// translators: Total count of the media.
-					printf( esc_html__( 'Total Media: %s', 'godam' ), esc_html( $count ) );
-					?>
-					<br />
-					<?php
-					// translators: Count of media which were successfully sent to the transcoder server.
-					printf( esc_html__( 'Media Sent for Retranscoding: %s', 'godam' ), '<span id="retranscodemedia-debug-successcount">0</span>' );
-					?>
-					<br />
-					<?php
-					// translators: Count of media which were failed while sending to the transcoder server.
-					printf( esc_html__( 'Failed While Sending: %s', 'godam' ), '<span id="retranscodemedia-debug-failurecount">0</span>' );
-					?>
-			</p>
+				<ol id="retranscodemedia-debuglist">
+					<li style="display:none"></li>
+				</ol>
 
-			<ol id="retranscodemedia-debuglist">
-				<li style="display:none"></li>
-			</ol>
-
-					<?php
+				<?php
 			} else {
 				// No button click? Display the form.
 				?>
-			<form method="post" action="">
-				<?php wp_nonce_field( 'rtgodam_tools' ); ?>
+				<form method="post" action="">
+					<?php wp_nonce_field( 'rtgodam_tools' ); ?>
 
-			<p><?php printf( esc_html__( 'This tool will retranscode ALL audio/video media uploaded to your website. This can be handy if you need to transcode media files uploaded in the past.', 'godam' ) ); ?>
+					<p><?php printf( esc_html__( 'This tool will retranscode ALL audio/video media uploaded to your website. This can be handy if you need to transcode media files uploaded in the past.', 'godam' ) ); ?>
 
-			<i><?php printf( esc_html__( 'Sending your entire media library for retranscoding can consume a lot of your bandwidth allowance, so use this tool with care.', 'godam' ) ); ?></i></p>
+					<i><?php printf( esc_html__( 'Sending your entire media library for retranscoding can consume a lot of your bandwidth allowance, so use this tool with care.', 'godam' ) ); ?></i></p>
 
-			<p>
-					<?php
-					// translators: Placeholder is for admin media section link.
-					printf( wp_kses( __( "You can retranscode specific media files (rather than ALL media) from the <a href='%s'>Media</a> page using Bulk Action via drop down or mouse hover a specific media (audio/video) file.", 'godam' ), array( 'a' => array( 'href' => array() ) ) ), esc_url( admin_url( 'upload.php' ) ) );
-					?>
-			</p>
+					<p>
+							<?php
+							// translators: Placeholder is for admin media section link.
+							printf( wp_kses( __( "You can retranscode specific media files (rather than ALL media) from the <a href='%s'>Media</a> page using Bulk Action via drop down or mouse hover a specific media (audio/video) file.", 'godam' ), array( 'a' => array( 'href' => array() ) ) ), esc_url( admin_url( 'upload.php' ) ) );
+							?>
+					</p>
 
-			<p><?php esc_html_e( 'To begin, just press the button below.', 'godam' ); ?></p>
+					<p><?php esc_html_e( 'To begin, just press the button below.', 'godam' ); ?></p>
 
-			<p><input type="submit" class="button hide-if-no-js button button-primary" name="rtgodam_tools" id="rtgodam_tools" value="<?php esc_attr_e( 'Retranscode All Media', 'godam' ); ?>" /></p>
+					<p><input type="submit" class="button hide-if-no-js button button-primary" name="rtgodam_tools" id="rtgodam_tools" value="<?php esc_attr_e( 'Retranscode All Media', 'godam' ); ?>" /></p>
 
-			<noscript><p><em><?php esc_html_e( 'You must enable Javascript in order to proceed!', 'godam' ); ?></em></p></noscript>
+					<noscript><p><em><?php esc_html_e( 'You must enable Javascript in order to proceed!', 'godam' ); ?></em></p></noscript>
 
-			</form>
-					<?php
+				</form>
+				<?php
 			} // End if button
 			?>
 		</div>
