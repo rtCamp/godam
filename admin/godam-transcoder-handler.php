@@ -152,7 +152,7 @@ class RTGODAM_Transcoder_Handler {
 			$this->transcoding_api_url = RTGODAM_TRANSCODER_API_URL;
 		}
 
-		$this->transcoding_api_url = apply_filters( 'transcoding_api_url', $this->transcoding_api_url );
+		$this->transcoding_api_url = apply_filters( 'rtgodam_transcoding_api_url', $this->transcoding_api_url );
 
 		if ( $no_init ) {
 			return;
@@ -839,11 +839,11 @@ class RTGODAM_Transcoder_Handler {
 			$thumbinfo['basename'] = $temp_name_array[ count( $temp_name_array ) - 1 ];
 
 			/**
-			 * Filter: 'transcoded_temp_filename' - Allows changes for the thumbnail name.
+			 * Filter: 'rtgodam_transcoded_temp_filename' - Allows changes for the thumbnail name.
 			 *
-			 * @deprecated 1.3.2. Use the {@see 'transcoded_thumb_filename'} filter instead.
+			 * @deprecated 1.3.2. Use the {@see 'rtgodam_transcoded_thumb_filename'} filter instead.
 			 */
-			$thumbinfo['basename'] = apply_filters_deprecated( 'transcoded_temp_filename', array( $thumbinfo['basename'] ), '1.3.2', 'transcoded_thumb_filename', __( 'Use transcoded_thumb_filename filter to modify video thumbnail name and transcoded_video_filename filter to modify video file name.', 'godam' ) );
+			$thumbinfo['basename'] = apply_filters_deprecated( 'rtgodam_transcoded_temp_filename', array( $thumbinfo['basename'] ), '1.3.2', 'rtgodam_transcoded_thumb_filename', __( 'Use rtgodam_transcoded_thumb_filename filter to modify video thumbnail name and rtgodam_transcoded_video_filename filter to modify video file name.', 'godam' ) );
 
 			/**
 			 * Allows users/plugins to filter the thumbnail Name
@@ -852,7 +852,7 @@ class RTGODAM_Transcoder_Handler {
 			 *
 			 * @param string $temp_name Contains the thumbnail public name
 			 */
-			$thumbinfo['basename'] = apply_filters( 'transcoded_thumb_filename', $thumbinfo['basename'] );
+			$thumbinfo['basename'] = apply_filters( 'rtgodam_transcoded_thumb_filename', $thumbinfo['basename'] );
 
 			// Verify Extension.
 			if ( empty( pathinfo( $thumbinfo['basename'], PATHINFO_EXTENSION ) ) ) {
@@ -881,7 +881,7 @@ class RTGODAM_Transcoder_Handler {
 			 *                                  and $thumb_upload_info['file'] contains the file physical path
 			 * @param int  $post_id             Contains the attachment ID for which transcoded file is uploaded
 			 */
-			$thumb_upload_info = apply_filters( 'transcoded_file_stored', $thumb_upload_info, $post_id );
+			$thumb_upload_info = apply_filters( 'rtgodam_transcoded_file_stored', $thumb_upload_info, $post_id );
 
 			if ( 'wp-media' !== $post_thumbs_array['job_for'] ) {
 				remove_filter( 'upload_dir', array( $this, 'upload_dir' ) );
@@ -897,7 +897,7 @@ class RTGODAM_Transcoder_Handler {
 			 * @param string $thumb_upload_info['url']  Contains the file public URL
 			 * @param int $post_id                      Contains the attachment ID for which transcoded file has been uploaded
 			 */
-			$thumb_upload_info['url'] = apply_filters( 'transcoded_file_url', $thumb_upload_info['url'], $post_id );
+			$thumb_upload_info['url'] = apply_filters( 'rtgodam_transcoded_file_url', $thumb_upload_info['url'], $post_id );
 
 			if ( $file ) {
 				$upload_thumbnail_array[] = $file;
@@ -1016,7 +1016,7 @@ class RTGODAM_Transcoder_Handler {
 								 *
 								 * @param string $new_wp_attached_file_pathinfo['basename']  Contains the file public name
 								 */
-								$file_name = apply_filters( 'transcoded_video_filename', $new_wp_attached_file_pathinfo['basename'] );
+								$file_name = apply_filters( 'rtgodam_transcoded_video_filename', $new_wp_attached_file_pathinfo['basename'] );
 
 								// Verify Extension.
 								if ( empty( pathinfo( $file_name, PATHINFO_EXTENSION ) ) ) {
@@ -1035,7 +1035,7 @@ class RTGODAM_Transcoder_Handler {
 								 *                              and $upload_info['file'] contains the file physical path
 								 * @param int  $attachment_id   Contains the attachment ID for which transcoded file is uploaded
 								 */
-								$upload_info = apply_filters( 'transcoded_file_stored', $upload_info, $attachment_id );
+								$upload_info = apply_filters( 'rtgodam_transcoded_file_stored', $upload_info, $attachment_id );
 
 								if ( 'wp-media' !== $job_for ) {
 									remove_filter( 'upload_dir', array( $this, 'upload_dir' ) );
@@ -1118,7 +1118,7 @@ class RTGODAM_Transcoder_Handler {
 							 * @param string $transcoded_file_url   Contains the file public URL
 							 * @param int $attachment_id            Contains the attachment ID for which transcoded file has been uploaded
 							 */
-							$transcoded_file_url = apply_filters( 'transcoded_file_url', $transcoded_file_url, $attachment_id );
+							$transcoded_file_url = apply_filters( 'rtgodam_transcoded_file_url', $transcoded_file_url, $attachment_id );
 
 							$activity_content = str_replace( $attachemnt_url, $transcoded_file_url, $content );
 							$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery

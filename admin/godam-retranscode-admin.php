@@ -91,7 +91,7 @@ class RTGODAM_RetranscodeMedia {
 		add_filter( 'render_block', array( $this, 'update_amp_story_video_url' ), 10, 2 ); // Filter block content and replace video URLs.
 
 		// Allow people to change what capability is required to use this feature.
-		$this->capability = apply_filters( 'retranscode_media_cap', 'manage_options' );
+		$this->capability = apply_filters( 'rtgodam_retranscode_media_cap', 'manage_options' );
 	}
 
 	/**
