@@ -7,13 +7,13 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\Providers\Storage;
+namespace RTGODAM\Inc\Providers\Storage;
 
 defined( 'ABSPATH' ) || exit;
 
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
-use Transcoder\Inc\Providers\Exceptions\EasyDamException;
+use RTGODAM\Inc\Providers\Exceptions\EasyDamException;
 
 /**
  * Base class for storage providers.

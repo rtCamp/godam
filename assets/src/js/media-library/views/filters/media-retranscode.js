@@ -46,7 +46,7 @@ MediaRetranscode = MediaRetranscode?.extend( {
 		const nonce = window.easydamMediaLibrary?.godamToolsNonce;
 
 		// Redirect to the retranscode page.
-		window.location.href = `${ homeUrl }/wp-admin/admin.php?page=godam-tools&ids=${ attachmentIds.join( ',' ) }&goback=1&_wpnonce=${ nonce }`;
+		window.location.href = `${ homeUrl }/wp-admin/admin.php?page=rtgodam_tools&ids=${ attachmentIds.join( ',' ) }&goback=1&_wpnonce=${ nonce }`;
 	},
 
 	render() {

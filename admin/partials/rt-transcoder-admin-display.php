@@ -8,7 +8,7 @@
  * @subpackage Transcoder/Admin/Partials
  */
 
-$current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+$current_page = rtgodam_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 ?>
 <div class="wrap">
 	<h1 class="rtm-option-title">
@@ -18,7 +18,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 				href="https://rtmedia.io/?utm_source=dashboard&utm_medium=plugin&utm_campaign=transcoder"
 				target="_blank"
 				title="rtCamp : <?php esc_attr_e( 'Empowering The Web With WordPress', 'godam' ); ?>">
-				<img src="<?php echo esc_url( GODAM_URL ); ?>admin/images/rtcamp-logo.png" alt="rtCamp"/>
+				<img src="<?php echo esc_url( RTGODAM_URL ); ?>admin/images/rtcamp-logo.png" alt="rtCamp"/>
 			</a>
 		</span>
 	</h1>
@@ -206,8 +206,8 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 				<form method="post" action="options.php">
 					<?php
 
-					settings_fields( 'rt-transcoder-settings-group' );
-					do_settings_sections( 'rt-transcoder-settings-group' );
+					settings_fields( 'rtgodam-settings-group' );
+					do_settings_sections( 'rtgodam-settings-group' );
 					?>
 					<table class="form-table">
 						<tr valign="top">
@@ -241,9 +241,9 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 							<td>
 								<?php
 
-								$rtt_override_thumbnail = get_option( 'rtt_override_thumbnail', false );
+								$rtgodam_override_thumbnail = get_option( 'rtgodam_override_thumbnail', false );
 								?>
-								<input type="checkbox" name="rtt_override_thumbnail" value="1" <?php checked( $rtt_override_thumbnail, 1 ); ?> />
+								<input type="checkbox" name="rtgodam_override_thumbnail" value="1" <?php checked( $rtgodam_override_thumbnail, 1 ); ?> />
 								<span class="rtm-tooltip">
 									<i class="dashicons dashicons-info" style="padding-top:3px"></i>
 									<span class="rtm-tip">
@@ -262,9 +262,9 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 							<td>
 								<?php
 
-								$rtt_check_status_btn = get_option( 'rtt_client_check_status_button', false );
+								$rtgodam_check_status_btn = get_option( 'rtgodam_client_check_status_button', false );
 								?>
-								<input type="checkbox" name="rtt_client_check_status_button" value="1" <?php checked( $rtt_check_status_btn, 1 ); ?> />
+								<input type="checkbox" name="rtgodam_client_check_status_button" value="1" <?php checked( $rtgodam_check_status_btn, 1 ); ?> />
 								<span class="rtm-tooltip">
 									<i class="dashicons dashicons-info" style="padding-top:3px"></i>
 									<span class="rtm-tip">
@@ -317,7 +317,7 @@ $current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL
 	</div>
 
 	<div class="metabox-holder transcoder-sidebar">
-		<?php do_action( 'rt_transcoder_before_widgets' ); ?>
+		<?php do_action( 'rtgodam_transcoder_before_widgets' ); ?>
 		<div class="postbox" id="rt-spread-the-word">
 			<h3 class="hndle">
 				<span>

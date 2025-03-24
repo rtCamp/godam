@@ -5,14 +5,14 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\Providers\Storage;
+namespace RTGODAM\Inc\Providers\Storage;
 
 defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\EasyDAM_Constants;
-use Transcoder\Inc\Traits\Singleton;
-use Transcoder\Inc\Providers\Storage\AWS;
-use Transcoder\Inc\Providers\Exceptions\EasyDamException;
+use RTGODAM\Inc\EasyDAM_Constants;
+use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\Providers\Storage\AWS;
+use RTGODAM\Inc\Providers\Exceptions\EasyDamException;
 
 /**
  * A factory class to create storage provider clients.
@@ -26,7 +26,7 @@ class StorageFactory {
 	/**
 	 * Provider client.
 	 * 
-	 * @var \Transcoder\Inc\Providers\Storage\Base
+	 * @var \RTGODAM\Inc\Providers\Storage\Base
 	 */
 	private $provider_client = null; 
 
@@ -45,7 +45,7 @@ class StorageFactory {
 	/**
 	 * Create a storage provider client based on database settings.
 	 *
-	 * @return \Transcoder\Inc\Providers\Storage\Base The storage provider client.
+	 * @return \RTGODAM\Inc\Providers\Storage\Base The storage provider client.
 	 */
 	private function create() {
 		$provider_name = 'aws';

@@ -16,68 +16,68 @@
 
 defined( 'ABSPATH' ) || exit;
 
-if ( ! defined( 'GODAM_PATH' ) ) {
+if ( ! defined( 'RTGODAM_PATH' ) ) {
 	/**
 	 * The server file system path to the plugin directory
 	 */
-	define( 'GODAM_PATH', plugin_dir_path( __FILE__ ) );
+	define( 'RTGODAM_PATH', plugin_dir_path( __FILE__ ) );
 }
 
-if ( ! defined( 'GODAM_URL' ) ) {
+if ( ! defined( 'RTGODAM_URL' ) ) {
 	/**
 	 * The url to the plugin directory
 	 */
-	define( 'GODAM_URL', plugin_dir_url( __FILE__ ) );
+	define( 'RTGODAM_URL', plugin_dir_url( __FILE__ ) );
 }
 
-if ( ! defined( 'GODAM_BASE_NAME' ) ) {
+if ( ! defined( 'RTGODAM_BASE_NAME' ) ) {
 	/**
 	 * The base name of the plugin directory
 	 */
-	define( 'GODAM_BASE_NAME', plugin_basename( __FILE__ ) );
+	define( 'RTGODAM_BASE_NAME', plugin_basename( __FILE__ ) );
 }
 
-if ( ! defined( 'GODAM_VERSION' ) ) {
+if ( ! defined( 'RTGODAM_VERSION' ) ) {
 	/**
 	 * The version of the plugin
 	 */
-	define( 'GODAM_VERSION', '1.0.0' );
+	define( 'RTGODAM_VERSION', '1.0.0' );
 }
 
-if ( ! defined( 'GODAM_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' ) ) {
-	define( 'GODAM_NO_MAIL', true );
+if ( ! defined( 'RTGODAM_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' ) ) {
+	define( 'RTGODAM_NO_MAIL', true );
 }
 
-if ( ! defined( 'GODAM_API_BASE' ) ) {
-	define( 'GODAM_API_BASE', 'https://app.godam.io' );
+if ( ! defined( 'RTGODAM_API_BASE' ) ) {
+	define( 'RTGODAM_API_BASE', 'https://app.godam.io' );
 }
 
-if ( ! defined( 'GODAM_ANALYTICS_BASE' ) ) {
-	define( 'GODAM_ANALYTICS_BASE', 'https://analytics.godam.io' );
+if ( ! defined( 'RTGODAM_ANALYTICS_BASE' ) ) {
+	define( 'RTGODAM_ANALYTICS_BASE', 'https://analytics.godam.io' );
 }
 
-if ( ! defined( 'GODAMIO_API_BASE' ) ) {
-	define( 'GODAMIO_API_BASE', 'https://godam.io' );
+if ( ! defined( 'RTGODAM_IO_API_BASE' ) ) {
+	define( 'RTGODAM_IO_API_BASE', 'https://godam.io' );
 }
 
-require_once GODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-require_once GODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-require_once GODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-require_once GODAM_PATH . 'admin/godam-transcoder-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+require_once RTGODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+require_once RTGODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+require_once RTGODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+require_once RTGODAM_PATH . 'admin/godam-transcoder-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
-global $rt_transcoder_admin;
+global $rtgodam_transcoder_admin;
 
 /**
  * Initiate file system.
  */
-\Transcoder\Inc\FileSystem::get_instance();
+\RTGODAM\Inc\FileSystem::get_instance();
 
-$rt_transcoder_admin = new RT_Transcoder_Admin();
+$rtgodam_transcoder_admin = new RTGODAM_Transcoder_Admin();
 
 /**
  * Initiate blocks.
  */
-\Transcoder\Inc\Plugin::get_instance();
+\RTGODAM\Inc\Plugin::get_instance();
 
 /**
  * Add Settings/Docs link to plugins area.
@@ -89,7 +89,7 @@ $rt_transcoder_admin = new RT_Transcoder_Admin();
  *
  * @return array Processed links.
  */
-function rtt_action_links( $links, $file ) {
+function rtgodam_action_links( $links, $file ) {
 	// Return normal links if not plugin.
 	if ( plugin_basename( 'godam/godam.php' ) !== $file ) {
 		return $links;
@@ -98,7 +98,7 @@ function rtt_action_links( $links, $file ) {
 	// Add a few links to the existing links array.
 	$settings_url = sprintf(
 		'<a href="%1$s">%2$s</a>',
-		esc_url( admin_url( 'admin.php?page=godam' ) ),
+		esc_url( admin_url( 'admin.php?page=rtgodam' ) ),
 		esc_html__( 'Settings', 'godam' )
 	);
 
@@ -110,27 +110,27 @@ function rtt_action_links( $links, $file ) {
 	);
 }
 
-add_filter( 'plugin_action_links', 'rtt_action_links', 11, 2 );
-add_filter( 'network_admin_plugin_action_links', 'rtt_action_links', 11, 2 );
+add_filter( 'plugin_action_links', 'rtgodam_action_links', 11, 2 );
+add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 );
 
 /**
  * Autoloader for the vendor directory.
  */
-require GODAM_PATH . 'vendor/autoload.php';
+require RTGODAM_PATH . 'vendor/autoload.php';
 
 /**
  * Runs when the plugin is activated.
  */
-function godam_plugin_activate() {
-	update_site_option( 'godam_plugin_activation_time', time() );
+function rtgodam_plugin_activate() {
+	update_site_option( 'rtgodam_plugin_activation_time', time() );
 }
-register_activation_hook( __FILE__, 'godam_plugin_activate' );
+register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
 
 /**
  * Runs when the plugin is deactivated.
  */
-function godam_plugin_deactivate() {
-	\Transcoder\Inc\Cron::get_instance()->unschedule_video_cleanup();
-	delete_site_option( 'godam_plugin_activation_time' );
+function rtgodam_plugin_deactivate() {
+	\RTGODAM\Inc\Cron::get_instance()->unschedule_video_cleanup();
+	delete_site_option( 'rtgodam_plugin_activation_time' );
 }
-register_deactivation_hook( __FILE__, 'godam_plugin_deactivate' );
+register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );

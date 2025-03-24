@@ -89,7 +89,7 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 							) }
 						</button>
 
-						<a href={ `/wp-admin/admin.php?page=analytics&id=${ item?.id }` } target="_blank" className="godam-video-list__video__thumbnail__actions__action" rel="noreferrer">
+						<a href={ `/wp-admin/admin.php?page=rtgodam_analytics&id=${ item?.id }` } target="_blank" className="godam-video-list__video__thumbnail__actions__action" rel="noreferrer">
 							<Icon icon={ chartBar } />
 							<span>{ __( 'View analytics', 'godam' ) }</span>
 						</a>

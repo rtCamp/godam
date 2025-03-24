@@ -5,11 +5,11 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc;
+namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\Traits\Singleton;
+use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Assets
@@ -20,14 +20,15 @@ class Pages {
 	/**
 	 * Hardcoded Slugs
 	 */
-	private $menu_slug            = 'godam';
-	private $video_editor_slug    = 'video_editor';
-	private $analytics_slug       = 'analytics';
-	private $menu_page_id         = 'toplevel_page_godam';
-	private $video_editor_page_id = 'godam_page_video_editor';
-	private $analytics_page_id    = 'godam_page_analytics';
-	private $help_page_id         = 'godam_page_help';
-	private $help_slug            = 'help';
+	private $menu_slug            = 'rtgodam';
+	private $video_editor_slug    = 'rtgodam_video_editor';
+	private $analytics_slug       = 'rtgodam_analytics';
+	private $help_slug			  = 'rtgodam_help';
+
+	private $menu_page_id         = 'toplevel_page_rtgodam';
+	private $video_editor_page_id = 'godam_page_' . 'rtgodam_video_editor';
+	private $analytics_page_id    = 'godam_page_' . 'rtgodam_analytics';
+	private $help_page_id         = 'godam_page_' . 'rtgodam_help';
 
 	/**
 	 * Construct method.
@@ -95,7 +96,7 @@ class Pages {
 		);
 
 		add_submenu_page(
-			'godam',
+			'rtgodam',
 			__( 'Help', 'godam' ),
 			__( 'Help', 'godam' ),
 			'edit_posts',
@@ -235,9 +236,9 @@ class Pages {
 		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id ), true ) ) {
 			wp_register_style(
 				'transcoder-page-style-godam',
-				GODAM_URL . '/pages/build/style.css',
+				RTGODAM_URL . '/pages/build/style.css',
 				array( 'wp-components' ),
-				filemtime( GODAM_PATH . '/pages/build/style.css' )
+				filemtime( RTGODAM_PATH . '/pages/build/style.css' )
 			);
 
 			wp_enqueue_style( 'transcoder-page-style-godam' );
@@ -247,9 +248,9 @@ class Pages {
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
-				GODAM_URL . '/pages/build/video-editor.js',
+				RTGODAM_URL . '/pages/build/video-editor.js',
 				array( 'wp-element' ),
-				filemtime( GODAM_PATH . '/pages/build/video-editor.js' ),
+				filemtime( RTGODAM_PATH . '/pages/build/video-editor.js' ),
 				true
 			);
 
@@ -261,16 +262,16 @@ class Pages {
 					'nonce'            => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
-					'valid_license'    => godam_is_license_valid(),
+					'valid_license'    => rtgodam_is_license_valid(),
 				)
 			);
 
-			$godam_user_data = godam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
 				'userData',
-				$godam_user_data
+				$rtgodam_user_data
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
@@ -297,18 +298,18 @@ class Pages {
 
 			wp_register_script(
 				'transcoder-page-script-godam',
-				GODAM_URL . '/pages/build/godam.js',
+				RTGODAM_URL . '/pages/build/godam.js',
 				array( 'wp-element' ),
-				filemtime( GODAM_PATH . '/pages/build/godam.js' ),
+				filemtime( RTGODAM_PATH . '/pages/build/godam.js' ),
 				true
 			);
 
-			$godam_user_data = godam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
 				'transcoder-page-script-godam',
 				'userData',
-				$godam_user_data
+				$rtgodam_user_data
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-godam' );
@@ -321,25 +322,25 @@ class Pages {
 			 */
 			wp_register_script(
 				'd3-js',
-				GODAM_URL . '/assets/src/libs/d3.js',
+				RTGODAM_URL . '/assets/src/libs/d3.js',
 				array(),
-				GODAM_VERSION,
+				RTGODAM_VERSION,
 				false
 			);
 
 			wp_register_script(
 				'transcoder-page-script-analytics',
-				GODAM_URL . 'pages/build/analytics.js',
+				RTGODAM_URL . 'pages/build/analytics.js',
 				array( 'wp-element' ),
-				filemtime( GODAM_PATH . 'pages/build/analytics.js' ),
+				filemtime( RTGODAM_PATH . 'pages/build/analytics.js' ),
 				true
 			);
 
 			wp_register_script(
 				'video-analytics-charts',
-				GODAM_URL . 'assets/build/js/video-analytics.js',
+				RTGODAM_URL . 'assets/build/js/video-analytics.js',
 				array( 'transcoder-page-script-analytics', 'd3-js' ),
-				filemtime( GODAM_PATH . 'assets/build/js/video-analytics.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/video-analytics.js' ),
 				true
 			);
 
@@ -351,16 +352,16 @@ class Pages {
 					'nonce'            => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
-					'adminUrl'         => admin_url( 'admin.php?page=godam' ),
+					'adminUrl'         => admin_url( 'admin.php?page=rtgodam' ),
 				)
 			);
 
-			$godam_user_data = godam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
 				'transcoder-page-script-analytics',
 				'userData',
-				$godam_user_data
+				$rtgodam_user_data
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
@@ -369,18 +370,18 @@ class Pages {
 		} elseif ( $screen && $this->help_page_id === $screen->id ) {
 			wp_register_script(
 				'godam-page-script-help',
-				GODAM_URL . 'pages/build/help.js',
+				RTGODAM_URL . 'pages/build/help.js',
 				array( 'wp-element' ),
-				filemtime( GODAM_PATH . 'pages/build/help.js' ),
+				filemtime( RTGODAM_PATH . 'pages/build/help.js' ),
 				true
 			);
 
-			$godam_user_data = godam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
 				'godam-page-script-help',
 				'userData',
-				$godam_user_data
+				$rtgodam_user_data
 			);
 
 			wp_enqueue_script( 'godam-page-script-help' );
@@ -390,9 +391,9 @@ class Pages {
 
 		wp_register_script(
 			'media-library-react',
-			GODAM_URL . '/pages/build/media-library.js',
+			RTGODAM_URL . '/pages/build/media-library.js',
 			array( 'wp-element', 'wp-i18n' ),
-			filemtime( GODAM_PATH . '/pages/build/media-library.js' ),
+			filemtime( RTGODAM_PATH . '/pages/build/media-library.js' ),
 			true
 		);
 
@@ -404,7 +405,7 @@ class Pages {
 			'MediaLibrary',
 			array(
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'userData' => godam_get_user_data(),
+				'userData' => rtgodam_get_user_data(),
 			)
 		);
 	}

@@ -121,11 +121,11 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 <?php if ( ! empty( $sources ) ) : ?>
 	<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>
 	style="
-	--easydam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
-	--easydam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
-	--easydam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
-	--easydam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
-	--godam-video-aspect-ratio: <?php echo esc_attr( $attributes['aspectRatio'] ); ?>;
+	--rtgodam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
+	--rtgodam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
+	--rtgodam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
+	--rtgodam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
+	--rtgodam-video-aspect-ratio: <?php echo esc_attr( $attributes['aspectRatio'] ); ?>;
 	">
 	<div class="easydam-video-container animate-video-loading">
 		<div class="animate-play-btn">
@@ -209,7 +209,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 						<?php elseif ( 'html' === $layer['cta_type'] && ! empty( $layer['html'] ) ) : ?>
 							<?php echo wp_kses_post( $layer['html'] ); ?>
 						<?php elseif ( 'image' === $layer['cta_type'] && ! empty( $layer['image'] ) ) : ?>
-							<?php echo wp_kses_post( image_cta_html( $layer ) ); ?>
+							<?php echo wp_kses_post( rtgodam_image_cta_html( $layer ) ); ?>
 						<?php endif; ?>
 					</div>
 					<?php
