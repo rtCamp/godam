@@ -114,11 +114,6 @@ add_filter( 'plugin_action_links', 'rtgodam_action_links', 11, 2 );
 add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 );
 
 /**
- * Autoloader for the vendor directory.
- */
-require RTGODAM_PATH . 'vendor/autoload.php';
-
-/**
  * Runs when the plugin is activated.
  */
 function rtgodam_plugin_activate() {
