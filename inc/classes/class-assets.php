@@ -232,7 +232,7 @@ class Assets {
 	 * @return void
 	 */
 	private function enqueue_godam_settings() {
-		$godam_settings = get_option( 'rt-easydam-settings' );
+		$godam_settings = get_option( 'rtgodam-settings' );
 
 		$selected_brand_image = $godam_settings['general']['selected_brand_image'] ?? '';
 		$brand_color          = $godam_settings['general']['brand_color'] ?? '';
