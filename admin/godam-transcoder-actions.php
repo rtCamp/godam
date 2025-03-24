@@ -97,7 +97,7 @@ function rtgodam_rtmedia_vedio_editor_content() {
 						} else {
 							$thumbnail_src = $uploads['baseurl'] . '/' . $file_url;
 						}
-						$thumbnail_src = apply_filters( 'transcoded_file_url', $thumbnail_src, $media_id );
+						$thumbnail_src = apply_filters( 'rtgodam_transcoded_file_url', $thumbnail_src, $media_id );
 						?>
 						<li<?php echo $checked ? ' class="selected"' : ''; ?>
 							style="width: 150px;display: inline-block;">
@@ -182,7 +182,7 @@ function rtgodam_set_video_thumbnail( $id ) {
 				$final_file_url = $uploads['baseurl'] . '/' . $file_url;
 			}
 
-			$final_file_url = apply_filters( 'transcoded_file_url', $final_file_url, $attachment_id );
+			$final_file_url = apply_filters( 'rtgodam_transcoded_file_url', $final_file_url, $attachment_id );
 
 			update_post_meta( $attachment_id, '_rt_media_video_thumbnail', $thumbnail );
 		}
