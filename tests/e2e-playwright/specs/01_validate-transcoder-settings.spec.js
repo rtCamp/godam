@@ -35,16 +35,16 @@ test.describe('Validate Transcoder Settings', () => {
         const activeUsage = page.locator("div[id='transcoder-usage']");
         expect(activeUsage).not.toBeNull();
         // Validate Checkboxes
-        const thumbnailCheckbox = await page.locator("input[name='rtt_override_thumbnail']").isChecked();
-        const trackUserprofile = await page.locator("input[name='rtt_client_check_status_button']").isChecked();
+        const thumbnailCheckbox = await page.locator("input[name='rtgodam_override_thumbnail']").isChecked();
+        const trackUserprofile = await page.locator("input[name='rtgodam_client_check_status_button']").isChecked();
 
         // Ensure Checkbox are checked for checking transcoding status for next test case
         if (thumbnailCheckbox === false) {
-            await page.locator("input[name='rtt_override_thumbnail']").check();
+            await page.locator("input[name='rtgodam_override_thumbnail']").check();
         }
 
         if (trackUserprofile === false) {
-            await page.locator("input[name='rtt_client_check_status_button']").check();
+            await page.locator("input[name='rtgodam_client_check_status_button']").check();
         }
         // Save settings and verify
         await page.locator("#submit").click();

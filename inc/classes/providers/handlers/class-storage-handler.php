@@ -5,12 +5,12 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\Providers\Handlers;
+namespace RTGODAM\Inc\Providers\Handlers;
 
 defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\Providers\Exceptions\EasyDamException;
-use Transcoder\Inc\Providers\Storage\StorageFactory;
+use RTGODAM\Inc\Providers\Exceptions\EasyDamException;
+use RTGODAM\Inc\Providers\Storage\StorageFactory;
 
 /**
  * Class Storage_Handler

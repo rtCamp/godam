@@ -7,12 +7,12 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\Providers\Handlers;
+namespace RTGODAM\Inc\Providers\Handlers;
 
 defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\Traits\Singleton;
-use Transcoder\Inc\Providers\Exceptions\EasyDamException;
+use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\Providers\Exceptions\EasyDamException;
 
 /**
  * Class Error_Handler

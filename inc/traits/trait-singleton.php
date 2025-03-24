@@ -25,7 +25,7 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\Traits;
+namespace RTGODAM\Inc\Traits;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -78,9 +78,9 @@ trait Singleton {
 			$instance[ $called_class ] = new $called_class();
 
 			/**
-			 * Dependent items can use the transcoder_singleton_init_{$called_class} hook to execute code
+			 * Dependent items can use the rtgodam_singleton_init_{$called_class} hook to execute code
 			 */
-			do_action( sprintf( 'transcoder_singleton_init_%s', $called_class ) ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+			do_action( sprintf( 'rtgodam_singleton_init_%s', $called_class ) ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
 
 		}
 

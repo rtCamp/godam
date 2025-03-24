@@ -333,7 +333,7 @@ function VideoEdit( {
 						</BaseControl.VisualLabel>
 						<Button
 							__next40pxDefaultSize
-							href={ `/wp-admin/admin.php?page=video_editor&id=${ id }` }
+							href={ `/wp-admin/admin.php?page=rtgodam_video_editor&id=${ id }` }
 							target="_blank"
 							variant="primary"
 							className=""

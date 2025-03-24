@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  * @return mixed Value of the requested variable on success, FALSE if the filter fails, or NULL if the
  *               variable_name variable is not set.
  */
-function transcoder_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, $options = 0 ) {
+function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, $options = 0 ) {
 
 	if ( php_sapi_name() !== 'cli' ) {
 
@@ -122,33 +122,30 @@ function transcoder_filter_input( $type, $variable_name, $filter = FILTER_DEFAUL
 	return filter_var( $input, $filter );
 }
 
-if ( ! function_exists( 'fetch_overlay_media_url' ) ) {
-
-	/**
-	 * Fetch the URL of a media file by its ID.
-	 *
-	 * This function retrieves the URL of a media attachment in WordPress based on the provided media ID.
-	 * It validates the ID, ensures the media exists, and is of the correct type (attachment).
-	 *
-	 * @param int $media_id The ID of the media attachment.
-	 * @return string The URL of the media file, or an empty string if invalid or not found.
-	 * @throws Exception If the media is not found or is not an attachment.
-	 */
-	function fetch_overlay_media_url( $media_id ) {
-		if ( empty( $media_id ) || 0 === intval( $media_id ) ) {
-			return '';
-		}
-
-		$media = get_post( $media_id );
-
-		if ( ! $media || 'attachment' !== $media->post_type ) {
-			throw new Exception( 'Media not found' );
-		}
-
-		$media_url = wp_get_attachment_url( $media_id );
-
-		return $media_url ? $media_url : '';
+/**
+ * Fetch the URL of a media file by its ID.
+ *
+ * This function retrieves the URL of a media attachment in WordPress based on the provided media ID.
+ * It validates the ID, ensures the media exists, and is of the correct type (attachment).
+ *
+ * @param int $media_id The ID of the media attachment.
+ * @return string The URL of the media file, or an empty string if invalid or not found.
+ * @throws Exception If the media is not found or is not an attachment.
+ */
+function rtgodam_fetch_overlay_media_url( $media_id ) {
+	if ( empty( $media_id ) || 0 === intval( $media_id ) ) {
+		return '';
 	}
+
+	$media = get_post( $media_id );
+
+	if ( ! $media || 'attachment' !== $media->post_type ) {
+		throw new Exception( 'Media not found' );
+	}
+
+	$media_url = wp_get_attachment_url( $media_id );
+
+	return $media_url ? $media_url : '';
 }
 
 /**
@@ -167,8 +164,8 @@ if ( ! function_exists( 'fetch_overlay_media_url' ) ) {
  *     - 'imageCtaButtonText' (string): Text for the CTA button.
  * @return string The generated HTML string for the image CTA overlay.
  */
-function image_cta_html( $layer ) {
-	$image_url = fetch_overlay_media_url( $layer['image'] );
+function rtgodam_image_cta_html( $layer ) {
+	$image_url = rtgodam_fetch_overlay_media_url( $layer['image'] );
 	// Ensure $layer is an associative array and has required fields.
 	$orientation_class = isset( $layer['imageCtaOrientation'] ) && 'portrait' === $layer['imageCtaOrientation']
 		? 'vertical-image-cta-container'
@@ -211,50 +208,50 @@ function image_cta_html( $layer ) {
  * 
  * @param int $timeout The time in seconds after which the user data should be refreshed.
  */
-function godam_get_user_data( $timeout = 300 ) {
-	$godam_user_data = get_site_option( 'godam_user_data', false );
-	$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+function rtgodam_get_user_data( $timeout = 300 ) {
+	$rtgodam_user_data = get_site_option( 'rtgodam_user_data', false );
+	$license_key = get_site_option( 'rtgodam-api-key', '' );
 
 	if (
-		( empty( $godam_user_data ) && ! empty( $license_key ) ) ||
-		( isset( $godam_user_data['timestamp'] ) && ( time() - $godam_user_data['timestamp'] ) > $timeout )
+		( empty( $rtgodam_user_data ) && ! empty( $license_key ) ) ||
+		( isset( $rtgodam_user_data['timestamp'] ) && ( time() - $rtgodam_user_data['timestamp'] ) > $timeout )
 	) {
 		// Verify the user's license.
-		$result      = rtt_verify_license( $license_key );
+		$result      = rtgodam_verify_license( $license_key );
 
 		$valid_license = false;
 		$user_data     = array();
 
 		if ( is_wp_error( $result ) ) {
 			$valid_license = false;
-			$user_data['license_key'] = rtt_mask_string( $license_key );
+			$user_data['license_key'] = rtgodam_mask_string( $license_key );
 		} else {
 			$valid_license            = true;
 			$user_data                = $result['data'] ?? array();
-			$user_data['license_key'] = rtt_mask_string( $license_key );
+			$user_data['license_key'] = rtgodam_mask_string( $license_key );
 		}
 
-		$godam_user_data = array(
+		$rtgodam_user_data = array(
 			'currentUserId' => get_current_user_id(),
 			'valid_license' => $valid_license,
 			'user_data'     => $user_data,
 		);
 
-		$usage_data = godam_get_usage_data();
+		$usage_data = rtgodam_get_usage_data();
 
 		if ( ! is_wp_error( $usage_data ) ) {
-			$godam_user_data = array_merge( $godam_user_data, $usage_data );
+			$rtgodam_user_data = array_merge( $rtgodam_user_data, $usage_data );
 		} else {
-			$godam_user_data['storageBandwidthError'] = $usage_data->get_error_message();
+			$rtgodam_user_data['storageBandwidthError'] = $usage_data->get_error_message();
 		}
 
-		$godam_user_data['timestamp'] = time();
+		$rtgodam_user_data['timestamp'] = time();
 
 		// Save the userData in wp_options.
-		update_site_option( 'godam_user_data', $godam_user_data );
+		update_site_option( 'rtgodam_user_data', $rtgodam_user_data );
 	}
 
-	return $godam_user_data;
+	return $rtgodam_user_data;
 }
 
 /**
@@ -262,15 +259,15 @@ function godam_get_user_data( $timeout = 300 ) {
  * 
  * @return array|WP_Error
  */
-function godam_get_usage_data() {
+function rtgodam_get_usage_data() {
 
-	$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+	$license_key = get_site_option( 'rtgodam-api-key', '' );
 
 	if ( empty( $license_key ) ) {
-		return new \WP_Error( 'godam_api_error', 'license key not found ( try refreshing the page )' );
+		return new \WP_Error( 'rtgodam_api_error', 'license key not found ( try refreshing the page )' );
 	}
 
-	$endpoint = GODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
+	$endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
 
 	$url = add_query_arg(
 		array(
@@ -291,7 +288,7 @@ function godam_get_usage_data() {
 
 	// Validate response structure
 	if ( ! isset( $data['message'] ) || ! isset( $data['message']['storage_used'] ) || ! isset( $data['message']['bandwidth_used'] ) ) {
-		return new \WP_Error( 'godam_api_error', 'Error fetching data for storage and bandwidth ( remove and add again the license key to get usage analytics )' );
+		return new \WP_Error( 'rtgodam_api_error', 'Error fetching data for storage and bandwidth ( remove and add again the license key to get usage analytics )' );
 	}
 
 	return array(
@@ -307,8 +304,8 @@ function godam_get_usage_data() {
  * 
  * @return bool
  */
-function godam_is_license_valid() {
-	$user_data = godam_get_user_data();
+function rtgodam_is_license_valid() {
+	$user_data = rtgodam_get_user_data();
 
 	return !empty ( $user_data['valid_license'] ) ? true : false;
 }

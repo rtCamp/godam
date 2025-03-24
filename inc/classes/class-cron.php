@@ -5,11 +5,11 @@
  * @package Transcoder
  */
 
-namespace Transcoder\Inc;
+namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\Traits\Singleton;
+use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Cron
@@ -26,7 +26,7 @@ class Cron {
 		add_action( 'wp', array( $this, 'schedule_video_cleanup' ) );
 
 		// Hook into the scheduled event.
-		add_action( 'godam_cleanup_expired_videos', array( $this, 'cleanup_expired_videos' ) );
+		add_action( 'rtgodam_cleanup_expired_videos', array( $this, 'cleanup_expired_videos' ) );
 
 		add_filter(
 			'cron_schedules',
@@ -44,8 +44,8 @@ class Cron {
 	 * Schedule the cron job for cleaning up expired videos.
 	 */
 	public function schedule_video_cleanup() {
-		if ( ! wp_next_scheduled( 'godam_cleanup_expired_videos' ) ) {
-			wp_schedule_event( time(), 'twelve_hours', 'godam_cleanup_expired_videos' );
+		if ( ! wp_next_scheduled( 'rtgodam_cleanup_expired_videos' ) ) {
+			wp_schedule_event( time(), 'twelve_hours', 'rtgodam_cleanup_expired_videos' );
 		}
 	}
 
@@ -58,8 +58,8 @@ class Cron {
 
 		$batch_size = 50; // Process in batches to avoid performance issues.
 
-		$usage_data  = get_site_option( 'rt-transcoding-usage', array() );
-		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+		$usage_data  = get_site_option( 'rtgodam-usage', array() );
+		$license_key = get_site_option( 'rtgodam-api-key', '' );
 		$usage_data  = isset( $usage_data[ $license_key ] ) ? (array) $usage_data[ $license_key ] : null;
 
 		// If there is no valid license usage data, do nothing.
@@ -123,10 +123,10 @@ class Cron {
 	 * Remove the scheduled cron event on plugin deactivation.
 	 */
 	public function unschedule_video_cleanup() {
-		$timestamp = wp_next_scheduled( 'godam_cleanup_expired_videos' );
+		$timestamp = wp_next_scheduled( 'rtgodam_cleanup_expired_videos' );
 		if ( $timestamp ) {
-			wp_unschedule_event( $timestamp, 'godam_cleanup_expired_videos' );
+			wp_unschedule_event( $timestamp, 'rtgodam_cleanup_expired_videos' );
 		}
-		wp_schedule_single_event( time() + 10, 'godam_cleanup_expired_videos' );
+		wp_schedule_single_event( time() + 10, 'rtgodam_cleanup_expired_videos' );
 	}
 }

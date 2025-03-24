@@ -7,7 +7,7 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\Providers\Storage;
+namespace RTGODAM\Inc\Providers\Storage;
 
 defined( 'ABSPATH' ) || exit;
 
