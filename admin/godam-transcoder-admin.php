@@ -101,10 +101,6 @@ class RTGODAM_Transcoder_Admin {
 
 			// Show admin notice when Transcoder pluign active and user using rtMedia version 4.0.7.
 			if ( version_compare( $rtmedia_plugin_info['Version'], '4.0.7', '<=' ) ) {
-				if ( is_multisite() ) {
-					add_action( 'network_admin_notices', array( $this, 'transcoder_admin_notice' ) );
-				}
-				add_action( 'admin_notices', array( $this, 'transcoder_admin_notice' ) );
 				add_action( 'wp_ajax_transcoder_hide_admin_notice', array( $this, 'transcoder_hide_admin_notice' ) );
 			}
 			add_action( 'admin_head', array( $this, 'rtmedia_hide_encoding_tab' ) );
@@ -378,39 +374,6 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		return $post;
-	}
-
-	/**
-	 * Display admin notice.
-	 *
-	 * @since   1.0.0
-	 */
-	public function transcoder_admin_notice() {
-		$show_notice = get_site_option( 'transcoder_admin_notice', 1 );
-
-		if ( '1' === $show_notice || 1 === $show_notice ) :
-			?>
-		<div class="notice notice-info transcoder-notice is-dismissible">
-			<?php wp_nonce_field( '_transcoder_hide_notice_', 'transcoder_hide_notice_nonce' ); ?>
-			<p>
-				<?php esc_html_e( 'rtMedia encoding service has been disabled because you are using Transcoder plugin.', 'godam' ); ?>
-			</p>
-		</div>
-		<script type="text/javascript">
-			jQuery( document ).ready( function() {
-				jQuery( '.transcoder-notice.is-dismissible' ).on( 'click', '.notice-dismiss', function() {
-					var data = {
-						action: 'transcoder_hide_admin_notice',
-						transcoder_notice_nonce: jQuery('#transcoder_hide_notice_nonce').val()
-					};
-					jQuery.post( ajaxurl, data, function ( response ) {
-						jQuery('.transcoder-notice').remove();
-					});
-				});
-			});
-		</script>
-			<?php
-		endif;
 	}
 
 	/**
