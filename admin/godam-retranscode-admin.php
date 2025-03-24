@@ -272,9 +272,9 @@ class RetranscodeMedia {
 	 * @return void
 	 */
 	public function bulk_action_handler() {
-		$action  = transcoder_filter_input( INPUT_GET, 'action', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$action2 = transcoder_filter_input( INPUT_GET, 'action2', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$media   = transcoder_filter_input( INPUT_GET, 'media', FILTER_SANITIZE_NUMBER_INT, FILTER_REQUIRE_ARRAY );
+		$action  = rtgodam_filter_input( INPUT_GET, 'action', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$action2 = rtgodam_filter_input( INPUT_GET, 'action2', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$media   = rtgodam_filter_input( INPUT_GET, 'media', FILTER_SANITIZE_NUMBER_INT, FILTER_REQUIRE_ARRAY );
 
 		if ( empty( $action ) || empty( $media ) || ! is_array( $media ) ||
 			( 'bulk_retranscode_media' !== $action && 'bulk_retranscode_media' !== $action2 )
@@ -328,7 +328,7 @@ class RetranscodeMedia {
 
 				// Create the list of image IDs.
 				$usage_info = get_site_option( 'rtgodam-usage' );
-				$ids        = transcoder_filter_input( INPUT_GET, 'ids', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+				$ids        = rtgodam_filter_input( INPUT_GET, 'ids', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				if ( ! empty( $ids ) ) {
 					$media = array_map( 'intval', explode( ',', trim( $ids, ',' ) ) );
 					$ids   = implode( ',', $media );
@@ -640,7 +640,7 @@ class RetranscodeMedia {
 	public function ajax_process_retranscode_request() {
 
 		header( 'Content-type: application/json' );
-		$id = transcoder_filter_input( INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT );
+		$id = rtgodam_filter_input( INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT );
 		$id = intval( $id );
 
 		if ( empty( $id ) || 0 >= $id ) {

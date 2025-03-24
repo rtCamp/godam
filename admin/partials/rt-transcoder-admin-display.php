@@ -8,7 +8,7 @@
  * @subpackage Transcoder/Admin/Partials
  */
 
-$current_page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+$current_page = rtgodam_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 ?>
 <div class="wrap">
 	<h1 class="rtm-option-title">

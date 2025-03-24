@@ -516,9 +516,9 @@ class RT_Transcoder_Handler {
 	 * @since   1.0.0
 	 */
 	public function save_api_key() {
-		$is_api_key_updated     = transcoder_filter_input( INPUT_GET, 'api-key-updated', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$is_api_key_updated     = rtgodam_filter_input( INPUT_GET, 'api-key-updated', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$is_invalid_license_key = false;
-		$is_localhost           = transcoder_filter_input( INPUT_GET, 'need-public-host', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$is_localhost           = rtgodam_filter_input( INPUT_GET, 'need-public-host', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 		if ( $is_api_key_updated ) {
 			if ( is_multisite() ) {
@@ -540,10 +540,10 @@ class RT_Transcoder_Handler {
 			add_action( 'admin_notices', array( $this, 'public_host_needed_notice' ) );
 		}
 
-		$filtered_apikey = transcoder_filter_input( INPUT_GET, 'apikey', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$filtered_apikey = rtgodam_filter_input( INPUT_GET, 'apikey', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$apikey          = ! empty( $filtered_apikey ) ? trim( $filtered_apikey ) : '';
 
-		$page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$page = rtgodam_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 		if ( ! empty( $apikey ) && is_admin() && ! empty( $page ) && ( 'rt-transcoder' === $page ) ) {
 			/* Do not activate transcoding service on localhost */
@@ -640,7 +640,7 @@ class RT_Transcoder_Handler {
 		<div class="updated">
 			<p>
 				<?php
-				$api_key_updated = transcoder_filter_input( INPUT_GET, 'api-key-updated', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+				$api_key_updated = rtgodam_filter_input( INPUT_GET, 'api-key-updated', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				printf(
 					wp_kses(
 						__( 'You have successfully subscribed.', 'godam' ),

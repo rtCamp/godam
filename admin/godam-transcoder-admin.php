@@ -156,7 +156,7 @@ class RT_Transcoder_Admin {
 	public function enqueue_scripts_styles() {
 		global $pagenow;
 
-		$page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$page = rtgodam_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 		if ( 'admin.php' !== $pagenow || 'rt-transcoder' !== $page ) {
 			return;
@@ -350,7 +350,7 @@ class RT_Transcoder_Admin {
 	 */
 	public function save_video_thumbnail( $post ) {
 
-		$rtmedia_thumbnail = transcoder_filter_input( INPUT_POST, 'rtmedia-thumbnail', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$rtmedia_thumbnail = rtgodam_filter_input( INPUT_POST, 'rtmedia-thumbnail', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$id                = ( ! empty( $post['ID'] ) && 0 < intval( $post['ID'] ) ) ? intval( $post['ID'] ) : 0;
 
 		if ( isset( $rtmedia_thumbnail ) ) {
@@ -419,8 +419,8 @@ class RT_Transcoder_Admin {
 	 * @since   1.0.0
 	 */
 	public function transcoder_hide_admin_notice() {
-		if ( check_ajax_referer( '_transcoder_hide_notice_', 'transcoder_notice_nonce' ) ) {
-			update_site_option( 'transcoder_admin_notice', '0' );
+		if ( check_ajax_referer( '_transcoder_hide_notice_', 'rtgodam_notice_nonce' ) ) {
+			update_site_option( 'rtgodam_admin_notice', '0' );
 		}
 		die();
 	}

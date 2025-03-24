@@ -759,7 +759,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 		 *
 		 * @param string $check_button_text Default text of transcoding process status check button.
 		 */
-		$check_button_text = apply_filters( 'transcoder_check_status_button_text', $check_button_text );
+		$check_button_text = apply_filters( 'rtgodam_check_status_button_text', $check_button_text );
 
 		?>
 		<div id="span_status<?php echo esc_attr( $post_id ); ?>"></div>
@@ -884,7 +884,7 @@ function rtgodam_transcoder_enqueue_block_editor_assets() {
 function rtgodam_ajax_process_check_status_request() {
 
 	check_ajax_referer( 'check-transcoding-status-ajax-nonce', 'security', true );
-	$post_id = transcoder_filter_input( INPUT_POST, 'postid', FILTER_SANITIZE_NUMBER_INT );
+	$post_id = rtgodam_filter_input( INPUT_POST, 'postid', FILTER_SANITIZE_NUMBER_INT );
 
 	if ( ! empty( $post_id ) ) {
 		echo esc_html( rtgodam_get_transcoding_status( $post_id ) );
@@ -1052,7 +1052,7 @@ add_filter( 'wp_generate_attachment_metadata', 'rtgodam_media_update_usage', 10,
 function get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FULL_SPECIAL_CHARS ) {
 	$server_val = '';
 	if ( function_exists( 'filter_input' ) && filter_has_var( INPUT_SERVER, $server_key ) ) {
-		$server_val = transcoder_filter_input( INPUT_SERVER, $server_key, $filter_type );
+		$server_val = rtgodam_filter_input( INPUT_SERVER, $server_key, $filter_type );
 	} elseif ( isset( $_SERVER[ $server_key ] ) ) {
 		$server_val = $_SERVER[ $server_key ]; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	}

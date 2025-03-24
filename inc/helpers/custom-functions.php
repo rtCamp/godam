@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  * @return mixed Value of the requested variable on success, FALSE if the filter fails, or NULL if the
  *               variable_name variable is not set.
  */
-function transcoder_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, $options = 0 ) {
+function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, $options = 0 ) {
 
 	if ( php_sapi_name() !== 'cli' ) {
 

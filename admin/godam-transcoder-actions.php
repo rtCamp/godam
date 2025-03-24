@@ -178,7 +178,7 @@ if ( ! function_exists( 'rtgodam_set_video_thumbnail' ) ) {
 	function rtgodam_set_video_thumbnail( $id ) {
 		$media_type    = rtmedia_type( $id );
 		$attachment_id = rtmedia_media_id( $id );      // Get the wp attachment ID.
-		$thumbnail     = transcoder_filter_input( INPUT_POST, 'rtmedia-thumbnail', FILTER_SANITIZE_URL );
+		$thumbnail     = rtgodam_filter_input( INPUT_POST, 'rtmedia-thumbnail', FILTER_SANITIZE_URL );
 		if ( 'video' === $media_type && ! empty( $thumbnail ) ) {
 
 			if ( ! is_numeric( $thumbnail ) ) {
