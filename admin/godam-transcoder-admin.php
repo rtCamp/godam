@@ -163,8 +163,8 @@ class RTGODAM_Transcoder_Admin {
 		}
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
-		wp_enqueue_style( 'rt-transcoder-admin-css', GODAM_URL . 'admin/css/rt-transcoder-admin' . $suffix . '.css', array(), GODAM_VERSION );
-		wp_register_script( 'rt-transcoder-main', GODAM_URL . 'admin/js/rt-transcoder-admin' . $suffix . '.js', array( 'jquery' ), GODAM_VERSION, true );
+		wp_enqueue_style( 'rt-transcoder-admin-css', RTGODAM_URL . 'admin/css/rt-transcoder-admin' . $suffix . '.css', array(), RTGODAM_VERSION );
+		wp_register_script( 'rt-transcoder-main', RTGODAM_URL . 'admin/js/rt-transcoder-admin' . $suffix . '.js', array( 'jquery' ), RTGODAM_VERSION, true );
 
 		$localize_script_data = array(
 			'admin_url'                             => esc_url( admin_url() ),

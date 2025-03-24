@@ -795,7 +795,7 @@ add_filter( 'manage_upload_sortable_columns', 'rtgodam_status_column_register_so
 function rtgodam_enqueue_scripts() {
 
 	if ( current_user_can( 'manage_options' ) ) {
-		wp_register_script( 'rtgodam_transcoder_js', plugins_url( 'js/rt-transcoder.min.js', __FILE__ ), array(), GODAM_VERSION, false );
+		wp_register_script( 'rtgodam_transcoder_js', plugins_url( 'js/rt-transcoder.min.js', __FILE__ ), array(), RTGODAM_VERSION, false );
 
 		$translation_array = array(
 			'load_flag'      => true,
@@ -812,7 +812,7 @@ function rtgodam_enqueue_scripts() {
 		// phpcs:enable
 
 		if ( ! is_admin() ) {
-			wp_enqueue_style( 'rt-transcoder-client-style', plugins_url( 'css/rt-transcoder-client.min.css', __FILE__ ), array(), GODAM_VERSION );
+			wp_enqueue_style( 'rt-transcoder-client-style', plugins_url( 'css/rt-transcoder-client.min.css', __FILE__ ), array(), RTGODAM_VERSION );
 		}
 	}
 }
@@ -834,7 +834,7 @@ function rtgodam_enqueue_frontend_scripts() {
 
 	$file = path_join( RTGODAM_PATH, $file_to_use );
 	if ( file_exists( $file ) && class_exists( 'RTMedia' ) ) {
-		wp_enqueue_script( 'rt-transcoder-front-js', GODAM_URL . $file_to_use, array( 'jquery', 'rtmedia-backbone' ), filemtime( $file ), true );
+		wp_enqueue_script( 'rt-transcoder-front-js', RTGODAM_URL . $file_to_use, array( 'jquery', 'rtmedia-backbone' ), filemtime( $file ), true );
 
 		$rest_url_prefix = get_site_url() . '/' . rest_get_url_prefix();
 		wp_localize_script( 'rt-transcoder-front-js', 'rtTranscoder', array( 'restURLPrefix' => $rest_url_prefix ) );
@@ -850,9 +850,9 @@ function rtgodam_transcoder_enqueue_block_editor_assets() {
 	// Enqueue our script.
 	wp_enqueue_script(
 		'rt-transcoder-block-editor-support',
-		esc_url( GODAM_URL . '/assets/build/js/rt-transcoder-block-editor-support.js' ),
+		esc_url( RTGODAM_URL . '/assets/build/js/rt-transcoder-block-editor-support.js' ),
 		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor' ),
-		GODAM_VERSION,
+		RTGODAM_VERSION,
 		true
 	);
 
@@ -1075,7 +1075,7 @@ function rtgodam_verify_license( $license_key, $save = false ) {
 		return new \WP_Error( 'missing_license_key', 'License key is required.', array( 'status' => 400 ) );
 	}
 
-	$api_url = GODAM_API_BASE . '/api/method/godam_core.api.verification.verify_license';
+	$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.verification.verify_license';
 
 	// Prepare request body.
 	$site_url     = get_site_url();
@@ -1219,7 +1219,7 @@ function rtgodam_get_localize_array() {
 
 	$localize_array = array();
 
-	$localize_array['endpoint']   = GODAM_ANALYTICS_BASE;
+	$localize_array['endpoint']   = RTGODAM_ANALYTICS_BASE;
 	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
 	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
 	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();

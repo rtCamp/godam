@@ -452,8 +452,8 @@ class Media_Library_Ajax {
 			return;
 		}
 
-		// API URL using GODAM_API_BASE.
-		$api_url = GODAM_API_BASE . '/api/method/godam_core.api.mutate.delete_attachment';
+		// API URL using RTGODAM_API_BASE.
+		$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.mutate.delete_attachment';
 
 		// Request params.
 		$params = array(

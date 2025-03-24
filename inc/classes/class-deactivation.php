@@ -17,7 +17,7 @@ class Deactivation {
 	 *
 	 * @var string
 	 */
-	private $api_url = GODAMIO_API_BASE . '/wp-json/godam/v1/feedback/'; // Replace the API Url by the production API Url.
+	private $api_url = RTGODAM_IO_API_BASE . '/wp-json/godam/v1/feedback/'; // Replace the API Url by the production API Url.
 
 	/**
 	 * Constructor function.
@@ -37,7 +37,7 @@ class Deactivation {
 
 		wp_register_script(
 			'godam-deactivation-survey-script',
-			GODAM_URL . '/assets/build/js/deactivation-feedback.js', 
+			RTGODAM_URL . '/assets/build/js/deactivation-feedback.js', 
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/js/deactivation-feedback.js' ),
 			true

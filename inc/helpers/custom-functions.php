@@ -267,7 +267,7 @@ function rtgodam_get_usage_data() {
 		return new \WP_Error( 'rtgodam_api_error', 'license key not found ( try refreshing the page )' );
 	}
 
-	$endpoint = GODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
+	$endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
 
 	$url = add_query_arg(
 		array(

@@ -23,41 +23,41 @@ if ( ! defined( 'RTGODAM_PATH' ) ) {
 	define( 'RTGODAM_PATH', plugin_dir_path( __FILE__ ) );
 }
 
-if ( ! defined( 'GODAM_URL' ) ) {
+if ( ! defined( 'RTGODAM_URL' ) ) {
 	/**
 	 * The url to the plugin directory
 	 */
-	define( 'GODAM_URL', plugin_dir_url( __FILE__ ) );
+	define( 'RTGODAM_URL', plugin_dir_url( __FILE__ ) );
 }
 
-if ( ! defined( 'GODAM_BASE_NAME' ) ) {
+if ( ! defined( 'RTGODAM_BASE_NAME' ) ) {
 	/**
 	 * The base name of the plugin directory
 	 */
-	define( 'GODAM_BASE_NAME', plugin_basename( __FILE__ ) );
+	define( 'RTGODAM_BASE_NAME', plugin_basename( __FILE__ ) );
 }
 
-if ( ! defined( 'GODAM_VERSION' ) ) {
+if ( ! defined( 'RTGODAM_VERSION' ) ) {
 	/**
 	 * The version of the plugin
 	 */
-	define( 'GODAM_VERSION', '1.0.0' );
+	define( 'RTGODAM_VERSION', '1.0.0' );
 }
 
-if ( ! defined( 'GODAM_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' ) ) {
-	define( 'GODAM_NO_MAIL', true );
+if ( ! defined( 'RTGODAM_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' ) ) {
+	define( 'RTGODAM_NO_MAIL', true );
 }
 
-if ( ! defined( 'GODAM_API_BASE' ) ) {
-	define( 'GODAM_API_BASE', 'https://app.godam.io' );
+if ( ! defined( 'RTGODAM_API_BASE' ) ) {
+	define( 'RTGODAM_API_BASE', 'https://app.godam.io' );
 }
 
-if ( ! defined( 'GODAM_ANALYTICS_BASE' ) ) {
-	define( 'GODAM_ANALYTICS_BASE', 'https://analytics.godam.io' );
+if ( ! defined( 'RTGODAM_ANALYTICS_BASE' ) ) {
+	define( 'RTGODAM_ANALYTICS_BASE', 'https://analytics.godam.io' );
 }
 
-if ( ! defined( 'GODAMIO_API_BASE' ) ) {
-	define( 'GODAMIO_API_BASE', 'https://godam.io' );
+if ( ! defined( 'RTGODAM_IO_API_BASE' ) ) {
+	define( 'RTGODAM_IO_API_BASE', 'https://godam.io' );
 }
 
 require_once RTGODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant

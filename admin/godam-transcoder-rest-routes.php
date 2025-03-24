@@ -322,7 +322,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			return new WP_Error( 'rtgodam_transcoding_error', 'Something went wrong. Invalid post request.', array( 'status' => 400 ) );
 		}
 
-		$mail = defined( 'GODAM_NO_MAIL' ) ? false : true;
+		$mail = defined( 'RTGODAM_NO_MAIL' ) ? false : true;
 
 		$attachment_id = '';
 

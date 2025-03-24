@@ -48,7 +48,7 @@ class Assets {
 
 		wp_register_script(
 			'rtgodam-script',
-			GODAM_URL . '/assets/build/js/main.js',
+			RTGODAM_URL . '/assets/build/js/main.js',
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/js/main.js' ),
 			true
@@ -56,7 +56,7 @@ class Assets {
 
 		wp_register_style(
 			'rtgodam-style',
-			GODAM_URL . '/assets/build/css/main.css',
+			RTGODAM_URL . '/assets/build/css/main.css',
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/css/main.css' )
 		);
@@ -64,7 +64,7 @@ class Assets {
 
 		wp_enqueue_script(
 			'analytics-library',
-			GODAM_URL . '/assets/src/libs/analytics.min.js',
+			RTGODAM_URL . '/assets/src/libs/analytics.min.js',
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/src/libs/analytics.min.js' ),
 			true
@@ -108,8 +108,8 @@ class Assets {
 		// Register IMA SDK.
 		wp_enqueue_script(
 			'ima-sdk',
-			GODAM_URL . '/assets/src/libs/ima3.js',
-			GODAM_VERSION,
+			RTGODAM_URL . '/assets/src/libs/ima3.js',
+			RTGODAM_VERSION,
 			true
 		);
 	}
@@ -125,7 +125,7 @@ class Assets {
 
 		wp_register_script(
 			'rtgodam-script',
-			GODAM_URL . '/assets/build/js/admin.js',
+			RTGODAM_URL . '/assets/build/js/admin.js',
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/js/admin.js' ),
 			true
@@ -135,7 +135,7 @@ class Assets {
 			'rtgodam-script',
 			'pluginInfo',
 			array(
-				'version' => GODAM_VERSION,
+				'version' => RTGODAM_VERSION,
 			)
 		);
 
@@ -151,7 +151,7 @@ class Assets {
 
 		wp_register_style(
 			'rtgodam-style',
-			GODAM_URL . '/assets/build/css/admin.css',
+			RTGODAM_URL . '/assets/build/css/admin.css',
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/css/admin.css' )
 		);
@@ -161,7 +161,7 @@ class Assets {
 
 		wp_register_script(
 			'easydam-media-library',
-			GODAM_URL . '/assets/build/js/media-library.js',
+			RTGODAM_URL . '/assets/build/js/media-library.js',
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/js/media-library.js' ),
 			true
@@ -169,7 +169,7 @@ class Assets {
 
 		wp_register_style(
 			'easydam-media-library',
-			GODAM_URL . '/assets/build/css/media-library.css',
+			RTGODAM_URL . '/assets/build/css/media-library.css',
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/css/media-library.css' )
 		);
@@ -218,8 +218,8 @@ class Assets {
 		/**
 		 * Dependency library for date range picker.
 		 */
-		wp_enqueue_script( 'moment-js', GODAM_URL . '/assets/src/libs/moment-js.min.js', array(), filemtime( RTGODAM_PATH . '/assets/src/libs/moment-js.min.js' ), true );
-		wp_enqueue_script( 'daterangepicker-js', GODAM_URL . '/assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( RTGODAM_PATH . '/assets/src/libs/daterangepicker.min.js' ), true );
-		wp_enqueue_style( 'daterangepicker-css', GODAM_URL . '/assets/src/libs/daterangepicker.css', array(), filemtime( RTGODAM_PATH . '/assets/src/libs/daterangepicker.css' ) );
+		wp_enqueue_script( 'moment-js', RTGODAM_URL . '/assets/src/libs/moment-js.min.js', array(), filemtime( RTGODAM_PATH . '/assets/src/libs/moment-js.min.js' ), true );
+		wp_enqueue_script( 'daterangepicker-js', RTGODAM_URL . '/assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( RTGODAM_PATH . '/assets/src/libs/daterangepicker.min.js' ), true );
+		wp_enqueue_style( 'daterangepicker-css', RTGODAM_URL . '/assets/src/libs/daterangepicker.css', array(), filemtime( RTGODAM_PATH . '/assets/src/libs/daterangepicker.css' ) );
 	}
 }

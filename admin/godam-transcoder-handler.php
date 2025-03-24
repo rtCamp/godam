@@ -27,7 +27,7 @@ class RTGODAM_Transcoder_Handler {
 	 * @access   protected
 	 * @var      string    $transcoding_api_url    The URL of the api.
 	 */
-	public $transcoding_api_url = GODAM_API_BASE . '/api/';
+	public $transcoding_api_url = RTGODAM_API_BASE . '/api/';
 
 	/**
 	 * The URL of the EDD store.
@@ -36,7 +36,7 @@ class RTGODAM_Transcoder_Handler {
 	 * @access   protected
 	 * @var      string    $store_url    The URL of the transcoder api.
 	 */
-	protected $store_url = GODAM_API_BASE . '/api/';
+	protected $store_url = RTGODAM_API_BASE . '/api/';
 
 	/**
 	 * Contain uploaded media information.
@@ -458,7 +458,7 @@ class RTGODAM_Transcoder_Handler {
 	 */
 	public function nearing_usage_limit( $usage_details ) {
 
-		if ( defined( 'GODAM_NO_MAIL' ) ) {
+		if ( defined( 'RTGODAM_NO_MAIL' ) ) {
 			return;
 		}
 
@@ -486,7 +486,7 @@ class RTGODAM_Transcoder_Handler {
 	 */
 	public function usage_quota_over() {
 
-		if ( defined( 'GODAM_NO_MAIL' ) ) {
+		if ( defined( 'RTGODAM_NO_MAIL' ) ) {
 			return;
 		}
 
@@ -962,7 +962,7 @@ class RTGODAM_Transcoder_Handler {
 	public function add_transcoded_files( $file_post_array, $attachment_id, $job_for = '' ) {
 		$transcoded_files = false;
 		$mail             = true;
-		if ( defined( 'GODAM_NO_MAIL' ) ) {
+		if ( defined( 'RTGODAM_NO_MAIL' ) ) {
 			$mail = false;
 		}
 		global $wpdb;
@@ -1245,7 +1245,7 @@ class RTGODAM_Transcoder_Handler {
 	 * @param  boolean $include_admin   If true then send an email to admin also else not.
 	 */
 	public function send_notification( $email_ids, $subject, $message, $include_admin = true ) {
-		if ( defined( 'GODAM_NO_MAIL' ) ) {
+		if ( defined( 'RTGODAM_NO_MAIL' ) ) {
 			return;
 		}
 
