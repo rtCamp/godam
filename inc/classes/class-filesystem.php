@@ -5,11 +5,11 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc;
+namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\Traits\Singleton;
+use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class FileSystem

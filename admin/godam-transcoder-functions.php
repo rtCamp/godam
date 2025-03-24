@@ -630,7 +630,7 @@ function rtgodam_delete_transcoded_files( $files ) {
 	foreach ( $files as $file ) {
 		if ( ! empty( $file ) ) {
 			$file_path = path_join( $uploadpath['basedir'], $file );
-			\Transcoder\Inc\FileSystem::delete_file( $file_path );
+			\RTGODAM\Inc\FileSystem::delete_file( $file_path );
 		}
 	}
 }

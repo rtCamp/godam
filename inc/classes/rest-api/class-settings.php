@@ -5,14 +5,14 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\REST_API;
+namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\EasyDAM_Constants;
-use Transcoder\Inc\Providers\Handlers\Storage_Handler;
-use Transcoder\Inc\Providers\Exceptions\EasyDamException;
-use Transcoder\Inc\Providers\Handlers\Error_Handler;
+use RTGODAM\Inc\EasyDAM_Constants;
+use RTGODAM\Inc\Providers\Handlers\Storage_Handler;
+use RTGODAM\Inc\Providers\Exceptions\EasyDamException;
+use RTGODAM\Inc\Providers\Handlers\Error_Handler;
 
 /**
  * Class Settings

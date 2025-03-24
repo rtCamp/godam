@@ -7,7 +7,7 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\Providers\Exceptions;
+namespace RTGODAM\Inc\Providers\Exceptions;
 
 defined( 'ABSPATH' ) || exit;
 

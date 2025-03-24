@@ -70,14 +70,14 @@ global $rtgodam_transcoder_admin;
 /**
  * Initiate file system.
  */
-\Transcoder\Inc\FileSystem::get_instance();
+\RTGODAM\Inc\FileSystem::get_instance();
 
 $rtgodam_transcoder_admin = new RTGODAM_Transcoder_Admin();
 
 /**
  * Initiate blocks.
  */
-\Transcoder\Inc\Plugin::get_instance();
+\RTGODAM\Inc\Plugin::get_instance();
 
 /**
  * Add Settings/Docs link to plugins area.
@@ -130,7 +130,7 @@ register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
  * Runs when the plugin is deactivated.
  */
 function rtgodam_plugin_deactivate() {
-	\Transcoder\Inc\Cron::get_instance()->unschedule_video_cleanup();
+	\RTGODAM\Inc\Cron::get_instance()->unschedule_video_cleanup();
 	delete_site_option( 'rtgodam_plugin_activation_time' );
 }
 register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );

@@ -5,7 +5,7 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\Helpers;
+namespace RTGODAM\Inc\Helpers;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
 function autoloader( $resource = '' ) {
 
 	$resource_path  = false;
-	$namespace_root = 'Transcoder\\';
+	$namespace_root = 'RTGODAM\\';
 	$resource       = trim( $resource, '\\' );
 
 	if ( empty( $resource ) || strpos( $resource, '\\' ) === false || strpos( $resource, $namespace_root ) !== 0 ) {

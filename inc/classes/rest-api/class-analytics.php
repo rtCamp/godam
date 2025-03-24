@@ -5,14 +5,14 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\REST_API;
+namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
 use WP_REST_Server;
 use WP_REST_Request;
 use WP_REST_Response;
-use Transcoder\Inc\EasyDAM_Constants;
+use RTGODAM\Inc\EasyDAM_Constants;
 
 /**
  * Class Analytics.

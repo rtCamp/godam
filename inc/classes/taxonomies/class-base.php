@@ -5,11 +5,11 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\Taxonomies;
+namespace RTGODAM\Inc\Taxonomies;
 
 defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\Traits\Singleton;
+use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Base

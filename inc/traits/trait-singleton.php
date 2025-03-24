@@ -25,7 +25,7 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\Traits;
+namespace RTGODAM\Inc\Traits;
 
 defined( 'ABSPATH' ) || exit;
 
