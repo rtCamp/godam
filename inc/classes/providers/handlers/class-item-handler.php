@@ -27,7 +27,7 @@ class Item_Handler {
 	 */
 	public static function delete_item( $attachment_id ) {
 
-		$s3_url = get_post_meta( $attachment_id, 's3_url', true );
+		$s3_url = get_post_meta( $attachment_id, 'rtgodam_s3_url', true );
 
 		if ( empty( $s3_url ) ) {
 			new EasyDamException( "S3 URL not found for attachment ID: $attachment_id" );
@@ -52,7 +52,7 @@ class Item_Handler {
 
 		if ( ! empty( $image_sizes['sizes'] ) ) {
 			foreach ( $image_sizes['sizes'] as $size => $size_data ) {
-				$s3_url = get_post_meta( $attachment_id, "s3_url_{$size}", true );
+				$s3_url = get_post_meta( $attachment_id, "rtgodams3_url_{$size}", true );
 
 				// get only the file name from the URL.
 				$s3_url = basename( $s3_url );
@@ -91,7 +91,7 @@ class Item_Handler {
 
 		$bucket_path = self::get_settings_base_path_x();
 
-		$s3_url    = get_post_meta( $attachment_id, 's3_url', true );
+		$s3_url    = get_post_meta( $attachment_id, 'rtgodam_s3_url', true );
 		$file_path = get_attached_file( $attachment_id );
 
 		$provider = StorageFactory::get_instance()->get_provider();
@@ -105,7 +105,7 @@ class Item_Handler {
 			$file_name = $bucket_path . basename( $file_path );
 
 			$s3_url = $provider->upload( $file_path, $file_name );
-			update_post_meta( $attachment_id, 's3_url', $s3_url );
+			update_post_meta( $attachment_id, 'rtgodam_s3_url', $s3_url );
 		}
 
 		$failed_count = 0;
@@ -113,7 +113,7 @@ class Item_Handler {
 		if ( ! empty( $image_sizes['sizes'] ) ) {
 			foreach ( $image_sizes['sizes'] as $size => $size_data ) {
 
-				$s3_url = get_post_meta( $attachment_id, "s3_url_{$size}", true );
+				$s3_url = get_post_meta( $attachment_id, "rtgodams3_url_{$size}", true );
 
 				if ( ! empty( $s3_url ) ) {
 					continue;
@@ -128,7 +128,7 @@ class Item_Handler {
 					try {
 						$resized_object_url = $provider->upload( $resized_file_path, $resized_file_name );
 	
-						update_post_meta( $attachment_id, "s3_url_{$size}", $resized_object_url );
+						update_post_meta( $attachment_id, "rtgodams3_url_{$size}", $resized_object_url );
 					} catch ( EasyDamException $e ) {
 						++$failed_count;
 					}

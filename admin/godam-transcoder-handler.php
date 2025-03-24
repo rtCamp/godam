@@ -224,7 +224,7 @@ class RTGODAM_Transcoder_Handler {
 			return $wp_metadata;
 		}
 
-		$already_sent = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
+		$already_sent = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 		if ( ! empty( $already_sent ) ) {
 			return $wp_metadata;
 		}
@@ -349,7 +349,7 @@ class RTGODAM_Transcoder_Handler {
 				error_log( json_encode( $upload_info ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log, WordPress.WP.AlternativeFunctions.json_encode_json_encode
 				if ( isset( $upload_info->data ) && isset( $upload_info->data->name ) ) {
 					$job_id = $upload_info->data->name;
-					update_post_meta( $attachment_id, '_rt_transcoding_job_id', $job_id );
+					update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
 				}
 			}
 		}
@@ -916,18 +916,18 @@ class RTGODAM_Transcoder_Handler {
 			$this->nofity_transcoding_failed( $post_array['job_id'], sprintf( 'Failed saving of Thumbnail for %1$s.', $post_array['file_name'] ) );
 		}
 
-		update_post_meta( $post_id, '_rt_media_source', $post_thumbs_array['job_for'] );
-		update_post_meta( $post_id, '_rt_media_thumbnails', $upload_thumbnail_array );
+		update_post_meta( $post_id, 'rtgodam_media_source', $post_thumbs_array['job_for'] );
+		update_post_meta( $post_id, 'rtgodam_media_thumbnails', $upload_thumbnail_array );
 
 		do_action( 'rtgodam_transcoded_thumbnails_added', $post_id );
 
 		if ( $largest_thumb ) {
 
-			$is_retranscoding_job = get_post_meta( $post_id, '_rt_retranscoding_sent', true );
+			$is_retranscoding_job = get_post_meta( $post_id, 'rtgodam_retranscoding_sent', true );
 
 			if ( ! $is_retranscoding_job || rtgodam_is_override_thumbnail() ) {
 
-				update_post_meta( $post_id, '_rt_media_video_thumbnail', $largest_thumb );
+				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $largest_thumb );
 
 				if ( 'rtmedia' === $post_thumbs_array['job_for'] && class_exists( 'RTMediaModel' ) ) {
 
@@ -1045,7 +1045,7 @@ class RTGODAM_Transcoder_Handler {
 								if ( ! empty( $uploaded_file ) ) {
 									$transcoded_files[ $key ][] = $uploaded_file;
 									update_post_meta( $attachment_id, '_wp_attached_file', $uploaded_file );
-									update_post_meta( $attachment_id, '_rt_transcoded_url', $download_url );
+									update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $download_url );
 
 									$wpdb->update(
 										$wpdb->posts,
@@ -1132,7 +1132,7 @@ class RTGODAM_Transcoder_Handler {
 			}
 		}
 		if ( ! empty( $transcoded_files ) ) {
-			update_post_meta( $attachment_id, '_rt_media_transcoded_files', $transcoded_files );
+			update_post_meta( $attachment_id, 'rtgodam_media_transcoded_files', $transcoded_files );
 			do_action( 'rtgodam_transcoded_media_added', $attachment_id );
 		}
 	}
@@ -1307,7 +1307,7 @@ class RTGODAM_Transcoder_Handler {
 			return false;
 		}
 		$subject       = esc_html__( 'Transcoding: Something went wrong.', 'godam' );
-		$attachment_id = $this->get_post_id_by_meta_key_and_value( '_rt_transcoding_job_id', $job_id );
+		$attachment_id = $this->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
 		if ( ! empty( $error_msg ) ) {
 			$message  = '<p>' . esc_html__( ' There was unexpected error occurred while transcoding this following media.', 'godam' ) . '</p>';
 			$message .= '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a></p>';
@@ -1354,10 +1354,10 @@ class RTGODAM_Transcoder_Handler {
 			);
 		}
 
-		$job_id            = get_post_meta( $post_id, '_rt_transcoding_job_id', true );
-		$transcoded_files  = get_post_meta( $post_id, '_rt_media_transcoded_files', true );
-		$transcoded_thumbs = get_post_meta( $post_id, '_rt_media_thumbnails', true );
-		$thumbnail         = get_post_meta( $post_id, '_rt_media_video_thumbnail', true );
+		$job_id            = get_post_meta( $post_id, 'rtgodam_transcoding_job_id', true );
+		$transcoded_files  = get_post_meta( $post_id, 'rtgodam_media_transcoded_files', true );
+		$transcoded_thumbs = get_post_meta( $post_id, 'rtgodam_media_thumbnails', true );
+		$thumbnail         = get_post_meta( $post_id, 'rtgodam_media_video_thumbnail', true );
 
 		$status_url = trailingslashit( $this->transcoding_api_url ) . 'job/status/' . $job_id . '/' . get_site_option( 'rtgodam-api-key-stored' );
 

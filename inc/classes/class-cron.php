@@ -110,9 +110,9 @@ class Cron {
 				}
 
 				foreach ( $expired_media as $video_id ) {
-					$cdn_url = get_post_meta( $video_id, '_rt_transcoded_url', true );
+					$cdn_url = get_post_meta( $video_id, 'rtgodam_transcoded_url', true );
 					if ( ! empty( $cdn_url ) ) {
-						delete_post_meta( $video_id, '_rt_transcoded_url' );
+						delete_post_meta( $video_id, 'rtgodam_transcoded_url' );
 					}
 				}
 			}

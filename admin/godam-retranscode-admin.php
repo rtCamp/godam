@@ -164,7 +164,7 @@ class RTGODAM_RetranscodeMedia {
 	 *
 	 * @return void
 	 */
-	public function _transcoder_settings_page() {
+	public function transcoder_settings_page() {
 		include_once RTGODAM_PATH . 'admin/partials/rt-transcoder-admin-display.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 	}
 
@@ -675,15 +675,15 @@ class RTGODAM_RetranscodeMedia {
 		}
 
 		/**
-		 * Check if `_rt_transcoding_job_id` meta is present for the media
+		 * Check if `rtgodam_transcoding_job_id` meta is present for the media
 		 * if it's present then media won't get sent to the transcoder
-		 * so we need to delete `_rt_transcoding_job_id` meta before we send
+		 * so we need to delete `rtgodam_transcoding_job_id` meta before we send
 		 * media back for the retranscoding
 		 */
-		$already_sent = get_post_meta( $media->ID, '_rt_transcoding_job_id', true );
+		$already_sent = get_post_meta( $media->ID, 'rtgodam_transcoding_job_id', true );
 
 		if ( ! empty( $already_sent ) ) {
-			delete_post_meta( $media->ID, '_rt_transcoding_job_id' );
+			delete_post_meta( $media->ID, 'rtgodam_transcoding_job_id' );
 		}
 
 		// Get the transcoder object.
@@ -691,7 +691,7 @@ class RTGODAM_RetranscodeMedia {
 
 		$attachment_meta = array( 'mime_type' => $media->post_mime_type );
 
-		$transcoded_files = get_post_meta( $media->ID, '_rt_media_transcoded_files', true );
+		$transcoded_files = get_post_meta( $media->ID, 'rtgodam_media_transcoded_files', true );
 
 		// No need to ask for the transcoded (mp4) file if we already have it.
 		// Only asks for the thumbnails.
@@ -715,13 +715,13 @@ class RTGODAM_RetranscodeMedia {
 		// Send media for (Re)transcoding.
 		$transcoder->wp_media_transcoding( $attachment_meta, $media->ID );
 
-		$is_sent = get_post_meta( $media->ID, '_rt_transcoding_job_id', true );
+		$is_sent = get_post_meta( $media->ID, 'rtgodam_transcoding_job_id', true );
 
 		if ( ! $is_sent ) {
 			$this->die_json_error_msg( $media->ID, __( 'Unknown failure reason.', 'godam' ) );
 		}
 
-		update_post_meta( $media->ID, '_rt_retranscoding_sent', $is_sent );
+		update_post_meta( $media->ID, 'rtgodam_retranscoding_sent', $is_sent );
 
 		// translators: Media name, Media id and success message for successfull transcode.
 		die( wp_json_encode( array( 'success' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) was successfully sent in %3$s seconds.', 'godam' ), esc_html( get_the_title( $media->ID ) ), $media->ID, timer_stop() ) ) ) );
@@ -773,14 +773,14 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		$previous_thumbs = get_post_meta( $media_id, '_rt_media_thumbnails', true );
+		$previous_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
 
 		if ( ! empty( $previous_thumbs ) && is_array( $previous_thumbs ) ) {
 
 			// Do not delete the current thumbnail of the video.
 			if ( ! rtgodam_is_override_thumbnail() ) {
 
-				$current_thumb = get_post_meta( $media_id, '_rt_media_video_thumbnail', true );
+				$current_thumb = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
 
 				$key = array_search( $current_thumb, $previous_thumbs, true );
 				if ( false !== $key ) {
@@ -790,7 +790,7 @@ class RTGODAM_RetranscodeMedia {
 
 			rtgodam_delete_transcoded_files( $previous_thumbs );
 		}
-		delete_post_meta( $media_id, '_rt_media_thumbnails' );
+		delete_post_meta( $media_id, 'rtgodam_media_thumbnails' );
 	}
 
 	/**
@@ -804,7 +804,7 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		$current_files = get_post_meta( $media_id, '_rt_media_transcoded_files', true );
+		$current_files = get_post_meta( $media_id, 'rtgodam_media_transcoded_files', true );
 
 		if ( ! empty( $current_files ) && is_array( $current_files ) ) {
 			foreach ( $current_files as $files ) {
@@ -813,7 +813,7 @@ class RTGODAM_RetranscodeMedia {
 				}
 			}
 		}
-		delete_post_meta( $media_id, '_rt_media_transcoded_files' );
+		delete_post_meta( $media_id, 'rtgodam_media_transcoded_files' );
 	}
 
 	/**
@@ -827,24 +827,24 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		$is_retranscoding_job = get_post_meta( $media_id, '_rt_retranscoding_sent', true );
+		$is_retranscoding_job = get_post_meta( $media_id, 'rtgodam_retranscoding_sent', true );
 
 		if ( $is_retranscoding_job && ! rtgodam_is_override_thumbnail() ) {
 
-			$new_thumbs = get_post_meta( $media_id, '_rt_media_thumbnails', true );
+			$new_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
 
 			if ( ! empty( $new_thumbs ) && is_array( $new_thumbs ) ) {
 
-				$current_thumb = get_post_meta( $media_id, '_rt_media_video_thumbnail', true );
+				$current_thumb = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
 				if ( $current_thumb ) {
 					$new_thumbs[] = $current_thumb;
-					update_post_meta( $media_id, '_rt_media_thumbnails', $new_thumbs );
+					update_post_meta( $media_id, 'rtgodam_media_thumbnails', $new_thumbs );
 				}
 			}
 		}
 
 		// Add thumbnail in media library for user selection and set attachment thumbnail.
-		$thumbnail_array = get_post_meta( $media_id, '_rt_media_thumbnails', true );
+		$thumbnail_array = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
 
 		if ( is_array( $thumbnail_array ) ) {
 			$uploads   = wp_upload_dir();
@@ -882,7 +882,7 @@ class RTGODAM_RetranscodeMedia {
 				$attach_data = wp_generate_attachment_metadata( $attachment_id, $thumbnail_src );
 				wp_update_attachment_metadata( $attachment_id, $attach_data );
 				set_post_thumbnail( $media_id, $attachment_id );
-				update_post_meta( $attachment_id, 'amp_is_poster', true );
+				update_post_meta( $attachment_id, 'rtgodam_amp_is_poster', true );
 			}
 		}
 	}
@@ -899,11 +899,11 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		$is_retranscoding_job = get_post_meta( $attachment_id, '_rt_retranscoding_sent', true );
+		$is_retranscoding_job = get_post_meta( $attachment_id, 'rtgodam_retranscoding_sent', true );
 
 		if ( $is_retranscoding_job ) {
 
-			delete_post_meta( $attachment_id, '_rt_retranscoding_sent' );
+			delete_post_meta( $attachment_id, 'rtgodam_retranscoding_sent' );
 
 		}
 	}
@@ -944,7 +944,7 @@ class RTGODAM_RetranscodeMedia {
 			}
 
 			if ( ! empty( $media_id ) ) {
-				$transcoded_url = get_post_meta( $media_id, '_rt_media_transcoded_files', true );
+				$transcoded_url = get_post_meta( $media_id, 'rtgodam_media_transcoded_files', true );
 
 				if ( ! empty( $transcoded_url ) && isset( $transcoded_url['mp4'] ) ) {
 					// Get transcoded video path.
@@ -1046,7 +1046,7 @@ add_action( 'init', 'rtgodam_retranscode_media' );
  */
 function rtgodam_retranscode_media() { // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
 
-	global $RetranscodeMedia; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+	global $rtgodam_retranscode_media; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 
-	$RetranscodeMedia = new RTGODAM_RetranscodeMedia(); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+	$rtgodam_retranscode_media = new RTGODAM_RetranscodeMedia(); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 }

@@ -120,7 +120,7 @@ class Media_Library_Ajax {
 	 * @return array $columns Columns.
 	 */
 	public function add_media_column( $columns ) {
-		$columns['s3_url'] = 'S3 URL';
+		$columns['rtgodam_s3_url'] = 'S3 URL';
 
 		return $columns;
 	}
@@ -143,8 +143,8 @@ class Media_Library_Ajax {
 				return;
 			}
 
-			if ( 's3_url' === $column_name ) {
-				$s3_url = get_post_meta( $post_id, 's3_url', true );
+			if ( 'rtgodam_s3_url' === $column_name ) {
+				$s3_url = get_post_meta( $post_id, 'rtgodam_s3_url', true );
 
 				if ( empty( $s3_url ) ) {
 					?>
@@ -182,12 +182,12 @@ class Media_Library_Ajax {
 	public function add_media_folder_to_attachment( $response, $attachment ) {
 
 		// Check if S3 url is present to S3 attachment meta.
-		$s3_url = get_post_meta( $attachment->ID, 's3_url', true );
+		$s3_url = get_post_meta( $attachment->ID, 'rtgodam_s3_url', true );
 
 		if ( ! empty( $s3_url ) ) {
-			$response['s3_url'] = $s3_url;
+			$response['rtgodam_s3_url'] = $s3_url;
 		} else {
-			$response['s3_url'] = false;
+			$response['rtgodam_s3_url'] = false;
 		}
 
 		return $response;
@@ -206,7 +206,7 @@ class Media_Library_Ajax {
 			return $response;
 		}
 
-		$transcoded_url = get_post_meta( $attachment->ID, '_rt_transcoded_url', true );
+		$transcoded_url = get_post_meta( $attachment->ID, 'rtgodam_transcoded_url', true );
 
 		if ( ! empty( $transcoded_url ) ) {
 			$response['transcoded_url'] = $transcoded_url;
@@ -443,7 +443,7 @@ class Media_Library_Ajax {
 	 * @return void
 	 */
 	public function handle_media_deletion( $attachment_id ) {
-		$job_id        = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
+		$job_id        = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 		$account_token = get_site_option( 'rtgodam-account-token', '' );
 		$license_key   = get_site_option( 'rtgodam-api-key', '' );
 

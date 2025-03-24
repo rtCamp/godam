@@ -399,7 +399,7 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_aws_settings( $request ) {
-		$settings = get_option( 'easydam_storage_aws' );
+		$settings = get_option( 'rtgodam_storage_aws' );
 
 		// If settings are not found, return a default empty array.
 		if ( false === $settings ) {

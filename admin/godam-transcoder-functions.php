@@ -118,10 +118,10 @@ add_shortcode( 'rtgodam_media', 'rtgodam_media_shortcode' );
  * @return boolean
  */
 function rtgodam_is_file_being_transcoded( $attachment_id ) {
-	$job_id = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
+	$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 	if ( ! empty( $job_id ) ) {
-		$transcoded_files  = get_post_meta( $attachment_id, '_rt_media_transcoded_files', true );
-		$transcoded_thumbs = get_post_meta( $attachment_id, '_rt_media_thumbnails', true );
+		$transcoded_files  = get_post_meta( $attachment_id, 'rtgodam_media_transcoded_files', true );
+		$transcoded_thumbs = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
 		if ( empty( $transcoded_files ) && empty( $transcoded_thumbs ) ) {
 			return true;
 		}
@@ -143,7 +143,7 @@ function rtgodam_media_get_video_thumbnail( $attachment_id ) {
 		return;
 	}
 
-	$thumbnails = get_post_meta( $attachment_id, '_rt_media_video_thumbnail', true );
+	$thumbnails = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 	if ( ! empty( $thumbnails ) ) {
 
@@ -184,7 +184,7 @@ function rtgodam_get_media_url( $attachment_id, $media_type = 'mp4' ) {
 		return;
 	}
 
-	$medias = get_post_meta( $attachment_id, '_rt_media_transcoded_files', true );
+	$medias = get_post_meta( $attachment_id, 'rtgodam_media_transcoded_files', true );
 
 	if ( isset( $medias[ $media_type ] ) && is_array( $medias[ $media_type ] ) && ! empty( $medias[ $media_type ][0] ) ) {
 		$file_url = $medias[ $media_type ][0];
@@ -315,7 +315,7 @@ function rtgodam_get_job_id_by_attachment_id( $attachment_id ) {
 		return 0;
 	}
 
-	$job_id = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
+	$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 
 	return $job_id ? $job_id : 0;
 }
@@ -340,7 +340,7 @@ function rtgodam_generate_video_shortcode( $html, $send_id, $attachment ) {
 	$post_mime_type = get_post_mime_type( $attachment['id'] );
 	$mime_type      = explode( '/', $post_mime_type );
 
-	$medias = get_post_meta( $attachment['id'], '_rt_media_transcoded_files', true );
+	$medias = get_post_meta( $attachment['id'], 'rtgodam_media_transcoded_files', true );
 
 	if ( 0 === strpos( $post_mime_type, '[audio' ) || 0 === strpos( $post_mime_type, '[video' ) ) {
 		return $html;
@@ -442,7 +442,7 @@ function rtgodam_bp_get_activity_content( $content, $activity = null ) {
 		// Iterate through each media.
 		foreach ( $all_media as $key => $media ) {
 			// Get default video thumbnail stored for this particular video in post meta.
-			$wp_video_thumbnail = get_post_meta( $media->media_id, '_rt_media_video_thumbnail', true );
+			$wp_video_thumbnail = get_post_meta( $media->media_id, 'rtgodam_media_video_thumbnail', true );
 
 			if ( ! empty( $video_src_url[2] ) ) {
 
@@ -586,7 +586,7 @@ function rtgodam_delete_related_transcoded_files( $post_id ) {
 		return false;
 	}
 
-	$transcoded_files = get_post_meta( $post_id, '_rt_media_transcoded_files', true );
+	$transcoded_files = get_post_meta( $post_id, 'rtgodam_media_transcoded_files', true );
 
 	if ( ! empty( $transcoded_files ) && is_array( $transcoded_files ) ) {
 		foreach ( $transcoded_files as $files ) {
@@ -595,13 +595,13 @@ function rtgodam_delete_related_transcoded_files( $post_id ) {
 			}
 		}
 	}
-	delete_post_meta( $post_id, '_rt_media_transcoded_files' );
+	delete_post_meta( $post_id, 'rtgodam_media_transcoded_files' );
 
-	$thumbnails = get_post_meta( $post_id, '_rt_media_thumbnails', true );
+	$thumbnails = get_post_meta( $post_id, 'rtgodam_media_thumbnails', true );
 	if ( ! empty( $thumbnails ) && is_array( $thumbnails ) ) {
 		rtgodam_delete_transcoded_files( $thumbnails );
 	}
-	delete_post_meta( $post_id, '_rt_media_thumbnails' );
+	delete_post_meta( $post_id, 'rtgodam_media_thumbnails' );
 }
 
 add_action( 'delete_attachment', 'rtgodam_delete_related_transcoded_files', 99, 1 );
@@ -737,8 +737,8 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 		return;
 	}
 
-	$transcoded_files  = get_post_meta( $post_id, '_rt_media_transcoded_files', true );
-	$transcoded_thumbs = get_post_meta( $post_id, '_rt_media_thumbnails', true );
+	$transcoded_files  = get_post_meta( $post_id, 'rtgodam_media_transcoded_files', true );
+	$transcoded_thumbs = get_post_meta( $post_id, 'rtgodam_media_thumbnails', true );
 
 	if ( empty( $transcoded_files ) && rtgodam_is_file_being_transcoded( $post_id ) ) {
 		$check_button_text = __( 'Check Status', 'godam' );

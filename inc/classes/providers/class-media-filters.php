@@ -74,7 +74,7 @@ class Media_Filters {
 
 		$this->handle_media_upload( array(), $post_id );
 
-		$s3_url = get_post_meta( $post_id, 's3_url', true );
+		$s3_url = get_post_meta( $post_id, 'rtgodam_s3_url', true );
 
 		if ( empty( $s3_url ) ) {
 			wp_send_json_error( array( 'error' => __( 'Failed to upload to S3.', 'godam' ) ) );
@@ -205,7 +205,7 @@ class Media_Filters {
 	 * @return string
 	 */
 	public function get_s3_url( $url, $post_id ) {
-		$s3_url = get_post_meta( $post_id, 's3_url', true );
+		$s3_url = get_post_meta( $post_id, 'rtgodam_s3_url', true );
 
 		if ( ! empty( $s3_url ) ) {
 

@@ -24,18 +24,18 @@ $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : arra
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 $video_preview = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
 
-// Retrieve 'easydam_meta' for the given attachment ID, defaulting to an empty array if not found.
-$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : [];
+// Retrieve 'rtgodam_meta' for the given attachment ID, defaulting to an empty array if not found.
+$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_meta', true ) : [];
 $easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : [];
 
 // Extract control bar settings with a fallback to an empty array.
 $control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? [];
 
-$poster_image = get_post_meta( $attachment_id, '_rt_media_video_thumbnail', true );
+$poster_image = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 $poster_image = ! empty( $poster_image ) ? $poster_image : '';
 
 $sources = [];
-$transcoded_url    = $attachment_id ? get_post_meta( $attachment_id, '_rt_transcoded_url', true ) : '';
+$transcoded_url    = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true ) : '';
 $video_src         = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
 $video_src_type    = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
 

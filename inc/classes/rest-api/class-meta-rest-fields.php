@@ -34,33 +34,33 @@ class Meta_Rest_Fields {
 	public function add_meta_rest_fields() {
 		register_rest_field(
 			'attachment',
-			'easydam_meta',
+			'rtgodam_meta',
 			array(
 				'get_callback'    => function ( $post ) {
-					return get_post_meta( $post['id'], 'easydam_meta', true );
+					return get_post_meta( $post['id'], 'rtgodam_meta', true );
 				},
 				'update_callback' => function ( $value, $post ) {
-					return update_post_meta( $post->ID, 'easydam_meta', $value );
+					return update_post_meta( $post->ID, 'rtgodam_meta', $value );
 				},
 			)
 		);
 
 		register_rest_field(
 			'attachment',
-			'easydam_analytics',
+			'rtgodam_analytics',
 			array(
 				'get_callback'    => function ( $post ) {
-					return get_post_meta( $post['id'], 'easydam_analytics', true );
+					return get_post_meta( $post['id'], 'rtgodam_analytics', true );
 				},
 				'update_callback' => function ( $value, $post ) {
-					return update_post_meta( $post->ID, 'easydam_analytics', $value );
+					return update_post_meta( $post->ID, 'rtgodam_analytics', $value );
 				},
 			)
 		);
 
 		register_post_meta(
 			'attachment',
-			'_rt_media_video_thumbnail',
+			'rtgodam_media_video_thumbnail',
 			array(
 				'type'          => 'string',
 				'single'        => true,

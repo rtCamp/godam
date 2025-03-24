@@ -80,8 +80,8 @@ const VideoEditor = ( { attachmentID } ) => {
 				}
 				// Set video sources
 				const videoSources = [ { src: data.source_url, type: data.mimeType } ];
-				if ( data?.meta?._rt_transcoded_url !== '' ) {
-					videoSources.push( { src: data.meta._rt_transcoded_url, type: data?.meta?._rt_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } );
+				if ( data?.meta?.rtgodam_transcoded_url !== '' ) {
+					videoSources.push( { src: data.meta.rtgodam_transcoded_url, type: data?.meta?.rtgodam_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } );
 				}
 				setSources( videoSources );
 			} )

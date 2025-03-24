@@ -338,13 +338,9 @@ class Media_Library extends Base {
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
 			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 400 ) );
 		}
-
-		$thumbnail_array = get_post_meta( $attachment_id, 'rtmedia_media_thumbnails', true );
-
-		if ( ! is_array( $thumbnail_array ) ) {
-			$thumbnail_array = get_post_meta( $attachment_id, '_rt_media_thumbnails', true );
-		}
-
+		
+		$thumbnail_array = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
+		
 		if ( ! is_array( $thumbnail_array ) ) {
 			return new \WP_Error( 'thumbnails_not_found', 'No thumbnails found.', array( 'status' => 404 ) );
 		}
@@ -367,7 +363,7 @@ class Media_Library extends Base {
 			$thumbnail_array[ $key ] = $thumbnail_src;
 		}
 
-		$selected_thumbnail = get_post_meta( $attachment_id, '_rt_media_video_thumbnail', true );
+		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 		if ( ! empty( $selected_thumbnail ) ) {
 			$file_url = $selected_thumbnail;
@@ -420,7 +416,7 @@ class Media_Library extends Base {
 		}
 
 		// Update the video thumbnail
-		update_post_meta( $attachment_id, '_rt_media_video_thumbnail', $thumbnail_url );
+		update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $thumbnail_url );
 
 		return rest_ensure_response(
 			array(
