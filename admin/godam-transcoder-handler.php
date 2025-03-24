@@ -944,7 +944,7 @@ class RTGODAM_Transcoder_Handler {
 			 * @param string    $largest_thumb  Absolute URL of the thumbnail
 			 * @param int       $post_id        Attachment ID of the video for which thumbnail has been set
 			 */
-			do_action( 'transcoded_thumb_added', $largest_thumb, $post_id );
+			do_action( 'rtgodam_transcoded_thumb_added', $largest_thumb, $post_id );
 		}
 
 		return $largest_thumb_url;
@@ -1133,7 +1133,7 @@ class RTGODAM_Transcoder_Handler {
 		}
 		if ( ! empty( $transcoded_files ) ) {
 			update_post_meta( $attachment_id, '_rt_media_transcoded_files', $transcoded_files );
-			do_action( 'transcoded_media_added', $attachment_id );
+			do_action( 'rtgodam_transcoded_media_added', $attachment_id );
 		}
 	}
 
