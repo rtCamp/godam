@@ -146,7 +146,7 @@ export const VideoJS = ( props ) => {
 				if ( videoConfig.controlBar.customBrandImg.length > 0 ) {
 					imageSrc = videoConfig.controlBar.customBrandImg;
 				} else if ( godamSettings?.brandImage ) {
-					imageSrc = godamSettings.brandImage;
+					imageSrc = godamSettings?.brandImage;
 				} else {
 					imageSrc = GoDAM;
 				}

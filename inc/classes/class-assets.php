@@ -31,7 +31,6 @@ class Assets {
 	 * @return void
 	 */
 	protected function setup_hooks() {
-
 		/**
 		 * Action
 		 */
@@ -102,33 +101,7 @@ class Assets {
 			)
 		);
 
-		$godam_settings = get_option( 'rt-easydam-settings' );
-
-		$selected_brand_image = $godam_settings['general']['selected_brand_image'] ?? '';
-		$brand_color          = $godam_settings['general']['brand_color'] ?? '';
-
-		wp_localize_script(
-			'godam-script',
-			'godamSettings',
-			array(
-				'brandImage' => $selected_brand_image,
-				'brandColor' => $brand_color,
-			)
-		);
-
-		$godam_settings = get_option( 'rt-easydam-settings' );
-
-		$selected_brand_image = $godam_settings['general']['selected_brand_image'] ?? '';
-		$brand_color          = $godam_settings['general']['brand_color'] ?? '';
-
-		wp_localize_script(
-			'godam-script',
-			'godamSettings',
-			array(
-				'brandImage' => $selected_brand_image,
-				'brandColor' => $brand_color,
-			)
-		);
+		$this->enqueue_godam_settings();
 
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
@@ -177,26 +150,14 @@ class Assets {
 			)
 		);
 
-		$godam_settings = get_option( 'rt-easydam-settings' );
-
-		$selected_brand_image = $godam_settings['general']['selected_brand_image'] ?? '';
-		$brand_color          = $godam_settings['general']['brand_color'] ?? '';
-
-		wp_localize_script(
-			'godam-script',
-			'godamSettings',
-			array(
-				'brandImage' => $selected_brand_image,
-				'brandColor' => $brand_color,
-			)
-		);
-
 		wp_register_style(
 			'rtgodam-style',
 			RTGODAM_URL . '/assets/build/css/admin.css',
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/css/admin.css' )
 		);
+
+		$this->enqueue_godam_settings();
 
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
@@ -263,5 +224,26 @@ class Assets {
 		wp_enqueue_script( 'moment-js', RTGODAM_URL . '/assets/src/libs/moment-js.min.js', array(), filemtime( RTGODAM_PATH . '/assets/src/libs/moment-js.min.js' ), true );
 		wp_enqueue_script( 'daterangepicker-js', RTGODAM_URL . '/assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( RTGODAM_PATH . '/assets/src/libs/daterangepicker.min.js' ), true );
 		wp_enqueue_style( 'daterangepicker-css', RTGODAM_URL . '/assets/src/libs/daterangepicker.css', array(), filemtime( RTGODAM_PATH . '/assets/src/libs/daterangepicker.css' ) );
+	}
+
+	/**
+	 * Enqueue GoDAM Settings JS localization.
+	 *
+	 * @return void
+	 */
+	private function enqueue_godam_settings() {
+		$godam_settings = get_option( 'rt-easydam-settings' );
+
+		$selected_brand_image = $godam_settings['general']['selected_brand_image'] ?? '';
+		$brand_color          = $godam_settings['general']['brand_color'] ?? '';
+
+		wp_localize_script(
+			'rtgodam-script',
+			'godamSettings',
+			array(
+				'brandImage' => $selected_brand_image,
+				'brandColor' => $brand_color,
+			)
+		);
 	}
 }
