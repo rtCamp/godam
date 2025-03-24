@@ -18,14 +18,14 @@ defined( 'ABSPATH' ) || exit;
  * @package     Transcoder
  * @subpackage  Transcoder/Admin
  */
-class RT_Transcoder_Admin {
+class RTGODAM_Transcoder_Admin {
 
 	/**
-	 * The object of RT_Transcoder_Handler class.
+	 * The object of RTGODAM_Transcoder_Handler class.
 	 *
 	 * @since    1.0.0
 	 * @access   private
-	 * @var      object    $transcoder_handler    The object of RT_Transcoder_Handler class.
+	 * @var      object    $transcoder_handler    The object of RTGODAM_Transcoder_Handler class.
 	 */
 	private $transcoder_handler;
 
@@ -54,15 +54,15 @@ class RT_Transcoder_Admin {
 	 */
 	public function __construct() {
 
-		$this->api_key        = get_site_option( 'rt-transcoding-api-key' );
-		$this->stored_api_key = get_site_option( 'rt-transcoding-api-key-stored' );
+		$this->api_key        = get_site_option( 'rtgodam-api-key' );
+		$this->stored_api_key = get_site_option( 'rtgodam-api-key-stored' );
 
-		if ( ! class_exists( 'RT_Progress' ) ) {
-			include_once GODAM_PATH . 'admin/godam-transcoder-progressbar.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		if ( ! class_exists( 'RTGODAM_Progress' ) ) {
+			include_once RTGODAM_PATH . 'admin/godam-transcoder-progressbar.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 		}
 
-		include_once GODAM_PATH . 'admin/godam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-		include_once GODAM_PATH . 'admin/godam-transcoder-actions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		include_once RTGODAM_PATH . 'admin/godam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		include_once RTGODAM_PATH . 'admin/godam-transcoder-actions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts_styles' ) );
 
@@ -76,7 +76,7 @@ class RT_Transcoder_Admin {
 		// add_filter( 'attachment_fields_to_save', array( $this, 'save_video_thumbnail' ), 11, 1 );
 		add_action( 'admin_notices', array( $this, 'add_settings_errors' ) );
 
-		$this->transcoder_handler = new RT_Transcoder_Handler();
+		$this->transcoder_handler = new RTGODAM_Transcoder_Handler();
 
 		if ( is_admin() ) {
 			add_action( 'admin_init', array( $this, 'register_transcoder_settings' ) );
@@ -117,7 +117,7 @@ class RT_Transcoder_Admin {
 	 * Display errors if any while settings are save.
 	 */
 	public function add_settings_errors() {
-		settings_errors( 'rt-transcoder-settings-group' );
+		settings_errors( 'rtgodam-settings-group' );
 	}
 
 	/**
@@ -156,15 +156,15 @@ class RT_Transcoder_Admin {
 	public function enqueue_scripts_styles() {
 		global $pagenow;
 
-		$page = transcoder_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$page = rtgodam_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 		if ( 'admin.php' !== $pagenow || 'rt-transcoder' !== $page ) {
 			return;
 		}
 		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
-		wp_enqueue_style( 'rt-transcoder-admin-css', GODAM_URL . 'admin/css/rt-transcoder-admin' . $suffix . '.css', array(), GODAM_VERSION );
-		wp_register_script( 'rt-transcoder-main', GODAM_URL . 'admin/js/rt-transcoder-admin' . $suffix . '.js', array( 'jquery' ), GODAM_VERSION, true );
+		wp_enqueue_style( 'rt-transcoder-admin-css', RTGODAM_URL . 'admin/css/rt-transcoder-admin' . $suffix . '.css', array(), RTGODAM_VERSION );
+		wp_register_script( 'rt-transcoder-main', RTGODAM_URL . 'admin/js/rt-transcoder-admin' . $suffix . '.js', array( 'jquery' ), RTGODAM_VERSION, true );
 
 		$localize_script_data = array(
 			'admin_url'                             => esc_url( admin_url() ),
@@ -173,11 +173,11 @@ class RT_Transcoder_Admin {
 			'enable_encoding'                       => esc_html__( 'Are you sure you want to enable the transcoding service?', 'godam' ),
 			'something_went_wrong'                  => esc_html__( 'Something went wrong. Please ', 'godam' ) . '<a href onclick="location.reload();">' . esc_html__( 'refresh', 'godam' ) . '</a>' . esc_html__( ' page.', 'godam' ),
 			'error_empty_key'                       => esc_html__( 'Please enter the license key.', 'godam' ),
-			'security_nonce_for_enabling_encoding'  => wp_create_nonce( 'rt_enable_transcoding' ),
-			'security_nonce_for_disabling_encoding' => wp_create_nonce( 'rt_disable_transcoding' ),
+			'security_nonce_for_enabling_encoding'  => wp_create_nonce( 'rtgodam_enable_transcoding' ),
+			'security_nonce_for_disabling_encoding' => wp_create_nonce( 'rtgodam_disable_transcoding' ),
 		);
 
-		wp_localize_script( 'rt-transcoder-main', 'rt_transcoder_script', $localize_script_data );
+		wp_localize_script( 'rt-transcoder-main', 'rtgodam_transcoder_script', $localize_script_data );
 
 		wp_enqueue_script( 'rt-transcoder-main' );
 	}
@@ -197,7 +197,7 @@ class RT_Transcoder_Admin {
 			$this->transcoder_handler->update_usage( $this->api_key );
 		}
 
-		$usage_details = get_site_option( 'rt-transcoding-usage' );
+		$usage_details = get_site_option( 'rtgodam-usage' );
 
 		if ( isset( $usage_details[ $this->api_key ]->plan->name ) && ( strtolower( $usage_details[ $this->api_key ]->plan->name ) === strtolower( $name ) ) && $usage_details[ $this->api_key ]->sub_status && ! $force ) {
 			$form = '<button disabled="disabled" type="submit" class="button button-primary bpm-unsubscribe">' . esc_html__( 'Current Plan', 'godam' ) . '</button>';
@@ -258,7 +258,7 @@ class RT_Transcoder_Admin {
 						} else {
 							$thumbnail_src = $uploads['baseurl'] . '/' . $file_url;
 						}
-						$thumbnail_src     = apply_filters( 'transcoded_file_url', $thumbnail_src, $media_id );
+						$thumbnail_src     = apply_filters( 'rtgodam_transcoded_file_url', $thumbnail_src, $media_id );
 						$count             = $key + 1;
 						$video_thumb_html .= '<li style="width: 150px;display: inline-block;"> ' .
 							'<label for="rtmedia-upload-select-thumbnail-' . esc_attr( $count ) . '"> ' .
@@ -318,7 +318,7 @@ class RT_Transcoder_Admin {
 						$checked           = checked( $thumbnail_src, $rtmedia_media[0]->cover_art, false );
 						$count             = $key + 1;
 						$final_file_url    = $base_url . '/' . $thumbnail_src;
-						$final_file_url    = apply_filters( 'transcoded_file_url', $final_file_url, $media_id );
+						$final_file_url    = apply_filters( 'rtgodam_transcoded_file_url', $final_file_url, $media_id );
 						$video_thumb_html .= '<li style="width: 150px;display: inline-block;">
 								<label for="rtmedia-upload-select-thumbnail-' . esc_attr( $count ) . '">
 								<input type="radio" ' . esc_attr( $checked ) . ' id="rtmedia-upload-select-thumbnail-' . esc_attr( $count ) . '" value="' . esc_attr( $thumbnail_src ) . '" name="rtmedia-thumbnail" />
@@ -350,7 +350,7 @@ class RT_Transcoder_Admin {
 	 */
 	public function save_video_thumbnail( $post ) {
 
-		$rtmedia_thumbnail = transcoder_filter_input( INPUT_POST, 'rtmedia-thumbnail', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$rtmedia_thumbnail = rtgodam_filter_input( INPUT_POST, 'rtmedia-thumbnail', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$id                = ( ! empty( $post['ID'] ) && 0 < intval( $post['ID'] ) ) ? intval( $post['ID'] ) : 0;
 
 		if ( isset( $rtmedia_thumbnail ) ) {
@@ -372,7 +372,7 @@ class RT_Transcoder_Admin {
 				$media         = $rtmedia_model->get( array( 'media_id' => $id ) );
 				$media_id      = $media[0]->id;
 				$rtmedia_model->update( array( 'cover_art' => $final_file_url ), array( 'media_id' => $id ) );
-				rtt_update_activity_after_thumb_set( $media_id );
+				rtgodam_update_activity_after_thumb_set( $media_id );
 			}
 			update_post_meta( $id, '_rt_media_video_thumbnail', $rtmedia_thumbnail );
 		}
@@ -419,8 +419,8 @@ class RT_Transcoder_Admin {
 	 * @since   1.0.0
 	 */
 	public function transcoder_hide_admin_notice() {
-		if ( check_ajax_referer( '_transcoder_hide_notice_', 'transcoder_notice_nonce' ) ) {
-			update_site_option( 'transcoder_admin_notice', '0' );
+		if ( check_ajax_referer( '_transcoder_hide_notice_', 'rtgodam_notice_nonce' ) ) {
+			update_site_option( 'rtgodam_admin_notice', '0' );
 		}
 		die();
 	}
@@ -462,10 +462,10 @@ class RT_Transcoder_Admin {
 	public function license_activation_admin_notice() {
 
 		// Get the license key from the site options.
-		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+		$license_key = get_site_option( 'rtgodam-api-key', '' );
 
 		// Get plugin activation time.
-		$activation_time       = get_site_option( 'godam_plugin_activation_time', 0 );
+		$activation_time       = get_site_option( 'rtgodam_plugin_activation_time', 0 );
 		$days_since_activation = ( time() - $activation_time ) / DAY_IN_SECONDS;
 
 		// If more than 3 days have passed and no license is activated, show scheduled notice.
@@ -486,7 +486,7 @@ class RT_Transcoder_Admin {
 		}
 
 		// Get stored usage data.
-		$usage_data = get_site_option( 'rt-transcoding-usage', array() );
+		$usage_data = get_site_option( 'rtgodam-usage', array() );
 		$usage_data = isset( $usage_data[ $license_key ] ) ? (array) $usage_data[ $license_key ] : null;
 
 		if ( empty( $usage_data ) ) {
@@ -582,7 +582,7 @@ class RT_Transcoder_Admin {
 		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
 
 		$button_label = ( $button_type === 'activate' ) ? esc_html__( 'Activate License', 'godam' ) : esc_html__( 'Use Video Editor', 'godam' );
-		$button_link  = ( $button_type === 'activate' ) ? admin_url( 'admin.php?page=godam' ) : admin_url( 'admin.php?page=video_editor' );
+		$button_link  = ( $button_type === 'activate' ) ? admin_url( 'admin.php?page=rtgodam' ) : admin_url( 'admin.php?rtgodam_video_editor' );
 
 		?>
 		<div class="notice notice-<?php echo esc_attr( $notice_type ); ?> is-dismissible rt-transcoder-license-notice">
@@ -641,7 +641,7 @@ class RT_Transcoder_Admin {
 					<p><strong><?php echo esc_html__( 'Hey, you’re missing out on our advanced features!', 'godam' ); ?></strong></p>
 					<p><?php echo esc_html__( 'Unlock high-speed transcoding, advanced analytics, adaptive streaming, and more by activating your license.', 'godam' ); ?></p>
 					<p>
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=godam' ) ); ?>" class="button button-primary">
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam' ) ); ?>" class="button button-primary">
 							<?php echo esc_html__( 'Activate License', 'godam' ); ?>
 						</a>
 						<a href="https://godam.io/adaptive-bitrate-streaming/" class="button button-secondary" target="_blank">

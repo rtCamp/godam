@@ -5,11 +5,11 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\REST_API;
+namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\Traits\Singleton;
+use RTGODAM\Inc\Traits\Singleton;
 
 
 /**

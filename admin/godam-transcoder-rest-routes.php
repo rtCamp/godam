@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Transcoder_Rest_Routes
+ * Class RTGODAM_Transcoder_Rest_Routes
  *
  * @package transcoder
  */
@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Handle REST Routes for Transcoder.
  */
-class Transcoder_Rest_Routes extends WP_REST_Controller {
+class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 	/**
 	 * Version of REST route.
@@ -30,9 +30,9 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 	/**
 	 * RT Transcoder Handler object.
 	 *
-	 * @var RT_Transcoder_Handler
+	 * @var RTGODAM_Transcoder_Handler
 	 */
-	public $rt_transcoder_handler;
+	public $rtgodam_transcoder_handler;
 
 	/**
 	 * Constructor
@@ -43,10 +43,10 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 	 * @return void
 	 */
 	public function __construct() {
-		$this->rt_transcoder_handler = new RT_Transcoder_Handler( true );
+		$this->rtgodam_transcoder_handler = new RTGODAM_Transcoder_Handler( true );
 
-		if ( ! defined( 'RT_TRANSCODER_CALLBACK_URL' ) ) {
-			define( 'RT_TRANSCODER_CALLBACK_URL', $this->get_callback_url() );
+		if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) ) {
+			define( 'RTGODAM_TRANSCODER_CALLBACK_URL', $this->get_callback_url() );
 		}
 	}
 
@@ -237,8 +237,8 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 			}
 
 			// Check if media is eligible to be transcoded.
-			$rt_transcoding_job_id = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
-			if ( empty( $rt_transcoding_job_id ) ) {
+			$rtgodam_transcoding_job_id = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
+			if ( empty( $rtgodam_transcoding_job_id ) ) {
 				$response[ $media_id ] = 'invalid';
 				continue;
 			}
@@ -250,7 +250,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 			}
 
 			// Get transcoding status to detect if the site doesn't have HTTP auth or some other restrictions.
-			$status = json_decode( rtt_get_transcoding_status( $attachment_id ), true );
+			$status = json_decode( rtgodam_get_transcoding_status( $attachment_id ), true );
 			if ( ! empty( $status['message'] ) && false !== strpos( $status['message'], 'Transcoder failed to transcode this file' ) ) {
 				$response[ $media_id ] = 'invalid';
 			}
@@ -318,11 +318,11 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 		$format      = $request->get_param( 'format' );
 
 		if ( ! empty( $job_id ) && ! empty( $file_status ) && ( 'error' === $file_status ) ) {
-			$this->rt_transcoder_handler->nofity_transcoding_failed( $job_id, $error_msg );
-			return new WP_Error( 'transcoder_error', 'Something went wrong. Invalid post request.', array( 'status' => 400 ) );
+			$this->rtgodam_transcoder_handler->nofity_transcoding_failed( $job_id, $error_msg );
+			return new WP_Error( 'rtgodam_transcoding_error', 'Something went wrong. Invalid post request.', array( 'status' => 400 ) );
 		}
 
-		$mail = defined( 'GODAM_NO_MAIL' ) ? false : true;
+		$mail = defined( 'RTGODAM_NO_MAIL' ) ? false : true;
 
 		$attachment_id = '';
 
@@ -331,7 +331,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 				$has_thumbs = isset( $thumbnail ) ? true : false;
 				$flag       = false;
 
-				$id = $this->rt_transcoder_handler->get_post_id_by_meta_key_and_value( '_rt_transcoding_job_id', $job_id );
+				$id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( '_rt_transcoding_job_id', $job_id );
 
 				if ( ! empty( $id ) && is_numeric( $id ) ) {
 					$attachment_id         = $id;
@@ -339,7 +339,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 					$post_array['post_id'] = $attachment_id;
 
 					if ( $has_thumbs && ! empty( $post_array['thumbnail'] ) ) {
-						$thumbnail = $this->rt_transcoder_handler->add_media_thumbnails( $post_array );
+						$thumbnail = $this->rtgodam_transcoder_handler->add_media_thumbnails( $post_array );
 					}
 
 					if ( isset( $format ) && 'thumbnail' === $format ) {
@@ -350,29 +350,29 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 						if ( ! empty( $post_array['files']['mpd'] ) ) {
 							update_post_meta( $attachment_id, '_rt_transcoded_url', $post_array['download_url'] );
 						} else {
-							$this->rt_transcoder_handler->add_transcoded_files( $post_array['files'], $attachment_id, $job_for );
+							$this->rtgodam_transcoder_handler->add_transcoded_files( $post_array['files'], $attachment_id, $job_for );
 						}
 					}
 				} else {
 					$flag = 'Something went wrong. The required attachment id does not exists. It must have been deleted.';
 				}
 
-				$this->rt_transcoder_handler->update_usage( $this->rt_transcoder_handler->api_key );
+				$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
 
 				if ( $flag && $mail ) {
 					$subject = 'Transcoding: Download Failed';
-					$message = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p>';
+					$message = '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p>';
 					$users   = get_users( array( 'role' => 'administrator' ) );
 					if ( $users ) {
 						$admin_email_ids = array();
 						foreach ( $users as $user ) {
 							$admin_email_ids[] = $user->user_email;
 						}
-						add_filter( 'wp_mail_content_type', array( $this->rt_transcoder_handler, 'wp_mail_content_type' ) );
+						add_filter( 'wp_mail_content_type', array( $this->rtgodam_transcoder_handler, 'wp_mail_content_type' ) );
 						wp_mail( $admin_email_ids, $subject, $message ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_mail_wp_mail
-						remove_filter( 'wp_mail_content_type', array( $this->rt_transcoder_handler, 'wp_mail_content_type' ) );
+						remove_filter( 'wp_mail_content_type', array( $this->rtgodam_transcoder_handler, 'wp_mail_content_type' ) );
 					}
-					return new WP_Error( 'transcoder_error', $flag, array( 'status' => 500 ) );
+					return new WP_Error( 'rtgodam_transcoding_error', $flag, array( 'status' => 500 ) );
 				} else {
 					return new WP_REST_Response( esc_html_e( 'Media transcoded successfully.', 'godam' ), 200 );
 				}
@@ -396,7 +396,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 				);
 
 				if ( ! isset( $meta_details[0] ) ) {
-					$id = $this->rt_transcoder_handler->get_post_id_by_meta_key_and_value( '_rt_transcoding_job_id', $job_id );
+					$id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( '_rt_transcoding_job_id', $job_id );
 				} else {
 					$id = $meta_details[0]->media_id;
 				}
@@ -411,7 +411,7 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 					$post_array['post_id'] = $attachment_id;
 
 					if ( $has_thumbs ) {
-						$this->rt_transcoder_handler->add_media_thumbnails( $post_array );
+						$this->rtgodam_transcoder_handler->add_media_thumbnails( $post_array );
 					}
 
 					if ( isset( $format ) && 'thumbnail' === $format ) {
@@ -419,28 +419,28 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 					}
 
 					if ( ! empty( $post_array['files'] ) ) {
-						$this->rt_transcoder_handler->add_transcoded_files( $post_array['files'], $attachment_id, $job_for );
+						$this->rtgodam_transcoder_handler->add_transcoded_files( $post_array['files'], $attachment_id, $job_for );
 					}
 				} else {
 					$flag = 'Something went wrong. The required attachment id does not exists. It must have been deleted.';
 				}
 
-				$this->rt_transcoder_handler->update_usage( $this->rt_transcoder_handler->api_key );
+				$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
 
 				if ( $flag && $mail ) {
 					$subject = 'Transcoding: Download Failed';
-					$message = '<p><a href="' . esc_url( rtt_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully transcoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p><p>';
+					$message = '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully transcoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p><p>';
 					$users   = get_users( array( 'role' => 'administrator' ) );
 					if ( $users ) {
 						$admin_email_ids = array();
 						foreach ( $users as $user ) {
 							$admin_email_ids[] = $user->user_email;
 						}
-						add_filter( 'wp_mail_content_type', array( $this->rt_transcoder_handler, 'wp_mail_content_type' ) );
+						add_filter( 'wp_mail_content_type', array( $this->rtgodam_transcoder_handler, 'wp_mail_content_type' ) );
 						wp_mail( $admin_email_ids, $subject, $message ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_mail_wp_mail
-						remove_filter( 'wp_mail_content_type', array( $this->rt_transcoder_handler, 'wp_mail_content_type' ) );
+						remove_filter( 'wp_mail_content_type', array( $this->rtgodam_transcoder_handler, 'wp_mail_content_type' ) );
 					}
-					return new WP_Error( 'transcoder_error', $flag, array( 'status' => 500 ) );
+					return new WP_Error( 'rtgodam_transcoding_error', $flag, array( 'status' => 500 ) );
 
 				} else {
 					return new WP_REST_Response( esc_html_e( 'Media transcoded successfully.', 'godam' ), 200 );
@@ -457,6 +457,6 @@ class Transcoder_Rest_Routes extends WP_REST_Controller {
 		 * @param number    $attachment_id  Attachment ID for which the callback has sent from the transcoder
 		 * @param number    $job_id         The transcoding job ID
 		 */
-		do_action( 'rtt_handle_callback_finished', $attachment_id, $job_id );
+		do_action( 'rtgodam_handle_callback_finished', $attachment_id, $job_id );
 	}
 }

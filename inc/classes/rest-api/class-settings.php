@@ -5,14 +5,14 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\REST_API;
+namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\EasyDAM_Constants;
-use Transcoder\Inc\Providers\Handlers\Storage_Handler;
-use Transcoder\Inc\Providers\Exceptions\EasyDamException;
-use Transcoder\Inc\Providers\Handlers\Error_Handler;
+use RTGODAM\Inc\EasyDAM_Constants;
+use RTGODAM\Inc\Providers\Handlers\Storage_Handler;
+use RTGODAM\Inc\Providers\Exceptions\EasyDamException;
+use RTGODAM\Inc\Providers\Handlers\Error_Handler;
 
 /**
  * Class Settings
@@ -129,7 +129,7 @@ class Settings extends Base {
 		$license_key = $request->get_param( 'license_key' );
 
 		// Use the helper function to verify the license key.
-		$result = rtt_verify_license( $license_key, true );
+		$result = rtgodam_verify_license( $license_key, true );
 
 		if ( is_wp_error( $result ) ) {
 
@@ -147,7 +147,7 @@ class Settings extends Base {
 		}
 
 		if ( ! empty( $result['data']['license_key'] ) ) {
-			$result['data']['license_key'] = rtt_mask_string( $result['data']['license_key'] );
+			$result['data']['license_key'] = rtgodam_mask_string( $result['data']['license_key'] );
 		}
 
 		return new \WP_REST_Response(
@@ -167,11 +167,11 @@ class Settings extends Base {
 	 */
 	public function deactivate_license() {
 		// Delete the license key from the database.
-		$deleted_key   = delete_site_option( 'rt-transcoding-api-key' );
-		$deleted_token = delete_site_option( 'rt-transcoding-account-token' );
+		$deleted_key   = delete_site_option( 'rtgodam-api-key' );
+		$deleted_token = delete_site_option( 'rtgodam-account-token' );
 		
 		// Delete the user data from the site_option.
-		delete_site_option( 'godam_user_data' );
+		delete_site_option( 'rtgodam_user_data' );
 
 		if ( $deleted_key || $deleted_token ) {
 			return new \WP_REST_Response(
@@ -198,7 +198,7 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_license_key() {
-		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+		$license_key = get_site_option( 'rtgodam-api-key', '' );
 
 		return new \WP_REST_Response(
 			array(
@@ -242,7 +242,7 @@ class Settings extends Base {
 		);
 
 		// Retrieve settings from the database.
-		$easydam_settings = get_option( 'rt-easydam-settings', $default_settings );
+		$easydam_settings = get_option( 'rtgodam-settings', $default_settings );
 
 		return new \WP_REST_Response( $easydam_settings, 200 );
 	}
@@ -257,7 +257,7 @@ class Settings extends Base {
 		$settings = $request->get_param( 'settings' );
 
 		// Save settings to the database.
-		update_option( 'rt-easydam-settings', $settings );
+		update_option( 'rtgodam-settings', $settings );
 
 		return new \WP_REST_Response(
 			array(
@@ -321,7 +321,7 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function fetch_subscription_plans() {
-		$api_url = GODAM_API_BASE . '/api/resource/Subscription Plan?fields=["name", "cost", "bandwidth", "storage", "billing_interval"]';
+		$api_url = RTGODAM_API_BASE . '/api/resource/Subscription Plan?fields=["name", "cost", "bandwidth", "storage", "billing_interval"]';
 
 		// Fetch data from the external API.
 		$response = wp_remote_get( $api_url );

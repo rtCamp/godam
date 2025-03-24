@@ -5,26 +5,26 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc;
+namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\Traits\Singleton;
-use Transcoder\Inc\Pages;
-use Transcoder\Inc\Blocks;
-use Transcoder\Inc\Assets;
-use Transcoder\Inc\Deactivation;
-use Transcoder\Inc\Cron;
+use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\Pages;
+use RTGODAM\Inc\Blocks;
+use RTGODAM\Inc\Assets;
+use RTGODAM\Inc\Deactivation;
+use RTGODAM\Inc\Cron;
 
-use Transcoder\Inc\Taxonomies\Media_Folders;
+use RTGODAM\Inc\Taxonomies\Media_Folders;
 
-use Transcoder\Inc\REST_API\GF;
-use Transcoder\Inc\REST_API\Settings;
-use Transcoder\Inc\REST_API\Meta_Rest_Fields;
-use Transcoder\Inc\REST_API\Media_Library;
-use Transcoder\Inc\REST_API\Ads;
-use Transcoder\Inc\REST_API\Transcoding;
-use Transcoder\Inc\REST_API\Analytics;
+use RTGODAM\Inc\REST_API\GF;
+use RTGODAM\Inc\REST_API\Settings;
+use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
+use RTGODAM\Inc\REST_API\Media_Library;
+use RTGODAM\Inc\REST_API\Ads;
+use RTGODAM\Inc\REST_API\Transcoding;
+use RTGODAM\Inc\REST_API\Analytics;
 
 /**
  * Class Plugin.

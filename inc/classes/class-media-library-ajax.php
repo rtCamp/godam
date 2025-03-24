@@ -5,11 +5,11 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc;
+namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\Traits\Singleton;
+use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Media_Library
@@ -348,16 +348,16 @@ class Media_Library_Ajax {
 	 */
 	public function handle_media_deletion( $attachment_id ) {
 		$job_id        = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
-		$account_token = get_site_option( 'rt-transcoding-account-token', '' );
-		$license_key   = get_site_option( 'rt-transcoding-api-key', '' );
+		$account_token = get_site_option( 'rtgodam-account-token', '' );
+		$license_key   = get_site_option( 'rtgodam-api-key', '' );
 
 		// Ensure all required data is available.
 		if ( empty( $job_id ) || empty( $account_token ) || empty( $license_key ) ) {
 			return;
 		}
 
-		// API URL using GODAM_API_BASE.
-		$api_url = GODAM_API_BASE . '/api/method/godam_core.api.mutate.delete_attachment';
+		// API URL using RTGODAM_API_BASE.
+		$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.mutate.delete_attachment';
 
 		// Request params.
 		$params = array(
