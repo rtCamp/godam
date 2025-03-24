@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @return object
  */
-function rta() {
+function rtgodam_admin() {
 	global $rtgodam_transcoder_admin;
 	return $rtgodam_transcoder_admin;
 }
@@ -90,7 +90,7 @@ function rtgodam_media_shortcode( $attrs, $content = '' ) {
 
 	}
 
-	if ( is_file_being_transcoded( $attachment_id ) ) {
+	if ( rtgodam_is_file_being_transcoded( $attachment_id ) ) {
 		$content .= '<p class="transcoding-in-progress"> ' . esc_html__( 'This file is being transcoded. Please wait.', 'godam' ) . '</p>';
 	}
 
@@ -117,7 +117,7 @@ add_shortcode( 'rtgodam_media', 'rtgodam_media_shortcode' );
  * @param  number $attachment_id    ID of attachment.
  * @return boolean
  */
-function is_file_being_transcoded( $attachment_id ) {
+function rtgodam_is_file_being_transcoded( $attachment_id ) {
 	$job_id = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
 	if ( ! empty( $job_id ) ) {
 		$transcoded_files  = get_post_meta( $attachment_id, '_rt_media_transcoded_files', true );
@@ -465,12 +465,12 @@ function rtgodam_bp_get_activity_content( $content, $activity = null ) {
 				// Thumbnail/poster URL.
 				$final_file_url = apply_filters( 'transcoded_file_url', $final_file_url, $media->media_id );
 				// Replace the first poster (assuming activity has multiple medias in it).
-				if ( is_file_being_transcoded( $media->media_id ) ) {
+				if ( rtgodam_is_file_being_transcoded( $media->media_id ) ) {
 					$content = preg_replace( '/' . str_replace( '/', '\/', $poster_url[1][ $key ] ) . '/', 'poster="' . $final_file_url . '"', $content, 1 );
 				}
 			}
 			// If media is sent to the transcoder then show the message.
-			if ( is_file_being_transcoded( $media->media_id ) ) {
+			if ( rtgodam_is_file_being_transcoded( $media->media_id ) ) {
 				if ( current_user_can( 'manage_options' ) && rtgodam_is_track_status_enabled() ) {
 
 					$check_button_text = __( 'Check Status', 'godam' );
@@ -697,15 +697,15 @@ function rtgodam_is_override_thumbnail( $attachment_id = '' ) {
  * @return string Remote IP address
  */
 function rtgodam_get_remote_ip_address() {
-	$client_ip = get_server_var( 'HTTP_CLIENT_IP' );
-	$xff       = get_server_var( 'HTTP_X_FORWARDED_FOR' );
+	$client_ip = rtgodam_get_server_var( 'HTTP_CLIENT_IP' );
+	$xff       = rtgodam_get_server_var( 'HTTP_X_FORWARDED_FOR' );
 	if ( ! empty( $client_ip ) ) {
 		return $client_ip;
 	} elseif ( ! empty( $xff ) ) {
 		return $xff;
 	}
 
-	$remote_addr = get_server_var( 'REMOTE_ADDR' );
+	$remote_addr = rtgodam_get_server_var( 'REMOTE_ADDR' );
 	return $remote_addr;
 }
 
@@ -740,7 +740,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 	$transcoded_files  = get_post_meta( $post_id, '_rt_media_transcoded_files', true );
 	$transcoded_thumbs = get_post_meta( $post_id, '_rt_media_thumbnails', true );
 
-	if ( empty( $transcoded_files ) && is_file_being_transcoded( $post_id ) ) {
+	if ( empty( $transcoded_files ) && rtgodam_is_file_being_transcoded( $post_id ) ) {
 		$check_button_text = __( 'Check Status', 'godam' );
 
 		/**
@@ -936,7 +936,7 @@ function rtgodam_add_transcoding_process_status_button_single_media_page( $rtmed
 	 */
 	$check_button_text = apply_filters( 'rtgodam_transcoder_check_status_button_text', $check_button_text );
 
-	if ( is_file_being_transcoded( $post_id ) ) {
+	if ( rtgodam_is_file_being_transcoded( $post_id ) ) {
 
 		if ( current_user_can( 'manage_options' ) && rtgodam_is_track_status_enabled() ) {
 			$message = sprintf(
@@ -975,7 +975,7 @@ function rtgodam_filter_single_media_page_video_markup( $html, $rtmedia_media ) 
 	if ( empty( $rtmedia_media ) || empty( $rtmedia_media->media_type ) || empty( $rtmedia_media->media_id ) ) {
 		return $html;
 	}
-	if ( 'video' === $rtmedia_media->media_type && is_file_being_transcoded( $rtmedia_media->media_id ) ) {
+	if ( 'video' === $rtmedia_media->media_type && rtgodam_is_file_being_transcoded( $rtmedia_media->media_id ) ) {
 
 		$youtube_url = get_rtmedia_meta( $rtmedia_media->id, 'video_url_uploaded_from' );
 		$html        = "<div id='rtm-mejs-video-container'>";
@@ -1040,7 +1040,7 @@ add_filter( 'wp_generate_attachment_metadata', 'rtgodam_media_update_usage', 10,
  *
  * @return string Filtered value if supports.
  */
-function get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FULL_SPECIAL_CHARS ) {
+function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FULL_SPECIAL_CHARS ) {
 	$server_val = '';
 	if ( function_exists( 'filter_input' ) && filter_has_var( INPUT_SERVER, $server_key ) ) {
 		$server_val = rtgodam_filter_input( INPUT_SERVER, $server_key, $filter_type );
@@ -1275,15 +1275,15 @@ function rtgodam_get_localize_array() {
 function rtgodam_get_user_ip() {
 	$ip_address = '';
 
-	$ip_address = filter_var( get_server_var( 'HTTP_CLIENT_IP' ), FILTER_VALIDATE_IP );
+	$ip_address = filter_var( rtgodam_get_server_var( 'HTTP_CLIENT_IP' ), FILTER_VALIDATE_IP );
 
 	if ( empty( $ip_address ) ) {
-		$forwarded_for = get_server_var( 'HTTP_X_FORWARDED_FOR' );
+		$forwarded_for = rtgodam_get_server_var( 'HTTP_X_FORWARDED_FOR' );
 		$ip_address = ! empty( $forwarded_for ) ? filter_var( explode( ',', $forwarded_for )[0], FILTER_VALIDATE_IP ) : false;
 	}
 
 	if ( empty( $ip_address ) ) {
-		$ip_address = filter_var( get_server_var( 'REMOTE_ADDR' ), FILTER_VALIDATE_IP );
+		$ip_address = filter_var( rtgodam_get_server_var( 'REMOTE_ADDR' ), FILTER_VALIDATE_IP );
 	}
 
 	return $ip_address; // Return an empty string if invalid

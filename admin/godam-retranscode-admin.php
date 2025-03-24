@@ -670,7 +670,7 @@ class RetranscodeMedia {
 		}
 
 		// Check if media is already being transcoded.
-		if ( is_file_being_transcoded( $media->ID ) ) {
+		if ( rtgodam_is_file_being_transcoded( $media->ID ) ) {
 			$this->die_json_error_msg( $media->ID, sprintf( __( 'The media is already being transcoded', 'godam' ) ) );
 		}
 
@@ -1039,12 +1039,12 @@ class RetranscodeMedia {
 }
 
 // Start up this plugin.
-add_action( 'init', 'retranscode_media' );
+add_action( 'init', 'rtgodam_retranscode_media' );
 
 /**
  * Execute RetranscodeMedia constructor.
  */
-function retranscode_media() { // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
+function rtgodam_retranscode_media() { // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
 
 	global $RetranscodeMedia; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 

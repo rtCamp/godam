@@ -122,33 +122,30 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
 	return filter_var( $input, $filter );
 }
 
-if ( ! function_exists( 'fetch_overlay_media_url' ) ) {
-
-	/**
-	 * Fetch the URL of a media file by its ID.
-	 *
-	 * This function retrieves the URL of a media attachment in WordPress based on the provided media ID.
-	 * It validates the ID, ensures the media exists, and is of the correct type (attachment).
-	 *
-	 * @param int $media_id The ID of the media attachment.
-	 * @return string The URL of the media file, or an empty string if invalid or not found.
-	 * @throws Exception If the media is not found or is not an attachment.
-	 */
-	function fetch_overlay_media_url( $media_id ) {
-		if ( empty( $media_id ) || 0 === intval( $media_id ) ) {
-			return '';
-		}
-
-		$media = get_post( $media_id );
-
-		if ( ! $media || 'attachment' !== $media->post_type ) {
-			throw new Exception( 'Media not found' );
-		}
-
-		$media_url = wp_get_attachment_url( $media_id );
-
-		return $media_url ? $media_url : '';
+/**
+ * Fetch the URL of a media file by its ID.
+ *
+ * This function retrieves the URL of a media attachment in WordPress based on the provided media ID.
+ * It validates the ID, ensures the media exists, and is of the correct type (attachment).
+ *
+ * @param int $media_id The ID of the media attachment.
+ * @return string The URL of the media file, or an empty string if invalid or not found.
+ * @throws Exception If the media is not found or is not an attachment.
+ */
+function rtgodam_fetch_overlay_media_url( $media_id ) {
+	if ( empty( $media_id ) || 0 === intval( $media_id ) ) {
+		return '';
 	}
+
+	$media = get_post( $media_id );
+
+	if ( ! $media || 'attachment' !== $media->post_type ) {
+		throw new Exception( 'Media not found' );
+	}
+
+	$media_url = wp_get_attachment_url( $media_id );
+
+	return $media_url ? $media_url : '';
 }
 
 /**
@@ -167,8 +164,8 @@ if ( ! function_exists( 'fetch_overlay_media_url' ) ) {
  *     - 'imageCtaButtonText' (string): Text for the CTA button.
  * @return string The generated HTML string for the image CTA overlay.
  */
-function image_cta_html( $layer ) {
-	$image_url = fetch_overlay_media_url( $layer['image'] );
+function rtgodam_image_cta_html( $layer ) {
+	$image_url = rtgodam_fetch_overlay_media_url( $layer['image'] );
 	// Ensure $layer is an associative array and has required fields.
 	$orientation_class = isset( $layer['imageCtaOrientation'] ) && 'portrait' === $layer['imageCtaOrientation']
 		? 'vertical-image-cta-container'

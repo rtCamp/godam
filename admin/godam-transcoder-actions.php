@@ -229,7 +229,7 @@ add_action( 'rtgodam_transcoded_thumb_added', 'rtgodam_update_wp_media_thumbnail
  * @param object $post The attachment post object.
  * @return array The modified array of attachment form fields.
  */
-function add_transcoded_url_field( $form_fields, $post ) {
+function rtgodam_add_transcoded_url_field( $form_fields, $post ) {
 
 	// Check if post is of type attachment.
 	if ( 'attachment' !== $post->post_type ) {
@@ -261,7 +261,7 @@ function add_transcoded_url_field( $form_fields, $post ) {
 	return $form_fields;
 }
 
-add_filter( 'attachment_fields_to_edit', 'add_transcoded_url_field', 10, 2 );
+add_filter( 'attachment_fields_to_edit', 'rtgodam_add_transcoded_url_field', 10, 2 );
 
 /**
  * Save the transcoded URL field when the attachment is saved.
@@ -270,7 +270,7 @@ add_filter( 'attachment_fields_to_edit', 'add_transcoded_url_field', 10, 2 );
  * @param array $attachment The attachment data.
  * @return array The post data for the attachment.
  */
-function save_transcoded_url_field( $post, $attachment ) {
+function rtgodam_save_transcoded_url_field( $post, $attachment ) {
 	// Check if adaptive bitrate streaming is enabled.
 	$easydam_settings = get_option( 'rtgodam-settings', array() );
 
@@ -292,12 +292,12 @@ function save_transcoded_url_field( $post, $attachment ) {
 	return $post;
 }
 
-add_filter( 'attachment_fields_to_save', 'save_transcoded_url_field', 10, 2 );
+add_filter( 'attachment_fields_to_save', 'rtgodam_save_transcoded_url_field', 10, 2 );
 
 /**
  * Register the transcoded URL meta field.
  */
-function register_rt_transcoded_url_meta() {
+function rtgodam_register_rt_transcoded_url_meta() {
 	register_post_meta(
 		'attachment',
 		'_rt_transcoded_url',
@@ -312,4 +312,4 @@ function register_rt_transcoded_url_meta() {
 	);
 }
 
-add_action( 'init', 'register_rt_transcoded_url_meta' );
+add_action( 'init', 'rtgodam_register_rt_transcoded_url_meta' );
