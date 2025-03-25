@@ -781,8 +781,7 @@ class RTGODAM_Transcoder_Handler {
 			</h3>
 			<div class="inside">
 				<?php
-				// Already escaped variable.
-				echo $content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo wp_kses_post( $content );
 				?>
 			</div>
 		</div>
