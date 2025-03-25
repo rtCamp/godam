@@ -58,14 +58,14 @@ if ( ! defined( 'GODAMIO_API_BASE' ) ) {
 	define( 'GODAMIO_API_BASE', 'https://godam.io' );
 }
 
+rtgodam_pre_init();
+
 require_once GODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once GODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once GODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once GODAM_PATH . 'admin/godam-transcoder-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 global $rt_transcoder_admin;
-
-godam_pre_init();
 
 /**
  * Initiate file system.
@@ -139,7 +139,7 @@ register_deactivation_hook( __FILE__, 'godam_plugin_deactivate' );
 
 
 // Function to check if required build folders exist
-function godam_check_build_folders() {
+function rtgodam_check_build_folders() {
 	$plugin_dir    = plugin_dir_path( __FILE__ );
 	$assets_folder = $plugin_dir . 'assets/build';
 	$pages_folder  = $plugin_dir . 'pages/build';
@@ -150,9 +150,9 @@ function godam_check_build_folders() {
 	return true;
 }
 
-function godam_pre_init() {
+function rtgodam_pre_init() {
 
-	if ( ! godam_check_build_folders() ) {
+	if ( ! rtgodam_check_build_folders() ) {
 
 		wp_die(
 			'<h2>GoDAM Plugin Activation Failed</h2>
