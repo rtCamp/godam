@@ -952,8 +952,7 @@ function rtgodam_add_transcoding_process_status_button_single_media_page( $rtmed
 			);
 		}
 
-		echo wp_kses_post( $message ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Message already escaped.
-
+		echo wp_kses_post( $message );
 	}
 }
 
