@@ -10,7 +10,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-
 /**
  * Add a field for the transcoded URL to the media attachment edit screen.
  *
