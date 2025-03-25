@@ -58,10 +58,6 @@ jQuery( document ).ready( function( $ ) {
 		}
 		$( '#message' ).html( '<p><strong>' + rtResultText + '</strong></p>' );
 		$( '#message' ).show();
-
-		$( '#retranscode-goback' ).on( 'click', function() {
-			window.rtgodam_retranscode;
-		} );
 	}
 	// Regenerate a specified image via AJAX
 	function RetranscodeMedia( id ) {
