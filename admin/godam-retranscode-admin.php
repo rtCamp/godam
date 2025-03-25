@@ -248,6 +248,7 @@ class RTGODAM_RetranscodeMedia {
 				RTGODAM_URL . '/admin/js/godam-retranscode-admin.js',
 				array( 'jquery' ),
 				filemtime( RTGODAM_PATH . '/admin/js/godam-retranscode-admin.js' ),
+				true
 			);
 	
 			wp_localize_script(
