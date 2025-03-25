@@ -1,3 +1,5 @@
+/* global godamSettings */
+
 /**
  * External dependencies
  */
@@ -218,11 +220,15 @@ function GODAMPlayer( videoRef = null ) {
 						const el = super.createEl();
 						el.className += ' vjs-custom-play-button';
 						const img = document.createElement( 'img' );
-						if ( 0 === controlBarSettings.customBrandImg.length ) {
-							img.src = GoDAM;
-						} else {
+
+						if ( controlBarSettings.customBrandImg.length ) {
 							img.src = controlBarSettings.customBrandImg;
+						} else if ( godamSettings?.brandImage ) {
+							img.src = godamSettings.brandImage;
+						} else {
+							img.src = GoDAM;
 						}
+
 						img.id = 'branding-icon';
 						img.alt = 'Branding';
 						img.className = 'branding-icon';

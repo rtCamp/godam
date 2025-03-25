@@ -1,4 +1,5 @@
-// src/slices/todosSlice.js
+/* global godamSettings */
+
 /**
  * External dependencies
  */
@@ -33,7 +34,7 @@ const slice = createSlice( {
 				},
 				//custom controls
 				brandingIcon: false,
-				appearanceColor: '#2b333fb3',
+				appearanceColor: godamSettings?.brandColor ? godamSettings?.brandColor : '#2b333fb3',
 				hoverColor: '#fff',
 				zoomLevel: 0,
 				playButtonPosition: 'center',

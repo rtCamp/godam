@@ -1,3 +1,5 @@
+/* global godamSettings */
+
 /**
  * External dependencies
  */
@@ -12,7 +14,7 @@ import 'videojs-ima';
 /**
  * Internal dependencies
  */
-import GoDAM from "../../assets/src/images/GoDAM.png";
+import GoDAM from '../../assets/src/images/GoDAM.png';
 import { setCurrentLayer } from './redux/slice/videoSlice';
 
 /**
@@ -139,12 +141,20 @@ export const VideoJS = ( props ) => {
 			const img = document.createElement( 'img' );
 
 			if ( ! brandingLogo ) {
-				img.src =
-          videoConfig.controlBar.customBrandImg.length > 0
-          	? videoConfig.controlBar.customBrandImg
-          	: GoDAM;
+				let imageSrc = '';
+
+				if ( videoConfig.controlBar.customBrandImg.length > 0 ) {
+					imageSrc = videoConfig.controlBar.customBrandImg;
+				} else if ( godamSettings?.brandImage ) {
+					imageSrc = godamSettings?.brandImage;
+				} else {
+					imageSrc = GoDAM;
+				}
+
+				img.src = imageSrc;
 				img.id = 'branding-icon';
 				img.alt = 'Branding';
+
 				document.querySelector( '.vjs-control-bar' ).appendChild( img );
 			}
 		}
