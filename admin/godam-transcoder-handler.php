@@ -1046,11 +1046,10 @@ class RTGODAM_Transcoder_Handler {
 									update_post_meta( $attachment_id, '_wp_attached_file', $uploaded_file );
 									update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $download_url );
 
-									$wpdb->update(
-										$wpdb->posts,
-										array( 'post_mime_type' => 'video/mp4' ),
-										array( 'ID' => $attachment_id )
-									);
+									wp_update_post( array(
+										'ID' => $attachment_id,
+										'post_mime_type' => 'video/mp4',
+									) );
 									
 								}
 							} else {

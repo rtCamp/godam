@@ -995,7 +995,7 @@ add_action( 'init', 'rtgodam_retranscode_media' );
  */
 function rtgodam_retranscode_media() { // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
 
-	global $rtgodam_retranscode_media; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+	global $rtgodam_retranscode_media;
 
-	$rtgodam_retranscode_media = new RTGODAM_RetranscodeMedia(); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+	$rtgodam_retranscode_media = new RTGODAM_RetranscodeMedia();
 }
