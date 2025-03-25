@@ -119,6 +119,7 @@ add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 )
 function rtgodam_plugin_activate() {
 	update_site_option( 'rtgodam_plugin_activation_time', time() );
 }
+
 register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
 
 /**
@@ -128,4 +129,5 @@ function rtgodam_plugin_deactivate() {
 	\RTGODAM\Inc\Cron::get_instance()->unschedule_video_cleanup();
 	delete_site_option( 'rtgodam_plugin_activation_time' );
 }
+
 register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );

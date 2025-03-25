@@ -146,12 +146,12 @@ class RTGODAM_RetranscodeMedia {
 	public function add_easydam_meta_boxes() {
 
 		add_meta_box(
-			'retranscode_media_widget',                 // ID of the meta box
-			__( 'Retranscode Media', 'godam' ),    // Title of the meta box
-			array( $this, 'retranscode_interface' ), // Callback to render the meta box
-			'rtgodam_tools',                            // Screen (matches submenu slug)
-			'normal',                                   // Context (main column)
-			'high'                                      // Priority
+			'retranscode_media_widget',
+			__( 'Retranscode Media', 'godam' ),
+			array( $this, 'retranscode_interface' ),
+			'rtgodam_tools',
+			'normal',
+			'high'
 		);
 	}
 
