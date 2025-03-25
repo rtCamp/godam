@@ -158,17 +158,6 @@ class RTGODAM_RetranscodeMedia {
 	}
 
 	/**
-	 * Transcoder settings render.
-	 *
-	 * Note: DO NOT USE directly.
-	 *
-	 * @return void
-	 */
-	public function transcoder_settings_page() {
-		include_once RTGODAM_PATH . 'admin/partials/rt-transcoder-admin-display.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-	}
-
-	/**
 	 * Enqueue the needed Javascript and CSS
 	 *
 	 * @param string $hook_suffix Suffix of the hook.
