@@ -57,15 +57,6 @@ class RTGODAM_Transcoder_Handler {
 	public $api_key = false;
 
 	/**
-	 * The api key of transcoding service subscription.
-	 *
-	 * @since    1.0.0
-	 * @access   public
-	 * @var      string    $stored_api_key    The api key of transcoding service subscription.
-	 */
-	public $stored_api_key = false;
-
-	/**
 	 * Video extensions with comma separated.
 	 *
 	 * @since    1.0.0
@@ -123,7 +114,6 @@ class RTGODAM_Transcoder_Handler {
 	public function __construct( $no_init = false ) {
 
 		$this->api_key          = get_site_option( 'rtgodam-api-key' );
-		$this->stored_api_key   = get_site_option( 'rtgodam-api-key-stored' );
 		$this->easydam_settings = get_option( 'rtgodam-settings', array() );
 
 		$default_settings = array(
@@ -158,49 +148,19 @@ class RTGODAM_Transcoder_Handler {
 			return;
 		}
 
-		// phpcs:disable
 		if ( $this->api_key ) {
-			// Store api key as different db key if user disable transcoding service.
-			if ( ! $this->stored_api_key ) {
-				$this->stored_api_key = $this->api_key;
-				update_site_option( 'rtgodam-api-key-stored', $this->stored_api_key );
-			}
-			add_filter( 'rtmedia_allowed_types', array( $this, 'allowed_types_admin_settings' ), 10, 1 );
 			$usage_info = get_site_option( 'rtgodam-usage' );
 
 			if ( isset( $usage_info ) && is_array( $usage_info ) && array_key_exists( $this->api_key, $usage_info ) ) {
-				// if ( isset( $usage_info[ $this->api_key ]->plan->expires )
-				// && strtotime( $usage_info[ $this->api_key ]->plan->expires ) < time() ) {
-				// $usage_info = $this->update_usage( $this->api_key );
-				// }
-				if ( array_key_exists( $this->api_key, $usage_info ) && is_object( $usage_info[ $this->api_key ] ) && isset( $usage_info[ $this->api_key ]->status ) && 'Active' === $usage_info[ $this->api_key ]->status ) {
-					// if ( isset( $usage_info[ $this->api_key ]->remaining ) && $usage_info[ $this->api_key ]->remaining > 0 ) {
+				if ( is_object( $usage_info[ $this->api_key ] ) && isset( $usage_info[ $this->api_key ]->status ) && 'Active' === $usage_info[ $this->api_key ]->status ) {
 
-						// Enable re-transcoding.
-						include_once RTGODAM_PATH . 'admin/godam-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+					// Enable re-transcoding.
+					include_once RTGODAM_PATH . 'admin/godam-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
-
-						if ( 'Active' === $usage_info[ $this->api_key ]->status ) {
-						add_filter( 'wp_generate_attachment_metadata', array( $this, 'wp_media_transcoding' ), 21, 2 );
-						}
-
-						/* Do not let the user to upload non supported media types on localhost */
-						$blacklist   = rtgodam_get_blacklist_ip_addresses();
-						$remote_addr = rtgodam_get_remote_ip_address();
-						if ( ! in_array( wp_unslash( $remote_addr ), $blacklist, true ) ) {
-						add_filter( 'rtmedia_plupload_files_filter', array( $this, 'allowed_types' ), 10, 1 );
-						add_filter( 'rtmedia_allowed_types', array( $this, 'allowed_types_admin_settings' ), 10, 1 );
-						add_filter( 'rtmedia_valid_type_check', array( $this, 'bypass_video_audio' ), 10, 2 );
-						}
-					// }
+					add_filter( 'wp_generate_attachment_metadata', array( $this, 'wp_media_transcoding' ), 21, 2 );
 				}
 			}
 		}
-		// phpcs:enable
-
-		add_action( 'wp_ajax_rt_disable_transcoding', array( $this, 'disable_transcoding' ), 1 );
-		add_action( 'wp_ajax_rt_enable_transcoding', array( $this, 'enable_transcoding' ), 1 );
-		add_action( 'add_attachment', array( $this, 'after_upload_pdf' ) );
 	}
 
 	/**
@@ -298,11 +258,11 @@ class RTGODAM_Transcoder_Handler {
 			$callback_url = RTGODAM_TRANSCODER_CALLBACK_URL;
 
 			if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) || empty( RTGODAM_TRANSCODER_CALLBACK_URL ) ) {
-				return;
+				return $wp_metadata;
 			}
 
 			/**
-			 * manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
+			 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
 			 */
 			$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
 
@@ -332,7 +292,7 @@ class RTGODAM_Transcoder_Handler {
 			$transcoding_url = $this->transcoding_api_url . 'resource/Transcoder Job';
 
 			$upload_page = wp_remote_post( $transcoding_url, $args );
-			error_log( print_r( $upload_page, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log, WordPress.WP.AlternativeFunctions.json_encode_json_encode
+
 			if ( ! is_wp_error( $upload_page ) &&
 				(
 					isset( $upload_page['response']['code'] ) &&
@@ -378,27 +338,6 @@ class RTGODAM_Transcoder_Handler {
 	}
 
 	/**
-	 * Check whether uploaded file is valid audio/video file or not.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param boolean $flag     File valid or not.
-	 * @param array   $file     Media file.
-	 *
-	 * @return boolean
-	 */
-	public function bypass_video_audio( $flag, $file ) {
-		if ( isset( $file['type'] ) ) {
-			$fileinfo = explode( '/', $file['type'] );
-			if ( in_array( $fileinfo[0], array( 'audio', 'video' ), true ) ) {
-				$flag = true;
-			}
-		}
-
-		return $flag;
-	}
-
-	/**
 	 * Check api key is valid or not.
 	 *
 	 * @since   1.0.0
@@ -441,109 +380,6 @@ class RTGODAM_Transcoder_Handler {
 		update_site_option( 'rtgodam-usage', array( $key => (object) $response['data'] ) );
 
 		return $response;
-	}
-
-	/**
-	 * Send email to admin when trancoding quota near to limit.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param array $usage_details Usage informataion.
-	 */
-	public function nearing_usage_limit( $usage_details ) {
-
-		if ( defined( 'RTGODAM_NO_MAIL' ) ) {
-			return;
-		}
-
-		$subject = esc_html__( 'Transcoding: Nearing quota limit.', 'godam' );
-		$message = '<p>' . esc_html__( 'You are nearing the quota limit for your transcoding service.', 'godam' ) . '</p><p>' . esc_html__( 'Following are the details:', 'godam' ) . '</p><p><strong>Used:</strong> %s</p><p><strong>' . esc_html__( 'Remaining', 'godam' ) . '</strong>: %s</p><p><strong>' . esc_html__( 'Total:', 'godam' ) . '</strong> %s</p>';
-		$users   = get_users( array( 'role' => 'administrator' ) );
-
-		if ( $users ) {
-			$admin_email_ids = array();
-			foreach ( $users as $user ) {
-				$admin_email_ids[] = $user->user_email;
-			}
-			add_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-			wp_mail( $admin_email_ids, $subject, sprintf( $message, size_format( $usage_details[ $this->api_key ]->used, 2 ), size_format( $usage_details[ $this->api_key ]->remaining, 2 ), size_format( $usage_details[ $this->api_key ]->total, 2 ) ) ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_mail_wp_mail
-			remove_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-		}
-
-		update_site_option( 'rtgodam-usage-limit-mail', 1 );
-	}
-
-	/**
-	 * Send email to admin when trancoding quota is over.
-	 *
-	 * @since   1.0.0
-	 */
-	public function usage_quota_over() {
-
-		if ( defined( 'RTGODAM_NO_MAIL' ) ) {
-			return;
-		}
-
-		$usage_details = get_site_option( 'rtgodam-usage' );
-
-		if ( ! $usage_details[ $this->api_key ]->remaining ) {
-			$subject = esc_html__( 'Transcoding: Usage quota over.', 'godam' );
-			$message = '<p>' . esc_html__( 'Your usage quota is over. Upgrade your plan', 'godam' ) . '</p><p>' . esc_html__( 'Following are the details:', 'godam' ) . '</p><p><strong>' . esc_html__( 'Used:', 'godam' ) . '</strong> %s</p><p><strong>' . esc_html__( 'Remaining', 'godam' ) . '</strong>: %s</p><p><strong>' . esc_html__( 'Total:', 'godam' ) . '</strong> %s</p>';
-			$users   = get_users( array( 'role' => 'administrator' ) );
-			if ( $users ) {
-				$admin_email_ids = array();
-				foreach ( $users as $user ) {
-					$admin_email_ids[] = $user->user_email;
-				}
-				add_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-				wp_mail( $admin_email_ids, $subject, sprintf( $message, size_format( $usage_details[ $this->api_key ]->used, 2 ), 0, size_format( $usage_details[ $this->api_key ]->total, 2 ) ) ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_mail_wp_mail
-				remove_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-			}
-
-			update_site_option( 'rtgodam-usage-limit-mail', 1 );
-		}
-	}
-
-	/**
-	 * Allow user to upload other types media files.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param array $types  Mime types.
-	 *
-	 * @return array $types Mime types.
-	 */
-	public function allowed_types( $types ) {
-		if ( isset( $types[0] ) && isset( $types[0]['extensions'] ) ) {
-			if ( is_rtmedia_upload_video_enabled() && strpos( $this->video_extensions, $types[0]['extensions'] ) ) {
-				$types[0]['extensions'] .= $this->video_extensions; // Allow all types of video file to be uploded.
-			}
-			if ( is_rtmedia_upload_music_enabled() && strpos( $this->audio_extensions, $types[0]['extensions'] ) ) {
-				$types[0]['extensions'] .= $this->audio_extensions; // Allow all types of music file to be uploded.
-			}
-		}
-
-		return $types;
-	}
-
-	/**
-	 * Allow user to upload other types media files.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param array $types Mime types.
-	 *
-	 * @return array    Mime types.
-	 */
-	public function allowed_types_admin_settings( $types ) {
-		$allowed_video_string   = implode( ',', $types['video']['extn'] );
-		$allowed_audio_string   = implode( ',', $types['music']['extn'] );
-		$allowed_video          = explode( ',', $allowed_video_string . $this->video_extensions );
-		$allowed_audio          = explode( ',', $allowed_audio_string . $this->audio_extensions );
-		$types['video']['extn'] = array_unique( $allowed_video );
-		$types['music']['extn'] = array_unique( $allowed_audio );
-
-		return $types;
 	}
 
 	/**
@@ -982,30 +818,6 @@ class RTGODAM_Transcoder_Handler {
 	}
 
 	/**
-	 * Disable transcoding.
-	 *
-	 * @since 1.0.0
-	 */
-	public function disable_transcoding() {
-		check_ajax_referer( 'rtgodam_disable_transcoding', 'rtgodam_transcoder_nonce', true );
-		update_site_option( 'rtgodam-api-key', '' );
-		esc_html_e( 'Transcoding disabled successfully.', 'godam' );
-		die();
-	}
-
-	/**
-	 * Enable transcoding.
-	 *
-	 * @since 1.0.0
-	 */
-	public function enable_transcoding() {
-		check_ajax_referer( 'rtgodam_enable_transcoding', 'rtgodam_transcoder_nonce', true );
-		update_site_option( 'rtgodam-api-key', $this->stored_api_key );
-		esc_html_e( 'Transcoding enabled successfully.', 'godam' );
-		die();
-	}
-
-	/**
 	 * Return upload path of media uploaded through rtMedia plugin.
 	 *
 	 * @since 1.0.0
@@ -1273,57 +1085,5 @@ class RTGODAM_Transcoder_Handler {
 		$response['status']  = esc_html( $status );
 
 		return wp_json_encode( $response );
-	}
-
-	/**
-	 * Send transcoding request to the server for PDF files.
-	 *
-	 * WordPress doesn't generate metadata for PDF attachment,
-	 * `add_attachment` hook will do it fo PDF.
-	 *
-	 * @param int $post_id Attachment ID of the PDF.
-	 *
-	 * @return void
-	 */
-	public function after_upload_pdf( $post_id ) {
-
-		$post_id = ( ! empty( $post_id ) && 0 < intval( $post_id ) ) ? intval( $post_id ) : 0;
-
-		if ( empty( $post_id ) ) {
-			return;
-		}
-
-		$file_path = get_attached_file( $post_id );
-		$file_type = wp_check_filetype( $file_path );
-		$file_type = array_map( 'strtolower', $file_type );
-
-		if ( 'pdf' !== $file_type['ext'] ) {
-			return;
-		}
-
-		$allow_transcoding = true;
-
-		// If it have native support, skip the use of transcoder server.
-		if ( extension_loaded( 'imagick' ) &&
-			class_exists( 'Imagick', false ) &&
-			class_exists( 'ImagickPixel', false ) &&
-			version_compare( phpversion( 'imagick' ), '2.2.0', '>=' )
-		) {
-			$allow_transcoding = false;
-		}
-
-		if ( defined( 'VIP_GO_ENV' ) || defined( 'VIP_GO_APP_ENVIRONMENT' ) ) {
-			$allow_transcoding = true;
-		}
-
-		if ( false === $allow_transcoding && empty( wp_get_attachment_metadata( $post_id ) ) ) {
-			$allow_transcoding = true;
-		}
-
-		if ( false === $allow_transcoding ) {
-			return;
-		}
-
-		$this->wp_media_transcoding( array( 'mime_type' => 'application/pdf' ), $post_id );
 	}
 }
