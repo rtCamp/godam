@@ -795,21 +795,6 @@ add_filter( 'manage_upload_sortable_columns', 'rtgodam_status_column_register_so
 function rtgodam_enqueue_scripts() {
 
 	if ( current_user_can( 'manage_options' ) ) {
-		wp_register_script( 'rtgodam_transcoder_js', plugins_url( 'js/rt-transcoder.min.js', __FILE__ ), array(), RTGODAM_VERSION, false );
-
-		$translation_array = array(
-			'load_flag'      => true,
-			'security_nonce' => esc_js( wp_create_nonce( 'check-transcoding-status-ajax-nonce' ) ),
-		);
-
-		// phpcs:disable
-
-		// comment out this code as the functionality is being shifted to block editor.
-
-		// wp_localize_script( 'rtgodam_transcoder_js', 'transcoding_status', $translation_array );
-		// wp_enqueue_script( 'rtgodam_transcoder_js' );
-
-		// phpcs:enable
 
 		if ( ! is_admin() ) {
 			wp_enqueue_style( 'rt-transcoder-client-style', plugins_url( 'css/rt-transcoder-client.min.css', __FILE__ ), array(), RTGODAM_VERSION );
@@ -821,8 +806,6 @@ if ( rtgodam_is_track_status_enabled() ) {
 	add_action( 'wp_enqueue_scripts', 'rtgodam_enqueue_scripts' );
 }
 add_action( 'admin_enqueue_scripts', 'rtgodam_enqueue_scripts' );
-
-add_action( 'enqueue_block_editor_assets', 'rtgodam_transcoder_enqueue_block_editor_assets' );
 
 /**
  * Enqueues script on frontend.
@@ -843,29 +826,6 @@ function rtgodam_enqueue_frontend_scripts() {
 
 add_action( 'wp_enqueue_scripts', 'rtgodam_enqueue_frontend_scripts' );
 
-/**
- * Enqueue required script for block editor.
- */
-function rtgodam_transcoder_enqueue_block_editor_assets() {
-	// Enqueue our script.
-	wp_enqueue_script(
-		'rt-transcoder-block-editor-support',
-		esc_url( RTGODAM_URL . '/assets/build/js/rt-transcoder-block-editor-support.js' ),
-		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor' ),
-		RTGODAM_VERSION,
-		true
-	);
-
-	// Localize fallback poster image for use in our enqueued script.
-	wp_localize_script(
-		'rt-transcoder-block-editor-support',
-		'rtTranscoderBlockEditorSupport',
-		array(
-			'amp_story_fallback_poster' => plugins_url( '/images/amp-story-fallback-poster.png', __FILE__ ),
-			'amp_video_fallback_poster' => plugins_url( '/images/amp-story-video-fallback-poster.png', __FILE__ ),
-		)
-	);
-}
 
 /**
  * Method to handle AJAX request for checking status.
