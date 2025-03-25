@@ -1,3 +1,5 @@
+/* global jQuery */
+
 const { __ } = wp.i18n;
 
 jQuery( document ).ready( function( $ ) {

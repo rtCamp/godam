@@ -334,7 +334,7 @@ class RTGODAM_RetranscodeMedia {
 		}
 
 		wp_enqueue_script(
-			'godam-retranscode-media',
+			'rtgodam-retranscode-media',
 			RTGODAM_URL . '/admin/js/godam-retranscode-media.js',
 			array( 'jquery' ),
 			filemtime( RTGODAM_PATH . '/admin/js/godam-retranscode-media.js' ),
