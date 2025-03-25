@@ -57,10 +57,6 @@ class RTGODAM_Transcoder_Admin {
 		$this->api_key        = get_site_option( 'rtgodam-api-key' );
 		$this->stored_api_key = get_site_option( 'rtgodam-api-key-stored' );
 
-		if ( ! class_exists( 'RTGODAM_Progress' ) ) {
-			include_once RTGODAM_PATH . 'admin/godam-transcoder-progressbar.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-		}
-
 		include_once RTGODAM_PATH . 'admin/godam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 		include_once RTGODAM_PATH . 'admin/godam-transcoder-actions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 

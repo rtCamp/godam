@@ -158,12 +158,6 @@ class RTGODAM_Transcoder_Handler {
 			return;
 		}
 
-		if ( is_admin() ) {
-			add_action( 'rtgodam_transcoder_before_widgets', array( $this, 'usage_widget' ) );
-		}
-
-		add_action( 'admin_init', array( $this, 'save_api_key' ), 10, 1 );
-
 		// phpcs:disable
 		if ( $this->api_key ) {
 			// Store api key as different db key if user disable transcoding service.
@@ -511,84 +505,6 @@ class RTGODAM_Transcoder_Handler {
 	}
 
 	/**
-	 * Check whether key is valid or not and save api key.
-	 *
-	 * @since   1.0.0
-	 */
-	public function save_api_key() {
-		$is_api_key_updated     = rtgodam_filter_input( INPUT_GET, 'api-key-updated', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$is_invalid_license_key = false;
-		$is_localhost           = rtgodam_filter_input( INPUT_GET, 'need-public-host', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-
-		if ( $is_api_key_updated ) {
-			if ( is_multisite() ) {
-				add_action( 'network_admin_notices', array( $this, 'successfully_subscribed_notice' ) );
-			}
-
-			add_action( 'admin_notices', array( $this, 'successfully_subscribed_notice' ) );
-		} elseif ( $is_invalid_license_key ) {
-			if ( is_multisite() ) {
-				add_action( 'network_admin_notices', array( $this, 'invalid_license_notice' ) );
-			}
-
-			add_action( 'admin_notices', array( $this, 'invalid_license_notice' ) );
-		} elseif ( $is_localhost ) {
-			if ( is_multisite() ) {
-				add_action( 'network_admin_notices', array( $this, 'public_host_needed_notice' ) );
-			}
-
-			add_action( 'admin_notices', array( $this, 'public_host_needed_notice' ) );
-		}
-
-		$filtered_apikey = rtgodam_filter_input( INPUT_GET, 'apikey', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$apikey          = ! empty( $filtered_apikey ) ? trim( $filtered_apikey ) : '';
-
-		$page = rtgodam_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-
-		if ( ! empty( $apikey ) && is_admin() && ! empty( $page ) && ( 'rt-transcoder' === $page ) ) {
-			/* Do not activate transcoding service on localhost */
-			$blacklist   = rtgodam_get_blacklist_ip_addresses();
-			$remote_addr = rtgodam_get_remote_ip_address();
-			if ( in_array( wp_unslash( $remote_addr ), $blacklist, true ) ) {
-				$return_page = add_query_arg(
-					array(
-						'page'             => 'rt-transcoder',
-						'need-public-host' => '1',
-					),
-					admin_url( 'admin.php' )
-				);
-				wp_safe_redirect( esc_url_raw( $return_page ) );
-				die();
-			}
-			if ( $this->is_valid_key( $apikey ) ) {
-				update_site_option( 'rtgodam-api-key', $apikey );
-				update_site_option( 'rtgodam-api-key-stored', $apikey );
-
-				$usage_info  = $this->update_usage( $apikey );
-				$return_page = add_query_arg(
-					array(
-						'page'            => 'rt-transcoder',
-						'api-key-updated' => $usage_info->plan ? ucfirst( strtolower( $usage_info->plan ) ) : 'Free',
-					),
-					admin_url( 'admin.php' )
-				);
-				wp_safe_redirect( esc_url_raw( $return_page ) );
-				die();
-			} else {
-				$return_page = add_query_arg(
-					array(
-						'page'                => 'rt-transcoder',
-						'invalid-license-key' => '1',
-					),
-					admin_url( 'admin.php' )
-				);
-				wp_safe_redirect( esc_url_raw( $return_page ) );
-				die();
-			}
-		}
-	}
-
-	/**
 	 * Allow user to upload other types media files.
 	 *
 	 * @since 1.0.0
@@ -682,108 +598,6 @@ class RTGODAM_Transcoder_Handler {
 			<p>
 				<?php esc_html_e( 'Transcoding service can not be activated on the localhost', 'godam' ); ?>
 			</p>
-		</div>
-		<?php
-	}
-
-	/**
-	 * Display usage widget in sidebar on rtmedia transcoder settings page.
-	 *
-	 * @since 1.0.0
-	 */
-	public function usage_widget() {
-		$usage_details = get_site_option( 'rtgodam-usage' );
-		$content       = '';
-		$api_key       = '';
-
-		if ( ! empty( $this->api_key ) ) {
-			$api_key = $this->api_key;
-		} elseif ( ! empty( $this->stored_api_key ) ) {
-			$api_key = $this->stored_api_key;
-		}
-
-		if ( ! empty( $api_key ) ) {
-			if ( $usage_details && isset( $usage_details[ $api_key ]->status ) && $usage_details[ $api_key ]->status && 'error' !== $usage_details[ $api_key ]->status ) {
-
-				if ( isset( $usage_details[ $api_key ]->plan->name ) ) {
-					$plan_name = strtolower( $usage_details[ $api_key ]->plan->name );
-					$content  .= '<p><strong>' . esc_html__( 'Current Plan', 'godam' ) . ':</strong> ' . esc_html( ucfirst( $plan_name ) ) . ( $usage_details[ $api_key ]->sub_status ? '' : ' (' . esc_html__( 'Unsubscribed', 'godam' ) . ')' ) . '</p>';
-				} else {
-					$plan_name = '';
-				}
-
-				if ( isset( $usage_details[ $api_key ]->plan->expires ) && 'free' !== $plan_name ) {
-					$content .= '<p><strong>' . esc_html__( 'Expires On', 'godam' ) . ':</strong> ' . date_i18n( 'F j, Y', strtotime( $usage_details[ $api_key ]->plan->expires ) ) . '</p>';
-				}
-				if ( isset( $usage_details[ $api_key ]->used ) ) {
-					$used_size = size_format( $usage_details[ $api_key ]->used, 2 );
-					$content  .= '<p><span class="transcoding-used"></span><strong>' . esc_html__( 'Used', 'godam' ) . ':</strong> ' . ( ( ! empty( $used_size ) ) ? esc_html( $used_size ) : '0MB' ) . '</p>';
-				}
-				if ( isset( $usage_details[ $api_key ]->remaining ) ) {
-					$content .= '<p><span class="transcoding-remaining"></span><strong>' . esc_html__( 'Remaining', 'godam' ) . ':</strong> ';
-					if ( $usage_details[ $api_key ]->remaining >= 0 ) {
-						$content .= size_format( $usage_details[ $api_key ]->remaining, 2 );
-					} else {
-						$content .= $usage_details[ $api_key ]->remaining . '0MB';
-					}
-				}
-				if ( isset( $usage_details[ $api_key ]->total ) ) {
-					$content .= '<p><strong>' . esc_html__( 'Total', 'godam' ) . ':</strong> ';
-					if ( $usage_details[ $api_key ]->total >= 0 ) {
-						$content .= size_format( $usage_details[ $api_key ]->total, 2 );
-					} elseif ( $usage_details[ $api_key ]->total <= -1 ) {
-						$content .= 'Unlimited';
-					} else {
-						$content .= '';
-					}
-				}
-				$usage = new RTGODAM_Progress();
-
-				if ( empty( $usage_details[ $api_key ]->used ) ) {
-					$usage_details[ $api_key ]->used = 0;
-				}
-
-				if ( empty( $usage_details[ $api_key ]->total ) ) {
-					$usage_details[ $api_key ]->total = 0;
-				}
-
-				if ( ! isset( $usage_details[ $api_key ]->remaining ) ) {
-					$usage_details[ $api_key ]->remaining = 0;
-				}
-
-				$content .= $usage->progress_ui( $usage->progress( $usage_details[ $api_key ]->used, $usage_details[ $api_key ]->total ), false );
-
-				$content .= '<p>' . esc_html__( 'Usage will automatically reset at the end of every month.', 'godam' ) . '</p>';
-
-				if ( 'free' === $plan_name ) {
-					$content .= '<p>' . esc_html__( 'Upgrade for more bandwidth.', 'godam' ) . '</p>';
-				}
-
-				if ( ( 0 >= $usage_details[ $api_key ]->remaining ) ) {
-					$content .= '<div class="error below-h2"><p>' . esc_html__( 'Your usage limit has been reached. Upgrade your plan.', 'godam' ) . '</p></div>';
-				}
-
-				if ( ( isset( $usage_details[ $api_key ]->plan->expires ) && strtotime( $usage_details[ $api_key ]->plan->expires ) < time() ) ) {
-					$content .= '<div class="error below-h2"><p>' . esc_html__( 'Your plan has expired. Please consider upgrading if you need more bandwidth.', 'godam' ) . '</p></div>';
-				}
-			} else {
-				$content .= '<div class="error below-h2"><p>' . esc_html__( 'Your API key is not valid or is expired.', 'godam' ) . '</p></div>';
-			}
-		} else {
-			$content .= '<p>' . esc_html__( 'Currently, You are not subscribed to transcoding service. Please subscribe.', 'godam' ) . '</p>';
-		}
-		?>
-		<div class="postbox" id="transcoder-usage">
-			<h3 class="hndle">
-				<span>
-					<?php esc_html_e( 'Transcoding usage this month', 'godam' ); ?>
-				</span>
-			</h3>
-			<div class="inside">
-				<?php
-				echo wp_kses_post( $content );
-				?>
-			</div>
 		</div>
 		<?php
 	}
