@@ -58,25 +58,6 @@ class Media_Library extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/upload-to-s3',
-				'args'      => array(
-					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'upload_to_s3' ),
-					'permission_callback' => function () {
-						return false; // disable REST API for now.
-					},
-					'args'                => array(
-						'attachment_ids' => array(
-							'required'    => true,
-							'type'        => 'array',
-							'items'       => array( 'type' => 'integer' ),
-							'description' => 'Array of attachment IDs to upload to S3.',
-						),
-					),
-				),
-			),
-			array(
-				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/get-exif-data',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
@@ -213,39 +194,6 @@ class Media_Library extends Base {
 		}
 
 		return wp_remove_object_terms( $post_id, $terms, $taxonomy );
-	}
-
-	/**
-	 * Upload to S3.
-	 * 
-	 * Upload the list of attachment IDs to S3.
-	 *
-	 * @param \WP_REST_Request $request REST API request.
-	 * @return \WP_REST_Response
-	 */
-	public function upload_to_s3( $request ) {
-
-		$attachment_ids = $request->get_param( 'attachment_ids' );
-
-		$successful_uploads = array();
-
-		foreach ( $attachment_ids as $attachment_id ) {
-
-			try {
-				Item_Handler::upload_item( $attachment_id );
-				$successful_uploads[] = $attachment_id;
-			} catch ( EasyDamException $e ) {
-				Error_Handler::handle_exception( $e );
-			}
-		}
-
-		return rest_ensure_response(
-			array(
-				'success'  => true,
-				'message'  => 'Attachments successfully uploaded to S3.',
-				'uploaded' => $successful_uploads,
-			) 
-		);
 	}
 
 	/**
