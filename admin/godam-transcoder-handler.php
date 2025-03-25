@@ -327,7 +327,7 @@ class RTGODAM_Transcoder_Handler {
 						'force'           => 0,
 						'formats'         => ( true === $autoformat ) ? ( ( 'video' === $type_array[0] ) ? 'mp4' : 'mp3' ) : $autoformat,
 						'thumbnail_count' => $options_video_thumb,
-						'stream'          => boolval( $rtgodam_adaptive_bitrate_streaming ),
+						'stream'          => true,
 						'watermark'       => boolval( $rtgodam_watermark ),
 						'resolutions'     => $rtgodam_abs_resolutions,
 					),
@@ -781,8 +781,7 @@ class RTGODAM_Transcoder_Handler {
 			</h3>
 			<div class="inside">
 				<?php
-				// Already escaped variable.
-				echo $content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo wp_kses_post( $content );
 				?>
 			</div>
 		</div>
