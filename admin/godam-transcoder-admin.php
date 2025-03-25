@@ -222,13 +222,9 @@ class RTGODAM_Transcoder_Admin {
 			$media_type = explode( '/', $post->post_mime_type );
 			if ( is_array( $media_type ) && 'video' === $media_type[0] ) {
 				$media_id        = $post->ID;
-				$thumbnail_array = get_post_meta( $media_id, '_rt_media_thumbnails', true );
+				$thumbnail_array = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
 
-				if ( empty( $thumbnail_array ) ) {
-					$thumbnail_array = get_post_meta( $media_id, 'rtmedia_media_thumbnails', true );
-				}
-
-				$wp_video_thumbnail = get_post_meta( $media_id, '_rt_media_video_thumbnail', true );
+				$wp_video_thumbnail = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
 
 				$video_thumb_html = '';
 				if ( is_array( $thumbnail_array ) ) {
@@ -289,11 +285,7 @@ class RTGODAM_Transcoder_Admin {
 			$media_type = explode( '/', $post->post_mime_type );
 			if ( is_array( $media_type ) && 'video' === $media_type[0] ) {
 				$media_id        = $post->ID;
-				$thumbnail_array = get_post_meta( $media_id, '_rt_media_thumbnails', true );
-
-				if ( empty( $thumbnail_array ) ) {
-					$thumbnail_array = get_post_meta( $media_id, 'rtmedia_media_thumbnails', true );
-				}
+				$thumbnail_array = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
 
 				$rtmedia_model    = new RTMediaModel();
 				$rtmedia_media    = $rtmedia_model->get( array( 'media_id' => $media_id ) );
@@ -370,7 +362,7 @@ class RTGODAM_Transcoder_Admin {
 				$rtmedia_model->update( array( 'cover_art' => $final_file_url ), array( 'media_id' => $id ) );
 				rtgodam_update_activity_after_thumb_set( $media_id );
 			}
-			update_post_meta( $id, '_rt_media_video_thumbnail', $rtmedia_thumbnail );
+			update_post_meta( $id, 'rtgodam_media_video_thumbnail', $rtmedia_thumbnail );
 		}
 
 		return $post;

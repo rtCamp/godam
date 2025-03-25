@@ -117,8 +117,8 @@ const Analytics = ( { attachmentID } ) => {
 										>
 											<source src={ analyticsData.source_url || '' } type={ getMimiType( analyticsData.mime_type ) || 'video/mp4' } />
 											{
-												analyticsData?.meta?._rt_transcoded_url && (
-													<source src={ analyticsData?.meta?._rt_transcoded_url || '' } type={ analyticsData?.meta?._rt_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } />
+												analyticsData?.meta?.rtgodam_transcoded_url && (
+													<source src={ analyticsData?.meta?.rtgodam_transcoded_url || '' } type={ analyticsData?.meta?.rtgodam_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } />
 												)
 											}
 										</video>

@@ -237,7 +237,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			}
 
 			// Check if media is eligible to be transcoded.
-			$rtgodam_transcoding_job_id = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
+			$rtgodam_transcoding_job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 			if ( empty( $rtgodam_transcoding_job_id ) ) {
 				$response[ $media_id ] = 'invalid';
 				continue;
@@ -274,7 +274,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 		// Check if thumbnail and transcoded file exist for the passed attachment.
 		$thumbnail_id   = get_post_thumbnail_id( $media_id );
-		$transcoded_url = get_post_meta( $media_id, '_rt_media_transcoded_files', true );
+		$transcoded_url = get_post_meta( $media_id, 'rtgodam_media_transcoded_files', true );
 
 		if ( empty( $thumbnail_id ) || empty( $transcoded_url ) ) {
 			return false;
@@ -291,7 +291,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			$final_file_url = trailingslashit( $uploads['baseurl'] ) . $transcoded_url;
 		}
 
-		if ( true !== (bool) get_post_meta( $thumbnail_id, 'amp_is_poster', true ) || empty( $final_file_url ) ) {
+		if ( true !== (bool) get_post_meta( $thumbnail_id, 'rtgodam_amp_is_poster', true ) || empty( $final_file_url ) ) {
 			return false;
 		}
 
@@ -331,7 +331,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 				$has_thumbs = isset( $thumbnail ) ? true : false;
 				$flag       = false;
 
-				$id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( '_rt_transcoding_job_id', $job_id );
+				$id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
 
 				if ( ! empty( $id ) && is_numeric( $id ) ) {
 					$attachment_id         = $id;
@@ -348,7 +348,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 					if ( ! empty( $post_array['files'] ) ) {
 						if ( ! empty( $post_array['files']['mpd'] ) ) {
-							update_post_meta( $attachment_id, '_rt_transcoded_url', $post_array['download_url'] );
+							update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $post_array['download_url'] );
 						} else {
 							$this->rtgodam_transcoder_handler->add_transcoded_files( $post_array['files'], $attachment_id, $job_for );
 						}
@@ -396,7 +396,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 				);
 
 				if ( ! isset( $meta_details[0] ) ) {
-					$id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( '_rt_transcoding_job_id', $job_id );
+					$id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
 				} else {
 					$id = $meta_details[0]->media_id;
 				}

@@ -110,7 +110,7 @@ class Media_Library_Ajax {
 			return $response;
 		}
 
-		$transcoded_url = get_post_meta( $attachment->ID, '_rt_transcoded_url', true );
+		$transcoded_url = get_post_meta( $attachment->ID, 'rtgodam_transcoded_url', true );
 
 		if ( ! empty( $transcoded_url ) ) {
 			$response['transcoded_url'] = $transcoded_url;
@@ -347,7 +347,7 @@ class Media_Library_Ajax {
 	 * @return void
 	 */
 	public function handle_media_deletion( $attachment_id ) {
-		$job_id        = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
+		$job_id        = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 		$account_token = get_site_option( 'rtgodam-account-token', '' );
 		$license_key   = get_site_option( 'rtgodam-api-key', '' );
 

@@ -20,10 +20,8 @@ function rtgodam_video_editor_title() {
 	if ( isset( $rtmedia_query->media[0]->media_type ) && 'video' === $rtmedia_query->media[0]->media_type ) {
 		$flag            = false;
 		$media_id        = $rtmedia_query->media[0]->media_id;
-		$thumbnail_array = get_post_meta( $media_id, 'rtmedia_media_thumbnails', true );
-		if ( ! is_array( $thumbnail_array ) ) {
-			$thumbnail_array = get_post_meta( $media_id, '_rt_media_thumbnails', true );
-		}
+		$thumbnail_array = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
+
 		if ( is_array( $thumbnail_array ) ) {
 			$flag = true;
 		} else {
@@ -53,11 +51,8 @@ function rtgodam_rtmedia_vedio_editor_content() {
 	global $rtmedia_query;
 	if ( isset( $rtmedia_query->media ) && is_array( $rtmedia_query->media ) && isset( $rtmedia_query->media[0]->media_type ) && 'video' === $rtmedia_query->media[0]->media_type ) {
 		$media_id                        = $rtmedia_query->media[0]->media_id;
-		$rtmedia_transcoded_video_thumbs = get_post_meta( $rtmedia_query->media[0]->media_id, '_rt_media_thumbnails', true );
+		$rtmedia_transcoded_video_thumbs = get_post_meta( $rtmedia_query->media[0]->media_id, 'rtgodam_media_thumbnails', true );
 
-		if ( ! is_array( $rtmedia_transcoded_video_thumbs ) ) {
-			$rtmedia_transcoded_video_thumbs = get_post_meta( $media_id, 'rtmedia_media_thumbnails', true );
-		}
 		echo '<div class="content" id="panel2">';
 		if ( is_array( $rtmedia_transcoded_video_thumbs ) ) {
 			?>
@@ -73,7 +68,7 @@ function rtgodam_rtmedia_vedio_editor_content() {
 					}
 					$media_id = $rtmedia_query->media[0]->media_id;
 					foreach ( $rtmedia_transcoded_video_thumbs as $key => $thumbnail_src ) {
-						$wp_video_thumbnail = get_post_meta( $media_id, '_rt_media_video_thumbnail', true );
+						$wp_video_thumbnail = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
 
 						if ( 0 === strpos( $thumbnail_src, $uploads['baseurl'] ) ) {
 							$thumbnail_src = str_replace( $uploads['baseurl'], '', $thumbnail_src );
@@ -184,7 +179,7 @@ function rtgodam_set_video_thumbnail( $id ) {
 
 			$final_file_url = apply_filters( 'rtgodam_transcoded_file_url', $final_file_url, $attachment_id );
 
-			update_post_meta( $attachment_id, '_rt_media_video_thumbnail', $thumbnail );
+			update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $thumbnail );
 		}
 
 		$model = new RTMediaModel();
@@ -243,7 +238,7 @@ function rtgodam_add_transcoded_url_field( $form_fields, $post ) {
 		return $form_fields;
 	}
 
-	$transcoded_url = get_post_meta( $post->ID, '_rt_transcoded_url', true );
+	$transcoded_url = get_post_meta( $post->ID, 'rtgodam_transcoded_url', true );
 
 	$easydam_settings = get_option( 'rtgodam-settings', array() );
 
@@ -286,7 +281,7 @@ function rtgodam_save_transcoded_url_field( $post, $attachment ) {
 			return $post;
 		}
 		// Update the post meta with the new value.
-		update_post_meta( $post['ID'], '_rt_transcoded_url', esc_url_raw( $attachment['transcoded_url'] ) );
+		update_post_meta( $post['ID'], 'rtgodam_transcoded_url', esc_url_raw( $attachment['transcoded_url'] ) );
 	}
 
 	return $post;
@@ -297,10 +292,10 @@ add_filter( 'attachment_fields_to_save', 'rtgodam_save_transcoded_url_field', 10
 /**
  * Register the transcoded URL meta field.
  */
-function rtgodam_register_rt_transcoded_url_meta() {
+function rtgodam_register_transcoded_url_meta() {
 	register_post_meta(
 		'attachment',
-		'_rt_transcoded_url',
+		'rtgodam_transcoded_url',
 		array(
 			'type'          => 'string',
 			'single'        => true,
@@ -312,4 +307,4 @@ function rtgodam_register_rt_transcoded_url_meta() {
 	);
 }
 
-add_action( 'init', 'rtgodam_register_rt_transcoded_url_meta' );
+add_action( 'init', 'rtgodam_register_transcoded_url_meta' );

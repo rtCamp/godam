@@ -286,13 +286,9 @@ class Media_Library extends Base {
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
 			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 400 ) );
 		}
-
-		$thumbnail_array = get_post_meta( $attachment_id, 'rtmedia_media_thumbnails', true );
-
-		if ( ! is_array( $thumbnail_array ) ) {
-			$thumbnail_array = get_post_meta( $attachment_id, '_rt_media_thumbnails', true );
-		}
-
+		
+		$thumbnail_array = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
+		
 		if ( ! is_array( $thumbnail_array ) ) {
 			return new \WP_Error( 'thumbnails_not_found', 'No thumbnails found.', array( 'status' => 404 ) );
 		}
@@ -315,7 +311,7 @@ class Media_Library extends Base {
 			$thumbnail_array[ $key ] = $thumbnail_src;
 		}
 
-		$selected_thumbnail = get_post_meta( $attachment_id, '_rt_media_video_thumbnail', true );
+		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 		if ( ! empty( $selected_thumbnail ) ) {
 			$file_url = $selected_thumbnail;
@@ -355,20 +351,20 @@ class Media_Library extends Base {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
 
-		// Check if attachment is of type video
+		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
 			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 400 ) );
 		}
 
-		// Check if the thumbnail URL is valid
+		// Check if the thumbnail URL is valid.
 		if ( ! filter_var( $thumbnail_url, FILTER_VALIDATE_URL ) ) {
 			return new \WP_Error( 'invalid_thumbnail_url', 'Invalid thumbnail URL.', array( 'status' => 400 ) );
 		}
 
-		// Update the video thumbnail
-		update_post_meta( $attachment_id, '_rt_media_video_thumbnail', $thumbnail_url );
+		// Update the video thumbnail.
+		update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $thumbnail_url );
 
 		return rest_ensure_response(
 			array(

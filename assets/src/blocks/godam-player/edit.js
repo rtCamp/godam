@@ -67,12 +67,12 @@ function VideoEdit( {
 				try {
 					const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
 
-					if ( response.meta._rt_media_video_thumbnail !== '' ) {
-						setDefaultPoster( response.meta._rt_media_video_thumbnail );
+					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
+						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
 					}
 
-					if ( response && response.meta && response.meta._rt_transcoded_url ) {
-						const transcodedUrl = response.meta._rt_transcoded_url;
+					if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
+						const transcodedUrl = response.meta.rtgodam_transcoded_url;
 
 						setAttributes( {
 							sources: [
@@ -144,11 +144,11 @@ function VideoEdit( {
 			try {
 				const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
 
-				if ( response && response.meta && response.meta._rt_transcoded_url ) {
-					const transcodedUrl = response.meta._rt_transcoded_url;
+				if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
+					const transcodedUrl = response.meta.rtgodam_transcoded_url;
 
-					if ( response.meta._rt_media_video_thumbnail !== '' ) {
-						setDefaultPoster( response.meta._rt_media_video_thumbnail );
+					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
+						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
 					}
 
 					setAttributes( {

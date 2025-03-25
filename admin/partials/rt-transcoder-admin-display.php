@@ -217,7 +217,7 @@ $current_page = rtgodam_filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SP
 							<td>
 								<?php
 
-								$number_of_thumbnails = get_option( 'number_of_thumbs', 5 );
+								$number_of_thumbnails = get_option( 'rtgodam_number_of_thumbs', 5 );
 								if ( empty( $number_of_thumbnails ) ) {
 									$number_of_thumbnails = 5;
 								}

@@ -19,5 +19,5 @@ class EasyDAM_Constants {
 	 *
 	 * @var string
 	 */
-	const S3_STORAGE_OPTIONS = 'easydam_storage_aws';
+	const S3_STORAGE_OPTIONS = 'rtgodam_storage_aws';
 }

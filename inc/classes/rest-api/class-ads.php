@@ -202,7 +202,7 @@ class Ads extends Base {
 		}
 
 		// Get easydam_meta data.
-		$easydam_meta = get_post_meta( $video_id, 'easydam_meta', true );
+		$easydam_meta = get_post_meta( $video_id, 'rtgodam_meta', true );
 
 		if ( empty( $easydam_meta ) ) {
 			return '';
