@@ -412,25 +412,6 @@ function rtgodam_status_column_register_sortable( $columns ) {
 add_filter( 'manage_upload_sortable_columns', 'rtgodam_status_column_register_sortable' );
 
 /**
- * Enqueues script on frontend.
- *
- * @return void
- */
-function rtgodam_enqueue_frontend_scripts() {
-	$file_to_use = 'public-assets/js/build/transcoder.min.js';
-
-	$file = path_join( RTGODAM_PATH, $file_to_use );
-	if ( file_exists( $file ) && class_exists( 'RTMedia' ) ) {
-		wp_enqueue_script( 'rt-transcoder-front-js', RTGODAM_URL . $file_to_use, array( 'jquery', 'rtmedia-backbone' ), filemtime( $file ), true );
-
-		$rest_url_prefix = get_site_url() . '/' . rest_get_url_prefix();
-		wp_localize_script( 'rt-transcoder-front-js', 'rtTranscoder', array( 'restURLPrefix' => $rest_url_prefix ) );
-	}
-}
-
-add_action( 'wp_enqueue_scripts', 'rtgodam_enqueue_frontend_scripts' );
-
-/**
  * To get sanitized server variables.
  *
  * @param string $server_key Key of the $_SERVER superglobal variable.
