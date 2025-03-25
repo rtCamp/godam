@@ -133,7 +133,7 @@ const Analytics = ( { attachmentID } ) => {
 												<p>{ __( '+0.91% this week', 'godam' ) }</p>
 											</div>
 										</div>
-										<div className="analytics-info flex justify-between  max-lg:flex-col">
+										{/* <div className="analytics-info flex justify-between  max-lg:flex-col">
 											<div className="analytics-single-info">
 												<div className="analytics-info-heading">
 													<p>
@@ -147,7 +147,7 @@ const Analytics = ( { attachmentID } ) => {
 												<img src={ TopArrow } height={ 20 } width={ 20 } alt="Stats dropped indicating icon" />
 												<p>{ __( '+0.91% this week', 'godam' ) }</p>
 											</div>
-										</div>
+										</div> */}
 									</div>
 								</div>
 								<div className="min-w-[750px]">
