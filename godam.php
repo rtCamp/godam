@@ -58,8 +58,6 @@ if ( ! defined( 'GODAMIO_API_BASE' ) ) {
 	define( 'GODAMIO_API_BASE', 'https://godam.io' );
 }
 
-rtgodam_pre_init();
-
 require_once GODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once GODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once GODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
@@ -118,10 +116,42 @@ add_filter( 'network_admin_plugin_action_links', 'rtt_action_links', 11, 2 );
  */
 require GODAM_PATH . 'vendor/autoload.php';
 
+// Function to check if required build folders exist
+function rtgodam_check_build_folders() {
+	$plugin_dir    = plugin_dir_path( __FILE__ );
+	$assets_folder = $plugin_dir . 'assets/build';
+	$pages_folder  = $plugin_dir . 'pages/build';
+
+	if ( ! is_dir( $assets_folder ) || ! is_dir( $pages_folder ) ) {
+		return false;
+	}
+	return true;
+}
+
+function rtgodam_pre_activate() {
+
+	if ( ! rtgodam_check_build_folders() ) {
+
+		deactivate_plugins( plugin_basename( __FILE__ ) );
+		wp_die(
+			'<h2>GoDAM Plugin Activation Failed</h2>
+            <p>Required build folders are missing.</p>
+            <p>Please run <code>npm install && npm run build:dev</code> before activating the plugin.</p>
+			<p>For more details, check out <a href="https://github.com/rtCamp/godam/blob/master/README.md">README.md</a></p>
+            <p><a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">Go back to Plugins</a></p>',
+			'Plugin Activation Error',
+			array( 'back_link' => true )
+		);
+	}
+}
+
 /**
  * Runs when the plugin is activated.
  */
 function godam_plugin_activate() {
+
+	rtgodam_pre_activate();
+
 	update_site_option( 'godam_plugin_activation_time', time() );
 }
 
@@ -137,32 +167,3 @@ function godam_plugin_deactivate() {
 
 register_deactivation_hook( __FILE__, 'godam_plugin_deactivate' );
 
-
-// Function to check if required build folders exist
-function rtgodam_check_build_folders() {
-	$plugin_dir    = plugin_dir_path( __FILE__ );
-	$assets_folder = $plugin_dir . 'assets/build';
-	$pages_folder  = $plugin_dir . 'pages/build';
-
-	if ( ! is_dir( $assets_folder ) || ! is_dir( $pages_folder ) ) {
-		return false;
-	}
-	return true;
-}
-
-function rtgodam_pre_init() {
-
-	if ( ! rtgodam_check_build_folders() ) {
-
-		wp_die(
-			'<h2>GoDAM Plugin Activation Failed</h2>
-            <p>Required build folders are missing.</p>
-            <p>Please run <code>npm install && npm run build:dev</code> before activating the plugin.</p>
-			<p>For more details, check out <a href="https://github.com/rtCamp/godam/blob/master/README.md">README.md</a></p>
-            <p><a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">Go back to Plugins</a></p>',
-			'Plugin Activation Error',
-			array( 'back_link' => true )
-		);
-		return;
-	}
-}
