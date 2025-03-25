@@ -288,7 +288,7 @@ class RTGODAM_Transcoder_Handler {
 			$rtgodam_watermark_text             = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
 			$rtgodam_watermark_url              = esc_url( $this->easydam_settings['video']['watermark_url'] );
 			$rtgodam_abs_resolutions            = $this->easydam_settings['video']['video_quality'] ?? array();
-			$rtgodam_abs_resolutions            = json_encode( $rtgodam_abs_resolutions );
+			$rtgodam_abs_resolutions            = wp_json_encode( $rtgodam_abs_resolutions );
 
 			$watermark_to_use = array();
 
