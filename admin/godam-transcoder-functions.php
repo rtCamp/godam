@@ -198,7 +198,6 @@ function rtgodam_is_track_status_enabled() {
 	return ! empty( $easydam_settings['general']['track_status'] ) && $easydam_settings['general']['track_status'];
 }
 
-
 /**
  * Deletes the transcoded files related to the attachment
  *
@@ -387,7 +386,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 	}
 }
 
-$user_data = rtgodam_get_user_data();
+$user_data           = rtgodam_get_user_data();
 $is_license_verified = isset( $user_data['valid_license'] ) ? $user_data['valid_license'] : false;
 
 if ( $is_license_verified ) {
@@ -678,7 +677,7 @@ function rtgodam_get_user_ip() {
 
 	if ( empty( $ip_address ) ) {
 		$forwarded_for = rtgodam_get_server_var( 'HTTP_X_FORWARDED_FOR' );
-		$ip_address = ! empty( $forwarded_for ) ? filter_var( explode( ',', $forwarded_for )[0], FILTER_VALIDATE_IP ) : false;
+		$ip_address    = ! empty( $forwarded_for ) ? filter_var( explode( ',', $forwarded_for )[0], FILTER_VALIDATE_IP ) : false;
 	}
 
 	if ( empty( $ip_address ) ) {

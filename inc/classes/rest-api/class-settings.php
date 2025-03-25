@@ -220,7 +220,7 @@ class Settings extends Base {
 				'adaptive_bitrate'     => false,
 				'optimize_videos'      => false,
 				'video_format'         => 'auto',
-				'video_quality'        => array( 'auto', '240','360','480','720','1080','1440','2160' ),
+				'video_quality'        => array( 'auto', '240', '360', '480', '720', '1080', '1440', '2160' ),
 				'video_thumbnails'     => 5,
 				'overwrite_thumbnails' => false,
 				'watermark'            => false,
