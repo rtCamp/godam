@@ -241,7 +241,7 @@ class RTGODAM_RetranscodeMedia {
 
 			$stopping_text = esc_html__( 'Stopping...', 'godam' );
 			$text_goback   = ( ! empty( $_GET['goback'] ) ) ? __( 'To go back to the previous page, <a id="retranscode-goback" href="#">click here</a>.', 'godam' ) : '';
-			$adminUrl      = esc_url( wp_nonce_url( admin_url( 'admin.php?page=rtgodam_tools&goback=1' ), 'rtgodam_tools' ) . '&ids=' );
+			$admin_url      = esc_url( wp_nonce_url( admin_url( 'admin.php?page=rtgodam_tools&goback=1' ), 'rtgodam_tools' ) . '&ids=' );
 	
 			wp_register_script( 
 				'rtgodam-retranscode-admin',
@@ -257,7 +257,7 @@ class RTGODAM_RetranscodeMedia {
 					'ids'           => $ids,
 					'stopping_text' => $stopping_text,
 					'text_goback'   => $text_goback,
-					'admin_url'     => $adminUrl,
+					'admin_url'     => $admin_url,
 				)
 			);
 	
