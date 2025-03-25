@@ -30,6 +30,8 @@ class RTGODAM_Transcoder_Admin {
 		include_once RTGODAM_PATH . 'admin/godam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 		include_once RTGODAM_PATH . 'admin/godam-transcoder-actions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
+		new RTGODAM_Transcoder_Handler();
+
 		if ( is_admin() ) {
 			if ( is_multisite() ) {
 				add_action( 'network_admin_notices', array( $this, 'license_activation_admin_notice' ) );
