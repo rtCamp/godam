@@ -225,18 +225,8 @@ class RTGODAM_Transcoder_Handler {
 
 			/** Figure out who is requesting this job */
 			$job_for     = 'wp-media';
-			$post_parent = wp_get_post_parent_id( $attachment_id );
-			if ( 0 !== $post_parent ) {
-				$post_type = get_post_type( $post_parent );
-				if ( class_exists( 'RTMediaModel' ) && function_exists( 'rtmedia_id' ) ) {
-					if ( 'rtmedia_album' === $post_type ) {
-						$job_for = 'rtmedia';
-					}
-				}
-			}
 
 			// Media settings.
-			$rtgodam_adaptive_bitrate_streaming = $this->easydam_settings['video']['adaptive_bitrate'];
 			$rtgodam_watermark                  = $this->easydam_settings['video']['watermark'];
 			$rtgodam_use_watermark_image        = $this->easydam_settings['video']['use_watermark_image'];
 			$rtgodam_watermark_text             = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
@@ -463,17 +453,6 @@ class RTGODAM_Transcoder_Handler {
 		$post_thumbs_array  = maybe_unserialize( $post_thumbs );
 		$largest_thumb_size = 0;
 
-		if ( 'rtmedia' === $post_thumbs_array['job_for'] && class_exists( 'RTMediaModel' ) ) {
-			$model    = new RTMediaModel();
-			$media    = $model->get( array( 'media_id' => $post_id ) );
-			$media_id = $media[0]->id;
-
-			$this->media_author             = $media[0]->media_author;
-			$this->uploaded['context']      = $media[0]->context;
-			$this->uploaded['context_id']   = $media[0]->context_id;
-			$this->uploaded['media_author'] = $media[0]->media_author;
-		}
-
 		$largest_thumb          = false;
 		$largest_thumb_url      = false;
 		$upload_thumbnail_array = array();
@@ -577,12 +556,6 @@ class RTGODAM_Transcoder_Handler {
 			if ( ! $is_retranscoding_job || rtgodam_is_override_thumbnail() ) {
 
 				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $largest_thumb );
-
-				if ( 'rtmedia' === $post_thumbs_array['job_for'] && class_exists( 'RTMediaModel' ) ) {
-
-						$model->update( array( 'cover_art' => $largest_thumb ), array( 'media_id' => $post_id ) );
-						update_activity_after_thumb_set( $media_id );
-				}
 			}
 
 			/**
@@ -625,14 +598,6 @@ class RTGODAM_Transcoder_Handler {
 						$flag = false;
 						if ( isset( $file ) ) {
 
-							if ( 'rtmedia' === $job_for ) {
-								$model                          = new RTMediaModel();
-								$media                          = $model->get_media( array( 'media_id' => $attachment_id ), 0, 1 );
-								$this->media_author             = $media[0]->media_author;
-								$this->uploaded['context']      = $media[0]->context;
-								$this->uploaded['context_id']   = $media[0]->context_id;
-								$this->uploaded['media_author'] = $media[0]->media_author;
-							}
 							$download_url                  = urldecode( urldecode( $file ) );
 							$new_wp_attached_file_pathinfo = pathinfo( $download_url );
 							$post_mime_type                = 'mp4' === $new_wp_attached_file_pathinfo['extension'] ? 'video/mp4' : 'audio/mp3';
@@ -735,47 +700,6 @@ class RTGODAM_Transcoder_Handler {
 									esc_html_e( 'Done', 'godam' );
 								}
 							}
-						}
-					}
-					if ( 'rtmedia' === $job_for ) {
-						$activity_id = $media[0]->activity_id;
-						if ( $activity_id ) {
-							$content = wp_cache_get( 'activity_' . $activity_id, 'godam' );
-							if ( empty( $content ) ) {
-								$content = $wpdb->get_var( $wpdb->prepare( "SELECT content FROM {$wpdb->base_prefix}bp_activity WHERE id = %d", $activity_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-								wp_cache_set( 'activity_' . $activity_id, $content, 'godam', 3600 );
-							}
-
-							/* for WordPress backward compatibility */
-							if ( function_exists( 'wp_get_upload_dir' ) ) {
-								$uploads = wp_get_upload_dir();
-							} else {
-								$uploads = wp_upload_dir();
-							}
-
-							if ( 'video/mp4' === $post_mime_type ) {
-								$media_type = 'mp4';
-							} elseif ( 'audio/mp3' === $post_mime_type ) {
-								$media_type = 'mp3';
-							}
-
-							$transcoded_file_url = $uploads['baseurl'] . '/' . $transcoded_files[ $media_type ][0];
-							/**
-							 * Allows users/plugins to filter the file URL
-							 *
-							 * @since 1.0.5
-							 *
-							 * @param string $transcoded_file_url   Contains the file public URL
-							 * @param int $attachment_id            Contains the attachment ID for which transcoded file has been uploaded
-							 */
-							$transcoded_file_url = apply_filters( 'rtgodam_transcoded_file_url', $transcoded_file_url, $attachment_id );
-
-							$activity_content = str_replace( $attachemnt_url, $transcoded_file_url, $content );
-							$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-								$wpdb->base_prefix . 'bp_activity',
-								array( 'content' => $activity_content ),
-								array( 'id' => $activity_id )
-							);
 						}
 					}
 				}
