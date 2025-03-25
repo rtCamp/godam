@@ -292,7 +292,7 @@ add_filter( 'attachment_fields_to_save', 'rtgodam_save_transcoded_url_field', 10
 /**
  * Register the transcoded URL meta field.
  */
-function rtgodam_registerrtgodam_transcoded_url_meta() {
+function rtgodam_register_transcoded_url_meta() {
 	register_post_meta(
 		'attachment',
 		'rtgodam_transcoded_url',
@@ -307,4 +307,4 @@ function rtgodam_registerrtgodam_transcoded_url_meta() {
 	);
 }
 
-add_action( 'init', 'rtgodam_registerrtgodam_transcoded_url_meta' );
+add_action( 'init', 'rtgodam_register_transcoded_url_meta' );
