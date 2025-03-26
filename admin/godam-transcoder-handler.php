@@ -487,10 +487,6 @@ class RTGODAM_Transcoder_Handler {
 				$thumbinfo['basename'] .= '.' . $thumbinfo['extension'];
 			}
 
-			if ( 'wp-media' !== $post_thumbs_array['job_for'] ) {
-				add_filter( 'upload_dir', array( $this, 'upload_dir' ) );
-			}
-
 			// Create a file in the upload folder with given content.
 			$thumb_upload_info = wp_upload_bits( $thumbinfo['basename'], null, $thumbresource['body'] );
 
@@ -510,10 +506,6 @@ class RTGODAM_Transcoder_Handler {
 			 * @param int  $post_id             Contains the attachment ID for which transcoded file is uploaded
 			 */
 			$thumb_upload_info = apply_filters( 'rtgodam_transcoded_file_stored', $thumb_upload_info, $post_id );
-
-			if ( 'wp-media' !== $post_thumbs_array['job_for'] ) {
-				remove_filter( 'upload_dir', array( $this, 'upload_dir' ) );
-			}
 
 			$file = _wp_relative_upload_path( $thumb_upload_info['file'] );
 
@@ -619,10 +611,6 @@ class RTGODAM_Transcoder_Handler {
 
 							if ( ! empty( $file_content ) ) {
 
-								if ( 'wp-media' !== $job_for ) {
-									add_filter( 'upload_dir', array( $this, 'upload_dir' ) );
-								}
-
 								/**
 								 * Allows users/plugins to filter the transcoded file Name
 								 *
@@ -650,10 +638,6 @@ class RTGODAM_Transcoder_Handler {
 								 * @param int  $attachment_id   Contains the attachment ID for which transcoded file is uploaded
 								 */
 								$upload_info = apply_filters( 'rtgodam_transcoded_file_stored', $upload_info, $attachment_id );
-
-								if ( 'wp-media' !== $job_for ) {
-									remove_filter( 'upload_dir', array( $this, 'upload_dir' ) );
-								}
 
 								$uploaded_file = _wp_relative_upload_path( $upload_info['file'] );
 								if ( ! empty( $uploaded_file ) ) {
@@ -739,49 +723,6 @@ class RTGODAM_Transcoder_Handler {
 		} else {
 			return false;
 		}
-	}
-
-	/**
-	 * Return upload path of media uploaded through rtMedia plugin.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @global mixed $rtmedia_interaction
-	 *
-	 * @param array $upload_dir  Upload directory information.
-	 *
-	 * @return array $upload_dir
-	 */
-	public function upload_dir( $upload_dir ) {
-		global $rtmedia_interaction;
-		if ( isset( $this->uploaded['context'] ) && isset( $this->uploaded['context_id'] ) ) {
-			if ( 'group' !== $this->uploaded['context'] ) {
-				$rtmedia_upload_prefix = 'users/';
-				$id                    = $this->uploaded['media_author'];
-			} else {
-				$rtmedia_upload_prefix = 'groups/';
-				$id                    = $this->uploaded['context_id'];
-			}
-		} elseif ( 'group' !== $rtmedia_interaction->context->type ) {
-				$rtmedia_upload_prefix = 'users/';
-				$id                    = $this->uploaded['media_author'];
-		} else {
-			$rtmedia_upload_prefix = 'groups/';
-			$id                    = $rtmedia_interaction->context->id;
-		}
-
-		if ( ! $id ) {
-			$id = $this->media_author;
-		}
-
-		$rtmedia_folder_name = apply_filters( 'rtmedia_upload_folder_name', 'rtMedia' );
-
-		$upload_dir['path'] = trailingslashit( str_replace( $upload_dir['subdir'], '', $upload_dir['path'] ) ) . $rtmedia_folder_name . '/' . $rtmedia_upload_prefix . $id . $upload_dir['subdir'];
-		$upload_dir['url']  = trailingslashit( str_replace( $upload_dir['subdir'], '', $upload_dir['url'] ) ) . $rtmedia_folder_name . '/' . $rtmedia_upload_prefix . $id . $upload_dir['subdir'];
-
-		$upload_dir = apply_filters( 'rtmedia_filter_upload_dir', $upload_dir, $this->uploaded );
-
-		return $upload_dir;
 	}
 
 	/**
