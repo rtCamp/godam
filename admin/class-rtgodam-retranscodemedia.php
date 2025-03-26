@@ -98,7 +98,7 @@ class RTGODAM_RetranscodeMedia {
 	 * @return void
 	 */
 	public function load_rest_endpoints() {
-		include_once RTGODAM_PATH . 'admin/godam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 		// Create class object and register routes.
 		$transcoder_rest_routes = new RTGODAM_Transcoder_Rest_Routes();
@@ -146,12 +146,12 @@ class RTGODAM_RetranscodeMedia {
 	public function add_easydam_meta_boxes() {
 
 		add_meta_box(
-			'retranscode_media_widget',                 // ID of the meta box
-			__( 'Retranscode Media', 'godam' ),    // Title of the meta box
-			array( $this, 'retranscode_interface' ), // Callback to render the meta box
-			'rtgodam_tools',                            // Screen (matches submenu slug)
-			'normal',                                   // Context (main column)
-			'high'                                      // Priority
+			'retranscode_media_widget',
+			__( 'Retranscode Media', 'godam' ),
+			array( $this, 'retranscode_interface' ),
+			'rtgodam_tools',
+			'normal',
+			'high'
 		);
 	}
 

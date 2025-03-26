@@ -9,10 +9,6 @@ namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
-use RTGODAM\Inc\Providers\Handlers\Item_Handler;
-use RTGODAM\Inc\Providers\Exceptions\EasyDamException;
-use RTGODAM\Inc\Providers\Handlers\Error_Handler;
-
 /**
  * Class Media_Library
  */
@@ -207,15 +203,15 @@ class Media_Library extends Base {
 	public function get_exif_data( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 
-		// Get the file path of the image
+		// Get the file path of the image.
 		$file_path = get_attached_file( $attachment_id );
 
 		if ( ! file_exists( $file_path ) ) {
 			return new \WP_Error( 'image_not_found', 'Image file not found.', array( 'status' => 404 ) );
 		}
 
-		// Read EXIF data from the image
-		$exif_data = @exif_read_data( $file_path, 0, true );
+		// Read EXIF data from the image.
+		$exif_data = exif_read_data( $file_path, 0, true );
 
 		if ( false === $exif_data ) {
 			return new \WP_Error( 'exif_data_not_found', 'No EXIF data found.', array( 'status' => 404 ) );
@@ -261,7 +257,7 @@ class Media_Library extends Base {
 	private function format_fnumber( $fnumber ) {
 		if ( is_string( $fnumber ) && strpos( $fnumber, '/' ) !== false ) {
 			list( $numerator, $denominator ) = explode( '/', $fnumber );
-			if ( is_numeric( $numerator ) && is_numeric( $denominator ) && $denominator != 0 ) {
+			if ( is_numeric( $numerator ) && is_numeric( $denominator ) && 0 !== $denominator ) {
 				return 'f/' . round( $numerator / $denominator, 1 );
 			}
 		}
@@ -280,7 +276,7 @@ class Media_Library extends Base {
 	public function get_video_thumbnails( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 
-		// Check if attachment is of type video
+		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {

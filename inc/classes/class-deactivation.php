@@ -1,13 +1,19 @@
 <?php
 /**
  * Plguin Deactivation Survey Class.
+ * 
+ * @package godam
  */
+
 namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
 
+/**
+ * Deactivation Class.
+ */
 class Deactivation {
 
 	use Singleton;
@@ -65,21 +71,25 @@ class Deactivation {
 	/**
 	 * Ajax Function call.
 	 *
-	 * @return string.
+	 * @return void
 	 */
 	public function rtgodam_send_deactivation_feedback() {
 		// Checking ajax referer.
 		check_ajax_referer( 'GoDAMDeactivationFeedback', 'nonce' );
-
-		if ( ! $_POST['reason'] && empty( $_POST['user'] && ! $_POST['site_url'] ) ) {
-			return;
-		}
 
 		// Filter the inputs.
 		$site_url = filter_input( INPUT_POST, 'site_url', FILTER_SANITIZE_URL );
 		$reason   = filter_input( INPUT_POST, 'reason', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$user     = filter_input( INPUT_POST, 'user', FILTER_SANITIZE_FULL_SPECIAL_CHARS, FILTER_REQUIRE_ARRAY );
 		$feedback = filter_input( INPUT_POST, 'additional_feedback', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+		if ( ! $reason || ! $site_url || ! $user ) {
+			wp_send_json_error(
+				array(
+					'message' => esc_html__( 'Invalid data.', 'godam' ),
+				)
+			);
+		}
 
 		$data = array(
 			'site_url'            => $site_url,
@@ -97,10 +107,8 @@ class Deactivation {
 			'body' => $data,
 		);
 
-
 		$api_response = wp_remote_post( $this->api_url, $options );
 		$response     = json_decode( wp_remote_retrieve_body( $api_response ) );
-
 
 		if ( is_int( $response ) ) {
 			wp_send_json_success();

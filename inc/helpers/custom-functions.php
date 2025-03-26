@@ -210,20 +210,20 @@ function rtgodam_image_cta_html( $layer ) {
  */
 function rtgodam_get_user_data( $timeout = 300 ) {
 	$rtgodam_user_data = get_site_option( 'rtgodam_user_data', false );
-	$license_key = get_site_option( 'rtgodam-api-key', '' );
+	$license_key       = get_site_option( 'rtgodam-api-key', '' );
 
 	if (
 		( empty( $rtgodam_user_data ) && ! empty( $license_key ) ) ||
 		( isset( $rtgodam_user_data['timestamp'] ) && ( time() - $rtgodam_user_data['timestamp'] ) > $timeout )
 	) {
 		// Verify the user's license.
-		$result      = rtgodam_verify_license( $license_key );
+		$result = rtgodam_verify_license( $license_key );
 
 		$valid_license = false;
 		$user_data     = array();
 
 		if ( is_wp_error( $result ) ) {
-			$valid_license = false;
+			$valid_license            = false;
 			$user_data['license_key'] = rtgodam_mask_string( $license_key );
 		} else {
 			$valid_license            = true;
@@ -286,7 +286,7 @@ function rtgodam_get_usage_data() {
 
 	$data = json_decode( $body, true );
 
-	// Validate response structure
+	// Validate response structure.
 	if ( ! isset( $data['message'] ) || ! isset( $data['message']['storage_used'] ) || ! isset( $data['message']['bandwidth_used'] ) ) {
 		return new \WP_Error( 'rtgodam_api_error', 'Error fetching data for storage and bandwidth ( remove and add again the license key to get usage analytics )' );
 	}
@@ -307,5 +307,5 @@ function rtgodam_get_usage_data() {
 function rtgodam_is_license_valid() {
 	$user_data = rtgodam_get_user_data();
 
-	return !empty ( $user_data['valid_license'] ) ? true : false;
+	return ! empty( $user_data['valid_license'] ) ? true : false;
 }

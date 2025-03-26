@@ -97,7 +97,7 @@ class Assets {
 			'rtgodam-script',
 			'godamRestRoute',
 			array(
-				'url' => get_rest_url( get_current_blog_id() )
+				'url' => get_rest_url( get_current_blog_id() ),
 			)
 		);
 
@@ -110,6 +110,7 @@ class Assets {
 		wp_enqueue_script(
 			'ima-sdk',
 			RTGODAM_URL . '/assets/src/libs/ima3.js',
+			array(),
 			RTGODAM_VERSION,
 			true
 		);
@@ -144,9 +145,9 @@ class Assets {
 			'rtgodam-script',
 			'godamRestRoute',
 			array(
-				'url' => get_rest_url( get_current_blog_id() ),
+				'url'      => get_rest_url( get_current_blog_id() ),
 				'home_url' => get_home_url( get_current_blog_id() ),
-				'nonce' => wp_create_nonce( 'wp_rest' ),
+				'nonce'    => wp_create_nonce( 'wp_rest' ),
 			)
 		);
 

@@ -63,7 +63,7 @@ if ( ! defined( 'RTGODAM_IO_API_BASE' ) ) {
 require_once RTGODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RTGODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RTGODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-require_once RTGODAM_PATH . 'admin/godam-transcoder-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+require_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 global $rtgodam_transcoder_admin;
 
@@ -119,6 +119,7 @@ add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 )
 function rtgodam_plugin_activate() {
 	update_site_option( 'rtgodam_plugin_activation_time', time() );
 }
+
 register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
 
 /**
@@ -128,4 +129,5 @@ function rtgodam_plugin_deactivate() {
 	\RTGODAM\Inc\Cron::get_instance()->unschedule_video_cleanup();
 	delete_site_option( 'rtgodam_plugin_activation_time' );
 }
+
 register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );

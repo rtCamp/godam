@@ -14,7 +14,6 @@ use RTGODAM\Inc\Pages;
 use RTGODAM\Inc\Blocks;
 use RTGODAM\Inc\Assets;
 use RTGODAM\Inc\Deactivation;
-use RTGODAM\Inc\Cron;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
@@ -43,7 +42,6 @@ class Plugin {
 		Blocks::get_instance();
 		Pages::get_instance();
 		Media_Library_Ajax::get_instance();
-		Cron::get_instance();
 
 		$this->load_post_types();
 		$this->load_taxonomies();

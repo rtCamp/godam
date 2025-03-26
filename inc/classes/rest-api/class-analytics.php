@@ -12,7 +12,6 @@ defined( 'ABSPATH' ) || exit;
 use WP_REST_Server;
 use WP_REST_Request;
 use WP_REST_Response;
-use RTGODAM\Inc\EasyDAM_Constants;
 
 /**
  * Class Analytics.
@@ -98,7 +97,7 @@ class Analytics extends Base {
 		$analytics_url = add_query_arg( $query_params, $analytics_endpoint );
 
 		// Send request to analytics microservice.
-		$response = wp_remote_get( $analytics_url, array( 'timeout' => 10 ) );
+		$response = wp_remote_get( $analytics_url );
 
 		// Handle response errors.
 		if ( is_wp_error( $response ) ) {

@@ -133,7 +133,7 @@ class RTGODAM_Transcoder_Handler {
 		);
 
 		// Temporarily inclduing godam-retranscode-admin.php file here.
-		include_once RTGODAM_PATH . 'admin/godam-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		include_once RTGODAM_PATH . 'admin/class-rtgodam-retranscodemedia.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 		/**
 		 * Allow other plugin and wp-config to overwrite API URL.
@@ -155,7 +155,7 @@ class RTGODAM_Transcoder_Handler {
 				if ( is_object( $usage_info[ $this->api_key ] ) && isset( $usage_info[ $this->api_key ]->status ) && 'Active' === $usage_info[ $this->api_key ]->status ) {
 
 					// Enable re-transcoding.
-					include_once RTGODAM_PATH . 'admin/godam-retranscode-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+					include_once RTGODAM_PATH . 'admin/class-rtgodam-retranscodemedia.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 					add_filter( 'wp_generate_attachment_metadata', array( $this, 'wp_media_transcoding' ), 21, 2 );
 				}
@@ -290,7 +290,7 @@ class RTGODAM_Transcoder_Handler {
 				)
 			) {
 				$upload_info = json_decode( $upload_page['body'] );
-				error_log( json_encode( $upload_info ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log, WordPress.WP.AlternativeFunctions.json_encode_json_encode
+
 				if ( isset( $upload_info->data ) && isset( $upload_info->data->name ) ) {
 					$job_id = $upload_info->data->name;
 					update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );

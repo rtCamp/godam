@@ -167,7 +167,7 @@ class Transcoding extends Base {
 
 		if ( empty( $job_id ) ) {
 			return array(
-				'status' => 'not_transcoding',
+				'status'  => 'not_transcoding',
 				'message' => __( 'Video has not been transcoded.', 'godam' ),
 			);
 		}
@@ -177,7 +177,7 @@ class Transcoding extends Base {
 
 		if ( empty( $status ) ) {
 			return array(
-				'status' => 'not_started',
+				'status'  => 'not_started',
 				'message' => __( 'Transcoding has not started.', 'godam' ),
 			);
 		}

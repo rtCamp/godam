@@ -27,7 +27,7 @@ class RTGODAM_Transcoder_Admin {
 	 */
 	public function __construct() {
 
-		include_once RTGODAM_PATH . 'admin/godam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 		include_once RTGODAM_PATH . 'admin/godam-transcoder-actions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 		new RTGODAM_Transcoder_Handler();
@@ -162,13 +162,14 @@ class RTGODAM_Transcoder_Admin {
 	 * @param string $notice_type Type of notice (warning, error, etc.).
 	 * @param bool   $include_buttons Whether to include action buttons (default: false).
 	 * @param bool   $show_godam_message Whether to show the GoDAM update message (default: false).
+	 * @param string $button_type The type of button to display (default: 'editor').
 	 */
 	private function render_admin_notice( $message, $notice_type = 'warning', $include_buttons = false, $show_godam_message = false, $button_type = 'editor' ) {
 		// Get the GoDAM logo URL.
 		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
 
-		$button_label = ( $button_type === 'activate' ) ? esc_html__( 'Activate License', 'godam' ) : esc_html__( 'Use Video Editor', 'godam' );
-		$button_link  = ( $button_type === 'activate' ) ? admin_url( 'admin.php?page=rtgodam' ) : admin_url( 'admin.php?rtgodam_video_editor' );
+		$button_label = ( 'activate' === $button_type ) ? esc_html__( 'Activate License', 'godam' ) : esc_html__( 'Use Video Editor', 'godam' );
+		$button_link  = ( 'activate' === $button_type ) ? admin_url( 'admin.php?page=rtgodam' ) : admin_url( 'admin.php?rtgodam_video_editor' );
 
 		?>
 		<div class="notice notice-<?php echo esc_attr( $notice_type ); ?> is-dismissible rt-transcoder-license-notice">
