@@ -11,32 +11,28 @@ import '../video-editor/style.scss';
 import axios from 'axios';
 import GodamHeader from '../godam/GodamHeader';
 import Tooltip from './Tooltip';
-import DownArrow from '../../assets/src/images/drop-arrow.png';
-import TopArrow from '../../assets/src/images/rise-arrow.png';
 
 /**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
 
+const adminUrl =
+  window.videoData?.adminUrl || '/wp-admin/admin.php?page=rtgodam';
+const restURL = window.godamRestRoute.url || '';
+
 const Analytics = ( { attachmentID } ) => {
 	const [ analyticsData, setAnalyticsData ] = useState( null );
 
-	const adminUrl = window.videoData?.adminUrl || '/wp-admin/admin.php?page=rtgodam';
-	const restURL = window.godamRestRoute.url || '';
-
 	useEffect( () => {
 		if ( attachmentID ) {
-			const url = pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] );
+			const url = window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] );
 
 			axios
 				.get( url )
 				.then( ( response ) => {
 					const data = response.data;
 					setAnalyticsData( data );
-				} )
-				.catch( ( error ) => {
-					console.log( error );
 				} );
 		}
 	}, [ attachmentID ] );

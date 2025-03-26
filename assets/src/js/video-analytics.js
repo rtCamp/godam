@@ -1,3 +1,4 @@
+/* global d3 */
 /**
  * External dependencies
  */
@@ -108,8 +109,8 @@ function generateHeatmap( data, selector, videoPlayer ) {
 				// Update the vertical line
 				verticalLine
 					.style( 'opacity', 1 )
-					.attr( 'x1', xScale( index ) + xScale.bandwidth() / 2 )
-					.attr( 'x2', xScale( index ) + xScale.bandwidth() / 2 );
+					.attr( 'x1', xScale( index ) + ( xScale.bandwidth() / 2 ) )
+					.attr( 'x2', xScale( index ) + ( xScale.bandwidth() / 2 ) );
 
 				videoPlayer.currentTime( videoTime );
 			}
@@ -261,7 +262,6 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 
 		return result.data;
 	} catch ( error ) {
-		console.error( 'Error fetching analytics:', error );
 		return null;
 	}
 }
