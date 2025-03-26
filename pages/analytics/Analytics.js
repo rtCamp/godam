@@ -98,10 +98,6 @@ const Analytics = ( { attachmentID } ) => {
 												</div>
 												<p id="engagement-rate" className="min-w-[90px] engagement-rate">0%</p>
 											</div>
-											{/* <div className="analytics-stats">
-												<img src={ DownArrow } height={ 20 } width={ 20 } alt="Stats dropped indicating icon" />
-												<p>{ __( '-0.91% this week', 'godam' ) }</p>
-											</div> */}
 										</div>
 										<div className="analytics-info flex justify-between  max-lg:flex-col">
 											<div className="analytics-single-info">
@@ -113,10 +109,6 @@ const Analytics = ( { attachmentID } ) => {
 												</div>
 												<p id="total-plays" className="min-w-[90px] engagement-rate">0</p>
 											</div>
-											{/* <div className="analytics-stats">
-												<img src={ DownArrow } height={ 20 } width={ 20 } alt="Stats dropped indicating icon" />
-												<p>{ __( '-0.91% this week', 'godam' ) }</p>
-											</div> */}
 										</div>
 										<div className="analytics-info flex justify-between  max-lg:flex-col">
 											<div className="analytics-single-info">
@@ -128,26 +120,7 @@ const Analytics = ( { attachmentID } ) => {
 												</div>
 												<p id="play-rate" className="min-w-[90px] engagement-rate">0%</p>
 											</div>
-											{/* <div className="analytics-stats">
-												<img src={ TopArrow } height={ 20 } width={ 20 } alt="Stats dropped indicating icon" />
-												<p>{ __( '+0.91% this week', 'godam' ) }</p>
-											</div> */}
 										</div>
-										{/* <div className="analytics-info flex justify-between  max-lg:flex-col">
-											<div className="analytics-single-info">
-												<div className="analytics-info-heading">
-													<p>
-														{ __( 'Watch Time (hours)', 'godam' ) }
-													</p>
-													<Tooltip text="Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads" />
-												</div>
-												<p id="watch-time" className="min-w-[90px] engagement-rate">2h:12m</p>
-											</div>
-											<div className="analytics-stats">
-												<img src={ TopArrow } height={ 20 } width={ 20 } alt="Stats dropped indicating icon" />
-												<p>{ __( '+0.91% this week', 'godam' ) }</p>
-											</div>
-										</div> */}
 									</div>
 								</div>
 								<div className="min-w-[750px]">
