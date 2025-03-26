@@ -74,9 +74,9 @@ const VideoEditor = ( { attachmentID } ) => {
 			.then( ( response ) => response.json() )
 			.then( ( data ) => {
 				setVideo( data );
-				const easydamMeta = data.easydam_meta;
-				if ( easydamMeta ) {
-					dispatch( initializeStore( easydamMeta ) );
+				const rtGodamMeta = data.rtgodam_meta;
+				if ( rtGodamMeta ) {
+					dispatch( initializeStore( rtGodamMeta ) );
 				}
 				// Set video sources
 				const videoSources = [ { src: data.source_url, type: data.mimeType } ];
@@ -115,7 +115,7 @@ const VideoEditor = ( { attachmentID } ) => {
 		setIsSaving( true );
 		// Update the attchment meta
 		const data = {
-			easydam_meta: { videoConfig, layers },
+			rtgodam_meta: { videoConfig, layers },
 		};
 		// update media meta via REST API
 		axios.post( window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] ), data, {

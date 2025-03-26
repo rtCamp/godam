@@ -110,14 +110,14 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		const thumbnailsHTML = thumbnails.map( ( thumbnail ) =>
 			`<li class="${ thumbnail === selected ? 'selected' : '' }">
-			<img src="${ thumbnail }" alt="Video Thumbnail" />
-		</li>` ).join( '' );
+				<img src="${ thumbnail }" alt="Video Thumbnail" />
+			</li>` ).join( '' );
 
 		const thumbnailDiv = `
-		<div class="attachment-video-thumbnails">
-			<div class="attachment-video-title"><h4>Video Thumbnails</h4></div>
-			<ul>${ thumbnailsHTML }</ul>
-		</div>`;
+			<div class="attachment-video-thumbnails">
+				<div class="attachment-video-title"><h4>Video Thumbnails</h4></div>
+				<ul>${ thumbnailsHTML }</ul>
+			</div>`;
 
 		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( thumbnailDiv ) );
 		this.setupThumbnailClickHandler( attachmentID );

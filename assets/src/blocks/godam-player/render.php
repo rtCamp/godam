@@ -153,7 +153,9 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 				endif;
 			endforeach;
 
-			if ( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) {
+			if ( isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) &&
+				$easydam_meta_data['videoConfig']['controlBar']['subsCapsButton']
+			) {
 				foreach ( $tracks as $track ) :
 					if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
 						?>

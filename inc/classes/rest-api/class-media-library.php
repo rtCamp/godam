@@ -311,6 +311,9 @@ class Media_Library extends Base {
 			$thumbnail_array[ $key ] = $thumbnail_src;
 		}
 
+		// only filter for the unique values.
+		$thumbnail_array = array_unique( $thumbnail_array );
+
 		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 		if ( ! empty( $selected_thumbnail ) ) {

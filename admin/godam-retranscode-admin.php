@@ -87,8 +87,6 @@ class RTGODAM_RetranscodeMedia {
 		add_action( 'rtgodam_before_transcoded_media_store', array( $this, 'rtgodam_before_transcoded_media_store' ), 10, 2 ); // Delete old transcoded files.
 		add_action( 'rtgodam_transcoded_thumbnails_added', array( $this, 'transcoded_thumbnails_added' ), 10, 1 ); // Add the current thumbnail to the newly added thumbnails.
 		add_action( 'rtgodam_handle_callback_finished', array( $this, 'rtgodam_handle_callback_finished' ), 10, 2 ); // Clean the extra meta that has been added while sending retranscoding request.
-		add_filter( 'amp_story_allowed_video_types', array( $this, 'add_amp_video_extensions' ) ); // Extend allowed video mime type extensions for AMP Story Background.
-		add_filter( 'render_block', array( $this, 'update_amp_story_video_url' ), 10, 2 ); // Filter block content and replace video URLs.
 
 		// Allow people to change what capability is required to use this feature.
 		$this->capability = apply_filters( 'rtgodam_retranscode_media_cap', 'manage_options' );
@@ -158,17 +156,6 @@ class RTGODAM_RetranscodeMedia {
 	}
 
 	/**
-	 * Transcoder settings render.
-	 *
-	 * Note: DO NOT USE directly.
-	 *
-	 * @return void
-	 */
-	public function transcoder_settings_page() {
-		include_once RTGODAM_PATH . 'admin/partials/rt-transcoder-admin-display.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-	}
-
-	/**
 	 * Enqueue the needed Javascript and CSS
 	 *
 	 * @param string $hook_suffix Suffix of the hook.
@@ -180,13 +167,7 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		// WordPress 3.1 vs older version compatibility.
-		if ( wp_script_is( 'jquery-ui-widget', 'registered' ) ) {
-			wp_enqueue_script( 'jquery-ui-progressbar', plugins_url( 'js/jquery.ui.progressbar.min.js', __FILE__ ), array( 'jquery-ui-core', 'jquery-ui-widget' ), '1.8.6', true );
-		} else {
-			wp_enqueue_script( 'jquery-ui-progressbar', plugins_url( 'js/jquery.ui.progressbar.min.1.7.2.js', __FILE__ ), array( 'jquery-ui-core' ), '1.7.2', true );
-		}
-
+		wp_enqueue_script( 'jquery-ui-progressbar', plugins_url( 'js/jquery.ui.progressbar.min.js', __FILE__ ), array( 'jquery-ui-core', 'jquery-ui-widget' ), '1.8.6', true );
 		wp_enqueue_style( 'jquery-ui-retranscodemedia', plugins_url( 'css/jquery-ui-1.7.2.custom.css', __FILE__ ), array(), '1.7.2' );
 
 		$ids = array();
@@ -855,123 +836,6 @@ class RTGODAM_RetranscodeMedia {
 			delete_post_meta( $attachment_id, 'rtgodam_retranscoding_sent' );
 
 		}
-	}
-
-	/**
-	 * Add extensions to allow selection of more mime types in AMP Story.
-	 *
-	 * @param array $allowed_video_mime_types Allowed video types.
-	 *
-	 * @return array
-	 */
-	public function add_amp_video_extensions( $allowed_video_mime_types ) {
-		return array_merge( $allowed_video_mime_types, array( 'video/webm', 'video/quicktime', 'video/avi', 'video/msvideo', 'video/x-msvideo', 'video/mpeg', 'video/x-flv', 'video/x-ms-wmv' ) );
-	}
-
-	/**
-	 * Filter block content and replace AMP Video URL's with transcoded media.
-	 *
-	 * @param string $block_content Block Content.
-	 * @param array  $block         Block Information.
-	 *
-	 * @return mixed
-	 */
-	public function update_amp_story_video_url( $block_content, $block ) {
-		$allowed_blocks = array( 'amp/amp-story-page', 'core/video' );
-
-		// Check if the block content should be filtered or not.
-		if ( ! in_array( $block['blockName'], $allowed_blocks, true ) || is_admin() ) {
-			return $block_content;
-		}
-
-		if ( isset( $block['attrs'] ) ) {
-			$media_id = '';
-			if ( isset( $block['attrs']['mediaId'] ) ) {
-				$media_id = $block['attrs']['mediaId']; // For AMP Story Background Media.
-			} elseif ( isset( $block['attrs']['id'] ) ) {
-				$media_id = $block['attrs']['id']; // For AMP Story Video Block.
-			}
-
-			if ( ! empty( $media_id ) ) {
-				$transcoded_url = get_post_meta( $media_id, 'rtgodam_media_transcoded_files', true );
-
-				if ( ! empty( $transcoded_url ) && isset( $transcoded_url['mp4'] ) ) {
-					// Get transcoded video path.
-					$transcoded_url = empty( $transcoded_url['mp4'][0] ) ? '' : $transcoded_url['mp4'][0];
-					$uploads        = wp_get_upload_dir();
-
-					// Get URL for the transcoded video.
-					if ( 0 === strpos( $transcoded_url, $uploads['baseurl'] ) ) {
-						$final_file_url = $transcoded_url;
-					} else {
-						$final_file_url = trailingslashit( $uploads['baseurl'] ) . $transcoded_url;
-					}
-
-					// Replace existing video URL with transcoded URL.
-					if ( ! empty( $final_file_url ) ) {
-						// Check for URL in amp-video tag.
-						$amp_video_pattern = '/<amp-video (.*?) src="(?<url>.*?)" (.*?)>/m';
-						preg_match_all( $amp_video_pattern, $block_content, $amp_tag_matches, PREG_SET_ORDER, 0 );
-
-						if ( ! empty( $amp_tag_matches ) ) {
-							foreach ( $amp_tag_matches as $amp_tag ) {
-								if ( isset( $amp_tag['url'] ) ) {
-									$block_content = str_replace( $amp_tag['url'], $final_file_url, $block_content );
-								}
-							}
-						}
-
-						// Check for URL in video tag.
-						$video_pattern = '/<video (.*?) src="(?<url>.*?)"(.*?)>/m';
-						preg_match_all( $video_pattern, $block_content, $video_tag_matches, PREG_SET_ORDER, 0 );
-
-						if ( ! empty( $video_tag_matches ) ) {
-							foreach ( $video_tag_matches as $video_tag ) {
-								if ( isset( $video_tag['url'] ) ) {
-									$block_content = str_replace( $video_tag['url'], $final_file_url, $block_content );
-								}
-							}
-						}
-
-						// Replace fallback poster with generated thumbnail.
-						$amp_story_poster = '/<amp-video (.*?) poster="(?<poster>.*?)" (.*?)>/m';
-						preg_match_all( $amp_story_poster, $block_content, $poster_matches, PREG_SET_ORDER, 0 );
-
-						if ( ! empty( $poster_matches ) ) {
-							foreach ( $poster_matches as $poster_match ) {
-								if ( isset( $poster_match['poster'] ) ) {
-									if ( false !== strpos( $poster_match['poster'], 'amp-story-fallback-poster.png' ) ) {
-										$video_poster_url = get_the_post_thumbnail_url( $media_id );
-										if ( false !== $video_poster_url ) {
-											$block_content = str_replace( $poster_match['poster'], $video_poster_url, $block_content );
-										}
-									}
-								}
-							}
-						}
-
-						// Replace fallback poster with generated thumbnail for video block.
-						$video_story_poster = '/<video (.*?) poster="(?<poster>.*?)" (.*?)>/m';
-						preg_match_all( $video_story_poster, $block_content, $video_poster_matches, PREG_SET_ORDER, 0 );
-
-						if ( ! empty( $video_poster_matches ) ) {
-							foreach ( $video_poster_matches as $video_poster_match ) {
-								if ( isset( $video_poster_match['poster'] ) ) {
-									if ( false !== strpos( $video_poster_match['poster'], 'amp-story-video-fallback-poster.png' ) ) {
-										$video_thumbnail_url = get_the_post_thumbnail_url( $media_id );
-										if ( false !== $video_thumbnail_url ) {
-											$block_content = str_replace( $video_poster_match['poster'], $video_thumbnail_url, $block_content );
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return $block_content;
 	}
 
 	/**
