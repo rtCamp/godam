@@ -98,7 +98,7 @@ class RTGODAM_RetranscodeMedia {
 	 * @return void
 	 */
 	public function load_rest_endpoints() {
-		include_once RTGODAM_PATH . 'admin/godam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+		include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 		// Create class object and register routes.
 		$transcoder_rest_routes = new RTGODAM_Transcoder_Rest_Routes();
