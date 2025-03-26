@@ -290,7 +290,7 @@ class RTGODAM_Transcoder_Handler {
 				)
 			) {
 				$upload_info = json_decode( $upload_page['body'] );
-				error_log( json_encode( $upload_info ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log, WordPress.WP.AlternativeFunctions.json_encode_json_encode
+
 				if ( isset( $upload_info->data ) && isset( $upload_info->data->name ) ) {
 					$job_id = $upload_info->data->name;
 					update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
