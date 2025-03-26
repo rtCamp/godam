@@ -257,7 +257,7 @@ class Media_Library extends Base {
 	private function format_fnumber( $fnumber ) {
 		if ( is_string( $fnumber ) && strpos( $fnumber, '/' ) !== false ) {
 			list( $numerator, $denominator ) = explode( '/', $fnumber );
-			if ( is_numeric( $numerator ) && is_numeric( $denominator ) && 0 != $denominator ) {
+			if ( is_numeric( $numerator ) && is_numeric( $denominator ) && 0 !== $denominator ) {
 				return 'f/' . round( $numerator / $denominator, 1 );
 			}
 		}
