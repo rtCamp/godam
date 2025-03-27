@@ -409,10 +409,6 @@ function rtgodam_verify_license( $license_key, $save = false ) {
 			update_site_option( 'rtgodam-api-key', $license_key );
 			update_site_option( 'rtgodam-api-key-stored', $license_key );
 			update_site_option( 'rtgodam-account-token', $account_token );
-
-			// Update usage data.
-			$handler = new \RTGODAM_Transcoder_Handler( false );
-			$handler->update_usage( $license_key );
 		}
 
 		return array(
