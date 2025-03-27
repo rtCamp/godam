@@ -174,10 +174,6 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 			?>
 		</video>
 
-		<?php if ( $caption ) : ?>
-			<figcaption><?php echo esc_html( $caption ); ?></figcaption>
-		<?php endif; ?>
-
 		<!-- Dynamically render shortcodes for form layers. -->
 		<?php
 		if ( ! empty( $easydam_meta_data['layers'] ) ) :
@@ -233,5 +229,9 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 			<?php endforeach; ?>
 		<?php endif; ?>
 	</div>
+
+	<?php if ( $caption && ! empty( $caption ) ) : ?>
+		<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $caption ); ?></figcaption>
+	<?php endif; ?>
 </figure>
 <?php endif; ?>

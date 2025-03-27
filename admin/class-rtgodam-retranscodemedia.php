@@ -44,7 +44,7 @@ class RTGODAM_RetranscodeMedia {
 
 	/**
 	 * Capability required to use this feature.
-	 * 
+	 *
 	 * @var string
 	 */
 	public $capability;
@@ -56,6 +56,11 @@ class RTGODAM_RetranscodeMedia {
 
 		$this->api_key        = get_site_option( 'rtgodam-api-key' );
 		$this->stored_api_key = get_site_option( 'rtgodam-api-key-stored' );
+
+		$license_check = rtgodam_verify_license( $this->api_key );
+		if ( is_wp_error( $license_check ) ) {
+			return; // Abort initializing retranscoding if license is invalid.
+		}
 
 		$this->usage_info = get_site_option( 'rtgodam-usage' );
 		// Load Rest Endpoints.
@@ -179,13 +184,13 @@ class RTGODAM_RetranscodeMedia {
 
 			// Form nonce check.
 			check_admin_referer( 'rtgodam_tools' );
-			
+
 			$file_size = 0;
 			$files     = array();
-	
+
 			// Get the list of media IDs.
 			$ids = rtgodam_filter_input( INPUT_GET, 'ids', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-			
+
 			if ( ! empty( $ids ) ) {
 				$ids = explode( ',', $ids );
 			} else {
@@ -194,12 +199,12 @@ class RTGODAM_RetranscodeMedia {
 				$media = $query->get_posts();
 				remove_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
 				if ( empty( $media ) || is_wp_error( $media ) ) {
-	
+
 					// translators: Link to the media page.
 					echo '	<p>' . sprintf( esc_html__( "Unable to find any media. Are you sure <a href='%s'>some exist</a>?", 'godam' ), esc_url( admin_url( 'upload.php' ) ) ) . '</p></div>';
 					return;
 				}
-	
+
 				// Generate the list of IDs.
 				$ids = array();
 				foreach ( $media as $i => $each ) {
@@ -221,17 +226,19 @@ class RTGODAM_RetranscodeMedia {
 			}
 
 			$stopping_text = esc_html__( 'Stopping...', 'godam' );
-			$text_goback   = ( ! empty( $_GET['goback'] ) ) ? __( 'To go back to the previous page, <a id="retranscode-goback" href="#">click here</a>.', 'godam' ) : '';
-			$admin_url     = esc_url( wp_nonce_url( admin_url( 'admin.php?page=rtgodam_tools&goback=1' ), 'rtgodam_tools' ) . '&ids=' );
-	
-			wp_register_script( 
+			$previous_url  = wp_get_referer();
+			// translators: The URL to go back to the previous page.
+			$text_goback = $previous_url ? sprintf( __( 'To go back to the previous page, <a href="%s">click here</a>.', 'godam' ), esc_url( $previous_url ) ) : '';
+			$admin_url   = esc_url( wp_nonce_url( admin_url( 'admin.php?page=rtgodam_tools&goback=1' ), 'rtgodam_tools' ) . '&ids=' );
+
+			wp_register_script(
 				'rtgodam-retranscode-admin',
 				RTGODAM_URL . '/admin/js/godam-retranscode-admin.js',
 				array( 'jquery' ),
 				filemtime( RTGODAM_PATH . '/admin/js/godam-retranscode-admin.js' ),
 				true
 			);
-	
+
 			wp_localize_script(
 				'rtgodam-retranscode-admin',
 				'rtgodam_retranscode',
@@ -242,7 +249,7 @@ class RTGODAM_RetranscodeMedia {
 					'admin_url'     => $admin_url,
 				)
 			);
-	
+
 			wp_enqueue_script( 'rtgodam-retranscode-admin' );
 		}
 	}
@@ -491,8 +498,9 @@ class RTGODAM_RetranscodeMedia {
 				<?php
 				$count = count( $media );
 
-				// translators: Count of media which were successfully transcoded with the time in seconds.
-				$text_goback = ( ! empty( $_GET['goback'] ) ) ? __( 'To go back to the previous page, <a id="retranscode-goback" href="#">click here</a>.', 'godam' ) : '';
+				$previous_url = wp_get_referer();
+				// translators: The URL to go back to the previous page.
+				$text_goback = $previous_url ? sprintf( __( 'To go back to the previous page, <a href="%s">click here</a>.', 'godam' ), esc_url( $previous_url ) ) : '';
 
 				// translators: Count of media which were successfully and media which were failed transcoded with the time in seconds and previout page link.
 				$text_failures = sprintf( __( 'All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were %3$s failure(s). To try transcoding the failed media again, <a href="%4$s">click here</a>. %5$s', 'godam' ), "' + rtgodam_successes + '", "' + rtgodam_totaltime + '", "' + rtgodam_errors + '", esc_url( wp_nonce_url( admin_url( 'admin.php?page=rtgodam_tools&goback=1' ), 'rtgodam_tools' ) . '&ids=' ) . "' + rtgodam_failedlist + '", $text_goback );

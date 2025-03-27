@@ -10,6 +10,21 @@
 	// Add your styles here.
 }
 
+.rtgodam-video-caption {
+	margin-bottom: 1em;
+    margin-top: .5em;
+
+	input {
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 0.75rem !important;
+        color: #666 !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+}
+
 .easydam-video-block {
 	video {
 		width: 100%;

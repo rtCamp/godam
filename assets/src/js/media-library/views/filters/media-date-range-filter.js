@@ -37,17 +37,19 @@ MediaDateRangeFilter = MediaDateRangeFilter?.extend( {
 		/**
 		 * Create a date query based on the selected date range.
 		 */
-		const dateQuery = [];
+		const dateQuery = {
+			inclusive: true,
+		};
 
 		if ( startDate ) {
-			dateQuery.push( { after: startDate } );
+			dateQuery.after = startDate;
 		}
 		if ( endDate ) {
-			dateQuery.push( { before: endDate } );
+			dateQuery.before = endDate;
 		}
 
 		this.model.set( {
-			date_query: dateQuery.length > 0 ? { relation: 'AND', ...dateQuery } : undefined,
+			date_query: dateQuery,
 		} );
 
 		// update the input value to show the selected date range.

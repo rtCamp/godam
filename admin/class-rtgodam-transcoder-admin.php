@@ -46,6 +46,9 @@ class RTGODAM_Transcoder_Admin {
 	 * @since 1.0.0
 	 */
 	public function license_activation_admin_notice() {
+		if ( ! $this->is_dashboard_screen() ) {
+			return;
+		}
 
 		// Get the license key from the site options.
 		$license_key = get_site_option( 'rtgodam-api-key', '' );
@@ -239,5 +242,15 @@ class RTGODAM_Transcoder_Admin {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Check if the current screen is the dashboard.
+	 *
+	 * @return bool
+	 */
+	public function is_dashboard_screen() {
+		$current_screen = get_current_screen();
+		return isset( $current_screen->id ) && 'dashboard' === $current_screen->id;
 	}
 }

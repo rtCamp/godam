@@ -45,6 +45,26 @@ const TextCTA = ( { layerID } ) => {
 		[ 'clean' ], // Remove formatting
 	];
 
+	/**
+	 * Replaces all occurrences of RGB or RGBA color values in a string with their hexadecimal equivalents.
+	 *
+	 * This function scans the input string for color values in the format `rgb(r, g, b)` or `rgba(r, g, b, a)`,
+	 * converts the RGB values to a hexadecimal color code, and replaces them in the string.
+	 *
+	 * @param {string} str - The input string that may contain RGB or RGBA color values.
+	 * @return {string} - The modified string with RGB/RGBA colors converted to hex format.
+	 *
+	 */
+	function replaceRgbaWithHex( str ) {
+		return str.replace(
+			/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/g,
+			( match, r, g, b ) => {
+				const hex = `#${ Number( r ).toString( 16 ).padStart( 2, '0' ) }${ Number( g ).toString( 16 ).padStart( 2, '0' ) }${ Number( b ).toString( 16 ).padStart( 2, '0' ) }`;
+				return hex;
+			},
+		);
+	}
+
 	return (
 		<>
 			<div className="mb-2 flex items-end justify-between">
@@ -56,7 +76,7 @@ const TextCTA = ( { layerID } ) => {
 					dispatch( updateLayerField( {
 						id: layer.id,
 						field: 'text',
-						value: DOMPurify.sanitize( val ),
+						value: DOMPurify.sanitize( replaceRgbaWithHex( val ) ), // Quill Editor stores rgb values for the color selected by user which is causing issues while escaping in Wordpress.
 					} ) );
 				} }
 				toolbarOptions={ layer.FullEditor ? allToolbarOptions : minmalToolbarOptions }
