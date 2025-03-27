@@ -68,7 +68,7 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
 	 * is running on Cli.
 	 */
 
-	// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE,  WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
 	switch ( $type ) {
 

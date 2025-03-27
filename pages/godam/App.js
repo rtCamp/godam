@@ -80,7 +80,7 @@ const App = () => {
 					licenseFromUrl = urlParams.get( 'license_key' );
 				}
 
-				if ( ! window.userData.valid_license && licenseFromUrl ) {
+				if ( ! window.userData?.valid_license && licenseFromUrl ) {
 					// Set license key from URL and trigger verification in GeneralSettings
 					setLicenseKey( licenseFromUrl );
 					setVerifyLicenseFromUrl( true ); // Pass this flag to GeneralSettings

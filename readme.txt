@@ -153,3 +153,75 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Feat: Cloud storage and CDN integration.
 - Feat: Advanced analytics and engagement tracking.
 - Feat: Enhanced WordPress Media Library for better asset management.
+
+== External Services ==
+This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
+
+=== godam.io ===
+Purpose: This service stores feedback submitted by users during plugin deactivation to help us improve the plugin and understand user concerns.
+
+Data Sent:
+
+1. Site URL
+
+2. Reason for deactivation
+
+3. Name
+
+4. Email ID
+
+When Data is Sent:
+Data is sent only when a user submits the deactivation feedback form after clicking the deactivate button.
+
+Service Provider: godam.io
+
+[Terms of Service](https://godam.io/tos/)
+[Privacy Policy](https://godam.io/privacy-policy/)
+
+=== app.godam.io ===
+Purpose: This service is used for transcoding media uploaded by users and verifying the API Key to ensure the plugin is authorized for use.
+
+Data Sent:
+
+1. Site URL
+
+2. API Key
+
+When Data is Sent:
+
+1. During media transcoding when the user uploads a video.
+
+2. When the plugin checks for a valid API Key.
+
+Service Provider: app.godam.io
+
+[Terms of Service](https://godam.io/tos/)
+[Privacy Policy](https://godam.io/privacy-policy/)
+
+=== analytics.godam.io ===
+Purpose: This service collects analytics data when a user watches a video on the frontend. It helps track video performance, user engagement, and campaign effectiveness.
+
+Data Sent:
+
+1. IP Address
+
+2. Email
+
+3. Author of the post’s display name
+
+4. Browser version, name, and browser language
+
+5. User Agent String
+
+6. The operating system of the user's device (e.g., Windows, macOS, Android)
+
+When Data is Sent:
+
+1. When the page containing the video loads.
+
+2. When the user exits the page after watching the video.
+
+Service Provider: analytics.godam.io
+
+[Terms of Service](https://godam.io/tos/)
+[Privacy Policy](https://godam.io/privacy-policy/)
