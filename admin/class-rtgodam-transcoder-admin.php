@@ -169,7 +169,7 @@ class RTGODAM_Transcoder_Admin {
 		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
 
 		$button_label = ( 'activate' === $button_type ) ? esc_html__( 'Activate License', 'godam' ) : esc_html__( 'Use Video Editor', 'godam' );
-		$button_link  = ( 'activate' === $button_type ) ? admin_url( 'admin.php?page=rtgodam' ) : admin_url( 'admin.php?rtgodam_video_editor' );
+		$button_link  = ( 'activate' === $button_type ) ? admin_url( 'admin.php?page=rtgodam' ) : admin_url( 'admin.php?page=rtgodam_video_editor' );
 
 		?>
 		<div class="notice notice-<?php echo esc_attr( $notice_type ); ?> is-dismissible rt-transcoder-license-notice">
