@@ -243,8 +243,8 @@ class Media_Library_Ajax {
 					'date_query',
 					array(
 						'inclusive' => true,
-						'after'     => sanitize_text_field( $_GET['date-start'] ),
-						'before'    => sanitize_text_field( $_GET['date-end'] ),
+						'after'     => sanitize_text_field( wp_unslash( $_GET['date-start'] ) ),
+						'before'    => sanitize_text_field( wp_unslash( $_GET['date-end'] ) ),
 					)
 				);
 			}
@@ -325,10 +325,10 @@ class Media_Library_Ajax {
 		if ( ! is_array( $date_query ) ) {
 			return array();
 		}
-	
+
 		$allowed_keys    = array( 'inclusive', 'after', 'before' );
 		$sanitized_query = array();
-	
+
 		foreach ( $allowed_keys as $key ) {
 			if ( isset( $date_query[ $key ] ) ) {
 				switch ( $key ) {
@@ -345,7 +345,7 @@ class Media_Library_Ajax {
 				}
 			}
 		}
-	
+
 		return $sanitized_query;
 	}
 
