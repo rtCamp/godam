@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
 function rtgodam_is_file_being_transcoded( $attachment_id ) {
 	$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 	if ( ! empty( $job_id ) ) {
-		$transcoded_files  = get_post_meta( $attachment_id, 'rtgodam_media_transcoded_files', true );
+		$transcoded_files  = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
 		$transcoded_thumbs = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
 		if ( empty( $transcoded_files ) && empty( $transcoded_thumbs ) ) {
 			return true;
@@ -271,7 +271,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 		return;
 	}
 
-	$transcoded_files  = get_post_meta( $post_id, 'rtgodam_media_transcoded_files', true );
+	$transcoded_files  = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
 	$transcoded_thumbs = get_post_meta( $post_id, 'rtgodam_media_thumbnails', true );
 
 	if ( empty( $transcoded_files ) && rtgodam_is_file_being_transcoded( $post_id ) ) {
