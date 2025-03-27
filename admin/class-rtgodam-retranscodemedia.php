@@ -226,7 +226,8 @@ class RTGODAM_RetranscodeMedia {
 			}
 
 			$stopping_text = esc_html__( 'Stopping...', 'godam' );
-			$text_goback   = ( ! empty( $_GET['goback'] ) ) ? __( 'To go back to the previous page, <a id="retranscode-goback" href="#">click here</a>.', 'godam' ) : '';
+			$previous_url = wp_get_referer();
+			$text_goback   = $previous_url ? sprintf( __( 'To go back to the previous page, <a href="%s">click here</a>.', 'godam' ), esc_url( $previous_url ) ) : '';
 			$admin_url     = esc_url( wp_nonce_url( admin_url( 'admin.php?page=rtgodam_tools&goback=1' ), 'rtgodam_tools' ) . '&ids=' );
 	
 			wp_register_script( 
@@ -496,8 +497,8 @@ class RTGODAM_RetranscodeMedia {
 				<?php
 				$count = count( $media );
 
-				// translators: Count of media which were successfully transcoded with the time in seconds.
-				$text_goback = ( ! empty( $_GET['goback'] ) ) ? __( 'To go back to the previous page, <a id="retranscode-goback" href="#">click here</a>.', 'godam' ) : '';
+				$previous_url = wp_get_referer();
+				$text_goback   = $previous_url ? sprintf( __( 'To go back to the previous page, <a href="%s">click here</a>.', 'godam' ), esc_url( $previous_url ) ) : '';
 
 				// translators: Count of media which were successfully and media which were failed transcoded with the time in seconds and previout page link.
 				$text_failures = sprintf( __( 'All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were %3$s failure(s). To try transcoding the failed media again, <a href="%4$s">click here</a>. %5$s', 'godam' ), "' + rtgodam_successes + '", "' + rtgodam_totaltime + '", "' + rtgodam_errors + '", esc_url( wp_nonce_url( admin_url( 'admin.php?page=rtgodam_tools&goback=1' ), 'rtgodam_tools' ) . '&ids=' ) . "' + rtgodam_failedlist + '", $text_goback );
