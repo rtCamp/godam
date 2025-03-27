@@ -555,6 +555,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 											<br />
 											<strong>{ __( 'Note: ', 'godam' ) }</strong>
 											{ __( 'Selecting Auto will automatically include all available resolutions for delivery.', 'godam' ) }
+											{ __( ' Quality settings are not available for low-quality videos.', 'godam' ) }
 										</div>
 									</div>
 								</div>
