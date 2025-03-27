@@ -356,23 +356,6 @@ class RTGODAM_Transcoder_Handler {
 	}
 
 	/**
-	 * Save usage information.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param string $key  Api key.
-	 *
-	 * @return array $usage_info  An array containing usage information.
-	 */
-	public function update_usage( $key ) {
-
-		$response = rtgodam_verify_license( $key );
-		update_site_option( 'rtgodam-usage', array( $key => (object) $response['data'] ) );
-
-		return $response;
-	}
-
-	/**
 	 * Display message when user subscribed successfully.
 	 *
 	 * @since 1.0.0

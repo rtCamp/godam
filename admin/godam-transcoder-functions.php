@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
 function rtgodam_is_file_being_transcoded( $attachment_id ) {
 	$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 	if ( ! empty( $job_id ) ) {
-		$transcoded_files  = get_post_meta( $attachment_id, 'rtgodam_media_transcoded_files', true );
+		$transcoded_files  = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
 		$transcoded_thumbs = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
 		if ( empty( $transcoded_files ) && empty( $transcoded_thumbs ) ) {
 			return true;
@@ -271,7 +271,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 		return;
 	}
 
-	$transcoded_files  = get_post_meta( $post_id, 'rtgodam_media_transcoded_files', true );
+	$transcoded_files  = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
 	$transcoded_thumbs = get_post_meta( $post_id, 'rtgodam_media_thumbnails', true );
 
 	if ( empty( $transcoded_files ) && rtgodam_is_file_being_transcoded( $post_id ) ) {
@@ -334,7 +334,7 @@ function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FUL
 	if ( function_exists( 'filter_input' ) && filter_has_var( INPUT_SERVER, $server_key ) ) {
 		$server_val = rtgodam_filter_input( INPUT_SERVER, $server_key, $filter_type );
 	} elseif ( isset( $_SERVER[ $server_key ] ) ) {
-		$server_val = $_SERVER[ $server_key ]; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$server_val = wp_unslash( $_SERVER[ $server_key ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	}
 	return $server_val;
 }
@@ -409,10 +409,6 @@ function rtgodam_verify_license( $license_key, $save = false ) {
 			update_site_option( 'rtgodam-api-key', $license_key );
 			update_site_option( 'rtgodam-api-key-stored', $license_key );
 			update_site_option( 'rtgodam-account-token', $account_token );
-
-			// Update usage data.
-			$handler = new \RTGODAM_Transcoder_Handler( false );
-			$handler->update_usage( $license_key );
 		}
 
 		return array(

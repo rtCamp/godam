@@ -137,7 +137,7 @@ class Media_Library_Ajax {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Hooking into default WP hooks.
 
 		if ( isset( $_REQUEST['query']['media-folder'] ) ) {
-			$media_folder_id = sanitize_text_field( $_REQUEST['query']['media-folder'] );
+			$media_folder_id = sanitize_text_field( wp_unslash( $_REQUEST['query']['media-folder'] ) );
 
 			if ( 'uncategorized' === $media_folder_id ) {
 				$media_folder_id = 0;
@@ -201,7 +201,7 @@ class Media_Library_Ajax {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Hooking into default WP hooks.
 
 		if ( is_admin() && $query->is_main_query() && $query->get( 'post_type' ) === 'attachment' ) {
-			$media_folder = isset( $_GET['media-folder'] ) ? sanitize_text_field( $_GET['media-folder'] ) : null;
+			$media_folder = isset( $_GET['media-folder'] ) ? sanitize_text_field( wp_unslash( $_GET['media-folder'] ) ) : null;
 
 			if ( $media_folder && 'uncategorized' === $media_folder ) {
 				$query->set(
@@ -262,7 +262,7 @@ class Media_Library_Ajax {
 
 		if ( 'upload' === $screen->id ) {
 			// Get the current folder filter value from the URL.
-			$media_folder = isset( $_GET['media-folder'] ) ? sanitize_text_field( $_GET['media-folder'] ) : 'all'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just echoing the value without any usage.
+			$media_folder = isset( $_GET['media-folder'] ) ? sanitize_text_field( wp_unslash( $_GET['media-folder'] ) ) : 'all'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just echoing the value without any usage.
 
 			// Get all terms from the 'media-folder' taxonomy.
 			$terms = get_terms(

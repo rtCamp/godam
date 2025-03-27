@@ -347,11 +347,13 @@ class Pages {
 
 			$rtgodam_user_data = rtgodam_get_user_data();
 
-			wp_localize_script(
-				'transcoder-page-script-godam',
-				'userData',
-				$rtgodam_user_data
-			);
+			if ( ! empty( $rtgodam_user_data ) ) {
+				wp_localize_script(
+					'transcoder-page-script-godam',
+					'userData',
+					$rtgodam_user_data
+				);
+			}
 
 			wp_enqueue_script( 'transcoder-page-script-godam' );
 		} elseif ( $screen && $this->analytics_page_id === $screen->id ) {
