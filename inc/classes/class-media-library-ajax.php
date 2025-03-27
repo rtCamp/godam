@@ -183,7 +183,7 @@ class Media_Library_Ajax {
 		}
 
 		if ( isset( $_REQUEST['query']['date_query'] ) && is_array( $_REQUEST['query']['date_query'] ) ) {
-			$query_args['date_query'] = $this->sanitize_date( $_REQUEST['query']['date_query'] ); // phpcs:ignore -- date_query is getting sanitized by custom function.
+			$query_args['date_query'] = $this->sanitize_date_query( $_REQUEST['query']['date_query'] ); // phpcs:ignore -- date_query is getting sanitized by custom function.
 		}
 
 		return $query_args;
@@ -242,13 +242,9 @@ class Media_Library_Ajax {
 				$query->set(
 					'date_query',
 					array(
-						'relation' => 'AND',
-						array(
-							'after' => sanitize_text_field( wp_unslash( $_GET['date-start'] ) ),
-						),
-						array(
-							'before' => sanitize_text_field( wp_unslash( $_GET['date-end'] ) ),
-						),
+						'inclusive' => true,
+						'after'     => sanitize_text_field( $_GET['date-start'] ),
+						'before'    => sanitize_text_field( $_GET['date-end'] ),
 					)
 				);
 			}
@@ -325,33 +321,32 @@ class Media_Library_Ajax {
 	 *
 	 * @return array $date_query sanitized date query.
 	 */
-	private function sanitize_date( $date_query ) {
-		return array_filter(
-			array_map(
-				function ( $item ) {
-					if ( is_array( $item ) ) {
-						$sanitized_item = array();
-						foreach ( $item as $key => $value ) {
-							if ( 'after' === $key || 'before' === $key ) {
-								// Validate date format (YYYY-MM-DD).
-								if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ) {
-									$sanitized_item[ $key ] = $value;
-								}
-							} else {
-								// Sanitize any other keys.
-								$sanitized_item[ $key ] = sanitize_text_field( $value );
-							}
+	private function sanitize_date_query( $date_query ) {
+		if ( ! is_array( $date_query ) ) {
+			return array();
+		}
+	
+		$allowed_keys    = array( 'inclusive', 'after', 'before' );
+		$sanitized_query = array();
+	
+		foreach ( $allowed_keys as $key ) {
+			if ( isset( $date_query[ $key ] ) ) {
+				switch ( $key ) {
+					case 'inclusive':
+						$sanitized_query['inclusive'] = filter_var( $date_query['inclusive'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
+						break;
+					case 'after':
+					case 'before':
+						$sanitized_query[ $key ] = sanitize_text_field( $date_query[ $key ] );
+						if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $sanitized_query[ $key ] ) ) {
+							unset( $sanitized_query[ $key ] );
 						}
-						return $sanitized_item;
-					} else {
-						$valid_relations = array( 'AND', 'OR' );
-						return in_array( $item, $valid_relations, true ) ? sanitize_text_field( $item ) : null;
-					}
-					return null;
-				},
-				$date_query
-			)
-		);
+						break;
+				}
+			}
+		}
+	
+		return $sanitized_query;
 	}
 
 	/**
