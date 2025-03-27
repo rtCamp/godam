@@ -126,7 +126,6 @@ register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
  * Runs when the plugin is deactivated.
  */
 function rtgodam_plugin_deactivate() {
-	\RTGODAM\Inc\Cron::get_instance()->unschedule_video_cleanup();
 	delete_site_option( 'rtgodam_plugin_activation_time' );
 }
 
