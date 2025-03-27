@@ -66,6 +66,10 @@
 		"aspectRatio": {
 			"type": "string",
 			"default": "16/9"
+		},
+		"caption": {
+			"type": "string",
+			"default": ""
 		}
 	},
 	"supports": {
