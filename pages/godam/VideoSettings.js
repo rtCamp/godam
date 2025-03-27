@@ -257,8 +257,8 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 		}, 5000 );
 	};
 
-	const isValidLicense = window.userData.valid_license;
-	const isStarterPlan = window.userData.user_data?.active_plan === 'Starter';
+	const isValidLicense = window.userData?.valid_license;
+	const isStarterPlan = window.userData?.user_data?.active_plan === 'Starter';
 
 	const [ isDirty, setIsDirty ] = useState( false );
 
