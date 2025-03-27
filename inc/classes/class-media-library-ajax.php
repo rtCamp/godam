@@ -242,8 +242,8 @@ class Media_Library_Ajax {
 					'date_query',
 					array(
 						'inclusive' => true,
-						'after' => sanitize_text_field( $_GET['date-start'] ),
-						'before' => sanitize_text_field( $_GET['date-end'] ),
+						'after'     => sanitize_text_field( $_GET['date-start'] ),
+						'before'    => sanitize_text_field( $_GET['date-end'] ),
 					)
 				);
 			}
@@ -325,7 +325,7 @@ class Media_Library_Ajax {
 			return array();
 		}
 	
-		$allowed_keys = array( 'inclusive', 'after', 'before' );
+		$allowed_keys    = array( 'inclusive', 'after', 'before' );
 		$sanitized_query = array();
 	
 		foreach ( $allowed_keys as $key ) {
