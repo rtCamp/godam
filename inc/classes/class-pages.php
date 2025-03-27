@@ -19,59 +19,16 @@ class Pages {
 
 	/**
 	 * Hardcoded Slugs
-	 * 
-	 * @var string
 	 */
-	private $menu_slug = 'rtgodam';
+	private $menu_slug            = 'rtgodam';
+	private $video_editor_slug    = 'rtgodam_video_editor';
+	private $analytics_slug       = 'rtgodam_analytics';
+	private $help_slug			  = 'rtgodam_help';
 
-	/**
-	 * Slug for the video editor page.
-	 *
-	 * @var string
-	 */
-	private $video_editor_slug = 'rtgodam_video_editor';
-
-	/**
-	 * Slug for the analytics page.
-	 *
-	 * @var string
-	 */
-	private $analytics_slug = 'rtgodam_analytics';
-
-	/**
-	 * Slug for the help page.
-	 *
-	 * @var string
-	 */
-	private $help_slug = 'rtgodam_help';
-
-	/**
-	 * Menu pag ID.
-	 *
-	 * @var string
-	 */
-	private $menu_page_id = 'toplevel_page_rtgodam';
-
-	/**
-	 * Video editor page ID.
-	 *
-	 * @var string
-	 */
-	private $video_editor_page_id = 'godam_page_rtgodam_video_editor';
-
-	/**
-	 * Analytics page ID.
-	 *
-	 * @var string
-	 */
-	private $analytics_page_id = 'godam_page_rtgodam_analytics';
-
-	/**
-	 * Help page ID.
-	 *
-	 * @var string
-	 */
-	private $help_page_id = 'godam_page_rtgodam_help';
+	private $menu_page_id         = 'toplevel_page_rtgodam';
+	private $video_editor_page_id = 'godam_page_' . 'rtgodam_video_editor';
+	private $analytics_page_id    = 'godam_page_' . 'rtgodam_analytics';
+	private $help_page_id         = 'godam_page_' . 'rtgodam_help';
 
 	/**
 	 * Construct method.
@@ -267,7 +224,9 @@ class Pages {
 	}
 
 	/**
-	 * To enqueue scripts and styles in admin.
+	 * To enqueue scripts and styles. in admin.
+	 *
+	 * @param string $hook_suffix Admin page name.
 	 *
 	 * @return void
 	 */

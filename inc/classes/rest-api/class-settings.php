@@ -9,6 +9,11 @@ namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\EasyDAM_Constants;
+use RTGODAM\Inc\Providers\Handlers\Storage_Handler;
+use RTGODAM\Inc\Providers\Exceptions\EasyDamException;
+use RTGODAM\Inc\Providers\Handlers\Error_Handler;
+
 /**
  * Class Settings
  */

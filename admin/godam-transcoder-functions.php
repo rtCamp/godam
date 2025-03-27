@@ -357,8 +357,6 @@ function rtgodam_get_blacklist_ip_addresses() {
  * Helper function to verify the license key.
  *
  * @param string $license_key The license key to verify.
- * @param bool   $save        Whether to save the license key in the site options.
- * 
  * @return array|WP_Error Array with status and data on success, WP_Error on failure.
  */
 function rtgodam_verify_license( $license_key, $save = false ) {
@@ -376,10 +374,11 @@ function rtgodam_verify_license( $license_key, $save = false ) {
 	);
 
 	$args = array(
-		'body'    => wp_json_encode( $request_body ),
+		'body'    => json_encode( $request_body ),
 		'headers' => array(
 			'Content-Type' => 'application/json',
 		),
+		'timeout' => 10,
 	);
 
 	// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
@@ -450,7 +449,7 @@ function rtgodam_mask_string( $input, $offset = 4 ) {
  *
  * @param int $post_id Current Post Id.
  *
- * @return array|string List of Categories or empty string on failure.
+ * @return void
  */
 function rtgodam_get_categories_list( $post_id ) {
 
@@ -476,7 +475,7 @@ function rtgodam_get_categories_list( $post_id ) {
  *
  * @param int $post_id Current Post Id.
  *
- * @return array|string List of Tags or empty string on failure.
+ * @return void
  */
 function rtgodam_get_tags_list( $post_id ) {
 
@@ -572,5 +571,5 @@ function rtgodam_get_user_ip() {
 		$ip_address = filter_var( rtgodam_get_server_var( 'REMOTE_ADDR' ), FILTER_VALIDATE_IP );
 	}
 
-	return $ip_address; // Return an empty string if invalid.
+	return $ip_address; // Return an empty string if invalid
 }

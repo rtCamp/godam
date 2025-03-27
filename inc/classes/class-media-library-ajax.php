@@ -49,10 +49,6 @@ class Media_Library_Ajax {
 	 * @return void
 	 */
 	public function add_media_library_taxonomy_on_media_upload( $attachment_id ) {
-
-		// Check nonce which would be same as the async-upload.php nonce.
-		check_admin_referer( 'media-form' );
-
 		if ( ! isset( $_REQUEST['media-folder'] ) || empty( $_REQUEST['media-folder'] ) || $_REQUEST['media-folder'] <= 0 ) {
 			return;
 		}
@@ -134,8 +130,6 @@ class Media_Library_Ajax {
 	 */
 	public function filter_media_library_by_taxonomy( $query_args ) {
 
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Hooking into default WP hooks.
-
 		if ( isset( $_REQUEST['query']['media-folder'] ) ) {
 			$media_folder_id = sanitize_text_field( wp_unslash( $_REQUEST['query']['media-folder'] ) );
 
@@ -186,8 +180,6 @@ class Media_Library_Ajax {
 		}
 
 		return $query_args;
-
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
@@ -197,9 +189,6 @@ class Media_Library_Ajax {
 	 * @return void
 	 */
 	public function pre_get_post_filter( $query ) {
-
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Hooking into default WP hooks.
-
 		if ( is_admin() && $query->is_main_query() && $query->get( 'post_type' ) === 'attachment' ) {
 			$media_folder = isset( $_GET['media-folder'] ) ? sanitize_text_field( wp_unslash( $_GET['media-folder'] ) ) : null;
 
@@ -252,8 +241,6 @@ class Media_Library_Ajax {
 				);
 			}
 		}
-
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
@@ -266,7 +253,7 @@ class Media_Library_Ajax {
 
 		if ( 'upload' === $screen->id ) {
 			// Get the current folder filter value from the URL.
-			$media_folder = isset( $_GET['media-folder'] ) ? sanitize_text_field( wp_unslash( $_GET['media-folder'] ) ) : 'all'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just echoing the value without any usage.
+			$media_folder = isset( $_GET['media-folder'] ) ? sanitize_text_field( $_GET['media-folder'] ) : 'all';
 
 			// Get all terms from the 'media-folder' taxonomy.
 			$terms = get_terms(
@@ -385,6 +372,7 @@ class Media_Library_Ajax {
 			array(
 				'body'    => wp_json_encode( $params ),
 				'headers' => array( 'Content-Type' => 'application/json' ),
+				'timeout' => 10,
 			)
 		);
 	}

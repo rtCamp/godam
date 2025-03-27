@@ -12,27 +12,27 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Auto loader function.
  *
- * @param string $file_resource Source namespace.
+ * @param string $resource Source namespace.
  *
  * @return void
  */
-function autoloader( $file_resource = '' ) {
+function autoloader( $resource = '' ) {
 
 	$resource_path  = false;
 	$namespace_root = 'RTGODAM\\';
-	$file_resource  = trim( $file_resource, '\\' );
+	$resource       = trim( $resource, '\\' );
 
-	if ( empty( $file_resource ) || strpos( $file_resource, '\\' ) === false || strpos( $file_resource, $namespace_root ) !== 0 ) {
+	if ( empty( $resource ) || strpos( $resource, '\\' ) === false || strpos( $resource, $namespace_root ) !== 0 ) {
 		// Not our namespace, bail out.
 		return;
 	}
 
 	// Remove our root namespace.
-	$file_resource = str_replace( $namespace_root, '', $file_resource );
+	$resource = str_replace( $namespace_root, '', $resource );
 
 	$path = explode(
 		'\\',
-		str_replace( '_', '-', strtolower( $file_resource ) )
+		str_replace( '_', '-', strtolower( $resource ) )
 	);
 
 	/**
