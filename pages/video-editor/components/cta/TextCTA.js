@@ -45,6 +45,16 @@ const TextCTA = ( { layerID } ) => {
 		[ 'clean' ], // Remove formatting
 	];
 
+	function replaceRgbaWithHex( str ) {
+		return str.replace(
+			/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/g,
+			( match, r, g, b ) => {
+				const hex = `#${ Number( r ).toString( 16 ).padStart( 2, '0' ) }${ Number( g ).toString( 16 ).padStart( 2, '0' ) }${ Number( b ).toString( 16 ).padStart( 2, '0' ) }`;
+				return hex;
+			},
+		);
+	}
+
 	return (
 		<>
 			<div className="mb-2 flex items-end justify-between">
@@ -56,7 +66,7 @@ const TextCTA = ( { layerID } ) => {
 					dispatch( updateLayerField( {
 						id: layer.id,
 						field: 'text',
-						value: DOMPurify.sanitize( val ),
+						value: DOMPurify.sanitize( replaceRgbaWithHex( val ) ),
 					} ) );
 				} }
 				toolbarOptions={ layer.FullEditor ? allToolbarOptions : minmalToolbarOptions }
