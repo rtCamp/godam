@@ -163,7 +163,11 @@ class Ads extends Base {
 				<vmap:AdBreak timeOffset="<?php echo esc_attr( $display_time ); ?>" breakType="linear" breakId="preroll">
 					<vmap:AdSource id="preroll-ad-1" allowMultipleAds="false" followRedirects="true">
 						<vmap:AdTagURI templateType="vast4">
-							<![CDATA[ <?php echo esc_url_raw( $vast_url ); ?> ]]>
+							<![CDATA[ 
+							<?php 
+								echo esc_url_raw( $vast_url ); // The URL used here is for redirect purposes, so it must be raw. This will is used to get the VAST XML.
+							?>
+							]]>
 						</vmap:AdTagURI>
 					</vmap:AdSource>
 				</vmap:AdBreak>
@@ -250,7 +254,11 @@ class Ads extends Base {
 					<vmap:AdBreak timeOffset="<?php echo esc_attr( 0 === $display_time ? 'start' : gmdate( 'H:i:s', $display_time ) ); ?>" breakType="linear">
 						<vmap:AdSource allowMultipleAds="false" followRedirects="true">
 							<vmap:AdTagURI templateType="vast4">
-								<![CDATA[ <?php echo esc_url_raw( $vast_url ); ?> ]]>
+								<![CDATA[
+									<?php 
+										echo esc_url_raw( $vast_url ); // The URL used here is for redirect purposes, so it must be raw. This will is used to get the VAST XML.
+									?>
+								]]>
 							</vmap:AdTagURI>
 						</vmap:AdSource>
 					</vmap:AdBreak>
