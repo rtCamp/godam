@@ -57,6 +57,11 @@ class RTGODAM_RetranscodeMedia {
 		$this->api_key        = get_site_option( 'rtgodam-api-key' );
 		$this->stored_api_key = get_site_option( 'rtgodam-api-key-stored' );
 
+		$license_check = rtgodam_verify_license( $this->api_key );
+		if ( is_wp_error( $license_check ) ) {
+			return; // Abort initializing retranscoding if license is invalid.
+		}
+
 		$this->usage_info = get_site_option( 'rtgodam-usage' );
 		// Load Rest Endpoints.
 		$this->load_rest_endpoints();

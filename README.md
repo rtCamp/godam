@@ -99,6 +99,17 @@ Method 2: Manual Upload
 
 The GoDAM menu should appear on your admin dashboard!
 
+### Build from Source (For Developers)
+After downloading the plugin ZIP from GitHub, run the following commands in your terminal:
+
+```bash
+composer install --optimize-autoloader --no-dev
+npm install
+npm run build:prod
+```
+
+This will install PHP and JavaScript dependencies and generate the production-ready build of the plugin.
+
 ## Frequently Asked Questions
 Q. What is GoDAM, and how does it work?
 A. GoDAM is a media management service that seamlessly integrates with your WordPress site to optimize and enhance your audio and video content. It automatically converts uploaded audio files to MP3 and video files to MP4 formats. Additionally, GoDAM offers a suite of powerful features, including thumbnail generation, shortcode support, customizable video layers (like Gravity Forms, text/image CTAs, video hotspots, and ads), adaptive bitrate streaming for smooth playback, and advanced asset management tools.

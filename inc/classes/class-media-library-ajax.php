@@ -50,8 +50,7 @@ class Media_Library_Ajax {
 	 */
 	public function add_media_library_taxonomy_on_media_upload( $attachment_id ) {
 
-		// Check nonce which would be same as the async-upload.php nonce.
-		check_admin_referer( 'media-form' );
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Hooking into default WP hooks.
 
 		if ( ! isset( $_REQUEST['media-folder'] ) || empty( $_REQUEST['media-folder'] ) || $_REQUEST['media-folder'] <= 0 ) {
 			return;
@@ -69,6 +68,8 @@ class Media_Library_Ajax {
 
 		// Assign the existing term.
 		wp_set_object_terms( $attachment_id, (int) $media_folder, 'media-folder' );
+
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
