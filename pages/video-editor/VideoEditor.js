@@ -227,7 +227,6 @@ const VideoEditor = ( { attachmentID } ) => {
 										preload: 'auto',
 										width: '100%',
 										sources,
-										muted: true,
 										controlBar: {
 											playToggle: true, // Play/Pause button
 											volumePanel: true,
