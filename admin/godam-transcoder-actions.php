@@ -27,7 +27,7 @@ function rtgodam_add_transcoded_url_field( $form_fields, $post ) {
 	// Check if attachment is of type video.
 	$mime_type = get_post_mime_type( $post->ID );
 
-	if ( ! preg_match( '/^video\//', $mime_type ) ) {
+	if ( ! preg_match( '/^(video|audio)\//', $mime_type ) ) {
 		return $form_fields;
 	}
 

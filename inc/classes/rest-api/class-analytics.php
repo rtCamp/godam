@@ -76,12 +76,12 @@ class Analytics extends Base {
 
 		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
 
-		// Check if license key is valid.
+		// Check if API key is valid.
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
 				array(
 					'status'  => 'error',
-					'message' => 'Invalid or unverified license key.',
+					'message' => 'Invalid or unverified API key.',
 				),
 				200
 			);

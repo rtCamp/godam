@@ -337,7 +337,7 @@ class RTGODAM_Transcoder_Handler {
 	 * @return boolean $status  If true then key is valid else key is not valid.
 	 */
 	public function is_valid_key( $key ) {
-		$validate_url = trailingslashit( $this->store_url ) . '/resource/License/' . $key;
+		$validate_url = trailingslashit( $this->store_url ) . '/resource/api_key/' . $key;
 		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
 			$validation_page = vip_safe_wp_remote_get( $validate_url, '', 3, 3 );
 		} else {
@@ -353,6 +353,23 @@ class RTGODAM_Transcoder_Handler {
 		}
 
 		return $status;
+	}
+
+	/**
+	 * Save usage information.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @param string $key  Api key.
+	 *
+	 * @return array $usage_info  An array containing usage information.
+	 */
+	public function update_usage( $key ) {
+
+		$response = rtgodam_verify_api_key( $key );
+		update_site_option( 'rtgodam-usage', array( $key => (object) $response['data'] ) );
+
+		return $response;
 	}
 
 	/**
@@ -382,22 +399,22 @@ class RTGODAM_Transcoder_Handler {
 	}
 
 	/**
-	 * Display message when license key is not valid.
+	 * Display message when API key is not valid.
 	 *
 	 * @since 1.0.0
 	 */
-	public function invalid_license_notice() {
+	public function invalid_api_key_notice() {
 		?>
 		<div class="error">
 			<p>
-				<?php esc_html_e( 'This license key is invalid.', 'godam' ); ?>
+				<?php esc_html_e( 'This API key is invalid.', 'godam' ); ?>
 			</p>
 		</div>
 		<?php
 	}
 
 	/**
-	 * Display message when user tries to activate license key on localhost.
+	 * Display message when user tries to activate API key on localhost.
 	 *
 	 * @since 1.0.6
 	 */
@@ -628,13 +645,23 @@ class RTGODAM_Transcoder_Handler {
 									update_post_meta( $attachment_id, '_wp_attached_file', $uploaded_file );
 									update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $download_url );
 
-									wp_update_post(
-										array(
-											'ID' => $attachment_id,
-											'post_mime_type' => 'video/mp4',
-										)
-									);
+									$mime_type = get_post_mime_type( $attachment_id );
 
+									if ( strpos( $mime_type, 'audio' ) !== false ) {
+										wp_update_post(
+											array(
+												'ID' => $attachment_id,
+												'post_mime_type' => 'audio/mp3',
+											)
+										);
+									} else {
+										wp_update_post(
+											array(
+												'ID' => $attachment_id,
+												'post_mime_type' => 'video/mp4',
+											)
+										);
+									}
 								}
 							} else {
 								$flag = esc_html__( 'Could not read file.', 'godam' );

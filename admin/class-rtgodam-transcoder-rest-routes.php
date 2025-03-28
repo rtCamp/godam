@@ -228,6 +228,8 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					$flag = 'Something went wrong. The required attachment id does not exists. It must have been deleted.';
 				}
 
+				$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
+
 				if ( $flag && $mail ) {
 					$subject = 'Transcoding: Download Failed';
 					$message = '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p>';

@@ -4,7 +4,7 @@
 /**
  * Internal dependencies
  */
-import { isLicenseValid, isFolderOrgDisabled } from '../utility';
+import { isAPIKeyValid, isFolderOrgDisabled } from '../utility';
 
 const $ = jQuery;
 
@@ -84,7 +84,7 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 		 */
 		wp.media.view.Attachment.prototype.render.call( this );
 
-		if ( isLicenseValid() && this.model.get( 'type' ) === 'video' ) {
+		if ( isAPIKeyValid() && ( this.model.get( 'type' ) === 'video' || this.model.get( 'type' ) === 'audio' ) ) {
 			if ( this.model.get( 'transcoded_url' ) ) {
 				this.$el.append( `
 					<div class="transcoding-status__loader" data-percent="100">

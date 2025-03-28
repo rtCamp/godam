@@ -219,7 +219,7 @@
 	pointer-events: none;
 }
 
-.license-overlay {
+.api-key-overlay {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -233,7 +233,7 @@
 	z-index: 99;
 }
 
-.license-message {
+.api-key-message {
 	background: white;
 	padding: 20px 40px;
 	border-radius: 5px;
@@ -242,13 +242,13 @@
 	font-size: 16px;
 	font-weight: bold;
 }
-.license-message a {
+.api-key-message a {
 	color: #3b82f6;
 	text-decoration: none;
 	font-weight: 600;
 }
 
-.license-message a:hover {
+.api-key-message a:hover {
 	text-decoration: underline;
 }
 

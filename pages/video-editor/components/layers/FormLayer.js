@@ -76,10 +76,10 @@ const FormLayer = ( { layerID, goBack } ) => {
 	};
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidLicense = window?.videoData?.valid_license;
+	// const isValidAPIKey = window?.videoData?.valid_api_key;
 
 	// For now we are enabling all the features
-	const isValidLicense = true;
+	const isValidAPIKey = true;
 
 	return (
 		<>
@@ -102,7 +102,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 			</div>
 
 			{
-				! isValidLicense &&
+				! isValidAPIKey &&
 				<Notice
 					className="mb-4"
 					status="warning"
@@ -114,7 +114,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 			{
 				forms.length > 0 &&
-					<GravityFormSelector disabled={ ! isValidLicense } className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
+					<GravityFormSelector disabled={ ! isValidAPIKey } className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<SelectControl
@@ -125,7 +125,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 				onChange={ ( value ) =>
 					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
 				}
-				disabled={ ! isValidLicense }
+				disabled={ ! isValidAPIKey }
 			/>
 
 			<ToggleControl
@@ -136,7 +136,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
 				}
 				help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
-				disabled={ ! isValidLicense }
+				disabled={ ! isValidAPIKey }
 			/>
 
 			<Panel className="-mx-4 border-x-0">
@@ -153,12 +153,12 @@ const FormLayer = ( { layerID, goBack } ) => {
 						label={ __( 'Layer background color', 'godam' ) }
 						enableAlpha={ true }
 						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
-						disabled={ ! isValidLicense }
+						disabled={ ! isValidAPIKey }
 					/>
 
 					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'godam' ) }</label>
 
-					<div className={ ! isValidLicense ? 'pointer-events-none opacity-50' : '' }>
+					<div className={ ! isValidAPIKey ? 'pointer-events-none opacity-50' : '' }>
 						<Editor
 							id="custom-css"
 							className="code-editor"

@@ -303,7 +303,7 @@ class Pages {
 					'nonce'            => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
-					'valid_license'    => rtgodam_is_license_valid(),
+					'valid_api_key'    => rtgodam_is_api_key_valid(),
 				)
 			);
 

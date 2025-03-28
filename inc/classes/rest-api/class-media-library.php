@@ -115,7 +115,7 @@ class Media_Library extends Base {
 	}
 
 	/**
-	 * Verify the license key using external API.
+	 * Verify the API key using external API.
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response

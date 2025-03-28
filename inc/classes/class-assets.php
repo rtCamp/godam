@@ -87,9 +87,9 @@ class Assets {
 		
 		wp_localize_script(
 			'rtgodam-script',
-			'godamLicenseData',
+			'godamAPIKeyData',
 			array(
-				'valid_license' => rtgodam_is_license_valid(),
+				'valid_api_key' => rtgodam_is_api_key_valid(),
 			)
 		);
 
