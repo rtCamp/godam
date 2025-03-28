@@ -14,18 +14,11 @@ defined( 'ABSPATH' ) || exit;
 class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 	/**
-	 * Version of REST route.
-	 *
-	 * @var int
-	 */
-	public $version = 1;
-
-	/**
 	 * Prefix for API endpoint namespace.
 	 *
 	 * @var string
 	 */
-	public $namespace_prefix = 'transcoder/v';
+	public $namespace_prefix = 'godam/v1';
 
 	/**
 	 * RT Transcoder Handler object.
@@ -57,12 +50,12 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 		// Register `transcoder-callback` route to handle callback request by the FFMPEG transcoding server.
 		register_rest_route(
-			$this->namespace_prefix . $this->version,
+			$this->namespace_prefix,
 			'/transcoder-callback',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'handle_callback' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => '__return_true', // The endpoint must be public; otherwise, GoDAM (https://app.godam.io) won't be able to send a media transcoding callback request.
 				'args'                => array(
 					'job_id'           => array(
 						'required'          => true,
@@ -135,6 +128,15 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	}
 
 	/**
+	 * Return the callback URL for the transcoder.
+	 *
+	 * @return string
+	 */
+	public function get_callback_url() {
+		return rest_url( $this->namespace_prefix . '/transcoder-callback' );
+	}
+
+	/**
 	 * Sanitizes a single URL or an array of URLs.
 	 *
 	 * @param mixed           $value The incoming data (can be a single URL or an array of URLs).
@@ -168,15 +170,6 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 		// Else just sanitize the array values.
 		return array_map( 'esc_url_raw', $value );
-	}
-
-	/**
-	 * Return the callback URL for the transcoder.
-	 *
-	 * @return string
-	 */
-	public function get_callback_url() {
-		return rest_url( $this->namespace_prefix . $this->version . '/transcoder-callback' );
 	}
 
 	/**
