@@ -118,10 +118,10 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 	}, [] );
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidLicense = window?.videoData?.valid_license;
+	// const isValidAPIKey = window?.videoData?.valid_license;
 
 	// For now we are enabling all the features
-	const isValidLicense = true;
+	const isValidAPIKey = true;
 
 	return (
 		<>
@@ -165,7 +165,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			</div>
 
 			{
-				! isValidLicense &&
+				! isValidAPIKey &&
 				<Notice
 					className="mb-4"
 					status="warning"
@@ -187,7 +187,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 						updateField( 'duration', newVal );
 					} }
 					help="Duration (in seconds) this layer will stay visible"
-					disabled={ ! isValidLicense }
+					disabled={ ! isValidAPIKey }
 				/>
 			</div>
 
@@ -197,7 +197,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 					label={ __( 'Pause video on hover', 'godam' ) }
 					checked={ layer?.pauseOnHover || false }
 					onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
-					disabled={ ! isValidLicense }
+					disabled={ ! isValidAPIKey }
 				/>
 				<p className="text-xs text-gray-500 mt-1">
 					{ __(
@@ -291,7 +291,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 											),
 										)
 									}
-									disabled={ ! isValidLicense }
+									disabled={ ! isValidAPIKey }
 								/>
 								<TextControl
 									label={ __( 'Link', 'godam' ) }
@@ -305,7 +305,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 											),
 										)
 									}
-									disabled={ ! isValidLicense }
+									disabled={ ! isValidAPIKey }
 								/>
 								{ hotspot.showIcon && (
 									<div className="flex flex-col gap-2 mt-2">
@@ -314,7 +314,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 											index={ index }
 											updateField={ updateField }
 											hotspots={ hotspots }
-											disabled={ ! isValidLicense }
+											disabled={ ! isValidAPIKey }
 										/>
 									</div>
 								) }
@@ -329,7 +329,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 										<ColorPalette
 											id={ `hotspot-color-${ index }` }
 											value={ hotspot.backgroundColor || '#0c80dfa6' }
-											className={ ! isValidLicense ? 'pointer-events-none opacity-50' : '' }
+											className={ ! isValidAPIKey ? 'pointer-events-none opacity-50' : '' }
 											onChange={ ( newColor ) => {
 												updateField(
 													'hotspots',
@@ -358,7 +358,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 					icon={ plus }
 					iconPosition="left"
 					onClick={ handleAddHotspot }
-					disabled={ ! isValidLicense }
+					disabled={ ! isValidAPIKey }
 				>
 					{ __( 'Add Hotspot', 'godam' ) }
 				</Button>

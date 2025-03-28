@@ -257,7 +257,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 		}, 5000 );
 	};
 
-	const isValidLicense = window.userData?.valid_license;
+	const isValidAPIKey = window.userData?.valid_license;
 	const isStarterPlan = window.userData?.user_data?.active_plan === 'Starter';
 
 	const [ isDirty, setIsDirty ] = useState( false );
@@ -447,7 +447,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 
 				<div className="relative mt-4">
 					{
-						! isValidLicense && (
+						! isValidAPIKey && (
 							<div className="premium-feature-overlay">
 								<Button icon={ unlock } href="https://app.godam.io/subscription/plans" target="_blank" variant="primary">{ __( 'Unlock with GoDAM pro', 'godam' ) }</Button>
 							</div>
@@ -566,7 +566,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 
 				<div className="relative">
 					{
-						! isValidLicense && (
+						! isValidAPIKey && (
 							<div className="premium-feature-overlay">
 								<Button icon={ unlock } href="https://app.godam.io/subscription/plans" target="_blank" variant="primary">{ __( 'Unlock with GoDAM pro', 'godam' ) }</Button>
 							</div>
@@ -621,7 +621,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 
 				<div className="relative">
 					{
-						( ! isValidLicense || isStarterPlan ) && (
+						( ! isValidAPIKey || isStarterPlan ) && (
 							<div className="premium-feature-overlay">
 								<Button icon={ unlock } href="https://app.godam.io/subscription/plans" target="_blank" variant="primary">{ __( 'Upgrade to unlock', 'godam' ) }</Button>
 							</div>
@@ -640,9 +640,9 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 								<ToggleControl
 									__nextHasNoMarginBottom
 									label="Disable video watermark"
-									checked={ ( ! isValidLicense || isStarterPlan ) ? false : disableWatermark }
+									checked={ ( ! isValidAPIKey || isStarterPlan ) ? false : disableWatermark }
 									onChange={ ( value ) => setDisableWatermark( value ) }
-									disabled={ isStarterPlan || ! isValidLicense }
+									disabled={ isStarterPlan || ! isValidAPIKey }
 									help={ __( 'If enabled, GoDAM will add a watermark to the transcoded video', 'godam' ) }
 								/>
 								{ ! isStarterPlan && ! disableWatermark && (
