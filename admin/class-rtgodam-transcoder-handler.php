@@ -645,7 +645,6 @@ class RTGODAM_Transcoder_Handler {
 											)
 										);
 									}
-
 								}
 							} else {
 								$flag = esc_html__( 'Could not read file.', 'godam' );
