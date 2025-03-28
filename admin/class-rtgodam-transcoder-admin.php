@@ -171,7 +171,7 @@ class RTGODAM_Transcoder_Admin {
 		// Get the GoDAM logo URL.
 		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
 
-		$button_label = ( 'activate' === $button_type ) ? esc_html__( 'Activate License', 'godam' ) : esc_html__( 'Use Video Editor', 'godam' );
+		$button_label = ( 'activate' === $button_type ) ? esc_html__( 'Activate API Key', 'godam' ) : esc_html__( 'Use Video Editor', 'godam' );
 		$button_link  = ( 'activate' === $button_type ) ? admin_url( 'admin.php?page=rtgodam' ) : admin_url( 'admin.php?page=rtgodam_video_editor' );
 
 		?>
@@ -232,7 +232,7 @@ class RTGODAM_Transcoder_Admin {
 					<p><?php echo esc_html__( 'Unlock high-speed transcoding, advanced analytics, adaptive streaming, and more by activating your license.', 'godam' ); ?></p>
 					<p>
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam' ) ); ?>" class="button button-primary">
-							<?php echo esc_html__( 'Activate License', 'godam' ); ?>
+							<?php echo esc_html__( 'Activate API Key', 'godam' ); ?>
 						</a>
 						<a href="https://godam.io/adaptive-bitrate-streaming/" class="button button-secondary" target="_blank">
 							<?php echo esc_html__( 'Learn More', 'godam' ); ?>

@@ -251,7 +251,7 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 
 		const result = await response.json();
 
-		if ( result.status === 'error' && result.message.includes( 'Invalid or unverified license key' ) ) {
+		if ( result.status === 'error' && result.message.includes( 'Invalid or unverified API key' ) ) {
 			showLicenseActivationMessage();
 			return null;
 		}

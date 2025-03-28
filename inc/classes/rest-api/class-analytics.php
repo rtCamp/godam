@@ -81,7 +81,7 @@ class Analytics extends Base {
 			return new WP_REST_Response(
 				array(
 					'status'  => 'error',
-					'message' => 'Invalid or unverified license key.',
+					'message' => 'Invalid or unverified API key.',
 				),
 				200
 			);

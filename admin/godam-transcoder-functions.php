@@ -363,7 +363,7 @@ function rtgodam_get_blacklist_ip_addresses() {
  */
 function rtgodam_verify_license( $license_key, $save = false ) {
 	if ( empty( $license_key ) ) {
-		return new \WP_Error( 'missing_license_key', 'License key is required.', array( 'status' => 400 ) );
+		return new \WP_Error( 'missing_api_key', 'API key is required.', array( 'status' => 400 ) );
 	}
 
 	$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.verification.verify_license';
@@ -413,14 +413,14 @@ function rtgodam_verify_license( $license_key, $save = false ) {
 
 		return array(
 			'status'  => 'success',
-			'message' => 'License key verified and stored successfully!',
+			'message' => 'API key verified and stored successfully!',
 			'data'    => $body['message'],
 		);
 	}
 
 	// Handle failure response.
 	if ( 404 === $status_code ) {
-		return new \WP_Error( 'invalid_license', 'Invalid license key. Please try again.', array( 'status' => 404 ) );
+		return new \WP_Error( 'invalid_license', 'Invalid API key. Please try again.', array( 'status' => 404 ) );
 	}
 
 	// Handle unexpected responses.

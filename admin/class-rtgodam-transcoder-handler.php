@@ -390,7 +390,7 @@ class RTGODAM_Transcoder_Handler {
 		?>
 		<div class="error">
 			<p>
-				<?php esc_html_e( 'This license key is invalid.', 'godam' ); ?>
+				<?php esc_html_e( 'This API key is invalid.', 'godam' ); ?>
 			</p>
 		</div>
 		<?php

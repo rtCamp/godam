@@ -41,7 +41,7 @@ class Settings extends Base {
 						'license_key' => array(
 							'required'          => true,
 							'type'              => 'string',
-							'description'       => 'The license key to verify.',
+							'description'       => 'The API key to verify.',
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 					),
@@ -172,7 +172,7 @@ class Settings extends Base {
 			return new \WP_REST_Response(
 				array(
 					'status'  => 'success',
-					'message' => 'License key deactivated successfully.',
+					'message' => 'API key deactivated successfully.',
 				),
 				200
 			);
@@ -181,7 +181,7 @@ class Settings extends Base {
 		return new \WP_REST_Response(
 			array(
 				'status'  => 'error',
-				'message' => 'Failed to deactivate the license key. It might not exist.',
+				'message' => 'Failed to deactivate the API key. It might not exist.',
 			),
 			400
 		);

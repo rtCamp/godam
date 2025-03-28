@@ -302,7 +302,6 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 
 			{ ! window?.userData?.valid_license && (
 				<Panel
-					header={ __( 'Pricing Plan', 'godam' ) }
 					className="mb-4"
 				>
 					<PanelBody
