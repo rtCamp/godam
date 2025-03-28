@@ -135,15 +135,6 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	}
 
 	/**
-	 * Check if the current user has the permission to transcode media.
-	 * 
-	 * @return bool
-	 */
-	public function is_media_transcoding_permission() {
-		return current_user_can( 'upload_files' );
-	}
-
-	/**
 	 * Sanitizes a single URL or an array of URLs.
 	 *
 	 * @param mixed           $value The incoming data (can be a single URL or an array of URLs).
