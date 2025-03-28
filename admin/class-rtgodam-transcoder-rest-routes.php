@@ -133,7 +133,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	 * @return string
 	 */
 	public function get_callback_url() {
-		return rest_url( $this->namespace_prefix . $this->version . '/transcoder-callback' );
+		return rest_url( $this->namespace_prefix . '/transcoder-callback' );
 	}
 
 	/**
