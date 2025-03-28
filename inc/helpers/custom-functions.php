@@ -210,7 +210,7 @@ function rtgodam_image_cta_html( $layer ) {
  */
 function rtgodam_get_user_data( $timeout = 300 ) {
 	$rtgodam_user_data = get_site_option( 'rtgodam_user_data', false );
-	$api_key       = get_site_option( 'rtgodam-api-key', '' );
+	$api_key           = get_site_option( 'rtgodam-api-key', '' );
 
 	if (
 		( empty( $rtgodam_user_data ) && ! empty( $api_key ) ) ||
@@ -223,11 +223,11 @@ function rtgodam_get_user_data( $timeout = 300 ) {
 		$user_data     = array();
 
 		if ( is_wp_error( $result ) ) {
-			$valid_api_key            = false;
+			$valid_api_key               = false;
 			$user_data['masked_api_key'] = rtgodam_mask_string( $api_key );
 		} else {
-			$valid_api_key            = true;
-			$user_data                = $result['data'] ?? array();
+			$valid_api_key               = true;
+			$user_data                   = $result['data'] ?? array();
 			$user_data['masked_api_key'] = rtgodam_mask_string( $api_key );
 		}
 
