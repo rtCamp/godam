@@ -645,13 +645,23 @@ class RTGODAM_Transcoder_Handler {
 									update_post_meta( $attachment_id, '_wp_attached_file', $uploaded_file );
 									update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $download_url );
 
-									wp_update_post(
-										array(
-											'ID' => $attachment_id,
-											'post_mime_type' => 'video/mp4',
-										)
-									);
+									$mime_type = get_post_mime_type( $attachment_id );
 
+									if ( strpos( $mime_type, 'audio' ) !== false ) {
+										wp_update_post(
+											array(
+												'ID' => $attachment_id,
+												'post_mime_type' => 'audio/mp3',
+											)
+										);
+									} else {
+										wp_update_post(
+											array(
+												'ID' => $attachment_id,
+												'post_mime_type' => 'video/mp4',
+											)
+										);
+									}
 								}
 							} else {
 								$flag = esc_html__( 'Could not read file.', 'godam' );
