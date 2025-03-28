@@ -34,7 +34,7 @@ import GoDAM from '../../../../assets/src/images/GoDAM.png';
  * Global variables
  */
 const PREMIUM_LAYERS = [ 'form', 'hotspot', 'ad' ];
-const validLicense = window?.godamLicenseData?.valid_api_key;
+const validAPIKey = window?.godamAPIKeyData?.valid_api_key;
 
 library.add( fas );
 dom.watch();
@@ -207,7 +207,7 @@ function GODAMPlayer( videoRef = null ) {
 				controlBar.removeChild( 'volumePanel' );
 			}
 
-			if ( controlBarSettings.brandingIcon || ! validLicense ) {
+			if ( controlBarSettings.brandingIcon || ! validAPIKey ) {
 				const CustomPlayButton = videojs.getComponent( 'Button' );
 
 				class CustomButton extends CustomPlayButton {

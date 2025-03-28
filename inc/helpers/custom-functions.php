@@ -216,7 +216,7 @@ function rtgodam_get_user_data( $timeout = 300 ) {
 		( empty( $rtgodam_user_data ) && ! empty( $api_key ) ) ||
 		( isset( $rtgodam_user_data['timestamp'] ) && ( time() - $rtgodam_user_data['timestamp'] ) > $timeout )
 	) {
-		// Verify the user's license.
+		// Verify the user's API Key.
 		$result = rtgodam_verify_api_key( $api_key );
 
 		$valid_api_key = false;
@@ -271,7 +271,7 @@ function rtgodam_get_usage_data() {
 
 	$url = add_query_arg(
 		array(
-			'license' => $api_key,
+			'api_key' => $api_key,
 		),
 		$endpoint
 	);

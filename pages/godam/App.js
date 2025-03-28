@@ -76,12 +76,12 @@ const App = () => {
 
 				let apiKeyFromURL = '';
 				const urlParams = new URLSearchParams( window.location.search );
-				if ( urlParams.has( 'license_key' ) ) {
-					apiKeyFromURL = urlParams.get( 'license_key' );
+				if ( urlParams.has( 'api_key' ) ) {
+					apiKeyFromURL = urlParams.get( 'api_key' );
 				}
 
 				if ( ! window.userData?.valid_api_key && apiKeyFromURL ) {
-					// Set license key from URL and trigger verification in GeneralSettings
+					// Set API key from URL and trigger verification in GeneralSettings
 					setAPIKey( apiKeyFromURL );
 					setVerifyAPIKeyFromURL( true ); // Pass this flag to GeneralSettings
 				} else {

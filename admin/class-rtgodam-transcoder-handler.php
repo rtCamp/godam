@@ -337,7 +337,7 @@ class RTGODAM_Transcoder_Handler {
 	 * @return boolean $status  If true then key is valid else key is not valid.
 	 */
 	public function is_valid_key( $key ) {
-		$validate_url = trailingslashit( $this->store_url ) . '/resource/License/' . $key;
+		$validate_url = trailingslashit( $this->store_url ) . '/resource/api_key/' . $key;
 		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
 			$validation_page = vip_safe_wp_remote_get( $validate_url, '', 3, 3 );
 		} else {

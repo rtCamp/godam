@@ -110,13 +110,13 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, apiKey, setAPIKey, saveM
 		let result = {};
 
 		try {
-			const response = await fetch( window.pathJoin( [ restURL, '/godam/v1/settings/verify-license' ] ), {
+			const response = await fetch( window.pathJoin( [ restURL, '/godam/v1/settings/verify-api-key' ] ), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 					'X-WP-Nonce': window.wpApiSettings.nonce,
 				},
-				body: JSON.stringify( { license_key: apiKey } ),
+				body: JSON.stringify( { api_key: apiKey } ),
 			} );
 
 			result = await response.json();
@@ -160,7 +160,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, apiKey, setAPIKey, saveM
 		setIsDeactivateLoading( true );
 
 		try {
-			const response = await fetch( window.pathJoin( [ restURL, '/godam/v1/settings/deactivate-license' ] ), {
+			const response = await fetch( window.pathJoin( [ restURL, '/godam/v1/settings/deactivate-api-key' ] ), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, apiKey, setAPIKey, saveM
 			} );
 
 			if ( response.ok ) {
-				setAPIKey( '' ); // Clear the license key from state.
+				setAPIKey( '' ); // Clear the API key from state.
 				setNotice( { message: 'API key deactivated successfully', status: 'success', isVisible: true } );
 				const updatedSettings = {
 					...mediaSettings,
@@ -354,7 +354,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, apiKey, setAPIKey, saveM
 											<>
 												{ __( 'Your API key is required to access the features. You can get your active API key from your ', 'godam' ) }
 												<a
-													href={ GODAM_API_BASE + '/#licenses' }
+													href={ GODAM_API_BASE }
 													target="_blank"
 													rel="noopener noreferrer"
 													className="text-blue-500 underline"

@@ -7,7 +7,7 @@ import MediaLibraryTaxonomyFilter from './filters/media-library-taxonomy-filter'
 import MediaDateRangeFilter from './filters/media-date-range-filter';
 import MediaRetranscode from './filters/media-retranscode';
 
-import { isLicenseValid, isUploadPage, isFolderOrgDisabled } from '../utility';
+import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled } from '../utility';
 
 const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
 
@@ -61,7 +61,7 @@ export default AttachmentsBrowser?.extend( {
 			);
 		}
 
-		if ( isLicenseValid() && isUploadPage() ) {
+		if ( isAPIKeyValid() && isUploadPage() ) {
 			if ( MediaRetranscode ) {
 				this.toolbar.set(
 					'MediaRetranscode',

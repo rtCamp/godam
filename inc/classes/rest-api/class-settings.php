@@ -30,15 +30,15 @@ class Settings extends Base {
 		return array(
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/verify-license',
+				'route'     => '/' . $this->rest_base . '/verify-api-key',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'verify_license' ),
+					'callback'            => array( $this, 'verify_api_key' ),
 					'permission_callback' => function () {
 						return current_user_can( 'manage_options' );
 					},
 					'args'                => array(
-						'license_key' => array(
+						'api_key' => array(
 							'required'          => true,
 							'type'              => 'string',
 							'description'       => 'The API key to verify.',
@@ -49,10 +49,10 @@ class Settings extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/deactivate-license',
+				'route'     => '/' . $this->rest_base . '/deactivate-api-key',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'deactivate_license' ),
+					'callback'            => array( $this, 'deactivate_api_key' ),
 					'permission_callback' => function () {
 						return current_user_can( 'manage_options' );
 					},
@@ -60,10 +60,10 @@ class Settings extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/get-license-key',
+				'route'     => '/' . $this->rest_base . '/get-api-key',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_license_key' ),
+					'callback'            => array( $this, 'get_api_key' ),
 					'permission_callback' => function () {
 						return current_user_can( 'manage_options' );
 					},
@@ -115,16 +115,16 @@ class Settings extends Base {
 	}
 
 	/**
-	 * Verify the license key using external API.
+	 * Verify the API key using external API.
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response
 	 */
-	public function verify_license( $request ) {
-		$license_key = $request->get_param( 'license_key' );
+	public function verify_api_key( $request ) {
+		$api_key = $request->get_param( 'api_key' );
 
-		// Use the helper function to verify the license key.
-		$result = rtgodam_verify_api_key( $license_key, true );
+		// Use the helper function to verify the API key.
+		$result = rtgodam_verify_api_key( $api_key, true );
 
 		if ( is_wp_error( $result ) ) {
 
@@ -141,8 +141,8 @@ class Settings extends Base {
 			);
 		}
 
-		if ( ! empty( $result['data']['license_key'] ) ) {
-			$result['data']['license_key'] = rtgodam_mask_string( $result['data']['license_key'] );
+		if ( ! empty( $result['data']['api_key'] ) ) {
+			$result['data']['api_key'] = rtgodam_mask_string( $result['data']['api_key'] );
 		}
 
 		return new \WP_REST_Response(
@@ -156,12 +156,12 @@ class Settings extends Base {
 	}
 
 	/**
-	 * Deactivate the license key.
+	 * Deactivate the API key.
 	 *
 	 * @return \WP_REST_Response
 	 */
-	public function deactivate_license() {
-		// Delete the license key from the database.
+	public function deactivate_api_key() {
+		// Delete the API key from the database.
 		$deleted_key   = delete_site_option( 'rtgodam-api-key' );
 		$deleted_token = delete_site_option( 'rtgodam-account-token' );
 		
@@ -188,16 +188,16 @@ class Settings extends Base {
 	}
 
 	/**
-	 * Fetch the saved license key.
+	 * Fetch the saved API key.
 	 *
 	 * @return \WP_REST_Response
 	 */
-	public function get_license_key() {
-		$license_key = get_site_option( 'rtgodam-api-key', '' );
+	public function get_api_key() {
+		$api_key = get_site_option( 'rtgodam-api-key', '' );
 
 		return new \WP_REST_Response(
 			array(
-				'license_key' => $license_key,
+				'api_key' => $api_key,
 			),
 			200
 		);

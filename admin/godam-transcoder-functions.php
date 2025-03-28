@@ -357,7 +357,7 @@ function rtgodam_get_blacklist_ip_addresses() {
  * Helper function to verify the api key.
  *
  * @param string $api_key The api key to verify.
- * @param bool   $save        Whether to save the license key in the site options.
+ * @param bool   $save        Whether to save the API key in the site options.
  * 
  * @return array|WP_Error Array with status and data on success, WP_Error on failure.
  */
@@ -366,13 +366,13 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		return new \WP_Error( 'missing_api_key', 'API key is required.', array( 'status' => 400 ) );
 	}
 
-	$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.verification.verify_license';
+	$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.verification.verify_api_key';
 
 	// Prepare request body.
 	$site_url     = get_site_url();
 	$request_body = array(
-		'license_key' => $api_key,
-		'site_url'    => $site_url,
+		'api_key'  => $api_key,
+		'site_url' => $site_url,
 	);
 
 	$args = array(

@@ -281,9 +281,9 @@ function showAPIActivationMessage() {
 	}
 
 	// Add a message overlay
-	const licenseOverlay = document.getElementById( 'api-key-overlay' );
-	if ( licenseOverlay ) {
-		licenseOverlay.classList.remove( 'hidden' );
+	const apiOverlay = document.getElementById( 'api-key-overlay' );
+	if ( apiOverlay ) {
+		apiOverlay.classList.remove( 'hidden' );
 	}
 }
 
