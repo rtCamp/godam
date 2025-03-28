@@ -366,7 +366,7 @@ class RTGODAM_Transcoder_Handler {
 	 */
 	public function update_usage( $key ) {
 
-		$response = rtgodam_verify_license( $key );
+		$response = rtgodam_verify_api_key( $key );
 		update_site_option( 'rtgodam-usage', array( $key => (object) $response['data'] ) );
 
 		return $response;

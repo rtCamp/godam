@@ -412,7 +412,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 
 			// Update usage data.
 			$handler = new \RTGODAM_Transcoder_Handler( false );
-			$handler->update_usage( $license_key );
+			$handler->update_usage( $api_key );
 		}
 
 		return array(
