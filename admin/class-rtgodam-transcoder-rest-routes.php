@@ -62,7 +62,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'handle_callback' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'is_media_transcoding_permission' ),
 				'args'                => array(
 					'job_id'           => array(
 						'required'          => true,
@@ -132,6 +132,15 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 				),
 			)
 		);
+	}
+
+	/**
+	 * Check if the current user has the permission to transcode media.
+	 * 
+	 * @return bool
+	 */
+	public function is_media_transcoding_permission() {
+		return current_user_can( 'upload_files' );
 	}
 
 	/**
