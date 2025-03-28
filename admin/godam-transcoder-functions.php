@@ -297,9 +297,9 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 }
 
 $user_data           = rtgodam_get_user_data();
-$is_license_verified = isset( $user_data['valid_license'] ) ? $user_data['valid_license'] : false;
+$is_api_key_verified = isset( $user_data['valid_api_key'] ) ? $user_data['valid_api_key'] : false;
 
-if ( $is_license_verified ) {
+if ( $is_api_key_verified ) {
 	add_filter( 'manage_media_columns', 'rtgodam_add_status_columns_head' );
 	add_action( 'manage_media_custom_column', 'rtgodam_add_status_columns_content', 10, 2 );
 }
@@ -354,25 +354,25 @@ function rtgodam_get_blacklist_ip_addresses() {
 }
 
 /**
- * Helper function to verify the license key.
+ * Helper function to verify the api key.
  *
- * @param string $license_key The license key to verify.
- * @param bool   $save        Whether to save the license key in the site options.
+ * @param string $api_key The api key to verify.
+ * @param bool   $save        Whether to save the API key in the site options.
  * 
  * @return array|WP_Error Array with status and data on success, WP_Error on failure.
  */
-function rtgodam_verify_license( $license_key, $save = false ) {
-	if ( empty( $license_key ) ) {
-		return new \WP_Error( 'missing_license_key', 'License key is required.', array( 'status' => 400 ) );
+function rtgodam_verify_api_key( $api_key, $save = false ) {
+	if ( empty( $api_key ) ) {
+		return new \WP_Error( 'missing_api_key', 'API key is required.', array( 'status' => 400 ) );
 	}
 
-	$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.verification.verify_license';
+	$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.verification.verify_api_key';
 
 	// Prepare request body.
 	$site_url     = get_site_url();
 	$request_body = array(
-		'license_key' => $license_key,
-		'site_url'    => $site_url,
+		'api_key'  => $api_key,
+		'site_url' => $site_url,
 	);
 
 	$args = array(
@@ -390,14 +390,14 @@ function rtgodam_verify_license( $license_key, $save = false ) {
 	}
 
 	if ( is_wp_error( $response ) ) {
-		return new \WP_Error( 'api_error', 'An error occurred while verifying the license. Please try again.', array( 'status' => 500 ) );
+		return new \WP_Error( 'api_error', 'An error occurred while verifying the API. Please try again.', array( 'status' => 500 ) );
 	}
 
 	$status_code = wp_remote_retrieve_response_code( $response );
 	$body        = json_decode( wp_remote_retrieve_body( $response ), true );
 
 	if ( isset( $body['message']['error'] ) ) {
-		return new \WP_Error( 'invalid_license', $body['message']['error'], array( 'status' => 400 ) );
+		return new \WP_Error( 'invalid_api_key', $body['message']['error'], array( 'status' => 400 ) );
 	}
 
 	// Handle success response.
@@ -405,22 +405,26 @@ function rtgodam_verify_license( $license_key, $save = false ) {
 
 		$account_token = $body['message']['account_token'];
 		if ( $save ) {
-			// Save the license key in the site options only if it is verified.
-			update_site_option( 'rtgodam-api-key', $license_key );
-			update_site_option( 'rtgodam-api-key-stored', $license_key );
+			// Save the API key in the site options only if it is verified.
+			update_site_option( 'rtgodam-api-key', $api_key );
+			update_site_option( 'rtgodam-api-key-stored', $api_key );
 			update_site_option( 'rtgodam-account-token', $account_token );
+
+			// Update usage data.
+			$handler = new \RTGODAM_Transcoder_Handler( false );
+			$handler->update_usage( $api_key );
 		}
 
 		return array(
 			'status'  => 'success',
-			'message' => 'License key verified and stored successfully!',
+			'message' => 'API key verified and stored successfully!',
 			'data'    => $body['message'],
 		);
 	}
 
 	// Handle failure response.
 	if ( 404 === $status_code ) {
-		return new \WP_Error( 'invalid_license', 'Invalid license key. Please try again.', array( 'status' => 404 ) );
+		return new \WP_Error( 'invalid_api_key', 'Invalid API key. Please try again.', array( 'status' => 404 ) );
 	}
 
 	// Handle unexpected responses.

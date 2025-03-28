@@ -358,10 +358,10 @@ class Media_Library_Ajax {
 	public function handle_media_deletion( $attachment_id ) {
 		$job_id        = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 		$account_token = get_site_option( 'rtgodam-account-token', '' );
-		$license_key   = get_site_option( 'rtgodam-api-key', '' );
+		$api_key       = get_site_option( 'rtgodam-api-key', '' );
 
 		// Ensure all required data is available.
-		if ( empty( $job_id ) || empty( $account_token ) || empty( $license_key ) ) {
+		if ( empty( $job_id ) || empty( $account_token ) || empty( $api_key ) ) {
 			return;
 		}
 
@@ -371,7 +371,7 @@ class Media_Library_Ajax {
 		// Request params.
 		$params = array(
 			'job_id'        => $job_id,
-			'license_key'   => $license_key,
+			'api_key'       => $api_key,
 			'account_token' => $account_token,
 		);
 

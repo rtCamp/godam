@@ -251,8 +251,8 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 
 		const result = await response.json();
 
-		if ( result.status === 'error' && result.message.includes( 'Invalid or unverified license key' ) ) {
-			showLicenseActivationMessage();
+		if ( result.status === 'error' && result.message.includes( 'Invalid or unverified API key' ) ) {
+			showAPIActivationMessage();
 			return null;
 		}
 
@@ -266,7 +266,7 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 	}
 }
 
-function showLicenseActivationMessage() {
+function showAPIActivationMessage() {
 	// Remove loading animation
 	const loadingElement = document.getElementById( 'loading-analytics-animation' );
 	if ( loadingElement ) {
@@ -281,9 +281,9 @@ function showLicenseActivationMessage() {
 	}
 
 	// Add a message overlay
-	const licenseOverlay = document.getElementById( 'license-overlay' );
-	if ( licenseOverlay ) {
-		licenseOverlay.classList.remove( 'hidden' );
+	const apiOverlay = document.getElementById( 'api-key-overlay' );
+	if ( apiOverlay ) {
+		apiOverlay.classList.remove( 'hidden' );
 	}
 }
 

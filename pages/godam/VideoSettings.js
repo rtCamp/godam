@@ -11,7 +11,7 @@ import { lock, unlock } from '@wordpress/icons';
 const GODAM_API_BASE = 'https://app.godam.io';
 const restURL = window.godamRestRoute.url || '';
 
-const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKey, saveMediaSettings, verifyLicenseFromUrl } ) => {
+const VideoSettings = ( { isPremiumUser, mediaSettings, apiKey, setAPIKey, saveMediaSettings, verifyAPIKeyFromURL } ) => {
 	const [ syncFromEasyDAM, setSyncFromEasyDAM ] = useState( mediaSettings?.video?.sync_from_easydam || false );
 	const [ videoFormat, setVideoFormat ] = useState( mediaSettings?.video?.video_format || 'auto' );
 	const [ disableWatermark, setDisableWatermark ] = useState( mediaSettings?.video?.watermark !== undefined ? ! mediaSettings.video.watermark : true );
@@ -28,7 +28,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
-	const [ isLicenseKeyLoading, setIsLicenseKeyLoading ] = useState( false ); // Loading indicator for saving license key.
+	const [ isAPIKeyLoading, setIsAPIKeyLoading ] = useState( false ); // Loading indicator for saving api key key.
 	const [ isDeactivateLoading, setIsDeactivateLoading ] = useState( false );
 
 	const isFirstRender = useRef( true );
@@ -65,10 +65,10 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 
 	useEffect( () => {
 		// Trigger verification if the flag is true
-		if ( verifyLicenseFromUrl && licenseKey ) {
-			saveLicenseKey(); // Use the existing saveLicenseKey function
+		if ( verifyAPIKeyFromURL && apiKey ) {
+			saveAPIKey(); // Use the existing saveAPIKey function
 		}
-	}, [ verifyLicenseFromUrl, licenseKey ] );
+	}, [ verifyAPIKeyFromURL, apiKey ] );
 
 	const openMediaPicker = () => {
 		const fileFrame = wp.media( {
@@ -99,24 +99,24 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 		fileFrame.open();
 	};
 
-	const saveLicenseKey = async () => {
-		if ( ! licenseKey.trim() ) {
+	const saveAPIKey = async () => {
+		if ( ! apiKey.trim() ) {
 			setNotice( { message: 'Please enter a valid API key', status: 'error', isVisible: true } );
 			return;
 		}
 
-		setIsLicenseKeyLoading( true );
+		setIsAPIKeyLoading( true );
 
 		let result = {};
 
 		try {
-			const response = await fetch( window.pathJoin( [ restURL, '/godam/v1/settings/verify-license' ] ), {
+			const response = await fetch( window.pathJoin( [ restURL, '/godam/v1/settings/verify-api-key' ] ), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 					'X-WP-Nonce': window.wpApiSettings.nonce,
 				},
-				body: JSON.stringify( { license_key: licenseKey } ),
+				body: JSON.stringify( { api_key: apiKey } ),
 			} );
 
 			result = await response.json();
@@ -137,15 +137,15 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 				window.location.reload();
 			} else {
 				setNotice( { message: result.message || 'Failed to verify the API key', status: 'error', isVisible: true } );
-				window.userData.valid_license = false;
+				window.userData.valid_api_key = false;
 				window.userData.user_data = {};
 			}
 		} catch ( error ) {
 			setNotice( { message: 'An error occurred. Please try again later', status: 'error', isVisible: true } );
-			window.userData.valid_license = false;
+			window.userData.valid_api_key = false;
 			window.userData.user_data = {};
 		} finally {
-			setIsLicenseKeyLoading( false ); // Hide loading indicator.
+			setIsAPIKeyLoading( false ); // Hide loading indicator.
 		}
 
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
@@ -156,11 +156,11 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 		}, 5000 );
 	};
 
-	const deactivateLicenseKey = async () => {
+	const deactivateAPIKey = async () => {
 		setIsDeactivateLoading( true );
 
 		try {
-			const response = await fetch( window.pathJoin( [ restURL, '/godam/v1/settings/deactivate-license' ] ), {
+			const response = await fetch( window.pathJoin( [ restURL, '/godam/v1/settings/deactivate-api-key' ] ), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 			} );
 
 			if ( response.ok ) {
-				setLicenseKey( '' ); // Clear the license key from state.
+				setAPIKey( '' ); // Clear the API key from state.
 				setNotice( { message: 'API key deactivated successfully', status: 'success', isVisible: true } );
 				const updatedSettings = {
 					...mediaSettings,
@@ -188,7 +188,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 		} finally {
 			setIsDeactivateLoading( false );
 			// reload the page.
-			window.userData.valid_license = false; // Set the flag to true.
+			window.userData.valid_api_key = false; // Set the flag to true.
 			window.userData.user_data = {}; // Set the flag to true.
 		}
 
@@ -257,7 +257,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 		}, 5000 );
 	};
 
-	const isValidLicense = window.userData?.valid_license;
+	const isValidAPIKey = window.userData?.valid_api_key;
 	const isStarterPlan = window.userData?.user_data?.active_plan === 'Starter';
 
 	const [ isDirty, setIsDirty ] = useState( false );
@@ -300,9 +300,8 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 				</Notice>
 			) }
 
-			{ ! window?.userData?.valid_license && (
+			{ ! window?.userData?.valid_api_key && (
 				<Panel
-					header={ __( 'Pricing Plan', 'godam' ) }
 					className="mb-4"
 				>
 					<PanelBody
@@ -346,16 +345,16 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 					<div className="flex flex-col gap-2 b-4m">
 						<TextControl
 							label={ __( 'API Key', 'godam' ) }
-							value={ licenseKey }
-							onChange={ ( value ) => setLicenseKey( value ) }
+							value={ apiKey }
+							onChange={ ( value ) => setAPIKey( value ) }
 							help={
 								<>
 									{
-										( ! window?.userData?.valid_license ) &&
+										( ! window?.userData?.valid_api_key ) &&
 											<>
 												{ __( 'Your API key is required to access the features. You can get your active API key from your ', 'godam' ) }
 												<a
-													href={ GODAM_API_BASE + '/#licenses' }
+													href={ GODAM_API_BASE }
 													target="_blank"
 													rel="noopener noreferrer"
 													className="text-blue-500 underline"
@@ -367,23 +366,23 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 								</>
 							}
 							placeholder="Enter your API key here"
-							className={ `max-w-[400px] ${ ( ! window?.userData?.valid_license && window?.userData?.user_data?.license_key ) ? 'invalid-license-key' : '' }` }
-							disabled={ window?.userData?.valid_license }
+							className={ `max-w-[400px] ${ ( ! window?.userData?.valid_api_key && window?.userData?.user_data?.masked_api_key ) ? 'invalid-api-key' : '' }` }
+							disabled={ window?.userData?.valid_api_key }
 						/>
 						<div className="flex gap-2">
 							<Button
 								className="max-w-[140px] w-full flex justify-center items-center"
-								onClick={ saveLicenseKey }
-								disabled={ isLicenseKeyLoading || window?.userData?.valid_license }
+								onClick={ saveAPIKey }
+								disabled={ isAPIKeyLoading || window?.userData?.valid_api_key }
 								variant="primary"
-								isBusy={ isLicenseKeyLoading }
+								isBusy={ isAPIKeyLoading }
 							>
 								{ __( 'Save API Key', 'godam' ) }
 							</Button>
 							<Button
 								className="max-w-[160px] w-full flex justify-center items-center"
-								onClick={ deactivateLicenseKey }
-								disabled={ isLicenseKeyLoading || ! window?.userData?.valid_license }
+								onClick={ deactivateAPIKey }
+								disabled={ isAPIKeyLoading || ! window?.userData?.valid_api_key }
 								variant="secondary"
 								isDestructive
 								isBusy={ isDeactivateLoading }
@@ -393,7 +392,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 						</div>
 					</div>
 					{
-						( mediaSettings?.general?.is_verified || window?.userData?.valid_license ) && (
+						( mediaSettings?.general?.is_verified || window?.userData?.valid_api_key ) && (
 							<div className="flex gap-4 flex-wrap">
 
 								{
@@ -444,11 +443,11 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 				</PanelBody>
 			</Panel>
 
-			{ window?.userData?.valid_license && ( <>
+			{ window?.userData?.valid_api_key && ( <>
 
 				<div className="relative mt-4">
 					{
-						! isValidLicense && (
+						! isValidAPIKey && (
 							<div className="premium-feature-overlay">
 								<Button icon={ unlock } href="https://app.godam.io/subscription/plans" target="_blank" variant="primary">{ __( 'Unlock with GoDAM pro', 'godam' ) }</Button>
 							</div>
@@ -567,7 +566,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 
 				<div className="relative">
 					{
-						! isValidLicense && (
+						! isValidAPIKey && (
 							<div className="premium-feature-overlay">
 								<Button icon={ unlock } href="https://app.godam.io/subscription/plans" target="_blank" variant="primary">{ __( 'Unlock with GoDAM pro', 'godam' ) }</Button>
 							</div>
@@ -622,7 +621,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 
 				<div className="relative">
 					{
-						( ! isValidLicense || isStarterPlan ) && (
+						( ! isValidAPIKey || isStarterPlan ) && (
 							<div className="premium-feature-overlay">
 								<Button icon={ unlock } href="https://app.godam.io/subscription/plans" target="_blank" variant="primary">{ __( 'Upgrade to unlock', 'godam' ) }</Button>
 							</div>
@@ -641,9 +640,9 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, licenseKey, setLicenseKe
 								<ToggleControl
 									__nextHasNoMarginBottom
 									label="Disable video watermark"
-									checked={ ( ! isValidLicense || isStarterPlan ) ? false : disableWatermark }
+									checked={ ( ! isValidAPIKey || isStarterPlan ) ? false : disableWatermark }
 									onChange={ ( value ) => setDisableWatermark( value ) }
-									disabled={ isStarterPlan || ! isValidLicense }
+									disabled={ isStarterPlan || ! isValidAPIKey }
 									help={ __( 'If enabled, GoDAM will add a watermark to the transcoded video', 'godam' ) }
 								/>
 								{ ! isStarterPlan && ! disableWatermark && (
