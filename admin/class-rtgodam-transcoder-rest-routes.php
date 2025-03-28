@@ -62,7 +62,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'handle_callback' ),
-				'permission_callback' => array( $this, 'is_media_transcoding_permission' ),
+				'permission_callback' => '__return_true', // The endpoint must be public; otherwise, GoDAM (https://app.godam.io) won't be able to send a media transcoding callback request.
 				'args'                => array(
 					'job_id'           => array(
 						'required'          => true,
@@ -177,15 +177,6 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 		// Else just sanitize the array values.
 		return array_map( 'esc_url_raw', $value );
-	}
-
-	/**
-	 * Return the callback URL for the transcoder.
-	 *
-	 * @return string
-	 */
-	public function get_callback_url() {
-		return rest_url( $this->namespace_prefix . $this->version . '/transcoder-callback' );
 	}
 
 	/**
