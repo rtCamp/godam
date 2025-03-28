@@ -27,8 +27,8 @@ const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
 	const isPremiumUser = window.userData?.user_data?.active_plan !== 'Starter';
 	const [ mediaSettings, setMediaSettings ] = useState( null );
-	const [ licenseKey, setLicenseKey ] = useState( '' );
-	const [ verifyLicenseFromUrl, setVerifyLicenseFromUrl ] = useState( false );
+	const [ apiKey, setAPIKey ] = useState( '' );
+	const [ verifyAPIKeyFromURL, setVerifyAPIKeyFromURL ] = useState( false );
 
 	const dispatch = useDispatch();
 
@@ -74,18 +74,18 @@ const App = () => {
 
 				const settingsData = await settingsResponse.json();
 
-				let licenseFromUrl = '';
+				let apiKeyFromURL = '';
 				const urlParams = new URLSearchParams( window.location.search );
-				if ( urlParams.has( 'license_key' ) ) {
-					licenseFromUrl = urlParams.get( 'license_key' );
+				if ( urlParams.has( 'api_key' ) ) {
+					apiKeyFromURL = urlParams.get( 'api_key' );
 				}
 
-				if ( ! window.userData?.valid_license && licenseFromUrl ) {
-					// Set license key from URL and trigger verification in GeneralSettings
-					setLicenseKey( licenseFromUrl );
-					setVerifyLicenseFromUrl( true ); // Pass this flag to GeneralSettings
+				if ( ! window.userData?.valid_api_key && apiKeyFromURL ) {
+					// Set API key from URL and trigger verification in GeneralSettings
+					setAPIKey( apiKeyFromURL );
+					setVerifyAPIKeyFromURL( true ); // Pass this flag to GeneralSettings
 				} else {
-					setLicenseKey( window?.userData?.user_data?.license_key || '' );
+					setAPIKey( window?.userData?.user_data?.masked_api_key || '' );
 				}
 
 				setMediaSettings( settingsData );
@@ -157,9 +157,9 @@ const App = () => {
 											isPremiumUser={ isPremiumUser }
 											mediaSettings={ mediaSettings }
 											saveMediaSettings={ saveMediaSettings }
-											licenseKey={ licenseKey }
-											setLicenseKey={ setLicenseKey }
-											verifyLicenseFromUrl={ verifyLicenseFromUrl }
+											apiKey={ apiKey }
+											setAPIKey={ setAPIKey }
+											verifyAPIKeyFromURL={ verifyAPIKeyFromURL }
 										/>
 								) )
 							}

@@ -56,12 +56,12 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
-			<div id="license-overlay" className="license-overlay hidden">
-				<div className="license-message">
+			<div id="api-key-overlay" className="api-key-overlay hidden">
+				<div className="api-key-message">
 					<p>
 						{ __( 'Please ', 'godam' ) }
 						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( 'activate your license', 'godam' ) }
+							{ __( 'activate your API key', 'godam' ) }
 						</a>
 						{ __( ' to access the Analytics feature', 'godam' ) }
 					</p>
