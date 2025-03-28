@@ -382,11 +382,11 @@ class RTGODAM_Transcoder_Handler {
 	}
 
 	/**
-	 * Display message when license key is not valid.
+	 * Display message when API key is not valid.
 	 *
 	 * @since 1.0.0
 	 */
-	public function invalid_license_notice() {
+	public function invalid_api_key_notice() {
 		?>
 		<div class="error">
 			<p>
@@ -397,7 +397,7 @@ class RTGODAM_Transcoder_Handler {
 	}
 
 	/**
-	 * Display message when user tries to activate license key on localhost.
+	 * Display message when user tries to activate API key on localhost.
 	 *
 	 * @since 1.0.6
 	 */

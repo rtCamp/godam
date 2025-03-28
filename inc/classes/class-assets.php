@@ -89,7 +89,7 @@ class Assets {
 			'rtgodam-script',
 			'godamLicenseData',
 			array(
-				'valid_license' => rtgodam_is_license_valid(),
+				'valid_api_key' => rtgodam_is_api_key_valid(),
 			)
 		);
 

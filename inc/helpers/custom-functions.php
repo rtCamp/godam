@@ -204,36 +204,36 @@ function rtgodam_image_cta_html( $layer ) {
 }
 
 /**
- * Verify the license key for the plugin and return user data. 
+ * Verify the api key for the plugin and return user data. 
  * 
  * @param int $timeout The time in seconds after which the user data should be refreshed.
  */
 function rtgodam_get_user_data( $timeout = 300 ) {
 	$rtgodam_user_data = get_site_option( 'rtgodam_user_data', false );
-	$license_key       = get_site_option( 'rtgodam-api-key', '' );
+	$api_key       = get_site_option( 'rtgodam-api-key', '' );
 
 	if (
-		( empty( $rtgodam_user_data ) && ! empty( $license_key ) ) ||
+		( empty( $rtgodam_user_data ) && ! empty( $api_key ) ) ||
 		( isset( $rtgodam_user_data['timestamp'] ) && ( time() - $rtgodam_user_data['timestamp'] ) > $timeout )
 	) {
 		// Verify the user's license.
-		$result = rtgodam_verify_license( $license_key );
+		$result = rtgodam_verify_api_key( $api_key );
 
-		$valid_license = false;
+		$valid_api_key = false;
 		$user_data     = array();
 
 		if ( is_wp_error( $result ) ) {
-			$valid_license            = false;
-			$user_data['license_key'] = rtgodam_mask_string( $license_key );
+			$valid_api_key            = false;
+			$user_data['masked_api_key'] = rtgodam_mask_string( $api_key );
 		} else {
-			$valid_license            = true;
+			$valid_api_key            = true;
 			$user_data                = $result['data'] ?? array();
-			$user_data['license_key'] = rtgodam_mask_string( $license_key );
+			$user_data['masked_api_key'] = rtgodam_mask_string( $api_key );
 		}
 
 		$rtgodam_user_data = array(
 			'currentUserId' => get_current_user_id(),
-			'valid_license' => $valid_license,
+			'valid_api_key' => $valid_api_key,
 			'user_data'     => $user_data,
 		);
 
@@ -261,9 +261,9 @@ function rtgodam_get_user_data( $timeout = 300 ) {
  */
 function rtgodam_get_usage_data() {
 
-	$license_key = get_site_option( 'rtgodam-api-key', '' );
+	$api_key = get_site_option( 'rtgodam-api-key', '' );
 
-	if ( empty( $license_key ) ) {
+	if ( empty( $api_key ) ) {
 		return new \WP_Error( 'rtgodam_api_error', 'API key not found ( try refreshing the page )' );
 	}
 
@@ -271,7 +271,7 @@ function rtgodam_get_usage_data() {
 
 	$url = add_query_arg(
 		array(
-			'license' => $license_key,
+			'license' => $api_key,
 		),
 		$endpoint
 	);
@@ -300,12 +300,12 @@ function rtgodam_get_usage_data() {
 }
 
 /**
- * Check if the license is valid.
+ * Check if the api key is valid.
  * 
  * @return bool
  */
-function rtgodam_is_license_valid() {
+function rtgodam_is_api_key_valid() {
 	$user_data = rtgodam_get_user_data();
 
-	return ! empty( $user_data['valid_license'] ) ? true : false;
+	return ! empty( $user_data['valid_api_key'] ) ? true : false;
 }

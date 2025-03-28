@@ -252,7 +252,7 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 		const result = await response.json();
 
 		if ( result.status === 'error' && result.message.includes( 'Invalid or unverified API key' ) ) {
-			showLicenseActivationMessage();
+			showAPIActivationMessage();
 			return null;
 		}
 
@@ -266,7 +266,7 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 	}
 }
 
-function showLicenseActivationMessage() {
+function showAPIActivationMessage() {
 	// Remove loading animation
 	const loadingElement = document.getElementById( 'loading-analytics-animation' );
 	if ( loadingElement ) {
@@ -281,7 +281,7 @@ function showLicenseActivationMessage() {
 	}
 
 	// Add a message overlay
-	const licenseOverlay = document.getElementById( 'license-overlay' );
+	const licenseOverlay = document.getElementById( 'api-key-overlay' );
 	if ( licenseOverlay ) {
 		licenseOverlay.classList.remove( 'hidden' );
 	}

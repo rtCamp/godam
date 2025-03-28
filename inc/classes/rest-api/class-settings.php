@@ -124,7 +124,7 @@ class Settings extends Base {
 		$license_key = $request->get_param( 'license_key' );
 
 		// Use the helper function to verify the license key.
-		$result = rtgodam_verify_license( $license_key, true );
+		$result = rtgodam_verify_api_key( $license_key, true );
 
 		if ( is_wp_error( $result ) ) {
 

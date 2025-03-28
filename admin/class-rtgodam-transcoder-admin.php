@@ -34,39 +34,39 @@ class RTGODAM_Transcoder_Admin {
 
 		if ( is_admin() ) {
 			if ( is_multisite() ) {
-				add_action( 'network_admin_notices', array( $this, 'license_activation_admin_notice' ) );
+				add_action( 'network_admin_notices', array( $this, 'api_activation_admin_notice' ) );
 			}
-			add_action( 'admin_notices', array( $this, 'license_activation_admin_notice' ) );
+			add_action( 'admin_notices', array( $this, 'api_activation_admin_notice' ) );
 		}
 	}
 
 	/**
-	 * Display admin notice for activating the license and handle dismissal.
+	 * Display admin notice for activating the api key and handle dismissal.
 	 *
 	 * @since 1.0.0
 	 */
-	public function license_activation_admin_notice() {
+	public function api_activation_admin_notice() {
 		if ( ! $this->is_dashboard_screen() ) {
 			return;
 		}
 
-		// Get the license key from the site options.
-		$license_key = get_site_option( 'rtgodam-api-key', '' );
+		// Get the api key key from the site options.
+		$api_key = get_site_option( 'rtgodam-api-key', '' );
 
 		// Get plugin activation time.
 		$activation_time       = get_site_option( 'rtgodam_plugin_activation_time', 0 );
 		$days_since_activation = ( time() - $activation_time ) / DAY_IN_SECONDS;
 
-		// If more than 3 days have passed and no license is activated, show scheduled notice.
-		if ( empty( $license_key ) && $days_since_activation >= 3 ) {
+		// If more than 3 days have passed and no api key is activated, show scheduled notice.
+		if ( empty( $api_key ) && $days_since_activation >= 3 ) {
 			$this->scheduled_admin_notice();
 			return;
 		}
 
 		// Otherwise, show regular admin notice.
-		if ( empty( $license_key ) ) {
+		if ( empty( $api_key ) ) {
 			$this->render_admin_notice(
-				esc_html__( 'Enjoy using our DAM and Video Editor features for free! To unlock transcoding and other features, please activate your license.', 'godam' ),
+				esc_html__( 'Enjoy using our DAM and Video Editor features for free! To unlock transcoding and other features, please activate your api key.', 'godam' ),
 				'warning',
 				true,
 				true
@@ -76,11 +76,11 @@ class RTGODAM_Transcoder_Admin {
 
 		// Get stored usage data.
 		$usage_data = get_site_option( 'rtgodam-usage', array() );
-		$usage_data = isset( $usage_data[ $license_key ] ) ? (array) $usage_data[ $license_key ] : null;
+		$usage_data = isset( $usage_data[ $api_key ] ) ? (array) $usage_data[ $api_key ] : null;
 
 		if ( empty( $usage_data ) ) {
 			$this->render_admin_notice(
-				'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your license',
+				'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your api key',
 				'warning',
 				true,
 				false
@@ -114,7 +114,7 @@ class RTGODAM_Transcoder_Admin {
 			}
 		}
 
-		// If the license is Active, no need to show any notice.
+		// If the API key is Active, no need to show any notice.
 		if ( 'Active' === $status ) {
 			return;
 		}
@@ -140,7 +140,7 @@ class RTGODAM_Transcoder_Admin {
 				return;
 			} else {
 				$this->render_admin_notice(
-					'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your license',
+					'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your API key',
 					'error',
 					true,
 					false
@@ -151,7 +151,7 @@ class RTGODAM_Transcoder_Admin {
 
 		// Default fallback notice (if none of the above conditions are met).
 		$this->render_admin_notice(
-			'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your license',
+			'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, please activate your API key',
 			'warning',
 			true,
 			false
@@ -159,7 +159,7 @@ class RTGODAM_Transcoder_Admin {
 	}
 
 	/**
-	 * Render an admin notice for license activation or expiry warnings.
+	 * Render an admin notice for API key activation or expiry warnings.
 	 *
 	 * @param string $message The message to display.
 	 * @param string $notice_type Type of notice (warning, error, etc.).
@@ -175,7 +175,7 @@ class RTGODAM_Transcoder_Admin {
 		$button_link  = ( 'activate' === $button_type ) ? admin_url( 'admin.php?page=rtgodam' ) : admin_url( 'admin.php?page=rtgodam_video_editor' );
 
 		?>
-		<div class="notice notice-<?php echo esc_attr( $notice_type ); ?> is-dismissible rt-transcoder-license-notice">
+		<div class="notice notice-<?php echo esc_attr( $notice_type ); ?> is-dismissible rt-transcoder-api-key-notice">
 
 		<div class="godam-notice-header">
 			<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
@@ -218,18 +218,18 @@ class RTGODAM_Transcoder_Admin {
 	}
 
 	/**
-	 * Display the scheduled admin notice for activating the license.
+	 * Display the scheduled admin notice for activating the API key.
 	 */
 	public function scheduled_admin_notice() {
 		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
 
 		?>
-		<div class="notice notice-warning is-dismissible rt-transcoder-license-notice">
+		<div class="notice notice-warning is-dismissible rt-transcoder-api-key-notice">
 			<div class="godam-notice-header">
 				<img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" class="godam-logo" />
 				<div>
 					<p><strong><?php echo esc_html__( 'Hey, you’re missing out on our advanced features!', 'godam' ); ?></strong></p>
-					<p><?php echo esc_html__( 'Unlock high-speed transcoding, advanced analytics, adaptive streaming, and more by activating your license.', 'godam' ); ?></p>
+					<p><?php echo esc_html__( 'Unlock high-speed transcoding, advanced analytics, adaptive streaming, and more by activating your API key.', 'godam' ); ?></p>
 					<p>
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam' ) ); ?>" class="button button-primary">
 							<?php echo esc_html__( 'Activate API Key', 'godam' ); ?>

@@ -34,7 +34,7 @@ import GoDAM from '../../../../assets/src/images/GoDAM.png';
  * Global variables
  */
 const PREMIUM_LAYERS = [ 'form', 'hotspot', 'ad' ];
-const validLicense = window?.godamLicenseData?.valid_license;
+const validLicense = window?.godamLicenseData?.valid_api_key;
 
 library.add( fas );
 dom.watch();

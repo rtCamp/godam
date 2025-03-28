@@ -341,7 +341,7 @@ const Appearance = () => {
 							checked={ videoConfig.controlBar.subsCapsButton }
 						/>
 						{
-							window.videoData?.valid_license &&
+							window.videoData?.valid_api_key &&
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label="Show Branding"

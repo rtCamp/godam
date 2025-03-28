@@ -4,7 +4,7 @@
  * @return {boolean} True if the user has a valid license, false otherwise.
  */
 function isLicenseValid() {
-	return window.MediaLibrary?.userData?.valid_license ? true : false;
+	return window.MediaLibrary?.userData?.valid_api_key ? true : false;
 }
 
 /**
