@@ -17,7 +17,7 @@ import Skeleton from './components/Skeleton.jsx';
 import GodamHeader from './components/GoDAMHeader.jsx';
 
 import GeneralSettings from './components/tabs/GeneralSettings/GeneralSettings.jsx';
-import VideoSettings from './VideoSettings';
+import VideoSettings from './components/tabs/VideoSettings/VideoSettings.jsx';
 
 import { useGetMediaSettingsQuery } from './redux/api/media-settings.js';
 import { setMediaSettings } from './redux/slice/media-settings.js';

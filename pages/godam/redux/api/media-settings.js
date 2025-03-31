@@ -29,20 +29,20 @@ export const generalAPI = createApi( {
 				body: data,
 			} ),
 		} ),
-		verifyLicenseKey: builder.mutation( {
+		verifyAPIKey: builder.mutation( {
 			query: ( licenseKey ) => ( {
-				url: 'verify-license',
+				url: 'verify-api-key',
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 					'X-WP-Nonce': window.wpApiSettings.nonce,
 				},
-				body: { license_key: licenseKey },
+				body: { api_key: licenseKey },
 			} ),
 		} ),
-		deactiveLicenseKey: builder.mutation( {
+		deactivateAPIKey: builder.mutation( {
 			query: () => ( {
-				url: 'deactivate-license',
+				url: 'deactivate-api-key',
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -54,8 +54,8 @@ export const generalAPI = createApi( {
 } );
 
 export const {
-	useVerifyLicenseKeyMutation,
-	useDeactiveLicenseKeyMutation,
+	useVerifyAPIKeyMutation,
+	useDeactivateAPIKeyMutation,
 	useGetMediaSettingsQuery,
 	useSaveMediaSettingsMutation,
 } = generalAPI;

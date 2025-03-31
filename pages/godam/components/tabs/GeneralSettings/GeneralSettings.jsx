@@ -25,6 +25,8 @@ import ColorPickerButton from '../../../../video-editor/components/ColorPickerBu
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
 
+import { scrollToTop } from '../../../utils/index.js';
+
 const GeneralSettings = () => {
 	const dispatch = useDispatch();
 	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
@@ -35,10 +37,6 @@ const GeneralSettings = () => {
 	const showNotice = ( message, status = 'success' ) => {
 		setNotice( { message, status, isVisible: true } );
 		scrollToTop();
-	};
-
-	const scrollToTop = () => {
-		window.scrollTo( { top: 0, behavior: 'smooth' } );
 	};
 
 	const handleSettingChange = ( key, value ) => {
@@ -60,7 +58,7 @@ const GeneralSettings = () => {
 	};
 
 	return (
-		<div>
+		<>
 			{ notice.isVisible && (
 				<Notice
 					className="mb-4"
@@ -82,7 +80,7 @@ const GeneralSettings = () => {
 						onChange={ ( value ) => handleSettingChange( 'enable_folder_organization', value ) }
 					/>
 
-					<BrandImageSelector mediaSettings={ mediaSettings } updateMediaSettings={ updateMediaSetting } />
+					<BrandImageSelector mediaSettings={ mediaSettings } handleSettingChange={ handleSettingChange } />
 
 					<div className="godam-form-group">
 						<label htmlFor="brand-color">{ __( 'Brand color', 'godam' ) }</label>
@@ -101,7 +99,7 @@ const GeneralSettings = () => {
 			<Button variant="primary" className="godam-button" onClick={ handleSaveSettings }>
 				{ __( 'Save Settings', 'godam' ) }
 			</Button>
-		</div>
+		</>
 	);
 };
 

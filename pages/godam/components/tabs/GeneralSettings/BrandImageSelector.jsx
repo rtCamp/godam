@@ -1,17 +1,10 @@
 /**
- * External dependencies
- */
-import { useDispatch } from 'react-redux';
-
-/**
  * WordPress dependencies
  */
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
-const BrandImageSelector = ( { mediaSettings, updateMediaSettings } ) => {
-	const dispatch = useDispatch();
-
+const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 	const openBrandMediaPicker = () => {
 		const fileFrame = wp.media( {
 			title: 'Select Brand Image',
@@ -27,22 +20,14 @@ const BrandImageSelector = ( { mediaSettings, updateMediaSettings } ) => {
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 
-			dispatch( updateMediaSettings( {
-				category: 'general',
-				key: 'brand_image',
-				value: attachment.url,
-			} ) );
+			handleSettingChange( 'brand_image', attachment.url );
 		} );
 
 		fileFrame.open();
 	};
 
 	const removeBrandImage = () => {
-		dispatch( updateMediaSettings( {
-			category: 'general',
-			key: 'brand_image',
-			value: '',
-		} ) );
+		handleSettingChange( 'brand_image', '' );
 	};
 
 	return (
