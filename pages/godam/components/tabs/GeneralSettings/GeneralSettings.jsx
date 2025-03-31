@@ -19,73 +19,49 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
-import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
 import BrandImageSelector from './BrandImageSelector.jsx';
 import ColorPickerButton from '../../../../video-editor/components/ColorPickerButton.js';
 
+import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
+import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
+
 const GeneralSettings = () => {
-	const [ notice, setNotice ] = useState( {
-		message: '',
-		status: 'success',
-		isVisible: false,
-	} );
-
-	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
-
 	const dispatch = useDispatch();
-
+	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
 	const [ saveMediaSettings ] = useSaveMediaSettingsMutation();
 
-	const handleMediaFolderOrganization = ( value ) => {
-		dispatch( updateMediaSetting(
-			{
-				category: 'general',
-				key: 'enable_folder_organization',
-				value,
-			},
-		) );
+	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
+
+	const showNotice = ( message, status = 'success' ) => {
+		setNotice( { message, status, isVisible: true } );
+		scrollToTop();
 	};
 
-	const handleBrandColorChange = ( value ) => {
-		dispatch( updateMediaSetting(
-			{
-				category: 'general',
-				key: 'brand_color',
-				value,
-			},
-		) );
+	const scrollToTop = () => {
+		window.scrollTo( { top: 0, behavior: 'smooth' } );
+	};
+
+	const handleSettingChange = ( key, value ) => {
+		dispatch( updateMediaSetting( { category: 'general', key, value } ) );
 	};
 
 	const handleSaveSettings = async () => {
 		try {
-			const response = await saveMediaSettings( mediaSettings ).unwrap();
+			const response = await saveMediaSettings( { settings: { general: mediaSettings?.general } } ).unwrap();
 
 			if ( response?.status === 'success' ) {
-				setNotice( {
-					message: __( 'Settings saved successfully.', 'godam' ),
-					status: 'success',
-					isVisible: true,
-				} );
+				showNotice( __( 'Settings saved successfully.', 'godam' ) );
 			} else {
-				setNotice( {
-					message: __( 'Failed to save settings.', 'godam' ),
-					status: 'error',
-					isVisible: true,
-				} );
+				showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 			}
 		} catch ( error ) {
-			setNotice( {
-				message: __( 'Failed to save settings.', 'godam' ),
-				status: 'error',
-				isVisible: true,
-			} );
+			showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 		}
 	};
 
 	return (
 		<div>
-			{ notice?.isVisible && (
+			{ notice.isVisible && (
 				<Notice
 					className="mb-4"
 					status={ notice.status }
@@ -96,54 +72,33 @@ const GeneralSettings = () => {
 			) }
 
 			<Panel header={ __( 'General Settings', 'godam' ) } className="godam-panel">
-				<PanelBody opened={ true }>
-					<div className="flex flex-col gap-4">
-						<ToggleControl
-							__nextHasNoMarginBottom
-							className="godam-toggle"
-							label={ __(
-								'Enable Folder Organization in Media Library.',
-								'godam',
-							) }
-							help={ __(
-								'Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization.',
-								'godam',
-							) }
-							checked={ mediaSettings?.general?.enable_folder_organization || true }
-							onChange={ handleMediaFolderOrganization }
-						/>
-					</div>
+				<PanelBody opened>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						className="godam-toggle godam-margin-bottom"
+						label={ __( 'Enable folder organization in media library.', 'godam' ) }
+						help={ __( 'Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization.', 'godam' ) }
+						checked={ mediaSettings?.general?.enable_folder_organization }
+						onChange={ ( value ) => handleSettingChange( 'enable_folder_organization', value ) }
+					/>
 
 					<BrandImageSelector mediaSettings={ mediaSettings } updateMediaSettings={ updateMediaSetting } />
 
-					<div className="form-group">
-
-						<label
-							htmlFor="brand-color"
-							className="easydam-label"
-						>
-							{ __( 'Brand Color', 'godam' ) }
-						</label>
-
+					<div className="godam-form-group">
+						<label htmlFor="brand-color">{ __( 'Brand color', 'godam' ) }</label>
 						<ColorPickerButton
-							label={ __( 'Brand Color', 'godam' ) }
+							label={ __( 'Brand color', 'godam' ) }
 							value={ mediaSettings?.general?.brand_color }
-							onChange={ handleBrandColorChange }
+							onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
 						/>
-
-						<p className="text-xsm text-gray-600 mb-2">
+						<p className="help-text">
 							{ __( 'Select a brand color to apply to the video block. This can be overridden for individual videos by the video editor', 'godam' ) }
 						</p>
 					</div>
-
 				</PanelBody>
 			</Panel>
 
-			<Button
-				variant="primary"
-				className="godam-button"
-				onClick={ handleSaveSettings }
-			>
+			<Button variant="primary" className="godam-button" onClick={ handleSaveSettings }>
 				{ __( 'Save Settings', 'godam' ) }
 			</Button>
 		</div>

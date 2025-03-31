@@ -11,7 +11,7 @@ export const generalAPI = createApi( {
 	endpoints: ( builder ) => ( {
 		getMediaSettings: builder.query( {
 			query: () => ( {
-				url: 'easydam-settings',
+				url: 'godam-settings',
 				headers: {
 					'Content-Type': 'application/json',
 					'X-WP-Nonce': window.wpApiSettings.nonce,
@@ -20,7 +20,7 @@ export const generalAPI = createApi( {
 		} ),
 		saveMediaSettings: builder.mutation( {
 			query: ( data ) => ( {
-				url: 'easydam-settings',
+				url: 'godam-settings',
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

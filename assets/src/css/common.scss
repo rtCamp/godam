@@ -128,8 +128,8 @@
 	}
 
 	label{
-		font-size: 1rem !important;
-		line-height: 1.375rem !important;
+		font-size: 0.875rem !important;
+		line-height: 1rem !important;
 		font-weight: 500;
 		color: variables.$godam-black-color;
 	}
@@ -160,18 +160,47 @@
 
 	.components-panel__header {
 		height: auto;
-		padding: 1.5rem;
+		padding: 1.25rem;
 
 		h2 {
 			font-size: 1rem;
-			line-height: 1.375rem;
+			line-height: 1rem;
 			font-weight: 600;
 		}
 	}
 
 	.components-panel__body {
-		padding: 1.5rem;
+		padding: 1.25rem;
 	}
 	
+
+}
+
+.godam-margin-bottom {
+	margin-bottom: 1rem;
+}
+
+.godam-margin-right {
+	margin-right: 0.5rem;
+}
+
+.godam-form-group {
+	
+	label {
+		font-size: 0.875rem !important;
+		line-height: 1.375rem !important;
+		display: block;
+		margin-bottom: 0.5rem;
+		font-weight: 500;
+	}
+
+	.help-text {
+		font-size: 0.875rem;
+		line-height: 1.375rem;
+		font-weight: 400;
+		margin-top: 0.5rem;
+		color: rgba(119, 119, 119, 1);
+	}
+
 
 }

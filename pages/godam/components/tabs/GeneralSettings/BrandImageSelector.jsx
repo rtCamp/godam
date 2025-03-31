@@ -46,23 +46,27 @@ const BrandImageSelector = ( { mediaSettings, updateMediaSettings } ) => {
 	};
 
 	return (
-		<div className="form-group">
+		<div className="godam-form-group godam-margin-bottom">
 			<label
 				htmlFor="custom-brand-logo"
-				className="easydam-label"
 			>
-				{ __( 'Custom Brand Logo', 'godam' ) }
+				{ __( 'Custom brand logo', 'godam' ) }
 			</label>
 
 			<Button
 				onClick={ openBrandMediaPicker }
 				variant="primary"
-				className="mr-2"
+				className="godam-button godam-margin-right"
 			>
 				{ mediaSettings?.general?.brand_image ? 'Replace' : 'Upload' }
 			</Button>
 			{ mediaSettings?.general?.brand_image && (
-				<Button onClick={ removeBrandImage } variant="secondary" isDestructive>
+				<Button
+					onClick={ removeBrandImage }
+					variant="secondary"
+					isDestructive
+					className="godam-button"
+				>
 					{ __( 'Remove', 'godam' ) }
 				</Button>
 			) }
@@ -76,7 +80,7 @@ const BrandImageSelector = ( { mediaSettings, updateMediaSettings } ) => {
 				</div>
 			) }
 
-			<p className="text-xsm text-gray-600 mb-2">
+			<p className="help-text">
 				{ __( 'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos', 'godam' ) }
 			</p>
 		</div>

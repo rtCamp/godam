@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import godamLogo from '../../assets/src/images/godam-logo.png';
+import godamLogo from '../../../assets/src/images/godam-logo.png';
 import { help } from '@wordpress/icons';
 
 const GodamHeader = () => {

@@ -16,6 +16,8 @@ const initialState = {
 	},
 	general: {
 		enable_folder_organization: true,
+		brand_color: '#000000',
+		brand_image: '',
 	},
 };
 
@@ -23,9 +25,17 @@ const mediaSettingsSlice = createSlice( {
 	name: 'mediaSettings',
 	initialState,
 	reducers: {
-		// Sets the entire media settings (useful when loading from API)
+		// Sets the entire media settings (validates allowed keys)
 		setMediaSettings: ( state, action ) => {
-			return { ...state, ...action.payload };
+			Object.keys( action.payload ).forEach( ( category ) => {
+				if ( state[ category ] ) {
+					Object.keys( action.payload[ category ] ).forEach( ( key ) => {
+						if ( key in state[ category ] ) {
+							state[ category ][ key ] = action.payload[ category ][ key ];
+						}
+					} );
+				}
+			} );
 		},
 
 		// Updates a specific setting dynamically
