@@ -235,14 +235,14 @@ class Assets {
 	private function enqueue_godam_settings() {
 		$godam_settings = get_option( 'rtgodam-settings' );
 
-		$selected_brand_image = $godam_settings['general']['selected_brand_image'] ?? '';
-		$brand_color          = $godam_settings['general']['brand_color'] ?? '';
+		$brand_image = $godam_settings['general']['brand_image'] ?? '';
+		$brand_color = $godam_settings['general']['brand_color'] ?? '';
 
 		wp_localize_script(
 			'rtgodam-script',
 			'godamSettings',
 			array(
-				'brandImage' => $selected_brand_image,
+				'brandImage' => $brand_image,
 				'brandColor' => $brand_color,
 			)
 		);

@@ -33,7 +33,7 @@ import VideoWatermark from './VideoWatermark.jsx';
 const VideoSettings = () => {
 	const dispatch = useDispatch();
 	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
-	const [ saveMediaSettings ] = useSaveMediaSettingsMutation();
+	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
 
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
@@ -95,12 +95,21 @@ const VideoSettings = () => {
 
 			<APISettings setNotice={ setNotice } />
 
-			<VideoQuality handleSettingChange={ handleSettingChange } />
-			<VideoThumbnails handleSettingChange={ handleSettingChange } />
-			<VideoWatermark handleSettingChange={ handleSettingChange } />
+			{ hasValidAPIKey && (
+				<>
+					<VideoQuality handleSettingChange={ handleSettingChange } />
+					<VideoThumbnails handleSettingChange={ handleSettingChange } />
+					<VideoWatermark handleSettingChange={ handleSettingChange } />
+				</>
+			) }
 
 			{ hasValidAPIKey && (
-				<Button variant="primary" className="godam-button" onClick={ handleSaveSettings }>
+				<Button
+					variant="primary"
+					className="godam-button"
+					onClick={ handleSaveSettings }
+					isBusy={ saveMediaSettingsLoading }
+				>
 					{ __( 'Save Settings', 'godam' ) }
 				</Button>
 			) }

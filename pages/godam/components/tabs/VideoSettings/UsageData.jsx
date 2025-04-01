@@ -8,6 +8,13 @@
  */
 import { __ } from '@wordpress/i18n';
 
+/**
+ * A Utility function to calculate the percentage of used storage or bandwidth.
+ *
+ * @param {number} used  - The amount of storage or bandwidth used.
+ * @param {number} total - The total amount of storage or bandwidth available.
+ * @return {number} - The percentage of used storage or bandwidth, rounded to two decimal places.
+ */
 const calculatePercentage = ( used, total ) => {
 	if ( total === 0 ) {
 		return 0;

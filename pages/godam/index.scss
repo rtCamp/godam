@@ -66,7 +66,7 @@
 						&.active {
 							color: rgba(33, 33, 33, 1);
 	
-							background-color: #ffffff;
+							background-color: #fff;
 						}
 	
 						&:focus {
@@ -83,6 +83,7 @@
 	}
 
 	.invalid-license-key {
+
 		input {
 			border-color: #fb2c36;
 		}
@@ -93,9 +94,11 @@
 	}
 
 	.sidebar-nav-item {
+
 		@apply flex items-center gap-2 p-2 font-medium rounded-md text-gray-600 hover:text-gray-900 border border-transparent transition-all;
 
 		&.active {
+
 			@apply bg-white font-semibold focus:ring-2 ring-indigo-200 text-gray-900 drop-shadow-sm;
 			border: 1px solid #ddd;
 		}
@@ -116,7 +119,7 @@
 			align-items: center;
 			justify-content: center;
 			font-size: 20px;
-			font-weight: bold;
+			font-weight: 700;
 			color: #333;
 
 			&.red {

@@ -30,7 +30,7 @@ import { scrollToTop } from '../../../utils/index.js';
 const GeneralSettings = () => {
 	const dispatch = useDispatch();
 	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
-	const [ saveMediaSettings ] = useSaveMediaSettingsMutation();
+	const [ saveMediaSettings, { isLoading: saveMediaSettingLoading } ] = useSaveMediaSettingsMutation();
 
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
@@ -101,7 +101,12 @@ const GeneralSettings = () => {
 				</PanelBody>
 			</Panel>
 
-			<Button variant="primary" className="godam-button" onClick={ handleSaveSettings }>
+			<Button
+				variant="primary"
+				className="godam-button"
+				onClick={ handleSaveSettings }
+				isBusy={ saveMediaSettingLoading }
+			>
 				{ __( 'Save Settings', 'godam' ) }
 			</Button>
 		</>
