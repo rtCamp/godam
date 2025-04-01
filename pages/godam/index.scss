@@ -15,13 +15,13 @@
 			font-size: 13px;
 			font-weight: 500;
 			line-height: 1.4;
-			margin-bottom: calc(4px* 2);
+			margin-bottom: calc(4px * 2);
 			padding: 0;
 			text-transform: none;
 		}
 
 		&-help {
-			margin-top: calc(4px* 2);
+			margin-top: calc(4px * 2);
 			margin-bottom: 0;
 			font-size: 12px;
 			font-style: normal;
@@ -56,7 +56,7 @@
 						white-space: nowrap;
 	
 						font-size: 0.875rem;
-						line-height: 1rem;
+						line-height: 1;
 						font-weight: 500;
 						color: rgba(119, 119, 119, 1);
 	
@@ -82,7 +82,7 @@
 		}
 	}
 
-	.invalid-license-key {
+	.invalid-api-key {
 
 		input {
 			border-color: #fb2c36;

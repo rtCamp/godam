@@ -30,14 +30,14 @@ export const generalAPI = createApi( {
 			} ),
 		} ),
 		verifyAPIKey: builder.mutation( {
-			query: ( licenseKey ) => ( {
+			query: ( apiKey ) => ( {
 				url: 'verify-api-key',
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 					'X-WP-Nonce': window.wpApiSettings.nonce,
 				},
-				body: { api_key: licenseKey },
+				body: { api_key: apiKey },
 			} ),
 		} ),
 		deactivateAPIKey: builder.mutation( {
