@@ -5,7 +5,6 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
 	video: {
-		adaptive_bitrate: false,
 		video_quality: [],
 		video_thumbnails: 5,
 		overwrite_thumbnails: false,

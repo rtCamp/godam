@@ -24,7 +24,11 @@ import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
 import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
 
 import './video-settings.scss';
-import APIKeyInput from './APIKeyInput.jsx';
+
+import APISettings from './APISettings.jsx';
+import VideoQuality from './VideoQuality.jsx';
+import VideoThumbnails from './VideoThumbnails.jsx';
+import VideoWatermark from './VideoWatermark.jsx';
 
 const VideoSettings = () => {
 	const dispatch = useDispatch();
@@ -44,7 +48,7 @@ const VideoSettings = () => {
 
 	const handleSaveSettings = async () => {
 		try {
-			const response = await saveMediaSettings( { settings: { general: mediaSettings?.general } } ).unwrap();
+			const response = await saveMediaSettings( { settings: { video: mediaSettings?.video } } ).unwrap();
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
@@ -89,9 +93,13 @@ const VideoSettings = () => {
 				</Panel>
 			) }
 
-			<APIKeyInput setNotice={ setNotice } />
+			<APISettings setNotice={ setNotice } />
 
-			{ false && (
+			<VideoQuality handleSettingChange={ handleSettingChange } />
+			<VideoThumbnails handleSettingChange={ handleSettingChange } />
+			<VideoWatermark handleSettingChange={ handleSettingChange } />
+
+			{ hasValidAPIKey && (
 				<Button variant="primary" className="godam-button" onClick={ handleSaveSettings }>
 					{ __( 'Save Settings', 'godam' ) }
 				</Button>

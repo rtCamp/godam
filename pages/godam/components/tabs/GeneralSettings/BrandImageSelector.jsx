@@ -33,6 +33,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 	return (
 		<div className="godam-form-group godam-margin-bottom">
 			<label
+				className="label-text"
 				htmlFor="custom-brand-logo"
 			>
 				{ __( 'Custom brand logo', 'godam' ) }

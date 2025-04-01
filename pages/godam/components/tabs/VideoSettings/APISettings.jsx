@@ -17,7 +17,7 @@ import { useDeactivateAPIKeyMutation, useVerifyAPIKeyMutation } from '../../../r
 import { hasValidAPIKey, maskedAPIKey, GODAM_API_BASE, scrollToTop } from '../../../utils/index.js';
 import UsageData from './UsageData.jsx';
 
-const APIKeyInput = ( { setNotice } ) => {
+const APISettings = ( { setNotice } ) => {
 	const [ apiKey, setAPIKey ] = useState( hasValidAPIKey ? maskedAPIKey : '' );
 
 	const [ verifyAPIKey, { isLoading: isAPIKeyLoading } ] = useVerifyAPIKeyMutation();
@@ -132,4 +132,4 @@ const APIKeyInput = ( { setNotice } ) => {
 	);
 };
 
-export default APIKeyInput;
+export default APISettings;

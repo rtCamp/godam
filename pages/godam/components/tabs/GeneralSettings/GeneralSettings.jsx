@@ -83,7 +83,12 @@ const GeneralSettings = () => {
 					<BrandImageSelector mediaSettings={ mediaSettings } handleSettingChange={ handleSettingChange } />
 
 					<div className="godam-form-group">
-						<label htmlFor="brand-color">{ __( 'Brand color', 'godam' ) }</label>
+						<label
+							className="label-text"
+							htmlFor="brand-color"
+						>
+							{ __( 'Brand color', 'godam' ) }
+						</label>
 						<ColorPickerButton
 							label={ __( 'Brand color', 'godam' ) }
 							value={ mediaSettings?.general?.brand_color }
