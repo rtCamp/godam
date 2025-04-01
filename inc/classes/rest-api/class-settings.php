@@ -22,14 +22,14 @@ class Settings extends Base {
 	protected $rest_base = 'settings';
 
 		/**
-	 * Default settings structure.
-	 *
-	 * @return array
-	 */
+		 * Default settings structure.
+		 *
+		 * @return array
+		 */
 	private function get_default_settings() {
 		return array(
 			'video'   => array(
-				'sync_from_godam'    => false,
+				'sync_from_godam'      => false,
 				'adaptive_bitrate'     => false,
 				'optimize_videos'      => false,
 				'video_format'         => 'auto',
@@ -42,9 +42,9 @@ class Settings extends Base {
 				'use_watermark_image'  => false,
 			),
 			'general' => array(
-				'enable_folder_organization'  => true,
-				'brand_image'                 => '',
-				'brand_color'                 => '#000000',
+				'enable_folder_organization' => true,
+				'brand_image'                => '',
+				'brand_color'                => '#000000',
 			),
 		);
 	}
@@ -240,18 +240,18 @@ class Settings extends Base {
 	public function update_easydam_settings( $request ) {
 		$new_settings = $request->get_param( 'settings' );
 
-		// Retrieve existing settings
+		// Retrieve existing settings.
 		$existing_settings = get_option( 'rtgodam-settings', array() );
 
-		// Ensure it's an array (in case get_option returns false)
+		// Ensure it's an array (in case get_option returns false).
 		if ( ! is_array( $existing_settings ) ) {
 			$existing_settings = array();
 		}
 	
-		// Merge the new settings with the existing ones
+		// Merge the new settings with the existing ones.
 		$updated_settings = array_replace_recursive( $existing_settings, $new_settings );
 	
-		// Save updated settings to the database
+		// Save updated settings to the database.
 		update_option( 'rtgodam-settings', $updated_settings );
 	
 		return new \WP_REST_Response(
