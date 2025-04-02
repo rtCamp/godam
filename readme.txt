@@ -15,7 +15,7 @@ Manage and optimize digital assets with GoDAM – featuring transcoding, adaptiv
 
 With GoDAM, WordPress users can leverage advanced video capabilities without requiring extensive technical expertise. It automates the conversion of uploaded videos into multiple resolutions, enabling seamless playback with adaptive bitrate streaming. The integration of interactive elements such as CTAs, forms, hotspots and ads makes GoDAM an all-in-one solution for content creators, marketers, and eCommerce businesses.
 
-See Our Official GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam)
+Check out our source code and contribute to the plugin on GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam).
 Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 
 [youtube https://www.youtube.com/watch?v=UGmKa6aLSgU]
