@@ -12,7 +12,7 @@ const slice = createSlice( {
 			bucket: '',
 		},
 		offLoadMedia: false,
-		bucketPath: 'wp-content/uploads',
+		bucketPath: window?.pluginInfo?.uploadUrl,
 
 		notice: {
 			type: '',
@@ -30,7 +30,7 @@ const slice = createSlice( {
 	reducers: {
 		setSettings( state, action ) {
 			state.offLoadMedia = action.payload.offLoadMedia ?? false;
-			state.bucketPath = action.payload.bucketPath ?? 'wp-content/uploads';
+			state.bucketPath = action.payload.bucketPath ?? window?.pluginInfo?.uploadUrl;
 
 			state.aws.accessKey = action.payload.aws?.accessKey ?? '';
 			state.aws.secretKey = action.payload.aws?.secretKey ?? '';
