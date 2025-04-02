@@ -6,13 +6,14 @@ import { configureStore } from '@reduxjs/toolkit';
 /**
  * Internal dependencies
  */
-import StorageReducer from './slice/storage';
-import { storageAPI } from './api/storage';
+import MediaSettingsReducer from './slice/media-settings';
+
+import { generalAPI } from './api/media-settings';
 
 export default configureStore( {
 	reducer: {
-		storage: StorageReducer,
-		[ storageAPI.reducerPath ]: storageAPI.reducer,
+		mediaSettings: MediaSettingsReducer,
+		[ generalAPI.reducerPath ]: generalAPI.reducer,
 	},
-	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat( storageAPI.middleware ),
+	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat( generalAPI.middleware ),
 } );

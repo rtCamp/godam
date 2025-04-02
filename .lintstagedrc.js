@@ -2,7 +2,7 @@ module.exports = {
 	"**/*.php": [
 		"npm run lint:php"
 	],
-	"**/*.js": [
+	"**/*.{js,jsx}": [
 		"npm run lint:js"
 	],
 	"**/*.{css,scss}": [
