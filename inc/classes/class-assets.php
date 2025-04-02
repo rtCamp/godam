@@ -137,8 +137,8 @@ class Assets {
 			'rtgodam-script',
 			'pluginInfo',
 			array(
-				'version' => RTGODAM_VERSION,
-				'adminUrl' => admin_url(),
+				'version'   => RTGODAM_VERSION,
+				'adminUrl'  => admin_url(),
 				'uploadUrl' => wp_upload_dir()['baseurl'],
 			)
 		);
