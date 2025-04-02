@@ -40,8 +40,8 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 📌 Smart Transcoding & Adaptive Bitrate Streaming
 - Automatically converts videos into multiple resolutions (240p to 4K).
 - Ensures smooth playback by dynamically adjusting quality based on network speed.
-- Supported audio formats: MP3, M4A, WAV, OGG, WMA
-- Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, MPG, OGV, WEBM, WMV
+- Supported audio formats: MP3, M4A, WAV, OGG
+- Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
 
 📌 Seamless Ad Monetization
 - Supports self-hosted ads and third-party ad networks.
@@ -112,15 +112,15 @@ This will install PHP and JavaScript dependencies and generate the production-re
 
 ## Frequently Asked Questions
 Q. What is GoDAM, and how does it work?
-A. GoDAM is a media management service that seamlessly integrates with your WordPress site to optimize and enhance your audio and video content. It automatically converts uploaded audio files to MP3 and video files to MP4 formats. Additionally, GoDAM offers a suite of powerful features, including thumbnail generation, shortcode support, customizable video layers (like Gravity Forms, text/image CTAs, video hotspots, and ads), adaptive bitrate streaming for smooth playback, and advanced asset management tools.
+A. GoDAM is a media management service that seamlessly integrates with your WordPress site to optimize and enhance your audio and video content. It automatically converts uploaded audio files to MP3 and video files to MPD formats. Additionally, GoDAM offers a suite of powerful features, including thumbnail generation, shortcode support, customizable video layers (like Gravity Forms, text/image CTAs, video hotspots, and ads), adaptive bitrate streaming for smooth playback, and advanced asset management tools.
 
 To get started, you just need to install the GoDAM plugin on your WordPress website and subscribe to a plan. Once set up, GoDAM helps you manage, edit, and deliver media content more efficiently, making it a perfect solution for creators, educators, and businesses.
 
 Q. Which file types are supported?
-A. GoDAM converts all supported audio files to MP3 format and video files to MP4 format.
+A. GoDAM converts all supported audio files to MP3 format and video files to MPD format.
 Supported input formats:
-• Audio: MP3, M4A, WAV, OGG, WMA
-• Video: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, MPG, OGV, WEBM, WMV
+• Audio: MP3, M4A, WAV, OGG
+• Video: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
 
 Q. Who is GoDAM designed for?
 A. Our solution is perfect for content creators, marketers, educators, e-commerce businesses, and anyone looking to enhance their video strategy with customizable and interactive features.

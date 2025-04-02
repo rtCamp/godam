@@ -18,7 +18,7 @@ import Tooltip from './Tooltip';
 import { __ } from '@wordpress/i18n';
 
 const adminUrl =
-  window.videoData?.adminUrl || '/wp-admin/admin.php?page=rtgodam';
+  window.videoData?.adminUrl;
 const restURL = window.godamRestRoute.url || '';
 
 const Analytics = ( { attachmentID } ) => {
