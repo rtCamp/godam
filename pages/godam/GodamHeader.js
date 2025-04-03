@@ -38,7 +38,7 @@ const GodamHeader = () => {
 							icon={ help }
 						/>
 						{
-							( window?.userData?.valid_license && window?.userData?.user_data?.active_plan && ( window?.userData?.user_data?.active_plan )?.toLowerCase() !== 'platinum' ) &&
+							( window?.userData?.valid_api_key && window?.userData?.user_data?.active_plan && ( window?.userData?.user_data?.active_plan )?.toLowerCase() !== 'platinum' ) &&
 								<Button
 									className="ml-2"
 									variant="primary"

@@ -5,6 +5,8 @@ import DOMPurify from 'isomorphic-dompurify';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
+const restURL = window.godamRestRoute.url || '';
+
 export default AttachmentDetailsTwoColumn?.extend( {
 
 	/**
@@ -46,7 +48,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			return null;
 		}
 		try {
-			const response = await fetch( `${ window.location.origin }${ url }?attachment_id=${ attachmentId }`, {
+			const response = await fetch( `${ url }?attachment_id=${ attachmentId }`, {
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json',
@@ -70,7 +72,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		if ( attachment?.attributes?.type !== 'video' ) {
 			return null;
 		}
-		return this.fetchData( '/wp-json/godam/v1/media-library/get-video-thumbnail', attachmentId );
+		return this.fetchData( window.pathJoin( [ restURL, '/godam/v1/media-library/get-video-thumbnail' ] ), attachmentId );
 	},
 
 	/**
@@ -80,7 +82,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @return {Promise<Object|null>} - The fetched EXIF data or null.
 	 */
 	getExifDetails( attachmentId ) {
-		return this.fetchData( '/wp-json/godam/v1/media-library/get-exif-data', attachmentId );
+		return this.fetchData( window.pathJoin( [ restURL, '/godam/v1/media-library/get-exif-data' ] ), attachmentId );
 	},
 
 	/**
@@ -108,14 +110,14 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		const thumbnailsHTML = thumbnails.map( ( thumbnail ) =>
 			`<li class="${ thumbnail === selected ? 'selected' : '' }">
-			<img src="${ thumbnail }" alt="Video Thumbnail" />
-		</li>` ).join( '' );
+				<img src="${ thumbnail }" alt="Video Thumbnail" />
+			</li>` ).join( '' );
 
 		const thumbnailDiv = `
-		<div class="attachment-video-thumbnails">
-			<div class="attachment-video-title"><h4>Video Thumbnails</h4></div>
-			<ul>${ thumbnailsHTML }</ul>
-		</div>`;
+			<div class="attachment-video-thumbnails">
+				<div class="attachment-video-title"><h4>Video Thumbnails</h4></div>
+				<ul>${ thumbnailsHTML }</ul>
+			</div>`;
 
 		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( thumbnailDiv ) );
 		this.setupThumbnailClickHandler( attachmentID );
@@ -138,7 +140,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				/**
 				 * Send a POST request to the server to set the selected thumbnail for the video.
 				 */
-				fetch( `${ window.location.origin }/wp-json/godam/v1/media-library/set-video-thumbnail`, {
+				fetch( window.pathJoin( [ restURL, '/godam/v1/media-library/set-video-thumbnail' ] ), {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
@@ -164,8 +166,8 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @return {string} - The generated button HTML.
 	 */
 	getButtonsHTML() {
-		const editVideoURL = `admin.php?page=video_editor&id=${ this.model.get( 'id' ) }`;
-		const analyticsURL = `admin.php?page=analytics&id=${ this.model.get( 'id' ) }`;
+		const editVideoURL = `admin.php?page=rtgodam_video_editor&id=${ this.model.get( 'id' ) }`;
+		const analyticsURL = `admin.php?page=rtgodam_analytics&id=${ this.model.get( 'id' ) }`;
 
 		return `
 		<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>

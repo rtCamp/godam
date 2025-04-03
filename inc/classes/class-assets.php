@@ -5,9 +5,11 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc;
+namespace RTGODAM\Inc;
 
-use Transcoder\Inc\Traits\Singleton;
+defined( 'ABSPATH' ) || exit;
+
+use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Assets
@@ -29,7 +31,6 @@ class Assets {
 	 * @return void
 	 */
 	protected function setup_hooks() {
-
 		/**
 		 * Action
 		 */
@@ -45,58 +46,74 @@ class Assets {
 	public function enqueue_scripts() {
 
 		wp_register_script(
-			'godam-script',
-			GODAM_URL . '/assets/build/js/main.js',
+			'rtgodam-script',
+			RTGODAM_URL . '/assets/build/js/main.js',
 			array(),
-			filemtime( GODAM_PATH . '/assets/build/js/main.js' ),
+			filemtime( RTGODAM_PATH . '/assets/build/js/main.js' ),
 			true
 		);
 
 		wp_register_style(
-			'godam-style',
-			GODAM_URL . '/assets/build/css/main.css',
+			'rtgodam-style',
+			RTGODAM_URL . '/assets/build/css/main.css',
 			array(),
-			filemtime( GODAM_PATH . '/assets/build/css/main.css' )
+			filemtime( RTGODAM_PATH . '/assets/build/css/main.css' )
 		);
 
 
 		wp_enqueue_script(
 			'analytics-library',
-			'https://unpkg.com/analytics/dist/analytics.min.js',
+			RTGODAM_URL . '/assets/src/libs/analytics.min.js',
 			array(),
-			GODAM_VERSION,
+			filemtime( RTGODAM_PATH . '/assets/src/libs/analytics.min.js' ),
 			true
 		);
 
 		wp_localize_script(
-			'godam-script',
+			'rtgodam-script',
 			'nonceData',
 			array(
 				'nonce' => wp_create_nonce( 'wp_rest' ),
 			)
 		);
 		
-		$localize_array = rt_get_localize_array();
+		$localize_array = rtgodam_get_localize_array();
 
 		wp_localize_script(
-			'godam-script',
+			'rtgodam-script',
 			'videoAnalyticsParams',
 			$localize_array
 		);
 		
 		wp_localize_script(
-			'godam-script',
-			'godamLicenseData',
+			'rtgodam-script',
+			'godamAPIKeyData',
 			array(
-				'valid_license' => godam_is_license_valid(),
+				'valid_api_key' => rtgodam_is_api_key_valid(),
 			)
 		);
 
-		wp_enqueue_script( 'godam-script' );
-		wp_enqueue_style( 'godam-style' );
+		wp_localize_script(
+			'rtgodam-script',
+			'godamRestRoute',
+			array(
+				'url' => get_rest_url( get_current_blog_id() ),
+			)
+		);
+
+		$this->enqueue_godam_settings();
+
+		wp_enqueue_script( 'rtgodam-script' );
+		wp_enqueue_style( 'rtgodam-style' );
 
 		// Register IMA SDK.
-		wp_enqueue_script( 'ima-sdk', 'https://imasdk.googleapis.com/js/sdkloader/ima3.js', GODAM_VERSION, true );
+		wp_enqueue_script(
+			'ima-sdk',
+			RTGODAM_URL . '/assets/src/libs/ima3.js',
+			array(),
+			RTGODAM_VERSION,
+			true
+		);
 	}
 
 	/**
@@ -109,44 +126,56 @@ class Assets {
 		$screen = get_current_screen();
 
 		wp_register_script(
-			'godam-script',
-			GODAM_URL . '/assets/build/js/admin.js',
+			'rtgodam-script',
+			RTGODAM_URL . '/assets/build/js/admin.js',
 			array(),
-			filemtime( GODAM_PATH . '/assets/build/js/admin.js' ),
+			filemtime( RTGODAM_PATH . '/assets/build/js/admin.js' ),
 			true
 		);
 
 		wp_localize_script(
-			'godam-script',
+			'rtgodam-script',
 			'pluginInfo',
 			array(
-				'version' => GODAM_VERSION,
+				'version' => RTGODAM_VERSION,
+			)
+		);
+
+		wp_localize_script(
+			'rtgodam-script',
+			'godamRestRoute',
+			array(
+				'url'      => get_rest_url( get_current_blog_id() ),
+				'home_url' => get_home_url( get_current_blog_id() ),
+				'nonce'    => wp_create_nonce( 'wp_rest' ),
 			)
 		);
 
 		wp_register_style(
-			'godam-style',
-			GODAM_URL . '/assets/build/css/admin.css',
+			'rtgodam-style',
+			RTGODAM_URL . '/assets/build/css/admin.css',
 			array(),
-			filemtime( GODAM_PATH . '/assets/build/css/admin.css' )
+			filemtime( RTGODAM_PATH . '/assets/build/css/admin.css' )
 		);
 
-		wp_enqueue_script( 'godam-script' );
-		wp_enqueue_style( 'godam-style' );
+		$this->enqueue_godam_settings();
+
+		wp_enqueue_script( 'rtgodam-script' );
+		wp_enqueue_style( 'rtgodam-style' );
 
 		wp_register_script(
 			'easydam-media-library',
-			GODAM_URL . '/assets/build/js/media-library.js',
+			RTGODAM_URL . '/assets/build/js/media-library.js',
 			array(),
-			filemtime( GODAM_PATH . '/assets/build/js/media-library.js' ),
+			filemtime( RTGODAM_PATH . '/assets/build/js/media-library.js' ),
 			true
 		);
 
 		wp_register_style(
 			'easydam-media-library',
-			GODAM_URL . '/assets/build/css/media-library.css',
+			RTGODAM_URL . '/assets/build/css/media-library.css',
 			array(),
-			filemtime( GODAM_PATH . '/assets/build/css/media-library.css' )
+			filemtime( RTGODAM_PATH . '/assets/build/css/media-library.css' )
 		);
 
 		wp_localize_script(
@@ -171,7 +200,7 @@ class Assets {
 			)
 		);
 
-		$disable_folder_organization = get_option( 'rt-easydam-settings', array() )['general']['disable_folder_organization'] ?? false;
+		$disable_folder_organization = get_option( 'rtgodam-settings', array() )['general']['disable_folder_organization'] ?? false;
 
 		wp_localize_script(
 			'easydam-media-library',
@@ -179,7 +208,7 @@ class Assets {
 			array(
 				'ajaxUrl'                   => admin_url( 'admin-ajax.php' ),
 				'nonce'                     => wp_create_nonce( 'easydam_media_library' ),
-				'godamToolsNonce'           => wp_create_nonce( 'godam-tools' ),
+				'godamToolsNonce'           => wp_create_nonce( 'rtgodam_tools' ),
 				'disableFolderOrganization' => $disable_folder_organization,
 			)
 		);
@@ -193,8 +222,29 @@ class Assets {
 		/**
 		 * Dependency library for date range picker.
 		 */
-		wp_enqueue_script( 'moment-js', 'https://cdn.jsdelivr.net/momentjs/latest/moment.min.js', array(), '1.0.0', true );
-		wp_enqueue_script( 'daterangepicker-js', 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js', array( 'moment-js' ), '1.0.0', true );
-		wp_enqueue_style( 'daterangepicker-css', 'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css', array(), '1.0.0' );
+		wp_enqueue_script( 'moment-js', RTGODAM_URL . '/assets/src/libs/moment-js.min.js', array(), filemtime( RTGODAM_PATH . '/assets/src/libs/moment-js.min.js' ), true );
+		wp_enqueue_script( 'daterangepicker-js', RTGODAM_URL . '/assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( RTGODAM_PATH . '/assets/src/libs/daterangepicker.min.js' ), true );
+		wp_enqueue_style( 'daterangepicker-css', RTGODAM_URL . '/assets/src/libs/daterangepicker.css', array(), filemtime( RTGODAM_PATH . '/assets/src/libs/daterangepicker.css' ) );
+	}
+
+	/**
+	 * Enqueue GoDAM Settings JS localization.
+	 *
+	 * @return void
+	 */
+	private function enqueue_godam_settings() {
+		$godam_settings = get_option( 'rtgodam-settings' );
+
+		$selected_brand_image = $godam_settings['general']['selected_brand_image'] ?? '';
+		$brand_color          = $godam_settings['general']['brand_color'] ?? '';
+
+		wp_localize_script(
+			'rtgodam-script',
+			'godamSettings',
+			array(
+				'brandImage' => $selected_brand_image,
+				'brandColor' => $brand_color,
+			)
+		);
 	}
 }

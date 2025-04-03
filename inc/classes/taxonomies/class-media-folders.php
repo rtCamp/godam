@@ -5,7 +5,9 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\Taxonomies;
+namespace RTGODAM\Inc\Taxonomies;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Media_Folders

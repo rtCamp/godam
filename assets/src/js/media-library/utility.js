@@ -1,10 +1,10 @@
 /**
- * Utility function to check if the user has a valid license.
+ * Utility function to check if the user has a valid API key.
  *
- * @return {boolean} True if the user has a valid license, false otherwise.
+ * @return {boolean} True if the user has a valid API Key, false otherwise.
  */
-function isLicenseValid() {
-	return window.MediaLibrary?.userData?.valid_license ? true : false;
+function isAPIKeyValid() {
+	return window.MediaLibrary?.userData?.valid_api_key ? true : false;
 }
 
 /**
@@ -40,4 +40,4 @@ function isFolderOrgDisabled() {
 	return window.easydamMediaLibrary?.disableFolderOrganization || false;
 }
 
-export { isLicenseValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled };
+export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled };

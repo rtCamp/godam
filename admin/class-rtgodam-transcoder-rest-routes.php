@@ -1,0 +1,264 @@
+<?php
+/**
+ * Class RTGODAM_Transcoder_Rest_Routes
+ *
+ * @package transcoder
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+
+/**
+ * Handle REST Routes for Transcoder.
+ */
+class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
+
+	/**
+	 * Prefix for API endpoint namespace.
+	 *
+	 * @var string
+	 */
+	public $namespace_prefix = 'godam/v1';
+
+	/**
+	 * RT Transcoder Handler object.
+	 *
+	 * @var RTGODAM_Transcoder_Handler
+	 */
+	public $rtgodam_transcoder_handler;
+
+	/**
+	 * Constructor
+	 *
+	 * @since   1.0.0
+	 *
+	 * @access public
+	 * @return void
+	 */
+	public function __construct() {
+		$this->rtgodam_transcoder_handler = new RTGODAM_Transcoder_Handler( true );
+
+		if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) ) {
+			define( 'RTGODAM_TRANSCODER_CALLBACK_URL', $this->get_callback_url() );
+		}
+	}
+
+	/**
+	 * Function to register routes.
+	 */
+	public function register_routes() {
+
+		// Register `transcoder-callback` route to handle callback request by the FFMPEG transcoding server.
+		register_rest_route(
+			$this->namespace_prefix,
+			'/transcoder-callback',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'handle_callback' ),
+				'permission_callback' => '__return_true', // The endpoint must be public; otherwise, GoDAM (https://app.godam.io) won't be able to send a media transcoding callback request.
+				'args'                => array(
+					'job_id'           => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'job_type'         => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'job_for'          => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'format'           => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'download_url'     => array(
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'esc_url_raw',
+					),
+					'file_name'        => array(
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'thumb_count'      => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+					'status'           => array(
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'file_status'      => array(
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'files'            => array(
+						'required'          => false,
+						'type'              => 'array',
+						'sanitize_callback' => array( $this, 'sanitize_array_of_urls' ),
+					),
+					'thumbnail'        => array(
+						'required'          => false,
+						'type'              => 'array',
+						'sanitize_callback' => array( $this, 'sanitize_array_of_urls' ),
+					),
+					'error_msg'        => array(
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'job_manager_form' => array(
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Return the callback URL for the transcoder.
+	 *
+	 * @return string
+	 */
+	public function get_callback_url() {
+		return rest_url( $this->namespace_prefix . '/transcoder-callback' );
+	}
+
+	/**
+	 * Sanitizes a single URL or an array of URLs.
+	 *
+	 * @param mixed           $value The incoming data (can be a single URL or an array of URLs).
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @param string          $param The parameter name (e.g., 'files' or 'thumbnail').
+	 *
+	 * @return mixed Returns a sanitized URL, array of sanitized URLs, or WP_Error on failure.
+	 */
+	public function sanitize_array_of_urls( $value, $request, $param ) {
+		// If the value is not an array, treat it as a single URL.
+		if ( ! is_array( $value ) ) {
+			if ( is_string( $value ) ) {
+				return esc_url_raw( $value );
+			}
+			// translators: Return an error if the value is neither a string nor an array.
+			return new WP_Error( 'invalid_param', sprintf( __( '%s must be a valid URL or an array of URLs.', 'godam' ), $param ) );
+		}
+
+		// Initialize the sanitized array.
+		$sanitized = array();
+
+		// Handle `files` case: multiple file types like `mp4`, `mp3`, `mpd`.
+		if ( 'files' === $param ) {
+			foreach ( array( 'mp4', 'mp3', 'mpd' ) as $file_type ) {
+				if ( isset( $value[ $file_type ] ) && is_array( $value[ $file_type ] ) ) {
+					$sanitized[ $file_type ] = array_map( 'esc_url_raw', $value[ $file_type ] );
+				}
+			}
+			return $sanitized;
+		}
+
+		// Else just sanitize the array values.
+		return array_map( 'esc_url_raw', $value );
+	}
+
+	/**
+	 * Function to handle the callback request by the FFMPEG transcoding server.
+	 *
+	 * @param WP_REST_Request $request Object of WP_REST_Request.
+	 *
+	 * @return WP_Error|WP_REST_Response REST API response.
+	 */
+	public function handle_callback( WP_REST_Request $request ) {
+
+		$job_id      = $request->get_param( 'job_id' );
+		$file_status = $request->get_param( 'file_status' );
+		$error_msg   = $request->get_param( 'error_msg' );
+		$job_for     = $request->get_param( 'job_for' );
+		$thumbnail   = $request->get_param( 'thumbnail' );
+		$format      = $request->get_param( 'format' );
+
+		if ( ! empty( $job_id ) && ! empty( $file_status ) && ( 'error' === $file_status ) ) {
+			$this->rtgodam_transcoder_handler->nofity_transcoding_failed( $job_id, $error_msg );
+			return new WP_Error( 'rtgodam_transcoding_error', 'Something went wrong. Invalid post request.', array( 'status' => 400 ) );
+		}
+
+		$mail = defined( 'RTGODAM_NO_MAIL' ) ? false : true;
+
+		$attachment_id = '';
+
+		if ( isset( $job_for ) && ( 'wp-media' === $job_for ) ) {
+			if ( isset( $job_id ) ) {
+				$has_thumbs = isset( $thumbnail ) ? true : false;
+				$flag       = false;
+
+				$id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
+
+				if ( ! empty( $id ) && is_numeric( $id ) ) {
+					$attachment_id         = $id;
+					$post_array            = $request->get_params();
+					$post_array['post_id'] = $attachment_id;
+
+					if ( $has_thumbs && ! empty( $post_array['thumbnail'] ) ) {
+						$thumbnail = $this->rtgodam_transcoder_handler->add_media_thumbnails( $post_array );
+					}
+
+					if ( isset( $format ) && 'thumbnail' === $format ) {
+						return new WP_REST_Response( esc_html_e( 'Thumbnail created successfully.', 'godam' ), 200 );
+					}
+
+					if ( ! empty( $post_array['files'] ) ) {
+						if ( ! empty( $post_array['files']['mpd'] ) ) {
+							update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $post_array['download_url'] );
+						} else {
+							$this->rtgodam_transcoder_handler->add_transcoded_files( $post_array['files'], $attachment_id, $job_for );
+						}
+					}
+				} else {
+					$flag = 'Something went wrong. The required attachment id does not exists. It must have been deleted.';
+				}
+
+				$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
+
+				if ( $flag && $mail ) {
+					$subject = 'Transcoding: Download Failed';
+					$message = '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p>';
+					$users   = get_users( array( 'role' => 'administrator' ) );
+					if ( $users ) {
+						$admin_email_ids = array();
+						foreach ( $users as $user ) {
+							$admin_email_ids[] = $user->user_email;
+						}
+						add_filter( 'wp_mail_content_type', array( $this->rtgodam_transcoder_handler, 'wp_mail_content_type' ) );
+						wp_mail( $admin_email_ids, $subject, $message ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_mail_wp_mail
+						remove_filter( 'wp_mail_content_type', array( $this->rtgodam_transcoder_handler, 'wp_mail_content_type' ) );
+					}
+					return new WP_Error( 'rtgodam_transcoding_error', $flag, array( 'status' => 500 ) );
+				} else {
+					return new WP_REST_Response( esc_html_e( 'Media transcoded successfully.', 'godam' ), 200 );
+				}
+			}
+		}
+
+		/**
+		 * Allow users/plugins to perform action after response received from the transcoder is
+		 * processed
+		 *
+		 * @since 1.0.9
+		 *
+		 * @param number    $attachment_id  Attachment ID for which the callback has sent from the transcoder
+		 * @param number    $job_id         The transcoding job ID
+		 */
+		do_action( 'rtgodam_handle_callback_finished', $attachment_id, $job_id );
+	}
+}

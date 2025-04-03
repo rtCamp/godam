@@ -5,12 +5,9 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\REST_API;
+namespace RTGODAM\Inc\REST_API;
 
-use Transcoder\Inc\EasyDAM_Constants;
-use Transcoder\Inc\Providers\Handlers\Storage_Handler;
-use Transcoder\Inc\Providers\Exceptions\EasyDamException;
-use Transcoder\Inc\Providers\Handlers\Error_Handler;
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Settings
@@ -33,18 +30,18 @@ class Settings extends Base {
 		return array(
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/verify-license',
+				'route'     => '/' . $this->rest_base . '/verify-api-key',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'verify_license' ),
+					'callback'            => array( $this, 'verify_api_key' ),
 					'permission_callback' => function () {
 						return current_user_can( 'manage_options' );
 					},
 					'args'                => array(
-						'license_key' => array(
+						'api_key' => array(
 							'required'          => true,
 							'type'              => 'string',
-							'description'       => 'The license key to verify.',
+							'description'       => 'The API key to verify.',
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 					),
@@ -52,10 +49,10 @@ class Settings extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/deactivate-license',
+				'route'     => '/' . $this->rest_base . '/deactivate-api-key',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'deactivate_license' ),
+					'callback'            => array( $this, 'deactivate_api_key' ),
 					'permission_callback' => function () {
 						return current_user_can( 'manage_options' );
 					},
@@ -63,10 +60,10 @@ class Settings extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/get-license-key',
+				'route'     => '/' . $this->rest_base . '/get-api-key',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_license_key' ),
+					'callback'            => array( $this, 'get_api_key' ),
 					'permission_callback' => function () {
 						return current_user_can( 'manage_options' );
 					},
@@ -104,83 +101,6 @@ class Settings extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/aws',
-				'args'      => array(
-					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_aws_settings' ),
-					'permission_callback' => function () {
-						return false; // disable REST API for now.
-					},
-				),
-			),
-			array(
-				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/aws',
-				'args'      => array(
-					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'update_aws_settings' ),
-					'permission_callback' => function () {
-						return false; // disable REST API for now.
-					},
-					'args'                => array(
-						'bucketPath'   => array(
-							'type'              => 'string',
-							'description'       => 'The bucket path to save.',
-							'sanitize_callback' => 'sanitize_text_field',
-						),
-						'offLoadMedia' => array(
-							'type'              => 'boolean',
-							'description'       => 'The offload media to save.',
-							'sanitize_callback' => 'rest_sanitize_boolean',
-						),
-						'aws'          => array(
-							'type'        => 'object',
-							'description' => 'AWS credentials and settings.',
-							'properties'  => array(
-								'accessKey' => array(
-									'type'              => 'string',
-									'description'       => 'The AWS access key.',
-									'sanitize_callback' => 'sanitize_text_field',
-								),
-								'bucket'    => array(
-									'type'              => 'string',
-									'description'       => 'The AWS bucket name.',
-									'sanitize_callback' => 'sanitize_text_field',
-								),
-								'secretKey' => array(
-									'type'              => 'string',
-									'description'       => 'The AWS secret key.',
-									'sanitize_callback' => 'sanitize_text_field',
-								),
-							),
-						),
-					),
-				),
-			),
-			array(
-				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/get-buckets',
-				'args'      => array(
-					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_buckets' ),
-					'permission_callback' => function () {
-						return false; // disable REST API for now.
-					},
-				),
-			),
-			array(
-				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/validate-credentials',
-				'args'      => array(
-					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'test_credentials' ),
-					'permission_callback' => function () {
-						return false; // disable REST API for now.
-					},
-				),
-			),
-			array(
-				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/subscription-plans',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
@@ -195,21 +115,21 @@ class Settings extends Base {
 	}
 
 	/**
-	 * Verify the license key using external API.
+	 * Verify the API key using external API.
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response
 	 */
-	public function verify_license( $request ) {
-		$license_key = $request->get_param( 'license_key' );
+	public function verify_api_key( $request ) {
+		$api_key = $request->get_param( 'api_key' );
 
-		// Use the helper function to verify the license key.
-		$result = rtt_verify_license( $license_key, true );
+		// Use the helper function to verify the API key.
+		$result = rtgodam_verify_api_key( $api_key, true );
 
 		if ( is_wp_error( $result ) ) {
 
-			$error_data = $result->get_error_data();
-			$status_code = is_array($error_data) && isset($error_data['status']) ? $error_data['status'] : 500;
+			$error_data  = $result->get_error_data();
+			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
 
 			return new \WP_REST_Response(
 				array(
@@ -221,8 +141,8 @@ class Settings extends Base {
 			);
 		}
 
-		if ( ! empty( $result['data']['license_key'] ) ) {
-			$result['data']['license_key'] = rtt_mask_string( $result['data']['license_key'] );
+		if ( ! empty( $result['data']['api_key'] ) ) {
+			$result['data']['api_key'] = rtgodam_mask_string( $result['data']['api_key'] );
 		}
 
 		return new \WP_REST_Response(
@@ -236,23 +156,23 @@ class Settings extends Base {
 	}
 
 	/**
-	 * Deactivate the license key.
+	 * Deactivate the API key.
 	 *
 	 * @return \WP_REST_Response
 	 */
-	public function deactivate_license() {
-		// Delete the license key from the database.
-		$deleted_key   = delete_site_option( 'rt-transcoding-api-key' );
-		$deleted_token = delete_site_option( 'rt-transcoding-account-token' );
+	public function deactivate_api_key() {
+		// Delete the API key from the database.
+		$deleted_key   = delete_site_option( 'rtgodam-api-key' );
+		$deleted_token = delete_site_option( 'rtgodam-account-token' );
 		
 		// Delete the user data from the site_option.
-		delete_site_option( 'godam_user_data' );
+		delete_site_option( 'rtgodam_user_data' );
 
 		if ( $deleted_key || $deleted_token ) {
 			return new \WP_REST_Response(
 				array(
 					'status'  => 'success',
-					'message' => 'License key deactivated successfully.',
+					'message' => 'API key deactivated successfully.',
 				),
 				200
 			);
@@ -261,23 +181,23 @@ class Settings extends Base {
 		return new \WP_REST_Response(
 			array(
 				'status'  => 'error',
-				'message' => 'Failed to deactivate the license key. It might not exist.',
+				'message' => 'Failed to deactivate the API key. It might not exist.',
 			),
 			400
 		);
 	}
 
 	/**
-	 * Fetch the saved license key.
+	 * Fetch the saved API key.
 	 *
 	 * @return \WP_REST_Response
 	 */
-	public function get_license_key() {
-		$license_key = get_site_option( 'rt-transcoding-api-key', '' );
+	public function get_api_key() {
+		$api_key = get_site_option( 'rtgodam-api-key', '' );
 
 		return new \WP_REST_Response(
 			array(
-				'license_key' => $license_key,
+				'api_key' => $api_key,
 			),
 			200
 		);
@@ -295,7 +215,7 @@ class Settings extends Base {
 				'adaptive_bitrate'     => false,
 				'optimize_videos'      => false,
 				'video_format'         => 'auto',
-				'video_quality'        => array( 'auto' ),
+				'video_quality'        => array( 'auto', '240', '360', '480', '720', '1080', '1440', '2160' ),
 				'video_thumbnails'     => 5,
 				'overwrite_thumbnails' => false,
 				'watermark'            => false,
@@ -313,11 +233,13 @@ class Settings extends Base {
 				'track_status'                => false,
 				'is_verified'                 => false,
 				'disable_folder_organization' => false,
+				'selected_brand_image'        => '',
+				'brand_color'                 => '#000000',
 			),
 		);
 
 		// Retrieve settings from the database.
-		$easydam_settings = get_option( 'rt-easydam-settings', $default_settings );
+		$easydam_settings = get_option( 'rtgodam-settings', $default_settings );
 
 		return new \WP_REST_Response( $easydam_settings, 200 );
 	}
@@ -332,7 +254,7 @@ class Settings extends Base {
 		$settings = $request->get_param( 'settings' );
 
 		// Save settings to the database.
-		update_option( 'rt-easydam-settings', $settings );
+		update_option( 'rtgodam-settings', $settings );
 
 		return new \WP_REST_Response(
 			array(
@@ -384,118 +306,12 @@ class Settings extends Base {
 				'track_status'                => rest_sanitize_boolean( $settings['general']['track_status'] ),
 				'is_verified'                 => rest_sanitize_boolean( $settings['general']['is_verified'] ),
 				'disable_folder_organization' => rest_sanitize_boolean( $settings['general']['disable_folder_organization'] ),
+				'selected_brand_image'        => sanitize_text_field( $settings['general']['selected_brand_image'] ),
+				'brand_color'                 => sanitize_hex_color( $settings['general']['brand_color'] ),
 			),
 		);
 
 		return $sanitized_settings;
-	}
-
-	/**
-	 * Update the AWS settings.
-	 *
-	 * @param \WP_REST_Request $request REST API request.
-	 * @return \WP_REST_Response
-	 */
-	public function get_aws_settings( $request ) {
-		$settings = get_option( 'easydam_storage_aws' );
-
-		// If settings are not found, return a default empty array.
-		if ( false === $settings ) {
-			$settings = array();
-		}
-
-		return new \WP_REST_Response( $settings, 200 );
-	}
-
-	/**
-	 * Update AWS settings.
-	 *
-	 * @param array $data AWS settings to update.
-	 *
-	 * @return \WP_REST_Response
-	 */
-	public function update_aws_settings( $data ) {
-		// Fetch existing settings from the database.
-		$existing_settings = get_option(
-			EasyDAM_Constants::S3_STORAGE_OPTIONS,
-			array(
-				'bucketPath'   => '',
-				'offLoadMedia' => false,
-				'aws'          => array(
-					'accessKey' => '',
-					'secretKey' => '',
-					'bucket'    => '',
-				),
-			)
-		);
-
-		// Merge existing settings with new data, ensuring only updated values are replaced.
-		$updated_settings = array_merge(
-			$existing_settings,
-			array_filter(
-				array(
-					'bucketPath'   => $data['bucketPath'] ?? null,
-					'offLoadMedia' => $data['offLoadMedia'] ?? null,
-					'aws'          => isset( $data['aws'] ) && is_array( $data['aws'] )
-						? array_merge( $existing_settings['aws'], $data['aws'] )
-						: null,
-				),
-				function ( $value ) {
-					return null !== $value;
-				}
-			)
-		);
-
-		// Update the option in the database.
-		update_option( EasyDAM_Constants::S3_STORAGE_OPTIONS, $updated_settings );
-
-		return new \WP_REST_Response(
-			array(
-				'status'  => 'success',
-				'message' => 'AWS settings updated successfully!',
-			),
-			200
-		);
-	}
-
-	/**
-	 * Get the list of buckets.
-	 *
-	 * @return \WP_REST_Response
-	 */
-	public function get_buckets() {
-
-		try {
-			$buckets = Storage_Handler::get_buckets();
-			return new \WP_REST_Response( $buckets, 200 );
-
-		} catch ( EasyDamException $e ) {
-			return Error_Handler::handle_exception( $e, true );
-		}
-	}
-
-	/**
-	 * Test the credentials.
-	 *
-	 * Test the credentials for the storage provider.
-	 *
-	 * @return \WP_REST_Response
-	 */
-	public function test_credentials() {
-
-		try {
-			Storage_Handler::check_credentials();
-
-			$response = array(
-				'status'  => 'success',
-				'message' => 'Credentials are valid and can write storage.',
-			);
-
-			return new \WP_REST_Response( $response, 200 );
-
-		} catch ( EasyDamException $e ) {
-			return Error_Handler::handle_exception( $e, true );
-		}
 	}
 
 	/**
@@ -504,7 +320,7 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function fetch_subscription_plans() {
-		$api_url = GODAM_API_BASE . '/api/resource/Subscription Plan?fields=["name", "cost", "bandwidth", "storage", "billing_interval"]';
+		$api_url = RTGODAM_API_BASE . '/api/resource/Subscription Plan?fields=["name", "cost", "bandwidth", "storage", "billing_interval"]';
 
 		// Fetch data from the external API.
 		$response = wp_remote_get( $api_url );

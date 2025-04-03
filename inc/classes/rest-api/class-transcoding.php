@@ -5,7 +5,9 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\REST_API;
+namespace RTGODAM\Inc\REST_API;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Transcoding
@@ -102,7 +104,7 @@ class Transcoding extends Base {
 		$error_msg  = $request->get_param( 'error_msg' );
 		$error_code = $request->get_param( 'error_code' );
 
-		$attachment_id = $this->get_post_id_by_meta_key_and_value( '_rt_transcoding_job_id', $job_id );
+		$attachment_id = $this->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
 
 		if ( ! $attachment_id ) {
 			wp_send_json_error(
@@ -114,14 +116,14 @@ class Transcoding extends Base {
 
 		if ( ! empty( $error_msg ) || ! empty( $error_code ) ) {
 			
-			update_post_meta( $attachment_id, '_godam_transcoding_error_msg', $error_msg );
-			update_post_meta( $attachment_id, '_godam_transcoding_error_code', $error_code );
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $error_msg );
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', $error_code );
 
 			$progress = 0;
 		}
 
-		update_post_meta( $attachment_id, '_godam_transcoding_status', $status );
-		update_post_meta( $attachment_id, '_godam_transcoding_progress', $progress );
+		update_post_meta( $attachment_id, 'rtgodam_transcoding_status', $status );
+		update_post_meta( $attachment_id, 'rtgodam_transcoding_progress', $progress );
 
 		wp_send_json_success(
 			array(
@@ -161,29 +163,29 @@ class Transcoding extends Base {
 	private function get_status_object_from_attachment( int $attachment_id ) {
 
 		// Check if video has a transcoding job ID.
-		$job_id = sanitize_text_field( get_post_meta( $attachment_id, '_rt_transcoding_job_id', true ) );
+		$job_id = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) );
 
 		if ( empty( $job_id ) ) {
 			return array(
-				'status' => 'not_transcoding',
+				'status'  => 'not_transcoding',
 				'message' => __( 'Video has not been transcoded.', 'godam' ),
 			);
 		}
 
 		// Get and sanitize the transcoding status.
-		$status = sanitize_text_field( get_post_meta( $attachment_id, '_godam_transcoding_status', true ) );
+		$status = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) );
 
 		if ( empty( $status ) ) {
 			return array(
-				'status' => 'not_started',
+				'status'  => 'not_started',
 				'message' => __( 'Transcoding has not started.', 'godam' ),
 			);
 		}
 
 		// Handle failure case with error details.
 		if ( 'Failed' === $status ) {
-			$error_code = sanitize_text_field( get_post_meta( $attachment_id, '_godam_transcoding_error_code', true ) );
-			$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, '_godam_transcoding_error_msg', true ) );
+			$error_code = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true ) );
+			$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
 
 			return array(
 				'status'     => 'failed',
@@ -193,7 +195,7 @@ class Transcoding extends Base {
 		}
 
 		// Get and sanitize transcoding progress.
-		$progress = intval( get_post_meta( $attachment_id, '_godam_transcoding_progress', true ) );
+		$progress = intval( get_post_meta( $attachment_id, 'rtgodam_transcoding_progress', true ) );
 
 		// Define status messages.
 		$status_messages = array(

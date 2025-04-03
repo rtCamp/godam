@@ -5,9 +5,11 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc;
+namespace RTGODAM\Inc;
 
-use Transcoder\Inc\Traits\Singleton;
+defined( 'ABSPATH' ) || exit;
+
+use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Blocks
@@ -42,7 +44,7 @@ class Blocks {
 
 		// Register example-block Block.
 		register_block_type(
-			GODAM_PATH . '/assets/build/blocks/godam-player/'
+			RTGODAM_PATH . '/assets/build/blocks/godam-player/'
 		);
 	}
 }

@@ -5,11 +5,9 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\REST_API;
+namespace RTGODAM\Inc\REST_API;
 
-use Transcoder\Inc\Providers\Handlers\Item_Handler;
-use Transcoder\Inc\Providers\Exceptions\EasyDamException;
-use Transcoder\Inc\Providers\Handlers\Error_Handler;
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Media_Library
@@ -50,25 +48,6 @@ class Media_Library extends Base {
 							'required'    => true,
 							'type'        => 'integer',
 							'description' => 'ID of the folder term to associate with the attachments.',
-						),
-					),
-				),
-			),
-			array(
-				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/upload-to-s3',
-				'args'      => array(
-					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'upload_to_s3' ),
-					'permission_callback' => function () {
-						return false; // disable REST API for now.
-					},
-					'args'                => array(
-						'attachment_ids' => array(
-							'required'    => true,
-							'type'        => 'array',
-							'items'       => array( 'type' => 'integer' ),
-							'description' => 'Array of attachment IDs to upload to S3.',
 						),
 					),
 				),
@@ -136,7 +115,7 @@ class Media_Library extends Base {
 	}
 
 	/**
-	 * Verify the license key using external API.
+	 * Verify the API key using external API.
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response
@@ -214,39 +193,6 @@ class Media_Library extends Base {
 	}
 
 	/**
-	 * Upload to S3.
-	 * 
-	 * Upload the list of attachment IDs to S3.
-	 *
-	 * @param \WP_REST_Request $request REST API request.
-	 * @return \WP_REST_Response
-	 */
-	public function upload_to_s3( $request ) {
-
-		$attachment_ids = $request->get_param( 'attachment_ids' );
-
-		$successful_uploads = array();
-
-		foreach ( $attachment_ids as $attachment_id ) {
-
-			try {
-				Item_Handler::upload_item( $attachment_id );
-				$successful_uploads[] = $attachment_id;
-			} catch ( EasyDamException $e ) {
-				Error_Handler::handle_exception( $e );
-			}
-		}
-
-		return rest_ensure_response(
-			array(
-				'success'  => true,
-				'message'  => 'Attachments successfully uploaded to S3.',
-				'uploaded' => $successful_uploads,
-			) 
-		);
-	}
-
-	/**
 	 * Get EXIF data.
 	 * 
 	 * Get the EXIF data for the attachment ID.
@@ -257,15 +203,15 @@ class Media_Library extends Base {
 	public function get_exif_data( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 
-		// Get the file path of the image
+		// Get the file path of the image.
 		$file_path = get_attached_file( $attachment_id );
 
 		if ( ! file_exists( $file_path ) ) {
 			return new \WP_Error( 'image_not_found', 'Image file not found.', array( 'status' => 404 ) );
 		}
 
-		// Read EXIF data from the image
-		$exif_data = @exif_read_data( $file_path, 0, true );
+		// Read EXIF data from the image.
+		$exif_data = exif_read_data( $file_path, 0, true );
 
 		if ( false === $exif_data ) {
 			return new \WP_Error( 'exif_data_not_found', 'No EXIF data found.', array( 'status' => 404 ) );
@@ -311,7 +257,7 @@ class Media_Library extends Base {
 	private function format_fnumber( $fnumber ) {
 		if ( is_string( $fnumber ) && strpos( $fnumber, '/' ) !== false ) {
 			list( $numerator, $denominator ) = explode( '/', $fnumber );
-			if ( is_numeric( $numerator ) && is_numeric( $denominator ) && $denominator != 0 ) {
+			if ( is_numeric( $numerator ) && is_numeric( $denominator ) && 0 !== $denominator ) {
 				return 'f/' . round( $numerator / $denominator, 1 );
 			}
 		}
@@ -330,19 +276,15 @@ class Media_Library extends Base {
 	public function get_video_thumbnails( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 
-		// Check if attachment is of type video
+		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
 			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 400 ) );
 		}
-
-		$thumbnail_array = get_post_meta( $attachment_id, 'rtmedia_media_thumbnails', true );
-
-		if ( ! is_array( $thumbnail_array ) ) {
-			$thumbnail_array = get_post_meta( $attachment_id, '_rt_media_thumbnails', true );
-		}
-
+		
+		$thumbnail_array = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
+		
 		if ( ! is_array( $thumbnail_array ) ) {
 			return new \WP_Error( 'thumbnails_not_found', 'No thumbnails found.', array( 'status' => 404 ) );
 		}
@@ -365,7 +307,10 @@ class Media_Library extends Base {
 			$thumbnail_array[ $key ] = $thumbnail_src;
 		}
 
-		$selected_thumbnail = get_post_meta( $attachment_id, '_rt_media_video_thumbnail', true );
+		// only filter for the unique values.
+		$thumbnail_array = array_unique( $thumbnail_array );
+
+		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 		if ( ! empty( $selected_thumbnail ) ) {
 			$file_url = $selected_thumbnail;
@@ -405,20 +350,20 @@ class Media_Library extends Base {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
 
-		// Check if attachment is of type video
+		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
 			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 400 ) );
 		}
 
-		// Check if the thumbnail URL is valid
+		// Check if the thumbnail URL is valid.
 		if ( ! filter_var( $thumbnail_url, FILTER_VALIDATE_URL ) ) {
 			return new \WP_Error( 'invalid_thumbnail_url', 'Invalid thumbnail URL.', array( 'status' => 400 ) );
 		}
 
-		// Update the video thumbnail
-		update_post_meta( $attachment_id, '_rt_media_video_thumbnail', $thumbnail_url );
+		// Update the video thumbnail.
+		update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $thumbnail_url );
 
 		return rest_ensure_response(
 			array(

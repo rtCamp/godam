@@ -35,6 +35,8 @@ const VideoEditor = ( { attachmentID } ) => {
 	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
 
+	const restURL = window.godamRestRoute.url || '';
+
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
 			if ( isChanged ) {
@@ -64,7 +66,7 @@ const VideoEditor = ( { attachmentID } ) => {
 		dispatch( setLoading( true ) );
 
 		// Get the post data
-		fetch( `/wp-json/wp/v2/media/${ attachmentID }`, {
+		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] ), {
 			headers: {
 				'X-WP-Nonce': videoData.nonce,
 			},
@@ -72,14 +74,14 @@ const VideoEditor = ( { attachmentID } ) => {
 			.then( ( response ) => response.json() )
 			.then( ( data ) => {
 				setVideo( data );
-				const easydamMeta = data.easydam_meta;
-				if ( easydamMeta ) {
-					dispatch( initializeStore( easydamMeta ) );
+				const rtGodamMeta = data.rtgodam_meta;
+				if ( rtGodamMeta ) {
+					dispatch( initializeStore( rtGodamMeta ) );
 				}
 				// Set video sources
 				const videoSources = [ { src: data.source_url, type: data.mimeType } ];
-				if ( data?.meta?._rt_transcoded_url !== '' ) {
-					videoSources.push( { src: data.meta._rt_transcoded_url, type: data?.meta?._rt_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } );
+				if ( data?.meta?.rtgodam_transcoded_url !== '' ) {
+					videoSources.push( { src: data.meta.rtgodam_transcoded_url, type: data?.meta?.rtgodam_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } );
 				}
 				setSources( videoSources );
 			} )
@@ -113,10 +115,10 @@ const VideoEditor = ( { attachmentID } ) => {
 		setIsSaving( true );
 		// Update the attchment meta
 		const data = {
-			easydam_meta: { videoConfig, layers },
+			rtgodam_meta: { videoConfig, layers },
 		};
 		// update media meta via REST API
-		axios.post( `/wp-json/wp/v2/media/${ attachmentID }`, data, {
+		axios.post( window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] ), data, {
 			headers: {
 				'X-WP-Nonce': videoData.nonce,
 			},
@@ -140,7 +142,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	};
 
 	const fetchGravityForms = () => {
-		axios.get( '/wp-json/godam/v1/gforms?fields=id,title,description' )
+		axios.get( window.pathJoin( [ restURL, '/godam/v1/gforms?fields=id,title,description' ] ) )
 			.then( ( response ) => {
 				const data = response.data;
 				dispatch( setGravityForms( data ) );
@@ -225,7 +227,6 @@ const VideoEditor = ( { attachmentID } ) => {
 										preload: 'auto',
 										width: '100%',
 										sources,
-										muted: true,
 										controlBar: {
 											playToggle: true, // Play/Pause button
 											volumePanel: true,

@@ -2,11 +2,11 @@
 # GoDAM
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar
 
-Tags: media, multimedia, audio, songs, music, video, ffmpeg, media-node, rtMedia, WordPress, transcode, transcoder, encoding, encode, transcoder, DAM, audio video conversion, digital asset management
+Tags: Transcoder, DAM, Interactive Video Layers, Adaptive Bitrate Streaming, Video Analytics
 
 Requires at least: 6.5
 
-Tested up to: 6.7.2
+Tested up to: 6.7
 
 Requires PHP: 7.4
 
@@ -14,7 +14,7 @@ Stable tag: 1.0.0
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
-Seamlessly manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, gravity forms integration, and ad integration.
+Manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, and video analytics.
 
 ## Description
 [GoDAM](https://godam.io/) is a powerful digital asset management solution designed to provide automatic transcoding, adaptive bitrate streaming, and interactive video layers to enhance viewer engagement. It simplifies the entire video workflow, from upload to optimized playback, ensuring smooth delivery across all devices and network conditions.
@@ -99,6 +99,17 @@ Method 2: Manual Upload
 
 The GoDAM menu should appear on your admin dashboard!
 
+### Build from Source (For Developers)
+After downloading the plugin ZIP from GitHub, run the following commands in your terminal:
+
+```bash
+composer install --optimize-autoloader --no-dev
+npm install
+npm run build:prod
+```
+
+This will install PHP and JavaScript dependencies and generate the production-ready build of the plugin.
+
 ## Frequently Asked Questions
 Q. What is GoDAM, and how does it work?
 A. GoDAM is a media management service that seamlessly integrates with your WordPress site to optimize and enhance your audio and video content. It automatically converts uploaded audio files to MP3 and video files to MP4 formats. Additionally, GoDAM offers a suite of powerful features, including thumbnail generation, shortcode support, customizable video layers (like Gravity Forms, text/image CTAs, video hotspots, and ads), adaptive bitrate streaming for smooth playback, and advanced asset management tools.
@@ -146,12 +157,88 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 14. Video Analytics
 
 ## Changelog
-1.0.0 [Feb 2025]
-- Initial release of GoDAM plugin.
-- Automatic transcoding for audio and video files.
-- Adaptive bitrate streaming for smooth playback.
-- Interactive video layers (CTAs, forms, hotspots, ads).
-- Customizable video player with branding options.
-- Cloud storage and CDN integration.
-- Advanced analytics and engagement tracking.
-- Enhanced WordPress Media Library for better asset management.
+## v1.0.0 (March 05, 2025)
+
+- **Feat:** Initial release of GoDAM plugin.
+- **Feat:** Automatic transcoding for audio and video files.
+- **Feat:** Adaptive bitrate streaming for smooth playback.
+- **Feat:** Interactive video layers (CTAs, forms, hotspots, ads).
+- **Feat:** Customizable video player with branding option.
+- **Feat:** Cloud storage and CDN integration.
+- **Feat:** Advanced analytics and engagement tracking.
+- **Feat:** Enhanced WordPress Media Library for better asset management.
+
+## External services
+
+This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
+
+- **godam.io**:
+  Purpose: This service stores feedback submitted by users during plugin deactivation to help us improve the plugin and understand user concerns.
+
+  **Data Sent:**
+
+  - Site URL
+
+  - Reason for deactivation
+
+  - Name
+
+  - Email ID
+
+**When Data is Sent:**
+Data is sent only when a user submits the deactivation feedback form after clicking the deactivate button.
+
+**Service Provider:** godam.io
+
+[Terms of Service](https://godam.io/tos/)
+[Privacy Policy](https://godam.io/privacy-policy/)
+
+- **app.godam.io**:
+
+This service is used for transcoding media uploaded by users and verifying the API Key to ensure the plugin is authorized for use.
+
+**Data Sent:**
+
+- Site URL
+
+- API Key
+
+**When Data is Sent:**
+
+During media transcoding when the user uploads a video.
+
+When the plugin checks for a valid API Key.
+
+**Service Provider**: app.godam.io
+
+[Terms of Service](https://godam.io/tos/)
+[Privacy Policy](https://godam.io/privacy-policy/)
+
+- **analytics.godam.io**:
+
+This service collects analytics data when a user watches a video on the frontend. It helps track video performance, user engagement, and campaign effectiveness.
+
+**Data Sent:**
+
+- IP Address
+
+- Email
+
+- Author of the post’s display name
+
+- Browser version, name, and browser language
+
+- User Agent String
+
+- The operating system of the user's device (e.g., Windows, macOS, Android)
+
+**When Data is Sent:**
+
+- When the page containing the video loads.
+
+- When the user exits the page after watching the video.
+
+**Service Provider**: analytics.godam.io
+
+[Terms of Service](https://godam.io/tos/)
+[Privacy Policy](https://godam.io/privacy-policy/)

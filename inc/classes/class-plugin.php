@@ -5,26 +5,25 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc;
+namespace RTGODAM\Inc;
 
-use Transcoder\Inc\Traits\Singleton;
-use Transcoder\Inc\Pages;
-use Transcoder\Inc\Blocks;
-use Transcoder\Inc\Assets;
-use Transcoder\Inc\Deactivation;
-use Transcoder\Inc\Cron;
+defined( 'ABSPATH' ) || exit;
 
-use Transcoder\Inc\Taxonomies\Media_Folders;
+use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\Pages;
+use RTGODAM\Inc\Blocks;
+use RTGODAM\Inc\Assets;
+use RTGODAM\Inc\Deactivation;
 
-use Transcoder\Inc\REST_API\GF;
-use Transcoder\Inc\REST_API\Settings;
-use Transcoder\Inc\REST_API\Meta_Rest_Fields;
-use Transcoder\Inc\REST_API\Media_Library;
-use Transcoder\Inc\REST_API\Ads;
-use Transcoder\Inc\REST_API\Transcoding;
-use Transcoder\Inc\REST_API\Analytics;
+use RTGODAM\Inc\Taxonomies\Media_Folders;
 
-use Transcoder\Inc\Providers\Media_Filters;
+use RTGODAM\Inc\REST_API\GF;
+use RTGODAM\Inc\REST_API\Settings;
+use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
+use RTGODAM\Inc\REST_API\Media_Library;
+use RTGODAM\Inc\REST_API\Ads;
+use RTGODAM\Inc\REST_API\Transcoding;
+use RTGODAM\Inc\REST_API\Analytics;
 
 /**
  * Class Plugin.
@@ -43,22 +42,11 @@ class Plugin {
 		Blocks::get_instance();
 		Pages::get_instance();
 		Media_Library_Ajax::get_instance();
-		Cron::get_instance();
 
 		$this->load_post_types();
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 		$this->load_rest_api();
-
-		// TODO: think of a better place to put this.
-		$offload_media = get_option( EasyDAM_Constants::S3_STORAGE_OPTIONS );
-		$offload_media = isset( $offload_media['offLoadMedia'] ) ? $offload_media['offLoadMedia'] : false;
-		
-		$offload_media = false; // disabling the S3 bucket for now
-
-		if ( $offload_media ) {
-			Media_Filters::get_instance();
-		}
 	}
 
 	/**

@@ -1,7 +1,13 @@
+/* global d3 */
 /**
  * External dependencies
  */
 import videojs from 'video.js';
+/**
+ * Internal dependencies
+ */
+import ViewIcon from '../../src/images/views.png';
+import DurationIcon from '../../src/images/duration.png';
 
 function formatTime( seconds ) {
 	const minutes = Math.floor( seconds / 60 );
@@ -12,7 +18,7 @@ function formatTime( seconds ) {
 function generateHeatmap( data, selector, videoPlayer ) {
 	// Chart dimensions
 	const margin = { top: 0, right: 0, bottom: 0, left: 0 };
-	const width = 640 - margin.left - margin.right;
+	const width = 830 - margin.left - margin.right;
 	const height = 60 - margin.top - margin.bottom;
 
 	// Create the SVG canvas
@@ -85,15 +91,26 @@ function generateHeatmap( data, selector, videoPlayer ) {
 				// Update the tooltip
 				heatmapTooltip
 					.style( 'opacity', 1 )
-					.style( 'left', `${ mouseX + margin.left }px` )
+					.style( 'left', `${ mouseX }px` )
 					.style( 'top', `${ margin.top - 52 }px` ) // Fixed above the heatmap
-					.html( `<div class="heatmap-tooltip-html">${ value } watches<br>${ formatTime( index ) }</div>` );
+					.html(
+						`<div class="heatmap-tooltip-html">
+							<div class="flex gap-2 items-center text-black">
+								<img src=${ ViewIcon } alt="View" height=${ 16 } width=${ 16 }/>
+								${ value }
+							</div>
+							<div class="flex gap-2 items-center text-black">
+								<img src=${ DurationIcon } alt="Duration" height=${ 15 } width=${ 15 }/>
+								${ formatTime( index ) }
+							</div>
+						</div>`,
+					);
 
 				// Update the vertical line
 				verticalLine
 					.style( 'opacity', 1 )
-					.attr( 'x1', xScale( index ) + xScale.bandwidth() / 2 )
-					.attr( 'x2', xScale( index ) + xScale.bandwidth() / 2 );
+					.attr( 'x1', xScale( index ) + ( xScale.bandwidth() / 2 ) )
+					.attr( 'x2', xScale( index ) + ( xScale.bandwidth() / 2 ) );
 
 				videoPlayer.currentTime( videoTime );
 			}
@@ -1281,7 +1298,7 @@ function generateMetricsOverTime( parsedData, selector ) {
 
 function generateLineChart( data, selector, videoPlayer ) {
 	const margin = { top: 0, right: 0, bottom: 0, left: 0 };
-	const width = 640 - margin.left - margin.right;
+	const width = 830 - margin.left - margin.right;
 	const height = 300 - margin.top - margin.bottom;
 
 	const svg = d3.select( selector )
@@ -1356,9 +1373,20 @@ function generateLineChart( data, selector, videoPlayer ) {
 
 				tooltip
 					.style( 'opacity', 1 )
-					.style( 'left', `${ xScale( index ) + 8 }px` )
-					.style( 'top', `${ yScale( value ) + margin.top - 20 }px` )
-					.html( `${ formatTime( index ) }<br>${ value } watches` );
+					.style( 'left', `${ xScale( index ) - 30 }px` )
+					.style( 'top', 0 )
+					.html(
+						`<div class="heatmap-tooltip-html">
+							<div class="flex gap-2 items-center text-black">
+								<img src=${ ViewIcon } alt="View" height=${ 16 } width=${ 16 }/>
+								${ value }
+							</div>
+							<div class="flex gap-2 items-center text-black">
+								<img src=${ DurationIcon } alt="Duration" height=${ 15 } width=${ 15 }/>
+								${ formatTime( index ) }
+							</div>
+						</div>`,
+					);
 
 				videoPlayer.currentTime( videoTime );
 
@@ -1383,6 +1411,8 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 			site_url: siteUrl,
 		} );
 
+		const url = `${ window.godamRestRoute.url }godam/v1/analytics/fetch?${ params.toString() }`;
+
 		const sampleCountryData = {
 			USA: 120,
 			India: 95,
@@ -1397,7 +1427,7 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 		};
 
 		const response = await fetch(
-			`/wp-json/godam/v1/analytics/fetch?${ params.toString() }`,
+			url,
 			{
 				method: 'GET',
 				headers: {
@@ -1409,8 +1439,8 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 
 		const result = await response.json();
 
-		if ( result.status === 'error' && result.message.includes( 'Invalid or unverified license key' ) ) {
-			showLicenseActivationMessage();
+		if ( result.status === 'error' && result.message.includes( 'Invalid or unverified API key' ) ) {
+			showAPIActivationMessage();
 			return null;
 		}
 
@@ -1422,12 +1452,11 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 
 		return result.data;
 	} catch ( error ) {
-		console.error( 'Error fetching analytics:', error );
 		return null;
 	}
 }
 
-function showLicenseActivationMessage() {
+function showAPIActivationMessage() {
 	// Remove loading animation
 	const loadingElement = document.getElementById( 'loading-analytics-animation' );
 	if ( loadingElement ) {

@@ -1,3 +1,5 @@
+/* global godamSettings */
+
 /**
  * External dependencies
  */
@@ -32,7 +34,7 @@ import GoDAM from '../../../../assets/src/images/GoDAM.png';
  * Global variables
  */
 const PREMIUM_LAYERS = [ 'form', 'hotspot', 'ad' ];
-const validLicense = window?.godamLicenseData?.valid_license;
+const validAPIKey = window?.godamAPIKeyData?.valid_api_key;
 
 library.add( fas );
 dom.watch();
@@ -47,6 +49,10 @@ function GODAMPlayer( videoRef = null ) {
 	}
 
 	videos.forEach( ( video ) => {
+		video.classList.remove( 'vjs-hidden' );
+
+		video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
+
 		const adTagUrl = video.dataset.ad_tag_url;
 		let isVideoClicked = false;
 
@@ -201,7 +207,7 @@ function GODAMPlayer( videoRef = null ) {
 				controlBar.removeChild( 'volumePanel' );
 			}
 
-			if ( controlBarSettings.brandingIcon || ! validLicense ) {
+			if ( controlBarSettings.brandingIcon || ! validAPIKey ) {
 				const CustomPlayButton = videojs.getComponent( 'Button' );
 
 				class CustomButton extends CustomPlayButton {
@@ -214,11 +220,15 @@ function GODAMPlayer( videoRef = null ) {
 						const el = super.createEl();
 						el.className += ' vjs-custom-play-button';
 						const img = document.createElement( 'img' );
-						if ( 0 === controlBarSettings.customBrandImg.length ) {
-							img.src = GoDAM;
-						} else {
+
+						if ( controlBarSettings.customBrandImg.length ) {
 							img.src = controlBarSettings.customBrandImg;
+						} else if ( godamSettings?.brandImage ) {
+							img.src = godamSettings.brandImage;
+						} else {
+							img.src = GoDAM;
 						}
+
 						img.id = 'branding-icon';
 						img.alt = 'Branding';
 						img.className = 'branding-icon';

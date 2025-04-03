@@ -20,7 +20,7 @@ import {
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice';
-import GoDAM from "../../../../assets/src/images/GoDAM.png";
+import GoDAM from '../../../../assets/src/images/GoDAM.png';
 import ColorPickerButton from '../ColorPickerButton';
 
 const Appearance = () => {
@@ -94,100 +94,12 @@ const Appearance = () => {
 		);
 
 		if ( brandingLogo ) {
-			controlBar.removeChild( brandingLogo );
-		} else {
-			controlBar.appendChild( brandingLogo );
-		}
-	}
-
-	function handleControlColorChange( e ) {
-		const selectedColor = e;
-		dispatch(
-			updateVideoConfig( {
-				controlBar: {
-					...videoConfig.controlBar,
-					appearanceColor: selectedColor,
-				},
-			} ),
-		);
-		const controlBar = document.querySelector( '.vjs-control-bar' );
-		const bigPlayButton = document.querySelector( '.vjs-big-play-button' );
-		controlBar.style.setProperty(
-			'background-color',
-			selectedColor,
-			'important',
-		);
-		bigPlayButton.style.setProperty(
-			'background-color',
-			selectedColor,
-			'important',
-		);
-	}
-
-	function handleControlsHoverColor( e ) {
-		const selectedColor = e;
-		dispatch(
-			updateVideoConfig( {
-				controlBar: {
-					...videoConfig.controlBar,
-					hoverColor: selectedColor,
-				},
-			} ),
-		);
-		const controlBar = document.querySelector( '.vjs-control-bar' );
-		const controls = controlBar.querySelectorAll( '.vjs-control' );
-		controls.forEach( ( control ) => {
-			// On hover
-			control.addEventListener( 'mouseenter', function() {
-				control.style.color = selectedColor;
-			} );
-
-			control.addEventListener( 'mouseleave', function() {
-				control.style.color = '#fff'; // Reset to default
-			} );
-		} );
-
-		document
-			.querySelector( '.vjs-slider-bar' )
-			.addEventListener( 'mouseenter', function() {
-				this.style.backgroundColor = selectedColor;
-			} );
-
-		document
-			.querySelector( '.vjs-control-bar' )
-			.addEventListener( 'mouseleave', function() {
-				document.querySelector( '.vjs-slider-bar' ).style.backgroundColor =
-          '#fff';
-			} );
-	}
-
-	function handleControlsHoverZoomColor( e ) {
-		const selectedZoomVal = 1 + parseFloat( e );
-
-		dispatch(
-			updateVideoConfig( {
-				controlBar: {
-					...videoConfig.controlBar,
-					zoomLevel: parseFloat( e ),
-				},
-			} ),
-		);
-
-		const controlBar = document.querySelector( '.vjs-control-bar' );
-		const controls = controlBar.querySelectorAll( '.vjs-control' );
-
-		controls.forEach( ( control ) => {
-			if ( ! control.className.includes( 'vjs-progress-control' ) ) {
-				// On hover
-				control.addEventListener( 'mouseenter', function() {
-					this.style.transform = `scale(${ selectedZoomVal })`;
-				} );
-
-				control.addEventListener( 'mouseleave', function() {
-					this.style.transform = 'scale(1)'; // Reset to default
-				} );
+			if ( ! videoConfig.controlBar.brandingIcon ) { // added opposite condition due to delayed update of redux state.
+				controlBar.appendChild( brandingLogo );
+			} else {
+				controlBar.removeChild( brandingLogo );
 			}
-		} );
+		}
 	}
 
 	function handlePlayButtonPosition( e ) {
@@ -315,21 +227,6 @@ const Appearance = () => {
 		playButtonElement.style.backgroundImage = '';
 	};
 
-	function handleUploadCustomBrandImg( e ) {
-		const file = e.target.files[ 0 ];
-		if ( file ) {
-			const reader = new FileReader();
-			reader.onload = function( e ) {
-				const brandImg = document.querySelector( '#branding-icon' );
-
-				if ( brandImg ) {
-					brandImg.src = `${ e.target.result }`;
-				}
-			};
-			reader.readAsDataURL( file );
-		}
-	}
-
 	function handleSkipTimeSettings( e ) {
 		const selectedSkipVal = parseFloat( e.selectedItem.name );
 		dispatch(
@@ -444,7 +341,7 @@ const Appearance = () => {
 							checked={ videoConfig.controlBar.subsCapsButton }
 						/>
 						{
-							window.videoData?.valid_license &&
+							window.videoData?.valid_api_key &&
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label="Show Branding"
@@ -519,24 +416,6 @@ const Appearance = () => {
 							name: videoConfig.controlBar.playButtonPosition,
 						} }
 					/>
-				</div>
-				<div className="form-group">
-					<div id="hover-control-container">
-						<div className="hover-control-input-container">
-							<RangeControl
-								__nextHasNoMarginBottom
-								__next40pxDefaultSize
-								help={ __( 'scale up the player controls icons on hover', 'godam' ) }
-								initialPosition={ 0 }
-								max={ 1 }
-								min={ 0 }
-								label={ __( 'Zoom Level', 'godam' ) }
-								onChange={ handleControlsHoverZoomColor }
-								step={ 0.1 }
-								value={ videoConfig.controlBar.zoomLevel }
-							/>
-						</div>
-					</div>
 				</div>
 				<div className="form-group">
 					<label

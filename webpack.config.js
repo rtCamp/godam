@@ -65,7 +65,6 @@ const styles = {
 			( plugin ) => plugin.constructor.name !== 'DependencyExtractionWebpackPlugin',
 		),
 	],
-
 };
 
 // Example of how to add a new entry point for JS file.
@@ -101,14 +100,6 @@ const deactivationJS = {
 	...sharedConfig,
 	entry: {
 		'deactivation-feedback': path.resolve( process.cwd(), 'assets', 'src', 'js', 'deactivation-feedback.js' ),
-	},
-};
-
-// Example of how to add a new entry point for JS file.
-const easyDAM = {
-	...sharedConfig,
-	entry: {
-		main: path.resolve( process.cwd(), 'assets', 'src', 'js', 'easydam', 'index.js' ),
 	},
 };
 
@@ -178,7 +169,6 @@ module.exports = [
 	videoAnalyticsJS,
 	mediaLibrary,
 	deactivationJS,
-	easyDAM,
 	styles, // Do not remove this.
 	pages,
 ];

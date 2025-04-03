@@ -1,11 +1,19 @@
 <?php
 /**
  * Plguin Deactivation Survey Class.
+ * 
+ * @package godam
  */
-namespace Transcoder\Inc;
 
-use Transcoder\Inc\Traits\Singleton;
+namespace RTGODAM\Inc;
 
+defined( 'ABSPATH' ) || exit;
+
+use RTGODAM\Inc\Traits\Singleton;
+
+/**
+ * Deactivation Class.
+ */
 class Deactivation {
 
 	use Singleton;
@@ -15,14 +23,14 @@ class Deactivation {
 	 *
 	 * @var string
 	 */
-	private $api_url = GODAMIO_API_BASE . '/wp-json/godam/v1/feedback/'; // Replace the API Url by the production API Url.
+	private $api_url = RTGODAM_IO_API_BASE . '/wp-json/godam/v1/feedback/'; // Replace the API Url by the production API Url.
 
 	/**
 	 * Constructor function.
 	 */
 	public function __construct() {
 		add_action( 'admin_enqueue_scripts', array( $this, 'load_scripts' ) );
-		add_action( 'wp_ajax_godam_send_deactivation_feedback', array( $this, 'godam_send_deactivation_feedback' ) );
+		add_action( 'wp_ajax_godam_send_deactivation_feedback', array( $this, 'rtgodam_send_deactivation_feedback' ) );
 	}
 
 	/**
@@ -35,9 +43,9 @@ class Deactivation {
 
 		wp_register_script(
 			'godam-deactivation-survey-script',
-			GODAM_URL . '/assets/build/js/deactivation-feedback.js', 
+			RTGODAM_URL . '/assets/build/js/deactivation-feedback.js', 
 			array(),
-			filemtime( GODAM_PATH . '/assets/build/js/deactivation-feedback.js' ),
+			filemtime( RTGODAM_PATH . '/assets/build/js/deactivation-feedback.js' ),
 			true
 		);
 
@@ -47,7 +55,7 @@ class Deactivation {
 
 			$current_user = wp_get_current_user();
 
-			$rt_deactivate = array(
+			$rtgodam_deactivate = array(
 				'site_url'    => home_url(),
 				'nonce'       => wp_create_nonce( 'GoDAMDeactivationFeedback' ),
 				'user_name'   => $current_user->user_nicename,
@@ -56,28 +64,32 @@ class Deactivation {
 				'api_url'     => esc_url( $this->api_url ),
 			);
 
-			wp_localize_script( 'godam-deactivation-survey-script', 'GoDAMDeactivation', $rt_deactivate );
+			wp_localize_script( 'godam-deactivation-survey-script', 'GoDAMDeactivation', $rtgodam_deactivate );
 		}
 	}
 
 	/**
 	 * Ajax Function call.
 	 *
-	 * @return string.
+	 * @return void
 	 */
-	public function godam_send_deactivation_feedback() {
+	public function rtgodam_send_deactivation_feedback() {
 		// Checking ajax referer.
 		check_ajax_referer( 'GoDAMDeactivationFeedback', 'nonce' );
-
-		if ( ! $_POST['reason'] && empty( $_POST['user'] && ! $_POST['site_url'] ) ) {
-			return;
-		}
 
 		// Filter the inputs.
 		$site_url = filter_input( INPUT_POST, 'site_url', FILTER_SANITIZE_URL );
 		$reason   = filter_input( INPUT_POST, 'reason', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$user     = filter_input( INPUT_POST, 'user', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+		$user     = filter_input( INPUT_POST, 'user', FILTER_SANITIZE_FULL_SPECIAL_CHARS, FILTER_REQUIRE_ARRAY );
 		$feedback = filter_input( INPUT_POST, 'additional_feedback', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+		if ( ! $reason || ! $site_url || ! $user ) {
+			wp_send_json_error(
+				array(
+					'message' => esc_html__( 'Invalid data.', 'godam' ),
+				)
+			);
+		}
 
 		$data = array(
 			'site_url'            => $site_url,
@@ -95,10 +107,8 @@ class Deactivation {
 			'body' => $data,
 		);
 
-
 		$api_response = wp_remote_post( $this->api_url, $options );
 		$response     = json_decode( wp_remote_retrieve_body( $api_response ) );
-
 
 		if ( is_int( $response ) ) {
 			wp_send_json_success();

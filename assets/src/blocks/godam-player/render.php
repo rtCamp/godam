@@ -24,20 +24,20 @@ $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : arra
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 $video_preview = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
 
-// Retrieve 'easydam_meta' for the given attachment ID, defaulting to an empty array if not found.
-$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'easydam_meta', true ) : [];
-$easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : [];
+// Retrieve 'rtgodam_meta' for the given attachment ID, defaulting to an empty array if not found.
+$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_meta', true ) : array();
+$easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : array();
 
 // Extract control bar settings with a fallback to an empty array.
-$control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? [];
+$control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? array();
 
-$poster_image = get_post_meta( $attachment_id, '_rt_media_video_thumbnail', true );
+$poster_image = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 $poster_image = ! empty( $poster_image ) ? $poster_image : '';
 
-$sources = [];
-$transcoded_url    = $attachment_id ? get_post_meta( $attachment_id, '_rt_transcoded_url', true ) : '';
-$video_src         = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
-$video_src_type    = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
+$sources        = array();
+$transcoded_url = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true ) : '';
+$video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
+$video_src_type = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
 
 if ( ! empty( $transcoded_url ) ) {
 	$sources = array(
@@ -47,15 +47,15 @@ if ( ! empty( $transcoded_url ) ) {
 		),
 		array(
 			'src'  => $video_src,
-			'type' => $video_src_type === 'video/quicktime' ? 'video/mp4' : $video_src_type,
+			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
 		),
 	);
 } else {
 	$sources = array(
 		array(
 			'src'  => $video_src,
-			'type' => $video_src_type === 'video/quicktime' ? 'video/mp4' : $video_src_type,
-		)
+			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
+		),
 	);
 }
 
@@ -70,18 +70,29 @@ $video_setup = wp_json_encode(
 		'poster'     => empty( $poster ) ? $poster_image : $poster,
 		'fluid'      => true,
 		'sources'    => $sources,
-		'controlBar' => $control_bar_settings, // contains settings specific to control bar
+		'controlBar' => $control_bar_settings, // contains settings specific to control bar.
 	)
 );
 
 $video_config = wp_json_encode(
 	array(
 		'preview' => $video_preview,
-		'layers'  => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers
+		'layers'  => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
 	)
 );
 
-$easydam_control_bar_color  = ! empty( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : '#2b333fb3';
+$easydam_control_bar_color = '#2b333fb3'; // Default color.
+
+$godam_settings   = get_option( 'rtgodam-settings', array() );
+$brand_color      = isset( $godam_settings['general']['brand_color'] ) ? $godam_settings['general']['brand_color'] : null;
+$appearance_color = isset( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
+
+if ( ! empty( $appearance_color ) ) {
+	$easydam_control_bar_color = $appearance_color;
+} elseif ( ! empty( $brand_color ) ) {
+	$easydam_control_bar_color = $brand_color;
+}
+
 $easydam_hover_color        = ! empty( $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
 $easydam_hover_zoom         = ! empty( $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
 $easydam_custom_btn_img     = ! empty( $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
@@ -101,7 +112,7 @@ $ad_server = isset( $easydam_meta_data['videoConfig']['adServer'] ) ? sanitize_t
 if ( ! empty( $ad_server ) ) :
 	$ad_tag_url = isset( $easydam_meta_data['videoConfig']['adTagURL'] ) ? $easydam_meta_data['videoConfig']['adTagURL'] : '';
 elseif ( ! empty( $ads_layers ) ) :
-	$ad_tag_url = rest_url( '/godam/v1/adTagURL/' ) . $attachment_id;
+	$ad_tag_url = get_rest_url( get_current_blog_id(), '/godam/v1/adTagURL/' ) . $attachment_id;
 endif;
 
 $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
@@ -110,16 +121,22 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 <?php if ( ! empty( $sources ) ) : ?>
 	<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>
 	style="
-	--easydam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
-	--easydam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
-	--easydam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
-	--easydam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
+	--rtgodam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
+	--rtgodam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
+	--rtgodam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
+	--rtgodam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
+	--rtgodam-video-aspect-ratio: <?php echo esc_attr( $attributes['aspectRatio'] ); ?>;
 	">
-	<div class="easydam-video-container">
+	<div class="easydam-video-container animate-video-loading">
+		<div class="animate-play-btn">
+		<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+			<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+		</svg>
+		</div>
 		<video
-			class="easydam-player video-js vjs-big-play-centered"
+			class="easydam-player video-js vjs-big-play-centered vjs-hidden"
 			data-options="<?php echo esc_attr( $video_config ); ?>"
-			data-ad_tag_url="<?php echo esc_url_raw( $ad_tag_url ); ?>"
+			data-ad_tag_url="<?php echo esc_url( $ad_tag_url ); ?>"
 			data-id="<?php echo esc_attr( $attachment_id ); ?>" 
 			data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 			data-controls = "<?php echo esc_attr( $video_setup ); ?>"
@@ -136,7 +153,9 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 				endif;
 			endforeach;
 
-			if ( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) {
+			if ( isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) &&
+				$easydam_meta_data['videoConfig']['controlBar']['subsCapsButton']
+			) {
 				foreach ( $tracks as $track ) :
 					if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
 						?>
@@ -154,10 +173,6 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 			}
 			?>
 		</video>
-
-		<?php if ( $caption ) : ?>
-			<figcaption><?php echo esc_html( $caption ); ?></figcaption>
-		<?php endif; ?>
 
 		<!-- Dynamically render shortcodes for form layers. -->
 		<?php
@@ -192,7 +207,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 						<?php elseif ( 'html' === $layer['cta_type'] && ! empty( $layer['html'] ) ) : ?>
 							<?php echo wp_kses_post( $layer['html'] ); ?>
 						<?php elseif ( 'image' === $layer['cta_type'] && ! empty( $layer['image'] ) ) : ?>
-							<?php echo wp_kses_post( image_cta_html( $layer ) ); ?>
+							<?php echo wp_kses_post( rtgodam_image_cta_html( $layer ) ); ?>
 						<?php endif; ?>
 					</div>
 					<?php
@@ -214,5 +229,9 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 			<?php endforeach; ?>
 		<?php endif; ?>
 	</div>
+
+	<?php if ( $caption && ! empty( $caption ) ) : ?>
+		<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $caption ); ?></figcaption>
+	<?php endif; ?>
 </figure>
 <?php endif; ?>

@@ -1,5 +1,6 @@
 
 let MediaRetranscode = wp?.media?.view?.Button;
+const homeUrl = window.godamRestRoute.home_url || window.location.origin;
 
 MediaRetranscode = MediaRetranscode?.extend( {
 
@@ -45,16 +46,18 @@ MediaRetranscode = MediaRetranscode?.extend( {
 		const nonce = window.easydamMediaLibrary?.godamToolsNonce;
 
 		// Redirect to the retranscode page.
-		window.location.href = `${ window.location.origin }/wp-admin/admin.php?page=godam-tools&ids=${ attachmentIds.join( ',' ) }&goback=1&_wpnonce=${ nonce }`;
+		window.location.href = `${ homeUrl }/wp-admin/admin.php?page=rtgodam_tools&ids=${ attachmentIds.join( ',' ) }&goback=1&_wpnonce=${ nonce }`;
 	},
 
 	render() {
 		wp.media.view.Button.prototype.render.apply( this, arguments );
+
 		if ( this.controller.isModeActive( 'select' ) ) {
-			this.$el.addClass( 'media-library-upload-to-s3' );
+			this.$el.addClass( 'media-library-bulk-actions' );
 		} else {
-			this.$el.addClass( 'media-library-upload-to-s3 hidden' );
+			this.$el.addClass( 'media-library-bulk-actions hidden' );
 		}
+
 		this.toggleDisabled();
 		return this;
 	},

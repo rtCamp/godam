@@ -8,104 +8,7 @@
  * @subpackage Transcoder/Functions
  */
 
-/**
- * Return instance of RT_Transcoder_Admin Class.
- *
- * @since   1.0.0
- *
- * @return object
- */
-function rta() {
-	global $rt_transcoder_admin;
-	return $rt_transcoder_admin;
-}
-
-/**
- * Builds the [rt_media] shortcode output.
- *
- * If media type is video then display transcoded video (mp4 format) if any else original video.
- *
- * If media type is audio then display transcoded audio (mp3 format) if any else original audio.
- *
- * @since 1.0.0
- *
- * @param array  $attrs {
- *     Attributes of the shortcode.
- *
- *     @type int $attachment_id     ID of attachment.
- * }
- * @param  string $content  Shortcode content.
- * @return string|void      HTML content to display video.
- */
-function rt_media_shortcode( $attrs, $content = '' ) {
-
-	if ( empty( $attrs['attachment_id'] ) ) {
-		return false;
-	}
-
-	$attachment_id = $attrs['attachment_id'];
-
-	$type = get_post_mime_type( $attachment_id );
-
-	if ( empty( $type ) ) {
-		return false;
-	}
-
-	$mime_type = explode( '/', $type );
-	$media_url = '';
-
-	if ( 'video' === $mime_type[0] ) {
-
-		$video_shortcode_attributes = '';
-		$media_url                  = rtt_get_media_url( $attachment_id );
-
-		$poster = rt_media_get_video_thumbnail( $attachment_id );
-
-		$attrs['src']    = $media_url;
-		$attrs['poster'] = $poster;
-
-		foreach ( $attrs as $key => $value ) {
-			$video_shortcode_attributes .= ' ' . $key . '="' . $value . '"';
-		}
-
-		$content = do_shortcode( "[video {$video_shortcode_attributes}]" );
-
-	} elseif ( 'audio' === $mime_type[0] ) {
-
-		$media_url = rtt_get_media_url( $attachment_id, 'mp3' );
-
-		$audio_shortcode_attributes = 'src="' . $media_url . '"';
-
-		foreach ( $attrs as $key => $value ) {
-			$audio_shortcode_attributes .= ' ' . $key . '="' . $value . '"';
-		}
-
-		$content = do_shortcode( "[audio {$audio_shortcode_attributes}]" );
-
-	} elseif ( 'image' === $mime_type[0] ) {
-
-		$content = '<p>' . esc_html__( 'Image attachments are not handled by Transcoder plugin.', 'godam' ) . '</p>';
-
-	}
-
-	if ( is_file_being_transcoded( $attachment_id ) ) {
-		$content .= '<p class="transcoding-in-progress"> ' . esc_html__( 'This file is being transcoded. Please wait.', 'godam' ) . '</p>';
-	}
-
-	/**
-	 * Allow user to filter [rt_media] short code content.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $content       Activity content.
-	 * @param int $attachment_id    ID of attachment.
-	 * @param string $media_url     URL of the media.
-	 * @param string $media_type    Mime type of the media.
-	 */
-	return apply_filters( 'rt_media_shortcode', $content, $attachment_id, $media_url, $mime_type[0] );
-}
-
-add_shortcode( 'rt_media', 'rt_media_shortcode' );
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Check whether the file is sent to the transcoder or not.
@@ -115,11 +18,11 @@ add_shortcode( 'rt_media', 'rt_media_shortcode' );
  * @param  number $attachment_id    ID of attachment.
  * @return boolean
  */
-function is_file_being_transcoded( $attachment_id ) {
-	$job_id = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
+function rtgodam_is_file_being_transcoded( $attachment_id ) {
+	$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 	if ( ! empty( $job_id ) ) {
-		$transcoded_files  = get_post_meta( $attachment_id, '_rt_media_transcoded_files', true );
-		$transcoded_thumbs = get_post_meta( $attachment_id, '_rt_media_thumbnails', true );
+		$transcoded_files  = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+		$transcoded_thumbs = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
 		if ( empty( $transcoded_files ) && empty( $transcoded_thumbs ) ) {
 			return true;
 		}
@@ -128,262 +31,65 @@ function is_file_being_transcoded( $attachment_id ) {
 }
 
 /**
- * Give the transcoded video's thumbnail stored in videos meta.
+ * Retrieve edit posts link for post. Derived from WordPress core
+ *
+ * Can be used within the WordPress loop or outside of it. Can be used with
+ * pages, posts, attachments, and revisions.
  *
  * @since 1.0.0
  *
- * @param  int $attachment_id   ID of attachment.
- * @return string               returns image file url on success.
+ * @param int    $id      Optional. Post ID.
+ * @param string $context Optional, defaults to display.
+ * @return string|null The edit post link for the given post. null if the post type is invalid or does
+ *                     not allow an editing UI.
  */
-function rt_media_get_video_thumbnail( $attachment_id ) {
-
-	if ( empty( $attachment_id ) ) {
+function rtgodam_get_edit_post_link( $id = 0, $context = 'display' ) {
+	$_post = get_post( $id );
+	if ( empty( $_post ) ) {
 		return;
 	}
 
-	$thumbnails = get_post_meta( $attachment_id, '_rt_media_video_thumbnail', true );
-
-	if ( ! empty( $thumbnails ) ) {
-
-		$file_url = $thumbnails;
-		// for WordPress backward compatibility.
-		if ( function_exists( 'wp_get_upload_dir' ) ) {
-			$uploads = wp_get_upload_dir();
-		} else {
-			$uploads = wp_upload_dir();
-		}
-
-		if ( 0 === strpos( $file_url, $uploads['baseurl'] ) ) {
-			$final_file_url = $file_url;
-		} else {
-			$final_file_url = $uploads['baseurl'] . '/' . $file_url;
-		}
-
-		$final_file_url = apply_filters( 'transcoded_file_url', $final_file_url, $attachment_id );
-
-		return $final_file_url;
-	}
-
-	return false;
-}
-
-/**
- * Give the transcoded media URL of attachment.
- *
- * @since 1.0.0
- *
- * @param  int    $attachment_id     ID of attachment.
- * @param  string $media_type        Type of media i.e mp4, mp3. By default it mp4 is passed.
- * @return string                    Returns audio file url on success.
- */
-function rtt_get_media_url( $attachment_id, $media_type = 'mp4' ) {
-
-	if ( empty( $attachment_id ) ) {
-		return;
-	}
-
-	$medias = get_post_meta( $attachment_id, '_rt_media_transcoded_files', true );
-
-	if ( isset( $medias[ $media_type ] ) && is_array( $medias[ $media_type ] ) && ! empty( $medias[ $media_type ][0] ) ) {
-		$file_url = $medias[ $media_type ][0];
-		// for WordPress backward compatibility.
-		if ( function_exists( 'wp_get_upload_dir' ) ) {
-			$uploads = wp_get_upload_dir();
-		} else {
-			$uploads = wp_upload_dir();
-		}
-		if ( 0 === strpos( $file_url, $uploads['baseurl'] ) ) {
-			$final_file_url = $file_url;
-		} else {
-			$final_file_url = $uploads['baseurl'] . '/' . $file_url;
-		}
-		$final_file_url = apply_filters( 'transcoded_file_url', $final_file_url, $attachment_id );
+	if ( 'revision' === $_post->post_type ) {
+		$action = '';
+	} elseif ( 'display' === $context ) {
+		$action = '&amp;action=edit';
 	} else {
-		$final_file_url = wp_get_attachment_url( $attachment_id );
+		$action = '&action=edit';
 	}
 
-	return $final_file_url;
-}
-
-if ( ! function_exists( 'rtt_update_activity_after_thumb_set' ) ) {
-
-	/**
-	 * Update the activity after thumb is set to the video.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param number $id media id.
-	 *
-	 * @return void
-	 */
-	function rtt_update_activity_after_thumb_set( $id ) {
-
-		$model       = new RTMediaModel();
-		$media_obj   = new RTMediaMedia();
-		$media       = $model->get( array( 'id' => $id ) );
-		$privacy     = $media[0]->privacy;
-		$activity_id = rtmedia_activity_id( $id );
-		if ( ! empty( $activity_id ) ) {
-			$same_medias           = $media_obj->model->get( array( 'activity_id' => $activity_id ) );
-			$update_activity_media = array();
-			foreach ( $same_medias as $a_media ) {
-				$update_activity_media[] = $a_media->id;
-			}
-			$obj_activity = new RTMediaActivity( $update_activity_media, $privacy, false );
-			global $bp;
-			$activity_old_content = bp_activity_get_meta( $activity_id, 'bp_old_activity_content' );
-			$activity_text        = bp_activity_get_meta( $activity_id, 'bp_activity_text' );
-			if ( ! empty( $activity_old_content ) ) {
-				// get old activity content and save in activity meta.
-				$activity_get  = bp_activity_get_specific( array( 'activity_ids' => $activity_id ) );
-				$activity      = $activity_get['activities'][0];
-				$activity_body = $activity->content;
-				bp_activity_update_meta( $activity_id, 'bp_old_activity_content', $activity_body );
-				// extract activity text from old content.
-				$activity_text = wp_kses( $activity_body, array( '<span>' => array() ) );
-				$activity_text = explode( '</span>', $activity_text );
-				$activity_text = wp_strip_all_tags( $activity_text[0] );
-				bp_activity_update_meta( $activity_id, 'bp_activity_text', $activity_text );
-			}
-			$activity_text               = bp_activity_get_meta( $activity_id, 'bp_activity_text' );
-			$obj_activity->activity_text = $activity_text;
-			global $wpdb;
-			$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
-				$bp->activity->table_name,
-				array(
-					'type'    => 'rtmedia_update',
-					'content' => $obj_activity->create_activity_html(),
-				),
-				array( 'id' => $activity_id )
-			);
-		}
+	$post_type_object = get_post_type_object( $_post->post_type );
+	if ( ! $post_type_object ) {
+		return;
 	}
-}
 
-if ( ! function_exists( 'rtt_get_edit_post_link' ) ) {
-
-	/**
-	 * Retrieve edit posts link for post. Derived from WordPress core
-	 *
-	 * Can be used within the WordPress loop or outside of it. Can be used with
-	 * pages, posts, attachments, and revisions.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param int    $id      Optional. Post ID.
-	 * @param string $context Optional, defaults to display.
-	 * @return string|null The edit post link for the given post. null if the post type is invalid or does
-	 *                     not allow an editing UI.
-	 */
-	function rtt_get_edit_post_link( $id = 0, $context = 'display' ) {
-		$_post = get_post( $id );
-		if ( empty( $_post ) ) {
-			return;
-		}
-
-		if ( 'revision' === $_post->post_type ) {
-			$action = '';
-		} elseif ( 'display' === $context ) {
-			$action = '&amp;action=edit';
-		} else {
-			$action = '&action=edit';
-		}
-
-		$post_type_object = get_post_type_object( $_post->post_type );
-		if ( ! $post_type_object ) {
-			return;
-		}
-
-		if ( $post_type_object->_edit_link ) {
-			$link = admin_url( sprintf( $post_type_object->_edit_link . $action, $_post->ID ) );
-		} else {
-			$link = '';
-		}
-
-		return $link;
+	if ( $post_type_object->_edit_link ) {
+		$link = admin_url( sprintf( $post_type_object->_edit_link . $action, $_post->ID ) );
+	} else {
+		$link = '';
 	}
-}
 
-if ( ! function_exists( 'rtt_get_job_id_by_attachment_id' ) ) {
-
-	/**
-	 * Get the job id of attachment
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param number $attachment_id Attachment id.
-	 *
-	 * @return number On success it returns the job id otherwise it returns the false.
-	 */
-	function rtt_get_job_id_by_attachment_id( $attachment_id ) {
-
-		if ( empty( $attachment_id ) ) {
-			return 0;
-		}
-
-		$job_id = get_post_meta( $attachment_id, '_rt_transcoding_job_id', true );
-
-		return $job_id ? $job_id : 0;
-	}
+	return $link;
 }
 
 /**
- * Generate the video short code when non supported media is inserted in content area
+ * Get the job id of attachment
  *
- * @since  1.0
+ * @since 1.0.0
  *
- * @param string $html       Short code for the media.
- * @param number $send_id    Unique id for the short code.
- * @param array  $attachment Attachment array.
+ * @param number $attachment_id Attachment id.
  *
- * @return string
+ * @return number On success it returns the job id otherwise it returns the false.
  */
-function rtt_generate_video_shortcode( $html, $send_id, $attachment ) {
+function rtgodam_get_job_id_by_attachment_id( $attachment_id ) {
 
-	if ( empty( $attachment ) ) {
-		return $html;
+	if ( empty( $attachment_id ) ) {
+		return 0;
 	}
 
-	$post_mime_type = get_post_mime_type( $attachment['id'] );
-	$mime_type      = explode( '/', $post_mime_type );
+	$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 
-	$medias = get_post_meta( $attachment['id'], '_rt_media_transcoded_files', true );
-
-	if ( 0 === strpos( $post_mime_type, '[audio' ) || 0 === strpos( $post_mime_type, '[video' ) ) {
-		return $html;
-	}
-
-	if ( empty( $medias ) ) {
-		return $html;
-	}
-
-	if ( ! empty( $mime_type ) && 0 === strpos( $post_mime_type, 'video' ) ) {
-		$transcoded_file_url = rtt_get_media_url( $attachment['id'] );
-		if ( empty( $transcoded_file_url ) ) {
-			return $html;
-		}
-
-		$transcoded_thumb_url = rt_media_get_video_thumbnail( $attachment['id'] );
-
-		$poster = '';
-		if ( ! empty( $transcoded_thumb_url ) ) {
-			$poster = 'poster="' . $transcoded_thumb_url . '"';
-		}
-
-		$html = '[video src="' . $transcoded_file_url . '" ' . $poster . ' ]';
-	} elseif ( ! empty( $mime_type ) && 0 === strpos( $post_mime_type, 'audio' ) ) {
-		$transcoded_file_url = rtt_get_media_url( $attachment['id'] );
-		if ( empty( $transcoded_file_url ) ) {
-			return $html;
-		}
-
-		$html = '[audio src="' . $transcoded_file_url . '"]';
-	}
-
-	return $html;
+	return $job_id ? $job_id : 0;
 }
-
-add_filter( 'media_send_to_editor', 'rtt_generate_video_shortcode', 100, 3 );
 
 /**
  * Check if track status setting is enabled.
@@ -394,191 +100,12 @@ add_filter( 'media_send_to_editor', 'rtt_generate_video_shortcode', 100, 3 );
  *
  * @return boolean TRUE if track status is enabled, FALSE otherwise.
  */
-function rtt_is_track_status_enabled() {
+function rtgodam_is_track_status_enabled() {
 	// Fetch EasyDAM settings from the database.
-	$easydam_settings = get_option( 'rt-easydam-settings', array() );
+	$easydam_settings = get_option( 'rtgodam-settings', array() );
 
 	// Check and return the track_status value, defaulting to false if not set.
 	return ! empty( $easydam_settings['general']['track_status'] ) && $easydam_settings['general']['track_status'];
-}
-
-/**
- * Add the notice when file is sent for the transcoding and adds the poster thumbnail if poster tag is empty
- * This function also works as a backward compatibility for the rtAmazon S3 plugin
- *
- * @since 1.0.1
- *
- * @param string      $content  HTML contents of the activity.
- * @param object|null $activity Activity object.
- *
- * @return string
- */
-function rtt_bp_get_activity_content( $content, $activity = null ) {
-
-	if ( empty( $activity ) || empty( $content ) ) {
-		return $content;
-	}
-
-	if ( class_exists( 'RTMediaModel' ) ) {
-		$rt_model  = new RTMediaModel();
-		$all_media = $rt_model->get( array( 'activity_id' => $activity->id ) );
-		if ( empty( $all_media ) ) {
-			return $content;
-		}
-
-		// Filter all video objects. So we only get video objects in $all_media array.
-		foreach ( $all_media as $key => $media ) {
-			if ( 'video' !== $media->media_type ) {
-				unset( $all_media[ $key ] );
-			}
-		}
-
-		// Reset the array keys. Changing SORT_DESC from SORT_ASC because $video_src_url is in desc order.
-		array_multisort( $all_media, SORT_DESC );
-
-		// Get all the video src.
-		$search_video_url = '/<video.+(src=["]([^"]*)["])/';
-		preg_match_all( $search_video_url, $content, $video_src_url );
-
-		// Get all the poster src.
-		$search_poster_url = '/<video.+(poster=["]([^"]*)["])/';
-		preg_match_all( $search_poster_url, $content, $poster_url );
-
-		$uploads = wp_upload_dir();
-
-		// Iterate through each media.
-		foreach ( $all_media as $key => $media ) {
-			// Get default video thumbnail stored for this particular video in post meta.
-			$wp_video_thumbnail = get_post_meta( $media->media_id, '_rt_media_video_thumbnail', true );
-
-			if ( ! empty( $video_src_url[2] ) ) {
-
-				$transcoded_media_url = rtt_get_media_url( $media->media_id );
-
-				if ( ! empty( $transcoded_media_url ) ) {
-					$content = preg_replace( '/' . str_replace( '/', '\/', $video_src_url[2][ $key ] ) . '/', $transcoded_media_url, $content, 1 );
-				}
-			}
-
-			// Make the URL absolute.
-			if ( ! empty( $wp_video_thumbnail ) ) {
-				$file_url = $wp_video_thumbnail;
-
-				if ( 0 === strpos( $file_url, $uploads['baseurl'] ) ) {
-					$final_file_url = $file_url;
-				} else {
-					$final_file_url = $uploads['baseurl'] . '/' . $file_url;
-				}
-				// Thumbnail/poster URL.
-				$final_file_url = apply_filters( 'transcoded_file_url', $final_file_url, $media->media_id );
-				// Replace the first poster (assuming activity has multiple medias in it).
-				if ( is_file_being_transcoded( $media->media_id ) ) {
-					$content = preg_replace( '/' . str_replace( '/', '\/', $poster_url[1][ $key ] ) . '/', 'poster="' . $final_file_url . '"', $content, 1 );
-				}
-			}
-			// If media is sent to the transcoder then show the message.
-			if ( is_file_being_transcoded( $media->media_id ) ) {
-				if ( current_user_can( 'manage_options' ) && rtt_is_track_status_enabled() ) {
-
-					$check_button_text = __( 'Check Status', 'godam' );
-
-					/**
-					 * Filters the text of transcoding process status check button.
-					 *
-					 * @since 1.2
-					 *
-					 * @param string $check_button_text Default text of transcoding process status check button.
-					 */
-					$check_button_text = apply_filters( 'rtt_transcoder_check_status_button_text', $check_button_text );
-
-					$message = sprintf(
-						'<div class="transcoding-in-progress"><button id="btn_check_status%1$s" class="btn_check_transcode_status" name="check_status_btn" data-value="%1$s">%2$s</button> <div class="transcode_status_box" id="span_status%1$s">%3$s</div></div>',
-						esc_attr( $media->media_id ),
-						esc_html( $check_button_text ),
-						esc_html__( 'This file is converting. Please refresh the page after some time.', 'godam' )
-					);
-
-				} else {
-					$message = sprintf(
-						'<p class="transcoding-in-progress">%s</p>',
-						esc_html__( 'This file is converting. Please refresh the page after some time.', 'godam' )
-					);
-				}
-				/**
-				 * Allow user to filter the message text.
-				 *
-				 * @since 1.0.2
-				 *
-				 * @param string $message   Message to be displayed.
-				 * @param object $activity  Activity object.
-				 */
-				$message  = apply_filters( 'rtt_transcoding_in_progress_message', $message, $activity );
-				$message .= '</div>';
-				// Add this message to the particular media (there can be multiple medias in the activity).
-				$search     = '/(rt_media_video_' . $media->id . ")['\"](.*?)(<\/a><\/div>)/s";
-				$text_found = array();
-				preg_match( $search, $content, $text_found );
-
-				if ( ! empty( $text_found[0] ) ) {
-					$content = str_replace( $text_found[0], $text_found[1] . '"' . $text_found[2] . '</a>' . $message, $content );
-				}
-			}
-		}
-		$search     = '/(<div class="rtmedia-item-title")(.*?)(>)/s';
-		$text_found = array();
-		global $rtmedia;
-		$text_to_be_entered = " style='max-width:" . esc_attr( $rtmedia->options['defaultSizes_video_activityPlayer_width'] ) . "px;' ";
-		preg_match( $search, $content, $text_found );
-		if ( ! empty( $text_found[0] ) ) {
-				$content = str_replace( $text_found[0], $text_found[1] . $text_to_be_entered . $text_found[3], $content );
-		}
-		return $content;
-	} else {
-		return $content;
-	}
-}
-
-add_filter( 'bp_get_activity_content_body', 'rtt_bp_get_activity_content', 99, 2 );
-
-/**
- * Parse the URL - Derived from the WordPress core
- *
- * @since 1.0.4
- *
- * @param  string $url The URL to be parsed.
- * @return array       Array containing the information about the URL.
- */
-function rtt_wp_parse_url( $url ) {
-	if ( function_exists( 'wp_parse_url' ) ) {
-		return wp_parse_url( $url );
-	}
-	$parts = wp_parse_url( $url );
-	if ( ! $parts ) {
-		// < PHP 5.4.7 compat, trouble with relative paths including a scheme break in the path
-		if ( '/' === $url[0] && false !== strpos( $url, '://' ) ) {
-			// Since we know it's a relative path, prefix with a scheme/host placeholder and try again.
-			$parts = wp_parse_url( 'placeholder://placeholder' . $url );
-			if ( empty( $parts ) ) {
-				return $parts;
-			}
-			// Remove the placeholder values.
-			unset( $parts['scheme'], $parts['host'] );
-		} else {
-			return $parts;
-		}
-	}
-
-	// < PHP 5.4.7 compat, doesn't detect schemeless URL's host field
-	if ( '//' === substr( $url, 0, 2 ) && ! isset( $parts['host'] ) ) {
-		$path_parts    = explode( '/', substr( $parts['path'], 2 ), 2 );
-		$parts['host'] = $path_parts[0];
-		if ( isset( $path_parts[1] ) ) {
-			$parts['path'] = '/' . $path_parts[1];
-		} else {
-			unset( $parts['path'] );
-		}
-	}
-	return $parts;
 }
 
 /**
@@ -588,30 +115,30 @@ function rtt_wp_parse_url( $url ) {
  *
  * @param  int $post_id Attachment ID.
  */
-function rtt_delete_related_transcoded_files( $post_id ) {
+function rtgodam_delete_related_transcoded_files( $post_id ) {
 	if ( empty( $post_id ) ) {
 		return false;
 	}
 
-	$transcoded_files = get_post_meta( $post_id, '_rt_media_transcoded_files', true );
+	$transcoded_files = get_post_meta( $post_id, 'rtgodam_media_transcoded_files', true );
 
 	if ( ! empty( $transcoded_files ) && is_array( $transcoded_files ) ) {
 		foreach ( $transcoded_files as $files ) {
 			if ( ! empty( $files ) && is_array( $files ) ) {
-				rtt_delete_transcoded_files( $files );
+				rtgodam_delete_transcoded_files( $files );
 			}
 		}
 	}
-	delete_post_meta( $post_id, '_rt_media_transcoded_files' );
+	delete_post_meta( $post_id, 'rtgodam_media_transcoded_files' );
 
-	$thumbnails = get_post_meta( $post_id, '_rt_media_thumbnails', true );
+	$thumbnails = get_post_meta( $post_id, 'rtgodam_media_thumbnails', true );
 	if ( ! empty( $thumbnails ) && is_array( $thumbnails ) ) {
-		rtt_delete_transcoded_files( $thumbnails );
+		rtgodam_delete_transcoded_files( $thumbnails );
 	}
-	delete_post_meta( $post_id, '_rt_media_thumbnails' );
+	delete_post_meta( $post_id, 'rtgodam_media_thumbnails' );
 }
 
-add_action( 'delete_attachment', 'rtt_delete_related_transcoded_files', 99, 1 );
+add_action( 'delete_attachment', 'rtgodam_delete_related_transcoded_files', 99, 1 );
 
 /**
  * Deletes/Unlinks the files given in the array
@@ -622,7 +149,7 @@ add_action( 'delete_attachment', 'rtt_delete_related_transcoded_files', 99, 1 );
  *
  * @return void
  */
-function rtt_delete_transcoded_files( $files ) {
+function rtgodam_delete_transcoded_files( $files ) {
 
 	if ( empty( $files ) ) {
 		return;
@@ -632,12 +159,12 @@ function rtt_delete_transcoded_files( $files ) {
 		$files = array( $files );
 	}
 
-	$uploadpath = rtt_get_upload_dir();
+	$uploadpath = rtgodam_get_upload_dir();
 
 	foreach ( $files as $file ) {
 		if ( ! empty( $file ) ) {
 			$file_path = path_join( $uploadpath['basedir'], $file );
-			\Transcoder\Inc\FileSystem::delete_file( $file_path );
+			\RTGODAM\Inc\FileSystem::delete_file( $file_path );
 		}
 	}
 }
@@ -657,7 +184,7 @@ function rtt_delete_transcoded_files( $files ) {
  *
  * @return array See above for description.
  */
-function rtt_get_upload_dir() {
+function rtgodam_get_upload_dir() {
 	// for WordPress backward compatibility.
 	if ( function_exists( 'wp_get_upload_dir' ) ) {
 		$uploads = wp_get_upload_dir();
@@ -677,25 +204,25 @@ function rtt_get_upload_dir() {
  *
  * @return boolean TRUE if override is ON, FALSE is OFF
  */
-function rtt_is_override_thumbnail( $attachment_id = '' ) {
+function rtgodam_is_override_thumbnail( $attachment_id = '' ) {
 
 	// Fetch EasyDAM settings directly.
-	$easydam_settings = get_option( 'rt-easydam-settings', array() );
+	$easydam_settings = get_option( 'rtgodam-settings', array() );
 
 	// Return the 'overwrite_thumbnails' value, defaulting to false if not set.
-	$rtt_override_thumbnail = ! empty( $easydam_settings['video']['overwrite_thumbnails'] );
+	$rtgodam_override_thumbnail = ! empty( $easydam_settings['video']['overwrite_thumbnails'] );
 
 	/**
 	 * Allow user to override the setting.
 	 *
 	 * @since 1.1.0
 	 *
-	 * @param boolean   $rtt_override_thumbnail     Number of thumbnails set in setting.
+	 * @param boolean   $rtgodam_override_thumbnail     Number of thumbnails set in setting.
 	 * @param int       $attachment_id              ID of attachment.
 	 */
-	$rtt_override_thumbnail = apply_filters( 'rtt_is_override_thumbnail', $rtt_override_thumbnail, $attachment_id );
+	$rtgodam_override_thumbnail = apply_filters( 'rtgodam_is_override_thumbnail', $rtgodam_override_thumbnail, $attachment_id );
 
-	return $rtt_override_thumbnail;
+	return $rtgodam_override_thumbnail;
 }
 
 /**
@@ -703,16 +230,16 @@ function rtt_is_override_thumbnail( $attachment_id = '' ) {
  *
  * @return string Remote IP address
  */
-function rtt_get_remote_ip_address() {
-	$client_ip = get_server_var( 'HTTP_CLIENT_IP' );
-	$xff       = get_server_var( 'HTTP_X_FORWARDED_FOR' );
+function rtgodam_get_remote_ip_address() {
+	$client_ip = rtgodam_get_server_var( 'HTTP_CLIENT_IP' );
+	$xff       = rtgodam_get_server_var( 'HTTP_X_FORWARDED_FOR' );
 	if ( ! empty( $client_ip ) ) {
 		return $client_ip;
 	} elseif ( ! empty( $xff ) ) {
 		return $xff;
 	}
 
-	$remote_addr = get_server_var( 'REMOTE_ADDR' );
+	$remote_addr = rtgodam_get_server_var( 'REMOTE_ADDR' );
 	return $remote_addr;
 }
 
@@ -725,7 +252,7 @@ function rtt_get_remote_ip_address() {
  *
  * @return array columns list
  */
-function rtt_add_status_columns_head( $defaults ) {
+function rtgodam_add_status_columns_head( $defaults ) {
 
 	$defaults['convert_status'] = __( 'Transcode Status', 'godam' );
 	return $defaults;
@@ -739,15 +266,15 @@ function rtt_add_status_columns_head( $defaults ) {
  * @param string $column_name column name.
  * @param int    $post_id Post ID.
  */
-function rtt_add_status_columns_content( $column_name, $post_id ) {
+function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 	if ( 'convert_status' !== $column_name ) {
 		return;
 	}
 
-	$transcoded_files  = get_post_meta( $post_id, '_rt_media_transcoded_files', true );
-	$transcoded_thumbs = get_post_meta( $post_id, '_rt_media_thumbnails', true );
+	$transcoded_files  = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
+	$transcoded_thumbs = get_post_meta( $post_id, 'rtgodam_media_thumbnails', true );
 
-	if ( empty( $transcoded_files ) && is_file_being_transcoded( $post_id ) ) {
+	if ( empty( $transcoded_files ) && rtgodam_is_file_being_transcoded( $post_id ) ) {
 		$check_button_text = __( 'Check Status', 'godam' );
 
 		/**
@@ -757,7 +284,7 @@ function rtt_add_status_columns_content( $column_name, $post_id ) {
 		 *
 		 * @param string $check_button_text Default text of transcoding process status check button.
 		 */
-		$check_button_text = apply_filters( 'transcoder_check_status_button_text', $check_button_text );
+		$check_button_text = apply_filters( 'rtgodam_check_status_button_text', $check_button_text );
 
 		?>
 		<div id="span_status<?php echo esc_attr( $post_id ); ?>"></div>
@@ -769,12 +296,12 @@ function rtt_add_status_columns_content( $column_name, $post_id ) {
 	}
 }
 
-$user_data = godam_get_user_data();
-$is_license_verified = isset( $user_data['valid_license'] ) ? $user_data['valid_license'] : false;
+$user_data           = rtgodam_get_user_data();
+$is_api_key_verified = isset( $user_data['valid_api_key'] ) ? $user_data['valid_api_key'] : false;
 
-if ( $is_license_verified ) {
-	add_filter( 'manage_media_columns', 'rtt_add_status_columns_head' );
-	add_action( 'manage_media_custom_column', 'rtt_add_status_columns_content', 10, 2 );
+if ( $is_api_key_verified ) {
+	add_filter( 'manage_media_columns', 'rtgodam_add_status_columns_head' );
+	add_action( 'manage_media_custom_column', 'rtgodam_add_status_columns_content', 10, 2 );
 }
 
 /**
@@ -786,258 +313,13 @@ if ( $is_license_verified ) {
  *
  * @return array columns list
  */
-function rtt_status_column_register_sortable( $columns ) {
+function rtgodam_status_column_register_sortable( $columns ) {
 
 	$columns['convert_status'] = 'convert_status';
 	return $columns;
 }
 
-add_filter( 'manage_upload_sortable_columns', 'rtt_status_column_register_sortable' );
-
-/**
- * Method to add js function.
- *
- * @since 1.2
- */
-function rtt_enqueue_scripts() {
-
-	if ( current_user_can( 'manage_options' ) ) {
-		wp_register_script( 'rt_transcoder_js', plugins_url( 'js/rt-transcoder.min.js', __FILE__ ), array(), GODAM_VERSION, false );
-
-		$translation_array = array(
-			'load_flag'      => true,
-			'security_nonce' => esc_js( wp_create_nonce( 'check-transcoding-status-ajax-nonce' ) ),
-		);
-
-		// phpcs:disable
-
-		// comment out this code as the functionality is being shifted to block editor.
-
-		// wp_localize_script( 'rt_transcoder_js', 'transcoding_status', $translation_array );
-		// wp_enqueue_script( 'rt_transcoder_js' );
-
-		// phpcs:enable
-
-		if ( ! is_admin() ) {
-			wp_enqueue_style( 'rt-transcoder-client-style', plugins_url( 'css/rt-transcoder-client.min.css', __FILE__ ), array(), GODAM_VERSION );
-		}
-	}
-}
-
-if ( rtt_is_track_status_enabled() ) {
-	add_action( 'wp_enqueue_scripts', 'rtt_enqueue_scripts' );
-}
-add_action( 'admin_enqueue_scripts', 'rtt_enqueue_scripts' );
-
-add_action( 'enqueue_block_editor_assets', 'rt_transcoder_enqueue_block_editor_assets' );
-
-/**
- * Enqueues script on frontend.
- *
- * @return void
- */
-function rtt_enqueue_frontend_scripts() {
-	$file_to_use = 'public-assets/js/build/transcoder.min.js';
-
-	$file = path_join( GODAM_PATH, $file_to_use );
-	if ( file_exists( $file ) && class_exists( 'RTMedia' ) ) {
-		wp_enqueue_script( 'rt-transcoder-front-js', GODAM_URL . $file_to_use, array( 'jquery', 'rtmedia-backbone' ), filemtime( $file ), true );
-
-		$rest_url_prefix = get_site_url() . '/' . rest_get_url_prefix();
-		wp_localize_script( 'rt-transcoder-front-js', 'rtTranscoder', array( 'restURLPrefix' => $rest_url_prefix ) );
-	}
-}
-
-add_action( 'wp_enqueue_scripts', 'rtt_enqueue_frontend_scripts' );
-
-/**
- * Enqueue required script for block editor.
- */
-function rt_transcoder_enqueue_block_editor_assets() {
-	// Enqueue our script.
-	wp_enqueue_script(
-		'rt-transcoder-block-editor-support',
-		esc_url( GODAM_URL . '/assets/build/js/rt-transcoder-block-editor-support.js' ),
-		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor' ),
-		GODAM_VERSION,
-		true
-	);
-
-	// Localize fallback poster image for use in our enqueued script.
-	wp_localize_script(
-		'rt-transcoder-block-editor-support',
-		'rtTranscoderBlockEditorSupport',
-		array(
-			'amp_story_fallback_poster' => plugins_url( '/images/amp-story-fallback-poster.png', __FILE__ ),
-			'amp_video_fallback_poster' => plugins_url( '/images/amp-story-video-fallback-poster.png', __FILE__ ),
-		)
-	);
-}
-
-/**
- * Method to handle AJAX request for checking status.
- *
- * @since 1.2
- */
-function rtt_ajax_process_check_status_request() {
-
-	check_ajax_referer( 'check-transcoding-status-ajax-nonce', 'security', true );
-	$post_id = transcoder_filter_input( INPUT_POST, 'postid', FILTER_SANITIZE_NUMBER_INT );
-
-	if ( ! empty( $post_id ) ) {
-		echo esc_html( rtt_get_transcoding_status( $post_id ) );
-	}
-
-	wp_die();
-}
-
-// Action added to handle check_status onclick request.
-add_action( 'wp_ajax_checkstatus', 'rtt_ajax_process_check_status_request' );
-
-/**
- * To get status of transcoding process
- *
- * @since 1.2
- *
- * @param int $post_id post ID.
- *
- * @return string transcoding process status
- */
-function rtt_get_transcoding_status( $post_id ) {
-
-	require_once GODAM_PATH . 'admin/godam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-
-	$obj    = new RT_Transcoder_Handler( true );
-	$status = $obj->get_transcoding_status( $post_id );
-
-	return $status;
-}
-
-/**
- * To get status of transcoding process
- *
- * @since 1.2
- *
- * @param int $rtmedia_id rtmedia ID.
- */
-function rtt_add_transcoding_process_status_button_single_media_page( $rtmedia_id ) {
-
-	global $wpdb;
-	$rtmedia_media_table = $wpdb->prefix . 'rt_rtm_media';
-
-	$post_id = wp_cache_get( 'media_' . $rtmedia_id, 'godam' );
-	if ( empty( $post_id ) ) {
-		$results = $wpdb->get_results( $wpdb->prepare( "SELECT media_id FROM $rtmedia_media_table WHERE id = %d", $rtmedia_id ), OBJECT ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- %s adds '' around table name.
-		$post_id = $results[0]->media_id;
-		wp_cache_set( 'media_' . $rtmedia_id, $post_id, 'godam', 3600 );
-	}
-
-	$check_button_text = __( 'Check Status', 'godam' );
-
-	/**
-	 * Filters the text of transcoding process status check button.
-	 *
-	 * @since 1.2
-	 *
-	 * @param string $check_button_text Default text of transcoding process status check button.
-	 */
-	$check_button_text = apply_filters( 'rtt_transcoder_check_status_button_text', $check_button_text );
-
-	if ( is_file_being_transcoded( $post_id ) ) {
-
-		if ( current_user_can( 'manage_options' ) && rtt_is_track_status_enabled() ) {
-			$message = sprintf(
-				'<div class="transcoding-in-progress"><button id="btn_check_status%1$s" class="btn_check_transcode_status" name="check_status_btn" data-value="%1$s">%2$s</button> <div class="transcode_status_box" id="span_status%1$s">%3$s</div></div>',
-				esc_attr( $post_id ),
-				esc_html( $check_button_text ),
-				esc_html__( 'This file is converting. Please click on check status button to know current status or refresh the page after some time. ', 'godam' )
-			);
-		} else {
-			$message = sprintf(
-				'<p class="transcoding-in-progress">%s</p>',
-				esc_html__( 'This file is converting. Please refresh the page after some time.', 'godam' )
-			);
-		}
-
-		// Message already escaped.
-		echo $message; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-
-	}
-}
-
-// Add action to media single page.
-add_action( 'rtmedia_actions_before_description', 'rtt_add_transcoding_process_status_button_single_media_page', 10, 1 );
-
-/**
- * To resize video container of media single page when video is being transcoded .
- *
- * @since 1.2
- *
- * @param string $html html markup.
- * @param object $rtmedia_media rtmedia media object.
- *
- * @return string html markup
- */
-function rtt_filter_single_media_page_video_markup( $html, $rtmedia_media ) {
-	if ( empty( $rtmedia_media ) || empty( $rtmedia_media->media_type ) || empty( $rtmedia_media->media_id ) ) {
-		return $html;
-	}
-	if ( 'video' === $rtmedia_media->media_type && is_file_being_transcoded( $rtmedia_media->media_id ) ) {
-
-		$youtube_url = get_rtmedia_meta( $rtmedia_media->id, 'video_url_uploaded_from' );
-		$html        = "<div id='rtm-mejs-video-container'>";
-
-		if ( empty( $youtube_url ) ) {
-
-			$html_video = '<video poster="%s" src="%s" type="video/mp4" class="wp-video-shortcode" id="rt_media_video_%s" controls="controls" preload="metadata"></video>';
-			$html      .= sprintf( $html_video, esc_url( $rtmedia_media->cover_art ), esc_url( wp_get_attachment_url( $rtmedia_media->media_id ) ), esc_attr( $rtmedia_media->id ) );
-
-		} else {
-
-			$html_video = '<video width="640" height="360" class="url-video" id="video-id-%s" preload="none"><source type="video/youtube" src="%s" /></video>';
-			$html      .= sprintf( $html_video, esc_attr( $rtmedia_media->id ), esc_url( wp_get_attachment_url( $rtmedia_media->media_id ) ) );
-
-		}
-
-		$html .= '</div>';
-	}
-	return $html;
-}
-
-add_filter( 'rtmedia_single_content_filter', 'rtt_filter_single_media_page_video_markup', 10, 2 );
-
-/**
- *
- * Added handler to update usage if it is not updated.
- * Added one flag in transient to avoid requests when usage quota is over and it is not renewed.
- *
- * @since 1.0.0
- *
- * @param array  $wp_metadata       Metadata of the attachment.
- * @param int    $attachment_id  ID of attachment.
- * @param string $autoformat     If true then generating thumbs only else trancode video.
- */
-function rtt_media_update_usage( $wp_metadata, $attachment_id, $autoformat = true ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
-
-	$stored_key     = get_site_option( 'rt-transcoding-api-key' );
-	$transient_flag = get_transient( 'rtt_usage_update_flag' );
-
-	if ( ! empty( $stored_key ) && empty( $transient_flag ) ) {
-
-		$usage_info = get_site_option( 'rt-transcoding-usage' );
-		$handler    = new RT_Transcoder_Handler( false );
-
-		if ( empty( $usage_info ) || empty( $usage_info[ $handler->api_key ]->remaining ) ) {
-
-			$handler->update_usage( $handler->api_key );
-			set_transient( 'rtt_usage_update_flag', '1', HOUR_IN_SECONDS );
-		}
-	}
-
-	return $wp_metadata;
-}
-
-add_filter( 'wp_generate_attachment_metadata', 'rtt_media_update_usage', 10, 2 );
+add_filter( 'manage_upload_sortable_columns', 'rtgodam_status_column_register_sortable' );
 
 /**
  * To get sanitized server variables.
@@ -1047,12 +329,12 @@ add_filter( 'wp_generate_attachment_metadata', 'rtt_media_update_usage', 10, 2 )
  *
  * @return string Filtered value if supports.
  */
-function get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FULL_SPECIAL_CHARS ) {
+function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FULL_SPECIAL_CHARS ) {
 	$server_val = '';
 	if ( function_exists( 'filter_input' ) && filter_has_var( INPUT_SERVER, $server_key ) ) {
-		$server_val = transcoder_filter_input( INPUT_SERVER, $server_key, $filter_type );
+		$server_val = rtgodam_filter_input( INPUT_SERVER, $server_key, $filter_type );
 	} elseif ( isset( $_SERVER[ $server_key ] ) ) {
-		$server_val = $_SERVER[ $server_key ]; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$server_val = wp_unslash( $_SERVER[ $server_key ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	}
 	return $server_val;
 }
@@ -1062,9 +344,9 @@ function get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FULL_SPECIA
  *
  * @return array
  */
-function rtt_get_blacklist_ip_addresses() {
+function rtgodam_get_blacklist_ip_addresses() {
 	// If custom API URL added then don't block local ips.
-	if ( defined( 'TRANSCODER_API_URL' ) ) {
+	if ( defined( 'RTGODAM_TRANSCODER_API_URL' ) ) {
 		return array();
 	}
 
@@ -1072,31 +354,32 @@ function rtt_get_blacklist_ip_addresses() {
 }
 
 /**
- * Helper function to verify the license key.
+ * Helper function to verify the api key.
  *
- * @param string $license_key The license key to verify.
+ * @param string $api_key The api key to verify.
+ * @param bool   $save        Whether to save the API key in the site options.
+ * 
  * @return array|WP_Error Array with status and data on success, WP_Error on failure.
  */
-function rtt_verify_license( $license_key, $save = false ) {
-	if ( empty( $license_key ) ) {
-		return new \WP_Error( 'missing_license_key', 'License key is required.', array( 'status' => 400 ) );
+function rtgodam_verify_api_key( $api_key, $save = false ) {
+	if ( empty( $api_key ) ) {
+		return new \WP_Error( 'missing_api_key', 'API key is required.', array( 'status' => 400 ) );
 	}
 
-	$api_url = GODAM_API_BASE . '/api/method/godam_core.api.verification.verify_license';
+	$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.verification.verify_api_key';
 
 	// Prepare request body.
 	$site_url     = get_site_url();
 	$request_body = array(
-		'license_key' => $license_key,
-		'site_url'    => $site_url,
+		'api_key'  => $api_key,
+		'site_url' => $site_url,
 	);
 
 	$args = array(
-		'body'    => json_encode( $request_body ),
+		'body'    => wp_json_encode( $request_body ),
 		'headers' => array(
 			'Content-Type' => 'application/json',
 		),
-		'timeout' => 10,
 	);
 
 	// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
@@ -1107,14 +390,14 @@ function rtt_verify_license( $license_key, $save = false ) {
 	}
 
 	if ( is_wp_error( $response ) ) {
-		return new \WP_Error( 'api_error', 'An error occurred while verifying the license. Please try again.', array( 'status' => 500 ) );
+		return new \WP_Error( 'api_error', 'An error occurred while verifying the API. Please try again.', array( 'status' => 500 ) );
 	}
 
 	$status_code = wp_remote_retrieve_response_code( $response );
 	$body        = json_decode( wp_remote_retrieve_body( $response ), true );
 
 	if ( isset( $body['message']['error'] ) ) {
-		return new \WP_Error( 'invalid_license', $body['message']['error'], array( 'status' => 400 ) );
+		return new \WP_Error( 'invalid_api_key', $body['message']['error'], array( 'status' => 400 ) );
 	}
 
 	// Handle success response.
@@ -1122,26 +405,26 @@ function rtt_verify_license( $license_key, $save = false ) {
 
 		$account_token = $body['message']['account_token'];
 		if ( $save ) {
-			// Save the license key in the site options only if it is verified.
-			update_site_option( 'rt-transcoding-api-key', $license_key );
-			update_site_option( 'rt-transcoding-api-key-stored', $license_key );
-			update_site_option( 'rt-transcoding-account-token', $account_token );
+			// Save the API key in the site options only if it is verified.
+			update_site_option( 'rtgodam-api-key', $api_key );
+			update_site_option( 'rtgodam-api-key-stored', $api_key );
+			update_site_option( 'rtgodam-account-token', $account_token );
 
 			// Update usage data.
-			$handler = new \RT_Transcoder_Handler( false );
-			$handler->update_usage( $license_key );
+			$handler = new \RTGODAM_Transcoder_Handler( false );
+			$handler->update_usage( $api_key );
 		}
 
 		return array(
 			'status'  => 'success',
-			'message' => 'License key verified and stored successfully!',
+			'message' => 'API key verified and stored successfully!',
 			'data'    => $body['message'],
 		);
 	}
 
 	// Handle failure response.
 	if ( 404 === $status_code ) {
-		return new \WP_Error( 'invalid_license', 'Invalid license key. Please try again.', array( 'status' => 404 ) );
+		return new \WP_Error( 'invalid_api_key', 'Invalid API key. Please try again.', array( 'status' => 404 ) );
 	}
 
 	// Handle unexpected responses.
@@ -1156,7 +439,7 @@ function rtt_verify_license( $license_key, $save = false ) {
  *
  * @return string
  */
-function rtt_mask_string( $input, $offset = 4 ) {
+function rtgodam_mask_string( $input, $offset = 4 ) {
 	$length = strlen( $input );
 	if ( $length <= $offset ) {
 		return $input; // If string length is equal or less than $offset, return as is.
@@ -1171,9 +454,9 @@ function rtt_mask_string( $input, $offset = 4 ) {
  *
  * @param int $post_id Current Post Id.
  *
- * @return void
+ * @return array|string List of Categories or empty string on failure.
  */
-function rt_get_categories_list( $post_id ) {
+function rtgodam_get_categories_list( $post_id ) {
 
 	$categories     = get_the_category( $post_id );
 	$category_names = array();
@@ -1197,9 +480,9 @@ function rt_get_categories_list( $post_id ) {
  *
  * @param int $post_id Current Post Id.
  *
- * @return void
+ * @return array|string List of Tags or empty string on failure.
  */
-function rt_get_tags_list( $post_id ) {
+function rtgodam_get_tags_list( $post_id ) {
 
 	$tags      = get_the_tags( $post_id );
 	$tag_names = array();
@@ -1222,16 +505,16 @@ function rt_get_tags_list( $post_id ) {
  *
  * @return array The array to localize
  */
-function rt_get_localize_array() {
+function rtgodam_get_localize_array() {
 
 	$localize_array = array();
 
-	$localize_array['endpoint']   = GODAM_ANALYTICS_BASE;
+	$localize_array['endpoint']   = RTGODAM_ANALYTICS_BASE;
 	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
 	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
 	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
 	$localize_array['postTitle']  = get_the_title();
-	$localize_array['locationIP'] = rtt_get_user_ip();
+	$localize_array['locationIP'] = rtgodam_get_user_ip();
 
 	/**
 	 * Get Current User.
@@ -1259,8 +542,8 @@ function rt_get_localize_array() {
 	if ( $post_id ) {
 
 		$localize_array['postId']     = $post_id;
-		$localize_array['categories'] = rt_get_categories_list( $post_id );
-		$localize_array['tags']       = rt_get_tags_list( $post_id );
+		$localize_array['categories'] = rtgodam_get_categories_list( $post_id );
+		$localize_array['tags']       = rtgodam_get_tags_list( $post_id );
 
 	}
 
@@ -1269,7 +552,7 @@ function rt_get_localize_array() {
 		$localize_array['author'] = get_the_author();
 	}
 
-	$localize_array['token'] = get_site_option( 'rt-transcoding-account-token', 'unverified' );
+	$localize_array['token'] = get_site_option( 'rtgodam-account-token', 'unverified' );
 
 	return $localize_array;
 }
@@ -1279,17 +562,19 @@ function rt_get_localize_array() {
  *
  * @return string The user's IP address.
  */
-function rtt_get_user_ip() {
+function rtgodam_get_user_ip() {
 	$ip_address = '';
 
-	if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-		$ip_address = $_SERVER['HTTP_CLIENT_IP'];
-	} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-		// Handle multiple IPs (e.g., in proxies).
-		$ip_address = explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] )[0];
-	} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-		$ip_address = $_SERVER['REMOTE_ADDR'];
+	$ip_address = filter_var( rtgodam_get_server_var( 'HTTP_CLIENT_IP' ), FILTER_VALIDATE_IP );
+
+	if ( empty( $ip_address ) ) {
+		$forwarded_for = rtgodam_get_server_var( 'HTTP_X_FORWARDED_FOR' );
+		$ip_address    = ! empty( $forwarded_for ) ? filter_var( explode( ',', $forwarded_for )[0], FILTER_VALIDATE_IP ) : false;
 	}
 
-	return esc_attr( $ip_address );
+	if ( empty( $ip_address ) ) {
+		$ip_address = filter_var( rtgodam_get_server_var( 'REMOTE_ADDR' ), FILTER_VALIDATE_IP );
+	}
+
+	return $ip_address; // Return an empty string if invalid.
 }

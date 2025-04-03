@@ -1,14 +1,14 @@
 === GoDAM ===
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar
-Tags: media, multimedia, audio, songs, music, video, ffmpeg, media-node, rtMedia, WordPress, transcode, transcoder, encoding, encode, transcoder, DAM, audio video conversion, digital asset management
+Tags: Transcoder, DAM, Interactive Video Layers, Adaptive Bitrate Streaming, Video Analytics
 Requires at least: 6.5
-Tested up to: 6.7.2
+Tested up to: 6.7
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Seamlessly manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, gravity forms integration, and ad integration.
+Manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, and video analytics.
 
 == Description ==
 [GoDAM](https://godam.io/) is a powerful digital asset management solution designed to provide automatic transcoding, adaptive bitrate streaming, and interactive video layers to enhance viewer engagement. It simplifies the entire video workflow, from upload to optimized playback, ensuring smooth delivery across all devices and network conditions.
@@ -17,6 +17,8 @@ With GoDAM, WordPress users can leverage advanced video capabilities without req
 
 See Our Official GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam)
 Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
+
+[youtube https://www.youtube.com/watch?v=UGmKa6aLSgU]
 
 Free Features
 
@@ -140,13 +142,86 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 14. Video Analytics
 
 == Changelog ==
-= v1.0.0 (Feb 2025) =
 
-- Initial release of GoDAM plugin.
-- Automatic transcoding for audio and video files.
-- Adaptive bitrate streaming for smooth playback.
-- Interactive video layers (CTAs, forms, hotspots, ads).
-- Customizable video player with branding options.
-- Cloud storage and CDN integration.
-- Advanced analytics and engagement tracking.
-- Enhanced WordPress Media Library for better asset management.
+= v1.0.0 (March 05, 2025) =
+
+- Feat: Initial release of GoDAM plugin.
+- Feat: Automatic transcoding for audio and video files.
+- Feat: Adaptive bitrate streaming for smooth playback.
+- Feat: Interactive video layers (CTAs, forms, hotspots, ads).
+- Feat: Customizable video player with branding option.
+- Feat: Cloud storage and CDN integration.
+- Feat: Advanced analytics and engagement tracking.
+- Feat: Enhanced WordPress Media Library for better asset management.
+
+== External Services ==
+This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
+
+=== godam.io ===
+Purpose: This service stores feedback submitted by users during plugin deactivation to help us improve the plugin and understand user concerns.
+
+Data Sent:
+
+1. Site URL
+
+2. Reason for deactivation
+
+3. Name
+
+4. Email ID
+
+When Data is Sent:
+Data is sent only when a user submits the deactivation feedback form after clicking the deactivate button.
+
+Service Provider: godam.io
+
+[Terms of Service](https://godam.io/tos/)
+[Privacy Policy](https://godam.io/privacy-policy/)
+
+=== app.godam.io ===
+Purpose: This service is used for transcoding media uploaded by users and verifying the API Key to ensure the plugin is authorized for use.
+
+Data Sent:
+
+1. Site URL
+
+2. API Key
+
+When Data is Sent:
+
+1. During media transcoding when the user uploads a video.
+
+2. When the plugin checks for a valid API Key.
+
+Service Provider: app.godam.io
+
+[Terms of Service](https://godam.io/tos/)
+[Privacy Policy](https://godam.io/privacy-policy/)
+
+=== analytics.godam.io ===
+Purpose: This service collects analytics data when a user watches a video on the frontend. It helps track video performance, user engagement, and campaign effectiveness.
+
+Data Sent:
+
+1. IP Address
+
+2. Email
+
+3. Author of the post’s display name
+
+4. Browser version, name, and browser language
+
+5. User Agent String
+
+6. The operating system of the user's device (e.g., Windows, macOS, Android)
+
+When Data is Sent:
+
+1. When the page containing the video loads.
+
+2. When the user exits the page after watching the video.
+
+Service Provider: analytics.godam.io
+
+[Terms of Service](https://godam.io/tos/)
+[Privacy Policy](https://godam.io/privacy-policy/)

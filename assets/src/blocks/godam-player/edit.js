@@ -23,7 +23,7 @@ import {
 	MediaReplaceFlow,
 	useBlockProps,
 } from '@wordpress/block-editor';
-import { useRef, useEffect, useState } from '@wordpress/element';
+import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
@@ -37,6 +37,7 @@ import { store as noticesStore } from '@wordpress/notices';
 import VideoCommonSettings from './edit-common-settings';
 import Video from './VideoJS';
 import TracksEditor from './track-uploader';
+import { Caption } from './caption';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -46,6 +47,7 @@ function VideoEdit( {
 	attributes,
 	className,
 	setAttributes,
+	insertBlocksAfter,
 } ) {
 	const instanceId = useInstanceId( VideoEdit );
 	const videoPlayer = useRef();
@@ -53,6 +55,38 @@ function VideoEdit( {
 	const { id, controls, autoplay, poster, src, tracks, sources, muted, loop, playsInline, preload } = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
+
+	// Memoize video options to prevent unnecessary rerenders
+	const videoOptions = useMemo( () => ( {
+		controls,
+		autoplay,
+		preload,
+		fluid: true,
+		playsinline: playsInline,
+		loop,
+		muted,
+		poster: poster || defaultPoster,
+		sources,
+	} ), [ controls, autoplay, preload, playsInline, loop, muted, poster, defaultPoster, sources ] );
+
+	// Memoize the video component to prevent rerenders
+	const videoComponent = useMemo( () => (
+		<Disabled isDisabled={ ! isSingleSelected }>
+			<Video
+				options={ videoOptions }
+				onPlayerReady={ ( player ) => {
+					if ( player ) {
+						const playerEl = player.el_;
+						const video = playerEl.querySelector( 'video' );
+
+						video.addEventListener( 'loadedmetadata', () => {
+							setAttributes( { aspectRatio: `${ video.videoWidth } / ${ video.videoHeight }` } );
+						} );
+					}
+				} }
+			/>
+		</Disabled>
+	), [ isSingleSelected, videoOptions, setAttributes ] );
 
 	useEffect( () => {
 		// Placeholder may be rendered.
@@ -67,12 +101,12 @@ function VideoEdit( {
 				try {
 					const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
 
-					if ( response.meta._rt_media_video_thumbnail !== '' ) {
-						setDefaultPoster( response.meta._rt_media_video_thumbnail );
+					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
+						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
 					}
 
-					if ( response && response.meta && response.meta._rt_transcoded_url ) {
-						const transcodedUrl = response.meta._rt_transcoded_url;
+					if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
+						const transcodedUrl = response.meta.rtgodam_transcoded_url;
 
 						setAttributes( {
 							sources: [
@@ -144,11 +178,11 @@ function VideoEdit( {
 			try {
 				const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
 
-				if ( response && response.meta && response.meta._rt_transcoded_url ) {
-					const transcodedUrl = response.meta._rt_transcoded_url;
+				if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
+					const transcodedUrl = response.meta.rtgodam_transcoded_url;
 
-					if ( response.meta._rt_media_video_thumbnail !== '' ) {
-						setDefaultPoster( response.meta._rt_media_video_thumbnail );
+					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
+						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
 					}
 
 					setAttributes( {
@@ -216,6 +250,8 @@ function VideoEdit( {
 	const blockProps = useBlockProps( {
 		className: classes,
 	} );
+
+	console.log( 'caption from parent', attributes.caption );
 
 	if ( ! src && ! temporaryURL ) {
 		return (
@@ -333,7 +369,7 @@ function VideoEdit( {
 						</BaseControl.VisualLabel>
 						<Button
 							__next40pxDefaultSize
-							href={ `/wp-admin/admin.php?page=video_editor&id=${ id }` }
+							href={ `/wp-admin/admin.php?page=rtgodam_video_editor&id=${ id }` }
 							target="_blank"
 							variant="primary"
 							className=""
@@ -343,42 +379,20 @@ function VideoEdit( {
 							{ __( 'Customise', 'godam' ) }
 						</Button>
 					</div>
-					{ /* Temporary hide the partially implemented video preview feature */ }
-					{ /* <div className="editor-enable-preview">
-						<BaseControl.VisualLabel>
-							{ __( 'Enable Preview' ) }
-						</BaseControl.VisualLabel>
-						<ToggleControl
-							label={ __( 'Show a preview of 10 seconds when user hovers over a video' ) }
-							checked={ attributes.preview }
-							onChange={ ( value ) => setAttributes( { preview: value } ) }
-						/>
-					</div>*/ }
 				</PanelBody>
 			</InspectorControls>
 
 			<figure { ...blockProps }>
-				{ /*
-                    Disable the video tag if the block is not selected
-                    so the user clicking on it won't play the
-                    video when the controls are enabled.
-                */ }
-				<Disabled isDisabled={ ! isSingleSelected }>
-					<Video
-						options={ {
-							controls,
-							autoplay,
-							preload,
-							fluid: true,
-							playsinline: playsInline,
-							loop,
-							muted,
-							poster: poster || defaultPoster,
-							sources,
-						} }
-					/>
-				</Disabled>
+				{ videoComponent }
 				{ !! temporaryURL && <Spinner /> }
+				<Caption
+					attributes={ attributes }
+					setAttributes={ setAttributes }
+					isSelected={ isSingleSelected }
+					insertBlocksAfter={ insertBlocksAfter }
+					label={ __( 'Video caption text' ) }
+					showToolbarButton={ isSingleSelected }
+				/>
 			</figure>
 		</>
 	);

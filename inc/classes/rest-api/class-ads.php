@@ -5,7 +5,9 @@
  * @package transcoder
  */
 
-namespace Transcoder\Inc\REST_API;
+namespace RTGODAM\Inc\REST_API;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class LocationAPI
@@ -62,13 +64,12 @@ class Ads extends Base {
 	 * 
 	 * @return bool
 	 */
-	public function maybe_ad_url_tag_request( $served, $result, $request, $server ) { // phpcs:ignore
+	public function maybe_ad_url_tag_request( $served, $result, $request, $server ) {
 
 		// Check if the route of the current REST API request matches your custom route.
 		if ( ! str_contains( $request->get_route(), '/godam/v1/adTagURL' ) ) {
 			return $served;
 		}
-	
 
 		// Set necessary CORS headers.
 		header( 'Access-Control-Allow-Origin: *' ); // Allow all origins.
@@ -76,12 +77,13 @@ class Ads extends Base {
 		header( 'Access-Control-Allow-Credentials: true' );
 		header( 'Access-Control-Allow-Headers: Content-Type, Authorization, X-WP-Nonce' );
 	
-		// // Ensure the response is XML.
+		// Ensure the response is XML.
 		header( 'Content-Type: text/xml; charset=utf-8' );
-	
+
 		// Output the XML response and terminate the script.
-		echo $result->get_data(); // phpcs:ignore
-		exit;
+		echo $result->get_data(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The response is already escaped.
+		
+		return true;
 	}
 
 	/**
@@ -119,7 +121,6 @@ class Ads extends Base {
 					<Advertiser>GoDAM</Advertiser>
 					<Creatives>
 						<Creative id="5480" sequence="1" adId="2447226">
-							<UniversalAdId idRegistry="Ad-ID">8465</UniversalAdId>
 							<Linear <?php echo $skippable ? ' skipoffset="' . esc_attr( gmdate( 'H:i:s', $skip_offset ) ) . '"' : ''; ?>>
 								<Duration><?php echo esc_html( $ad_duration ); ?></Duration>
 								<MediaFiles>
@@ -162,7 +163,11 @@ class Ads extends Base {
 				<vmap:AdBreak timeOffset="<?php echo esc_attr( $display_time ); ?>" breakType="linear" breakId="preroll">
 					<vmap:AdSource id="preroll-ad-1" allowMultipleAds="false" followRedirects="true">
 						<vmap:AdTagURI templateType="vast4">
-							<![CDATA[ <?php echo esc_url_raw( $vast_url ); ?> ]]>
+							<![CDATA[ 
+							<?php 
+								echo esc_url_raw( $vast_url ); // The URL used here is for redirect purposes, so it must be raw. This will is used to get the VAST XML.
+							?>
+							]]>
 						</vmap:AdTagURI>
 					</vmap:AdSource>
 				</vmap:AdBreak>
@@ -200,7 +205,7 @@ class Ads extends Base {
 		}
 
 		// Get easydam_meta data.
-		$easydam_meta = get_post_meta( $video_id, 'easydam_meta', true );
+		$easydam_meta = get_post_meta( $video_id, 'rtgodam_meta', true );
 
 		if ( empty( $easydam_meta ) ) {
 			return '';
@@ -249,7 +254,11 @@ class Ads extends Base {
 					<vmap:AdBreak timeOffset="<?php echo esc_attr( 0 === $display_time ? 'start' : gmdate( 'H:i:s', $display_time ) ); ?>" breakType="linear">
 						<vmap:AdSource allowMultipleAds="false" followRedirects="true">
 							<vmap:AdTagURI templateType="vast4">
-								<![CDATA[ <?php echo esc_url_raw( $vast_url ); ?> ]]>
+								<![CDATA[
+									<?php 
+										echo esc_url_raw( $vast_url ); // The URL used here is for redirect purposes, so it must be raw. This will is used to get the VAST XML.
+									?>
+								]]>
 							</vmap:AdTagURI>
 						</vmap:AdSource>
 					</vmap:AdBreak>
