@@ -1427,7 +1427,8 @@ async function fetchAnalyticsData( videoId, siteUrl ) {
 		};
 
 		const response = await fetch(
-			url,
+			// url,
+			`/wp-json/godam/v1/analytics/fetch?${ params.toString() }`,
 			{
 				method: 'GET',
 				headers: {
