@@ -107,6 +107,29 @@ class MediaDateRangeFilter {
 			autoUpdateInput: false,
 		} );
 
+		const daterangepickerContainer = $( this.inputElement ).data( 'daterangepicker' ).container;
+
+		// Create "Clear" button
+		const clearButton = $( '<button>' )
+			.text( 'Clear' )
+			.addClass( 'btn btn-sm btn-light daterangepicker-clear' )
+			.css( {
+				display: 'block',
+				width: '100%',
+				padding: '8px',
+				textAlign: 'center',
+				background: '#f8f9fa',
+				border: '1px solid #ddd',
+				cursor: 'pointer',
+				marginTop: '8px',
+			} )
+			.on( 'click', () => {
+				this.clearFilter();
+				$( this.inputElement ).data( 'daterangepicker' ).hide();
+			} );
+
+		// Append "Clear" button inside the main dropdown
+		daterangepickerContainer.append( clearButton );
 		$( this.inputElement ).on( 'apply.daterangepicker', this.updateFilter.bind( this ) );
 		$( this.inputElement ).on( 'show.daterangepicker', this.updatePickerPosition.bind( this ) );
 		$( this.inputElement ).on( 'cancel.daterangepicker', this.clearFilter.bind( this ) );
