@@ -1,7 +1,9 @@
 
-/* global moment */
+/* global moment, jQuery */
 
 let MediaDateRangeFilter = wp?.media?.View;
+
+const $ = jQuery;
 
 MediaDateRangeFilter = MediaDateRangeFilter?.extend( {
 
@@ -87,6 +89,29 @@ MediaDateRangeFilter = MediaDateRangeFilter?.extend( {
 		);
 
 		this.$el.val( 'Date Range' );
+
+		// Add "Clear" button inside the main dropdown
+		const daterangepickerContainer = this.$el.data( 'daterangepicker' ).container;
+		const clearButton = $( '<button>' )
+			.text( 'Clear' )
+			.addClass( 'btn btn-sm btn-light daterangepicker-clear' )
+			.css( {
+				display: 'block',
+				width: '100%',
+				padding: '8px',
+				textAlign: 'center',
+				background: '#f8f9fa',
+				border: '1px solid #ddd',
+				cursor: 'pointer',
+				marginTop: '8px',
+			} )
+			.on( 'click', () => {
+				this.clearFilter();
+				this.$el.data( 'daterangepicker' ).hide();
+			} );
+
+		// Append the button inside the main container
+		daterangepickerContainer.append( clearButton );
 
 		return this;
 	},
