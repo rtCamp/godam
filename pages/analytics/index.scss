@@ -36,7 +36,7 @@
 	}
 
 	.country-heatmap-container {
-		@apply text-center bg-slate-100 overflow-auto md:px-10;
+		@apply bg-slate-100 overflow-auto;
 	}
 
 	.analytics-info-container {
@@ -258,3 +258,29 @@
 	visibility: visible;
 	opacity: 1;
 }
+
+/* Tooltip styling */
+.tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    pointer-events: none; /* Prevents interfering with mouse events */
+    opacity: 0; /* Initially hidden */
+    transition: opacity 0.2s ease-in-out;
+}
+
+.bar-container {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 4px; /* Adjust thickness */
+            background-color: lightgray;
+        }
+        .bar {
+            height: 100%;
+            background-color: blue;
+        }
