@@ -13,7 +13,6 @@ import '../../video-control.css';
 import {
 	Button,
 	CustomSelectControl,
-	RangeControl,
 	TextareaControl,
 	ToggleControl,
 } from '@wordpress/components';
@@ -39,7 +38,7 @@ const Appearance = () => {
 				.classList.remove( 'vjs-hidden' );
 		}
 		dispatch( setCurrentLayer( null ) );
-	}, [] );
+	}, [ dispatch, videoConfig.controlBar.subsCapsButton ] );
 
 	function handleVolumeToggle() {
 		const volumeSlider = document.querySelector( '.vjs-volume-panel' );
@@ -80,7 +79,7 @@ const Appearance = () => {
 		}
 	}
 
-	function handleBrandingToggle( e ) {
+	function handleBrandingToggle() {
 		const brandingLogo = document.querySelector( '#branding-icon' );
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 
@@ -233,10 +232,10 @@ const Appearance = () => {
 			updateVideoConfig( {
 				controlBar: {
 					...videoConfig.controlBar,
-			  	skipButtons: {
-				  forward: selectedSkipVal,
-				  backward: selectedSkipVal,
-		  		},
+					skipButtons: {
+						forward: selectedSkipVal,
+						backward: selectedSkipVal,
+					},
 				},
 			} ),
 		);
@@ -272,57 +271,13 @@ const Appearance = () => {
 		}
 	}
 
-	function handleControlBarPosition( e ) {
-		const selectedValue = e.selectedItem.key;
-		dispatch(
-			updateVideoConfig( {
-				controlBar: {
-					...videoConfig.controlBar,
-					controlBarPosition: selectedValue,
-				},
-			} ),
-		);
-		const controlBar = document.querySelector( '.vjs-control-bar' );
-		controlBar.classList.add( 'vjs-control-bar-vertical' );
-
-		const controls = document.getElementsByClassName( 'vjs-control' );
-
-		if ( 'vertical' === selectedValue ) {
-			for ( const control of controls ) {
-				control.classList.add( 'vjs-control-vertical' );
-				if ( control.classList.contains( 'vjs-volume-panel' ) ) {
-					control.classList.add( 'vjs-volume-panel-vertical' );
-					control.classList.remove( 'vjs-volume-panel-horizontal' );
-				}
-
-				if ( control.classList.contains( 'vjs-volume-horizontal' ) ) {
-					control.classList.add( 'vjs-volume-vertical' );
-				}
-			}
-		} else {
-			controlBar.classList.remove( 'vjs-control-bar-vertical' );
-			for ( const control of controls ) {
-				control.classList.remove( 'vjs-control-vertical' );
-
-				if ( control.classList.contains( 'vjs-volume-panel' ) ) {
-					control.classList.remove( 'vjs-volume-panel-vertical' );
-					control.classList.add( 'vjs-volume-panel-horizontal' );
-				}
-
-				if ( control.classList.contains( 'vjs-volume-horizontal' ) ) {
-					control.classList.remove( 'vjs-volume-vertical' );
-				}
-			}
-		}
-	}
-
 	return (
-		<div id="easydam-player-settings" className="p-4 pb-20">
+		<div id="easydam-player-settings" className="pb-20">
 			<div className="accordion-item--content mt-2 flex flex-col gap-6">
-				<div className="display-settings">
+				<div className="display-settings godam-form-group">
 					<label
 						htmlFor="custom-brand-logo"
-						className="easydam-label"
+						className="label-text"
 					>
 						{ __( 'Display settings', 'godam' ) }
 					</label>
@@ -330,46 +285,51 @@ const Appearance = () => {
 					<div className="flex flex-col gap-3">
 						<ToggleControl
 							__nextHasNoMarginBottom
+							className="godam-toggle"
 							label="Show Volume Slider"
 							checked={ videoConfig.controlBar.volumePanel }
 							onChange={ handleVolumeToggle }
 						/>
 						<ToggleControl
 							__nextHasNoMarginBottom
+							className="godam-toggle"
 							label="Display Captions"
 							onChange={ handleCaptionsToggle }
 							checked={ videoConfig.controlBar.subsCapsButton }
 						/>
-						{
-							window.videoData?.valid_api_key &&
-							<ToggleControl
-								__nextHasNoMarginBottom
-								label="Show Branding"
-								onChange={ handleBrandingToggle }
-								checked={ videoConfig.controlBar.brandingIcon }
-							/>
-						}
+						<ToggleControl
+							__nextHasNoMarginBottom
+							className="godam-toggle"
+							label="Show Branding"
+							onChange={ handleBrandingToggle }
+							checked={ videoConfig.controlBar.brandingIcon }
+						/>
 					</div>
 
 				</div>
 
 				{ videoConfig.controlBar.brandingIcon && (
-					<div className="form-group">
+					<div className="godam-form-group">
 						<label
 							htmlFor="custom-brand-logo"
-							className="easydam-label"
+							className="label-text"
 						>
 							{ __( 'Custom Brand Logo', 'godam' ) }
 						</label>
 						<Button
 							onClick={ openBrandMediaPicker }
 							variant="primary"
-							className="mr-2"
+							className="mr-2 godam-button"
 						>
 							{ selectedBrandImage ? 'Replace' : 'Upload' }
 						</Button>
 						{ selectedBrandImage && (
-							<Button onClick={ removeBrandImage } variant="secondary" isDestructive>
+							<Button
+								onClick={ removeBrandImage }
+								variant="secondary"
+								isDestructive
+								className="godam-button"
+							>
 								{ __( 'Remove', 'godam' ) }
 							</Button>
 						) }
@@ -387,6 +347,7 @@ const Appearance = () => {
 				<div className="form-group">
 					<CustomSelectControl
 						__next40pxDefaultSize
+						className="godam-input"
 						label={ __( 'Play Button Position', 'godam' ) }
 						onChange={ handlePlayButtonPosition }
 						options={ [
@@ -417,18 +378,27 @@ const Appearance = () => {
 						} }
 					/>
 				</div>
-				<div className="form-group">
+				<div className="godam-form-group">
 					<label
 						htmlFor="custom-hover-color"
-						className="easydam-label"
+						className="label-text"
 					>
 						{ __( 'Custom Play Button', 'godam' ) }
 					</label>
-					<Button onClick={ openCustomBtnImg } variant="primary" className="mr-2">
+					<Button
+						onClick={ openCustomBtnImg }
+						variant="primary"
+						className="mr-2 godam-button"
+					>
 						{ selectedCustomBgImg ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 					</Button>
 					{ selectedCustomBgImg && (
-						<Button onClick={ removeCustomPlayBtnImage } variant="secondary" isDestructive>
+						<Button
+							onClick={ removeCustomPlayBtnImage }
+							variant="secondary"
+							className="godam-button"
+							isDestructive
+						>
 							{ __( 'Remove', 'godam' ) }
 						</Button>
 					) }
@@ -445,6 +415,7 @@ const Appearance = () => {
 				<div className="form-group">
 					<CustomSelectControl
 						__next40pxDefaultSize
+						className="godam-input"
 						onChange={ handleSkipTimeSettings }
 						options={ [
 							{
@@ -467,10 +438,10 @@ const Appearance = () => {
 						} }
 					/>
 				</div>
-				<div className="form-group">
+				<div className="godam-form-group">
 					<label
 						htmlFor="appearance-color"
-						className="easydam-label"
+						className="label-text"
 					>
 						{ __( 'Player Theme', 'godam' ) }
 					</label>
@@ -514,14 +485,15 @@ const Appearance = () => {
 					/>
 				</div>
 
-				<div className="form-group">
+				<div className="godam-form-group">
 					<label
 						htmlFor="custom-hover-color"
-						className="easydam-label"
+						className="label-text"
 					>
 						{ __( 'Select Ad server', 'godam' ) }
 					</label>
 					<ToggleControl
+						className="godam-toggle"
 						label={ __( 'Use ad server\'s ads', 'godam' ) }
 						help={ __( 'Enable this option to use ads from the ad server. This option will disable the ads layer', 'godam' ) }
 						checked={ videoConfig.adServer === 'ad-server' }
@@ -536,6 +508,7 @@ const Appearance = () => {
 					{
 						videoConfig.adServer === 'ad-server' && (
 							<TextareaControl
+								className="godam-input"
 								label={ __( 'adTag URL', 'godam' ) }
 								help={ <>
 									<div>

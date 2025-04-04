@@ -1,4 +1,4 @@
- #root-video-editor {
+#root-video-editor {
 	background-color: #f3f4f6;
 
 	.godam-video-list {
@@ -100,6 +100,7 @@
 				img {
 					display: block;
 					width: 100%;
+					height: 100%;
 					object-fit: cover;
 				}
 
@@ -178,6 +179,9 @@
 
 				h3, p {
 					margin: 0;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
 				}
 
 				p {

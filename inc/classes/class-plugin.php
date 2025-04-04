@@ -24,6 +24,7 @@ use RTGODAM\Inc\REST_API\Media_Library;
 use RTGODAM\Inc\REST_API\Ads;
 use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Analytics;
+use RTGODAM\Inc\REST_API\Polls;
 
 /**
  * Class Plugin.
@@ -82,5 +83,6 @@ class Plugin {
 		Transcoding::get_instance();
 		Analytics::get_instance();
 		Deactivation::get_instance();
+		Polls::get_instance();
 	}
 }

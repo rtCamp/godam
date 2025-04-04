@@ -196,6 +196,18 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 						</div>
 					</div>
 					<?php
+					// Poll layer.
+				elseif ( isset( $layer['type'] ) && 'poll' === $layer['type'] ) :
+					?>
+					<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+						<div class="form-container">
+							<?php
+							$poll_id = ! empty( $layer['poll_id'] ) ? intval( $layer['poll_id'] ) : 0;
+							echo do_shortcode( "[poll id='$poll_id']" );
+							?>
+						</div>
+					</div>
+					<?php
 					// CTA layer.
 				elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) :
 					?>
