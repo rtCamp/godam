@@ -21,6 +21,34 @@ class Settings extends Base {
 	 */
 	protected $rest_base = 'settings';
 
+		/**
+		 * Default settings structure.
+		 *
+		 * @return array
+		 */
+	private function get_default_settings() {
+		return array(
+			'video'   => array(
+				'sync_from_godam'      => false,
+				'adaptive_bitrate'     => false,
+				'optimize_videos'      => false,
+				'video_format'         => 'auto',
+				'video_quality'        => array( 'auto', '240', '360', '480', '720', '1080', '1440', '2160' ),
+				'video_thumbnails'     => 5,
+				'overwrite_thumbnails' => false,
+				'watermark'            => false,
+				'watermark_text'       => '',
+				'watermark_url'        => '',
+				'use_watermark_image'  => false,
+			),
+			'general' => array(
+				'enable_folder_organization' => true,
+				'brand_image'                => '',
+				'brand_color'                => '#000000',
+			),
+		);
+	}
+
 	/**
 	 * Register custom REST API routes for Settings Pages.
 	 *
@@ -71,7 +99,7 @@ class Settings extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/easydam-settings',
+				'route'     => '/' . $this->rest_base . '/godam-settings',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_easydam_settings' ),
@@ -82,7 +110,7 @@ class Settings extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/easydam-settings',
+				'route'     => '/' . $this->rest_base . '/godam-settings',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'update_easydam_settings' ),
@@ -93,24 +121,12 @@ class Settings extends Base {
 						'settings' => array(
 							'required'          => true,
 							'type'              => 'object',
-							'description'       => 'The easydam settings to save.',
+							'description'       => 'The godam settings to save.',
 							'sanitize_callback' => array( $this, 'sanitize_settings' ),
 						),
 					),
 				),
 			),
-			array(
-				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/subscription-plans',
-				'args'      => array(
-					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'fetch_subscription_plans' ),
-					'permission_callback' => function () {
-						return true; // Allow public access.
-					},
-				),
-			),
-
 		);
 	}
 
@@ -209,37 +225,8 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_easydam_settings() {
-		$default_settings = array(
-			'video'   => array(
-				'sync_from_easydam'    => false,
-				'adaptive_bitrate'     => false,
-				'optimize_videos'      => false,
-				'video_format'         => 'auto',
-				'video_quality'        => array( 'auto', '240', '360', '480', '720', '1080', '1440', '2160' ),
-				'video_thumbnails'     => 5,
-				'overwrite_thumbnails' => false,
-				'watermark'            => false,
-				'watermark_text'       => '',
-				'watermark_url'        => '',
-				'use_watermark_image'  => false,
-			),
-			'image'   => array(
-				'sync_from_easydam' => false,
-				'optimize_images'   => false,
-				'image_format'      => 'auto',
-				'image_quality'     => '20',
-			),
-			'general' => array(
-				'track_status'                => false,
-				'is_verified'                 => false,
-				'disable_folder_organization' => false,
-				'selected_brand_image'        => '',
-				'brand_color'                 => '#000000',
-			),
-		);
-
 		// Retrieve settings from the database.
-		$easydam_settings = get_option( 'rtgodam-settings', $default_settings );
+		$easydam_settings = get_option( 'rtgodam-settings', $this->get_default_settings() );
 
 		return new \WP_REST_Response( $easydam_settings, 200 );
 	}
@@ -251,11 +238,22 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function update_easydam_settings( $request ) {
-		$settings = $request->get_param( 'settings' );
+		$new_settings = $request->get_param( 'settings' );
 
-		// Save settings to the database.
-		update_option( 'rtgodam-settings', $settings );
+		// Retrieve existing settings.
+		$existing_settings = get_option( 'rtgodam-settings', array() );
 
+		// Ensure it's an array (in case get_option returns false).
+		if ( ! is_array( $existing_settings ) ) {
+			$existing_settings = array();
+		}
+	
+		// Merge the new settings with the existing ones.
+		$updated_settings = array_replace_recursive( $existing_settings, $new_settings );
+	
+		// Save updated settings to the database.
+		update_option( 'rtgodam-settings', $updated_settings );
+	
 		return new \WP_REST_Response(
 			array(
 				'status'  => 'success',
@@ -272,89 +270,27 @@ class Settings extends Base {
 	 * @return array
 	 */
 	public function sanitize_settings( $settings ) {
-		$sanitized_settings = array(
+		$default = $this->get_default_settings();
+
+		return array(
 			'video'   => array(
-				'sync_from_easydam'    => rest_sanitize_boolean( $settings['video']['sync_from_easydam'] ),
-				'adaptive_bitrate'     => rest_sanitize_boolean( $settings['video']['adaptive_bitrate'] ),
-				'optimize_videos'      => rest_sanitize_boolean( $settings['video']['optimize_videos'] ),
-				'video_format'         => sanitize_text_field( $settings['video']['video_format'] ),
-				'video_quality'        => array_map( 'sanitize_text_field', $settings['video']['video_quality'] ),
-				'video_thumbnails'     => filter_var(
-					$settings['video']['video_thumbnails'],
-					FILTER_VALIDATE_INT,
-					array(
-						'options' => array(
-							'default'   => 5,
-							'min_range' => 1,
-							'max_range' => 10,
-						),
-					)
-				),
-				'overwrite_thumbnails' => rest_sanitize_boolean( $settings['video']['overwrite_thumbnails'] ),
-				'watermark'            => rest_sanitize_boolean( $settings['video']['watermark'] ),
-				'watermark_text'       => sanitize_text_field( $settings['video']['watermark_text'] ),
-				'watermark_url'        => esc_url_raw( $settings['video']['watermark_url'] ),
-				'use_watermark_image'  => rest_sanitize_boolean( $settings['video']['use_watermark_image'] ),
-			),
-			'image'   => array(
-				'sync_from_easydam' => rest_sanitize_boolean( $settings['image']['sync_from_easydam'] ),
-				'optimize_images'   => rest_sanitize_boolean( $settings['image']['optimize_images'] ),
-				'image_format'      => sanitize_text_field( $settings['image']['image_format'] ),
-				'image_quality'     => sanitize_text_field( $settings['image']['image_quality'] ),
+				'sync_from_godam'      => rest_sanitize_boolean( $settings['video']['sync_from_godam'] ?? $default['video']['sync_from_godam'] ),
+				'adaptive_bitrate'     => rest_sanitize_boolean( $settings['video']['adaptive_bitrate'] ?? $default['video']['adaptive_bitrate'] ),
+				'optimize_videos'      => rest_sanitize_boolean( $settings['video']['optimize_videos'] ?? $default['video']['optimize_videos'] ),
+				'video_format'         => sanitize_text_field( $settings['video']['video_format'] ?? $default['video']['video_format'] ),
+				'video_quality'        => array_map( 'sanitize_text_field', $settings['video']['video_quality'] ?? $default['video']['video_quality'] ),
+				'video_thumbnails'     => intval( $settings['video']['video_thumbnails'] ?? $default['video']['video_thumbnails'] ),
+				'overwrite_thumbnails' => rest_sanitize_boolean( $settings['video']['overwrite_thumbnails'] ?? $default['video']['overwrite_thumbnails'] ),
+				'watermark'            => rest_sanitize_boolean( $settings['video']['watermark'] ?? $default['video']['watermark'] ),
+				'watermark_text'       => sanitize_text_field( $settings['video']['watermark_text'] ?? $default['video']['watermark_text'] ),
+				'watermark_url'        => esc_url_raw( $settings['video']['watermark_url'] ?? $default['video']['watermark_url'] ),
+				'use_watermark_image'  => rest_sanitize_boolean( $settings['video']['use_watermark_image'] ?? $default['video']['use_watermark_image'] ),
 			),
 			'general' => array(
-				'track_status'                => rest_sanitize_boolean( $settings['general']['track_status'] ),
-				'is_verified'                 => rest_sanitize_boolean( $settings['general']['is_verified'] ),
-				'disable_folder_organization' => rest_sanitize_boolean( $settings['general']['disable_folder_organization'] ),
-				'selected_brand_image'        => sanitize_text_field( $settings['general']['selected_brand_image'] ),
-				'brand_color'                 => sanitize_hex_color( $settings['general']['brand_color'] ),
+				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
+				'brand_image'                => sanitize_text_field( $settings['general']['brand_image'] ?? $default['general']['brand_image'] ),
+				'brand_color'                => sanitize_hex_color( $settings['general']['brand_color'] ?? $default['general']['brand_color'] ),
 			),
-		);
-
-		return $sanitized_settings;
-	}
-
-	/**
-	 * Fetch subscription plans from the external API.
-	 *
-	 * @return \WP_REST_Response
-	 */
-	public function fetch_subscription_plans() {
-		$api_url = RTGODAM_API_BASE . '/api/resource/Subscription Plan?fields=["name", "cost", "bandwidth", "storage", "billing_interval"]';
-
-		// Fetch data from the external API.
-		$response = wp_remote_get( $api_url );
-
-		if ( is_wp_error( $response ) ) {
-			return new \WP_REST_Response(
-				array(
-					'status'  => 'error',
-					'message' => 'Failed to fetch subscription plans.',
-				),
-				500
-			);
-		}
-
-		$body = wp_remote_retrieve_body( $response );
-		$data = json_decode( $body, true );
-
-		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			return new \WP_REST_Response(
-				array(
-					'status'  => 'error',
-					'message' => 'Invalid JSON response from the external API.',
-				),
-				500
-			);
-		}
-
-		// Return the subscription plans.
-		return new \WP_REST_Response(
-			array(
-				'status' => 'success',
-				'data'   => $data['data'],
-			),
-			200
 		);
 	}
 }
