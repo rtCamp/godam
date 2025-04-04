@@ -350,6 +350,23 @@
 	}
 }
 
+.ab-testing-table {
+	border:1px solid blue;
+
+	th, td {
+		border:1px solid blue;
+	}
+	
+	td {
+		text-align: center;
+    	padding: 15px;
+	}
+
+	.leftGreater > td {
+		background-color: green;
+	}
+}
+
 @media (max-width: 1024px) {
 		#root-video-analytics {
 			.video-analytics-container {
