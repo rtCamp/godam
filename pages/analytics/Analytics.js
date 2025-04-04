@@ -326,7 +326,7 @@ const Analytics = ( { attachmentID } ) => {
 								/>
 								<div>
 									<h4>{ attachmentData?.title?.rendered }</h4>
-									<p>0 unique videos</p>
+									<p className="text-center">0 unique videos</p>
 								</div>
 							</div>
 							<div className="flex-1 border-2 border-solid">
@@ -366,7 +366,7 @@ const Analytics = ( { attachmentID } ) => {
 										/>
 										<div>
 											<h4>{ abTestComparisonAttachmentData?.title?.rendered }</h4>
-											<p>0 unique views</p>
+											<p className="text-center">0 unique views</p>
 										</div>
 									</div>
 								) }
