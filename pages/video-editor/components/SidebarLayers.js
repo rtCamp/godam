@@ -67,13 +67,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidLicense = window?.videoData?.valid_license;
+	// const isValidAPiKey = window?.videoData?.valid_license;
 
 	// For now we are enabling all the features
-	const isValidLicense = true;
+	const isValidAPiKey = true;
 
 	const addNewLayer = ( type ) => {
-		if ( premiumLayers.includes( type ) && ! isValidLicense ) {
+		if ( premiumLayers.includes( type ) && ! isValidAPiKey ) {
 			return;
 		}
 
@@ -166,7 +166,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 								let addWarning = false;
 								let toolTipMessage = '';
 
-								if ( premiumLayers.includes( layer.type ) && ! isValidLicense ) {
+								if ( premiumLayers.includes( layer.type ) && ! isValidAPiKey ) {
 									toolTipMessage = __( 'This feature is available in the premium version', 'godam' );
 									addWarning = true;
 								} else if ( isAdServerAd ) {

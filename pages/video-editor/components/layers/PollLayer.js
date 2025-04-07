@@ -39,8 +39,6 @@ const PollLayer = ( { layerID, goBack } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'poll_id', value } ) );
 	};
 
-	const isValidLicense = true;
-
 	return (
 		<>
 			<div className="flex justify-between items-center border-b mb-3">
@@ -82,7 +80,6 @@ const PollLayer = ( { layerID, goBack } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
 				}
 				help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
-				disabled={ ! isValidLicense }
 			/>
 
 			<Panel
@@ -105,12 +102,11 @@ const PollLayer = ( { layerID, goBack } ) => {
 						label={ __( 'Layer background color', 'godam' ) }
 						enableAlpha={ true }
 						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
-						disabled={ ! isValidLicense }
 					/>
 
 					<label htmlFor="custom-css" className="text-base font-medium block mb-2">{ __( 'Custom CSS', 'godam' ) }</label>
 
-					<div className={ ! isValidLicense ? 'pointer-events-none opacity-50' : '' }>
+					<div>
 						<Editor
 							id="custom-css"
 							className="code-editor"
