@@ -54,7 +54,9 @@ class Media_Library_Ajax {
 			return;
 		}
 
-		check_admin_referer( 'media-form' );
+		if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( $_REQUEST['_wpnonce'] ), 'media-form' ) ) {
+			return;
+		}
 
 		// Get the media folder.
 		$media_folder = intval( $_REQUEST['media-folder'] ); // Ensure it's an integer.
