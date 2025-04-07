@@ -50,11 +50,11 @@ class Media_Library_Ajax {
 	 */
 	public function add_media_library_taxonomy_on_media_upload( $attachment_id ) {
 
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Hooking into default WP hooks.
-
 		if ( ! isset( $_REQUEST['media-folder'] ) || empty( $_REQUEST['media-folder'] ) || $_REQUEST['media-folder'] <= 0 ) {
 			return;
 		}
+
+		check_admin_referer( 'media-form' );
 
 		// Get the media folder.
 		$media_folder = intval( $_REQUEST['media-folder'] ); // Ensure it's an integer.
@@ -68,8 +68,6 @@ class Media_Library_Ajax {
 
 		// Assign the existing term.
 		wp_set_object_terms( $attachment_id, (int) $media_folder, 'media-folder' );
-
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
