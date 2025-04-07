@@ -9,7 +9,7 @@ import Editor from '@monaco-editor/react';
 /**
  * WordPress dependencies
  */
-import { Button, SelectControl, ToggleControl, ComboboxControl, TextareaControl, Modal, Panel, PanelBody, Notice, TextControl } from '@wordpress/components';
+import { Button, SelectControl, ToggleControl, ComboboxControl, Modal, Panel, PanelBody, Notice } from '@wordpress/components';
 import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
@@ -19,7 +19,7 @@ import { useState, useEffect } from '@wordpress/element';
  */
 import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
 import LayerControl from '../LayerControls';
-import ColorPickerButton from '../ColorPickerButton';
+import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 
 const templateOptions = [
 	{
@@ -71,7 +71,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 		} ).then( ( response ) => {
 			setFormHTML( response.data );
 		} ).catch( ( error ) => {
-			console.error( error );
+			throw error;
 		} );
 	};
 
@@ -228,51 +228,6 @@ function GravityFormSelector( { className, disabled, formID, forms, handleChange
 								.startsWith( inputValue.toLowerCase() ),
 						),
 					);
-				} }
-			/>
-		</>
-	);
-}
-
-function CustomCssInjector( { value, handleChange } ) {
-	const [ customCss, setCustomCss ] = useState( value );
-
-	useEffect( () => {
-		// Create a <style> element
-		const styleElement = document.createElement( 'style' );
-		styleElement.type = 'text/css';
-		styleElement.id = 'custom-css';
-
-		// Append the <style> element to the <head>
-		document.head.appendChild( styleElement );
-
-		// Cleanup: Remove <style> on component unmount
-		return () => {
-			const existingStyle = document.getElementById( 'custom-css' );
-			if ( existingStyle ) {
-				document.head.removeChild( existingStyle );
-			}
-		};
-	}, [] );
-
-	useEffect( () => {
-		// Inject CSS whenever it changes
-		const styleElement = document.getElementById( 'custom-css' );
-		if ( styleElement ) {
-			styleElement.innerHTML = customCss;
-		}
-	}, [ customCss ] );
-
-	return (
-		<>
-			<TextareaControl
-				className="mb-4"
-				label={ __( 'Custom CSS', 'godam' ) }
-				placeholder={ __( '.classname { border: 1px solid blue; }', 'godam' ) }
-				value={ customCss }
-				onChange={ ( val ) => {
-					setCustomCss( val );
-					handleChange( val );
 				} }
 			/>
 		</>

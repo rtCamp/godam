@@ -18,7 +18,7 @@ import { useState } from '@wordpress/element';
  */
 import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
 import LayerControl from '../LayerControls';
-import ColorPickerButton from '../ColorPickerButton';
+import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 
 import { useGetPollsQuery, useGetPollQuery } from '../../redux/api/polls';
 

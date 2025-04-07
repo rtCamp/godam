@@ -20,7 +20,7 @@ import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice';
 import GoDAM from '../../../../assets/src/images/GoDAM.png';
-import ColorPickerButton from '../ColorPickerButton';
+import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 
 const Appearance = () => {
 	const dispatch = useDispatch();

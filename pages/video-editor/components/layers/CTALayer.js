@@ -10,8 +10,6 @@ import {
 	Button,
 	Modal,
 	SelectControl,
-	ToggleControl,
-	ColorPalette,
 	Panel,
 	PanelBody,
 } from '@wordpress/components';
@@ -27,7 +25,7 @@ import TextCTA from '../cta/TextCTA';
 import ImageCTA from '../cta/ImageCTA';
 import HtmlCTA from '../cta/HtmlCTA';
 import LayerControls from '../LayerControls';
-import ColorPickerButton from '../ColorPickerButton';
+import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 
 const CTALayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
