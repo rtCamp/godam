@@ -331,11 +331,11 @@ add_filter( 'manage_upload_sortable_columns', 'rtgodam_status_column_register_so
  */
 function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FULL_SPECIAL_CHARS ) {
 	$server_val = '';
+
 	if ( function_exists( 'filter_input' ) && filter_has_var( INPUT_SERVER, $server_key ) ) {
 		$server_val = rtgodam_filter_input( INPUT_SERVER, $server_key, $filter_type );
-	} elseif ( isset( $_SERVER[ $server_key ] ) ) {
-		$server_val = wp_unslash( $_SERVER[ $server_key ] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	}
+
 	return $server_val;
 }
 
