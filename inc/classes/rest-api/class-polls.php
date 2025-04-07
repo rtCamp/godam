@@ -38,14 +38,14 @@ class Polls extends Base {
 						'permission_callback' => '__return_true',
 						'args'                => 
 							array(
-								'id'    => array(
+								'id' => array(
 									'description'       => 'The ID of the Poll.',
 									'type'              => 'integer',
 									'required'          => true,
 									'sanitize_callback' => 'absint',
-								)
+								),
 							),
-						),
+					),
 				),
 			),
 		);
@@ -58,20 +58,32 @@ class Polls extends Base {
 	 */
 	public function get_polls() {
 		global $wpdb;
-
+	
 		if ( ! $this->is_poll_plugin_active() ) {
 			return new \WP_Error( 'poll_plugin_not_active', 'Poll plugin is not active.', array( 'status' => 404 ) );
 		}
-
-		$polls = $wpdb->get_results( "SELECT * FROM $wpdb->pollsq ORDER BY pollq_timestamp DESC" );
-
+	
+		$cache_key   = 'polls_lists';
+		$cache_group = 'godam_polls';
+	
+		// Try to get polls from cache.
+		$polls = wp_cache_get( $cache_key, $cache_group );
+	
+		if ( false === $polls ) {
+			// Not cached — run the query.
+			$polls = $wpdb->get_results( "SELECT * FROM $wpdb->pollsq ORDER BY pollq_timestamp DESC" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- direct query is needed because custom table.
+	
+			// Cache the results for 10 minutes.
+			wp_cache_set( $cache_key, $polls, $cache_group, 10 * MINUTE_IN_SECONDS );
+		}
+	
 		return rest_ensure_response( $polls );
 	}
 
 	/**
 	 * Get a single Poll.
 	 *
-	 * @param \WP_REST_Request $request
+	 * @param \WP_REST_Request $request The request object.
 	 * @return \WP_REST_Response
 	 */
 	public function get_poll( $request ) {
