@@ -72,9 +72,9 @@ const Analytics = ( { attachmentID } ) => {
 					setAttachmentData( data );
 				} );
 		}
-	}, [attachmentID]);
+	}, [ attachmentID ] );
 
-	console.log(analyticsData)
+	console.log( analyticsData );
 
 	// useEffect( () => {
 	async function startABTesting() {
@@ -93,15 +93,19 @@ const Analytics = ( { attachmentID } ) => {
 	// }, [ attachmentID, abTestComparisonUrl, abTestComparisonAttachmentData ] );
 
 	const openVideoUploader = () => {
+		// Force media library tab only
+		const originalPostId = wp.media.model.settings.post.id;
+		wp.media.model.settings.post.id = 0; // Prevent upload tab
+
 		const fileFrame = wp.media( {
 			title: 'Select Video to Perform A/B testing',
 			button: {
 				text: 'Use this Video',
 			},
 			library: {
-				type: 'video', // Restrict to images only
+				type: 'video',
 			},
-			multiple: false, // Disable multiple selection
+			multiple: false,
 		} );
 
 		fileFrame.on( 'select', function() {
@@ -115,6 +119,9 @@ const Analytics = ( { attachmentID } ) => {
 				const data = response.data;
 				setAbTestComparisonAttachmentData( data );
 			} );
+
+			// Restore post ID
+			wp.media.model.settings.post.id = originalPostId;
 		} );
 
 		fileFrame.open();
@@ -290,6 +297,13 @@ const Analytics = ( { attachmentID } ) => {
 						</div>
 					</div>
 
+					<div className="posts-count-container">
+						<h2>Video Views by Post Source</h2>
+						<div id="post-views-count-chart" className="text-center"></div>
+						<div className="legend" id="legend"></div>
+						<div className="total-views" id="total-views"></div>
+					</div>
+
 					<div className="px-10 py-28">
 						<div className="flex justify-between">
 							<h3>A/B Testing</h3>
@@ -317,7 +331,7 @@ const Analytics = ( { attachmentID } ) => {
 								/>
 								<div>
 									<h4>{ attachmentData?.title?.rendered }</h4>
-									<p className="text-center">0 unique videos</p>
+									<p className="text-center">0 unique vis</p>
 								</div>
 							</div>
 							<div className="flex-1 border-2 border-solid">
@@ -329,7 +343,7 @@ const Analytics = ( { attachmentID } ) => {
 											className="ml-2"
 											aria-label="Upload or Replace CTA Image"
 										>
-											Upload
+											Select Video
 										</Button>
 										{ /* { abTestComparisonAttachmentData && (
 											<p>

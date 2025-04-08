@@ -1250,6 +1250,131 @@ function generateCountryHeatmap( countryData, mapSelector, tableSelector ) {
 		} );
 }
 
+function generatePostViewsChart( postsData, selector, videoSelector ) {
+	// Set dimensions
+	const width = 500;
+	const height = 400;
+	const margin = 40;
+	const radius = ( Math.min( width, height ) / 2 ) - margin;
+	const innerRadius = radius * 0.6;
+
+	// Calculate total views
+	const totalViews = postsData.reduce( ( sum, entry ) => sum + entry.views, 0 );
+
+	// Format numbers with commas
+	const formatNumber = ( num ) => {
+		return num.toString().replace( /\B(?=(\d{3})+(?!\d))/g, ',' );
+	};
+
+	// Color scale
+	const color = d3
+		.scaleOrdinal()
+		.domain( postsData.map( ( d ) => d.post ) )
+		.range( d3.schemeSet2 );
+
+	// Create SVG
+	const svg = d3
+		.select( selector )
+		.append( 'svg' )
+		.attr( 'width', width )
+		.attr( 'height', height )
+		.append( 'g' )
+		.attr( 'transform', `translate(${ width / 2 }, ${ height / 2 })` );
+
+	// Create tooltip
+	const tooltip = d3
+		.select( 'body' )
+		.append( 'div' )
+		.attr( 'class', 'tooltip' )
+		.style( 'opacity', 0 );
+
+	// Pie generator
+	const pie = d3
+		.pie()
+		.value( ( d ) => d.views )
+		.sort( null );
+
+	// Arc generator
+	const arc = d3.arc().innerRadius( innerRadius ).outerRadius( radius );
+
+	// Larger arc for hover effect
+	const arcHover = d3
+		.arc()
+		.innerRadius( innerRadius )
+		.outerRadius( radius * 1.05 );
+
+	// Create donut chart
+	const slices = svg
+		.selectAll( 'path' )
+		.data( pie( postsData ) )
+		.join( 'path' )
+		.attr( 'd', arc )
+		.attr( 'fill', ( d ) => color( d.data.post ) )
+		.attr( 'stroke', 'white' )
+		.style( 'stroke-width', '2px' )
+		.style( 'opacity', 0.8 )
+		.on( 'mouseover', function( event, d ) {
+			d3.select( this )
+				.transition()
+				.duration( 200 )
+				.attr( 'd', arcHover )
+				.style( 'opacity', 1 );
+
+			const percent = ( ( d.data.views / totalViews ) * 100 ).toFixed( 1 );
+
+			tooltip.transition().duration( 200 ).style( 'opacity', 0.9 );
+			tooltip
+				.html(
+					`<strong>${ d.data.post }</strong><br>
+                        Views: ${ formatNumber( d.data.views ) }<br>
+                        Percentage: ${ percent }%`,
+				)
+				.style( 'left', event.pageX + 10 + 'px' )
+				.style( 'top', event.pageY - 28 + 'px' );
+		} )
+		.on( 'mouseout', function() {
+			d3.select( this )
+				.transition()
+				.duration( 200 )
+				.attr( 'd', arc )
+				.style( 'opacity', 0.8 );
+
+			tooltip.transition().duration( 500 ).style( 'opacity', 0 );
+		} );
+
+	// Add center text
+	svg
+		.append( 'text' )
+		.attr( 'class', 'center-text' )
+		.attr( 'dy', -10 )
+		.text( 'Total Views' );
+
+	svg
+		.append( 'text' )
+		.attr( 'class', 'center-text' )
+		.attr( 'dy', 20 )
+		.text( formatNumber( totalViews ) );
+
+	// Create legend
+	const legend = d3.select( '#legend' );
+
+	postsData.forEach( ( d ) => {
+		const legendItem = legend.append( 'div' ).attr( 'class', 'legend-item' );
+
+		legendItem
+			.append( 'div' )
+			.attr( 'class', 'legend-color' )
+			.style( 'background-color', color( d.post ) );
+
+		legendItem.append( 'div' ).text( `${ d.post }: ${ formatNumber( d.views ) }` );
+	} );
+
+	// Add total views text
+	d3.select( '#total-views' ).html(
+		`Total Video Views: <strong>${ formatNumber( totalViews ) }</strong>`,
+	);
+}
+
 async function main() {
 	const videoElement = document.getElementById( 'analytics-video' );
 	const videoId = videoElement?.dataset.id;
@@ -1353,10 +1478,20 @@ async function main() {
 		// Complete 60-day dataset
 	];
 
+	const postsData = [
+		{ post: 'http://godam.local/51-2/', views: 15423 },
+		{ post: 'http://godam.local/49-2/', views: 42891 },
+		{ post: 'http://godam.local/41/', views: 28736 },
+		{ post: 'http://godam.local/37-2/', views: 9842 },
+		{ post: 'http://godam.local/28-2/', views: 19384 },
+		{ post: 'http://godam.local/51-2/', views: 35217 },
+	];
+
 	// Generate visualizations
 	generateLineChart( heatmapData, '#line-chart', videoPlayer );
 	generateHeatmap( heatmapData, '#heatmap', videoPlayer );
 	generateMetricsOverTime( timeMeticsChartData, '#metrics-chart', videoPlayer );
+	generatePostViewsChart( postsData, '#post-views-count-chart', videoPlayer );
 
 	if ( countryViews ) {
 		// generateCountryHeatmap( countryViews, '#country-heatmap' );

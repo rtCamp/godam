@@ -367,6 +367,71 @@
 	}
 }
 
+#menu-item-upload {
+	display: none;
+}
+
+.posts-count-container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-top: 20px;
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    .tooltip {
+      position: absolute;
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      pointer-events: none;
+      font-size: 14px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin: 5px 10px;
+    }
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      margin-right: 5px;
+      border-radius: 2px;
+    }
+    .total-views {
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
+      color: #555;
+    }
+    .donut-label {
+      font-size: 14px;
+      text-anchor: middle;
+      fill: #333;
+    }
+    .donut-percent {
+      font-size: 12px;
+      text-anchor: middle;
+      fill: #666;
+    }
+    .center-text {
+      font-size: 16px;
+      text-anchor: middle;
+      fill: #333;
+      font-weight: bold;
+    }
+}
+
 @media (max-width: 1024px) {
 		#root-video-analytics {
 			.video-analytics-container {
