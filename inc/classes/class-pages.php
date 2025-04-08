@@ -463,7 +463,7 @@ class Pages {
 			);
 
 			wp_enqueue_script( 'godam-page-script-help' );
-		} else if($screen && $this->dashboard_page_id === $screen->id) {
+		} elseif ( $screen && $this->dashboard_page_id === $screen->id ) {
 
 			wp_register_script(
 				'd3-js',
