@@ -11,7 +11,7 @@ import '../video-editor/style.scss';
 import axios from 'axios';
 import GodamHeader from '../godam/GodamHeader';
 import Tooltip from './Tooltip';
-import { fetchAnalyticsData } from './helper';
+import { fetchAnalyticsData, calculateEngagementRate, calculatePlayRate } from './helper';
 
 /**
  * WordPress dependencies
@@ -72,7 +72,9 @@ const Analytics = ( { attachmentID } ) => {
 					setAttachmentData( data );
 				} );
 		}
-	}, [ attachmentID ] );
+	}, [attachmentID]);
+
+	console.log(analyticsData)
 
 	// useEffect( () => {
 	async function startABTesting() {
@@ -117,17 +119,6 @@ const Analytics = ( { attachmentID } ) => {
 
 		fileFrame.open();
 	};
-
-	function calculateEngagementRate( plays, videoLength, playTime ) {
-		const engagementRate =
-    plays && videoLength ? ( playTime / ( plays * videoLength ) ) * 100 : 0;
-		return `${ engagementRate.toFixed( 2 ) }%`;
-	}
-
-	function calculatePlayRate( pageLoad, plays ) {
-		const playRate = pageLoad ? ( plays / pageLoad ) * 100 : 0;
-		return `${ playRate.toFixed( 2 ) }%`;
-	}
 
 	const engagementRate = analyticsData ? calculateEngagementRate(
 		analyticsData?.plays,

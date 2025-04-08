@@ -46,6 +46,13 @@ class Pages {
 	private $help_slug = 'rtgodam_help';
 
 	/**
+	 * Slug for dashboard page
+	 *
+	 * @var string
+	 */
+	private $dashboard_slug = 'rtgodam_dashboard';
+
+	/**
 	 * Menu pag ID.
 	 *
 	 * @var string
@@ -72,6 +79,13 @@ class Pages {
 	 * @var string
 	 */
 	private $help_page_id = 'godam_page_rtgodam_help';
+
+	/**
+	 * Dashboard ID.
+	 *
+	 * @var string
+	 */
+	private $dashboard_page_id = 'godam_page_rtgodam_dashboard';
 
 	/**
 	 * Construct method.
@@ -120,12 +134,22 @@ class Pages {
 
 		add_submenu_page(
 			$this->menu_slug,
+			__( 'Dashboard', 'godam' ),
+			__( 'Dashboard', 'godam' ),
+			'edit_posts',
+			$this->dashboard_slug,
+			array( $this, 'render_dashboard_page' ),
+			1
+		);
+
+		add_submenu_page(
+			$this->menu_slug,
 			__( 'Video editor', 'godam' ),
 			__( 'Video editor', 'godam' ),
 			'edit_posts',
 			$this->video_editor_slug,
 			array( $this, 'render_video_editor_page' ),
-			1
+			3
 		);
 
 		add_submenu_page(
@@ -145,7 +169,7 @@ class Pages {
 			'edit_posts',
 			$this->help_slug,
 			array( $this, 'render_help_page' ),
-			4
+			5
 		);
 	}
 
@@ -170,7 +194,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id ) ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->dashboard_page_id ) ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
@@ -256,6 +280,17 @@ class Pages {
 	}
 
 	/**
+	 * To render the dashboard page.
+	 *
+	 * @return void
+	 */
+	public function render_dashboard_page() {
+		?>
+		<div id="root-video-dashboard"></div>
+		<?php
+	}
+
+	/**
 	 * To render the analytics page.
 	 *
 	 * @return void
@@ -274,7 +309,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->dashboard_page_id ), true ) ) {
 			wp_register_style(
 				'transcoder-page-style-godam',
 				RTGODAM_URL . '/pages/build/style.css',
@@ -428,6 +463,43 @@ class Pages {
 			);
 
 			wp_enqueue_script( 'godam-page-script-help' );
+		} else if($screen && $this->dashboard_page_id === $screen->id) {
+
+			wp_register_script(
+				'd3-js',
+				RTGODAM_URL . '/assets/src/libs/d3.js',
+				array(),
+				RTGODAM_VERSION,
+				false
+			);
+			
+			wp_register_script(
+				'godam-page-script-dashboard',
+				RTGODAM_URL . 'pages/build/dashboard.js',
+				array( 'wp-element' ),
+				filemtime( RTGODAM_PATH . 'pages/build/dashboard.js' ),
+				true
+			);
+
+			wp_register_script(
+				'godam-global-analytics-script',
+				RTGODAM_URL . 'assets/build/js/video-analytics.js',
+				array( 'godam-page-script-dashboard', 'd3-js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/video-analytics.js' ),
+				true
+			);
+
+			$rtgodam_user_data = rtgodam_get_user_data();
+
+			wp_localize_script(
+				'godam-page-script-dashboard',
+				'userData',
+				$rtgodam_user_data
+			);
+
+			wp_enqueue_script( 'godam-page-script-dashboard' );
+			wp_enqueue_script( 'd3-js' );
+			wp_enqueue_script( 'godam-global-analytics-script' );
 		}
 
 		wp_enqueue_style( 'wp-components' );
