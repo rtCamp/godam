@@ -42,7 +42,7 @@ const Dashboard = () => {
 				page_load: 5,
 				play_time: 5,
 				video_length: 14,
-				title: 'Video 1',
+				title: 'Video 2',
 				size: '50MB',
 				embedded_locations: [ 'www.google.com', 'https://rtcamp.com' ],
 			},
@@ -52,7 +52,7 @@ const Dashboard = () => {
 				page_load: 5,
 				play_time: 5,
 				video_length: 14,
-				title: 'Video 1',
+				title: 'Video 3',
 				size: '50MB',
 				embedded_locations: [ 'www.google.com', 'https://rtcamp.com' ],
 			},
@@ -62,7 +62,7 @@ const Dashboard = () => {
 				page_load: 5,
 				play_time: 5,
 				video_length: 14,
-				title: 'Video 1',
+				title: 'Video 4',
 				size: '50MB',
 				embedded_locations: [],
 			},
@@ -782,22 +782,6 @@ const Dashboard = () => {
 												width={ 190 }
 												alt="Video thumbnail"
 											/>
-											{ /* <video id="analytics-video" data-id={ video.id }>
-												<source
-													src={ video.source_url || '' }
-													type={ getMimiType( video.mime_type ) || 'video/mp4' }
-												/>
-												{ attachmentData?.meta?.rtgodam_transcoded_url && (
-													<source
-														src={ attachmentData?.meta?.rtgodam_transcoded_url || '' }
-														type={
-															attachmentData?.meta?.rtgodam_transcoded_url.endsWith( '.mpd' )
-																? 'application/dash+xml'
-																: ''
-														}
-													/>
-												) }
-											</video> */ }
 											<p>{ video.title?.rendered }</p>
 											<a href={ `admin.php?page=rtgodam_analytics&id=${ video.id }` } className="text-blue-500">View Analytics</a><br />
 											<a href={ `/wp-admin/upload.php?item=${ video.id }` } className="text-blue-500">View Video</a>
@@ -834,17 +818,17 @@ const Dashboard = () => {
 						<tr key={ index }>
 							<td className="flex gap-6">
 								<img
-									src={ thumbnails[ item.media_id ] || DefaultThumbnail }
+									src={ DefaultThumbnail }
 									height={ 100 }
 									width={ 190 }
 									alt="Video thumbnail"
 								/>
 								<p className="w-full max-w-40 text-left flex-1">
-									{ postTitles[ item.media_id ] }
+									{ item.title }
 								</p>
 							</td>
 							<td>
-								{ item.embedded_locations.length > 0 ? (
+								{ item.embedded_locations?.length > 0 ? (
 									item.embedded_locations?.map( ( location, key ) => (
 										<a key={ key } href={ location }>
 											{ location }
@@ -856,16 +840,14 @@ const Dashboard = () => {
 								) }
 							</td>
 							<td>{ item.size }</td>
-							<td>{ playRates[ item.media_id ] }</td>
+							<td>5%</td>
 							<td>5</td>
 							<td>{ item.plays }</td>
-							<td>{ engagementRates[ item.media_id ] }</td>
+							<td>10%</td>
 							<td>
-								<a
-									href={ `admin.php?page=rtgodam_analytics&id=${ item.media_id }` }
-								>
+								<p>
 									View
-								</a>
+								</p>
 							</td>
 						</tr>
 					) ) }
