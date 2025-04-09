@@ -72,41 +72,6 @@ const Dashboard = () => {
 	}, [] );
 
 	useEffect( () => {
-		topMediaList.forEach( ( item ) => {
-			const mediaId = item.media_id;
-
-			if ( ! thumbnails[ mediaId ] ) {
-				fetch( `/wp-json/wp/v2/media/${ mediaId }` )
-					.then( ( res ) => res.json() )
-					.then( ( data ) => {
-						setThumbnails( ( prev ) => ( {
-							...prev,
-							[ mediaId ]: data.meta.rtgodam_media_video_thumbnail,
-						} ) );
-						setPostTitles( ( prev ) => ( {
-							...prev,
-							[ mediaId ]:
-                            data.title.rendered,
-						} ) );
-					} )
-					.catch( ( err ) => {
-						console.error( 'Error fetching video meta:', err );
-					} );
-			}
-
-			setEngagementRates( ( prev ) => ( {
-				...prev,
-				[ mediaId ]: calculateEngagementRate( item.plays, item.video_length, item.play_time ),
-			} ) );
-
-			setPlayRates( ( prev ) => ( {
-				...prev,
-				[ mediaId ]: calculatePlayRate( item.plays, item.video_length, item.play_time ),
-			} ) );
-		} );
-	}, [ topMediaList ] );
-
-	useEffect( () => {
 		const timeMeticsChartData = [
 			{
 				date: '2025-04-02',
