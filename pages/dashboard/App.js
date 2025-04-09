@@ -10,11 +10,11 @@ import GodamHeader from '../godam/GodamHeader';
 
 const App = () => {
 	return (
-    <>
-      <GodamHeader />
-      <Dashboard />
-    </>
-  );
+		<>
+			<GodamHeader />
+			<Dashboard />
+		</>
+	);
 };
 
 export default App;

@@ -17,7 +17,7 @@ import { fetchAnalyticsData, calculateEngagementRate, calculatePlayRate } from '
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, Icon, Spinner } from '@wordpress/components';
+import { Button, Spinner } from '@wordpress/components';
 
 const adminUrl =
   window.videoData?.adminUrl || '/wp-admin/admin.php?page=rtgodam';
@@ -74,15 +74,11 @@ const Analytics = ( { attachmentID } ) => {
 		}
 	}, [ attachmentID ] );
 
-	console.log( analyticsData );
-
-	// useEffect( () => {
 	async function startABTesting() {
 		setIsABResultsLoading( true );
 		const siteUrl = window.location.origin;
 		setAnalyticsData( await fetchAnalyticsData( attachmentID, siteUrl ) );
 		if ( abTestComparisonAttachmentData ) {
-			// console.log('executed', abTestComparisonAnalyticsData)
 			setAbTestComparisonAnalyticsData(
 				await fetchAnalyticsData( abTestComparisonAttachmentData?.id, siteUrl ),
 			);
@@ -90,13 +86,7 @@ const Analytics = ( { attachmentID } ) => {
 		setIsABResultsLoading( false );
 	}
 
-	// }, [ attachmentID, abTestComparisonUrl, abTestComparisonAttachmentData ] );
-
 	const openVideoUploader = () => {
-		// Force media library tab only
-		const originalPostId = wp.media.model.settings.post.id;
-		wp.media.model.settings.post.id = 0; // Prevent upload tab
-
 		const fileFrame = wp.media( {
 			title: 'Select Video to Perform A/B testing',
 			button: {
@@ -119,9 +109,6 @@ const Analytics = ( { attachmentID } ) => {
 				const data = response.data;
 				setAbTestComparisonAttachmentData( data );
 			} );
-
-			// Restore post ID
-			wp.media.model.settings.post.id = originalPostId;
 		} );
 
 		fileFrame.open();
@@ -155,8 +142,6 @@ const Analytics = ( { attachmentID } ) => {
 	const plays = analyticsData?.plays;
 
 	const comparisonPlays = abTestComparisonAnalyticsData?.plays;
-
-	console.log( comparisonEngagementRate, comparisonPlayRate, comparisonPlays );
 
 	return (
 		<div className="godam-analytics-container">
@@ -279,19 +264,12 @@ const Analytics = ( { attachmentID } ) => {
 					</div>
 					<div>
 						<div className="text-center">
-							{ /* <h3 className="text-md font-semibold text-gray-700 mb-8">
-								{ __( 'Geographical Heatmap', 'godam' ) }
-							</h3> */ }
 							<svg id="metrics-chart" width="900" height="500"></svg>
 						</div>
 						<div
 							className="country-heatmap-container text-center"
 							id="country-heatmap-container"
 						>
-							{ /* <h3 className="text-md font-semibold text-gray-700 mb-2">
-								{ __( 'Geographical Heatmap', 'godam' ) }
-							</h3> */ }
-							{ /* <svg id="country-heatmap"></svg> */ }
 							<div id="map-container"></div>
 							<div id="table-container" className="px-12"></div>
 						</div>
@@ -345,12 +323,6 @@ const Analytics = ( { attachmentID } ) => {
 										>
 											Select Video
 										</Button>
-										{ /* { abTestComparisonAttachmentData && (
-											<p>
-												No analytics present for this video! Choose another
-												video.
-											</p>
-										) } */ }
 									</div>
 								) }
 

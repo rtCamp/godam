@@ -73,14 +73,12 @@ const Dashboard = () => {
 
 	useEffect( () => {
 		topMediaList.forEach( ( item ) => {
-			const mediaId = item.media_id; // adjust key if needed
+			const mediaId = item.media_id;
 
 			if ( ! thumbnails[ mediaId ] ) {
 				fetch( `/wp-json/wp/v2/media/${ mediaId }` )
 					.then( ( res ) => res.json() )
 					.then( ( data ) => {
-						// Custom meta like `rtgodam_media_thumbnails` will appear under `meta` if it's exposed
-
 						setThumbnails( ( prev ) => ( {
 							...prev,
 							[ mediaId ]: data.meta.rtgodam_media_video_thumbnail,

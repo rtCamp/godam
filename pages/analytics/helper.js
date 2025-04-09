@@ -5,8 +5,6 @@ export async function fetchAnalyticsData( videoId, siteUrl ) {
 			site_url: siteUrl,
 		} );
 
-		const url = `${ window.godamRestRoute.url }godam/v1/analytics/fetch?${ params.toString() }`;
-
 		const sampleCountryData = {
 			USA: 120,
 			India: 95,
