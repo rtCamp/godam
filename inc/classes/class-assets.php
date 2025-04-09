@@ -212,6 +212,7 @@ class Assets {
 				'nonce'                    => wp_create_nonce( 'easydam_media_library' ),
 				'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
 				'enableFolderOrganization' => $enable_folder_organization,
+				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
 			)
 		);
 

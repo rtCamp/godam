@@ -22,11 +22,8 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 
 	return (
 		<div className="h-full overflow-auto godam-video-list-wrapper px-10 bg-white">
-
 			<div className="godam-video-list-header py-10">
-				<h1 className="godam-video-list__title">
-					{ __( 'Videos', 'godam' ) }
-				</h1>
+				<h1 className="godam-video-list__title">{ __( 'Videos', 'godam' ) }</h1>
 
 				<div className="godam-video-list__filters">
 					<div className="godam-video-list__filters__search">
@@ -45,7 +42,14 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 				</div>
 			</div>
 
-			<MediaGrid search={ searchTerm } page={ page } handleAttachmentClick={ handleAttachmentClick } setPage={ setPage } setAttachments={ setAttachments } attachments={ attachments } />
+			<MediaGrid
+				search={ searchTerm }
+				page={ page }
+				handleAttachmentClick={ handleAttachmentClick }
+				setPage={ setPage }
+				setAttachments={ setAttachments }
+				attachments={ attachments }
+			/>
 		</div>
 	);
 };
