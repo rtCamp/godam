@@ -9,6 +9,7 @@ import FormLayer from './FormLayer';
 import CTALayer from './CTALayer';
 import HotspotLayer from './HotspotLayer';
 import Ads from './AdsLayer';
+import PollLayer from './PollLayer';
 
 const Layer = ( { layer, goBack } ) => {
 	return (
@@ -24,6 +25,9 @@ const Layer = ( { layer, goBack } ) => {
 			}
 			{
 				layer.type === 'ad' && <Ads layerID={ layer.id } goBack={ goBack } />
+			}
+			{
+				layer.type === 'poll' && <PollLayer layerID={ layer.id } goBack={ goBack } />
 			}
 		</>
 	);
