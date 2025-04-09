@@ -73,6 +73,10 @@
 	align-items: center;
 	justify-content: center;
 	gap: 8px;
+
+	&.hidden {
+		display: none;
+	}
 }
 
 .easydam-video-container {

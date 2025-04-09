@@ -293,7 +293,7 @@ function GODAMPlayer( videoRef = null ) {
 
 			layerElement.classList.add( 'hidden' ); // Initially hidden
 
-			if ( layer.type === 'form' || layer.type === 'cta' ) {
+			if ( layer.type === 'form' || layer.type === 'cta' || layer.type === 'poll' ) {
 				if ( layer.custom_css ) {
 					const styleElement = document.createElement( 'style' );
 					styleElement.textContent = layer.custom_css;
@@ -324,23 +324,29 @@ function GODAMPlayer( videoRef = null ) {
 
 			// Allow closing or skipping layers
 			formLayers.forEach( ( layerObj, index ) => {
-				const skipButton = document.createElement( 'button' );
-				skipButton.textContent = 'Skip';
-				skipButton.classList.add( 'skip-button' );
+				let skipButton = layerObj.layerElement.querySelector( '.skip-button' );
+
+				// Check if skip button already exists.
+				if ( ! skipButton ) {
+					skipButton = document.createElement( 'button' );
+					skipButton.textContent = 'Skip';
+					skipButton.classList.add( 'skip-button' );
+
+					const arrowIcon = document.createElement( 'i' );
+					arrowIcon.className = 'fa-solid fa-chevron-right';
+					skipButton.appendChild( arrowIcon );
+				}
 
 				if ( ! layerObj.allowSkip ) {
 					skipButton.classList.add( 'hidden' );
 				}
 
-				const arrowIcon = document.createElement( 'i' );
-				arrowIcon.className = 'fa-solid fa-chevron-right';
-				skipButton.appendChild( arrowIcon );
-
 				// Observe changes in the layer's DOM for the confirmation message
 				const observer = new MutationObserver( ( mutations ) => {
 					mutations.forEach( ( mutation ) => {
 						if (
-							layerObj.layerElement.querySelector( '.gform_confirmation_message' )
+							layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ||
+							! layerObj.layerElement.querySelector( 'form.wp-polls-form' )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';

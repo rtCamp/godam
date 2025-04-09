@@ -1,0 +1,69 @@
+.godam-layer-selector {
+
+	border-radius: 0.75rem;
+
+	&__list {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		grid-gap: 1rem;
+	}
+
+	&__item {
+
+		padding: 1rem;
+		border: 1px solid rgba(225, 225, 225, 1);
+		border-radius: 0.5rem;
+
+		display: flex;
+		align-items: center;
+		gap: 1.5rem;
+
+		background: none;
+		cursor: pointer;
+
+		&:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+
+		&.selected {
+			border: 2px solid;
+			border-image-source: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+			border-image-slice: 1;
+		}
+
+		&__image {
+			flex: 1;
+			aspect-ratio: 1;
+			max-height: 7.5rem;
+			border-radius: 0.75rem;
+		}
+
+		&__content {
+			flex: 3;
+
+			h3 {
+				margin-top: 0;
+				margin-bottom: 0.75rem;
+
+				font-size: 1.25rem;
+			}
+
+			p {
+				font-size: 1rem;
+				line-height: 1.375rem;
+				margin: 0;
+
+				color: rgba(119, 119, 119, 1);
+			}
+		}
+	}
+
+	&__buttons {
+		margin-top: 2.5rem;
+		gap: 0.75rem;
+
+		display: flex;
+		justify-content: end;
+	}
+}

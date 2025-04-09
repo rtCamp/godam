@@ -66,7 +66,7 @@ const slice = createSlice( {
 			state.isChanged = false;
 			state.skipTime = skipTime;
 		},
-		saveVideoMeta: ( state, action ) => {
+		saveVideoMeta: ( state ) => {
 			state.isChanged = false;
 		},
 		addLayer: ( state, action ) => {
