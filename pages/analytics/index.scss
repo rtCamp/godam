@@ -36,6 +36,10 @@
 		@apply flex justify-between py-6 bg-slate-100 overflow-auto md:px-10 pt-8;
 	}
 
+	.country-heatmap-container {
+		@apply bg-slate-100 overflow-auto;
+	}
+
 	.analytics-info-container {
 		display: flex;
 		gap: 27px;
@@ -294,6 +298,32 @@
 	opacity: 1;
 }
 
+/* Tooltip styling */
+.tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    pointer-events: none; /* Prevents interfering with mouse events */
+    opacity: 0; /* Initially hidden */
+    transition: opacity 0.2s ease-in-out;
+}
+
+.bar-container {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 4px; /* Adjust thickness */
+            background-color: lightgray;
+        }
+        .bar {
+            height: 100%;
+            background-color: blue;
+        }
+
 .subheading-container {
 	display: flex;
 	align-items: center;
@@ -318,6 +348,88 @@
 		height: 2px;
 		background-color: #AB3A6C;
 	}
+}
+
+.ab-testing-table {
+	border:1px solid blue;
+
+	th, td {
+		border:1px solid blue;
+	}
+	
+	td {
+		text-align: center;
+    	padding: 15px;
+	}
+
+	.leftGreater > td {
+		background-color: green;
+	}
+}
+
+#menu-item-upload {
+	display: none;
+}
+
+.posts-count-container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-top: 20px;
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    .tooltip {
+      position: absolute;
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      pointer-events: none;
+      font-size: 14px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin: 5px 10px;
+    }
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      margin-right: 5px;
+      border-radius: 2px;
+    }
+    .total-views {
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
+      color: #555;
+    }
+    .donut-label {
+      font-size: 14px;
+      text-anchor: middle;
+      fill: #333;
+    }
+    .donut-percent {
+      font-size: 12px;
+      text-anchor: middle;
+      fill: #666;
+    }
+    .center-text {
+      font-size: 16px;
+      text-anchor: middle;
+      fill: #333;
+      font-weight: bold;
+    }
 }
 
 @media (max-width: 1024px) {

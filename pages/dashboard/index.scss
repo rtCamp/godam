@@ -1,0 +1,108 @@
+.analytics-info {
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 2rem;
+    
+    .analytics-single-info {
+        display: flex;
+        border-radius: 12px;
+        padding: 25px;
+        flex-direction: column;
+        background-color: #fff;
+        min-width: 300px;
+
+        .analytics-stats {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: auto;
+
+            img {
+                height: 10px;
+                width: 10px;
+            }
+        }
+    }
+
+    .analytics-info-heading {
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        gap: 5px;
+
+        p {
+            font-weight: 400;
+            font-size: 18px;
+        }
+}}
+
+.top-media-container {
+        table th, td {
+            border-bottom:1px solid blue;
+            text-align: center;
+            padding-bottom: 0.5rem;
+        }
+
+        table th {
+            font-size: 1rem;
+        }
+
+        table td {
+            padding: 1.5rem;
+        }
+
+        table a {
+            color: blue;
+        }
+}
+
+
+#tooltip-container {
+	position: relative;
+	display: inline-block;
+	cursor: pointer;
+}
+
+#tooltip-container .tooltip-text {
+	position: absolute;
+	top: 100%;
+    left: -95%;
+	visibility: hidden;
+	background-color: rgba(0, 0, 0, 0.8);
+	color: #fff;
+	text-align: center;
+	padding: 8px;
+	border-radius: 5px;
+	min-width: 110px;
+	width: max-content;
+	max-width: 200px;
+	z-index: 100;
+	pointer-events: none;
+	font-size: 12px;
+	line-height: 1.2;
+	opacity: 0;
+	transition: opacity 0.2s ease, visibility 0.2s ease;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+#tooltip-container:hover .tooltip-text {
+	visibility: visible;
+	opacity: 1;
+}
+
+/* Tooltip styling */
+.tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    pointer-events: none; /* Prevents interfering with mouse events */
+    opacity: 0; /* Initially hidden */
+    transition: opacity 0.2s ease-in-out;
+}
