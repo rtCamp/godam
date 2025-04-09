@@ -3,7 +3,6 @@
  */
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import axios from 'axios';
 
 /**
  * WordPress dependencies
@@ -17,28 +16,29 @@ import { __ } from '@wordpress/i18n';
 import VideoJSPlayer from './VideoJSPlayer';
 import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
-import { initializeStore, saveVideoMeta, setCurrentTab, setLoading, setGravityForms, setGravityFormsPluginActive } from './redux/slice/videoSlice';
+
+import { initializeStore, saveVideoMeta, setCurrentTab, setGravityForms, setGravityFormsPluginActive } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
+import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
+import { useGetFormsQuery } from './redux/api/gravity-forms';
 
 const VideoEditor = ( { attachmentID } ) => {
-	const videoData = window.videoData;
-
-	const [ video, setVideo ] = useState( null );
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
-	const [ isSaving, setIsSaving ] = useState( false );
-	const playerInstance = useRef( null );
 	const [ sources, setSources ] = useState( [] );
+
+	const playerRef = useRef( null );
 
 	const dispatch = useDispatch();
 
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
-	const loading = useSelector( ( state ) => state.videoReducer.loading );
 
-	const restURL = window.godamRestRoute.url || '';
+	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
+	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
+	const { data: gravityForms, isError: isGravityFormError } = useGetFormsQuery();
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -55,108 +55,94 @@ const VideoEditor = ( { attachmentID } ) => {
 	}, [ isChanged ] );
 
 	useEffect( () => {
-		// Make sure the post ID is passed in the URL
-		if ( ! attachmentID ) {
-			return;
-		}
-
 		// Collapse the admin sidebar
 		const body = document.querySelector( 'body' );
 		if ( body ) {
 			body.classList.add( 'folded' );
 		}
-
-		dispatch( setLoading( true ) );
-
-		// Get the post data
-		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] ), {
-			headers: {
-				'X-WP-Nonce': videoData.nonce,
-			},
-		} )
-			.then( ( response ) => response.json() )
-			.then( ( data ) => {
-				setVideo( data );
-				const rtGodamMeta = data.rtgodam_meta;
-				if ( rtGodamMeta ) {
-					dispatch( initializeStore( rtGodamMeta ) );
-				}
-				// Set video sources
-				const videoSources = [ { src: data.source_url, type: data.mimeType } ];
-				if ( data?.meta?.rtgodam_transcoded_url !== '' ) {
-					videoSources.push( { src: data.meta.rtgodam_transcoded_url, type: data?.meta?.rtgodam_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } );
-				}
-				setSources( videoSources );
-			} )
-			.catch( ( error ) => {
-				console.error( error );
-			} )
-			.finally( () => {
-				dispatch( setLoading( false ) );
-			} );
-
-		// Fetch Gravity Forms
-		fetchGravityForms();
 	}, [] );
 
-	const handleTimeUpdate = ( player, time ) => {
-		// Round the current time to 2 decimal places
-		setCurrentTime( time.toFixed( 2 ) );
-	};
-
-	const handlePlayerReady = ( player ) => {
-		playerInstance.current = player;
-	};
-
-	const seekToLayerTime = ( time ) => {
-		if ( playerInstance.current ) {
-			playerInstance.current.currentTime( time );
+	useEffect( () => {
+		if ( ! attachmentConfig ) {
+			return;
 		}
-	};
 
-	const saveAttachmentMeta = () => {
-		setIsSaving( true );
-		// Update the attchment meta
+		const rtGodamMeta = attachmentConfig.rtgodam_meta;
+
+		if ( rtGodamMeta ) {
+			dispatch( initializeStore( rtGodamMeta ) );
+
+			// Set video sources
+			const videoSources = [ { src: attachmentConfig.source_url, type: attachmentConfig.mimeType } ];
+			if ( attachmentConfig?.meta?.rtgodam_transcoded_url !== '' ) {
+				videoSources.push( { src: attachmentConfig.meta.rtgodam_transcoded_url, type: attachmentConfig?.meta?.rtgodam_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } );
+			}
+			setSources( videoSources );
+		}
+	}, [ attachmentConfig, dispatch ] );
+
+	/**
+	 * This gravity form plugin logic should be moved to the appropriate layer component, instead of globally here.
+	 */
+	useEffect( () => {
+		if ( gravityForms ) {
+			dispatch( setGravityForms( gravityForms ) );
+		}
+
+		if ( isGravityFormError ) {
+			dispatch( setGravityFormsPluginActive( false ) );
+		}
+	}, [ gravityForms, isGravityFormError, dispatch ] );
+
+	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
+	const handlePlayerReady = ( player ) => ( playerRef.current = player );
+	const seekToTime = ( time ) => playerRef.current?.currentTime( time );
+
+	const handleSaveAttachmentMeta = async () => {
 		const data = {
 			rtgodam_meta: { videoConfig, layers },
 		};
-		// update media meta via REST API
-		axios.post( window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] ), data, {
-			headers: {
-				'X-WP-Nonce': videoData.nonce,
-			},
-		} )
-			.then( ( response ) => {
-				if ( response.status === 200 ) {
-					// Dispatch the action to update the store
-					dispatch( saveVideoMeta() );
-					setShowSaveMessage( true );
-					setTimeout( () => {
-						setShowSaveMessage( false );
-					}, 2500 );
-				}
-			} )
-			.catch( ( error ) => {
-				console.error( error );
-			} )
-			.finally( () => {
-				setIsSaving( false );
-			} );
+
+		const response = await saveAttachmentMeta( { id: attachmentID, data } ).unwrap();
+
+		if ( response ) {
+			// Dispatch the action to update the store
+			dispatch( saveVideoMeta() );
+			setShowSaveMessage( true );
+			setTimeout( () => {
+				setShowSaveMessage( false );
+			}, 3000 );
+		}
 	};
 
-	const fetchGravityForms = () => {
-		axios.get( window.pathJoin( [ restURL, '/godam/v1/gforms?fields=id,title,description' ] ) )
-			.then( ( response ) => {
-				const data = response.data;
-				dispatch( setGravityForms( data ) );
-			} )
-			.catch( ( error ) => {
-				if ( error.status === 404 && error.response.data.code === 'gravity_forms_not_active' ) {
-					// Gravity Forms is not active.
-					dispatch( setGravityFormsPluginActive( false ) );
-				}
-			} );
-	};
+	const tabConfig = [
+		{
+			name: 'layers',
+			title: __( 'Layers', 'godam' ),
+			className: 'flex-1 justify-center items-center',
+			component: (
+				<SidebarLayers
+					currentTime={ currentTime }
+					onSelectLayer={ seekToTime }
+				/>
+			),
+		},
+		{
+			name: 'player-settings',
+			title: __( 'Player Settings', 'godam' ),
+			className: 'flex-1 justify-center items-center',
+			component: <Appearance />,
+		},
+	];
+
+	if ( isAttachmentConfigLoading ) {
+		return (
+			<div className="max-w-[740px] w-full loading-skeleton">
+				<div className="skeleton-video-container"></div>
+				<div className="skeleton-line"></div>
+			</div>
+		);
+	}
 
 	return (
 		<>
@@ -164,47 +150,23 @@ const VideoEditor = ( { attachmentID } ) => {
 				<div className="py-3 aside relative">
 					<div id="sidebar-content" className="godam-video-editor">
 						<TabPanel
-							onSelect={ ( tabName ) => {
-								dispatch( setCurrentTab( tabName ) );
-							} }
 							className="godam-video-editor-tabs"
-							tabs={ [
-								{
-									name: 'layers',
-									title: 'Layers',
-									className: 'flex-1 justify-center items-center',
-									component: <SidebarLayers
-										currentTime={ currentTime }
-										onSelectLayer={ ( layerTime ) => seekToLayerTime( layerTime ) }
-									/>,
-								},
-								{
-									name: 'player-settings',
-									title: 'Player Settings',
-									className: 'flex-1 justify-center items-center',
-									component: <Appearance />,
-								},
-							] }
+							tabs={ tabConfig }
+							onSelect={ ( tabName ) => dispatch( setCurrentTab( tabName ) ) }
 						>
 							{ ( tab ) => tab.component }
 						</TabPanel>
 					</div>
 
-					{ loading
-						? <div className="absolute right-4 top-5 loading-skeleton">
-							<div className="skeleton-button"></div>
-						</div>
-						: (
-							<Button
-								className="godam-button absolute right-4 bottom-8"
-								variant="primary"
-								disabled={ ! isChanged }
-								onClick={ saveAttachmentMeta }
-								isBusy={ isSaving }
-							>
-								{ __( 'Save', 'godam' ) }
-							</Button> )
-					}
+					<Button
+						className="godam-button absolute right-4 bottom-8"
+						variant="primary"
+						disabled={ ! isChanged }
+						onClick={ handleSaveAttachmentMeta }
+						isBusy={ isSavingMeta }
+					>
+						{ __( 'Save', 'godam' ) }
+					</Button>
 				</div>
 
 				<main className="flex justify-center items-center p-4 relative overflow-y-auto">
@@ -218,7 +180,7 @@ const VideoEditor = ( { attachmentID } ) => {
 						)
 					}
 
-					{ ! loading && video && (
+					{ attachmentConfig && sources.length > 0 && (
 						<div className="w-full">
 							<div className="relative">
 								<VideoJSPlayer
@@ -229,19 +191,19 @@ const VideoEditor = ( { attachmentID } ) => {
 										width: '100%',
 										sources,
 										controlBar: {
-											playToggle: true, // Play/Pause button
+											playToggle: true,
 											volumePanel: true,
-											currentTimeDisplay: true, // Current time
-											timeDivider: true, // Divider between current time and duration
-											durationDisplay: true, // Total duration
-											fullscreenToggle: true, // Full-screen button
+											currentTimeDisplay: true,
+											timeDivider: true,
+											durationDisplay: true,
+											fullscreenToggle: true,
 											subsCapsButton: true,
 											skipButtons: {
 												forward: 10,
 												backward: 10,
 											},
 											progressControl: {
-												vertical: true, // Prevent horizontal volume slider
+												vertical: true,
 											},
 										},
 									} }
@@ -252,15 +214,6 @@ const VideoEditor = ( { attachmentID } ) => {
 							</div>
 						</div>
 					) }
-
-					{
-						loading && (
-							<div className="max-w-[740px] w-full loading-skeleton">
-								<div className="skeleton-video-container"></div>
-								<div className="skeleton-line"></div>
-							</div>
-						)
-					}
 				</main>
 			</div>
 		</>
