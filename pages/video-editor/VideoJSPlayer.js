@@ -77,9 +77,6 @@ export const VideoJS = ( props ) => {
 			videoElement.classList.add( 'vjs-big-play-centered' );
 			videoRef.current.appendChild( videoElement );
 
-			console.log( 'options', options);
-			
-
 			const player = ( playerRef.current = videojs( videoElement, options, () => {
 				videojs.log( 'player is ready' );
 				onReady && onReady( player );
