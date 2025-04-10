@@ -89,7 +89,7 @@
 		"lint": "npm-run-all --parallel lint:*",
 		"lint:css": "wp-scripts lint-style ./assets/src",
 		"lint:css:fix": "npm run lint:css -- --fix ./assets/src",
-		"lint:js": "wp-scripts lint-js",
+		"lint:js": "wp-scripts lint-js ./assets/src",
 		"lint:js:fix": "npm run lint:js -- --fix ./assets/src",
 		"lint:js:report": "npm run lint:js -- --output-file lint-js-report.json --format json .",
 		"lint:php": "vendor/bin/phpcs",
