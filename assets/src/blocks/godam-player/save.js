@@ -21,7 +21,6 @@ export default function save( { attributes } ) {
 		preload,
 		src,
 		sources,
-		playsInline,
 		tracks,
 	} = attributes;
 

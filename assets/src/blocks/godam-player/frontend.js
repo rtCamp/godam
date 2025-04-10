@@ -74,6 +74,68 @@ function GODAMPlayer( videoRef = null ) {
 
 		const player = videojs( video, videoSetupControls );
 
+		video.addEventListener( 'loadedmetadata', () => {
+			const playerElement = player.el_;
+			playerElement.style.setProperty( '--video-width', video.videoWidth );
+			playerElement.style.setProperty( '--video-height', video.videoHeight );
+		} );
+
+		function handleVideoResize() {
+			// if screen size if greater than 768px then skip.
+			if ( window.innerWidth > 768 ) {
+				return;
+			}
+			try {
+				const playerElement = player.el_;
+				const newHeight = playerElement.offsetHeight;
+
+				const skipBackwardButton5 = playerElement.querySelector(
+					'.vjs-skip-backward-5',
+				);
+				const skipForwardButton5 = playerElement.querySelector(
+					'.vjs-skip-forward-5',
+				);
+				const skipBackwardButton10 = playerElement.querySelector(
+					'.vjs-skip-backward-10',
+				);
+				const skipForwardButton10 = playerElement.querySelector(
+					'.vjs-skip-forward-10',
+				);
+				const skipBackwardButton30 = playerElement.querySelector(
+					'.vjs-skip-backward-30',
+				);
+				const skipForwardButton30 = playerElement.querySelector(
+					'.vjs-skip-forward-30',
+				);
+
+				if ( skipBackwardButton5 ) {
+					skipBackwardButton5.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+				}
+				if ( skipForwardButton5 ) {
+					skipForwardButton5.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+				}
+				if ( skipBackwardButton10 ) {
+					skipBackwardButton10.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+				}
+				if ( skipForwardButton10 ) {
+					skipForwardButton10.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+				}
+				if ( skipBackwardButton30 ) {
+					skipBackwardButton30.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+				}
+				if ( skipForwardButton30 ) {
+					skipForwardButton30.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+				}
+			} catch ( error ) {
+				// console.error( 'Error handling video resize:', error );
+			}
+		}
+
+		handleVideoResize();
+
+		// On screen resize, update the video dimensions
+		window.addEventListener( 'resize', handleVideoResize );
+
 		let isPreview = null;
 
 		const watcher = {
@@ -245,25 +307,6 @@ function GODAMPlayer( videoRef = null ) {
 				// Register the component before using it
 				videojs.registerComponent( 'CustomButton', CustomButton );
 				controlBar.addChild( 'CustomButton', {} );
-			}
-
-			// Vertical control bar handling
-			if ( controlBarSettings.controlBarPosition === 'vertical' ) {
-				controlBar.addClass( 'vjs-control-bar-vertical' );
-
-				controlBar.children().forEach( ( control ) => {
-					const el = control.el();
-					el.classList.add( 'vjs-control-vertical' );
-
-					if ( el.classList.contains( 'vjs-volume-panel' ) ) {
-						el.classList.add( 'vjs-volume-panel-vertical' );
-						el.classList.remove( 'vjs-volume-panel-horizontal' );
-					}
-
-					if ( el.classList.contains( 'vjs-volume-horizontal' ) ) {
-						el.classList.add( 'vjs-volume-vertical' );
-					}
-				} );
 			}
 		} );
 

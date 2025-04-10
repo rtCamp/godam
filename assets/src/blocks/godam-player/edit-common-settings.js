@@ -12,11 +12,11 @@ const options = [
 ];
 
 const VideoSettings = ( { setAttributes, attributes } ) => {
-	const { autoplay, controls, loop, muted, playsInline, preload } =
+	const { autoplay, controls, loop, muted, preload } =
 		attributes;
 
 	const autoPlayHelpText = __(
-		'Autoplay may cause usability issues for some users.'
+		'Autoplay may cause usability issues for some users.',
 	);
 	const getAutoplayHelp = Platform.select( {
 		web: useCallback( ( checked ) => {
@@ -37,7 +37,6 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 			loop: toggleAttribute( 'loop' ),
 			muted: toggleAttribute( 'muted' ),
 			controls: toggleAttribute( 'controls' ),
-			playsInline: toggleAttribute( 'playsInline' ),
 		};
 	}, [] );
 
@@ -71,16 +70,6 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 				label={ __( 'Playback controls' ) }
 				onChange={ toggleFactory.controls }
 				checked={ !! controls }
-			/>
-			<ToggleControl
-				__nextHasNoMarginBottom
-				/* translators: Setting to play videos within the webpage on mobile browsers rather than opening in a fullscreen player. */
-				label={ __( 'Play inline' ) }
-				onChange={ toggleFactory.playsInline }
-				checked={ !! playsInline }
-				help={ __(
-					'When enabled, videos will play directly within the webpage on mobile browsers, instead of opening in a fullscreen player.'
-				) }
 			/>
 			<SelectControl
 				__next40pxDefaultSize
