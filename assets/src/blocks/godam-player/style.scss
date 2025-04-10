@@ -583,8 +583,6 @@
 	
 			.vjs-control {
 				height: 3em !important;
-				// position: absolute;
-				// bottom: 0;
 			}
 	
 			.vjs-play-control {
@@ -657,13 +655,13 @@
 				right: 40px;
 				height: 3em !important;
 			}
-	
-			// .vjs-subs-caps-button {
-			// 	position: absolute;
-			// 	bottom: 0;
-			// 	right: calc(2 * 40px);
-			// 	height: 3em !important;
-			// }
+
+			.vjs-quality-menu-wrapper {
+				position: absolute;
+				bottom: 0;
+				right: calc(3 * 40px);
+				height: 3em !important;
+			}
 	
 			.vjs-time-control {
 				&.vjs-current-time {
@@ -674,7 +672,7 @@
 					display: block;
 				}
 				&.vjs-time-divider {
-					display: block !important;
+					display: block;
 					height: 3em;
 					position: absolute;
 					left: 50%;
@@ -691,8 +689,19 @@
 				&.vjs-remaining-time {
 					display: none;
 				}
+
+				@media screen and (max-width: 420px) {
+					display: none !important;
+				}
 			}
 	
+		}
+
+		.vjs-control-bar > .vjs-subs-caps-button.vjs-control {
+			position: absolute;
+			bottom: 0;
+			right: calc(2 * 40px);
+			height: 3em !important;
 		}
 	}
 

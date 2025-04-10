@@ -78,62 +78,53 @@ function GODAMPlayer( videoRef = null ) {
 			const playerElement = player.el_;
 			playerElement.style.setProperty( '--video-width', video.videoWidth );
 			playerElement.style.setProperty( '--video-height', video.videoHeight );
+
+			const captionControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-subs-caps-button.vjs-control.vjs-hidden' );
+
+			if ( captionControlBtn ) {
+				const qualityControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-quality-menu-wrapper' );
+				if ( qualityControlBtn ) {
+					qualityControlBtn.style.setProperty( 'right', '80px' );
+				}
+			}
 		} );
+
+		// Function to move video controls
+		function moveVideoControls() {
+			try {
+				const playerElement = player.el_;
+				const newHeight = playerElement.offsetHeight;
+
+				const skipButtons = playerElement.querySelectorAll(
+					'.vjs-skip-backward-5, .vjs-skip-backward-10, .vjs-skip-backward-30, .vjs-skip-forward-5, .vjs-skip-forward-10, .vjs-skip-forward-30',
+				);
+
+				skipButtons.forEach( ( button ) => {
+					button.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+				} );
+			} catch ( error ) {
+				console.error( 'Error to move video controls on video resize:', error );
+			}
+		}
 
 		function handleVideoResize() {
 			// if screen size if greater than 768px then skip.
 			if ( window.innerWidth > 768 ) {
 				return;
 			}
-			try {
-				const playerElement = player.el_;
-				const newHeight = playerElement.offsetHeight;
 
-				const skipBackwardButton5 = playerElement.querySelector(
-					'.vjs-skip-backward-5',
-				);
-				const skipForwardButton5 = playerElement.querySelector(
-					'.vjs-skip-forward-5',
-				);
-				const skipBackwardButton10 = playerElement.querySelector(
-					'.vjs-skip-backward-10',
-				);
-				const skipForwardButton10 = playerElement.querySelector(
-					'.vjs-skip-forward-10',
-				);
-				const skipBackwardButton30 = playerElement.querySelector(
-					'.vjs-skip-backward-30',
-				);
-				const skipForwardButton30 = playerElement.querySelector(
-					'.vjs-skip-forward-30',
-				);
-
-				if ( skipBackwardButton5 ) {
-					skipBackwardButton5.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
-				}
-				if ( skipForwardButton5 ) {
-					skipForwardButton5.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
-				}
-				if ( skipBackwardButton10 ) {
-					skipBackwardButton10.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
-				}
-				if ( skipForwardButton10 ) {
-					skipForwardButton10.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
-				}
-				if ( skipBackwardButton30 ) {
-					skipBackwardButton30.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
-				}
-				if ( skipForwardButton30 ) {
-					skipForwardButton30.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
-				}
-			} catch ( error ) {
-				// console.error( 'Error handling video resize:', error );
+			// Apply debounce to avoid multiple calls.
+			if ( handleVideoResize.timeout ) {
+				clearTimeout( handleVideoResize.timeout );
 			}
+			handleVideoResize.timeout = setTimeout( () => {
+				moveVideoControls();
+			}, 100 );
 		}
 
 		handleVideoResize();
 
-		// On screen resize, update the video dimensions
+		// On screen resize, update the video dimensions.
 		window.addEventListener( 'resize', handleVideoResize );
 
 		let isPreview = null;
@@ -283,7 +274,7 @@ function GODAMPlayer( videoRef = null ) {
 						el.className += ' vjs-custom-play-button';
 						const img = document.createElement( 'img' );
 
-						if ( controlBarSettings.customBrandImg.length ) {
+						if ( controlBarSettings.customBrandImg?.length ) {
 							img.src = controlBarSettings.customBrandImg;
 						} else if ( godamSettings?.brandImage ) {
 							img.src = godamSettings.brandImage;
