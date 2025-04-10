@@ -59,20 +59,21 @@ if ( ! empty( $transcoded_url ) ) {
 }
 
 // Build the video setup options for data-setup.
-$video_setup = wp_json_encode(
-	array(
-		'controls'    => $controls,
-		'autoplay'    => $autoplay,
-		'loop'        => $loop,
-		'muted'       => $muted,
-		'preload'     => $preload,
-		'poster'      => empty( $poster ) ? $poster_image : $poster,
-		'fluid'       => true,
-		'sources'     => $sources,
-		'playsinline' => true,
-		'controlBar'  => $control_bar_settings, // contains settings specific to control bar.
-	)
+$video_setup = array(
+	'controls'    => $controls,
+	'autoplay'    => $autoplay,
+	'loop'        => $loop,
+	'muted'       => $muted,
+	'preload'     => $preload,
+	'poster'      => empty( $poster ) ? $poster_image : $poster,
+	'fluid'       => true,
+	'sources'     => $sources,
+	'playsinline' => true,
 );
+if ( ! empty( $control_bar_settings ) ) {
+	$video_setup['controlBar'] = $control_bar_settings; // contains settings specific to control bar.
+}
+$video_setup = wp_json_encode( $video_setup );
 
 $video_config = wp_json_encode(
 	array(

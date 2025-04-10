@@ -33,7 +33,6 @@ import GoDAM from '../../../../assets/src/images/GoDAM.png';
 /**
  * Global variables
  */
-const PREMIUM_LAYERS = [ 'form', 'hotspot', 'ad' ];
 const validAPIKey = window?.godamAPIKeyData?.valid_api_key;
 
 library.add( fas );
@@ -76,8 +75,6 @@ function GODAMPlayer( videoRef = null ) {
 
 		video.addEventListener( 'loadedmetadata', () => {
 			const playerElement = player.el_;
-			playerElement.style.setProperty( '--video-width', video.videoWidth );
-			playerElement.style.setProperty( '--video-height', video.videoHeight );
 
 			const captionControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-subs-caps-button.vjs-control.vjs-hidden' );
 
@@ -103,7 +100,7 @@ function GODAMPlayer( videoRef = null ) {
 					button.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
 				} );
 			} catch ( error ) {
-				console.error( 'Error to move video controls on video resize:', error );
+				// Silently fail - do nothing.
 			}
 		}
 
@@ -372,7 +369,7 @@ function GODAMPlayer( videoRef = null ) {
 
 				// Observe changes in the layer's DOM for the confirmation message
 				const observer = new MutationObserver( ( mutations ) => {
-					mutations.forEach( ( mutation ) => {
+					mutations.forEach( () => {
 						if (
 							layerObj.layerElement.querySelector( '.gform_confirmation_message' )
 						) {
@@ -701,7 +698,7 @@ function GODAMPlayer( videoRef = null ) {
 		try {
 			player.qualityMenu();
 		} catch ( error ) {
-			console.log( error );
+			// Silently fail - do nothing.
 		}
 	} );
 }
