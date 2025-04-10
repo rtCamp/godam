@@ -67,18 +67,31 @@ const VideoEditor = ( { attachmentID } ) => {
 			return;
 		}
 
-		const rtGodamMeta = attachmentConfig.rtgodam_meta;
+		const { rtgodam_meta: rtGodamMeta, source_url: sourceURL, mime_type: mimeType, meta } = attachmentConfig;
 
+		// Initialize the store if meta exists
 		if ( rtGodamMeta ) {
 			dispatch( initializeStore( rtGodamMeta ) );
-
-			// Set video sources
-			const videoSources = [ { src: attachmentConfig.source_url, type: attachmentConfig.mimeType } ];
-			if ( attachmentConfig?.meta?.rtgodam_transcoded_url !== '' ) {
-				videoSources.push( { src: attachmentConfig.meta.rtgodam_transcoded_url, type: attachmentConfig?.meta?.rtgodam_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } );
-			}
-			setSources( videoSources );
 		}
+
+		// Initialize video sources with the original source
+		const videoSources = [];
+
+		if ( sourceURL && mimeType ) {
+			videoSources.push( { src: sourceURL, type: mimeType } );
+		}
+
+		// Add transcoded video source if valid
+		const transcodedUrl = meta?.rtgodam_transcoded_url;
+		if ( transcodedUrl && typeof transcodedUrl === 'string' && transcodedUrl.trim() !== '' ) {
+			const transcodedType = transcodedUrl.endsWith( '.mpd' )
+				? 'application/dash+xml'
+				: undefined;
+
+			videoSources.push( { src: transcodedUrl, type: transcodedType } );
+		}
+
+		setSources( videoSources );
 	}, [ attachmentConfig, dispatch ] );
 
 	/**
