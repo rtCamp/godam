@@ -22,7 +22,7 @@ tests
 .stylelintignore
 .stylelintrc.json
 babel.config.js
-Gulpfile.js
+Gruntfile.js
 package-lock.json
 package.json
 phpcs.xml
@@ -32,3 +32,6 @@ webpack.config.js
 .github
 .git
 plugin-build.sh
+composer.json
+composer.lock
+README.md
