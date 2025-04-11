@@ -2,7 +2,7 @@
 /**
  * Register taxonomy of the Media Folders.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc\Taxonomies;

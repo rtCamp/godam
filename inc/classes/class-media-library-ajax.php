@@ -2,7 +2,7 @@
 /**
  * Class to handle Media Folders.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc;
