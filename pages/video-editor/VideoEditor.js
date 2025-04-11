@@ -3,6 +3,7 @@
  */
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import axios from 'axios';
 
 /**
  * WordPress dependencies
@@ -16,8 +17,7 @@ import { __ } from '@wordpress/i18n';
 import VideoJSPlayer from './VideoJSPlayer';
 import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
-
-import { initializeStore, saveVideoMeta, setCurrentTab, setGravityForms, setGravityFormsPluginActive } from './redux/slice/videoSlice';
+import { initializeStore, saveVideoMeta, setCurrentTab, setLoading, setGravityForms, setGravityFormsPluginActive, SetCF7PluginActive, setCF7Forms, setNinjaForms, setNinjaFormPluginActive } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
@@ -40,6 +40,8 @@ const VideoEditor = ( { attachmentID } ) => {
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 	const { data: gravityForms, isError: isGravityFormError } = useGetFormsQuery();
 
+	const restURL = window.godamRestRoute.url || '';
+
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
 			if ( isChanged ) {
@@ -60,6 +62,39 @@ const VideoEditor = ( { attachmentID } ) => {
 		if ( body ) {
 			body.classList.add( 'folded' );
 		}
+
+		dispatch( setLoading( true ) );
+
+		// Get the post data
+		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] ), {
+			headers: {
+				'X-WP-Nonce': window.videoData.nonce,
+			},
+		} )
+			.then( ( response ) => response.json() )
+			.then( ( data ) => {
+				const rtGodamMeta = data.rtgodam_meta;
+				if ( rtGodamMeta ) {
+					dispatch( initializeStore( rtGodamMeta ) );
+				}
+				// Set video sources
+				const videoSources = [ { src: data.source_url, type: data.mimeType } ];
+				if ( data?.meta?.rtgodam_transcoded_url !== '' ) {
+					videoSources.push( { src: data.meta.rtgodam_transcoded_url, type: data?.meta?.rtgodam_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } );
+				}
+				setSources( videoSources );
+			} )
+			.catch( ( ) => {
+				// Todo: Show proper error message to the user
+			} )
+			.finally( () => {
+				dispatch( setLoading( false ) );
+			} );
+
+		// Fetch Contact Form 7 Forms
+		fetchCF7Forms();
+		// Fetch Ninja Forms
+		fetchNinjaForms();
 	}, [] );
 
 	useEffect( () => {
@@ -155,6 +190,38 @@ const VideoEditor = ( { attachmentID } ) => {
 				<div className="skeleton-line"></div>
 			</div>
 		);
+	}
+
+	function fetchCF7Forms() {
+		axios.get( window.pathJoin( [ restURL, '/contact-form-7/v1/contact-forms' ] ), {
+			headers: {
+				'X-WP-Nonce': window.videoData.nonce,
+			},
+		} )
+			.then( ( response ) => {
+				const data = response.data;
+				dispatch( setCF7Forms( data ) );
+			} )
+			.catch( ( error ) => {
+				if ( error.status === 404 && error.response.data.code === 'rest_no_route' ) {
+					// CF7 Forms is not active.
+					dispatch( SetCF7PluginActive( false ) );
+				}
+			} );
+	}
+
+	function fetchNinjaForms() {
+		axios.get( window.pathJoin( [ restURL, '/godam/v1/ninja-forms' ] ) )
+			.then( ( response ) => {
+				const data = response.data;
+				dispatch( setNinjaForms( data ) );
+			} )
+			.catch( ( error ) => {
+				if ( error.status === 404 && error.response.data.code === 'gravity_forms_not_active' ) {
+					// Gravity Forms is not active.
+					dispatch( setNinjaFormPluginActive( false ) );
+				}
+			} );
 	}
 
 	return (

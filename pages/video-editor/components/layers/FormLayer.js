@@ -1,34 +1,43 @@
 /**
  * External dependencies
  */
-
 import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
 import Editor from '@monaco-editor/react';
 
 /**
  * WordPress dependencies
  */
-import { Button, SelectControl, ToggleControl, ComboboxControl, Modal, Panel, PanelBody, Notice } from '@wordpress/components';
-import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
+import { Button, ToggleControl, Modal, Panel, PanelBody, Notice, CustomSelectControl } from '@wordpress/components';
+import { arrowLeft, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
-import LayerControl from '../LayerControls';
+
+import GravityForm from '../forms/GravityForm';
+import NinjaForm from '../forms/NinjaForm';
+import CF7 from '../forms/CF7';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 
-const templateOptions = [
+const SUPPORTED_FORM_TYPES = [
 	{
-		value: 'orbital',
-		label: 'Orbital',
+		key: 'gravity',
+		name: __( 'Gravity Forms', 'godam' ),
 	},
 	{
-		value: 'gravity',
-		label: 'Gravity',
+		key: 'cf7',
+		name: __( 'Contact Form 7', 'godam' ),
+	},
+	{
+		key: 'ninjaforms',
+		name: __( 'Ninja Forms', 'godam' ),
+	},
+	{
+		key: 'wpforms',
+		name: __( 'WPForms', 'godam' ),
 	},
 ];
 
@@ -36,43 +45,10 @@ const FormLayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
-	const gforms = useSelector( ( state ) => state.videoReducer.gforms );
-	const forms = gforms.map( ( form ) => ( {
-		value: form.id,
-		label: form.title,
-	} ) );
-
-	const [ formHTML, setFormHTML ] = useState( '' );
-
-	const restURL = window.godamRestRoute.url || '';
 
 	const handleDeleteLayer = () => {
 		dispatch( removeLayer( { id: layer.id } ) );
 		goBack();
-	};
-
-	const changeFormID = ( formID ) => {
-		dispatch( updateLayerField( { id: layer.id, field: 'gf_id', value: formID } ) );
-	};
-
-	useEffect( () => {
-		if ( layer.gf_id ) {
-			fetchGravityForm( layer.gf_id, layer.theme );
-		}
-	}, [
-		layer.gf_id,
-		layer.theme,
-	] );
-
-	// Fetch the Gravity Form HTML
-	const fetchGravityForm = ( formId, theme ) => {
-		axios.get( window.pathJoin( [ restURL, '/godam/v1/gform' ] ), {
-			params: { id: formId, theme },
-		} ).then( ( response ) => {
-			setFormHTML( response.data );
-		} ).catch( ( error ) => {
-			throw error;
-		} );
 	};
 
 	// If we want to disable the premium layers the we can use this code
@@ -112,21 +88,43 @@ const FormLayer = ( { layerID, goBack } ) => {
 				</Notice>
 			}
 
-			{
-				forms.length > 0 &&
-					<GravityFormSelector disabled={ ! isValidAPIKey } className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
-			}
+			{ /* Form type */ }
+			<CustomSelectControl
+				className="mb-4"
+				label={ __( 'Form type', 'godam' ) }
+				value={ SUPPORTED_FORM_TYPES.find( ( option ) => option.key === layer.formType ) }
+				onChange={ ( value ) => {
+					const formType = value?.selectedItem?.key;
+					dispatch( updateLayerField( { id: layer.id, field: 'formType', value: formType } ) );
 
-			<SelectControl
-				className="mb-4 godam-select"
-				label={ __( 'Select form theme', 'godam' ) }
-				options={ templateOptions }
-				value={ layer.theme }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
-				}
+					if ( formType === 'gravity' ) {
+						dispatch( updateLayerField( { id: layer.id, field: 'gf_id', value: '' } ) );
+					} else if ( formType === 'cf7' ) {
+						dispatch( updateLayerField( { id: layer.id, field: 'cf7_id', value: '' } ) );
+					} else if ( formType === 'ninjaforms' ) {
+						dispatch( updateLayerField( { id: layer.id, field: 'ninjaform_id', value: '' } ) );
+					} else if ( formType === 'wpforms' ) {
+						dispatch( updateLayerField( { id: layer.id, field: 'wpform_id', value: '' } ) );
+					}
+				} }
+				options={ SUPPORTED_FORM_TYPES }
 				disabled={ ! isValidAPIKey }
 			/>
+
+			{
+				layer.formType === 'gravity' &&
+				<GravityForm layerID={ layer.id } />
+			}
+
+			{
+				layer.formType === 'cf7' &&
+				<CF7 layerID={ layer.id } />
+			}
+
+			{
+				layer.formType === 'ninjaforms' &&
+				<NinjaForm layerID={ layer.id } />
+			}
 
 			<ToggleControl
 				className="mb-4 godam-toggle"
@@ -174,64 +172,8 @@ const FormLayer = ( { layerID, goBack } ) => {
 					</div>
 				</PanelBody>
 			</Panel>
-
-			<LayerControl>
-				<>
-					<div
-						style={ {
-							backgroundColor: layer.bg_color,
-						} } className="easydam-layer">
-						<div className="form-container" dangerouslySetInnerHTML={ { __html: formHTML } } />
-					</div>
-					{ layer.allow_skip &&
-					<Button
-						className="skip-button"
-						variant="primary"
-						icon={ chevronRight }
-						iconSize="18"
-						iconPosition="right"
-						onClick={ () => setOpen( false ) }
-					>
-						{ __( 'Skip', 'godam' ) }
-					</Button>
-					}
-				</>
-			</LayerControl>
 		</>
 	);
 };
-
-function GravityFormSelector( { className, disabled, formID, forms, handleChange } ) {
-	const [ form, setForm ] = useState( formID );
-	const [ filteredOptions, setFilteredOptions ] = useState( forms );
-
-	const setFormData = ( value ) => {
-		setForm( value );
-		handleChange( value );
-	};
-
-	return (
-		<>
-			<ComboboxControl
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-				label={ __( 'Select gravity form', 'godam' ) }
-				className={ `${ className } ${ disabled ? 'disabled' : '' }` }
-				value={ form }
-				onChange={ setFormData }
-				options={ filteredOptions }
-				onFilterValueChange={ ( inputValue ) => {
-					setFilteredOptions(
-						forms.filter( ( _form ) =>
-							_form.label
-								.toLowerCase()
-								.startsWith( inputValue.toLowerCase() ),
-						),
-					);
-				} }
-			/>
-		</>
-	);
-}
 
 export default FormLayer;

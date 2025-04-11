@@ -26,7 +26,7 @@ const layerTypes = [
 		type: 'cta',
 	},
 	{
-		title: __( 'Gravity Forms', 'godam' ),
+		title: __( 'Forms', 'godam' ),
 		icon: preformatted,
 		type: 'form',
 	},
@@ -83,6 +83,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 					id: uuidv4(),
 					displayTime: currentTime,
 					type,
+					formType: 'gravity',
 					submitted: false,
 					allow_skip: true,
 					custom_css: '',

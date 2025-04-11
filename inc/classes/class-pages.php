@@ -9,6 +9,7 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
+use NF_Display_Render;
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -265,7 +266,6 @@ class Pages {
 	 * @return void
 	 */
 	public function render_video_editor_page() {
-
 		?>
 		<div id="root-video-editor">
 			<div class="progress-bar-wrapper">
@@ -330,6 +330,10 @@ class Pages {
 				true
 			);
 
+			$is_gf_active  = is_plugin_active( 'gravityforms/gravityforms.php' );
+			$is_cf7_active = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
+			$is_nf_active  = is_plugin_active( 'ninja-forms/ninja-forms.php' );
+
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
@@ -339,8 +343,20 @@ class Pages {
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 					'valid_api_key'    => rtgodam_is_api_key_valid(),
+					'gf_active'        => $is_gf_active,
+					'cf7_active'       => $is_cf7_active,
+					'nf_active'        => $is_nf_active,
 				)
 			);
+
+			// Enqueue Gravity Forms styles if the plugin is active.
+			if ( $is_gf_active ) {
+				$this->enqueue_gravity_forms_styles();
+			}
+			// Enqueue Ninja Forms styles if the plugin is active.
+			if ( $is_nf_active ) {
+				$this->enqueue_ninja_forms_scripts();
+			}
 
 			$rtgodam_user_data = rtgodam_get_user_data();
 
@@ -352,23 +368,8 @@ class Pages {
 
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
 
-			$gravity_forms_styles = array(
-				'gravity-forms-orbital-theme'    => 'gravityforms/assets/css/dist/gravity-forms-orbital-theme.min.css',
-				'gravity-forms-theme-foundation' => 'gravityforms/assets/css/dist/gravity-forms-theme-foundation.min.css',
-				'gravity-forms-theme-framework'  => 'gravityforms/assets/css/dist/gravity-forms-theme-framework.min.css',
-				'gravity-forms-theme'            => 'gravityforms/assets/css/dist/theme.min.css',
-				'gravity-forms-theme-components' => 'gravityforms/assets/css/dist/theme-components.min.css',
-				'gravity-forms-basic'            => 'gravityforms/assets/css/dist/basic.min.css',
-				'common-css-utilities'           => 'gravityforms/assets/css/dist/common-css-utilities.min.css',
-			);
-
-			foreach ( $gravity_forms_styles as $handle => $path ) {
-				wp_enqueue_style(
-					$handle,
-					plugins_url( $path ),
-					array(),
-					'1.0.0'
-				);
+			if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
+				$this->enqueue_gravity_forms_styles();
 			}
 
 			$poll_ajax_style = get_option( 'poll_ajax_style' );
@@ -394,7 +395,7 @@ class Pages {
 						'show_fading'   => (int) $poll_ajax_style['fading'],
 					)
 				);
-			}
+			}       
 		} elseif ( $screen && $this->menu_page_id === $screen->id ) {
 
 			wp_register_script(
@@ -548,5 +549,57 @@ class Pages {
 				'userData' => rtgodam_get_user_data(),
 			)
 		);
+	}
+
+	/**
+	 * Enqueue Gravity Forms styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_gravity_forms_styles() {
+		$gravity_forms_styles = array(
+			'gravity-forms-orbital-theme'    => 'gravityforms/assets/css/dist/gravity-forms-orbital-theme.min.css',
+			'gravity-forms-theme-foundation' => 'gravityforms/assets/css/dist/gravity-forms-theme-foundation.min.css',
+			'gravity-forms-theme-framework'  => 'gravityforms/assets/css/dist/gravity-forms-theme-framework.min.css',
+			'gravity-forms-theme'            => 'gravityforms/assets/css/dist/theme.min.css',
+			'gravity-forms-theme-components' => 'gravityforms/assets/css/dist/theme-components.min.css',
+			'gravity-forms-basic'            => 'gravityforms/assets/css/dist/basic.min.css',
+			'common-css-utilities'           => 'gravityforms/assets/css/dist/common-css-utilities.min.css',
+		);
+	
+		foreach ( $gravity_forms_styles as $handle => $path ) {
+			wp_enqueue_style(
+				$handle,
+				plugins_url( $path ),
+				array(),
+				RTGODAM_VERSION
+			);
+		} 
+	}
+
+	/**
+	 * Enqueue Ninja Forms scripts and styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_ninja_forms_scripts() {
+
+		$forms = Ninja_Forms()->form()->get_forms();
+
+		// Filter the form id and title to be returned.
+		$forms = array_map(
+			function ( $form ) {
+				return array(
+					'id'    => $form->get_id(),
+					'title' => $form->get_setting( 'title' ),
+				);
+			},
+			$forms 
+		);
+
+		foreach ( $forms as $form ) {
+			// Enqueue the Ninja Forms scripts and styles.
+			NF_Display_Render::enqueue_scripts( $form['id'], true );
+		}
 	}
 }
