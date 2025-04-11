@@ -22,7 +22,6 @@ tests
 .stylelintignore
 .stylelintrc.json
 babel.config.js
-deploy.sh
 Gulpfile.js
 package-lock.json
 package.json
