@@ -2,7 +2,7 @@
 /**
  * REST API class for Media Library Pages.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc\REST_API;

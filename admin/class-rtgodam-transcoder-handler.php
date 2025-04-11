@@ -4,8 +4,8 @@
  *
  * @since   1.0.0
  *
- * @package    Transcoder
- * @subpackage Transcoder/TranscoderHandler
+ * @package GoDAM
+ * @subpackage GoDAM/TranscoderHandler
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -15,8 +15,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since   1.0.0
  *
- * @package    Transcoder
- * @subpackage Transcoder/TranscoderHandler
+ * @package GoDAM
+ * @subpackage GoDAM/TranscoderHandler
  */
 class RTGODAM_Transcoder_Handler {
 

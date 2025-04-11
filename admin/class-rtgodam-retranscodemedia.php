@@ -3,7 +3,7 @@
  * Retranscode media https://wordpress.org/plugins/regenerate-thumbnails/
  * The code and UI is borrowed from the following plugin (Author: Alex Mills).
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 defined( 'ABSPATH' ) || exit;
