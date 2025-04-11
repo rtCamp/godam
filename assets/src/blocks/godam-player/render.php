@@ -18,7 +18,6 @@ $loop          = ! empty( $attributes['loop'] );
 $muted         = ! empty( $attributes['muted'] );
 $poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
 $preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$plays_inline  = ! empty( $attributes['playsInline'] );
 $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
@@ -60,19 +59,21 @@ if ( ! empty( $transcoded_url ) ) {
 }
 
 // Build the video setup options for data-setup.
-$video_setup = wp_json_encode(
-	array(
-		'controls'   => $controls,
-		'autoplay'   => $autoplay,
-		'loop'       => $loop,
-		'muted'      => $muted,
-		'preload'    => $preload,
-		'poster'     => empty( $poster ) ? $poster_image : $poster,
-		'fluid'      => true,
-		'sources'    => $sources,
-		'controlBar' => $control_bar_settings, // contains settings specific to control bar.
-	)
+$video_setup = array(
+	'controls'    => $controls,
+	'autoplay'    => $autoplay,
+	'loop'        => $loop,
+	'muted'       => $muted,
+	'preload'     => $preload,
+	'poster'      => empty( $poster ) ? $poster_image : $poster,
+	'fluid'       => true,
+	'sources'     => $sources,
+	'playsinline' => true,
 );
+if ( ! empty( $control_bar_settings ) ) {
+	$video_setup['controlBar'] = $control_bar_settings; // contains settings specific to control bar.
+}
+$video_setup = wp_json_encode( $video_setup );
 
 $video_config = wp_json_encode(
 	array(

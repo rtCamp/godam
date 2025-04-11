@@ -48,9 +48,6 @@
 			},
 			"default": []
 		},
-		"playsInline": {
-			"type": "boolean"
-		},
 		"tracks": {
 			"role": "content",
 			"type": "array",
