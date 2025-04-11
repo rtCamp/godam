@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - master
+      - main
       - develop
   workflow_dispatch:
 name: Deploy on Push
