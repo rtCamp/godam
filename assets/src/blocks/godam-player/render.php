@@ -108,11 +108,11 @@ $ads_layers = array_filter(
 );
 $ad_tag_url = '';
 
-$ad_server = isset( $easydam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $easydam_meta_data['videoConfig']['adServer'] ) : '';
+$ad_server = isset( $easydam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $easydam_meta_data['videoConfig']['adServer'] ) : 'self-hosted';
 
-if ( ! empty( $ad_server ) ) :
+if ( ! empty( $ad_server ) && 'ad-server' === $ad_server ) :
 	$ad_tag_url = isset( $easydam_meta_data['videoConfig']['adTagURL'] ) ? $easydam_meta_data['videoConfig']['adTagURL'] : '';
-elseif ( ! empty( $ads_layers ) ) :
+elseif ( ! empty( $ads_layers ) && 'self-hosted' === $ad_server ) :
 	$ad_tag_url = get_rest_url( get_current_blog_id(), '/godam/v1/adTagURL/' ) . $attachment_id;
 endif;
 
