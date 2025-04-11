@@ -239,9 +239,6 @@ const VideoEditor = ( { attachmentID } ) => {
 												forward: 10,
 												backward: 10,
 											},
-											progressControl: {
-												vertical: true, // Prevent horizontal volume slider
-											},
 										},
 									} }
 									onTimeupdate={ handleTimeUpdate }
