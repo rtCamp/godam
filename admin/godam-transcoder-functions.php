@@ -4,8 +4,8 @@
  *
  * @since      1.0.0
  *
- * @package    Transcoder
- * @subpackage Transcoder/Functions
+ * @package GoDAM
+ * @subpackage GoDAM/Functions
  */
 
 defined( 'ABSPATH' ) || exit;

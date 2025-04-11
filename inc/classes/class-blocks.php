@@ -2,7 +2,7 @@
 /**
  * Class to handle file system.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc;

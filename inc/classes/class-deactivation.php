@@ -2,7 +2,7 @@
 /**
  * Plguin Deactivation Survey Class.
  * 
- * @package godam
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc;

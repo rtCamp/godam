@@ -2,7 +2,7 @@
 /**
  * Autoloader file for plugin.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc\Helpers;
