@@ -35,3 +35,4 @@ plugin-build.sh
 composer.json
 composer.lock
 README.md
+wp-assets/
