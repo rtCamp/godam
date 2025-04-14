@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
  * WordPress dependencies
  */
-import { TextControl, Button, ButtonGroup, Modal } from '@wordpress/components';
+import { TextControl, Button, Modal } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -18,6 +18,8 @@ import './scss/modal.scss';
 
 const RenameModal = () => {
 	const [ folderName, setFolderName ] = useState( '' );
+	const [ isLoading, setIsLoading ] = useState( false );
+	const inputRef = useRef( null ); // Create ref
 
 	const dispatch = useDispatch();
 
@@ -29,10 +31,21 @@ const RenameModal = () => {
 	useEffect( () => {
 		if ( isOpen ) {
 			setFolderName( selectedFolder.name );
+			setIsLoading( false );
+			// Focus the input field after render
+			setTimeout( () => {
+				inputRef.current?.focus();
+			}, 0 );
 		}
 	}, [ isOpen, selectedFolder ] );
 
 	const handleSubmit = async () => {
+		if ( ! folderName.trim() || isLoading ) {
+			return;
+		}
+
+		setIsLoading( true );
+
 		try {
 			await updateFolder( { id: selectedFolder.id, name: folderName } ).unwrap();
 
@@ -51,9 +64,16 @@ const RenameModal = () => {
 					type: 'error',
 				},
 			) );
+		} finally {
+			setIsLoading( false );
+			dispatch( closeModal( 'rename' ) );
 		}
+	};
 
-		dispatch( closeModal( 'rename' ) );
+	const handleKeyDown = ( e ) => {
+		if ( e.key === 'Enter' && folderName.trim() ) {
+			handleSubmit();
+		}
 	};
 
 	return (
@@ -67,10 +87,13 @@ const RenameModal = () => {
 					label="Folder Name"
 					value={ folderName }
 					onChange={ ( value ) => setFolderName( value ) }
+					ref={ inputRef }
+					onKeyDown={ handleKeyDown }
 				/>
 
 				<div className="modal__button-group">
 					<Button
+						isBusy={ isLoading }
 						text="Rename"
 						variant="primary"
 						onClick={ () => handleSubmit() }
