@@ -75,6 +75,7 @@ class Analytics extends Base {
 		$analytics_endpoint = RTGODAM_ANALYTICS_BASE . '/processed-analytics/fetch/';
 
 		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_site_option( 'rtgodam-api-key', '' );
 
 		// Check if API key is valid.
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
@@ -92,6 +93,7 @@ class Analytics extends Base {
 			'video_id'      => $video_id,
 			'site_url'      => $site_url,
 			'account_token' => $account_token,
+			'api_key'       => $api_key,
 		);
 
 		$analytics_url = add_query_arg( $query_params, $analytics_endpoint );
