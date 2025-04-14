@@ -18,6 +18,7 @@ import './scss/modal.scss';
 
 const RenameModal = () => {
 	const [ folderName, setFolderName ] = useState( '' );
+	const [ isLoading, setIsLoading ] = useState( false );
 	const inputRef = useRef( null ); // Create ref
 
 	const dispatch = useDispatch();
@@ -30,6 +31,7 @@ const RenameModal = () => {
 	useEffect( () => {
 		if ( isOpen ) {
 			setFolderName( selectedFolder.name );
+			setIsLoading( false );
 			// Focus the input field after render
 			setTimeout( () => {
 				inputRef.current?.focus();
@@ -38,6 +40,12 @@ const RenameModal = () => {
 	}, [ isOpen, selectedFolder ] );
 
 	const handleSubmit = async () => {
+		if ( ! folderName.trim() || isLoading ) {
+			return;
+		}
+
+		setIsLoading( true );
+
 		try {
 			await updateFolder( { id: selectedFolder.id, name: folderName } ).unwrap();
 
@@ -56,9 +64,10 @@ const RenameModal = () => {
 					type: 'error',
 				},
 			) );
+		} finally {
+			setIsLoading( false );
+			dispatch( closeModal( 'rename' ) );
 		}
-
-		dispatch( closeModal( 'rename' ) );
 	};
 
 	const handleKeyDown = ( e ) => {
@@ -84,6 +93,7 @@ const RenameModal = () => {
 
 				<div className="modal__button-group">
 					<Button
+						isBusy={ isLoading }
 						text="Rename"
 						variant="primary"
 						onClick={ () => handleSubmit() }

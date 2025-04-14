@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -18,6 +18,8 @@ import './scss/modal.scss';
 import { triggerFilterChange } from '../../data/media-grid';
 
 const DeleteModal = () => {
+	const [ isLoading, setIsLoading ] = useState( false );
+
 	const dispatch = useDispatch();
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.delete );
@@ -28,6 +30,7 @@ const DeleteModal = () => {
 
 	useEffect( () => {
 		if ( isOpen ) {
+			setIsLoading( false );
 			// Focus the button after render
 			setTimeout( () => {
 				ref.current?.focus();
@@ -36,6 +39,12 @@ const DeleteModal = () => {
 	}, [ isOpen ] );
 
 	const handleSubmit = async () => {
+		if ( isLoading ) {
+			return;
+		}
+
+		setIsLoading( true );
+
 		try {
 			await deleteFolderMutation( selectedFolder.id );
 
@@ -56,9 +65,10 @@ const DeleteModal = () => {
 					type: 'error',
 				},
 			) );
+		} finally {
+			setIsLoading( false );
+			dispatch( closeModal( 'delete' ) );
 		}
-
-		dispatch( closeModal( 'delete' ) );
 	};
 
 	const handleKeyDown = ( e ) => {
@@ -83,6 +93,7 @@ const DeleteModal = () => {
 
 				<div className="modal__button-group">
 					<Button
+						isBusy={ isLoading }
 						ref={ ref }
 						text="Delete"
 						variant="primary"

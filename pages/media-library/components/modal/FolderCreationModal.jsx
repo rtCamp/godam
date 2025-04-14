@@ -19,6 +19,7 @@ import './scss/modal.scss';
 
 const FolderCreationModal = () => {
 	const [ folderName, setFolderName ] = useState( '' );
+	const [ isLoading, setIsLoading ] = useState( false );
 
 	const [ createFolderMutation ] = useCreateFolderMutation();
 	const inputRef = useRef( null ); // Create ref
@@ -31,6 +32,7 @@ const FolderCreationModal = () => {
 	useEffect( () => {
 		if ( isOpen ) {
 			setFolderName( '' );
+			setIsLoading( false );
 			// Focus the input field after render
 			setTimeout( () => {
 				inputRef.current?.focus();
@@ -39,6 +41,12 @@ const FolderCreationModal = () => {
 	}, [ isOpen ] );
 
 	const handleSubmit = async () => {
+		if ( ! folderName.trim() || isLoading ) {
+			return;
+		}
+
+		setIsLoading( true );
+
 		try {
 			let parent = selectedFolder.id;
 
@@ -65,9 +73,10 @@ const FolderCreationModal = () => {
 					type: 'error',
 				},
 			) );
+		} finally {
+			setIsLoading( false );
+			dispatch( closeModal( 'folderCreation' ) );
 		}
-
-		dispatch( closeModal( 'folderCreation' ) );
 	};
 
 	const handleKeyDown = ( e ) => {
@@ -93,6 +102,7 @@ const FolderCreationModal = () => {
 
 				<div className="modal__button-group">
 					<Button
+						isBusy={ isLoading }
 						text="Create"
 						variant="primary"
 						onClick={ () => handleSubmit() }
