@@ -154,6 +154,12 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Feat: Advanced analytics and engagement tracking.
 - Feat: Enhanced WordPress Media Library for better asset management.
 
+= v1.0.1 (April 14, 2025) =
+
+- Fix: FAQ formatting for readme.txt.
+- Fix: Ad loading logic for third-party and self-hosted ads.
+- Fix: Enhance the GoDAM video player's UI for mobile devices.
+
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
 
