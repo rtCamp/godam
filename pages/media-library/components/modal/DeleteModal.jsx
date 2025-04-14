@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
  * WordPress dependencies
  */
-import { Button, ButtonGroup, Modal } from '@wordpress/components';
+import { Button, Modal } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -24,6 +24,16 @@ const DeleteModal = () => {
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
 
 	const [ deleteFolderMutation ] = useDeleteFolderMutation();
+	const ref = useRef( null );
+
+	useEffect( () => {
+		if ( isOpen ) {
+			// Focus the button after render
+			setTimeout( () => {
+				ref.current?.focus();
+			}, 0 );
+		}
+	}, [ isOpen ] );
 
 	const handleSubmit = async () => {
 		try {
@@ -51,6 +61,12 @@ const DeleteModal = () => {
 		dispatch( closeModal( 'delete' ) );
 	};
 
+	const handleKeyDown = ( e ) => {
+		if ( e.key === 'Enter' ) {
+			handleSubmit();
+		}
+	};
+
 	return (
 		isOpen && (
 			<Modal
@@ -65,19 +81,21 @@ const DeleteModal = () => {
 					Are you sure you want to proceed? This action cannot be undone.
 				</p>
 
-				<ButtonGroup className="modal__button-group">
+				<div className="modal__button-group">
 					<Button
+						ref={ ref }
 						text="Delete"
 						variant="primary"
 						onClick={ () => handleSubmit() }
 						isDestructive
+						onKeyDown={ handleKeyDown }
 					/>
 					<Button
 						text="Cancel"
 						onClick={ () => dispatch( closeModal( 'delete' ) ) }
 						isDestructive
 					/>
-				</ButtonGroup>
+				</div>
 			</Modal>
 		)
 	);

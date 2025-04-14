@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
  * WordPress dependencies
  */
-import { TextControl, Button, ButtonGroup, Modal } from '@wordpress/components';
+import { TextControl, Button, Modal } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -18,6 +18,7 @@ import './scss/modal.scss';
 
 const RenameModal = () => {
 	const [ folderName, setFolderName ] = useState( '' );
+	const inputRef = useRef( null ); // Create ref
 
 	const dispatch = useDispatch();
 
@@ -29,6 +30,10 @@ const RenameModal = () => {
 	useEffect( () => {
 		if ( isOpen ) {
 			setFolderName( selectedFolder.name );
+			// Focus the input field after render
+			setTimeout( () => {
+				inputRef.current?.focus();
+			}, 0 );
 		}
 	}, [ isOpen, selectedFolder ] );
 
@@ -56,6 +61,12 @@ const RenameModal = () => {
 		dispatch( closeModal( 'rename' ) );
 	};
 
+	const handleKeyDown = ( e ) => {
+		if ( e.key === 'Enter' && folderName.trim() ) {
+			handleSubmit();
+		}
+	};
+
 	return (
 		isOpen && (
 			<Modal
@@ -67,6 +78,8 @@ const RenameModal = () => {
 					label="Folder Name"
 					value={ folderName }
 					onChange={ ( value ) => setFolderName( value ) }
+					ref={ inputRef }
+					onKeyDown={ handleKeyDown }
 				/>
 
 				<div className="modal__button-group">

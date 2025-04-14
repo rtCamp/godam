@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
  * WordPress dependencies
  */
-import { TextControl, Button, ButtonGroup, Modal } from '@wordpress/components';
+import { TextControl, Button, Modal } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -21,6 +21,7 @@ const FolderCreationModal = () => {
 	const [ folderName, setFolderName ] = useState( '' );
 
 	const [ createFolderMutation ] = useCreateFolderMutation();
+	const inputRef = useRef( null ); // Create ref
 
 	const dispatch = useDispatch();
 
@@ -30,6 +31,10 @@ const FolderCreationModal = () => {
 	useEffect( () => {
 		if ( isOpen ) {
 			setFolderName( '' );
+			// Focus the input field after render
+			setTimeout( () => {
+				inputRef.current?.focus();
+			}, 0 );
 		}
 	}, [ isOpen ] );
 
@@ -65,6 +70,12 @@ const FolderCreationModal = () => {
 		dispatch( closeModal( 'folderCreation' ) );
 	};
 
+	const handleKeyDown = ( e ) => {
+		if ( e.key === 'Enter' && folderName.trim() ) {
+			handleSubmit();
+		}
+	};
+
 	return (
 		isOpen && (
 			<Modal
@@ -73,12 +84,14 @@ const FolderCreationModal = () => {
 				className="modal__container"
 			>
 				<TextControl
+					ref={ inputRef }
+					onKeyDown={ handleKeyDown }
 					label="Folder Name"
 					value={ folderName }
 					onChange={ ( value ) => setFolderName( value ) }
 				/>
 
-				<ButtonGroup className="modal__button-group">
+				<div className="modal__button-group">
 					<Button
 						text="Create"
 						variant="primary"
@@ -90,7 +103,7 @@ const FolderCreationModal = () => {
 						onClick={ () => dispatch( closeModal( 'folderCreation' ) ) }
 						isDestructive
 					/>
-				</ButtonGroup>
+				</div>
 			</Modal>
 		)
 	);
