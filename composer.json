@@ -1,6 +1,5 @@
 {
   "name": "rtcamp/godam",
-  "description": "1.0.0",
   "type": "wordpress-plugin",
   "require-dev": {
       "wp-coding-standards/wpcs": "^3.1",
