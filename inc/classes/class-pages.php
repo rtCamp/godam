@@ -2,7 +2,7 @@
 /**
  * Assets class.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc;

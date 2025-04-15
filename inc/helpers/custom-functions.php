@@ -2,7 +2,7 @@
 /**
  * Custom functions.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 defined( 'ABSPATH' ) || exit;

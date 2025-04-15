@@ -1,0 +1,671 @@
+# Copyright (C) 2024 
+# This file is distributed under the same license as the  package.
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: http://community.rtcamp.com/\n"
+"POT-Creation-Date: 2024-02-27 06:14:22+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2024-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Transcoder <support@rtcamp.com>\n"
+"Language-Team: Transcoder <support@rtcamp.com>\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-Country: United States\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: "
+"__;_e;_x:1,2c;_ex:1,2c;_n:1,2;_nx:1,2,4c;_n_noop:1,2;_nx_noop:1,2,3c;esc_"
+"attr__;esc_html__;esc_attr_e;esc_html_e;esc_attr_x:1,2c;esc_html_x:1,2c;\n"
+"X-Poedit-Basepath: ../\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-Bookmarks: \n"
+"X-Textdomain-Support: yes\n"
+"X-Generator: grunt-wp-i18n 1.0.3\n"
+
+#: admin/partials/rt-transcoder-admin-display.php:15
+msgid "Transcoder Service Settings"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:20
+msgid "Empowering The Web With WordPress"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:28
+msgid "Dismiss this notice"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:36
+msgid "Enter License Key"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:40
+msgid "Save Key"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:65
+msgid "Feature\\Plan"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:68
+#: admin/partials/rt-transcoder-admin-display.php:137
+msgid "Free"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:71
+msgid "Silver"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:79
+msgid "File Size Limit"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:82
+msgid "100MB"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:85
+msgid "16GB"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:90
+msgid "Bandwidth (monthly)"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:93
+msgid "5GB"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:96
+msgid "100GB"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:101
+msgid "Overage Bandwidth"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:104
+#: admin/partials/rt-transcoder-admin-display.php:115
+#: admin/partials/rt-transcoder-admin-display.php:126
+msgid "Not Available"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:107
+msgid "Currently not charged"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:112
+msgid "Amazon S3 Support"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:118
+#: admin/partials/rt-transcoder-admin-display.php:129
+msgid "Coming Soon"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:123
+msgid "HD Profile"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:134
+msgid "Pricing"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:140
+msgid "$9/month"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:199
+msgid ""
+"<strong>Note</strong>: Transcoder will only work on publicly accessible "
+"websites. If you are using Transcoder on a <strong>locally hosted "
+"website</strong> (i.e. <strong>localhost</strong>), we will be unable to "
+"identify the source of your audio/video transcoding requests."
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:215
+msgid "Number of video thumbnails generated"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:231
+msgid ""
+"This field specifies the number of video thumbnails that will be generated "
+"by the Transcoder. To choose from the generated thumbnails for a video, go "
+"to ​Media > Edit > Video Thumbnails. Thumbnails are only generated when the "
+"video is first uploaded. Maximum value is 10."
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:239
+msgid "Over-write video thumbnails after retranscoding"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:252
+msgid ""
+"If enabled, Transcoder will replace existing media thumbnails with "
+"regenerated ones after retranscoding. If disabled, media thumbnails will "
+"remain untouched."
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:260
+msgid "Allow admin to track real-time transcoding status on user profile"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:273
+msgid ""
+"If enabled, It will display check status button to know status of "
+"transcoding process at client side if that user have administrator rights."
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:286
+#. translators: 1. URL of documentation page.
+msgid "Visit our <a href=\"%1$s\">documentation page</a> for more details"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:324
+msgid "Spread the Word"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:332
+#. translators: Placeholde contains link of the home url.
+msgid "I use @rtMediaWP http://rt.cx/rtmedia on %s"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:335
+msgid "Post to Twitter Now"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:336
+msgid "Post to Twitter"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:341
+msgid "Share on Facebook Now"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:342
+msgid "Share on Facebook"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:347
+msgid "Rate rtMedia on Wordpress.org"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:348
+msgid "Rate on Wordpress.org"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:353
+#: admin/partials/rt-transcoder-admin-display.php:354
+msgid "Subscribe to our Feeds"
+msgstr ""
+
+#: admin/partials/rt-transcoder-admin-display.php:364
+#: admin/partials/rt-transcoder-admin-display.php:376
+msgid "Subscribe"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:119 admin/godam-retranscode-admin.php:120
+#: admin/godam-retranscode-admin.php:191 admin/godam-retranscode-admin.php:212
+#: admin/godam-retranscode-admin.php:232 admin/godam-retranscode-admin.php:283
+msgid "Retranscode Media"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:190
+msgid "Retranscode this single media"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:291
+msgid "Cheatin&#8217; uh?"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:325
+#. translators: Link to the media page.
+msgid "Unable to find any media. Are you sure <a href='%s'>some exist</a>?"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:351
+msgid "There are no media available to send for transcoding."
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:361
+msgid "You do not have sufficient bandwidth remaining to perform the transcoding."
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:362
+msgid "Your remaining bandwidth is : "
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:363
+msgid "Required bandwidth is: "
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:367
+msgid "You can select the files manually and try again."
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:374 admin/godam-retranscode-admin.php:388
+msgid "Proceed with retranscoding"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:402
+msgid ""
+"Your files are being re-transcoded. Do not navigate away from this page "
+"until the process is completed, as doing so will prematurely abort the "
+"script. Retranscoding can take a while, especially for larger files. You "
+"can view the progress below."
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:409
+#. translators: Count of media which were successfully transcoded with the time
+#. in seconds.
+msgid ""
+"To go back to the previous page, <a id=\"retranscode-goback\" "
+"href=\"#\">click here</a>."
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:412
+#. translators: Count of media which were successfully and media which were
+#. failed transcoded with the time in seconds and previout page link.
+msgid ""
+"All done! %1$s media file(s) were successfully sent for transcoding in %2$s "
+"seconds and there were %3$s failure(s). To try transcoding the failed media "
+"again, <a href=\"%4$s\">click here</a>. %5$s"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:414
+#. translators: Count of media which were successfully transcoded with the time
+#. in seconds and previout page link.
+msgid ""
+"All done! %1$s media file(s) were successfully sent for transcoding in %2$s "
+"seconds and there were 0 failures. %3$s"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:418 admin/godam-retranscode-admin.php:598
+msgid "You must enable Javascript in order to proceed!"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:424
+msgid "Abort the Operation"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:426
+msgid "Debugging Information"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:431
+#. translators: Total count of the media.
+msgid "Total Media: %s"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:436
+#. translators: Count of media which were successfully sent to the transcoder
+#. server.
+msgid "Media Sent for Retranscoding: %s"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:441
+#. translators: Count of media which were failed while sending to the
+#. transcoder server.
+msgid "Failed While Sending: %s"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:473
+msgid "Stopping..."
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:530
+#. translators: Media ID.
+msgid ""
+"The resize request was abnormally terminated (ID %s). This is likely due to "
+"the media exceeding available memory or some other type of fatal error."
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:583
+msgid ""
+"This tool will retranscode ALL audio/video media uploaded to your website. "
+"This can be handy if you need to transcode media files uploaded in the past."
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:585
+msgid ""
+"Sending your entire media library for retranscoding can consume a lot of "
+"your bandwidth allowance, so use this tool with care."
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:590
+#. translators: Placeholder is for admin media section link.
+msgid ""
+"You can retranscode specific media files (rather than ALL media) from the "
+"<a href='%s'>Media</a> page using Bulk Action via drop down or mouse hover "
+"a specific media (audio/video) file."
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:594
+msgid "To begin, just press the button below."
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:596
+msgid "Retranscode All Media"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:633
+#. translators: Media id of the invalid media type.
+msgid "Sending Failed: %d is an invalid media ID/type."
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:638
+#. translators: Placeholder is for Media Name and ID of media.
+msgid ""
+"&quot;%1$s&quot; (ID %2$s) is MP3 file already. No need to send for "
+"transcoding"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:642
+msgid "Your user account doesn't have permission to transcode"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:647
+msgid "The media is already being transcoded"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:694
+msgid "Unknown failure reason."
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:700
+#. translators: Media name, Media id and success message for successfull
+#. transcode.
+msgid "&quot;%1$s&quot; (ID %2$s) was successfully sent in %3$s seconds."
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:712
+#. translators: Media name, Media ID and message for failed transcode.
+msgid "&quot;%1$s&quot; (ID %2$s) failed to sent. The error message was: %3$s"
+msgstr ""
+
+#: admin/godam-retranscode-admin.php:734
+msgid "Insufficient bandwidth!"
+msgstr ""
+
+#: admin/godam-transcoder-actions.php:44
+msgid "Video Thumbnail"
+msgstr ""
+
+#: admin/godam-transcoder-actions.php:71 admin/godam-transcoder-actions.php:132
+msgid "Video Thumbnail:"
+msgstr ""
+
+#: admin/godam-transcoder-admin.php:201
+msgid "Are you sure you want to disable the transcoding service?"
+msgstr ""
+
+#: admin/godam-transcoder-admin.php:202
+msgid "Are you sure you want to enable the transcoding service?"
+msgstr ""
+
+#: admin/godam-transcoder-admin.php:203
+msgid "Something went wrong. Please "
+msgstr ""
+
+#: admin/godam-transcoder-admin.php:203
+msgid "refresh"
+msgstr ""
+
+#: admin/godam-transcoder-admin.php:203
+msgid " page."
+msgstr ""
+
+#: admin/godam-transcoder-admin.php:204
+msgid "Please enter the license key."
+msgstr ""
+
+#: admin/godam-transcoder-admin.php:232 admin/godam-transcoder-handler.php:656
+msgid "Current Plan"
+msgstr ""
+
+#: admin/godam-transcoder-admin.php:425
+msgid ""
+"rtMedia encoding service has been disabled because you are using Transcoder "
+"plugin."
+msgstr ""
+
+#: admin/godam-transcoder-admin.php:461
+#. translators: Markup to show the info about plugin subscription if no API key
+#. is there.
+msgid ""
+"<div class=\"%1$s\"><p><strong>IMPORTANT!</strong> The Transcoder plugin "
+"works with active transcoding services subscription plan. <a "
+"href=\"%2$s\">Click here</a> to subscribe or enable.</p></div>"
+msgstr ""
+
+#: admin/godam-transcoder-functions.php:87
+msgid "Image attachments are not handled by Transcoder plugin."
+msgstr ""
+
+#: admin/godam-transcoder-functions.php:92
+msgid "This file is being transcoded. Please wait."
+msgstr ""
+
+#: admin/godam-transcoder-functions.php:463 admin/godam-transcoder-functions.php:728
+#: admin/godam-transcoder-functions.php:901
+msgid "Check Status"
+msgstr ""
+
+#: admin/godam-transcoder-functions.php:478 admin/godam-transcoder-functions.php:484
+#: admin/godam-transcoder-functions.php:924
+msgid "This file is converting. Please refresh the page after some time."
+msgstr ""
+
+#: admin/godam-transcoder-functions.php:705
+msgid "Transcode Status"
+msgstr ""
+
+#: admin/godam-transcoder-functions.php:745
+msgid "File is transcoded."
+msgstr ""
+
+#: admin/godam-transcoder-functions.php:919
+msgid ""
+"This file is converting. Please click on check status button to know "
+"current status or refresh the page after some time. "
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:411
+msgid "Transcoding: Nearing quota limit."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:412
+msgid "You are nearing the quota limit for your transcoding service."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:412 admin/godam-transcoder-handler.php:443
+msgid "Following are the details:"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:412 admin/godam-transcoder-handler.php:443
+#: admin/godam-transcoder-handler.php:669
+msgid "Remaining"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:412 admin/godam-transcoder-handler.php:443
+msgid "Total:"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:442
+msgid "Transcoding: Usage quota over."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:443
+msgid "Your usage quota is over. Upgrade your plan"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:443
+msgid "Used:"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:592
+msgid "You have successfully subscribed."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:614
+msgid "This license key is invalid."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:629
+msgid "Transcoding service can not be activated on the localhost"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:656
+msgid "Unsubscribed"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:662
+msgid "Expires On"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:666
+msgid "Used"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:677
+msgid "Total"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:702
+msgid "Usage will automatically reset at the end of every month."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:705
+msgid "Upgrade for more bandwidth."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:709
+msgid "Your usage limit has been reached. Upgrade your plan."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:713
+msgid "Your plan has expired. Please consider upgrading if you need more bandwidth."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:716
+msgid "Your API key is not valid or is expired."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:719
+msgid "Currently, You are not subscribed to transcoding service. Please subscribe."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:725
+msgid "Transcoding usage this month"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:792
+msgid ""
+"Use transcoded_thumb_filename filter to modify video thumbnail name and "
+"transcoded_video_filename filter to modify video file name."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:996
+msgid "Could not read file."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1009 admin/godam-transcoder-handler.php:1163
+#: admin/godam-transcoder-handler.php:1232
+msgid "Transcoding: Download Failed"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1010 admin/godam-transcoder-handler.php:1164
+#: admin/godam-transcoder-handler.php:1233 admin/godam-transcoder-handler.php:1407
+#: admin/godam-transcoder-handler.php:1410
+msgid "Media"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1010 admin/godam-transcoder-handler.php:1164
+msgid " was successfully encoded but there was an error while downloading:"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1010
+msgid "You can "
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1010
+msgid "retry the download"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1023 admin/godam-transcoder-handler.php:1177
+#: admin/godam-transcoder-handler.php:1246
+msgid "Done"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1125
+msgid "Something went wrong. Invalid post request."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1157 admin/godam-transcoder-handler.php:1226
+msgid ""
+"Something went wrong. The required attachment id does not exists. It must "
+"have been deleted."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1233
+msgid " was successfully transcoded but there was an error while downloading:"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1272
+msgid "Transcoding disabled successfully."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1284
+msgid "Transcoding enabled successfully."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1403
+msgid "Transcoding: Something went wrong."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1406
+msgid " There was unexpected error occurred while transcoding this following media."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1411
+msgid " there was unexpected error occurred while transcoding this media."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1446
+msgid "Something went wrong. Please try again!"
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1464 admin/godam-transcoder-handler.php:1500
+msgid "Your file is transcoded successfully. Please refresh the page."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1495
+msgid ""
+"Looks like the server is taking too long to respond, Please try again in "
+"sometime."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1496
+msgid "Unfortunately, Transcoder failed to transcode this file."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1497
+msgid "Your file is getting transcoded. Please refresh after some time."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1498
+msgid "This file is still in the queue. Please refresh after some time."
+msgstr ""
+
+#: admin/godam-transcoder-handler.php:1499
+msgid "Your server should be ready to receive the transcoded file."
+msgstr ""
+
+#: godam.php:83
+msgid "Settings"
+msgstr ""
+
+#: godam.php:88
+msgid "Docs"
+msgstr ""

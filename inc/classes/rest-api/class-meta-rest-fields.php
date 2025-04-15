@@ -2,7 +2,7 @@
 /**
  * Register REST API endpoints for meta fields.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc\REST_API;

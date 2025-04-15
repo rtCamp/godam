@@ -2,7 +2,7 @@
 /**
  * Class RTGODAM_Transcoder_Rest_Routes
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 defined( 'ABSPATH' ) || exit;

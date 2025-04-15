@@ -215,9 +215,6 @@ const VideoEditor = ( { attachmentID } ) => {
 												forward: 10,
 												backward: 10,
 											},
-											progressControl: {
-												vertical: true,
-											},
 										},
 									} }
 									onTimeupdate={ handleTimeUpdate }
