@@ -52,7 +52,7 @@ function VideoEdit( {
 	const instanceId = useInstanceId( VideoEdit );
 	const videoPlayer = useRef();
 	const posterImageButton = useRef();
-	const { id, controls, autoplay, poster, src, tracks, sources, muted, loop, playsInline, preload } = attributes;
+	const { id, controls, autoplay, poster, src, tracks, sources, muted, loop, preload } = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
 
@@ -62,12 +62,12 @@ function VideoEdit( {
 		autoplay,
 		preload,
 		fluid: true,
-		playsinline: playsInline,
+		playsinline: true,
 		loop,
 		muted,
 		poster: poster || defaultPoster,
 		sources,
-	} ), [ controls, autoplay, preload, playsInline, loop, muted, poster, defaultPoster, sources ] );
+	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources ] );
 
 	// Memoize the video component to prevent rerenders
 	const videoComponent = useMemo( () => (

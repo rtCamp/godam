@@ -4,7 +4,7 @@ Tags: Transcoder, DAM, Interactive Video Layers, Adaptive Bitrate Streaming, Vid
 Requires at least: 6.5
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -96,33 +96,33 @@ Method 2: Manual Upload
 The GoDAM menu should appear on your admin dashboard!
 
 == Frequently Asked Questions ==
-Q. What is GoDAM, and how does it work?
+= What is GoDAM, and how does it work? =
 A. GoDAM is a media management service that seamlessly integrates with your WordPress site to optimize and enhance your audio and video content. It automatically converts uploaded audio files to MP3 and video files to MPD formats. Additionally, GoDAM offers a suite of powerful features, including thumbnail generation, shortcode support, customizable video layers (like Gravity Forms, text/image CTAs, video hotspots, and ads), adaptive bitrate streaming for smooth playback, and advanced asset management tools.
 
 To get started, you just need to install the GoDAM plugin on your WordPress website and subscribe to a plan. Once set up, GoDAM helps you manage, edit, and deliver media content more efficiently, making it a perfect solution for creators, educators, and businesses.
 
-Q. Which file types are supported?
+= Which file types are supported? =
 A. GoDAM converts all supported audio files to MP3 format and video files to MP4 format.
 Supported input formats:
 • Audio: MP3, M4A, WAV, OGG
 • Video: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
 
-Q. Who is GoDAM designed for?
+= Who is GoDAM designed for? =
 A. Our solution is perfect for content creators, marketers, educators, e-commerce businesses, and anyone looking to enhance their video strategy with customizable and interactive features.
 
-Q. What are Video Layers, and how do they work?
+= What are Video Layers, and how do they work? =
 A. Video Layers allow you to add interactive elements like forms, CTAs, ads, and hotspots directly onto your videos. For example, you can pause a video to collect leads using Gravity Forms or display a call-to-action at a specific timestamp.
 
-Q. What is adaptive bitrate streaming?
+= What is adaptive bitrate streaming? =
 A. Adaptive bitrate streaming ensures that viewers get the best possible video quality based on their network conditions. It adjusts the resolution dynamically, providing a seamless viewing experience even on slower connections.
 
-Q. Can I customize the video player?
+= Can I customize the video player? =
 A. Yes, our customizable player allows you to tailor the controls, branding, and features to match your unique requirements and branding guidelines.
 
-Q. Is there a free trial available?
+= Is there a free trial available? =
 A. Yes! You can start with a 7-day free trial to explore all features. If you decide not to continue with the subscribed plan, you can cancel anytime and remove your credit card.
 
-Q. Can I track video engagement and analytics?
+= Can I track video engagement and analytics? =
 A. Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and heatmaps to see which parts of your videos are most engaging. These insights help you optimize your content strategy.
 
 == Screenshots ==
@@ -153,6 +153,16 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Feat: Cloud storage and CDN integration.
 - Feat: Advanced analytics and engagement tracking.
 - Feat: Enhanced WordPress Media Library for better asset management.
+
+= v1.0.1 (April 14, 2025) =
+
+- Fix: FAQ formatting for readme.txt.
+- Fix: Ad loading logic for third-party and self-hosted ads.
+- Fix: Enhance the GoDAM video player's UI for mobile devices.
+
+= v1.0.2 (April 15, 2025) =
+
+- Fix: Enhance accessibility features for the media library
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.

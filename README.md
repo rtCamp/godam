@@ -10,7 +10,7 @@ Tested up to: 6.7
 
 Requires PHP: 7.4
 
-Stable tag: 1.0.0
+Stable tag: 1.0.2
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -155,18 +155,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 12. Video Layer Selection
 13. Attachment Video Details
 14. Video Analytics
-
-## Changelog
-## v1.0.0 (March 05, 2025)
-
-- **Feat:** Initial release of GoDAM plugin.
-- **Feat:** Automatic transcoding for audio and video files.
-- **Feat:** Adaptive bitrate streaming for smooth playback.
-- **Feat:** Interactive video layers (CTAs, forms, hotspots, ads).
-- **Feat:** Customizable video player with branding option.
-- **Feat:** Cloud storage and CDN integration.
-- **Feat:** Advanced analytics and engagement tracking.
-- **Feat:** Enhanced WordPress Media Library for better asset management.
 
 ## External services
 

@@ -33,7 +33,6 @@ import GoDAM from '../../../../assets/src/images/GoDAM.png';
 /**
  * Global variables
  */
-const PREMIUM_LAYERS = [ 'form', 'hotspot', 'ad' ];
 const validAPIKey = window?.godamAPIKeyData?.valid_api_key;
 
 library.add( fas );
@@ -73,6 +72,57 @@ function GODAMPlayer( videoRef = null ) {
 		const isPreviewEnabled = videoSetupOptions.preview;
 
 		const player = videojs( video, videoSetupControls );
+
+		video.addEventListener( 'loadedmetadata', () => {
+			const playerElement = player.el_;
+
+			const captionControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-subs-caps-button.vjs-control.vjs-hidden' );
+
+			if ( captionControlBtn ) {
+				const qualityControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-quality-menu-wrapper' );
+				if ( qualityControlBtn ) {
+					qualityControlBtn.style.setProperty( 'right', '80px' );
+				}
+			}
+		} );
+
+		// Function to move video controls
+		function moveVideoControls() {
+			try {
+				const playerElement = player.el_;
+				const newHeight = playerElement.offsetHeight;
+
+				const skipButtons = playerElement.querySelectorAll(
+					'.vjs-skip-backward-5, .vjs-skip-backward-10, .vjs-skip-backward-30, .vjs-skip-forward-5, .vjs-skip-forward-10, .vjs-skip-forward-30',
+				);
+
+				skipButtons.forEach( ( button ) => {
+					button.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+				} );
+			} catch ( error ) {
+				// Silently fail - do nothing.
+			}
+		}
+
+		function handleVideoResize() {
+			// if screen size if greater than 768px then skip.
+			if ( window.innerWidth > 768 ) {
+				return;
+			}
+
+			// Apply debounce to avoid multiple calls.
+			if ( handleVideoResize.timeout ) {
+				clearTimeout( handleVideoResize.timeout );
+			}
+			handleVideoResize.timeout = setTimeout( () => {
+				moveVideoControls();
+			}, 100 );
+		}
+
+		handleVideoResize();
+
+		// On screen resize, update the video dimensions.
+		window.addEventListener( 'resize', handleVideoResize );
 
 		let isPreview = null;
 
@@ -221,7 +271,7 @@ function GODAMPlayer( videoRef = null ) {
 						el.className += ' vjs-custom-play-button';
 						const img = document.createElement( 'img' );
 
-						if ( controlBarSettings.customBrandImg.length ) {
+						if ( controlBarSettings.customBrandImg?.length ) {
 							img.src = controlBarSettings.customBrandImg;
 						} else if ( godamSettings?.brandImage ) {
 							img.src = godamSettings.brandImage;
@@ -245,25 +295,6 @@ function GODAMPlayer( videoRef = null ) {
 				// Register the component before using it
 				videojs.registerComponent( 'CustomButton', CustomButton );
 				controlBar.addChild( 'CustomButton', {} );
-			}
-
-			// Vertical control bar handling
-			if ( controlBarSettings.controlBarPosition === 'vertical' ) {
-				controlBar.addClass( 'vjs-control-bar-vertical' );
-
-				controlBar.children().forEach( ( control ) => {
-					const el = control.el();
-					el.classList.add( 'vjs-control-vertical' );
-
-					if ( el.classList.contains( 'vjs-volume-panel' ) ) {
-						el.classList.add( 'vjs-volume-panel-vertical' );
-						el.classList.remove( 'vjs-volume-panel-horizontal' );
-					}
-
-					if ( el.classList.contains( 'vjs-volume-horizontal' ) ) {
-						el.classList.add( 'vjs-volume-vertical' );
-					}
-				} );
 			}
 		} );
 
@@ -343,7 +374,7 @@ function GODAMPlayer( videoRef = null ) {
 
 				// Observe changes in the layer's DOM for the confirmation message
 				const observer = new MutationObserver( ( mutations ) => {
-					mutations.forEach( ( mutation ) => {
+					mutations.forEach( () => {
 						if (
 							layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ||
 							! layerObj.layerElement.querySelector( 'form.wp-polls-form' )
@@ -673,7 +704,7 @@ function GODAMPlayer( videoRef = null ) {
 		try {
 			player.qualityMenu();
 		} catch ( error ) {
-			console.log( error );
+			// Silently fail - do nothing.
 		}
 	} );
 }

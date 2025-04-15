@@ -2,7 +2,7 @@
 /**
  * REST API class for Analytics.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc\REST_API;

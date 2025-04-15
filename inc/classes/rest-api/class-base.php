@@ -2,7 +2,7 @@
 /**
  * Abstract class for REST API endpoints with register_meta support.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc\REST_API;
