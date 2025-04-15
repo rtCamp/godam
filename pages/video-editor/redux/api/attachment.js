@@ -15,6 +15,9 @@ export const attachmentAPI = createApi( {
 			query: ( id ) => ( {
 				url: `/wp/v2/media/${ id }`,
 				method: 'GET',
+				headers: {
+					'X-WP-Nonce': window.videoData.nonce,
+				},
 			} ),
 		} ),
 		saveAttachmentMeta: builder.mutation( {
