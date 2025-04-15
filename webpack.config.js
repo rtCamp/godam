@@ -117,10 +117,9 @@ fs.readdirSync( pagesDir ).forEach( ( folder ) => {
 } );
 
 const pages = {
-	mode: 'development',
 	entry: entryPoints, // Dynamic entry points for each page
 	output: {
-		path: path.resolve( __dirname, './pages/build' ), // Output directory
+		path: path.resolve( __dirname, './assets/build/pages' ), // Output directory
 		filename: '[name].js', // Each entry gets its own output file
 	},
 	module: {
