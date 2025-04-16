@@ -81,7 +81,7 @@ function GODAMPlayer( videoRef = null ) {
 			if ( captionControlBtn ) {
 				const qualityControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-quality-menu-wrapper' );
 				if ( qualityControlBtn ) {
-					qualityControlBtn.style.setProperty( 'right', '80px' );
+					qualityControlBtn.classList.add( 'mobile-right-80' );
 				}
 			}
 		} );
