@@ -21,6 +21,13 @@ const sharedConfig = {
 	},
 	plugins: [
 		...defaultConfig.plugins
+			/**
+			 * Remove the RTL CSS plugin from the default configuration.
+			 *
+			 * RTL CSS is not currently in use, and its output was being incorrectly placed in the JS build directory.
+			 * This plugin can be re-enabled in the future if RTL support is needed.
+			 */
+			.filter( ( plugin ) => plugin.constructor.name !== 'RtlCssPlugin' )
 			.map(
 				( plugin ) => {
 					if ( plugin.constructor.name === 'MiniCssExtractPlugin' ) {
@@ -47,10 +54,12 @@ const styles = {
 	entry: () => {
 		const entries = {};
 
-		const dir = './assets/src/css';
-		fs.readdirSync( dir ).forEach( ( fileName ) => {
-			const fullPath = `${ dir }/${ fileName }`;
-			if ( ! fs.lstatSync( fullPath ).isDirectory() ) {
+		const CSS_DIR = path.resolve( process.cwd(), 'assets', 'src', 'css' );
+
+		fs.readdirSync( CSS_DIR ).forEach( ( fileName ) => {
+			const fullPath = `${ CSS_DIR }/${ fileName }`;
+			// Skip directories and files starting with _
+			if ( ! fs.lstatSync( fullPath ).isDirectory() && ! fileName.startsWith( '_' ) ) {
 				entries[ fileName.replace( /\.[^/.]+$/, '' ) ] = fullPath;
 			}
 		} );
@@ -115,6 +124,8 @@ fs.readdirSync( pagesDir ).forEach( ( folder ) => {
 		entryPoints[ folder ] = entryFile; // Use the folder name as the key
 	}
 } );
+
+entryPoints[ 'page-css' ] = path.resolve( process.cwd(), 'pages', 'index.js' );
 
 const pages = {
 	entry: entryPoints, // Dynamic entry points for each page

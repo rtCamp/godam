@@ -310,14 +310,16 @@ class Pages {
 		$screen = get_current_screen();
 
 		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->dashboard_page_id, $this->help_page_id ), true ) ) {
-			wp_register_style(
-				'transcoder-page-style-godam',
-				RTGODAM_URL . 'assets/build/pages/style.css',
+
+			wp_register_script(
+				'rtgodam-page-style',
+				RTGODAM_URL . 'assets/build/pages/page-css.js',
 				array( 'wp-components' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/style.css' )
+				filemtime( RTGODAM_PATH . 'assets/build/pages/page-css.js' ),
+				true
 			);
 
-			wp_enqueue_style( 'transcoder-page-style-godam' );
+			wp_enqueue_script( 'rtgodam-page-style' );
 			wp_enqueue_media();
 		}
 		// Check if this is your custom admin page.

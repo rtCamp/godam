@@ -80,13 +80,11 @@
 	"scripts": {
 		"start:blocks": "wp-scripts start --config ./node_modules/@wordpress/scripts/config/webpack.config.js --webpack-src-dir=./assets/src/blocks/ --output-path=./assets/build/blocks/",
 		"start:js": "wp-scripts start --config ./webpack.config.js",
-		"start:pages-css": "npx tailwindcss -i ./pages/style.css -o ./assets/build/pages/style.css --watch",
 		"start": "npm-run-all --parallel start:*",
 		"build:dev": "cross-env NODE_ENV=development npm-run-all 'build:!(dev|prod)'",
 		"build:prod": "cross-env NODE_ENV=production npm-run-all 'build:!(dev|prod)'",
 		"build:blocks": "wp-scripts build --config ./node_modules/@wordpress/scripts/config/webpack.config.js --webpack-src-dir=./assets/src/blocks/ --output-path=./assets/build/blocks/",
 		"build:js": "wp-scripts build --config ./webpack.config.js",
-		"build:page-css": "tailwindcss -i ./pages/style.css -o ./assets//build/pages/style.css",
 		"lint": "npm-run-all --parallel lint:*",
 		"lint:css": "wp-scripts lint-style",
 		"lint:css:fix": "npm run lint:css --fix --",
