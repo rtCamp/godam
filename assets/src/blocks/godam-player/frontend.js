@@ -81,7 +81,7 @@ function GODAMPlayer( videoRef = null ) {
 			if ( captionControlBtn ) {
 				const qualityControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-quality-menu-wrapper' );
 				if ( qualityControlBtn ) {
-					qualityControlBtn.style.setProperty( 'right', '80px' );
+					qualityControlBtn.classList.add( 'mobile-right-80' );
 				}
 			}
 		} );
@@ -245,9 +245,9 @@ function GODAMPlayer( videoRef = null ) {
 			// Update classes
 			playButton.removeClass( ...alignments ); // Remove all alignment classes
 			if (
-				alignments.includes( `${ controlBarSettings.playButtonPosition }-align` )
+				alignments.includes( `${ controlBarSettings?.playButtonPosition }-align` )
 			) {
-				playButton.addClass( `${ controlBarSettings.playButtonPosition }-align` ); // Add the selected alignment class
+				playButton.addClass( `${ controlBarSettings?.playButtonPosition }-align` ); // Add the selected alignment class
 			}
 
 			// Control bar and volume panel handling
