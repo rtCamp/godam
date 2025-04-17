@@ -7,7 +7,7 @@ import Editor from '@monaco-editor/react';
 /**
  * WordPress dependencies
  */
-import { Button, ToggleControl, Modal, Panel, PanelBody, Notice, CustomSelectControl } from '@wordpress/components';
+import { Button, ToggleControl, Modal, Panel, PanelBody, Notice } from '@wordpress/components';
 import { arrowLeft, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
@@ -23,25 +23,23 @@ import WPForm from '../forms/WPForm';
 import CF7 from '../forms/CF7';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 
-const SUPPORTED_FORM_TYPES = [
-	{
-		key: 'gravity',
-		name: __( 'Gravity Forms', 'godam' ),
-	},
-	{
-		key: 'cf7',
-		name: __( 'Contact Form 7', 'godam' ),
-	},
-	{
-		key: 'wpforms',
-		name: __( 'WPForms', 'godam' ),
-	},
-];
-
 const FormLayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
+
+	function getFormPluginName( formType ) {
+		switch ( formType ) {
+			case 'gravity':
+				return 'Gravity Forms';
+			case 'wpforms':
+				return 'WPForms';
+			case 'cf7':
+				return 'Contact Form 7';
+			default:
+				return 'Gravity Forms';
+		}
+	}
 
 	const handleDeleteLayer = () => {
 		dispatch( removeLayer( { id: layer.id } ) );
@@ -57,7 +55,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 		<>
 			<div className="flex justify-between items-center border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="text-base">{ __( 'Form layer at', 'godam' ) } { layer.displayTime }s</p>
+				<p className="text-base">{ getFormPluginName( layer?.formType ) }{ __( ' layer at', 'godam' ) } { layer.displayTime }s</p>
 				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
 				{ isOpen && (
 					<Modal title={ __( 'Delete layer', 'godam' ) } onRequestClose={ () => setOpen( false ) }>
