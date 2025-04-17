@@ -5,8 +5,8 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const restURL = window.godamRestRoute.url || '';
 
-export const contactForm7Api = createApi( {
-	reducerPath: 'contactForm7Api',
+export const wpFormsApi = createApi( {
+	reducerPath: 'wpFormsApi',
 	baseQuery: fetchBaseQuery( {
 		baseUrl: restURL,
 		prepareHeaders: ( headers ) => {
@@ -15,9 +15,9 @@ export const contactForm7Api = createApi( {
 		},
 	} ),
 	endpoints: ( builder ) => ( {
-		getCF7Forms: builder.query( {
+		getWPForms: builder.query( {
 			query: () => ( {
-				url: '/contact-form-7/v1/contact-forms',
+				url: '/wpforms/v1/forms',
 				method: 'GET',
 			} ),
 		} ),
@@ -25,6 +25,6 @@ export const contactForm7Api = createApi( {
 } );
 
 export const {
-	useGetCF7FormsQuery,
-} = contactForm7Api;
+	useGetWPFormsQuery,
+} = wpFormsApi;
 

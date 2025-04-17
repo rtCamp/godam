@@ -7,8 +7,8 @@ import axios from 'axios';
 /**
  * WordPress dependencies
  */
-import { Button } from '@wordpress/components';
-import { chevronRight } from '@wordpress/icons';
+import { Button, SelectControl } from '@wordpress/components';
+import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 
@@ -18,6 +18,17 @@ import { useState, useEffect } from '@wordpress/element';
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
+
+const templateOptions = [
+	{
+		value: 'godam',
+		label: 'GoDAM',
+	},
+	{
+		value: 'default',
+		label: 'Default',
+	},
+];
 
 const CF7 = ( { layerID } ) => {
 	const dispatch = useDispatch();
@@ -58,6 +69,8 @@ const CF7 = ( { layerID } ) => {
 		restURL,
 	] );
 
+	const formTheme = layer.theme || 'godam';
+
 	// If we want to disable the premium layers the we can use this code
 	// const isValidAPIKey = window?.videoData?.valid_api_key;
 	// For now we are enabling all the features
@@ -70,13 +83,35 @@ const CF7 = ( { layerID } ) => {
 					<FormSelector disabled={ ! isValidAPIKey } className="gravity-form-selector mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
+			<SelectControl
+				className="mb-4"
+				label={ __( 'Select form theme', 'godam' ) }
+				options={ templateOptions }
+				value={ layer.theme || 'godam' }
+				onChange={ ( value ) =>
+					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
+				}
+				disabled={ ! isValidAPIKey }
+			/>
+
 			<LayerControl>
 				<>
 					<div
 						style={ {
 							backgroundColor: layer.bg_color,
-						} } className="easydam-layer">
-						<div className="form-container" dangerouslySetInnerHTML={ { __html: formHTML } } />
+						} } className="easydam-layer relative">
+						<div className={ `form-container ${ formTheme === 'godam' ? 'rtgodam-wpcf7-form' : '' }` } dangerouslySetInnerHTML={ { __html: formHTML } } />
+
+						{
+							formHTML &&
+							<Button
+								href={ `${ window?.videoData?.adminUrl }admin.php?page=wpcf7&post=${ layer.cf7_id }&action=edit` }
+								target="_blank"
+								variant="secondary"
+								icon={ pencil }
+								className="absolute top-2 right-2"
+							>{ __( 'Edit form', 'godam' ) }</Button>
+						}
 					</div>
 					{ layer.allow_skip &&
 					<Button

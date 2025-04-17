@@ -19,6 +19,7 @@ import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
 
 import GravityForm from '../forms/GravityForm';
 import NinjaForm from '../forms/NinjaForm';
+import WPForm from '../forms/WPForm';
 import CF7 from '../forms/CF7';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 
@@ -30,10 +31,6 @@ const SUPPORTED_FORM_TYPES = [
 	{
 		key: 'cf7',
 		name: __( 'Contact Form 7', 'godam' ),
-	},
-	{
-		key: 'ninjaforms',
-		name: __( 'Ninja Forms', 'godam' ),
 	},
 	{
 		key: 'wpforms',
@@ -53,7 +50,6 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 	// If we want to disable the premium layers the we can use this code
 	// const isValidAPIKey = window?.videoData?.valid_api_key;
-
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
@@ -88,42 +84,24 @@ const FormLayer = ( { layerID, goBack } ) => {
 				</Notice>
 			}
 
-			{ /* Form type */ }
-			<CustomSelectControl
-				className="mb-4"
-				label={ __( 'Form type', 'godam' ) }
-				value={ SUPPORTED_FORM_TYPES.find( ( option ) => option.key === layer.formType ) }
-				onChange={ ( value ) => {
-					const formType = value?.selectedItem?.key;
-					dispatch( updateLayerField( { id: layer.id, field: 'formType', value: formType } ) );
-
-					if ( formType === 'gravity' ) {
-						dispatch( updateLayerField( { id: layer.id, field: 'gf_id', value: '' } ) );
-					} else if ( formType === 'cf7' ) {
-						dispatch( updateLayerField( { id: layer.id, field: 'cf7_id', value: '' } ) );
-					} else if ( formType === 'ninjaforms' ) {
-						dispatch( updateLayerField( { id: layer.id, field: 'ninjaform_id', value: '' } ) );
-					} else if ( formType === 'wpforms' ) {
-						dispatch( updateLayerField( { id: layer.id, field: 'wpform_id', value: '' } ) );
-					}
-				} }
-				options={ SUPPORTED_FORM_TYPES }
-				disabled={ ! isValidAPIKey }
-			/>
-
 			{
-				layer.formType === 'gravity' &&
+				layer.form_type === 'gravity' &&
 				<GravityForm layerID={ layer.id } />
 			}
 
 			{
-				layer.formType === 'cf7' &&
+				layer.form_type === 'cf7' &&
 				<CF7 layerID={ layer.id } />
 			}
 
 			{
-				layer.formType === 'ninjaforms' &&
+				layer.form_type === 'ninjaforms' &&
 				<NinjaForm layerID={ layer.id } />
+			}
+
+			{
+				layer.form_type === 'wpforms' &&
+				<WPForm layerID={ layer.id } />
 			}
 
 			<ToggleControl

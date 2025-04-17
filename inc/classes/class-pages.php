@@ -330,9 +330,9 @@ class Pages {
 				true
 			);
 
-			$is_gf_active  = is_plugin_active( 'gravityforms/gravityforms.php' );
-			$is_cf7_active = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
-			$is_nf_active  = is_plugin_active( 'ninja-forms/ninja-forms.php' );
+			$is_gf_active      = is_plugin_active( 'gravityforms/gravityforms.php' );
+			$is_cf7_active     = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
+			$is_wpforms_active = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
@@ -343,9 +343,10 @@ class Pages {
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 					'valid_api_key'    => rtgodam_is_api_key_valid(),
+					'adminUrl'         => admin_url(),
 					'gf_active'        => $is_gf_active,
 					'cf7_active'       => $is_cf7_active,
-					'nf_active'        => $is_nf_active,
+					'wpforms_active'   => $is_wpforms_active,
 				)
 			);
 
@@ -353,9 +354,10 @@ class Pages {
 			if ( $is_gf_active ) {
 				$this->enqueue_gravity_forms_styles();
 			}
-			// Enqueue Ninja Forms styles if the plugin is active.
-			if ( $is_nf_active ) {
-				$this->enqueue_ninja_forms_scripts();
+
+			// Enqueue WPForms styles if the plugin is active.
+			if ( $is_wpforms_active ) {
+				$this->enqueue_wpforms_styles();
 			}
 
 			$rtgodam_user_data = rtgodam_get_user_data();
@@ -578,7 +580,7 @@ class Pages {
 	}
 
 	/**
-	 * Enqueue Ninja Forms scripts and styles.
+	 * Enqueue WPForms scripts and styles.
 	 *
 	 * @return void
 	 */
@@ -601,5 +603,20 @@ class Pages {
 			// Enqueue the Ninja Forms scripts and styles.
 			NF_Display_Render::enqueue_scripts( $form['id'], true );
 		}
+	}
+
+	/**
+	 * Enqueue WPForms styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_wpforms_styles() {
+		// Enqueue the WPForms styles.
+		wp_enqueue_style(
+			'wpforms-full',
+			WPFORMS_PLUGIN_URL . 'assets/css/frontend/classic/wpforms-full.css',
+			array(),
+			WPFORMS_VERSION
+		);
 	}
 }

@@ -377,7 +377,8 @@ function GODAMPlayer( videoRef = null ) {
 					mutations.forEach( () => {
 						if (
 							layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ||
-							! layerObj.layerElement.querySelector( 'form.wp-polls-form' )
+							layerObj.layerElement.querySelector( '.wpforms-confirmation-container-full' ) ||
+							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -391,6 +392,8 @@ function GODAMPlayer( videoRef = null ) {
 				observer.observe( layerObj.layerElement, {
 					childList: true,
 					subtree: true,
+					attributes: true,
+					attributeFilter: [ 'class' ],
 				} );
 
 				skipButton.addEventListener( 'click', () => {

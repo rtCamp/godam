@@ -7,6 +7,9 @@ import { useSelector, useDispatch } from 'react-redux';
  */
 import { addLayer, setCurrentLayer } from '../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
+import GFIcon from '../assets/layers/GFIcon.svg';
+import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
+import CF7Icon from '../assets/layers/CF7Icon.svg';
 
 /**
  * WordPress dependencies
@@ -72,7 +75,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	// For now we are enabling all the features
 	const isValidAPiKey = true;
 
-	const addNewLayer = ( type ) => {
+	const addNewLayer = ( type, form_type ) => {
 		if ( premiumLayers.includes( type ) && ! isValidAPiKey ) {
 			return;
 		}
@@ -83,11 +86,11 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 					id: uuidv4(),
 					displayTime: currentTime,
 					type,
-					formType: 'gravity',
+					form_type: form_type || 'gravity',
 					submitted: false,
 					allow_skip: true,
 					custom_css: '',
-					theme: 'orbital',
+					theme: '',
 				} ) );
 				break;
 			case 'cta':
@@ -183,6 +186,20 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 									toolTipMessage = '';
 								}
 
+								let icon, layerText;
+								if ( layer.type === 'form' && layer.form_type === 'gravity' ) {
+									icon = GFIcon;
+									layerText = __( 'Gravity Form', 'godam' );
+								} else if ( layer.type === 'form' && layer.form_type === 'wpforms' ) {
+									icon = WPFormsIcon;
+									layerText = __( 'WPForms', 'godam' );
+								} else if ( layer.type === 'form' && layer.form_type === 'cf7' ) {
+									icon = CF7Icon;
+									layerText = __( 'Contact Form 7', 'godam' );
+								} else {
+									layerText = layer?.type?.toUpperCase();
+								}
+
 								return (
 									<Tooltip
 										key={ layer.id }
@@ -199,8 +216,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 												} }
 											>
 												<div className="flex items-center gap-2">
-													<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type ).icon } />
-													<p className="m-0 text-base">{ layer?.type?.toUpperCase() } layer at <b>{ layer.displayTime }s</b></p>
+													{ icon && <img src={ icon } alt={ layer.type } className="w-6 h-6" /> }
+													{ ! icon && <Icon icon={ layerTypes.find( ( l ) => l.type === layer.type )?.icon } /> }
+													<p className="m-0 text-base">{ layerText } layer at <b>{ layer.displayTime }s</b></p>
 												</div>
 												<div>
 													<Icon icon={ arrowRight } />
@@ -259,7 +277,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 
 						{ isOpen && (
 							<LayerSelector
-								isGFPluginActive={ isGFPluginActive }
+								isGFPluginActive={ window?.videoData?.gf_active }
+								isWPFormsPluginActive={ window?.videoData?.wpforms_active }
+								isCF7PluginActive={ window?.videoData?.cf7_active }
 								closeModal={ closeModal }
 								addNewLayer={ addNewLayer }
 							/>

@@ -19,7 +19,7 @@ function FormSelector( { className, disabled, formID, forms, handleChange } ) {
 			<ComboboxControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
-				label={ __( 'Select gravity form', 'godam' ) }
+				label={ __( 'Select form', 'godam' ) }
 				className={ `${ className } ${ disabled ? 'disabled' : '' }` }
 				value={ form }
 				onChange={ setFormData }

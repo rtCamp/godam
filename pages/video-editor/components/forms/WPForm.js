@@ -7,7 +7,7 @@ import axios from 'axios';
 /**
  * WordPress dependencies
  */
-import { Button, SelectControl } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
@@ -19,53 +19,41 @@ import { updateLayerField } from '../../redux/slice/videoSlice';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
 
-const templateOptions = [
-	{
-		value: 'orbital',
-		label: 'Orbital',
-	},
-	{
-		value: 'gravity',
-		label: 'Gravity',
-	},
-];
-
-const GravityForm = ( { layerID } ) => {
+const CF7 = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
-	const gforms = useSelector( ( state ) => state.videoReducer.gforms );
+	const wpForms = useSelector( ( state ) => state.videoReducer.wpforms );
 
-	const forms = gforms.map( ( form ) => ( {
+	const restURL = window.godamRestRoute.url || '';
+
+	const [ formHTML, setFormHTML ] = useState( '' );
+
+	const forms = wpForms.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
 	} ) );
 
-	const [ formHTML, setFormHTML ] = useState( '' );
-
-	const restURL = window.godamRestRoute.url || '';
-
 	const changeFormID = ( formID ) => {
-		dispatch( updateLayerField( { id: layer.id, field: 'gf_id', value: formID } ) );
+		dispatch( updateLayerField( { id: layer.id, field: 'wpform_id', value: formID } ) );
 	};
 
 	useEffect( () => {
-		// Fetch the Gravity Form HTML
-		const fetchGravityForm = ( formId, theme ) => {
-			axios.get( window.pathJoin( [ restURL, '/godam/v1/gform' ] ), {
+		// Fetch the CF7 Form HTML.
+		const fetchWPForm = ( formId, theme ) => {
+			axios.get( window.pathJoin( [ restURL, '/godam/v1/wpform' ] ), {
 				params: { id: formId, theme },
 			} ).then( ( response ) => {
 				setFormHTML( response.data );
 			} ).catch( () => {
-				// Handle error without using console
 				setFormHTML( '<p>Error loading form. Please try again later.</p>' );
 			} );
 		};
 
-		if ( layer.gf_id ) {
-			fetchGravityForm( layer.gf_id, layer.theme );
+		if ( layer.wpform_id ) {
+			fetchWPForm( layer.wpform_id, layer.theme );
 		}
 	}, [
-		layer.gf_id,
+		layer.wpform_id,
 		layer.theme,
 		restURL,
 	] );
@@ -77,22 +65,10 @@ const GravityForm = ( { layerID } ) => {
 
 	return (
 		<>
-
 			{
 				forms.length > 0 &&
-					<FormSelector disabled={ ! isValidAPIKey } className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
+					<FormSelector disabled={ ! isValidAPIKey } className="gravity-form-selector mb-4" formID={ layer.wpform_id } forms={ forms } handleChange={ changeFormID } />
 			}
-
-			<SelectControl
-				className="mb-4"
-				label={ __( 'Select form theme', 'godam' ) }
-				options={ templateOptions }
-				value={ layer.theme || 'orbital' }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
-				}
-				disabled={ ! isValidAPIKey }
-			/>
 
 			<LayerControl>
 				<>
@@ -101,10 +77,11 @@ const GravityForm = ( { layerID } ) => {
 							backgroundColor: layer.bg_color,
 						} } className="easydam-layer">
 						<div className="form-container" dangerouslySetInnerHTML={ { __html: formHTML } } />
+
 						{
 							formHTML &&
 							<Button
-								href={ `${ window?.videoData?.adminUrl }admin.php?page=gf_edit_forms&id=${ layer.gf_id }` }
+								href={ `${ window?.videoData?.adminUrl }admin.php?page=wpforms-builder&view=fields&form_id=${ layer.wpform_id }` }
 								target="_blank"
 								variant="secondary"
 								icon={ pencil }
@@ -113,15 +90,15 @@ const GravityForm = ( { layerID } ) => {
 						}
 					</div>
 					{ layer.allow_skip &&
-					<Button
-						className="skip-button"
-						variant="primary"
-						icon={ chevronRight }
-						iconSize="18"
-						iconPosition="right"
-					>
-						{ __( 'Skip', 'godam' ) }
-					</Button>
+						<Button
+							className="skip-button"
+							variant="primary"
+							icon={ chevronRight }
+							iconSize="18"
+							iconPosition="right"
+						>
+							{ __( 'Skip', 'godam' ) }
+						</Button>
 					}
 				</>
 			</LayerControl>
@@ -129,4 +106,4 @@ const GravityForm = ( { layerID } ) => {
 	);
 };
 
-export default GravityForm;
+export default CF7;

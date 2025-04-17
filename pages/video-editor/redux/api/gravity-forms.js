@@ -11,7 +11,7 @@ export const gravityFormsAPI = createApi( {
 		baseUrl: window.pathJoin( [ restURL, '/godam/v1/' ] ),
 	} ),
 	endpoints: ( builder ) => ( {
-		getForms: builder.query( {
+		getGravityForms: builder.query( {
 			query: () => ( {
 				url: 'gforms',
 				params: {
@@ -24,5 +24,5 @@ export const gravityFormsAPI = createApi( {
 } );
 
 export const {
-	useGetFormsQuery,
+	useGetGravityFormsQuery,
 } = gravityFormsAPI;

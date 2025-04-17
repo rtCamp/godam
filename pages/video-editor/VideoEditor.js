@@ -3,7 +3,6 @@
  */
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import axios from 'axios';
 
 /**
  * WordPress dependencies
@@ -17,11 +16,22 @@ import { __ } from '@wordpress/i18n';
 import VideoJSPlayer from './VideoJSPlayer';
 import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
-import { initializeStore, saveVideoMeta, setCurrentTab, setLoading, setGravityForms, setGravityFormsPluginActive, SetCF7PluginActive, setCF7Forms, setNinjaForms, setNinjaFormPluginActive } from './redux/slice/videoSlice';
+import {
+	initializeStore,
+	saveVideoMeta,
+	setCurrentTab,
+	setLoading,
+	setGravityForms,
+	setGravityFormsPluginActive,
+	SetCF7PluginActive,
+	setCF7Forms,
+	setWPForms,
+	setWPFormPluginActive,
+} from './redux/slice/videoSlice';
 
 import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
-import { useGetFormsQuery } from './redux/api/gravity-forms';
+import { useFetchForms } from './components/forms/fetchForms';
 
 const VideoEditor = ( { attachmentID } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
@@ -38,7 +48,8 @@ const VideoEditor = ( { attachmentID } ) => {
 
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
-	const { data: gravityForms, isError: isGravityFormError } = useGetFormsQuery();
+
+	const { gravityForms, wpForms, cf7Forms } = useFetchForms();
 
 	const restURL = window.godamRestRoute.url || '';
 
@@ -90,11 +101,6 @@ const VideoEditor = ( { attachmentID } ) => {
 			.finally( () => {
 				dispatch( setLoading( false ) );
 			} );
-
-		// Fetch Contact Form 7 Forms
-		fetchCF7Forms();
-		// Fetch Ninja Forms
-		fetchNinjaForms();
 	}, [] );
 
 	useEffect( () => {
@@ -136,11 +142,35 @@ const VideoEditor = ( { attachmentID } ) => {
 		if ( gravityForms ) {
 			dispatch( setGravityForms( gravityForms ) );
 		}
+	}, [ gravityForms, dispatch ] );
 
-		if ( isGravityFormError ) {
-			dispatch( setGravityFormsPluginActive( false ) );
+	useEffect( () => {
+		if ( wpForms ) {
+			const forms = wpForms.map( ( form ) => {
+				return {
+					id: form.ID,
+					title: form.post_title,
+				};
+			} );
+
+			dispatch( setWPForms( forms ) );
 		}
-	}, [ gravityForms, isGravityFormError, dispatch ] );
+	}, [ wpForms, dispatch ] );
+
+	useEffect( () => {
+		if ( cf7Forms ) {
+			const forms = cf7Forms.map( ( form ) => {
+				return {
+					id: form.id,
+					title: form.title,
+				};
+			} );
+
+			console.log( 'cf7Forms:', cf7Forms );
+
+			dispatch( setCF7Forms( forms ) );
+		}
+	}, [ cf7Forms, dispatch ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => ( playerRef.current = player );
@@ -192,38 +222,6 @@ const VideoEditor = ( { attachmentID } ) => {
 		);
 	}
 
-	function fetchCF7Forms() {
-		axios.get( window.pathJoin( [ restURL, '/contact-form-7/v1/contact-forms' ] ), {
-			headers: {
-				'X-WP-Nonce': window.videoData.nonce,
-			},
-		} )
-			.then( ( response ) => {
-				const data = response.data;
-				dispatch( setCF7Forms( data ) );
-			} )
-			.catch( ( error ) => {
-				if ( error.status === 404 && error.response.data.code === 'rest_no_route' ) {
-					// CF7 Forms is not active.
-					dispatch( SetCF7PluginActive( false ) );
-				}
-			} );
-	}
-
-	function fetchNinjaForms() {
-		axios.get( window.pathJoin( [ restURL, '/godam/v1/ninja-forms' ] ) )
-			.then( ( response ) => {
-				const data = response.data;
-				dispatch( setNinjaForms( data ) );
-			} )
-			.catch( ( error ) => {
-				if ( error.status === 404 && error.response.data.code === 'gravity_forms_not_active' ) {
-					// Gravity Forms is not active.
-					dispatch( setNinjaFormPluginActive( false ) );
-				}
-			} );
-	}
-
 	return (
 		<>
 			<div className="video-editor-container">
@@ -254,7 +252,7 @@ const VideoEditor = ( { attachmentID } ) => {
 					{
 						// Display a success message when video changes are saved
 						showSaveMessage && (
-							<Snackbar className="absolute bottom-4 right-4 opacity-70">
+							<Snackbar className="absolute bottom-4 right-4 opacity-70 z-50">
 								{ __( 'Video changes saved successfully', 'godam' ) }
 							</Snackbar>
 						)

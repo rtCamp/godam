@@ -124,6 +124,12 @@ const slice = createSlice( {
 		setNinjaFormPluginActive: ( state, action ) => {
 			state.ninjaFormPluginActive = action.payload;
 		},
+		setWPForms: ( state, action ) => {
+			state.wpforms = action.payload;
+		},
+		setWPFormPluginActive: ( state, action ) => {
+			state.wpFormPluginActive = action.payload;
+		},
 	},
 } );
 
@@ -143,5 +149,7 @@ export const {
 	SetCF7PluginActive,
 	setNinjaForms,
 	setNinjaFormPluginActive,
+	setWPForms,
+	setWPFormPluginActive,
 } = slice.actions;
 export default slice.reducer;
