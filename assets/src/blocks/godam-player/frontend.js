@@ -334,12 +334,24 @@ function GODAMPlayer( videoRef = null ) {
 					() => layer.layerElement === layerElement,
 				);
 
+				let skipText = '';
+				if ( 'form' === layer.type ) {
+					skipText = 'Skip Form';
+				} else if ( 'cta' === layer.type ) {
+					skipText = 'Skip CTA';
+				} else if ( 'poll' === layer.type ) {
+					skipText = 'Skip Poll';
+				} else {
+					skipText = 'Skip';
+				}
+
 				if ( ! existingLayer ) {
 					formLayers.push( {
 						layerElement,
 						displayTime: parseFloat( layer.displayTime ),
 						show: true,
 						allowSkip: layer.allow_skip !== undefined ? layer.allow_skip : true,
+						skipText,
 					} );
 				}
 			} else if ( layer.type === 'hotspot' ) {
@@ -360,7 +372,7 @@ function GODAMPlayer( videoRef = null ) {
 				// Check if skip button already exists.
 				if ( ! skipButton ) {
 					skipButton = document.createElement( 'button' );
-					skipButton.textContent = 'Skip';
+					skipButton.textContent = layerObj.skipText;
 					skipButton.classList.add( 'skip-button' );
 
 					const arrowIcon = document.createElement( 'i' );
