@@ -10,6 +10,7 @@ import VideoSettings from './VideoSettings';
  * WordPress dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
+
 /**
  * External dependencies
  */
@@ -88,7 +89,7 @@ const App = () => {
 
 				setMediaSettings( settingsData );
 			} catch ( error ) {
-				// Todo: Handle error
+				console.error( 'Failed to fetch data:', error );
 			} finally {
 				dispatch( setLoading( false ) ); // Set loading to false
 			}
@@ -114,12 +115,10 @@ const App = () => {
 				setMediaSettings( updatedSettings ); // Update local state
 				return true;
 			}
-
-			// Todo: Handle error
-
+			console.error( result.message );
 			return false;
 		} catch ( error ) {
-			// Todo: Handle error
+			console.error( 'Failed to save media settings:', error );
 		}
 	};
 
