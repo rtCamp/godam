@@ -294,3 +294,59 @@ $media-frame-width: calc(300px + 2 * 24px);
 .godam-notice-content {
 	flex: 1;
 }
+
+// GoDAM Footer
+.godam-footer {
+
+	margin-top: 40px;
+
+	&__links {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		&__item {
+
+			a {
+				color: #2271b1;
+				text-decoration: underline;
+			}
+
+			&::after {
+				content: '/';
+				margin-left: 10px;
+				margin-right: 10px;
+			}
+
+			&:last-child {
+				&::after {
+					content: '';
+				}
+			}
+		}
+	}
+
+	&__social-links {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 20px;
+
+		&__item {
+			a {
+				text-decoration: none;
+
+				svg {
+					width: 18px;
+					height: 18px;
+					
+					&:hover {
+						transform: scale(1.1);
+						transition: all 0.3s ease;
+						color: #ab3a6c;
+					}
+				}
+			}
+		}
+	}
+}

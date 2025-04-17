@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import ReactDOM from 'react-dom';
-
-/**
  * Internal dependencies
  */
 import GeneralSettings from './GeneralSettings';
@@ -15,13 +10,16 @@ import VideoSettings from './VideoSettings';
  * WordPress dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
-import { useDispatch, useSelector } from 'react-redux';
+/**
+ * External dependencies
+ */
+import { useDispatch } from 'react-redux';
 import { setLoading } from './redux/slice/storage';
-import { __ } from '@wordpress/i18n';
-import { cog, video, image, help } from '@wordpress/icons';
-import { Button, Icon, Panel, PanelBody } from '@wordpress/components';
+import { cog, video } from '@wordpress/icons';
+import { Icon } from '@wordpress/components';
 
 import GodamHeader from './GodamHeader';
+import GoDAMFooter from './GoDAMFooter';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
@@ -90,7 +88,7 @@ const App = () => {
 
 				setMediaSettings( settingsData );
 			} catch ( error ) {
-				console.error( 'Failed to fetch data:', error );
+				// Todo: Handle error
 			} finally {
 				dispatch( setLoading( false ) ); // Set loading to false
 			}
@@ -116,10 +114,12 @@ const App = () => {
 				setMediaSettings( updatedSettings ); // Update local state
 				return true;
 			}
-			console.error( result.message );
+
+			// Todo: Handle error
+
 			return false;
 		} catch ( error ) {
-			console.error( 'Failed to save media settings:', error );
+			// Todo: Handle error
 		}
 	};
 
@@ -167,6 +167,7 @@ const App = () => {
 					</div>
 				</div>
 			</div>
+			<GoDAMFooter />
 		</div>
 	);
 };
