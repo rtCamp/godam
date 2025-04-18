@@ -72,7 +72,6 @@ const Analytics = ( { attachmentID } ) => {
 				<>
 					<div className="p-10 flex gap-3 items-center">
 						<h2 className="text-2xl m-0 capitalize">{ analyticsData?.title?.rendered }</h2>
-						<span className="h-[26px] px-2 bg-white flex items-center rounded-sm">{ analyticsData?.media_details?.length_formatted }</span>
 					</div>
 
 					<div className="subheading-container">
