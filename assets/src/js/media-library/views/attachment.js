@@ -96,9 +96,7 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 
 				this.$el.addClass( 'transcoding-status' );
 				this.$el.addClass( 'transcoding-status--completed' );
-			}
-
-			if ( ! this.model.get( 'transcoded_url' ) ) {
+			} else {
 				this.$el.append( `
 					<div class="transcoding-status__loader" data-percent="100">
 						<svg class="transcoding-status__loader__progress">
