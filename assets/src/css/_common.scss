@@ -9,7 +9,7 @@
 	border-radius: 0.5rem;
 
 	font-size: 0.875rem;
-	line-height: 1.375rem;
+	line-height: 1.375;
 	font-weight: 600;
 	text-align: center;
 
@@ -55,7 +55,7 @@
 	label,
 	.components-base-control__label {
 		font-size: 0.875rem !important;
-		line-height: 1rem !important;
+		line-height: 1 !important;
 		font-weight: 500;
 		color: variables.$godam-black-color;
 		margin-bottom: 0.75rem !important;
@@ -71,7 +71,7 @@
 		height: auto !important;
 
 		font-size: 0.875rem !important;
-		line-height: 1.375rem !important;
+		line-height: 1.375 !important;
 		font-weight: 400;
 	}
 
@@ -81,13 +81,13 @@
 
 	div:has( > .components-custom-select-control__item) {
 		border: 1px solid rgba(225, 225, 225, 1);
-		box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
 		border-radius: 0.5rem;
 	}
 
 	.components-custom-select-control__item {
 		font-size: 0.875rem;
-		line-height: 1.375rem;
+		line-height: 1.375;
 		font-weight: 500;
 		padding: 1rem 1.5rem;
 
@@ -102,7 +102,7 @@
 
 	p {
 		font-size: 0.875rem;
-		line-height: 1.375rem;
+		line-height: 1.375;
 		font-weight: 400;
 		margin-top: 0.75rem;
 
@@ -121,6 +121,7 @@
 	.components-form-toggle {
 
 		&.is-checked {
+
 			.components-form-toggle__track {
 				background: variables.$godam-primary-gradient !important;
 			}
@@ -129,14 +130,14 @@
 
 	label{
 		font-size: 0.875rem !important;
-		line-height: 1rem !important;
+		line-height: 1 !important;
 		font-weight: 500;
 		color: variables.$godam-black-color;
 	}
 
 	.components-toggle-control__help {
 		font-size: 0.875rem;
-		line-height: 1.375rem;
+		line-height: 1.375;
 		font-weight: 400;
 	}
 }
@@ -155,6 +156,7 @@
  * Select Style
  */
 .godam-select {
+
 	label,
 	.components-base-control__label {
 		font-size: 0.875rem !important;
@@ -172,7 +174,7 @@
 		height: auto !important;
 
 		font-size: 0.875rem !important;
-		line-height: 1.375rem !important;
+		line-height: 1.375 !important;
 		font-weight: 400;
 	}
 
@@ -194,7 +196,7 @@
 
 		h2 {
 			font-size: 1rem;
-			line-height: 1rem;
+			line-height: 1;
 			font-weight: 600;
 		}
 	}
@@ -218,7 +220,7 @@
 	
 	.label-text {
 		font-size: 0.875rem !important;
-		line-height: 1.375rem !important;
+		line-height: 1.375 !important;
 		display: block;
 		margin-bottom: 0.5rem;
 		font-weight: 500;
@@ -226,7 +228,7 @@
 
 	.help-text {
 		font-size: 0.875rem;
-		line-height: 1.375rem;
+		line-height: 1.375;
 		font-weight: 400;
 		margin-top: 0.5rem;
 		color: rgba(119, 119, 119, 1);
