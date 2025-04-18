@@ -55,6 +55,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 					'X-WP-Nonce': window.wpApiSettings?.nonce || '',
 				},
 			} );
+
+			// Check if the response is anything else than 200, then return null.
+			if ( response.status !== 200 ) {
+				return null;
+			}
+
 			return response.ok ? response.json() : null;
 		} catch {
 			return null;
