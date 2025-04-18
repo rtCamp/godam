@@ -230,3 +230,5 @@ This service collects analytics data when a user watches a video on the frontend
 
 [Terms of Service](https://godam.io/tos/)
 [Privacy Policy](https://godam.io/privacy-policy/)
+
+Want to suggest a feature? Please submit it [here](https://github.com/rtCamp/godam/discussions/categories/feature-requests)
