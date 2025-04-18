@@ -214,7 +214,7 @@ class Media_Library extends Base {
 		$exif_data = exif_read_data( $file_path, 0, true );
 
 		if ( false === $exif_data ) {
-			return new \WP_Error( 'exif_data_not_found', 'No EXIF data found.', array( 'status' => 404 ) );
+			return new \WP_Error( 'exif_data_not_found', 'No EXIF data found.', array( 'status' => 204 ) );
 		}
 
 		// Extract and filter the desired EXIF data fields.
@@ -280,13 +280,13 @@ class Media_Library extends Base {
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
-			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 404 ) );
 		}
 		
 		$thumbnail_array = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
 		
 		if ( ! is_array( $thumbnail_array ) ) {
-			return new \WP_Error( 'thumbnails_not_found', 'No thumbnails found.', array( 'status' => 404 ) );
+			return new \WP_Error( 'thumbnails_not_found', 'No thumbnails found.', array( 'status' => 204 ) );
 		}
 
 		if ( function_exists( 'wp_get_upload_dir' ) ) {
