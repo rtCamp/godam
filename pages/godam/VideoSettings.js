@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { lock, unlock } from '@wordpress/icons';
 
 const GODAM_API_BASE = 'https://app.godam.io';
+const pricingLink = 'https://godam.io/#pricing';
 const restURL = window.godamRestRoute.url || '';
 
 const VideoSettings = ( { isPremiumUser, mediaSettings, apiKey, setAPIKey, saveMediaSettings, verifyAPIKeyFromURL } ) => {
@@ -352,14 +353,14 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, apiKey, setAPIKey, saveM
 									{
 										( ! window?.userData?.valid_api_key ) &&
 											<>
-												{ __( 'Your API key is required to access the features. You can get your active API key from your ', 'godam' ) }
+												{ __( 'API key is required to access video transcoding and related features. You can obtain your API key after activating your ', 'godam' ) }
 												<a
-													href={ GODAM_API_BASE }
+													href={ pricingLink }
 													target="_blank"
 													rel="noopener noreferrer"
 													className="text-blue-500 underline"
 												>
-													{ __( 'Account', 'godam' ) }
+													{ __( 'GoDAM account', 'godam' ) }
 												</a>.
 											</>
 									}

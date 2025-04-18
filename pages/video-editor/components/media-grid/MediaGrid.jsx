@@ -13,6 +13,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { useGetVideosMutation } from '../../redux/api/video';
 import MediaItem from './MediaItem.jsx';
+import { Icon, media } from '@wordpress/icons';
 
 const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments, setAttachments } ) => {
 	const [ getVideos, { isLoading } ] = useGetVideosMutation();
@@ -72,7 +73,32 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 	}, [ getVideos, setAttachments, search, page ] );
 
 	if ( ! fetching && attachments.length === 0 ) {
-		return <p className="text-2xl">{ __( 'No videos found.', 'godam' ) }</p>;
+		return (
+			<div className="flex justify-end items-center flex-col mt-8">
+				<Icon
+					style={ {
+						fill: '#9ca3af',
+					} }
+					icon={ media }
+					size={ 140 }
+				/>
+				<h2 className="text-gray-400">
+					{ __( 'No video found', 'godam' ) }
+				</h2>
+				<p className="text-sm text-gray-500 m-0 text-center">
+					{ __( 'Upload videos from WordPress ', 'godam' ) }
+					<a
+						href={ `${ window?.videoData?.admin_url }upload.php` }
+						target="_blank"
+						rel="noopener noreferrer"
+						className="text-blue-500 underline"
+					>
+						{ __( 'media library', 'godam' ) }
+					</a>
+					{ __( ' to use them in Godam.', 'godam' ) }
+				</p>
+			</div>
+		);
 	}
 
 	return (
@@ -88,7 +114,11 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 				) ) }
 			</div>
 
-			{ ( isLoading || fetching ) && <p>{ __( 'Loading…', 'godam' ) }</p> }
+			{ ( isLoading || fetching ) &&
+				<div className="flex justify-end items-center flex-col">
+					<p>{ __( 'Loading…', 'godam' ) }</p>
+				</div>
+			}
 		</>
 	);
 };
