@@ -91,19 +91,21 @@ MediaDateRangeFilter = MediaDateRangeFilter?.extend( {
 		this.$el.val( 'Date Range' );
 
 		// Add "Clear" button inside the main dropdown
-		const daterangepickerContainer = this.$el.data( 'daterangepicker' ).container;
+
+		const rangesContainer = this.$el.data( 'daterangepicker' ).container.find( '.ranges ul' );
+
 		const clearButton = $( '<button>' )
 			.text( 'Clear' )
 			.addClass( 'btn btn-sm btn-light daterangepicker-clear' )
 			.css( {
-				display: 'block',
-				width: '100%',
+				width: '140px',
 				padding: '8px',
 				textAlign: 'center',
 				background: '#f8f9fa',
 				border: '1px solid #ddd',
 				cursor: 'pointer',
-				marginTop: '8px',
+				fontSize: '12px',
+				fontWeight: '600',
 			} )
 			.on( 'click', () => {
 				this.clearFilter();
@@ -111,7 +113,7 @@ MediaDateRangeFilter = MediaDateRangeFilter?.extend( {
 			} );
 
 		// Append the button inside the main container
-		daterangepickerContainer.append( clearButton );
+		rangesContainer.append( clearButton );
 
 		return this;
 	},
