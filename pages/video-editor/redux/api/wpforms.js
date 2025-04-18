@@ -5,18 +5,19 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const restURL = window.godamRestRoute.url || '';
 
-export const gravityFormsAPI = createApi( {
-	reducerPath: 'gravityFormsAPI',
+export const wpFormsApi = createApi( {
+	reducerPath: 'wpFormsApi',
 	baseQuery: fetchBaseQuery( {
-		baseUrl: window.pathJoin( [ restURL, '/godam/v1/' ] ),
+		baseUrl: restURL,
+		prepareHeaders: ( headers ) => {
+			headers.set( 'X-WP-Nonce', window.godamRestRoute.nonce );
+			return headers;
+		},
 	} ),
 	endpoints: ( builder ) => ( {
-		getGravityForms: builder.query( {
+		getWPForms: builder.query( {
 			query: () => ( {
-				url: 'gforms',
-				params: {
-					fields: 'id,title,description',
-				},
+				url: '/wpforms/v1/forms',
 				method: 'GET',
 			} ),
 		} ),
@@ -24,5 +25,6 @@ export const gravityFormsAPI = createApi( {
 } );
 
 export const {
-	useGetGravityFormsQuery,
-} = gravityFormsAPI;
+	useGetWPFormsQuery,
+} = wpFormsApi;
+

@@ -27,6 +27,7 @@
 
 .easydam-video-block {
 
+
 	video {
 		width: 100%;
 		height: auto;
@@ -34,6 +35,7 @@
 }
 
 .wp-block-easydam-video {
+
 
 	video {
 		width: 100%;
@@ -65,6 +67,7 @@
 	right: 20px;
 	z-index: 15;
 	background-color: #3858e9;
+	color: #fff;
 	color: #fff;
 	padding: 8px 12px;
 	border: none;
@@ -294,6 +297,7 @@
 	background: transparent;
 }
 
+
 /* Hotspot layer*/
 .hotspot {
 	pointer-events: auto;
@@ -304,15 +308,18 @@
 	cursor: pointer;
   }
 
+
   .hotspot.circle {
 	border-radius: 50%;
   }
+
 
   .hotspot:hover {
 	border: 2px solid rgb(35, 136, 251);
 	box-shadow: 0 0 1px 1px rgba(35, 136, 251, 0.5);
 	background-color: rgba(12, 128, 223, 0.55);
   }
+
 
   /* Show tooltip on hover */
   .hotspot:hover .hotspot-tooltip,
@@ -332,6 +339,7 @@
 	align-items: center;
 	justify-content: center;
   }
+
 
   /* If there's an icon, we typically don't show the white center dot; 
 	 if you want to keep it, you can adjust the rule to a conditional class. */
@@ -425,9 +433,11 @@
 	z-index: 200;
 }
 
+
 .fullscreen-layer .hotspot-tooltip {
 	font-size: 16px;
 }
+
 
 .no-arrow::after {
 	display: none;
@@ -547,6 +557,7 @@
 }
 
 @keyframes pulse {
+
 
 	50% {
 	  opacity: 0.5;
@@ -748,6 +759,64 @@
 			.vjs-skip-forward-20,
 			.vjs-skip-forward-30 {
 				bottom: initial !important;
+			}
+		}
+	}
+}
+
+
+// CF7 Form style
+.rtgodam-wpcf7-form {
+
+	.wpcf7 {
+
+		.wpcf7-form {
+
+			&.sent {
+
+				p {
+					display: none;
+				}
+			}
+
+			p {
+				margin: 10px 0;
+			}
+
+			label, p {
+				font-size: 14px;
+				font-weight: 500;
+	
+				span {
+					display: block;
+					
+					.wpcf7-form-control {
+						padding: 12px;
+						display: block;
+						width: 100%;
+						outline: none;
+						border: 1px solid #686e77;
+						border-radius: 0.25rem;
+						line-height: 1;
+	
+						&:focus {
+							border: 1px solid #204ce5;
+							box-shadow: 0 0 0 .2rem #204be560;
+						}
+					}
+				}
+			}
+	
+			input[type="submit"], button {
+				background-color: var(--rtgodam-submit-button-color, #204ce5);
+				color: #fff;
+				padding: 12px 16px;
+				border: none;
+				border-radius: 0.25rem;
+				font-size: 16px;
+				line-height: 1;
+				letter-spacing: 0;
+				width: max-content;
 			}
 		}
 	}

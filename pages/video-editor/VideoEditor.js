@@ -16,12 +16,22 @@ import { __ } from '@wordpress/i18n';
 import VideoJSPlayer from './VideoJSPlayer';
 import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
-
-import { initializeStore, saveVideoMeta, setCurrentTab, setGravityForms, setGravityFormsPluginActive } from './redux/slice/videoSlice';
+import {
+	initializeStore,
+	saveVideoMeta,
+	setCurrentTab,
+	setLoading,
+	setGravityForms,
+	setGravityFormsPluginActive,
+	SetCF7PluginActive,
+	setCF7Forms,
+	setWPForms,
+	setWPFormPluginActive,
+} from './redux/slice/videoSlice';
 
 import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
-import { useGetFormsQuery } from './redux/api/gravity-forms';
+import { useFetchForms } from './components/forms/fetchForms';
 
 const VideoEditor = ( { attachmentID } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
@@ -38,7 +48,10 @@ const VideoEditor = ( { attachmentID } ) => {
 
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
-	const { data: gravityForms, isError: isGravityFormError } = useGetFormsQuery();
+
+	const { gravityForms, wpForms, cf7Forms } = useFetchForms();
+
+	const restURL = window.godamRestRoute.url || '';
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -60,6 +73,34 @@ const VideoEditor = ( { attachmentID } ) => {
 		if ( body ) {
 			body.classList.add( 'folded' );
 		}
+
+		dispatch( setLoading( true ) );
+
+		// Get the post data
+		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] ), {
+			headers: {
+				'X-WP-Nonce': window.videoData.nonce,
+			},
+		} )
+			.then( ( response ) => response.json() )
+			.then( ( data ) => {
+				const rtGodamMeta = data.rtgodam_meta;
+				if ( rtGodamMeta ) {
+					dispatch( initializeStore( rtGodamMeta ) );
+				}
+				// Set video sources
+				const videoSources = [ { src: data.source_url, type: data.mimeType } ];
+				if ( data?.meta?.rtgodam_transcoded_url !== '' ) {
+					videoSources.push( { src: data.meta.rtgodam_transcoded_url, type: data?.meta?.rtgodam_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } );
+				}
+				setSources( videoSources );
+			} )
+			.catch( ( ) => {
+				// Todo: Show proper error message to the user
+			} )
+			.finally( () => {
+				dispatch( setLoading( false ) );
+			} );
 	}, [] );
 
 	useEffect( () => {
@@ -101,11 +142,35 @@ const VideoEditor = ( { attachmentID } ) => {
 		if ( gravityForms ) {
 			dispatch( setGravityForms( gravityForms ) );
 		}
+	}, [ gravityForms, dispatch ] );
 
-		if ( isGravityFormError ) {
-			dispatch( setGravityFormsPluginActive( false ) );
+	useEffect( () => {
+		if ( wpForms ) {
+			const forms = wpForms.map( ( form ) => {
+				return {
+					id: form.ID,
+					title: form.post_title,
+				};
+			} );
+
+			dispatch( setWPForms( forms ) );
 		}
-	}, [ gravityForms, isGravityFormError, dispatch ] );
+	}, [ wpForms, dispatch ] );
+
+	useEffect( () => {
+		if ( cf7Forms ) {
+			const forms = cf7Forms.map( ( form ) => {
+				return {
+					id: form.id,
+					title: form.title,
+				};
+			} );
+
+			console.log( 'cf7Forms:', cf7Forms );
+
+			dispatch( setCF7Forms( forms ) );
+		}
+	}, [ cf7Forms, dispatch ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => ( playerRef.current = player );
@@ -187,7 +252,7 @@ const VideoEditor = ( { attachmentID } ) => {
 					{
 						// Display a success message when video changes are saved
 						showSaveMessage && (
-							<Snackbar className="absolute bottom-4 right-4 opacity-70">
+							<Snackbar className="absolute bottom-4 right-4 opacity-70 z-50">
 								{ __( 'Video changes saved successfully', 'godam' ) }
 							</Snackbar>
 						)
