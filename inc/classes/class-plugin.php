@@ -43,6 +43,7 @@ class Plugin {
 		Blocks::get_instance();
 		Pages::get_instance();
 		Media_Library_Ajax::get_instance();
+		Seo::get_instance();
 
 		$this->load_post_types();
 		$this->load_taxonomies();
