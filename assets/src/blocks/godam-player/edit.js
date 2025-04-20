@@ -28,7 +28,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
-import { external, media as icon } from '@wordpress/icons';
+import { external, search, media as icon } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
 /**
@@ -38,6 +38,8 @@ import VideoCommonSettings from './edit-common-settings';
 import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
+
+import VideoSEOModal from './components/VideoSEOModal.js';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -55,6 +57,9 @@ function VideoEdit( {
 	const { id, controls, autoplay, poster, src, tracks, sources, muted, loop, preload } = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
+
+	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
+	const [ videoResponse, setVideoResponse ] = useState( {} );
 
 	// Memoize video options to prevent unnecessary rerenders
 	const videoOptions = useMemo( () => ( {
@@ -101,6 +106,8 @@ function VideoEdit( {
 				try {
 					const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
 
+					setVideoResponse( response );
+
 					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
 						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
 					}
@@ -132,7 +139,7 @@ function VideoEdit( {
 						} );
 					}
 				} catch ( error ) {
-					console.error( 'Error fetching media meta:', error );
+					throw new Error( error );
 				}
 			} )();
 		}
@@ -178,6 +185,8 @@ function VideoEdit( {
 			try {
 				const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
 
+				setVideoResponse( response );
+
 				if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
 					const transcodedUrl = response.meta.rtgodam_transcoded_url;
 
@@ -209,7 +218,6 @@ function VideoEdit( {
 					} );
 				}
 			} catch ( error ) {
-				console.error( 'Error fetching media meta:', error );
 				// On error, use media url.
 				setAttributes( {
 					sources: [
@@ -250,8 +258,6 @@ function VideoEdit( {
 	const blockProps = useBlockProps( {
 		className: classes,
 	} );
-
-	console.log( 'caption from parent', attributes.caption );
 
 	if ( ! src && ! temporaryURL ) {
 		return (
@@ -380,8 +386,27 @@ function VideoEdit( {
 							{ __( 'Customise', 'godam' ) }
 						</Button>
 					</div>
+
+					<Button
+						__next40pxDefaultSize
+						onClick={ () => setIsSEOModelOpen( true ) }
+						variant="primary"
+						className="editor-video-customisation-cta"
+						icon={ search }
+						iconPosition="right"
+					>
+						{ __( 'SEO Settings', 'godam' ) }
+					</Button>
 				</PanelBody>
 			</InspectorControls>
+
+			<VideoSEOModal
+				isOpen={ isSEOModalOpen }
+				setIsOpen={ setIsSEOModelOpen }
+				attachmentData={ videoResponse }
+				attributes={ attributes }
+				setAttributes={ setAttributes }
+			/>
 
 			<figure { ...blockProps }>
 				{ videoComponent }
