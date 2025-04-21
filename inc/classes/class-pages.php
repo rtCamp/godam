@@ -304,6 +304,7 @@ class Pages {
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 					'valid_api_key'    => rtgodam_is_api_key_valid(),
+					'admin_url'        => admin_url(),                      // Admin URL for the GoDAM page.
 				)
 			);
 
@@ -395,7 +396,7 @@ class Pages {
 					'nonce'            => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
-					'adminUrl'         => admin_url( 'admin.php?page=rtgodam' ),
+					'adminUrl'         => admin_url( 'admin.php?page=rtgodam#video-settings' ),
 				)
 			);
 
