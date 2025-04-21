@@ -113,7 +113,7 @@ class RTGODAM_Transcoder_Handler {
 	 */
 	public function __construct( $no_init = false ) {
 
-		$this->api_key          = get_site_option( 'rtgodam-api-key' );
+		$this->api_key          = get_option( 'rtgodam-api-key' );
 		$this->easydam_settings = get_option( 'rtgodam-settings', array() );
 
 		$default_settings = array(
@@ -149,7 +149,7 @@ class RTGODAM_Transcoder_Handler {
 		}
 
 		if ( $this->api_key ) {
-			$usage_info = get_site_option( 'rtgodam-usage' );
+			$usage_info = get_option( 'rtgodam-usage' );
 
 			if ( isset( $usage_info ) && is_array( $usage_info ) && array_key_exists( $this->api_key, $usage_info ) ) {
 				if ( is_object( $usage_info[ $this->api_key ] ) && isset( $usage_info[ $this->api_key ]->status ) && 'Active' === $usage_info[ $this->api_key ]->status ) {
@@ -367,7 +367,7 @@ class RTGODAM_Transcoder_Handler {
 	public function update_usage( $key ) {
 
 		$response = rtgodam_verify_api_key( $key );
-		update_site_option( 'rtgodam-usage', array( $key => (object) $response['data'] ) );
+		update_option( 'rtgodam-usage', array( $key => (object) $response['data'] ) );
 
 		return $response;
 	}

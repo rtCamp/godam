@@ -162,11 +162,11 @@ class Settings extends Base {
 	 */
 	public function deactivate_api_key() {
 		// Delete the API key from the database.
-		$deleted_key   = delete_site_option( 'rtgodam-api-key' );
-		$deleted_token = delete_site_option( 'rtgodam-account-token' );
+		$deleted_key   = delete_option( 'rtgodam-api-key' );
+		$deleted_token = delete_option( 'rtgodam-account-token' );
 		
 		// Delete the user data from the site_option.
-		delete_site_option( 'rtgodam_user_data' );
+		delete_option( 'rtgodam_user_data' );
 
 		if ( $deleted_key || $deleted_token ) {
 			return new \WP_REST_Response(
@@ -193,7 +193,7 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_api_key() {
-		$api_key = get_site_option( 'rtgodam-api-key', '' );
+		$api_key = get_option( 'rtgodam-api-key', '' );
 
 		return new \WP_REST_Response(
 			array(

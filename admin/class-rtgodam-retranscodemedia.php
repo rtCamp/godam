@@ -54,15 +54,15 @@ class RTGODAM_RetranscodeMedia {
 	 */
 	public function __construct() {
 
-		$this->api_key        = get_site_option( 'rtgodam-api-key' );
-		$this->stored_api_key = get_site_option( 'rtgodam-api-key-stored' );
+		$this->api_key        = get_option( 'rtgodam-api-key' );
+		$this->stored_api_key = get_option( 'rtgodam-api-key-stored' );
 
 		$api_check = rtgodam_verify_api_key( $this->api_key );
 		if ( is_wp_error( $api_check ) ) {
 			return; // Abort initializing retranscoding if api is invalid.
 		}
 
-		$this->usage_info = get_site_option( 'rtgodam-usage' );
+		$this->usage_info = get_option( 'rtgodam-usage' );
 		// Load Rest Endpoints.
 		$this->load_rest_endpoints();
 
@@ -392,7 +392,7 @@ class RTGODAM_RetranscodeMedia {
 				$files     = array();
 
 				// Create the list of image IDs.
-				$usage_info = get_site_option( 'rtgodam-usage' );
+				$usage_info = get_option( 'rtgodam-usage' );
 				$ids        = rtgodam_filter_input( INPUT_GET, 'ids', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				if ( ! empty( $ids ) ) {
 					$media = array_map( 'intval', explode( ',', trim( $ids, ',' ) ) );
