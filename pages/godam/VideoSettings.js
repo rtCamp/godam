@@ -261,6 +261,12 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, apiKey, setAPIKey, saveM
 	const isValidAPIKey = window.userData?.valid_api_key;
 	const isStarterPlan = window.userData?.user_data?.active_plan === 'Starter';
 
+	// Allowed user with starte plan to use watermark
+	const allowWatermark = isValidAPIKey;
+
+	// Note: To disable watermark for starter plan uncomment the below line.
+	// const allowWatermark = isValidAPIKey && ! isStarterPlan;
+
 	const [ isDirty, setIsDirty ] = useState( false );
 
 	useEffect( () => {
@@ -622,7 +628,7 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, apiKey, setAPIKey, saveM
 
 				<div className="relative">
 					{
-						( ! isValidAPIKey || isStarterPlan ) && (
+						( ! allowWatermark ) && (
 							<div className="premium-feature-overlay">
 								<Button icon={ unlock } href="https://app.godam.io/subscription/plans" target="_blank" variant="primary">{ __( 'Upgrade to unlock', 'godam' ) }</Button>
 							</div>
@@ -641,12 +647,12 @@ const VideoSettings = ( { isPremiumUser, mediaSettings, apiKey, setAPIKey, saveM
 								<ToggleControl
 									__nextHasNoMarginBottom
 									label="Disable video watermark"
-									checked={ ( ! isValidAPIKey || isStarterPlan ) ? false : disableWatermark }
+									checked={ ! allowWatermark ? false : disableWatermark }
 									onChange={ ( value ) => setDisableWatermark( value ) }
-									disabled={ isStarterPlan || ! isValidAPIKey }
+									disabled={ ! allowWatermark }
 									help={ __( 'If enabled, GoDAM will add a watermark to the transcoded video', 'godam' ) }
 								/>
-								{ ! isStarterPlan && ! disableWatermark && (
+								{ allowWatermark && ! disableWatermark && (
 									<>
 										<div>
 											<ToggleControl
