@@ -209,10 +209,11 @@ function rtgodam_image_cta_html( $layer ) {
  * @param int $timeout The time in seconds after which the user data should be refreshed.
  */
 function rtgodam_get_user_data( $timeout = 300 ) {
-	$rtgodam_user_data = get_site_option( 'rtgodam_user_data', false );
-	$api_key           = get_site_option( 'rtgodam-api-key', '' );
+	$rtgodam_user_data = get_option( 'rtgodam_user_data', false );
+	$api_key           = get_option( 'rtgodam-api-key', '' );
 
 	if (
+		empty( $rtgodam_user_data ) ||
 		( empty( $rtgodam_user_data ) && ! empty( $api_key ) ) ||
 		( isset( $rtgodam_user_data['timestamp'] ) && ( time() - $rtgodam_user_data['timestamp'] ) > $timeout )
 	) {
@@ -241,6 +242,8 @@ function rtgodam_get_user_data( $timeout = 300 ) {
 
 		if ( ! is_wp_error( $usage_data ) ) {
 			$rtgodam_user_data = array_merge( $rtgodam_user_data, $usage_data );
+		} elseif ( ! $valid_api_key ) {
+			$rtgodam_user_data['storageBandwidthError'] = __( 'Oops! It looks like your API key is incorrect or has expired. Please update it and try again.', 'godam' );
 		} else {
 			$rtgodam_user_data['storageBandwidthError'] = $usage_data->get_error_message();
 		}
@@ -248,7 +251,7 @@ function rtgodam_get_user_data( $timeout = 300 ) {
 		$rtgodam_user_data['timestamp'] = time();
 
 		// Save the userData in wp_options.
-		update_site_option( 'rtgodam_user_data', $rtgodam_user_data );
+		update_option( 'rtgodam_user_data', $rtgodam_user_data );
 	}
 
 	return $rtgodam_user_data;
@@ -261,7 +264,7 @@ function rtgodam_get_user_data( $timeout = 300 ) {
  */
 function rtgodam_get_usage_data() {
 
-	$api_key = get_site_option( 'rtgodam-api-key', '' );
+	$api_key = get_option( 'rtgodam-api-key', '' );
 
 	if ( empty( $api_key ) ) {
 		return new \WP_Error( 'rtgodam_api_error', 'API key not found ( try refreshing the page )' );
