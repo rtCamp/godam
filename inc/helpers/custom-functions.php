@@ -242,10 +242,9 @@ function rtgodam_get_user_data( $timeout = 300 ) {
 
 		if ( ! is_wp_error( $usage_data ) ) {
 			$rtgodam_user_data = array_merge( $rtgodam_user_data, $usage_data );
-		} else if ( ! $valid_api_key ) {
+		} elseif ( ! $valid_api_key ) {
 			$rtgodam_user_data['storageBandwidthError'] = __( 'Oops! It looks like your API key is incorrect or has expired. Please update it and try again.', 'godam' );
-		}
-		else {
+		} else {
 			$rtgodam_user_data['storageBandwidthError'] = $usage_data->get_error_message();
 		}
 
