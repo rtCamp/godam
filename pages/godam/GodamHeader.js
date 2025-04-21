@@ -13,6 +13,7 @@ import { help } from '@wordpress/icons';
 const GodamHeader = () => {
 	const helpLink = 'http://app.godam.io/helpdesk';
 	const upgradePlanLink = 'https://app.godam.io/subscription/plans';
+	const pricingLink = 'https://godam.io#pricing';
 
 	return (
 		<header>
@@ -47,6 +48,17 @@ const GodamHeader = () => {
 									target="_blank"
 									text={ __( 'Upgrade plan', 'godam' ) }
 								/>
+						}
+						{
+							( ! window?.userData?.valid_api_key || ! window?.userData?.user_data?.active_plan ) &&
+							<Button
+								className="ml-2"
+								variant="primary"
+								size="compact"
+								href={ pricingLink }
+								target="_blank"
+								text={ __( 'Get GoDAM', 'godam' ) }
+							/>
 						}
 					</div>
 				</div>

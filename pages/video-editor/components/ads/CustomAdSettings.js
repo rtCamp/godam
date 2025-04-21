@@ -24,9 +24,9 @@ const CustomAdSettings = ( { layerID } ) => {
 
 	const OpenVideoSelector = () => {
 		const fileFrame = wp.media( {
-			title: 'Select Brand Image',
+			title: __( 'Select / Upload Ad video', 'godam' ),
 			button: {
-				text: __( 'Edit video', 'godam' ),
+				text: __( 'Add video', 'godam' ),
 			},
 			library: {
 				type: 'video', // Restrict to images only

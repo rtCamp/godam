@@ -169,6 +169,18 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const editVideoURL = `admin.php?page=rtgodam_video_editor&id=${ this.model.get( 'id' ) }`;
 		const analyticsURL = `admin.php?page=rtgodam_analytics&id=${ this.model.get( 'id' ) }`;
 
+		const activeUser = window?.MediaLibrary?.userData?.valid_api_key;
+
+		if ( ! activeUser ) {
+			return `
+			<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>
+			<div class="paid-feature" title="This feature is only available for paid users.">
+				<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>
+				<span>$</span>
+			</div>
+			`;
+		}
+
 		return `
 		<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>
 		<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>
