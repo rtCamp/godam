@@ -357,8 +357,8 @@ class Media_Library_Ajax {
 	 */
 	public function handle_media_deletion( $attachment_id ) {
 		$job_id        = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-		$account_token = get_site_option( 'rtgodam-account-token', '' );
-		$api_key       = get_site_option( 'rtgodam-api-key', '' );
+		$account_token = get_option( 'rtgodam-account-token', '' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
 
 		// Ensure all required data is available.
 		if ( empty( $job_id ) || empty( $account_token ) || empty( $api_key ) ) {

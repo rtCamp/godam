@@ -117,7 +117,7 @@ add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 )
  * Runs when the plugin is activated.
  */
 function rtgodam_plugin_activate() {
-	update_site_option( 'rtgodam_plugin_activation_time', time() );
+	update_option( 'rtgodam_plugin_activation_time', time() );
 }
 
 register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
@@ -126,7 +126,7 @@ register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
  * Runs when the plugin is deactivated.
  */
 function rtgodam_plugin_deactivate() {
-	delete_site_option( 'rtgodam_plugin_activation_time' );
+	delete_option( 'rtgodam_plugin_activation_time' );
 }
 
 register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
