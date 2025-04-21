@@ -89,6 +89,16 @@ const App = () => {
 				}
 
 				setMediaSettings( settingsData );
+
+				const hash = window.location.hash;
+				if ( hash ) {
+					const tabId = hash.substring( 1 ); // Remove the '#' from the hash.
+					const validTab = tabs.find( ( tab ) => tab.id === tabId );
+
+					if ( validTab ) {
+						setActiveTab( tabId );
+					}
+				}
 			} catch ( error ) {
 				console.error( 'Failed to fetch data:', error );
 			} finally {
@@ -98,17 +108,6 @@ const App = () => {
 
 		fetchSettings();
 	}, [ dispatch ] );
-
-	useEffect( () => {
-		const hash = window.location.hash;
-		if ( hash ) {
-			const tabId = hash.substring( 1 ); // Remove the '#' from the hash.
-			const validTab = tabs.find( ( tab ) => tab.id === tabId );
-			if ( validTab ) {
-				setActiveTab( tabId );
-			}
-		}
-	}, [] );
 
 	const saveMediaSettings = async ( updatedSettings ) => {
 		try {
@@ -162,7 +161,7 @@ const App = () => {
 						<div className="w-full">
 							{
 								tabs.map( ( tab ) => (
-									activeTab === tab.id &&
+									activeTab === tab.id && (
 										<tab.component
 											key={ tab.id }
 											isPremiumUser={ isPremiumUser }
@@ -172,6 +171,7 @@ const App = () => {
 											setAPIKey={ setAPIKey }
 											verifyAPIKeyFromURL={ verifyAPIKeyFromURL }
 										/>
+									)
 								) )
 							}
 						</div>
