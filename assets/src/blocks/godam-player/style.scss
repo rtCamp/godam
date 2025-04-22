@@ -53,7 +53,7 @@
 }
 
 .hidden {
-	display: none;
+	display: none !important;
 }
 
 .skip-button,
@@ -62,8 +62,8 @@
 	bottom: 10%;
 	right: 20px;
 	z-index: 15;
-	background-color: #3858e9;
-	color: #ffffff;
+	background-color: var( --rtgodam-control-bar-color, #3858e9 );
+	color: #fff;
 	padding: 8px 12px;
 	border: none;
 	cursor: pointer;
@@ -73,6 +73,10 @@
 	align-items: center;
 	justify-content: center;
 	gap: 8px;
+
+	&:hover {
+		color: var(--rtgodam-control-hover-color, #fff);
+	}
 }
 
 .easydam-video-container {
