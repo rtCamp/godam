@@ -69,6 +69,22 @@ function GODAMPlayer( videoRef = null ) {
 				preview: false,
 			};
 
+		if ( ! ( 'controlBar' in videoSetupControls ) ) {
+			videoSetupControls.controlBar = {
+				playToggle: true,
+				volumePanel: true,
+				currentTimeDisplay: true,
+				timeDivider: true,
+				durationDisplay: true,
+				fullscreenToggle: true,
+				subsCapsButton: true,
+				skipButtons: {
+					forward: 10,
+					backward: 10,
+				},
+			};
+		}
+
 		const isPreviewEnabled = videoSetupOptions?.preview;
 
 		const player = videojs( video, videoSetupControls );
