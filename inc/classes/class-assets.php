@@ -109,7 +109,7 @@ class Assets {
 		// Register IMA SDK.
 		wp_enqueue_script(
 			'ima-sdk',
-			RTGODAM_URL . '/assets/src/libs/ima3.js',
+			'https://imasdk.googleapis.com/js/sdkloader/ima3.js', // It is required to load the IMA SDK from the Google CDN, else it will show console error.
 			array(),
 			RTGODAM_VERSION,
 			true
