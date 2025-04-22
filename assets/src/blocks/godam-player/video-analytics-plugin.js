@@ -92,8 +92,6 @@ const videoAnalyticsPlugin = () => {
 					keepalive: true,
 				} );
 
-				console.log( 'Video analytics POST response:', response );
-
 				if ( ! response.ok ) {
 					throw new Error(
 						`Video analytics POST failed with status ${ response.status }`,
