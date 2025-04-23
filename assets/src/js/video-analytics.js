@@ -452,9 +452,13 @@ function generatePostViewsChart( postsData, selector ) {
 
 	// Create donut chart
 	svg
-		.selectAll( 'path' )
+		.selectAll( 'a' )
 		.data( pie( postsData ) )
-		.join( 'path' )
+		.enter()
+		.append( 'a' )
+		.attr( 'xlink:href', ( d ) => d.data.url )
+		.attr( 'target', '_blank' )
+		.append( 'path' )
 		.attr( 'd', arc )
 		.attr( 'fill', ( d ) => color( d.data.post ) )
 		.attr( 'stroke', 'white' )
@@ -473,8 +477,8 @@ function generatePostViewsChart( postsData, selector ) {
 			tooltip
 				.html(
 					`<strong>${ d.data.post }</strong><br>
-                        Views: ${ formatNumber( d.data.views ) }<br>
-                        Percentage: ${ percent }%`,
+					Views: ${ formatNumber( d.data.views ) }<br>
+					Percentage: ${ percent }%`,
 				)
 				.style( 'left', event.pageX + 10 + 'px' )
 				.style( 'top', event.pageY - 28 + 'px' );
@@ -513,7 +517,8 @@ function generatePostViewsChart( postsData, selector ) {
 			.attr( 'class', 'legend-color' )
 			.style( 'background-color', color( d.post ) );
 
-		legendItem.append( 'div' ).text( `${ d.post }: ${ formatNumber( d.views ) }` );
+		legendItem.append( 'div' )
+			.html( `<a href="${ d.url }" target="_blank" style="text-decoration: underline; color: inherit;">${ d.post }</a>: ${ formatNumber( d.views ) }` );
 	} );
 
 	// Add total views text
@@ -537,7 +542,6 @@ async function main() {
 		video_length: videoLength,
 		all_time_heatmap: allTimeHeatmap,
 		country_views: countryViews,
-		post_views: postViews,
 		views_change: viewsChange,
 		watch_time_change: watchTimeChange,
 		play_rate_change: playRateChange,
@@ -587,7 +591,10 @@ async function main() {
 		};
 	} );
 
-	const postsData = Object.entries( postViews || {} ).map( ( [ post, views ] ) => ( { post, views } ) );
+	const postsData = ( window.analyticsDataFetched?.post_details || [] ).map( ( post ) => {
+		const views = post.views || 0;
+		return { post: post.title, views, url: post.url };
+	} );
 
 	// Generate visualizations
 	generateLineChart( heatmapData, '#line-chart', videoPlayer );

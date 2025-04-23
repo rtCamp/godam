@@ -143,10 +143,39 @@ class Analytics extends Base {
 
 		// Return analytics data if available.
 		if ( isset( $data['processed_analytics'] ) ) {
+			$post_views   = $data['processed_analytics']['post_views'] ?? array();
+			$post_ids     = array_keys( $post_views );
+			$post_details = array();
+
+			if ( ! empty( $post_ids ) ) {
+				$posts = get_posts(
+					array(
+						'post__in'       => $post_ids,
+						'post_type'      => 'post',
+						'posts_per_page' => -1,
+						'orderby'        => 'post__in',
+					)
+				);
+
+				foreach ( $posts as $post ) {
+					if ( isset( $post_views[ $post->ID ] ) ) {
+						$post_details[] = array(
+							'id'    => $post->ID,
+							'title' => get_the_title( $post ),
+							'url'   => get_permalink( $post ),
+							'views' => $post_views[ $post->ID ],
+						);
+					}
+				}
+			}
+
 			return new WP_REST_Response(
 				array(
 					'status' => 'success',
-					'data'   => $data['processed_analytics'],
+					'data'   => array_merge(
+						$data['processed_analytics'],
+						array( 'post_details' => $post_details )
+					),
 				),
 				200
 			);
