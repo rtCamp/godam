@@ -11,7 +11,8 @@ import '../video-editor/style.scss';
 import axios from 'axios';
 import GodamHeader from '../godam/GodamHeader';
 import Tooltip from './Tooltip';
-import { fetchAnalyticsData, calculateEngagementRate, calculatePlayRate } from './helper';
+import { useFetchAnalyticsDataQuery } from './redux/api/analyticsApi';
+import { calculateEngagementRate, calculatePlayRate } from './helper';
 
 /**
  * WordPress dependencies
@@ -61,6 +62,59 @@ const Analytics = ( { attachmentID } ) => {
 		useState( null );
 	const [ isABResultsLoading, setIsABResultsLoading ] = useState( false );
 
+	// RTK Query hooks
+	const siteUrl = window.location.origin;
+	const {
+		data: analyticsDataFetched,
+		refetch,
+	} = useFetchAnalyticsDataQuery(
+		{ videoId: attachmentID, siteUrl },
+		{ skip: ! attachmentID },
+	);
+
+	window.analyticsDataFetched = analyticsDataFetched;
+
+	const {
+		data: abTestComparisonAnalyticsDataFetched,
+		refetch: refetchAB,
+	} = useFetchAnalyticsDataQuery(
+		{
+			videoId: abTestComparisonAttachmentData?.id,
+			siteUrl,
+		},
+		{ skip: ! abTestComparisonAttachmentData?.id },
+	);
+
+	// Sync main analytics data
+	useEffect( () => {
+		if ( analyticsDataFetched?.errorType === 'invalid_key' ) {
+			const loadingEl = document.getElementById( 'loading-analytics-animation' );
+			const container = document.getElementById( 'video-analytics-container' );
+			const overlay = document.getElementById( 'api-key-overlay' );
+			if ( loadingEl ) {
+				loadingEl.style.display = 'none';
+			}
+			if ( container ) {
+				container.classList.remove( 'hidden' );
+			}
+			if ( container ) {
+				container.classList.add( 'blurred' );
+			}
+			if ( overlay ) {
+				overlay.classList.remove( 'hidden' );
+			}
+		} else if ( analyticsDataFetched ) {
+			setAnalyticsData( analyticsDataFetched );
+		}
+	}, [ analyticsDataFetched ] );
+
+	// Sync A/B test comparison data
+	useEffect( () => {
+		if ( abTestComparisonAnalyticsDataFetched ) {
+			setAbTestComparisonAnalyticsData( abTestComparisonAnalyticsDataFetched );
+		}
+	}, [ abTestComparisonAnalyticsDataFetched ] );
+
 	useEffect( () => {
 		if ( attachmentID ) {
 			const url = window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] );
@@ -76,12 +130,9 @@ const Analytics = ( { attachmentID } ) => {
 
 	async function startABTesting() {
 		setIsABResultsLoading( true );
-		const siteUrl = window.location.origin;
-		setAnalyticsData( await fetchAnalyticsData( attachmentID, siteUrl ) );
+		await refetch();
 		if ( abTestComparisonAttachmentData ) {
-			setAbTestComparisonAnalyticsData(
-				await fetchAnalyticsData( abTestComparisonAttachmentData?.id, siteUrl ),
-			);
+			await refetchAB();
 		}
 		setIsABResultsLoading( false );
 	}

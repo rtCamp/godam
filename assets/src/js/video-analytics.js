@@ -9,7 +9,6 @@ import videojs from 'video.js';
 import ViewIcon from '../../src/images/views.png';
 import DurationIcon from '../../src/images/duration.png';
 import {
-	fetchAnalyticsData,
 	generateMetricsOverTime,
 } from '../../../pages/analytics/helper';
 
@@ -355,7 +354,7 @@ function generateCountryHeatmap( countryData, mapSelector, tableSelector ) {
 	const tbody = table.append( 'tbody' );
 
 	const maxViews = d3.max( countryDataArray, ( d ) => d.views );
-	const rows = tbody
+	tbody
 		.selectAll( 'tr' )
 		.data( countryDataArray )
 		.enter()
@@ -450,7 +449,7 @@ function generatePostViewsChart( postsData, selector ) {
 		.outerRadius( radius * 1.05 );
 
 	// Create donut chart
-	const slices = svg
+	svg
 		.selectAll( 'path' )
 		.data( pie( postsData ) )
 		.join( 'path' )
@@ -522,11 +521,7 @@ function generatePostViewsChart( postsData, selector ) {
 }
 
 async function main() {
-	const videoElement = document.getElementById( 'analytics-video' );
-	const videoId = videoElement?.dataset.id;
-	const siteUrl = window.location.origin;
-
-	const analyticsData = await fetchAnalyticsData( videoId, siteUrl );
+	const analyticsData = window.analyticsDataFetched;
 
 	if ( ! analyticsData ) {
 		return;
@@ -659,8 +654,9 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	const videoCheckInterval = setInterval( () => {
 		const videoElement = document.getElementById( 'analytics-video' );
 		const videoId = videoElement?.dataset.id;
+		const analyticsDataFetched = window.analyticsDataFetched;
 
-		if ( videoId ) {
+		if ( videoId && analyticsDataFetched ) {
 			clearInterval( videoCheckInterval );
 			main();
 		}
