@@ -133,7 +133,7 @@
 			opacity: 0.7;
 		}
 
-		.tooltip {
+		.line-chart-tooltip {
 			position: absolute;
 			background-color: #fff;
 			border: 1px solid #ccc;
@@ -147,7 +147,7 @@
 			opacity: 0;
 		}
 
-		.tooltip::after {
+		.line-chart-tooltip::after {
 			content: "";
 			position: absolute;
 			border-width: 8px;
@@ -177,51 +177,51 @@
 		max-width: 830px;
 		margin-top: 2rem;
 
-		.heatmap-tooltip {
-			position: absolute;
-			position: absolute;
-			background-color: #fff;
-			border: 1px solid #ccc;
-			padding: 5px;
-			border-radius: 4px;
-			pointer-events: none;
-			white-space: nowrap;
-			font-size: 12px;
-			box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-			text-align: center;
-			opacity: 0;
-			z-index: 999;
+	.heatmap-tooltip {
+		position: absolute;
+		position: absolute;
+		background-color: #fff;
+		border: 1px solid #ccc;
+		padding: 5px;
+		border-radius: 4px;
+		pointer-events: none;
+		white-space: nowrap;
+		font-size: 12px;
+		box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+		text-align: center;
+		opacity: 0;
+		z-index: 999;
 
-			&::after {
-				content: "";
-				position: absolute;
-				border-width: 8px;
-				border-style: solid;
-				border-color: #fff transparent transparent transparent;
-				left: 50%;
-				bottom: -16px;
-				transform: translateX(-50%);
-			}
-
-			&::before {
-				content: "";
-				position: absolute;
-				border-width: 9px;
-				border-style: solid;
-				border-color: rgba(0, 0, 0, 0.2) transparent transparent transparent;
-				left: 50%;
-				bottom: -21px;
-				transform: translateX(-50%);
-				filter: blur(2px);
-				z-index: -1;
-   			 }
+		&::after {
+			content: "";
+			position: absolute;
+			border-width: 8px;
+			border-style: solid;
+			border-color: #fff transparent transparent transparent;
+			left: 50%;
+			bottom: -16px;
+			transform: translateX(-50%);
 		}
 
-		.heatmap-vertical-line {
-			stroke: #000;
-			stroke-dasharray: 4;
-			stroke-width: 2px;
+		&::before {
+			content: "";
+			position: absolute;
+			border-width: 9px;
+			border-style: solid;
+			border-color: rgba(0, 0, 0, 0.2) transparent transparent transparent;
+			left: 50%;
+			bottom: -21px;
+			transform: translateX(-50%);
+			filter: blur(2px);
+			z-index: -1;
 		}
+	}
+
+	.heatmap-vertical-line {
+		stroke: #000;
+		stroke-dasharray: 4;
+		stroke-width: 2px;
+	}
 	}
 }
 

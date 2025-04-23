@@ -96,7 +96,7 @@ function generateHeatmap( data, selector, videoPlayer ) {
 				// Update the tooltip
 				heatmapTooltip
 					.style( 'opacity', 1 )
-					.style( 'left', `${ mouseX }px` )
+					.style( 'left', `${ xScale( index ) - 20 }px` )
 					.style( 'top', `${ margin.top - 52 }px` ) // Fixed above the heatmap
 					.html(
 						`<div class="heatmap-tooltip-html">
@@ -174,7 +174,7 @@ function generateLineChart( data, selector, videoPlayer ) {
 		.attr( 'class', 'area' )
 		.style( 'opacity', 0 );
 
-	const tooltip = d3.select( '.tooltip' );
+	const tooltip = d3.select( '.line-chart-tooltip' );
 
 	svg.append( 'rect' )
 		.attr( 'width', width )

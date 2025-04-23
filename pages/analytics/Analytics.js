@@ -307,7 +307,7 @@ const Analytics = ( { attachmentID } ) => {
 											<div className="video-chart-container">
 												<div id="chart-container">
 													<svg id="line-chart" width="640" height="300"></svg>
-													<div className="tooltip"></div>
+													<div className="line-chart-tooltip"></div>
 												</div>
 											</div>
 										</div>
