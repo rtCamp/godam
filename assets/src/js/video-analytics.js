@@ -553,6 +553,7 @@ async function main() {
 	document.getElementById( 'play-rate' ).innerText = `${ playRate.toFixed( 2 ) }%`;
 	document.getElementById( 'total-plays' ).innerText = totalPlays;
 	document.getElementById( 'engagement-rate' ).innerText = `${ engagementRate.toFixed( 2 ) }%`;
+	document.getElementById( 'watch-time' ).innerText = `${ playTime.toFixed( 2 ) }s`;
 
 	// Convert heatmap string into an array
 	const heatmapData = JSON.parse( allTimeHeatmap );
