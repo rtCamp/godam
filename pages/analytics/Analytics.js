@@ -11,7 +11,10 @@ import '../video-editor/style.scss';
 import axios from 'axios';
 import GodamHeader from '../godam/GodamHeader';
 import Tooltip from './Tooltip';
-import { useFetchAnalyticsDataQuery } from './redux/api/analyticsApi';
+import {
+	useFetchAnalyticsDataQuery,
+	useFetchProcessedAnalyticsHistoryQuery,
+} from './redux/api/analyticsApi';
 import { calculateEngagementRate, calculatePlayRate } from './helper';
 
 /**
@@ -73,6 +76,16 @@ const Analytics = ( { attachmentID } ) => {
 	);
 
 	window.analyticsDataFetched = analyticsDataFetched;
+
+	// Query for last 60 days of processed analytics history
+	const {
+		data: processedAnalyticsHistory,
+	} = useFetchProcessedAnalyticsHistoryQuery(
+		{ videoId: attachmentID, siteUrl, days: 60 },
+		{ skip: ! attachmentID },
+	);
+
+	window.processedAnalyticsHistory = processedAnalyticsHistory;
 
 	const {
 		data: abTestComparisonAnalyticsDataFetched,

@@ -39,7 +39,23 @@ export const analyticsApi = createApi( {
 				return response.data;
 			},
 		} ),
+		fetchProcessedAnalyticsHistory: builder.query( {
+			query: ( { days, videoId, siteUrl } ) => ( {
+				url: 'godam/v1/analytics/history',
+				params: {
+					days,
+					video_id: videoId,
+					site_url: siteUrl,
+				},
+			} ),
+			transformResponse: ( response ) => {
+				if ( response.status === 'error' ) {
+					throw new Error( response.message );
+				}
+				return response.processed_analytics || [];
+			},
+		} ),
 	} ),
 } );
 
-export const { useFetchAnalyticsDataQuery } = analyticsApi;
+export const { useFetchAnalyticsDataQuery, useFetchProcessedAnalyticsHistoryQuery } = analyticsApi;

@@ -58,6 +58,32 @@ class Analytics extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/history',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_analytics_history' ),
+					'permission_callback' => '__return_true',
+					'args'                => array(
+						'days'     => array(
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						),
+						'video_id' => array(
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						),
+						'site_url' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+					),
+				),
+			),
 		);
 	}
 
@@ -142,6 +168,63 @@ class Analytics extends Base {
 					'video_id'         => 0,
 					'video_length'     => 0.0,
 				),
+			),
+			200
+		);
+	}
+
+	/**
+	 * Fetch analytics history from the external API securely.
+	 *
+	 * @param WP_REST_Request $request REST API request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_analytics_history( WP_REST_Request $request ) {
+		$days          = $request->get_param( 'days' );
+		$video_id      = $request->get_param( 'video_id' );
+		$site_url      = $request->get_param( 'site_url' );
+		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_site_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => 'Invalid or unverified API key.',
+				),
+				200
+			);
+		}
+
+		$microservice_url = RTGODAM_ANALYTICS_BASE . '/processed-analytics/history/';
+		$params           = array(
+			'days'          => $days,
+			'video_id'      => $video_id,
+			'site_url'      => $site_url,
+			'account_token' => $account_token,
+			'api_key'       => $api_key,
+		);
+
+		$history_url = add_query_arg( $params, $microservice_url );
+		$response    = wp_remote_get( $history_url );
+
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => 'Error fetching history data: ' . $response->get_error_message(),
+				),
+				500
+			);
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		return new WP_REST_Response(
+			array(
+				'status'              => 'success',
+				'processed_analytics' => $data['processed_analytics'] ?? array(),
 			),
 			200
 		);
