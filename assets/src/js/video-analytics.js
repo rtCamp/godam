@@ -528,7 +528,19 @@ async function main() {
 	}
 
 	// Extract values from the analytics response
-	const { plays, page_load: pageLoad, play_time: playTime, video_length: videoLength, all_time_heatmap: allTimeHeatmap, country_views: countryViews } = analyticsData;
+	const {
+		plays,
+		page_load: pageLoad,
+		play_time: playTime,
+		video_length: videoLength,
+		all_time_heatmap: allTimeHeatmap,
+		country_views: countryViews,
+		post_views: postViews,
+		views_change: viewsChange,
+		watch_time_change: watchTimeChange,
+		play_rate_change: playRateChange,
+		avg_engagement_change: avgEngagementChange,
+	} = analyticsData;
 
 	// Calculate analytics metrics
 	const playRate = pageLoad ? ( plays / pageLoad ) * 100 : 0; // Convert to percentage
@@ -619,20 +631,27 @@ async function main() {
 		// Complete 60-day dataset
 	];
 
-	const postsData = [
-		{ post: 'http://godam.local/51-2/', views: 15423 },
-		{ post: 'http://godam.local/49-2/', views: 42891 },
-		{ post: 'http://godam.local/41/', views: 28736 },
-		{ post: 'http://godam.local/37-2/', views: 9842 },
-		{ post: 'http://godam.local/28-2/', views: 19384 },
-		{ post: 'http://godam.local/51-2/', views: 35217 },
-	];
+	const postsData = Object.entries( postViews || {} ).map( ( [ post, views ] ) => ( { post, views } ) );
 
 	// Generate visualizations
 	generateLineChart( heatmapData, '#line-chart', videoPlayer );
 	generateHeatmap( heatmapData, '#heatmap', videoPlayer );
 	generateMetricsOverTime( timeMeticsChartData, '#metrics-chart', videoPlayer );
 	generatePostViewsChart( postsData, '#post-views-count-chart' );
+
+	// Update change metrics in the DOM if elements exist, rounding to 2 decimal places
+	if ( document.getElementById( 'views-change' ) ) {
+		document.getElementById( 'views-change' ).innerText = `${ viewsChange.toFixed( 2 ) }% this week`;
+	}
+	if ( document.getElementById( 'watch-time-change' ) ) {
+		document.getElementById( 'watch-time-change' ).innerText = `${ watchTimeChange.toFixed( 2 ) }% this week`;
+	}
+	if ( document.getElementById( 'play-rate-change' ) ) {
+		document.getElementById( 'play-rate-change' ).innerText = `${ playRateChange.toFixed( 2 ) }% this week`;
+	}
+	if ( document.getElementById( 'avg-engagement-change' ) ) {
+		document.getElementById( 'avg-engagement-change' ).innerText = `${ avgEngagementChange.toFixed( 2 ) }% this week`;
+	}
 
 	if ( countryViews ) {
 		generateCountryHeatmap( countryViews, '#map-container', '#table-container' );

@@ -252,6 +252,7 @@ const Analytics = ( { attachmentID } ) => {
 												>
 													0%
 												</p>
+												<p id="avg-engagement-change" className="metric-change">+0% this week</p>
 											</div>
 										</div>
 										<div className="analytics-info flex justify-between  max-lg:flex-col">
@@ -266,6 +267,7 @@ const Analytics = ( { attachmentID } ) => {
 												>
 													0
 												</p>
+												<p id="views-change" className="metric-change">+0% this week</p>
 											</div>
 										</div>
 										<div className="analytics-info flex justify-between  max-lg:flex-col">
@@ -280,6 +282,17 @@ const Analytics = ( { attachmentID } ) => {
 												>
 													0%
 												</p>
+												<p id="play-rate-change" className="metric-change">+0% this week</p>
+											</div>
+										</div>
+										<div className="analytics-info flex justify-between  max-lg:flex-col">
+											<div className="analytics-single-info">
+												<div className="analytics-info-heading">
+													<p>{ __( 'Watch Time', 'godam' ) }</p>
+													<Tooltip text="Total time the video has been watched, aggregated across all plays." />
+												</div>
+												<p id="watch-time" className="min-w-[90px] engagement-rate">0s</p>
+												<p id="watch-time-change" className="metric-change">+0% this week</p>
 											</div>
 										</div>
 									</div>

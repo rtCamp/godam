@@ -36,23 +36,7 @@ export const analyticsApi = createApi( {
 					throw new Error( response.message );
 				}
 
-				const sampleCountryData = {
-					USA: 120,
-					India: 95,
-					'United Kingdom': 45,
-					Germany: 30,
-					Canada: 25,
-					Australia: 20,
-					France: 18,
-					Brazil: 15,
-					Japan: 10,
-					'South Africa': 8,
-				};
-
-				return {
-					...response.data,
-					country_views: sampleCountryData,
-				};
+				return response.data;
 			},
 		} ),
 	} ),
