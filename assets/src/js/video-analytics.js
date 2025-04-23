@@ -11,6 +11,8 @@ import DurationIcon from '../../src/images/duration.png';
 import {
 	generateMetricsOverTime,
 } from '../../../pages/analytics/helper';
+import DownArrow from '../images/down-arrow.svg';
+import TopArrow from '../images/up-arrow.svg';
 
 function formatTime( seconds ) {
 	const minutes = Math.floor( seconds / 60 );
@@ -639,18 +641,24 @@ async function main() {
 	generateMetricsOverTime( timeMeticsChartData, '#metrics-chart', videoPlayer );
 	generatePostViewsChart( postsData, '#post-views-count-chart' );
 
-	// Update change metrics in the DOM if elements exist, rounding to 2 decimal places
+	const renderChange = ( changeValue ) => {
+		const rounded = Math.abs( changeValue ).toFixed( 2 );
+		const prefix = changeValue >= 0 ? '+' : '-';
+		const arrow = changeValue >= 0 ? TopArrow : DownArrow;
+		return `<img src="${ arrow }" alt="Arrow Icon" height="20" width="20"/>${ prefix }${ rounded }% this week`;
+	};
+
 	if ( document.getElementById( 'views-change' ) ) {
-		document.getElementById( 'views-change' ).innerText = `${ viewsChange.toFixed( 2 ) }% this week`;
+		document.getElementById( 'views-change' ).innerHTML = renderChange( viewsChange );
 	}
 	if ( document.getElementById( 'watch-time-change' ) ) {
-		document.getElementById( 'watch-time-change' ).innerText = `${ watchTimeChange.toFixed( 2 ) }% this week`;
+		document.getElementById( 'watch-time-change' ).innerHTML = renderChange( watchTimeChange );
 	}
 	if ( document.getElementById( 'play-rate-change' ) ) {
-		document.getElementById( 'play-rate-change' ).innerText = `${ playRateChange.toFixed( 2 ) }% this week`;
+		document.getElementById( 'play-rate-change' ).innerHTML = renderChange( playRateChange );
 	}
 	if ( document.getElementById( 'avg-engagement-change' ) ) {
-		document.getElementById( 'avg-engagement-change' ).innerText = `${ avgEngagementChange.toFixed( 2 ) }% this week`;
+		document.getElementById( 'avg-engagement-change' ).innerHTML = renderChange( avgEngagementChange );
 	}
 
 	if ( countryViews ) {

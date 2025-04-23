@@ -1,62 +1,57 @@
 .analytics-info {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	grid-template-rows: repeat(2, 1fr);
+	gap: 2rem;
+	
+	.analytics-single-info {
+		display: flex;
+		border-radius: 12px;
+		padding: 25px;
+		flex-direction: column;
+		background-color: #fff;
+		min-width: 300px;
 
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 2rem;
-    
-    .analytics-single-info {
-        display: flex;
-        border-radius: 12px;
-        padding: 25px;
-        flex-direction: column;
-        background-color: #fff;
-        min-width: 300px;
+		.analytics-stats {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			margin-top: auto;
+		}
+	}
 
-        .analytics-stats {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: auto;
+	.analytics-info-heading {
+		font-size: 16px;
+		display: flex;
+		align-items: center;
+		font-weight: 500;
+		gap: 5px;
 
-            img {
-                height: 10px;
-                width: 10px;
-            }
-        }
-    }
-
-    .analytics-info-heading {
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        font-weight: 500;
-        gap: 5px;
-
-        p {
-            font-weight: 400;
-            font-size: 18px;
-        }
+		p {
+			font-weight: 400;
+			font-size: 18px;
+		}
 }}
 
 .top-media-container {
-        table th, td {
-            border-bottom:1px solid blue;
-            text-align: center;
-            padding-bottom: 0.5rem;
-        }
 
-        table th {
-            font-size: 1rem;
-        }
+	table th, td {
+		border-bottom:1px solid #00f;
+		text-align: center;
+		padding-bottom: 0.5rem;
+	}
 
-        table td {
-            padding: 1.5rem;
-        }
+	table th {
+		font-size: 1rem;
+	}
 
-        table a {
-            color: blue;
-        }
+	table td {
+		padding: 1.5rem;
+	}
+
+	table a {
+		color: #00f;
+	}
 }
 
 
@@ -96,13 +91,13 @@
 
 /* Tooltip styling */
 .tooltip {
-    position: absolute;
-    background: rgba(0, 0, 0, 0.75);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 12px;
-    pointer-events: none; /* Prevents interfering with mouse events */
-    opacity: 0; /* Initially hidden */
-    transition: opacity 0.2s ease-in-out;
+	position: absolute;
+	background: rgba(0, 0, 0, 0.75);
+	color: #fff;
+	padding: 5px 10px;
+	border-radius: 5px;
+	font-size: 12px;
+	pointer-events: none; /* Prevents interfering with mouse events */
+	opacity: 0; /* Initially hidden */
+	transition: opacity 0.2s ease-in-out;
 }
