@@ -29,6 +29,12 @@ import 'quill/dist/quill.snow.css';
  * Internal dependencies
  */
 import GoDAM from '../../../../assets/src/images/GoDAM.png';
+import Share from '../../../../assets/src/images/share.svg';
+
+/**
+ * WordPress dependencies
+ */
+import { Modal } from '@wordpress/components';
 
 /**
  * Global variables
@@ -47,7 +53,7 @@ function GODAMPlayer( videoRef = null ) {
 		videos = videoRef.querySelectorAll( '.easydam-player.video-js' );
 	}
 
-	videos.forEach( ( video ) => {
+	videos.forEach( ( video, index ) => {
 		video.classList.remove( 'vjs-hidden' );
 
 		video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
@@ -68,7 +74,6 @@ function GODAMPlayer( videoRef = null ) {
 				fluid: true,
 				preview: false,
 			};
-
 		const isPreviewEnabled = videoSetupOptions.preview;
 
 		const player = videojs( video, videoSetupControls );
@@ -224,6 +229,151 @@ function GODAMPlayer( videoRef = null ) {
 			player.currentTime( 0 );
 			player.pause();
 			stopPreview();
+		} );
+
+		player.jobId = '';
+
+		const getAllMeta = async () => {
+			const videoId = video.dataset.id;
+			try {
+				const res = await fetch( `/wp-json/wp/v2/media/${ videoId }?_fields=meta` );
+				const data = await res.json();
+				player.jobId = data.meta.rtgodam_transcoding_job_id;
+				return data.meta.rtgodam_transcoding_job_id;
+			} catch ( err ) {
+				console.error( 'Error fetching post meta:', err );
+			}
+		};
+
+		const Button = videojs.getComponent( 'Button' );
+
+		class GodamShareButton extends Button {
+			constructor( p, options ) {
+				super( p, options );
+				this.controlText( 'Share' );
+			}
+
+			// Set the button content
+			createEl() {
+				const el = super.createEl();
+				const img = document.createElement( 'img' );
+
+				img.src = Share;
+
+				img.id = 'share-icon';
+				img.alt = 'Share';
+				img.className = 'share-icon';
+				el.appendChild( img );
+				return el;
+			}
+
+			copyToClipboard( inputId ) {
+				const input = document.getElementById( inputId );
+
+				if ( navigator.clipboard && navigator.clipboard.writeText ) {
+					navigator.clipboard
+						.writeText( input.value )
+						.then( () => {
+							console.log( 'Copied to clipboard' );
+						} )
+						.catch( ( err ) => {
+							console.error( 'Clipboard copy failed', err );
+						} );
+				} else {
+					// Fallback for unsupported browsers
+					input.select();
+					input.setSelectionRange( 0, 99999 ); // for mobile
+					try {
+						document.execCommand( 'copy' );
+						console.log( 'Copied with fallback' );
+					} catch ( err ) {
+						console.error( 'Fallback copy failed', err );
+					}
+				}
+			}
+
+			// Add click event for playback
+			handleClick( event ) {
+				console.log( 'change 6' );
+				event.preventDefault();
+
+				const mainContainer = document.getElementsByTagName( 'main' )[ 0 ];
+				// if ( ! isShareModalOpen ) {
+				const shareModal = document.createElement( 'div' );
+				const videoContainer = this.player().el_.closest(
+					'.easydam-video-container',
+				);
+				if ( videoContainer ) {
+					videoContainer.appendChild( shareModal );
+				}
+				shareModal.className = 'share-modal-container';
+				shareModal.innerHTML = `
+				<div class="share-modal-message">
+					<div class="share-modal-header">
+						<h2>Share Media</h2>
+						<p>Copy the links below to share the selected media files.</p>
+					</div>
+					
+					<div class='share-input-container'>
+						<label>Page Link</label>
+						<div class="share-modal-input-group">
+							<input id="page-link" type="text" value="https://app.godam.io./web/video/${ this.player().jobId }" readonly />
+							<button id="copy-page-link" class="copy-button">📋</button>
+						</div>
+					</div>
+
+					<div class='share-input-container'>
+						<label>Embed</label>
+						<div class="share-modal-input-group">
+							<input id="embed-code" type="text" value='<iframe src="https://app.godam.io/web/embed/${ this.player().jobId }"></iframe>' readonly />
+							<button id="copy-embed-code" class="copy-button">📋</button>
+						</div>
+					</div>
+
+					<div class="share-modal-footer">
+						<button id="cancel-button">Cancel</button>
+					</div>
+				</div>
+			`;
+
+				shareModal
+					.querySelector( '#copy-page-link' )
+					.addEventListener( 'click', () => this.copyToClipboard( 'page-link' ) );
+
+				shareModal
+					.querySelector( '#copy-embed-code' )
+					.addEventListener( 'click', () => this.copyToClipboard( 'embed-code' ) );
+
+				shareModal
+					.querySelector( '#cancel-button' )
+					.addEventListener( 'click', function() {
+						const cancelButton = shareModal.querySelector( '#cancel-button' );
+						cancelButton.closest( '.share-modal-container' ).remove();
+					} );
+				// } else {
+				// 	const shareModal = document.getElementsByClassName( 'share-modal-container' )[ 0 ];
+				// 	shareModal.classList.add( 'remove' );
+				// 	mainContainer.classList.remove( 'blurred' );
+				// }
+			}
+		}
+
+		// Register the new component
+		videojs.registerComponent( 'GodamShareButton', GodamShareButton );
+
+		// Add the button to the control bar after the player is ready
+		player.ready( function() {
+			getAllMeta().then( ( id ) => {
+				player.jobId = id; // Store the result when it's available
+				const controlBar = player.getChild( 'controlBar' );
+				if ( controlBar && player.jobId !== '' ) {
+					controlBar.addChild(
+						'GodamShareButton',
+						{},
+						controlBar.children().length - 1,
+					);
+				}
+			} );
 		} );
 
 		player.ready( function() {
