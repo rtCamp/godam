@@ -178,29 +178,27 @@ const Analytics = ( { attachmentID } ) => {
 		fileFrame.open();
 	};
 
-	const engagementRate = Number( calculateEngagementRate(
+	const engagementRate = calculateEngagementRate(
 		analyticsData?.plays,
 		analyticsData?.video_length,
 		analyticsData?.play_time,
-	) ) || 0;
+	);
 
-	const comparisonEngagementRate = Number( calculateEngagementRate(
+	const comparisonEngagementRate = calculateEngagementRate(
 		abTestComparisonAnalyticsData?.plays,
 		abTestComparisonAnalyticsData?.video_length,
 		abTestComparisonAnalyticsData?.play_time,
-	) ) || 0;
+	);
 
-	const playRate = Number( calculatePlayRate(
+	const playRate = calculatePlayRate(
+		analyticsData?.page_load,
 		analyticsData?.plays,
-		analyticsData?.video_length,
-		analyticsData?.play_time,
-	) ) || 0;
+	);
 
-	const comparisonPlayRate = Number( calculatePlayRate(
+	const comparisonPlayRate = calculatePlayRate(
+		abTestComparisonAnalyticsData?.page_load,
 		abTestComparisonAnalyticsData?.plays,
-		abTestComparisonAnalyticsData?.video_length,
-		abTestComparisonAnalyticsData?.play_time,
-	) ) || 0;
+	);
 
 	const plays = analyticsData?.plays;
 
@@ -450,9 +448,9 @@ const Analytics = ( { attachmentID } ) => {
 								<table className="w-full ab-testing-table">
 									<tbody>
 										<tr className={ highlightClass( engagementRate, comparisonEngagementRate ) }>
-											<td>{ engagementRate?.toFixed( 2 ) }%</td>
+											<td>{ engagementRate }</td>
 											<td>{ __( 'Average Engagement', 'godam' ) }</td>
-											<td>{ comparisonEngagementRate?.toFixed( 2 ) }%</td>
+											<td>{ comparisonEngagementRate }</td>
 										</tr>
 										<tr className={ highlightClass( plays, comparisonPlays ) }>
 											<td>{ plays }</td>
@@ -460,9 +458,9 @@ const Analytics = ( { attachmentID } ) => {
 											<td>{ comparisonPlays }</td>
 										</tr>
 										<tr className={ highlightClass( playRate, comparisonPlayRate ) }>
-											<td>{ playRate?.toFixed( 2 ) }%</td>
+											<td>{ playRate }</td>
 											<td>{ __( 'Play Rate', 'godam' ) }</td>
-											<td>{ comparisonPlayRate?.toFixed( 2 ) }%</td>
+											<td>{ comparisonPlayRate }</td>
 										</tr>
 										<tr className={ highlightClass( analyticsData?.page_load, abTestComparisonAnalyticsData?.page_load ) }>
 											<td>{ analyticsData?.page_load }</td>
