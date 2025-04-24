@@ -32,11 +32,6 @@ import GoDAM from '../../../../assets/src/images/GoDAM.png';
 import Share from '../../../../assets/src/images/share.svg';
 
 /**
- * WordPress dependencies
- */
-import { Modal } from '@wordpress/components';
-
-/**
  * Global variables
  */
 const validAPIKey = window?.godamAPIKeyData?.valid_api_key;
@@ -53,7 +48,7 @@ function GODAMPlayer( videoRef = null ) {
 		videos = videoRef.querySelectorAll( '.easydam-player.video-js' );
 	}
 
-	videos.forEach( ( video, index ) => {
+	videos.forEach( ( video ) => {
 		video.classList.remove( 'vjs-hidden' );
 
 		video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
@@ -241,7 +236,8 @@ function GODAMPlayer( videoRef = null ) {
 				player.jobId = data.meta.rtgodam_transcoding_job_id;
 				return data.meta.rtgodam_transcoding_job_id;
 			} catch ( err ) {
-				console.error( 'Error fetching post meta:', err );
+				console.error('Error fetching post meta:', err);
+				return '';
 			}
 		};
 
@@ -294,11 +290,7 @@ function GODAMPlayer( videoRef = null ) {
 
 			// Add click event for playback
 			handleClick( event ) {
-				console.log( 'change 6' );
 				event.preventDefault();
-
-				const mainContainer = document.getElementsByTagName( 'main' )[ 0 ];
-				// if ( ! isShareModalOpen ) {
 				const shareModal = document.createElement( 'div' );
 				const videoContainer = this.player().el_.closest(
 					'.easydam-video-container',
@@ -350,11 +342,6 @@ function GODAMPlayer( videoRef = null ) {
 						const cancelButton = shareModal.querySelector( '#cancel-button' );
 						cancelButton.closest( '.share-modal-container' ).remove();
 					} );
-				// } else {
-				// 	const shareModal = document.getElementsByClassName( 'share-modal-container' )[ 0 ];
-				// 	shareModal.classList.add( 'remove' );
-				// 	mainContainer.classList.remove( 'blurred' );
-				// }
 			}
 		}
 
