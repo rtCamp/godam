@@ -350,12 +350,14 @@ const Analytics = ( { attachmentID } ) => {
 					</div>
 					<div>
 						<div className="text-center">
+							<h3 className="text-md mb-4">{ __( 'Time Series Overview', 'godam' ) }</h3>
 							<svg id="metrics-chart" width="900" height="500"></svg>
 						</div>
 						<div
 							className="country-heatmap-container text-center"
 							id="country-heatmap-container"
 						>
+							<h3 className="text-md mb-4">{ __( 'Geographical Heatmap', 'godam' ) }</h3>
 							<div id="map-container"></div>
 							<div id="table-container" className="px-12"></div>
 						</div>
@@ -370,7 +372,7 @@ const Analytics = ( { attachmentID } ) => {
 
 					<div className="px-10 py-28">
 						<div className="flex justify-between">
-							<h3>A/B Testing</h3>
+							<h3>Video Comparison</h3>
 							{ attachmentData && abTestComparisonAttachmentData && (
 								<div className="flex gap-4">
 									<Button variant="secondary" onClick={ () => {
@@ -381,7 +383,7 @@ const Analytics = ( { attachmentID } ) => {
 										Remove
 									</Button>
 									<Button variant="primary" onClick={ () => startABTesting() }>
-										Start A/B Test
+										Start Comparison Test
 									</Button>
 								</div>
 							) }
