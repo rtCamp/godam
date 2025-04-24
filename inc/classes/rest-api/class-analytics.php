@@ -150,10 +150,11 @@ class Analytics extends Base {
 			if ( ! empty( $post_ids ) ) {
 				$posts = get_posts(
 					array(
-						'post__in'       => $post_ids,
-						'post_type'      => 'post',
-						'posts_per_page' => -1,
-						'orderby'        => 'post__in',
+						'post__in'         => $post_ids,
+						'post_type'        => 'post',
+						'posts_per_page'   => -1,
+						'orderby'          => 'post__in',
+						'suppress_filters' => false,
 					)
 				);
 

@@ -61,5 +61,4 @@ export const analyticsApi = createApi( {
 export const {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
-	useFetchPostDetailsQuery,
 } = analyticsApi;
