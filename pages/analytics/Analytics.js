@@ -152,9 +152,9 @@ const Analytics = ( { attachmentID } ) => {
 
 	const openVideoUploader = () => {
 		const fileFrame = wp.media( {
-			title: 'Select Video to Perform A/B testing',
+			title: __( 'Select Video to Perform A/B testing', 'godam' ),
 			button: {
-				text: 'Use this Video',
+				text: __( 'Use this Video', 'godam' ),
 			},
 			library: {
 				type: 'video',
@@ -266,7 +266,7 @@ const Analytics = ( { attachmentID } ) => {
 											<div className="analytics-single-info">
 												<div className="analytics-info-heading">
 													<p>{ __( 'Average Engagement', 'godam' ) }</p>
-													<Tooltip text="Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)" />
+													<Tooltip text={ __( 'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)', 'godam' ) } />
 												</div>
 												<p
 													id="engagement-rate"
@@ -281,7 +281,7 @@ const Analytics = ( { attachmentID } ) => {
 											<div className="analytics-single-info">
 												<div className="analytics-info-heading">
 													<p>{ __( 'Total Plays', 'godam' ) }</p>
-													<Tooltip text="Plays represent the total number of times the video has been viewed" />
+													<Tooltip text={ __( 'Plays represent the total number of times the video has been viewed', 'godam' ) } />
 												</div>
 												<p
 													id="total-plays"
@@ -289,14 +289,14 @@ const Analytics = ( { attachmentID } ) => {
 												>
 													0
 												</p>
-												<p id="views-change" className="metric-change">+0% this week</p>
+												<p id="views-change" className="metric-change">{ __( '+0% this week', 'godam' ) }</p>
 											</div>
 										</div>
 										<div className="analytics-info flex justify-between  max-lg:flex-col">
 											<div className="analytics-single-info">
 												<div className="analytics-info-heading">
 													<p>{ __( 'Play Rate', 'godam' ) }</p>
-													<Tooltip text="Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads" />
+													<Tooltip text={ __( 'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads', 'godam' ) } />
 												</div>
 												<p
 													id="play-rate"
@@ -311,10 +311,10 @@ const Analytics = ( { attachmentID } ) => {
 											<div className="analytics-single-info">
 												<div className="analytics-info-heading">
 													<p>{ __( 'Watch Time', 'godam' ) }</p>
-													<Tooltip text="Total time the video has been watched, aggregated across all plays." />
+													<Tooltip text={ __( 'Total time the video has been watched, aggregated across all plays.', 'godam' ) } />
 												</div>
 												<p id="watch-time" className="min-w-[90px] engagement-rate">0s</p>
-												<p id="watch-time-change" className="metric-change">+0% this week</p>
+												<p id="watch-time-change" className="metric-change">{ __( '+0% this week', 'godam' ) }</p>
 											</div>
 										</div>
 									</div>
@@ -337,7 +337,7 @@ const Analytics = ( { attachmentID } ) => {
 											<div id="heatmap-container" className="mt-4">
 												<h3 className="text-md mb-2 flex gap-2">
 													{ __( 'Heatmap', 'godam' ) }
-													<Tooltip text="Heatmap visualizes per-second view density, identifying peaks of plays, skipped sections, and audience drop-offs. Darker areas indicate higher engagement" />
+													<Tooltip text={ __( 'Heatmap visualizes per-second view density, identifying peaks of plays, skipped sections, and audience drop-offs. Darker areas indicate higher engagement', 'godam' ) } />
 												</h3>
 												<svg id="heatmap" width="640" height="100"></svg>
 												<div className="heatmap-tooltip"></div>
@@ -364,7 +364,7 @@ const Analytics = ( { attachmentID } ) => {
 					</div>
 
 					<div className="posts-count-container">
-						<h2>Video Views by Post Source</h2>
+						<h2>{ __( 'Video Views by Post Source', 'godam' ) }</h2>
 						<div id="post-views-count-chart" className="text-center"></div>
 						<div className="legend" id="legend"></div>
 						<div className="total-views" id="total-views"></div>
@@ -372,7 +372,7 @@ const Analytics = ( { attachmentID } ) => {
 
 					<div className="px-10 py-28">
 						<div className="flex justify-between">
-							<h3>Video Comparison</h3>
+							<h3>{ __( 'Video Comparison', 'godam' ) }</h3>
 							{ attachmentData && abTestComparisonAttachmentData && (
 								<div className="flex gap-4">
 									<Button variant="secondary" onClick={ () => {
@@ -380,10 +380,10 @@ const Analytics = ( { attachmentID } ) => {
 										setAbComparisonUrl( '' );
 										setAbTestComparisonAnalyticsData( null );
 									} }>
-										Remove
+										{ __( 'Remove', 'godam' ) }
 									</Button>
 									<Button variant="primary" onClick={ () => startABTesting() }>
-										Start Comparison Test
+										{ __( 'Start Comparison Test', 'godam' ) }
 									</Button>
 								</div>
 							) }
@@ -409,9 +409,9 @@ const Analytics = ( { attachmentID } ) => {
 											onClick={ openVideoUploader }
 											variant="primary"
 											className="ml-2"
-											aria-label="Upload or Replace CTA Image"
+											aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
 										>
-											Select Video
+											{ __( 'Select Video', 'godam' ) }
 										</Button>
 									</div>
 								) }
@@ -451,32 +451,32 @@ const Analytics = ( { attachmentID } ) => {
 									<tbody>
 										<tr className={ highlightClass( engagementRate, comparisonEngagementRate ) }>
 											<td>{ engagementRate?.toFixed( 2 ) }%</td>
-											<td>Average Engagement</td>
+											<td>{ __( 'Average Engagement', 'godam' ) }</td>
 											<td>{ comparisonEngagementRate?.toFixed( 2 ) }%</td>
 										</tr>
 										<tr className={ highlightClass( plays, comparisonPlays ) }>
 											<td>{ plays }</td>
-											<td>Total Plays</td>
+											<td>{ __( 'Total Plays', 'godam' ) }</td>
 											<td>{ comparisonPlays }</td>
 										</tr>
 										<tr className={ highlightClass( playRate, comparisonPlayRate ) }>
 											<td>{ playRate?.toFixed( 2 ) }%</td>
-											<td>Play Rate</td>
+											<td>{ __( 'Play Rate', 'godam' ) }</td>
 											<td>{ comparisonPlayRate?.toFixed( 2 ) }%</td>
 										</tr>
 										<tr className={ highlightClass( analyticsData?.page_load, abTestComparisonAnalyticsData?.page_load ) }>
 											<td>{ analyticsData?.page_load }</td>
-											<td>Page Loads</td>
+											<td>{ __( 'Page Loads', 'godam' ) }</td>
 											<td>{ abTestComparisonAnalyticsData?.page_load }</td>
 										</tr>
 										<tr className={ highlightClass( analyticsData?.play_time, abTestComparisonAnalyticsData?.play_time ) }>
 											<td>{ analyticsData?.play_time?.toFixed( 2 ) }s</td>
-											<td>Play Time</td>
+											<td>{ __( 'Play Time', 'godam' ) }</td>
 											<td>{ abTestComparisonAnalyticsData?.play_time?.toFixed( 2 ) }s</td>
 										</tr>
 										<tr>
 											<td>{ analyticsData?.video_length }s</td>
-											<td>Video Length</td>
+											<td>{ __( 'Video Length', 'godam' ) }</td>
 											<td>{ abTestComparisonAnalyticsData?.video_length }s</td>
 										</tr>
 									</tbody>

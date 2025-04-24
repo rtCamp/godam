@@ -40,7 +40,7 @@ const App = () => {
 				icon="plus"
 				__next40pxDefaultSize
 				variant="primary"
-				text="New Folder"
+				text={ __( 'New Folder', 'godam' ) }
 				className="button--full mb-spacing"
 				onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
 			/>
@@ -50,7 +50,7 @@ const App = () => {
 					icon="edit"
 					__next40pxDefaultSize
 					variant="secondary"
-					text="Rename"
+					text={ __( 'Rename', 'godam' ) }
 					className="button--half"
 					onClick={ () => dispatch( openModal( 'rename' ) ) }
 					disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
@@ -59,7 +59,7 @@ const App = () => {
 					icon="trash"
 					__next40pxDefaultSize
 					variant="primary"
-					text="Delete"
+					text={ __( 'Delete', 'godam' ) }
 					className="button--half"
 					isDestructive={ true }
 					onClick={ () => dispatch( openModal( 'delete' ) ) }
