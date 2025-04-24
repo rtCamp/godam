@@ -11,7 +11,11 @@ import '../video-editor/style.scss';
 import axios from 'axios';
 import GodamHeader from '../godam/GodamHeader';
 import Tooltip from './Tooltip';
-import { fetchAnalyticsData, calculateEngagementRate, calculatePlayRate } from './helper';
+import {
+	useFetchAnalyticsDataQuery,
+	useFetchProcessedAnalyticsHistoryQuery,
+} from './redux/api/analyticsApi';
+import { calculateEngagementRate, calculatePlayRate } from './helper';
 
 /**
  * WordPress dependencies
@@ -61,6 +65,69 @@ const Analytics = ( { attachmentID } ) => {
 		useState( null );
 	const [ isABResultsLoading, setIsABResultsLoading ] = useState( false );
 
+	// RTK Query hooks
+	const siteUrl = window.location.origin;
+	const {
+		data: analyticsDataFetched,
+		refetch,
+	} = useFetchAnalyticsDataQuery(
+		{ videoId: attachmentID, siteUrl },
+		{ skip: ! attachmentID },
+	);
+
+	window.analyticsDataFetched = analyticsDataFetched;
+
+	// Query for last 60 days of processed analytics history
+	const {
+		data: processedAnalyticsHistory,
+	} = useFetchProcessedAnalyticsHistoryQuery(
+		{ videoId: attachmentID, siteUrl, days: 60 },
+		{ skip: ! attachmentID },
+	);
+
+	window.processedAnalyticsHistory = processedAnalyticsHistory;
+
+	const {
+		data: abTestComparisonAnalyticsDataFetched,
+		refetch: refetchAB,
+	} = useFetchAnalyticsDataQuery(
+		{
+			videoId: abTestComparisonAttachmentData?.id,
+			siteUrl,
+		},
+		{ skip: ! abTestComparisonAttachmentData?.id },
+	);
+
+	// Sync main analytics data
+	useEffect( () => {
+		if ( analyticsDataFetched?.errorType === 'invalid_key' ) {
+			const loadingEl = document.getElementById( 'loading-analytics-animation' );
+			const container = document.getElementById( 'video-analytics-container' );
+			const overlay = document.getElementById( 'api-key-overlay' );
+			if ( loadingEl ) {
+				loadingEl.style.display = 'none';
+			}
+			if ( container ) {
+				container.classList.remove( 'hidden' );
+			}
+			if ( container ) {
+				container.classList.add( 'blurred' );
+			}
+			if ( overlay ) {
+				overlay.classList.remove( 'hidden' );
+			}
+		} else if ( analyticsDataFetched ) {
+			setAnalyticsData( analyticsDataFetched );
+		}
+	}, [ analyticsDataFetched ] );
+
+	// Sync A/B test comparison data
+	useEffect( () => {
+		if ( abTestComparisonAnalyticsDataFetched ) {
+			setAbTestComparisonAnalyticsData( abTestComparisonAnalyticsDataFetched );
+		}
+	}, [ abTestComparisonAnalyticsDataFetched ] );
+
 	useEffect( () => {
 		if ( attachmentID ) {
 			const url = window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] );
@@ -76,12 +143,9 @@ const Analytics = ( { attachmentID } ) => {
 
 	async function startABTesting() {
 		setIsABResultsLoading( true );
-		const siteUrl = window.location.origin;
-		setAnalyticsData( await fetchAnalyticsData( attachmentID, siteUrl ) );
+		await refetch();
 		if ( abTestComparisonAttachmentData ) {
-			setAbTestComparisonAnalyticsData(
-				await fetchAnalyticsData( abTestComparisonAttachmentData?.id, siteUrl ),
-			);
+			await refetchAB();
 		}
 		setIsABResultsLoading( false );
 	}
@@ -114,34 +178,43 @@ const Analytics = ( { attachmentID } ) => {
 		fileFrame.open();
 	};
 
-	const engagementRate = analyticsData ? calculateEngagementRate(
+	const engagementRate = Number( calculateEngagementRate(
 		analyticsData?.plays,
 		analyticsData?.video_length,
 		analyticsData?.play_time,
-	) : '';
+	) ) || 0;
 
-	const comparisonEngagementRate =
-		abTestComparisonAnalyticsData ? calculateEngagementRate(
-			abTestComparisonAnalyticsData?.plays,
-			abTestComparisonAnalyticsData?.video_length,
-			abTestComparisonAnalyticsData?.play_time,
-		) : '';
-
-	const playRate = analyticsData ? calculatePlayRate(
-		analyticsData?.plays,
-		analyticsData?.video_length,
-		analyticsData?.play_time,
-	) : '';
-
-	const comparisonPlayRate = abTestComparisonAnalyticsData ? calculatePlayRate(
+	const comparisonEngagementRate = Number( calculateEngagementRate(
 		abTestComparisonAnalyticsData?.plays,
 		abTestComparisonAnalyticsData?.video_length,
 		abTestComparisonAnalyticsData?.play_time,
-	) : '';
+	) ) || 0;
+
+	const playRate = Number( calculatePlayRate(
+		analyticsData?.plays,
+		analyticsData?.video_length,
+		analyticsData?.play_time,
+	) ) || 0;
+
+	const comparisonPlayRate = Number( calculatePlayRate(
+		abTestComparisonAnalyticsData?.plays,
+		abTestComparisonAnalyticsData?.video_length,
+		abTestComparisonAnalyticsData?.play_time,
+	) ) || 0;
 
 	const plays = analyticsData?.plays;
 
 	const comparisonPlays = abTestComparisonAnalyticsData?.plays;
+
+	const highlightClass = ( a, b ) => {
+		if ( a > b ) {
+			return 'left-greater';
+		}
+		if ( a < b ) {
+			return 'right-greater';
+		}
+		return 'left-greater right-greater';
+	};
 
 	return (
 		<div className="godam-analytics-container">
@@ -168,7 +241,7 @@ const Analytics = ( { attachmentID } ) => {
 			</div>
 
 			{ attachmentData && (
-				<>
+				<div id="analytics-content" className="hidden">
 					<div className="p-10 flex gap-3 items-center">
 						<h2 className="text-2xl m-0 capitalize">
 							{ attachmentData?.title?.rendered }
@@ -201,6 +274,7 @@ const Analytics = ( { attachmentID } ) => {
 												>
 													0%
 												</p>
+												<p id="avg-engagement-change" className="metric-change">+0% this week</p>
 											</div>
 										</div>
 										<div className="analytics-info flex justify-between  max-lg:flex-col">
@@ -215,6 +289,7 @@ const Analytics = ( { attachmentID } ) => {
 												>
 													0
 												</p>
+												<p id="views-change" className="metric-change">+0% this week</p>
 											</div>
 										</div>
 										<div className="analytics-info flex justify-between  max-lg:flex-col">
@@ -229,6 +304,17 @@ const Analytics = ( { attachmentID } ) => {
 												>
 													0%
 												</p>
+												<p id="play-rate-change" className="metric-change">+0% this week</p>
+											</div>
+										</div>
+										<div className="analytics-info flex justify-between  max-lg:flex-col">
+											<div className="analytics-single-info">
+												<div className="analytics-info-heading">
+													<p>{ __( 'Watch Time', 'godam' ) }</p>
+													<Tooltip text="Total time the video has been watched, aggregated across all plays." />
+												</div>
+												<p id="watch-time" className="min-w-[90px] engagement-rate">0s</p>
+												<p id="watch-time-change" className="metric-change">+0% this week</p>
 											</div>
 										</div>
 									</div>
@@ -243,7 +329,7 @@ const Analytics = ( { attachmentID } ) => {
 											<div className="video-chart-container">
 												<div id="chart-container">
 													<svg id="line-chart" width="640" height="300"></svg>
-													<div className="tooltip"></div>
+													<div className="line-chart-tooltip"></div>
 												</div>
 											</div>
 										</div>
@@ -264,12 +350,14 @@ const Analytics = ( { attachmentID } ) => {
 					</div>
 					<div>
 						<div className="text-center">
+							<h3 className="text-md mb-4">{ __( 'Time Series Overview', 'godam' ) }</h3>
 							<svg id="metrics-chart" width="900" height="500"></svg>
 						</div>
 						<div
 							className="country-heatmap-container text-center"
 							id="country-heatmap-container"
 						>
+							<h3 className="text-md mb-4">{ __( 'Geographical Heatmap', 'godam' ) }</h3>
 							<div id="map-container"></div>
 							<div id="table-container" className="px-12"></div>
 						</div>
@@ -284,7 +372,7 @@ const Analytics = ( { attachmentID } ) => {
 
 					<div className="px-10 py-28">
 						<div className="flex justify-between">
-							<h3>A/B Testing</h3>
+							<h3>Video Comparison</h3>
 							{ attachmentData && abTestComparisonAttachmentData && (
 								<div className="flex gap-4">
 									<Button variant="secondary" onClick={ () => {
@@ -295,7 +383,7 @@ const Analytics = ( { attachmentID } ) => {
 										Remove
 									</Button>
 									<Button variant="primary" onClick={ () => startABTesting() }>
-										Start A/B Test
+										Start Comparison Test
 									</Button>
 								</div>
 							) }
@@ -305,11 +393,13 @@ const Analytics = ( { attachmentID } ) => {
 								<RenderVideo
 									attachmentData={ attachmentData }
 									attachmentID={ attachmentID }
-									className="w-full h-full"
+									className="w-full h-full max-h-[300px]"
 								/>
 								<div>
 									<h4>{ attachmentData?.title?.rendered }</h4>
-									<p className="text-center">0 unique vis</p>
+									<p className="text-center">
+										{ analyticsData?.plays ?? 0 } views
+									</p>
 								</div>
 							</div>
 							<div className="flex-1 border-2 border-solid">
@@ -339,50 +429,61 @@ const Analytics = ( { attachmentID } ) => {
 										<RenderVideo
 											attachmentData={ abTestComparisonAttachmentData }
 											attachmentID={ abTestComparisonAttachmentData?.id }
-											className="w-full h-full"
+											className="w-full h-full max-h-[300px]"
 										/>
 										<div>
 											<h4>{ abTestComparisonAttachmentData?.title?.rendered }</h4>
-											<p className="text-center">0 unique views</p>
+											<p className="text-center">
+												{ abTestComparisonAnalyticsData?.plays ?? 0 } views
+											</p>
 										</div>
 									</div>
 								) }
 							</div>
 						</div>
-						{ analyticsData && abTestComparisonAnalyticsData && (
-							<table className="w-full ab-testing-table">
-								<tr
-									className={ `${ engagementRate > comparisonEngagementRate ? 'leftGreater' : 'rightGreater' }` }
-								>
-									<td>{ engagementRate }</td>
-									<td>Average Engagement</td>
-									<td>{ comparisonEngagementRate }</td>
-								</tr>
-								<tr
-									className={ `${ plays > comparisonPlays ? 'leftGreater' : 'rightGreater' }` }
-								>
-									<td>{ plays }</td>
-									<td>Total Plays</td>
-									<td>{ comparisonPlays }</td>
-								</tr>
-								<tr
-									className={ `${ playRate > comparisonPlayRate ? 'leftGreater' : 'rightGreater' }` }
-								>
-									<td>{ playRate }</td>
-									<td>Play Rate</td>
-									<td>{ comparisonPlayRate }</td>
-								</tr>
-							</table>
-						) }
-						{
-							isABResultsLoading && (
-								<div className="text-center p-20">
-									<Spinner />
-								</div>
-							)
-						}
+						{ isABResultsLoading ? (
+							<div className="flex justify-center items-center py-20">
+								<Spinner />
+							</div>
+						) : (
+							analyticsData && abTestComparisonAnalyticsData && (
+								<table className="w-full ab-testing-table">
+									<tbody>
+										<tr className={ highlightClass( engagementRate, comparisonEngagementRate ) }>
+											<td>{ engagementRate?.toFixed( 2 ) }%</td>
+											<td>Average Engagement</td>
+											<td>{ comparisonEngagementRate?.toFixed( 2 ) }%</td>
+										</tr>
+										<tr className={ highlightClass( plays, comparisonPlays ) }>
+											<td>{ plays }</td>
+											<td>Total Plays</td>
+											<td>{ comparisonPlays }</td>
+										</tr>
+										<tr className={ highlightClass( playRate, comparisonPlayRate ) }>
+											<td>{ playRate?.toFixed( 2 ) }%</td>
+											<td>Play Rate</td>
+											<td>{ comparisonPlayRate?.toFixed( 2 ) }%</td>
+										</tr>
+										<tr className={ highlightClass( analyticsData?.page_load, abTestComparisonAnalyticsData?.page_load ) }>
+											<td>{ analyticsData?.page_load }</td>
+											<td>Page Loads</td>
+											<td>{ abTestComparisonAnalyticsData?.page_load }</td>
+										</tr>
+										<tr className={ highlightClass( analyticsData?.play_time, abTestComparisonAnalyticsData?.play_time ) }>
+											<td>{ analyticsData?.play_time?.toFixed( 2 ) }s</td>
+											<td>Play Time</td>
+											<td>{ abTestComparisonAnalyticsData?.play_time?.toFixed( 2 ) }s</td>
+										</tr>
+										<tr>
+											<td>{ analyticsData?.video_length }s</td>
+											<td>Video Length</td>
+											<td>{ abTestComparisonAnalyticsData?.video_length }s</td>
+										</tr>
+									</tbody>
+								</table>
+							) ) }
 					</div>
-				</>
+				</div>
 			) }
 		</div>
 	);
