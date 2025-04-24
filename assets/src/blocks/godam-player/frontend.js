@@ -31,6 +31,12 @@ import 'quill/dist/quill.snow.css';
 import GoDAM from '../../../../assets/src/images/GoDAM.png';
 import Share from '../../../../assets/src/images/share.svg';
 import CopyIcon from '../../../../assets/src/images/clipboard.svg';
+import Facebook from '../../../../assets/src/images/facebook.svg';
+import LinkedIn from '../../../../assets/src/images/linkedin.svg';
+import Reddit from '../../../../assets/src/images/reddit.svg';
+import Telegram from '../../../../assets/src/images/telegram.svg';
+import Twitter from '../../../../assets/src/images/twitter-x.svg';
+import Whatsapp from '../../../../assets/src/images/whatsapp.svg';
 
 /**
  * Global variables
@@ -306,6 +312,15 @@ function GODAMPlayer( videoRef = null ) {
 						<h2>Share Media</h2>
 						<p>Copy the links below to share the selected media files.</p>
 					</div>
+
+					<div class="share-buttons">
+						<a class="facebook social-icon" target="blank"><img src=${ Facebook } alt='Facebook icon' height={24} width={24}</a>
+						<a class="twitter social-icon" target="blank"><img src=${ Twitter } alt='Twitter icon' height={24} width={24}</a>
+						<a class="linkedin social-icon" target="blank"><img src=${ LinkedIn } alt='Linkedin icon' height={24} width={24}</a>
+						<a class="reddit social-icon" target="blank"><img src=${ Reddit } alt='Reddit icon' height={24} width={24}</a>
+						<a class="whatsapp social-icon" target="blank"><img src=${ Whatsapp } alt='Whatsapp icon' height={24} width={24}</a>
+						<a class="telegram social-icon" target="blank"><img src=${ Telegram } alt='Telegram icon' height={24} width={24}</a>
+					</div>
 					
 					<div class='share-input-container'>
 						<label>Page Link</label>
@@ -347,6 +362,29 @@ function GODAMPlayer( videoRef = null ) {
 						const cancelButton = shareModal.querySelector( '#cancel-button' );
 						cancelButton.closest( '.share-modal-container' ).remove();
 					} );
+
+				const link = encodeURI(
+					`https://frappe-transcoder-api.rt.gw/web/video/${ this.player().jobId }`,
+				);
+				const msg = encodeURIComponent( 'Check out this video!' );
+
+				const fb = document.querySelector( '.facebook' );
+				fb.href = `https://www.facebook.com/share.php?u=${ link }`;
+
+				const twitter = document.querySelector( '.twitter' );
+				twitter.href = `http://twitter.com/share?&url=${ link }&text=${ msg }`;
+
+				const linkedIn = document.querySelector( '.linkedin' );
+				linkedIn.href = `https://www.linkedin.com/sharing/share-offsite/?url=${ link }&text=${ msg }`;
+
+				const reddit = document.querySelector( '.reddit' );
+				reddit.href = `http://www.reddit.com/submit?url=${ link }&title=${ msg }`;
+
+				const whatsapp = document.querySelector( '.whatsapp' );
+				whatsapp.href = `https://api.whatsapp.com/send?text=${ msg }: ${ link }`;
+
+				const telegram = document.querySelector( '.telegram' );
+				telegram.href = `https://telegram.me/share/url?url=${ link }&text=${ msg }`;
 			}
 		}
 

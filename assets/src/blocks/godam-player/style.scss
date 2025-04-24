@@ -544,7 +544,6 @@
 		height: 100%;
 		object-fit: fill;
 	}
-
 }
 
 .share-icon {
@@ -578,7 +577,7 @@
 
 .share-modal-message {
 	background: #fff;
-    padding: 20px 40px;
+    padding: 10px 40px;
     border-radius: 5px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, .1);
     text-align: center;
@@ -593,6 +592,18 @@
 
 	p {
 		font-size: 12px;
+	}
+
+	a {
+		text-underline-offset: 0 !important;
+		text-decoration: none !important;
+		text-decoration-thickness: 0px !important;
+	}
+
+	.share-buttons {
+		display: flex;
+		gap: 15px;
+		justify-content: center;
 	}
 
 	.share-input-container {
