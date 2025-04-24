@@ -37,6 +37,7 @@ import Reddit from '../../../../assets/src/images/reddit.svg';
 import Telegram from '../../../../assets/src/images/telegram.svg';
 import Twitter from '../../../../assets/src/images/twitter-x.svg';
 import Whatsapp from '../../../../assets/src/images/whatsapp.svg';
+import Complete from '../../../../assets/src/images/check.svg';
 
 /**
  * Global variables
@@ -243,7 +244,6 @@ function GODAMPlayer( videoRef = null ) {
 				player.jobId = data.meta.rtgodam_transcoding_job_id;
 				return data.meta.rtgodam_transcoding_job_id;
 			} catch ( err ) {
-				console.error( 'Error fetching post meta:', err );
 				return '';
 			}
 		};
@@ -272,25 +272,41 @@ function GODAMPlayer( videoRef = null ) {
 
 			copyToClipboard( inputId ) {
 				const input = document.getElementById( inputId );
+				const button = input.nextElementSibling; // assuming button is right after input
+
+				const setSuccessStyle = () => {
+					button.style.backgroundColor = '#4caf50'; // green background
+					button.querySelector( 'img' ).src = Complete;
+				};
+
+				const resetStyle = () => {
+					button.style.backgroundColor = 'transparent'; // reset background
+					button.querySelector( 'img' ).src = CopyIcon;
+				};
+
+				// Common feedback function to handle success
+				const doFeedback = () => {
+					setSuccessStyle();
+					setTimeout( resetStyle, 2000 ); // revert after 2 seconds
+				};
 
 				if ( navigator.clipboard && navigator.clipboard.writeText ) {
 					navigator.clipboard
 						.writeText( input.value )
 						.then( () => {
-							console.log( 'Copied to clipboard' );
+							doFeedback(); // Use the common feedback function
 						} )
-						.catch( ( err ) => {
-							console.error( 'Clipboard copy failed', err );
+						.catch( () => {
+							// silently fail
 						} );
 				} else {
-					// Fallback for unsupported browsers
 					input.select();
 					input.setSelectionRange( 0, 99999 ); // for mobile
 					try {
 						document.execCommand( 'copy' );
-						console.log( 'Copied with fallback' );
+						doFeedback(); // Use the common feedback function
 					} catch ( err ) {
-						console.error( 'Fallback copy failed', err );
+						// silently fail
 					}
 				}
 			}
@@ -325,7 +341,7 @@ function GODAMPlayer( videoRef = null ) {
 					<div class='share-input-container'>
 						<label>Page Link</label>
 						<div class="share-modal-input-group">
-							<input id="page-link" type="text" value="https://frappe-transcoder-api.rt.gw/web/video/${ this.player().jobId }" readonly />
+							<input id="page-link" type="text" value="${ window.godamData.api_base }/web/video/${ this.player().jobId }" readonly />
 							<button id="copy-page-link" class="copy-button">
 								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
 							</button>
@@ -335,7 +351,7 @@ function GODAMPlayer( videoRef = null ) {
 					<div class='share-input-container'>
 						<label>Embed</label>
 						<div class="share-modal-input-group">
-							<input id="embed-code" type="text" value='<iframe src="https://frappe-transcoder-api.rt.gw/web/embed/${ this.player().jobId }"></iframe>' readonly />
+							<input id="embed-code" type="text" value='<iframe src="${ window.godamData.api_base }/web/embed/${ this.player().jobId }"></iframe>' readonly />
 							<button id="copy-embed-code" class="copy-button">
 								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
 							</button>
@@ -364,7 +380,7 @@ function GODAMPlayer( videoRef = null ) {
 					} );
 
 				const link = encodeURI(
-					`https://frappe-transcoder-api.rt.gw/web/video/${ this.player().jobId }`,
+					`${ window.godamData.api_base }/web/video/${ this.player().jobId }`,
 				);
 				const msg = encodeURIComponent( 'Check out this video!' );
 
