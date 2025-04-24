@@ -232,7 +232,7 @@ const Analytics = ( { attachmentID } ) => {
 			</div>
 
 			{ attachmentData && (
-				<>
+				<div id="analytics-content" className="hidden">
 					<div className="p-10 flex gap-3 items-center">
 						<h2 className="text-2xl m-0 capitalize">
 							{ attachmentData?.title?.rendered }
@@ -459,7 +459,7 @@ const Analytics = ( { attachmentID } ) => {
 							)
 						}
 					</div>
-				</>
+				</div>
 			) }
 		</div>
 	);

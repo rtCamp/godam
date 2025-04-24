@@ -631,6 +631,11 @@ async function main() {
 		analyticsContainer.classList.remove( 'hidden' );
 	}
 
+	const analyticsContent = document.getElementById( 'analytics-content' );
+	if ( analyticsContent ) {
+		analyticsContent.classList.remove( 'hidden' );
+	}
+
 	// Hide the loading animation
 	const loadingElement = document.getElementById( 'loading-analytics-animation' );
 	if ( loadingElement ) {
