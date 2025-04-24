@@ -178,34 +178,43 @@ const Analytics = ( { attachmentID } ) => {
 		fileFrame.open();
 	};
 
-	const engagementRate = analyticsData ? calculateEngagementRate(
+	const engagementRate = Number( calculateEngagementRate(
 		analyticsData?.plays,
 		analyticsData?.video_length,
 		analyticsData?.play_time,
-	) : '';
+	) ) || 0;
 
-	const comparisonEngagementRate =
-		abTestComparisonAnalyticsData ? calculateEngagementRate(
-			abTestComparisonAnalyticsData?.plays,
-			abTestComparisonAnalyticsData?.video_length,
-			abTestComparisonAnalyticsData?.play_time,
-		) : '';
-
-	const playRate = analyticsData ? calculatePlayRate(
-		analyticsData?.plays,
-		analyticsData?.video_length,
-		analyticsData?.play_time,
-	) : '';
-
-	const comparisonPlayRate = abTestComparisonAnalyticsData ? calculatePlayRate(
+	const comparisonEngagementRate = Number( calculateEngagementRate(
 		abTestComparisonAnalyticsData?.plays,
 		abTestComparisonAnalyticsData?.video_length,
 		abTestComparisonAnalyticsData?.play_time,
-	) : '';
+	) ) || 0;
+
+	const playRate = Number( calculatePlayRate(
+		analyticsData?.plays,
+		analyticsData?.video_length,
+		analyticsData?.play_time,
+	) ) || 0;
+
+	const comparisonPlayRate = Number( calculatePlayRate(
+		abTestComparisonAnalyticsData?.plays,
+		abTestComparisonAnalyticsData?.video_length,
+		abTestComparisonAnalyticsData?.play_time,
+	) ) || 0;
 
 	const plays = analyticsData?.plays;
 
 	const comparisonPlays = abTestComparisonAnalyticsData?.plays;
+
+	const highlightClass = ( a, b ) => {
+		if ( a > b ) {
+			return 'left-greater';
+		}
+		if ( a < b ) {
+			return 'right-greater';
+		}
+		return 'left-greater right-greater';
+	};
 
 	return (
 		<div className="godam-analytics-container">
@@ -382,11 +391,13 @@ const Analytics = ( { attachmentID } ) => {
 								<RenderVideo
 									attachmentData={ attachmentData }
 									attachmentID={ attachmentID }
-									className="w-full h-full"
+									className="w-full h-full max-h-[300px]"
 								/>
 								<div>
 									<h4>{ attachmentData?.title?.rendered }</h4>
-									<p className="text-center">0 unique vis</p>
+									<p className="text-center">
+										{ analyticsData?.plays ?? 0 } views
+									</p>
 								</div>
 							</div>
 							<div className="flex-1 border-2 border-solid">
@@ -416,48 +427,59 @@ const Analytics = ( { attachmentID } ) => {
 										<RenderVideo
 											attachmentData={ abTestComparisonAttachmentData }
 											attachmentID={ abTestComparisonAttachmentData?.id }
-											className="w-full h-full"
+											className="w-full h-full max-h-[300px]"
 										/>
 										<div>
 											<h4>{ abTestComparisonAttachmentData?.title?.rendered }</h4>
-											<p className="text-center">0 unique views</p>
+											<p className="text-center">
+												{ abTestComparisonAnalyticsData?.plays ?? 0 } views
+											</p>
 										</div>
 									</div>
 								) }
 							</div>
 						</div>
-						{ analyticsData && abTestComparisonAnalyticsData && (
-							<table className="w-full ab-testing-table">
-								<tr
-									className={ `${ engagementRate > comparisonEngagementRate ? 'leftGreater' : 'rightGreater' }` }
-								>
-									<td>{ engagementRate }</td>
-									<td>Average Engagement</td>
-									<td>{ comparisonEngagementRate }</td>
-								</tr>
-								<tr
-									className={ `${ plays > comparisonPlays ? 'leftGreater' : 'rightGreater' }` }
-								>
-									<td>{ plays }</td>
-									<td>Total Plays</td>
-									<td>{ comparisonPlays }</td>
-								</tr>
-								<tr
-									className={ `${ playRate > comparisonPlayRate ? 'leftGreater' : 'rightGreater' }` }
-								>
-									<td>{ playRate }</td>
-									<td>Play Rate</td>
-									<td>{ comparisonPlayRate }</td>
-								</tr>
-							</table>
-						) }
-						{
-							isABResultsLoading && (
-								<div className="text-center p-20">
-									<Spinner />
-								</div>
-							)
-						}
+						{ isABResultsLoading ? (
+							<div className="flex justify-center items-center py-20">
+								<Spinner />
+							</div>
+						) : (
+							analyticsData && abTestComparisonAnalyticsData && (
+								<table className="w-full ab-testing-table">
+									<tbody>
+										<tr className={ highlightClass( engagementRate, comparisonEngagementRate ) }>
+											<td>{ engagementRate?.toFixed( 2 ) }%</td>
+											<td>Average Engagement</td>
+											<td>{ comparisonEngagementRate?.toFixed( 2 ) }%</td>
+										</tr>
+										<tr className={ highlightClass( plays, comparisonPlays ) }>
+											<td>{ plays }</td>
+											<td>Total Plays</td>
+											<td>{ comparisonPlays }</td>
+										</tr>
+										<tr className={ highlightClass( playRate, comparisonPlayRate ) }>
+											<td>{ playRate?.toFixed( 2 ) }%</td>
+											<td>Play Rate</td>
+											<td>{ comparisonPlayRate?.toFixed( 2 ) }%</td>
+										</tr>
+										<tr className={ highlightClass( analyticsData?.page_load, abTestComparisonAnalyticsData?.page_load ) }>
+											<td>{ analyticsData?.page_load }</td>
+											<td>Page Loads</td>
+											<td>{ abTestComparisonAnalyticsData?.page_load }</td>
+										</tr>
+										<tr className={ highlightClass( analyticsData?.play_time, abTestComparisonAnalyticsData?.play_time ) }>
+											<td>{ analyticsData?.play_time?.toFixed( 2 ) }s</td>
+											<td>Play Time</td>
+											<td>{ abTestComparisonAnalyticsData?.play_time?.toFixed( 2 ) }s</td>
+										</tr>
+										<tr>
+											<td>{ analyticsData?.video_length }s</td>
+											<td>Video Length</td>
+											<td>{ abTestComparisonAnalyticsData?.video_length }s</td>
+										</tr>
+									</tbody>
+								</table>
+							) ) }
 					</div>
 				</div>
 			) }
