@@ -30,6 +30,7 @@ import 'quill/dist/quill.snow.css';
  */
 import GoDAM from '../../../../assets/src/images/GoDAM.png';
 import Share from '../../../../assets/src/images/share.svg';
+import CopyIcon from '../../../../assets/src/images/clipboard.svg';
 
 /**
  * Global variables
@@ -236,7 +237,7 @@ function GODAMPlayer( videoRef = null ) {
 				player.jobId = data.meta.rtgodam_transcoding_job_id;
 				return data.meta.rtgodam_transcoding_job_id;
 			} catch ( err ) {
-				console.error('Error fetching post meta:', err);
+				console.error( 'Error fetching post meta:', err );
 				return '';
 			}
 		};
@@ -310,7 +311,9 @@ function GODAMPlayer( videoRef = null ) {
 						<label>Page Link</label>
 						<div class="share-modal-input-group">
 							<input id="page-link" type="text" value="https://app.godam.io./web/video/${ this.player().jobId }" readonly />
-							<button id="copy-page-link" class="copy-button">📋</button>
+							<button id="copy-page-link" class="copy-button">
+								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
+							</button>
 						</div>
 					</div>
 
@@ -318,7 +321,9 @@ function GODAMPlayer( videoRef = null ) {
 						<label>Embed</label>
 						<div class="share-modal-input-group">
 							<input id="embed-code" type="text" value='<iframe src="https://app.godam.io/web/embed/${ this.player().jobId }"></iframe>' readonly />
-							<button id="copy-embed-code" class="copy-button">📋</button>
+							<button id="copy-embed-code" class="copy-button">
+								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
+							</button>
 						</div>
 					</div>
 
