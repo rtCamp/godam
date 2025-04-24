@@ -310,7 +310,7 @@ function GODAMPlayer( videoRef = null ) {
 					<div class='share-input-container'>
 						<label>Page Link</label>
 						<div class="share-modal-input-group">
-							<input id="page-link" type="text" value="https://app.godam.io/web/video/${ this.player().jobId }" readonly />
+							<input id="page-link" type="text" value="https://frappe-transcoder-api.rt.gw/web/video/${ this.player().jobId }" readonly />
 							<button id="copy-page-link" class="copy-button">
 								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
 							</button>
@@ -320,7 +320,7 @@ function GODAMPlayer( videoRef = null ) {
 					<div class='share-input-container'>
 						<label>Embed</label>
 						<div class="share-modal-input-group">
-							<input id="embed-code" type="text" value='<iframe src="https://app.godam.io/web/embed/${ this.player().jobId }"></iframe>' readonly />
+							<input id="embed-code" type="text" value='<iframe src="https://frappe-transcoder-api.rt.gw/web/embed/${ this.player().jobId }"></iframe>' readonly />
 							<button id="copy-embed-code" class="copy-button">
 								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
 							</button>
