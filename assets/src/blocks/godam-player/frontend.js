@@ -38,6 +38,7 @@ import Telegram from '../../../../assets/src/images/telegram.svg';
 import Twitter from '../../../../assets/src/images/twitter-x.svg';
 import Whatsapp from '../../../../assets/src/images/whatsapp.svg';
 import Complete from '../../../../assets/src/images/check.svg';
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * Global variables
@@ -310,7 +311,7 @@ function GODAMPlayer( videoRef = null ) {
 					videoContainer.appendChild( shareModal );
 				}
 				shareModal.className = 'share-modal-container';
-				shareModal.innerHTML = `
+				const html = `
 				<div class="share-modal-message">
 					<div class="share-modal-header">
 						<h2>Share Media</h2>
@@ -351,6 +352,8 @@ function GODAMPlayer( videoRef = null ) {
 					</div>
 				</div>
 			`;
+
+				shareModal.innerHTML = DOMPurify.sanitize( html );
 
 				shareModal
 					.querySelector( '#copy-page-link' )
