@@ -683,6 +683,123 @@ function GODAMPlayer( videoRef = null ) {
 			updateHotspotPositions( player, hotspotLayers );
 		} );
 
+		// We'll create a single global keyboard event handler if it doesn't exist yet
+		if ( ! window.godamKeyboardHandlerInitialized ) {
+			// Flag to prevent multiple initializations
+			window.godamKeyboardHandlerInitialized = true;
+
+			document.addEventListener( 'keydown', ( event ) => {
+				// Skip if we're in a form field or input element to avoid interfering with typing
+				if ( event.target.tagName === 'INPUT' ||
+					event.target.tagName === 'TEXTAREA' ||
+					event.target.isContentEditable ) {
+					return;
+				}
+
+				// Find the most appropriate player to control
+				let activePlayer = null;
+
+				// First priority: player that contains the active element
+				document.querySelectorAll( '.easydam-player.video-js' ).forEach( ( playerEl ) => {
+					const vjsPlayer = videojs.getPlayer( playerEl );
+					if ( playerEl.contains( playerEl.ownerDocument.activeElement ) ) {
+						activePlayer = vjsPlayer;
+					}
+				} );
+
+				// Second priority: visible player if no player has focus
+				document
+					.querySelectorAll( '.easydam-player.video-js' )
+					.forEach( ( playerEl ) => {
+						const doc = playerEl.ownerDocument;
+
+						// Only proceed if no activePlayer and body has focus
+						if ( ! activePlayer && doc.activeElement === doc.body ) {
+							const rect = playerEl.getBoundingClientRect();
+							const isVisible =
+              rect.top >= 0 &&
+              rect.left >= 0 &&
+              rect.bottom <=
+                ( window.innerHeight || doc.documentElement.clientHeight ) &&
+              rect.right <=
+                ( window.innerWidth || doc.documentElement.clientWidth );
+
+							if ( isVisible ) {
+								const vjsPlayer = videojs.getPlayer( playerEl );
+								if ( vjsPlayer ) {
+									activePlayer = vjsPlayer;
+								}
+							}
+						}
+					} );
+
+				// If no active player was found, exit
+				if ( ! activePlayer ) {
+					return;
+				}
+
+				const key = event.key.toLowerCase();
+				switch ( key ) {
+					case 'f':
+						// Toggle fullscreen
+						event.preventDefault();
+						if ( activePlayer.isFullscreen() ) {
+							activePlayer.exitFullscreen();
+						} else {
+							activePlayer.requestFullscreen();
+						}
+						break;
+
+					case 'arrowleft':
+						// Seek backward 5 seconds
+						event.preventDefault();
+						activePlayer.currentTime( Math.max( 0, activePlayer.currentTime() - 5 ) );
+
+						// Show a visual indicator for seeking backward
+						showIndicator( activePlayer.el(), 'backward', '<i class="fa-solid fa-backward"></i> 5s' );
+						break;
+
+					case 'arrowright':
+						// Seek forward 5 seconds
+						event.preventDefault();
+						activePlayer.currentTime( activePlayer.currentTime() + 5 );
+
+						// Show a visual indicator for seeking forward
+						showIndicator( activePlayer.el(), 'forward', '5s <i class="fa-solid fa-forward"></i>' );
+						break;
+
+					case ' ':
+					case 'spacebar': // Added explicit 'spacebar' case for broader browser compatibility
+						// Toggle play/pause
+						event.preventDefault(); // prevent page scroll
+						if ( activePlayer.paused() ) {
+							activePlayer.play();
+
+							// Visual indicator for play
+							showIndicator( activePlayer.el(), 'play-indicator', '<i class="fa-solid fa-play"></i>' );
+						} else {
+							activePlayer.pause();
+
+							// Visual indicator for pause
+							showIndicator( activePlayer.el(), 'pause-indicator', '<i class="fa-solid fa-pause"></i>' );
+						}
+						break;
+				}
+			} );
+		}
+
+		// Helper function to show indicators
+		function showIndicator( playerEl, className, html ) {
+			// Remove any existing indicators first
+			playerEl.querySelectorAll( '.vjs-seek-indicator' ).forEach( ( el ) => el.remove() );
+
+			const indicator = document.createElement( 'div' );
+			indicator.className = `vjs-seek-indicator ${ className }`;
+			indicator.innerHTML = html;
+			playerEl.appendChild( indicator );
+			setTimeout( () => indicator.remove(), 500 );
+		}
+
 		// Prevent video resume if a form/CTA is visible
 		player.on( 'play', () => {
 			const isAnyLayerVisible = formLayers.some(
