@@ -236,18 +236,6 @@ function GODAMPlayer( videoRef = null ) {
 
 		player.jobId = '';
 
-		const getAllMeta = async () => {
-			const videoId = video.dataset.id;
-			try {
-				const res = await fetch( `/wp-json/wp/v2/media/${ videoId }?_fields=meta` );
-				const data = await res.json();
-				player.jobId = data.meta.rtgodam_transcoding_job_id;
-				return data.meta.rtgodam_transcoding_job_id;
-			} catch ( err ) {
-				return '';
-			}
-		};
-
 		const Button = videojs.getComponent( 'Button' );
 
 		class GodamShareButton extends Button {
@@ -409,17 +397,16 @@ function GODAMPlayer( videoRef = null ) {
 
 		// Add the button to the control bar after the player is ready
 		player.ready( function() {
-			getAllMeta().then( ( id ) => {
-				player.jobId = id; // Store the result when it's available
-				const controlBar = player.getChild( 'controlBar' );
-				if ( controlBar && player.jobId !== '' ) {
-					controlBar.addChild(
-						'GodamShareButton',
-						{},
-						controlBar.children().length - 1,
-					);
-				}
-			} );
+			player.jobId = video.dataset.job_id; // Store the result when it's available
+
+			const controlBar = player.getChild( 'controlBar' );
+			if ( controlBar && player.jobId !== '' ) {
+				controlBar.addChild(
+					'GodamShareButton',
+					{},
+					controlBar.children().length - 1,
+				);
+			}
 		} );
 
 		player.ready( function() {

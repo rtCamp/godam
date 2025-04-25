@@ -37,6 +37,7 @@ $sources        = array();
 $transcoded_url = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true ) : '';
 $video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
 $video_src_type = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
+$job_id         = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
 
 if ( ! empty( $transcoded_url ) ) {
 	$sources = array(
@@ -141,6 +142,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 			data-id="<?php echo esc_attr( $attachment_id ); ?>" 
 			data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 			data-controls = "<?php echo esc_attr( $video_setup ); ?>"
+			data-job_id="<?php echo esc_attr( $job_id ); ?>"
 		>
 			<?php
 			foreach ( $sources as $source ) :
