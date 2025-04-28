@@ -157,6 +157,25 @@ const VideoEditor = ( { attachmentID } ) => {
 		);
 	}
 
+	document.addEventListener( 'keydown', ( event ) => {
+		if (
+			event.target.tagName === 'INPUT' ||
+      event.target.tagName === 'TEXTAREA' ||
+      event.target.isContentEditable
+		) {
+			return;
+		}
+
+		if ( event.key === 'Backspace' ) {
+			event.preventDefault();
+
+			const backButton = document.querySelector( '.components-button.has-icon' );
+			if ( backButton ) {
+				backButton.click();
+			}
+		}
+	} );
+
 	return (
 		<>
 			<div className="video-editor-container">
