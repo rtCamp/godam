@@ -1,8 +1,8 @@
-.wp-block-audio :where(figcaption) {
+.wp-block-godam-audio :where(figcaption) {
 	
 	@include caption-style-theme();
 }
 
-.wp-block-audio {
+.wp-block-godam-audio {
 	margin: 0 0 1em 0;
 }

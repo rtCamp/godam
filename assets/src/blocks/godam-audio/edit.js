@@ -32,6 +32,7 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import { Caption } from './caption';
+import './editor.scss';
 
 const ALLOWED_MEDIA_TYPES = [ 'audio' ];
 

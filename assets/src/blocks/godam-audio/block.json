@@ -48,8 +48,8 @@
 			"clientNavigation": true
 		}
 	},
-	"editorStyle": "wp-block-audio-editor",
-	"style": "wp-block-audio",
+	"editorStyle": ["file:./index.css"],
+	"style": ["file:./style-index.css"],
 	"editorScript": ["file:./index.js"],
 	"render": "file:./render.php"
 }
