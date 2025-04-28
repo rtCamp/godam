@@ -112,6 +112,20 @@ const deactivationJS = {
 	},
 };
 
+const gfGodamRecorderJS = {
+	...sharedConfig,
+	entry: {
+		'gf-godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-godam-recorder.js' ),
+	},
+};
+
+const gfGodamRecorderEditorJS = {
+	...sharedConfig,
+	entry: {
+		'gf-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-godam-recorder-editor.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -179,6 +193,8 @@ module.exports = [
 	videoAnalyticsJS,
 	mediaLibrary,
 	deactivationJS,
+	gfGodamRecorderJS,
+	gfGodamRecorderEditorJS,
 	styles, // Do not remove this.
 	pages,
 ];
