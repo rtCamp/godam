@@ -14,15 +14,10 @@
 		},
 		"src": {
 			"type": "string",
-			"source": "attribute",
-			"selector": "audio",
-			"attribute": "src",
 			"role": "content"
 		},
 		"caption": {
-			"type": "rich-text",
-			"source": "rich-text",
-			"selector": "figcaption",
+			"type": "string",
 			"role": "content"
 		},
 		"id": {
