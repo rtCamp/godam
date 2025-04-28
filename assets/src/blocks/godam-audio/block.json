@@ -31,21 +31,15 @@
 		},
 		"autoplay": {
 			"type": "boolean",
-			"source": "attribute",
-			"selector": "audio",
-			"attribute": "autoplay"
+			"default": false
 		},
 		"loop": {
 			"type": "boolean",
-			"source": "attribute",
-			"selector": "audio",
-			"attribute": "loop"
+			"default": false
 		},
 		"preload": {
 			"type": "string",
-			"source": "attribute",
-			"selector": "audio",
-			"attribute": "preload"
+			"default": "metadata"
 		}
 	},
 	"supports": {
