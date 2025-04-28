@@ -683,7 +683,6 @@ function GODAMPlayer( videoRef = null ) {
 			updateHotspotPositions( player, hotspotLayers );
 		} );
 
-		// We'll create a single global keyboard event handler if it doesn't exist yet
 		if ( ! window.godamKeyboardHandlerInitialized ) {
 			// Flag to prevent multiple initializations
 			window.godamKeyboardHandlerInitialized = true;
