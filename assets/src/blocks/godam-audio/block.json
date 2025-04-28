@@ -53,11 +53,7 @@
 		"align": true,
 		"spacing": {
 			"margin": true,
-			"padding": true,
-			"__experimentalDefaultControls": {
-				"margin": false,
-				"padding": false
-			}
+			"padding": true
 		},
 		"interactivity": {
 			"clientNavigation": true
@@ -65,5 +61,6 @@
 	},
 	"editorStyle": "wp-block-audio-editor",
 	"style": "wp-block-audio",
-	"editorScript": ["file:./index.js"]
+	"editorScript": ["file:./index.js"],
+	"render": "file:./render.php"
 }
