@@ -1,27 +1,26 @@
+
 /**
  * External dependencies
  */
-import ReactDOM from 'react-dom';
-
-/**
- * Internal dependencies
- */
-import GeneralSettings from './GeneralSettings';
-import VideoSettings from './VideoSettings';
-// import ImageSettings from './ImageSettings';
-// import StorageSettings from './storage-settings/index';
+import { useDispatch } from 'react-redux';
 
 /**
  * WordPress dependencies
  */
+import { cog, video } from '@wordpress/icons';
+import { Icon } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
-import { useDispatch, useSelector } from 'react-redux';
-import { setLoading } from './redux/slice/storage';
-import { __ } from '@wordpress/i18n';
-import { cog, video, image, help } from '@wordpress/icons';
-import { Button, Icon, Panel, PanelBody } from '@wordpress/components';
 
+/**
+ * Internal dependencies
+ */
+import { setLoading } from './redux/slice/storage';
+import GeneralSettings from './GeneralSettings';
+import VideoSettings from './VideoSettings';
+// import ImageSettings from './ImageSettings';
+// import StorageSettings from './storage-settings/index';
 import GodamHeader from './GodamHeader';
+import GoDAMFooter from './GoDAMFooter';
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( 'general-settings' );
@@ -178,6 +177,7 @@ const App = () => {
 					</div>
 				</div>
 			</div>
+			<GoDAMFooter />
 		</div>
 	);
 };
