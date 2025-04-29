@@ -12,6 +12,7 @@ import WebDesign from '../../assets/src/images/web-design.png';
 import GodamHeader from '../godam/GodamHeader';
 import { Icon } from '@wordpress/components';
 import { chevronRight } from '@wordpress/icons';
+import GoDAMFooter from '../godam/GoDAMFooter';
 
 const App = () => {
 	const content = [
@@ -173,6 +174,8 @@ const App = () => {
 					</div>
 				) ) }
 			</div>
+
+			<GoDAMFooter />
 		</div>
 	);
 };
