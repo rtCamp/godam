@@ -1,24 +1,24 @@
-/**
- * Internal dependencies
- */
-import GeneralSettings from './GeneralSettings';
-import VideoSettings from './VideoSettings';
-// import ImageSettings from './ImageSettings';
-// import StorageSettings from './storage-settings/index';
-
-/**
- * WordPress dependencies
- */
-import { useState, useEffect } from '@wordpress/element';
 
 /**
  * External dependencies
  */
 import { useDispatch } from 'react-redux';
-import { setLoading } from './redux/slice/storage';
+
+/**
+ * WordPress dependencies
+ */
 import { cog, video } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
+import { useState, useEffect } from '@wordpress/element';
 
+/**
+ * Internal dependencies
+ */
+import { setLoading } from './redux/slice/storage';
+import GeneralSettings from './GeneralSettings';
+import VideoSettings from './VideoSettings';
+// import ImageSettings from './ImageSettings';
+// import StorageSettings from './storage-settings/index';
 import GodamHeader from './GodamHeader';
 import GoDAMFooter from './GoDAMFooter';
 
