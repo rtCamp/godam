@@ -84,6 +84,71 @@ class Analytics extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/dashboard-metrics',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_dashboard_metrics' ),
+					'permission_callback' => '__return_true',
+					'args'                => array(
+						'site_url' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/dashboard-history',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_dashboard_history' ),
+					'permission_callback' => '__return_true',
+					'args'                => array(
+						'days'     => array(
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						),
+						'site_url' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/top-videos',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_top_videos' ),
+					'permission_callback' => '__return_true',
+					'args'                => array(
+						'page'     => array(
+							'required'          => false,
+							'type'              => 'integer',
+							'default'           => 1,
+							'sanitize_callback' => 'absint',
+						),
+						'limit'    => array(
+							'required'          => false,
+							'type'              => 'integer',
+							'default'           => 10,
+							'sanitize_callback' => 'absint',
+						),
+						'site_url' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+					),
+				),
+			),
 		);
 	}
 
@@ -262,6 +327,168 @@ class Analytics extends Base {
 			array(
 				'status'              => 'success',
 				'processed_analytics' => $data['processed_analytics'] ?? array(),
+			),
+			200
+		);
+	}
+
+	/**
+	 * Fetch dashboard metrics from the external API securely.
+	 *
+	 * @param WP_REST_Request $request REST API request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_dashboard_metrics( WP_REST_Request $request ) {
+		$site_url      = $request->get_param( 'site_url' );
+		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_site_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => 'Invalid or unverified API key.',
+				),
+				200
+			);
+		}
+
+		$endpoint = add_query_arg(
+			array(
+				'site_url'      => $site_url,
+				'account_token' => $account_token,
+				'api_key'       => $api_key,
+			),
+			RTGODAM_ANALYTICS_BASE . '/dashboard/metrics/fetch/'
+		);
+
+		$response = wp_remote_get( $endpoint );
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => $response->get_error_message(),
+				),
+				500
+			);
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		return new WP_REST_Response(
+			array(
+				'status'            => 'success',
+				'dashboard_metrics' => $body['dashboard_metrics'] ?? array(),
+			),
+			200
+		);
+	}
+
+	/**
+	 * Fetch dashboard metrics history from the external API securely.
+	 *
+	 * @param WP_REST_Request $request REST API request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_dashboard_history( WP_REST_Request $request ) {
+		$days          = $request->get_param( 'days' );
+		$site_url      = $request->get_param( 'site_url' );
+		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_site_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => 'Invalid or unverified API key.',
+				),
+				200
+			);
+		}
+
+		$endpoint = add_query_arg(
+			array(
+				'days'          => $days,
+				'site_url'      => $site_url,
+				'account_token' => $account_token,
+				'api_key'       => $api_key,
+			),
+			RTGODAM_ANALYTICS_BASE . '/dashboard/metrics/history/'
+		);
+
+		$response = wp_remote_get( $endpoint );
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => $response->get_error_message(),
+				),
+				500
+			);
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		return new WP_REST_Response(
+			array(
+				'status'                    => 'success',
+				'dashboard_metrics_history' => $body['dashboard_metrics_history'] ?? array(),
+			),
+			200
+		);
+	}
+
+	/**
+	 * Fetch top videos from the external API securely.
+	 *
+	 * @param WP_REST_Request $request REST API request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_top_videos( WP_REST_Request $request ) {
+		$page          = $request->get_param( 'page' ) ?? 1;
+		$limit         = $request->get_param( 'limit' ) ?? 10;
+		$site_url      = $request->get_param( 'site_url' );
+		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_site_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => 'Invalid or unverified API key.',
+				),
+				200
+			);
+		}
+
+		$endpoint = add_query_arg(
+			array(
+				'page'          => $page,
+				'limit'         => $limit,
+				'site_url'      => $site_url,
+				'account_token' => $account_token,
+				'api_key'       => $api_key,
+			),
+			RTGODAM_ANALYTICS_BASE . '/dashboard/top-videos/'
+		);
+
+		$response = wp_remote_get( $endpoint );
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => $response->get_error_message(),
+				),
+				500
+			);
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		return new WP_REST_Response(
+			array(
+				'status'     => 'success',
+				'top_videos' => $body['top_videos'] ?? array(),
 			),
 			200
 		);
