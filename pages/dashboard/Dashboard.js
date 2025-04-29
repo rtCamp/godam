@@ -15,6 +15,7 @@ import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.pn
 import DownArrow from '../../assets/src/images/down-arrow.svg';
 import TopArrow from '../../assets/src/images/up-arrow.svg';
 import Tooltip from '../analytics/Tooltip.js';
+import '../analytics/charts.js';
 
 const Dashboard = () => {
 	const [ topMediaList, setTopMediaList ] = useState( [] );

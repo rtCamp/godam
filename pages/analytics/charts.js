@@ -6,13 +6,13 @@ import videojs from 'video.js';
 /**
  * Internal dependencies
  */
-import ViewIcon from '../../src/images/views.png';
-import DurationIcon from '../../src/images/duration.png';
+import ViewIcon from '../../assets/src/images/views.png';
+import DurationIcon from '../../assets/src/images/duration.png';
 import {
 	generateMetricsOverTime,
-} from '../../../pages/analytics/helper';
-import DownArrow from '../images/down-arrow.svg';
-import TopArrow from '../images/up-arrow.svg';
+} from './helper.js';
+import DownArrow from '../../assets/src/images/down-arrow.svg';
+import TopArrow from '../../assets/src/images/up-arrow.svg';
 
 function formatTime( seconds ) {
 	const minutes = Math.floor( seconds / 60 );

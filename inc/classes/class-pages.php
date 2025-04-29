@@ -441,14 +441,6 @@ class Pages {
 				true
 			);
 
-			wp_register_script(
-				'video-analytics-charts',
-				RTGODAM_URL . 'assets/build/js/video-analytics.js',
-				array( 'transcoder-page-script-analytics', 'd3-js' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/video-analytics.js' ),
-				true
-			);
-
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
 				'transcoder-page-script-analytics',
@@ -471,7 +463,6 @@ class Pages {
 
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 			wp_enqueue_script( 'd3-js' );
-			wp_enqueue_script( 'video-analytics-charts' );
 		} elseif ( $screen && $this->help_page_id === $screen->id ) {
 			wp_register_script(
 				'godam-page-script-help',
@@ -508,14 +499,6 @@ class Pages {
 				true
 			);
 
-			wp_register_script(
-				'godam-global-analytics-script',
-				RTGODAM_URL . 'assets/build/js/video-analytics.js',
-				array( 'godam-page-script-dashboard', 'd3-js' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/video-analytics.js' ),
-				true
-			);
-
 			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
@@ -526,7 +509,6 @@ class Pages {
 
 			wp_enqueue_script( 'godam-page-script-dashboard' );
 			wp_enqueue_script( 'd3-js' );
-			wp_enqueue_script( 'godam-global-analytics-script' );
 		}
 
 		wp_enqueue_style( 'wp-components' );
