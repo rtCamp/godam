@@ -18,7 +18,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	 *
 	 * @var string
 	 */
-	public $namespace_prefix = 'godam/v1';
+	static $namespace_prefix = 'godam/v1';
 
 	/**
 	 * RT Transcoder Handler object.
@@ -39,7 +39,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		$this->rtgodam_transcoder_handler = new RTGODAM_Transcoder_Handler( true );
 
 		if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) ) {
-			define( 'RTGODAM_TRANSCODER_CALLBACK_URL', $this->get_callback_url() );
+			define( 'RTGODAM_TRANSCODER_CALLBACK_URL', self::get_callback_url() );
 		}
 	}
 
@@ -50,7 +50,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 		// Register `transcoder-callback` route to handle callback request by the FFMPEG transcoding server.
 		register_rest_route(
-			$this->namespace_prefix,
+			self::$namespace_prefix,
 			'/transcoder-callback',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -132,8 +132,8 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	 *
 	 * @return string
 	 */
-	public function get_callback_url() {
-		return rest_url( $this->namespace_prefix . '/transcoder-callback' );
+	public static function get_callback_url() {
+		return rest_url( self::$namespace_prefix . '/transcoder-callback' );
 	}
 
 	/**
