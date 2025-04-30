@@ -16,12 +16,14 @@ import {
 	useFetchProcessedAnalyticsHistoryQuery,
 } from './redux/api/analyticsApi';
 import { calculateEngagementRate, calculatePlayRate } from './helper';
+import './charts.js';
 
 /**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
 import { Button, Spinner } from '@wordpress/components';
+import SingleMetrics from './SingleMetrics.js';
 
 const adminUrl =
   window.videoData?.adminUrl;
@@ -77,11 +79,11 @@ const Analytics = ( { attachmentID } ) => {
 
 	window.analyticsDataFetched = analyticsDataFetched;
 
-	// Query for last 60 days of processed analytics history
+	// Query for last 30 days of processed analytics history
 	const {
 		data: processedAnalyticsHistory,
 	} = useFetchProcessedAnalyticsHistoryQuery(
-		{ videoId: attachmentID, siteUrl, days: 60 },
+		{ videoId: attachmentID, siteUrl, days: 30 },
 		{ skip: ! attachmentID },
 	);
 
@@ -260,61 +262,37 @@ const Analytics = ( { attachmentID } ) => {
 							<div className="flex gap-10 items-start max-lg:flex-col">
 								<div className="min-w-[350px] max-w-[350px] flex-grow">
 									<div className="analytics-info-container max-lg:flex-row flex-col">
-										<div className="analytics-info flex justify-between max-lg:flex-col">
-											<div className="analytics-single-info">
-												<div className="analytics-info-heading">
-													<p>{ __( 'Average Engagement', 'godam' ) }</p>
-													<Tooltip text={ __( 'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)', 'godam' ) } />
-												</div>
-												<p
-													id="engagement-rate"
-													className="min-w-[90px] engagement-rate"
-												>
-													0%
-												</p>
-												<p id="avg-engagement-change" className="metric-change">+0% this week</p>
-											</div>
-										</div>
-										<div className="analytics-info flex justify-between  max-lg:flex-col">
-											<div className="analytics-single-info">
-												<div className="analytics-info-heading">
-													<p>{ __( 'Total Plays', 'godam' ) }</p>
-													<Tooltip text={ __( 'Plays represent the total number of times the video has been viewed', 'godam' ) } />
-												</div>
-												<p
-													id="total-plays"
-													className="min-w-[90px] engagement-rate"
-												>
-													0
-												</p>
-												<p id="views-change" className="metric-change">{ __( '+0% this week', 'godam' ) }</p>
-											</div>
-										</div>
-										<div className="analytics-info flex justify-between  max-lg:flex-col">
-											<div className="analytics-single-info">
-												<div className="analytics-info-heading">
-													<p>{ __( 'Play Rate', 'godam' ) }</p>
-													<Tooltip text={ __( 'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads', 'godam' ) } />
-												</div>
-												<p
-													id="play-rate"
-													className="min-w-[90px] engagement-rate"
-												>
-													0%
-												</p>
-												<p id="play-rate-change" className="metric-change">+0% this week</p>
-											</div>
-										</div>
-										<div className="analytics-info flex justify-between  max-lg:flex-col">
-											<div className="analytics-single-info">
-												<div className="analytics-info-heading">
-													<p>{ __( 'Watch Time', 'godam' ) }</p>
-													<Tooltip text={ __( 'Total time the video has been watched, aggregated across all plays.', 'godam' ) } />
-												</div>
-												<p id="watch-time" className="min-w-[90px] engagement-rate">0s</p>
-												<p id="watch-time-change" className="metric-change">{ __( '+0% this week', 'godam' ) }</p>
-											</div>
-										</div>
+										<SingleMetrics
+											metricType={ 'engagement-rate' }
+											label={ __( 'Average Engagement', 'godam' ) }
+											tooltipText={ __( 'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)', 'godam' ) }
+											processedAnalyticsHistory={ processedAnalyticsHistory }
+											analyticsDataFetched={ analyticsDataFetched }
+										/>
+
+										<SingleMetrics
+											metricType={ 'plays' }
+											label={ __( 'Total Plays', 'godam' ) }
+											tooltipText={ __( 'Plays represent the total number of times the video has been viewed', 'godam' ) }
+											processedAnalyticsHistory={ processedAnalyticsHistory }
+											analyticsDataFetched={ analyticsDataFetched }
+										/>
+
+										<SingleMetrics
+											metricType={ 'play-rate' }
+											label={ __( 'Play Rate', 'godam' ) }
+											tooltipText={ __( 'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads', 'godam' ) }
+											processedAnalyticsHistory={ processedAnalyticsHistory }
+											analyticsDataFetched={ analyticsDataFetched }
+										/>
+
+										<SingleMetrics
+											metricType={ 'watch-time' }
+											label={ __( 'Watch Time', 'godam' ) }
+											tooltipText={ __( 'Total time the video has been watched, aggregated across all plays', 'godam' ) }
+											processedAnalyticsHistory={ processedAnalyticsHistory }
+											analyticsDataFetched={ analyticsDataFetched }
+										/>
 									</div>
 								</div>
 								<div className="min-w-[750px]">

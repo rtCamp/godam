@@ -11,8 +11,6 @@ import DurationIcon from '../../assets/src/images/duration.png';
 import {
 	generateMetricsOverTime,
 } from './helper.js';
-import DownArrow from '../../assets/src/images/down-arrow.svg';
-import TopArrow from '../../assets/src/images/up-arrow.svg';
 
 function formatTime( seconds ) {
 	const minutes = Math.floor( seconds / 60 );
@@ -555,7 +553,7 @@ async function main() {
 
 	// Update the UI with computed analytics
 	document.getElementById( 'play-rate' ).innerText = `${ playRate.toFixed( 2 ) }%`;
-	document.getElementById( 'total-plays' ).innerText = totalPlays;
+	document.getElementById( 'plays' ).innerText = totalPlays;
 	document.getElementById( 'engagement-rate' ).innerText = `${ engagementRate.toFixed( 2 ) }%`;
 	document.getElementById( 'watch-time' ).innerText = `${ playTime.toFixed( 2 ) }s`;
 
@@ -605,21 +603,32 @@ async function main() {
 	const renderChange = ( changeValue ) => {
 		const rounded = Math.abs( changeValue ).toFixed( 2 );
 		const prefix = changeValue >= 0 ? '+' : '-';
-		const arrow = changeValue >= 0 ? TopArrow : DownArrow;
-		return `<img src="${ arrow }" alt="Arrow Icon" height="20" width="20"/>${ prefix }${ rounded }% this week`;
+		return `${ prefix }${ rounded }%`;
 	};
 
-	if ( document.getElementById( 'views-change' ) ) {
-		document.getElementById( 'views-change' ).innerHTML = renderChange( viewsChange );
+	if ( document.getElementById( 'plays-change' ) ) {
+		document.getElementById( 'plays-change' ).innerHTML = renderChange( viewsChange );
+		document
+			.getElementById( 'plays-change' )
+			.classList.add( viewsChange >= 0 ? 'change-rise' : 'change-drop' );
 	}
 	if ( document.getElementById( 'watch-time-change' ) ) {
 		document.getElementById( 'watch-time-change' ).innerHTML = renderChange( watchTimeChange );
+		document
+			.getElementById( 'watch-time-change' )
+			.classList.add( viewsChange >= 0 ? 'change-rise' : 'change-drop' );
 	}
 	if ( document.getElementById( 'play-rate-change' ) ) {
 		document.getElementById( 'play-rate-change' ).innerHTML = renderChange( playRateChange );
+		document
+			.getElementById( 'play-rate-change' )
+			.classList.add( viewsChange >= 0 ? 'change-rise' : 'change-drop' );
 	}
-	if ( document.getElementById( 'avg-engagement-change' ) ) {
-		document.getElementById( 'avg-engagement-change' ).innerHTML = renderChange( avgEngagementChange );
+	if ( document.getElementById( 'engagement-rate-change' ) ) {
+		document.getElementById( 'engagement-rate-change' ).innerHTML = renderChange( avgEngagementChange );
+		document
+			.getElementById( 'engagement-rate-change' )
+			.classList.add( viewsChange >= 0 ? 'change-rise' : 'change-drop' );
 	}
 
 	if ( countryViews ) {
