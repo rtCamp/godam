@@ -580,37 +580,16 @@ class Pages {
 	}
 
 	/**
-	 * Enqueue WPForms scripts and styles.
-	 *
-	 * @return void
-	 */
-	public function enqueue_ninja_forms_scripts() {
-
-		$forms = Ninja_Forms()->form()->get_forms();
-
-		// Filter the form id and title to be returned.
-		$forms = array_map(
-			function ( $form ) {
-				return array(
-					'id'    => $form->get_id(),
-					'title' => $form->get_setting( 'title' ),
-				);
-			},
-			$forms 
-		);
-
-		foreach ( $forms as $form ) {
-			// Enqueue the Ninja Forms scripts and styles.
-			NF_Display_Render::enqueue_scripts( $form['id'], true );
-		}
-	}
-
-	/**
 	 * Enqueue WPForms styles.
 	 *
 	 * @return void
 	 */
 	public function enqueue_wpforms_styles() {
+
+		if ( ! defined( 'WPFORMS_PLUGIN_URL' ) ) {
+			return;
+		}
+
 		// Enqueue the WPForms styles.
 		wp_enqueue_style(
 			'wpforms-full',

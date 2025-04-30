@@ -1,3 +1,6 @@
+/**
+ * Internal dependencies
+ */
 import { useGetGravityFormsQuery } from '../../redux/api/gravity-forms';
 import { useGetWPFormsQuery } from '../../redux/api/wpforms';
 import { useGetCF7FormsQuery } from '../../redux/api/cf7-forms';

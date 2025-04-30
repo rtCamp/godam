@@ -1,8 +1,10 @@
 <?php
 /**
- * Register REST API endpoints for any Assets file endpoints.
+ * Register REST API endpoints for Contact Form 7.
+ * 
+ * Get a single Contact Form 7 Form.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc\REST_API;
@@ -26,7 +28,7 @@ class CF7 extends Base {
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_cf7_form' ),
-						'permission_callback' => array( $this, 'get_cf7_forms_permissions_check' ),
+						'permission_callback' => '__return_true', 
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
 							array(
@@ -71,18 +73,5 @@ class CF7 extends Base {
 		$cf7_form = do_shortcode( "[contact-form-7 id='{$form_id}' theme='{$theme}']" );
 
 		return rest_ensure_response( $cf7_form );
-	}
-
-	/**
-	 * Get item permissions check.
-	 *
-	 * Because we are routing to other endpoints,
-	 * we don't need to check permissions.
-	 *
-	 * @param \WP_REST_Request $request Request Object.
-	 * @return bool
-	 */
-	public function get_cf7_forms_permissions_check( $request ) {
-		return true;
 	}
 }

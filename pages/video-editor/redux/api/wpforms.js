@@ -21,10 +21,20 @@ export const wpFormsApi = createApi( {
 				method: 'GET',
 			} ),
 		} ),
+		getSingleWPForm: builder.query( {
+			query: ( formId ) => ( {
+				url: `/godam/v1/wpform`,
+				params: {
+					id: formId,
+				},
+				method: 'GET',
+			} ),
+		} ),
 	} ),
 } );
 
 export const {
 	useGetWPFormsQuery,
+	useGetSingleWPFormQuery,
 } = wpFormsApi;
 

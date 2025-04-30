@@ -21,10 +21,21 @@ export const contactForm7Api = createApi( {
 				method: 'GET',
 			} ),
 		} ),
+		getSingleCF7Form: builder.query( {
+			query: ( { id, theme } ) => ( {
+				url: '/godam/v1/cf7-form',
+				params: {
+					id,
+					theme,
+				},
+				method: 'GET',
+			} ),
+		} ),
 	} ),
 } );
 
 export const {
 	useGetCF7FormsQuery,
+	useGetSingleCF7FormQuery,
 } = contactForm7Api;
 

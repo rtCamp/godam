@@ -18,7 +18,6 @@ import { useState } from '@wordpress/element';
 import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
 
 import GravityForm from '../forms/GravityForm';
-import NinjaForm from '../forms/NinjaForm';
 import WPForm from '../forms/WPForm';
 import CF7 from '../forms/CF7';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
@@ -55,7 +54,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 		<>
 			<div className="flex justify-between items-center border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="text-base">{ getFormPluginName( layer?.formType ) }{ __( ' layer at', 'godam' ) } { layer.displayTime }s</p>
+				<p className="text-base">{ getFormPluginName( layer?.form_type ) }{ __( ' layer at', 'godam' ) } { layer.displayTime }s</p>
 				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
 				{ isOpen && (
 					<Modal title={ __( 'Delete layer', 'godam' ) } onRequestClose={ () => setOpen( false ) }>
@@ -90,11 +89,6 @@ const FormLayer = ( { layerID, goBack } ) => {
 			{
 				layer.form_type === 'cf7' &&
 				<CF7 layerID={ layer.id } />
-			}
-
-			{
-				layer.form_type === 'ninjaforms' &&
-				<NinjaForm layerID={ layer.id } />
 			}
 
 			{

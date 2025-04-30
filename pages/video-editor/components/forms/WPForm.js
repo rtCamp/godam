@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
 
 /**
  * WordPress dependencies
@@ -10,12 +9,12 @@ import axios from 'axios';
 import { Button } from '@wordpress/components';
 import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
+import { useGetSingleWPFormQuery } from '../../redux/api/wpforms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
 
@@ -23,12 +22,9 @@ const CF7 = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const wpForms = useSelector( ( state ) => state.videoReducer.wpforms );
+	const { data: formHTML, isFetching } = useGetSingleWPFormQuery( layer.wpform_id );
 
-	const restURL = window.godamRestRoute.url || '';
-
-	const [ formHTML, setFormHTML ] = useState( '' );
-
-	const forms = wpForms.map( ( form ) => ( {
+	const forms = wpForms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
 	} ) );
@@ -36,27 +32,6 @@ const CF7 = ( { layerID } ) => {
 	const changeFormID = ( formID ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'wpform_id', value: formID } ) );
 	};
-
-	useEffect( () => {
-		// Fetch the CF7 Form HTML.
-		const fetchWPForm = ( formId, theme ) => {
-			axios.get( window.pathJoin( [ restURL, '/godam/v1/wpform' ] ), {
-				params: { id: formId, theme },
-			} ).then( ( response ) => {
-				setFormHTML( response.data );
-			} ).catch( () => {
-				setFormHTML( '<p>Error loading form. Please try again later.</p>' );
-			} );
-		};
-
-		if ( layer.wpform_id ) {
-			fetchWPForm( layer.wpform_id, layer.theme );
-		}
-	}, [
-		layer.wpform_id,
-		layer.theme,
-		restURL,
-	] );
 
 	// If we want to disable the premium layers the we can use this code
 	// const isValidAPIKey = window?.videoData?.valid_api_key;
@@ -66,8 +41,7 @@ const CF7 = ( { layerID } ) => {
 	return (
 		<>
 			{
-				forms.length > 0 &&
-					<FormSelector disabled={ ! isValidAPIKey } className="gravity-form-selector mb-4" formID={ layer.wpform_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isValidAPIKey } className="gravity-form-selector mb-4" formID={ layer.wpform_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<LayerControl>
@@ -75,8 +49,26 @@ const CF7 = ( { layerID } ) => {
 					<div
 						style={ {
 							backgroundColor: layer.bg_color,
-						} } className="easydam-layer">
-						<div className="form-container" dangerouslySetInnerHTML={ { __html: formHTML } } />
+						} }
+						className="easydam-layer"
+					>
+
+						{
+							( formHTML && ! isFetching ) &&
+							<div className="form-container" dangerouslySetInnerHTML={ { __html: formHTML } } />
+						}
+
+						{
+							isFetching &&
+							<div className="form-container">
+								<p>{ __( 'Loading form…', 'godam' ) }</p>
+							</div>
+						}
+
+						{
+							! isValidAPIKey &&
+							<p className="text-sm text-gray-500">{ __( 'This features is available in premium version', 'godam' ) }</p>
+						}
 
 						{
 							formHTML &&

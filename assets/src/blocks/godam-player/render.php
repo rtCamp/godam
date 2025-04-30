@@ -182,7 +182,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 
 				$form_type = ! empty( $layer['form_type'] ) ? $layer['form_type'] : 'gravity';
 
-				// FORM layer.
+					// FORM layer.
 				if ( isset( $layer['type'] ) && 'form' === $layer['type'] ) :
 					if ( 'gravity' === $form_type && ! empty( $layer['gf_id'] ) ) :
 						?>
@@ -266,10 +266,9 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 					<div
 						id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
 						class="easydam-layer hidden hotspot-layer"
-						<?php
-						if ( ! empty( $layer['bg_color'] ) ) :
-							?>
-							style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>"<?php endif; ?>
+						<?php if ( ! empty( $layer['bg_color'] ) ) : ?>
+							style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>"
+						<?php endif; ?>
 					>
 					</div>
 					<?php

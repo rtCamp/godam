@@ -20,13 +20,9 @@ import {
 	initializeStore,
 	saveVideoMeta,
 	setCurrentTab,
-	setLoading,
 	setGravityForms,
-	setGravityFormsPluginActive,
-	SetCF7PluginActive,
 	setCF7Forms,
 	setWPForms,
-	setWPFormPluginActive,
 } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
@@ -49,7 +45,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
-	const { gravityForms, wpForms, cf7Forms } = useFetchForms();
+	const { gravityForms, wpForms, cf7Forms, isLoading } = useFetchForms();
 
 	const restURL = window.godamRestRoute.url || '';
 
@@ -74,8 +70,6 @@ const VideoEditor = ( { attachmentID } ) => {
 			body.classList.add( 'folded' );
 		}
 
-		dispatch( setLoading( true ) );
-
 		// Get the post data
 		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] ), {
 			headers: {
@@ -97,9 +91,6 @@ const VideoEditor = ( { attachmentID } ) => {
 			} )
 			.catch( ( ) => {
 				// Todo: Show proper error message to the user
-			} )
-			.finally( () => {
-				dispatch( setLoading( false ) );
 			} );
 	}, [] );
 
@@ -136,41 +127,30 @@ const VideoEditor = ( { attachmentID } ) => {
 	}, [ attachmentConfig, dispatch ] );
 
 	/**
-	 * This gravity form plugin logic should be moved to the appropriate layer component, instead of globally here.
+	 * Update the store with the fetched forms.
 	 */
 	useEffect( () => {
-		if ( gravityForms ) {
-			dispatch( setGravityForms( gravityForms ) );
-		}
-	}, [ gravityForms, dispatch ] );
+		if ( ! isLoading ) {
+			const _cf7Forms = cf7Forms.map( ( form ) => {
+				return {
+					id: form.id,
+					title: form.title,
+				};
+			} );
+			dispatch( setCF7Forms( _cf7Forms ) );
 
-	useEffect( () => {
-		if ( wpForms ) {
-			const forms = wpForms.map( ( form ) => {
+			const _wpForms = wpForms.map( ( form ) => {
 				return {
 					id: form.ID,
 					title: form.post_title,
 				};
 			} );
 
-			dispatch( setWPForms( forms ) );
+			dispatch( setWPForms( _wpForms ) );
+
+			dispatch( setGravityForms( gravityForms ) );
 		}
-	}, [ wpForms, dispatch ] );
-
-	useEffect( () => {
-		if ( cf7Forms ) {
-			const forms = cf7Forms.map( ( form ) => {
-				return {
-					id: form.id,
-					title: form.title,
-				};
-			} );
-
-			console.log( 'cf7Forms:', cf7Forms );
-
-			dispatch( setCF7Forms( forms ) );
-		}
-	}, [ cf7Forms, dispatch ] );
+	}, [ gravityForms, cf7Forms, wpForms, isLoading, dispatch ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => ( playerRef.current = player );
@@ -215,9 +195,19 @@ const VideoEditor = ( { attachmentID } ) => {
 
 	if ( isAttachmentConfigLoading ) {
 		return (
-			<div className="max-w-[740px] w-full loading-skeleton">
-				<div className="skeleton-video-container"></div>
-				<div className="skeleton-line"></div>
+			<div className="flex gap-5 p-5">
+				<div className="max-w-[360px] w-full loading-skeleton">
+					<div className="skeleton-title"></div>
+					<div className="skeleton-line"></div>
+					<div className="skeleton-line"></div>
+					<div className="skeleton-line"></div>
+					<div className="skeleton-line"></div>
+					<div className="skeleton-line"></div>
+				</div>
+				<div className="w-full loading-skeleton">
+					<div className="skeleton-video-container"></div>
+					<div className="max-w-[740px] mx-auto skeleton-line"></div>
+				</div>
 			</div>
 		);
 	}

@@ -26,7 +26,7 @@ function FormSelector( { className, disabled, formID, forms, handleChange } ) {
 				options={ filteredOptions }
 				onFilterValueChange={ ( inputValue ) => {
 					setFilteredOptions(
-						forms.filter( ( _form ) =>
+						forms?.filter( ( _form ) =>
 							_form.label
 								.toLowerCase()
 								.startsWith( inputValue.toLowerCase() ),

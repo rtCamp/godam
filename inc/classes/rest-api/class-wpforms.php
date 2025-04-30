@@ -1,8 +1,10 @@
 <?php
 /**
- * Register REST API endpoints for any Assets file endpoints.
+ * Register REST API endpoints for WPForms.
+ * 
+ * Get a single WPForm.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc\REST_API;
@@ -26,7 +28,7 @@ class WPForms extends Base {
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_wpforms_form' ),
-						'permission_callback' => array( $this, 'get_wpforms_form_permissions_check' ),
+						'permission_callback' => '__return_true',
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
 							array(
@@ -74,18 +76,5 @@ class WPForms extends Base {
 		$wpform = do_shortcode( "[wpforms id='{$form_id}' title='{$title}' description='{$description}' ajax='true']" );
 
 		return rest_ensure_response( $wpform );
-	}
-
-	/**
-	 * Get item permissions check.
-	 *
-	 * Because we are routing to other endpoints,
-	 * we don't need to check permissions.
-	 *
-	 * @param \WP_REST_Request $request Request Object.
-	 * @return bool
-	 */
-	public function get_wpforms_form_permissions_check( $request ) {
-		return true;
 	}
 }

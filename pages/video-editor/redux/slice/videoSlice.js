@@ -118,12 +118,6 @@ const slice = createSlice( {
 		SetCF7PluginActive: ( state, action ) => {
 			state.cf7PluginActive = action.payload;
 		},
-		setNinjaForms: ( state, action ) => {
-			state.ninjaForms = action.payload;
-		},
-		setNinjaFormPluginActive: ( state, action ) => {
-			state.ninjaFormPluginActive = action.payload;
-		},
 		setWPForms: ( state, action ) => {
 			state.wpforms = action.payload;
 		},
@@ -147,8 +141,6 @@ export const {
 	setGravityFormsPluginActive,
 	setCF7Forms,
 	SetCF7PluginActive,
-	setNinjaForms,
-	setNinjaFormPluginActive,
 	setWPForms,
 	setWPFormPluginActive,
 } = slice.actions;

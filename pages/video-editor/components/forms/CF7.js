@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
 
 /**
  * WordPress dependencies
@@ -10,12 +9,12 @@ import axios from 'axios';
 import { Button, SelectControl } from '@wordpress/components';
 import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
+import { useGetSingleCF7FormQuery } from '../../redux/api/cf7-forms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
 
@@ -34,12 +33,9 @@ const CF7 = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const cf7Forms = useSelector( ( state ) => state.videoReducer.cf7Forms );
+	const { data: formHTML, isFetching } = useGetSingleCF7FormQuery( { id: layer.cf7_id, theme: layer.theme || 'godam' } );
 
-	const restURL = window.godamRestRoute.url || '';
-
-	const [ formHTML, setFormHTML ] = useState( '' );
-
-	const forms = cf7Forms.map( ( form ) => ( {
+	const forms = cf7Forms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
 	} ) );
@@ -47,27 +43,6 @@ const CF7 = ( { layerID } ) => {
 	const changeFormID = ( formID ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'cf7_id', value: formID } ) );
 	};
-
-	useEffect( () => {
-		// Fetch the CF7 Form HTML.
-		const fetchCF7Form = ( formId, theme ) => {
-			axios.get( window.pathJoin( [ restURL, '/godam/v1/cf7-form' ] ), {
-				params: { id: formId, theme },
-			} ).then( ( response ) => {
-				setFormHTML( response.data );
-			} ).catch( () => {
-				setFormHTML( '<p>Error loading form. Please try again later.</p>' );
-			} );
-		};
-
-		if ( layer.cf7_id ) {
-			fetchCF7Form( layer.cf7_id, layer.theme );
-		}
-	}, [
-		layer.cf7_id,
-		layer.theme,
-		restURL,
-	] );
 
 	const formTheme = layer.theme || 'godam';
 
@@ -99,8 +74,21 @@ const CF7 = ( { layerID } ) => {
 					<div
 						style={ {
 							backgroundColor: layer.bg_color,
-						} } className="easydam-layer relative">
-						<div className={ `form-container ${ formTheme === 'godam' ? 'rtgodam-wpcf7-form' : '' }` } dangerouslySetInnerHTML={ { __html: formHTML } } />
+						} }
+						className="easydam-layer relative"
+					>
+
+						{
+							( formHTML && ! isFetching ) &&
+							<div className={ `form-container ${ formTheme === 'godam' ? 'rtgodam-wpcf7-form' : '' }` } dangerouslySetInnerHTML={ { __html: formHTML } } />
+						}
+
+						{
+							isFetching &&
+							<div className="form-container">
+								<p>{ __( 'Loading form…', 'godam' ) }</p>
+							</div>
+						}
 
 						{
 							formHTML &&

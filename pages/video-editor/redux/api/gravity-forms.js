@@ -20,9 +20,20 @@ export const gravityFormsAPI = createApi( {
 				method: 'GET',
 			} ),
 		} ),
+		getSingleGravityForm: builder.query( {
+			query: ( { id, theme } ) => ( {
+				url: 'gform',
+				params: {
+					id,
+					theme,
+				},
+				method: 'GET',
+			} ),
+		} ),
 	} ),
 } );
 
 export const {
 	useGetGravityFormsQuery,
+	useGetSingleGravityFormQuery,
 } = gravityFormsAPI;
