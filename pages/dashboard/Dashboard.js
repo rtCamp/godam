@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { generateMetricsOverTime } from '../analytics/helper';
+import { generateMetricsOverTime, generateCountryHeatmap } from '../analytics/helper';
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
 import DownArrow from '../../assets/src/images/down-arrow.svg';
 import TopArrow from '../../assets/src/images/up-arrow.svg';
@@ -19,24 +19,66 @@ import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, us
 
 const Dashboard = () => {
 	const [ recentVideos, setRecentVideos ] = useState( [] );
+	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
 	const siteUrl = window.location.origin;
 
 	const { data: dashboardMetrics, isLoading: isDashboardMetricsLoading } = useFetchDashboardMetricsQuery( { siteUrl } );
 	const { data: dashboardMetricsHistory, isLoading: isDashboardMetricsHistoryLoading } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl } );
-	const { data: topVideosData, isLoading: isTopVideosLoading } = useFetchTopVideosQuery( { siteUrl } );
+	const {
+		data: topVideosResponse,
+		isLoading: isTopVideosLoading,
+	} = useFetchTopVideosQuery( { siteUrl, page: topVideosPage, limit: 10 } );
+
+	const topVideosData = topVideosResponse?.videos || [];
+	const totalTopVideosPages = topVideosResponse?.totalPages || 1;
 
 	useEffect( () => {
-		if ( dashboardMetricsHistory ) {
+		if (
+			! isDashboardMetricsHistoryLoading &&
+			dashboardMetricsHistory &&
+			dashboardMetricsHistory.length > 0
+		) {
 			const transformedData = dashboardMetricsHistory.map( ( item ) => ( {
 				date: item.date,
 				engagement_rate: item.avg_engagement,
-				play_rate: item.play_rate,
+				play_rate: item.play_rate * 100,
 				watch_time: item.watch_time,
 			} ) );
 
-			generateMetricsOverTime( transformedData, '#global-analytics-container' );
+			// Poll for the container to exist in the DOM
+			const interval = setInterval( () => {
+				const container = document.querySelector( '#global-analytics-container' );
+				if ( container ) {
+					clearInterval( interval );
+					generateMetricsOverTime( transformedData, '#global-analytics-container' );
+				}
+			}, 100 );
+
+			return () => clearInterval( interval );
 		}
-	}, [ dashboardMetricsHistory ] );
+	}, [ isDashboardMetricsHistoryLoading, dashboardMetricsHistory ] );
+
+	useEffect( () => {
+		if (
+			! isDashboardMetricsLoading &&
+			dashboardMetrics?.country_views
+		) {
+			const interval = setInterval( () => {
+				const mapContainer = document.querySelector( '#map-container' );
+				const tableContainer = document.querySelector( '#table-container' );
+				if ( mapContainer && tableContainer ) {
+					clearInterval( interval );
+					generateCountryHeatmap(
+						dashboardMetrics.country_views,
+						'#map-container',
+						'#table-container',
+					);
+				}
+			}, 100 );
+
+			return () => clearInterval( interval );
+		}
+	}, [ isDashboardMetricsLoading, dashboardMetrics ] );
 
 	const handleExportCSV = () => {
 		const headers = [
@@ -121,6 +163,13 @@ const Dashboard = () => {
 
 		fetchRecentVideos();
 	}, [] );
+
+	useEffect( () => {
+		const container = document.querySelector( '.top-media-container' );
+		if ( container ) {
+			container.scrollIntoView( { behavior: 'smooth' } );
+		}
+	}, [ topVideosPage ] );
 
 	if ( isDashboardMetricsLoading || isDashboardMetricsHistoryLoading || isTopVideosLoading ) {
 		return (
@@ -356,6 +405,11 @@ const Dashboard = () => {
 			</div>
 
 			<div id="global-analytics-container" className="p-12 mx-auto"></div>
+			<div className="p-12 mx-auto">
+				<h2>Views by Country</h2>
+				<div id="map-container" className="mb-10"></div>
+				<div id="table-container"></div>
+			</div>
 
 			<div className="top-media-container px-[20px]">
 				<div className="flex justify-between pt-24">
@@ -364,55 +418,80 @@ const Dashboard = () => {
 						Export
 					</Button>
 				</div>
-				<table className="w-full pt-10">
-					<tr>
-						<th>Video</th>
-						<th>Size</th>
-						<th>Play Rate</th>
-						<th>Total Plays</th>
-						<th>Total Watch Time</th>
-						<th>Average Engagement</th>
-						<th>View Analytics</th>
-					</tr>
-					{ topVideosData?.map( ( item, index ) => (
-						<tr key={ index }>
-							<td>
-								<div className="flex gap-6 items-center">
-									<img
-										src={ DefaultThumbnail }
-										height={ 100 }
-										width={ 190 }
-										alt="Video thumbnail"
-									/>
-									<div className="w-full max-w-40 text-left flex-1">
-										<p>{ `Video ID: ${ item.video_id }` }</p>
-									</div>
-								</div>
-							</td>
-							<td>0 MB</td> { /* Placeholder, can replace later */ }
-							<td>
-								{ item.plays > 0 && item.page_load > 0
-									? ( ( item.plays / item.page_load ) * 100 ).toFixed( 2 ) + '%'
-									: '0%' }
-							</td>
-							<td>{ item.plays ?? '-' }</td>
-							<td>{ item.play_time?.toFixed( 2 ) ?? '-' }s</td>
-							<td>
-								{ item.plays > 0 && item.video_length > 0
-									? ( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%'
-									: '-' }
-							</td>
-							<td>
-								<a
-									href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }
-									className="text-blue-500"
-								>
-									View
-								</a>
-							</td>
+				{ isTopVideosLoading ? (
+					<div className="flex justify-center items-center min-h-[100px]">
+						<div className="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full text-blue-500 border-blue-500" role="status"></div>
+					</div>
+				) : (
+					<table className="w-full pt-10">
+						<tr>
+							<th>Video</th>
+							<th>Size</th>
+							<th>Play Rate</th>
+							<th>Total Plays</th>
+							<th>Total Watch Time</th>
+							<th>Average Engagement</th>
+							<th>View Analytics</th>
 						</tr>
-					) ) }
-				</table>
+						{ topVideosData?.map( ( item, index ) => (
+							<tr key={ index }>
+								<td>
+									<div className="flex gap-6 items-center">
+										<img
+											src={ DefaultThumbnail }
+											height={ 100 }
+											width={ 190 }
+											alt="Video thumbnail"
+										/>
+										<div className="w-full max-w-40 text-left flex-1">
+											<p>{ `Video ID: ${ item.video_id }` }</p>
+										</div>
+									</div>
+								</td>
+								<td>0 MB</td> { /* Placeholder, can replace later */ }
+								<td>
+									{ item.plays > 0 && item.page_load > 0
+										? ( ( item.plays / item.page_load ) * 100 ).toFixed( 2 ) + '%'
+										: '0%' }
+								</td>
+								<td>{ item.plays ?? '-' }</td>
+								<td>{ item.play_time?.toFixed( 2 ) ?? '-' }s</td>
+								<td>
+									{ item.plays > 0 && item.video_length > 0
+										? ( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%'
+										: '-' }
+								</td>
+								<td>
+									<a
+										href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }
+										className="text-blue-500"
+									>
+										View
+									</a>
+								</td>
+							</tr>
+						) ) }
+					</table>
+				) }
+				<div className="flex justify-end gap-4 mt-4">
+					<Button
+						isSecondary
+						disabled={ topVideosPage === 1 }
+						onClick={ () => setTopVideosPage( ( prev ) => Math.max( prev - 1, 1 ) ) }
+					>
+						Previous
+					</Button>
+					<Button
+						isPrimary
+						disabled={ topVideosPage >= totalTopVideosPages }
+						onClick={ () => setTopVideosPage( ( prev ) => prev + 1 ) }
+					>
+						Next
+					</Button>
+				</div>
+				<p className="text-sm text-gray-500">
+					Page { topVideosPage } of { totalTopVideosPages }
+				</p>
 			</div>
 		</div>
 	);

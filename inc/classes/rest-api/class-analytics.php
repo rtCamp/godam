@@ -487,8 +487,9 @@ class Analytics extends Base {
 
 		return new WP_REST_Response(
 			array(
-				'status'     => 'success',
-				'top_videos' => $body['top_videos'] ?? array(),
+				'status'      => 'success',
+				'top_videos'  => $body['top_videos'] ?? array(),
+				'total_pages' => $body['total_pages'] ?? 1,
 			),
 			200
 		);

@@ -61,7 +61,10 @@ export const dashboardAnalyticsApi = createApi( {
 				if ( response.status === 'error' ) {
 					throw new Error( response.message );
 				}
-				return response.top_videos || [];
+				return {
+					videos: response.top_videos || [],
+					totalPages: response.total_pages || 1,
+				};
 			},
 		} ),
 	} ),
