@@ -158,14 +158,9 @@ class RTGODAM_Transcoder_Handler {
 					include_once RTGODAM_PATH . 'admin/class-rtgodam-retranscodemedia.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 					add_filter( 'wp_generate_attachment_metadata', array( $this, 'wp_media_transcoding' ), 21, 2 );
-					add_action( 'as3cf_post_upload_item', array( $this, 'wp_offload_media_transcoding' ), 10, 1 );
 				}
 			}
 		}
-	}
-
-	public function wp_offload_media_transcoding( $as3cf_item ) {
-		error_log( 'as3cf_item ' . print_r( $as3cf_item, true ) );
 	}
 
 	/**
@@ -261,8 +256,6 @@ class RTGODAM_Transcoder_Handler {
 			 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
 			 */
 			$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
-
-			error_log( 'File Origin : ' . $url );
 
 			$args = array(
 				'method'    => 'POST',
