@@ -622,19 +622,10 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 			svg.transition().duration( 500 ).call( zoom.transform, initialTransform );
 		} );
 
-	// Set up map projection
-	const projection = d3
-		.geoNaturalEarth1()
-		.scale( 150 )
-		.translate( [ width / 2, height / 2 ] );
-
-	const path = d3.geoPath().projection( projection );
-
 	// Set up tooltip
-	const tooltip = d3
-		.select( 'body' )
+	const tooltip = container
 		.append( 'div' )
-		.attr( 'class', 'tooltip' )
+		.attr( 'class', 'map-tooltip' )
 		.style( 'position', 'absolute' )
 		.style( 'background', 'rgba(0, 0, 0, 0.8)' )
 		.style( 'color', '#fff' )
@@ -645,15 +636,29 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 		.style( 'pointer-events', 'none' )
 		.style( 'z-index', '100' );
 
+	const maxViews = d3.max( countryDataArray, ( d ) => d.views );
+
 	// Load and render the map
 	d3.json( 'https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson' )
 		.then( ( worldData ) => {
-			const colorScale = d3
-				.scaleSequential( d3.interpolateBlues )
-				.domain( [ 0, d3.max( Object.values( countryData ) ) ] );
+			const colorScale = d3.scaleSequential()
+				.domain( [ 0, maxViews ] )
+				.interpolator( ( t ) => d3.interpolateRgb( '#ddd', '#AB3A6C' )( t ) );
+
+			const features = worldData.features
+				.filter( ( f ) => f.properties.name !== 'Antarctica' );
+
+			const projection = d3.geoEquirectangular();
+
+			projection.fitExtent(
+				[ [ 20, 20 ], [ width - 20, height - 20 ] ],
+				{ type: 'FeatureCollection', features },
+			);
+
+			const path = d3.geoPath().projection( projection );
 
 			g.selectAll( 'path' )
-				.data( worldData.features )
+				.data( features )
 				.enter()
 				.append( 'path' )
 				.attr( 'd', path )
@@ -663,32 +668,74 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 						? colorScale( countryData[ countryName ] )
 						: '#ddd';
 				} )
-				.attr( 'stroke', '#333' )
-				.attr( 'stroke-width', '1px' )
+				.attr( 'stroke', 'none' )
+				.attr( 'stroke-width', 0 )
 				.on( 'mouseover', function( event, d ) {
 					const countryName = d.properties.name;
-					if ( countryData[ countryName ] ) {
+					const views = countryData[ countryName ];
+					const [ x, y ] = d3.pointer( event, container.node() );
+					const totalViews = d3.sum( countryDataArray, ( data ) => data.views );
+
+					if ( views ) {
+						// Compute percentage of maxViews
+						const pct = Math.round( ( views / totalViews ) * 100 );
+						const radius = 20;
+						const circumference = 2 * Math.PI * radius;
+						const dash = ( circumference * pct ) / 100;
+
+						// Build tooltip content with SVG circle
 						tooltip
 							.style( 'display', 'block' )
-							.html( `<strong>${ countryName }:</strong> ${ countryData[ countryName ] }` )
-							.style( 'left', ( event.pageX + 10 ) + 'px' )
-							.style( 'top', ( event.pageY + 10 ) + 'px' );
+							.html( `
+							<div style="text-align:center; font-family:Arial,sans-serif">
+								<strong>${ countryName }</strong><br/>
+								<svg width="50" height="50">
+								<!-- background circle -->
+								<circle cx="25" cy="25" r="${ radius }"
+										fill="none" stroke="#eee" stroke-width="4"/>
+								<!-- progress arc -->
+								<circle cx="25" cy="25" r="${ radius }"
+										fill="none" stroke="#AB3A6C" stroke-width="4"
+										stroke-dasharray="${ dash } ${ circumference - dash }"
+										transform="rotate(-90 25 25)"/>
+								 <text
+									x="25" y="30"
+									text-anchor="middle"
+									font-size="12"
+									fill="#fff"
+									font-family="Arial, sans-serif"
+									>${ pct }%</text>
+								</svg>
+								<div style="margin-top:4px; font-size:12px; color:#fff">
+								${ views } plays
+								</div>
+							</div>
+							` )
+							.style( 'left', ( x + 10 ) + 'px' )
+							.style( 'top', ( y + 10 ) + 'px' );
 
-						d3.select( this )
-							.style( 'stroke', '#000' )
-							.style( 'stroke-width', '2px' );
+						// Darken fill on hover
+						const orig = colorScale( views );
+						const darker = d3.color( orig ).darker( 1 ).formatHex();
+						d3.select( this ).attr( 'fill', darker );
 					}
 				} )
 				.on( 'mousemove', ( event ) => {
+					const [ x, y ] = d3.pointer( event, container.node() );
 					tooltip
-						.style( 'left', ( event.pageX + 10 ) + 'px' )
-						.style( 'top', ( event.pageY + 10 ) + 'px' );
+						.style( 'left', ( x + 10 ) + 'px' )
+						.style( 'top', ( y + 10 ) + 'px' );
 				} )
-				.on( 'mouseout', function() {
+				.on( 'mouseout', function( event, d ) {
 					tooltip.style( 'display', 'none' );
+					const countryName = d.properties.name;
+					const orig = countryData[ countryName ]
+						? colorScale( countryData[ countryName ] )
+						: '#ddd';
 					d3.select( this )
-						.style( 'stroke', '#333' )
-						.style( 'stroke-width', '1px' );
+						.attr( 'stroke', 'none' )
+						.attr( 'stroke-width', 0 )
+						.attr( 'fill', orig );
 				} );
 		} );
 
@@ -717,7 +764,6 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 
 	const tbody = table.append( 'tbody' );
 
-	const maxViews = d3.max( countryDataArray, ( d ) => d.views );
 	tbody
 		.selectAll( 'tr' )
 		.data( countryDataArray )
