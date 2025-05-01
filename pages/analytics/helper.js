@@ -545,11 +545,82 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 	const width = 800,
 		height = 500;
 
+	// Create a container div inside mapSelector
+	const container = d3.select( mapSelector )
+		.style( 'position', 'relative' )
+		.style( 'width', `${ width }px` )
+		.style( 'height', `${ height }px` );
+
 	// Create the SVG for the map
-	const svg = d3.select( mapSelector )
+	const svg = container
 		.append( 'svg' )
 		.attr( 'width', width )
 		.attr( 'height', height );
+
+	// Group for zoom + pan
+	const g = svg.append( 'g' );
+
+	// Define zoom behavior
+	const zoom = d3.zoom()
+		.scaleExtent( [ 1, 8 ] )
+		.on( 'zoom', ( event ) => {
+			g.attr( 'transform', event.transform );
+		} );
+
+	svg.call( zoom );
+
+	const initialTransform = d3.zoomIdentity; // Identity transform for reset
+
+	// Add Zoom Buttons
+	const zoomControls = container
+		.append( 'div' )
+		.attr( 'class', 'zoom-controls' )
+		.style( 'position', 'absolute' )
+		.style( 'top', '20px' )
+		.style( 'right', '20px' )
+		.style( 'display', 'flex' )
+		.style( 'flex-direction', 'column' )
+		.style( 'gap', '10px' )
+		.style( 'z-index', '10' );
+
+	zoomControls.append( 'button' )
+		.text( '+' )
+		.style( 'width', '40px' )
+		.style( 'height', '40px' )
+		.style( 'font-size', '24px' )
+		.style( 'cursor', 'pointer' )
+		.style( 'border', '1px solid #ccc' )
+		.style( 'border-radius', '5px' )
+		.style( 'background', '#fff' )
+		.on( 'click', () => {
+			svg.transition().call( zoom.scaleBy, 1.3 );
+		} );
+
+	zoomControls.append( 'button' )
+		.text( '–' )
+		.style( 'width', '40px' )
+		.style( 'height', '40px' )
+		.style( 'font-size', '24px' )
+		.style( 'cursor', 'pointer' )
+		.style( 'border', '1px solid #ccc' )
+		.style( 'border-radius', '5px' )
+		.style( 'background', '#fff' )
+		.on( 'click', () => {
+			svg.transition().call( zoom.scaleBy, 1 / 1.3 );
+		} );
+
+	zoomControls.append( 'button' )
+		.text( '⟳' )
+		.style( 'width', '40px' )
+		.style( 'height', '40px' )
+		.style( 'font-size', '20px' )
+		.style( 'cursor', 'pointer' )
+		.style( 'border', '1px solid #ccc' )
+		.style( 'border-radius', '5px' )
+		.style( 'background', '#fff' )
+		.on( 'click', () => {
+			svg.transition().duration( 500 ).call( zoom.transform, initialTransform );
+		} );
 
 	// Set up map projection
 	const projection = d3
@@ -575,69 +646,61 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 		.style( 'z-index', '100' );
 
 	// Load and render the map
-	d3.json(
-		'https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson',
-	).then( ( worldData ) => {
-		// Create color scale
-		const colorScale = d3
-			.scaleSequential( d3.interpolateBlues )
-			.domain( [ 0, d3.max( Object.values( countryData ) ) ] );
+	d3.json( 'https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson' )
+		.then( ( worldData ) => {
+			const colorScale = d3
+				.scaleSequential( d3.interpolateBlues )
+				.domain( [ 0, d3.max( Object.values( countryData ) ) ] );
 
-		svg
-			.selectAll( 'path' )
-			.data( worldData.features )
-			.enter()
-			.append( 'path' )
-			.attr( 'd', path )
-			.attr( 'fill', ( d ) => {
-				const countryName = d.properties.name;
-				return countryData[ countryName ]
-					? colorScale( countryData[ countryName ] )
-					: '#ddd';
-			} )
-			.attr( 'stroke', '#333' )
-			.attr( 'stroke-width', '1px' )
-			.on( 'mouseover', function( event, d ) {
-				const countryName = d.properties.name;
-				if ( countryData[ countryName ] ) {
+			g.selectAll( 'path' )
+				.data( worldData.features )
+				.enter()
+				.append( 'path' )
+				.attr( 'd', path )
+				.attr( 'fill', ( d ) => {
+					const countryName = d.properties.name;
+					return countryData[ countryName ]
+						? colorScale( countryData[ countryName ] )
+						: '#ddd';
+				} )
+				.attr( 'stroke', '#333' )
+				.attr( 'stroke-width', '1px' )
+				.on( 'mouseover', function( event, d ) {
+					const countryName = d.properties.name;
+					if ( countryData[ countryName ] ) {
+						tooltip
+							.style( 'display', 'block' )
+							.html( `<strong>${ countryName }:</strong> ${ countryData[ countryName ] }` )
+							.style( 'left', ( event.pageX + 10 ) + 'px' )
+							.style( 'top', ( event.pageY + 10 ) + 'px' );
+
+						d3.select( this )
+							.style( 'stroke', '#000' )
+							.style( 'stroke-width', '2px' );
+					}
+				} )
+				.on( 'mousemove', ( event ) => {
 					tooltip
-						.style( 'display', 'block' )
-						.html(
-							`<strong>${ countryName }:</strong> ${ countryData[ countryName ] }`,
-						)
 						.style( 'left', ( event.pageX + 10 ) + 'px' )
 						.style( 'top', ( event.pageY + 10 ) + 'px' );
-
+				} )
+				.on( 'mouseout', function() {
+					tooltip.style( 'display', 'none' );
 					d3.select( this )
-						.style( 'stroke', '#000' )
-						.style( 'stroke-width', '2px' );
-				}
-			} )
-			.on( 'mousemove', ( event ) => {
-				tooltip
-					.style( 'left', ( event.pageX + 10 ) + 'px' )
-					.style( 'top', ( event.pageY + 10 ) + 'px' );
-			} )
-			.on( 'mouseout', function() {
-				tooltip.style( 'display', 'none' );
-				d3.select( this )
-					.style( 'stroke', '#333' )
-					.style( 'stroke-width', '1px' );
-			} );
-	} );
+						.style( 'stroke', '#333' )
+						.style( 'stroke-width', '1px' );
+				} );
+		} );
 
 	// ===== TABLE VISUALIZATION =====
-	// Create table as a completely separate element
 	const tableDiv = d3.select( tableSelector );
 
-	// Create table element
 	const table = tableDiv
 		.append( 'table' )
 		.style( 'width', '100%' )
 		.style( 'border-collapse', 'collapse' )
 		.style( 'font-family', 'Arial, sans-serif' );
 
-	// Add header
 	const thead = table.append( 'thead' );
 	thead
 		.append( 'tr' )
@@ -652,7 +715,6 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 		.style( 'font-size', '12px' )
 		.style( 'font-weight', '500' );
 
-	// Add table body
 	const tbody = table.append( 'tbody' );
 
 	const maxViews = d3.max( countryDataArray, ( d ) => d.views );
@@ -661,10 +723,8 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 		.data( countryDataArray )
 		.enter()
 		.each( function( d ) {
-			// Append the main row (Country + Views)
 			const mainRow = d3.select( this ).append( 'tr' );
 
-			// Add country column
 			mainRow
 				.append( 'td' )
 				.style( 'border-bottom', '1px solid #eee' )
@@ -672,7 +732,6 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 				.style( 'font-weight', '900' )
 				.text( d.country );
 
-			// Add views column
 			mainRow
 				.append( 'td' )
 				.text( d.views )
@@ -681,10 +740,8 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 				.style( 'border-bottom', '1px solid #eee' )
 				.style( 'font-weight', '500' );
 
-			// Append the second row (Progress Bar)
 			const barRow = d3.select( this ).append( 'tr' );
 
-			// Add progress bar spanning across both columns
 			barRow
 				.append( 'td' )
 				.attr( 'colspan', 2 )

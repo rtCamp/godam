@@ -346,8 +346,9 @@ class Analytics extends Base {
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
 				array(
-					'status'  => 'error',
-					'message' => 'Invalid or unverified API key.',
+					'status'    => 'error',
+					'message'   => 'Invalid or unverified API key.',
+					'errorType' => 'invalid_key',
 				),
 				200
 			);
@@ -362,12 +363,25 @@ class Analytics extends Base {
 			RTGODAM_ANALYTICS_BASE . '/dashboard/metrics/fetch/'
 		);
 
+		$empty_metrics = array(
+			'plays'                 => 0,
+			'play_time'             => 0.0,
+			'page_load'             => 0,
+			'avg_engagement'        => 0.0,
+			'country_views'         => array(),
+			'views_change'          => 0.0,
+			'watch_time_change'     => 0.0,
+			'play_rate_change'      => 0.0,
+			'avg_engagement_change' => 0.0,
+		);
+
 		$response = wp_remote_get( $endpoint );
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
 				array(
-					'status'  => 'error',
-					'message' => $response->get_error_message(),
+					'status'            => 'error',
+					'message'           => $response->get_error_message(),
+					'dashboard_metrics' => $empty_metrics,
 				),
 				500
 			);
@@ -378,7 +392,7 @@ class Analytics extends Base {
 		return new WP_REST_Response(
 			array(
 				'status'            => 'success',
-				'dashboard_metrics' => $body['dashboard_metrics'] ?? array(),
+				'dashboard_metrics' => $body['dashboard_metrics'] ?? $empty_metrics,
 			),
 			200
 		);

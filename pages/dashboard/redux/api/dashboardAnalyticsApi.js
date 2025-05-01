@@ -25,9 +25,17 @@ export const dashboardAnalyticsApi = createApi( {
 				},
 			} ),
 			transformResponse: ( response ) => {
-				if ( response.status === 'error' ) {
+				if (
+					response.status === 'error' &&
+					response.errorType === 'invalid_key'
+				) {
+					return { errorType: 'invalid_key' };
+				}
+
+				if ( response.status !== 'success' ) {
 					throw new Error( response.message );
 				}
+
 				return response.dashboard_metrics || {};
 			},
 		} ),

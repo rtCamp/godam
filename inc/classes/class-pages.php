@@ -524,6 +524,14 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_localize_script(
+				'godam-page-script-dashboard',
+				'videoData',
+				array(
+					'adminUrl' => admin_url( 'admin.php?page=rtgodam#video-settings' ),
+				)
+			);
+
 			wp_enqueue_script( 'godam-page-script-dashboard' );
 			wp_enqueue_script( 'd3-js' );
 			wp_enqueue_script( 'godam-global-analytics-script' );
