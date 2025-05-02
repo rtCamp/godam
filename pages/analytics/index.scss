@@ -1,21 +1,34 @@
 /* Video Editor Set up */
 @media screen and (max-width: 782px) {
+
 	.auto-fold #root-video-analytics {
 		margin-left: 0 !important;
 	}
 }
 
 @media screen and (max-width: 960px) {
+
 	.auto-fold #root-video-analytics {
 		margin-left: 36px;
 	}
 }
 
-.folded #root-video-analytics {
-	margin-left: 36px;
+
+
+.tooltip {
+	position: absolute;
+	background: rgba(0, 0, 0, 0.75);
+	color: #fff;
+	padding: 5px 10px;
+	border-radius: 5px;
+	font-size: 12px;
+	pointer-events: none; /* Prevents interfering with mouse events */
+	opacity: 0; /* Initially hidden */
+	transition: opacity 0.2s ease-in-out;
 }
 
 #root-video-analytics {
+
 	@apply bg-slate-100;
 	position: fixed;
 	top: 0;
@@ -27,16 +40,15 @@
 	padding-top: var(--wp-admin--admin-bar--height, 0);
 	overflow: auto;
 	color: #000;
-}
-
-#root-video-analytics {
 
 	// Video JS styles
 	.video-analytics-container {
+
 		@apply flex justify-between py-6 bg-slate-100 overflow-auto md:px-10 pt-8;
 	}
 
 	.country-heatmap-container {
+
 		@apply bg-slate-100 overflow-auto;
 	}
 
@@ -71,6 +83,13 @@
 				}
 			}
 
+			.metric-change {
+				display: flex;
+				align-items: center;
+				gap: 4px;
+				font-size: 14px;
+			}
+
 			p {
 				margin-block-end: unset;
 				margin-block-start: unset;
@@ -79,18 +98,6 @@
 			.engagement-rate {
 				font-weight: 600;
 				font-size: 36px;
-			}
-
-			.analytics-stats {
-				display: flex;
-				align-items: center;
-				gap: 8px;
-				margin-top: auto;
-
-				img {
-					height: 10px;
-					width: 10px;
-				}
 			}
 		}
 	}
@@ -126,26 +133,26 @@
 			opacity: 0.7;
 		}
 
-		.tooltip {
+		.line-chart-tooltip {
 			position: absolute;
-			background-color: white;
+			background-color: #fff;
 			border: 1px solid #ccc;
 			padding: 5px;
 			border-radius: 4px;
 			pointer-events: none;
 			white-space: nowrap;
 			font-size: 12px;
-			box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+			box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 			text-align: center;
 			opacity: 0;
 		}
 
-		.tooltip::after {
+		.line-chart-tooltip::after {
 			content: "";
 			position: absolute;
 			border-width: 8px;
 			border-style: solid;
-			border-color: white transparent transparent transparent;
+			border-color: #fff transparent transparent transparent;
 			left: 50%;
 			bottom: -16px;
 			transform: translateX(-50%);
@@ -160,7 +167,7 @@
 
 		.focus-circle {
 			fill: rgba(255, 200, 0, 1);
-			stroke: white;
+			stroke: #fff;
 			stroke-width: 2px;
 			r: 3.5;
 		}
@@ -170,52 +177,56 @@
 		max-width: 830px;
 		margin-top: 2rem;
 
-		.heatmap-tooltip {
-			position: absolute;
-			position: absolute;
-			background-color: white;
-			border: 1px solid #ccc;
-			padding: 5px;
-			border-radius: 4px;
-			pointer-events: none;
-			white-space: nowrap;
-			font-size: 12px;
-			box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
-			text-align: center;
-			opacity: 0;
-			z-index: 999;
+	.heatmap-tooltip {
+		position: absolute;
+		position: absolute;
+		background-color: #fff;
+		border: 1px solid #ccc;
+		padding: 5px;
+		border-radius: 4px;
+		pointer-events: none;
+		white-space: nowrap;
+		font-size: 12px;
+		box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+		text-align: center;
+		opacity: 0;
+		z-index: 999;
 
-			&::after {
-				content: "";
-				position: absolute;
-				border-width: 8px;
-				border-style: solid;
-				border-color: white transparent transparent transparent;
-				left: 50%;
-				bottom: -16px;
-				transform: translateX(-50%);
-			}
-
-			&::before {
-				content: "";
-				position: absolute;
-				border-width: 9px;
-				border-style: solid;
-				border-color: rgba(0, 0, 0, 0.2) transparent transparent transparent;
-				left: 50%;
-				bottom: -21px;
-				transform: translateX(-50%);
-				filter: blur(2px);
-				z-index: -1;
-   			 }
+		&::after {
+			content: "";
+			position: absolute;
+			border-width: 8px;
+			border-style: solid;
+			border-color: #fff transparent transparent transparent;
+			left: 50%;
+			bottom: -16px;
+			transform: translateX(-50%);
 		}
 
-		.heatmap-vertical-line {
-			stroke: #000;
-			stroke-dasharray: 4;
-			stroke-width: 2px;
+		&::before {
+			content: "";
+			position: absolute;
+			border-width: 9px;
+			border-style: solid;
+			border-color: rgba(0, 0, 0, 0.2) transparent transparent transparent;
+			left: 50%;
+			bottom: -21px;
+			transform: translateX(-50%);
+			filter: blur(2px);
+			z-index: -1;
 		}
 	}
+
+	.heatmap-vertical-line {
+		stroke: #000;
+		stroke-dasharray: 4;
+		stroke-width: 2px;
+	}
+	}
+}
+
+.folded #root-video-analytics {
+	margin-left: 36px;
 }
 
 .blurred {
@@ -238,14 +249,15 @@
 }
 
 .api-key-message {
-	background: white;
+	background: #fff;
 	padding: 20px 40px;
 	border-radius: 5px;
-	box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 	text-align: center;
 	font-size: 16px;
-	font-weight: bold;
+	font-weight: 700;
 }
+
 .api-key-message a {
 	color: #3b82f6;
 	text-decoration: none;
@@ -298,30 +310,18 @@
 	opacity: 1;
 }
 
-/* Tooltip styling */
-.tooltip {
-    position: absolute;
-    background: rgba(0, 0, 0, 0.75);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 12px;
-    pointer-events: none; /* Prevents interfering with mouse events */
-    opacity: 0; /* Initially hidden */
-    transition: opacity 0.2s ease-in-out;
-}
-
 .bar-container {
             position: absolute;
             left: 0;
             bottom: 0;
             width: 100%;
             height: 4px; /* Adjust thickness */
-            background-color: lightgray;
+            background-color: #d3d3d3;
         }
+
         .bar {
             height: 100%;
-            background-color: blue;
+            background-color: #00f;
         }
 
 .subheading-container {
@@ -351,20 +351,47 @@
 }
 
 .ab-testing-table {
-	border:1px solid blue;
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 2rem;
+	font-family: Inter, sans-serif;
+	font-size: 14px;
+	color: #333;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 
 	th, td {
-		border:1px solid blue;
-	}
-	
-	td {
+		border: 1px solid #e0e0e0;
+		padding: 16px;
 		text-align: center;
-    	padding: 15px;
 	}
 
-	.leftGreater > td {
-		background-color: green;
+	th {
+		background-color: #f5f5f5;
+		font-weight: 600;
+		color: #555;
 	}
+
+	tr:nth-child(even) {
+		background-color: #fafafa;
+	}
+
+	tr td:nth-child(2) {
+		font-style: italic;
+		color: #777;
+	}
+
+	tr.left-greater td:first-child {
+		background-color: #e6f4ea;
+		color: #166534;
+		font-weight: 600;
+	}
+
+	tr.right-greater td:last-child {
+		background-color: #e6f4ea;
+		color: #166534;
+		font-weight: 600;
+	}
+	
 }
 
 #menu-item-upload {
@@ -372,72 +399,74 @@
 }
 
 .posts-count-container {
-      background-color: white;
+      background-color: #fff;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       padding: 20px;
       margin-top: 20px;
+
     h2 {
       text-align: center;
       color: #333;
     }
-    .tooltip {
-      position: absolute;
-      padding: 10px;
-      background-color: rgba(255, 255, 255, 0.9);
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      pointer-events: none;
-      font-size: 14px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+
     .legend {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       margin-top: 20px;
     }
+
     .legend-item {
       display: flex;
       align-items: center;
       margin: 5px 10px;
     }
+
     .legend-color {
       width: 12px;
       height: 12px;
       margin-right: 5px;
       border-radius: 2px;
     }
+
     .total-views {
       font-size: 14px;
       margin-top: 10px;
       text-align: center;
       color: #555;
     }
+
     .donut-label {
       font-size: 14px;
       text-anchor: middle;
       fill: #333;
     }
+
     .donut-percent {
       font-size: 12px;
       text-anchor: middle;
       fill: #666;
     }
+
     .center-text {
       font-size: 16px;
       text-anchor: middle;
       fill: #333;
-      font-weight: bold;
+      font-weight: 700;
     }
 }
 
 @media (max-width: 1024px) {
+
 		#root-video-analytics {
+
 			.video-analytics-container {
 				padding: 40px;
 			}
+
 			.analytics-info-container {
+
 				.analytics-info {
 					min-width: 200px;
 					gap: 20px;

@@ -23,7 +23,6 @@ import {
 	plus,
 	chevronDown,
 	chevronUp,
-	chevronRight,
 	moreVertical,
 	check,
 } from '@wordpress/icons';
@@ -69,7 +68,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 	const handleAddHotspot = () => {
 		const newHotspot = {
 			id: uuidv4(),
-			tooltipText: 'New Hotspot',
+			tooltipText: __( 'New Hotspot', 'godam' ),
 			link: '',
 			position: { x: 50, y: 50 },
 			size: { diameter: 48 },
@@ -186,7 +185,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 						const newVal = parseInt( val, 10 ) || 0;
 						updateField( 'duration', newVal );
 					} }
-					help="Duration (in seconds) this layer will stay visible"
+					help={ __( 'Duration (in seconds) this layer will stay visible', 'godam' ) }
 					disabled={ ! isValidAPIKey }
 				/>
 			</div>
@@ -281,7 +280,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 							<div className="mt-3">
 								<TextControl
 									label={ __( 'Tooltip Text', 'godam' ) }
-									placeholder="Click Me!"
+									placeholder={ __( 'Click Me!', 'godam' ) }
 									value={ hotspot.tooltipText }
 									onChange={ ( val ) =>
 										updateField(

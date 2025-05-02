@@ -4,5 +4,8 @@
     "**/*.js",
     "**/*.json"
   ],
-  "rules": {}
+  "rules": {
+	"selector-class-pattern": null,
+	"selector-id-pattern": null
+  }
 }

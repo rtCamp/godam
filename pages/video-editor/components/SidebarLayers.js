@@ -75,7 +75,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	// For now we are enabling all the features
 	const isValidAPiKey = true;
 
-	const addNewLayer = ( type, form_type ) => {
+	const addNewLayer = ( type, formType ) => {
 		if ( premiumLayers.includes( type ) && ! isValidAPiKey ) {
 			return;
 		}
@@ -86,7 +86,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 					id: uuidv4(),
 					displayTime: currentTime,
 					type,
-					form_type: form_type || 'gravity',
+					form_type: formType || 'gravity',
 					submitted: false,
 					allow_skip: true,
 					custom_css: '',
@@ -116,7 +116,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 						hotspots: [
 							{
 								id: uuidv4(),
-								tooltipText: 'Click me!',
+								tooltipText: __( 'Click me!', 'godam' ),
 								position: { x: 50, y: 50 },
 								size: { diameter: 48 },
 								oSize: { diameter: 48 },

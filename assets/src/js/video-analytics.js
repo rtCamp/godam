@@ -9,9 +9,10 @@ import videojs from 'video.js';
 import ViewIcon from '../../src/images/views.png';
 import DurationIcon from '../../src/images/duration.png';
 import {
-	fetchAnalyticsData,
 	generateMetricsOverTime,
 } from '../../../pages/analytics/helper';
+import DownArrow from '../images/down-arrow.svg';
+import TopArrow from '../images/up-arrow.svg';
 
 function formatTime( seconds ) {
 	const minutes = Math.floor( seconds / 60 );
@@ -95,7 +96,7 @@ function generateHeatmap( data, selector, videoPlayer ) {
 				// Update the tooltip
 				heatmapTooltip
 					.style( 'opacity', 1 )
-					.style( 'left', `${ mouseX }px` )
+					.style( 'left', `${ xScale( index ) - 20 }px` )
 					.style( 'top', `${ margin.top - 52 }px` ) // Fixed above the heatmap
 					.html(
 						`<div class="heatmap-tooltip-html">
@@ -173,7 +174,7 @@ function generateLineChart( data, selector, videoPlayer ) {
 		.attr( 'class', 'area' )
 		.style( 'opacity', 0 );
 
-	const tooltip = d3.select( '.tooltip' );
+	const tooltip = d3.select( '.line-chart-tooltip' );
 
 	svg.append( 'rect' )
 		.attr( 'width', width )
@@ -355,7 +356,7 @@ function generateCountryHeatmap( countryData, mapSelector, tableSelector ) {
 	const tbody = table.append( 'tbody' );
 
 	const maxViews = d3.max( countryDataArray, ( d ) => d.views );
-	const rows = tbody
+	tbody
 		.selectAll( 'tr' )
 		.data( countryDataArray )
 		.enter()
@@ -450,10 +451,14 @@ function generatePostViewsChart( postsData, selector ) {
 		.outerRadius( radius * 1.05 );
 
 	// Create donut chart
-	const slices = svg
-		.selectAll( 'path' )
+	svg
+		.selectAll( 'a' )
 		.data( pie( postsData ) )
-		.join( 'path' )
+		.enter()
+		.append( 'a' )
+		.attr( 'xlink:href', ( d ) => d.data.url )
+		.attr( 'target', '_blank' )
+		.append( 'path' )
 		.attr( 'd', arc )
 		.attr( 'fill', ( d ) => color( d.data.post ) )
 		.attr( 'stroke', 'white' )
@@ -472,8 +477,8 @@ function generatePostViewsChart( postsData, selector ) {
 			tooltip
 				.html(
 					`<strong>${ d.data.post }</strong><br>
-                        Views: ${ formatNumber( d.data.views ) }<br>
-                        Percentage: ${ percent }%`,
+					Views: ${ formatNumber( d.data.views ) }<br>
+					Percentage: ${ percent }%`,
 				)
 				.style( 'left', event.pageX + 10 + 'px' )
 				.style( 'top', event.pageY - 28 + 'px' );
@@ -512,7 +517,8 @@ function generatePostViewsChart( postsData, selector ) {
 			.attr( 'class', 'legend-color' )
 			.style( 'background-color', color( d.post ) );
 
-		legendItem.append( 'div' ).text( `${ d.post }: ${ formatNumber( d.views ) }` );
+		legendItem.append( 'div' )
+			.html( `<a href="${ d.url }" target="_blank" style="text-decoration: underline; color: inherit;">${ d.post }</a>: ${ formatNumber( d.views ) }` );
 	} );
 
 	// Add total views text
@@ -522,18 +528,25 @@ function generatePostViewsChart( postsData, selector ) {
 }
 
 async function main() {
-	const videoElement = document.getElementById( 'analytics-video' );
-	const videoId = videoElement?.dataset.id;
-	const siteUrl = window.location.origin;
-
-	const analyticsData = await fetchAnalyticsData( videoId, siteUrl );
+	const analyticsData = window.analyticsDataFetched;
 
 	if ( ! analyticsData ) {
 		return;
 	}
 
 	// Extract values from the analytics response
-	const { plays, page_load: pageLoad, play_time: playTime, video_length: videoLength, all_time_heatmap: allTimeHeatmap, country_views: countryViews } = analyticsData;
+	const {
+		plays,
+		page_load: pageLoad,
+		play_time: playTime,
+		video_length: videoLength,
+		all_time_heatmap: allTimeHeatmap,
+		country_views: countryViews,
+		views_change: viewsChange,
+		watch_time_change: watchTimeChange,
+		play_rate_change: playRateChange,
+		avg_engagement_change: avgEngagementChange,
+	} = analyticsData;
 
 	// Calculate analytics metrics
 	const playRate = pageLoad ? ( plays / pageLoad ) * 100 : 0; // Convert to percentage
@@ -544,6 +557,7 @@ async function main() {
 	document.getElementById( 'play-rate' ).innerText = `${ playRate.toFixed( 2 ) }%`;
 	document.getElementById( 'total-plays' ).innerText = totalPlays;
 	document.getElementById( 'engagement-rate' ).innerText = `${ engagementRate.toFixed( 2 ) }%`;
+	document.getElementById( 'watch-time' ).innerText = `${ playTime.toFixed( 2 ) }s`;
 
 	// Convert heatmap string into an array
 	const heatmapData = JSON.parse( allTimeHeatmap );
@@ -554,90 +568,59 @@ async function main() {
 		controls: false,
 	} );
 
-	const timeMeticsChartData = [
-		{ date: '2025-04-02', engagement_rate: 47.8, play_rate: 64.3, watch_time: 132 },
-		{ date: '2025-04-01', engagement_rate: 45.2, play_rate: 60.1, watch_time: 120 },
-		{ date: '2025-03-31', engagement_rate: 46.5, play_rate: 62.7, watch_time: 125 },
-		{ date: '2025-03-30', engagement_rate: 44.9, play_rate: 59.8, watch_time: 118 },
-		{ date: '2025-03-29', engagement_rate: 42.3, play_rate: 58.4, watch_time: 114 },
-		{ date: '2025-03-28', engagement_rate: 43.7, play_rate: 61.2, watch_time: 124 },
-		{ date: '2025-03-27', engagement_rate: 48.6, play_rate: 65.0, watch_time: 138 },
-		// Last 7 days complete here
-		{ date: '2025-03-26', engagement_rate: 44.1, play_rate: 59.6, watch_time: 121 },
-		{ date: '2025-03-25', engagement_rate: 41.5, play_rate: 57.8, watch_time: 112 },
-		{ date: '2025-03-24', engagement_rate: 45.9, play_rate: 62.5, watch_time: 126 },
-		{ date: '2025-03-23', engagement_rate: 51.2, play_rate: 67.8, watch_time: 145 },
-		{ date: '2025-03-22', engagement_rate: 49.7, play_rate: 66.1, watch_time: 141 },
-		{ date: '2025-03-21', engagement_rate: 47.3, play_rate: 63.4, watch_time: 130 },
-		{ date: '2025-03-20', engagement_rate: 45.8, play_rate: 61.9, watch_time: 128 },
-		// Last 14 days complete here
-		{ date: '2025-03-19', engagement_rate: 42.6, play_rate: 58.1, watch_time: 115 },
-		{ date: '2025-03-18', engagement_rate: 44.5, play_rate: 60.5, watch_time: 122 },
-		{ date: '2025-03-17', engagement_rate: 46.8, play_rate: 63.0, watch_time: 131 },
-		{ date: '2025-03-16', engagement_rate: 48.9, play_rate: 64.7, watch_time: 135 },
-		{ date: '2025-03-15', engagement_rate: 52.3, play_rate: 68.4, watch_time: 147 },
-		{ date: '2025-03-14', engagement_rate: 50.6, play_rate: 67.1, watch_time: 143 },
-		{ date: '2025-03-13', engagement_rate: 47.5, play_rate: 63.8, watch_time: 133 },
-		{ date: '2025-03-12', engagement_rate: 45.0, play_rate: 60.9, watch_time: 123 },
-		{ date: '2025-03-11', engagement_rate: 43.2, play_rate: 59.2, watch_time: 119 },
-		{ date: '2025-03-10', engagement_rate: 41.8, play_rate: 58.6, watch_time: 116 },
-		{ date: '2025-03-09', engagement_rate: 44.3, play_rate: 61.4, watch_time: 127 },
-		{ date: '2025-03-08', engagement_rate: 46.2, play_rate: 62.0, watch_time: 129 },
-		{ date: '2025-03-07', engagement_rate: 48.3, play_rate: 64.2, watch_time: 136 },
-		{ date: '2025-03-06', engagement_rate: 50.1, play_rate: 66.7, watch_time: 140 },
-		// Last 28 days complete here (also covers the 30-day option)
-		{ date: '2025-03-05', engagement_rate: 47.9, play_rate: 64.0, watch_time: 134 },
-		{ date: '2025-03-04', engagement_rate: 45.3, play_rate: 61.5, watch_time: 125 },
-		// Additional data for 30 days
-		{ date: '2025-03-03', engagement_rate: 43.8, play_rate: 60.3, watch_time: 122 },
-		{ date: '2025-03-02', engagement_rate: 42.1, play_rate: 57.5, watch_time: 113 },
-		// 30 days complete here
-		{ date: '2025-03-01', engagement_rate: 44.0, play_rate: 59.5, watch_time: 120 },
-		{ date: '2025-02-28', engagement_rate: 41.0, play_rate: 56.8, watch_time: 110 },
-		{ date: '2025-02-27', engagement_rate: 43.5, play_rate: 59.9, watch_time: 121 },
-		{ date: '2025-02-26', engagement_rate: 45.7, play_rate: 61.8, watch_time: 127 },
-		{ date: '2025-02-25', engagement_rate: 48.0, play_rate: 64.5, watch_time: 134 },
-		{ date: '2025-02-24', engagement_rate: 50.8, play_rate: 67.3, watch_time: 144 },
-		{ date: '2025-02-23', engagement_rate: 49.2, play_rate: 65.9, watch_time: 139 },
-		{ date: '2025-02-22', engagement_rate: 46.7, play_rate: 62.9, watch_time: 130 },
-		{ date: '2025-02-21', engagement_rate: 44.4, play_rate: 60.7, watch_time: 123 },
-		{ date: '2025-02-20', engagement_rate: 42.9, play_rate: 58.7, watch_time: 117 },
-		{ date: '2025-02-19', engagement_rate: 40.7, play_rate: 57.0, watch_time: 111 },
-		{ date: '2025-02-18', engagement_rate: 43.3, play_rate: 59.3, watch_time: 120 },
-		{ date: '2025-02-17', engagement_rate: 45.4, play_rate: 61.6, watch_time: 126 },
-		{ date: '2025-02-16', engagement_rate: 47.6, play_rate: 63.5, watch_time: 132 },
-		{ date: '2025-02-15', engagement_rate: 49.5, play_rate: 66.0, watch_time: 140 },
-		{ date: '2025-02-14', engagement_rate: 51.7, play_rate: 68.5, watch_time: 148 },
-		{ date: '2025-02-13', engagement_rate: 48.7, play_rate: 65.3, watch_time: 137 },
-		{ date: '2025-02-12', engagement_rate: 45.6, play_rate: 62.4, watch_time: 128 },
-		{ date: '2025-02-11', engagement_rate: 42.4, play_rate: 59.0, watch_time: 119 },
-		{ date: '2025-02-10', engagement_rate: 40.0, play_rate: 56.5, watch_time: 109 },
-		{ date: '2025-02-09', engagement_rate: 41.3, play_rate: 57.3, watch_time: 112 },
-		{ date: '2025-02-08', engagement_rate: 43.9, play_rate: 60.0, watch_time: 122 },
-		{ date: '2025-02-07', engagement_rate: 46.1, play_rate: 62.3, watch_time: 129 },
-		{ date: '2025-02-06', engagement_rate: 48.4, play_rate: 64.8, watch_time: 136 },
-		{ date: '2025-02-05', engagement_rate: 50.9, play_rate: 67.6, watch_time: 146 },
-		{ date: '2025-02-04', engagement_rate: 49.9, play_rate: 66.5, watch_time: 142 },
-		{ date: '2025-02-03', engagement_rate: 47.2, play_rate: 63.6, watch_time: 131 },
-		{ date: '2025-02-02', engagement_rate: 44.6, play_rate: 60.4, watch_time: 124 },
-		{ date: '2025-02-01', engagement_rate: 42.0, play_rate: 58.0, watch_time: 115 },
-		// Complete 60-day dataset
-	];
+	const timeMetricsChartData = ( window.processedAnalyticsHistory || [] ).map( ( entry ) => {
+		const {
+			date,
+			page_load: dailyPageLoad,
+			play_time: dailyPlayTime,
+			video_length: dailyVideoLength,
+			plays: dailyPlays,
+		} = entry;
 
-	const postsData = [
-		{ post: 'http://godam.local/51-2/', views: 15423 },
-		{ post: 'http://godam.local/49-2/', views: 42891 },
-		{ post: 'http://godam.local/41/', views: 28736 },
-		{ post: 'http://godam.local/37-2/', views: 9842 },
-		{ post: 'http://godam.local/28-2/', views: 19384 },
-		{ post: 'http://godam.local/51-2/', views: 35217 },
-	];
+		const dailyEngagementRate =
+			dailyPlays && dailyVideoLength ? ( dailyPlayTime / ( dailyPlays * dailyVideoLength ) ) * 100 : 0;
+
+		const dailyPlayRate =
+			dailyPageLoad ? ( dailyPlays / dailyPageLoad ) * 100 : 0;
+
+		return {
+			date,
+			engagement_rate: +dailyEngagementRate.toFixed( 2 ),
+			play_rate: +dailyPlayRate.toFixed( 2 ),
+			watch_time: +dailyPlayTime.toFixed( 2 ),
+		};
+	} );
+
+	const postsData = ( window.analyticsDataFetched?.post_details || [] ).map( ( post ) => {
+		const views = post.views || 0;
+		return { post: post.title, views, url: post.url };
+	} );
 
 	// Generate visualizations
 	generateLineChart( heatmapData, '#line-chart', videoPlayer );
 	generateHeatmap( heatmapData, '#heatmap', videoPlayer );
-	generateMetricsOverTime( timeMeticsChartData, '#metrics-chart', videoPlayer );
+	generateMetricsOverTime( timeMetricsChartData, '#metrics-chart', videoPlayer );
 	generatePostViewsChart( postsData, '#post-views-count-chart' );
+
+	const renderChange = ( changeValue ) => {
+		const rounded = Math.abs( changeValue ).toFixed( 2 );
+		const prefix = changeValue >= 0 ? '+' : '-';
+		const arrow = changeValue >= 0 ? TopArrow : DownArrow;
+		return `<img src="${ arrow }" alt="Arrow Icon" height="20" width="20"/>${ prefix }${ rounded }% this week`;
+	};
+
+	if ( document.getElementById( 'views-change' ) ) {
+		document.getElementById( 'views-change' ).innerHTML = renderChange( viewsChange );
+	}
+	if ( document.getElementById( 'watch-time-change' ) ) {
+		document.getElementById( 'watch-time-change' ).innerHTML = renderChange( watchTimeChange );
+	}
+	if ( document.getElementById( 'play-rate-change' ) ) {
+		document.getElementById( 'play-rate-change' ).innerHTML = renderChange( playRateChange );
+	}
+	if ( document.getElementById( 'avg-engagement-change' ) ) {
+		document.getElementById( 'avg-engagement-change' ).innerHTML = renderChange( avgEngagementChange );
+	}
 
 	if ( countryViews ) {
 		generateCountryHeatmap( countryViews, '#map-container', '#table-container' );
@@ -646,6 +629,11 @@ async function main() {
 	const analyticsContainer = document.getElementById( 'video-analytics-container' );
 	if ( analyticsContainer ) {
 		analyticsContainer.classList.remove( 'hidden' );
+	}
+
+	const analyticsContent = document.getElementById( 'analytics-content' );
+	if ( analyticsContent ) {
+		analyticsContent.classList.remove( 'hidden' );
 	}
 
 	// Hide the loading animation
@@ -659,8 +647,10 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	const videoCheckInterval = setInterval( () => {
 		const videoElement = document.getElementById( 'analytics-video' );
 		const videoId = videoElement?.dataset.id;
+		const analyticsDataFetched = window.analyticsDataFetched;
+		const processedAnalyticsHistory = window.processedAnalyticsHistory;
 
-		if ( videoId ) {
+		if ( videoId && analyticsDataFetched && processedAnalyticsHistory ) {
 			clearInterval( videoCheckInterval );
 			main();
 		}

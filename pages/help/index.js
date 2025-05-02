@@ -6,7 +6,7 @@ import ReactDOM from 'react-dom';
 /**
  * Internal dependencies
  */
-import './style.scss';
+import './index.scss';
 import App from './App';
 
 const Index = () => {

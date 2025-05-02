@@ -175,9 +175,23 @@
 
 .image-overlay-text {
     font-size: 15px;
-    background: white;
+    background: var( --wp--preset--color--white );
     padding: 10px;
     border-radius: 12px;
+}
+
+.image-cta-btn {
+    padding: 10px 15px;
+    border-radius: 4px;
+    color: #fff;
+    background-color: #eeab95;
+    border: none;
+    font-size: 16px;
+    text-transform: uppercase;
+
+	a {
+		color: #fff;
+	}
 }
 
 .image-cta-container, .vertical-image-cta-container {
@@ -215,20 +229,6 @@
     align-content: center;
     justify-content: center;
     padding-left: 0;
-}
-
-.image-cta-btn {
-    padding: 10px 15px;
-    border-radius: 4px;
-    color: #fff;
-    background-color: #eeab95;
-    border: none;
-    font-size: 16px;
-    text-transform: uppercase;
-
-	a {
-		color: #fff;
-	}
 }
 
 .vertical-image-cta-container {
@@ -315,10 +315,36 @@
 	background-color: rgba(12, 128, 223, 0.55);
   }
 
+  /* Tooltip style */
+  .hotspot-tooltip {
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	visibility: hidden;
+	background-color: rgba(0, 0, 0, 0.8);
+	color: #fff;
+	text-align: center;
+	padding: 8px;
+	border-radius: 5px;
+	min-width: 110px;
+	max-width: 180px;
+	z-index: 200;
+	pointer-events: none;
+	font-size: 14px;
+	line-height: 1.2;
+	opacity: 0;
+	transition: opacity 0.2s ease, visibility 0.2s ease;
+	word-wrap: break-word;
+}
+
+.fullscreen-layer .hotspot-tooltip {
+	font-size: 16px;
+}
 
   /* Show tooltip on hover */
-  .hotspot:hover .hotspot-tooltip,
-  .hotspot-tooltip:hover {
+  .hotspot-tooltip:hover,
+  .hotspot:hover .hotspot-tooltip {
 	visibility: visible;
 	opacity: 1;
 	transition: opacity 0.6s ease;
@@ -365,29 +391,6 @@
 	line-height: 1;
 	border-radius: 2px;
   }
-  
-  /* Tooltip style */
-  .hotspot-tooltip {
-	position: absolute;
-	bottom: 100%;
-	left: 50%;
-	transform: translateX(-50%);
-	visibility: hidden;
-	background-color: rgba(0, 0, 0, 0.8);
-	color: #fff;
-	text-align: center;
-	padding: 8px;
-	border-radius: 5px;
-	min-width: 110px;
-	max-width: 180px;
-	z-index: 200;
-	pointer-events: none;
-	font-size: 14px;
-	line-height: 1.2;
-	opacity: 0;
-	transition: opacity 0.2s ease, visibility 0.2s ease;
-	word-wrap: break-word;
-}
 
 .hotspot-tooltip a {
 	overflow-wrap: break-word;
@@ -427,12 +430,6 @@
 .fullscreen-layer .hotspot {
 	z-index: 200;
 }
-
-
-.fullscreen-layer .hotspot-tooltip {
-	font-size: 16px;
-}
-
 
 .no-arrow::after {
 	display: none;
@@ -551,6 +548,45 @@
 	}
 }
 
+ .vjs-seek-indicator {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	background-color: rgba(0, 0, 0, 0.7);
+	color: var( --wp--preset--color--white );
+	padding: 8px 12px;
+	border-radius: 4px;
+	font-size: 14px;
+	opacity: 0;
+	animation: fadeInOut 0.5s ease-in-out;
+	z-index: 100;
+}
+
+.vjs-seek-indicator.backward {
+	left: 20px;
+}
+
+.vjs-seek-indicator.forward {
+	right: 20px;
+}
+
+.vjs-seek-indicator.play-indicator,
+.vjs-seek-indicator.pause-indicator {
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-size: 24px;
+	padding: 15px;
+}
+
+@keyframes fadeInOut {
+
+	0% { opacity: 0; }
+
+	50% { opacity: 1; }
+
+	100% { opacity: 0; }
+}
+
 @keyframes pulse {
 
 
@@ -560,6 +596,20 @@
 }
 // Style for video player fullscreen button
 .video-js {
+
+	.vjs-custom-fullscreen-control {
+	
+		.vjs-icon-placeholder {
+
+			&.fullscreen-icon {
+				display: block;	
+			}
+
+			&.exitscreen-icon {
+				display: none;
+			}
+		}
+	}
 
 	&.vjs-fullscreen {
 
@@ -578,19 +628,6 @@
 		}
 	}
 
-	.vjs-custom-fullscreen-control {
-	
-		.vjs-icon-placeholder {
-
-			&.fullscreen-icon {
-				display: block;	
-			}
-
-			&.exitscreen-icon {
-				display: none;
-			}
-		}
-	}
 
 	@media screen and (max-width: 768px) {
 
@@ -760,5 +797,5 @@
 }
 
  // CF7 Form style.
- @import "./cf7-godam-theme.scss";
+ @use "./cf7-godam-theme";
  

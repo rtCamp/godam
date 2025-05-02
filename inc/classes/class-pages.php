@@ -309,24 +309,26 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->dashboard_page_id ), true ) ) {
-			wp_register_style(
-				'transcoder-page-style-godam',
-				RTGODAM_URL . '/pages/build/style.css',
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->dashboard_page_id, $this->help_page_id ), true ) ) {
+
+			wp_register_script(
+				'rtgodam-page-style',
+				RTGODAM_URL . 'assets/build/pages/page-css.js',
 				array( 'wp-components' ),
-				filemtime( RTGODAM_PATH . '/pages/build/style.css' )
+				filemtime( RTGODAM_PATH . 'assets/build/pages/page-css.js' ),
+				true
 			);
 
-			wp_enqueue_style( 'transcoder-page-style-godam' );
+			wp_enqueue_script( 'rtgodam-page-style' );
 			wp_enqueue_media();
 		}
 		// Check if this is your custom admin page.
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
-				RTGODAM_URL . '/pages/build/video-editor.js',
+				RTGODAM_URL . 'assets/build/pages/video-editor.js',
 				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . '/pages/build/video-editor.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/video-editor.js' ),
 				true
 			);
 
@@ -402,9 +404,9 @@ class Pages {
 
 			wp_register_script(
 				'transcoder-page-script-godam',
-				RTGODAM_URL . '/pages/build/godam.js',
+				RTGODAM_URL . 'assets/build/pages/godam.js',
 				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . '/pages/build/godam.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/godam.js' ),
 				true
 			);
 
@@ -436,9 +438,9 @@ class Pages {
 
 			wp_register_script(
 				'transcoder-page-script-analytics',
-				RTGODAM_URL . 'pages/build/analytics.js',
+				RTGODAM_URL . 'assets/build/pages/analytics.js',
 				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . 'pages/build/analytics.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/analytics.js' ),
 				true
 			);
 
@@ -476,9 +478,9 @@ class Pages {
 		} elseif ( $screen && $this->help_page_id === $screen->id ) {
 			wp_register_script(
 				'godam-page-script-help',
-				RTGODAM_URL . 'pages/build/help.js',
+				RTGODAM_URL . 'assets/build/pages/help.js',
 				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . 'pages/build/help.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/help.js' ),
 				true
 			);
 
@@ -503,9 +505,9 @@ class Pages {
 			
 			wp_register_script(
 				'godam-page-script-dashboard',
-				RTGODAM_URL . 'pages/build/dashboard.js',
+				RTGODAM_URL . 'assets/build/pages/dashboard.js',
 				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . 'pages/build/dashboard.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/dashboard.js' ),
 				true
 			);
 
@@ -534,9 +536,9 @@ class Pages {
 
 		wp_register_script(
 			'media-library-react',
-			RTGODAM_URL . '/pages/build/media-library.js',
+			RTGODAM_URL . 'assets/build/pages/media-library.js',
 			array( 'wp-element', 'wp-i18n' ),
-			filemtime( RTGODAM_PATH . '/pages/build/media-library.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/pages/media-library.js' ),
 			true
 		);
 

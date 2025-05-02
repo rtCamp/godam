@@ -32,6 +32,8 @@ const QuillEditor = ( { className, intialValue, onHTMLChange, toolbarOptions } )
 					onHTMLChange( quill.root.innerHTML );
 				}
 			} );
+
+			quill.blur();
 		}
 
 		return () => {

@@ -53,7 +53,7 @@ const VideoEditor = ( { attachmentID } ) => {
 		const handleBeforeUnload = ( event ) => {
 			if ( isChanged ) {
 				event.preventDefault();
-				event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+				event.returnValue = __( 'You have unsaved changes. Are you sure you want to leave?', 'godam' );
 			}
 		};
 
@@ -211,6 +211,25 @@ const VideoEditor = ( { attachmentID } ) => {
 			</div>
 		);
 	}
+
+	document.addEventListener( 'keydown', ( event ) => {
+		if (
+			event.target.tagName === 'INPUT' ||
+      event.target.tagName === 'TEXTAREA' ||
+      event.target.isContentEditable
+		) {
+			return;
+		}
+
+		if ( event.key === 'Backspace' ) {
+			event.preventDefault();
+
+			const backButton = document.querySelector( '.components-button.has-icon' );
+			if ( backButton ) {
+				backButton.click();
+			}
+		}
+	} );
 
 	return (
 		<>
