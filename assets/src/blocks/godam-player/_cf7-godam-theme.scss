@@ -5,17 +5,6 @@
 
         .wpcf7-form {
 
-            &.sent {
-
-                p {
-                    display: none;
-                }
-            }
-
-            p {
-                margin: 10px 0;
-            }
-
             label, p {
                 font-size: 14px;
                 font-weight: 500;
@@ -37,6 +26,17 @@
                             box-shadow: 0 0 0 .2rem #204be560;
                         }
                     }
+                }
+            }
+
+            p {
+                margin: 10px 0;
+            }
+
+            &.sent {
+
+                p {
+                    display: none;
                 }
             }
 
