@@ -5,11 +5,6 @@
  * Replace them with your own styles or remove the file completely.
  */
 
-
- .wp-block-trascoder-rt-player {
-	// Add your styles here.
-}
-
 .rtgodam-video-caption {
 	margin-bottom: 1em;
     margin-top: .5em;
@@ -27,6 +22,7 @@
 
 .easydam-video-block {
 
+
 	video {
 		width: 100%;
 		height: auto;
@@ -34,6 +30,7 @@
 }
 
 .wp-block-easydam-video {
+
 
 	video {
 		width: 100%;
@@ -65,6 +62,7 @@
 	right: 20px;
 	z-index: 15;
 	background-color: #3858e9;
+	color: #fff;
 	color: #fff;
 	padding: 8px 12px;
 	border: none;
@@ -294,6 +292,7 @@
 	background: transparent;
 }
 
+
 /* Hotspot layer*/
 .hotspot {
 	pointer-events: auto;
@@ -304,9 +303,11 @@
 	cursor: pointer;
   }
 
+
   .hotspot.circle {
 	border-radius: 50%;
   }
+
 
   .hotspot:hover {
 	border: 2px solid rgb(35, 136, 251);
@@ -359,6 +360,7 @@
 	align-items: center;
 	justify-content: center;
   }
+
 
   /* If there's an icon, we typically don't show the white center dot; 
 	 if you want to keep it, you can adjust the rule to a conditional class. */
@@ -587,6 +589,7 @@
 
 @keyframes pulse {
 
+
 	50% {
 	  opacity: 0.5;
 	}
@@ -792,3 +795,7 @@
 		}
 	}
 }
+
+ // CF7 Form style.
+ @use "./cf7-godam-theme";
+ 
