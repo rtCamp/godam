@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, SelectControl } from '@wordpress/components';
+import { Button, Notice, SelectControl } from '@wordpress/components';
 import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
@@ -49,11 +49,23 @@ const GravityForm = ( { layerID } ) => {
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
+	const isGFPluginActive = Boolean( window?.videoData?.gf_active );
+
 	return (
 		<>
+			{
+				! isGFPluginActive &&
+				<Notice
+					className="mb-4"
+					status="warning"
+					isDismissible={ false }
+				>
+					{ __( 'Please activate the Gravity Forms plugin to use this feature.', 'godam' ) }
+				</Notice>
+			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey } className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isValidAPIKey || ! isGFPluginActive } className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<SelectControl
@@ -64,7 +76,7 @@ const GravityForm = ( { layerID } ) => {
 				onChange={ ( value ) =>
 					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
 				}
-				disabled={ ! isValidAPIKey }
+				disabled={ ! isValidAPIKey || ! isGFPluginActive }
 			/>
 
 			<LayerControl>
