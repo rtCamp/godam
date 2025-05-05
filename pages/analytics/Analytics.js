@@ -214,6 +214,13 @@ const Analytics = ( { attachmentID } ) => {
 		return 'left-greater right-greater';
 	};
 
+	function decodeHtmlCharCodes( text ) {
+		// Create a temporary DOM element
+		const textarea = document.createElement( 'textarea' );
+		textarea.innerHTML = text;
+		return textarea.value;
+	}
+
 	return (
 		<div className="godam-analytics-container">
 			<GodamHeader />
@@ -242,11 +249,13 @@ const Analytics = ( { attachmentID } ) => {
 				<div id="analytics-content" className="hidden">
 					<div className="p-10 flex gap-3 items-center">
 						<h2 className="text-2xl m-0 capitalize">
-							{ attachmentData?.title?.rendered }
+							{ decodeHtmlCharCodes( attachmentData?.title?.rendered ) }
 						</h2>
-						<span className="h-[26px] px-2 bg-white flex items-center rounded-sm">
-							{ attachmentData?.media_details?.length_formatted }
-						</span>
+						{ attachmentData?.media_details?.length_formatted &&
+							<span className="h-[26px] px-2 bg-white flex items-center rounded-sm">
+								{ attachmentData?.media_details?.length_formatted }
+							</span>
+						}
 					</div>
 
 					<div className="subheading-container">
