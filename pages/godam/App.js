@@ -16,7 +16,7 @@ import { useState, useEffect } from '@wordpress/element';
  */
 import Skeleton from './components/Skeleton.jsx';
 import GodamHeader from './components/GoDAMHeader.jsx';
-import GoDAMFooter from './GoDAMFooter';
+import GoDAMFooter from './components/GoDAMFooter.jsx';
 
 import GeneralSettings from './components/tabs/GeneralSettings/GeneralSettings.jsx';
 import VideoSettings from './components/tabs/VideoSettings/VideoSettings.jsx';
