@@ -81,7 +81,7 @@ const VideoSettings = () => {
 
 						<div className="button-group">
 							<Button
-								href="https://godam.io/#pricing"
+								href="https://godam.io/pricing"
 								target="_blank"
 								variant="primary"
 								className="godam-button"
