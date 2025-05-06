@@ -4,7 +4,7 @@ Tags: Transcoder, DAM, Interactive Video Layers, Adaptive Bitrate Streaming, Vid
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -164,13 +164,21 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 - Fix: Enhance accessibility features for the media library
 
-= v1.0.2 (April 22, 2025) =
+= v1.0.3 (April 22, 2025) =
 
 - Fix: Video player ads related console errors, and add optional chaining to avoid console errors.
 - Fix: Addressed an edge case where users couldn't save a new API key if the previous one had expired.
 - Fix: Update the settings page links and wordings.
 - Feat: Improve the GoDAM video player UI.
 - Feat: Enabled the watermark feature for users on the Starter plan.
+
+= v1.0.4 (May 7, 2025) =
+
+- Feat: Introduced the new GoDAM Audio Block for displaying audio content from CDN.
+- Feat: Redesigned the Video Editor interface for a smoother editing experience.
+- Feat: Refreshed the UI of Settings pages for improved usability.
+- Feat: Added support for interactive Polls layer in video editor.
+- Fix: Added CDN detection to prevent conflicts with GoDAM’s transcoding.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.

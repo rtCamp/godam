@@ -10,7 +10,7 @@ Tested up to: 6.8
 
 Requires PHP: 7.4
 
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
