@@ -11,6 +11,7 @@ import '../video-editor/style.scss';
 import axios from 'axios';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import Tooltip from './Tooltip';
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * WordPress dependencies
@@ -71,7 +72,7 @@ const Analytics = ( { attachmentID } ) => {
 			{ analyticsData && (
 				<>
 					<div className="p-10 flex gap-3 items-center">
-						<h2 className="text-2xl m-0 capitalize">{ analyticsData?.title?.rendered }</h2>
+						<h2 className="text-2xl m-0 capitalize" dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( analyticsData?.title?.rendered ) } }></h2>
 					</div>
 
 					<div className="subheading-container">
