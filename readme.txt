@@ -20,7 +20,7 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 
 [youtube https://www.youtube.com/watch?v=UGmKa6aLSgU]
 
-Free Features
+= Free Features =
 
 📌 Media Management
 ✓ The DAM functionality streamlines file organization for websites with large libraries of images, videos, documents, and more.
@@ -41,7 +41,7 @@ Free Features
 ✓ Fully customizable playback controls, branding, and player themes.
 ✓ Enable video looping, autoplay, and inline play for better user experience.
 
-Pro Features
+= Pro Features =
 
 📌 Smart Transcoding & Adaptive Bitrate Streaming
 ✓ Automatically converts videos into multiple resolutions (240p to 4K).
