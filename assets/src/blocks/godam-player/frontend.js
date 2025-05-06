@@ -302,7 +302,6 @@ function GODAMPlayer( videoRef = null ) {
 			// Add click event for playback
 			handleClick( event ) {
 				event.preventDefault();
-				// event.stopPropagation();
 				const shareModal = document.createElement( 'div' );
 				const videoContainer = this.player().el_.closest(
 					'.easydam-video-container',
