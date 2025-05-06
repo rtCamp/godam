@@ -1,22 +1,11 @@
+/* global d3 */
+
 export async function fetchAnalyticsData( videoId, siteUrl ) {
 	try {
 		const params = new URLSearchParams( {
 			video_id: videoId,
 			site_url: siteUrl,
 		} );
-
-		const sampleCountryData = {
-			USA: 120,
-			India: 95,
-			'United Kingdom': 45,
-			Germany: 30,
-			Canada: 25,
-			Australia: 20,
-			France: 18,
-			Brazil: 15,
-			Japan: 10,
-			'South Africa': 8,
-		};
 
 		const response = await fetch(
 			// url,
@@ -34,7 +23,7 @@ export async function fetchAnalyticsData( videoId, siteUrl ) {
 
 		if (
 			result.status === 'error' &&
-      result.message.includes( 'Invalid or unverified API key' )
+			result.message.includes( 'Invalid or unverified API key' )
 		) {
 			showAPIActivationMessage();
 			return null;
@@ -43,8 +32,6 @@ export async function fetchAnalyticsData( videoId, siteUrl ) {
 		if ( result.status !== 'success' ) {
 			throw new Error( result.message );
 		}
-
-		result.data.country_views = sampleCountryData;
 
 		return result.data;
 	} catch ( error ) {
@@ -84,7 +71,6 @@ export function generateMetricsOverTime( parsedData, selector ) {
 	// Ensure the container exists
 	const container = d3.select( selector );
 	if ( container.empty() ) {
-		console.error( `Container '${ selector }' not found.` );
 		return;
 	}
 
@@ -391,9 +377,6 @@ export function generateMetricsOverTime( parsedData, selector ) {
 	// Function to update the chart based on selected date range and metric
 	function updateChart( selectedDays, selectedMetric ) {
 		const filteredData = filterData( selectedDays );
-		const metricOption = metricsOptions.find(
-			( option ) => option.value === selectedMetric,
-		);
 
 		// Remove any existing chart elements before redrawing
 		chartGroup.selectAll( '*' ).remove();
@@ -427,6 +410,10 @@ export function generateMetricsOverTime( parsedData, selector ) {
 			.range( [ height, 0 ] );
 
 		chartGroup.append( 'g' ).call( d3.axisLeft( y ) );
+
+		const metricOption = metricsOptions.find(
+			( option ) => option.value === selectedMetric,
+		);
 
 		// Add Y axis label
 		chartGroup

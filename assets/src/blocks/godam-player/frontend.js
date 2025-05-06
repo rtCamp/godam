@@ -520,12 +520,24 @@ function GODAMPlayer( videoRef = null ) {
 					() => layer.layerElement === layerElement,
 				);
 
+				let skipText = '';
+				if ( 'form' === layer.type ) {
+					skipText = 'Skip Form';
+				} else if ( 'cta' === layer.type ) {
+					skipText = 'Skip CTA';
+				} else if ( 'poll' === layer.type ) {
+					skipText = 'Skip Poll';
+				} else {
+					skipText = 'Skip';
+				}
+
 				if ( ! existingLayer ) {
 					formLayers.push( {
 						layerElement,
 						displayTime: parseFloat( layer.displayTime ),
 						show: true,
 						allowSkip: layer.allow_skip !== undefined ? layer.allow_skip : true,
+						skipText,
 					} );
 				}
 			} else if ( layer.type === 'hotspot' ) {
@@ -546,7 +558,7 @@ function GODAMPlayer( videoRef = null ) {
 				// Check if skip button already exists.
 				if ( ! skipButton ) {
 					skipButton = document.createElement( 'button' );
-					skipButton.textContent = 'Skip';
+					skipButton.textContent = layerObj.skipText;
 					skipButton.classList.add( 'skip-button' );
 
 					const arrowIcon = document.createElement( 'i' );
@@ -563,7 +575,8 @@ function GODAMPlayer( videoRef = null ) {
 					mutations.forEach( () => {
 						if (
 							layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ||
-							! layerObj.layerElement.querySelector( 'form.wp-polls-form' )
+							layerObj.layerElement.querySelector( '.wpforms-confirmation-container-full' ) ||
+							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -577,6 +590,8 @@ function GODAMPlayer( videoRef = null ) {
 				observer.observe( layerObj.layerElement, {
 					childList: true,
 					subtree: true,
+					attributes: true,
+					attributeFilter: [ 'class' ],
 				} );
 
 				skipButton.addEventListener( 'click', () => {
@@ -868,6 +883,122 @@ function GODAMPlayer( videoRef = null ) {
 			} );
 			updateHotspotPositions( player, hotspotLayers );
 		} );
+
+		if ( ! window.godamKeyboardHandlerInitialized ) {
+			// Flag to prevent multiple initializations
+			window.godamKeyboardHandlerInitialized = true;
+
+			document.addEventListener( 'keydown', ( event ) => {
+				// Skip if we're in a form field or input element to avoid interfering with typing
+				if ( event.target.tagName === 'INPUT' ||
+					event.target.tagName === 'TEXTAREA' ||
+					event.target.isContentEditable ) {
+					return;
+				}
+
+				// Find the most appropriate player to control
+				let activePlayer = null;
+
+				// First priority: player that contains the active element
+				document.querySelectorAll( '.easydam-player.video-js' ).forEach( ( playerEl ) => {
+					const vjsPlayer = videojs.getPlayer( playerEl );
+					if ( playerEl.contains( playerEl.ownerDocument.activeElement ) ) {
+						activePlayer = vjsPlayer;
+					}
+				} );
+
+				// Second priority: visible player if no player has focus
+				document
+					.querySelectorAll( '.easydam-player.video-js' )
+					.forEach( ( playerEl ) => {
+						const doc = playerEl.ownerDocument;
+
+						// Only proceed if no activePlayer and body has focus
+						if ( ! activePlayer && doc.activeElement === doc.body ) {
+							const rect = playerEl.getBoundingClientRect();
+							const isVisible =
+              rect.top >= 0 &&
+              rect.left >= 0 &&
+              rect.bottom <=
+                ( window.innerHeight || doc.documentElement.clientHeight ) &&
+              rect.right <=
+                ( window.innerWidth || doc.documentElement.clientWidth );
+
+							if ( isVisible ) {
+								const vjsPlayer = videojs.getPlayer( playerEl );
+								if ( vjsPlayer ) {
+									activePlayer = vjsPlayer;
+								}
+							}
+						}
+					} );
+
+				// If no active player was found, exit
+				if ( ! activePlayer ) {
+					return;
+				}
+
+				const key = event.key.toLowerCase();
+				switch ( key ) {
+					case 'f':
+						// Toggle fullscreen
+						event.preventDefault();
+						if ( activePlayer.isFullscreen() ) {
+							activePlayer.exitFullscreen();
+						} else {
+							activePlayer.requestFullscreen();
+						}
+						break;
+
+					case 'arrowleft':
+						// Seek backward 5 seconds
+						event.preventDefault();
+						activePlayer.currentTime( Math.max( 0, activePlayer.currentTime() - 5 ) );
+
+						// Show a visual indicator for seeking backward
+						showIndicator( activePlayer.el(), 'backward', '<i class="fa-solid fa-backward"></i> 5s' );
+						break;
+
+					case 'arrowright':
+						// Seek forward 5 seconds
+						event.preventDefault();
+						activePlayer.currentTime( activePlayer.currentTime() + 5 );
+
+						// Show a visual indicator for seeking forward
+						showIndicator( activePlayer.el(), 'forward', '5s <i class="fa-solid fa-forward"></i>' );
+						break;
+
+					case ' ':
+					case 'spacebar': // Added explicit 'spacebar' case for broader browser compatibility
+						// Toggle play/pause
+						event.preventDefault(); // prevent page scroll
+						if ( activePlayer.paused() ) {
+							activePlayer.play();
+
+							// Visual indicator for play
+							showIndicator( activePlayer.el(), 'play-indicator', '<i class="fa-solid fa-play"></i>' );
+						} else {
+							activePlayer.pause();
+
+							// Visual indicator for pause
+							showIndicator( activePlayer.el(), 'pause-indicator', '<i class="fa-solid fa-pause"></i>' );
+						}
+						break;
+				}
+			} );
+		}
+
+		// Helper function to show indicators
+		function showIndicator( playerEl, className, html ) {
+			// Remove any existing indicators first
+			playerEl.querySelectorAll( '.vjs-seek-indicator' ).forEach( ( el ) => el.remove() );
+
+			const indicator = document.createElement( 'div' );
+			indicator.className = `vjs-seek-indicator ${ className }`;
+			indicator.innerHTML = html;
+			playerEl.appendChild( indicator );
+			setTimeout( () => indicator.remove(), 500 );
+		}
 
 		// Prevent video resume if a form/CTA is visible
 		player.on( 'play', () => {

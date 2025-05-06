@@ -16,12 +16,18 @@ import { __ } from '@wordpress/i18n';
 import VideoJSPlayer from './VideoJSPlayer';
 import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
-
-import { initializeStore, saveVideoMeta, setCurrentTab, setGravityForms, setGravityFormsPluginActive } from './redux/slice/videoSlice';
+import {
+	initializeStore,
+	saveVideoMeta,
+	setCurrentTab,
+	setGravityForms,
+	setCF7Forms,
+	setWPForms,
+} from './redux/slice/videoSlice';
 
 import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
-import { useGetFormsQuery } from './redux/api/gravity-forms';
+import { useFetchForms } from './components/forms/fetchForms';
 
 const VideoEditor = ( { attachmentID } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
@@ -38,13 +44,16 @@ const VideoEditor = ( { attachmentID } ) => {
 
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
-	const { data: gravityForms, isError: isGravityFormError } = useGetFormsQuery();
+
+	const { gravityForms, wpForms, cf7Forms, isLoading } = useFetchForms();
+
+	const restURL = window.godamRestRoute.url || '';
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
 			if ( isChanged ) {
 				event.preventDefault();
-				event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+				event.returnValue = __( 'You have unsaved changes. Are you sure you want to leave?', 'godam' );
 			}
 		};
 
@@ -60,6 +69,29 @@ const VideoEditor = ( { attachmentID } ) => {
 		if ( body ) {
 			body.classList.add( 'folded' );
 		}
+
+		// Get the post data
+		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] ), {
+			headers: {
+				'X-WP-Nonce': window.videoData.nonce,
+			},
+		} )
+			.then( ( response ) => response.json() )
+			.then( ( data ) => {
+				const rtGodamMeta = data.rtgodam_meta;
+				if ( rtGodamMeta ) {
+					dispatch( initializeStore( rtGodamMeta ) );
+				}
+				// Set video sources
+				const videoSources = [ { src: data.source_url, type: data.mimeType } ];
+				if ( data?.meta?.rtgodam_transcoded_url !== '' ) {
+					videoSources.push( { src: data.meta.rtgodam_transcoded_url, type: data?.meta?.rtgodam_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } );
+				}
+				setSources( videoSources );
+			} )
+			.catch( ( ) => {
+				// Todo: Show proper error message to the user
+			} );
 	}, [] );
 
 	useEffect( () => {
@@ -95,17 +127,30 @@ const VideoEditor = ( { attachmentID } ) => {
 	}, [ attachmentConfig, dispatch ] );
 
 	/**
-	 * This gravity form plugin logic should be moved to the appropriate layer component, instead of globally here.
+	 * Update the store with the fetched forms.
 	 */
 	useEffect( () => {
-		if ( gravityForms ) {
+		if ( ! isLoading ) {
+			const _cf7Forms = cf7Forms.map( ( form ) => {
+				return {
+					id: form.id,
+					title: form.title,
+				};
+			} );
+			dispatch( setCF7Forms( _cf7Forms ) );
+
+			const _wpForms = wpForms.map( ( form ) => {
+				return {
+					id: form.ID,
+					title: form.post_title,
+				};
+			} );
+
+			dispatch( setWPForms( _wpForms ) );
+
 			dispatch( setGravityForms( gravityForms ) );
 		}
-
-		if ( isGravityFormError ) {
-			dispatch( setGravityFormsPluginActive( false ) );
-		}
-	}, [ gravityForms, isGravityFormError, dispatch ] );
+	}, [ gravityForms, cf7Forms, wpForms, isLoading, dispatch ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => ( playerRef.current = player );
@@ -150,12 +195,41 @@ const VideoEditor = ( { attachmentID } ) => {
 
 	if ( isAttachmentConfigLoading ) {
 		return (
-			<div className="max-w-[740px] w-full loading-skeleton">
-				<div className="skeleton-video-container"></div>
-				<div className="skeleton-line"></div>
+			<div className="flex gap-5 p-5">
+				<div className="max-w-[360px] w-full loading-skeleton">
+					<div className="skeleton-title"></div>
+					<div className="skeleton-line"></div>
+					<div className="skeleton-line"></div>
+					<div className="skeleton-line"></div>
+					<div className="skeleton-line"></div>
+					<div className="skeleton-line"></div>
+				</div>
+				<div className="w-full loading-skeleton">
+					<div className="skeleton-video-container"></div>
+					<div className="max-w-[740px] mx-auto skeleton-line"></div>
+				</div>
 			</div>
 		);
 	}
+
+	document.addEventListener( 'keydown', ( event ) => {
+		if (
+			event.target.tagName === 'INPUT' ||
+      event.target.tagName === 'TEXTAREA' ||
+      event.target.isContentEditable
+		) {
+			return;
+		}
+
+		if ( event.key === 'Backspace' ) {
+			event.preventDefault();
+
+			const backButton = document.querySelector( '.components-button.has-icon' );
+			if ( backButton ) {
+				backButton.click();
+			}
+		}
+	} );
 
 	return (
 		<>
@@ -187,7 +261,7 @@ const VideoEditor = ( { attachmentID } ) => {
 					{
 						// Display a success message when video changes are saved
 						showSaveMessage && (
-							<Snackbar className="absolute bottom-4 right-4 opacity-70">
+							<Snackbar className="absolute bottom-4 right-4 opacity-70 z-50">
 								{ __( 'Video changes saved successfully', 'godam' ) }
 							</Snackbar>
 						)

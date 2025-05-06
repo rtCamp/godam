@@ -10,18 +10,14 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { generateMetricsOverTime, calculateEngagementRate, calculatePlayRate } from '../analytics/helper';
+import { generateMetricsOverTime } from '../analytics/helper';
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
-import DownArrow from '../../assets/src/images/drop-arrow.png';
-import TopArrow from '../../assets/src/images/rise-arrow.png';
+import DownArrow from '../../assets/src/images/down-arrow.svg';
+import TopArrow from '../../assets/src/images/up-arrow.svg';
 import Tooltip from '../analytics/Tooltip.js';
 
 const Dashboard = () => {
-	const [ thumbnails, setThumbnails ] = useState( {} );
-	const [ engagementRates, setEngagementRates ] = useState( {} );
-	const [ playRates, setPlayRates ] = useState( {} );
 	const [ topMediaList, setTopMediaList ] = useState( [] );
-	const [ postTitles, setPostTitles ] = useState( [] );
 	const [ recentVideos, setRecentVideos ] = useState( [] );
 
 	useEffect( () => {
@@ -467,14 +463,14 @@ const Dashboard = () => {
 				? item.embedded_locations.join( '\n' ) // split by newline for CSV
 				: 'No locations found!';
 			return [
-				postTitles[ id ] || 'N/A',
+				'N/A',
 				id,
 				locations,
 				item.size || '0',
-				playRates[ id ] || '0%',
+				'0%',
 				item.plays || '0',
 				5,
-				engagementRates[ id ] || '0%',
+				'0%',
 			];
 		} );
 
@@ -485,7 +481,7 @@ const Dashboard = () => {
 					.map( ( value ) => {
 						if (
 							typeof value === 'string' &&
-              ( value.includes( ',' ) || value.includes( '\n' ) )
+							( value.includes( ',' ) || value.includes( '\n' ) )
 						) {
 							return `"${ value.replace( /"/g, '""' ) }"`; // escape double quotes
 						}
@@ -515,7 +511,6 @@ const Dashboard = () => {
 			const result = ( used / total ) * 100;
 			return result.toFixed( 2 );
 		} catch ( error ) {
-			console.error( 'Error calculating percentage:', error );
 			return 0;
 		}
 	};
@@ -534,7 +529,6 @@ const Dashboard = () => {
 				const data = await response.json();
 				setRecentVideos( data ); // if using state
 			} catch ( error ) {
-				console.error( 'Failed to fetch recent videos:', error );
 			}
 		};
 
@@ -658,10 +652,10 @@ const Dashboard = () => {
 										}` }
 										style={ {
 											'--percentage':
-                        calculatePercentage(
-                        	window?.userData?.bandwidth_used,
-                        	window?.userData?.total_bandwidth,
-                        ) + '%',
+											calculatePercentage(
+												window?.userData?.bandwidth_used,
+												window?.userData?.total_bandwidth,
+											) + '%',
 										} }
 									></div>
 								</div>
@@ -672,7 +666,7 @@ const Dashboard = () => {
 									<strong>{ __( 'Available: ', 'godam' ) }</strong>
 									{ parseFloat(
 										window?.userData?.total_bandwidth -
-                      window?.userData?.bandwidth_used,
+										window?.userData?.bandwidth_used,
 									).toFixed( 2 ) }
 									{ __( 'GB', 'godam' ) }
 									<br />
@@ -701,10 +695,10 @@ const Dashboard = () => {
 										}` }
 										style={ {
 											'--percentage':
-                        calculatePercentage(
-                        	window?.userData?.storage_used,
-                        	window?.userData?.total_storage,
-                        ) + '%',
+											calculatePercentage(
+												window?.userData?.storage_used,
+												window?.userData?.total_storage,
+											) + '%',
 										} }
 									></div>
 								</div>
@@ -715,7 +709,7 @@ const Dashboard = () => {
 									<strong>{ __( 'Available: ', 'godam' ) }</strong>
 									{ parseFloat(
 										window?.userData?.total_storage -
-                      window?.userData?.storage_used,
+										window?.userData?.storage_used,
 									).toFixed( 2 ) }
 									{ __( 'GB', 'godam' ) }
 									<br />

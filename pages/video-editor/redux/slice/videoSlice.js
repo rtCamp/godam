@@ -112,6 +112,18 @@ const slice = createSlice( {
 		setGravityFormsPluginActive: ( state, action ) => {
 			state.gformPluginActive = action.payload;
 		},
+		setCF7Forms: ( state, action ) => {
+			state.cf7Forms = action.payload;
+		},
+		SetCF7PluginActive: ( state, action ) => {
+			state.cf7PluginActive = action.payload;
+		},
+		setWPForms: ( state, action ) => {
+			state.wpforms = action.payload;
+		},
+		setWPFormPluginActive: ( state, action ) => {
+			state.wpFormPluginActive = action.payload;
+		},
 	},
 } );
 
@@ -127,5 +139,9 @@ export const {
 	setLoading,
 	setGravityForms,
 	setGravityFormsPluginActive,
+	setCF7Forms,
+	SetCF7PluginActive,
+	setWPForms,
+	setWPFormPluginActive,
 } = slice.actions;
 export default slice.reducer;
