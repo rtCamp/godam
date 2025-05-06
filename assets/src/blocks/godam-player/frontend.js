@@ -29,6 +29,16 @@ import 'quill/dist/quill.snow.css';
  * Internal dependencies
  */
 import GoDAM from '../../../../assets/src/images/GoDAM.png';
+import Share from '../../../../assets/src/images/share.svg';
+import CopyIcon from '../../../../assets/src/images/clipboard.svg';
+import Facebook from '../../../../assets/src/images/facebook.svg';
+import LinkedIn from '../../../../assets/src/images/linkedin.svg';
+import Reddit from '../../../../assets/src/images/reddit.svg';
+import Telegram from '../../../../assets/src/images/telegram.svg';
+import Twitter from '../../../../assets/src/images/twitter-x.svg';
+import Whatsapp from '../../../../assets/src/images/whatsapp.svg';
+import Complete from '../../../../assets/src/images/check.svg';
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * Global variables
@@ -68,7 +78,6 @@ function GODAMPlayer( videoRef = null ) {
 				fluid: true,
 				preview: false,
 			};
-
 		const isPreviewEnabled = videoSetupOptions.preview;
 
 		const player = videojs( video, videoSetupControls );
@@ -224,6 +233,183 @@ function GODAMPlayer( videoRef = null ) {
 			player.currentTime( 0 );
 			player.pause();
 			stopPreview();
+		} );
+
+		player.jobId = '';
+
+		const Button = videojs.getComponent( 'Button' );
+
+		class GodamShareButton extends Button {
+			constructor( p, options ) {
+				super( p, options );
+				this.controlText( 'Share' );
+			}
+
+			// Set the button content
+			createEl() {
+				const el = super.createEl();
+				const img = document.createElement( 'img' );
+
+				img.src = Share;
+
+				img.id = 'share-icon';
+				img.alt = 'Share';
+				img.className = 'share-icon';
+				el.appendChild( img );
+				return el;
+			}
+
+			copyToClipboard( inputId ) {
+				const input = document.getElementById( inputId );
+				const button = input.nextElementSibling; // assuming button is right after input
+
+				const setSuccessStyle = () => {
+					button.style.backgroundColor = '#4caf50'; // green background
+					button.querySelector( 'img' ).src = Complete;
+				};
+
+				const resetStyle = () => {
+					button.style.backgroundColor = 'transparent'; // reset background
+					button.querySelector( 'img' ).src = CopyIcon;
+				};
+
+				// Common feedback function to handle success
+				const doFeedback = () => {
+					setSuccessStyle();
+					setTimeout( resetStyle, 2000 ); // revert after 2 seconds
+				};
+
+				if ( navigator.clipboard && navigator.clipboard.writeText ) {
+					navigator.clipboard
+						.writeText( input.value )
+						.then( () => {
+							doFeedback(); // Use the common feedback function
+						} )
+						.catch( () => {
+							// silently fail
+						} );
+				} else {
+					input.select();
+					input.setSelectionRange( 0, 99999 ); // for mobile
+					try {
+						document.execCommand( 'copy' );
+						doFeedback(); // Use the common feedback function
+					} catch ( err ) {
+						// silently fail
+					}
+				}
+			}
+
+			// Add click event for playback
+			handleClick( event ) {
+				event.preventDefault();
+				const shareModal = document.createElement( 'div' );
+				const videoContainer = this.player().el_.closest(
+					'.easydam-video-container',
+				);
+				if ( videoContainer ) {
+					videoContainer.appendChild( shareModal );
+				}
+				shareModal.className = 'share-modal-container';
+				const html = `
+				<div class="share-modal-message">
+					<div class="share-modal-header">
+						<h2>Share Media</h2>
+						<p>Copy the links below to share the selected media files.</p>
+					</div>
+
+					<div class="share-buttons">
+						<a class="facebook social-icon" target="blank"><img src=${ Facebook } alt='Facebook icon' height={24} width={24}</a>
+						<a class="twitter social-icon" target="blank"><img src=${ Twitter } alt='Twitter icon' height={24} width={24}</a>
+						<a class="linkedin social-icon" target="blank"><img src=${ LinkedIn } alt='Linkedin icon' height={24} width={24}</a>
+						<a class="reddit social-icon" target="blank"><img src=${ Reddit } alt='Reddit icon' height={24} width={24}</a>
+						<a class="whatsapp social-icon" target="blank"><img src=${ Whatsapp } alt='Whatsapp icon' height={24} width={24}</a>
+						<a class="telegram social-icon" target="blank"><img src=${ Telegram } alt='Telegram icon' height={24} width={24}</a>
+					</div>
+					
+					<div class='share-input-container'>
+						<label>Page Link</label>
+						<div class="share-modal-input-group">
+							<input id="page-link" type="text" value="${ window.godamData.api_base }/web/video/${ this.player().jobId }" readonly />
+							<button id="copy-page-link" class="copy-button">
+								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
+							</button>
+						</div>
+					</div>
+
+					<div class='share-input-container'>
+						<label>Embed</label>
+						<div class="share-modal-input-group">
+							<input id="embed-code" type="text" value='<iframe src="${ window.godamData.api_base }/web/embed/${ this.player().jobId }"></iframe>' readonly />
+							<button id="copy-embed-code" class="copy-button">
+								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
+							</button>
+						</div>
+					</div>
+
+					<div class="share-modal-footer">
+						<button id="cancel-button">Cancel</button>
+					</div>
+				</div>
+			`;
+
+				shareModal.innerHTML = DOMPurify.sanitize( html );
+
+				shareModal
+					.querySelector( '#copy-page-link' )
+					.addEventListener( 'click', () => this.copyToClipboard( 'page-link' ) );
+
+				shareModal
+					.querySelector( '#copy-embed-code' )
+					.addEventListener( 'click', () => this.copyToClipboard( 'embed-code' ) );
+
+				shareModal
+					.querySelector( '#cancel-button' )
+					.addEventListener( 'click', function() {
+						const cancelButton = shareModal.querySelector( '#cancel-button' );
+						cancelButton.closest( '.share-modal-container' ).remove();
+					} );
+
+				const link = encodeURI(
+					`${ window.godamData.api_base }/web/video/${ this.player().jobId }`,
+				);
+				const msg = encodeURIComponent( 'Check out this video!' );
+
+				const fb = document.querySelector( '.facebook' );
+				fb.href = `https://www.facebook.com/share.php?u=${ link }`;
+
+				const twitter = document.querySelector( '.twitter' );
+				twitter.href = `http://twitter.com/share?&url=${ link }&text=${ msg }`;
+
+				const linkedIn = document.querySelector( '.linkedin' );
+				linkedIn.href = `https://www.linkedin.com/sharing/share-offsite/?url=${ link }&text=${ msg }`;
+
+				const reddit = document.querySelector( '.reddit' );
+				reddit.href = `http://www.reddit.com/submit?url=${ link }&title=${ msg }`;
+
+				const whatsapp = document.querySelector( '.whatsapp' );
+				whatsapp.href = `https://api.whatsapp.com/send?text=${ msg }: ${ link }`;
+
+				const telegram = document.querySelector( '.telegram' );
+				telegram.href = `https://telegram.me/share/url?url=${ link }&text=${ msg }`;
+			}
+		}
+
+		// Register the new component
+		videojs.registerComponent( 'GodamShareButton', GodamShareButton );
+
+		// Add the button to the control bar after the player is ready
+		player.ready( function() {
+			player.jobId = video.dataset.job_id; // Store the result when it's available
+
+			const controlBar = player.getChild( 'controlBar' );
+			if ( controlBar && player.jobId !== '' ) {
+				controlBar.addChild(
+					'GodamShareButton',
+					{},
+					controlBar.children().length - 1,
+				);
+			}
 		} );
 
 		player.ready( function() {

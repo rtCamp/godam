@@ -114,6 +114,22 @@ class Assets {
 			RTGODAM_VERSION,
 			true
 		);
+
+		wp_enqueue_script(
+			'godam-frontend-js',
+			RTGODAM_URL . 'assets/build/blocks/godam-player/frontend.js',
+			array(), 
+			'1.0', 
+			true
+		);
+
+		wp_localize_script(
+			'godam-frontend-js',
+			'godamData',
+			array(
+				'api_base' => RTGODAM_API_BASE,
+			)
+		);
 	}
 
 	/**
