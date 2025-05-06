@@ -16,6 +16,7 @@ import {
 	useFetchProcessedAnalyticsHistoryQuery,
 } from './redux/api/analyticsApi';
 import { calculateEngagementRate, calculatePlayRate } from './helper';
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * WordPress dependencies
@@ -214,13 +215,6 @@ const Analytics = ( { attachmentID } ) => {
 		return 'left-greater right-greater';
 	};
 
-	function decodeHtmlCharCodes( text ) {
-		// Create a temporary DOM element
-		const textarea = document.createElement( 'textarea' );
-		textarea.innerHTML = text;
-		return textarea.value;
-	}
-
 	return (
 		<div className="godam-analytics-container">
 			<GodamHeader />
@@ -248,8 +242,7 @@ const Analytics = ( { attachmentID } ) => {
 			{ attachmentData && (
 				<div id="analytics-content" className="hidden">
 					<div className="p-10 flex gap-3 items-center">
-						<h2 className="text-2xl m-0 capitalize">
-							{ decodeHtmlCharCodes( attachmentData?.title?.rendered ) }
+						<h2 className="text-2xl m-0 capitalize" dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( attachmentData?.title?.rendered ) } }>
 						</h2>
 						{ attachmentData?.media_details?.length_formatted &&
 							<span className="h-[26px] px-2 bg-white flex items-center rounded-sm">
