@@ -50,6 +50,19 @@ const FormLayer = ( { layerID, goBack } ) => {
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
+	const isPluginActive = ( formType ) => {
+		switch ( formType ) {
+			case 'gravity':
+				return Boolean( window?.videoData?.gf_active );
+			case 'wpforms':
+				return Boolean( window?.videoData?.wpforms_active );
+			case 'cf7':
+				return Boolean( window?.videoData?.cf7_active );
+			default:
+				return false;
+		}
+	};
+
 	return (
 		<>
 			<div className="flex justify-between items-center border-b mb-3">
@@ -104,7 +117,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
 				}
 				help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
-				disabled={ ! isValidAPIKey }
+				disabled={ ! isValidAPIKey || ! isPluginActive( layer.form_type ) }
 			/>
 
 			<Panel className="-mx-4 border-x-0">
@@ -121,12 +134,12 @@ const FormLayer = ( { layerID, goBack } ) => {
 						label={ __( 'Layer background color', 'godam' ) }
 						enableAlpha={ true }
 						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
-						disabled={ ! isValidAPIKey }
+						disabled={ ! isValidAPIKey || ! isPluginActive( layer.form_type ) }
 					/>
 
 					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'godam' ) }</label>
 
-					<div className={ ! isValidAPIKey ? 'pointer-events-none opacity-50' : '' }>
+					<div className={ ( ! isValidAPIKey || ! isPluginActive( layer.form_type ) ) ? 'pointer-events-none opacity-50' : '' }>
 						<Editor
 							id="custom-css"
 							className="code-editor"

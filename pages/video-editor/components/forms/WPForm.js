@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button } from '@wordpress/components';
+import { Button, Notice } from '@wordpress/components';
 import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
@@ -38,10 +38,23 @@ const CF7 = ( { layerID } ) => {
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
+	const isWPFormsPluginActive = Boolean( window?.videoData?.wpforms_active );
+
 	return (
 		<>
 			{
-				<FormSelector disabled={ ! isValidAPIKey } className="gravity-form-selector mb-4" formID={ layer.wpform_id } forms={ forms } handleChange={ changeFormID } />
+				! isWPFormsPluginActive &&
+				<Notice
+					className="mb-4"
+					status="warning"
+					isDismissible={ false }
+				>
+					{ __( 'Please activate the WPForms plugin to use this feature.', 'godam' ) }
+				</Notice>
+			}
+
+			{
+				<FormSelector disabled={ ! isValidAPIKey || ! isWPFormsPluginActive } className="gravity-form-selector mb-4" formID={ layer.wpform_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<LayerControl>

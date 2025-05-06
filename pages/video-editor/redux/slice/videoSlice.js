@@ -49,6 +49,8 @@ const slice = createSlice( {
 		currentTab: 'layers',
 		loading: false,
 		gforms: [],
+		cf7Forms: [],
+		wpforms: [],
 		gformPluginActive: true,
 	},
 	reducers: {

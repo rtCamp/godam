@@ -63,7 +63,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
-	const isGFPluginActive = useSelector( ( state ) => state.videoReducer.gformPluginActive );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 
 	// Sort the array (ascending order)
@@ -165,7 +164,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 						{
 							sortedLayers?.map( ( layer ) => {
 								const isAdServerAd = adServer === 'ad-server' && layer.type === 'ad';
-								const isGFPluginNotActive = layer.type === 'form' && ! isGFPluginActive;
+								const isGFPluginNotActive = layer.type === 'form' && ! window?.videoData?.gf_active;
+								const isWPFormsPluginNotActive = layer.type === 'form' && ! window?.videoData?.wpforms_active;
+								const isCF7PluginNotActive = layer.type === 'form' && ! window?.videoData?.cf7_active;
 								const isPollPluginNotActive = layer.type === 'poll' && ! window.easydamMediaLibrary.isPollPluginActive;
 								let addWarning = false;
 								let toolTipMessage = '';
@@ -176,8 +177,14 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 								} else if ( isAdServerAd ) {
 									toolTipMessage = __( 'This ad will be overriden by Ad server\'s ads', 'godam' );
 									addWarning = true;
-								} else if ( isGFPluginNotActive ) {
+								} else if ( isGFPluginNotActive && layer.form_type === 'gravity' ) {
 									toolTipMessage = __( 'Gravity Forms plugin is not active', 'godam' );
+									addWarning = true;
+								} else if ( isWPFormsPluginNotActive && layer.form_type === 'wpforms' ) {
+									toolTipMessage = __( 'WPForms plugin is not active', 'godam' );
+									addWarning = true;
+								} else if ( isCF7PluginNotActive && layer.form_type === 'cf7' ) {
+									toolTipMessage = __( 'Contact Form 7 plugin is not active', 'godam' );
 									addWarning = true;
 								} else if ( isPollPluginNotActive ) {
 									toolTipMessage = __( 'Poll plugin is not active', 'godam' );

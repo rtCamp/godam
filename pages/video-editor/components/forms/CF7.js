@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, SelectControl } from '@wordpress/components';
+import { Button, Notice, SelectControl } from '@wordpress/components';
 import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
@@ -51,11 +51,22 @@ const CF7 = ( { layerID } ) => {
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
+	const isCF7PluginActive = Boolean( window?.videoData?.cf7_active );
+
 	return (
 		<>
 			{
-				forms.length > 0 &&
-					<FormSelector disabled={ ! isValidAPIKey } className="gravity-form-selector mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
+				! isCF7PluginActive &&
+				<Notice
+					className="mb-4"
+					status="warning"
+					isDismissible={ false }
+				>
+					{ __( 'Please activate the Contact Form 7 plugin to use this feature.', 'godam' ) }
+				</Notice>
+			}
+			{
+				<FormSelector disabled={ ! isValidAPIKey || ! isCF7PluginActive } className="gravity-form-selector mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<SelectControl
@@ -66,7 +77,7 @@ const CF7 = ( { layerID } ) => {
 				onChange={ ( value ) =>
 					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
 				}
-				disabled={ ! isValidAPIKey }
+				disabled={ ! isValidAPIKey || ! isCF7PluginActive }
 			/>
 
 			<LayerControl>
