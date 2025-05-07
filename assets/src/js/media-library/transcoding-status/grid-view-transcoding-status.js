@@ -55,18 +55,6 @@ class GridViewTranscodingStatus {
 
 		if ( status === 'failed' ) {
 			this.updateFailedStatus();
-
-			const errorMessage = 'Looks like you are using CDN services that offload media from your WordPress server to CDN or cloud storage. <a href="" target="_blank">Click here</a> to troubleshoot this issue.';
-
-			const noticeHTML = `
-				<div id="godam-transcoding-notice" class="notice notice-error is-dismissible">
-					<p>${ errorMessage }</p>
-					<button type="button" class="notice-dismiss">
-						<span class="screen-reader-text">Dismiss this notice.</span>
-					</button>
-				</div>`;
-
-			this.displayNotice( noticeHTML );
 		}
 
 		if ( status === 'not_transcoding' ) {
@@ -100,33 +88,6 @@ class GridViewTranscodingStatus {
 		this.transcodingStatusElement.classList.remove( 'transcoding-status--in-progress' );
 		this.transcodingStatusElement.classList.add( 'transcoding-status--failed' );
 		this.transcodingStatusLoader.style.removeProperty( '--status-text' );
-	}
-
-	displayNotice( noticeHTML ) {
-		// Check if the notice element exists.
-		const noticeElement = document.querySelector( '#godam-transcoding-notice' );
-
-		if ( noticeElement ) {
-			return;
-		}
-
-		const container = document.querySelector( '#wpbody-content .wrap .wp-header-end' );
-
-		// Prepend the notice to the container.
-		if ( container ) {
-			container.insertAdjacentHTML( 'afterend', noticeHTML );
-		}
-
-		// Make the notice dismissible.
-		const dismissButton = document.querySelector( '#godam-transcoding-notice .notice-dismiss' );
-		if ( dismissButton ) {
-			dismissButton.addEventListener( 'click', () => {
-				const notice = document.querySelector( '#godam-transcoding-notice' );
-				if ( notice ) {
-					notice.remove();
-				}
-			} );
-		}
 	}
 
 	updateNotTranscodingStatus() {
