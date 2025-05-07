@@ -25,7 +25,7 @@ const App = () => {
 				},
 				{
 					title: __( 'Video Settings', 'godam' ),
-					link: 'settings-and-configuration/video-settingz/',
+					link: 'settings-and-configuration/video-settings/',
 				},
 				{
 					title: __( 'Configuring the Video Block', 'godam' ),
