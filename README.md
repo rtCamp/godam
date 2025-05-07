@@ -34,14 +34,7 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 - Embed clickable CTAs to drive actions like sign-ups and purchases.
 - Enhance your videos with customizable hotspots that deliver additional context, links, and information exactly when and where your viewers need it.
 - Integrate Gravity Forms to collect user feedback and lead data within videos.
-
-### Pro Features
-
-📌 Smart Transcoding & Adaptive Bitrate Streaming
-- Automatically converts videos into multiple resolutions (240p to 4K).
-- Ensures smooth playback by dynamically adjusting quality based on network speed.
-- Supported audio formats: MP3, M4A, WAV, OGG
-- Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
+- Add interactive Polls to gather viewer opinions during playback.
 
 📌 Seamless Ad Monetization
 - Supports self-hosted ads and third-party ad networks.
@@ -51,6 +44,14 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 📌 Customizable Video Player Experience
 - Fully customizable playback controls, branding, and player themes.
 - Enable video looping, autoplay, and inline play for better user experience.
+
+### Pro Features
+
+📌 Smart Transcoding & Adaptive Bitrate Streaming
+- Automatically converts videos into multiple resolutions (240p to 4K).
+- Ensures smooth playback by dynamically adjusting quality based on network speed.
+- Supported audio formats: MP3, M4A, WAV, OGG
+- Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
 - Watermarking support to protect video content.
 
 📌 Video Analytics
@@ -80,7 +81,7 @@ Whether you’re running an e-learning site, an eCommerce store with product vid
 Get started today and revolutionize the way you manage and deliver video content on WordPress!
 
 ### Pricing Plans
-[View Pricing Plans](https://godam.io/#pricing)
+[View Pricing Plans](https://godam.io/pricing)
 
 - **7-Day Free Trial** available for each subscription plan.
 - Flexible pricing options to suit different needs.
@@ -176,10 +177,9 @@ This plugin relies on third-party services to provide specific features. Below i
 **When Data is Sent:**
 Data is sent only when a user submits the deactivation feedback form after clicking the deactivate button.
 
-**Service Provider:** godam.io
+**Service Provider:** [godam.io](https://godam.io)
 
-[Terms of Service](https://godam.io/tos/)
-[Privacy Policy](https://godam.io/privacy-policy/)
+[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
 
 - **app.godam.io**:
 
@@ -199,8 +199,7 @@ When the plugin checks for a valid API Key.
 
 **Service Provider**: app.godam.io
 
-[Terms of Service](https://godam.io/tos/)
-[Privacy Policy](https://godam.io/privacy-policy/)
+[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
 
 - **analytics.godam.io**:
 
@@ -228,7 +227,6 @@ This service collects analytics data when a user watches a video on the frontend
 
 **Service Provider**: analytics.godam.io
 
-[Terms of Service](https://godam.io/tos/)
-[Privacy Policy](https://godam.io/privacy-policy/)
+[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
 
 Want to suggest a feature? Please submit it [here](https://github.com/rtCamp/godam/discussions/categories/feature-requests)
