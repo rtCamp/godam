@@ -200,10 +200,9 @@ Data Sent:
 When Data is Sent:
 Data is sent only when a user submits the deactivation feedback form after clicking the deactivate button.
 
-Service Provider: godam.io
+Service Provider: [godam.io](https://godam.io)
 
-[Terms of Service](https://godam.io/tos/)
-[Privacy Policy](https://godam.io/privacy-policy/)
+[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
 
 === app.godam.io ===
 Purpose: This service is used for transcoding media uploaded by users and verifying the API Key to ensure the plugin is authorized for use.
@@ -222,8 +221,7 @@ When Data is Sent:
 
 Service Provider: app.godam.io
 
-[Terms of Service](https://godam.io/tos/)
-[Privacy Policy](https://godam.io/privacy-policy/)
+[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
 
 === analytics.godam.io ===
 Purpose: This service collects analytics data when a user watches a video on the frontend. It helps track video performance, user engagement, and campaign effectiveness.
@@ -250,5 +248,4 @@ When Data is Sent:
 
 Service Provider: analytics.godam.io
 
-[Terms of Service](https://godam.io/tos/)
-[Privacy Policy](https://godam.io/privacy-policy/)
+[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
