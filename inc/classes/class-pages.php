@@ -532,6 +532,14 @@ class Pages {
 				)
 			);
 
+			wp_localize_script(
+				'godam-page-script-dashboard',
+				'godamPluginData',
+				array(
+					'flagBasePath' => RTGODAM_URL . 'assets/src/images/flags',
+				)
+			);
+
 			wp_enqueue_script( 'godam-page-script-dashboard' );
 			wp_enqueue_script( 'd3-js' );
 			wp_enqueue_script( 'godam-global-analytics-script' );

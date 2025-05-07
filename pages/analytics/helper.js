@@ -1,4 +1,8 @@
-/* global d3 */
+/* global d3, godamPluginData */
+/**
+ * Internal dependencies
+ */
+import { d3CountryToIso } from './countryFlagMapping';
 
 export async function fetchAnalyticsData( videoId, siteUrl ) {
 	try {
@@ -548,14 +552,23 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 	// Create a container div inside mapSelector
 	const container = d3.select( mapSelector )
 		.style( 'position', 'relative' )
-		.style( 'width', `${ width }px` )
-		.style( 'height', `${ height }px` );
+		.style( 'width', '100%' )
+		.style( 'height', 'auto' );
+
+	container
+		.append( 'div' )
+		.text( 'Views by Location' )
+		.style( 'font-size', '18px' )
+		.style( 'font-weight', '500' )
+		.style( 'margin-bottom', '12px' );
 
 	// Create the SVG for the map
 	const svg = container
 		.append( 'svg' )
-		.attr( 'width', width )
-		.attr( 'height', height );
+		.attr( 'viewBox', `0 0 ${ width } ${ height }` )
+		.attr( 'preserveAspectRatio', 'xMidYMid meet' )
+		.style( 'width', '100%' )
+		.style( 'height', 'auto' );
 
 	// Group for zoom + pan
 	const g = svg.append( 'g' );
@@ -577,7 +590,7 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 		.attr( 'class', 'zoom-controls' )
 		.style( 'position', 'absolute' )
 		.style( 'top', '20px' )
-		.style( 'right', '20px' )
+		.style( 'right', '0px' )
 		.style( 'display', 'flex' )
 		.style( 'flex-direction', 'column' )
 		.style( 'gap', '10px' )
@@ -585,39 +598,39 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 
 	zoomControls.append( 'button' )
 		.text( '+' )
-		.style( 'width', '40px' )
-		.style( 'height', '40px' )
-		.style( 'font-size', '24px' )
+		.style( 'width', '20px' )
+		.style( 'height', '20px' )
+		.style( 'font-size', '14px' )
 		.style( 'cursor', 'pointer' )
-		.style( 'border', '1px solid #ccc' )
 		.style( 'border-radius', '5px' )
-		.style( 'background', '#fff' )
+		.style( 'background', '#52525B' )
+		.style( 'color', '#fff' )
 		.on( 'click', () => {
 			svg.transition().call( zoom.scaleBy, 1.3 );
 		} );
 
 	zoomControls.append( 'button' )
 		.text( '–' )
-		.style( 'width', '40px' )
-		.style( 'height', '40px' )
-		.style( 'font-size', '24px' )
+		.style( 'width', '20px' )
+		.style( 'height', '20px' )
+		.style( 'font-size', '14px' )
 		.style( 'cursor', 'pointer' )
-		.style( 'border', '1px solid #ccc' )
 		.style( 'border-radius', '5px' )
-		.style( 'background', '#fff' )
+		.style( 'background', '#52525B' )
+		.style( 'color', '#fff' )
 		.on( 'click', () => {
 			svg.transition().call( zoom.scaleBy, 1 / 1.3 );
 		} );
 
 	zoomControls.append( 'button' )
 		.text( '⟳' )
-		.style( 'width', '40px' )
-		.style( 'height', '40px' )
-		.style( 'font-size', '20px' )
+		.style( 'width', '20px' )
+		.style( 'height', '20px' )
+		.style( 'font-size', '14px' )
 		.style( 'cursor', 'pointer' )
-		.style( 'border', '1px solid #ccc' )
 		.style( 'border-radius', '5px' )
-		.style( 'background', '#fff' )
+		.style( 'background', '#52525B' )
+		.style( 'color', '#fff' )
 		.on( 'click', () => {
 			svg.transition().duration( 500 ).call( zoom.transform, initialTransform );
 		} );
@@ -637,6 +650,7 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 		.style( 'z-index', '100' );
 
 	const maxViews = d3.max( countryDataArray, ( d ) => d.views );
+	const totalViews = d3.sum( countryDataArray, ( d ) => d.views );
 
 	// Load and render the map
 	d3.json( 'https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson' )
@@ -674,7 +688,6 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 					const countryName = d.properties.name;
 					const views = countryData[ countryName ];
 					const [ x, y ] = d3.pointer( event, container.node() );
-					const totalViews = d3.sum( countryDataArray, ( data ) => data.views );
 
 					if ( views ) {
 						// Compute percentage of maxViews
@@ -748,54 +761,65 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 		.style( 'border-collapse', 'collapse' )
 		.style( 'font-family', 'Arial, sans-serif' );
 
-	const thead = table.append( 'thead' );
-	thead
-		.append( 'tr' )
-		.selectAll( 'th' )
-		.data( [ 'COUNTRY', 'VIEWS' ] )
-		.enter()
-		.append( 'th' )
-		.text( ( d ) => d )
-		.style( 'text-align', ( d, i ) => ( i === 1 ? 'right' : 'left' ) )
-		.style( 'border-bottom', '1px solid #ddd' )
-		.style( 'color', '#777' )
-		.style( 'font-size', '12px' )
-		.style( 'font-weight', '500' );
-
 	const tbody = table.append( 'tbody' );
 
 	tbody
 		.selectAll( 'tr' )
-		.data( countryDataArray )
+		.data( countryDataArray.slice( 0, 4 ) )
 		.enter()
 		.each( function( d ) {
 			const mainRow = d3.select( this ).append( 'tr' );
 
-			mainRow
+			const countryCell = mainRow
 				.append( 'td' )
-				.style( 'border-bottom', '1px solid #eee' )
 				.style( 'text-align', 'left' )
-				.style( 'font-weight', '900' )
-				.text( d.country );
+				.style( 'font-weight', '500' )
+				.style( 'vertical-align', 'middle' );
+
+			const flagWrapper = countryCell.append( 'div' )
+				.style( 'display', 'flex' )
+				.style( 'align-items', 'center' )
+				.style( 'gap', '8px' );
+
+			const flagCode = d3CountryToIso[ d.country ];
+
+			if ( flagCode ) {
+				flagWrapper.append( 'img' )
+					.attr( 'src', `${ godamPluginData.flagBasePath }/${ flagCode }.svg` )
+					.attr( 'alt', `${ d.country } flag` )
+					.style( 'width', '18px' )
+					.style( 'height', '18px' )
+					.style( 'border-radius', '50%' )
+					.style( 'object-fit', 'cover' )
+					.style( 'flex-shrink', '0' );
+			}
+
+			flagWrapper.append( 'span' ).text( d.country );
 
 			mainRow
 				.append( 'td' )
-				.text( d.views )
+				.text( `${ Math.round( ( d.views / totalViews ) * 100 ) }%` )
 				.style( 'text-align', 'right' )
-				.style( 'padding', '10px' )
-				.style( 'border-bottom', '1px solid #eee' )
-				.style( 'font-weight', '500' );
+				.style( 'font-weight', '500' )
+				.style( 'padding', '10px' );
 
 			const barRow = d3.select( this ).append( 'tr' );
 
-			barRow
+			const progressContainer = barRow
 				.append( 'td' )
 				.attr( 'colspan', 2 )
 				.append( 'div' )
-				.style( 'height', '4px' )
-				.style( 'background-color', 'blue' )
-				.style( 'opacity', '0.6' )
-				.style( 'margin-top', '-5px' )
-				.style( 'width', `${ ( d.views / maxViews ) * 100 }%` );
+				.style( 'height', '6px' )
+				.style( 'width', '100%' )
+				.style( 'background-color', '#E4E4E7' )
+				.style( 'border-radius', '8px' )
+				.style( 'overflow', 'hidden' );
+
+			progressContainer
+				.append( 'div' )
+				.style( 'height', '100%' )
+				.style( 'width', `${ ( d.views / totalViews ) * 100 }%` )
+				.style( 'background-color', '#AB3A6C' )
+				.style( 'border-radius', '8px' );
 		} );
 }

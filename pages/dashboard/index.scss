@@ -157,3 +157,33 @@
 	overflow: auto;
 	color: #000;
 }
+
+
+.playback-country-container {
+	display: flex;
+	gap: 20px;
+
+	.playback-performace {
+		flex: 1;
+	}
+
+	.country-views {
+		width: 30%;
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+		background: #fff;
+		border: 1px solid #ddd;
+		border-radius: 8px;
+		overflow: hidden;
+		padding: 20px;
+
+		.country-views-map {
+			width: 100%;
+		}
+
+		#country-views-table {
+			width: 100%;
+		}
+	}
+}

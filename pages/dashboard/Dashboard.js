@@ -439,9 +439,13 @@ const Dashboard = () => {
 
 				<div id="global-analytics-container" className="p-12 mx-auto"></div>
 				<div className="p-12 mx-auto">
-					<h2>Views by Country</h2>
-					<div id="map-container" className="mb-10"></div>
-					<div id="table-container"></div>
+					<div className="playback-country-container">
+						<div className="playback-performace"></div>
+						<div className="country-views">
+							<div className="country-views-map" id="map-container"></div>
+							<div className="country-views-table" id="table-container"></div>
+						</div>
+					</div>
 				</div>
 
 				<div className="top-media-container px-[20px]">
