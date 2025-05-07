@@ -18,7 +18,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	 *
 	 * @var string
 	 */
-	static $namespace_prefix = 'godam/v1';
+	public static $namespace_prefix = 'godam/v1';
 
 	/**
 	 * RT Transcoder Handler object.
@@ -219,12 +219,12 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 						if ( ! empty( $post_array['files']['mpd'] ) ) {
 							update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $post_array['download_url'] );
 
-							$latest_attachment = get_option( 'rtgodam_new_attachment_id', false );
+							$latest_attachment = get_option( 'rtgodam_new_attachment', false );
 
 							if ( ! empty( $latest_attachment ) && $latest_attachment['attachment_id'] === $attachment_id ) {
 								$latest_attachment['transcoding_status'] = 'success';
+								update_option( 'rtgodam_new_attachment', $latest_attachment, '', true );
 							}
-
 						} else {
 							$this->rtgodam_transcoder_handler->add_transcoded_files( $post_array['files'], $attachment_id, $job_for );
 						}
