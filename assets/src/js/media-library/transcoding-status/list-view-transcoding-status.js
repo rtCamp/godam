@@ -11,7 +11,6 @@ import TranscodingChecker from './transcoding-checker';
 class ListViewTranscodingStatus {
 	constructor() {
 		this.addEventListeners();
-		this.updateCallback = this.updateCallback.bind( this );
 		this.checker = new TranscodingChecker( transcoderSettings.restUrl, this.updateCallback );
 	}
 
@@ -35,7 +34,6 @@ class ListViewTranscodingStatus {
 				statusElement.textContent = 'Transcoding failed, please try again.';
 				statusElement.style.display = 'block';
 				checkStatusElement.style.display = 'none';
-
 				return;
 			}
 
