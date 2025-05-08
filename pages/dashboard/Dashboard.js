@@ -114,7 +114,7 @@ const Dashboard = () => {
 			return [
 				`Video ID: ${ item.video_id }`,
 				item.video_id,
-				'0',
+				( item.video_size ? item.video_size.toFixed( 2 ) : 0 ) + ' MB',,
 				( ( item.plays / ( item.plays + 5 ) ) * 100 ).toFixed( 2 ) + '%',
 				item.plays,
 				item.play_time?.toFixed( 2 ) + 's',
@@ -222,7 +222,7 @@ const Dashboard = () => {
 				<div className="analytics-info">
 					<div className="analytics-single-info">
 						<p id="total-videos" className="min-w-[90px] text-[2rem] font-black mb-0 mt-0">
-							45
+							{ dashboardMetrics?.total_videos || 0 }
 						</p>
 						<div className="analytics-info-heading">
 							<p>{ __( 'Total Videos', 'godam' ) }</p>
@@ -437,10 +437,9 @@ const Dashboard = () => {
 					}
 				</div>
 
-				<div id="global-analytics-container" className="p-12 mx-auto"></div>
 				<div className="p-12 mx-auto">
 					<div className="playback-country-container">
-						<div className="playback-performace"></div>
+						<div className="playback-performance" id="global-analytics-container"></div>
 						<div className="country-views">
 							<div className="country-views-map" id="map-container"></div>
 							<div className="country-views-table" id="table-container"></div>
@@ -486,7 +485,9 @@ const Dashboard = () => {
 												</div>
 											</div>
 										</td>
-										<td>0 MB</td> { /* Placeholder, can replace later */ }
+										<td>
+											{ item.video_size ? `${ item.video_size.toFixed( 2 ) } MB` : '0 MB' }
+										</td>
 										<td>
 											{ item.plays > 0 && item.page_load > 0
 												? ( ( item.plays / item.page_load ) * 100 ).toFixed( 2 ) + '%'

@@ -499,10 +499,26 @@ class Analytics extends Base {
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 
+		$top_videos = $body['top_videos'] ?? array();
+
+		foreach ( $top_videos as &$video ) {
+			if ( ! empty( $video['video_id'] ) ) {
+				$attachment_id = intval( $video['video_id'] );
+				$file_path = get_attached_file( $attachment_id );
+
+				if ( file_exists( $file_path ) ) {
+					$file_size = filesize( $file_path ); // bytes
+					$video['video_size'] = round( $file_size / ( 1024 * 1024 ), 2 ); // MB
+				} else {
+					$video['video_size'] = 0;
+				}
+			}
+		}
+
 		return new WP_REST_Response(
 			array(
 				'status'      => 'success',
-				'top_videos'  => $body['top_videos'] ?? array(),
+				'top_videos'  => $top_videos,
 				'total_pages' => $body['total_pages'] ?? 1,
 			),
 			200

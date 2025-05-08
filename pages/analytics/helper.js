@@ -84,8 +84,10 @@ export function generateMetricsOverTime( parsedData, selector ) {
 	// Create an SVG element
 	const svg = container
 		.append( 'svg' )
-		.attr( 'width', width + margin.left + margin.right )
-		.attr( 'height', height + margin.top + margin.bottom );
+		.attr( 'viewBox', `0 0 ${ width + margin.left + margin.right } ${ height + margin.top + margin.bottom }` )
+		.attr( 'preserveAspectRatio', 'xMidYMid meet' )
+		.style( 'width', '100%' )
+		.style( 'height', 'auto' );
 
 	// Add a background rectangle for the header area
 	svg
