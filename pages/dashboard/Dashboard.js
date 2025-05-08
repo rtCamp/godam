@@ -14,8 +14,10 @@ import { generateMetricsOverTime, generateCountryHeatmap } from '../analytics/he
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
 import DownArrow from '../../assets/src/images/down-arrow.svg';
 import TopArrow from '../../assets/src/images/up-arrow.svg';
+import ExportBtn from '../../assets/src/images/export.svg';
 import Tooltip from '../analytics/Tooltip.js';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchTopVideosQuery } from './redux/api/dashboardAnalyticsApi';
+import GodamHeader from '../godam/GodamHeader';
 
 const Dashboard = () => {
 	const [ recentVideos, setRecentVideos ] = useState( [] );
@@ -113,7 +115,7 @@ const Dashboard = () => {
 		const rows = topVideosData?.map( ( item ) => {
 			return [
 				`Video ID: ${ item.video_id }`,
-				item.video_id,
+				item.title || `Video ID: ${ item.video_id }`,
 				( item.video_size ? item.video_size.toFixed( 2 ) : 0 ) + ' MB',,
 				( ( item.plays / ( item.plays + 5 ) ) * 100 ).toFixed( 2 ) + '%',
 				item.plays,
@@ -204,6 +206,7 @@ const Dashboard = () => {
 
 	return (
 		<div className="godam-dashboard-container">
+			<GodamHeader />
 			<div id="api-key-overlay" className="api-key-overlay hidden">
 				<div className="api-key-message">
 					<p>
@@ -449,8 +452,9 @@ const Dashboard = () => {
 
 				<div className="top-media-container px-[20px]">
 					<div className="flex justify-between pt-24">
-						<h2>Top Media</h2>
-						<Button variant="primary" onClick={ handleExportCSV }>
+						<h2>Top Videos</h2>
+						<Button variant="primary" onClick={ handleExportCSV } className="export-button">
+							<img src={ ExportBtn } alt="Export" className="export-icon" />
 							Export
 						</Button>
 					</div>
@@ -462,27 +466,28 @@ const Dashboard = () => {
 						<table className="w-full pt-10">
 							<tbody>
 								<tr>
-									<th>Video</th>
+									<th>Name</th>
 									<th>Size</th>
 									<th>Play Rate</th>
 									<th>Total Plays</th>
 									<th>Total Watch Time</th>
 									<th>Average Engagement</th>
-									<th>View Analytics</th>
 								</tr>
 								{ topVideosData?.map( ( item, index ) => (
 									<tr key={ index }>
 										<td>
-											<div className="flex gap-6 items-center">
-												<img
-													src={ DefaultThumbnail }
-													height={ 100 }
-													width={ 190 }
-													alt="Video thumbnail"
-												/>
-												<div className="w-full max-w-40 text-left flex-1">
-													<p>{ `Video ID: ${ item.video_id }` }</p>
-												</div>
+											<div className="video-info">
+												<a className="thumbnail-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
+													<img
+														src={ item.thumbnail_url || DefaultThumbnail }
+														alt={ item.title || 'Video thumbnail' }
+													/>
+												</a>
+												<a className="title-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
+													<div className="w-full max-w-40 text-left flex-1">
+														<p className="font-semibold">{ item.title || `Video ID: ${ item.video_id }` }</p>
+													</div>
+												</a>
 											</div>
 										</td>
 										<td>
@@ -499,14 +504,6 @@ const Dashboard = () => {
 											{ item.plays > 0 && item.video_length > 0
 												? ( ( item.play_time / ( item.plays * item.video_length ) ) * 100 ).toFixed( 2 ) + '%'
 												: '-' }
-										</td>
-										<td>
-											<a
-												href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }
-												className="text-blue-500"
-											>
-												View
-											</a>
 										</td>
 									</tr>
 								) ) }
