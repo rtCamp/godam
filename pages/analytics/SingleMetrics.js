@@ -30,7 +30,6 @@ const SingleMetrics = ( {
 		if ( ! processedAnalyticsHistory || ! analyticsDataFetched ) {
 			return;
 		}
-		// const engagementRateData = processedAnalyticsHistory.map((history) => { 'enagegement_rate': calculateEngagementRate(history.plays, history.video_length, history.play_time), 'date': history.date } );
 
 		const finalHistoryArray = processedAnalyticsHistory.map( ( history ) => {
 			return {
@@ -78,7 +77,7 @@ const SingleMetrics = ( {
 	}, [ processedAnalyticsHistory, analyticsDataFetched ] );
 
 	return (
-		<div className="analytics-info flex justify-between max-lg:flex-col">
+		<div className="analytics-info flex justify-between max-lg:flex-col border border-zinc-200">
 			<div className="analytics-single-info">
 				<div className="flex justify-between items-center flex-row w-full">
 					<div className="analytics-info-heading">
@@ -95,7 +94,7 @@ const SingleMetrics = ( {
 						>
 							0%
 						</p>
-						<p>{ __( 'Last 7 days', 'godam' ) }</p>
+						<p className="text-zinc-500">{ __( 'Last 7 days', 'godam' ) }</p>
 					</div>
 					<div id={ `single-${ metricType }-chart` } className="metrics-chart"></div>
 				</div>

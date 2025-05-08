@@ -8,9 +8,6 @@ import videojs from 'video.js';
  */
 import ViewIcon from '../../assets/src/images/views.png';
 import DurationIcon from '../../assets/src/images/duration.png';
-import {
-	generateMetricsOverTime,
-} from './helper.js';
 
 function formatTime( seconds ) {
 	const minutes = Math.floor( seconds / 60 );
@@ -240,7 +237,7 @@ function generateCountryHeatmap( countryData, mapSelector, tableSelector ) {
 	} ) ).sort( ( a, b ) => b.views - a.views );
 
 	// ===== MAP VISUALIZATION =====
-	const width = 800,
+	const width = 500,
 		height = 500;
 
 	// Create the SVG for the map
@@ -397,11 +394,11 @@ function generateCountryHeatmap( countryData, mapSelector, tableSelector ) {
 
 function generatePostViewsChart( postsData, selector ) {
 	// Set dimensions
-	const width = 500;
-	const height = 400;
+	const width = 280;
+	const height = 280;
 	const margin = 40;
 	const radius = ( Math.min( width, height ) / 2 ) - margin;
-	const innerRadius = radius * 0.6;
+	const innerRadius = radius * 0.7;
 
 	// Calculate total views
 	const totalViews = postsData.reduce( ( sum, entry ) => sum + entry.views, 0 );
@@ -414,8 +411,17 @@ function generatePostViewsChart( postsData, selector ) {
 	// Color scale
 	const color = d3
 		.scaleOrdinal()
-		.domain( postsData.map( ( d ) => d.post ) )
-		.range( d3.schemeSet2 );
+		.domain( postsData.map( ( d ) => d.post + d.id ) )
+		.range( [
+			'#1D4A4F',
+			'#368071',
+			'#4C9A88',
+			'#5DB5A1',
+			'#76CFC0',
+			'#A8E4D7',
+			'#D1F0EC',
+			'#2C6660',
+		] );
 
 	// Create SVG
 	const svg = d3
@@ -458,10 +464,9 @@ function generatePostViewsChart( postsData, selector ) {
 		.attr( 'target', '_blank' )
 		.append( 'path' )
 		.attr( 'd', arc )
-		.attr( 'fill', ( d ) => color( d.data.post ) )
+		.attr( 'fill', ( d ) => color( d.data.post + d.data.id ) )
 		.attr( 'stroke', 'white' )
 		.style( 'stroke-width', '2px' )
-		.style( 'opacity', 0.8 )
 		.on( 'mouseover', function( event, d ) {
 			d3.select( this )
 				.transition()
@@ -474,7 +479,7 @@ function generatePostViewsChart( postsData, selector ) {
 			tooltip.transition().duration( 200 ).style( 'opacity', 0.9 );
 			tooltip
 				.html(
-					`<strong>${ d.data.post }</strong><br>
+					`<strong>${ d.data.post === '' ? 'Untitled' : d.data.post }</strong><br>
 					Views: ${ formatNumber( d.data.views ) }<br>
 					Percentage: ${ percent }%`,
 				)
@@ -485,22 +490,35 @@ function generatePostViewsChart( postsData, selector ) {
 			d3.select( this )
 				.transition()
 				.duration( 200 )
-				.attr( 'd', arc )
-				.style( 'opacity', 0.8 );
+				.attr( 'd', arc );
 
 			tooltip.transition().duration( 500 ).style( 'opacity', 0 );
 		} );
 
+	// Add view count text labels to each arc
+	svg.selectAll( 'text.slice-label' )
+		.data( pie( postsData ) )
+		.enter()
+		.append( 'text' )
+		.attr( 'class', 'slice-label' )
+		.attr( 'transform', ( d ) => `translate(${ arc.centroid( d ) })` )
+		.attr( 'text-anchor', 'middle' )
+		.attr( 'dy', '0.35em' )
+		.style( 'fill', '#fff' )
+		.style( 'font-size', '12px' )
+		.style( 'font-weight', 'bold' )
+		.text( ( d ) => formatNumber( d.data.views ) );
+
 	// Add center text
 	svg
 		.append( 'text' )
-		.attr( 'class', 'center-text' )
+		.attr( 'class', 'center-text-title' )
 		.attr( 'dy', -10 )
-		.text( 'Total Views' );
+		.text( 'Total' );
 
 	svg
 		.append( 'text' )
-		.attr( 'class', 'center-text' )
+		.attr( 'class', 'center-text-views' )
 		.attr( 'dy', 20 )
 		.text( formatNumber( totalViews ) );
 
@@ -513,16 +531,11 @@ function generatePostViewsChart( postsData, selector ) {
 		legendItem
 			.append( 'div' )
 			.attr( 'class', 'legend-color' )
-			.style( 'background-color', color( d.post ) );
+			.style( 'background-color', color( d.post + d.id ) );
 
 		legendItem.append( 'div' )
-			.html( `<a href="${ d.url }" target="_blank" style="text-decoration: underline; color: inherit;">${ d.post }</a>: ${ formatNumber( d.views ) }` );
+			.html( `<a href="${ d.url }" target="_blank" class="pie-chart-legend">${ d.post === '' ? 'Untitled' : d.post }</a>` );
 	} );
-
-	// Add total views text
-	d3.select( '#total-views' ).html(
-		`Total Video Views: <strong>${ formatNumber( totalViews ) }</strong>`,
-	);
 }
 
 async function main() {
@@ -566,38 +579,38 @@ async function main() {
 		controls: false,
 	} );
 
-	const timeMetricsChartData = ( window.processedAnalyticsHistory || [] ).map( ( entry ) => {
-		const {
-			date,
-			page_load: dailyPageLoad,
-			play_time: dailyPlayTime,
-			video_length: dailyVideoLength,
-			plays: dailyPlays,
-		} = entry;
+	// const timeMetricsChartData = ( window.processedAnalyticsHistory || [] ).map( ( entry ) => {
+	// 	const {
+	// 		date,
+	// 		page_load: dailyPageLoad,
+	// 		play_time: dailyPlayTime,
+	// 		video_length: dailyVideoLength,
+	// 		plays: dailyPlays,
+	// 	} = entry;
 
-		const dailyEngagementRate =
-			dailyPlays && dailyVideoLength ? ( dailyPlayTime / ( dailyPlays * dailyVideoLength ) ) * 100 : 0;
+	// 	const dailyEngagementRate =
+	// 		dailyPlays && dailyVideoLength ? ( dailyPlayTime / ( dailyPlays * dailyVideoLength ) ) * 100 : 0;
 
-		const dailyPlayRate =
-			dailyPageLoad ? ( dailyPlays / dailyPageLoad ) * 100 : 0;
+	// 	const dailyPlayRate =
+	// 		dailyPageLoad ? ( dailyPlays / dailyPageLoad ) * 100 : 0;
 
-		return {
-			date,
-			engagement_rate: +dailyEngagementRate.toFixed( 2 ),
-			play_rate: +dailyPlayRate.toFixed( 2 ),
-			watch_time: +dailyPlayTime.toFixed( 2 ),
-		};
-	} );
+	// 	return {
+	// 		date,
+	// 		engagement_rate: +dailyEngagementRate.toFixed( 2 ),
+	// 		play_rate: +dailyPlayRate.toFixed( 2 ),
+	// 		watch_time: +dailyPlayTime.toFixed( 2 ),
+	// 	};
+	// } );
 
 	const postsData = ( window.analyticsDataFetched?.post_details || [] ).map( ( post ) => {
 		const views = post.views || 0;
-		return { post: post.title, views, url: post.url };
+		return { post: post.title, views, url: post.url, id: post.id };
 	} );
 
 	// Generate visualizations
 	generateLineChart( heatmapData, '#line-chart', videoPlayer );
 	generateHeatmap( heatmapData, '#heatmap', videoPlayer );
-	generateMetricsOverTime( timeMetricsChartData, '#metrics-chart', videoPlayer );
+	// generateMetricsOverTime( timeMetricsChartData, '#metrics-chart', videoPlayer );
 	generatePostViewsChart( postsData, '#post-views-count-chart' );
 
 	const renderChange = ( changeValue ) => {
@@ -616,19 +629,19 @@ async function main() {
 		document.getElementById( 'watch-time-change' ).innerHTML = renderChange( watchTimeChange );
 		document
 			.getElementById( 'watch-time-change' )
-			.classList.add( viewsChange >= 0 ? 'change-rise' : 'change-drop' );
+			.classList.add( watchTimeChange >= 0 ? 'change-rise' : 'change-drop' );
 	}
 	if ( document.getElementById( 'play-rate-change' ) ) {
 		document.getElementById( 'play-rate-change' ).innerHTML = renderChange( playRateChange );
 		document
 			.getElementById( 'play-rate-change' )
-			.classList.add( viewsChange >= 0 ? 'change-rise' : 'change-drop' );
+			.classList.add( playRateChange >= 0 ? 'change-rise' : 'change-drop' );
 	}
 	if ( document.getElementById( 'engagement-rate-change' ) ) {
 		document.getElementById( 'engagement-rate-change' ).innerHTML = renderChange( avgEngagementChange );
 		document
 			.getElementById( 'engagement-rate-change' )
-			.classList.add( viewsChange >= 0 ? 'change-rise' : 'change-drop' );
+			.classList.add( avgEngagementChange >= 0 ? 'change-rise' : 'change-drop' );
 	}
 
 	if ( countryViews ) {

@@ -29,7 +29,7 @@
 
 #root-video-analytics {
 
-	@apply bg-slate-100;
+	background-color: #fff;
 	position: fixed;
 	top: 0;
 	bottom: 0;
@@ -44,12 +44,12 @@
 	// Video JS styles
 	.video-analytics-container {
 
-		@apply flex justify-between py-6 bg-slate-100 overflow-auto md:px-10 pt-8;
+		@apply flex bg-white justify-between py-6 overflow-auto md:px-10 pt-8;
 	}
 
 	.country-heatmap-container {
 
-		@apply bg-slate-100 overflow-auto;
+		@apply bg-white overflow-auto;
 	}
 
 	.analytics-info-container {
@@ -60,7 +60,7 @@
 		.analytics-info {
 			display: flex;
 			align-items: center;
-			background-color: #fff;
+			// background-color: #fff;
 			padding: 16px;
 			border-radius: 12px;
 
@@ -380,6 +380,7 @@
 	font-size: 14px;
 	color: #333;
 	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+	border-radius: 12px;
 
 	th, td {
 		border: 1px solid #e0e0e0;
@@ -398,18 +399,19 @@
 	}
 
 	tr td:nth-child(2) {
-		font-style: italic;
-		color: #777;
+		color: #000;
+		background-color: #F9F8F2;
+		font-weight: 600;
 	}
 
 	tr.left-greater td:first-child {
-		background-color: #e6f4ea;
+		background-color: #E5F6EA;
 		color: #166534;
 		font-weight: 600;
 	}
 
 	tr.right-greater td:last-child {
-		background-color: #e6f4ea;
+		background-color: #E5F6EA;
 		color: #166534;
 		font-weight: 600;
 	}
@@ -420,6 +422,32 @@
 	display: none;
 }
 
+.legend {
+	// flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+
+	.legend-item {
+		background-color: #F2F2F7;
+		padding: 4px 8px;
+		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		width: fit-content;
+	}
+
+	.pie-chart-legend {
+		text-decoration: none; 
+		color: inherit; 
+		cursor: pointer;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
 .posts-count-container {
       background-color: #fff;
       border-radius: 8px;
@@ -428,8 +456,8 @@
       margin-top: 20px;
 
     h2 {
-      text-align: center;
-      color: #333;
+      color: #1C1C1E;
+	  font-weight: 600;
     }
 
     .legend {
@@ -437,12 +465,6 @@
       flex-wrap: wrap;
       justify-content: center;
       margin-top: 20px;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      margin: 5px 10px;
     }
 
     .legend-color {
@@ -471,12 +493,17 @@
       fill: #666;
     }
 
-    .center-text {
-      font-size: 16px;
-      text-anchor: middle;
-      fill: #333;
-      font-weight: 700;
-    }
+	.center-text-title {
+		fill: #8E8E93;
+		font-size: 14px;
+		text-anchor: middle;
+	}
+
+	.center-text-views {
+		font-size: 24px;
+		font-weight: 600;
+		text-anchor: middle;
+	}
 }
 
 @media (max-width: 1024px) {
