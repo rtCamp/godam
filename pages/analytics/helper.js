@@ -1,4 +1,8 @@
-/* global d3 */
+/* global d3, godamPluginData */
+/**
+ * Internal dependencies
+ */
+import { d3CountryToIso } from './countryFlagMapping';
 
 export async function fetchAnalyticsData( videoId, siteUrl ) {
 	try {
@@ -577,8 +581,10 @@ export function singleMetricsChart(
 	// Create an SVG element
 	const svg = container
 		.append( 'svg' )
-		.attr( 'width', width + margin.left + margin.right )
-		.attr( 'height', height + margin.top + margin.bottom );
+		.attr( 'viewBox', `0 0 ${ width + margin.left + margin.right } ${ height + margin.top + margin.bottom }` )
+		.attr( 'preserveAspectRatio', 'xMidYMid meet' )
+		.style( 'width', '100%' )
+		.style( 'height', 'auto' );
 
 	// Create main chart group
 	const chartGroup = svg
@@ -734,4 +740,290 @@ export function calculateEngagementRate( plays, videoLength, playTime ) {
 export function calculatePlayRate( pageLoad, plays ) {
 	const playRate = pageLoad ? ( plays / pageLoad ) * 100 : 0;
 	return playRate.toFixed( 2 );
+}
+
+export function generateCountryHeatmap( countryData, mapSelector, tableSelector ) {
+	// Convert object to array for table sorting
+	const countryDataArray = Object.entries( countryData ).map( ( [ country, views ] ) => ( {
+		country,
+		views,
+	} ) ).sort( ( a, b ) => b.views - a.views );
+
+	// ===== MAP VISUALIZATION =====
+	const width = 800,
+		height = 500;
+
+	// Create a container div inside mapSelector
+	const container = d3.select( mapSelector )
+		.style( 'position', 'relative' )
+		.style( 'width', '100%' )
+		.style( 'height', 'auto' );
+
+	container
+		.append( 'div' )
+		.text( 'Views by Location' )
+		.style( 'font-size', '18px' )
+		.style( 'font-weight', '500' )
+		.style( 'margin-bottom', '12px' );
+
+	// Create the SVG for the map
+	const svg = container
+		.append( 'svg' )
+		.attr( 'viewBox', `0 0 ${ width } ${ height }` )
+		.attr( 'preserveAspectRatio', 'xMidYMid meet' )
+		.style( 'width', '100%' )
+		.style( 'height', 'auto' );
+
+	// Group for zoom + pan
+	const g = svg.append( 'g' );
+
+	// Define zoom behavior
+	const zoom = d3.zoom()
+		.scaleExtent( [ 1, 8 ] )
+		.on( 'zoom', ( event ) => {
+			g.attr( 'transform', event.transform );
+		} );
+
+	svg.call( zoom );
+
+	const initialTransform = d3.zoomIdentity; // Identity transform for reset
+
+	// Add Zoom Buttons
+	const zoomControls = container
+		.append( 'div' )
+		.attr( 'class', 'zoom-controls' )
+		.style( 'position', 'absolute' )
+		.style( 'top', '20px' )
+		.style( 'right', '0px' )
+		.style( 'display', 'flex' )
+		.style( 'flex-direction', 'column' )
+		.style( 'gap', '10px' )
+		.style( 'z-index', '10' );
+
+	zoomControls.append( 'button' )
+		.text( '+' )
+		.style( 'width', '20px' )
+		.style( 'height', '20px' )
+		.style( 'font-size', '14px' )
+		.style( 'cursor', 'pointer' )
+		.style( 'border-radius', '5px' )
+		.style( 'background', '#52525B' )
+		.style( 'color', '#fff' )
+		.on( 'click', () => {
+			svg.transition().call( zoom.scaleBy, 1.3 );
+		} );
+
+	zoomControls.append( 'button' )
+		.text( '–' )
+		.style( 'width', '20px' )
+		.style( 'height', '20px' )
+		.style( 'font-size', '14px' )
+		.style( 'cursor', 'pointer' )
+		.style( 'border-radius', '5px' )
+		.style( 'background', '#52525B' )
+		.style( 'color', '#fff' )
+		.on( 'click', () => {
+			svg.transition().call( zoom.scaleBy, 1 / 1.3 );
+		} );
+
+	zoomControls.append( 'button' )
+		.text( '⟳' )
+		.style( 'width', '20px' )
+		.style( 'height', '20px' )
+		.style( 'font-size', '14px' )
+		.style( 'cursor', 'pointer' )
+		.style( 'border-radius', '5px' )
+		.style( 'background', '#52525B' )
+		.style( 'color', '#fff' )
+		.on( 'click', () => {
+			svg.transition().duration( 500 ).call( zoom.transform, initialTransform );
+		} );
+
+	// Set up tooltip
+	const tooltip = container
+		.append( 'div' )
+		.attr( 'class', 'map-tooltip' )
+		.style( 'position', 'absolute' )
+		.style( 'background', 'rgba(0, 0, 0, 0.8)' )
+		.style( 'color', '#fff' )
+		.style( 'padding', '5px 10px' )
+		.style( 'border-radius', '5px' )
+		.style( 'display', 'none' )
+		.style( 'font-size', '14px' )
+		.style( 'pointer-events', 'none' )
+		.style( 'z-index', '100' );
+
+	const maxViews = d3.max( countryDataArray, ( d ) => d.views );
+	const totalViews = d3.sum( countryDataArray, ( d ) => d.views );
+
+	// Load and render the map
+	d3.json( 'https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson' )
+		.then( ( worldData ) => {
+			const colorScale = d3.scaleSequential()
+				.domain( [ 0, maxViews ] )
+				.interpolator( ( t ) => d3.interpolateRgb( '#ddd', '#AB3A6C' )( t ) );
+
+			const features = worldData.features
+				.filter( ( f ) => f.properties.name !== 'Antarctica' );
+
+			const projection = d3.geoEquirectangular();
+
+			projection.fitExtent(
+				[ [ 20, 20 ], [ width - 20, height - 20 ] ],
+				{ type: 'FeatureCollection', features },
+			);
+
+			const path = d3.geoPath().projection( projection );
+
+			g.selectAll( 'path' )
+				.data( features )
+				.enter()
+				.append( 'path' )
+				.attr( 'd', path )
+				.attr( 'fill', ( d ) => {
+					const countryName = d.properties.name;
+					return countryData[ countryName ]
+						? colorScale( countryData[ countryName ] )
+						: '#ddd';
+				} )
+				.attr( 'stroke', 'none' )
+				.attr( 'stroke-width', 0 )
+				.on( 'mouseover', function( event, d ) {
+					const countryName = d.properties.name;
+					const views = countryData[ countryName ];
+					const [ x, y ] = d3.pointer( event, container.node() );
+
+					if ( views ) {
+						// Compute percentage of maxViews
+						const pct = Math.round( ( views / totalViews ) * 100 );
+						const radius = 20;
+						const circumference = 2 * Math.PI * radius;
+						const dash = ( circumference * pct ) / 100;
+
+						// Build tooltip content with SVG circle
+						tooltip
+							.style( 'display', 'block' )
+							.html( `
+							<div style="text-align:center; font-family:Arial,sans-serif">
+								<strong>${ countryName }</strong><br/>
+								<svg width="50" height="50">
+								<!-- background circle -->
+								<circle cx="25" cy="25" r="${ radius }"
+										fill="none" stroke="#eee" stroke-width="4"/>
+								<!-- progress arc -->
+								<circle cx="25" cy="25" r="${ radius }"
+										fill="none" stroke="#AB3A6C" stroke-width="4"
+										stroke-dasharray="${ dash } ${ circumference - dash }"
+										transform="rotate(-90 25 25)"/>
+								 <text
+									x="25" y="30"
+									text-anchor="middle"
+									font-size="12"
+									fill="#fff"
+									font-family="Arial, sans-serif"
+									>${ pct }%</text>
+								</svg>
+								<div style="margin-top:4px; font-size:12px; color:#fff">
+								${ views } plays
+								</div>
+							</div>
+							` )
+							.style( 'left', ( x + 10 ) + 'px' )
+							.style( 'top', ( y + 10 ) + 'px' );
+
+						// Darken fill on hover
+						const orig = colorScale( views );
+						const darker = d3.color( orig ).darker( 1 ).formatHex();
+						d3.select( this ).attr( 'fill', darker );
+					}
+				} )
+				.on( 'mousemove', ( event ) => {
+					const [ x, y ] = d3.pointer( event, container.node() );
+					tooltip
+						.style( 'left', ( x + 10 ) + 'px' )
+						.style( 'top', ( y + 10 ) + 'px' );
+				} )
+				.on( 'mouseout', function( event, d ) {
+					tooltip.style( 'display', 'none' );
+					const countryName = d.properties.name;
+					const orig = countryData[ countryName ]
+						? colorScale( countryData[ countryName ] )
+						: '#ddd';
+					d3.select( this )
+						.attr( 'stroke', 'none' )
+						.attr( 'stroke-width', 0 )
+						.attr( 'fill', orig );
+				} );
+		} );
+
+	// ===== TABLE VISUALIZATION =====
+	const tableDiv = d3.select( tableSelector );
+
+	const table = tableDiv
+		.append( 'table' )
+		.style( 'width', '100%' )
+		.style( 'border-collapse', 'collapse' )
+		.style( 'font-family', 'Arial, sans-serif' );
+
+	const tbody = table.append( 'tbody' );
+
+	tbody
+		.selectAll( 'tr' )
+		.data( countryDataArray )
+		.enter()
+		.each( function( d ) {
+			const mainRow = d3.select( this ).append( 'tr' );
+
+			const countryCell = mainRow
+				.append( 'td' )
+				.style( 'text-align', 'left' )
+				.style( 'font-weight', '500' )
+				.style( 'vertical-align', 'middle' );
+
+			const flagWrapper = countryCell.append( 'div' )
+				.style( 'display', 'flex' )
+				.style( 'align-items', 'center' )
+				.style( 'gap', '8px' );
+
+			const flagCode = d3CountryToIso[ d.country ];
+
+			if ( flagCode ) {
+				flagWrapper.append( 'img' )
+					.attr( 'src', `${ godamPluginData.flagBasePath }/${ flagCode }.svg` )
+					.attr( 'alt', `${ d.country } flag` )
+					.style( 'width', '18px' )
+					.style( 'height', '18px' )
+					.style( 'border-radius', '50%' )
+					.style( 'object-fit', 'cover' )
+					.style( 'flex-shrink', '0' );
+			}
+
+			flagWrapper.append( 'span' ).text( d.country );
+
+			mainRow
+				.append( 'td' )
+				.text( `${ Math.round( ( d.views / totalViews ) * 100 ) }%` )
+				.style( 'text-align', 'right' )
+				.style( 'font-weight', '500' )
+				.style( 'padding', '10px' );
+
+			const barRow = d3.select( this ).append( 'tr' );
+
+			const progressContainer = barRow
+				.append( 'td' )
+				.attr( 'colspan', 2 )
+				.append( 'div' )
+				.style( 'height', '6px' )
+				.style( 'width', '100%' )
+				.style( 'background-color', '#E4E4E7' )
+				.style( 'border-radius', '8px' )
+				.style( 'overflow', 'hidden' );
+
+			progressContainer
+				.append( 'div' )
+				.style( 'height', '100%' )
+				.style( 'width', `${ ( d.views / totalViews ) * 100 }%` )
+				.style( 'background-color', '#AB3A6C' )
+				.style( 'border-radius', '8px' );
+		} );
 }

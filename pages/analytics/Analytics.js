@@ -15,6 +15,7 @@ import {
 	useFetchProcessedAnalyticsHistoryQuery,
 } from './redux/api/analyticsApi';
 import { calculateEngagementRate, calculatePlayRate } from './helper';
+import DOMPurify from 'isomorphic-dompurify';
 import './charts.js';
 
 /**
@@ -304,12 +305,13 @@ const Analytics = ( { attachmentID } ) => {
 			{ attachmentData && (
 				<div id="analytics-content" className="hidden">
 					<div className="p-10 flex gap-3 items-center">
-						<h2 className="text-2xl m-0 capitalize">
-							{ attachmentData?.title?.rendered }
+						<h2 className="text-2xl m-0 capitalize" dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( attachmentData?.title?.rendered ) } }>
 						</h2>
-						<span className="h-[26px] px-2 bg-white flex items-center rounded-sm">
-							{ attachmentData?.media_details?.length_formatted }
-						</span>
+						{ attachmentData?.media_details?.length_formatted &&
+							<span className="h-[26px] px-2 bg-white flex items-center rounded-sm">
+								{ attachmentData?.media_details?.length_formatted }
+							</span>
+						}
 					</div>
 
 					<div className="subheading-container">

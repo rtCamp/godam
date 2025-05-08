@@ -9,6 +9,7 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
+use NF_Display_Render;
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -265,7 +266,6 @@ class Pages {
 	 * @return void
 	 */
 	public function render_video_editor_page() {
-
 		?>
 		<div id="root-video-editor">
 			<div class="progress-bar-wrapper">
@@ -332,6 +332,10 @@ class Pages {
 				true
 			);
 
+			$is_gf_active      = is_plugin_active( 'gravityforms/gravityforms.php' );
+			$is_cf7_active     = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
+			$is_wpforms_active = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
+
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
@@ -341,8 +345,22 @@ class Pages {
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 					'valid_api_key'    => rtgodam_is_api_key_valid(),
+					'adminUrl'         => admin_url(),
+					'gf_active'        => $is_gf_active,
+					'cf7_active'       => $is_cf7_active,
+					'wpforms_active'   => $is_wpforms_active,
 				)
 			);
+
+			// Enqueue Gravity Forms styles if the plugin is active.
+			if ( $is_gf_active ) {
+				$this->enqueue_gravity_forms_styles();
+			}
+
+			// Enqueue WPForms styles if the plugin is active.
+			if ( $is_wpforms_active ) {
+				$this->enqueue_wpforms_styles();
+			}
 
 			$rtgodam_user_data = rtgodam_get_user_data();
 
@@ -354,23 +372,8 @@ class Pages {
 
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
 
-			$gravity_forms_styles = array(
-				'gravity-forms-orbital-theme'    => 'gravityforms/assets/css/dist/gravity-forms-orbital-theme.min.css',
-				'gravity-forms-theme-foundation' => 'gravityforms/assets/css/dist/gravity-forms-theme-foundation.min.css',
-				'gravity-forms-theme-framework'  => 'gravityforms/assets/css/dist/gravity-forms-theme-framework.min.css',
-				'gravity-forms-theme'            => 'gravityforms/assets/css/dist/theme.min.css',
-				'gravity-forms-theme-components' => 'gravityforms/assets/css/dist/theme-components.min.css',
-				'gravity-forms-basic'            => 'gravityforms/assets/css/dist/basic.min.css',
-				'common-css-utilities'           => 'gravityforms/assets/css/dist/common-css-utilities.min.css',
-			);
-
-			foreach ( $gravity_forms_styles as $handle => $path ) {
-				wp_enqueue_style(
-					$handle,
-					plugins_url( $path ),
-					array(),
-					'1.0.0'
-				);
+			if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
+				$this->enqueue_gravity_forms_styles();
 			}
 
 			$poll_ajax_style = get_option( 'poll_ajax_style' );
@@ -396,7 +399,7 @@ class Pages {
 						'show_fading'   => (int) $poll_ajax_style['fading'],
 					)
 				);
-			}
+			}       
 		} elseif ( $screen && $this->menu_page_id === $screen->id ) {
 
 			wp_register_script(
@@ -461,6 +464,14 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_localize_script(
+				'transcoder-page-script-analytics',
+				'godamPluginData',
+				array(
+					'flagBasePath' => RTGODAM_URL . 'assets/src/images/flags',
+				)
+			);
+
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 			wp_enqueue_script( 'd3-js' );
 		} elseif ( $screen && $this->help_page_id === $screen->id ) {
@@ -507,6 +518,22 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_localize_script(
+				'godam-page-script-dashboard',
+				'videoData',
+				array(
+					'adminUrl' => admin_url( 'admin.php?page=rtgodam#video-settings' ),
+				)
+			);
+
+			wp_localize_script(
+				'godam-page-script-dashboard',
+				'godamPluginData',
+				array(
+					'flagBasePath' => RTGODAM_URL . 'assets/src/images/flags',
+				)
+			);
+
 			wp_enqueue_script( 'godam-page-script-dashboard' );
 			wp_enqueue_script( 'd3-js' );
 		}
@@ -531,6 +558,52 @@ class Pages {
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
 				'userData' => rtgodam_get_user_data(),
 			)
+		);
+	}
+
+	/**
+	 * Enqueue Gravity Forms styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_gravity_forms_styles() {
+		$gravity_forms_styles = array(
+			'gravity-forms-orbital-theme'    => 'gravityforms/assets/css/dist/gravity-forms-orbital-theme.min.css',
+			'gravity-forms-theme-foundation' => 'gravityforms/assets/css/dist/gravity-forms-theme-foundation.min.css',
+			'gravity-forms-theme-framework'  => 'gravityforms/assets/css/dist/gravity-forms-theme-framework.min.css',
+			'gravity-forms-theme'            => 'gravityforms/assets/css/dist/theme.min.css',
+			'gravity-forms-theme-components' => 'gravityforms/assets/css/dist/theme-components.min.css',
+			'gravity-forms-basic'            => 'gravityforms/assets/css/dist/basic.min.css',
+			'common-css-utilities'           => 'gravityforms/assets/css/dist/common-css-utilities.min.css',
+		);
+	
+		foreach ( $gravity_forms_styles as $handle => $path ) {
+			wp_enqueue_style(
+				$handle,
+				plugins_url( $path ),
+				array(),
+				RTGODAM_VERSION
+			);
+		} 
+	}
+
+	/**
+	 * Enqueue WPForms styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_wpforms_styles() {
+
+		if ( ! defined( 'WPFORMS_PLUGIN_URL' ) ) {
+			return;
+		}
+
+		// Enqueue the WPForms styles.
+		wp_enqueue_style(
+			'wpforms-full',
+			WPFORMS_PLUGIN_URL . 'assets/css/frontend/classic/wpforms-full.css',
+			array(),
+			WPFORMS_VERSION
 		);
 	}
 }

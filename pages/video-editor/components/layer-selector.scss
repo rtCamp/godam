@@ -32,11 +32,27 @@
 			border-image-slice: 1;
 		}
 
-		&__image {
+		&__image-container {
+			position: relative;
 			flex: 1;
 			aspect-ratio: 1;
 			max-height: 7.5rem;
 			border-radius: 0.75rem;
+
+			&__image {
+				flex: 1;
+				aspect-ratio: 1;
+				max-height: 7.5rem;
+				border-radius: 0.75rem;
+			}
+
+			&__form-icon {
+				position: absolute;
+				bottom: -0.5rem;
+				right: -0.5rem;
+				width: 4rem;
+				height: 4rem;
+			}
 		}
 
 		&__content {
@@ -45,15 +61,15 @@
 			h3 {
 				margin-top: 0;
 				margin-bottom: 0.75rem;
-
+				text-align: left;
 				font-size: 1.25rem;
 			}
 
 			p {
 				font-size: 1rem;
-				line-height: 1.375rem;
+				line-height: 1.375;
 				margin: 0;
-
+				text-align: left;
 				color: rgba(119, 119, 119, 1);
 			}
 		}

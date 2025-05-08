@@ -1,0 +1,56 @@
+
+.rtgodam-wpcf7-form {
+
+    .wpcf7 {
+
+        .wpcf7-form {
+
+            label, p {
+                font-size: 14px;
+                font-weight: 500;
+
+                span {
+                    display: block;
+
+                    .wpcf7-form-control {
+                        padding: 12px;
+                        display: block;
+                        width: 100%;
+                        outline: none;
+                        border: 1px solid #686e77;
+                        border-radius: 0.25rem;
+                        line-height: 1;
+
+                        &:focus {
+                            border: 1px solid #204ce5;
+                            box-shadow: 0 0 0 .2rem #204be560;
+                        }
+                    }
+                }
+            }
+
+            p {
+                margin: 10px 0;
+            }
+
+            &.sent {
+
+                p {
+                    display: none;
+                }
+            }
+
+            input[type="submit"], button {
+                background-color: var(--rtgodam-submit-button-color, #204ce5);
+                color: #fff;
+                padding: 12px 16px;
+                border: none;
+                border-radius: 0.25rem;
+                font-size: 16px;
+                line-height: 1;
+                letter-spacing: 0;
+                width: max-content;
+            }
+        }
+    }
+}

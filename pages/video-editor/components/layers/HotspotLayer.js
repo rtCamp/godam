@@ -23,7 +23,6 @@ import {
 	plus,
 	chevronDown,
 	chevronUp,
-	chevronRight,
 	moreVertical,
 	check,
 } from '@wordpress/icons';
