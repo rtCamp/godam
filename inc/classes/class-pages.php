@@ -469,6 +469,14 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_localize_script(
+				'transcoder-page-script-analytics',
+				'godamPluginData',
+				array(
+					'flagBasePath' => RTGODAM_URL . 'assets/src/images/flags',
+				)
+			);
+
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 			wp_enqueue_script( 'd3-js' );
 			wp_enqueue_script( 'video-analytics-charts' );

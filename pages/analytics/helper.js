@@ -765,7 +765,7 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 
 	tbody
 		.selectAll( 'tr' )
-		.data( countryDataArray.slice( 0, 4 ) )
+		.data( countryDataArray )
 		.enter()
 		.each( function( d ) {
 			const mainRow = d3.select( this ).append( 'tr' );

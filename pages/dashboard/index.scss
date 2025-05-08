@@ -182,8 +182,28 @@
 			width: 100%;
 		}
 
-		#country-views-table {
+		.country-views-table {
 			width: 100%;
+			max-height: 200px;
+			overflow-y: auto;
+			padding-right: 4px;
+
+			scrollbar-width: thin;
+			scrollbar-color: #AB3A6C #f0f0f0;
+
+			&::-webkit-scrollbar {
+				width: 4px;
+			}
+
+			&::-webkit-scrollbar-thumb {
+				background-color: #AB3A6C;
+				border-radius: 3px;
+			}
+
+			&::-webkit-scrollbar-track {
+				background-color: #f0f0f0;
+				border-radius: 3px;
+			}
 		}
 	}
 }
