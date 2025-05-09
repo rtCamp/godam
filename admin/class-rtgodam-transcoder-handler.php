@@ -243,11 +243,12 @@ class RTGODAM_Transcoder_Handler {
 				}
 			}
 
-			$callback_url = RTGODAM_TRANSCODER_CALLBACK_URL;
-
 			if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) || empty( RTGODAM_TRANSCODER_CALLBACK_URL ) ) {
-				return $wp_metadata;
+				include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+				define( 'RTGODAM_TRANSCODER_CALLBACK_URL', RTGODAM_Transcoder_Rest_Routes::get_callback_url() );
 			}
+
+			$callback_url = RTGODAM_TRANSCODER_CALLBACK_URL;
 
 			/**
 			 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
