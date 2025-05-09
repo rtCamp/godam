@@ -308,6 +308,8 @@ class Pages {
 				)
 			);
 
+			wp_set_script_translations( 'transcoder-page-script-video-editor', 'godam', RTGODAM_PATH . 'languages' );
+
 			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
@@ -365,9 +367,9 @@ class Pages {
 
 			wp_register_script(
 				'transcoder-page-script-godam',
-				RTGODAM_URL . '/pages/build/godam.js',
-				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . '/pages/build/godam.js' ),
+				RTGODAM_URL . 'pages/build/godam.js',
+				array( 'wp-element', 'wp-i18n' ),
+				filemtime( RTGODAM_PATH . 'pages/build/godam.js' ),
 				true
 			);
 
@@ -381,7 +383,12 @@ class Pages {
 				);
 			}
 
+			$returned = wp_set_script_translations( 'transcoder-page-script-godam', 'godam', RTGODAM_PATH . 'languages' );
+
 			wp_enqueue_script( 'transcoder-page-script-godam' );
+
+			error_log( 'Translation returned: ' . $returned );
+
 		} elseif ( $screen && $this->analytics_page_id === $screen->id ) {
 
 			/**
@@ -404,6 +411,8 @@ class Pages {
 				filemtime( RTGODAM_PATH . 'pages/build/analytics.js' ),
 				true
 			);
+
+			wp_set_script_translations( 'transcoder-page-script-analytics', 'godam', RTGODAM_PATH . 'languages' );
 
 			wp_register_script(
 				'video-analytics-charts',
@@ -445,6 +454,8 @@ class Pages {
 				true
 			);
 
+			wp_set_script_translations( 'godam-page-script-help', 'godam', RTGODAM_PATH . 'languages' );
+
 			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
@@ -465,6 +476,8 @@ class Pages {
 			filemtime( RTGODAM_PATH . '/pages/build/media-library.js' ),
 			true
 		);
+
+		wp_set_script_translations( 'media-library-react', 'godam', RTGODAM_PATH . 'languages' );
 
 		wp_enqueue_script( 'media-library-react' );
 

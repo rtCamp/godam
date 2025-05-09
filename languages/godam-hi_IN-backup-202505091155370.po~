@@ -4,20 +4,22 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GoDAM 1.0.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Last-Translator: \n"
+"Language-Team: हिन्दी\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2025-05-09T11:47:22+00:00\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.11.0\n"
+"PO-Revision-Date: 2025-05-09 11:55+0000\n"
+"X-Generator: Loco https://localise.biz/\n"
 "X-Domain: godam\n"
+"\n"
+"Language: hi_IN\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Loco-Version: 2.7.2; wp-6.8.1"
 
 #. Plugin Name of the plugin
-#: godam.php
-#: inc/classes/class-pages.php:104
-#: inc/classes/class-pages.php:105
+#: godam.php inc/classes/class-pages.php:104 inc/classes/class-pages.php:105
 msgid "GoDAM"
 msgstr ""
 
@@ -28,7 +30,10 @@ msgstr ""
 
 #. Description of the plugin
 #: godam.php
-msgid "Seamlessly manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, gravity forms integration, and ad integration."
+msgid ""
+"Seamlessly manage and optimize digital assets with GoDAM – featuring "
+"transcoding, adaptive streaming, interactive video layers, gravity forms "
+"integration, and ad integration."
 msgstr ""
 
 #. Author of the plugin
@@ -38,7 +43,8 @@ msgstr ""
 
 #. Author URI of the plugin
 #: godam.php
-msgid "https://rtcamp.com/?utm_source=dashboard&utm_medium=plugin&utm_campaign=godam"
+msgid ""
+"https://rtcamp.com/?utm_source=dashboard&utm_medium=plugin&utm_campaign=godam"
 msgstr ""
 
 #: admin/class-rtgodam-retranscodemedia.php:122
@@ -87,7 +93,8 @@ msgid "There are no media available to send for transcoding."
 msgstr ""
 
 #: admin/class-rtgodam-retranscodemedia.php:455
-msgid "You do not have sufficient bandwidth remaining to perform the transcoding."
+msgid ""
+"You do not have sufficient bandwidth remaining to perform the transcoding."
 msgstr ""
 
 #: admin/class-rtgodam-retranscodemedia.php:456
@@ -108,17 +115,26 @@ msgid "Proceed with retranscoding"
 msgstr ""
 
 #: admin/class-rtgodam-retranscodemedia.php:496
-msgid "Your files are being re-transcoded. Do not navigate away from this page until the process is completed, as doing so will prematurely abort the script. Retranscoding can take a while, especially for larger files. You can view the progress below."
+msgid ""
+"Your files are being re-transcoded. Do not navigate away from this page "
+"until the process is completed, as doing so will prematurely abort the "
+"script. Retranscoding can take a while, especially for larger files. You can "
+"view the progress below."
 msgstr ""
 
 #. translators: Count of media which were successfully and media which were failed transcoded with the time in seconds and previout page link.
 #: admin/class-rtgodam-retranscodemedia.php:506
-msgid "All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were %3$s failure(s). To try transcoding the failed media again, <a href=\"%4$s\">click here</a>. %5$s"
+msgid ""
+"All done! %1$s media file(s) were successfully sent for transcoding in %2$s "
+"seconds and there were %3$s failure(s). To try transcoding the failed media "
+"again, <a href=\"%4$s\">click here</a>. %5$s"
 msgstr ""
 
 #. translators: Count of media which were successfully transcoded with the time in seconds and previout page link.
 #: admin/class-rtgodam-retranscodemedia.php:508
-msgid "All done! %1$s media file(s) were successfully sent for transcoding in %2$s seconds and there were 0 failures. %3$s"
+msgid ""
+"All done! %1$s media file(s) were successfully sent for transcoding in %2$s "
+"seconds and there were 0 failures. %3$s"
 msgstr ""
 
 #: admin/class-rtgodam-retranscodemedia.php:511
@@ -150,16 +166,23 @@ msgid "Failed While Sending: %s"
 msgstr ""
 
 #: admin/class-rtgodam-retranscodemedia.php:549
-msgid "This tool will retranscode ALL audio/video media uploaded to your website. This can be handy if you need to transcode media files uploaded in the past."
+msgid ""
+"This tool will retranscode ALL audio/video media uploaded to your website. "
+"This can be handy if you need to transcode media files uploaded in the past."
 msgstr ""
 
 #: admin/class-rtgodam-retranscodemedia.php:551
-msgid "Sending your entire media library for retranscoding can consume a lot of your bandwidth allowance, so use this tool with care."
+msgid ""
+"Sending your entire media library for retranscoding can consume a lot of "
+"your bandwidth allowance, so use this tool with care."
 msgstr ""
 
 #. translators: Placeholder is for admin media section link.
 #: admin/class-rtgodam-retranscodemedia.php:556
-msgid "You can retranscode specific media files (rather than ALL media) from the <a href='%s'>Media</a> page using Bulk Action via drop down or mouse hover a specific media (audio/video) file."
+msgid ""
+"You can retranscode specific media files (rather than ALL media) from the <a "
+"href='%s'>Media</a> page using Bulk Action via drop down or mouse hover a "
+"specific media (audio/video) file."
 msgstr ""
 
 #: admin/class-rtgodam-retranscodemedia.php:560
@@ -177,7 +200,9 @@ msgstr ""
 
 #. translators: Placeholder is for Media Name and ID of media.
 #: admin/class-rtgodam-retranscodemedia.php:603
-msgid "&quot;%1$s&quot; (ID %2$s) is MP3 file already. No need to send for transcoding"
+msgid ""
+"&quot;%1$s&quot; (ID %2$s) is MP3 file already. No need to send for "
+"transcoding"
 msgstr ""
 
 #: admin/class-rtgodam-retranscodemedia.php:607
@@ -207,7 +232,9 @@ msgid "Insufficient bandwidth!"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:69
-msgid "Enjoy using our DAM and Video Editor features for free! To unlock transcoding and other features, please activate your api key."
+msgid ""
+"Enjoy using our DAM and Video Editor features for free! To unlock "
+"transcoding and other features, please activate your api key."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:174
@@ -237,7 +264,9 @@ msgid "Hey, you’re missing out on our advanced features!"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:232
-msgid "Unlock high-speed transcoding, advanced analytics, adaptive streaming, and more by activating your API key."
+msgid ""
+"Unlock high-speed transcoding, advanced analytics, adaptive streaming, and "
+"more by activating your API key."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-handler.php:386
@@ -253,7 +282,9 @@ msgid "Transcoding service can not be activated on the localhost"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-handler.php:472
-msgid "Use rtgodam_transcoded_thumb_filename filter to modify video thumbnail name and rtgodam_transcoded_video_filename filter to modify video file name."
+msgid ""
+"Use rtgodam_transcoded_thumb_filename filter to modify video thumbnail name "
+"and rtgodam_transcoded_video_filename filter to modify video file name."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-handler.php:665
@@ -293,7 +324,8 @@ msgid "Transcoding: Something went wrong."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-handler.php:811
-msgid " There was unexpected error occurred while transcoding this following media."
+msgid ""
+" There was unexpected error occurred while transcoding this following media."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-handler.php:816
@@ -318,7 +350,9 @@ msgid "Transcoded CDN URL"
 msgstr ""
 
 #: admin/godam-transcoder-actions.php:46
-msgid "The URL of the transcoded file is generated automatically and cannot be edited."
+msgid ""
+"The URL of the transcoded file is generated automatically and cannot be "
+"edited."
 msgstr ""
 
 #: admin/godam-transcoder-functions.php:257
@@ -338,10 +372,8 @@ msgstr ""
 msgid "Your browser does not support the audio element."
 msgstr ""
 
-#: godam.php:102
-#: inc/classes/class-pages.php:115
-#: inc/classes/class-pages.php:116
-#: assets/build/blocks/godam-audio/index.js:1
+#: godam.php:102 inc/classes/class-pages.php:115
+#: inc/classes/class-pages.php:116 assets/build/blocks/godam-audio/index.js:1
 #: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-audio/edit.js:136
 #: assets/src/blocks/godam-player/edit.js:321
@@ -357,8 +389,7 @@ msgid "Invalid data."
 msgstr ""
 
 #: inc/classes/class-media-library-ajax.php:280
-#: pages/build/media-library.js:2977
-#: pages/media-library/App.js:87
+#: pages/build/media-library.js:2977 pages/media-library/App.js:87
 msgid "Uncategorized"
 msgstr ""
 
@@ -366,18 +397,15 @@ msgstr ""
 msgid "All collections"
 msgstr ""
 
-#: inc/classes/class-pages.php:123
-#: inc/classes/class-pages.php:124
+#: inc/classes/class-pages.php:123 inc/classes/class-pages.php:124
 msgid "Video editor"
 msgstr ""
 
-#: inc/classes/class-pages.php:133
-#: inc/classes/class-pages.php:134
+#: inc/classes/class-pages.php:133 inc/classes/class-pages.php:134
 msgid "Analytics"
 msgstr ""
 
-#: inc/classes/class-pages.php:143
-#: inc/classes/class-pages.php:144
+#: inc/classes/class-pages.php:143 inc/classes/class-pages.php:144
 msgid "Help"
 msgstr ""
 
@@ -472,7 +500,9 @@ msgid "Media Folders"
 msgstr ""
 
 #: inc/helpers/custom-functions.php:246
-msgid "Oops! It looks like your API key is incorrect or has expired. Please update it and try again."
+msgid ""
+"Oops! It looks like your API key is incorrect or has expired. Please update "
+"it and try again."
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
@@ -669,7 +699,9 @@ msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:246
-msgid "Tracks can be subtitles, captions, chapters, or descriptions. They help make your content more accessible to a wider range of users."
+msgid ""
+"Tracks can be subtitles, captions, chapters, or descriptions. They help make "
+"your content more accessible to a wider range of users."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:2
@@ -709,10 +741,8 @@ msgid "Select poster image"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:2
-#: assets/src/blocks/godam-player/edit.js:343
-#: pages/build/godam.js:7185
-#: pages/build/video-editor.js:12379
-#: pages/build/video-editor.js:12401
+#: assets/src/blocks/godam-player/edit.js:343 pages/build/godam.js:7185
+#: pages/build/video-editor.js:12379 pages/build/video-editor.js:12401
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:47
 #: pages/video-editor/components/appearance/Appearance.js:324
 #: pages/video-editor/components/appearance/Appearance.js:393
@@ -737,8 +767,7 @@ msgid "There is no poster image currently selected"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:362
-#: pages/build/godam.js:7185
+#: assets/src/blocks/godam-player/edit.js:362 pages/build/godam.js:7185
 #: pages/build/video-editor.js:12379
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:56
 #: pages/video-editor/components/appearance/Appearance.js:333
@@ -761,202 +790,170 @@ msgstr ""
 msgid "Video caption text"
 msgstr ""
 
-#: assets/build/js/media-library.js:1
-#: assets/src/js/media-library/index.js:183
+#: assets/build/js/media-library.js:1 assets/src/js/media-library/index.js:183
 msgid "Date Range"
 msgstr ""
 
-#: pages/analytics/Analytics.js:63
-#: pages/build/analytics.js:2514
+#: pages/analytics/Analytics.js:63 pages/build/analytics.js:2514
 msgid "Please "
 msgstr ""
 
-#: pages/analytics/Analytics.js:65
-#: pages/build/analytics.js:2514
+#: pages/analytics/Analytics.js:65 pages/build/analytics.js:2514
 msgid "activate your API key"
 msgstr ""
 
-#: pages/analytics/Analytics.js:67
-#: pages/build/analytics.js:2514
+#: pages/analytics/Analytics.js:67 pages/build/analytics.js:2514
 msgid " to access the Analytics feature"
 msgstr ""
 
-#: pages/analytics/Analytics.js:79
-#: pages/build/analytics.js:2514
+#: pages/analytics/Analytics.js:79 pages/build/analytics.js:2514
 msgid "Overview"
 msgstr ""
 
-#: pages/analytics/Analytics.js:91
-#: pages/build/analytics.js:2514
+#: pages/analytics/Analytics.js:91 pages/build/analytics.js:2514
 msgid "Average Engagement"
 msgstr ""
 
-#: pages/analytics/Analytics.js:93
-#: pages/build/analytics.js:2514
-msgid "Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)"
+#: pages/analytics/Analytics.js:93 pages/build/analytics.js:2514
+msgid ""
+"Video engagement rate is the percentage of video watched. Average Engagement "
+"= Total time played / (Total plays x Video length)"
 msgstr ""
 
-#: pages/analytics/Analytics.js:102
-#: pages/build/analytics.js:2514
+#: pages/analytics/Analytics.js:102 pages/build/analytics.js:2514
 msgid "Total Plays"
 msgstr ""
 
-#: pages/analytics/Analytics.js:104
-#: pages/build/analytics.js:2514
+#: pages/analytics/Analytics.js:104 pages/build/analytics.js:2514
 msgid "Plays represent the total number of times the video has been viewed"
 msgstr ""
 
-#: pages/analytics/Analytics.js:113
-#: pages/build/analytics.js:2514
+#: pages/analytics/Analytics.js:113 pages/build/analytics.js:2514
 msgid "Play Rate"
 msgstr ""
 
-#: pages/analytics/Analytics.js:115
-#: pages/build/analytics.js:2514
-msgid "Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads"
+#: pages/analytics/Analytics.js:115 pages/build/analytics.js:2514
+msgid ""
+"Play rate is the percentage of page visitors who clicked play. Play Rate = "
+"Total plays / Page loads"
 msgstr ""
 
-#: pages/analytics/Analytics.js:148
-#: pages/build/analytics.js:2514
+#: pages/analytics/Analytics.js:148 pages/build/analytics.js:2514
 msgid "Heatmap"
 msgstr ""
 
-#: pages/analytics/Analytics.js:149
-#: pages/build/analytics.js:2514
-msgid "Heatmap visualizes per-second view density, identifying peaks of plays, skipped sections, and audience drop-offs. Darker areas indicate higher engagement"
+#: pages/analytics/Analytics.js:149 pages/build/analytics.js:2514
+msgid ""
+"Heatmap visualizes per-second view density, identifying peaks of plays, "
+"skipped sections, and audience drop-offs. Darker areas indicate higher "
+"engagement"
 msgstr ""
 
-#: pages/analytics/index.js:34
-#: pages/build/analytics.js:2536
+#: pages/analytics/index.js:34 pages/build/analytics.js:2536
 msgid "Select video"
 msgstr ""
 
-#: pages/analytics/index.js:36
-#: pages/build/analytics.js:2536
+#: pages/analytics/index.js:36 pages/build/analytics.js:2536
 #: pages/build/video-editor.js:12522
 #: pages/video-editor/components/media-grid/MediaItem.jsx:72
 msgid "View analytics"
 msgstr ""
 
-#: pages/analytics/index.js:76
-#: pages/build/analytics.js:2536
+#: pages/analytics/index.js:76 pages/build/analytics.js:2536
 msgid "No video is selected"
 msgstr ""
 
-#: pages/analytics/index.js:86
-#: pages/build/analytics.js:2536
+#: pages/analytics/index.js:86 pages/build/analytics.js:2536
 msgid "Select Video to Edit"
 msgstr ""
 
-#: pages/build/analytics.js:2558
-#: pages/build/godam.js:7152
-#: pages/build/help.js:1985
-#: pages/build/video-editor.js:12192
+#: pages/build/analytics.js:2558 pages/build/godam.js:7152
+#: pages/build/help.js:1985 pages/build/video-editor.js:12192
 #: pages/godam/components/GoDAMHeader.jsx:38
 msgid "Need help?"
 msgstr ""
 
-#: pages/build/analytics.js:2558
-#: pages/build/godam.js:7152
-#: pages/build/help.js:1985
-#: pages/build/video-editor.js:12192
+#: pages/build/analytics.js:2558 pages/build/godam.js:7152
+#: pages/build/help.js:1985 pages/build/video-editor.js:12192
 #: pages/godam/components/GoDAMHeader.jsx:49
 msgid "Upgrade plan"
 msgstr ""
 
-#: pages/build/analytics.js:2558
-#: pages/build/godam.js:7152
-#: pages/build/help.js:1985
-#: pages/build/video-editor.js:12192
+#: pages/build/analytics.js:2558 pages/build/godam.js:7152
+#: pages/build/help.js:1985 pages/build/video-editor.js:12192
 #: pages/godam/components/GoDAMHeader.jsx:60
 msgid "Get GoDAM"
 msgstr ""
 
-#: pages/build/godam.js:7130
-#: pages/build/godam.js:7196
-#: pages/build/help.js:2007
+#: pages/build/godam.js:7130 pages/build/godam.js:7196 pages/build/help.js:2007
 #: pages/godam/App.js:31
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:72
 #: pages/help/App.js:23
 msgid "General Settings"
 msgstr ""
 
-#: pages/build/godam.js:7130
-#: pages/build/help.js:2007
-#: pages/godam/App.js:37
+#: pages/build/godam.js:7130 pages/build/help.js:2007 pages/godam/App.js:37
 #: pages/help/App.js:27
 msgid "Video Settings"
 msgstr ""
 
-#: pages/build/godam.js:7141
-#: pages/build/help.js:1974
+#: pages/build/godam.js:7141 pages/build/help.js:1974
 #: pages/godam/components/GoDAMFooter.jsx:19
 msgid "Support"
 msgstr ""
 
-#: pages/build/godam.js:7141
-#: pages/build/help.js:1974
+#: pages/build/godam.js:7141 pages/build/help.js:1974
 #: pages/godam/components/GoDAMFooter.jsx:23
 msgid "Docs"
 msgstr ""
 
-#: pages/build/godam.js:7141
-#: pages/build/help.js:1974
+#: pages/build/godam.js:7141 pages/build/help.js:1974
 #: pages/godam/components/GoDAMFooter.jsx:27
 msgid "Newsletter"
 msgstr ""
 
-#: pages/build/godam.js:7141
-#: pages/build/help.js:1974
+#: pages/build/godam.js:7141 pages/build/help.js:1974
 #: pages/godam/components/GoDAMFooter.jsx:34
 msgid "Twitter X"
 msgstr ""
 
-#: pages/build/godam.js:7141
-#: pages/build/help.js:1974
+#: pages/build/godam.js:7141 pages/build/help.js:1974
 #: pages/godam/components/GoDAMFooter.jsx:39
 msgid "Linkedin"
 msgstr ""
 
-#: pages/build/godam.js:7141
-#: pages/build/help.js:1974
+#: pages/build/godam.js:7141 pages/build/help.js:1974
 #: pages/godam/components/GoDAMFooter.jsx:44
 msgid "Instagram"
 msgstr ""
 
-#: pages/build/godam.js:7141
-#: pages/build/help.js:1974
+#: pages/build/godam.js:7141 pages/build/help.js:1974
 #: pages/godam/components/GoDAMFooter.jsx:49
 msgid "Youtube"
 msgstr ""
 
-#: pages/build/godam.js:7141
-#: pages/build/help.js:1974
+#: pages/build/godam.js:7141 pages/build/help.js:1974
 #: pages/godam/components/GoDAMFooter.jsx:54
 msgid "WordPress.org"
 msgstr ""
 
-#: pages/build/godam.js:7141
-#: pages/build/help.js:1974
+#: pages/build/godam.js:7141 pages/build/help.js:1974
 #: pages/godam/components/GoDAMFooter.jsx:57
 msgid "Rate us on WordPress.org"
 msgstr ""
 
-#: pages/build/godam.js:7141
-#: pages/build/help.js:1974
+#: pages/build/godam.js:7141 pages/build/help.js:1974
 #: pages/godam/components/GoDAMFooter.jsx:67
 msgid "Made with ♥ by the GoDAM Team"
 msgstr ""
 
-#: pages/build/godam.js:7185
-#: pages/build/video-editor.js:12379
+#: pages/build/godam.js:7185 pages/build/video-editor.js:12379
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:10
 #: pages/video-editor/components/appearance/Appearance.js:168
 msgid "Select Brand Image"
 msgstr ""
 
-#: pages/build/godam.js:7185
-#: pages/build/video-editor.js:12379
+#: pages/build/godam.js:7185 pages/build/video-editor.js:12379
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:12
 #: pages/video-editor/components/appearance/Appearance.js:170
 msgid "Use this brand image"
@@ -967,8 +964,7 @@ msgstr ""
 msgid "Custom brand logo"
 msgstr ""
 
-#: pages/build/godam.js:7185
-#: pages/build/video-editor.js:12379
+#: pages/build/godam.js:7185 pages/build/video-editor.js:12379
 #: pages/build/video-editor.js:12401
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:47
 #: pages/video-editor/components/appearance/Appearance.js:324
@@ -984,18 +980,18 @@ msgstr ""
 
 #: pages/build/godam.js:7185
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:70
-msgid "Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos"
+msgid ""
+"Upload a custom brand logo to display beside the player controls when "
+"selected. This can be overridden for individual videos"
 msgstr ""
 
-#: pages/build/godam.js:7196
-#: pages/build/godam.js:7229
+#: pages/build/godam.js:7196 pages/build/godam.js:7229
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:51
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:53
 msgid "Settings saved successfully."
 msgstr ""
 
-#: pages/build/godam.js:7196
-#: pages/build/godam.js:7229
+#: pages/build/godam.js:7196 pages/build/godam.js:7229
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:53
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:56
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:55
@@ -1010,7 +1006,9 @@ msgstr ""
 
 #: pages/build/godam.js:7196
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:78
-msgid "Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization."
+msgid ""
+"Keep this option enabled to organize media into folders within the media "
+"library. Disabling it will remove folder organization."
 msgstr ""
 
 #: pages/build/godam.js:7196
@@ -1021,11 +1019,12 @@ msgstr ""
 
 #: pages/build/godam.js:7196
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:98
-msgid "Select a brand color to apply to the video block. This can be overridden for individual videos by the video editor"
+msgid ""
+"Select a brand color to apply to the video block. This can be overridden for "
+"individual videos by the video editor"
 msgstr ""
 
-#: pages/build/godam.js:7196
-#: pages/build/godam.js:7229
+#: pages/build/godam.js:7196 pages/build/godam.js:7229
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:110
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:111
 msgid "Save Settings"
@@ -1033,7 +1032,9 @@ msgstr ""
 
 #: pages/build/godam.js:7207
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:30
-msgid "Your API key is required to access the features. You can get your active API key from your "
+msgid ""
+"Your API key is required to access the features. You can get your active API "
+"key from your "
 msgstr ""
 
 #: pages/build/godam.js:7207
@@ -1118,7 +1119,9 @@ msgstr ""
 
 #: pages/build/godam.js:7229
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:79
-msgid "Set up your video transcoding settings to optimize playback across all devices and network conditions. 🚀"
+msgid ""
+"Set up your video transcoding settings to optimize playback across all "
+"devices and network conditions. 🚀"
 msgstr ""
 
 #: pages/build/godam.js:7229
@@ -1138,12 +1141,18 @@ msgstr ""
 
 #: pages/build/godam.js:7240
 #: pages/godam/components/tabs/VideoSettings/VideoThumbnails.jsx:41
-msgid "This field specifies the number of video thumbnails that will be generated by the GoDAM. To choose from the generated thumbnails for a video, go to Media > Edit > Video Thumbnails. Thumbnails are only generated when the video is first uploaded. Please enter a value between 1 and 10"
+msgid ""
+"This field specifies the number of video thumbnails that will be generated "
+"by the GoDAM. To choose from the generated thumbnails for a video, go to "
+"Media > Edit > Video Thumbnails. Thumbnails are only generated when the "
+"video is first uploaded. Please enter a value between 1 and 10"
 msgstr ""
 
 #: pages/build/godam.js:7240
 #: pages/godam/components/tabs/VideoSettings/VideoThumbnails.jsx:52
-msgid "If enabled, GoDAM will replace existing media thumbnails with regenerated ones after retranscoding. If disabled, media thumbnails will remain untouched"
+msgid ""
+"If enabled, GoDAM will replace existing media thumbnails with regenerated "
+"ones after retranscoding. If disabled, media thumbnails will remain untouched"
 msgstr ""
 
 #: pages/build/godam.js:7251
@@ -1168,7 +1177,9 @@ msgstr ""
 
 #: pages/build/godam.js:7251
 #: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:93
-msgid "If enabled, Transcoder will use an image instead of text as the watermark for the transcoded video"
+msgid ""
+"If enabled, Transcoder will use an image instead of text as the watermark "
+"for the transcoded video"
 msgstr ""
 
 #: pages/build/godam.js:7251
@@ -1191,78 +1202,65 @@ msgstr ""
 msgid "Specify the watermark text that will be added to transcoded videos"
 msgstr ""
 
-#: pages/build/help.js:2007
-#: pages/help/App.js:31
+#: pages/build/help.js:2007 pages/help/App.js:31
 msgid "Configuring the Video Block"
 msgstr ""
 
-#: pages/build/help.js:2007
-#: pages/help/App.js:41
+#: pages/build/help.js:2007 pages/help/App.js:41
 msgid "Appearance Customisation"
 msgstr ""
 
-#: pages/build/help.js:2007
-#: pages/help/App.js:45
+#: pages/build/help.js:2007 pages/help/App.js:45
 msgid "Call To Actions"
 msgstr ""
 
-#: pages/build/help.js:2007
-#: pages/help/App.js:49
+#: pages/build/help.js:2007 pages/help/App.js:49
 msgid "Hotspots"
 msgstr ""
 
-#: pages/build/help.js:2007
-#: pages/help/App.js:53
+#: pages/build/help.js:2007 pages/help/App.js:53
 msgid "Forms"
 msgstr ""
 
-#: pages/build/help.js:2007
-#: pages/help/App.js:57
+#: pages/build/help.js:2007 pages/help/App.js:57
 msgid "ADs"
 msgstr ""
 
-#: pages/build/help.js:2007
-#: pages/help/App.js:67
+#: pages/build/help.js:2007 pages/help/App.js:67
 msgid "Interface"
 msgstr ""
 
-#: pages/build/help.js:2007
-#: pages/help/App.js:71
+#: pages/build/help.js:2007 pages/help/App.js:71
 msgid "How Tos"
 msgstr ""
 
-#: pages/build/help.js:2007
-#: pages/help/App.js:99
+#: pages/build/help.js:2007 pages/help/App.js:99
 msgid "Hi, How can we help?"
 msgstr ""
 
-#: pages/build/help.js:2007
-#: pages/help/App.js:100
+#: pages/build/help.js:2007 pages/help/App.js:100
 msgid "Welcome to the GoDAM Help Center!"
 msgstr ""
 
-#: pages/build/help.js:2007
-#: pages/help/App.js:102
-msgid "Click on the documentation links below to find step-by-step guides, FAQs, and troubleshooting tips for the features you need help with."
+#: pages/build/help.js:2007 pages/help/App.js:102
+msgid ""
+"Click on the documentation links below to find step-by-step guides, FAQs, "
+"and troubleshooting tips for the features you need help with."
 msgstr ""
 
-#: pages/build/media-library.js:2977
-#: pages/media-library/App.js:43
+#: pages/build/media-library.js:2977 pages/media-library/App.js:43
 msgid "New Folder"
 msgstr ""
 
-#: pages/build/media-library.js:2977
-#: pages/media-library/App.js:53
+#: pages/build/media-library.js:2977 pages/media-library/App.js:53
 msgid "Rename"
 msgstr ""
 
-#: pages/build/media-library.js:2977
-#: pages/media-library/App.js:62
+#: pages/build/media-library.js:2977 pages/media-library/App.js:62
 msgid "Delete"
 msgstr ""
 
-#: pages/build/media-library.js:2977
-#: pages/media-library/App.js:77
+#: pages/build/media-library.js:2977 pages/media-library/App.js:77
 msgid "All Media"
 msgstr ""
 
@@ -1276,59 +1274,49 @@ msgstr ""
 msgid "Failed to assign items"
 msgstr ""
 
-#: pages/build/media-library.js:2988
-#: pages/build/video-editor.js:12511
+#: pages/build/media-library.js:2988 pages/build/video-editor.js:12511
 #: pages/media-library/components/folder-tree/FolderTree.jsx:224
 #: pages/video-editor/components/media-grid/MediaGrid.jsx:119
 msgid "Loading…"
 msgstr ""
 
-#: pages/build/video-editor.js:12214
-#: pages/video-editor/AttachmentPicker.jsx:26
+#: pages/build/video-editor.js:12214 pages/video-editor/AttachmentPicker.jsx:26
 msgid "Videos"
 msgstr ""
 
-#: pages/build/video-editor.js:12214
-#: pages/video-editor/AttachmentPicker.jsx:34
+#: pages/build/video-editor.js:12214 pages/video-editor/AttachmentPicker.jsx:34
 msgid "Search videos"
 msgstr ""
 
-#: pages/build/video-editor.js:12225
-#: pages/video-editor/VideoEditor.js:47
+#: pages/build/video-editor.js:12225 pages/video-editor/VideoEditor.js:47
 msgid "You have unsaved changes. Are you sure you want to leave?"
 msgstr ""
 
-#: pages/build/video-editor.js:12225
-#: pages/build/video-editor.js:12335
+#: pages/build/video-editor.js:12225 pages/build/video-editor.js:12335
 #: pages/video-editor/components/LayerSelector.jsx:78
 #: pages/video-editor/VideoEditor.js:134
 msgid "Layers"
 msgstr ""
 
-#: pages/build/video-editor.js:12225
-#: pages/video-editor/VideoEditor.js:145
+#: pages/build/video-editor.js:12225 pages/video-editor/VideoEditor.js:145
 msgid "Player Settings"
 msgstr ""
 
-#: pages/build/video-editor.js:12225
-#: pages/video-editor/VideoEditor.js:181
+#: pages/build/video-editor.js:12225 pages/video-editor/VideoEditor.js:181
 msgid "Save"
 msgstr ""
 
-#: pages/build/video-editor.js:12225
-#: pages/video-editor/VideoEditor.js:191
+#: pages/build/video-editor.js:12225 pages/video-editor/VideoEditor.js:191
 msgid "Video changes saved successfully"
 msgstr ""
 
-#: pages/build/video-editor.js:12236
-#: pages/build/video-editor.js:12357
+#: pages/build/video-editor.js:12236 pages/build/video-editor.js:12357
 #: pages/video-editor/components/SidebarLayers.js:29
 #: pages/video-editor/VideoJSPlayer.js:29
 msgid "Gravity Forms"
 msgstr ""
 
-#: pages/build/video-editor.js:12236
-#: pages/build/video-editor.js:12335
+#: pages/build/video-editor.js:12236 pages/build/video-editor.js:12335
 #: pages/build/video-editor.js:12357
 #: pages/video-editor/components/LayerSelector.jsx:34
 #: pages/video-editor/components/SidebarLayers.js:24
@@ -1336,8 +1324,7 @@ msgstr ""
 msgid "CTA"
 msgstr ""
 
-#: pages/build/video-editor.js:12236
-#: pages/build/video-editor.js:12335
+#: pages/build/video-editor.js:12236 pages/build/video-editor.js:12335
 #: pages/build/video-editor.js:12357
 #: pages/video-editor/components/LayerSelector.jsx:41
 #: pages/video-editor/components/SidebarLayers.js:34
@@ -1345,8 +1332,7 @@ msgstr ""
 msgid "Hotspot"
 msgstr ""
 
-#: pages/build/video-editor.js:12236
-#: pages/build/video-editor.js:12335
+#: pages/build/video-editor.js:12236 pages/build/video-editor.js:12335
 #: pages/build/video-editor.js:12357
 #: pages/video-editor/components/LayerSelector.jsx:48
 #: pages/video-editor/components/SidebarLayers.js:39
@@ -1354,8 +1340,7 @@ msgstr ""
 msgid "Ad"
 msgstr ""
 
-#: pages/build/video-editor.js:12236
-#: pages/build/video-editor.js:12335
+#: pages/build/video-editor.js:12236 pages/build/video-editor.js:12335
 #: pages/build/video-editor.js:12357
 #: pages/video-editor/components/LayerSelector.jsx:55
 #: pages/video-editor/components/SidebarLayers.js:44
@@ -1393,12 +1378,9 @@ msgstr ""
 msgid "Gather opinions through interactive voting"
 msgstr ""
 
-#: pages/build/video-editor.js:12335
-#: pages/build/video-editor.js:12445
-#: pages/build/video-editor.js:12456
-#: pages/build/video-editor.js:12467
-#: pages/build/video-editor.js:12478
-#: pages/build/video-editor.js:12500
+#: pages/build/video-editor.js:12335 pages/build/video-editor.js:12445
+#: pages/build/video-editor.js:12456 pages/build/video-editor.js:12467
+#: pages/build/video-editor.js:12478 pages/build/video-editor.js:12500
 #: pages/video-editor/components/layers/AdsLayer.js:59
 #: pages/video-editor/components/layers/CTALayer.js:139
 #: pages/video-editor/components/layers/FormLayer.js:97
@@ -1423,8 +1405,7 @@ msgstr ""
 msgid "This feature is available in the premium version"
 msgstr ""
 
-#: pages/build/video-editor.js:12357
-#: pages/build/video-editor.js:12368
+#: pages/build/video-editor.js:12357 pages/build/video-editor.js:12368
 #: pages/video-editor/components/ads/CustomAdSettings.js:61
 #: pages/video-editor/components/SidebarLayers.js:173
 msgid "This ad will be overriden by Ad server's ads"
@@ -1457,7 +1438,9 @@ msgstr ""
 
 #: pages/build/video-editor.js:12357
 #: pages/video-editor/components/SidebarLayers.js:252
-msgid "There is already a layer at this timestamp. Please choose a different timestamp."
+msgid ""
+"There is already a layer at this timestamp. Please choose a different "
+"timestamp."
 msgstr ""
 
 #: pages/build/video-editor.js:12368
@@ -1470,8 +1453,7 @@ msgstr ""
 msgid "Add video"
 msgstr ""
 
-#: pages/build/video-editor.js:12368
-#: pages/build/video-editor.js:12467
+#: pages/build/video-editor.js:12368 pages/build/video-editor.js:12467
 #: pages/build/video-editor.js:12478
 #: pages/video-editor/components/ads/CustomAdSettings.js:71
 #: pages/video-editor/components/layers/FormLayer.js:111
@@ -1529,15 +1511,13 @@ msgstr ""
 msgid "Enter the URL to redirect when the ad is clicked"
 msgstr ""
 
-#: pages/build/video-editor.js:12379
-#: pages/build/video-editor.js:12401
+#: pages/build/video-editor.js:12379 pages/build/video-editor.js:12401
 #: pages/video-editor/components/appearance/Appearance.js:134
 #: pages/video-editor/components/cta/ImageCTA.js:28
 msgid "Select Custom Background Image"
 msgstr ""
 
-#: pages/build/video-editor.js:12379
-#: pages/build/video-editor.js:12401
+#: pages/build/video-editor.js:12379 pages/build/video-editor.js:12401
 #: pages/video-editor/components/appearance/Appearance.js:136
 #: pages/video-editor/components/cta/ImageCTA.js:30
 msgid "Use this Background Image"
@@ -1595,7 +1575,9 @@ msgstr ""
 
 #: pages/build/video-editor.js:12379
 #: pages/video-editor/components/appearance/Appearance.js:498
-msgid "Enable this option to use ads from the ad server. This option will disable the ads layer"
+msgid ""
+"Enable this option to use ads from the ad server. This option will disable "
+"the ads layer"
 msgstr ""
 
 #: pages/build/video-editor.js:12379
@@ -1658,10 +1640,8 @@ msgstr ""
 msgid "Ad layer at"
 msgstr ""
 
-#: pages/build/video-editor.js:12445
-#: pages/build/video-editor.js:12456
-#: pages/build/video-editor.js:12467
-#: pages/build/video-editor.js:12500
+#: pages/build/video-editor.js:12445 pages/build/video-editor.js:12456
+#: pages/build/video-editor.js:12467 pages/build/video-editor.js:12500
 #: pages/video-editor/components/layers/AdsLayer.js:42
 #: pages/video-editor/components/layers/AdsLayer.js:52
 #: pages/video-editor/components/layers/CTALayer.js:133
@@ -1698,8 +1678,7 @@ msgstr ""
 msgid "Select type"
 msgstr ""
 
-#: pages/build/video-editor.js:12456
-#: pages/build/video-editor.js:12467
+#: pages/build/video-editor.js:12456 pages/build/video-editor.js:12467
 #: pages/build/video-editor.js:12500
 #: pages/video-editor/components/layers/CTALayer.js:175
 #: pages/video-editor/components/layers/FormLayer.js:144
@@ -1707,8 +1686,7 @@ msgstr ""
 msgid "Advance"
 msgstr ""
 
-#: pages/build/video-editor.js:12456
-#: pages/build/video-editor.js:12467
+#: pages/build/video-editor.js:12456 pages/build/video-editor.js:12467
 #: pages/build/video-editor.js:12500
 #: pages/video-editor/components/layers/CTALayer.js:179
 #: pages/video-editor/components/layers/FormLayer.js:149
@@ -1716,8 +1694,7 @@ msgstr ""
 msgid "Color"
 msgstr ""
 
-#: pages/build/video-editor.js:12456
-#: pages/build/video-editor.js:12467
+#: pages/build/video-editor.js:12456 pages/build/video-editor.js:12467
 #: pages/build/video-editor.js:12500
 #: pages/video-editor/components/layers/CTALayer.js:183
 #: pages/video-editor/components/layers/FormLayer.js:153
@@ -1725,8 +1702,7 @@ msgstr ""
 msgid "Layer background color"
 msgstr ""
 
-#: pages/build/video-editor.js:12456
-#: pages/build/video-editor.js:12467
+#: pages/build/video-editor.js:12456 pages/build/video-editor.js:12467
 #: pages/build/video-editor.js:12500
 #: pages/video-editor/components/layers/CTALayer.js:223
 #: pages/video-editor/components/layers/FormLayer.js:195
@@ -1744,22 +1720,19 @@ msgstr ""
 msgid "Select form theme"
 msgstr ""
 
-#: pages/build/video-editor.js:12467
-#: pages/build/video-editor.js:12500
+#: pages/build/video-editor.js:12467 pages/build/video-editor.js:12500
 #: pages/video-editor/components/layers/FormLayer.js:133
 #: pages/video-editor/components/layers/PollLayer.js:77
 msgid "Allow user to skip"
 msgstr ""
 
-#: pages/build/video-editor.js:12467
-#: pages/build/video-editor.js:12500
+#: pages/build/video-editor.js:12467 pages/build/video-editor.js:12500
 #: pages/video-editor/components/layers/FormLayer.js:138
 #: pages/video-editor/components/layers/PollLayer.js:82
 msgid "If enabled, the user will be able to skip the form submission."
 msgstr ""
 
-#: pages/build/video-editor.js:12467
-#: pages/build/video-editor.js:12500
+#: pages/build/video-editor.js:12467 pages/build/video-editor.js:12500
 #: pages/video-editor/components/layers/FormLayer.js:159
 #: pages/video-editor/components/layers/PollLayer.js:107
 msgid "Custom CSS"
@@ -1807,7 +1780,9 @@ msgstr ""
 
 #: pages/build/video-editor.js:12478
 #: pages/video-editor/components/layers/HotspotLayer.js:203
-msgid "Player will pause the video while the layer is displayed and users hover over the hotspots."
+msgid ""
+"Player will pause the video while the layer is displayed and users hover "
+"over the hotspots."
 msgstr ""
 
 #: pages/build/video-editor.js:12478
