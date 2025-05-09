@@ -279,7 +279,9 @@ function rtgodam_get_usage_data() {
 		$endpoint
 	);
 
-	$response = wp_safe_remote_get( $url );
+	$response = wp_safe_remote_get( $url, array(
+		'timeout' => 20,
+	) );
 
 	if ( is_wp_error( $response ) ) {
 		return $response;

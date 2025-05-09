@@ -159,7 +159,7 @@ class Media_Tracker {
 							<?php
 							$raw_html = '<p>For detailed guidance, please refer to our <a href="%1$s" target="_blank">CDN Integration Guide</a> or contact our <a href="%2$s" target="_blank">Support Team</a> for assistance.</p>';
 
-							$cdn_guide_url = esc_url( 'https://godam.io/docs' );
+							$cdn_guide_url = esc_url( 'https://godam.io/docs/troubleshooting/resolving-conflicts-between-godam-and-media-offload-to-cdn-plugins' );
 							$support_url   = esc_url( 'https://app.godam.io/helpdesk/my-tickets' );
 
 							// Allowed HTML tags for wp_kses.
