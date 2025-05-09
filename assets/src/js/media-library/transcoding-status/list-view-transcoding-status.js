@@ -33,7 +33,6 @@ class ListViewTranscodingStatus {
 			if ( data[ key ].status === 'failed' ) {
 				statusElement.textContent = 'Transcoding failed, please try again.';
 				statusElement.style.display = 'block';
-
 				checkStatusElement.style.display = 'none';
 				return;
 			}

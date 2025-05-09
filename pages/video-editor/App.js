@@ -14,11 +14,16 @@ import '../../assets/build/blocks/godam-player/style-index.css';
  * WordPress dependencies
  */
 import AttachmentPicker from './AttachmentPicker.jsx';
-import GodamHeader from '../godam/GodamHeader';
+import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 
 const App = () => {
 	const [ attachmentID, setAttachmentID ] = useState( null );
 
+	/**
+	 * Handle the back/forward navigation
+	 *
+	 * When navigating back from the video editor to the attachment picker, the attachment ID is removed from the URL.
+	 */
 	useEffect( () => {
 		// Check if the attachment ID is present in the URL
 		const urlParams = new URLSearchParams( window.location.search );

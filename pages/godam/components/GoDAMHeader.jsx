@@ -7,18 +7,18 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import godamLogo from '../../assets/src/images/godam-logo.png';
+import godamLogo from '../../../assets/src/images/godam-logo.png';
 import { help } from '@wordpress/icons';
 
 const GodamHeader = () => {
 	const helpLink = 'http://app.godam.io/helpdesk';
 	const upgradePlanLink = 'https://app.godam.io/subscription/plans';
-	const pricingLink = 'https://godam.io#pricing';
+	const pricingLink = 'https://godam.io/pricing';
 
 	return (
 		<header>
-			<div className="easydam-settings-header border-b -ml-[32px] pl-[32px]">
-				<div className="max-w-[1260px] mx-auto pl-4 pr-9 flex items-center justify-between">
+			<div className="easydam-settings-header border-b -ml-[32px] pl-[32px] bg-white">
+				<div className="max-w-[1440px] mx-auto pl-4 pr-9 flex items-center justify-between">
 					<h1 className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-end">
 						<img className="h-12" src={ godamLogo } alt="GoDAM" />
 						<div className="ml-3">
@@ -41,7 +41,7 @@ const GodamHeader = () => {
 						{
 							( window?.userData?.valid_api_key && window?.userData?.user_data?.active_plan && ( window?.userData?.user_data?.active_plan )?.toLowerCase() !== 'platinum' ) &&
 								<Button
-									className="ml-2"
+									className="ml-2 godam-button"
 									variant="primary"
 									size="compact"
 									href={ upgradePlanLink }
@@ -51,14 +51,14 @@ const GodamHeader = () => {
 						}
 						{
 							( ! window?.userData?.valid_api_key || ! window?.userData?.user_data?.active_plan ) &&
-							<Button
-								className="ml-2"
-								variant="primary"
-								size="compact"
-								href={ pricingLink }
-								target="_blank"
-								text={ __( 'Get GoDAM', 'godam' ) }
-							/>
+								<Button
+									className="ml-2 godam-button"
+									variant="primary"
+									size="compact"
+									href={ pricingLink }
+									target="_blank"
+									text={ __( 'Get GoDAM', 'godam' ) }
+								/>
 						}
 					</div>
 				</div>

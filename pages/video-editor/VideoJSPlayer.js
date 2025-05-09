@@ -20,7 +20,7 @@ import { setCurrentLayer } from './redux/slice/videoSlice';
 /**
  * WordPress dependencies
  */
-import { customLink, customPostType, preformatted, video } from '@wordpress/icons';
+import { customLink, customPostType, preformatted, video, thumbsUp } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
 
@@ -44,6 +44,11 @@ const layerTypes = [
 		title: __( 'Ad', 'godam' ),
 		icon: video,
 		type: 'ad',
+	},
+	{
+		title: __( 'Poll', 'godam' ),
+		icon: thumbsUp,
+		type: 'poll',
 	},
 ];
 
@@ -356,7 +361,7 @@ export const VideoJS = ( props ) => {
 					'--is-controls-visible': displayVideoControls ? '' : 'none',
 				} }
 			>
-				<div id="easydam-video-player" className="relative" data-vjs-player>
+				<div id="easydam-video-player" className="relative rounded-lg overflow-hidden" data-vjs-player>
 					<div ref={ videoRef } />
 					<div id="easydam-layer-placeholder" />
 				</div>
@@ -443,6 +448,13 @@ const Slider = ( props ) => {
 				onMouseMove={ handleHover }
 				onMouseLeave={ handleLeave }
 			/>
+			<span
+				className="slider-progress"
+				style={ {
+					width: `${ sliderValue / max * 100 }%`,
+				} }
+			>
+			</span>
 			{
 				hoverValue && hoverValue >= 0 && hoverValue <= max && (
 					<div className="tooltip" style={ { left: `${ hoverValue / max * 100 }%` } }>

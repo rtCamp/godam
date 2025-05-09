@@ -7,7 +7,7 @@ import { TwitterX, Linkedin, Instagram, Youtube, Wordpress } from 'react-bootstr
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Icon, Tooltip } from '@wordpress/components';
+import { Tooltip } from '@wordpress/components';
 
 /**
  * Internal dependencies

@@ -77,6 +77,9 @@
 	&:hover {
 		color: var(--rtgodam-control-hover-color, #fff);
 	}
+	&.hidden {
+		display: none;
+	}
 }
 
 .easydam-video-container {
@@ -255,7 +258,10 @@
 
 .image-cta-parent-container {
 	display: flex;
+	justify-content: center;
 	align-items: center;
+	height: 100%;
+	width: 100%;
 }
 
 .image-cta-overlay-container {
@@ -733,6 +739,4 @@
 			}
 		}
 	}
-
-
 }

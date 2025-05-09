@@ -1,0 +1,33 @@
+@use '../../assets/src/css/variables.scss';
+
+.godam-video-editor {
+
+	padding: 1rem;
+	height: 100%;
+
+	&-tabs {
+
+		height: 100%;
+
+		.components-tab-panel__tabs {
+			border-bottom: 1px solid rgba(228, 228, 228, 1);
+
+			button {
+				white-space: nowrap;
+				flex-grow: 0;
+
+				font-size: 1rem;
+				line-height: 1.375rem;
+				color: rgba(119, 119, 119, 1);
+
+				&::after {
+					background: variables.$godam-primary-gradient;
+				}
+
+				&.is-active {
+					color: rgba(33, 33, 33, 1);
+				}
+			}
+		}
+	}
+}

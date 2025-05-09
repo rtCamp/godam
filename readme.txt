@@ -4,7 +4,7 @@ Tags: Transcoder, DAM, Interactive Video Layers, Adaptive Bitrate Streaming, Vid
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,55 +20,56 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 
 [youtube https://www.youtube.com/watch?v=UGmKa6aLSgU]
 
-Free Features
+= Free Features =
 
 📌 Media Management
-- The DAM functionality streamlines file organization for websites with large libraries of images, videos, documents, and more.
-- Organize media assets efficiently with enhanced WordPress Media Library integration.
+✓ The DAM functionality streamlines file organization for websites with large libraries of images, videos, documents, and more.
+✓ Organize media assets efficiently with enhanced WordPress Media Library integration.
 
 📌 Interactive Video Layers for Engagement
-- Embed clickable CTAs to drive actions like sign-ups and purchases.
-- Enhance your videos with customizable hotspots that deliver additional context, links, and information exactly when and where your viewers need it.
-- Integrate Gravity Forms to collect user feedback and lead data within videos.
-
-Pro Features
-
-📌 Smart Transcoding & Adaptive Bitrate Streaming
-- Automatically converts videos into multiple resolutions (240p to 4K).
-- Ensures smooth playback by dynamically adjusting quality based on network speed.
-- Supported audio formats: MP3, M4A, WAV, OGG
-- Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
+✓ Embed clickable CTAs to drive actions like sign-ups and purchases.
+✓ Enhance your videos with customizable hotspots that deliver additional context, links, and information exactly when and where your viewers need it.
+✓ Integrate Gravity Forms to collect user feedback and lead data within videos.
+✓ Add interactive Polls to gather viewer opinions during playback.
 
 📌 Seamless Ad Monetization
-- Supports self-hosted ads and third-party ad networks.
-- Flexible ad placements (pre-roll, mid-roll, post-roll) to maximize revenue.
-- Boost revenue and engagement with clickable ad redirections
+✓ Supports self-hosted ads and third-party ad networks.
+✓ Flexible ad placements (pre-roll, mid-roll, post-roll) to maximize revenue.
+✓ Boost revenue and engagement with clickable ad redirections
 
 📌 Customizable Video Player Experience
-- Fully customizable playback controls, branding, and player themes.
-- Enable video looping, autoplay, and inline play for better user experience.
-- Watermarking support to protect video content.
+✓ Fully customizable playback controls, branding, and player themes.
+✓ Enable video looping, autoplay, and inline play for better user experience.
+
+= Pro Features =
+
+📌 Smart Transcoding & Adaptive Bitrate Streaming
+✓ Automatically converts videos into multiple resolutions (240p to 4K).
+✓ Ensures smooth playback by dynamically adjusting quality based on network speed.
+✓ Supported audio formats: MP3, M4A, WAV, OGG
+✓ Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
+✓ Watermarking support to protect video content.
 
 📌 Video Analytics
-- Monitor viewer behavior and engagement through detailed metrics and heatmaps.
-- Track video interactions to optimize content strategy.
-- Gain insights into user retention and conversion rates.
+✓ Monitor viewer behavior and engagement through detailed metrics and heatmaps.
+✓ Track video interactions to optimize content strategy.
+✓ Gain insights into user retention and conversion rates.
 
 Primary Benefits:
-- Simplifies asset management with automated transcoding and adaptive streaming.
-- Enhances viewer engagement with interactive layers like forms, CTAs, and hotspots.
-- Integrates seamlessly with WordPress for a familiar and user-friendly experience.
+✓ Simplifies asset management with automated transcoding and adaptive streaming.
+✓ Enhances viewer engagement with interactive layers like forms, CTAs, and hotspots.
+✓ Integrates seamlessly with WordPress for a familiar and user-friendly experience.
 
 Secondary Benefits:
-- Cost-efficient pricing tailored to your actual usage.
-- Scalable features suitable for small businesses, educators, and enterprise-level users.
-- Monetization opportunities through ad placement and e-commerce integrations.
+✓ Cost-efficient pricing tailored to your actual usage.
+✓ Scalable features suitable for small businesses, educators, and enterprise-level users.
+✓ Monetization opportunities through ad placement and e-commerce integrations.
 
 Use Cases:
-- Education: Deliver interactive video lessons with forms for quizzes or feedback.
-- E-commerce: Use video hotspots to enable in-video product purchases.
-- Marketing: Engage viewers with CTAs and lead capture forms.
-- Content Platforms: Stream high-quality videos with minimal buffering and downtime.
+✓ Education: Deliver interactive video lessons with forms for quizzes or feedback.
+✓ E-commerce: Use video hotspots to enable in-video product purchases.
+✓ Marketing: Engage viewers with CTAs and lead capture forms.
+✓ Content Platforms: Stream high-quality videos with minimal buffering and downtime.
 
 GoDAM is ideal for businesses, content creators, educators, and media platforms looking to streamline digital asset management while offering high-quality streaming experiences.
 Whether you’re running an e-learning site, an eCommerce store with product videos, or a media-heavy blog, GoDAM ensures your videos are delivered efficiently and engagingly.
@@ -76,11 +77,11 @@ Whether you’re running an e-learning site, an eCommerce store with product vid
 Get started today and revolutionize the way you manage and deliver video content on WordPress!
 
 = Pricing Plans =
-[View Pricing Plans](https://godam.io/#pricing)
+[View Pricing Plans](https://godam.io/pricing)
 
-- **7-Day Free Trial** available for each subscription plan.
-- Flexible pricing options to suit different needs.
-- Upgrade or cancel anytime based on usage.
+✓ **7-Day Free Trial** available for each subscription plan.
+✓ Flexible pricing options to suit different needs.
+✓ Upgrade or cancel anytime based on usage.
 
 == Installation ==
 Method 1: WordPress Dashboard
@@ -104,8 +105,8 @@ To get started, you just need to install the GoDAM plugin on your WordPress webs
 = Which file types are supported? =
 A. GoDAM converts all supported audio files to MP3 format and video files to MP4 format.
 Supported input formats:
-• Audio: MP3, M4A, WAV, OGG
-• Video: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
+✓ Audio: MP3, M4A, WAV, OGG
+✓ Video: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
 
 = Who is GoDAM designed for? =
 A. Our solution is perfect for content creators, marketers, educators, e-commerce businesses, and anyone looking to enhance their video strategy with customizable and interactive features.
@@ -164,13 +165,21 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 - Fix: Enhance accessibility features for the media library
 
-= v1.0.2 (April 22, 2025) =
+= v1.0.3 (April 22, 2025) =
 
 - Fix: Video player ads related console errors, and add optional chaining to avoid console errors.
 - Fix: Addressed an edge case where users couldn't save a new API key if the previous one had expired.
 - Fix: Update the settings page links and wordings.
 - Feat: Improve the GoDAM video player UI.
 - Feat: Enabled the watermark feature for users on the Starter plan.
+
+= v1.0.4 (May 7, 2025) =
+
+- Feat: Introduced the new GoDAM Audio Block for displaying audio content from CDN.
+- Feat: Redesigned the Video Editor interface for a smoother editing experience.
+- Feat: Refreshed the UI of Settings pages for improved usability.
+- Feat: Added support for interactive Polls layer in video editor.
+- Fix: Added CDN detection to prevent conflicts with GoDAM’s transcoding.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
@@ -191,10 +200,9 @@ Data Sent:
 When Data is Sent:
 Data is sent only when a user submits the deactivation feedback form after clicking the deactivate button.
 
-Service Provider: godam.io
+Service Provider: [godam.io](https://godam.io)
 
-[Terms of Service](https://godam.io/tos/)
-[Privacy Policy](https://godam.io/privacy-policy/)
+[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
 
 === app.godam.io ===
 Purpose: This service is used for transcoding media uploaded by users and verifying the API Key to ensure the plugin is authorized for use.
@@ -213,8 +221,7 @@ When Data is Sent:
 
 Service Provider: app.godam.io
 
-[Terms of Service](https://godam.io/tos/)
-[Privacy Policy](https://godam.io/privacy-policy/)
+[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
 
 === analytics.godam.io ===
 Purpose: This service collects analytics data when a user watches a video on the frontend. It helps track video performance, user engagement, and campaign effectiveness.
@@ -241,5 +248,4 @@ When Data is Sent:
 
 Service Provider: analytics.godam.io
 
-[Terms of Service](https://godam.io/tos/)
-[Privacy Policy](https://godam.io/privacy-policy/)
+[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)

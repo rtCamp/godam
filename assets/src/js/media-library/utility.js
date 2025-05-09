@@ -37,7 +37,7 @@ function isUploadPage() {
  * @return {boolean} True if folder organization is disabled, false otherwise.
  */
 function isFolderOrgDisabled() {
-	return window.easydamMediaLibrary?.disableFolderOrganization || false;
+	return ! window.easydamMediaLibrary?.enableFolderOrganization || false;
 }
 
 export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled };

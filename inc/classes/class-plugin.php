@@ -14,6 +14,7 @@ use RTGODAM\Inc\Pages;
 use RTGODAM\Inc\Blocks;
 use RTGODAM\Inc\Assets;
 use RTGODAM\Inc\Deactivation;
+use RTGODAM\Inc\Media_Tracker;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
@@ -24,6 +25,7 @@ use RTGODAM\Inc\REST_API\Media_Library;
 use RTGODAM\Inc\REST_API\Ads;
 use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Analytics;
+use RTGODAM\Inc\REST_API\Polls;
 
 /**
  * Class Plugin.
@@ -42,6 +44,7 @@ class Plugin {
 		Blocks::get_instance();
 		Pages::get_instance();
 		Media_Library_Ajax::get_instance();
+		Media_Tracker::get_instance();
 
 		$this->load_post_types();
 		$this->load_taxonomies();
@@ -82,5 +85,6 @@ class Plugin {
 		Transcoding::get_instance();
 		Analytics::get_instance();
 		Deactivation::get_instance();
+		Polls::get_instance();
 	}
 }

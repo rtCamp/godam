@@ -1,0 +1,30 @@
+.godam-color-picker {
+	width: 100%;
+	margin-bottom: 0.5rem;
+
+	&--disabled {
+		pointer-events: none;
+		opacity: 0.5;
+	}
+
+	&__toggle {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.75rem;
+		border: 1px solid rgb(229, 231, 235);
+		border-radius: 0.5rem;
+		background-color: transparent;
+
+		&--open {
+			background-color: #f3f3f3;
+		}
+	}
+
+	&__label {
+		font-size: 0.875rem;
+		line-height: 1;
+		font-weight: 500;
+	}
+}

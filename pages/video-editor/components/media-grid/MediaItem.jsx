@@ -1,12 +1,13 @@
 /**
  * External dependencies
  */
-import React, { useState, forwardRef } from 'react';
+import React, { forwardRef } from 'react';
 
 /**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { DropdownMenu } from '@wordpress/components';
 import { Icon, moreHorizontalMobile, seen, link, chartBar } from '@wordpress/icons';
 
 /**
@@ -15,31 +16,12 @@ import { Icon, moreHorizontalMobile, seen, link, chartBar } from '@wordpress/ico
 import NoThumbnailImage from '../../assets/no-thumbnail.jpg';
 
 const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
-	const [ isActionOpen, setIsActionOpen ] = useState( false );
-	const [ isCopied, setIsCopied ] = useState( false );
-
 	const handleItemClick = ( e ) => {
-		if ( e.target.closest( '.godam-video-list__video__thumbnail__actions' ) ) {
+		if ( e.target.closest( '.godam-video-list__video__thumbnail__overlay' ) ) {
 			return;
 		}
 
-		// Check if the click item is the overlay button.
-		if ( e.target.closest( '.godam-video-list__video__thumbnail__overlay' ) ) {
-			setIsActionOpen( ! isActionOpen );
-		} else {
-			handleAttachmentClick( item.id );
-		}
-	};
-
-	const copyLink = ( e ) => {
-		e.preventDefault();
-		navigator.clipboard.writeText( item?.url );
-
-		setIsCopied( true );
-
-		setTimeout( () => {
-			setIsCopied( false );
-		}, 2000 );
+		handleAttachmentClick( item.id );
 	};
 
 	return (
@@ -65,36 +47,34 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 					)
 				}
 
-				<button className="godam-video-list__video__thumbnail__overlay" >
-					<Icon icon={ moreHorizontalMobile } />
-				</button>
-
-				{ isActionOpen && (
-					<div className="godam-video-list__video__thumbnail__actions">
-						<a href={ item.link } target="_blank" className="godam-video-list__video__thumbnail__actions__action" rel="noreferrer">
-							<Icon icon={ seen } />
-							<span>{ __( 'Preview template', 'godam' ) }</span>
-						</a>
-
-						<button
-							href="#"
-							onClick={ copyLink }
-							className="godam-video-list__video__thumbnail__actions__action">
-							<Icon icon={ link } />
-
-							{ isCopied ? (
-								<span>{ __( 'Link copied', 'godam' ) }</span>
-							) : (
-								<span>{ __( 'Copy video Link', 'godam' ) }</span>
-							) }
-						</button>
-
-						<a href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_analytics&id=${ item?.id }` } target="_blank" className="godam-video-list__video__thumbnail__actions__action" rel="noreferrer">
-							<Icon icon={ chartBar } />
-							<span>{ __( 'View analytics', 'godam' ) }</span>
-						</a>
-					</div>
-				) }
+				<DropdownMenu
+					className="godam-video-list__video__thumbnail__overlay"
+					controls={ [
+						{
+							icon: <Icon icon={ seen } />,
+							onClick: () => {
+								window.open( item.link, '_blank' );
+							},
+							title: __( 'Preview template', 'godam' ),
+						},
+						{
+							icon: <Icon icon={ link } />,
+							onClick: () => {
+								navigator.clipboard.writeText( item?.url );
+							},
+							title: __( 'Copy video Link', 'godam' ),
+						},
+						{
+							icon: <Icon icon={ chartBar } />,
+							onClick: () => {
+								window.open( `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_analytics&id=${ item?.id }`, '_blank' );
+							},
+							title: __( 'View analytics', 'godam' ),
+						},
+					] }
+					icon={ <Icon icon={ moreHorizontalMobile } /> }
+					label="Quick actions."
+				/>
 
 				{ item?.fileLength && <span className="godam-video-list__video__thumbnail__time text-xs text-white font-bold">{ item?.fileLength }</span> }
 			</div>
