@@ -51,6 +51,7 @@ class Deactivation {
 
 		if ( is_admin() && 'plugins.php' === $pagenow ) {
 
+			wp_set_script_translations( 'godam-deactivation-survey-script', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'godam-deactivation-survey-script' ); 
 
 			$current_user = wp_get_current_user();
