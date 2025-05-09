@@ -81,12 +81,12 @@ const SingleMetrics = ( {
 			<div className="analytics-single-info">
 				<div className="flex justify-between items-center flex-row w-full">
 					<div className="analytics-info-heading">
-						<p>{ label }</p>
+						<p className="text-xs text-[#525252]">{ label }</p>
 						<Tooltip text={ tooltipText } />
 					</div>
 					<p id={ `${ metricType }-change` } className="metric-change">+0%</p>
 				</div>
-				<div className="flex flex-row justify-between">
+				<div className="flex flex-row justify-between gap-2 items-end">
 					<div className="flex flex-col gap-3">
 						<p
 							id={ `${ metricType }` }
@@ -94,7 +94,7 @@ const SingleMetrics = ( {
 						>
 							0%
 						</p>
-						<p className="text-zinc-500">{ __( 'Last 7 days', 'godam' ) }</p>
+						<p className="text-zinc-500 text-xs">{ __( 'Last 7 days', 'godam' ) }</p>
 					</div>
 					<div id={ `single-${ metricType }-chart` } className="metrics-chart"></div>
 				</div>

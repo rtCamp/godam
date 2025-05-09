@@ -234,9 +234,9 @@ function generateLineChart( data, selector, videoPlayer ) {
 
 function generatePostViewsChart( postsData, selector ) {
 	// Set dimensions
-	const width = 280;
-	const height = 280;
-	const margin = 40;
+	const width = 200;
+	const height = 200;
+	const margin = 20;
 	const radius = ( Math.min( width, height ) / 2 ) - margin;
 	const innerRadius = radius * 0.7;
 

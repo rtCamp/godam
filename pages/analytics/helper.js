@@ -536,8 +536,8 @@ export function singleMetricsChart(
 ) {
 	// Set the dimensions and margins of the graph - smaller to match card design
 	const margin = { top: 10, right: 10, bottom: 0, left: 0 },
-		width = 180 - margin.left - margin.right,
-		height = 60 - margin.top - margin.bottom;
+		width = 170 - margin.left - margin.right,
+		height = 40 - margin.top - margin.bottom;
 
 	// Define metric options to display proper labels and units with color
 	const metricsOptions = [
@@ -760,11 +760,12 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 		.style( 'height', 'auto' );
 
 	container
-		.append( 'div' )
+		.append( 'h2' )
 		.text( 'Views by Location' )
-		.style( 'font-size', '18px' )
-		.style( 'font-weight', '500' )
-		.style( 'margin-bottom', '12px' );
+		.style( 'font-size', '16px' )
+		.style( 'font-weight', '700' )
+		.style( 'text-align', 'left' )
+		.style( 'margin-bottom', '8px' );
 
 	// Create the SVG for the map
 	const svg = container

@@ -321,10 +321,10 @@ const Analytics = ( { attachmentID } ) => {
 						id="video-analytics-container"
 						className="video-analytics-container hidden"
 					>
-						<div className="overflow-auto">
-							<div className="flex gap-10 items-start max-lg:flex-col">
+						<div>
+							<div className="flex gap-10 items-center max-lg:flex-col">
 								<div className="min-w-[350px] max-w-[350px] flex-grow">
-									<div className="analytics-info-container max-lg:flex-row flex-col">
+									<div className="analytics-info-container max-lg:flex-row flex-col items-center">
 										<SingleMetrics
 											metricType={ 'engagement-rate' }
 											label={ __( 'Average Engagement', 'godam' ) }
@@ -387,7 +387,7 @@ const Analytics = ( { attachmentID } ) => {
 							</div>
 						</div>
 					</div>
-					<div className="grid grid-cols-[3fr_1fr_1fr] gap-4">
+					<div className="grid grid-cols-[2fr_2fr_2fr] gap-4 px-10">
 						{ /* <div className="text-center bg-white border border-zinc-200 rounded p-4">
 							<h3 className="text-base font-medium text-zinc-700 mb-2">{ __( 'Playback Performance', 'godam' ) }</h3>
 							<svg id="metrics-chart"></svg>
@@ -397,7 +397,6 @@ const Analytics = ( { attachmentID } ) => {
 							className="country-heatmap-container text-center bg-white border border-zinc-200 rounded p-4"
 							id="country-heatmap-container"
 						>
-							<h3 className="text-base font-medium text-zinc-700 mb-2">{ __( 'Geographical Heatmap', 'godam' ) }</h3>
 							<div id="map-container"></div>
 							<div id="table-container" className="px-12"></div>
 						</div>
