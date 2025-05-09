@@ -8,6 +8,10 @@ import { useEffect, useRef, useState } from 'react';
  * Internal dependencies
  */
 import { useFetchProcessedAnalyticsHistoryQuery } from './redux/api/analyticsApi';
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
 
 export default function PlaybackPerformanceDashboard( {
 	attachmentID,
@@ -91,8 +95,6 @@ dailyPlays && dailyVideoLength
 		setParsedData( timeMetricsChartData );
 	}, [ processedAnalyticsHistory, selectedMetrics ] );
 
-	// console.log( 'processedAnalyticsHistory 3', parsedData );
-
 	const renderChart = () => {
 		if ( ! chartRef.current || ! parsedData ) {
 			return;
@@ -116,7 +118,7 @@ dailyPlays && dailyVideoLength
 		// Set the dimensions and margins of the graph
 		const margin = { top: 20, right: 30, bottom: 50, left: 60 },
 			width = chartRef.current.clientWidth - margin.left - margin.right,
-			height = 500 - margin.top - margin.bottom;
+			height = 300 - margin.top - margin.bottom;
 
 		// Create an SVG element
 		const svg = d3
@@ -137,89 +139,102 @@ dailyPlays && dailyVideoLength
 		// } ) );
 
 		// Filter data based on selected period
-		// const filterData = ( data, period ) => {
-		// 	const today = new Date();
-		// 	const cutoffDate = new Date( today );
+		const filterData = ( data, period ) => {
+			const today = new Date();
+			const cutoffDate = new Date( today );
 
-		// 	switch ( period ) {
-		// 		case '7D':
-		// 			cutoffDate.setDate( today.getDate() - 7 );
-		// 			break;
-		// 		case '1M':
-		// 			cutoffDate.setMonth( today.getMonth() - 1 );
-		// 			break;
-		// 		case '6M':
-		// 			cutoffDate.setMonth( today.getMonth() - 6 );
-		// 			break;
-		// 		case '1Y':
-		// 			cutoffDate.setFullYear( today.getFullYear() - 1 );
-		// 			break;
-		// 		case 'All':
-		// 		default:
-		// 			return data;
-		// 	}
+			switch ( period ) {
+				case '7D':
+					cutoffDate.setDate( today.getDate() - 7 );
+					break;
+				case '1M':
+					cutoffDate.setMonth( today.getMonth() - 1 );
+					break;
+				case '6M':
+					cutoffDate.setMonth( today.getMonth() - 6 );
+					break;
+				case '1Y':
+					cutoffDate.setFullYear( today.getFullYear() - 1 );
+					break;
+				case 'All':
+				default:
+					return data;
+			}
 
-		// 	return data.filter( ( d ) => new Date( d.date ) >= cutoffDate );
-		// };
+			return data.filter( ( d ) => new Date( d.date ) >= cutoffDate );
+		};
 
-		// const filteredData = filterData( parsedData, selectedPeriod );
+		const filteredData = filterData( parsedData, selectedPeriod );
 
-		const filteredData = [
-			{
-				date: new Date( '2023-05-06T18:30:00.000Z' ),
-				engagement_rate: 15.3,
-				play_rate: 45.1,
-				watch_time: 4.22,
-			},
-			{
-				date: new Date( '2023-07-12T18:30:00.000Z' ),
-				engagement_rate: 18.7,
-				play_rate: 52.0,
-				watch_time: 6.14,
-			},
-			{
-				date: new Date( '2023-09-30T18:30:00.000Z' ),
-				engagement_rate: 21.9,
-				play_rate: 39.6,
-				watch_time: 7.85,
-			},
-			{
-				date: new Date( '2023-12-15T18:30:00.000Z' ),
-				engagement_rate: 23.2,
-				play_rate: 60.0,
-				watch_time: 5.77,
-			},
-			{
-				date: new Date( '2024-03-10T18:30:00.000Z' ),
-				engagement_rate: 19.6,
-				play_rate: 48.5,
-				watch_time: 8.13,
-			},
-			{
-				date: new Date( '2024-07-01T18:30:00.000Z' ),
-				engagement_rate: 17.2,
-				play_rate: 50.0,
-				watch_time: 6.25,
-			},
-			{
-				date: new Date( '2024-10-18T18:30:00.000Z' ),
-				engagement_rate: 20.4,
-				play_rate: 55.3,
-				watch_time: 9.02,
-			},
-			{
-				date: new Date( '2025-01-22T18:30:00.000Z' ),
-				engagement_rate: 22.1,
-				play_rate: 63.9,
-				watch_time: 10.54,
-			},
-			{
-				date: new Date( '2025-04-30T18:30:00.000Z' ),
-				engagement_rate: 24.7,
-				play_rate: 70.2,
-				watch_time: 11.76,
-			},
-		];
+		// const filteredData = [
+		// 	{
+		// 		date: new Date( '2023-05-06T18:30:00.000Z' ),
+		// 		engagement_rate: 15.3,
+		// 		play_rate: 45.1,
+		// 		watch_time: 4.22,
+		// 	},
+		// 	{
+		// 		date: new Date( '2023-07-12T18:30:00.000Z' ),
+		// 		engagement_rate: 18.7,
+		// 		play_rate: 52.0,
+		// 		watch_time: 6.14,
+		// 	},
+		// 	{
+		// 		date: new Date( '2023-09-30T18:30:00.000Z' ),
+		// 		engagement_rate: 21.9,
+		// 		play_rate: 39.6,
+		// 		watch_time: 7.85,
+		// 	},
+		// 	{
+		// 		date: new Date( '2023-12-15T18:30:00.000Z' ),
+		// 		engagement_rate: 23.2,
+		// 		play_rate: 60.0,
+		// 		watch_time: 5.77,
+		// 	},
+		// 	{
+		// 		date: new Date( '2024-03-10T18:30:00.000Z' ),
+		// 		engagement_rate: 19.6,
+		// 		play_rate: 48.5,
+		// 		watch_time: 8.13,
+		// 	},
+		// 	{
+		// 		date: new Date( '2024-07-01T18:30:00.000Z' ),
+		// 		engagement_rate: 17.2,
+		// 		play_rate: 50.0,
+		// 		watch_time: 6.25,
+		// 	},
+		// 	{
+		// 		date: new Date( '2024-10-18T18:30:00.000Z' ),
+		// 		engagement_rate: 20.4,
+		// 		play_rate: 55.3,
+		// 		watch_time: 9.02,
+		// 	},
+		// 	{
+		// 		date: new Date( '2025-01-22T18:30:00.000Z' ),
+		// 		engagement_rate: 22.1,
+		// 		play_rate: 63.9,
+		// 		watch_time: 10.54,
+		// 	},
+		// 	{
+		// 		date: new Date( '2025-04-30T18:30:00.000Z' ),
+		// 		engagement_rate: 24.7,
+		// 		play_rate: 70.2,
+		// 		watch_time: 11.76,
+		// 	},
+		// 	// New data points in April 2025
+		// 	{
+		// 		date: new Date( '2025-04-10T18:30:00.000Z' ),
+		// 		engagement_rate: 23.5,
+		// 		play_rate: 68.9,
+		// 		watch_time: 10.87,
+		// 	},
+		// 	{
+		// 		date: new Date( '2025-04-18T18:30:00.000Z' ),
+		// 		engagement_rate: 25.1,
+		// 		play_rate: 72.4,
+		// 		watch_time: 12.34,
+		// 	},
+		// ];
 
 		const startDate = d3.min( filteredData, ( d ) => d.date );
 		const endDate = d3.max( filteredData, ( d ) => d.date );
@@ -276,6 +291,7 @@ dailyPlays && dailyVideoLength
 				if ( month === 'Jan' ) {
 					return `${ month } '${ String( year ).slice( -2 ) }`; // Example: Jan '24
 				}
+
 				return month;
 			};
 		} else {
@@ -287,7 +303,12 @@ dailyPlays && dailyVideoLength
 		svg
 			.append( 'g' )
 			.attr( 'transform', `translate(0, ${ height })` )
-			.call( d3.axisBottom( x ).tickValues( tickValues ).tickFormat( xTickFormat ) );
+			.call( d3.axisBottom( x ).tickValues( tickValues ).tickFormat( xTickFormat ) )
+			.selectAll( 'text' )
+			.style( 'fill', '#71717a' );
+
+		svg.selectAll( '.domain' )
+			.style( 'stroke', '#71717a' ); // Set axis line color to zinc-500
 
 		// Add month name in center
 		// svg
@@ -345,7 +366,23 @@ dailyPlays && dailyVideoLength
 			.domain( [ 0, maxValue * 1.1 ] )
 			.range( [ height, 0 ] );
 
-		svg.append( 'g' ).call( d3.axisLeft( y ) );
+		svg
+			.append( 'g' )
+			.call( d3.axisLeft( y ) )
+			.selectAll( 'text' )
+			.style( 'fill', '#71717a' );
+
+		svg
+			.append( 'text' )
+			.attr( 'transform', 'rotate(-90)' )
+			.attr( 'y', -50 )
+			.attr( 'x', -height / 2 )
+			.attr( 'dy', '1em' )
+			.attr( 'text-anchor', 'middle' )
+			.text( __( 'Performance', 'godam' ) )
+			.style( 'fill', '#71717a' )
+			.style( 'font-family', 'sans-serif' )
+			.style( 'font-size', '12px' );
 
 		// Define color scale for different metrics
 		const colorScale = d3
@@ -366,6 +403,7 @@ dailyPlays && dailyVideoLength
 			.style( 'box-shadow', '0 0 10px rgba(0,0,0,0.1)' )
 			.style( 'pointer-events', 'none' )
 			.style( 'opacity', 0 )
+			.style( 'min-width', 300 )
 			.style( 'z-index', 1000 );
 
 		// Add a vertical dotted line for April 19
@@ -434,19 +472,27 @@ dailyPlays && dailyVideoLength
 						.style( 'opacity', 1 )
 						.html(
 							`
-              <div style="font-weight: bold">
+              <div class="text-zinc-500">
                 ${ d.date.getDate() } ${ d.date.toLocaleString( 'default', { month: 'short' } ) } ${ d.date.getFullYear() }
               </div>
-              <hr style="margin: 5px 0" />
-              <div>
-                	<span style="color: #9333EA">●</span> 
-               		Engagement Rate: ${ d.engagement_rate.toFixed( 0 ) }${ unit }
+              <hr />
+				<div class="flex flex-col min-w-[250px]">
+					<div class="flex justify-between items-center h-9">
+						<div class="flex items-center gap-2">
+							<span style="color: #9333EA">●</span> 
+							<p class="text-zinc-500">Engagement Rate</p>
+						</div>
+						<span class="text-zinc-950 font-medium">${ d.engagement_rate.toFixed( 2 ) }${ unit }</span>
+					</div>
+					<div class="flex justify-between items-center h-9">
+						<div class="flex items-center gap-2">
+							<span style="color: #5CC8BE">●</span> 
+							<p class="text-zinc-500">Play Rate</p>
+						</div>
+						<span class="text-zinc-950 font-medium">${ d.play_rate.toFixed( 2 ) }${ unit }</span>
+					</div>
 				</div>
-				<br/>
-				<div>
-				 	<span style="color: #5CC8BE">●</span> 
-                	Play Rate: ${ d.play_rate.toFixed( 0 ) }${ unit }
-				</div>
+
             `,
 						)
 						.style( 'left', event.pageX + 10 + 'px' )
@@ -507,7 +553,7 @@ dailyPlays && dailyVideoLength
 	// }, [ selectedPeriod, selectedMetrics, parsedData ] );
 
 	return (
-		<div className="w-full border rounded-lg p-4 shadow-sm">
+		<div className="w-full border rounded-lg p-4 shadow-sm h-[400px]">
 			<div className="flex justify-between items-center mb-6">
 				<h2 className="text-base font-bold text-gray-800">
 					Playback Performance
@@ -612,7 +658,7 @@ dailyPlays && dailyVideoLength
 				</div>
 			</div>
 
-			<div className="w-full" style={ { height: '500px' } } ref={ chartRef }></div>
+			<div className="w-full" style={ { height: '300px' } } ref={ chartRef }></div>
 		</div>
 	);
 }
