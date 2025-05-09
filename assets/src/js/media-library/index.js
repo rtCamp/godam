@@ -11,6 +11,7 @@ import Attachments from './views/attachments.js';
 import AttachmentDetailsTwoColumn from './views/attachment-detail-two-column.js';
 
 import { isFolderOrgDisabled, isUploadPage } from './utility.js';
+import { __ } from '@wordpress/i18n';
 
 const $ = jQuery;
 
@@ -179,6 +180,6 @@ if ( ! isFolderOrgDisabled() ) {
 		initializeDateRangeFromQueryParams();
 
 		// Set initial placeholder value
-		inputElement.value = 'Date Range';
+		inputElement.value = __( 'Date Range', 'godam' );
 	} );
 }

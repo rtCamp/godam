@@ -38,7 +38,7 @@ if ( empty( $primary_audio ) && empty( $backup_audio ) ) {
 			<source src="<?php echo esc_url( $backup_audio ); ?>" type="audio/mpeg" />
 		<?php endif; ?>
 		
-		Your browser does not support the audio element.
+		<?php __( 'Your browser does not support the audio element.', 'godam' ); ?>
 	</audio>
 
 	<?php if ( $caption ) : ?>

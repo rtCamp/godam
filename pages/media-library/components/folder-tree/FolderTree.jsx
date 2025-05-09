@@ -8,6 +8,11 @@ import { closestCenter, DndContext, DragOverlay, MouseSensor, PointerSensor, use
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import TreeItem from './TreeItem.jsx';
@@ -174,7 +179,7 @@ const FolderTree = () => {
 
 							if ( response ) {
 								dispatch( updateSnackbar( {
-									message: 'Items assigned successfully',
+									message: __( 'Items assigned successfully', 'godam' ),
 									type: 'success',
 								},
 								) );
@@ -190,7 +195,7 @@ const FolderTree = () => {
 							}
 						} catch {
 							dispatch( updateSnackbar( {
-								message: 'Failed to assign items',
+								message: __( 'Failed to assign items', 'godam' ),
 								type: 'error',
 							},
 							) );
@@ -216,7 +221,7 @@ const FolderTree = () => {
 	}, [ data, assignFolderMutation, dispatch, selectedFolder ] );
 
 	if ( isLoading ) {
-		return <div>Loading...</div>;
+		return <div>{ __( 'Loading…', 'godam' ) }</div>;
 	}
 
 	if ( error ) {

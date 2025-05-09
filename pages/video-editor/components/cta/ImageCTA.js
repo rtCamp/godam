@@ -7,6 +7,7 @@
 import { Button, Icon, RangeControl, SelectControl, TextareaControl, TextControl } from '@wordpress/components';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -24,9 +25,9 @@ const ImageCTA = ( { layerID } ) => {
 
 	const openImageCTAUploader = () => {
 		const fileFrame = wp.media( {
-			title: 'Select Custom Background Image',
+			title: __( 'Select Custom Background Image', 'godam' ),
 			button: {
-				text: 'Use this Background Image',
+				text: __( 'Use this Background Image', 'godam' ),
 			},
 			library: {
 				type: 'image', // Restrict to images only
@@ -87,15 +88,15 @@ const ImageCTA = ( { layerID } ) => {
 					name="hover-slider"
 					className="custom-label"
 				>
-					Add Image
+					{ __( 'Add Image', 'godam' ) }
 				</label>
 				<Button
 					onClick={ openImageCTAUploader }
 					variant="primary"
 					className="ml-2"
-					aria-label="Upload or Replace CTA Image"
+					aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
 				>
-					{ 0 === layer?.image || ! layer?.image ? 'Upload' : 'Replace' }
+					{ 0 === layer?.image || ! layer?.image ? __( 'Upload', 'godam' ) : __( 'Replace', 'godam' ) }
 				</Button>
 				{ selectedImageUrl && (
 					<div className="mt-2">

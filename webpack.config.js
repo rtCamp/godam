@@ -157,6 +157,7 @@ const pages = {
 		react: 'React',
 		'react-dom': 'ReactDOM',
 		'@wordpress/element': [ 'wp', 'element' ], // For WordPress compatibility
+		'@wordpress/i18n': [ 'wp', 'i18n' ],
 	},
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions

@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux';
 import { cog, video } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -27,13 +28,13 @@ import { setMediaSettings } from './redux/slice/media-settings.js';
 const TABS = [
 	{
 		id: 'general-settings',
-		label: 'General Settings',
+		label: __( 'General Settings', 'godam' ),
 		component: GeneralSettings,
 		icon: cog,
 	},
 	{
 		id: 'video-settings',
-		label: 'Video Settings',
+		label: __( 'Video Settings', 'godam' ),
 		component: VideoSettings,
 		icon: video,
 	},

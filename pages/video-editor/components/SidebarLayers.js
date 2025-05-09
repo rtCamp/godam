@@ -112,7 +112,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 						hotspots: [
 							{
 								id: uuidv4(),
-								tooltipText: 'Click me!',
+								tooltipText: __( 'Click me!', 'godam' ),
 								position: { x: 50, y: 50 },
 								size: { diameter: 48 },
 								oSize: { diameter: 48 },

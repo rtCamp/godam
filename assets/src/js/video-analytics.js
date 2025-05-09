@@ -37,20 +37,6 @@ function generateHeatmap( data, selector, videoPlayer ) {
 	const colorScale = d3.scaleSequential( d3.interpolateReds )
 		.domain( [ 0, d3.max( data ) ] );
 
-	// const colorScale = d3.scaleLinear()
-	// 	.domain( [ 0, 100, 200, 400, 700, 1100, 1600, 3000, 4000, 5000 ] ) // Exact breakpoints for sequential scaling
-	// 	.range( [
-	// 		'#eab308', // Lime with low opacity
-	// 		'#f59e0b', // Yellow with medium opacity
-	// 		'#f97316', // Orange with higher opacity
-	// 		'#dc2626', //  Red with full opacity
-	// 		'#991b1b', // Dark red with full opacity
-	// 		'#450a0a', // Bold dark red with full opacity
-	// 		'#4c1d95',
-	// 		'#4c1d95',
-	// 		'#3730a3',
-	// 	] );
-
 	// Add rectangles for the heatmap
 	heatmapSvg.selectAll( 'rect' )
 		.data( data )

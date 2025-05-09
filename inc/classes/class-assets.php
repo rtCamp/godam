@@ -60,7 +60,6 @@ class Assets {
 			filemtime( RTGODAM_PATH . '/assets/build/css/main.css' )
 		);
 
-
 		wp_enqueue_script(
 			'analytics-library',
 			RTGODAM_URL . '/assets/src/libs/analytics.min.js',
@@ -103,6 +102,7 @@ class Assets {
 
 		$this->enqueue_godam_settings();
 
+		wp_set_script_translations( 'rtgodam-script', 'godam', RTGODAM_PATH . 'languages' );
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
 
@@ -220,6 +220,7 @@ class Assets {
 			wp_enqueue_style( 'easydam-media-library' );
 		}
 
+		wp_set_script_translations( 'easydam-media-library', 'godam', RTGODAM_PATH . 'languages' );
 		wp_enqueue_script( 'easydam-media-library' );
 
 		/**

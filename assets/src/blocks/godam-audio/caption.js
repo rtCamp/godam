@@ -21,14 +21,14 @@ export function Caption( {
 	setAttributes,
 	isSelected,
 	insertBlocksAfter,
-	placeholder = __( 'Add caption' ),
-	label = __( 'Caption text' ),
+	placeholder = __( 'Add caption', 'godam' ),
+	label = __( 'Caption text', 'godam' ),
 	showToolbarButton = true,
 	excludeElementClassName,
 	className,
 	tagName = 'figcaption',
-	addLabel = __( 'Add caption' ),
-	removeLabel = __( 'Remove caption' ),
+	addLabel = __( 'Add caption', 'godam' ),
+	removeLabel = __( 'Remove caption', 'godam' ),
 	icon = captionIcon,
 	...props
 } ) {
