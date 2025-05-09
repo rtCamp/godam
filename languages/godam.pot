@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-05-09T05:37:38+00:00\n"
+"POT-Creation-Date: 2025-05-09T06:37:07+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: godam\n"
@@ -333,11 +333,16 @@ msgstr ""
 msgid "File is transcoded."
 msgstr ""
 
+#: assets/src/blocks/godam-audio/render.php:41
+msgid "Your browser does not support the audio element."
+msgstr ""
+
 #: godam.php:102
 #: inc/classes/class-pages.php:115
 #: inc/classes/class-pages.php:116
 #: assets/build/blocks/godam-player/index.js:645
-#: assets/src/blocks/godam-player/edit.js:320
+#: assets/src/blocks/godam-audio/edit.js:136
+#: assets/src/blocks/godam-player/edit.js:321
 #: assets/build/blocks/godam-player/index.js:595
 msgid "Settings"
 msgstr ""
@@ -475,18 +480,22 @@ msgid "GoDAM Audio"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:245
+#: assets/src/blocks/godam-audio/edit.js:163
 #: assets/src/blocks/godam-player/edit-common-settings.js:9
 #: assets/build/blocks/godam-player/index.js:198
 msgid "Auto"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:248
+#: assets/src/blocks/godam-audio/edit.js:164
 #: assets/src/blocks/godam-player/edit-common-settings.js:10
+#: assets/src/blocks/godam-player/track-uploader.js:36
 #: assets/build/blocks/godam-player/index.js:199
 msgid "Metadata"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:251
+#: assets/src/blocks/godam-audio/edit.js:167
 #: assets/src/blocks/godam-player/edit-common-settings.js:11
 #: assets/build/blocks/godam-player/index.js:200
 msgctxt "Preload value"
@@ -494,18 +503,21 @@ msgid "None"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:264
+#: assets/src/blocks/godam-audio/edit.js:62
 #: assets/src/blocks/godam-player/edit-common-settings.js:18
 #: assets/build/blocks/godam-player/index.js:207
 msgid "Autoplay may cause usability issues for some users."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:293
+#: assets/src/blocks/godam-audio/edit.js:139
 #: assets/src/blocks/godam-player/edit-common-settings.js:49
 #: assets/build/blocks/godam-player/index.js:238
 msgid "Autoplay"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:299
+#: assets/src/blocks/godam-audio/edit.js:146
 #: assets/src/blocks/godam-player/edit-common-settings.js:56
 #: assets/build/blocks/godam-player/index.js:245
 msgid "Loop"
@@ -530,19 +542,19 @@ msgid "Preload"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:652
-#: assets/src/blocks/godam-player/edit.js:331
+#: assets/src/blocks/godam-player/edit.js:332
 #: assets/build/blocks/godam-player/index.js:606
 msgid "Select poster image"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:663
-#: assets/src/blocks/godam-player/edit.js:342
+#: assets/src/blocks/godam-player/edit.js:343
 #: assets/build/blocks/godam-player/index.js:617
 msgid "Select"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:663
-#: assets/src/blocks/godam-player/edit.js:342
+#: assets/src/blocks/godam-player/edit.js:343
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:47
 #: pages/video-editor/components/appearance/Appearance.js:324
 #: pages/video-editor/components/appearance/Appearance.js:393
@@ -552,7 +564,7 @@ msgid "Replace"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:672
-#: assets/src/blocks/godam-player/edit.js:361
+#: assets/src/blocks/godam-player/edit.js:362
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:56
 #: pages/video-editor/components/appearance/Appearance.js:333
 #: pages/video-editor/components/appearance/Appearance.js:402
@@ -561,15 +573,163 @@ msgid "Remove"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:674
-#: assets/src/blocks/godam-player/edit.js:368
+#: assets/src/blocks/godam-player/edit.js:369
 #: assets/build/blocks/godam-player/index.js:643
 msgid "Customise Video"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:682
-#: assets/src/blocks/godam-player/edit.js:379
+#: assets/src/blocks/godam-player/edit.js:380
 #: assets/build/blocks/godam-player/index.js:654
 msgid "Customise"
+msgstr ""
+
+#: assets/src/blocks/godam-audio/caption.js:24
+#: assets/src/blocks/godam-audio/caption.js:30
+#: assets/src/blocks/godam-player/caption.js:24
+#: assets/src/blocks/godam-player/caption.js:30
+msgid "Add caption"
+msgstr ""
+
+#: assets/src/blocks/godam-audio/caption.js:25
+#: assets/src/blocks/godam-player/caption.js:25
+msgid "Caption text"
+msgstr ""
+
+#: assets/src/blocks/godam-audio/caption.js:31
+#: assets/src/blocks/godam-player/caption.js:31
+msgid "Remove caption"
+msgstr ""
+
+#: assets/src/blocks/godam-audio/edit.js:153
+msgctxt "noun; Audio block parameter"
+msgid "Preload"
+msgstr ""
+
+#: assets/src/blocks/godam-audio/edit.js:162
+msgid "Browser default"
+msgstr ""
+
+#: assets/src/blocks/godam-audio/edit.js:188
+msgid "Audio caption text"
+msgstr ""
+
+#: assets/src/blocks/godam-player/edit.js:263
+msgid "GoDAM video"
+msgstr ""
+
+#: assets/src/blocks/godam-player/edit.js:264
+msgid "Drag and drop a video, upload, or choose from your library."
+msgstr ""
+
+#: assets/src/blocks/godam-player/edit.js:329
+msgid "Poster image"
+msgstr ""
+
+#. translators: %s: poster image URL.
+#: assets/src/blocks/godam-player/edit.js:351
+msgid "The current poster image url is %s"
+msgstr ""
+
+#: assets/src/blocks/godam-player/edit.js:354
+msgid "There is no poster image currently selected"
+msgstr ""
+
+#: assets/src/blocks/godam-player/edit.js:394
+msgid "Video caption text"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:32
+msgid "Subtitles"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:33
+msgid "Captions"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:34
+msgid "Descriptions"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:35
+msgid "Chapters"
+msgstr ""
+
+#. translators: %s: Label of the video text track e.g: "French subtitles".
+#: assets/src/blocks/godam-player/track-uploader.js:53
+msgctxt "text tracks"
+msgid "Edit %s"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:57
+msgid "Edit"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:65
+#: assets/src/blocks/godam-player/track-uploader.js:212
+#: assets/src/blocks/godam-player/track-uploader.js:243
+msgid "Text tracks"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:82
+msgid "Edit track"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:85
+msgid "File"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:97
+msgid "Label"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:99
+msgid "Title of track"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:110
+msgid "Source language"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:112
+msgid "Language tag (en, fr, etc.)"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:122
+msgid "Kind"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:137
+msgid "Remove track"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:146
+msgid "English"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:166
+msgid "Apply"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:246
+msgid "Tracks can be subtitles, captions, chapters, or descriptions. They help make your content more accessible to a wider range of users."
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:257
+msgid "Add tracks"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:268
+msgid "Open Media Library"
+msgstr ""
+
+#: assets/src/blocks/godam-player/track-uploader.js:303
+msgctxt "verb"
+msgid "Upload"
+msgstr ""
+
+#: assets/src/js/media-library/index.js:183
+msgid "Date Range"
 msgstr ""
 
 #: pages/analytics/Analytics.js:63
