@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { generateMetricsOverTime, generateCountryHeatmap } from '../analytics/helper';
+import { generateCountryHeatmap } from '../analytics/helper';
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
 import DownArrow from '../../assets/src/images/down-arrow.svg';
 import TopArrow from '../../assets/src/images/up-arrow.svg';
@@ -18,6 +18,7 @@ import ExportBtn from '../../assets/src/images/export.svg';
 import Tooltip from '../analytics/Tooltip.js';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchTopVideosQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/GodamHeader';
+import SingleMetrics from '../analytics/SingleMetrics';
 
 const Dashboard = () => {
 	const [ recentVideos, setRecentVideos ] = useState( [] );
@@ -52,32 +53,6 @@ const Dashboard = () => {
 			return () => clearInterval( interval );
 		}
 	}, [ dashboardMetrics ] );
-
-	useEffect( () => {
-		if (
-			! isDashboardMetricsHistoryLoading &&
-			dashboardMetricsHistory &&
-			dashboardMetricsHistory.length > 0
-		) {
-			const transformedData = dashboardMetricsHistory.map( ( item ) => ( {
-				date: item.date,
-				engagement_rate: item.avg_engagement,
-				play_rate: item.play_rate * 100,
-				watch_time: item.watch_time,
-			} ) );
-
-			// Poll for the container to exist in the DOM
-			const interval = setInterval( () => {
-				const container = document.querySelector( '#global-analytics-container' );
-				if ( container ) {
-					clearInterval( interval );
-					generateMetricsOverTime( transformedData, '#global-analytics-container' );
-				}
-			}, 100 );
-
-			return () => clearInterval( interval );
-		}
-	}, [ isDashboardMetricsHistoryLoading, dashboardMetricsHistory ] );
 
 	useEffect( () => {
 		if (
@@ -309,6 +284,37 @@ const Dashboard = () => {
 						</div>
 					</div>
 
+				</div>
+
+				<div className="analytics-info analytics-info-container">
+					<SingleMetrics
+						metricType="engagement-rate"
+						label={ __( 'Average Engagement', 'godam' ) }
+						tooltipText={ __( 'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)', 'godam' ) }
+						processedAnalyticsHistory={ dashboardMetricsHistory }
+						analyticsDataFetched={ dashboardMetrics }
+					/>
+					<SingleMetrics
+						metricType="plays"
+						label={ __( 'Total Plays', 'godam' ) }
+						tooltipText={ __( 'Plays represent the total number of times the video has been viewed', 'godam' ) }
+						processedAnalyticsHistory={ dashboardMetricsHistory }
+						analyticsDataFetched={ dashboardMetrics }
+					/>
+					<SingleMetrics
+						metricType="play-rate"
+						label={ __( 'Play Rate', 'godam' ) }
+						tooltipText={ __( 'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads', 'godam' ) }
+						processedAnalyticsHistory={ dashboardMetricsHistory }
+						analyticsDataFetched={ dashboardMetrics }
+					/>
+					<SingleMetrics
+						metricType="watch-time"
+						label={ __( 'Watch Time', 'godam' ) }
+						tooltipText={ __( 'Total time the video has been watched, aggregated across all plays', 'godam' ) }
+						processedAnalyticsHistory={ dashboardMetricsHistory }
+						analyticsDataFetched={ dashboardMetrics }
+					/>
 				</div>
 
 				<div>
