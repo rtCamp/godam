@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { TwitterX, Linkedin, Instagram, Youtube, Wordpress } from 'react-bootstrap-icons';
+import { TwitterX, Linkedin, Instagram, Youtube, Wordpress, Facebook } from 'react-bootstrap-icons';
 
 /**
  * WordPress dependencies
@@ -36,18 +36,23 @@ const SOCIAL_ICONS = [
 		icon: <TwitterX />,
 	},
 	{
+		title: __( 'Facebook', 'godam' ),
+		url: 'https://www.facebook.com/Godam.io',
+		icon: <Facebook />,
+	},
+	{
 		title: __( 'Linkedin', 'godam' ),
 		url: 'https://www.linkedin.com/company/godamio',
 		icon: <Linkedin />,
 	},
 	{
 		title: __( 'Instagram', 'godam' ),
-		url: 'https://www.instagram.com/godam.io',
+		url: 'https://www.instagram.com/godam_io',
 		icon: <Instagram />,
 	},
 	{
 		title: __( 'Youtube', 'godam' ),
-		url: 'https://www.youtube.com/@TeamGoDAM',
+		url: 'https://www.youtube.com/@godam_io',
 		icon: <Youtube />,
 	},
 	{
