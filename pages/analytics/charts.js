@@ -345,7 +345,7 @@ function generatePostViewsChart( postsData, selector ) {
 		.attr( 'text-anchor', 'middle' )
 		.attr( 'dy', '0.35em' )
 		.style( 'fill', '#fff' )
-		.style( 'font-size', '12px' )
+		.style( 'font-size', '11px' )
 		.style( 'font-weight', 'bold' )
 		.text( ( d ) => formatNumber( d.data.views ) );
 

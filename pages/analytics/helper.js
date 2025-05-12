@@ -765,7 +765,7 @@ export function generateCountryHeatmap( countryData, mapSelector, tableSelector 
 		.style( 'font-size', '16px' )
 		.style( 'font-weight', '700' )
 		.style( 'text-align', 'left' )
-		.style( 'margin-bottom', '8px' );
+		.style( 'margin-bottom', '16px' );
 
 	// Create the SVG for the map
 	const svg = container
