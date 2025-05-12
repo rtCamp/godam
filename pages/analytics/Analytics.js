@@ -9,8 +9,9 @@ import 'video.js/dist/video-js.css';
  */
 import '../video-editor/style.scss';
 import axios from 'axios';
-import GodamHeader from '../godam/GodamHeader';
+import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import Tooltip from './Tooltip';
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * WordPress dependencies
@@ -71,7 +72,7 @@ const Analytics = ( { attachmentID } ) => {
 			{ analyticsData && (
 				<>
 					<div className="p-10 flex gap-3 items-center">
-						<h2 className="text-2xl m-0 capitalize">{ analyticsData?.title?.rendered }</h2>
+						<h2 className="text-2xl m-0 capitalize" dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( analyticsData?.title?.rendered ) } }></h2>
 					</div>
 
 					<div className="subheading-container">
@@ -89,7 +90,7 @@ const Analytics = ( { attachmentID } ) => {
 													<p>
 														{ __( 'Average Engagement', 'godam' ) }
 													</p>
-													<Tooltip text="Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)" />
+													<Tooltip text={ __( 'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)', 'godam' ) } />
 												</div>
 												<p id="engagement-rate" className="min-w-[90px] engagement-rate">0%</p>
 											</div>
@@ -100,7 +101,7 @@ const Analytics = ( { attachmentID } ) => {
 													<p>
 														{ __( 'Total Plays', 'godam' ) }
 													</p>
-													<Tooltip text="Plays represent the total number of times the video has been viewed" />
+													<Tooltip text={ __( 'Plays represent the total number of times the video has been viewed', 'godam' ) } />
 												</div>
 												<p id="total-plays" className="min-w-[90px] engagement-rate">0</p>
 											</div>
@@ -111,7 +112,7 @@ const Analytics = ( { attachmentID } ) => {
 													<p>
 														{ __( 'Play Rate', 'godam' ) }
 													</p>
-													<Tooltip text="Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads" />
+													<Tooltip text={ __( 'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads', 'godam' ) } />
 												</div>
 												<p id="play-rate" className="min-w-[90px] engagement-rate">0%</p>
 											</div>
@@ -145,7 +146,7 @@ const Analytics = ( { attachmentID } ) => {
 											<div id="heatmap-container" className="mt-4">
 												<h3 className="text-md mb-2 flex gap-2">
 													{ __( 'Heatmap', 'godam' ) }
-													<Tooltip text="Heatmap visualizes per-second view density, identifying peaks of plays, skipped sections, and audience drop-offs. Darker areas indicate higher engagement" />
+													<Tooltip text={ __( 'Heatmap visualizes per-second view density, identifying peaks of plays, skipped sections, and audience drop-offs. Darker areas indicate higher engagement', 'godam' ) } />
 												</h3>
 												<svg id="heatmap" width="640" height="100"></svg>
 												<div className="heatmap-tooltip"></div>

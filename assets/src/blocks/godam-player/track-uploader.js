@@ -29,11 +29,11 @@ const ALLOWED_TYPES = [ 'text/vtt' ];
 const DEFAULT_KIND = 'subtitles';
 
 const KIND_OPTIONS = [
-	{ label: __( 'Subtitles' ), value: 'subtitles' },
-	{ label: __( 'Captions' ), value: 'captions' },
-	{ label: __( 'Descriptions' ), value: 'descriptions' },
-	{ label: __( 'Chapters' ), value: 'chapters' },
-	{ label: __( 'Metadata' ), value: 'metadata' },
+	{ label: __( 'Subtitles', 'godam' ), value: 'subtitles' },
+	{ label: __( 'Captions', 'godam' ), value: 'captions' },
+	{ label: __( 'Descriptions', 'godam' ), value: 'descriptions' },
+	{ label: __( 'Chapters', 'godam' ), value: 'chapters' },
+	{ label: __( 'Metadata', 'godam' ), value: 'metadata' },
 ];
 
 function TrackList( { tracks, onEditPress } ) {
@@ -50,11 +50,11 @@ function TrackList( { tracks, onEditPress } ) {
 					onClick={ () => onEditPress( index ) }
 					aria-label={ sprintf(
 						/* translators: %s: Label of the video text track e.g: "French subtitles". */
-						_x( 'Edit %s', 'text tracks' ),
+						_x( 'Edit %s', 'text tracks', 'godam' ),
 						track.label,
 					) }
 				>
-					{ __( 'Edit' ) }
+					{ __( 'Edit', 'godam' ) }
 				</Button>
 			</div>
 		);
@@ -62,7 +62,7 @@ function TrackList( { tracks, onEditPress } ) {
 
 	return (
 		<MenuGroup
-			label={ __( 'Text tracks' ) }
+			label={ __( 'Text tracks', 'godam' ) }
 			className="block-library-video-tracks-editor__track-list"
 		>
 			{ content }
@@ -79,10 +79,10 @@ function SingleTrackEditor( { track, onChange, onClose, onRemove } ) {
 			spacing="4"
 		>
 			<span className="block-library-video-tracks-editor__single-track-editor-edit-track-label">
-				{ __( 'Edit track' ) }
+				{ __( 'Edit track', 'godam' ) }
 			</span>
 			<span>
-				{ __( 'File' ) }: <b>{ fileName }</b>
+				{ __( 'File', 'godam' ) }: <b>{ fileName }</b>
 			</span>
 			<div columns={ 2 } gap={ 4 }>
 				<TextControl
@@ -94,9 +94,9 @@ function SingleTrackEditor( { track, onChange, onClose, onRemove } ) {
 							label: newLabel,
 						} )
 					}
-					label={ __( 'Label' ) }
+					label={ __( 'Label', 'godam' ) }
 					value={ label }
-					help={ __( 'Title of track' ) }
+					help={ __( 'Title of track', 'godam' ) }
 				/>
 				<TextControl
 					__next40pxDefaultSize
@@ -107,9 +107,9 @@ function SingleTrackEditor( { track, onChange, onClose, onRemove } ) {
 							srcLang: newSrcLang,
 						} )
 					}
-					label={ __( 'Source language' ) }
+					label={ __( 'Source language', 'godam' ) }
 					value={ srcLang }
-					help={ __( 'Language tag (en, fr, etc.)' ) }
+					help={ __( 'Language tag (en, fr, etc.)', 'godam' ) }
 				/>
 			</div>
 			<div spacing="8">
@@ -119,7 +119,7 @@ function SingleTrackEditor( { track, onChange, onClose, onRemove } ) {
 					className="block-library-video-tracks-editor__single-track-editor-kind-select"
 					options={ KIND_OPTIONS }
 					value={ kind }
-					label={ __( 'Kind' ) }
+					label={ __( 'Kind', 'godam' ) }
 					onChange={ ( newKind ) => {
 						onChange( {
 							...track,
@@ -134,7 +134,7 @@ function SingleTrackEditor( { track, onChange, onClose, onRemove } ) {
 						variant="link"
 						onClick={ onRemove }
 					>
-						{ __( 'Remove track' ) }
+						{ __( 'Remove track', 'godam' ) }
 					</Button>
 					<Button
 						__next40pxDefaultSize
@@ -143,7 +143,7 @@ function SingleTrackEditor( { track, onChange, onClose, onRemove } ) {
 							const changes = {};
 							let hasChanges = false;
 							if ( label === '' ) {
-								changes.label = __( 'English' );
+								changes.label = __( 'English', 'godam' );
 								hasChanges = true;
 							}
 							if ( srcLang === '' ) {
@@ -163,7 +163,7 @@ function SingleTrackEditor( { track, onChange, onClose, onRemove } ) {
 							onClose();
 						} }
 					>
-						{ __( 'Apply' ) }
+						{ __( 'Apply', 'godam' ) }
 					</Button>
 				</div>
 			</div>
@@ -209,7 +209,7 @@ export default function TracksEditor( { tracks = [], onChange } ) {
 							aria-haspopup="true"
 							onClick={ handleOnToggle }
 						>
-							{ __( 'Text tracks' ) }
+							{ __( 'Text tracks', 'godam' ) }
 						</ToolbarButton>
 					</ToolbarGroup>
 				);
@@ -240,11 +240,12 @@ export default function TracksEditor( { tracks = [], onChange } ) {
 						{ tracks.length === 0 && (
 							<div className="block-library-video-tracks-editor__tracks-informative-message">
 								<h2 className="block-library-video-tracks-editor__tracks-informative-message-title">
-									{ __( 'Text tracks' ) }
+									{ __( 'Text tracks', 'godam' ) }
 								</h2>
 								<p className="block-library-video-tracks-editor__tracks-informative-message-description">
 									{ __(
 										'Tracks can be subtitles, captions, chapters, or descriptions. They help make your content more accessible to a wider range of users.',
+										'godam',
 									) }
 								</p>
 							</div>
@@ -253,7 +254,7 @@ export default function TracksEditor( { tracks = [], onChange } ) {
 							<TrackList tracks={ tracks } onEditPress={ setTrackBeingEdited } />
 							<MenuGroup
 								className="block-library-video-tracks-editor__add-tracks-container"
-								label={ __( 'Add tracks' ) }
+								label={ __( 'Add tracks', 'godam' ) }
 							>
 								<MediaUpload
 									onSelect={ ( { url } ) => {
@@ -264,7 +265,7 @@ export default function TracksEditor( { tracks = [], onChange } ) {
 									allowedTypes={ ALLOWED_TYPES }
 									render={ ( { open } ) => (
 										<MenuItem icon={ media } onClick={ open }>
-											{ __( 'Open Media Library' ) }
+											{ __( 'Open Media Library', 'godam' ) }
 										</MenuItem>
 									) }
 								/>
@@ -299,7 +300,7 @@ export default function TracksEditor( { tracks = [], onChange } ) {
 														openFileDialog();
 													} }
 												>
-													{ _x( 'Upload', 'verb' ) }
+													{ _x( 'Upload', 'verb', 'godam' ) }
 												</MenuItem>
 											);
 										} }

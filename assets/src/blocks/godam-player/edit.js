@@ -260,9 +260,10 @@ function VideoEdit( {
 					className="block-editor-media-placeholder"
 					withIllustration={ ! isSingleSelected }
 					icon={ icon }
-					label={ __( 'GoDAM video' ) }
+					label={ __( 'GoDAM video', 'godam' ) }
 					instructions={ __(
 						'Drag and drop a video, upload, or choose from your library.',
+						'godam',
 					) }
 				>
 					<MediaUpload
@@ -325,7 +326,7 @@ function VideoEdit( {
 					<MediaUploadCheck>
 						<div className="editor-video-poster-control">
 							<BaseControl.VisualLabel>
-								{ __( 'Poster image' ) }
+								{ __( 'Poster image', 'godam' ) }
 							</BaseControl.VisualLabel>
 							<MediaUpload
 								title={ __( 'Select poster image', 'godam' ) }
@@ -347,10 +348,10 @@ function VideoEdit( {
 								{ poster
 									? sprintf(
 										/* translators: %s: poster image URL. */
-										__( 'The current poster image url is %s' ),
+										__( 'The current poster image url is %s', 'godam' ),
 										poster,
 									)
-									: __( 'There is no poster image currently selected' ) }
+									: __( 'There is no poster image currently selected', 'godam' ) }
 							</p>
 							{ !! poster && (
 								<Button
@@ -390,7 +391,7 @@ function VideoEdit( {
 					setAttributes={ setAttributes }
 					isSelected={ isSingleSelected }
 					insertBlocksAfter={ insertBlocksAfter }
-					label={ __( 'Video caption text' ) }
+					label={ __( 'Video caption text', 'godam' ) }
 					showToolbarButton={ isSingleSelected }
 				/>
 			</figure>

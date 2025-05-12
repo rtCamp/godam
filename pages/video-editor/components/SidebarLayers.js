@@ -12,11 +12,12 @@ import { v4 as uuidv4 } from 'uuid';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { BaseControl, Button, Icon, Modal, Tooltip } from '@wordpress/components';
-import { plus, preformatted, customLink, arrowRight, video, customPostType } from '@wordpress/icons';
+import { Button, Icon, Tooltip } from '@wordpress/components';
+import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
 
 import Layer from './layers/Layer';
+import LayerSelector from './LayerSelector.jsx';
 
 const layerTypes = [
 	{
@@ -38,6 +39,11 @@ const layerTypes = [
 		title: __( 'Ad', 'godam' ),
 		icon: video,
 		type: 'ad',
+	},
+	{
+		title: __( 'Poll', 'godam' ),
+		icon: thumbsUp,
+		type: 'poll',
 	},
 ];
 
@@ -61,13 +67,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
+	// const isValidAPiKey = window?.videoData?.valid_license;
 
 	// For now we are enabling all the features
-	const isValidAPIKey = true;
+	const isValidAPiKey = true;
 
 	const addNewLayer = ( type ) => {
-		if ( premiumLayers.includes( type ) && ! isValidAPIKey ) {
+		if ( premiumLayers.includes( type ) && ! isValidAPiKey ) {
 			return;
 		}
 
@@ -106,7 +112,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 						hotspots: [
 							{
 								id: uuidv4(),
-								tooltipText: 'Click me!',
+								tooltipText: __( 'Click me!', 'godam' ),
 								position: { x: 50, y: 50 },
 								size: { diameter: 48 },
 								oSize: { diameter: 48 },
@@ -132,6 +138,16 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 					skip_offset: 5,
 				} ) );
 				break;
+			case 'poll':
+				dispatch( addLayer( {
+					id: uuidv4(),
+					displayTime: currentTime,
+					type,
+					poll_id: '',
+					allow_skip: true,
+					custom_css: '',
+				} ) );
+				break;
 			default:
 				break;
 		}
@@ -141,15 +157,16 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 		<>
 			{
 				! currentLayer ? (
-					<div id="sidebar-layers" className="p-4">
+					<div id="sidebar-layers" className="pt-4 h-max">
 						{
 							sortedLayers?.map( ( layer ) => {
 								const isAdServerAd = adServer === 'ad-server' && layer.type === 'ad';
 								const isGFPluginNotActive = layer.type === 'form' && ! isGFPluginActive;
+								const isPollPluginNotActive = layer.type === 'poll' && ! window.easydamMediaLibrary.isPollPluginActive;
 								let addWarning = false;
 								let toolTipMessage = '';
 
-								if ( premiumLayers.includes( layer.type ) && ! isValidAPIKey ) {
+								if ( premiumLayers.includes( layer.type ) && ! isValidAPiKey ) {
 									toolTipMessage = __( 'This feature is available in the premium version', 'godam' );
 									addWarning = true;
 								} else if ( isAdServerAd ) {
@@ -158,6 +175,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 								} else if ( isGFPluginNotActive ) {
 									toolTipMessage = __( 'Gravity Forms plugin is not active', 'godam' );
 									addWarning = true;
+								} else if ( isPollPluginNotActive ) {
+									toolTipMessage = __( 'Poll plugin is not active', 'godam' );
+									addWarning = true;
 								} else {
 									toolTipMessage = '';
 								}
@@ -165,13 +185,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 								return (
 									<Tooltip
 										key={ layer.id }
-										className="w-full flex justify-between items-center p-2 border rounded mb-2 hover:bg-gray-50 cursor-pointer"
+										className="w-full flex justify-between items-center px-2 py-3 border rounded-md mb-2 hover:bg-gray-50 cursor-pointer"
 										text={ toolTipMessage }
 										placement="right"
 									>
-										<div className="border rounded mb-2">
+										<div className="border rounded-lg mb-2">
 											<Button
-												className={ `w-full flex justify-between items-center p-2 border-1 rounded hover:bg-gray-50 cursor-pointer border-[#e5e7eb] ${ addWarning ? 'bg-orange-50 hover:bg-orange-50' : '' }` }
+												className={ `w-full flex justify-between items-center px-2 py-3 border-1 rounded-lg h-auto hover:bg-gray-50 cursor-pointer border-[#e5e7eb] ${ addWarning ? 'bg-orange-50 hover:bg-orange-50' : '' }` }
 												onClick={ () => {
 													dispatch( setCurrentLayer( layer ) );
 													onSelectLayer( layer.displayTime );
@@ -179,7 +199,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 											>
 												<div className="flex items-center gap-2">
 													<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type ).icon } />
-													<p>{ layer?.type?.toUpperCase() } layer at <b>{ layer.displayTime }s</b></p>
+													<p className="m-0 text-base">{ layer?.type?.toUpperCase() } layer at <b>{ layer.displayTime }s</b></p>
 												</div>
 												<div>
 													<Icon icon={ arrowRight } />
@@ -192,7 +212,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 						}
 						{
 							! loading && layers.length === 0 && (
-								<p className="text-center py-4 text-gray-400">{ __( 'No layers added.', 'godam' ) }</p>
+								<>
+									<h3 className="text-2xl m-0 text-center">{ __( 'No layers added', 'godam' ) }</h3>
+									<p className="text-center mb-10 text-gray-400">{ __( 'Play video to add layer.', 'godam' ) }</p>
+								</>
 							)
 						}
 						{
@@ -211,85 +234,38 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 							)
 						}
 
-						{ ! loading &&
-						<div>
-							<Button
-								isPrimary
-								id="add-layer-btn"
-								icon={ plus }
-								iconPosition="left"
-								onClick={ openModal }
-								disabled={ ! currentTime || layers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
-							>{ __( 'Add layer at ', 'godam' ) } { currentTime }s
-							</Button>
-							{ layers.find( ( l ) => l.displayTime === currentTime ) && (
-								<p className="text-slate-500">
-									{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
-								</p>
-							) }
-						</div>
-						}
-						{ isOpen && (
-							<Modal title={ __( 'Select layer type', 'godam' ) } onRequestClose={ closeModal }>
-								<div className="flex flex-col gap-1">
-									{
-										layerTypes.map( ( layerType ) => {
-											const isAdServerAd = adServer === 'ad-server' && layerType.type === 'ad';
-											const isGFPluginNotActive = layerType.type === 'form' && ! isGFPluginActive;
-											let isDisabled = false;
-											let isPremium = false;
-											let message = '';
-
-											if ( premiumLayers.includes( layerType.type ) && ! isValidAPIKey ) {
-												message = __( 'This feature is available in the premium version', 'godam' );
-												isDisabled = true;
-												isPremium = true;
-											} else if ( isAdServerAd ) {
-												message = __( 'This ad will be overriden by Ad server\'s ads', 'godam' );
-												isDisabled = true;
-											} else if ( isGFPluginNotActive ) {
-												message = __( 'Gravity Forms plugin is not active', 'godam' );
-												isDisabled = true;
-											} else {
-												message = '';
-											}
-
-											return (
-												<Tooltip
-													key={ layerType.type }
-													text={ message }
-													placement="top"
-													delay={ 0 }
-													hideOnClick={ true }
-												>
-													<div>
-														<Button
-															icon={ layerType.icon }
-															key={ layerType.type }
-															variant="secondary"
-															className={ `w-full ${ isPremium && isDisabled ? 'opacity-40' : '' }` }
-															onClick={ () => {
-																if ( isPremium && isDisabled ) {
-																	window.open( 'https://godam.io/#pricing', '_blank' );
-																	return;
-																}
-
-																addNewLayer( layerType.type );
-																closeModal();
-															} }
-															disabled={ ! isPremium && isDisabled }
-														>{ layerType.title }</Button>
-													</div>
-												</Tooltip>
-											);
-										} )
-									}
+						{
+							! loading && (
+								<div className="mt-10 flex justify-center flex-col items-center">
+									<Button
+										className="godam-button w-fit"
+										variant="primary"
+										id="add-layer-btn"
+										icon={ plus }
+										iconPosition="left"
+										onClick={ openModal }
+										disabled={ ! currentTime || layers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
+									>{ __( 'Add layer at ', 'godam' ) } { currentTime }s
+									</Button>
+									{ layers.find( ( l ) => l.displayTime === currentTime ) && (
+										<p className="text-slate-500 text-center">
+											{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
+										</p>
+									) }
 								</div>
-							</Modal>
+							)
+						}
+
+						{ isOpen && (
+							<LayerSelector
+								isGFPluginActive={ isGFPluginActive }
+								closeModal={ closeModal }
+								addNewLayer={ addNewLayer }
+							/>
 						) }
 					</div>
 				) : (
-					<div id="sidebar-layers" className="p-4">
+					<div id="sidebar-layers">
 						<Layer layer={ currentLayer } goBack={ () => dispatch( setCurrentLayer( null ) ) } />
 					</div>
 				)
