@@ -289,8 +289,8 @@ class Pages {
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
-				RTGODAM_URL . '/pages/build/video-editor.js',
-				array( 'wp-element' ),
+				RTGODAM_URL . 'pages/build/video-editor.js',
+				array( 'wp-element', 'wp-i18n' ),
 				filemtime( RTGODAM_PATH . '/pages/build/video-editor.js' ),
 				true
 			);
@@ -316,6 +316,7 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_set_script_translations( 'transcoder-page-script-video-editor', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
 
 			$gravity_forms_styles = array(
@@ -365,9 +366,9 @@ class Pages {
 
 			wp_register_script(
 				'transcoder-page-script-godam',
-				RTGODAM_URL . '/pages/build/godam.js',
-				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . '/pages/build/godam.js' ),
+				RTGODAM_URL . 'pages/build/godam.js',
+				array( 'wp-element', 'wp-i18n' ),
+				filemtime( RTGODAM_PATH . 'pages/build/godam.js' ),
 				true
 			);
 
@@ -381,7 +382,9 @@ class Pages {
 				);
 			}
 
+			wp_set_script_translations( 'transcoder-page-script-godam', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-godam' );
+
 		} elseif ( $screen && $this->analytics_page_id === $screen->id ) {
 
 			/**
@@ -404,6 +407,8 @@ class Pages {
 				filemtime( RTGODAM_PATH . 'pages/build/analytics.js' ),
 				true
 			);
+
+			wp_set_script_translations( 'transcoder-page-script-analytics', 'godam', RTGODAM_PATH . 'languages' );
 
 			wp_register_script(
 				'video-analytics-charts',
@@ -433,8 +438,10 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_set_script_translations( 'transcoder-page-script-analytics', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 			wp_enqueue_script( 'd3-js' );
+			wp_set_script_translations( 'video-analytics-charts', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'video-analytics-charts' );
 		} elseif ( $screen && $this->help_page_id === $screen->id ) {
 			wp_register_script(
@@ -453,6 +460,7 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_set_script_translations( 'godam-page-script-help', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'godam-page-script-help' );
 		}
 
@@ -460,11 +468,13 @@ class Pages {
 
 		wp_register_script(
 			'media-library-react',
-			RTGODAM_URL . '/pages/build/media-library.js',
+			RTGODAM_URL . 'pages/build/media-library.js',
 			array( 'wp-element', 'wp-i18n' ),
 			filemtime( RTGODAM_PATH . '/pages/build/media-library.js' ),
 			true
 		);
+
+		wp_set_script_translations( 'media-library-react', 'godam', RTGODAM_PATH . 'languages' );
 
 		wp_enqueue_script( 'media-library-react' );
 

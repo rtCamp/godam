@@ -7,7 +7,7 @@
  * Text Domain: godam
  * Author: rtCamp
  * Author URI: https://rtcamp.com/?utm_source=dashboard&utm_medium=plugin&utm_campaign=godam
- * Domain Path: /languages/
+ * Domain Path: /languages
  * License: GPLv2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -130,3 +130,14 @@ function rtgodam_plugin_deactivate() {
 }
 
 register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
+
+add_action( 'init', 'load_godam_textdomain' );
+
+/**
+ * Load Text Domain
+ *
+ * @return void
+ */
+function load_godam_textdomain() {
+	load_plugin_textdomain( 'godam' );
+}

@@ -90,7 +90,7 @@ const Analytics = ( { attachmentID } ) => {
 													<p>
 														{ __( 'Average Engagement', 'godam' ) }
 													</p>
-													<Tooltip text="Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)" />
+													<Tooltip text={ __( 'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)', 'godam' ) } />
 												</div>
 												<p id="engagement-rate" className="min-w-[90px] engagement-rate">0%</p>
 											</div>
@@ -101,7 +101,7 @@ const Analytics = ( { attachmentID } ) => {
 													<p>
 														{ __( 'Total Plays', 'godam' ) }
 													</p>
-													<Tooltip text="Plays represent the total number of times the video has been viewed" />
+													<Tooltip text={ __( 'Plays represent the total number of times the video has been viewed', 'godam' ) } />
 												</div>
 												<p id="total-plays" className="min-w-[90px] engagement-rate">0</p>
 											</div>
@@ -112,7 +112,7 @@ const Analytics = ( { attachmentID } ) => {
 													<p>
 														{ __( 'Play Rate', 'godam' ) }
 													</p>
-													<Tooltip text="Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads" />
+													<Tooltip text={ __( 'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads', 'godam' ) } />
 												</div>
 												<p id="play-rate" className="min-w-[90px] engagement-rate">0%</p>
 											</div>
@@ -146,7 +146,7 @@ const Analytics = ( { attachmentID } ) => {
 											<div id="heatmap-container" className="mt-4">
 												<h3 className="text-md mb-2 flex gap-2">
 													{ __( 'Heatmap', 'godam' ) }
-													<Tooltip text="Heatmap visualizes per-second view density, identifying peaks of plays, skipped sections, and audience drop-offs. Darker areas indicate higher engagement" />
+													<Tooltip text={ __( 'Heatmap visualizes per-second view density, identifying peaks of plays, skipped sections, and audience drop-offs. Darker areas indicate higher engagement', 'godam' ) } />
 												</h3>
 												<svg id="heatmap" width="640" height="100"></svg>
 												<div className="heatmap-tooltip"></div>
