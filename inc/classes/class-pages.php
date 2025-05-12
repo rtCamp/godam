@@ -289,8 +289,8 @@ class Pages {
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
-				RTGODAM_URL . '/pages/build/video-editor.js',
-				array( 'wp-element' ),
+				RTGODAM_URL . 'pages/build/video-editor.js',
+				array( 'wp-element', 'wp-i18n' ),
 				filemtime( RTGODAM_PATH . '/pages/build/video-editor.js' ),
 				true
 			);
@@ -468,7 +468,7 @@ class Pages {
 
 		wp_register_script(
 			'media-library-react',
-			RTGODAM_URL . '/pages/build/media-library.js',
+			RTGODAM_URL . 'pages/build/media-library.js',
 			array( 'wp-element', 'wp-i18n' ),
 			filemtime( RTGODAM_PATH . '/pages/build/media-library.js' ),
 			true
