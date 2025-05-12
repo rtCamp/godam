@@ -6,7 +6,7 @@ Tags: Transcoder, DAM, Interactive Video Layers, Adaptive Bitrate Streaming, Vid
 
 Requires at least: 6.5
 
-Tested up to: 6.8
+Tested up to: 6.8.1
 
 Requires PHP: 7.4
 
