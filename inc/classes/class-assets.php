@@ -47,7 +47,7 @@ class Assets {
 
 		wp_register_script(
 			'rtgodam-script',
-			RTGODAM_URL . '/assets/build/js/main.js',
+			RTGODAM_URL . 'assets/build/js/main.js',
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/js/main.js' ),
 			true
@@ -127,7 +127,7 @@ class Assets {
 
 		wp_register_script(
 			'rtgodam-script',
-			RTGODAM_URL . '/assets/build/js/admin.js',
+			RTGODAM_URL . 'assets/build/js/admin.js',
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/js/admin.js' ),
 			true
@@ -167,7 +167,7 @@ class Assets {
 
 		wp_register_script(
 			'easydam-media-library',
-			RTGODAM_URL . '/assets/build/js/media-library.js',
+			RTGODAM_URL . 'assets/build/js/media-library.js',
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/js/media-library.js' ),
 			true

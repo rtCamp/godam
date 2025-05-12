@@ -43,7 +43,7 @@ class Deactivation {
 
 		wp_register_script(
 			'godam-deactivation-survey-script',
-			RTGODAM_URL . '/assets/build/js/deactivation-feedback.js', 
+			RTGODAM_URL . 'assets/build/js/deactivation-feedback.js', 
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/js/deactivation-feedback.js' ),
 			true
