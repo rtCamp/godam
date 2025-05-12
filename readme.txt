@@ -128,19 +128,21 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Screenshots ==
 1. General Settings
-2. Video Settings
-3. Video Editor
-4. Gravity Forms Integration
-5. CTA Layer
-6. Hotspot Layer
-7. Ads Integration
-8. Player Settings
-9. Enhanced Media Library (DAM)
-10. GoDAM Video Block
-11. Post-Specific Video Settings
-12. Video Layer Selection
-13. Attachment Video Details
-14. Video Analytics
+2. Video Settings without API Key
+3. Video Settings with valid API Key
+4. Video Editor
+5. Gravity Forms Integration
+6. CTA Layer
+7. Hotspot Layer
+8. Ads Integration
+9. Polls Layer
+10. Player Settings
+11. Enhanced Media Library (DAM)
+12. GoDAM Video Block
+13. Post-Specific Video Settings
+14. Video Layer Selection
+15. Attachment Video Details
+16. Video Analytics
 
 == Changelog ==
 
