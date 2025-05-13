@@ -1,6 +1,6 @@
 === GoDAM ===
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar
-Tags: Transcoder, DAM, Interactive Video Layers, Adaptive Bitrate Streaming, Video Analytics
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20
+Tags: transcoder, DAM, media library, adaptive streaming, video analytics
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4

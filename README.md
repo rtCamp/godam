@@ -1,8 +1,8 @@
 ![Banner V3](https://github.com/user-attachments/assets/1c2cdf13-5cab-432a-b548-34cd3876e93f)
 # GoDAM
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20
 
-Tags: Transcoder, DAM, Interactive Video Layers, Adaptive Bitrate Streaming, Video Analytics
+Tags: transcoder, DAM, media library, adaptive streaming, video analytics
 
 Requires at least: 6.5
 
