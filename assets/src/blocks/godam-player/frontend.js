@@ -382,7 +382,7 @@ function GODAMPlayer( videoRef = null ) {
 			}
 
 			// Allow closing or skipping layers
-			formLayers.forEach( ( layerObj, index ) => {
+			formLayers.forEach( ( layerObj ) => {
 				let skipButton = layerObj.layerElement.querySelector( '.skip-button' );
 
 				// Check if skip button already exists.
@@ -421,9 +421,6 @@ function GODAMPlayer( videoRef = null ) {
 				} );
 
 				skipButton.addEventListener( 'click', () => {
-
-					console.log('Skip button clicked');
-
 					layerObj.show = false;
 					layerObj.layerElement.classList.add( 'hidden' );
 					player.controls( true );
@@ -431,11 +428,9 @@ function GODAMPlayer( videoRef = null ) {
 					isDisplayingLayer = false;
 
 					// Increment the current form layer.
-					if ( index === currentFormLayerIndex ) {
+					if ( layerObj === formLayers[ currentFormLayerIndex ] ) {
 						currentFormLayerIndex++;
 					}
-
-					console.log('increase index', currentFormLayerIndex);
 				} );
 
 				layerObj.layerElement.appendChild( skipButton );
@@ -471,8 +466,6 @@ function GODAMPlayer( videoRef = null ) {
 			if ( ! isDisplayingLayer && currentFormLayerIndex < formLayers.length ) {
 				const layerObj = formLayers[ currentFormLayerIndex ];
 				// If we've reached its displayTime, show it
-
-				console.log(layerObj.show, currentTime, layerObj.displayTime, layerObj.layerElement.classList.contains( 'hidden' ) );
 
 				if (
 					layerObj.show &&
