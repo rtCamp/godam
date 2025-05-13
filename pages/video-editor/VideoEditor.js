@@ -185,9 +185,9 @@ const VideoEditor = ( { attachmentID } ) => {
 				<main className="flex justify-center items-center p-4 relative overflow-y-auto">
 
 					{
-						// Display a success message when video changes are saved
+						// Display a success message when video changes are saved.
 						showSaveMessage && (
-							<Snackbar className="absolute bottom-4 right-4 opacity-70">
+							<Snackbar className="absolute bottom-4 right-4 opacity-70 z-50">
 								{ __( 'Video changes saved successfully', 'godam' ) }
 							</Snackbar>
 						)
