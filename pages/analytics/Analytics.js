@@ -68,6 +68,7 @@ const Analytics = ( { attachmentID } ) => {
 		useState( null );
 	const [ isABResultsLoading, setIsABResultsLoading ] = useState( false );
 	const [ isABTestCompleted, setIsABTestCompleted ] = useState( false );
+	const [ mediaLibraryAttachment, setMediaLibraryAttachment ] = useState( null );
 
 	// RTK Query hooks
 	const siteUrl = window.location.origin;
@@ -147,48 +148,18 @@ const Analytics = ( { attachmentID } ) => {
 		}
 	}, [ attachmentID ] );
 
-	// useEffect( () => {
-	// 	const performanceHistory = ( processedAnalyticsHistory || [] ).map(
-	// 		( entry ) => {
-	// 			const {
-	// 				date,
-	// 				page_load: dailyPageLoad,
-	// 				play_time: dailyPlayTime,
-	// 				video_length: dailyVideoLength,
-	// 				plays: dailyPlays,
-	// 			} = entry;
-
-	// 			const dailyEngagementRate =
-	//       dailyPlays && dailyVideoLength ? ( dailyPlayTime / ( dailyPlays * dailyVideoLength ) ) * 100 : 0;
-
-	// 			const dailyPlayRate = dailyPageLoad
-	// 				? ( dailyPlays / dailyPageLoad ) * 100
-	// 				: 0;
-
-	// 			return {
-	// 				date,
-	// 				engagement_rate: +dailyEngagementRate.toFixed( 2 ),
-	// 				play_rate: +dailyPlayRate.toFixed( 2 ),
-	// 				watch_time: +dailyPlayTime.toFixed( 2 ),
-	// 			};
-	// 		},
-	// 	);
-
-	// 	setTimeMetricsChartData( performanceHistory );
-	// }, [ processedAnalyticsHistory ] );
-
 	async function startABTesting() {
 		setIsABResultsLoading( true );
-		setIsABTestCompleted( false );
 		await refetch();
-		if ( abTestComparisonAttachmentData ) {
+		setAbTestComparisonAttachmentData( mediaLibraryAttachment );
+		if ( mediaLibraryAttachment ) {
 			await refetchAB();
 		}
 	}
 
 	const openVideoUploader = () => {
 		const fileFrame = wp.media( {
-			title: __( 'Select Video to Perform A/B testing', 'godam' ),
+			title: __( 'Select Video to Perform Performance Comparison Testing', 'godam' ),
 			button: {
 				text: __( 'Use this Video', 'godam' ),
 			},
@@ -207,7 +178,7 @@ const Analytics = ( { attachmentID } ) => {
 
 			axios.get( url ).then( ( response ) => {
 				const data = response.data;
-				setAbTestComparisonAttachmentData( data );
+				setMediaLibraryAttachment( data );
 			} );
 		} );
 
@@ -305,13 +276,17 @@ const Analytics = ( { attachmentID } ) => {
 			{ attachmentData && (
 				<div id="analytics-content" className="hidden">
 					<div className="p-10 flex gap-3 items-center">
-						<h2 className="text-2xl m-0 capitalize" dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( attachmentData?.title?.rendered ) } }>
-						</h2>
-						{ attachmentData?.media_details?.length_formatted &&
+						<h2
+							className="text-2xl m-0 capitalize"
+							dangerouslySetInnerHTML={ {
+								__html: DOMPurify.sanitize( attachmentData?.title?.rendered ),
+							} }
+						></h2>
+						{ attachmentData?.media_details?.length_formatted && (
 							<span className="h-[26px] px-2 bg-white flex items-center rounded-sm">
 								{ attachmentData?.media_details?.length_formatted }
 							</span>
-						}
+						) }
 					</div>
 
 					<div className="subheading-container">
@@ -328,7 +303,10 @@ const Analytics = ( { attachmentID } ) => {
 										<SingleMetrics
 											metricType={ 'engagement-rate' }
 											label={ __( 'Average Engagement', 'godam' ) }
-											tooltipText={ __( 'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)', 'godam' ) }
+											tooltipText={ __(
+												'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)',
+												'godam',
+											) }
 											processedAnalyticsHistory={ processedAnalyticsHistory }
 											analyticsDataFetched={ analyticsDataFetched }
 										/>
@@ -336,7 +314,10 @@ const Analytics = ( { attachmentID } ) => {
 										<SingleMetrics
 											metricType={ 'plays' }
 											label={ __( 'Total Plays', 'godam' ) }
-											tooltipText={ __( 'Plays represent the total number of times the video has been viewed', 'godam' ) }
+											tooltipText={ __(
+												'Plays represent the total number of times the video has been viewed',
+												'godam',
+											) }
 											processedAnalyticsHistory={ processedAnalyticsHistory }
 											analyticsDataFetched={ analyticsDataFetched }
 										/>
@@ -344,7 +325,10 @@ const Analytics = ( { attachmentID } ) => {
 										<SingleMetrics
 											metricType={ 'play-rate' }
 											label={ __( 'Play Rate', 'godam' ) }
-											tooltipText={ __( 'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads', 'godam' ) }
+											tooltipText={ __(
+												'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
+												'godam',
+											) }
 											processedAnalyticsHistory={ processedAnalyticsHistory }
 											analyticsDataFetched={ analyticsDataFetched }
 										/>
@@ -352,7 +336,10 @@ const Analytics = ( { attachmentID } ) => {
 										<SingleMetrics
 											metricType={ 'watch-time' }
 											label={ __( 'Watch Time', 'godam' ) }
-											tooltipText={ __( 'Total time the video has been watched, aggregated across all plays', 'godam' ) }
+											tooltipText={ __(
+												'Total time the video has been watched, aggregated across all plays',
+												'godam',
+											) }
 											processedAnalyticsHistory={ processedAnalyticsHistory }
 											analyticsDataFetched={ analyticsDataFetched }
 										/>
@@ -392,7 +379,10 @@ const Analytics = ( { attachmentID } ) => {
 							<h3 className="text-base font-medium text-zinc-700 mb-2">{ __( 'Playback Performance', 'godam' ) }</h3>
 							<svg id="metrics-chart"></svg>
 						</div> */ }
-						<PlaybackPerformanceDashboard attachmentID={ attachmentID } initialData={ processedAnalyticsHistory } />
+						<PlaybackPerformanceDashboard
+							attachmentID={ attachmentID }
+							initialData={ processedAnalyticsHistory }
+						/>
 						<div
 							className="country-heatmap-container text-center bg-white border border-zinc-200 rounded p-4"
 							id="country-heatmap-container"
@@ -401,7 +391,9 @@ const Analytics = ( { attachmentID } ) => {
 							<div id="table-container" className="px-12"></div>
 						</div>
 						<div className="posts-count-container lg:col-span-1 bg-white border border-zinc-200 rounded p-4">
-							<h2 className="text-base font-medium text-zinc-700 mb-2">{ __( 'Views by Post Source', 'godam' ) }</h2>
+							<h2 className="text-base font-medium text-zinc-700 mb-2">
+								{ __( 'Views by Post Source', 'godam' ) }
+							</h2>
 							<div id="post-views-count-chart" className="text-center"></div>
 							<div className="legend" id="legend"></div>
 							<div className="total-views" id="total-views"></div>
@@ -410,152 +402,198 @@ const Analytics = ( { attachmentID } ) => {
 
 					<div className="px-10 py-28">
 						<div>
-							<h3>{ __( 'Performance Comparison', 'godam' ) }</h3>
-							<div>
-								{ attachmentData && abTestComparisonAttachmentData && (
-									<div className="flex gap-4 bg-zinc-100 justify-between py-4 [padding-left:22px] [padding-right:22px] rounded-xl mb-6 items-center">
-										{ ( () => {
-											if ( ! isABTestCompleted ) {
-												if ( isABResultsLoading ) {
-													return (
-														<p>
-															{ __( 'In Progress', 'godam' ) }
-															<Spinner />
-														</p>
-													);
-												}
-												return __( 'Initiate the test comparison to generate analytical insights.', 'godam' );
+							<h3 className="text-base font-semibold">
+								{ __( 'Performance Comparison', 'godam' ) }
+							</h3>
+						</div>
+						<div className="border border-gray-200 bg-white rounded-xl">
+							{ attachmentData && mediaLibraryAttachment && (
+								<div className="flex gap-4 bg-zinc-100 justify-between py-4 [padding-left:22px] [padding-right:22px] rounded-xl items-center performance-status-container">
+									{ ( () => {
+										if ( ! isABTestCompleted ) {
+											if ( isABResultsLoading ) {
+												return (
+													<p>
+														{ __( 'In Progress', 'godam' ) }
+														<Spinner />
+													</p>
+												);
 											}
-											return __( 'The test is complete! Review results to identify the best-performing video.', 'godam' );
-										} )() }
-										{ ! isABResultsLoading && ! isABTestCompleted && (
-											<div className="flex gap-3">
-												<Button variant="secondary" onClick={ () => {
+											return __(
+												'Initiate the test comparison to generate analytical insights.',
+												'godam',
+											);
+										}
+										return __(
+											'The test is complete! Review results to identify the best-performing video.',
+											'godam',
+										);
+									} )() }
+									{ ! isABResultsLoading && ! isABTestCompleted && (
+										<div>
+											<Button
+												variant="primary"
+												onClick={ () => startABTesting() }
+											>
+												{ __( 'Start Test ', 'godam' ) }
+											</Button>
+										</div>
+									) }
+
+									{ isABTestCompleted && (
+										<div className="flex gap-3">
+											<Button
+												variant="primary"
+												onClick={ () => {
+													setMediaLibraryAttachment( null );
 													setAbTestComparisonAttachmentData( null );
 													setAbComparisonUrl( '' );
 													setAbTestComparisonAnalyticsData( null );
-												} }>
-													{ __( 'Remove', 'godam' ) }
-												</Button>
-												<Button variant="primary" onClick={ () => startABTesting() }>
-													{ __( 'Start Test ', 'godam' ) }
+													setIsABTestCompleted( false );
+													openVideoUploader();
+												} }
+											>
+												{ __( 'Choose Video', 'godam' ) }
+											</Button>
+										</div>
+									) }
+								</div>
+							) }
+							<div className="p-6">
+								<div className="flex justify-center w-full">
+									<div className="flex-1">
+										{ abTestComparisonUrl.length === 0 && (
+											<div className="flex justify-center items-center flex-1 h-[280px] gap-6 flex-col">
+												<p>
+													{ __(
+														'Test this video against others to see which performs better.',
+														'godam',
+													) }
+												</p>
+												<Button
+													onClick={ openVideoUploader }
+													variant="primary"
+													className="ml-2"
+													aria-label={ __(
+														'Upload or Replace CTA Image',
+														'godam',
+													) }
+												>
+													{ __( 'Choose', 'godam' ) }
 												</Button>
 											</div>
 										) }
 
-										{
-											isABTestCompleted && (
-												<div className="flex gap-3">
-													<Button variant="secondary" onClick={ () => {
-														setAbTestComparisonAnalyticsData( null );
-														startABTesting();
-													} }>
-														{ __( 'Restart Test ', 'godam' ) }
-													</Button>
-													<Button variant="primary" onClick={ () => {
-														setAbTestComparisonAttachmentData( null );
-														setAbComparisonUrl( '' );
-														setAbTestComparisonAnalyticsData( null );
-														openVideoUploader();
-													} }>
-														{ __( 'Choose Video', 'godam' ) }
-													</Button>
+										{ ! mediaLibraryAttachment &&
+											abTestComparisonUrl.length > 0 && (
+											<div className="flex justify-center items-center flex-col pt-4 w-full flex-1 border-2 border-solid h-[280px]">
+												<Spinner />
+											</div>
+										) }
+										{ mediaLibraryAttachment && (
+											<div className="flex gap-12 w-full h-full pt-6">
+												<div className="flex-1 flex justify-center items-center flex-col comparison-video">
+													<RenderVideo
+														attachmentData={ attachmentData }
+														attachmentID={ attachmentID }
+														className="w-full h-full max-h-[300px] object-fill rounded-xl"
+													/>
+													<div>
+														<h4>{ attachmentData?.title?.rendered }</h4>
+													</div>
 												</div>
-											)
-										}
+												<div className="w-px bg-gray-200 mx-4 divide-dashed"></div>
+												<div className="flex justify-center items-center flex-col h-full w-full flex-1">
+													<RenderVideo
+														attachmentData={ mediaLibraryAttachment }
+														attachmentID={ mediaLibraryAttachment?.id }
+														className="w-full h-full max-h-[300px] object-fill rounded-xl"
+													/>
+													<div className="video-chart-container">
+														<div id="chart-container">
+															<svg id="line-chart" width="525" height="300"></svg>
+															<div className="line-chart-tooltip"></div>
+														</div>
+													</div>
+													<div>
+														<h4>
+															{ mediaLibraryAttachment?.title?.rendered }
+														</h4>
+													</div>
+												</div>
+											</div>
+										) }
 									</div>
-								) }
-							</div>
-						</div>
-						<div className="flex justify-center w-full">
-							<div className="flex-1 flex justify-center items-center flex-col pt-4 [border-top-left-radius:12px] [border-top-right-radius:0px] [border-bottom-left-radius:12px] [border-bottom-right-radius:0px]">
-								<RenderVideo
-									attachmentData={ attachmentData }
-									attachmentID={ attachmentID }
-									className="w-full h-full max-h-[300px] object-fill"
-								/>
-								<div>
-									<h4>{ attachmentData?.title?.rendered }</h4>
 								</div>
-							</div>
-							<div className="flex-1">
-								{ abTestComparisonUrl.length === 0 && (
-									<div className="flex justify-center items-center h-full flex-1 [border-top-left-radius:0px] [border-top-right-radius:12px] [border-bottom-left-radius:0px] [border-bottom-right-radius:12px]">
-										<Button
-											onClick={ openVideoUploader }
-											variant="primary"
-											className="ml-2"
-											aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
-										>
-											{ __( 'Select Video', 'godam' ) }
-										</Button>
-									</div>
-								) }
 
-								{ ! abTestComparisonAttachmentData &&
-									abTestComparisonUrl.length > 0 &&
-									(
-										<div className="flex justify-center items-center flex-col pt-4 h-full w-full flex-1 border-2 border-solid">
-											<Spinner />
-										</div>
-									) }
-								{ abTestComparisonAttachmentData && (
-									<div className="flex justify-center items-center flex-col pt-4 h-full w-full flex-1">
-
-										<RenderVideo
-											attachmentData={ abTestComparisonAttachmentData }
-											attachmentID={ abTestComparisonAttachmentData?.id }
-											className="w-full h-full max-h-[300px] object-fill"
-										/>
-										<div>
-											<h4>{ abTestComparisonAttachmentData?.title?.rendered }</h4>
-										</div>
-									</div>
+								{ analyticsData && abTestComparisonAnalyticsData && (
+									<table className="w-full ab-testing-table rounded-xl">
+										<tbody>
+											<tr
+												className={ highlightClass(
+													analyticsData?.plays,
+													abTestComparisonAnalyticsData?.plays ?? 0,
+												) }
+											>
+												<td>{ analyticsData?.plays }</td>
+												<td>{ __( 'Views', 'godam' ) }</td>
+												<td>{ abTestComparisonAnalyticsData?.plays ?? 0 }</td>
+											</tr>
+											<tr
+												className={ highlightClass(
+													engagementRate,
+													comparisonEngagementRate,
+												) }
+											>
+												<td>{ engagementRate }</td>
+												<td>{ __( 'Average Engagement', 'godam' ) }</td>
+												<td>{ comparisonEngagementRate }</td>
+											</tr>
+											<tr className={ highlightClass( plays, comparisonPlays ) }>
+												<td>{ plays }</td>
+												<td>{ __( 'Total Plays', 'godam' ) }</td>
+												<td>{ comparisonPlays }</td>
+											</tr>
+											<tr
+												className={ highlightClass( playRate, comparisonPlayRate ) }
+											>
+												<td>{ playRate }</td>
+												<td>{ __( 'Play Rate', 'godam' ) }</td>
+												<td>{ comparisonPlayRate }</td>
+											</tr>
+											<tr
+												className={ highlightClass(
+													analyticsData?.page_load,
+													abTestComparisonAnalyticsData?.page_load,
+												) }
+											>
+												<td>{ analyticsData?.page_load }</td>
+												<td>{ __( 'Page Loads', 'godam' ) }</td>
+												<td>{ abTestComparisonAnalyticsData?.page_load }</td>
+											</tr>
+											<tr
+												className={ highlightClass(
+													analyticsData?.play_time,
+													abTestComparisonAnalyticsData?.play_time,
+												) }
+											>
+												<td>{ analyticsData?.play_time?.toFixed( 2 ) }s</td>
+												<td>{ __( 'Play Time', 'godam' ) }</td>
+												<td>
+													{ abTestComparisonAnalyticsData?.play_time?.toFixed( 2 ) }
+													s
+												</td>
+											</tr>
+											<tr>
+												<td>{ analyticsData?.video_length }s</td>
+												<td>{ __( 'Video Length', 'godam' ) }</td>
+												<td>{ abTestComparisonAnalyticsData?.video_length }s</td>
+											</tr>
+										</tbody>
+									</table>
 								) }
 							</div>
 						</div>
-						{
-							analyticsData && abTestComparisonAnalyticsData && (
-								<table className="w-full ab-testing-table rounded-xl">
-									<tbody>
-										<tr className={ highlightClass( analyticsData?.plays, abTestComparisonAnalyticsData?.plays ?? 0 ) }>
-											<td>{ analyticsData?.plays }</td>
-											<td>{ __( 'Views', 'godam' ) }</td>
-											<td>{ abTestComparisonAnalyticsData?.plays ?? 0 }</td>
-										</tr>
-										<tr className={ highlightClass( engagementRate, comparisonEngagementRate ) }>
-											<td>{ engagementRate }</td>
-											<td>{ __( 'Average Engagement', 'godam' ) }</td>
-											<td>{ comparisonEngagementRate }</td>
-										</tr>
-										<tr className={ highlightClass( plays, comparisonPlays ) }>
-											<td>{ plays }</td>
-											<td>{ __( 'Total Plays', 'godam' ) }</td>
-											<td>{ comparisonPlays }</td>
-										</tr>
-										<tr className={ highlightClass( playRate, comparisonPlayRate ) }>
-											<td>{ playRate }</td>
-											<td>{ __( 'Play Rate', 'godam' ) }</td>
-											<td>{ comparisonPlayRate }</td>
-										</tr>
-										<tr className={ highlightClass( analyticsData?.page_load, abTestComparisonAnalyticsData?.page_load ) }>
-											<td>{ analyticsData?.page_load }</td>
-											<td>{ __( 'Page Loads', 'godam' ) }</td>
-											<td>{ abTestComparisonAnalyticsData?.page_load }</td>
-										</tr>
-										<tr className={ highlightClass( analyticsData?.play_time, abTestComparisonAnalyticsData?.play_time ) }>
-											<td>{ analyticsData?.play_time?.toFixed( 2 ) }s</td>
-											<td>{ __( 'Play Time', 'godam' ) }</td>
-											<td>{ abTestComparisonAnalyticsData?.play_time?.toFixed( 2 ) }s</td>
-										</tr>
-										<tr>
-											<td>{ analyticsData?.video_length }s</td>
-											<td>{ __( 'Video Length', 'godam' ) }</td>
-											<td>{ abTestComparisonAnalyticsData?.video_length }s</td>
-										</tr>
-									</tbody>
-								</table>
-							) }
 					</div>
 				</div>
 			) }
