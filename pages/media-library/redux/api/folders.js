@@ -14,6 +14,7 @@ export const folderApi = createApi( {
 				url: 'wp/v2/media-folder',
 				params: {
 					_fields: 'id,name,parent',
+					per_page: 100, // Note: 100 is the max per page. Implement pagination if total folders > 100
 				},
 			} ),
 		} ),
