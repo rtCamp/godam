@@ -175,7 +175,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Feat: Improve the GoDAM video player UI.
 - Feat: Enabled the watermark feature for users on the Starter plan.
 
-= v1.0.4 (May 12, 2025) =
+= v1.0.4 (May 14, 2025) =
 
 - Fix: Added CDN detection to prevent conflicts with GoDAM’s transcoding.
 - Fix: Resolved translation issues across plugin interfaces.
