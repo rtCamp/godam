@@ -350,12 +350,24 @@ function GODAMPlayer( videoRef = null ) {
 					() => layer.layerElement === layerElement,
 				);
 
+				let skipText = '';
+				if ( 'form' === layer.type ) {
+					skipText = 'Skip Form';
+				} else if ( 'cta' === layer.type ) {
+					skipText = 'Skip CTA';
+				} else if ( 'poll' === layer.type ) {
+					skipText = 'Skip Poll';
+				} else {
+					skipText = 'Skip';
+				}
+
 				if ( ! existingLayer ) {
 					formLayers.push( {
 						layerElement,
 						displayTime: parseFloat( layer.displayTime ),
 						show: true,
 						allowSkip: layer.allow_skip !== undefined ? layer.allow_skip : true,
+						skipText,
 					} );
 				}
 			} else if ( layer.type === 'hotspot' ) {
@@ -370,13 +382,13 @@ function GODAMPlayer( videoRef = null ) {
 			}
 
 			// Allow closing or skipping layers
-			formLayers.forEach( ( layerObj, index ) => {
+			formLayers.forEach( ( layerObj ) => {
 				let skipButton = layerObj.layerElement.querySelector( '.skip-button' );
 
 				// Check if skip button already exists.
 				if ( ! skipButton ) {
 					skipButton = document.createElement( 'button' );
-					skipButton.textContent = 'Skip';
+					skipButton.textContent = layerObj.skipText;
 					skipButton.classList.add( 'skip-button' );
 
 					const arrowIcon = document.createElement( 'i' );
@@ -392,8 +404,7 @@ function GODAMPlayer( videoRef = null ) {
 				const observer = new MutationObserver( ( mutations ) => {
 					mutations.forEach( () => {
 						if (
-							layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ||
-							! layerObj.layerElement.querySelector( 'form.wp-polls-form' )
+							layerObj.layerElement.querySelector( '.gform_confirmation_message' )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -415,8 +426,9 @@ function GODAMPlayer( videoRef = null ) {
 					player.controls( true );
 					player.play();
 					isDisplayingLayer = false;
+
 					// Increment the current form layer.
-					if ( index === currentFormLayerIndex ) {
+					if ( layerObj === formLayers[ currentFormLayerIndex ] ) {
 						currentFormLayerIndex++;
 					}
 				} );
@@ -427,7 +439,17 @@ function GODAMPlayer( videoRef = null ) {
 
 		if ( ! isPreviewEnabled ) {
 			layers.forEach( ( layer ) => {
-				handleLayerDisplay( layer );
+				if ( layer.type === 'form' ) {
+					if ( window.godamPluginDependencies?.gravityforms ) {
+						handleLayerDisplay( layer );
+					}
+				} else if ( layer.type === 'poll' ) {
+					if ( window.godamPluginDependencies?.wp_polls ) {
+						handleLayerDisplay( layer );
+					}
+				} else {
+					handleLayerDisplay( layer );
+				}
 			} );
 		}
 
@@ -444,6 +466,7 @@ function GODAMPlayer( videoRef = null ) {
 			if ( ! isDisplayingLayer && currentFormLayerIndex < formLayers.length ) {
 				const layerObj = formLayers[ currentFormLayerIndex ];
 				// If we've reached its displayTime, show it
+
 				if (
 					layerObj.show &&
           currentTime >= layerObj.displayTime &&

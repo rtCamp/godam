@@ -92,6 +92,19 @@ class Assets {
 			)
 		);
 
+		include_once ABSPATH . 'wp-admin/includes/plugin.php';
+		$is_gf_active       = is_plugin_active( 'gravityforms/gravityforms.php' );
+		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
+
+		wp_localize_script(
+			'rtgodam-script',
+			'godamPluginDependencies',
+			array(
+				'gravityforms' => $is_gf_active,
+				'wp_polls'     => $is_wp_polls_active,
+			)
+		);
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamRestRoute',

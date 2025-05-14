@@ -2,12 +2,14 @@
  * External dependencies
  */
 import { useState } from 'react';
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * WordPress dependencies
  */
-import { Button, Modal } from '@wordpress/components';
+import { Button, Icon, Modal } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { cautionFilled } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -80,25 +82,43 @@ const LayerSelector = ( { isGFPluginActive, closeModal, addNewLayer } ) => {
 		>
 
 			<div className="godam-layer-selector__list">
-				{ Layers.map( ( layer ) => (
-					<button
-						key={ layer.id }
-						className={ `godam-layer-selector__item ${ selectedLayer?.id === layer.id ? 'selected' : '' }` }
-						onClick={ () => handleLayerSelect( layer ) }
-						disabled={ ( layer.requiresGf && ! isGFPluginActive ) || ( layer.requiresWpPolls && ! window.easydamMediaLibrary.isPollPluginActive ) }
-					>
-						<img
-							className="godam-layer-selector__item__image"
-							src={ layer.image }
-							alt={ layer.title }
-						/>
+				{
+					Layers.map( ( layer ) => {
+						const isDisabled = ( layer.requiresGf && ! isGFPluginActive ) || ( layer.requiresWpPolls && ! window.easydamMediaLibrary.isPollPluginActive );
+						let message = '';
+						if ( layer.requiresGf && ! isGFPluginActive ) {
+							message = `<a class="godam-link" href="https://docs.gravityforms.com/installation/">Gravity Forms</a> plugin is required to use Form layer`;
+						} else if ( layer.requiresWpPolls && ! window.easydamMediaLibrary.isPollPluginActive ) {
+							message = `<a class="godam-link" href="https://wordpress.org/plugins/wp-polls/">WP-Polls</a> plugin is required to use Poll layer`;
+						}
+						return ( <div key={ layer.id }>
+							<button
+								key={ layer.id }
+								className={ `godam-layer-selector__item ${ selectedLayer?.id === layer.id ? 'selected' : '' }` }
+								onClick={ () => handleLayerSelect( layer ) }
+								disabled={ isDisabled }
+							>
+								<img
+									className="godam-layer-selector__item__image"
+									src={ layer.image }
+									alt={ layer.title }
+								/>
 
-						<div className="godam-layer-selector__item__content">
-							<h3>{ layer.title }</h3>
-							<p>{ layer.description }</p>
-						</div>
-					</button>
-				) ) }
+								<div className="godam-layer-selector__item__content">
+									<h3>{ layer.title }</h3>
+									<p>{ layer.description }</p>
+								</div>
+							</button>
+							{
+								isDisabled &&
+									<p className="godam-layer-selector__item__message">
+										<Icon icon={ cautionFilled } />
+										<div dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( message ) } } />
+									</p>
+							}
+						</div> );
+					} )
+				}
 			</div>
 
 			<div className="godam-layer-selector__buttons">
