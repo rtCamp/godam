@@ -169,7 +169,6 @@ const pages = {
 module.exports = [
 	mainJS,
 	adminJS,
-	videoAnalyticsJS,
 	mediaLibrary,
 	deactivationJS,
 	styles, // Do not remove this.
