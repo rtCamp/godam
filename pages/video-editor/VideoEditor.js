@@ -150,9 +150,19 @@ const VideoEditor = ( { attachmentID } ) => {
 
 	if ( isAttachmentConfigLoading ) {
 		return (
-			<div className="max-w-[740px] w-full loading-skeleton">
-				<div className="skeleton-video-container"></div>
-				<div className="skeleton-line"></div>
+			<div className="flex gap-5 p-5">
+				<div className="max-w-[360px] w-full loading-skeleton">
+					<div className="skeleton-title"></div>
+					<div className="skeleton-line"></div>
+					<div className="skeleton-line"></div>
+					<div className="skeleton-line"></div>
+					<div className="skeleton-line"></div>
+					<div className="skeleton-line"></div>
+				</div>
+				<div className="w-full loading-skeleton">
+					<div className="skeleton-video-container"></div>
+					<div className="max-w-[740px] mx-auto skeleton-line"></div>
+				</div>
 			</div>
 		);
 	}
