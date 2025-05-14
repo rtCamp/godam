@@ -6,14 +6,12 @@ import videojs from 'video.js';
 /**
  * Internal dependencies
  */
-import ViewIcon from '../../src/images/views.png';
-import DurationIcon from '../../src/images/duration.png';
+import ViewIcon from '../../assets/src/images/views.png';
+import DurationIcon from '../../assets/src/images/duration.png';
 import {
-	generateMetricsOverTime,
 	generateCountryHeatmap,
-} from '../../../pages/analytics/helper';
-import DownArrow from '../images/down-arrow.svg';
-import TopArrow from '../images/up-arrow.svg';
+	generateLineChart,
+} from '../../pages/analytics/helper';
 
 function formatTime( seconds ) {
 	const minutes = Math.floor( seconds / 60 );
@@ -127,121 +125,13 @@ function generateHeatmap( data, selector, videoPlayer ) {
 		} );
 }
 
-function generateLineChart( data, selector, videoPlayer ) {
-	const margin = { top: 0, right: 0, bottom: 0, left: 0 };
-	const width = 830 - margin.left - margin.right;
-	const height = 300 - margin.top - margin.bottom;
-
-	const svg = d3.select( selector )
-		.attr( 'width', width + margin.left + margin.right )
-		.attr( 'height', height + margin.top + margin.bottom )
-		.append( 'g' )
-		.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
-
-	const xScale = d3.scaleLinear()
-		.domain( [ 0, data.length - 1 ] )
-		.range( [ 0, width ] );
-
-	const yScale = d3.scaleLinear()
-		.domain( [ d3.min( data ) - 10, d3.max( data ) + 10 ] )
-		.range( [ height, 0 ] );
-
-	const line = d3.line()
-		.x( ( d, i ) => xScale( i ) )
-		.y( ( d ) => yScale( d ) );
-
-	const area = d3.area()
-		.x( ( d, i ) => xScale( i ) )
-		.y0( height )
-		.y1( ( d ) => yScale( d ) );
-
-	svg.append( 'path' )
-		.datum( data )
-		.attr( 'class', 'line' )
-		.attr( 'd', line );
-
-	const hoverLine = svg.append( 'line' )
-		.attr( 'class', 'hover-line' )
-		.attr( 'y1', 0 )
-		.attr( 'y2', height )
-		.style( 'opacity', 0 );
-
-	const focus = svg.append( 'circle' )
-		.attr( 'class', 'focus-circle' )
-		.style( 'opacity', 0 );
-
-	const filledArea = svg.append( 'path' )
-		.datum( data )
-		.attr( 'class', 'area' )
-		.style( 'opacity', 0 );
-
-	const tooltip = d3.select( '.line-chart-tooltip' );
-
-	svg.append( 'rect' )
-		.attr( 'width', width )
-		.attr( 'height', height )
-		.style( 'fill', 'none' )
-		.style( 'pointer-events', 'all' )
-		.on( 'mousemove', function( event ) {
-			const [ mouseX ] = d3.pointer( event );
-			const xValue = xScale.invert( mouseX );
-			const index = Math.round( xValue );
-
-			if ( index >= 0 && index < data.length ) {
-				const value = data[ index ];
-				const videoDuration = videoPlayer.duration();
-				const videoTime = ( index / data.length ) * videoDuration;
-
-				focus
-					.style( 'opacity', 1 )
-					.attr( 'cx', xScale( index ) )
-					.attr( 'cy', yScale( value ) );
-
-				hoverLine
-					.style( 'opacity', 1 )
-					.attr( 'x1', xScale( index ) )
-					.attr( 'x2', xScale( index ) );
-
-				tooltip
-					.style( 'opacity', 1 )
-					.style( 'left', `${ xScale( index ) - 30 }px` )
-					.style( 'top', 0 )
-					.html(
-						`<div class="heatmap-tooltip-html">
-							<div class="flex gap-2 items-center text-black">
-								<img src=${ ViewIcon } alt="View" height=${ 16 } width=${ 16 }/>
-								${ value }
-							</div>
-							<div class="flex gap-2 items-center text-black">
-								<img src=${ DurationIcon } alt="Duration" height=${ 15 } width=${ 15 }/>
-								${ formatTime( index ) }
-							</div>
-						</div>`,
-					);
-
-				videoPlayer.currentTime( videoTime );
-
-				// Update the filled area
-				filledArea
-					.style( 'opacity', 1 )
-					.attr( 'd', area( data.slice( 0, index + 1 ) ) );
-			}
-		} )
-		.on( 'mouseout', () => {
-			focus.style( 'opacity', 0 );
-			hoverLine.style( 'opacity', 0 );
-			tooltip.style( 'opacity', 0 );
-			filledArea.style( 'opacity', 0 );
-		} );
-}
-
 function generatePostViewsChart( postsData, selector ) {
 	// Set dimensions
-	const width = 500;
-	const height = 400;
-	const margin = 40;
+	const width = 200;
+	const height = 200;
+	const margin = 20;
 	const radius = ( Math.min( width, height ) / 2 ) - margin;
-	const innerRadius = radius * 0.6;
+	const innerRadius = radius * 0.7;
 
 	// Calculate total views
 	const totalViews = postsData.reduce( ( sum, entry ) => sum + entry.views, 0 );
@@ -254,8 +144,17 @@ function generatePostViewsChart( postsData, selector ) {
 	// Color scale
 	const color = d3
 		.scaleOrdinal()
-		.domain( postsData.map( ( d ) => d.post ) )
-		.range( d3.schemeSet2 );
+		.domain( postsData.map( ( d ) => d.post + d.id ) )
+		.range( [
+			'#1D4A4F',
+			'#368071',
+			'#4C9A88',
+			'#5DB5A1',
+			'#76CFC0',
+			'#A8E4D7',
+			'#D1F0EC',
+			'#2C6660',
+		] );
 
 	// Create SVG
 	const svg = d3
@@ -298,10 +197,9 @@ function generatePostViewsChart( postsData, selector ) {
 		.attr( 'target', '_blank' )
 		.append( 'path' )
 		.attr( 'd', arc )
-		.attr( 'fill', ( d ) => color( d.data.post ) )
+		.attr( 'fill', ( d ) => color( d.data.post + d.data.id ) )
 		.attr( 'stroke', 'white' )
 		.style( 'stroke-width', '2px' )
-		.style( 'opacity', 0.8 )
 		.on( 'mouseover', function( event, d ) {
 			d3.select( this )
 				.transition()
@@ -314,7 +212,7 @@ function generatePostViewsChart( postsData, selector ) {
 			tooltip.transition().duration( 200 ).style( 'opacity', 0.9 );
 			tooltip
 				.html(
-					`<strong>${ d.data.post }</strong><br>
+					`<strong>${ d.data.post === '' ? 'Untitled' : d.data.post }</strong><br>
 					Views: ${ formatNumber( d.data.views ) }<br>
 					Percentage: ${ percent }%`,
 				)
@@ -325,22 +223,35 @@ function generatePostViewsChart( postsData, selector ) {
 			d3.select( this )
 				.transition()
 				.duration( 200 )
-				.attr( 'd', arc )
-				.style( 'opacity', 0.8 );
+				.attr( 'd', arc );
 
 			tooltip.transition().duration( 500 ).style( 'opacity', 0 );
 		} );
 
+	// Add view count text labels to each arc
+	svg.selectAll( 'text.slice-label' )
+		.data( pie( postsData ) )
+		.enter()
+		.append( 'text' )
+		.attr( 'class', 'slice-label' )
+		.attr( 'transform', ( d ) => `translate(${ arc.centroid( d ) })` )
+		.attr( 'text-anchor', 'middle' )
+		.attr( 'dy', '0.35em' )
+		.style( 'fill', '#fff' )
+		.style( 'font-size', '11px' )
+		.style( 'font-weight', 'bold' )
+		.text( ( d ) => formatNumber( d.data.views ) );
+
 	// Add center text
 	svg
 		.append( 'text' )
-		.attr( 'class', 'center-text' )
+		.attr( 'class', 'center-text-title' )
 		.attr( 'dy', -10 )
-		.text( 'Total Views' );
+		.text( 'Total' );
 
 	svg
 		.append( 'text' )
-		.attr( 'class', 'center-text' )
+		.attr( 'class', 'center-text-views' )
 		.attr( 'dy', 20 )
 		.text( formatNumber( totalViews ) );
 
@@ -353,16 +264,11 @@ function generatePostViewsChart( postsData, selector ) {
 		legendItem
 			.append( 'div' )
 			.attr( 'class', 'legend-color' )
-			.style( 'background-color', color( d.post ) );
+			.style( 'background-color', color( d.post + d.id ) );
 
 		legendItem.append( 'div' )
-			.html( `<a href="${ d.url }" target="_blank" style="text-decoration: underline; color: inherit;">${ d.post }</a>: ${ formatNumber( d.views ) }` );
+			.html( `<a href="${ d.url }" target="_blank" class="pie-chart-legend">${ d.post === '' ? 'Untitled' : d.post }</a>` );
 	} );
-
-	// Add total views text
-	d3.select( '#total-views' ).html(
-		`Total Video Views: <strong>${ formatNumber( totalViews ) }</strong>`,
-	);
 }
 
 async function main() {
@@ -393,7 +299,7 @@ async function main() {
 
 	// Update the UI with computed analytics
 	document.getElementById( 'play-rate' ).innerText = `${ playRate.toFixed( 2 ) }%`;
-	document.getElementById( 'total-plays' ).innerText = totalPlays;
+	document.getElementById( 'plays' ).innerText = totalPlays;
 	document.getElementById( 'engagement-rate' ).innerText = `${ engagementRate.toFixed( 2 ) }%`;
 	document.getElementById( 'watch-time' ).innerText = `${ playTime.toFixed( 2 ) }s`;
 
@@ -406,58 +312,53 @@ async function main() {
 		controls: false,
 	} );
 
-	const timeMetricsChartData = ( window.processedAnalyticsHistory || [] ).map( ( entry ) => {
-		const {
-			date,
-			page_load: dailyPageLoad,
-			play_time: dailyPlayTime,
-			video_length: dailyVideoLength,
-			plays: dailyPlays,
-		} = entry;
-
-		const dailyEngagementRate =
-			dailyPlays && dailyVideoLength ? ( dailyPlayTime / ( dailyPlays * dailyVideoLength ) ) * 100 : 0;
-
-		const dailyPlayRate =
-			dailyPageLoad ? ( dailyPlays / dailyPageLoad ) * 100 : 0;
-
-		return {
-			date,
-			engagement_rate: +dailyEngagementRate.toFixed( 2 ),
-			play_rate: +dailyPlayRate.toFixed( 2 ),
-			watch_time: +dailyPlayTime.toFixed( 2 ),
-		};
-	} );
-
 	const postsData = ( window.analyticsDataFetched?.post_details || [] ).map( ( post ) => {
 		const views = post.views || 0;
-		return { post: post.title, views, url: post.url };
+		return { post: post.title, views, url: post.url, id: post.id };
 	} );
 
 	// Generate visualizations
-	generateLineChart( heatmapData, '#line-chart', videoPlayer );
+	generateLineChart(
+		heatmapData,
+		'#line-chart',
+		videoPlayer,
+		'.line-chart-tooltip',
+		830,
+		300,
+	);
 	generateHeatmap( heatmapData, '#heatmap', videoPlayer );
-	generateMetricsOverTime( timeMetricsChartData, '#metrics-chart', videoPlayer );
+	// generateMetricsOverTime( timeMetricsChartData, '#metrics-chart', videoPlayer );
 	generatePostViewsChart( postsData, '#post-views-count-chart' );
 
 	const renderChange = ( changeValue ) => {
 		const rounded = Math.abs( changeValue ).toFixed( 2 );
 		const prefix = changeValue >= 0 ? '+' : '-';
-		const arrow = changeValue >= 0 ? TopArrow : DownArrow;
-		return `<img src="${ arrow }" alt="Arrow Icon" height="20" width="20"/>${ prefix }${ rounded }% this week`;
+		return `${ prefix }${ rounded }%`;
 	};
 
-	if ( document.getElementById( 'views-change' ) ) {
-		document.getElementById( 'views-change' ).innerHTML = renderChange( viewsChange );
+	if ( document.getElementById( 'plays-change' ) ) {
+		document.getElementById( 'plays-change' ).innerHTML = renderChange( viewsChange );
+		document
+			.getElementById( 'plays-change' )
+			.classList.add( viewsChange >= 0 ? 'change-rise' : 'change-drop' );
 	}
 	if ( document.getElementById( 'watch-time-change' ) ) {
 		document.getElementById( 'watch-time-change' ).innerHTML = renderChange( watchTimeChange );
+		document
+			.getElementById( 'watch-time-change' )
+			.classList.add( watchTimeChange >= 0 ? 'change-rise' : 'change-drop' );
 	}
 	if ( document.getElementById( 'play-rate-change' ) ) {
 		document.getElementById( 'play-rate-change' ).innerHTML = renderChange( playRateChange );
+		document
+			.getElementById( 'play-rate-change' )
+			.classList.add( playRateChange >= 0 ? 'change-rise' : 'change-drop' );
 	}
-	if ( document.getElementById( 'avg-engagement-change' ) ) {
-		document.getElementById( 'avg-engagement-change' ).innerHTML = renderChange( avgEngagementChange );
+	if ( document.getElementById( 'engagement-rate-change' ) ) {
+		document.getElementById( 'engagement-rate-change' ).innerHTML = renderChange( avgEngagementChange );
+		document
+			.getElementById( 'engagement-rate-change' )
+			.classList.add( avgEngagementChange >= 0 ? 'change-rise' : 'change-drop' );
 	}
 
 	if ( countryViews ) {
