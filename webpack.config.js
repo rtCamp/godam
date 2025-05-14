@@ -91,13 +91,6 @@ const adminJS = {
 	},
 };
 
-const videoAnalyticsJS = {
-	...sharedConfig,
-	entry: {
-		'video-analytics': path.resolve( process.cwd(), 'assets', 'src', 'js', 'video-analytics.js' ),
-	},
-};
-
 const mediaLibrary = {
 	...sharedConfig,
 	entry: {
