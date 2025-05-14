@@ -10,6 +10,7 @@ import ViewIcon from '../../assets/src/images/views.png';
 import DurationIcon from '../../assets/src/images/duration.png';
 import {
 	generateCountryHeatmap,
+	generateLineChart,
 } from '../../pages/analytics/helper';
 
 function formatTime( seconds ) {
@@ -121,114 +122,6 @@ function generateHeatmap( data, selector, videoPlayer ) {
 		.on( 'mouseout', () => {
 			heatmapTooltip.style( 'opacity', 0 );
 			verticalLine.style( 'opacity', 0 );
-		} );
-}
-
-function generateLineChart( data, selector, videoPlayer ) {
-	const margin = { top: 0, right: 0, bottom: 0, left: 0 };
-	const width = 830 - margin.left - margin.right;
-	const height = 300 - margin.top - margin.bottom;
-
-	const svg = d3.select( selector )
-		.attr( 'width', width + margin.left + margin.right )
-		.attr( 'height', height + margin.top + margin.bottom )
-		.append( 'g' )
-		.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
-
-	const xScale = d3.scaleLinear()
-		.domain( [ 0, data.length - 1 ] )
-		.range( [ 0, width ] );
-
-	const yScale = d3.scaleLinear()
-		.domain( [ d3.min( data ) - 10, d3.max( data ) + 10 ] )
-		.range( [ height, 0 ] );
-
-	const line = d3.line()
-		.x( ( d, i ) => xScale( i ) )
-		.y( ( d ) => yScale( d ) );
-
-	const area = d3.area()
-		.x( ( d, i ) => xScale( i ) )
-		.y0( height )
-		.y1( ( d ) => yScale( d ) );
-
-	svg.append( 'path' )
-		.datum( data )
-		.attr( 'class', 'line' )
-		.attr( 'd', line );
-
-	const hoverLine = svg.append( 'line' )
-		.attr( 'class', 'hover-line' )
-		.attr( 'y1', 0 )
-		.attr( 'y2', height )
-		.style( 'opacity', 0 );
-
-	const focus = svg.append( 'circle' )
-		.attr( 'class', 'focus-circle' )
-		.style( 'opacity', 0 );
-
-	const filledArea = svg.append( 'path' )
-		.datum( data )
-		.attr( 'class', 'area' )
-		.style( 'opacity', 0 );
-
-	const tooltip = d3.select( '.line-chart-tooltip' );
-
-	svg.append( 'rect' )
-		.attr( 'width', width )
-		.attr( 'height', height )
-		.style( 'fill', 'none' )
-		.style( 'pointer-events', 'all' )
-		.on( 'mousemove', function( event ) {
-			const [ mouseX ] = d3.pointer( event );
-			const xValue = xScale.invert( mouseX );
-			const index = Math.round( xValue );
-
-			if ( index >= 0 && index < data.length ) {
-				const value = data[ index ];
-				const videoDuration = videoPlayer.duration();
-				const videoTime = ( index / data.length ) * videoDuration;
-
-				focus
-					.style( 'opacity', 1 )
-					.attr( 'cx', xScale( index ) )
-					.attr( 'cy', yScale( value ) );
-
-				hoverLine
-					.style( 'opacity', 1 )
-					.attr( 'x1', xScale( index ) )
-					.attr( 'x2', xScale( index ) );
-
-				tooltip
-					.style( 'opacity', 1 )
-					.style( 'left', `${ xScale( index ) - 30 }px` )
-					.style( 'top', 0 )
-					.html(
-						`<div class="heatmap-tooltip-html">
-							<div class="flex gap-2 items-center text-black">
-								<img src=${ ViewIcon } alt="View" height=${ 16 } width=${ 16 }/>
-								${ value }
-							</div>
-							<div class="flex gap-2 items-center text-black">
-								<img src=${ DurationIcon } alt="Duration" height=${ 15 } width=${ 15 }/>
-								${ formatTime( index ) }
-							</div>
-						</div>`,
-					);
-
-				videoPlayer.currentTime( videoTime );
-
-				// Update the filled area
-				filledArea
-					.style( 'opacity', 1 )
-					.attr( 'd', area( data.slice( 0, index + 1 ) ) );
-			}
-		} )
-		.on( 'mouseout', () => {
-			focus.style( 'opacity', 0 );
-			hoverLine.style( 'opacity', 0 );
-			tooltip.style( 'opacity', 0 );
-			filledArea.style( 'opacity', 0 );
 		} );
 }
 
@@ -419,36 +312,20 @@ async function main() {
 		controls: false,
 	} );
 
-	// const timeMetricsChartData = ( window.processedAnalyticsHistory || [] ).map( ( entry ) => {
-	// 	const {
-	// 		date,
-	// 		page_load: dailyPageLoad,
-	// 		play_time: dailyPlayTime,
-	// 		video_length: dailyVideoLength,
-	// 		plays: dailyPlays,
-	// 	} = entry;
-
-	// 	const dailyEngagementRate =
-	// 		dailyPlays && dailyVideoLength ? ( dailyPlayTime / ( dailyPlays * dailyVideoLength ) ) * 100 : 0;
-
-	// 	const dailyPlayRate =
-	// 		dailyPageLoad ? ( dailyPlays / dailyPageLoad ) * 100 : 0;
-
-	// 	return {
-	// 		date,
-	// 		engagement_rate: +dailyEngagementRate.toFixed( 2 ),
-	// 		play_rate: +dailyPlayRate.toFixed( 2 ),
-	// 		watch_time: +dailyPlayTime.toFixed( 2 ),
-	// 	};
-	// } );
-
 	const postsData = ( window.analyticsDataFetched?.post_details || [] ).map( ( post ) => {
 		const views = post.views || 0;
 		return { post: post.title, views, url: post.url, id: post.id };
 	} );
 
 	// Generate visualizations
-	generateLineChart( heatmapData, '#line-chart', videoPlayer );
+	generateLineChart(
+		heatmapData,
+		'#line-chart',
+		videoPlayer,
+		'.line-chart-tooltip',
+		830,
+		300,
+	);
 	generateHeatmap( heatmapData, '#heatmap', videoPlayer );
 	// generateMetricsOverTime( timeMetricsChartData, '#metrics-chart', videoPlayer );
 	generatePostViewsChart( postsData, '#post-views-count-chart' );

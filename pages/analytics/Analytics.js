@@ -14,7 +14,7 @@ import {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
 } from './redux/api/analyticsApi';
-import { calculateEngagementRate, calculatePlayRate } from './helper';
+import { calculateEngagementRate, calculatePlayRate, generateLineChart } from './helper';
 import DOMPurify from 'isomorphic-dompurify';
 import './charts.js';
 
@@ -25,12 +25,13 @@ import { __ } from '@wordpress/i18n';
 import { Button, Spinner } from '@wordpress/components';
 import SingleMetrics from './SingleMetrics.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
+import videojs from 'video.js';
 
 const adminUrl =
   window.videoData?.adminUrl;
 const restURL = window.godamRestRoute.url || '';
 
-const RenderVideo = ( { attachmentID, attachmentData, className } ) => {
+const RenderVideo = ( { attachmentID, attachmentData, className, videoId } ) => {
 	const getMimiType = ( mime ) => {
 		if ( mime === 'video/quicktime' ) {
 			return 'video/mp4';
@@ -40,7 +41,7 @@ const RenderVideo = ( { attachmentID, attachmentData, className } ) => {
 	};
 
 	return (
-		<video id="analytics-video" className={ `video-js ${ className }` } data-id={ attachmentID }>
+		<video id={ videoId } className={ `video-js ${ className }` } data-id={ attachmentID }>
 			<source
 				src={ attachmentData.source_url || '' }
 				type={ getMimiType( attachmentData.mime_type ) || 'video/mp4' }
@@ -157,6 +158,45 @@ const Analytics = ( { attachmentID } ) => {
 		}
 	}
 
+	useEffect( () => {
+		const originalVideoEl = document.getElementById( 'original-analytics-video' );
+		if ( originalVideoEl && analyticsData ) {
+			const originalVideo = videojs( 'original-analytics-video', {
+				fluid: true,
+				mute: true,
+				controls: false,
+			} );
+
+			generateLineChart(
+				JSON.parse( analyticsData?.all_time_heatmap ),
+				'#performance-line-chart',
+				originalVideo,
+				'.performance-line-chart-tooltip',
+				525,
+				300,
+			);
+		}
+
+		const comparisonVideoEl = document.getElementById( 'comparison-analytics-video' );
+
+		if ( comparisonVideoEl && abTestComparisonAnalyticsData ) {
+			const comparisonVideo = videojs( 'comparison-analytics-video', {
+				fluid: true,
+				mute: true,
+				controls: false,
+			} );
+
+			generateLineChart(
+				JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ),
+				'#comparison-line-chart',
+				comparisonVideo,
+				'.comparison-line-chart-tooltip',
+				525,
+				300,
+			);
+		}
+	}, [ analyticsData, abTestComparisonAnalyticsData ] );
+
 	const openVideoUploader = () => {
 		const fileFrame = wp.media( {
 			title: __( 'Select Video to Perform Performance Comparison Testing', 'godam' ),
@@ -166,6 +206,7 @@ const Analytics = ( { attachmentID } ) => {
 			library: {
 				type: 'video',
 			},
+			frame: 'select',
 			multiple: false,
 		} );
 
@@ -220,34 +261,6 @@ const Analytics = ( { attachmentID } ) => {
 		}
 		return 'left-greater right-greater';
 	};
-
-	// const timeMetricsChartData = ( processedAnalyticsHistory || [] ).map(
-	// 	( entry ) => {
-	// 		const {
-	// 			date,
-	// 			page_load: dailyPageLoad,
-	// 			play_time: dailyPlayTime,
-	// 			video_length: dailyVideoLength,
-	// 			plays: dailyPlays,
-	// 		} = entry;
-
-	// 		const dailyEngagementRate =
-	//     dailyPlays && dailyVideoLength
-	//     	? ( dailyPlayTime / ( dailyPlays * dailyVideoLength ) ) * 100
-	//     	: 0;
-
-	// 		const dailyPlayRate = dailyPageLoad
-	// 			? ( dailyPlays / dailyPageLoad ) * 100
-	// 			: 0;
-
-	// 		return {
-	// 			date,
-	// 			engagement_rate: +dailyEngagementRate.toFixed( 2 ),
-	// 			play_rate: +dailyPlayRate.toFixed( 2 ),
-	// 			watch_time: +dailyPlayTime.toFixed( 2 ),
-	// 		};
-	// 	},
-	// );
 
 	return (
 		<div className="godam-analytics-container">
@@ -351,6 +364,7 @@ const Analytics = ( { attachmentID } ) => {
 											<RenderVideo
 												attachmentData={ attachmentData }
 												attachmentID={ attachmentID }
+												videoId={ 'analytics-video' }
 											/>
 											<div className="video-chart-container">
 												<div id="chart-container">
@@ -360,14 +374,6 @@ const Analytics = ( { attachmentID } ) => {
 											</div>
 										</div>
 										<div className="video-container">
-											{ /* <div id="heatmap-container" className="mt-4">
-												<h3 className="text-md mb-2 flex gap-2">
-													{ __( 'Heatmap', 'godam' ) }
-													<Tooltip text={ __( 'Heatmap visualizes per-second view density, identifying peaks of plays, skipped sections, and audience drop-offs. Darker areas indicate higher engagement', 'godam' ) } />
-												</h3>
-												<svg id="heatmap" width="640" height="100"></svg>
-												<div className="heatmap-tooltip"></div>
-											</div> */ }
 										</div>
 									</div>
 								</div>
@@ -375,10 +381,6 @@ const Analytics = ( { attachmentID } ) => {
 						</div>
 					</div>
 					<div className="grid grid-cols-[4fr_2fr_2fr] gap-4 px-10">
-						{ /* <div className="text-center bg-white border border-zinc-200 rounded p-4">
-							<h3 className="text-base font-medium text-zinc-700 mb-2">{ __( 'Playback Performance', 'godam' ) }</h3>
-							<svg id="metrics-chart"></svg>
-						</div> */ }
 						<PlaybackPerformanceDashboard
 							attachmentID={ attachmentID }
 							initialData={ processedAnalyticsHistory }
@@ -413,7 +415,7 @@ const Analytics = ( { attachmentID } ) => {
 										if ( ! isABTestCompleted ) {
 											if ( isABResultsLoading ) {
 												return (
-													<p>
+													<p className="flex items-center">
 														{ __( 'In Progress', 'godam' ) }
 														<Spinner />
 													</p>
@@ -434,6 +436,7 @@ const Analytics = ( { attachmentID } ) => {
 											<Button
 												variant="primary"
 												onClick={ () => startABTesting() }
+												className="godam-button"
 											>
 												{ __( 'Start Test ', 'godam' ) }
 											</Button>
@@ -452,6 +455,7 @@ const Analytics = ( { attachmentID } ) => {
 													setIsABTestCompleted( false );
 													openVideoUploader();
 												} }
+												className="godam-button"
 											>
 												{ __( 'Choose Video', 'godam' ) }
 											</Button>
@@ -473,7 +477,7 @@ const Analytics = ( { attachmentID } ) => {
 												<Button
 													onClick={ openVideoUploader }
 													variant="primary"
-													className="ml-2"
+													className="ml-2 godam-button"
 													aria-label={ __(
 														'Upload or Replace CTA Image',
 														'godam',
@@ -492,31 +496,43 @@ const Analytics = ( { attachmentID } ) => {
 										) }
 										{ mediaLibraryAttachment && (
 											<div className="flex gap-12 w-full h-full pt-6">
-												<div className="flex-1 flex justify-center items-center flex-col comparison-video">
-													<RenderVideo
-														attachmentData={ attachmentData }
-														attachmentID={ attachmentID }
-														className="w-full h-full max-h-[300px] object-fill rounded-xl"
-													/>
-													<div>
-														<h4>{ attachmentData?.title?.rendered }</h4>
-													</div>
-												</div>
-												<div className="w-px bg-gray-200 mx-4 divide-dashed"></div>
-												<div className="flex justify-center items-center flex-col h-full w-full flex-1">
-													<RenderVideo
-														attachmentData={ mediaLibraryAttachment }
-														attachmentID={ mediaLibraryAttachment?.id }
-														className="w-full h-full max-h-[300px] object-fill rounded-xl"
-													/>
-													<div className="video-chart-container">
-														<div id="chart-container">
-															<svg id="line-chart" width="525" height="300"></svg>
-															<div className="line-chart-tooltip"></div>
+												<div className="block w-[525px] h-[350px]">
+													<div className="relative">
+														<RenderVideo
+															attachmentData={ attachmentData }
+															attachmentID={ attachmentID }
+															className="w-full h-[320px] object-fill rounded-xl comparison-video-container"
+															videoId={ 'original-analytics-video' }
+														/>
+														<div className="original-video-chart-container relative">
+															<div id="original-chart-container">
+																<svg id="performance-line-chart" width="525" height="320"></svg>
+																<div className="performance-line-chart-tooltip"></div>
+															</div>
 														</div>
 													</div>
 													<div>
-														<h4>
+														<h4 className="text-center m-0">{ attachmentData?.title?.rendered }</h4>
+													</div>
+												</div>
+												<div className="w-px bg-gray-200 mx-4 divide-dashed"></div>
+												<div className="block w-[525px] h-[350px]">
+													<div className="relative">
+														<RenderVideo
+															attachmentData={ mediaLibraryAttachment }
+															attachmentID={ mediaLibraryAttachment?.id }
+															className="w-full h-[320px] object-fill rounded-xl comparison-video-container"
+															videoId={ 'comparison-analytics-video' }
+														/>
+														<div className="original-video-chart-container relative">
+															<div id="comparison-chart-container">
+																<svg id="comparison-line-chart" width="525" height="320"></svg>
+																<div className="comparison-line-chart-tooltip"></div>
+															</div>
+														</div>
+													</div>
+													<div>
+														<h4 className="text-center m-0">
 															{ mediaLibraryAttachment?.title?.rendered }
 														</h4>
 													</div>
