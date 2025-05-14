@@ -37,7 +37,6 @@ class Media_Library_Ajax {
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
 		add_action( 'add_attachment', array( $this, 'add_media_library_taxonomy_on_media_upload' ), 10, 1 );
-		add_action( 'add_attachment', array( $this, 'upload_media_to_frappe_backend' ), 10, 1 );
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
 
 		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
@@ -51,23 +50,31 @@ class Media_Library_Ajax {
 	 * @return array
 	 */
 	public function godam_media_library_ajax( $query_args ) {
+
+		$api_key = get_site_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) ) {
+			return $query_args;
+		}
+
 		if ( isset( $query_args['post_mime_type'] ) && is_array( $query_args['post_mime_type'] ) && in_array( 'godam', $query_args['post_mime_type'], true ) ) {
 			
-			$api_url = 'https://frappe-transcoder-api.rt.gw/api/method/godam_core.api.file.get_list_of_files_with_api_key';
+			$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.file.get_list_of_files_with_api_key';
 
-			$query = array(
-				'job_type' => '',
-				'order_by' => 'creation asc',
-				'search'   => '',
-				'api_key'  => '6a44b5ac7d1cb51f301d90a08411ae49',
+			$api_url = add_query_arg(
+				array(
+					'api_key' => $api_key,
+				),
+				$api_url
 			);
 
 			$response = wp_remote_get(
 				$api_url,
 				array(
-					'body'    => $query,
-					'headers' => array( 'Content-Type' => 'application/json' ),
-				)
+					'headers' => array(
+						'Content-Type' => 'application/json',
+					),
+				) 
 			);
 
 			if ( is_wp_error( $response ) ) {
@@ -103,13 +110,13 @@ class Media_Library_Ajax {
 			return array();
 		}
 
-		return array(
+		$result = array(
 			'id'                    => $item['name'],
 			'title'                 => pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) ?? $item['name'],
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
 			'url'                   => $item['file_origin'],
-			'mime'                  => $item['mime_type'] ?? 'image/jpg',
-			'type'                  => 'image',
+			'mime'                  => $item['mime_type'] ?? '',
+			'type'                  => $item['job_type'] ?? '',
 			'subtype'               => explode( '/', $item['mime_type'] )[1] ?? 'jpg',
 			'status'                => $item['status'],
 			'date'                  => strtotime( $item['creation'] ) * 1000,
@@ -119,54 +126,13 @@ class Media_Library_Ajax {
 			'owner'                 => $item['owner'] ?? '',
 			'label'                 => $item['file_label'] ?? '',
 		);
-	}
 
-	/**
-	 * Upload media to the Frappe backend.
-	 *
-	 * @param int $attachment_id Attachment ID.
-	 * @return void
-	 */
-	public function upload_media_to_frappe_backend( $attachment_id ) {
-		// Only if attachment type if image.
-		if ( 'image' !== substr( get_post_mime_type( $attachment_id ), 0, 5 ) ) {
-			return;
+		if ( 'stream' === $item['job_type'] ) {
+			$result['icon'] = $item['thumbnail_url'] ?? '';
+			$result['type'] = 'video';
 		}
 
-		$account_token = get_site_option( 'rtgodam-account-token', '' );
-		$api_key       = get_site_option( 'rtgodam-api-key', '' );
-
-		if ( empty( $account_token ) || empty( $api_key ) ) {
-			return;
-		}
-
-		$api_url = 'https://frappe-transcoder-api.rt.gw/api/resource/Transcoder Job';
-
-		$attachment_url = wp_get_attachment_url( $attachment_id );
-
-		// Replace the localhost:10003 with the https://a24c-103-5-135-88.ngrok-free.app.
-
-		$attachment_url = str_replace( 'localhost:10003', 'a24c-103-5-135-88.ngrok-free.app', $attachment_url );
-		$attachment_url = str_replace( 'http://', 'https://', $attachment_url );
-		$attachment_url = str_replace( 'https://localhost:10003', 'https://a24c-103-5-135-88.ngrok-free.app', $attachment_url );
-
-		// Request params.
-		$params = array(
-			'api_token'         => '6a44b5ac7d1cb51f301d90a08411ae49',
-			'job_type'          => 'image',
-			'file_origin'       => $attachment_url,
-			'orignal_file_name' => get_the_title( $attachment_id ),
-		);
-
-		wp_remote_post(
-			$api_url,
-			array(
-				'body'    => wp_json_encode( $params ),
-				'headers' => array(
-					'Content-Type' => 'application/json',
-				),
-			)
-		);
+		return $result;
 	}
 
 	/**
