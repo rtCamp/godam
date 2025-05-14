@@ -266,6 +266,8 @@ class RTGODAM_RetranscodeMedia {
 				'video/' !== substr( $post->post_mime_type, 0, 6 ) &&
 				'application/pdf' !== $post->post_mime_type
 			) ||
+			// Safe fallback via filter; PHPCS can't resolve dynamic capability.
+			// phpcs:ignore WordPress.WP.Capabilities.Undetermined
 			! current_user_can( $this->capability )
 		) {
 			return $actions;
@@ -590,6 +592,8 @@ class RTGODAM_RetranscodeMedia {
 			die( wp_json_encode( array( 'error' => sprintf( __( 'Sending Failed: %d is an invalid media ID/type.', 'godam' ), intval( $id ) ) ) ) );
 		}
 
+		// Safe fallback via filter; PHPCS can't resolve dynamic capability.
+		// phpcs:ignore WordPress.WP.Capabilities.Undetermined
 		if ( ! current_user_can( $this->capability ) ) {
 			$this->die_json_error_msg( $media->ID, __( "Your user account doesn't have permission to transcode", 'godam' ) );
 		}
