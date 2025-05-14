@@ -210,7 +210,9 @@ const CTALayer = ( { layerID, goBack } ) => {
 						</div>
 					) }
 					{ layer?.cta_type === 'html' && (
-						<div className="easydam-layer" dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( formHTML, wpKsesAllowed ) } } style={ { backgroundColor: layer.bg_color } } />
+						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
+							<div className="easydam-layer--cta-html" dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( formHTML, wpKsesAllowed ) } } />
+						</div>
 					) }
 					{ layer?.cta_type === 'image' && (
 						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
