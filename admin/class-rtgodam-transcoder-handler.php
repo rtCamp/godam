@@ -203,7 +203,6 @@ class RTGODAM_Transcoder_Handler {
 				preg_match( '/video|audio/i', $metadata['mime_type'], $type_array ) ||
 				in_array( $metadata['mime_type'], $this->allowed_mimetypes, true )
 			) &&
-			! in_array( $metadata['mime_type'], array( 'audio/mp3' ), true ) &&
 			! in_array( $type, $not_allowed_type, true )
 		) {
 

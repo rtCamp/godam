@@ -191,11 +191,9 @@ function rtgodam_image_cta_html( $layer ) {
 				<div class=\"image-cta-description\">
 					" . ( ! empty( $image_text ) ? "<h2>{$image_text}</h2>" : '' ) . '
 					' . ( ! empty( $image_description ) ? "<p>{$image_description}</p>" : '' ) . "
-					<button class=\"image-cta-btn\">
-						<a href=\"{$image_link}\" target=\"_blank\">
-							{$cta_button_text}
-						</a>
-					</button>
+					<a class=\"image-cta-btn\" href=\"{$image_link}\" target=\"_blank\">
+						{$cta_button_text}
+					</a>
 				</div>
 			</div>
 		</div>

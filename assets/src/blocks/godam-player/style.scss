@@ -219,6 +219,10 @@
     align-content: center;
     justify-content: center;
     padding-left: 0;
+
+	h2 {
+		color: #000;
+	}
 }
 
 .image-cta-btn {
@@ -229,7 +233,9 @@
     border: none;
     font-size: 16px;
     text-transform: uppercase;
-
+	text-align: center;
+	font-weight: 500;
+	
 	a {
 		color: #fff;
 	}
@@ -285,7 +291,6 @@
 	}
 
 	a {
-		margin-top: -25px;
 		text-decoration: none;
 	}
 

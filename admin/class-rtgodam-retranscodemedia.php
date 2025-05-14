@@ -208,19 +208,15 @@ class RTGODAM_RetranscodeMedia {
 				// Generate the list of IDs.
 				$ids = array();
 				foreach ( $media as $i => $each ) {
-					if ( ! in_array( $each->post_mime_type, array( 'audio/mp3', 'audio/mpeg' ), true ) ) {
-						$ids[] = $each->ID;
-						$path  = get_attached_file( $each->ID );
-						if ( file_exists( $path ) ) {
-							$current_file_size  = filesize( $path );
-							$file_size          = $file_size + $current_file_size;
-							$files[ $each->ID ] = array(
-								'name' => esc_html( get_the_title( $each->ID ) ),
-								'size' => $current_file_size,
-							);
-						}
-					} elseif ( in_array( $each->post_mime_type, array( 'audio/mp3', 'audio/mpeg' ), true ) ) {
-						unset( $media[ $i ] );
+					$ids[] = $each->ID;
+					$path  = get_attached_file( $each->ID );
+					if ( file_exists( $path ) ) {
+						$current_file_size  = filesize( $path );
+						$file_size          = $file_size + $current_file_size;
+						$files[ $each->ID ] = array(
+							'name' => esc_html( get_the_title( $each->ID ) ),
+							'size' => $current_file_size,
+						);
 					}
 				}
 			}
@@ -270,7 +266,8 @@ class RTGODAM_RetranscodeMedia {
 				'video/' !== substr( $post->post_mime_type, 0, 6 ) &&
 				'application/pdf' !== $post->post_mime_type
 			) ||
-			'audio/mpeg' === $post->post_mime_type ||
+			// Safe fallback via filter; PHPCS can't resolve dynamic capability.
+			// phpcs:ignore WordPress.WP.Capabilities.Undetermined
 			! current_user_can( $this->capability )
 		) {
 			return $actions;
@@ -423,19 +420,15 @@ class RTGODAM_RetranscodeMedia {
 					// Generate the list of IDs.
 					$ids = array();
 					foreach ( $media as $i => $each ) {
-						if ( ! in_array( $each->post_mime_type, array( 'audio/mp3', 'audio/mpeg' ), true ) ) {
-							$ids[] = $each->ID;
-							$path  = get_attached_file( $each->ID );
-							if ( file_exists( $path ) ) {
-								$current_file_size  = filesize( $path );
-								$file_size          = $file_size + $current_file_size;
-								$files[ $each->ID ] = array(
-									'name' => esc_html( get_the_title( $each->ID ) ),
-									'size' => $current_file_size,
-								);
-							}
-						} elseif ( in_array( $each->post_mime_type, array( 'audio/mp3', 'audio/mpeg' ), true ) ) {
-							unset( $media[ $i ] );
+						$ids[] = $each->ID;
+						$path  = get_attached_file( $each->ID );
+						if ( file_exists( $path ) ) {
+							$current_file_size  = filesize( $path );
+							$file_size          = $file_size + $current_file_size;
+							$files[ $each->ID ] = array(
+								'name' => esc_html( get_the_title( $each->ID ) ),
+								'size' => $current_file_size,
+							);
 						}
 					}
 					$ids = implode( ',', $ids );
@@ -583,6 +576,7 @@ class RTGODAM_RetranscodeMedia {
 
 		if ( empty( $id ) || 0 >= $id ) {
 			wp_send_json_error();
+			exit;
 		}
 
 		$media = get_post( $id );
@@ -598,11 +592,8 @@ class RTGODAM_RetranscodeMedia {
 			die( wp_json_encode( array( 'error' => sprintf( __( 'Sending Failed: %d is an invalid media ID/type.', 'godam' ), intval( $id ) ) ) ) );
 		}
 
-		if ( 'audio/mpeg' === $media->post_mime_type ) {
-			// translators: Placeholder is for Media Name and ID of media.
-			die( wp_json_encode( array( 'error' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) is MP3 file already. No need to send for transcoding', 'godam' ), esc_html( get_the_title( $media->ID ) ), $media->ID ) ) ) );
-		}
-
+		// Safe fallback via filter; PHPCS can't resolve dynamic capability.
+		// phpcs:ignore WordPress.WP.Capabilities.Undetermined
 		if ( ! current_user_can( $this->capability ) ) {
 			$this->die_json_error_msg( $media->ID, __( "Your user account doesn't have permission to transcode", 'godam' ) );
 		}
@@ -673,7 +664,7 @@ class RTGODAM_RetranscodeMedia {
 	 */
 	public function die_json_error_msg( $id, $message ) {
 		// translators: Media name, Media ID and message for failed transcode.
-		die( wp_json_encode( array( 'error' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) failed to sent. The error message was: %3$s', 'godam' ), esc_html( get_the_title( $id ) ), $id, $message ) ) ) );
+		die( wp_json_encode( array( 'error' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) failed to send. The error message was: %3$s', 'godam' ), esc_html( get_the_title( $id ) ), $id, $message ) ) ) );
 	}
 
 	/**
