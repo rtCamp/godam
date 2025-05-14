@@ -95,11 +95,9 @@ const CTALayer = ( { layerID, goBack } ) => {
 					<div class="image-cta-description">
 						${ layer?.imageText ? `<h2>${ layer.imageText }</h2>` : '' }
 						${ layer?.imageDescription ? `<p>${ layer.imageDescription }</p>` : '' }
-						<button class="image-cta-btn">
-							<a href="${ layer?.imageLink || '/' }" target="_blank">
-								${ layer?.imageCtaButtonText || __( 'Buy Now', 'godam' ) }
-							</a>
-						</button>
+						<a class="image-cta-btn" href="${ layer?.imageLink || '/' }" target="_blank">
+							${ layer?.imageCtaButtonText || __( 'Buy Now', 'godam' ) }
+						</a>
 					</div>
    				 </div>`;
 	};
