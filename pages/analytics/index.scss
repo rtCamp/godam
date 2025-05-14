@@ -52,12 +52,6 @@
 		@apply bg-white overflow-auto h-[400px];
 	}
 
-	.media-frame-menu, 
-.media-frame-router, 
-.media-frame-content .upload-ui {
-	display: none !important;
-}
-
 	.analytics-info-container {
 		display: flex;
 		gap: 12px;
@@ -66,7 +60,6 @@
 		.analytics-info {
 			display: flex;
 			align-items: center;
-			// background-color: #fff;
 			padding: 9px 12px;
 			border-radius: 12px;
 
@@ -138,6 +131,7 @@
 	.original-video-chart-container {
 		position: relative;
 		bottom: 30px;
+		top: 0;
 	}
 
 	#chart-container, #original-chart-container, #comparison-chart-container {
