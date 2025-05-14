@@ -1,8 +1,8 @@
 ![Banner V3](https://github.com/user-attachments/assets/1c2cdf13-5cab-432a-b548-34cd3876e93f)
 # GoDAM
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar
+Contributors: [rtcamp](https://profiles.wordpress.org/rtcamp), [elifvish](https://profiles.wordpress.org/elifvish), [subodhrajpopat](https://profiles.wordpress.org/subodhrajpopat), [kuldipchaudhary](https://profiles.wordpress.org/kuldipchaudhary), [prachigarg19](https://profiles.wordpress.org/prachigarg19), [juzar](https://profiles.wordpress.org/juzar), [geekofshire](https://profiles.wordpress.org/geekofshire), [nazmulhassann20](https://profiles.wordpress.org/nazmulhassann20)
 
-Tags: Transcoder, DAM, Interactive Video Layers, Adaptive Bitrate Streaming, Video Analytics
+Tags: transcoder, DAM, media library, adaptive streaming, video analytics
 
 Requires at least: 6.5
 
@@ -27,17 +27,17 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 ### Free Features
 
 📌 Media Management
-- The DAM functionality streamlines file organization for websites with large libraries of images, videos, documents, and more.
+- The [DAM functionality](https://godam.io/features/wordpress-advanced-media-management/) streamlines file organization for websites with large libraries of images, videos, documents, and more.
 - Organize media assets efficiently with enhanced WordPress Media Library integration.
 
 📌 Interactive Video Layers for Engagement
-- Embed clickable CTAs to drive actions like sign-ups and purchases.
-- Enhance your videos with customizable hotspots that deliver additional context, links, and information exactly when and where your viewers need it.
-- Integrate Gravity Forms to collect user feedback and lead data within videos.
+- Embed [clickable CTAs](https://godam.io/features/video-overlay/) to drive actions like sign-ups and purchases.
+- Enhance your videos with [customizable hotspots](https://godam.io/features/video-hotspot/) that deliver additional context, links, and information exactly when and where your viewers need it.
+- [Integrate Gravity Forms](https://godam.io/features/gravity-forms/) to collect user feedback and lead data within videos.
 - Add interactive Polls to gather viewer opinions during playback.
 
 📌 Seamless Ad Monetization
-- Supports self-hosted ads and third-party ad networks.
+- Supports [self-hosted ads and third-party ad networks](https://godam.io/features/ads-integration/).
 - Flexible ad placements (pre-roll, mid-roll, post-roll) to maximize revenue.
 - Boost revenue and engagement with clickable ad redirections
 
@@ -48,14 +48,14 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 ### Pro Features
 
 📌 Smart Transcoding & Adaptive Bitrate Streaming
-- Automatically converts videos into multiple resolutions (240p to 4K).
+- Automatically [converts videos into multiple resolutions](https://godam.io/features/adaptive-bitrate-streaming/) (240p to 4K).
 - Ensures smooth playback by dynamically adjusting quality based on network speed.
 - Supported audio formats: MP3, M4A, WAV, OGG
 - Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
 - Watermarking support to protect video content.
 
 📌 Video Analytics
-- Monitor viewer behavior and engagement through detailed metrics and heatmaps.
+- Monitor viewer behavior and engagement through [detailed metrics and heatmaps](https://godam.io/features/analytics/).
 - Track video interactions to optimize content strategy.
 - Gain insights into user retention and conversion rates.
 
