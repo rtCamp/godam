@@ -139,5 +139,5 @@ add_action( 'init', 'load_godam_textdomain' );
  * @return void
  */
 function load_godam_textdomain() {
-	load_plugin_textdomain( 'godam' );
+	load_plugin_textdomain( 'godam', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 }
