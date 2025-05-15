@@ -172,4 +172,4 @@ function rtt_update_wp_media_thumbnail( $thumb_url, $attachment_id ) {
 	}
 }
 
-add_action( 'transcoded_thumb_added', 'rtt_update_wp_media_thumbnail', 10, 2 );
+add_action( 'rtgodam_transcoded_thumb_added', 'rtt_update_wp_media_thumbnail', 10, 2 );
