@@ -4,7 +4,7 @@ Tags: transcoder, DAM, media library, adaptive streaming, video analytics
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -183,6 +183,10 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Enhancement: Refreshed the UI of Settings pages for improved usability.
 - Feat: Added support for interactive Polls layer in video editor.
 - Feat: Introduced the new GoDAM Audio Block for displaying audio content from CDN.
+
+= v1.0.5 (May 15, 2025) =
+- Fix: Updated plugin to support translations and localization.
+- Enhancement: Added compatibility for displaying thumbnails in the rtMedia gallery view.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
