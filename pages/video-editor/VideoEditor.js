@@ -45,7 +45,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
-	const { gravityForms, wpForms, cf7Forms, isLoading } = useFetchForms();
+	const { gravityForms, wpForms, cf7Forms, isFetching } = useFetchForms();
 
 	const restURL = window.godamRestRoute.url || '';
 
@@ -130,27 +130,32 @@ const VideoEditor = ( { attachmentID } ) => {
 	 * Update the store with the fetched forms.
 	 */
 	useEffect( () => {
-		if ( ! isLoading ) {
-			const _cf7Forms = cf7Forms.map( ( form ) => {
-				return {
-					id: form.id,
-					title: form.title,
-				};
-			} );
-			dispatch( setCF7Forms( _cf7Forms ) );
+		if ( ! isFetching ) {
+			if ( cf7Forms && cf7Forms.length > 0 ) {
+				const _cf7Forms = cf7Forms.map( ( form ) => {
+					return {
+						id: form.id,
+						title: form.title,
+					};
+				} );
+				dispatch( setCF7Forms( _cf7Forms ) );
+			}
 
-			const _wpForms = wpForms.map( ( form ) => {
-				return {
-					id: form.ID,
-					title: form.post_title,
-				};
-			} );
+			if ( wpForms && wpForms.length > 0 ) {
+				const _wpForms = wpForms.map( ( form ) => {
+					return {
+						id: form.ID,
+						title: form.post_title,
+					};
+				} );
+				dispatch( setWPForms( _wpForms ) );
+			}
 
-			dispatch( setWPForms( _wpForms ) );
-
-			dispatch( setGravityForms( gravityForms ) );
+			if ( gravityForms && gravityForms.length > 0 ) {
+				dispatch( setGravityForms( gravityForms ) );
+			}
 		}
-	}, [ gravityForms, cf7Forms, wpForms, isLoading, dispatch ] );
+	}, [ gravityForms, cf7Forms, wpForms, isFetching, dispatch ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => ( playerRef.current = player );

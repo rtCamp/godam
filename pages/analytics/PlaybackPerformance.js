@@ -8,6 +8,10 @@ import { useEffect, useRef, useState } from 'react';
  * Internal dependencies
  */
 import { useFetchProcessedAnalyticsHistoryQuery } from './redux/api/analyticsApi';
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
 
 export default function PlaybackPerformanceDashboard( {
 	attachmentID,
@@ -19,16 +23,7 @@ export default function PlaybackPerformanceDashboard( {
 		'engagement_rate',
 		'play_rate',
 	] );
-	const [ parsedData, setParsedData ] = useState( initialData );
-
-	// useEffect( () => {
-	// 	console.log( 'here' );
-
-	// 	setTimeout( () => {
-	// 		renderChart();
-	// 		setParsedData( initialData );
-	// 	}, 500 );
-	// }, [] );
+	const [ parsedData, setParsedData ] = useState( initialData ); // Stores formatted data.
 
 	// Get days value from selected period
 	const getDaysFromPeriod = ( period ) => {
@@ -59,6 +54,7 @@ export default function PlaybackPerformanceDashboard( {
 		{ skip: ! attachmentID },
 	);
 
+	// Format data response for chart.
 	useEffect( () => {
 		const parseDate = d3.timeParse( '%Y-%m-%d' );
 		const timeMetricsChartData = ( processedAnalyticsHistory || [] ).map(
@@ -91,13 +87,12 @@ dailyPlays && dailyVideoLength
 		setParsedData( timeMetricsChartData );
 	}, [ processedAnalyticsHistory, selectedMetrics ] );
 
-	// console.log( 'processedAnalyticsHistory 3', parsedData );
-
 	const renderChart = () => {
 		if ( ! chartRef.current || ! parsedData ) {
 			return;
 		}
 
+		// For discontinous data, we generate dates between the range for continuous range render.
 		const generateDateRange = ( start, end ) => {
 			const dates = [];
 			const current = new Date( start );
@@ -116,7 +111,7 @@ dailyPlays && dailyVideoLength
 		// Set the dimensions and margins of the graph
 		const margin = { top: 20, right: 30, bottom: 50, left: 60 },
 			width = chartRef.current.clientWidth - margin.left - margin.right,
-			height = 500 - margin.top - margin.bottom;
+			height = 300 - margin.top - margin.bottom;
 
 		// Create an SVG element
 		const svg = d3
@@ -127,106 +122,41 @@ dailyPlays && dailyVideoLength
 			.append( 'g' )
 			.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
 
-		// Parse dates
-		// const parseDate = d3.timeParse( '%Y-%m-%d' );
-		// const data = parsedData.map( ( d ) => ( {
-		// 	date: parseDate( d.date ),
-		// 	engagement_rate: +d.engagement_rate,
-		// 	play_rate: +d.play_rate,
-		// 	watch_time: +d.watch_time,
-		// } ) );
-
 		// Filter data based on selected period
-		// const filterData = ( data, period ) => {
-		// 	const today = new Date();
-		// 	const cutoffDate = new Date( today );
+		const filterData = ( data, period ) => {
+			const today = new Date();
+			const cutoffDate = new Date( today );
 
-		// 	switch ( period ) {
-		// 		case '7D':
-		// 			cutoffDate.setDate( today.getDate() - 7 );
-		// 			break;
-		// 		case '1M':
-		// 			cutoffDate.setMonth( today.getMonth() - 1 );
-		// 			break;
-		// 		case '6M':
-		// 			cutoffDate.setMonth( today.getMonth() - 6 );
-		// 			break;
-		// 		case '1Y':
-		// 			cutoffDate.setFullYear( today.getFullYear() - 1 );
-		// 			break;
-		// 		case 'All':
-		// 		default:
-		// 			return data;
-		// 	}
+			switch ( period ) {
+				case '7D':
+					cutoffDate.setDate( today.getDate() - 7 );
+					break;
+				case '1M':
+					cutoffDate.setMonth( today.getMonth() - 1 );
+					break;
+				case '6M':
+					cutoffDate.setMonth( today.getMonth() - 6 );
+					break;
+				case '1Y':
+					cutoffDate.setFullYear( today.getFullYear() - 1 );
+					break;
+				case 'All':
+				default:
+					return data;
+			}
 
-		// 	return data.filter( ( d ) => new Date( d.date ) >= cutoffDate );
-		// };
+			return data.filter( ( d ) => new Date( d.date ) >= cutoffDate );
+		};
 
-		// const filteredData = filterData( parsedData, selectedPeriod );
-
-		const filteredData = [
-			{
-				date: new Date( '2023-05-06T18:30:00.000Z' ),
-				engagement_rate: 15.3,
-				play_rate: 45.1,
-				watch_time: 4.22,
-			},
-			{
-				date: new Date( '2023-07-12T18:30:00.000Z' ),
-				engagement_rate: 18.7,
-				play_rate: 52.0,
-				watch_time: 6.14,
-			},
-			{
-				date: new Date( '2023-09-30T18:30:00.000Z' ),
-				engagement_rate: 21.9,
-				play_rate: 39.6,
-				watch_time: 7.85,
-			},
-			{
-				date: new Date( '2023-12-15T18:30:00.000Z' ),
-				engagement_rate: 23.2,
-				play_rate: 60.0,
-				watch_time: 5.77,
-			},
-			{
-				date: new Date( '2024-03-10T18:30:00.000Z' ),
-				engagement_rate: 19.6,
-				play_rate: 48.5,
-				watch_time: 8.13,
-			},
-			{
-				date: new Date( '2024-07-01T18:30:00.000Z' ),
-				engagement_rate: 17.2,
-				play_rate: 50.0,
-				watch_time: 6.25,
-			},
-			{
-				date: new Date( '2024-10-18T18:30:00.000Z' ),
-				engagement_rate: 20.4,
-				play_rate: 55.3,
-				watch_time: 9.02,
-			},
-			{
-				date: new Date( '2025-01-22T18:30:00.000Z' ),
-				engagement_rate: 22.1,
-				play_rate: 63.9,
-				watch_time: 10.54,
-			},
-			{
-				date: new Date( '2025-04-30T18:30:00.000Z' ),
-				engagement_rate: 24.7,
-				play_rate: 70.2,
-				watch_time: 11.76,
-			},
-		];
+		const filteredData = filterData( parsedData, selectedPeriod );
 
 		const startDate = d3.min( filteredData, ( d ) => d.date );
 		const endDate = d3.max( filteredData, ( d ) => d.date );
 		const allDates = generateDateRange( startDate, endDate );
 
-		const completeData = allDates.map( ( date ) => {
-			const match = filteredData.find(
+		// For discontinous data, after the dates is generated, for the dates with no data, add a 0 value.
+		const completeData = allDates?.map( ( date ) => {
+			const match = filteredData?.find(
 				( d ) => d.date.getTime() === date.getTime(),
 			);
 			return (
@@ -244,9 +174,6 @@ dailyPlays && dailyVideoLength
 			.scaleTime()
 			.domain( d3.extent( completeData, ( d ) => d.date ) )
 			.range( [ 0, width ] );
-
-		// 	const tickFormat =
-		//   selectedPeriod === '7D' || selectedPeriod === '1M' ? d3.timeFormat( '%b %d' ) : d3.timeFormat( '%b' );
 
 		let tickValues, xTickFormat;
 
@@ -274,8 +201,9 @@ dailyPlays && dailyVideoLength
 
 				// If it's January, append the year
 				if ( month === 'Jan' ) {
-					return `${ month } '${ String( year ).slice( -2 ) }`; // Example: Jan '24
+					return `${ month } '${ String( year ).slice( -2 ) }`;
 				}
+
 				return month;
 			};
 		} else {
@@ -283,47 +211,27 @@ dailyPlays && dailyVideoLength
 			tickValues = completeData.map( ( d ) => d.date );
 			xTickFormat = d3.timeFormat( '%b %d' ); // e.g., Jan 12
 		}
-		// Add X axis with month name
-		svg
+
+		// Add X axis.
+		const xAxis = svg
 			.append( 'g' )
 			.attr( 'transform', `translate(0, ${ height })` )
-			.call( d3.axisBottom( x ).tickValues( tickValues ).tickFormat( xTickFormat ) );
+			.call( d3.axisBottom( x ).tickValues( tickValues ).tickFormat( xTickFormat ) )
+			.selectAll( 'text' )
+			.style( 'fill', '#71717a' );
 
-		// Add month name in center
-		// svg
-		// 	.append( 'text' )
-		// 	.attr( 'x', width / 2 )
-		// 	.attr( 'y', height + 40 )
-		// 	.attr( 'text-anchor', 'middle' )
-		// 	.text( 'April' )
-		// 	.attr( 'fill', '#333' )
-		// 	.attr( 'font-family', 'Arial, sans-serif' )
-		// 	.attr( 'font-size', '14px' );
+		svg.selectAll( '.domain' ).style( 'stroke', '#71717a' ); // Set axis line color to zinc-500
 
-		// // Add left arrow
-		// svg
-		// 	.append( 'text' )
-		// 	.attr( 'x', width / 2 - 60 )
-		// 	.attr( 'y', height + 40 )
-		// 	.attr( 'text-anchor', 'middle' )
-		// 	.text( '←' )
-		// 	.attr( 'fill', '#333' )
-		// 	.attr( 'font-family', 'Arial, sans-serif' )
-		// 	.attr( 'font-size', '14px' )
-		// 	.attr( 'cursor', 'pointer' );
+		if ( dateRangeInDays > 31 ) {
+			//if date range is greater than 31 days, vertically place the month to prevent tick clustering.
+			xAxis
+				.style( 'text-anchor', 'end' )
+				.attr( 'dx', '-0.8em' )
+				.attr( 'dy', '0.15em' )
+				.attr( 'transform', 'rotate(-90)' );
+		}
 
-		// // Add right arrow
-		// svg
-		// 	.append( 'text' )
-		// 	.attr( 'x', width / 2 + 60 )
-		// 	.attr( 'y', height + 40 )
-		// 	.attr( 'text-anchor', 'middle' )
-		// 	.text( '→' )
-		// 	.attr( 'fill', '#333' )
-		// 	.attr( 'font-family', 'Arial, sans-serif' )
-		// 	.attr( 'font-size', '14px' )
-		// 	.attr( 'cursor', 'pointer' );
-
+		// Adds a vertical axis when tooltip is hovered over.
 		const vertical = svg
 			.append( 'line' )
 			.attr( 'class', 'vertical-line' )
@@ -345,7 +253,23 @@ dailyPlays && dailyVideoLength
 			.domain( [ 0, maxValue * 1.1 ] )
 			.range( [ height, 0 ] );
 
-		svg.append( 'g' ).call( d3.axisLeft( y ) );
+		svg
+			.append( 'g' )
+			.call( d3.axisLeft( y ) )
+			.selectAll( 'text' )
+			.style( 'fill', '#71717a' );
+
+		svg
+			.append( 'text' )
+			.attr( 'transform', 'rotate(-90)' )
+			.attr( 'y', -50 )
+			.attr( 'x', -height / 2 )
+			.attr( 'dy', '1em' )
+			.attr( 'text-anchor', 'middle' )
+			.text( __( 'Performance', 'godam' ) )
+			.style( 'fill', '#71717a' )
+			.style( 'font-family', 'sans-serif' )
+			.style( 'font-size', '12px' );
 
 		// Define color scale for different metrics
 		const colorScale = d3
@@ -366,21 +290,8 @@ dailyPlays && dailyVideoLength
 			.style( 'box-shadow', '0 0 10px rgba(0,0,0,0.1)' )
 			.style( 'pointer-events', 'none' )
 			.style( 'opacity', 0 )
+			.style( 'min-width', 300 )
 			.style( 'z-index', 1000 );
-
-		// Add a vertical dotted line for April 19
-		// const april19 = parseDate( '2025-04-19' );
-		// if ( filteredData.some( ( d ) => d.date.getTime() === april19.getTime() ) ) {
-		// 	svg
-		// 		.append( 'line' )
-		// 		.attr( 'x1', x( april19 ) )
-		// 		.attr( 'x2', x( april19 ) )
-		// 		.attr( 'y1', 0 )
-		// 		.attr( 'y2', height )
-		// 		.attr( 'stroke', '#999' )
-		// 		.attr( 'stroke-width', 1 )
-		// 		.attr( 'stroke-dasharray', '3,3' );
-		// }
 
 		// Add area and line for each selected metric
 		selectedMetrics.forEach( ( metric ) => {
@@ -434,19 +345,27 @@ dailyPlays && dailyVideoLength
 						.style( 'opacity', 1 )
 						.html(
 							`
-              <div style="font-weight: bold">
+              <div class="text-zinc-500">
                 ${ d.date.getDate() } ${ d.date.toLocaleString( 'default', { month: 'short' } ) } ${ d.date.getFullYear() }
               </div>
-              <hr style="margin: 5px 0" />
-              <div>
-                	<span style="color: #9333EA">●</span> 
-               		Engagement Rate: ${ d.engagement_rate.toFixed( 0 ) }${ unit }
+              <hr />
+				<div class="flex flex-col min-w-[250px]">
+					<div class="flex justify-between items-center h-9">
+						<div class="flex items-center gap-2">
+							<span style="color: #9333EA">●</span> 
+							<p class="text-zinc-500">Engagement Rate</p>
+						</div>
+						<span class="text-zinc-950 font-medium">${ d.engagement_rate.toFixed( 2 ) }${ unit }</span>
+					</div>
+					<div class="flex justify-between items-center h-9">
+						<div class="flex items-center gap-2">
+							<span style="color: #5CC8BE">●</span> 
+							<p class="text-zinc-500">Play Rate</p>
+						</div>
+						<span class="text-zinc-950 font-medium">${ d.play_rate.toFixed( 2 ) }${ unit }</span>
+					</div>
 				</div>
-				<br/>
-				<div>
-				 	<span style="color: #5CC8BE">●</span> 
-                	Play Rate: ${ d.play_rate.toFixed( 0 ) }${ unit }
-				</div>
+
             `,
 						)
 						.style( 'left', event.pageX + 10 + 'px' )
@@ -465,9 +384,6 @@ dailyPlays && dailyVideoLength
 					vertical.style( 'opacity', 0 );
 				} )
 				.on( 'mousemove', function() {
-					// mousex = d3.mouse( this );
-					// mousex = mousex[ 0 ] + 5;
-					// vertical.style( 'left', mousex + 'px' );
 					const [ mouseX ] = d3.pointer( event );
 					vertical.attr( 'x1', mouseX ).attr( 'x2', mouseX );
 				} );
@@ -497,23 +413,14 @@ dailyPlays && dailyVideoLength
 		};
 	}, [ selectedPeriod, selectedMetrics, parsedData ] );
 
-	// useEffect( () => {
-	// 	const handleResize = () => {
-	// 		renderChart();
-	// 	};
-
-	// 	window.addEventListener( 'resize', handleResize );
-	// 	return () => window.removeEventListener( 'resize', handleResize );
-	// }, [ selectedPeriod, selectedMetrics, parsedData ] );
-
 	return (
-		<div className="w-full border rounded-lg p-4 shadow-sm">
-			<div className="flex justify-between items-center mb-6">
-				<h2 className="text-base font-bold text-gray-800">
+		<div className="w-full border rounded-lg p-4 shadow-sm h-[400px]">
+			<div className="flex justify-between gap-8">
+				<h2 className="text-base font-bold text-gray-800 m-0 whitespace-nowrap">
 					Playback Performance
 				</h2>
-				<div className="flex items-center gap-4">
-					<div className="flex items-center">
+				<div className="flex gap-4 flex-col">
+					<div className="flex">
 						<button
 							className={ `flex items-center gap-1 rounded-md bg-transparent` }
 							onClick={ () => toggleMetric( 'engagement_rate' ) }
@@ -577,7 +484,7 @@ dailyPlays && dailyVideoLength
 						</button>
 					</div>
 
-					<div className="flex gap-1">
+					<div className="flex gap-1 text-sm">
 						<button
 							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === 'All' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( 'All' ) }
@@ -612,7 +519,8 @@ dailyPlays && dailyVideoLength
 				</div>
 			</div>
 
-			<div className="w-full" style={ { height: '500px' } } ref={ chartRef }></div>
+			<div className="w-full" style={ { height: '300px', overflowX: 'auto',
+				width: '100%' } } ref={ chartRef }></div>
 		</div>
 	);
 }

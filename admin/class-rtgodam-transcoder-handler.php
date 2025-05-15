@@ -227,12 +227,11 @@ class RTGODAM_Transcoder_Handler {
 			$job_for = 'wp-media';
 
 			// Media settings.
-			$rtgodam_watermark           = $this->easydam_settings['video']['watermark'];
-			$rtgodam_use_watermark_image = $this->easydam_settings['video']['use_watermark_image'];
-			$rtgodam_watermark_text      = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
-			$rtgodam_watermark_url       = esc_url( $this->easydam_settings['video']['watermark_url'] );
-			$rtgodam_abs_resolutions     = $this->easydam_settings['video']['video_quality'] ?? array();
-			$rtgodam_abs_resolutions     = wp_json_encode( $rtgodam_abs_resolutions );
+			$rtgodam_watermark              = $this->easydam_settings['video']['watermark'];
+			$rtgodam_use_watermark_image    = $this->easydam_settings['video']['use_watermark_image'];
+			$rtgodam_watermark_text         = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
+			$rtgodam_watermark_url          = esc_url( $this->easydam_settings['video']['watermark_url'] );
+			$rtgodam_video_compress_quality = $this->easydam_settings['video']['video_compress_quality'] ?? 80;
 
 			$watermark_to_use = array();
 
@@ -273,7 +272,8 @@ class RTGODAM_Transcoder_Handler {
 						'thumbnail_count' => $options_video_thumb,
 						'stream'          => true,
 						'watermark'       => boolval( $rtgodam_watermark ),
-						'resolutions'     => $rtgodam_abs_resolutions,
+						'resolutions'     => array( 'auto' ),
+						'video_quality'   => $rtgodam_video_compress_quality,
 					),
 					$watermark_to_use
 				),

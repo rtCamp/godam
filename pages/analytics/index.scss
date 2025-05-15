@@ -49,25 +49,31 @@
 
 	.country-heatmap-container {
 
-		@apply bg-white overflow-auto;
+		@apply bg-white overflow-auto h-[400px];
 	}
+
+	.media-frame-menu, 
+.media-frame-router, 
+.media-frame-content .upload-ui {
+	display: none !important;
+}
 
 	.analytics-info-container {
 		display: flex;
-		gap: 27px;
+		gap: 12px;
 		height: 100%;
 
 		.analytics-info {
 			display: flex;
 			align-items: center;
 			// background-color: #fff;
-			padding: 16px;
+			padding: 9px 12px;
 			border-radius: 12px;
 
 			.analytics-single-info {
 				display: flex;
 				flex-direction: column;
-				gap: 24px;
+				gap: 9px;
 				width: 100%;
 			}
 
@@ -75,7 +81,7 @@
 				font-size: 16px;
 				display: flex;
 				align-items: center;
-				font-weight: 500;
+				font-weight: 400;
 				gap: 5px;
 
 				.tooltip-container {
@@ -108,7 +114,8 @@
 
 			.engagement-rate {
 				font-weight: 600;
-				font-size: 24px;
+				font-size: 20px;
+				line-height: 32px;
 			}
 		}
 	}
@@ -125,7 +132,16 @@
 		bottom: 0;
 	}
 
-	#chart-container {
+	.comparison-video-container {
+		position: absolute !important;
+	}
+
+	.original-video-chart-container {
+		position: relative;
+		bottom: 30px;
+	}
+
+	#chart-container, #original-chart-container, #comparison-chart-container {
 		width: 100%;
 
 		svg {
@@ -144,7 +160,7 @@
 			opacity: 0.7;
 		}
 
-		.line-chart-tooltip {
+		.line-chart-tooltip, .performance-line-chart-tooltip, .comparison-line-chart-tooltip {
 			position: absolute;
 			background-color: #fff;
 			border: 1px solid #ccc;
@@ -158,7 +174,7 @@
 			opacity: 0;
 		}
 
-		.line-chart-tooltip::after {
+		.line-chart-tooltip::after, .performance-line-chart-tooltip::after {
 			content: "";
 			position: absolute;
 			border-width: 8px;
@@ -418,8 +434,34 @@
 	
 }
 
-#menu-item-upload {
-	display: none;
+.legend {
+	// flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+
+	.legend-item {
+		background-color: #F2F2F7;
+		padding: 4px 8px;
+		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		width: fit-content;
+	}
+
+	.pie-chart-legend {
+		text-decoration: none; 
+		color: inherit; 
+		cursor: pointer;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
+.performance-status-container {
+	border-radius: 12px 12px 0 0;
 }
 
 .legend {
@@ -452,12 +494,13 @@
       background-color: #fff;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      margin-top: 20px;
+      padding: 16px;
+	  height: 400px;
+	  overflow: scroll;
 
     h2 {
       color: #1C1C1E;
-	  font-weight: 600;
+	  font-weight: 700;
     }
 
     .legend {

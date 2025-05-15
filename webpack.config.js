@@ -91,13 +91,6 @@ const adminJS = {
 	},
 };
 
-const videoAnalyticsJS = {
-	...sharedConfig,
-	entry: {
-		'video-analytics': path.resolve( process.cwd(), 'assets', 'src', 'js', 'video-analytics.js' ),
-	},
-};
-
 const mediaLibrary = {
 	...sharedConfig,
 	entry: {
@@ -176,7 +169,6 @@ const pages = {
 module.exports = [
 	mainJS,
 	adminJS,
-	videoAnalyticsJS,
 	mediaLibrary,
 	deactivationJS,
 	styles, // Do not remove this.
