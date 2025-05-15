@@ -19,6 +19,8 @@ use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
 use RTGODAM\Inc\REST_API\GF;
+use RTGODAM\Inc\REST_API\CF7;
+use RTGODAM\Inc\REST_API\WPForms;
 use RTGODAM\Inc\REST_API\Settings;
 use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
 use RTGODAM\Inc\REST_API\Media_Library;
@@ -78,6 +80,8 @@ class Plugin {
 	 */
 	public function load_rest_api() {
 		GF::get_instance();
+		CF7::get_instance();
+		WPForms::get_instance();
 		Settings::get_instance();
 		Meta_Rest_Fields::get_instance();
 		Media_Library::get_instance();

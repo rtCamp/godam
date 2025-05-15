@@ -1,4 +1,5 @@
 @media screen and (max-width: 782px) {
+
 	.auto-fold .media-modal.wp-core-ui,
 	.media-modal-backdrop {
 		margin-left: 0 !important;
@@ -6,6 +7,7 @@
 }
 
 @media screen and (max-width: 960px) {
+
 	.auto-fold .media-modal.wp-core-ui,
 	.media-modal-backdrop {
 		margin-left: 36px;
@@ -26,8 +28,6 @@
 	z-index: 99;
 
 	.media-modal-content {
-		border-radius: 4px;
-		box-shadow: none;
 		filter: drop-shadow(0 10px 8px rgb(0 0 0 / 0.04)) drop-shadow(0 4px 3px rgb(0 0 0 / 0.1));
 		box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 		border: 1px solid #dcdcde;
@@ -43,6 +43,7 @@
 }
 
 #easydam-video-player {
+
 	.vjs-control-bar {
 		display: var(--is-controls-visible, flex);
 	}
@@ -138,6 +139,7 @@
 		user-select: none;
 
 		&.hotspot-indicator {
+
 			&:hover {
 				background-color: rgb(255, 177, 31, 0.5);
 			}
@@ -155,6 +157,7 @@
 			width: var(--hover-width, 8px);
 
 			.layer-indicator--container {
+
 				.icon {
 					border-radius: 0.5rem;
 
@@ -203,7 +206,6 @@
 				}
 
 				div {
-					display: flex;
 					align-items: center;
 					flex-wrap: nowrap;
 					white-space: nowrap;
@@ -229,7 +231,6 @@
 				position: absolute;
 				bottom: -3rem;
 				left: 4px;
-				transform: translate(-50%, 0);
 				font-size: 12px;
 				padding: 0.25rem;
 				background-color: #fff;
@@ -237,7 +238,6 @@
 				transform: translate(-50%, 0);
 				border: 1px solid #ddd;
 				z-index: 1;
-				display: flex;
 				align-items: center;
 				flex-wrap: nowrap;
 				white-space: nowrap;
@@ -256,6 +256,7 @@
 }
 
 .easydam-settings {
+
 	&-header {
 		background: #fff;
 	}

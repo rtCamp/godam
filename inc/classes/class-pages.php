@@ -9,6 +9,7 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
+use NF_Display_Render;
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -46,6 +47,13 @@ class Pages {
 	private $help_slug = 'rtgodam_help';
 
 	/**
+	 * Slug for dashboard page
+	 *
+	 * @var string
+	 */
+	private $dashboard_slug = 'rtgodam_dashboard';
+
+	/**
 	 * Menu pag ID.
 	 *
 	 * @var string
@@ -72,6 +80,13 @@ class Pages {
 	 * @var string
 	 */
 	private $help_page_id = 'godam_page_rtgodam_help';
+
+	/**
+	 * Dashboard ID.
+	 *
+	 * @var string
+	 */
+	private $dashboard_page_id = 'godam_page_rtgodam_dashboard';
 
 	/**
 	 * Construct method.
@@ -120,12 +135,22 @@ class Pages {
 
 		add_submenu_page(
 			$this->menu_slug,
+			__( 'Dashboard', 'godam' ),
+			__( 'Dashboard', 'godam' ),
+			'edit_posts',
+			$this->dashboard_slug,
+			array( $this, 'render_dashboard_page' ),
+			1
+		);
+
+		add_submenu_page(
+			$this->menu_slug,
 			__( 'Video editor', 'godam' ),
 			__( 'Video editor', 'godam' ),
 			'edit_posts',
 			$this->video_editor_slug,
 			array( $this, 'render_video_editor_page' ),
-			1
+			3
 		);
 
 		add_submenu_page(
@@ -145,7 +170,7 @@ class Pages {
 			'edit_posts',
 			$this->help_slug,
 			array( $this, 'render_help_page' ),
-			4
+			5
 		);
 	}
 
@@ -170,7 +195,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id ) ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->dashboard_page_id ) ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
@@ -241,7 +266,6 @@ class Pages {
 	 * @return void
 	 */
 	public function render_video_editor_page() {
-
 		?>
 		<div id="root-video-editor">
 			<div class="progress-bar-wrapper">
@@ -252,6 +276,17 @@ class Pages {
 				</div>
 			</div>
 		</div>
+		<?php
+	}
+
+	/**
+	 * To render the dashboard page.
+	 *
+	 * @return void
+	 */
+	public function render_dashboard_page() {
+		?>
+		<div id="root-video-dashboard"></div>
 		<?php
 	}
 
@@ -274,26 +309,32 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id ), true ) ) {
-			wp_register_style(
-				'transcoder-page-style-godam',
-				RTGODAM_URL . '/pages/build/style.css',
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->dashboard_page_id, $this->help_page_id ), true ) ) {
+
+			wp_register_script(
+				'rtgodam-page-style',
+				RTGODAM_URL . 'assets/build/pages/page-css.js',
 				array( 'wp-components' ),
-				filemtime( RTGODAM_PATH . '/pages/build/style.css' )
+				filemtime( RTGODAM_PATH . 'assets/build/pages/page-css.js' ),
+				true
 			);
 
-			wp_enqueue_style( 'transcoder-page-style-godam' );
+			wp_enqueue_script( 'rtgodam-page-style' );
 			wp_enqueue_media();
 		}
 		// Check if this is your custom admin page.
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
-				RTGODAM_URL . 'pages/build/video-editor.js',
+				RTGODAM_URL . 'assets/build/pages/video-editor.js',
 				array( 'wp-element', 'wp-i18n' ),
-				filemtime( RTGODAM_PATH . '/pages/build/video-editor.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/video-editor.js' ),
 				true
 			);
+
+			$is_gf_active      = is_plugin_active( 'gravityforms/gravityforms.php' );
+			$is_cf7_active     = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
+			$is_wpforms_active = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
@@ -304,9 +345,22 @@ class Pages {
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 					'valid_api_key'    => rtgodam_is_api_key_valid(),
-					'admin_url'        => admin_url(),                      // Admin URL for the GoDAM page.
+					'adminUrl'         => admin_url(),
+					'gf_active'        => $is_gf_active,
+					'cf7_active'       => $is_cf7_active,
+					'wpforms_active'   => $is_wpforms_active,
 				)
 			);
+
+			// Enqueue Gravity Forms styles if the plugin is active.
+			if ( $is_gf_active ) {
+				$this->enqueue_gravity_forms_styles();
+			}
+
+			// Enqueue WPForms styles if the plugin is active.
+			if ( $is_wpforms_active ) {
+				$this->enqueue_wpforms_styles();
+			}
 
 			$rtgodam_user_data = rtgodam_get_user_data();
 
@@ -319,22 +373,32 @@ class Pages {
 			wp_set_script_translations( 'transcoder-page-script-video-editor', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
 
-			$gravity_forms_styles = array(
-				'gravity-forms-orbital-theme'    => 'gravityforms/assets/css/dist/gravity-forms-orbital-theme.min.css',
-				'gravity-forms-theme-foundation' => 'gravityforms/assets/css/dist/gravity-forms-theme-foundation.min.css',
-				'gravity-forms-theme-framework'  => 'gravityforms/assets/css/dist/gravity-forms-theme-framework.min.css',
-				'gravity-forms-theme'            => 'gravityforms/assets/css/dist/theme.min.css',
-				'gravity-forms-theme-components' => 'gravityforms/assets/css/dist/theme-components.min.css',
-				'gravity-forms-basic'            => 'gravityforms/assets/css/dist/basic.min.css',
-				'common-css-utilities'           => 'gravityforms/assets/css/dist/common-css-utilities.min.css',
-			);
+			if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
+				$this->enqueue_gravity_forms_styles();
+			}
 
-			foreach ( $gravity_forms_styles as $handle => $path ) {
-				wp_enqueue_style(
-					$handle,
-					plugins_url( $path ),
-					array(),
-					'1.0.0'
+			$poll_ajax_style = get_option( 'poll_ajax_style' );
+
+			if ( is_plugin_active( 'wp-polls/wp-polls.php' ) && isset( $poll_ajax_style['loading'] ) && $poll_ajax_style['loading'] ) {
+
+				if ( ! defined( 'WP_POLLS_VERSION' ) ) {
+					define( 'WP_POLLS_VERSION', '2.77.3' );
+				}
+
+				wp_enqueue_script( 'wp-polls', plugins_url( 'wp-polls/polls-js.js' ), array( 'jquery' ), WP_POLLS_VERSION, true );
+				wp_enqueue_style( 'wp-polls', plugins_url( 'wp-polls/polls-css.css' ), false, WP_POLLS_VERSION, 'all' );
+
+				wp_localize_script(
+					'wp-polls',
+					'pollsL10n',
+					array(
+						'ajax_url'      => admin_url( 'admin-ajax.php' ),
+						'text_wait'     => __( 'Your last request is still being processed. Please wait a while ...', 'godam' ),
+						'text_valid'    => __( 'Please choose a valid poll answer.', 'godam' ),
+						'text_multiple' => __( 'Maximum number of choices allowed: ', 'godam' ),
+						'show_loading'  => (int) $poll_ajax_style['loading'],
+						'show_fading'   => (int) $poll_ajax_style['fading'],
+					)
 				);
 			}
 
@@ -366,9 +430,9 @@ class Pages {
 
 			wp_register_script(
 				'transcoder-page-script-godam',
-				RTGODAM_URL . 'pages/build/godam.js',
+				RTGODAM_URL . 'assets/build/pages/godam.js',
 				array( 'wp-element', 'wp-i18n' ),
-				filemtime( RTGODAM_PATH . 'pages/build/godam.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/godam.js' ),
 				true
 			);
 
@@ -402,21 +466,13 @@ class Pages {
 
 			wp_register_script(
 				'transcoder-page-script-analytics',
-				RTGODAM_URL . 'pages/build/analytics.js',
+				RTGODAM_URL . 'assets/build/pages/analytics.js',
 				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . 'pages/build/analytics.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/analytics.js' ),
 				true
 			);
 
 			wp_set_script_translations( 'transcoder-page-script-analytics', 'godam', RTGODAM_PATH . 'languages' );
-
-			wp_register_script(
-				'video-analytics-charts',
-				RTGODAM_URL . 'assets/build/js/video-analytics.js',
-				array( 'transcoder-page-script-analytics', 'd3-js' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/video-analytics.js' ),
-				true
-			);
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
@@ -438,17 +494,22 @@ class Pages {
 				$rtgodam_user_data
 			);
 
-			wp_set_script_translations( 'transcoder-page-script-analytics', 'godam', RTGODAM_PATH . 'languages' );
+			wp_localize_script(
+				'transcoder-page-script-analytics',
+				'godamPluginData',
+				array(
+					'flagBasePath' => RTGODAM_URL . 'assets/src/images/flags',
+				)
+			);
+
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 			wp_enqueue_script( 'd3-js' );
-			wp_set_script_translations( 'video-analytics-charts', 'godam', RTGODAM_PATH . 'languages' );
-			wp_enqueue_script( 'video-analytics-charts' );
 		} elseif ( $screen && $this->help_page_id === $screen->id ) {
 			wp_register_script(
 				'godam-page-script-help',
-				RTGODAM_URL . 'pages/build/help.js',
+				RTGODAM_URL . 'assets/build/pages/help.js',
 				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . 'pages/build/help.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/help.js' ),
 				true
 			);
 
@@ -462,15 +523,59 @@ class Pages {
 
 			wp_set_script_translations( 'godam-page-script-help', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'godam-page-script-help' );
+		} elseif ( $screen && $this->dashboard_page_id === $screen->id ) {
+
+			wp_register_script(
+				'd3-js',
+				RTGODAM_URL . '/assets/src/libs/d3.js',
+				array(),
+				RTGODAM_VERSION,
+				false
+			);
+			
+			wp_register_script(
+				'godam-page-script-dashboard',
+				RTGODAM_URL . 'assets/build/pages/dashboard.js',
+				array( 'wp-element' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/dashboard.js' ),
+				true
+			);
+
+			$rtgodam_user_data = rtgodam_get_user_data();
+
+			wp_localize_script(
+				'godam-page-script-dashboard',
+				'userData',
+				$rtgodam_user_data
+			);
+
+			wp_localize_script(
+				'godam-page-script-dashboard',
+				'videoData',
+				array(
+					'adminUrl' => admin_url( 'admin.php?page=rtgodam#video-settings' ),
+				)
+			);
+
+			wp_localize_script(
+				'godam-page-script-dashboard',
+				'godamPluginData',
+				array(
+					'flagBasePath' => RTGODAM_URL . 'assets/src/images/flags',
+				)
+			);
+
+			wp_enqueue_script( 'godam-page-script-dashboard' );
+			wp_enqueue_script( 'd3-js' );
 		}
 
 		wp_enqueue_style( 'wp-components' );
 
 		wp_register_script(
 			'media-library-react',
-			RTGODAM_URL . 'pages/build/media-library.js',
+			RTGODAM_URL . 'assets/build/pages/media-library.js',
 			array( 'wp-element', 'wp-i18n' ),
-			filemtime( RTGODAM_PATH . '/pages/build/media-library.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/pages/media-library.js' ),
 			true
 		);
 
@@ -486,6 +591,52 @@ class Pages {
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
 				'userData' => rtgodam_get_user_data(),
 			)
+		);
+	}
+
+	/**
+	 * Enqueue Gravity Forms styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_gravity_forms_styles() {
+		$gravity_forms_styles = array(
+			'gravity-forms-orbital-theme'    => 'gravityforms/assets/css/dist/gravity-forms-orbital-theme.min.css',
+			'gravity-forms-theme-foundation' => 'gravityforms/assets/css/dist/gravity-forms-theme-foundation.min.css',
+			'gravity-forms-theme-framework'  => 'gravityforms/assets/css/dist/gravity-forms-theme-framework.min.css',
+			'gravity-forms-theme'            => 'gravityforms/assets/css/dist/theme.min.css',
+			'gravity-forms-theme-components' => 'gravityforms/assets/css/dist/theme-components.min.css',
+			'gravity-forms-basic'            => 'gravityforms/assets/css/dist/basic.min.css',
+			'common-css-utilities'           => 'gravityforms/assets/css/dist/common-css-utilities.min.css',
+		);
+	
+		foreach ( $gravity_forms_styles as $handle => $path ) {
+			wp_enqueue_style(
+				$handle,
+				plugins_url( $path ),
+				array(),
+				RTGODAM_VERSION
+			);
+		} 
+	}
+
+	/**
+	 * Enqueue WPForms styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_wpforms_styles() {
+
+		if ( ! defined( 'WPFORMS_PLUGIN_URL' ) ) {
+			return;
+		}
+
+		// Enqueue the WPForms styles.
+		wp_enqueue_style(
+			'wpforms-full',
+			WPFORMS_PLUGIN_URL . 'assets/css/frontend/classic/wpforms-full.css',
+			array(),
+			WPFORMS_VERSION
 		);
 	}
 }

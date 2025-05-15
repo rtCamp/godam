@@ -19,7 +19,7 @@ const videoAnalyticsPlugin = () => {
 	return {
 		name: 'video-analytics-plugin',
 		track: async ( { payload } ) => {
-			let { event, properties, meta, anonymousId } = payload;
+			let { properties, meta, anonymousId } = payload;
 
 			properties = {
 				...properties,
@@ -98,7 +98,7 @@ const videoAnalyticsPlugin = () => {
 					);
 				}
 			} catch ( err ) {
-				console.error( 'Video analytics plugin track error:', err );
+				// Error is silently ignored, not console logged.
 			}
 		},
 	};

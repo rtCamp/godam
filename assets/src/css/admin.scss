@@ -1,5 +1,9 @@
 
-@import "common.scss";
+@import "_common"; // stylelint-disable-line scss/load-no-partial-leading-underscore
+
+$GREEN: #4CAF50;
+$RED: #F44336;
+$LIGHT_BLUE: #2196F3;
 
 /*
 Write your Sass code here for admin.
@@ -7,7 +11,6 @@ Write your Sass code here for admin.
 #toplevel_page_rtgodam .wp-submenu li:nth-child(4) { /** Hide the "Settings" submenu ***/
 	display: none;
 }
-
 
 /* EasyDAM Tools Submenu Page */
 #easydam-tools-widget .hndle {
@@ -93,7 +96,8 @@ $media-frame-width: calc(300px + 2 * 24px);
 .toplevel_page_rtgodam,
 .godam_page_rtgodam_video_editor,
 .godam_page_rtgodam_help,
-.godam-analytics-container {
+.godam-analytics-container
+.godam-dashboard-container {
 	--wp-admin-theme-color: #ab3a6c;
 
 	button,
@@ -185,7 +189,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 			--status-text: "Transcoded";
 
 			svg {
-				fill: green;
+				fill: $GREEN;
 			}
 		}
 	}
@@ -196,7 +200,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 			--status-text: "Transcoding Failed";
 
 			svg {
-				fill: red;
+				fill: $RED;
 			}
 		}
 	}
@@ -207,7 +211,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 			--status-text: "Not Transcoded";
 
 			svg {
-				fill: lightblue;
+				fill: $LIGHT_BLUE;
 			}
 		}
 	}
