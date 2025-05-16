@@ -57,6 +57,12 @@ function GODAMPlayer( videoRef = null ) {
 		videos = videoRef.querySelectorAll( '.easydam-player.video-js' );
 	}
 
+	const isDisplayingLayers = {};
+
+	videos.forEach( ( video ) => {
+		isDisplayingLayers[ video.dataset.instanceId ] = false;
+	} );
+
 	videos.forEach( ( video ) => {
 		video.classList.remove( 'vjs-hidden' );
 
@@ -616,8 +622,7 @@ function GODAMPlayer( videoRef = null ) {
 					layerObj.layerElement.classList.add( 'hidden' );
 					player.controls( true );
 					player.play();
-					isDisplayingLayer = false;
-
+					isDisplayingLayers[ video.dataset.instanceId ] = false;
 					// Increment the current form layer.
 					if ( layerObj === formLayers[ currentFormLayerIndex ] ) {
 						currentFormLayerIndex++;
@@ -647,17 +652,14 @@ function GODAMPlayer( videoRef = null ) {
 		formLayers.sort( ( a, b ) => a.displayTime - b.displayTime );
 
 		let currentFormLayerIndex = 0;
-		let isDisplayingLayer = false;
+		isDisplayingLayers[ video.dataset.instanceId ] = false;
 
 		// Time update
 		player.on( 'timeupdate', () => {
-
-			console.log( 'timeupdate : isDisplayingLayer :', isDisplayingLayer );
-
 			const currentTime = player.currentTime();
 
 			// form/cta handling only the current form layer (if any)
-			if ( ! isDisplayingLayer && currentFormLayerIndex < formLayers.length ) {
+			if ( ! isDisplayingLayers[ video.dataset.instanceId ] && currentFormLayerIndex < formLayers.length ) {
 				const layerObj = formLayers[ currentFormLayerIndex ];
 				// If we've reached its displayTime, show it
 
@@ -669,7 +671,7 @@ function GODAMPlayer( videoRef = null ) {
 					layerObj.layerElement.classList.remove( 'hidden' );
 					player.pause();
 					player.controls( false );
-					isDisplayingLayer = true;
+					isDisplayingLayers[ video.dataset.instanceId ] = true;
 				}
 			}
 
@@ -921,12 +923,6 @@ function GODAMPlayer( videoRef = null ) {
 			window.godamKeyboardHandlerInitialized = true;
 
 			document.addEventListener( 'keydown', ( event ) => {
-				console.log( 'keydown : isDisplayingLayer :', isDisplayingLayer );
-				
-				if ( isDisplayingLayer ) {
-					return;
-				}
-
 				// Skip if we're in a form field or input element to avoid interfering with typing
 				if ( event.target.tagName === 'INPUT' ||
 					event.target.tagName === 'TEXTAREA' ||
@@ -973,6 +969,15 @@ function GODAMPlayer( videoRef = null ) {
 
 				// If no active player was found, exit
 				if ( ! activePlayer ) {
+					return;
+				}
+
+				const element = activePlayer.el_;
+
+				const activeVideo = element.querySelector( 'video' );
+				const activeVideoInstanceId = activeVideo.dataset.instanceId;
+
+				if ( isDisplayingLayers[ activeVideoInstanceId ] ) {
 					return;
 				}
 
