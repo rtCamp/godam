@@ -146,7 +146,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v1.0.6 (May 15, 2025) =
+= v1.0.6 (May 16, 2025) =
 - Fix: Updated translation files.
 
 = v1.0.5 (May 15, 2025) =
