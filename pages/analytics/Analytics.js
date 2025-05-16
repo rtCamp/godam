@@ -26,6 +26,7 @@ import { Button, Spinner } from '@wordpress/components';
 import SingleMetrics from './SingleMetrics.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import videojs from 'video.js';
+import { arrowLeft } from '@wordpress/icons';
 
 const adminUrl =
   window.videoData?.adminUrl;
@@ -288,22 +289,17 @@ const Analytics = ( { attachmentID } ) => {
 
 			{ attachmentData && (
 				<div id="analytics-content" className="hidden">
-					<div className="p-10 flex gap-3 items-center">
-						<h2
-							className="text-2xl m-0 capitalize"
-							dangerouslySetInnerHTML={ {
-								__html: DOMPurify.sanitize( attachmentData?.title?.rendered ),
-							} }
-						></h2>
-						{ attachmentData?.media_details?.length_formatted && (
-							<span className="h-[26px] px-2 bg-white flex items-center rounded-sm">
-								{ attachmentData?.media_details?.length_formatted }
-							</span>
-						) }
-					</div>
+					<div>
+						<div className="subheading-container pt-6">
+							{ attachmentData?.title?.rendered
+								? <div className="subheading">{ __( 'Analytics report of ', 'godam' ) }
+									<span dangerouslySetInnerHTML={ {
+										__html: DOMPurify.sanitize( attachmentData?.title?.rendered ),
+									} }></span></div> : <div className="subheading">{ __( 'Analytics report', 'godam' ) }</div>
+							}
+							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => window.location.href = 'admin.php?page=rtgodam_video_editor' }>{ __( 'Back to Video Editor', 'godam' ) }</Button>
 
-					<div className="subheading-container">
-						<div className="subheading">{ __( 'Overview', 'godam' ) }</div>
+						</div>
 					</div>
 					<div
 						id="video-analytics-container"
@@ -380,7 +376,7 @@ const Analytics = ( { attachmentID } ) => {
 							</div>
 						</div>
 					</div>
-					<div className="grid grid-cols-[4fr_2fr_2fr] gap-4 px-10">
+					<div className="grid grid-cols-[4fr_2fr_2fr] gap-4 px-10 metrics-container">
 						<PlaybackPerformanceDashboard
 							attachmentID={ attachmentID }
 							initialData={ processedAnalyticsHistory }
@@ -402,13 +398,13 @@ const Analytics = ( { attachmentID } ) => {
 						</div>
 					</div>
 
-					<div className="px-10 py-28">
+					<div className="px-10 pt-6">
 						<div>
 							<h3 className="text-base font-semibold">
 								{ __( 'Performance Comparison', 'godam' ) }
 							</h3>
 						</div>
-						<div className="border border-gray-200 bg-white rounded-xl">
+						<div className="border border-gray-200 bg-white rounded-xl min-w-[1230px] overflow-scroll">
 							{ attachmentData && mediaLibraryAttachment && (
 								<div className="flex gap-4 bg-zinc-100 justify-between py-4 [padding-left:22px] [padding-right:22px] rounded-xl items-center performance-status-container">
 									{ ( () => {
@@ -417,7 +413,7 @@ const Analytics = ( { attachmentID } ) => {
 												return (
 													<p className="flex items-center">
 														{ __( 'In Progress', 'godam' ) }
-														<Spinner />
+														<div className="mt-0"><Spinner /></div>
 													</p>
 												);
 											}
@@ -495,13 +491,13 @@ const Analytics = ( { attachmentID } ) => {
 											</div>
 										) }
 										{ mediaLibraryAttachment && (
-											<div className="flex gap-12 w-full h-full pt-6">
+											<div className="flex gap-12 w-full h-full pt-6 justify-center">
 												<div className="block w-[525px] h-[350px]">
 													<div className="relative">
 														<RenderVideo
 															attachmentData={ attachmentData }
 															attachmentID={ attachmentID }
-															className="w-full h-[320px] object-fill rounded-xl comparison-video-container"
+															className="w-full object-fill comparison-video-container"
 															videoId={ 'original-analytics-video' }
 														/>
 														<div className="original-video-chart-container relative">
@@ -512,7 +508,7 @@ const Analytics = ( { attachmentID } ) => {
 														</div>
 													</div>
 													<div>
-														<h4 className="text-center m-0">{ attachmentData?.title?.rendered }</h4>
+														<h4 className="text-center m-0 mt-6">{ attachmentData?.title?.rendered }</h4>
 													</div>
 												</div>
 												<div className="w-px bg-gray-200 mx-4 divide-dashed"></div>
@@ -521,7 +517,7 @@ const Analytics = ( { attachmentID } ) => {
 														<RenderVideo
 															attachmentData={ mediaLibraryAttachment }
 															attachmentID={ mediaLibraryAttachment?.id }
-															className="w-full h-[320px] object-fill rounded-xl comparison-video-container"
+															className="w-full h-[320px] object-fill comparison-video-container"
 															videoId={ 'comparison-analytics-video' }
 														/>
 														<div className="original-video-chart-container relative">
@@ -532,7 +528,7 @@ const Analytics = ( { attachmentID } ) => {
 														</div>
 													</div>
 													<div>
-														<h4 className="text-center m-0">
+														<h4 className="text-center m-0 mt-6">
 															{ mediaLibraryAttachment?.title?.rendered }
 														</h4>
 													</div>

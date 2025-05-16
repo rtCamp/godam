@@ -3,8 +3,13 @@
  * Internal dependencies
  */
 import { d3CountryToIso } from './countryFlagMapping';
-import ViewIcon from '../../assets/src/images/views.png';
-import DurationIcon from '../../assets/src/images/duration.png';
+import ViewIcon from '../../assets/src/images/views.svg';
+import DurationIcon from '../../assets/src/images/duration.svg';
+
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
 
 function formatTime( seconds ) {
 	const minutes = Math.floor( seconds / 60 );
@@ -90,25 +95,25 @@ export function singleMetricsChart(
 	const metricsOptions = [
 		{
 			value: 'engagement_rate',
-			label: 'Engagement Rate',
+			label: __( 'Engagement Rate', 'godam' ),
 			unit: '%',
 			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
 		},
 		{
 			value: 'play_rate',
-			label: 'Play Rate',
+			label: __( 'Play Rate', 'godam' ),
 			unit: '%',
 			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
 		},
 		{
 			value: 'watch_time',
-			label: 'Watch Time',
+			label: __( 'Watch Time', 'godam' ),
 			unit: 's',
 			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
 		},
 		{
 			value: 'plays',
-			label: 'Plays',
+			label: __( 'Plays', 'godam' ),
 			unit: '',
 			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
 		},
@@ -171,7 +176,7 @@ export function singleMetricsChart(
 			.attr( 'x', width / 2 )
 			.attr( 'y', height / 2 )
 			.attr( 'text-anchor', 'middle' )
-			.text( 'No data available.' );
+			.text( __( 'No data available.', 'godam' ) );
 		return;
 	}
 

@@ -206,6 +206,21 @@ dailyPlays && dailyVideoLength
 
 				return month;
 			};
+		} else if ( dateRangeInDays > 10 && dateRangeInDays <= 31 ) {
+			// Show tick for each day
+			tickValues = completeData.map( ( d ) => new Date( d.date ) );
+
+			xTickFormat = ( d ) => {
+				const date = new Date( d );
+				const day = date.getDate();
+				const month = d3.timeFormat( '%b' )( date ); // e.g., "Apr"
+
+				if ( day === 1 ) {
+					return `${ month } ${ day }`;
+				}
+
+				return `${ day }`;
+			};
 		} else {
 			// Show daily ticks with full date
 			tickValues = completeData.map( ( d ) => d.date );
@@ -226,8 +241,8 @@ dailyPlays && dailyVideoLength
 			//if date range is greater than 31 days, vertically place the month to prevent tick clustering.
 			xAxis
 				.style( 'text-anchor', 'end' )
-				.attr( 'dx', '-0.8em' )
-				.attr( 'dy', '0.15em' )
+				.attr( 'dx', '-0.85em' ) // small shift right
+				.attr( 'dy', '-1em' ) // slight vertical nudge
 				.attr( 'transform', 'rotate(-90)' );
 		}
 
@@ -353,14 +368,14 @@ dailyPlays && dailyVideoLength
 					<div class="flex justify-between items-center h-9">
 						<div class="flex items-center gap-2">
 							<span style="color: #9333EA">●</span> 
-							<p class="text-zinc-500">Engagement Rate</p>
+							<p class="text-zinc-500">${ __( 'Engagement Rate', 'godam' ) }</p>
 						</div>
 						<span class="text-zinc-950 font-medium">${ d.engagement_rate.toFixed( 2 ) }${ unit }</span>
 					</div>
 					<div class="flex justify-between items-center h-9">
 						<div class="flex items-center gap-2">
 							<span style="color: #5CC8BE">●</span> 
-							<p class="text-zinc-500">Play Rate</p>
+							<p class="text-zinc-500">${ __( 'Play Rate', 'godam' ) }</p>
 						</div>
 						<span class="text-zinc-950 font-medium">${ d.play_rate.toFixed( 2 ) }${ unit }</span>
 					</div>
@@ -417,7 +432,7 @@ dailyPlays && dailyVideoLength
 		<div className="w-full border rounded-lg p-4 shadow-sm h-[400px]">
 			<div className="flex justify-between gap-8">
 				<h2 className="text-base font-bold text-gray-800 m-0 whitespace-nowrap">
-					Playback Performance
+					{ __( 'Playback Performance', 'godam' ) }
 				</h2>
 				<div className="flex gap-4 flex-col">
 					<div className="flex">
@@ -449,7 +464,7 @@ dailyPlays && dailyVideoLength
 									</svg>
 								) }
 							</div>
-							<span className="whitespace-nowrap">Engagement Rate</span>
+							<span className="whitespace-nowrap">{ __( 'Engagement Rate', 'godam' ) }</span>
 						</button>
 
 						<button
@@ -480,7 +495,7 @@ dailyPlays && dailyVideoLength
 									</svg>
 								) }
 							</div>
-							<span className="whitespace-nowrap">Play Rate</span>
+							<span className="whitespace-nowrap">{ __( 'Play Rate', 'godam' ) }</span>
 						</button>
 					</div>
 

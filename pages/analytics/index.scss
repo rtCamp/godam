@@ -119,6 +119,14 @@
 		}
 	}
 
+	.godam-analytics-back-btn:hover {
+		color: #AB3A6C;
+	}
+
+	.godam-analytics-back-btn:focus {
+		box-shadow: none;
+	}
+
 	// Video Chart styles
 	.video-container {
 		position: relative;
@@ -132,12 +140,15 @@
 	}
 
 	.comparison-video-container {
-		position: absolute !important;
+		height: 300px;
 	}
 
 	.original-video-chart-container {
-		position: relative;
-		bottom: 30px;
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		height: 100%;
+		width: 100%;
 	}
 
 	#chart-container, #original-chart-container, #comparison-chart-container {
@@ -197,6 +208,10 @@
 			stroke-width: 2px;
 			r: 3.5;
 		}
+	}
+
+	#comparison-line-chart, #performance-line-chart {
+		top: 0 !important;
 	}
 
 	#heatmap-container {
@@ -364,10 +379,11 @@
 .subheading-container {
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	position: relative;
 	border-bottom: 1px solid #ddd;
 	margin: 0 0 0 40px;
-	padding-bottom: 16px;
+	padding-bottom: 8px;
 }
 
 .subheading {
@@ -466,7 +482,6 @@
 .posts-count-container {
       background-color: #fff;
       border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       padding: 16px;
 	  height: 400px;
 	  overflow: scroll;
@@ -536,17 +551,21 @@
 					min-width: 200px;
 					gap: 20px;
 
-				.analytics-single-info {
-					width: 100%;
-					align-items: center;
-					gap: 7px;
-				}
+					.analytics-single-info {
+						width: 100%;
+						align-items: center;
+						gap: 7px;
+					}
 
-				.analytics-info-heading {
-					width: 100%;
-					justify-content: space-between;
+					.analytics-info-heading {
+						width: 100%;
+						justify-content: space-between;
+					}
 				}
 			}
+
+		.metrics-container {
+			grid-template-columns: 1fr;
 		}
 	}
 }
