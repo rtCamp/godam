@@ -25,7 +25,7 @@ import {
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
 import { external, search, media as icon } from '@wordpress/icons';
@@ -60,6 +60,8 @@ function VideoEdit( {
 
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
 	const [ videoResponse, setVideoResponse ] = useState( {} );
+
+	const dispatch = useDispatch();
 
 	// Memoize video options to prevent unnecessary rerenders
 	const videoOptions = useMemo( () => ( {
@@ -139,7 +141,14 @@ function VideoEdit( {
 						} );
 					}
 				} catch ( error ) {
-					throw new Error( error );
+					// Show error notice if fetching media fails.
+					const message = sprintf(
+						/* translators: %s: Label of the video text track e.g: "French subtitles". */
+						_x( 'Failed to load video data with id: %d', 'text tracks' ),
+						id,
+					);
+					const { createErrorNotice } = dispatch( noticesStore );
+					createErrorNotice( message, { type: 'snackbar' } );
 				}
 			} )();
 		}
@@ -218,7 +227,6 @@ function VideoEdit( {
 					} );
 				}
 			} catch ( error ) {
-				// On error, use media url.
 				setAttributes( {
 					sources: [
 						{
