@@ -183,7 +183,7 @@ dailyPlays && dailyVideoLength
         d3.min( completeData, ( d ) => d.date ) ) /
       ( 1000 * 60 * 60 * 24 );
 
-		if ( dateRangeInDays > 30 ) {
+		if ( dateRangeInDays > 31 ) {
 			// Show ticks for each unique month
 			const uniqueMonths = Array.from(
 				new Set(
@@ -206,7 +206,7 @@ dailyPlays && dailyVideoLength
 
 				return month;
 			};
-		} else if ( dateRangeInDays > 10 && dateRangeInDays <= 30 ) {
+		} else if ( dateRangeInDays > 10 && dateRangeInDays <= 31 ) {
 			// Show tick for each day
 			tickValues = completeData.map( ( d ) => new Date( d.date ) );
 
@@ -237,8 +237,8 @@ dailyPlays && dailyVideoLength
 
 		svg.selectAll( '.domain' ).style( 'stroke', '#71717a' ); // Set axis line color to zinc-500
 
-		if ( dateRangeInDays > 30 ) {
-			//if date range is greater than 30 days, vertically place the month to prevent tick clustering.
+		if ( dateRangeInDays > 31 ) {
+			//if date range is greater than 31 days, vertically place the month to prevent tick clustering.
 			xAxis
 				.style( 'text-anchor', 'end' )
 				.attr( 'dx', '-0.85em' ) // small shift right

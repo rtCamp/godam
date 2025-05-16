@@ -297,7 +297,7 @@ const Analytics = ( { attachmentID } ) => {
 										__html: DOMPurify.sanitize( attachmentData?.title?.rendered ),
 									} }></span></div> : <div className="subheading">{ __( 'Analytics report', 'godam' ) }</div>
 							}
-							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => window.location.href = 'admin.php?page=rtgodam_video_editor' }>Back to Video Editor</Button>
+							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => window.location.href = 'admin.php?page=rtgodam_video_editor' }>{ __( 'Back to Video Editor', 'godam' ) }</Button>
 
 						</div>
 					</div>
