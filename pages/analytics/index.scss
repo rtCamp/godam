@@ -109,6 +109,7 @@
 			p {
 				margin-block-end: unset;
 				margin-block-start: unset;
+				font-size: 12px;
 			}
 
 			.engagement-rate {
@@ -477,6 +478,32 @@
 
 .performance-status-container {
 	border-radius: 12px 12px 0 0;
+}
+
+.legend {
+	// flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+
+	.legend-item {
+		background-color: #F2F2F7;
+		padding: 4px 8px;
+		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		width: fit-content;
+	}
+
+	.pie-chart-legend {
+		text-decoration: none; 
+		color: inherit; 
+		cursor: pointer;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
 }
 
 .posts-count-container {
