@@ -4,7 +4,7 @@ Tags: transcoder, DAM, media library, adaptive streaming, video analytics
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -146,34 +146,12 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v1.0.0 (March 05, 2025) =
+= v1.0.6 (May 15, 2025) =
+- Fix: Updated translation files.
 
-- Feat: Initial release of GoDAM plugin.
-- Feat: Automatic transcoding for audio and video files.
-- Feat: Adaptive bitrate streaming for smooth playback.
-- Feat: Interactive video layers (CTAs, forms, hotspots, ads).
-- Feat: Customizable video player with branding option.
-- Feat: Cloud storage and CDN integration.
-- Feat: Advanced analytics and engagement tracking.
-- Feat: Enhanced WordPress Media Library for better asset management.
-
-= v1.0.1 (April 14, 2025) =
-
-- Fix: FAQ formatting for readme.txt.
-- Fix: Ad loading logic for third-party and self-hosted ads.
-- Fix: Enhance the GoDAM video player's UI for mobile devices.
-
-= v1.0.2 (April 15, 2025) =
-
-- Fix: Enhance accessibility features for the media library
-
-= v1.0.3 (April 22, 2025) =
-
-- Fix: Video player ads related console errors, and add optional chaining to avoid console errors.
-- Fix: Addressed an edge case where users couldn't save a new API key if the previous one had expired.
-- Fix: Update the settings page links and wordings.
-- Feat: Improve the GoDAM video player UI.
-- Feat: Enabled the watermark feature for users on the Starter plan.
+= v1.0.5 (May 15, 2025) =
+- Fix: Updated plugin to support translations and localization.
+- Enhancement: Added compatibility for displaying thumbnails in the rtMedia gallery view.
 
 = v1.0.4 (May 14, 2025) =
 
@@ -184,9 +162,34 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Feat: Added support for interactive Polls layer in video editor.
 - Feat: Introduced the new GoDAM Audio Block for displaying audio content from CDN.
 
-= v1.0.5 (May 15, 2025) =
-- Fix: Updated plugin to support translations and localization.
-- Enhancement: Added compatibility for displaying thumbnails in the rtMedia gallery view.
+= v1.0.3 (April 22, 2025) =
+
+- Fix: Video player ads related console errors, and add optional chaining to avoid console errors.
+- Fix: Addressed an edge case where users couldn't save a new API key if the previous one had expired.
+- Fix: Update the settings page links and wordings.
+- Feat: Improve the GoDAM video player UI.
+- Feat: Enabled the watermark feature for users on the Starter plan.
+
+= v1.0.2 (April 15, 2025) =
+
+- Fix: Enhance accessibility features for the media library
+
+= v1.0.1 (April 14, 2025) =
+
+- Fix: FAQ formatting for readme.txt.
+- Fix: Ad loading logic for third-party and self-hosted ads.
+- Fix: Enhance the GoDAM video player's UI for mobile devices.
+
+= v1.0.0 (March 05, 2025) =
+
+- Feat: Initial release of GoDAM plugin.
+- Feat: Automatic transcoding for audio and video files.
+- Feat: Adaptive bitrate streaming for smooth playback.
+- Feat: Interactive video layers (CTAs, forms, hotspots, ads).
+- Feat: Customizable video player with branding option.
+- Feat: Cloud storage and CDN integration.
+- Feat: Advanced analytics and engagement tracking.
+- Feat: Enhanced WordPress Media Library for better asset management.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
