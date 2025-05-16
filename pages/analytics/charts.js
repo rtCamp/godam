@@ -6,12 +6,17 @@ import videojs from 'video.js';
 /**
  * Internal dependencies
  */
-import ViewIcon from '../../assets/src/images/views.png';
-import DurationIcon from '../../assets/src/images/duration.png';
+import ViewIcon from '../../assets/src/images/views.svg';
+import DurationIcon from '../../assets/src/images/duration.svg';
 import {
 	generateCountryHeatmap,
 	generateLineChart,
 } from '../../pages/analytics/helper';
+
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
 
 function formatTime( seconds ) {
 	const minutes = Math.floor( seconds / 60 );
@@ -40,20 +45,6 @@ function generateHeatmap( data, selector, videoPlayer ) {
 
 	const colorScale = d3.scaleSequential( d3.interpolateReds )
 		.domain( [ 0, d3.max( data ) ] );
-
-	// const colorScale = d3.scaleLinear()
-	// 	.domain( [ 0, 100, 200, 400, 700, 1100, 1600, 3000, 4000, 5000 ] ) // Exact breakpoints for sequential scaling
-	// 	.range( [
-	// 		'#eab308', // Lime with low opacity
-	// 		'#f59e0b', // Yellow with medium opacity
-	// 		'#f97316', // Orange with higher opacity
-	// 		'#dc2626', //  Red with full opacity
-	// 		'#991b1b', // Dark red with full opacity
-	// 		'#450a0a', // Bold dark red with full opacity
-	// 		'#4c1d95',
-	// 		'#4c1d95',
-	// 		'#3730a3',
-	// 	] );
 
 	// Add rectangles for the heatmap
 	heatmapSvg.selectAll( 'rect' )
@@ -212,7 +203,7 @@ function generatePostViewsChart( postsData, selector ) {
 			tooltip.transition().duration( 200 ).style( 'opacity', 0.9 );
 			tooltip
 				.html(
-					`<strong>${ d.data.post === '' ? 'Untitled' : d.data.post }</strong><br>
+					`<strong>${ d.data.post === '' ? __( 'Untitled', ' godam' ) : d.data.post }</strong><br>
 					Views: ${ formatNumber( d.data.views ) }<br>
 					Percentage: ${ percent }%`,
 				)
@@ -267,7 +258,7 @@ function generatePostViewsChart( postsData, selector ) {
 			.style( 'background-color', color( d.post + d.id ) );
 
 		legendItem.append( 'div' )
-			.html( `<a href="${ d.url }" target="_blank" class="pie-chart-legend">${ d.post === '' ? 'Untitled' : d.post }</a>` );
+			.html( `<a href="${ d.url }" target="_blank" class="pie-chart-legend">${ d.post === '' ? __( 'Untitled', 'godam' ) : d.post }</a>` );
 	} );
 }
 
