@@ -66,6 +66,8 @@ function GODAMPlayer( videoRef = null ) {
 	videos.forEach( ( video ) => {
 		video.classList.remove( 'vjs-hidden' );
 
+		const currentPlayerVideoInstanceId = video.dataset.instanceId;
+
 		video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
 
 		const adTagUrl = video.dataset.ad_tag_url;
@@ -605,7 +607,7 @@ function GODAMPlayer( videoRef = null ) {
 					layerObj.layerElement.classList.add( 'hidden' );
 					player.controls( true );
 					player.play();
-					isDisplayingLayers[ video.dataset.instanceId ] = false;
+					isDisplayingLayers[ currentPlayerVideoInstanceId ] = false;
 					// Increment the current form layer.
 					if ( index === currentFormLayerIndex ) {
 						currentFormLayerIndex++;
@@ -625,14 +627,14 @@ function GODAMPlayer( videoRef = null ) {
 		formLayers.sort( ( a, b ) => a.displayTime - b.displayTime );
 
 		let currentFormLayerIndex = 0;
-		isDisplayingLayers[ video.dataset.instanceId ] = false;
+		isDisplayingLayers[ currentPlayerVideoInstanceId ] = false;
 
 		// Time update
 		player.on( 'timeupdate', () => {
 			const currentTime = player.currentTime();
 
 			// form/cta handling only the current form layer (if any)
-			if ( ! isDisplayingLayers[ video.dataset.instanceId ] && currentFormLayerIndex < formLayers.length ) {
+			if ( ! isDisplayingLayers[ currentPlayerVideoInstanceId ] && currentFormLayerIndex < formLayers.length ) {
 				const layerObj = formLayers[ currentFormLayerIndex ];
 				// If we've reached its displayTime, show it
 				if (
@@ -643,7 +645,7 @@ function GODAMPlayer( videoRef = null ) {
 					layerObj.layerElement.classList.remove( 'hidden' );
 					player.pause();
 					player.controls( false );
-					isDisplayingLayers[ video.dataset.instanceId ] = true;
+					isDisplayingLayers[ currentPlayerVideoInstanceId ] = true;
 				}
 			}
 
