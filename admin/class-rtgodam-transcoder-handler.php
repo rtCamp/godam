@@ -536,16 +536,36 @@ class RTGODAM_Transcoder_Handler {
 			$this->nofity_transcoding_failed( $post_array['job_id'], sprintf( 'Failed saving of Thumbnail for %1$s.', $post_array['file_name'] ) );
 		}
 
+		if ( class_exists( 'RTMediaModel' ) ) {
+			$model    = new RTMediaModel();
+			$media    = $model->get( array( 'media_id' => $post_id ) );
+			$media_id = $media[0]->id;
+
+			$this->media_author             = $media[0]->media_author;
+			$this->uploaded['context']      = $media[0]->context;
+			$this->uploaded['context_id']   = $media[0]->context_id;
+			$this->uploaded['media_author'] = $media[0]->media_author;
+		}
+
+		update_post_meta( $post_id, '_rt_media_source', $post_thumbs_array['job_for'] );
+		update_post_meta( $post_id, '_rt_media_thumbnails', $upload_thumbnail_array );
+
 		update_post_meta( $post_id, 'rtgodam_media_source', $post_thumbs_array['job_for'] );
 		update_post_meta( $post_id, 'rtgodam_media_thumbnails', $upload_thumbnail_array );
 
 		do_action( 'rtgodam_transcoded_thumbnails_added', $post_id );
 
-		if ( $largest_thumb ) {
+		if ( $largest_thumb_url ) {
 
 			$is_retranscoding_job = get_post_meta( $post_id, 'rtgodam_retranscoding_sent', true );
 
 			if ( ! $is_retranscoding_job || rtgodam_is_override_thumbnail() ) {
+				update_post_meta( $post_id, '_rt_media_video_thumbnail', $largest_thumb_url );
+
+				if ( class_exists( 'RTMediaModel' ) ) {
+					$model->update( array( 'cover_art' => $largest_thumb ), array( 'media_id' => $post_id ) );
+					update_activity_after_thumb_set( $media_id );
+				}
 
 				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $largest_thumb );
 			}
