@@ -379,10 +379,11 @@
 .subheading-container {
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	position: relative;
 	border-bottom: 1px solid #ddd;
 	margin: 0 0 0 40px;
-	padding-bottom: 16px;
+	padding-bottom: 8px;
 }
 
 .subheading {
@@ -481,7 +482,6 @@
 .posts-count-container {
       background-color: #fff;
       border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       padding: 16px;
 	  height: 400px;
 	  overflow: scroll;
