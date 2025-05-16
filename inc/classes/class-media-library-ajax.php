@@ -32,6 +32,7 @@ class Media_Library_Ajax {
 	 */
 	public function setup_hooks() {
 		add_filter( 'ajax_query_attachments_args', array( $this, 'filter_media_library_by_taxonomy' ) );
+		add_filter( 'ajax_query_attachments_args', array( $this, 'godam_media_library_ajax' ) );
 		add_action( 'pre_get_posts', array( $this, 'pre_get_post_filter' ) );
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
@@ -40,6 +41,98 @@ class Media_Library_Ajax {
 
 		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
 		add_action( 'delete_attachment', array( $this, 'handle_media_deletion' ), 10, 1 );
+	}
+
+	/**
+	 * Short-circuit the media library AJAX request if the mime type is 'godam'.
+	 *
+	 * @param array $query_args Query arguments.
+	 * @return array
+	 */
+	public function godam_media_library_ajax( $query_args ) {
+
+		$api_key = get_site_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) ) {
+			return $query_args;
+		}
+
+		if ( isset( $query_args['post_mime_type'] ) && is_array( $query_args['post_mime_type'] ) && in_array( 'godam', $query_args['post_mime_type'], true ) ) {
+			
+			$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.file.get_list_of_files_with_api_key';
+
+			$api_url = add_query_arg(
+				array(
+					'api_key' => $api_key,
+				),
+				$api_url
+			);
+
+			$response = wp_remote_get(
+				$api_url,
+				array(
+					'headers' => array(
+						'Content-Type' => 'application/json',
+					),
+				) 
+			);
+
+			if ( is_wp_error( $response ) ) {
+				return $query_args;
+			}
+
+			$body = json_decode( wp_remote_retrieve_body( $response ) );
+
+			$response = $body->message;
+
+			foreach ( $response as $key => $item ) {
+				$response[ $key ] = $this->prepare_godam_media_item( $item );
+			}
+
+			wp_send_json_success( $response );
+
+		} else {
+			return $query_args;
+		}
+	}
+
+	/**
+	 * Prepare a single Godam media item to match WordPress media format.
+	 *
+	 * @param array $item The media item data from the API.
+	 * @return array
+	 */
+	public function prepare_godam_media_item( $item ) {
+		// Ensure $item is an array.
+		$item = (array) $item; 
+
+		if ( empty( $item['name'] ) || empty( $item['file_origin'] ) ) {
+			return array();
+		}
+
+		$result = array(
+			'id'                    => $item['name'],
+			'title'                 => pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) ?? $item['name'],
+			'filename'              => $item['orignal_file_name'] ?? $item['name'],
+			'url'                   => $item['file_origin'],
+			'mime'                  => $item['mime_type'] ?? '',
+			'type'                  => $item['job_type'] ?? '',
+			'subtype'               => explode( '/', $item['mime_type'] )[1] ?? 'jpg',
+			'status'                => $item['status'],
+			'date'                  => strtotime( $item['creation'] ) * 1000,
+			'modified'              => strtotime( $item['modified'] ) * 1000,
+			'filesizeInBytes'       => $item['file_size'],
+			'filesizeHumanReadable' => size_format( $item['file_size'] ),
+			'owner'                 => $item['owner'] ?? '',
+			'label'                 => $item['file_label'] ?? '',
+		);
+
+		if ( 'stream' === $item['job_type'] ) {
+			$result['icon'] = $item['thumbnail_url'] ?? '';
+			$result['type'] = 'video';
+		}
+
+		return $result;
 	}
 
 	/**
