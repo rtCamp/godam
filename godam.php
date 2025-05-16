@@ -130,14 +130,3 @@ function rtgodam_plugin_deactivate() {
 }
 
 register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
-
-add_action( 'init', 'load_godam_textdomain' );
-
-/**
- * Load Text Domain
- *
- * @return void
- */
-function load_godam_textdomain() {
-	load_plugin_textdomain( 'godam', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
-}
