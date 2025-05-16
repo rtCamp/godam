@@ -78,7 +78,24 @@ function GODAMPlayer( videoRef = null ) {
 				fluid: true,
 				preview: false,
 			};
-		const isPreviewEnabled = videoSetupOptions.preview;
+
+		if ( ! ( 'controlBar' in videoSetupControls ) ) {
+			videoSetupControls.controlBar = {
+				playToggle: true,
+				volumePanel: true,
+				currentTimeDisplay: true,
+				timeDivider: true,
+				durationDisplay: true,
+				fullscreenToggle: true,
+				subsCapsButton: true,
+				skipButtons: {
+					forward: 10,
+					backward: 10,
+				},
+			};
+		}
+
+		const isPreviewEnabled = videoSetupOptions?.preview;
 
 		const player = videojs( video, videoSetupControls );
 
@@ -90,7 +107,7 @@ function GODAMPlayer( videoRef = null ) {
 			if ( captionControlBtn ) {
 				const qualityControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-quality-menu-wrapper' );
 				if ( qualityControlBtn ) {
-					qualityControlBtn.style.setProperty( 'right', '80px' );
+					qualityControlBtn.classList.add( 'mobile-right-80' );
 				}
 			}
 		} );
@@ -152,7 +169,7 @@ function GODAMPlayer( videoRef = null ) {
 			player.currentTime( 0 );
 			const controlBarElement = player.controlBar.el();
 			if ( controlBarElement ) {
-				controlBarElement.classList.add( 'hide' );
+				controlBarElement?.classList.add( 'hide' );
 			}
 			watcher.value = true;
 			player.play();
@@ -161,7 +178,7 @@ function GODAMPlayer( videoRef = null ) {
 		function stopPreview() {
 			const controlBarElement = player.controlBar.el();
 			if ( controlBarElement ) {
-				controlBarElement.classList.remove( 'hide' );
+				controlBarElement?.classList.remove( 'hide' );
 			}
 			const muteButton = document.querySelector( '.mute-button' );
 			if ( muteButton && muteButton.classList.contains( 'mute-button' ) ) {
@@ -189,7 +206,7 @@ function GODAMPlayer( videoRef = null ) {
 			}
 			watcher.value = false;
 			const controlBarElement = player.controlBar.el();
-			if ( controlBarElement.classList.contains( 'hide' ) ) {
+			if ( controlBarElement?.classList.contains( 'hide' ) ) {
 				controlBarElement.classList.remove( 'hide' );
 			}
 			const muteButton = document.querySelector( '.mute-button' );
@@ -414,7 +431,7 @@ function GODAMPlayer( videoRef = null ) {
 
 		player.ready( function() {
 			const controlBarSettings =
-				videoSetupControls.controlBar;
+				videoSetupControls?.controlBar;
 
 			// Appearance settings
 
@@ -431,19 +448,19 @@ function GODAMPlayer( videoRef = null ) {
 			// Update classes
 			playButton.removeClass( ...alignments ); // Remove all alignment classes
 			if (
-				alignments.includes( `${ controlBarSettings.playButtonPosition }-align` )
+				alignments.includes( `${ controlBarSettings?.playButtonPosition }-align` )
 			) {
-				playButton.addClass( `${ controlBarSettings.playButtonPosition }-align` ); // Add the selected alignment class
+				playButton.addClass( `${ controlBarSettings?.playButtonPosition }-align` ); // Add the selected alignment class
 			}
 
 			// Control bar and volume panel handling
 			const controlBar = player.controlBar;
 
-			if ( ! controlBarSettings.volumePanel ) {
+			if ( ! controlBarSettings?.volumePanel ) {
 				controlBar.removeChild( 'volumePanel' );
 			}
 
-			if ( controlBarSettings.brandingIcon || ! validAPIKey ) {
+			if ( controlBarSettings?.brandingIcon || ! validAPIKey ) {
 				const CustomPlayButton = videojs.getComponent( 'Button' );
 
 				class CustomButton extends CustomPlayButton {
@@ -457,7 +474,7 @@ function GODAMPlayer( videoRef = null ) {
 						el.className += ' vjs-custom-play-button';
 						const img = document.createElement( 'img' );
 
-						if ( controlBarSettings.customBrandImg?.length ) {
+						if ( controlBarSettings?.customBrandImg?.length ) {
 							img.src = controlBarSettings.customBrandImg;
 						} else if ( godamSettings?.brandImage ) {
 							img.src = godamSettings.brandImage;
@@ -485,7 +502,7 @@ function GODAMPlayer( videoRef = null ) {
 		} );
 
 		// Find and initialize layers from easydam_meta
-		const layers = videoSetupOptions.layers || [];
+		const layers = videoSetupOptions?.layers || [];
 		const formLayers = [];
 		const hotspotLayers = [];
 
@@ -524,7 +541,7 @@ function GODAMPlayer( videoRef = null ) {
 				if ( 'form' === layer.type ) {
 					skipText = 'Skip Form';
 				} else if ( 'cta' === layer.type ) {
-					skipText = 'Skip CTA';
+					skipText = 'Skip';
 				} else if ( 'poll' === layer.type ) {
 					skipText = 'Skip Poll';
 				} else {
@@ -552,7 +569,7 @@ function GODAMPlayer( videoRef = null ) {
 			}
 
 			// Allow closing or skipping layers
-			formLayers.forEach( ( layerObj, index ) => {
+			formLayers.forEach( ( layerObj ) => {
 				let skipButton = layerObj.layerElement.querySelector( '.skip-button' );
 
 				// Check if skip button already exists.
@@ -600,8 +617,9 @@ function GODAMPlayer( videoRef = null ) {
 					player.controls( true );
 					player.play();
 					isDisplayingLayer = false;
+
 					// Increment the current form layer.
-					if ( index === currentFormLayerIndex ) {
+					if ( layerObj === formLayers[ currentFormLayerIndex ] ) {
 						currentFormLayerIndex++;
 					}
 				} );
@@ -612,7 +630,17 @@ function GODAMPlayer( videoRef = null ) {
 
 		if ( ! isPreviewEnabled ) {
 			layers.forEach( ( layer ) => {
-				handleLayerDisplay( layer );
+				if ( layer.type === 'form' ) {
+					if ( window.godamPluginDependencies?.gravityforms ) {
+						handleLayerDisplay( layer );
+					}
+				} else if ( layer.type === 'poll' ) {
+					if ( window.godamPluginDependencies?.wp_polls ) {
+						handleLayerDisplay( layer );
+					}
+				} else {
+					handleLayerDisplay( layer );
+				}
 			} );
 		}
 
@@ -629,6 +657,7 @@ function GODAMPlayer( videoRef = null ) {
 			if ( ! isDisplayingLayer && currentFormLayerIndex < formLayers.length ) {
 				const layerObj = formLayers[ currentFormLayerIndex ];
 				// If we've reached its displayTime, show it
+
 				if (
 					layerObj.show &&
           currentTime >= layerObj.displayTime &&

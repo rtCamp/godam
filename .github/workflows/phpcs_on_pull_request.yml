@@ -13,5 +13,6 @@ jobs:
       env:
         SKIP_FOLDERS: "tests,.github"
         GH_BOT_TOKEN: ${{ secrets.RTBOT_TOKEN }}
+        PHPCS_SNIFFS_EXCLUDE: "WordPress.Files.FileName"
       with:
         args: WordPress,WordPress-Core,WordPress-Docs

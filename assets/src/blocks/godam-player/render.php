@@ -239,7 +239,19 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 				elseif ( isset( $layer['type'] ) && 'poll' === $layer['type'] ) :
 					?>
 					<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-						<div class="form-container">
+						<div class="form-container poll-container">
+							<?php
+							$poll_id = ! empty( $layer['poll_id'] ) ? intval( $layer['poll_id'] ) : 0;
+							echo do_shortcode( "[poll id='$poll_id']" );
+							?>
+						</div>
+					</div>
+					<?php
+					// Poll layer.
+				elseif ( isset( $layer['type'] ) && 'poll' === $layer['type'] ) :
+					?>
+					<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+						<div class="form-container poll-container">
 							<?php
 							$poll_id = ! empty( $layer['poll_id'] ) ? intval( $layer['poll_id'] ) : 0;
 							echo do_shortcode( "[poll id='$poll_id']" );
@@ -256,7 +268,9 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 								<?php echo wp_kses_post( $layer['text'] ); ?>
 							</div>
 						<?php elseif ( 'html' === $layer['cta_type'] && ! empty( $layer['html'] ) ) : ?>
-							<?php echo wp_kses_post( $layer['html'] ); ?>
+							<div class="easydam-layer--cta-html">
+								<?php echo wp_kses_post( $layer['html'] ); ?>
+							</div>
 						<?php elseif ( 'image' === $layer['cta_type'] && ! empty( $layer['image'] ) ) : ?>
 							<?php echo wp_kses_post( rtgodam_image_cta_html( $layer ) ); ?>
 						<?php endif; ?>

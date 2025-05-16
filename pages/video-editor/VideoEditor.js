@@ -47,8 +47,6 @@ const VideoEditor = ( { attachmentID } ) => {
 
 	const { gravityForms, wpForms, cf7Forms, isFetching } = useFetchForms();
 
-	const restURL = window.godamRestRoute.url || '';
-
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
 			if ( isChanged ) {
@@ -69,29 +67,6 @@ const VideoEditor = ( { attachmentID } ) => {
 		if ( body ) {
 			body.classList.add( 'folded' );
 		}
-
-		// Get the post data
-		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] ), {
-			headers: {
-				'X-WP-Nonce': window.videoData.nonce,
-			},
-		} )
-			.then( ( response ) => response.json() )
-			.then( ( data ) => {
-				const rtGodamMeta = data.rtgodam_meta;
-				if ( rtGodamMeta ) {
-					dispatch( initializeStore( rtGodamMeta ) );
-				}
-				// Set video sources
-				const videoSources = [ { src: data.source_url, type: data.mimeType } ];
-				if ( data?.meta?.rtgodam_transcoded_url !== '' ) {
-					videoSources.push( { src: data.meta.rtgodam_transcoded_url, type: data?.meta?.rtgodam_transcoded_url.endsWith( '.mpd' ) ? 'application/dash+xml' : '' } );
-				}
-				setSources( videoSources );
-			} )
-			.catch( ( ) => {
-				// Todo: Show proper error message to the user
-			} );
 	}, [] );
 
 	useEffect( () => {
@@ -220,8 +195,8 @@ const VideoEditor = ( { attachmentID } ) => {
 	document.addEventListener( 'keydown', ( event ) => {
 		if (
 			event.target.tagName === 'INPUT' ||
-      event.target.tagName === 'TEXTAREA' ||
-      event.target.isContentEditable
+			event.target.tagName === 'TEXTAREA' ||
+			event.target.isContentEditable
 		) {
 			return;
 		}
@@ -264,7 +239,7 @@ const VideoEditor = ( { attachmentID } ) => {
 				<main className="flex justify-center items-center p-4 relative overflow-y-auto">
 
 					{
-						// Display a success message when video changes are saved
+						// Display a success message when video changes are saved.
 						showSaveMessage && (
 							<Snackbar className="absolute bottom-4 right-4 opacity-70 z-50">
 								{ __( 'Video changes saved successfully', 'godam' ) }

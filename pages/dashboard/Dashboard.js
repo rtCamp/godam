@@ -7,6 +7,7 @@
 import { Button } from '@wordpress/components';
 import React, { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
+
 /**
  * Internal dependencies
  */
@@ -17,7 +18,7 @@ import TopArrow from '../../assets/src/images/up-arrow.svg';
 import ExportBtn from '../../assets/src/images/export.svg';
 import Tooltip from '../analytics/Tooltip.js';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchTopVideosQuery } from './redux/api/dashboardAnalyticsApi';
-import GodamHeader from '../godam/GodamHeader';
+import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 
 const Dashboard = () => {
 	const [ recentVideos, setRecentVideos ] = useState( [] );

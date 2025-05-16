@@ -9,7 +9,7 @@ import 'video.js/dist/video-js.css';
  */
 import '../video-editor/style.scss';
 import axios from 'axios';
-import GodamHeader from '../godam/GodamHeader';
+import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,

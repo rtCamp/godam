@@ -49,6 +49,15 @@
 	}
 }
 
+.godam-link {
+	text-decoration: none;
+	color: #AB3A6C;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
 .slider {
 	position: relative;
 	height: 12px;

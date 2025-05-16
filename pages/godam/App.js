@@ -1,3 +1,4 @@
+
 /**
  * External dependencies
  */
@@ -6,9 +7,9 @@ import { useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { useState, useEffect } from '@wordpress/element';
 import { cog, video } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
+import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -16,6 +17,7 @@ import { __ } from '@wordpress/i18n';
  */
 import Skeleton from './components/Skeleton.jsx';
 import GodamHeader from './components/GoDAMHeader.jsx';
+import GoDAMFooter from './components/GoDAMFooter.jsx';
 
 import GeneralSettings from './components/tabs/GeneralSettings/GeneralSettings.jsx';
 import VideoSettings from './components/tabs/VideoSettings/VideoSettings.jsx';
@@ -76,6 +78,7 @@ const App = () => {
 					{ activeTabData && <activeTabData.component /> }
 				</div>
 			</div>
+			<GoDAMFooter />
 		</div>
 	);
 };

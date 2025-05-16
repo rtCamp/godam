@@ -419,12 +419,12 @@ const Appearance = () => {
 						onChange={ handleSkipTimeSettings }
 						options={ [
 							{
-								key: '10',
-								name: '10',
-							},
-							{
 								key: '5',
 								name: '5',
+							},
+							{
+								key: '10',
+								name: '10',
 							},
 							{
 								key: '30',

@@ -29,9 +29,6 @@ const slice = createSlice( {
 					forward: 10,
 					backward: 10,
 				},
-				progressControl: {
-					vertical: true, // Prevent horizontal volume slider
-				},
 				//custom controls
 				brandingIcon: false,
 				appearanceColor: godamSettings?.brandColor ? godamSettings?.brandColor : '#2b333fb3',
