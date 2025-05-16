@@ -651,6 +651,9 @@ function GODAMPlayer( videoRef = null ) {
 
 		// Time update
 		player.on( 'timeupdate', () => {
+
+			console.log( 'timeupdate : isDisplayingLayer :', isDisplayingLayer );
+
 			const currentTime = player.currentTime();
 
 			// form/cta handling only the current form layer (if any)
@@ -918,6 +921,12 @@ function GODAMPlayer( videoRef = null ) {
 			window.godamKeyboardHandlerInitialized = true;
 
 			document.addEventListener( 'keydown', ( event ) => {
+				console.log( 'keydown : isDisplayingLayer :', isDisplayingLayer );
+				
+				if ( isDisplayingLayer ) {
+					return;
+				}
+
 				// Skip if we're in a form field or input element to avoid interfering with typing
 				if ( event.target.tagName === 'INPUT' ||
 					event.target.tagName === 'TEXTAREA' ||
