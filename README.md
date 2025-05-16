@@ -1,16 +1,16 @@
 ![Banner V3](https://github.com/user-attachments/assets/1c2cdf13-5cab-432a-b548-34cd3876e93f)
 # GoDAM
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar
+Contributors: [rtcamp](https://profiles.wordpress.org/rtcamp), [elifvish](https://profiles.wordpress.org/elifvish), [subodhrajpopat](https://profiles.wordpress.org/subodhrajpopat), [kuldipchaudhary](https://profiles.wordpress.org/kuldipchaudhary), [prachigarg19](https://profiles.wordpress.org/prachigarg19), [juzar](https://profiles.wordpress.org/juzar), [geekofshire](https://profiles.wordpress.org/geekofshire), [nazmulhassann20](https://profiles.wordpress.org/nazmulhassann20)
 
-Tags: Transcoder, DAM, Interactive Video Layers, Adaptive Bitrate Streaming, Video Analytics
+Tags: transcoder, DAM, media library, adaptive streaming, video analytics
 
 Requires at least: 6.5
 
-Tested up to: 6.7
+Tested up to: 6.8.1
 
 Requires PHP: 7.4
 
-Stable tag: 1.0.2
+Stable tag: 1.0.6
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -27,34 +27,35 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 ### Free Features
 
 📌 Media Management
-- The DAM functionality streamlines file organization for websites with large libraries of images, videos, documents, and more.
+- The [DAM functionality](https://godam.io/features/wordpress-advanced-media-management/) streamlines file organization for websites with large libraries of images, videos, documents, and more.
 - Organize media assets efficiently with enhanced WordPress Media Library integration.
 
 📌 Interactive Video Layers for Engagement
-- Embed clickable CTAs to drive actions like sign-ups and purchases.
-- Enhance your videos with customizable hotspots that deliver additional context, links, and information exactly when and where your viewers need it.
-- Integrate Gravity Forms to collect user feedback and lead data within videos.
-
-### Pro Features
-
-📌 Smart Transcoding & Adaptive Bitrate Streaming
-- Automatically converts videos into multiple resolutions (240p to 4K).
-- Ensures smooth playback by dynamically adjusting quality based on network speed.
-- Supported audio formats: MP3, M4A, WAV, OGG
-- Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
+- Embed [clickable CTAs](https://godam.io/features/video-overlay/) to drive actions like sign-ups and purchases.
+- Enhance your videos with [customizable hotspots](https://godam.io/features/video-hotspot/) that deliver additional context, links, and information exactly when and where your viewers need it.
+- [Integrate Gravity Forms](https://godam.io/features/gravity-forms/) to collect user feedback and lead data within videos.
+- Add interactive Polls to gather viewer opinions during playback.
 
 📌 Seamless Ad Monetization
-- Supports self-hosted ads and third-party ad networks.
+- Supports [self-hosted ads and third-party ad networks](https://godam.io/features/ads-integration/).
 - Flexible ad placements (pre-roll, mid-roll, post-roll) to maximize revenue.
 - Boost revenue and engagement with clickable ad redirections
 
 📌 Customizable Video Player Experience
 - Fully customizable playback controls, branding, and player themes.
 - Enable video looping, autoplay, and inline play for better user experience.
+
+### Pro Features
+
+📌 Smart Transcoding & Adaptive Bitrate Streaming
+- Automatically [converts videos into multiple resolutions](https://godam.io/features/adaptive-bitrate-streaming/) (240p to 4K).
+- Ensures smooth playback by dynamically adjusting quality based on network speed.
+- Supported audio formats: MP3, M4A, WAV, OGG
+- Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
 - Watermarking support to protect video content.
 
 📌 Video Analytics
-- Monitor viewer behavior and engagement through detailed metrics and heatmaps.
+- Monitor viewer behavior and engagement through [detailed metrics and heatmaps](https://godam.io/features/analytics/).
 - Track video interactions to optimize content strategy.
 - Gain insights into user retention and conversion rates.
 
@@ -80,7 +81,7 @@ Whether you’re running an e-learning site, an eCommerce store with product vid
 Get started today and revolutionize the way you manage and deliver video content on WordPress!
 
 ### Pricing Plans
-[View Pricing Plans](https://godam.io/#pricing)
+[View Pricing Plans](https://godam.io/pricing)
 
 - **7-Day Free Trial** available for each subscription plan.
 - Flexible pricing options to suit different needs.
@@ -142,19 +143,21 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 ### Screenshots
 1. General Settings
-2. Video Settings
-3. Video Editor
-4. Gravity Forms Integration
-5. CTA Layer
-6. Hotspot Layer
-7. Ads Integration
-8. Player Settings
-9. Enhanced Media Library (DAM)
-10. GoDAM Video Block
-11. Post-Specific Video Settings
-12. Video Layer Selection
-13. Attachment Video Details
-14. Video Analytics
+2. Video Settings without API Key
+3. Video Settings with valid API Key
+4. Video Editor
+5. Gravity Forms Integration
+6. CTA Layer
+7. Hotspot Layer
+8. Ads Integration
+9. Polls Layer
+10. Player Settings
+11. Enhanced Media Library (DAM)
+12. GoDAM Video Block
+13. Post-Specific Video Settings
+14. Video Layer Selection
+15. Attachment Video Details
+16. Video Analytics
 
 ## External services
 
@@ -176,10 +179,9 @@ This plugin relies on third-party services to provide specific features. Below i
 **When Data is Sent:**
 Data is sent only when a user submits the deactivation feedback form after clicking the deactivate button.
 
-**Service Provider:** godam.io
+**Service Provider:** [godam.io](https://godam.io)
 
-[Terms of Service](https://godam.io/tos/)
-[Privacy Policy](https://godam.io/privacy-policy/)
+[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
 
 - **app.godam.io**:
 
@@ -199,8 +201,7 @@ When the plugin checks for a valid API Key.
 
 **Service Provider**: app.godam.io
 
-[Terms of Service](https://godam.io/tos/)
-[Privacy Policy](https://godam.io/privacy-policy/)
+[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
 
 - **analytics.godam.io**:
 
@@ -228,5 +229,6 @@ This service collects analytics data when a user watches a video on the frontend
 
 **Service Provider**: analytics.godam.io
 
-[Terms of Service](https://godam.io/tos/)
-[Privacy Policy](https://godam.io/privacy-policy/)
+[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
+
+Want to suggest a feature? Please submit it [here](https://github.com/rtCamp/godam/discussions/categories/feature-requests)

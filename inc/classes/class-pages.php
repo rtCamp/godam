@@ -327,7 +327,7 @@ class Pages {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
 				RTGODAM_URL . 'assets/build/pages/video-editor.js',
-				array( 'wp-element' ),
+				array( 'wp-element', 'wp-i18n' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/video-editor.js' ),
 				true
 			);
@@ -370,6 +370,7 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_set_script_translations( 'transcoder-page-script-video-editor', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
 
 			if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
@@ -399,13 +400,38 @@ class Pages {
 						'show_fading'   => (int) $poll_ajax_style['fading'],
 					)
 				);
-			}       
+			}
+
+			$poll_ajax_style = get_option( 'poll_ajax_style' );
+
+			if ( is_plugin_active( 'wp-polls/wp-polls.php' ) && isset( $poll_ajax_style['loading'] ) && $poll_ajax_style['loading'] ) {
+
+				if ( ! defined( 'WP_POLLS_VERSION' ) ) {
+					define( 'WP_POLLS_VERSION', '2.77.3' );
+				}
+
+				wp_enqueue_script( 'wp-polls', plugins_url( 'wp-polls/polls-js.js' ), array( 'jquery' ), WP_POLLS_VERSION, true );
+				wp_enqueue_style( 'wp-polls', plugins_url( 'wp-polls/polls-css.css' ), false, WP_POLLS_VERSION, 'all' );
+
+				wp_localize_script(
+					'wp-polls',
+					'pollsL10n',
+					array(
+						'ajax_url'      => admin_url( 'admin-ajax.php' ),
+						'text_wait'     => __( 'Your last request is still being processed. Please wait a while ...', 'godam' ),
+						'text_valid'    => __( 'Please choose a valid poll answer.', 'godam' ),
+						'text_multiple' => __( 'Maximum number of choices allowed: ', 'godam' ),
+						'show_loading'  => (int) $poll_ajax_style['loading'],
+						'show_fading'   => (int) $poll_ajax_style['fading'],
+					)
+				);
+			}
 		} elseif ( $screen && $this->menu_page_id === $screen->id ) {
 
 			wp_register_script(
 				'transcoder-page-script-godam',
 				RTGODAM_URL . 'assets/build/pages/godam.js',
-				array( 'wp-element' ),
+				array( 'wp-element', 'wp-i18n' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/godam.js' ),
 				true
 			);
@@ -420,7 +446,9 @@ class Pages {
 				);
 			}
 
+			wp_set_script_translations( 'transcoder-page-script-godam', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-godam' );
+
 		} elseif ( $screen && $this->analytics_page_id === $screen->id ) {
 
 			/**
@@ -444,6 +472,8 @@ class Pages {
 				true
 			);
 
+			wp_set_script_translations( 'transcoder-page-script-analytics', 'godam', RTGODAM_PATH . 'languages' );
+
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
 				'transcoder-page-script-analytics',
@@ -452,7 +482,7 @@ class Pages {
 					'nonce'            => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
-					'adminUrl'         => admin_url( 'admin.php?page=rtgodam' ),
+					'adminUrl'         => admin_url( 'admin.php?page=rtgodam#video-settings' ),
 				)
 			);
 
@@ -491,6 +521,7 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			wp_set_script_translations( 'godam-page-script-help', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'godam-page-script-help' );
 		} elseif ( $screen && $this->dashboard_page_id === $screen->id ) {
 
@@ -547,6 +578,8 @@ class Pages {
 			filemtime( RTGODAM_PATH . 'assets/build/pages/media-library.js' ),
 			true
 		);
+
+		wp_set_script_translations( 'media-library-react', 'godam', RTGODAM_PATH . 'languages' );
 
 		wp_enqueue_script( 'media-library-react' );
 

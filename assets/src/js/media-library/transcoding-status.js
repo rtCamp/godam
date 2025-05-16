@@ -21,9 +21,14 @@ if ( 'list' === checkMediaLibraryView() ) {
 
 	document.addEventListener( 'godam-attachment-browser:changed', () => {
 		initGridView();
-		setTimeout( () => {
-			gridView.reAttachEvent();
-		}, 500 );
+
+		const checkInterval = setInterval( () => {
+			const statusItems = document.querySelectorAll( '.transcoding-status' );
+			if ( statusItems.length > 0 ) {
+				clearInterval( checkInterval );
+				gridView.reAttachEvent();
+			}
+		}, 100 );
 	} );
 
 	if ( wp?.Uploader ) {

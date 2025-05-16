@@ -165,8 +165,8 @@ class Analytics extends Base {
 		// Define API URL for fetching analytics.
 		$analytics_endpoint = RTGODAM_ANALYTICS_BASE . '/processed-analytics/fetch/';
 
-		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
-		$api_key       = get_site_option( 'rtgodam-api-key', '' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
 
 		// Check if API key is valid.
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {

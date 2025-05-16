@@ -20,7 +20,7 @@ import { setCurrentLayer } from './redux/slice/videoSlice';
 /**
  * WordPress dependencies
  */
-import { customLink, customPostType, preformatted, video } from '@wordpress/icons';
+import { customLink, customPostType, preformatted, video, thumbsUp } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
 
@@ -47,7 +47,7 @@ const layerTypes = [
 	},
 	{
 		title: __( 'Poll', 'godam' ),
-		icon: customPostType,
+		icon: thumbsUp,
 		type: 'poll',
 	},
 ];

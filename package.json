@@ -1,6 +1,6 @@
 {
-	"name": "godam",
-	"version": "1.0.2",
+	"name": "GoDAM",
+	"version": "1.0.6",
 	"description": "A WordPress plugin to manage digital assets",
 	"private": true,
 	"author": "rtCamp",
@@ -40,7 +40,7 @@
 		"isomorphic-dompurify": "^2.21.0",
 		"quill": "^2.0.3",
 		"react": "^18.3.1",
-		"react-bootstrap-icons": "^1.11.5",
+		"react-bootstrap-icons": "1.11.5",
 		"react-dom": "^18.3.1",
 		"react-redux": "^9.2.0",
 		"react-rnd": "^10.4.14",

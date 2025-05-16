@@ -59,7 +59,7 @@ function AudioEdit( {
 
 	function getAutoplayHelp( checked ) {
 		return checked
-			? __( 'Autoplay may cause usability issues for some users.' )
+			? __( 'Autoplay may cause usability issues for some users.', 'godam' )
 			: null;
 	}
 
@@ -133,24 +133,24 @@ function AudioEdit( {
 				</BlockControls>
 			) }
 			<InspectorControls>
-				<PanelBody title={ __( 'Settings' ) }>
+				<PanelBody title={ __( 'Settings', 'godam' ) }>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={ __( 'Autoplay' ) }
+						label={ __( 'Autoplay', 'godam' ) }
 						onChange={ toggleAttribute( 'autoplay' ) }
 						checked={ autoplay }
 						help={ getAutoplayHelp }
 					/>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={ __( 'Loop' ) }
+						label={ __( 'Loop', 'godam' ) }
 						onChange={ toggleAttribute( 'loop' ) }
 						checked={ loop }
 					/>
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
-						label={ _x( 'Preload', 'noun; Audio block parameter' ) }
+						label={ _x( 'Preload', 'noun; Audio block parameter', 'godam' ) }
 						value={ preload || '' }
 						// `undefined` is required for the preload attribute to be unset.
 						onChange={ ( value ) =>
@@ -159,12 +159,12 @@ function AudioEdit( {
 							} )
 						}
 						options={ [
-							{ value: '', label: __( 'Browser default' ) },
-							{ value: 'auto', label: __( 'Auto' ) },
-							{ value: 'metadata', label: __( 'Metadata' ) },
+							{ value: '', label: __( 'Browser default', 'godam' ) },
+							{ value: 'auto', label: __( 'Auto', 'godam' ) },
+							{ value: 'metadata', label: __( 'Metadata', 'godam' ) },
 							{
 								value: 'none',
-								label: _x( 'None', 'Preload value' ),
+								label: _x( 'None', 'Preload value', 'godam' ),
 							},
 						] }
 					/>
@@ -185,7 +185,7 @@ function AudioEdit( {
 					setAttributes={ setAttributes }
 					isSelected={ isSingleSelected }
 					insertBlocksAfter={ insertBlocksAfter }
-					label={ __( 'Audio caption text' ) }
+					label={ __( 'Audio caption text', 'godam' ) }
 					showToolbarButton={ isSingleSelected }
 				/>
 			</figure>
