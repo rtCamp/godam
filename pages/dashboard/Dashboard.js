@@ -13,8 +13,6 @@ import { __ } from '@wordpress/i18n';
  */
 import { generateCountryHeatmap } from '../analytics/helper';
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
-import DownArrow from '../../assets/src/images/down-arrow.svg';
-import TopArrow from '../../assets/src/images/up-arrow.svg';
 import ExportBtn from '../../assets/src/images/export.svg';
 import Tooltip from '../analytics/Tooltip.js';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchTopVideosQuery } from './redux/api/dashboardAnalyticsApi';
@@ -22,12 +20,13 @@ import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import SingleMetrics from '../analytics/SingleMetrics';
 
 const Dashboard = () => {
-	const [ recentVideos, setRecentVideos ] = useState( [] );
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
 	const siteUrl = window.location.origin;
 	const adminUrl = window.videoData?.adminUrl;
 
 	const { data: dashboardMetrics, isLoading: isDashboardMetricsLoading } = useFetchDashboardMetricsQuery( { siteUrl } );
+	window.dashboardMetrics = dashboardMetrics;
+
 	const { data: dashboardMetricsHistory, isLoading: isDashboardMetricsHistoryLoading } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl } );
 	const {
 		data: topVideosResponse,
@@ -142,26 +141,6 @@ const Dashboard = () => {
 	};
 
 	useEffect( () => {
-		const fetchRecentVideos = async () => {
-			// Calculate date 7 days ago
-			const date = new Date();
-			date.setDate( date.getDate() - 7 );
-			const isoDate = date.toISOString(); // e.g., "2025-04-01T12:00:00.000Z"
-
-			const url = `/wp-json/wp/v2/media?media_type=video&after=${ isoDate }&per_page=100`;
-
-			try {
-				const response = await fetch( url );
-				const data = await response.json();
-				setRecentVideos( data ); // if using state
-			} catch ( error ) {
-			}
-		};
-
-		fetchRecentVideos();
-	}, [] );
-
-	useEffect( () => {
 		const container = document.querySelector( '.top-media-container' );
 		if ( container ) {
 			container.scrollIntoView( { behavior: 'smooth' } );
@@ -198,124 +177,78 @@ const Dashboard = () => {
 			<div id="dashboard-container">
 				<h1>Dashboard</h1>
 
-				<div className="analytics-info">
-					<div className="analytics-single-info">
-						<p id="total-videos" className="min-w-[90px] text-[2rem] font-black mb-0 mt-0">
-							{ dashboardMetrics?.total_videos || 0 }
-						</p>
-						<div className="analytics-info-heading">
-							<p>{ __( 'Total Videos', 'godam' ) }</p>
-							<Tooltip text="Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)" />
+				<div className="flex-grow">
+					<div className="analytics-info-container flex max-lg:flex-row items-stretch gap-4">
+
+						<div className="analytics-info flex justify-between max-lg:flex-col border border-zinc-200 w-[150px]">
+							<div className="analytics-single-info">
+								<div className="flex justify-between items-center flex-row w-full">
+									<div className="analytics-info-heading">
+										<p className="text-xs text-[#525252]">{ __( 'Total Videos', 'godam' ) }</p>
+										<Tooltip text={ __( 'Total number of videos uploaded on your site.', 'godam' ) } />
+									</div>
+								</div>
+								<div className="flex flex-row justify-between gap-2 items-end">
+									<div className="flex flex-col gap-3">
+										<p
+											id="total-videos"
+											className="min-w-[90px] single-metrics-value"
+										>
+											{ dashboardMetrics?.total_videos ?? 0 }
+										</p>
+									</div>
+								</div>
+							</div>
 						</div>
+
+						{/* <SingleMetrics
+							mode="dashboard"
+							metricType={ 'engagement-rate' }
+							label={ __( 'Average Engagement', 'godam' ) }
+							tooltipText={ __(
+								'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)',
+								'godam',
+							) }
+							processedAnalyticsHistory={ dashboardMetricsHistory }
+							analyticsDataFetched={ dashboardMetrics }
+						/> */}
+
+						<SingleMetrics
+							mode="dashboard"
+							metricType={ 'plays' }
+							label={ __( 'Total Plays', 'godam' ) }
+							tooltipText={ __(
+								'Plays represent the total number of times the video has been viewed',
+								'godam',
+							) }
+							processedAnalyticsHistory={ dashboardMetricsHistory }
+							analyticsDataFetched={ dashboardMetrics }
+						/>
+
+						<SingleMetrics
+							mode="dashboard"
+							metricType={ 'play-rate' }
+							label={ __( 'Play Rate', 'godam' ) }
+							tooltipText={ __(
+								'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
+								'godam',
+							) }
+							processedAnalyticsHistory={ dashboardMetricsHistory }
+							analyticsDataFetched={ dashboardMetrics }
+						/>
+
+						<SingleMetrics
+							mode="dashboard"
+							metricType={ 'watch-time' }
+							label={ __( 'Watch Time', 'godam' ) }
+							tooltipText={ __(
+								'Total time the video has been watched, aggregated across all plays',
+								'godam',
+							) }
+							processedAnalyticsHistory={ dashboardMetricsHistory }
+							analyticsDataFetched={ dashboardMetrics }
+						/>
 					</div>
-
-					<div className="analytics-single-info">
-						<p id="dashboard-engagement-rate" className="min-w-[90px] text-[2rem] font-black mb-0 mt-0">
-							{ dashboardMetrics?.avg_engagement?.toFixed( 2 ) || 0 }%
-						</p>
-						<div className="analytics-info-heading">
-							<p>{ __( 'Average Engagement', 'godam' ) }</p>
-							<Tooltip text="Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)" />
-						</div>
-						<div className="analytics-stats">
-							<img
-								src={ dashboardMetrics?.avg_engagement_change >= 0 ? TopArrow : DownArrow }
-								height={ 20 }
-								width={ 20 }
-								alt="Engagement change arrow"
-							/>
-							<p>{ dashboardMetrics?.avg_engagement_change !== null ? `${ dashboardMetrics?.avg_engagement_change > 0 ? '+' : '' }${ dashboardMetrics?.avg_engagement_change }% this week` : '-' }</p>
-						</div>
-					</div>
-
-					<div className="analytics-single-info">
-						<p id="dashboard-plays" className="min-w-[90px] text-[2rem] font-black mb-0 mt-0">
-							{ dashboardMetrics?.plays || 0 }
-						</p>
-						<div className="analytics-info-heading">
-							<p>{ __( 'Plays', 'godam' ) }</p>
-							<Tooltip text="Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)" />
-						</div>
-						<div className="analytics-stats">
-							<img
-								src={ dashboardMetrics?.views_change >= 0 ? TopArrow : DownArrow }
-								height={ 20 }
-								width={ 20 }
-								alt="Engagement change arrow"
-							/>
-							<p>{ dashboardMetrics?.views_change !== null ? `${ dashboardMetrics?.views_change > 0 ? '+' : '' }${ dashboardMetrics?.views_change }% this week` : '-' }</p>
-						</div>
-					</div>
-
-					<div className="analytics-single-info">
-						<p id="dashboard-play-rate" className="min-w-[90px] text-[2rem] font-black mb-0 mt-0">
-							{ ( ( dashboardMetrics?.plays || 0 ) / ( dashboardMetrics?.page_load || 1 ) * 100 ).toFixed( 2 ) }%
-						</p>
-						<div className="analytics-info-heading">
-							<p>{ __( 'Play rate', 'godam' ) }</p>
-							<Tooltip text="Play rate is the percentage of viewers who visit the page that play the video" />
-						</div>
-						<div className="analytics-stats">
-							<img
-								src={ dashboardMetrics?.play_rate_change >= 0 ? TopArrow : DownArrow }
-								height={ 20 }
-								width={ 20 }
-								alt="Engagement change arrow"
-							/>
-							<p>{ dashboardMetrics?.play_rate_change !== null ? `${ dashboardMetrics?.play_rate_change > 0 ? '+' : '' }${ dashboardMetrics?.play_rate_change }% this week` : '-' }</p>
-						</div>
-					</div>
-
-					<div className="analytics-single-info">
-						<p id="dashboard-watch-time" className="min-w-[90px] text-[2rem] font-black mb-0 mt-0">
-							{ dashboardMetrics?.play_time?.toFixed( 2 ) || 0 }s
-						</p>
-						<div className="analytics-info-heading">
-							<p>{ __( 'Watch Time', 'godam' ) }</p>
-							<Tooltip text="Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)" />
-						</div>
-						<div className="analytics-stats">
-							<img
-								src={ dashboardMetrics?.watch_time_change >= 0 ? TopArrow : DownArrow }
-								height={ 20 }
-								width={ 20 }
-								alt="Engagement change arrow"
-							/>
-							<p>{ dashboardMetrics?.watch_time_change !== null ? `${ dashboardMetrics?.watch_time_change > 0 ? '+' : '' }${ dashboardMetrics?.watch_time_change }% this week` : '-' }</p>
-						</div>
-					</div>
-
-				</div>
-
-				<div className="analytics-info analytics-info-container">
-					<SingleMetrics
-						metricType="engagement-rate"
-						label={ __( 'Average Engagement', 'godam' ) }
-						tooltipText={ __( 'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)', 'godam' ) }
-						processedAnalyticsHistory={ dashboardMetricsHistory }
-						analyticsDataFetched={ dashboardMetrics }
-					/>
-					<SingleMetrics
-						metricType="plays"
-						label={ __( 'Total Plays', 'godam' ) }
-						tooltipText={ __( 'Plays represent the total number of times the video has been viewed', 'godam' ) }
-						processedAnalyticsHistory={ dashboardMetricsHistory }
-						analyticsDataFetched={ dashboardMetrics }
-					/>
-					<SingleMetrics
-						metricType="play-rate"
-						label={ __( 'Play Rate', 'godam' ) }
-						tooltipText={ __( 'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads', 'godam' ) }
-						processedAnalyticsHistory={ dashboardMetricsHistory }
-						analyticsDataFetched={ dashboardMetrics }
-					/>
-					<SingleMetrics
-						metricType="watch-time"
-						label={ __( 'Watch Time', 'godam' ) }
-						tooltipText={ __( 'Total time the video has been watched, aggregated across all plays', 'godam' ) }
-						processedAnalyticsHistory={ dashboardMetricsHistory }
-						analyticsDataFetched={ dashboardMetrics }
-					/>
 				</div>
 
 				<div>
@@ -415,36 +348,6 @@ const Dashboard = () => {
 							</>
 						) }
 					</div>
-					{
-						recentVideos && (
-							<div className="bg-white p-12">
-								<div className="flex justify-between">
-									<div>
-										<h2>Latest Videos</h2>
-										<p>Videos from last 7 days</p>
-									</div>
-									<Button variant="primary" onClick={ () => window.location.href = '/wp-admin/upload.php' }>View All</Button>
-								</div>
-								<div className="flex gap-6 max-w-[1194px] overflow-scroll">
-									{
-										recentVideos.map( ( video, index ) => (
-											<div key={ index }>
-												<img
-													src={ video.meta?.rtgodam_media_video_thumbnail || DefaultThumbnail }
-													height={ 100 }
-													width={ 190 }
-													alt="Video thumbnail"
-												/>
-												<p>{ video.title?.rendered }</p>
-												<a href={ `admin.php?page=rtgodam_analytics&id=${ video.id }` } className="text-blue-500">View Analytics</a><br />
-												<a href={ `/wp-admin/upload.php?item=${ video.id }` } className="text-blue-500">View Video</a>
-											</div>
-										) )
-									}
-								</div>
-							</div>
-						)
-					}
 				</div>
 
 				<div className="p-12 mx-auto">

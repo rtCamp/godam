@@ -19,7 +19,31 @@ import './charts.js';
  */
 import { __ } from '@wordpress/i18n';
 
+const chartConfigMap = {
+	'engagement-rate': {
+		id: '#single-engagement-rate-chart',
+		key: 'engagement_rate',
+		changeKey: 'avg_engagement_change',
+	},
+	plays: {
+		id: '#single-plays-chart',
+		key: 'plays',
+		changeKey: 'views_change',
+	},
+	'play-rate': {
+		id: '#single-play-rate-chart',
+		key: 'play_rate',
+		changeKey: 'play_rate_change',
+	},
+	'watch-time': {
+		id: '#single-watch-time-chart',
+		key: 'watch_time',
+		changeKey: 'watch_time_change',
+	},
+};
+
 const SingleMetrics = ( {
+	mode = 'analytics',
 	metricType,
 	label,
 	tooltipText,
@@ -31,49 +55,47 @@ const SingleMetrics = ( {
 			return;
 		}
 
-		const finalHistoryArray = processedAnalyticsHistory.map( ( history ) => {
-			return {
-				date: history.date,
-				engagement_rate: calculateEngagementRate(
-					history.plays,
-					history.video_length,
-					history.play_time,
-				),
-				play_rate: calculatePlayRate( history.page_load, history.plays ),
-				plays: history.plays.toFixed( 2 ),
-				watch_time: history.play_time,
-			};
-		} );
+		let finalHistoryArray = [];
 
-		singleMetricsChart(
-			finalHistoryArray,
-			'#single-engagement-rate-chart',
-			'engagement_rate',
-			7,
-			analyticsDataFetched.avg_engagement_change,
-		);
+		if ( mode === 'analytics' ) {
+			finalHistoryArray = processedAnalyticsHistory.map( ( history ) => {
+				return {
+					date: history.date,
+					engagement_rate: calculateEngagementRate(
+						history.plays,
+						history.video_length,
+						history.play_time,
+					),
+					play_rate: calculatePlayRate( history.page_load, history.plays ),
+					plays: history.plays.toFixed( 2 ),
+					watch_time: history.play_time,
+				};
+			} );
+		} else if ( mode === 'dashboard' ) {
+			finalHistoryArray = processedAnalyticsHistory.map( ( history ) => {
+				return {
+					date: history.date,
+					engagement_rate: history.avg_engagement || 0,
+					play_rate: history.play_rate
+						? parseFloat( history.play_rate * 100 ).toFixed( 2 )
+						: 0,
+					plays: history.plays.toFixed( 2 ),
+					watch_time: history.watch_time,
+				};
+			} );
+		}
 
-		singleMetricsChart(
-			finalHistoryArray,
-			'#single-plays-chart',
-			'plays',
-			7,
-			analyticsDataFetched.views_change,
-		);
-		singleMetricsChart(
-			finalHistoryArray,
-			'#single-play-rate-chart',
-			'play_rate',
-			7,
-			analyticsDataFetched.play_rate_change,
-		);
-		singleMetricsChart(
-			finalHistoryArray,
-			'#single-watch-time-chart',
-			'watch_time',
-			7,
-			analyticsDataFetched.watch_time_change,
-		);
+		const config = chartConfigMap[ metricType ];
+
+		if ( config && config.id ) {
+			singleMetricsChart(
+				finalHistoryArray,
+				config.id,
+				config.key,
+				7,
+				analyticsDataFetched?.[ config.changeKey ] ?? 0,
+			);
+		}
 	}, [ processedAnalyticsHistory, analyticsDataFetched ] );
 
 	return (
@@ -90,7 +112,7 @@ const SingleMetrics = ( {
 					<div className="flex flex-col gap-3">
 						<p
 							id={ `${ metricType }` }
-							className="min-w-[90px] engagement-rate"
+							className="min-w-[90px] single-metrics-value"
 						>
 							0%
 						</p>

@@ -2,41 +2,6 @@
 	background-color: #ffffff;
 }
 
-.analytics-info {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	grid-template-rows: repeat(2, 1fr);
-	gap: 2rem;
-	
-	.analytics-single-info {
-		display: flex;
-		border-radius: 12px;
-		padding: 25px;
-		flex-direction: column;
-		background-color: #fff;
-		min-width: 300px;
-
-		.analytics-stats {
-			display: flex;
-			align-items: center;
-			gap: 8px;
-			margin-top: auto;
-		}
-	}
-
-	.analytics-info-heading {
-		font-size: 16px;
-		display: flex;
-		align-items: center;
-		font-weight: 500;
-		gap: 5px;
-
-		p {
-			font-weight: 400;
-			font-size: 18px;
-		}
-}}
-
 .api-key-message a {
 	color: #3b82f6;
 	text-decoration: none;

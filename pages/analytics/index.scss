@@ -27,7 +27,7 @@
 	transition: opacity 0.2s ease-in-out;
 }
 
-#root-video-analytics {
+#root-video-analytics, #root-video-dashboard {
 
 	background-color: #fff;
 	position: fixed;
@@ -53,10 +53,10 @@
 	}
 
 	.media-frame-menu, 
-.media-frame-router, 
-.media-frame-content .upload-ui {
-	display: none !important;
-}
+	.media-frame-router, 
+	.media-frame-content .upload-ui {
+		display: none !important;
+	}
 
 	.analytics-info-container {
 		display: flex;
@@ -112,7 +112,7 @@
 				font-size: 12px;
 			}
 
-			.engagement-rate {
+			.single-metrics-value {
 				font-weight: 600;
 				font-size: 20px;
 				line-height: 32px;
@@ -335,7 +335,8 @@
 	cursor: pointer;
 }
 
-#root-video-analytics #tooltip-container .tooltip-text {
+#root-video-analytics #tooltip-container .tooltip-text,
+#root-video-dashboard #tooltip-container .tooltip-text {
 	position: absolute;
 	top: 100%;
     left: -95%;
@@ -358,7 +359,8 @@
 	overflow-wrap: break-word;
 }
 
-#root-video-analytics #tooltip-container:hover .tooltip-text {
+#root-video-analytics #tooltip-container:hover .tooltip-text,
+#root-video-dashboard #tooltip-container:hover .tooltip-text {
 	visibility: visible;
 	opacity: 1;
 }
@@ -566,7 +568,7 @@
 
 @media (max-width: 1024px) {
 
-		#root-video-analytics {
+		#root-video-analytics, #root-video-dashboard {
 
 			.video-analytics-container {
 				padding: 40px;
