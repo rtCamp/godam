@@ -18,6 +18,7 @@ import Tooltip from '../analytics/Tooltip.js';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchTopVideosQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import SingleMetrics from '../analytics/SingleMetrics';
+import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
@@ -201,18 +202,6 @@ const Dashboard = () => {
 							</div>
 						</div>
 
-						{/* <SingleMetrics
-							mode="dashboard"
-							metricType={ 'engagement-rate' }
-							label={ __( 'Average Engagement', 'godam' ) }
-							tooltipText={ __(
-								'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)',
-								'godam',
-							) }
-							processedAnalyticsHistory={ dashboardMetricsHistory }
-							analyticsDataFetched={ dashboardMetrics }
-						/> */}
-
 						<SingleMetrics
 							mode="dashboard"
 							metricType={ 'plays' }
@@ -351,9 +340,14 @@ const Dashboard = () => {
 				</div>
 
 				<div className="p-12 mx-auto">
-					<div className="playback-country-container">
-						<div className="playback-performance" id="global-analytics-container"></div>
-						<div className="country-views">
+					<div className="playback-country-container flex flex-wrap gap-4">
+						<div className="playback-performance flex-grow basis-[60%]" id="global-analytics-container">
+							<PlaybackPerformanceDashboard
+								initialData={ dashboardMetricsHistory }
+								mode="dashboard"
+							/>
+						</div>
+						<div className="country-views flex-grow basis-[35%]">
 							<div className="country-views-map" id="map-container"></div>
 							<div className="country-views-table" id="table-container"></div>
 						</div>
