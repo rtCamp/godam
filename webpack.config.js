@@ -96,6 +96,20 @@ const mediaLibrary = {
 	},
 };
 
+const godamPlayerFrontend = {
+	...sharedConfig,
+	entry: {
+		'godam-player-frontend': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'frontend.js' ),
+	},
+};
+
+const godamPlayerAnalytics = {
+	...sharedConfig,
+	entry: {
+		'godam-player-analytics': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'analytics.js' ),
+	},
+};
+
 const deactivationJS = {
 	...sharedConfig,
 	entry: {
@@ -169,6 +183,8 @@ module.exports = [
 	adminJS,
 	videoAnalyticsJS,
 	mediaLibrary,
+	godamPlayerFrontend,
+	godamPlayerAnalytics,
 	deactivationJS,
 	styles, // Do not remove this.
 	pages,
