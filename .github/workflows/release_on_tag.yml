@@ -17,17 +17,6 @@ jobs:
       run: |
         npm install
         npm run build:prod
-
-    - name: Setup PHP with composer v2
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.4'
-        tools: composer:v2
-
-    - name: Generate POT file
-      shell: bash
-      run: composer run pot
-
     - name: WordPress Plugin Deploy
       id: deploy
       uses: 10up/action-wordpress-plugin-deploy@2.3.0
