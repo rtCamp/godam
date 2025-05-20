@@ -287,6 +287,12 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
+			<div id="screen-size-overlay" className="screen-size-overlay hidden">
+				<div className="screen-size-message">
+					<p>{ __( 'You need to use desktop to access this feature. ', 'godam' ) }</p>
+				</div>
+			</div>
+
 			{ attachmentData && (
 				<div id="analytics-content" className="hidden">
 					<div>
@@ -398,13 +404,13 @@ const Analytics = ( { attachmentID } ) => {
 						</div>
 					</div>
 
-					<div className="px-10 pt-6">
+					<div className="px-10 py-6">
 						<div>
 							<h3 className="text-base font-semibold">
 								{ __( 'Performance Comparison', 'godam' ) }
 							</h3>
 						</div>
-						<div className="border border-gray-200 bg-white rounded-xl min-w-[1230px] overflow-scroll">
+						<div className="border border-gray-200 bg-white rounded-xl">
 							{ attachmentData && mediaLibraryAttachment && (
 								<div className="flex gap-4 bg-zinc-100 justify-between py-4 [padding-left:22px] [padding-right:22px] rounded-xl items-center performance-status-container">
 									{ ( () => {
@@ -460,7 +466,7 @@ const Analytics = ( { attachmentID } ) => {
 								</div>
 							) }
 							<div className="p-6">
-								<div className="flex justify-center w-full">
+								<div className="flex w-full overflow-scroll">
 									<div className="flex-1">
 										{ abTestComparisonUrl.length === 0 && (
 											<div className="flex justify-center items-center flex-1 h-[280px] gap-6 flex-col">

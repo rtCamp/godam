@@ -292,7 +292,7 @@ async function main() {
 	document.getElementById( 'play-rate' ).innerText = `${ playRate.toFixed( 2 ) }%`;
 	document.getElementById( 'plays' ).innerText = totalPlays;
 	document.getElementById( 'engagement-rate' ).innerText = `${ engagementRate.toFixed( 2 ) }%`;
-	document.getElementById( 'watch-time' ).innerText = `${ playTime.toFixed( 2 ) }s`;
+	document.getElementById( 'watch-time' ).innerText = `${ formatWatchTime( playTime.toFixed( 2 ) ) }`;
 
 	// Convert heatmap string into an array
 	const heatmapData = JSON.parse( allTimeHeatmap );
@@ -326,6 +326,25 @@ async function main() {
 		const prefix = changeValue >= 0 ? '+' : '-';
 		return `${ prefix }${ rounded }%`;
 	};
+
+	function formatWatchTime( seconds ) {
+		const hrs = Math.floor( seconds / 3600 );
+		const mins = Math.floor( ( seconds % 3600 ) / 60 );
+		const secs = Math.floor( seconds % 60 );
+
+		const parts = [];
+		if ( hrs > 0 ) {
+			parts.push( `${ hrs }h` );
+		}
+		if ( mins > 0 ) {
+			parts.push( `${ mins }m` );
+		}
+		if ( secs > 0 || parts.length === 0 ) {
+			parts.push( `${ secs }s` );
+		}
+
+		return parts.join( ' ' );
+	}
 
 	if ( document.getElementById( 'plays-change' ) ) {
 		document.getElementById( 'plays-change' ).innerHTML = renderChange( viewsChange );
@@ -379,6 +398,14 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		const videoId = videoElement?.dataset.id;
 		const analyticsDataFetched = window.analyticsDataFetched;
 		const processedAnalyticsHistory = window.processedAnalyticsHistory;
+
+		const windowSize = window.innerWidth <= 1024;
+
+		const responsiveOverlay = document.getElementById( 'screen-size-overlay' );
+
+		if ( windowSize && responsiveOverlay ) {
+			responsiveOverlay.classList.remove( 'hidden' );
+		}
 
 		if ( videoId && analyticsDataFetched && processedAnalyticsHistory ) {
 			clearInterval( videoCheckInterval );
