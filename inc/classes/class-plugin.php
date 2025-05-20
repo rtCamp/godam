@@ -47,6 +47,7 @@ class Plugin {
 		Pages::get_instance();
 		Media_Library_Ajax::get_instance();
 		Media_Tracker::get_instance();
+		Seo::get_instance();
 
 		$this->load_post_types();
 		$this->load_taxonomies();
