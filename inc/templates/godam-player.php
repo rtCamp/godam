@@ -117,15 +117,23 @@ elseif ( ! empty( $ads_layers ) && 'self-hosted' === $ad_server ) :
 endif;
 
 $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
+
+if ( isset( $is_shortcode ) && $is_shortcode ) {
+	$is_shortcode = true;
+} else {
+	$is_shortcode = false;
+}
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>
+	<figure 
+	<?php echo $is_shortcode ? '' : wp_kses_data( get_block_wrapper_attributes() ); ?>
 	style="
 	--rtgodam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
 	--rtgodam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
 	--rtgodam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
 	--rtgodam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
+	--rtgodam-video-aspect-ratio: <?php echo esc_attr( $attributes['aspectRatio'] ?? '16/9' ); ?>;
 	">
 	<div class="easydam-video-container animate-video-loading">
 		<div class="animate-play-btn">

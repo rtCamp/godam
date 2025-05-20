@@ -52,7 +52,7 @@ function GODAMPlayer( videoRef = null ) {
 
 		const videoAnimationEl = video.closest( '.animate-video-loading' );
 		if ( videoAnimationEl ) {
-			videoAnimationEl.classList.add( 'animate-video-loaded' );
+			videoAnimationEl.classList.remove( 'animate-video-loading' );
 		}
 
 		const adTagUrl = video.dataset.ad_tag_url;
@@ -89,8 +89,6 @@ function GODAMPlayer( videoRef = null ) {
 		}
 
 		const isPreviewEnabled = videoSetupOptions?.preview;
-
-		console.log(videoSetupControls);
 
 		const player = videojs( video, videoSetupControls );
 

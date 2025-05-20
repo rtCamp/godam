@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react';
  */
 import VideoEditor from './VideoEditor';
 import './style.scss';
-import '../../assets/build/blocks/godam-player/style-index.css';
+import '../../assets/build/css/godam-player.css';
 
 /**
  * WordPress dependencies
