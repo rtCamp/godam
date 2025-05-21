@@ -116,6 +116,7 @@
 				font-weight: 600;
 				font-size: 20px;
 				line-height: 32px;
+				white-space: nowrap;
 			}
 		}
 	}
@@ -287,7 +288,7 @@
 	pointer-events: none;
 }
 
-.api-key-overlay {
+.api-key-overlay, .screen-size-overlay {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -301,7 +302,7 @@
 	z-index: 99;
 }
 
-.api-key-message {
+.api-key-message, .screen-size-message {
 	background: #fff;
 	padding: 20px 40px;
 	border-radius: 5px;

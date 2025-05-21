@@ -1,0 +1,31 @@
+.godam-seo-modal {
+	width: 42rem;
+	box-shadow: 0 5px 30px 0 rgba(0,0,0,0.2);
+
+	.components-modal__header-heading {
+		font-size: 1rem;
+	}
+
+	&__property {
+
+		background-color: rgb(248, 249, 250);
+		border-radius: 0.25rem;
+		padding: 0.5rem 1rem;
+		border: 1px solid rgb(222, 226, 230);
+		margin-bottom: 1rem;
+
+		.components-text-control__input {
+			border-radius: 0.25rem;
+			height: 2.5rem;
+		}
+
+		.components-textarea-control__input {
+			border-radius: 0.25rem;
+		}
+
+		.components-base-control__help {
+			font-size: 0.875rem;
+			margin-bottom: 0;
+		}
+	}
+}

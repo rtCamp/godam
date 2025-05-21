@@ -57,8 +57,16 @@ function GODAMPlayer( videoRef = null ) {
 		videos = videoRef.querySelectorAll( '.easydam-player.video-js' );
 	}
 
+	const isDisplayingLayers = {};
+
+	videos.forEach( ( video ) => {
+		isDisplayingLayers[ video.dataset.instanceId ] = false;
+	} );
+
 	videos.forEach( ( video ) => {
 		video.classList.remove( 'vjs-hidden' );
+
+		const currentPlayerVideoInstanceId = video.dataset.instanceId;
 
 		video.closest( '.animate-video-loading' )?.classList.remove( 'animate-video-loading' );
 
@@ -616,8 +624,7 @@ function GODAMPlayer( videoRef = null ) {
 					layerObj.layerElement.classList.add( 'hidden' );
 					player.controls( true );
 					player.play();
-					isDisplayingLayer = false;
-
+					isDisplayingLayers[ currentPlayerVideoInstanceId ] = false;
 					// Increment the current form layer.
 					if ( layerObj === formLayers[ currentFormLayerIndex ] ) {
 						currentFormLayerIndex++;
@@ -647,14 +654,14 @@ function GODAMPlayer( videoRef = null ) {
 		formLayers.sort( ( a, b ) => a.displayTime - b.displayTime );
 
 		let currentFormLayerIndex = 0;
-		let isDisplayingLayer = false;
+		isDisplayingLayers[ currentPlayerVideoInstanceId ] = false;
 
 		// Time update
 		player.on( 'timeupdate', () => {
 			const currentTime = player.currentTime();
 
 			// form/cta handling only the current form layer (if any)
-			if ( ! isDisplayingLayer && currentFormLayerIndex < formLayers.length ) {
+			if ( ! isDisplayingLayers[ currentPlayerVideoInstanceId ] && currentFormLayerIndex < formLayers.length ) {
 				const layerObj = formLayers[ currentFormLayerIndex ];
 				// If we've reached its displayTime, show it
 
@@ -666,7 +673,7 @@ function GODAMPlayer( videoRef = null ) {
 					layerObj.layerElement.classList.remove( 'hidden' );
 					player.pause();
 					player.controls( false );
-					isDisplayingLayer = true;
+					isDisplayingLayers[ currentPlayerVideoInstanceId ] = true;
 				}
 			}
 
@@ -964,6 +971,15 @@ function GODAMPlayer( videoRef = null ) {
 
 				// If no active player was found, exit
 				if ( ! activePlayer ) {
+					return;
+				}
+
+				const element = activePlayer.el_;
+
+				const activeVideo = element.querySelector( 'video' );
+				const activeVideoInstanceId = activeVideo.dataset.instanceId;
+
+				if ( isDisplayingLayers[ activeVideoInstanceId ] ) {
 					return;
 				}
 
