@@ -57,14 +57,54 @@ class Media_Library_Ajax {
 			return $query_args;
 		}
 
-		if ( isset( $query_args['post_mime_type'] ) && is_array( $query_args['post_mime_type'] ) && in_array( 'godam', $query_args['post_mime_type'], true ) ) {
+		if ( isset( $query_args['post_mime_type'] ) && is_array( $query_args['post_mime_type'] ) ) {
 			
+			$post_mime_type = $query_args['post_mime_type'][0];
+			$mime_type      = '';
+			if ( false === strpos( $post_mime_type, 'godam/' ) ) {
+				return $query_args;
+			} else {
+				// mime_type is godam/{mime_type}.
+				$mime_type = str_replace( 'godam/', '', $post_mime_type );
+				$mime_type = explode( '-', $mime_type );
+				$mime_type = $mime_type[0];
+				if ( 'all' === $mime_type ) {
+					$mime_type = '';
+				}
+			}
+
 			$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.file.get_list_of_files_with_api_key';
 
+
+			$order_by = 'creation asc';
+			if ( isset( $query_args['order'] ) && 'DESC' === $query_args['order'] ) {
+				$order_by = 'creation desc';
+			}
+
+			$request_args = array(
+				'api_key'  => $api_key,
+				'order_by' => $order_by,
+			);
+
+			if ( ! empty( $mime_type ) ) {
+				if ( 'video' === $mime_type ) {
+					$request_args['job_type'] = 'stream';
+				} else {
+					$request_args['job_type'] = $mime_type;
+				}
+			}
+
+			if ( isset( $query_args['s'] ) && ! empty( $query_args['s'] ) ) {
+				$request_args['search'] = $query_args['s'];
+			}
+
+			if ( isset( $query_args['posts_per_page'] ) && ! empty( $query_args['paged'] ) ) {
+				$request_args['page_size'] = intval( $query_args['posts_per_page'] );
+				$request_args['page']      = intval( $query_args['paged'] );
+			}
+
 			$api_url = add_query_arg(
-				array(
-					'api_key' => $api_key,
-				),
+				$request_args,
 				$api_url
 			);
 
@@ -114,8 +154,8 @@ class Media_Library_Ajax {
 			'id'                    => $item['name'],
 			'title'                 => pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) ?? $item['name'],
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
-			'url'                   => $item['file_origin'],
-			'mime'                  => $item['mime_type'] ?? '',
+			'url'                   => 'image' === $item['job_type'] ? $item['file_origin'] : ( $item['transcoded_file_path'] ?? $item['file_origin'] ),
+			'mime'                  => 'application/dash+xml' ?? '',
 			'type'                  => $item['job_type'] ?? '',
 			'subtype'               => explode( '/', $item['mime_type'] )[1] ?? 'jpg',
 			'status'                => $item['status'],

@@ -30,12 +30,20 @@ export default MediaFrameSelect?.extend( {
 	GoDAMCreate() {
 		const state = this.state();
 
+		let mimeTypes = state.get( 'library' )?.props?.get( 'type' );
+
+		if ( ! mimeTypes ) {
+			mimeTypes = 'all';
+		} else {
+			mimeTypes = mimeTypes.join( '-' );
+		}
+
 		this.$el.removeClass( 'hide-toolbar' );
 
 		// Browse our library of attachments.
 		const RenderedContent = new wp.media.view.AttachmentsBrowser( {
 			controller: this,
-			collection: wp.media.query( { type: [ 'godam' ] } ),
+			collection: wp.media.query( { type: [ 'godam/' + mimeTypes ] } ),
 			selection: state.get( 'selection' ),
 			model: state,
 		} );
