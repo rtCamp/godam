@@ -40,6 +40,11 @@ const chartConfigMap = {
 		key: 'watch_time',
 		changeKey: 'watch_time_change',
 	},
+	'total-videos': {
+		id: '#single-total-videos-chart',
+		key: 'total_videos',
+		changeKey: 'total_videos_change',
+	},
 };
 
 const SingleMetrics = ( {
@@ -81,6 +86,7 @@ const SingleMetrics = ( {
 						: 0,
 					plays: history.plays.toFixed( 2 ),
 					watch_time: history.watch_time,
+					total_videos: history.total_videos ?? 0,
 				};
 			} );
 		}
@@ -88,15 +94,37 @@ const SingleMetrics = ( {
 		const config = chartConfigMap[ metricType ];
 
 		if ( config && config.id ) {
+			let trendChange = 0;
+			let trendPercentage = 0;
+
+			if ( finalHistoryArray.length >= 2 ) {
+				const last = parseFloat( finalHistoryArray[ 0 ][ config.key ] );
+				const first = parseFloat( finalHistoryArray[ finalHistoryArray.length - 1 ][ config.key ] );
+
+				if ( ! isNaN( first ) && first !== 0 ) {
+					trendChange = last - first;
+					trendPercentage = ( trendChange / first ) * 100;
+				}
+			}
+
+			// Update the change percentage UI
+			const changeEl = document.getElementById( `${ metricType }-change` );
+			if ( changeEl ) {
+				const rounded = Math.abs( trendPercentage ).toFixed( 2 );
+				const prefix = trendPercentage >= 0 ? '+' : '-';
+				changeEl.innerText = `${ prefix }${ rounded }%`;
+				changeEl.classList.add( trendPercentage >= 0 ? 'change-rise' : 'change-drop' );
+			}
+
 			singleMetricsChart(
 				finalHistoryArray,
 				config.id,
 				config.key,
-				7,
-				analyticsDataFetched?.[ config.changeKey ] ?? 0,
+				Math.min( 7, finalHistoryArray.length ), // Cap to available data
+				trendPercentage,
 			);
 		}
-	}, [ processedAnalyticsHistory, analyticsDataFetched ] );
+	}, [ processedAnalyticsHistory, analyticsDataFetched, metricType, mode ] );
 
 	return (
 		<div className="analytics-info flex justify-between max-lg:flex-col border border-zinc-200 w-[350px]">

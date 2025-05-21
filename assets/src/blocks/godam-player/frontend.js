@@ -60,7 +60,7 @@ function GODAMPlayer( videoRef = null ) {
 	videos.forEach( ( video ) => {
 		video.classList.remove( 'vjs-hidden' );
 
-		video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
+		video.closest( '.animate-video-loading' )?.classList.remove( 'animate-video-loading' );
 
 		const adTagUrl = video.dataset.ad_tag_url;
 		let isVideoClicked = false;
