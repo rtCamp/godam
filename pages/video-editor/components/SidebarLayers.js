@@ -272,14 +272,23 @@ const SidebarLayers = ( { currentTime, onSelectLayer, duration } ) => {
 															disabled={ isDuplicateTime }
 															onClick={ ( e ) => {
 																e.stopPropagation();
+																const sanitized = layerTime[ layer?.id ].replace(
+																	/^0+(?!\.)/,
+																	'',
+																);
+
+																const parsed = parseFloat( sanitized );
 																dispatch(
 																	updateLayerField( {
 																		id: layer.id,
 																		field: 'displayTime',
-																		value: layerTime[ layer?.id ],
+																		value: parsed,
 																	} ),
 																);
-																setIsEditing( false );
+																setIsEditing( ( prev ) => ( {
+																	...prev,
+																	[ layer?.id ]: false,
+																} ) );
 															} } />
 
 														<Button icon={ cancelCircleFilled } onClick={ ( e ) => {
