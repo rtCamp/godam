@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * Internal dependencies
  */
-import { addLayer, setCurrentLayer } from '../redux/slice/videoSlice';
+import { addLayer, setCurrentLayer, updateLayerField } from '../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
@@ -15,9 +15,9 @@ import CF7Icon from '../assets/layers/CF7Icon.svg';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, Icon, Tooltip } from '@wordpress/components';
-import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp } from '@wordpress/icons';
-import { useState } from '@wordpress/element';
+import { Button, Icon, Tooltip, TextControl } from '@wordpress/components';
+import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp, edit, check, cancelCircleFilled } from '@wordpress/icons';
+import { useEffect, useState } from '@wordpress/element';
 
 import Layer from './layers/Layer';
 import LayerSelector from './LayerSelector.jsx';
@@ -52,9 +52,11 @@ const layerTypes = [
 
 const premiumLayers = [ 'form', 'hotspot', 'ad' ];
 
-const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
+const SidebarLayers = ( { currentTime, onSelectLayer, duration } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
+	const [ isEditing, setIsEditing ] = useState( {} );
+	const [ layerTime, setLayerTime ] = useState( {} );
 
 	const openModal = () => setOpen( true );
 	const closeModal = () => setOpen( false );
@@ -156,6 +158,16 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 		}
 	};
 
+	useEffect( () => {
+		layers?.forEach( ( layer ) => {
+			const sortedLayerId = layer.id;
+			setLayerTime( ( prev ) => ( {
+				...prev,
+				[ sortedLayerId ]: layer?.displayTime,
+			} ) );
+		} );
+	}, [ layers ] );
+
 	return (
 		<>
 			{
@@ -207,6 +219,12 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 									layerText = layer?.type?.toUpperCase();
 								}
 
+								const isDuplicateTime = layers?.some(
+									( singleLayer ) =>
+										Number( singleLayer.displayTime ) ===
+                    Number( layerTime[ layer?.id ] ),
+								) || layerTime[ layer?.id ] === '';
+
 								return (
 									<Tooltip
 										key={ layer.id }
@@ -225,11 +243,62 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 												<div className="flex items-center gap-2">
 													{ icon && <img src={ icon } alt={ layer.type } className="w-6 h-6" /> }
 													{ ! icon && <Icon icon={ layerTypes.find( ( l ) => l.type === layer.type )?.icon } /> }
-													<p className="m-0 text-base">{ layerText } layer at <b>{ layer.displayTime }s</b></p>
+													<p className={ `m-0 text-base ${ isEditing[ layer?.id ] ? 'flex gap-5 whitespace-nowrap items-center' : '' }` }>{ layerText } layer at { isEditing[ layer?.id ] ? <TextControl
+														__nextHasNoMarginBottom={ true }
+														__next40pxDefaultSize={ true }
+														value={ layerTime[ layer?.id ] }
+														style={ { width: 90 } }
+														onClick={ ( e ) => e.stopPropagation()
+														}
+														type="number"
+														onChange={ ( value ) => {
+															// Regex: only numbers with up to 2 decimal places
+															const decimalRegex = /^\d*\.?\d{0,2}$/;
+
+															// Reject empty string and invalid formats
+															if ( decimalRegex.test( value ) && ( value <= duration || '' === value ) ) {
+																setLayerTime( ( prev ) => ( {
+																	...prev,
+																	[ layer?.id ]: value,
+																} ) );
+															}
+														} }
+													/> : <b>{ layer.displayTime }s</b> }</p>
 												</div>
-												<div>
-													<Icon icon={ arrowRight } />
-												</div>
+												{ isEditing[ layer?.id ]
+													? ( <div className="flex pl-3 items-center">
+														<Button
+															icon={ check }
+															disabled={ isDuplicateTime }
+															onClick={ ( e ) => {
+																e.stopPropagation();
+																dispatch(
+																	updateLayerField( {
+																		id: layer.id,
+																		field: 'displayTime',
+																		value: layerTime[ layer?.id ],
+																	} ),
+																);
+																setIsEditing( false );
+															} } />
+
+														<Button icon={ cancelCircleFilled } onClick={ ( e ) => {
+															e.stopPropagation();
+															setIsEditing( ( prev ) => ( { ...prev, [ layer?.id ]: false } ) );
+															setLayerTime( ( prev ) => ( {
+																...prev,
+																[ layer?.id ]: layer?.displayTime,
+															} ) );
+														} } />
+													</div> ) : (
+														<div className="flex pl-3 items-center">
+															<Button icon={ edit } onClick={ ( e ) => {
+																e.stopPropagation();
+																setIsEditing( ( prev ) => ( { ...prev, [ layer?.id ]: true } ) );
+															} } />
+															<Icon icon={ arrowRight } />
+														</div>
+													) }
 											</Button>
 										</div>
 									</Tooltip>
