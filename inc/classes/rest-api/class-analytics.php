@@ -507,7 +507,7 @@ class Analytics extends Base {
 				$file_path     = get_attached_file( $attachment_id );
 		
 				if ( file_exists( $file_path ) ) {
-					$file_size = filesize( $file_path );
+					$file_size           = filesize( $file_path );
 					$video['video_size'] = round( $file_size / ( 1024 * 1024 ), 2 );
 				} else {
 					$video['video_size'] = 0;
