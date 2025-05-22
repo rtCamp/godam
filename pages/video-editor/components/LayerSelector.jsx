@@ -177,7 +177,7 @@ const LayerSelector = ( { isGFPluginActive, isWPFormsPluginActive, isCF7PluginAc
 					disabled={ ! selectedLayer }
 					onClick={ () => handleCustomiseLayer() }
 				>
-					{ __( 'Customise Layer', 'godam' ) }
+					{ __( 'Customize Layer', 'godam' ) }
 				</Button>
 			</div>
 		</Modal>
