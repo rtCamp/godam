@@ -29,6 +29,8 @@ use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Polls;
 
+use RTGODAM\Inc\Shortcodes\GoDAM_Player;
+
 /**
  * Class Plugin.
  */
@@ -48,6 +50,9 @@ class Plugin {
 		Media_Library_Ajax::get_instance();
 		Media_Tracker::get_instance();
 		Seo::get_instance();
+
+		// Load shortcodes.
+		GoDAM_Player::get_instance();
 
 		$this->load_post_types();
 		$this->load_taxonomies();
