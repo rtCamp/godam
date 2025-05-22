@@ -8,6 +8,9 @@ import './transcoding-status';
 import AttachmentsBrowser from './views/attachment-browser.js';
 import Attachments from './views/attachments.js';
 import AttachmentDetailsTwoColumn from './views/attachment-detail-two-column.js';
+import mediaFrameSelect from './views/media-frame-select.js';
+
+import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-view.js';
 
 import MediaDateRangeListViewFilter from './views/filters/media-date-range-filter-list-view.js';
 import { isFolderOrgDisabled, isUploadPage } from './utility.js';
@@ -42,6 +45,27 @@ class MediaLibrary {
 		if ( wp?.media?.view?.Attachment?.Details?.TwoColumn && AttachmentDetailsTwoColumn ) {
 			wp.media.view.Attachment.Details.TwoColumn = AttachmentDetailsTwoColumn;
 		}
+
+		if ( wp?.media?.view?.MediaFrame?.Select && mediaFrameSelect ) {
+			wp.media.view.MediaFrame.Select = mediaFrameSelect;
+		}
+	}
+
+	setupMediaLibraryRoot() {
+		if ( ! isFolderOrgDisabled() && isUploadPage() ) {
+			const mediaLibraryRoot = document.createElement( 'div' );
+			mediaLibraryRoot.id = 'rt-transcoder-media-library-root';
+			const wpbody = document.querySelector( '#wpbody' );
+			wpbody.insertBefore( mediaLibraryRoot, wpbody.firstChild );
+		}
+	}
+
+	initializeDateRangeFilter() {
+		new MediaDateRangeFilter(
+			'media-date-range-filter',
+			'media-date-range-filter-start',
+			'media-date-range-filter-end',
+		);
 	}
 
 	setupMediaLibraryRoot() {
