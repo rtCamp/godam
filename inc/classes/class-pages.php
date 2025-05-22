@@ -289,9 +289,9 @@ class Pages {
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
-				RTGODAM_URL . 'pages/build/video-editor.js',
+				RTGODAM_URL . 'pages/build/video-editor.min.js',
 				array( 'wp-element', 'wp-i18n' ),
-				filemtime( RTGODAM_PATH . '/pages/build/video-editor.js' ),
+				filemtime( RTGODAM_PATH . '/pages/build/video-editor.min.js' ),
 				true
 			);
 
@@ -366,9 +366,9 @@ class Pages {
 
 			wp_register_script(
 				'transcoder-page-script-godam',
-				RTGODAM_URL . 'pages/build/godam.js',
+				RTGODAM_URL . 'pages/build/godam.min.js',
 				array( 'wp-element', 'wp-i18n' ),
-				filemtime( RTGODAM_PATH . 'pages/build/godam.js' ),
+				filemtime( RTGODAM_PATH . 'pages/build/godam.min.js' ),
 				true
 			);
 
@@ -402,9 +402,9 @@ class Pages {
 
 			wp_register_script(
 				'transcoder-page-script-analytics',
-				RTGODAM_URL . 'pages/build/analytics.js',
+				RTGODAM_URL . 'pages/build/analytics.min.js',
 				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . 'pages/build/analytics.js' ),
+				filemtime( RTGODAM_PATH . 'pages/build/analytics.min.js' ),
 				true
 			);
 
@@ -412,9 +412,9 @@ class Pages {
 
 			wp_register_script(
 				'video-analytics-charts',
-				RTGODAM_URL . 'assets/build/js/video-analytics.js',
+				RTGODAM_URL . 'assets/build/js/video-analytics.min.js',
 				array( 'transcoder-page-script-analytics', 'd3-js' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/video-analytics.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/video-analytics.min.js' ),
 				true
 			);
 
@@ -446,9 +446,9 @@ class Pages {
 		} elseif ( $screen && $this->help_page_id === $screen->id ) {
 			wp_register_script(
 				'godam-page-script-help',
-				RTGODAM_URL . 'pages/build/help.js',
+				RTGODAM_URL . 'pages/build/help.min.js',
 				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . 'pages/build/help.js' ),
+				filemtime( RTGODAM_PATH . 'pages/build/help.min.js' ),
 				true
 			);
 
@@ -468,9 +468,9 @@ class Pages {
 
 		wp_register_script(
 			'media-library-react',
-			RTGODAM_URL . 'pages/build/media-library.js',
+			RTGODAM_URL . 'pages/build/media-library.min.js',
 			array( 'wp-element', 'wp-i18n' ),
-			filemtime( RTGODAM_PATH . '/pages/build/media-library.js' ),
+			filemtime( RTGODAM_PATH . '/pages/build/media-library.min.js' ),
 			true
 		);
 
