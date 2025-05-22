@@ -4,7 +4,7 @@ Tags: transcoder, DAM, media library, adaptive streaming, video analytics
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -145,6 +145,10 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 16. Video Analytics
 
 == Changelog ==
+
+= v1.0.7 (May 22, 2025) =
+- Fix: Update the POT creation process for translation.
+- Fix: Analytics event data for non logged-in users.
 
 = v1.0.6 (May 16, 2025) =
 - Fix: Updated translation files.
