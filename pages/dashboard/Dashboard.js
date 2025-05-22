@@ -174,6 +174,33 @@ const Dashboard = () => {
 		return () => clearInterval( checkExist );
 	}, [] );
 
+	useEffect( () => {
+		const handleResize = () => {
+			const smallSize = window.innerWidth <= 1024;
+			const responsiveOverlay = document.getElementById( 'screen-size-overlay' );
+			const dashboardContainer = document.getElementById( 'root-video-dashboard' );
+
+			if ( responsiveOverlay && dashboardContainer ) {
+				if ( smallSize ) {
+					responsiveOverlay.classList.remove( 'hidden' );
+					dashboardContainer.style.overflow = 'hidden';
+				} else {
+					responsiveOverlay.classList.add( 'hidden' );
+					dashboardContainer.style.overflow = 'auto';
+				}
+			}
+		};
+
+		// Initial check
+		handleResize();
+
+		// Add listener
+		window.addEventListener( 'resize', handleResize );
+
+		// Cleanup
+		return () => window.removeEventListener( 'resize', handleResize );
+	}, [] );
+
 	return (
 		<div className="godam-dashboard-container">
 			<GodamHeader />

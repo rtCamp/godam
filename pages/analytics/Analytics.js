@@ -322,6 +322,33 @@ const Analytics = ( { attachmentID } ) => {
 	// 	},
 	// );
 
+	useEffect( () => {
+		const handleResize = () => {
+			const smallSize = window.innerWidth <= 1024;
+			const responsiveOverlay = document.getElementById( 'screen-size-overlay' );
+			const analyticsContainer = document.getElementById( 'root-video-analytics' );
+
+			if ( responsiveOverlay && analyticsContainer ) {
+				if ( smallSize ) {
+					responsiveOverlay.classList.remove( 'hidden' );
+					analyticsContainer.style.overflow = 'hidden';
+				} else {
+					responsiveOverlay.classList.add( 'hidden' );
+					analyticsContainer.style.overflow = 'auto';
+				}
+			}
+		};
+
+		// Initial check
+		handleResize();
+
+		// Add listener
+		window.addEventListener( 'resize', handleResize );
+
+		// Cleanup
+		return () => window.removeEventListener( 'resize', handleResize );
+	}, [] );
+
 	return (
 		<div className="godam-analytics-container">
 			<GodamHeader />
