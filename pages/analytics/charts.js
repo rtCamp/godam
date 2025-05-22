@@ -405,6 +405,8 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
 		if ( windowSize && responsiveOverlay ) {
 			responsiveOverlay.classList.remove( 'hidden' );
+		} else {
+			responsiveOverlay.classList.add( 'hidden' );
 		}
 
 		if ( videoId && analyticsDataFetched && processedAnalyticsHistory ) {

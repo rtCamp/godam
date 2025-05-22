@@ -4,7 +4,7 @@
 /**
  * WordPress dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -31,10 +31,9 @@ const Dashboard = () => {
 	const { data: dashboardMetrics, isLoading: isDashboardMetricsLoading } = useFetchDashboardMetricsQuery( { siteUrl } );
 	window.dashboardMetrics = dashboardMetrics;
 
-	const { data: dashboardMetricsHistory, isLoading: isDashboardMetricsHistoryLoading } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl } );
+	const { data: dashboardMetricsHistory } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl } );
 	const {
 		data: topVideosResponse,
-		isLoading: isTopVideosLoading,
 		isFetching: isTopVideosFetching,
 	} = useFetchTopVideosQuery( { siteUrl, page: topVideosPage, limit: 10 } );
 
@@ -43,19 +42,20 @@ const Dashboard = () => {
 
 	useEffect( () => {
 		if ( dashboardMetrics?.errorType === 'invalid_key' ) {
-			const interval = setInterval( () => {
-				const container = document.getElementById( 'dashboard-container' );
-				const overlay = document.getElementById( 'api-key-overlay' );
+			const loadingEl = document.getElementById( 'loading-analytics-animation' );
+			const container = document.getElementById( 'dashboard-container' );
+			const overlay = document.getElementById( 'api-key-overlay' );
 
-				if ( container && overlay ) {
-					container.classList.add( 'blurred' );
-					container.classList.add( 'hidden' );
-					overlay.classList.remove( 'hidden' );
-					clearInterval( interval );
-				}
-			}, 100 );
-
-			return () => clearInterval( interval );
+			if ( loadingEl ) {
+				loadingEl.style.display = 'none';
+			}
+			if ( container ) {
+				container.classList.add( 'hidden' );
+				container.classList.add( 'blurred' );
+			}
+			if ( overlay ) {
+				overlay.classList.remove( 'hidden' );
+			}
 		}
 	}, [ dashboardMetrics ] );
 
@@ -133,7 +133,14 @@ const Dashboard = () => {
 		document.body.removeChild( link );
 	};
 
+	const isFirstLoadRef = useRef( true );
+
 	useEffect( () => {
+		if ( isFirstLoadRef.current ) {
+			isFirstLoadRef.current = false;
+			return;
+		}
+
 		const container = document.querySelector( '.top-media-container' );
 		if ( container ) {
 			container.scrollIntoView( { behavior: 'smooth' } );
@@ -167,8 +174,10 @@ const Dashboard = () => {
 		return () => clearInterval( checkExist );
 	}, [] );
 
-	if ( isDashboardMetricsLoading || isDashboardMetricsHistoryLoading || isTopVideosLoading ) {
-		return (
+	return (
+		<div className="godam-dashboard-container">
+			<GodamHeader />
+
 			<div id="loading-analytics-animation" className="progress-bar-wrapper">
 				<div className="progress-bar-container">
 					<div className="progress-bar">
@@ -176,12 +185,7 @@ const Dashboard = () => {
 					</div>
 				</div>
 			</div>
-		);
-	}
 
-	return (
-		<div className="godam-dashboard-container">
-			<GodamHeader />
 			<div id="api-key-overlay" className="api-key-overlay hidden">
 				<div className="api-key-message">
 					<p>
@@ -191,6 +195,12 @@ const Dashboard = () => {
 						</a>
 						{ __( ' to access the Dashboard feature', 'godam' ) }
 					</p>
+				</div>
+			</div>
+
+			<div id="screen-size-overlay" className="screen-size-overlay hidden">
+				<div className="screen-size-message">
+					<p>{ __( 'You need to use desktop to access this feature. ', 'godam' ) }</p>
 				</div>
 			</div>
 
