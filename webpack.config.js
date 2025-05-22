@@ -16,8 +16,8 @@ const sharedConfig = {
 	...defaultConfig,
 	output: {
 		path: path.resolve( process.cwd(), 'assets', 'build', 'js' ),
-		filename: '[name].js',
-		chunkFilename: '[name].js',
+		filename: '[name].min.js',
+		chunkFilename: '[name].min.js',
 	},
 	plugins: [
 		...defaultConfig.plugins
@@ -121,7 +121,8 @@ const pages = {
 	entry: entryPoints, // Dynamic entry points for each page
 	output: {
 		path: path.resolve( __dirname, './pages/build' ), // Output directory
-		filename: '[name].js', // Each entry gets its own output file
+		filename: '[name].min.js', // Each entry gets its own output file
+		chunkFilename: '[name].min.js',
 	},
 	module: {
 		rules: [
