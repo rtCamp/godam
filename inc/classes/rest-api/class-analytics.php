@@ -513,7 +513,10 @@ class Analytics extends Base {
 					$video['video_size'] = 0;
 				}
 				$video['title']         = get_the_title( $attachment_id );
-				$video['thumbnail_url'] = wp_get_attachment_image_url( $attachment_id, 'medium' );
+				$custom_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+				$default_thumb    = wp_get_attachment_image_url( $attachment_id, 'medium' );
+
+				$video['thumbnail_url'] = $custom_thumbnail ?: $default_thumb ?: null;
 			}
 		}
 
