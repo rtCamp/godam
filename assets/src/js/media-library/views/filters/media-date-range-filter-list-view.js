@@ -10,7 +10,7 @@
 
 const $ = jQuery;
 
-class MediaDateRangeFilter {
+class MediaDateRangeListViewFilter {
 	constructor( inputId, startDateId, endDateId ) {
 		this.inputElement = document.getElementById( inputId );
 		this.startDateField = document.getElementById( startDateId );
@@ -19,6 +19,11 @@ class MediaDateRangeFilter {
 
 		if ( ! this.inputElement || ! this.startDateField || ! this.endDateField ) {
 			return;
+		}
+
+		// Set default text if input is empty
+		if ( ! this.inputElement.value ) {
+			this.inputElement.value = 'Date Range';
 		}
 
 		this.initializeDatePicker();
@@ -107,21 +112,21 @@ class MediaDateRangeFilter {
 			autoUpdateInput: false,
 		} );
 
-		const daterangepickerContainer = $( this.inputElement ).data( 'daterangepicker' ).container;
+		const rangesContainer = $( this.inputElement ).data( 'daterangepicker' ).container.find( '.ranges' );
 
 		// Create "Clear" button
 		const clearButton = $( '<button>' )
 			.text( 'Clear' )
 			.addClass( 'btn btn-sm btn-light daterangepicker-clear' )
 			.css( {
-				display: 'block',
-				width: '100%',
+				width: '140px',
 				padding: '8px',
 				textAlign: 'center',
 				background: '#f8f9fa',
 				border: '1px solid #ddd',
 				cursor: 'pointer',
-				marginTop: '8px',
+				fontSize: '12px',
+				fontWeight: '600',
 			} )
 			.on( 'click', () => {
 				this.clearFilter();
@@ -129,12 +134,12 @@ class MediaDateRangeFilter {
 			} );
 
 		// Append "Clear" button inside the main dropdown
-		daterangepickerContainer.append( clearButton );
+		rangesContainer.append( clearButton );
 		$( this.inputElement ).on( 'apply.daterangepicker', this.updateFilter.bind( this ) );
 		$( this.inputElement ).on( 'show.daterangepicker', this.updatePickerPosition.bind( this ) );
 		$( this.inputElement ).on( 'cancel.daterangepicker', this.clearFilter.bind( this ) );
 	}
 }
 
-export default MediaDateRangeFilter;
+export default MediaDateRangeListViewFilter;
 

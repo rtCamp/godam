@@ -1,23 +1,24 @@
 {
-  "name": "rtcamp/godam",
-  "description": "1.0.0",
-  "type": "wordpress-plugin",
-  "require-dev": {
-      "wp-coding-standards/wpcs": "^3.1",
-      "phpcompatibility/phpcompatibility-wp": "^2.1",
-      "automattic/vipwpcs": "^3.0",
-      "phpunit/phpunit": "^9.6",
-      "wp-phpunit/wp-phpunit": "^6.2",
-      "yoast/phpunit-polyfills": "^1.0"
-  },
-  "config": {
-      "allow-plugins": {
-          "dealerdirect/phpcodesniffer-composer-installer": true
-      }
-  },
-  "scripts": {
-    "pre-commit": [
-      "npm run lint:staged"
-    ]
-  }
+	"name": "rtcamp/godam",
+	"type": "wordpress-plugin",
+	"require-dev": {
+		"wp-coding-standards/wpcs": "^3.1",
+		"phpcompatibility/phpcompatibility-wp": "^2.1",
+		"automattic/vipwpcs": "^3.0",
+		"phpunit/phpunit": "^9.6",
+		"wp-phpunit/wp-phpunit": "^6.2",
+		"yoast/phpunit-polyfills": "^1.0",
+		"wp-cli/i18n-command": "^v2.6"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"scripts": {
+		"pre-commit": [
+		"npm run lint:staged"
+		],
+		"pot": "WP_CLI_PHP_ARGS='-d memory_limit=1024M' ./vendor/bin/wp i18n make-pot . --exclude=\"assets/src,assets/node_modules,tests,vendor\" ./languages/godam.pot"
+	}
 }

@@ -4,8 +4,8 @@
  *
  * @since      1.0.0
  *
- * @package    Transcoder
- * @subpackage Transcoder/Admin
+ * @package GoDAM
+ * @subpackage GoDAM/Admin
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -15,8 +15,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since       1.0.0
  *
- * @package     Transcoder
- * @subpackage  Transcoder/Admin
+ * @package    GoDAM
+ * @subpackage GoDAM/Admin
  */
 class RTGODAM_Transcoder_Admin {
 
@@ -51,10 +51,10 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		// Get the api key key from the site options.
-		$api_key = get_site_option( 'rtgodam-api-key', '' );
+		$api_key = get_option( 'rtgodam-api-key', '' );
 
 		// Get plugin activation time.
-		$activation_time       = get_site_option( 'rtgodam_plugin_activation_time', 0 );
+		$activation_time       = get_option( 'rtgodam_plugin_activation_time', 0 );
 		$days_since_activation = ( time() - $activation_time ) / DAY_IN_SECONDS;
 
 		// If more than 3 days have passed and no api key is activated, show scheduled notice.
@@ -75,7 +75,7 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		// Get stored usage data.
-		$usage_data = get_site_option( 'rtgodam-usage', array() );
+		$usage_data = get_option( 'rtgodam-usage', array() );
 		$usage_data = isset( $usage_data[ $api_key ] ) ? (array) $usage_data[ $api_key ] : null;
 
 		if ( empty( $usage_data ) ) {

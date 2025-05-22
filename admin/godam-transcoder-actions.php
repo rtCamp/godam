@@ -4,8 +4,8 @@
  *
  * @since      1.0.7
  *
- * @package    Transcoder
- * @subpackage Transcoder/Actions
+ * @package GoDAM
+ * @subpackage GoDAM/Actions
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -101,3 +101,75 @@ function rtgodam_register_transcoded_url_meta() {
 }
 
 add_action( 'init', 'rtgodam_register_transcoded_url_meta' );
+
+
+
+if ( ! function_exists( 'rtt_set_video_thumbnail' ) ) {
+
+	/**
+	 * Set the video thumbnail
+	 *
+	 * @since   1.0.0
+	 *
+	 * @param number $id rtMedia activity ID.
+	 */
+	function rtt_set_video_thumbnail( $id ) {
+		$media_type    = rtmedia_type( $id );
+		$attachment_id = rtmedia_media_id( $id );      // Get the wp attachment ID.
+		$thumbnail     = rtgodam_filter_input( INPUT_POST, 'rtmedia-thumbnail', FILTER_SANITIZE_URL );
+		if ( 'video' === $media_type && ! empty( $thumbnail ) ) {
+
+			if ( ! is_numeric( $thumbnail ) ) {
+				$file_url = $thumbnail;
+				/* for WordPress backward compatibility */
+				if ( function_exists( 'wp_get_upload_dir' ) ) {
+					$uploads = wp_get_upload_dir();
+				} else {
+					$uploads = wp_upload_dir();
+				}
+				if ( 0 === strpos( $file_url, $uploads['baseurl'] ) ) {
+					$final_file_url = $file_url;
+				} else {
+					$final_file_url = $uploads['baseurl'] . '/' . $file_url;
+				}
+
+				$final_file_url = apply_filters( 'transcoded_file_url', $final_file_url, $attachment_id );
+
+				update_post_meta( $attachment_id, '_rt_media_video_thumbnail', $thumbnail );
+			}
+
+			$model = new RTMediaModel();
+			$model->update( array( 'cover_art' => $final_file_url ), array( 'id' => intval( $id ) ) );
+			rtt_update_activity_after_thumb_set( $id );
+
+		}
+	}
+}
+
+add_action( 'rtmedia_after_update_media', 'rtt_set_video_thumbnail', 12 );
+
+/**
+ * Set the cover art/video thumbnail for the videos which are not uploaded from the rtMedia activity
+ *
+ * @since 1.0.7
+ * @param string $thumb_url     Video thumbnail URL.
+ * @param int    $attachment_id Attachment ID of the media/video for which thumbnail has to be set.
+ */
+function rtt_update_wp_media_thumbnail( $thumb_url, $attachment_id ) {
+	if ( class_exists( 'RTMediaModel' ) ) {
+		$model = new RTMediaModel();
+		$media = $model->get( array( 'media_id' => $attachment_id ) );
+
+		if ( ! empty( $media ) && ! empty( $media[0] ) ) {
+			$attachment_id = $media[0]->media_id;
+			$media_type    = $media[0]->media_type;
+			$cover_art     = $media[0]->cover_art;
+
+			if ( 'video' === $media_type && empty( $cover_art ) && ! empty( $thumb_url ) ) {
+				$model->update( array( 'cover_art' => $thumb_url ), array( 'media_id' => $attachment_id ) );
+			}
+		}
+	}
+}
+
+add_action( 'rtgodam_transcoded_thumb_added', 'rtt_update_wp_media_thumbnail', 10, 2 );

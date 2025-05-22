@@ -62,11 +62,11 @@ input, textarea, select {
   @apply flex h-full bg-gray-100;
 }
 
-.video-editor-container aside {
+.video-editor-container .aside {
   @apply h-full w-[400px];
 }
 
-.video-editor-container aside #sidebar-content {
+.video-editor-container .aside #sidebar-content {
   @apply overflow-auto bg-white rounded-xl shadow;
   min-height: calc(100vh - var(--wp-admin--admin-bar--height, 0) - 24px);
   max-height: calc(100vh - var(--wp-admin--admin-bar--height, 0) - 24px);
@@ -80,10 +80,10 @@ input, textarea, select {
   /* @apply text-blue-500; */
 }
 
-#add-layer-btn,
+/* #add-layer-btn,
 #add-hotspot-btn {
   @apply w-full justify-center;
-}
+} */
 
 .components-tooltip {
   @apply whitespace-nowrap;
@@ -411,9 +411,9 @@ input, textarea, select {
 	@apply text-[11px] uppercase font-medium mb-2 block;
 }
 
-#easydam-player-settings .components-base-control__label {
+/* #easydam-player-settings .components-base-control__label {
 	@apply font-semibold;
-}
+} */
 
 #easydam-player-settings .easydam-label {
 	@apply text-[11px] uppercase font-semibold mb-2 block;
@@ -545,6 +545,11 @@ input, textarea, select {
 	background-color: #6b7280;
 	position: absolute;
 	animation: oscillate 2.5s infinite ease-in-out;
+}
+
+.poll-container {
+	pointer-events: none;
+	padding: 32px 30%;
 }
 
 @keyframes oscillate {

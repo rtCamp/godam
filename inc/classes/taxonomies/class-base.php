@@ -2,7 +2,7 @@
 /**
  * Base class to register taxonomy.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc\Taxonomies;

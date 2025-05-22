@@ -2,7 +2,7 @@
 /**
  * Register REST API endpoints for meta fields.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc\REST_API;
@@ -61,6 +61,19 @@ class Meta_Rest_Fields {
 		register_post_meta(
 			'attachment',
 			'rtgodam_media_video_thumbnail',
+			array(
+				'type'          => 'string',
+				'single'        => true,
+				'show_in_rest'  => true,
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		register_post_meta(
+			'attachment',
+			'rtgodam_transcoding_job_id',
 			array(
 				'type'          => 'string',
 				'single'        => true,

@@ -2,7 +2,7 @@
 /**
  * Class to handle file system.
  *
- * @package transcoder
+ * @package GoDAM
  */
 
 namespace RTGODAM\Inc;
@@ -42,9 +42,13 @@ class Blocks {
 	 */
 	public function register_blocks() {
 
-		// Register example-block Block.
+		// Register blocks.
 		register_block_type(
 			RTGODAM_PATH . '/assets/build/blocks/godam-player/'
+		);
+
+		register_block_type(
+			RTGODAM_PATH . '/assets/build/blocks/godam-audio/'
 		);
 	}
 }

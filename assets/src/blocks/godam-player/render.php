@@ -18,7 +18,6 @@ $loop          = ! empty( $attributes['loop'] );
 $muted         = ! empty( $attributes['muted'] );
 $poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
 $preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$plays_inline  = ! empty( $attributes['playsInline'] );
 $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
@@ -38,6 +37,7 @@ $sources        = array();
 $transcoded_url = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true ) : '';
 $video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
 $video_src_type = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
+$job_id         = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
 
 if ( ! empty( $transcoded_url ) ) {
 	$sources = array(
@@ -60,19 +60,21 @@ if ( ! empty( $transcoded_url ) ) {
 }
 
 // Build the video setup options for data-setup.
-$video_setup = wp_json_encode(
-	array(
-		'controls'   => $controls,
-		'autoplay'   => $autoplay,
-		'loop'       => $loop,
-		'muted'      => $muted,
-		'preload'    => $preload,
-		'poster'     => empty( $poster ) ? $poster_image : $poster,
-		'fluid'      => true,
-		'sources'    => $sources,
-		'controlBar' => $control_bar_settings, // contains settings specific to control bar.
-	)
+$video_setup = array(
+	'controls'    => $controls,
+	'autoplay'    => $autoplay,
+	'loop'        => $loop,
+	'muted'       => $muted,
+	'preload'     => $preload,
+	'poster'      => empty( $poster ) ? $poster_image : $poster,
+	'fluid'       => true,
+	'sources'     => $sources,
+	'playsinline' => true,
 );
+if ( ! empty( $control_bar_settings ) ) {
+	$video_setup['controlBar'] = $control_bar_settings; // contains settings specific to control bar.
+}
+$video_setup = wp_json_encode( $video_setup );
 
 $video_config = wp_json_encode(
 	array(
@@ -107,11 +109,11 @@ $ads_layers = array_filter(
 );
 $ad_tag_url = '';
 
-$ad_server = isset( $easydam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $easydam_meta_data['videoConfig']['adServer'] ) : '';
+$ad_server = isset( $easydam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $easydam_meta_data['videoConfig']['adServer'] ) : 'self-hosted';
 
-if ( ! empty( $ad_server ) ) :
+if ( ! empty( $ad_server ) && 'ad-server' === $ad_server ) :
 	$ad_tag_url = isset( $easydam_meta_data['videoConfig']['adTagURL'] ) ? $easydam_meta_data['videoConfig']['adTagURL'] : '';
-elseif ( ! empty( $ads_layers ) ) :
+elseif ( ! empty( $ads_layers ) && 'self-hosted' === $ad_server ) :
 	$ad_tag_url = get_rest_url( get_current_blog_id(), '/godam/v1/adTagURL/' ) . $attachment_id;
 endif;
 
@@ -140,6 +142,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 			data-id="<?php echo esc_attr( $attachment_id ); ?>" 
 			data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 			data-controls = "<?php echo esc_attr( $video_setup ); ?>"
+			data-job_id="<?php echo esc_attr( $job_id ); ?>"
 		>
 			<?php
 			foreach ( $sources as $source ) :
@@ -178,20 +181,80 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 		<?php
 		if ( ! empty( $easydam_meta_data['layers'] ) ) :
 			foreach ( $easydam_meta_data['layers'] as $layer ) :
-				// FORM layer.
-				if ( isset( $layer['type'] ) && 'form' === $layer['type'] && ! empty( $layer['gf_id'] ) ) :
+
+				$form_type = ! empty( $layer['form_type'] ) ? $layer['form_type'] : 'gravity';
+
+					// FORM layer.
+				if ( isset( $layer['type'] ) && 'form' === $layer['type'] ) :
+					if ( 'gravity' === $form_type && ! empty( $layer['gf_id'] ) ) :
+						?>
+						<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+							<div class="form-container">
+								<?php
+									$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
+									echo do_shortcode(
+										sprintf(
+											"[gravityform id='%d' title='false' description='false' ajax='true'%s]",
+											intval( $layer['gf_id'] ),
+											$theme ? " theme='$theme'" : ''
+										)
+									);
+								?>
+							</div>
+						</div>
+						<?php
+					elseif ( 'cf7' === $form_type && ! empty( $layer['cf7_id'] ) ) :
+						$form_theme = ! empty( $layer['theme'] ) ? $layer['theme'] : 'godam';
+						?>
+						<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+							<div class="form-container <?php echo esc_attr( 'godam' === $form_theme ? 'rtgodam-wpcf7-form' : '' ); ?>">
+								<?php
+									echo do_shortcode(
+										sprintf(
+											"[contact-form-7 id='%d' title='false' ajax='true']",
+											intval( $layer['cf7_id'] )
+										)
+									);
+								?>
+							</div>
+						</div>
+						<?php
+					elseif ( 'wpforms' === $form_type && ! empty( $layer['wpform_id'] ) ) :
+						?>
+						<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+							<div class="form-container">
+								<?php
+									echo do_shortcode(
+										sprintf(
+											"[wpforms id='%d' title='false' description='false' ajax='true']",
+											intval( $layer['wpform_id'] )
+										)
+									);
+								?>
+							</div>
+						</div>
+						<?php
+					endif;
+					// Poll layer.
+				elseif ( isset( $layer['type'] ) && 'poll' === $layer['type'] ) :
 					?>
 					<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-						<div class="form-container">
+						<div class="form-container poll-container">
 							<?php
-								$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
-								echo do_shortcode(
-									sprintf(
-										"[gravityform id='%d' title='false' description='false' ajax='true'%s]",
-										intval( $layer['gf_id'] ),
-										$theme ? " theme='$theme'" : ''
-									)
-								);
+							$poll_id = ! empty( $layer['poll_id'] ) ? intval( $layer['poll_id'] ) : 0;
+							echo do_shortcode( "[poll id='$poll_id']" );
+							?>
+						</div>
+					</div>
+					<?php
+					// Poll layer.
+				elseif ( isset( $layer['type'] ) && 'poll' === $layer['type'] ) :
+					?>
+					<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+						<div class="form-container poll-container">
+							<?php
+							$poll_id = ! empty( $layer['poll_id'] ) ? intval( $layer['poll_id'] ) : 0;
+							echo do_shortcode( "[poll id='$poll_id']" );
 							?>
 						</div>
 					</div>
@@ -205,7 +268,9 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 								<?php echo wp_kses_post( $layer['text'] ); ?>
 							</div>
 						<?php elseif ( 'html' === $layer['cta_type'] && ! empty( $layer['html'] ) ) : ?>
-							<?php echo wp_kses_post( $layer['html'] ); ?>
+							<div class="easydam-layer--cta-html">
+								<?php echo wp_kses_post( $layer['html'] ); ?>
+							</div>
 						<?php elseif ( 'image' === $layer['cta_type'] && ! empty( $layer['image'] ) ) : ?>
 							<?php echo wp_kses_post( rtgodam_image_cta_html( $layer ) ); ?>
 						<?php endif; ?>
@@ -217,16 +282,15 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 					<div
 						id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
 						class="easydam-layer hidden hotspot-layer"
-						<?php
-						if ( ! empty( $layer['bg_color'] ) ) :
-							?>
-							style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>"<?php endif; ?>
+						<?php if ( ! empty( $layer['bg_color'] ) ) : ?>
+							style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>"
+						<?php endif; ?>
 					>
 					</div>
 					<?php
 				endif;
-				?>
-			<?php endforeach; ?>
+			endforeach; 
+			?>
 		<?php endif; ?>
 	</div>
 

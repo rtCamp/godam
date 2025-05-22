@@ -9,9 +9,10 @@ import { __ } from '@wordpress/i18n';
 import Customize from '../../assets/src/images/customize.png';
 import Folder from '../../assets/src/images/folder.png';
 import WebDesign from '../../assets/src/images/web-design.png';
-import GodamHeader from '../godam/GodamHeader';
+import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { Icon } from '@wordpress/components';
 import { chevronRight } from '@wordpress/icons';
+import GoDAMFooter from '../godam/components/GoDAMFooter.jsx';
 
 const App = () => {
 	const content = [
@@ -24,7 +25,7 @@ const App = () => {
 				},
 				{
 					title: __( 'Video Settings', 'godam' ),
-					link: 'settings-and-configuration/video-settingz/',
+					link: 'settings-and-configuration/video-settings/',
 				},
 				{
 					title: __( 'Configuring the Video Block', 'godam' ),
@@ -173,6 +174,8 @@ const App = () => {
 					</div>
 				) ) }
 			</div>
+
+			<GoDAMFooter />
 		</div>
 	);
 };

@@ -1,91 +1,73 @@
 /**
  * External dependencies
  */
-
 import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
 import Editor from '@monaco-editor/react';
 
 /**
  * WordPress dependencies
  */
-import { Button, SelectControl, ToggleControl, ComboboxControl, TextareaControl, Modal, Panel, PanelBody, Notice, TextControl } from '@wordpress/components';
-import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
+import { Button, ToggleControl, Modal, Panel, PanelBody, Notice } from '@wordpress/components';
+import { arrowLeft, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
-import LayerControl from '../LayerControls';
-import ColorPickerButton from '../ColorPickerButton';
 
-const templateOptions = [
-	{
-		value: 'orbital',
-		label: 'Orbital',
-	},
-	{
-		value: 'gravity',
-		label: 'Gravity',
-	},
-];
+import GravityForm from '../forms/GravityForm';
+import WPForm from '../forms/WPForm';
+import CF7 from '../forms/CF7';
+import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 
 const FormLayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
-	const gforms = useSelector( ( state ) => state.videoReducer.gforms );
-	const forms = gforms.map( ( form ) => ( {
-		value: form.id,
-		label: form.title,
-	} ) );
 
-	const [ formHTML, setFormHTML ] = useState( '' );
-
-	const restURL = window.godamRestRoute.url || '';
+	function getFormPluginName( formType ) {
+		switch ( formType ) {
+			case 'gravity':
+				return 'Gravity Forms';
+			case 'wpforms':
+				return 'WPForms';
+			case 'cf7':
+				return 'Contact Form 7';
+			default:
+				return 'Gravity Forms';
+		}
+	}
 
 	const handleDeleteLayer = () => {
 		dispatch( removeLayer( { id: layer.id } ) );
 		goBack();
 	};
 
-	const changeFormID = ( formID ) => {
-		dispatch( updateLayerField( { id: layer.id, field: 'gf_id', value: formID } ) );
-	};
-
-	useEffect( () => {
-		if ( layer.gf_id ) {
-			fetchGravityForm( layer.gf_id, layer.theme );
-		}
-	}, [
-		layer.gf_id,
-		layer.theme,
-	] );
-
-	// Fetch the Gravity Form HTML
-	const fetchGravityForm = ( formId, theme ) => {
-		axios.get( window.pathJoin( [ restURL, '/godam/v1/gform' ] ), {
-			params: { id: formId, theme },
-		} ).then( ( response ) => {
-			setFormHTML( response.data );
-		} ).catch( ( error ) => {
-			console.error( error );
-		} );
-	};
-
 	// If we want to disable the premium layers the we can use this code
 	// const isValidAPIKey = window?.videoData?.valid_api_key;
-
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
+	const isPluginActive = ( formType ) => {
+		switch ( formType ) {
+			case 'gravity':
+				return Boolean( window?.videoData?.gf_active );
+			case 'wpforms':
+				return Boolean( window?.videoData?.wpforms_active );
+			case 'cf7':
+				return Boolean( window?.videoData?.cf7_active );
+			default:
+				return false;
+		}
+	};
+
 	return (
 		<>
-			<div className="flex justify-between items-center pb-3 border-b mb-3">
+			<div className="flex justify-between items-center border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="font-semibold">{ __( 'Form layer at', 'godam' ) } { layer.displayTime }s</p>
+				<p className="text-base">{ getFormPluginName( layer?.form_type ) }{ __( ' layer at', 'godam' ) } { layer.displayTime }s</p>
 				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
 				{ isOpen && (
 					<Modal title={ __( 'Delete layer', 'godam' ) } onRequestClose={ () => setOpen( false ) }>
@@ -113,30 +95,29 @@ const FormLayer = ( { layerID, goBack } ) => {
 			}
 
 			{
-				forms.length > 0 &&
-					<GravityFormSelector disabled={ ! isValidAPIKey } className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
+				layer.form_type === 'gravity' &&
+				<GravityForm layerID={ layer.id } />
 			}
 
-			<SelectControl
-				className="mb-4"
-				label={ __( 'Select form theme', 'godam' ) }
-				options={ templateOptions }
-				value={ layer.theme }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
-				}
-				disabled={ ! isValidAPIKey }
-			/>
+			{
+				layer.form_type === 'cf7' &&
+				<CF7 layerID={ layer.id } />
+			}
+
+			{
+				layer.form_type === 'wpforms' &&
+				<WPForm layerID={ layer.id } />
+			}
 
 			<ToggleControl
-				className="mb-4"
+				className="mb-4 godam-toggle"
 				label={ __( 'Allow user to skip', 'godam' ) }
 				checked={ layer.allow_skip }
 				onChange={ ( value ) =>
 					dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
 				}
 				help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
-				disabled={ ! isValidAPIKey }
+				disabled={ ! isValidAPIKey || ! isPluginActive( layer.form_type ) }
 			/>
 
 			<Panel className="-mx-4 border-x-0">
@@ -153,12 +134,12 @@ const FormLayer = ( { layerID, goBack } ) => {
 						label={ __( 'Layer background color', 'godam' ) }
 						enableAlpha={ true }
 						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
-						disabled={ ! isValidAPIKey }
+						disabled={ ! isValidAPIKey || ! isPluginActive( layer.form_type ) }
 					/>
 
 					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'godam' ) }</label>
 
-					<div className={ ! isValidAPIKey ? 'pointer-events-none opacity-50' : '' }>
+					<div className={ ( ! isValidAPIKey || ! isPluginActive( layer.form_type ) ) ? 'pointer-events-none opacity-50' : '' }>
 						<Editor
 							id="custom-css"
 							className="code-editor"
@@ -174,109 +155,8 @@ const FormLayer = ( { layerID, goBack } ) => {
 					</div>
 				</PanelBody>
 			</Panel>
-
-			<LayerControl>
-				<>
-					<div
-						style={ {
-							backgroundColor: layer.bg_color,
-						} } className="easydam-layer">
-						<div className="form-container" dangerouslySetInnerHTML={ { __html: formHTML } } />
-					</div>
-					{ layer.allow_skip &&
-					<Button
-						className="skip-button"
-						variant="primary"
-						icon={ chevronRight }
-						iconSize="18"
-						iconPosition="right"
-						onClick={ () => setOpen( false ) }
-					>
-						{ __( 'Skip', 'godam' ) }
-					</Button>
-					}
-				</>
-			</LayerControl>
 		</>
 	);
 };
-
-function GravityFormSelector( { className, disabled, formID, forms, handleChange } ) {
-	const [ form, setForm ] = useState( formID );
-	const [ filteredOptions, setFilteredOptions ] = useState( forms );
-
-	const setFormData = ( value ) => {
-		setForm( value );
-		handleChange( value );
-	};
-
-	return (
-		<>
-			<ComboboxControl
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-				label={ __( 'Select gravity form', 'godam' ) }
-				className={ `${ className } ${ disabled ? 'disabled' : '' }` }
-				value={ form }
-				onChange={ setFormData }
-				options={ filteredOptions }
-				onFilterValueChange={ ( inputValue ) => {
-					setFilteredOptions(
-						forms.filter( ( _form ) =>
-							_form.label
-								.toLowerCase()
-								.startsWith( inputValue.toLowerCase() ),
-						),
-					);
-				} }
-			/>
-		</>
-	);
-}
-
-function CustomCssInjector( { value, handleChange } ) {
-	const [ customCss, setCustomCss ] = useState( value );
-
-	useEffect( () => {
-		// Create a <style> element
-		const styleElement = document.createElement( 'style' );
-		styleElement.type = 'text/css';
-		styleElement.id = 'custom-css';
-
-		// Append the <style> element to the <head>
-		document.head.appendChild( styleElement );
-
-		// Cleanup: Remove <style> on component unmount
-		return () => {
-			const existingStyle = document.getElementById( 'custom-css' );
-			if ( existingStyle ) {
-				document.head.removeChild( existingStyle );
-			}
-		};
-	}, [] );
-
-	useEffect( () => {
-		// Inject CSS whenever it changes
-		const styleElement = document.getElementById( 'custom-css' );
-		if ( styleElement ) {
-			styleElement.innerHTML = customCss;
-		}
-	}, [ customCss ] );
-
-	return (
-		<>
-			<TextareaControl
-				className="mb-4"
-				label={ __( 'Custom CSS', 'godam' ) }
-				placeholder={ __( '.classname { border: 1px solid blue; }', 'godam' ) }
-				value={ customCss }
-				onChange={ ( val ) => {
-					setCustomCss( val );
-					handleChange( val );
-				} }
-			/>
-		</>
-	);
-}
 
 export default FormLayer;

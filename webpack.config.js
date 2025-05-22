@@ -21,6 +21,13 @@ const sharedConfig = {
 	},
 	plugins: [
 		...defaultConfig.plugins
+			/**
+			 * Remove the RTL CSS plugin from the default configuration.
+			 *
+			 * RTL CSS is not currently in use, and its output was being incorrectly placed in the JS build directory.
+			 * This plugin can be re-enabled in the future if RTL support is needed.
+			 */
+			.filter( ( plugin ) => plugin.constructor.name !== 'RtlCssPlugin' )
 			.map(
 				( plugin ) => {
 					if ( plugin.constructor.name === 'MiniCssExtractPlugin' ) {
@@ -47,10 +54,12 @@ const styles = {
 	entry: () => {
 		const entries = {};
 
-		const dir = './assets/src/css';
-		fs.readdirSync( dir ).forEach( ( fileName ) => {
-			const fullPath = `${ dir }/${ fileName }`;
-			if ( ! fs.lstatSync( fullPath ).isDirectory() ) {
+		const CSS_DIR = path.resolve( process.cwd(), 'assets', 'src', 'css' );
+
+		fs.readdirSync( CSS_DIR ).forEach( ( fileName ) => {
+			const fullPath = `${ CSS_DIR }/${ fileName }`;
+			// Skip directories and files starting with _
+			if ( ! fs.lstatSync( fullPath ).isDirectory() && ! fileName.startsWith( '_' ) ) {
 				entries[ fileName.replace( /\.[^/.]+$/, '' ) ] = fullPath;
 			}
 		} );
@@ -82,13 +91,6 @@ const adminJS = {
 	},
 };
 
-const videoAnalyticsJS = {
-	...sharedConfig,
-	entry: {
-		'video-analytics': path.resolve( process.cwd(), 'assets', 'src', 'js', 'video-analytics.js' ),
-	},
-};
-
 const mediaLibrary = {
 	...sharedConfig,
 	entry: {
@@ -116,11 +118,12 @@ fs.readdirSync( pagesDir ).forEach( ( folder ) => {
 	}
 } );
 
+entryPoints[ 'page-css' ] = path.resolve( process.cwd(), 'pages', 'index.js' );
+
 const pages = {
-	mode: 'development',
 	entry: entryPoints, // Dynamic entry points for each page
 	output: {
-		path: path.resolve( __dirname, './pages/build' ), // Output directory
+		path: path.resolve( __dirname, './assets/build/pages' ), // Output directory
 		filename: '[name].js', // Each entry gets its own output file
 	},
 	module: {
@@ -157,6 +160,7 @@ const pages = {
 		react: 'React',
 		'react-dom': 'ReactDOM',
 		'@wordpress/element': [ 'wp', 'element' ], // For WordPress compatibility
+		'@wordpress/i18n': [ 'wp', 'i18n' ],
 	},
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
@@ -166,7 +170,6 @@ const pages = {
 module.exports = [
 	mainJS,
 	adminJS,
-	videoAnalyticsJS,
 	mediaLibrary,
 	deactivationJS,
 	styles, // Do not remove this.
