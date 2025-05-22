@@ -13,7 +13,7 @@ const carouselSlides = [
 		description: 'Visualize performance, track engagement, and get real-time insights across all your media.',
 	},
 	{
-		tip: 'See how many users played your videos each day — track growth at a glance.',
+		tip: 'Your analytics are updated every 15 minutes with the latest data.',
 	},
 	{
 		tip: 'Monitor average engagement and watch time to understand what content works best.',
