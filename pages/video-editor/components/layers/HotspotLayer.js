@@ -38,7 +38,7 @@ import LayerControls from '../LayerControls';
 import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const HotspotLayer = ( { layerID, goBack } ) => {
+const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
@@ -46,10 +46,15 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 
 	const hotspots = layer?.hotspots || [];
 
+	const layers = useSelector( ( state ) => state.videoReducer.layers );
+
 	// Delete modal
 	const [ isDeleteModalOpen, setDeleteModalOpen ] = useState( false );
 	// Track expanded hotspot
 	const [ expandedHotspotIndex, setExpandedHotspotIndex ] = useState( null );
+	const [ isEditing, setIsEditing ] = useState( false );
+	const [ layerTime, setLayerTime ] = useState( layer?.id );
+	const [ initialTimePeriod, setInitialTimePeriod ] = useState( '' );
 
 	const containerRef = useRef( null );
 
@@ -116,51 +121,141 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 		return () => window.removeEventListener( 'resize', recalcRatio );
 	}, [] );
 
+	useEffect( () => {
+		setLayerTime( layer?.displayTime );
+		setInitialTimePeriod( layer?.displayTime );
+	}, [] );
+
 	// If we want to disable the premium layers the we can use this code
 	// const isValidAPIKey = window?.videoData?.valid_api_key;
 
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
+	const isDuplicateTime = layers?.some( ( singleLayer ) => Number( singleLayer.displayTime ) === Number( layerTime ) && singleLayer?.id !== layer?.id );
+
 	return (
 		<>
-			<div className="flex justify-between items-center pb-3 border-b mb-3">
-				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="font-semibold">
-					{ __( 'Hotspot Layer at', 'godam' ) } { layer.displayTime }s
-				</p>
-				<Button
-					icon={ trash }
-					isDestructive
-					onClick={ () => setDeleteModalOpen( true ) }
-				/>
-				{ isDeleteModalOpen && (
-					<Modal
-						title={ __( 'Delete Hotspot Layer', 'godam' ) }
-						onRequestClose={ () => setDeleteModalOpen( false ) }
-					>
-						<div className="flex justify-between items-center gap-3">
-							<Button
-								className="w-full justify-center"
-								isDestructive
-								variant="primary"
-								onClick={ () => {
-									handleDeleteLayer();
-									setDeleteModalOpen( false );
+			<div>
+				<div className="flex justify-between items-center pb-3 border-b mb-3">
+					<Button icon={ arrowLeft } onClick={ goBack } />
+					<p className="font-semibold flex items-center gap-1">
+						{ __( 'Hotspot Layer at', 'godam' ) } { isEditing ? (
+							<TextControl
+								__nextHasNoMarginBottom={ true }
+								__next40pxDefaultSize={ false }
+								value={ layerTime }
+								style={ { width: 60, height: 20 } }
+								onClick={ ( e ) => e.stopPropagation()
+								}
+								type="number"
+								onChange={ ( value ) => {
+									// Remove leading zeros
+									let normalizedValue = value.replace( /^0+(?=\d)/, '' );
+
+									// Limit to 2 decimal places
+									if ( normalizedValue.includes( '.' ) ) {
+										const [ intPart, decimalPart ] = normalizedValue.split( '.' );
+										normalizedValue = intPart + '.' + decimalPart.slice( 0, 2 );
+									}
+
+									// Convert to number for validation
+									const floatValue = parseFloat( normalizedValue );
+
+									if ( floatValue > duration ) {
+										return;
+									}
+
+									// Reject empty or over-duration values
+									if ( normalizedValue === '' || isNaN( floatValue ) ) {
+										setLayerTime( normalizedValue );
+										dispatch( updateLayerField( {
+											id: layer.id,
+											field: 'displayTime',
+											value: initialTimePeriod,
+										} ) );
+										return;
+									}
+
+									setLayerTime( normalizedValue );
+
+									// Check for duplicate timestamp
+									const isTimestampExists = layers?.some(
+										( singleLayer ) =>
+											Number( singleLayer.displayTime ) === floatValue &&
+																			singleLayer?.id !== layer?.id,
+									);
+
+									if ( isTimestampExists ) {
+										dispatch( updateLayerField( {
+											id: layer.id,
+											field: 'displayTime',
+											value: initialTimePeriod,
+										} ) );
+									} else {
+										dispatch( updateLayerField( {
+											id: layer.id,
+											field: 'displayTime',
+											value: normalizedValue,
+										} ) );
+									}
 								} }
-							>
-								{ __( 'Delete Layer', 'godam' ) }
-							</Button>
-							<Button
-								className="w-full justify-center"
-								variant="secondary"
-								onClick={ () => setDeleteModalOpen( false ) }
-							>
-								{ __( 'Cancel', 'godam' ) }
-							</Button>
-						</div>
-					</Modal>
-				) }
+								min={ 0 }
+								max={ duration }
+								step={ 0.1 }
+							/>
+						) : <button onClick={ () => setIsEditing( true ) } className="cursor-pointer bg-transparent text-inherit p-0">{ layer.displayTime }s</button> }
+					</p>
+					<Button
+						icon={ trash }
+						isDestructive
+						onClick={ () => setDeleteModalOpen( true ) }
+					/>
+					{ isDeleteModalOpen && (
+						<Modal
+							title={ __( 'Delete Hotspot Layer', 'godam' ) }
+							onRequestClose={ () => setDeleteModalOpen( false ) }
+						>
+							<div className="flex justify-between items-center gap-3">
+								<Button
+									className="w-full justify-center"
+									isDestructive
+									variant="primary"
+									onClick={ () => {
+										handleDeleteLayer();
+										setDeleteModalOpen( false );
+									} }
+								>
+									{ __( 'Delete Layer', 'godam' ) }
+								</Button>
+								<Button
+									className="w-full justify-center"
+									variant="secondary"
+									onClick={ () => setDeleteModalOpen( false ) }
+								>
+									{ __( 'Cancel', 'godam' ) }
+								</Button>
+							</div>
+						</Modal>
+					) }
+				</div>
+				{ isDuplicateTime && isEditing && <Notice
+					className="mb-4"
+					status="error"
+					isDismissible={ true }
+				>
+					{ __( 'A layer already exists at this timestamp!', 'godam' ) }
+				</Notice>
+				}
+				{
+					isEditing && '' === layerTime && <Notice
+						className="mb-4"
+						status="error"
+						isDismissible={ true }
+					>
+						{ __( 'The timestamp cannot be an empty value!', 'godam' ) }
+					</Notice>
+				}
 			</div>
 
 			{
