@@ -9,11 +9,10 @@
 	}
 
 	&__item {
-
+		width: 100%;
 		padding: 1rem;
 		border: 1px solid rgba(225, 225, 225, 1);
 		border-radius: 0.5rem;
-
 		display: flex;
 		align-items: center;
 		gap: 1.5rem;
@@ -32,11 +31,27 @@
 			border-image-slice: 1;
 		}
 
-		&__image {
+		&__image-container {
+			position: relative;
 			flex: 1;
 			aspect-ratio: 1;
 			max-height: 7.5rem;
 			border-radius: 0.75rem;
+
+			&__image {
+				flex: 1;
+				aspect-ratio: 1;
+				max-height: 7.5rem;
+				border-radius: 0.75rem;
+			}
+
+			&__form-icon {
+				position: absolute;
+				bottom: -0.5rem;
+				right: -0.5rem;
+				width: 4rem;
+				height: 4rem;
+			}
 		}
 
 		&__content {
@@ -45,7 +60,7 @@
 			h3 {
 				margin-top: 0;
 				margin-bottom: 0.75rem;
-
+				text-align: left;
 				font-size: 1.25rem;
 			}
 
@@ -53,8 +68,19 @@
 				font-size: 1rem;
 				line-height: 1.375rem;
 				margin: 0;
-
 				color: rgba(119, 119, 119, 1);
+				text-align: left;
+			}
+		}
+
+		&__message {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			margin-top: 0.5rem;
+
+			svg {
+				fill: oklch(68.1% 0.162 75.834);
 			}
 		}
 	}

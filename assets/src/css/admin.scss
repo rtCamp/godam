@@ -96,7 +96,8 @@ $media-frame-width: calc(300px + 2 * 24px);
 .toplevel_page_rtgodam,
 .godam_page_rtgodam_video_editor,
 .godam_page_rtgodam_help,
-.godam-analytics-container {
+.godam-analytics-container
+.godam-dashboard-container {
 	--wp-admin-theme-color: #ab3a6c;
 
 	button,

@@ -29,6 +29,16 @@ import 'quill/dist/quill.snow.css';
  * Internal dependencies
  */
 import GoDAM from '../../../../assets/src/images/GoDAM.png';
+import Share from '../../../../assets/src/images/share.svg';
+import CopyIcon from '../../../../assets/src/images/clipboard.svg';
+import Facebook from '../../../../assets/src/images/facebook.svg';
+import LinkedIn from '../../../../assets/src/images/linkedin.svg';
+import Reddit from '../../../../assets/src/images/reddit.svg';
+import Telegram from '../../../../assets/src/images/telegram.svg';
+import Twitter from '../../../../assets/src/images/twitter-x.svg';
+import Whatsapp from '../../../../assets/src/images/whatsapp.svg';
+import Complete from '../../../../assets/src/images/check.svg';
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * Global variables
@@ -47,8 +57,16 @@ function GODAMPlayer( videoRef = null ) {
 		videos = videoRef.querySelectorAll( '.easydam-player.video-js' );
 	}
 
+	const isDisplayingLayers = {};
+
+	videos.forEach( ( video ) => {
+		isDisplayingLayers[ video.dataset.instanceId ] = false;
+	} );
+
 	videos.forEach( ( video ) => {
 		video.classList.remove( 'vjs-hidden' );
+
+		const currentPlayerVideoInstanceId = video.dataset.instanceId;
 
 		video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
 
@@ -69,7 +87,23 @@ function GODAMPlayer( videoRef = null ) {
 				preview: false,
 			};
 
-		const isPreviewEnabled = videoSetupOptions.preview;
+		if ( ! ( 'controlBar' in videoSetupControls ) ) {
+			videoSetupControls.controlBar = {
+				playToggle: true,
+				volumePanel: true,
+				currentTimeDisplay: true,
+				timeDivider: true,
+				durationDisplay: true,
+				fullscreenToggle: true,
+				subsCapsButton: true,
+				skipButtons: {
+					forward: 10,
+					backward: 10,
+				},
+			};
+		}
+
+		const isPreviewEnabled = videoSetupOptions?.preview;
 
 		const player = videojs( video, videoSetupControls );
 
@@ -81,7 +115,7 @@ function GODAMPlayer( videoRef = null ) {
 			if ( captionControlBtn ) {
 				const qualityControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-quality-menu-wrapper' );
 				if ( qualityControlBtn ) {
-					qualityControlBtn.style.setProperty( 'right', '80px' );
+					qualityControlBtn.classList.add( 'mobile-right-80' );
 				}
 			}
 		} );
@@ -143,7 +177,7 @@ function GODAMPlayer( videoRef = null ) {
 			player.currentTime( 0 );
 			const controlBarElement = player.controlBar.el();
 			if ( controlBarElement ) {
-				controlBarElement.classList.add( 'hide' );
+				controlBarElement?.classList.add( 'hide' );
 			}
 			watcher.value = true;
 			player.play();
@@ -152,7 +186,7 @@ function GODAMPlayer( videoRef = null ) {
 		function stopPreview() {
 			const controlBarElement = player.controlBar.el();
 			if ( controlBarElement ) {
-				controlBarElement.classList.remove( 'hide' );
+				controlBarElement?.classList.remove( 'hide' );
 			}
 			const muteButton = document.querySelector( '.mute-button' );
 			if ( muteButton && muteButton.classList.contains( 'mute-button' ) ) {
@@ -180,7 +214,7 @@ function GODAMPlayer( videoRef = null ) {
 			}
 			watcher.value = false;
 			const controlBarElement = player.controlBar.el();
-			if ( controlBarElement.classList.contains( 'hide' ) ) {
+			if ( controlBarElement?.classList.contains( 'hide' ) ) {
 				controlBarElement.classList.remove( 'hide' );
 			}
 			const muteButton = document.querySelector( '.mute-button' );
@@ -226,9 +260,186 @@ function GODAMPlayer( videoRef = null ) {
 			stopPreview();
 		} );
 
+		player.jobId = '';
+
+		const Button = videojs.getComponent( 'Button' );
+
+		class GodamShareButton extends Button {
+			constructor( p, options ) {
+				super( p, options );
+				this.controlText( 'Share' );
+			}
+
+			// Set the button content
+			createEl() {
+				const el = super.createEl();
+				const img = document.createElement( 'img' );
+
+				img.src = Share;
+
+				img.id = 'share-icon';
+				img.alt = 'Share';
+				img.className = 'share-icon';
+				el.appendChild( img );
+				return el;
+			}
+
+			copyToClipboard( inputId ) {
+				const input = document.getElementById( inputId );
+				const button = input.nextElementSibling; // assuming button is right after input
+
+				const setSuccessStyle = () => {
+					button.style.backgroundColor = '#4caf50'; // green background
+					button.querySelector( 'img' ).src = Complete;
+				};
+
+				const resetStyle = () => {
+					button.style.backgroundColor = 'transparent'; // reset background
+					button.querySelector( 'img' ).src = CopyIcon;
+				};
+
+				// Common feedback function to handle success
+				const doFeedback = () => {
+					setSuccessStyle();
+					setTimeout( resetStyle, 2000 ); // revert after 2 seconds
+				};
+
+				if ( navigator.clipboard && navigator.clipboard.writeText ) {
+					navigator.clipboard
+						.writeText( input.value )
+						.then( () => {
+							doFeedback(); // Use the common feedback function
+						} )
+						.catch( () => {
+							// silently fail
+						} );
+				} else {
+					input.select();
+					input.setSelectionRange( 0, 99999 ); // for mobile
+					try {
+						document.execCommand( 'copy' );
+						doFeedback(); // Use the common feedback function
+					} catch ( err ) {
+						// silently fail
+					}
+				}
+			}
+
+			// Add click event for playback
+			handleClick( event ) {
+				event.preventDefault();
+				const shareModal = document.createElement( 'div' );
+				const videoContainer = this.player().el_.closest(
+					'.easydam-video-container',
+				);
+				if ( videoContainer ) {
+					videoContainer.appendChild( shareModal );
+				}
+				shareModal.className = 'share-modal-container';
+				const html = `
+				<div class="share-modal-message">
+					<div class="share-modal-header">
+						<h2>Share Media</h2>
+						<p>Copy the links below to share the selected media files.</p>
+					</div>
+
+					<div class="share-buttons">
+						<a class="facebook social-icon" target="blank"><img src=${ Facebook } alt='Facebook icon' height={24} width={24}</a>
+						<a class="twitter social-icon" target="blank"><img src=${ Twitter } alt='Twitter icon' height={24} width={24}</a>
+						<a class="linkedin social-icon" target="blank"><img src=${ LinkedIn } alt='Linkedin icon' height={24} width={24}</a>
+						<a class="reddit social-icon" target="blank"><img src=${ Reddit } alt='Reddit icon' height={24} width={24}</a>
+						<a class="whatsapp social-icon" target="blank"><img src=${ Whatsapp } alt='Whatsapp icon' height={24} width={24}</a>
+						<a class="telegram social-icon" target="blank"><img src=${ Telegram } alt='Telegram icon' height={24} width={24}</a>
+					</div>
+					
+					<div class='share-input-container'>
+						<label>Page Link</label>
+						<div class="share-modal-input-group">
+							<input id="page-link" type="text" value="${ window.godamData.api_base }/web/video/${ this.player().jobId }" readonly />
+							<button id="copy-page-link" class="copy-button">
+								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
+							</button>
+						</div>
+					</div>
+
+					<div class='share-input-container'>
+						<label>Embed</label>
+						<div class="share-modal-input-group">
+							<input id="embed-code" type="text" value='<iframe src="${ window.godamData.api_base }/web/embed/${ this.player().jobId }"></iframe>' readonly />
+							<button id="copy-embed-code" class="copy-button">
+								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
+							</button>
+						</div>
+					</div>
+
+					<div class="share-modal-footer">
+						<button id="cancel-button">Cancel</button>
+					</div>
+				</div>
+			`;
+
+				shareModal.innerHTML = DOMPurify.sanitize( html );
+
+				shareModal
+					.querySelector( '#copy-page-link' )
+					.addEventListener( 'click', () => this.copyToClipboard( 'page-link' ) );
+
+				shareModal
+					.querySelector( '#copy-embed-code' )
+					.addEventListener( 'click', () => this.copyToClipboard( 'embed-code' ) );
+
+				shareModal
+					.querySelector( '#cancel-button' )
+					.addEventListener( 'click', function() {
+						const cancelButton = shareModal.querySelector( '#cancel-button' );
+						cancelButton.closest( '.share-modal-container' ).remove();
+					} );
+
+				const link = encodeURI(
+					`${ window.godamData.api_base }/web/video/${ this.player().jobId }`,
+				);
+				const msg = encodeURIComponent( 'Check out this video!' );
+
+				const fb = document.querySelector( '.facebook' );
+				fb.href = `https://www.facebook.com/share.php?u=${ link }`;
+
+				const twitter = document.querySelector( '.twitter' );
+				twitter.href = `http://twitter.com/share?&url=${ link }&text=${ msg }`;
+
+				const linkedIn = document.querySelector( '.linkedin' );
+				linkedIn.href = `https://www.linkedin.com/sharing/share-offsite/?url=${ link }&text=${ msg }`;
+
+				const reddit = document.querySelector( '.reddit' );
+				reddit.href = `http://www.reddit.com/submit?url=${ link }&title=${ msg }`;
+
+				const whatsapp = document.querySelector( '.whatsapp' );
+				whatsapp.href = `https://api.whatsapp.com/send?text=${ msg }: ${ link }`;
+
+				const telegram = document.querySelector( '.telegram' );
+				telegram.href = `https://telegram.me/share/url?url=${ link }&text=${ msg }`;
+			}
+		}
+
+		// Register the new component
+		videojs.registerComponent( 'GodamShareButton', GodamShareButton );
+
+		// Add the button to the control bar after the player is ready
+		player.ready( function() {
+			player.jobId = video.dataset.job_id; // Store the result when it's available
+
+			const controlBar = player.getChild( 'controlBar' );
+			if ( controlBar && player.jobId !== '' ) {
+				controlBar.addChild(
+					'GodamShareButton',
+					{},
+					controlBar.children().length - 1,
+				);
+			}
+		} );
+
 		player.ready( function() {
 			const controlBarSettings =
-				videoSetupControls.controlBar;
+				videoSetupControls?.controlBar;
 
 			// Appearance settings
 
@@ -245,19 +456,19 @@ function GODAMPlayer( videoRef = null ) {
 			// Update classes
 			playButton.removeClass( ...alignments ); // Remove all alignment classes
 			if (
-				alignments.includes( `${ controlBarSettings.playButtonPosition }-align` )
+				alignments.includes( `${ controlBarSettings?.playButtonPosition }-align` )
 			) {
-				playButton.addClass( `${ controlBarSettings.playButtonPosition }-align` ); // Add the selected alignment class
+				playButton.addClass( `${ controlBarSettings?.playButtonPosition }-align` ); // Add the selected alignment class
 			}
 
 			// Control bar and volume panel handling
 			const controlBar = player.controlBar;
 
-			if ( ! controlBarSettings.volumePanel ) {
+			if ( ! controlBarSettings?.volumePanel ) {
 				controlBar.removeChild( 'volumePanel' );
 			}
 
-			if ( controlBarSettings.brandingIcon || ! validAPIKey ) {
+			if ( controlBarSettings?.brandingIcon || ! validAPIKey ) {
 				const CustomPlayButton = videojs.getComponent( 'Button' );
 
 				class CustomButton extends CustomPlayButton {
@@ -271,7 +482,7 @@ function GODAMPlayer( videoRef = null ) {
 						el.className += ' vjs-custom-play-button';
 						const img = document.createElement( 'img' );
 
-						if ( controlBarSettings.customBrandImg?.length ) {
+						if ( controlBarSettings?.customBrandImg?.length ) {
 							img.src = controlBarSettings.customBrandImg;
 						} else if ( godamSettings?.brandImage ) {
 							img.src = godamSettings.brandImage;
@@ -299,7 +510,7 @@ function GODAMPlayer( videoRef = null ) {
 		} );
 
 		// Find and initialize layers from easydam_meta
-		const layers = videoSetupOptions.layers || [];
+		const layers = videoSetupOptions?.layers || [];
 		const formLayers = [];
 		const hotspotLayers = [];
 
@@ -334,12 +545,24 @@ function GODAMPlayer( videoRef = null ) {
 					() => layer.layerElement === layerElement,
 				);
 
+				let skipText = '';
+				if ( 'form' === layer.type ) {
+					skipText = 'Skip Form';
+				} else if ( 'cta' === layer.type ) {
+					skipText = 'Skip';
+				} else if ( 'poll' === layer.type ) {
+					skipText = 'Skip Poll';
+				} else {
+					skipText = 'Skip';
+				}
+
 				if ( ! existingLayer ) {
 					formLayers.push( {
 						layerElement,
 						displayTime: parseFloat( layer.displayTime ),
 						show: true,
 						allowSkip: layer.allow_skip !== undefined ? layer.allow_skip : true,
+						skipText,
 					} );
 				}
 			} else if ( layer.type === 'hotspot' ) {
@@ -354,13 +577,13 @@ function GODAMPlayer( videoRef = null ) {
 			}
 
 			// Allow closing or skipping layers
-			formLayers.forEach( ( layerObj, index ) => {
+			formLayers.forEach( ( layerObj ) => {
 				let skipButton = layerObj.layerElement.querySelector( '.skip-button' );
 
 				// Check if skip button already exists.
 				if ( ! skipButton ) {
 					skipButton = document.createElement( 'button' );
-					skipButton.textContent = 'Skip';
+					skipButton.textContent = layerObj.skipText;
 					skipButton.classList.add( 'skip-button' );
 
 					const arrowIcon = document.createElement( 'i' );
@@ -377,7 +600,8 @@ function GODAMPlayer( videoRef = null ) {
 					mutations.forEach( () => {
 						if (
 							layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ||
-							! layerObj.layerElement.querySelector( 'form.wp-polls-form' )
+							layerObj.layerElement.querySelector( '.wpforms-confirmation-container-full' ) ||
+							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -391,6 +615,8 @@ function GODAMPlayer( videoRef = null ) {
 				observer.observe( layerObj.layerElement, {
 					childList: true,
 					subtree: true,
+					attributes: true,
+					attributeFilter: [ 'class' ],
 				} );
 
 				skipButton.addEventListener( 'click', () => {
@@ -398,9 +624,9 @@ function GODAMPlayer( videoRef = null ) {
 					layerObj.layerElement.classList.add( 'hidden' );
 					player.controls( true );
 					player.play();
-					isDisplayingLayer = false;
+					isDisplayingLayers[ currentPlayerVideoInstanceId ] = false;
 					// Increment the current form layer.
-					if ( index === currentFormLayerIndex ) {
+					if ( layerObj === formLayers[ currentFormLayerIndex ] ) {
 						currentFormLayerIndex++;
 					}
 				} );
@@ -411,23 +637,34 @@ function GODAMPlayer( videoRef = null ) {
 
 		if ( ! isPreviewEnabled ) {
 			layers.forEach( ( layer ) => {
-				handleLayerDisplay( layer );
+				if ( layer.type === 'form' ) {
+					if ( window.godamPluginDependencies?.gravityforms ) {
+						handleLayerDisplay( layer );
+					}
+				} else if ( layer.type === 'poll' ) {
+					if ( window.godamPluginDependencies?.wp_polls ) {
+						handleLayerDisplay( layer );
+					}
+				} else {
+					handleLayerDisplay( layer );
+				}
 			} );
 		}
 
 		formLayers.sort( ( a, b ) => a.displayTime - b.displayTime );
 
 		let currentFormLayerIndex = 0;
-		let isDisplayingLayer = false;
+		isDisplayingLayers[ currentPlayerVideoInstanceId ] = false;
 
 		// Time update
 		player.on( 'timeupdate', () => {
 			const currentTime = player.currentTime();
 
 			// form/cta handling only the current form layer (if any)
-			if ( ! isDisplayingLayer && currentFormLayerIndex < formLayers.length ) {
+			if ( ! isDisplayingLayers[ currentPlayerVideoInstanceId ] && currentFormLayerIndex < formLayers.length ) {
 				const layerObj = formLayers[ currentFormLayerIndex ];
 				// If we've reached its displayTime, show it
+
 				if (
 					layerObj.show &&
           currentTime >= layerObj.displayTime &&
@@ -436,7 +673,7 @@ function GODAMPlayer( videoRef = null ) {
 					layerObj.layerElement.classList.remove( 'hidden' );
 					player.pause();
 					player.controls( false );
-					isDisplayingLayer = true;
+					isDisplayingLayers[ currentPlayerVideoInstanceId ] = true;
 				}
 			}
 
@@ -682,6 +919,131 @@ function GODAMPlayer( videoRef = null ) {
 			} );
 			updateHotspotPositions( player, hotspotLayers );
 		} );
+
+		if ( ! window.godamKeyboardHandlerInitialized ) {
+			// Flag to prevent multiple initializations
+			window.godamKeyboardHandlerInitialized = true;
+
+			document.addEventListener( 'keydown', ( event ) => {
+				// Skip if we're in a form field or input element to avoid interfering with typing
+				if ( event.target.tagName === 'INPUT' ||
+					event.target.tagName === 'TEXTAREA' ||
+					event.target.isContentEditable ) {
+					return;
+				}
+
+				// Find the most appropriate player to control
+				let activePlayer = null;
+
+				// First priority: player that contains the active element
+				document.querySelectorAll( '.easydam-player.video-js' ).forEach( ( playerEl ) => {
+					const vjsPlayer = videojs.getPlayer( playerEl );
+					if ( playerEl.contains( playerEl.ownerDocument.activeElement ) ) {
+						activePlayer = vjsPlayer;
+					}
+				} );
+
+				// Second priority: visible player if no player has focus
+				document
+					.querySelectorAll( '.easydam-player.video-js' )
+					.forEach( ( playerEl ) => {
+						const doc = playerEl.ownerDocument;
+
+						// Only proceed if no activePlayer and body has focus
+						if ( ! activePlayer && doc.activeElement === doc.body ) {
+							const rect = playerEl.getBoundingClientRect();
+							const isVisible =
+              rect.top >= 0 &&
+              rect.left >= 0 &&
+              rect.bottom <=
+                ( window.innerHeight || doc.documentElement.clientHeight ) &&
+              rect.right <=
+                ( window.innerWidth || doc.documentElement.clientWidth );
+
+							if ( isVisible ) {
+								const vjsPlayer = videojs.getPlayer( playerEl );
+								if ( vjsPlayer ) {
+									activePlayer = vjsPlayer;
+								}
+							}
+						}
+					} );
+
+				// If no active player was found, exit
+				if ( ! activePlayer ) {
+					return;
+				}
+
+				const element = activePlayer.el_;
+
+				const activeVideo = element.querySelector( 'video' );
+				const activeVideoInstanceId = activeVideo.dataset.instanceId;
+
+				if ( isDisplayingLayers[ activeVideoInstanceId ] ) {
+					return;
+				}
+
+				const key = event.key.toLowerCase();
+				switch ( key ) {
+					case 'f':
+						// Toggle fullscreen
+						event.preventDefault();
+						if ( activePlayer.isFullscreen() ) {
+							activePlayer.exitFullscreen();
+						} else {
+							activePlayer.requestFullscreen();
+						}
+						break;
+
+					case 'arrowleft':
+						// Seek backward 5 seconds
+						event.preventDefault();
+						activePlayer.currentTime( Math.max( 0, activePlayer.currentTime() - 5 ) );
+
+						// Show a visual indicator for seeking backward
+						showIndicator( activePlayer.el(), 'backward', '<i class="fa-solid fa-backward"></i> 5s' );
+						break;
+
+					case 'arrowright':
+						// Seek forward 5 seconds
+						event.preventDefault();
+						activePlayer.currentTime( activePlayer.currentTime() + 5 );
+
+						// Show a visual indicator for seeking forward
+						showIndicator( activePlayer.el(), 'forward', '5s <i class="fa-solid fa-forward"></i>' );
+						break;
+
+					case ' ':
+					case 'spacebar': // Added explicit 'spacebar' case for broader browser compatibility
+						// Toggle play/pause
+						event.preventDefault(); // prevent page scroll
+						if ( activePlayer.paused() ) {
+							activePlayer.play();
+
+							// Visual indicator for play
+							showIndicator( activePlayer.el(), 'play-indicator', '<i class="fa-solid fa-play"></i>' );
+						} else {
+							activePlayer.pause();
+
+							// Visual indicator for pause
+							showIndicator( activePlayer.el(), 'pause-indicator', '<i class="fa-solid fa-pause"></i>' );
+						}
+						break;
+				}
+			} );
+		}
+
+		// Helper function to show indicators
+		function showIndicator( playerEl, className, html ) {
+			// Remove any existing indicators first
+			playerEl.querySelectorAll( '.vjs-seek-indicator' ).forEach( ( el ) => el.remove() );
+
+			const indicator = document.createElement( 'div' );
+			indicator.className = `vjs-seek-indicator ${ className }`;
+			indicator.innerHTML = html;
+			playerEl.appendChild( indicator );
+			setTimeout( () => indicator.remove(), 500 );
+		}
 
 		// Prevent video resume if a form/CTA is visible
 		player.on( 'play', () => {

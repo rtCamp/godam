@@ -113,7 +113,7 @@ class RTGODAM_Transcoder_Handler {
 	 */
 	public function __construct( $no_init = false ) {
 
-		$this->api_key          = get_site_option( 'rtgodam-api-key' );
+		$this->api_key          = get_option( 'rtgodam-api-key' );
 		$this->easydam_settings = get_option( 'rtgodam-settings', array() );
 
 		$default_settings = array(
@@ -149,7 +149,7 @@ class RTGODAM_Transcoder_Handler {
 		}
 
 		if ( $this->api_key ) {
-			$usage_info = get_site_option( 'rtgodam-usage' );
+			$usage_info = get_option( 'rtgodam-usage' );
 
 			if ( isset( $usage_info ) && is_array( $usage_info ) && array_key_exists( $this->api_key, $usage_info ) ) {
 				if ( is_object( $usage_info[ $this->api_key ] ) && isset( $usage_info[ $this->api_key ]->status ) && 'Active' === $usage_info[ $this->api_key ]->status ) {
@@ -203,7 +203,6 @@ class RTGODAM_Transcoder_Handler {
 				preg_match( '/video|audio/i', $metadata['mime_type'], $type_array ) ||
 				in_array( $metadata['mime_type'], $this->allowed_mimetypes, true )
 			) &&
-			! in_array( $metadata['mime_type'], array( 'audio/mp3' ), true ) &&
 			! in_array( $type, $not_allowed_type, true )
 		) {
 
@@ -227,12 +226,11 @@ class RTGODAM_Transcoder_Handler {
 			$job_for = 'wp-media';
 
 			// Media settings.
-			$rtgodam_watermark           = $this->easydam_settings['video']['watermark'];
-			$rtgodam_use_watermark_image = $this->easydam_settings['video']['use_watermark_image'];
-			$rtgodam_watermark_text      = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
-			$rtgodam_watermark_url       = esc_url( $this->easydam_settings['video']['watermark_url'] );
-			$rtgodam_abs_resolutions     = $this->easydam_settings['video']['video_quality'] ?? array();
-			$rtgodam_abs_resolutions     = wp_json_encode( $rtgodam_abs_resolutions );
+			$rtgodam_watermark              = $this->easydam_settings['video']['watermark'];
+			$rtgodam_use_watermark_image    = $this->easydam_settings['video']['use_watermark_image'];
+			$rtgodam_watermark_text         = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
+			$rtgodam_watermark_url          = esc_url( $this->easydam_settings['video']['watermark_url'] );
+			$rtgodam_video_compress_quality = $this->easydam_settings['video']['video_compress_quality'] ?? 80;
 
 			$watermark_to_use = array();
 
@@ -245,11 +243,12 @@ class RTGODAM_Transcoder_Handler {
 				}
 			}
 
-			$callback_url = RTGODAM_TRANSCODER_CALLBACK_URL;
-
 			if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) || empty( RTGODAM_TRANSCODER_CALLBACK_URL ) ) {
-				return $wp_metadata;
+				include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+				define( 'RTGODAM_TRANSCODER_CALLBACK_URL', RTGODAM_Transcoder_Rest_Routes::get_callback_url() );
 			}
+
+			$callback_url = RTGODAM_TRANSCODER_CALLBACK_URL;
 
 			/**
 			 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
@@ -273,7 +272,8 @@ class RTGODAM_Transcoder_Handler {
 						'thumbnail_count' => $options_video_thumb,
 						'stream'          => true,
 						'watermark'       => boolval( $rtgodam_watermark ),
-						'resolutions'     => $rtgodam_abs_resolutions,
+						'resolutions'     => array( 'auto' ),
+						'video_quality'   => $rtgodam_video_compress_quality,
 					),
 					$watermark_to_use
 				),
@@ -367,7 +367,7 @@ class RTGODAM_Transcoder_Handler {
 	public function update_usage( $key ) {
 
 		$response = rtgodam_verify_api_key( $key );
-		update_site_option( 'rtgodam-usage', array( $key => (object) $response['data'] ) );
+		update_option( 'rtgodam-usage', array( $key => (object) $response['data'] ) );
 
 		return $response;
 	}
@@ -536,16 +536,36 @@ class RTGODAM_Transcoder_Handler {
 			$this->nofity_transcoding_failed( $post_array['job_id'], sprintf( 'Failed saving of Thumbnail for %1$s.', $post_array['file_name'] ) );
 		}
 
+		if ( class_exists( 'RTMediaModel' ) ) {
+			$model    = new RTMediaModel();
+			$media    = $model->get( array( 'media_id' => $post_id ) );
+			$media_id = $media[0]->id;
+
+			$this->media_author             = $media[0]->media_author;
+			$this->uploaded['context']      = $media[0]->context;
+			$this->uploaded['context_id']   = $media[0]->context_id;
+			$this->uploaded['media_author'] = $media[0]->media_author;
+		}
+
+		update_post_meta( $post_id, '_rt_media_source', $post_thumbs_array['job_for'] );
+		update_post_meta( $post_id, '_rt_media_thumbnails', $upload_thumbnail_array );
+
 		update_post_meta( $post_id, 'rtgodam_media_source', $post_thumbs_array['job_for'] );
 		update_post_meta( $post_id, 'rtgodam_media_thumbnails', $upload_thumbnail_array );
 
 		do_action( 'rtgodam_transcoded_thumbnails_added', $post_id );
 
-		if ( $largest_thumb ) {
+		if ( $largest_thumb_url ) {
 
 			$is_retranscoding_job = get_post_meta( $post_id, 'rtgodam_retranscoding_sent', true );
 
 			if ( ! $is_retranscoding_job || rtgodam_is_override_thumbnail() ) {
+				update_post_meta( $post_id, '_rt_media_video_thumbnail', $largest_thumb_url );
+
+				if ( class_exists( 'RTMediaModel' ) ) {
+					$model->update( array( 'cover_art' => $largest_thumb ), array( 'media_id' => $post_id ) );
+					update_activity_after_thumb_set( $media_id );
+				}
 
 				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $largest_thumb );
 			}

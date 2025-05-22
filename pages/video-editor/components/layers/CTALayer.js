@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useDispatch, useSelector } from 'react-redux';
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * WordPress dependencies
@@ -26,6 +27,21 @@ import ImageCTA from '../cta/ImageCTA';
 import HtmlCTA from '../cta/HtmlCTA';
 import LayerControls from '../LayerControls';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
+
+// A DOMPurify config similar to what wp_kses_post() allows
+const wpKsesAllowed = {
+	ALLOWED_TAGS: [
+		'a', 'abbr', 'acronym', 'b', 'blockquote', 'cite', 'code', 'del', 'em', 'i',
+		'q', 'strike', 'strong', 'br', 'p', 'ul', 'ol', 'li', 'span', 'div', 'img',
+		'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre', 'hr', 'table', 'thead', 'tbody',
+		'tr', 'th', 'td', 'video', 'audio', 'source', 'track', 'button',
+	],
+	ALLOWED_ATTR: [
+		'href', 'title', 'alt', 'src', 'class', 'id', 'style', 'rel', 'target',
+		'name', 'width', 'height', 'align',
+	],
+	ALLOW_DATA_ATTR: false,
+};
 
 const CTALayer = ( { layerID, goBack } ) => {
 	const [ isOpen, setOpen ] = useState( false );
@@ -86,20 +102,18 @@ const CTALayer = ( { layerID, goBack } ) => {
 	const imageCtaHtml = () => {
 		return `<div class="${ 'portrait' === layer?.imageCtaOrientation ? 'vertical-image-cta-container' : 'image-cta-container' }">
 					<img
-						src="${ imageCtaUrl }" 
+						src="${ imageCtaUrl }"
 						alt="CTA ad"
 						height="300"
 						width="250"
-						style="opacity: ${ layer?.imageOpacity || 1 }" 
+						style="opacity: ${ layer?.imageOpacity || 1 }"
 					/>
 					<div class="image-cta-description">
 						${ layer?.imageText ? `<h2>${ layer.imageText }</h2>` : '' }
 						${ layer?.imageDescription ? `<p>${ layer.imageDescription }</p>` : '' }
-						<button class="image-cta-btn">
-							<a href="${ layer?.imageLink || '/' }" target="_blank">
-								${ layer?.imageCtaButtonText || 'Buy Now' }
-							</a>
-						</button>
+						<a class="image-cta-btn" href="${ layer?.imageLink || '/' }" target="_blank">
+							${ layer?.imageCtaButtonText || __( 'Buy Now', 'godam' ) }
+						</a>
 					</div>
    				 </div>`;
 	};
@@ -196,7 +210,9 @@ const CTALayer = ( { layerID, goBack } ) => {
 						</div>
 					) }
 					{ layer?.cta_type === 'html' && (
-						<div className="easydam-layer" dangerouslySetInnerHTML={ { __html: formHTML } } style={ { backgroundColor: layer.bg_color } } />
+						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>
+							<div className="easydam-layer--cta-html" dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( formHTML, wpKsesAllowed ) } } />
+						</div>
 					) }
 					{ layer?.cta_type === 'image' && (
 						<div className="easydam-layer" style={ { backgroundColor: layer.bg_color } }>

@@ -29,9 +29,6 @@ const slice = createSlice( {
 					forward: 10,
 					backward: 10,
 				},
-				progressControl: {
-					vertical: true, // Prevent horizontal volume slider
-				},
 				//custom controls
 				brandingIcon: false,
 				appearanceColor: godamSettings?.brandColor ? godamSettings?.brandColor : '#2b333fb3',
@@ -49,6 +46,8 @@ const slice = createSlice( {
 		currentTab: 'layers',
 		loading: false,
 		gforms: [],
+		cf7Forms: [],
+		wpforms: [],
 		gformPluginActive: true,
 	},
 	reducers: {
@@ -112,6 +111,18 @@ const slice = createSlice( {
 		setGravityFormsPluginActive: ( state, action ) => {
 			state.gformPluginActive = action.payload;
 		},
+		setCF7Forms: ( state, action ) => {
+			state.cf7Forms = action.payload;
+		},
+		SetCF7PluginActive: ( state, action ) => {
+			state.cf7PluginActive = action.payload;
+		},
+		setWPForms: ( state, action ) => {
+			state.wpforms = action.payload;
+		},
+		setWPFormPluginActive: ( state, action ) => {
+			state.wpFormPluginActive = action.payload;
+		},
 	},
 } );
 
@@ -127,5 +138,9 @@ export const {
 	setLoading,
 	setGravityForms,
 	setGravityFormsPluginActive,
+	setCF7Forms,
+	SetCF7PluginActive,
+	setWPForms,
+	setWPFormPluginActive,
 } = slice.actions;
 export default slice.reducer;

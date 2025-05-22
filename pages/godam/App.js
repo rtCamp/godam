@@ -1,3 +1,4 @@
+
 /**
  * External dependencies
  */
@@ -6,15 +7,17 @@ import { useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { useState, useEffect } from '@wordpress/element';
 import { cog, video } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
+import { useState, useEffect } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import Skeleton from './components/Skeleton.jsx';
 import GodamHeader from './components/GoDAMHeader.jsx';
+import GoDAMFooter from './components/GoDAMFooter.jsx';
 
 import GeneralSettings from './components/tabs/GeneralSettings/GeneralSettings.jsx';
 import VideoSettings from './components/tabs/VideoSettings/VideoSettings.jsx';
@@ -25,13 +28,13 @@ import { setMediaSettings } from './redux/slice/media-settings.js';
 const TABS = [
 	{
 		id: 'general-settings',
-		label: 'General Settings',
+		label: __( 'General Settings', 'godam' ),
 		component: GeneralSettings,
 		icon: cog,
 	},
 	{
 		id: 'video-settings',
-		label: 'Video Settings',
+		label: __( 'Video Settings', 'godam' ),
 		component: VideoSettings,
 		icon: video,
 	},
@@ -75,6 +78,7 @@ const App = () => {
 					{ activeTabData && <activeTabData.component /> }
 				</div>
 			</div>
+			<GoDAMFooter />
 		</div>
 	);
 };

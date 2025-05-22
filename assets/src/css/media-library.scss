@@ -73,6 +73,38 @@
 				overflow: hidden;
 			}
 		}
+
+		.paid-feature {
+			position: relative;
+
+			.button {
+				&-secondary {
+
+					transition: all 0.2s ease;
+					&:hover {
+						transform: scale(1);
+						background: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
+						color: #fff;
+						-webkit-text-fill-color: #fff
+					}
+				}
+			}
+			
+			span {
+				position: absolute;
+				right: -8px;
+				top: -8px;
+				width: 1.5rem;
+				height: 1.5rem;
+				font-size: 1rem;
+				background: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				border-radius: 100px;
+				color: #fff;
+			}
+		}
 	}
 }
 

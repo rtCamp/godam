@@ -131,9 +131,9 @@ const Appearance = () => {
 	const openCustomBtnImg = () => {
 		setSelectedCustomBgImg( true );
 		const fileFrame = wp.media( {
-			title: 'Select Custom Background Image',
+			title: __( 'Select Custom Background Image', 'godam' ),
 			button: {
-				text: 'Use this Background Image',
+				text: __( 'Use this Background Image', 'godam' ),
 			},
 			library: {
 				type: 'image', // Restrict to images only
@@ -165,9 +165,9 @@ const Appearance = () => {
 	const openBrandMediaPicker = () => {
 		setSelectedBrandImage( true );
 		const fileFrame = wp.media( {
-			title: 'Select Brand Image',
+			title: __( 'Select Brand Image', 'godam' ),
 			button: {
-				text: 'Use this brand image',
+				text: __( 'Use this brand image', 'godam' ),
 			},
 			library: {
 				type: 'image', // Restrict to images only
@@ -321,7 +321,7 @@ const Appearance = () => {
 							variant="primary"
 							className="mr-2 godam-button"
 						>
-							{ selectedBrandImage ? 'Replace' : 'Upload' }
+							{ selectedBrandImage ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 						</Button>
 						{ selectedBrandImage && (
 							<Button
@@ -419,12 +419,12 @@ const Appearance = () => {
 						onChange={ handleSkipTimeSettings }
 						options={ [
 							{
-								key: '10',
-								name: '10',
-							},
-							{
 								key: '5',
 								name: '5',
+							},
+							{
+								key: '10',
+								name: '10',
 							},
 							{
 								key: '30',

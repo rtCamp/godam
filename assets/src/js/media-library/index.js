@@ -10,7 +10,6 @@ import Attachments from './views/attachments.js';
 import AttachmentDetailsTwoColumn from './views/attachment-detail-two-column.js';
 
 import MediaDateRangeListViewFilter from './views/filters/media-date-range-filter-list-view.js';
-
 import { isFolderOrgDisabled, isUploadPage } from './utility.js';
 
 /**

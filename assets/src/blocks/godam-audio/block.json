@@ -1,0 +1,55 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "godam/audio",
+	"title": "GoDAM Audio",
+	"category": "media",
+	"description": "Embed a GoDAM audio player.",
+	"keywords": [ "music", "sound", "podcast", "recording" ],
+	"textdomain": "godam",
+	"attributes": {
+		"blob": {
+			"type": "string",
+			"role": "local"
+		},
+		"src": {
+			"type": "string",
+			"role": "content"
+		},
+		"caption": {
+			"type": "string",
+			"role": "content"
+		},
+		"id": {
+			"type": "number",
+			"role": "content"
+		},
+		"autoplay": {
+			"type": "boolean",
+			"default": false
+		},
+		"loop": {
+			"type": "boolean",
+			"default": false
+		},
+		"preload": {
+			"type": "string",
+			"default": "metadata"
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"align": true,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		},
+		"interactivity": {
+			"clientNavigation": true
+		}
+	},
+	"editorStyle": ["file:./index.css"],
+	"style": ["file:./style-index.css"],
+	"editorScript": ["file:./index.js"],
+	"render": "file:./render.php"
+}

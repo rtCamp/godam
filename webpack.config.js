@@ -91,13 +91,6 @@ const adminJS = {
 	},
 };
 
-const videoAnalyticsJS = {
-	...sharedConfig,
-	entry: {
-		'video-analytics': path.resolve( process.cwd(), 'assets', 'src', 'js', 'video-analytics.js' ),
-	},
-};
-
 const mediaLibrary = {
 	...sharedConfig,
 	entry: {
@@ -167,6 +160,7 @@ const pages = {
 		react: 'React',
 		'react-dom': 'ReactDOM',
 		'@wordpress/element': [ 'wp', 'element' ], // For WordPress compatibility
+		'@wordpress/i18n': [ 'wp', 'i18n' ],
 	},
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
@@ -176,7 +170,6 @@ const pages = {
 module.exports = [
 	mainJS,
 	adminJS,
-	videoAnalyticsJS,
 	mediaLibrary,
 	deactivationJS,
 	styles, // Do not remove this.
