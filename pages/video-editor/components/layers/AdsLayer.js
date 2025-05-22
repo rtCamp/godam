@@ -153,7 +153,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 				{ isDuplicateTime && isEditing && <Notice
 					className="mb-4"
 					status="error"
-					isDismissible={ true }
+					isDismissible={ false }
 				>
 					{ __( 'A layer already exists at this timestamp!', 'godam' ) }
 				</Notice>
@@ -162,7 +162,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 					isEditing && '' === layerTime && <Notice
 						className="mb-4"
 						status="error"
-						isDismissible={ true }
+						isDismissible={ false }
 					>
 						{ __( 'The timestamp cannot be an empty value!', 'godam' ) }
 					</Notice>
