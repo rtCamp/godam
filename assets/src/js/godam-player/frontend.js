@@ -68,7 +68,7 @@ function GODAMPlayer( videoRef = null ) {
 
 		const currentPlayerVideoInstanceId = video.dataset.instanceId;
 
-		video.closest( '.animate-video-loading' )?.classList.remove( 'animate-video-loading' );
+		video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
 
 		const adTagUrl = video.dataset.ad_tag_url;
 		let isVideoClicked = false;
@@ -265,8 +265,9 @@ function GODAMPlayer( videoRef = null ) {
 		const Button = videojs.getComponent( 'Button' );
 
 		class GodamShareButton extends Button {
-			buildCSSClass() {
-				return `godam-share-button ${ super.buildCSSClass() }`;
+			constructor( p, options ) {
+				super( p, options );
+				this.controlText( 'Share' );
 			}
 
 			// Set the button content
@@ -426,15 +427,13 @@ function GODAMPlayer( videoRef = null ) {
 		player.ready( function() {
 			player.jobId = video.dataset.job_id; // Store the result when it's available
 
-			const videoContainer = player.el().closest( '.easydam-video-container' );
-			if ( videoContainer && player.jobId !== '' ) {
-				const shareButton = new GodamShareButton( player );
-				const buttonEl = shareButton.createEl();
-				buttonEl.addEventListener(
-					'click',
-					shareButton.handleClick.bind( shareButton ),
+			const controlBar = player.getChild( 'controlBar' );
+			if ( controlBar && player.jobId !== '' ) {
+				controlBar.addChild(
+					'GodamShareButton',
+					{},
+					controlBar.children().length - 1,
 				);
-				videoContainer.appendChild( buttonEl );
 			}
 		} );
 

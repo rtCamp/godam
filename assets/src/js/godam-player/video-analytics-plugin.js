@@ -49,7 +49,7 @@ const videoAnalyticsPlugin = () => {
 					body: JSON.stringify( {
 						site_url: window.location.origin,
 						user_token: anonymousId,
-						wp_user_id: parseInt( userId, 10 ) || 0,
+						wp_user_id: parseInt( userId, 0 ) || '',
 						account_token: token || '',
 						email: emailId || '',
 						visitor_timestamp: meta?.ts || Date.now(),
