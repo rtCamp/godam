@@ -25,10 +25,10 @@ import {
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
-import { external, media as icon } from '@wordpress/icons';
+import { external, search, media as icon } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
 /**
@@ -38,6 +38,8 @@ import VideoCommonSettings from './edit-common-settings';
 import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
+
+import VideoSEOModal from './components/VideoSEOModal.js';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -55,6 +57,11 @@ function VideoEdit( {
 	const { id, controls, autoplay, poster, src, tracks, sources, muted, loop, preload } = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
+
+	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
+	const [ videoResponse, setVideoResponse ] = useState( {} );
+
+	const dispatch = useDispatch();
 
 	// Memoize video options to prevent unnecessary rerenders
 	const videoOptions = useMemo( () => ( {
@@ -101,6 +108,8 @@ function VideoEdit( {
 				try {
 					const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
 
+					setVideoResponse( response );
+
 					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
 						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
 					}
@@ -132,7 +141,14 @@ function VideoEdit( {
 						} );
 					}
 				} catch ( error ) {
-					console.error( 'Error fetching media meta:', error );
+					// Show error notice if fetching media fails.
+					const message = sprintf(
+						/* translators: %s: Label of the video text track e.g: "French subtitles". */
+						_x( 'Failed to load video data with id: %d', 'text tracks' ),
+						id,
+					);
+					const { createErrorNotice } = dispatch( noticesStore );
+					createErrorNotice( message, { type: 'snackbar' } );
 				}
 			} )();
 		}
@@ -178,6 +194,8 @@ function VideoEdit( {
 			try {
 				const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
 
+				setVideoResponse( response );
+
 				if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
 					const transcodedUrl = response.meta.rtgodam_transcoded_url;
 
@@ -209,8 +227,6 @@ function VideoEdit( {
 					} );
 				}
 			} catch ( error ) {
-				console.error( 'Error fetching media meta:', error );
-				// On error, use media url.
 				setAttributes( {
 					sources: [
 						{
@@ -251,8 +267,6 @@ function VideoEdit( {
 		className: classes,
 	} );
 
-	console.log( 'caption from parent', attributes.caption );
-
 	if ( ! src && ! temporaryURL ) {
 		return (
 			<div { ...blockProps }>
@@ -260,9 +274,10 @@ function VideoEdit( {
 					className="block-editor-media-placeholder"
 					withIllustration={ ! isSingleSelected }
 					icon={ icon }
-					label={ __( 'GoDAM video' ) }
+					label={ __( 'GoDAM video', 'godam' ) }
 					instructions={ __(
 						'Drag and drop a video, upload, or choose from your library.',
+						'godam',
 					) }
 				>
 					<MediaUpload
@@ -322,51 +337,56 @@ function VideoEdit( {
 						setAttributes={ setAttributes }
 						attributes={ attributes }
 					/>
-					<MediaUploadCheck>
-						<div className="editor-video-poster-control">
-							<BaseControl.VisualLabel>
-								{ __( 'Poster image' ) }
-							</BaseControl.VisualLabel>
-							<MediaUpload
-								title={ __( 'Select poster image', 'godam' ) }
-								onSelect={ onSelectPoster }
-								allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
-								render={ ( { open } ) => (
+					<BaseControl
+						id={ `video-block__poster-image-${ instanceId }` }
+						label={ __( 'Poster image', 'godam' ) }
+						__nextHasNoMarginBottom
+					>
+						<MediaUploadCheck>
+							<div className="editor-video-poster-control">
+								<MediaUpload
+									title={ __( 'Select poster image', 'godam' ) }
+									onSelect={ onSelectPoster }
+									allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
+									render={ ( { open } ) => (
+										<Button
+											__next40pxDefaultSize
+											variant="primary"
+											onClick={ open }
+											ref={ posterImageButton }
+											aria-describedby={ videoPosterDescription }
+										>
+											{ ! poster ? __( 'Select', 'godam' ) : __( 'Replace', 'godam' ) }
+										</Button>
+									) }
+								/>
+								<p id={ videoPosterDescription } hidden>
+									{ poster
+										? sprintf(
+											/* translators: %s: poster image URL. */
+											__( 'The current poster image url is %s', 'godam' ),
+											poster,
+										)
+										: __( 'There is no poster image currently selected', 'godam' ) }
+								</p>
+								{ !! poster && (
 									<Button
 										__next40pxDefaultSize
-										variant="primary"
-										onClick={ open }
-										ref={ posterImageButton }
-										aria-describedby={ videoPosterDescription }
+										onClick={ onRemovePoster }
+										variant="tertiary"
 									>
-										{ ! poster ? __( 'Select', 'godam' ) : __( 'Replace', 'godam' ) }
+										{ __( 'Remove', 'godam' ) }
 									</Button>
 								) }
-							/>
-							<p id={ videoPosterDescription } hidden>
-								{ poster
-									? sprintf(
-										/* translators: %s: poster image URL. */
-										__( 'The current poster image url is %s' ),
-										poster,
-									)
-									: __( 'There is no poster image currently selected' ) }
-							</p>
-							{ !! poster && (
-								<Button
-									__next40pxDefaultSize
-									onClick={ onRemovePoster }
-									variant="tertiary"
-								>
-									{ __( 'Remove', 'godam' ) }
-								</Button>
-							) }
-						</div>
-					</MediaUploadCheck>
-					<div className="editor-video-customisation-cta">
-						<BaseControl.VisualLabel>
-							{ __( 'Customise Video', 'godam' ) }
-						</BaseControl.VisualLabel>
+							</div>
+						</MediaUploadCheck>
+					</BaseControl>
+
+					<BaseControl
+						id={ `video-block__video-editor-${ instanceId }` }
+						label={ __( 'Customise Video', 'godam' ) }
+						__nextHasNoMarginBottom
+					>
 						<Button
 							__next40pxDefaultSize
 							href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ id }` }
@@ -378,9 +398,35 @@ function VideoEdit( {
 						>
 							{ __( 'Customise', 'godam' ) }
 						</Button>
-					</div>
+					</BaseControl>
+
+					<BaseControl
+						id={ `video-block__video-seo-${ instanceId }` }
+						label={ __( 'SEO Settings', 'godam' ) }
+						__nextHasNoMarginBottom
+					>
+						<Button
+							__next40pxDefaultSize
+							onClick={ () => setIsSEOModelOpen( true ) }
+							variant="primary"
+							className="editor-video-customisation-cta"
+							icon={ search }
+							iconPosition="right"
+						>
+							{ __( 'SEO Settings', 'godam' ) }
+						</Button>
+					</BaseControl>
+
 				</PanelBody>
 			</InspectorControls>
+
+			<VideoSEOModal
+				isOpen={ isSEOModalOpen }
+				setIsOpen={ setIsSEOModelOpen }
+				attachmentData={ videoResponse }
+				attributes={ attributes }
+				setAttributes={ setAttributes }
+			/>
 
 			<figure { ...blockProps }>
 				{ videoComponent }
@@ -390,7 +436,7 @@ function VideoEdit( {
 					setAttributes={ setAttributes }
 					isSelected={ isSingleSelected }
 					insertBlocksAfter={ insertBlocksAfter }
-					label={ __( 'Video caption text' ) }
+					label={ __( 'Video caption text', 'godam' ) }
 					showToolbarButton={ isSingleSelected }
 				/>
 			</figure>

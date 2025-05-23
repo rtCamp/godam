@@ -3,11 +3,11 @@
  * Plugin Name: GoDAM
  * Plugin URI: https://godam.io
  * Description: Seamlessly manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, gravity forms integration, and ad integration.
- * Version: 1.0.2
+ * Version: 1.0.6
  * Text Domain: godam
  * Author: rtCamp
  * Author URI: https://rtcamp.com/?utm_source=dashboard&utm_medium=plugin&utm_campaign=godam
- * Domain Path: /languages/
+ * Domain Path: /languages
  * License: GPLv2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -41,7 +41,7 @@ if ( ! defined( 'RTGODAM_VERSION' ) ) {
 	/**
 	 * The version of the plugin
 	 */
-	define( 'RTGODAM_VERSION', '1.0.2' );
+	define( 'RTGODAM_VERSION', '1.0.6' );
 }
 
 if ( ! defined( 'RTGODAM_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' ) ) {
@@ -117,7 +117,7 @@ add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 )
  * Runs when the plugin is activated.
  */
 function rtgodam_plugin_activate() {
-	update_site_option( 'rtgodam_plugin_activation_time', time() );
+	update_option( 'rtgodam_plugin_activation_time', time() );
 }
 
 register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
@@ -126,7 +126,7 @@ register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
  * Runs when the plugin is deactivated.
  */
 function rtgodam_plugin_deactivate() {
-	delete_site_option( 'rtgodam_plugin_activation_time' );
+	delete_option( 'rtgodam_plugin_activation_time' );
 }
 
 register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );

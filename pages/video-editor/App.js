@@ -8,13 +8,13 @@ import React, { useEffect, useState } from 'react';
  */
 import VideoEditor from './VideoEditor';
 import './style.scss';
-import '../../assets/build/blocks/godam-player/style-index.css';
+import '../../assets/src/css/godam-player.scss';
 
 /**
  * WordPress dependencies
  */
 import AttachmentPicker from './AttachmentPicker.jsx';
-import GodamHeader from '../godam/GodamHeader';
+import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 
 const App = () => {
 	const [ attachmentID, setAttachmentID ] = useState( null );

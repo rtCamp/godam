@@ -406,9 +406,10 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		$account_token = $body['message']['account_token'];
 		if ( $save ) {
 			// Save the API key in the site options only if it is verified.
-			update_site_option( 'rtgodam-api-key', $api_key );
-			update_site_option( 'rtgodam-api-key-stored', $api_key );
-			update_site_option( 'rtgodam-account-token', $account_token );
+			update_option( 'rtgodam-api-key', $api_key );
+			update_option( 'rtgodam-api-key-stored', $api_key );
+			update_option( 'rtgodam-account-token', $account_token );
+			delete_option( 'rtgodam_user_data' );
 
 			// Update usage data.
 			$handler = new \RTGODAM_Transcoder_Handler( false );
@@ -552,7 +553,7 @@ function rtgodam_get_localize_array() {
 		$localize_array['author'] = get_the_author();
 	}
 
-	$localize_array['token'] = get_site_option( 'rtgodam-account-token', 'unverified' );
+	$localize_array['token'] = get_option( 'rtgodam-account-token', 'unverified' );
 
 	return $localize_array;
 }

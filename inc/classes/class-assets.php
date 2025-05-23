@@ -47,7 +47,7 @@ class Assets {
 
 		wp_register_script(
 			'rtgodam-script',
-			RTGODAM_URL . '/assets/build/js/main.js',
+			RTGODAM_URL . 'assets/build/js/main.js',
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/js/main.js' ),
 			true
@@ -59,7 +59,6 @@ class Assets {
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/css/main.css' )
 		);
-
 
 		wp_enqueue_script(
 			'analytics-library',
@@ -93,6 +92,19 @@ class Assets {
 			)
 		);
 
+		include_once ABSPATH . 'wp-admin/includes/plugin.php';
+		$is_gf_active       = is_plugin_active( 'gravityforms/gravityforms.php' );
+		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
+
+		wp_localize_script(
+			'rtgodam-script',
+			'godamPluginDependencies',
+			array(
+				'gravityforms' => $is_gf_active,
+				'wp_polls'     => $is_wp_polls_active,
+			)
+		);
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamRestRoute',
@@ -103,16 +115,33 @@ class Assets {
 
 		$this->enqueue_godam_settings();
 
+		wp_set_script_translations( 'rtgodam-script', 'godam', RTGODAM_PATH . 'languages' );
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
 
 		// Register IMA SDK.
 		wp_enqueue_script(
 			'ima-sdk',
-			RTGODAM_URL . '/assets/src/libs/ima3.js',
+			'https://imasdk.googleapis.com/js/sdkloader/ima3.js', // It is required to load the IMA SDK from the Google CDN, else it will show console error.
 			array(),
 			RTGODAM_VERSION,
 			true
+		);
+
+		wp_enqueue_script(
+			'godam-frontend-js',
+			RTGODAM_URL . 'assets/build/blocks/godam-player/frontend.js',
+			array(), 
+			'1.0', 
+			true
+		);
+
+		wp_localize_script(
+			'godam-frontend-js',
+			'godamData',
+			array(
+				'api_base' => RTGODAM_API_BASE,
+			)
 		);
 	}
 
@@ -127,7 +156,7 @@ class Assets {
 
 		wp_register_script(
 			'rtgodam-script',
-			RTGODAM_URL . '/assets/build/js/admin.js',
+			RTGODAM_URL . 'assets/build/js/admin.js',
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/js/admin.js' ),
 			true
@@ -167,7 +196,7 @@ class Assets {
 
 		wp_register_script(
 			'easydam-media-library',
-			RTGODAM_URL . '/assets/build/js/media-library.js',
+			RTGODAM_URL . 'assets/build/js/media-library.js',
 			array(),
 			filemtime( RTGODAM_PATH . '/assets/build/js/media-library.js' ),
 			true
@@ -220,6 +249,7 @@ class Assets {
 			wp_enqueue_style( 'easydam-media-library' );
 		}
 
+		wp_set_script_translations( 'easydam-media-library', 'godam', RTGODAM_PATH . 'languages' );
 		wp_enqueue_script( 'easydam-media-library' );
 
 		/**

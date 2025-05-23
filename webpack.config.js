@@ -91,17 +91,24 @@ const adminJS = {
 	},
 };
 
-const videoAnalyticsJS = {
-	...sharedConfig,
-	entry: {
-		'video-analytics': path.resolve( process.cwd(), 'assets', 'src', 'js', 'video-analytics.js' ),
-	},
-};
-
 const mediaLibrary = {
 	...sharedConfig,
 	entry: {
 		'media-library': path.resolve( process.cwd(), 'assets', 'src', 'js', 'media-library', 'index.js' ),
+	},
+};
+
+const godamPlayerFrontend = {
+	...sharedConfig,
+	entry: {
+		'godam-player-frontend': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'frontend.js' ),
+	},
+};
+
+const godamPlayerAnalytics = {
+	...sharedConfig,
+	entry: {
+		'godam-player-analytics': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'analytics.js' ),
 	},
 };
 
@@ -188,6 +195,7 @@ const pages = {
 		react: 'React',
 		'react-dom': 'ReactDOM',
 		'@wordpress/element': [ 'wp', 'element' ], // For WordPress compatibility
+		'@wordpress/i18n': [ 'wp', 'i18n' ],
 	},
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
@@ -197,8 +205,9 @@ const pages = {
 module.exports = [
 	mainJS,
 	adminJS,
-	videoAnalyticsJS,
 	mediaLibrary,
+	godamPlayerFrontend,
+	godamPlayerAnalytics,
 	deactivationJS,
 	gfGodamRecorderJS,
 	gfGodamRecorderEditorJS,
