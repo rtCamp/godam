@@ -95,13 +95,17 @@ class Assets {
 		include_once ABSPATH . 'wp-admin/includes/plugin.php';
 		$is_gf_active       = is_plugin_active( 'gravityforms/gravityforms.php' );
 		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
-
+		$is_cf7_active      = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
+		$is_wpforms_active  = is_plugin_active( 'wpforms-lite/wpforms.php' );
+		
 		wp_localize_script(
 			'rtgodam-script',
 			'godamPluginDependencies',
 			array(
 				'gravityforms' => $is_gf_active,
 				'wp_polls'     => $is_wp_polls_active,
+				'cf7'          => $is_cf7_active,
+				'wpforms'      => $is_wpforms_active,
 			)
 		);
 
