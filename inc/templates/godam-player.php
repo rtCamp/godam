@@ -11,6 +11,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( isset( $is_shortcode ) && $is_shortcode ) {
+	$is_shortcode = true;
+} else {
+	$is_shortcode = false;
+}
+
 // attributes.
 $autoplay      = ! empty( $attributes['autoplay'] );
 $controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
@@ -22,6 +28,9 @@ $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['capt
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 $video_preview = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
+
+$src            = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
+$transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
 
 // Retrieve 'rtgodam_meta' for the given attachment ID, defaulting to an empty array if not found.
 $easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_meta', true ) : array();
@@ -36,6 +45,22 @@ $poster_image = ! empty( $poster_image ) ? $poster_image : '';
 $sources = array();
 if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$sources = $attributes['sources'];
+} elseif ( empty( $attachment_id ) &&
+	( ! empty( $src || ! empty( $transcoded_url ) ) ) 
+) {
+	$sources = array();
+	if ( ! empty( $transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $transcoded_url,
+			'type' => 'application/dash+xml',
+		);
+	}
+	if ( ! empty( $src ) ) {
+		$sources[] = array(
+			'src'  => $src,
+			'type' => 'video/mp4',
+		);
+	}
 } else {
 	$transcoded_url = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true ) : '';
 	$video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
@@ -120,12 +145,6 @@ elseif ( ! empty( $ads_layers ) && 'self-hosted' === $ad_server ) :
 endif;
 
 $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
-
-if ( isset( $is_shortcode ) && $is_shortcode ) {
-	$is_shortcode = true;
-} else {
-	$is_shortcode = false;
-}
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>

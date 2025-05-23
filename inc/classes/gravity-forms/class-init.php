@@ -48,7 +48,7 @@ class Init {
 		add_action( 'gform_field_standard_settings', array( $this, 'add_godam_recorder_field_setting' ), 10, 2 );
 		add_action( 'gform_editor_js', array( $this, 'add_editor_script' ) );
 		add_action( 'gform_after_submission', array( $this, 'process_file_upload_to_godam' ), 10, 2 );
-		add_action( 'gform_entry_detail', array( $this, 'enqueue_entry_detail_scripts' ), 10, 2 );
+		add_action( 'gform_entry_detail', array( $this, 'enqueue_entry_detail_scripts' ) );
 	}
 
 	/**
@@ -105,11 +105,8 @@ class Init {
 
 	/**
 	 * Enqueue scripts and styles for the entry detail page.
-	 *
-	 * @param array $form The form object.
-	 * @param array $entry The entry object.
 	 */
-	public function enqueue_entry_detail_scripts( $form, $entry ) {
+	public function enqueue_entry_detail_scripts() {
 		wp_enqueue_script(
 			'gf-entry-detail-script',
 			RTGODAM_URL . 'assets/build/js/gf-entry-detail.js',
@@ -193,7 +190,16 @@ class Init {
 		);
 	}
 
+	/**
+	 * Process file upload to GoDAM.
+	 *
+	 * @param array $entry The entry object.
+	 * @param array $form The form object.
+	 */
 	public function process_file_upload_to_godam( $entry, $form ) {
+
+		$form_title = $form['title'];
+
 		// Check if the form contains a godam_record field.
 		foreach ( $form['fields'] as $field ) {
 
@@ -202,40 +208,43 @@ class Init {
 			}
 
 			// Process the file upload to GoDAM.
-			// Add your logic here to handle the file upload to GoDAM.
-
 			// Get the uploaded file URL.
 			$field_id   = $field->id;
 			$file_value = rgar( $entry, $field_id );
-
-			error_log( 'File value: ' . $file_value );
 
 			if ( empty( $file_value ) ) {
 				continue;
 			}
 
-			// For multiple files
-			if ( $field->multipleFiles ) {
+			// For multiple files.
+			if ( $field->multipleFiles ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				$files = json_decode( $file_value, true );
 				if ( ! is_array( $files ) ) {
 					$files = array( $file_value );
 				}
 				
 				foreach ( $files as $index => $file_url ) {
-					$this->send_to_godam( $file_url, $entry['id'], $field_id, $index );
+					$this->send_to_godam( $form_title, $file_url, $entry['id'], $field_id, $index );
 				}
 			} else {
-				// Single file
-				$this->send_to_godam( $file_value, $entry['id'], $field_id );
+				// Single file.
+				$this->send_to_godam( $form_title, $file_value, $entry['id'], $field_id );
 			}
 		}
 	}
 
-	private function send_to_godam( $file_url, $entry_id, $field_id, $index = 0 ) {
+	/**
+	 * Send file to GoDAM for transcoding.
+	 *
+	 * @param string $form_title The title of the form.
+	 * @param string $file_url The URL of the file to be sent.
+	 * @param int    $entry_id The ID of the entry.
+	 * @param int    $field_id The ID of the field.
+	 * @param int    $index The index of the file (for multiple files).
+	 */
+	private function send_to_godam( $form_title, $file_url, $entry_id, $field_id, $index = 0 ) {
 
-		error_log( 'send_to_godam() is called' );
-
-		// Get file extension
+		// Get file extension.
 		$file_extension = pathinfo( $file_url, PATHINFO_EXTENSION );
 
 		$default_settings = array(
@@ -294,14 +303,15 @@ class Init {
 						'thumbnail_count' => 0,
 						'stream'          => true,
 						'watermark'       => boolval( $rtgodam_watermark ),
-						'resolutions'     => ['auto'],
+						'resolutions'     => array( 'auto' ),
+						'file_label'      => $form_title ?? 'Gravity Forms',
 					),
 					$watermark_to_use
 				),
 		);
 
 		$transcoding_api_url = RTGODAM_API_BASE . '/api/';
-		$transcoding_url = $transcoding_api_url . 'resource/Transcoder Job';
+		$transcoding_url     = $transcoding_api_url . 'resource/Transcoder Job';
 
 		$upload_page = wp_remote_post( $transcoding_url, $args );
 
@@ -316,20 +326,18 @@ class Init {
 			if ( isset( $upload_info->data ) && isset( $upload_info->data->name ) ) {
 				$job_id = $upload_info->data->name;
 				gform_update_meta( $entry_id, 'rtgodam_transcoding_job_id_' . $field_id . '_' . $index, $job_id );
-				add_option( $job_id, array(
-					'source'   => 'gform_godam_recorder',
-					'entry_id' => $entry_id,
-					'field_id' => $field_id,
-					'index'    => $index,
-				) );
+				add_option(
+					$job_id,
+					array(
+						'source'   => 'gform_godam_recorder',
+						'entry_id' => $entry_id,
+						'field_id' => $field_id,
+						'index'    => $index,
+					) 
+				);
 			}
-		} else {
-			// Handle error
-			$body = wp_remote_retrieve_body( $upload_page );
-			error_log( 'Error uploading file to GoDAM: ' . print_r( $body, true ) );
-			$data = json_decode( $body, true );
-			error_log( 'Error data: ' . print_r( $data, true ) );
 		}
-	}
 
+		// Todo: Handle error cases.
+	}
 }
