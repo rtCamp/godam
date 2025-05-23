@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
  */
 import { Button, TextControl, ToggleControl, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { useState, useEffect } from 'react';
 
 /**
  * Internal dependencies
@@ -20,6 +21,11 @@ const CustomAdSettings = ( { layerID } ) => {
 	);
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
+	const [ inputValue, setInputValue ] = useState( layer?.click_link || '' );
+	const [ isValid, setIsValid ] = useState( true );
+
+	// Debounced input value
+	const debouncedInput = useDebounce( inputValue, 500 );
 	const dispatch = useDispatch();
 
 	const OpenVideoSelector = () => {
@@ -36,11 +42,76 @@ const CustomAdSettings = ( { layerID } ) => {
 
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
-			dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: attachment.url } ) );
+			dispatch(
+				updateLayerField( {
+					id: layerID,
+					field: 'ad_url',
+					value: attachment.url,
+				} ),
+			);
 		} );
 
 		fileFrame.open();
 	};
+
+	function useDebounce( value, delay ) {
+		const [ debouncedValue, setDebouncedValue ] = useState( value );
+
+		useEffect( () => {
+			const handler = setTimeout( () => {
+				setDebouncedValue( value );
+			}, delay );
+
+			return () => {
+				clearTimeout( handler );
+			};
+		}, [ value, delay ] );
+
+		return debouncedValue;
+	}
+
+	// URL validation function
+	const isValidURL = ( url ) => {
+		try {
+			new URL( url );
+			return true;
+		} catch {
+			return false;
+		}
+	};
+
+	useEffect( () => {
+		if ( debouncedInput === '' ) {
+			// Allow empty input (optional, adjust as needed)
+			setIsValid( true );
+			// Optionally update field if you want to clear it on empty
+			dispatch(
+				updateLayerField( { id: layer.id, field: 'click_link', value: '' } ),
+			);
+			return;
+		}
+
+		const valid = isValidURL( debouncedInput );
+		setIsValid( valid );
+
+		if ( valid ) {
+			dispatch(
+				updateLayerField( {
+					id: layer.id,
+					field: 'click_link',
+					value: debouncedInput,
+				} ),
+			);
+		}
+	}, [ debouncedInput, dispatch, layer.id, updateLayerField ] );
+
+	const handleChange = ( value ) => {
+		setInputValue( value );
+	};
+
+	useEffect( () => {
+		setInputValue( layer?.click_link || '' );
+	}, [ layer?.click_link ] );
 
 	// If we want to disable the premium layers the we can use this code
 	// const isValidAPIKey = window?.videoData?.valid_api_key;
@@ -99,7 +170,7 @@ const CustomAdSettings = ( { layerID } ) => {
 								src={ layer.ad_url }
 								controls={ adServer !== 'ad-server' }
 							/>
-							{ adServer === 'ad-server' || ! isValidAPIKey && <div className="video-overlay" /> }
+							{ ( adServer === 'ad-server' || ! isValidAPIKey ) && <div className="video-overlay" /> }
 						</div>
 					)
 				}
@@ -134,12 +205,18 @@ const CustomAdSettings = ( { layerID } ) => {
 				label={ __( 'Click link', 'godam' ) }
 				placeholder="https://example"
 				help={ __( 'Enter the URL to redirect when the ad is clicked', 'godam' ) }
-				value={ layer?.click_link }
+				value={ inputValue }
 				className="mb-4"
-				onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'click_link', value } ) ) }
+				onChange={ handleChange }
 				disabled={ adServer === 'ad-server' || ! isValidAPIKey }
+				isInvalid={ ! isValid }
+				type="url"
 			/>
-
+			{ ! isValid && (
+				<Notice className="mb-4" status="error" isDismissible={ false }>
+					{ __( 'Please enter a valid URL (https://…)', 'godam' ) }
+				</Notice>
+			) }
 		</div>
 	);
 };
