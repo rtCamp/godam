@@ -126,6 +126,13 @@ const gfGodamRecorderEditorJS = {
 	},
 };
 
+const gfEntryDetailJS = {
+	...sharedConfig,
+	entry: {
+		'gf-entry-detail': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-entry-detail.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -195,6 +202,7 @@ module.exports = [
 	deactivationJS,
 	gfGodamRecorderJS,
 	gfGodamRecorderEditorJS,
+	gfEntryDetailJS,
 	styles, // Do not remove this.
 	pages,
 ];

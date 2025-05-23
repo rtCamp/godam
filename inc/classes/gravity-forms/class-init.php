@@ -47,6 +47,8 @@ class Init {
 		add_action( 'gform_enqueue_scripts', array( $this, 'enqueue_godam_recorder_scripts' ), 10, 2 );
 		add_action( 'gform_field_standard_settings', array( $this, 'add_godam_recorder_field_setting' ), 10, 2 );
 		add_action( 'gform_editor_js', array( $this, 'add_editor_script' ) );
+		add_action( 'gform_after_submission', array( $this, 'process_file_upload_to_godam' ), 10, 2 );
+		add_action( 'gform_entry_detail', array( $this, 'enqueue_entry_detail_scripts' ), 10, 2 );
 	}
 
 	/**
@@ -98,6 +100,29 @@ class Init {
 			array( 'jquery' ),
 			filemtime( RTGODAM_PATH . 'assets/build/js/gf-godam-recorder.js' ), 
 			true 
+		);
+	}
+
+	/**
+	 * Enqueue scripts and styles for the entry detail page.
+	 *
+	 * @param array $form The form object.
+	 * @param array $entry The entry object.
+	 */
+	public function enqueue_entry_detail_scripts( $form, $entry ) {
+		wp_enqueue_script(
+			'gf-entry-detail-script',
+			RTGODAM_URL . 'assets/build/js/gf-entry-detail.js',
+			array( 'jquery' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/gf-entry-detail.js' ), 
+			true 
+		);
+
+		wp_enqueue_style(
+			'gf-entry-detail-style',
+			RTGODAM_URL . 'assets/build/css/gf-entry-detail.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/gf-entry-detail.css' )
 		);
 	}
 
@@ -167,4 +192,144 @@ class Init {
 			true
 		);
 	}
+
+	public function process_file_upload_to_godam( $entry, $form ) {
+		// Check if the form contains a godam_record field.
+		foreach ( $form['fields'] as $field ) {
+
+			if ( 'godam_record' !== $field->type ) {
+				continue;
+			}
+
+			// Process the file upload to GoDAM.
+			// Add your logic here to handle the file upload to GoDAM.
+
+			// Get the uploaded file URL.
+			$field_id   = $field->id;
+			$file_value = rgar( $entry, $field_id );
+
+			error_log( 'File value: ' . $file_value );
+
+			if ( empty( $file_value ) ) {
+				continue;
+			}
+
+			// For multiple files
+			if ( $field->multipleFiles ) {
+				$files = json_decode( $file_value, true );
+				if ( ! is_array( $files ) ) {
+					$files = array( $file_value );
+				}
+				
+				foreach ( $files as $index => $file_url ) {
+					$this->send_to_godam( $file_url, $entry['id'], $field_id, $index );
+				}
+			} else {
+				// Single file
+				$this->send_to_godam( $file_value, $entry['id'], $field_id );
+			}
+		}
+	}
+
+	private function send_to_godam( $file_url, $entry_id, $field_id, $index = 0 ) {
+
+		error_log( 'send_to_godam() is called' );
+
+		// Get file extension
+		$file_extension = pathinfo( $file_url, PATHINFO_EXTENSION );
+
+		$default_settings = array(
+			'video' => array(
+				'adaptive_bitrate'     => true,
+				'watermark'            => false,
+				'watermark_text'       => '',
+				'watermark_url'        => '',
+				'video_thumbnails'     => 0,
+				'overwrite_thumbnails' => false,
+			),
+		);
+
+		$godam_settings = get_option( 'rtgodam-settings', array() );
+
+		$rtgodam_watermark           = $godam_settings['video']['watermark'];
+		$rtgodam_use_watermark_image = $godam_settings['video']['use_watermark_image'];
+		$rtgodam_watermark_text      = sanitize_text_field( $godam_settings['video']['watermark_text'] );
+		$rtgodam_watermark_url       = esc_url( $godam_settings['video']['watermark_url'] );
+
+		$watermark_to_use = array();
+
+		// Include watermark settings only if watermark is enabled.
+		if ( $rtgodam_watermark ) {
+			if ( $rtgodam_use_watermark_image && ! empty( $rtgodam_watermark_url ) ) {
+				$watermark_to_use['watermark_url'] = $rtgodam_watermark_url;
+			} elseif ( ! $rtgodam_use_watermark_image && ! empty( $rtgodam_watermark_text ) ) {
+				$watermark_to_use['watermark_text'] = $rtgodam_watermark_text;
+			}
+		}
+
+		
+		$callback_url = rest_url( 'godam/v1/transcoder-callback' );
+
+		/**
+		 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
+		 */
+		$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
+
+		$api_key = get_site_option( 'rtgodam-api-key', '' );
+
+		$args = array(
+			'method'    => 'POST',
+			'sslverify' => false,
+			'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
+				'body'  => array_merge(
+					array(
+						'api_token'       => $api_key,
+						'job_type'        => 'stream',
+						'job_for'         => 'gf-godam-recorder',
+						'file_origin'     => rawurlencode( $file_url ),
+						'callback_url'    => rawurlencode( $callback_url ),
+						'status_callback' => rawurlencode( $status_callback_url ),
+						'force'           => 0,
+						'formats'         => $file_extension,
+						'thumbnail_count' => 0,
+						'stream'          => true,
+						'watermark'       => boolval( $rtgodam_watermark ),
+						'resolutions'     => ['auto'],
+					),
+					$watermark_to_use
+				),
+		);
+
+		$transcoding_api_url = RTGODAM_API_BASE . '/api/';
+		$transcoding_url = $transcoding_api_url . 'resource/Transcoder Job';
+
+		$upload_page = wp_remote_post( $transcoding_url, $args );
+
+		if ( ! is_wp_error( $upload_page ) &&
+			(
+				isset( $upload_page['response']['code'] ) &&
+				200 === intval( $upload_page['response']['code'] )
+			)
+		) {
+			$upload_info = json_decode( $upload_page['body'] );
+
+			if ( isset( $upload_info->data ) && isset( $upload_info->data->name ) ) {
+				$job_id = $upload_info->data->name;
+				gform_update_meta( $entry_id, 'rtgodam_transcoding_job_id_' . $field_id . '_' . $index, $job_id );
+				add_option( $job_id, array(
+					'source'   => 'gform_godam_recorder',
+					'entry_id' => $entry_id,
+					'field_id' => $field_id,
+					'index'    => $index,
+				) );
+			}
+		} else {
+			// Handle error
+			$body = wp_remote_retrieve_body( $upload_page );
+			error_log( 'Error uploading file to GoDAM: ' . print_r( $body, true ) );
+			$data = json_decode( $body, true );
+			error_log( 'Error data: ' . print_r( $data, true ) );
+		}
+	}
+
 }

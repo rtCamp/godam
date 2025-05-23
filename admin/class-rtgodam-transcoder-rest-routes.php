@@ -250,6 +250,24 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			}
 		}
 
+		if ( isset( $job_for ) && ( 'gf-godam-recorder' === $job_for ) ) {
+			if ( isset( $job_id ) ) {
+				$post_array = $request->get_params();
+				$data = get_option( $job_id );
+				if ( ! empty( $data ) ) {
+					if ( 'gform_godam_recorder' === $data['source'] ) {
+						error_log( 'Source matched!' );
+						$entry_id   = $data['entry_id'];
+						$post_array = $request->get_params();
+						if ( $entry_id && function_exists( 'gform_update_meta' ) ) {
+							error_log( 'before updating entry meta data: ' . $post_array['download_url'] );
+							gform_update_meta( $entry_id, 'rtgodam_transcoded_url_' . $data['field_id'] . '_' . $data['index'] , $post_array['download_url'] );
+						}
+					}
+				}
+			}
+		}
+
 		/**
 		 * Allow users/plugins to perform action after response received from the transcoder is
 		 * processed

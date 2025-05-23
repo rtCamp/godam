@@ -257,7 +257,7 @@ if ( class_exists( 'GF_Field' ) ) {
 			$force_download = in_array( 'download', $this->get_modifiers() );
 	
 			if ( is_array( $files ) ) {
-				foreach ( $files as $file_path ) {
+				foreach ( $files as $index => $file_path ) {
 
 					// File type check.
 					$file_type = wp_check_filetype( $file_path );
@@ -301,11 +301,99 @@ if ( class_exists( 'GF_Field' ) ) {
 					 */
 					$file_path    = str_replace( ' ', '%20', apply_filters( 'gform_fileupload_entry_value_file_path', $file_path, $this ) );
 					$output_arr[] = 'text' == $format ? $file_path : sprintf( "<li><a href='%s' target='_blank' aria-label='%s'>%s</a></li>", esc_attr( $file_path ), esc_attr__( 'Click to view', 'godam' ), $basename );
-					
-					if ( $is_video ) {
-						$output_arr[] = sprintf( "<video class='godam-video-preview' controls><source src='%s'></video>", esc_attr( $file_path ) );
+
+					// Get the entry ID from GFAPI context
+					$entry_id = 0;
+					if ( function_exists( 'rgget' ) ) {
+						$entry_id = rgget( 'lid' ) ? rgget( 'lid' ) : rgget( 'entry' );
+					}
+
+					// Get and display the transcoding job ID if available
+					$transcoded_url = '';
+					if ( $entry_id && function_exists( 'gform_get_meta' ) ) {
+						$meta_key = 'rtgodam_transcoding_job_id_' . $this->id . '_' . $index;
+						$job_id = gform_get_meta( $entry_id, $meta_key );
+						
+						if ( $job_id ) {
+							$output_arr[] = sprintf( 
+								"<li class='godam-transcoding-job-info'><strong>%s:</strong> %s</li>", 
+								esc_html__( 'Transcoding Job ID', 'godam' ), 
+								esc_html( $job_id ) 
+							);
+						}
+
+						$meta_key = 'rtgodam_transcoded_url_' . $this->id . '_' . $index;
+						$transcoded_url = gform_get_meta( $entry_id, $meta_key );
+
+						error_log( '**** Transcoded URL: ' . print_r( $transcoded_url, true ) );
+
+						if ( $transcoded_url ) {
+							$output_arr[] = sprintf( 
+								"<li class='godam-transcoded-url-info'><strong>%s:</strong> <a href='%s' target='_blank'>%s</a></li>", 
+								esc_html__( 'Transcoded URL', 'godam' ), 
+								esc_url( $transcoded_url ), 
+								esc_html( $transcoded_url ) 
+							);
+						}
 					}
 				}
+
+				if ( $is_video ) {
+					
+					if ( $transcoded_url ) {
+						$sources = array(
+							array(
+								'src' => $transcoded_url,
+								'type' => 'application/dash+xml',
+							),
+							array(
+								'src' => $file_path,
+								'type' => 'video/mp4',
+							),
+						);
+					} else {
+						$sources = array(
+							array(
+								'src' => $file_path,
+								'type' => 'video/mp4',
+							),
+						);
+					}
+
+					$sources = array(
+						array(
+							'src'  => 'https://godam.io/wp-content/uploads/2025/01/GoDAM.mp4',
+							'type' => 'video/mp4',
+						),
+					);
+
+					ob_start();
+					?>
+						<div
+							class="godam-player video-js vjs-big-play-centered"
+							data-video-sources="<?php echo esc_attr( json_encode( $sources ) ); ?>"
+						>
+							<video class="godam-player--video" id="<?php echo esc_attr( 'video_' . $index ); ?>">
+								<?php foreach ( $sources as $source ) : 
+									if ( ! empty( $source['src'] ) && ! empty( $source['type'] ) ) : ?>
+										?>
+										<source
+											src="<?php echo esc_url( $source['src'] ); ?>"
+											type="<?php echo esc_attr( $source['type'] ); ?>"
+										/>
+										<?php
+									endif;
+								endforeach; ?>
+								<p class="vjs-no-js">
+									<?php esc_html_e( 'To view this video please enable JavaScript, and consider upgrading to a web browser that', 'godam' ); ?>
+								</p>
+							</video>
+						</div>
+					<?php
+					$video_output = ob_get_clean();
+					$output_arr[] = $video_output;
+				}
+
 				$output = join( PHP_EOL, $output_arr );
 			}
 	
