@@ -637,7 +637,11 @@ function GODAMPlayer( videoRef = null ) {
 		if ( ! isPreviewEnabled ) {
 			layers.forEach( ( layer ) => {
 				if ( layer.type === 'form' ) {
-					if ( window.godamPluginDependencies?.gravityforms ) {
+					if ( window.godamPluginDependencies?.gravityforms && layer.form_type === 'gravity' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.wpforms && layer.form_type === 'wpforms' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.cf7 && layer.form_type === 'cf7' ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {
