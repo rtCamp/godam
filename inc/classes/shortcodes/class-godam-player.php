@@ -78,7 +78,7 @@ class GoDAM_Player {
 				'src'            => '',
 				'transcoded_url' => '',
 				'poster'         => '',
-				'aspectRatio'    => '16:9',
+				'aspectRatio'    => '',
 			),
 			$atts,
 			'godam_video'

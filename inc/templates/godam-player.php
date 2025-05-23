@@ -155,7 +155,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 	--rtgodam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
 	--rtgodam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
 	--rtgodam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
-	--rtgodam-video-aspect-ratio: <?php echo esc_attr( $attributes['aspectRatio'] ?? '16/9' ); ?>;
+	<?php echo $attributes['aspectRatio'] ? '--rtgodam-video-aspect-ratio: ' . esc_attr( $attributes['aspectRatio'] ) : ''; ?>
 	">
 	<div class="easydam-video-container animate-video-loading">
 		<div class="animate-play-btn">
