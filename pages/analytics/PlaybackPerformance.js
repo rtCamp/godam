@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
  * Internal dependencies
  */
 import { useFetchProcessedAnalyticsHistoryQuery } from './redux/api/analyticsApi';
+import { useFetchDashboardMetricsHistoryQuery } from '../dashboard/redux/api/dashboardAnalyticsApi';
 /**
  * WordPress dependencies
  */
@@ -16,6 +17,7 @@ import { __ } from '@wordpress/i18n';
 export default function PlaybackPerformanceDashboard( {
 	attachmentID,
 	initialData,
+	mode = 'analytics',
 } ) {
 	const chartRef = useRef( null );
 	const [ selectedPeriod, setSelectedPeriod ] = useState( '7D' );
@@ -44,23 +46,46 @@ export default function PlaybackPerformanceDashboard( {
 	};
 
 	// Fetch analytics data based on selected period
-	const { data: processedAnalyticsHistory } =
-	useFetchProcessedAnalyticsHistoryQuery(
+	const dashboardHistoryResult = useFetchDashboardMetricsHistoryQuery(
+		{
+			days: getDaysFromPeriod( selectedPeriod ),
+			siteUrl: window.location.origin,
+		},
+		{ skip: mode !== 'dashboard' },
+	);
+
+	const analyticsHistoryResult = useFetchProcessedAnalyticsHistoryQuery(
 		{
 			videoId: attachmentID,
 			siteUrl: window.location.origin,
 			days: getDaysFromPeriod( selectedPeriod ),
 		},
-		{ skip: ! attachmentID },
+		{ skip: mode === 'dashboard' || ! attachmentID },
 	);
+
+	// Then pick the right one based on mode
+	const processedAnalyticsHistory =
+		mode === 'dashboard'
+			? dashboardHistoryResult.data
+			: analyticsHistoryResult.data;
 
 	// Format data response for chart.
 	useEffect( () => {
 		const parseDate = d3.timeParse( '%Y-%m-%d' );
 		const timeMetricsChartData = ( processedAnalyticsHistory || [] ).map(
 			( entry ) => {
+				const date = parseDate( entry.date );
+
+				if ( mode === 'dashboard' ) {
+					return {
+						date,
+						engagement_rate: +entry.avg_engagement?.toFixed( 2 ) || 0,
+						play_rate: +( entry.play_rate * 100 || 0 ).toFixed( 2 ),
+						watch_time: +( entry.watch_time || 0 ).toFixed( 2 ),
+					};
+				}
+
 				const {
-					date,
 					page_load: dailyPageLoad,
 					play_time: dailyPlayTime,
 					video_length: dailyVideoLength,
@@ -68,16 +93,16 @@ export default function PlaybackPerformanceDashboard( {
 				} = entry;
 
 				const dailyEngagementRate =
-dailyPlays && dailyVideoLength
-	? ( dailyPlayTime / ( dailyPlays * dailyVideoLength ) ) * 100
-	: 0;
+					dailyPlays && dailyVideoLength
+						? ( dailyPlayTime / ( dailyPlays * dailyVideoLength ) ) * 100
+						: 0;
 
 				const dailyPlayRate = dailyPageLoad
 					? ( dailyPlays / dailyPageLoad ) * 100
 					: 0;
 
 				return {
-					date: parseDate( date ),
+					date,
 					engagement_rate: +dailyEngagementRate.toFixed( 2 ),
 					play_rate: +dailyPlayRate.toFixed( 2 ),
 					watch_time: +dailyPlayTime.toFixed( 2 ),
@@ -85,7 +110,7 @@ dailyPlays && dailyVideoLength
 			},
 		);
 		setParsedData( timeMetricsChartData );
-	}, [ processedAnalyticsHistory, selectedMetrics ] );
+	}, [ processedAnalyticsHistory, selectedMetrics, mode ] );
 
 	const renderChart = () => {
 		if ( ! chartRef.current || ! parsedData ) {

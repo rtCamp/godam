@@ -1,41 +1,13 @@
 .godam-dashboard-container {
-	background-color: #ffffff;
+	background-color: #fff;
 }
 
-.analytics-info {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	grid-template-rows: repeat(2, 1fr);
-	gap: 2rem;
-	
-	.analytics-single-info {
-		display: flex;
-		border-radius: 12px;
-		padding: 25px;
-		flex-direction: column;
-		background-color: #fff;
-		min-width: 300px;
-
-		.analytics-stats {
-			display: flex;
-			align-items: center;
-			gap: 8px;
-			margin-top: auto;
-		}
-	}
-
-	.analytics-info-heading {
-		font-size: 16px;
-		display: flex;
-		align-items: center;
-		font-weight: 500;
-		gap: 5px;
-
-		p {
-			font-weight: 400;
-			font-size: 18px;
-		}
-}}
+.dashboard-container {
+	padding: 1rem;
+	max-width: 1440px;
+	margin-left: auto;
+	margin-right: auto;
+}
 
 .api-key-message a {
 	color: #3b82f6;
@@ -43,15 +15,28 @@
 	font-weight: 600;
 }
 
+.api-key-message a:hover {
+	text-decoration: underline;
+}
+
 .top-media-container {
 
+	h2 {
+		font-weight: 600;
+		margin: 0;
+		display: flex;
+		align-items: center;
+	}
+
 	.export-button {
-		background-color: #d1d1d7;
+		background-color: #F4F4F5;
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		padding: 8px 14px;
+		padding: 0 14px;
 		color: #000;
+		border-radius: 6px;
+		height: 40px;
 	
 		.export-icon {
 			width: 16px;
@@ -61,27 +46,38 @@
 
 	.export-button:hover {
 		background-color: #E4E4E7;
+		cursor: pointer;
+	}
+
+	.table-container {
+		margin-top: 12px;
+		border: 1px solid #E4E4E7;
+		border-radius: 6px;
+		border-collapse: collapse;
 	}
 
 	table {
 		width: 100%;
-		border: 1px solid #E4E4E7;
-		border-radius: 6px;
-		border-collapse: collapse;
 
 		th, td {
-			padding: 16px;
+			padding: 8px 16px;
 			text-align: left;
 			font-weight: 500;
 			border-bottom: 1px solid #E4E4E7;
 		}
 
+		tr:last-child td {
+			border-bottom: none;
+		}
+
 		th {
 			font-size: 1rem;
+			padding: 16px;
 			color: #71717A;
 		}
 
 		td {
+
 			.video-info {
 				display: flex;
 				align-items: center;
@@ -115,6 +111,44 @@
 					text-overflow: ellipsis;
 				}
 			}
+		}
+	}
+
+	.previous-btn {
+		background-color: transparent;
+	}
+
+	.next-btn {
+		background-color: transparent;
+	}
+	
+	.previous-btn:hover, .next-btn:hover {
+		cursor: pointer;
+	}
+
+	.icon-disabled {
+		filter: grayscale(100%) opacity(0.2);
+		pointer-events: none;
+	}
+
+	.skeleton {
+		background-color: #e5e7eb;
+		border-radius: 4px;
+		animation: skeletonPulse 1.5s ease-in-out infinite;
+	}
+	
+	@keyframes skeletonPulse {
+
+		0% {
+			opacity: 1;
+		}
+
+		50% {
+			opacity: 0.4;
+		}
+
+		100% {
+			opacity: 1;
 		}
 	}
 }
@@ -195,10 +229,6 @@
 	font-weight: 700;
 }
 
-.api-key-message a:hover {
-	text-decoration: underline;
-}
-
 .hidden {
 	display: none;
 }
@@ -210,16 +240,18 @@
 	left: 0;
 	right: 0;
 	min-height: calc( 100vh - var(--wp-admin--admin-bar--height, 0) );
-	margin-left: 160px;
 	padding-top: var(--wp-admin--admin-bar--height, 0);
 	overflow: auto;
 	color: #000;
 }
 
+.folded #root-video-dashboard {
+	margin-left: 36px;
+}
 
 .playback-country-container {
 	display: flex;
-	gap: 20px;
+	gap: 12px;
 
 	.playback-performance {
 		flex: 2;
@@ -264,5 +296,47 @@
 				border-radius: 3px;
 			}
 		}
+	}
+}
+
+.dashboard-donut-container {
+	border-radius: 12px;
+}
+
+.hero-donut-block {
+	background-image: url(../../assets/src/images/hero-bg.webp);
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+@keyframes slide-in {
+
+	from {
+		transform: translateX(100%);
+		opacity: 0;
+	}
+
+	to {
+		transform: translateX(0%);
+		opacity: 1;
+	}
+}
+
+.animate-slide-in {
+	animation: slide-in 0.5s ease forwards;
+}
+
+@media screen and (max-width: 960px) {
+
+	.auto-fold #root-video-dashboard {
+		margin-left: 36px;
+	}
+}
+
+@media screen and (max-width: 782px) {
+
+	.auto-fold #root-video-dashboard {
+		margin-left: 0;
 	}
 }
