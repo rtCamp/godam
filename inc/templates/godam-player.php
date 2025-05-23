@@ -99,6 +99,30 @@ if ( ! empty( $appearance_color ) ) {
 	$easydam_control_bar_color = $brand_color;
 }
 
+/**
+ * Disable scroll effect on all WPForms by overriding scroll functions.
+ *
+ * This disables automatic scrolling to errors or page sections in multi-page forms for WpForms.
+ *
+ * @param array $forms An array of form data objects rendered on the page.
+ */
+function wpf_dev_disable_scroll_effect_on_all_forms( $forms ) { 
+	foreach ( $forms as $form ) {
+		?>
+			<script type="text/javascript">
+			wpforms.scrollToError = function(){};
+			wpforms.animateScrollTop = function(){};
+			</script>
+			<?php
+			
+	}
+}
+
+add_action( 'wpforms_wp_footer_end', 'wpf_dev_disable_scroll_effect_on_all_forms', 10, 1 );
+
+// prevent default behavior of Gravity Forms autoscroll on submission.
+add_filter( 'gform_confirmation_anchor', '__return_false' );
+
 $easydam_hover_color        = ! empty( $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
 $easydam_hover_zoom         = ! empty( $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
 $easydam_custom_btn_img     = ! empty( $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
