@@ -150,36 +150,6 @@ const Analytics = ( { attachmentID } ) => {
 		}
 	}, [ attachmentID ] );
 
-	// useEffect( () => {
-	// 	const performanceHistory = ( processedAnalyticsHistory || [] ).map(
-	// 		( entry ) => {
-	// 			const {
-	// 				date,
-	// 				page_load: dailyPageLoad,
-	// 				play_time: dailyPlayTime,
-	// 				video_length: dailyVideoLength,
-	// 				plays: dailyPlays,
-	// 			} = entry;
-
-	// 			const dailyEngagementRate =
-	//       dailyPlays && dailyVideoLength ? ( dailyPlayTime / ( dailyPlays * dailyVideoLength ) ) * 100 : 0;
-
-	// 			const dailyPlayRate = dailyPageLoad
-	// 				? ( dailyPlays / dailyPageLoad ) * 100
-	// 				: 0;
-
-	// 			return {
-	// 				date,
-	// 				engagement_rate: +dailyEngagementRate.toFixed( 2 ),
-	// 				play_rate: +dailyPlayRate.toFixed( 2 ),
-	// 				watch_time: +dailyPlayTime.toFixed( 2 ),
-	// 			};
-	// 		},
-	// 	);
-
-	// 	setTimeMetricsChartData( performanceHistory );
-	// }, [ processedAnalyticsHistory ] );
-
 	async function startABTesting() {
 		setIsABResultsLoading( true );
 		setIsABTestCompleted( false );
@@ -293,34 +263,6 @@ const Analytics = ( { attachmentID } ) => {
 		}
 		return 'left-greater right-greater';
 	};
-
-	// const timeMetricsChartData = ( processedAnalyticsHistory || [] ).map(
-	// 	( entry ) => {
-	// 		const {
-	// 			date,
-	// 			page_load: dailyPageLoad,
-	// 			play_time: dailyPlayTime,
-	// 			video_length: dailyVideoLength,
-	// 			plays: dailyPlays,
-	// 		} = entry;
-
-	// 		const dailyEngagementRate =
-	//     dailyPlays && dailyVideoLength
-	//     	? ( dailyPlayTime / ( dailyPlays * dailyVideoLength ) ) * 100
-	//     	: 0;
-
-	// 		const dailyPlayRate = dailyPageLoad
-	// 			? ( dailyPlays / dailyPageLoad ) * 100
-	// 			: 0;
-
-	// 		return {
-	// 			date,
-	// 			engagement_rate: +dailyEngagementRate.toFixed( 2 ),
-	// 			play_rate: +dailyPlayRate.toFixed( 2 ),
-	// 			watch_time: +dailyPlayTime.toFixed( 2 ),
-	// 		};
-	// 	},
-	// );
 
 	useEffect( () => {
 		const handleResize = () => {

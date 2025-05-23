@@ -507,12 +507,12 @@ class Analytics extends Base {
 				$file_path     = get_attached_file( $attachment_id );
 		
 				if ( file_exists( $file_path ) ) {
-					$file_size = filesize( $file_path );
+					$file_size           = filesize( $file_path );
 					$video['video_size'] = round( $file_size / ( 1024 * 1024 ), 2 );
 				} else {
 					$video['video_size'] = 0;
 				}
-				$video['title']         = get_the_title( $attachment_id );
+				$video['title']   = get_the_title( $attachment_id );
 				$custom_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 				$default_thumb    = wp_get_attachment_image_url( $attachment_id, 'medium' );
 
