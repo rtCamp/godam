@@ -227,7 +227,7 @@ class RTGODAM_Transcoder_Handler {
 
 			// Media settings.
 			$rtgodam_watermark              = $this->easydam_settings['video']['watermark'];
-			$rtgodam_use_watermark_image    = $this->easydam_settings['video']['use_watermark_image'];
+			$rtgodam_use_watermark_image    = $this->easydam_settings['video']['use_watermark_image'] ?? false;
 			$rtgodam_watermark_text         = sanitize_text_field( $this->easydam_settings['video']['watermark_text'] );
 			$rtgodam_watermark_url          = esc_url( $this->easydam_settings['video']['watermark_url'] );
 			$rtgodam_video_compress_quality = $this->easydam_settings['video']['video_compress_quality'] ?? 80;
@@ -268,7 +268,7 @@ class RTGODAM_Transcoder_Handler {
 						'callback_url'    => rawurlencode( $callback_url ),
 						'status_callback' => rawurlencode( $status_callback_url ),
 						'force'           => 0,
-						'formats'         => ( true === $autoformat ) ? ( ( 'video' === $type_array[0] ) ? 'mp4' : 'mp3' ) : $autoformat,
+						'formats'         => ( true === $autoformat ) ? ( ( ( isset( $type_array[0] ) ) && 'video' === $type_array[0] ) ? 'mp4' : 'mp3' ) : $autoformat,
 						'thumbnail_count' => $options_video_thumb,
 						'stream'          => true,
 						'watermark'       => boolval( $rtgodam_watermark ),
