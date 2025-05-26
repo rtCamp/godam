@@ -285,8 +285,8 @@ class Analytics extends Base {
 		$days          = $request->get_param( 'days' );
 		$video_id      = $request->get_param( 'video_id' );
 		$site_url      = $request->get_param( 'site_url' );
-		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
-		$api_key       = get_site_option( 'rtgodam-api-key', '' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
 
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
@@ -340,8 +340,8 @@ class Analytics extends Base {
 	 */
 	public function fetch_dashboard_metrics( WP_REST_Request $request ) {
 		$site_url      = $request->get_param( 'site_url' );
-		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
-		$api_key       = get_site_option( 'rtgodam-api-key', '' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
 
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
@@ -407,8 +407,8 @@ class Analytics extends Base {
 	public function fetch_dashboard_history( WP_REST_Request $request ) {
 		$days          = $request->get_param( 'days' );
 		$site_url      = $request->get_param( 'site_url' );
-		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
-		$api_key       = get_site_option( 'rtgodam-api-key', '' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
 
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
@@ -462,8 +462,8 @@ class Analytics extends Base {
 		$page          = $request->get_param( 'page' ) ?? 1;
 		$limit         = $request->get_param( 'limit' ) ?? 10;
 		$site_url      = $request->get_param( 'site_url' );
-		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
-		$api_key       = get_site_option( 'rtgodam-api-key', '' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
 
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(

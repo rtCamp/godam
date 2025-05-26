@@ -51,7 +51,7 @@ class Media_Library_Ajax {
 	 */
 	public function godam_media_library_ajax( $query_args ) {
 
-		$api_key = get_site_option( 'rtgodam-api-key', '' );
+		$api_key = get_option( 'rtgodam-api-key', '' );
 
 		if ( empty( $api_key ) ) {
 			return $query_args;
