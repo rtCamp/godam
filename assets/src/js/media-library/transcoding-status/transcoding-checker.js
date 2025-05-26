@@ -50,6 +50,9 @@ class TranscodingChecker {
 	filterPostIds( data ) {
 		this.postIds = this.postIds.filter( ( id ) => {
 			const post = data[ id ];
+			if ( ! post ) {
+				return false;
+			}
 			return post.progress !== 100 && post.status !== 'not_transcoding' && post.status !== 'failed';
 		} );
 	}
