@@ -16,6 +16,12 @@ jQuery( document ).on( 'gform_load_field_settings', function( event, field ) {
 		jQuery.each( fileSelectors, function( index, value ) {
 			jQuery( '#field_godam_video_file_selector_' + value ).prop( 'checked', true );
 		} );
+
+		// Set default value to 'on' if not defined
+		const syncVideo = field.godamVideoSync === undefined ? 'on' : field.godamVideoSync;
+
+		// Explicitly set checkbox state based on value
+		jQuery( 'input[name="field_godam_video_sync"]' ).prop( 'checked', syncVideo === 'on' );
 	}
 } );
 
@@ -39,6 +45,17 @@ jQuery( document ).ready( function() {
 		if ( typeof SetFieldProperty === 'function' ) {
 			// eslint-disable-next-line no-undef
 			SetFieldProperty( 'godamVideoFileSelectors', selectedSelectors );
+		}
+	} );
+
+	jQuery( 'input[name="field_godam_video_sync"]' ).on( 'change', function() {
+		// Get the checked state instead of value
+		const isChecked = jQuery( this ).prop( 'checked' );
+
+		// Save to the field - 'on' when checked, 'off' when unchecked
+		if ( typeof SetFieldProperty === 'function' ) {
+			// eslint-disable-next-line no-undef
+			SetFieldProperty( 'godamVideoSync', isChecked ? 'on' : 'off' );
 		}
 	} );
 } );

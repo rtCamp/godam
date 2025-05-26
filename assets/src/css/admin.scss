@@ -303,7 +303,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 }
 
 .rtgodam-hidden {
-	display: none;
+	display: none !important;
 }
 
 .gf-godam-video-preview {
@@ -311,4 +311,10 @@ $media-frame-width: calc(300px + 2 * 24px);
 	figure {
 		margin: 0;
 	}
+}
+
+.godam_no_license {
+
+	pointer-events: none;
+	opacity: 0.5;
 }

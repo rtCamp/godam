@@ -114,13 +114,6 @@ class Init {
 			filemtime( RTGODAM_PATH . 'assets/build/js/gf-entry-detail.js' ), 
 			true 
 		);
-
-		wp_enqueue_style(
-			'gf-entry-detail-style',
-			RTGODAM_URL . 'assets/build/css/gf-entry-detail.css',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/css/gf-entry-detail.css' )
-		);
 	}
 
 	/**
@@ -132,6 +125,8 @@ class Init {
 	 */
 	public function add_godam_settings_tooltip( $tooltips ) {
 		$tooltips['godam_file_selector_setting'] = sprintf( '<h6>%s</h6><p>%s</p>', __( 'Video file selector', 'godam' ), __( 'Select the file selection options from where user can upload/record video', 'godam' ) );
+		$tooltips['godam_video_sync_setting']    = sprintf( '<p>%s</p>', __( 'Save submitted video on GoDAM storage', 'godam' ) );
+
 		return $tooltips;
 	}
 
@@ -141,8 +136,28 @@ class Init {
 	 * @param int $position The position of the field setting.
 	 */
 	public function add_godam_recorder_field_setting( $position ) {
+
+		$valid_godam_license = rtgodam_is_api_key_valid();
+
 		if ( 50 == $position ) {
 			?>
+			<li class="godam-video-field-setting field_setting <?php echo $valid_godam_license ? 'rtgodam-hidden' : ''; ?>" style="display: none;">
+				<label class="section_label">
+					<?php esc_html_e( 'Save submitted video on GoDAM', 'godam' ); ?>
+					<?php gform_tooltip( 'godam_video_sync_setting' ); ?>
+				</label>
+
+				<!-- Checkbox-->
+				<div class="field_godam_video_sync <?php echo $valid_godam_license ? '' : 'godam_no_license'; ?>">
+					<input type="checkbox" id="field_godam_video_sync" class="field_godam_video_sync" name="field_godam_video_sync" checked" />
+					<label for="field_godam_video_sync">
+						<?php esc_html_e( 'Sync video', 'godam' ); ?>
+					</label>
+				</div>
+				<?php if ( ! $valid_godam_license ) : ?>
+					<p class="description"><?php esc_html_e( 'You need a GoDAM paid plan to use this feature', 'godam' ); ?></p>
+				<?php endif; ?>
+			</li>
 			<li class="godam-video-field-setting field_setting" style="display: none;">
 				<label class="section_label">
 					<?php esc_html_e( 'Choose file selector', 'godam' ); ?>
@@ -181,6 +196,7 @@ class Init {
 	 * Add editor script
 	 */
 	public function add_editor_script() {
+
 		wp_enqueue_script(
 			'gf-godam-recorder-editor-script',
 			RTGODAM_URL . 'assets/build/js/gf-godam-recorder-editor.js',
@@ -198,12 +214,18 @@ class Init {
 	 */
 	public function process_file_upload_to_godam( $entry, $form ) {
 
-		$form_title = $form['title'];
+		$form_title          = $form['title'];
+		$valid_godam_license = rtgodam_is_api_key_valid();
 
 		// Check if the form contains a godam_record field.
 		foreach ( $form['fields'] as $field ) {
 
 			if ( 'godam_record' !== $field->type ) {
+				continue;
+			}
+
+			if ( ! $valid_godam_license ) {
+				// If not valid license set to sync with GoDAM, skip processing.
 				continue;
 			}
 
@@ -286,28 +308,30 @@ class Init {
 
 		$api_key = get_site_option( 'rtgodam-api-key', '' );
 
+		$body = array_merge(
+			array(
+				'api_token'       => $api_key,
+				'job_type'        => 'stream',
+				'job_for'         => 'gf-godam-recorder',
+				'file_origin'     => rawurlencode( $file_url ),
+				'callback_url'    => rawurlencode( $callback_url ),
+				'status_callback' => rawurlencode( $status_callback_url ),
+				'force'           => 0,
+				'formats'         => $file_extension,
+				'thumbnail_count' => 0,
+				'stream'          => true,
+				'watermark'       => boolval( $rtgodam_watermark ),
+				'resolutions'     => array( 'auto' ),
+				'file_label'      => $form_title ?? 'Gravity Forms',
+			),
+			$watermark_to_use
+		);
+
 		$args = array(
 			'method'    => 'POST',
 			'sslverify' => false,
 			'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
-				'body'  => array_merge(
-					array(
-						'api_token'       => $api_key,
-						'job_type'        => 'stream',
-						'job_for'         => 'gf-godam-recorder',
-						'file_origin'     => rawurlencode( $file_url ),
-						'callback_url'    => rawurlencode( $callback_url ),
-						'status_callback' => rawurlencode( $status_callback_url ),
-						'force'           => 0,
-						'formats'         => $file_extension,
-						'thumbnail_count' => 0,
-						'stream'          => true,
-						'watermark'       => boolval( $rtgodam_watermark ),
-						'resolutions'     => array( 'auto' ),
-						'file_label'      => $form_title ?? 'Gravity Forms',
-					),
-					$watermark_to_use
-				),
+			'body'      => $body,
 		);
 
 		$transcoding_api_url = RTGODAM_API_BASE . '/api/';

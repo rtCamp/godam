@@ -110,7 +110,9 @@ document.addEventListener( 'DOMContentLoaded', function() {
 				const fileName = file.name || 'video.webm';
 				const fileType = file.type || 'video/webm';
 				const fileBlob = new Blob( [ file.data ], { type: fileType } );
+				// Attach the file name and type, and video duration.
 				const fileObject = new File( [ fileBlob ], fileName, {
+					...file,
 					type: fileType,
 					lastModified: Date.now(),
 				} );
