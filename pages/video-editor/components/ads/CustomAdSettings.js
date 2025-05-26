@@ -142,7 +142,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					{ __( 'This features is available in premium version', 'godam' ) }
 				</Notice>
 			}
-			<div className="flex flex-col items-start mb-4">
+			<div className="flex flex-col items-start">
 				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom Ad', 'godam' ) }</label>
 				<div className="flex gap-2">
 					<Button
@@ -213,9 +213,9 @@ const CustomAdSettings = ( { layerID } ) => {
 				type="url"
 			/>
 			{ ! isValid && (
-				<Notice className="mb-4" status="error" isDismissible={ false }>
+				<p className="text-red-500 -mt-3 mx-0 mb-0">
 					{ __( 'Please enter a valid URL (https://…)', 'godam' ) }
-				</Notice>
+				</p>
 			) }
 		</div>
 	);
