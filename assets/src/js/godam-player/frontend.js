@@ -1,4 +1,4 @@
-/* global godamSettings */
+/* global godamSettings, wpforms */
 
 /**
  * External dependencies
@@ -530,6 +530,11 @@ function GODAMPlayer( videoRef = null ) {
 
 			if ( ! layerElement ) {
 				return;
+			}
+
+			if ( typeof wpforms !== 'undefined' ) {
+				wpforms.scrollToError = function() {};
+				wpforms.animateScrollTop = function() {};
 			}
 
 			layerElement.classList.add( 'hidden' ); // Initially hidden
