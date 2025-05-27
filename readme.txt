@@ -83,6 +83,15 @@ Get started today and revolutionize the way you manage and deliver video content
 ✓ Flexible pricing options to suit different needs.
 ✓ Upgrade or cancel anytime based on usage.
 
+= Integrations =
+
+GoDAM works seamlessly with popular WordPress plugins to enhance interactivity and engagement:
+
+- [Gravity Forms](https://godam.io/features/gravity-forms/) – Add forms directly to your videos to collect leads and feedback.
+- [WPForms](https://wordpress.org/plugins/wpforms-lite/) – Integrate lightweight forms for surveys, signups, or user inputs.
+- [Contact Form 7](https://wordpress.org/plugins/contact-form-7/) – Use a classic contact form plugin inside your videos for engagement.
+- [WP-Polls](https://wordpress.org/plugins/wp-polls/) – Add live polls to your videos and gather audience opinions in real-time.
+
 == Installation ==
 Method 1: WordPress Dashboard
 1. Log in to WordPress (your-site.com/wp-admin).
