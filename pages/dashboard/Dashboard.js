@@ -41,11 +41,16 @@ const Dashboard = () => {
 	const totalTopVideosPages = topVideosResponse?.totalPages || 1;
 
 	useEffect( () => {
-		if ( dashboardMetrics?.errorType === 'invalid_key' ) {
-			const loadingEl = document.getElementById( 'loading-analytics-animation' );
-			const container = document.getElementById( 'dashboard-container' );
-			const overlay = document.getElementById( 'api-key-overlay' );
+		const loadingEl = document.getElementById( 'loading-analytics-animation' );
+		const container = document.getElementById( 'dashboard-container' );
+		const overlay = document.getElementById( 'api-key-overlay' );
 
+		const shouldShowOverlay =
+			dashboardMetrics?.errorType === 'invalid_key' ||
+			dashboardMetrics?.errorType === 'missing_key' ||
+			dashboardMetrics?.errorType === 'microservice_error';
+
+		if ( shouldShowOverlay ) {
 			if ( loadingEl ) {
 				loadingEl.style.display = 'none';
 			}
@@ -94,8 +99,8 @@ const Dashboard = () => {
 
 		const rows = topVideosData?.map( ( item ) => {
 			return [
+				item.title || item.video_id,
 				`Video ID: ${ item.video_id }`,
-				item.title || `Video ID: ${ item.video_id }`,
 				( item.video_size ? item.video_size.toFixed( 2 ) : 0 ) + ' MB',,
 				( ( item.plays / ( item.plays + 5 ) ) * 100 ).toFixed( 2 ) + '%',
 				item.plays,
@@ -216,11 +221,13 @@ const Dashboard = () => {
 			<div id="api-key-overlay" className="api-key-overlay hidden">
 				<div className="api-key-message">
 					<p>
-						{ __( 'Please ', 'godam' ) }
+						{ dashboardMetrics?.message || __(
+							'Your API key is missing or invalid. Please check your plugin settings.',
+							'godam',
+						) }
 						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( 'activate your API key', 'godam' ) }
+							{ __( ' Go to plugin settings', 'godam' ) }
 						</a>
-						{ __( ' to access the Dashboard feature', 'godam' ) }
 					</p>
 				</div>
 			</div>

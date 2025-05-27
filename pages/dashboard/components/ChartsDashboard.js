@@ -1,5 +1,7 @@
 /* global d3 */
-export function generateUsageDonutChart( selector, used, total, type = 'bandwidth', label = 'Used' ) {
+export function generateUsageDonutChart( selector, usedRaw, totalRaw, type = 'bandwidth', label = 'Used' ) {
+	const used = parseFloat( usedRaw ) || 0;
+	const total = parseFloat( totalRaw ) || 0;
 	const width = 300;
 	const height = 300;
 	const margin = 20;
@@ -149,7 +151,7 @@ function main() {
 
 	const playRateEl = document.getElementById( 'play-rate' );
 	if ( playRateEl ) {
-		playRateEl.innerText = `${ playRate.toFixed( 2 ) }%`;
+		playRateEl.innerText = `${ playRate?.toFixed( 2 ) }%`;
 	}
 
 	const playsEl = document.getElementById( 'plays' );
@@ -159,7 +161,7 @@ function main() {
 
 	const watchTimeEl = document.getElementById( 'watch-time' );
 	if ( watchTimeEl ) {
-		watchTimeEl.innerText = `${ playTime.toFixed( 2 ) }s`;
+		watchTimeEl.innerText = `${ playTime?.toFixed( 2 ) }s`;
 	}
 
 	const analyticsContainer = document.getElementById( 'video-analytics-container' );

@@ -25,15 +25,11 @@ export const dashboardAnalyticsApi = createApi( {
 				},
 			} ),
 			transformResponse: ( response ) => {
-				if (
-					response.status === 'error' &&
-					response.errorType === 'invalid_key'
-				) {
-					return { errorType: 'invalid_key' };
-				}
-
-				if ( response.status !== 'success' ) {
-					throw new Error( response.message );
+				if ( response.status === 'error' ) {
+					return {
+						errorType: response.errorType || 'unknown_error',
+						message: response.message || 'An unknown error occurred.',
+					};
 				}
 
 				return response.dashboard_metrics || {};
