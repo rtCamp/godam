@@ -1,5 +1,7 @@
 /* global d3 */
-export function generateUsageDonutChart( selector, used, total, type = 'bandwidth', label = 'Used' ) {
+export function generateUsageDonutChart( selector, usedRaw, totalRaw, type = 'bandwidth', label = 'Used' ) {
+	const used = parseFloat( usedRaw ) || 0;
+	const total = parseFloat( totalRaw ) || 0;
 	const width = 300;
 	const height = 300;
 	const margin = 20;
