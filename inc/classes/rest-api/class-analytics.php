@@ -43,7 +43,7 @@ class Analytics extends Base {
 						'video_id' => array(
 							'required'          => true,
 							'type'              => 'integer',
-							'description'       => 'The Video ID for fetching analytics data.',
+							'description'       => __( 'The Video ID for fetching analytics data.', 'godam' ),
 							'validate_callback' => function ( $param ) {
 								return is_numeric( $param ) && intval( $param ) > 0;
 							},
@@ -52,7 +52,7 @@ class Analytics extends Base {
 						'site_url' => array(
 							'required'          => true,
 							'type'              => 'string',
-							'description'       => 'The Site URL associated with the video.',
+							'description'       => __( 'The Site URL associated with the video.', 'godam' ),
 							'sanitize_callback' => 'esc_url_raw',
 						),
 					),
@@ -173,7 +173,7 @@ class Analytics extends Base {
 			return new WP_REST_Response(
 				array(
 					'status'    => 'error',
-					'message'   => 'Missing API key.',
+					'message'   => __( 'Missing API key.', 'godam' ),
 					'errorType' => 'missing_key',
 				),
 				200
@@ -198,7 +198,7 @@ class Analytics extends Base {
 			return new WP_REST_Response(
 				array(
 					'status'    => 'error',
-					'message'   => 'Unable to reach analytics server.',
+					'message'   => __( 'Unable to reach analytics server.', 'godam' ),
 					'errorType' => 'microservice_error',
 				),
 				200
@@ -209,7 +209,7 @@ class Analytics extends Base {
 		$data = json_decode( $body, true );
 
 		$http_code = wp_remote_retrieve_response_code( $response );
-		$detail    = $data['detail'] ?? 'Unexpected error from analytics server.';
+		$detail    = $data['detail'] ?? __( 'Unexpected error from analytics server.', 'godam' );
 
 		if ( 404 === $http_code || 400 === $http_code ) {
 			return new WP_REST_Response(
@@ -319,7 +319,7 @@ class Analytics extends Base {
 			return new WP_REST_Response(
 				array(
 					'status'  => 'error',
-					'message' => 'Invalid or unverified API key.',
+					'message' => __( 'Invalid or unverified API key.', 'godam' ),
 				),
 				200
 			);
@@ -341,7 +341,8 @@ class Analytics extends Base {
 			return new WP_REST_Response(
 				array(
 					'status'  => 'error',
-					'message' => 'Error fetching history data: ' . $response->get_error_message(),
+					/* translators: %s is the error message from the API response. */
+					'message' => sprintf( __( 'Error fetching history data: %s', 'godam' ), $response->get_error_message() ),
 				),
 				500
 			);
@@ -374,7 +375,7 @@ class Analytics extends Base {
 			return new WP_REST_Response(
 				array(
 					'status'    => 'error',
-					'message'   => 'Missing API key.',
+					'message'   => __( 'Missing API key.', 'godam' ),
 					'errorType' => 'missing_key',
 				),
 				200
@@ -407,7 +408,7 @@ class Analytics extends Base {
 			return new WP_REST_Response(
 				array(
 					'status'    => 'error',
-					'message'   => 'Unable to reach analytics server.',
+					'message'   => __( 'Unable to reach analytics server.', 'godam' ),
 					'errorType' => 'microservice_error',
 				),
 				200
@@ -416,7 +417,7 @@ class Analytics extends Base {
 
 		$http_code = wp_remote_retrieve_response_code( $response );
 		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
-		$detail    = $body['detail'] ?? 'Unexpected error from analytics server.';
+		$detail    = $body['detail'] ?? __( 'Unexpected error from analytics server.', 'godam' );
 
 		if ( 404 === $http_code || 400 === $http_code ) {
 			return new WP_REST_Response(
@@ -465,7 +466,7 @@ class Analytics extends Base {
 			return new WP_REST_Response(
 				array(
 					'status'  => 'error',
-					'message' => 'Invalid or unverified API key.',
+					'message' => __( 'Invalid or unverified API key.', 'godam' ),
 				),
 				200
 			);
@@ -520,7 +521,7 @@ class Analytics extends Base {
 			return new WP_REST_Response(
 				array(
 					'status'  => 'error',
-					'message' => 'Invalid or unverified API key.',
+					'message' => __( 'Invalid or unverified API key.', 'godam' ),
 				),
 				200
 			);
