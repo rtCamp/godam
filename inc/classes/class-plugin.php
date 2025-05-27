@@ -30,6 +30,7 @@ use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Polls;
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
+use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
 
 /**
  * Class Plugin.
@@ -53,6 +54,7 @@ class Plugin {
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
+		GoDAM_Video_Gallery::get_instance();
 
 		$this->load_post_types();
 		$this->load_taxonomies();

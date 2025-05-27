@@ -1,0 +1,64 @@
+/* Root container */
+.godam-video-gallery {
+	display: grid;
+	gap: 24px;
+	margin: 30px auto;
+}
+
+/* Grid layout with dynamic columns */
+.godam-video-gallery.columns-1 {
+	grid-template-columns: 1fr;
+}
+
+.godam-video-gallery.columns-2 {
+	grid-template-columns: repeat(2, 1fr);
+}
+
+.godam-video-gallery.columns-3 {
+	grid-template-columns: repeat(3, 1fr);
+}
+
+.godam-video-gallery.columns-4 {
+	grid-template-columns: repeat(4, 1fr);
+}
+
+.godam-video-gallery.columns-5 {
+	grid-template-columns: repeat(5, 1fr);
+}
+
+.godam-video-gallery.columns-6 {
+	grid-template-columns: repeat(6, 1fr);
+}
+
+/* Individual video card */
+.godam-video-item {
+	background-color: #fff;
+	border: 1px solid #e5e5e5;
+	border-radius: 8px;
+	padding: 10px;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+	transition: box-shadow 0.2s ease;
+}
+
+.godam-video-item:hover {
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Make sure video is responsive */
+.godam-video-item video,
+.godam-video-item .godam-player-container {
+	width: 100%;
+	height: auto;
+	border-radius: 6px;
+	overflow: hidden;
+	display: block;
+}
+
+/* Optional: spacing below videos for captions or descriptions */
+.godam-video-item h4,
+.godam-video-item p {
+	margin-top: 8px;
+	font-size: 0.9rem;
+	color: #333;
+	text-align: center;
+}
