@@ -11,6 +11,7 @@
 defined( 'ABSPATH' ) || exit;
 
 if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
+
 	/**
 	 * Add a field for the transcoded URL to the media attachment edit screen.
 	 *
@@ -55,6 +56,7 @@ add_filter( 'attachment_fields_to_edit', 'rtgodam_add_transcoded_url_field', 10,
 
 
 if ( ! function_exists( 'rtgodam_save_transcoded_url_field' ) ) {
+
 	/**
 	 * Save the transcoded URL field when the attachment is saved.
 	 *
@@ -89,6 +91,7 @@ add_filter( 'attachment_fields_to_save', 'rtgodam_save_transcoded_url_field', 10
 
 
 if ( ! function_exists( 'rtgodam_register_transcoded_url_meta' ) ) {
+
 	/**
 	 * Register the transcoded URL meta field.
 	 */
@@ -112,7 +115,7 @@ add_action( 'init', 'rtgodam_register_transcoded_url_meta' );
 
 
 
-if ( ! function_exists( 'rtt_set_video_thumbnail' ) ) {
+if ( ! function_exists( 'rtgodam_rtt_set_video_thumbnail' ) ) {
 
 	/**
 	 * Set the video thumbnail
@@ -121,7 +124,7 @@ if ( ! function_exists( 'rtt_set_video_thumbnail' ) ) {
 	 *
 	 * @param number $id rtMedia activity ID.
 	 */
-	function rtt_set_video_thumbnail( $id ) {
+	function rtgodam_rtt_set_video_thumbnail( $id ) {
 		$media_type    = rtmedia_type( $id );
 		$attachment_id = rtmedia_media_id( $id );      // Get the wp attachment ID.
 		$thumbnail     = rtgodam_filter_input( INPUT_POST, 'rtmedia-thumbnail', FILTER_SANITIZE_URL );
@@ -154,10 +157,11 @@ if ( ! function_exists( 'rtt_set_video_thumbnail' ) ) {
 	}
 }
 
-add_action( 'rtmedia_after_update_media', 'rtt_set_video_thumbnail', 12 );
+add_action( 'rtmedia_after_update_media', 'rtgodam_rtt_set_video_thumbnail', 12 );
 
 
 if ( ! function_exists( 'rtgodam_rtt_update_wp_media_thumbnail' ) ) {
+
 	/**
 	 * Set the cover art/video thumbnail for the videos which are not uploaded from the rtMedia activity
 	 *
@@ -165,7 +169,6 @@ if ( ! function_exists( 'rtgodam_rtt_update_wp_media_thumbnail' ) ) {
 	 * @param string $thumb_url     Video thumbnail URL.
 	 * @param int    $attachment_id Attachment ID of the media/video for which thumbnail has to be set.
 	 */
-
 	function rtgodam_rtt_update_wp_media_thumbnail( $thumb_url, $attachment_id ) {
 		if ( class_exists( 'RTMediaModel' ) ) {
 			$model = new RTMediaModel();
