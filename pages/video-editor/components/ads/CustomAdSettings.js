@@ -23,9 +23,6 @@ const CustomAdSettings = ( { layerID } ) => {
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 	const [ inputValue, setInputValue ] = useState( layer?.click_link || '' );
 	const [ isValid, setIsValid ] = useState( true );
-
-	// Debounced input value
-	const debouncedInput = useDebounce( inputValue, 500 );
 	const dispatch = useDispatch();
 
 	const OpenVideoSelector = () => {
@@ -54,22 +51,6 @@ const CustomAdSettings = ( { layerID } ) => {
 		fileFrame.open();
 	};
 
-	function useDebounce( value, delay ) {
-		const [ debouncedValue, setDebouncedValue ] = useState( value );
-
-		useEffect( () => {
-			const handler = setTimeout( () => {
-				setDebouncedValue( value );
-			}, delay );
-
-			return () => {
-				clearTimeout( handler );
-			};
-		}, [ value, delay ] );
-
-		return debouncedValue;
-	}
-
 	// URL validation function
 	const isValidURL = ( url ) => {
 		try {
@@ -80,9 +61,11 @@ const CustomAdSettings = ( { layerID } ) => {
 		}
 	};
 
-	useEffect( () => {
-		if ( debouncedInput === '' ) {
-			// Allow empty input (optional, adjust as needed)
+	const handleChange = ( value ) => {
+		setInputValue( value );
+
+		if ( value === '' ) {
+			// Allow empty input
 			setIsValid( true );
 			// Optionally update field if you want to clear it on empty
 			dispatch(
@@ -91,7 +74,7 @@ const CustomAdSettings = ( { layerID } ) => {
 			return;
 		}
 
-		const valid = isValidURL( debouncedInput );
+		const valid = isValidURL( value );
 		setIsValid( valid );
 
 		if ( valid ) {
@@ -99,14 +82,14 @@ const CustomAdSettings = ( { layerID } ) => {
 				updateLayerField( {
 					id: layer.id,
 					field: 'click_link',
-					value: debouncedInput,
+					value,
 				} ),
 			);
+		} else {
+			dispatch(
+				updateLayerField( { id: layer.id, field: 'click_link', value: layer?.click_link } ),
+			);
 		}
-	}, [ debouncedInput, dispatch, layer.id, updateLayerField ] );
-
-	const handleChange = ( value ) => {
-		setInputValue( value );
 	};
 
 	useEffect( () => {

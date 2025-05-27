@@ -11,6 +11,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// prevent default behavior of Gravity Forms autoscroll on submission.
+add_filter( 'gform_confirmation_anchor', '__return_false' );
+
 // attributes.
 $autoplay      = ! empty( $attributes['autoplay'] );
 $controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
@@ -98,9 +101,6 @@ if ( ! empty( $appearance_color ) ) {
 } elseif ( ! empty( $brand_color ) ) {
 	$easydam_control_bar_color = $brand_color;
 }
-
-// prevent default behavior of Gravity Forms autoscroll on submission.
-add_filter( 'gform_confirmation_anchor', '__return_false' );
 
 $easydam_hover_color        = ! empty( $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
 $easydam_hover_zoom         = ! empty( $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
