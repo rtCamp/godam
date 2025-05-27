@@ -149,7 +149,7 @@ function main() {
 
 	const playRateEl = document.getElementById( 'play-rate' );
 	if ( playRateEl ) {
-		playRateEl.innerText = `${ playRate.toFixed( 2 ) }%`;
+		playRateEl.innerText = `${ playRate?.toFixed( 2 ) }%`;
 	}
 
 	const playsEl = document.getElementById( 'plays' );
@@ -159,7 +159,7 @@ function main() {
 
 	const watchTimeEl = document.getElementById( 'watch-time' );
 	if ( watchTimeEl ) {
-		watchTimeEl.innerText = `${ playTime.toFixed( 2 ) }s`;
+		watchTimeEl.innerText = `${ playTime?.toFixed( 2 ) }s`;
 	}
 
 	const analyticsContainer = document.getElementById( 'video-analytics-container' );

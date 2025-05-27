@@ -168,12 +168,13 @@ class Analytics extends Base {
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
-		// Check if API key is valid.
-		if ( empty( $account_token ) || 'unverified' === $account_token ) {
+		// Check if API key is missing.
+		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
 				array(
-					'status'  => 'error',
-					'message' => 'Invalid or unverified API key.',
+					'status'    => 'error',
+					'message'   => 'Missing API key.',
+					'errorType' => 'missing_key',
 				),
 				200
 			);
@@ -196,15 +197,41 @@ class Analytics extends Base {
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
 				array(
-					'status'  => 'error',
-					'message' => 'Error fetching analytics data: ' . $response->get_error_message(),
+					'status'    => 'error',
+					'message'   => 'Unable to reach analytics server.',
+					'errorType' => 'microservice_error',
 				),
-				500
+				200
 			);
 		}
 
 		$body = wp_remote_retrieve_body( $response );
 		$data = json_decode( $body, true );
+
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$detail    = $data['detail'] ?? 'Unexpected error from analytics server.';
+
+		if ( 404 === $http_code || 400 === $http_code ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'invalid_key',
+				),
+				200
+			);
+		}
+
+		if ( $http_code >= 500 ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
 
 		// Return analytics data if available.
 		if ( isset( $data['processed_analytics'] ) ) {
@@ -343,12 +370,12 @@ class Analytics extends Base {
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
-		if ( empty( $account_token ) || 'unverified' === $account_token ) {
+		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
 				array(
 					'status'    => 'error',
-					'message'   => 'Invalid or unverified API key.',
-					'errorType' => 'invalid_key',
+					'message'   => 'Missing API key.',
+					'errorType' => 'missing_key',
 				),
 				200
 			);
@@ -379,15 +406,39 @@ class Analytics extends Base {
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
 				array(
-					'status'            => 'error',
-					'message'           => $response->get_error_message(),
-					'dashboard_metrics' => $empty_metrics,
+					'status'    => 'error',
+					'message'   => 'Unable to reach analytics server.',
+					'errorType' => 'microservice_error',
 				),
-				500
+				200
 			);
 		}
 
-		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+		$detail    = $body['detail'] ?? 'Unexpected error from analytics server.';
+
+		if ( 404 === $http_code || 400 === $http_code ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'invalid_key',
+				),
+				200
+			);
+		}
+
+		if ( $http_code >= 500 ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
 
 		return new WP_REST_Response(
 			array(
@@ -505,7 +556,7 @@ class Analytics extends Base {
 			if ( ! empty( $video['video_id'] ) ) {
 				$attachment_id = intval( $video['video_id'] );
 				$file_path     = get_attached_file( $attachment_id );
-		
+
 				if ( file_exists( $file_path ) ) {
 					$file_size           = filesize( $file_path );
 					$video['video_size'] = round( $file_size / ( 1024 * 1024 ), 2 );
