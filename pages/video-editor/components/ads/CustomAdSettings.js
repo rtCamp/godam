@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
  */
 import { Button, TextControl, ToggleControl, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 /**
  * Internal dependencies
@@ -21,7 +21,6 @@ const CustomAdSettings = ( { layerID } ) => {
 	);
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
-	const [ inputValue, setInputValue ] = useState( layer?.click_link || '' );
 	const [ isValid, setIsValid ] = useState( true );
 	const dispatch = useDispatch();
 
@@ -62,8 +61,6 @@ const CustomAdSettings = ( { layerID } ) => {
 	};
 
 	const handleChange = ( value ) => {
-		setInputValue( value );
-
 		dispatch(
 			updateLayerField( {
 				id: layer.id,
@@ -75,10 +72,6 @@ const CustomAdSettings = ( { layerID } ) => {
 		const valid = isValidURL( value );
 		setIsValid( valid );
 	};
-
-	useEffect( () => {
-		setInputValue( layer?.click_link || '' );
-	}, [ layer?.click_link ] );
 
 	// If we want to disable the premium layers the we can use this code
 	// const isValidAPIKey = window?.videoData?.valid_api_key;
@@ -172,7 +165,7 @@ const CustomAdSettings = ( { layerID } ) => {
 				label={ __( 'Click link', 'godam' ) }
 				placeholder="https://example"
 				help={ __( 'Enter the URL to redirect when the ad is clicked', 'godam' ) }
-				value={ inputValue }
+				value={ layer?.click_link }
 				className="mb-4"
 				onChange={ handleChange }
 				disabled={ adServer === 'ad-server' || ! isValidAPIKey }
