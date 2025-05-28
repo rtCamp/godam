@@ -188,10 +188,9 @@ class Media_Library_Ajax {
 			return;
 		}
 
-		$account_token = get_option( 'rtgodam-account-token', '' );
-		$api_key       = get_option( 'rtgodam-api-key', '' );
+		$api_key = get_option( 'rtgodam-api-key', '' );
 
-		if ( empty( $account_token ) || empty( $api_key ) ) {
+		if ( empty( $api_key ) ) {
 			return;
 		}
 
