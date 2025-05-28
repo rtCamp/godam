@@ -9,24 +9,24 @@ import DOMPurify from 'isomorphic-dompurify';
  */
 import {
 	Button,
-	Modal,
 	SelectControl,
 	Panel,
 	PanelBody,
 } from '@wordpress/components';
-import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
+import { chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import { removeLayer, updateLayerField } from '../../redux/slice/videoSlice';
+import { updateLayerField } from '../../redux/slice/videoSlice';
 import TextCTA from '../cta/TextCTA';
 import ImageCTA from '../cta/ImageCTA';
 import HtmlCTA from '../cta/HtmlCTA';
 import LayerControls from '../LayerControls';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
+import LayersHeader from './LayersHeader.js';
 
 // A DOMPurify config similar to what wp_kses_post() allows
 const wpKsesAllowed = {
@@ -43,8 +43,7 @@ const wpKsesAllowed = {
 	ALLOW_DATA_ATTR: false,
 };
 
-const CTALayer = ( { layerID, goBack } ) => {
-	const [ isOpen, setOpen ] = useState( false );
+const CTALayer = ( { layerID, goBack, duration } ) => {
 	const [ formHTML, setFormHTML ] = useState( '' );
 	const [ imageCtaUrl, setImageCtaUrl ] = useState( '' );
 	const dispatch = useDispatch();
@@ -54,10 +53,6 @@ const CTALayer = ( { layerID, goBack } ) => {
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
-	const handleDeleteLayer = () => {
-		dispatch( removeLayer( { id: layer.id } ) );
-		goBack();
-	};
 
 	const handleCTATypeSelect = ( val ) => {
 		dispatch(
@@ -139,23 +134,7 @@ const CTALayer = ( { layerID, goBack } ) => {
 
 	return (
 		<>
-			<div className="flex justify-between items-center border-b mb-3">
-				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="text-base">{ __( 'CTA layer at', 'godam' ) } { layer.displayTime }s</p>
-				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
-				{ isOpen && (
-					<Modal title={ __( 'Delete layer', 'godam' ) } onRequestClose={ () => setOpen( false ) }>
-						<div className="flex justify-between items-center gap-3">
-							<Button className="w-full justify-center" isDestructive variant="primary" onClick={ handleDeleteLayer }>
-								{ __( 'Delete layer', 'godam' ) }
-							</Button>
-							<Button className="w-full justify-center" variant="secondary" onClick={ () => setOpen( false ) }>
-								{ __( 'Cancel', 'godam' ) }
-							</Button>
-						</div>
-					</Modal>
-				) }
-			</div>
+			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
 			<div className="flex flex-col godam-form-group">
 				<p className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</p>

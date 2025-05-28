@@ -9,7 +9,6 @@ import { useDispatch, useSelector } from 'react-redux';
  */
 import {
 	Button,
-	Modal,
 	TextControl,
 	ToggleControl,
 	DropdownMenu,
@@ -18,7 +17,6 @@ import {
 	Notice,
 } from '@wordpress/components';
 import {
-	arrowLeft,
 	trash,
 	plus,
 	chevronDown,
@@ -32,22 +30,20 @@ import { useState, useRef, useEffect } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
+import { updateLayerField } from '../../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import LayerControls from '../LayerControls';
 import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import LayersHeader from './LayersHeader';
 
-const HotspotLayer = ( { layerID, goBack } ) => {
+const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
 
 	const hotspots = layer?.hotspots || [];
-
-	// Delete modal
-	const [ isDeleteModalOpen, setDeleteModalOpen ] = useState( false );
 	// Track expanded hotspot
 	const [ expandedHotspotIndex, setExpandedHotspotIndex ] = useState( null );
 
@@ -87,11 +83,6 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 		);
 	};
 
-	const handleDeleteLayer = () => {
-		dispatch( removeLayer( { id: layer.id } ) );
-		goBack();
-	};
-
 	// Expand/hide a hotspot’s panel
 	const toggleHotspotExpansion = ( index ) => {
 		setExpandedHotspotIndex( expandedHotspotIndex === index ? null : index );
@@ -124,44 +115,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 
 	return (
 		<>
-			<div className="flex justify-between items-center pb-3 border-b mb-3">
-				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="font-semibold">
-					{ __( 'Hotspot Layer at', 'godam' ) } { layer.displayTime }s
-				</p>
-				<Button
-					icon={ trash }
-					isDestructive
-					onClick={ () => setDeleteModalOpen( true ) }
-				/>
-				{ isDeleteModalOpen && (
-					<Modal
-						title={ __( 'Delete Hotspot Layer', 'godam' ) }
-						onRequestClose={ () => setDeleteModalOpen( false ) }
-					>
-						<div className="flex justify-between items-center gap-3">
-							<Button
-								className="w-full justify-center"
-								isDestructive
-								variant="primary"
-								onClick={ () => {
-									handleDeleteLayer();
-									setDeleteModalOpen( false );
-								} }
-							>
-								{ __( 'Delete Layer', 'godam' ) }
-							</Button>
-							<Button
-								className="w-full justify-center"
-								variant="secondary"
-								onClick={ () => setDeleteModalOpen( false ) }
-							>
-								{ __( 'Cancel', 'godam' ) }
-							</Button>
-						</div>
-					</Modal>
-				) }
-			</div>
+			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
 			{
 				! isValidAPIKey &&
