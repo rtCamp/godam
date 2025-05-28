@@ -322,7 +322,7 @@ class Init {
 				'stream'          => true,
 				'watermark'       => boolval( $rtgodam_watermark ),
 				'resolutions'     => array( 'auto' ),
-				'file_label'      => $form_title ?? 'Gravity Forms',
+				'folder_name'     => $form_title ?? 'Gravity Forms',
 			),
 			$watermark_to_use
 		);
