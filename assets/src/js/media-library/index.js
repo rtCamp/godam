@@ -12,8 +12,7 @@ import mediaFrameSelect from './views/media-frame-select.js';
 
 import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-view.js';
 
-import MediaDateRangeListViewFilter from './views/filters/media-date-range-filter-list-view.js';
-import { isFolderOrgDisabled, isUploadPage } from './utility.js';
+import { isFolderOrgDisabled, isUploadPage, addManageMediaButton } from './utility.js';
 
 /**
  * MediaLibrary class.
@@ -31,6 +30,7 @@ class MediaLibrary {
 	onDOMContentLoaded() {
 		this.setupMediaLibraryRoot();
 		this.initializeDateRangeFilter();
+		addManageMediaButton();
 	}
 
 	setupAttachmentBrowser() {
@@ -62,23 +62,6 @@ class MediaLibrary {
 
 	initializeDateRangeFilter() {
 		new MediaDateRangeFilter(
-			'media-date-range-filter',
-			'media-date-range-filter-start',
-			'media-date-range-filter-end',
-		);
-	}
-
-	setupMediaLibraryRoot() {
-		if ( ! isFolderOrgDisabled() && isUploadPage() ) {
-			const mediaLibraryRoot = document.createElement( 'div' );
-			mediaLibraryRoot.id = 'rt-transcoder-media-library-root';
-			const wpbody = document.querySelector( '#wpbody' );
-			wpbody.insertBefore( mediaLibraryRoot, wpbody.firstChild );
-		}
-	}
-
-	initializeDateRangeFilter() {
-		new MediaDateRangeListViewFilter(
 			'media-date-range-filter',
 			'media-date-range-filter-start',
 			'media-date-range-filter-end',

@@ -183,6 +183,7 @@ class Assets {
 				'url'      => get_rest_url( get_current_blog_id() ),
 				'home_url' => get_home_url( get_current_blog_id() ),
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
+				'api_base' => RTGODAM_API_BASE,
 			)
 		);
 
