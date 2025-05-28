@@ -11,6 +11,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// prevent default behavior of Gravity Forms autoscroll on submission.
+add_filter( 'gform_confirmation_anchor', '__return_false' );
+
 // attributes.
 $autoplay      = ! empty( $attributes['autoplay'] );
 $controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
