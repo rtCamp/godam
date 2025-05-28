@@ -7,43 +7,23 @@ import Editor from '@monaco-editor/react';
 /**
  * WordPress dependencies
  */
-import { Button, ToggleControl, Modal, Panel, PanelBody, Notice } from '@wordpress/components';
-import { arrowLeft, trash } from '@wordpress/icons';
+import { ToggleControl, Panel, PanelBody, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
+import { updateLayerField } from '../../redux/slice/videoSlice';
 
 import GravityForm from '../forms/GravityForm';
 import WPForm from '../forms/WPForm';
 import CF7 from '../forms/CF7';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
+import LayersHeader from './LayersHeader.js';
 
-const FormLayer = ( { layerID, goBack } ) => {
-	const [ isOpen, setOpen ] = useState( false );
+const FormLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
-
-	function getFormPluginName( formType ) {
-		switch ( formType ) {
-			case 'gravity':
-				return 'Gravity Forms';
-			case 'wpforms':
-				return 'WPForms';
-			case 'cf7':
-				return 'Contact Form 7';
-			default:
-				return 'Gravity Forms';
-		}
-	}
-
-	const handleDeleteLayer = () => {
-		dispatch( removeLayer( { id: layer.id } ) );
-		goBack();
-	};
 
 	// If we want to disable the premium layers the we can use this code
 	// const isValidAPIKey = window?.videoData?.valid_api_key;
@@ -65,23 +45,7 @@ const FormLayer = ( { layerID, goBack } ) => {
 
 	return (
 		<>
-			<div className="flex justify-between items-center border-b mb-3">
-				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="text-base">{ getFormPluginName( layer?.form_type ) }{ __( ' layer at', 'godam' ) } { layer.displayTime }s</p>
-				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
-				{ isOpen && (
-					<Modal title={ __( 'Delete layer', 'godam' ) } onRequestClose={ () => setOpen( false ) }>
-						<div className="flex justify-between items-center gap-3">
-							<Button className="w-full justify-center" isDestructive variant="primary" onClick={ handleDeleteLayer }>
-								{ __( 'Delete layer', 'godam' ) }
-							</Button>
-							<Button className="w-full justify-center" variant="secondary" onClick={ () => setOpen( false ) }>
-								{ __( 'Cancel', 'godam' ) }
-							</Button>
-						</div>
-					</Modal>
-				) }
-			</div>
+			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
 			{
 				! isValidAPIKey &&
