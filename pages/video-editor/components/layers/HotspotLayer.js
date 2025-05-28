@@ -26,7 +26,7 @@ import {
 	moreVertical,
 	check,
 } from '@wordpress/icons';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { useState, useRef, useEffect } from '@wordpress/element';
 
 /**
@@ -216,12 +216,17 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 								className="flex-1 text-left"
 								onClick={ () => toggleHotspotExpansion( index ) }
 							>
-								{ `Hotspot ${ index + 1 }` }
+								{
+									/* translators: %d is the hotspot index */
+									sprintf( __( 'Hotspot %d', 'godam' ), index + 1 )
+								}
 							</Button>
 							<DropdownMenu
 								icon={ moreVertical }
 								label={ `Hotspot ${ index + 1 } options` }
-								toggleProps={ { 'aria-label': `Options for Hotspot ${ index + 1 }` } }
+								/* translators: %d is the hotspot index */
+								toggleProps={ { 'aria-label': sprintf( __( 'Options for Hotspot %d', 'godam' ), index + 1 ) } }
+
 							>
 								{ () => (
 									<>

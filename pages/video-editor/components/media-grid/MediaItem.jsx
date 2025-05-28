@@ -73,7 +73,7 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 						},
 					] }
 					icon={ <Icon icon={ moreHorizontalMobile } /> }
-					label="Quick actions."
+					label={ __( 'Quick actions.', 'godam' ) }
 				/>
 
 				{ item?.fileLength && <span className="godam-video-list__video__thumbnail__time text-xs text-white font-bold">{ item?.fileLength }</span> }
