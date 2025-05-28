@@ -37,6 +37,15 @@ class GoDAM_Video_Gallery {
 			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-gallery.css' )
 		);
+
+		wp_register_script(
+			'godam-gallery-script',
+			RTGODAM_URL . 'assets/build/js/godam-gallery.js',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-gallery.js' ),
+			true
+		);
+		wp_enqueue_script( 'godam-gallery-script' );
 	}
 
 	/**
@@ -76,11 +85,48 @@ class GoDAM_Video_Gallery {
 		if ( $query->have_posts() ) {
 			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) . ' columns-' . intval( $atts['columns'] ) . '">';
 			foreach ( $query->posts as $video ) {
+				$video_id  = intval( $video->ID );
+				$video_url = wp_get_attachment_url( $video_id );
+			
+				$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
+				$fallback_thumb   = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
+			
+				$thumbnail = $custom_thumbnail ?: $fallback_thumb;
+			
+				// Get video duration using file path.
+				$file_path = get_attached_file( $video_id );
+				$duration  = null;
+			
+				if ( file_exists( $file_path ) ) {
+					if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+						require_once ABSPATH . 'wp-admin/includes/media.php';
+					}
+			
+					$metadata = wp_read_video_metadata( $file_path );
+					if ( ! empty( $metadata['length_formatted'] ) ) {
+						$duration = $metadata['length_formatted'];
+					}
+				}
+			
 				echo '<div class="godam-video-item">';
-				echo do_shortcode( '[godam_video id="' . intval( $video->ID ) . '"]' );
+				echo '<div class="godam-video-thumbnail" data-video-url="' . esc_url( $video_url ) . '" data-video-id="' . esc_attr( $video_id ) . '">';
+				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr__( 'Video Thumbnail', 'godam' ) . '" />';
+				if ( $duration ) {
+					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
+				}
+				echo '</div>';
 				echo '</div>';
 			}
-			echo '</div>';
+			echo '
+			</div>
+
+			<div id="godam-video-modal" class="godam-modal hidden">
+				<div class="godam-modal-overlay"></div>
+				<div class="godam-modal-content">
+					<span class="godam-modal-close">&times;</span>
+					<video id="godam-modal-video" controls></video>
+				</div>
+			</div>';
 		} else {
 			echo '<p>' . esc_html__( 'No videos found.', 'godam' ) . '</p>';
 		}

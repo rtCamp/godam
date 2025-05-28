@@ -119,6 +119,13 @@ const deactivationJS = {
 	},
 };
 
+const godamGallery = {
+	...sharedConfig,
+	entry: {
+		'godam-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-gallery.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -188,6 +195,7 @@ module.exports = [
 	godamPlayerFrontend,
 	godamPlayerAnalytics,
 	deactivationJS,
+	godamGallery,
 	styles, // Do not remove this.
 	pages,
 ];
