@@ -25,6 +25,18 @@ class GoDAM_Video_Gallery {
 	final protected function __construct() {
 		add_shortcode( 'godam_video_gallery', array( $this, 'render' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
+
+		add_action(
+			'wp_enqueue_scripts',
+			function () {
+				if ( ! is_admin() ) {
+					wp_enqueue_script( 'godam-player-frontend-script' );
+					wp_enqueue_script( 'godam-player-analytics-script' );
+					wp_enqueue_style( 'godam-player-frontend-style' );
+					wp_enqueue_style( 'godam-player-style' );
+				}
+			} 
+		);
 	}
 
 	/**
@@ -85,8 +97,7 @@ class GoDAM_Video_Gallery {
 		if ( $query->have_posts() ) {
 			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) . ' columns-' . intval( $atts['columns'] ) . '">';
 			foreach ( $query->posts as $video ) {
-				$video_id  = intval( $video->ID );
-				$video_url = wp_get_attachment_url( $video_id );
+				$video_id = intval( $video->ID );
 			
 				$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
 				$fallback_thumb   = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
@@ -109,7 +120,7 @@ class GoDAM_Video_Gallery {
 				}
 			
 				echo '<div class="godam-video-item">';
-				echo '<div class="godam-video-thumbnail" data-video-url="' . esc_url( $video_url ) . '" data-video-id="' . esc_attr( $video_id ) . '">';
+				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr__( 'Video Thumbnail', 'godam' ) . '" />';
 				if ( $duration ) {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
@@ -122,10 +133,7 @@ class GoDAM_Video_Gallery {
 
 			<div id="godam-video-modal" class="godam-modal hidden">
 				<div class="godam-modal-overlay"></div>
-				<div class="godam-modal-content">
-					<span class="godam-modal-close">&times;</span>
-					<video id="godam-modal-video" controls></video>
-				</div>
+				<div class="godam-modal-content"></div>
 			</div>';
 		} else {
 			echo '<p>' . esc_html__( 'No videos found.', 'godam' ) . '</p>';
