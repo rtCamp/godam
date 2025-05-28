@@ -64,28 +64,16 @@ const CustomAdSettings = ( { layerID } ) => {
 	const handleChange = ( value ) => {
 		setInputValue( value );
 
-		if ( value === '' ) {
-			// Allow empty input
-			setIsValid( true );
-			// Optionally update field if you want to clear it on empty
-			dispatch(
-				updateLayerField( { id: layer.id, field: 'click_link', value: '' } ),
-			);
-			return;
-		}
+		dispatch(
+			updateLayerField( {
+				id: layer.id,
+				field: 'click_link',
+				value,
+			} ),
+		);
 
 		const valid = isValidURL( value );
 		setIsValid( valid );
-
-		if ( valid ) {
-			dispatch(
-				updateLayerField( {
-					id: layer.id,
-					field: 'click_link',
-					value,
-				} ),
-			);
-		}
 	};
 
 	useEffect( () => {
@@ -188,7 +176,6 @@ const CustomAdSettings = ( { layerID } ) => {
 				className="mb-4"
 				onChange={ handleChange }
 				disabled={ adServer === 'ad-server' || ! isValidAPIKey }
-				isInvalid={ ! isValid }
 				type="url"
 			/>
 			{ ! isValid && (
