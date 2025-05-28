@@ -37,6 +37,7 @@ class Media_Library_Ajax {
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
 		add_action( 'add_attachment', array( $this, 'add_media_library_taxonomy_on_media_upload' ), 10, 1 );
+		add_action( 'add_attachment', array( $this, 'upload_media_to_frappe_backend' ), 10, 1 );
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
 
 		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
@@ -173,6 +174,64 @@ class Media_Library_Ajax {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Upload media to the Frappe backend.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return void
+	 */
+	public function upload_media_to_frappe_backend( $attachment_id ) {
+		// Only if attachment type if image.
+		if ( 'image' !== substr( get_post_mime_type( $attachment_id ), 0, 5 ) ) {
+			return;
+		}
+
+		$api_key = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) ) {
+			return;
+		}
+
+		$api_url = RTGODAM_API_BASE . '/api/resource/Transcoder Job';
+
+		$attachment_url = wp_get_attachment_url( $attachment_id );
+
+		// Request params.
+		$params = array(
+			'api_token'         => $api_key,
+			'job_type'          => 'image',
+			'file_origin'       => $attachment_url,
+			'orignal_file_name' => get_the_title( $attachment_id ),
+		);
+
+		$upload_media = wp_remote_post(
+			$api_url,
+			array(
+				'body'    => wp_json_encode( $params ),
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
+			)
+		);
+
+		if ( ! is_wp_error( $upload_media ) &&
+			(
+				isset( $upload_media['response']['code'] ) &&
+				200 === intval( $upload_media['response']['code'] )
+			)
+		) {
+			$upload_info = json_decode( $upload_media['body'] );
+
+			if ( isset( $upload_info->data ) && isset( $upload_info->data->name ) ) {
+				$job_id = $upload_info->data->name;
+				update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
+			}
+		}
+
+		// Note: For now media is only uploaded to the GoDAM and we are storing the transcoding job ID in the attachment meta.
+		// Todo: In future we can add more logic to handle the transcoded image URLs to provide image CDN feature.
 	}
 
 	/**
