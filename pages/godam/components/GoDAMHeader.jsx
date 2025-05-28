@@ -35,7 +35,7 @@ const GodamHeader = () => {
 							variant="tertiary"
 							href={ helpLink }
 							target="_blank"
-							className="rounded-full"
+							className="rounded-full godam-button-icon"
 							label={ __( 'Need help?', 'godam' ) }
 							icon={ help }
 						/>

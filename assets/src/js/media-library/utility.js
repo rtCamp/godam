@@ -49,9 +49,10 @@ function addManageMediaButton() {
 	const referenceElement = document.querySelector( '.wrap .page-title-action' );
 
 	const godamMediaLink = window.godamRestRoute?.api_base + '/web/media-library';
+	const page = window.easydamMediaLibrary?.page || '';
 
 	// Insert the button after referenceElement
-	if ( referenceElement ) {
+	if ( referenceElement && 'upload' === page ) {
 		const button = document.createElement( 'a' );
 		button.className = 'button godam-button';
 		button.href = godamMediaLink ?? '#';
