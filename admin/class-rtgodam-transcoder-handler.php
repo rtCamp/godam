@@ -171,8 +171,9 @@ class RTGODAM_Transcoder_Handler {
 	 * @param array  $wp_metadata          Metadata of the attachment.
 	 * @param int    $attachment_id     ID of attachment.
 	 * @param string $autoformat        If true then generating thumbs only else trancode video.
+	 * @param bool   $retranscode       If its retranscoding request or not.
 	 */
-	public function wp_media_transcoding( $wp_metadata, $attachment_id, $autoformat = true ) {
+	public function wp_media_transcoding( $wp_metadata, $attachment_id, $autoformat = true, $retranscode = false ) {
 
 		if ( empty( $wp_metadata['mime_type'] ) ) {
 			return $wp_metadata;
@@ -294,7 +295,33 @@ class RTGODAM_Transcoder_Handler {
 				if ( isset( $upload_info->data ) && isset( $upload_info->data->name ) ) {
 					$job_id = $upload_info->data->name;
 					update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
+
+					if ( $retranscode ) {
+						$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
+
+						if ( isset( $failed_transcoding_attachments[ $attachment_id ] ) ) {
+							unset( $failed_transcoding_attachments[ $attachment_id ] );
+							update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
+						}
+					}
 				}
+			}
+
+
+			if ( is_wp_error( $upload_page ) || 500 <= intval( $upload_page['response']['code'] ) ) {
+				$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
+
+				$failed_transcoding_attachments[ $attachment_id ] = array(
+					'wp_metadata'   => $wp_metadata,
+					'attachment_id' => $attachment_id,
+					'autoformat'    => $autoformat,
+				);
+
+				update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
+				
+				// display notice to user for next 5 minutes.
+				$timestamp = time();
+				update_option( 'rtgodam-transcoding-failed-notice-timestamp', $timestamp );
 			}
 		}
 

@@ -31,6 +31,8 @@ use RTGODAM\Inc\REST_API\Polls;
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 
+use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
+
 /**
  * Class Plugin.
  */
@@ -58,6 +60,9 @@ class Plugin {
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 		$this->load_rest_api();
+
+		// Load cron jobs.
+		Retranscode_Failed_Media::get_instance();
 	}
 
 	/**

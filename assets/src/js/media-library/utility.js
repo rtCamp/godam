@@ -1,4 +1,9 @@
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Utility function to check if the user has a valid API key.
  *
  * @return {boolean} True if the user has a valid API Key, false otherwise.
@@ -40,4 +45,26 @@ function isFolderOrgDisabled() {
 	return ! window.easydamMediaLibrary?.enableFolderOrganization || false;
 }
 
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled };
+function addManageMediaButton() {
+	const referenceElement = document.querySelector( '.wrap .page-title-action' );
+
+	const godamMediaLink = window.godamRestRoute?.api_base + '/web/media-library';
+
+	// Insert the button after referenceElement
+	if ( referenceElement ) {
+		const button = document.createElement( 'a' );
+		button.className = 'button godam-button';
+		button.href = godamMediaLink ?? '#';
+		button.target = '_blank';
+		const icon = document.createElement( 'span' );
+		icon.classList.add( 'godam-icon' );
+		button.appendChild( icon );
+		const text = document.createElement( 'span' );
+		text.className = 'button-text';
+		text.textContent = __( 'Manage Media', 'godam' );
+		button.appendChild( text );
+		referenceElement.insertAdjacentElement( 'afterend', button );
+	}
+}
+
+export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton };
