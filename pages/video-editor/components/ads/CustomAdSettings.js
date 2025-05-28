@@ -85,10 +85,6 @@ const CustomAdSettings = ( { layerID } ) => {
 					value,
 				} ),
 			);
-		} else {
-			dispatch(
-				updateLayerField( { id: layer.id, field: 'click_link', value: layer?.click_link } ),
-			);
 		}
 	};
 
