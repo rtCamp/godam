@@ -39,13 +39,13 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 	function getFormPluginName( formType ) {
 		switch ( formType ) {
 			case 'gravity':
-				return 'Gravity Forms';
+				return __( 'Gravity Forms', 'godam' );
 			case 'wpforms':
-				return 'WPForms';
+				return __( 'WPForms', 'godam' );
 			case 'cf7':
-				return 'Contact Form 7';
+				return __( 'Contact Form 7', 'godam' );
 			default:
-				return 'Gravity Forms';
+				return __( 'Gravity Forms', 'godam' );
 		}
 	}
 
@@ -57,17 +57,17 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 	const layerName = ( type ) => {
 		switch ( type ) {
 			case 'poll':
-				return 'Poll';
+				return __( 'Poll', 'godam' );
 			case 'form':
 				return getFormPluginName( layer?.form_type ) || 'Form';
 			case 'ad':
-				return 'Ad';
+				return __( 'Ad', 'godam' );
 			case 'cta':
-				return 'CTA';
+				return __( 'CTA', 'godam' );
 			case 'hotspot':
-				return 'Hotspot';
+				return __( 'Hotspot', 'godam' );
 			default:
-				return 'Layer';
+				return __( 'Layer', 'godam' );
 		}
 	};
 	return (
