@@ -57,6 +57,12 @@ function addManageMediaButton() {
 		button.className = 'button godam-button';
 		button.href = godamMediaLink ?? '#';
 		button.target = '_blank';
+		if ( ! isAPIKeyValid() ) {
+			button.classList.add( 'disable' );
+			button.title = __( 'Premium Feature', 'godam' );
+			button.href = '#';
+			button.target = '';
+		}
 		const icon = document.createElement( 'span' );
 		icon.classList.add( 'godam-icon' );
 		button.appendChild( icon );
