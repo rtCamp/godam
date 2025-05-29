@@ -39,31 +39,31 @@ class Transcoding extends Base {
 						'job_id'     => array(
 							'required'          => true,
 							'type'              => 'string',
-							'description'       => 'The jobID of transcoding job.',
+							'description'       => __( 'The jobID of transcoding job.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 						'status'     => array(
 							'required'          => true,
 							'type'              => 'string',
-							'description'       => 'The status of the transcoding job.',
+							'description'       => __( 'The status of the transcoding job.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 						'progress'   => array(
 							'required'          => false,
 							'type'              => 'integer',
-							'description'       => 'The progress of the transcoding job.',
+							'description'       => __( 'The progress of the transcoding job.', 'godam' ),
 							'sanitize_callback' => 'absint',
 						),
 						'error_msg'  => array(
 							'required'          => false,
 							'type'              => 'string',
-							'description'       => 'The error message of the transcoding job.',
+							'description'       => __( 'The error message of the transcoding job.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 						'error_code' => array(
 							'required'          => false,
 							'type'              => 'string',
-							'description'       => 'The error code of the transcoding job.',
+							'description'       => __( 'The error code of the transcoding job.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 					),
@@ -80,7 +80,7 @@ class Transcoding extends Base {
 						'ids' => array(
 							'required'          => true,
 							'type'              => 'array',
-							'description'       => 'The array of attachment IDs.',
+							'description'       => __( 'The array of attachment IDs.', 'godam' ),
 							'validate_callback' => function ( $param ) {
 								return is_array( $param );
 							},
@@ -115,7 +115,7 @@ class Transcoding extends Base {
 		}
 
 		if ( ! empty( $error_msg ) || ! empty( $error_code ) ) {
-			
+
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $error_msg );
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', $error_code );
 
@@ -127,7 +127,7 @@ class Transcoding extends Base {
 
 		wp_send_json_success(
 			array(
-				'message' => 'Transcoding status updated successfully.',
+				'message' => __( 'Transcoding status updated successfully.', 'godam' ),
 			)
 		);
 	}
@@ -140,7 +140,7 @@ class Transcoding extends Base {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_transcoding_status( \WP_REST_Request $request ) {
-		
+
 		$attachment_ids = $request->get_param( 'ids' );
 
 		$response_object = array();
@@ -218,7 +218,7 @@ class Transcoding extends Base {
 
 	/**
 	 * Get post id from meta key and value.
-	 * 
+	 *
 	 * Taken the function from the rt-transcoder-handler.php file.
 	 *
 	 * @param string $key   Meta key.
