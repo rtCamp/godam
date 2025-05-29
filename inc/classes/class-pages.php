@@ -313,9 +313,9 @@ class Pages {
 
 			wp_register_script(
 				'rtgodam-page-style',
-				RTGODAM_URL . 'assets/build/pages/page-css.js',
+				RTGODAM_URL . 'assets/build/pages/page-css.min.js',
 				array( 'wp-components' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/page-css.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/page-css.min.js' ),
 				true
 			);
 
@@ -535,9 +535,9 @@ class Pages {
 			
 			wp_register_script(
 				'godam-page-script-dashboard',
-				RTGODAM_URL . 'assets/build/pages/dashboard.js',
+				RTGODAM_URL . 'assets/build/pages/dashboard.min.js',
 				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/dashboard.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/dashboard.min.js' ),
 				true
 			);
 
