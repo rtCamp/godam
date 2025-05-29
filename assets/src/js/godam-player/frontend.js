@@ -422,21 +422,6 @@ function GODAMPlayer( videoRef = null ) {
 		// Register the new component
 		videojs.registerComponent( 'GodamShareButton', GodamShareButton );
 
-		// Add the button to the control bar after the player is ready
-		player.ready( function() {
-			player.jobId = video.dataset.job_id; // Store the result when it's available
-			const videoContainer = player.el().closest( '.easydam-video-container' );
-			if ( videoContainer && player.jobId !== '' ) {
-				const shareButton = new GodamShareButton( player );
-				const buttonEl = shareButton.createEl();
-				buttonEl.addEventListener(
-					'click',
-					shareButton.handleClick.bind( shareButton ),
-				);
-				videoContainer.appendChild( buttonEl );
-			}
-		} );
-
 		player.ready( function() {
 			const controlBarSettings = videoSetupControls?.controlBar;
 
