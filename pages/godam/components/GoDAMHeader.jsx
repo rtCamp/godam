@@ -46,9 +46,9 @@ const GodamHeader = () => {
 							className={ `ml-2 godam-button ${ ( ! window?.userData?.valid_api_key || ! window?.userData?.user_data?.active_plan ) ? 'disabled' : '' }` }
 							variant="primary"
 							size="compact"
-							target="_blank"
+							target={ ( window?.userData?.valid_api_key && window?.userData?.user_data?.active_plan ) ? '_blank' : undefined }
 							text={ __( 'Manage Media', 'godam' ) }
-							href={ godamMediaLink }
+							href={ ( window?.userData?.valid_api_key && window?.userData?.user_data?.active_plan ) ? godamMediaLink : '#' }
 							icon={
 								<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
 									<path d="M25.5578 20.0911L8.05587 37.593L3.46397 33.0011C0.818521 30.3556 2.0821 25.8336 5.72228 24.9464L25.5632 20.0964L25.5578 20.0911Z" fill="white" />
