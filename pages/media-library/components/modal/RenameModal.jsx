@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
  * WordPress dependencies
  */
 import { TextControl, Button, Modal } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -53,14 +54,14 @@ const RenameModal = () => {
 
 			dispatch( updateSnackbar(
 				{
-					message: 'Folder renamed successfully',
+					message: __( 'Folder renamed successfully', 'godam' ),
 					type: 'success',
 				},
 			) );
 		} catch ( error ) {
 			dispatch( updateSnackbar(
 				{
-					message: 'Failed to rename folder',
+					message: __( 'Failed to rename folder', 'godam' ),
 					type: 'error',
 				},
 			) );
@@ -79,12 +80,12 @@ const RenameModal = () => {
 	return (
 		isOpen && (
 			<Modal
-				title="Rename folder"
+				title={ __( 'Rename folder', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'rename' ) ) }
 				className="modal__container"
 			>
 				<TextControl
-					label="Folder Name"
+					label={ __( 'Folder Name', 'godam' ) }
 					value={ folderName }
 					onChange={ ( value ) => setFolderName( value ) }
 					ref={ inputRef }
@@ -94,13 +95,13 @@ const RenameModal = () => {
 				<div className="modal__button-group">
 					<Button
 						isBusy={ isLoading }
-						text="Rename"
+						text={ __( 'Rename', 'godam' ) }
 						variant="primary"
 						onClick={ () => handleSubmit() }
 						disabled={ ! folderName }
 					/>
 					<Button
-						text="Cancel"
+						text={ __( 'Cancel', 'godam' ) }
 						onClick={ () => dispatch( closeModal( 'rename' ) ) }
 						isDestructive
 					/>

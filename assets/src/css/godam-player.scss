@@ -100,6 +100,7 @@
  .animate-video-loading {
 	 position: relative;
 	 animation: pulse 2s cubic-bezier(.4,0,.6,1) infinite;
+	 aspect-ratio: var(--rtgodam-video-aspect-ratio, 16/9);
  
 	 .animate-play-btn {
 		 width: 100px;

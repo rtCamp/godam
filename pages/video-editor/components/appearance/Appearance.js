@@ -286,21 +286,21 @@ const Appearance = () => {
 						<ToggleControl
 							__nextHasNoMarginBottom
 							className="godam-toggle"
-							label="Show Volume Slider"
+							label={ __( 'Show Volume Slider', 'godam' ) }
 							checked={ videoConfig.controlBar.volumePanel }
 							onChange={ handleVolumeToggle }
 						/>
 						<ToggleControl
 							__nextHasNoMarginBottom
 							className="godam-toggle"
-							label="Display Captions"
+							label={ __( 'Display Captions', 'godam' ) }
 							onChange={ handleCaptionsToggle }
 							checked={ videoConfig.controlBar.subsCapsButton }
 						/>
 						<ToggleControl
 							__nextHasNoMarginBottom
 							className="godam-toggle"
-							label="Show Branding"
+							label={ __( 'Show Branding', 'godam' ) }
 							onChange={ handleBrandingToggle }
 							checked={ videoConfig.controlBar.brandingIcon }
 						/>

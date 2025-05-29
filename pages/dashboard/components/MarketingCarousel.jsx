@@ -20,23 +20,18 @@ import analyticsImage from '../../../assets/src/images/analytics.png';
 const carouselSlides = [
 	{},
 	{
-		tip: 'Easily manage all your media files in one place with the Central Media Manager.',
 		image: centralMediaManager,
 	},
 	{
-		tip: 'Every video gets its own performance-rich template with powerful insights.',
 		image: singleVideoTemplate,
 	},
 	{
-		tip: 'Your analytics data refreshes every 15 minutes. Always get the latest performance insights.',
 		image: analyticsImage,
 	},
 	{
-		tip: 'Boost discoverability with built-in video SEO, including structured data and custom metadata.',
 		image: videoSEOImage,
 	},
 	{
-		tip: 'Add interactive form layers using your favorite WordPress form plugins.',
 		image: videoLayerSelectionImage,
 	},
 ];
@@ -91,7 +86,7 @@ const MarketingCarousel = () => {
 				>
 					{ currentIndex === 0 ? (
 						<>
-							<h3 className="text-lg font-semibold mb-2 text-pink-800">What’s New</h3>
+							<h3 className="text-lg font-semibold mb-2 text-pink-800">{ __( 'What\'s New', 'godam' ) }</h3>
 							<a
 								href="https://godam.io/blog"
 								target="_blank"
@@ -103,9 +98,6 @@ const MarketingCarousel = () => {
 						</>
 					) : (
 						<>
-							<p className="text-sm text-center px-4 mb-2">
-								{ currentSlide.tip }
-							</p>
 							{ currentSlide.image && (
 								<img
 									src={ currentSlide.image }

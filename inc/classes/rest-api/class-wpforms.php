@@ -1,7 +1,7 @@
 <?php
 /**
  * Register REST API endpoints for WPForms.
- * 
+ *
  * Get a single WPForm.
  *
  * @package GoDAM
@@ -33,12 +33,12 @@ class WPForms extends Base {
 							$this->get_collection_params(), // Default collection params.
 							array(
 								'id'    => array(
-									'description' => 'The ID of the Contact Form 7 Form.',
+									'description' => __( 'The ID of the Contact Form 7 Form.', 'godam' ),
 									'type'        => 'string',
 									'required'    => true,
 								),
 								'theme' => array(
-									'description'       => 'The theme to be applied to the Contact Form 7 Form.',
+									'description'       => __( 'The theme to be applied to the Contact Form 7 Form.', 'godam' ),
 									'type'              => 'string',
 									'required'          => false,
 									'sanitize_callback' => 'sanitize_text_field',
@@ -60,7 +60,7 @@ class WPForms extends Base {
 	public function get_wpforms_form( $request ) {
 		// Check if Gravity Forms plugin is active.
 		if ( ! is_plugin_active( 'wpforms-lite/wpforms.php' ) && ! is_plugin_active( 'wpforms/wpforms.php' ) ) {
-			return new \WP_Error( 'wpforms_not_active', 'WPForms plugin is not active.', array( 'status' => 404 ) );
+			return new \WP_Error( 'wpforms_not_active', __( 'WPForms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		$form_id     = $request->get_param( 'id' );
@@ -70,7 +70,7 @@ class WPForms extends Base {
 		$description = empty( $description ) ? 'false' : 'true';
 
 		if ( empty( $form_id ) ) {
-			return new \WP_Error( 'invalid_form_id', 'Invalid form ID.', array( 'status' => 404 ) );
+			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		$wpform = do_shortcode( "[wpforms id='{$form_id}' title='{$title}' description='{$description}' ajax='true']" );

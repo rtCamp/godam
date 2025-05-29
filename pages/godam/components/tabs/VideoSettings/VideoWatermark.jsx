@@ -23,9 +23,9 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 
 	const openMediaPicker = () => {
 		const fileFrame = wp.media( {
-			title: 'Select a Watermark',
+			title: __( 'Select a Watermark', 'godam' ),
 			button: {
-				text: 'Use this watermark',
+				text: __( 'Use this watermark', 'godam' ),
 			},
 			library: {
 				type: 'image', // Restrict to images only
@@ -67,7 +67,7 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 						<ToggleControl
 							__nextHasNoMarginBottom
 							className="godam-toggle"
-							label="Enable video watermark"
+							label={ __( 'Enable video watermark', 'godam' ) }
 							checked={
 								! hasValidAPIKey || isOnStarterPlan ? false : enableWatermark
 							}
@@ -113,8 +113,8 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 													className="godam-button"
 												>
 													{ selectedMedia
-														? 'Change Watermark'
-														: 'Select Watermark' }
+														? __( 'Change Watermark', 'godam' )
+														: __( 'Select Watermark', 'godam' ) }
 												</Button>
 												{ selectedMedia && (
 													<Button
@@ -133,7 +133,7 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 												<div className="mt-2 border-2 border-blue-700 rounded-lg p-2 inline-block bg-gray-200">
 													<img
 														src={ selectedMedia }
-														alt="Selected watermark"
+														alt={ __( 'Selected watermark', 'godam' ) }
 														className="max-w-[200px]"
 													/>
 												</div>
@@ -153,7 +153,7 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 											onChange={ ( value ) =>
 												handleSettingChange( 'watermark_text', value )
 											}
-											placeholder="Enter watermark text"
+											placeholder={ __( 'Enter watermark text', 'godam' ) }
 											className="godam-input"
 											help={ __(
 												'Specify the watermark text that will be added to transcoded videos',

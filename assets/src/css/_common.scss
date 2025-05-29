@@ -45,6 +45,14 @@
 		color: #949494 !important;
 		background: variables.$godam-gray-color !important;
 	}
+
+	&.disabled {
+		opacity: 0.6 !important;
+
+		&:hover {
+			transform: none !important;
+		}
+	}
 }
 
 /**

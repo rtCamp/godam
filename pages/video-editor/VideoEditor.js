@@ -33,6 +33,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
+	const [ duration, setDuration ] = useState( 0 );
 
 	const playerRef = useRef( null );
 
@@ -133,7 +134,20 @@ const VideoEditor = ( { attachmentID } ) => {
 	}, [ gravityForms, cf7Forms, wpForms, isFetching, dispatch ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
-	const handlePlayerReady = ( player ) => ( playerRef.current = player );
+	const handlePlayerReady = ( player ) => {
+		if ( player ) {
+			playerRef.current = player;
+
+			const playerEl = player.el_;
+			const video = playerEl.querySelector( 'video' );
+
+			if ( video ) {
+				video.addEventListener( 'loadedmetadata', () => {
+					setDuration( player.duration() );
+				} );
+			}
+		}
+	};
 	const seekToTime = ( time ) => playerRef.current?.currentTime( time );
 
 	const handleSaveAttachmentMeta = async () => {
@@ -162,6 +176,7 @@ const VideoEditor = ( { attachmentID } ) => {
 				<SidebarLayers
 					currentTime={ currentTime }
 					onSelectLayer={ seekToTime }
+					duration={ duration }
 				/>
 			),
 		},

@@ -28,6 +28,11 @@ input, textarea, select {
   border: 1px solid #ccc;
 }
 
+.godam-button-icon {
+	svg {
+		fill: #ab3a6c;
+	}
+}
 
 /* Video Editor Set up */
 @media screen and (max-width: 782px) {
