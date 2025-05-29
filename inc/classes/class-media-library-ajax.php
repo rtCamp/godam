@@ -198,12 +198,15 @@ class Media_Library_Ajax {
 
 		$attachment_url = wp_get_attachment_url( $attachment_id );
 
+		$file_title = get_the_title( $attachment_id );
+		$file_name  = pathinfo( $attachment_url, PATHINFO_FILENAME ) . '.' . pathinfo( $attachment_url, PATHINFO_EXTENSION );
+
 		// Request params.
 		$params = array(
 			'api_token'         => $api_key,
 			'job_type'          => 'image',
 			'file_origin'       => $attachment_url,
-			'orignal_file_name' => get_the_title( $attachment_id ),
+			'orignal_file_name' => $file_name ?? $file_title,
 		);
 
 		$upload_media = wp_remote_post(
