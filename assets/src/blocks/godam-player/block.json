@@ -67,6 +67,10 @@
 		"caption": {
 			"type": "string",
 			"default": ""
+		},
+		"seo": {
+			"type": "object",
+			"default": {}
 		}
 	},
 	"supports": {
@@ -97,9 +101,9 @@
 			"clientNavigation": true
 		}
 	},
-    "editorStyle": ["file:./index.css", "file:./frontend.css"],
-	"style": ["file:./style-index.css", "file:./frontend.css"],
-    "editorScript": ["file:./index.js"],
-    "viewScript": ["file:./frontend.js", "file:./analytics.js"],
+    "editorStyle": ["file:./index.css", "godam-player-frontend-style"],
+	"style": ["godam-player-style", "godam-player-frontend-style"],
+	"editorScript": ["file:./index.js"],
+    "viewScript": ["godam-player-frontend-script", "godam-player-analytics-script"],
     "render": "file:./render.php"
 }

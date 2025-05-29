@@ -1,0 +1,369 @@
+.godam-button-icon {
+	svg {
+		fill: #ab3a6c;
+	}
+}
+
+.godam-dashboard-container {
+	background-color: #fff;
+}
+
+.dashboard-container {
+	padding: 1rem;
+	max-width: 1440px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.api-key-message a {
+	color: #3b82f6;
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.api-key-message a:hover {
+	text-decoration: underline;
+}
+
+.top-media-container {
+
+	h2 {
+		font-weight: 600;
+		margin: 0;
+		display: flex;
+		align-items: center;
+	}
+
+	.export-button {
+		background-color: #F4F4F5;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 0 14px;
+		color: #000;
+		border-radius: 6px;
+		height: 40px;
+	
+		.export-icon {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	.export-button:hover {
+		background-color: #E4E4E7;
+		cursor: pointer;
+	}
+
+	.table-container {
+		margin-top: 12px;
+		border: 1px solid #E4E4E7;
+		border-radius: 6px;
+		border-collapse: collapse;
+	}
+
+	table {
+		width: 100%;
+
+		th, td {
+			padding: 8px 16px;
+			text-align: left;
+			font-weight: 500;
+			border-bottom: 1px solid #E4E4E7;
+		}
+
+		tr:last-child td {
+			border-bottom: none;
+		}
+
+		th {
+			font-size: 1rem;
+			padding: 16px;
+			color: #71717A;
+		}
+
+		td {
+
+			.video-info {
+				display: flex;
+				align-items: center;
+				gap: 1rem;
+				justify-content: flex-start;
+
+				a {
+					text-decoration: none;
+					color: #000;
+				}
+
+				.thumbnail-link {
+					width: 40px;
+					height: 40px;
+					overflow: hidden;
+				
+					img {
+						width: 100%;
+						height: 100%;
+						object-fit: cover;
+						border-radius: 3px;
+					}
+				}
+
+				.title-link {
+					font-weight: 600;
+					font-size: 14px;
+					max-width: 200px;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+			}
+		}
+	}
+
+	.previous-btn {
+		background-color: transparent;
+	}
+
+	.next-btn {
+		background-color: transparent;
+	}
+	
+	.previous-btn:hover, .next-btn:hover {
+		cursor: pointer;
+	}
+
+	.icon-disabled {
+		filter: grayscale(100%) opacity(0.2);
+		pointer-events: none;
+	}
+
+	.skeleton {
+		background-color: #e5e7eb;
+		border-radius: 4px;
+		animation: skeletonPulse 1.5s ease-in-out infinite;
+	}
+	
+	@keyframes skeletonPulse {
+
+		0% {
+			opacity: 1;
+		}
+
+		50% {
+			opacity: 0.4;
+		}
+
+		100% {
+			opacity: 1;
+		}
+	}
+}
+
+#tooltip-container {
+	position: relative;
+	display: inline-block;
+	cursor: pointer;
+}
+
+#tooltip-container .tooltip-text {
+	position: absolute;
+	top: 100%;
+    left: -95%;
+	visibility: hidden;
+	background-color: rgba(0, 0, 0, 0.8);
+	color: #fff;
+	text-align: center;
+	padding: 8px;
+	border-radius: 5px;
+	min-width: 110px;
+	width: max-content;
+	max-width: 200px;
+	z-index: 100;
+	pointer-events: none;
+	font-size: 12px;
+	line-height: 1.2;
+	opacity: 0;
+	transition: opacity 0.2s ease, visibility 0.2s ease;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+#tooltip-container:hover .tooltip-text {
+	visibility: visible;
+	opacity: 1;
+}
+
+/* Tooltip styling */
+.tooltip {
+	position: absolute;
+	background: rgba(0, 0, 0, 0.75);
+	color: #fff;
+	padding: 5px 10px;
+	border-radius: 5px;
+	font-size: 12px;
+	pointer-events: none; /* Prevents interfering with mouse events */
+	opacity: 0; /* Initially hidden */
+	transition: opacity 0.2s ease-in-out;
+}
+
+.blurred {
+	filter: blur(5px);
+	pointer-events: none;
+}
+
+.api-key-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: rgba(0, 0, 0, 0.4);
+	backdrop-filter: blur(5px);
+	z-index: 99;
+}
+
+.api-key-message {
+	background: #fff;
+	padding: 20px 40px;
+	border-radius: 5px;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+	text-align: center;
+	font-size: 16px;
+	font-weight: 700;
+}
+
+.hidden {
+	display: none;
+}
+
+#root-video-dashboard {
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	min-height: calc( 100vh - var(--wp-admin--admin-bar--height, 0) );
+	padding-top: var(--wp-admin--admin-bar--height, 0);
+	overflow: auto;
+	color: #000;
+}
+
+.folded #root-video-dashboard {
+	margin-left: 36px;
+}
+
+.playback-country-container {
+	display: flex;
+	gap: 12px;
+
+	.playback-performance {
+		flex: 2;
+	}
+
+	.country-views {
+		max-width: 30%;
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+		background: #fff;
+		border: 1px solid #ddd;
+		border-radius: 8px;
+		overflow: hidden;
+		padding: 20px;
+		flex: 1;
+
+		.country-views-map {
+			width: 100%;
+		}
+
+		.country-views-table {
+			width: 100%;
+			max-height: 200px;
+			overflow-y: auto;
+			padding-right: 4px;
+
+			scrollbar-width: thin;
+			scrollbar-color: #AB3A6C #f0f0f0;
+
+			&::-webkit-scrollbar {
+				width: 4px;
+			}
+
+			&::-webkit-scrollbar-thumb {
+				background-color: #AB3A6C;
+				border-radius: 3px;
+			}
+
+			&::-webkit-scrollbar-track {
+				background-color: #f0f0f0;
+				border-radius: 3px;
+			}
+		}
+	}
+}
+
+.dashboard-donut-container {
+	border-radius: 12px;
+}
+
+.hero-donut-block {
+	background-image: url(../../assets/src/images/hero-bg.webp);
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+@keyframes slide-in {
+
+	from {
+		transform: translateX(100%);
+		opacity: 0;
+	}
+
+	to {
+		transform: translateX(0%);
+		opacity: 1;
+	}
+}
+
+.animate-slide-in {
+	animation: slide-in 0.5s ease forwards;
+}
+
+@media screen and (max-width: 960px) {
+
+	.auto-fold #root-video-dashboard {
+		margin-left: 36px;
+	}
+}
+
+@media screen and (max-width: 782px) {
+
+	.auto-fold #root-video-dashboard {
+		margin-left: 0;
+	}
+}
+
+
+.marketing-carousel-read-more {
+	display: inline-block;
+	padding: 0.4rem 1rem;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: #fff;
+	background-color: #AB3A6C;
+	border-radius: 0.375rem;
+	transition: background-color 0.3s ease, transform 0.2s ease;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	outline: none;
+}
+
+.marketing-carousel-read-more:hover {
+	background-color: #922c59;
+	transform: translateY(-1px);
+	text-decoration: none;
+	color: #fff;
+}

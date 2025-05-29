@@ -40,7 +40,7 @@ const APISettings = ( { setNotice } ) => {
 	const handleSaveAPIKey = async () => {
 		if ( ! apiKey.trim() ) {
 			setNotice( {
-				message: 'Please enter a valid API key',
+				message: __( 'Please enter a valid API key', 'godam' ),
 				status: 'error',
 				isVisible: true,
 			} );
@@ -99,7 +99,7 @@ const APISettings = ( { setNotice } ) => {
 						value={ apiKey }
 						onChange={ setAPIKey }
 						help={ renderHelpText() }
-						placeholder="Enter your API key here"
+						placeholder={ __( 'Enter your API key here', 'godam' ) }
 						className={ `godam-input ${ ! hasValidAPIKey && maskedAPIKey ? 'invalid-api-key' : '' }` }
 						disabled={ hasValidAPIKey }
 					/>

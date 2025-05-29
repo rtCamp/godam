@@ -19,6 +19,8 @@ use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
 use RTGODAM\Inc\REST_API\GF;
+use RTGODAM\Inc\REST_API\CF7;
+use RTGODAM\Inc\REST_API\WPForms;
 use RTGODAM\Inc\REST_API\Settings;
 use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
 use RTGODAM\Inc\REST_API\Media_Library;
@@ -26,6 +28,11 @@ use RTGODAM\Inc\REST_API\Ads;
 use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Polls;
+use RTGODAM\Inc\Gravity_Forms;
+
+use RTGODAM\Inc\Shortcodes\GoDAM_Player;
+
+use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 
 /**
  * Class Plugin.
@@ -45,11 +52,19 @@ class Plugin {
 		Pages::get_instance();
 		Media_Library_Ajax::get_instance();
 		Media_Tracker::get_instance();
+		Seo::get_instance();
+
+		// Load shortcodes.
+		GoDAM_Player::get_instance();
 
 		$this->load_post_types();
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 		$this->load_rest_api();
+		$this->init_gravity_forms();
+
+		// Load cron jobs.
+		Retranscode_Failed_Media::get_instance();
 	}
 
 	/**
@@ -78,6 +93,8 @@ class Plugin {
 	 */
 	public function load_rest_api() {
 		GF::get_instance();
+		CF7::get_instance();
+		WPForms::get_instance();
 		Settings::get_instance();
 		Meta_Rest_Fields::get_instance();
 		Media_Library::get_instance();
@@ -86,5 +103,12 @@ class Plugin {
 		Analytics::get_instance();
 		Deactivation::get_instance();
 		Polls::get_instance();
+	}
+
+	/**
+	 * Init Gravity Forms
+	 */
+	public function init_gravity_forms() {
+		Gravity_Forms\Init::get_instance();
 	}
 }

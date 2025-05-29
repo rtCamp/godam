@@ -29,17 +29,17 @@ class Settings extends Base {
 	private function get_default_settings() {
 		return array(
 			'video'   => array(
-				'sync_from_godam'      => false,
-				'adaptive_bitrate'     => false,
-				'optimize_videos'      => false,
-				'video_format'         => 'auto',
-				'video_quality'        => array( 'auto', '240', '360', '480', '720', '1080', '1440', '2160' ),
-				'video_thumbnails'     => 5,
-				'overwrite_thumbnails' => false,
-				'watermark'            => false,
-				'watermark_text'       => '',
-				'watermark_url'        => '',
-				'use_watermark_image'  => false,
+				'sync_from_godam'        => false,
+				'adaptive_bitrate'       => false,
+				'optimize_videos'        => false,
+				'video_format'           => 'auto',
+				'video_compress_quality' => 80,
+				'video_thumbnails'       => 5,
+				'overwrite_thumbnails'   => false,
+				'watermark'              => false,
+				'watermark_text'         => '',
+				'watermark_url'          => '',
+				'use_watermark_image'    => false,
 			),
 			'general' => array(
 				'enable_folder_organization' => true,
@@ -69,7 +69,7 @@ class Settings extends Base {
 						'api_key' => array(
 							'required'          => true,
 							'type'              => 'string',
-							'description'       => 'The API key to verify.',
+							'description'       => __( 'The API key to verify.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 					),
@@ -121,7 +121,7 @@ class Settings extends Base {
 						'settings' => array(
 							'required'          => true,
 							'type'              => 'object',
-							'description'       => 'The godam settings to save.',
+							'description'       => __( 'The godam settings to save.', 'godam' ),
 							'sanitize_callback' => array( $this, 'sanitize_settings' ),
 						),
 					),
@@ -180,7 +180,7 @@ class Settings extends Base {
 		// Delete the API key from the database.
 		$deleted_key   = delete_option( 'rtgodam-api-key' );
 		$deleted_token = delete_option( 'rtgodam-account-token' );
-		
+
 		// Delete the user data from the site_option.
 		delete_option( 'rtgodam_user_data' );
 
@@ -247,13 +247,13 @@ class Settings extends Base {
 		if ( ! is_array( $existing_settings ) ) {
 			$existing_settings = array();
 		}
-	
+
 		// Merge the new settings with the existing ones.
 		$updated_settings = array_replace_recursive( $existing_settings, $new_settings );
-	
+
 		// Save updated settings to the database.
 		update_option( 'rtgodam-settings', $updated_settings );
-	
+
 		return new \WP_REST_Response(
 			array(
 				'status'  => 'success',
@@ -274,17 +274,17 @@ class Settings extends Base {
 
 		return array(
 			'video'   => array(
-				'sync_from_godam'      => rest_sanitize_boolean( $settings['video']['sync_from_godam'] ?? $default['video']['sync_from_godam'] ),
-				'adaptive_bitrate'     => rest_sanitize_boolean( $settings['video']['adaptive_bitrate'] ?? $default['video']['adaptive_bitrate'] ),
-				'optimize_videos'      => rest_sanitize_boolean( $settings['video']['optimize_videos'] ?? $default['video']['optimize_videos'] ),
-				'video_format'         => sanitize_text_field( $settings['video']['video_format'] ?? $default['video']['video_format'] ),
-				'video_quality'        => array_map( 'sanitize_text_field', $settings['video']['video_quality'] ?? $default['video']['video_quality'] ),
-				'video_thumbnails'     => intval( $settings['video']['video_thumbnails'] ?? $default['video']['video_thumbnails'] ),
-				'overwrite_thumbnails' => rest_sanitize_boolean( $settings['video']['overwrite_thumbnails'] ?? $default['video']['overwrite_thumbnails'] ),
-				'watermark'            => rest_sanitize_boolean( $settings['video']['watermark'] ?? $default['video']['watermark'] ),
-				'watermark_text'       => sanitize_text_field( $settings['video']['watermark_text'] ?? $default['video']['watermark_text'] ),
-				'watermark_url'        => esc_url_raw( $settings['video']['watermark_url'] ?? $default['video']['watermark_url'] ),
-				'use_watermark_image'  => rest_sanitize_boolean( $settings['video']['use_watermark_image'] ?? $default['video']['use_watermark_image'] ),
+				'sync_from_godam'        => rest_sanitize_boolean( $settings['video']['sync_from_godam'] ?? $default['video']['sync_from_godam'] ),
+				'adaptive_bitrate'       => rest_sanitize_boolean( $settings['video']['adaptive_bitrate'] ?? $default['video']['adaptive_bitrate'] ),
+				'optimize_videos'        => rest_sanitize_boolean( $settings['video']['optimize_videos'] ?? $default['video']['optimize_videos'] ),
+				'video_format'           => sanitize_text_field( $settings['video']['video_format'] ?? $default['video']['video_format'] ),
+				'video_compress_quality' => intval( $settings['video']['video_compress_quality'] ?? $default['video']['video_compress_quality'] ),
+				'video_thumbnails'       => intval( $settings['video']['video_thumbnails'] ?? $default['video']['video_thumbnails'] ),
+				'overwrite_thumbnails'   => rest_sanitize_boolean( $settings['video']['overwrite_thumbnails'] ?? $default['video']['overwrite_thumbnails'] ),
+				'watermark'              => rest_sanitize_boolean( $settings['video']['watermark'] ?? $default['video']['watermark'] ),
+				'watermark_text'         => sanitize_text_field( $settings['video']['watermark_text'] ?? $default['video']['watermark_text'] ),
+				'watermark_url'          => esc_url_raw( $settings['video']['watermark_url'] ?? $default['video']['watermark_url'] ),
+				'use_watermark_image'    => rest_sanitize_boolean( $settings['video']['use_watermark_image'] ?? $default['video']['use_watermark_image'] ),
 			),
 			'general' => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),

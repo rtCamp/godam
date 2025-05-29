@@ -46,7 +46,7 @@ const VideoThumbnails = ( { handleSettingChange } ) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						className="godam-toggle"
-						label="Over-write video thumbnails"
+						label={ __( 'Over-write video thumbnails', 'godam' ) }
 						checked={ overwriteThumbnails }
 						onChange={ ( value ) => handleSettingChange( 'overwrite_thumbnails', value ) }
 						help={ __( 'If enabled, GoDAM will replace existing media thumbnails with regenerated ones after retranscoding. If disabled, media thumbnails will remain untouched', 'godam' ) }

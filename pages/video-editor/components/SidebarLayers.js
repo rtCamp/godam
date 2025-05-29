@@ -7,6 +7,9 @@ import { useSelector, useDispatch } from 'react-redux';
  */
 import { addLayer, setCurrentLayer } from '../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
+import GFIcon from '../assets/layers/GFIcon.svg';
+import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
+import CF7Icon from '../assets/layers/CF7Icon.svg';
 
 /**
  * WordPress dependencies
@@ -26,7 +29,7 @@ const layerTypes = [
 		type: 'cta',
 	},
 	{
-		title: __( 'Gravity Forms', 'godam' ),
+		title: __( 'Forms', 'godam' ),
 		icon: preformatted,
 		type: 'form',
 	},
@@ -49,7 +52,7 @@ const layerTypes = [
 
 const premiumLayers = [ 'form', 'hotspot', 'ad' ];
 
-const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
+const SidebarLayers = ( { currentTime, onSelectLayer, duration } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
 
@@ -60,7 +63,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
-	const isGFPluginActive = useSelector( ( state ) => state.videoReducer.gformPluginActive );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 
 	// Sort the array (ascending order)
@@ -72,7 +74,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	// For now we are enabling all the features
 	const isValidAPiKey = true;
 
-	const addNewLayer = ( type ) => {
+	const addNewLayer = ( type, formType ) => {
 		if ( premiumLayers.includes( type ) && ! isValidAPiKey ) {
 			return;
 		}
@@ -83,10 +85,11 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 					id: uuidv4(),
 					displayTime: currentTime,
 					type,
+					form_type: formType || 'gravity',
 					submitted: false,
 					allow_skip: true,
 					custom_css: '',
-					theme: 'orbital',
+					theme: '',
 				} ) );
 				break;
 			case 'cta':
@@ -161,7 +164,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 						{
 							sortedLayers?.map( ( layer ) => {
 								const isAdServerAd = adServer === 'ad-server' && layer.type === 'ad';
-								const isGFPluginNotActive = layer.type === 'form' && ! isGFPluginActive;
+								const isGFPluginNotActive = layer.type === 'form' && ! window?.videoData?.gf_active;
+								const isWPFormsPluginNotActive = layer.type === 'form' && ! window?.videoData?.wpforms_active;
+								const isCF7PluginNotActive = layer.type === 'form' && ! window?.videoData?.cf7_active;
 								const isPollPluginNotActive = layer.type === 'poll' && ! window.easydamMediaLibrary.isPollPluginActive;
 								let addWarning = false;
 								let toolTipMessage = '';
@@ -172,14 +177,34 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 								} else if ( isAdServerAd ) {
 									toolTipMessage = __( 'This ad will be overriden by Ad server\'s ads', 'godam' );
 									addWarning = true;
-								} else if ( isGFPluginNotActive ) {
+								} else if ( isGFPluginNotActive && layer.form_type === 'gravity' ) {
 									toolTipMessage = __( 'Gravity Forms plugin is not active', 'godam' );
+									addWarning = true;
+								} else if ( isWPFormsPluginNotActive && layer.form_type === 'wpforms' ) {
+									toolTipMessage = __( 'WPForms plugin is not active', 'godam' );
+									addWarning = true;
+								} else if ( isCF7PluginNotActive && layer.form_type === 'cf7' ) {
+									toolTipMessage = __( 'Contact Form 7 plugin is not active', 'godam' );
 									addWarning = true;
 								} else if ( isPollPluginNotActive ) {
 									toolTipMessage = __( 'Poll plugin is not active', 'godam' );
 									addWarning = true;
 								} else {
 									toolTipMessage = '';
+								}
+
+								let icon, layerText;
+								if ( layer.type === 'form' && layer.form_type === 'gravity' ) {
+									icon = GFIcon;
+									layerText = __( 'Gravity Forms', 'godam' );
+								} else if ( layer.type === 'form' && layer.form_type === 'wpforms' ) {
+									icon = WPFormsIcon;
+									layerText = __( 'WPForms', 'godam' );
+								} else if ( layer.type === 'form' && layer.form_type === 'cf7' ) {
+									icon = CF7Icon;
+									layerText = __( 'Contact Form 7', 'godam' );
+								} else {
+									layerText = layer?.type?.toUpperCase();
 								}
 
 								return (
@@ -198,8 +223,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 												} }
 											>
 												<div className="flex items-center gap-2">
-													<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type ).icon } />
-													<p className="m-0 text-base">{ layer?.type?.toUpperCase() } layer at <b>{ layer.displayTime }s</b></p>
+													{ icon && <img src={ icon } alt={ layer.type } className="w-6 h-6" /> }
+													{ ! icon && <Icon icon={ layerTypes.find( ( l ) => l.type === layer.type )?.icon } /> }
+													<p className="m-0 text-base">{ layerText } layer at <b>{ layer.displayTime }s</b></p>
 												</div>
 												<div>
 													<Icon icon={ arrowRight } />
@@ -258,7 +284,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 
 						{ isOpen && (
 							<LayerSelector
-								isGFPluginActive={ isGFPluginActive }
+								isGFPluginActive={ window?.videoData?.gf_active }
+								isWPFormsPluginActive={ window?.videoData?.wpforms_active }
+								isCF7PluginActive={ window?.videoData?.cf7_active }
 								closeModal={ closeModal }
 								addNewLayer={ addNewLayer }
 							/>
@@ -266,7 +294,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 					</div>
 				) : (
 					<div id="sidebar-layers">
-						<Layer layer={ currentLayer } goBack={ () => dispatch( setCurrentLayer( null ) ) } />
+						<Layer layer={ currentLayer } goBack={ () => dispatch( setCurrentLayer( null ) ) } duration={ duration } />
 					</div>
 				)
 			}

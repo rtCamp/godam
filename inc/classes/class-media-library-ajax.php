@@ -32,14 +32,209 @@ class Media_Library_Ajax {
 	 */
 	public function setup_hooks() {
 		add_filter( 'ajax_query_attachments_args', array( $this, 'filter_media_library_by_taxonomy' ) );
+		add_filter( 'ajax_query_attachments_args', array( $this, 'godam_media_library_ajax' ) );
 		add_action( 'pre_get_posts', array( $this, 'pre_get_post_filter' ) );
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
 		add_action( 'add_attachment', array( $this, 'add_media_library_taxonomy_on_media_upload' ), 10, 1 );
+		add_action( 'add_attachment', array( $this, 'upload_media_to_frappe_backend' ), 10, 1 );
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
 
 		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
 		add_action( 'delete_attachment', array( $this, 'handle_media_deletion' ), 10, 1 );
+	}
+
+	/**
+	 * Short-circuit the media library AJAX request if the mime type is 'godam'.
+	 *
+	 * @param array $query_args Query arguments.
+	 * @return array
+	 */
+	public function godam_media_library_ajax( $query_args ) {
+
+		$api_key = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) ) {
+			return $query_args;
+		}
+
+		if ( isset( $query_args['post_mime_type'] ) && is_array( $query_args['post_mime_type'] ) ) {
+			
+			$post_mime_type = $query_args['post_mime_type'][0];
+			$mime_type      = '';
+			if ( false === strpos( $post_mime_type, 'godam/' ) ) {
+				return $query_args;
+			} else {
+				// mime_type is godam/{mime_type}.
+				$mime_type = str_replace( 'godam/', '', $post_mime_type );
+				$mime_type = explode( '-', $mime_type );
+				$mime_type = $mime_type[0];
+				if ( 'all' === $mime_type ) {
+					$mime_type = '';
+				}
+			}
+
+			$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.file.get_list_of_files_with_api_key';
+
+
+			$order_by = 'creation asc';
+			if ( isset( $query_args['order'] ) && 'DESC' === $query_args['order'] ) {
+				$order_by = 'creation desc';
+			}
+
+			$request_args = array(
+				'api_key'  => $api_key,
+				'order_by' => $order_by,
+			);
+
+			if ( ! empty( $mime_type ) ) {
+				if ( 'video' === $mime_type ) {
+					$request_args['job_type'] = 'stream';
+				} else {
+					$request_args['job_type'] = $mime_type;
+				}
+			}
+
+			if ( isset( $query_args['s'] ) && ! empty( $query_args['s'] ) ) {
+				$request_args['search'] = $query_args['s'];
+			}
+
+			if ( isset( $query_args['posts_per_page'] ) && ! empty( $query_args['paged'] ) ) {
+				$request_args['page_size'] = intval( $query_args['posts_per_page'] );
+				$request_args['page']      = intval( $query_args['paged'] );
+			}
+
+			$api_url = add_query_arg(
+				$request_args,
+				$api_url
+			);
+
+			$response = wp_remote_get(
+				$api_url,
+				array(
+					'headers' => array(
+						'Content-Type' => 'application/json',
+					),
+				) 
+			);
+
+			if ( is_wp_error( $response ) ) {
+				return $query_args;
+			}
+
+			$body = json_decode( wp_remote_retrieve_body( $response ) );
+
+			$response = $body->message;
+
+			foreach ( $response as $key => $item ) {
+				$response[ $key ] = $this->prepare_godam_media_item( $item );
+			}
+
+			wp_send_json_success( $response );
+
+		} else {
+			return $query_args;
+		}
+	}
+
+	/**
+	 * Prepare a single Godam media item to match WordPress media format.
+	 *
+	 * @param array $item The media item data from the API.
+	 * @return array
+	 */
+	public function prepare_godam_media_item( $item ) {
+		// Ensure $item is an array.
+		$item = (array) $item; 
+
+		if ( empty( $item['name'] ) || empty( $item['file_origin'] ) ) {
+			return array();
+		}
+
+		$result = array(
+			'id'                    => $item['name'],
+			'title'                 => pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) ?? $item['name'],
+			'filename'              => $item['orignal_file_name'] ?? $item['name'],
+			'url'                   => 'image' === $item['job_type'] ? $item['file_origin'] : ( $item['transcoded_file_path'] ?? $item['file_origin'] ),
+			'mime'                  => 'application/dash+xml' ?? '',
+			'type'                  => $item['job_type'] ?? '',
+			'subtype'               => explode( '/', $item['mime_type'] )[1] ?? 'jpg',
+			'status'                => $item['status'],
+			'date'                  => strtotime( $item['creation'] ) * 1000,
+			'modified'              => strtotime( $item['modified'] ) * 1000,
+			'filesizeInBytes'       => $item['file_size'],
+			'filesizeHumanReadable' => size_format( $item['file_size'] ),
+			'owner'                 => $item['owner'] ?? '',
+			'label'                 => $item['file_label'] ?? '',
+		);
+
+		if ( 'stream' === $item['job_type'] ) {
+			$result['icon'] = $item['thumbnail_url'] ?? '';
+			$result['type'] = 'video';
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Upload media to the Frappe backend.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return void
+	 */
+	public function upload_media_to_frappe_backend( $attachment_id ) {
+		// Only if attachment type if image.
+		if ( 'image' !== substr( get_post_mime_type( $attachment_id ), 0, 5 ) ) {
+			return;
+		}
+
+		$api_key = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) ) {
+			return;
+		}
+
+		$api_url = RTGODAM_API_BASE . '/api/resource/Transcoder Job';
+
+		$attachment_url = wp_get_attachment_url( $attachment_id );
+
+		$file_title = get_the_title( $attachment_id );
+		$file_name  = pathinfo( $attachment_url, PATHINFO_FILENAME ) . '.' . pathinfo( $attachment_url, PATHINFO_EXTENSION );
+
+		// Request params.
+		$params = array(
+			'api_token'         => $api_key,
+			'job_type'          => 'image',
+			'file_origin'       => $attachment_url,
+			'orignal_file_name' => $file_name ?? $file_title,
+		);
+
+		$upload_media = wp_remote_post(
+			$api_url,
+			array(
+				'body'    => wp_json_encode( $params ),
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
+			)
+		);
+
+		if ( ! is_wp_error( $upload_media ) &&
+			(
+				isset( $upload_media['response']['code'] ) &&
+				200 === intval( $upload_media['response']['code'] )
+			)
+		) {
+			$upload_info = json_decode( $upload_media['body'] );
+
+			if ( isset( $upload_info->data ) && isset( $upload_info->data->name ) ) {
+				$job_id = $upload_info->data->name;
+				update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
+			}
+		}
+
+		// Note: For now media is only uploaded to the GoDAM and we are storing the transcoding job ID in the attachment meta.
+		// Todo: In future we can add more logic to handle the transcoded image URLs to provide image CDN feature.
 	}
 
 	/**

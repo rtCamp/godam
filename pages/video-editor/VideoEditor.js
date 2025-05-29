@@ -16,17 +16,24 @@ import { __ } from '@wordpress/i18n';
 import VideoJSPlayer from './VideoJSPlayer';
 import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
-
-import { initializeStore, saveVideoMeta, setCurrentTab, setGravityForms, setGravityFormsPluginActive } from './redux/slice/videoSlice';
+import {
+	initializeStore,
+	saveVideoMeta,
+	setCurrentTab,
+	setGravityForms,
+	setCF7Forms,
+	setWPForms,
+} from './redux/slice/videoSlice';
 
 import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
-import { useGetFormsQuery } from './redux/api/gravity-forms';
+import { useFetchForms } from './components/forms/fetchForms';
 
 const VideoEditor = ( { attachmentID } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
+	const [ duration, setDuration ] = useState( 0 );
 
 	const playerRef = useRef( null );
 
@@ -38,7 +45,8 @@ const VideoEditor = ( { attachmentID } ) => {
 
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
-	const { data: gravityForms, isError: isGravityFormError } = useGetFormsQuery();
+
+	const { gravityForms, wpForms, cf7Forms, isFetching } = useFetchForms();
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -95,20 +103,51 @@ const VideoEditor = ( { attachmentID } ) => {
 	}, [ attachmentConfig, dispatch ] );
 
 	/**
-	 * This gravity form plugin logic should be moved to the appropriate layer component, instead of globally here.
+	 * Update the store with the fetched forms.
 	 */
 	useEffect( () => {
-		if ( gravityForms ) {
-			dispatch( setGravityForms( gravityForms ) );
-		}
+		if ( ! isFetching ) {
+			if ( cf7Forms && cf7Forms.length > 0 ) {
+				const _cf7Forms = cf7Forms.map( ( form ) => {
+					return {
+						id: form.id,
+						title: form.title,
+					};
+				} );
+				dispatch( setCF7Forms( _cf7Forms ) );
+			}
 
-		if ( isGravityFormError ) {
-			dispatch( setGravityFormsPluginActive( false ) );
+			if ( wpForms && wpForms.length > 0 ) {
+				const _wpForms = wpForms.map( ( form ) => {
+					return {
+						id: form.ID,
+						title: form.post_title,
+					};
+				} );
+				dispatch( setWPForms( _wpForms ) );
+			}
+
+			if ( gravityForms && gravityForms.length > 0 ) {
+				dispatch( setGravityForms( gravityForms ) );
+			}
 		}
-	}, [ gravityForms, isGravityFormError, dispatch ] );
+	}, [ gravityForms, cf7Forms, wpForms, isFetching, dispatch ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
-	const handlePlayerReady = ( player ) => ( playerRef.current = player );
+	const handlePlayerReady = ( player ) => {
+		if ( player ) {
+			playerRef.current = player;
+
+			const playerEl = player.el_;
+			const video = playerEl.querySelector( 'video' );
+
+			if ( video ) {
+				video.addEventListener( 'loadedmetadata', () => {
+					setDuration( player.duration() );
+				} );
+			}
+		}
+	};
 	const seekToTime = ( time ) => playerRef.current?.currentTime( time );
 
 	const handleSaveAttachmentMeta = async () => {
@@ -137,6 +176,7 @@ const VideoEditor = ( { attachmentID } ) => {
 				<SidebarLayers
 					currentTime={ currentTime }
 					onSelectLayer={ seekToTime }
+					duration={ duration }
 				/>
 			),
 		},
@@ -166,6 +206,25 @@ const VideoEditor = ( { attachmentID } ) => {
 			</div>
 		);
 	}
+
+	document.addEventListener( 'keydown', ( event ) => {
+		if (
+			event.target.tagName === 'INPUT' ||
+			event.target.tagName === 'TEXTAREA' ||
+			event.target.isContentEditable
+		) {
+			return;
+		}
+
+		if ( event.key === 'Backspace' ) {
+			event.preventDefault();
+
+			const backButton = document.querySelector( '.components-button.has-icon' );
+			if ( backButton ) {
+				backButton.click();
+			}
+		}
+	} );
 
 	return (
 		<>

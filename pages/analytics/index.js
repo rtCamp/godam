@@ -9,10 +9,11 @@ import { edit, media } from '@wordpress/icons';
 import { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Provider } from 'react-redux';
+import ReactDOM from 'react-dom/client';
 /**
  * Internal dependencies
  */
-import store from '../video-editor/redux/store';
+import store from './redux/store';
 import Analytics from './Analytics';
 import './index.scss';
 
@@ -106,4 +107,6 @@ const App = () => {
 
 export default App;
 
-ReactDOM.render( <App />, document.getElementById( 'root-video-analytics' ) );
+const container = document.getElementById( 'root-video-analytics' );
+const root = ReactDOM.createRoot( container );
+root.render( <App /> );

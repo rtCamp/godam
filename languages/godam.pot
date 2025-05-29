@@ -709,7 +709,10 @@ msgid "Select poster image"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:2
+<<<<<<< HEAD
+=======
 #: assets/src/blocks/godam-player/edit.js:343
+>>>>>>> main
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:47
 #: pages/video-editor/components/appearance/Appearance.js:324
 #: pages/video-editor/components/appearance/Appearance.js:393
@@ -734,7 +737,10 @@ msgid "There is no poster image currently selected"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
+<<<<<<< HEAD
+=======
 #: assets/src/blocks/godam-player/edit.js:362
+>>>>>>> main
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:56
 #: pages/video-editor/components/appearance/Appearance.js:333
 #: pages/video-editor/components/appearance/Appearance.js:402
