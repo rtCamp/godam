@@ -177,7 +177,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Feat: Central Media Manager – Unified media dashboard with folders, filters, search, and public sharing.
 - Feat: Central Media Selector Tab – New tab to import media from the Central Media Manager directly into the WordPress media library.
 - Feat: Image Upload to Central Media Manager – Upload and organize image files into the central media library.
-- Feat: Share Button – Generate a public or embeddable link to share GoDAM videos anywhere.
 - Feat: GoDAM Recorder Field for Gravity Forms – Record webcam or screen video directly within a form submission.
 - Feat: Automatic Video Transcription – AI-generated captions added automatically to uploaded videos.
 - Feat: Built-in Video SEO – Generate video schema with title, description, thumbnail and more for improved search engine discoverability.
@@ -190,7 +189,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Enhancement: Keyboard Accessibility – Improved keyboard navigation and accessibility within the GoDAM video player.
 
 = v1.0.8 (May 27, 2025) =
-- Renamed functions and added checks for function existence to prevent fatal errors caused by other plugin functions.
+- Fix: Renamed functions and added checks for function existence to prevent fatal errors caused by other plugin functions.
 
 = v1.0.7 (May 22, 2025) =
 - Fix: Update the POT creation process for translation.
