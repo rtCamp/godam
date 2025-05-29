@@ -11,28 +11,33 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import centralMediaManager from '../../../assets/src/images/central-media-manager.png'; // Central Media Manager
-import singleVideoTemplate from '../../../assets/src/images/single-video-template.png'; // Single Video Template
-import videoSEOImage from '../../../assets/src/images/video-seo.png';
-import videoLayerSelectionImage from '../../../assets/src/images/video-layer-selection.png';
-import analyticsImage from '../../../assets/src/images/analytics.png';
+import addLayersImage from '../../../assets/src/images/Add Layers.png';
+import centralMediaManagerImage from '../../../assets/src/images/Central Media Manager.png';
+import videoAnalyticsImage from '../../../assets/src/images/Video Analytics.png';
+import comparisonAnalyticsImage from '../../../assets/src/images/Video Analytics (Comparison).png';
+import singleVideoImage from '../../../assets/src/images/Single Video.png';
 
 const carouselSlides = [
-	{},
+	{}, // "What's New" slide
 	{
-		image: centralMediaManager,
+		image: centralMediaManagerImage,
+		link: 'https://godam.io/features/central-media-manager/',
 	},
 	{
-		image: singleVideoTemplate,
+		image: singleVideoImage,
+		link: 'https://godam.io/features/central-media-manager/',
 	},
 	{
-		image: analyticsImage,
+		image: addLayersImage,
+		link: 'https://godam.io/features/video-overlay/',
 	},
 	{
-		image: videoSEOImage,
+		image: videoAnalyticsImage,
+		link: 'https://godam.io/features/analytics/',
 	},
 	{
-		image: videoLayerSelectionImage,
+		image: comparisonAnalyticsImage,
+		link: 'https://godam.io/features/analytics/',
 	},
 ];
 
@@ -60,7 +65,7 @@ const MarketingCarousel = () => {
 	const currentSlide = carouselSlides[ currentIndex ];
 
 	return (
-		<div className="dashboard-donut-container hero-donut-block p-2 border border-zinc-200 flex-1 min-w-[300px] h-[346px] flex flex-col items-center justify-center text-center relative">
+		<div className="dashboard-donut-container hero-donut-block border border-zinc-200 flex-1 min-w-[300px] h-[346px] flex flex-col items-center justify-center text-center relative">
 			<div className="w-full h-full overflow-hidden relative">
 				<div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 z-10">
 					{ carouselSlides.map( ( _, index ) => (
@@ -99,11 +104,17 @@ const MarketingCarousel = () => {
 					) : (
 						<>
 							{ currentSlide.image && (
-								<img
-									src={ currentSlide.image }
-									alt="Feature Screenshot"
-									className="w-full max-w-full max-h-[300px] rounded mx-auto object-contain"
-								/>
+								<a
+									href={ currentSlide.link }
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<img
+										src={ currentSlide.image }
+										alt="Feature Screenshot"
+										className="w-full max-w-full max-h-[346px] rounded mx-auto object-contain"
+									/>
+								</a>
 							) }
 						</>
 					) }
