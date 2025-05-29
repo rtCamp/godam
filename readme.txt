@@ -190,7 +190,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Enhancement: Keyboard Accessibility – Improved keyboard navigation and accessibility within the GoDAM video player.
 
 = v1.0.8 (May 27, 2025) =
-- Renamed functions and added checks for function existence to prevent fatal errors caused by other plugin functions.
+- Fix: Renamed functions and added checks for function existence to prevent fatal errors caused by other plugin functions.
 
 = v1.0.7 (May 22, 2025) =
 - Fix: Update the POT creation process for translation.
