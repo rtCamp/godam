@@ -55,15 +55,6 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attachmentData, attr
 		}
 	}, [ duration ] );
 
-	// useEffect( () => {
-	// 	if ( poster ) {
-	// 		setVideoData( {
-	// 			...videoData,
-	// 			thumbnailUrl: poster,
-	// 		} );
-	// 	}
-	// }, [ poster ] );
-
 	const updateField = ( field, value ) => {
 		setVideoData( { ...videoData, [ field ]: value } );
 	};
