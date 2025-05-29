@@ -33,7 +33,8 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 📌 Interactive Video Layers for Engagement
 - Embed [clickable CTAs](https://godam.io/features/video-overlay/) to drive actions like sign-ups and purchases.
 - Enhance your videos with [customizable hotspots](https://godam.io/features/video-hotspot/) that deliver additional context, links, and information exactly when and where your viewers need it.
-- [Integrate Gravity Forms](https://godam.io/features/gravity-forms/) to collect user feedback and lead data within videos.
+- Add interactive forms using [Gravity Forms](https://godam.io/features/gravity-forms/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), and [WPForms](https://wordpress.org/plugins/wpforms-lite/) to collect leads.
+- Enable video submissions using the GoDAM Record field inside Gravity Forms.
 - Add interactive Polls to gather viewer opinions during playback.
 
 📌 Seamless Ad Monetization
@@ -53,6 +54,10 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 - Supported audio formats: MP3, M4A, WAV, OGG
 - Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
 - Watermarking support to protect video content.
+
+📌 Central Media Manager
+- Unified dashboard for managing all media assets in one place.
+- Organize videos, images, and documents into folders with search, filters, and sharing options.
 
 📌 Video Analytics
 - Monitor viewer behavior and engagement through [detailed metrics and heatmaps](https://godam.io/features/analytics/).
