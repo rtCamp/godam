@@ -17,6 +17,9 @@ if ( isset( $is_shortcode ) && $is_shortcode ) {
 	$is_shortcode = false;
 }
 
+// prevent default behavior of Gravity Forms autoscroll on submission.
+add_filter( 'gform_confirmation_anchor', '__return_false' );
+
 // attributes.
 $autoplay      = ! empty( $attributes['autoplay'] );
 $controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
@@ -41,6 +44,7 @@ $control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? array
 
 $poster_image = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 $poster_image = ! empty( $poster_image ) ? $poster_image : '';
+$job_id       = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
 
 $sources = array();
 if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
@@ -65,6 +69,7 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$transcoded_url = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true ) : '';
 	$video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
 	$video_src_type = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
+	
 	if ( ! empty( $transcoded_url ) ) {
 		$sources = array(
 			array(
@@ -170,6 +175,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 			data-id="<?php echo esc_attr( $attachment_id ); ?>" 
 			data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 			data-controls = "<?php echo esc_attr( $video_setup ); ?>"
+			data-job_id="<?php echo esc_attr( $job_id ); ?>"
 		>
 			<?php
 			foreach ( $sources as $source ) :
@@ -208,9 +214,11 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 		<?php
 		if ( ! empty( $easydam_meta_data['layers'] ) ) :
 			foreach ( $easydam_meta_data['layers'] as $layer ) :
+				$form_type = ! empty( $layer['form_type'] ) ? $layer['form_type'] : 'gravity';
 				// FORM layer.
-				if ( isset( $layer['type'] ) && 'form' === $layer['type'] && ! empty( $layer['gf_id'] ) ) :
-					?>
+				if ( isset( $layer['type'] ) && 'form' === $layer['type'] ) :
+					if ( 'gravity' === $form_type && ! empty( $layer['gf_id'] ) ) :
+						?>
 					<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 						<div class="form-container">
 							<?php
@@ -225,7 +233,39 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 							?>
 						</div>
 					</div>
-					<?php
+						<?php
+					elseif ( 'cf7' === $form_type && ! empty( $layer['cf7_id'] ) ) :
+						$form_theme = ! empty( $layer['theme'] ) ? $layer['theme'] : 'godam';
+						?>
+						<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+							<div class="form-container <?php echo esc_attr( 'godam' === $form_theme ? 'rtgodam-wpcf7-form' : '' ); ?>">
+								<?php
+									echo do_shortcode(
+										sprintf(
+											"[contact-form-7 id='%d' title='false' ajax='true']",
+											intval( $layer['cf7_id'] )
+										)
+									);
+								?>
+							</div>
+						</div>
+						<?php
+					elseif ( 'wpforms' === $form_type && ! empty( $layer['wpform_id'] ) ) :
+						?>
+						<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+							<div class="form-container">
+								<?php
+									echo do_shortcode(
+										sprintf(
+											"[wpforms id='%d' title='false' description='false' ajax='true']",
+											intval( $layer['wpform_id'] )
+										)
+									);
+								?>
+							</div>
+						</div>
+						<?php
+					endif;
 					// Poll layer.
 				elseif ( isset( $layer['type'] ) && 'poll' === $layer['type'] ) :
 					?>
@@ -269,8 +309,8 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 					</div>
 					<?php
 				endif;
-				?>
-			<?php endforeach; ?>
+			endforeach;
+			?>
 		<?php endif; ?>
 	</div>
 

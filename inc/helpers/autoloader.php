@@ -60,6 +60,7 @@ function autoloader( $file_resource = '' ) {
 			case 'rest-api': // phpcs:ignore
 			case 'gravity-forms': // phpcs:ignore
 			case 'shortcodes': // phpcs:ignore
+			case 'cron-jobs': // phpcs:ignore
 				/**
 				 * If there is class name provided for specific directory then load that.
 				 * otherwise find in inc/ directory.

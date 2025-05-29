@@ -52,7 +52,7 @@ const layerTypes = [
 
 const premiumLayers = [ 'form', 'hotspot', 'ad' ];
 
-const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
+const SidebarLayers = ( { currentTime, onSelectLayer, duration } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
 
@@ -196,7 +196,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 								let icon, layerText;
 								if ( layer.type === 'form' && layer.form_type === 'gravity' ) {
 									icon = GFIcon;
-									layerText = __( 'Gravity Form', 'godam' );
+									layerText = __( 'Gravity Forms', 'godam' );
 								} else if ( layer.type === 'form' && layer.form_type === 'wpforms' ) {
 									icon = WPFormsIcon;
 									layerText = __( 'WPForms', 'godam' );
@@ -294,7 +294,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 					</div>
 				) : (
 					<div id="sidebar-layers">
-						<Layer layer={ currentLayer } goBack={ () => dispatch( setCurrentLayer( null ) ) } />
+						<Layer layer={ currentLayer } goBack={ () => dispatch( setCurrentLayer( null ) ) } duration={ duration } />
 					</div>
 				)
 			}

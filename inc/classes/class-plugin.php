@@ -32,6 +32,8 @@ use RTGODAM\Inc\Gravity_Forms;
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 
+use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
+
 /**
  * Class Plugin.
  */
@@ -59,8 +61,10 @@ class Plugin {
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 		$this->load_rest_api();
-
 		$this->init_gravity_forms();
+
+		// Load cron jobs.
+		Retranscode_Failed_Media::get_instance();
 	}
 
 	/**

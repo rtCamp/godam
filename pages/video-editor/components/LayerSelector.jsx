@@ -28,7 +28,7 @@ import CF7Icon from '../assets/layers/CF7Icon.svg';
 const Layers = [
 	{
 		id: 1,
-		title: __( 'Gravity Form', 'godam' ),
+		title: __( 'Gravity Forms', 'godam' ),
 		description: 'Collect user input using Gravity Forms',
 		image: Form,
 		type: 'form',
