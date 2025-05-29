@@ -326,9 +326,9 @@ class Pages {
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
-				RTGODAM_URL . 'assets/build/pages/video-editor.js',
+				RTGODAM_URL . 'assets/build/pages/video-editor.min.js',
 				array( 'wp-element', 'wp-i18n' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/video-editor.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/video-editor.min.js' ),
 				true
 			);
 
@@ -430,9 +430,9 @@ class Pages {
 
 			wp_register_script(
 				'transcoder-page-script-godam',
-				RTGODAM_URL . 'assets/build/pages/godam.js',
+				RTGODAM_URL . 'assets/build/pages/godam.min.js',
 				array( 'wp-element', 'wp-i18n' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/godam.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/godam.min.js' ),
 				true
 			);
 
@@ -466,9 +466,9 @@ class Pages {
 
 			wp_register_script(
 				'transcoder-page-script-analytics',
-				RTGODAM_URL . 'assets/build/pages/analytics.js',
+				RTGODAM_URL . 'assets/build/pages/analytics.min.js',
 				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/analytics.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/analytics.min.js' ),
 				true
 			);
 
@@ -507,9 +507,9 @@ class Pages {
 		} elseif ( $screen && $this->help_page_id === $screen->id ) {
 			wp_register_script(
 				'godam-page-script-help',
-				RTGODAM_URL . 'assets/build/pages/help.js',
+				RTGODAM_URL . 'assets/build/pages/help.min.js',
 				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/help.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/help.min.js' ),
 				true
 			);
 
@@ -573,9 +573,9 @@ class Pages {
 
 		wp_register_script(
 			'media-library-react',
-			RTGODAM_URL . 'assets/build/pages/media-library.js',
+			RTGODAM_URL . 'assets/build/pages/media-library.min.js',
 			array( 'wp-element', 'wp-i18n' ),
-			filemtime( RTGODAM_PATH . 'assets/build/pages/media-library.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/pages/media-library.min.js' ),
 			true
 		);
 

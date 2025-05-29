@@ -4,7 +4,7 @@ Tags: transcoder, DAM, media library, adaptive streaming, video analytics
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,7 +16,7 @@ Manage and optimize digital assets with GoDAM – featuring transcoding, adaptiv
 With GoDAM, WordPress users can leverage advanced video capabilities without requiring extensive technical expertise. It automates the conversion of uploaded videos into multiple resolutions, enabling seamless playback with adaptive bitrate streaming. The integration of interactive elements such as CTAs, forms, hotspots and ads makes GoDAM an all-in-one solution for content creators, marketers, and eCommerce businesses.
 
 Check out our source code and contribute to the plugin on GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam).
-Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
+Read our blog: [GoDAM blog](https://godam.io/blog/)
 
 [youtube https://www.youtube.com/watch?v=UGmKa6aLSgU]
 
@@ -171,6 +171,13 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 16. Video Analytics
 
 == Changelog ==
+
+= v1.0.8 (May 27, 2025) =
+- Renamed functions and added checks for function existence to prevent fatal errors caused by other plugin functions.
+
+= v1.0.7 (May 22, 2025) =
+- Fix: Update the POT creation process for translation.
+- Fix: Analytics event data for non logged-in users.
 
 = v1.0.6 (May 16, 2025) =
 - Fix: Updated translation files.
