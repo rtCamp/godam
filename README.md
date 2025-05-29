@@ -34,7 +34,7 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 - Embed [clickable CTAs](https://godam.io/features/video-overlay/) to drive actions like sign-ups and purchases.
 - Enhance your videos with [customizable hotspots](https://godam.io/features/video-hotspot/) that deliver additional context, links, and information exactly when and where your viewers need it.
 - Add interactive forms using [Gravity Forms](https://godam.io/features/gravity-forms/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), and [WPForms](https://wordpress.org/plugins/wpforms-lite/) to collect leads.
-- Enable video submissions using the GoDAM Record field inside Gravity Forms.
+- Enable video submissions using the GoDAM Record field that supports webcam and screencast inside Gravity Forms.
 - Add interactive Polls to gather viewer opinions during playback.
 
 📌 Seamless Ad Monetization
@@ -46,6 +46,9 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 - Fully customizable playback controls, branding, and player themes.
 - Enable video looping, autoplay, and inline play for better user experience.
 
+📌 Video SEO
+- Generate structured data for better indexing, with video schema, title, description, thumbnail
+
 ### Pro Features
 
 📌 Smart Transcoding & Adaptive Bitrate Streaming
@@ -54,15 +57,24 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 - Supported audio formats: MP3, M4A, WAV, OGG
 - Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
 - Watermarking support to protect video content.
+- Automatically compress and resize videos on upload to reduce storage and bandwidth.
 
 📌 Central Media Manager
 - Unified dashboard for managing all media assets in one place.
 - Organize videos, images, and documents into folders with search, filters, and sharing options.
+- Each video gets a dedicated single video page with time-stamped comments and reactions for team collaboration.
+- Automatically sync uploaded videos with the WordPress Media Library for easy access across your site.
 
-📌 Video Analytics
+📌 Advanced Video Analytics
 - Monitor viewer behavior and engagement through [detailed metrics and heatmaps](https://godam.io/features/analytics/).
-- Track video interactions to optimize content strategy.
-- Gain insights into user retention and conversion rates.
+- Track plays, watch time, and engagement rate
+- See views by country
+- Compare video performance
+- View bandwidth and storage usage
+- Rank videos by performance and much more
+
+📌 Automatic Video Transcription
+- AI-powered closed captions added automatically on upload for accessibility and engagement.
 
 ### Primary Benefits:
 - Simplifies asset management with automated transcoding and adaptive streaming.
