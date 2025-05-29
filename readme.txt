@@ -172,6 +172,23 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.1.0 (May 29, 2025) =
+
+- Feat: Central Media Manager – Unified media dashboard with folders, filters, search, and public sharing.
+- Feat: Central Media Selector Tab – New tab to import media from the Central Media Manager directly into the WordPress media library.
+- Feat: Image Upload to Central Media Manager – Upload and organize image files into the central media library.
+- Feat: Share Button – Generate a public or embeddable link to share GoDAM videos anywhere.
+- Feat: GoDAM Recorder Field for Gravity Forms – Record webcam or screen video directly within a form submission.
+- Feat: Automatic Video Transcription – AI-generated captions added automatically to uploaded videos.
+- Feat: Built-in Video SEO – Generate video schema with title, description, thumbnail and more for improved search engine discoverability.
+- Feat: Video Optimization at Upload – Auto-compression and resizing of uploaded videos to optimize bandwidth and storage.
+- Feat: WPForms & Contact Form 7 Integration – Add interactive form layers to videos using your preferred form plugins.
+- Feat: [godam_video] Shortcode – Embed a video anywhere using its media ID.
+- Feat: Advanced Video Analytics Dashboard – View plays, watch time, engagement, regional performance, and top-performing videos.
+- Enhancement: Improved Single Video Analytics Page – Compare videos, view playback metrics, and explore geographical heatmaps.
+- Enhancement: Video Editor UX – Edit timestamps for interactive video layers.
+- Enhancement: Keyboard Accessibility – Improved keyboard navigation and accessibility within the GoDAM video player.
+
 = v1.0.8 (May 27, 2025) =
 - Renamed functions and added checks for function existence to prevent fatal errors caused by other plugin functions.
 
