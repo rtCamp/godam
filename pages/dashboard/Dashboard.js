@@ -1,10 +1,11 @@
 /**
  * External dependencies
  */
+import React, { useEffect, useState, useRef } from 'react';
+
 /**
  * WordPress dependencies
  */
-import React, { useEffect, useState, useRef } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
