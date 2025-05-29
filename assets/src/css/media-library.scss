@@ -15,6 +15,10 @@
 	margin-left: 8px !important;
 	font-weight: 400;
 
+	&.disable {
+		opacity: 0.5;
+	}
+
 	.godam-icon {
 		width: 18px;
 		height: 18px;
