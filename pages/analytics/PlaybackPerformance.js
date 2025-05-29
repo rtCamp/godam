@@ -12,7 +12,7 @@ import { useFetchDashboardMetricsHistoryQuery } from '../dashboard/redux/api/das
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, _x } from '@wordpress/i18n';
 
 export default function PlaybackPerformanceDashboard( {
 	attachmentID,
@@ -392,14 +392,14 @@ export default function PlaybackPerformanceDashboard( {
 				<div class="flex flex-col min-w-[250px]">
 					<div class="flex justify-between items-center h-9">
 						<div class="flex items-center gap-2">
-							<span style="color: #9333EA">●</span> 
+							<span style="color: #9333EA">●</span>
 							<p class="text-zinc-500">${ __( 'Engagement Rate', 'godam' ) }</p>
 						</div>
 						<span class="text-zinc-950 font-medium">${ d.engagement_rate.toFixed( 2 ) }${ unit }</span>
 					</div>
 					<div class="flex justify-between items-center h-9">
 						<div class="flex items-center gap-2">
-							<span style="color: #5CC8BE">●</span> 
+							<span style="color: #5CC8BE">●</span>
 							<p class="text-zinc-500">${ __( 'Play Rate', 'godam' ) }</p>
 						</div>
 						<span class="text-zinc-950 font-medium">${ d.play_rate.toFixed( 2 ) }${ unit }</span>
@@ -529,31 +529,31 @@ export default function PlaybackPerformanceDashboard( {
 							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === 'All' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( 'All' ) }
 						>
-							All
+							{ _x( 'All', 'All time period', 'godam' ) }
 						</button>
 						<button
 							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '7D' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( '7D' ) }
 						>
-							7D
+							{ _x( '7D', '7 days period', 'godam' ) }
 						</button>
 						<button
 							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '1M' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( '1M' ) }
 						>
-							1M
+							{ _x( '1M', '1 month period', 'godam' ) }
 						</button>
 						<button
 							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '6M' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( '6M' ) }
 						>
-							6M
+							{ _x( '6M', '6 months period', 'godam' ) }
 						</button>
 						<button
 							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '1Y' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( '1Y' ) }
 						>
-							1Y
+							{ _x( '1Y', '1 year period', 'godam' ) }
 						</button>
 					</div>
 				</div>

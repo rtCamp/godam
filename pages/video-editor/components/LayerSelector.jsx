@@ -29,7 +29,7 @@ const Layers = [
 	{
 		id: 1,
 		title: __( 'Gravity Forms', 'godam' ),
-		description: 'Collect user input using Gravity Forms',
+		description: __( 'Collect user input using Gravity Forms', 'godam' ),
 		image: Form,
 		type: 'form',
 		formType: 'gravity',
@@ -39,7 +39,7 @@ const Layers = [
 	{
 		id: 2,
 		title: __( 'WPForms', 'godam' ),
-		description: 'Collect user input using WPForms',
+		description: __( 'Collect user input using WPForms', 'godam' ),
 		image: Form,
 		type: 'form',
 		formType: 'wpforms',

@@ -144,15 +144,15 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 					className="mb-4 godam-select"
 					options={ [
 						{
-							label: 'Text',
+							label: __( 'Text', 'godam' ),
 							value: 'text',
 						},
 						{
-							label: 'HTML',
+							label: __( 'HTML', 'godam' ),
 							value: 'html',
 						},
 						{
-							label: 'Image',
+							label: __( 'Image', 'godam' ),
 							value: 'image',
 						},
 					] }

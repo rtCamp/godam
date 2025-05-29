@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
  * WordPress dependencies
  */
 import { Button, Modal } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -52,7 +53,7 @@ const DeleteModal = () => {
 
 			dispatch( updateSnackbar(
 				{
-					message: 'Folder deleted successfully',
+					message: __( 'Folder deleted successfully', 'godam' ),
 					type: 'success',
 				},
 			) );
@@ -61,7 +62,7 @@ const DeleteModal = () => {
 		} catch ( error ) {
 			dispatch( updateSnackbar(
 				{
-					message: 'Failed to delete folder',
+					message: __( 'Failed to delete folder', 'godam' ),
 					type: 'error',
 				},
 			) );
@@ -80,7 +81,7 @@ const DeleteModal = () => {
 	return (
 		isOpen && (
 			<Modal
-				title="Confirm Delete"
+				title={ __( 'Confirm Delete', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'delete' ) ) }
 				className="modal__container"
 			>
@@ -88,7 +89,7 @@ const DeleteModal = () => {
 					Deleting the folder <span className="modal__highlight">{ selectedFolder.name }</span> will remove it and all its subfolders, but <span className="modal__highlight">media associated with it will not be deleted</span>.
 				</p>
 				<p className="modal__warning">
-					Are you sure you want to proceed? This action cannot be undone.
+					{ __( 'Are you sure you want to proceed? This action cannot be undone.', 'godam' ) }
 				</p>
 
 				<div className="modal__button-group">

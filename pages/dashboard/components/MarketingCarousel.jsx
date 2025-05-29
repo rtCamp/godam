@@ -2,6 +2,12 @@
  * External dependencies
  */
 import { useEffect, useState, useRef } from 'react';
+
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
 /**
  * Internal dependencies
  */
@@ -9,20 +15,20 @@ import giftIcon from '../../../assets/src/images/gift.png';
 
 const carouselSlides = [
 	{
-		title: 'Welcome to Your GoDAM Dashboard',
-		description: 'Visualize performance, track engagement, and get real-time insights across all your media.',
+		title: __( 'Welcome to Your GoDAM Dashboard', 'godam' ),
+		description: __( 'Visualize performance, track engagement, and get real-time insights across all your media.', 'godam' ),
 	},
 	{
-		tip: 'Your analytics are updated every 15 minutes with the latest data.',
+		tip: __( 'Your analytics are updated every 15 minutes with the latest data.', 'godam' ),
 	},
 	{
-		tip: 'Monitor average engagement and watch time to understand what content works best.',
+		tip: __( 'Monitor average engagement and watch time to understand what content works best.', 'godam' ),
 	},
 	{
-		tip: 'Keep tabs on your bandwidth and storage — no surprises, just clarity.',
+		tip: __( 'Keep tabs on your bandwidth and storage — no surprises, just clarity.', 'godam' ),
 	},
 	{
-		tip: 'View global reach and top countries your videos are being watched in.',
+		tip: __( 'View global reach and top countries your videos are being watched in.', 'godam' ),
 	},
 ];
 

@@ -6,7 +6,7 @@
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, _x } from '@wordpress/i18n';
 
 /**
  * A Utility function to calculate the percentage of used storage or bandwidth.
@@ -47,9 +47,9 @@ const UsageData = () => {
 							</div>
 							<div className="leading-6">
 								<div className="easydam-settings-label text-base">{ __( 'BANDWIDTH', 'godam' ) }</div>
-								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_bandwidth - userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_bandwidth - userData.bandwidth_used ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
 								<br />
-								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.bandwidth_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.bandwidth_used ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
 							</div>
 						</div>
 						<div className="flex gap-3 items-center">
@@ -64,9 +64,9 @@ const UsageData = () => {
 							</div>
 							<div className="leading-6">
 								<div className="easydam-settings-label text-base">{ __( 'STORAGE', 'godam' ) }</div>
-								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_storage - userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ parseFloat( userData.total_storage - userData.storage_used ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
 								<br />
-								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.storage_used ).toFixed( 2 ) }{ __( 'GB', 'godam' ) }
+								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ parseFloat( userData.storage_used ).toFixed( 2 ) }{ _x( 'GB', 'gigabyte', 'godam' ) }
 							</div>
 						</div>
 					</>

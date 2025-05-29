@@ -107,7 +107,7 @@ const ImageCTA = ( { layerID } ) => {
 						/>
 						<img
 							src={ selectedImageUrl }
-							alt={ 'Selected custom brand' }
+							alt={ __( 'Selected custom brand', 'godam' ) }
 							className="max-w-[200px]"
 						/>
 					</div>
@@ -117,18 +117,18 @@ const ImageCTA = ( { layerID } ) => {
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
-				label="Text"
+				label={ __( 'Text', 'godam' ) }
 				value={ layer.imageText }
 				onChange={ ( value ) => {
 					updateField( 'imageText', value );
 				} }
-				placeholder="Your text"
+				placeholder={ __( 'Your text', 'godam' ) }
 			/>
 
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
-				label="URL"
+				label={ __( 'URL', 'godam' ) }
 				value={ layer.imageLink }
 				onChange={ ( value ) => {
 					updateField( 'imageLink', value );
@@ -139,36 +139,36 @@ const ImageCTA = ( { layerID } ) => {
 			<TextareaControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
-				label="Description"
+				label={ __( 'Description', 'godam' ) }
 				value={ layer.imageDescription }
 				onChange={ ( value ) => {
 					updateField( 'imageDescription', value );
 				} }
-				placeholder="Your Description"
+				placeholder={ __( 'Your Description', 'godam' ) }
 			/>
 
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
-				label="CTA Button Text"
+				label={ __( 'CTA Button Text', 'godam' ) }
 				value={ layer.imageCtaButtonText }
 				onChange={ ( value ) => {
 					updateField( 'imageCtaButtonText', value );
 				} }
-				placeholder="Buy Now"
+				placeholder={ __( 'Buy Now', 'godam' ) }
 			/>
 
 			<SelectControl
 				__next40pxDefaultSize
-				label="Select orientation"
+				label={ __( 'Select orientation', 'godam' ) }
 				className="mb-4"
 				options={ [
 					{
-						label: 'Landscape',
+						label: __( 'Landscape', 'godam' ),
 						value: 'landscape',
 					},
 					{
-						label: 'Portrait',
+						label: __( 'Portrait', 'godam' ),
 						value: 'portrait',
 					},
 				] }
@@ -183,14 +183,14 @@ const ImageCTA = ( { layerID } ) => {
 					<RangeControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						help="Please select how transparent you would like this."
+						help={ __( 'Please select how transparent you would like this.', 'godam' ) }
 						initialPosition={ 0 }
 						max={ 1 }
 						min={ 0 }
 						onChange={ ( value ) => updateField( 'imageOpacity', value ) }
 						step={ 0.1 }
 						value={ layer.imageOpacity }
-						label="Opacity of background image"
+						label={ __( 'Opacity of background image', 'godam' ) }
 					/>
 				</div>
 			</div>
