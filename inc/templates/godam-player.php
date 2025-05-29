@@ -11,6 +11,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( isset( $is_shortcode ) && $is_shortcode ) {
+	$is_shortcode = true;
+} else {
+	$is_shortcode = false;
+}
+
 // prevent default behavior of Gravity Forms autoscroll on submission.
 add_filter( 'gform_confirmation_anchor', '__return_false' );
 
@@ -26,6 +32,9 @@ $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : arra
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 $video_preview = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
 
+$src            = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
+$transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
+
 // Retrieve 'rtgodam_meta' for the given attachment ID, defaulting to an empty array if not found.
 $easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_meta', true ) : array();
 $easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : array();
@@ -40,6 +49,22 @@ $job_id       = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transco
 $sources = array();
 if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$sources = $attributes['sources'];
+} elseif ( empty( $attachment_id ) &&
+	( ! empty( $src || ! empty( $transcoded_url ) ) ) 
+) {
+	$sources = array();
+	if ( ! empty( $transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $transcoded_url,
+			'type' => 'application/dash+xml',
+		);
+	}
+	if ( ! empty( $src ) ) {
+		$sources[] = array(
+			'src'  => $src,
+			'type' => 'video/mp4',
+		);
+	}
 } else {
 	$transcoded_url = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true ) : '';
 	$video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
@@ -125,12 +150,6 @@ elseif ( ! empty( $ads_layers ) && 'self-hosted' === $ad_server ) :
 endif;
 
 $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
-
-if ( isset( $is_shortcode ) && $is_shortcode ) {
-	$is_shortcode = true;
-} else {
-	$is_shortcode = false;
-}
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
@@ -141,7 +160,7 @@ if ( isset( $is_shortcode ) && $is_shortcode ) {
 	--rtgodam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
 	--rtgodam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
 	--rtgodam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
-	--rtgodam-video-aspect-ratio: <?php echo esc_attr( $attributes['aspectRatio'] ?? '16/9' ); ?>;
+	<?php echo $attributes['aspectRatio'] ? '--rtgodam-video-aspect-ratio: ' . esc_attr( $attributes['aspectRatio'] ) : ''; ?>
 	">
 	<div class="easydam-video-container animate-video-loading">
 		<div class="animate-play-btn">

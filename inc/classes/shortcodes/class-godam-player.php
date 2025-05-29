@@ -25,6 +25,7 @@ class GoDAM_Player {
 	final protected function __construct() {
 		add_shortcode( 'godam_video', array( $this, 'render' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts' ) );
 	}
 
 	/**
@@ -72,7 +73,12 @@ class GoDAM_Player {
 	public function render( $atts ) {
 		$attributes = shortcode_atts(
 			array(
-				'id' => '',
+				'id'             => '',
+				'sources'        => '',
+				'src'            => '',
+				'transcoded_url' => '',
+				'poster'         => '',
+				'aspectRatio'    => '',
 			),
 			$atts,
 			'godam_video'

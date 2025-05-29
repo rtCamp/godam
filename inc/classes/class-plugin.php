@@ -28,6 +28,7 @@ use RTGODAM\Inc\REST_API\Ads;
 use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Polls;
+use RTGODAM\Inc\Gravity_Forms;
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 
@@ -60,6 +61,7 @@ class Plugin {
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 		$this->load_rest_api();
+		$this->init_gravity_forms();
 
 		// Load cron jobs.
 		Retranscode_Failed_Media::get_instance();
@@ -101,5 +103,12 @@ class Plugin {
 		Analytics::get_instance();
 		Deactivation::get_instance();
 		Polls::get_instance();
+	}
+
+	/**
+	 * Init Gravity Forms
+	 */
+	public function init_gravity_forms() {
+		Gravity_Forms\Init::get_instance();
 	}
 }
