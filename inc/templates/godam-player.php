@@ -44,7 +44,8 @@ $control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? array
 
 $poster_image = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 $poster_image = ! empty( $poster_image ) ? $poster_image : '';
-$job_id       = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
+
+$job_id = '';
 
 $sources = array();
 if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
@@ -69,6 +70,7 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$transcoded_url = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true ) : '';
 	$video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
 	$video_src_type = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
+	$job_id         = $attachment_id && ! empty( $transcoded_url ) ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
 	
 	if ( ! empty( $transcoded_url ) ) {
 		$sources = array(
