@@ -710,8 +710,8 @@ function GODAMPlayer( videoRef = null ) {
 
 		function createHotspots( layerObj, currentPlayer ) {
 			const videoContainer = currentPlayer.el();
-			const containerWidth = videoContainer.offsetWidth;
-			const containerHeight = videoContainer.offsetHeight;
+			const containerWidth = videoContainer?.offsetWidth;
+			const containerHeight = videoContainer?.offsetHeight;
 
 			const baseWidth = 800;
 			const baseHeight = 600;
@@ -863,8 +863,8 @@ function GODAMPlayer( videoRef = null ) {
 		// Reposition hotspots on resize or fullscreen
 		function updateHotspotPositions( currentPlayer, currentHotspotLayers ) {
 			const videoContainer = currentPlayer.el();
-			const containerWidth = videoContainer.offsetWidth;
-			const containerHeight = videoContainer.offsetHeight;
+			const containerWidth = videoContainer?.offsetWidth;
+			const containerHeight = videoContainer?.offsetHeight;
 
 			const baseWidth = 800;
 			const baseHeight = 600;

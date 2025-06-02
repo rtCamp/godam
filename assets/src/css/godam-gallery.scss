@@ -89,10 +89,12 @@
 	}
 
 	.godam-modal-overlay {
-		position: absolute;
+		position: fixed;
 		inset: 0;
-		background: transparent;
+		background: rgba(0, 0, 0, 0.5);
 		cursor: pointer;
+		width: 100vw;
+		height: 100vh;
 	}
 
 	.godam-modal-content {
@@ -111,6 +113,28 @@
 			height: auto;
 			display: block;
 			border-radius: 0;
+		}
+
+		.easydam-video-container {
+			width: 100%;
+			aspect-ratio: 16/9;
+
+			figure {
+				margin: 0;
+			}
+
+			.godam-error-message {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				height: 100%;
+				background: #f8f8f8;
+				color: #666;
+				text-align: center;
+				padding: 20px;
+				border-radius: 8px;
+				font-size: 16px;
+			}
 		}
 	}
 
