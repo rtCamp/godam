@@ -83,3 +83,57 @@ document.querySelectorAll( '.godam-video-thumbnail' ).forEach( ( thumbnail ) => 
 		}
 	} );
 } );
+
+document.addEventListener( 'click', async function( e ) {
+	if ( e.target && e.target.classList.contains( 'godam-load-more' ) ) {
+		e.preventDefault();
+		const btn = e.target;
+		const gallery = btn.previousElementSibling;
+
+		// Create spinner container if it doesn't exist
+		let spinnerContainer = document.querySelector( '.godam-spinner-container' );
+		if ( ! spinnerContainer ) {
+			spinnerContainer = document.createElement( 'div' );
+			spinnerContainer.className = 'godam-spinner-container';
+			spinnerContainer.innerHTML = '<div class="godam-spinner"></div>';
+			btn.parentNode.insertBefore( spinnerContainer, btn.nextSibling );
+		}
+
+		const offset = parseInt( btn.getAttribute( 'data-offset' ), 10 );
+		const columns = parseInt( btn.getAttribute( 'data-columns' ), 10 );
+		const orderby = btn.getAttribute( 'data-orderby' );
+		const order = btn.getAttribute( 'data-order' );
+		const loadCount = 3 * columns;
+
+		// Hide button and show spinner
+		btn.style.display = 'none';
+		spinnerContainer.classList.add( 'loading' );
+
+		try {
+			const params = new URLSearchParams( {
+				offset,
+				columns,
+				count: loadCount,
+				orderby,
+				order,
+			} );
+			const response = await fetch( `/wp-json/godam/v1/gallery-shortcode?${ params.toString() }` );
+			const data = await response.json();
+
+			if ( data.status === 'success' && data.html && data.html.trim() !== '' ) {
+				gallery.insertAdjacentHTML( 'beforeend', data.html );
+				btn.setAttribute( 'data-offset', offset + loadCount );
+				// Show button and hide spinner
+				btn.style.display = 'inline-flex';
+				spinnerContainer.classList.remove( 'loading' );
+			} else {
+				btn.remove();
+				spinnerContainer.remove();
+			}
+		} catch ( error ) {
+			btn.textContent = wp.i18n.__( 'Error. Try again.', 'godam' );
+			btn.style.display = 'inline-flex';
+			spinnerContainer.classList.remove( 'loading' );
+		}
+	}
+} );

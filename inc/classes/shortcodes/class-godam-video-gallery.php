@@ -69,7 +69,7 @@ class GoDAM_Video_Gallery {
 	public function render( $atts ) {
 		$atts = shortcode_atts(
 			array(
-				'count'   => -1,
+				'count'   => 6,
 				'orderby' => 'date',
 				'order'   => 'DESC',
 				'columns' => 3,
@@ -134,9 +134,23 @@ class GoDAM_Video_Gallery {
 				echo '</div>';
 				echo '</div>';
 			}
-			echo '
-			</div>
+			echo '</div>';
 
+			$total_videos = $query->found_posts;
+			$shown_videos = count( $query->posts );
+
+			if ( $shown_videos < $total_videos ) {
+				echo '<button 
+					class="godam-load-more" 
+					data-offset="' . esc_attr( $shown_videos ) . '" 
+					data-columns="' . esc_attr( $atts['columns'] ) . '" 
+					data-count="' . esc_attr( $atts['count'] ) . '" 
+					data-orderby="' . esc_attr( $atts['orderby'] ) . '" 
+					data-order="' . esc_attr( $atts['order'] ) . '"
+				>' . esc_html__( 'Load More', 'godam' ) . '</button>';
+			}
+
+			echo '
 			<div id="godam-video-modal" class="godam-modal hidden">
 				<div class="godam-modal-overlay"></div>
 				<div class="godam-modal-content"></div>
