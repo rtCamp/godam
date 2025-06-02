@@ -47,9 +47,9 @@ class Assets {
 
 		wp_register_script(
 			'rtgodam-script',
-			RTGODAM_URL . 'assets/build/js/main.min.js',
+			RTGODAM_URL . 'assets/build/js/main.js',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/main.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/main.js' ),
 			true
 		);
 
@@ -62,9 +62,9 @@ class Assets {
 
 		wp_enqueue_script(
 			'analytics-library',
-			RTGODAM_URL . 'assets/src/libs/analytics.min.js',
+			RTGODAM_URL . 'assets/src/libs/analytics.js',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/src/libs/analytics.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/src/libs/analytics.js' ),
 			true
 		);
 
@@ -75,7 +75,7 @@ class Assets {
 				'nonce' => wp_create_nonce( 'wp_rest' ),
 			)
 		);
-		
+
 		$localize_array = rtgodam_get_localize_array();
 
 		wp_localize_script(
@@ -83,7 +83,7 @@ class Assets {
 			'videoAnalyticsParams',
 			$localize_array
 		);
-		
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamAPIKeyData',
@@ -97,7 +97,7 @@ class Assets {
 		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
 		$is_cf7_active      = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
 		$is_wpforms_active  = is_plugin_active( 'wpforms-lite/wpforms.php' );
-		
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamPluginDependencies',
@@ -144,9 +144,9 @@ class Assets {
 
 		wp_register_script(
 			'rtgodam-script',
-			RTGODAM_URL . 'assets/build/js/admin.min.js',
+			RTGODAM_URL . 'assets/build/js/admin.js',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/admin.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/admin.js' ),
 			true
 		);
 
@@ -185,9 +185,9 @@ class Assets {
 
 		wp_register_script(
 			'easydam-media-library',
-			RTGODAM_URL . 'assets/build/js/media-library.min.js',
+			RTGODAM_URL . 'assets/build/js/media-library.js',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/media-library.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/media-library.js' ),
 			true
 		);
 
