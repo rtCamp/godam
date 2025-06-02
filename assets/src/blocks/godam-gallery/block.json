@@ -1,0 +1,43 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "godam/gallery",
+	"title": "GoDAM Video Gallery",
+	"category": "media",
+	"description": "Display a grid of GoDAM videos.",
+	"keywords": ["video", "gallery", "grid", "videos"],
+	"textdomain": "godam",
+	"attributes": {
+		"columns": {
+			"type": "number",
+			"default": 3
+		},
+		"count": {
+			"type": "number",
+			"default": -1
+		},
+		"orderby": {
+			"type": "string",
+			"default": "date"
+		},
+		"order": {
+			"type": "string",
+			"default": "DESC"
+		},
+		"layout": {
+			"type": "string",
+			"default": "grid"
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"align": true,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"editorStyle": ["file:./index.css"],
+	"editorScript": ["file:./index.js"],
+	"render": "file:./render.php"
+}
