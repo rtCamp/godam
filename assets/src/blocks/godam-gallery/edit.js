@@ -23,6 +23,17 @@ export default function Edit( { attributes, setAttributes } ) {
 	const { columns, count, orderby, order } = attributes;
 	const blockProps = useBlockProps();
 
+	// Generate sample video containers
+	const GoDAMVideos = Array.from( { length: count }, ( _, i ) => (
+		<div className="godam-editor-video-item" key={ i }>
+			<div className="godam-editor-video-thumbnail">
+				<span className="godam-editor-video-label">
+					{ __( 'GoDAM Video', 'godam' ) }
+				</span>
+			</div>
+		</div>
+	) );
+
 	return (
 		<>
 			<InspectorControls>
@@ -38,9 +49,8 @@ export default function Edit( { attributes, setAttributes } ) {
 						label={ __( 'Number of videos', 'godam' ) }
 						value={ count }
 						onChange={ ( value ) => setAttributes( { count: value } ) }
-						min={ -1 }
-						max={ 50 }
-						help={ __( 'Set to -1 to show all videos', 'godam' ) }
+						min={ 1 }
+						max={ 30 }
 					/>
 					<SelectControl
 						label={ __( 'Order by', 'godam' ) }
@@ -63,8 +73,13 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 				</PanelBody>
 			</InspectorControls>
-			<div { ...blockProps }>
-				{ __( 'GoDAM Video Gallery', 'godam' ) }
+			<div
+				{ ...blockProps }
+			>
+				<div className={ `godam-editor-video-gallery columns-${ columns }` }>
+					{ GoDAMVideos }
+				</div>
+
 			</div>
 		</>
 	);

@@ -14,7 +14,7 @@
 		},
 		"count": {
 			"type": "number",
-			"default": -1
+			"default": 6
 		},
 		"orderby": {
 			"type": "string",
