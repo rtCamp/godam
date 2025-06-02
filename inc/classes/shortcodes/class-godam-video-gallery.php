@@ -147,6 +147,7 @@ class GoDAM_Video_Gallery {
 					data-count="' . esc_attr( $atts['count'] ) . '" 
 					data-orderby="' . esc_attr( $atts['orderby'] ) . '" 
 					data-order="' . esc_attr( $atts['order'] ) . '"
+					data-total="' . esc_attr( $total_videos ) . '"
 				>' . esc_html__( 'Load More', 'godam' ) . '</button>';
 			}
 

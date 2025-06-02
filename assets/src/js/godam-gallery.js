@@ -122,10 +122,18 @@ document.addEventListener( 'click', async function( e ) {
 
 			if ( data.status === 'success' && data.html && data.html.trim() !== '' ) {
 				gallery.insertAdjacentHTML( 'beforeend', data.html );
-				btn.setAttribute( 'data-offset', offset + loadCount );
-				// Show button and hide spinner
-				btn.style.display = 'inline-flex';
-				spinnerContainer.classList.remove( 'loading' );
+				const newOffset = offset + loadCount;
+				btn.setAttribute( 'data-offset', newOffset );
+				// Check if we've loaded all videos
+				const totalVideos = parseInt( btn.getAttribute( 'data-total' ), 10 );
+				if ( newOffset >= totalVideos ) {
+					btn.remove();
+					spinnerContainer.remove();
+				} else {
+					// Show button and hide spinner
+					btn.style.display = 'inline-flex';
+					spinnerContainer.classList.remove( 'loading' );
+				}
 			} else {
 				btn.remove();
 				spinnerContainer.remove();
