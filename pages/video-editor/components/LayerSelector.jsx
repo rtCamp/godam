@@ -24,6 +24,7 @@ import Poll from '../assets/layers/Poll.png';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
+import Woo from '../assets/layers/Woo.svg';
 
 const Layers = [
 	{
@@ -85,6 +86,15 @@ const Layers = [
 		type: 'poll',
 		requiresWpPolls: true,
 	},
+	{
+		id: 8,
+		title: __( 'WooCommerce', 'godam' ),
+		description: __( 'Display products using hotspots', 'godam' ),
+		image: Hotspot,
+		type: 'woo',
+		requiresWoo: true,
+		formIcon: Woo,
+	},
 ];
 
 const LayerSelector = ( { isGFPluginActive, isWPFormsPluginActive, isCF7PluginActive, closeModal, addNewLayer } ) => {
@@ -112,7 +122,7 @@ const LayerSelector = ( { isGFPluginActive, isWPFormsPluginActive, isCF7PluginAc
 
 			<div className="godam-layer-selector__list">
 				{ Layers.map( ( layer ) => {
-					const isDisabled = ( layer.requiresGf && ! isGFPluginActive ) || ( layer.requiresWPForms && ! isWPFormsPluginActive ) || ( layer.requiresCF7 && ! isCF7PluginActive ) || ( layer.requiresWpPolls && ! window.easydamMediaLibrary.isPollPluginActive );
+					const isDisabled = ( layer.requiresGf && ! isGFPluginActive ) || ( layer.requiresWPForms && ! isWPFormsPluginActive ) || ( layer.requiresCF7 && ! isCF7PluginActive ) || ( layer.requiresWpPolls && ! window.easydamMediaLibrary.isPollPluginActive ) || ( layer.requiresWoo && ! window.easydamMediaLibrary.isWooActive );
 					let message = '';
 					if ( layer.requiresGf && ! isGFPluginActive ) {
 						message = `<a class="godam-link" href="https://docs.gravityforms.com/installation/">Gravity Forms</a> plugin is required to use Form layer`;
@@ -122,6 +132,8 @@ const LayerSelector = ( { isGFPluginActive, isWPFormsPluginActive, isCF7PluginAc
 						message = `<a class="godam-link" href="https://wordpress.org/plugins/contact-form-7/">Contact Form 7</a> plugin is required to use Form layer`;
 					} else if ( layer.requiresWpPolls && ! window.easydamMediaLibrary.isPollPluginActive ) {
 						message = `<a class="godam-link" href="https://wordpress.org/plugins/wp-polls/">WP-Polls</a> plugin is required to use Poll layer`;
+					} else if ( layer.requiresWoo && ! window.easydamMediaLibrary.isWooActive ) {
+						message = `<a class="godam-link" href="https://wordpress.org/plugins/woocommerce/">WooCommerce</a> plugin is required to use Buy Now layer`;
 					}
 					return ( <div key={ layer.id }>
 						<button
@@ -137,7 +149,7 @@ const LayerSelector = ( { isGFPluginActive, isWPFormsPluginActive, isCF7PluginAc
 									alt={ layer.title }
 								/>
 								{
-									layer.type === 'form' && layer.formIcon && (
+									( layer.type === 'form' || layer.type === 'woo' ) && layer.formIcon && (
 										<img
 											className="godam-layer-selector__item__image-container__form-icon"
 											src={ layer.formIcon }

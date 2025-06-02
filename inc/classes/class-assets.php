@@ -95,6 +95,7 @@ class Assets {
 		include_once ABSPATH . 'wp-admin/includes/plugin.php';
 		$is_gf_active       = is_plugin_active( 'gravityforms/gravityforms.php' );
 		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
+		$is_woo_active		= is_plugin_active( 'woocommerce/woocommerce.php' );
 
 		wp_localize_script(
 			'rtgodam-script',
@@ -102,6 +103,7 @@ class Assets {
 			array(
 				'gravityforms' => $is_gf_active,
 				'wp_polls'     => $is_wp_polls_active,
+				'woocommerce'  => $is_woo_active,
 			)
 		);
 
@@ -242,6 +244,7 @@ class Assets {
 				'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
 				'enableFolderOrganization' => $enable_folder_organization,
 				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
+				'isWooActive'       	   => is_plugin_active( 'woocommerce/woocommerce.php' ),
 			)
 		);
 

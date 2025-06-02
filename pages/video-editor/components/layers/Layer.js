@@ -10,6 +10,7 @@ import CTALayer from './CTALayer';
 import HotspotLayer from './HotspotLayer';
 import Ads from './AdsLayer';
 import PollLayer from './PollLayer';
+import WoocommerceLayer from './WoocommerceLayer';
 
 const Layer = ( { layer, goBack } ) => {
 	return (
@@ -28,6 +29,9 @@ const Layer = ( { layer, goBack } ) => {
 			}
 			{
 				layer.type === 'poll' && <PollLayer layerID={ layer.id } goBack={ goBack } />
+			}
+			{
+				layer.type === 'woo' && <WoocommerceLayer layerID={ layer.id } goBack={ goBack } />
 			}
 		</>
 	);
