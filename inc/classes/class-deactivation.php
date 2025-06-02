@@ -1,7 +1,7 @@
 <?php
 /**
  * Plguin Deactivation Survey Class.
- * 
+ *
  * @package GoDAM
  */
 
@@ -43,16 +43,16 @@ class Deactivation {
 
 		wp_register_script(
 			'godam-deactivation-survey-script',
-			RTGODAM_URL . 'assets/build/js/deactivation-feedback.min.js', 
+			RTGODAM_URL . 'assets/build/js/deactivation-feedback.js',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/deactivation-feedback.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/deactivation-feedback.js' ),
 			true
 		);
 
 		if ( is_admin() && 'plugins.php' === $pagenow ) {
 
 			wp_set_script_translations( 'godam-deactivation-survey-script', 'godam', RTGODAM_PATH . 'languages' );
-			wp_enqueue_script( 'godam-deactivation-survey-script' ); 
+			wp_enqueue_script( 'godam-deactivation-survey-script' );
 
 			$current_user = wp_get_current_user();
 
