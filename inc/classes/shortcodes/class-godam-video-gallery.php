@@ -86,6 +86,7 @@ class GoDAM_Video_Gallery {
 				'custom_date_start' => '',
 				'custom_date_end'   => '',
 				'show_title'        => true,
+				'align'             => '',
 			),
 			$atts,
 			'godam_video_gallery'
@@ -199,7 +200,8 @@ class GoDAM_Video_Gallery {
 			$total_videos = $query->found_posts;
 			$shown_videos = count( $query->posts );
 
-			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) . ' columns-' . intval( $atts['columns'] ) . '" 
+			$alignment_class = ! empty( $atts['align'] ) ? ' align' . $atts['align'] : '';
+			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) . ' columns-' . intval( $atts['columns'] ) . esc_attr( $alignment_class ) . '" 
 				data-infinite-scroll="' . esc_attr( $atts['infinite_scroll'] ) . '"
 				data-offset="' . esc_attr( $shown_videos ) . '"
 				data-columns="' . esc_attr( $atts['columns'] ) . '"
