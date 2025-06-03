@@ -67,7 +67,9 @@ class GoDAM_Video_Gallery {
 	 * @return string HTML output of the gallery.
 	 */
 	public function render( $atts ) {
-		$atts = shortcode_atts(
+		// Add filter for default attributes.
+		$default_atts = apply_filters(
+			'rtgodam_gallery_default_attributes',
 			array(
 				'count'             => 6,
 				'orderby'           => 'date',
@@ -85,10 +87,13 @@ class GoDAM_Video_Gallery {
 				'custom_date_end'   => '',
 				'show_title'        => true,
 				'align'             => '',
-			),
-			$atts,
-			'godam_video_gallery'
+			)
 		);
+
+		$atts = shortcode_atts( $default_atts, $atts, 'godam_video_gallery' );
+		
+		// Add filter for processed attributes.
+		$atts = apply_filters( 'rtgodam_gallery_attributes', $atts );
 
 		wp_enqueue_style( 'godam-gallery-style' );
 
@@ -107,6 +112,9 @@ class GoDAM_Video_Gallery {
 			'order'          => sanitize_text_field( $atts['order'] ),
 			
 		);
+
+		// Add filter for query arguments.
+		$args = apply_filters( 'rtgodam_gallery_query_args', $args, $atts );
 
 		// Add category filter.
 		if ( ! empty( $atts['category'] ) ) {
@@ -189,6 +197,9 @@ class GoDAM_Video_Gallery {
 		ob_start();
 
 		if ( $query->have_posts() ) {
+			// Add action before gallery output.
+			do_action( 'rtgodam_gallery_before_output', $query, $atts );
+
 			// Calculate these values before using them.
 			$total_videos = $query->found_posts;
 			$shown_videos = count( $query->posts );
@@ -206,9 +217,18 @@ class GoDAM_Video_Gallery {
 				data-show-title="' . ( $atts['show_title'] ? '1' : '0' ) . '"
 				data-layout="' . esc_attr( $atts['layout'] ) . '">';
 			foreach ( $query->posts as $video ) {
+				// Add action before each video item.
+				do_action( 'rtgodam_gallery_before_video_item', $video, $atts );
+
 				$video_id    = intval( $video->ID );
 				$video_title = get_the_title( $video_id );
 				$video_date  = get_the_date( 'F j, Y', $video_id );
+				
+				// Add filter for video title.
+				$video_title = apply_filters( 'rtgodam_gallery_video_title', $video_title, $video_id );
+				
+				// Add filter for video date format.
+				$video_date = apply_filters( 'rtgodam_gallery_video_date', $video_date, $video_id );
 			
 				$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
 				$fallback_thumb   = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
@@ -244,6 +264,9 @@ class GoDAM_Video_Gallery {
 					echo '</div>';
 				}
 				echo '</div>';
+
+				// Add action after each video item.
+				do_action( 'rtgodam_gallery_after_video_item', $video, $atts );
 			}
 			echo '</div>';
 
@@ -276,6 +299,9 @@ class GoDAM_Video_Gallery {
 					</div>
 				</div>
 			</div>';
+
+			// Add action after gallery output.
+			do_action( 'rtgodam_gallery_after_output', $query, $atts );
 		} else {
 			echo '<p>' . esc_html__( 'No videos found.', 'godam' ) . '</p>';
 		}

@@ -70,13 +70,31 @@ class Dynamic_Shortcode extends Base {
 			);
 		}
 
+		// Add action before shortcode rendering.
+		do_action( 'rtgodam_shortcode_before_render', $id );
+
 		// Get the video title and date.
 		$video_title = get_the_title( $id );
 		$video_date  = get_the_date( 'F j, Y', $id );
 
+		// Add filters for title and date.
+		$video_title = apply_filters( 'rtgodam_shortcode_video_title', $video_title, $id );
+		$video_date  = apply_filters( 'rtgodam_shortcode_video_date', $video_date, $id );
+
 		ob_start();
-		echo do_shortcode( '[godam_video id="' . $id . '"]' );
+		$shortcode = '[godam_video id="' . $id . '"]';
+		
+		// Add filter for shortcode.
+		$shortcode = apply_filters( 'rtgodam_shortcode_output', $shortcode, $id );
+		
+		echo do_shortcode( $shortcode );
 		$html = ob_get_clean();
+
+		// Add filter for final HTML output.
+		$html = apply_filters( 'rtgodam_shortcode_html', $html, $id );
+
+		// Add action after shortcode rendering.
+		do_action( 'rtgodam_shortcode_after_render', $id );
 
 		return new WP_REST_Response(
 			array(

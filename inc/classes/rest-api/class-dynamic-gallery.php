@@ -93,7 +93,9 @@ class Dynamic_Gallery extends Base {
 			'layout'     => $request->get_param( 'layout' ),
 		);
 
-		// Render only the video items, not the whole gallery wrapper or button.
+		// Add filter for dynamic gallery attributes.
+		$atts = apply_filters( 'rtgodam_dynamic_gallery_attributes', $atts, $request );
+
 		$args = array(
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
@@ -111,14 +113,29 @@ class Dynamic_Gallery extends Base {
 			),
 		);
 
+		// Add filter for dynamic gallery query args.
+		$args = apply_filters( 'rtgodam_dynamic_gallery_query_args', $args, $atts );
+
 		$query = new \WP_Query( $args );
 		ob_start();
 		if ( $query->have_posts() ) {
+			// Add action before dynamic gallery output.
+			do_action( 'rtgodam_dynamic_gallery_before_output', $query, $atts );
+
 			foreach ( $query->posts as $video ) {
+				// Add action before each dynamic video item.
+				do_action( 'rtgodam_dynamic_gallery_before_video_item', $video, $atts );
+
 				$video_id    = intval( $video->ID );
 				$video_title = get_the_title( $video_id );
 				$video_date  = get_the_date( 'F j, Y', $video_id );
 				
+				// Add filter for dynamic gallery video title.
+				$video_title = apply_filters( 'rtgodam_dynamic_gallery_video_title', $video_title, $video_id );
+				
+				// Add filter for dynamic gallery video date.
+				$video_date = apply_filters( 'rtgodam_dynamic_gallery_video_date', $video_date, $video_id );
+
 				$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
 				$fallback_thumb   = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
 				$thumbnail        = $custom_thumbnail ?: $fallback_thumb;
@@ -151,10 +168,20 @@ class Dynamic_Gallery extends Base {
 				}
 				
 				echo '</div>';
+
+				// Add action after each dynamic video item.
+				do_action( 'rtgodam_dynamic_gallery_after_video_item', $video, $atts );
 			}
+
+			// Add action after dynamic gallery output.
+			do_action( 'rtgodam_dynamic_gallery_after_output', $query, $atts );
 		}
 		
 		$html = ob_get_clean();
+		
+		// Add filter for final HTML output.
+		$html = apply_filters( 'rtgodam_dynamic_gallery_html', $html, $query, $atts );
+
 		return new WP_REST_Response(
 			array(
 				'status' => 'success',
