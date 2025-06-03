@@ -110,7 +110,13 @@ class GoDAM_Video_Gallery {
 			'posts_per_page' => intval( $atts['count'] ),
 			'orderby'        => sanitize_text_field( $atts['orderby'] ),
 			'order'          => sanitize_text_field( $atts['order'] ),
-			
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			'meta_query'     => array(
+				array(
+					'key'     => 'rtgodam_transcoded_url',
+					'compare' => 'EXISTS',
+				),
+			),
 		);
 
 		// Add filter for query arguments.
