@@ -348,9 +348,7 @@
 .godam-load-more {
 	position: relative;
 	min-width: 120px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
+	display: block;
 	margin: 20px auto;
 	padding: 10px 20px;
 	background: linear-gradient(to right, #AB3A6C, #E6533A);
@@ -360,6 +358,7 @@
 	cursor: pointer;
 	font-size: 14px;
 	transition: opacity 0.2s ease;
+	text-align: center;
 
 	&:disabled {
 		cursor: not-allowed;

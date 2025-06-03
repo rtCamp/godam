@@ -119,7 +119,7 @@ document.addEventListener( 'click', async function( e ) {
 
 		if ( newOffset ) {
 			btn.setAttribute( 'data-offset', newOffset );
-			btn.style.display = 'inline-flex';
+			btn.style.display = 'block';
 		} else {
 			btn.remove();
 		}
