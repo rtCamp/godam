@@ -44,7 +44,6 @@ export default function Edit( { attributes, setAttributes } ) {
 		dateRange,
 		customDateStart,
 		customDateEnd,
-		exclude,
 		include,
 		search,
 		showTitle,
@@ -285,12 +284,6 @@ export default function Edit( { attributes, setAttributes } ) {
 							</div>
 						</div>
 					) }
-					<TextControl
-						label={ __( 'Exclude Video IDs', 'godam' ) }
-						help={ __( 'Comma-separated list of video IDs to exclude', 'godam' ) }
-						value={ exclude }
-						onChange={ ( value ) => setAttributes( { exclude: value } ) }
-					/>
 					<TextControl
 						label={ __( 'Include Video IDs', 'godam' ) }
 						help={ __( 'Comma-separated list of video IDs to include', 'godam' ) }

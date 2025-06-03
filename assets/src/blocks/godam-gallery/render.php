@@ -24,8 +24,6 @@ $attributes = wp_parse_args(
 		'dateRange'       => '',
 		'customDateStart' => '',
 		'customDateEnd'   => '',
-		// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
-		'exclude'         => '',
 		'include'         => '',
 		'search'          => '',
 		'showTitle'       => true,
@@ -47,8 +45,6 @@ $shortcode_atts = array(
 	'date_range'        => sanitize_text_field( $attributes['dateRange'] ),
 	'custom_date_start' => sanitize_text_field( $attributes['customDateStart'] ),
 	'custom_date_end'   => sanitize_text_field( $attributes['customDateEnd'] ),
-	// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
-	'exclude'           => sanitize_text_field( $attributes['exclude'] ),
 	'include'           => sanitize_text_field( $attributes['include'] ),
 	'search'            => sanitize_text_field( $attributes['search'] ),
 	'show_title'        => ! empty( $attributes['showTitle'] ),

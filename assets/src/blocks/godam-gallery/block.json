@@ -56,10 +56,6 @@
 			"type": "string",
 			"default": ""
 		},
-		"exclude": {
-			"type": "string",
-			"default": ""
-		},
 		"include": {
 			"type": "string",
 			"default": ""

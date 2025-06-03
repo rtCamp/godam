@@ -79,8 +79,6 @@ class GoDAM_Video_Gallery {
 				'tag'               => '',
 				'author'            => 0,
 				'date_range'        => '',
-				// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
-				'exclude'           => '',
 				'include'           => '',
 				'search'            => '',
 				'custom_date_start' => '',
@@ -164,12 +162,6 @@ class GoDAM_Video_Gallery {
 			if ( ! empty( $date_query ) ) {
 				$args['date_query'] = array( $date_query );
 			}
-		}
-
-		// Add exclude filter.
-		if ( ! empty( $atts['exclude'] ) ) {
-			// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in
-			$args['post__not_in'] = array_map( 'intval', explode( ',', $atts['exclude'] ) );
 		}
 
 		// Add include filter.
