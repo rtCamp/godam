@@ -70,6 +70,9 @@ class Dynamic_Shortcode extends Base {
 			);
 		}
 
+		// Get the video title.
+		$video_title = get_the_title( $id );
+
 		ob_start();
 		echo do_shortcode( '[godam_video id="' . $id . '"]' );
 		$html = ob_get_clean();
@@ -78,6 +81,7 @@ class Dynamic_Shortcode extends Base {
 			array(
 				'status' => 'success',
 				'html'   => $html,
+				'title'  => $video_title,
 			),
 			200
 		);

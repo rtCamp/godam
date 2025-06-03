@@ -159,6 +159,9 @@ document.addEventListener( 'click', async function( e ) {
 						</svg>
 					</div>
 				</div>
+				<div class="godam-modal-footer">
+					<h3 class="godam-video-title"></h3>
+				</div>
 			</div>
 		`;
 
@@ -199,6 +202,13 @@ document.addEventListener( 'click', async function( e ) {
 				if ( videoContainer ) {
 					videoContainer.innerHTML = data.html;
 					videoContainer.classList.remove( 'animate-video-loading' );
+
+					// Update video title in the modal header
+					const videoTitle = modal.querySelector( '.godam-video-title' );
+					if ( videoTitle ) {
+						videoTitle.textContent = data.title || '';
+					}
+
 					// Reinitialize the player with the new content
 					if ( typeof GODAMPlayer === 'function' ) {
 						GODAMPlayer( modal );

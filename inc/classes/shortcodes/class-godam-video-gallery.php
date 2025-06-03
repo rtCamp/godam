@@ -264,7 +264,12 @@ class GoDAM_Video_Gallery {
 			echo '
 			<div id="godam-video-modal" class="godam-modal hidden">
 				<div class="godam-modal-overlay"></div>
-				<div class="godam-modal-content"></div>
+				<div class="godam-modal-content">
+					<div class="easydam-video-container animate-video-loading"></div>
+					<div class="godam-modal-footer">
+						<h3 class="godam-video-title"></h3>
+					</div>
+				</div>
 			</div>';
 		} else {
 			echo '<p>' . esc_html__( 'No videos found.', 'godam' ) . '</p>';
