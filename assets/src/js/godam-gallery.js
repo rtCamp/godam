@@ -128,8 +128,11 @@ document.addEventListener( 'click', async function( e ) {
 	}
 } );
 
-document.querySelectorAll( '.godam-video-thumbnail' ).forEach( ( thumbnail ) => {
-	thumbnail.addEventListener( 'click', async () => {
+// Use event delegation - attach listener to document, check if clicked element matches
+document.addEventListener( 'click', async function( e ) {
+	// Check if the clicked element is a video thumbnail
+	if ( e.target.closest( '.godam-video-thumbnail' ) ) {
+		const thumbnail = e.target.closest( '.godam-video-thumbnail' );
 		const videoId = thumbnail.getAttribute( 'data-video-id' );
 		if ( ! videoId ) {
 			return;
@@ -179,8 +182,8 @@ document.querySelectorAll( '.godam-video-thumbnail' ).forEach( ( thumbnail ) => 
 		};
 
 		modal.querySelector( '.godam-modal-close' )?.addEventListener( 'click', close );
-		modal.addEventListener( 'click', ( e ) => {
-			if ( ! e.target.closest( '.godam-modal-content' ) ) {
+		modal.addEventListener( 'click', ( err ) => {
+			if ( ! err.target.closest( '.godam-modal-content' ) ) {
 				close();
 			}
 		} );
@@ -201,13 +204,21 @@ document.querySelectorAll( '.godam-video-thumbnail' ).forEach( ( thumbnail ) => 
 						GODAMPlayer( modal );
 					}
 				}
+			} else {
+				// Handle error case
+				const videoContainer = modal.querySelector( '.easydam-video-container' );
+				if ( videoContainer ) {
+					videoContainer.innerHTML = '<div class="godam-error-message">Video could not be loaded.</div>';
+					videoContainer.classList.remove( 'animate-video-loading' );
+				}
 			}
 		} catch ( error ) {
+			// Handle error case
 			const videoContainer = modal.querySelector( '.easydam-video-container' );
 			if ( videoContainer ) {
-				videoContainer.innerHTML = `<div class="godam-error-message">${ wp.i18n.__( 'Unable to load video. Please try again later.', 'godam' ) }</div>`;
+				videoContainer.innerHTML = '<div class="godam-error-message">Video could not be loaded.</div>';
 				videoContainer.classList.remove( 'animate-video-loading' );
 			}
 		}
-	} );
+	}
 } );
