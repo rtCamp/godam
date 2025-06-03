@@ -98,6 +98,12 @@
 			align-items: center;
 			gap: 8px;
 
+			@media (max-width: 765px) {
+				flex-direction: column;
+				align-items: flex-start;
+				gap: 4px;
+			}
+
 			.godam-video-title {
 				font-size: 14px;
 				color: #333;
@@ -105,6 +111,13 @@
 				text-overflow: ellipsis;
 				white-space: nowrap;
 				flex: 1;
+
+				@media (max-width: 765px) {
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					width: 100%;
+				}
 			}
 
 			.godam-video-date {
@@ -129,6 +142,11 @@
 				width: 200px;
 				min-width: 200px;
 				aspect-ratio: 16/9;
+
+				@media (max-width: 765px) {
+					width: 120px;
+					min-width: 120px;
+				}
 			}
 
 			.godam-video-info {
@@ -144,12 +162,25 @@
 					white-space: normal;
 					overflow: visible;
 					text-overflow: initial;
+
+					@media (max-width: 765px) {
+						font-size: 14px;
+					}
 				}
 
 				.godam-video-date {
 					font-size: 14px;
 					color: #666;
+
+					@media (max-width: 765px) {
+						font-size: 12px;
+					}
 				}
+			}
+
+			@media (max-width: 765px) {
+				gap: 12px;
+				padding: 8px;
 			}
 		}
 	}
