@@ -106,6 +106,7 @@ function GODAMPlayer( videoRef = null ) {
 		const isPreviewEnabled = videoSetupOptions?.preview;
 
 		const player = videojs( video, videoSetupControls );
+		player.aspectRatio( '16:9' );
 
 		video.addEventListener( 'loadedmetadata', () => {
 			const playerElement = player.el_;

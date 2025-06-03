@@ -177,15 +177,23 @@
 		background: #fff;
 		border-radius: 12px;
 		padding: 16px;
-		max-width: 96vw;
-		max-height: 96vh;
-		width: 100%;
+		width: 90vw;
+		max-width: none;
+		max-height: 90vh;
 		box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 		z-index: 10;
 
 		.easydam-video-container {
-			width: 100%;
-			aspect-ratio: 16/9;
+			width: 85vw;
+			height: auto;
+
+			@media (min-width: 1728px) {
+				width: 70vw;
+			}
+
+			@media (min-width: 2028px) {
+				width: 50vw;
+			}
 
 			figure {
 				margin: 0;
