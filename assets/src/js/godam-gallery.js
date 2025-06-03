@@ -60,48 +60,42 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		const totalVideos = parseInt( gallery.getAttribute( 'data-total' ), 10 );
 		let currentOffset = offset;
 		let isLoading = false;
+		let allVideosLoaded = false;
 
-		// Create an observer for the last video item
-		const observer = new IntersectionObserver( ( entries ) => {
-			entries.forEach( ( entry ) => {
-				// Check if the last item is no longer visible (scrolled past it)
-				if ( entry.isIntersecting && ! isLoading ) {
-					isLoading = true;
-					// Load more videos when we've scrolled past the last item
-					loadMoreVideos( gallery, currentOffset, columns, orderby, order, totalVideos )
-						.then( ( newOffset ) => {
-							if ( newOffset ) {
-								currentOffset = newOffset;
-								// Re-observe the new last item
-								const videoItems = gallery.querySelectorAll( '.godam-video-item' );
-								if ( videoItems.length > 0 ) {
-									observer.observe( videoItems[ videoItems.length - 1 ] );
-								}
-							}
-							isLoading = false;
-						} )
-						.catch( () => {
-							isLoading = false;
-						} );
-				}
-			} );
-		}, {
-			root: null,
-			rootMargin: '-200px',
-			threshold: 0.5,
-		} );
+		// Add scroll event listener
+		let scrollTimeout;
+		const scrollHandler = () => {
+			if ( ! allVideosLoaded ) {
+				clearTimeout( scrollTimeout );
+				scrollTimeout = setTimeout( () => {
+					const videoItems = gallery.querySelectorAll( '.godam-video-item' );
+					if ( videoItems.length > 0 ) {
+						const lastItem = videoItems[ videoItems.length - 1 ];
+						const rect = lastItem.getBoundingClientRect();
 
-		// Function to observe the last video item
-		const observeLastItem = () => {
-			const videoItems = gallery.querySelectorAll( '.godam-video-item' );
-			if ( videoItems.length > 0 ) {
-				const lastItem = videoItems[ videoItems.length - 1 ];
-				observer.observe( lastItem );
+						// If the last item is near the bottom of the viewport
+						if ( rect.bottom <= window.innerHeight + 200 && ! isLoading ) {
+							isLoading = true;
+							loadMoreVideos( gallery, currentOffset, columns, orderby, order, totalVideos )
+								.then( ( newOffset ) => {
+									if ( newOffset ) {
+										currentOffset = newOffset;
+									} else {
+										allVideosLoaded = true;
+										window.removeEventListener( 'scroll', scrollHandler );
+									}
+									isLoading = false;
+								} )
+								.catch( ( ) => {
+									isLoading = false;
+								} );
+						}
+					}
+				}, 100 ); // Debounce scroll events
 			}
 		};
 
-		// Initial observation
-		observeLastItem();
+		window.addEventListener( 'scroll', scrollHandler );
 	} );
 } );
 
