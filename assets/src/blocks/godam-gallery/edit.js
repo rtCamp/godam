@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, SelectControl, RangeControl } from '@wordpress/components';
+import { PanelBody, SelectControl, RangeControl, ToggleControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -20,7 +20,7 @@ import './editor.scss';
  * @return {WPElement} Element to render.
  */
 export default function Edit( { attributes, setAttributes } ) {
-	const { columns, count, orderby, order } = attributes;
+	const { columns, count, orderby, order, infiniteScroll } = attributes;
 	const blockProps = useBlockProps();
 
 	// Generate sample video containers
@@ -70,6 +70,11 @@ export default function Edit( { attributes, setAttributes } ) {
 							{ label: __( 'Ascending', 'godam' ), value: 'ASC' },
 						] }
 						onChange={ ( value ) => setAttributes( { order: value } ) }
+					/>
+					<ToggleControl
+						label={ __( 'Enable Infinite Scroll', 'godam' ) }
+						checked={ !! infiniteScroll }
+						onChange={ ( value ) => setAttributes( { infiniteScroll: value } ) }
 					/>
 				</PanelBody>
 			</InspectorControls>

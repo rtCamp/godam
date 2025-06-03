@@ -69,11 +69,12 @@ class GoDAM_Video_Gallery {
 	public function render( $atts ) {
 		$atts = shortcode_atts(
 			array(
-				'count'   => 6,
-				'orderby' => 'date',
-				'order'   => 'DESC',
-				'columns' => 3,
-				'layout'  => 'grid',
+				'count'           => 6,
+				'orderby'         => 'date',
+				'order'           => 'DESC',
+				'columns'         => 3,
+				'layout'          => 'grid',
+				'infinite_scroll' => false,
 			),
 			$atts,
 			'godam_video_gallery'
@@ -101,7 +102,17 @@ class GoDAM_Video_Gallery {
 		ob_start();
 
 		if ( $query->have_posts() ) {
-			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) . ' columns-' . intval( $atts['columns'] ) . '">';
+			// Calculate these values before using them.
+			$total_videos = $query->found_posts;
+			$shown_videos = count( $query->posts );
+
+			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) . ' columns-' . intval( $atts['columns'] ) . '" 
+				data-infinite-scroll="' . esc_attr( $atts['infinite_scroll'] ) . '"
+				data-offset="' . esc_attr( $shown_videos ) . '"
+				data-columns="' . esc_attr( $atts['columns'] ) . '"
+				data-orderby="' . esc_attr( $atts['orderby'] ) . '"
+				data-order="' . esc_attr( $atts['order'] ) . '"
+				data-total="' . esc_attr( $total_videos ) . '">';
 			foreach ( $query->posts as $video ) {
 				$video_id = intval( $video->ID );
 			
@@ -136,19 +147,20 @@ class GoDAM_Video_Gallery {
 			}
 			echo '</div>';
 
-			$total_videos = $query->found_posts;
-			$shown_videos = count( $query->posts );
 
 			if ( $shown_videos < $total_videos ) {
-				echo '<button 
-					class="godam-load-more" 
-					data-offset="' . esc_attr( $shown_videos ) . '" 
-					data-columns="' . esc_attr( $atts['columns'] ) . '" 
-					data-count="' . esc_attr( $atts['count'] ) . '" 
-					data-orderby="' . esc_attr( $atts['orderby'] ) . '" 
-					data-order="' . esc_attr( $atts['order'] ) . '"
-					data-total="' . esc_attr( $total_videos ) . '"
-				>' . esc_html__( 'Load More', 'godam' ) . '</button>';
+				if ( ! $atts['infinite_scroll'] ) {
+					echo '<button 
+						class="godam-load-more" 
+						data-offset="' . esc_attr( $shown_videos ) . '" 
+						data-columns="' . esc_attr( $atts['columns'] ) . '" 
+						data-count="' . esc_attr( $atts['count'] ) . '" 
+						data-orderby="' . esc_attr( $atts['orderby'] ) . '" 
+						data-order="' . esc_attr( $atts['order'] ) . '"
+						data-total="' . esc_attr( $total_videos ) . '"
+					>' . esc_html__( 'Load More', 'godam' ) . '</button>';
+				}
+				echo '<div class="godam-spinner-container"><div class="godam-spinner"></div></div>';
 			}
 
 			echo '

@@ -2,6 +2,7 @@
 	display: grid;
 	gap: 24px;
 	margin: 30px auto;
+	max-width: 100%;
 
 	&.columns-1 {
 		grid-template-columns: 1fr;
@@ -163,7 +164,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	margin: 20px auto;
+	margin: 20px 0;
 	padding: 10px 20px;
 	background: linear-gradient(to right, #AB3A6C, #E6533A);
 	color: #fff;
@@ -172,6 +173,8 @@
 	cursor: pointer;
 	font-size: 14px;
 	transition: opacity 0.2s ease;
+	width: 100%;
+	max-width: 100%;
 
 	&:disabled {
 		cursor: not-allowed;
@@ -191,7 +194,7 @@
 .godam-spinner-container {
 	display: none;
 	justify-content: center;
-	margin: 20px auto;
+	margin: 20px 0;
 	width: 100%;
 	text-align: center;
 	

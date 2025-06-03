@@ -27,6 +27,10 @@
 		"layout": {
 			"type": "string",
 			"default": "grid"
+		},
+		"infiniteScroll": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {

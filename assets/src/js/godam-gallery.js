@@ -1,5 +1,133 @@
 /* global GODAMPlayer */
 
+// Common function to load more videos
+async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos ) {
+	const loadCount = 3 * columns;
+	const spinnerContainer = document.querySelector( '.godam-spinner-container' );
+
+	if ( spinnerContainer ) {
+		spinnerContainer.classList.add( 'loading' );
+	}
+
+	try {
+		const params = new URLSearchParams( {
+			offset,
+			columns,
+			count: loadCount,
+			orderby,
+			order,
+		} );
+		const response = await fetch( `/wp-json/godam/v1/gallery-shortcode?${ params.toString() }` );
+		const data = await response.json();
+
+		if ( data.status === 'success' && data.html && data.html.trim() !== '' ) {
+			gallery.insertAdjacentHTML( 'beforeend', data.html );
+			const newOffset = offset + loadCount;
+
+			// Check if we've loaded all videos
+			if ( newOffset >= totalVideos ) {
+				if ( spinnerContainer ) {
+					spinnerContainer.remove();
+				}
+				return false; // No more videos to load
+			}
+
+			if ( spinnerContainer ) {
+				spinnerContainer.classList.remove( 'loading' );
+			}
+			return newOffset; // Return new offset for next load
+		}
+	} catch ( error ) {
+	}
+
+	if ( spinnerContainer ) {
+		spinnerContainer.classList.remove( 'loading' );
+	}
+	return false;
+}
+
+document.addEventListener( 'DOMContentLoaded', function() {
+	// Get all galleries with infinite scroll enabled
+	document.querySelectorAll( '.godam-video-gallery[data-infinite-scroll="1"]' ).forEach( ( gallery ) => {
+		const offset = parseInt( gallery.getAttribute( 'data-offset' ), 10 );
+		const columns = parseInt( gallery.getAttribute( 'data-columns' ), 10 );
+		const orderby = gallery.getAttribute( 'data-orderby' );
+		const order = gallery.getAttribute( 'data-order' );
+		const totalVideos = parseInt( gallery.getAttribute( 'data-total' ), 10 );
+		let currentOffset = offset;
+		let isLoading = false;
+
+		// Create an observer for the last video item
+		const observer = new IntersectionObserver( ( entries ) => {
+			entries.forEach( ( entry ) => {
+				// Check if the last item is no longer visible (scrolled past it)
+				if ( entry.isIntersecting && ! isLoading ) {
+					isLoading = true;
+					// Load more videos when we've scrolled past the last item
+					loadMoreVideos( gallery, currentOffset, columns, orderby, order, totalVideos )
+						.then( ( newOffset ) => {
+							if ( newOffset ) {
+								currentOffset = newOffset;
+								// Re-observe the new last item
+								const videoItems = gallery.querySelectorAll( '.godam-video-item' );
+								if ( videoItems.length > 0 ) {
+									observer.observe( videoItems[ videoItems.length - 1 ] );
+								}
+							}
+							isLoading = false;
+						} )
+						.catch( () => {
+							isLoading = false;
+						} );
+				}
+			} );
+		}, {
+			root: null,
+			rootMargin: '-200px',
+			threshold: 0.5,
+		} );
+
+		// Function to observe the last video item
+		const observeLastItem = () => {
+			const videoItems = gallery.querySelectorAll( '.godam-video-item' );
+			if ( videoItems.length > 0 ) {
+				const lastItem = videoItems[ videoItems.length - 1 ];
+				observer.observe( lastItem );
+			}
+		};
+
+		// Initial observation
+		observeLastItem();
+	} );
+} );
+
+// Handle Load More button clicks
+document.addEventListener( 'click', async function( e ) {
+	if ( e.target && e.target.classList.contains( 'godam-load-more' ) ) {
+		e.preventDefault();
+		const btn = e.target;
+		const gallery = btn.previousElementSibling;
+
+		const offset = parseInt( btn.getAttribute( 'data-offset' ), 10 );
+		const columns = parseInt( btn.getAttribute( 'data-columns' ), 10 );
+		const orderby = btn.getAttribute( 'data-orderby' );
+		const order = btn.getAttribute( 'data-order' );
+		const totalVideos = parseInt( btn.getAttribute( 'data-total' ), 10 );
+
+		// Hide button
+		btn.style.display = 'none';
+
+		const newOffset = await loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos );
+
+		if ( newOffset ) {
+			btn.setAttribute( 'data-offset', newOffset );
+			btn.style.display = 'inline-flex';
+		} else {
+			btn.remove();
+		}
+	}
+} );
+
 document.querySelectorAll( '.godam-video-thumbnail' ).forEach( ( thumbnail ) => {
 	thumbnail.addEventListener( 'click', async () => {
 		const videoId = thumbnail.getAttribute( 'data-video-id' );
@@ -82,66 +210,4 @@ document.querySelectorAll( '.godam-video-thumbnail' ).forEach( ( thumbnail ) => 
 			}
 		}
 	} );
-} );
-
-document.addEventListener( 'click', async function( e ) {
-	if ( e.target && e.target.classList.contains( 'godam-load-more' ) ) {
-		e.preventDefault();
-		const btn = e.target;
-		const gallery = btn.previousElementSibling;
-
-		// Create spinner container if it doesn't exist
-		let spinnerContainer = document.querySelector( '.godam-spinner-container' );
-		if ( ! spinnerContainer ) {
-			spinnerContainer = document.createElement( 'div' );
-			spinnerContainer.className = 'godam-spinner-container';
-			spinnerContainer.innerHTML = '<div class="godam-spinner"></div>';
-			btn.parentNode.insertBefore( spinnerContainer, btn.nextSibling );
-		}
-
-		const offset = parseInt( btn.getAttribute( 'data-offset' ), 10 );
-		const columns = parseInt( btn.getAttribute( 'data-columns' ), 10 );
-		const orderby = btn.getAttribute( 'data-orderby' );
-		const order = btn.getAttribute( 'data-order' );
-		const loadCount = 3 * columns;
-
-		// Hide button and show spinner
-		btn.style.display = 'none';
-		spinnerContainer.classList.add( 'loading' );
-
-		try {
-			const params = new URLSearchParams( {
-				offset,
-				columns,
-				count: loadCount,
-				orderby,
-				order,
-			} );
-			const response = await fetch( `/wp-json/godam/v1/gallery-shortcode?${ params.toString() }` );
-			const data = await response.json();
-
-			if ( data.status === 'success' && data.html && data.html.trim() !== '' ) {
-				gallery.insertAdjacentHTML( 'beforeend', data.html );
-				const newOffset = offset + loadCount;
-				btn.setAttribute( 'data-offset', newOffset );
-				// Check if we've loaded all videos
-				const totalVideos = parseInt( btn.getAttribute( 'data-total' ), 10 );
-				if ( newOffset >= totalVideos ) {
-					btn.remove();
-					spinnerContainer.remove();
-				} else {
-					// Show button and hide spinner
-					btn.style.display = 'inline-flex';
-					spinnerContainer.classList.remove( 'loading' );
-				}
-			} else {
-				btn.remove();
-				spinnerContainer.remove();
-			}
-		} catch ( error ) {
-			btn.textContent = wp.i18n.__( 'Error. Try again.', 'godam' );
-			btn.style.display = 'inline-flex';
-			spinnerContainer.classList.remove( 'loading' );
-		}
-	}
 } );

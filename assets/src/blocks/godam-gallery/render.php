@@ -12,21 +12,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 $attributes = wp_parse_args(
 	$attributes,
 	array(
-		'columns' => 3,
-		'count'   => -1,
-		'orderby' => 'date',
-		'order'   => 'DESC',
-		'layout'  => 'grid',
+		'columns'        => 3,
+		'count'          => -1,
+		'orderby'        => 'date',
+		'order'          => 'DESC',
+		'layout'         => 'grid',
+		'infiniteScroll' => false,
 	)
 );
 
 // Build the shortcode attributes.
 $shortcode_atts = array(
-	'columns' => intval( $attributes['columns'] ),
-	'count'   => intval( $attributes['count'] ),
-	'orderby' => sanitize_text_field( $attributes['orderby'] ),
-	'order'   => sanitize_text_field( $attributes['order'] ),
-	'layout'  => sanitize_text_field( $attributes['layout'] ),
+	'columns'         => intval( $attributes['columns'] ),
+	'count'           => intval( $attributes['count'] ),
+	'orderby'         => sanitize_text_field( $attributes['orderby'] ),
+	'order'           => sanitize_text_field( $attributes['order'] ),
+	'layout'          => sanitize_text_field( $attributes['layout'] ),
+	'infinite_scroll' => ! empty( $attributes['infiniteScroll'] ),
 );
 
 // Convert attributes to shortcode string.
