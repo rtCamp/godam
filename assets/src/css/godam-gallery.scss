@@ -189,6 +189,14 @@
 		box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 		z-index: 10;
 
+		@media (min-width: 1728px) {
+			width: 65vw;
+		}
+
+		@media (min-width: 2028px) {
+			width: 45vw;
+		}
+
 		.easydam-video-container {
 			width: 75vw;
 			height: auto;
