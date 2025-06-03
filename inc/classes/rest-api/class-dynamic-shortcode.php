@@ -70,8 +70,9 @@ class Dynamic_Shortcode extends Base {
 			);
 		}
 
-		// Get the video title.
+		// Get the video title and date.
 		$video_title = get_the_title( $id );
+		$video_date  = get_the_date( 'F j, Y', $id );
 
 		ob_start();
 		echo do_shortcode( '[godam_video id="' . $id . '"]' );
@@ -82,6 +83,7 @@ class Dynamic_Shortcode extends Base {
 				'status' => 'success',
 				'html'   => $html,
 				'title'  => $video_title,
+				'date'   => $video_date,
 			),
 			200
 		);

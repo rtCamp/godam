@@ -160,7 +160,10 @@ document.addEventListener( 'click', async function( e ) {
 					</div>
 				</div>
 				<div class="godam-modal-footer">
-					<h3 class="godam-video-title"></h3>
+					<div class="godam-video-info">
+						<h3 class="godam-video-title"></h3>
+						<span class="godam-video-date"></span>
+					</div>
 				</div>
 			</div>
 		`;
@@ -207,6 +210,12 @@ document.addEventListener( 'click', async function( e ) {
 					const videoTitle = modal.querySelector( '.godam-video-title' );
 					if ( videoTitle ) {
 						videoTitle.textContent = data.title || '';
+					}
+
+					// Add this new code to update the date
+					const videoDate = modal.querySelector( '.godam-video-date' );
+					if ( videoDate ) {
+						videoDate.textContent = data.date || '';
 					}
 
 					// Reinitialize the player with the new content

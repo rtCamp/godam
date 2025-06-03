@@ -105,13 +105,7 @@ class GoDAM_Video_Gallery {
 			'posts_per_page' => intval( $atts['count'] ),
 			'orderby'        => sanitize_text_field( $atts['orderby'] ),
 			'order'          => sanitize_text_field( $atts['order'] ),
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-			'meta_query'     => array(
-				array(
-					'key'     => 'rtgodam_transcoded_url',
-					'compare' => 'EXISTS',
-				),
-			),
+			
 		);
 
 		// Add category filter.
@@ -210,6 +204,7 @@ class GoDAM_Video_Gallery {
 			foreach ( $query->posts as $video ) {
 				$video_id    = intval( $video->ID );
 				$video_title = get_the_title( $video_id );
+				$video_date  = get_the_date( 'F j, Y', $video_id );
 			
 				$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
 				$fallback_thumb   = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
@@ -239,7 +234,10 @@ class GoDAM_Video_Gallery {
 				}
 				echo '</div>';
 				if ( ! empty( $atts['show_title'] ) ) {
+					echo '<div class="godam-video-info">';
 					echo '<div class="godam-video-title">' . esc_html( $video_title ) . '</div>';
+					echo '<div class="godam-video-date">' . esc_html( $video_date ) . '</div>';
+					echo '</div>';
 				}
 				echo '</div>';
 			}
@@ -267,7 +265,10 @@ class GoDAM_Video_Gallery {
 				<div class="godam-modal-content">
 					<div class="easydam-video-container animate-video-loading"></div>
 					<div class="godam-modal-footer">
-						<h3 class="godam-video-title"></h3>
+						<div class="godam-video-info">
+							<h3 class="godam-video-title"></h3>
+							<span class="godam-video-date"></span>
+						</div>
 					</div>
 				</div>
 			</div>';

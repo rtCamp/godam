@@ -132,21 +132,27 @@
 			}
 		}
 
-		h4,
-		p {
+		.godam-video-info {
 			margin-top: 8px;
-			font-size: 0.9rem;
-			color: #333;
-			text-align: center;
-		}
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 8px;
 
-		.godam-video-title {
-			margin-top: 8px;
-			font-size: 14px;
-			color: #333;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
+			.godam-video-title {
+				font-size: 14px;
+				color: #333;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				flex: 1;
+			}
+
+			.godam-video-date {
+				font-size: 12px;
+				color: #666;
+				white-space: nowrap;
+			}
 		}
 	}
 }
@@ -177,7 +183,7 @@
 		background: #fff;
 		border-radius: 12px;
 		padding: 16px;
-		width: 90vw;
+		width: 75vw;
 		max-width: none;
 		max-height: 90vh;
 		box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
@@ -212,12 +218,38 @@
 				font-size: 16px;
 			}
 		}
+
+		.godam-modal-footer {
+			margin-top: 16px;
+			padding-top: 16px;
+			border-top: 1px solid #e5e5e5;
+
+			.godam-video-info {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				gap: 16px;
+
+				.godam-video-title {
+					margin: 0;
+					font-size: 18px;
+					color: #333;
+					flex: 1;
+				}
+
+				.godam-video-date {
+					color: #666;
+					font-size: 14px;
+					white-space: nowrap;
+				}
+			}
+		}
 	}
 
 	.godam-modal-close {
 		position: absolute;
-		top: 10px;
-		right: 12px;
+		top: 5px;
+		right: 6px;
 		width: 32px;
 		height: 32px;
 		font-size: 20px;
