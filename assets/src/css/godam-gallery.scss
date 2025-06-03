@@ -76,6 +76,10 @@
 		padding: 10px;
 		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 		transition: box-shadow 0.2s ease;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		overflow: hidden;
 
 		&:hover {
 			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -122,6 +126,7 @@
 			color: #333;
 			overflow: hidden;
 			text-overflow: ellipsis;
+			white-space: nowrap;
 		}
 	}
 }
