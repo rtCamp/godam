@@ -12,23 +12,43 @@ if ( ! defined( 'ABSPATH' ) ) {
 $attributes = wp_parse_args(
 	$attributes,
 	array(
-		'columns'        => 3,
-		'count'          => -1,
-		'orderby'        => 'date',
-		'order'          => 'DESC',
-		'layout'         => 'grid',
-		'infiniteScroll' => false,
+		'columns'         => 3,
+		'count'           => -1,
+		'orderby'         => 'date',
+		'order'           => 'DESC',
+		'layout'          => 'grid',
+		'infiniteScroll'  => false,
+		'category'        => '',
+		'tag'             => '',
+		'author'          => 0,
+		'dateRange'       => '',
+		'customDateStart' => '',
+		'customDateEnd'   => '',
+		// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
+		'exclude'         => '',
+		'include'         => '',
+		'search'          => '',
 	)
 );
 
 // Build the shortcode attributes.
 $shortcode_atts = array(
-	'columns'         => intval( $attributes['columns'] ),
-	'count'           => intval( $attributes['count'] ),
-	'orderby'         => sanitize_text_field( $attributes['orderby'] ),
-	'order'           => sanitize_text_field( $attributes['order'] ),
-	'layout'          => sanitize_text_field( $attributes['layout'] ),
-	'infinite_scroll' => ! empty( $attributes['infiniteScroll'] ),
+	'columns'           => intval( $attributes['columns'] ),
+	'count'             => intval( $attributes['count'] ),
+	'orderby'           => sanitize_text_field( $attributes['orderby'] ),
+	'order'             => sanitize_text_field( $attributes['order'] ),
+	'layout'            => sanitize_text_field( $attributes['layout'] ),
+	'infinite_scroll'   => ! empty( $attributes['infiniteScroll'] ),
+	'category'          => sanitize_text_field( $attributes['category'] ),
+	'tag'               => sanitize_text_field( $attributes['tag'] ),
+	'author'            => intval( $attributes['author'] ),
+	'date_range'        => sanitize_text_field( $attributes['dateRange'] ),
+	'custom_date_start' => sanitize_text_field( $attributes['customDateStart'] ),
+	'custom_date_end'   => sanitize_text_field( $attributes['customDateEnd'] ),
+	// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
+	'exclude'           => sanitize_text_field( $attributes['exclude'] ),
+	'include'           => sanitize_text_field( $attributes['include'] ),
+	'search'            => sanitize_text_field( $attributes['search'] ),
 );
 
 // Convert attributes to shortcode string.

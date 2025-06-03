@@ -69,12 +69,22 @@ class GoDAM_Video_Gallery {
 	public function render( $atts ) {
 		$atts = shortcode_atts(
 			array(
-				'count'           => 6,
-				'orderby'         => 'date',
-				'order'           => 'DESC',
-				'columns'         => 3,
-				'layout'          => 'grid',
-				'infinite_scroll' => false,
+				'count'             => 6,
+				'orderby'           => 'date',
+				'order'             => 'DESC',
+				'columns'           => 3,
+				'layout'            => 'grid',
+				'infinite_scroll'   => false,
+				'category'          => '',
+				'tag'               => '',
+				'author'            => 0,
+				'date_range'        => '',
+				// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
+				'exclude'           => '',
+				'include'           => '',
+				'search'            => '',
+				'custom_date_start' => '',
+				'custom_date_end'   => '',
 			),
 			$atts,
 			'godam_video_gallery'
@@ -96,6 +106,88 @@ class GoDAM_Video_Gallery {
 			'orderby'        => sanitize_text_field( $atts['orderby'] ),
 			'order'          => sanitize_text_field( $atts['order'] ),
 		);
+
+		// Add category filter.
+		if ( ! empty( $atts['category'] ) ) {
+			$args['tax_query'][] = array(
+				'taxonomy' => 'category',
+				'field'    => 'term_id',
+				'terms'    => intval( $atts['category'] ),
+			);
+		}
+
+		// Add tag filter.
+		if ( ! empty( $atts['tag'] ) ) {
+			$args['tax_query'][] = array(
+				'taxonomy' => 'post_tag',
+				'field'    => 'term_id',
+				'terms'    => intval( $atts['tag'] ),
+			);
+		}
+
+		// Add author filter.
+		if ( ! empty( $atts['author'] ) ) {
+			$args['author'] = intval( $atts['author'] );
+		}
+
+		// Add date range filter.
+		if ( ! empty( $atts['date_range'] ) ) {
+			$date_query = array();
+			switch ( $atts['date_range'] ) {
+				case '7days':
+					$date_query = array(
+						'after' => '1 week ago',
+					);
+					break;
+				case '30days':
+					$date_query = array(
+						'after' => '1 month ago',
+					);
+					break;
+				case '90days':
+					$date_query = array(
+						'after' => '3 months ago',
+					);
+					break;
+				case 'custom':
+					if ( ! empty( $atts['custom_date_start'] ) && ! empty( $atts['custom_date_end'] ) ) {
+						$date_query = array(
+							'after'     => $atts['custom_date_start'],
+							'before'    => $atts['custom_date_end'],
+							'inclusive' => true,
+						);
+					}
+					break;
+			}
+			if ( ! empty( $date_query ) ) {
+				$args['date_query'] = array( $date_query );
+			}
+		}
+
+		// Add exclude filter.
+		if ( ! empty( $atts['exclude'] ) ) {
+			// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in
+			$args['post__not_in'] = array_map( 'intval', explode( ',', $atts['exclude'] ) );
+		}
+
+		// Add include filter.
+		if ( ! empty( $atts['include'] ) ) {
+			$args['post__in'] = array_map( 'intval', explode( ',', $atts['include'] ) );
+		}
+
+		// Add search filter.
+		if ( ! empty( $atts['search'] ) ) {
+			$args['s'] = $atts['search'];
+		}
+
+		// Handle custom orderby options.
+		if ( 'duration' === $atts['orderby'] ) {
+			$args['meta_key'] = '_video_duration';
+			$args['orderby']  = 'meta_value_num';
+		} elseif ( 'size' === $atts['orderby'] ) {
+			$args['meta_key'] = '_wp_attached_file';
+			$args['orderby']  = 'meta_value_num';
+		}
 
 		$query = new \WP_Query( $args );
 

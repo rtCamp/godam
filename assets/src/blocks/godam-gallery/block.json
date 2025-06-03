@@ -31,6 +31,42 @@
 		"infiniteScroll": {
 			"type": "boolean",
 			"default": false
+		},
+		"category": {
+			"type": "string",
+			"default": ""
+		},
+		"tag": {
+			"type": "string",
+			"default": ""
+		},
+		"author": {
+			"type": "number",
+			"default": 0
+		},
+		"dateRange": {
+			"type": "string",
+			"default": ""
+		},
+		"customDateStart": {
+			"type": "string",
+			"default": ""
+		},
+		"customDateEnd": {
+			"type": "string",
+			"default": ""
+		},
+		"exclude": {
+			"type": "string",
+			"default": ""
+		},
+		"include": {
+			"type": "string",
+			"default": ""
+		},
+		"search": {
+			"type": "string",
+			"default": ""
 		}
 	},
 	"supports": {
