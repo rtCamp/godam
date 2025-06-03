@@ -47,6 +47,7 @@ export default function Edit( { attributes, setAttributes } ) {
 		include,
 		search,
 		showTitle,
+		layout,
 	} = attributes;
 	const blockProps = useBlockProps();
 
@@ -69,16 +70,49 @@ export default function Edit( { attributes, setAttributes } ) {
 		return select( coreStore ).getUsers( { per_page: -1 } );
 	}, [] );
 
+	// Add this helper function at the top of your file
+	const getFormattedDate = () => {
+		const today = new Date();
+		return today.toLocaleDateString( 'en-US', {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric',
+		} );
+	};
+
 	// Generate sample video containers
-	const GoDAMVideos = Array.from( { length: count }, ( _, i ) => (
-		<div className="godam-editor-video-item" key={ i }>
-			<div className="godam-editor-video-thumbnail">
-				<span className="godam-editor-video-label">
-					{ __( 'GoDAM Video', 'godam' ) }
-				</span>
+	const GoDAMVideos = Array.from( { length: count }, ( _, i ) => {
+		if ( layout === 'list' ) {
+			return (
+				<div className="godam-editor-video-item godam-editor-list-item" key={ i }>
+					<div className="godam-editor-video-thumbnail">
+						<span className="godam-editor-video-label">
+							{ __( 'GoDAM Video', 'godam' ) }
+						</span>
+					</div>
+					<div className="godam-editor-video-info">
+						<div className="godam-editor-video-title">
+							{ __( 'Title', 'godam' ) } { i + 1 }
+						</div>
+						<div className="godam-editor-video-date">
+							{ getFormattedDate() }
+						</div>
+					</div>
+				</div>
+			);
+		}
+
+		// Grid layout (default)
+		return (
+			<div className="godam-editor-video-item" key={ i }>
+				<div className="godam-editor-video-thumbnail">
+					<span className="godam-editor-video-label">
+						{ __( 'GoDAM Video', 'godam' ) }
+					</span>
+				</div>
 			</div>
-		</div>
-	) );
+		);
+	} );
 
 	// Add this helper function at the top of your file
 	const formatDateForDisplay = ( dateString ) => {
@@ -136,13 +170,44 @@ export default function Edit( { attributes, setAttributes } ) {
 		<>
 			<InspectorControls>
 				<PanelBody title={ __( 'Gallery Settings', 'godam' ) }>
-					<RangeControl
-						label={ __( 'Number of columns', 'godam' ) }
-						value={ columns }
-						onChange={ ( value ) => setAttributes( { columns: value } ) }
-						min={ 1 }
-						max={ 6 }
+					<ToggleControl
+						label={ __( 'Enable Infinite Scroll', 'godam' ) }
+						checked={ !! infiniteScroll }
+						onChange={ ( value ) => setAttributes( { infiniteScroll: value } ) }
 					/>
+					{ layout === 'grid' && (
+						<>
+							<ToggleControl
+								label={ __( 'Show Video Titles and Dates', 'godam' ) }
+								checked={ !! showTitle }
+								onChange={ ( value ) => setAttributes( { showTitle: value } ) }
+							/>
+						</>
+					) }
+					<SelectControl
+						label={ __( 'Layout', 'godam' ) }
+						value={ layout }
+						options={ [
+							{ label: __( 'Grid', 'godam' ), value: 'grid' },
+							{ label: __( 'List', 'godam' ), value: 'list' },
+						] }
+						onChange={ ( value ) => {
+							setAttributes( {
+								layout: value,
+								columns: value === 'list' ? 1 : 3,
+								showTitle: value === 'list' ? true : showTitle,
+							} );
+						} }
+					/>
+					{ layout === 'grid' && (
+						<RangeControl
+							label={ __( 'Number of columns', 'godam' ) }
+							value={ columns }
+							onChange={ ( value ) => setAttributes( { columns: value } ) }
+							min={ 1 }
+							max={ 6 }
+						/>
+					) }
 					<RangeControl
 						label={ __( 'Number of videos', 'godam' ) }
 						value={ count }
@@ -296,25 +361,12 @@ export default function Edit( { attributes, setAttributes } ) {
 						value={ search }
 						onChange={ ( value ) => setAttributes( { search: value } ) }
 					/>
-					<ToggleControl
-						label={ __( 'Enable Infinite Scroll', 'godam' ) }
-						checked={ !! infiniteScroll }
-						onChange={ ( value ) => setAttributes( { infiniteScroll: value } ) }
-					/>
-					<ToggleControl
-						label={ __( 'Show Video Titles and Dates', 'godam' ) }
-						checked={ !! showTitle }
-						onChange={ ( value ) => setAttributes( { showTitle: value } ) }
-					/>
 				</PanelBody>
 			</InspectorControls>
-			<div
-				{ ...blockProps }
-			>
-				<div className={ `godam-editor-video-gallery columns-${ columns }` }>
+			<div { ...blockProps }>
+				<div className={ `godam-editor-video-gallery layout-${ layout } ${ layout === 'grid' ? `columns-${ columns }` : '' }` }>
 					{ GoDAMVideos }
 				</div>
-
 			</div>
 		</>
 	);

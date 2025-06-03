@@ -194,14 +194,17 @@ class GoDAM_Video_Gallery {
 			$shown_videos = count( $query->posts );
 
 			$alignment_class = ! empty( $atts['align'] ) ? ' align' . $atts['align'] : '';
-			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) . ' columns-' . intval( $atts['columns'] ) . esc_attr( $alignment_class ) . '" 
+			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) . 
+				( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) . 
+				esc_attr( $alignment_class ) . '" 
 				data-infinite-scroll="' . esc_attr( $atts['infinite_scroll'] ) . '"
 				data-offset="' . esc_attr( $shown_videos ) . '"
 				data-columns="' . esc_attr( $atts['columns'] ) . '"
 				data-orderby="' . esc_attr( $atts['orderby'] ) . '"
 				data-order="' . esc_attr( $atts['order'] ) . '"
 				data-total="' . esc_attr( $total_videos ) . '"
-				data-show-title="' . ( $atts['show_title'] ? '1' : '0' ) . '">';
+				data-show-title="' . ( $atts['show_title'] ? '1' : '0' ) . '"
+				data-layout="' . esc_attr( $atts['layout'] ) . '">';
 			foreach ( $query->posts as $video ) {
 				$video_id    = intval( $video->ID );
 				$video_title = get_the_title( $video_id );

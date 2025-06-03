@@ -65,6 +65,10 @@ class Dynamic_Gallery extends Base {
 							'type'    => 'boolean',
 							'default' => true,
 						),
+						'layout'     => array(
+							'type'    => 'string',
+							'default' => 'grid',
+						),
 					),
 				),
 			),
@@ -86,6 +90,7 @@ class Dynamic_Gallery extends Base {
 			'columns'    => $request->get_param( 'columns' ),
 			'offset'     => $request->get_param( 'offset' ),
 			'show_title' => $request->get_param( 'show_title' ),
+			'layout'     => $request->get_param( 'layout' ),
 		);
 
 		// Render only the video items, not the whole gallery wrapper or button.
