@@ -4,6 +4,7 @@
 async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos ) {
 	const loadCount = 3 * columns;
 	const spinnerContainer = document.querySelector( '.godam-spinner-container' );
+	const showTitle = gallery.getAttribute( 'data-show-title' ) === '1';
 
 	if ( spinnerContainer ) {
 		spinnerContainer.classList.add( 'loading' );
@@ -16,6 +17,7 @@ async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVi
 			count: loadCount,
 			orderby,
 			order,
+			show_title: showTitle,
 		} );
 		const response = await fetch( `/wp-json/godam/v1/gallery-shortcode?${ params.toString() }` );
 		const data = await response.json();

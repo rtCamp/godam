@@ -302,7 +302,7 @@ export default function Edit( { attributes, setAttributes } ) {
 						onChange={ ( value ) => setAttributes( { infiniteScroll: value } ) }
 					/>
 					<ToggleControl
-						label={ __( 'Show Video Titles', 'godam' ) }
+						label={ __( 'Show Video Titles and Dates', 'godam' ) }
 						checked={ !! showTitle }
 						onChange={ ( value ) => setAttributes( { showTitle: value } ) }
 					/>

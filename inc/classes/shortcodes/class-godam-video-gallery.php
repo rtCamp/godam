@@ -200,7 +200,8 @@ class GoDAM_Video_Gallery {
 				data-columns="' . esc_attr( $atts['columns'] ) . '"
 				data-orderby="' . esc_attr( $atts['orderby'] ) . '"
 				data-order="' . esc_attr( $atts['order'] ) . '"
-				data-total="' . esc_attr( $total_videos ) . '">';
+				data-total="' . esc_attr( $total_videos ) . '"
+				data-show-title="' . ( $atts['show_title'] ? '1' : '0' ) . '">';
 			foreach ( $query->posts as $video ) {
 				$video_id    = intval( $video->ID );
 				$video_title = get_the_title( $video_id );

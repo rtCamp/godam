@@ -112,6 +112,7 @@ class Dynamic_Gallery extends Base {
 			foreach ( $query->posts as $video ) {
 				$video_id    = intval( $video->ID );
 				$video_title = get_the_title( $video_id );
+				$video_date  = get_the_date( 'F j, Y', $video_id );
 				
 				$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
 				$fallback_thumb   = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
@@ -137,10 +138,11 @@ class Dynamic_Gallery extends Base {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
 				}
 				echo '</div>';
-				
-				// Add title if show_title is true.
 				if ( ! empty( $atts['show_title'] ) ) {
+					echo '<div class="godam-video-info">';
 					echo '<div class="godam-video-title">' . esc_html( $video_title ) . '</div>';
+					echo '<div class="godam-video-date">' . esc_html( $video_date ) . '</div>';
+					echo '</div>';
 				}
 				
 				echo '</div>';
