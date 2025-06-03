@@ -85,6 +85,7 @@ class GoDAM_Video_Gallery {
 				'search'            => '',
 				'custom_date_start' => '',
 				'custom_date_end'   => '',
+				'show_title'        => true,
 			),
 			$atts,
 			'godam_video_gallery'
@@ -206,7 +207,8 @@ class GoDAM_Video_Gallery {
 				data-order="' . esc_attr( $atts['order'] ) . '"
 				data-total="' . esc_attr( $total_videos ) . '">';
 			foreach ( $query->posts as $video ) {
-				$video_id = intval( $video->ID );
+				$video_id    = intval( $video->ID );
+				$video_title = get_the_title( $video_id );
 			
 				$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
 				$fallback_thumb   = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
@@ -230,11 +232,14 @@ class GoDAM_Video_Gallery {
 			
 				echo '<div class="godam-video-item">';
 				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '">';
-				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr__( 'Video Thumbnail', 'godam' ) . '" />';
+				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
 				if ( $duration ) {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
 				}
 				echo '</div>';
+				if ( ! empty( $atts['show_title'] ) ) {
+					echo '<div class="godam-video-title">' . esc_html( $video_title ) . '</div>';
+				}
 				echo '</div>';
 			}
 			echo '</div>';

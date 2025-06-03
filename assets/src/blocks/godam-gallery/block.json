@@ -67,6 +67,10 @@
 		"search": {
 			"type": "string",
 			"default": ""
+		},
+		"showTitle": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"supports": {

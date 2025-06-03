@@ -47,6 +47,7 @@ export default function Edit( { attributes, setAttributes } ) {
 		exclude,
 		include,
 		search,
+		showTitle,
 	} = attributes;
 	const blockProps = useBlockProps();
 
@@ -306,6 +307,11 @@ export default function Edit( { attributes, setAttributes } ) {
 						label={ __( 'Enable Infinite Scroll', 'godam' ) }
 						checked={ !! infiniteScroll }
 						onChange={ ( value ) => setAttributes( { infiniteScroll: value } ) }
+					/>
+					<ToggleControl
+						label={ __( 'Show Video Titles', 'godam' ) }
+						checked={ !! showTitle }
+						onChange={ ( value ) => setAttributes( { showTitle: value } ) }
 					/>
 				</PanelBody>
 			</InspectorControls>

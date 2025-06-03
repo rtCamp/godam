@@ -28,6 +28,7 @@ $attributes = wp_parse_args(
 		'exclude'         => '',
 		'include'         => '',
 		'search'          => '',
+		'showTitle'       => true,
 	)
 );
 
@@ -49,6 +50,7 @@ $shortcode_atts = array(
 	'exclude'           => sanitize_text_field( $attributes['exclude'] ),
 	'include'           => sanitize_text_field( $attributes['include'] ),
 	'search'            => sanitize_text_field( $attributes['search'] ),
+	'show_title'        => ! empty( $attributes['showTitle'] ),
 );
 
 // Convert attributes to shortcode string.
