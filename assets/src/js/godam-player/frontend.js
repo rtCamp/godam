@@ -12,7 +12,6 @@ import 'videojs-ima/dist/videojs.ima.css';
 import videojs from 'video.js';
 import 'videojs-contrib-ads';
 import 'videojs-ima';
-import 'videojs-contrib-quality-menu';
 
 /**
  * FontAwesome dependencies
@@ -39,6 +38,7 @@ import Twitter from '../../../../assets/src/images/twitter-x.svg';
 import Whatsapp from '../../../../assets/src/images/whatsapp.svg';
 import Complete from '../../../../assets/src/images/check.svg';
 import DOMPurify from 'isomorphic-dompurify';
+import SettingsButton from './masterSettings';
 
 /**
  * Global variables
@@ -466,6 +466,13 @@ function GODAMPlayer( videoRef = null ) {
 			if ( ! controlBarSettings?.volumePanel ) {
 				controlBar.removeChild( 'volumePanel' );
 			}
+
+			videojs.registerComponent( 'SettingsButton', SettingsButton );
+			controlBar.addChild( 'SettingsButton', {} );
+
+			document.querySelectorAll( '.vjs-settings-button' ).forEach( ( button ) => {
+				button.querySelector( '.vjs-icon-placeholder' ).classList.add( 'vjs-icon-cog' );
+			} );
 
 			if ( controlBarSettings?.brandingIcon || ! validAPIKey ) {
 				const CustomPlayButton = videojs.getComponent( 'Button' );
@@ -1069,12 +1076,6 @@ function GODAMPlayer( videoRef = null ) {
 				id: 'content_video',
 				adTagUrl,
 			} );
-		}
-
-		try {
-			player.qualityMenu();
-		} catch ( error ) {
-			// Silently fail - do nothing.
 		}
 	} );
 }

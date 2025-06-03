@@ -100,7 +100,7 @@
  .animate-video-loading {
 	 position: relative;
 	 animation: pulse 2s cubic-bezier(.4,0,.6,1) infinite;
-	 aspect-ratio: var(--rtgodam-video-aspect-ratio, 16/9);
+	 aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
  
 	 .animate-play-btn {
 		 width: 100px;
@@ -131,8 +131,19 @@
 		 }
 	 }
  }
- 
- 
+
+ .vjs-fullscreen-control {
+	order: 8;
+}
+
+.vjs-settings-button {
+	order: 6;
+}
+
+.vjs-picture-in-picture-control {
+	order: 7;
+}
+
  .easydam-player.video-js {
 	 aspect-ratio: var(--rtgodam-video-aspect-ratio);
  }
@@ -374,6 +385,58 @@
 	 background: transparent;
  }
  
+.godam-menu-item-container {
+	align-items: center;
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+	justify-content: space-between;
+    padding: 0 5px;
+    transition: background-color .2s ease;
+ }
+
+ .godam-back-item-container {
+	justify-content: unset;
+
+	span {
+		width: 100%;
+		text-align: center;
+		text-transform: capitalize;
+	}
+
+	&::after {
+		content: "";
+		position: absolute;
+		width: 100%;
+		height: 2px;
+		left: 0;
+		top: 25px;
+		background: rgba(115, 133, 159, 0.5);
+	}
+}
+
+ .vjs-menu-item-text {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	text-transform: capitalize;
+}
+
+  .vjs-menu-item:hover, .vjs-back-item:hover {
+	background: rgba(115, 133, 159, 0.5) !important;
+}
+
+.selected-menu-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 10px;
+	width: 100%;
+
+	span {
+		margin: 0 auto;
+	}
+}
  
  /* Hotspot layer*/
  .hotspot {
@@ -659,6 +722,10 @@
 	 background-color: rgba(255, 255, 255, 0.9);
 	 color: #000;
  }
+
+ .vjs-menu-content {
+	background-color: rgba(43, 51, 63, 0.9);
+}
  
  .vjs-menu ul.vjs-menu-content {
 	 display: block !important;
@@ -670,6 +737,7 @@
  
  .vjs-control-bar {
 	 background-color: var(--rtgodam-control-bar-color) !important;
+	 display: flex;
  }
  
  .vjs-control:hover {
