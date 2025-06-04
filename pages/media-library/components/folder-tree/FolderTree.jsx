@@ -10,7 +10,7 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-ki
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -225,7 +225,8 @@ const FolderTree = () => {
 	}
 
 	if ( error ) {
-		return <div>Error: { error.message }</div>;
+		/* translators: %s is the error message */
+		return <div>{ sprintf( __( 'Error: %s', 'godam' ), error.message ) }</div>;
 	}
 
 	return (

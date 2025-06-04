@@ -21,11 +21,11 @@ import FormSelector from './FormSelector';
 const templateOptions = [
 	{
 		value: 'godam',
-		label: 'GoDAM',
+		label: __( 'GoDAM', 'godam' ),
 	},
 	{
 		value: 'default',
-		label: 'Default',
+		label: __( 'Default', 'godam' ),
 	},
 ];
 

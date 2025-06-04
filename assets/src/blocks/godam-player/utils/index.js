@@ -56,4 +56,31 @@ function isObjectEmpty( obj ) {
 	return Object.keys( obj ).length === 0;
 }
 
-export { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty };
+/**
+ * Convert a duration in seconds to an ISO 8601 duration string.
+ *
+ * @param {number} seconds - The duration in seconds to convert.
+ * @return {string} An ISO 8601 duration string in the format 'PTnHnMnS'.
+ */
+function secondsToISO8601( seconds ) {
+	const duration = {
+		hours: Math.floor( seconds / 3600 ),
+		minutes: Math.floor( ( seconds % 3600 ) / 60 ),
+		seconds: seconds % 60,
+	};
+
+	let isoString = 'PT';
+	if ( duration.hours ) {
+		isoString += `${ duration.hours }H`;
+	}
+	if ( duration.minutes ) {
+		isoString += `${ duration.minutes }M`;
+	}
+	if ( duration.seconds || isoString === 'PT' ) {
+		isoString += `${ duration.seconds }S`;
+	}
+
+	return isoString;
+}
+
+export { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty, secondsToISO8601 };

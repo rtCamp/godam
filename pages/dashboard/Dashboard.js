@@ -1,11 +1,12 @@
 /**
  * External dependencies
  */
+import React, { useEffect, useState, useRef } from 'react';
+
 /**
  * WordPress dependencies
  */
-import React, { useEffect, useState, useRef } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -334,22 +335,22 @@ const Dashboard = () => {
 
 				<div className="top-media-container">
 					<div className="flex justify-between pt-8">
-						<h2>Top Videos</h2>
+						<h2>{ __( 'Top Videos', 'godam' ) }</h2>
 						<button onClick={ handleExportCSV } className="export-button">
 							<img src={ ExportBtn } alt="Export" className="export-icon" />
-							Export
+							{ __( 'Export', 'godam' ) }
 						</button>
 					</div>
 					<div className="table-container">
 						<table className="w-full">
 							<tbody>
 								<tr>
-									<th>Name</th>
-									<th>Size</th>
-									<th>Play Rate</th>
-									<th>Total Plays</th>
-									<th>Total Watch Time</th>
-									<th>Average Engagement</th>
+									<th>{ __( 'Name', 'godam' ) }</th>
+									<th>{ __( 'Size', 'godam' ) }</th>
+									<th>{ __( 'Play Rate', 'godam' ) }</th>
+									<th>{ __( 'Total Plays', 'godam' ) }</th>
+									<th>{ __( 'Total Watch Time', 'godam' ) }</th>
+									<th>{ __( 'Average Engagement', 'godam' ) }</th>
 								</tr>
 								{ isTopVideosFetching ? (
 									<tr>
@@ -369,7 +370,7 @@ const Dashboard = () => {
 													<a className="thumbnail-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
 														<img
 															src={ item.thumbnail_url || DefaultThumbnail }
-															alt={ item.title || 'Video thumbnail' }
+															alt={ item.title || __( 'Video thumbnail', 'godam' ) }
 														/>
 													</a>
 													<a className="title-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
@@ -402,7 +403,10 @@ const Dashboard = () => {
 					</div>
 					<div className="flex items-center justify-between mt-4">
 						<p className="text-sm text-gray-500">
-							Page { topVideosPage } of { totalTopVideosPages }
+							{
+								/* translators: %1$d is the current page number, %2$d is the total number of pages */
+								sprintf( __( 'Page %1$d of %2$d', 'godam' ), topVideosPage, totalTopVideosPages )
+							}
 						</p>
 						<div className="flex items-center gap-4">
 							<button
@@ -415,14 +419,14 @@ const Dashboard = () => {
 									alt="Previous"
 									className={ `w-4 h-4 chevron-icon ${ topVideosPage === 1 ? 'icon-disabled' : '' }` }
 								/>
-								<span>Previous</span>
+								<span>{ __( 'Previous', 'godam' ) }</span>
 							</button>
 							<button
 								className="next-btn flex items-center gap-1"
 								disabled={ topVideosPage >= totalTopVideosPages }
 								onClick={ () => setTopVideosPage( ( prev ) => prev + 1 ) }
 							>
-								<span>Next</span>
+								<span>{ __( 'Next', 'godam' ) }</span>
 								<img
 									src={ chevronRight }
 									alt="Next"

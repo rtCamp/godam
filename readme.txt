@@ -4,7 +4,7 @@ Tags: transcoder, DAM, media library, adaptive streaming, video analytics
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,7 +16,7 @@ Manage and optimize digital assets with GoDAM – featuring transcoding, adaptiv
 With GoDAM, WordPress users can leverage advanced video capabilities without requiring extensive technical expertise. It automates the conversion of uploaded videos into multiple resolutions, enabling seamless playback with adaptive bitrate streaming. The integration of interactive elements such as CTAs, forms, hotspots and ads makes GoDAM an all-in-one solution for content creators, marketers, and eCommerce businesses.
 
 Check out our source code and contribute to the plugin on GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam).
-Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
+Read our blog: [GoDAM blog](https://godam.io/blog/)
 
 [youtube https://www.youtube.com/watch?v=UGmKa6aLSgU]
 
@@ -29,7 +29,8 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 📌 Interactive Video Layers for Engagement
 ✓ Embed [clickable CTAs](https://godam.io/features/video-overlay/) to drive actions like sign-ups and purchases.
 ✓ Enhance your videos with [customizable hotspots](https://godam.io/features/video-hotspot/) that deliver additional context, links, and information exactly when and where your viewers need it.
-✓ [Integrate Gravity Forms](https://godam.io/features/gravity-forms/) to collect user feedback and lead data within videos.
+✓ Add interactive forms using [Gravity Forms](https://godam.io/features/gravity-forms/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), and [WPForms](https://wordpress.org/plugins/wpforms-lite/) to collect leads.
+✓ Enable video submissions using the GoDAM Record field that supports webcam and screencast inside Gravity Forms.
 ✓ Add interactive Polls to gather viewer opinions during playback.
 
 📌 Seamless Ad Monetization
@@ -41,6 +42,9 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 ✓ Fully customizable playback controls, branding, and player themes.
 ✓ Enable video looping, autoplay, and inline play for better user experience.
 
+📌 Video SEO
+✓ Generate structured data for better indexing, with video schema, title, description, thumbnail
+
 = Pro Features =
 
 📌 Smart Transcoding & Adaptive Bitrate Streaming
@@ -49,11 +53,24 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 ✓ Supported audio formats: MP3, M4A, WAV, OGG
 ✓ Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
 ✓ Watermarking support to protect video content.
+✓ Automatically compress and resize videos on upload to reduce storage and bandwidth.
 
-📌 Video Analytics
+📌 Central Media Manager
+✓ Unified dashboard for managing all media assets in one place.
+✓ Organize videos, images, and documents into folders with search, filters, and sharing options.
+✓ Each video gets a dedicated single video page with time-stamped comments and reactions for team collaboration.
+✓ Automatically sync uploaded videos with the WordPress Media Library for easy access across your site.
+
+📌 Advanced Video Analytics
 ✓ Monitor viewer behavior and engagement through [detailed metrics and heatmaps](https://godam.io/features/analytics/).
-✓ Track video interactions to optimize content strategy.
-✓ Gain insights into user retention and conversion rates.
+✓ Track plays, watch time, and engagement rate
+✓ See views by country
+✓ Compare video performance
+✓ View bandwidth and storage usage
+✓ Rank videos by performance and much more
+
+📌 Automatic Video Transcription
+✓ AI-powered closed captions added automatically on upload for accessibility and engagement.
 
 Primary Benefits:
 ✓ Simplifies asset management with automated transcoding and adaptive streaming.
@@ -154,6 +171,13 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 16. Video Analytics
 
 == Changelog ==
+
+= v1.0.8 (May 27, 2025) =
+- Renamed functions and added checks for function existence to prevent fatal errors caused by other plugin functions.
+
+= v1.0.7 (May 22, 2025) =
+- Fix: Update the POT creation process for translation.
+- Fix: Analytics event data for non logged-in users.
 
 = v1.0.6 (May 16, 2025) =
 - Fix: Updated translation files.

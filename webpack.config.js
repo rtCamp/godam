@@ -16,8 +16,8 @@ const sharedConfig = {
 	...defaultConfig,
 	output: {
 		path: path.resolve( process.cwd(), 'assets', 'build', 'js' ),
-		filename: '[name].js',
-		chunkFilename: '[name].js',
+		filename: '[name].min.js',
+		chunkFilename: '[name].min.js',
 	},
 	plugins: [
 		...defaultConfig.plugins
@@ -126,6 +126,27 @@ const godamGallery = {
 	},
 };
 
+const gfGodamRecorderJS = {
+	...sharedConfig,
+	entry: {
+		'gf-godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-godam-recorder.js' ),
+	},
+};
+
+const gfGodamRecorderEditorJS = {
+	...sharedConfig,
+	entry: {
+		'gf-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-godam-recorder-editor.js' ),
+	},
+};
+
+const gfEntryDetailJS = {
+	...sharedConfig,
+	entry: {
+		'gf-entry-detail': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-entry-detail.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -145,7 +166,8 @@ const pages = {
 	entry: entryPoints, // Dynamic entry points for each page
 	output: {
 		path: path.resolve( __dirname, './assets/build/pages' ), // Output directory
-		filename: '[name].js', // Each entry gets its own output file
+		filename: '[name].min.js', // Each entry gets its own output file
+		chunkFilename: '[name].min.js',
 	},
 	module: {
 		rules: [
@@ -196,6 +218,9 @@ module.exports = [
 	godamPlayerAnalytics,
 	deactivationJS,
 	godamGallery,
+	gfGodamRecorderJS,
+	gfGodamRecorderEditorJS,
+	gfEntryDetailJS,
 	styles, // Do not remove this.
 	pages,
 ];

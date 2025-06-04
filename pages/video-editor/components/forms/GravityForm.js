@@ -21,11 +21,11 @@ import FormSelector from './FormSelector';
 const templateOptions = [
 	{
 		value: 'orbital',
-		label: 'Orbital',
+		label: __( 'Orbital', 'godam' ),
 	},
 	{
 		value: 'gravity',
-		label: 'Gravity',
+		label: __( 'Gravity', 'godam' ),
 	},
 ];
 

@@ -41,6 +41,8 @@ import { Caption } from './caption';
 
 import VideoSEOModal from './components/VideoSEOModal.js';
 
+import { secondsToISO8601 } from './utils';
+
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
 
@@ -60,6 +62,7 @@ function VideoEdit( {
 
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
 	const [ videoResponse, setVideoResponse ] = useState( {} );
+	const [ duration, setDuration ] = useState( 0 );
 
 	const dispatch = useDispatch();
 
@@ -88,6 +91,12 @@ function VideoEdit( {
 
 						video.addEventListener( 'loadedmetadata', () => {
 							setAttributes( { aspectRatio: `${ video.videoWidth } / ${ video.videoHeight }` } );
+							let _duration = player.duration();
+							setDuration( _duration );
+							if ( _duration ) {
+								_duration = secondsToISO8601( Math.round( _duration ) );
+								setAttributes( { seo: { ...attributes.seo, duration: _duration } } );
+							}
 						} );
 					}
 				} }
@@ -426,6 +435,7 @@ function VideoEdit( {
 				attachmentData={ videoResponse }
 				attributes={ attributes }
 				setAttributes={ setAttributes }
+				duration={ attributes?.seo?.duration || '' }
 			/>
 
 			<figure { ...blockProps }>
