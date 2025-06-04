@@ -201,9 +201,24 @@ class Dynamic_Gallery extends Base {
 					break;
 				case 'custom':
 					if ( ! empty( $atts['custom_date_start'] ) && ! empty( $atts['custom_date_end'] ) ) {
+						// Convert UTC dates to local timezone.
+						$start_date = new \DateTime( $atts['custom_date_start'] );
+						$end_date   = new \DateTime( $atts['custom_date_end'] );
+						
+						// Set timezone to WordPress timezone.
+						$wp_timezone = new \DateTimeZone( wp_timezone_string() );
+						$start_date->setTimezone( $wp_timezone );
+						$end_date->setTimezone( $wp_timezone );
+						
+						// Set start date to beginning of day (00:00:00).
+						$start_date->setTime( 0, 0, 0 );
+						
+						// Set end date to end of day (23:59:59).
+						$end_date->setTime( 23, 59, 59 );
+						
 						$date_query = array(
-							'after'     => $atts['custom_date_start'],
-							'before'    => $atts['custom_date_end'],
+							'after'     => $start_date->format( 'Y-m-d H:i:s' ),
+							'before'    => $end_date->format( 'Y-m-d H:i:s' ),
 							'inclusive' => true,
 						);
 					}
