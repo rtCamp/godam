@@ -280,7 +280,7 @@ class GoDAM_Video_Gallery {
 			if ( $shown_videos < $total_videos ) {
 				if ( ! $atts['infinite_scroll'] ) {
 					echo '<button 
-						class="godam-load-more" 
+						class="godam-load-more wp-element-button" 
 						data-offset="' . esc_attr( $shown_videos ) . '" 
 						data-columns="' . esc_attr( $atts['columns'] ) . '" 
 						data-count="' . esc_attr( $atts['count'] ) . '" 
