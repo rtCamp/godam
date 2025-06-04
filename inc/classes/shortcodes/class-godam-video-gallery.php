@@ -221,7 +221,16 @@ class GoDAM_Video_Gallery {
 				data-order="' . esc_attr( $atts['order'] ) . '"
 				data-total="' . esc_attr( $total_videos ) . '"
 				data-show-title="' . ( $atts['show_title'] ? '1' : '0' ) . '"
-				data-layout="' . esc_attr( $atts['layout'] ) . '">';
+				data-layout="' . esc_attr( $atts['layout'] ) . '"
+				data-search="' . esc_attr( $atts['search'] ) . '"
+				data-category="' . esc_attr( $atts['category'] ) . '"
+				data-tag="' . esc_attr( $atts['tag'] ) . '"
+				data-author="' . esc_attr( $atts['author'] ) . '"
+				data-include="' . esc_attr( $atts['include'] ) . '"
+				data-date-range="' . esc_attr( $atts['date_range'] ) . '"
+				data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ) . '"
+				data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ) . '"
+			>';
 			foreach ( $query->posts as $video ) {
 				// Add action before each video item.
 				do_action( 'rtgodam_gallery_before_video_item', $video, $atts );

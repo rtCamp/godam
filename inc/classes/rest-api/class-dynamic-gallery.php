@@ -41,33 +41,65 @@ class Dynamic_Gallery extends Base {
 					'callback'            => array( $this, 'render_gallery' ),
 					'permission_callback' => '__return_true',
 					'args'                => array(
-						'offset'     => array(
+						'offset'            => array(
 							'type'    => 'integer',
 							'default' => 0,
 						),
-						'columns'    => array(
+						'columns'           => array(
 							'type'    => 'integer',
 							'default' => 3,
 						),
-						'count'      => array(
+						'count'             => array(
 							'type'    => 'integer',
 							'default' => 6,
 						),
-						'orderby'    => array(
+						'orderby'           => array(
 							'type'    => 'string',
 							'default' => 'date',
 						),
-						'order'      => array(
+						'order'             => array(
 							'type'    => 'string',
 							'default' => 'DESC',
 						),
-						'show_title' => array(
+						'show_title'        => array(
 							'type'    => 'boolean',
 							'default' => true,
 						),
-						'layout'     => array(
+						'layout'            => array(
 							'type'    => 'string',
 							'default' => 'grid',
+						),
+						'category'          => array(
+							'type'    => 'integer',
+							'default' => 0,
+						),
+						'tag'               => array(
+							'type'    => 'integer',
+							'default' => 0,
+						),
+						'author'            => array(
+							'type'    => 'integer',
+							'default' => 0,
+						),
+						'include'           => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'search'            => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'date_range'        => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'custom_date_start' => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'custom_date_end'   => array(
+							'type'    => 'string',
+							'default' => '',
 						),
 					),
 				),
@@ -84,13 +116,21 @@ class Dynamic_Gallery extends Base {
 	 */
 	public function render_gallery( WP_REST_Request $request ) {
 		$atts = array(
-			'count'      => $request->get_param( 'count' ),
-			'orderby'    => $request->get_param( 'orderby' ),
-			'order'      => $request->get_param( 'order' ),
-			'columns'    => $request->get_param( 'columns' ),
-			'offset'     => $request->get_param( 'offset' ),
-			'show_title' => $request->get_param( 'show_title' ),
-			'layout'     => $request->get_param( 'layout' ),
+			'count'             => $request->get_param( 'count' ),
+			'orderby'           => $request->get_param( 'orderby' ),
+			'order'             => $request->get_param( 'order' ),
+			'columns'           => $request->get_param( 'columns' ),
+			'offset'            => $request->get_param( 'offset' ),
+			'show_title'        => $request->get_param( 'show_title' ),
+			'layout'            => $request->get_param( 'layout' ),
+			'category'          => $request->get_param( 'category' ),
+			'tag'               => $request->get_param( 'tag' ),
+			'author'            => $request->get_param( 'author' ),
+			'include'           => $request->get_param( 'include' ),
+			'search'            => $request->get_param( 'search' ),
+			'date_range'        => $request->get_param( 'date_range' ),
+			'custom_date_start' => $request->get_param( 'custom_date_start' ),
+			'custom_date_end'   => $request->get_param( 'custom_date_end' ),
 		);
 
 		// Add filter for dynamic gallery attributes.
@@ -113,6 +153,67 @@ class Dynamic_Gallery extends Base {
 			),
 		);
 
+		// Add category filter.
+		if ( ! empty( $atts['category'] ) ) {
+			$args['tax_query'][] = array(
+				'taxonomy' => 'category',
+				'field'    => 'term_id',
+				'terms'    => intval( $atts['category'] ),
+			);
+		}
+
+		// Add tag filter.
+		if ( ! empty( $atts['tag'] ) ) {
+			$args['tax_query'][] = array(
+				'taxonomy' => 'post_tag',
+				'field'    => 'term_id',
+				'terms'    => intval( $atts['tag'] ),
+			);
+		}
+
+		// Add author filter.
+		if ( ! empty( $atts['author'] ) ) {
+			$args['author'] = intval( $atts['author'] );
+		}
+
+		// Add include filter.
+		if ( ! empty( $atts['include'] ) ) {
+			$args['post__in'] = array_map( 'intval', explode( ',', $atts['include'] ) );
+		}
+
+		// Add search filter.
+		if ( ! empty( $atts['search'] ) ) {
+			$args['s'] = $atts['search'];
+		}
+
+		// Add date range filter.
+		if ( ! empty( $atts['date_range'] ) ) {
+			$date_query = array();
+			switch ( $atts['date_range'] ) {
+				case '7days':
+					$date_query = array( 'after' => '1 week ago' );
+					break;
+				case '30days':
+					$date_query = array( 'after' => '1 month ago' );
+					break;
+				case '90days':
+					$date_query = array( 'after' => '3 months ago' );
+					break;
+				case 'custom':
+					if ( ! empty( $atts['custom_date_start'] ) && ! empty( $atts['custom_date_end'] ) ) {
+						$date_query = array(
+							'after'     => $atts['custom_date_start'],
+							'before'    => $atts['custom_date_end'],
+							'inclusive' => true,
+						);
+					}
+					break;
+			}
+			if ( ! empty( $date_query ) ) {
+				$args['date_query'] = array( $date_query );
+			}
+		}
+
 		// Handle duration and size sorting.
 		if ( 'duration' === $atts['orderby'] ) {
 			$args['meta_key'] = '_video_duration';
@@ -128,30 +229,48 @@ class Dynamic_Gallery extends Base {
 		$query = new \WP_Query( $args );
 		ob_start();
 		if ( $query->have_posts() ) {
-			// Add action before dynamic gallery output.
+			$total_videos    = $query->found_posts;
+			$shown_videos    = count( $query->posts );
+			$alignment_class = '';
+	
+			if ( intval( $atts['offset'] ) === 0 ) {
+				echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) .
+					( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) .
+					esc_attr( $alignment_class ) . '" 
+					data-infinite-scroll="true"
+					data-offset="' . esc_attr( $shown_videos + $atts['offset'] ) . '"
+					data-columns="' . esc_attr( $atts['columns'] ) . '"
+					data-orderby="' . esc_attr( $atts['orderby'] ) . '"
+					data-order="' . esc_attr( $atts['order'] ) . '"
+					data-total="' . esc_attr( $total_videos ) . '"
+					data-show-title="' . ( $atts['show_title'] ? '1' : '0' ) . '"
+					data-layout="' . esc_attr( $atts['layout'] ) . '"
+					data-category="' . esc_attr( $atts['category'] ?? '' ) . '"
+					data-tag="' . esc_attr( $atts['tag'] ?? '' ) . '"
+					data-author="' . esc_attr( $atts['author'] ?? '' ) . '"
+					data-include="' . esc_attr( $atts['include'] ?? '' ) . '"
+					data-search="' . esc_attr( $atts['search'] ?? '' ) . '"
+					data-date-range="' . esc_attr( $atts['date_range'] ?? '' ) . '"
+					data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ?? '' ) . '"
+					data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ?? '' ) . '">';
+			}
+	
 			do_action( 'rtgodam_dynamic_gallery_before_output', $query, $atts );
-
+	
 			foreach ( $query->posts as $video ) {
-				// Add action before each dynamic video item.
 				do_action( 'rtgodam_dynamic_gallery_before_video_item', $video, $atts );
-
+	
 				$video_id    = intval( $video->ID );
-				$video_title = get_the_title( $video_id );
-				$video_date  = get_the_date( 'F j, Y', $video_id );
-				
-				// Add filter for dynamic gallery video title.
-				$video_title = apply_filters( 'rtgodam_dynamic_gallery_video_title', $video_title, $video_id );
-				
-				// Add filter for dynamic gallery video date.
-				$video_date = apply_filters( 'rtgodam_dynamic_gallery_video_date', $video_date, $video_id );
-
+				$video_title = apply_filters( 'rtgodam_dynamic_gallery_video_title', get_the_title( $video_id ), $video_id );
+				$video_date  = apply_filters( 'rtgodam_dynamic_gallery_video_date', get_the_date( 'F j, Y', $video_id ), $video_id );
+	
 				$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
 				$fallback_thumb   = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
 				$thumbnail        = $custom_thumbnail ?: $fallback_thumb;
-				
+	
 				$file_path = get_attached_file( $video_id );
 				$duration  = null;
-				
+	
 				if ( file_exists( $file_path ) ) {
 					if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 						require_once ABSPATH . 'wp-admin/includes/media.php';
@@ -161,7 +280,7 @@ class Dynamic_Gallery extends Base {
 						$duration = $metadata['length_formatted'];
 					}
 				}
-
+	
 				echo '<div class="godam-video-item">';
 				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
@@ -169,28 +288,28 @@ class Dynamic_Gallery extends Base {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
 				}
 				echo '</div>';
+	
 				if ( ! empty( $atts['show_title'] ) ) {
 					echo '<div class="godam-video-info">';
 					echo '<div class="godam-video-title">' . esc_html( $video_title ) . '</div>';
 					echo '<div class="godam-video-date">' . esc_html( $video_date ) . '</div>';
 					echo '</div>';
 				}
-				
 				echo '</div>';
-
-				// Add action after each dynamic video item.
+	
 				do_action( 'rtgodam_dynamic_gallery_after_video_item', $video, $atts );
 			}
-
-			// Add action after dynamic gallery output.
+	
+			if ( intval( $atts['offset'] ) === 0 ) {
+				echo '</div>';
+			}
+	
 			do_action( 'rtgodam_dynamic_gallery_after_output', $query, $atts );
 		}
-		
+	
 		$html = ob_get_clean();
-		
-		// Add filter for final HTML output.
 		$html = apply_filters( 'rtgodam_dynamic_gallery_html', $html, $query, $atts );
-
+	
 		return new WP_REST_Response(
 			array(
 				'status' => 'success',
