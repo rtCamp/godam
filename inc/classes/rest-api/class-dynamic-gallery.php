@@ -113,6 +113,12 @@ class Dynamic_Gallery extends Base {
 			),
 		);
 
+		// Handle duration sorting.
+		if ( 'duration' === $atts['orderby'] ) {
+			$args['meta_key'] = '_video_duration';
+			$args['orderby']  = 'meta_value_num';
+		}
+
 		// Add filter for dynamic gallery query args.
 		$args = apply_filters( 'rtgodam_dynamic_gallery_query_args', $args, $atts );
 
