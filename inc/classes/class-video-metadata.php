@@ -122,6 +122,7 @@ class Video_Metadata {
 		
 		while ( $has_more_videos ) {
 			// Get a batch of video attachments without metadata.
+			//phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
 			$videos = get_posts(
 				array(
 					'post_type'      => 'attachment',
