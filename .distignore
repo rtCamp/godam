@@ -3,7 +3,6 @@ assets/src/blocks
 assets/src/css
 assets/src/js
 assets/src/libs/jquery-ui-1.14.1.draggable
-pages/
 .browserslistrc
 .eslintignore
 .eslintrc
