@@ -113,9 +113,12 @@ class Dynamic_Gallery extends Base {
 			),
 		);
 
-		// Handle duration sorting.
+		// Handle duration and size sorting.
 		if ( 'duration' === $atts['orderby'] ) {
 			$args['meta_key'] = '_video_duration';
+			$args['orderby']  = 'meta_value_num';
+		} elseif ( 'size' === $atts['orderby'] ) {
+			$args['meta_key'] = '_video_file_size';
 			$args['orderby']  = 'meta_value_num';
 		}
 

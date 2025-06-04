@@ -194,7 +194,7 @@ class GoDAM_Video_Gallery {
 			$args['meta_key'] = '_video_duration';
 			$args['orderby']  = 'meta_value_num';
 		} elseif ( 'size' === $atts['orderby'] ) {
-			$args['meta_key'] = '_wp_attached_file';
+			$args['meta_key'] = '_video_file_size';
 			$args['orderby']  = 'meta_value_num';
 		}
 

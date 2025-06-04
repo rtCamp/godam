@@ -36,7 +36,7 @@ class Video_Metadata {
 	 */
 	protected function setup_hooks() {
 		add_action( 'init', array( $this, 'maybe_migrate_existing_videos' ) );
-		add_action( 'add_attachment', array( $this, 'save_video_duration_meta' ) );
+		add_action( 'add_attachment', array( $this, 'save_video_metadata' ) );
 	}
 
 	/**
@@ -46,46 +46,54 @@ class Video_Metadata {
 	 */
 	public function maybe_migrate_existing_videos() {
 		// Check if migration has been run, if not, run it once.
-		$migration_completed = get_option( 'rtgodam_video_duration_migration_completed', false );
+		$migration_completed = get_option( 'rtgodam_video_metadata_migration_completed', false );
 		
 		if ( ! $migration_completed ) {
-			$this->migrate_existing_video_durations();
-			update_option( 'rtgodam_video_duration_migration_completed', true );
+			$this->migrate_existing_video_metadata();
+			update_option( 'rtgodam_video_metadata_migration_completed', true );
 		}
 	}
 
 	/**
-	 * Save video duration as meta field when attachment is added.
+	 * Save video duration and file size as meta fields when attachment is added.
 	 *
 	 * @param int $attachment_id The attachment ID.
 	 * @return void
 	 */
-	public function save_video_duration_meta( $attachment_id ) {
-		$this->process_video_duration( $attachment_id );
+	public function save_video_metadata( $attachment_id ) {
+		$this->process_video_metadata( $attachment_id );
 	}
 
 	/**
-	 * Process a single video to save its duration meta field.
+	 * Process a single video to save its duration and file size meta fields.
 	 *
 	 * @param int $attachment_id The attachment ID.
 	 * @return void
 	 */
-	private function process_video_duration( $attachment_id ) {
+	private function process_video_metadata( $attachment_id ) {
 		$file_path = get_attached_file( $attachment_id );
 		
 		if ( $this->is_video_attachment( $attachment_id ) && file_exists( $file_path ) ) {
-			// Check if duration meta already exists to avoid unnecessary processing.
+			// Check if metadata already exists to avoid unnecessary processing.
 			$existing_duration = get_post_meta( $attachment_id, '_video_duration', true );
+			$existing_size     = get_post_meta( $attachment_id, '_video_file_size', true );
 			
-			if ( empty( $existing_duration ) ) {
+			if ( empty( $existing_duration ) || empty( $existing_size ) ) {
 				if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 					require_once ABSPATH . 'wp-admin/includes/media.php';
 				}
 				
 				$metadata = wp_read_video_metadata( $file_path );
 				
+				// Save duration.
 				if ( ! empty( $metadata['length'] ) ) {
 					update_post_meta( $attachment_id, '_video_duration', intval( $metadata['length'] ) );
+				}
+				
+				// Save file size.
+				$file_size = filesize( $file_path );
+				if ( $file_size ) {
+					update_post_meta( $attachment_id, '_video_file_size', $file_size );
 				}
 			}
 		}
@@ -103,18 +111,17 @@ class Video_Metadata {
 	}
 
 	/**
-	 * Migrate existing videos to have duration meta field.
+	 * Migrate existing videos to have duration and file size meta fields.
 	 * This runs once on init after plugin activation in batches.
 	 *
 	 * @return void
 	 */
-	private function migrate_existing_video_durations() {
+	private function migrate_existing_video_metadata() {
 		$offset          = 0;
 		$has_more_videos = true;
 		
 		while ( $has_more_videos ) {
-			// Get a batch of video attachments without _video_duration meta.
-			//phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
+			// Get a batch of video attachments without metadata.
 			$videos = get_posts(
 				array(
 					'post_type'      => 'attachment',
@@ -123,8 +130,13 @@ class Video_Metadata {
 					'offset'         => $offset,
 					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 					'meta_query'     => array(
+						'relation' => 'OR',
 						array(
 							'key'     => '_video_duration',
+							'compare' => 'NOT EXISTS',
+						),
+						array(
+							'key'     => '_video_file_size',
 							'compare' => 'NOT EXISTS',
 						),
 					),
@@ -134,7 +146,7 @@ class Video_Metadata {
 			if ( ! empty( $videos ) ) {
 				// Process this batch.
 				foreach ( $videos as $video ) {
-					$this->process_video_duration( $video->ID );
+					$this->process_video_metadata( $video->ID );
 				}
 				
 				// Move to the next batch.
