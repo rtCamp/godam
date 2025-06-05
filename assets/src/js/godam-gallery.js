@@ -20,6 +20,14 @@ async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVi
 			order,
 			show_title: showTitle,
 			layout,
+			category: gallery.dataset.category ? parseInt( gallery.dataset.category, 10 ) : 0,
+			tag: gallery.dataset.tag ? parseInt( gallery.dataset.tag, 10 ) : 0,
+			author: gallery.dataset.author ? parseInt( gallery.dataset.author, 10 ) : 0,
+			include: gallery.dataset.include || '',
+			search: gallery.dataset.search || '',
+			date_range: gallery.dataset.dateRange || '',
+			custom_date_start: gallery.dataset.customDateStart || '',
+			custom_date_end: gallery.dataset.customDateEnd || '',
 		} );
 		const response = await fetch( `/wp-json/godam/v1/gallery-shortcode?${ params.toString() }` );
 		const data = await response.json();
