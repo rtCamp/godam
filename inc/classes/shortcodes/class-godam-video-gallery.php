@@ -166,9 +166,24 @@ class GoDAM_Video_Gallery {
 					break;
 				case 'custom':
 					if ( ! empty( $atts['custom_date_start'] ) && ! empty( $atts['custom_date_end'] ) ) {
+						// Convert UTC dates to local timezone.
+						$start_date = new \DateTime( $atts['custom_date_start'] );
+						$end_date   = new \DateTime( $atts['custom_date_end'] );
+						
+						// Set timezone to WordPress timezone.
+						$wp_timezone = new \DateTimeZone( wp_timezone_string() );
+						$start_date->setTimezone( $wp_timezone );
+						$end_date->setTimezone( $wp_timezone );
+						
+						// Set start date to beginning of day (00:00:00).
+						$start_date->setTime( 0, 0, 0 );
+						
+						// Set end date to end of day (23:59:59).
+						$end_date->setTime( 23, 59, 59 );
+						
 						$date_query = array(
-							'after'     => $atts['custom_date_start'],
-							'before'    => $atts['custom_date_end'],
+							'after'     => $start_date->format( 'Y-m-d H:i:s' ),
+							'before'    => $end_date->format( 'Y-m-d H:i:s' ),
 							'inclusive' => true,
 						);
 					}
@@ -221,7 +236,16 @@ class GoDAM_Video_Gallery {
 				data-order="' . esc_attr( $atts['order'] ) . '"
 				data-total="' . esc_attr( $total_videos ) . '"
 				data-show-title="' . ( $atts['show_title'] ? '1' : '0' ) . '"
-				data-layout="' . esc_attr( $atts['layout'] ) . '">';
+				data-layout="' . esc_attr( $atts['layout'] ) . '"
+				data-search="' . esc_attr( $atts['search'] ) . '"
+				data-category="' . esc_attr( $atts['category'] ) . '"
+				data-tag="' . esc_attr( $atts['tag'] ) . '"
+				data-author="' . esc_attr( $atts['author'] ) . '"
+				data-include="' . esc_attr( $atts['include'] ) . '"
+				data-date-range="' . esc_attr( $atts['date_range'] ) . '"
+				data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ) . '"
+				data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ) . '"
+			>';
 			foreach ( $query->posts as $video ) {
 				// Add action before each video item.
 				do_action( 'rtgodam_gallery_before_video_item', $video, $atts );

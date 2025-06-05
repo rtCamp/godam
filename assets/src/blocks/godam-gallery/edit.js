@@ -127,14 +127,28 @@ export default function Edit( { attributes, setAttributes } ) {
 		} );
 	};
 
-	const formatDateForStorage = ( dateString ) => {
+	const formatDateForStorage = ( dateString, type ) => {
 		if ( ! dateString ) {
 			return '';
 		}
 		const date = new Date( dateString );
-		// Set time to 00:00:00
-		date.setHours( 0, 0, 0, 0 );
-		return date.toISOString();
+
+		// Create a new date object with the local date components
+		const year = date.getFullYear();
+		const month = date.getMonth();
+		const day = date.getDate();
+
+		// Create new date objects for start and end times
+		let formattedDate;
+		if ( type === 'start' ) {
+			// Set start date to beginning of day (00:00:00) in local time
+			formattedDate = new Date( year, month, day, 0, 0, 0, 0 );
+		} else {
+			// Set end date to end of day (23:59:59) in local time
+			formattedDate = new Date( year, month, day, 23, 59, 59, 999 );
+		}
+
+		return formattedDate.toISOString();
 	};
 
 	// Update the handleDateChange function
@@ -146,9 +160,16 @@ export default function Edit( { attributes, setAttributes } ) {
 			return;
 		}
 
+		// Create date objects and set them to start of day for comparison
 		const newDate = new Date( date );
-		const otherDate = type === 'start' ? new Date( customDateEnd ) : new Date( customDateStart );
+		newDate.setHours( 0, 0, 0, 0 );
 
+		const otherDate = type === 'start' ? new Date( customDateEnd ) : new Date( customDateStart );
+		if ( otherDate ) {
+			otherDate.setHours( 0, 0, 0, 0 );
+		}
+
+		// Compare dates without time component
 		if ( newDate && otherDate ) {
 			if ( type === 'start' && newDate > otherDate ) {
 				setDateError( __( 'Start date cannot be later than end date', 'godam' ) );
@@ -162,7 +183,7 @@ export default function Edit( { attributes, setAttributes } ) {
 
 		setDateError( '' );
 		setAttributes( {
-			[ type === 'start' ? 'customDateStart' : 'customDateEnd' ]: formatDateForStorage( date ),
+			[ type === 'start' ? 'customDateStart' : 'customDateEnd' ]: formatDateForStorage( date, type ),
 		} );
 	};
 
