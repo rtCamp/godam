@@ -72,6 +72,13 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 📌 Automatic Video Transcription
 ✓ AI-powered closed captions added automatically on upload for accessibility and engagement.
 
+📌 GoDAM Video Gallery
+✓ Professional Video Galleries: Create stunning video displays that match your website's design
+✓ Smart Video Management: Automatically organize and filter your video content
+✓ Mobile-Friendly Design: Galleries that look perfect on all devices and screen sizes
+✓ Interactive Video Player: Pop-up video player with smooth playback experience
+✓ Performance Optimized: Fast loading with intelligent content loading strategies
+
 Primary Benefits:
 ✓ Simplifies asset management with automated transcoding and adaptive streaming.
 ✓ Enhances viewer engagement with interactive layers like forms, CTAs, and hotspots.
