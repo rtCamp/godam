@@ -97,12 +97,6 @@ class GoDAM_Video_Gallery {
 
 		wp_enqueue_style( 'godam-gallery-style' );
 
-		// Check for API key.
-		$api_key = get_option( 'rtgodam-api-key', '' );
-		if ( empty( $api_key ) ) {
-			return '<div class="godam-video-gallery-error">' . esc_html__( '[API Key missing. Please configure the API key in the GoDAM settings.]', 'godam' ) . '</div>';
-		}
-
 		$args = array(
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
@@ -110,13 +104,6 @@ class GoDAM_Video_Gallery {
 			'posts_per_page' => intval( $atts['count'] ),
 			'orderby'        => sanitize_text_field( $atts['orderby'] ),
 			'order'          => sanitize_text_field( $atts['order'] ),
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-			'meta_query'     => array(
-				array(
-					'key'     => 'rtgodam_transcoded_url',
-					'compare' => 'EXISTS',
-				),
-			),
 		);
 
 		// Add filter for query arguments.
