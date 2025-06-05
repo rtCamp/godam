@@ -62,6 +62,14 @@ class GoDAM_Player {
 			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player.css' )
 		);
+
+		wp_localize_script(
+			'godam-player-frontend-script',
+			'godamData',
+			array(
+				'api_base' => RTGODAM_API_BASE,
+			)
+		);
 	}
 
 	/**

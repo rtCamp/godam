@@ -106,6 +106,7 @@ function GODAMPlayer( videoRef = null ) {
 		const isPreviewEnabled = videoSetupOptions?.preview;
 
 		const player = videojs( video, videoSetupControls );
+		player.aspectRatio( '16:9' );
 
 		video.addEventListener( 'loadedmetadata', () => {
 			const playerElement = player.el_;
@@ -422,6 +423,21 @@ function GODAMPlayer( videoRef = null ) {
 		// Register the new component
 		videojs.registerComponent( 'GodamShareButton', GodamShareButton );
 
+		// Add the button to the control bar after the player is ready
+		player.ready( function() {
+			player.jobId = video.dataset.job_id; // Store the result when it's available
+			const videoContainer = player.el().closest( '.easydam-video-container' );
+			if ( videoContainer && player.jobId !== '' ) {
+				const shareButton = new GodamShareButton( player );
+				const buttonEl = shareButton.createEl();
+				buttonEl.addEventListener(
+					'click',
+					shareButton.handleClick.bind( shareButton ),
+				);
+				videoContainer.appendChild( buttonEl );
+			}
+		} );
+
 		player.ready( function() {
 			const controlBarSettings = videoSetupControls?.controlBar;
 
@@ -700,8 +716,8 @@ function GODAMPlayer( videoRef = null ) {
 
 		function createHotspots( layerObj, currentPlayer ) {
 			const videoContainer = currentPlayer.el();
-			const containerWidth = videoContainer.offsetWidth;
-			const containerHeight = videoContainer.offsetHeight;
+			const containerWidth = videoContainer?.offsetWidth;
+			const containerHeight = videoContainer?.offsetHeight;
 
 			const baseWidth = 800;
 			const baseHeight = 600;
@@ -853,8 +869,8 @@ function GODAMPlayer( videoRef = null ) {
 		// Reposition hotspots on resize or fullscreen
 		function updateHotspotPositions( currentPlayer, currentHotspotLayers ) {
 			const videoContainer = currentPlayer.el();
-			const containerWidth = videoContainer.offsetWidth;
-			const containerHeight = videoContainer.offsetHeight;
+			const containerWidth = videoContainer?.offsetWidth;
+			const containerHeight = videoContainer?.offsetHeight;
 
 			const baseWidth = 800;
 			const baseHeight = 600;
