@@ -196,6 +196,8 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 26. [godam_video] Shortcode
 27. Central Media Manager
 28. Image Upload to Central Media Manager
+29. GoDAM Video Gallery Block
+30. GoDAM Video Gallery Front-end
 
 ## External services
 
