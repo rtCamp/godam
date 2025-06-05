@@ -479,7 +479,7 @@ const Slider = ( props ) => {
 						>
 							<div className="layer-indicator--container">
 								<div className={ `icon ${ layer.id === currentLayerID ? 'active' : '' }` }>
-									<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type ).icon } />
+									<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type )?.icon } />
 									<div>
 										{ layer?.type?.toUpperCase() }
 										{
