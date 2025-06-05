@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -193,6 +193,12 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 30. GoDAM Video Gallery Front-end
 
 == Changelog ==
+
+= v1.1.2 (June 5, 2025) =
+
+- Feat: Added a “Share” button to enable sharing of single video pages in the Central Media Manager.
+- Feat: Introduced the GoDAM Video Gallery block and shortcode for displaying GoDAM videos on the frontend.
+- Enhance: Improved video player UI for better mobile viewing experience.
 
 = v1.1.1 (May 30, 2025) =
 
