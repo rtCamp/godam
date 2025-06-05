@@ -144,13 +144,6 @@ class Dynamic_Gallery extends Base {
 			'orderby'        => $atts['orderby'],
 			'order'          => $atts['order'],
 			'offset'         => $atts['offset'],
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-			'meta_query'     => array(
-				array(
-					'key'     => 'rtgodam_transcoded_url',
-					'compare' => 'EXISTS',
-				),
-			),
 		);
 
 		// Add category filter.

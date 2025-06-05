@@ -46,6 +46,13 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 📌 **Video SEO**
 ✓ Generate structured data for better indexing, with video schema, title, description, thumbnail
 
+📌 **GoDAM Video Gallery**
+✓ Professional Video Galleries: Create stunning video displays that match your website's design
+✓ Smart Video Management: Automatically organize and filter your video content
+✓ Mobile-Friendly Design: Galleries that look perfect on all devices and screen sizes
+✓ Interactive Video Player: Pop-up video player with smooth playback experience
+✓ Performance Optimized: Fast loading with intelligent content loading strategies
+
 = Pro Features =
 
 📌 **Smart Transcoding & Adaptive Bitrate Streaming**
@@ -72,13 +79,6 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 
 📌 **Automatic Video Transcription**
 ✓ AI-powered closed captions added automatically on upload for accessibility and engagement.
-
-📌 **GoDAM Video Gallery**
-✓ Professional Video Galleries: Create stunning video displays that match your website's design
-✓ Smart Video Management: Automatically organize and filter your video content
-✓ Mobile-Friendly Design: Galleries that look perfect on all devices and screen sizes
-✓ Interactive Video Player: Pop-up video player with smooth playback experience
-✓ Performance Optimized: Fast loading with intelligent content loading strategies
 
 Primary Benefits:
 ✓ Simplifies asset management with automated transcoding and adaptive streaming.
@@ -197,7 +197,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 = v1.1.2 (June 5, 2025) =
 
 - Feat: Added a “Share” button to enable sharing of single video pages in the Central Media Manager.
-- Feat: Introduced the GoDAM Video Gallery block and shortcode for displaying GoDAM videos on the frontend.
+- Feat: Introduced the GoDAM Video Gallery block and shortcode for displaying videos on the frontend.
 - Enhance: Improved video player UI for better mobile viewing experience.
 
 = v1.1.1 (May 30, 2025) =
