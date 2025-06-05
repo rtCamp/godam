@@ -16,7 +16,7 @@ import CF7Icon from '../assets/layers/CF7Icon.svg';
  */
 import { __ } from '@wordpress/i18n';
 import { Button, Icon, Tooltip } from '@wordpress/components';
-import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp } from '@wordpress/icons';
+import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp, error } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
 
 import Layer from './layers/Layer';
@@ -240,7 +240,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer, duration } ) => {
 							! loading && layers.length === 0 && (
 								<>
 									<h3 className="text-2xl m-0 text-center">{ __( 'No layers added', 'godam' ) }</h3>
-									<p className="text-center mb-10 text-gray-400">{ __( 'Play video to add layer.', 'godam' ) }</p>
 								</>
 							)
 						}
@@ -277,6 +276,12 @@ const SidebarLayers = ( { currentTime, onSelectLayer, duration } ) => {
 										<p className="text-slate-500 text-center">
 											{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
 										</p>
+									) }
+									{ ! currentTime && (
+										<div className="flex items-center gap-2">
+											<Icon icon={ error } className="w-4 h-4" style={ { fill: '#EAB308' } } />
+											<p className="text-center text-[#AB3A6C]">{ __( 'Play video to add layer.', 'godam' ) }</p>
+										</div>
 									) }
 								</div>
 							)

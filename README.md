@@ -1,8 +1,8 @@
 ![Banner V3](https://github.com/user-attachments/assets/1c2cdf13-5cab-432a-b548-34cd3876e93f)
-# GoDAM
+# GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more
 Contributors: [rtcamp](https://profiles.wordpress.org/rtcamp), [elifvish](https://profiles.wordpress.org/elifvish), [subodhrajpopat](https://profiles.wordpress.org/subodhrajpopat), [kuldipchaudhary](https://profiles.wordpress.org/kuldipchaudhary), [prachigarg19](https://profiles.wordpress.org/prachigarg19), [juzar](https://profiles.wordpress.org/juzar), [geekofshire](https://profiles.wordpress.org/geekofshire), [nazmulhassann20](https://profiles.wordpress.org/nazmulhassann20)
 
-Tags: transcoder, DAM, media library, adaptive streaming, video analytics
+Tags: transcoder, video, media library, folders, file manager
 
 Requires at least: 6.5
 
@@ -10,14 +10,14 @@ Tested up to: 6.8.1
 
 Requires PHP: 7.4
 
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
 Manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, and video analytics.
 
 ## Description
-[GoDAM](https://godam.io/) is a powerful digital asset management solution designed to provide automatic transcoding, adaptive bitrate streaming, and interactive video layers to enhance viewer engagement. It simplifies the entire video workflow, from upload to optimized playback, ensuring smooth delivery across all devices and network conditions.
+[GoDAM](https://godam.io/) is a powerful file manager, WordPress Media Library organizer and digital asset management solution designed to provide automatic transcoding, adaptive bitrate streaming, and interactive video layers to enhance viewer engagement. It simplifies the entire video workflow, from upload to optimized playback, ensuring smooth delivery across all devices and network conditions.
 
 With GoDAM, WordPress users can leverage advanced video capabilities without requiring extensive technical expertise. It automates the conversion of uploaded videos into multiple resolutions, enabling seamless playback with adaptive bitrate streaming. The integration of interactive elements such as CTAs, forms, hotspots and ads makes GoDAM an all-in-one solution for content creators, marketers, and eCommerce businesses.
 
@@ -28,7 +28,8 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 
 📌 Media Management
 - The [DAM functionality](https://godam.io/features/wordpress-advanced-media-management/) streamlines file organization for websites with large libraries of images, videos, documents, and more.
-- Organize media assets efficiently with enhanced WordPress Media Library integration.
+- Organize media assets efficiently with enhanced WordPress Media Library folders and filtering with a smart Media Library Assistant.
+- Manage files easily with a built-in folder-based File Manager for drag-and-drop organization.
 
 📌 Interactive Video Layers for Engagement
 - Embed [clickable CTAs](https://godam.io/features/video-overlay/) to drive actions like sign-ups and purchases.
@@ -75,6 +76,13 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 
 📌 Automatic Video Transcription
 - AI-powered closed captions added automatically on upload for accessibility and engagement.
+
+📌 GoDAM Video Gallery
+- Professional Video Galleries: Create stunning video displays that match your website's design
+- Smart Video Management: Automatically organize and filter your video content
+- Mobile-Friendly Design: Galleries that look perfect on all devices and screen sizes
+- Interactive Video Player: Pop-up video player with smooth playback experience
+- Performance Optimized: Fast loading with intelligent content loading strategies
 
 ### Primary Benefits:
 - Simplifies asset management with automated transcoding and adaptive streaming.
@@ -196,6 +204,8 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 26. [godam_video] Shortcode
 27. Central Media Manager
 28. Image Upload to Central Media Manager
+29. GoDAM Video Gallery Block
+30. GoDAM Video Gallery Front-end
 
 ## External services
 

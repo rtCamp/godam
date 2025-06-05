@@ -1,6 +1,6 @@
 {
-	"name": "GoDAM",
-	"version": "1.1.1",
+	"name": "godam",
+	"version": "1.1.2",
 	"description": "A WordPress plugin to manage digital assets",
 	"private": true,
 	"author": "rtCamp",
