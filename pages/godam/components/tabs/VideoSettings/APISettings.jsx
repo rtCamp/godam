@@ -14,7 +14,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { useDeactivateAPIKeyMutation, useVerifyAPIKeyMutation } from '../../../redux/api/media-settings.js';
 
-import { hasValidAPIKey, maskedAPIKey, GODAM_API_BASE, scrollToTop } from '../../../utils/index.js';
+import { hasValidAPIKey, maskedAPIKey, scrollToTop } from '../../../utils/index.js';
 import UsageData from './UsageData.jsx';
 
 const APISettings = ( { setNotice } ) => {
@@ -28,7 +28,7 @@ const APISettings = ( { setNotice } ) => {
 			return (
 				<>
 					{ __( 'Your API key is required to access the features. You can get your active API key from your ', 'godam' ) }
-					<a href={ GODAM_API_BASE } target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+					<a href={ ( window.godamRestRoute?.api_base ?? 'https://app.godam.io' ) + '/web/my-account?accTab=API' } target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
 						{ __( 'Account', 'godam' ) }
 					</a>.
 				</>

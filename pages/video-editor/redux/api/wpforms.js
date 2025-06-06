@@ -17,7 +17,7 @@ export const wpFormsApi = createApi( {
 	endpoints: ( builder ) => ( {
 		getWPForms: builder.query( {
 			query: () => ( {
-				url: '/wpforms/v1/forms',
+				url: '/godam/v1/wpforms',
 				method: 'GET',
 			} ),
 		} ),
