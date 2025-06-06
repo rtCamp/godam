@@ -71,6 +71,7 @@ const Analytics = ( { attachmentID } ) => {
 	const [ isABResultsLoading, setIsABResultsLoading ] = useState( false );
 	const [ isABTestCompleted, setIsABTestCompleted ] = useState( false );
 	const [ mediaLibraryAttachment, setMediaLibraryAttachment ] = useState( null );
+	const [ mediaNotFound, setMediaNotFound ] = useState( false );
 
 	// RTK Query hooks
 	const siteUrl = window.location.origin;
@@ -143,12 +144,22 @@ const Analytics = ( { attachmentID } ) => {
 	useEffect( () => {
 		if ( attachmentID ) {
 			const url = window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] );
+			const loadingEl = document.getElementById( 'loading-analytics-animation' );
 
 			axios
 				.get( url )
 				.then( ( response ) => {
 					const data = response.data;
 					setAttachmentData( data );
+					setMediaNotFound( false );
+				} )
+				.catch( ( error ) => {
+					if ( error.response?.data?.code === 'rest_post_invalid_id' ) {
+						setMediaNotFound( true );
+						if ( loadingEl ) {
+							loadingEl.style.display = 'none';
+						}
+					}
 				} );
 		}
 	}, [ attachmentID ] );
@@ -306,15 +317,26 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
+			<div id="media-not-found-overlay" className={ `api-key-overlay ${ ! mediaNotFound ? 'hidden' : '' }` }>
+				<div className="api-key-message">
+					<p>
+						{ __( 'This media doesn\'t exist. ', 'godam' ) }
+						<a href="admin.php?page=rtgodam_dashboard">
+							{ __( 'Go to Dashboard', 'godam' ) }
+						</a>
+					</p>
+				</div>
+			</div>
+
 			<div id="api-key-overlay" className="api-key-overlay hidden">
 				<div className="api-key-message">
 					<p>
-						{ analyticsDataFetched?.message || __(
+						{ analyticsDataFetched?.message + ' ' || __(
 							'Your API key is missing or invalid. Please check your plugin settings.',
 							'godam',
 						) }
 						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( ' Go to plugin settings', 'godam' ) }
+							{ __( 'Go to plugin settings', 'godam' ) }
 						</a>
 					</p>
 				</div>
@@ -326,7 +348,7 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
-			{ attachmentData && (
+			{ attachmentData && ! mediaNotFound && (
 				<div id="analytics-content" className="hidden">
 					<div>
 						<div className="subheading-container pt-6">

@@ -222,12 +222,12 @@ const Dashboard = () => {
 			<div id="api-key-overlay" className="api-key-overlay hidden">
 				<div className="api-key-message">
 					<p>
-						{ dashboardMetrics?.message || __(
+						{ dashboardMetrics?.message + ' ' || __(
 							'Your API key is missing or invalid. Please check your plugin settings.',
 							'godam',
 						) }
 						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( ' Go to plugin settings', 'godam' ) }
+							{ __( 'Go to plugin settings', 'godam' ) }
 						</a>
 					</p>
 				</div>
