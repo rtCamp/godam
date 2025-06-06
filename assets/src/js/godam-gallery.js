@@ -215,7 +215,7 @@ document.addEventListener( 'click', async function( e ) {
 					// Update video title in the modal header
 					const videoTitle = modal.querySelector( '.godam-video-title' );
 					if ( videoTitle ) {
-						videoTitle.textContent = data.title || '';
+						videoTitle.innerHTML = data.title || '';
 					}
 
 					// Add this new code to update the date
