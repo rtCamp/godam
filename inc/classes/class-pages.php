@@ -145,7 +145,6 @@ class Pages {
 			3
 		);
 
-
 		add_submenu_page(
 			$this->menu_slug,
 			__( 'Analytics', 'godam' ),
@@ -163,9 +162,9 @@ class Pages {
 			'edit_posts',
 			$this->settings_slug,
 			array( $this, 'render_godam_page' ),
-			7
+			6
 		);
-		
+
 		add_submenu_page(
 			$this->menu_slug,
 			__( 'Help', 'godam' ),
@@ -173,7 +172,7 @@ class Pages {
 			'edit_posts',
 			$this->help_slug,
 			array( $this, 'render_help_page' ),
-			8
+			7
 		);
 	}
 

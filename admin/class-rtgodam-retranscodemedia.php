@@ -124,7 +124,7 @@ class RTGODAM_RetranscodeMedia {
 			$this->capability,
 			'rtgodam_tools',
 			array( $this, 'render_tools_page' ),
-			4
+			3
 		);
 	}
 
