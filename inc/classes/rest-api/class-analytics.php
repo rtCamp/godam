@@ -43,7 +43,7 @@ class Analytics extends Base {
 						'video_id' => array(
 							'required'          => true,
 							'type'              => 'integer',
-							'description'       => 'The Video ID for fetching analytics data.',
+							'description'       => __( 'The Video ID for fetching analytics data.', 'godam' ),
 							'validate_callback' => function ( $param ) {
 								return is_numeric( $param ) && intval( $param ) > 0;
 							},
@@ -52,7 +52,7 @@ class Analytics extends Base {
 						'site_url' => array(
 							'required'          => true,
 							'type'              => 'string',
-							'description'       => 'The Site URL associated with the video.',
+							'description'       => __( 'The Site URL associated with the video.', 'godam' ),
 							'sanitize_callback' => 'esc_url_raw',
 						),
 					),
@@ -168,12 +168,13 @@ class Analytics extends Base {
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
-		// Check if API key is valid.
-		if ( empty( $account_token ) || 'unverified' === $account_token ) {
+		// Check if API key is missing.
+		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
 				array(
-					'status'  => 'error',
-					'message' => 'Invalid or unverified API key.',
+					'status'    => 'error',
+					'message'   => __( 'Missing API key.', 'godam' ),
+					'errorType' => 'missing_key',
 				),
 				200
 			);
@@ -196,15 +197,41 @@ class Analytics extends Base {
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
 				array(
-					'status'  => 'error',
-					'message' => 'Error fetching analytics data: ' . $response->get_error_message(),
+					'status'    => 'error',
+					'message'   => __( 'Unable to reach analytics server.', 'godam' ),
+					'errorType' => 'microservice_error',
 				),
-				500
+				200
 			);
 		}
 
 		$body = wp_remote_retrieve_body( $response );
 		$data = json_decode( $body, true );
+
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$detail    = $data['detail'] ?? __( 'Unexpected error from analytics server.', 'godam' );
+
+		if ( 404 === $http_code || 400 === $http_code ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'invalid_key',
+				),
+				200
+			);
+		}
+
+		if ( $http_code >= 500 ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
 
 		// Return analytics data if available.
 		if ( isset( $data['processed_analytics'] ) ) {
@@ -285,14 +312,14 @@ class Analytics extends Base {
 		$days          = $request->get_param( 'days' );
 		$video_id      = $request->get_param( 'video_id' );
 		$site_url      = $request->get_param( 'site_url' );
-		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
-		$api_key       = get_site_option( 'rtgodam-api-key', '' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
 
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
 				array(
 					'status'  => 'error',
-					'message' => 'Invalid or unverified API key.',
+					'message' => __( 'Invalid or unverified API key.', 'godam' ),
 				),
 				200
 			);
@@ -314,7 +341,8 @@ class Analytics extends Base {
 			return new WP_REST_Response(
 				array(
 					'status'  => 'error',
-					'message' => 'Error fetching history data: ' . $response->get_error_message(),
+					/* translators: %s is the error message from the API response. */
+					'message' => sprintf( __( 'Error fetching history data: %s', 'godam' ), $response->get_error_message() ),
 				),
 				500
 			);
@@ -340,15 +368,15 @@ class Analytics extends Base {
 	 */
 	public function fetch_dashboard_metrics( WP_REST_Request $request ) {
 		$site_url      = $request->get_param( 'site_url' );
-		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
-		$api_key       = get_site_option( 'rtgodam-api-key', '' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
 
-		if ( empty( $account_token ) || 'unverified' === $account_token ) {
+		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
 				array(
 					'status'    => 'error',
-					'message'   => 'Invalid or unverified API key.',
-					'errorType' => 'invalid_key',
+					'message'   => __( 'Missing API key.', 'godam' ),
+					'errorType' => 'missing_key',
 				),
 				200
 			);
@@ -379,15 +407,39 @@ class Analytics extends Base {
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
 				array(
-					'status'            => 'error',
-					'message'           => $response->get_error_message(),
-					'dashboard_metrics' => $empty_metrics,
+					'status'    => 'error',
+					'message'   => __( 'Unable to reach analytics server.', 'godam' ),
+					'errorType' => 'microservice_error',
 				),
-				500
+				200
 			);
 		}
 
-		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+		$detail    = $body['detail'] ?? __( 'Unexpected error from analytics server.', 'godam' );
+
+		if ( 404 === $http_code || 400 === $http_code ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'invalid_key',
+				),
+				200
+			);
+		}
+
+		if ( $http_code >= 500 ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
 
 		return new WP_REST_Response(
 			array(
@@ -407,14 +459,14 @@ class Analytics extends Base {
 	public function fetch_dashboard_history( WP_REST_Request $request ) {
 		$days          = $request->get_param( 'days' );
 		$site_url      = $request->get_param( 'site_url' );
-		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
-		$api_key       = get_site_option( 'rtgodam-api-key', '' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
 
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
 				array(
 					'status'  => 'error',
-					'message' => 'Invalid or unverified API key.',
+					'message' => __( 'Invalid or unverified API key.', 'godam' ),
 				),
 				200
 			);
@@ -462,14 +514,14 @@ class Analytics extends Base {
 		$page          = $request->get_param( 'page' ) ?? 1;
 		$limit         = $request->get_param( 'limit' ) ?? 10;
 		$site_url      = $request->get_param( 'site_url' );
-		$account_token = get_site_option( 'rtgodam-account-token', 'unverified' );
-		$api_key       = get_site_option( 'rtgodam-api-key', '' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
 
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
 				array(
 					'status'  => 'error',
-					'message' => 'Invalid or unverified API key.',
+					'message' => __( 'Invalid or unverified API key.', 'godam' ),
 				),
 				200
 			);
@@ -505,15 +557,18 @@ class Analytics extends Base {
 			if ( ! empty( $video['video_id'] ) ) {
 				$attachment_id = intval( $video['video_id'] );
 				$file_path     = get_attached_file( $attachment_id );
-		
+
 				if ( file_exists( $file_path ) ) {
-					$file_size = filesize( $file_path );
+					$file_size           = filesize( $file_path );
 					$video['video_size'] = round( $file_size / ( 1024 * 1024 ), 2 );
 				} else {
 					$video['video_size'] = 0;
 				}
-				$video['title']         = get_the_title( $attachment_id );
-				$video['thumbnail_url'] = wp_get_attachment_image_url( $attachment_id, 'medium' );
+				$video['title']   = get_the_title( $attachment_id );
+				$custom_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+				$default_thumb    = wp_get_attachment_image_url( $attachment_id, 'medium' );
+
+				$video['thumbnail_url'] = $custom_thumbnail ?: $default_thumb ?: null;
 			}
 		}
 

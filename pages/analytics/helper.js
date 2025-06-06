@@ -117,6 +117,12 @@ export function singleMetricsChart(
 			unit: '',
 			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
 		},
+		{
+			value: 'total_videos',
+			label: __( 'Total Videos', 'godam' ),
+			unit: '',
+			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
+		},
 	];
 
 	// Ensure the container exists - add # to the selector if it doesn't have one
@@ -164,7 +170,8 @@ export function singleMetricsChart(
 		play_rate: +d.play_rate || 0,
 		watch_time: +d.watch_time || 0,
 		plays: +d.plays || 0,
-	} ) );
+		total_videos: +d.total_videos || 0,
+	} ) ).sort( ( a, b ) => a.date - b.date );
 
 	// Remove any existing chart elements before redrawing
 	chartGroup.selectAll( '*' ).remove();

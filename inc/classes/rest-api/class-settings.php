@@ -69,7 +69,7 @@ class Settings extends Base {
 						'api_key' => array(
 							'required'          => true,
 							'type'              => 'string',
-							'description'       => 'The API key to verify.',
+							'description'       => __( 'The API key to verify.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 					),
@@ -121,7 +121,7 @@ class Settings extends Base {
 						'settings' => array(
 							'required'          => true,
 							'type'              => 'object',
-							'description'       => 'The godam settings to save.',
+							'description'       => __( 'The godam settings to save.', 'godam' ),
 							'sanitize_callback' => array( $this, 'sanitize_settings' ),
 						),
 					),
@@ -180,7 +180,7 @@ class Settings extends Base {
 		// Delete the API key from the database.
 		$deleted_key   = delete_option( 'rtgodam-api-key' );
 		$deleted_token = delete_option( 'rtgodam-account-token' );
-		
+
 		// Delete the user data from the site_option.
 		delete_option( 'rtgodam_user_data' );
 
@@ -247,13 +247,13 @@ class Settings extends Base {
 		if ( ! is_array( $existing_settings ) ) {
 			$existing_settings = array();
 		}
-	
+
 		// Merge the new settings with the existing ones.
 		$updated_settings = array_replace_recursive( $existing_settings, $new_settings );
-	
+
 		// Save updated settings to the database.
 		update_option( 'rtgodam-settings', $updated_settings );
-	
+
 		return new \WP_REST_Response(
 			array(
 				'status'  => 'success',

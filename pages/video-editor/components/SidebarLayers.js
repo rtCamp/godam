@@ -17,7 +17,7 @@ import woo from '../assets/layers/woo.svg';
  */
 import { __ } from '@wordpress/i18n';
 import { Button, Icon, Tooltip } from '@wordpress/components';
-import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp } from '@wordpress/icons';
+import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp, error } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
 
 import Layer from './layers/Layer';
@@ -58,7 +58,7 @@ const layerTypes = [
 
 const premiumLayers = [ 'form', 'hotspot', 'ad' ];
 
-const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
+const SidebarLayers = ( { currentTime, onSelectLayer, duration } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
 
@@ -234,7 +234,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 								let icon, layerText;
 								if ( layer.type === 'form' && layer.form_type === 'gravity' ) {
 									icon = GFIcon;
-									layerText = __( 'Gravity Form', 'godam' );
+									layerText = __( 'Gravity Forms', 'godam' );
 								} else if ( layer.type === 'form' && layer.form_type === 'wpforms' ) {
 									icon = WPFormsIcon;
 									layerText = __( 'WPForms', 'godam' );
@@ -281,7 +281,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 							! loading && layers.length === 0 && (
 								<>
 									<h3 className="text-2xl m-0 text-center">{ __( 'No layers added', 'godam' ) }</h3>
-									<p className="text-center mb-10 text-gray-400">{ __( 'Play video to add layer.', 'godam' ) }</p>
 								</>
 							)
 						}
@@ -319,6 +318,12 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 											{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
 										</p>
 									) }
+									{ ! currentTime && (
+										<div className="flex items-center gap-2">
+											<Icon icon={ error } className="w-4 h-4" style={ { fill: '#EAB308' } } />
+											<p className="text-center text-[#AB3A6C]">{ __( 'Play video to add layer.', 'godam' ) }</p>
+										</div>
+									) }
 								</div>
 							)
 						}
@@ -335,7 +340,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 					</div>
 				) : (
 					<div id="sidebar-layers">
-						<Layer layer={ currentLayer } goBack={ () => dispatch( setCurrentLayer( null ) ) } />
+						<Layer layer={ currentLayer } goBack={ () => dispatch( setCurrentLayer( null ) ) } duration={ duration } />
 					</div>
 				)
 			}

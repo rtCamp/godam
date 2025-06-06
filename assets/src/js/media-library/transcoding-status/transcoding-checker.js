@@ -14,6 +14,9 @@ class TranscodingChecker {
 
 	async fetchStatusOnce( postIds ) {
 		const url = this.buildUrl( postIds );
+		if ( ! url ) {
+			return;
+		}
 		try {
 			const response = await fetch( url );
 			const data = await response.json();
@@ -24,9 +27,13 @@ class TranscodingChecker {
 	}
 
 	async fetchStatus() {
-		try {
-			const response = await fetch( this.buildUrl( this.postIds ) );
+		const url = this.buildUrl( this.postIds );
+		if ( ! url ) {
+			return;
+		}
 
+		try {
+			const response = await fetch( url );
 			const data = await response.json();
 
 			this.updateCallback( data );
@@ -43,12 +50,20 @@ class TranscodingChecker {
 	filterPostIds( data ) {
 		this.postIds = this.postIds.filter( ( id ) => {
 			const post = data[ id ];
+			if ( ! post ) {
+				return false;
+			}
 			return post.progress !== 100 && post.status !== 'not_transcoding' && post.status !== 'failed';
 		} );
 	}
 
 	buildUrl( postIds ) {
-		const queryString = postIds.map( ( id ) => `ids[]=${ id }` ).join( '&' );
+		const validIds = postIds.filter( ( id ) => Number.isInteger( id ) && id > 0 );
+		if ( validIds.length === 0 ) {
+			return null;
+		}
+
+		const queryString = validIds.map( ( id ) => `ids[]=${ id }` ).join( '&' );
 		return `${ this.apiUrl }?${ queryString }`;
 	}
 

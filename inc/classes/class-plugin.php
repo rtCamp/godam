@@ -29,6 +29,16 @@ use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\WC;
+use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
+use RTGODAM\Inc\REST_API\Dynamic_Gallery;
+use RTGODAM\Inc\Gravity_Forms;
+
+use RTGODAM\Inc\Shortcodes\GoDAM_Player;
+use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
+
+use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
+
+use RTGODAM\Inc\Video_Metadata;
 
 /**
  * Class Plugin.
@@ -50,10 +60,21 @@ class Plugin {
 		Media_Tracker::get_instance();
 		Seo::get_instance();
 
+		// Load shortcodes.
+		GoDAM_Player::get_instance();
+		GoDAM_Video_Gallery::get_instance();
+
 		$this->load_post_types();
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 		$this->load_rest_api();
+		$this->init_gravity_forms();
+
+		// Load cron jobs.
+		Retranscode_Failed_Media::get_instance();
+
+		// Load video metadata.
+		Video_Metadata::get_instance();
 	}
 
 	/**
@@ -93,5 +114,14 @@ class Plugin {
 		Deactivation::get_instance();
 		Polls::get_instance();
 		WC::get_instance();
+		Dynamic_Shortcode::get_instance();
+		Dynamic_Gallery::get_instance();
+	}
+
+	/**
+	 * Init Gravity Forms
+	 */
+	public function init_gravity_forms() {
+		Gravity_Forms\Init::get_instance();
 	}
 }

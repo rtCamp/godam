@@ -21,7 +21,7 @@ import { __ } from '@wordpress/i18n';
 import './video-seo-modal.scss';
 import { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty } from '../utils';
 
-export default function VideoSEOModal( { isOpen, setIsOpen, attachmentData, attributes, setAttributes } ) {
+export default function VideoSEOModal( { isOpen, setIsOpen, attachmentData, attributes, setAttributes, duration } ) {
 	const [ videoData, setVideoData ] = useState( {} );
 
 	const hasInitialized = useRef( false );
@@ -48,6 +48,12 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attachmentData, attr
 			hasInitialized.current = true;
 		}
 	}, [ attachmentData, attributes, setAttributes ] );
+
+	useEffect( () => {
+		if ( duration ) {
+			setVideoData( { ...videoData, duration } );
+		}
+	}, [ duration ] );
 
 	const updateField = ( field, value ) => {
 		setVideoData( { ...videoData, [ field ]: value } );

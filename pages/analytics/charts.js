@@ -399,14 +399,6 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		const analyticsDataFetched = window.analyticsDataFetched;
 		const processedAnalyticsHistory = window.processedAnalyticsHistory;
 
-		const windowSize = window.innerWidth <= 1024;
-
-		const responsiveOverlay = document.getElementById( 'screen-size-overlay' );
-
-		if ( windowSize && responsiveOverlay ) {
-			responsiveOverlay.classList.remove( 'hidden' );
-		}
-
 		if ( videoId && analyticsDataFetched && processedAnalyticsHistory ) {
 			clearInterval( videoCheckInterval );
 			main();

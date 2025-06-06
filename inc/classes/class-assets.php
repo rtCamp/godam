@@ -47,24 +47,24 @@ class Assets {
 
 		wp_register_script(
 			'rtgodam-script',
-			RTGODAM_URL . 'assets/build/js/main.js',
+			RTGODAM_URL . 'assets/build/js/main.min.js',
 			array(),
-			filemtime( RTGODAM_PATH . '/assets/build/js/main.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/main.min.js' ),
 			true
 		);
 
 		wp_register_style(
 			'rtgodam-style',
-			RTGODAM_URL . '/assets/build/css/main.css',
+			RTGODAM_URL . 'assets/build/css/main.css',
 			array(),
-			filemtime( RTGODAM_PATH . '/assets/build/css/main.css' )
+			filemtime( RTGODAM_PATH . 'assets/build/css/main.css' )
 		);
 
 		wp_enqueue_script(
 			'analytics-library',
-			RTGODAM_URL . '/assets/src/libs/analytics.min.js',
+			RTGODAM_URL . 'assets/src/libs/analytics.min.js',
 			array(),
-			filemtime( RTGODAM_PATH . '/assets/src/libs/analytics.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/src/libs/analytics.min.js' ),
 			true
 		);
 
@@ -95,8 +95,11 @@ class Assets {
 		include_once ABSPATH . 'wp-admin/includes/plugin.php';
 		$is_gf_active       = is_plugin_active( 'gravityforms/gravityforms.php' );
 		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
-		$is_woo_active		= is_plugin_active( 'woocommerce/woocommerce.php' );
+		$is_woo_active      = is_plugin_active( 'woocommerce/woocommerce.php' );
 
+		$is_cf7_active     = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
+		$is_wpforms_active = is_plugin_active( 'wpforms-lite/wpforms.php' );
+		
 		wp_localize_script(
 			'rtgodam-script',
 			'godamPluginDependencies',
@@ -104,6 +107,8 @@ class Assets {
 				'gravityforms' => $is_gf_active,
 				'wp_polls'     => $is_wp_polls_active,
 				'woocommerce'  => $is_woo_active,
+				'cf7'          => $is_cf7_active,
+				'wpforms'      => $is_wpforms_active,
 			)
 		);
 
@@ -129,22 +134,6 @@ class Assets {
 			RTGODAM_VERSION,
 			true
 		);
-
-		wp_enqueue_script(
-			'godam-frontend-js',
-			RTGODAM_URL . 'assets/build/blocks/godam-player/frontend.js',
-			array(), 
-			'1.0', 
-			true
-		);
-
-		wp_localize_script(
-			'godam-frontend-js',
-			'godamData',
-			array(
-				'api_base' => RTGODAM_API_BASE,
-			)
-		);
 	}
 
 	/**
@@ -158,9 +147,9 @@ class Assets {
 
 		wp_register_script(
 			'rtgodam-script',
-			RTGODAM_URL . 'assets/build/js/admin.js',
+			RTGODAM_URL . 'assets/build/js/admin.min.js',
 			array(),
-			filemtime( RTGODAM_PATH . '/assets/build/js/admin.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/admin.min.js' ),
 			true
 		);
 
@@ -181,14 +170,15 @@ class Assets {
 				'url'      => get_rest_url( get_current_blog_id() ),
 				'home_url' => get_home_url( get_current_blog_id() ),
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
+				'api_base' => RTGODAM_API_BASE,
 			)
 		);
 
 		wp_register_style(
 			'rtgodam-style',
-			RTGODAM_URL . '/assets/build/css/admin.css',
+			RTGODAM_URL . 'assets/build/css/admin.css',
 			array(),
-			filemtime( RTGODAM_PATH . '/assets/build/css/admin.css' )
+			filemtime( RTGODAM_PATH . 'assets/build/css/admin.css' )
 		);
 
 		$this->enqueue_godam_settings();
@@ -198,17 +188,17 @@ class Assets {
 
 		wp_register_script(
 			'easydam-media-library',
-			RTGODAM_URL . 'assets/build/js/media-library.js',
+			RTGODAM_URL . 'assets/build/js/media-library.min.js',
 			array(),
-			filemtime( RTGODAM_PATH . '/assets/build/js/media-library.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/media-library.min.js' ),
 			true
 		);
 
 		wp_register_style(
 			'easydam-media-library',
-			RTGODAM_URL . '/assets/build/css/media-library.css',
+			RTGODAM_URL . 'assets/build/css/media-library.css',
 			array(),
-			filemtime( RTGODAM_PATH . '/assets/build/css/media-library.css' )
+			filemtime( RTGODAM_PATH . 'assets/build/css/media-library.css' )
 		);
 
 		wp_localize_script(
@@ -244,7 +234,8 @@ class Assets {
 				'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
 				'enableFolderOrganization' => $enable_folder_organization,
 				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
-				'isWooActive'       	   => is_plugin_active( 'woocommerce/woocommerce.php' ),
+				'isWooActive'              => is_plugin_active( 'woocommerce/woocommerce.php' ),
+				'page'                     => $screen ? $screen->id : '',
 			)
 		);
 
@@ -258,9 +249,9 @@ class Assets {
 		/**
 		 * Dependency library for date range picker.
 		 */
-		wp_enqueue_script( 'moment-js', RTGODAM_URL . '/assets/src/libs/moment-js.min.js', array(), filemtime( RTGODAM_PATH . '/assets/src/libs/moment-js.min.js' ), true );
-		wp_enqueue_script( 'daterangepicker-js', RTGODAM_URL . '/assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( RTGODAM_PATH . '/assets/src/libs/daterangepicker.min.js' ), true );
-		wp_enqueue_style( 'daterangepicker-css', RTGODAM_URL . '/assets/src/libs/daterangepicker.css', array(), filemtime( RTGODAM_PATH . '/assets/src/libs/daterangepicker.css' ) );
+		wp_enqueue_script( 'moment-js', RTGODAM_URL . 'assets/src/libs/moment-js.min.js', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/moment-js.min.js' ), true );
+		wp_enqueue_script( 'daterangepicker-js', RTGODAM_URL . 'assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.min.js' ), true );
+		wp_enqueue_style( 'daterangepicker-css', RTGODAM_URL . 'assets/src/libs/daterangepicker.css', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.css' ) );
 	}
 
 	/**

@@ -107,15 +107,18 @@ const Analytics = ( { attachmentID } ) => {
 
 	// Sync main analytics data
 	useEffect( () => {
-		if ( analyticsDataFetched?.errorType === 'invalid_key' ) {
-			const loadingEl = document.getElementById( 'loading-analytics-animation' );
-			const container = document.getElementById( 'video-analytics-container' );
-			const overlay = document.getElementById( 'api-key-overlay' );
+		const loadingEl = document.getElementById( 'loading-analytics-animation' );
+		const container = document.getElementById( 'video-analytics-container' );
+		const overlay = document.getElementById( 'api-key-overlay' );
+
+		const shouldShowOverlay =
+			analyticsDataFetched?.errorType === 'invalid_key' ||
+			analyticsDataFetched?.errorType === 'missing_key' ||
+			analyticsDataFetched?.errorType === 'microservice_error';
+
+		if ( shouldShowOverlay ) {
 			if ( loadingEl ) {
 				loadingEl.style.display = 'none';
-			}
-			if ( container ) {
-				container.classList.remove( 'hidden' );
 			}
 			if ( container ) {
 				container.classList.add( 'blurred' );
@@ -152,6 +155,7 @@ const Analytics = ( { attachmentID } ) => {
 
 	async function startABTesting() {
 		setIsABResultsLoading( true );
+		setIsABTestCompleted( false );
 		await refetch();
 		setAbTestComparisonAttachmentData( mediaLibraryAttachment );
 		if ( mediaLibraryAttachment ) {
@@ -263,6 +267,33 @@ const Analytics = ( { attachmentID } ) => {
 		return 'left-greater right-greater';
 	};
 
+	useEffect( () => {
+		const handleResize = () => {
+			const smallSize = window.innerWidth <= 1024;
+			const responsiveOverlay = document.getElementById( 'screen-size-overlay' );
+			const analyticsContainer = document.getElementById( 'root-video-analytics' );
+
+			if ( responsiveOverlay && analyticsContainer ) {
+				if ( smallSize ) {
+					responsiveOverlay.classList.remove( 'hidden' );
+					analyticsContainer.style.overflow = 'hidden';
+				} else {
+					responsiveOverlay.classList.add( 'hidden' );
+					analyticsContainer.style.overflow = 'auto';
+				}
+			}
+		};
+
+		// Initial check
+		handleResize();
+
+		// Add listener
+		window.addEventListener( 'resize', handleResize );
+
+		// Cleanup
+		return () => window.removeEventListener( 'resize', handleResize );
+	}, [] );
+
 	return (
 		<div className="godam-analytics-container">
 			<GodamHeader />
@@ -278,11 +309,13 @@ const Analytics = ( { attachmentID } ) => {
 			<div id="api-key-overlay" className="api-key-overlay hidden">
 				<div className="api-key-message">
 					<p>
-						{ __( 'Please ', 'godam' ) }
+						{ analyticsDataFetched?.message || __(
+							'Your API key is missing or invalid. Please check your plugin settings.',
+							'godam',
+						) }
 						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( 'activate your API key', 'godam' ) }
+							{ __( ' Go to plugin settings', 'godam' ) }
 						</a>
-						{ __( ' to access the Analytics feature', 'godam' ) }
 					</p>
 				</div>
 			</div>

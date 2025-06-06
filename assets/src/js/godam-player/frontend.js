@@ -1,4 +1,4 @@
-/* global godamSettings */
+/* global godamSettings, wpforms */
 
 /**
  * External dependencies
@@ -106,6 +106,7 @@ function GODAMPlayer( videoRef = null ) {
 		const isPreviewEnabled = videoSetupOptions?.preview;
 
 		const player = videojs( video, videoSetupControls );
+		player.aspectRatio( '16:9' );
 
 		video.addEventListener( 'loadedmetadata', () => {
 			const playerElement = player.el_;
@@ -265,9 +266,8 @@ function GODAMPlayer( videoRef = null ) {
 		const Button = videojs.getComponent( 'Button' );
 
 		class GodamShareButton extends Button {
-			constructor( p, options ) {
-				super( p, options );
-				this.controlText( 'Share' );
+			buildCSSClass() {
+				return `godam-share-button ${ super.buildCSSClass() }`;
 			}
 
 			// Set the button content
@@ -426,20 +426,20 @@ function GODAMPlayer( videoRef = null ) {
 		// Add the button to the control bar after the player is ready
 		player.ready( function() {
 			player.jobId = video.dataset.job_id; // Store the result when it's available
-
-			const controlBar = player.getChild( 'controlBar' );
-			if ( controlBar && player.jobId !== '' ) {
-				controlBar.addChild(
-					'GodamShareButton',
-					{},
-					controlBar.children().length - 1,
+			const videoContainer = player.el().closest( '.easydam-video-container' );
+			if ( videoContainer && player.jobId !== '' ) {
+				const shareButton = new GodamShareButton( player );
+				const buttonEl = shareButton.createEl();
+				buttonEl.addEventListener(
+					'click',
+					shareButton.handleClick.bind( shareButton ),
 				);
+				videoContainer.appendChild( buttonEl );
 			}
 		} );
 
 		player.ready( function() {
-			const controlBarSettings =
-				videoSetupControls?.controlBar;
+			const controlBarSettings = videoSetupControls?.controlBar;
 
 			// Appearance settings
 
@@ -532,6 +532,11 @@ function GODAMPlayer( videoRef = null ) {
 
 			if ( ! layerElement ) {
 				return;
+			}
+
+			if ( typeof wpforms !== 'undefined' ) {
+				wpforms.scrollToError = function() {};
+				wpforms.animateScrollTop = function() {};
 			}
 
 			layerElement.classList.add( 'hidden' ); // Initially hidden
@@ -648,7 +653,11 @@ function GODAMPlayer( videoRef = null ) {
 		if ( ! isPreviewEnabled ) {
 			layers.forEach( ( layer ) => {
 				if ( layer.type === 'form' ) {
-					if ( window.godamPluginDependencies?.gravityforms ) {
+					if ( window.godamPluginDependencies?.gravityforms && layer.form_type === 'gravity' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.wpforms && layer.form_type === 'wpforms' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.cf7 && layer.form_type === 'cf7' ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {
@@ -745,8 +754,8 @@ function GODAMPlayer( videoRef = null ) {
 
 		function createHotspots( layerObj, currentPlayer ) {
 			const videoContainer = currentPlayer.el();
-			const containerWidth = videoContainer.offsetWidth;
-			const containerHeight = videoContainer.offsetHeight;
+			const containerWidth = videoContainer?.offsetWidth;
+			const containerHeight = videoContainer?.offsetHeight;
 
 			const baseWidth = 800;
 			const baseHeight = 600;
@@ -1045,8 +1054,8 @@ function GODAMPlayer( videoRef = null ) {
 		// Reposition hotspots on resize or fullscreen
 		function updateHotspotPositions( currentPlayer, currentHotspotLayers ) {
 			const videoContainer = currentPlayer.el();
-			const containerWidth = videoContainer.offsetWidth;
-			const containerHeight = videoContainer.offsetHeight;
+			const containerWidth = videoContainer?.offsetWidth;
+			const containerHeight = videoContainer?.offsetHeight;
 
 			const baseWidth = 800;
 			const baseHeight = 600;

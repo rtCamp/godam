@@ -42,12 +42,12 @@ class Media_Library extends Base {
 							'required'    => true,
 							'type'        => 'array',
 							'items'       => array( 'type' => 'integer' ),
-							'description' => 'Array of attachment IDs to associate.',
+							'description' => __( 'Array of attachment IDs to associate.', 'godam' ),
 						),
 						'folder_term_id' => array(
 							'required'    => true,
 							'type'        => 'integer',
-							'description' => 'ID of the folder term to associate with the attachments.',
+							'description' => __( 'ID of the folder term to associate with the attachments.', 'godam' ),
 						),
 					),
 				),
@@ -65,7 +65,7 @@ class Media_Library extends Base {
 						'attachment_id' => array(
 							'required'    => true,
 							'type'        => 'integer',
-							'description' => 'Attachment ID to get EXIF data for.',
+							'description' => __( 'Attachment ID to get EXIF data for.', 'godam' ),
 						),
 					),
 				),
@@ -83,12 +83,12 @@ class Media_Library extends Base {
 						'attachment_id' => array(
 							'required'    => true,
 							'type'        => 'integer',
-							'description' => 'Attachment ID to set video thumbnail for.',
+							'description' => __( 'Attachment ID to set video thumbnail for.', 'godam' ),
 						),
 						'thumbnail_url' => array(
 							'required'    => true,
 							'type'        => 'string',
-							'description' => 'Attachment URL to set as the thumbnail.',
+							'description' => __( 'Attachment URL to set as the thumbnail.', 'godam' ),
 						),
 					),
 				),
@@ -106,7 +106,7 @@ class Media_Library extends Base {
 						'attachment_id' => array(
 							'required'    => true,
 							'type'        => 'integer',
-							'description' => 'Attachment ID to get video thumbnail for.',
+							'description' => __( 'Attachment ID to get video thumbnail for.', 'godam' ),
 						),
 					),
 				),
@@ -129,43 +129,43 @@ class Media_Library extends Base {
 			foreach ( $attachment_ids as $attachment_id ) {
 
 				$return = $this->remove_all_terms_from_id( $attachment_id, 'media-folder' );
-	
+
 				if ( is_wp_error( $return ) ) {
 					return new \WP_Error( 'term_assignment_failed', 'Failed to remove folder from the attachments.', array( 'status' => 500 ) );
 				}
 			}
-	
+
 			return rest_ensure_response(
 				array(
 					'success' => true,
 					'message' => 'Attachments successfully removed from the folder.',
-				) 
+				)
 			);
 		}
-	
+
 		$term = get_term( $folder_term_id, 'media-folder' );
 
 		if ( ! $term || is_wp_error( $term ) ) {
 			return new \WP_Error( 'invalid_term', 'Invalid folder term ID.', array( 'status' => 400 ) );
 		}
-	
+
 		foreach ( $attachment_ids as $attachment_id ) {
 			if ( get_post_type( $attachment_id ) !== 'attachment' ) {
 				return new \WP_Error( 'invalid_attachment', 'Invalid attachment ID.', array( 'status' => 400 ) );
 			}
-	
+
 			$return = wp_set_object_terms( $attachment_id, $folder_term_id, 'media-folder' );
-	
+
 			if ( is_wp_error( $return ) ) {
 				return new \WP_Error( 'term_assignment_failed', 'Failed to associate attachments with the folder.', array( 'status' => 500 ) );
 			}
 		}
-	
+
 		return rest_ensure_response(
 			array(
 				'success' => true,
 				'message' => 'Attachments successfully associated with the folder.',
-			) 
+			)
 		);
 	}
 
@@ -194,7 +194,7 @@ class Media_Library extends Base {
 
 	/**
 	 * Get EXIF data.
-	 * 
+	 *
 	 * Get the EXIF data for the attachment ID.
 	 *
 	 * @param \WP_REST_Request $request REST API request.
@@ -214,7 +214,7 @@ class Media_Library extends Base {
 		$exif_data = exif_read_data( $file_path, 0, true );
 
 		if ( false === $exif_data ) {
-			return new \WP_Error( 'exif_data_not_found', 'No EXIF data found.', array( 'status' => 404 ) );
+			return new \WP_Error( 'exif_data_not_found', 'No EXIF data found.', array( 'status' => 204 ) );
 		}
 
 		// Extract and filter the desired EXIF data fields.
@@ -223,19 +223,19 @@ class Media_Library extends Base {
 		if ( isset( $exif_data['EXIF']['DateTimeOriginal'] ) ) {
 			$filtered_data['DateTimeOriginal'] = $exif_data['EXIF']['DateTimeOriginal'];
 		}
-	
+
 		if ( isset( $exif_data['IFD0']['Make'] ) ) {
 			$filtered_data['Make'] = $exif_data['IFD0']['Make'];
 		}
-	
+
 		if ( isset( $exif_data['IFD0']['Model'] ) ) {
 			$filtered_data['Model'] = $exif_data['IFD0']['Model'];
 		}
-	
+
 		if ( isset( $exif_data['EXIF']['ExposureTime'] ) ) {
 			$filtered_data['ExposureTime'] = $exif_data['EXIF']['ExposureTime'];
 		}
-	
+
 		if ( isset( $exif_data['EXIF']['FNumber'] ) ) {
 			$filtered_data['FNumber'] = $this->format_fnumber( $exif_data['EXIF']['FNumber'] );
 		}
@@ -244,7 +244,7 @@ class Media_Library extends Base {
 			array(
 				'success' => true,
 				'data'    => $filtered_data,
-			) 
+			)
 		);
 	}
 
@@ -267,7 +267,7 @@ class Media_Library extends Base {
 
 	/**
 	 * Get video thumbnails.
-	 * 
+	 *
 	 * Get the video thumbnail for the attachment ID.
 	 *
 	 * @param \WP_REST_Request $request REST API request.
@@ -280,13 +280,13 @@ class Media_Library extends Base {
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
-			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 404 ) );
 		}
-		
+
 		$thumbnail_array = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
-		
+
 		if ( ! is_array( $thumbnail_array ) ) {
-			return new \WP_Error( 'thumbnails_not_found', 'No thumbnails found.', array( 'status' => 404 ) );
+			return new \WP_Error( 'thumbnails_not_found', 'No thumbnails found.', array( 'status' => 204 ) );
 		}
 
 		if ( function_exists( 'wp_get_upload_dir' ) ) {
@@ -334,13 +334,13 @@ class Media_Library extends Base {
 			array(
 				'success' => true,
 				'data'    => $data,
-			) 
+			)
 		);
 	}
 
 	/**
 	 * Set video thumbnail.
-	 * 
+	 *
 	 * Set the video thumbnail for the attachment ID.
 	 *
 	 * @param \WP_REST_Request $request REST API request.
@@ -369,7 +369,7 @@ class Media_Library extends Base {
 			array(
 				'success' => true,
 				'message' => 'Video thumbnail successfully set.',
-			) 
+			)
 		);
 	}
 }

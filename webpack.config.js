@@ -16,8 +16,8 @@ const sharedConfig = {
 	...defaultConfig,
 	output: {
 		path: path.resolve( process.cwd(), 'assets', 'build', 'js' ),
-		filename: '[name].js',
-		chunkFilename: '[name].js',
+		filename: '[name].min.js',
+		chunkFilename: '[name].min.js',
 	},
 	plugins: [
 		...defaultConfig.plugins
@@ -98,10 +98,52 @@ const mediaLibrary = {
 	},
 };
 
+const godamPlayerFrontend = {
+	...sharedConfig,
+	entry: {
+		'godam-player-frontend': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'frontend.js' ),
+	},
+};
+
+const godamPlayerAnalytics = {
+	...sharedConfig,
+	entry: {
+		'godam-player-analytics': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'analytics.js' ),
+	},
+};
+
 const deactivationJS = {
 	...sharedConfig,
 	entry: {
 		'deactivation-feedback': path.resolve( process.cwd(), 'assets', 'src', 'js', 'deactivation-feedback.js' ),
+	},
+};
+
+const godamGallery = {
+	...sharedConfig,
+	entry: {
+		'godam-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-gallery.js' ),
+	},
+};
+
+const gfGodamRecorderJS = {
+	...sharedConfig,
+	entry: {
+		'gf-godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-godam-recorder.js' ),
+	},
+};
+
+const gfGodamRecorderEditorJS = {
+	...sharedConfig,
+	entry: {
+		'gf-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-godam-recorder-editor.js' ),
+	},
+};
+
+const gfEntryDetailJS = {
+	...sharedConfig,
+	entry: {
+		'gf-entry-detail': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-entry-detail.js' ),
 	},
 };
 
@@ -124,7 +166,8 @@ const pages = {
 	entry: entryPoints, // Dynamic entry points for each page
 	output: {
 		path: path.resolve( __dirname, './assets/build/pages' ), // Output directory
-		filename: '[name].js', // Each entry gets its own output file
+		filename: '[name].min.js', // Each entry gets its own output file
+		chunkFilename: '[name].min.js',
 	},
 	module: {
 		rules: [
@@ -171,7 +214,13 @@ module.exports = [
 	mainJS,
 	adminJS,
 	mediaLibrary,
+	godamPlayerFrontend,
+	godamPlayerAnalytics,
 	deactivationJS,
+	godamGallery,
+	gfGodamRecorderJS,
+	gfGodamRecorderEditorJS,
+	gfEntryDetailJS,
 	styles, // Do not remove this.
 	pages,
 ];

@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
  */
 import { Button, TextControl, ToggleControl, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { useState } from 'react';
 
 /**
  * Internal dependencies
@@ -20,6 +21,7 @@ const CustomAdSettings = ( { layerID } ) => {
 	);
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
+	const [ isValid, setIsValid ] = useState( true );
 	const dispatch = useDispatch();
 
 	const OpenVideoSelector = () => {
@@ -36,10 +38,39 @@ const CustomAdSettings = ( { layerID } ) => {
 
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
-			dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: attachment.url } ) );
+			dispatch(
+				updateLayerField( {
+					id: layerID,
+					field: 'ad_url',
+					value: attachment.url,
+				} ),
+			);
 		} );
 
 		fileFrame.open();
+	};
+
+	// URL validation function
+	const isValidURL = ( url ) => {
+		try {
+			new URL( url );
+			return true;
+		} catch {
+			return false;
+		}
+	};
+
+	const handleChange = ( value ) => {
+		dispatch(
+			updateLayerField( {
+				id: layer.id,
+				field: 'click_link',
+				value,
+			} ),
+		);
+
+		const valid = isValidURL( value );
+		setIsValid( valid );
 	};
 
 	// If we want to disable the premium layers the we can use this code
@@ -71,7 +102,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					{ __( 'This features is available in premium version', 'godam' ) }
 				</Notice>
 			}
-			<div className="flex flex-col items-start mb-4">
+			<div className="flex flex-col items-start">
 				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom Ad', 'godam' ) }</label>
 				<div className="flex gap-2">
 					<Button
@@ -99,7 +130,7 @@ const CustomAdSettings = ( { layerID } ) => {
 								src={ layer.ad_url }
 								controls={ adServer !== 'ad-server' }
 							/>
-							{ adServer === 'ad-server' || ! isValidAPIKey && <div className="video-overlay" /> }
+							{ ( adServer === 'ad-server' || ! isValidAPIKey ) && <div className="video-overlay" /> }
 						</div>
 					)
 				}
@@ -136,10 +167,15 @@ const CustomAdSettings = ( { layerID } ) => {
 				help={ __( 'Enter the URL to redirect when the ad is clicked', 'godam' ) }
 				value={ layer?.click_link }
 				className="mb-4"
-				onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'click_link', value } ) ) }
+				onChange={ handleChange }
 				disabled={ adServer === 'ad-server' || ! isValidAPIKey }
+				type="url"
 			/>
-
+			{ ! isValid && (
+				<p className="text-red-500 -mt-3 mx-0 mb-0">
+					{ __( 'Please enter a valid URL (https://…)', 'godam' ) }
+				</p>
+			) }
 		</div>
 	);
 };

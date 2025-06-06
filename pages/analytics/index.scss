@@ -13,7 +13,11 @@
 	}
 }
 
-
+.godam-button-icon {
+	svg {
+		fill: #ab3a6c;
+	}
+}
 
 .tooltip {
 	position: absolute;
@@ -27,7 +31,7 @@
 	transition: opacity 0.2s ease-in-out;
 }
 
-#root-video-analytics {
+#root-video-analytics, #root-video-dashboard {
 
 	background-color: #fff;
 	position: fixed;
@@ -53,10 +57,10 @@
 	}
 
 	.media-frame-menu, 
-.media-frame-router, 
-.media-frame-content .upload-ui {
-	display: none !important;
-}
+	.media-frame-router, 
+	.media-frame-content .upload-ui {
+		display: none !important;
+	}
 
 	.analytics-info-container {
 		display: flex;
@@ -109,9 +113,10 @@
 			p {
 				margin-block-end: unset;
 				margin-block-start: unset;
+				font-size: 12px;
 			}
 
-			.engagement-rate {
+			.single-metrics-value {
 				font-weight: 600;
 				font-size: 20px;
 				line-height: 32px;
@@ -335,7 +340,8 @@
 	cursor: pointer;
 }
 
-#root-video-analytics #tooltip-container .tooltip-text {
+#root-video-analytics #tooltip-container .tooltip-text,
+#root-video-dashboard #tooltip-container .tooltip-text {
 	position: absolute;
 	top: 100%;
     left: -95%;
@@ -358,7 +364,8 @@
 	overflow-wrap: break-word;
 }
 
-#root-video-analytics #tooltip-container:hover .tooltip-text {
+#root-video-analytics #tooltip-container:hover .tooltip-text,
+#root-video-dashboard #tooltip-container:hover .tooltip-text {
 	visibility: visible;
 	opacity: 1;
 }
@@ -480,6 +487,32 @@
 	border-radius: 12px 12px 0 0;
 }
 
+.legend {
+	// flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+
+	.legend-item {
+		background-color: #F2F2F7;
+		padding: 4px 8px;
+		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		width: fit-content;
+	}
+
+	.pie-chart-legend {
+		text-decoration: none; 
+		color: inherit; 
+		cursor: pointer;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
 .posts-count-container {
       background-color: #fff;
       border-radius: 8px;
@@ -540,7 +573,7 @@
 
 @media (max-width: 1024px) {
 
-		#root-video-analytics {
+		#root-video-analytics, #root-video-dashboard {
 
 			.video-analytics-container {
 				padding: 40px;

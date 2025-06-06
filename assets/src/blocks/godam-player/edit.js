@@ -41,6 +41,8 @@ import { Caption } from './caption';
 
 import VideoSEOModal from './components/VideoSEOModal.js';
 
+import { secondsToISO8601 } from './utils';
+
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
 
@@ -60,6 +62,7 @@ function VideoEdit( {
 
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
 	const [ videoResponse, setVideoResponse ] = useState( {} );
+	const [ duration, setDuration ] = useState( 0 );
 
 	const dispatch = useDispatch();
 
@@ -88,6 +91,12 @@ function VideoEdit( {
 
 						video.addEventListener( 'loadedmetadata', () => {
 							setAttributes( { aspectRatio: `${ video.videoWidth } / ${ video.videoHeight }` } );
+							let _duration = player.duration();
+							setDuration( _duration );
+							if ( _duration ) {
+								_duration = secondsToISO8601( Math.round( _duration ) );
+								setAttributes( { seo: { ...attributes.seo, duration: _duration } } );
+							}
 						} );
 					}
 				} }
@@ -337,51 +346,56 @@ function VideoEdit( {
 						setAttributes={ setAttributes }
 						attributes={ attributes }
 					/>
-					<MediaUploadCheck>
-						<div className="editor-video-poster-control">
-							<BaseControl.VisualLabel>
-								{ __( 'Poster image', 'godam' ) }
-							</BaseControl.VisualLabel>
-							<MediaUpload
-								title={ __( 'Select poster image', 'godam' ) }
-								onSelect={ onSelectPoster }
-								allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
-								render={ ( { open } ) => (
+					<BaseControl
+						id={ `video-block__poster-image-${ instanceId }` }
+						label={ __( 'Poster image', 'godam' ) }
+						__nextHasNoMarginBottom
+					>
+						<MediaUploadCheck>
+							<div className="editor-video-poster-control">
+								<MediaUpload
+									title={ __( 'Select poster image', 'godam' ) }
+									onSelect={ onSelectPoster }
+									allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
+									render={ ( { open } ) => (
+										<Button
+											__next40pxDefaultSize
+											variant="primary"
+											onClick={ open }
+											ref={ posterImageButton }
+											aria-describedby={ videoPosterDescription }
+										>
+											{ ! poster ? __( 'Select', 'godam' ) : __( 'Replace', 'godam' ) }
+										</Button>
+									) }
+								/>
+								<p id={ videoPosterDescription } hidden>
+									{ poster
+										? sprintf(
+											/* translators: %s: poster image URL. */
+											__( 'The current poster image url is %s', 'godam' ),
+											poster,
+										)
+										: __( 'There is no poster image currently selected', 'godam' ) }
+								</p>
+								{ !! poster && (
 									<Button
 										__next40pxDefaultSize
-										variant="primary"
-										onClick={ open }
-										ref={ posterImageButton }
-										aria-describedby={ videoPosterDescription }
+										onClick={ onRemovePoster }
+										variant="tertiary"
 									>
-										{ ! poster ? __( 'Select', 'godam' ) : __( 'Replace', 'godam' ) }
+										{ __( 'Remove', 'godam' ) }
 									</Button>
 								) }
-							/>
-							<p id={ videoPosterDescription } hidden>
-								{ poster
-									? sprintf(
-										/* translators: %s: poster image URL. */
-										__( 'The current poster image url is %s', 'godam' ),
-										poster,
-									)
-									: __( 'There is no poster image currently selected', 'godam' ) }
-							</p>
-							{ !! poster && (
-								<Button
-									__next40pxDefaultSize
-									onClick={ onRemovePoster }
-									variant="tertiary"
-								>
-									{ __( 'Remove', 'godam' ) }
-								</Button>
-							) }
-						</div>
-					</MediaUploadCheck>
-					<div className="editor-video-customisation-cta">
-						<BaseControl.VisualLabel>
-							{ __( 'Customise Video', 'godam' ) }
-						</BaseControl.VisualLabel>
+							</div>
+						</MediaUploadCheck>
+					</BaseControl>
+
+					<BaseControl
+						id={ `video-block__video-editor-${ instanceId }` }
+						label={ __( 'Customise Video', 'godam' ) }
+						__nextHasNoMarginBottom
+					>
 						<Button
 							__next40pxDefaultSize
 							href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ id }` }
@@ -393,18 +407,25 @@ function VideoEdit( {
 						>
 							{ __( 'Customise', 'godam' ) }
 						</Button>
-					</div>
+					</BaseControl>
 
-					<Button
-						__next40pxDefaultSize
-						onClick={ () => setIsSEOModelOpen( true ) }
-						variant="primary"
-						className="editor-video-customisation-cta"
-						icon={ search }
-						iconPosition="right"
+					<BaseControl
+						id={ `video-block__video-seo-${ instanceId }` }
+						label={ __( 'SEO Settings', 'godam' ) }
+						__nextHasNoMarginBottom
 					>
-						{ __( 'SEO Settings', 'godam' ) }
-					</Button>
+						<Button
+							__next40pxDefaultSize
+							onClick={ () => setIsSEOModelOpen( true ) }
+							variant="primary"
+							className="editor-video-customisation-cta"
+							icon={ search }
+							iconPosition="right"
+						>
+							{ __( 'SEO Settings', 'godam' ) }
+						</Button>
+					</BaseControl>
+
 				</PanelBody>
 			</InspectorControls>
 
@@ -414,6 +435,7 @@ function VideoEdit( {
 				attachmentData={ videoResponse }
 				attributes={ attributes }
 				setAttributes={ setAttributes }
+				duration={ attributes?.seo?.duration || '' }
 			/>
 
 			<figure { ...blockProps }>

@@ -301,3 +301,20 @@ $media-frame-width: calc(300px + 2 * 24px);
 .godam-notice-content {
 	flex: 1;
 }
+
+.rtgodam-hidden {
+	display: none !important;
+}
+
+.gf-godam-video-preview {
+
+	figure {
+		margin: 0;
+	}
+}
+
+.godam_no_license {
+
+	pointer-events: none;
+	opacity: 0.5;
+}

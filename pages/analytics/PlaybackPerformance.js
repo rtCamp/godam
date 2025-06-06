@@ -8,14 +8,16 @@ import { useEffect, useRef, useState } from 'react';
  * Internal dependencies
  */
 import { useFetchProcessedAnalyticsHistoryQuery } from './redux/api/analyticsApi';
+import { useFetchDashboardMetricsHistoryQuery } from '../dashboard/redux/api/dashboardAnalyticsApi';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, _x } from '@wordpress/i18n';
 
 export default function PlaybackPerformanceDashboard( {
 	attachmentID,
 	initialData,
+	mode = 'analytics',
 } ) {
 	const chartRef = useRef( null );
 	const [ selectedPeriod, setSelectedPeriod ] = useState( '7D' );
@@ -44,23 +46,46 @@ export default function PlaybackPerformanceDashboard( {
 	};
 
 	// Fetch analytics data based on selected period
-	const { data: processedAnalyticsHistory } =
-	useFetchProcessedAnalyticsHistoryQuery(
+	const dashboardHistoryResult = useFetchDashboardMetricsHistoryQuery(
+		{
+			days: getDaysFromPeriod( selectedPeriod ),
+			siteUrl: window.location.origin,
+		},
+		{ skip: mode !== 'dashboard' },
+	);
+
+	const analyticsHistoryResult = useFetchProcessedAnalyticsHistoryQuery(
 		{
 			videoId: attachmentID,
 			siteUrl: window.location.origin,
 			days: getDaysFromPeriod( selectedPeriod ),
 		},
-		{ skip: ! attachmentID },
+		{ skip: mode === 'dashboard' || ! attachmentID },
 	);
+
+	// Then pick the right one based on mode
+	const processedAnalyticsHistory =
+		mode === 'dashboard'
+			? dashboardHistoryResult.data
+			: analyticsHistoryResult.data;
 
 	// Format data response for chart.
 	useEffect( () => {
 		const parseDate = d3.timeParse( '%Y-%m-%d' );
 		const timeMetricsChartData = ( processedAnalyticsHistory || [] ).map(
 			( entry ) => {
+				const date = parseDate( entry.date );
+
+				if ( mode === 'dashboard' ) {
+					return {
+						date,
+						engagement_rate: +entry.avg_engagement?.toFixed( 2 ) || 0,
+						play_rate: +( entry.play_rate * 100 || 0 ).toFixed( 2 ),
+						watch_time: +( entry.watch_time || 0 ).toFixed( 2 ),
+					};
+				}
+
 				const {
-					date,
 					page_load: dailyPageLoad,
 					play_time: dailyPlayTime,
 					video_length: dailyVideoLength,
@@ -68,16 +93,16 @@ export default function PlaybackPerformanceDashboard( {
 				} = entry;
 
 				const dailyEngagementRate =
-dailyPlays && dailyVideoLength
-	? ( dailyPlayTime / ( dailyPlays * dailyVideoLength ) ) * 100
-	: 0;
+					dailyPlays && dailyVideoLength
+						? ( dailyPlayTime / ( dailyPlays * dailyVideoLength ) ) * 100
+						: 0;
 
 				const dailyPlayRate = dailyPageLoad
 					? ( dailyPlays / dailyPageLoad ) * 100
 					: 0;
 
 				return {
-					date: parseDate( date ),
+					date,
 					engagement_rate: +dailyEngagementRate.toFixed( 2 ),
 					play_rate: +dailyPlayRate.toFixed( 2 ),
 					watch_time: +dailyPlayTime.toFixed( 2 ),
@@ -85,7 +110,7 @@ dailyPlays && dailyVideoLength
 			},
 		);
 		setParsedData( timeMetricsChartData );
-	}, [ processedAnalyticsHistory, selectedMetrics ] );
+	}, [ processedAnalyticsHistory, selectedMetrics, mode ] );
 
 	const renderChart = () => {
 		if ( ! chartRef.current || ! parsedData ) {
@@ -367,14 +392,14 @@ dailyPlays && dailyVideoLength
 				<div class="flex flex-col min-w-[250px]">
 					<div class="flex justify-between items-center h-9">
 						<div class="flex items-center gap-2">
-							<span style="color: #9333EA">●</span> 
+							<span style="color: #9333EA">●</span>
 							<p class="text-zinc-500">${ __( 'Engagement Rate', 'godam' ) }</p>
 						</div>
 						<span class="text-zinc-950 font-medium">${ d.engagement_rate.toFixed( 2 ) }${ unit }</span>
 					</div>
 					<div class="flex justify-between items-center h-9">
 						<div class="flex items-center gap-2">
-							<span style="color: #5CC8BE">●</span> 
+							<span style="color: #5CC8BE">●</span>
 							<p class="text-zinc-500">${ __( 'Play Rate', 'godam' ) }</p>
 						</div>
 						<span class="text-zinc-950 font-medium">${ d.play_rate.toFixed( 2 ) }${ unit }</span>
@@ -504,31 +529,31 @@ dailyPlays && dailyVideoLength
 							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === 'All' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( 'All' ) }
 						>
-							All
+							{ _x( 'All', 'All time period', 'godam' ) }
 						</button>
 						<button
 							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '7D' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( '7D' ) }
 						>
-							7D
+							{ _x( '7D', '7 days period', 'godam' ) }
 						</button>
 						<button
 							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '1M' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( '1M' ) }
 						>
-							1M
+							{ _x( '1M', '1 month period', 'godam' ) }
 						</button>
 						<button
 							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '6M' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( '6M' ) }
 						>
-							6M
+							{ _x( '6M', '6 months period', 'godam' ) }
 						</button>
 						<button
 							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '1Y' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
 							onClick={ () => setSelectedPeriod( '1Y' ) }
 						>
-							1Y
+							{ _x( '1Y', '1 year period', 'godam' ) }
 						</button>
 					</div>
 				</div>
