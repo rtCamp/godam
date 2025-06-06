@@ -102,7 +102,7 @@ const Dashboard = () => {
 			return [
 				item.title || item.video_id,
 				`Video ID: ${ item.video_id }`,
-				( item.video_size ? item.video_size.toFixed( 2 ) : 0 ) + ' MB',,
+				( item.video_size ? item.video_size.toFixed( 2 ) : 0 ) + ' MB',
 				( ( item.plays / ( item.plays + 5 ) ) * 100 ).toFixed( 2 ) + '%',
 				item.plays,
 				item.play_time?.toFixed( 2 ) + 's',
