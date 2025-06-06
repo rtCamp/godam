@@ -270,16 +270,7 @@
 		}
 
 		.easydam-video-container {
-			width: 75vw;
 			height: auto;
-
-			@media (min-width: 1728px) {
-				width: 65vw;
-			}
-
-			@media (min-width: 2028px) {
-				width: 45vw;
-			}
 
 			figure {
 				margin: 0;

@@ -1,4 +1,8 @@
 /* global GODAMPlayer */
+/**
+ * External dependencies
+ */
+import DOMPurify from 'isomorphic-dompurify';
 
 // Common function to load more videos
 async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos ) {
@@ -215,7 +219,7 @@ document.addEventListener( 'click', async function( e ) {
 					// Update video title in the modal header
 					const videoTitle = modal.querySelector( '.godam-video-title' );
 					if ( videoTitle ) {
-						videoTitle.textContent = data.title || '';
+						videoTitle.innerHTML = DOMPurify.sanitize( data.title || '' );
 					}
 
 					// Add this new code to update the date
