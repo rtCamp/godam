@@ -78,19 +78,6 @@ class WPForms extends Base {
 			return new \WP_Error( 'wpforms_not_active', __( 'WPForms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		$wpforms = get_posts(
-			array(
-				'post_type'      => 'wpforms',
-				'posts_per_page' => -1,
-				'post_status'    => 'publish',
-				'include'        => array(
-					'ID',
-					'post_title',
-					'post_excerpt',
-				),
-			),
-		);
-
 		// Fetch all WPForms in a paginated manner.
 		// Using pagination to avoid memory issues with large datasets.
 		$paged    = 1;
