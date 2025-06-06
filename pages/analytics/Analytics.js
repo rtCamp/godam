@@ -321,7 +321,7 @@ const Analytics = ( { attachmentID } ) => {
 				<div className="api-key-message">
 					<p>
 						{ __( 'This media doesn\'t exist. ', 'godam' ) }
-						<a href="admin.php?page=rtgodam_dashboard">
+						<a href="admin.php?page=rtgodam">
 							{ __( 'Go to Dashboard', 'godam' ) }
 						</a>
 					</p>
