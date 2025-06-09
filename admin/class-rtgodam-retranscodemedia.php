@@ -598,6 +598,15 @@ class RTGODAM_RetranscodeMedia {
 			$this->die_json_error_msg( $media->ID, __( "Your user account doesn't have permission to transcode", 'godam' ) );
 		}
 
+		// Check if transcoding status is failed and clean up if needed.
+		$transcoding_status = get_post_meta( $media->ID, 'rtgodam_transcoding_status', true );
+		if ( 'Failed' === $transcoding_status ) {
+			// Clean up any existing job ID and status.
+			delete_post_meta( $media->ID, 'rtgodam_transcoding_job_id' );
+			delete_post_meta( $media->ID, 'rtgodam_transcoding_status' );
+			delete_post_meta( $media->ID, 'rtgodam_transcoding_error_msg' );
+		}
+
 		// Check if media is already being transcoded.
 		if ( rtgodam_is_file_being_transcoded( $media->ID ) ) {
 			$this->die_json_error_msg( $media->ID, sprintf( __( 'The media is already being transcoded', 'godam' ) ) );
