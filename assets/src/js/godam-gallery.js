@@ -183,6 +183,11 @@ document.addEventListener( 'click', async function( e ) {
 		// Initialize the video player
 		if ( typeof GODAMPlayer === 'function' ) {
 			GODAMPlayer( modal );
+			// Find the video player and start playing
+			const videoPlayer = modal.querySelector( '.video-js' );
+			if ( videoPlayer && videoPlayer.player ) {
+				videoPlayer.player.play();
+			}
 		}
 
 		// Close handlers
@@ -231,6 +236,11 @@ document.addEventListener( 'click', async function( e ) {
 					// Reinitialize the player with the new content
 					if ( typeof GODAMPlayer === 'function' ) {
 						GODAMPlayer( modal );
+						// Find the video player and start playing
+						const videoPlayer = modal.querySelector( '.video-js' );
+						if ( videoPlayer && videoPlayer.player ) {
+							videoPlayer.player.play();
+						}
 					}
 				}
 			} else {
