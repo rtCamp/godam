@@ -42,7 +42,7 @@ if ( ! defined( 'RTGODAM_VERSION' ) ) {
 	/**
 	 * The version of the plugin
 	 */
-	define( 'RTGODAM_VERSION', '1.1.0' );
+	define( 'RTGODAM_VERSION', '1.1.2' );
 }
 
 if ( ! defined( 'RTGODAM_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' ) ) {
@@ -128,6 +128,7 @@ register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
  */
 function rtgodam_plugin_deactivate() {
 	delete_option( 'rtgodam_plugin_activation_time' );
+	delete_option( 'rtgodam_video_metadata_migration_completed' );
 }
 
 register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
