@@ -175,7 +175,7 @@ function GODAMPlayer( videoRef = null ) {
 		}
 
 		const initializeChapters = ( chaptersData ) => {
-			if ( ! chaptersData || chaptersData.length === 0 ) {
+			if ( ! chaptersData || chaptersData?.length === 0 ) {
 				console.log( 'No chapters data available' );
 				return;
 			}
@@ -184,7 +184,7 @@ function GODAMPlayer( videoRef = null ) {
 			chaptersData.sort( ( a, b ) => a.startTime - b.startTime );
 
 			// Calculate end times
-			for ( let i = 0; i < chaptersData.length; i++ ) {
+			for ( let i = 0; i < chaptersData?.length; i++ ) {
 				if ( i < chaptersData.length - 1 ) {
 					chaptersData[ i ].endTime = chaptersData[ i + 1 ].startTime;
 				} else {
@@ -610,7 +610,7 @@ function GODAMPlayer( videoRef = null ) {
 		// FIXED: Create markers when duration becomes available
 		player.on( 'durationchange', () => {
 			const duration = player.duration();
-			if ( ! duration || duration === Infinity || ! chaptersData.length ) {
+			if ( ! duration || duration === Infinity || ! chaptersData?.length ) {
 				return;
 			}
 

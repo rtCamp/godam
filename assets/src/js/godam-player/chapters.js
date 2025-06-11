@@ -81,7 +81,7 @@ export function createChapterMarkers( player, chapters ) {
 	}
 
 	// Remove existing markers
-	progressHolder.querySelectorAll( '.chapter-marker' ).forEach( ( marker ) => {
+	progressHolder.querySelectorAll( '.chapter-marker' )?.forEach( ( marker ) => {
 		marker.remove();
 	} );
 

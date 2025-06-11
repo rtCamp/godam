@@ -152,6 +152,15 @@ const Chapters = ( { currentTime, onSelectLayer, duration, formatTimeForInput } 
 							) }
 						</p>
 					) }
+					<div>
+						<p>{ __( 'Chapter timestamp formatting adapts to the video length:', 'godam' ) }</p>
+						<ul>
+							<li>{ __( 'For videos under a minute, timestamps use seconds.milliseconds.', 'godam' ) }</li>
+							<li>{ __( 'For videos between one minute and one hour, the format becomes minutes:seconds.milliseconds.', 'godam' ) }</li>
+							<li>{ __( 'For videos over an hour, timestamps are shown as hours:minutes:seconds.milliseconds.', 'godam' ) }</li>
+						</ul>
+					</div>
+
 				</div>
 			) }
 		</>

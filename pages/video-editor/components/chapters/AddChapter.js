@@ -118,35 +118,39 @@ const AddChapter = ( { chapterID, duration, isError, formatTimeForInput } ) => {
 
 	return chapterID && (
 		<div className="flex">
-			<div className="flex items-center justify-between pt-4 gap-3">
-				{ isError[ chapterID ]
-					? <Tooltip text={ generateTooltipText() } className="chapter-error-tooltip">
-						<Button icon={ cautionFilled } height={ 20 } width={ 20 } className="p-0" />
-					</Tooltip>
-					: <div className="w-[56px] pr-4"></div>
-				}
-				<TextControl
-					__nextHasNoMarginBottom
-					__next40pxDefaultSize
-					value={ chapter?.originalTime }
+			<div className="flex items-end justify-between">
+				<div>
+					{ isError[ chapterID ]
+						? <Tooltip text={ generateTooltipText() } className="chapter-error-tooltip">
+							<Button icon={ cautionFilled } height={ 20 } width={ 20 } className="p-0" />
+						</Tooltip>
+						: <div className="w-[36px] pr-4"></div>
+					}
+				</div>
+				<div className="flex items-center justify-between pt-4 gap-3">
+					<TextControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						value={ chapter?.originalTime }
 
-					onChange={ ( value ) => {
-						handleChange( value, 'originalTime' );
-						const parsedValue = parseTimeToSeconds( value );
-						handleChange( parsedValue.toString(), 'startTime' );
-					} }
-					type="text"
-					className={ isError[ chapterID ] ? 'godam-error' : '' }
-				/>
-				<TextControl
-					__nextHasNoMarginBottom
-					__next40pxDefaultSize
-					value={ chapter?.text || '' }
-					onChange={ ( value ) => handleChange( value, 'text' ) }
-				/>
-				<Button icon={ closeSmall } isDestructive onClick={ () => {
-					dispatch( removeChapter( { id: chapterID } ) );
-				} } />
+						onChange={ ( value ) => {
+							handleChange( value, 'originalTime' );
+							const parsedValue = parseTimeToSeconds( value );
+							handleChange( parsedValue.toString(), 'startTime' );
+						} }
+						type="text"
+						className={ isError[ chapterID ] ? 'godam-error' : '' }
+					/>
+					<TextControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						value={ chapter?.text || '' }
+						onChange={ ( value ) => handleChange( value, 'text' ) }
+					/>
+					<Button icon={ closeSmall } isDestructive onClick={ () => {
+						dispatch( removeChapter( { id: chapterID } ) );
+					} } />
+				</div>
 			</div>
 		</div>
 	);
