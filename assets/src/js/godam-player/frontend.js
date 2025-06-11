@@ -111,6 +111,20 @@ function GODAMPlayer( videoRef = null ) {
 		const isPreviewEnabled = videoSetupOptions?.preview;
 
 		const player = videojs( video, videoSetupControls );
+		player.aspectRatio( '16:9' );
+
+		// Check if the player is inside a modal
+		const isInModal = video.closest( '.godam-modal' ) !== null;
+
+		// Set aspect ratio based on context
+		if ( isInModal ) {
+			// Only if in mobile view, set aspect ratio to 9:16. First check if the screen width is less than 768px.
+			if ( window.innerWidth < 420 ) {
+				player.aspectRatio( '9:16' );
+			} else {
+				player.aspectRatio( '16:9' );
+			}
+		}
 
 		video.addEventListener( 'loadedmetadata', () => {
 			const playerElement = player.el_;
@@ -836,8 +850,8 @@ function GODAMPlayer( videoRef = null ) {
 
 		function createHotspots( layerObj, currentPlayer ) {
 			const videoContainer = currentPlayer.el();
-			const containerWidth = videoContainer.offsetWidth;
-			const containerHeight = videoContainer.offsetHeight;
+			const containerWidth = videoContainer?.offsetWidth;
+			const containerHeight = videoContainer?.offsetHeight;
 
 			const baseWidth = 800;
 			const baseHeight = 600;
@@ -989,8 +1003,8 @@ function GODAMPlayer( videoRef = null ) {
 		// Reposition hotspots on resize or fullscreen
 		function updateHotspotPositions( currentPlayer, currentHotspotLayers ) {
 			const videoContainer = currentPlayer.el();
-			const containerWidth = videoContainer.offsetWidth;
-			const containerHeight = videoContainer.offsetHeight;
+			const containerWidth = videoContainer?.offsetWidth;
+			const containerHeight = videoContainer?.offsetHeight;
 
 			const baseWidth = 800;
 			const baseHeight = 600;

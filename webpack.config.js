@@ -119,6 +119,13 @@ const deactivationJS = {
 	},
 };
 
+const godamGallery = {
+	...sharedConfig,
+	entry: {
+		'godam-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-gallery.js' ),
+	},
+};
+
 const gfGodamRecorderJS = {
 	...sharedConfig,
 	entry: {
@@ -210,6 +217,7 @@ module.exports = [
 	godamPlayerFrontend,
 	godamPlayerAnalytics,
 	deactivationJS,
+	godamGallery,
 	gfGodamRecorderJS,
 	gfGodamRecorderEditorJS,
 	gfEntryDetailJS,

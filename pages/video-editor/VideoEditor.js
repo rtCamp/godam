@@ -120,13 +120,7 @@ const VideoEditor = ( { attachmentID } ) => {
 			}
 
 			if ( wpForms && wpForms.length > 0 ) {
-				const _wpForms = wpForms.map( ( form ) => {
-					return {
-						id: form.ID,
-						title: form.post_title,
-					};
-				} );
-				dispatch( setWPForms( _wpForms ) );
+				dispatch( setWPForms( wpForms ) );
 			}
 
 			if ( gravityForms && gravityForms.length > 0 ) {

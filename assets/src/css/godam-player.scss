@@ -88,9 +88,9 @@
  
  .easydam-video-container {
 	 position: relative;
-	 aspect-ratio: var(--rtgodam-video-aspect-ratio);
 	 background-color: rgba(149, 149, 149, 0.2);
 	 box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	 aspect-ratio: 16/9;
  }
  
  .animate-play-btn {
@@ -100,7 +100,7 @@
  .animate-video-loading {
 	 position: relative;
 	 animation: pulse 2s cubic-bezier(.4,0,.6,1) infinite;
-	 aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+	 aspect-ratio: 16/9;
  
 	 .animate-play-btn {
 		 width: 100px;
@@ -1096,7 +1096,6 @@
 	 @media screen and (max-width: 768px) {
  
 		 .vjs-control-bar {
-			 position: relative;
 			 height: 6em !important;
 			 
 			 .vjs-progress-control {
@@ -1136,7 +1135,7 @@
 				 }
  
 				 @media screen and (max-width: 420px) {
-					 display: none !important;
+					 left: 60px;
 				 }
 			 }
 	 
@@ -1158,7 +1157,7 @@
 				 }
  
 				 @media screen and (max-width: 420px) {
-					 display: none !important;
+					 right: 60px;
 				 }
 			 }
 	 
