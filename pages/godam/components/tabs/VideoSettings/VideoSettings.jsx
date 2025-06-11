@@ -109,6 +109,7 @@ const VideoSettings = () => {
 					className="godam-button"
 					onClick={ handleSaveSettings }
 					isBusy={ saveMediaSettingsLoading }
+					disabled={ saveMediaSettingsLoading }
 				>
 					{ __( 'Save Settings', 'godam' ) }
 				</Button>

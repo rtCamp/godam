@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { hasValidAPIKey, isOnStarterPlan } from '../../../utils';
+import { hasValidAPIKey } from '../../../utils';
 
 const VideoWatermark = ( { handleSettingChange } ) => {
 	const useImage = useSelector( ( state ) => state.mediaSettings.video.use_watermark_image );
@@ -45,7 +45,7 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 
 	return (
 		<div className="relative">
-			{ ( hasValidAPIKey && isOnStarterPlan ) && (
+			{ ! hasValidAPIKey && (
 				<div className="premium-feature-overlay">
 					<Button
 						className="godam-button"
@@ -69,16 +69,16 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 							className="godam-toggle"
 							label={ __( 'Enable video watermark', 'godam' ) }
 							checked={
-								! hasValidAPIKey || isOnStarterPlan ? false : enableWatermark
+								! hasValidAPIKey ? false : enableWatermark
 							}
 							onChange={ ( value ) => handleSettingChange( 'watermark', value ) }
-							disabled={ isOnStarterPlan || ! hasValidAPIKey }
+							disabled={ ! hasValidAPIKey }
 							help={ __(
 								'If enabled, GoDAM will add a watermark to the transcoded video',
 								'godam',
 							) }
 						/>
-						{ ! isOnStarterPlan && enableWatermark && (
+						{ enableWatermark && (
 							<>
 								<div>
 									<ToggleControl

@@ -3,7 +3,7 @@
  * Plugin Name: GoDAM
  * Plugin URI: https://godam.io
  * Description: Seamlessly manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, gravity forms integration, and ad integration.
- * Version: 1.1.2
+ * Version: 1.1.3
  * Text Domain: godam
  * Author: rtCamp
  * Author URI: https://rtcamp.com/?utm_source=dashboard&utm_medium=plugin&utm_campaign=godam
@@ -41,7 +41,7 @@ if ( ! defined( 'RTGODAM_VERSION' ) ) {
 	/**
 	 * The version of the plugin
 	 */
-	define( 'RTGODAM_VERSION', '1.1.2' );
+	define( 'RTGODAM_VERSION', '1.1.3' );
 }
 
 if ( ! defined( 'RTGODAM_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' ) ) {
@@ -98,7 +98,7 @@ function rtgodam_action_links( $links, $file ) {
 	// Add a few links to the existing links array.
 	$settings_url = sprintf(
 		'<a href="%1$s">%2$s</a>',
-		esc_url( admin_url( 'admin.php?page=rtgodam' ) ),
+		esc_url( admin_url( 'admin.php?page=rtgodam_settings' ) ),
 		esc_html__( 'Settings', 'godam' )
 	);
 

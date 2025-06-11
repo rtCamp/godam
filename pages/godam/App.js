@@ -51,6 +51,13 @@ const App = () => {
 		}
 	}, [ mediaSettingsData, dispatch ] );
 
+	useEffect( () => {
+		const hash = window.location.hash.replace( '#', '' );
+		if ( hash && TABS.some( ( tab ) => tab.id === hash ) ) {
+			setActiveTab( hash );
+		}
+	}, [] );
+
 	if ( isLoading ) {
 		return <Skeleton />;
 	}
