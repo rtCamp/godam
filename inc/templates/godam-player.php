@@ -188,7 +188,6 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 						src="<?php echo esc_url( $source['src'] ); ?>"
 						type="<?php echo esc_attr( $source['type'] ); ?>"
 					/>
-					<!-- <track kind="chapters" label="Chapters" src='https://www.radiantmediaplayer.com/media/vtt/chapters/chapters.vtt' /> -->
 					<?php
 				endif;
 			endforeach;

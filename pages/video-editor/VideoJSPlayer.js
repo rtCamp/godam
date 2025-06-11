@@ -431,7 +431,7 @@ const Slider = ( props ) => {
 		setSliderValue( value );
 	}, [ value ] );
 
-	// Sort the array (ascending order)
+	// Sort the array (ascending order) and remove garbage values
 	const seenTimes = new Set();
 	const sortedChapters = chapters
 		?.filter( ( chapter ) => {
@@ -549,28 +549,16 @@ const Slider = ( props ) => {
 					const hoverWidth = ( ( nextStart - chapter.startTime ) / max ) * 100;
 
 					return (
-					// eslint-disable-next-line jsx-a11y/click-events-have-key-events
 						<div
 							key={ chapter.id }
 							className="layer-indicator hotspot-indicator chapter-indicator"
 							style={ {
 								left: `${ chapterLeft }%`,
-								// width: `${ hoverWidth - 1 }%`,
 								'--hover-width': `${ hoverWidth }%`,
 							} }
 						>
 							<div className="chapter-indicator--duration">
 								{ `${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) } - ${ chapter?.originalTime }` }
-							</div>
-							<div className="layer-indicator--container">
-								<div>
-									{ /* <div>
-										{ chapter?.originalTime && (
-											<div className="duration">{ chapter.originalTime }s</div>
-										) }
-									</div> */ }
-								</div>
-								{ /* <div className="info">{ chapter?.text }</div> */ }
 							</div>
 							<div className="chapter-indicator--text">
 								{ chapter?.text }

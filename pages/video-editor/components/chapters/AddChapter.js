@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -9,9 +8,6 @@ import { useDispatch, useSelector } from 'react-redux';
  */
 import {
 	Button,
-	SelectControl,
-	Panel,
-	PanelBody,
 	TextControl,
 	Tooltip,
 } from '@wordpress/components';
@@ -20,40 +16,17 @@ import { closeSmall, cautionFilled } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { updateChapterField, addChapter, removeChapter } from '../../redux/slice/videoSlice';
+import { updateChapterField, removeChapter } from '../../redux/slice/videoSlice';
 
-const AddChapter = ( { chapterID, duration, isError, formatTimeForInput } ) => {
+const AddChapter = ( { chapterID, isError } ) => {
 	const chapter = useSelector( ( state ) =>
 		state.videoReducer.chapters.find( ( _chapter ) => _chapter.id === chapterID ),
 	);
-	const chapters = useSelector( ( state ) => state.videoReducer.chapters );
 
 	const dispatch = useDispatch();
-	// const [ isError, setIsError ] = React.useState( false );
 
 	const handleChange = ( value, field ) => {
-		// dispatch(
-		// 	updateChapterField( {
-		// 		id: chapterID,
-		// 		field: 'text',
-		// 		value,
-		// 	} ),
-		// );
-		// console.log( chapterID, 'chapterID' );
 		if ( chapterID ) {
-			// if ( 'originalTime' === field ) {
-			// 	const isSimilar = chapters.find( ( _chapter ) => _chapter.id !== chapterID && _chapter.originalTime === value );
-			// 	console.log( isSimilar );
-			// 	if ( value > duration ) {
-			// 		setIsError( 'greater than duration' );
-			// 	} else if ( value < 0 ) {
-			// 		setIsError( 'less than 0' );
-			// 	} else if ( isSimilar ) {
-			// 		setIsError( 'similar time' );
-			// 	} else {
-			// 		setIsError( false );
-			// 	}
-			// }
 			dispatch(
 				updateChapterField( {
 					id: chapterID,
@@ -63,8 +36,6 @@ const AddChapter = ( { chapterID, duration, isError, formatTimeForInput } ) => {
 			);
 		}
 	};
-
-	// console.log(isError, 'isError');
 
 	const generateTooltipText = () => {
 		switch ( isError[ chapterID ] ) {

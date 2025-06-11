@@ -437,6 +437,11 @@
 		margin: 0 auto;
 	}
 }
+
+.godam-error input {
+	border: 1px solid #F00 !important;
+	box-shadow: none !important;
+}
  
  /* Hotspot layer*/
  .hotspot {
@@ -772,33 +777,15 @@
     background: unset;
 }
 
-.godam-error input {
-	border: 1px solid red !important;
-	box-shadow: none !important;
-}
-
 .chapter-error-tooltip {
 	max-width: 9.5rem;
 	white-space: unset !important;
 }
 
-// .chapter-marker {
-//     position: absolute;
-//     top: 0;
-//     height: 100%;
-//     width: 2px;
-//     background-color: rgb(255, 255, 255, 0.2);
-//     z-index: 3;
-//     transform: translateX(-1px); /* center the 2px marker on timestamp */
-// }
-
 .chapter-marker:hover {
 	width: 4px;
 	background: #AB3A6C;
 	opacity: 1;
-	// transform: scaleY(1.8);
-	// top: -2px;
-	// transition: transform 0.2s ease, width 0.2s ease;
 }
 
 .chapter-marker::after {
@@ -816,7 +803,7 @@
 	left: 50%;
 	transform: translateX(-50%);
 	background: rgba(0, 0, 0, 0.9);
-	color: white;
+	color: #fff;
 	padding: 8px 12px;
 	border-radius: 4px;
 	font-size: 10px;
@@ -829,10 +816,6 @@
 	max-width: 200px;
 	text-align: center;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-
-	img {
-		margin-top: 10px;
-	}
 }
 
 .chapter-tooltip::after {
@@ -853,87 +836,6 @@
 .vjs-play-progress {
 	background: inherit;
 	z-index: 10;
-}
-
-
-/* Chapters Button */
-.vjs-chapters-button .vjs-icon-placeholder:before {
-	content: "\\f0cb";
-	font-family: VideoJS;
-}
-
-/* Chapters Menu */
-.vjs-menu-content {
-	background: rgba(0, 0, 0, 0.9);
-	max-height: 300px;
-	overflow-y: auto;
-}
-
-.vjs-menu-item {
-	padding: 10px 15px;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-	cursor: pointer;
-	transition: background-color 0.2s;
-}
-
-.vjs-menu-item:hover {
-	background: rgba(0, 123, 255, 0.2);
-}
-
-.vjs-menu-item.vjs-selected {
-	background: rgba(0, 123, 255, 0.4);
-}
-
-.chapter-menu-time {
-	color: #007bff;
-	font-size: 11px;
-	margin-right: 10px;
-}
-
-/* Chapter List Items */
-.vjs-chapter-item {
-	display: flex;
-	align-items: center;
-	padding: 12px 0;
-	border-bottom: 1px solid #404040;
-	cursor: pointer;
-	transition: background-color 0.2s;
-}
-
-.vjs-chapter-item:hover {
-	background-color: #404040;
-	border-radius: 4px;
-}
-
-.vjs-chapter-item:last-child {
-	border-bottom: none;
-}
-
-.vjs-chapter-time {
-	background: #007bff;
-	color: white;
-	padding: 4px 8px;
-	border-radius: 4px;
-	font-size: 12px;
-	font-weight: bold;
-	min-width: 60px;
-	text-align: center;
-	margin-right: 15px;
-}
-
-.vjs-chapter-title {
-	flex: 1;
-	font-weight: 500;
-}
-
-.vjs-chapter-item.vjs-chapter-active {
-	background-color: #007bff20;
-	border-left: 4px solid #007bff;
-	padding-left: 16px;
-}
-
-.vjs-chapter-item.vjs-chapter-active .vjs-chapter-time {
-	background: #28a745;
 }
  
  .vjs-big-play-button {

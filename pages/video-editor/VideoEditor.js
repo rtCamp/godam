@@ -164,17 +164,22 @@ const VideoEditor = ( { attachmentID } ) => {
 	};
 
 	const formatTimeForInput = ( seconds ) => {
-		if ( ! seconds ) {
+		if ( seconds === null || isNaN( seconds ) ) {
 			return '';
 		}
+
 		const hrs = Math.floor( seconds / 3600 );
 		const mins = Math.floor( ( seconds % 3600 ) / 60 );
-		const secs = ( seconds % 60 ).toFixed( 2 ).padStart( 2, '0' );
+		const secsRaw = seconds % 60;
+
+		const hrsStr = String( hrs ).padStart( 2, '0' );
+		const minsStr = String( mins ).padStart( 2, '0' );
+		const secsStr = secsRaw.toFixed( 2 ).padStart( 5, '0' ); // includes decimal, eg: 04.90
 
 		if ( hrs > 0 ) {
-			return `${ hrs }:${ String( mins ).padStart( 2, '0' ) }:${ secs }`;
+			return `${ hrsStr }:${ minsStr }:${ secsStr }`;
 		}
-		return `${ mins }:${ secs }`;
+		return `${ minsStr }:${ secsStr }`;
 	};
 
 	const tabConfig = [
@@ -203,7 +208,6 @@ const VideoEditor = ( { attachmentID } ) => {
 			component: (
 				<Chapters
 					currentTime={ currentTime }
-					onSelectLayer={ seekToTime }
 					duration={ duration }
 					formatTimeForInput={ formatTimeForInput }
 				/>

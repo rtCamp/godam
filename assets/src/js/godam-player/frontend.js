@@ -175,22 +175,8 @@ function GODAMPlayer( videoRef = null ) {
 			}
 		};
 
-		// Helper function to format seconds to MM:SS or HH:MM:SS
-		function formatTimeFromSeconds( seconds ) {
-			if ( seconds >= 3600 ) {
-				const hours = Math.floor( seconds / 3600 );
-				const mins = Math.floor( ( seconds % 3600 ) / 60 );
-				const secs = Math.floor( seconds % 60 );
-				return `${ hours }:${ mins.toString().padStart( 2, '0' ) }:${ secs.toString().padStart( 2, '0' ) }`;
-			}
-			const mins = Math.floor( seconds / 60 );
-			const secs = Math.floor( seconds % 60 );
-			return `${ mins }:${ secs.toString().padStart( 2, '0' ) }`;
-		}
-
 		const initializeChapters = ( chaptersData ) => {
 			if ( ! chaptersData || chaptersData?.length === 0 ) {
-				console.log( 'No chapters data available' );
 				return;
 			}
 
@@ -206,8 +192,6 @@ function GODAMPlayer( videoRef = null ) {
 					chaptersData[ i ].endTime = null;
 				}
 			}
-
-			console.log( 'Initializing chapters:', chaptersData );
 
 			// Load chapters using the chapters.js module
 			loadChapters( player, chaptersData );
@@ -540,8 +524,6 @@ function GODAMPlayer( videoRef = null ) {
 				initializeChapters( chaptersData );
 			}
 		} );
-
-		console.log( chaptersData, 'chaptersData' );
 
 		player.ready( function() {
 			const controlBarSettings = videoSetupControls?.controlBar;

@@ -115,9 +115,6 @@ const slice = createSlice( {
 		setCurrentLayer: ( state, action ) => {
 			state.currentLayer = action.payload;
 		},
-		setCurrentChapter: ( state, action ) => {
-			state.currentChapter = action.payload;
-		},
 		setCurrentTab: ( state, action ) => {
 			// check if action.payload is either 'layers' or 'player-settings'.
 			if ( action.payload === 'layers' || action.payload === 'player-settings' || action.payload === 'chapters' ) {
@@ -160,7 +157,6 @@ export const {
 	updateSkipTime,
 	setCurrentLayer,
 	setCurrentTab,
-	setCurrentChapter,
 	setLoading,
 	setGravityForms,
 	setGravityFormsPluginActive,
