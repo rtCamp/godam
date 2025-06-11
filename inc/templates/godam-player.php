@@ -110,8 +110,9 @@ $video_setup = wp_json_encode( $video_setup );
 
 $video_config = wp_json_encode(
 	array(
-		'preview' => $video_preview,
-		'layers'  => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
+		'preview'  => $video_preview,
+		'layers'   => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
+		'chapters' => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(), // contains list of chapters.
 	)
 );
 
@@ -185,6 +186,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 						src="<?php echo esc_url( $source['src'] ); ?>"
 						type="<?php echo esc_attr( $source['type'] ); ?>"
 					/>
+					<!-- <track kind="chapters" label="Chapters" src='https://www.radiantmediaplayer.com/media/vtt/chapters/chapters.vtt' /> -->
 					<?php
 				endif;
 			endforeach;

@@ -39,6 +39,11 @@ import Whatsapp from '../../../../assets/src/images/whatsapp.svg';
 import Complete from '../../../../assets/src/images/check.svg';
 import DOMPurify from 'isomorphic-dompurify';
 import SettingsButton from './masterSettings';
+import {
+	createChapterMarkers,
+	updateActiveChapter,
+	loadChapters,
+} from './chapters.js'; // Adjust path as needed
 
 /**
  * Global variables
@@ -119,6 +124,82 @@ function GODAMPlayer( videoRef = null ) {
 				}
 			}
 		} );
+
+		const getChaptersData = () => {
+			if (
+				videoSetupOptions?.chapters &&
+				Array.isArray( videoSetupOptions.chapters ) &&
+				videoSetupOptions.chapters.length > 0
+			) {
+				const seenTimes = new Set();
+
+				// First filter out invalid entries
+				const filteredChapters = videoSetupOptions.chapters.filter( ( chapter ) => {
+					const time = parseFloat( chapter.startTime );
+
+					// Conditions to discard
+					if (
+						! chapter.startTime || // empty string or undefined
+						isNaN( time ) ||
+						time < 0 ||
+						seenTimes.has( time )
+					) {
+						return false;
+					}
+
+					seenTimes.add( time );
+					return true;
+				} );
+
+				// Now convert to your format
+				return filteredChapters.map( ( chapter ) => ( {
+					startTime: parseFloat( chapter.startTime ) || 0,
+					text: chapter.text || 'Chapter',
+					originalTime: chapter.originalTime,
+					endTime: null,
+				} ) );
+			}
+		};
+
+		// Helper function to format seconds to MM:SS or HH:MM:SS
+		function formatTimeFromSeconds( seconds ) {
+			if ( seconds >= 3600 ) {
+				const hours = Math.floor( seconds / 3600 );
+				const mins = Math.floor( ( seconds % 3600 ) / 60 );
+				const secs = Math.floor( seconds % 60 );
+				return `${ hours }:${ mins.toString().padStart( 2, '0' ) }:${ secs.toString().padStart( 2, '0' ) }`;
+			}
+			const mins = Math.floor( seconds / 60 );
+			const secs = Math.floor( seconds % 60 );
+			return `${ mins }:${ secs.toString().padStart( 2, '0' ) }`;
+		}
+
+		const initializeChapters = ( chaptersData ) => {
+			if ( ! chaptersData || chaptersData.length === 0 ) {
+				console.log( 'No chapters data available' );
+				return;
+			}
+
+			// Sort chapters by start time
+			chaptersData.sort( ( a, b ) => a.startTime - b.startTime );
+
+			// Calculate end times
+			for ( let i = 0; i < chaptersData.length; i++ ) {
+				if ( i < chaptersData.length - 1 ) {
+					chaptersData[ i ].endTime = chaptersData[ i + 1 ].startTime;
+				} else {
+					// Last chapter - end time will be set to video duration when available
+					chaptersData[ i ].endTime = null;
+				}
+			}
+
+			console.log( 'Initializing chapters:', chaptersData );
+
+			// Load chapters using the chapters.js module
+			loadChapters( player, chaptersData );
+
+			return chaptersData;
+		};
 
 		// Function to move video controls
 		function moveVideoControls() {
@@ -422,6 +503,9 @@ function GODAMPlayer( videoRef = null ) {
 		// Register the new component
 		videojs.registerComponent( 'GodamShareButton', GodamShareButton );
 
+		// FIXED: Store chapters data at player level
+		let chaptersData = [];
+
 		// Add the button to the control bar after the player is ready
 		player.ready( function() {
 			player.jobId = video.dataset.job_id; // Store the result when it's available
@@ -435,7 +519,15 @@ function GODAMPlayer( videoRef = null ) {
 				);
 				videoContainer.appendChild( buttonEl );
 			}
+
+			// FIXED: Initialize chapters after player is ready
+			chaptersData = getChaptersData();
+			if ( chaptersData && chaptersData.length > 0 ) {
+				initializeChapters( chaptersData );
+			}
 		} );
+
+		console.log( chaptersData, 'chaptersData' );
 
 		player.ready( function() {
 			const controlBarSettings = videoSetupControls?.controlBar;
@@ -512,6 +604,28 @@ function GODAMPlayer( videoRef = null ) {
 				// Register the component before using it
 				videojs.registerComponent( 'CustomButton', CustomButton );
 				controlBar.addChild( 'CustomButton', {} );
+			}
+		} );
+
+		// FIXED: Create markers when duration becomes available
+		player.on( 'durationchange', () => {
+			const duration = player.duration();
+			if ( ! duration || duration === Infinity || ! chaptersData.length ) {
+				return;
+			}
+
+			// Drop chapters beyond duration
+			chaptersData = chaptersData.filter( ( ch ) => ch.startTime < duration );
+
+			// Set endTime for the last valid chapter
+			chaptersData[ chaptersData.length - 1 ].endTime = duration;
+
+			createChapterMarkers( player, chaptersData );
+		} );
+
+		player.on( 'timeupdate', () => {
+			if ( chaptersData && chaptersData.length > 0 ) {
+				updateActiveChapter( player.currentTime(), chaptersData );
 			}
 		} );
 

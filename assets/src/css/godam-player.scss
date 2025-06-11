@@ -748,6 +748,193 @@
  .vjs-progress-control:hover {
 	 transform: scale(1);
  }
+
+ .vjs-progress-holder {
+	position: relative !important;
+}
+
+.video-js .vjs-load-progress div {
+    background: var(--rtgodam-control-bar-color);
+	opacity: 1;
+}
+
+.chapter-marker {
+	position: absolute;
+	bottom: 0;
+	width: 2px;
+	height: 100%;
+	background: #b3aeae;
+	cursor: pointer;
+	z-index: 5;
+}
+
+.video-js .vjs-load-progress {
+    background: unset;
+}
+
+.godam-error input {
+	border: 1px solid red !important;
+	box-shadow: none !important;
+}
+
+.chapter-error-tooltip {
+	max-width: 9.5rem;
+	white-space: unset !important;
+}
+
+// .chapter-marker {
+//     position: absolute;
+//     top: 0;
+//     height: 100%;
+//     width: 2px;
+//     background-color: rgb(255, 255, 255, 0.2);
+//     z-index: 3;
+//     transform: translateX(-1px); /* center the 2px marker on timestamp */
+// }
+
+.chapter-marker:hover {
+	width: 4px;
+	background: #AB3A6C;
+	opacity: 1;
+	// transform: scaleY(1.8);
+	// top: -2px;
+	// transition: transform 0.2s ease, width 0.2s ease;
+}
+
+.chapter-marker::after {
+	content: '';
+	position: absolute;
+	background: #AB3A6C;
+	width: 4px;
+	opacity: 1;
+}
+
+/* Chapter tooltip */
+.chapter-tooltip {
+	position: absolute;
+	bottom: 8px;
+	left: 50%;
+	transform: translateX(-50%);
+	background: rgba(0, 0, 0, 0.9);
+	color: white;
+	padding: 8px 12px;
+	border-radius: 4px;
+	font-size: 10px;
+	white-space: nowrap;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.2s ease;
+	z-index: 10;
+	width: max-content;
+	max-width: 200px;
+	text-align: center;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+	img {
+		margin-top: 10px;
+	}
+}
+
+.chapter-tooltip::after {
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	border: 5px solid transparent;
+	border-top-color: rgba(0, 0, 0, 0.9);
+}
+
+.chapter-marker:hover .chapter-tooltip {
+	opacity: 1;
+}
+
+/* Enhanced Progress Bar */
+.vjs-play-progress {
+	background: inherit;
+	z-index: 10;
+}
+
+
+/* Chapters Button */
+.vjs-chapters-button .vjs-icon-placeholder:before {
+	content: "\\f0cb";
+	font-family: VideoJS;
+}
+
+/* Chapters Menu */
+.vjs-menu-content {
+	background: rgba(0, 0, 0, 0.9);
+	max-height: 300px;
+	overflow-y: auto;
+}
+
+.vjs-menu-item {
+	padding: 10px 15px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.vjs-menu-item:hover {
+	background: rgba(0, 123, 255, 0.2);
+}
+
+.vjs-menu-item.vjs-selected {
+	background: rgba(0, 123, 255, 0.4);
+}
+
+.chapter-menu-time {
+	color: #007bff;
+	font-size: 11px;
+	margin-right: 10px;
+}
+
+/* Chapter List Items */
+.vjs-chapter-item {
+	display: flex;
+	align-items: center;
+	padding: 12px 0;
+	border-bottom: 1px solid #404040;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.vjs-chapter-item:hover {
+	background-color: #404040;
+	border-radius: 4px;
+}
+
+.vjs-chapter-item:last-child {
+	border-bottom: none;
+}
+
+.vjs-chapter-time {
+	background: #007bff;
+	color: white;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: bold;
+	min-width: 60px;
+	text-align: center;
+	margin-right: 15px;
+}
+
+.vjs-chapter-title {
+	flex: 1;
+	font-weight: 500;
+}
+
+.vjs-chapter-item.vjs-chapter-active {
+	background-color: #007bff20;
+	border-left: 4px solid #007bff;
+	padding-left: 16px;
+}
+
+.vjs-chapter-item.vjs-chapter-active .vjs-chapter-time {
+	background: #28a745;
+}
  
  .vjs-big-play-button {
 	 background-color: var(--rtgodam-control-bar-color) !important;
@@ -995,6 +1182,13 @@
 				 right: 40px;
 				 height: 3em !important;
 			 }
+
+			 .vjs-settings-button {
+				 position: absolute;
+				 bottom: 0;
+				 right: 80px;
+				 height: 3em !important;
+			}
  
 			 .vjs-quality-menu-wrapper {
 				 position: absolute;
@@ -1005,6 +1199,11 @@
  
 			 .mobile-right-80 {
 				 right: 80px;
+			 }
+
+			 .vjs-menu {
+				background-color: #2b333f;
+				z-index: 10;
 			 }
 	 
 			 .vjs-time-control {
