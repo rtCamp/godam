@@ -32,14 +32,14 @@ const Chapters = ( { currentTime, duration, formatTimeForInput } ) => {
 	useEffect( () => {
 		const errors = {};
 
-		for ( let i = 0; i < chapters.length; i++ ) {
-			const chapter = chapters[ i ];
-			if ( i !== 0 && chapter.originalTime !== '' && parseFloat( chapter.startTime ) === parseFloat( chapters[ i - 1 ].startTime ) ) {
+		for ( let i = 1; i < sortedChapters.length; i++ ) {
+			const chapter = sortedChapters[ i ];
+			if ( chapter.originalTime !== '' && parseFloat( chapter.startTime ) === parseFloat( sortedChapters[ i - 1 ].startTime ) ) {
 				errors[ chapter.id ] = 'similar time';
 			}
 		}
 
-		chapters.forEach( ( chapter ) => {
+		sortedChapters.forEach( ( chapter ) => {
 			if ( chapter.startTime > duration ) {
 				errors[ chapter.id ] = 'greater than duration';
 			} else if ( chapter.startTime < 0 ) {
