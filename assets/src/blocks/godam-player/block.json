@@ -99,11 +99,25 @@
 		"shadow": true,
 		"interactivity": {
 			"clientNavigation": true
+		},
+		"innerBlocks": {
+			"allowedBlocks": [
+				"core/paragraph",
+				"core/heading",
+				"core/button",
+				"core/image",
+				"core/group",
+				"core/columns",
+				"core/column",
+				"core/spacer",
+				"core/html",
+				"core/shortcode"
+			]
 		}
 	},
-    "editorStyle": ["file:./index.css", "godam-player-frontend-style"],
+	"editorStyle": ["file:./index.css", "godam-player-frontend-style"],
 	"style": ["godam-player-style", "godam-player-frontend-style"],
 	"editorScript": ["file:./index.js"],
-    "viewScript": ["godam-player-frontend-script", "godam-player-analytics-script"],
-    "render": "file:./render.php"
+	"viewScript": ["godam-player-frontend-script", "godam-player-analytics-script"],
+	"render": "file:./render.php"
 }

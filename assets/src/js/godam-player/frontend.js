@@ -451,6 +451,29 @@ function GODAMPlayer( videoRef = null ) {
 			}
 		} );
 
+		// Handle overlay removal on first play
+		let hasPlayedOnce = false;
+		const videoContainerWrapper = video.closest( '.godam-video-wrapper' );
+		const overlay = videoContainerWrapper ? videoContainerWrapper.querySelector( '[data-overlay-content]' ) : null;
+
+		if ( overlay ) {
+			// Function to hide overlay
+			const hideOverlay = function() {
+				if ( ! hasPlayedOnce ) {
+					hasPlayedOnce = true;
+					overlay.style.opacity = '0';
+
+					// Remove the overlay after the transition
+					setTimeout( function() {
+						overlay.style.display = 'none';
+					}, 300 );
+				}
+			};
+
+			// Listen for the first play event
+			player.one( 'play', hideOverlay );
+		}
+
 		player.ready( function() {
 			const controlBarSettings = videoSetupControls?.controlBar;
 
