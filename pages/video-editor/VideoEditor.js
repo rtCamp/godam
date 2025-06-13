@@ -257,14 +257,14 @@ const VideoEditor = ( { attachmentID } ) => {
 					}
 
 					{ attachmentConfig && sources.length > 0 && (
-						<div className="w-full">
+						<div className="w-full video-canvas-wrapper">
 							<div className="relative">
 								<VideoJSPlayer
 									options={ {
 										controls: true,
 										fluid: true,
 										preload: 'auto',
-										width: '100%',
+										aspectRatio: '16:9',
 										sources,
 										controlBar: {
 											playToggle: true,
