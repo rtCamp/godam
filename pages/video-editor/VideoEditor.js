@@ -262,8 +262,8 @@ const VideoEditor = ( { attachmentID } ) => {
 								<VideoJSPlayer
 									options={ {
 										controls: true,
-										fluid: true,
 										preload: 'auto',
+										height: ( window.innerHeight * 0.7 ) + 'px',
 										width: '100%',
 										sources,
 										controlBar: {
