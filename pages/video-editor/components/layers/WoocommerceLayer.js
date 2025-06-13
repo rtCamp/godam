@@ -217,10 +217,12 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 						<div className="flex justify-between items-center">
 							<Button
 								icon={ expandedProductHotspotIndex === index ? chevronUp : chevronDown }
-								className="flex-1 text-left"
+								className="flex-1 text-left text-flex-left"
 								onClick={ () => toggleProductHotspotExpansion( index ) }
 							>
-								{ `Product Hotspot ${ index + 1 }` }
+								{ productHotspot?.productDetails?.name
+									? `${ index + 1 }. ${ productHotspot.productDetails.name }`
+									: `Product Hotspot ${ index + 1 }` }
 							</Button>
 							<DropdownMenu
 								icon={ moreVertical }
@@ -298,23 +300,37 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 								/>
 								<div className="mt-3">
 									{ ( () => {
-										let helpText = '';
+										const isGrouped = productHotspot.productDetails.type === 'grouped';
+										const isExternal = productHotspot.productDetails.type === 'external';
+										const forceProductPage = isGrouped || isExternal;
+										const isDisabled = ! isValidAPIKey || isGrouped || isExternal;
 
-										if ( productHotspot.productDetails.type === 'grouped' ) {
-											helpText = __( 'Grouped products cannot be added directly to cart.', 'godam' );
-										} else if ( productHotspot.productDetails.type === 'external' ) {
-											helpText = __( 'External/Affiliate products cannot be added directly to cart.', 'godam' );
+										if ( forceProductPage && ! productHotspot.addToCart ) {
+											updateField(
+												'productHotspots',
+												productHotspots.map( ( h2, j ) =>
+													j === index ? { ...h2, addToCart: true } : h2,
+												),
+											);
+										}
+
+										let help = '';
+
+										if ( isGrouped ) {
+											help = __( 'Grouped products cannot be added to the cart directly.', 'godam' );
+										} else if ( isExternal ) {
+											help = __( 'External/Affiliate products cannot be added to the cart directly.', 'godam' );
 										} else if ( productHotspot.addToCart ) {
-											helpText = __( 'Product will be added to the cart.', 'godam' );
+											help = __( 'Users will be redirected to the product page.', 'godam' );
 										} else {
-											helpText = __( 'Turn this on to add to cart, otherwise it will link to the product page.', 'godam' );
+											help = __( 'By default, this adds the product to the cart. Turn ON to go to the product page instead.', 'godam' );
 										}
 
 										return (
 											<ToggleControl
-												label={ __( 'Add to Cart', 'godam' ) }
+												label={ __( 'Link to Product Page', 'godam' ) }
 												checked={ productHotspot.addToCart }
-												help={ helpText }
+												help={ help }
 												onChange={ ( isChecked ) => {
 													updateField(
 														'productHotspots',
@@ -323,7 +339,7 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 														),
 													);
 												} }
-												disabled={ ! isValidAPIKey || productHotspot.productDetails.type === 'grouped' || productHotspot.productDetails.type === 'external' }
+												disabled={ isDisabled }
 											/>
 										);
 									} )() }
@@ -505,8 +521,8 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 														className="product-hotspot-woo-link"
 														href={
 															productHotspot.addToCart
-																? `/cart/?add-to-cart=${ productHotspot.productId }`
-																: productHotspot.productDetails.link
+																? productHotspot.productDetails.link
+																: `/cart/?add-to-cart=${ productHotspot.productId }`
 														}
 														target="_blank"
 														rel="noopener noreferrer"
