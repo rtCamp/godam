@@ -19,6 +19,9 @@ const initialState = {
 		brand_color: '#000000',
 		brand_image: '',
 	},
+	video_player: {
+		custom_css: '',
+	},
 };
 
 const mediaSettingsSlice = createSlice( {
