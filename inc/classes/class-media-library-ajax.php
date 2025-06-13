@@ -310,13 +310,17 @@ class Media_Library_Ajax {
 			return $response;
 		}
 
-		$transcoded_url = get_post_meta( $attachment->ID, 'rtgodam_transcoded_url', true );
+		$transcoded_url     = get_post_meta( $attachment->ID, 'rtgodam_transcoded_url', true );
+		$transcoding_status = get_post_meta( $attachment->ID, 'rtgodam_transcoding_status', true );
 
 		if ( ! empty( $transcoded_url ) ) {
 			$response['transcoded_url'] = $transcoded_url;
 		} else {
 			$response['transcoded_url'] = false;
 		}
+
+		// Add transcoding status to response.
+		$response['transcoding_status'] = $transcoding_status ? strtolower( $transcoding_status ) : 'not_started';
 
 		return $response;
 	}

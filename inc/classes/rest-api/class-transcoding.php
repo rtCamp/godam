@@ -199,11 +199,11 @@ class Transcoding extends Base {
 
 		// Define status messages.
 		$status_messages = array(
-			'Queued'      => __( 'Video is queued for transcoding.', 'godam' ),
-			'Downloading' => __( 'Video is downloading for transcoding.', 'godam' ),
-			'Downloaded'  => __( 'Video is downloaded for transcoding.', 'godam' ),
-			'Transcoding' => __( 'Video is transcoding.', 'godam' ),
-			'Transcoded'  => __( 'Video is transcoded.', 'godam' ),
+			'Queued'      => __( 'Media is queued for transcoding.', 'godam' ),
+			'Downloading' => __( 'Media is downloading for transcoding.', 'godam' ),
+			'Downloaded'  => __( 'Media is downloaded for transcoding.', 'godam' ),
+			'Transcoding' => __( 'Media is transcoding.', 'godam' ),
+			'Transcoded'  => __( 'Media is transcoded.', 'godam' ),
 		);
 
 		// Set default message for unknown status.

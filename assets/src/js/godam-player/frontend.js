@@ -619,7 +619,9 @@ function GODAMPlayer( videoRef = null ) {
 						if (
 							layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ||
 							layerObj.layerElement.querySelector( '.wpforms-confirmation-container-full' ) ||
-							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' )
+							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' ) ||
+							( ! layerObj.layerElement.querySelector( '.wp-polls-form' ) &&
+							layerObj.layerElement.querySelector( '.wp-polls-ans' ) )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';

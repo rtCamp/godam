@@ -58,6 +58,8 @@ class TranscodingChecker {
 	}
 
 	buildUrl( postIds ) {
+		// convert string IDs to int here. and filter out the invalid IDs.
+		postIds = postIds.map( ( id ) => parseInt( id ) );
 		const validIds = postIds.filter( ( id ) => Number.isInteger( id ) && id > 0 );
 		if ( validIds.length === 0 ) {
 			return null;
