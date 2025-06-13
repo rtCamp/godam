@@ -129,7 +129,6 @@ const Appearance = () => {
 	}
 
 	const openCustomBtnImg = () => {
-		setSelectedCustomBgImg( true );
 		const fileFrame = wp.media( {
 			title: __( 'Select Custom Background Image', 'godam' ),
 			button: {
@@ -142,6 +141,8 @@ const Appearance = () => {
 		} );
 
 		fileFrame.on( 'select', function() {
+			setSelectedCustomBgImg( true );
+
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 			const playButtonElement = document.querySelector( '.vjs-big-play-button' );
 
@@ -163,7 +164,6 @@ const Appearance = () => {
 	};
 
 	const openBrandMediaPicker = () => {
-		setSelectedBrandImage( true );
 		const fileFrame = wp.media( {
 			title: __( 'Select Brand Image', 'godam' ),
 			button: {
@@ -176,6 +176,8 @@ const Appearance = () => {
 		} );
 
 		fileFrame.on( 'select', function() {
+			setSelectedBrandImage( true );
+
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 			const brandImg = document.querySelector( '#branding-icon' );
 
