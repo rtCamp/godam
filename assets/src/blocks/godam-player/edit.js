@@ -23,6 +23,7 @@ import {
 	MediaReplaceFlow,
 	useBlockProps,
 	InnerBlocks,
+	BlockVerticalAlignmentControl,
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
@@ -94,6 +95,7 @@ function VideoEdit( {
 		muted,
 		loop,
 		preload,
+		verticalAlignment,
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
@@ -354,6 +356,28 @@ function VideoEdit( {
 
 	const videoPosterDescription = `video-block__poster-image-description-${ instanceId }`;
 
+	// Add function to handle vertical alignment change
+	const onChangeVerticalAlignment = ( alignment ) => {
+		setAttributes( { verticalAlignment: alignment } );
+	};
+
+	// Add function to get alignment styles
+	const getAlignmentStyles = () => {
+		const alignmentMap = {
+			top: 'flex-start',
+			center: 'center',
+			bottom: 'flex-end',
+		};
+
+		return {
+			display: 'flex',
+			flexDirection: 'column',
+			justifyContent: alignmentMap[ verticalAlignment ] || 'center',
+			alignItems: 'stretch',
+			height: '100%',
+		};
+	};
+
 	return (
 		<>
 			{ isSingleSelected && (
@@ -368,6 +392,10 @@ function VideoEdit( {
 						>
 							{ __( 'Overlay', 'godam' ) }
 						</Button>
+						<BlockVerticalAlignmentControl
+							value={ verticalAlignment }
+							onChange={ onChangeVerticalAlignment }
+						/>
 					</BlockControls>
 					<BlockControls group="other">
 						<MediaReplaceFlow
@@ -500,6 +528,7 @@ function VideoEdit( {
 								bottom: 0,
 								zIndex: 5,
 								pointerEvents: isSingleSelected ? 'auto' : 'none',
+								...getAlignmentStyles(),
 							} }
 						>
 							<InnerBlocks

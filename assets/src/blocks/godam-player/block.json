@@ -71,6 +71,10 @@
 		"seo": {
 			"type": "object",
 			"default": {}
+		},
+		"verticalAlignment": {
+			"type": "string",
+			"default": "center"
 		}
 	},
 	"supports": {

@@ -153,6 +153,19 @@ elseif ( ! empty( $ads_layers ) && 'self-hosted' === $ad_server ) :
 endif;
 
 $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
+
+// Add vertical alignment attribute.
+$vertical_alignment = ! empty( $attributes['verticalAlignment'] ) ? esc_attr( $attributes['verticalAlignment'] ) : 'center';
+
+// Get alignment styles inline.
+$alignment_map = array(
+	'top'    => 'flex-start',
+	'center' => 'center',
+	'bottom' => 'flex-end',
+);
+
+$justify_content  = isset( $alignment_map[ $vertical_alignment ] ) ? $alignment_map[ $vertical_alignment ] : 'center';
+$alignment_styles = "display: flex; flex-direction: column; justify-content: {$justify_content}; align-items: stretch; height: 100%;";
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
@@ -180,6 +193,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 						pointer-events: none;
 						opacity: 1;
 						transition: opacity 0.3s ease;
+						<?php echo esc_attr( $alignment_styles ); ?>
 					"
 				>
 					<?php 
@@ -374,52 +388,4 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 		<?php endif; ?>
 	</figure>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-	// Hide heading overlay when video starts playing
-	const videos = document.querySelectorAll('.easydam-player[data-has-heading="true"]');
-	
-	videos.forEach(function(video) {
-		const container = video.closest('.easydam-video-container');
-		const headingOverlay = container ? container.querySelector('[data-heading-overlay]') : null;
-		
-		if (headingOverlay) {
-			// Listen for the first play event
-			let hasPlayed = false;
-			
-			video.addEventListener('play', function() {
-				if (!hasPlayed) {
-					hasPlayed = true;
-					headingOverlay.style.opacity = '0';
-					
-					// Remove the overlay after the transition
-					setTimeout(function() {
-						headingOverlay.style.display = 'none';
-					}, 300);
-				}
-			});
-			
-			// For VideoJS, we might need to listen to the player ready event
-			video.addEventListener('loadstart', function() {
-				// Check if VideoJS is available and initialize listener
-				if (window.videojs && video.id) {
-					const player = window.videojs.getPlayer(video.id);
-					if (player) {
-						player.one('play', function() {
-							if (!hasPlayed) {
-								hasPlayed = true;
-								headingOverlay.style.opacity = '0';
-								
-								setTimeout(function() {
-									headingOverlay.style.display = 'none';
-								}, 300);
-							}
-						});
-					}
-				}
-			});
-		}
-	});
-});
-</script>
 <?php endif; ?>
