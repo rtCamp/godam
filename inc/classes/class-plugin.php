@@ -114,6 +114,7 @@ class Plugin {
 		Polls::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
+		Elementor_Widgets::get_instance();
 	}
 
 	/**
