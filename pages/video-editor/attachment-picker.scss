@@ -153,4 +153,12 @@
 			}
 		}
 	}
+
+	.video-canvas-wrapper {
+		max-width: 90%;
+
+		@media screen and (min-width: 1440px) {
+			max-width: 80%;
+		}
+	}
 }

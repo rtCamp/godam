@@ -5,6 +5,12 @@ $GREEN: #4CAF50;
 $RED: #F44336;
 $LIGHT_BLUE: #2196F3;
 
+#root-easydam,
+#root-video-editor {
+	--wp-components-color-accent: #ab3a6c;
+}
+
+
 /*
 Write your Sass code here for admin.
 */
@@ -165,6 +171,8 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 		&::after {
 			content: var(--status-text, "");
+			max-width: 300px;
+			width: 400%;
 			position: absolute;
 			top: calc(100% + 0.25rem);
 			right: 0;
@@ -173,7 +181,6 @@ $media-frame-width: calc(300px + 2 * 24px);
 			padding: 0.25rem 0.5rem;
 			border-radius: 0.25rem;
 			font-size: 0.75rem;
-			white-space: nowrap;
 			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 			opacity: 0;
 		}
@@ -208,7 +215,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 	&--not-started {
 
 		.transcoding-status__loader {
-			--status-text: "Not Transcoded";
+			--status-text: "Not Transcoded, Bulk Select to Transcode";
 
 			svg {
 				fill: $LIGHT_BLUE;

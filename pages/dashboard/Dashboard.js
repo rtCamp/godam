@@ -101,8 +101,8 @@ const Dashboard = () => {
 		const rows = topVideosData?.map( ( item ) => {
 			return [
 				item.title || item.video_id,
-				`Video ID: ${ item.video_id }`,
-				( item.video_size ? item.video_size.toFixed( 2 ) : 0 ) + ' MB',,
+				`ID: ${ item.video_id }`,
+				( item.video_size ? item.video_size.toFixed( 2 ) : 0 ) + ' MB',
 				( ( item.plays / ( item.plays + 5 ) ) * 100 ).toFixed( 2 ) + '%',
 				item.plays,
 				item.play_time?.toFixed( 2 ) + 's',
@@ -222,12 +222,12 @@ const Dashboard = () => {
 			<div id="api-key-overlay" className="api-key-overlay hidden">
 				<div className="api-key-message">
 					<p>
-						{ dashboardMetrics?.message || __(
+						{ dashboardMetrics?.message + ' ' || __(
 							'Your API key is missing or invalid. Please check your plugin settings.',
 							'godam',
 						) }
 						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( ' Go to plugin settings', 'godam' ) }
+							{ __( 'Go to plugin settings', 'godam' ) }
 						</a>
 					</p>
 				</div>
@@ -367,21 +367,39 @@ const Dashboard = () => {
 										<tr key={ index }>
 											<td>
 												<div className="video-info">
-													<a className="thumbnail-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
-														<img
-															src={ item.thumbnail_url || DefaultThumbnail }
-															alt={ item.title || __( 'Video thumbnail', 'godam' ) }
-														/>
-													</a>
-													<a className="title-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
-														<div className="w-full max-w-40 text-left flex-1">
-															<p className="font-semibold">{ item.title || `Video ID: ${ item.video_id }` }</p>
-														</div>
-													</a>
+													{ item.exists ? (
+														<>
+															<a className="thumbnail-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
+																<img
+																	src={ item.thumbnail_url || DefaultThumbnail }
+																	alt={ item.title || __( 'Video thumbnail', 'godam' ) }
+																/>
+															</a>
+															<a className="title-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
+																<div className="w-full max-w-40 text-left flex-1">
+																	<p className="font-semibold">{ item.title || `Video ID: ${ item.video_id }` }</p>
+																</div>
+															</a>
+														</>
+													) : (
+														<>
+															<div className="thumbnail-link">
+																<img
+																	src={ DefaultThumbnail }
+																	alt={ item.title || __( 'Video thumbnail', 'godam' ) }
+																/>
+															</div>
+															<div className="title-link">
+																<div className="w-full max-w-40 text-left flex-1">
+																	<p className="font-semibold">{ item.title }</p>
+																</div>
+															</div>
+														</>
+													) }
 												</div>
 											</td>
 											<td>
-												{ item.video_size ? `${ item.video_size.toFixed( 2 ) } MB` : '0 MB' }
+												{ item.video_size ? `${ item.video_size.toFixed( 2 ) } MB` : '' }
 											</td>
 											<td>
 												{ item.plays > 0 && item.page_load > 0

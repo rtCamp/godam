@@ -118,13 +118,7 @@ const VideoEditor = ( { attachmentID } ) => {
 			}
 
 			if ( wpForms && wpForms.length > 0 ) {
-				const _wpForms = wpForms.map( ( form ) => {
-					return {
-						id: form.ID,
-						title: form.post_title,
-					};
-				} );
-				dispatch( setWPForms( _wpForms ) );
+				dispatch( setWPForms( wpForms ) );
 			}
 
 			if ( gravityForms && gravityForms.length > 0 ) {
@@ -263,14 +257,14 @@ const VideoEditor = ( { attachmentID } ) => {
 					}
 
 					{ attachmentConfig && sources.length > 0 && (
-						<div className="w-full">
+						<div className="w-full video-canvas-wrapper">
 							<div className="relative">
 								<VideoJSPlayer
 									options={ {
 										controls: true,
 										fluid: true,
 										preload: 'auto',
-										width: '100%',
+										aspectRatio: '16:9',
 										sources,
 										controlBar: {
 											playToggle: true,

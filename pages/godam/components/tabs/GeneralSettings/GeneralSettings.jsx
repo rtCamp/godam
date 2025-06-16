@@ -106,6 +106,7 @@ const GeneralSettings = () => {
 				className="godam-button"
 				onClick={ handleSaveSettings }
 				isBusy={ saveMediaSettingLoading }
+				disabled={ saveMediaSettingLoading }
 			>
 				{ __( 'Save Settings', 'godam' ) }
 			</Button>
