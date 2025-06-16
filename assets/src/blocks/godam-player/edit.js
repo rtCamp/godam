@@ -64,8 +64,10 @@ const ALLOWED_BLOCKS = [
 const TEMPLATE = [
 	[ 'core/group', {
 		className: 'godam-video-overlay',
-		// full width layout
-		layout: { type: 'full' },
+		layout: {
+			type: 'default',
+			inherit: true,
+		},
 	}, [
 		[ 'core/heading', {
 			level: 2,
@@ -99,7 +101,7 @@ function VideoEdit( {
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
-	const [ showOverlay, setShowOverlay ] = useState( true );
+	const [ showOverlay, setShowOverlay ] = useState( false );
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
 	const [ videoResponse, setVideoResponse ] = useState( {} );
 	const [ duration, setDuration ] = useState( 0 );
@@ -386,17 +388,20 @@ function VideoEdit( {
 					<BlockControls group="block">
 						<Button
 							icon={ layoutIcon }
-							label={ __( 'Toggle overlay', 'godam' ) }
+							label={ __( 'Thumbnail Overlay', 'godam' ) }
 							onClick={ () => setShowOverlay( ! showOverlay ) }
 							isPressed={ showOverlay }
 							className="wp-block-godam-video-overlay-button"
 						>
 							{ __( 'Overlay', 'godam' ) }
 						</Button>
-						<BlockVerticalAlignmentControl
-							value={ verticalAlignment }
-							onChange={ onChangeVerticalAlignment }
-						/>
+						{ showOverlay && (
+							<BlockVerticalAlignmentControl
+								label={ __( 'Vertical alignment of overlay blocks', 'godam' ) }
+								value={ verticalAlignment }
+								onChange={ onChangeVerticalAlignment }
+							/>
+						) }
 					</BlockControls>
 					<BlockControls group="other">
 						<MediaReplaceFlow
@@ -537,6 +542,10 @@ function VideoEdit( {
 								template={ TEMPLATE }
 								templateLock={ false }
 								renderAppender={ isSingleSelected ? InnerBlocks.ButtonBlockAppender : false }
+								__experimentalLayout={ {
+									type: 'default',
+									inherit: true,
+								} }
 							/>
 						</div>
 					) }
