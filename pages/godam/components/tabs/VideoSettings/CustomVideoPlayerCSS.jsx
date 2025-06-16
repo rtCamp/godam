@@ -9,9 +9,9 @@ import { useSelector } from 'react-redux';
 import {
 	PanelBody,
 	Panel,
-	TextareaControl,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import Editor from '@monaco-editor/react';
 
 const CustomVideoPlayerCSS = ( { handleSettingChange } ) => {
 	const customCSS = useSelector(
@@ -22,13 +22,15 @@ const CustomVideoPlayerCSS = ( { handleSettingChange } ) => {
 		<Panel heading={ __( 'Video Thumbnails', 'godam' ) } className="godam-panel">
 			<PanelBody>
 				<div className="godam-form-group">
-					<TextareaControl
-						__nextHasNoMarginBottom
-						label="Custom CSS"
+					<Editor
+						id="custom-css"
+						className="code-editor"
+						defaultLanguage="html"
+						defaultValue={ customCSS }
+						options={ {
+							minimap: { enabled: false },
+						} }
 						onChange={ ( value ) => handleSettingChange( 'custom_css', value ) }
-						placeholder="Placeholder"
-						value={ customCSS }
-						rows={ 30 }
 					/>
 					<div className="help-text">
 						{ __( 'Add custom css for GoDAM Video Block', 'godam' ) }
