@@ -7,6 +7,7 @@
 
 namespace RTGODAM\Inc;
 
+use RTGODAM\Inc\Elementor_Widgets\Godam_Gallery;
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -47,6 +48,7 @@ class Elementor_Widgets {
 	 * Register Widgets.
 	 */
 	public function widgets_registered() {
+		\Elementor\Plugin::$instance->widgets_manager->register( new Godam_Gallery() );
 	}
 
 	/**
