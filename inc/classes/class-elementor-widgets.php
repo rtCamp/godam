@@ -7,6 +7,7 @@
 
 namespace RTGODAM\Inc;
 
+use RTGODAM\Inc\Elementor_Widgets\Godam_Audio;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Gallery;
 use RTGODAM\Inc\Traits\Singleton;
 
@@ -21,7 +22,6 @@ class Elementor_Widgets {
 	 * Construct method.
 	 */
 	protected function __construct() {
-
 		add_action( 'elementor/widgets/register', array( $this, 'widgets_registered' ) );
 		add_action( 'elementor/elements/categories_registered', array( $this, 'add_elementor_widget_categories' ) );
 	}
@@ -51,6 +51,7 @@ class Elementor_Widgets {
 	 */
 	public function widgets_registered() {
 		\Elementor\Plugin::$instance->widgets_manager->register( new Godam_Gallery() );
+		\Elementor\Plugin::$instance->widgets_manager->register( new Godam_Audio() );
 	}
 
 	/**

@@ -80,42 +80,6 @@ class Godam_Gallery extends Base {
 		);
 
 		$this->add_control(
-			'align',
-			array(
-				'label'   => __( 'Alignment', 'godam' ),
-				'type'    => Controls_Manager::CHOOSE,
-				'options' => array(
-					'none'   => array(
-						'title' => esc_html__( 'None', 'godam' ),
-						'icon'  => 'eicon-editor-close',
-					),
-					'full'   => array(
-						'title' => esc_html__( 'Full Width', 'godam' ),
-						'icon'  => 'eicon-device-wide',
-					),
-					'wide'   => array(
-						'title' => esc_html__( 'Wide', 'godam' ),
-						'icon'  => 'eicon-text-align-justify',
-					),
-					'left'   => array(
-						'title' => esc_html__( 'Left', 'godam' ),
-						'icon'  => 'eicon-text-align-left',
-					),
-					'center' => array(
-						'title' => esc_html__( 'Center', 'godam' ),
-						'icon'  => 'eicon-text-align-center',
-					),
-					'right'  => array(
-						'title' => esc_html__( 'Right', 'godam' ),
-						'icon'  => 'eicon-text-align-right',
-					),
-				),
-				'default' => 'none',
-				'toggle'  => true,
-			)
-		);
-
-		$this->add_control(
 			'count',
 			array(
 				'label'   => esc_html__( 'Number of videos', 'godam' ),

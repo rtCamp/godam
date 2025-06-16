@@ -67,6 +67,7 @@ class Plugin {
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 		$this->load_rest_api();
+		$this->load_elementor_widgets();
 		$this->init_gravity_forms();
 
 		// Load cron jobs.
@@ -96,6 +97,19 @@ class Plugin {
 	}
 
 	/**
+	 * Registers the elementor widgets if required.
+	 * 
+	 * @return void
+	 */
+	public function load_elementor_widgets() {
+		if ( ! did_action( 'elementor/loaded' ) ) {
+			return;
+		}
+
+		Elementor_Widgets::get_instance();
+	}
+
+	/**
 	 * Load REST API.
 	 *
 	 * @return void
@@ -114,7 +128,6 @@ class Plugin {
 		Polls::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
-		Elementor_Widgets::get_instance();
 	}
 
 	/**
