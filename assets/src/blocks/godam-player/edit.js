@@ -375,6 +375,7 @@ function VideoEdit( {
 			justifyContent: alignmentMap[ verticalAlignment ] || 'center',
 			alignItems: 'stretch',
 			height: '100%',
+			overflow: 'hidden',
 		};
 	};
 

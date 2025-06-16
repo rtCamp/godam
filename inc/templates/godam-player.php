@@ -165,7 +165,7 @@ $alignment_map = array(
 );
 
 $justify_content  = isset( $alignment_map[ $vertical_alignment ] ) ? $alignment_map[ $vertical_alignment ] : 'center';
-$alignment_styles = "display: flex; flex-direction: column; justify-content: {$justify_content}; align-items: stretch; height: 100%;";
+$alignment_styles = "display: flex; flex-direction: column; justify-content: {$justify_content}; align-items: stretch; height: 100%; overflow: hidden;";
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
