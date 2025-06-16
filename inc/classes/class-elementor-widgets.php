@@ -7,6 +7,7 @@
 
 namespace RTGODAM\Inc;
 
+use RTGODAM\Inc\Elementor_Widgets\Godam_Audio;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Gallery;
 use RTGODAM\Inc\Traits\Singleton;
 
@@ -20,8 +21,39 @@ class Elementor_Widgets {
 	 * Construct method.
 	 */
 	protected function __construct() {
+		$this->register_scripts();
+		$this->setup_hooks();
+	}
+
+	/**
+	 * To setup action/filter.
+	 *
+	 * @return void
+	 */
+	public function setup_hooks() {
+		/**
+		 * Actions.
+		 */
 		add_action( 'elementor/widgets/register', array( $this, 'widgets_registered' ) );
 		add_action( 'elementor/elements/categories_registered', array( $this, 'add_elementor_widget_categories' ) );
+	}
+
+	/**
+	 * Registers required scripts and styles.
+	 *
+	 * @return void
+	 */
+	public function register_scripts() {
+
+		/**
+		 * Styles.
+		 */
+		wp_register_style(
+			'elementor-godam-audio-style',
+			RTGODAM_URL . 'assets/build/css/godam-audio.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/godam-audio.css' )
+		);
 	}
 
 	/**
@@ -49,6 +81,7 @@ class Elementor_Widgets {
 	 */
 	public function widgets_registered() {
 		\Elementor\Plugin::$instance->widgets_manager->register( new Godam_Gallery() );
+		\Elementor\Plugin::$instance->widgets_manager->register( new Godam_Audio() );
 	}
 
 	/**
