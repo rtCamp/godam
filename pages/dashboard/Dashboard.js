@@ -278,7 +278,7 @@ const Dashboard = () => {
 					</div>
 				</div>
 
-				<div className="mx-auto">
+				<div className="mx-auto py-4">
 					<div className="playback-country-container flex flex-wrap">
 						<div className="playback-performance flex-1 min-w-[600px]" id="global-analytics-container">
 							<PlaybackPerformanceDashboard
@@ -294,7 +294,7 @@ const Dashboard = () => {
 				</div>
 
 				<div className="top-media-container">
-					<div className="flex justify-between pt-8">
+					<div className="flex justify-between pt-4">
 						<h2>{ __( 'Top Videos', 'godam' ) }</h2>
 						<button onClick={ handleExportCSV } className="export-button">
 							<img src={ ExportBtn } alt="Export" className="export-icon" />
