@@ -886,6 +886,12 @@
 		 object-fit: fill;
 	 }
  }
+
+ .vjs-big-play-button.custom-play-image {
+	height: unset;
+	border: unset;
+	border-radius: unset;
+}
  
  .share-icon {
 	 height: 18px;
