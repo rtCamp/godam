@@ -128,6 +128,8 @@ const Appearance = () => {
 		}
 	}
 
+	let originalPlayButton = null;
+
 	const openCustomBtnImg = () => {
 		setSelectedCustomBgImg( true );
 		const fileFrame = wp.media( {
@@ -154,9 +156,23 @@ const Appearance = () => {
 				} ),
 			);
 
-			// Apply custom background via class
-			playButtonElement.style.backgroundImage = `url(${ attachment.url })`;
-			playButtonElement.classList.add( 'custom-bg' ); // Add the custom CSS class
+			// Replace button with image tag
+			if ( playButtonElement ) {
+				if ( ! originalPlayButton ) {
+					originalPlayButton = playButtonElement.cloneNode( true );
+				}
+
+				// Create new image element
+				const imgElement = document.createElement( 'img' );
+				imgElement.src = attachment.url;
+				imgElement.alt = __( 'Custom Play Button', 'godam' );
+				imgElement.className = 'vjs-big-play-button custom-play-image';
+
+				imgElement.style.cursor = 'pointer';
+
+				// Replace the original button with the new image
+				playButtonElement.parentNode.replaceChild( imgElement, playButtonElement );
+			}
 		} );
 
 		fileFrame.open();
@@ -222,8 +238,38 @@ const Appearance = () => {
 			} ),
 		);
 		setSelectedCustomBgImg( false );
-		const playButtonElement = document.querySelector( '.vjs-big-play-button' );
-		playButtonElement.style.backgroundImage = '';
+
+		// Find the custom image element and restore original button
+		const customImageElement = document.querySelector( '.custom-play-image' );
+
+		if ( customImageElement && originalPlayButton ) {
+		// Clone the original button to avoid issues with reusing DOM nodes
+			const restoredButton = originalPlayButton.cloneNode( true );
+
+			// Replace the image with the original button
+			customImageElement.parentNode.replaceChild( restoredButton, customImageElement );
+		} else {
+		// Fallback: create a new default play button if original is not available
+			const playButtonContainer = document.querySelector( '.video-js' );
+			const existingCustomImage = document.querySelector( '.custom-play-image' );
+
+			if ( playButtonContainer && existingCustomImage ) {
+			// Create default Video.js play button
+				const defaultButton = document.createElement( 'button' );
+				defaultButton.className = 'vjs-big-play-button';
+				defaultButton.type = 'button';
+				defaultButton.setAttribute( 'aria-label', 'Play Video' );
+
+				// Add the play icon span
+				const iconSpan = document.createElement( 'span' );
+				iconSpan.setAttribute( 'aria-hidden', 'true' );
+				iconSpan.className = 'vjs-icon-placeholder';
+				defaultButton.appendChild( iconSpan );
+
+				// Replace the image with the default button
+				existingCustomImage.parentNode.replaceChild( defaultButton, existingCustomImage );
+			}
+		}
 	};
 
 	function handleSkipTimeSettings( e ) {
