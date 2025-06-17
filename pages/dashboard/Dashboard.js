@@ -376,12 +376,15 @@ const Dashboard = () => {
 										</tr>
 									) )
 								) }
+								{ topVideosData.length === 0 && (
+									<tr>
+										<td colSpan="6" className="text-center py-4 text-lg">
+											{ __( 'No videos found.', 'godam' ) }
+										</td>
+									</tr>
+								) }
 							</tbody>
-							{ topVideosData.length === 0 && (
-								<div className="text-center py-4 text-lg mx-auto w-full">
-									{ __( 'No videos found.', 'godam' ) }
-								</div>
-							) }
+
 						</table>
 					</div>
 					<div className="flex items-center justify-between mt-4">
