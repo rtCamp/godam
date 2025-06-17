@@ -481,6 +481,24 @@ function GODAMPlayer( videoRef = null ) {
 				controlBar.removeChild( 'volumePanel' );
 			}
 
+			if ( controlBarSettings?.customPlayBtnImg ) {
+				const playButtonElement = player.getChild( 'bigPlayButton' );
+
+				const imgElement = document.createElement( 'img' );
+				imgElement.src = controlBarSettings?.customPlayBtnImg;
+				imgElement.alt = 'Custom Play Button';
+				imgElement.className = 'vjs-big-play-button custom-play-image';
+
+				imgElement.style.cursor = 'pointer';
+				imgElement.addEventListener( 'click', function() {
+					const videoPlayer = imgElement.closest( '.easydam-player' );
+					const videoElement = videoPlayer?.querySelector( 'video' );
+					videoElement.play();
+				} );
+				// Replace the original button with the new image
+				playButtonElement.el_.parentNode.replaceChild( imgElement, playButtonElement.el_ );
+			}
+
 			if ( controlBarSettings?.brandingIcon || ! validAPIKey ) {
 				const CustomPlayButton = videojs.getComponent( 'Button' );
 
