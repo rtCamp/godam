@@ -15,7 +15,7 @@ use Elementor\Controls_Manager;
 class Godam_Audio extends Base {
 
 	/**
-	 * Default config for Calculate Savings Widget.
+	 * Default config for GoDAM Audio Widget.
 	 *
 	 * @return array
 	 */
@@ -31,7 +31,7 @@ class Godam_Audio extends Base {
 	}
 
 	/**
-	 * Register Calculate Savings Widget Controls.
+	 * Register Widget Controls.
 	 *
 	 * @access protected
 	 */
@@ -111,7 +111,7 @@ class Godam_Audio extends Base {
 	}
 
 	/**
-	 * Render GoDAM Audio widget.
+	 * Render GoDAM Audio widget output on the frontend.
 	 *
 	 * @access protected
 	 */

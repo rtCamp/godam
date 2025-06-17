@@ -17,6 +17,12 @@ if ( isset( $is_shortcode ) && $is_shortcode ) {
 	$is_shortcode = false;
 }
 
+if ( isset( $is_elementor_widget ) && $is_elementor_widget ) {
+	$is_elementor_widget = true;
+} else {
+	$is_elementor_widget = false;
+}
+
 // prevent default behavior of Gravity Forms autoscroll on submission.
 add_filter( 'gform_confirmation_anchor', '__return_false' );
 
@@ -156,7 +162,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 
 <?php if ( ! empty( $sources ) ) : ?>
 	<figure 
-	<?php echo $is_shortcode ? '' : wp_kses_data( get_block_wrapper_attributes() ); ?>
+	<?php echo $is_shortcode || $is_elementor_widget ? '' : wp_kses_data( get_block_wrapper_attributes() ); ?>
 	style="
 	--rtgodam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
 	--rtgodam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
