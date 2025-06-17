@@ -101,8 +101,8 @@
 			"clientNavigation": true
 		}
 	},
-    "editorStyle": ["file:./index.css", "godam-player-frontend-style"],
-	"style": ["godam-player-style", "godam-player-frontend-style"],
+    "editorStyle": ["file:./index.css", "godam-player-frontend-style", "godam-player-rtcamp-skin-style"],
+	"style": ["godam-player-style", "godam-player-frontend-style", "godam-player-rtcamp-skin-style"],
 	"editorScript": ["file:./index.js"],
     "viewScript": ["godam-player-frontend-script", "godam-player-analytics-script"],
     "render": "file:./render.php"

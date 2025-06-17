@@ -1,0 +1,182 @@
+.video-js {
+    // Big play button styles
+    .vjs-big-play-button {
+      right: 0;
+      left: 70%;
+      background-image: url(../images/rtcamp-skin-playicon.svg) !important;
+      background-color: unset !important;
+      border-radius: 50%;
+      height: clamp(75px, 5.5vw, 100px);
+      width: clamp(75px, 5.5vw, 100px);
+      z-index: 9;
+      border: unset;
+    //   position: relative; // Needed for absolutely positioned pseudo-elements
+  
+      &::before,
+      &::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        border: 1px solid rgba(255, 255, 255, 1);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: -1;
+        animation: ringAnimationForDownload 1.8s infinite linear;
+      }
+  
+      &::after {
+        animation-delay: 0.9s;
+      }
+    }
+    // control bar styles
+  
+    .vjs-control-bar {
+          background-color: transparent !important;
+          flex-direction: row-reverse;
+  
+          // Force controls except seek bar into a column
+          button:not(.vjs-progress-control):not(.vjs-play-progress):not(.vjs-load-progress):not(.vjs-subs-caps-button), div.vjs-subs-caps-button{
+            // position: static; // let flexbox handle layout
+            // display: flex;
+            // justify-content: center;
+            // align-items: center;
+            // width: 3rem;
+            // height: 3rem;
+            // border-radius: 50%;
+            // background-color: #3a1d1d;
+            display: flex;
+            background: #000;
+            border-radius: 50%;
+            /* height: 2rem; */
+            padding: 19px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: contrast(0.7);
+            position: absolute;
+            right: 8px;
+
+            &:hover {
+              filter: contrast(1);
+            }
+        }
+
+          .vjs-seek-to-live-control, .vjs-remaining-time, .vjs-picture-in-picture-control, [class^="vjs-skip-backward"], [class^="vjs-skip-forward"], .vjs-custom-play-button {
+            display: none !important;
+          }
+
+          .vjs-volume-panel {
+            flex-direction: row-reverse;
+            bottom: 10px;
+            align-items: center;
+        }
+
+        .vjs-volume-control {
+            margin-right: 50px !important;
+            background: #000;
+            padding: 0 6px;
+            height: 2em !important;
+            width: 7em !important;
+            display: flex;
+            align-items: center;
+            border-radius: 5px;
+            filter: contrast(0.7);
+
+            &:hover {
+                filter: contrast(1);
+            }
+        }
+
+          // Stack buttons vertically from bottom up with 10px gap
+        .vjs-play-control {
+            bottom: 10px;
+        }
+
+        .vjs-volume-panel {
+            bottom: 65px;
+        }
+
+        .vjs-fullscreen-control {
+            bottom: 160px;
+        }
+
+        .fullscreen-bottom-110 {
+            bottom: 110px;
+        }
+        
+        div.vjs-subs-caps-button{
+            bottom: 110px;
+            // right: -90px;
+
+            .vjs-menu {
+                /* top: 0; */
+                bottom: -7em;
+                /* right: 6em; */
+                left: -11em;
+
+                &::before {
+                    border-bottom: 6px solid transparent;
+                    border-left: 6px solid rgba(43,51,63,.7);
+                    border-top: 6px solid transparent;
+                    content: "";
+                    // height: -11px;
+                    position: absolute;
+                    right: -6px;
+                    /* top: 100%; */
+                    // width: 0;
+                    bottom: 68px; // same as menu background
+                  }
+            }
+        }
+
+        .vjs-icon-placeholder:before {
+            line-height: 2;
+        }
+      }
+  
+    .vjs-progress-control {
+          order: 1;
+          transform: translateY(-50%);
+
+        .vjs-progress-holder {
+            margin: 0 30px;
+        }
+
+          &:hover {
+            transform: translateY(-50%);
+        }
+      }
+
+    //   .vjs-volume-panel.vjs-volume-panel-horizontal.vjs-hover, .vjs-volume-panel.vjs-volume-panel-horizontal.vjs-slider-active, .vjs-volume-panel.vjs-volume-panel-horizontal:active {
+    //     width: unset;
+    // }
+
+  }
+
+
+//   $btn-size: 40px;
+//   $gap: 10px;
+
+//   @for $i from 1 through 95 {
+//     .video-js .vjs-control-bar .vjs-button:nth-of-type(#{$i}) {
+//       bottom: calc((#{$btn-size} + #{$gap}) * (#{$i - 1}));
+//     }
+// }
+  
+  // Animation for play button rings
+  @keyframes ringAnimationForDownload {
+    0% {
+      width: clamp(3.75rem, 2.662rem + 5.438vi, 9.1875rem);
+      height: clamp(3.75rem, 2.662rem + 5.438vi, 9.1875rem);
+      opacity: 0.14;
+    }
+  
+    100% {
+      width: clamp(15.625rem, 12.675rem + 14.75vi, 30.375rem);
+      height: clamp(15.625rem, 12.675rem + 14.75vi, 30.375rem);
+      opacity: 0;
+    }
+  }
+  
