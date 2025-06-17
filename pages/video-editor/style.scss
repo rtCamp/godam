@@ -245,6 +245,31 @@
 			}
 		}
 	}
+
+	.chapter-indicator {
+
+		&--duration {
+			display: none;
+		}
+		&--text {
+			position: absolute;
+			left: 50%;
+			bottom: -20px;
+			font-size: 11px;
+			white-space: nowrap;
+		}
+		&:hover {
+			
+			.chapter-indicator--duration {
+				display: block;
+				position: absolute;
+				top: -20px;
+				left: 50%;
+				white-space: nowrap;
+				font-size: 11px;
+			}
+		}
+	}
 }
 
 .godam-video-list-wrapper {
