@@ -14,13 +14,10 @@ import { __, sprintf } from '@wordpress/i18n';
 import { generateCountryHeatmap } from '../analytics/helper';
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
 import ExportBtn from '../../assets/src/images/export.svg';
-import Tooltip from '../analytics/Tooltip.js';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchTopVideosQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import SingleMetrics from '../analytics/SingleMetrics';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
-import { generateUsageDonutChart } from './components/ChartsDashboard.js';
-import MarketingCarousel from './components/MarketingCarousel.jsx';
 import chevronLeft from '../../assets/src/images/chevron-left.svg';
 import chevronRight from '../../assets/src/images/chevron-right.svg';
 
@@ -160,20 +157,6 @@ const Dashboard = () => {
 
 			if ( bandwidthEl && storageEl && window?.userData ) {
 				clearInterval( checkExist );
-
-				generateUsageDonutChart(
-					'#bandwidth-donut-chart',
-					window.userData.bandwidth_used ?? 0,
-					window.userData.total_bandwidth ?? 0,
-					'bandwidth',
-				);
-
-				generateUsageDonutChart(
-					'#storage-donut-chart',
-					window.userData.storage_used ?? 0,
-					window.userData.total_storage ?? 0,
-					'storage',
-				);
 			}
 		}, 100 );
 
@@ -295,29 +278,6 @@ const Dashboard = () => {
 					</div>
 				</div>
 
-				<div className="flex flex-wrap gap-3 py-4">
-					<div className="dashboard-donut-container bg-white border border-zinc-200 p-2">
-						<div className="flex items-center gap-1 mb-1">
-							<h2 className="text-sm font-medium text-zinc-600 m-0">
-								{ __( 'Bandwidth Usage', 'godam' ) }
-							</h2>
-							<Tooltip text={ __( 'Bandwidth used for all media delivery. This resets monthly.', 'godam' ) } />
-						</div>
-						<div id="bandwidth-donut-chart"></div>
-					</div>
-
-					<div className="dashboard-donut-container bg-white border border-zinc-200 p-2">
-						<div className="flex items-center gap-1 mb-1">
-							<h2 className="text-sm font-medium text-zinc-600 m-0">
-								{ __( 'Storage Usage', 'godam' ) }
-							</h2>
-							<Tooltip text={ __( 'Storage space consumed by all uploaded media files. Storage is a one-time allocation.', 'godam' ) } />
-						</div>
-						<div id="storage-donut-chart"></div>
-					</div>
-					<MarketingCarousel />
-				</div>
-
 				<div className="mx-auto">
 					<div className="playback-country-container flex flex-wrap">
 						<div className="playback-performance flex-1 min-w-[600px]" id="global-analytics-container">
@@ -399,6 +359,11 @@ const Dashboard = () => {
 									) )
 								) }
 							</tbody>
+							{ topVideosData.length === 0 && (
+								<div className="text-center py-4 text-lg mx-auto w-full">
+									{ __( 'No videos found.', 'godam' ) }
+								</div>
+							) }
 						</table>
 					</div>
 					<div className="flex items-center justify-between mt-4">
