@@ -93,7 +93,7 @@ const MarketingCarousel = () => {
 						<>
 							<h3 className="text-lg font-semibold mb-2 text-pink-800">{ __( 'What\'s New', 'godam' ) }</h3>
 							<a
-								href="https://godam.io/blog"
+								href="https://godam.io/blog/whats-new-in-godam-v1-1-0/"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="marketing-carousel-read-more"

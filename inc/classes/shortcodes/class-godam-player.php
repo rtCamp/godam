@@ -26,26 +26,41 @@ class GoDAM_Player {
 		add_shortcode( 'godam_video', array( $this, 'render' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts' ) );
+		add_action( 'wp_head', array( $this, 'godam_output_admin_player_css' ) );
+	}
+	
+	/**
+	 * Outputs custom css from video player settings tab input field.
+	 */
+	public function godam_output_admin_player_css() {
+		$godam_settings = get_option( 'rtgodam-settings', array() );
+		$custom_css     = $godam_settings['video_player']['custom_css'];
+		if ( ! empty( $custom_css ) ) {
+			echo '<style id="godam-player-inline-css">' . esc_html( $custom_css ) . '</style>';
+		}
 	}
 
 	/**
 	 * Register scripts and styles for the GoDAM player.
 	 */
 	public function register_scripts() {
+		// Allow external stylesheets to be enqueued.
+		do_action( 'godam_player_enqueue_styles' );
+
 		// Register your scripts and styles here.
 		wp_register_script(
 			'godam-player-frontend-script',
-			RTGODAM_URL . 'assets/build/js/godam-player-frontend.js',
+			RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
 			true
 		);
 
 		wp_register_script(
 			'godam-player-analytics-script',
-			RTGODAM_URL . 'assets/build/js/godam-player-analytics.js',
+			RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
 			array( 'godam-player-frontend-script' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-analytics.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js' ),
 			true
 		);
 
@@ -61,6 +76,14 @@ class GoDAM_Player {
 			RTGODAM_URL . 'assets/build/css/godam-player.css',
 			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player.css' )
+		);
+
+		wp_localize_script(
+			'godam-player-frontend-script',
+			'godamData',
+			array(
+				'api_base' => RTGODAM_API_BASE,
+			)
 		);
 	}
 

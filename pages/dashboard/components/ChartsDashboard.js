@@ -75,9 +75,9 @@ export function generateUsageDonutChart( selector, usedRaw, totalRaw, type = 'ba
 		.style( 'stroke-width', '2px' );
 
 	const percent = total > 0 ? ( used / total ) * 100 : 0;
-	const usedText = `${ used.toFixed( 1 ) }`;
-	const totalText = `${ total.toFixed( 1 ) } GB`;
-	const availableText = `${ ( total - used ).toFixed( 1 ) } GB available of ${ totalText }`;
+	const usedText = `${ formatGBToTB( used, false ) }`;
+	const totalText = formatGBToTB( total );
+	const availableText = `${ formatGBToTB( total - used ) } available of ${ totalText }`;
 
 	if ( type === 'bandwidth' ) {
 		svg
@@ -128,6 +128,32 @@ export function generateUsageDonutChart( selector, usedRaw, totalRaw, type = 'ba
 	}
 }
 
+function formatWatchTime( seconds ) {
+	const hrs = Math.floor( seconds / 3600 );
+	const mins = Math.floor( ( seconds % 3600 ) / 60 );
+	const secs = Math.floor( seconds % 60 );
+
+	const parts = [];
+	if ( hrs > 0 ) {
+		parts.push( `${ hrs }h` );
+	}
+	if ( mins > 0 ) {
+		parts.push( `${ mins }m` );
+	}
+	if ( secs > 0 || parts.length === 0 ) {
+		parts.push( `${ secs }s` );
+	}
+
+	return parts.join( ' ' );
+}
+
+function formatGBToTB( gb, unit = true ) {
+	if ( gb >= 1000 ) {
+		return ( gb / 1000 ).toFixed( 1 ) + ( unit ? ' TB' : '' );
+	}
+	return gb.toFixed( 1 ) + ( unit ? ' GB' : '' );
+}
+
 function main() {
 	const dashboardMetrics = window.dashboardMetrics;
 
@@ -161,7 +187,7 @@ function main() {
 
 	const watchTimeEl = document.getElementById( 'watch-time' );
 	if ( watchTimeEl ) {
-		watchTimeEl.innerText = `${ playTime?.toFixed( 2 ) }s`;
+		watchTimeEl.innerText = `${ formatWatchTime( playTime.toFixed( 2 ) ) }`;
 	}
 
 	const analyticsContainer = document.getElementById( 'video-analytics-container' );

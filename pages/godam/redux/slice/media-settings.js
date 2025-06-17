@@ -6,7 +6,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
 	video: {
 		video_quality: [],
-		video_compress_quality: 80,
+		video_compress_quality: 100,
 		video_thumbnails: 5,
 		overwrite_thumbnails: false,
 		watermark: false,
@@ -18,6 +18,9 @@ const initialState = {
 		enable_folder_organization: true,
 		brand_color: '#000000',
 		brand_image: '',
+	},
+	video_player: {
+		custom_css: '',
 	},
 };
 

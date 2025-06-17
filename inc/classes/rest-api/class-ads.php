@@ -236,7 +236,7 @@ class Ads extends Base {
 					$skippable    = $layer['skippable'] ?? false;
 					$skip_offset  = intval( $layer['skip_offset'] ?? 0 );
 					$ad_url       = esc_url( $layer['ad_url'] ) ?? '';
-					$click_link   = esc_url( $layer['click_link'] ) ?? '';
+					$click_link   = esc_url( $layer['click_link'] ?? '' );
 					
 					$endpoint_url = rest_url( $this->namespace . sprintf( '/%s', empty( $this->rest_base ) ? 'adTagURL' : $this->rest_base . 'adTagURL' ) );
 					$vast_url     = add_query_arg(

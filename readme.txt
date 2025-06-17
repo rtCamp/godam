@@ -1,53 +1,61 @@
-=== GoDAM ===
+=== GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more ===
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20
-Tags: transcoder, DAM, media library, adaptive streaming, video analytics
+Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 1.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, and video analytics.
 
 == Description ==
-[GoDAM](https://godam.io/) is a powerful digital asset management solution designed to provide automatic transcoding, adaptive bitrate streaming, and interactive video layers to enhance viewer engagement. It simplifies the entire video workflow, from upload to optimized playback, ensuring smooth delivery across all devices and network conditions.
+[GoDAM](https://godam.io/) is a powerful file manager, WordPress Media Library organizer and digital asset management solution designed to provide automatic transcoding, adaptive bitrate streaming, and interactive video layers to enhance viewer engagement. It simplifies the entire video workflow, from upload to optimized playback, ensuring smooth delivery across all devices and network conditions.
 
 With GoDAM, WordPress users can leverage advanced video capabilities without requiring extensive technical expertise. It automates the conversion of uploaded videos into multiple resolutions, enabling seamless playback with adaptive bitrate streaming. The integration of interactive elements such as CTAs, forms, hotspots and ads makes GoDAM an all-in-one solution for content creators, marketers, and eCommerce businesses.
 
 Check out our source code and contribute to the plugin on GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam).
-Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
+Read our blog: [GoDAM blog](https://godam.io/blog/)
 
 [youtube https://www.youtube.com/watch?v=UGmKa6aLSgU]
 
 = Free Features =
 
-📌 Media Management
+📌 **Media Management**
 ✓ The [DAM functionality](https://godam.io/features/wordpress-advanced-media-management/) streamlines file organization for websites with large libraries of images, videos, documents, and more.
-✓ Organize media assets efficiently with enhanced WordPress Media Library integration.
+✓ Organize media assets efficiently with enhanced WordPress Media Library folders and filtering with a smart Media Library Assistant.
+✓ Manage files easily with a built-in folder-based File Manager for drag-and-drop organization.
 
-📌 Interactive Video Layers for Engagement
+📌 **Interactive Video Layers for Engagement**
 ✓ Embed [clickable CTAs](https://godam.io/features/video-overlay/) to drive actions like sign-ups and purchases.
 ✓ Enhance your videos with [customizable hotspots](https://godam.io/features/video-hotspot/) that deliver additional context, links, and information exactly when and where your viewers need it.
 ✓ Add interactive forms using [Gravity Forms](https://godam.io/features/gravity-forms/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), and [WPForms](https://wordpress.org/plugins/wpforms-lite/) to collect leads.
 ✓ Enable video submissions using the GoDAM Record field that supports webcam and screencast inside Gravity Forms.
 ✓ Add interactive Polls to gather viewer opinions during playback.
 
-📌 Seamless Ad Monetization
+📌 **Seamless Ad Monetization**
 ✓ Supports [self-hosted ads and third-party ad networks](https://godam.io/features/ads-integration/).
 ✓ Flexible ad placements (pre-roll, mid-roll, post-roll) to maximize revenue.
 ✓ Boost revenue and engagement with clickable ad redirections
 
-📌 Customizable Video Player Experience
+📌 **Customizable Video Player Experience**
 ✓ Fully customizable playback controls, branding, and player themes.
 ✓ Enable video looping, autoplay, and inline play for better user experience.
 
-📌 Video SEO
+📌 **Video SEO**
 ✓ Generate structured data for better indexing, with video schema, title, description, thumbnail
+
+📌 **GoDAM Video Gallery**
+✓ Professional Video Galleries: Create stunning video displays that match your website's design
+✓ Smart Video Management: Automatically organize and filter your video content
+✓ Mobile-Friendly Design: Galleries that look perfect on all devices and screen sizes
+✓ Interactive Video Player: Pop-up video player with smooth playback experience
+✓ Performance Optimized: Fast loading with intelligent content loading strategies
 
 = Pro Features =
 
-📌 Smart Transcoding & Adaptive Bitrate Streaming
+📌 **Smart Transcoding & Adaptive Bitrate Streaming**
 ✓ Automatically [converts videos into multiple resolutions](https://godam.io/features/adaptive-bitrate-streaming/) (240p to 4K).
 ✓ Ensures smooth playback by dynamically adjusting quality based on network speed.
 ✓ Supported audio formats: MP3, M4A, WAV, OGG
@@ -55,13 +63,13 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 ✓ Watermarking support to protect video content.
 ✓ Automatically compress and resize videos on upload to reduce storage and bandwidth.
 
-📌 Central Media Manager
+📌 **Central Media Manager**
 ✓ Unified dashboard for managing all media assets in one place.
 ✓ Organize videos, images, and documents into folders with search, filters, and sharing options.
 ✓ Each video gets a dedicated single video page with time-stamped comments and reactions for team collaboration.
 ✓ Automatically sync uploaded videos with the WordPress Media Library for easy access across your site.
 
-📌 Advanced Video Analytics
+📌 **Advanced Video Analytics**
 ✓ Monitor viewer behavior and engagement through [detailed metrics and heatmaps](https://godam.io/features/analytics/).
 ✓ Track plays, watch time, and engagement rate
 ✓ See views by country
@@ -69,7 +77,7 @@ Read our blog: [GoDAM blog](https://rtcamp.com/blog/godam/)
 ✓ View bandwidth and storage usage
 ✓ Rank videos by performance and much more
 
-📌 Automatic Video Transcription
+📌 **Automatic Video Transcription**
 ✓ AI-powered closed captions added automatically on upload for accessibility and engagement.
 
 Primary Benefits:
@@ -157,20 +165,75 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 2. Video Settings without API Key
 3. Video Settings with valid API Key
 4. Video Editor
-5. Gravity Forms Integration
+5. Video Layer Selection
 6. CTA Layer
 7. Hotspot Layer
 8. Ads Integration
 9. Polls Layer
-10. Player Settings
-11. Enhanced Media Library (DAM)
-12. GoDAM Video Block
-13. Post-Specific Video Settings
-14. Video Layer Selection
-15. Attachment Video Details
-16. Video Analytics
+10. Gravity Forms Integration
+11. Contact Form 7 Integration
+12. WP Forms Integration
+13. Player Settings
+14. Enhanced Media Library (DAM)
+15. GoDAM Video Block
+16. Post-Specific Video Settings
+17. Attachment Video Details
+18. Single Video Analytics
+19. Video Analytics Dashboard
+20. Central Media Selector Tab
+21. Share Button
+22. GoDAM Recorder Field for Gravity Forms
+23. Gravity Form Entry Detail page
+24. Automatic Video Transcription
+25. Built-in Video SEO
+26. [godam_video] Shortcode
+27. Central Media Manager
+28. Image Upload to Central Media Manager
+29. GoDAM Video Gallery Block
+30. GoDAM Video Gallery Front-end
 
 == Changelog ==
+
+= v1.1.3 (June 6, 2025) =
+
+Fix: Implemented a custom endpoint to retrieve and display the list of WPForms on the Video Editor page.
+Fix: Enabled watermarking functionality for users on the Starter plan.
+Fix: Update overlapping Modal Popup UI for GoDAM Gallery.
+Enhancement: Reorganized the GoDAM admin menu for improved navigation.
+Enhancement: Added a clear guidance message on Analytics pages for cases where videos have been deleted.
+
+= v1.1.2 (June 5, 2025) =
+
+- Feat: Added a “Share” button to enable sharing of single video pages in the Central Media Manager.
+- Feat: Introduced the GoDAM Video Gallery block and shortcode for displaying videos on the frontend.
+- Enhance: Improved video player UI for better mobile viewing experience.
+
+= v1.1.1 (May 30, 2025) =
+
+- Fix: Plugin release actions to generate compressed plugin zip file.
+
+= v1.1.0 (May 29, 2025) =
+
+- Feat: Central Media Manager – Unified media dashboard with folders, filters, search, and public sharing.
+- Feat: Central Media Selector Tab – New tab to import media from the Central Media Manager directly into the WordPress media library.
+- Feat: Image Upload to Central Media Manager – Upload and organize image files into the central media library.
+- Feat: GoDAM Recorder Field for Gravity Forms – Record webcam or screen video directly within a form submission.
+- Feat: Automatic Video Transcription – AI-generated captions added automatically to uploaded videos.
+- Feat: Built-in Video SEO – Generate video schema with title, description, thumbnail and more for improved search engine discoverability.
+- Feat: Video Optimization at Upload – Auto-compression and resizing of uploaded videos to optimize bandwidth and storage.
+- Feat: WPForms & Contact Form 7 Integration – Add interactive form layers to videos using your preferred form plugins.
+- Feat: [godam_video] Shortcode – Embed a video anywhere using its media ID.
+- Feat: Advanced Video Analytics Dashboard – View plays, watch time, engagement, regional performance, and top-performing videos.
+- Enhancement: Improved Single Video Analytics Page – Compare videos, view playback metrics, and explore geographical heatmaps.
+- Enhancement: Video Editor UX – Edit timestamps for interactive video layers.
+- Enhancement: Keyboard Accessibility – Improved keyboard navigation and accessibility within the GoDAM video player.
+
+= v1.0.8 (May 27, 2025) =
+- Fix: Renamed functions and added checks for function existence to prevent fatal errors caused by other plugin functions.
+
+= v1.0.7 (May 22, 2025) =
+- Fix: Update the POT creation process for translation.
+- Fix: Analytics event data for non logged-in users.
 
 = v1.0.6 (May 16, 2025) =
 - Fix: Updated translation files.
