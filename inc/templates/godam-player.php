@@ -112,8 +112,9 @@ $video_setup = wp_json_encode( $video_setup );
 
 $video_config = wp_json_encode(
 	array(
-		'preview' => $video_preview,
-		'layers'  => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
+		'preview'  => $video_preview,
+		'layers'   => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
+		'chapters' => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(), // contains list of chapters.
 	)
 );
 

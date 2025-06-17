@@ -28,7 +28,7 @@ class Settings extends Base {
 		 */
 	private function get_default_settings() {
 		return array(
-			'video'   => array(
+			'video'        => array(
 				'sync_from_godam'        => false,
 				'adaptive_bitrate'       => false,
 				'optimize_videos'        => false,
@@ -41,10 +41,13 @@ class Settings extends Base {
 				'watermark_url'          => '',
 				'use_watermark_image'    => false,
 			),
-			'general' => array(
+			'general'      => array(
 				'enable_folder_organization' => true,
 				'brand_image'                => '',
 				'brand_color'                => '#000000',
+			),
+			'video_player' => array(
+				'custom_css' => '',
 			),
 		);
 	}
@@ -273,7 +276,7 @@ class Settings extends Base {
 		$default = $this->get_default_settings();
 
 		return array(
-			'video'   => array(
+			'video'        => array(
 				'sync_from_godam'        => rest_sanitize_boolean( $settings['video']['sync_from_godam'] ?? $default['video']['sync_from_godam'] ),
 				'adaptive_bitrate'       => rest_sanitize_boolean( $settings['video']['adaptive_bitrate'] ?? $default['video']['adaptive_bitrate'] ),
 				'optimize_videos'        => rest_sanitize_boolean( $settings['video']['optimize_videos'] ?? $default['video']['optimize_videos'] ),
@@ -286,10 +289,13 @@ class Settings extends Base {
 				'watermark_url'          => esc_url_raw( $settings['video']['watermark_url'] ?? $default['video']['watermark_url'] ),
 				'use_watermark_image'    => rest_sanitize_boolean( $settings['video']['use_watermark_image'] ?? $default['video']['use_watermark_image'] ),
 			),
-			'general' => array(
+			'general'      => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
 				'brand_image'                => sanitize_text_field( $settings['general']['brand_image'] ?? $default['general']['brand_image'] ),
 				'brand_color'                => sanitize_hex_color( $settings['general']['brand_color'] ?? $default['general']['brand_color'] ),
+			),
+			'video_player' => array(
+				'custom_css' => sanitize_textarea_field( $settings['video_player']['custom_css'] ) ?? $default['video_player']['custom_css'],
 			),
 		);
 	}
