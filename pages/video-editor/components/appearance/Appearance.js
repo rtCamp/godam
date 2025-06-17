@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 /**
  * Internal dependencies
@@ -25,10 +25,6 @@ import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 const Appearance = () => {
 	const dispatch = useDispatch();
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
-	const [ selectedBrandImage, setSelectedBrandImage ] = useState( videoConfig.controlBar.customBrandImg.length > 0 );
-	const [ selectedCustomBgImg, setSelectedCustomBgImg ] = useState(
-		videoConfig.controlBar.customPlayBtnImg.length > 0,
-	);
 
 	useEffect( () => {
 		//class gets re added upon component load, so we need to remove it.
@@ -131,7 +127,6 @@ const Appearance = () => {
 	let originalPlayButton = null;
 
 	const openCustomBtnImg = () => {
-		setSelectedCustomBgImg( true );
 		const fileFrame = wp.media( {
 			title: __( 'Select Custom Play Button Image', 'godam' ),
 			button: {
@@ -184,7 +179,6 @@ const Appearance = () => {
 	};
 
 	const openBrandMediaPicker = () => {
-		setSelectedBrandImage( true );
 		const fileFrame = wp.media( {
 			title: __( 'Select Brand Image', 'godam' ),
 			button: {
@@ -226,7 +220,6 @@ const Appearance = () => {
 				},
 			} ),
 		);
-		setSelectedBrandImage( false );
 		const brandImg = document.querySelector( '#branding-icon' );
 		if ( brandImg ) {
 			brandImg.src = GoDAM;
@@ -242,7 +235,6 @@ const Appearance = () => {
 				},
 			} ),
 		);
-		setSelectedCustomBgImg( false );
 
 		// Find the custom image element and restore original button
 		const customImageElement = document.querySelector( '.custom-play-image' );
@@ -372,9 +364,9 @@ const Appearance = () => {
 							variant="primary"
 							className="mr-2 godam-button"
 						>
-							{ selectedBrandImage ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
+							{ videoConfig.controlBar.customBrandImg?.length > 0 ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 						</Button>
-						{ selectedBrandImage && (
+						{ videoConfig.controlBar.customBrandImg?.length > 0 > 0 && (
 							<Button
 								onClick={ removeBrandImage }
 								variant="secondary"
@@ -384,7 +376,7 @@ const Appearance = () => {
 								{ __( 'Remove', 'godam' ) }
 							</Button>
 						) }
-						{ selectedBrandImage && (
+						{ videoConfig.controlBar.customBrandImg?.length > 0 > 0 && (
 							<div className="mt-2">
 								<img
 									src={ videoConfig.controlBar.customBrandImg }
@@ -441,9 +433,9 @@ const Appearance = () => {
 						variant="primary"
 						className="mr-2 godam-button"
 					>
-						{ selectedCustomBgImg ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
+						{ videoConfig.controlBar.customPlayBtnImg?.length > 0 ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 					</Button>
-					{ selectedCustomBgImg && (
+					{ videoConfig.controlBar.customPlayBtnImg?.length > 0 && (
 						<Button
 							onClick={ removeCustomPlayBtnImage }
 							variant="secondary"
@@ -453,7 +445,7 @@ const Appearance = () => {
 							{ __( 'Remove', 'godam' ) }
 						</Button>
 					) }
-					{ selectedCustomBgImg && (
+					{ videoConfig.controlBar.customPlayBtnImg?.length > 0 && (
 						<div className="mt-2">
 							<img
 								src={ videoConfig.controlBar.customPlayBtnImg }
