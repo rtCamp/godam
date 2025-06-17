@@ -475,7 +475,11 @@
 		 }
 	 }
  
- 
+	// CSS to override the elementor image CSS in editor.
+	.elementor .vjs-poster img {
+		height: 100% !important;
+	}
+
    .share-modal-message {
 	 background: #fff;
 	 padding: 10px 40px;

@@ -15,7 +15,7 @@ use Elementor\Controls_Manager;
 class Godam_Gallery extends Base {
 
 	/**
-	 * Default config for Calculate Savings Widget.
+	 * Default config for GoDAM Gallery Widget.
 	 *
 	 * @return array
 	 */
@@ -32,7 +32,7 @@ class Godam_Gallery extends Base {
 	}
 
 	/**
-	 * Register Calculate Savings Widget Controls.
+	 * Register Widget Controls.
 	 *
 	 * @access protected
 	 */
@@ -287,7 +287,7 @@ class Godam_Gallery extends Base {
 	}
 
 	/**
-	 * Render DT Nav Menu widget output on the frontend.
+	 * Render GoDAM Gallery widget output on the frontend.
 	 *
 	 * @access protected
 	 */
