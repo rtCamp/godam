@@ -109,7 +109,7 @@ const Chapters = ( { currentTime, duration, formatTimeForInput } ) => {
 					{ chapters.find( ( l ) => l.startTime === currentTime || ( ! currentTime && parseFloat( l.startTime ) === 0 ) ) && (
 						<p className="text-slate-500 text-center">
 							{ __(
-								'There is already a layer at this timestamp. Please choose a different timestamp.',
+								'There is already a chapter at this timestamp. Please choose a different timestamp.',
 								'godam',
 							) }
 						</p>
