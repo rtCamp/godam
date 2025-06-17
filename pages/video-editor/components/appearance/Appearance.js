@@ -133,9 +133,9 @@ const Appearance = () => {
 	const openCustomBtnImg = () => {
 		setSelectedCustomBgImg( true );
 		const fileFrame = wp.media( {
-			title: __( 'Select Custom Background Image', 'godam' ),
+			title: __( 'Select Custom Play Button Image', 'godam' ),
 			button: {
-				text: __( 'Use this Background Image', 'godam' ),
+				text: __( 'Use this Image', 'godam' ),
 			},
 			library: {
 				type: 'image', // Restrict to images only
@@ -166,7 +166,12 @@ const Appearance = () => {
 				const imgElement = document.createElement( 'img' );
 				imgElement.src = attachment.url;
 				imgElement.alt = __( 'Custom Play Button', 'godam' );
-				imgElement.className = 'vjs-big-play-button custom-play-image';
+
+				playButtonElement.classList.forEach( ( cls ) => {
+					imgElement.classList.add( cls );
+				} );
+
+				imgElement.classList.add( 'custom-play-image' );
 
 				imgElement.style.cursor = 'pointer';
 

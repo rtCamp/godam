@@ -487,7 +487,12 @@ function GODAMPlayer( videoRef = null ) {
 				const imgElement = document.createElement( 'img' );
 				imgElement.src = controlBarSettings?.customPlayBtnImg;
 				imgElement.alt = 'Custom Play Button';
-				imgElement.className = 'vjs-big-play-button custom-play-image';
+
+				playButtonElement.el_.classList.forEach( ( cls ) => {
+					imgElement.classList.add( cls );
+				} );
+
+				imgElement.classList.add( 'custom-play-image' );
 
 				imgElement.style.cursor = 'pointer';
 				imgElement.addEventListener( 'click', function() {

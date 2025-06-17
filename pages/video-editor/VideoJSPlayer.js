@@ -280,6 +280,12 @@ export const VideoJS = ( props ) => {
 			imgElement.alt = __( 'Custom Play Button', 'godam' );
 			imgElement.className = 'vjs-big-play-button custom-play-image';
 
+			playButtonElement.classList.forEach( ( cls ) => {
+				imgElement.classList.add( cls );
+			} );
+
+			imgElement.classList.add( 'custom-play-image' );
+
 			imgElement.style.cursor = 'pointer';
 
 			// Replace the original button with the new image
