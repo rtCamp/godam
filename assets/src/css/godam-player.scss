@@ -874,6 +874,7 @@
  
  .vjs-control.vjs-custom-play-button {
 	 width: auto !important;
+	 order: 8;
  
 	 @media screen and (max-width: 768px) {
 		 display: none;
