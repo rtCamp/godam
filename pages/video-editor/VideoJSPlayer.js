@@ -60,7 +60,8 @@ const layerTypes = [
 export const VideoJS = ( props ) => {
 	const videoRef = useRef( null );
 	const playerRef = useRef( null );
-	const { options, onReady, onTimeupdate, playbackTime } = props;
+	const { options, onReady, onTimeupdate, playbackTime, formatTimeForInput } =
+    props;
 
 	const [ duration, setDuration ] = useState( 0 );
 	const [ sliderValue, setSliderValue ] = useState( 0 );
@@ -71,6 +72,7 @@ export const VideoJS = ( props ) => {
 	const videoMeta = useSelector( ( state ) => state.videoReducer );
 	const videoConfig = videoMeta.videoConfig;
 	const layers = videoMeta.layers;
+	const chapters = videoMeta.chapters;
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const currentTab = useSelector( ( state ) => state.videoReducer.currentTab );
 
@@ -300,7 +302,7 @@ export const VideoJS = ( props ) => {
 				} );
 			}
 		}
-	}, [ layers ] );
+	}, [ layers, chapters ] );
 
 	useEffect( () => {
 		if ( playerRef.current ) {
@@ -393,6 +395,30 @@ export const VideoJS = ( props ) => {
 						} }
 						disabled={ currentLayer }
 						currentLayerID={ currentLayer?.id }
+						chapters={ [] }
+						formatTimeForInput={ formatTimeForInput }
+					/>
+				)
+			}
+
+			{
+				currentTab === 'chapters' && (
+					<Slider
+						className="mt-12 mb-6"
+						value={ sliderValue }
+						onChange={ ( value ) => {
+							setSliderValue( value );
+							if ( playerRef.current ) {
+								playerRef.current.currentTime( value );
+							}
+						} }
+						max={ duration }
+						chapters={ chapters }
+						onLayerSelect={ ( chapter ) => {
+							playerRef.current.currentTime( chapter?.originalTime );
+						} }
+						layers={ [] }
+						formatTimeForInput={ formatTimeForInput }
 					/>
 				)
 			}
@@ -401,7 +427,7 @@ export const VideoJS = ( props ) => {
 };
 
 const Slider = ( props ) => {
-	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID } = props;
+	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID, chapters, formatTimeForInput } = props;
 
 	const [ sliderValue, setSliderValue ] = useState( value );
 	const [ hoverValue, setHoverValue ] = useState( null ); // Hover value
@@ -410,8 +436,24 @@ const Slider = ( props ) => {
 		setSliderValue( value );
 	}, [ value ] );
 
-	// Sort the array (ascending order)
-	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
+	// Sort the array (ascending order) and remove garbage values
+	const seenTimes = new Set();
+	const sortedChapters = chapters
+		?.filter( ( chapter ) => {
+			const time = parseFloat( chapter.startTime );
+			if (
+				isNaN( time ) ||
+			time < 0 ||
+			seenTimes.has( time )
+			) {
+				return false;
+			}
+			seenTimes.add( time );
+			return true;
+		} )
+		.sort( ( a, b ) => a.startTime - b.startTime );
+
+	const sortedLayers = [ ...layers ]?.sort( ( a, b ) => a.displayTime - b.displayTime );
 
 	const handleHover = ( e ) => {
 		const rect = e.target.getBoundingClientRect();
@@ -468,7 +510,7 @@ const Slider = ( props ) => {
 				)
 			}
 			{
-				sortedLayers.map( ( layer ) => {
+				sortedLayers?.map( ( layer ) => {
 					const layerLeft = layer.displayTime / max * 100;
 
 					return (
@@ -502,6 +544,35 @@ const Slider = ( props ) => {
 					);
 				} )
 			}
+			{
+				sortedChapters?.map( ( chapter, index ) => {
+					const chapterLeft = ( chapter.startTime / max ) * 100;
+
+					// Calculate difference to next chapter
+					const nextChapter = sortedChapters[ index + 1 ];
+					const nextStart = nextChapter ? nextChapter.startTime : max; // fallback to end
+					const hoverWidth = ( ( nextStart - chapter.startTime ) / max ) * 100;
+
+					return (
+						<div
+							key={ chapter.id }
+							className="layer-indicator hotspot-indicator chapter-indicator"
+							style={ {
+								left: `${ chapterLeft }%`,
+								'--hover-width': `${ hoverWidth }%`,
+							} }
+						>
+							<div className="chapter-indicator--duration">
+								{ `${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) } - ${ chapter?.originalTime }` }
+							</div>
+							<div className="chapter-indicator--text">
+								{ chapter?.text }
+							</div>
+						</div>
+					);
+				} )
+			}
+
 		</div>
 	);
 };
