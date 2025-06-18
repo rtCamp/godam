@@ -146,7 +146,7 @@ const JetpackForm = ( { layerID } ) => {
 					>
 						{
 							( formHTML && ! isFetching && ! error ) &&
-							<div className="form-container" dangerouslySetInnerHTML={ { __html: formHTML } } />
+							<div className="form-container jetpack-form-preview" dangerouslySetInnerHTML={ { __html: formHTML } } />
 						}
 
 						{
