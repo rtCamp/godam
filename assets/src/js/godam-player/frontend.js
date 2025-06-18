@@ -977,7 +977,7 @@ function GODAMPlayer( videoRef = null ) {
 				// Product link
 				const productLink = document.createElement( 'a' );
 				productLink.classList.add( 'product-hotspot-woo-link' );
-				productLink.href = hotspot.addToCart ? `/cart/?add-to-cart=${ hotspot.productId }` : hotspot.productDetails.link;
+				productLink.href = hotspot.addToCart ? hotspot.productDetails.link : `/cart/?add-to-cart=${ hotspot.productId }`;
 				productLink.target = '_blank';
 				productLink.rel = 'noopener noreferrer';
 				productLink.style.background = hotspot.backgroundColor;
