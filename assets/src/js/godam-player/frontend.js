@@ -619,7 +619,8 @@ function GODAMPlayer( videoRef = null ) {
 						if (
 							layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ||
 							layerObj.layerElement.querySelector( '.wpforms-confirmation-container-full' ) ||
-							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' )
+							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' ) ||
+							layerObj.layerElement.querySelector( '.jetpack-form-confirmation' )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -661,6 +662,8 @@ function GODAMPlayer( videoRef = null ) {
 					} else if ( window.godamPluginDependencies?.wpforms && layer.form_type === 'wpforms' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.cf7 && layer.form_type === 'cf7' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.jetpack && layer.form_type === 'jetpack' ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {

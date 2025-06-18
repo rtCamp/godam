@@ -337,6 +337,7 @@ class Pages {
 			$is_gf_active      = is_plugin_active( 'gravityforms/gravityforms.php' );
 			$is_cf7_active     = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
 			$is_wpforms_active = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
+			$is_jetpack_active = is_plugin_active( 'jetpack/jetpack.php' );
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
@@ -351,6 +352,7 @@ class Pages {
 					'gf_active'        => $is_gf_active,
 					'cf7_active'       => $is_cf7_active,
 					'wpforms_active'   => $is_wpforms_active,
+					'jetpack_active'   => $is_jetpack_active,
 				)
 			);
 

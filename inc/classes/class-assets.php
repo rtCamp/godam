@@ -97,6 +97,7 @@ class Assets {
 		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
 		$is_cf7_active      = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
 		$is_wpforms_active  = is_plugin_active( 'wpforms-lite/wpforms.php' );
+		$is_jetpack_active  = is_plugin_active( 'jetpack/jetpack.php' );
 		
 		wp_localize_script(
 			'rtgodam-script',
@@ -106,6 +107,7 @@ class Assets {
 				'wp_polls'     => $is_wp_polls_active,
 				'cf7'          => $is_cf7_active,
 				'wpforms'      => $is_wpforms_active,
+				'jetpack'      => $is_jetpack_active,
 			)
 		);
 

@@ -18,6 +18,7 @@ use RTGODAM\Inc\Media_Tracker;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
+use RTGODAM\Inc\REST_API\Jetpack;
 use RTGODAM\Inc\REST_API\GF;
 use RTGODAM\Inc\REST_API\CF7;
 use RTGODAM\Inc\REST_API\WPForms;
@@ -101,6 +102,7 @@ class Plugin {
 	 * @return void
 	 */
 	public function load_rest_api() {
+		Jetpack::get_instance();
 		GF::get_instance();
 		CF7::get_instance();
 		WPForms::get_instance();

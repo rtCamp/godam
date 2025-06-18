@@ -267,6 +267,21 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 							</div>
 						</div>
 						<?php
+					elseif ( 'jetpack' === $form_type && ! empty( $layer['jp_id'] ) ) :
+						$form_theme = ! empty( $layer['theme'] ) ? $layer['theme'] : 'default';
+						
+						// Use the static helper method to get the rendered form HTML.
+						$form_html = \RTGODAM\Inc\REST_API\Jetpack::get_rendered_form_html_static( $layer['jp_id'], $form_theme );
+						
+						if ( $form_html && ! is_wp_error( $form_html ) ) {
+							?>
+							<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+								<div class="form-container jetpack-form-container <?php echo esc_attr( $form_theme ); ?>">
+									<?php echo wp_kses( $form_html, rtgodam_get_jetpack_form_allowed_html() ); ?>
+								</div>
+							</div>
+							<?php
+						}
 					endif;
 					// Poll layer.
 				elseif ( isset( $layer['type'] ) && 'poll' === $layer['type'] ) :
