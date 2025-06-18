@@ -22,13 +22,15 @@ import {
 	MediaUploadCheck,
 	MediaReplaceFlow,
 	useBlockProps,
+	InnerBlocks,
+	BlockVerticalAlignmentControl,
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
-import { external, search, media as icon } from '@wordpress/icons';
+import { external, search, media as icon, layout as layoutIcon } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
 /**
@@ -38,13 +40,41 @@ import VideoCommonSettings from './edit-common-settings';
 import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
-
 import VideoSEOModal from './components/VideoSEOModal.js';
-
 import { secondsToISO8601 } from './utils';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
+
+// Define allowed blocks for the overlay
+const ALLOWED_BLOCKS = [
+	'core/paragraph',
+	'core/heading',
+	'core/button',
+	'core/image',
+	'core/group',
+	'core/columns',
+	'core/column',
+	'core/spacer',
+	'core/html',
+	'core/shortcode',
+];
+
+// Define template for initial blocks
+const TEMPLATE = [
+	[ 'core/group', {
+		className: 'godam-video-overlay',
+		layout: {
+			type: 'default',
+			inherit: true,
+		},
+	}, [
+		[ 'core/heading', {
+			level: 2,
+			placeholder: __( 'Add a heading…', 'godam' ),
+		} ],
+	] ],
+];
 
 function VideoEdit( {
 	isSelected: isSingleSelected,
@@ -56,10 +86,22 @@ function VideoEdit( {
 	const instanceId = useInstanceId( VideoEdit );
 	const videoPlayer = useRef();
 	const posterImageButton = useRef();
-	const { id, controls, autoplay, poster, src, tracks, sources, muted, loop, preload } = attributes;
+	const {
+		id,
+		controls,
+		autoplay,
+		poster,
+		src,
+		tracks,
+		sources,
+		muted,
+		loop,
+		preload,
+		verticalAlignment,
+	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
-
+	const [ showOverlay, setShowOverlay ] = useState( false );
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
 	const [ videoResponse, setVideoResponse ] = useState( {} );
 	const [ duration, setDuration ] = useState( 0 );
@@ -316,10 +358,51 @@ function VideoEdit( {
 
 	const videoPosterDescription = `video-block__poster-image-description-${ instanceId }`;
 
+	// Add function to handle vertical alignment change
+	const onChangeVerticalAlignment = ( alignment ) => {
+		setAttributes( { verticalAlignment: alignment } );
+	};
+
+	// Add function to get alignment styles
+	const getAlignmentStyles = () => {
+		const alignmentMap = {
+			top: 'flex-start',
+			center: 'center',
+			bottom: 'flex-end',
+		};
+
+		return {
+			display: 'flex',
+			flexDirection: 'column',
+			justifyContent: alignmentMap[ verticalAlignment ] || 'center',
+			alignItems: 'stretch',
+			height: '100%',
+			overflow: 'hidden',
+		};
+	};
+
 	return (
 		<>
 			{ isSingleSelected && (
 				<>
+					<BlockControls group="block">
+						<Button
+							icon={ layoutIcon }
+							label={ __( 'Thumbnail Overlay', 'godam' ) }
+							onClick={ () => setShowOverlay( ! showOverlay ) }
+							isPressed={ showOverlay }
+							className="wp-block-godam-video-overlay-button"
+						>
+							{ __( 'Overlay', 'godam' ) }
+						</Button>
+						{ showOverlay && (
+							<BlockVerticalAlignmentControl
+								label={ __( 'Vertical alignment of overlay blocks', 'godam' ) }
+								value={ verticalAlignment }
+								onChange={ onChangeVerticalAlignment }
+							/>
+						) }
+					</BlockControls>
 					<BlockControls group="other">
 						<MediaReplaceFlow
 							mediaId={ id }
@@ -439,8 +522,36 @@ function VideoEdit( {
 			/>
 
 			<figure { ...blockProps }>
-				{ videoComponent }
-				{ !! temporaryURL && <Spinner /> }
+				<div className="godam-video-wrapper" style={ { position: 'relative' } }>
+					{ showOverlay && (
+						<div
+							className="godam-video-overlay-container"
+							style={ {
+								position: 'absolute',
+								top: 0,
+								left: 0,
+								right: 0,
+								bottom: 0,
+								zIndex: 5,
+								pointerEvents: isSingleSelected ? 'auto' : 'none',
+								...getAlignmentStyles(),
+							} }
+						>
+							<InnerBlocks
+								allowedBlocks={ ALLOWED_BLOCKS }
+								template={ TEMPLATE }
+								templateLock={ false }
+								renderAppender={ isSingleSelected ? InnerBlocks.ButtonBlockAppender : false }
+								__experimentalLayout={ {
+									type: 'default',
+									inherit: true,
+								} }
+							/>
+						</div>
+					) }
+					{ videoComponent }
+					{ !! temporaryURL && <Spinner /> }
+				</div>
 				<Caption
 					attributes={ attributes }
 					setAttributes={ setAttributes }

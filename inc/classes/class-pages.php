@@ -51,7 +51,7 @@ class Pages {
 	 *
 	 * @var string
 	 */
-	private $dashboard_slug = 'rtgodam_dashboard';
+	private $settings_slug = 'rtgodam_settings';
 
 	/**
 	 * Menu pag ID.
@@ -86,7 +86,7 @@ class Pages {
 	 *
 	 * @var string
 	 */
-	private $dashboard_page_id = 'godam_page_rtgodam_dashboard';
+	private $settings_page_id = 'godam_page_rtgodam_settings';
 
 	/**
 	 * Construct method.
@@ -120,25 +120,17 @@ class Pages {
 			__( 'GoDAM', 'godam' ),
 			'manage_options',
 			$this->menu_slug,
-			array( $this, 'render_godam_page' ),
+			array( $this, 'render_dashboard_page' ),
 			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1LjU1NzggMjAuMDkxMUw4LjA1NTg3IDM3LjU5M0wzLjQ2Mzk3IDMzLjAwMTFDMC44MTg1MjEgMzAuMzU1NiAyLjA4MjEgMjUuODMzNiA1LjcyMjI4IDI0Ljk0NjRMMjUuNTYzMiAyMC4wOTY0TDI1LjU1NzggMjAuMDkxMVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00Ny4zNzczIDIxLjg4NjdMNDUuNTQzOCAyOS4zODc1TDIyLjY5NzIgNTIuMjM0MUwxMS4yNjA1IDQwLjc5NzRMMzQuMTY2MiAxNy44OTE2TDQxLjU3MDMgMTYuMDc5NkM0NS4wNzA2IDE1LjIyNDcgNDguMjMyMyAxOC4zODYzIDQ3LjM3MiAyMS44ODEzTDQ3LjM3NzMgMjEuODg2N1oiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00My41MDU5IDM4LjEwMzZMMzguNjY2NyA1Ny44OTA3QzM3Ljc3NDEgNjEuNTI1NSAzMy4yNTIxIDYyLjc4OTEgMzAuNjA2NiA2MC4xNDM2TDI2LjAzNjMgNTUuNTczMkw0My41MDU5IDM4LjEwMzZaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K',
 			30
 		);
 
 		add_submenu_page(
 			$this->menu_slug,
-			__( 'Settings', 'godam' ),
-			__( 'Settings', 'godam' ),
+			__( 'Dashboard', 'godam' ),
+			__( 'Dashboard', 'godam' ),
 			'manage_options',
 			$this->menu_slug,
-		);
-
-		add_submenu_page(
-			$this->menu_slug,
-			__( 'Dashboard', 'godam' ),
-			__( 'Dashboard', 'godam' ),
-			'edit_posts',
-			$this->dashboard_slug,
 			array( $this, 'render_dashboard_page' ),
 			1
 		);
@@ -164,13 +156,23 @@ class Pages {
 		);
 
 		add_submenu_page(
-			'rtgodam',
+			$this->menu_slug,
+			__( 'Settings', 'godam' ),
+			__( 'Settings', 'godam' ),
+			'edit_posts',
+			$this->settings_slug,
+			array( $this, 'render_godam_page' ),
+			6
+		);
+
+		add_submenu_page(
+			$this->menu_slug,
 			__( 'Help', 'godam' ),
 			__( 'Help', 'godam' ),
 			'edit_posts',
 			$this->help_slug,
 			array( $this, 'render_help_page' ),
-			5
+			7
 		);
 	}
 
@@ -195,7 +197,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->dashboard_page_id ) ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->settings_page_id ) ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
@@ -309,7 +311,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->dashboard_page_id, $this->help_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id ), true ) ) {
 
 			wp_register_script(
 				'rtgodam-page-style',
@@ -427,27 +429,48 @@ class Pages {
 				);
 			}
 		} elseif ( $screen && $this->menu_page_id === $screen->id ) {
+			wp_register_script(
+				'd3-js',
+				RTGODAM_URL . '/assets/src/libs/d3.js',
+				array(),
+				RTGODAM_VERSION,
+				false
+			);
 
 			wp_register_script(
-				'transcoder-page-script-godam',
-				RTGODAM_URL . 'assets/build/pages/godam.min.js',
-				array( 'wp-element', 'wp-i18n' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/godam.min.js' ),
+				'godam-page-script-dashboard',
+				RTGODAM_URL . 'assets/build/pages/dashboard.min.js',
+				array( 'wp-element' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/dashboard.min.js' ),
 				true
 			);
 
 			$rtgodam_user_data = rtgodam_get_user_data();
 
-			if ( ! empty( $rtgodam_user_data ) ) {
-				wp_localize_script(
-					'transcoder-page-script-godam',
-					'userData',
-					$rtgodam_user_data
-				);
-			}
+			wp_localize_script(
+				'godam-page-script-dashboard',
+				'userData',
+				$rtgodam_user_data
+			);
 
-			wp_set_script_translations( 'transcoder-page-script-godam', 'godam', RTGODAM_PATH . 'languages' );
-			wp_enqueue_script( 'transcoder-page-script-godam' );
+			wp_localize_script(
+				'godam-page-script-dashboard',
+				'videoData',
+				array(
+					'adminUrl' => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
+				)
+			);
+
+			wp_localize_script(
+				'godam-page-script-dashboard',
+				'godamPluginData',
+				array(
+					'flagBasePath' => RTGODAM_URL . 'assets/src/images/flags',
+				)
+			);
+
+			wp_enqueue_script( 'godam-page-script-dashboard' );
+			wp_enqueue_script( 'd3-js' );
 
 		} elseif ( $screen && $this->analytics_page_id === $screen->id ) {
 
@@ -482,7 +505,7 @@ class Pages {
 					'nonce'            => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
-					'adminUrl'         => admin_url( 'admin.php?page=rtgodam#video-settings' ),
+					'adminUrl'         => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
 				)
 			);
 
@@ -523,50 +546,27 @@ class Pages {
 
 			wp_set_script_translations( 'godam-page-script-help', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'godam-page-script-help' );
-		} elseif ( $screen && $this->dashboard_page_id === $screen->id ) {
-
+		} elseif ( $screen && $this->settings_page_id === $screen->id ) {
 			wp_register_script(
-				'd3-js',
-				RTGODAM_URL . '/assets/src/libs/d3.js',
-				array(),
-				RTGODAM_VERSION,
-				false
-			);
-
-			wp_register_script(
-				'godam-page-script-dashboard',
-				RTGODAM_URL . 'assets/build/pages/dashboard.min.js',
-				array( 'wp-element' ),
-				filemtime( RTGODAM_PATH . 'assets/build/pages/dashboard.min.js' ),
+				'transcoder-page-script-godam',
+				RTGODAM_URL . 'assets/build/pages/godam.min.js',
+				array( 'wp-element', 'wp-i18n' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/godam.min.js' ),
 				true
 			);
 
 			$rtgodam_user_data = rtgodam_get_user_data();
 
-			wp_localize_script(
-				'godam-page-script-dashboard',
-				'userData',
-				$rtgodam_user_data
-			);
+			if ( ! empty( $rtgodam_user_data ) ) {
+				wp_localize_script(
+					'transcoder-page-script-godam',
+					'userData',
+					$rtgodam_user_data
+				);
+			}
 
-			wp_localize_script(
-				'godam-page-script-dashboard',
-				'videoData',
-				array(
-					'adminUrl' => admin_url( 'admin.php?page=rtgodam#video-settings' ),
-				)
-			);
-
-			wp_localize_script(
-				'godam-page-script-dashboard',
-				'godamPluginData',
-				array(
-					'flagBasePath' => RTGODAM_URL . 'assets/src/images/flags',
-				)
-			);
-
-			wp_enqueue_script( 'godam-page-script-dashboard' );
-			wp_enqueue_script( 'd3-js' );
+			wp_set_script_translations( 'transcoder-page-script-godam', 'godam', RTGODAM_PATH . 'languages' );
+			wp_enqueue_script( 'transcoder-page-script-godam' );
 		}
 
 		wp_enqueue_style( 'wp-components' );

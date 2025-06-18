@@ -35,6 +35,7 @@ class Media_Tracker {
 		add_action( 'add_attachment', array( $this, 'track_new_attachment' ) );
 		add_action( 'init', array( $this, 'check_new_attachment_transcoding_status' ), 100 );
 		add_action( 'delete_attachment', array( $this, 'delete_attachment' ) );
+		add_action( 'admin_notices', array( $this, 'check_transcoder_plugin' ) );
 	}
 
 	/**
@@ -182,5 +183,44 @@ class Media_Tracker {
 				<?php
 			} 
 		);
+	}
+
+	/**
+	 * Check if the Transcoder plugin is active and display an admin notice if it is.
+	 *
+	 * @return void
+	 */
+	public function check_transcoder_plugin() {
+		if ( is_plugin_active( 'transcoder/rt-transcoder.php' ) ) {
+
+			$screen = get_current_screen();
+			if ( ! in_array( $screen->id, array( 'dashboard', 'upload', 'plugins' ), true ) ) {
+				return;
+			}
+
+			$message = sprintf(
+				// translators: %1$s is the name of the Transcoder plugin, %2$s is the name of the GoDAM plugin.
+				__( 'Please deactivate the <strong>%1$s</strong> plugin to ensure the <strong>%2$s</strong> plugin functions correctly.', 'godam' ),
+				'Transcoder',
+				'GoDAM'
+			);
+
+			$message = '<div class="notice notice-error"><p>' . $message . '</p></div>';
+			
+			echo wp_kses(
+				$message,
+				array(
+					'div'    => array(
+						'class' => array(),
+					),
+					'p'      => array(),
+					'strong' => array(),
+					'a'      => array(
+						'href'   => array(),
+						'target' => array(),
+					),
+				),
+			);
+		}
 	}
 }

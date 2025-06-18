@@ -253,11 +253,11 @@
 	.godam-modal-content {
 		position: relative;
 		background: #fff;
-		border-radius: 12px;
-		padding: 16px;
-		width: 75vw;
+		border-radius: 4px;
+		padding: 4px;
+		width: 100vw;
 		max-width: none;
-		max-height: 90vh;
+		max-height: 95vh;
 		box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 		z-index: 10;
 
@@ -270,16 +270,9 @@
 		}
 
 		.easydam-video-container {
-			width: 75vw;
 			height: auto;
-
-			@media (min-width: 1728px) {
-				width: 65vw;
-			}
-
-			@media (min-width: 2028px) {
-				width: 45vw;
-			}
+			margin: auto;
+			max-height: 85vh;
 
 			figure {
 				margin: 0;

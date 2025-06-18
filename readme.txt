@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -193,6 +193,14 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 30. GoDAM Video Gallery Front-end
 
 == Changelog ==
+
+= v1.1.3 (June 6, 2025) =
+
+Fix: Implemented a custom endpoint to retrieve and display the list of WPForms on the Video Editor page.
+Fix: Enabled watermarking functionality for users on the Starter plan.
+Fix: Update overlapping Modal Popup UI for GoDAM Gallery.
+Enhancement: Reorganized the GoDAM admin menu for improved navigation.
+Enhancement: Added a clear guidance message on Analytics pages for cases where videos have been deleted.
 
 = v1.1.2 (June 5, 2025) =
 
