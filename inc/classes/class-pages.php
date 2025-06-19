@@ -366,6 +366,11 @@ class Pages {
 				$this->enqueue_wpforms_styles();
 			}
 
+			// Enqueue Jetpack Forms styles if the plugin is active.
+			if ( $is_jetpack_active ) {
+				$this->enqueue_jetpack_forms_styles();
+			}
+
 			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
@@ -640,5 +645,30 @@ class Pages {
 			array(),
 			WPFORMS_VERSION
 		);
+	}
+
+	/**
+	 * Enqueue Jetpack Forms styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_jetpack_forms_styles() {
+		// Check if the Jetpack Forms class exists.
+		if ( ! class_exists( 'Automattic\Jetpack\Forms\ContactForm\Contact_Form_Plugin' ) ) {
+			return;
+		}
+
+		// Enqueue the main Jetpack forms stylesheet.
+		wp_enqueue_style( 'grunion.css' );
+		
+		// Also enqueue the accessible form script.
+		wp_enqueue_script( 'accessible-form' );
+		
+		// In admin, we need to load the block library styles which include button styles.
+		wp_enqueue_style( 'wp-block-library' );
+		wp_enqueue_style( 'wp-block-library-theme' );
+		
+		// Load WordPress components styles (includes button styling).
+		wp_enqueue_style( 'wp-components' );
 	}
 }
