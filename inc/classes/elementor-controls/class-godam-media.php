@@ -55,7 +55,10 @@ class Godam_Media extends \Elementor\Base_Data_Control {
 	 */
 	protected function get_default_settings() {
 		return array(
-			'media_type' => 'text/vtt',
+			'media_type'  => 'text/vtt',
+			'media_types' => array(
+				'text/vtt',
+			),
 		);
 	}
 

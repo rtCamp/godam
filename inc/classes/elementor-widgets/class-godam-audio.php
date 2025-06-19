@@ -48,7 +48,7 @@ class Godam_Audio extends Base {
 			array(
 				'label'       => __( 'Audio File', 'godam' ),
 				'type'        => Controls_Manager::MEDIA,
-				'media_types' => array( 'audio' ),
+				'media_type'  => 'audio',
 				'description' => __( 'Select the audio file', 'godam' ),
 			)
 		);

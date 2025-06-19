@@ -26,7 +26,7 @@ class GoDAM_Player extends Base {
 			'icon'            => 'eicon-video',
 			'categories'      => array( 'godam' ),
 			'keywords'        => array( 'godam', 'video' ),
-			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-elementor-frontend' ),
+			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-player-frontend-script', 'godam-elementor-frontend' ),
 			'depended_styles' => array( 'godam-player-style', 'godam-player-frontend-style' ),
 		);
 	}
@@ -53,9 +53,6 @@ class GoDAM_Player extends Base {
 				'description' => esc_html__( 'Select video file', 'godam' ),
 				'label_block' => true,
 				'media_type'  => 'video',
-				'condition'   => array(
-					'video-file[url]!' => '',
-				),
 			)
 		);
 
@@ -271,10 +268,11 @@ class GoDAM_Player extends Base {
 		$this->add_control(
 			'poster',
 			array(
-				'label'       => esc_html__( 'Poster Image', 'godam' ),
-				'type'        => Controls_Manager::MEDIA,
-				'media_types' => array( 'image' ),
-				'description' => esc_html__( 'Select the poster image.', 'godam' ),
+				'label'       => esc_html__( 'Video Thumbnail', 'godam' ),
+				'type'        => 'godam-media',
+				'media_type'  => 'image',
+				'description' => esc_html__( 'Select the video thumbnail.', 'godam' ),
+				'label_block' => true,
 				'condition'   => array(
 					'video-file[url]!' => '',
 				),

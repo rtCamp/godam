@@ -2,4 +2,4 @@
 /**
  * Internal dependencies
  */
-import './controls/godam-media.js';
+import './widgets/godam-player.js';
