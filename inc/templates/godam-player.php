@@ -60,7 +60,7 @@ $sources = array();
 if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$sources = $attributes['sources'];
 } elseif ( empty( $attachment_id ) &&
-	( ! empty( $src || ! empty( $transcoded_url ) ) ) 
+	( ! empty( $src || ! empty( $transcoded_url ) ) )
 ) {
 	$sources = array();
 	if ( ! empty( $transcoded_url ) ) {
@@ -80,7 +80,7 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
 	$video_src_type = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
 	$job_id         = $attachment_id && ! empty( $transcoded_url ) ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
-	
+
 	if ( ! empty( $transcoded_url ) ) {
 		$sources = array(
 			array(
