@@ -7,6 +7,7 @@
 
 namespace RTGODAM\Inc;
 
+use RTGODAM\Inc\Elementor_Controls\Godam_Media;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Audio;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Gallery;
 use RTGODAM\Inc\Elementor_Widgets\GoDAM_Player;
@@ -37,6 +38,7 @@ class Elementor_Widgets {
 		 */
 		add_action( 'elementor/widgets/register', array( $this, 'widgets_registered' ) );
 		add_action( 'elementor/elements/categories_registered', array( $this, 'add_elementor_widget_categories' ) );
+		add_action( 'elementor/controls/controls_registered', array( $this, 'widgets_controls' ) );
 	}
 
 	/**
@@ -54,6 +56,17 @@ class Elementor_Widgets {
 			RTGODAM_URL . 'assets/build/css/godam-audio.css',
 			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-audio.css' )
+		);
+		
+
+		wp_register_script(
+			'godam-elementor-frontend',
+			RTGODAM_URL . 'assets/build/js/godam-elementor-frontend.min.js',
+			array(
+				'jquery',
+			),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-elementor-frontend.min.js' ),
+			true
 		);
 	}
 
@@ -75,6 +88,13 @@ class Elementor_Widgets {
 		}
 
 		return $options;
+	}
+
+	/**
+	 * Register Controls.
+	 */
+	public function widgets_controls() {
+		\Elementor\Plugin::$instance->controls_manager->register( new Godam_Media(), 'godam-media' );
 	}
 
 	/**
