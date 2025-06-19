@@ -1,89 +1,91 @@
 export const VideoCustomCSSTemplate = `
-    /* Video Player Wrapper */
+    /*
+    // Video Player Wrapper
     .video-js {
-        /* Styles for the overall video player */
+        // Styles for the overall video player
     }
 
-    /* Video Element Parent Div */
+    // Video Element Parent Div
     .easydam-video-container {
-        /* Styles for the video element parent div*/
+        // Styles for the video element parent div
     }
 
-    /* Video Element */
+    // Video Element
     .video-js video {
-        /* Styles for the actual video element */
+        // Styles for the actual video element
     }
 
-    /* Big Play Button */
+    // Big Play Button
     .video-js .vjs-big-play-button {
-        /* Styles for the central play button */
+        // Styles for the central play button
     }
 
-    /* Control Bar */
+    // Control Bar
     .video-js .vjs-control-bar {
-        /* Styles for the control bar container */
+        // Styles for the control bar container
     }
 
-    /* Play/Pause Button */
+    // Play/Pause Button
     .video-js .vjs-play-control {
-        /* Styles for play/pause button */
+        // Styles for play/pause button
     }
 
-    /* Volume Controls */
+    // Volume Controls
     .video-js .vjs-volume-panel {
-        /* Styles for volume control group */
+        // Styles for volume control group
     }
     .video-js .vjs-mute-control {
-        /* Styles for mute/unmute button */
+        // Styles for mute/unmute button
     }
     .video-js .vjs-volume-level {
-        /* Styles for the volume level bar */
+        // Styles for the volume level bar
     }
 
-    /* Progress Bar */
+    // Progress Bar
     .video-js .vjs-progress-control {
-        /* Styles for the progress bar container */
+        // Styles for the progress bar container
     }
     .video-js .vjs-play-progress {
-        /* Styles for the played portion of the progress bar */
+        // Styles for the played portion of the progress bar
     }
     .video-js .vjs-load-progress {
-        /* Styles for the buffered portion */
+        // Styles for the buffered portion
     }
 
-    /* Current Time / Duration Display */
+    // Current Time / Duration Display
     .video-js .vjs-current-time,
     .video-js .vjs-duration {
-        /* Styles for time displays */
+        // Styles for time displays
     }
 
-    /* Fullscreen Button */
+    // Fullscreen Button
     .video-js .vjs-fullscreen-control {
-        /* Styles for fullscreen toggle */
+        // Styles for fullscreen toggle
     }
 
-    /* Captions Button */
+    // Captions Button
     .video-js .vjs-captions-button {
-        /* Styles for captions/subtitles button */
+        // Styles for captions/subtitles button
     }
 
-    /* Custom Settings Menu (if added) */
+    // Custom Settings Menu (if added)
     .video-js .vjs-settings-button {
-        /* Styles for custom settings menu button */
+        // Styles for custom settings menu button
     }
 
-    /* Poster Image */
+    // Poster Image
     .video-js .vjs-poster {
-        /* Styles for the video poster (preview image before playback) */
+        // Styles for the video poster (preview image before playback)
     }
 
-    /* Loading Spinner */
+    // Loading Spinner
     .video-js .vjs-loading-spinner {
-        /* Styles for the buffering/loading animation */
+        // Styles for the buffering/loading animation
     }
 
-    /* Error Display */
+    // Error Display
     .video-js .vjs-error-display {
-        /* Styles for the error overlay if playback fails */
+        // Styles for the error overlay if playback fails
     }
+    */
 `;
