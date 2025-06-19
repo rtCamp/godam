@@ -169,7 +169,7 @@ $justify_content  = isset( $alignment_map[ $vertical_alignment ] ) ? $alignment_
 $alignment_styles = "display: flex; flex-direction: column; justify-content: {$justify_content}; align-items: stretch; height: 100%; overflow: hidden;";
 
 // Create custom inline styles in a more maintainable way.
-$css_vars = array(
+$custom_css_properties = array(
 	'--rtgodam-control-bar-color'      => $easydam_control_bar_color,
 	'--rtgodam-control-hover-color'    => $easydam_hover_color,
 	'--rtgodam-control-hover-zoom'     => 1 + $easydam_hover_zoom,
@@ -177,25 +177,29 @@ $css_vars = array(
 );
 
 if ( ! empty( $attributes['aspectRatio'] ) ) {
-	$css_vars['--rtgodam-video-aspect-ratio'] = $attributes['aspectRatio'];
+	$custom_css_properties['--rtgodam-video-aspect-ratio'] = $attributes['aspectRatio'];
 }
 
 // Build the inline style string, escaping each value.
 $custom_inline_styles = '';
-foreach ( $css_vars as $var => $value ) {
+foreach ( $custom_css_properties as $propertie => $value ) {
 	if ( ! empty( $value ) ) {
-		$custom_inline_styles .= esc_attr( $var ) . ': ' . esc_attr( $value ) . ';';
+		$custom_inline_styles .= esc_attr( $propertie ) . ': ' . esc_attr( $value ) . ';';
 	}
 }
 
-// Prepare an array of additional attributes to pass to get_block_wrapper_attributes().
-$additional_attributes = array();
-if ( ! empty( $custom_inline_styles ) ) {
-	$additional_attributes['style'] = $custom_inline_styles;
+// Build the figure attributes for the <figure> element.
+if ( $is_shortcode ) {
+	$figure_attributes = ! empty( $custom_inline_styles )
+		? 'style="' . esc_attr( $custom_inline_styles ) . '"'
+		: '';
+} else {
+	$additional_attributes = array();
+	if ( ! empty( $custom_inline_styles ) ) {
+		$additional_attributes['style'] = $custom_inline_styles;
+	}
+	$figure_attributes = get_block_wrapper_attributes( $additional_attributes );
 }
-
-// Combine attributes.
-$figure_attributes = $is_shortcode ? '' : get_block_wrapper_attributes( $additional_attributes );
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
