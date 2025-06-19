@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 /**
  * WordPress dependencies
  */
-import { Button, Notice, SelectControl } from '@wordpress/components';
+import { Button, Notice } from '@wordpress/components';
 import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
@@ -19,13 +19,6 @@ import { useGetSingleJetpackFormQuery } from '../../redux/api/jetpack-forms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
 
-const templateOptions = [
-	{
-		value: 'default',
-		label: __( 'Default', 'godam' ),
-	},
-];
-
 const JetpackForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
@@ -34,7 +27,6 @@ const JetpackForm = ( { layerID } ) => {
 	const { data: formHTML, isFetching, error } = useGetSingleJetpackFormQuery(
 		{
 			id: layer?.jp_id,
-			theme: layer?.theme || 'default',
 		},
 		{
 			skip: ! layer?.jp_id,
@@ -124,17 +116,6 @@ const JetpackForm = ( { layerID } ) => {
 					handleChange={ changeFormID }
 				/>
 			}
-
-			<SelectControl
-				className="mb-4"
-				label={ __( 'Select form theme', 'godam' ) }
-				options={ templateOptions }
-				value={ layer.theme || 'default' }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
-				}
-				disabled={ ! isValidAPIKey || ! isJetpackPluginActive }
-			/>
 
 			<LayerControl>
 				<>

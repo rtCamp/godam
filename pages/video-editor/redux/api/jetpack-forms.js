@@ -22,11 +22,10 @@ export const jetpackFormsApi = createApi( {
 			} ),
 		} ),
 		getSingleJetpackForm: builder.query( {
-			query: ( { id, theme } ) => ( {
+			query: ( { id } ) => ( {
 				url: `/godam/v1/jetpack-form`,
 				params: {
 					id,
-					theme,
 				},
 				method: 'GET',
 			} ),

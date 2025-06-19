@@ -44,16 +44,10 @@ class Jetpack extends Base {
 						'args'                => array_merge(
 							$this->get_collection_params(),
 							array(
-								'id'    => array(
+								'id' => array(
 									'description'       => __( 'The ID of the Jetpack Form.', 'godam' ),
 									'type'              => 'string',
 									'required'          => true,
-									'sanitize_callback' => 'sanitize_text_field',
-								),
-								'theme' => array(
-									'description'       => __( 'The theme to be applied to the Jetpack Form.', 'godam' ),
-									'type'              => 'string',
-									'required'          => false,
 									'sanitize_callback' => 'sanitize_text_field',
 								),
 							)
@@ -181,7 +175,6 @@ class Jetpack extends Base {
 		}
 
 		$form_id = $request->get_param( 'id' );
-		$theme   = $request->get_param( 'theme' );
 
 		if ( empty( $form_id ) ) {
 			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );
@@ -217,13 +210,7 @@ class Jetpack extends Base {
 			return new \WP_Error( 'form_render_failed', __( 'Failed to render form.', 'godam' ), array( 'status' => 500 ) );
 		}
 
-		// Apply theme class if specified.
-		$theme_class = 'modern' === $theme ? 'jetpack-form-modern' : 'jetpack-form-default';
-
-		// Wrap the form content with theme class.
-		$styled_content = '<div class="' . esc_attr( $theme_class ) . '">' . $form_content . '</div>';
-
-		return rest_ensure_response( $styled_content );
+		return rest_ensure_response( $form_content );
 	}
 
 	/**
@@ -315,10 +302,9 @@ class Jetpack extends Base {
 	 * Static helper method to get rendered form HTML (for use in templates).
 	 *
 	 * @param string $form_id The form ID.
-	 * @param string $theme The theme (default or modern).
 	 * @return string|false The rendered HTML or false on error.
 	 */
-	public static function get_rendered_form_html_static( $form_id, $theme = 'default' ) {
+	public static function get_rendered_form_html_static( $form_id ) {
 		// Check if Jetpack plugin is active.
 		if ( ! class_exists( 'Jetpack' ) || ! class_exists( 'Automattic\Jetpack\Forms\ContactForm\Contact_Form' ) ) {
 			return false;
@@ -354,17 +340,7 @@ class Jetpack extends Base {
 			return false;
 		}
 
-		// Apply theme class if specified.
-		$theme_class = 'modern' === $theme ? 'jetpack-form-modern' : 'jetpack-form-default';
-
-		// Wrap the form content with theme class.
-		$wrapped_content = sprintf(
-			'<div class="jetpack-form-wrapper %s">%s</div>',
-			esc_attr( $theme_class ),
-			$form_content
-		);
-
-		return $wrapped_content;
+		return $form_content;
 	}
 
 	/**
