@@ -1095,15 +1095,4 @@ function GODAMPlayer( videoRef = null ) {
 
 window.GODAMPlayer = GODAMPlayer;
 
-window.addEventListener( 'elementor/frontend/init', () => {
-	// eslint-disable-next-line no-undef
-	if ( undefined !== elementorFrontend ) {
-		// eslint-disable-next-line no-undef
-		elementorFrontend.hooks.addAction(
-			'frontend/element_ready/godam-player.default',
-			( ) => {
-				GODAMPlayer();
-			},
-		);
-	}
-} );
+

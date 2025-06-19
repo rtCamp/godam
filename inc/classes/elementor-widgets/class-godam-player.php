@@ -26,7 +26,7 @@ class GoDAM_Player extends Base {
 			'icon'            => 'eicon-video',
 			'categories'      => array( 'godam' ),
 			'keywords'        => array( 'godam', 'video' ),
-			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script' ),
+			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'elementor-godam-editor-script', 'easydam-media-library' ),
 			'depended_styles' => array( 'godam-player-style', 'godam-player-frontend-style' ),
 		);
 	}
@@ -55,6 +55,69 @@ class GoDAM_Player extends Base {
 				
 			)
 		);
+
+		$this->add_control(
+			'text_track_settings_popover_toggle',
+			array(
+				'label'        => esc_html__( 'Text tracks', 'godam' ),
+				'type'         => Controls_Manager::POPOVER_TOGGLE,
+				'label_off'    => esc_html__( 'Default', 'godam' ),
+				'label_on'     => esc_html__( 'Custom', 'godam' ),
+				'return_value' => 'yes',
+				'default'      => 'yes',
+				'condition'    => array(
+					'video-file[url]!' => '',
+				),
+			)
+		);
+
+		$this->start_popover();
+
+		$this->add_control(
+			'text_tracks',
+			array(
+				'label'         => esc_html__( 'Text track', 'godam' ),
+				'type'          => Controls_Manager::REPEATER,
+				'fields'        => array(
+					array(
+						'name'        => 'text_track',
+						'label'       => esc_html__( 'Text track file', 'godam' ),
+						'type'        => 'media-custom',
+						'label_block' => true,
+					),
+					array(
+						'name'        => 'text_track_title',
+						'label'       => esc_html__( 'Label', 'godam' ),
+						'description' => esc_html__( 'Title of track', 'godam' ),
+						'type'        => Controls_Manager::TEXT,
+						'label_block' => true,
+					),
+					array(
+						'name'        => 'text_track_lang',
+						'label'       => esc_html__( 'Source Language', 'godam' ),
+						'description' => esc_html__( 'Language tag (en, fr, etc.)', 'godam' ),
+						'type'        => Controls_Manager::TEXT,
+						'label_block' => true,
+					),
+					array(
+						'name'        => 'text_track_kind',
+						'label'       => esc_html__( 'Kind', 'godam' ),
+						'type'        => Controls_Manager::SELECT,
+						'options'     => array(
+							'subtitles'     => esc_html__( 'Subtitles', 'godam' ),
+							'captions' => esc_html__( 'Captions', 'godam' ),
+							'descriptions'     => esc_html_x( 'Descriptions', 'godam' ),
+							'chapters'     => esc_html_x( 'Chapters', 'godam' ),
+							'metadata'     => esc_html_x( 'Metadata', 'godam' ),
+						),
+					)
+				),
+				'prevent_empty' => false,
+				// 'title_field'   => '{{{text_track_label}}}'
+			)
+		);
+
+		$this->end_popover();
 		
 		$this->add_control(
 			'seo_settings_popover_toggle',
@@ -118,7 +181,8 @@ class GoDAM_Player extends Base {
 			'seo_content_video_thumbnail_url',
 			array(
 				'label'          => esc_html__( 'Video Thumbnail URL', 'godam' ),
-				'type'           => Controls_Manager::DATE_TIME,
+				'type'           => Controls_Manager::TEXT,
+				'label_block'    => true,
 				'picker_options' => array(
 					'enableTime' => false,
 				),
@@ -214,6 +278,71 @@ class GoDAM_Player extends Base {
 				),
 			)
 		);
+
+		// $this->add_control(
+		// 	'subtitle',
+		// 	array(
+		// 		'label'       => esc_html__( 'Subtitle File', 'godam' ),
+		// 		'type'        => Controls_Manager::MEDIA,
+		// 		'media_types' => array( 'image' ),
+		// 		'description' => esc_html__( 'Select the poster image.', 'godam' ),
+		// 		'condition'   => array(
+		// 			'video-file[url]!' => '',
+		// 		),
+		// 	)
+		// );
+
+		// $this->add_control(
+		// 	'subtitles',
+		// 	array(
+		// 		'label'       => esc_html__( 'Subtitle File', 'godam' ),
+		// 		'type'  => 'file-select',
+		// 		'media_type'  => 'application',
+		// 		'description' => esc_html__( 'Select subtitle', 'godam' ),
+		// 		'condition'   => array(
+		// 			'video-file[url]!' => '',
+		// 		),
+		// 	)
+		// );
+
+		$this->add_control(
+			'subtitles',
+			array(
+				'label'       => esc_html__( 'Subtitle File', 'godam' ),
+				'type'  => 'media-custom',
+				'description' => esc_html__( 'Select subtitle', 'godam' ),
+				'label_block'    => true,
+				'media_type' => 'video',
+				'condition'   => array(
+					'video-file[url]!' => '',
+				),
+			)
+		);
+
+		$this->add_control(
+			'enable_caption',
+			array(
+				'label'     => esc_html__( 'Show caption', 'godam' ),
+				'type'      => Controls_Manager::SWITCHER,
+				'default'   => 'yes',
+				'condition' => array(
+					'video-file[url]!' => '',
+				),
+			)
+		);
+
+		$this->add_control(
+			'caption',
+			array(
+				'label'     => esc_html__( 'Caption', 'godam' ),
+				'type'      => Controls_Manager::TEXTAREA,
+				'condition' => array(
+					'video-file[url]!' => '',
+					'enable_caption'   => 'yes'
+				),
+			)
+		);
+
 		$this->end_controls_section();
 	}
 
@@ -230,10 +359,33 @@ class GoDAM_Player extends Base {
 		$widget_muted       = 'yes' === $this->get_settings_for_display( 'muted' ) ? true : false;
 		$widget_loop        = 'yes' === $this->get_settings_for_display( 'loop' ) ? true : false;
 		$widget_preload     = $this->get_settings_for_display( 'preload' ) ?? 'auto';
+		$widget_show_caption= 'yes' === $this->get_settings_for_display( 'enable_caption' );
+		$widget_caption     = $this->get_settings_for_display( 'caption' ) ?? '';
+		$widget_text_tracks = $this->get_settings_for_display( 'text_tracks' ) ?? '';
+
+		
+
+		$formatted_tracks  = array();
+
+		foreach ($widget_text_tracks as $track) {
+			$single_track = array();
+			$single_track[ 'src' ] = $track[ 'text_track' ][ 'url' ];
+			$single_track[ 'kind' ] = $track[ 'text_track_kind' ];
+			$single_track[ 'label' ] = $track[ 'text_track_title' ];
+			$single_track[ 'srclang' ] = $track[ 'text_track_lang' ];
+
+			array_push( $formatted_tracks, $single_track );
+		}
+
+		if ( ! $widget_show_caption ) {
+			$widget_caption = '';
+		}
 
 		if ( ! isset( $widget_video_file['url'] ) || empty( $widget_video_file['url'] ) ) {
 			return;
 		}
+
+		echo print_r( $formatted_tracks, 1 );
 
 		$attributes = array(
 			'id'             => $widget_video_file['id'],
@@ -247,6 +399,8 @@ class GoDAM_Player extends Base {
 			'muted'          => $widget_muted,
 			'loop'           => $widget_loop,
 			'preload'        => $widget_preload,
+			'caption'        => $widget_caption,
+			'tracks'         => $formatted_tracks
 		);
 
 		$is_elementor_widget = true;

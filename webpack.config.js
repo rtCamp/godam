@@ -147,6 +147,20 @@ const gfEntryDetailJS = {
 	},
 };
 
+const elementorEditorJS = {
+	...sharedConfig,
+	entry: {
+		'elementor-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'elementor', 'editor.js' ),
+	},
+};
+
+const elementorControlJS = {
+	...sharedConfig,
+	entry: {
+		'file-select-control': path.resolve( process.cwd(), 'assets', 'src', 'js', 'elementor', 'controls', 'file-selector.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -223,4 +237,6 @@ module.exports = [
 	gfEntryDetailJS,
 	styles, // Do not remove this.
 	pages,
+	elementorEditorJS,
+	elementorControlJS,
 ];

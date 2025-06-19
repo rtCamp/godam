@@ -38,6 +38,8 @@ $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : arra
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 $video_preview = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
 
+echo print_r( $attributes, 1 );
+
 $src            = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
 

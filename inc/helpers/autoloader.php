@@ -62,6 +62,7 @@ function autoloader( $file_resource = '' ) {
 			case 'shortcodes': // phpcs:ignore
 			case 'cron-jobs': // phpcs:ignore
 			case 'elementor-widgets': // phpcs:ignore
+			case 'elementor-controls': // phpcs:ignore
 				/**
 				 * If there is class name provided for specific directory then load that.
 				 * otherwise find in inc/ directory.

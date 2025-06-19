@@ -7,6 +7,8 @@
 
 namespace RTGODAM\Inc;
 
+use RTGODAM\Inc\Elementor_Controls\FileSelect_Control;
+use RTGODAM\Inc\Elementor_Controls\Media_Custom;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Audio;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Gallery;
 use RTGODAM\Inc\Elementor_Widgets\GoDAM_Player;
@@ -37,6 +39,11 @@ class Elementor_Widgets {
 		 */
 		add_action( 'elementor/widgets/register', array( $this, 'widgets_registered' ) );
 		add_action( 'elementor/elements/categories_registered', array( $this, 'add_elementor_widget_categories' ) );
+		add_action( 'elementor/controls/controls_registered', [ $this, 'widgets_controls' ] );
+		add_action( 'elementor/editor/before_enqueue_scripts', [ $this, 'enqueue_editor_scripts' ] );
+	}
+
+	public function enqueue_editor_scripts() {
 	}
 
 	/**
@@ -54,6 +61,17 @@ class Elementor_Widgets {
 			RTGODAM_URL . 'assets/build/css/godam-audio.css',
 			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-audio.css' )
+		);
+		
+
+		wp_register_script(
+			'elementor-godam-editor-script',
+			RTGODAM_URL . 'assets/build/js/elementor-editor.min.js',
+			array(
+				'jquery',
+				'godam-player-frontend-script'
+			),
+			filemtime( RTGODAM_PATH . 'assets/build/js/elementor-editor.min.js' )
 		);
 	}
 
@@ -75,6 +93,14 @@ class Elementor_Widgets {
 		}
 
 		return $options;
+	}
+
+	/**
+	 * Register Controls.
+	 */
+	public function widgets_controls() {
+		\Elementor\Plugin::$instance->controls_manager->register(  new FileSelect_Control(), 'file-select' );
+		\Elementor\Plugin::$instance->controls_manager->register(  new Media_Custom(), 'media-custom' );
 	}
 
 	/**
