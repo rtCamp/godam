@@ -52,7 +52,7 @@ $sources = array();
 if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$sources = $attributes['sources'];
 } elseif ( empty( $attachment_id ) &&
-	( ! empty( $src || ! empty( $transcoded_url ) ) ) 
+	( ! empty( $src || ! empty( $transcoded_url ) ) )
 ) {
 	$sources = array();
 	if ( ! empty( $transcoded_url ) ) {
@@ -72,7 +72,7 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
 	$video_src_type = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
 	$job_id         = $attachment_id && ! empty( $transcoded_url ) ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
-	
+
 	if ( ! empty( $transcoded_url ) ) {
 		$sources = array(
 			array(
@@ -167,18 +167,43 @@ $alignment_map = array(
 
 $justify_content  = isset( $alignment_map[ $vertical_alignment ] ) ? $alignment_map[ $vertical_alignment ] : 'center';
 $alignment_styles = "display: flex; flex-direction: column; justify-content: {$justify_content}; align-items: stretch; height: 100%; overflow: hidden;";
+
+// Create custom inline styles in a more maintainable way.
+$custom_css_properties = array(
+	'--rtgodam-control-bar-color'      => $easydam_control_bar_color,
+	'--rtgodam-control-hover-color'    => $easydam_hover_color,
+	'--rtgodam-control-hover-zoom'     => 1 + $easydam_hover_zoom,
+	'--rtgodam-custom-play-button-url' => $easydam_custom_btn_img ? 'url(' . esc_url( $easydam_custom_btn_img ) . ')' : '',
+);
+
+if ( ! empty( $attributes['aspectRatio'] ) ) {
+	$custom_css_properties['--rtgodam-video-aspect-ratio'] = $attributes['aspectRatio'];
+}
+
+// Build the inline style string, escaping each value.
+$custom_inline_styles = '';
+foreach ( $custom_css_properties as $propertie => $value ) {
+	if ( ! empty( $value ) ) {
+		$custom_inline_styles .= esc_attr( $propertie ) . ': ' . esc_attr( $value ) . ';';
+	}
+}
+
+// Build the figure attributes for the <figure> element.
+if ( $is_shortcode ) {
+	$figure_attributes = ! empty( $custom_inline_styles )
+		? 'style="' . esc_attr( $custom_inline_styles ) . '"'
+		: '';
+} else {
+	$additional_attributes = array();
+	if ( ! empty( $custom_inline_styles ) ) {
+		$additional_attributes['style'] = $custom_inline_styles;
+	}
+	$figure_attributes = get_block_wrapper_attributes( $additional_attributes );
+}
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure 
-	<?php echo $is_shortcode ? '' : wp_kses_data( get_block_wrapper_attributes() ); ?>
-	style="
-	--rtgodam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
-	--rtgodam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
-	--rtgodam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
-	--rtgodam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
-	<?php echo $attributes['aspectRatio'] ? '--rtgodam-video-aspect-ratio: ' . esc_attr( $attributes['aspectRatio'] ) : ''; ?>
-	">
+	<figure <?php echo wp_kses_data( $figure_attributes ); ?>>
 		<div class="godam-video-wrapper" style="position: relative;">
 			<?php if ( ! empty( $inner_blocks_content ) ) : ?>
 				<div 
@@ -232,9 +257,9 @@ $alignment_styles = "display: flex; flex-direction: column; justify-content: {$j
 				<?php endif; ?>
 				
 				<div class="animate-play-btn">
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
-					<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
-				</svg>
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+					</svg>
 				</div>
 				<video
 					class="easydam-player video-js vjs-big-play-centered vjs-hidden"
@@ -388,5 +413,4 @@ $alignment_styles = "display: flex; flex-direction: column; justify-content: {$j
 			<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $caption ); ?></figcaption>
 		<?php endif; ?>
 	</figure>
-
 <?php endif; ?>
