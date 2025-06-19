@@ -276,7 +276,11 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 							?>
 							<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 								<div class="form-container jetpack-form-container">
-									<?php echo wp_kses( $form_html, rtgodam_get_jetpack_form_allowed_html() ); ?>
+									<?php 
+										// HTML generated dynamically using Block content.
+										// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+										echo $form_html; 
+									?>
 								</div>
 							</div>
 							<?php

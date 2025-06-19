@@ -660,15 +660,7 @@ class Pages {
 
 		// Enqueue the main Jetpack forms stylesheet.
 		wp_enqueue_style( 'grunion.css' );
-		
-		// Also enqueue the accessible form script.
-		wp_enqueue_script( 'accessible-form' );
-		
 		// In admin, we need to load the block library styles which include button styles.
 		wp_enqueue_style( 'wp-block-library' );
-		wp_enqueue_style( 'wp-block-library-theme' );
-		
-		// Load WordPress components styles (includes button styling).
-		wp_enqueue_style( 'wp-components' );
 	}
 }
