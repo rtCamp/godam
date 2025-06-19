@@ -67,6 +67,7 @@ window.addEventListener( 'elementor/frontend/init', () => {
 						model.get( 'settings' ).set( { seo_content_headline: seoData.headline } );
 						model.get( 'settings' ).set( { seo_content_upload_date: seoData.uploadDate } );
 						model.get( 'settings' ).set( { seo_content_video_thumbnail_url: seoData.thumbnailUrl } );
+						model.get( 'settings' ).set( { seo_content_duration: seoData.duration } );
 						panel.currentPageView.render();
 					} );
 				} );

@@ -50,7 +50,7 @@ if ( window.elementor ) {
 			} else if ( 'video' === mediaType ) {
 				this.ui.mediaVideo.attr( 'poster', icon ?? '' );
 				this.ui.mediaVideo.attr( 'src', url );
-			} else {
+			} else if ( 'string' === typeof value ) {
 				const fileName = url ? url.split( '/' ).pop() : '';
 				this.ui.fileName.text( fileName );
 			}

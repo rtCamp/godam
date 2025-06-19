@@ -177,6 +177,16 @@ class GoDAM_Player extends Base {
 		);
 
 		$this->add_control(
+			'seo_content_duration',
+			array(
+				'label'       => esc_html__( 'Duration', 'godam' ),
+				'type'        => Controls_Manager::TEXT,
+				'description' => esc_html__( 'ISO 8601 format. Example: PT1H30M', 'godam' ),
+				'label_block' => true,
+			)
+		);
+
+		$this->add_control(
 			'seo_content_video_thumbnail_url',
 			array(
 				'label'          => esc_html__( 'Video Thumbnail URL', 'godam' ),
