@@ -172,6 +172,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								const isAdServerAd = adServer === 'ad-server' && layer.type === 'ad';
 								const isGFPluginNotActive = layer.type === 'form' && ! window?.videoData?.gf_active;
 								const isWPFormsPluginNotActive = layer.type === 'form' && ! window?.videoData?.wpforms_active;
+								const isEverestFormsPluginNotActive = layer.type === 'form' && ! window?.videoData?.everest_forms_active;
 								const isCF7PluginNotActive = layer.type === 'form' && ! window?.videoData?.cf7_active;
 								const isPollPluginNotActive = layer.type === 'poll' && ! window.easydamMediaLibrary.isPollPluginActive;
 								let addWarning = false;
@@ -188,6 +189,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 									addWarning = true;
 								} else if ( isWPFormsPluginNotActive && layer.form_type === 'wpforms' ) {
 									toolTipMessage = __( 'WPForms plugin is not active', 'godam' );
+									addWarning = true;
+								} else if ( isEverestFormsPluginNotActive && layer.form_type === 'everest-forms' ) {
+									toolTipMessage = __( 'Everest Forms plugin is not active', 'godam' );
 									addWarning = true;
 								} else if ( isCF7PluginNotActive && layer.form_type === 'cf7' ) {
 									toolTipMessage = __( 'Contact Form 7 plugin is not active', 'godam' );
@@ -300,6 +304,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 							<LayerSelector
 								isGFPluginActive={ window?.videoData?.gf_active }
 								isWPFormsPluginActive={ window?.videoData?.wpforms_active }
+								isEverestFormsPluginActive={ window?.videoData?.everest_forms_active }
 								isCF7PluginActive={ window?.videoData?.cf7_active }
 								isJetpackPluginActive={ window?.videoData?.jetpack_active }
 								closeModal={ closeModal }
