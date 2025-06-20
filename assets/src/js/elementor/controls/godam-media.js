@@ -122,6 +122,12 @@ if ( window.elementor ) {
 						title: attachment.title,
 						name: attachment.filename,
 						icon: attachment.icon || '',
+						sources: [
+							{
+								src: attachment.url,
+								type: attachment?.mime,
+							},
+						],
 					} );
 				} else {
 					control.setValue( {

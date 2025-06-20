@@ -73,7 +73,9 @@ function GODAMPlayer( videoRef = null ) {
 
 		const currentPlayerVideoInstanceId = video.dataset.instanceId;
 
-		video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
+		if ( video.closest( '.animate-video-loading' ) ) {
+			video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
+		}
 
 		const adTagUrl = video.dataset.ad_tag_url;
 		let isVideoClicked = false;

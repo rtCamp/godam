@@ -354,12 +354,12 @@ class GoDAM_Player extends Base {
 		}
 
 		$attributes = array(
-			'id'             => $widget_video_file['id'],
-			'sources'        => '',
+			'id'             => ! isset( $widget_video_file['sources'] ) ? $widget_video_file['id'] : null,
+			'sources'        => isset( $widget_video_file['sources'] ) ? $widget_video_file['sources'] : array(),
 			'src'            => $widget_video_file['url'],
 			'transcoded_url' => '',
 			'poster'         => $widget_poster_file['url'],
-			'aspectRatio'    => '16/9',
+			'aspectRatio'    => '',
 			'autoplay'       => $widget_autoplay,
 			'controls'       => $widget_controls,
 			'muted'          => $widget_muted,

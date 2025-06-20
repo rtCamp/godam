@@ -25,7 +25,9 @@ window.addEventListener( 'elementor/frontend/init', () => {
 		elementorFrontend.hooks.addAction(
 			'frontend/element_ready/godam-player.default',
 			( ) => {
-				window.GODAMPlayer();
+				requestAnimationFrame( () => {
+					window.GODAMPlayer();
+				} );
 			},
 		);
 	}
