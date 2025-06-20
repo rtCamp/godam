@@ -50,6 +50,11 @@ const layerTypes = [
 		icon: thumbsUp,
 		type: 'poll',
 	},
+	{
+		title: __( 'WooCommerce', 'godam' ),
+		icon: customPostType,
+		type: 'woo',
+	},
 ];
 
 export const VideoJS = ( props ) => {
