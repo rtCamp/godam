@@ -54,16 +54,18 @@ const Chapters = ( { currentTime, duration, formatTimeForInput } ) => {
 
 	return (
 		<>
-			{
-				sortedChapters?.map( ( chapter ) => {
-					return (
-						<AddChapter chapterID={ chapter.id } key={ chapter?.id } isError={ isError } />
-					);
-				} )
-			}
+			{ sortedChapters?.map( ( chapter ) => {
+				return (
+					<AddChapter
+						chapterID={ chapter.id }
+						key={ chapter?.id }
+						isError={ isError }
+					/>
+				);
+			} ) }
 			{ ! loading && chapters.length === 0 && (
 				<>
-					<h3 className="text-2xl m-0 text-center">
+					<h3 className="text-2xl m-0 text-center pt-4">
 						{ __( 'No chapters added', 'godam' ) }
 					</h3>
 				</>
@@ -100,13 +102,20 @@ const Chapters = ( { currentTime, duration, formatTimeForInput } ) => {
 								} ),
 							);
 						} }
-						disabled={
-							chapters.find( ( l ) => l.startTime === currentTime || ( ! currentTime && parseFloat( l.startTime ) === 0 ) )
-						}
+						disabled={ chapters.find(
+							( l ) =>
+								l.startTime === currentTime ||
+                ( ! currentTime && parseFloat( l.startTime ) === 0 ),
+						) }
 					>
-						{ __( 'Add chapter at ', 'godam' ) } { formatTimeForInput( currentTime ) || '00:00' }s
+						{ __( 'Add chapter at ', 'godam' ) }{ ' ' }
+						{ formatTimeForInput( currentTime ) || '00:00' }s
 					</Button>
-					{ chapters.find( ( l ) => l.startTime === currentTime || ( ! currentTime && parseFloat( l.startTime ) === 0 ) ) && (
+					{ chapters.find(
+						( l ) =>
+							l.startTime === currentTime ||
+              ( ! currentTime && parseFloat( l.startTime ) === 0 ),
+					) && (
 						<p className="text-slate-500 text-center">
 							{ __(
 								'There is already a chapter at this timestamp. Please choose a different timestamp.',
@@ -115,14 +124,18 @@ const Chapters = ( { currentTime, duration, formatTimeForInput } ) => {
 						</p>
 					) }
 					<div>
-						<p>{ __( 'Chapter timestamp formatting adapts to the video length:', 'godam' ) }</p>
-						<ul>
-							<li>{ __( 'For videos under a minute, timestamps use seconds.milliseconds.', 'godam' ) }</li>
-							<li>{ __( 'For videos between one minute and one hour, the format becomes minutes:seconds.milliseconds.', 'godam' ) }</li>
-							<li>{ __( 'For videos over an hour, timestamps are shown as hours:minutes:seconds.milliseconds.', 'godam' ) }</li>
-						</ul>
+						<p className="text-slate-800">
+							{ __( 'Read more about timestamp format ', 'godam' ) }
+							<a
+								href="https://godam.io/docs/overview/chapters/#h-timestamps-formatting-instructions"
+								target="_blank"
+								className="text-[#AB3A6C]"
+								rel="noreferrer"
+							>
+								{ __( 'here', 'godam' ) }
+							</a>
+						</p>
 					</div>
-
 				</div>
 			) }
 		</>
