@@ -296,8 +296,8 @@ class Godam_Gallery extends Base {
 		$count             = $this->get_settings_for_display( 'count' );
 		$order_by          = $this->get_settings_for_display( 'order_by' );
 		$order             = $this->get_settings_for_display( 'order' );
-		$infinite_scroll   = $this->get_settings_for_display( 'infinite_scroll' );
-		$show_title        = $this->get_settings_for_display( 'show_title' );
+		$infinite_scroll   = 'yes' === $this->get_settings_for_display( 'infinite_scroll' );
+		$show_title        = 'yes' === $this->get_settings_for_display( 'show_title' );
 		$layout            = $this->get_settings_for_display( 'layout' );
 		$category          = $this->get_settings_for_display( 'category' );
 		$tag               = $this->get_settings_for_display( 'tag' );
@@ -307,7 +307,6 @@ class Godam_Gallery extends Base {
 		$custom_date_end   = $this->get_settings_for_display( 'custom_date_end' );
 		$include_id_field  = $this->get_settings_for_display( 'include' );
 		$search            = sanitize_text_field( $this->get_settings_for_display( 'search' ) );
-		$align             = $this->get_settings_for_display( 'align' );
 		$include_ids       = array();
 
 		// Concatenating the included ids in comma separated format.
@@ -338,7 +337,6 @@ class Godam_Gallery extends Base {
 			'include'           => $include,
 			'search'            => $search,
 			'show_title'        => $show_title,
-			'align'             => $align,
 		);
 
 		// Convert settings to shortcode string.
