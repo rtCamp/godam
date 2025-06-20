@@ -54,7 +54,7 @@ class MediaListViewTableDragHandler {
 	 * Iterates through each table row and applies drag functionality.
 	 */
 	setupDragHandlers() {
-		this.tableRows.forEach( ( row ) => {
+		this.tableRows?.forEach( ( row ) => {
 			this.setupRowDragHandler( this.$( row ) );
 		} );
 	}
@@ -77,12 +77,12 @@ class MediaListViewTableDragHandler {
 	addDragHandle( $row ) {
 		const checkColumn = $row.find( '.check-column' );
 
-		if ( checkColumn.length === 0 ) {
+		if ( checkColumn?.length === 0 ) {
 			return;
 		}
 
 		const dragHandle = this.createDragHandle();
-		checkColumn.append( dragHandle );
+		checkColumn?.append?.( dragHandle );
 	}
 
 	/**
@@ -93,7 +93,7 @@ class MediaListViewTableDragHandler {
 	createDragHandle() {
 		return this.$( '<span>', {
 			class: 'drag-handle',
-			html: '⋮⋮', // Visual indicator for draggable
+			html: '⋮⋮',
 			css: {
 				cursor: 'grab',
 				padding: '5px',
@@ -113,7 +113,7 @@ class MediaListViewTableDragHandler {
 	 * @param {jQuery} $row - jQuery object representing the table row
 	 */
 	makeDraggable( $row ) {
-		$row.draggable( {
+		$row?.draggable?.( {
 			cursor: 'move',
 			helper: () => this.createDragHelper( $row ),
 			opacity: 0.7,
@@ -130,11 +130,10 @@ class MediaListViewTableDragHandler {
 	 */
 	createDragHelper( $row ) {
 		const draggedItems = this.getDraggedItems( $row );
-		const itemCount = draggedItems.length;
+		const itemCount = draggedItems?.length ?? 0;
 		const helperText = `Moving ${ itemCount } item${ itemCount > 1 ? 's' : '' }`;
 
-		// Store dragged items data for later use
-		$row.data( 'draggedItems', draggedItems );
+		$row?.data?.( 'draggedItems', draggedItems );
 
 		return this.$( '<div>', {
 			text: helperText,
@@ -164,9 +163,8 @@ class MediaListViewTableDragHandler {
 		const selectedCheckboxes = this.$( '.wp-list-table.media tbody input[type="checkbox"]:checked' );
 		let draggedItemIds = [];
 
-		// Collect selected item IDs
-		selectedCheckboxes.each( ( index, checkbox ) => {
-			const itemId = this.$( checkbox ).val();
+		selectedCheckboxes?.each?.( ( index, checkbox ) => {
+			const itemId = this.$( checkbox )?.val?.();
 			if ( itemId ) {
 				draggedItemIds.push( itemId );
 			}
@@ -175,7 +173,7 @@ class MediaListViewTableDragHandler {
 		// If no items are selected, use the current row's item ID
 		if ( draggedItemIds.length === 0 ) {
 			const currentCheckbox = $row.find( 'input[type="checkbox"]' );
-			const currentItemId = currentCheckbox.val();
+			const currentItemId = currentCheckbox?.val?.();
 			if ( currentItemId ) {
 				draggedItemIds = [ currentItemId ];
 			}
@@ -204,25 +202,25 @@ class MediaListViewTableDragHandler {
 	 * Note: not used in the current implementation, but can be useful
 	 */
 	destroy() {
-		if ( this.tableRows ) {
-			this.tableRows.forEach( ( row ) => {
-				const $row = this.$( row );
-				if ( $row.hasClass( 'ui-draggable' ) ) {
-					$row.draggable( 'destroy' );
-				}
-				$row.find( '.drag-handle' ).remove();
-			} );
-		}
+		this.tableRows?.forEach( ( row ) => {
+			const $row = this.$( row );
+			if ( $row?.hasClass?.( 'ui-draggable' ) ) {
+				$row?.draggable?.( 'destroy' );
+			}
+			$row?.find?.( '.drag-handle' )?.remove?.();
+		} );
 	}
 
 	/**
 	 * Get dragged items data from a row
 	 *
+	 * Note: not used in the current implementation, but can be useful
+	 *
 	 * @param {jQuery} $row - jQuery object representing the table row
 	 * @return {Array} Array of dragged item IDs
 	 */
 	getDraggedItemsData( $row ) {
-		return $row.data( 'draggedItems' ) || [];
+		return $row?.data?.( 'draggedItems' ) ?? [];
 	}
 }
 
