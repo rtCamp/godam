@@ -114,6 +114,8 @@ document.addEventListener( 'DOMContentLoaded', function() {
 				filenameElement.textContent = file.name;
 			}
 
+			// Check file size.
+
 			// Create video preview.
 			if ( previewElement && file.type.startsWith( 'video/' ) ) {
 				const videoPreview = document.createElement( 'video' );
