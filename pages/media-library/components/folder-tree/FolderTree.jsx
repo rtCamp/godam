@@ -156,11 +156,12 @@ const FolderTree = () => {
 		 */
 		const setupDroppable = () => {
 			jQuery( '.tree-item' ).droppable( {
-				accept: 'li.attachment, th.check-column',
+				accept: 'li.attachment, tr',
 				hoverClass: 'droppable-hover',
 				tolerance: 'pointer',
 				drop: async ( event, ui ) => {
 					const draggedItems = ui.draggable.data( 'draggedItems' );
+
 					if ( draggedItems ) {
 						const targetFolderId = jQuery( event.target ).data( 'id' );
 
@@ -190,7 +191,8 @@ const FolderTree = () => {
 							 */
 							if ( selectedFolder.id !== -1 ) {
 								draggedItems.forEach( ( attachmentId ) => {
-									jQuery( `li.attachment[data-id="${ attachmentId }"]` ).remove();
+									jQuery( `li.attachment[data-id="${ attachmentId }"]` ).remove(); // for attachment grid view.
+									jQuery( `tr#post-${ attachmentId }` ).remove(); // for attachment list view.
 								} );
 							}
 						} catch {
