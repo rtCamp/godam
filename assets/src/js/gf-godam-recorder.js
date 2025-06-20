@@ -164,7 +164,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 		// Handle file restoration.
 		uppy.on( 'restored', () => {
-			const restoredFile = Object.values( uppy.getState().files )[ 0 ];
+			const restoredFile = Object.values( uppy.getState().files || {} )[ 0 ];
 			if ( ! restoredFile ) {
 				return;
 			}
