@@ -35,6 +35,7 @@ class Seo {
 	 */
 	public function setup_hooks() {
 		add_action( 'save_post', array( $this, 'save_seo_data_as_postmeta' ), 10, 2 );
+		add_action( 'save_post', array( $this, 'elementor_save_seo_data_as_postmeta' ), 10, 1 );
 		add_filter( 'rest_prepare_attachment', array( $this, 'add_video_duration_for_video_seo' ), 10, 2 );
 		add_action( 'wp_head', array( $this, 'add_video_seo_schema' ) );
 	}
@@ -216,7 +217,7 @@ class Seo {
 	
 			$schemas[] = $schema;
 		}
-	
+
 		if ( empty( $schemas ) ) {
 			return;
 		}
@@ -226,5 +227,82 @@ class Seo {
 			count( $schemas ) === 1 ? $schemas[0] : $schemas,
 			JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
 		) . '</script>';
+	}
+
+	/**
+	 * Extract SEO data from Elementor godam_video widget for a given post.
+	 *
+	 * @param int $post_id The ID of the post.
+	 * @return array Extracted SEO data array.
+	 */
+	public function godam_get_video_seo_data_from_elementor( $post_id ) {
+		// Bail if not built with Elementor.
+		if ( ! did_action( 'elementor/loaded' ) ) {
+			return array();
+		}
+
+		if ( ! \Elementor\Plugin::$instance->documents->get( $post_id )->is_built_with_elementor() ) {
+			return array();
+		}
+
+		// Get the raw Elementor data.
+		$data = get_post_meta( $post_id, '_elementor_data', true );
+		if ( empty( $data ) ) {
+			return array();
+		}
+
+		$widgets = json_decode( $data, true );
+		if ( ! is_array( $widgets ) ) {
+			return array();
+		}
+
+		$seo_data = array();
+
+		$extractor = function ( $elements ) use ( &$seo_data, &$extractor ) {
+			foreach ( $elements as $element ) {
+				$_seo_data = array();
+				if (
+					isset( $element['widgetType'] ) &&
+					'godam-player' === $element['widgetType']
+				) {
+					if (
+						isset( $element['settings']['seo_content_headline'] ) &&
+						! empty( $element['settings']['seo_content_headline'] )
+					) {
+						$_seo_data['contentUrl']       = isset( $element['settings']['seo_content_url'] ) ? $element['settings']['seo_content_url'] : '';
+						$_seo_data['headline']         = isset( $element['settings']['seo_content_headline'] ) ? $element['settings']['seo_content_headline'] : '';
+						$_seo_data['uploadDate']       = isset( $element['settings']['seo_content_upload_date'] ) ? $element['settings']['seo_content_upload_date'] : '';
+						$_seo_data['thumbnailUrl']     = isset( $element['settings']['seo_content_video_thumbnail_url'] ) ? $element['settings']['seo_content_video_thumbnail_url'] : '';
+						$_seo_data['isFamilyFriendly'] = isset( $element['settings']['seo_content_family_friendly'] ) ? 'yes' === $element['settings']['seo_content_family_friendly'] : true;
+						$_seo_data['duration']         = isset( $element['settings']['seo_content_duration'] ) ? 'yes' === $element['settings']['seo_content_duration'] : '';
+
+						array_push( $seo_data, $_seo_data );
+					}
+				}
+
+				if ( isset( $element['elements'] ) && is_array( $element['elements'] ) ) {
+					$extractor( $element['elements'] ); // Recurse into inner elements.
+				}
+			}
+		};
+
+		$extractor( $widgets );
+
+		return $seo_data;
+	}
+
+	/**
+	 * Stores the SEO data for elementor.
+	 *
+	 * @param int $post_ID Post ID.
+	 * @return void
+	 */
+	public function elementor_save_seo_data_as_postmeta( $post_ID ) {
+		$video_seo_schema = $this->godam_get_video_seo_data_from_elementor( $post_ID );
+
+		if ( ! empty( $video_seo_schema ) ) {
+			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema );
+			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() );
+		}
 	}
 }

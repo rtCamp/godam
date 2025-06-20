@@ -73,7 +73,9 @@ function GODAMPlayer( videoRef = null ) {
 
 		const currentPlayerVideoInstanceId = video.dataset.instanceId;
 
-		video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
+		if ( video.closest( '.animate-video-loading' ) ) {
+			video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
+		}
 
 		const adTagUrl = video.dataset.ad_tag_url;
 		let isVideoClicked = false;
@@ -578,8 +580,12 @@ function GODAMPlayer( videoRef = null ) {
 				controlBar.removeChild( 'volumePanel' );
 			}
 
-			videojs.registerComponent( 'SettingsButton', SettingsButton );
-			controlBar.addChild( 'SettingsButton', {} );
+			if ( ! controlBar.getChild( 'SettingsButton' ) ) {
+				if ( ! videojs.getComponent( 'SettingsButton' ) ) {
+					videojs.registerComponent( 'SettingsButton', SettingsButton );
+				}
+				controlBar.addChild( 'SettingsButton', {} );
+			}
 
 			document.querySelectorAll( '.vjs-settings-button' ).forEach( ( button ) => {
 				button.querySelector( '.vjs-icon-placeholder' ).classList.add( 'vjs-icon-cog' );
