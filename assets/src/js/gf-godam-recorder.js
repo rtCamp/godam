@@ -5,8 +5,27 @@ import Uppy from '@uppy/core';
 import Dashboard from '@uppy/dashboard';
 import Webcam from '@uppy/webcam';
 import ScreenCapture from '@uppy/screen-capture';
+import GoldenRetriever from '@uppy/golden-retriever';
+
+/**
+ * Handles invalidating persistent uppy states on successful submission
+ * to match the behavior of Gravity Forms.
+ */
+function clearUppyStateIfConfirmed() {
+	if ( document.querySelector( 'div[id^=gform_confirmation_message_]' ) ) {
+		const uppyKeys = Object.keys( localStorage ).filter( ( key ) => {
+			return key.startsWith( 'uppyState:' );
+		} );
+
+		for ( const key of uppyKeys ) {
+			localStorage.removeItem( key );
+		}
+	}
+}
 
 document.addEventListener( 'DOMContentLoaded', function() {
+	clearUppyStateIfConfirmed();
+
 	document.querySelectorAll( '.uppy-video-upload' ).forEach( ( container ) => {
 		const inputId = container.getAttribute( 'data-input-id' );
 		const fileInput = document.getElementById( inputId );
@@ -51,16 +70,20 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		const trigger = `#${ container.id } .uppy-video-upload-button`;
 
 		// Add Dashboard with webcam and screen capture.
-		uppy.use( Dashboard, {
-			trigger,
-			inline: false,
-			closeModalOnClickOutside: true,
-			closeAfterFinish: true,
-			proudlyDisplayPoweredByUppy: false,
-			showProgressDetails: true,
-			plugins: enabledPlugins,
-			disableLocalFiles: ! localFileInput,
-		} );
+		uppy
+			.use( Dashboard, {
+				trigger,
+				inline: false,
+				closeModalOnClickOutside: true,
+				closeAfterFinish: true,
+				proudlyDisplayPoweredByUppy: false,
+				showProgressDetails: true,
+				plugins: enabledPlugins,
+				disableLocalFiles: ! localFileInput,
+			} )
+			.use( GoldenRetriever, {
+				expires: 5 * 60 * 1000, // 5 minutes.
+			} );
 
 		// Conditionally add Webcam plugin.
 		if ( selectorArray.includes( 'webcam' ) ) {
@@ -78,14 +101,18 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			} );
 		}
 
-		// Handle file selection.
-		uppy.on( 'file-added', ( file ) => {
+		/**
+		 * Updates the video preview UI and syncs the selected file with the
+		 * corresponding input field.
+		 *
+		 * @param {File}    file                     - The file to attach to the file input.
+		 * @param {boolean} [shouldCloseModal=false] - Whether the modal should be closed after attaching.
+		 */
+		const processVideoUpload = ( file, shouldCloseModal = false ) => {
 			// Set filename display.
 			if ( filenameElement ) {
 				filenameElement.textContent = file.name;
 			}
-
-			// Check file size.
 
 			// Create video preview.
 			if ( previewElement && file.type.startsWith( 'video/' ) ) {
@@ -128,7 +155,24 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			}
 
 			// Close the modal.
-			uppy.getPlugin( 'Dashboard' ).closeModal();
+			if ( shouldCloseModal ) {
+				uppy.getPlugin( 'Dashboard' ).closeModal();
+			}
+		};
+
+		// Handle file restoration.
+		uppy.on( 'restored', () => {
+			const restoredFile = Object.values( uppy.getState().files )[ 0 ];
+			if ( ! restoredFile ) {
+				return;
+			}
+
+			processVideoUpload( restoredFile );
+		} );
+
+		// Handle file selection.
+		uppy.on( 'file-added', ( file ) => {
+			processVideoUpload( file, true );
 		} );
 
 		// Handle dashboard close.
