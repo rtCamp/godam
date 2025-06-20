@@ -25,7 +25,7 @@ export function createChapterMarkers( player, chapters ) {
 	}
 
 	// Remove existing markers
-	progressHolder.querySelectorAll( '.chapter-marker' )?.forEach( ( marker ) => {
+	progressHolder.querySelectorAll( '.chapter-segment' )?.forEach( ( marker ) => {
 		marker.remove();
 	} );
 
@@ -33,6 +33,9 @@ export function createChapterMarkers( player, chapters ) {
 	if ( ! duration || duration === 0 ) {
 		return;
 	}
+	const playProgress = player.el().querySelector( '.vjs-play-progress' );
+
+	playProgress.style.height = 'unset';// Reset height to allow markers to be drawn.
 
 	// Set end time for last chapter
 	if ( chapters?.length > 0 && chapters[ chapters?.length - 1 ]?.endTime === null ) {
@@ -41,30 +44,63 @@ export function createChapterMarkers( player, chapters ) {
 
 	chapters?.forEach( ( chapter, index ) => {
 		const percentage = ( chapter.startTime / duration ) * 100;
-
-		const marker = document.createElement( 'div' );
-		marker.className = 'chapter-marker';
-		marker.style.left = `${ percentage }%`;
 		const chapterDuration = chapter.endTime - chapter.startTime;
 		const widthPercent = ( chapterDuration / duration ) * 100;
-		marker.style.width = index === chapters.length - 1 ? `${ widthPercent }%` : `${ widthPercent - 0.8 }%`;
-		marker.setAttribute( 'data-chapter', index );
 
-		// Create tooltip
+		const segment = document.createElement( 'div' );
+		segment.className = 'chapter-segment';
+		segment.style.left = `${ percentage }%`;
+		segment.style.width =
+      index === chapters.length - 1 ? `${ widthPercent }%` : `${ widthPercent - 0.8 }%`;
+
+		const fill = document.createElement( 'div' );
+		fill.className = 'chapter-fill';
+		fill.dataset.chapter = index;
+		segment.appendChild( fill );
+
 		const tooltip = document.createElement( 'div' );
 		tooltip.className = 'chapter-tooltip';
 		tooltip.textContent = `${ formatTime( chapter.startTime ) } - ${ chapter.text }`;
+		segment.appendChild( tooltip );
 
-		marker.appendChild( tooltip );
-
-		// Add click event
-		marker.addEventListener( 'click', ( e ) => {
+		segment.addEventListener( 'click', ( e ) => {
 			e.stopPropagation();
 			player.currentTime( chapter.startTime );
 			updateActiveChapter( chapter.startTime, chapters );
 		} );
 
-		progressHolder.appendChild( marker );
+		progressHolder.appendChild( segment );
+	} );
+
+	player.on( 'timeupdate', () => {
+		const currentTime = player.currentTime();
+
+		chapters.forEach( ( chapter, index ) => {
+			const fill = progressHolder.querySelector(
+				`.chapter-fill[data-chapter="${ index }"]`,
+			);
+
+			if ( ! fill ) {
+				return;
+			}
+
+			if ( currentTime >= chapter.endTime ) {
+				// Chapter fully played
+				fill.style.width = '100%';
+			} else if (
+				currentTime >= chapter.startTime &&
+        currentTime < chapter.endTime
+			) {
+				// Chapter partially played
+				const played = currentTime - chapter.startTime;
+				const chapterDuration = chapter.endTime - chapter.startTime;
+				const percent = ( played / chapterDuration ) * 100;
+				fill.style.width = `${ percent }%`;
+			} else {
+				// Not reached yet
+				fill.style.width = '0%';
+			}
+		} );
 	} );
 }
 
