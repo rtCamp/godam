@@ -26,11 +26,24 @@ const TreeItem = ( { item, index, depth } ) => {
 
 	const selectedFolderID = useSelector( ( state ) => state.FolderReducer.selectedFolder?.id );
 
+	/**
+	 * Handle click on the tree item to change the selected folder
+	 * and trigger the filter change in the media grid.
+	 */
 	const handleClick = () => {
 		triggerFilterChange( item.id );
 
-		dispatch( toggleOpenClose( { id: item.id } ) );
 		dispatch( changeSelectedFolder( { item } ) );
+	};
+
+	/**
+	 * Handle click on the chevron to toggle the open/close state of the folder.
+	 *
+	 * @param {Event} e - The event object.
+	 */
+	const handleChevronClick = ( e ) => {
+		e.stopPropagation();
+		dispatch( toggleOpenClose( { id: item.id } ) );
 	};
 
 	const style = {
@@ -65,7 +78,22 @@ const TreeItem = ( { item, index, depth } ) => {
 					</div>
 
 					{ item.children?.length > 0 &&
+					<span
+						className="tree-item__chevron"
+						onClick={ ( event ) => handleChevronClick( event ) }
+						onKeyDown={ ( e ) => {
+							if ( e.key === 'Enter' || e.key === ' ' ) {
+								e.preventDefault();
+								handleChevronClick( e );
+							}
+						} }
+						role="button"
+						tabIndex={ 0 }
+						aria-label={ item.isOpen ? 'Collapse folder' : 'Expand folder' }
+
+					>
 						<Icon icon={ item.isOpen ? chevronUp : chevronDown } />
+					</span>
 					}
 				</button>
 			</div>
