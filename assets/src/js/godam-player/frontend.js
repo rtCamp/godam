@@ -580,8 +580,12 @@ function GODAMPlayer( videoRef = null ) {
 				controlBar.removeChild( 'volumePanel' );
 			}
 
-			videojs.registerComponent( 'SettingsButton', SettingsButton );
-			controlBar.addChild( 'SettingsButton', {} );
+			if ( ! controlBar.getChild( 'SettingsButton' ) ) {
+				if ( ! videojs.getComponent( 'SettingsButton' ) ) {
+					videojs.registerComponent( 'SettingsButton', SettingsButton );
+				}
+				controlBar.addChild( 'SettingsButton', {} );
+			}
 
 			document.querySelectorAll( '.vjs-settings-button' ).forEach( ( button ) => {
 				button.querySelector( '.vjs-icon-placeholder' ).classList.add( 'vjs-icon-cog' );

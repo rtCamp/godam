@@ -39,6 +39,19 @@ class Elementor_Widgets {
 		add_action( 'elementor/widgets/register', array( $this, 'widgets_registered' ) );
 		add_action( 'elementor/elements/categories_registered', array( $this, 'add_elementor_widget_categories' ) );
 		add_action( 'elementor/controls/controls_registered', array( $this, 'widgets_controls' ) );
+		add_action( 'elementor/editor/before_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+	}
+
+	/**
+	 * Scripts for elementor frontend rendering.
+	 * 
+	 * @return void
+	 */
+	public function enqueue_scripts() {
+		/**
+		 * The below script is only required in elementor editor experience.
+		 */
+		wp_enqueue_script( 'godam-elementor-frontend' );
 	}
 
 	/**
