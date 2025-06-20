@@ -15,10 +15,10 @@ defined( 'ABSPATH' ) || exit;
  * - https://bugs.php.net/bug.php?id=49184
  * - https://bugs.php.net/bug.php?id=54672
  *
- * @param int    $type          One of INPUT_GET, INPUT_POST, INPUT_COOKIE, INPUT_SERVER, or INPUT_ENV.
+ * @param int    $type One of INPUT_GET, INPUT_POST, INPUT_COOKIE, INPUT_SERVER, or INPUT_ENV.
  * @param string $variable_name Name of a variable to get.
- * @param int    $filter        The ID of the filter to apply.
- * @param mixed  $options       filter to apply.
+ * @param int    $filter The ID of the filter to apply.
+ * @param mixed  $options filter to apply.
  *
  * @return mixed Value of the requested variable on success, FALSE if the filter fails, or NULL if the
  *               variable_name variable is not set.
@@ -129,6 +129,7 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
  * It validates the ID, ensures the media exists, and is of the correct type (attachment).
  *
  * @param int $media_id The ID of the media attachment.
+ *
  * @return string The URL of the media file, or an empty string if invalid or not found.
  * @throws Exception If the media is not found or is not an attachment.
  */
@@ -162,6 +163,7 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
  *     - 'imageDescription' (string): Description text for the CTA.
  *     - 'imageLink' (string): URL for the CTA link.
  *     - 'imageCtaButtonText' (string): Text for the CTA button.
+ *
  * @return string The generated HTML string for the image CTA overlay.
  */
 function rtgodam_image_cta_html( $layer ) {
@@ -175,7 +177,7 @@ function rtgodam_image_cta_html( $layer ) {
 	$image_text        = isset( $layer['imageText'] ) ? $layer['imageText'] : '';
 	$image_description = isset( $layer['imageDescription'] ) ? $layer['imageDescription'] : '';
 	$image_link        = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '/';
-	$cta_button_text   = isset( $layer['imageCtaButtonText'] ) ? $layer['imageCtaButtonText'] : 'Buy Now';
+	$cta_button_text   = ! empty( $layer['imageCtaButtonText'] ) ? $layer['imageCtaButtonText'] : 'Buy Now'; // Null coalescing with empty check.
 
 	return "
 	<div class= \"image-cta-overlay-container\">
@@ -202,8 +204,8 @@ function rtgodam_image_cta_html( $layer ) {
 }
 
 /**
- * Verify the api key for the plugin and return user data. 
- * 
+ * Verify the api key for the plugin and return user data.
+ *
  * @param int $timeout The time in seconds after which the user data should be refreshed.
  */
 function rtgodam_get_user_data( $timeout = 300 ) {
@@ -257,7 +259,7 @@ function rtgodam_get_user_data( $timeout = 300 ) {
 
 /**
  * Get the storage and bandwidth usage data.
- * 
+ *
  * @return array|WP_Error
  */
 function rtgodam_get_usage_data() {
@@ -302,7 +304,7 @@ function rtgodam_get_usage_data() {
 
 /**
  * Check if the api key is valid.
- * 
+ *
  * @return bool
  */
 function rtgodam_is_api_key_valid() {
