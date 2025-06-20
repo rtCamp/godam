@@ -325,7 +325,11 @@ export const VideoJS = ( props ) => {
 	}, [ layers, chapters ] );
 
 	useEffect( () => {
-		if ( playerRef.current ) {
+		if ( ! playerRef.current ) {
+			return;
+		}
+
+		try {
 			const player = playerRef.current;
 
 			// player.sources( options.sources );
@@ -342,6 +346,8 @@ export const VideoJS = ( props ) => {
 			} else if ( ! options.controlBar.playToggle && volumePanel ) {
 				player.controlBar.removeChild( 'volumePanel' );
 			}
+		} catch {
+			// Ignoring - "No compatible source was found for this media" error will be shown on the video element.
 		}
 	}, [ options ] );
 
