@@ -105,6 +105,7 @@ const Appearance = () => {
 				controlBar: {
 					...videoConfig.controlBar,
 					playButtonPosition: e.selectedItem.key,
+					playButtonPositionName: e.selectedItem.name,
 				},
 			} ),
 		);
@@ -417,7 +418,7 @@ const Appearance = () => {
 						] }
 						value={ {
 							key: videoConfig.controlBar.playButtonPosition,
-							name: videoConfig.controlBar.playButtonPosition,
+							name: videoConfig.controlBar.playButtonPositionName,
 						} }
 					/>
 				</div>
