@@ -75,6 +75,10 @@ const TreeItem = ( { item, index, depth } ) => {
 					<div className="tree-item__content">
 						<Icon icon={ file } />
 						<span className="tree-item__text">{ item.name }</span>
+
+						<span className="tree-item__count">
+							{ item.attachmentCount ?? 0 }
+						</span>
 					</div>
 
 					{ item.children?.length > 0 &&
