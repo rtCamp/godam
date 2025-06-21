@@ -17,6 +17,7 @@ import FolderTree from './components/folder-tree/FolderTree.jsx';
 import { changeSelectedFolder, openModal } from './redux/slice/folders';
 import { FolderCreationModal, RenameModal, DeleteModal } from './components/modal/index.jsx';
 import { triggerFilterChange } from './data/media-grid.js';
+import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
 
 const App = () => {
 	const dispatch = useDispatch();
@@ -88,6 +89,7 @@ const App = () => {
 				</button>
 			</div>
 
+			<BookmarkTab />
 			<FolderTree />
 
 			<FolderCreationModal />

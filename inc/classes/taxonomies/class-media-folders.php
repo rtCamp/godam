@@ -102,5 +102,15 @@ class Media_Folders extends Base {
 				'show_in_rest' => true,
 			)
 		);
+
+		register_term_meta(
+			static::SLUG,
+			'bookmark',
+			array(
+				'type'         => 'boolean',
+				'single'       => true,
+				'show_in_rest' => true,
+			)
+		);
 	}
 }

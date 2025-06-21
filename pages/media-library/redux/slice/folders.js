@@ -153,6 +153,17 @@ const slice = createSlice( {
 				folder.meta.locked = ! folder.meta.locked;
 			}
 		},
+		addBookmark: ( state, action ) => {
+			const folder = state.folders.find( ( item ) => item.id === action.payload.id );
+
+			if ( folder ) {
+				if ( ! folder.meta ) {
+					folder.meta = {};
+				}
+
+				folder.meta.bookmark = ! folder.meta.bookmark;
+			}
+		},
 	},
 } );
 
@@ -169,6 +180,7 @@ export const {
 	showContextMenu,
 	hideContextMenu,
 	lockFolder,
+	addBookmark,
 } = slice.actions;
 
 export default slice.reducer;

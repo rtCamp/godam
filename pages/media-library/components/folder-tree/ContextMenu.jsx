@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useUpdateFolderMutation } from '../../redux/api/folders';
-import { hideContextMenu, openModal, lockFolder, updateSnackbar } from '../../redux/slice/folders';
+import { hideContextMenu, openModal, lockFolder, updateSnackbar, addBookmark } from '../../redux/slice/folders';
 
 import './css/context-menu.scss';
 
@@ -24,11 +24,45 @@ const ContextMenu = () => {
 
 	const [ updateFolderMutation ] = useUpdateFolderMutation();
 
-	/*
+	/**
+	 * Function to toggle bookmark status of a folder
+	 *
+	 * @param {Object} folder - The folder object to toggle bookmark status.
+	 */
+	const toggleBookmark = async ( folder ) => {
+		const isBookmarked = folder?.meta?.bookmark;
+		const updatedFolder = {
+			...folder,
+			meta: {
+				...folder.meta,
+				bookmark: ! isBookmarked,
+			},
+		};
+
+		try {
+			await updateFolderMutation( updatedFolder ).unwrap();
+
+			dispatch( addBookmark( folder ) );
+
+			dispatch( updateSnackbar( {
+				message: isBookmarked
+					? __( 'Bookmark removed successfully', 'godam' )
+					: __( 'Bookmark added successfully', 'godam' ),
+				type: 'success',
+			} ) );
+		} catch ( error ) {
+			dispatch( updateSnackbar( {
+				message: __( 'Failed to update bookmark status', 'godam' ),
+				type: 'error',
+			} ) );
+		}
+	};
+
+	/**
 	 * Function to lock or unlock a folder
 	 *
 	 * @param {Object} folder - The folder object to be locked or unlocked.
-	 * @returns {void}
+	 * @return {void}
 	 */
 	const toggleFolderLock = async ( folder ) => {
 		const isCurrentlyLocked = folder?.meta?.locked;
@@ -101,6 +135,9 @@ const ContextMenu = () => {
 			case 'lockFolder':
 				toggleFolderLock( targetItem );
 				break;
+			case 'addBookmark':
+				toggleBookmark( targetItem );
+				break;
 			default:
 				break;
 		}
@@ -147,6 +184,12 @@ const ContextMenu = () => {
 					onClick={ () => handleMenuAction( 'lockFolder' ) }
 				>
 					{ targetItem.meta.locked ? __( 'Unlock Folder', 'godam' ) : __( 'Lock Folder', 'godam' ) }
+				</button>
+				<button
+					className="context-menu__item"
+					onClick={ () => handleMenuAction( 'addBookmark' ) }
+				>
+					{ targetItem.meta?.bookmark ? __( 'Remove Bookmark', 'godam' ) : __( 'Add Bookmark', 'godam' ) }
 				</button>
 			</ul>
 		</div>
