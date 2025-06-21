@@ -13,7 +13,7 @@ import { Icon, file, chevronDown, chevronUp } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { toggleOpenClose, changeSelectedFolder } from '../../redux/slice/folders';
+import { toggleOpenClose, changeSelectedFolder, showContextMenu } from '../../redux/slice/folders';
 import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
 
@@ -46,6 +46,21 @@ const TreeItem = ( { item, index, depth } ) => {
 		dispatch( toggleOpenClose( { id: item.id } ) );
 	};
 
+	/**
+	 * Handle right-click context menu for the tree item.
+	 *
+	 * @param {Event} e - The event object.
+	 */
+	const handleContextMenu = ( e ) => {
+		e.preventDefault();
+		e.stopPropagation();
+
+		dispatch( showContextMenu( {
+			position: { x: e.clientX, y: e.clientY },
+			item,
+		} ) );
+	};
+
 	const style = {
 		transform: CSS.Transform.toString( transform ),
 		transition,
@@ -63,6 +78,7 @@ const TreeItem = ( { item, index, depth } ) => {
 				style={ style }
 				{ ...attributes }
 				{ ...listeners }
+				onContextMenu={ handleContextMenu }
 			>
 				<button
 					style={ { paddingLeft: `${ depth * indentPerLevel }px` } }

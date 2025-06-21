@@ -25,7 +25,7 @@ const RenameModal = () => {
 	const dispatch = useDispatch();
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.rename );
-	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const selectedFolder = useSelector( ( state ) => state.FolderReducer.modals.item );
 
 	const [ updateFolder ] = useUpdateFolderMutation();
 
@@ -78,7 +78,7 @@ const RenameModal = () => {
 	};
 
 	return (
-		isOpen && (
+		( isOpen && selectedFolder ) && (
 			<Modal
 				title={ __( 'Rename folder', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'rename' ) ) }

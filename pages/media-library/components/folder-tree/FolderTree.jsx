@@ -18,12 +18,13 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import TreeItem from './TreeItem.jsx';
 import TreeItemPreview from './TreeItemPreview.jsx';
+import ContextMenu from './ContextMenu.jsx';
+import SnackbarComp from './SnackbarComp.jsx';
 
 import { setTree, updateSnackbar } from '../../redux/slice/folders.js';
 import { utilities } from '../../data/utilities';
 
 import { useAssignFolderMutation, useGetFoldersQuery, useUpdateFolderMutation } from '../../redux/api/folders.js';
-import SnackbarComp from './SnackbarComp.jsx';
 
 import './css/tree.scss';
 
@@ -301,6 +302,7 @@ const FolderTree = () => {
 			</DragOverlay>
 
 			<SnackbarComp />
+			<ContextMenu />
 
 		</DndContext>
 	);

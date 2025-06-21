@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, ButtonGroup } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 const { __ } = wp.i18n;
 /**
  * Internal dependencies
@@ -42,17 +42,17 @@ const App = () => {
 				variant="primary"
 				text={ __( 'New Folder', 'godam' ) }
 				className="button--full mb-spacing"
-				onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
+				onClick={ () => dispatch( openModal( { type: 'folderCreation', item: selectedFolder } ) ) }
 			/>
 
-			<ButtonGroup className="button-group mb-spacing">
+			<div className="button-group mb-spacing">
 				<Button
 					icon="edit"
 					__next40pxDefaultSize
 					variant="secondary"
 					text={ __( 'Rename', 'godam' ) }
 					className="button--half"
-					onClick={ () => dispatch( openModal( 'rename' ) ) }
+					onClick={ () => dispatch( openModal( { type: 'rename', item: selectedFolder } ) ) }
 					disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
 				/>
 				<Button
@@ -62,10 +62,10 @@ const App = () => {
 					text={ __( 'Delete', 'godam' ) }
 					className="button--half"
 					isDestructive={ true }
-					onClick={ () => dispatch( openModal( 'delete' ) ) }
+					onClick={ () => dispatch( openModal( { type: 'delete', item: selectedFolder } ) ) }
 					disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
 				/>
-			</ButtonGroup>
+			</div>
 
 			<div className="folder-list">
 				<button
