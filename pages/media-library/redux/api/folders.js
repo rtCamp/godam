@@ -13,7 +13,7 @@ export const folderApi = createApi( {
 			query: () => ( {
 				url: 'wp/v2/media-folder',
 				params: {
-					_fields: 'id,name,parent,attachmentCount',
+					_fields: 'id,name,parent,attachmentCount,meta',
 					per_page: 100, // Note: 100 is the max per page. Implement pagination if total folders > 100
 				},
 			} ),

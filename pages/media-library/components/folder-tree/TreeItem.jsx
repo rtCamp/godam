@@ -8,7 +8,7 @@ import { CSS } from '@dnd-kit/utilities';
 /**
  * WordPress dependencies
  */
-import { Icon, file, chevronDown, chevronUp } from '@wordpress/icons';
+import { Icon, file, lock, chevronDown, chevronUp } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -89,7 +89,7 @@ const TreeItem = ( { item, index, depth } ) => {
 					onClick={ () => handleClick() }
 				>
 					<div className="tree-item__content">
-						<Icon icon={ file } />
+						<Icon icon={ item.meta?.locked ? lock : file } />
 						<span className="tree-item__text">{ item.name }</span>
 
 						<span className="tree-item__count">

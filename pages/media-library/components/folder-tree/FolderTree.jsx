@@ -172,8 +172,6 @@ const FolderTree = () => {
 		dispatch( setTree( updatedFolders ) );
 	}, [ data, dispatch ] );
 
-	const selectedFolderId = useMemo( () => selectedFolder?.id, [ selectedFolder?.id ] );
-
 	useEffect( () => {
 		/**
 		 * Initialize and manage droppable functionality for tree items.
@@ -195,7 +193,36 @@ const FolderTree = () => {
 						/**
 						 * Prevent assigning items to the same folder they are already in.
 						 */
-						if ( selectedFolderId === targetFolderId ) {
+						if ( selectedFolder?.id === targetFolderId ) {
+							return;
+						}
+
+						// do not allow assigning item to other folder from the locked folder.
+						if ( selectedFolder?.meta?.locked ) {
+							dispatch( updateSnackbar( {
+								message: __( 'This folder is locked and cannot be modified', 'godam' ),
+								type: 'error',
+							} ) );
+							return;
+						}
+
+						const targetFolder = data.find( ( folder ) => folder.id === targetFolderId );
+
+						// Check if the target folder exists.
+						if ( ! targetFolder ) {
+							dispatch( updateSnackbar( {
+								message: __( 'Target folder not found', 'godam' ),
+								type: 'error',
+							} ) );
+							return;
+						}
+
+						// do not allow assigning items to a locked folder.
+						if ( targetFolder?.meta?.locked ) {
+							dispatch( updateSnackbar( {
+								message: __( 'This folder is locked and cannot be modified', 'godam' ),
+								type: 'error',
+							} ) );
 							return;
 						}
 
@@ -216,14 +243,14 @@ const FolderTree = () => {
 							/**
 							 * Remove the dragged items from the attachment view if they are meant to be removed.
 							 */
-							if ( selectedFolderId !== -1 ) {
+							if ( selectedFolder?.id !== -1 ) {
 								draggedItems.forEach( ( attachmentId ) => {
 									jQuery( `li.attachment[data-id="${ attachmentId }"]` ).remove(); // for attachment grid view.
 									jQuery( `tr#post-${ attachmentId }` ).remove(); // for attachment list view.
 								} );
 
 								// Update the folder tree count that reflects the new state.
-								updateAttachmentCountOfFolders( selectedFolderId, targetFolderId, draggedItems.length );
+								updateAttachmentCountOfFolders( selectedFolder?.id, targetFolderId, draggedItems.length );
 							}
 						} catch {
 							dispatch( updateSnackbar( {
@@ -250,7 +277,7 @@ const FolderTree = () => {
 				} );
 			}
 		};
-	}, [ data, assignFolderMutation, dispatch, selectedFolderId, updateAttachmentCountOfFolders ] );
+	}, [ data, assignFolderMutation, dispatch, selectedFolder, updateAttachmentCountOfFolders ] );
 
 	if ( isLoading ) {
 		return <div>{ __( 'Loading…', 'godam' ) }</div>;

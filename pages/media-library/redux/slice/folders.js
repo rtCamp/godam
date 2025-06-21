@@ -146,6 +146,13 @@ const slice = createSlice( {
 			state.contextMenu.position = { x: 0, y: 0 };
 			state.contextMenu.item = null;
 		},
+		lockFolder: ( state, action ) => {
+			const folder = state.folders.find( ( item ) => item.id === action.payload.id );
+
+			if ( folder ) {
+				folder.meta.locked = ! folder.meta.locked;
+			}
+		},
 	},
 } );
 
@@ -161,6 +168,7 @@ export const {
 	setTree,
 	showContextMenu,
 	hideContextMenu,
+	lockFolder,
 } = slice.actions;
 
 export default slice.reducer;

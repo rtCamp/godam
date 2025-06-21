@@ -3,20 +3,65 @@
  */
 import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
 /**
  * Internal dependencies
  */
-import { hideContextMenu, openModal } from '../../redux/slice/folders';
+import { useUpdateFolderMutation } from '../../redux/api/folders';
+import { hideContextMenu, openModal, lockFolder, updateSnackbar } from '../../redux/slice/folders';
 
-/*
- * Internal dependencies
- */
 import './css/context-menu.scss';
 
 const ContextMenu = () => {
 	const dispatch = useDispatch();
 	const contextMenuRef = useRef( null );
 	const { isOpen, position, item: targetItem } = useSelector( ( state ) => state.FolderReducer.contextMenu );
+
+	const [ updateFolderMutation ] = useUpdateFolderMutation();
+
+	/*
+	 * Function to lock or unlock a folder
+	 *
+	 * @param {Object} folder - The folder object to be locked or unlocked.
+	 * @returns {void}
+	 */
+	const toggleFolderLock = async ( folder ) => {
+		const isCurrentlyLocked = folder?.meta?.locked;
+		const updatedFolder = {
+			...folder,
+			meta: {
+				...folder.meta,
+				locked: ! isCurrentlyLocked,
+			},
+		};
+
+		try {
+			await updateFolderMutation( updatedFolder ).unwrap();
+
+			dispatch( lockFolder( updatedFolder ) );
+
+			dispatch(
+				updateSnackbar( {
+					message: isCurrentlyLocked
+						? __( 'Folder unlocked successfully', 'godam' )
+						: __( 'Folder locked successfully', 'godam' ),
+					type: 'success',
+				} ),
+			);
+		} catch ( error ) {
+			dispatch(
+				updateSnackbar( {
+					message: __( 'Failed to update folder lock status', 'godam' ),
+					type: 'error',
+				} ),
+			);
+		}
+	};
 
 	useEffect( () => {
 		const handleClickOutside = ( event ) => {
@@ -53,10 +98,14 @@ const ContextMenu = () => {
 			case 'newFolder':
 				dispatch( openModal( { type: 'folderCreation', item: targetItem } ) );
 				break;
+			case 'lockFolder':
+				toggleFolderLock( targetItem );
+				break;
 			default:
-				dispatch( hideContextMenu() );
 				break;
 		}
+
+		dispatch( hideContextMenu() );
 	};
 
 	if ( ! isOpen || ! targetItem ) {
@@ -79,19 +128,25 @@ const ContextMenu = () => {
 					className="context-menu__item"
 					onClick={ () => handleMenuAction( 'rename' ) }
 				>
-					Rename Folder
+					{ __( 'Rename Folder', 'godam' ) }
 				</button>
 				<button
 					className="context-menu__item"
 					onClick={ () => handleMenuAction( 'newFolder' ) }
 				>
-					New Subfolder
+					{ __( 'New Folder', 'godam' ) }
 				</button>
 				<button
 					className="context-menu__item context-menu__item--danger"
 					onClick={ () => handleMenuAction( 'delete' ) }
 				>
-					Delete Folder
+					{ __( 'Delete Folder', 'godam' ) }
+				</button>
+				<button
+					className="context-menu__item"
+					onClick={ () => handleMenuAction( 'lockFolder' ) }
+				>
+					{ targetItem.meta.locked ? __( 'Unlock Folder', 'godam' ) : __( 'Lock Folder', 'godam' ) }
 				</button>
 			</ul>
 		</div>
