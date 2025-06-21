@@ -208,15 +208,6 @@ const FolderTree = () => {
 
 						const targetFolder = data.find( ( folder ) => folder.id === targetFolderId );
 
-						// Check if the target folder exists.
-						if ( ! targetFolder ) {
-							dispatch( updateSnackbar( {
-								message: __( 'Target folder not found', 'godam' ),
-								type: 'error',
-							} ) );
-							return;
-						}
-
 						// do not allow assigning items to a locked folder.
 						if ( targetFolder?.meta?.locked ) {
 							dispatch( updateSnackbar( {
