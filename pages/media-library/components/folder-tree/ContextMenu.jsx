@@ -7,12 +7,12 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { useUpdateFolderMutation } from '../../redux/api/folders';
+import { useDownloadZipMutation, useUpdateFolderMutation } from '../../redux/api/folders';
 import { hideContextMenu, openModal, lockFolder, updateSnackbar, addBookmark } from '../../redux/slice/folders';
 
 import './css/context-menu.scss';
@@ -23,6 +23,118 @@ const ContextMenu = () => {
 	const { isOpen, position, item: targetItem } = useSelector( ( state ) => state.FolderReducer.contextMenu );
 
 	const [ updateFolderMutation ] = useUpdateFolderMutation();
+	const [ downloadZipMutation ] = useDownloadZipMutation();
+
+	/**
+	 * Triggers a file download by creating a temporary anchor element and programmatically clicking it.
+	 *
+	 * This approach creates a temporary link element, sets the download URL and filename,
+	 * adds it to the DOM, triggers the download, and then cleans up by removing the element.
+	 * This is considered standard practice for downloading files in browsers as it's the
+	 * easiest method to implement, though alternative approaches could be explored if needed.
+	 *
+	 * TODO: Consider moving this function to a utility file if it will be reused elsewhere.
+	 *
+	 * ref - https://stackoverflow.com/questions/11620698/how-to-trigger-a-file-download-when-clicking-an-html-button-or-javascript
+	 *
+	 * @param {string}  url                 - The URL of the file to download
+	 * @param {string}  [filename]          - Optional filename for the downloaded file. If not provided, browser will use default from URL
+	 * @param {boolean} [openInNewTab=true] - Whether to set target="_blank" as fallback
+	 *
+	 */
+	function downloadFile( url, filename = null, openInNewTab = true ) {
+		// Create download link using the provided URL
+		const link = document.createElement( 'a' );
+		link.href = url;
+
+		// Set filename if provided
+		if ( filename ) {
+			link.download = filename;
+		}
+
+		// Set target="_blank" as fallback to open in new tab if download fails
+		if ( openInNewTab ) {
+			link.setAttribute( 'target', '_blank' );
+		}
+
+		// Add link to DOM temporarily
+		document.body.appendChild( link );
+
+		// Trigger download
+		link.click();
+
+		// Clean up by removing the temporary element
+		document.body.removeChild( link );
+	}
+
+	/**
+	 * Downloads the folder as a ZIP file.
+	 *
+	 * @param {number} folderId - The ID of the folder to download.
+	 */
+	const downloadZip = async ( folderId ) => {
+		try {
+			dispatch(
+				updateSnackbar( {
+					message: __( 'Preparing ZIP file…', 'godam' ),
+					type: 'info',
+				} ),
+			);
+
+			const response = await downloadZipMutation( { folderId } ).unwrap();
+
+			// Check if the response indicates success
+			if ( ! response.success ) {
+				throw new Error( response.message || __( 'Failed to create ZIP file', 'godam' ) );
+			}
+
+			// Extract data from response
+			const { data } = response;
+
+			if ( ! data || ! data.zip_url ) {
+				throw new Error( __( 'Invalid response: missing ZIP URL', 'godam' ) );
+			}
+
+			downloadFile(
+				data.zip_url,
+				data.zip_name || `${ targetItem.name }.zip`,
+				true, // Open in new tab as fallback
+			);
+
+			// Show success message with details
+			const successMessage = data.added_files > 0
+				? sprintf(
+					/* translators: %d: number of files added to the ZIP */
+					__( 'ZIP downloaded successfully! %d files included.', 'godam' ),
+					data.added_files,
+				)
+				: __( 'ZIP file downloaded successfully.', 'godam' );
+
+			dispatch(
+				updateSnackbar( {
+					message: successMessage,
+					type: 'success',
+				} ),
+			);
+		} catch ( error ) {
+			// TODO: test and decide if we want to directly show the error message or use a generic one
+			// Handle different types of errors
+			let errorMessage = __( 'Failed to download folder', 'godam' );
+
+			if ( error.message ) {
+				errorMessage = error.message;
+			} else if ( error.data && error.data.message ) {
+				errorMessage = error.data.message;
+			}
+
+			dispatch(
+				updateSnackbar( {
+					message: errorMessage,
+					type: 'error',
+				} ),
+			);
+		}
+	};
 
 	/**
 	 * Function to toggle bookmark status of a folder
@@ -138,6 +250,9 @@ const ContextMenu = () => {
 			case 'addBookmark':
 				toggleBookmark( targetItem );
 				break;
+			case 'downloadZip':
+				downloadZip( targetItem.id );
+				break;
 			default:
 				break;
 		}
@@ -190,6 +305,12 @@ const ContextMenu = () => {
 					onClick={ () => handleMenuAction( 'addBookmark' ) }
 				>
 					{ targetItem.meta?.bookmark ? __( 'Remove Bookmark', 'godam' ) : __( 'Add Bookmark', 'godam' ) }
+				</button>
+				<button
+					className="context-menu__item"
+					onClick={ () => handleMenuAction( 'downloadZip' ) }
+				>
+					{ __( 'Download as ZIP', 'godam' ) }
 				</button>
 			</ul>
 		</div>

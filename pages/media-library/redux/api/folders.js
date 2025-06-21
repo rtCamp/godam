@@ -63,6 +63,15 @@ export const folderApi = createApi( {
 				},
 			} ),
 		} ),
+		downloadZip: builder.mutation( {
+			query: ( { folderId } ) => ( {
+				url: `godam/v1/media-library/download-folder/${ folderId }`,
+				method: 'POST',
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
+				},
+			} ),
+		} ),
 	} ),
 } );
 
@@ -72,4 +81,5 @@ export const {
 	useUpdateFolderMutation,
 	useDeleteFolderMutation,
 	useAssignFolderMutation,
+	useDownloadZipMutation,
 } = folderApi;
