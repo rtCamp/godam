@@ -147,6 +147,13 @@ const gfEntryDetailJS = {
 	},
 };
 
+const jetpackFormJS = {
+	...sharedConfig,
+	entry: {
+		'jetpack-form': path.resolve( process.cwd(), 'assets', 'src', 'js', 'jetpack-form.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -221,6 +228,7 @@ module.exports = [
 	gfGodamRecorderJS,
 	gfGodamRecorderEditorJS,
 	gfEntryDetailJS,
+	jetpackFormJS,
 	styles, // Do not remove this.
 	pages,
 ];

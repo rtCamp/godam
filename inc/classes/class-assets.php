@@ -125,6 +125,26 @@ class Assets {
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
 
+		// Add Jetpack form script.
+		wp_register_script(
+			'rtgodam-jetpack-form',
+			RTGODAM_URL . 'assets/build/js/jetpack-form.min.js',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/js/jetpack-form.min.js' ),
+			true
+		);
+
+		wp_localize_script(
+			'rtgodam-jetpack-form',
+			'wpAjax',
+			array(
+				'ajaxurl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'jetpack_form_nonce' ),
+			) 
+		);
+
+		wp_enqueue_script( 'rtgodam-jetpack-form' );
+
 		// Register IMA SDK.
 		wp_enqueue_script(
 			'ima-sdk',

@@ -60,14 +60,31 @@ const JetpackForm = ( { layerID } ) => {
 
 	// Ensure forms is always an array with proper structure
 	const forms = Array.isArray( jetpackForms )
-		? jetpackForms.map( ( form ) => ( {
-			value: String( form.id ),
-			label: form.title || `Form ${ form.id }`,
-		} ) )
+		? jetpackForms.map( ( form ) => {
+			const formData = {
+				value: String( form.id ),
+				label: form.title || `Form ${ form.id }`,
+				origin_post_id: form.origin_post_id || form.post_id,
+			};
+			return formData;
+		} )
 		: [];
 
 	const changeFormID = ( formID ) => {
-		dispatch( updateLayerField( { id: layer.id, field: 'jp_id', value: formID } ) );
+		// Find the selected form to get the origin post ID
+		const selectedForm = forms.find( ( form ) => form.value === formID );
+
+		const originPostId = selectedForm ? selectedForm.origin_post_id : '';
+
+		// Update both fields in a single dispatch
+		dispatch( updateLayerField( {
+			id: layer.id,
+			field: 'jp_id',
+			value: formID,
+			additionalFields: {
+				origin_post_id: originPostId,
+			},
+		} ) );
 	};
 
 	// Helper function to extract post ID from form ID

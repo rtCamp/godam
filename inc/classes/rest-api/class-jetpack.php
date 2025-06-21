@@ -11,6 +11,8 @@ namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
+use Automattic\Jetpack\Forms\ContactForm\Contact_Form;
+
 /**
  * Class Jetpack
  */
@@ -55,6 +57,43 @@ class Jetpack extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/jetpack-form-submit',
+				'args'      => array(
+					array(
+						'methods'             => \WP_REST_Server::CREATABLE,
+						'callback'            => array( $this, 'submit_jetpack_form' ),
+						'permission_callback' => '__return_true',
+						'args'                => array(
+							'contact-form-id'   => array(
+								'description'       => __( 'The contact form ID.', 'godam' ),
+								'type'              => 'string',
+								'required'          => true,
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+							'contact-form-hash' => array(
+								'description'       => __( 'The contact form hash.', 'godam' ),
+								'type'              => 'string',
+								'required'          => true,
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+							'origin-post-id'    => array(
+								'description'       => __( 'The origin post ID.', 'godam' ),
+								'type'              => 'string',
+								'required'          => false,
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+							'fields'            => array(
+								'description' => __( 'The form fields data as JSON string.', 'godam' ),
+								'type'        => 'string',
+								'required'    => true,
+								'default'     => '{}',
+							),
+						),
+					),
+				),
+			),
 		);
 	}
 
@@ -92,12 +131,15 @@ class Jetpack extends Base {
 			$forms_in_post = $this->extract_jetpack_forms_from_blocks( $blocks, $post->ID, $post->post_title );
 
 			foreach ( $forms_in_post as $form ) {
-				$jetpack_forms[] = array(
-					'id'         => $form['id'],
-					'title'      => $form['title'],
-					'post_id'    => $post->ID,
-					'post_title' => $post->post_title,
+				$form_data = array(
+					'id'             => $form['id'],
+					'title'          => $form['title'],
+					'post_id'        => $post->ID,
+					'post_title'     => $post->post_title,
+					'origin_post_id' => $post->ID,
 				);
+				
+				$jetpack_forms[] = $form_data;
 			}
 		}
 
@@ -426,5 +468,224 @@ class Jetpack extends Base {
 		} catch ( \Exception $e ) {
 			return false;
 		}
+	}
+
+	/**
+	 * Handle Jetpack form submission via REST API.
+	 *
+	 * @param \WP_REST_Request $request Request Object.
+	 * @return \WP_REST_Response
+	 */
+	public function submit_jetpack_form( $request ) {
+		
+		if ( ! class_exists( '\Automattic\Jetpack\Forms\ContactForm\Contact_Form' ) ) {
+			return new \WP_Error( 'jetpack_not_active', __( 'Jetpack plugin is not active.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		$form_id        = $request->get_param( 'contact-form-id' );
+		$form_hash      = $request->get_param( 'contact-form-hash' );
+		$fields         = $request->get_param( 'fields' );
+		$origin_post_id = $request->get_param( 'origin-post-id' );
+
+		// Parse the fields JSON if it's a string.
+		if ( is_string( $fields ) ) {
+			$fields = json_decode( $fields, true );
+		}
+		
+		// Ensure fields is an array.
+		if ( ! is_array( $fields ) ) {
+			$fields = array();
+		}
+
+		// Use origin post ID if provided, otherwise fall back to parsing form ID.
+		$target_post_id = null;
+		if ( ! empty( $origin_post_id ) ) {
+			$target_post_id = intval( $origin_post_id );
+		} else {
+			// Fallback: parse form ID to get post ID (for backward compatibility).
+			$form_parts     = explode( '-', $form_id );
+			$target_post_id = intval( $form_parts[0] );
+		}
+
+		// Ensure the form is loaded into memory using the origin post ID.
+		$form_loaded = $this->load_form_into_memory_with_origin( $form_id, $form_hash, $target_post_id );
+		
+		if ( ! $form_loaded ) {
+			return new \WP_Error( 'form_not_found', __( 'Form not found or could not be loaded.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		// Use the correct hash from the original form.
+		global $correct_form_hash;
+		if ( isset( $correct_form_hash ) ) {
+			$form_hash = $correct_form_hash;
+		}
+
+		// Verify the form is now in memory.
+		if ( ! isset( Contact_Form::$forms[ $form_hash ] ) ) {
+			return new \WP_Error( 'form_not_found', __( 'Form not found in memory.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		// Get the original form to map field names and get correct form ID.
+		$original_form = Contact_Form::$forms[ $form_hash ];
+		$mapped_fields = $this->map_field_names( $fields, $original_form );
+		
+		// Get the correct form ID from the original form.
+		$correct_form_id = $original_form->attributes['id'];
+
+		// Prepare $_POST data as Jetpack expects.
+		$_POST['action']            = 'grunion-contact-form';
+		$_POST['contact-form-id']   = $correct_form_id; // Use the correct form ID.
+		$_POST['contact-form-hash'] = $form_hash;
+
+		// Add mapped form fields to $_POST.
+		foreach ( $mapped_fields as $key => $value ) {
+			$_POST[ $key ] = $value;
+		}
+
+		// Set field values on the field objects (nonce verification handled by Jetpack).
+		foreach ( $original_form->fields as $field_id => $field ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- handled by Jetpack.
+			if ( isset( $_POST[ $field_id ] ) ) { 
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing -- handled by Jetpack.
+				$field->value = sanitize_text_field( wp_unslash( $_POST[ $field_id ] ) );
+			}
+		}
+
+		// Add required fields.
+		$_POST['_wpnonce']         = wp_create_nonce( "contact-form_{$correct_form_id}" );
+		$_POST['_wp_http_referer'] = home_url();
+
+		// Output buffering to capture Jetpack's output.
+		ob_start();
+		$plugin = \Automattic\Jetpack\Forms\ContactForm\Contact_Form_Plugin::init();
+		$plugin->ajax_request();
+		$response = ob_get_clean();
+
+		return rest_ensure_response( $response );
+	}
+
+	/**
+	 * Map field names from frontend format to original form format.
+	 *
+	 * @param array  $frontend_fields The frontend field data.
+	 * @param object $original_form The original Jetpack form object.
+	 * @return array Mapped field names and values.
+	 */
+	private function map_field_names( $frontend_fields, $original_form ) {
+		$mapped_fields = array();
+
+		// Get the original form's field IDs in order.
+		$original_field_ids = array_keys( $original_form->fields );
+
+		// Get the frontend field values in order.
+		$frontend_values = array_values( $frontend_fields );
+
+		// Map values by order.
+		foreach ( $original_field_ids as $i => $field_id ) {
+			if ( isset( $frontend_values[ $i ] ) ) {
+				$mapped_fields[ $field_id ] = $frontend_values[ $i ];
+			}
+		}
+
+		return $mapped_fields;
+	}
+
+	/**
+	 * Load form into memory using the origin post ID.
+	 *
+	 * @param string $form_id The form ID.
+	 * @param string $form_hash The form hash.
+	 * @param int    $origin_post_id The origin post ID.
+	 * @return bool True if form loaded successfully, false otherwise.
+	 */
+	private function load_form_into_memory_with_origin( $form_id, $form_hash, $origin_post_id ) {
+		// Get the origin post.
+		$origin_post = get_post( $origin_post_id );
+		if ( ! $origin_post ) {
+			return false;
+		}
+
+		// Set the global $post to the origin post so Contact_Form constructor works correctly.
+		global $post;
+		$post = $origin_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- necessary for Jetpack form processing.
+		setup_postdata( $post );
+
+		try {
+			// Parse blocks and find the first Jetpack contact form.
+			$blocks     = parse_blocks( $origin_post->post_content );
+			$form_block = $this->find_first_jetpack_form_block( $blocks );
+
+			if ( ! $form_block ) {
+				return false;
+			}
+
+			// Prepare form attributes from the block.
+			$form_attributes       = $form_block['attrs'] ?? array();
+			$form_attributes['id'] = $origin_post_id; // Use origin post ID.
+
+			// Process inner blocks to get form content.
+			$form_content = '';
+			if ( ! empty( $form_block['innerBlocks'] ) ) {
+				foreach ( $form_block['innerBlocks'] as $inner_block ) {
+					$form_content .= render_block( $inner_block );
+				}
+			}
+
+			// Create the form object.
+			$form = new \Automattic\Jetpack\Forms\ContactForm\Contact_Form( $form_attributes, $form_content );
+			
+			// Generate the correct hash.
+			$correct_hash = $form->hash;
+			
+			// Add to the static forms array.
+			Contact_Form::$forms[ $correct_hash ] = $form;
+			
+			// Store the correct hash globally for later use.
+			global $correct_form_hash;
+			$correct_form_hash = $correct_hash;
+			
+			return true;
+			
+		} catch ( \Exception $e ) {
+			return false;
+		} finally {
+			// Restore the original post data.
+			wp_reset_postdata();
+		}
+	}
+
+	/**
+	 * Find the first Jetpack contact form block in the blocks.
+	 *
+	 * @param array $blocks The blocks to search.
+	 * @return array|false The form block or false if not found.
+	 */
+	private function find_first_jetpack_form_block( $blocks ) {
+		return $this->search_for_first_form_block( $blocks );
+	}
+
+	/**
+	 * Helper method to recursively search for the first form block.
+	 *
+	 * @param array $blocks The blocks to search.
+	 * @return array|false The form block or false if not found.
+	 */
+	private function search_for_first_form_block( $blocks ) {
+		foreach ( $blocks as $block ) {
+			// Check if this is a Jetpack contact form block.
+			if ( 'jetpack/contact-form' === $block['blockName'] ) {
+				return $block;
+			}
+
+			// Recursively search in inner blocks.
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$result = $this->search_for_first_form_block( $block['innerBlocks'] );
+				if ( false !== $result ) {
+					return $result;
+				}
+			}
+		}
+
+		return false;
 	}
 }

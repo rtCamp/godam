@@ -268,6 +268,8 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 						</div>
 						<?php
 					elseif ( 'jetpack' === $form_type && ! empty( $layer['jp_id'] ) ) :
+						// Get the origin post ID from the layer data.
+						$origin_post_id = isset( $layer['origin_post_id'] ) ? $layer['origin_post_id'] : '';
 						
 						// Use the static helper method to get the rendered form HTML.
 						$form_html = \RTGODAM\Inc\REST_API\Jetpack::get_rendered_form_html_static( $layer['jp_id'] );
@@ -275,7 +277,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 						if ( $form_html && ! is_wp_error( $form_html ) ) {
 							?>
 							<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-								<div class="form-container jetpack-form-container">
+								<div class="form-container jetpack-form-container" <?php echo ! empty( $origin_post_id ) ? 'data-origin-post-id="' . esc_attr( $origin_post_id ) . '"' : ''; ?>>
 									<?php 
 										// HTML generated dynamically using Block content.
 										// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
