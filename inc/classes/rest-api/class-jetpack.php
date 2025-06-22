@@ -592,7 +592,6 @@ class Jetpack extends Base {
 				return array(
 					'success' => false,
 					'message' => $validation_result['message'],
-					'errors'  => $validation_result['errors'],
 				);
 			}
 
@@ -646,20 +645,22 @@ class Jetpack extends Base {
 		$valid  = true;
 
 		foreach ( $form->fields as $field_id => $field ) {
-			
 			// Call the field's validate method.
 			$field->validate();
 			
 			if ( $field->is_error() ) {
-				$valid               = false;
-				$errors[ $field_id ] = $field->get_attribute( 'label' ) . ' is required.';
+				$valid       = false;
+				$field_label = $field->get_attribute( 'label' );
+				if ( empty( $field_label ) ) {
+					$field_label = ucfirst( str_replace( array( 'g' . $form->get_attribute( 'id' ) . '-', '-' ), array( '', ' ' ), $field_id ) );
+				}
+				$errors[] = 'Valid ' . $field_label . ' is required.';
 			}
 		}
 
 		$result = array(
 			'valid'   => $valid,
-			'errors'  => $errors,
-			'message' => $valid ? '' : __( 'Please correct the errors below.', 'godam' ),
+			'message' => $valid ? '' : 'Errors:<br>' . implode( '<br>', $errors ),
 		);
 
 		return $result;

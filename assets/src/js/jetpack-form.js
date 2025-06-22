@@ -12,6 +12,12 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		// Mark form as submitting
 		form.dataset.submitting = 'true';
 
+		// Remove any existing error messages
+		const existingError = form.querySelector( '.contact-form-error' );
+		if ( existingError ) {
+			existingError.remove();
+		}
+
 		// Gather all fields
 		const formData = new FormData( form );
 		const fields = {};
@@ -34,30 +40,14 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			return;
 		}
 
-		// Show loading state using Jetpack's spinner mechanism
+		// Show loading state
 		const submitBtn = form.querySelector( 'button[type="submit"], input[type="submit"]' );
 		let originalContent = '';
 
 		if ( submitBtn ) {
-			// Store original content
 			originalContent = submitBtn.innerHTML;
-
-			// Use Jetpack's spinner mechanism
-			submitBtn.setAttribute( 'aria-disabled', 'true' );
-
-			// Create and add Jetpack's spinner
-			const spinner = document.createElement( 'div' );
-			spinner.classList.add( 'contact-form__spinner' );
-			spinner.setAttribute( 'aria-hidden', 'true' );
-			spinner.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/><path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z"><animateTransform attributeName="transform" type="rotate" dur="0.75s" values="0 12 12;360 12 12" repeatCount="indefinite"/></path></svg>';
-
-			// Add screen reader text
-			const srText = document.createElement( 'span' );
-			srText.classList.add( 'visually-hidden' );
-			srText.textContent = 'Submitting form...';
-
-			submitBtn.appendChild( spinner );
-			submitBtn.appendChild( srText );
+			submitBtn.innerHTML = 'Submitting...';
+			submitBtn.disabled = true;
 		}
 
 		// Prepare payload
@@ -65,68 +55,51 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		payload.append( 'contact-form-id', formId );
 		payload.append( 'contact-form-hash', formHash );
 		payload.append( 'origin-post-id', originPostId );
-
-		// Add fields as a JSON string in a single parameter
 		payload.append( 'fields', JSON.stringify( fields ) );
 
-		// Submit to your REST endpoint
+		// Submit to REST endpoint
 		fetch( restUrl, {
 			method: 'POST',
 			headers: {},
 			credentials: 'same-origin',
 			body: payload,
 		} )
-			.then( ( response ) => {
-				if ( ! response.ok ) {
-					throw new Error( 'Network response was not ok: ' + response.status );
-				}
-
-				// Try to get the response text first to debug
-				return response.text().then( ( text ) => {
-					try {
-						return JSON.parse( text );
-					} catch ( e ) {
-						throw new Error( 'Invalid JSON response' );
-					}
-				} );
-			} )
+			.then( ( response ) => response.json() )
 			.then( ( data ) => {
-				// Hide loading state
+				// Reset button
 				if ( submitBtn ) {
-					submitBtn.removeAttribute( 'aria-disabled' );
 					submitBtn.innerHTML = originalContent;
+					submitBtn.disabled = false;
 				}
 
-				// Handle the response
 				if ( data.success ) {
 					// Success - replace form with success message
 					const heading = data.heading || 'Success!';
 					const message = data.message || 'Your message has been sent successfully.';
-
 					form.innerHTML = '<div class="contact-form-success" style="padding:20px;background:#d4edda;border:1px solid #c3e6cb;color:#155724;border-radius:4px;"><h4>' + heading + '</h4><p>' + message + '</p></div>';
 				} else {
-					// Error - show error message
-					let errorMessage = data.message || 'An error occurred. Please try again.';
-					if ( data.errors && Object.keys( data.errors ).length > 0 ) {
-						errorMessage += '<ul>';
-						Object.values( data.errors ).forEach( ( error ) => {
-							errorMessage += '<li>' + error + '</li>';
-						} );
-						errorMessage += '</ul>';
-					}
-
-					form.innerHTML = '<div class="contact-form-error" style="padding:20px;background:#f8d7da;border:1px solid #f5c6cb;color:#721c24;border-radius:4px;">' + errorMessage + '</div>';
+					// Error - append error message to form
+					const errorMessage = data.message || 'An error occurred. Please try again.';
+					const errorElement = document.createElement( 'div' );
+					errorElement.className = 'contact-form-error';
+					errorElement.style.cssText = 'padding: 15px; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; border-radius: 4px; margin-top: 15px;';
+					errorElement.innerHTML = '<p style="margin: 0;">' + errorMessage + '</p>';
+					form.appendChild( errorElement );
 				}
 			} )
 			.catch( ( ) => {
-				// Hide loading state
+				// Reset button
 				if ( submitBtn ) {
-					submitBtn.removeAttribute( 'aria-disabled' );
 					submitBtn.innerHTML = originalContent;
+					submitBtn.disabled = false;
 				}
 
 				// Show error message
-				form.innerHTML = '<div class="contact-form-error" style="padding:20px;background:#f8d7da;border:1px solid #f5c6cb;color:#721c24;border-radius:4px;"><p>Network error. Please try again.</p></div>';
+				const errorElement = document.createElement( 'div' );
+				errorElement.className = 'contact-form-error';
+				errorElement.style.cssText = 'padding: 15px; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; border-radius: 4px; margin-top: 15px;';
+				errorElement.innerHTML = '<p style="margin: 0;">Network error. Please try again.</p>';
+				form.appendChild( errorElement );
 			} )
 			.finally( () => {
 				// Reset submission flag
