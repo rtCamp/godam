@@ -187,11 +187,20 @@ class Jetpack extends Base {
 				$form_id = $post_id . '-' . $form_counter;
 
 				// Extract form title from attributes or generate one.
-				$form_title = 'Contact Form';
+				$form_title = '';
 				if ( isset( $block['attrs']['subject'] ) && ! empty( $block['attrs']['subject'] ) ) {
 					$form_title = $block['attrs']['subject'];
 				} else {
-					$form_title = $post_title . ' - Form ' . $form_counter;
+					// Create a more descriptive title.
+					$form_title = $post_title;
+					
+					// If there are multiple forms in the same post, add numbering.
+					if ( $form_counter > 1 ) {
+						$form_title .= ' (Form ' . $form_counter . ')';
+					}
+					
+					// Add the post ID for uniqueness.
+					$form_title .= ' (Post ID: ' . $post_id . ')';
 				}
 
 				$forms[] = array(
