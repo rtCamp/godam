@@ -271,10 +271,10 @@ class Seo {
 						isset( $element['settings']['seo_content_headline'] ) &&
 						! empty( $element['settings']['seo_content_headline'] )
 					) {
-						$_seo_data['contentUrl']       = isset( $element['settings']['seo_content_url'] ) ? $element['settings']['seo_content_url'] : '';
-						$_seo_data['headline']         = isset( $element['settings']['seo_content_headline'] ) ? $element['settings']['seo_content_headline'] : '';
-						$_seo_data['uploadDate']       = isset( $element['settings']['seo_content_upload_date'] ) ? $element['settings']['seo_content_upload_date'] : '';
-						$_seo_data['thumbnailUrl']     = isset( $element['settings']['seo_content_video_thumbnail_url'] ) ? $element['settings']['seo_content_video_thumbnail_url'] : '';
+						$_seo_data['contentUrl']       = $element['settings']['seo_content_url'] ?? '';
+						$_seo_data['headline']         = $element['settings']['seo_content_headline'] ?? '';
+						$_seo_data['uploadDate']       = $element['settings']['seo_content_upload_date'] ?? '';
+						$_seo_data['thumbnailUrl']     = $element['settings']['seo_content_video_thumbnail_url'] ?? '';
 						$_seo_data['isFamilyFriendly'] = isset( $element['settings']['seo_content_family_friendly'] ) ? 'yes' === $element['settings']['seo_content_family_friendly'] : true;
 						$_seo_data['duration']         = isset( $element['settings']['seo_content_duration'] ) ? 'yes' === $element['settings']['seo_content_duration'] : '';
 

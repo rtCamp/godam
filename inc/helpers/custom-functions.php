@@ -141,7 +141,7 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
 	$media = get_post( $media_id );
 
 	if ( ! $media || 'attachment' !== $media->post_type ) {
-		throw new Exception( 'Media not found' );
+		throw new \Exception( 'Media not found' );
 	}
 
 	$media_url = wp_get_attachment_url( $media_id );
@@ -172,11 +172,11 @@ function rtgodam_image_cta_html( $layer ) {
 		? 'vertical-image-cta-container'
 		: 'image-cta-container';
 
-	$image_opacity     = isset( $layer['imageOpacity'] ) ? $layer['imageOpacity'] : 1;
-	$image_text        = isset( $layer['imageText'] ) ? $layer['imageText'] : '';
-	$image_description = isset( $layer['imageDescription'] ) ? $layer['imageDescription'] : '';
-	$image_link        = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '/';
-	$cta_button_text   = isset( $layer['imageCtaButtonText'] ) ? $layer['imageCtaButtonText'] : 'Buy Now';
+	$image_opacity     = $layer['imageOpacity'] ?? 1;
+	$image_text        = $layer['imageText'] ?? '';
+	$image_description = $layer['imageDescription'] ?? '';
+	$image_link        = $layer['imageLink'] ?? '/';
+	$cta_button_text   = $layer['imageCtaButtonText'] ?? 'Buy Now';
 
 	return "
 	<div class= \"image-cta-overlay-container\">

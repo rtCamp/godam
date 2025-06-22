@@ -31,7 +31,7 @@ add_filter( 'gform_confirmation_anchor', '__return_false' );
 
 // attributes.
 $autoplay      = ! empty( $attributes['autoplay'] );
-$controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
+$controls      = $attributes['controls'] ?? true;
 $loop          = ! empty( $attributes['loop'] );
 $muted         = ! empty( $attributes['muted'] );
 $poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
@@ -40,7 +40,7 @@ $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['capt
 $heading       = ! empty( $attributes['heading'] ) ? wp_kses_post( $attributes['heading'] ) : '';
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : [];
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
-$video_preview = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
+$video_preview = $attributes['preview'] ?? false;
 
 $src            = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
@@ -131,8 +131,8 @@ $video_config = wp_json_encode(
 $easydam_control_bar_color = '#2b333fb3'; // Default color.
 
 $godam_settings   = get_option( 'rtgodam-settings', [] );
-$brand_color      = isset( $godam_settings['general']['brand_color'] ) ? $godam_settings['general']['brand_color'] : null;
-$appearance_color = isset( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
+$brand_color      = $godam_settings['general']['brand_color'] ?? null;
+$appearance_color = $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ?? null;
 
 if ( ! empty( $appearance_color ) ) {
 	$easydam_control_bar_color = $appearance_color;
@@ -157,7 +157,7 @@ $ad_tag_url = '';
 $ad_server = isset( $easydam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $easydam_meta_data['videoConfig']['adServer'] ) : 'self-hosted';
 
 if ( ! empty( $ad_server ) && 'ad-server' === $ad_server ) :
-	$ad_tag_url = isset( $easydam_meta_data['videoConfig']['adTagURL'] ) ? $easydam_meta_data['videoConfig']['adTagURL'] : '';
+	$ad_tag_url = $easydam_meta_data['videoConfig']['adTagURL'] ?? '';
 elseif ( ! empty( $ads_layers ) && 'self-hosted' === $ad_server ) :
 	$ad_tag_url = get_rest_url( get_current_blog_id(), '/godam/v1/adTagURL/' ) . $attachment_id;
 endif;
@@ -174,7 +174,7 @@ $alignment_map = [
 	'bottom' => 'flex-end',
 ];
 
-$justify_content  = isset( $alignment_map[ $vertical_alignment ] ) ? $alignment_map[ $vertical_alignment ] : 'center';
+$justify_content  = $alignment_map[ $vertical_alignment ] ?? 'center';
 $alignment_styles = "display: flex; flex-direction: column; justify-content: {$justify_content}; align-items: stretch; height: 100%; overflow: hidden;";
 ?>
 

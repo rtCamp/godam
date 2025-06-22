@@ -154,7 +154,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 				return esc_url_raw( $value );
 			}
 			// translators: Return an error if the value is neither a string nor an array.
-			return new WP_Error( 'invalid_param', sprintf( __( '%s must be a valid URL or an array of URLs.', 'godam' ), $param ) );
+			return new \WP_Error( 'invalid_param', sprintf( __( '%s must be a valid URL or an array of URLs.', 'godam' ), $param ) );
 		}
 
 		// Initialize the sanitized array.
@@ -192,7 +192,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 		if ( ! empty( $job_id ) && ! empty( $file_status ) && ( 'error' === $file_status ) ) {
 			$this->rtgodam_transcoder_handler->nofity_transcoding_failed( $job_id, $error_msg );
-			return new WP_Error( 'rtgodam_transcoding_error', 'Something went wrong. Invalid post request.', [ 'status' => 400 ] );
+			return new \WP_Error( 'rtgodam_transcoding_error', 'Something went wrong. Invalid post request.', [ 'status' => 400 ] );
 		}
 
 		$attachment_id = '';
@@ -238,7 +238,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 				$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
 
 				if ( $flag ) {
-					return new WP_Error( 'rtgodam_transcoding_error', $flag, [ 'status' => 500 ] );
+					return new \WP_Error( 'rtgodam_transcoding_error', $flag, [ 'status' => 500 ] );
 				} else {
 					return new WP_REST_Response( esc_html_e( 'Media transcoded successfully.', 'godam' ), 200 );
 				}

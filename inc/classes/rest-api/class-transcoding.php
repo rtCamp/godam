@@ -208,7 +208,7 @@ class Transcoding extends Base {
 		];
 
 		// Set default message for unknown status.
-		$message = isset( $status_messages[ $status ] ) ? $status_messages[ $status ] : __( 'Unknown transcoding status.', 'godam' );
+		$message = $status_messages[ $status ] ?? __( 'Unknown transcoding status.', 'godam' );
 
 		return [
 			'status'   => strtolower( $status ),

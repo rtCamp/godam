@@ -80,10 +80,10 @@ abstract class Base extends Widget_Base {
 
 		$labels = $this->set_default_config();
 
-		$this->name            = isset( $labels['name'] ) ? $labels['name'] : 'godam-widget-name';
-		$this->title           = isset( $labels['title'] ) ? $labels['title'] : __( 'GoDAM Widget Title', 'godam' );
-		$this->icon            = isset( $labels['icon'] ) ? $labels['icon'] : 'eicon-apps';
-		$this->categories      = isset( $labels['categories'] ) ? $labels['categories'] : [ 'godam' ];
+		$this->name            = $labels['name'] ?? 'godam-widget-name';
+		$this->title           = $labels['title'] ?? __( 'GoDAM Widget Title', 'godam' );
+		$this->icon            = $labels['icon'] ?? 'eicon-apps';
+		$this->categories      = $labels['categories'] ?? [ 'godam' ];
 		$this->keywords        = isset( $labels['keywords'] ) && is_array( $labels['keywords'] ) ? $labels['keywords'] : [];
 		$this->depended_script = isset( $labels['depended_script'] ) && is_array( $labels['depended_script'] ) ? $labels['depended_script'] : [];
 		$this->depended_styles = isset( $labels['depended_styles'] ) && is_array( $labels['depended_styles'] ) ? $labels['depended_styles'] : [];

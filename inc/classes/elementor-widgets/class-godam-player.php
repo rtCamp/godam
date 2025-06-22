@@ -357,7 +357,7 @@ class GoDAM_Player extends Base {
 
 		$attributes = [
 			'id'             => ! isset( $widget_video_file['sources'] ) ? $widget_video_file['id'] : null,
-			'sources'        => isset( $widget_video_file['sources'] ) ? $widget_video_file['sources'] : [],
+			'sources'        => $widget_video_file['sources'] ?? [],
 			'src'            => $widget_video_file['url'],
 			'transcoded_url' => '',
 			'poster'         => $widget_poster_file['url'],

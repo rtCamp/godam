@@ -304,7 +304,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 }
 
 $user_data           = rtgodam_get_user_data();
-$is_api_key_verified = isset( $user_data['valid_api_key'] ) ? $user_data['valid_api_key'] : false;
+$is_api_key_verified = $user_data['valid_api_key'] ?? false;
 
 if ( $is_api_key_verified ) {
 	add_filter( 'manage_media_columns', 'rtgodam_add_status_columns_head' );
