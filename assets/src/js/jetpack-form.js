@@ -4,6 +4,14 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 	// Define AJAX submission handler function
 	function handleRestSubmission( form ) {
+		// Prevent multiple submissions
+		if ( form.dataset.submitting === 'true' ) {
+			return;
+		}
+
+		// Mark form as submitting
+		form.dataset.submitting = 'true';
+
 		// Gather all fields
 		const formData = new FormData( form );
 		const fields = {};
@@ -22,18 +30,34 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		const originPostId = form.closest( '.form-container' )?.dataset?.originPostId;
 
 		if ( ! formId || ! formHash ) {
+			form.dataset.submitting = 'false';
 			return;
 		}
 
-		// Show loading state
+		// Show loading state using Jetpack's spinner mechanism
 		const submitBtn = form.querySelector( 'button[type="submit"], input[type="submit"]' );
-		let originalText = '';
+		let originalContent = '';
 
 		if ( submitBtn ) {
-			submitBtn.setAttribute( 'aria-disabled', true );
-			submitBtn.disabled = true;
-			originalText = submitBtn.innerHTML;
-			submitBtn.innerHTML = originalText + ' <span class="spinner is-active" style="float:none;margin-left:5px;"></span>';
+			// Store original content
+			originalContent = submitBtn.innerHTML;
+
+			// Use Jetpack's spinner mechanism
+			submitBtn.setAttribute( 'aria-disabled', 'true' );
+
+			// Create and add Jetpack's spinner
+			const spinner = document.createElement( 'div' );
+			spinner.classList.add( 'contact-form__spinner' );
+			spinner.setAttribute( 'aria-hidden', 'true' );
+			spinner.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/><path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z"><animateTransform attributeName="transform" type="rotate" dur="0.75s" values="0 12 12;360 12 12" repeatCount="indefinite"/></path></svg>';
+
+			// Add screen reader text
+			const srText = document.createElement( 'span' );
+			srText.classList.add( 'visually-hidden' );
+			srText.textContent = 'Submitting form...';
+
+			submitBtn.appendChild( spinner );
+			submitBtn.appendChild( srText );
 		}
 
 		// Prepare payload
@@ -45,12 +69,10 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		// Add fields as a JSON string in a single parameter
 		payload.append( 'fields', JSON.stringify( fields ) );
 
-		// Submit via AJAX to Jetpack's built-in handler
+		// Submit to your REST endpoint
 		fetch( restUrl, {
 			method: 'POST',
-			headers: {
-				// Don't set Content-Type for FormData, let the browser set it
-			},
+			headers: {},
 			credentials: 'same-origin',
 			body: payload,
 		} )
@@ -72,8 +94,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 				// Hide loading state
 				if ( submitBtn ) {
 					submitBtn.removeAttribute( 'aria-disabled' );
-					submitBtn.disabled = false;
-					submitBtn.innerHTML = originalText;
+					submitBtn.innerHTML = originalContent;
 				}
 
 				// Handle the response
@@ -101,12 +122,15 @@ document.addEventListener( 'DOMContentLoaded', function() {
 				// Hide loading state
 				if ( submitBtn ) {
 					submitBtn.removeAttribute( 'aria-disabled' );
-					submitBtn.disabled = false;
-					submitBtn.innerHTML = originalText;
+					submitBtn.innerHTML = originalContent;
 				}
 
 				// Show error message
 				form.innerHTML = '<div class="contact-form-error" style="padding:20px;background:#f8d7da;border:1px solid #f5c6cb;color:#721c24;border-radius:4px;"><p>Network error. Please try again.</p></div>';
+			} )
+			.finally( () => {
+				// Reset submission flag
+				form.dataset.submitting = 'false';
 			} );
 	}
 
@@ -116,18 +140,29 @@ document.addEventListener( 'DOMContentLoaded', function() {
 	jetpackForms.forEach( function( actionInput ) {
 		const form = actionInput.closest( 'form' );
 
-		// Prevent default form submission
-		form.addEventListener( 'submit', function( e ) {
+		// Completely disable Jetpack's original form handling
+		// Remove any existing event listeners by cloning the form
+		const newForm = form.cloneNode( true );
+		form.parentNode.replaceChild( newForm, form );
+
+		// Prevent default form submission with highest priority
+		newForm.addEventListener( 'submit', function( e ) {
 			e.preventDefault();
 			e.stopPropagation();
-			handleRestSubmission( form );
+			e.stopImmediatePropagation();
+			handleRestSubmission( newForm );
 			return false;
-		} );
+		}, true ); // Use capture phase to ensure this runs first
 
 		// Also override the form's submit method
-		form.submit = function() {
-			handleRestSubmission( form );
+		newForm.submit = function() {
+			handleRestSubmission( newForm );
 			return false;
 		};
+
+		// Disable any Jetpack AJAX handlers
+		if ( window.jQuery ) {
+			window.jQuery( newForm ).off( 'submit' );
+		}
 	} );
 } );
