@@ -55,7 +55,18 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			body: payload,
 		} )
 			.then( ( response ) => {
-				return response.text();
+				if ( ! response.ok ) {
+					throw new Error( 'Network response was not ok: ' + response.status );
+				}
+
+				// Try to get the response text first to debug
+				return response.text().then( ( text ) => {
+					try {
+						return JSON.parse( text );
+					} catch ( e ) {
+						throw new Error( 'Invalid JSON response' );
+					}
+				} );
 			} )
 			.then( ( data ) => {
 				// Hide loading state
@@ -65,19 +76,25 @@ document.addEventListener( 'DOMContentLoaded', function() {
 					submitBtn.innerHTML = originalText;
 				}
 
-				// Handle Jetpack's response
-				if ( data.includes( 'Your message has been sent' ) ||
-					data.includes( 'Thank you' ) ) {
+				// Handle the response
+				if ( data.success ) {
 					// Success - replace form with success message
-					form.innerHTML = '<div class="contact-form-success" style="padding:20px;background:#d4edda;border:1px solid #c3e6cb;color:#155724;border-radius:4px;"><h4>Success!</h4><p>Your message has been sent successfully.</p></div>';
-				} else if ( data.includes( 'form-error' ) ||
-					data.includes( 'Error' ) ||
-					data.includes( 'An error occurred' ) ) {
-					// Error - show error message
-					form.innerHTML = '<div class="contact-form-error" style="padding:20px;background:#f8d7da;border:1px solid #f5c6cb;color:#721c24;border-radius:4px;">' + data + '</div>';
+					const heading = data.heading || 'Success!';
+					const message = data.message || 'Your message has been sent successfully.';
+
+					form.innerHTML = '<div class="contact-form-success" style="padding:20px;background:#d4edda;border:1px solid #c3e6cb;color:#155724;border-radius:4px;"><h4>' + heading + '</h4><p>' + message + '</p></div>';
 				} else {
-					// Unknown response - show the response as-is
-					form.innerHTML = '<div class="contact-form-response">' + data + '</div>';
+					// Error - show error message
+					let errorMessage = data.message || 'An error occurred. Please try again.';
+					if ( data.errors && Object.keys( data.errors ).length > 0 ) {
+						errorMessage += '<ul>';
+						Object.values( data.errors ).forEach( ( error ) => {
+							errorMessage += '<li>' + error + '</li>';
+						} );
+						errorMessage += '</ul>';
+					}
+
+					form.innerHTML = '<div class="contact-form-error" style="padding:20px;background:#f8d7da;border:1px solid #f5c6cb;color:#721c24;border-radius:4px;">' + errorMessage + '</div>';
 				}
 			} )
 			.catch( ( ) => {

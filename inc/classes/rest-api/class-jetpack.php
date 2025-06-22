@@ -19,6 +19,13 @@ use Automattic\Jetpack\Forms\ContactForm\Contact_Form;
 class Jetpack extends Base {
 
 	/**
+	 * REST route base.
+	 *
+	 * @var string
+	 */
+	protected $rest_base = '';
+
+	/**
 	 * Get REST routes.
 	 */
 	public function get_rest_routes() {
@@ -555,13 +562,98 @@ class Jetpack extends Base {
 		$_POST['_wpnonce']         = wp_create_nonce( "contact-form_{$correct_form_id}" );
 		$_POST['_wp_http_referer'] = home_url();
 
-		// Output buffering to capture Jetpack's output.
-		ob_start();
-		$plugin = \Automattic\Jetpack\Forms\ContactForm\Contact_Form_Plugin::init();
-		$plugin->ajax_request();
-		$response = ob_get_clean();
+		// Process the form submission directly instead of using ajax_request().
+		$result = $this->process_jetpack_form_submission( $original_form );
 
-		return rest_ensure_response( $response );
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Process Jetpack form submission and return appropriate response.
+	 *
+	 * @param object $form The Jetpack form object.
+	 * @return array Response data.
+	 */
+	private function process_jetpack_form_submission( $form ) {
+		try {
+			// Validate the form.
+			$validation_result = $this->validate_jetpack_form( $form );
+			
+			if ( ! $validation_result['valid'] ) {
+				return array(
+					'success' => false,
+					'message' => $validation_result['message'],
+					'errors'  => $validation_result['errors'],
+				);
+			}
+
+			// Set DOING_AJAX constant to ensure process_submission returns success message.
+			if ( ! defined( 'DOING_AJAX' ) ) {
+				define( 'DOING_AJAX', true );
+			}
+			
+			// Process the submission using Jetpack's built-in method.
+			$submission_result = $form->process_submission();
+			
+			if ( $submission_result ) {
+				// Get custom success message from form attributes.
+				$custom_heading = $form->get_attribute( 'customThankyouHeading' );
+				$custom_message = $form->get_attribute( 'customThankyouMessage' );
+				
+				// Use custom messages if available, otherwise use defaults.
+				$heading = ! empty( $custom_heading ) ? $custom_heading : __( 'Success!', 'godam' );
+				$message = ! empty( $custom_message ) ? $custom_message : __( 'Your message has been sent successfully.', 'godam' );
+				
+				$response = array(
+					'success' => true,
+					'heading' => $heading,
+					'message' => $message,
+				);
+				
+				return $response;
+			} else {
+				return array(
+					'success' => false,
+					'message' => __( 'An error occurred while sending your message. Please try again.', 'godam' ),
+				);
+			}
+		} catch ( \Exception $e ) {
+			return array(
+				'success' => false,
+				'message' => __( 'An unexpected error occurred. Please try again.', 'godam' ),
+				'error'   => $e->getMessage(),
+			);
+		}
+	}
+
+	/**
+	 * Validate Jetpack form fields.
+	 *
+	 * @param object $form The Jetpack form object.
+	 * @return array Validation result.
+	 */
+	private function validate_jetpack_form( $form ) {
+		$errors = array();
+		$valid  = true;
+
+		foreach ( $form->fields as $field_id => $field ) {
+			
+			// Call the field's validate method.
+			$field->validate();
+			
+			if ( $field->is_error() ) {
+				$valid               = false;
+				$errors[ $field_id ] = $field->get_attribute( 'label' ) . ' is required.';
+			}
+		}
+
+		$result = array(
+			'valid'   => $valid,
+			'errors'  => $errors,
+			'message' => $valid ? '' : __( 'Please correct the errors below.', 'godam' ),
+		);
+
+		return $result;
 	}
 
 	/**
