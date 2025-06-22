@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * REST API class to render [godam_video] shortcode output.
  *
@@ -9,15 +12,14 @@ namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
-use WP_REST_Server;
 use WP_REST_Request;
 use WP_REST_Response;
+use WP_REST_Server;
 
 /**
  * Class Dynamic_Shortcode.
  */
 class Dynamic_Shortcode extends Base {
-
 	/**
 	 * Route base.
 	 *
@@ -83,10 +85,10 @@ class Dynamic_Shortcode extends Base {
 
 		ob_start();
 		$shortcode = '[godam_video id="' . $id . '"]';
-		
+
 		// Add filter for shortcode.
 		$shortcode = apply_filters( 'rtgodam_shortcode_output', $shortcode, $id );
-		
+
 		echo do_shortcode( $shortcode );
 		$html = ob_get_clean();
 

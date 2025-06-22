@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Assets class.
  *
@@ -9,7 +12,6 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
-use NF_Display_Render;
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -312,7 +314,6 @@ class Pages {
 		$screen = get_current_screen();
 
 		if ( $screen && in_array( $screen->id, [ $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id ], true ) ) {
-
 			wp_register_script(
 				'rtgodam-page-style',
 				RTGODAM_URL . 'assets/build/pages/page-css.min.js',
@@ -382,7 +383,6 @@ class Pages {
 			$poll_ajax_style = get_option( 'poll_ajax_style' );
 
 			if ( is_plugin_active( 'wp-polls/wp-polls.php' ) && isset( $poll_ajax_style['loading'] ) && $poll_ajax_style['loading'] ) {
-
 				if ( ! defined( 'WP_POLLS_VERSION' ) ) {
 					define( 'WP_POLLS_VERSION', '2.77.3' );
 				}
@@ -407,7 +407,6 @@ class Pages {
 			$poll_ajax_style = get_option( 'poll_ajax_style' );
 
 			if ( is_plugin_active( 'wp-polls/wp-polls.php' ) && isset( $poll_ajax_style['loading'] ) && $poll_ajax_style['loading'] ) {
-
 				if ( ! defined( 'WP_POLLS_VERSION' ) ) {
 					define( 'WP_POLLS_VERSION', '2.77.3' );
 				}
@@ -471,7 +470,6 @@ class Pages {
 
 			wp_enqueue_script( 'godam-page-script-dashboard' );
 			wp_enqueue_script( 'd3-js' );
-
 		} elseif ( $screen && $this->analytics_page_id === $screen->id ) {
 
 			/**

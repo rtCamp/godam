@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * To load all classes that register elementor widget.
  *
@@ -8,9 +11,9 @@
 namespace RTGODAM\Inc;
 
 use RTGODAM\Inc\Elementor_Controls\Godam_Media;
+use RTGODAM\Inc\Elementor_Widgets\GoDAM_Player;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Audio;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Gallery;
-use RTGODAM\Inc\Elementor_Widgets\GoDAM_Player;
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -44,7 +47,7 @@ class Elementor_Widgets {
 
 	/**
 	 * Scripts for elementor frontend rendering.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function enqueue_scripts() {
@@ -70,7 +73,6 @@ class Elementor_Widgets {
 			[],
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-audio.css' )
 		);
-		
 
 		wp_register_script(
 			'godam-elementor-frontend',

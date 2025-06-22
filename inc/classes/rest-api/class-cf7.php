@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Register REST API endpoints for Contact Form 7.
  *
@@ -15,7 +18,6 @@ defined( 'ABSPATH' ) || exit;
  * Class LocationAPI
  */
 class CF7 extends Base {
-
 	/**
 	 * Get REST routes.
 	 */

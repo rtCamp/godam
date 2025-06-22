@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Class to handle file system.
  *
@@ -15,7 +18,6 @@ use RTGODAM\Inc\Traits\Singleton;
  * Class FileSystem
  */
 class FileSystem {
-
 	use Singleton;
 
 	/**

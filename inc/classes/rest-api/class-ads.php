@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Register REST API endpoints for any Assets file endpoints.
  *
@@ -13,7 +16,6 @@ defined( 'ABSPATH' ) || exit;
  * Class LocationAPI
  */
 class Ads extends Base {
-
 	/**
 	 * Setup hooks and initialization.
 	 */
@@ -56,12 +58,12 @@ class Ads extends Base {
 	/**
 	 * Check if request  is for /godam/v1/ad endpoint.
 	 * Return the XML response if it is.
-	 * 
+	 *
 	 * @param bool              $served Whether the request has already been served.
 	 * @param \WP_REST_Response $result Result to send to the client. Usually a \WP_REST_Response.
 	 * @param \WP_REST_Request  $request Request used to generate the response.
 	 * @param \WP_REST_Server   $server Server instance.
-	 * 
+	 *
 	 * @return bool
 	 */
 	public function maybe_ad_url_tag_request( $served, $result, $request, $server ) {
@@ -76,13 +78,13 @@ class Ads extends Base {
 		header( 'Access-Control-Allow-Methods: GET, POST, OPTIONS' ); // Allow specific methods.
 		header( 'Access-Control-Allow-Credentials: true' );
 		header( 'Access-Control-Allow-Headers: Content-Type, Authorization, X-WP-Nonce' );
-	
+
 		// Ensure the response is XML.
 		header( 'Content-Type: text/xml; charset=utf-8' );
 
 		// Output the XML response and terminate the script.
 		echo $result->get_data(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The response is already escaped.
-		
+
 		return true;
 	}
 
@@ -102,14 +104,14 @@ class Ads extends Base {
 		$ad_url       = esc_url( $request->get_param( 'ad_url' ) ?? '' );
 		$click_link   = esc_url( $request->get_param( 'click_link' ) ?? '' );
 		$use_vmap     = rest_sanitize_boolean( $request->get_param( 'use_vmap' ) ?? false );
-		
+
 		// convert ad duration to HH:MM:SS format.  e.g. 16 seconds = 00:00:16.
 		$display_time = gmdate( 'H:i:s', $display_time );
 		$ad_duration  = gmdate( 'H:i:s', $ad_duration );
 
 		// Current endpoint URL.
 		$endpoint_url = rest_url( $this->namespace . sprintf( '/%s', empty( $this->rest_base ) ? 'adTagURL' : $this->rest_base . 'adTagURL' ) );
-		
+
 		ob_start();
 		?>
 			<VAST version="4.1" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.iab.com/VAST">
@@ -143,7 +145,7 @@ class Ads extends Base {
 			</VAST>
 		<?php
 		$vast_xml = ob_get_clean();
-		
+
 		ob_start();
 		// Prepare GET request for VMAP.
 		$vast_url = add_query_arg(
@@ -155,7 +157,7 @@ class Ads extends Base {
 				'ad_url'      => $ad_url,
 				'click_link'  => $click_link,
 			],
-			$endpoint_url 
+			$endpoint_url
 		);
 
 		?>
@@ -164,7 +166,7 @@ class Ads extends Base {
 					<vmap:AdSource id="preroll-ad-1" allowMultipleAds="false" followRedirects="true">
 						<vmap:AdTagURI templateType="vast4">
 							<![CDATA[ 
-							<?php 
+							<?php
 								echo esc_url_raw( $vast_url ); // The URL used here is for redirect purposes, so it must be raw. This will is used to get the VAST XML.
 							?>
 							]]>
@@ -192,7 +194,6 @@ class Ads extends Base {
 
 		$video_id = $request->get_param( 'id' );
 		$video_id = intval( $video_id );
-
 
 		if ( empty( $video_id ) ) {
 			return '';
@@ -227,7 +228,7 @@ class Ads extends Base {
 		ob_start();
 		?>
 			<vmap:VMAP xmlns:vmap="http://www.iab.net/videosuite/vmap" version="1.0">
-				<?php 
+				<?php
 				foreach ( $ads_layers as $layer ) :
 					// Current endpoint URL.
 					$display_time = intval( $layer['displayTime'] ?? 0 );
@@ -237,7 +238,7 @@ class Ads extends Base {
 					$skip_offset  = intval( $layer['skip_offset'] ?? 0 );
 					$ad_url       = esc_url( $layer['ad_url'] ) ?? '';
 					$click_link   = esc_url( $layer['click_link'] ?? '' );
-					
+
 					$endpoint_url = rest_url( $this->namespace . sprintf( '/%s', empty( $this->rest_base ) ? 'adTagURL' : $this->rest_base . 'adTagURL' ) );
 					$vast_url     = add_query_arg(
 						[
@@ -248,14 +249,14 @@ class Ads extends Base {
 							'ad_url'      => $ad_url,
 							'click_link'  => $click_link,
 						],
-						$endpoint_url 
+						$endpoint_url
 					);
 					?>
 					<vmap:AdBreak timeOffset="<?php echo esc_attr( 0 === $display_time ? 'start' : gmdate( 'H:i:s', $display_time ) ); ?>" breakType="linear">
 						<vmap:AdSource allowMultipleAds="false" followRedirects="true">
 							<vmap:AdTagURI templateType="vast4">
 								<![CDATA[
-									<?php 
+									<?php
 										echo esc_url_raw( $vast_url ); // The URL used here is for redirect purposes, so it must be raw. This will is used to get the VAST XML.
 									?>
 								]]>

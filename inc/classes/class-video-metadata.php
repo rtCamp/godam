@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Video Metadata Handler Class.
  *
@@ -47,7 +50,7 @@ class Video_Metadata {
 	public function maybe_migrate_existing_videos() {
 		// Check if migration has been run, if not, run it once.
 		$migration_completed = get_option( 'rtgodam_video_metadata_migration_completed', false );
-		
+
 		if ( ! $migration_completed ) {
 			$this->migrate_existing_video_metadata();
 			update_option( 'rtgodam_video_metadata_migration_completed', true );
@@ -72,24 +75,24 @@ class Video_Metadata {
 	 */
 	private function process_video_metadata( $attachment_id ) {
 		$file_path = get_attached_file( $attachment_id );
-		
+
 		if ( $this->is_video_attachment( $attachment_id ) && file_exists( $file_path ) ) {
 			// Check if metadata already exists to avoid unnecessary processing.
 			$existing_duration = get_post_meta( $attachment_id, '_video_duration', true );
 			$existing_size     = get_post_meta( $attachment_id, '_video_file_size', true );
-			
+
 			if ( empty( $existing_duration ) || empty( $existing_size ) ) {
 				if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 					require_once ABSPATH . 'wp-admin/includes/media.php';
 				}
-				
+
 				$metadata = wp_read_video_metadata( $file_path );
-				
+
 				// Save duration.
 				if ( ! empty( $metadata['length'] ) ) {
 					update_post_meta( $attachment_id, '_video_duration', intval( $metadata['length'] ) );
 				}
-				
+
 				// Save file size.
 				$file_size = filesize( $file_path );
 				if ( $file_size ) {
@@ -119,7 +122,7 @@ class Video_Metadata {
 	private function migrate_existing_video_metadata() {
 		$offset          = 0;
 		$has_more_videos = true;
-		
+
 		while ( $has_more_videos ) {
 			// Get a batch of video attachments without metadata.
 			//phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
@@ -143,16 +146,16 @@ class Video_Metadata {
 					],
 				]
 			);
-			
+
 			if ( ! empty( $videos ) ) {
 				// Process this batch.
 				foreach ( $videos as $video ) {
 					$this->process_video_metadata( $video->ID );
 				}
-				
+
 				// Move to the next batch.
 				$offset += self::BATCH_SIZE;
-				
+
 				// If we got fewer videos than batch size, we're done.
 				if ( count( $videos ) < self::BATCH_SIZE ) {
 					$has_more_videos = false;

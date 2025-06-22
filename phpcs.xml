@@ -52,8 +52,11 @@
 
 	<!-- Rules: rtCamp Coding Standards -->
 	<!-- https://github.com/rtCamp/coding-standards-d/rtCamp/ruleset.xml -->
-	<rule ref="rtCamp-Basic">
+	<rule ref="rtCamp-Extra">
 		<exclude name="SlevomatCodingStandard.ControlStructures.EarlyExit" />
+		<exclude name="WordPress.WhiteSpace.ControlStructureSpacing" />
+		<exclude name="Squiz.WhiteSpace.FunctionSpacing" />
+		<exclude name="SlevomatCodingStandard.TypeHints.LongTypeHints" />
 	</rule>
 
 	<!-- Restore these rules since we're using WPCS structure-->

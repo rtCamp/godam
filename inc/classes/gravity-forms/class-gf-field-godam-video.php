@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Register the Uppy Video field for Gravity Forms.
  *
@@ -10,7 +13,6 @@ namespace RTGODAM\Inc\Gravity_Forms;
 defined( 'ABSPATH' ) || exit;
 
 if ( class_exists( 'GF_Field' ) ) {
-
 	// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 	/**
 	 * Class GF_Field_GoDAM_Video
@@ -18,7 +20,6 @@ if ( class_exists( 'GF_Field' ) ) {
 	 * @package GoDAM
 	 */
 	class GF_Field_GoDAM_Video extends \GF_Field_FileUpload {
-
 		/**
 		 * The field type.
 		 *
@@ -28,13 +29,13 @@ if ( class_exists( 'GF_Field' ) ) {
 
 		/**
 		 * Returns the field's form editor title.
-		 * 
+		 *
 		 * @return string
 		 */
 		public function get_form_editor_field_title() {
 			return esc_attr__( 'GoDAM Record', 'godam' );
 		}
-	
+
 		/**
 		 * Returns the field's form editor description.
 		 *
@@ -43,7 +44,7 @@ if ( class_exists( 'GF_Field' ) ) {
 		public function get_form_editor_field_description() {
 			return esc_attr__( 'Allows users to record webcam video', 'godam' );
 		}
-	
+
 		/**
 		 * Returns the field's form editor icon.
 		 *
@@ -54,7 +55,7 @@ if ( class_exists( 'GF_Field' ) ) {
 		public function get_form_editor_field_icon() {
 			return 'dashicons-video-alt';
 		}
-	
+
 		/**
 		 * Returns the form editor field settings.
 		 *
@@ -90,21 +91,21 @@ if ( class_exists( 'GF_Field' ) ) {
 			$form_id         = absint( $form['id'] );
 			$is_entry_detail = $this->is_entry_detail();
 			$is_form_editor  = $this->is_form_editor();
-		
+
 			$id       = absint( $this->id );
 			$field_id = ! $is_entry_detail || $is_form_editor || $form_id ? "input_$id" : 'input_' . $form_id . "_$id";
-		
+
 			$size         = $this->size;
 			$class_suffix = $is_entry_detail ? '_admin' : '';
 			$class        = $size . $class_suffix;
 			$class        = esc_attr( $class );
-		
+
 			$disabled_text = $is_form_editor ? 'disabled="disabled"' : '';
-		
+
 			$tabindex       = $this->get_tabindex();
 			$multiple_files = $this->multipleFiles;
 			$file_list_id   = 'gform_preview_' . $form_id . '_' . $id;
-		
+
 			// Generate upload rules messages.
 			$upload_rules_messages = [];
 
@@ -121,22 +122,21 @@ if ( class_exists( 'GF_Field' ) ) {
 			$upload_rules_messages[] = esc_attr( sprintf( __( 'Max. file size: %s', 'godam' ), \GFCommon::format_file_size( $max_upload_size ) ) );
 
 			// No. of files.
-			$max_files = ( $multiple_files && $this->maxFiles > 0 ) ? $this->maxFiles : 0;
+			$max_files = $multiple_files && $this->maxFiles > 0 ? $this->maxFiles : 0;
 			if ( $max_files ) {
 				// translators: %s is the maximum number of files allowed.
 				$upload_rules_messages[] = esc_attr( sprintf( __( 'Max. files: %s', 'godam' ), $max_files ) );
 			}
-		
+
 			$rules_messages    = implode( ', ', $upload_rules_messages ) . '.';
 			$rules_messages_id = empty( $rules_messages ) ? '' : "gfield_upload_rules_{$this->formId}_{$this->id}";
 			$describedby       = $this->get_aria_describedby( [ $rules_messages_id ] );
-		
-			
+
 			// Uppy container.
 			$uppy_container_id = "uppy_container_{$form_id}_{$id}";
 			$uppy_file_name_id = "uppy_filename_{$form_id}_{$id}";
 			$uppy_preview_id   = "uppy_preview_{$form_id}_{$id}";
-			
+
 			// Build the uppy UI.
 			ob_start();
 
@@ -206,7 +206,7 @@ if ( class_exists( 'GF_Field' ) ) {
 						$uploaded_files_arr = [ $value ];
 					}
 				}
-	
+
 				$file_count = count( $uploaded_files_arr );
 				if ( 1 < $file_count ) {
 					// translators: %d is the number of files.
@@ -218,7 +218,7 @@ if ( class_exists( 'GF_Field' ) ) {
 					return;
 				}
 			}
-	
+
 			$file_path = $value;
 			if ( ! empty( $file_path ) ) {
 				// displaying thumbnail (if file is an image) or an icon based on the extension.
@@ -229,7 +229,7 @@ if ( class_exists( 'GF_Field' ) ) {
 			}
 			return $value;
 		}
-	
+
 		/**
 		 * Returns the field value for the entry detail page.
 		 *
@@ -245,17 +245,17 @@ if ( class_exists( 'GF_Field' ) ) {
 			if ( empty( $value ) ) {
 				return '';
 			}
-	
+
 			$output     = '';
 			$output_arr = [];
-	
+
 			$files = json_decode( $value, true );
 			if ( ! is_array( $files ) ) {
 				$files = [ $value ];
 			}
-	
+
 			$force_download = in_array( 'download', $this->get_modifiers() );
-	
+
 			if ( is_array( $files ) ) {
 				foreach ( $files as $index => $file_path ) {
 
@@ -269,9 +269,9 @@ if ( class_exists( 'GF_Field' ) ) {
 					} else {
 						$basename = wp_basename( $file_path );
 					}
-	
+
 					$file_path = $this->get_download_url( $file_path, $force_download );
-	
+
 					/**
 					 * Allow for override of SSL replacement
 					 *
@@ -286,11 +286,11 @@ if ( class_exists( 'GF_Field' ) ) {
 					 * @param \RTGODAM\Inc\Gravity_Forms\GF_Field_FileUpload $field     The field object for further context.
 					 */
 					$field_ssl = apply_filters( 'gform_secure_file_download_is_https', true, $file_path, $this );
-	
+
 					if ( \GFCommon::is_ssl() && strpos( $file_path, 'http:' ) && $field_ssl ) {
 						$file_path = str_replace( 'http:', 'https:', $file_path );
 					}
-	
+
 					/**
 					 * Allows for the filtering of the file path before output.
 					 *
@@ -318,8 +318,8 @@ if ( class_exists( 'GF_Field' ) ) {
 						$transcoded_url = gform_get_meta( $entry_id, $meta_key );
 
 						if ( $transcoded_url ) {
-							$output_arr[] = sprintf( 
-								"<li class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></li>", 
+							$output_arr[] = sprintf(
+								"<li class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></li>",
 								esc_html__( 'Video saved and transcoded successfully on GoDAM', 'godam' )
 							);
 						}
@@ -327,7 +327,6 @@ if ( class_exists( 'GF_Field' ) ) {
 				}
 
 				if ( $is_video ) {
-					
 					if ( $transcoded_url ) {
 						$transcoded_url = esc_url( $transcoded_url );
 					}
@@ -339,7 +338,7 @@ if ( class_exists( 'GF_Field' ) ) {
 
 				$output = join( PHP_EOL, $output_arr );
 			}
-	
+
 			return empty( $output ) || 'text' === $format ? $output : sprintf( '<ul>%s</ul>', $output );
 		}
 	}

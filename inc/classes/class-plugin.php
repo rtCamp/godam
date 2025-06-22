@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Plugin manifest class.
  *
@@ -9,41 +12,28 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
-use RTGODAM\Inc\Traits\Singleton;
-use RTGODAM\Inc\Pages;
-use RTGODAM\Inc\Blocks;
-use RTGODAM\Inc\Assets;
-use RTGODAM\Inc\Deactivation;
-use RTGODAM\Inc\Media_Tracker;
-
-use RTGODAM\Inc\Taxonomies\Media_Folders;
-
-use RTGODAM\Inc\REST_API\GF;
-use RTGODAM\Inc\REST_API\CF7;
-use RTGODAM\Inc\REST_API\WPForms;
-use RTGODAM\Inc\REST_API\Settings;
-use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
-use RTGODAM\Inc\REST_API\Media_Library;
+use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\REST_API\Ads;
-use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Analytics;
-use RTGODAM\Inc\REST_API\Polls;
-use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
+use RTGODAM\Inc\REST_API\CF7;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
-use RTGODAM\Inc\Gravity_Forms;
-
+use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
+use RTGODAM\Inc\REST_API\GF;
+use RTGODAM\Inc\REST_API\Media_Library;
+use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
+use RTGODAM\Inc\REST_API\Polls;
+use RTGODAM\Inc\REST_API\Settings;
+use RTGODAM\Inc\REST_API\Transcoding;
+use RTGODAM\Inc\REST_API\WPForms;
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
-
-use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
-
-use RTGODAM\Inc\Video_Metadata;
+use RTGODAM\Inc\Taxonomies\Media_Folders;
+use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Plugin.
  */
 class Plugin {
-
 	use Singleton;
 
 	/**
@@ -121,7 +111,7 @@ class Plugin {
 
 	/**
 	 * Registers the elementor widgets if required.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function load_elementor_widgets() {

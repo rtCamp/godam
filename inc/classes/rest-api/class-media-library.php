@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * REST API class for Media Library Pages.
  *
@@ -13,7 +16,6 @@ defined( 'ABSPATH' ) || exit;
  * Class Media_Library
  */
 class Media_Library extends Base {
-
 	/**
 	 * REST route base.
 	 *
@@ -127,7 +129,6 @@ class Media_Library extends Base {
 		// if folder id is 0, remove the folder from the attachments.
 		if ( 0 === $folder_term_id ) {
 			foreach ( $attachment_ids as $attachment_id ) {
-
 				$return = $this->remove_all_terms_from_id( $attachment_id, 'media-folder' );
 
 				if ( is_wp_error( $return ) ) {
@@ -256,7 +257,7 @@ class Media_Library extends Base {
 	 */
 	private function format_fnumber( $fnumber ) {
 		if ( is_string( $fnumber ) && strpos( $fnumber, '/' ) !== false ) {
-			list( $numerator, $denominator ) = explode( '/', $fnumber );
+			[ $numerator, $denominator ] = explode( '/', $fnumber );
 			if ( is_numeric( $numerator ) && is_numeric( $denominator ) && 0 !== $denominator ) {
 				return 'f/' . round( $numerator / $denominator, 1 );
 			}

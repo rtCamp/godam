@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * REST API class for Analytics.
  *
@@ -9,15 +12,14 @@ namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
-use WP_REST_Server;
 use WP_REST_Request;
 use WP_REST_Response;
+use WP_REST_Server;
 
 /**
  * Class Analytics.
  */
 class Analytics extends Base {
-
 	/**
 	 * REST route base.
 	 *
@@ -557,17 +559,17 @@ class Analytics extends Base {
 			if ( ! empty( $video['video_id'] ) ) {
 				$attachment_id = intval( $video['video_id'] );
 				$attachment    = get_post( $attachment_id );
-				
+
 				if ( $attachment && 'attachment' === $attachment->post_type ) {
 					$file_path = get_attached_file( $attachment_id );
-					
+
 					if ( file_exists( $file_path ) ) {
 						$file_size           = filesize( $file_path );
 						$video['video_size'] = round( $file_size / ( 1024 * 1024 ), 2 );
 					} else {
 						$video['video_size'] = 0;
 					}
-					
+
 					$video['title']         = get_the_title( $attachment_id );
 					$video['exists']        = true;
 					$custom_thumbnail       = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );

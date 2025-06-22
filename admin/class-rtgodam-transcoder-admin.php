@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -19,7 +22,6 @@ defined( 'ABSPATH' ) || exit;
  * @subpackage GoDAM/Admin
  */
 class RTGODAM_Transcoder_Admin {
-
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -171,8 +173,8 @@ class RTGODAM_Transcoder_Admin {
 		// Get the GoDAM logo URL.
 		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', __DIR__ );
 
-		$button_label = ( 'activate' === $button_type ) ? esc_html__( 'Activate API Key', 'godam' ) : esc_html__( 'Use Video Editor', 'godam' );
-		$button_link  = ( 'activate' === $button_type ) ? admin_url( 'admin.php?page=rtgodam_settings' ) : admin_url( 'admin.php?page=rtgodam_video_editor' );
+		$button_label = 'activate' === $button_type ? esc_html__( 'Activate API Key', 'godam' ) : esc_html__( 'Use Video Editor', 'godam' );
+		$button_link  = 'activate' === $button_type ? admin_url( 'admin.php?page=rtgodam_settings' ) : admin_url( 'admin.php?page=rtgodam_video_editor' );
 
 		?>
 		<div class="notice notice-<?php echo esc_attr( $notice_type ); ?> is-dismissible rt-transcoder-api-key-notice">

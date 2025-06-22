@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * REST API class for Transcoding Pages.
  *
@@ -13,7 +16,6 @@ defined( 'ABSPATH' ) || exit;
  * Class Transcoding
  */
 class Transcoding extends Base {
-
 	/**
 	 * REST route base.
 	 *
@@ -115,7 +117,6 @@ class Transcoding extends Base {
 		}
 
 		if ( ! empty( $error_msg ) || ! empty( $error_code ) ) {
-
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $error_msg );
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', $error_code );
 

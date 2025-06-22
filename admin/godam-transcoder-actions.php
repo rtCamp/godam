@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Transcoder actions.
  *
@@ -20,25 +23,25 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 	 * @return array The modified array of attachment form fields.
 	 */
 	function rtgodam_add_transcoded_url_field( $form_fields, $post ) {
-	
+
 		// Check if post is of type attachment.
 		if ( 'attachment' !== $post->post_type ) {
 			return $form_fields;
 		}
-	
+
 		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $post->ID );
-	
+
 		if ( ! preg_match( '/^(video|audio)\//', $mime_type ) ) {
 			return $form_fields;
 		}
-	
+
 		$transcoded_url = get_post_meta( $post->ID, 'rtgodam_transcoded_url', true );
-	
+
 		$easydam_settings = get_option( 'rtgodam-settings', [] );
-	
+
 		$adaptive_bitrate_enabled = ! empty( $easydam_settings['video']['adaptive_bitrate'] );
-	
+
 		// Add the transcoded URL field.
 		$form_fields['transcoded_url'] = [
 			'label' => __( 'Transcoded CDN URL', 'godam' ),
@@ -47,7 +50,7 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 			'value' => esc_url( $transcoded_url ),
 			'helps' => __( 'The URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
 		];
-	
+
 		return $form_fields;
 	}
 }
@@ -67,13 +70,13 @@ if ( ! function_exists( 'rtgodam_save_transcoded_url_field' ) ) {
 	function rtgodam_save_transcoded_url_field( $post, $attachment ) {
 		// Check if adaptive bitrate streaming is enabled.
 		$easydam_settings = get_option( 'rtgodam-settings', [] );
-	
+
 		$adaptive_bitrate_enabled = ! empty( $easydam_settings['video']['adaptive_bitrate'] );
-	
+
 		if ( ! $adaptive_bitrate_enabled ) {
 			return $post;
 		}
-	
+
 		if ( isset( $attachment['transcoded_url'] ) ) {
 			// Check the user's permissions.
 			if ( ! current_user_can( 'edit_post', $post['ID'] ) ) {
@@ -82,7 +85,7 @@ if ( ! function_exists( 'rtgodam_save_transcoded_url_field' ) ) {
 			// Update the post meta with the new value.
 			update_post_meta( $post['ID'], 'rtgodam_transcoded_url', esc_url_raw( $attachment['transcoded_url'] ) );
 		}
-	
+
 		return $post;
 	}
 }
@@ -129,7 +132,6 @@ if ( ! function_exists( 'rtgodam_rtt_set_video_thumbnail' ) ) {
 		$attachment_id = rtmedia_media_id( $id );      // Get the wp attachment ID.
 		$thumbnail     = rtgodam_filter_input( INPUT_POST, 'rtmedia-thumbnail', FILTER_SANITIZE_URL );
 		if ( 'video' === $media_type && ! empty( $thumbnail ) ) {
-
 			if ( ! is_numeric( $thumbnail ) ) {
 				$file_url = $thumbnail;
 				/* for WordPress backward compatibility */
@@ -152,7 +154,6 @@ if ( ! function_exists( 'rtgodam_rtt_set_video_thumbnail' ) ) {
 			$model = new RTMediaModel();
 			$model->update( [ 'cover_art' => $final_file_url ], [ 'id' => intval( $id ) ] );
 			rtt_update_activity_after_thumb_set( $id );
-
 		}
 	}
 }
@@ -173,12 +174,12 @@ if ( ! function_exists( 'rtgodam_rtt_update_wp_media_thumbnail' ) ) {
 		if ( class_exists( 'RTMediaModel' ) ) {
 			$model = new RTMediaModel();
 			$media = $model->get( [ 'media_id' => $attachment_id ] );
-	
+
 			if ( ! empty( $media ) && ! empty( $media[0] ) ) {
 				$attachment_id = $media[0]->media_id;
 				$media_type    = $media[0]->media_type;
 				$cover_art     = $media[0]->cover_art;
-	
+
 				if ( 'video' === $media_type && empty( $cover_art ) && ! empty( $thumb_url ) ) {
 					$model->update( [ 'cover_art' => $thumb_url ], [ 'media_id' => $attachment_id ] );
 				}

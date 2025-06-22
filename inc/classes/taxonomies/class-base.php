@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Base class to register taxonomy.
  *
@@ -15,7 +18,6 @@ use RTGODAM\Inc\Traits\Singleton;
  * Class Base
  */
 abstract class Base {
-
 	use Singleton;
 
 	/**
@@ -54,10 +56,10 @@ abstract class Base {
 		}
 
 		$args = $this->get_args();
-		$args = ( ! empty( $args ) && is_array( $args ) ) ? $args : [];
+		$args = ! empty( $args ) && is_array( $args ) ? $args : [];
 
 		$labels = $this->get_labels();
-		$labels = ( ! empty( $labels ) && is_array( $labels ) ) ? $labels : [];
+		$labels = ! empty( $labels ) && is_array( $labels ) ? $labels : [];
 
 		if ( ! empty( $labels ) && is_array( $labels ) ) {
 			$args['labels'] = $labels;

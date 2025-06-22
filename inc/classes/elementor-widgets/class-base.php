@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Abstract class to register Elementor Widget.
  *
@@ -7,14 +10,13 @@
 
 namespace RTGODAM\Inc\Elementor_Widgets;
 
-use RTGODAM\Inc\Traits\Singleton;
 use Elementor\Widget_Base;
+use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Base class to register GoDAM Elementor Widget.
  */
 abstract class Base extends Widget_Base {
-
 	use Singleton;
 
 	/**
@@ -78,13 +80,13 @@ abstract class Base extends Widget_Base {
 
 		$labels = $this->set_default_config();
 
-		$this->name            = ( isset( $labels['name'] ) ) ? $labels['name'] : 'godam-widget-name';
-		$this->title           = ( isset( $labels['title'] ) ) ? $labels['title'] : __( 'GoDAM Widget Title', 'godam' );
-		$this->icon            = ( isset( $labels['icon'] ) ) ? $labels['icon'] : 'eicon-apps';
-		$this->categories      = ( isset( $labels['categories'] ) ) ? $labels['categories'] : [ 'godam' ];
-		$this->keywords        = ( isset( $labels['keywords'] ) && is_array( $labels['keywords'] ) ) ? $labels['keywords'] : [];
-		$this->depended_script = ( isset( $labels['depended_script'] ) && is_array( $labels['depended_script'] ) ) ? $labels['depended_script'] : [];
-		$this->depended_styles = ( isset( $labels['depended_styles'] ) && is_array( $labels['depended_styles'] ) ) ? $labels['depended_styles'] : [];
+		$this->name            = isset( $labels['name'] ) ? $labels['name'] : 'godam-widget-name';
+		$this->title           = isset( $labels['title'] ) ? $labels['title'] : __( 'GoDAM Widget Title', 'godam' );
+		$this->icon            = isset( $labels['icon'] ) ? $labels['icon'] : 'eicon-apps';
+		$this->categories      = isset( $labels['categories'] ) ? $labels['categories'] : [ 'godam' ];
+		$this->keywords        = isset( $labels['keywords'] ) && is_array( $labels['keywords'] ) ? $labels['keywords'] : [];
+		$this->depended_script = isset( $labels['depended_script'] ) && is_array( $labels['depended_script'] ) ? $labels['depended_script'] : [];
+		$this->depended_styles = isset( $labels['depended_styles'] ) && is_array( $labels['depended_styles'] ) ? $labels['depended_styles'] : [];
 
 		parent::__construct( $data, $args );
 	}

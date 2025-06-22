@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Register Custom Widget - GoDAM Gallery
  *
@@ -13,7 +16,6 @@ use Elementor\Controls_Manager;
  * GoDAM Gallery Widget.
  */
 class Godam_Gallery extends Base {
-
 	/**
 	 * Default config for GoDAM Gallery Widget.
 	 *

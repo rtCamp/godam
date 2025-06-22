@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Extend gravity forms
  *
@@ -8,7 +11,6 @@
 namespace RTGODAM\Inc\Gravity_Forms;
 
 use RTGODAM\Inc\Traits\Singleton;
-use RTGODAM\Inc\Gravity_Forms\GF_Field_GoDAM_Video;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -18,7 +20,6 @@ defined( 'ABSPATH' ) || exit;
  * @package GoDAM
  */
 class Init {
-
 	use Singleton;
 
 	/**
@@ -34,7 +35,7 @@ class Init {
 	 * @return void
 	 */
 	public function setup_hooks() {
-		
+
 		/**
 		 * Filters
 		 */
@@ -53,7 +54,7 @@ class Init {
 
 	/**
 	 * Register custom gravity form field.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function register_custom_gf_field() {
@@ -71,7 +72,7 @@ class Init {
 
 		// Only enqueue the scripts and styles if the form contains a godam_record field.
 		$has_godam_field = false;
-	
+
 		// Check if form has godam_record fields.
 		if ( ! empty( $form['fields'] ) ) {
 			// Loop through all fields to find a godam_record field.
@@ -82,7 +83,7 @@ class Init {
 				}
 			}
 		}
-		
+
 		if ( ! $has_godam_field ) {
 			return;
 		}
@@ -94,12 +95,12 @@ class Init {
 			filemtime( RTGODAM_PATH . 'assets/build/css/gf-uppy-video.css' )
 		);
 
-		wp_enqueue_script( 
+		wp_enqueue_script(
 			'gf-godam-recorder-script',
 			RTGODAM_URL . 'assets/build/js/gf-godam-recorder.min.js',
 			[ 'jquery' ],
-			filemtime( RTGODAM_PATH . 'assets/build/js/gf-godam-recorder.min.js' ), 
-			true 
+			filemtime( RTGODAM_PATH . 'assets/build/js/gf-godam-recorder.min.js' ),
+			true
 		);
 	}
 
@@ -111,8 +112,8 @@ class Init {
 			'gf-entry-detail-script',
 			RTGODAM_URL . 'assets/build/js/gf-entry-detail.min.js',
 			[ 'jquery' ],
-			filemtime( RTGODAM_PATH . 'assets/build/js/gf-entry-detail.min.js' ), 
-			true 
+			filemtime( RTGODAM_PATH . 'assets/build/js/gf-entry-detail.min.js' ),
+			true
 		);
 	}
 
@@ -219,7 +220,6 @@ class Init {
 
 		// Check if the form contains a godam_record field.
 		foreach ( $form['fields'] as $field ) {
-
 			if ( 'godam_record' !== $field->type ) {
 				continue;
 			}
@@ -244,7 +244,7 @@ class Init {
 				if ( ! is_array( $files ) ) {
 					$files = [ $file_value ];
 				}
-				
+
 				foreach ( $files as $index => $file_url ) {
 					$this->send_to_godam( $form_title, $file_url, $entry['id'], $field_id, $index );
 				}
@@ -298,7 +298,6 @@ class Init {
 			}
 		}
 
-		
 		$callback_url = rest_url( 'godam/v1/transcoder-callback' );
 
 		/**
@@ -357,7 +356,7 @@ class Init {
 						'entry_id' => $entry_id,
 						'field_id' => $field_id,
 						'index'    => $index,
-					] 
+					]
 				);
 			}
 		}

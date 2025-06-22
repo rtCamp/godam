@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Retranscode media https://wordpress.org/plugins/regenerate-thumbnails/
  * The code and UI is borrowed from the following plugin (Author: Alex Mills).
@@ -33,7 +36,6 @@ class RTGODAM_RetranscodeMedia {
 	 *  @var string
 	 */
 	public $stored_api_key;
-
 
 	/**
 	 * Usage info of transcoder subscription.
@@ -253,8 +255,8 @@ class RTGODAM_RetranscodeMedia {
 	/**
 	 * Add a "Re Transcode Media" link to the media row actions
 	 *
-	 * @param array   $actions   An array of action links for each attachment.
-	 *                           Default 'Edit', 'Delete Permanently', 'View'.
+	 * @param array    $actions   An array of action links for each attachment.
+	 *                            Default 'Edit', 'Delete Permanently', 'View'.
 	 * @param \WP_Post $post      WP_Post object for the current attachment.
 	 *
 	 * @return array
@@ -273,7 +275,7 @@ class RTGODAM_RetranscodeMedia {
 			return $actions;
 		}
 
-		$actions = ( ! empty( $actions ) && is_array( $actions ) ) ? $actions : [];
+		$actions = ! empty( $actions ) && is_array( $actions ) ? $actions : [];
 
 		$url = wp_nonce_url( admin_url( 'admin.php?page=rtgodam_tools&goback=1&ids=' . $post->ID ), 'rtgodam_tools' );
 
@@ -705,7 +707,7 @@ class RTGODAM_RetranscodeMedia {
 	 * Delete the previously added media thumbnail files
 	 *
 	 * @param  \number $media_id     Post ID of the media.
-	 * @param  array  $post_request Post request coming for the transcoder API.
+	 * @param  array   $post_request Post request coming for the transcoder API.
 	 */
 	public function rtgodam_before_thumbnail_store( $media_id = '', $post_request = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		if ( empty( $media_id ) ) {
@@ -718,7 +720,6 @@ class RTGODAM_RetranscodeMedia {
 
 			// Do not delete the current thumbnail of the video.
 			if ( ! rtgodam_is_override_thumbnail() ) {
-
 				$current_thumb = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
 
 				$key = array_search( $current_thumb, $previous_thumbs, true );
@@ -736,7 +737,7 @@ class RTGODAM_RetranscodeMedia {
 	 * Delete the previously transcoded media files
 	 *
 	 * @param  \number $media_id     Post ID of the media.
-	 * @param  array  $transcoded_files Post request coming for the transcoder API.
+	 * @param  array   $transcoded_files Post request coming for the transcoder API.
 	 */
 	public function rtgodam_before_transcoded_media_store( $media_id = '', $transcoded_files = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		if ( empty( $media_id ) ) {
@@ -769,11 +770,9 @@ class RTGODAM_RetranscodeMedia {
 		$is_retranscoding_job = get_post_meta( $media_id, 'rtgodam_retranscoding_sent', true );
 
 		if ( $is_retranscoding_job && ! rtgodam_is_override_thumbnail() ) {
-
 			$new_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
 
 			if ( ! empty( $new_thumbs ) && is_array( $new_thumbs ) ) {
-
 				$current_thumb = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
 				if ( $current_thumb ) {
 					$new_thumbs[] = $current_thumb;
@@ -831,7 +830,7 @@ class RTGODAM_RetranscodeMedia {
 	 * which are not necessary after processing the callback request
 	 *
 	 * @param  \number $attachment_id      Post ID of the media.
-	 * @param  string $job_id             Unique job ID of the transcoding request.
+	 * @param  string  $job_id             Unique job ID of the transcoding request.
 	 */
 	public function rtgodam_handle_callback_finished( $attachment_id = '', $job_id = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		if ( empty( $attachment_id ) ) {
@@ -841,9 +840,7 @@ class RTGODAM_RetranscodeMedia {
 		$is_retranscoding_job = get_post_meta( $attachment_id, 'rtgodam_retranscoding_sent', true );
 
 		if ( $is_retranscoding_job ) {
-
 			delete_post_meta( $attachment_id, 'rtgodam_retranscoding_sent' );
-
 		}
 	}
 

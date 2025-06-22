@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Register REST API endpoints for Gravity Forms.
  *
@@ -15,7 +18,6 @@ defined( 'ABSPATH' ) || exit;
  * Class LocationAPI
  */
 class GF extends Base {
-
 	/**
 	 * Get REST routes.
 	 */

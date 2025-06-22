@@ -1,7 +1,10 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Elementor control - Godam Media control.
- * 
+ *
  * @package GoDAM
  */
 
@@ -18,7 +21,6 @@ use RTGODAM\Inc\Pages;
  * @since 1.0.0
  */
 class Godam_Media extends \Elementor\Base_Data_Control {
-
 	/**
 	 * Get media control type.
 	 *

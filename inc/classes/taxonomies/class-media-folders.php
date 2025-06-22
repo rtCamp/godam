@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Register taxonomy of the Media Folders.
  *
@@ -13,7 +16,6 @@ defined( 'ABSPATH' ) || exit;
  * Class Media_Folders
  */
 class Media_Folders extends Base {
-
 	/**
 	 * Slug of taxonomy.
 	 *

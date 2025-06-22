@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * The transcoder-specific functionality of the plugin.
  *
@@ -19,7 +22,6 @@ defined( 'ABSPATH' ) || exit;
  * @subpackage GoDAM/TranscoderHandler
  */
 class RTGODAM_Transcoder_Handler {
-
 	/**
 	 * The transcoder API URL.
 	 *
@@ -206,7 +208,6 @@ class RTGODAM_Transcoder_Handler {
 			) &&
 			! in_array( $type, $not_allowed_type, true )
 		) {
-
 			$options_video_thumb = $this->get_thumbnails_required( $attachment_id );
 
 			if ( empty( $options_video_thumb ) ) {
@@ -269,7 +270,7 @@ class RTGODAM_Transcoder_Handler {
 						'callback_url'    => rawurlencode( $callback_url ),
 						'status_callback' => rawurlencode( $status_callback_url ),
 						'force'           => 0,
-						'formats'         => ( true === $autoformat ) ? ( ( ( isset( $type_array[0] ) ) && 'video' === $type_array[0] ) ? 'mp4' : 'mp3' ) : $autoformat,
+						'formats'         => true === $autoformat ? ( isset( $type_array[0] ) && 'video' === $type_array[0] ? 'mp4' : 'mp3' ) : $autoformat,
 						'thumbnail_count' => $options_video_thumb,
 						'stream'          => true,
 						'watermark'       => boolval( $rtgodam_watermark ),
@@ -307,7 +308,6 @@ class RTGODAM_Transcoder_Handler {
 				}
 			}
 
-
 			if ( is_wp_error( $upload_page ) || 500 <= intval( $upload_page['response']['code'] ) ) {
 				$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', [] );
 
@@ -318,7 +318,7 @@ class RTGODAM_Transcoder_Handler {
 				];
 
 				update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
-				
+
 				// display notice to user for next 5 minutes.
 				$timestamp = time();
 				update_option( 'rtgodam-transcoding-failed-notice-timestamp', $timestamp );
@@ -361,7 +361,7 @@ class RTGODAM_Transcoder_Handler {
 	 *
 	 * @param string $key    Api Key.
 	 *
-	 * @return boolean $status  If true then key is valid else key is not valid.
+	 * @return bool $status  If true then key is valid else key is not valid.
 	 */
 	public function is_valid_key( $key ) {
 		$validate_url = trailingslashit( $this->store_url ) . '/resource/api_key/' . $key;
@@ -583,7 +583,6 @@ class RTGODAM_Transcoder_Handler {
 		do_action( 'rtgodam_transcoded_thumbnails_added', $post_id );
 
 		if ( $largest_thumb_url ) {
-
 			$is_retranscoding_job = get_post_meta( $post_id, 'rtgodam_retranscoding_sent', true );
 
 			if ( ! $is_retranscoding_job || rtgodam_is_override_thumbnail() ) {
@@ -636,7 +635,6 @@ class RTGODAM_Transcoder_Handler {
 					foreach ( $format as $file ) {
 						$flag = false;
 						if ( isset( $file ) ) {
-
 							$download_url                  = urldecode( urldecode( $file ) );
 							$new_wp_attached_file_pathinfo = pathinfo( $download_url );
 							$post_mime_type                = 'mp4' === $new_wp_attached_file_pathinfo['extension'] ? 'video/mp4' : 'audio/mp3';
@@ -650,7 +648,7 @@ class RTGODAM_Transcoder_Handler {
 
 							try {
 								$response = function_exists( 'vip_safe_wp_remote_get' ) ? vip_safe_wp_remote_get( $download_url, '', 3, 3 ) : wp_remote_get( $download_url, [ 'timeout' => $timeout ] ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
-							} catch ( Exception $e ) {
+							} catch ( \Throwable $e ) {
 								$flag = $e->getMessage();
 							}
 
@@ -787,10 +785,10 @@ class RTGODAM_Transcoder_Handler {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param  array   $email_ids       Email id's to send an email.
-	 * @param  string  $subject         Email subject.
-	 * @param  string  $message         Email message.
-	 * @param  boolean $include_admin   If true then send an email to admin also else not.
+	 * @param  array  $email_ids       Email id's to send an email.
+	 * @param  string $subject         Email subject.
+	 * @param  string $message         Email message.
+	 * @param  bool   $include_admin   If true then send an email to admin also else not.
 	 */
 	public function send_notification( $email_ids, $subject, $message, $include_admin = true ) {
 		if ( defined( 'RTGODAM_NO_MAIL' ) ) {

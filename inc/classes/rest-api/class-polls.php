@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Register REST API endpoints for any Assets file endpoints.
  *
@@ -11,7 +14,6 @@ namespace RTGODAM\Inc\REST_API;
  * Class Polls
  */
 class Polls extends Base {
-
 	/**
 	 * Get REST routes.
 	 */

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Class to handle re-transcoding of media files that encountered transcoding errors.
  *

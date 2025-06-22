@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * GoDAM Player Shortcode Class.
  *
@@ -28,7 +31,7 @@ class GoDAM_Player {
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_head', [ $this, 'godam_output_admin_player_css' ] );
 	}
-	
+
 	/**
 	 * Outputs custom css from video player settings tab input field.
 	 */
@@ -116,7 +119,6 @@ class GoDAM_Player {
 
 		ob_start();
 		require RTGODAM_PATH . 'inc/templates/godam-player.php';
-		$player_html = ob_get_clean();
-		return $player_html;
+		return ob_get_clean();
 	}
 }

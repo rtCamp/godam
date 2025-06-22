@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Register Custom Widget - GoDAM Audio
  *
@@ -13,7 +16,6 @@ use Elementor\Controls_Manager;
  * GoDAM Gallery Widget.
  */
 class GoDAM_Player extends Base {
-
 	/**
 	 * Default config for GoDAM Video Widget.
 	 *
@@ -117,7 +119,7 @@ class GoDAM_Player extends Base {
 		);
 
 		$this->end_popover();
-		
+
 		$this->add_control(
 			'seo_settings_popover_toggle',
 			[

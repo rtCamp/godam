@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * REST API class for Settings Pages.
  *
@@ -13,7 +16,6 @@ defined( 'ABSPATH' ) || exit;
  * Class Settings
  */
 class Settings extends Base {
-
 	/**
 	 * REST route base.
 	 *
@@ -146,7 +148,6 @@ class Settings extends Base {
 		$result = rtgodam_verify_api_key( $api_key, true );
 
 		if ( is_wp_error( $result ) ) {
-
 			$error_data  = $result->get_error_data();
 			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
 

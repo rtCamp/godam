@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Plugin Name: GoDAM
  * Plugin URI: https://godam.io

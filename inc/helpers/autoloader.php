@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Autoloader file for plugin.
  *
@@ -47,7 +50,6 @@ function autoloader( $file_resource = '' ) {
 	$file_name = '';
 
 	if ( 'inc' === $path[0] ) {
-
 		switch ( $path[1] ) {
 			case 'traits':
 				$directory = 'traits';
@@ -80,7 +82,6 @@ function autoloader( $file_resource = '' ) {
 		}
 
 		$resource_path = sprintf( '%s/inc/%s/%s.php', untrailingslashit( RTGODAM_PATH ), $directory, $file_name );
-
 	}
 
 	$resource_path_valid = validate_file( $resource_path );

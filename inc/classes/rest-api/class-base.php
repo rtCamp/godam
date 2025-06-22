@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Abstract class for REST API endpoints with register_meta support.
  *
@@ -15,7 +18,6 @@ use RTGODAM\Inc\Traits\Singleton;
  * Base class for REST API endpoints with register_meta support.
  */
 abstract class Base extends \WP_REST_Controller {
-
 	use Singleton;
 
 	/**

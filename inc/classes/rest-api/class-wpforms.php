@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Register REST API endpoints for WPForms.
  *
@@ -17,7 +20,6 @@ defined( 'ABSPATH' ) || exit;
  * Class LocationAPI
  */
 class WPForms extends Base {
-
 	/**
 	 * Get REST routes.
 	 */

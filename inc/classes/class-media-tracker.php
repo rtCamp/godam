@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Check if Media Transcoding is functional.
  *
@@ -13,7 +16,7 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * GoDAM Media_Tracker class.
- * 
+ *
  * This class is responsible for tracking the transcoding status of media attachments.
  */
 class Media_Tracker {
@@ -69,7 +72,7 @@ class Media_Tracker {
 
 	/**
 	 * Check new attachment transcoding status.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function check_new_attachment_transcoding_status() {
@@ -135,7 +138,7 @@ class Media_Tracker {
 
 	/**
 	 * Display admin notice.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function display_cdn_admin_notice() {
@@ -181,7 +184,7 @@ class Media_Tracker {
 					</div>
 				</div>
 				<?php
-			} 
+			}
 		);
 	}
 
@@ -192,7 +195,6 @@ class Media_Tracker {
 	 */
 	public function check_transcoder_plugin() {
 		if ( is_plugin_active( 'transcoder/rt-transcoder.php' ) ) {
-
 			$screen = get_current_screen();
 			if ( ! in_array( $screen->id, [ 'dashboard', 'upload', 'plugins' ], true ) ) {
 				return;
@@ -206,7 +208,7 @@ class Media_Tracker {
 			);
 
 			$message = '<div class="notice notice-error"><p>' . $message . '</p></div>';
-			
+
 			echo wp_kses(
 				$message,
 				[

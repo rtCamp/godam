@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Custom functions.
  *
@@ -71,7 +74,6 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
 	// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE,  WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
 	switch ( $type ) {
-
 		case INPUT_GET:
 			if ( ! isset( $_GET[ $variable_name ] ) ) {
 				return null;
@@ -114,7 +116,6 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
 
 		default:
 			return null;
-
 	}
 
 	// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing, WordPressVIPMinimum.Variables.RestrictedVariables.cache_constraints___COOKIE
@@ -202,8 +203,8 @@ function rtgodam_image_cta_html( $layer ) {
 }
 
 /**
- * Verify the api key for the plugin and return user data. 
- * 
+ * Verify the api key for the plugin and return user data.
+ *
  * @param int $timeout The time in seconds after which the user data should be refreshed.
  */
 function rtgodam_get_user_data( $timeout = 300 ) {
@@ -257,7 +258,7 @@ function rtgodam_get_user_data( $timeout = 300 ) {
 
 /**
  * Get the storage and bandwidth usage data.
- * 
+ *
  * @return array|\WP_Error
  */
 function rtgodam_get_usage_data() {
@@ -302,7 +303,7 @@ function rtgodam_get_usage_data() {
 
 /**
  * Check if the api key is valid.
- * 
+ *
  * @return bool
  */
 function rtgodam_is_api_key_valid() {

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Class RTGODAM_Transcoder_Rest_Routes
  *
@@ -12,7 +15,6 @@ defined( 'ABSPATH' ) || exit;
  * Handle REST Routes for Transcoder.
  */
 class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
-
 	/**
 	 * Prefix for API endpoint namespace.
 	 *
@@ -139,9 +141,9 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	/**
 	 * Sanitizes a single URL or an array of URLs.
 	 *
-	 * @param mixed           $value The incoming data (can be a single URL or an array of URLs).
+	 * @param mixed            $value The incoming data (can be a single URL or an array of URLs).
 	 * @param \WP_REST_Request $request Full details about the request.
-	 * @param string          $param The parameter name (e.g., 'files' or 'thumbnail').
+	 * @param string           $param The parameter name (e.g., 'files' or 'thumbnail').
 	 *
 	 * @return mixed Returns a sanitized URL, array of sanitized URLs, or WP_Error on failure.
 	 */

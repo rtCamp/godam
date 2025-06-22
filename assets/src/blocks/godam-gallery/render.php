@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Render template for the GoDAM Gallery Block.
  *

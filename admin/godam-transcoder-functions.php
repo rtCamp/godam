@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Transcoder functions.
  *
@@ -239,8 +242,7 @@ function rtgodam_get_remote_ip_address() {
 		return $xff;
 	}
 
-	$remote_addr = rtgodam_get_server_var( 'REMOTE_ADDR' );
-	return $remote_addr;
+	return rtgodam_get_server_var( 'REMOTE_ADDR' );
 }
 
 /**
@@ -363,7 +365,7 @@ function rtgodam_get_blacklist_ip_addresses() {
  *
  * @param string $api_key The api key to verify.
  * @param bool   $save        Whether to save the API key in the site options.
- * 
+ *
  * @return array|\WP_Error Array with status and data on success, WP_Error on failure.
  */
 function rtgodam_verify_api_key( $api_key, $save = false ) {
@@ -451,8 +453,7 @@ function rtgodam_mask_string( $input, $offset = 4 ) {
 		return $input; // If string length is equal or less than $offset, return as is.
 	}
 
-	$masked = str_repeat( '*', $length - $offset ) . substr( $input, -$offset );
-	return $masked;
+	return str_repeat( '*', $length - $offset ) . substr( $input, -$offset );
 }
 
 /**
@@ -473,9 +474,7 @@ function rtgodam_get_categories_list( $post_id ) {
 			$category_names[] = $category->name;
 		}
 
-		$comma_separated = implode( ', ', $category_names );
-
-		return $comma_separated;
+		return implode( ', ', $category_names );
 	}
 
 	return '';
@@ -499,8 +498,7 @@ function rtgodam_get_tags_list( $post_id ) {
 			$tag_names[] = $tag->name;
 		}
 
-		$comma_separated = implode( ', ', $tag_names );
-		return $comma_separated;
+		return implode( ', ', $tag_names );
 	}
 
 	return '';

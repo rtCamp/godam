@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Register REST API endpoints for meta fields.
  *
@@ -11,12 +14,10 @@ defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
 
-
 /**
  * Modify Rest fields.
  */
 class Meta_Rest_Fields {
-
 	use Singleton;
 
 	/**

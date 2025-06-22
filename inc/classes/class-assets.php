@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Assets class.
  *
@@ -15,7 +18,6 @@ use RTGODAM\Inc\Traits\Singleton;
  * Class Assets
  */
 class Assets {
-
 	use Singleton;
 
 	/**
@@ -75,7 +77,7 @@ class Assets {
 				'nonce' => wp_create_nonce( 'wp_rest' ),
 			]
 		);
-		
+
 		$localize_array = rtgodam_get_localize_array();
 
 		wp_localize_script(
@@ -83,7 +85,7 @@ class Assets {
 			'videoAnalyticsParams',
 			$localize_array
 		);
-		
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamAPIKeyData',
@@ -97,7 +99,7 @@ class Assets {
 		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
 		$is_cf7_active      = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
 		$is_wpforms_active  = is_plugin_active( 'wpforms-lite/wpforms.php' );
-		
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamPluginDependencies',

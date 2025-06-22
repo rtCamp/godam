@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Register REST API endpoint for Dynamic Gallery Blocks.
  *
@@ -9,16 +12,14 @@ namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
-use WP_REST_Server;
 use WP_REST_Request;
 use WP_REST_Response;
-
+use WP_REST_Server;
 
 /**
  * Class Dynamic_Gallery
  */
 class Dynamic_Gallery extends Base {
-
 	/**
 	 * Route base.
 	 *
@@ -109,7 +110,7 @@ class Dynamic_Gallery extends Base {
 
 	/**
 	 * Render the gallery block.
-	 * 
+	 *
 	 * @param \WP_REST_Request $request The REST request object.
 	 *
 	 * @return \WP_REST_Response
@@ -197,18 +198,18 @@ class Dynamic_Gallery extends Base {
 						// Convert UTC dates to local timezone.
 						$start_date = new \DateTime( $atts['custom_date_start'] );
 						$end_date   = new \DateTime( $atts['custom_date_end'] );
-						
+
 						// Set timezone to WordPress timezone.
 						$wp_timezone = new \DateTimeZone( wp_timezone_string() );
 						$start_date->setTimezone( $wp_timezone );
 						$end_date->setTimezone( $wp_timezone );
-						
+
 						// Set start date to beginning of day (00:00:00).
 						$start_date->setTime( 0, 0, 0 );
-						
+
 						// Set end date to end of day (23:59:59).
 						$end_date->setTime( 23, 59, 59 );
-						
+
 						$date_query = [
 							'after'     => $start_date->format( 'Y-m-d H:i:s' ),
 							'before'    => $end_date->format( 'Y-m-d H:i:s' ),
@@ -240,7 +241,7 @@ class Dynamic_Gallery extends Base {
 			$total_videos    = $query->found_posts;
 			$shown_videos    = count( $query->posts );
 			$alignment_class = '';
-	
+
 			if ( intval( $atts['offset'] ) === 0 ) {
 				echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) .
 					( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) .
@@ -262,23 +263,23 @@ class Dynamic_Gallery extends Base {
 					data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ?? '' ) . '"
 					data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ?? '' ) . '">';
 			}
-	
+
 			do_action( 'rtgodam_dynamic_gallery_before_output', $query, $atts );
-	
+
 			foreach ( $query->posts as $video ) {
 				do_action( 'rtgodam_dynamic_gallery_before_video_item', $video, $atts );
-	
+
 				$video_id    = intval( $video->ID );
 				$video_title = apply_filters( 'rtgodam_dynamic_gallery_video_title', get_the_title( $video_id ), $video_id );
 				$video_date  = apply_filters( 'rtgodam_dynamic_gallery_video_date', get_the_date( 'F j, Y', $video_id ), $video_id );
-	
+
 				$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
 				$fallback_thumb   = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
 				$thumbnail        = $custom_thumbnail ?: $fallback_thumb;
-	
+
 				$file_path = get_attached_file( $video_id );
 				$duration  = null;
-	
+
 				if ( file_exists( $file_path ) ) {
 					if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 						require_once ABSPATH . 'wp-admin/includes/media.php';
@@ -288,7 +289,7 @@ class Dynamic_Gallery extends Base {
 						$duration = $metadata['length_formatted'];
 					}
 				}
-	
+
 				echo '<div class="godam-video-item">';
 				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
@@ -296,7 +297,7 @@ class Dynamic_Gallery extends Base {
 					echo '<span class="godam-video-duration">' . esc_html( $duration ) . '</span>';
 				}
 				echo '</div>';
-	
+
 				if ( ! empty( $atts['show_title'] ) ) {
 					echo '<div class="godam-video-info">';
 					echo '<div class="godam-video-title">' . esc_html( $video_title ) . '</div>';
@@ -304,20 +305,20 @@ class Dynamic_Gallery extends Base {
 					echo '</div>';
 				}
 				echo '</div>';
-	
+
 				do_action( 'rtgodam_dynamic_gallery_after_video_item', $video, $atts );
 			}
-	
+
 			if ( intval( $atts['offset'] ) === 0 ) {
 				echo '</div>';
 			}
-	
+
 			do_action( 'rtgodam_dynamic_gallery_after_output', $query, $atts );
 		}
-	
+
 		$html = ob_get_clean();
 		$html = apply_filters( 'rtgodam_dynamic_gallery_html', $html, $query, $atts );
-	
+
 		return new WP_REST_Response(
 			[
 				'status' => 'success',

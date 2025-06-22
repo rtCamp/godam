@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 /**
  * Class to handle Media Folders.
  *
@@ -15,7 +18,6 @@ use RTGODAM\Inc\Traits\Singleton;
  * Class Media_Library
  */
 class Media_Library_Ajax {
-
 	use Singleton;
 
 	/**
@@ -59,7 +61,6 @@ class Media_Library_Ajax {
 		}
 
 		if ( isset( $query_args['post_mime_type'] ) && is_array( $query_args['post_mime_type'] ) ) {
-			
 			$post_mime_type = $query_args['post_mime_type'][0];
 			$mime_type      = '';
 			if ( false === strpos( $post_mime_type, 'godam/' ) ) {
@@ -75,7 +76,6 @@ class Media_Library_Ajax {
 			}
 
 			$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.file.get_list_of_files_with_api_key';
-
 
 			$order_by = 'creation asc';
 			if ( isset( $query_args['order'] ) && 'DESC' === $query_args['order'] ) {
@@ -115,7 +115,7 @@ class Media_Library_Ajax {
 					'headers' => [
 						'Content-Type' => 'application/json',
 					],
-				] 
+				]
 			);
 
 			if ( is_wp_error( $response ) ) {
@@ -131,7 +131,6 @@ class Media_Library_Ajax {
 			}
 
 			wp_send_json_success( $response );
-
 		} else {
 			return $query_args;
 		}
@@ -145,7 +144,7 @@ class Media_Library_Ajax {
 	 */
 	public function prepare_godam_media_item( $item ) {
 		// Ensure $item is an array.
-		$item = (array) $item; 
+		$item = (array) $item;
 
 		if ( empty( $item['name'] ) || empty( $item['file_origin'] ) ) {
 			return [];
@@ -300,7 +299,7 @@ class Media_Library_Ajax {
 	/**
 	 * Add transcoding URL to the media JS Object.
 	 *
-	 * @param array   $response Attachment response.
+	 * @param array                $response Attachment response.
 	 * @param \RTGODAM\Inc\WP_Post $attachment Attachment object.
 	 * @return array $response Attachment response.
 	 */
