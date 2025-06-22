@@ -92,7 +92,7 @@ if ( class_exists( 'GF_Field' ) ) {
 			$is_form_editor  = $this->is_form_editor();
 		
 			$id       = absint( $this->id );
-			$field_id = 0 == $is_entry_detail || $is_form_editor || $form_id ? "input_$id" : 'input_' . $form_id . "_$id";
+			$field_id = ! $is_entry_detail || $is_form_editor || $form_id ? "input_$id" : 'input_' . $form_id . "_$id";
 		
 			$size         = $this->size;
 			$class_suffix = $is_entry_detail ? '_admin' : '';
@@ -212,9 +212,9 @@ if ( class_exists( 'GF_Field' ) ) {
 					// translators: %d is the number of files.
 					$value = empty( $uploaded_files_arr ) ? '' : sprintf( esc_html__( '%d files', 'godam' ), count( $uploaded_files_arr ) );
 					return $value;
-				} elseif ( 1 == $file_count ) {
+				} elseif ( 1 === $file_count ) {
 					$value = current( $uploaded_files_arr );
-				} elseif ( 0 == $file_count ) {
+				} elseif ( 0 === $file_count ) {
 					return;
 				}
 			}
@@ -300,7 +300,7 @@ if ( class_exists( 'GF_Field' ) ) {
 					 * @param GF_Field_FileUpload $field     The field object for further context.
 					 */
 					$file_path    = str_replace( ' ', '%20', apply_filters( 'gform_fileupload_entry_value_file_path', $file_path, $this ) );
-					$output_arr[] = 'text' == $format ? $file_path : sprintf( "<li><strong>%s:</strong> <a href='%s' target='_blank' aria-label='%s'>%s</a></li>", _x( 'URL', 'GF entry detail page', 'godam' ), esc_attr( $file_path ), esc_attr__( 'Click to view', 'godam' ), $basename );
+					$output_arr[] = 'text' === $format ? $file_path : sprintf( "<li><strong>%s:</strong> <a href='%s' target='_blank' aria-label='%s'>%s</a></li>", _x( 'URL', 'GF entry detail page', 'godam' ), esc_attr( $file_path ), esc_attr__( 'Click to view', 'godam' ), $basename );
 
 					// Get the entry ID from GFAPI context.
 					$entry_id = 0;
@@ -340,7 +340,7 @@ if ( class_exists( 'GF_Field' ) ) {
 				$output = join( PHP_EOL, $output_arr );
 			}
 	
-			return empty( $output ) || 'text' == $format ? $output : sprintf( '<ul>%s</ul>', $output );
+			return empty( $output ) || 'text' === $format ? $output : sprintf( '<ul>%s</ul>', $output );
 		}
 	}
 	// phpcs:enable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase

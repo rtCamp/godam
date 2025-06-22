@@ -139,7 +139,7 @@ class Init {
 
 		$valid_godam_license = rtgodam_is_api_key_valid();
 
-		if ( 50 == $position ) {
+		if ( 50 === (int) $position ) {
 			?>
 			<li class="godam-video-field-setting field_setting <?php echo $valid_godam_license ? 'rtgodam-hidden' : ''; ?>" style="display: none;">
 				<label class="section_label">
