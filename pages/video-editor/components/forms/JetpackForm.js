@@ -73,17 +73,20 @@ const JetpackForm = ( { layerID } ) => {
 	const changeFormID = ( formID ) => {
 		// Find the selected form to get the origin post ID
 		const selectedForm = forms.find( ( form ) => form.value === formID );
-
 		const originPostId = selectedForm ? selectedForm.origin_post_id : '';
 
-		// Update both fields in a single dispatch
+		// Update jp_id first
 		dispatch( updateLayerField( {
 			id: layer.id,
 			field: 'jp_id',
 			value: formID,
-			additionalFields: {
-				origin_post_id: originPostId,
-			},
+		} ) );
+
+		// Update origin_post_id separately
+		dispatch( updateLayerField( {
+			id: layer.id,
+			field: 'origin_post_id',
+			value: originPostId,
 		} ) );
 	};
 
