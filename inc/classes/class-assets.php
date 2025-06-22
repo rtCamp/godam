@@ -136,6 +136,18 @@ class Assets {
 
 		wp_localize_script(
 			'rtgodam-jetpack-form',
+			'godamJetpackFormData',
+			array(
+				'submittingText'      => __( 'Submitting...', 'godam' ),
+				'successHeading'      => __( 'Success!', 'godam' ),
+				'successMessage'      => __( 'Your message has been sent successfully.', 'godam' ),
+				'errorMessage'        => __( 'An error occurred. Please try again.', 'godam' ),
+				'networkErrorMessage' => __( 'Network error. Please try again.', 'godam' ),
+			)
+		);
+
+		wp_localize_script(
+			'rtgodam-jetpack-form',
 			'wpAjax',
 			array(
 				'ajaxurl' => admin_url( 'admin-ajax.php' ),

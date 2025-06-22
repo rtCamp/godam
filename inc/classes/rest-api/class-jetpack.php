@@ -654,13 +654,23 @@ class Jetpack extends Base {
 				if ( empty( $field_label ) ) {
 					$field_label = ucfirst( str_replace( array( 'g' . $form->get_attribute( 'id' ) . '-', '-' ), array( '', ' ' ), $field_id ) );
 				}
-				$errors[] = 'Valid ' . $field_label . ' is required.';
+				// translators: %s is the field label.
+				$errors[] = sprintf( __( 'Valid %s is required.', 'godam' ), $field_label );
 			}
 		}
 
+		$error_count = count( $errors );
+		$error_text  = 1 === $error_count ? __( 'error', 'godam' ) : __( 'errors', 'godam' );
+		
 		$result = array(
 			'valid'   => $valid,
-			'message' => $valid ? '' : 'Please make sure all fields are valid. You need to fix ' . count( $errors ) . ' error' . ( count( $errors ) > 1 ? 's' : '' ) . ':<br>' . implode( '<br>', $errors ),
+			'message' => $valid ? '' : sprintf( 
+				// translators: %d is the number of errors, %s is the error text, %s is the list of errors.
+				__( 'Please make sure all fields are valid. You need to fix %1$d %2$s:<br>%3$s', 'godam' ),
+				$error_count,
+				$error_text,
+				implode( '<br>', $errors )
+			),
 		);
 
 		return $result;

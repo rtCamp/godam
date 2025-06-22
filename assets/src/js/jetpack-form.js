@@ -1,3 +1,5 @@
+/* global godamJetpackFormData */
+
 document.addEventListener( 'DOMContentLoaded', function() {
 	// Set your REST endpoint
 	const restUrl = '/wp-json/godam/v1/jetpack-form-submit';
@@ -46,7 +48,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 		if ( submitBtn ) {
 			originalContent = submitBtn.innerHTML;
-			submitBtn.innerHTML = 'Submitting...';
+			submitBtn.innerHTML = godamJetpackFormData?.submittingText;
 			submitBtn.disabled = true;
 		}
 
@@ -74,12 +76,12 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 				if ( data.success ) {
 					// Success - replace form with success message
-					const heading = data.heading || 'Success!';
-					const message = data.message || 'Your message has been sent successfully.';
+					const heading = data.heading || ( godamJetpackFormData?.successHeading );
+					const message = data.message || ( godamJetpackFormData?.successMessage );
 					form.innerHTML = '<div class="contact-form-success" style="padding:20px;background:#d4edda;border:1px solid #c3e6cb;color:#155724;border-radius:4px;"><h4>' + heading + '</h4><p>' + message + '</p></div>';
 				} else {
 					// Error - append error message to form
-					const errorMessage = data.message || 'An error occurred. Please try again.';
+					const errorMessage = data.message || ( godamJetpackFormData?.errorMessage );
 					const errorElement = document.createElement( 'div' );
 					errorElement.className = 'contact-form-error';
 					errorElement.style.cssText = 'padding: 15px; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; border-radius: 4px; margin-top: 15px;';
@@ -98,7 +100,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 				const errorElement = document.createElement( 'div' );
 				errorElement.className = 'contact-form-error';
 				errorElement.style.cssText = 'padding: 15px; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; border-radius: 4px; margin-top: 15px;';
-				errorElement.innerHTML = '<p style="margin: 0;">Network error. Please try again.</p>';
+				errorElement.innerHTML = '<p style="margin: 0;">' + godamJetpackFormData?.networkErrorMessage + '</p>';
 				form.appendChild( errorElement );
 			} )
 			.finally( () => {
