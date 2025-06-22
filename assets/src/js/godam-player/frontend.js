@@ -620,7 +620,7 @@ function GODAMPlayer( videoRef = null ) {
 							layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ||
 							layerObj.layerElement.querySelector( '.wpforms-confirmation-container-full' ) ||
 							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' ) ||
-							layerObj.layerElement.querySelector( '.jetpack-form-confirmation' )
+							layerObj.layerElement.querySelector( '.contact-form-success' )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
