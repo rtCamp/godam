@@ -16,39 +16,39 @@ class Polls extends Base {
 	 * Get REST routes.
 	 */
 	public function get_rest_routes() {
-		return array(
-			array(
+		return [
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/polls',
-				'args'      => array(
-					array(
+				'args'      => [
+					[
 						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_polls' ),
+						'callback'            => [ $this, 'get_polls' ],
 						'permission_callback' => '__return_true',
-					),
-				),
-			),
-			array(
+					],
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/poll/(?P<id>\d+)',
-				'args'      => array(
-					array(
+				'args'      => [
+					[
 						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_poll' ),
+						'callback'            => [ $this, 'get_poll' ],
 						'permission_callback' => '__return_true',
 						'args'                =>
-							array(
-								'id' => array(
+							[
+								'id' => [
 									'description'       => __( 'The ID of the Poll.', 'godam' ),
 									'type'              => 'integer',
 									'required'          => true,
 									'sanitize_callback' => 'absint',
-								),
-							),
-					),
-				),
-			),
-		);
+								],
+							],
+					],
+				],
+			],
+		];
 	}
 
 	/**
@@ -60,7 +60,7 @@ class Polls extends Base {
 		global $wpdb;
 
 		if ( ! $this->is_poll_plugin_active() ) {
-			return new \WP_Error( 'poll_plugin_not_active', __( 'Poll plugin is not active.', 'godam' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'poll_plugin_not_active', __( 'Poll plugin is not active.', 'godam' ), [ 'status' => 404 ] );
 		}
 
 		$cache_key   = 'polls_lists';
@@ -88,21 +88,21 @@ class Polls extends Base {
 	 */
 	public function get_poll( $request ) {
 		if ( ! $this->is_poll_plugin_active() ) {
-			return new \WP_Error( 'poll_plugin_not_active', __( 'Poll plugin is not active.', 'godam' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'poll_plugin_not_active', __( 'Poll plugin is not active.', 'godam' ), [ 'status' => 404 ] );
 		}
 
 		$poll_id = $request->get_param( 'id' );
 
 		if ( empty( $poll_id ) ) {
-			return new \WP_Error( 'invalid_poll_id', __( 'Invalid poll ID.', 'godam' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'invalid_poll_id', __( 'Invalid poll ID.', 'godam' ), [ 'status' => 404 ] );
 		}
 
 		$poll_html = get_poll( $poll_id, false );
 
-		$return_object = array(
+		$return_object = [
 			'id'   => $poll_id,
 			'html' => $poll_html,
-		);
+		];
 
 		return rest_ensure_response( $return_object );
 	}

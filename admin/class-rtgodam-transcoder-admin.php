@@ -34,9 +34,9 @@ class RTGODAM_Transcoder_Admin {
 
 		if ( is_admin() ) {
 			if ( is_multisite() ) {
-				add_action( 'network_admin_notices', array( $this, 'api_activation_admin_notice' ) );
+				add_action( 'network_admin_notices', [ $this, 'api_activation_admin_notice' ] );
 			}
-			add_action( 'admin_notices', array( $this, 'api_activation_admin_notice' ) );
+			add_action( 'admin_notices', [ $this, 'api_activation_admin_notice' ] );
 		}
 	}
 
@@ -75,7 +75,7 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		// Get stored usage data.
-		$usage_data = get_option( 'rtgodam-usage', array() );
+		$usage_data = get_option( 'rtgodam-usage', [] );
 		$usage_data = isset( $usage_data[ $api_key ] ) ? (array) $usage_data[ $api_key ] : null;
 
 		if ( empty( $usage_data ) ) {
@@ -190,13 +190,13 @@ class RTGODAM_Transcoder_Admin {
 				<?php
 				echo wp_kses(
 					$message,
-					array(
-						'strong' => array(),
-						'a'      => array(
-							'href'   => array(),
-							'target' => array(),
-						),
-					)
+					[
+						'strong' => [],
+						'a'      => [
+							'href'   => [],
+							'target' => [],
+						],
+					]
 				);
 				?>
 					</p>

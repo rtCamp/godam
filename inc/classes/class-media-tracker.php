@@ -32,10 +32,10 @@ class Media_Tracker {
 	 * @return void
 	 */
 	public function setup_hooks() {
-		add_action( 'add_attachment', array( $this, 'track_new_attachment' ) );
-		add_action( 'init', array( $this, 'check_new_attachment_transcoding_status' ), 100 );
-		add_action( 'delete_attachment', array( $this, 'delete_attachment' ) );
-		add_action( 'admin_notices', array( $this, 'check_transcoder_plugin' ) );
+		add_action( 'add_attachment', [ $this, 'track_new_attachment' ] );
+		add_action( 'init', [ $this, 'check_new_attachment_transcoding_status' ], 100 );
+		add_action( 'delete_attachment', [ $this, 'delete_attachment' ] );
+		add_action( 'admin_notices', [ $this, 'check_transcoder_plugin' ] );
 	}
 
 	/**
@@ -44,10 +44,10 @@ class Media_Tracker {
 	 * @param int $attachment_id Attachment ID.
 	 */
 	public function track_new_attachment( $attachment_id ) {
-		$attachment_data = array(
+		$attachment_data = [
 			'attachment_id'      => $attachment_id,
 			'transcoding_status' => '',
-		);
+		];
 
 		// Check if the attachment is a video.
 		update_option( 'rtgodam_new_attachment', $attachment_data, '', true );
@@ -78,7 +78,7 @@ class Media_Tracker {
 		if ( ! empty( $attachment_data ) ) {
 			$attachment_id = $attachment_data['attachment_id'];
 
-			if ( in_array( $attachment_data['transcoding_status'], array( 'success', 'failed', 'error' ), true ) ) {
+			if ( in_array( $attachment_data['transcoding_status'], [ 'success', 'failed', 'error' ], true ) ) {
 				return;
 			}
 
@@ -107,12 +107,12 @@ class Media_Tracker {
 	 */
 	public function get_transcoding_status( $attachment_id ) {
 
-		$ids = array( $attachment_id );
+		$ids = [ $attachment_id ];
 
 		$url = '/godam/v1/transcoding/transcoding-status';
 
 		$request = new \WP_REST_Request( 'GET', $url );
-		$request->set_query_params( array( 'ids' => $ids ) );
+		$request->set_query_params( [ 'ids' => $ids ] );
 
 		$response = rest_do_request( $request );
 
@@ -141,9 +141,9 @@ class Media_Tracker {
 	public function display_cdn_admin_notice() {
 		add_action(
 			'admin_notices',
-			function () {
+			static function () {
 				$screen = get_current_screen();
-				if ( ! in_array( $screen->id, array( 'dashboard', 'upload', 'plugins' ), true ) ) {
+				if ( ! in_array( $screen->id, [ 'dashboard', 'upload', 'plugins' ], true ) ) {
 					return;
 				}
 				?>
@@ -164,14 +164,14 @@ class Media_Tracker {
 							$support_url   = esc_url( 'https://app.godam.io/helpdesk/my-tickets' );
 
 							// Allowed HTML tags for wp_kses.
-							$allowed_tags = array(
-								'a'      => array(
-									'href'   => array(),
-									'target' => array(),
-								),
-								'p'      => array(),
-								'strong' => array(),
-							);
+							$allowed_tags = [
+								'a'      => [
+									'href'   => [],
+									'target' => [],
+								],
+								'p'      => [],
+								'strong' => [],
+							];
 
 							$formatted_html = sprintf( $raw_html, $cdn_guide_url, $support_url );
 							// Output safely with allowed HTML tags.
@@ -194,7 +194,7 @@ class Media_Tracker {
 		if ( is_plugin_active( 'transcoder/rt-transcoder.php' ) ) {
 
 			$screen = get_current_screen();
-			if ( ! in_array( $screen->id, array( 'dashboard', 'upload', 'plugins' ), true ) ) {
+			if ( ! in_array( $screen->id, [ 'dashboard', 'upload', 'plugins' ], true ) ) {
 				return;
 			}
 
@@ -209,17 +209,17 @@ class Media_Tracker {
 			
 			echo wp_kses(
 				$message,
-				array(
-					'div'    => array(
-						'class' => array(),
-					),
-					'p'      => array(),
-					'strong' => array(),
-					'a'      => array(
-						'href'   => array(),
-						'target' => array(),
-					),
-				),
+				[
+					'div'    => [
+						'class' => [],
+					],
+					'p'      => [],
+					'strong' => [],
+					'a'      => [
+						'href'   => [],
+						'target' => [],
+					],
+				],
 			);
 		}
 	}

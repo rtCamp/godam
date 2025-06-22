@@ -20,48 +20,48 @@ class GF extends Base {
 	 * Get REST routes.
 	 */
 	public function get_rest_routes() {
-		return array(
-			array(
+		return [
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/gforms',
-				'args'      => array(
-					array(
+				'args'      => [
+					[
 						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_gforms' ),
+						'callback'            => [ $this, 'get_gforms' ],
 						'permission_callback' => '__return_true',
 						'args'                => $this->get_collection_params(),
-					),
-				),
-			),
-			array(
+					],
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/gform',
-				'args'      => array(
-					array(
+				'args'      => [
+					[
 						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_gform' ),
+						'callback'            => [ $this, 'get_gform' ],
 						'permission_callback' => '__return_true',
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
-							array(
-								'id'    => array(
+							[
+								'id'    => [
 									'description'       => __( 'The ID of the Gravity Form.', 'godam' ),
 									'type'              => 'integer',
 									'required'          => true,
 									'sanitize_callback' => 'absint',
-								),
-								'theme' => array(
+								],
+								'theme' => [
 									'description'       => __( 'The theme to be applied to the Gravity Form.', 'godam' ),
 									'type'              => 'string',
 									'required'          => false,
 									'sanitize_callback' => 'sanitize_text_field',
-								),
-							)
+								],
+							]
 						),
-					),
-				),
-			),
-		);
+					],
+				],
+			],
+		];
 	}
 
 	/**
@@ -73,7 +73,7 @@ class GF extends Base {
 	public function get_gforms( $request ) {
 		// Check if Gravity Forms plugin is active.
 		if ( ! class_exists( 'GFAPI' ) ) {
-			return new \WP_Error( 'gravity_forms_not_active', __( 'Gravity Forms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'gravity_forms_not_active', __( 'Gravity Forms plugin is not active.', 'godam' ), [ 'status' => 404 ] );
 		}
 
 		// Get all forms.
@@ -86,7 +86,7 @@ class GF extends Base {
 		if ( ! empty( $fields ) ) {
 			$fields = explode( ',', $fields );
 			$gforms = array_map(
-				function ( $gform ) use ( $fields ) {
+				static function ( $gform ) use ( $fields ) {
 					return array_intersect_key( $gform, array_flip( $fields ) );
 				},
 				$gforms
@@ -105,7 +105,7 @@ class GF extends Base {
 	public function get_gform( $request ) {
 		// Check if Gravity Forms plugin is active.
 		if ( ! class_exists( 'GFAPI' ) ) {
-			return new \WP_Error( 'gravity_forms_not_active', __( 'Gravity Forms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'gravity_forms_not_active', __( 'Gravity Forms plugin is not active.', 'godam' ), [ 'status' => 404 ] );
 		}
 
 		$form_id = $request->get_param( 'id' );
@@ -113,7 +113,7 @@ class GF extends Base {
 		$form_id = absint( $form_id );
 
 		if ( empty( $form_id ) ) {
-			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), [ 'status' => 404 ] );
 		}
 
 		$gform = do_shortcode( "[gravityform id='{$form_id}' title='false' description='false' ajax='true' theme='{$theme}']" );

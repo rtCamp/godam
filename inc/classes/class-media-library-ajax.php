@@ -31,17 +31,17 @@ class Media_Library_Ajax {
 	 * @return void
 	 */
 	public function setup_hooks() {
-		add_filter( 'ajax_query_attachments_args', array( $this, 'filter_media_library_by_taxonomy' ) );
-		add_filter( 'ajax_query_attachments_args', array( $this, 'godam_media_library_ajax' ) );
-		add_action( 'pre_get_posts', array( $this, 'pre_get_post_filter' ) );
+		add_filter( 'ajax_query_attachments_args', [ $this, 'filter_media_library_by_taxonomy' ] );
+		add_filter( 'ajax_query_attachments_args', [ $this, 'godam_media_library_ajax' ] );
+		add_action( 'pre_get_posts', [ $this, 'pre_get_post_filter' ] );
 
-		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
-		add_action( 'add_attachment', array( $this, 'add_media_library_taxonomy_on_media_upload' ), 10, 1 );
-		add_action( 'add_attachment', array( $this, 'upload_media_to_frappe_backend' ), 10, 1 );
-		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
+		add_action( 'restrict_manage_posts', [ $this, 'restrict_manage_media_filter' ] );
+		add_action( 'add_attachment', [ $this, 'add_media_library_taxonomy_on_media_upload' ], 10, 1 );
+		add_action( 'add_attachment', [ $this, 'upload_media_to_frappe_backend' ], 10, 1 );
+		add_filter( 'wp_prepare_attachment_for_js', [ $this, 'add_media_transcoding_status_js' ], 10, 2 );
 
-		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
-		add_action( 'delete_attachment', array( $this, 'handle_media_deletion' ), 10, 1 );
+		add_action( 'pre_delete_term', [ $this, 'delete_child_media_folder' ], 10, 2 );
+		add_action( 'delete_attachment', [ $this, 'handle_media_deletion' ], 10, 1 );
 	}
 
 	/**
@@ -82,10 +82,10 @@ class Media_Library_Ajax {
 				$order_by = 'creation desc';
 			}
 
-			$request_args = array(
+			$request_args = [
 				'api_key'  => $api_key,
 				'order_by' => $order_by,
-			);
+			];
 
 			if ( ! empty( $mime_type ) ) {
 				if ( 'video' === $mime_type ) {
@@ -111,11 +111,11 @@ class Media_Library_Ajax {
 
 			$response = wp_remote_get(
 				$api_url,
-				array(
-					'headers' => array(
+				[
+					'headers' => [
 						'Content-Type' => 'application/json',
-					),
-				) 
+					],
+				] 
 			);
 
 			if ( is_wp_error( $response ) ) {
@@ -148,10 +148,10 @@ class Media_Library_Ajax {
 		$item = (array) $item; 
 
 		if ( empty( $item['name'] ) || empty( $item['file_origin'] ) ) {
-			return array();
+			return [];
 		}
 
-		$result = array(
+		$result = [
 			'id'                    => $item['name'],
 			'title'                 => pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) ?? $item['name'],
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
@@ -166,7 +166,7 @@ class Media_Library_Ajax {
 			'filesizeHumanReadable' => size_format( $item['file_size'] ),
 			'owner'                 => $item['owner'] ?? '',
 			'label'                 => $item['file_label'] ?? '',
-		);
+		];
 
 		if ( 'stream' === $item['job_type'] ) {
 			$result['icon'] = $item['thumbnail_url'] ?? '';
@@ -202,21 +202,21 @@ class Media_Library_Ajax {
 		$file_name  = pathinfo( $attachment_url, PATHINFO_FILENAME ) . '.' . pathinfo( $attachment_url, PATHINFO_EXTENSION );
 
 		// Request params.
-		$params = array(
+		$params = [
 			'api_token'         => $api_key,
 			'job_type'          => 'image',
 			'file_origin'       => $attachment_url,
 			'orignal_file_name' => $file_name ?? $file_title,
-		);
+		];
 
 		$upload_media = wp_remote_post(
 			$api_url,
-			array(
+			[
 				'body'    => wp_json_encode( $params ),
-				'headers' => array(
+				'headers' => [
 					'Content-Type' => 'application/json',
-				),
-			)
+				],
+			]
 		);
 
 		if ( ! is_wp_error( $upload_media ) &&
@@ -281,11 +281,11 @@ class Media_Library_Ajax {
 		}
 
 		$children = get_terms(
-			array(
+			[
 				'taxonomy'   => $taxonomy,
 				'parent'     => $term,
 				'hide_empty' => false,
-			)
+			]
 		);
 
 		/**
@@ -301,7 +301,7 @@ class Media_Library_Ajax {
 	 * Add transcoding URL to the media JS Object.
 	 *
 	 * @param array   $response Attachment response.
-	 * @param WP_Post $attachment Attachment object.
+	 * @param \RTGODAM\Inc\WP_Post $attachment Attachment object.
 	 * @return array $response Attachment response.
 	 */
 	public function add_media_transcoding_status_js( $response, $attachment ) {
@@ -350,30 +350,30 @@ class Media_Library_Ajax {
 			// Handle uncategorized folder (media-folder ID = 0).
 			if ( 0 === $media_folder_id ) {
 				$uncategorized_ids = get_terms(
-					array(
+					[
 						'taxonomy'   => 'media-folder',
 						'fields'     => 'ids',
 						'hide_empty' => false,
-					)
+					]
 				);
 
 				$query_args['tax_query'] = array( // phpcs:ignore -- tax_query is required here to filter by taxonomy.
-					array(
+					[
 						'taxonomy'         => 'media-folder',
 						'field'            => 'term_id',
 						'terms'            => $uncategorized_ids,
 						'operator'         => 'NOT IN',
 						'include_children' => false,
-					),
+					],
 				);
 			} elseif ( -1 !== $media_folder_id && ! empty( $media_folder_id ) ) {
 				$query_args['tax_query'] = array( // phpcs:ignore -- tax_query is required here to filter by taxonomy.
-					array(
+					[
 						'taxonomy'         => 'media-folder',
 						'field'            => 'term_id',
 						'terms'            => $media_folder_id,
 						'include_children' => false,
-					),
+					],
 				);
 			}
 
@@ -406,32 +406,32 @@ class Media_Library_Ajax {
 			if ( $media_folder && 'uncategorized' === $media_folder ) {
 				$query->set(
 					'tax_query',
-					array(
-						array(
+					[
+						[
 							'taxonomy' => 'media-folder',
 							'field'    => 'term_id',
 							'operator' => 'NOT IN',
 							'terms'    => get_terms(
-								array(
+								[
 									'taxonomy'   => 'media-folder',
 									'fields'     => 'ids',
 									'hide_empty' => false,
-								)
+								]
 							),
-						),
-					)
+						],
+					]
 				);
 			} elseif ( $media_folder && 'all' !== $media_folder ) {
 				$query->set( // phpcs:ignore
 					'tax_query',
-					array(
-						array(
+					[
+						[
 							'taxonomy'         => 'media-folder',
 							'field'            => 'term_id',
 							'terms'            => (int) $media_folder,
 							'include_children' => false,
-						),
-					)
+						],
+					]
 				);
 			}
 
@@ -440,11 +440,11 @@ class Media_Library_Ajax {
 			if ( isset( $_GET['date-start'] ) && isset( $_GET['date-end'] ) ) {
 				$query->set(
 					'date_query',
-					array(
+					[
 						'inclusive' => true,
 						'after'     => sanitize_text_field( wp_unslash( $_GET['date-start'] ) ),
 						'before'    => sanitize_text_field( wp_unslash( $_GET['date-end'] ) ),
-					)
+					]
 				);
 			}
 		}
@@ -466,30 +466,30 @@ class Media_Library_Ajax {
 
 			// Get all terms from the 'media-folder' taxonomy.
 			$terms = get_terms(
-				array(
+				[
 					'taxonomy'   => 'media-folder',
 					'hide_empty' => false,
-				)
+				]
 			);
 
 			// Define default options.
-			$folders = array(
-				(object) array(
+			$folders = [
+				(object) [
 					'id'   => 'uncategorized',
 					'name' => __( 'Uncategorized', 'godam' ),
-				),
-				(object) array(
+				],
+				(object) [
 					'id'   => 'all',
 					'name' => __( 'All collections', 'godam' ),
-				),
-			);
+				],
+			];
 
 			// Add taxonomy terms to the folder list.
 			foreach ( $terms as $term ) {
-				$folders[] = (object) array(
+				$folders[] = (object) [
 					'id'   => $term->term_id,
 					'name' => $term->name,
-				);
+				];
 			}
 
 			// Render the dropdown.
@@ -522,11 +522,11 @@ class Media_Library_Ajax {
 	 */
 	private function sanitize_date_query( $date_query ) {
 		if ( ! is_array( $date_query ) ) {
-			return array();
+			return [];
 		}
 
-		$allowed_keys    = array( 'inclusive', 'after', 'before' );
-		$sanitized_query = array();
+		$allowed_keys    = [ 'inclusive', 'after', 'before' ];
+		$sanitized_query = [];
 
 		foreach ( $allowed_keys as $key ) {
 			if ( isset( $date_query[ $key ] ) ) {
@@ -568,19 +568,19 @@ class Media_Library_Ajax {
 		$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.mutate.delete_attachment';
 
 		// Request params.
-		$params = array(
+		$params = [
 			'job_id'        => $job_id,
 			'api_key'       => $api_key,
 			'account_token' => $account_token,
-		);
+		];
 
 		// Send POST request.
 		wp_remote_post(
 			$api_url,
-			array(
+			[
 				'body'    => wp_json_encode( $params ),
-				'headers' => array( 'Content-Type' => 'application/json' ),
-			)
+				'headers' => [ 'Content-Type' => 'application/json' ],
+			]
 		);
 	}
 }

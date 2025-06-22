@@ -81,17 +81,17 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueues' ) );
-		add_action( 'wp_ajax_retranscodemedia', array( $this, 'ajax_process_retranscode_request' ) );
-		add_filter( 'media_row_actions', array( $this, 'add_media_row_action' ), 10, 2 );
-		add_action( 'admin_head-upload.php', array( $this, 'add_bulk_actions_via_javascript' ) );
-		add_action( 'admin_action_bulk_retranscode_media', array( $this, 'bulk_action_handler' ) ); // Top drowndown.
-		add_action( 'admin_action_-1', array( $this, 'bulk_action_handler' ) ); // Bottom dropdown (assumes top dropdown = default value).
-		add_action( 'rtgodam_before_thumbnail_store', array( $this, 'rtgodam_before_thumbnail_store' ), 10, 2 ); // Delete old thumbs.
-		add_action( 'rtgodam_before_transcoded_media_store', array( $this, 'rtgodam_before_transcoded_media_store' ), 10, 2 ); // Delete old transcoded files.
-		add_action( 'rtgodam_transcoded_thumbnails_added', array( $this, 'transcoded_thumbnails_added' ), 10, 1 ); // Add the current thumbnail to the newly added thumbnails.
-		add_action( 'rtgodam_handle_callback_finished', array( $this, 'rtgodam_handle_callback_finished' ), 10, 2 ); // Clean the extra meta that has been added while sending retranscoding request.
+		add_action( 'admin_menu', [ $this, 'add_admin_menu' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueues' ] );
+		add_action( 'wp_ajax_retranscodemedia', [ $this, 'ajax_process_retranscode_request' ] );
+		add_filter( 'media_row_actions', [ $this, 'add_media_row_action' ], 10, 2 );
+		add_action( 'admin_head-upload.php', [ $this, 'add_bulk_actions_via_javascript' ] );
+		add_action( 'admin_action_bulk_retranscode_media', [ $this, 'bulk_action_handler' ] ); // Top drowndown.
+		add_action( 'admin_action_-1', [ $this, 'bulk_action_handler' ] ); // Bottom dropdown (assumes top dropdown = default value).
+		add_action( 'rtgodam_before_thumbnail_store', [ $this, 'rtgodam_before_thumbnail_store' ], 10, 2 ); // Delete old thumbs.
+		add_action( 'rtgodam_before_transcoded_media_store', [ $this, 'rtgodam_before_transcoded_media_store' ], 10, 2 ); // Delete old transcoded files.
+		add_action( 'rtgodam_transcoded_thumbnails_added', [ $this, 'transcoded_thumbnails_added' ], 10, 1 ); // Add the current thumbnail to the newly added thumbnails.
+		add_action( 'rtgodam_handle_callback_finished', [ $this, 'rtgodam_handle_callback_finished' ], 10, 2 ); // Clean the extra meta that has been added while sending retranscoding request.
 
 		// Allow people to change what capability is required to use this feature.
 		$this->capability = apply_filters( 'rtgodam_retranscode_media_cap', 'manage_options' );
@@ -107,7 +107,7 @@ class RTGODAM_RetranscodeMedia {
 
 		// Create class object and register routes.
 		$transcoder_rest_routes = new RTGODAM_Transcoder_Rest_Routes();
-		add_action( 'rest_api_init', array( $transcoder_rest_routes, 'register_routes' ) );
+		add_action( 'rest_api_init', [ $transcoder_rest_routes, 'register_routes' ] );
 	}
 
 	/**
@@ -123,7 +123,7 @@ class RTGODAM_RetranscodeMedia {
 			__( 'Tools', 'godam' ),
 			$this->capability,
 			'rtgodam_tools',
-			array( $this, 'render_tools_page' ),
+			[ $this, 'render_tools_page' ],
 			3
 		);
 	}
@@ -153,7 +153,7 @@ class RTGODAM_RetranscodeMedia {
 		add_meta_box(
 			'retranscode_media_widget',
 			__( 'Retranscode Media', 'godam' ),
-			array( $this, 'retranscode_interface' ),
+			[ $this, 'retranscode_interface' ],
 			'rtgodam_tools',
 			'normal',
 			'high'
@@ -172,10 +172,10 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		wp_enqueue_script( 'jquery-ui-progressbar', plugins_url( 'js/jquery.ui.progressbar.min.js', __FILE__ ), array( 'jquery-ui-core', 'jquery-ui-widget' ), '1.8.6', true );
-		wp_enqueue_style( 'jquery-ui-retranscodemedia', plugins_url( 'css/jquery-ui-1.7.2.custom.css', __FILE__ ), array(), '1.7.2' );
+		wp_enqueue_script( 'jquery-ui-progressbar', plugins_url( 'js/jquery.ui.progressbar.min.js', __FILE__ ), [ 'jquery-ui-core', 'jquery-ui-widget' ], '1.8.6', true );
+		wp_enqueue_style( 'jquery-ui-retranscodemedia', plugins_url( 'css/jquery-ui-1.7.2.custom.css', __FILE__ ), [], '1.7.2' );
 
-		$ids = array();
+		$ids = [];
 		if ( ! empty( $_POST['rtgodam_tools'] ) || ! empty( $_REQUEST['ids'] ) ) {
 			// Capability check.
 			if ( ! current_user_can( $this->capability ) ) {
@@ -186,7 +186,7 @@ class RTGODAM_RetranscodeMedia {
 			check_admin_referer( 'rtgodam_tools' );
 
 			$file_size = 0;
-			$files     = array();
+			$files     = [];
 
 			// Get the list of media IDs.
 			$ids = rtgodam_filter_input( INPUT_GET, 'ids', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
@@ -194,10 +194,10 @@ class RTGODAM_RetranscodeMedia {
 			if ( ! empty( $ids ) ) {
 				$ids = explode( ',', $ids );
 			} else {
-				add_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
-				$query = new WP_Query( array( 'post_type' => 'attachments' ) );
+				add_filter( 'posts_where', [ $this, 'add_search_mime_types' ] );
+				$query = new WP_Query( [ 'post_type' => 'attachments' ] );
 				$media = $query->get_posts();
-				remove_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
+				remove_filter( 'posts_where', [ $this, 'add_search_mime_types' ] );
 				if ( empty( $media ) || is_wp_error( $media ) ) {
 
 					// translators: Link to the media page.
@@ -206,17 +206,17 @@ class RTGODAM_RetranscodeMedia {
 				}
 
 				// Generate the list of IDs.
-				$ids = array();
+				$ids = [];
 				foreach ( $media as $i => $each ) {
 					$ids[] = $each->ID;
 					$path  = get_attached_file( $each->ID );
 					if ( file_exists( $path ) ) {
 						$current_file_size  = filesize( $path );
 						$file_size          = $file_size + $current_file_size;
-						$files[ $each->ID ] = array(
+						$files[ $each->ID ] = [
 							'name' => esc_html( get_the_title( $each->ID ) ),
 							'size' => $current_file_size,
-						);
+						];
 					}
 				}
 			}
@@ -230,7 +230,7 @@ class RTGODAM_RetranscodeMedia {
 			wp_register_script(
 				'rtgodam-retranscode-admin',
 				RTGODAM_URL . '/admin/js/godam-retranscode-admin.js',
-				array( 'jquery' ),
+				[ 'jquery' ],
 				filemtime( RTGODAM_PATH . '/admin/js/godam-retranscode-admin.js' ),
 				true
 			);
@@ -238,12 +238,12 @@ class RTGODAM_RetranscodeMedia {
 			wp_localize_script(
 				'rtgodam-retranscode-admin',
 				'rtgodam_retranscode',
-				array(
+				[
 					'ids'           => $ids,
 					'stopping_text' => $stopping_text,
 					'text_goback'   => $text_goback,
 					'admin_url'     => $admin_url,
-				)
+				]
 			);
 
 			wp_enqueue_script( 'rtgodam-retranscode-admin' );
@@ -255,7 +255,7 @@ class RTGODAM_RetranscodeMedia {
 	 *
 	 * @param array   $actions   An array of action links for each attachment.
 	 *                           Default 'Edit', 'Delete Permanently', 'View'.
-	 * @param WP_Post $post      WP_Post object for the current attachment.
+	 * @param \WP_Post $post      WP_Post object for the current attachment.
 	 *
 	 * @return array
 	 */
@@ -273,7 +273,7 @@ class RTGODAM_RetranscodeMedia {
 			return $actions;
 		}
 
-		$actions = ( ! empty( $actions ) && is_array( $actions ) ) ? $actions : array();
+		$actions = ( ! empty( $actions ) && is_array( $actions ) ) ? $actions : [];
 
 		$url = wp_nonce_url( admin_url( 'admin.php?page=rtgodam_tools&goback=1&ids=' . $post->ID ), 'rtgodam_tools' );
 
@@ -322,7 +322,7 @@ class RTGODAM_RetranscodeMedia {
 		wp_enqueue_script(
 			'rtgodam-retranscode-media',
 			RTGODAM_URL . '/admin/js/godam-retranscode-media.js',
-			array( 'jquery' ),
+			[ 'jquery' ],
 			filemtime( RTGODAM_PATH . '/admin/js/godam-retranscode-media.js' ),
 			true
 		);
@@ -386,7 +386,7 @@ class RTGODAM_RetranscodeMedia {
 				check_admin_referer( 'rtgodam_tools' );
 
 				$file_size = 0;
-				$files     = array();
+				$files     = [];
 
 				// Create the list of image IDs.
 				$usage_info = get_option( 'rtgodam-usage' );
@@ -399,17 +399,17 @@ class RTGODAM_RetranscodeMedia {
 						if ( file_exists( $path ) ) {
 							$current_file_size = filesize( $path );
 							$file_size         = $file_size + $current_file_size;
-							$files[ $each ]    = array(
+							$files[ $each ]    = [
 								'name' => esc_html( get_the_title( $each ) ),
 								'size' => $current_file_size,
-							);
+							];
 						}
 					}
 				} else {
-					add_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
-					$query = new WP_Query( array( 'post_type' => 'attachments' ) );
+					add_filter( 'posts_where', [ $this, 'add_search_mime_types' ] );
+					$query = new WP_Query( [ 'post_type' => 'attachments' ] );
 					$media = $query->get_posts();
-					remove_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
+					remove_filter( 'posts_where', [ $this, 'add_search_mime_types' ] );
 					if ( empty( $media ) || is_wp_error( $media ) ) {
 
 						// translators: Link to the media page.
@@ -418,17 +418,17 @@ class RTGODAM_RetranscodeMedia {
 					}
 
 					// Generate the list of IDs.
-					$ids = array();
+					$ids = [];
 					foreach ( $media as $i => $each ) {
 						$ids[] = $each->ID;
 						$path  = get_attached_file( $each->ID );
 						if ( file_exists( $path ) ) {
 							$current_file_size  = filesize( $path );
 							$file_size          = $file_size + $current_file_size;
-							$files[ $each->ID ] = array(
+							$files[ $each->ID ] = [
 								'name' => esc_html( get_the_title( $each->ID ) ),
 								'size' => $current_file_size,
-							);
+							];
 						}
 					}
 					$ids = implode( ',', $ids );
@@ -546,7 +546,7 @@ class RTGODAM_RetranscodeMedia {
 					<p>
 							<?php
 							// translators: Placeholder is for admin media section link.
-							printf( wp_kses( __( "You can retranscode specific media files (rather than ALL media) from the <a href='%s'>Media</a> page using Bulk Action via drop down or mouse hover a specific media (audio/video) file.", 'godam' ), array( 'a' => array( 'href' => array() ) ) ), esc_url( admin_url( 'upload.php' ) ) );
+							printf( wp_kses( __( "You can retranscode specific media files (rather than ALL media) from the <a href='%s'>Media</a> page using Bulk Action via drop down or mouse hover a specific media (audio/video) file.", 'godam' ), [ 'a' => [ 'href' => [] ] ] ), esc_url( admin_url( 'upload.php' ) ) );
 							?>
 					</p>
 
@@ -589,7 +589,7 @@ class RTGODAM_RetranscodeMedia {
 			)
 		) {
 			// translators: Media id of the invalid media type.
-			die( wp_json_encode( array( 'error' => sprintf( __( 'Sending Failed: %d is an invalid media ID/type.', 'godam' ), intval( $id ) ) ) ) );
+			die( wp_json_encode( [ 'error' => sprintf( __( 'Sending Failed: %d is an invalid media ID/type.', 'godam' ), intval( $id ) ) ] ) );
 		}
 
 		// Safe fallback via filter; PHPCS can't resolve dynamic capability.
@@ -628,7 +628,7 @@ class RTGODAM_RetranscodeMedia {
 		// Get the transcoder object.
 		$transcoder = new RTGODAM_Transcoder_Handler( true );
 
-		$attachment_meta = array( 'mime_type' => $media->post_mime_type );
+		$attachment_meta = [ 'mime_type' => $media->post_mime_type ];
 
 		$transcoded_files = get_post_meta( $media->ID, 'rtgodam_media_transcoded_files', true );
 
@@ -663,7 +663,7 @@ class RTGODAM_RetranscodeMedia {
 		update_post_meta( $media->ID, 'rtgodam_retranscoding_sent', $is_sent );
 
 		// translators: Media name, Media id and success message for successfull transcode.
-		die( wp_json_encode( array( 'success' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) was successfully sent in %3$s seconds.', 'godam' ), esc_html( get_the_title( $media->ID ) ), $media->ID, timer_stop() ) ) ) );
+		die( wp_json_encode( [ 'success' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) was successfully sent in %3$s seconds.', 'godam' ), esc_html( get_the_title( $media->ID ) ), $media->ID, timer_stop() ) ] ) );
 	}
 
 	/**
@@ -674,7 +674,7 @@ class RTGODAM_RetranscodeMedia {
 	 */
 	public function die_json_error_msg( $id, $message ) {
 		// translators: Media name, Media ID and message for failed transcode.
-		die( wp_json_encode( array( 'error' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) failed to send. The error message was: %3$s', 'godam' ), esc_html( get_the_title( $id ) ), $id, $message ) ) ) );
+		die( wp_json_encode( [ 'error' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) failed to send. The error message was: %3$s', 'godam' ), esc_html( get_the_title( $id ) ), $id, $message ) ] ) );
 	}
 
 	/**
@@ -704,7 +704,7 @@ class RTGODAM_RetranscodeMedia {
 	/**
 	 * Delete the previously added media thumbnail files
 	 *
-	 * @param  number $media_id     Post ID of the media.
+	 * @param  \number $media_id     Post ID of the media.
 	 * @param  array  $post_request Post request coming for the transcoder API.
 	 */
 	public function rtgodam_before_thumbnail_store( $media_id = '', $post_request = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
@@ -735,7 +735,7 @@ class RTGODAM_RetranscodeMedia {
 	/**
 	 * Delete the previously transcoded media files
 	 *
-	 * @param  number $media_id     Post ID of the media.
+	 * @param  \number $media_id     Post ID of the media.
 	 * @param  array  $transcoded_files Post request coming for the transcoder API.
 	 */
 	public function rtgodam_before_transcoded_media_store( $media_id = '', $transcoded_files = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
@@ -759,7 +759,7 @@ class RTGODAM_RetranscodeMedia {
 	 * Add the current thumbnail image in the newly added thumbnails if
 	 * user wants to preserve the thumbnails set to the media
 	 *
-	 * @param  number $media_id     Post ID of the media.
+	 * @param  \number $media_id     Post ID of the media.
 	 */
 	public function transcoded_thumbnails_added( $media_id = '' ) {
 		if ( empty( $media_id ) ) {
@@ -797,12 +797,12 @@ class RTGODAM_RetranscodeMedia {
 
 			$file_type = wp_check_filetype( basename( $thumbnail_src ), null );
 
-			$attachment = array(
+			$attachment = [
 				'post_mime_type' => $file_type['type'],
 				'post_title'     => preg_replace( '/\.[^.]+$/', '', basename( $thumbnail_src ) ),
 				'post_content'   => '',
 				'post_status'    => 'inherit',
-			);
+			];
 
 			// Insert transcoded thumbnail attachment.
 			require_once ABSPATH . 'wp-admin/includes/image.php';
@@ -830,7 +830,7 @@ class RTGODAM_RetranscodeMedia {
 	 * Callback request from the transcoder has been processed, so delete the flags
 	 * which are not necessary after processing the callback request
 	 *
-	 * @param  number $attachment_id      Post ID of the media.
+	 * @param  \number $attachment_id      Post ID of the media.
 	 * @param  string $job_id             Unique job ID of the transcoding request.
 	 */
 	public function rtgodam_handle_callback_finished( $attachment_id = '', $job_id = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed

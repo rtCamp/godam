@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since   1.0.0
  *
- * @param  number $attachment_id    ID of attachment.
+ * @param  \number $attachment_id    ID of attachment.
  * @return boolean
  */
 function rtgodam_is_file_being_transcoded( $attachment_id ) {
@@ -76,9 +76,9 @@ function rtgodam_get_edit_post_link( $id = 0, $context = 'display' ) {
  *
  * @since 1.0.0
  *
- * @param number $attachment_id Attachment id.
+ * @param \number $attachment_id Attachment id.
  *
- * @return number On success it returns the job id otherwise it returns the false.
+ * @return \number On success it returns the job id otherwise it returns the false.
  */
 function rtgodam_get_job_id_by_attachment_id( $attachment_id ) {
 
@@ -102,7 +102,7 @@ function rtgodam_get_job_id_by_attachment_id( $attachment_id ) {
  */
 function rtgodam_is_track_status_enabled() {
 	// Fetch EasyDAM settings from the database.
-	$easydam_settings = get_option( 'rtgodam-settings', array() );
+	$easydam_settings = get_option( 'rtgodam-settings', [] );
 
 	// Check and return the track_status value, defaulting to false if not set.
 	return ! empty( $easydam_settings['general']['track_status'] ) && $easydam_settings['general']['track_status'];
@@ -156,7 +156,7 @@ function rtgodam_delete_transcoded_files( $files ) {
 	}
 
 	if ( ! empty( $files ) && ! is_array( $files ) ) {
-		$files = array( $files );
+		$files = [ $files ];
 	}
 
 	$uploadpath = rtgodam_get_upload_dir();
@@ -207,7 +207,7 @@ function rtgodam_get_upload_dir() {
 function rtgodam_is_override_thumbnail( $attachment_id = '' ) {
 
 	// Fetch EasyDAM settings directly.
-	$easydam_settings = get_option( 'rtgodam-settings', array() );
+	$easydam_settings = get_option( 'rtgodam-settings', [] );
 
 	// Return the 'overwrite_thumbnails' value, defaulting to false if not set.
 	$rtgodam_override_thumbnail = ! empty( $easydam_settings['video']['overwrite_thumbnails'] );
@@ -352,10 +352,10 @@ function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FUL
 function rtgodam_get_blacklist_ip_addresses() {
 	// If custom API URL added then don't block local ips.
 	if ( defined( 'RTGODAM_TRANSCODER_API_URL' ) ) {
-		return array();
+		return [];
 	}
 
-	return array( '127.0.0.1', '::1' );
+	return [ '127.0.0.1', '::1' ];
 }
 
 /**
@@ -364,28 +364,28 @@ function rtgodam_get_blacklist_ip_addresses() {
  * @param string $api_key The api key to verify.
  * @param bool   $save        Whether to save the API key in the site options.
  * 
- * @return array|WP_Error Array with status and data on success, WP_Error on failure.
+ * @return array|\WP_Error Array with status and data on success, WP_Error on failure.
  */
 function rtgodam_verify_api_key( $api_key, $save = false ) {
 	if ( empty( $api_key ) ) {
-		return new \WP_Error( 'missing_api_key', 'API key is required.', array( 'status' => 400 ) );
+		return new \WP_Error( 'missing_api_key', 'API key is required.', [ 'status' => 400 ] );
 	}
 
 	$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.verification.verify_api_key';
 
 	// Prepare request body.
 	$site_url     = get_site_url();
-	$request_body = array(
+	$request_body = [
 		'api_key'  => $api_key,
 		'site_url' => $site_url,
-	);
+	];
 
-	$args = array(
+	$args = [
 		'body'    => wp_json_encode( $request_body ),
-		'headers' => array(
+		'headers' => [
 			'Content-Type' => 'application/json',
-		),
-	);
+		],
+	];
 
 	// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
 	if ( function_exists( 'vip_safe_wp_remote_post' ) ) {
@@ -395,14 +395,14 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 	}
 
 	if ( is_wp_error( $response ) ) {
-		return new \WP_Error( 'api_error', 'An error occurred while verifying the API. Please try again.', array( 'status' => 500 ) );
+		return new \WP_Error( 'api_error', 'An error occurred while verifying the API. Please try again.', [ 'status' => 500 ] );
 	}
 
 	$status_code = wp_remote_retrieve_response_code( $response );
 	$body        = json_decode( wp_remote_retrieve_body( $response ), true );
 
 	if ( isset( $body['message']['error'] ) ) {
-		return new \WP_Error( 'invalid_api_key', $body['message']['error'], array( 'status' => 400 ) );
+		return new \WP_Error( 'invalid_api_key', $body['message']['error'], [ 'status' => 400 ] );
 	}
 
 	// Handle success response.
@@ -421,20 +421,20 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 			$handler->update_usage( $api_key );
 		}
 
-		return array(
+		return [
 			'status'  => 'success',
 			'message' => 'API key verified and stored successfully!',
 			'data'    => $body['message'],
-		);
+		];
 	}
 
 	// Handle failure response.
 	if ( 404 === $status_code ) {
-		return new \WP_Error( 'invalid_api_key', 'Invalid API key. Please try again.', array( 'status' => 404 ) );
+		return new \WP_Error( 'invalid_api_key', 'Invalid API key. Please try again.', [ 'status' => 404 ] );
 	}
 
 	// Handle unexpected responses.
-	return new \WP_Error( 'unexpected_error', 'An unexpected error occurred. Please try again later.', array( 'status' => 500 ) );
+	return new \WP_Error( 'unexpected_error', 'An unexpected error occurred. Please try again later.', [ 'status' => 500 ] );
 }
 
 /**
@@ -465,7 +465,7 @@ function rtgodam_mask_string( $input, $offset = 4 ) {
 function rtgodam_get_categories_list( $post_id ) {
 
 	$categories     = get_the_category( $post_id );
-	$category_names = array();
+	$category_names = [];
 
 	if ( is_array( $categories ) && ! empty( $categories ) ) {
 
@@ -491,7 +491,7 @@ function rtgodam_get_categories_list( $post_id ) {
 function rtgodam_get_tags_list( $post_id ) {
 
 	$tags      = get_the_tags( $post_id );
-	$tag_names = array();
+	$tag_names = [];
 
 	if ( ! is_array( $tags ) && ! empty( $tags ) ) {
 
@@ -513,7 +513,7 @@ function rtgodam_get_tags_list( $post_id ) {
  */
 function rtgodam_get_localize_array() {
 
-	$localize_array = array();
+	$localize_array = [];
 
 	$localize_array['endpoint']   = RTGODAM_ANALYTICS_BASE;
 	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();

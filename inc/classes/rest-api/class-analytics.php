@@ -31,132 +31,132 @@ class Analytics extends Base {
 	 * @return array Array of registered REST API routes.
 	 */
 	public function get_rest_routes() {
-		return array(
-			array(
+		return [
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/fetch',
-				'args'      => array(
+				'args'      => [
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'fetch_analytics_data' ),
+					'callback'            => [ $this, 'fetch_analytics_data' ],
 					'permission_callback' => '__return_true', // Publicly accessible.
-					'args'                => array(
-						'video_id' => array(
+					'args'                => [
+						'video_id' => [
 							'required'          => true,
 							'type'              => 'integer',
 							'description'       => __( 'The Video ID for fetching analytics data.', 'godam' ),
-							'validate_callback' => function ( $param ) {
+							'validate_callback' => static function ( $param ) {
 								return is_numeric( $param ) && intval( $param ) > 0;
 							},
 							'sanitize_callback' => 'absint',
-						),
-						'site_url' => array(
+						],
+						'site_url' => [
 							'required'          => true,
 							'type'              => 'string',
 							'description'       => __( 'The Site URL associated with the video.', 'godam' ),
 							'sanitize_callback' => 'esc_url_raw',
-						),
-					),
-				),
-			),
-			array(
+						],
+					],
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/history',
-				'args'      => array(
+				'args'      => [
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'fetch_analytics_history' ),
+					'callback'            => [ $this, 'fetch_analytics_history' ],
 					'permission_callback' => '__return_true',
-					'args'                => array(
-						'days'     => array(
+					'args'                => [
+						'days'     => [
 							'required'          => true,
 							'type'              => 'integer',
 							'sanitize_callback' => 'absint',
-						),
-						'video_id' => array(
+						],
+						'video_id' => [
 							'required'          => true,
 							'type'              => 'integer',
 							'sanitize_callback' => 'absint',
-						),
-						'site_url' => array(
+						],
+						'site_url' => [
 							'required'          => true,
 							'type'              => 'string',
 							'sanitize_callback' => 'esc_url_raw',
-						),
-					),
-				),
-			),
-			array(
+						],
+					],
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/dashboard-metrics',
-				'args'      => array(
+				'args'      => [
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'fetch_dashboard_metrics' ),
+					'callback'            => [ $this, 'fetch_dashboard_metrics' ],
 					'permission_callback' => '__return_true',
-					'args'                => array(
-						'site_url' => array(
+					'args'                => [
+						'site_url' => [
 							'required'          => true,
 							'type'              => 'string',
 							'sanitize_callback' => 'esc_url_raw',
-						),
-					),
-				),
-			),
-			array(
+						],
+					],
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/dashboard-history',
-				'args'      => array(
+				'args'      => [
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'fetch_dashboard_history' ),
+					'callback'            => [ $this, 'fetch_dashboard_history' ],
 					'permission_callback' => '__return_true',
-					'args'                => array(
-						'days'     => array(
+					'args'                => [
+						'days'     => [
 							'required'          => true,
 							'type'              => 'integer',
 							'sanitize_callback' => 'absint',
-						),
-						'site_url' => array(
+						],
+						'site_url' => [
 							'required'          => true,
 							'type'              => 'string',
 							'sanitize_callback' => 'esc_url_raw',
-						),
-					),
-				),
-			),
-			array(
+						],
+					],
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/top-videos',
-				'args'      => array(
+				'args'      => [
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'fetch_top_videos' ),
+					'callback'            => [ $this, 'fetch_top_videos' ],
 					'permission_callback' => '__return_true',
-					'args'                => array(
-						'page'     => array(
+					'args'                => [
+						'page'     => [
 							'required'          => false,
 							'type'              => 'integer',
 							'default'           => 1,
 							'sanitize_callback' => 'absint',
-						),
-						'limit'    => array(
+						],
+						'limit'    => [
 							'required'          => false,
 							'type'              => 'integer',
 							'default'           => 10,
 							'sanitize_callback' => 'absint',
-						),
-						'site_url' => array(
+						],
+						'site_url' => [
 							'required'          => true,
 							'type'              => 'string',
 							'sanitize_callback' => 'esc_url_raw',
-						),
-					),
-				),
-			),
-		);
+						],
+					],
+				],
+			],
+		];
 	}
 
 	/**
 	 * Fetch analytics data from the external API securely.
 	 *
-	 * @param WP_REST_Request $request REST API request.
-	 * @return WP_REST_Response
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
 	 */
 	public function fetch_analytics_data( WP_REST_Request $request ) {
 		$video_id = $request->get_param( 'video_id' );
@@ -171,22 +171,22 @@ class Analytics extends Base {
 		// Check if API key is missing.
 		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'    => 'error',
 					'message'   => __( 'Missing API key.', 'godam' ),
 					'errorType' => 'missing_key',
-				),
+				],
 				200
 			);
 		}
 
 		// Build query parameters safely.
-		$query_params = array(
+		$query_params = [
 			'video_id'      => $video_id,
 			'site_url'      => $site_url,
 			'account_token' => $account_token,
 			'api_key'       => $api_key,
-		);
+		];
 
 		$analytics_url = add_query_arg( $query_params, $analytics_endpoint );
 
@@ -196,11 +196,11 @@ class Analytics extends Base {
 		// Handle response errors.
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'    => 'error',
 					'message'   => __( 'Unable to reach analytics server.', 'godam' ),
 					'errorType' => 'microservice_error',
-				),
+				],
 				200
 			);
 		}
@@ -213,91 +213,91 @@ class Analytics extends Base {
 
 		if ( 404 === $http_code || 400 === $http_code ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'    => 'error',
 					'message'   => $detail,
 					'errorType' => 'invalid_key',
-				),
+				],
 				200
 			);
 		}
 
 		if ( $http_code >= 500 ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'    => 'error',
 					'message'   => $detail,
 					'errorType' => 'microservice_error',
-				),
+				],
 				200
 			);
 		}
 
 		// Return analytics data if available.
 		if ( isset( $data['processed_analytics'] ) ) {
-			$post_views   = $data['processed_analytics']['post_views'] ?? array();
+			$post_views   = $data['processed_analytics']['post_views'] ?? [];
 			$post_ids     = array_keys( $post_views );
-			$post_details = array();
+			$post_details = [];
 
 			if ( ! empty( $post_ids ) ) {
 				$posts = get_posts(
-					array(
+					[
 						'post__in'         => $post_ids,
 						'post_type'        => 'post',
 						'posts_per_page'   => -1,
 						'orderby'          => 'post__in',
 						'suppress_filters' => false,
-					)
+					]
 				);
 
 				foreach ( $posts as $post ) {
 					if ( isset( $post_views[ $post->ID ] ) ) {
-						$post_details[] = array(
+						$post_details[] = [
 							'id'    => $post->ID,
 							'title' => get_the_title( $post ),
 							'url'   => get_permalink( $post ),
 							'views' => $post_views[ $post->ID ],
-						);
+						];
 					}
 				}
 			}
 
 			return new WP_REST_Response(
-				array(
+				[
 					'status' => 'success',
 					'data'   => array_merge(
 						$data['processed_analytics'],
-						array( 'post_details' => $post_details )
+						[ 'post_details' => $post_details ]
 					),
-				),
+				],
 				200
 			);
 		}
 
 		// If no data found, return empty response.
 		return new WP_REST_Response(
-			array(
+			[
 				'status' => 'success',
-				'data'   => array(
+				'data'   => [
 					'account_token'         => '',
-					'all_time_heatmap'      => wp_json_encode( array() ),
+					'all_time_heatmap'      => wp_json_encode( [] ),
 					'date'                  => gmdate( 'Y-m-d' ),
-					'heatmap'               => wp_json_encode( array() ),
+					'heatmap'               => wp_json_encode( [] ),
 					'page_load'             => 0,
 					'play_time'             => 0.0,
 					'plays'                 => 0,
 					'site_url'              => '',
 					'video_id'              => 0,
 					'video_length'          => 0.0,
-					'country_views'         => array(),
-					'post_views'            => array(),
+					'country_views'         => [],
+					'post_views'            => [],
 					'views_change'          => 0.0,
 					'watch_time_change'     => 0.0,
 					'play_rate_change'      => 0.0,
 					'avg_engagement_change' => 0.0,
-					'post_details'          => array(),
-				),
-			),
+					'post_details'          => [],
+				],
+			],
 			200
 		);
 	}
@@ -305,8 +305,8 @@ class Analytics extends Base {
 	/**
 	 * Fetch analytics history from the external API securely.
 	 *
-	 * @param WP_REST_Request $request REST API request.
-	 * @return WP_REST_Response
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
 	 */
 	public function fetch_analytics_history( WP_REST_Request $request ) {
 		$days          = $request->get_param( 'days' );
@@ -317,33 +317,33 @@ class Analytics extends Base {
 
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'  => 'error',
 					'message' => __( 'Invalid or unverified API key.', 'godam' ),
-				),
+				],
 				200
 			);
 		}
 
 		$microservice_url = RTGODAM_ANALYTICS_BASE . '/processed-analytics/history/';
-		$params           = array(
+		$params           = [
 			'days'          => $days,
 			'video_id'      => $video_id,
 			'site_url'      => $site_url,
 			'account_token' => $account_token,
 			'api_key'       => $api_key,
-		);
+		];
 
 		$history_url = add_query_arg( $params, $microservice_url );
 		$response    = wp_remote_get( $history_url );
 
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'  => 'error',
 					/* translators: %s is the error message from the API response. */
 					'message' => sprintf( __( 'Error fetching history data: %s', 'godam' ), $response->get_error_message() ),
-				),
+				],
 				500
 			);
 		}
@@ -352,10 +352,10 @@ class Analytics extends Base {
 		$data = json_decode( $body, true );
 
 		return new WP_REST_Response(
-			array(
+			[
 				'status'              => 'success',
-				'processed_analytics' => $data['processed_analytics'] ?? array(),
-			),
+				'processed_analytics' => $data['processed_analytics'] ?? [],
+			],
 			200
 		);
 	}
@@ -363,8 +363,8 @@ class Analytics extends Base {
 	/**
 	 * Fetch dashboard metrics from the external API securely.
 	 *
-	 * @param WP_REST_Request $request REST API request.
-	 * @return WP_REST_Response
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
 	 */
 	public function fetch_dashboard_metrics( WP_REST_Request $request ) {
 		$site_url      = $request->get_param( 'site_url' );
@@ -373,44 +373,44 @@ class Analytics extends Base {
 
 		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'    => 'error',
 					'message'   => __( 'Missing API key.', 'godam' ),
 					'errorType' => 'missing_key',
-				),
+				],
 				200
 			);
 		}
 
 		$endpoint = add_query_arg(
-			array(
+			[
 				'site_url'      => $site_url,
 				'account_token' => $account_token,
 				'api_key'       => $api_key,
-			),
+			],
 			RTGODAM_ANALYTICS_BASE . '/dashboard/metrics/fetch/'
 		);
 
-		$empty_metrics = array(
+		$empty_metrics = [
 			'plays'                 => 0,
 			'play_time'             => 0.0,
 			'page_load'             => 0,
 			'avg_engagement'        => 0.0,
-			'country_views'         => array(),
+			'country_views'         => [],
 			'views_change'          => 0.0,
 			'watch_time_change'     => 0.0,
 			'play_rate_change'      => 0.0,
 			'avg_engagement_change' => 0.0,
-		);
+		];
 
 		$response = wp_remote_get( $endpoint );
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'    => 'error',
 					'message'   => __( 'Unable to reach analytics server.', 'godam' ),
 					'errorType' => 'microservice_error',
-				),
+				],
 				200
 			);
 		}
@@ -421,31 +421,31 @@ class Analytics extends Base {
 
 		if ( 404 === $http_code || 400 === $http_code ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'    => 'error',
 					'message'   => $detail,
 					'errorType' => 'invalid_key',
-				),
+				],
 				200
 			);
 		}
 
 		if ( $http_code >= 500 ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'    => 'error',
 					'message'   => $detail,
 					'errorType' => 'microservice_error',
-				),
+				],
 				200
 			);
 		}
 
 		return new WP_REST_Response(
-			array(
+			[
 				'status'            => 'success',
 				'dashboard_metrics' => $body['dashboard_metrics'] ?? $empty_metrics,
-			),
+			],
 			200
 		);
 	}
@@ -453,8 +453,8 @@ class Analytics extends Base {
 	/**
 	 * Fetch dashboard metrics history from the external API securely.
 	 *
-	 * @param WP_REST_Request $request REST API request.
-	 * @return WP_REST_Response
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
 	 */
 	public function fetch_dashboard_history( WP_REST_Request $request ) {
 		$days          = $request->get_param( 'days' );
@@ -464,31 +464,31 @@ class Analytics extends Base {
 
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'  => 'error',
 					'message' => __( 'Invalid or unverified API key.', 'godam' ),
-				),
+				],
 				200
 			);
 		}
 
 		$endpoint = add_query_arg(
-			array(
+			[
 				'days'          => $days,
 				'site_url'      => $site_url,
 				'account_token' => $account_token,
 				'api_key'       => $api_key,
-			),
+			],
 			RTGODAM_ANALYTICS_BASE . '/dashboard/metrics/history/'
 		);
 
 		$response = wp_remote_get( $endpoint );
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'  => 'error',
 					'message' => $response->get_error_message(),
-				),
+				],
 				500
 			);
 		}
@@ -496,10 +496,10 @@ class Analytics extends Base {
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		return new WP_REST_Response(
-			array(
+			[
 				'status'                    => 'success',
-				'dashboard_metrics_history' => $body['dashboard_metrics_history'] ?? array(),
-			),
+				'dashboard_metrics_history' => $body['dashboard_metrics_history'] ?? [],
+			],
 			200
 		);
 	}
@@ -507,8 +507,8 @@ class Analytics extends Base {
 	/**
 	 * Fetch top videos from the external API securely.
 	 *
-	 * @param WP_REST_Request $request REST API request.
-	 * @return WP_REST_Response
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
 	 */
 	public function fetch_top_videos( WP_REST_Request $request ) {
 		$page          = $request->get_param( 'page' ) ?? 1;
@@ -519,39 +519,39 @@ class Analytics extends Base {
 
 		if ( empty( $account_token ) || 'unverified' === $account_token ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'  => 'error',
 					'message' => __( 'Invalid or unverified API key.', 'godam' ),
-				),
+				],
 				200
 			);
 		}
 
 		$endpoint = add_query_arg(
-			array(
+			[
 				'page'          => $page,
 				'limit'         => $limit,
 				'site_url'      => $site_url,
 				'account_token' => $account_token,
 				'api_key'       => $api_key,
-			),
+			],
 			RTGODAM_ANALYTICS_BASE . '/dashboard/top-videos/'
 		);
 
 		$response = wp_remote_get( $endpoint );
 		if ( is_wp_error( $response ) ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'  => 'error',
 					'message' => $response->get_error_message(),
-				),
+				],
 				500
 			);
 		}
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-		$top_videos = $body['top_videos'] ?? array();
+		$top_videos = $body['top_videos'] ?? [];
 
 		foreach ( $top_videos as &$video ) {
 			if ( ! empty( $video['video_id'] ) ) {
@@ -584,11 +584,11 @@ class Analytics extends Base {
 		}
 
 		return new WP_REST_Response(
-			array(
+			[
 				'status'      => 'success',
 				'top_videos'  => $top_videos,
 				'total_pages' => $body['total_pages'] ?? 1,
-			),
+			],
 			200
 		);
 	}

@@ -104,9 +104,9 @@ function rtgodam_action_links( $links, $file ) {
 
 	return array_merge(
 		$links,
-		array(
+		[
 			'settings' => $settings_url,
-		)
+		]
 	);
 }
 

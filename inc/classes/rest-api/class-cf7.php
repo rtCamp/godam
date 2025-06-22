@@ -20,35 +20,35 @@ class CF7 extends Base {
 	 * Get REST routes.
 	 */
 	public function get_rest_routes() {
-		return array(
-			array(
+		return [
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/cf7-form',
-				'args'      => array(
-					array(
+				'args'      => [
+					[
 						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_cf7_form' ),
+						'callback'            => [ $this, 'get_cf7_form' ],
 						'permission_callback' => '__return_true',
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
-							array(
-								'id'    => array(
+							[
+								'id'    => [
 									'description' => __( 'The ID of the Contact Form 7 Form.', 'godam' ),
 									'type'        => 'string',
 									'required'    => true,
-								),
-								'theme' => array(
+								],
+								'theme' => [
 									'description'       => __( 'The theme to be applied to the Contact Form 7 Form.', 'godam' ),
 									'type'              => 'string',
 									'required'          => false,
 									'sanitize_callback' => 'sanitize_text_field',
-								),
-							)
+								],
+							]
 						),
-					),
-				),
-			),
-		);
+					],
+				],
+			],
+		];
 	}
 
 	/**
@@ -60,14 +60,14 @@ class CF7 extends Base {
 	public function get_cf7_form( $request ) {
 		// Check if Gravity Forms plugin is active.
 		if ( ! class_exists( 'WPCF7_ShortcodeManager' ) ) {
-			return new \WP_Error( 'contactform7_not_active', __( 'Contact Form 7 plugin is not active.', 'godam' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'contactform7_not_active', __( 'Contact Form 7 plugin is not active.', 'godam' ), [ 'status' => 404 ] );
 		}
 
 		$form_id = $request->get_param( 'id' );
 		$theme   = $request->get_param( 'theme' );
 
 		if ( empty( $form_id ) ) {
-			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), [ 'status' => 404 ] );
 		}
 
 		$cf7_form = do_shortcode( "[contact-form-7 id='{$form_id}' theme='{$theme}']" );

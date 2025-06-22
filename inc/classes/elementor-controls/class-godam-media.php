@@ -39,10 +39,10 @@ class Godam_Media extends \Elementor\Base_Data_Control {
 	 * @return array Control default value.
 	 */
 	public function get_default_value() {
-		return array(
+		return [
 			'id'  => '',
 			'url' => '',
-		);
+		];
 	}
 
 	/**
@@ -54,12 +54,12 @@ class Godam_Media extends \Elementor\Base_Data_Control {
 	 * @return array Control default settings.
 	 */
 	protected function get_default_settings() {
-		return array(
+		return [
 			'media_type'  => 'text/vtt',
-			'media_types' => array(
+			'media_types' => [
 				'text/vtt',
-			),
-		);
+			],
+		];
 	}
 
 	/**
@@ -76,7 +76,7 @@ class Godam_Media extends \Elementor\Base_Data_Control {
 		wp_enqueue_script( 'media-upload' );
 		wp_enqueue_script( 'thickbox' );
 
-		wp_register_script( 'godam-elementor-editor', RTGODAM_URL . 'assets/build/js/godam-elementor-editor.min.js', array( 'jquery' ), '1.0.0', true );
+		wp_register_script( 'godam-elementor-editor', RTGODAM_URL . 'assets/build/js/godam-elementor-editor.min.js', [ 'jquery' ], '1.0.0', true );
 		wp_enqueue_script( 'godam-elementor-editor' );
 		wp_enqueue_style( 'easydam-media-library' );
 

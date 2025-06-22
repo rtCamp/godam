@@ -31,10 +31,10 @@ class Retranscode_Failed_Media {
 	 * Setup hooks and initialization.
 	 */
 	protected function setup_hooks() {
-		add_action( 'cron_schedules', array( $this, 'add_re_transcoding_schedule' ) );
-		add_action( 'wp', array( $this, 'schedule_event' ) );
-		add_action( 'retranscode_failed_media_event', array( $this, 'retranscode_failed_media' ) );
-		add_action( 'admin_notices', array( $this, 'failed_transcoding_notice' ) );
+		add_action( 'cron_schedules', [ $this, 'add_re_transcoding_schedule' ] );
+		add_action( 'wp', [ $this, 'schedule_event' ] );
+		add_action( 'retranscode_failed_media_event', [ $this, 'retranscode_failed_media' ] );
+		add_action( 'admin_notices', [ $this, 'failed_transcoding_notice' ] );
 	}
 
 	/**
@@ -48,10 +48,10 @@ class Retranscode_Failed_Media {
 	 */
 	public function add_re_transcoding_schedule( $schedules ) {
 		if ( ! isset( $schedules['retranscode_failed_media'] ) ) {
-			$schedules['retranscode_failed_media'] = array(
+			$schedules['retranscode_failed_media'] = [
 				'interval' => 10, // 10 minutes
 				'display'  => __( 'Retranscode Failed Media', 'godam' ),
-			);
+			];
 		}
 		return $schedules;
 	}
@@ -76,7 +76,7 @@ class Retranscode_Failed_Media {
 	 */
 	public function retranscode_failed_media() {
 
-		$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
+		$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', [] );
 
 		foreach ( $failed_transcoding_attachments as $attachment ) {
 			$attachment_id = $attachment['attachment_id'] ?? 0;

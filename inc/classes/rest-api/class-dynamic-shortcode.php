@@ -31,41 +31,41 @@ class Dynamic_Shortcode extends Base {
 	 * @return array
 	 */
 	public function get_rest_routes() {
-		return array(
-			array(
+		return [
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base,
-				'args'      => array(
+				'args'      => [
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'render_shortcode' ),
+					'callback'            => [ $this, 'render_shortcode' ],
 					'permission_callback' => '__return_true',
-					'args'                => array(
-						'id' => array(
+					'args'                => [
+						'id' => [
 							'required'          => true,
 							'type'              => 'integer',
 							'sanitize_callback' => 'absint',
-						),
-					),
-				),
-			),
-		);
+						],
+					],
+				],
+			],
+		];
 	}
 
 	/**
 	 * Callback to render the shortcode.
 	 *
-	 * @param WP_REST_Request $request REST request.
-	 * @return WP_REST_Response
+	 * @param \WP_REST_Request $request REST request.
+	 * @return \WP_REST_Response
 	 */
 	public function render_shortcode( WP_REST_Request $request ) {
 		$id = $request->get_param( 'id' );
 
 		if ( ! get_post( $id ) ) {
 			return new WP_REST_Response(
-				array(
+				[
 					'status'  => 'error',
 					'message' => 'Video not found.',
-				),
+				],
 				404
 			);
 		}
@@ -97,12 +97,12 @@ class Dynamic_Shortcode extends Base {
 		do_action( 'rtgodam_shortcode_after_render', $id );
 
 		return new WP_REST_Response(
-			array(
+			[
 				'status' => 'success',
 				'html'   => $html,
 				'title'  => $video_title,
 				'date'   => $video_date,
-			),
+			],
 			200
 		);
 	}

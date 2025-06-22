@@ -29,8 +29,8 @@ class Deactivation {
 	 * Constructor function.
 	 */
 	public function __construct() {
-		add_action( 'admin_enqueue_scripts', array( $this, 'load_scripts' ) );
-		add_action( 'wp_ajax_godam_send_deactivation_feedback', array( $this, 'rtgodam_send_deactivation_feedback' ) );
+		add_action( 'admin_enqueue_scripts', [ $this, 'load_scripts' ] );
+		add_action( 'wp_ajax_godam_send_deactivation_feedback', [ $this, 'rtgodam_send_deactivation_feedback' ] );
 	}
 
 	/**
@@ -44,7 +44,7 @@ class Deactivation {
 		wp_register_script(
 			'godam-deactivation-survey-script',
 			RTGODAM_URL . 'assets/build/js/deactivation-feedback.min.js', 
-			array(),
+			[],
 			filemtime( RTGODAM_PATH . 'assets/build/js/deactivation-feedback.min.js' ),
 			true
 		);
@@ -56,14 +56,14 @@ class Deactivation {
 
 			$current_user = wp_get_current_user();
 
-			$rtgodam_deactivate = array(
+			$rtgodam_deactivate = [
 				'site_url'    => home_url(),
 				'nonce'       => wp_create_nonce( 'GoDAMDeactivationFeedback' ),
 				'user_name'   => $current_user->user_nicename,
 				'user_email'  => $current_user->user_email,
 				'header_text' => esc_html__( 'Please let us know why you are deactivating ', 'godam' ),
 				'api_url'     => esc_url( $this->api_url ),
-			);
+			];
 
 			wp_localize_script( 'godam-deactivation-survey-script', 'GoDAMDeactivation', $rtgodam_deactivate );
 		}
@@ -86,27 +86,27 @@ class Deactivation {
 
 		if ( ! $reason || ! $site_url || ! $user ) {
 			wp_send_json_error(
-				array(
+				[
 					'message' => esc_html__( 'Invalid data.', 'godam' ),
-				)
+				]
 			);
 		}
 
-		$data = array(
+		$data = [
 			'site_url'            => $site_url,
 			'reason'              => $reason,
 			'user_name'           => $user['name'],
 			'user_email'          => $user['email'],
-			'user'                => array(
+			'user'                => [
 				'name'  => $user['name'],
 				'email' => $user['email'],
-			),
+			],
 			'additional_feedback' => $feedback,
-		);
+		];
 
-		$options = array(
+		$options = [
 			'body' => $data,
-		);
+		];
 
 		$api_response = wp_remote_post( $this->api_url, $options );
 		$response     = json_decode( wp_remote_retrieve_body( $api_response ) );

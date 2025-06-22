@@ -20,15 +20,15 @@ class Godam_Gallery extends Base {
 	 * @return array
 	 */
 	public function set_default_config() {
-		return array(
+		return [
 			'name'            => 'godam-gallery',
 			'title'           => esc_html_x( 'GoDAM Gallery', 'Widget Title', 'godam' ),
 			'icon'            => 'eicon-gallery-grid',
-			'categories'      => array( 'godam' ),
-			'keywords'        => array( 'godam', 'gallery', 'video' ),
-			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-gallery-script' ),
-			'depended_styles' => array( 'godam-player-frontend-style', 'godam-player-style', 'godam-gallery-style' ),
-		);
+			'categories'      => [ 'godam' ],
+			'keywords'        => [ 'godam', 'gallery', 'video' ],
+			'depended_script' => [ 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-gallery-script' ],
+			'depended_styles' => [ 'godam-player-frontend-style', 'godam-player-style', 'godam-gallery-style' ],
+		];
 	}
 
 	/**
@@ -40,119 +40,119 @@ class Godam_Gallery extends Base {
 
 		$this->start_controls_section(
 			'section_gallery_settings',
-			array(
+			[
 				'label' => esc_html__( 'Gallery Settings', 'godam' ),
-			)
+			]
 		);
 
 		$this->add_control(
 			'infinite_scroll',
-			array(
+			[
 				'label'   => esc_html__( 'Enable Infinite Scroll', 'godam' ),
 				'type'    => Controls_Manager::SWITCHER,
 				'default' => 'no',
-			)
+			]
 		);
 
 		$this->add_control(
 			'show_title',
-			array(
+			[
 				'label'     => esc_html__( 'Show Video Titles and Dates', 'godam' ),
 				'type'      => Controls_Manager::SWITCHER,
 				'default'   => 'yes',
-				'condition' => array(
+				'condition' => [
 					'layout' => 'grid',
-				),
-			)
+				],
+			]
 		);
 
 		$this->add_control(
 			'layout',
-			array(
+			[
 				'label'   => esc_html__( 'Layout', 'godam' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => 'grid',
-				'options' => array(
+				'options' => [
 					'grid' => esc_html__( 'Grid', 'godam' ),
 					'list' => esc_html__( 'List', 'godam' ),
-				),
-			)
+				],
+			]
 		);
 
 		$this->add_control(
 			'count',
-			array(
+			[
 				'label'   => esc_html__( 'Number of videos', 'godam' ),
 				'type'    => Controls_Manager::SLIDER,
-				'range'   => array(
-					'videos' => array(
+				'range'   => [
+					'videos' => [
 						'min'  => 1,
 						'max'  => 30,
 						'step' => 1,
-					),
-				),
-				'default' => array(
+					],
+				],
+				'default' => [
 					'unit' => 'videos',
 					'size' => 6,
-				),
-			)
+				],
+			]
 		);
 
 		$this->add_control(
 			'columns',
-			array(
+			[
 				'label'     => esc_html__( 'Number of columns', 'godam' ),
 				'type'      => Controls_Manager::SLIDER,
-				'range'     => array(
-					'columns' => array(
+				'range'     => [
+					'columns' => [
 						'min'  => 1,
 						'max'  => 6,
 						'step' => 1,
-					),
-				),
-				'default'   => array(
+					],
+				],
+				'default'   => [
 					'unit' => 'columns',
 					'size' => 3,
-				),
-				'condition' => array(
+				],
+				'condition' => [
 					'layout' => 'grid',
-				),
-			)
+				],
+			]
 		);
 
 		$this->add_control(
 			'orderby',
-			array(
+			[
 				'label'   => __( 'Order By', 'godam' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => 'date',
-				'options' => array(
+				'options' => [
 					'date'     => esc_html__( 'Date', 'godam' ),
 					'title'    => esc_html__( 'Title', 'godam' ),
 					'duration' => esc_html__( 'Duration', 'godam' ),
 					'size'     => esc_html__( 'Size', 'godam' ),
-				),
-			)
+				],
+			]
 		);
 
 		$this->add_control(
 			'order',
-			array(
+			[
 				'label'   => __( 'Order', 'godam' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => 'DESC',
-				'options' => array(
+				'options' => [
 					'DESC' => esc_html__( 'Descending', 'godam' ),
 					'ASC'  => esc_html__( 'Ascending', 'godam' ),
-				),
-			)
+				],
+			]
 		);
 
 		// Fetch the available categories and add to control options.
 		$categories       = get_categories();
-		$category_options = array(
+		$category_options = [
 			'' => esc_html__( 'All Categories', 'godam' ),
-		);
+		];
 
 		foreach ( $categories as $category ) {
 			$category_options[ strval( $category->term_id ) ] = $category->name;
@@ -160,19 +160,19 @@ class Godam_Gallery extends Base {
 
 		$this->add_control(
 			'category',
-			array(
+			[
 				'label'   => esc_html__( 'Category', 'godam' ),
 				'type'    => Controls_Manager::SELECT2,
 				'default' => '',
 				'options' => $category_options,
-			)
+			]
 		);
 
 		// Fetch the available tags and add to control options.
 		$tags        = get_tags();
-		$tag_options = array(
+		$tag_options = [
 			'' => esc_html__( 'All Tags', 'godam' ),
-		);
+		];
 
 		foreach ( $tags as $tag ) {
 			$tag_options[ strval( $tag->term_id ) ] = $tag->name;
@@ -180,19 +180,19 @@ class Godam_Gallery extends Base {
 
 		$this->add_control(
 			'tag',
-			array(
+			[
 				'label'   => esc_html__( 'Tags', 'godam' ),
 				'type'    => Controls_Manager::SELECT2,
 				'default' => '',
 				'options' => $tag_options,
-			)
+			]
 		);
 
 		// Fetch the available authors and add to control options.
-		$users        = get_users( array( 'who' => 'authors' ) );
-		$user_options = array(
+		$users        = get_users( [ 'who' => 'authors' ] );
+		$user_options = [
 			'' => esc_html__( 'All Users', 'godam' ),
-		);
+		];
 
 		foreach ( $users as $user ) {
 			$user_options[ strval( $user->ID ) ] = $user->display_name;
@@ -200,87 +200,87 @@ class Godam_Gallery extends Base {
 
 		$this->add_control(
 			'author',
-			array(
+			[
 				'label'   => esc_html__( 'Author', 'godam' ),
 				'type'    => Controls_Manager::SELECT2,
 				'default' => '',
 				'options' => $user_options,
-			)
+			]
 		);
 
 		$this->add_control(
 			'date_range',
-			array(
+			[
 				'label'   => esc_html__( 'Date Range', 'godam' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => '',
-				'options' => array(
+				'options' => [
 					''       => esc_html__( 'All Time', 'godam' ),
 					'7days'  => esc_html__( 'Last 7 Days', 'godam' ),
 					'30days' => esc_html__( 'Last 30 Days', 'godam' ),
 					'90days' => esc_html__( 'Last 90 Days', 'godam' ),
 					'custom' => esc_html__( 'Custom Range', 'godam' ),
-				),
-			)
+				],
+			]
 		);
 
 		$this->add_control(
 			'custom_date_start',
-			array(
+			[
 				'label'          => esc_html__( 'Start Date', 'godam' ),
 				'type'           => Controls_Manager::DATE_TIME,
-				'picker_options' => array(
+				'picker_options' => [
 					'enableTime' => false,
-				),
-				'condition'      => array(
+				],
+				'condition'      => [
 					'date_range' => 'custom',
-				),
-			)
+				],
+			]
 		);
 
 		$this->add_control(
 			'custom_date_end',
-			array(
+			[
 				'label'          => esc_html__( 'End Date', 'godam' ),
 				'type'           => Controls_Manager::DATE_TIME,
-				'picker_options' => array(
+				'picker_options' => [
 					'enableTime' => false,
-				),
-				'condition'      => array(
+				],
+				'condition'      => [
 					'date_range' => 'custom',
-				),
-			)
+				],
+			]
 		);
 
 		$this->add_control(
 			'include',
-			array(
+			[
 				'label'         => esc_html__( 'Include Video IDs', 'godam' ),
 				'type'          => Controls_Manager::REPEATER,
 				'description'   => esc_html__( 'Comma-separated list of video IDs to include', 'godam' ),
-				'fields'        => array(
-					array(
+				'fields'        => [
+					[
 						'name'        => 'video_id',
 						'label'       => esc_html__( 'Video ID', 'godam' ),
 						'type'        => Controls_Manager::TEXT,
 						'default'     => esc_html__( '0', 'godam' ),
 						'label_block' => true,
-					),
-				),
-				'default'       => array(),
+					],
+				],
+				'default'       => [],
 				'prevent_empty' => false,
 				'title_field'   => '{{{ video_id }}}', // phpcs:ignore WordPressVIPMinimum.Security.Mustache.OutputNotation
-			)
+			]
 		);
 
 		$this->add_control(
 			'search',
-			array(
+			[
 				'label'       => esc_html__( 'Search', 'godam' ),
 				'type'        => Controls_Manager::TEXT,
 				'label_block' => true,
 				'description' => esc_html__( 'Search in video titles and descriptions', 'godam' ),
-			)
+			]
 		);
 
 		$this->end_controls_section();
@@ -307,7 +307,7 @@ class Godam_Gallery extends Base {
 		$custom_date_end   = $this->get_settings_for_display( 'custom_date_end' );
 		$include_id_field  = $this->get_settings_for_display( 'include' );
 		$search            = sanitize_text_field( $this->get_settings_for_display( 'search' ) );
-		$include_ids       = array();
+		$include_ids       = [];
 
 		// Concatenating the included ids in comma separated format.
 		foreach ( $include_id_field as $id_field ) {
@@ -321,7 +321,7 @@ class Godam_Gallery extends Base {
 			$show_title = true;
 		}
 
-		$shortcode_atts = array(
+		$shortcode_atts = [
 			'columns'           => ! empty( $columns ) && isset( $columns['size'] ) ? $columns['size'] : 3,
 			'count'             => ! empty( $count ) && isset( $count['size'] ) ? $count['size'] : 6,
 			'orderby'           => $order_by,
@@ -337,7 +337,7 @@ class Godam_Gallery extends Base {
 			'include'           => $include,
 			'search'            => $search,
 			'show_title'        => $show_title,
-		);
+		];
 
 		// Convert settings to shortcode string.
 		$shortcode_atts_string = '';

@@ -20,14 +20,14 @@ class Godam_Audio extends Base {
 	 * @return array
 	 */
 	public function set_default_config() {
-		return array(
+		return [
 			'name'            => 'godam-audio',
 			'title'           => _x( 'GoDAM Audio', 'Widget Title', 'godam' ),
 			'icon'            => 'eicon-headphones',
-			'categories'      => array( 'godam' ),
-			'keywords'        => array( 'godam', 'audio' ),
-			'depended_styles' => array( 'elementor-godam-audio-style' ),
-		);
+			'categories'      => [ 'godam' ],
+			'keywords'        => [ 'godam', 'audio' ],
+			'depended_styles' => [ 'elementor-godam-audio-style' ],
+		];
 	}
 
 	/**
@@ -38,74 +38,74 @@ class Godam_Audio extends Base {
 	protected function register_controls() {
 		$this->start_controls_section(
 			'section_audio_settings',
-			array(
+			[
 				'label' => __( 'Widget Settings', 'godam' ),
-			)
+			]
 		);
 
 		$this->add_control(
 			'audio-file',
-			array(
+			[
 				'label'       => __( 'Audio File', 'godam' ),
 				'type'        => 'godam-media',
 				'label_block' => true,
 				'media_type'  => 'audio',
 				'description' => __( 'Select the audio file', 'godam' ),
-			)
+			]
 		);
 
 		$this->add_control(
 			'autoplay',
-			array(
+			[
 				'label'     => __( 'Autoplay', 'godam' ),
 				'type'      => Controls_Manager::SWITCHER,
 				'default'   => 'no',
-				'condition' => array(
+				'condition' => [
 					'audio-file[url]!' => '',
-				),
-			)
+				],
+			]
 		);
 
 		$this->add_control(
 			'loop',
-			array(
+			[
 				'label'     => __( 'Loop', 'godam' ),
 				'type'      => Controls_Manager::SWITCHER,
 				'default'   => 'no',
-				'condition' => array(
+				'condition' => [
 					'audio-file[url]!' => '',
-				),
-			)
+				],
+			]
 		);
 
 		$this->add_control(
 			'caption',
-			array(
+			[
 				'label'     => __( 'Show Caption', 'godam' ),
 				'type'      => Controls_Manager::SWITCHER,
 				'default'   => 'no',
-				'condition' => array(
+				'condition' => [
 					'audio-file[url]!' => '',
-				),
-			)
+				],
+			]
 		);
 
 		$this->add_control(
 			'preload',
-			array(
+			[
 				'label'     => __( 'Preload', 'godam' ),
 				'type'      => Controls_Manager::SELECT,
 				'default'   => 'metadata',
-				'options'   => array(
+				'options'   => [
 					''         => esc_html__( 'Browser default', 'godam' ),
 					'auto'     => esc_html__( 'Auto', 'godam' ),
 					'metadata' => esc_html__( 'Metadata', 'godam' ),
 					'none'     => esc_html_x( 'None', 'Preload value', 'godam' ),
-				),
-				'condition' => array(
+				],
+				'condition' => [
 					'audio-file[url]!' => '',
-				),
-			)
+				],
+			]
 		);
 
 		$this->end_controls_section();
@@ -119,7 +119,7 @@ class Godam_Audio extends Base {
 	protected function render() {
 		$attachement   = $this->get_settings_for_display( 'audio-file' );
 		$attachment_id = $attachement['id'];
-		$show_caption  = 'yes' === $this->get_settings_for_display( 'caption' ) ? true : false;
+		$show_caption  = 'yes' === $this->get_settings_for_display( 'caption' );
 		$caption       = wp_get_attachment_caption( $attachment_id ) ?? '';
 		$autoplay      = 'yes' === $this->get_settings_for_display( 'autoplay' ) ? 'autoplay' : '';
 		$loop          = 'yes' === $this->get_settings_for_display( 'loop' ) ? 'loop' : '';

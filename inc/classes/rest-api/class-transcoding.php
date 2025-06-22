@@ -27,68 +27,68 @@ class Transcoding extends Base {
 	 * @return array Array of registered REST API routes
 	 */
 	public function get_rest_routes() {
-		return array(
-			array(
+		return [
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/transcoding-status',
-				'args'      => array(
+				'args'      => [
 					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'update_transcoding_status' ),
+					'callback'            => [ $this, 'update_transcoding_status' ],
 					'permission_callback' => '__return_true',
-					'args'                => array(
-						'job_id'     => array(
+					'args'                => [
+						'job_id'     => [
 							'required'          => true,
 							'type'              => 'string',
 							'description'       => __( 'The jobID of transcoding job.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
-						),
-						'status'     => array(
+						],
+						'status'     => [
 							'required'          => true,
 							'type'              => 'string',
 							'description'       => __( 'The status of the transcoding job.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
-						),
-						'progress'   => array(
+						],
+						'progress'   => [
 							'required'          => false,
 							'type'              => 'integer',
 							'description'       => __( 'The progress of the transcoding job.', 'godam' ),
 							'sanitize_callback' => 'absint',
-						),
-						'error_msg'  => array(
+						],
+						'error_msg'  => [
 							'required'          => false,
 							'type'              => 'string',
 							'description'       => __( 'The error message of the transcoding job.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
-						),
-						'error_code' => array(
+						],
+						'error_code' => [
 							'required'          => false,
 							'type'              => 'string',
 							'description'       => __( 'The error code of the transcoding job.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
-						),
-					),
-				),
-			),
-			array(
+						],
+					],
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/transcoding-status/',
-				'args'      => array(
+				'args'      => [
 					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_transcoding_status' ),
+					'callback'            => [ $this, 'get_transcoding_status' ],
 					'permission_callback' => '__return_true',
-					'args'                => array(
-						'ids' => array(
+					'args'                => [
+						'ids' => [
 							'required'          => true,
 							'type'              => 'array',
 							'description'       => __( 'The array of attachment IDs.', 'godam' ),
-							'validate_callback' => function ( $param ) {
+							'validate_callback' => static function ( $param ) {
 								return is_array( $param );
 							},
-						),
-					),
-				),
-			),
-		);
+						],
+					],
+				],
+			],
+		];
 	}
 
 	/**
@@ -108,9 +108,9 @@ class Transcoding extends Base {
 
 		if ( ! $attachment_id ) {
 			wp_send_json_error(
-				array(
+				[
 					'message' => 'Attachment not found.',
-				)
+				]
 			);
 		}
 
@@ -126,9 +126,9 @@ class Transcoding extends Base {
 		update_post_meta( $attachment_id, 'rtgodam_transcoding_progress', $progress );
 
 		wp_send_json_success(
-			array(
+			[
 				'message' => __( 'Transcoding status updated successfully.', 'godam' ),
-			)
+			]
 		);
 	}
 
@@ -137,13 +137,13 @@ class Transcoding extends Base {
 	 *
 	 * @param \WP_REST_Request $request REST request object.
 	 *
-	 * @return WP_REST_Response|WP_Error
+	 * @return \RTGODAM\Inc\REST_API\WP_REST_Response|\RTGODAM\Inc\REST_API\WP_Error
 	 */
 	public function get_transcoding_status( \WP_REST_Request $request ) {
 
 		$attachment_ids = $request->get_param( 'ids' );
 
-		$response_object = array();
+		$response_object = [];
 
 		foreach ( $attachment_ids as $attachment_id ) {
 			$status_object                     = $this->get_status_object_from_attachment( $attachment_id );
@@ -166,20 +166,20 @@ class Transcoding extends Base {
 		$job_id = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) );
 
 		if ( empty( $job_id ) ) {
-			return array(
+			return [
 				'status'  => 'not_transcoding',
 				'message' => __( 'Video has not been transcoded.', 'godam' ),
-			);
+			];
 		}
 
 		// Get and sanitize the transcoding status.
 		$status = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) );
 
 		if ( empty( $status ) ) {
-			return array(
+			return [
 				'status'  => 'not_started',
 				'message' => __( 'Transcoding has not started.', 'godam' ),
-			);
+			];
 		}
 
 		// Handle failure case with error details.
@@ -187,33 +187,33 @@ class Transcoding extends Base {
 			$error_code = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true ) );
 			$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
 
-			return array(
+			return [
 				'status'     => 'failed',
 				'error_code' => $error_code,
 				'error_msg'  => $error_msg,
-			);
+			];
 		}
 
 		// Get and sanitize transcoding progress.
 		$progress = intval( get_post_meta( $attachment_id, 'rtgodam_transcoding_progress', true ) );
 
 		// Define status messages.
-		$status_messages = array(
+		$status_messages = [
 			'Queued'      => __( 'Media is queued for transcoding.', 'godam' ),
 			'Downloading' => __( 'Media is downloading for transcoding.', 'godam' ),
 			'Downloaded'  => __( 'Media is downloaded for transcoding.', 'godam' ),
 			'Transcoding' => __( 'Media is transcoding.', 'godam' ),
 			'Transcoded'  => __( 'Media is transcoded.', 'godam' ),
-		);
+		];
 
 		// Set default message for unknown status.
 		$message = isset( $status_messages[ $status ] ) ? $status_messages[ $status ] : __( 'Unknown transcoding status.', 'godam' );
 
-		return array(
+		return [
 			'status'   => strtolower( $status ),
 			'progress' => $progress,
 			'message'  => $message,
-		);
+		];
 	}
 
 	/**

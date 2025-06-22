@@ -38,17 +38,17 @@ class Init {
 		/**
 		 * Filters
 		 */
-		add_filter( 'gform_tooltips', array( $this, 'add_godam_settings_tooltip' ) );
+		add_filter( 'gform_tooltips', [ $this, 'add_godam_settings_tooltip' ] );
 
 		/**
 		 * Actions
 		 */
-		add_action( 'gform_loaded', array( $this, 'register_custom_gf_field' ) );
-		add_action( 'gform_enqueue_scripts', array( $this, 'enqueue_godam_recorder_scripts' ), 10, 2 );
-		add_action( 'gform_field_standard_settings', array( $this, 'add_godam_recorder_field_setting' ), 10, 2 );
-		add_action( 'gform_editor_js', array( $this, 'add_editor_script' ) );
-		add_action( 'gform_after_submission', array( $this, 'process_file_upload_to_godam' ), 10, 2 );
-		add_action( 'gform_entry_detail', array( $this, 'enqueue_entry_detail_scripts' ) );
+		add_action( 'gform_loaded', [ $this, 'register_custom_gf_field' ] );
+		add_action( 'gform_enqueue_scripts', [ $this, 'enqueue_godam_recorder_scripts' ], 10, 2 );
+		add_action( 'gform_field_standard_settings', [ $this, 'add_godam_recorder_field_setting' ], 10, 2 );
+		add_action( 'gform_editor_js', [ $this, 'add_editor_script' ] );
+		add_action( 'gform_after_submission', [ $this, 'process_file_upload_to_godam' ], 10, 2 );
+		add_action( 'gform_entry_detail', [ $this, 'enqueue_entry_detail_scripts' ] );
 	}
 
 	/**
@@ -90,14 +90,14 @@ class Init {
 		wp_enqueue_style(
 			'gf-uppy-video-style',
 			RTGODAM_URL . 'assets/build/css/gf-uppy-video.css',
-			array(),
+			[],
 			filemtime( RTGODAM_PATH . 'assets/build/css/gf-uppy-video.css' )
 		);
 
 		wp_enqueue_script( 
 			'gf-godam-recorder-script',
 			RTGODAM_URL . 'assets/build/js/gf-godam-recorder.min.js',
-			array( 'jquery' ),
+			[ 'jquery' ],
 			filemtime( RTGODAM_PATH . 'assets/build/js/gf-godam-recorder.min.js' ), 
 			true 
 		);
@@ -110,7 +110,7 @@ class Init {
 		wp_enqueue_script(
 			'gf-entry-detail-script',
 			RTGODAM_URL . 'assets/build/js/gf-entry-detail.min.js',
-			array( 'jquery' ),
+			[ 'jquery' ],
 			filemtime( RTGODAM_PATH . 'assets/build/js/gf-entry-detail.min.js' ), 
 			true 
 		);
@@ -200,7 +200,7 @@ class Init {
 		wp_enqueue_script(
 			'gf-godam-recorder-editor-script',
 			RTGODAM_URL . 'assets/build/js/gf-godam-recorder-editor.min.js',
-			array( 'jquery' ),
+			[ 'jquery' ],
 			filemtime( RTGODAM_PATH . 'assets/build/js/gf-godam-recorder-editor.min.js' ),
 			true
 		);
@@ -242,7 +242,7 @@ class Init {
 			if ( $field->multipleFiles ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				$files = json_decode( $file_value, true );
 				if ( ! is_array( $files ) ) {
-					$files = array( $file_value );
+					$files = [ $file_value ];
 				}
 				
 				foreach ( $files as $index => $file_url ) {
@@ -269,25 +269,25 @@ class Init {
 		// Get file extension.
 		$file_extension = pathinfo( $file_url, PATHINFO_EXTENSION );
 
-		$default_settings = array(
-			'video' => array(
+		$default_settings = [
+			'video' => [
 				'adaptive_bitrate'     => true,
 				'watermark'            => false,
 				'watermark_text'       => '',
 				'watermark_url'        => '',
 				'video_thumbnails'     => 0,
 				'overwrite_thumbnails' => false,
-			),
-		);
+			],
+		];
 
-		$godam_settings = get_option( 'rtgodam-settings', array() );
+		$godam_settings = get_option( 'rtgodam-settings', [] );
 
 		$rtgodam_watermark           = $godam_settings['video']['watermark'];
 		$rtgodam_use_watermark_image = $godam_settings['video']['use_watermark_image'];
 		$rtgodam_watermark_text      = sanitize_text_field( $godam_settings['video']['watermark_text'] );
 		$rtgodam_watermark_url       = esc_url( $godam_settings['video']['watermark_url'] );
 
-		$watermark_to_use = array();
+		$watermark_to_use = [];
 
 		// Include watermark settings only if watermark is enabled.
 		if ( $rtgodam_watermark ) {
@@ -309,7 +309,7 @@ class Init {
 		$api_key = get_site_option( 'rtgodam-api-key', '' );
 
 		$body = array_merge(
-			array(
+			[
 				'api_token'       => $api_key,
 				'job_type'        => 'stream',
 				'job_for'         => 'gf-godam-recorder',
@@ -321,18 +321,18 @@ class Init {
 				'thumbnail_count' => 0,
 				'stream'          => true,
 				'watermark'       => boolval( $rtgodam_watermark ),
-				'resolutions'     => array( 'auto' ),
+				'resolutions'     => [ 'auto' ],
 				'folder_name'     => $form_title ?? 'Gravity Forms',
-			),
+			],
 			$watermark_to_use
 		);
 
-		$args = array(
+		$args = [
 			'method'    => 'POST',
 			'sslverify' => false,
 			'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 			'body'      => $body,
-		);
+		];
 
 		$transcoding_api_url = RTGODAM_API_BASE . '/api/';
 		$transcoding_url     = $transcoding_api_url . 'resource/Transcoder Job';
@@ -352,12 +352,12 @@ class Init {
 				gform_update_meta( $entry_id, 'rtgodam_transcoding_job_id_' . $field_id . '_' . $index, $job_id );
 				add_option(
 					$job_id,
-					array(
+					[
 						'source'   => 'gform_godam_recorder',
 						'entry_id' => $entry_id,
 						'field_id' => $field_id,
 						'index'    => $index,
-					) 
+					] 
 				);
 			}
 		}

@@ -18,39 +18,39 @@ class Ads extends Base {
 	 * Setup hooks and initialization.
 	 */
 	protected function setup_hooks() {
-		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
-		add_filter( 'rest_pre_serve_request', array( $this, 'maybe_ad_url_tag_request' ), 10, 4 );
+		add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
+		add_filter( 'rest_pre_serve_request', [ $this, 'maybe_ad_url_tag_request' ], 10, 4 );
 	}
 
 	/**
 	 * Get REST routes.
 	 */
 	public function get_rest_routes() {
-		return array(
-			array(
+		return [
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/adTagURL',
-				'args'      => array(
-					array(
+				'args'      => [
+					[
 						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_ad_tag_url' ),
-						'permission_callback' => array( $this, 'get_ad_permissions_check' ),
+						'callback'            => [ $this, 'get_ad_tag_url' ],
+						'permission_callback' => [ $this, 'get_ad_permissions_check' ],
 						'args'                => $this->get_collection_params(),
-					),
-				),
-			),
-			array(
+					],
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/adTagURL/(?P<id>\d+)',
-				'args'      => array(
-					array(
+				'args'      => [
+					[
 						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_video_ad_tag_url' ),
-						'permission_callback' => array( $this, 'get_ad_permissions_check' ),
-					),
-				),
-			),
-		);
+						'callback'            => [ $this, 'get_video_ad_tag_url' ],
+						'permission_callback' => [ $this, 'get_ad_permissions_check' ],
+					],
+				],
+			],
+		];
 	}
 
 	/**
@@ -147,14 +147,14 @@ class Ads extends Base {
 		ob_start();
 		// Prepare GET request for VMAP.
 		$vast_url = add_query_arg(
-			array(
+			[
 				'duration'    => $ad_duration,
 				'title'       => $ad_title,
 				'skippable'   => $skippable,
 				'skip_offset' => $skip_offset,
 				'ad_url'      => $ad_url,
 				'click_link'  => $click_link,
-			),
+			],
 			$endpoint_url 
 		);
 
@@ -212,12 +212,12 @@ class Ads extends Base {
 		}
 
 		// Retrieve and sanitize input parameters.
-		$layers = $easydam_meta['layers'] ?? array();
+		$layers = $easydam_meta['layers'] ?? [];
 
 		// Get all layers with type `ads`.
 		$ads_layers = array_filter(
 			$layers,
-			function ( $layer ) {
+			static function ( $layer ) {
 				return 'ad' === $layer['type'];
 			}
 		);
@@ -240,14 +240,14 @@ class Ads extends Base {
 					
 					$endpoint_url = rest_url( $this->namespace . sprintf( '/%s', empty( $this->rest_base ) ? 'adTagURL' : $this->rest_base . 'adTagURL' ) );
 					$vast_url     = add_query_arg(
-						array(
+						[
 							'duration'    => $ad_duration,
 							'title'       => $ad_title,
 							'skippable'   => $skippable,
 							'skip_offset' => $skip_offset,
 							'ad_url'      => $ad_url,
 							'click_link'  => $click_link,
-						),
+						],
 						$endpoint_url 
 					);
 					?>

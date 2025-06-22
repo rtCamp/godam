@@ -36,10 +36,10 @@ class Elementor_Widgets {
 		/**
 		 * Actions.
 		 */
-		add_action( 'elementor/widgets/register', array( $this, 'widgets_registered' ) );
-		add_action( 'elementor/elements/categories_registered', array( $this, 'add_elementor_widget_categories' ) );
-		add_action( 'elementor/controls/controls_registered', array( $this, 'widgets_controls' ) );
-		add_action( 'elementor/editor/before_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'elementor/widgets/register', [ $this, 'widgets_registered' ] );
+		add_action( 'elementor/elements/categories_registered', [ $this, 'add_elementor_widget_categories' ] );
+		add_action( 'elementor/controls/controls_registered', [ $this, 'widgets_controls' ] );
+		add_action( 'elementor/editor/before_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 	}
 
 	/**
@@ -67,7 +67,7 @@ class Elementor_Widgets {
 		wp_register_style(
 			'elementor-godam-audio-style',
 			RTGODAM_URL . 'assets/build/css/godam-audio.css',
-			array(),
+			[],
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-audio.css' )
 		);
 		
@@ -75,10 +75,10 @@ class Elementor_Widgets {
 		wp_register_script(
 			'godam-elementor-frontend',
 			RTGODAM_URL . 'assets/build/js/godam-elementor-frontend.min.js',
-			array(
+			[
 				'jquery',
 				'godam-player-frontend-script',
-			),
+			],
 			filemtime( RTGODAM_PATH . 'assets/build/js/godam-elementor-frontend.min.js' ),
 			true
 		);
@@ -93,9 +93,9 @@ class Elementor_Widgets {
 	public function get_available_menus() {
 		$menus = wp_get_nav_menus();
 
-		$options = array(
+		$options = [
 			'none' => 'None',
-		);
+		];
 
 		foreach ( $menus as $menu ) {
 			$options[ $menu->slug ] = $menu->name;
@@ -129,10 +129,10 @@ class Elementor_Widgets {
 
 		$elements_manager->add_category(
 			'godam',
-			array(
+			[
 				'title' => __( 'GoDAM', 'godam' ),
 				'icon'  => 'fa fa-plug',
-			)
+			]
 		);
 	}
 }

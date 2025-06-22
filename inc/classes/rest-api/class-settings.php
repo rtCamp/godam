@@ -27,8 +27,8 @@ class Settings extends Base {
 		 * @return array
 		 */
 	private function get_default_settings() {
-		return array(
-			'video'        => array(
+		return [
+			'video'        => [
 				'sync_from_godam'        => false,
 				'adaptive_bitrate'       => false,
 				'optimize_videos'        => false,
@@ -40,16 +40,16 @@ class Settings extends Base {
 				'watermark_text'         => '',
 				'watermark_url'          => '',
 				'use_watermark_image'    => false,
-			),
-			'general'      => array(
+			],
+			'general'      => [
 				'enable_folder_organization' => true,
 				'brand_image'                => '',
 				'brand_color'                => '#000000',
-			),
-			'video_player' => array(
+			],
+			'video_player' => [
 				'custom_css' => '',
-			),
-		);
+			],
+		];
 	}
 
 	/**
@@ -58,79 +58,79 @@ class Settings extends Base {
 	 * @return array Array of registered REST API routes
 	 */
 	public function get_rest_routes() {
-		return array(
-			array(
+		return [
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/verify-api-key',
-				'args'      => array(
+				'args'      => [
 					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'verify_api_key' ),
-					'permission_callback' => function () {
+					'callback'            => [ $this, 'verify_api_key' ],
+					'permission_callback' => static function () {
 						return current_user_can( 'manage_options' );
 					},
-					'args'                => array(
-						'api_key' => array(
+					'args'                => [
+						'api_key' => [
 							'required'          => true,
 							'type'              => 'string',
 							'description'       => __( 'The API key to verify.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
-						),
-					),
-				),
-			),
-			array(
+						],
+					],
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/deactivate-api-key',
-				'args'      => array(
+				'args'      => [
 					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'deactivate_api_key' ),
-					'permission_callback' => function () {
+					'callback'            => [ $this, 'deactivate_api_key' ],
+					'permission_callback' => static function () {
 						return current_user_can( 'manage_options' );
 					},
-				),
-			),
-			array(
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/get-api-key',
-				'args'      => array(
+				'args'      => [
 					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_api_key' ),
-					'permission_callback' => function () {
+					'callback'            => [ $this, 'get_api_key' ],
+					'permission_callback' => static function () {
 						return current_user_can( 'manage_options' );
 					},
-				),
-			),
-			array(
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/godam-settings',
-				'args'      => array(
+				'args'      => [
 					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_easydam_settings' ),
-					'permission_callback' => function () {
+					'callback'            => [ $this, 'get_easydam_settings' ],
+					'permission_callback' => static function () {
 						return current_user_can( 'manage_options' );
 					},
-				),
-			),
-			array(
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/godam-settings',
-				'args'      => array(
+				'args'      => [
 					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'update_easydam_settings' ),
-					'permission_callback' => function () {
+					'callback'            => [ $this, 'update_easydam_settings' ],
+					'permission_callback' => static function () {
 						return current_user_can( 'manage_options' );
 					},
-					'args'                => array(
-						'settings' => array(
+					'args'                => [
+						'settings' => [
 							'required'          => true,
 							'type'              => 'object',
 							'description'       => __( 'The godam settings to save.', 'godam' ),
-							'sanitize_callback' => array( $this, 'sanitize_settings' ),
-						),
-					),
-				),
-			),
-		);
+							'sanitize_callback' => [ $this, 'sanitize_settings' ],
+						],
+					],
+				],
+			],
+		];
 	}
 
 	/**
@@ -151,11 +151,11 @@ class Settings extends Base {
 			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
 
 			return new \WP_REST_Response(
-				array(
+				[
 					'status'  => 'error',
 					'message' => $result->get_error_message(),
 					'code'    => $result->get_error_code(),
-				),
+				],
 				$status_code
 			);
 		}
@@ -165,11 +165,11 @@ class Settings extends Base {
 		}
 
 		return new \WP_REST_Response(
-			array(
+			[
 				'status'  => 'success',
 				'message' => $result['message'],
 				'data'    => $result['data'],
-			),
+			],
 			200
 		);
 	}
@@ -189,19 +189,19 @@ class Settings extends Base {
 
 		if ( $deleted_key || $deleted_token ) {
 			return new \WP_REST_Response(
-				array(
+				[
 					'status'  => 'success',
 					'message' => 'API key deactivated successfully.',
-				),
+				],
 				200
 			);
 		}
 
 		return new \WP_REST_Response(
-			array(
+			[
 				'status'  => 'error',
 				'message' => 'Failed to deactivate the API key. It might not exist.',
-			),
+			],
 			400
 		);
 	}
@@ -215,9 +215,9 @@ class Settings extends Base {
 		$api_key = get_option( 'rtgodam-api-key', '' );
 
 		return new \WP_REST_Response(
-			array(
+			[
 				'api_key' => $api_key,
-			),
+			],
 			200
 		);
 	}
@@ -244,11 +244,11 @@ class Settings extends Base {
 		$new_settings = $request->get_param( 'settings' );
 
 		// Retrieve existing settings.
-		$existing_settings = get_option( 'rtgodam-settings', array() );
+		$existing_settings = get_option( 'rtgodam-settings', [] );
 
 		// Ensure it's an array (in case get_option returns false).
 		if ( ! is_array( $existing_settings ) ) {
-			$existing_settings = array();
+			$existing_settings = [];
 		}
 
 		// Merge the new settings with the existing ones.
@@ -258,10 +258,10 @@ class Settings extends Base {
 		update_option( 'rtgodam-settings', $updated_settings );
 
 		return new \WP_REST_Response(
-			array(
+			[
 				'status'  => 'success',
 				'message' => 'EasyDAM settings updated successfully!',
-			),
+			],
 			200
 		);
 	}
@@ -275,8 +275,8 @@ class Settings extends Base {
 	public function sanitize_settings( $settings ) {
 		$default = $this->get_default_settings();
 
-		return array(
-			'video'        => array(
+		return [
+			'video'        => [
 				'sync_from_godam'        => rest_sanitize_boolean( $settings['video']['sync_from_godam'] ?? $default['video']['sync_from_godam'] ),
 				'adaptive_bitrate'       => rest_sanitize_boolean( $settings['video']['adaptive_bitrate'] ?? $default['video']['adaptive_bitrate'] ),
 				'optimize_videos'        => rest_sanitize_boolean( $settings['video']['optimize_videos'] ?? $default['video']['optimize_videos'] ),
@@ -288,15 +288,15 @@ class Settings extends Base {
 				'watermark_text'         => sanitize_text_field( $settings['video']['watermark_text'] ?? $default['video']['watermark_text'] ),
 				'watermark_url'          => esc_url_raw( $settings['video']['watermark_url'] ?? $default['video']['watermark_url'] ),
 				'use_watermark_image'    => rest_sanitize_boolean( $settings['video']['use_watermark_image'] ?? $default['video']['use_watermark_image'] ),
-			),
-			'general'      => array(
+			],
+			'general'      => [
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
 				'brand_image'                => sanitize_text_field( $settings['general']['brand_image'] ?? $default['general']['brand_image'] ),
 				'brand_color'                => sanitize_hex_color( $settings['general']['brand_color'] ?? $default['general']['brand_color'] ),
-			),
-			'video_player' => array(
+			],
+			'video_player' => [
 				'custom_css' => sanitize_textarea_field( $settings['video_player']['custom_css'] ) ?? $default['video_player']['custom_css'],
-			),
-		);
+			],
+		];
 	}
 }

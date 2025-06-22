@@ -22,47 +22,47 @@ class WPForms extends Base {
 	 * Get REST routes.
 	 */
 	public function get_rest_routes() {
-		return array(
-			array(
+		return [
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/wpforms',
-				'args'      => array(
-					array(
+				'args'      => [
+					[
 						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_gforms' ),
+						'callback'            => [ $this, 'get_gforms' ],
 						'permission_callback' => '__return_true',
 						'args'                => $this->get_collection_params(),
-					),
-				),
-			),
-			array(
+					],
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/wpform',
-				'args'      => array(
-					array(
+				'args'      => [
+					[
 						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_wpforms_form' ),
+						'callback'            => [ $this, 'get_wpforms_form' ],
 						'permission_callback' => '__return_true',
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
-							array(
-								'id'    => array(
+							[
+								'id'    => [
 									'description' => __( 'The ID of the Contact Form 7 Form.', 'godam' ),
 									'type'        => 'string',
 									'required'    => true,
-								),
-								'theme' => array(
+								],
+								'theme' => [
 									'description'       => __( 'The theme to be applied to the Contact Form 7 Form.', 'godam' ),
 									'type'              => 'string',
 									'required'          => false,
 									'sanitize_callback' => 'sanitize_text_field',
-								),
-							)
+								],
+							]
 						),
-					),
-				),
-			),
-		);
+					],
+				],
+			],
+		];
 	}
 
 	/**
@@ -75,23 +75,23 @@ class WPForms extends Base {
 		// Check if WPForms plugin is active.
 		$is_wpforms_active = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
 		if ( ! $is_wpforms_active ) {
-			return new \WP_Error( 'wpforms_not_active', __( 'WPForms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'wpforms_not_active', __( 'WPForms plugin is not active.', 'godam' ), [ 'status' => 404 ] );
 		}
 
 		// Fetch all WPForms in a paginated manner.
 		// Using pagination to avoid memory issues with large datasets.
 		$paged    = 1;
 		$per_page = 50;
-		$forms    = array();
+		$forms    = [];
 
 		do {
 			$query = new WP_Query(
-				array(
+				[
 					'post_type'      => 'wpforms',
 					'posts_per_page' => $per_page,
 					'paged'          => $paged,
 					'post_status'    => 'publish',
-				)
+				]
 			);
 
 			if ( ! empty( $query->posts ) ) {
@@ -102,15 +102,15 @@ class WPForms extends Base {
 			}
 		} while ( true );
 
-		$wpforms = array();
+		$wpforms = [];
 
 		if ( ! empty( $forms ) && ! is_wp_error( $forms ) ) {
 			foreach ( $forms as $form ) {
-				$wpforms[] = array(
+				$wpforms[] = [
 					'id'          => $form->ID,
 					'title'       => $form->post_title,
 					'description' => $form->post_excerpt,
-				);
+				];
 			}
 		}
 
@@ -126,7 +126,7 @@ class WPForms extends Base {
 	public function get_wpforms_form( $request ) {
 		// Check if Gravity Forms plugin is active.
 		if ( ! is_plugin_active( 'wpforms-lite/wpforms.php' ) && ! is_plugin_active( 'wpforms/wpforms.php' ) ) {
-			return new \WP_Error( 'wpforms_not_active', __( 'WPForms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'wpforms_not_active', __( 'WPForms plugin is not active.', 'godam' ), [ 'status' => 404 ] );
 		}
 
 		$form_id     = $request->get_param( 'id' );
@@ -136,7 +136,7 @@ class WPForms extends Base {
 		$description = empty( $description ) ? 'false' : 'true';
 
 		if ( empty( $form_id ) ) {
-			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), [ 'status' => 404 ] );
 		}
 
 		$wpform = do_shortcode( "[wpforms id='{$form_id}' title='{$title}' description='{$description}' ajax='true']" );

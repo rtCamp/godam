@@ -130,7 +130,7 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
  *
  * @param int $media_id The ID of the media attachment.
  * @return string The URL of the media file, or an empty string if invalid or not found.
- * @throws Exception If the media is not found or is not an attachment.
+ * @throws \Exception If the media is not found or is not an attachment.
  */
 function rtgodam_fetch_overlay_media_url( $media_id ) {
 	if ( empty( $media_id ) || 0 === intval( $media_id ) ) {
@@ -219,22 +219,22 @@ function rtgodam_get_user_data( $timeout = 300 ) {
 		$result = rtgodam_verify_api_key( $api_key );
 
 		$valid_api_key = false;
-		$user_data     = array();
+		$user_data     = [];
 
 		if ( is_wp_error( $result ) ) {
 			$valid_api_key               = false;
 			$user_data['masked_api_key'] = rtgodam_mask_string( $api_key );
 		} else {
 			$valid_api_key               = true;
-			$user_data                   = $result['data'] ?? array();
+			$user_data                   = $result['data'] ?? [];
 			$user_data['masked_api_key'] = rtgodam_mask_string( $api_key );
 		}
 
-		$rtgodam_user_data = array(
+		$rtgodam_user_data = [
 			'currentUserId' => get_current_user_id(),
 			'valid_api_key' => $valid_api_key,
 			'user_data'     => $user_data,
-		);
+		];
 
 		$usage_data = rtgodam_get_usage_data();
 
@@ -258,7 +258,7 @@ function rtgodam_get_user_data( $timeout = 300 ) {
 /**
  * Get the storage and bandwidth usage data.
  * 
- * @return array|WP_Error
+ * @return array|\WP_Error
  */
 function rtgodam_get_usage_data() {
 
@@ -271,9 +271,9 @@ function rtgodam_get_usage_data() {
 	$endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
 
 	$url = add_query_arg(
-		array(
+		[
 			'api_key' => $api_key,
-		),
+		],
 		$endpoint
 	);
 
@@ -292,12 +292,12 @@ function rtgodam_get_usage_data() {
 		return new \WP_Error( 'rtgodam_api_error', 'Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )' );
 	}
 
-	return array(
+	return [
 		'storage_used'    => floatval( $data['message']['storage_used'] ?? 0 ),
 		'total_storage'   => floatval( $data['message']['total_storage'] ?? 0 ),
 		'bandwidth_used'  => floatval( $data['message']['bandwidth_used'] ?? 0 ),
 		'total_bandwidth' => floatval( $data['message']['total_bandwidth'] ?? 0 ),
-	);
+	];
 }
 
 /**

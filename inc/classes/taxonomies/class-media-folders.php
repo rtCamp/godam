@@ -28,7 +28,7 @@ class Media_Folders extends Base {
 	 */
 	public function get_labels() {
 
-		return array(
+		return [
 			'name'              => _x( 'Media Folders', 'Media Folder', 'godam' ),
 			'singular_name'     => _x( 'Media Folder', 'Media Folder', 'godam' ),
 			'search_items'      => __( 'Search Media Folders', 'godam' ),
@@ -40,7 +40,7 @@ class Media_Folders extends Base {
 			'add_new_item'      => __( 'Add New Media Folder', 'godam' ),
 			'new_item_name'     => __( 'New Media Folder Name', 'godam' ),
 			'menu_name'         => __( 'Media Folders', 'godam' ),
-		);
+		];
 	}
 
 	/**
@@ -50,9 +50,9 @@ class Media_Folders extends Base {
 	 */
 	public function get_post_types() {
 
-		return array(
+		return [
 			'attachment',
-		);
+		];
 	}
 
 	/**
@@ -64,14 +64,14 @@ class Media_Folders extends Base {
 
 		$args = parent::get_args();
 
-		$extra = array(
+		$extra = [
 			'hierarchical'      => true,
 			'show_ui'           => false,
 			'show_admin_column' => false,
-			'rewrite'           => array( 'slug' => 'media-folder' ),
+			'rewrite'           => [ 'slug' => 'media-folder' ],
 			'show_in_rest'      => true,
 			'query_var'         => true,
-		);
+		];
 
 		return array_merge( $args, $extra );
 	}

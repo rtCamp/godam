@@ -32,7 +32,7 @@ class Blocks {
 	 * @return void
 	 */
 	public function setup_hooks() {
-		add_action( 'init', array( $this, 'register_blocks' ) );
+		add_action( 'init', [ $this, 'register_blocks' ] );
 	}
 
 	/**

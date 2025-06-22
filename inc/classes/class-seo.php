@@ -34,10 +34,10 @@ class Seo {
 	 * @return void
 	 */
 	public function setup_hooks() {
-		add_action( 'save_post', array( $this, 'save_seo_data_as_postmeta' ), 10, 2 );
-		add_action( 'save_post', array( $this, 'elementor_save_seo_data_as_postmeta' ), 10, 1 );
-		add_filter( 'rest_prepare_attachment', array( $this, 'add_video_duration_for_video_seo' ), 10, 2 );
-		add_action( 'wp_head', array( $this, 'add_video_seo_schema' ) );
+		add_action( 'save_post', [ $this, 'save_seo_data_as_postmeta' ], 10, 2 );
+		add_action( 'save_post', [ $this, 'elementor_save_seo_data_as_postmeta' ], 10, 1 );
+		add_filter( 'rest_prepare_attachment', [ $this, 'add_video_duration_for_video_seo' ], 10, 2 );
+		add_action( 'wp_head', [ $this, 'add_video_seo_schema' ] );
 	}
 
 	/**
@@ -49,7 +49,7 @@ class Seo {
 	 * a timestamp in `godam_video_seo_schema_updated`.
 	 *
 	 * @param int     $post_ID Post ID.
-	 * @param WP_Post $post    Post object.
+	 * @param \RTGODAM\Inc\WP_Post $post    Post object.
 	 */
 	public function save_seo_data_as_postmeta( $post_ID, $post ) {
 		// Bail if this is an autosave or revision.
@@ -72,7 +72,7 @@ class Seo {
 		}
 
 		$blocks           = parse_blocks( $content );
-		$video_seo_schema = array();
+		$video_seo_schema = [];
 
 		foreach ( $blocks as $block ) {
 			// Flatten nested blocks (if any).
@@ -98,7 +98,7 @@ class Seo {
 	 * @return array Extracted SEO schema.
 	 */
 	private function extract_video_seo_schema_from_block( $block ) {
-		$schemas = array();
+		$schemas = [];
 
 		if ( isset( $block['blockName'] ) && 'godam/video' === $block['blockName'] ) {
 			if ( isset( $block['attrs']['seo'] ) && ! empty( $block['attrs']['seo'] ) ) {
@@ -121,9 +121,9 @@ class Seo {
 	/**
 	 * Add ISO 8601 video duration to REST API response for video attachments.
 	 *
-	 * @param WP_REST_Response $response  The response object.
-	 * @param WP_Post          $post      The attachment post object.
-	 * @return WP_REST_Response
+	 * @param \RTGODAM\Inc\WP_REST_Response $response  The response object.
+	 * @param \RTGODAM\Inc\WP_Post          $post      The attachment post object.
+	 * @return \RTGODAM\Inc\WP_REST_Response
 	 */
 	public function add_video_duration_for_video_seo( $response, $post ) {
 		if ( 'video' === $post->post_mime_type || str_starts_with( $post->post_mime_type, 'video/' ) ) {
@@ -190,14 +190,14 @@ class Seo {
 			return;
 		}
 	
-		$schemas = array();
+		$schemas = [];
 	
 		foreach ( $raw as $video ) {
 			if ( ! is_array( $video ) ) {
 				continue;
 			}
 	
-			$schema = array(
+			$schema = [
 				'@context'         => 'https://schema.org',
 				'@type'            => 'VideoObject',
 				'name'             => sanitize_text_field( $video['headline'] ?? '' ),
@@ -205,7 +205,7 @@ class Seo {
 				'contentUrl'       => esc_url_raw( $video['contentUrl'] ?? '' ),
 				'uploadDate'       => sanitize_text_field( $video['uploadDate'] ?? '' ),
 				'isFamilyFriendly' => isset( $video['isFamilyFriendly'] ) ? (bool) $video['isFamilyFriendly'] : true,
-			);
+			];
 	
 			if ( ! empty( $video['thumbnailUrl'] ) ) {
 				$schema['thumbnailUrl'] = esc_url_raw( $video['thumbnailUrl'] );
@@ -238,29 +238,29 @@ class Seo {
 	public function godam_get_video_seo_data_from_elementor( $post_id ) {
 		// Bail if not built with Elementor.
 		if ( ! did_action( 'elementor/loaded' ) ) {
-			return array();
+			return [];
 		}
 
 		if ( ! \Elementor\Plugin::$instance->documents->get( $post_id )->is_built_with_elementor() ) {
-			return array();
+			return [];
 		}
 
 		// Get the raw Elementor data.
 		$data = get_post_meta( $post_id, '_elementor_data', true );
 		if ( empty( $data ) ) {
-			return array();
+			return [];
 		}
 
 		$widgets = json_decode( $data, true );
 		if ( ! is_array( $widgets ) ) {
-			return array();
+			return [];
 		}
 
-		$seo_data = array();
+		$seo_data = [];
 
-		$extractor = function ( $elements ) use ( &$seo_data, &$extractor ) {
+		$extractor = static function ( $elements ) use ( &$seo_data, &$extractor ) {
 			foreach ( $elements as $element ) {
-				$_seo_data = array();
+				$_seo_data = [];
 				if (
 					isset( $element['widgetType'] ) &&
 					'godam-player' === $element['widgetType']

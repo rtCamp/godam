@@ -23,17 +23,17 @@ class GoDAM_Player {
 	 * Constructor.
 	 */
 	final protected function __construct() {
-		add_shortcode( 'godam_video', array( $this, 'render' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts' ) );
-		add_action( 'wp_head', array( $this, 'godam_output_admin_player_css' ) );
+		add_shortcode( 'godam_video', [ $this, 'render' ] );
+		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'register_scripts' ] );
+		add_action( 'wp_head', [ $this, 'godam_output_admin_player_css' ] );
 	}
 	
 	/**
 	 * Outputs custom css from video player settings tab input field.
 	 */
 	public function godam_output_admin_player_css() {
-		$godam_settings = get_option( 'rtgodam-settings', array() );
+		$godam_settings = get_option( 'rtgodam-settings', [] );
 		$custom_css     = isset( $godam_settings['video_player'] ) ? $godam_settings['video_player']['custom_css'] : '';
 		if ( ! empty( $custom_css ) ) {
 			echo '<style id="godam-player-inline-css">' . esc_html( $custom_css ) . '</style>';
@@ -51,7 +51,7 @@ class GoDAM_Player {
 		wp_register_script(
 			'godam-player-frontend-script',
 			RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
-			array(),
+			[],
 			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
 			true
 		);
@@ -59,7 +59,7 @@ class GoDAM_Player {
 		wp_register_script(
 			'godam-player-analytics-script',
 			RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
-			array( 'godam-player-frontend-script' ),
+			[ 'godam-player-frontend-script' ],
 			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js' ),
 			true
 		);
@@ -67,23 +67,23 @@ class GoDAM_Player {
 		wp_register_style(
 			'godam-player-frontend-style',
 			RTGODAM_URL . 'assets/build/css/godam-player-frontend.css',
-			array(),
+			[],
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player-frontend.css' )
 		);
 
 		wp_register_style(
 			'godam-player-style',
 			RTGODAM_URL . 'assets/build/css/godam-player.css',
-			array(),
+			[],
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player.css' )
 		);
 
 		wp_localize_script(
 			'godam-player-frontend-script',
 			'godamData',
-			array(
+			[
 				'api_base' => RTGODAM_API_BASE,
-			)
+			]
 		);
 	}
 
@@ -95,14 +95,14 @@ class GoDAM_Player {
 	 */
 	public function render( $atts ) {
 		$attributes = shortcode_atts(
-			array(
+			[
 				'id'             => '',
 				'sources'        => '',
 				'src'            => '',
 				'transcoded_url' => '',
 				'poster'         => '',
 				'aspectRatio'    => '',
-			),
+			],
 			$atts,
 			'godam_video'
 		);

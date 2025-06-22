@@ -35,7 +35,7 @@ $poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster
 $preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
 $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $heading       = ! empty( $attributes['heading'] ) ? wp_kses_post( $attributes['heading'] ) : '';
-$tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
+$tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : [];
 $attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
 $video_preview = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
 
@@ -43,35 +43,35 @@ $src            = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) 
 $transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
 
 // Retrieve 'rtgodam_meta' for the given attachment ID, defaulting to an empty array if not found.
-$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_meta', true ) : array();
-$easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : array();
+$easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_meta', true ) : [];
+$easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : [];
 
 // Extract control bar settings with a fallback to an empty array.
-$control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? array();
+$control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? [];
 
 $poster_image = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 $poster_image = ! empty( $poster_image ) ? $poster_image : '';
 
 $job_id = '';
 
-$sources = array();
+$sources = [];
 if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$sources = $attributes['sources'];
 } elseif ( empty( $attachment_id ) &&
 	( ! empty( $src || ! empty( $transcoded_url ) ) ) 
 ) {
-	$sources = array();
+	$sources = [];
 	if ( ! empty( $transcoded_url ) ) {
-		$sources[] = array(
+		$sources[] = [
 			'src'  => $transcoded_url,
 			'type' => 'application/dash+xml',
-		);
+		];
 	}
 	if ( ! empty( $src ) ) {
-		$sources[] = array(
+		$sources[] = [
 			'src'  => $src,
 			'type' => 'video/mp4',
-		);
+		];
 	}
 } else {
 	$transcoded_url = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true ) : '';
@@ -80,28 +80,28 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$job_id         = $attachment_id && ! empty( $transcoded_url ) ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
 	
 	if ( ! empty( $transcoded_url ) ) {
-		$sources = array(
-			array(
+		$sources = [
+			[
 				'src'  => $transcoded_url,
 				'type' => 'application/dash+xml',
-			),
-			array(
+			],
+			[
 				'src'  => $video_src,
 				'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
-			),
-		);
+			],
+		];
 	} else {
-		$sources = array(
-			array(
+		$sources = [
+			[
 				'src'  => $video_src,
 				'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
-			),
-		);
+			],
+		];
 	}
 }
 
 // Build the video setup options for data-setup.
-$video_setup = array(
+$video_setup = [
 	'controls'    => $controls,
 	'autoplay'    => $autoplay,
 	'loop'        => $loop,
@@ -111,23 +111,23 @@ $video_setup = array(
 	'fluid'       => true,
 	'sources'     => $sources,
 	'playsinline' => true,
-);
+];
 if ( ! empty( $control_bar_settings ) ) {
 	$video_setup['controlBar'] = $control_bar_settings; // contains settings specific to control bar.
 }
 $video_setup = wp_json_encode( $video_setup );
 
 $video_config = wp_json_encode(
-	array(
+	[
 		'preview'  => $video_preview,
-		'layers'   => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
-		'chapters' => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(), // contains list of chapters.
-	)
+		'layers'   => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : [], // contains list of layers.
+		'chapters' => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : [], // contains list of chapters.
+	]
 );
 
 $easydam_control_bar_color = '#2b333fb3'; // Default color.
 
-$godam_settings   = get_option( 'rtgodam-settings', array() );
+$godam_settings   = get_option( 'rtgodam-settings', [] );
 $brand_color      = isset( $godam_settings['general']['brand_color'] ) ? $godam_settings['general']['brand_color'] : null;
 $appearance_color = isset( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
 
@@ -140,12 +140,12 @@ if ( ! empty( $appearance_color ) ) {
 $easydam_hover_color        = ! empty( $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
 $easydam_hover_zoom         = ! empty( $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] ) ? $easydam_meta_data['videoConfig']['controlBar']['zoomLevel'] : 0;
 $easydam_custom_btn_img     = ! empty( $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] ) ? $easydam_meta_data['videoConfig']['controlBar']['customPlayBtnImg'] : '';
-$easydam_control_bar_config = ! empty( $easydam_meta_data['videoConfig']['controlBar'] ) ? $easydam_meta_data['videoConfig']['controlBar'] : array();
+$easydam_control_bar_config = ! empty( $easydam_meta_data['videoConfig']['controlBar'] ) ? $easydam_meta_data['videoConfig']['controlBar'] : [];
 
-$layers     = $easydam_meta_data['layers'] ?? array();
+$layers     = $easydam_meta_data['layers'] ?? [];
 $ads_layers = array_filter(
 	$layers,
-	function ( $layer ) {
+	static function ( $layer ) {
 		return 'ad' === $layer['type'];
 	}
 );
@@ -165,11 +165,11 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 $vertical_alignment = ! empty( $attributes['verticalAlignment'] ) ? esc_attr( $attributes['verticalAlignment'] ) : 'center';
 
 // Get alignment styles inline.
-$alignment_map = array(
+$alignment_map = [
 	'top'    => 'flex-start',
 	'center' => 'center',
 	'bottom' => 'flex-end',
-);
+];
 
 $justify_content  = isset( $alignment_map[ $vertical_alignment ] ) ? $alignment_map[ $vertical_alignment ] : 'center';
 $alignment_styles = "display: flex; flex-direction: column; justify-content: {$justify_content}; align-items: stretch; height: 100%; overflow: hidden;";

@@ -23,12 +23,12 @@ class GoDAM_Video_Gallery {
 	 * Constructor.
 	 */
 	final protected function __construct() {
-		add_shortcode( 'godam_video_gallery', array( $this, 'render' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
+		add_shortcode( 'godam_video_gallery', [ $this, 'render' ] );
+		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 
 		add_action(
 			'wp_enqueue_scripts',
-			function () {
+			static function () {
 				if ( ! is_admin() ) {
 					wp_enqueue_script( 'godam-player-frontend-script' );
 					wp_enqueue_script( 'godam-player-analytics-script' );
@@ -46,14 +46,14 @@ class GoDAM_Video_Gallery {
 		wp_register_style(
 			'godam-gallery-style',
 			RTGODAM_URL . 'assets/build/css/godam-gallery.css',
-			array(),
+			[],
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-gallery.css' )
 		);
 
 		wp_register_script(
 			'godam-gallery-script',
 			RTGODAM_URL . 'assets/build/js/godam-gallery.min.js',
-			array(),
+			[],
 			filemtime( RTGODAM_PATH . 'assets/build/js/godam-gallery.min.js' ),
 			true
 		);
@@ -70,7 +70,7 @@ class GoDAM_Video_Gallery {
 		// Add filter for default attributes.
 		$default_atts = apply_filters(
 			'rtgodam_gallery_default_attributes',
-			array(
+			[
 				'count'             => 6,
 				'orderby'           => 'date',
 				'order'             => 'DESC',
@@ -87,7 +87,7 @@ class GoDAM_Video_Gallery {
 				'custom_date_end'   => '',
 				'show_title'        => true,
 				'align'             => '',
-			)
+			]
 		);
 
 		$atts = shortcode_atts( $default_atts, $atts, 'godam_video_gallery' );
@@ -97,34 +97,34 @@ class GoDAM_Video_Gallery {
 
 		wp_enqueue_style( 'godam-gallery-style' );
 
-		$args = array(
+		$args = [
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
 			'post_mime_type' => 'video',
 			'posts_per_page' => intval( $atts['count'] ),
 			'orderby'        => sanitize_text_field( $atts['orderby'] ),
 			'order'          => sanitize_text_field( $atts['order'] ),
-		);
+		];
 
 		// Add filter for query arguments.
 		$args = apply_filters( 'rtgodam_gallery_query_args', $args, $atts );
 
 		// Add category filter.
 		if ( ! empty( $atts['category'] ) ) {
-			$args['tax_query'][] = array(
+			$args['tax_query'][] = [
 				'taxonomy' => 'category',
 				'field'    => 'term_id',
 				'terms'    => intval( $atts['category'] ),
-			);
+			];
 		}
 
 		// Add tag filter.
 		if ( ! empty( $atts['tag'] ) ) {
-			$args['tax_query'][] = array(
+			$args['tax_query'][] = [
 				'taxonomy' => 'post_tag',
 				'field'    => 'term_id',
 				'terms'    => intval( $atts['tag'] ),
-			);
+			];
 		}
 
 		// Add author filter.
@@ -134,22 +134,22 @@ class GoDAM_Video_Gallery {
 
 		// Add date range filter.
 		if ( ! empty( $atts['date_range'] ) ) {
-			$date_query = array();
+			$date_query = [];
 			switch ( $atts['date_range'] ) {
 				case '7days':
-					$date_query = array(
+					$date_query = [
 						'after' => '1 week ago',
-					);
+					];
 					break;
 				case '30days':
-					$date_query = array(
+					$date_query = [
 						'after' => '1 month ago',
-					);
+					];
 					break;
 				case '90days':
-					$date_query = array(
+					$date_query = [
 						'after' => '3 months ago',
-					);
+					];
 					break;
 				case 'custom':
 					if ( ! empty( $atts['custom_date_start'] ) && ! empty( $atts['custom_date_end'] ) ) {
@@ -168,16 +168,16 @@ class GoDAM_Video_Gallery {
 						// Set end date to end of day (23:59:59).
 						$end_date->setTime( 23, 59, 59 );
 						
-						$date_query = array(
+						$date_query = [
 							'after'     => $start_date->format( 'Y-m-d H:i:s' ),
 							'before'    => $end_date->format( 'Y-m-d H:i:s' ),
 							'inclusive' => true,
-						);
+						];
 					}
 					break;
 			}
 			if ( ! empty( $date_query ) ) {
-				$args['date_query'] = array( $date_query );
+				$args['date_query'] = [ $date_query ];
 			}
 		}
 

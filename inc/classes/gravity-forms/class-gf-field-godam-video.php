@@ -61,7 +61,7 @@ if ( class_exists( 'GF_Field' ) ) {
 		 * @return array
 		 */
 		public function get_form_editor_field_settings() {
-			return array(
+			return [
 				'conditional_logic_field_setting',
 				'error_message_setting',
 				'label_setting',
@@ -73,7 +73,7 @@ if ( class_exists( 'GF_Field' ) ) {
 				'visibility_setting',
 				'description_setting',
 				'css_class_setting',
-			);
+			];
 		}
 
 		/**
@@ -106,7 +106,7 @@ if ( class_exists( 'GF_Field' ) ) {
 			$file_list_id   = 'gform_preview_' . $form_id . '_' . $id;
 		
 			// Generate upload rules messages.
-			$upload_rules_messages = array();
+			$upload_rules_messages = [];
 
 			// Extensions.
 			$allowed_extensions = ! empty( $this->allowedExtensions ) ? join( ',', \GFCommon::clean_extensions( explode( ',', strtolower( $this->allowedExtensions ) ) ) ) : '';
@@ -129,7 +129,7 @@ if ( class_exists( 'GF_Field' ) ) {
 		
 			$rules_messages    = implode( ', ', $upload_rules_messages ) . '.';
 			$rules_messages_id = empty( $rules_messages ) ? '' : "gfield_upload_rules_{$this->formId}_{$this->id}";
-			$describedby       = $this->get_aria_describedby( array( $rules_messages_id ) );
+			$describedby       = $this->get_aria_describedby( [ $rules_messages_id ] );
 		
 			
 			// Uppy container.
@@ -203,7 +203,7 @@ if ( class_exists( 'GF_Field' ) ) {
 				} else {
 					$uploaded_files_arr = json_decode( $value, true );
 					if ( ! is_array( $uploaded_files_arr ) ) {
-						$uploaded_files_arr = array( $value );
+						$uploaded_files_arr = [ $value ];
 					}
 				}
 	
@@ -247,11 +247,11 @@ if ( class_exists( 'GF_Field' ) ) {
 			}
 	
 			$output     = '';
-			$output_arr = array();
+			$output_arr = [];
 	
 			$files = json_decode( $value, true );
 			if ( ! is_array( $files ) ) {
-				$files = array( $value );
+				$files = [ $value ];
 			}
 	
 			$force_download = in_array( 'download', $this->get_modifiers() );
@@ -283,7 +283,7 @@ if ( class_exists( 'GF_Field' ) ) {
 					 *
 					 * @param bool                $field_ssl True to allow override if needed or false if not.
 					 * @param string              $file_path The file path of the download file.
-					 * @param GF_Field_FileUpload $field     The field object for further context.
+					 * @param \RTGODAM\Inc\Gravity_Forms\GF_Field_FileUpload $field     The field object for further context.
 					 */
 					$field_ssl = apply_filters( 'gform_secure_file_download_is_https', true, $file_path, $this );
 	
@@ -297,7 +297,7 @@ if ( class_exists( 'GF_Field' ) ) {
 					 * @since 2.1.1.23
 					 *
 					 * @param string              $file_path The file path of the download file.
-					 * @param GF_Field_FileUpload $field     The field object for further context.
+					 * @param \RTGODAM\Inc\Gravity_Forms\GF_Field_FileUpload $field     The field object for further context.
 					 */
 					$file_path    = str_replace( ' ', '%20', apply_filters( 'gform_fileupload_entry_value_file_path', $file_path, $this ) );
 					$output_arr[] = 'text' === $format ? $file_path : sprintf( "<li><strong>%s:</strong> <a href='%s' target='_blank' aria-label='%s'>%s</a></li>", _x( 'URL', 'GF entry detail page', 'godam' ), esc_attr( $file_path ), esc_attr__( 'Click to view', 'godam' ), $basename );

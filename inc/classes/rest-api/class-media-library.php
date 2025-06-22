@@ -27,91 +27,91 @@ class Media_Library extends Base {
 	 * @return array Array of registered REST API routes
 	 */
 	public function get_rest_routes() {
-		return array(
-			array(
+		return [
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/assign-folder',
-				'args'      => array(
+				'args'      => [
 					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'assign_images_to_folder' ),
-					'permission_callback' => function () {
+					'callback'            => [ $this, 'assign_images_to_folder' ],
+					'permission_callback' => static function () {
 						return current_user_can( 'edit_posts' );
 					},
-					'args'                => array(
-						'attachment_ids' => array(
+					'args'                => [
+						'attachment_ids' => [
 							'required'    => true,
 							'type'        => 'array',
-							'items'       => array( 'type' => 'integer' ),
+							'items'       => [ 'type' => 'integer' ],
 							'description' => __( 'Array of attachment IDs to associate.', 'godam' ),
-						),
-						'folder_term_id' => array(
+						],
+						'folder_term_id' => [
 							'required'    => true,
 							'type'        => 'integer',
 							'description' => __( 'ID of the folder term to associate with the attachments.', 'godam' ),
-						),
-					),
-				),
-			),
-			array(
+						],
+					],
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/get-exif-data',
-				'args'      => array(
+				'args'      => [
 					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_exif_data' ),
-					'permission_callback' => function () {
+					'callback'            => [ $this, 'get_exif_data' ],
+					'permission_callback' => static function () {
 						return current_user_can( 'edit_posts' );
 					},
-					'args'                => array(
-						'attachment_id' => array(
+					'args'                => [
+						'attachment_id' => [
 							'required'    => true,
 							'type'        => 'integer',
 							'description' => __( 'Attachment ID to get EXIF data for.', 'godam' ),
-						),
-					),
-				),
-			),
-			array(
+						],
+					],
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/set-video-thumbnail',
-				'args'      => array(
+				'args'      => [
 					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'set_video_thumbnail' ),
-					'permission_callback' => function () {
+					'callback'            => [ $this, 'set_video_thumbnail' ],
+					'permission_callback' => static function () {
 						return current_user_can( 'edit_posts' );
 					},
-					'args'                => array(
-						'attachment_id' => array(
+					'args'                => [
+						'attachment_id' => [
 							'required'    => true,
 							'type'        => 'integer',
 							'description' => __( 'Attachment ID to set video thumbnail for.', 'godam' ),
-						),
-						'thumbnail_url' => array(
+						],
+						'thumbnail_url' => [
 							'required'    => true,
 							'type'        => 'string',
 							'description' => __( 'Attachment URL to set as the thumbnail.', 'godam' ),
-						),
-					),
-				),
-			),
-			array(
+						],
+					],
+				],
+			],
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/get-video-thumbnail',
-				'args'      => array(
+				'args'      => [
 					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_video_thumbnails' ),
-					'permission_callback' => function () {
+					'callback'            => [ $this, 'get_video_thumbnails' ],
+					'permission_callback' => static function () {
 						return current_user_can( 'edit_posts' );
 					},
-					'args'                => array(
-						'attachment_id' => array(
+					'args'                => [
+						'attachment_id' => [
 							'required'    => true,
 							'type'        => 'integer',
 							'description' => __( 'Attachment ID to get video thumbnail for.', 'godam' ),
-						),
-					),
-				),
-			),
-		);
+						],
+					],
+				],
+			],
+		];
 	}
 
 	/**
@@ -131,41 +131,41 @@ class Media_Library extends Base {
 				$return = $this->remove_all_terms_from_id( $attachment_id, 'media-folder' );
 
 				if ( is_wp_error( $return ) ) {
-					return new \WP_Error( 'term_assignment_failed', 'Failed to remove folder from the attachments.', array( 'status' => 500 ) );
+					return new \WP_Error( 'term_assignment_failed', 'Failed to remove folder from the attachments.', [ 'status' => 500 ] );
 				}
 			}
 
 			return rest_ensure_response(
-				array(
+				[
 					'success' => true,
 					'message' => 'Attachments successfully removed from the folder.',
-				)
+				]
 			);
 		}
 
 		$term = get_term( $folder_term_id, 'media-folder' );
 
 		if ( ! $term || is_wp_error( $term ) ) {
-			return new \WP_Error( 'invalid_term', 'Invalid folder term ID.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_term', 'Invalid folder term ID.', [ 'status' => 400 ] );
 		}
 
 		foreach ( $attachment_ids as $attachment_id ) {
 			if ( get_post_type( $attachment_id ) !== 'attachment' ) {
-				return new \WP_Error( 'invalid_attachment', 'Invalid attachment ID.', array( 'status' => 400 ) );
+				return new \WP_Error( 'invalid_attachment', 'Invalid attachment ID.', [ 'status' => 400 ] );
 			}
 
 			$return = wp_set_object_terms( $attachment_id, $folder_term_id, 'media-folder' );
 
 			if ( is_wp_error( $return ) ) {
-				return new \WP_Error( 'term_assignment_failed', 'Failed to associate attachments with the folder.', array( 'status' => 500 ) );
+				return new \WP_Error( 'term_assignment_failed', 'Failed to associate attachments with the folder.', [ 'status' => 500 ] );
 			}
 		}
 
 		return rest_ensure_response(
-			array(
+			[
 				'success' => true,
 				'message' => 'Attachments successfully associated with the folder.',
-			)
+			]
 		);
 	}
 
@@ -175,15 +175,15 @@ class Media_Library extends Base {
 	 * @param int    $post_id   The ID of the post or object.
 	 * @param string $taxonomy  The taxonomy to remove terms from.
 	 *
-	 * @return bool|WP_ERROR True if terms are successfully removed, WP_Error otherwise.
+	 * @return bool|\RTGODAM\Inc\REST_API\WP_ERROR True if terms are successfully removed, WP_Error otherwise.
 	 */
 	private function remove_all_terms_from_id( $post_id, $taxonomy ) {
 		if ( ! taxonomy_exists( $taxonomy ) ) {
-			return new \WP_Error( 'invalid_taxonomy', 'Invalid taxonomy.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_taxonomy', 'Invalid taxonomy.', [ 'status' => 400 ] );
 		}
 
 		// Get all terms associated with the post ID for the taxonomy.
-		$terms = wp_get_object_terms( $post_id, $taxonomy, array( 'fields' => 'ids' ) );
+		$terms = wp_get_object_terms( $post_id, $taxonomy, [ 'fields' => 'ids' ] );
 
 		if ( is_wp_error( $terms ) ) {
 			return $terms;
@@ -207,18 +207,18 @@ class Media_Library extends Base {
 		$file_path = get_attached_file( $attachment_id );
 
 		if ( ! file_exists( $file_path ) ) {
-			return new \WP_Error( 'image_not_found', 'Image file not found.', array( 'status' => 404 ) );
+			return new \WP_Error( 'image_not_found', 'Image file not found.', [ 'status' => 404 ] );
 		}
 
 		// Read EXIF data from the image.
 		$exif_data = exif_read_data( $file_path, 0, true );
 
 		if ( false === $exif_data ) {
-			return new \WP_Error( 'exif_data_not_found', 'No EXIF data found.', array( 'status' => 204 ) );
+			return new \WP_Error( 'exif_data_not_found', 'No EXIF data found.', [ 'status' => 204 ] );
 		}
 
 		// Extract and filter the desired EXIF data fields.
-		$filtered_data = array();
+		$filtered_data = [];
 
 		if ( isset( $exif_data['EXIF']['DateTimeOriginal'] ) ) {
 			$filtered_data['DateTimeOriginal'] = $exif_data['EXIF']['DateTimeOriginal'];
@@ -241,10 +241,10 @@ class Media_Library extends Base {
 		}
 
 		return rest_ensure_response(
-			array(
+			[
 				'success' => true,
 				'data'    => $filtered_data,
-			)
+			]
 		);
 	}
 
@@ -280,13 +280,13 @@ class Media_Library extends Base {
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
-			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 404 ) );
+			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', [ 'status' => 404 ] );
 		}
 
 		$thumbnail_array = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
 
 		if ( ! is_array( $thumbnail_array ) ) {
-			return new \WP_Error( 'thumbnails_not_found', 'No thumbnails found.', array( 'status' => 204 ) );
+			return new \WP_Error( 'thumbnails_not_found', 'No thumbnails found.', [ 'status' => 204 ] );
 		}
 
 		if ( function_exists( 'wp_get_upload_dir' ) ) {
@@ -322,7 +322,7 @@ class Media_Library extends Base {
 			}
 		}
 
-		$data = array();
+		$data = [];
 
 		if ( ! empty( $selected_thumbnail ) ) {
 			$data['selected'] = $selected_thumbnail;
@@ -331,10 +331,10 @@ class Media_Library extends Base {
 		$data['thumbnails'] = $thumbnail_array;
 
 		return rest_ensure_response(
-			array(
+			[
 				'success' => true,
 				'data'    => $data,
-			)
+			]
 		);
 	}
 
@@ -354,22 +354,22 @@ class Media_Library extends Base {
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
-			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', [ 'status' => 400 ] );
 		}
 
 		// Check if the thumbnail URL is valid.
 		if ( ! filter_var( $thumbnail_url, FILTER_VALIDATE_URL ) ) {
-			return new \WP_Error( 'invalid_thumbnail_url', 'Invalid thumbnail URL.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_thumbnail_url', 'Invalid thumbnail URL.', [ 'status' => 400 ] );
 		}
 
 		// Update the video thumbnail.
 		update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $thumbnail_url );
 
 		return rest_ensure_response(
-			array(
+			[
 				'success' => true,
 				'message' => 'Video thumbnail successfully set.',
-			)
+			]
 		);
 	}
 }

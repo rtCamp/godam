@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $attributes = wp_parse_args(
 	$attributes,
-	array(
+	[
 		'columns'         => 3,
 		'count'           => -1,
 		'orderby'         => 'date',
@@ -28,11 +28,11 @@ $attributes = wp_parse_args(
 		'search'          => '',
 		'showTitle'       => true,
 		'align'           => '',
-	)
+	]
 );
 
 // Build the shortcode attributes.
-$shortcode_atts = array(
+$shortcode_atts = [
 	'columns'           => intval( $attributes['columns'] ),
 	'count'             => intval( $attributes['count'] ),
 	'orderby'           => sanitize_text_field( $attributes['orderby'] ),
@@ -49,7 +49,7 @@ $shortcode_atts = array(
 	'search'            => sanitize_text_field( $attributes['search'] ),
 	'show_title'        => ! empty( $attributes['showTitle'] ),
 	'align'             => sanitize_text_field( $attributes['align'] ),
-);
+];
 
 // Convert attributes to shortcode string.
 $shortcode_atts_string = '';

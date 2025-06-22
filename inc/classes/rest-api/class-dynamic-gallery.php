@@ -32,90 +32,90 @@ class Dynamic_Gallery extends Base {
 	 * @return array
 	 */
 	public function get_rest_routes() {
-		return array(
-			array(
+		return [
+			[
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base,
-				'args'      => array(
+				'args'      => [
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'render_gallery' ),
+					'callback'            => [ $this, 'render_gallery' ],
 					'permission_callback' => '__return_true',
-					'args'                => array(
-						'offset'            => array(
+					'args'                => [
+						'offset'            => [
 							'type'    => 'integer',
 							'default' => 0,
-						),
-						'columns'           => array(
+						],
+						'columns'           => [
 							'type'    => 'integer',
 							'default' => 3,
-						),
-						'count'             => array(
+						],
+						'count'             => [
 							'type'    => 'integer',
 							'default' => 6,
-						),
-						'orderby'           => array(
+						],
+						'orderby'           => [
 							'type'    => 'string',
 							'default' => 'date',
-						),
-						'order'             => array(
+						],
+						'order'             => [
 							'type'    => 'string',
 							'default' => 'DESC',
-						),
-						'show_title'        => array(
+						],
+						'show_title'        => [
 							'type'    => 'boolean',
 							'default' => true,
-						),
-						'layout'            => array(
+						],
+						'layout'            => [
 							'type'    => 'string',
 							'default' => 'grid',
-						),
-						'category'          => array(
+						],
+						'category'          => [
 							'type'    => 'integer',
 							'default' => 0,
-						),
-						'tag'               => array(
+						],
+						'tag'               => [
 							'type'    => 'integer',
 							'default' => 0,
-						),
-						'author'            => array(
+						],
+						'author'            => [
 							'type'    => 'integer',
 							'default' => 0,
-						),
-						'include'           => array(
+						],
+						'include'           => [
 							'type'    => 'string',
 							'default' => '',
-						),
-						'search'            => array(
+						],
+						'search'            => [
 							'type'    => 'string',
 							'default' => '',
-						),
-						'date_range'        => array(
+						],
+						'date_range'        => [
 							'type'    => 'string',
 							'default' => '',
-						),
-						'custom_date_start' => array(
+						],
+						'custom_date_start' => [
 							'type'    => 'string',
 							'default' => '',
-						),
-						'custom_date_end'   => array(
+						],
+						'custom_date_end'   => [
 							'type'    => 'string',
 							'default' => '',
-						),
-					),
-				),
-			),
-		);
+						],
+					],
+				],
+			],
+		];
 	}
 
 	/**
 	 * Render the gallery block.
 	 * 
-	 * @param WP_REST_Request $request The REST request object.
+	 * @param \WP_REST_Request $request The REST request object.
 	 *
-	 * @return WP_REST_Response
+	 * @return \WP_REST_Response
 	 */
 	public function render_gallery( WP_REST_Request $request ) {
-		$atts = array(
+		$atts = [
 			'count'             => $request->get_param( 'count' ),
 			'orderby'           => $request->get_param( 'orderby' ),
 			'order'             => $request->get_param( 'order' ),
@@ -131,12 +131,12 @@ class Dynamic_Gallery extends Base {
 			'date_range'        => $request->get_param( 'date_range' ),
 			'custom_date_start' => $request->get_param( 'custom_date_start' ),
 			'custom_date_end'   => $request->get_param( 'custom_date_end' ),
-		);
+		];
 
 		// Add filter for dynamic gallery attributes.
 		$atts = apply_filters( 'rtgodam_dynamic_gallery_attributes', $atts, $request );
 
-		$args = array(
+		$args = [
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
 			'post_mime_type' => 'video',
@@ -144,24 +144,24 @@ class Dynamic_Gallery extends Base {
 			'orderby'        => $atts['orderby'],
 			'order'          => $atts['order'],
 			'offset'         => $atts['offset'],
-		);
+		];
 
 		// Add category filter.
 		if ( ! empty( $atts['category'] ) ) {
-			$args['tax_query'][] = array(
+			$args['tax_query'][] = [
 				'taxonomy' => 'category',
 				'field'    => 'term_id',
 				'terms'    => intval( $atts['category'] ),
-			);
+			];
 		}
 
 		// Add tag filter.
 		if ( ! empty( $atts['tag'] ) ) {
-			$args['tax_query'][] = array(
+			$args['tax_query'][] = [
 				'taxonomy' => 'post_tag',
 				'field'    => 'term_id',
 				'terms'    => intval( $atts['tag'] ),
-			);
+			];
 		}
 
 		// Add author filter.
@@ -181,16 +181,16 @@ class Dynamic_Gallery extends Base {
 
 		// Add date range filter.
 		if ( ! empty( $atts['date_range'] ) ) {
-			$date_query = array();
+			$date_query = [];
 			switch ( $atts['date_range'] ) {
 				case '7days':
-					$date_query = array( 'after' => '1 week ago' );
+					$date_query = [ 'after' => '1 week ago' ];
 					break;
 				case '30days':
-					$date_query = array( 'after' => '1 month ago' );
+					$date_query = [ 'after' => '1 month ago' ];
 					break;
 				case '90days':
-					$date_query = array( 'after' => '3 months ago' );
+					$date_query = [ 'after' => '3 months ago' ];
 					break;
 				case 'custom':
 					if ( ! empty( $atts['custom_date_start'] ) && ! empty( $atts['custom_date_end'] ) ) {
@@ -209,16 +209,16 @@ class Dynamic_Gallery extends Base {
 						// Set end date to end of day (23:59:59).
 						$end_date->setTime( 23, 59, 59 );
 						
-						$date_query = array(
+						$date_query = [
 							'after'     => $start_date->format( 'Y-m-d H:i:s' ),
 							'before'    => $end_date->format( 'Y-m-d H:i:s' ),
 							'inclusive' => true,
-						);
+						];
 					}
 					break;
 			}
 			if ( ! empty( $date_query ) ) {
-				$args['date_query'] = array( $date_query );
+				$args['date_query'] = [ $date_query ];
 			}
 		}
 
@@ -319,10 +319,10 @@ class Dynamic_Gallery extends Base {
 		$html = apply_filters( 'rtgodam_dynamic_gallery_html', $html, $query, $atts );
 	
 		return new WP_REST_Response(
-			array(
+			[
 				'status' => 'success',
 				'html'   => $html,
-			),
+			],
 			200
 		);
 	}

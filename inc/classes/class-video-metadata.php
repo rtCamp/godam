@@ -35,8 +35,8 @@ class Video_Metadata {
 	 * @return void
 	 */
 	protected function setup_hooks() {
-		add_action( 'init', array( $this, 'maybe_migrate_existing_videos' ) );
-		add_action( 'add_attachment', array( $this, 'save_video_metadata' ) );
+		add_action( 'init', [ $this, 'maybe_migrate_existing_videos' ] );
+		add_action( 'add_attachment', [ $this, 'save_video_metadata' ] );
 	}
 
 	/**
@@ -124,24 +124,24 @@ class Video_Metadata {
 			// Get a batch of video attachments without metadata.
 			//phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
 			$videos = get_posts(
-				array(
+				[
 					'post_type'      => 'attachment',
 					'post_mime_type' => 'video',
 					'posts_per_page' => self::BATCH_SIZE,
 					'offset'         => $offset,
 					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-					'meta_query'     => array(
+					'meta_query'     => [
 						'relation' => 'OR',
-						array(
+						[
 							'key'     => '_video_duration',
 							'compare' => 'NOT EXISTS',
-						),
-						array(
+						],
+						[
 							'key'     => '_video_file_size',
 							'compare' => 'NOT EXISTS',
-						),
-					),
-				)
+						],
+					],
+				]
 			);
 			
 			if ( ! empty( $videos ) ) {
