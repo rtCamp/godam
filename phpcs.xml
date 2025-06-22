@@ -52,7 +52,7 @@
 
 	<!-- Rules: rtCamp Coding Standards -->
 	<!-- https://github.com/rtCamp/coding-standards-d/rtCamp/ruleset.xml -->
-	<rule ref="rtCamp-Strict">
+	<rule ref="rtCamp">
 		<exclude name="SlevomatCodingStandard.ControlStructures.EarlyExit" />
 		<exclude name="WordPress.WhiteSpace.ControlStructureSpacing" />
 		<exclude name="Squiz.WhiteSpace.FunctionSpacing" />
