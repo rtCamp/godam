@@ -107,11 +107,17 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			} );
 	}
 
-	// Find all Jetpack forms
-	const jetpackForms = document.querySelectorAll( 'form input[name="action"][value="grunion-contact-form"]' );
+	// Find only Jetpack forms that are within GoDAM video blocks
+	// Look for forms that have the data-origin-post-id attribute (which indicates they're from GoDAM)
+	const godamJetpackForms = document.querySelectorAll( '.form-container[data-origin-post-id] form input[name="action"][value="grunion-contact-form"]' );
 
-	jetpackForms.forEach( function( actionInput ) {
+	godamJetpackForms.forEach( function( actionInput ) {
 		const form = actionInput.closest( 'form' );
+
+		// Only process forms that are within GoDAM containers
+		if ( ! form.closest( '.form-container[data-origin-post-id]' ) ) {
+			return;
+		}
 
 		// Completely disable Jetpack's original form handling
 		// Remove any existing event listeners by cloning the form

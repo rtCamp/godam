@@ -660,7 +660,7 @@ class Jetpack extends Base {
 
 		$result = array(
 			'valid'   => $valid,
-			'message' => $valid ? '' : 'Errors:<br>' . implode( '<br>', $errors ),
+			'message' => $valid ? '' : 'Please make sure all fields are valid. You need to fix ' . count( $errors ) . ' error' . ( count( $errors ) > 1 ? 's' : '' ) . ':<br>' . implode( '<br>', $errors ),
 		);
 
 		return $result;
