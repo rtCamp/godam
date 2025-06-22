@@ -47,9 +47,45 @@ const JetpackForm = ( { layerID } ) => {
 			.then( ( response ) => response.json() )
 			.then( ( data ) => {
 				dispatch( setJetpackForms( data ) );
+
+				// Clear the previously selected form when no forms are available
+				if ( data.length === 0 && layer?.jp_id ) {
+					dispatch( updateLayerField( {
+						id: layer.id,
+						field: 'jp_id',
+						value: '',
+					} ) );
+
+					dispatch( updateLayerField( {
+						id: layer.id,
+						field: 'origin_post_id',
+						value: '',
+					} ) );
+				}
+
+				// Auto-select the first form if no form is currently selected and forms are available
+				if ( data && data.length > 0 && ! layer?.jp_id ) {
+					const firstForm = data[ 0 ];
+					changeFormID( firstForm.id );
+				}
 			} )
 			.catch( ( ) => {
 				dispatch( setJetpackForms( [] ) );
+
+				// Also clear the form selection on error
+				if ( layer?.jp_id ) {
+					dispatch( updateLayerField( {
+						id: layer.id,
+						field: 'jp_id',
+						value: '',
+					} ) );
+
+					dispatch( updateLayerField( {
+						id: layer.id,
+						field: 'origin_post_id',
+						value: '',
+					} ) );
+				}
 			} );
 	}, [ dispatch ] );
 
@@ -146,33 +182,67 @@ const JetpackForm = ( { layerID } ) => {
 						className="easydam-layer"
 					>
 						{
-							( formHTML && ! isFetching && ! error ) &&
-							<div className="form-container jetpack-form-preview" dangerouslySetInnerHTML={ { __html: formHTML } } />
+							// Only show form preview if a form is selected
+							layer.jp_id && (
+								<>
+									{
+										( formHTML && ! isFetching && ! error ) &&
+										<div className="form-container jetpack-form-preview" dangerouslySetInnerHTML={ { __html: formHTML } } />
+									}
+
+									{
+										isFetching &&
+										<div className="form-container">
+											<p>{ __( 'Loading form…', 'godam' ) }</p>
+										</div>
+									}
+
+									{
+										error &&
+										<div className="form-container">
+											<p>{ __( 'Error loading form. Please check if the form exists.', 'godam' ) }</p>
+										</div>
+									}
+
+									{
+										! isFetching && ! formHTML && ! error &&
+										<div className="form-container">
+											<p>{ __( 'No form selected or form not found.', 'godam' ) }</p>
+										</div>
+									}
+
+									{
+										layer.jp_id &&
+										<Button
+											href={ getEditFormUrl( layer.jp_id ) }
+											target="_blank"
+											variant="secondary"
+											icon={ pencil }
+											className="absolute top-2 right-2"
+										>{ __( 'Edit form', 'godam' ) }</Button>
+									}
+								</>
+							)
 						}
 
 						{
-							isFetching &&
-							<div className="form-container">
-								<p>{ __( 'Loading form…', 'godam' ) }</p>
-							</div>
-						}
-
-						{
-							error &&
-							<div className="form-container">
-								<p>{ __( 'Error loading form. Please check if the form exists.', 'godam' ) }</p>
-							</div>
-						}
-
-						{
-							layer.jp_id &&
-							<Button
-								href={ getEditFormUrl( layer.jp_id ) }
-								target="_blank"
-								variant="secondary"
-								icon={ pencil }
-								className="absolute top-2 right-2"
-							>{ __( 'Edit form', 'godam' ) }</Button>
+							// Show message when no forms are available
+							! layer.jp_id && forms.length === 0 && (
+								<div className="form-container">
+									<p>
+										{ __( 'No Jetpack forms found. Please ', 'godam' ) }
+										<a
+											href={ `${ window?.videoData?.adminUrl }admin.php?page=jetpack-forms-admin#/responses` }
+											target="_blank"
+											rel="noopener noreferrer"
+											style={ { color: '#007cba', textDecoration: 'underline' } }
+										>
+											{ __( 'create a Jetpack contact form', 'godam' ) }
+										</a>
+										{ __( ' first.', 'godam' ) }
+									</p>
+								</div>
+							)
 						}
 					</div>
 					{ layer.allow_skip &&
