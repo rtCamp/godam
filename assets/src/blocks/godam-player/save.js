@@ -3,47 +3,15 @@
  */
 import {
 	useBlockProps,
+	InnerBlocks,
 } from '@wordpress/block-editor';
 
-/**
- * Internal dependencies
- */
-import Tracks from './tracks';
-
-export default function save( { attributes } ) {
-	const {
-		autoplay,
-		caption,
-		controls,
-		loop,
-		muted,
-		poster,
-		preload,
-		src,
-		sources,
-		tracks,
-	} = attributes;
-
-	const videoSetupOptions = {
-		controls,
-		autoplay,
-		loop,
-		muted,
-		preload,
-		poster,
-		fluid: true,
-		sources,
-	};
+export default function save() {
+	// Since we're using server-side rendering (render.php), 
+	// we only need to save the InnerBlocks content
 	return (
-		<figure { ...useBlockProps.save() }>
-			{ src && (
-				<video
-					className="easydam-player video-js vjs-big-play-centered"
-					data-setup={ JSON.stringify( videoSetupOptions ) }
-				>
-					<Tracks tracks={ tracks } />
-				</video>
-			) }
-		</figure>
+		<div { ...useBlockProps.save() }>
+			<InnerBlocks.Content />
+		</div>
 	);
 }

@@ -41,6 +41,7 @@ const slice = createSlice( {
 			},
 		},
 		layers: [],
+		chapters: [],
 		isChanged: false,
 		currentLayer: null,
 		currentTab: 'layers',
@@ -54,7 +55,7 @@ const slice = createSlice( {
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
-			const { videoConfig, layers, skipTime } = action.payload;
+			const { videoConfig, layers, skipTime, chapters } = action.payload;
 			state.videoConfig = {
 				...state.videoConfig,
 				...videoConfig,
@@ -66,6 +67,7 @@ const slice = createSlice( {
 			state.layers = layers;
 			state.isChanged = false;
 			state.skipTime = skipTime;
+			state.chapters = chapters || [];
 		},
 		saveVideoMeta: ( state ) => {
 			state.isChanged = false;
@@ -87,6 +89,23 @@ const slice = createSlice( {
 			state.layers[ ind ][ field ] = value;
 			state.isChanged = true;
 		},
+		addChapter: ( state, action ) => {
+			const newChapter = action.payload;
+			state.chapters.push( newChapter );
+			state.currentChapter = newChapter;
+			state.isChanged = true;
+		},
+		removeChapter: ( state, action ) => {
+			const chapterID = action.payload.id;
+			state.chapters = state.chapters.filter( ( layer ) => layer.id !== chapterID );
+			state.isChanged = true;
+		},
+		updateChapterField: ( state, action ) => {
+			const { id, field, value } = action.payload;
+			const ind = state.chapters.findIndex( ( l ) => l.id === id );
+			state.chapters[ ind ][ field ] = value;
+			state.isChanged = true;
+		},
 		updateVideoConfig: ( state, action ) => {
 			state.videoConfig = { ...state.videoConfig, ...action.payload };
 			state.isChanged = true;
@@ -100,7 +119,7 @@ const slice = createSlice( {
 		},
 		setCurrentTab: ( state, action ) => {
 			// check if action.payload is either 'layers' or 'player-settings'.
-			if ( action.payload === 'layers' || action.payload === 'player-settings' ) {
+			if ( action.payload === 'layers' || action.payload === 'player-settings' || action.payload === 'chapters' ) {
 				state.currentTab = action.payload;
 			}
 		},
@@ -139,6 +158,9 @@ export const {
 	addLayer,
 	removeLayer,
 	updateLayerField,
+	addChapter,
+	removeChapter,
+	updateChapterField,
 	updateVideoConfig,
 	updateSkipTime,
 	setCurrentLayer,

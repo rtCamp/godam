@@ -154,6 +154,20 @@ const jetpackFormJS = {
 	},
 };
 
+const elementorWidgetJS = {
+	...sharedConfig,
+	entry: {
+		'godam-elementor-frontend': path.resolve( process.cwd(), 'assets', 'src', 'js', 'elementor', 'frontend.js' ),
+	},
+};
+
+const elementorEditorJS = {
+	...sharedConfig,
+	entry: {
+		'godam-elementor-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'elementor', 'editor.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -231,4 +245,6 @@ module.exports = [
 	jetpackFormJS,
 	styles, // Do not remove this.
 	pages,
+	elementorWidgetJS,
+	elementorEditorJS,
 ];

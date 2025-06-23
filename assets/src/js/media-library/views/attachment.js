@@ -1,4 +1,3 @@
-
 /* global jQuery */
 
 /**
@@ -85,7 +84,11 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 		wp.media.view.Attachment.prototype.render.call( this );
 
 		if ( isAPIKeyValid() && ( this.model.get( 'type' ) === 'video' || this.model.get( 'type' ) === 'audio' ) ) {
-			if ( this.model.get( 'transcoded_url' ) ) {
+			// Get the transcoding status from the model
+			const transcodingStatus = this.model.get( 'transcoding_status' );
+
+			// Check if the status is 'transcoded' or if we have a transcoded URL
+			if ( transcodingStatus === 'transcoded' ) {
 				this.$el.append( `
 					<div class="transcoding-status__loader" data-percent="100">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
