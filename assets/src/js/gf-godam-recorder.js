@@ -229,9 +229,9 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		}
 
 		/**
-		 * The `gform_post_render` hook fires on every post render including the AJAX re-renders.
-		 * This is used to re-attach click handler on previously invalidated Uppy triggers and syncs
-		 * files on AJAX submissions stored locally.
+		 * The `gform_post_render` hook fires on every post render. This is used to re-attach click
+		 * handler on previously invalidated Uppy triggers and syncs files on AJAX submissions
+		 * stored locally.
 		 *
 		 * @see https://docs.gravityforms.com/gform_post_render/
 		 */
