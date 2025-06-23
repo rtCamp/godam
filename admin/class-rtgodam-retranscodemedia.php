@@ -603,9 +603,10 @@ class RTGODAM_RetranscodeMedia {
 		if ( 'Failed' === $transcoding_status ) {
 			// Clean up any existing job ID and status.
 			delete_post_meta( $media->ID, 'rtgodam_transcoding_job_id' );
-			delete_post_meta( $media->ID, 'rtgodam_transcoding_status' );
-			delete_post_meta( $media->ID, 'rtgodam_transcoding_error_msg' );
 		}
+
+		delete_post_meta( $media->ID, 'rtgodam_transcoding_status' );
+		delete_post_meta( $media->ID, 'rtgodam_transcoding_error_msg' );
 
 		// Check if media is already being transcoded.
 		if ( rtgodam_is_file_being_transcoded( $media->ID ) ) {

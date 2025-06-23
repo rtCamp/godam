@@ -475,7 +475,11 @@
 		 }
 	 }
  
- 
+	// CSS to override the elementor image CSS in editor.
+	.elementor .vjs-poster img {
+		height: 100% !important;
+	}
+
    .share-modal-message {
 	 background: #fff;
 	 padding: 10px 40px;
@@ -840,8 +844,6 @@
  
  .vjs-big-play-button {
 	 background-color: var(--rtgodam-control-bar-color) !important;
-	 background-size: 100% 100% !important;
-	 background-image: var(--rtgodam-custom-play-button-url) !important;
  }
  
  .left-align {
@@ -876,6 +878,7 @@
  
  .vjs-control.vjs-custom-play-button {
 	 width: auto !important;
+	 order: 8;
  
 	 @media screen and (max-width: 768px) {
 		 display: none;
@@ -887,6 +890,13 @@
 		 object-fit: fill;
 	 }
  }
+
+ .vjs-big-play-button.custom-play-image {
+	height: unset;
+	border: unset;
+	border-radius: unset;
+	background-color: transparent !important;
+}
  
  .share-icon {
 	 height: 18px;

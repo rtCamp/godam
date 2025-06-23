@@ -52,11 +52,16 @@ const layerTypes = [
 
 const premiumLayers = [ 'form', 'hotspot', 'ad' ];
 
-const SidebarLayers = ( { currentTime, onSelectLayer, duration } ) => {
+const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
 
-	const openModal = () => setOpen( true );
+	const openModal = () => {
+		setOpen( true );
+		if ( onPauseVideo ) {
+			onPauseVideo();
+		}
+	};
 	const closeModal = () => setOpen( false );
 
 	const dispatch = useDispatch();
