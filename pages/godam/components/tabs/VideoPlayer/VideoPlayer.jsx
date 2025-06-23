@@ -18,15 +18,15 @@ import { useState } from '@wordpress/element';
  */
 import { scrollToTop } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
-import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
+import { updateMediaSetting, selectHasChanges, selectMediaSettings } from '../../../redux/slice/media-settings.js';
 import CustomVideoPlayerCSS from './CustomVideoPlayerCSS.jsx';
 
 const VideoPlayer = () => {
 	const dispatch = useDispatch();
 	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] =
     useSaveMediaSettingsMutation();
-	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
-
+	const mediaSettings = useSelector( selectMediaSettings( 'video_player' ) );
+	const isChanged = useSelector( selectHasChanges( 'video_player' ) );
 	const handleSettingChange = ( key, value ) => {
 		dispatch( updateMediaSetting( { category: 'video_player', key, value } ) );
 	};
@@ -40,9 +40,7 @@ const VideoPlayer = () => {
 
 	const handleSaveSettings = async () => {
 		try {
-			const response = await saveMediaSettings( {
-				settings: { video_player: mediaSettings?.video_player },
-			} ).unwrap();
+			const response = await saveMediaSettings( { settings: { video_player: mediaSettings } } ).unwrap();
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
@@ -66,14 +64,14 @@ const VideoPlayer = () => {
 				</Notice>
 			) }
 
-			<CustomVideoPlayerCSS handleSettingChange={ handleSettingChange } />
+			<CustomVideoPlayerCSS mediaSettings={ mediaSettings } handleSettingChange={ handleSettingChange } />
 
 			<Button
 				variant="primary"
 				className="godam-button"
 				onClick={ handleSaveSettings }
 				isBusy={ saveMediaSettingsLoading }
-				disabled={ saveMediaSettingsLoading }
+				disabled={ saveMediaSettingsLoading || ! isChanged }
 			>
 				{ __( 'Save Settings', 'godam' ) }
 			</Button>

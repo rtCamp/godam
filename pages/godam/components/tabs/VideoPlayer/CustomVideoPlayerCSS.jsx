@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useSelector } from 'react-redux';
+import Editor from '@monaco-editor/react';
 
 /**
  * WordPress dependencies
@@ -11,9 +11,8 @@ import {
 	Panel,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import Editor from '@monaco-editor/react';
 
-const CustomVideoPlayerCSS = ( { handleSettingChange } ) => {
+const CustomVideoPlayerCSS = ( { mediaSettings, handleSettingChange } ) => {
 	const handleEditorMount = ( editor, monaco ) => {
 		monaco.editor.defineTheme( 'godam-theme', {
 			base: 'vs',
@@ -34,12 +33,10 @@ const CustomVideoPlayerCSS = ( { handleSettingChange } ) => {
 		monaco.editor.setTheme( 'godam-theme' );
 	};
 
-	const customCSS = useSelector(
-		( state ) => state.mediaSettings.video_player?.custom_css,
-	);
+	const customCSS = mediaSettings.custom_css;
 
 	return (
-		<Panel heading={ __( 'Video Thumbnails', 'godam' ) } className="godam-panel">
+		<Panel heading={ __( 'Video Player CSS', 'godam' ) } className="godam-panel">
 			<PanelBody>
 				<div className="godam-form-group">
 					<Editor

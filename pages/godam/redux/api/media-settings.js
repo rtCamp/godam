@@ -3,6 +3,12 @@
  */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+/**
+ * Internal dependencies
+ */
+import { setMediaSettings, resetChanges } from '../slice/media-settings.js';
+import { VideoCustomCSSTemplate } from '../../components/VideoCustomCSSTemplate';
+
 const restURL = window.godamRestRoute.url || '';
 
 export const generalAPI = createApi( {
@@ -17,6 +23,17 @@ export const generalAPI = createApi( {
 					'X-WP-Nonce': window.wpApiSettings.nonce,
 				},
 			} ),
+			async onQueryStarted( arg, { dispatch, queryFulfilled } ) {
+				try {
+					const { data } = await queryFulfilled;
+					dispatch( setMediaSettings( data ) );
+					dispatch( setMediaSettings( {
+						video: data.video || initialState.settings.video,
+						general: data.general || initialState.settings.general,
+						video_player: data.video_player || initialState.settings.video_player,
+					} ) );
+				} catch {}
+			},
 		} ),
 		saveMediaSettings: builder.mutation( {
 			query: ( data ) => ( {
@@ -28,6 +45,15 @@ export const generalAPI = createApi( {
 				},
 				body: data,
 			} ),
+			async onQueryStarted( arg, { dispatch, queryFulfilled } ) {
+				try {
+					const { data } = await queryFulfilled;
+					if ( data?.status === 'success' ) {
+						const category = Object.keys( arg.settings )[ 0 ]; // e.g., 'general' , 'video' or 'video_player'
+						dispatch( resetChanges( { category } ) );
+					}
+				} catch {}
+			},
 		} ),
 		verifyAPIKey: builder.mutation( {
 			query: ( apiKey ) => ( {
@@ -59,3 +85,26 @@ export const {
 	useGetMediaSettingsQuery,
 	useSaveMediaSettingsMutation,
 } = generalAPI;
+
+const initialState = {
+	settings: {
+		video: {
+			video_quality: [],
+			video_compress_quality: 100,
+			video_thumbnails: 5,
+			overwrite_thumbnails: false,
+			watermark: false,
+			use_watermark_image: false,
+			watermark_text: '',
+			watermark_url: '',
+		},
+		general: {
+			enable_folder_organization: true,
+			brand_color: '#000000',
+			brand_image: '',
+		},
+		video_player: {
+			custom_css: VideoCustomCSSTemplate,
+		},
+	},
+};

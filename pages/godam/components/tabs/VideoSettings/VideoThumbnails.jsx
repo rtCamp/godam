@@ -1,17 +1,12 @@
 /**
- * External dependencies
- */
-import { useSelector } from 'react-redux';
-
-/**
  * WordPress dependencies
  */
 import { ToggleControl, TextControl, Panel, PanelBody } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
-const VideoThumbnails = ( { handleSettingChange } ) => {
-	const videoThumbnails = useSelector( ( state ) => state.mediaSettings.video.video_thumbnails ) || 5;
-	const overwriteThumbnails = useSelector( ( state ) => state.mediaSettings.video.overwrite_thumbnails ) || false;
+const VideoThumbnails = ( { mediaSettings, handleSettingChange } ) => {
+	const videoThumbnails = mediaSettings.video_thumbnails || 5;
+	const overwriteThumbnails = mediaSettings.overwrite_thumbnails || false;
 
 	const setVideoThumbnails = ( value ) => {
 		value = parseInt( value, 10 );

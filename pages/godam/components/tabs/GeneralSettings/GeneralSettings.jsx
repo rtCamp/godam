@@ -21,17 +21,15 @@ import { __ } from '@wordpress/i18n';
  */
 import BrandImageSelector from './BrandImageSelector.jsx';
 import ColorPickerButton from '../../../../video-editor/components/shared/color-picker/ColorPickerButton.jsx';
-
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
-import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
-
+import { updateMediaSetting, selectHasChanges, selectMediaSettings } from '../../../redux/slice/media-settings.js';
 import { scrollToTop } from '../../../utils/index.js';
 
 const GeneralSettings = () => {
 	const dispatch = useDispatch();
-	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
+	const mediaSettings = useSelector( selectMediaSettings( 'general' ) );
+	const isChanged = useSelector( selectHasChanges( 'general' ) );
 	const [ saveMediaSettings, { isLoading: saveMediaSettingLoading } ] = useSaveMediaSettingsMutation();
-
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
 	const showNotice = ( message, status = 'success' ) => {
@@ -45,7 +43,7 @@ const GeneralSettings = () => {
 
 	const handleSaveSettings = async () => {
 		try {
-			const response = await saveMediaSettings( { settings: { general: mediaSettings?.general } } ).unwrap();
+			const response = await saveMediaSettings( { settings: { general: mediaSettings } } ).unwrap();
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
@@ -76,7 +74,7 @@ const GeneralSettings = () => {
 						className="godam-toggle godam-margin-bottom"
 						label={ __( 'Enable folder organization in media library.', 'godam' ) }
 						help={ __( 'Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization.', 'godam' ) }
-						checked={ mediaSettings?.general?.enable_folder_organization }
+						checked={ mediaSettings.enable_folder_organization }
 						onChange={ ( value ) => handleSettingChange( 'enable_folder_organization', value ) }
 					/>
 
@@ -91,7 +89,7 @@ const GeneralSettings = () => {
 						</label>
 						<ColorPickerButton
 							label={ __( 'Brand color', 'godam' ) }
-							value={ mediaSettings?.general?.brand_color }
+							value={ mediaSettings.brand_color || '#000000' }
 							onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
 						/>
 						<p className="help-text">
@@ -106,7 +104,7 @@ const GeneralSettings = () => {
 				className="godam-button"
 				onClick={ handleSaveSettings }
 				isBusy={ saveMediaSettingLoading }
-				disabled={ saveMediaSettingLoading }
+				disabled={ saveMediaSettingLoading || ! isChanged }
 			>
 				{ __( 'Save Settings', 'godam' ) }
 			</Button>

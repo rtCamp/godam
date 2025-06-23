@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import { useSelector } from 'react-redux';
-
-/**
  * WordPress dependencies
  */
 import { Panel, PanelBody, SelectControl } from '@wordpress/components';
@@ -17,8 +12,8 @@ const QUALITY_OPTIONS = [
 	{ label: __( 'Lowest compression', 'godam' ), value: 20 },
 ];
 
-const VideoCompressQuality = ( { handleSettingChange } ) => {
-	const videoQuality = useSelector( ( state ) => state.mediaSettings.video?.video_compress_quality );
+const VideoCompressQuality = ( { mediaSettings, handleSettingChange } ) => {
+	const videoQuality = mediaSettings.video_compress_quality || 100;
 
 	return (
 		<Panel

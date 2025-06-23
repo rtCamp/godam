@@ -19,8 +19,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
-import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
-
+import { updateMediaSetting, selectHasChanges, selectMediaSettings } from '../../../redux/slice/media-settings.js';
 import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
 
 import './video-settings.scss';
@@ -32,9 +31,9 @@ import VideoWatermark from './VideoWatermark.jsx';
 
 const VideoSettings = () => {
 	const dispatch = useDispatch();
-	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
+	const mediaSettings = useSelector( selectMediaSettings( 'video' ) );
+	const isChanged = useSelector( selectHasChanges( 'video' ) );
 	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
-
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
 	const showNotice = ( message, status = 'success' ) => {
@@ -48,7 +47,7 @@ const VideoSettings = () => {
 
 	const handleSaveSettings = async () => {
 		try {
-			const response = await saveMediaSettings( { settings: { video: mediaSettings?.video } } ).unwrap();
+			const response = await saveMediaSettings( { settings: { video: mediaSettings } } ).unwrap();
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
@@ -97,9 +96,9 @@ const VideoSettings = () => {
 
 			{ hasValidAPIKey && (
 				<>
-					<VideoCompressQuality handleSettingChange={ handleSettingChange } />
-					<VideoThumbnails handleSettingChange={ handleSettingChange } />
-					<VideoWatermark handleSettingChange={ handleSettingChange } />
+					<VideoCompressQuality mediaSettings={ mediaSettings } handleSettingChange={ handleSettingChange } />
+					<VideoThumbnails mediaSettings={ mediaSettings } handleSettingChange={ handleSettingChange } />
+					<VideoWatermark mediaSettings={ mediaSettings } handleSettingChange={ handleSettingChange } />
 				</>
 			) }
 
@@ -109,7 +108,7 @@ const VideoSettings = () => {
 					className="godam-button"
 					onClick={ handleSaveSettings }
 					isBusy={ saveMediaSettingsLoading }
-					disabled={ saveMediaSettingsLoading }
+					disabled={ saveMediaSettingsLoading || ! isChanged }
 				>
 					{ __( 'Save Settings', 'godam' ) }
 				</Button>
