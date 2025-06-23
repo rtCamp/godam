@@ -527,16 +527,19 @@ function GODAMPlayer( videoRef = null ) {
 			}
 		} );
 
-		// Handle overlay removal on first play
-		let hasPlayedOnce = false;
+		// Handle overlay removal based on time range
 		const videoContainerWrapper = video.closest( '.godam-video-wrapper' );
 		const overlay = videoContainerWrapper ? videoContainerWrapper.querySelector( '[data-overlay-content]' ) : null;
 
 		if ( overlay ) {
+			// Get overlay time range from video configuration
+			const overlayTimeRange = videoSetupOptions?.overlayTimeRange || 0;
+			let overlayHidden = false;
+
 			// Function to hide overlay
 			const hideOverlay = function() {
-				if ( ! hasPlayedOnce ) {
-					hasPlayedOnce = true;
+				if ( ! overlayHidden ) {
+					overlayHidden = true;
 					overlay.style.opacity = '0';
 
 					// Remove the overlay after the transition
@@ -546,8 +549,27 @@ function GODAMPlayer( videoRef = null ) {
 				}
 			};
 
-			// Listen for the first play event
-			player.one( 'play', hideOverlay );
+			// Handle overlay visibility based on time range
+			if ( overlayTimeRange > 0 ) {
+				// Listen for timeupdate to check if we should hide the overlay
+				player.on( 'timeupdate', function() {
+					const currentTime = player.currentTime();
+
+					if ( currentTime >= overlayTimeRange && ! overlayHidden ) {
+						hideOverlay();
+					}
+				} );
+			} else {
+				// If time range is 0, hide overlay on first play (original behavior)
+				let hasPlayedOnce = false;
+				const hideOnFirstPlay = function() {
+					if ( ! hasPlayedOnce ) {
+						hasPlayedOnce = true;
+						hideOverlay();
+					}
+				};
+				player.one( 'play', hideOnFirstPlay );
+			}
 		}
 
 		player.ready( function() {
