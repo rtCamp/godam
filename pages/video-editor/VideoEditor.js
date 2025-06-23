@@ -145,6 +145,7 @@ const VideoEditor = ( { attachmentID } ) => {
 		}
 	};
 	const seekToTime = ( time ) => playerRef.current?.currentTime( time );
+	const pauseVideo = () => playerRef.current?.pause();
 
 	const handleSaveAttachmentMeta = async () => {
 		const data = {
@@ -191,6 +192,7 @@ const VideoEditor = ( { attachmentID } ) => {
 				<SidebarLayers
 					currentTime={ currentTime }
 					onSelectLayer={ seekToTime }
+					onPauseVideo={ pauseVideo }
 					duration={ duration }
 				/>
 			),

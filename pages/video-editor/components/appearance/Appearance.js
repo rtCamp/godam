@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 /**
  * Internal dependencies
@@ -25,10 +25,6 @@ import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 const Appearance = () => {
 	const dispatch = useDispatch();
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
-	const [ selectedBrandImage, setSelectedBrandImage ] = useState( videoConfig.controlBar.customBrandImg.length > 0 );
-	const [ selectedCustomBgImg, setSelectedCustomBgImg ] = useState(
-		videoConfig.controlBar.customPlayBtnImg.length > 0,
-	);
 
 	useEffect( () => {
 		//class gets re added upon component load, so we need to remove it.
@@ -128,12 +124,13 @@ const Appearance = () => {
 		}
 	}
 
+	let originalPlayButton = null;
+
 	const openCustomBtnImg = () => {
-		setSelectedCustomBgImg( true );
 		const fileFrame = wp.media( {
-			title: __( 'Select Custom Background Image', 'godam' ),
+			title: __( 'Select Custom Play Button Image', 'godam' ),
 			button: {
-				text: __( 'Use this Background Image', 'godam' ),
+				text: __( 'Use this Image', 'godam' ),
 			},
 			library: {
 				type: 'image', // Restrict to images only
@@ -154,16 +151,34 @@ const Appearance = () => {
 				} ),
 			);
 
-			// Apply custom background via class
-			playButtonElement.style.backgroundImage = `url(${ attachment.url })`;
-			playButtonElement.classList.add( 'custom-bg' ); // Add the custom CSS class
+			// Replace button with image tag
+			if ( playButtonElement ) {
+				if ( ! originalPlayButton ) {
+					originalPlayButton = playButtonElement.cloneNode( true );
+				}
+
+				// Create new image element
+				const imgElement = document.createElement( 'img' );
+				imgElement.src = attachment.url;
+				imgElement.alt = __( 'Custom Play Button', 'godam' );
+
+				playButtonElement.classList.forEach( ( cls ) => {
+					imgElement.classList.add( cls );
+				} );
+
+				imgElement.classList.add( 'custom-play-image' );
+
+				imgElement.style.cursor = 'pointer';
+
+				// Replace the original button with the new image
+				playButtonElement.parentNode.replaceChild( imgElement, playButtonElement );
+			}
 		} );
 
 		fileFrame.open();
 	};
 
 	const openBrandMediaPicker = () => {
-		setSelectedBrandImage( true );
 		const fileFrame = wp.media( {
 			title: __( 'Select Brand Image', 'godam' ),
 			button: {
@@ -205,7 +220,6 @@ const Appearance = () => {
 				},
 			} ),
 		);
-		setSelectedBrandImage( false );
 		const brandImg = document.querySelector( '#branding-icon' );
 		if ( brandImg ) {
 			brandImg.src = GoDAM;
@@ -221,9 +235,38 @@ const Appearance = () => {
 				},
 			} ),
 		);
-		setSelectedCustomBgImg( false );
-		const playButtonElement = document.querySelector( '.vjs-big-play-button' );
-		playButtonElement.style.backgroundImage = '';
+
+		// Find the custom image element and restore original button
+		const customImageElement = document.querySelector( '.custom-play-image' );
+
+		if ( customImageElement && originalPlayButton ) {
+		// Clone the original button to avoid issues with reusing DOM nodes
+			const restoredButton = originalPlayButton.cloneNode( true );
+
+			// Replace the image with the original button
+			customImageElement.parentNode.replaceChild( restoredButton, customImageElement );
+		} else {
+		// Fallback: create a new default play button if original is not available
+			const playButtonContainer = document.querySelector( '.video-js' );
+			const existingCustomImage = document.querySelector( '.custom-play-image' );
+
+			if ( playButtonContainer && existingCustomImage ) {
+			// Create default Video.js play button
+				const defaultButton = document.createElement( 'button' );
+				defaultButton.className = 'vjs-big-play-button';
+				defaultButton.type = 'button';
+				defaultButton.setAttribute( 'aria-label', 'Play Video' );
+
+				// Add the play icon span
+				const iconSpan = document.createElement( 'span' );
+				iconSpan.setAttribute( 'aria-hidden', 'true' );
+				iconSpan.className = 'vjs-icon-placeholder';
+				defaultButton.appendChild( iconSpan );
+
+				// Replace the image with the default button
+				existingCustomImage.parentNode.replaceChild( defaultButton, existingCustomImage );
+			}
+		}
 	};
 
 	function handleSkipTimeSettings( e ) {
@@ -321,9 +364,9 @@ const Appearance = () => {
 							variant="primary"
 							className="mr-2 godam-button"
 						>
-							{ selectedBrandImage ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
+							{ videoConfig.controlBar.customBrandImg?.length > 0 ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 						</Button>
-						{ selectedBrandImage && (
+						{ videoConfig.controlBar.customBrandImg?.length > 0 > 0 && (
 							<Button
 								onClick={ removeBrandImage }
 								variant="secondary"
@@ -333,7 +376,7 @@ const Appearance = () => {
 								{ __( 'Remove', 'godam' ) }
 							</Button>
 						) }
-						{ selectedBrandImage && (
+						{ videoConfig.controlBar.customBrandImg?.length > 0 > 0 && (
 							<div className="mt-2">
 								<img
 									src={ videoConfig.controlBar.customBrandImg }
@@ -390,9 +433,9 @@ const Appearance = () => {
 						variant="primary"
 						className="mr-2 godam-button"
 					>
-						{ selectedCustomBgImg ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
+						{ videoConfig.controlBar.customPlayBtnImg?.length > 0 ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 					</Button>
-					{ selectedCustomBgImg && (
+					{ videoConfig.controlBar.customPlayBtnImg?.length > 0 && (
 						<Button
 							onClick={ removeCustomPlayBtnImage }
 							variant="secondary"
@@ -402,7 +445,7 @@ const Appearance = () => {
 							{ __( 'Remove', 'godam' ) }
 						</Button>
 					) }
-					{ selectedCustomBgImg && (
+					{ videoConfig.controlBar.customPlayBtnImg?.length > 0 && (
 						<div className="mt-2">
 							<img
 								src={ videoConfig.controlBar.customPlayBtnImg }

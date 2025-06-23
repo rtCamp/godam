@@ -73,7 +73,9 @@ function GODAMPlayer( videoRef = null ) {
 
 		const currentPlayerVideoInstanceId = video.dataset.instanceId;
 
-		video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
+		if ( video.closest( '.animate-video-loading' ) ) {
+			video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
+		}
 
 		const adTagUrl = video.dataset.ad_tag_url;
 		let isVideoClicked = false;
@@ -525,6 +527,29 @@ function GODAMPlayer( videoRef = null ) {
 			}
 		} );
 
+		// Handle overlay removal on first play
+		let hasPlayedOnce = false;
+		const videoContainerWrapper = video.closest( '.godam-video-wrapper' );
+		const overlay = videoContainerWrapper ? videoContainerWrapper.querySelector( '[data-overlay-content]' ) : null;
+
+		if ( overlay ) {
+			// Function to hide overlay
+			const hideOverlay = function() {
+				if ( ! hasPlayedOnce ) {
+					hasPlayedOnce = true;
+					overlay.style.opacity = '0';
+
+					// Remove the overlay after the transition
+					setTimeout( function() {
+						overlay.style.display = 'none';
+					}, 300 );
+				}
+			};
+
+			// Listen for the first play event
+			player.one( 'play', hideOverlay );
+		}
+
 		player.ready( function() {
 			const controlBarSettings = videoSetupControls?.controlBar;
 
@@ -555,12 +580,39 @@ function GODAMPlayer( videoRef = null ) {
 				controlBar.removeChild( 'volumePanel' );
 			}
 
-			videojs.registerComponent( 'SettingsButton', SettingsButton );
-			controlBar.addChild( 'SettingsButton', {} );
+			if ( ! controlBar.getChild( 'SettingsButton' ) ) {
+				if ( ! videojs.getComponent( 'SettingsButton' ) ) {
+					videojs.registerComponent( 'SettingsButton', SettingsButton );
+				}
+				controlBar.addChild( 'SettingsButton', {} );
+			}
 
 			document.querySelectorAll( '.vjs-settings-button' ).forEach( ( button ) => {
 				button.querySelector( '.vjs-icon-placeholder' ).classList.add( 'vjs-icon-cog' );
 			} );
+
+			if ( controlBarSettings?.customPlayBtnImg ) {
+				const playButtonElement = player.getChild( 'bigPlayButton' );
+
+				const imgElement = document.createElement( 'img' );
+				imgElement.src = controlBarSettings?.customPlayBtnImg;
+				imgElement.alt = 'Custom Play Button';
+
+				playButtonElement.el_.classList.forEach( ( cls ) => {
+					imgElement.classList.add( cls );
+				} );
+
+				imgElement.classList.add( 'custom-play-image' );
+
+				imgElement.style.cursor = 'pointer';
+				imgElement.addEventListener( 'click', function() {
+					const videoPlayer = imgElement.closest( '.easydam-player' );
+					const videoElement = videoPlayer?.querySelector( 'video' );
+					videoElement.play();
+				} );
+				// Replace the original button with the new image
+				playButtonElement.el_.parentNode.replaceChild( imgElement, playButtonElement.el_ );
+			}
 
 			if ( controlBarSettings?.brandingIcon || ! validAPIKey ) {
 				const CustomPlayButton = videojs.getComponent( 'Button' );
@@ -722,7 +774,9 @@ function GODAMPlayer( videoRef = null ) {
 						if (
 							layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ||
 							layerObj.layerElement.querySelector( '.wpforms-confirmation-container-full' ) ||
-							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' )
+							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' ) ||
+							( ! layerObj.layerElement.querySelector( '.wp-polls-form' ) &&
+							layerObj.layerElement.querySelector( '.wp-polls-ans' ) )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
