@@ -96,6 +96,24 @@ class Media_Folder_Utils {
 	}
 
 	/**
+	 * Invalidate attachment count cache for multiple folders
+	 *
+	 * @param array $folder_ids - An array of media folder IDs.
+	 */
+	public function invalidate_multiple_attachment_count_cache( $folder_ids ) {
+		if ( empty( $folder_ids ) || ! is_array( $folder_ids ) ) {
+			return;
+		}
+
+		foreach ( $folder_ids as $folder_id ) {
+			$folder_id = absint( $folder_id );
+			if ( $folder_id > 0 ) {
+				$this->invalidate_attachment_count_cache( $folder_id );
+			}
+		}
+	}
+
+	/**
 	 * Clear all attachment count caches
 	 * Useful for bulk operations or when you want to force refresh all counts
 	 */

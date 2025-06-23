@@ -33,7 +33,7 @@ class Media_Folders_REST_API {
 		add_filter( 'rest_prepare_media-folder', array( $this, 'add_data_to_media_folder_rest_api' ), 10, 2 );
 
 		add_action( 'set_object_terms', array( $this, 'invalidate_attachment_count_cache' ), 10, 4 );
-		add_action( 'deleted_term_relationships', array( $this, 'invalidate_all_attachment_count_cache' ), 10, 3 );
+		add_action( 'delete_term_relationships', array( $this, 'invalidate_attachment_cache_on_delete_relationship' ), 10, 3 );
 	}
 
 	/**
@@ -59,8 +59,7 @@ class Media_Folders_REST_API {
 	 * @param string $taxonomy   Taxonomy slug.
 	 */
 	public function invalidate_attachment_count_cache( $object_id, $terms, $tt_ids, $taxonomy ) {
-
-		if ( 'media-folder' === $taxonomy ) {
+		if ( Media_Folders::SLUG === $taxonomy ) {
 			// Filter term IDs to ensure they're integers (not slugs).
 			$term_ids = array_filter( $terms, 'is_numeric' );
 			$term_ids = array_map( 'intval', $term_ids );
@@ -79,12 +78,31 @@ class Media_Folders_REST_API {
 	 * @param array  $tt_ids  An array of term taxonomy IDs.
 	 * @param string $taxonomy The taxonomy slug.
 	 */
-	public function invalidate_all_attachment_count_cache( $object_id, $tt_ids, $taxonomy ) {
-		// TODO: Cache invalidation logic can be optimized to only clear the specific folder's cache.
-		// For now, we clear all caches for the media folders taxonomy.
-		// That is because the invalidation logic when folder is removed from an attachment is tricky.
-		if ( 'media-folder' === $taxonomy ) {
-			Media_Folder_Utils::get_instance()->clear_all_attachment_count_caches();
+	public function invalidate_attachment_cache_on_delete_relationship( $object_id, $tt_ids, $taxonomy ) {
+		// Only process if it's the media-folder taxonomy.
+		if ( Media_Folders::SLUG !== $taxonomy ) {
+			return;
+		}
+
+		// Ensure $tt_ids is an array.
+		if ( ! is_array( $tt_ids ) ) {
+			$tt_ids = array( $tt_ids );
+		}
+
+		// Get term IDs from term taxonomy IDs.
+		$term_ids = array();
+
+		foreach ( $tt_ids as $tt_id ) {
+			$term_taxonomy = get_term_by( 'term_taxonomy_id', $tt_id );
+
+			if ( $term_taxonomy && ! is_wp_error( $term_taxonomy ) ) {
+				$term_ids[] = $term_taxonomy->term_id;
+			}
+		}
+
+		// Invalidate cache for specific terms only.
+		if ( ! empty( $term_ids ) ) {
+			Media_Folder_Utils::get_instance()->invalidate_multiple_attachment_count_cache( $term_ids );
 		}
 	}
 }
