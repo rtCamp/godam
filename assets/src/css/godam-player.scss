@@ -1187,6 +1187,42 @@
 .godam-video-overlay-container {
   display: block;
   pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+
+  // Vertical alignment classes
+  &.godam-overlay-alignment-top {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  &.godam-overlay-alignment-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  &.godam-overlay-alignment-bottom {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    height: 100%;
+    overflow: hidden;
+  }
 
   .block-editor-block-list__layout {
     width: 100%;
