@@ -25,7 +25,7 @@ class Everest_Forms extends Base {
 		return array(
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/everestforms',
+				'route'     => '/' . $this->rest_base . '/everest-forms',
 				'args'      => array(
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
@@ -37,7 +37,7 @@ class Everest_Forms extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/everestform',
+				'route'     => '/' . $this->rest_base . '/everest-form',
 				'args'      => array(
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
@@ -112,7 +112,7 @@ class Everest_Forms extends Base {
 						'description' => $form->post_excerpt,
 					);
 				},
-				$forms 
+				$forms
 			);
 		}
 

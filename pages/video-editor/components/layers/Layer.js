@@ -15,7 +15,7 @@ const Layer = ( { layer, goBack, duration } ) => {
 	return (
 		<>
 			{
-				layer.type === 'form' && <FormLayer layerID={ layer.id } goBack={ goBack } duration={ duration } />
+				layer.type === 'form' && <FormLayer __nextHasNoMarginBottom={ true } layerID={ layer.id } goBack={ goBack } duration={ duration } />
 			}
 			{
 				layer.type === 'cta' && <CTALayer layerID={ layer.id } goBack={ goBack }duration={ duration } />

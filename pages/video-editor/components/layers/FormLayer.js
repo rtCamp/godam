@@ -17,6 +17,7 @@ import { updateLayerField } from '../../redux/slice/videoSlice';
 
 import GravityForm from '../forms/GravityForm';
 import WPForm from '../forms/WPForm';
+import EverestForm from '../forms/EverestForm';
 import CF7 from '../forms/CF7';
 import JetpackForm from '../forms/JetpackForm';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
@@ -37,6 +38,8 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 				return Boolean( window?.videoData?.gf_active );
 			case 'wpforms':
 				return Boolean( window?.videoData?.wpforms_active );
+			case 'everest-forms':
+				return Boolean( window?.videoData?.everest_forms_active );
 			case 'cf7':
 				return Boolean( window?.videoData?.cf7_active );
 			case 'jetpack':
@@ -79,6 +82,12 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 			{
 				layer.form_type === 'jetpack' &&
 				<JetpackForm layerID={ layer.id } />
+
+			}
+
+			{
+				layer.form_type === 'everest-forms' &&
+				<EverestForm layerID={ layer.id } />
 			}
 
 			<ToggleControl
