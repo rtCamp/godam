@@ -268,6 +268,13 @@
 				white-space: nowrap;
 				font-size: 11px;
 			}
+
+			.chapter-indicator--text {
+				max-width: var(--hover-width, 8px);
+				overflow: hidden;
+				white-space: nowrap;
+				text-overflow: ellipsis;
+			}
 		}
 	}
 }
@@ -290,4 +297,8 @@
 .disabled .components-combobox-control__suggestions-container {
 	pointer-events: none;
 	opacity: 0.5;
+}
+
+#branding-icon {
+	order: 9;
 }
