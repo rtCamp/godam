@@ -97,6 +97,7 @@ class Assets {
 		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
 		$is_cf7_active      = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
 		$is_wpforms_active  = is_plugin_active( 'wpforms-lite/wpforms.php' );
+		$is_jetpack_active  = is_plugin_active( 'jetpack/jetpack.php' );
 		
 		wp_localize_script(
 			'rtgodam-script',
@@ -106,6 +107,7 @@ class Assets {
 				'wp_polls'     => $is_wp_polls_active,
 				'cf7'          => $is_cf7_active,
 				'wpforms'      => $is_wpforms_active,
+				'jetpack'      => $is_jetpack_active,
 			)
 		);
 
@@ -122,6 +124,38 @@ class Assets {
 		wp_set_script_translations( 'rtgodam-script', 'godam', RTGODAM_PATH . 'languages' );
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
+
+		// Add Jetpack form script.
+		wp_register_script(
+			'rtgodam-jetpack-form',
+			RTGODAM_URL . 'assets/build/js/jetpack-form.min.js',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/js/jetpack-form.min.js' ),
+			true
+		);
+
+		wp_localize_script(
+			'rtgodam-jetpack-form',
+			'godamJetpackFormData',
+			array(
+				'submittingText'      => __( 'Submitting...', 'godam' ),
+				'successHeading'      => __( 'Success!', 'godam' ),
+				'successMessage'      => __( 'Your message has been sent successfully.', 'godam' ),
+				'errorMessage'        => __( 'An error occurred. Please try again.', 'godam' ),
+				'networkErrorMessage' => __( 'Network error. Please try again.', 'godam' ),
+			)
+		);
+
+		wp_localize_script(
+			'rtgodam-jetpack-form',
+			'wpAjax',
+			array(
+				'ajaxurl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'jetpack_form_nonce' ),
+			) 
+		);
+
+		wp_enqueue_script( 'rtgodam-jetpack-form' );
 
 		// Register IMA SDK.
 		wp_enqueue_script(

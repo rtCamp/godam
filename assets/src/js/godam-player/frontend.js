@@ -12,7 +12,6 @@ import 'videojs-ima/dist/videojs.ima.css';
 import videojs from 'video.js';
 import 'videojs-contrib-ads';
 import 'videojs-ima';
-import 'videojs-contrib-quality-menu';
 
 /**
  * FontAwesome dependencies
@@ -39,6 +38,12 @@ import Twitter from '../../../../assets/src/images/twitter-x.svg';
 import Whatsapp from '../../../../assets/src/images/whatsapp.svg';
 import Complete from '../../../../assets/src/images/check.svg';
 import DOMPurify from 'isomorphic-dompurify';
+import SettingsButton from './masterSettings';
+import {
+	createChapterMarkers,
+	updateActiveChapter,
+	loadChapters,
+} from './chapters.js'; // Adjust path as needed
 
 /**
  * Global variables
@@ -68,7 +73,9 @@ function GODAMPlayer( videoRef = null ) {
 
 		const currentPlayerVideoInstanceId = video.dataset.instanceId;
 
-		video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
+		if ( video.closest( '.animate-video-loading' ) ) {
+			video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
+		}
 
 		const adTagUrl = video.dataset.ad_tag_url;
 		let isVideoClicked = false;
@@ -106,6 +113,7 @@ function GODAMPlayer( videoRef = null ) {
 		const isPreviewEnabled = videoSetupOptions?.preview;
 
 		const player = videojs( video, videoSetupControls );
+		player.aspectRatio( '16:9' );
 
 		// Check if the player is inside a modal
 		const isInModal = video.closest( '.godam-modal' ) !== null;
@@ -132,6 +140,66 @@ function GODAMPlayer( videoRef = null ) {
 				}
 			}
 		} );
+
+		const getChaptersData = () => {
+			if (
+				videoSetupOptions?.chapters &&
+				Array.isArray( videoSetupOptions.chapters ) &&
+				videoSetupOptions.chapters.length > 0
+			) {
+				const seenTimes = new Set();
+
+				// First filter out invalid entries
+				const filteredChapters = videoSetupOptions.chapters.filter( ( chapter ) => {
+					const time = parseFloat( chapter.startTime );
+
+					// Conditions to discard
+					if (
+						! chapter.startTime || // empty string or undefined
+						isNaN( time ) ||
+						time < 0 ||
+						seenTimes.has( time )
+					) {
+						return false;
+					}
+
+					seenTimes.add( time );
+					return true;
+				} );
+
+				// Now convert to your format
+				return filteredChapters.map( ( chapter ) => ( {
+					startTime: parseFloat( chapter.startTime ) || 0,
+					text: chapter.text || 'Chapter',
+					originalTime: chapter.originalTime,
+					endTime: null,
+				} ) );
+			}
+		};
+
+		const initializeChapters = ( chaptersData ) => {
+			if ( ! chaptersData || chaptersData?.length === 0 ) {
+				return;
+			}
+
+			// Sort chapters by start time
+			chaptersData.sort( ( a, b ) => a.startTime - b.startTime );
+
+			// Calculate end times
+			for ( let i = 0; i < chaptersData?.length; i++ ) {
+				if ( i < chaptersData.length - 1 ) {
+					chaptersData[ i ].endTime = chaptersData[ i + 1 ].startTime;
+				} else {
+					// Last chapter - end time will be set to video duration when available
+					chaptersData[ i ].endTime = null;
+				}
+			}
+
+			// Load chapters using the chapters.js module
+			loadChapters( player, chaptersData );
+
+			return chaptersData;
+		};
 
 		// Function to move video controls
 		function moveVideoControls() {
@@ -392,6 +460,27 @@ function GODAMPlayer( videoRef = null ) {
 
 				shareModal.innerHTML = DOMPurify.sanitize( html );
 
+				// Function to close the modal
+				const closeModal = () => {
+					shareModal.remove();
+				};
+
+				// Close modal when clicking outside
+				shareModal.addEventListener( 'click', ( modalEvent ) => {
+					if ( modalEvent.target === shareModal ) {
+						closeModal();
+					}
+				} );
+
+				// Close modal on escape key
+				const handleEscapeKey = ( modalEvent ) => {
+					if ( modalEvent.key === 'Escape' ) {
+						closeModal();
+						document.removeEventListener( 'keydown', handleEscapeKey );
+					}
+				};
+				document.addEventListener( 'keydown', handleEscapeKey );
+
 				shareModal
 					.querySelector( '#copy-page-link' )
 					.addEventListener( 'click', () => this.copyToClipboard( 'page-link' ) );
@@ -402,10 +491,7 @@ function GODAMPlayer( videoRef = null ) {
 
 				shareModal
 					.querySelector( '#cancel-button' )
-					.addEventListener( 'click', function() {
-						const cancelButton = shareModal.querySelector( '#cancel-button' );
-						cancelButton.closest( '.share-modal-container' ).remove();
-					} );
+					.addEventListener( 'click', closeModal );
 
 				const link = encodeURI(
 					`${ window.godamData.api_base }/web/video/${ this.player().jobId }`,
@@ -435,6 +521,9 @@ function GODAMPlayer( videoRef = null ) {
 		// Register the new component
 		videojs.registerComponent( 'GodamShareButton', GodamShareButton );
 
+		// FIXED: Store chapters data at player level
+		let chaptersData = [];
+
 		// Add the button to the control bar after the player is ready
 		player.ready( function() {
 			player.jobId = video.dataset.job_id; // Store the result when it's available
@@ -448,7 +537,58 @@ function GODAMPlayer( videoRef = null ) {
 				);
 				videoContainer.appendChild( buttonEl );
 			}
+
+			// FIXED: Initialize chapters after player is ready
+			chaptersData = getChaptersData();
+			if ( chaptersData && chaptersData.length > 0 ) {
+				initializeChapters( chaptersData );
+			}
 		} );
+
+		// Handle overlay removal based on time range
+		const videoContainerWrapper = video.closest( '.godam-video-wrapper' );
+		const overlay = videoContainerWrapper ? videoContainerWrapper.querySelector( '[data-overlay-content]' ) : null;
+
+		if ( overlay ) {
+			// Get overlay time range from video configuration
+			const overlayTimeRange = videoSetupOptions?.overlayTimeRange || 0;
+			let overlayHidden = false;
+
+			// Function to hide overlay
+			const hideOverlay = function() {
+				if ( ! overlayHidden ) {
+					overlayHidden = true;
+					overlay.style.opacity = '0';
+
+					// Remove the overlay after the transition
+					setTimeout( function() {
+						overlay.style.display = 'none';
+					}, 300 );
+				}
+			};
+
+			// Handle overlay visibility based on time range
+			if ( overlayTimeRange > 0 ) {
+				// Listen for timeupdate to check if we should hide the overlay
+				player.on( 'timeupdate', function() {
+					const currentTime = player.currentTime();
+
+					if ( currentTime >= overlayTimeRange && ! overlayHidden ) {
+						hideOverlay();
+					}
+				} );
+			} else {
+				// If time range is 0, hide overlay on first play (original behavior)
+				let hasPlayedOnce = false;
+				const hideOnFirstPlay = function() {
+					if ( ! hasPlayedOnce ) {
+						hasPlayedOnce = true;
+						hideOverlay();
+					}
+				};
+				player.one( 'play', hideOnFirstPlay );
+			}
+		}
 
 		player.ready( function() {
 			const controlBarSettings = videoSetupControls?.controlBar;
@@ -478,6 +618,40 @@ function GODAMPlayer( videoRef = null ) {
 
 			if ( ! controlBarSettings?.volumePanel ) {
 				controlBar.removeChild( 'volumePanel' );
+			}
+
+			if ( ! controlBar.getChild( 'SettingsButton' ) ) {
+				if ( ! videojs.getComponent( 'SettingsButton' ) ) {
+					videojs.registerComponent( 'SettingsButton', SettingsButton );
+				}
+				controlBar.addChild( 'SettingsButton', {} );
+			}
+
+			document.querySelectorAll( '.vjs-settings-button' ).forEach( ( button ) => {
+				button.querySelector( '.vjs-icon-placeholder' ).classList.add( 'vjs-icon-cog' );
+			} );
+
+			if ( controlBarSettings?.customPlayBtnImg ) {
+				const playButtonElement = player.getChild( 'bigPlayButton' );
+
+				const imgElement = document.createElement( 'img' );
+				imgElement.src = controlBarSettings?.customPlayBtnImg;
+				imgElement.alt = 'Custom Play Button';
+
+				playButtonElement.el_.classList.forEach( ( cls ) => {
+					imgElement.classList.add( cls );
+				} );
+
+				imgElement.classList.add( 'custom-play-image' );
+
+				imgElement.style.cursor = 'pointer';
+				imgElement.addEventListener( 'click', function() {
+					const videoPlayer = imgElement.closest( '.easydam-player' );
+					const videoElement = videoPlayer?.querySelector( 'video' );
+					videoElement.play();
+				} );
+				// Replace the original button with the new image
+				playButtonElement.el_.parentNode.replaceChild( imgElement, playButtonElement.el_ );
 			}
 
 			if ( controlBarSettings?.brandingIcon || ! validAPIKey ) {
@@ -518,6 +692,28 @@ function GODAMPlayer( videoRef = null ) {
 				// Register the component before using it
 				videojs.registerComponent( 'CustomButton', CustomButton );
 				controlBar.addChild( 'CustomButton', {} );
+			}
+		} );
+
+		// FIXED: Create markers when duration becomes available
+		player.on( 'durationchange', () => {
+			const duration = player.duration();
+			if ( ! duration || duration === Infinity || ! chaptersData?.length ) {
+				return;
+			}
+
+			// Drop chapters beyond duration
+			chaptersData = chaptersData.filter( ( ch ) => ch.startTime < duration );
+
+			// Set endTime for the last valid chapter
+			chaptersData[ chaptersData.length - 1 ].endTime = duration;
+
+			createChapterMarkers( player, chaptersData );
+		} );
+
+		player.on( 'timeupdate', () => {
+			if ( chaptersData && chaptersData.length > 0 ) {
+				updateActiveChapter( player.currentTime(), chaptersData );
 			}
 		} );
 
@@ -618,7 +814,10 @@ function GODAMPlayer( videoRef = null ) {
 						if (
 							layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ||
 							layerObj.layerElement.querySelector( '.wpforms-confirmation-container-full' ) ||
-							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' )
+							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' ) ||
+							layerObj.layerElement.querySelector( '.contact-form-success' ) ||
+							( ! layerObj.layerElement.querySelector( '.wp-polls-form' ) &&
+							layerObj.layerElement.querySelector( '.wp-polls-answer' ) )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -660,6 +859,8 @@ function GODAMPlayer( videoRef = null ) {
 					} else if ( window.godamPluginDependencies?.wpforms && layer.form_type === 'wpforms' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.cf7 && layer.form_type === 'cf7' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.jetpack && layer.form_type === 'jetpack' ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {
@@ -1082,12 +1283,6 @@ function GODAMPlayer( videoRef = null ) {
 				id: 'content_video',
 				adTagUrl,
 			} );
-		}
-
-		try {
-			player.qualityMenu();
-		} catch ( error ) {
-			// Silently fail - do nothing.
 		}
 	} );
 }

@@ -245,6 +245,38 @@
 			}
 		}
 	}
+
+	.chapter-indicator {
+
+		&--duration {
+			display: none;
+		}
+		&--text {
+			position: absolute;
+			left: 50%;
+			bottom: -20px;
+			font-size: 11px;
+			white-space: nowrap;
+		}
+		&:hover {
+			
+			.chapter-indicator--duration {
+				display: block;
+				position: absolute;
+				top: -20px;
+				left: 50%;
+				white-space: nowrap;
+				font-size: 11px;
+			}
+
+			.chapter-indicator--text {
+				max-width: var(--hover-width, 8px);
+				overflow: hidden;
+				white-space: nowrap;
+				text-overflow: ellipsis;
+			}
+		}
+	}
 }
 
 .godam-video-list-wrapper {
@@ -265,4 +297,12 @@
 .disabled .components-combobox-control__suggestions-container {
 	pointer-events: none;
 	opacity: 0.5;
+}
+
+.jetpack-form-preview .wp-block-jetpack-contact-form-container {
+	pointer-events: none;
+}
+
+#branding-icon {
+	order: 9;
 }

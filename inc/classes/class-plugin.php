@@ -18,6 +18,7 @@ use RTGODAM\Inc\Media_Tracker;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
+use RTGODAM\Inc\REST_API\Jetpack;
 use RTGODAM\Inc\REST_API\GF;
 use RTGODAM\Inc\REST_API\CF7;
 use RTGODAM\Inc\REST_API\WPForms;
@@ -74,6 +75,9 @@ class Plugin {
 
 		// Load video metadata.
 		Video_Metadata::get_instance();
+
+		// Load Elementor widgets.
+		$this->load_elementor_widgets();
 	}
 
 	/**
@@ -101,6 +105,7 @@ class Plugin {
 	 * @return void
 	 */
 	public function load_rest_api() {
+		Jetpack::get_instance();
 		GF::get_instance();
 		CF7::get_instance();
 		WPForms::get_instance();
@@ -114,6 +119,19 @@ class Plugin {
 		Polls::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
+	}
+
+	/**
+	 * Registers the elementor widgets if required.
+	 * 
+	 * @return void
+	 */
+	public function load_elementor_widgets() {
+		if ( ! did_action( 'elementor/loaded' ) ) {
+			return;
+		}
+
+		Elementor_Widgets::get_instance();
 	}
 
 	/**

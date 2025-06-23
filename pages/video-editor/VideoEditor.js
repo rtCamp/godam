@@ -28,6 +28,7 @@ import {
 import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
 import { useFetchForms } from './components/forms/fetchForms';
+import Chapters from './components/chapters/Chapters';
 
 const VideoEditor = ( { attachmentID } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
@@ -41,6 +42,7 @@ const VideoEditor = ( { attachmentID } ) => {
 
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
+	const chapters = useSelector( ( state ) => state.videoReducer.chapters );
 	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
 
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
@@ -143,10 +145,11 @@ const VideoEditor = ( { attachmentID } ) => {
 		}
 	};
 	const seekToTime = ( time ) => playerRef.current?.currentTime( time );
+	const pauseVideo = () => playerRef.current?.pause();
 
 	const handleSaveAttachmentMeta = async () => {
 		const data = {
-			rtgodam_meta: { videoConfig, layers },
+			rtgodam_meta: { videoConfig, layers, chapters },
 		};
 
 		const response = await saveAttachmentMeta( { id: attachmentID, data } ).unwrap();
@@ -161,6 +164,25 @@ const VideoEditor = ( { attachmentID } ) => {
 		}
 	};
 
+	const formatTimeForInput = ( seconds ) => {
+		if ( seconds === null || isNaN( seconds ) ) {
+			return '';
+		}
+
+		const hrs = Math.floor( seconds / 3600 );
+		const mins = Math.floor( ( seconds % 3600 ) / 60 );
+		const secsRaw = seconds % 60;
+
+		const hrsStr = String( hrs ).padStart( 2, '0' );
+		const minsStr = String( mins ).padStart( 2, '0' );
+		const secsStr = secsRaw.toFixed( 2 ).padStart( 5, '0' ); // includes decimal, eg: 04.90
+
+		if ( hrs > 0 ) {
+			return `${ hrsStr }:${ minsStr }:${ secsStr }`;
+		}
+		return `${ minsStr }:${ secsStr }`;
+	};
+
 	const tabConfig = [
 		{
 			name: 'layers',
@@ -170,6 +192,7 @@ const VideoEditor = ( { attachmentID } ) => {
 				<SidebarLayers
 					currentTime={ currentTime }
 					onSelectLayer={ seekToTime }
+					onPauseVideo={ pauseVideo }
 					duration={ duration }
 				/>
 			),
@@ -179,6 +202,18 @@ const VideoEditor = ( { attachmentID } ) => {
 			title: __( 'Player Settings', 'godam' ),
 			className: 'flex-1 justify-center items-center',
 			component: <Appearance />,
+		},
+		{
+			name: 'chapters',
+			title: __( 'Chapters', 'godam' ),
+			className: 'flex-1 justify-center items-center',
+			component: (
+				<Chapters
+					currentTime={ currentTime }
+					duration={ duration }
+					formatTimeForInput={ formatTimeForInput }
+				/>
+			),
 		},
 	];
 
@@ -257,14 +292,14 @@ const VideoEditor = ( { attachmentID } ) => {
 					}
 
 					{ attachmentConfig && sources.length > 0 && (
-						<div className="w-full">
+						<div className="w-full video-canvas-wrapper">
 							<div className="relative">
 								<VideoJSPlayer
 									options={ {
 										controls: true,
 										fluid: true,
 										preload: 'auto',
-										width: '100%',
+										aspectRatio: '16:9',
 										sources,
 										controlBar: {
 											playToggle: true,
@@ -283,6 +318,7 @@ const VideoEditor = ( { attachmentID } ) => {
 									onTimeupdate={ handleTimeUpdate }
 									onReady={ handlePlayerReady }
 									playbackTime={ currentTime }
+									formatTimeForInput={ formatTimeForInput }
 								/>
 							</div>
 						</div>

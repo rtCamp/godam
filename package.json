@@ -30,6 +30,7 @@
 		"@tailwindcss/typography": "^0.5.16",
 		"@uppy/core": "4.4.4",
 		"@uppy/dashboard": "4.3.3",
+		"@uppy/golden-retriever": "4.1.1",
 		"@uppy/screen-capture": "4.2.2",
 		"@uppy/webcam": "4.1.2",
 		"@uppy/xhr-upload": "4.3.3",
@@ -54,6 +55,7 @@
 		"uuid": "^11.0.5",
 		"video.js": "^8.21.0",
 		"videojs-contrib-ads": "^7.5.2",
+		"videojs-contrib-quality-levels": "4.1.0",
 		"videojs-contrib-quality-menu": "^1.0.3",
 		"videojs-ima": "^2.3.0"
 	},

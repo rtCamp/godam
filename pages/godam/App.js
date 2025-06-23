@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { cog, video } from '@wordpress/icons';
+import { cog, video, code } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -24,6 +24,7 @@ import VideoSettings from './components/tabs/VideoSettings/VideoSettings.jsx';
 
 import { useGetMediaSettingsQuery } from './redux/api/media-settings.js';
 import { setMediaSettings } from './redux/slice/media-settings.js';
+import VideoPlayer from './components/tabs/VideoPlayer/VideoPlayer.jsx';
 
 const TABS = [
 	{
@@ -37,6 +38,12 @@ const TABS = [
 		label: __( 'Video Settings', 'godam' ),
 		component: VideoSettings,
 		icon: video,
+	},
+	{
+		id: 'video-player',
+		label: __( 'Video Player', 'godam' ),
+		component: VideoPlayer,
+		icon: code,
 	},
 ];
 

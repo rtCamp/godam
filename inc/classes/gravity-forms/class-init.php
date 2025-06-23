@@ -34,7 +34,7 @@ class Init {
 	 * @return void
 	 */
 	public function setup_hooks() {
-		
+
 		/**
 		 * Filters
 		 */
@@ -53,7 +53,7 @@ class Init {
 
 	/**
 	 * Register custom gravity form field.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function register_custom_gf_field() {
@@ -71,7 +71,7 @@ class Init {
 
 		// Only enqueue the scripts and styles if the form contains a godam_record field.
 		$has_godam_field = false;
-	
+
 		// Check if form has godam_record fields.
 		if ( ! empty( $form['fields'] ) ) {
 			// Loop through all fields to find a godam_record field.
@@ -82,7 +82,7 @@ class Init {
 				}
 			}
 		}
-		
+
 		if ( ! $has_godam_field ) {
 			return;
 		}
@@ -94,12 +94,12 @@ class Init {
 			filemtime( RTGODAM_PATH . 'assets/build/css/gf-uppy-video.css' )
 		);
 
-		wp_enqueue_script( 
+		wp_enqueue_script(
 			'gf-godam-recorder-script',
 			RTGODAM_URL . 'assets/build/js/gf-godam-recorder.min.js',
 			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/gf-godam-recorder.min.js' ), 
-			true 
+			filemtime( RTGODAM_PATH . 'assets/build/js/gf-godam-recorder.min.js' ),
+			true
 		);
 	}
 
@@ -111,8 +111,8 @@ class Init {
 			'gf-entry-detail-script',
 			RTGODAM_URL . 'assets/build/js/gf-entry-detail.min.js',
 			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/gf-entry-detail.min.js' ), 
-			true 
+			filemtime( RTGODAM_PATH . 'assets/build/js/gf-entry-detail.min.js' ),
+			true
 		);
 	}
 
@@ -244,7 +244,7 @@ class Init {
 				if ( ! is_array( $files ) ) {
 					$files = array( $file_value );
 				}
-				
+
 				foreach ( $files as $index => $file_url ) {
 					$this->send_to_godam( $form_title, $file_url, $entry['id'], $field_id, $index );
 				}
@@ -277,10 +277,11 @@ class Init {
 				'watermark_url'        => '',
 				'video_thumbnails'     => 0,
 				'overwrite_thumbnails' => false,
+				'use_watermark_image'  => false,
 			),
 		);
 
-		$godam_settings = get_option( 'rtgodam-settings', array() );
+		$godam_settings = get_option( 'rtgodam-settings', $default_settings );
 
 		$rtgodam_watermark           = $godam_settings['video']['watermark'];
 		$rtgodam_use_watermark_image = $godam_settings['video']['use_watermark_image'];
@@ -298,7 +299,6 @@ class Init {
 			}
 		}
 
-		
 		$callback_url = rest_url( 'godam/v1/transcoder-callback' );
 
 		/**
@@ -357,7 +357,7 @@ class Init {
 						'entry_id' => $entry_id,
 						'field_id' => $field_id,
 						'index'    => $index,
-					) 
+					)
 				);
 			}
 		}
