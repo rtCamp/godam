@@ -5,6 +5,7 @@ import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
+	const brandImage = mediaSettings.brand_image || '';
 	const openBrandMediaPicker = () => {
 		const fileFrame = wp.media( {
 			title: __( 'Select Brand Image', 'godam' ),
@@ -44,9 +45,9 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 				variant="primary"
 				className="godam-button godam-margin-right"
 			>
-				{ mediaSettings?.general?.brand_image ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
+				{ brandImage ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 			</Button>
-			{ mediaSettings?.general?.brand_image && (
+			{ brandImage && (
 				<Button
 					onClick={ removeBrandImage }
 					variant="secondary"
@@ -56,10 +57,10 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 					{ __( 'Remove', 'godam' ) }
 				</Button>
 			) }
-			{ mediaSettings?.general?.brand_image && (
+			{ brandImage && (
 				<div className="mt-2">
 					<img
-						src={ mediaSettings?.general?.brand_image }
+						src={ brandImage }
 						alt={ __( 'Selected custom brand', 'godam' ) }
 						className="max-w-[200px]"
 					/>
