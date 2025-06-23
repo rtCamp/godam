@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -102,13 +102,7 @@ const ContextMenu = () => {
 			);
 
 			// Show success message with details
-			const successMessage = data.added_files > 0
-				? sprintf(
-					/* translators: %d: number of files added to the ZIP */
-					__( 'ZIP downloaded successfully! %d files included.', 'godam' ),
-					data.added_files,
-				)
-				: __( 'ZIP file downloaded successfully.', 'godam' );
+			const successMessage = data?.message;
 
 			dispatch(
 				updateSnackbar( {

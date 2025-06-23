@@ -34,6 +34,8 @@ class Media_Folders_REST_API {
 
 		add_action( 'set_object_terms', array( $this, 'invalidate_attachment_count_cache' ), 10, 4 );
 		add_action( 'delete_term_relationships', array( $this, 'invalidate_attachment_cache_on_delete_relationship' ), 10, 3 );
+
+		add_action( 'godam_cleanup_zip', array( $this, 'godam_cleanup_zip_file' ), 10, 1 );
 	}
 
 	/**
@@ -104,5 +106,17 @@ class Media_Folders_REST_API {
 		if ( ! empty( $term_ids ) ) {
 			Media_Folder_Utils::get_instance()->invalidate_multiple_attachment_count_cache( $term_ids );
 		}
+	}
+
+	/**
+	 * Clean up the ZIP file after download.
+	 *
+	 * This method is called via an action hook to ensure that the ZIP file is deleted
+	 * after it has been downloaded, preventing unnecessary storage usage.
+	 *
+	 * @param string $zip_path The path to the ZIP file to be cleaned up.
+	 */
+	public function godam_cleanup_zip_file( $zip_path ) {
+		Media_Folder_Utils::get_instance()->godam_cleanup_zip_file( $zip_path );
 	}
 }
