@@ -33,8 +33,14 @@ class GoDAM_Player {
 	 * Outputs custom css from video player settings tab input field.
 	 */
 	public function godam_output_admin_player_css() {
-		$godam_settings = get_option( 'rtgodam-settings', array() );
-		$custom_css     = $godam_settings['video_player']['custom_css'] ?? '';
+		$default_settings = array(
+			'video_player' => array(
+				'custom_css' => '',
+			),
+		);
+
+		$godam_settings = get_option( 'rtgodam-settings', $default_settings );
+		$custom_css     = $godam_settings['video_player']['custom_css'];
 		if ( ! empty( $custom_css ) ) {
 			echo '<style id="godam-player-inline-css">' . esc_html( $custom_css ) . '</style>';
 		}
