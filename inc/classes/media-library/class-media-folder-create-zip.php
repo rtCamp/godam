@@ -56,7 +56,6 @@ class Media_Folder_Create_Zip {
 	 * @return array Array of attachment objects.
 	 */
 	private function get_taxonomy_attachments( $folder_id ) {
-		// Get attachments associated with the folder.
 		$args = array(
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
@@ -67,10 +66,14 @@ class Media_Folder_Create_Zip {
 					'terms'    => $folder_id,
 				),
 			),
-			'posts_per_page' => -1, // Get all attachments.
+			'posts_per_page' => -1,
+			'no_found_rows'  => true, // Improve performance when pagination isn't needed.
+			'fields'         => 'all', // Return full post objects.
 		);
 
-		return get_posts( $args );
+		$query = new \WP_Query( $args );
+
+		return $query->posts;
 	}
 
 	/**
