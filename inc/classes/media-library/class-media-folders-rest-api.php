@@ -30,9 +30,6 @@ class Media_Folders_REST_API {
 	 */
 	private function setup_hooks() {
 		add_filter( 'rest_prepare_media-folder', array( $this, 'add_data_to_media_folder_rest_api' ), 10, 2 );
-
-		add_action( 'added_term_relationship', array( $this, 'invalidate_folder_count_cache' ), 10, 3 );
-		add_action( 'deleted_term_relationships', array( $this, 'invalidate_folder_count_cache' ), 10, 3 );
 	}
 
 	/**
