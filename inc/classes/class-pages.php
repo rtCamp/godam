@@ -338,7 +338,9 @@ class Pages {
 			$is_cf7_active           = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
 			$is_wpforms_active       = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
 			$is_jetpack_active = is_plugin_active( 'jetpack/jetpack.php' );
-			$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' ) || is_plugin_active( 'everest-forms-pro/everest-forms-pro.php' );
+
+			// TODO Handle Everest Forms pro versions as well in future.
+			$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' );
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(

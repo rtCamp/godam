@@ -431,7 +431,7 @@ function GODAMPlayer( videoRef = null ) {
 						<a class="whatsapp social-icon" target="blank"><img src=${ Whatsapp } alt='Whatsapp icon' height={24} width={24}</a>
 						<a class="telegram social-icon" target="blank"><img src=${ Telegram } alt='Telegram icon' height={24} width={24}</a>
 					</div>
-					
+
 					<div class='share-input-container'>
 						<label>Page Link</label>
 						<div class="share-modal-input-group">
@@ -817,6 +817,8 @@ function GODAMPlayer( videoRef = null ) {
 					if ( window.godamPluginDependencies?.gravityforms && layer.form_type === 'gravity' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.wpforms && layer.form_type === 'wpforms' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.everestForms && layer.form_type === 'everest-forms' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.cf7 && layer.form_type === 'cf7' ) {
 						handleLayerDisplay( layer );

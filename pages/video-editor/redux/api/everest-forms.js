@@ -6,7 +6,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 const restURL = window.godamRestRoute.url || '';
 
 export const everestFormsApi = createApi( {
-	reducerPath: 'wpFormsApi',
+	reducerPath: 'everestFormsApi',
 	baseQuery: fetchBaseQuery( {
 		baseUrl: restURL,
 		prepareHeaders: ( headers ) => {

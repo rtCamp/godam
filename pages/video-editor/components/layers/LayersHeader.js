@@ -42,6 +42,8 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 				return __( 'Gravity Forms', 'godam' );
 			case 'wpforms':
 				return __( 'WPForms', 'godam' );
+			case 'everest-forms':
+				return __( 'Everest Forms', 'godam' );
 			case 'cf7':
 				return __( 'Contact Form 7', 'godam' );
 			case 'jetpack':

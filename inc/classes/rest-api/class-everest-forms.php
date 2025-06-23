@@ -141,7 +141,7 @@ class Everest_Forms extends Base {
 			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		$form = do_shortcode( "[everest-forms id='{$form_id}' title='{$title}' description='{$description}' ajax='true']" );
+		$form = do_shortcode( "[everest_form id='{$form_id}' title='{$title}' description='{$description}']" );
 
 		return rest_ensure_response( $form );
 	}
@@ -152,6 +152,7 @@ class Everest_Forms extends Base {
 	 * @return boolean
 	 */
 	public function is_form_active() {
-		return is_plugin_active( 'everest-forms/everest-forms.php' ) || is_plugin_active( 'everest-forms-pro/everest-forms-pro.php' );
+		// TODO Handle Everest Forms pro versions as well in future.
+		return is_plugin_active( 'everest-forms/everest-forms.php' );
 	}
 }

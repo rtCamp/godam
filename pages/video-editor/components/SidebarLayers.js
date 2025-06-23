@@ -9,6 +9,7 @@ import { addLayer, setCurrentLayer } from '../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
+import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 
@@ -210,6 +211,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								} else if ( layer.type === 'form' && layer.form_type === 'wpforms' ) {
 									icon = WPFormsIcon;
 									layerText = __( 'WPForms', 'godam' );
+								} else if ( layer.type === 'form' && layer.form_type === 'everest-forms' ) {
+									icon = EverestFormsIcon;
+									layerText = __( 'Everest Forms', 'godam' );
 								} else if ( layer.type === 'form' && layer.form_type === 'cf7' ) {
 									icon = CF7Icon;
 									layerText = __( 'Contact Form 7', 'godam' );
