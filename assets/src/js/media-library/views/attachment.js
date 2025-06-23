@@ -86,8 +86,7 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 
 		if ( isAPIKeyValid() && ( this.model.get( 'type' ) === 'video' || this.model.get( 'type' ) === 'audio' ) ) {
 			// When media is uploaded from current site then only transcoded URL is available.
-			// If the media is uploaded from another site,
-			// Then system will object retrieved from godam API so to check if the media is transcoded or not, we need to check the status.
+			// Else we need to check the status of the media from object retrieved from godam API.
 			if ( this.model.get( 'transcoded_url' ) || 'Transcoded' === this.model.get( 'status' ) ) {
 				this.$el.append( `
 					<div class="transcoding-status__loader" data-percent="100">
