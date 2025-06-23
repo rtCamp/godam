@@ -26,6 +26,40 @@ class Jetpack extends Base {
 	protected $rest_base = '';
 
 	/**
+	 * Batch size for fetching Jetpack forms.
+	 *
+	 * @var integer
+	 */
+	protected $batch_size = 50;
+
+	/**
+	 * Cache key for Jetpack forms.
+	 *
+	 * @var string
+	 */
+	protected $cache_key = 'rtgodam_jetpack_fetched_forms';
+
+	/**
+	 * Cache expiry for Jetpack forms.
+	 *
+	 * @var integer
+	 */
+	protected $cache_expiry = DAY_IN_SECONDS;
+
+	/**
+	 * Setup hooks and initialization.
+	 */
+	protected function setup_hooks() {
+
+		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+		
+		// Hook cache invalidation to post actions.
+		add_action( 'save_post', array( $this, 'invalidate_cache' ) );
+		add_action( 'deleted_post', array( $this, 'invalidate_cache' ) );
+		add_action( 'wp_trash_post', array( $this, 'invalidate_cache' ) );
+	}
+
+	/**
 	 * Get REST routes.
 	 */
 	public function get_rest_routes() {
@@ -116,39 +150,61 @@ class Jetpack extends Base {
 			return new \WP_Error( 'jetpack_not_active', __( 'Jetpack plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}
 
+		// Try to get from cache first.
+		$cached = get_transient( $this->cache_key );
+		if ( false !== $cached ) {
+			return rest_ensure_response( $cached );
+		}
+
 		global $wpdb;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$posts_with_forms = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT DISTINCT p.ID, p.post_title, p.post_content 
-				FROM {$wpdb->posts} p 
-				WHERE p.post_status = 'publish'
-				AND p.post_type IN ( 'page', 'post' )
-				AND p.post_content LIKE %s",
-				'%wp:jetpack/contact-form%'
-			)
-		);
-
+		$batch_size    = $this->batch_size;
+		$offset        = 0;
 		$jetpack_forms = array();
 
-		foreach ( $posts_with_forms as $post ) {
-			// Parse blocks to find Jetpack forms.
-			$blocks        = parse_blocks( $post->post_content );
-			$forms_in_post = $this->extract_jetpack_forms_from_blocks( $blocks, $post->ID, $post->post_title );
+		do {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$posts_with_forms = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT DISTINCT p.ID, p.post_title, p.post_content 
+					FROM {$wpdb->posts} p 
+					WHERE p.post_status = 'publish'
+					AND p.post_type IN ( 'page', 'post' )
+					AND p.post_content LIKE %s
+					LIMIT %d OFFSET %d",
+					'%wp:jetpack/contact-form%',
+					$batch_size,
+					$offset
+				)
+			);
 
-			foreach ( $forms_in_post as $form ) {
-				$form_data = array(
-					'id'             => $form['id'],
-					'title'          => $form['title'],
-					'post_id'        => $post->ID,
-					'post_title'     => $post->post_title,
-					'origin_post_id' => $post->ID,
-				);
-				
-				$jetpack_forms[] = $form_data;
+			if ( empty( $posts_with_forms ) ) {
+				break;
 			}
-		}
+
+			foreach ( $posts_with_forms as $post ) {
+				// Parse blocks to find Jetpack forms.
+				$blocks        = parse_blocks( $post->post_content );
+				$forms_in_post = $this->extract_jetpack_forms_from_blocks( $blocks, $post->ID, $post->post_title );
+
+				foreach ( $forms_in_post as $form ) {
+					$form_data       = array(
+						'id'             => $form['id'],
+						'title'          => $form['title'],
+						'post_id'        => $post->ID,
+						'post_title'     => $post->post_title,
+						'origin_post_id' => $post->ID,
+					);
+					$jetpack_forms[] = $form_data;
+				}
+			}
+
+			$offset     += $batch_size;
+			$posts_count = count( $posts_with_forms );
+		} while ( $posts_count === $batch_size );
+
+		// Cache the result for 1 day.
+		set_transient( $this->cache_key, $jetpack_forms, $this->cache_expiry );
 
 		return rest_ensure_response( $jetpack_forms );
 	}
@@ -796,5 +852,14 @@ class Jetpack extends Base {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Invalidate the Jetpack forms cache on post save, delete, or trash.
+	 *
+	 * @param int $post_id The post ID that was saved, deleted, or trashed.
+	 */
+	public function invalidate_cache( $post_id ) {
+		delete_transient( $this->cache_key );
 	}
 }
