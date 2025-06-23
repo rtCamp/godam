@@ -23,7 +23,7 @@ window.addEventListener( 'elementor/frontend/init', () => {
 	if ( window.elementorFrontend && window.GODAMPlayer ) {
 		// eslint-disable-next-line no-undef
 		elementorFrontend.hooks.addAction(
-			'frontend/element_ready/godam-player.default',
+			'frontend/element_ready/godam-video.default',
 			( ) => {
 				window.GODAMPlayer();
 			},
@@ -35,7 +35,7 @@ window.addEventListener( 'elementor/frontend/init', () => {
 		elementor.hooks.addAction(
 			'panel/open_editor/widget',
 			( panel, model ) => {
-				if ( model.get( 'widgetType' ) !== 'godam-player' ) {
+				if ( model.get( 'widgetType' ) !== 'godam-video' ) {
 					return;
 				}
 
