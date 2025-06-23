@@ -69,12 +69,10 @@ class RTGODAM_Transcoder_Admin {
 		// Otherwise, show regular admin notice.
 		if ( empty( $api_key ) ) {
 			$this->render_admin_notice(
-				wp_kses_post(
-					sprintf(
-						// translators: %s is the URL to the plugin settings page where the API key can be activated.
-						__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
-						esc_url( $video_editor_settings_url )
-					),
+				sprintf(
+					// translators: %s is the URL to the plugin settings page where the API key can be activated.
+					__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
+					esc_url( $video_editor_settings_url )
 				),
 				'warning',
 				true,
@@ -89,12 +87,10 @@ class RTGODAM_Transcoder_Admin {
 
 		if ( empty( $usage_data ) ) {
 			$this->render_admin_notice(
-				wp_kses_post(
-					sprintf(
-						// translators: %s is the URL to the plugin settings page where the API key can be activated.
-						__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
-						esc_url( $video_editor_settings_url )
-					),
+				sprintf(
+					// translators: %s is the URL to the plugin settings page where the API key can be activated.
+					__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
+					esc_url( $video_editor_settings_url )
 				),
 				'warning',
 				true,
@@ -155,12 +151,10 @@ class RTGODAM_Transcoder_Admin {
 				return;
 			} else {
 				$this->render_admin_notice(
-					wp_kses_post(
-						sprintf(
-							// translators: %s is the URL to the plugin settings page where the API key can be activated.
-							__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
-							esc_url( $video_editor_settings_url )
-						),
+					sprintf(
+						// translators: %s is the URL to the plugin settings page where the API key can be activated.
+						__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
+						esc_url( $video_editor_settings_url )
 					),
 					'error',
 					true,
@@ -172,12 +166,10 @@ class RTGODAM_Transcoder_Admin {
 
 		// Default fallback notice (if none of the above conditions are met).
 		$this->render_admin_notice(
-			wp_kses_post(
-				sprintf(
-					// translators: %s is the URL to the plugin settings page where the API key can be activated.
-					__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
-					esc_url( $video_editor_settings_url )
-				),
+			sprintf(
+				// translators: %s is the URL to the plugin settings page where the API key can be activated.
+				__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock transcoding and other features, <a href="%s">please activate your api key.</a>', 'godam' ),
+				esc_url( $video_editor_settings_url )
 			),
 			'warning',
 			true,
