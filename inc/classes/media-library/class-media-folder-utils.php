@@ -24,9 +24,9 @@ class Media_Folder_Utils {
 	private const CACHE_GROUP = 'godam_media_folders';
 
 	/**
-	 * Default cache expiration time (15 minutes)
+	 * Default cache expiration time (15 days)
 	 */
-	private const CACHE_EXPIRATION = 15 * MINUTE_IN_SECONDS;
+	private const CACHE_EXPIRATION = 15 * DAY_IN_SECONDS;
 
 	/**
 	 * Get the count of attachments in a folder with caching
