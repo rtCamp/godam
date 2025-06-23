@@ -264,9 +264,10 @@ $alignment_styles = "display: flex; flex-direction: column; justify-content: {$j
 						endif;
 					endforeach;
 
-					if ( isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) &&
-						$easydam_meta_data['videoConfig']['controlBar']['subsCapsButton']
-					) {
+					$display_caption = ( ! isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) || 
+						( isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] );
+
+					if ( $display_caption ) {
 						foreach ( $tracks as $track ) :
 							if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
 								?>
