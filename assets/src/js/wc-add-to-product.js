@@ -183,12 +183,49 @@ jQuery( document ).ready( function( $ ) {
 					</ul>
 
 					{ selected.length > 0 && (
-						<div style={ { marginTop: '1rem', background: '#f8f8f8', padding: '10px', borderRadius: '4px' } }>
+						<div
+							style={ {
+								marginTop: '1rem',
+								background: '#f8f8f8',
+								padding: '10px',
+								borderRadius: '4px',
+							} }
+						>
 							<strong>Attach Products to Video:</strong>
-							<ul style={ { marginTop: '8px', listStyle: 'disc', paddingLeft: '20px' } }>
+
+							{ /* ⬇️  list without default bullets */ }
+							<ul style={ { marginTop: 8, listStyle: 'none', paddingLeft: 0 } }>
 								{ selected
 									.filter( ( p ) => p.id !== CURRENT_ID )
-									.map( ( p ) => <li key={ p.id }>{ p.name }</li> ) }
+									.map( ( p ) => (
+										<li
+											key={ p.id }
+											style={ {
+												display: 'flex',
+												alignItems: 'center',
+												marginBottom: 6,
+											} }
+										>
+											{console.log(p)}
+											{ /* feature image */ }
+											{ p.image && (
+												<img
+													src={ p.image }
+													alt={ p.name }
+													style={ {
+														width: 32,
+														height: 32,
+														objectFit: 'cover',
+														borderRadius: 3,
+														marginRight: 8,
+													} }
+												/>
+											) }
+
+											{ /* name */ }
+											<span>{ p.name }</span>
+										</li>
+									) ) }
 							</ul>
 						</div>
 					) }

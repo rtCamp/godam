@@ -160,9 +160,15 @@ class WC_Product_Video_Gallery {
             $linked_products = $id ? get_post_meta( $id, '_video_parent_product_id', false ) : array();
             $linked_products_obj = array_map(
                 function ( $pid ) {
+					$thumb_id  = get_post_thumbnail_id( $pid );
+					$thumb_url = $thumb_id
+						? wp_get_attachment_image_url( $thumb_id, 'woocommerce_thumbnail' )
+						: wc_placeholder_img_src();
+					
                     return array(
                         'id'   => (int) $pid,
                         'name' => get_the_title( $pid ),
+						'image' => $thumb_url,
                     );
                 },
                 $linked_products

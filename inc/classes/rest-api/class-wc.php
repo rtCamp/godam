@@ -476,10 +476,16 @@ class WC extends Base {
 
 		$linked_products = array_map(
 			function ( $pid ) {
-				return array(
-					'id'   => (int) $pid,
-					'name' => get_the_title( $pid ),
-				);
+				$thumb_id  = get_post_thumbnail_id( $pid );
+					$thumb_url = $thumb_id
+						? wp_get_attachment_image_url( $thumb_id, 'woocommerce_thumbnail' )
+						: wc_placeholder_img_src();
+					
+                    return array(
+                        'id'   => (int) $pid,
+                        'name' => get_the_title( $pid ),
+						'image' => $thumb_url,
+                    );
 			},
 			$product_ids
 		);
