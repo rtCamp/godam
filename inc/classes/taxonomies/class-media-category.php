@@ -61,9 +61,8 @@ class Media_Category {
 			return;
 		}
 
-		$taxonomy      = 'category';
-		$selected      = isset( $_GET[ $taxonomy ] ) ? sanitize_text_field( wp_unslash( $_GET[ $taxonomy ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The media filter form has nonce verification, so this is safe to use without additional nonce checks.
-		$taxonomy_data = get_taxonomy( $taxonomy );
+		$taxonomy = 'category';
+		$selected = isset( $_GET[ $taxonomy ] ) ? sanitize_text_field( wp_unslash( $_GET[ $taxonomy ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The media filter form has nonce verification, so this is safe to use without additional nonce checks.
 
 
 		wp_dropdown_categories(
