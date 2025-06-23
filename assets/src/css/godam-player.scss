@@ -767,6 +767,10 @@
 	opacity: 1;
 }
 
+.video-js .vjs-load-progress div {
+	background-color: unset;
+}
+
 .chapter-segment {
 	position: absolute;
 	top: 0;
