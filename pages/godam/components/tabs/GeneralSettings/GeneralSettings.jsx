@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import {
 	ToggleControl,
 	Notice,
@@ -32,6 +32,7 @@ const GeneralSettings = () => {
 	const [ saveMediaSettings, { isLoading: saveMediaSettingLoading } ] = useSaveMediaSettingsMutation();
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
+	// Show notice function to display messages
 	const showNotice = ( message, status = 'success' ) => {
 		setNotice( { message, status, isVisible: true } );
 		if ( window.scrollY > 0 ) {
@@ -39,10 +40,12 @@ const GeneralSettings = () => {
 		}
 	};
 
+	// Handle setting changes
 	const handleSettingChange = ( key, value ) => {
 		dispatch( updateMediaSetting( { category: 'general', key, value } ) );
 	};
 
+	// Handle saving settings
 	const handleSaveSettings = async () => {
 		try {
 			const response = await saveMediaSettings( { settings: { general: mediaSettings } } ).unwrap();
@@ -56,6 +59,18 @@ const GeneralSettings = () => {
 			showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 		}
 	};
+
+	// Add unsaved changes warning
+	useEffect( () => {
+		const handleBeforeUnload = ( event ) => {
+			if ( isChanged ) {
+				event.preventDefault();
+				event.returnValue = __( 'You have unsaved changes. Are you sure you want to leave?', 'godam' );
+			}
+		};
+		window.addEventListener( 'beforeunload', handleBeforeUnload );
+		return () => window.removeEventListener( 'beforeunload', handleBeforeUnload );
+	}, [ isChanged ] );
 
 	return (
 		<>
