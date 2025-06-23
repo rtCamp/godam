@@ -89,25 +89,12 @@ const processVideoUpload = ( file, container ) => {
 /**
  * Handles updates to Video UI on AJAX submissions.
  *
- * @param {string} formId       - The form ID.
  * @param {string} containerId  - The container ID.
  * @param {string} trigger      - The trigger to open Uppy Dashboard.
  * @param {Uppy}   uppyInstance - The uppy instance
  * @return {void}
  */
-const handleUppyUIOnAjaxRequest = ( formId, containerId, trigger, uppyInstance ) => {
-	const form = document.getElementById( `gform_${ formId }` );
-	const gformWrapper = form.closest( 'div[id^=gform_wrapper_]' );
-
-	/**
-	 * Do not run this on initial load, let the data be populated using uppy's restored
-	 * event as the hook `gform_post_render` executes too early, before the file data
-	 * is asynchronously restored.
-	 */
-	if ( ! gformWrapper.classList.contains( 'gform_validation_error' ) ) {
-		return;
-	}
-
+const handleUppyUIOnAjaxRequest = ( containerId, trigger, uppyInstance ) => {
 	/**
 	 * On subsequent AJAX requests, the reference to Uppy's trigger gets invalidated and
 	 * therefore must be replaced with custom click handler in order for it to work.
@@ -140,6 +127,8 @@ const clearVideoUploadUIOnModalClose = ( selectedFiles, containerId ) => {
 	const container = document.getElementById( containerId );
 	const filenameElement = container.querySelector( '.upp-video-upload-filename' );
 	const previewElement = container.querySelector( '.uppy-video-upload-preview' );
+	const inputId = container.getAttribute( 'data-input-id' );
+	const fileInput = document.getElementById( inputId );
 
 	if ( ! selectedFiles || selectedFiles.length === 0 ) {
 		if ( filenameElement ) {
@@ -147,6 +136,9 @@ const clearVideoUploadUIOnModalClose = ( selectedFiles, containerId ) => {
 		}
 		if ( previewElement ) {
 			previewElement.innerHTML = '';
+		}
+		if ( fileInput ) {
+			fileInput.value = '';
 		}
 	}
 };
@@ -194,7 +186,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 		const localFileInput = selectorArray.includes( 'file_input' ) ? true : false;
 
-		const trigger = `#${ container.id } .uppy-video-upload-button`;
+		const trigger = `#${ containerId } .uppy-video-upload-button`;
 
 		// Add Dashboard with webcam and screen capture.
 		uppy
@@ -236,8 +228,36 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		 * @see https://docs.gravityforms.com/gform_post_render/
 		 */
 		jQuery( document ).on( 'gform_post_render', function( _, formId ) {
+			const submission = window?.gform?.submission;
+			if ( ! submission ) {
+				return;
+			}
+
+			const form = document.getElementById( `gform_${ formId }` );
+			if ( ! form ) {
+				clearUppyStateIfConfirmed();
+				return;
+			}
+
+			/**
+			 * Do not handle file restoration/click-handlers when the submission method is not AJAX
+			 * as that would be taken care of by uppy.
+			 */
+			if ( submission.getSubmissionMethod( form ) === submission.SUBMISSION_METHOD_POSTBACK ) {
+				return;
+			}
+
+			/**
+			 * Do not run this on initial load, let the data be populated using uppy's restored
+			 * event as the hook `gform_post_render` executes too early, before the file data
+			 * is asynchronously restored.
+			 */
+			const gformWrapper = form.closest( 'div[id^=gform_wrapper_]' );
+			if ( ! gformWrapper.classList.contains( 'gform_validation_error' ) ) {
+				return;
+			}
+
 			handleUppyUIOnAjaxRequest(
-				formId,
 				containerId,
 				trigger,
 				uppy,
