@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
+import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 
 /**
  * WordPress dependencies
@@ -208,6 +209,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								} else if ( layer.type === 'form' && layer.form_type === 'cf7' ) {
 									icon = CF7Icon;
 									layerText = __( 'Contact Form 7', 'godam' );
+								} else if ( layer.type === 'form' && layer.form_type === 'jetpack' ) {
+									icon = JetpackIcon;
+									layerText = __( 'Jetpack Forms', 'godam' );
 								} else {
 									layerText = layer?.type?.toUpperCase();
 								}
@@ -297,6 +301,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								isGFPluginActive={ window?.videoData?.gf_active }
 								isWPFormsPluginActive={ window?.videoData?.wpforms_active }
 								isCF7PluginActive={ window?.videoData?.cf7_active }
+								isJetpackPluginActive={ window?.videoData?.jetpack_active }
 								closeModal={ closeModal }
 								addNewLayer={ addNewLayer }
 							/>

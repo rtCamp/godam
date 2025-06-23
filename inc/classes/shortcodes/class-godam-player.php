@@ -34,7 +34,7 @@ class GoDAM_Player {
 	 */
 	public function godam_output_admin_player_css() {
 		$godam_settings = get_option( 'rtgodam-settings', array() );
-		$custom_css     = isset( $godam_settings['video_player'] ) ? $godam_settings['video_player']['custom_css'] : '';
+		$custom_css     = $godam_settings['video_player']['custom_css'] ?? '';
 		if ( ! empty( $custom_css ) ) {
 			echo '<style id="godam-player-inline-css">' . esc_html( $custom_css ) . '</style>';
 		}

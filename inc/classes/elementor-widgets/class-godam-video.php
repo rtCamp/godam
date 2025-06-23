@@ -1,6 +1,6 @@
 <?php
 /**
- * Register Custom Widget - GoDAM Audio
+ * Register Custom Widget - GoDAM Video.
  *
  * @package GoDAM
  */
@@ -10,9 +10,9 @@ namespace RTGODAM\Inc\Elementor_Widgets;
 use Elementor\Controls_Manager;
 
 /**
- * GoDAM Gallery Widget.
+ * GoDAM Video Widget.
  */
-class GoDAM_Player extends Base {
+class GoDAM_Video extends Base {
 
 	/**
 	 * Default config for GoDAM Video Widget.
@@ -21,8 +21,8 @@ class GoDAM_Player extends Base {
 	 */
 	public function set_default_config() {
 		return array(
-			'name'            => 'godam-player',
-			'title'           => _x( 'GoDAM Player', 'Widget Title', 'godam' ),
+			'name'            => 'godam-video',
+			'title'           => _x( 'GoDAM Video', 'Widget Title', 'godam' ),
 			'icon'            => 'eicon-video',
 			'categories'      => array( 'godam' ),
 			'keywords'        => array( 'godam', 'video' ),

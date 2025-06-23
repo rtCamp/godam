@@ -105,6 +105,7 @@ const Appearance = () => {
 				controlBar: {
 					...videoConfig.controlBar,
 					playButtonPosition: e.selectedItem.key,
+					playButtonPositionName: e.selectedItem.name,
 				},
 			} ),
 		);
@@ -139,6 +140,8 @@ const Appearance = () => {
 		} );
 
 		fileFrame.on( 'select', function() {
+			setSelectedCustomBgImg( true );
+
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 			const playButtonElement = document.querySelector( '.vjs-big-play-button' );
 
@@ -191,6 +194,8 @@ const Appearance = () => {
 		} );
 
 		fileFrame.on( 'select', function() {
+			setSelectedBrandImage( true );
+
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 			const brandImg = document.querySelector( '#branding-icon' );
 
@@ -417,7 +422,7 @@ const Appearance = () => {
 						] }
 						value={ {
 							key: videoConfig.controlBar.playButtonPosition,
-							name: videoConfig.controlBar.playButtonPosition,
+							name: videoConfig.controlBar.playButtonPositionName,
 						} }
 					/>
 				</div>

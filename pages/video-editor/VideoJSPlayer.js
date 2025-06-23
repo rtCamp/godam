@@ -591,10 +591,17 @@ const Slider = ( props ) => {
 							} }
 						>
 							<div className="chapter-indicator--duration">
-								{ `${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) } - ${ chapter?.originalTime }` }
+								{ `${ chapter?.originalTime } - ${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) }` }
 							</div>
-							<div className="chapter-indicator--text">
-								{ chapter?.text }
+							<div
+								className="chapter-indicator--text"
+								style={ {
+									'--hover-width': `${ hoverWidth }%`,
+								} }
+							>
+								{ chapter?.text?.length > 13
+									? `${ chapter.text.slice( 0, 13 ) }...`
+									: chapter?.text }
 							</div>
 						</div>
 					);
