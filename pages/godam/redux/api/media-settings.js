@@ -30,7 +30,9 @@ export const generalAPI = createApi( {
 					dispatch( setMediaSettings( {
 						video: data.video || initialState.settings.video,
 						general: data.general || initialState.settings.general,
-						video_player: data.video_player || initialState.settings.video_player,
+						video_player: {
+							custom_css: data.video_player?.custom_css?.trim() ? data.video_player.custom_css : initialState.settings.video_player.custom_css,
+						},
 					} ) );
 				} catch {}
 			},
@@ -49,7 +51,7 @@ export const generalAPI = createApi( {
 				try {
 					const { data } = await queryFulfilled;
 					if ( data?.status === 'success' ) {
-						const category = Object.keys( arg.settings )[ 0 ]; // e.g., 'general' , 'video' or 'video_player'
+						const category = Object.keys( arg.settings )[ 0 ];
 						dispatch( resetChanges( { category } ) );
 					}
 				} catch {}

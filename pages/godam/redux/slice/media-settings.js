@@ -44,10 +44,16 @@ const mediaSettingsSlice = createSlice( {
 		setMediaSettings: ( state, action ) => {
 			Object.keys( action.payload ).forEach( ( category ) => {
 				if ( state.settings[ category ] ) {
-					state.settings[ category ] = {
-						...state.settings[ category ],
-						...action.payload[ category ],
-					};
+					const settings = { ...state.settings[ category ] };
+					Object.keys( action.payload[ category ] ).forEach( ( key ) => {
+						// Preserve VideoCustomCSSTemplate if custom_css is empty
+						if ( category === 'video_player' && key === 'custom_css' && ! action.payload[ category ][ key ]?.trim() ) {
+							settings[ key ] = initialState.settings.video_player.custom_css;
+						} else {
+							settings[ key ] = action.payload[ category ][ key ];
+						}
+					} );
+					state.settings[ category ] = settings;
 				}
 			} );
 			// Reset isChanged for all categories on full settings update
@@ -75,6 +81,7 @@ const mediaSettingsSlice = createSlice( {
 	},
 } );
 
+// Export actions for use in components
 export const { setMediaSettings, updateMediaSetting, resetChanges } = mediaSettingsSlice.actions;
 
 // Selector to get media settings for a specific category
@@ -83,4 +90,5 @@ export const selectMediaSettings = ( category ) => ( state ) => state.mediaSetti
 // Selector to check if settings have changed for a category
 export const selectHasChanges = ( category ) => ( state ) => state.mediaSettings.isChanged[ category ];
 
+// Export the reducer to be used in the store
 export default mediaSettingsSlice.reducer;

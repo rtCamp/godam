@@ -12,6 +12,11 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Internal dependencies
+ */
+import { VideoCustomCSSTemplate } from '../../VideoCustomCSSTemplate';
+
 const CustomVideoPlayerCSS = ( { mediaSettings, handleSettingChange } ) => {
 	const handleEditorMount = ( editor, monaco ) => {
 		monaco.editor.defineTheme( 'godam-theme', {
@@ -33,7 +38,8 @@ const CustomVideoPlayerCSS = ( { mediaSettings, handleSettingChange } ) => {
 		monaco.editor.setTheme( 'godam-theme' );
 	};
 
-	const customCSS = mediaSettings.custom_css;
+	//  Get the custom CSS from media settings or use the default template
+	const customCSS = mediaSettings.custom_css?.trim() ? mediaSettings.custom_css : VideoCustomCSSTemplate;
 
 	return (
 		<Panel heading={ __( 'Video Player CSS', 'godam' ) } className="godam-panel">
