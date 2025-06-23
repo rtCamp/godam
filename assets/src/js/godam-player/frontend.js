@@ -460,6 +460,27 @@ function GODAMPlayer( videoRef = null ) {
 
 				shareModal.innerHTML = DOMPurify.sanitize( html );
 
+				// Function to close the modal
+				const closeModal = () => {
+					shareModal.remove();
+				};
+
+				// Close modal when clicking outside
+				shareModal.addEventListener( 'click', ( modalEvent ) => {
+					if ( modalEvent.target === shareModal ) {
+						closeModal();
+					}
+				} );
+
+				// Close modal on escape key
+				const handleEscapeKey = ( modalEvent ) => {
+					if ( modalEvent.key === 'Escape' ) {
+						closeModal();
+						document.removeEventListener( 'keydown', handleEscapeKey );
+					}
+				};
+				document.addEventListener( 'keydown', handleEscapeKey );
+
 				shareModal
 					.querySelector( '#copy-page-link' )
 					.addEventListener( 'click', () => this.copyToClipboard( 'page-link' ) );
@@ -470,10 +491,7 @@ function GODAMPlayer( videoRef = null ) {
 
 				shareModal
 					.querySelector( '#cancel-button' )
-					.addEventListener( 'click', function() {
-						const cancelButton = shareModal.querySelector( '#cancel-button' );
-						cancelButton.closest( '.share-modal-container' ).remove();
-					} );
+					.addEventListener( 'click', closeModal );
 
 				const link = encodeURI(
 					`${ window.godamData.api_base }/web/video/${ this.player().jobId }`,
