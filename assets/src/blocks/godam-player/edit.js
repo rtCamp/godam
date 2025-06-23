@@ -501,7 +501,6 @@ function VideoEdit( {
 							__next40pxDefaultSize
 							onClick={ () => setIsSEOModelOpen( true ) }
 							variant="primary"
-							className="editor-video-customisation-cta"
 							icon={ search }
 							iconPosition="right"
 						>
