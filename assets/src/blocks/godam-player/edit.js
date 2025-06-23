@@ -431,13 +431,13 @@ function VideoEdit( {
 					/>
 					<BaseControl
 						id={ `video-block__poster-image-${ instanceId }` }
-						label={ __( 'Poster image', 'godam' ) }
+						label={ __( 'Video Thumbnail', 'godam' ) }
 						__nextHasNoMarginBottom
 					>
 						<MediaUploadCheck>
 							<div className="editor-video-poster-control">
 								<MediaUpload
-									title={ __( 'Select poster image', 'godam' ) }
+									title={ __( 'Select Video Thumbnail', 'godam' ) }
 									onSelect={ onSelectPoster }
 									allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
 									render={ ( { open } ) => (
