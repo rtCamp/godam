@@ -231,7 +231,7 @@ class RTGODAM_Transcoder_Admin {
 					<p><strong><?php echo esc_html__( 'Hey, you’re missing out on our advanced features!', 'godam' ); ?></strong></p>
 					<p><?php echo esc_html__( 'Unlock high-speed transcoding, advanced analytics, adaptive streaming, and more by activating your API key.', 'godam' ); ?></p>
 					<p>
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_settings' ) ); ?>" class="button button-primary">
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_settings#video-settings' ) ); ?>" class="button button-primary">
 							<?php echo esc_html__( 'Activate API Key', 'godam' ); ?>
 						</a>
 						<a href="https://godam.io/adaptive-bitrate-streaming/" class="button button-secondary" target="_blank">
