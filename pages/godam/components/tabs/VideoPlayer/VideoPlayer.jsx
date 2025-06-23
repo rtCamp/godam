@@ -35,7 +35,9 @@ const VideoPlayer = () => {
 
 	const showNotice = ( message, status = 'success' ) => {
 		setNotice( { message, status, isVisible: true } );
-		scrollToTop();
+		if ( window.scrollY > 0 ) {
+			scrollToTop();
+		}
 	};
 
 	const handleSaveSettings = async () => {

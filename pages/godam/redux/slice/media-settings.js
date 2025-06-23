@@ -42,23 +42,19 @@ const mediaSettingsSlice = createSlice( {
 	reducers: {
 		// Sets the entire media settings (validates allowed keys)
 		setMediaSettings: ( state, action ) => {
-			Object.keys( action.payload ).forEach( ( category ) => {
+			Object.entries( action.payload ).forEach( ( [ category, payloadSettings ] ) => {
 				if ( state.settings[ category ] ) {
-					const settings = { ...state.settings[ category ] };
-					Object.keys( action.payload[ category ] ).forEach( ( key ) => {
-						// Preserve VideoCustomCSSTemplate if custom_css is empty
-						if ( category === 'video_player' && key === 'custom_css' && ! action.payload[ category ][ key ]?.trim() ) {
-							settings[ key ] = initialState.settings.video_player.custom_css;
+					Object.entries( payloadSettings ).forEach( ( [ key, value ] ) => {
+						if ( category === 'video_player' && key === 'custom_css' && ( value === null || value === '' ) ) {
+						// Preserve VideoCustomCSSTemplate for empty or null custom_css
+							state.settings[ category ][ key ] = initialState.settings.video_player.custom_css;
 						} else {
-							settings[ key ] = action.payload[ category ][ key ];
+							state.settings[ category ][ key ] = value;
 						}
 					} );
-					state.settings[ category ] = settings;
+					// Reset isChanged for this category
+					state.isChanged[ category ] = false;
 				}
-			} );
-			// Reset isChanged for all categories on full settings update
-			Object.keys( state.isChanged ).forEach( ( category ) => {
-				state.isChanged[ category ] = false;
 			} );
 		},
 

@@ -26,7 +26,6 @@ export const generalAPI = createApi( {
 			async onQueryStarted( arg, { dispatch, queryFulfilled } ) {
 				try {
 					const { data } = await queryFulfilled;
-					dispatch( setMediaSettings( data ) );
 					dispatch( setMediaSettings( {
 						video: data.video || initialState.settings.video,
 						general: data.general || initialState.settings.general,
