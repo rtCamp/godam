@@ -3,11 +3,21 @@
  */
 import { ComboboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 
 function FormSelector( { className, disabled, formID, forms, handleChange } ) {
 	const [ form, setForm ] = useState( formID );
 	const [ filteredOptions, setFilteredOptions ] = useState( forms );
+
+	// Sync local state with prop changes
+	useEffect( () => {
+		setForm( formID );
+	}, [ formID ] );
+
+	// Sync filtered options when forms change
+	useEffect( () => {
+		setFilteredOptions( forms );
+	}, [ forms ] );
 
 	const setFormData = ( value ) => {
 		setForm( value );
