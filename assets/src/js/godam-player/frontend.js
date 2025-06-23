@@ -123,14 +123,18 @@ function GODAMPlayer( videoRef = null ) {
 
 		video.addEventListener( 'loadedmetadata', () => {
 			const playerElement = player.el_;
-
 			const captionControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-subs-caps-button.vjs-control.vjs-hidden' );
-
 			if ( captionControlBtn ) {
 				const qualityControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-quality-menu-wrapper' );
 				if ( qualityControlBtn ) {
 					qualityControlBtn.classList.add( 'mobile-right-80' );
 				}
+			}
+			const fullscreenBtn = playerElement.querySelector( '.vjs-fullscreen-control' );
+
+			// Position fullscreen button if captions do not exist
+			if ( fullscreenBtn ) {
+				fullscreenBtn.classList.add( 'fullscreen-bottom-110' );
 			}
 		} );
 

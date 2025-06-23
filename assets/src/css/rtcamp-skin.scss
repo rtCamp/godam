@@ -1,3 +1,8 @@
+.easydam-video-container {
+  container-type: inline-size;
+	container-name: godam-player-rtcamp-skin;
+}
+
 .video-js {
     // Big play button styles
     .vjs-big-play-button {
@@ -37,7 +42,7 @@
           flex-direction: row-reverse;
   
           // Force controls except seek bar into a column
-          button:not(.vjs-progress-control):not(.vjs-play-progress):not(.vjs-load-progress):not(.vjs-subs-caps-button), div.vjs-subs-caps-button{
+          button:not(.vjs-progress-control):not(.vjs-play-progress):not(.vjs-load-progress):not(.vjs-subs-caps-button), div.vjs-subs-caps-button, .vjs-quality-menu-wrapper{
             // position: static; // let flexbox handle layout
             // display: flex;
             // justify-content: center;
@@ -92,10 +97,12 @@
           // Stack buttons vertically from bottom up with 10px gap
         .vjs-play-control {
             bottom: 10px;
+            left: unset !important;
         }
 
         .vjs-volume-panel {
             bottom: 65px;
+            left: unset !important;
         }
 
         .vjs-fullscreen-control {
@@ -149,21 +156,7 @@
         }
       }
 
-    //   .vjs-volume-panel.vjs-volume-panel-horizontal.vjs-hover, .vjs-volume-panel.vjs-volume-panel-horizontal.vjs-slider-active, .vjs-volume-panel.vjs-volume-panel-horizontal:active {
-    //     width: unset;
-    // }
-
   }
-
-
-//   $btn-size: 40px;
-//   $gap: 10px;
-
-//   @for $i from 1 through 95 {
-//     .video-js .vjs-control-bar .vjs-button:nth-of-type(#{$i}) {
-//       bottom: calc((#{$btn-size} + #{$gap}) * (#{$i - 1}));
-//     }
-// }
   
   // Animation for play button rings
   @keyframes ringAnimationForDownload {
@@ -180,3 +173,48 @@
     }
   }
   
+
+  @media screen and (max-width: 768px) {
+    .video-js .vjs-control-bar {
+        height: 3em !important;
+    }
+
+    .vjs-volume-control.vjs-control.vjs-volume-horizontal {
+      display: none;
+    }
+}
+
+@container godam-player-rtcamp-skin (max-width: 320px) {
+	.vjs-play-control {
+    bottom: 10px;
+    left: unset !important;
+  }
+
+  .video-js .vjs-control {
+    width: 2.3em;
+    padding: 15px !important;
+  }
+
+  .vjs-button>.vjs-icon-placeholder:before {
+      line-height: 2.5 !important; 
+      font-size: 1.2em;
+  }
+
+  .video-js .vjs-control-bar .vjs-volume-panel {
+      bottom: 45px;
+  }
+
+  .video-js .vjs-control-bar .vjs-fullscreen-control {
+    bottom: 114px;
+  }
+
+  .video-js .vjs-control-bar .vjs-subs-caps-button {
+      bottom: 80px !important;
+      right: 8px !important;
+  }
+
+  .video-js .vjs-control-bar .fullscreen-bottom-110 {
+      bottom: 80px;
+  }
+}
+
