@@ -59,7 +59,7 @@ class Media_Library_Ajax {
 		}
 
 		if ( isset( $query_args['post_mime_type'] ) && is_array( $query_args['post_mime_type'] ) ) {
-			
+
 			$post_mime_type = $query_args['post_mime_type'][0];
 			$mime_type      = '';
 			if ( false === strpos( $post_mime_type, 'godam/' ) ) {
@@ -115,7 +115,7 @@ class Media_Library_Ajax {
 					'headers' => array(
 						'Content-Type' => 'application/json',
 					),
-				) 
+				)
 			);
 
 			if ( is_wp_error( $response ) ) {
@@ -145,7 +145,7 @@ class Media_Library_Ajax {
 	 */
 	public function prepare_godam_media_item( $item ) {
 		// Ensure $item is an array.
-		$item = (array) $item; 
+		$item = (array) $item;
 
 		if ( empty( $item['name'] ) || empty( $item['file_origin'] ) ) {
 			return array();
@@ -379,6 +379,42 @@ class Media_Library_Ajax {
 
 			// Unset the 'media-folder' query arg regardless of the case.
 			unset( $query_args['media-folder'] );
+		}
+
+		if ( isset( $_REQUEST['query']['media_category'] ) ) {
+			$media_category = sanitize_text_field( wp_unslash( $_REQUEST['query']['media_category'] ) );
+
+			if ( ! isset( $query_args['tax_query'] ) ) {
+				$query_args['tax_query'] = array(); // phpcs:ignore -- tax_query is required here to filter by taxonomy.
+			}
+
+			if ( 'uncategorized' === $media_category ) {
+				$query_args['tax_query'][] = array(
+					'taxonomy' => 'category',
+					'field'    => 'term_id',
+					'operator' => 'NOT EXISTS',
+				);
+			} elseif ( 'all' !== $media_category && '' !== $media_category ) {
+				$query_args['tax_query'][] = array(
+					'taxonomy' => 'category',
+					'field'    => 'slug',
+					'terms'    => $media_category,
+				);
+			}
+		}
+
+		if ( isset( $_REQUEST['query']['media_tag'] ) && '' !== $_REQUEST['query']['media_tag'] ) {
+			$media_tag = sanitize_text_field( wp_unslash( $_REQUEST['query']['media_tag'] ) );
+
+			if ( ! isset( $query_args['tax_query'] ) ) {
+				$query_args['tax_que ry'] = array(); // phpcs:ignore -- tax_query is required here to filter by taxonomy.
+			}
+
+			$query_args['tax_query'][] = array(
+				'taxonomy' => 'post_tag',
+				'field'    => 'slug',
+				'terms'    => $media_tag,
+			);
 		}
 
 		if ( isset( $_REQUEST['query']['date_query'] ) && is_array( $_REQUEST['query']['date_query'] ) ) {
