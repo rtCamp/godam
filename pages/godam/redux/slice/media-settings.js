@@ -3,6 +3,11 @@
  */
 import { createSlice } from '@reduxjs/toolkit';
 
+/**
+ * Internal dependencies
+ */
+import { VideoCustomCSSTemplate } from '../../components/VideoCustomCSSTemplate';
+
 const initialState = {
 	video: {
 		video_quality: [],
@@ -18,6 +23,9 @@ const initialState = {
 		enable_folder_organization: true,
 		brand_color: '#000000',
 		brand_image: '',
+	},
+	video_player: {
+		custom_css: VideoCustomCSSTemplate,
 	},
 };
 

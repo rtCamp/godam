@@ -81,10 +81,32 @@ export default AttachmentsBrowser?.extend( {
 			setTimeout( () => {
 				$( '.media-frame' ).removeClass( 'hide-menu' );
 
-				const menu = $( '.media-frame' ).find( '.media-frame-menu' );
+				if ( window.elementor ) {
+					const visibleContainers = Array.from( document.querySelectorAll( '.supports-drag-drop' ) ).filter(
+						( container ) => getComputedStyle( container ).display !== 'none',
+					);
 
-				if ( menu.length ) {
-					menu.append( '<div id="rt-transcoder-media-library-root"></div>' );
+					const activeContainer = visibleContainers.at( -1 ); // most recently opened visible one
+
+					if ( activeContainer ) {
+						const menu = activeContainer.querySelector( '.media-frame-menu' );
+						if ( menu ) {
+							menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
+							const div = document.createElement( 'div' );
+							div.id = 'rt-transcoder-media-library-root';
+							if ( menu.firstChild ) {
+								menu.firstChild.appendChild( div );
+							} else {
+								menu.appendChild( div );
+							}
+						}
+					}
+				} else {
+					const menu = $( '.media-frame' ).find( '.media-frame-menu' );
+
+					if ( menu.length ) {
+						menu.append( '<div id="rt-transcoder-media-library-root"></div>' );
+					}
 				}
 
 				const event = new CustomEvent( 'media-frame-opened' );

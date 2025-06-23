@@ -75,6 +75,9 @@ class Plugin {
 
 		// Load video metadata.
 		Video_Metadata::get_instance();
+
+		// Load Elementor widgets.
+		$this->load_elementor_widgets();
 	}
 
 	/**
@@ -116,6 +119,19 @@ class Plugin {
 		Polls::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
+	}
+
+	/**
+	 * Registers the elementor widgets if required.
+	 * 
+	 * @return void
+	 */
+	public function load_elementor_widgets() {
+		if ( ! did_action( 'elementor/loaded' ) ) {
+			return;
+		}
+
+		Elementor_Widgets::get_instance();
 	}
 
 	/**

@@ -20,7 +20,7 @@ class Pages {
 
 	/**
 	 * Hardcoded Slugs
-	 * 
+	 *
 	 * @var string
 	 */
 	private $menu_slug = 'rtgodam';
@@ -137,8 +137,8 @@ class Pages {
 
 		add_submenu_page(
 			$this->menu_slug,
-			__( 'Video editor', 'godam' ),
-			__( 'Video editor', 'godam' ),
+			__( 'Video Editor', 'godam' ),
+			__( 'Video Editor', 'godam' ),
 			'edit_posts',
 			$this->video_editor_slug,
 			array( $this, 'render_video_editor_page' ),
@@ -443,7 +443,7 @@ class Pages {
 				RTGODAM_VERSION,
 				false
 			);
-			
+
 			wp_register_script(
 				'godam-page-script-dashboard',
 				RTGODAM_URL . 'assets/build/pages/dashboard.min.js',
@@ -483,7 +483,7 @@ class Pages {
 
 			/**
 			 * We are using the D3.js library for the analytics page.
-			 * 
+			 *
 			 * License: https://github.com/d3/d3/blob/main/LICENSE
 			 */
 			wp_register_script(
@@ -616,7 +616,7 @@ class Pages {
 			'gravity-forms-basic'            => 'gravityforms/assets/css/dist/basic.min.css',
 			'common-css-utilities'           => 'gravityforms/assets/css/dist/common-css-utilities.min.css',
 		);
-	
+
 		foreach ( $gravity_forms_styles as $handle => $path ) {
 			wp_enqueue_style(
 				$handle,
@@ -624,7 +624,7 @@ class Pages {
 				array(),
 				RTGODAM_VERSION
 			);
-		} 
+		}
 	}
 
 	/**
