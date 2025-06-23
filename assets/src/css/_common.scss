@@ -217,12 +217,39 @@
 
 }
 
+.godam-margin-top {
+	margin-top: 2rem;
+}
+
 .godam-margin-bottom {
 	margin-bottom: 1rem;
 }
 
 .godam-margin-right {
 	margin-right: 0.5rem;
+}
+
+.godam-margin-top-no-bottom {
+	margin-bottom: -1.5rem;
+	margin-top: 0.5rem;
+}
+
+.godam-center-button {
+	display: flex;
+	justify-content: center;
+	margin-top: 10px;
+}
+
+.godam-add-product-button {
+	border: 1px dashed black;
+    padding: 10px;
+    margin: 10px;
+    height: 22px !important;
+}
+
+.godam-video-picker-modal {
+	width: 70% !important;
+	padding: 0 !important;
 }
 
 .godam-form-group {

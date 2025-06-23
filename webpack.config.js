@@ -147,6 +147,20 @@ const gfEntryDetailJS = {
 	},
 };
 
+const productVideoGalleryJS = {
+	...sharedConfig,
+	entry: {
+		'wc-product-video-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wc-product-video-gallery.js' ),
+	},
+};
+
+const addToProductJS = {
+	...sharedConfig,
+	entry: {
+		'wc-add-to-product': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wc-add-to-product.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -221,6 +235,8 @@ module.exports = [
 	gfGodamRecorderJS,
 	gfGodamRecorderEditorJS,
 	gfEntryDetailJS,
+	productVideoGalleryJS,
+	addToProductJS,
 	styles, // Do not remove this.
 	pages,
 ];

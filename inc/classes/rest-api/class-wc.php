@@ -52,6 +52,58 @@ class WC extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/link-video',
+				'args'      => array(
+					array(
+						'methods'             => \WP_REST_Server::CREATABLE,
+						'callback'            => array( $this, 'link_video_to_product' ),
+						'permission_callback' => function ( \WP_REST_Request $req ) {
+							$product_id = (int) $req->get_param( 'product_id' );
+							return current_user_can( 'edit_post', $product_id );
+						},
+						'args'                => array(
+							'product_id'    => array(
+								'required'          => true,
+								'type'              => 'integer',
+								'sanitize_callback' => 'absint',
+							),
+							'attachment_id' => array(
+								'required'          => true,
+								'type'              => 'integer',
+								'sanitize_callback' => 'absint',
+							),
+							'url'           => array(
+								'required'          => true,
+								'type'              => 'string',
+								'sanitize_callback' => 'esc_url_raw',
+							),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/video-product-count/(?P<id>\d+)',
+				'args'      => array(
+					array(
+						'methods'             => \WP_REST_Server::READABLE,
+						'callback'            => array( $this, 'get_video_product_count' ),
+						'permission_callback' => function () {
+							return current_user_can( 'edit_products' );
+						},
+						'args'                => array(
+							'id' => array(
+								'description'       => 'Attachment (video) ID.',
+								'type'              => 'integer',
+								'required'          => true,
+								'sanitize_callback' => 'absint',
+							),
+						),
+					),
+				),
+			),
 		);
 	}
 
@@ -362,4 +414,82 @@ class WC extends Base {
 
 		return rest_ensure_response( $data );
 	}
+
+	/**
+	 * Link a video to a WooCommerce product (and vice versa).
+	 *
+	 * If the video is already linked, the endpoint ensures no duplication occurs.
+	 *
+	 * @param \WP_REST_Request $request The REST request containing product_id, attachment_id, and url.
+	 * @return \WP_REST_Response|\WP_Error A REST response confirming success, or an error if parameters are missing.
+	 */
+	public function link_video_to_product( \WP_REST_Request $request ) {
+
+		$product_id    = (int) $request->get_param( 'product_id' );
+		$attachment_id = (int) $request->get_param( 'attachment_id' );
+		$url           = esc_url_raw( $request->get_param( 'url' ) );
+
+		if ( ! $product_id || ! $attachment_id || ! $url ) {
+			return new \WP_Error( 'missing_params', 'Required parameters missing.', array( 'status' => 400 ) );
+		}
+
+		/* ---- 1. update product meta ---- */
+		$ids  = get_post_meta( $product_id, '_rtgodam_product_video_gallery_ids', true ) ?: array();
+		$urls = get_post_meta( $product_id, '_rtgodam_product_video_gallery', true ) ?: array();
+
+		if ( ! in_array( $attachment_id, $ids, true ) ) {
+			$ids[]  = $attachment_id;
+			$urls[] = $url;
+			update_post_meta( $product_id, '_rtgodam_product_video_gallery_ids', $ids );
+			update_post_meta( $product_id, '_rtgodam_product_video_gallery', $urls );
+		}
+
+		/* ---- 2. update attachment meta ---- */
+		$parent_meta_key = '_video_parent_product_id';
+		
+		foreach ( $ids as $attachment_id ) {
+			$existing = get_post_meta( $attachment_id, $parent_meta_key, false );
+
+			// If the value is not present, create a new meta‑row.
+			if ( ! in_array( $product_id, array_map( 'intval', $existing ), true ) ) {
+				add_post_meta( $attachment_id, $parent_meta_key, $product_id, false );
+			}
+		}
+
+		return rest_ensure_response( array( 'success' => true ) );
+	}
+
+	/**
+	 * Return how many products already use this video in their gallery.
+	 *
+	 * @param \WP_REST_Request $request { id: <attachment_id> }
+	 * @return \WP_REST_Response
+	 */
+	public function get_video_product_count( \WP_REST_Request $request ) {
+		$attachment_id = absint( $request->get_param( 'id' ) );
+
+		if ( ! $attachment_id ) {
+			return new \WP_Error( 'invalid_id', 'Invalid attachment ID.', array( 'status' => 400 ) );
+		}
+
+		$product_ids = get_post_meta( $attachment_id, '_video_parent_product_id', false );
+
+		$linked_products = array_map(
+			function ( $pid ) {
+				return array(
+					'id'   => (int) $pid,
+					'name' => get_the_title( $pid ),
+				);
+			},
+			$product_ids
+		);
+
+		return rest_ensure_response(
+			array(
+				'count'   => count( $product_ids ),
+				'linked'  => $linked_products,
+			)
+		);
+	}
+
 }
