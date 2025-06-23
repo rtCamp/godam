@@ -126,20 +126,11 @@ class Media_Library_Ajax {
 
 			$response = $body->message;
 
-			$output = array();
-
 			foreach ( $response as $key => $item ) {
-				$godam_media_item = $this->prepare_godam_media_item( $item );
-
-				// Skip if item is not transcoded.
-				if ( 'Transcoded' !== $godam_media_item['status'] ) {
-					continue;
-				}
-
-				$output[] = $godam_media_item;
+				$response[ $key ] = $this->prepare_godam_media_item( $item );
 			}
 
-			wp_send_json_success( $output );
+			wp_send_json_success( $response );
 
 		} else {
 			return $query_args;
