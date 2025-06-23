@@ -15,7 +15,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { updateLayerField, setJetpackForms, setJetpackPluginActive } from '../../redux/slice/videoSlice';
-import { useGetSingleJetpackFormQuery } from '../../redux/api/jetpack-forms';
+import { useGetSingleJetpackFormQuery, useGetJetpackFormsQuery } from '../../redux/api/jetpack-forms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
 
@@ -24,6 +24,10 @@ const JetpackForm = ( { layerID } ) => {
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const jetpackForms = useSelector( ( state ) => state.videoReducer.jetpackForms ) || [];
 
+	// Use Redux Toolkit Query for fetching Jetpack forms
+	const { data: formsData, error: formsError } = useGetJetpackFormsQuery();
+
+	// Use existing query for single form
 	const { data: formHTML, isFetching, error } = useGetSingleJetpackFormQuery(
 		{
 			id: layer?.jp_id,
@@ -38,56 +42,52 @@ const JetpackForm = ( { layerID } ) => {
 		// Set Jetpack plugin active status
 		dispatch( setJetpackPluginActive( Boolean( window?.videoData?.jetpack_active ) ) );
 
-		// Fetch and set Jetpack forms
-		fetch( window.godamRestRoute.url + 'godam/v1/jetpack-forms', {
-			headers: {
-				'X-WP-Nonce': window.godamRestRoute.nonce,
-			},
-		} )
-			.then( ( response ) => response.json() )
-			.then( ( data ) => {
-				dispatch( setJetpackForms( data ) );
+		// Update forms data when API response is available
+		if ( formsData ) {
+			dispatch( setJetpackForms( formsData ) );
 
-				// Clear the previously selected form when no forms are available
-				if ( data.length === 0 && layer?.jp_id ) {
-					dispatch( updateLayerField( {
-						id: layer.id,
-						field: 'jp_id',
-						value: '',
-					} ) );
+			// Clear the previously selected form when no forms are available
+			if ( formsData.length === 0 && layer?.jp_id ) {
+				dispatch( updateLayerField( {
+					id: layer.id,
+					field: 'jp_id',
+					value: '',
+				} ) );
 
-					dispatch( updateLayerField( {
-						id: layer.id,
-						field: 'origin_post_id',
-						value: '',
-					} ) );
-				}
+				dispatch( updateLayerField( {
+					id: layer.id,
+					field: 'origin_post_id',
+					value: '',
+				} ) );
+			}
 
-				// Auto-select the first form if no form is currently selected and forms are available
-				if ( data && data.length > 0 && ! layer?.jp_id ) {
-					const firstForm = data[ 0 ];
-					changeFormID( firstForm.id );
-				}
-			} )
-			.catch( ( ) => {
-				dispatch( setJetpackForms( [] ) );
+			// Auto-select the first form if no form is currently selected and forms are available
+			if ( formsData && formsData.length > 0 && ! layer?.jp_id ) {
+				const firstForm = formsData[ 0 ];
+				changeFormID( firstForm.id );
+			}
+		}
 
-				// Also clear the form selection on error
-				if ( layer?.jp_id ) {
-					dispatch( updateLayerField( {
-						id: layer.id,
-						field: 'jp_id',
-						value: '',
-					} ) );
+		// Handle error case
+		if ( formsError ) {
+			dispatch( setJetpackForms( [] ) );
 
-					dispatch( updateLayerField( {
-						id: layer.id,
-						field: 'origin_post_id',
-						value: '',
-					} ) );
-				}
-			} );
-	}, [ dispatch ] );
+			// Also clear the form selection on error
+			if ( layer?.jp_id ) {
+				dispatch( updateLayerField( {
+					id: layer.id,
+					field: 'jp_id',
+					value: '',
+				} ) );
+
+				dispatch( updateLayerField( {
+					id: layer.id,
+					field: 'origin_post_id',
+					value: '',
+				} ) );
+			}
+		}
+	}, [ dispatch, formsData, formsError, layer?.jp_id ] );
 
 	// Add null check for layer
 	if ( ! layer ) {
