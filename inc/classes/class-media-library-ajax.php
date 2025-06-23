@@ -59,7 +59,7 @@ class Media_Library_Ajax {
 		}
 
 		if ( isset( $query_args['post_mime_type'] ) && is_array( $query_args['post_mime_type'] ) ) {
-			
+
 			$post_mime_type = $query_args['post_mime_type'][0];
 			$mime_type      = '';
 			if ( false === strpos( $post_mime_type, 'godam/' ) ) {
@@ -115,7 +115,7 @@ class Media_Library_Ajax {
 					'headers' => array(
 						'Content-Type' => 'application/json',
 					),
-				) 
+				)
 			);
 
 			if ( is_wp_error( $response ) ) {
@@ -126,11 +126,20 @@ class Media_Library_Ajax {
 
 			$response = $body->message;
 
+			$output = array();
+
 			foreach ( $response as $key => $item ) {
-				$response[ $key ] = $this->prepare_godam_media_item( $item );
+				$godam_media_item = $this->prepare_godam_media_item( $item );
+
+				// Skip if item is not transcoded.
+				if ( 'Transcoded' !== $godam_media_item['status'] ) {
+					continue;
+				}
+
+				$output[] = $godam_media_item;
 			}
 
-			wp_send_json_success( $response );
+			wp_send_json_success( $output );
 
 		} else {
 			return $query_args;
@@ -145,7 +154,7 @@ class Media_Library_Ajax {
 	 */
 	public function prepare_godam_media_item( $item ) {
 		// Ensure $item is an array.
-		$item = (array) $item; 
+		$item = (array) $item;
 
 		if ( empty( $item['name'] ) || empty( $item['file_origin'] ) ) {
 			return array();

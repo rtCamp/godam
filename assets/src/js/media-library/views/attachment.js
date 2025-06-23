@@ -84,6 +84,11 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 		 */
 		wp.media.view.Attachment.prototype.render.call( this );
 
+		// If the mode is 'godam', we don't need to render the transcoding status.
+		if ( 'godam' === this.controller.content.mode() ) {
+			return this;
+		}
+
 		if ( isAPIKeyValid() && ( this.model.get( 'type' ) === 'video' || this.model.get( 'type' ) === 'audio' ) ) {
 			if ( this.model.get( 'transcoded_url' ) ) {
 				this.$el.append( `
