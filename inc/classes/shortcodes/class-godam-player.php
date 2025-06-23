@@ -28,7 +28,7 @@ class GoDAM_Player {
 		add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'wp_head', array( $this, 'godam_output_admin_player_css' ) );
 	}
-
+	
 	/**
 	 * Outputs custom css from video player settings tab input field.
 	 */
