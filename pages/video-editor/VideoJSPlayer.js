@@ -558,7 +558,7 @@ const Slider = ( props ) => {
 							} }
 						>
 							<div className="chapter-indicator--duration">
-								{ `${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) } - ${ chapter?.originalTime }` }
+								{ `${ chapter?.originalTime } - ${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) }` }
 							</div>
 							<div className="chapter-indicator--text">
 								{ chapter?.text }
