@@ -110,6 +110,8 @@ class WC extends Base {
 			'post_status'    => 'publish',
 			'posts_per_page' => 20,
 		);
+
+		$taxonomy_query = array();
 	
 		// Allow numeric search by ID.
 		if ( $is_numeric ) {
@@ -137,11 +139,29 @@ class WC extends Base {
 				);
 			}
 			$args['tax_query'] = $tax_query; // phpcs:ignore
+
+			$taxonomy_query = new \WP_Query( $args );
+
+			unset( $args['tax_query'] );
+			$args['s'] = $search;
+
 		} else {
 			$args['s'] = $search;
 		}
 	
 		$query = new \WP_Query( $args );
+
+		$all_posts = $query->posts;
+
+		if ( $taxonomy_query instanceof \WP_Query ) {
+			$existing_ids = wp_list_pluck( $all_posts, 'ID' );
+
+			foreach ( $taxonomy_query->posts as $post ) {
+				if ( ! in_array( $post->ID, $existing_ids, true ) ) {
+					$all_posts[] = $post;
+				}
+			}
+		}
 	
 		$products = array_map(
 			function ( $post ) {
@@ -241,7 +261,7 @@ class WC extends Base {
 					'brands'     => $brands,
 				);
 			},
-			$query->posts 
+			$all_posts 
 		);
 	
 		return rest_ensure_response( $products );
