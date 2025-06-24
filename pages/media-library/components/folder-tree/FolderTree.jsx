@@ -157,10 +157,6 @@ const FolderTree = () => {
 	 * @param {number} count               - The number of items being moved.
 	 */
 	const updateAttachmentCountOfFolders = useCallback( ( selectedFolderId, destinationFolderId, count ) => {
-		if ( ! selectedFolderId || ! destinationFolderId || count <= 0 ) {
-			return;
-		}
-
 		const updatedFolders = data.map( ( folder ) => {
 			if ( folder.id === selectedFolderId ) {
 				const currentCount = Number( folder.attachmentCount ) || 0;

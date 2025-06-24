@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useDownloadZipMutation, useUpdateFolderMutation } from '../../redux/api/folders';
-import { hideContextMenu, openModal, lockFolder, updateSnackbar, addBookmark } from '../../redux/slice/folders';
+import { hideContextMenu, openModal, lockFolder, updateSnackbar, addBookmark, updateContextMenuPosition } from '../../redux/slice/folders';
 
 import './css/context-menu.scss';
 
@@ -227,6 +227,33 @@ const ContextMenu = () => {
 		};
 	}, [ isOpen, dispatch ] );
 
+	useEffect( () => {
+		if ( ! isOpen || ! contextMenuRef.current ) {
+			return;
+		}
+
+		const menuRect = contextMenuRef.current?.getBoundingClientRect();
+
+		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
+
+		let newX = position.x;
+		let newY = position.y;
+
+		// Adjust if overflowing
+		if ( menuRect.right > viewportWidth ) {
+			newX = viewportWidth - menuRect.width - 10;
+		}
+		if ( menuRect.bottom > viewportHeight ) {
+			newY = viewportHeight - menuRect.height - 10;
+		}
+
+		// Update position if needed
+		if ( newX !== position.x || newY !== position.y ) {
+			dispatch( updateContextMenuPosition( { x: newX, y: newY } ) );
+		}
+	}, [ dispatch, position, isOpen ] );
+
 	const handleMenuAction = ( action ) => {
 		switch ( action ) {
 			case 'rename':
@@ -292,7 +319,7 @@ const ContextMenu = () => {
 					className="context-menu__item"
 					onClick={ () => handleMenuAction( 'lockFolder' ) }
 				>
-					{ targetItem.meta.locked ? __( 'Unlock Folder', 'godam' ) : __( 'Lock Folder', 'godam' ) }
+					{ targetItem.meta?.locked ? __( 'Unlock Folder', 'godam' ) : __( 'Lock Folder', 'godam' ) }
 				</button>
 				<button
 					className="context-menu__item"

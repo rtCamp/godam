@@ -146,11 +146,18 @@ const slice = createSlice( {
 			state.contextMenu.position = { x: 0, y: 0 };
 			state.contextMenu.item = null;
 		},
+		updateContextMenuPosition: ( state, action ) => {
+			state.contextMenu.position = action.payload;
+		},
 		lockFolder: ( state, action ) => {
 			const folder = state.folders.find( ( item ) => item.id === action.payload.id );
 
 			if ( folder ) {
-				folder.meta.locked = ! folder.meta.locked;
+				if ( ! folder.meta ) {
+					folder.meta = {};
+				}
+
+				folder.meta.locked = ! Boolean( folder.meta?.locked );
 			}
 		},
 		addBookmark: ( state, action ) => {
@@ -161,7 +168,7 @@ const slice = createSlice( {
 					folder.meta = {};
 				}
 
-				folder.meta.bookmark = ! folder.meta.bookmark;
+				folder.meta.bookmark = ! Boolean( folder.meta?.bookmark );
 			}
 		},
 	},
@@ -181,6 +188,7 @@ export const {
 	hideContextMenu,
 	lockFolder,
 	addBookmark,
+	updateContextMenuPosition,
 } = slice.actions;
 
 export default slice.reducer;
