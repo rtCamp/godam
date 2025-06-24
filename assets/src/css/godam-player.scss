@@ -1091,6 +1091,7 @@
 				 bottom: 0;
 				 right: 80px;
 				 height: 3em !important;
+				 z-index: 99;
 			}
  
 			 .vjs-quality-menu-wrapper {
@@ -1150,7 +1151,7 @@
 		 .vjs-control-bar > .vjs-subs-caps-button.vjs-control {
 			 position: absolute;
 			 bottom: 0;
-			 right: calc(2 * 40px);
+			 right: calc(3 * 40px);
 			 height: 3em !important;
 		 }
 	 }
