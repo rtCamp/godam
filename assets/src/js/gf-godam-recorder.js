@@ -90,19 +90,30 @@ const processVideoUpload = ( file, container ) => {
  * Handles updates to Video UI on AJAX submissions.
  *
  * @param {string} containerId  - The container ID.
- * @param {string} trigger      - The trigger to open Uppy Dashboard.
  * @param {Uppy}   uppyInstance - The uppy instance
  * @return {void}
  */
-const handleUppyUIOnAjaxRequest = ( containerId, trigger, uppyInstance ) => {
+const handleUppyUIOnAjaxRequest = ( containerId, uppyInstance ) => {
+	const containerReference = document.getElementById( containerId );
+	const uploadButtonId = containerReference.getAttribute( 'data-video-upload-button-id' );
+
 	/**
 	 * On subsequent AJAX requests, the reference to Uppy's trigger gets invalidated and
 	 * therefore must be replaced with custom click handler in order for it to work.
+	 *
+	 * It's also possible for the hook `gform_post_render` to be called multiple times.
+	 * In such a scenario, we need to ensure we are not adding redundant listeners to the
+	 * same element by maintaining a data attribute.
 	 */
-	const dashboardTrigger = document.querySelector( trigger );
-	dashboardTrigger.addEventListener( 'click', () => {
-		uppyInstance.getPlugin( 'Dashboard' ).openModal();
-	} );
+	const dashboardTrigger = document.getElementById( uploadButtonId );
+	const uppyClickAttached = dashboardTrigger.getAttribute( 'uppy-click-attached' );
+
+	if ( ! uppyClickAttached ) {
+		dashboardTrigger.addEventListener( 'click', () => {
+			uppyInstance.getPlugin( 'Dashboard' ).openModal();
+		} );
+		dashboardTrigger.setAttribute( 'uppy-click-attached', true );
+	}
 
 	const restoredFile = uppyInstance.getFiles()?.[ 0 ];
 	if ( ! restoredFile ) {
@@ -113,7 +124,6 @@ const handleUppyUIOnAjaxRequest = ( containerId, trigger, uppyInstance ) => {
 	 * Pass a new reference to the container, as after AJAX submission, previously
 	 * cached references are invalidated.
 	 */
-	const containerReference = document.getElementById( containerId );
 	processVideoUpload( restoredFile, containerReference );
 };
 
@@ -185,8 +195,9 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		}
 
 		const localFileInput = selectorArray.includes( 'file_input' ) ? true : false;
+		const videoUploadButtonId = container.getAttribute( 'data-video-upload-button-id' );
 
-		const trigger = `#${ containerId } .uppy-video-upload-button`;
+		const trigger = `#${ videoUploadButtonId }`;
 
 		// Add Dashboard with webcam and screen capture.
 		uppy
@@ -257,11 +268,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 				return;
 			}
 
-			handleUppyUIOnAjaxRequest(
-				containerId,
-				trigger,
-				uppy,
-			);
+			handleUppyUIOnAjaxRequest( containerId, uppy );
 		} );
 
 		// Handle file restoration on reload.
