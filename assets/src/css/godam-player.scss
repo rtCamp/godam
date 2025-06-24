@@ -629,7 +629,11 @@
 		 }
 	 }
  
- 
+	// CSS to override the elementor image CSS in editor.
+	.elementor .vjs-poster img {
+		height: 100% !important;
+	}
+
    .share-modal-message {
 	 background: #fff;
 	 padding: 10px 40px;
@@ -927,53 +931,48 @@
 	position: relative !important;
 }
 
-.video-js .vjs-load-progress div {
+.video-js .chapter-load-progress div {
     background: var(--rtgodam-control-bar-color);
 	opacity: 1;
 }
 
-.chapter-marker {
+.video-js .vjs-load-progress div {
+	background-color: unset;
+}
+
+.chapter-segment {
 	position: absolute;
-	bottom: 0;
-	width: 2px;
+	top: 0;
 	height: 100%;
-	background: #b3aeae;
+	background-color: #5f5c5c; /* visible even if not filled */
+	overflow: visible;
+	pointer-events: auto;
 	cursor: pointer;
 	z-index: 5;
+	transition: background-color 0.2s ease;
 }
 
-.video-js .vjs-load-progress {
-    background: unset;
+.chapter-segment:hover {
+	background-color: #b3aeae;
 }
 
-.chapter-error-tooltip {
-	max-width: 9.5rem;
-	white-space: unset !important;
+.chapter-fill {
+	height: 100%;
+	background-color: #AB3A6C;
+	width: 0%;
+	transition: width 0.1s linear;
+	pointer-events: none;
 }
 
-.chapter-marker:hover {
-	width: 4px;
-	background: #AB3A6C;
-	opacity: 1;
-}
-
-.chapter-marker::after {
-	content: '';
-	position: absolute;
-	background: #AB3A6C;
-	width: 4px;
-	opacity: 1;
-}
-
-/* Chapter tooltip */
+/* Tooltip styling */
 .chapter-tooltip {
 	position: absolute;
-	bottom: 8px;
+	bottom: 10px;
 	left: 50%;
 	transform: translateX(-50%);
 	background: rgba(0, 0, 0, 0.9);
 	color: #fff;
-	padding: 8px 12px;
+	padding: 6px 10px;
 	border-radius: 4px;
 	font-size: 10px;
 	white-space: nowrap;
@@ -981,9 +980,6 @@
 	pointer-events: none;
 	transition: opacity 0.2s ease;
 	z-index: 10;
-	width: max-content;
-	max-width: 200px;
-	text-align: center;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -997,7 +993,7 @@
 	border-top-color: rgba(0, 0, 0, 0.9);
 }
 
-.chapter-marker:hover .chapter-tooltip {
+.chapter-segment:hover .chapter-tooltip {
 	opacity: 1;
 }
 
@@ -1009,8 +1005,6 @@
  
  .vjs-big-play-button {
 	 background-color: var(--rtgodam-control-bar-color) !important;
-	 background-size: 100% 100% !important;
-	 background-image: var(--rtgodam-custom-play-button-url) !important;
  }
  
  .left-align {
@@ -1045,6 +1039,7 @@
  
  .vjs-control.vjs-custom-play-button {
 	 width: auto !important;
+	 order: 8;
  
 	 @media screen and (max-width: 768px) {
 		 display: none;
@@ -1056,6 +1051,13 @@
 		 object-fit: fill;
 	 }
  }
+
+ .vjs-big-play-button.custom-play-image {
+	height: unset;
+	border: unset;
+	border-radius: unset;
+	background-color: transparent !important;
+}
  
  .share-icon {
 	 height: 18px;
@@ -1354,6 +1356,42 @@
 .godam-video-overlay-container {
   display: block;
   pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+
+  // Vertical alignment classes
+  &.godam-overlay-alignment-top {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  &.godam-overlay-alignment-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  &.godam-overlay-alignment-bottom {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    height: 100%;
+    overflow: hidden;
+  }
 
   .block-editor-block-list__layout {
     width: 100%;

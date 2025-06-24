@@ -20,7 +20,7 @@ class Pages {
 
 	/**
 	 * Hardcoded Slugs
-	 * 
+	 *
 	 * @var string
 	 */
 	private $menu_slug = 'rtgodam';
@@ -137,8 +137,8 @@ class Pages {
 
 		add_submenu_page(
 			$this->menu_slug,
-			__( 'Video editor', 'godam' ),
-			__( 'Video editor', 'godam' ),
+			__( 'Video Editor', 'godam' ),
+			__( 'Video Editor', 'godam' ),
 			'edit_posts',
 			$this->video_editor_slug,
 			array( $this, 'render_video_editor_page' ),
@@ -337,6 +337,7 @@ class Pages {
 			$is_gf_active      = is_plugin_active( 'gravityforms/gravityforms.php' );
 			$is_cf7_active     = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
 			$is_wpforms_active = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
+			$is_jetpack_active = is_plugin_active( 'jetpack/jetpack.php' );
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
@@ -351,6 +352,7 @@ class Pages {
 					'gf_active'        => $is_gf_active,
 					'cf7_active'       => $is_cf7_active,
 					'wpforms_active'   => $is_wpforms_active,
+					'jetpack_active'   => $is_jetpack_active,
 				)
 			);
 
@@ -362,6 +364,11 @@ class Pages {
 			// Enqueue WPForms styles if the plugin is active.
 			if ( $is_wpforms_active ) {
 				$this->enqueue_wpforms_styles();
+			}
+
+			// Enqueue Jetpack Forms styles if the plugin is active.
+			if ( $is_jetpack_active ) {
+				$this->enqueue_jetpack_forms_styles();
 			}
 
 			$rtgodam_user_data = rtgodam_get_user_data();
@@ -436,7 +443,7 @@ class Pages {
 				RTGODAM_VERSION,
 				false
 			);
-			
+
 			wp_register_script(
 				'godam-page-script-dashboard',
 				RTGODAM_URL . 'assets/build/pages/dashboard.min.js',
@@ -476,7 +483,7 @@ class Pages {
 
 			/**
 			 * We are using the D3.js library for the analytics page.
-			 * 
+			 *
 			 * License: https://github.com/d3/d3/blob/main/LICENSE
 			 */
 			wp_register_script(
@@ -609,7 +616,7 @@ class Pages {
 			'gravity-forms-basic'            => 'gravityforms/assets/css/dist/basic.min.css',
 			'common-css-utilities'           => 'gravityforms/assets/css/dist/common-css-utilities.min.css',
 		);
-	
+
 		foreach ( $gravity_forms_styles as $handle => $path ) {
 			wp_enqueue_style(
 				$handle,
@@ -617,7 +624,7 @@ class Pages {
 				array(),
 				RTGODAM_VERSION
 			);
-		} 
+		}
 	}
 
 	/**
@@ -638,5 +645,22 @@ class Pages {
 			array(),
 			WPFORMS_VERSION
 		);
+	}
+
+	/**
+	 * Enqueue Jetpack Forms styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_jetpack_forms_styles() {
+		// Check if the Jetpack Forms class exists.
+		if ( ! class_exists( 'Automattic\Jetpack\Forms\ContactForm\Contact_Form_Plugin' ) ) {
+			return;
+		}
+
+		// Enqueue the main Jetpack forms stylesheet.
+		wp_enqueue_style( 'grunion.css' );
+		// In admin, we need to load the block library styles which include button styles.
+		wp_enqueue_style( 'wp-block-library' );
 	}
 }

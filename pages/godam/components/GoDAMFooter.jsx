@@ -87,7 +87,7 @@ const GoDAMFooter = () => {
 											text={ icon.tooltip }
 											placement="bottom"
 										>
-											<a href={ icon.url } target="_blank" rel="noreferrer">{ icon.icon }</a>
+											<a href={ icon.url } target="_blank" rel="noreferrer" aria-label={ icon.title }>{ icon.icon }</a>
 										</Tooltip>
 									</li>
 								) )

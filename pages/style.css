@@ -302,6 +302,18 @@ input, textarea, select {
 	border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
 }
 
+/* Hotspot link */
+
+/* Turn the link box red if link is not valid */
+.hotspot-link-error .components-text-control__input {
+	box-shadow: 0 0 0 0.5px #d63638 !important;
+	border-color: #d63638 !important;
+}
+
+.hotspot-link-error .components-base-control__label {
+	color: #d63638 !important;
+}
+
 /* Hotspot layer */
 .hotspot {
 	position: absolute;

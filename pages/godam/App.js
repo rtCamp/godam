@@ -24,7 +24,7 @@ import VideoSettings from './components/tabs/VideoSettings/VideoSettings.jsx';
 
 import { useGetMediaSettingsQuery } from './redux/api/media-settings.js';
 import { setMediaSettings } from './redux/slice/media-settings.js';
-import VideoPlayer from './components/tabs/VideoSettings/VideoPlayer.jsx';
+import VideoPlayer from './components/tabs/VideoPlayer/VideoPlayer.jsx';
 
 const TABS = [
 	{

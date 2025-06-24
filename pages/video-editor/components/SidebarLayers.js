@@ -11,6 +11,7 @@ import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
 import woo from '../assets/layers/woo.svg';
+import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 
 /**
  * WordPress dependencies
@@ -58,11 +59,16 @@ const layerTypes = [
 
 const premiumLayers = [ 'form', 'hotspot', 'ad' ];
 
-const SidebarLayers = ( { currentTime, onSelectLayer, duration } ) => {
+const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
 
-	const openModal = () => setOpen( true );
+	const openModal = () => {
+		setOpen( true );
+		if ( onPauseVideo ) {
+			onPauseVideo();
+		}
+	};
 	const closeModal = () => setOpen( false );
 
 	const dispatch = useDispatch();
@@ -244,6 +250,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, duration } ) => {
 								} else if ( layer.type === 'woo' ) {
 									icon = woo;
 									layerText = __( 'WooCommerce', 'godam' );
+								} else if ( layer.type === 'form' && layer.form_type === 'jetpack' ) {
+									icon = JetpackIcon;
+									layerText = __( 'Jetpack Forms', 'godam' );
 								} else {
 									layerText = layer?.type?.toUpperCase();
 								}
@@ -333,6 +342,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, duration } ) => {
 								isGFPluginActive={ window?.videoData?.gf_active }
 								isWPFormsPluginActive={ window?.videoData?.wpforms_active }
 								isCF7PluginActive={ window?.videoData?.cf7_active }
+								isJetpackPluginActive={ window?.videoData?.jetpack_active }
 								closeModal={ closeModal }
 								addNewLayer={ addNewLayer }
 							/>

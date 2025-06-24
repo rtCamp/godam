@@ -50,6 +50,8 @@ const slice = createSlice( {
 		cf7Forms: [],
 		wpforms: [],
 		gformPluginActive: true,
+		jetpackForms: [],
+		jetpackPluginActive: false,
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
@@ -142,6 +144,12 @@ const slice = createSlice( {
 		setWPFormPluginActive: ( state, action ) => {
 			state.wpFormPluginActive = action.payload;
 		},
+		setJetpackForms: ( state, action ) => {
+			state.jetpackForms = action.payload;
+		},
+		setJetpackPluginActive: ( state, action ) => {
+			state.jetpackPluginActive = action.payload;
+		},
 	},
 } );
 
@@ -164,5 +172,7 @@ export const {
 	SetCF7PluginActive,
 	setWPForms,
 	setWPFormPluginActive,
+	setJetpackForms,
+	setJetpackPluginActive,
 } = slice.actions;
 export default slice.reducer;

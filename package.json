@@ -30,6 +30,7 @@
 		"@tailwindcss/typography": "^0.5.16",
 		"@uppy/core": "4.4.4",
 		"@uppy/dashboard": "4.3.3",
+		"@uppy/golden-retriever": "4.1.1",
 		"@uppy/screen-capture": "4.2.2",
 		"@uppy/webcam": "4.1.2",
 		"@uppy/xhr-upload": "4.3.3",

@@ -113,6 +113,9 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
+	const isValidOrigin = ( url = '' ) =>
+		/^https?:\/\//i.test( url.trim() );
+
 	return (
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
@@ -255,16 +258,20 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 									label={ __( 'Link', 'godam' ) }
 									placeholder="https://www.example.com"
 									value={ hotspot.link }
-									onChange={ ( val ) =>
-										updateField(
-											'hotspots',
-											hotspots.map( ( h2, j ) =>
-												j === index ? { ...h2, link: val } : h2,
-											),
-										)
-									}
+									onChange={ ( val ) => {
+										const updated = hotspots.map( ( h2, j ) =>
+											j === index
+												? { ...h2, link: val, linkInvalid: val && ! isValidOrigin( val ) }
+												: h2,
+										);
+										updateField( 'hotspots', updated );
+									} }
+									className={ hotspot.linkInvalid ? 'hotspot-link-error' : undefined }
 									disabled={ ! isValidAPIKey }
 								/>
+								{ hotspot.linkInvalid && (
+									<p className="text-red-600 text-xs mt-1">{ __( 'Invalid origin: must use either http or https as the scheme.', 'godam' ) }</p>
+								) }
 								{ hotspot.showIcon && (
 									<div className="flex flex-col gap-2 mt-2">
 										<FontAwesomeIconPicker

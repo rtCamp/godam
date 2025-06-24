@@ -271,8 +271,13 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 		return;
 	}
 
-	$transcoded_files  = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
-	$transcoded_thumbs = get_post_meta( $post_id, 'rtgodam_media_thumbnails', true );
+	$transcoded_files = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
+
+	// only display the check status button for media that are transcoding.
+	$transcoding_status = get_post_meta( $post_id, 'rtgodam_transcoding_status', true );
+	if ( empty( $transcoding_status ) && empty( $transcoded_files ) ) {
+		return;
+	}
 
 	if ( empty( $transcoded_files ) && rtgodam_is_file_being_transcoded( $post_id ) ) {
 		$check_button_text = __( 'Check Status', 'godam' );
@@ -291,7 +296,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 		<button type="button" id="btn_check_status<?php echo esc_attr( $post_id ); ?>" name="check_status_btn" data-value='<?php echo esc_attr( $post_id ); ?>'><?php echo esc_html( $check_button_text ); ?></button>
 		<?php
 
-	} elseif ( ! empty( $transcoded_files ) && ! empty( $transcoded_thumbs ) ) {
+	} elseif ( ! empty( $transcoded_files ) ) {
 		echo esc_html__( 'File is transcoded.', 'godam' );
 	}
 }
