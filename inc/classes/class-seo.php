@@ -241,7 +241,7 @@ class Seo {
 			return array();
 		}
 
-		if ( ! \Elementor\Plugin::$instance->documents->get( $post_id )->is_built_with_elementor() ) {
+		if ( null !== \Elementor\Plugin::$instance->documents && ! \Elementor\Plugin::$instance->documents->get( $post_id )->is_built_with_elementor() ) {
 			return array();
 		}
 
