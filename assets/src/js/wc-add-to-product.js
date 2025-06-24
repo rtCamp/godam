@@ -193,40 +193,62 @@ jQuery( document ).ready( function( $ ) {
 						>
 							<strong>Attach Products to Video:</strong>
 
-							{ /* ⬇️  list without default bullets */ }
-							<ul style={ { marginTop: 8, listStyle: 'none', paddingLeft: 0 } }>
+							<div
+								style={ {
+									display: 'flex',
+									overflowX: 'auto',
+									gap: '12px',
+									paddingTop: '10px',
+								} }
+							>
 								{ selected
 									.filter( ( p ) => p.id !== CURRENT_ID )
 									.map( ( p ) => (
-										<li
+										<div
 											key={ p.id }
 											style={ {
 												display: 'flex',
+												flexDirection: 'column',
 												alignItems: 'center',
-												marginBottom: 6,
+												width: '110px',
+												minWidth: '100px',
+												height: '130px',
+												border: '1px solid #ddd',
+												borderRadius: '6px',
+												padding: '8px',
+												background: '#fff',
+												boxSizing: 'border-box',
+												flexShrink: 0,
 											} }
 										>
-											{console.log(p)}
-											{ /* feature image */ }
 											{ p.image && (
 												<img
 													src={ p.image }
 													alt={ p.name }
 													style={ {
-														width: 32,
-														height: 32,
+														width: 64,
+														height: 64,
 														objectFit: 'cover',
-														borderRadius: 3,
-														marginRight: 8,
+														borderRadius: 4,
+														marginBottom: 6,
 													} }
 												/>
 											) }
-
-											{ /* name */ }
-											<span>{ p.name }</span>
-										</li>
+											<span
+												style={ {
+													fontSize: '13px',
+													textAlign: 'center',
+													whiteSpace: 'nowrap',
+													overflow: 'hidden',
+													textOverflow: 'ellipsis',
+													width: '100%',
+												} }
+											>
+												{ p.name }
+											</span>
+										</div>
 									) ) }
-							</ul>
+							</div>
 						</div>
 					) }
 
