@@ -12,6 +12,7 @@ import {
 	Panel,
 	PanelBody,
 	Button,
+	Spinner,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -21,13 +22,15 @@ import { __ } from '@wordpress/i18n';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, selectHasChanges, selectMediaSettings } from '../../../redux/slice/media-settings.js';
 import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
-
-import './video-settings.scss';
-
 import APISettings from './APISettings.jsx';
 import VideoCompressQuality from './VideoCompressQuality.jsx';
 import VideoThumbnails from './VideoThumbnails.jsx';
 import VideoWatermark from './VideoWatermark.jsx';
+
+/**
+ * Styles
+ */
+import './video-settings.scss';
 
 const VideoSettings = () => {
 	const dispatch = useDispatch();
@@ -123,11 +126,12 @@ const VideoSettings = () => {
 				<Button
 					variant="primary"
 					className="godam-button"
+					icon={ saveMediaSettingsLoading && <Spinner /> }
 					onClick={ handleSaveSettings }
 					isBusy={ saveMediaSettingsLoading }
-					disabled={ saveMediaSettingsLoading || ! isChanged }
+					disabled={ ! isChanged }
 				>
-					{ __( 'Save Settings', 'godam' ) }
+					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 				</Button>
 			) }
 

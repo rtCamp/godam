@@ -9,6 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import {
 	Button,
 	Notice,
+	Spinner,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
@@ -85,11 +86,12 @@ const VideoPlayer = () => {
 			<Button
 				variant="primary"
 				className="godam-button"
+				icon={ saveMediaSettingsLoading && <Spinner /> }
 				onClick={ handleSaveSettings }
 				isBusy={ saveMediaSettingsLoading }
-				disabled={ saveMediaSettingsLoading || ! isChanged }
+				disabled={ ! isChanged }
 			>
-				{ __( 'Save Settings', 'godam' ) }
+				{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 			</Button>
 
 		</>

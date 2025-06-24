@@ -13,6 +13,7 @@ import {
 	Panel,
 	PanelBody,
 	Button,
+	Spinner,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -29,7 +30,7 @@ const GeneralSettings = () => {
 	const dispatch = useDispatch();
 	const mediaSettings = useSelector( selectMediaSettings( 'general' ) );
 	const isChanged = useSelector( selectHasChanges( 'general' ) );
-	const [ saveMediaSettings, { isLoading: saveMediaSettingLoading } ] = useSaveMediaSettingsMutation();
+	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
 	// Show notice function to display messages
@@ -119,11 +120,12 @@ const GeneralSettings = () => {
 			<Button
 				variant="primary"
 				className="godam-button"
+				icon={ saveMediaSettingsLoading && <Spinner /> }
 				onClick={ handleSaveSettings }
-				isBusy={ saveMediaSettingLoading }
-				disabled={ saveMediaSettingLoading || ! isChanged }
+				isBusy={ saveMediaSettingsLoading }
+				disabled={ ! isChanged }
 			>
-				{ __( 'Save Settings', 'godam' ) }
+				{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 			</Button>
 		</>
 	);

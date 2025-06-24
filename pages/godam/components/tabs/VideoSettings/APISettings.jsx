@@ -6,20 +6,24 @@ import { useState } from 'react';
 /**
  * WordPress dependencies
  */
-import { Button, Panel, PanelBody, TextControl } from '@wordpress/components';
+import {
+	Button,
+	Panel,
+	PanelBody,
+	TextControl,
+	Spinner,
+} from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { useDeactivateAPIKeyMutation, useVerifyAPIKeyMutation } from '../../../redux/api/media-settings.js';
-
 import { hasValidAPIKey, maskedAPIKey, scrollToTop } from '../../../utils/index.js';
 import UsageData from './UsageData.jsx';
 
 const APISettings = ( { setNotice } ) => {
 	const [ apiKey, setAPIKey ] = useState( hasValidAPIKey ? maskedAPIKey : '' );
-
 	const [ verifyAPIKey, { isLoading: isAPIKeyLoading } ] = useVerifyAPIKeyMutation();
 	const [ deactivateAPIKey, { isLoading: isDeactivateLoading } ] = useDeactivateAPIKeyMutation();
 
@@ -107,11 +111,12 @@ const APISettings = ( { setNotice } ) => {
 						<Button
 							className="godam-button godam-margin-right"
 							onClick={ handleSaveAPIKey }
+							icon={ isAPIKeyLoading && <Spinner /> }
 							disabled={ isAPIKeyLoading || hasValidAPIKey || ! apiKey.trim() }
 							variant="primary"
 							isBusy={ isAPIKeyLoading }
 						>
-							{ __( 'Save API Key', 'godam' ) }
+							{ isAPIKeyLoading ? __( 'Saving…', 'godam' ) : __( 'Save API Key', 'godam' ) }
 						</Button>
 						<Button
 							className="godam-button"
