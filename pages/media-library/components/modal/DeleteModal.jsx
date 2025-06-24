@@ -63,7 +63,7 @@ const DeleteModal = () => {
 			dispatch( updateSnackbar(
 				{
 					message: __( 'Failed to delete folder', 'godam' ),
-					type: 'error',
+					type: 'fail',
 				},
 			) );
 		} finally {

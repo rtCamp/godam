@@ -62,7 +62,7 @@ const RenameModal = () => {
 			dispatch( updateSnackbar(
 				{
 					message: __( 'Failed to rename folder', 'godam' ),
-					type: 'error',
+					type: 'fail',
 				},
 			) );
 		} finally {

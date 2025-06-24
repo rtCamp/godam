@@ -205,7 +205,7 @@ const FolderTree = () => {
 						if ( selectedFolder?.meta?.locked ) {
 							dispatch( updateSnackbar( {
 								message: __( 'This folder is locked and cannot be modified', 'godam' ),
-								type: 'error',
+								type: 'fail',
 							} ) );
 							return;
 						}
@@ -216,7 +216,7 @@ const FolderTree = () => {
 						if ( targetFolder?.meta?.locked ) {
 							dispatch( updateSnackbar( {
 								message: __( 'This folder is locked and cannot be modified', 'godam' ),
-								type: 'error',
+								type: 'fail',
 							} ) );
 							return;
 						}
@@ -250,7 +250,7 @@ const FolderTree = () => {
 						} catch {
 							dispatch( updateSnackbar( {
 								message: __( 'Failed to assign items', 'godam' ),
-								type: 'error',
+								type: 'fail',
 							},
 							) );
 						}
