@@ -128,19 +128,6 @@ function GODAMPlayer( videoRef = null ) {
 			}
 		}
 
-		video.addEventListener( 'loadedmetadata', () => {
-			const playerElement = player.el_;
-
-			const captionControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-subs-caps-button.vjs-control.vjs-hidden' );
-
-			if ( captionControlBtn ) {
-				const qualityControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-quality-menu-wrapper' );
-				if ( qualityControlBtn ) {
-					qualityControlBtn.classList.add( 'mobile-right-80' );
-				}
-			}
-		} );
-
 		const getChaptersData = () => {
 			if (
 				videoSetupOptions?.chapters &&
