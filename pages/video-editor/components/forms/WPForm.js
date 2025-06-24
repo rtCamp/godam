@@ -34,11 +34,11 @@ const CF7 = ( { layerID } ) => {
 	};
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
+	// const isValidAPIKey = window?.videoData?.validApiKey;
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isWPFormsPluginActive = Boolean( window?.videoData?.wpforms_active );
+	const isWPFormsPluginActive = Boolean( window?.videoData?.wpformsActive );
 
 	return (
 		<>

@@ -29,7 +29,7 @@ jQuery( document ).ready( function( $ ) {
 	// Called after each resize. Updates debug information and the progress bar.
 	function RetranscodeMediaUpdateStatus( id, success, response ) {
 		$( '#retranscodemedia-bar' ).progressbar( 'value', ( rtCount / rtTotal ) * 100 );
-		$( '#retranscodemedia-bar-percent' ).html( Math.round( ( rtCount / rtTotal ) * 1000 ) / 10 + '%' );
+		$( '#retranscodemedia-bar-percent' ).html( Math.round( ( ( rtCount / rtTotal ) * 1000 ) / 10 ) + '%' );
 		rtCount = rtCount + 1;
 
 		if ( success ) {
@@ -52,9 +52,9 @@ jQuery( document ).ready( function( $ ) {
 		$( '#retranscodemedia-stop' ).hide();
 
 		if ( rtErrors > 0 ) {
-			rtResultText = `All done! ${ rtSuccesses } media file(s) were successfully sent for transcoding in ${ rtTotaltime } seconds and there were ${ rtErrors } failure(s). To try transcoding the failed media again, <a href="${ window.rtgodam_retranscode?.admin_url }&ids=${ rtFailedlist }">click here</a>. ${ window.rtgodam_retranscode?.text_goback }`;
+			rtResultText = `All done! ${ rtSuccesses } media file(s) were successfully sent for transcoding in ${ rtTotaltime } seconds and there were ${ rtErrors } failure(s). To try transcoding the failed media again, <a href="${ window.rtgodam_retranscode?.adminUrl }&ids=${ rtFailedlist }">click here</a>. ${ window.rtgodam_retranscode?.textGoback }`;
 		} else {
-			rtResultText = `All done! ${ rtSuccesses } media file(s) were successfully sent for transcoding in ${ rtTotaltime } seconds and there were 0 failures. ${ window.rtgodam_retranscode?.text_goback }`;
+			rtResultText = `All done! ${ rtSuccesses } media file(s) were successfully sent for transcoding in ${ rtTotaltime } seconds and there were 0 failures. ${ window.rtgodam_retranscode?.textGoback }`;
 		}
 		$( '#message' ).html( '<p><strong>' + rtResultText + '</strong></p>' );
 		$( '#message' ).show();

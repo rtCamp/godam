@@ -170,9 +170,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						{
 							sortedLayers?.map( ( layer ) => {
 								const isAdServerAd = adServer === 'ad-server' && layer.type === 'ad';
-								const isGFPluginNotActive = layer.type === 'form' && ! window?.videoData?.gf_active;
-								const isWPFormsPluginNotActive = layer.type === 'form' && ! window?.videoData?.wpforms_active;
-								const isCF7PluginNotActive = layer.type === 'form' && ! window?.videoData?.cf7_active;
+								const isGFPluginNotActive = layer.type === 'form' && ! window?.videoData?.gfActive;
+								const isWPFormsPluginNotActive = layer.type === 'form' && ! window?.videoData?.wpformsActive;
+								const isCF7PluginNotActive = layer.type === 'form' && ! window?.videoData?.cf7Active;
 								const isPollPluginNotActive = layer.type === 'poll' && ! window.easydamMediaLibrary.isPollPluginActive;
 								let addWarning = false;
 								let toolTipMessage = '';
@@ -298,10 +298,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 
 						{ isOpen && (
 							<LayerSelector
-								isGFPluginActive={ window?.videoData?.gf_active }
-								isWPFormsPluginActive={ window?.videoData?.wpforms_active }
-								isCF7PluginActive={ window?.videoData?.cf7_active }
-								isJetpackPluginActive={ window?.videoData?.jetpack_active }
+								isGFPluginActive={ window?.videoData?.gfActive }
+								isWPFormsPluginActive={ window?.videoData?.wpformsActive }
+								isCF7PluginActive={ window?.videoData?.cf7Active }
+								isJetpackPluginActive={ window?.videoData?.jetpackActive }
 								closeModal={ closeModal }
 								addNewLayer={ addNewLayer }
 							/>

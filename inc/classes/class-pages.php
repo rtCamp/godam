@@ -347,12 +347,12 @@ class Pages {
 					'nonce'            => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
 					'currentUserId'    => get_current_user_id(),            // Current user ID.
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
-					'valid_api_key'    => rtgodam_is_api_key_valid(),
+					'validApiKey'      => rtgodam_is_api_key_valid(),
 					'adminUrl'         => admin_url(),
-					'gf_active'        => $is_gf_active,
-					'cf7_active'       => $is_cf7_active,
-					'wpforms_active'   => $is_wpforms_active,
-					'jetpack_active'   => $is_jetpack_active,
+					'gfActive'         => $is_gf_active,
+					'cf7Active'        => $is_cf7_active,
+					'wpformsActive'    => $is_wpforms_active,
+					'jetpackActive'    => $is_jetpack_active,
 				)
 			);
 
@@ -371,7 +371,7 @@ class Pages {
 				$this->enqueue_jetpack_forms_styles();
 			}
 
-			$rtgodam_user_data = rtgodam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data( true );
 
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
@@ -401,12 +401,12 @@ class Pages {
 					'wp-polls',
 					'pollsL10n',
 					array(
-						'ajax_url'      => admin_url( 'admin-ajax.php' ),
-						'text_wait'     => __( 'Your last request is still being processed. Please wait a while ...', 'godam' ),
-						'text_valid'    => __( 'Please choose a valid poll answer.', 'godam' ),
-						'text_multiple' => __( 'Maximum number of choices allowed: ', 'godam' ),
-						'show_loading'  => (int) $poll_ajax_style['loading'],
-						'show_fading'   => (int) $poll_ajax_style['fading'],
+						'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+						'textWait'     => __( 'Your last request is still being processed. Please wait a while ...', 'godam' ),
+						'textValid'    => __( 'Please choose a valid poll answer.', 'godam' ),
+						'textMultiple' => __( 'Maximum number of choices allowed: ', 'godam' ),
+						'showLoading'  => (int) $poll_ajax_style['loading'],
+						'showFading'   => (int) $poll_ajax_style['fading'],
 					)
 				);
 			}
@@ -426,12 +426,12 @@ class Pages {
 					'wp-polls',
 					'pollsL10n',
 					array(
-						'ajax_url'      => admin_url( 'admin-ajax.php' ),
-						'text_wait'     => __( 'Your last request is still being processed. Please wait a while ...', 'godam' ),
-						'text_valid'    => __( 'Please choose a valid poll answer.', 'godam' ),
-						'text_multiple' => __( 'Maximum number of choices allowed: ', 'godam' ),
-						'show_loading'  => (int) $poll_ajax_style['loading'],
-						'show_fading'   => (int) $poll_ajax_style['fading'],
+						'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+						'textWait'     => __( 'Your last request is still being processed. Please wait a while ...', 'godam' ),
+						'textValid'    => __( 'Please choose a valid poll answer.', 'godam' ),
+						'textMultiple' => __( 'Maximum number of choices allowed: ', 'godam' ),
+						'showLoading'  => (int) $poll_ajax_style['loading'],
+						'showFading'   => (int) $poll_ajax_style['fading'],
 					)
 				);
 			}
@@ -452,7 +452,7 @@ class Pages {
 				true
 			);
 
-			$rtgodam_user_data = rtgodam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data( true );
 
 			wp_localize_script(
 				'godam-page-script-dashboard',
@@ -516,7 +516,7 @@ class Pages {
 				)
 			);
 
-			$rtgodam_user_data = rtgodam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data( true );
 
 			wp_localize_script(
 				'transcoder-page-script-analytics',
@@ -543,7 +543,7 @@ class Pages {
 				true
 			);
 
-			$rtgodam_user_data = rtgodam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data( true );
 
 			wp_localize_script(
 				'godam-page-script-help',
@@ -562,7 +562,7 @@ class Pages {
 				true
 			);
 
-			$rtgodam_user_data = rtgodam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data( true );
 
 			if ( ! empty( $rtgodam_user_data ) ) {
 				wp_localize_script(
@@ -596,7 +596,7 @@ class Pages {
 			'MediaLibrary',
 			array(
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'userData' => rtgodam_get_user_data(),
+				'userData' => rtgodam_get_user_data( true ),
 			)
 		);
 	}

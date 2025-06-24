@@ -27,20 +27,20 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
+	// const isValidAPIKey = window?.videoData?.validApiKey;
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
 	const isPluginActive = ( formType ) => {
 		switch ( formType ) {
 			case 'gravity':
-				return Boolean( window?.videoData?.gf_active );
+				return Boolean( window?.videoData?.gfActive );
 			case 'wpforms':
-				return Boolean( window?.videoData?.wpforms_active );
+				return Boolean( window?.videoData?.wpformsActive );
 			case 'cf7':
-				return Boolean( window?.videoData?.cf7_active );
+				return Boolean( window?.videoData?.cf7Active );
 			case 'jetpack':
-				return Boolean( window?.videoData?.jetpack_active );
+				return Boolean( window?.videoData?.jetpackActive );
 			default:
 				return false;
 		}

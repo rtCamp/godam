@@ -202,11 +202,12 @@ function rtgodam_image_cta_html( $layer ) {
 }
 
 /**
- * Verify the api key for the plugin and return user data. 
- * 
- * @param int $timeout The time in seconds after which the user data should be refreshed.
+ * Verify the api key for the plugin and return user data.
+ *
+ * @param bool $use_for_localize_array Whether to use the data for localizing scripts. Defaults to false.
+ * @param int  $timeout                The time in seconds after which the user data should be refreshed.
  */
-function rtgodam_get_user_data( $timeout = 300 ) {
+function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = 300 ) {
 	$rtgodam_user_data = get_option( 'rtgodam_user_data', false );
 	$api_key           = get_option( 'rtgodam-api-key', '' );
 
@@ -252,12 +253,25 @@ function rtgodam_get_user_data( $timeout = 300 ) {
 		update_option( 'rtgodam_user_data', $rtgodam_user_data );
 	}
 
+	if ( $use_for_localize_array ) {
+		// Prepare the data for localizing scripts.
+		$localized_array_data = array(
+			'currentUserId'         => $rtgodam_user_data['currentUserId'],
+			'validApiKey'           => $rtgodam_user_data['valid_api_key'],
+			'userData'              => $rtgodam_user_data['user_data'],
+			'storageBandwidthError' => $rtgodam_user_data['storageBandwidthError'],
+			'timestamp'             => $rtgodam_user_data['timestamp'],
+		);
+
+		return $localized_array_data;
+	}
+
 	return $rtgodam_user_data;
 }
 
 /**
  * Get the storage and bandwidth usage data.
- * 
+ *
  * @return array|WP_Error
  */
 function rtgodam_get_usage_data() {
@@ -302,7 +316,7 @@ function rtgodam_get_usage_data() {
 
 /**
  * Check if the api key is valid.
- * 
+ *
  * @return bool
  */
 function rtgodam_is_api_key_valid() {
