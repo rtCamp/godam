@@ -64,38 +64,35 @@ class WC extends Base {
 	 * @return array{term_id:int,taxonomy:string}|false Array with term ID and taxonomy, or false when no match
 	 */
 	public function godam_find_term( $search_term, array $taxonomies ) {
+		$matches = array();
+	
 		foreach ( $taxonomies as $tax ) {
 			$found = term_exists( $search_term, $tax );
-
+	
 			if ( ! $found ) {
 				continue;
 			}
-
-			// Normalise every possible return type.
+	
 			if ( is_int( $found ) ) {
-				return array(
+				$matches[] = array(
 					'term_id'  => $found,
 					'taxonomy' => $tax,
 				);
-			}
-
-			if ( $found instanceof \WP_Term ) { 
-				return array(
+			} elseif ( $found instanceof \WP_Term ) {
+				$matches[] = array(
 					'term_id'  => $found->term_id,
 					'taxonomy' => $found->taxonomy,
 				);
-			}
-
-			if ( is_array( $found ) ) {
-				return array(
+			} elseif ( is_array( $found ) ) {
+				$matches[] = array(
 					'term_id'  => (int) $found['term_id'],
 					'taxonomy' => $tax,
 				);
 			}
 		}
-
-		return false; // Nothing matched.
-	}
+	
+		return ! empty( $matches ) ? $matches : false;
+	}   
 
 	/**
 	 * Get all WooCommerce products.
@@ -106,7 +103,7 @@ class WC extends Base {
 	public function get_products( $request ) {
 		$search     = sanitize_text_field( $request->get_param( 'search' ) );
 		$is_numeric = is_numeric( $search );
-		$term_info  = $this->godam_find_term( $search, array( 'product_cat', 'product_tag', 'product_brand' ) );
+		$term_info  = $is_numeric ? false : $this->godam_find_term( $search, array( 'product_cat', 'product_tag', 'product_brand' ) );
 	
 		$args = array(
 			'post_type'      => 'product',
@@ -117,22 +114,29 @@ class WC extends Base {
 		// Allow numeric search by ID.
 		if ( $is_numeric ) {
 			$args['post__in'] = array( (int) $search );
-		} elseif ( $term_info ) {
-			$args['tax_query'] = array( // phpcs:ignore
-				'relation' => 'OR',
-				array(
-					'taxonomy' => $term_info['taxonomy'],
+		} elseif ( is_array( $term_info ) && ! empty( $term_info ) ) {
+			$tax_query = array( 'relation' => 'OR' );
+		
+			foreach ( $term_info as $term ) {
+				if ( ! isset( $term['taxonomy'] ) ) {
+					continue;
+				}
+		
+				$tax_query[] = array(
+					'taxonomy' => $term['taxonomy'],
 					'field'    => 'slug',
 					'terms'    => array( $search ),
 					'operator' => 'IN',
-				),
-				array(
-					'taxonomy' => $term_info['taxonomy'],
+				);
+		
+				$tax_query[] = array(
+					'taxonomy' => $term['taxonomy'],
 					'field'    => 'name',
 					'terms'    => $search,
 					'operator' => 'LIKE',
-				),
-			);
+				);
+			}
+			$args['tax_query'] = $tax_query; // phpcs:ignore
 		} else {
 			$args['s'] = $search;
 		}
