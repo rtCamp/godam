@@ -325,7 +325,11 @@ export const VideoJS = ( props ) => {
 	}, [ layers, chapters ] );
 
 	useEffect( () => {
-		if ( playerRef.current ) {
+		if ( ! playerRef.current ) {
+			return;
+		}
+
+		try {
 			const player = playerRef.current;
 
 			// player.sources( options.sources );
@@ -342,6 +346,8 @@ export const VideoJS = ( props ) => {
 			} else if ( ! options.controlBar.playToggle && volumePanel ) {
 				player.controlBar.removeChild( 'volumePanel' );
 			}
+		} catch {
+			// Ignoring - "No compatible source was found for this media" error will be shown on the video element.
 		}
 	}, [ options ] );
 
@@ -585,10 +591,17 @@ const Slider = ( props ) => {
 							} }
 						>
 							<div className="chapter-indicator--duration">
-								{ `${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) } - ${ chapter?.originalTime }` }
+								{ `${ chapter?.originalTime } - ${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) }` }
 							</div>
-							<div className="chapter-indicator--text">
-								{ chapter?.text }
+							<div
+								className="chapter-indicator--text"
+								style={ {
+									'--hover-width': `${ hoverWidth }%`,
+								} }
+							>
+								{ chapter?.text?.length > 13
+									? `${ chapter.text.slice( 0, 13 ) }...`
+									: chapter?.text }
 							</div>
 						</div>
 					);

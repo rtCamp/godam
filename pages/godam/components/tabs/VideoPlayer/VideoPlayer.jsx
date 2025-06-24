@@ -16,7 +16,7 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
+import { scrollToTop } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
 import CustomVideoPlayerCSS from './CustomVideoPlayerCSS.jsx';
@@ -65,20 +65,19 @@ const VideoPlayer = () => {
 					{ notice.message }
 				</Notice>
 			) }
-			{
-				hasValidAPIKey && <CustomVideoPlayerCSS handleSettingChange={ handleSettingChange } />
-			}
-			{ hasValidAPIKey && (
-				<Button
-					variant="primary"
-					className="godam-button"
-					onClick={ handleSaveSettings }
-					isBusy={ saveMediaSettingsLoading }
-					disabled={ saveMediaSettingsLoading }
-				>
-					{ __( 'Save Settings', 'godam' ) }
-				</Button>
-			) }
+
+			<CustomVideoPlayerCSS handleSettingChange={ handleSettingChange } />
+
+			<Button
+				variant="primary"
+				className="godam-button"
+				onClick={ handleSaveSettings }
+				isBusy={ saveMediaSettingsLoading }
+				disabled={ saveMediaSettingsLoading }
+			>
+				{ __( 'Save Settings', 'godam' ) }
+			</Button>
+
 		</>
 	);
 };

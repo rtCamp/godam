@@ -73,7 +73,9 @@ function GODAMPlayer( videoRef = null ) {
 
 		const currentPlayerVideoInstanceId = video.dataset.instanceId;
 
-		video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
+		if ( video.closest( '.animate-video-loading' ) ) {
+			video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
+		}
 
 		const adTagUrl = video.dataset.ad_tag_url;
 		let isVideoClicked = false;
@@ -458,6 +460,27 @@ function GODAMPlayer( videoRef = null ) {
 
 				shareModal.innerHTML = DOMPurify.sanitize( html );
 
+				// Function to close the modal
+				const closeModal = () => {
+					shareModal.remove();
+				};
+
+				// Close modal when clicking outside
+				shareModal.addEventListener( 'click', ( modalEvent ) => {
+					if ( modalEvent.target === shareModal ) {
+						closeModal();
+					}
+				} );
+
+				// Close modal on escape key
+				const handleEscapeKey = ( modalEvent ) => {
+					if ( modalEvent.key === 'Escape' ) {
+						closeModal();
+						document.removeEventListener( 'keydown', handleEscapeKey );
+					}
+				};
+				document.addEventListener( 'keydown', handleEscapeKey );
+
 				shareModal
 					.querySelector( '#copy-page-link' )
 					.addEventListener( 'click', () => this.copyToClipboard( 'page-link' ) );
@@ -468,10 +491,7 @@ function GODAMPlayer( videoRef = null ) {
 
 				shareModal
 					.querySelector( '#cancel-button' )
-					.addEventListener( 'click', function() {
-						const cancelButton = shareModal.querySelector( '#cancel-button' );
-						cancelButton.closest( '.share-modal-container' ).remove();
-					} );
+					.addEventListener( 'click', closeModal );
 
 				const link = encodeURI(
 					`${ window.godamData.api_base }/web/video/${ this.player().jobId }`,
@@ -525,16 +545,19 @@ function GODAMPlayer( videoRef = null ) {
 			}
 		} );
 
-		// Handle overlay removal on first play
-		let hasPlayedOnce = false;
+		// Handle overlay removal based on time range
 		const videoContainerWrapper = video.closest( '.godam-video-wrapper' );
 		const overlay = videoContainerWrapper ? videoContainerWrapper.querySelector( '[data-overlay-content]' ) : null;
 
 		if ( overlay ) {
+			// Get overlay time range from video configuration
+			const overlayTimeRange = videoSetupOptions?.overlayTimeRange || 0;
+			let overlayHidden = false;
+
 			// Function to hide overlay
 			const hideOverlay = function() {
-				if ( ! hasPlayedOnce ) {
-					hasPlayedOnce = true;
+				if ( ! overlayHidden ) {
+					overlayHidden = true;
 					overlay.style.opacity = '0';
 
 					// Remove the overlay after the transition
@@ -544,8 +567,27 @@ function GODAMPlayer( videoRef = null ) {
 				}
 			};
 
-			// Listen for the first play event
-			player.one( 'play', hideOverlay );
+			// Handle overlay visibility based on time range
+			if ( overlayTimeRange > 0 ) {
+				// Listen for timeupdate to check if we should hide the overlay
+				player.on( 'timeupdate', function() {
+					const currentTime = player.currentTime();
+
+					if ( currentTime >= overlayTimeRange && ! overlayHidden ) {
+						hideOverlay();
+					}
+				} );
+			} else {
+				// If time range is 0, hide overlay on first play (original behavior)
+				let hasPlayedOnce = false;
+				const hideOnFirstPlay = function() {
+					if ( ! hasPlayedOnce ) {
+						hasPlayedOnce = true;
+						hideOverlay();
+					}
+				};
+				player.one( 'play', hideOnFirstPlay );
+			}
 		}
 
 		player.ready( function() {
@@ -578,8 +620,12 @@ function GODAMPlayer( videoRef = null ) {
 				controlBar.removeChild( 'volumePanel' );
 			}
 
-			videojs.registerComponent( 'SettingsButton', SettingsButton );
-			controlBar.addChild( 'SettingsButton', {} );
+			if ( ! controlBar.getChild( 'SettingsButton' ) ) {
+				if ( ! videojs.getComponent( 'SettingsButton' ) ) {
+					videojs.registerComponent( 'SettingsButton', SettingsButton );
+				}
+				controlBar.addChild( 'SettingsButton', {} );
+			}
 
 			document.querySelectorAll( '.vjs-settings-button' ).forEach( ( button ) => {
 				button.querySelector( '.vjs-icon-placeholder' ).classList.add( 'vjs-icon-cog' );
@@ -769,8 +815,9 @@ function GODAMPlayer( videoRef = null ) {
 							layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ||
 							layerObj.layerElement.querySelector( '.wpforms-confirmation-container-full' ) ||
 							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' ) ||
+							layerObj.layerElement.querySelector( '.contact-form-success' ) ||
 							( ! layerObj.layerElement.querySelector( '.wp-polls-form' ) &&
-							layerObj.layerElement.querySelector( '.wp-polls-ans' ) )
+							layerObj.layerElement.querySelector( '.wp-polls-answer' ) )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -812,6 +859,8 @@ function GODAMPlayer( videoRef = null ) {
 					} else if ( window.godamPluginDependencies?.wpforms && layer.form_type === 'wpforms' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.cf7 && layer.form_type === 'cf7' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.jetpack && layer.form_type === 'jetpack' ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {
