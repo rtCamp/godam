@@ -63,11 +63,9 @@ export const generalAPI = createApi( {
 						const currentSettings = state.mediaSettings.settings;
 						const mergedSettings = {
 							...currentSettings,
-							[ category ]: { ...currentSettings[ category ], ...( data[ category ] || settings[ category ] ) },
+							...data,
 						};
 						dispatch( setMediaSettings( mergedSettings ) );
-						// Refetch to sync with server
-						await dispatch( generalAPI.endpoints.getMediaSettings.initiate() ).unwrap();
 					}
 				} catch {}
 			},

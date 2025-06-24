@@ -43,33 +43,20 @@ const mediaSettingsSlice = createSlice( {
 		// Set media settings, merging with existing settings
 		setMediaSettings: ( state, action ) => {
 			const payload = action.payload || {};
-			// Initialize with current settings to preserve existing data
-			const mergedSettings = {
-				video: { ...state.settings.video },
-				general: { ...state.settings.general },
-				video_player: { ...state.settings.video_player },
-			};
-
-			// Update only provided categories
+			// Merge directly with current settings
+			const mergedSettings = { ...state.settings };
 			Object.entries( payload ).forEach( ( [ category, payloadSettings ] ) => {
 				if ( state.settings[ category ] ) {
-					const currentSettings = { ...state.settings[ category ] };
-					Object.entries( payloadSettings ).forEach( ( [ key, value ] ) => {
-						if ( category === 'video_player' && key === 'custom_css' && ( value === null || value === '' ) ) {
-							mergedSettings[ category ][ key ] = initialState.settings.video_player.custom_css;
-						} else {
-							mergedSettings[ category ][ key ] = value;
-						}
-					} );
-					Object.keys( currentSettings ).forEach( ( key ) => {
-						if ( ! ( key in payloadSettings ) ) {
-							mergedSettings[ category ][ key ] = currentSettings[ key ];
-						}
-					} );
+					mergedSettings[ category ] = {
+						...state.settings[ category ],
+						...payloadSettings,
+						...( category === 'video_player' && ( ! payloadSettings.custom_css?.trim() )
+							? { custom_css: initialState.settings.video_player.custom_css }
+							: {} ),
+					};
 					state.isChanged[ category ] = false;
 				}
 			} );
-
 			state.settings = mergedSettings;
 		},
 		// Update a specific media setting
