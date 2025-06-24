@@ -676,9 +676,12 @@ function GODAMPlayer( videoRef = null ) {
 					}
 				}
 
-				// Register the component before using it
-				videojs.registerComponent( 'CustomButton', CustomButton );
-				controlBar.addChild( 'CustomButton', {} );
+				if ( ! controlBar.getChild( 'CustomButton' ) ) {
+					if ( ! videojs.getComponent( 'CustomButton' ) ) {
+						videojs.registerComponent( 'CustomButton', CustomButton );
+					}
+					controlBar.addChild( 'CustomButton', {} );
+				}
 			}
 		} );
 
