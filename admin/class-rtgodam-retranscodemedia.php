@@ -237,7 +237,7 @@ class RTGODAM_RetranscodeMedia {
 
 			wp_localize_script(
 				'rtgodam-retranscode-admin',
-				'rtgodam_retranscode',
+				'rtgodamRetranscode',
 				array(
 					'ids'          => $ids,
 					'stoppingText' => $stopping_text,

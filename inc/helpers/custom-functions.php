@@ -256,12 +256,31 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = 300 
 	if ( $use_for_localize_array ) {
 		// Prepare the data for localizing scripts.
 		$localized_array_data = array(
-			'currentUserId'         => $rtgodam_user_data['currentUserId'],
-			'validApiKey'           => $rtgodam_user_data['valid_api_key'],
-			'userData'              => $rtgodam_user_data['user_data'],
-			'storageBandwidthError' => $rtgodam_user_data['storageBandwidthError'],
-			'timestamp'             => $rtgodam_user_data['timestamp'],
+			'currentUserId' => $rtgodam_user_data['currentUserId'],
+			'validApiKey'   => $rtgodam_user_data['valid_api_key'],
+			'userApiData'   => $rtgodam_user_data['user_data'],
+			'timestamp'     => $rtgodam_user_data['timestamp'],
 		);
+
+		if ( isset( $rtgodam_user_data['storageBandwidthError'] ) && ! empty( $rtgodam_user_data['storageBandwidthError'] ) ) {
+			$localized_array_data['storageBandwidthError'] = $rtgodam_user_data['storageBandwidthError'];
+		}
+
+		if ( isset( $rtgodam_user_data['storage_used'] ) && ! empty( $rtgodam_user_data['storage_used'] ) ) {
+			$localized_array_data['storageUsed'] = $rtgodam_user_data['storage_used'];
+		}
+
+		if ( isset( $rtgodam_user_data['total_storage'] ) && ! empty( $rtgodam_user_data['total_storage'] ) ) {
+			$localized_array_data['totalStorage'] = $rtgodam_user_data['total_storage'];
+		}
+
+		if ( isset( $rtgodam_user_data['bandwidth_used'] ) && ! empty( $rtgodam_user_data['bandwidth_used'] ) ) {
+			$localized_array_data['bandwidthUsed'] = $rtgodam_user_data['bandwidth_used'];
+		}
+
+		if ( isset( $rtgodam_user_data['total_bandwidth'] ) && ! empty( $rtgodam_user_data['total_bandwidth'] ) ) {
+			$localized_array_data['totalBandwidth'] = $rtgodam_user_data['total_bandwidth'];
+		}
 
 		return $localized_array_data;
 	}
