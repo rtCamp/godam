@@ -334,9 +334,9 @@ class Pages {
 				true
 			);
 
-			$is_gf_active            = is_plugin_active( 'gravityforms/gravityforms.php' );
-			$is_cf7_active           = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
-			$is_wpforms_active       = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
+			$is_gf_active      = is_plugin_active( 'gravityforms/gravityforms.php' );
+			$is_cf7_active     = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
+			$is_wpforms_active = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
 			$is_jetpack_active = is_plugin_active( 'jetpack/jetpack.php' );
 
 			// TODO Handle Everest Forms pro versions as well in future.
@@ -355,7 +355,7 @@ class Pages {
 					'gf_active'            => $is_gf_active,
 					'cf7_active'           => $is_cf7_active,
 					'wpforms_active'       => $is_wpforms_active,
-					'jetpack_active'   => $is_jetpack_active,
+					'jetpack_active'       => $is_jetpack_active,
 					'everest_forms_active' => $is_everest_forms_active,
 				)
 			);

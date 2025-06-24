@@ -27,17 +27,19 @@ if ( isset( $is_elementor_widget ) && $is_elementor_widget ) {
 add_filter( 'gform_confirmation_anchor', '__return_false' );
 
 // attributes.
-$autoplay      = ! empty( $attributes['autoplay'] );
-$controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
-$loop          = ! empty( $attributes['loop'] );
-$muted         = ! empty( $attributes['muted'] );
-$poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
-$preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
-$heading       = ! empty( $attributes['heading'] ) ? wp_kses_post( $attributes['heading'] ) : '';
-$tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
-$attachment_id = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
-$video_preview = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
+$autoplay           = ! empty( $attributes['autoplay'] );
+$controls           = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
+$loop               = ! empty( $attributes['loop'] );
+$muted              = ! empty( $attributes['muted'] );
+$poster             = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
+$preload            = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
+$caption            = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
+$tracks             = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
+$attachment_id      = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$video_preview      = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
+$overlay_time_range = ! empty( $attributes['overlayTimeRange'] ) ? floatval( $attributes['overlayTimeRange'] ) : 0;
+$show_overlay       = isset( $attributes['showOverlay'] ) ? $attributes['showOverlay'] : false;
+$vertical_alignment = ! empty( $attributes['verticalAlignment'] ) ? esc_attr( $attributes['verticalAlignment'] ) : 'center';
 
 $src            = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
@@ -119,9 +121,10 @@ $video_setup = wp_json_encode( $video_setup );
 
 $video_config = wp_json_encode(
 	array(
-		'preview'  => $video_preview,
-		'layers'   => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
-		'chapters' => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(), // contains list of chapters.
+		'preview'          => $video_preview,
+		'layers'           => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
+		'chapters'         => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(), // contains list of chapters.
+		'overlayTimeRange' => $overlay_time_range, // Add overlay time range to video config.
 	)
 );
 
@@ -161,18 +164,6 @@ endif;
 
 $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 
-// Add vertical alignment attribute.
-$vertical_alignment = ! empty( $attributes['verticalAlignment'] ) ? esc_attr( $attributes['verticalAlignment'] ) : 'center';
-
-// Get alignment styles inline.
-$alignment_map = array(
-	'top'    => 'flex-start',
-	'center' => 'center',
-	'bottom' => 'flex-end',
-);
-
-$justify_content  = isset( $alignment_map[ $vertical_alignment ] ) ? $alignment_map[ $vertical_alignment ] : 'center';
-$alignment_styles = "display: flex; flex-direction: column; justify-content: {$justify_content}; align-items: stretch; height: 100%; overflow: hidden;";
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
@@ -186,22 +177,11 @@ $alignment_styles = "display: flex; flex-direction: column; justify-content: {$j
 	<?php echo $attributes['aspectRatio'] ? '--rtgodam-video-aspect-ratio: ' . esc_attr( $attributes['aspectRatio'] ) : ''; ?>
 	">
 		<div class="godam-video-wrapper" style="position: relative;">
-			<?php if ( ! empty( $inner_blocks_content ) ) : ?>
+			<?php if ( $show_overlay && ! empty( $inner_blocks_content ) ) : ?>
 				<div
-					class="godam-video-overlay-container"
+					class="godam-video-overlay-container godam-overlay-alignment-<?php echo esc_attr( $vertical_alignment ); ?>"
 					data-overlay-content
-					style="
-						position: absolute;
-						top: 0;
-						left: 0;
-						right: 0;
-						bottom: 0;
-						z-index: 100;
-						pointer-events: none;
-						opacity: 1;
-						transition: opacity 0.3s ease;
-						<?php echo esc_attr( $alignment_styles ); ?>
-					"
+					data-overlay-time-range="<?php echo esc_attr( $overlay_time_range ); ?>"
 				>
 					<?php
 					// Safely output the inner blocks content.
@@ -250,7 +230,6 @@ $alignment_styles = "display: flex; flex-direction: column; justify-content: {$j
 					data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 					data-controls="<?php echo esc_attr( $video_setup ); ?>"
 					data-job_id="<?php echo esc_attr( $job_id ); ?>"
-					data-has-heading="<?php echo ! empty( $heading ) ? 'true' : 'false'; ?>"
 				>
 					<?php
 					foreach ( $sources as $source ) :
@@ -264,9 +243,10 @@ $alignment_styles = "display: flex; flex-direction: column; justify-content: {$j
 						endif;
 					endforeach;
 
-					if ( isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) &&
-						$easydam_meta_data['videoConfig']['controlBar']['subsCapsButton']
-					) {
+					$display_caption = ( ! isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
+						( isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] );
+
+					if ( $display_caption ) {
 						foreach ( $tracks as $track ) :
 							if ( ! empty( $track['src'] ) && ! empty( $track['kind'] ) ) :
 								?>
@@ -347,7 +327,8 @@ $alignment_styles = "display: flex; flex-direction: column; justify-content: {$j
 								// Use the static helper method to get the rendered form HTML.
 								$form_html = \RTGODAM\Inc\REST_API\Jetpack::get_rendered_form_html_static( $layer['jp_id'] );
 
-								if ( $form_html && ! is_wp_error( $form_html ) ) :									?>
+								if ( $form_html && ! is_wp_error( $form_html ) ) :
+									?>
 									<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 										<div class="form-container jetpack-form-container" <?php echo ! empty( $origin_post_id ) ? 'data-origin-post-id="' . esc_attr( $origin_post_id ) . '"' : ''; ?>>
 											<?php

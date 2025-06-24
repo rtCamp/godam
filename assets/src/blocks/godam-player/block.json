@@ -76,6 +76,14 @@
 			"type": "string",
 			"default": "center"
 		},
+		"overlayTimeRange": {
+			"type": "number",
+			"default": 0
+		},
+		"showOverlay": {
+			"type": "boolean",
+			"default": false
+		},
 		"layout": {
 			"type": "object",
 			"default": {
