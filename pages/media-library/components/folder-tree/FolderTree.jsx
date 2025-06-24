@@ -157,6 +157,10 @@ const FolderTree = () => {
 	 * @param {number} count               - The number of items being moved.
 	 */
 	const updateAttachmentCountOfFolders = useCallback( ( selectedFolderId, destinationFolderId, count ) => {
+		if ( ! selectedFolderId || ! destinationFolderId || count <= 0 ) {
+			return;
+		}
+
 		const updatedFolders = data.map( ( folder ) => {
 			if ( folder.id === selectedFolderId ) {
 				const currentCount = Number( folder.attachmentCount ) || 0;
@@ -231,6 +235,9 @@ const FolderTree = () => {
 								) );
 							}
 
+							// Update the folder tree count that reflects the new state.
+							updateAttachmentCountOfFolders( selectedFolder?.id, targetFolderId, draggedItems.length );
+
 							/**
 							 * Remove the dragged items from the attachment view if they are meant to be removed.
 							 */
@@ -239,9 +246,6 @@ const FolderTree = () => {
 									jQuery( `li.attachment[data-id="${ attachmentId }"]` ).remove(); // for attachment grid view.
 									jQuery( `tr#post-${ attachmentId }` ).remove(); // for attachment list view.
 								} );
-
-								// Update the folder tree count that reflects the new state.
-								updateAttachmentCountOfFolders( selectedFolder?.id, targetFolderId, draggedItems.length );
 							}
 						} catch {
 							dispatch( updateSnackbar( {
