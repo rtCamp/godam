@@ -29,6 +29,7 @@ import { scrollToTop } from '../../../utils/index.js';
 const GeneralSettings = () => {
 	const dispatch = useDispatch();
 	const mediaSettings = useSelector( selectMediaSettings( 'general' ) );
+	const allMediaSettings = useSelector( ( state ) => state.mediaSettings.settings );
 	const isChanged = useSelector( selectHasChanges( 'general' ) );
 	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
@@ -49,7 +50,7 @@ const GeneralSettings = () => {
 	// Handle saving settings
 	const handleSaveSettings = async () => {
 		try {
-			const response = await saveMediaSettings( { settings: { general: mediaSettings } } ).unwrap();
+			const response = await saveMediaSettings( { settings: allMediaSettings } ).unwrap();
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );

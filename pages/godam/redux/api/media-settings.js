@@ -6,7 +6,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 /**
  * Internal dependencies
  */
-import { setMediaSettings, resetChanges } from '../slice/media-settings.js';
+import { setMediaSettings, resetChanges, resetAllChanges } from '../slice/media-settings.js';
 import { VideoCustomCSSTemplate } from '../../components/VideoCustomCSSTemplate';
 
 const restURL = window.godamRestRoute.url || '';
@@ -23,16 +23,22 @@ export const generalAPI = createApi( {
 					'X-WP-Nonce': window.wpApiSettings.nonce,
 				},
 			} ),
-			async onQueryStarted( arg, { dispatch, queryFulfilled } ) {
+			async onQueryStarted( arg, { dispatch, queryFulfilled, getState } ) {
 				try {
 					const { data } = await queryFulfilled;
-					dispatch( setMediaSettings( {
-						video: data.video || initialState.settings.video,
-						general: data.general || initialState.settings.general,
+					const state = getState();
+					const currentSettings = state.mediaSettings.settings;
+					// Merge server response with current state
+					const mergedSettings = {
+						video: { ...currentSettings.video, ...( data.video || initialState.settings.video ) },
+						general: { ...currentSettings.general, ...( data.general || initialState.settings.general ) },
 						video_player: {
+							...currentSettings.video_player,
 							custom_css: data.video_player?.custom_css?.trim() ? data.video_player.custom_css : initialState.settings.video_player.custom_css,
 						},
-					} ) );
+					};
+					dispatch( setMediaSettings( mergedSettings ) );
+					dispatch( resetAllChanges() );
 				} catch {}
 			},
 		} ),
@@ -46,12 +52,22 @@ export const generalAPI = createApi( {
 				},
 				body: data,
 			} ),
-			async onQueryStarted( arg, { dispatch, queryFulfilled } ) {
+			async onQueryStarted( { settings }, { dispatch, queryFulfilled, getState } ) {
 				try {
 					const { data } = await queryFulfilled;
 					if ( data?.status === 'success' ) {
-						const category = Object.keys( arg.settings )[ 0 ];
+						const category = Object.keys( settings )[ 0 ];
 						dispatch( resetChanges( { category } ) );
+						// Merge server response with current state
+						const state = getState();
+						const currentSettings = state.mediaSettings.settings;
+						const mergedSettings = {
+							...currentSettings,
+							[ category ]: { ...currentSettings[ category ], ...( data[ category ] || settings[ category ] ) },
+						};
+						dispatch( setMediaSettings( mergedSettings ) );
+						// Refetch to sync with server
+						await dispatch( generalAPI.endpoints.getMediaSettings.initiate() ).unwrap();
 					}
 				} catch {}
 			},

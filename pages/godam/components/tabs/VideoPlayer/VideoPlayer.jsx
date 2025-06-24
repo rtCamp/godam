@@ -26,6 +26,7 @@ const VideoPlayer = () => {
 	const dispatch = useDispatch();
 	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
 	const mediaSettings = useSelector( selectMediaSettings( 'video_player' ) );
+	const allMediaSettings = useSelector( ( state ) => state.mediaSettings.settings );
 	const isChanged = useSelector( selectHasChanges( 'video_player' ) );
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
@@ -45,7 +46,7 @@ const VideoPlayer = () => {
 	// Handle saving settings
 	const handleSaveSettings = async () => {
 		try {
-			const response = await saveMediaSettings( { settings: { video_player: mediaSettings } } ).unwrap();
+			const response = await saveMediaSettings( { settings: allMediaSettings } ).unwrap();
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
