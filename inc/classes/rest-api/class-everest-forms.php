@@ -4,6 +4,8 @@
  *
  * Get a single WPForm.
  *
+ * @since n.e.x.t
+ *
  * @package GoDAM
  */
 
@@ -15,11 +17,15 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class LocationAPI
+ *
+ * @since n.e.x.t
  */
 class Everest_Forms extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function get_rest_routes() {
 		return array(
@@ -67,6 +73,8 @@ class Everest_Forms extends Base {
 
 	/**
 	 * Get all Everest Forms.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
@@ -122,6 +130,8 @@ class Everest_Forms extends Base {
 	/**
 	 * Get a single Everest Form.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
 	 */
@@ -148,6 +158,8 @@ class Everest_Forms extends Base {
 
 	/**
 	 * Return true if either Everest Forms Free or Pro plugin is active.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return boolean
 	 */
