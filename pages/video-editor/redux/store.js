@@ -13,6 +13,7 @@ import { attachmentAPI } from './api/attachment';
 import { gravityFormsAPI } from './api/gravity-forms';
 import { contactForm7Api } from './api/cf7-forms';
 import { wpFormsApi } from './api/wpforms';
+import { jetpackFormsApi } from './api/jetpack-forms';
 
 export default configureStore( {
 	reducer: {
@@ -23,6 +24,7 @@ export default configureStore( {
 		[ gravityFormsAPI.reducerPath ]: gravityFormsAPI.reducer,
 		[ contactForm7Api.reducerPath ]: contactForm7Api.reducer,
 		[ wpFormsApi.reducerPath ]: wpFormsApi.reducer,
+		[ jetpackFormsApi.reducerPath ]: jetpackFormsApi.reducer,
 	},
 	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat(
 		videosAPI.middleware,
@@ -31,5 +33,6 @@ export default configureStore( {
 		gravityFormsAPI.middleware,
 		contactForm7Api.middleware,
 		wpFormsApi.middleware,
+		jetpackFormsApi.middleware,
 	),
 } );

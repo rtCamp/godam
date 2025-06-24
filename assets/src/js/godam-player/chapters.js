@@ -35,6 +35,12 @@ export function createChapterMarkers( player, chapters ) {
 	}
 	const playProgress = player.el().querySelector( '.vjs-play-progress' );
 
+	const loadProgress = player.el().querySelector( '.vjs-load-progress' );
+
+	if ( loadProgress ) {
+		loadProgress.classList.add( 'chapter-load-progress' );
+	}
+
 	playProgress.style.height = 'unset';// Reset height to allow markers to be drawn.
 
 	// Set end time for last chapter

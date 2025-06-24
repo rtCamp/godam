@@ -18,6 +18,7 @@ use RTGODAM\Inc\Media_Tracker;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
+use RTGODAM\Inc\REST_API\Jetpack;
 use RTGODAM\Inc\REST_API\GF;
 use RTGODAM\Inc\REST_API\CF7;
 use RTGODAM\Inc\REST_API\WPForms;
@@ -28,6 +29,7 @@ use RTGODAM\Inc\REST_API\Ads;
 use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Polls;
+use RTGODAM\Inc\REST_API\WC;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\Gravity_Forms;
@@ -108,6 +110,7 @@ class Plugin {
 	 * @return void
 	 */
 	public function load_rest_api() {
+		Jetpack::get_instance();
 		GF::get_instance();
 		CF7::get_instance();
 		WPForms::get_instance();
@@ -119,6 +122,7 @@ class Plugin {
 		Analytics::get_instance();
 		Deactivation::get_instance();
 		Polls::get_instance();
+		WC::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
 	}
