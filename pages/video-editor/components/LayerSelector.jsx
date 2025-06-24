@@ -98,7 +98,7 @@ const Layers = [
 		requiresWpPolls: true,
 	},
 	{
-		id: 8,
+		id: 9,
 		title: __( 'WooCommerce', 'godam' ),
 		description: __( 'Display products using hotspots', 'godam' ),
 		image: Hotspot,
