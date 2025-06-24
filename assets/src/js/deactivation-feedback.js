@@ -1,5 +1,6 @@
+/* global jQuery */
 
-jQuery( document ).ready( function( $ ) { // eslint-disable-line no-undef
+jQuery( document ).ready( function( $ ) {
 	( 'use strict' );
 
 	const deactivateLink = $( '#deactivate-godam' );
