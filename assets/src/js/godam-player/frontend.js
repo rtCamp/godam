@@ -721,6 +721,7 @@ function GODAMPlayer( videoRef = null ) {
 		const layers = videoSetupOptions?.layers || [];
 		const formLayers = [];
 		const hotspotLayers = [];
+		const wooLayers = [];
 
 		// Function to handle `isPreview` state changes
 		function handlePreviewStateChange( newValue ) {
@@ -785,6 +786,15 @@ function GODAMPlayer( videoRef = null ) {
 					duration: layer.duration ? parseInt( layer.duration ) : 0,
 					show: true,
 					hotspots: layer.hotspots || [],
+					pauseOnHover: layer.pauseOnHover || false,
+				} );
+			} else if ( layer.type === 'woo' ) {
+				wooLayers.push( {
+					layerElement,
+					displayTime: parseFloat( layer.displayTime ),
+					duration: layer.duration ? parseInt( layer.duration ) : 0,
+					show: true,
+					productHotspots: layer.productHotspots || [],
 					pauseOnHover: layer.pauseOnHover || false,
 				} );
 			}
@@ -869,6 +879,10 @@ function GODAMPlayer( videoRef = null ) {
 					if ( window.godamPluginDependencies?.wp_polls ) {
 						handleLayerDisplay( layer );
 					}
+				} else if ( layer.type === 'woo' ) {
+					if ( window.godamPluginDependencies?.woocommerce ) {
+						handleLayerDisplay( layer );
+					}
 				} else {
 					handleLayerDisplay( layer );
 				}
@@ -900,6 +914,30 @@ function GODAMPlayer( videoRef = null ) {
 					isDisplayingLayers[ currentPlayerVideoInstanceId ] = true;
 				}
 			}
+
+			//Woocommerce layer handling
+			wooLayers.forEach( ( layerObj ) => {
+				if ( ! layerObj.show ) {
+					return;
+				}
+
+				const endTime = layerObj.displayTime + layerObj.duration;
+				const isActive =
+          currentTime >= layerObj.displayTime && currentTime < endTime;
+
+				if ( isActive ) {
+					if ( layerObj.layerElement.classList.contains( 'hidden' ) ) {
+						// first time show
+						layerObj.layerElement.classList.remove( 'hidden' );
+						if ( ! layerObj.layerElement.dataset?.productHotspotsInitialized ) {
+							createProductHotspots( layerObj, player );
+							layerObj.layerElement.dataset.productHotspotsInitialized = true;
+						}
+					}
+				} else if ( ! layerObj.layerElement.classList.contains( 'hidden' ) ) {
+					layerObj.layerElement.classList.add( 'hidden' );
+				}
+			} );
 
 			// hotspot handling
 			hotspotLayers.forEach( ( layerObj ) => {
@@ -1030,6 +1068,149 @@ function GODAMPlayer( videoRef = null ) {
 			} );
 		}
 
+		function createProductHotspots( layerObj, currentPlayer ) {
+			const videoContainer = currentPlayer.el();
+			const containerWidth = videoContainer.offsetWidth;
+			const containerHeight = videoContainer.offsetHeight;
+
+			const baseWidth = 800;
+			const baseHeight = 600;
+
+			layerObj.productHotspots.forEach( ( hotspot ) => {
+				// Create the outer div
+				const hotspotDiv = document.createElement( 'div' );
+				hotspotDiv.classList.add( 'hotspot', 'circle' );
+				hotspotDiv.style.position = 'absolute';
+
+				// Positioning
+				const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
+				const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;
+				const pixelX = ( fallbackPosX / baseWidth ) * containerWidth;
+				const pixelY = ( fallbackPosY / baseHeight ) * containerHeight;
+
+				hotspotDiv.style.left = `${ pixelX }px`;
+				hotspotDiv.style.top = `${ pixelY }px`;
+
+				// Sizing
+				const fallbackDiameter =
+          hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
+				const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
+				hotspotDiv.style.width = `${ pixelDiameter }px`;
+				hotspotDiv.style.height = `${ pixelDiameter }px`;
+
+				// Background color
+				if ( hotspot.icon ) {
+					hotspotDiv.style.backgroundColor = 'white';
+				} else {
+					hotspotDiv.style.backgroundColor =
+            hotspot.backgroundColor || '#0c80dfa6';
+				}
+
+				// Inner content
+				const hotspotContent = document.createElement( 'div' );
+				hotspotContent.classList.add( 'hotspot-content' );
+				hotspotContent.style.position = 'relative';
+				hotspotContent.style.width = '100%';
+				hotspotContent.style.height = '100%';
+
+				if ( hotspot.icon ) {
+					const iconEl = document.createElement( 'i' );
+					iconEl.className = `fa-solid fa-${ hotspot.icon }`;
+					iconEl.style.width = '50%';
+					iconEl.style.height = '50%';
+					iconEl.style.fontSize = '1.6em';
+					iconEl.style.display = 'flex';
+					iconEl.style.alignItems = 'center';
+					iconEl.style.justifyContent = 'center';
+					iconEl.style.margin = 'auto';
+					iconEl.style.color = '#000';
+					hotspotContent.appendChild( iconEl );
+				} else {
+					hotspotContent.classList.add( 'no-icon' );
+				}
+
+				// Product box
+				const productBoxDiv = document.createElement( 'div' );
+				productBoxDiv.classList.add( 'product-hotspot-box' );
+
+				// No product
+				const noProductDiv = document.createElement( 'div' );
+				noProductDiv.textContent = 'No product here';
+
+				// Product display
+				const productDisplayDiv = document.createElement( 'div' );
+				productDisplayDiv.classList.add( 'product-hotspot-woo-display' );
+
+				if ( hotspot?.productDetails ) {
+					productBoxDiv.appendChild( productDisplayDiv );
+				} else {
+					productBoxDiv.appendChild( noProductDiv );
+				}
+
+				// Image wrapper
+				const imageWrapperDiv = document.createElement( 'div' );
+				imageWrapperDiv.classList.add( 'product-hotspot-woo-image-wrapper' );
+				productDisplayDiv.appendChild( imageWrapperDiv );
+
+				// Image
+				const imageBox = document.createElement( 'img' );
+				imageBox.classList.add( 'product-hotspot-woo-image' );
+				imageBox.src = hotspot.productDetails.image;
+				imageBox.alt = hotspot.productDetails.name;
+				imageWrapperDiv.appendChild( imageBox );
+
+				// Product details
+				const productDetailsDiv = document.createElement( 'div' );
+				productDetailsDiv.classList.add( 'product-hotspot-woo-details' );
+				productDisplayDiv.appendChild( productDetailsDiv );
+
+				// Product name
+				const productNameDiv = document.createElement( 'div' );
+				productNameDiv.classList.add( 'product-hotspot-woo-name' );
+				productNameDiv.textContent = hotspot.productDetails.name;
+				productDetailsDiv.appendChild( productNameDiv );
+
+				// Product price
+				const productPriceDiv = document.createElement( 'div' );
+				productPriceDiv.classList.add( 'product-hotspot-woo-price' );
+				productPriceDiv.innerHTML = hotspot.productDetails.price;
+				productDetailsDiv.appendChild( productPriceDiv );
+
+				// Product link
+				const productLink = document.createElement( 'a' );
+				productLink.classList.add( 'product-hotspot-woo-link' );
+				productLink.href = hotspot.addToCart ? hotspot.productDetails.link : `/cart/?add-to-cart=${ hotspot.productId }`;
+				productLink.target = '_blank';
+				productLink.rel = 'noopener noreferrer';
+				productLink.style.background = hotspot.backgroundColor;
+				productLink.textContent = hotspot.shopText;
+				productDetailsDiv.appendChild( productLink );
+
+				hotspotContent.appendChild( productBoxDiv );
+				hotspotDiv.appendChild( hotspotContent );
+				layerObj.layerElement.appendChild( hotspotDiv );
+
+				// Pause on hover
+				if ( layerObj.pauseOnHover ) {
+					hotspotDiv.addEventListener( 'mouseenter', () => {
+						// Check if the video is currently playing before pausing
+						wasPlayingBeforeHover = ! currentPlayer.paused();
+						currentPlayer.pause();
+					} );
+					hotspotDiv.addEventListener( 'mouseleave', () => {
+						// Resume playback only if the video was playing before hover
+						if ( wasPlayingBeforeHover ) {
+							currentPlayer.play();
+						}
+					} );
+				}
+
+				requestAnimationFrame( () => {
+					positionTooltip( hotspotDiv, productBoxDiv );
+				} );
+			} );
+		}
+
 		function positionTooltip( hotspotDiv, tooltipDiv ) {
 			const hotspotRect = hotspotDiv.getBoundingClientRect();
 			const tooltipRect = tooltipDiv.getBoundingClientRect();
@@ -1041,7 +1222,11 @@ function GODAMPlayer( videoRef = null ) {
 				// Place below
 				tooltipDiv.style.bottom = 'auto';
 				tooltipDiv.style.top = '100%';
-				tooltipDiv.classList.add( 'tooltip-bottom' );
+				if ( tooltipDiv.classList.contains( 'product-hotspot-box' ) ) {
+					tooltipDiv.classList.add( 'product-bottom' );
+				} else {
+					tooltipDiv.classList.add( 'tooltip-bottom' );
+				}
 				tooltipDiv.classList.remove( 'tooltip-top' );
 			} else {
 				// Place above
@@ -1121,6 +1306,7 @@ function GODAMPlayer( videoRef = null ) {
 
 		window.addEventListener( 'resize', () => {
 			updateHotspotPositions( player, hotspotLayers );
+			updateProductHotspotPositions( player, wooLayers );
 		} );
 
 		player.on( 'fullscreenchange', () => {
@@ -1141,8 +1327,53 @@ function GODAMPlayer( videoRef = null ) {
 					videoContainer.appendChild( layerObj.layerElement );
 				}
 			} );
+			wooLayers.forEach( ( layerObj ) => {
+				if ( isFullscreen && ! videoContainer.contains( layerObj.layerElement ) ) {
+					videoContainer.appendChild( layerObj.layerElement );
+				}
+			} );
+
 			updateHotspotPositions( player, hotspotLayers );
+			updateProductHotspotPositions( player, wooLayers );
 		} );
+
+		// Reposition product hotspots on resize or fullscreen
+		function updateProductHotspotPositions( currentPlayer, currentHotspotLayers ) {
+			const videoContainer = currentPlayer.el();
+			const containerWidth = videoContainer.offsetWidth;
+			const containerHeight = videoContainer.offsetHeight;
+
+			const baseWidth = 800;
+			const baseHeight = 600;
+
+			currentHotspotLayers.forEach( ( layerObj ) => {
+				const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
+				hotspotDivs.forEach( ( hotspotDiv, index ) => {
+					const hotspot = layerObj.productHotspots[ index ];
+					// Recalc pos
+					const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;
+					const fallbackPosY = hotspot.oPosition?.y ?? hotspot.position.y;
+					const pixelX = ( fallbackPosX / baseWidth ) * containerWidth;
+					const pixelY = ( fallbackPosY / baseHeight ) * containerHeight;
+					hotspotDiv.style.left = `${ pixelX }px`;
+					hotspotDiv.style.top = `${ pixelY }px`;
+
+					// Recalc size
+					const fallbackDiameter =
+            hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? 48;
+					const pixelDiameter = ( fallbackDiameter / baseWidth ) * containerWidth;
+					hotspotDiv.style.width = `${ pixelDiameter }px`;
+					hotspotDiv.style.height = `${ pixelDiameter }px`;
+
+					const productBoxDiv = hotspotDiv.querySelector( '.product-hotspot-box' );
+					if ( productBoxDiv ) {
+						requestAnimationFrame( () => {
+							positionTooltip( hotspotDiv, productBoxDiv );
+						} );
+					}
+				} );
+			} );
+		}
 
 		if ( ! window.godamKeyboardHandlerInitialized ) {
 			// Flag to prevent multiple initializations
