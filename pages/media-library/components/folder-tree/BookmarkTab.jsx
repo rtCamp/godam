@@ -1,14 +1,14 @@
-
 /**
  * External dependencies
  */
 import { useSelector } from 'react-redux';
+import { useMemo } from 'react';
 
 /**
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Panel, PanelBody, Notice } from '@wordpress/components';
+import { Panel, PanelBody } from '@wordpress/components';
 import { lock as bookmarkIcon, starFilled } from '@wordpress/icons';
 
 /**
@@ -18,16 +18,27 @@ import BookmarkItem from './BookmarkItem.jsx';
 import './css/bookmark.scss';
 
 const BookmarkTab = () => {
-	const folders = useSelector( ( state ) => state.FolderReducer.folders );
+	const folders = useSelector( ( state ) => state.FolderReducer?.folders || [] );
 
 	// Get all the bookmarks from folder where `meta.bookmark` is true
 	// and sort them by name (case-insensitive)
-	const bookmarks = folders
-		?.filter( ( folder ) => folder.meta?.bookmark )
-		?.sort( ( a, b ) => a.name.toLowerCase().localeCompare( b.name.toLowerCase() ) ) || [];
+	const bookmarks = useMemo( () => {
+		return folders
+			?.filter( ( folder ) => folder?.meta?.bookmark )
+			?.sort( ( a, b ) => a?.name?.toLowerCase().localeCompare( b?.name?.toLowerCase() ) ) || [];
+	}, [ folders ] );
 
-	// Empty state with better messaging and action
-	if ( ! bookmarks || bookmarks.length === 0 ) {
+	const bookmarkCount = bookmarks?.length || 0;
+
+	const panelTitle = useMemo( () => {
+		return sprintf(
+			/* translators: %d: number of bookmarks */
+			__( 'Bookmarks (%d)', 'godam' ),
+			bookmarkCount,
+		);
+	}, [ bookmarkCount ] );
+
+	if ( bookmarkCount === 0 ) {
 		return (
 			<div className="godam-bookmark-tab godam-bookmark-tab--empty">
 				<Panel className="godam-bookmark-panel">
@@ -48,42 +59,21 @@ const BookmarkTab = () => {
 		);
 	}
 
-	// Success state with bookmarks
 	return (
 		<div className="godam-bookmark-tab">
 			<Panel className="godam-bookmark-panel">
 				<PanelBody
-					title={
-						sprintf(
-							/* translators: %d: number of bookmarks */
-							__( 'Bookmarks (%d)', 'godam' ),
-							bookmarks.length,
-						)
-					}
+					title={ panelTitle }
 					icon={ bookmarkIcon }
 					initialOpen={ true }
 				>
-					{ bookmarks.length > 5 && (
-						<Notice
-							status="info"
-							isDismissible={ false }
-							className="godam-bookmark-tab__notice"
-						>
-							{ sprintf(
-								/* translators: %d: number of bookmarks */
-								__( 'You have %d bookmarks. Consider organizing them into categories.', 'godam' ),
-								bookmarks.length,
-							) }
-						</Notice>
-					) }
-
 					<div className="godam-bookmark-tab__list">
 						{ bookmarks.map( ( bookmark, index ) => (
 							<BookmarkItem
 								item={ bookmark }
-								key={ bookmark.id }
+								key={ bookmark?.id || index }
 								index={ index }
-								totalCount={ bookmarks.length }
+								totalCount={ bookmarkCount }
 							/>
 						) ) }
 					</div>
