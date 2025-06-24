@@ -107,7 +107,7 @@ const APISettings = ( { setNotice } ) => {
 						<Button
 							className="godam-button godam-margin-right"
 							onClick={ handleSaveAPIKey }
-							disabled={ isAPIKeyLoading || hasValidAPIKey }
+							disabled={ isAPIKeyLoading || hasValidAPIKey || ! apiKey.trim() }
 							variant="primary"
 							isBusy={ isAPIKeyLoading }
 						>
