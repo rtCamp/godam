@@ -357,6 +357,18 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 							>
 							</div>
 							<?php
+							// WooCommerce layer.
+						elseif ( isset( $layer['type'] ) && 'woo' === $layer['type'] ) :
+							?>
+							<div
+								id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
+								class="easydam-layer hidden hotspot-layer"
+								<?php if ( ! empty( $layer['bg_color'] ) ) : ?>
+									style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>"
+								<?php endif; ?>
+							>
+							</div>
+							<?php
 						endif;
 					endforeach;
 					?>
