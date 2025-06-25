@@ -19,6 +19,7 @@ import WPForm from '../forms/WPForm';
 import CF7 from '../forms/CF7';
 import JetpackForm from '../forms/JetpackForm';
 import SureForm from '../forms/Sureform.js';
+import FluentForm from '../forms/FluentForm.js';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader.js';
 
@@ -87,6 +88,11 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 			}
 
 			<FormLayerComponent layerID={ layer.id } />
+
+			{
+				layer.form_type === 'fluent-forms' &&
+				<FluentForm layerID={ layer.id } />
+			}
 
 			<ToggleControl
 				className="mb-4 godam-toggle"
