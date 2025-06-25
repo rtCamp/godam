@@ -223,7 +223,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Show Transcoding Status for Retranscoding videos
 - Fix: Poll layer submission issues
 
-
 = v1.1.3 (June 6, 2025) =
 
 - Fix: Implemented a custom endpoint to retrieve and display the list of WPForms on the Video Editor page.
