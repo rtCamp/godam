@@ -218,6 +218,8 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 32. Elementor GoDAM Gallery Widget
 33. Elementor GoDAM Video Widget
 34. Jetpack Forms Integration
+35. Video Player Style Settings
+36. Chapters Interface
 
 ## External services
 
