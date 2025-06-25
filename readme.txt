@@ -214,9 +214,9 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Transcoded videos showing as Not Transcoded in DAM Tab
 - Fix: Show Transcoding Status for Retranscoding videos
 - Fix: Poll layer submission issues
-- Feat: Added Jetpack Forms Integration to GoDAM Video Block
+- Feat: Added [Jetpack Forms Integration](https://godam.io/features/jetpack/) to GoDAM Video Block
 - Feat: Added Block Overlay feature to GoDAM Video Block with customizable timing
-- Feat: Added Elementor widgets for GoDAM Video, Gallery, and Audio to enable easy media embedding via drag-and-drop
+- Feat: Added [Elementor widgets](https://godam.io/features/elementor/) for GoDAM Video, Gallery, and Audio to enable easy media embedding via drag-and-drop
 - Feat: Added "Video Player" settings menu with support to add custom CSS to modify and style the UI of video player globally
 - Feat: Introduced `godam_player_enqueue_styles` hook for registering custom styles for GoDAM video blocks
 - Feat: Consolidated video quality selector and playback speed controls into a unified player settings UI
