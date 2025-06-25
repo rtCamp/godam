@@ -8,12 +8,13 @@ import React, { forwardRef } from 'react';
  */
 import { __ } from '@wordpress/i18n';
 import { DropdownMenu } from '@wordpress/components';
-import { Icon, moreHorizontalMobile, seen, link, chartBar, video } from '@wordpress/icons';
+import { Icon, moreHorizontalMobile, seen, link, chartBar, video, copy } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import NoThumbnailImage from '../../assets/no-thumbnail.jpg';
+import { copyGoDAMVideoBlock } from '../../utils';
 
 const MediaItem = forwardRef( ( { item, handleAttachmentClick, handlePreviewVideoClick }, ref ) => {
 	const handleItemClick = ( e ) => {
@@ -63,6 +64,13 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick, handlePreviewVide
 								handlePreviewVideoClick( item.id );
 							},
 							title: __( 'Preview Video', 'godam' ),
+						},
+						{
+							icon: <Icon icon={ copy } />,
+							onClick: () => {
+								copyGoDAMVideoBlock( item.id );
+							},
+							title: __( 'Copy Video Block', 'godam' ),
 						},
 						{
 							icon: <Icon icon={ link } />,
