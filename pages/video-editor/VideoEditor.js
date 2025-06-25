@@ -9,6 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
  */
 import { Button, TabPanel, Snackbar } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { video as videoIcon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -29,12 +30,14 @@ import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
 import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
+import PlayerPreview from './components/PlayerPreview';
 
 const VideoEditor = ( { attachmentID } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
 	const [ duration, setDuration ] = useState( 0 );
+	const [ showPlayerPreview, setShowPlayerPreview ] = useState( false );
 
 	const playerRef = useRef( null );
 
@@ -183,6 +186,9 @@ const VideoEditor = ( { attachmentID } ) => {
 		return `${ minsStr }:${ secsStr }`;
 	};
 
+	const openPlayerPreview = () => setShowPlayerPreview( true );
+	const closePlayerPreview = () => setShowPlayerPreview( false );
+
 	const tabConfig = [
 		{
 			name: 'layers',
@@ -281,6 +287,19 @@ const VideoEditor = ( { attachmentID } ) => {
 				</div>
 
 				<main className="flex justify-center items-center p-4 relative overflow-y-auto">
+					<div className="absolute top-4 right-4 z-20">
+						<Button
+							variant="secondary"
+							icon={ videoIcon }
+							iconPosition="left"
+							onClick={ openPlayerPreview }
+							className="godam-button text-sm"
+						>
+							{ __( 'Show Preview', 'godam' ) }
+						</Button>
+					</div>
+
+					{ showPlayerPreview && <PlayerPreview isOpen={ showPlayerPreview } onClose={ closePlayerPreview } attachmentId={ attachmentID } /> }
 
 					{
 						// Display a success message when video changes are saved.
