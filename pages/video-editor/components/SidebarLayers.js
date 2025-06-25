@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
+import woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 
 /**
@@ -48,6 +49,11 @@ const layerTypes = [
 		title: __( 'Poll', 'godam' ),
 		icon: thumbsUp,
 		type: 'poll',
+	},
+	{
+		title: __( 'WooCommerce', 'godam' ),
+		icon: customPostType,
+		type: 'woo',
 	},
 ];
 
@@ -157,6 +163,34 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					custom_css: '',
 				} ) );
 				break;
+			case 'woo':
+				dispatch(
+					addLayer( {
+						id: uuidv4(),
+						displayTime: currentTime,
+						type,
+						duration: 5,
+						pauseOnHover: false,
+						productHotspots: [
+							{
+								id: uuidv4(),
+								productId: '',
+								productDetails: '',
+								addToCart: false,
+								shopText: __( 'Shop Me', 'godam' ),
+								position: { x: 50, y: 50 },
+								size: { diameter: 48 },
+								oSize: { diameter: 48 },
+								oPosition: { x: 50, y: 50 },
+								backgroundColor: '#0c80dfa6',
+								showStyle: false,
+								showIcon: false,
+								icon: '',
+							},
+						],
+					} ),
+				);
+				break;
 			default:
 				break;
 		}
@@ -174,6 +208,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								const isWPFormsPluginNotActive = layer.type === 'form' && ! window?.videoData?.wpforms_active;
 								const isCF7PluginNotActive = layer.type === 'form' && ! window?.videoData?.cf7_active;
 								const isPollPluginNotActive = layer.type === 'poll' && ! window.easydamMediaLibrary.isPollPluginActive;
+								const isWooCommerceNotActive = layer.type === 'woo' && ! window.easydamMediaLibrary.isWooActive;
 								let addWarning = false;
 								let toolTipMessage = '';
 
@@ -195,6 +230,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								} else if ( isPollPluginNotActive ) {
 									toolTipMessage = __( 'Poll plugin is not active', 'godam' );
 									addWarning = true;
+								} else if ( isWooCommerceNotActive ) {
+									toolTipMessage = __( 'WooCommerce is not active', 'godam' );
+									addWarning = true;
 								} else {
 									toolTipMessage = '';
 								}
@@ -209,6 +247,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								} else if ( layer.type === 'form' && layer.form_type === 'cf7' ) {
 									icon = CF7Icon;
 									layerText = __( 'Contact Form 7', 'godam' );
+								} else if ( layer.type === 'woo' ) {
+									icon = woo;
+									layerText = __( 'WooCommerce', 'godam' );
 								} else if ( layer.type === 'form' && layer.form_type === 'jetpack' ) {
 									icon = JetpackIcon;
 									layerText = __( 'Jetpack Forms', 'godam' );
