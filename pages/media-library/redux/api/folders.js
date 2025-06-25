@@ -10,13 +10,25 @@ export const folderApi = createApi( {
 	baseQuery: fetchBaseQuery( { baseUrl: restURL } ),
 	endpoints: ( builder ) => ( {
 		getFolders: builder.query( {
-			query: () => ( {
-				url: 'wp/v2/media-folder',
+			query: ( { page = 1, perPage = 100 } = {} ) => ( {
+				url: 'godam/v1/media-library/media-folders',
 				params: {
-					_fields: 'id,name,parent,attachmentCount,meta',
-					per_page: 100, // Note: 100 is the max per page. Implement pagination if total folders > 100
+					page,
+					per_page: perPage,
+				},
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary?.nonce || '',
 				},
 			} ),
+			transformResponse: ( response, meta ) => {
+				const total = parseInt( meta?.response?.headers.get( 'X-WP-Total' ) || '0', 10 );
+				const totalPages = parseInt( meta?.response?.headers.get( 'X-WP-TotalPages' ) || '1', 10 );
+				return {
+					folders: response,
+					total,
+					totalPages,
+				};
+			},
 		} ),
 		createFolder: builder.mutation( {
 			query: ( data ) => ( {

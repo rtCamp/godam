@@ -51,7 +51,10 @@ const openLocalStorageItem = ( folders ) => {
 };
 
 const FolderTree = () => {
-	const { data: folders, error, isLoading } = useGetFoldersQuery();
+	const [ page, setPage ] = useState( 1 );
+	const [ totalPages, setTotalPages ] = useState( 1 );
+	const [ allFolders, setAllFolders ] = useState( [] );
+	const { data: folderData, error, isLoading } = useGetFoldersQuery( { page, perPage: 20 } );
 
 	const dispatch = useDispatch();
 	const data = useSelector( ( state ) => state.FolderReducer.folders );
@@ -60,10 +63,24 @@ const FolderTree = () => {
 	const [ updateFolderMutation ] = useUpdateFolderMutation();
 
 	useEffect( () => {
-		if ( folders ) {
-			dispatch( setTree( openLocalStorageItem( folders ) ) );
+		if ( folderData?.folders ) {
+			// avoid duplicate folders on subsequent fetches
+			setAllFolders( ( prev ) => {
+				const ids = new Set( prev.map( ( f ) => f.id ) );
+				const uniqueNew = folderData.folders.filter( ( f ) => ! ids.has( f.id ) );
+				return [ ...prev, ...uniqueNew ];
+			} );
 		}
-	}, [ dispatch, folders ] );
+		if ( folderData?.totalPages ) {
+			setTotalPages( folderData.totalPages );
+		}
+	}, [ folderData ] );
+
+	useEffect( () => {
+		if ( allFolders.length ) {
+			dispatch( setTree( openLocalStorageItem( allFolders ) ) );
+		}
+	}, [ allFolders, dispatch ] );
 
 	const [ activeId, setActiveId ] = useState( null );
 	const [ overId, setOverId ] = useState( null );
@@ -304,7 +321,18 @@ const FolderTree = () => {
 							);
 						} ) }
 					</SortableContext>
+					{ page < totalPages && (
+						<div className="load-more-wrap" style={ { textAlign: 'center', marginTop: '1rem' } }>
+							<button
+								className="button button-secondary"
+								onClick={ () => setPage( ( prev ) => prev + 1 ) }
+							>
+								{ __( 'Load More', 'godam' ) }
+							</button>
+						</div>
+					) }
 				</div>
+
 			</div>
 
 			<DragOverlay>

@@ -131,7 +131,124 @@ class Media_Library extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/media-folders',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_flat_media_folders' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+					'args'                => array(
+						'page'     => array(
+							'type'        => 'integer',
+							'default'     => 1,
+							'description' => __( 'Page number for pagination.', 'godam' ),
+						),
+						'per_page' => array(
+							'type'        => 'integer',
+							'default'     => 20,
+							'description' => __( 'Number of items per page.', 'godam' ),
+						),
+					),
+				),
+			),          
 		);
+	}
+
+	/**
+	 * Retrieves a flat list of media folders with pagination.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function get_flat_media_folders( $request ) {
+		$page     = max( 1, (int) $request->get_param( 'page' ) );
+		$per_page = min( 100, max( 1, (int) $request->get_param( 'per_page' ) ) );
+		$offset   = ( $page - 1 ) * $per_page;
+	
+		$top_level_terms = get_terms(
+			array(
+				'taxonomy'   => 'media-folder',
+				'hide_empty' => false,
+				'orderby'    => 'name',
+				'order'      => 'ASC',
+				'number'     => $per_page,
+				'offset'     => $offset,
+				'parent'     => 0,
+			)
+		);
+	
+		// Count only top-level terms for pagination.
+		$total_terms = wp_count_terms(
+			array(
+				'taxonomy'   => 'media-folder',
+				'hide_empty' => false,
+				'fields'     => 'count',
+				'parent'     => 0,
+			)
+		);
+	
+		$all_terms = array();
+	
+		// Recursively fetch all descendants of each top-level folder.
+		foreach ( $top_level_terms as $term ) {
+			$all_terms[] = $term;
+			$all_terms   = array_merge( $all_terms, $this->get_term_descendants_recursive( $term->term_id ) );
+		}
+	
+		$results = array_map(
+			function ( $term ) {
+				$locked   = get_term_meta( $term->term_id, 'locked', true );
+				$bookmark = get_term_meta( $term->term_id, 'bookmark', true );
+	
+				return array(
+					'id'              => (int) $term->term_id,
+					'name'            => $term->name,
+					'parent'          => (int) $term->parent,
+					'meta'            => array(
+						'locked'   => '1' === $locked ? true : false,
+						'bookmark' => '1' === $bookmark ? true : false,
+					),
+					'attachmentCount' => (int) $term->count,
+				);
+			},
+			$all_terms
+		);
+	
+		$response = rest_ensure_response( $results );
+		$response->header( 'X-WP-Total', (int) $total_terms );
+		$response->header( 'X-WP-TotalPages', (int) ceil( $total_terms / $per_page ) );
+	
+		return $response;
+	}
+
+	/**
+	 * Recursively get all descendants of a term.
+	 *
+	 * @param int $parent_id The ID of the parent term.
+	 * @return array Array of descendant terms.
+	 */
+	private function get_term_descendants_recursive( $parent_id ) {
+		$descendants = array();
+	
+		$child_terms = get_terms(
+			array(
+				'taxonomy'   => 'media-folder',
+				'hide_empty' => false,
+				'orderby'    => 'name',
+				'order'      => 'ASC',
+				'parent'     => $parent_id,
+			)
+		);
+	
+		foreach ( $child_terms as $child ) {
+			$descendants[] = $child;
+			$descendants   = array_merge( $descendants, $this->get_term_descendants_recursive( $child->term_id ) );
+		}
+	
+		return $descendants;
 	}
 
 	/**
