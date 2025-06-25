@@ -9,6 +9,7 @@ import { useState, useEffect, useLayoutEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { createPortal, useCallback } from '@wordpress/element';
+import { Button } from '@wordpress/components';
 
 const PlayerPreview = ( {
 	isOpen,
@@ -82,13 +83,14 @@ const PlayerPreview = ( {
 
 	return createPortal(
 		<div className="fixed top-0 left-0 w-screen h-screen z-[100000] p-24 flex items-center justify-center bg-black bg-opacity-85">
-			<button
+			<Button
 				onClick={ onClose }
-				className="absolute top-10 right-10 p-2 rounded-full hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+				variant="primary"
+				className="absolute top-10 right-10"
 				aria-label={ __( 'Close player preview', 'godam' ) }
 			>
 				{ __( 'Close', 'godam' ) }
-			</button>
+			</Button>
 
 			<div className="max-w-[70vw] w-full">
 				{ loading && (
@@ -105,12 +107,12 @@ const PlayerPreview = ( {
 						<div className="text-center">
 							<div className="text-red-500 text-lg mb-2">⚠️</div>
 							<p className="text-red-600">{ error }</p>
-							<button
+							<Button
 								onClick={ updatePreview }
 								className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
 							>
 								Retry
-							</button>
+							</Button>
 						</div>
 					</div>
 				) }
