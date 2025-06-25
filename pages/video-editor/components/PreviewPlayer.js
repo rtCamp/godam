@@ -11,7 +11,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { createPortal, useCallback } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 
-const PlayerPreview = ( {
+const PreviewPlayer = ( {
 	isOpen,
 	onClose,
 	attachmentId,
@@ -86,7 +86,7 @@ const PlayerPreview = ( {
 			<Button
 				onClick={ onClose }
 				variant="primary"
-				className="absolute top-10 right-10"
+				className="absolute top-10 right-10 rounded-md"
 				aria-label={ __( 'Close player preview', 'godam' ) }
 			>
 				{ __( 'Close', 'godam' ) }
@@ -136,4 +136,4 @@ const PlayerPreview = ( {
 	);
 };
 
-export default PlayerPreview;
+export default PreviewPlayer;

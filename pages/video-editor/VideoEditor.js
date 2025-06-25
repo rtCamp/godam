@@ -30,14 +30,14 @@ import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
 import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
-import PlayerPreview from './components/PlayerPreview';
+import PreviewPlayer from './components/PreviewPlayer';
 
 const VideoEditor = ( { attachmentID } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
 	const [ duration, setDuration ] = useState( 0 );
-	const [ showPlayerPreview, setShowPlayerPreview ] = useState( false );
+	const [ showPreviewPlayer, setShowPreviewPlayer ] = useState( false );
 
 	const playerRef = useRef( null );
 
@@ -186,8 +186,8 @@ const VideoEditor = ( { attachmentID } ) => {
 		return `${ minsStr }:${ secsStr }`;
 	};
 
-	const openPlayerPreview = () => setShowPlayerPreview( true );
-	const closePlayerPreview = () => setShowPlayerPreview( false );
+	const openPlayerPreview = () => setShowPreviewPlayer( true );
+	const closePlayerPreview = () => setShowPreviewPlayer( false );
 
 	const tabConfig = [
 		{
@@ -299,7 +299,7 @@ const VideoEditor = ( { attachmentID } ) => {
 						</Button>
 					</div>
 
-					{ showPlayerPreview && <PlayerPreview isOpen={ showPlayerPreview } onClose={ closePlayerPreview } attachmentId={ attachmentID } /> }
+					{ showPreviewPlayer && <PreviewPlayer isOpen={ showPreviewPlayer } onClose={ closePlayerPreview } attachmentId={ attachmentID } /> }
 
 					{
 						// Display a success message when video changes are saved.
