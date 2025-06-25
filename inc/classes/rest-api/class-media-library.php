@@ -177,58 +177,79 @@ class Media_Library extends Base {
 				'number'     => $per_page,
 				'offset'     => $offset,
 				'parent'     => 0,
-			) 
+			)
 		);
-		
-		$all_terms = $top_level_terms;
 	
+		// Count only top-level terms for pagination.
 		$total_terms = wp_count_terms(
 			array(
 				'taxonomy'   => 'media-folder',
 				'hide_empty' => false,
 				'fields'     => 'count',
-			) 
+				'parent'     => 0,
+			)
 		);
 	
-		$results = array();
+		$all_terms = array();
 	
+		// Recursively fetch all descendants of each top-level folder.
 		foreach ( $top_level_terms as $term ) {
-			$child_terms = get_terms(
-				array(
-					'taxonomy'   => 'media-folder',
-					'hide_empty' => false,
-					'orderby'    => 'name',
-					'order'      => 'ASC',
-					'parent'     => (int) $term->term_id,
-				) 
-			);
-		
-			$all_terms = array_merge( $all_terms, $child_terms );
+			$all_terms[] = $term;
+			$all_terms   = array_merge( $all_terms, $this->get_term_descendants_recursive( $term->term_id ) );
 		}
-
-		foreach ( $all_terms as $term ) {
-			$locked   = get_term_meta( $term->term_id, 'locked', true );
-			$bookmark = get_term_meta( $term->term_id, 'bookmark', true );
 	
-			$results[] = array(
-				'id'              => (int) $term->term_id,
-				'name'            => $term->name,
-				'parent'          => (int) $term->parent,
-				'meta'            => array(
-					'locked'   => '1' === $locked ? true : false,
-					'bookmark' => '1' === $bookmark ? true : false,
-				),
-				'attachmentCount' => (int) $term->count,
-			);
-		}
+		$results = array_map(
+			function ( $term ) {
+				$locked   = get_term_meta( $term->term_id, 'locked', true );
+				$bookmark = get_term_meta( $term->term_id, 'bookmark', true );
+	
+				return array(
+					'id'              => (int) $term->term_id,
+					'name'            => $term->name,
+					'parent'          => (int) $term->parent,
+					'meta'            => array(
+						'locked'   => '1' === $locked ? true : false,
+						'bookmark' => '1' === $bookmark ? true : false,
+					),
+					'attachmentCount' => (int) $term->count,
+				);
+			},
+			$all_terms
+		);
 	
 		$response = rest_ensure_response( $results );
-	
 		$response->header( 'X-WP-Total', (int) $total_terms );
 		$response->header( 'X-WP-TotalPages', (int) ceil( $total_terms / $per_page ) );
 	
 		return $response;
-	}   
+	}
+
+	/**
+	 * Recursively get all descendants of a term.
+	 *
+	 * @param int $parent_id The ID of the parent term.
+	 * @return array Array of descendant terms.
+	 */
+	private function get_term_descendants_recursive( $parent_id ) {
+		$descendants = array();
+	
+		$child_terms = get_terms(
+			array(
+				'taxonomy'   => 'media-folder',
+				'hide_empty' => false,
+				'orderby'    => 'name',
+				'order'      => 'ASC',
+				'parent'     => $parent_id,
+			)
+		);
+	
+		foreach ( $child_terms as $child ) {
+			$descendants[] = $child;
+			$descendants   = array_merge( $descendants, $this->get_term_descendants_recursive( $child->term_id ) );
+		}
+	
+		return $descendants;
+	}
 
 	/**
 	 * Verify the API key using external API.
