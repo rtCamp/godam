@@ -168,7 +168,7 @@ class Media_Library extends Base {
 		$per_page = min( 100, max( 1, (int) $request->get_param( 'per_page' ) ) );
 		$offset   = ( $page - 1 ) * $per_page;
 	
-		$terms = get_terms(
+		$top_level_terms = get_terms(
 			array(
 				'taxonomy'   => 'media-folder',
 				'hide_empty' => false,
@@ -176,8 +176,11 @@ class Media_Library extends Base {
 				'order'      => 'ASC',
 				'number'     => $per_page,
 				'offset'     => $offset,
+				'parent'     => 0,
 			) 
 		);
+		
+		$all_terms = $top_level_terms;
 	
 		$total_terms = wp_count_terms(
 			array(
@@ -189,7 +192,21 @@ class Media_Library extends Base {
 	
 		$results = array();
 	
-		foreach ( $terms as $term ) {
+		foreach ( $top_level_terms as $term ) {
+			$child_terms = get_terms(
+				array(
+					'taxonomy'   => 'media-folder',
+					'hide_empty' => false,
+					'orderby'    => 'name',
+					'order'      => 'ASC',
+					'parent'     => (int) $term->term_id,
+				) 
+			);
+		
+			$all_terms = array_merge( $all_terms, $child_terms );
+		}
+
+		foreach ( $all_terms as $term ) {
 			$locked   = get_term_meta( $term->term_id, 'locked', true );
 			$bookmark = get_term_meta( $term->term_id, 'bookmark', true );
 	
