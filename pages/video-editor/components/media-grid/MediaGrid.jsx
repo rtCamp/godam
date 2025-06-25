@@ -14,11 +14,14 @@ import { __ } from '@wordpress/i18n';
 import { useGetVideosMutation } from '../../redux/api/video';
 import MediaItem from './MediaItem.jsx';
 import { Icon, media } from '@wordpress/icons';
+import PreviewPlayer from '../PreviewPlayer';
 
 const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments, setAttachments } ) => {
 	const [ getVideos, { isLoading } ] = useGetVideosMutation();
 	const [ hasMore, setHasMore ] = useState( true );
 	const [ fetching, setFetching ] = useState( false );
+	const [ videoPreviewId, setVideoPreviewId ] = useState( null );
+	const [ showVideoPreview, setShowVideoPreview ] = useState( false );
 	const observer = useRef();
 
 	const lastItemRef = useCallback(
@@ -42,6 +45,16 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 			}
 		}, [ hasMore, fetching, setPage ],
 	);
+
+	const handlePreviewVideoClick = ( item ) => {
+		setVideoPreviewId( item );
+		setShowVideoPreview( true );
+	};
+
+	const closeVideoPreviewPlayer = () => {
+		setShowVideoPreview( false );
+		setVideoPreviewId( null );
+	};
 
 	/**
 	 * Search item for the videos.
@@ -109,10 +122,13 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 						key={ item.id }
 						item={ item }
 						handleAttachmentClick={ handleAttachmentClick }
+						handlePreviewVideoClick={ handlePreviewVideoClick }
 						ref={ index === attachments.length - 1 ? lastItemRef : null }
 					/>
 				) ) }
 			</div>
+
+			{ showVideoPreview && <PreviewPlayer attachmentId={ videoPreviewId } onClose={ closeVideoPreviewPlayer } isOpen={ showVideoPreview } /> }
 
 			{ ( isLoading || fetching ) &&
 				<div className="flex justify-end items-center flex-col">

@@ -8,14 +8,14 @@ import React, { forwardRef } from 'react';
  */
 import { __ } from '@wordpress/i18n';
 import { DropdownMenu } from '@wordpress/components';
-import { Icon, moreHorizontalMobile, seen, link, chartBar } from '@wordpress/icons';
+import { Icon, moreHorizontalMobile, seen, link, chartBar, video } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import NoThumbnailImage from '../../assets/no-thumbnail.jpg';
 
-const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
+const MediaItem = forwardRef( ( { item, handleAttachmentClick, handlePreviewVideoClick }, ref ) => {
 	const handleItemClick = ( e ) => {
 		if ( e.target.closest( '.godam-video-list__video__thumbnail__overlay' ) ) {
 			return;
@@ -56,6 +56,13 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 								window.open( item.link, '_blank' );
 							},
 							title: __( 'Preview template', 'godam' ),
+						},
+						{
+							icon: <Icon icon={ video } />,
+							onClick: () => {
+								handlePreviewVideoClick( item.id );
+							},
+							title: __( 'Preview Video', 'godam' ),
 						},
 						{
 							icon: <Icon icon={ link } />,
