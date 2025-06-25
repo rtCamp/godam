@@ -33,6 +33,15 @@ class Pages {
 	private $video_editor_slug = 'rtgodam_video_editor';
 
 	/**
+	 * Slug for the video preview page.
+	 *
+	 * @since n.e.x.t
+	 * 
+	 * @var string
+	 */
+	private $video_preview_slug = 'rtgodam_video_preview';
+
+	/**
 	 * Slug for the analytics page.
 	 *
 	 * @var string
@@ -66,6 +75,15 @@ class Pages {
 	 * @var string
 	 */
 	private $video_editor_page_id = 'godam_page_rtgodam_video_editor';
+
+	/**
+	 * Video preview page ID.
+	 *
+	 * @since n.e.x.t
+	 * 
+	 * @var string
+	 */
+	private $video_preview_page_id = 'godam_page_rtgodam_video_preview';
 
 	/**
 	 * Analytics page ID.
@@ -137,6 +155,16 @@ class Pages {
 
 		add_submenu_page(
 			$this->menu_slug,
+			__( 'Analytics', 'godam' ),
+			__( 'Analytics', 'godam' ),
+			'edit_posts',
+			$this->analytics_slug,
+			array( $this, 'render_analytics_page' ),
+			2
+		);
+
+		add_submenu_page(
+			$this->menu_slug,
 			__( 'Video Editor', 'godam' ),
 			__( 'Video Editor', 'godam' ),
 			'edit_posts',
@@ -147,12 +175,12 @@ class Pages {
 
 		add_submenu_page(
 			$this->menu_slug,
-			__( 'Analytics', 'godam' ),
-			__( 'Analytics', 'godam' ),
+			__( 'Video Preview', 'godam' ),
+			__( 'Video Preview', 'godam' ),
 			'edit_posts',
-			$this->analytics_slug,
-			array( $this, 'render_analytics_page' ),
-			2
+			$this->video_preview_slug,
+			array( $this, 'render_video_preview_page' ),
+			4
 		);
 
 		add_submenu_page(
@@ -300,6 +328,48 @@ class Pages {
 	public function render_analytics_page() {
 		?>
 		<div id="root-video-analytics"></div>
+		<?php
+	}
+
+	/**
+	 * To render the video preview page.
+	 * 
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function render_video_preview_page() {
+		$video_id = isset( $_GET['id'] ) ? intval( wp_unslash( $_GET['id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no nonce verification needed for this page.
+
+		if ( empty( $video_id ) ) {
+			echo '<div class="wrap"><h1 class="godam-video-preview-title">' . esc_html__( 'Video Preview', 'godam' ) . '</h1>';
+			echo '<p class="video-not-found">' . esc_html__( 'Oops! We could not locate your video', 'godam' ) . '</p></div>';
+			return;
+		}
+
+		// Check if video attachment exists.
+		$video_attachment = get_post( $video_id );
+		if ( ! $video_attachment || 'attachment' !== $video_attachment->post_type ) {
+			echo '<div class="wrap"><h1 class="godam-video-preview-title">' . esc_html__( 'Video Preview', 'godam' ) . '</h1>';
+			echo '<p class="video-not-found">' . esc_html__( 'Oops! We could not locate your video', 'godam' ) . '</p></div>';
+			return;
+		}
+
+		?>
+		<div class="wrap">
+			<h1 class="godam-video-preview-title">
+				<strong><?php esc_html_e( 'Video Preview: ', 'godam' ); ?></strong>
+				<?php echo esc_html( get_the_title( $video_id ) ); ?>
+			</h1>
+
+			<div class="notice notice-warning">
+				<p><?php esc_html_e( 'Note: This is a simple video preview. This video may display differently when added to your page based on normal inheritance from parent theme styles.', 'godam' ); ?></p>
+			</div>
+
+			<div class="godam-video-preview">
+				<?php echo do_shortcode( '[godam_video id="' . $video_id . '"]' ); ?>
+			</div>
+		</div>
 		<?php
 	}
 
@@ -574,6 +644,16 @@ class Pages {
 
 			wp_set_script_translations( 'transcoder-page-script-godam', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-godam' );
+		} elseif ( $screen && $this->video_preview_page_id === $screen->id ) {
+			// Enqueue style and script for the video preview page.
+			wp_register_style(
+				'godam-video-preview-style',
+				RTGODAM_URL . 'assets/build/css/godam-video-preview.css',
+				array(),
+				filemtime( RTGODAM_PATH . 'assets/build/css/godam-video-preview.css' )
+			);
+
+			wp_enqueue_style( 'godam-video-preview-style' );
 		}
 
 		wp_enqueue_style( 'wp-components' );
