@@ -18,11 +18,13 @@ const initialState = {
 		use_watermark_image: false,
 		watermark_text: '',
 		watermark_url: '',
+		watermark_image_id: null,
 	},
 	general: {
 		enable_folder_organization: true,
 		brand_color: '#000000',
 		brand_image: '',
+		brand_image_id: null,
 	},
 	video_player: {
 		custom_css: VideoCustomCSSTemplate,

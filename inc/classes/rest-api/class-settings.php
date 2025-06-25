@@ -39,11 +39,13 @@ class Settings extends Base {
 				'watermark'              => false,
 				'watermark_text'         => '',
 				'watermark_url'          => '',
+				'watermark_image_id'     => null,
 				'use_watermark_image'    => false,
 			),
 			'general'      => array(
 				'enable_folder_organization' => true,
 				'brand_image'                => '',
+				'brand_image_id'             => null,
 				'brand_color'                => '#000000',
 			),
 			'video_player' => array(
@@ -287,11 +289,13 @@ class Settings extends Base {
 				'watermark'              => rest_sanitize_boolean( $settings['video']['watermark'] ?? $default['video']['watermark'] ),
 				'watermark_text'         => sanitize_text_field( $settings['video']['watermark_text'] ?? $default['video']['watermark_text'] ),
 				'watermark_url'          => esc_url_raw( $settings['video']['watermark_url'] ?? $default['video']['watermark_url'] ),
+				'watermark_image_id'     => absint( $settings['video']['watermark_image_id'] ?? $default['video']['watermark_image_id'] ),
 				'use_watermark_image'    => rest_sanitize_boolean( $settings['video']['use_watermark_image'] ?? $default['video']['use_watermark_image'] ),
 			),
 			'general'      => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
 				'brand_image'                => sanitize_text_field( $settings['general']['brand_image'] ?? $default['general']['brand_image'] ),
+				'brand_image_id'             => absint( $settings['general']['brand_image_id'] ?? $default['general']['brand_image_id'] ),
 				'brand_color'                => sanitize_hex_color( $settings['general']['brand_color'] ?? $default['general']['brand_color'] ),
 			),
 			'video_player' => array(
