@@ -92,7 +92,9 @@ if ( class_exists( 'GF_Field' ) ) {
 			$is_form_editor  = $this->is_form_editor();
 
 			$id                     = absint( $this->id );
-			$field_id               = 0 === $is_entry_detail || $is_form_editor || ! $form_id ? "input_$id" : 'input_' . $form_id . "_$id";
+			$field_id               = ! $form_id
+				? sprintf( 'input_%s', $id )
+				: sprintf( 'input_%1$s_%2$s', $form_id, $id );
 			$video_upload_button_id = wp_unique_id( 'uppy-video-upload-' );
 
 			$size         = $this->size;
