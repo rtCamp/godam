@@ -210,26 +210,26 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 = v1.1.4 (June 25, 2025) =
 
-Fix: GoDAM Record field data disappearing after invalid submission
-Fix: Transcoded videos showing as Not Transcoded in DAM Tab
-Fix: Show Transcoding Status for Retranscoding videos
-Fix: Poll layer submission issues
-Feat: Added Jetpack Forms Integration to GoDAM Video Block
-Feat: Added Block Overlay feature to GoDAM Video Block with customizable timing
-Feat: Added Elementor widgets for GoDAM Video, Gallery, and Audio to enable easy media embedding via drag-and-drop
-Feat: Added "Video Player" settings menu with support to add custom CSS to modify and style the UI of video player globally
-Feat: Introduced `godam_player_enqueue_styles` hook for registering custom styles for GoDAM video blocks
-Feat: Consolidated video quality selector and playback speed controls into a unified player settings UI
-Feat: Implemented chapters feature for enhanced video navigation
-Enhancement: GoDAM Gallery Modal made more user-friendly and scrollable in fullscreen
+- Fix: GoDAM Record field data disappearing after invalid submission
+- Fix: Transcoded videos showing as Not Transcoded in DAM Tab
+- Fix: Show Transcoding Status for Retranscoding videos
+- Fix: Poll layer submission issues
+- Feat: Added Jetpack Forms Integration to GoDAM Video Block
+- Feat: Added Block Overlay feature to GoDAM Video Block with customizable timing
+- Feat: Added Elementor widgets for GoDAM Video, Gallery, and Audio to enable easy media embedding via drag-and-drop
+- Feat: Added "Video Player" settings menu with support to add custom CSS to modify and style the UI of video player globally
+- Feat: Introduced `godam_player_enqueue_styles` hook for registering custom styles for GoDAM video blocks
+- Feat: Consolidated video quality selector and playback speed controls into a unified player settings UI
+- Feat: Implemented chapters feature for enhanced video navigation
+- Enhancement: GoDAM Gallery Modal made more user-friendly and scrollable in fullscreen
 
 = v1.1.3 (June 6, 2025) =
 
-Fix: Implemented a custom endpoint to retrieve and display the list of WPForms on the Video Editor page.
-Fix: Enabled watermarking functionality for users on the Starter plan.
-Fix: Update overlapping Modal Popup UI for GoDAM Gallery.
-Enhancement: Reorganized the GoDAM admin menu for improved navigation.
-Enhancement: Added a clear guidance message on Analytics pages for cases where videos have been deleted.
+- Fix: Implemented a custom endpoint to retrieve and display the list of WPForms on the Video Editor page.
+- Fix: Enabled watermarking functionality for users on the Starter plan.
+- Fix: Update overlapping Modal Popup UI for GoDAM Gallery.
+- Enhancement: Reorganized the GoDAM admin menu for improved navigation.
+- Enhancement: Added a clear guidance message on Analytics pages for cases where videos have been deleted.
 
 = v1.1.2 (June 5, 2025) =
 
