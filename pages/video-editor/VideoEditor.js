@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
  */
 import { Button, TabPanel, Snackbar } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { video as videoIcon } from '@wordpress/icons';
+import { copy, video as videoIcon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -31,6 +31,7 @@ import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redu
 import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
 import PreviewPlayer from './components/PreviewPlayer';
+import { copyGoDAMVideoBlock } from './utils/index';
 
 const VideoEditor = ( { attachmentID } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
@@ -189,6 +190,10 @@ const VideoEditor = ( { attachmentID } ) => {
 	const openPlayerPreview = () => setShowPreviewPlayer( true );
 	const closePlayerPreview = () => setShowPreviewPlayer( false );
 
+	const handleCopyGoDAMVideoBlock = () => {
+		copyGoDAMVideoBlock( attachmentID );
+	};
+
 	const tabConfig = [
 		{
 			name: 'layers',
@@ -287,7 +292,16 @@ const VideoEditor = ( { attachmentID } ) => {
 				</div>
 
 				<main className="flex justify-center items-center p-4 relative overflow-y-auto">
-					<div className="absolute top-4 right-4 z-20">
+					<div className="absolute top-4 right-4 z-20 gap-x-4 flex items-center">
+						<Button
+							variant="primary"
+							icon={ copy }
+							iconPosition="left"
+							onClick={ handleCopyGoDAMVideoBlock }
+							className="godam-button text-sm"
+						>
+							{ __( 'Copy Block', 'godam' ) }
+						</Button>
 						<Button
 							variant="secondary"
 							icon={ videoIcon }
