@@ -12,6 +12,7 @@ import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
 import woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
+import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 
 /**
  * WordPress dependencies
@@ -207,6 +208,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								const isGFPluginNotActive = layer.type === 'form' && ! window?.videoData?.gf_active;
 								const isWPFormsPluginNotActive = layer.type === 'form' && ! window?.videoData?.wpforms_active;
 								const isCF7PluginNotActive = layer.type === 'form' && ! window?.videoData?.cf7_active;
+								const isFluentFormsPluginNotActive = layer.type === 'form' && ! window?.videoData?.fluent_forms_active;
 								const isPollPluginNotActive = layer.type === 'poll' && ! window.easydamMediaLibrary.isPollPluginActive;
 								const isWooCommerceNotActive = layer.type === 'woo' && ! window.easydamMediaLibrary.isWooActive;
 								let addWarning = false;
@@ -226,6 +228,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 									addWarning = true;
 								} else if ( isCF7PluginNotActive && layer.form_type === 'cf7' ) {
 									toolTipMessage = __( 'Contact Form 7 plugin is not active', 'godam' );
+									addWarning = true;
+								} else if ( isFluentFormsPluginNotActive && layer.form_type === 'fluent-forms' ) {
+									toolTipMessage = __( 'Fluent Form plugin is not active', 'godam' );
 									addWarning = true;
 								} else if ( isPollPluginNotActive ) {
 									toolTipMessage = __( 'Poll plugin is not active', 'godam' );
@@ -247,6 +252,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								} else if ( layer.type === 'form' && layer.form_type === 'cf7' ) {
 									icon = CF7Icon;
 									layerText = __( 'Contact Form 7', 'godam' );
+								} else if ( layer.type === 'form' && layer.form_type === 'fluent-forms' ) {
+									icon = FluentFormsIcon;
+									layerText = __( 'Fluent Forms', 'godam' );
 								} else if ( layer.type === 'woo' ) {
 									icon = woo;
 									layerText = __( 'WooCommerce', 'godam' );
@@ -343,6 +351,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								isWPFormsPluginActive={ window?.videoData?.wpforms_active }
 								isCF7PluginActive={ window?.videoData?.cf7_active }
 								isJetpackPluginActive={ window?.videoData?.jetpack_active }
+								isFluentFormsPluginActive={ window?.videoData?.fluent_forms_active }
 								closeModal={ closeModal }
 								addNewLayer={ addNewLayer }
 							/>

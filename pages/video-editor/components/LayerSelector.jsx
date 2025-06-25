@@ -26,6 +26,7 @@ import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
 import Woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
+import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 
 const Layers = [
 	{
@@ -70,27 +71,37 @@ const Layers = [
 	},
 	{
 		id: 5,
+		title: __( 'Fluent Forms', 'godam' ),
+		description: __( 'Collect user input using Fluent Forms', 'godam' ),
+		image: Form,
+		type: 'form',
+		formType: 'fluent-forms',
+		requiresFluentForms: true,
+		formIcon: FluentFormsIcon,
+	},
+	{
+		id: 6,
 		title: __( 'CTA', 'godam' ),
 		description: __( 'Guide users toward a specific action', 'godam' ),
 		image: CTA,
 		type: 'cta',
 	},
 	{
-		id: 6,
+		id: 7,
 		title: __( 'Hotspot', 'godam' ),
 		description: __( 'Highlighting key areas with focus', 'godam' ),
 		image: Hotspot,
 		type: 'hotspot',
 	},
 	{
-		id: 7,
+		id: 8,
 		title: __( 'Ad', 'godam' ),
 		description: __( 'Redirect user to custom advertisement', 'godam' ),
 		image: Ad,
 		type: 'ad',
 	},
 	{
-		id: 8,
+		id: 9,
 		title: __( 'Poll', 'godam' ),
 		description: __( 'Gather opinions through interactive voting', 'godam' ),
 		image: Poll,
@@ -98,7 +109,7 @@ const Layers = [
 		requiresWpPolls: true,
 	},
 	{
-		id: 9,
+		id: 10,
 		title: __( 'WooCommerce', 'godam' ),
 		description: __( 'Display products using hotspots', 'godam' ),
 		image: Hotspot,
@@ -108,7 +119,7 @@ const Layers = [
 	},
 ];
 
-const LayerSelector = ( { isGFPluginActive, isWPFormsPluginActive, isCF7PluginActive, isJetpackPluginActive, closeModal, addNewLayer } ) => {
+const LayerSelector = ( { isGFPluginActive, isWPFormsPluginActive, isCF7PluginActive, isJetpackPluginActive, isFluentFormsPluginActive, closeModal, addNewLayer } ) => {
 	const [ selectedLayer, setSelectedLayer ] = useState( null );
 
 	const handleLayerSelect = ( layer ) => {
@@ -133,8 +144,15 @@ const LayerSelector = ( { isGFPluginActive, isWPFormsPluginActive, isCF7PluginAc
 
 			<div className="godam-layer-selector__list">
 				{ Layers.map( ( layer ) => {
-					const isDisabled = ( layer.requiresGf && ! isGFPluginActive ) || ( layer.requiresWPForms && ! isWPFormsPluginActive ) || ( layer.requiresCF7 && ! isCF7PluginActive ) || ( layer.requiresJetpack && ! isJetpackPluginActive ) || ( layer.requiresWpPolls && ! window.easydamMediaLibrary.isPollPluginActive ) || ( layer.requiresWoo && ! window.easydamMediaLibrary.isWooActive );
 					let message = '';
+					const isDisabled = ( layer.requiresGf && ! isGFPluginActive ) ||
+						( layer.requiresWPForms && ! isWPFormsPluginActive ) ||
+						( layer.requiresCF7 && ! isCF7PluginActive ) ||
+						( layer.requiresJetpack && ! isJetpackPluginActive ) ||
+						( layer.requiresFluentForms && ! isFluentFormsPluginActive ) ||
+						( layer.requiresWpPolls && ! window.easydamMediaLibrary.isPollPluginActive ) ||
+						( layer.requiresWoo && ! window.easydamMediaLibrary.isWooActive );
+
 					if ( layer.requiresGf && ! isGFPluginActive ) {
 						message = `<a class="godam-link" href="https://docs.gravityforms.com/installation/">Gravity Forms</a> plugin is required to use Form layer`;
 					} else if ( layer.requiresWPForms && ! isWPFormsPluginActive ) {
@@ -143,6 +161,8 @@ const LayerSelector = ( { isGFPluginActive, isWPFormsPluginActive, isCF7PluginAc
 						message = `<a class="godam-link" href="https://wordpress.org/plugins/contact-form-7/">Contact Form 7</a> plugin is required to use Form layer`;
 					} else if ( layer.requiresJetpack && ! isJetpackPluginActive ) {
 						message = `<a class="godam-link" href="https://wordpress.org/plugins/jetpack/">Jetpack</a> plugin is required to use Form layer`;
+					} else if ( layer.requiresFluentForms && ! isFluentFormsPluginActive ) {
+						message = `<a class="godam-link" href="https://wordpress.org/plugins/fluentform/">Fluent Forms</a> plugin is required to use Form layer`;
 					} else if ( layer.requiresWpPolls && ! window.easydamMediaLibrary.isPollPluginActive ) {
 						message = `<a class="godam-link" href="https://wordpress.org/plugins/wp-polls/">WP-Polls</a> plugin is required to use Poll layer`;
 					} else if ( layer.requiresWoo && ! window.easydamMediaLibrary.isWooActive ) {

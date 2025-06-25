@@ -46,6 +46,8 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 				return __( 'Contact Form 7', 'godam' );
 			case 'jetpack':
 				return __( 'Jetpack Forms', 'godam' );
+			case 'fluent-forms':
+				return __( 'Fluent Forms', 'godam' );
 			default:
 				return __( 'Gravity Forms', 'godam' );
 		}
