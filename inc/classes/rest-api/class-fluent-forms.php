@@ -1,8 +1,8 @@
 <?php
 /**
- * Register REST API endpoints for Gravity Forms.
+ * Register REST API endpoints for Fluent Forms.
  *
- * Get all Gravity Forms and a single Gravity Form.
+ * Get all Fluent Forms and a single Fluent Form.
  *
  * @package GoDAM
  */
@@ -12,9 +12,9 @@ namespace RTGODAM\Inc\REST_API;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class GF
+ * Class Fluent_Forms
  */
-class GF extends Base {
+class Fluent_Forms extends Base {
 
 	/**
 	 * Get REST routes.
@@ -23,11 +23,11 @@ class GF extends Base {
 		return array(
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/gforms',
+				'route'     => '/' . $this->rest_base . '/fluent-forms',
 				'args'      => array(
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_gforms' ),
+						'callback'            => array( $this, 'get_fforms' ),
 						'permission_callback' => '__return_true',
 						'args'                => $this->get_collection_params(),
 					),
@@ -35,23 +35,23 @@ class GF extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/gform',
+				'route'     => '/' . $this->rest_base . '/fluent-form',
 				'args'      => array(
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_gform' ),
+						'callback'            => array( $this, 'get_fform' ),
 						'permission_callback' => '__return_true',
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
 							array(
 								'id'    => array(
-									'description'       => __( 'The ID of the Gravity Form.', 'godam' ),
+									'description'       => __( 'The ID of the Fluent Form.', 'godam' ),
 									'type'              => 'integer',
 									'required'          => true,
 									'sanitize_callback' => 'absint',
 								),
 								'theme' => array(
-									'description'       => __( 'The theme to be applied to the Gravity Form.', 'godam' ),
+									'description'       => __( 'The theme to be applied to the Fluent Form.', 'godam' ),
 									'type'              => 'string',
 									'required'          => false,
 									'sanitize_callback' => 'sanitize_text_field',
@@ -70,30 +70,28 @@ class GF extends Base {
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
 	 */
-	public function get_gforms( $request ) {
-		// Check if Gravity Forms plugin is active.
-		if ( ! class_exists( 'GFAPI' ) ) {
-			return new \WP_Error( 'gravity_forms_not_active', __( 'Gravity Forms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
+	public function get_fforms( $request ) {
+		// Check if Fluent Forms plugin is active.
+		if ( ! $this->is_plugin_active() ) {
+			return new \WP_Error( 'fluent_forms_not_active', __( 'Fluent Forms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		// Get all forms.
-		$gforms = \GFAPI::get_forms();
+		$fform_api = new \FluentForm\App\Api\Form();
 
-		// Get the output fields.
-		$fields = $request->get_param( 'fields' );
+		$fforms = $fform_api->forms();
 
-		// Filter fields.
-		if ( ! empty( $fields ) ) {
-			$fields = explode( ',', $fields );
-			$gforms = array_map(
-				function ( $gform ) use ( $fields ) {
-					return array_intersect_key( $gform, array_flip( $fields ) );
+		return rest_ensure_response(
+			array_map(
+				function ( $fform ) {
+					return array(
+						'id'    => $fform->id,
+						'title' => $fform->title,
+					);
 				},
-				$gforms
-			);
-		}
-
-		return rest_ensure_response( $gforms );
+				$fforms['data']
+			)
+		);
 	}
 
 	/**
@@ -102,10 +100,10 @@ class GF extends Base {
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
 	 */
-	public function get_gform( $request ) {
-		// Check if Gravity Forms plugin is active.
-		if ( ! class_exists( 'GFAPI' ) ) {
-			return new \WP_Error( 'gravity_forms_not_active', __( 'Gravity Forms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
+	public function get_fform( $request ) {
+		// Check if Fluent Forms plugin is active.
+		if ( ! $this->is_plugin_active() ) {
+			return new \WP_Error( 'fluent_forms_not_active', __( 'Fluent Forms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		$form_id = $request->get_param( 'id' );
@@ -116,8 +114,17 @@ class GF extends Base {
 			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		$gform = do_shortcode( "[gravityform id='{$form_id}' title='false' description='false' ajax='true' theme='{$theme}']" );
+		$fform = do_shortcode( "[fluentform id='{$form_id}' theme='{$theme}']" );
 
-		return rest_ensure_response( $gform );
+		return rest_ensure_response( $fform );
+	}
+
+	/**
+	 * Returns true if Fluent Form plugin is active.
+	 * 
+	 * @return boolean
+	 */
+	public function is_plugin_active() {
+		return is_plugin_active( 'fluentform/fluentform.php' );
 	}
 }
