@@ -34,9 +34,15 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 📌 Interactive Video Layers for Engagement
 - Embed [clickable CTAs](https://godam.io/features/video-overlay/) to drive actions like sign-ups and purchases.
 - Enhance your videos with [customizable hotspots](https://godam.io/features/video-hotspot/) that deliver additional context, links, and information exactly when and where your viewers need it.
-- Add interactive forms using [Gravity Forms](https://godam.io/features/gravity-forms/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), and [WPForms](https://wordpress.org/plugins/wpforms-lite/) to collect leads.
+- Add interactive forms using [Gravity Forms](https://godam.io/features/gravity-forms/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), [WPForms](https://wordpress.org/plugins/wpforms-lite/), and [Jetpack Forms](https://wordpress.org/plugins/jetpack/) to collect leads.
 - Enable video submissions using the GoDAM Record field that supports webcam and screencast inside Gravity Forms.
 - Add interactive Polls to gather viewer opinions during playback.
+- Customize video player appearance globally with custom CSS through the Video Player settings menu.
+- Navigate videos easily with chapter markers for better content organization and viewer experience.
+
+📌 Elementor Integration
+- Drag-and-drop GoDAM Video, Gallery, and Audio widgets for seamless content creation.
+- Embed media content directly into Elementor pages.
 
 📌 Seamless Ad Monetization
 - Supports [self-hosted ads and third-party ad networks](https://godam.io/features/ads-integration/).
@@ -120,6 +126,8 @@ GoDAM works seamlessly with popular WordPress plugins to enhance interactivity a
 - [WPForms](https://wordpress.org/plugins/wpforms-lite/) – Integrate lightweight forms for surveys, signups, or user inputs.
 - [Contact Form 7](https://wordpress.org/plugins/contact-form-7/) – Use a classic contact form plugin inside your videos for engagement.
 - [WP-Polls](https://wordpress.org/plugins/wp-polls/) – Add live polls to your videos and gather audience opinions in real-time.
+- [Jetpack Forms](https://wordpress.org/plugins/jetpack/) - Block Editor based forms for lead generation and engagement.
+- [Elementor](https://wordpress.org/plugins/elementor/) – Drag-and-drop GoDAM widgets for easy content creation.
 
 ## Installation
 Method 1: WordPress Dashboard
@@ -206,6 +214,10 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 28. Image Upload to Central Media Manager
 29. GoDAM Video Gallery Block
 30. GoDAM Video Gallery Front-end
+31. Elementor GoDAM Audio Widget
+32. Elementor GoDAM Gallery Widget
+33. Elementor GoDAM Video Widget
+34. Jetpack Forms Integration
 
 ## External services
 
