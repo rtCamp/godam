@@ -153,6 +153,12 @@ const clearVideoUploadUIOnModalClose = ( selectedFiles, containerId ) => {
 	}
 };
 
+jQuery( document ).ready( function() {
+	jQuery( document ).on( 'gform_confirmation_loaded', function() {
+		clearUppyStateIfConfirmed();
+	} );
+} );
+
 document.addEventListener( 'DOMContentLoaded', function() {
 	clearUppyStateIfConfirmed();
 
@@ -160,7 +166,8 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		const containerId = container.id;
 		const inputId = container.getAttribute( 'data-input-id' );
 		const fileInput = document.getElementById( inputId );
-		const uploadButton = container.querySelector( '.uppy-video-upload-button' );
+		const uploadButtonId = container.getAttribute( 'data-video-upload-button-id' );
+		const uploadButton = container.querySelector( `#${ uploadButtonId }` );
 
 		if ( ! fileInput || ! uploadButton ) {
 			return;
@@ -174,7 +181,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 		// Initialize Uppy.
 		const uppy = new Uppy( {
-			id: `uppy-${ inputId }`,
+			id: `uppy-${ inputId }-${ uploadButtonId }`,
 			autoProceed: false,
 			restrictions: {
 				maxNumberOfFiles: 1,
@@ -195,9 +202,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		}
 
 		const localFileInput = selectorArray.includes( 'file_input' ) ? true : false;
-		const videoUploadButtonId = container.getAttribute( 'data-video-upload-button-id' );
-
-		const trigger = `#${ containerId } #${ videoUploadButtonId }`;
+		const trigger = `#${ containerId } #${ uploadButtonId }`;
 
 		// Add Dashboard with webcam and screen capture.
 		uppy
@@ -246,7 +251,6 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 			const form = document.getElementById( `gform_${ formId }` );
 			if ( ! form ) {
-				clearUppyStateIfConfirmed();
 				return;
 			}
 
