@@ -2,11 +2,10 @@
 	display: flex;
 	justify-content: center;
 	width: 100%;
+	height: calc(100vh - 300px);
+	overflow: scroll;
 
 	.tree {
-		display: flex;
-		flex-direction: column;
-		justify-content: flex-end;
 		width: 100%;
 	}
 }
