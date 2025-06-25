@@ -872,6 +872,8 @@ function GODAMPlayer( videoRef = null ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.jetpack && layer.form_type === 'jetpack' ) {
 						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.fluentForms && layer.form_type === 'fluent-forms' ) {
+						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {
 					if ( window.godamPluginDependencies?.wp_polls ) {
