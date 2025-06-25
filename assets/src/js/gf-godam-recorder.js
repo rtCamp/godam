@@ -197,7 +197,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 		const localFileInput = selectorArray.includes( 'file_input' ) ? true : false;
 		const videoUploadButtonId = container.getAttribute( 'data-video-upload-button-id' );
 
-		const trigger = `#${ videoUploadButtonId }`;
+		const trigger = `#${ containerId } #${ videoUploadButtonId }`;
 
 		// Add Dashboard with webcam and screen capture.
 		uppy
