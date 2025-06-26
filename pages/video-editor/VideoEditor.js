@@ -9,6 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
  */
 import { Button, TabPanel, Snackbar } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { seen } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -290,6 +291,21 @@ const VideoEditor = ( { attachmentID } ) => {
 							</Snackbar>
 						)
 					}
+
+					<div className="absolute top-4 left-4 right-4">
+						<div className="flex justify-end items-center">
+							<Button
+								variant="secondary"
+								href={ `/?godam_page=video-preview&id=${ attachmentID }` }
+								target="_blank"
+								className="godam-button"
+								size="compact"
+								icon={ seen }
+							>
+								{ __( 'Preview', 'godam' ) }
+							</Button>
+						</div>
+					</div>
 
 					{ attachmentConfig && sources.length > 0 && (
 						<div className="w-full video-canvas-wrapper">

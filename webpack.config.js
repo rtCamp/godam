@@ -184,6 +184,7 @@ fs.readdirSync( pagesDir ).forEach( ( folder ) => {
 entryPoints[ 'page-css' ] = path.resolve( process.cwd(), 'pages', 'index.js' );
 
 const pages = {
+	mode: 'development', // Set to 'production' for production builds
 	entry: entryPoints, // Dynamic entry points for each page
 	output: {
 		path: path.resolve( __dirname, './assets/build/pages' ), // Output directory
