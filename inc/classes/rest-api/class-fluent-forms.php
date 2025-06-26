@@ -107,16 +107,32 @@ class Fluent_Forms extends Base {
 		}
 
 		$form_id = $request->get_param( 'id' );
-		$theme   = $request->get_param( 'theme' );
 		$form_id = absint( $form_id );
 
 		if ( empty( $form_id ) ) {
 			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		$fform = do_shortcode( "[fluentform id='{$form_id}' theme='{$theme}']" );
+		ob_start();
 
-		return rest_ensure_response( $fform );
+		$fform = do_shortcode(
+			sprintf(
+				"[fluentform id='%d']",
+				$form_id
+			)
+		);
+
+
+		// Manually trigger footer actions so styles are printed.
+		do_action( 'wp_footer' );
+
+		$footer_styles = ob_get_clean();
+
+		// Combine form + styles.
+		$response_html = $fform . $footer_styles;
+
+
+		return rest_ensure_response( $response_html );
 	}
 
 	/**

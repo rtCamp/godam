@@ -373,6 +373,11 @@ class Pages {
 				$this->enqueue_jetpack_forms_styles();
 			}
 
+			// Enqueue Fluent Forms styles if the plugin is active.
+			if ( $is_fluent_forms_active ) {
+				$this->enqueue_fluent_forms_styles();
+			}
+
 			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
@@ -664,5 +669,30 @@ class Pages {
 		wp_enqueue_style( 'grunion.css' );
 		// In admin, we need to load the block library styles which include button styles.
 		wp_enqueue_style( 'wp-block-library' );
+	}
+
+	/**
+	 * Enqueue Fluent Forms styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_fluent_forms_styles() {
+		if ( ! defined( 'FLUENTFORM_VERSION' ) ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'fluent-forms-public',
+			plugins_url( 'fluentform/assets/css/fluent-forms-public.css' ),
+			array(),
+			FLUENTFORM_VERSION 
+		);
+
+		wp_enqueue_style(
+			'fluent-forms-default',
+			plugins_url( 'fluentform/assets/css/fluentform-public-default.css' ),
+			array(),
+			FLUENTFORM_VERSION 
+		);
 	}
 }
