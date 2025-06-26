@@ -26,7 +26,7 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 	useEffect( () => {
 		setLayerTime( layer?.displayTime );
 		setInitialTimePeriod( layer?.displayTime );
-	}, [] );
+	}, [ layer?.displayTime ] );
 
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 
@@ -46,6 +46,8 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 				return __( 'Contact Form 7', 'godam' );
 			case 'jetpack':
 				return __( 'Jetpack Forms', 'godam' );
+			case 'sureforms':
+				return __( 'SureForms', 'godam' );
 			default:
 				return __( 'Gravity Forms', 'godam' );
 		}

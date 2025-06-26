@@ -12,6 +12,7 @@ import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
 import woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
+import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
 
 /**
  * WordPress dependencies
@@ -207,8 +208,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								const isGFPluginNotActive = layer.type === 'form' && ! window?.videoData?.gf_active;
 								const isWPFormsPluginNotActive = layer.type === 'form' && ! window?.videoData?.wpforms_active;
 								const isCF7PluginNotActive = layer.type === 'form' && ! window?.videoData?.cf7_active;
+								const isSureformsActive = layer.type === 'form' && ! window.videoData?.sureformsActive;
 								const isPollPluginNotActive = layer.type === 'poll' && ! window.easydamMediaLibrary.isPollPluginActive;
 								const isWooCommerceNotActive = layer.type === 'woo' && ! window.easydamMediaLibrary.isWooActive;
+
 								let addWarning = false;
 								let toolTipMessage = '';
 
@@ -233,6 +236,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								} else if ( isWooCommerceNotActive ) {
 									toolTipMessage = __( 'WooCommerce is not active', 'godam' );
 									addWarning = true;
+								} else if ( isSureformsActive ) {
+									toolTipMessage = __( 'Sureforms is not active', 'godam' );
 								} else {
 									toolTipMessage = '';
 								}
@@ -253,6 +258,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								} else if ( layer.type === 'form' && layer.form_type === 'jetpack' ) {
 									icon = JetpackIcon;
 									layerText = __( 'Jetpack Forms', 'godam' );
+								} else if ( layer.type === 'form' && layer.formType === 'sureforms' ) {
+									icon = SureformsIcon;
+									layerText = __( 'Sureforms', 'godam' );
 								} else {
 									layerText = layer?.type?.toUpperCase();
 								}
@@ -343,6 +351,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 								isWPFormsPluginActive={ window?.videoData?.wpforms_active }
 								isCF7PluginActive={ window?.videoData?.cf7_active }
 								isJetpackPluginActive={ window?.videoData?.jetpack_active }
+								isSureformsPluginActive={ window?.videoData?.sureformsActive }
 								closeModal={ closeModal }
 								addNewLayer={ addNewLayer }
 							/>
