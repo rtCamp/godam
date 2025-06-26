@@ -294,6 +294,21 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 									</div>
 								</div>
 								<?php
+							elseif ( 'sureforms' === $form_type && ! empty( $layer['sureform_id'] ) ) :
+								?>
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div class="form-container">
+										<?php
+											echo do_shortcode(
+												sprintf(
+													"[sureforms id='%d']",
+													intval( $layer['sureform_id'] )
+												)
+											);
+										?>
+									</div>
+								</div>
+								<?php
 							elseif ( 'jetpack' === $form_type && ! empty( $layer['jp_id'] ) ) :
 								// Get the origin post ID from the layer data.
 								$origin_post_id = isset( $layer['origin_post_id'] ) ? $layer['origin_post_id'] : '';

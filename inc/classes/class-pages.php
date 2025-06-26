@@ -678,6 +678,16 @@ class Pages {
 	 */
 	public function enqueue_sureforms_styles() {
 
-		// Todo: Add the sureforms styles.
+		/**
+		 * Enqueue the sureforms assets.
+		 */
+		if ( class_exists( 'SRFM\Inc\Frontend_Assets' ) ) {
+			$instance = \SRFM\Inc\Frontend_Assets::get_instance();
+
+			if ( $instance ) {
+				$instance->register_scripts();
+				$instance->enqueue_scripts_and_styles();
+			}
+		}
 	}
 }
