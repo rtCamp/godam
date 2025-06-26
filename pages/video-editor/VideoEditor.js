@@ -9,6 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
  */
 import { Button, TabPanel, Snackbar } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { copy, video as videoIcon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -29,12 +30,17 @@ import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
 import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
+import PreviewPlayer from './components/PreviewPlayer';
+import { copyGoDAMVideoBlock } from './utils/index';
 
 const VideoEditor = ( { attachmentID } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
 	const [ duration, setDuration ] = useState( 0 );
+	const [ showPreviewPlayer, setShowPreviewPlayer ] = useState( false );
+	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
+	const [ showSnackbar, setShowSnackbar ] = useState( false );
 
 	const playerRef = useRef( null );
 
@@ -183,6 +189,24 @@ const VideoEditor = ( { attachmentID } ) => {
 		return `${ minsStr }:${ secsStr }`;
 	};
 
+	const openPlayerPreview = () => setShowPreviewPlayer( true );
+	const closePlayerPreview = () => setShowPreviewPlayer( false );
+
+	const handleCopyGoDAMVideoBlock = async () => {
+		const result = await copyGoDAMVideoBlock( attachmentID );
+		if ( result ) {
+			setSnackbarMessage( __( 'GoDAM Video Block copied to clipboard', 'godam' ) );
+			setShowSnackbar( true );
+		} else {
+			setSnackbarMessage( __( 'Failed to copy GoDAM Video Block', 'godam' ) );
+			setShowSnackbar( true );
+		}
+	};
+
+	const handleOnSnackbarRemove = () => {
+		setShowSnackbar( false );
+	};
+
 	const tabConfig = [
 		{
 			name: 'layers',
@@ -281,6 +305,36 @@ const VideoEditor = ( { attachmentID } ) => {
 				</div>
 
 				<main className="flex justify-center items-center p-4 relative overflow-y-auto">
+					<div className="absolute top-4 right-4 z-20 gap-x-4 flex items-center">
+						<Button
+							variant="primary"
+							icon={ copy }
+							iconPosition="left"
+							onClick={ handleCopyGoDAMVideoBlock }
+							className="godam-button text-sm"
+						>
+							{ __( 'Copy Block', 'godam' ) }
+						</Button>
+						<Button
+							variant="secondary"
+							icon={ videoIcon }
+							iconPosition="left"
+							onClick={ openPlayerPreview }
+							className="godam-button text-sm"
+						>
+							{ __( 'Show Preview', 'godam' ) }
+						</Button>
+					</div>
+
+					{ showPreviewPlayer && <PreviewPlayer isOpen={ showPreviewPlayer } onClose={ closePlayerPreview } attachmentId={ attachmentID } /> }
+
+					{ showSnackbar && (
+						<Snackbar className="absolute bottom-4 right-4 opacity-70 z-50"
+							onRemove={ handleOnSnackbarRemove }
+						>
+							{ snackbarMessage }
+						</Snackbar>
+					) }
 
 					{
 						// Display a success message when video changes are saved.

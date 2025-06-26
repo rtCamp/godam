@@ -33,6 +33,7 @@ use RTGODAM\Inc\REST_API\WC;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\Gravity_Forms;
+use RTGODAM\Inc\REST_API\Player_Preview;
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
@@ -121,11 +122,12 @@ class Plugin {
 		WC::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
+		Player_Preview::get_instance();
 	}
 
 	/**
 	 * Registers the elementor widgets if required.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function load_elementor_widgets() {
