@@ -15,6 +15,8 @@ use RTGODAM\Inc\Blocks;
 use RTGODAM\Inc\Assets;
 use RTGODAM\Inc\Deactivation;
 use RTGODAM\Inc\Media_Tracker;
+use RTGODAM\Inc\Rewrite;
+use RTGODAM\Inc\Video_Preview;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
@@ -59,6 +61,8 @@ class Plugin {
 		Media_Library_Ajax::get_instance();
 		Media_Tracker::get_instance();
 		Seo::get_instance();
+		Rewrite::get_instance();
+		Video_Preview::get_instance();
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();

@@ -9,7 +9,6 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
-use NF_Display_Render;
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
