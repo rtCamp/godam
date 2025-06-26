@@ -15,7 +15,18 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
+import { layerTypes } from '../SidebarLayers';
 
+/**
+ * Component that renders the header section for the selected layer.
+ *
+ * @param {Object}   param0          - Props passed to the LayersHeader component.
+ * @param {Object}   param0.layer    - The layer object containing type and metadata.
+ * @param {Function} param0.goBack   - Callback to navigate back to the previous view.
+ * @param {number}   param0.duration - Total duration of the video (in seconds or milliseconds).
+ *
+ * @return {JSX.Element} The rendered LayersHeader component.
+ */
 const LayersHeader = ( { layer, goBack, duration } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const [ isEditing, setIsEditing ] = useState( false );
@@ -36,50 +47,23 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
         singleLayer?.id !== layer?.id,
 	);
 
-	function getFormPluginName( formType ) {
-		switch ( formType ) {
-			case 'gravity':
-				return __( 'Gravity Forms', 'godam' );
-			case 'wpforms':
-				return __( 'WPForms', 'godam' );
-			case 'cf7':
-				return __( 'Contact Form 7', 'godam' );
-			case 'jetpack':
-				return __( 'Jetpack Forms', 'godam' );
-			case 'sureforms':
-				return __( 'SureForms', 'godam' );
-			default:
-				return __( 'Gravity Forms', 'godam' );
-		}
-	}
+	/**
+	 * Get the layer data.
+	 */
+	const layerTypeData = layerTypes.find( ( l ) => l.type === layer.type );
+	const layerName = 'form' === layer.type ? layerTypeData?.formType[ layer?.form_type ?? 'gravity' ]?.layerText : layerTypeData?.layerText;
 
 	const handleDeleteLayer = () => {
 		dispatch( removeLayer( { id: layer.id } ) );
 		goBack();
 	};
 
-	const layerName = ( type ) => {
-		switch ( type ) {
-			case 'poll':
-				return __( 'Poll', 'godam' );
-			case 'form':
-				return getFormPluginName( layer?.form_type ) || 'Form';
-			case 'ad':
-				return __( 'Ad', 'godam' );
-			case 'cta':
-				return __( 'CTA', 'godam' );
-			case 'hotspot':
-				return __( 'Hotspot', 'godam' );
-			default:
-				return __( 'Layer', 'godam' );
-		}
-	};
 	return (
 		<>
 			<div className="flex justify-between items-center border-b mb-3">
 				<Button icon={ arrowLeft } onClick={ goBack } />
 				<p className="text-base flex items-center gap-1">
-					{ layerName( layer.type ) }
+					{ layerName }
 					{ __( ' layer at', 'godam' ) }{ isEditing ? (
 						<TextControl
 							__nextHasNoMarginBottom={ true }

@@ -29,7 +29,7 @@ import LayerSelector from './LayerSelector.jsx';
 /**
  * Layer types with detail related to title, text and premium feature.
  */
-const layerTypes = [
+export const layerTypes = [
 	{
 		title: __( 'CTA', 'godam' ),
 		icon: customLink,
