@@ -123,7 +123,7 @@ jQuery( document ).ready( function( $ ) {
 			};
 
 			return (
-				<Modal title="Attach video to other products" onRequestClose={ close } className="rt-godam-modal godam-video-picker-modal">
+				<Modal title="Attach video to other products" onRequestClose={ close } className="rt-godam-modal godam-video-picker-modal wc-godam-product-admin">
 					<div style={ { display: 'flex', gap: '8px', marginBottom: '1rem' } }>
 						<div style={ { flex: 1 } }>
 							<TextControl
@@ -207,12 +207,13 @@ jQuery( document ).ready( function( $ ) {
 										<div
 											key={ p.id }
 											style={ {
+												position: 'relative',
 												display: 'flex',
 												flexDirection: 'column',
 												alignItems: 'center',
 												width: '110px',
 												minWidth: '100px',
-												height: '130px',
+												height: '110px',
 												border: '1px solid #ddd',
 												borderRadius: '6px',
 												padding: '8px',
@@ -221,6 +222,44 @@ jQuery( document ).ready( function( $ ) {
 												flexShrink: 0,
 											} }
 										>
+											<button
+												type="button"
+												onClick={ () => {
+													apiFetch( {
+														path: `${ RTGodamVideoGallery.namespace }${ RTGodamVideoGallery.unLinkVideoEP }`,
+														method: 'POST',
+														data: {
+															product_id: p.id,
+															attachment_id: attachmentId,
+														},
+													} ).catch( () => {
+														// eslint-disable-next-line no-alert
+														window.alert( 'Failed to unlink video from product ' + p.id );
+													} );
+
+													setSelected( ( prev ) => prev.filter( ( item ) => item.id !== p.id ) );
+												} }
+												style={ {
+													position: 'absolute',
+													top: '-9px',
+													right: '-9px',
+													background: '#f44336',
+													color: 'white',
+													border: 'none',
+													borderRadius: '50%',
+													width: '20px',
+													height: '20px',
+													cursor: 'pointer',
+													fontWeight: 'bold',
+													lineHeight: '16px',
+													fontSize: '14px',
+													padding: 0,
+												} }
+												aria-label="Remove product"
+											>
+												&times;
+											</button>
+
 											{ p.image && (
 												<img
 													src={ p.image }
@@ -259,7 +298,7 @@ jQuery( document ).ready( function( $ ) {
 							onClick={ addToProducts }
 							className="components-button ml-2 godam-button is-primary godam-margin-top-no-bottom wc-godam-product-admin"
 						>
-							Add&nbsp;product{ selected.length > 1 ? 's' : '' }
+							Save
 						</Button>
 					</div>
 				</Modal>

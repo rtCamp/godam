@@ -14,39 +14,43 @@ class WC_Product_Video_Gallery {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_media_scripts' ) );
 		add_action( 'delete_attachment', array( $this, 'on_attachment_deleted' ) );
 		add_filter( 'get_user_option_meta-box-order_product', array( $this, 'place_below_wc_gallery' ) );
-        /**
-         * Allow inline SVG in WP‑Admin (buttons, meta boxes, etc.).
-         * Runs early so anything that calls wp_kses_post() later will respect it.
-         */
-        add_filter( 'wp_kses_allowed_html', function ( $tags, $context ) {
+		/**
+		 * Allow inline SVG in WP‑Admin (buttons, meta boxes, etc.).
+		 * Runs early so anything that calls wp_kses_post() later will respect it.
+		 */
+		add_filter(
+			'wp_kses_allowed_html',
+			function ( $tags, $context ) {
 
-            if ( 'post' !== $context && 'data' !== $context ) {
-                return $tags; // leave front‑end/global contexts alone
-            }
+				if ( 'post' !== $context && 'data' !== $context ) {
+					return $tags; // leave front‑end/global contexts alone
+				}
 
-            $tags['svg'] = array(
-                'xmlns'       => true,
-                'width'       => true,
-                'height'      => true,
-                'viewBox'     => true,
-                'aria-hidden' => true,
-                'focusable'   => true,
-                'style'       => true,
-                'class'       => true,
-            );
+				$tags['svg'] = array(
+					'xmlns'       => true,
+					'width'       => true,
+					'height'      => true,
+					'viewBox'     => true,
+					'aria-hidden' => true,
+					'focusable'   => true,
+					'style'       => true,
+					'class'       => true,
+				);
 
-            $tags['path'] = array(
-                'd'            => true,
-                'fill'         => true,
-                'stroke'       => true,
-                'stroke-width' => true,
-                'stroke-linecap'   => true,
-                'stroke-linejoin'  => true,
-            );
+				$tags['path'] = array(
+					'd'               => true,
+					'fill'            => true,
+					'stroke'          => true,
+					'stroke-width'    => true,
+					'stroke-linecap'  => true,
+					'stroke-linejoin' => true,
+				);
 
-            return $tags;
-        }, 20, 2 );
-
+				return $tags;
+			},
+			20,
+			2 
+		);
 	}
 
 	public function enqueue_media_scripts() {
@@ -74,12 +78,14 @@ class WC_Product_Video_Gallery {
 				'rtgodam-wc-add-to-product',
 				'RTGodamVideoGallery',
 				array(
-					'apiRoot'     => esc_url_raw( rest_url() ),
-					'namespace'   => 'godam/v1',
-					'productsEP'  => '/wcproducts',
-					'linkVideoEP' => '/link-video',
-                    'videoCountEP'     => '/video-product-count',
-                    'currentProductId' => get_the_ID(),
+					'apiRoot'          => esc_url_raw( rest_url() ),
+					'namespace'        => 'godam/v1',
+					'productsEP'       => '/wcproducts',
+					'linkVideoEP'      => '/link-video',
+					'unLinkVideoEP'      => '/unlink-video',
+					'videoCountEP'     => '/video-product-count',
+					'currentProductId' => get_the_ID(),
+					'defaultThumbnail' => RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png',
 				)
 			);
 		}
@@ -125,7 +131,7 @@ class WC_Product_Video_Gallery {
 		$video_urls = get_post_meta( $post->ID, '_rtgodam_product_video_gallery', true );
 		$video_urls = is_array( $video_urls ) ? $video_urls : array();
 
-        $tag_icon_svg = '
+		$tag_icon_svg = '
 		<svg xmlns="http://www.w3.org/2000/svg"
             width="14" height="14" viewBox="0 0 24 24"
             aria-hidden="true" focusable="false"
@@ -138,83 +144,102 @@ class WC_Product_Video_Gallery {
 
 		echo '<div id="rtgodam-product-video-gallery">';
 		wp_nonce_field( 'rtgodam_save_video_gallery', 'rtgodam_video_gallery_nonce' );
-		echo '<div id="button-container" class="godam-center-button">';
-		printf(
-			'<button type="button" class="components-button ml-2 godam-button is-primary godam-margin-top-no-bottom wc-godam-add-video-button wc-godam-product-admin" aria-label="%s">',
-			esc_attr__( 'Add video to gallery', 'godam' )
-		);
-		echo '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 64 64" fill="none" style="margin-right: 6px; vertical-align: middle;">
-                <path d="M25.5578 20.0911L8.05587 37.593L3.46397 33.0011C0.818521 30.3556 2.0821 25.8336 5.72228 24.9464L25.5632 20.0964L25.5578 20.0911Z" fill="white" />
-                <path d="M47.3773 21.8867L45.5438 29.3875L22.6972 52.2341L11.2605 40.7974L34.1662 17.8916L41.5703 16.0796C45.0706 15.2247 48.2323 18.3863 47.372 21.8813L47.3773 21.8867Z" fill="white" />
-                <path d="M43.5059 38.1036L38.6667 57.8907C37.7741 61.5255 33.2521 62.7891 30.6066 60.1436L26.0363 55.5732L43.5059 38.1036Z" fill="white" />
-            </svg>';
-		echo esc_html__( 'Add product Videos', 'godam' );
-		echo '</button>';
-		echo '</div>';
-		echo '<ul class="godam-product-video-gallery-list godam-margin-top">';
+
+		echo '<ul class="godam-product-video-gallery-list godam-margin-top godam-margin-bottom godam-product-video-gallery-list wc-godam-product-admin">';
 
 		foreach ( $video_urls as $index => $url ) {
 			$id            = isset( $ids[ $index ] ) ? intval( $ids[ $index ] ) : '';
 			$sanitised_url = esc_url( $url );
 
-            $linked_products = $id ? get_post_meta( $id, '_video_parent_product_id', false ) : array();
-            $linked_products_obj = array_map(
-                function ( $pid ) {
+			$linked_products     = $id ? get_post_meta( $id, '_video_parent_product_id', false ) : array();
+			$linked_products_obj = array_map(
+				function ( $pid ) {
 					$thumb_id  = get_post_thumbnail_id( $pid );
 					$thumb_url = $thumb_id
 						? wp_get_attachment_image_url( $thumb_id, 'woocommerce_thumbnail' )
 						: wc_placeholder_img_src();
 					
-                    return array(
-                        'id'   => (int) $pid,
-                        'name' => get_the_title( $pid ),
+					return array(
+						'id'    => (int) $pid,
+						'name'  => get_the_title( $pid ),
 						'image' => $thumb_url,
-                    );
-                },
-                $linked_products
-            );
-            $linked_json = esc_attr( wp_json_encode( $linked_products_obj ) );
+					);
+				},
+				$linked_products
+			);
+			$linked_json         = esc_attr( wp_json_encode( $linked_products_obj ) );
 
-	        $count           = is_array( $linked_products ) ? count( $linked_products ) - 1 : 0;
+			$count = is_array( $linked_products ) ? count( $linked_products ) - 1 : 0;
 
-            if ( $count > 0 ) {
-                $raw_label = sprintf(
-                    '%s%d&nbsp;%s',
-                    $tag_icon_svg,
-                    $count,
-                    _n( 'product', 'products', $count, 'godam' )
-                );
-            } else {
-                $raw_label = esc_html__( '+ Add products', 'godam' );
-            }
-        
-            $label = $raw_label;
+			if ( $count > 0 ) {
+				$raw_label = sprintf(
+					'&nbsp;%s%d&nbsp;%s',
+					$tag_icon_svg,
+					$count,
+					_n( 'product', 'products', $count, 'godam' )
+				);
+			} else {
+				$raw_label = esc_html__( '+ Add products', 'godam' );
+			}
+		
+			$label = $raw_label;
+
+			$video_title = $id ? get_the_title( $id ) : '';
+
+			$video_thumbnail = get_post_meta( $id, 'rtgodam_media_video_thumbnail', true );
+
+			if ( empty( $video_thumbnail ) ) {
+				$video_thumbnail = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
+			}
 
 			printf(
 				'<li>
                     <input type="hidden" name="rtgodam_product_video_gallery_ids[]" value="%d" data-vid-id="%d" />
-                    <input type="text" name="rtgodam_product_video_gallery_urls[]" value="%s" style="width:80%%" readonly />
+                    <input type="hidden" name="rtgodam_product_video_gallery_urls[]" value="%s" />
+					<div class="video-thumb-wrapper">
+        				<img src="%s" alt="Video Thumbnail" style="display:block; max-width: 200px; margin-bottom: 10px;" />
+						<button type="button" class="godam-remove-video-button components-button godam-button is-compact is-secondary has-icon wc-godam-product-admin" aria-label="%s">
+							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none">
+								<path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+								<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+								<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+								<path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+							</svg>
+						</button>
+					</div>
+					<div class="video-title" title="%s">%s</div>
                     <button type="button" data-linked-products="%s" class="godam-add-product-button components-button godam-button is-compact is-tertiary wc-godam-product-admin" aria-label="%s">%s</button>
-                    <button type="button" class="godam-remove-video-button components-button godam-button is-compact is-secondary has-icon wc-godam-product-admin" aria-label="%s">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none">
-                            <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </button>
                 </li>',
 				esc_attr( $id ),
 				esc_attr( $id ),
 				esc_attr( $sanitised_url ),
-                $linked_json,
+				esc_url( $video_thumbnail ),
+				esc_attr__( 'Remove video from gallery', 'godam' ),
+				esc_attr( $video_title ),
+				esc_html( $video_title ),
+				$linked_json,
 				esc_attr__( 'Associate products with this video', 'godam' ),
-				$label,
-				esc_attr__( 'Remove video from gallery', 'godam' )
+				$label
 			);
 		}
 
-		echo '</ul></div>';
+		echo '</ul>';
+
+		echo '<div id="button-container" class="godam-center-button godam-margin-top">';
+		printf(
+			'<button type="button" class="components-button ml-2 godam-button is-primary godam-margin-bottom-no-top wc-godam-add-video-button wc-godam-product-admin" aria-label="%s">',
+			esc_attr__( 'Add video to gallery', 'godam' )
+		);
+		echo '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 64 64" fill="none" style="margin-right: 6px; vertical-align: middle;">
+				<path d="M25.5578 20.0911L8.05587 37.593L3.46397 33.0011C0.818521 30.3556 2.0821 25.8336 5.72228 24.9464L25.5632 20.0964L25.5578 20.0911Z" fill="white" />
+				<path d="M47.3773 21.8867L45.5438 29.3875L22.6972 52.2341L11.2605 40.7974L34.1662 17.8916L41.5703 16.0796C45.0706 15.2247 48.2323 18.3863 47.372 21.8813L47.3773 21.8867Z" fill="white" />
+				<path d="M43.5059 38.1036L38.6667 57.8907C37.7741 61.5255 33.2521 62.7891 30.6066 60.1436L26.0363 55.5732L43.5059 38.1036Z" fill="white" />
+			</svg>';
+		echo esc_html__( 'Add product Videos', 'godam' );
+		echo '</button>';
+		echo '</div>';
+
+		echo '</div>';
 	}
 
 	public function save_video_gallery( $post_id ) {

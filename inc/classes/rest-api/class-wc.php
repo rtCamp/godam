@@ -104,6 +104,32 @@ class WC extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/unlink-video',
+				'args'      => array(
+					array(
+						'methods'             => \WP_REST_Server::CREATABLE,
+						'callback'            => array( $this, 'unlink_video_from_product' ),
+						'permission_callback' => function ( \WP_REST_Request $req ) {
+							$product_id = (int) $req->get_param( 'product_id' );
+							return current_user_can( 'edit_post', $product_id );
+						},
+						'args'                => array(
+							'product_id'    => array(
+								'required'          => true,
+								'type'              => 'integer',
+								'sanitize_callback' => 'absint',
+							),
+							'attachment_id' => array(
+								'required'          => true,
+								'type'              => 'integer',
+								'sanitize_callback' => 'absint',
+							),
+						),
+					),
+				),
+			),
 		);
 	}
 
@@ -476,26 +502,59 @@ class WC extends Base {
 
 		$linked_products = array_map(
 			function ( $pid ) {
-				$thumb_id  = get_post_thumbnail_id( $pid );
+				$thumb_id      = get_post_thumbnail_id( $pid );
 					$thumb_url = $thumb_id
 						? wp_get_attachment_image_url( $thumb_id, 'woocommerce_thumbnail' )
 						: wc_placeholder_img_src();
 					
-                    return array(
-                        'id'   => (int) $pid,
-                        'name' => get_the_title( $pid ),
+					return array(
+						'id'    => (int) $pid,
+						'name'  => get_the_title( $pid ),
 						'image' => $thumb_url,
-                    );
+					);
 			},
 			$product_ids
 		);
 
 		return rest_ensure_response(
 			array(
-				'count'   => count( $product_ids ),
-				'linked'  => $linked_products,
+				'count'  => count( $product_ids ),
+				'linked' => $linked_products,
 			)
 		);
 	}
 
+	/**
+	 * Unlink a video from a WooCommerce product.
+	 *
+	 * @param \WP_REST_Request $request Request object.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function unlink_video_from_product( \WP_REST_Request $request ) {
+		$product_id    = (int) $request->get_param( 'product_id' );
+		$attachment_id = (int) $request->get_param( 'attachment_id' );
+
+		if ( ! $product_id || ! $attachment_id ) {
+			return new \WP_Error( 'missing_params', 'Required parameters missing.', array( 'status' => 400 ) );
+		}
+
+		/* ---- 1. update product meta ---- */
+		$ids  = get_post_meta( $product_id, '_rtgodam_product_video_gallery_ids', true ) ?: array();
+		$urls = get_post_meta( $product_id, '_rtgodam_product_video_gallery', true ) ?: array();
+
+		$index = array_search( $attachment_id, $ids, true );
+
+		if ( false !== $index ) {
+			unset( $ids[ $index ] );
+			unset( $urls[ $index ] );
+
+			update_post_meta( $product_id, '_rtgodam_product_video_gallery_ids', array_values( $ids ) );
+			update_post_meta( $product_id, '_rtgodam_product_video_gallery', array_values( $urls ) );
+		}
+
+		/* ---- 2. update attachment meta ---- */
+		delete_post_meta( $attachment_id, '_video_parent_product_id', $product_id );
+
+		return rest_ensure_response( array( 'success' => true ) );
+	}
 }

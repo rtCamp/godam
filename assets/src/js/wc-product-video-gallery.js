@@ -48,52 +48,72 @@ jQuery( document ).ready( function( $ ) {
 					'data-linked-products': '[]',
 				} );
 
-				const listItem = $( '<li>' )
-					.append(
-						`<input type="hidden"
-								name="rtgodam_product_video_gallery_ids[]"
-								value="${ data.id }"
-								data-vid-id="${ data.id }" />`,
-					)
-					.append(
-						`<input type="text"
-								name="rtgodam_product_video_gallery_urls[]"
-								value="${ data.url }"
-								style="width:80%"
-                                readonly />`,
-					)
-					.append(
-						$addBtn,
-					)
-					.append(
-						$( '<button>', {
-							type: 'button',
-							class: 'godam-remove-video-button components-button godam-button is-compact is-secondary has-icon wc-godam-product-admin',
-							'aria-label': __( 'Remove video from gallery', 'godam' ),
-							html: `
-								<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none">
-									<path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-									<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-									<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-									<path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-								</svg>
-							`,
-						} ),
-					);
-
-				videoList.append( listItem );
-
 				wp.apiFetch( {
-					path: `${ RTGodamVideoGallery.namespace }${ RTGodamVideoGallery.videoCountEP }/${ data.id }`,
-				} ).then( ( res ) => {
-					updateAddProductButtonLabel( $addBtn, res.count );
+					path: `/wp/v2/media/${ data.id }`,
+				} )
+					.then( ( media ) => {
+						const thumbnail = media.meta.rtgodam_media_video_thumbnail || RTGodamVideoGallery.defaultThumbnail;
+						const videoTitle = media.title?.rendered || '';
 
-					if ( Array.isArray( res.linked ) ) {
-						$addBtn.attr( 'data-linked-products', JSON.stringify( res.linked ) );
-					}
-				} ).catch( () => {
-					// If endpoint fails just leave the default label & an empty list.
-				} );
+						const listItem = $( '<li>' ).append(
+							`<input type="hidden"
+									name="rtgodam_product_video_gallery_ids[]"
+									value="${ data.id }"
+									data-vid-id="${ data.id }" />`,
+							`<input type="hidden"
+									name="rtgodam_product_video_gallery_urls[]"
+									value="${ data.url }" />`,
+						);
+
+						const $thumbWrapper = $( '<div>', { class: 'video-thumb-wrapper' } );
+
+						if ( thumbnail ) {
+							$thumbWrapper.append( `<img src="${ thumbnail }" alt="Video thumbnail" class="godam-video-thumbnail" />` );
+						} else {
+							$thumbWrapper.append( `<span style="color:#aaa; margin-bottom: 10px; display:block;">No thumbnail</span>` );
+						}
+
+						const $videoTitle = $( '<div>', {
+							class: 'video-title',
+							text: videoTitle,
+							title: videoTitle,
+						} );
+
+						$thumbWrapper.append(
+							$( '<button>', {
+								type: 'button',
+								class: 'godam-remove-video-button components-button godam-button is-compact is-secondary has-icon wc-godam-product-admin',
+								'aria-label': __( 'Remove video from gallery', 'godam' ),
+								html: `
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none">
+										<path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+										<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+										<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+										<path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+									</svg>
+								`,
+							} ),
+						);
+
+						listItem.append( $thumbWrapper ).append( $videoTitle ).append( $addBtn );
+						videoList.append( listItem );
+
+						wp.apiFetch( {
+							path: `${ RTGodamVideoGallery.namespace }${ RTGodamVideoGallery.videoCountEP }/${ data.id }`,
+						} ).then( ( res ) => {
+							updateAddProductButtonLabel( $addBtn, res.count );
+
+							if ( Array.isArray( res.linked ) ) {
+								$addBtn.attr( 'data-linked-products', JSON.stringify( res.linked ) );
+							}
+						} ).catch( () => {
+							// If endpoint fails just leave the default label & an empty list.
+						} );
+					} )
+					.catch( () => {
+						// eslint-disable-next-line no-console
+						console.warn( 'Could not fetch media data for ID: ' + data.id );
+					} );
 			} );
 		} );
 
