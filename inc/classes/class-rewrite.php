@@ -48,7 +48,7 @@ class Rewrite {
 	 * @return array The modified query variables.
 	 */
 	public function add_query_vars( $vars ) {
-		// Add 'video-review' to the list of query vars.
+		// Add 'godam_page' to the list of query vars.
 		$vars[] = 'godam_page';
 		return $vars;
 	}
