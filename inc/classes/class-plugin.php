@@ -17,6 +17,8 @@ use RTGODAM\Inc\Blocks;
 use RTGODAM\Inc\Assets;
 use RTGODAM\Inc\Deactivation;
 use RTGODAM\Inc\Media_Tracker;
+use RTGODAM\Inc\Rewrite;
+use RTGODAM\Inc\Video_Preview;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
@@ -31,6 +33,7 @@ use RTGODAM\Inc\REST_API\Ads;
 use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Polls;
+use RTGODAM\Inc\REST_API\WC;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\Gravity_Forms;
@@ -61,6 +64,8 @@ class Plugin {
 		Media_Library_Ajax::get_instance();
 		Media_Tracker::get_instance();
 		Seo::get_instance();
+		Rewrite::get_instance();
+		Video_Preview::get_instance();
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
@@ -121,6 +126,7 @@ class Plugin {
 		Analytics::get_instance();
 		Deactivation::get_instance();
 		Polls::get_instance();
+		WC::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
 	}

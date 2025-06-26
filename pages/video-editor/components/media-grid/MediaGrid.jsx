@@ -88,7 +88,7 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 				<p className="text-sm text-gray-500 m-0 text-center">
 					{ __( 'Upload videos from WordPress ', 'godam' ) }
 					<a
-						href={ `${ window?.videoData?.admin_url }upload.php` }
+						href={ `${ window?.videoData?.adminUrl }upload.php` }
 						target="_blank"
 						rel="noopener noreferrer"
 						className="text-blue-500 underline"

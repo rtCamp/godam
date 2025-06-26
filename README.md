@@ -1,6 +1,6 @@
 ![Banner V3](https://github.com/user-attachments/assets/1c2cdf13-5cab-432a-b548-34cd3876e93f)
 # GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more
-Contributors: [rtcamp](https://profiles.wordpress.org/rtcamp), [elifvish](https://profiles.wordpress.org/elifvish), [subodhrajpopat](https://profiles.wordpress.org/subodhrajpopat), [kuldipchaudhary](https://profiles.wordpress.org/kuldipchaudhary), [prachigarg19](https://profiles.wordpress.org/prachigarg19), [juzar](https://profiles.wordpress.org/juzar), [geekofshire](https://profiles.wordpress.org/geekofshire), [nazmulhassann20](https://profiles.wordpress.org/nazmulhassann20)
+Contributors: [rtcamp](https://profiles.wordpress.org/rtcamp), [elifvish](https://profiles.wordpress.org/elifvish), [subodhrajpopat](https://profiles.wordpress.org/subodhrajpopat), [kuldipchaudhary](https://profiles.wordpress.org/kuldipchaudhary), [prachigarg19](https://profiles.wordpress.org/prachigarg19), [juzar](https://profiles.wordpress.org/juzar), [geekofshire](https://profiles.wordpress.org/geekofshire), [nazmulhassann20](https://profiles.wordpress.org/nazmulhassann20), [abhinavbelhekar03](https://profiles.wordpress.org/abhinavbelhekar03)
 
 Tags: transcoder, video, media library, folders, file manager
 
@@ -10,7 +10,7 @@ Tested up to: 6.8.1
 
 Requires PHP: 7.4
 
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -34,9 +34,15 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 📌 Interactive Video Layers for Engagement
 - Embed [clickable CTAs](https://godam.io/features/video-overlay/) to drive actions like sign-ups and purchases.
 - Enhance your videos with [customizable hotspots](https://godam.io/features/video-hotspot/) that deliver additional context, links, and information exactly when and where your viewers need it.
-- Add interactive forms using [Gravity Forms](https://godam.io/features/gravity-forms/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), and [WPForms](https://wordpress.org/plugins/wpforms-lite/) to collect leads.
+- Add interactive forms using [Gravity Forms](https://godam.io/features/gravity-forms/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), [WPForms](https://wordpress.org/plugins/wpforms-lite/), and [Jetpack Forms](https://wordpress.org/plugins/jetpack/) to collect leads.
 - Enable video submissions using the GoDAM Record field that supports webcam and screencast inside Gravity Forms.
 - Add interactive Polls to gather viewer opinions during playback.
+- Customize video player appearance globally with custom CSS through the Video Player settings menu.
+- Navigate videos easily with chapter markers for better content organization and viewer experience.
+
+📌 Elementor Integration
+- Drag-and-drop GoDAM Video, Gallery, and Audio widgets for seamless content creation.
+- Embed media content directly into Elementor pages.
 
 📌 Seamless Ad Monetization
 - Supports [self-hosted ads and third-party ad networks](https://godam.io/features/ads-integration/).
@@ -120,6 +126,8 @@ GoDAM works seamlessly with popular WordPress plugins to enhance interactivity a
 - [WPForms](https://wordpress.org/plugins/wpforms-lite/) – Integrate lightweight forms for surveys, signups, or user inputs.
 - [Contact Form 7](https://wordpress.org/plugins/contact-form-7/) – Use a classic contact form plugin inside your videos for engagement.
 - [WP-Polls](https://wordpress.org/plugins/wp-polls/) – Add live polls to your videos and gather audience opinions in real-time.
+- [Jetpack Forms](https://wordpress.org/plugins/jetpack/) - Block Editor based forms for lead generation and engagement.
+- [Elementor](https://wordpress.org/plugins/elementor/) – Drag-and-drop GoDAM widgets for easy content creation.
 
 ## Installation
 Method 1: WordPress Dashboard
@@ -206,6 +214,12 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 28. Image Upload to Central Media Manager
 29. GoDAM Video Gallery Block
 30. GoDAM Video Gallery Front-end
+31. Elementor GoDAM Audio Widget
+32. Elementor GoDAM Gallery Widget
+33. Elementor GoDAM Video Widget
+34. Jetpack Forms Integration
+35. Video Player Style Settings
+36. Chapters Interface
 
 ## External services
 
