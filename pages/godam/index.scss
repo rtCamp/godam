@@ -95,7 +95,7 @@
 
 	.sidebar-nav-item {
 
-		@apply flex items-center gap-2 p-2 font-medium rounded-md text-gray-600 hover:text-gray-900 border border-transparent transition-all;
+		@apply flex items-center gap-2 p-2 mb-0.5 font-medium rounded-md text-gray-600 hover:text-gray-900 border border-transparent transition-all;
 
 		&.active {
 
