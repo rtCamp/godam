@@ -116,11 +116,6 @@ const layerTypes = [
 const premiumMessage = __( 'This feature is available in the premium version', 'godam' );
 
 /**
- * Premium layers.
- */
-const premiumLayers = [ 'form', 'hotspot', 'ad' ];
-
-/**
  * Sidebar component to display and select different types of layers to be added to the video.
  *
  * @param {Object}   param0               - Props passed to SidebarLayers component.
@@ -159,7 +154,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	const isValidAPiKey = true;
 
 	const addNewLayer = ( type, formType ) => {
-		if ( premiumLayers.includes( type ) && ! isValidAPiKey ) {
+		const layerType = layerTypes.find( ( l ) => l.type === type );
+		const isPremiumLayer = ! isValidAPiKey && layerType && layerType?.isPremium;
+
+		if ( isPremiumLayer ) {
 			return;
 		}
 
