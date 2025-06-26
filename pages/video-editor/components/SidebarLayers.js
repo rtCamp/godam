@@ -347,11 +347,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 
 						{ isOpen && (
 							<LayerSelector
-								isGFPluginActive={ window?.videoData?.gf_active }
-								isWPFormsPluginActive={ window?.videoData?.wpforms_active }
-								isCF7PluginActive={ window?.videoData?.cf7_active }
-								isJetpackPluginActive={ window?.videoData?.jetpack_active }
-								isSureformsPluginActive={ window?.videoData?.sureformsActive }
 								closeModal={ closeModal }
 								addNewLayer={ addNewLayer }
 							/>
