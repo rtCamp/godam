@@ -39,6 +39,8 @@ const VideoEditor = ( { attachmentID } ) => {
 	const [ sources, setSources ] = useState( [] );
 	const [ duration, setDuration ] = useState( 0 );
 	const [ showPreviewPlayer, setShowPreviewPlayer ] = useState( false );
+	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
+	const [ showSnackbar, setShowSnackbar ] = useState( false );
 
 	const playerRef = useRef( null );
 
@@ -190,8 +192,19 @@ const VideoEditor = ( { attachmentID } ) => {
 	const openPlayerPreview = () => setShowPreviewPlayer( true );
 	const closePlayerPreview = () => setShowPreviewPlayer( false );
 
-	const handleCopyGoDAMVideoBlock = () => {
-		copyGoDAMVideoBlock( attachmentID );
+	const handleCopyGoDAMVideoBlock = async () => {
+		const result = await copyGoDAMVideoBlock( attachmentID );
+		if ( result ) {
+			setSnackbarMessage( __( 'GoDAM Video Block copied to clipboard', 'godam' ) );
+			setShowSnackbar( true );
+		} else {
+			setSnackbarMessage( __( 'Failed to copy GoDAM Video Block', 'godam' ) );
+			setShowSnackbar( true );
+		}
+	};
+
+	const handleOnSnackbarRemove = () => {
+		setShowSnackbar( false );
 	};
 
 	const tabConfig = [
@@ -314,6 +327,14 @@ const VideoEditor = ( { attachmentID } ) => {
 					</div>
 
 					{ showPreviewPlayer && <PreviewPlayer isOpen={ showPreviewPlayer } onClose={ closePlayerPreview } attachmentId={ attachmentID } /> }
+
+					{ showSnackbar && (
+						<Snackbar className="absolute bottom-4 right-4 opacity-70 z-50"
+							onRemove={ handleOnSnackbarRemove }
+						>
+							{ snackbarMessage }
+						</Snackbar>
+					) }
 
 					{
 						// Display a success message when video changes are saved.
