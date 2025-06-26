@@ -132,7 +132,7 @@ const VideoEditor = ( { attachmentID } ) => {
 				dispatch( setGravityForms( gravityForms ) );
 			}
 		}
-	}, [ gravityForms, cf7Forms, wpForms, isFetching, dispatch ] );
+	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {
