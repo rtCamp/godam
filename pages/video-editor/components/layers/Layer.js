@@ -19,13 +19,13 @@ const Layer = ( { layer, goBack, duration } ) => {
 				layer.type === 'form' && <FormLayer layerID={ layer.id } goBack={ goBack } duration={ duration } />
 			}
 			{
-				layer.type === 'cta' && <CTALayer layerID={ layer.id } goBack={ goBack }duration={ duration } />
+				layer.type === 'cta' && <CTALayer layerID={ layer.id } goBack={ goBack } duration={ duration } />
 			}
 			{
 				layer.type === 'hotspot' && <HotspotLayer layerID={ layer.id } goBack={ goBack } duration={ duration } />
 			}
 			{
-				layer.type === 'ad' && <Ads layerID={ layer.id } goBack={ goBack }duration={ duration } />
+				layer.type === 'ad' && <Ads layerID={ layer.id } goBack={ goBack } duration={ duration } />
 			}
 			{
 				layer.type === 'poll' && <PollLayer layerID={ layer.id } goBack={ goBack } duration={ duration } />
