@@ -51,7 +51,8 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			// Populate basic field options
 			$this->field_option( 'basic-options', $video_field, array( 'markup' => 'open' ) );
 			$this->field_option( 'label', $video_field );
-			$this->file_selector_field_element( $video_field );
+			$this->file_selection_field_element( $video_field );
+			$this->max_file_size_field_element( $video_field );
 			$this->field_option( 'description', $video_field );
 			$this->field_option( 'required', $video_field );
 			$this->field_option( 'basic-options', $video_field, array( 'markup' => 'close' ) );
@@ -126,7 +127,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			);
 		}
 
-		protected function file_selector_field_element( $video_field ) {
+		protected function file_selection_field_element( $video_field ) {
 			$label = $this->field_element(
 				'label',
 				$video_field,
@@ -167,6 +168,46 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				array(
 					'slug'    => 'file-selector',
 					'content' => $label . $checkboxes,
+				)
+			);
+		}
+
+		protected function max_file_size_field_element( $video_field ) {
+			$label = $this->field_element(
+				'label',
+				$video_field,
+				array(
+					'slug'    => 'max_file_size',
+					'value'   => esc_html__( 'Maximum File Size(MB)', 'godam' ),
+					'tooltip' => esc_html__( 'Allows to set maximum file size that can be uploaded.', 'godam' ),
+				),
+				false
+			);
+
+			$field = $this->field_element(
+				'text',
+				$video_field,
+				array(
+					'type'        => 'number',
+					'slug'        => 'max_file_size',
+					'placeholder' => '100MB',
+					'value'       => isset( $video_field['max_file_size'] ) ? absint( $video_field['max_file_size'] ) : absint( size_format( wp_max_upload_size() ) ),
+					'after'       => esc_html__( 'Maximum allowed on this server: ' . size_format( wp_max_upload_size() ), 'godam' ),
+					'class'       => array( 'wpforms-field-options-column', 'max-quantity-input' ),
+					'attrs'       => array(
+						'min'  => 0,
+						'step' => 25,
+					),
+				),
+				false
+			);
+
+			$this->field_element(
+				'row',
+				$video_field,
+				array(
+					'slug'    => 'file-selector',
+					'content' => $label . $field,
 				)
 			);
 		}
