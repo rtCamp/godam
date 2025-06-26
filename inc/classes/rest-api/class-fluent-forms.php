@@ -44,17 +44,11 @@ class Fluent_Forms extends Base {
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
 							array(
-								'id'    => array(
+								'id' => array(
 									'description'       => __( 'The ID of the Fluent Form.', 'godam' ),
 									'type'              => 'integer',
 									'required'          => true,
 									'sanitize_callback' => 'absint',
-								),
-								'theme' => array(
-									'description'       => __( 'The theme to be applied to the Fluent Form.', 'godam' ),
-									'type'              => 'string',
-									'required'          => false,
-									'sanitize_callback' => 'sanitize_text_field',
 								),
 							)
 						),
