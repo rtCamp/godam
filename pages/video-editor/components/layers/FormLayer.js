@@ -14,7 +14,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
-
 import GravityForm from '../forms/GravityForm';
 import WPForm from '../forms/WPForm';
 import CF7 from '../forms/CF7';
@@ -23,6 +22,42 @@ import SureForm from '../forms/Sureform.js';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader.js';
 
+/**
+ * FormLayer Components Object mapping.
+ */
+const FormLayerComponentType = {
+	gravity: {
+		isActive: Boolean( window?.videoData?.gf_active ) ?? false,
+		component: GravityForm,
+	},
+	cf7: {
+		isActive: Boolean( window?.videoData?.cf7_active ) ?? false,
+		component: CF7,
+	},
+	jetpack: {
+		isActive: Boolean( window?.videoData?.jetpack_active ) ?? false,
+		component: JetpackForm,
+	},
+	wpforms: {
+		isActive: Boolean( window?.videoData?.wpforms_active ) ?? false,
+		component: WPForm,
+	},
+	sureforms: {
+		isActive: Boolean( window?.videoData?.sureformsActive ) ?? false,
+		component: SureForm,
+	},
+};
+
+/**
+ * Component to render and manage a form layer within the video editor.
+ *
+ * @param {Object}   param0          - Props passed to the FormLayer component.
+ * @param {string}   param0.layerID  - Unique identifier for the form layer.
+ * @param {Function} param0.goBack   - Callback function to navigate back to the previous view.
+ * @param {number}   param0.duration - Total duration of the video (in seconds or milliseconds).
+ *
+ * @return {JSX.Element} The rendered FormLayer component.
+ */
 const FormLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
@@ -32,22 +67,9 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isPluginActive = ( formType ) => {
-		switch ( formType ) {
-			case 'gravity':
-				return Boolean( window?.videoData?.gf_active );
-			case 'wpforms':
-				return Boolean( window?.videoData?.wpforms_active );
-			case 'cf7':
-				return Boolean( window?.videoData?.cf7_active );
-			case 'jetpack':
-				return Boolean( window?.videoData?.jetpack_active );
-			case 'sureforms':
-				return Boolean( window?.videoData?.sureformsActive );
-			default:
-				return false;
-		}
-	};
+	const FormLayerData = FormLayerComponentType[ layer?.form_type ?? 'gravity' ];
+	const FormLayerComponent = FormLayerData?.component;
+	const isPluginActive = FormLayerData?.isActive;
 
 	return (
 		<>
@@ -64,30 +86,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 				</Notice>
 			}
 
-			{
-				layer.form_type === 'gravity' &&
-				<GravityForm layerID={ layer.id } />
-			}
-
-			{
-				layer.form_type === 'cf7' &&
-				<CF7 layerID={ layer.id } />
-			}
-
-			{
-				layer.form_type === 'wpforms' &&
-				<WPForm layerID={ layer.id } />
-			}
-
-			{
-				layer.form_type === 'jetpack' &&
-				<JetpackForm layerID={ layer.id } />
-			}
-
-			{
-				layer.form_type === 'sureforms' &&
-				<SureForm layerID={ layer.id } />
-			}
+			<FormLayerComponent layerID={ layer.id } />
 
 			<ToggleControl
 				className="mb-4 godam-toggle"
@@ -97,7 +96,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 					dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
 				}
 				help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
-				disabled={ ! isValidAPIKey || ! isPluginActive( layer.form_type ) }
+				disabled={ ! isValidAPIKey || ! isPluginActive }
 			/>
 
 			<Panel className="-mx-4 border-x-0">
@@ -114,12 +113,12 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 						label={ __( 'Layer background color', 'godam' ) }
 						enableAlpha={ true }
 						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
-						disabled={ ! isValidAPIKey || ! isPluginActive( layer.form_type ) }
+						disabled={ ! isValidAPIKey || ! isPluginActive }
 					/>
 
 					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'godam' ) }</label>
 
-					<div className={ ( ! isValidAPIKey || ! isPluginActive( layer.form_type ) ) ? 'pointer-events-none opacity-50' : '' }>
+					<div className={ ( ! isValidAPIKey || ! isPluginActive ) ? 'pointer-events-none opacity-50' : '' }>
 						<Editor
 							id="custom-css"
 							className="code-editor"
