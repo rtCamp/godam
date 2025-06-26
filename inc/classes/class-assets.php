@@ -118,7 +118,8 @@ class Assets {
 			'rtgodam-script',
 			'godamRestRoute',
 			array(
-				'url' => get_rest_url( get_current_blog_id() ),
+				'url'      => get_rest_url( get_current_blog_id() ),
+				'home_url' => get_home_url( get_current_blog_id() ),
 			)
 		);
 
@@ -201,10 +202,11 @@ class Assets {
 			'rtgodam-script',
 			'godamRestRoute',
 			array(
-				'url'      => get_rest_url( get_current_blog_id() ),
-				'home_url' => get_home_url( get_current_blog_id() ),
-				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'api_base' => RTGODAM_API_BASE,
+				'url'       => get_rest_url( get_current_blog_id() ),
+				'home_url'  => get_home_url( get_current_blog_id() ),
+				'admin_url' => admin_url(),
+				'nonce'     => wp_create_nonce( 'wp_rest' ),
+				'api_base'  => RTGODAM_API_BASE,
 			)
 		);
 
