@@ -2,9 +2,6 @@
 /**
  * Internal dependencies
  */
-/**
- * WordPress dependencies
- */
 import FormLayer from './FormLayer';
 import CTALayer from './CTALayer';
 import HotspotLayer from './HotspotLayer';
@@ -52,4 +49,7 @@ const Layer = ( { layer, goBack, duration } ) => {
 	return <Component layerID={ layer.id } goBack={ goBack } duration={ duration } />;
 };
 
+/**
+ * Export default `Layer` component.
+ */
 export default Layer;
