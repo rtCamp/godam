@@ -1,0 +1,91 @@
+{
+	"apiVersion": 2,
+	"name": "godam/srfm/recorder",
+	"title": "Recorder",
+	"description": "Add the recorder field of GoDAM",
+	"category": "sureforms",
+	"keywords": [
+		"godam",
+		"recorder",
+		"sureforms"
+	],
+	"textdomain": "godam",
+	"supports": {
+		"reusable": false,
+		"html": false
+	},
+	"example": {
+		"attributes": {
+			"preview": true
+		}
+	},
+	"attributes": {
+		"preview": {
+			"type": "boolean",
+			"default": false
+		},
+		"block_id": {
+			"type": "string"
+		},
+		"defaultValue": {
+			"type": "string",
+			"default": ""
+		},
+		"required": {
+			"type": "boolean",
+			"default": false
+		},
+		"placeholder": {
+			"type": "string",
+			"default": ""
+		},
+		"fieldWidth": {
+			"type": "number",
+			"default": 100
+		},
+		"label": {
+			"type": "string",
+			"default": "Email"
+		},
+		"help": {
+			"type": "string",
+			"default": ""
+		},
+		"isUnique": {
+			"type": "boolean",
+			"default": false
+		},
+		"duplicateMsg": {
+			"type": "string",
+			"default": ""
+		},
+		"errorMsg": {
+			"type": "string",
+			"default": ""
+		},
+		"confirmLabel": {
+			"type": "string",
+			"default": "Confirm Email"
+		},
+		"isConfirmEmail": {
+			"type": "boolean",
+			"default": false
+		},
+		"formId": {
+			"type": "number",
+			"default": ""
+		},
+		"isConditionalLogic": {
+			"type": "boolean",
+			"default": false
+		},
+		"slug": {
+			"type": "string",
+			"default": ""
+		},
+		"readOnly": {
+			"type": "boolean",
+			"default": false
+		}
+	}
+}
