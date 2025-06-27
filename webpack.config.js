@@ -161,6 +161,13 @@ const addToProductJS = {
 	},
 };
 
+const wcVideoCarouselJS = {
+	...sharedConfig,
+	entry: {
+		'wc-video-carousel': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wc-video-carousel.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -237,6 +244,7 @@ module.exports = [
 	gfEntryDetailJS,
 	productVideoGalleryJS,
 	addToProductJS,
+	wcVideoCarouselJS,
 	styles, // Do not remove this.
 	pages,
 ];

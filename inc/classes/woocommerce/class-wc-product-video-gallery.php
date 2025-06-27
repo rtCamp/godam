@@ -26,7 +26,9 @@ class WC_Product_Video_Gallery {
 	public function __construct() {
 		add_action( 'add_meta_boxes', array( $this, 'add_video_gallery_metabox' ) );
 		add_action( 'save_post_product', array( $this, 'save_video_gallery' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_media_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
+		add_action( 'woocommerce_after_single_product_summary', array( $this, 'add_video_slider_to_single_product' ) );
 		add_action( 'delete_attachment', array( $this, 'on_attachment_deleted' ) );
 		add_filter( 'get_user_option_meta-box-order_product', array( $this, 'place_below_wc_gallery' ) );
 	}
@@ -38,7 +40,7 @@ class WC_Product_Video_Gallery {
 	 *
 	 * @since 1.0.0
 	 */
-	public function enqueue_media_scripts() {
+	public function enqueue_admin_assets() {
 		if ( get_post_type() === 'product' ) {
 
 			wp_enqueue_media();
@@ -75,6 +77,45 @@ class WC_Product_Video_Gallery {
 					'DeleteIcon'       => RTGODAM_URL . 'assets/src/images/delete-video-bin.svg',
 				)
 			);
+		}
+	}
+
+	/**
+	 * Registers and enqueues frontend assets for the video carousel on the product page.
+	 *
+	 * Registers the Swiper library and a custom script for initializing the carousel.
+	 * Enqueues the styles and scripts if the current post type is 'product'.
+	 *
+	 * @since 1.0.0
+	 */
+	public function enqueue_frontend_assets() {
+		wp_register_script(
+			'rtgodam-swiper-script',
+			RTGODAM_URL . 'assets/src/libs/swiper/swiper-bundle.min.js',
+			array( 'jquery' ),
+			filemtime( RTGODAM_PATH . 'assets/src/libs/swiper/swiper-bundle.min.js' ),
+			true
+		);
+
+		wp_register_style(
+			'rtgodam-swiper-style',
+			RTGODAM_URL . 'assets/src/libs/swiper/swiper-bundle.min.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/src/libs/swiper/swiper-bundle.min.css' )
+		);
+
+		wp_register_script(
+			'rtgodam-wc-video-carousel',
+			RTGODAM_URL . 'assets/build/js/wc-video-carousel.min.js',
+			array( 'jquery', 'rtgodam-swiper-script' ),
+			filemtime( RTGODAM_PATH . 'assets/src/libs/swiper/wc-video-carousel.min.js' ),
+			true
+		);
+
+		if ( get_post_type() === 'product' ) {
+			wp_enqueue_style( 'rtgodam-swiper-style' );
+			wp_enqueue_script( 'rtgodam-swiper-script' );
+			wp_enqueue_script( 'rtgodam-wc-video-carousel' );
 		}
 	}
 
@@ -368,5 +409,34 @@ class WC_Product_Video_Gallery {
 
 		// Clean up parent reference from attachment.
 		delete_post_meta( $attachment_id, $parent_meta_key );
+	}
+
+	/**
+	 * Renders a video slider in a single product page.
+	 *
+	 * The method retrieves the video attachment IDs associated with the current product
+	 * from the '_rtgodam_product_video_gallery_ids' meta key. If the array is not empty,
+	 * it outputs a Swiper slider with pagination and navigation controls. The slider items
+	 * are generated using the [godam_video] shortcode.
+	 */
+	public function add_video_slider_to_single_product() {
+		global $post;
+		$rtgodam_product_video_gallery_ids = get_post_meta( $post->ID, '_rtgodam_product_video_gallery_ids', true );
+
+		if ( empty( $rtgodam_product_video_gallery_ids ) ) {
+			return '';
+		}
+		$slider_html = '<div class="rtgodam-product-video-gallery-slider swiper"><div class="swiper-wrapper">';
+		foreach ( $rtgodam_product_video_gallery_ids as $attachment_id ) {
+			$slider_html .= '<div class="rtgodam-product-video-gallery-slider-item swiper-slide">';
+			$slider_html .= do_shortcode( "[godam_video id='{$attachment_id}']" );
+			$slider_html .= '</div>';
+		}
+		$slider_html .= '</div>';
+		$slider_html .= '<div class="swiper-pagination"></div>';
+		$slider_html .= '<div class="swiper-button-next"></div>';
+		$slider_html .= '<div class="swiper-button-prev"></div>';
+		$slider_html .= '</div>';
+		echo $slider_html; // phpcs:ignore	
 	}
 }
