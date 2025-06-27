@@ -47,6 +47,10 @@ const FormLayerComponentType = {
 		isActive: Boolean( window?.videoData?.sureformsActive ) ?? false,
 		component: SureForm,
 	},
+	'fluent-forms': {
+		isActive: Boolean( window?.videoData?.fluent_forms_active ) ?? false,
+		component: FluentForm,
+	},
 };
 
 /**
@@ -88,11 +92,6 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 			}
 
 			<FormLayerComponent layerID={ layer.id } />
-
-			{
-				layer.form_type === 'fluent-forms' &&
-				<FluentForm layerID={ layer.id } />
-			}
 
 			<ToggleControl
 				className="mb-4 godam-toggle"

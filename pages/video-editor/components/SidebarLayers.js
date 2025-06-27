@@ -74,7 +74,7 @@ export const layerTypes = [
 				isActive: window?.videoData?.sureformsActive ?? false,
 				tooltipMessage: __( 'SureForms plugin is not active', 'godam' ),
 			},
-			fluentforms: {
+			'fluent-forms': {
 				layerText: __( 'Fluent Forms', 'godam' ),
 				icon: FluentFormsIcon,
 				isActive: window?.videoData?.fluent_forms_active ?? false,
