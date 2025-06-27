@@ -7,6 +7,8 @@
 
 namespace RTGODAM\Inc\REST_API;
 
+use RTGODAM\Inc\Media_Library\Media_Folder_Create_Zip;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -107,6 +109,24 @@ class Media_Library extends Base {
 							'required'    => true,
 							'type'        => 'integer',
 							'description' => __( 'Attachment ID to get video thumbnail for.', 'godam' ),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/download-folder/(?P<folder_id>\d+)',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'download_folder' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+					'args'                => array(
+						'folder_id' => array(
+							'required'    => true,
+							'type'        => 'integer',
+							'description' => __( 'ID of the folder to create a ZIP file for.', 'godam' ),
 						),
 					),
 				),
@@ -369,6 +389,43 @@ class Media_Library extends Base {
 			array(
 				'success' => true,
 				'message' => 'Video thumbnail successfully set.',
+			)
+		);
+	}
+
+	/**
+	 * Download folder as ZIP.
+	 *
+	 * Create a ZIP file of the folder with the given ID.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function download_folder( $request ) {
+		$folder_id = $request->get_param( 'folder_id' );
+
+		if ( ! $folder_id || ! is_numeric( $folder_id ) ) {
+			return new \WP_Error( 'invalid_folder_id', 'Invalid folder ID.', array( 'status' => 400 ) );
+		}
+
+		// Check if the term of the folder exists.
+		$term = get_term( $folder_id, 'media-folder' );
+
+		if ( ! $term || is_wp_error( $term ) ) {
+			return new \WP_Error( 'invalid_folder', 'Invalid folder term ID.', array( 'status' => 404 ) );
+		}
+
+		$result = Media_Folder_Create_Zip::get_instance()->create_zip( $folder_id, 'media-folder-' . $term->slug . '.zip' );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => 'ZIP file created successfully.',
+				'data'    => $result,
 			)
 		);
 	}

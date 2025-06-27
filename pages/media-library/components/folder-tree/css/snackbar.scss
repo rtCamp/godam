@@ -4,13 +4,11 @@
 	bottom: 1rem;
 	right: 1rem;
 
-
-
 	&.success {
 		background-color: #4CAF50;
 	}
 
-	&.error {
+	&.fail {
 		background-color: #f44336;
 	}
 }

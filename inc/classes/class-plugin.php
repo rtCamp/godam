@@ -44,6 +44,8 @@ use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 
 use RTGODAM\Inc\Video_Metadata;
 
+use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
+
 /**
  * Class Plugin.
  */
@@ -84,6 +86,8 @@ class Plugin {
 
 		// Load Elementor widgets.
 		$this->load_elementor_widgets();
+
+		$this->load_media_library();
 	}
 
 	/**
@@ -130,8 +134,17 @@ class Plugin {
 	}
 
 	/**
+	 * Load all the classes related to the media library.
+	 *
+	 * @return void
+	 */
+	private function load_media_library() {
+		Media_Folders_REST_API::get_instance();
+	}
+
+	/**
 	 * Registers the elementor widgets if required.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function load_elementor_widgets() {

@@ -28,7 +28,7 @@ const FolderCreationModal = () => {
 	const dispatch = useDispatch();
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.folderCreation );
-	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const selectedFolder = useSelector( ( state ) => state.FolderReducer.modals.item );
 
 	useEffect( () => {
 		if ( isOpen ) {
@@ -71,7 +71,7 @@ const FolderCreationModal = () => {
 			dispatch( updateSnackbar(
 				{
 					message: __( 'Failed to create folder', 'godam' ),
-					type: 'error',
+					type: 'fail',
 				},
 			) );
 		} finally {
@@ -87,7 +87,7 @@ const FolderCreationModal = () => {
 	};
 
 	return (
-		isOpen && (
+		( isOpen && selectedFolder ) && (
 			<Modal
 				title={ __( 'Create a new folder', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'folderCreation' ) ) }
