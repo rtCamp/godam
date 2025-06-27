@@ -146,7 +146,6 @@ class Settings extends Base {
 		$result = rtgodam_verify_api_key( $api_key, true );
 
 		if ( is_wp_error( $result ) ) {
-
 			$error_data  = $result->get_error_data();
 			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
 
@@ -257,10 +256,14 @@ class Settings extends Base {
 		// Save updated settings to the database.
 		update_option( 'rtgodam-settings', $updated_settings );
 
+		// Return updated settings to avoid client refetch.
 		return new \WP_REST_Response(
 			array(
-				'status'  => 'success',
-				'message' => 'EasyDAM settings updated successfully!',
+				'status'       => 'success',
+				'message'      => 'EasyDAM settings updated successfully!',
+				'video'        => $updated_settings['video'],
+				'general'      => $updated_settings['general'],
+				'video_player' => $updated_settings['video_player'],
 			),
 			200
 		);
@@ -295,7 +298,7 @@ class Settings extends Base {
 				'brand_color'                => sanitize_hex_color( $settings['general']['brand_color'] ?? $default['general']['brand_color'] ),
 			),
 			'video_player' => array(
-				'custom_css' => sanitize_textarea_field( $settings['video_player']['custom_css'] ) ?? $default['video_player']['custom_css'],
+				'custom_css' => sanitize_textarea_field( $settings['video_player']['custom_css'] ?? $default['video_player']['custom_css'] ),
 			),
 		);
 	}

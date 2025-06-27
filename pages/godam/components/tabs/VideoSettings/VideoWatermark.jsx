@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import { useSelector } from 'react-redux';
-
-/**
  * WordPress dependencies
  */
 import { ToggleControl, TextControl, Button, Panel, PanelBody } from '@wordpress/components';
@@ -15,11 +10,11 @@ import { __ } from '@wordpress/i18n';
  */
 import { hasValidAPIKey } from '../../../utils';
 
-const VideoWatermark = ( { handleSettingChange } ) => {
-	const useImage = useSelector( ( state ) => state.mediaSettings.video.use_watermark_image );
-	const watermarkText = useSelector( ( state ) => state.mediaSettings.video.watermark_text );
-	const enableWatermark = useSelector( ( state ) => state.mediaSettings.video.watermark );
-	const selectedMedia = useSelector( ( state ) => state.mediaSettings.video.watermark_url );
+const VideoWatermark = ( { mediaSettings, handleSettingChange } ) => {
+	const useImage = mediaSettings.use_watermark_image || false;
+	const watermarkText = mediaSettings.watermark_text || '';
+	const enableWatermark = mediaSettings.watermark || false;
+	const selectedMedia = mediaSettings.watermark_url || '';
 
 	const openMediaPicker = () => {
 		const fileFrame = wp.media( {

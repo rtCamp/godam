@@ -6,13 +6,14 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import {
 	ToggleControl,
 	Notice,
 	Panel,
 	PanelBody,
 	Button,
+	Spinner,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -21,31 +22,35 @@ import { __ } from '@wordpress/i18n';
  */
 import BrandImageSelector from './BrandImageSelector.jsx';
 import ColorPickerButton from '../../../../video-editor/components/shared/color-picker/ColorPickerButton.jsx';
-
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
-import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
-
+import { updateMediaSetting, selectHasChanges, selectMediaSettings } from '../../../redux/slice/media-settings.js';
 import { scrollToTop } from '../../../utils/index.js';
 
 const GeneralSettings = () => {
 	const dispatch = useDispatch();
-	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
-	const [ saveMediaSettings, { isLoading: saveMediaSettingLoading } ] = useSaveMediaSettingsMutation();
-
+	const mediaSettings = useSelector( selectMediaSettings( 'general' ) );
+	const allMediaSettings = useSelector( ( state ) => state.mediaSettings.settings );
+	const isChanged = useSelector( selectHasChanges( 'general' ) );
+	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
+	// Show notice function to display messages
 	const showNotice = ( message, status = 'success' ) => {
 		setNotice( { message, status, isVisible: true } );
-		scrollToTop();
+		if ( window.scrollY > 0 ) {
+			scrollToTop();
+		}
 	};
 
+	// Handle setting changes
 	const handleSettingChange = ( key, value ) => {
 		dispatch( updateMediaSetting( { category: 'general', key, value } ) );
 	};
 
+	// Handle saving settings
 	const handleSaveSettings = async () => {
 		try {
-			const response = await saveMediaSettings( { settings: { general: mediaSettings?.general } } ).unwrap();
+			const response = await saveMediaSettings( { settings: allMediaSettings } ).unwrap();
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
@@ -56,6 +61,18 @@ const GeneralSettings = () => {
 			showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 		}
 	};
+
+	// Add unsaved changes warning
+	useEffect( () => {
+		const handleBeforeUnload = ( event ) => {
+			if ( isChanged ) {
+				event.preventDefault();
+				event.returnValue = __( 'You have unsaved changes. Are you sure you want to leave?', 'godam' );
+			}
+		};
+		window.addEventListener( 'beforeunload', handleBeforeUnload );
+		return () => window.removeEventListener( 'beforeunload', handleBeforeUnload );
+	}, [ isChanged ] );
 
 	return (
 		<>
@@ -76,7 +93,7 @@ const GeneralSettings = () => {
 						className="godam-toggle godam-margin-bottom"
 						label={ __( 'Enable folder organization in media library.', 'godam' ) }
 						help={ __( 'Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization.', 'godam' ) }
-						checked={ mediaSettings?.general?.enable_folder_organization }
+						checked={ mediaSettings.enable_folder_organization }
 						onChange={ ( value ) => handleSettingChange( 'enable_folder_organization', value ) }
 					/>
 
@@ -91,7 +108,7 @@ const GeneralSettings = () => {
 						</label>
 						<ColorPickerButton
 							label={ __( 'Brand color', 'godam' ) }
-							value={ mediaSettings?.general?.brand_color }
+							value={ mediaSettings.brand_color || '#000000' }
 							onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
 						/>
 						<p className="help-text">
@@ -104,11 +121,12 @@ const GeneralSettings = () => {
 			<Button
 				variant="primary"
 				className="godam-button"
+				icon={ saveMediaSettingsLoading && <Spinner /> }
 				onClick={ handleSaveSettings }
-				isBusy={ saveMediaSettingLoading }
-				disabled={ saveMediaSettingLoading }
+				isBusy={ saveMediaSettingsLoading }
+				disabled={ ! isChanged }
 			>
-				{ __( 'Save Settings', 'godam' ) }
+				{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 			</Button>
 		</>
 	);
