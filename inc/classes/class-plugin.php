@@ -24,6 +24,7 @@ use RTGODAM\Inc\REST_API\Jetpack;
 use RTGODAM\Inc\REST_API\GF;
 use RTGODAM\Inc\REST_API\CF7;
 use RTGODAM\Inc\REST_API\WPForms;
+use RTGODAM\INC\REST_API\SureForms;
 use RTGODAM\Inc\REST_API\Settings;
 use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
 use RTGODAM\Inc\REST_API\Media_Library;
@@ -114,6 +115,7 @@ class Plugin {
 		GF::get_instance();
 		CF7::get_instance();
 		WPForms::get_instance();
+		SureForms::get_instance();
 		Settings::get_instance();
 		Meta_Rest_Fields::get_instance();
 		Media_Library::get_instance();
