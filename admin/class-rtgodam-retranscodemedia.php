@@ -772,13 +772,6 @@ class RTGODAM_RetranscodeMedia {
 				do_action( 'rtgodam_primary_remote_thumbnail_set', $media_id, $primary_remote_thumbnail_url );
 			}
 
-			$attachment = array(
-				'post_mime_type' => $file_type['type'],
-				'post_title'     => preg_replace( '/\.[^.]+$/', '', basename( $thumbnail_src ) ),
-				'post_content'   => '',
-				'post_status'    => 'inherit',
-			);
-
 			// Insert transcoded thumbnail attachment.
 			require_once ABSPATH . 'wp-admin/includes/image.php';
 			$attachment_id = 0;
