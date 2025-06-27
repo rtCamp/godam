@@ -49,6 +49,7 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 				label={ __( 'Autoplay', 'godam' ) }
 				onChange={ toggleFactory.autoplay }
 				checked={ !! autoplay }
+				disabled={ ! muted }
 				help={ getAutoplayHelp }
 			/>
 			<ToggleControl
@@ -60,7 +61,13 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 			<ToggleControl
 				__nextHasNoMarginBottom
 				label={ __( 'Muted', 'godam' ) }
-				onChange={ toggleFactory.muted }
+				onChange={ ( e ) => {
+					if ( ! e ) {
+						// If not muted, disable the autoplay.
+						toggleFactory.autoplay( false );
+					}
+					toggleFactory.muted( e );
+				} }
 				checked={ !! muted }
 			/>
 			<ToggleControl
