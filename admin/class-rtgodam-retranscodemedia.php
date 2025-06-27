@@ -769,33 +769,26 @@ class RTGODAM_RetranscodeMedia {
 		$is_retranscoding_job = get_post_meta( $media_id, 'rtgodam_retranscoding_sent', true );
 
 		if ( $is_retranscoding_job && ! rtgodam_is_override_thumbnail() ) {
-
 			$new_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
 
 			if ( ! empty( $new_thumbs ) && is_array( $new_thumbs ) ) {
-
 				$current_thumb = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
-				if ( $current_thumb ) {
+
+				if ( $current_thumb && ! in_array( $current_thumb, $new_thumbs, true ) ) {
 					$new_thumbs[] = $current_thumb;
 					update_post_meta( $media_id, 'rtgodam_media_thumbnails', $new_thumbs );
+
+					if ( ! empty( $new_thumbs ) ) {
+						update_post_meta( $media_id, 'rtgodam_media_video_thumbnail', $new_thumbs[0] );
+					}
 				}
 			}
-		}
 
-		// Add thumbnail in media library for user selection and set attachment thumbnail.
-		$thumbnail_array = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
+			$primary_remote_thumbnail_url = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
 
-		if ( is_array( $thumbnail_array ) ) {
-			$uploads   = wp_upload_dir();
-			$thumbnail = $thumbnail_array[0];
-
-			if ( 0 === strpos( $thumbnail, $uploads['baseurl'] ) ) {
-				$thumbnail_src = $thumbnail;
-			} else {
-				$thumbnail_src = trailingslashit( $uploads['basedir'] ) . $thumbnail;
+			if ( ! empty( $primary_remote_thumbnail_url ) ) {
+				do_action( 'rtgodam_primary_remote_thumbnail_set', $media_id, $primary_remote_thumbnail_url );
 			}
-
-			$file_type = wp_check_filetype( basename( $thumbnail_src ), null );
 
 			$attachment = array(
 				'post_mime_type' => $file_type['type'],
@@ -811,17 +804,6 @@ class RTGODAM_RetranscodeMedia {
 			if ( 'application/pdf' === get_post_mime_type( $media_id ) ) {
 				$attach_data = wp_generate_attachment_metadata( $media_id, $thumbnail_src );
 				wp_update_attachment_metadata( $media_id, $attach_data );
-			} else {
-				// Insert transcoded thumbnail attachment for video/audio files.
-				$attachment_id = wp_insert_attachment( $attachment, $thumbnail_src, $media_id );
-			}
-
-			// Generate attachment metadata for thumbnail and set post thumbnail for video/audio files.
-			if ( ! is_wp_error( $attachment_id ) && 0 !== $attachment_id ) {
-				$attach_data = wp_generate_attachment_metadata( $attachment_id, $thumbnail_src );
-				wp_update_attachment_metadata( $attachment_id, $attach_data );
-				set_post_thumbnail( $media_id, $attachment_id );
-				update_post_meta( $attachment_id, 'rtgodam_amp_is_poster', true );
 			}
 		}
 	}
