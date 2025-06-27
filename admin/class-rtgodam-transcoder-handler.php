@@ -318,7 +318,7 @@ class RTGODAM_Transcoder_Handler {
 				);
 
 				update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
-				
+
 				// display notice to user for next 5 minutes.
 				$timestamp = time();
 				update_option( 'rtgodam-transcoding-failed-notice-timestamp', $timestamp );
@@ -475,92 +475,24 @@ class RTGODAM_Transcoder_Handler {
 
 		do_action( 'rtgodam_before_thumbnail_store', $post_array['post_id'], $post_array );
 
-		$post_id            = $post_array['post_id'];
-		$post_thumbs        = $post_array;
-		$post_thumbs_array  = maybe_unserialize( $post_thumbs );
-		$largest_thumb_size = 0;
+		$post_id           = $post_array['post_id'];
+		$post_thumbs       = $post_array;
+		$post_thumbs_array = maybe_unserialize( $post_thumbs );
 
-		$largest_thumb          = false;
-		$largest_thumb_url      = false;
-		$upload_thumbnail_array = array();
-		$failed_thumbnails      = false;
+		$thumbnail_urls      = array();
+		$first_thumbnail_url = false;
 
-		foreach ( $post_thumbs_array['thumbnail'] as $thumbnail ) {
-			$thumbresource         = function_exists( 'vip_safe_wp_remote_get' ) ? vip_safe_wp_remote_get( $thumbnail, '', 3, 3 ) : wp_remote_get( $thumbnail, array( 'timeout' => 120 ) );  // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get, WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
-			$thumbinfo             = pathinfo( $thumbnail );
-			$temp_name             = $thumbinfo['basename'];
-			$temp_name             = urldecode( $temp_name );
-			$temp_name_array       = explode( '/', $temp_name );
-			$thumbinfo['basename'] = $temp_name_array[ count( $temp_name_array ) - 1 ];
-
-			/**
-			 * Filter: 'rtgodam_transcoded_temp_filename' - Allows changes for the thumbnail name.
-			 *
-			 * @deprecated 1.3.2. Use the {@see 'rtgodam_transcoded_thumb_filename'} filter instead.
-			 */
-			$thumbinfo['basename'] = apply_filters_deprecated( 'rtgodam_transcoded_temp_filename', array( $thumbinfo['basename'] ), '1.3.2', 'rtgodam_transcoded_thumb_filename', __( 'Use rtgodam_transcoded_thumb_filename filter to modify video thumbnail name and rtgodam_transcoded_video_filename filter to modify video file name.', 'godam' ) );
-
-			/**
-			 * Allows users/plugins to filter the thumbnail Name
-			 *
-			 * @since 1.3.2
-			 *
-			 * @param string $temp_name Contains the thumbnail public name
-			 */
-			$thumbinfo['basename'] = apply_filters( 'rtgodam_transcoded_thumb_filename', $thumbinfo['basename'] );
-
-			// Verify Extension.
-			if ( empty( pathinfo( $thumbinfo['basename'], PATHINFO_EXTENSION ) ) ) {
-				$thumbinfo['basename'] .= '.' . $thumbinfo['extension'];
+		foreach ( $post_thumbs_array['thumbnail'] as $thumbnail_url ) {
+				$sanitized_url = esc_url_raw( $thumbnail_url );
+			if ( empty( $sanitized_url ) ) {
+				continue;
 			}
 
-			// Create a file in the upload folder with given content.
-			$thumb_upload_info = wp_upload_bits( $thumbinfo['basename'], null, $thumbresource['body'] );
-
-			// Check error.
-			if ( ! empty( $thumb_upload_info['error'] ) ) {
-				$failed_thumbnails = $thumb_upload_info;
-			}
-
-			/**
-			 * Allow users to filter/perform action on uploaded transcoded file.
-			 *
-			 * @since 1.0.5
-			 *
-			 * @param array $thumb_upload_info  Array contains the uploaded file url and Path
-			 *                                  i.e $thumb_upload_info['url'] contains the file URL
-			 *                                  and $thumb_upload_info['file'] contains the file physical path
-			 * @param int  $post_id             Contains the attachment ID for which transcoded file is uploaded
-			 */
-			$thumb_upload_info = apply_filters( 'rtgodam_transcoded_file_stored', $thumb_upload_info, $post_id );
-
-			$file = _wp_relative_upload_path( $thumb_upload_info['file'] );
-
-			/**
-			 * Allows users/plugins to filter the file URL
-			 *
-			 * @since 1.0.5
-			 *
-			 * @param string $thumb_upload_info['url']  Contains the file public URL
-			 * @param int $post_id                      Contains the attachment ID for which transcoded file has been uploaded
-			 */
-			$thumb_upload_info['url'] = apply_filters( 'rtgodam_transcoded_file_url', $thumb_upload_info['url'], $post_id );
-
-			if ( $file ) {
-				$upload_thumbnail_array[] = $file;
-			}
-
-			$current_thumb_size = filesize( $thumb_upload_info['file'] );
-
-			if ( $current_thumb_size >= $largest_thumb_size ) {
-				$largest_thumb_size = $current_thumb_size;
-				$largest_thumb      = $thumb_upload_info['url'];            // Absolute URL of the thumb.
-				$largest_thumb_url  = $file ? $file : '';                   // Relative URL of the thumb.
-			}
+				$thumbnail_urls[] = $sanitized_url;
 		}
 
-		if ( false !== $failed_thumbnails && ! empty( $failed_thumbnails['error'] ) ) {
-			$this->nofity_transcoding_failed( $post_array['job_id'], sprintf( 'Failed saving of Thumbnail for %1$s.', $post_array['file_name'] ) );
+		if ( ! empty( $thumbnail_urls ) ) {
+			$first_thumbnail_url = $thumbnail_urls[0];
 		}
 
 		if ( class_exists( 'RTMediaModel' ) ) {
@@ -574,27 +506,23 @@ class RTGODAM_Transcoder_Handler {
 			$this->uploaded['media_author'] = $media[0]->media_author;
 		}
 
-		update_post_meta( $post_id, '_rt_media_source', $post_thumbs_array['job_for'] );
-		update_post_meta( $post_id, '_rt_media_thumbnails', $upload_thumbnail_array );
-
 		update_post_meta( $post_id, 'rtgodam_media_source', $post_thumbs_array['job_for'] );
-		update_post_meta( $post_id, 'rtgodam_media_thumbnails', $upload_thumbnail_array );
+		update_post_meta( $post_id, 'rtgodam_media_thumbnails', $thumbnail_urls );
 
 		do_action( 'rtgodam_transcoded_thumbnails_added', $post_id );
 
-		if ( $largest_thumb_url ) {
+		if ( $first_thumbnail_url ) {
 
 			$is_retranscoding_job = get_post_meta( $post_id, 'rtgodam_retranscoding_sent', true );
 
 			if ( ! $is_retranscoding_job || rtgodam_is_override_thumbnail() ) {
-				update_post_meta( $post_id, '_rt_media_video_thumbnail', $largest_thumb_url );
 
 				if ( class_exists( 'RTMediaModel' ) ) {
-					$model->update( array( 'cover_art' => $largest_thumb ), array( 'media_id' => $post_id ) );
+					$model->update( array( 'cover_art' => $first_thumbnail_url ), array( 'media_id' => $post_id ) );
 					update_activity_after_thumb_set( $media_id );
 				}
 
-				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $largest_thumb );
+				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $first_thumbnail_url );
 			}
 
 			/**
@@ -605,10 +533,10 @@ class RTGODAM_Transcoder_Handler {
 			 * @param string    $largest_thumb  Absolute URL of the thumbnail
 			 * @param int       $post_id        Attachment ID of the video for which thumbnail has been set
 			 */
-			do_action( 'rtgodam_transcoded_thumb_added', $largest_thumb, $post_id );
+			do_action( 'rtgodam_transcoded_thumb_added', $first_thumbnail_url, $post_id );
 		}
 
-		return $largest_thumb_url;
+		return $first_thumbnail_url;
 	}
 
 	/**
