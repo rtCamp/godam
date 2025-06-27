@@ -90,7 +90,7 @@ const Layers = [
 		formIcon: SureformsIcon,
 		isRequired: true,
 		isActive: Boolean( window?.videoData?.sureformsActive ) ?? false,
-		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/sureforms">${ __( 'SureForms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/sureforms/">${ __( 'SureForms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
 		id: 6,
@@ -101,6 +101,9 @@ const Layers = [
 		formType: 'everestforms',
 		requiresEverestForms: true,
 		formIcon: EverestFormsIcon,
+		isRequired: true,
+		isActive: Boolean( window?.videoData?.everestFormsActive ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/everest-forms/">${ __( 'Everest Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
 		id: 7,
