@@ -14,6 +14,7 @@ import CF7Icon from '../assets/layers/CF7Icon.svg';
 import woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
+import ForminatorIcon from '../assets/layers/Forminator.png';
 
 /**
  * WordPress dependencies
@@ -72,6 +73,12 @@ export const layerTypes = [
 				icon: SureformsIcon,
 				isActive: window?.videoData?.sureformsActive ?? false,
 				tooltipMessage: __( 'SureForms plugin is not active', 'godam' ),
+			},
+			forminator: {
+				layerText: __( 'Forminator Forms', 'godam' ),
+				icon: ForminatorIcon,
+				isActive: window?.videoData?.forminatorActive ?? false,
+				tooltipMessage: __( 'Forminator Forms plugin is not active', 'godam' ),
 			},
 		},
 	},
