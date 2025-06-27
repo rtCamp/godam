@@ -17,18 +17,8 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 
 	// Show a specific help for autoplay.
 	const getAutoplayHelp = useMemo( () => {
-		const autoPlayHelpText = __( 'Autoplay may cause usability issues for some users.', 'godam' );
-
-		// Show help text if autoplay and muted is on.
-		if ( autoplay && muted ) {
-			return autoPlayHelpText;
-		}
-
-		const disabledAutoPlayHelpText = __( 'Autoplay only works when video is muted.', 'godam' );
-
-		// Show disabled help text if video is not muted.
 		if ( ! autoplay && ! muted ) {
-			return disabledAutoPlayHelpText;
+			return __( 'Autoplay only works when video is muted.', 'godam' );
 		}
 
 		return null;
