@@ -4,7 +4,14 @@
 /**
  * WordPress dependencies
  */
-import { Button, Icon, RangeControl, SelectControl, TextareaControl, TextControl } from '@wordpress/components';
+import {
+	Button,
+	CustomSelectControl,
+	Icon,
+	RangeControl,
+	TextareaControl,
+	TextControl,
+} from '@wordpress/components';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { __ } from '@wordpress/i18n';
@@ -22,6 +29,17 @@ const ImageCTA = ( { layerID } ) => {
 	const dispatch = useDispatch();
 
 	const restURL = window.godamRestRoute.url || '';
+
+	const imageOrientationOptions = [
+		{
+			name: __( 'Landscape', 'godam' ),
+			key: 'landscape',
+		},
+		{
+			name: __( 'Portrait', 'godam' ),
+			key: 'portrait',
+		},
+	];
 
 	const openImageCTAUploader = () => {
 		const fileFrame = wp.media( {
@@ -158,24 +176,15 @@ const ImageCTA = ( { layerID } ) => {
 				placeholder={ __( 'Buy Now', 'godam' ) }
 			/>
 
-			<SelectControl
+			<CustomSelectControl
 				__next40pxDefaultSize
+				className="mb-4 godam-input"
 				label={ __( 'Select orientation', 'godam' ) }
-				className="mb-4"
-				options={ [
-					{
-						label: __( 'Landscape', 'godam' ),
-						value: 'landscape',
-					},
-					{
-						label: __( 'Portrait', 'godam' ),
-						value: 'portrait',
-					},
-				] }
-				value={ layer.imageCtaOrientation }
 				onChange={ ( value ) => {
-					updateField( 'imageCtaOrientation', value );
+					updateField( 'imageCtaOrientation', value.selectedItem.key );
 				} }
+				options={ imageOrientationOptions }
+				value={ imageOrientationOptions.find( ( option ) => option.key === layer.imageCtaOrientation ) }
 			/>
 
 			<div className="mb-4">
