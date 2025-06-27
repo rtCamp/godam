@@ -384,6 +384,160 @@
 	 pointer-events: none;
 	 background: transparent;
  }
+
+ /* Product Hotspot */
+.product-hotspot-box {
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	visibility: hidden;
+	background-color: rgba(255, 255, 255);
+	color: #000;
+	text-align: center;
+	border-radius: 3px;
+	z-index: 200;
+	pointer-events: auto;
+	font-size: 14px;
+	line-height: 1.2;
+	opacity: 0;
+	transition: opacity 0.2s ease, visibility 0.2s ease;
+	word-wrap: break-word;
+	width: 20em;
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		border-width: 5px;
+		border-style: solid;
+		border-color: rgba(255, 255, 255) transparent transparent transparent;
+	}
+
+	a {
+		overflow-wrap: break-word;
+		word-break: break-word;
+
+		&:hover {
+			color: #fff;
+			text-decoration: underline;
+		}
+	}
+
+	@media (max-width: 768px) {
+		width: 11em;
+		font-size: 13px;
+	}
+}
+
+.product-hotspot-woo-display {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	max-width: 600px;
+	border-radius: 6px;
+	overflow: hidden;
+	align-items: stretch;
+
+	.product-hotspot-woo-image-wrapper,
+	.product-hotspot-woo-details {
+		width: 50%;
+		flex: 0 0 50%;
+		box-sizing: border-box;
+	}
+
+	.product-hotspot-woo-image-wrapper {
+		display: flex;
+
+		.product-hotspot-woo-image {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			display: block;
+
+			@media (max-width: 768px) {
+				height: auto;
+				max-height: 100px;
+			}
+		}
+
+		@media (max-width: 768px) {
+			width: 100%;
+			height: auto;
+		}
+	}
+
+	.product-hotspot-woo-details {
+		padding: 1rem;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		box-sizing: border-box;
+		align-items: flex-start;
+		text-align: left;
+
+		.product-hotspot-woo-name {
+			font-weight: 300;
+			font-size: 16px;
+			margin-bottom: 1rem;
+			color: #8f8b8b;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			line-height: 1.3em;
+			max-height: 2.6em;
+
+			@media (max-width: 768px) {
+				font-size: 15px;
+			}
+		}
+
+		.product-hotspot-woo-price {
+			color: #000;
+			margin-bottom: 1rem;
+			font-size: 14px;
+
+			@media (max-width: 768px) {
+				font-size: 13px;
+			}
+		}
+
+		.product-hotspot-woo-link {
+			display: inline-block;
+			width: 100%;
+			text-align: center;
+			padding: 10px 0;
+			color: #fff;
+			border-radius: 3px;
+			text-decoration: none;
+			font-size: 14px;
+			box-sizing: border-box;
+
+			&:hover {
+				cursor: pointer;
+				pointer-events: auto;
+			}
+
+			@media (max-width: 768px) {
+				font-size: 13px;
+			}
+		}
+
+		@media (max-width: 768px) {
+			width: 100%;
+			padding: 0.75rem;
+		}
+	}
+
+	@media (max-width: 768px) {
+		flex-direction: column;
+		max-width: 100%;
+	}
+}
  
 .godam-menu-item-container {
 	align-items: center;
@@ -595,13 +749,16 @@
 	 word-wrap: break-word;
  }
  
- .fullscreen-layer .hotspot-tooltip {
+ .fullscreen-layer .hotspot-tooltip,
+ .fullscreen-layer .product-hotspot-box {
 	 font-size: 16px;
  }
  
    /* Show tooltip on hover */
    .hotspot-tooltip:hover,
-   .hotspot:hover .hotspot-tooltip {
+   .hotspot:hover .hotspot-tooltip,
+   .product-hotspot-box:hover,
+  .hotspot:hover .product-hotspot-box {
 	 visibility: visible;
 	 opacity: 1;
 	 transition: opacity 0.6s ease;
@@ -699,6 +856,18 @@
 	 border-style: solid;
 	 border-color: transparent transparent rgba(0, 0, 0, 0.8) transparent;
  }
+
+ .product-bottom::after {
+	content: "";
+	position: absolute;
+	bottom: 100%;
+	top: auto;
+	left: 50%;
+	transform: translateX(-50%);
+	border-width: 5px;
+	border-style: solid;
+	border-color: transparent transparent rgba(255, 255, 255) transparent;
+}
  
  .fullscreen-layer .hotspot {
 	 z-index: 200;
@@ -1091,6 +1260,7 @@
 				 bottom: 0;
 				 right: 80px;
 				 height: 3em !important;
+				 z-index: 99;
 			}
  
 			 .vjs-quality-menu-wrapper {
@@ -1150,7 +1320,7 @@
 		 .vjs-control-bar > .vjs-subs-caps-button.vjs-control {
 			 position: absolute;
 			 bottom: 0;
-			 right: calc(2 * 40px);
+			 right: calc(3 * 40px);
 			 height: 3em !important;
 		 }
 	 }

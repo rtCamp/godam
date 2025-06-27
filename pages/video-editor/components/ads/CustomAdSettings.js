@@ -102,7 +102,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					{ __( 'This features is available in premium version', 'godam' ) }
 				</Notice>
 			}
-			<div className="flex flex-col items-start">
+			<div className="flex flex-col items-start mb-4">
 				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom Ad', 'godam' ) }</label>
 				<div className="flex gap-2">
 					<Button

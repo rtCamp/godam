@@ -14,47 +14,47 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
-import { useGetSingleWPFormQuery } from '../../redux/api/wpforms';
+import { useGetSingleSureformQuery } from '../../redux/api/sureforms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
 
-const WPForm = ( { layerID } ) => {
+const SureForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
-	const wpForms = useSelector( ( state ) => state.videoReducer.wpforms );
-	const { data: formHTML, isFetching } = useGetSingleWPFormQuery( layer.wpform_id );
+	const sureforms = useSelector( ( state ) => state.videoReducer.sureforms );
+	const { data: formHTML, isFetching } = useGetSingleSureformQuery( layer.sureform_id );
 
-	const forms = wpForms?.map( ( form ) => ( {
+	const forms = sureforms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
 	} ) );
 
 	const changeFormID = ( formID ) => {
-		dispatch( updateLayerField( { id: layer.id, field: 'wpform_id', value: formID } ) );
+		dispatch( updateLayerField( { id: layer.id, field: 'sureform_id', value: formID } ) );
 	};
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.validApiKey;
+	// const isValidAPIKey = window?.videoData?.valid_api_key;
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isWPFormsPluginActive = Boolean( window?.videoData?.wpformsActive );
+	const isSureformsPluginActive = Boolean( window?.videoData?.sureformsActive );
 
 	return (
 		<>
 			{
-				! isWPFormsPluginActive &&
+				! isSureformsPluginActive &&
 				<Notice
 					className="mb-4"
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'Please activate the WPForms plugin to use this feature.', 'godam' ) }
+					{ __( 'Please activate the SureForms plugin to use this feature.', 'godam' ) }
 				</Notice>
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isWPFormsPluginActive } className="gravity-form-selector mb-4" formID={ layer.wpform_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isValidAPIKey || ! isSureformsPluginActive } className="gravity-form-selector mb-4" formID={ layer.sureform_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<LayerControl>
@@ -86,7 +86,7 @@ const WPForm = ( { layerID } ) => {
 						{
 							formHTML &&
 							<Button
-								href={ `${ window?.videoData?.adminUrl }admin.php?page=wpforms-builder&view=fields&form_id=${ layer.wpform_id }` }
+								href={ `${ window?.videoData?.adminUrl }post.php?post=${ layer.sureform_id }&action=edit` }
 								target="_blank"
 								variant="secondary"
 								icon={ pencil }
@@ -111,4 +111,4 @@ const WPForm = ( { layerID } ) => {
 	);
 };
 
-export default WPForm;
+export default SureForm;
