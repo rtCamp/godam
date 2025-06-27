@@ -249,75 +249,13 @@
 	margin-top: 6px;
 	line-height: 1;
 	font-size: 12px;
-  }
-  
-//   .godam-product-video-gallery-list {
-// 	  display: grid;
-// 	  grid-template-columns: repeat(2, 1fr);
-// 	  gap: 12px;
-// 	  padding: 0;
-// 	  margin: 0;
-// 	  list-style: none;
 
-// 	/* Scrolling setup */
-// 	max-height: 16rem;
-// 	overflow-y: auto;
-// 	scrollbar-width: thin;
-//   }
-
-//   .godam-product-video-gallery-list::-webkit-scrollbar {
-// 	width: 6px;
-// }
-
-// .godam-product-video-gallery-list::-webkit-scrollbar-thumb {
-// 	background: #ccc;
-// 	border-radius: 4px;
-// }
-  
-//   .godam-product-video-gallery-list li {
-// 	  max-width: 120px;
-// 	  width: 100%;
-// 	  margin: 0 auto;
-//   }
-  
-//   .godam-product-video-gallery-list li img {
-// 	  width: 100%;
-// 	  aspect-ratio: 1 / 1;
-// 	  object-fit: cover;
-// 	  border: 1px solid #ccc;
-// 	  border-radius: 4px;
-//   }
-  
-//   .video-thumb-wrapper {
-// 	  position: relative;
-// 	  width: 100%;
-// 	  aspect-ratio: 1 / 1;
-//   }
-  
-//   .video-thumb-wrapper img {
-// 	  width: 100%;
-// 	  height: 100%;
-// 	  object-fit: cover;
-// 	  border: 1px solid #ccc;
-// 	  border-radius: 4px;
-// 	  display: block;
-//   }
-  
-//   .godam-remove-video-button {
-// 	  position: absolute;
-// 	  top: 4px;
-// 	  right: 4px;
-// 	  background: rgba(255, 255, 255, 0.9);
-// 	  border: none;
-// 	  padding: 4px;
-// 	  border-radius: 50%;
-// 	  cursor: pointer;
-// 	  box-shadow: 0 0 4px rgba(0,0,0,0.2);
-//   }
-  
-//   .godam-remove-video-button svg {
-// 	  pointer-events: none;
-//   }
+	&:hover {
+		background-color: #f3f4f6;
+		border-color: #4b5563;
+		color: #111827;
+	}
+}
 
 .godam-product-video-gallery-list {
 	display: grid;
@@ -329,31 +267,37 @@
 	max-height: 18rem;
 	overflow-y: auto;
 	scrollbar-width: thin;
-}
 
-.godam-product-video-gallery-list::-webkit-scrollbar {
-	width: 6px;
-}
+	&::-webkit-scrollbar {
+		width: 6px;
+	}
 
-.godam-product-video-gallery-list::-webkit-scrollbar-thumb {
-	background: #ccc;
-	border-radius: 4px;
-}
+	&::-webkit-scrollbar-thumb {
+		background: #ccc;
+		border-radius: 4px;
+	}
 
-.godam-product-video-gallery-list li {
-	background: #fff;
-	border-radius: 8px;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-	padding: 6px;
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	align-items: stretch;
-	width: 100%;
-	max-width: 123px; /* Reduced size */
-	box-sizing: border-box;
-	transition: box-shadow 0.2s ease;
-	height: 168px;
+	li {
+		background: #fff;
+		border-radius: 8px;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+		padding: 6px;
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		width: 100%;
+		max-width: 123px;
+		box-sizing: border-box;
+		transition: box-shadow 0.2s ease;
+		height: 168px;
+
+		&:hover {
+			.godam-remove-video-button {
+				opacity: 1;
+			}
+		}
+	}
 }
 
 .video-thumb-wrapper {
@@ -362,15 +306,15 @@
 	aspect-ratio: 1 / 1;
 	border-radius: 6px;
 	overflow: hidden;
-}
 
-.video-thumb-wrapper img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	border: 1px solid #ccc;
-	border-radius: 6px;
-	display: block;
+	> img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border: 1px solid #ccc;
+		border-radius: 6px;
+		display: block;
+	}
 }
 
 .godam-remove-video-button {
@@ -390,18 +334,15 @@
 	justify-content: center;
 	opacity: 0;
 	transition: opacity 0.2s ease;
+
+	img {
+		width: 12px;
+		height: 12px;
+		filter: brightness(0) saturate(100%) invert(31%) sepia(36%) saturate(1577%) hue-rotate(309deg) brightness(95%) contrast(101%);
+	}
 }
 
-.godam-product-video-gallery-list li:hover .godam-remove-video-button {
-	opacity: 1;
-}
-
-.godam-remove-video-button svg {
-	width: 12px;
-	height: 12px;
-}
-
-.video-title {
+.godam-product-video-title {
 	margin-top: 6px;
 	font-size: 12px;
 	font-weight: 300;
@@ -409,29 +350,6 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-}
-
-// .godam-add-product-button {
-// 	margin-top: 6px;
-// 	width: 100%;
-// 	padding: 0; /* Reset any inherited padding */
-// 	line-height: 1; /* Prevent extra space from line height */
-// 	font-size: 12px;
-// 	border: 2px dashed #6b7280;
-// 	border-radius: 5px;
-// 	background-color: #f9fafb;
-// 	color: #374151;
-// 	text-align: center;
-// 	cursor: pointer;
-// 	transition: all 0.2s ease;
-// 	height: auto;
-// }
-
-
-.godam-add-product-button:hover {
-	background-color: #f3f4f6;
-	border-color: #4b5563;
-	color: #111827;
 }
 
 .godam-video-picker-modal {

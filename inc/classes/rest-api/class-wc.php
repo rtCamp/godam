@@ -91,7 +91,7 @@ class WC extends Base {
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_video_product_count' ),
 						'permission_callback' => function () {
-							return current_user_can( 'edit_products' );
+							return current_user_can( 'edit_products' ); // phpcs:ignore
 						},
 						'args'                => array(
 							'id' => array(
@@ -488,8 +488,8 @@ class WC extends Base {
 	/**
 	 * Return how many products already use this video in their gallery.
 	 *
-	 * @param \WP_REST_Request $request { id: <attachment_id> }
-	 * @return \WP_REST_Response
+	 * @param \WP_REST_Request $request { id: <attachment_id> }.
+	 * @return \WP_REST_Response A REST response confirming success.
 	 */
 	public function get_video_product_count( \WP_REST_Request $request ) {
 		$attachment_id = absint( $request->get_param( 'id' ) );
