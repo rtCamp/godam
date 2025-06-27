@@ -27,19 +27,19 @@ import LayersHeader from './LayersHeader.js';
  */
 const FormLayerComponentType = {
 	gravity: {
-		isActive: Boolean( window?.videoData?.gf_active ) ?? false,
+		isActive: Boolean( window?.videoData?.gfActive ) ?? false,
 		component: GravityForm,
 	},
 	cf7: {
-		isActive: Boolean( window?.videoData?.cf7_active ) ?? false,
+		isActive: Boolean( window?.videoData?.cf7Active ) ?? false,
 		component: CF7,
 	},
 	jetpack: {
-		isActive: Boolean( window?.videoData?.jetpack_active ) ?? false,
+		isActive: Boolean( window?.videoData?.jetpackActive ) ?? false,
 		component: JetpackForm,
 	},
 	wpforms: {
-		isActive: Boolean( window?.videoData?.wpforms_active ) ?? false,
+		isActive: Boolean( window?.videoData?.wpformsActive ) ?? false,
 		component: WPForm,
 	},
 	sureforms: {

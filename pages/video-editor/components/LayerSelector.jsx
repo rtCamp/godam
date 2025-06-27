@@ -38,7 +38,7 @@ const Layers = [
 		formType: 'gravity',
 		formIcon: GFIcon,
 		isRequired: true,
-		isActive: Boolean( window?.videoData?.gf_active ) ?? false,
+		isActive: Boolean( window?.videoData?.gfActive ) ?? false,
 		requireMessage: `<a class="godam-link" target="_blank" href="https://docs.gravityforms.com/installation/">${ __( 'Gravity Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
@@ -50,7 +50,7 @@ const Layers = [
 		formType: 'wpforms',
 		formIcon: WPFormsIcon,
 		isRequired: true,
-		isActive: Boolean( window?.videoData?.wpforms_active ) ?? false,
+		isActive: Boolean( window?.videoData?.wpformsActive ) ?? false,
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/wpforms-lite/">${ __( 'WP Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
@@ -62,7 +62,7 @@ const Layers = [
 		formType: 'cf7',
 		formIcon: CF7Icon,
 		isRequired: true,
-		isActive: Boolean( window?.videoData?.cf7_active ) ?? false,
+		isActive: Boolean( window?.videoData?.cf7Active ) ?? false,
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/contact-form-7/">${ __( 'Contact Form 7', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
@@ -75,7 +75,7 @@ const Layers = [
 		requiresJetpack: true,
 		formIcon: JetpackIcon,
 		isRequired: true,
-		isActive: Boolean( window?.videoData?.jetpack_active ) ?? false,
+		isActive: Boolean( window?.videoData?.jetpackActive ) ?? false,
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/jetpack/">${ __( 'Jetpack', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
