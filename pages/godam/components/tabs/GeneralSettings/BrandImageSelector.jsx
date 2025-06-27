@@ -21,13 +21,26 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 
 			handleSettingChange( 'brand_image', attachment.url );
+			handleSettingChange( 'brand_image_id', attachment.id );
 		} );
+
+		if ( mediaSettings?.general?.brand_image_id ) {
+			const attachment = wp.media.attachment( mediaSettings.general.brand_image_id );
+			attachment.fetch();
+
+			fileFrame.on( 'open', function() {
+				const selection = fileFrame.state().get( 'selection' );
+				selection.reset();
+				selection.add( attachment );
+			} );
+		}
 
 		fileFrame.open();
 	};
 
 	const removeBrandImage = () => {
 		handleSettingChange( 'brand_image', '' );
+		handleSettingChange( 'brand_image_id', null );
 	};
 
 	return (
