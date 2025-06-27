@@ -19,3 +19,12 @@
 		justify-content: center;
 	}
 }
+
+.vjs-big-play-centered.video-player-settings-preview.video-js {
+	width: 60%;
+	padding-top: 370px;
+}
+
+.video-player-settings-preview .vjs-control-bar, .video-player-settings-preview .vjs-big-play-button {
+	background-color: var(--vjs-brand-color) !important;
+}

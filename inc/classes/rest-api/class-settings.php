@@ -43,11 +43,11 @@ class Settings extends Base {
 			),
 			'general'      => array(
 				'enable_folder_organization' => true,
-				'brand_image'                => '',
-				'brand_color'                => '#000000',
 			),
 			'video_player' => array(
-				'custom_css' => '',
+				'brand_image' => '',
+				'brand_color' => '#000000',
+				'custom_css'  => '',
 			),
 		);
 	}
@@ -291,11 +291,11 @@ class Settings extends Base {
 			),
 			'general'      => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
-				'brand_image'                => sanitize_text_field( $settings['general']['brand_image'] ?? $default['general']['brand_image'] ),
-				'brand_color'                => sanitize_hex_color( $settings['general']['brand_color'] ?? $default['general']['brand_color'] ),
 			),
 			'video_player' => array(
-				'custom_css' => sanitize_textarea_field( $settings['video_player']['custom_css'] ) ?? $default['video_player']['custom_css'],
+				'brand_image' => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),
+				'brand_color' => sanitize_hex_color( $settings['video_player']['brand_color'] ?? $default['video_player']['brand_color'] ),
+				'custom_css'  => sanitize_textarea_field( $settings['video_player']['custom_css'] ) ?? $default['video_player']['custom_css'],
 			),
 		);
 	}
