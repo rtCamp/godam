@@ -27,7 +27,7 @@ class Fluent_Forms extends Base {
 				'args'      => array(
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_fforms' ),
+						'callback'            => array( $this, 'get_fluent_forms' ),
 						'permission_callback' => '__return_true',
 						'args'                => $this->get_collection_params(),
 					),
@@ -39,7 +39,7 @@ class Fluent_Forms extends Base {
 				'args'      => array(
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_fform' ),
+						'callback'            => array( $this, 'get_fluent_form' ),
 						'permission_callback' => '__return_true',
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
@@ -61,10 +61,9 @@ class Fluent_Forms extends Base {
 	/**
 	 * Get all Gravity Forms.
 	 *
-	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
 	 */
-	public function get_fforms( $request ) {
+	public function get_fluent_forms() {
 		// Check if Fluent Forms plugin is active.
 		if ( ! $this->is_plugin_active() ) {
 			return new \WP_Error( 'fluent_forms_not_active', __( 'Fluent Forms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
@@ -94,7 +93,7 @@ class Fluent_Forms extends Base {
 	 * @param \WP_REST_Request $request Request Object.
 	 * @return \WP_REST_Response
 	 */
-	public function get_fform( $request ) {
+	public function get_fluent_form( $request ) {
 		// Check if Fluent Forms plugin is active.
 		if ( ! $this->is_plugin_active() ) {
 			return new \WP_Error( 'fluent_forms_not_active', __( 'Fluent Forms plugin is not active.', 'godam' ), array( 'status' => 404 ) );

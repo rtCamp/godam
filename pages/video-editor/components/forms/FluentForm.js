@@ -40,7 +40,7 @@ const FluentForm = ( { layerID } ) => {
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isFluentFormsPluginActive = Boolean( window?.videoData?.fluent_forms_active );
+	const isFluentFormsPluginActive = Boolean( window?.videoData?.fluentformsActive );
 
 	return (
 		<>

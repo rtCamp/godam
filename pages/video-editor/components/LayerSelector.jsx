@@ -97,11 +97,11 @@ const Layers = [
 		description: __( 'Collect user input using Fluent Forms', 'godam' ),
 		image: Form,
 		type: 'form',
-		formType: 'fluent-forms',
+		formType: 'fluentforms',
 		requiresFluentForms: true,
 		formIcon: FluentFormsIcon,
 		isRequired: true,
-		isActive: Boolean( window?.videoData?.fluent_forms_active ) ?? false,
+		isActive: Boolean( window?.videoData?.fluentformsActive ) ?? false,
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/fluentform">${ __( 'Fluent Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{

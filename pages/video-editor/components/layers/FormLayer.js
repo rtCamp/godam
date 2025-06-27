@@ -47,8 +47,8 @@ const FormLayerComponentType = {
 		isActive: Boolean( window?.videoData?.sureformsActive ) ?? false,
 		component: SureForm,
 	},
-	'fluent-forms': {
-		isActive: Boolean( window?.videoData?.fluent_forms_active ) ?? false,
+	fluentforms: {
+		isActive: Boolean( window?.videoData?.fluentformsActive ) ?? false,
 		component: FluentForm,
 	},
 };

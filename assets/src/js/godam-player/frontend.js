@@ -865,7 +865,7 @@ function GODAMPlayer( videoRef = null ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.sureforms && layer.form_type === 'sureforms' ) {
 						handleLayerDisplay( layer );
-					} else if ( window.godamPluginDependencies?.fluentForms && layer.form_type === 'fluent-forms' ) {
+					} else if ( window.godamPluginDependencies?.fluentForms && layer.form_type === 'fluentforms' ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {
