@@ -15,10 +15,19 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 	const { autoplay, controls, loop, muted, preload } =
 		attributes;
 
-	// Show a specific help for autoplay.
+	// Show a specific help for autoplay setting.
 	const getAutoplayHelp = useMemo( () => {
-		if ( ! autoplay && ! muted ) {
-			return __( 'Autoplay only works when video is muted.', 'godam' );
+		if ( autoplay && muted ) {
+			return __( 'Autoplay may cause usability issues for some users.', 'godam' );
+		}
+
+		return null;
+	}, [ autoplay, muted ] );
+
+	// Show a specific help for muted setting.
+	const getMutedHelp = useMemo( () => {
+		if ( autoplay && muted ) {
+			return __( 'Muted because of Autoplay.', 'godam' );
 		}
 
 		return null;
@@ -48,9 +57,16 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 			<ToggleControl
 				__nextHasNoMarginBottom
 				label={ __( 'Autoplay', 'godam' ) }
-				onChange={ toggleFactory.autoplay }
+				onChange={ ( e ) => {
+					// When autoplay is enabled, mute the video.
+					/**
+					 * When autoplay is enabled, mute the video.
+					 * This behaviour follows core/video block.
+					 */
+					toggleFactory.muted( e );
+					toggleFactory.autoplay( e );
+				} }
 				checked={ !! autoplay }
-				disabled={ ! muted }
 				help={ getAutoplayHelp }
 			/>
 			<ToggleControl
@@ -62,14 +78,10 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 			<ToggleControl
 				__nextHasNoMarginBottom
 				label={ __( 'Muted', 'godam' ) }
-				onChange={ ( e ) => {
-					if ( ! e ) {
-						// If not muted, disable the autoplay.
-						toggleFactory.autoplay( false );
-					}
-					toggleFactory.muted( e );
-				} }
+				onChange={ toggleFactory.muted }
+				disabled={ autoplay }
 				checked={ !! muted }
+				help={ getMutedHelp }
 			/>
 			<ToggleControl
 				__nextHasNoMarginBottom
