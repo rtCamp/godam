@@ -69,5 +69,6 @@ class Init {
 		/**
 		 * Register the blocks.
 		 */
+		Register::get_instance();
 	}
 }

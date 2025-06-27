@@ -18,16 +18,13 @@ use SRFM\Inc\Blocks\Base;
 class Block extends Base {
 
 	/**
-	 * Render the block
+	 * Register the field for sureforms.
 	 *
-	 * @param array<mixed> $attributes Block attributes.
-	 *
-	 * @return string|bool
+	 * @return void
 	 */
-	public function render( $attributes ) {
-		ob_start();
-		// phpcs:ignore
-		echo 'This is from recorder field.';
-		return ob_get_clean();
+	public function register() {
+		register_block_type(
+			RTGODAM_PATH . '/assets/build/blocks/sureforms/blocks/recorder/'
+		);
 	}
 }

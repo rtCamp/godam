@@ -36,6 +36,11 @@ class Register {
 		 * Filter to register new block as fields for sureforms.
 		 */
 		add_filter( 'srfm_register_additional_blocks', array( $this, 'add_additional_blocks' ) );
+
+		/**
+		 * Filter to allow the register block.
+		 */
+		add_filter( 'srfm_allowed_block_types', array( $this, 'allowed_blocks' ) );
 	}
 
 	/**
@@ -61,5 +66,20 @@ class Register {
 		$blocks = array( ...$blocks, ...$new_blocks );
 
 		return $blocks;
+	}
+
+	/**
+	 * List of allowed blocks for sureforms edit forms page.
+	 *
+	 * @param array $allowed_blocks Allowed Blocks.
+	 *
+	 * @return array
+	 */
+	public function allowed_blocks( $allowed_blocks ) {
+		$new_blocks_to_allow = array(
+			'godam/srfm-recorder',
+		);
+
+		return array_merge( $allowed_blocks, $new_blocks_to_allow );
 	}
 }
