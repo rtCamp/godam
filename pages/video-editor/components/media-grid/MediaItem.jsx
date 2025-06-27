@@ -69,6 +69,9 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 
 				<DropdownMenu
 					className="godam-video-list__video__thumbnail__overlay"
+					menuProps={ {
+						className: 'godam-video-list__video__thumbnail__overlay__menu',
+					} }
 					controls={ [
 						{
 							icon: <Icon icon={ seen } />,
