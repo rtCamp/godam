@@ -12,7 +12,7 @@ namespace RTGODAM\Inc\REST_API;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class LocationAPI
+ * Class GF
  */
 class GF extends Base {
 
