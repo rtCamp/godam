@@ -23,7 +23,6 @@ class Elementor_Widgets {
 	 * Construct method.
 	 */
 	protected function __construct() {
-		$this->register_scripts();
 		$this->setup_hooks();
 	}
 
@@ -40,6 +39,7 @@ class Elementor_Widgets {
 		add_action( 'elementor/elements/categories_registered', array( $this, 'add_elementor_widget_categories' ) );
 		add_action( 'elementor/controls/controls_registered', array( $this, 'widgets_controls' ) );
 		add_action( 'elementor/editor/before_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 	}
 
 	/**

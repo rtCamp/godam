@@ -52,6 +52,8 @@ const slice = createSlice( {
 		gformPluginActive: true,
 		jetpackForms: [],
 		jetpackPluginActive: false,
+		sureforms: [],
+		sureformsPlugnActive: false,
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
@@ -150,6 +152,12 @@ const slice = createSlice( {
 		setJetpackPluginActive: ( state, action ) => {
 			state.jetpackPluginActive = action.payload;
 		},
+		setSureforms: ( state, action ) => {
+			state.sureforms = action.payload;
+		},
+		setSureformsPluginActive: ( state, action ) => {
+			state.sureformsPlugnActive = action.payload;
+		},
 	},
 } );
 
@@ -174,5 +182,7 @@ export const {
 	setWPFormPluginActive,
 	setJetpackForms,
 	setJetpackPluginActive,
+	setSureforms,
+	setSureformsPluginActive,
 } = slice.actions;
 export default slice.reducer;
