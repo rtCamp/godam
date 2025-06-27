@@ -712,23 +712,6 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		$previous_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
-
-		if ( ! empty( $previous_thumbs ) && is_array( $previous_thumbs ) ) {
-
-			// Do not delete the current thumbnail of the video.
-			if ( ! rtgodam_is_override_thumbnail() ) {
-
-				$current_thumb = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
-
-				$key = array_search( $current_thumb, $previous_thumbs, true );
-				if ( false !== $key ) {
-					unset( $previous_thumbs[ $key ] );
-				}
-			}
-
-			rtgodam_delete_transcoded_files( $previous_thumbs );
-		}
 		delete_post_meta( $media_id, 'rtgodam_media_thumbnails' );
 	}
 
@@ -768,20 +751,19 @@ class RTGODAM_RetranscodeMedia {
 
 		$is_retranscoding_job = get_post_meta( $media_id, 'rtgodam_retranscoding_sent', true );
 
+		$new_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
+		$new_thumbs = is_array( $new_thumbs ) ? $new_thumbs : array();
+
 		if ( $is_retranscoding_job && ! rtgodam_is_override_thumbnail() ) {
-			$new_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
+			$current_selected_thumb = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
 
-			if ( ! empty( $new_thumbs ) && is_array( $new_thumbs ) ) {
-				$current_thumb = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
-
-				if ( $current_thumb && ! in_array( $current_thumb, $new_thumbs, true ) ) {
-					$new_thumbs[] = $current_thumb;
-					update_post_meta( $media_id, 'rtgodam_media_thumbnails', $new_thumbs );
-
-					if ( ! empty( $new_thumbs ) ) {
-						update_post_meta( $media_id, 'rtgodam_media_video_thumbnail', $new_thumbs[0] );
-					}
-				}
+			if ( $current_selected_thumb && ! empty( $current_selected_thumb ) && ! in_array( $current_selected_thumb, $new_thumbs, true ) ) {
+				$new_thumbs[] = $current_selected_thumb;
+				update_post_meta( $media_id, 'rtgodam_media_thumbnails', $new_thumbs );
+			}
+		} else {
+			if ( ! empty( $new_thumbs ) ) {
+				update_post_meta( $media_id, 'rtgodam_media_video_thumbnail', $new_thumbs[0] );
 			}
 
 			$primary_remote_thumbnail_url = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
