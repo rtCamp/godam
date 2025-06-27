@@ -15,6 +15,7 @@ import { contactForm7Api } from './api/cf7-forms';
 import { wpFormsApi } from './api/wpforms';
 import { jetpackFormsApi } from './api/jetpack-forms';
 import { sureformsApi } from './api/sureforms';
+import { everestFormsApi } from './api/everest-forms';
 
 export default configureStore( {
 	reducer: {
@@ -27,6 +28,8 @@ export default configureStore( {
 		[ wpFormsApi.reducerPath ]: wpFormsApi.reducer,
 		[ jetpackFormsApi.reducerPath ]: jetpackFormsApi.reducer,
 		[ sureformsApi.reducerPath ]: sureformsApi.reducer,
+		[ everestFormsApi.reducerPath ]: everestFormsApi.reducer,
+
 	},
 	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat(
 		videosAPI.middleware,
@@ -37,5 +40,6 @@ export default configureStore( {
 		wpFormsApi.middleware,
 		jetpackFormsApi.middleware,
 		sureformsApi.middleware,
+		everestFormsApi.middleware,
 	),
 } );

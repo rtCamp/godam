@@ -339,21 +339,25 @@ class Pages {
 			$is_jetpack_active   = is_plugin_active( 'jetpack/jetpack.php' );
 			$is_sure_form_active = is_plugin_active( 'sureforms/sureforms.php' );
 
+			// TODO Handle Everest Forms pro versions as well in future.
+			$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' );
+
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
 				'videoData',
 				array(
-					'nonce'            => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
-					'currentUserId'    => get_current_user_id(),            // Current user ID.
-					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
-					'valid_api_key'    => rtgodam_is_api_key_valid(),
-					'adminUrl'         => admin_url(),
-					'gf_active'        => $is_gf_active,
-					'cf7_active'       => $is_cf7_active,
-					'wpforms_active'   => $is_wpforms_active,
-					'jetpack_active'   => $is_jetpack_active,
-					'sureformsActive'  => $is_sure_form_active,
+					'nonce'              => wp_create_nonce( 'wp_rest' ),   // WordPress nonce for API requests.
+					'currentUserId'      => get_current_user_id(),          // Current user ID.
+					'currentUserRoles'   => wp_get_current_user()->roles,   // Current user roles.
+					'valid_api_key'      => rtgodam_is_api_key_valid(),
+					'adminUrl'           => admin_url(),
+					'gf_active'          => $is_gf_active,
+					'cf7_active'         => $is_cf7_active,
+					'wpforms_active'     => $is_wpforms_active,
+					'jetpack_active'     => $is_jetpack_active,
+					'sureformsActive'    => $is_sure_form_active,
+					'everestFormsActive' => $is_everest_forms_active,
 				)
 			);
 

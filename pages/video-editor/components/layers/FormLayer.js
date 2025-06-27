@@ -16,6 +16,7 @@ import { __ } from '@wordpress/i18n';
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import GravityForm from '../forms/GravityForm';
 import WPForm from '../forms/WPForm';
+import EverestForm from '../forms/EverestForm';
 import CF7 from '../forms/CF7';
 import JetpackForm from '../forms/JetpackForm';
 import SureForm from '../forms/Sureform.js';
@@ -45,6 +46,10 @@ const FormLayerComponentType = {
 	sureforms: {
 		isActive: Boolean( window?.videoData?.sureformsActive ) ?? false,
 		component: SureForm,
+	},
+	everestforms: {
+		isActive: Boolean( window?.videoData?.everestFormsActive ) ?? false,
+		component: EverestForm,
 	},
 };
 

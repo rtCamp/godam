@@ -11,9 +11,6 @@ const RemoveEmptyScriptsPlugin = require( 'webpack-remove-empty-scripts' );
  */
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 
-const isProduction = process.env.NODE_ENV === 'production';
-const mode = isProduction ? 'production' : 'development';
-
 // Extend the default config.
 const sharedConfig = {
 	...defaultConfig,
@@ -187,7 +184,6 @@ fs.readdirSync( pagesDir ).forEach( ( folder ) => {
 entryPoints[ 'page-css' ] = path.resolve( process.cwd(), 'pages', 'index.js' );
 
 const pages = {
-	mode,
 	entry: entryPoints, // Dynamic entry points for each page
 	output: {
 		path: path.resolve( __dirname, './assets/build/pages' ), // Output directory
