@@ -1,0 +1,47 @@
+<?php
+
+namespace RTGODAM\Inc\Filesystem;
+
+class Curl_Streamer {
+	private $file_path;
+
+	public function __construct( $file_path ) {
+		$this->file_path = $file_path;
+	}
+
+	public function init() {
+		add_action( 'http_api_curl', array( $this, 'init_upload' ), 10 );
+	}
+
+	public function deinit() {
+		remove_action( 'http_api_curl', array( $this, 'init_upload' ) );
+	}
+
+	public function init_upload( $curl_handle ) {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- FP - the file is opened read-only
+		$file_stream = fopen( $this->file_path, 'r' );
+
+		if ( ! $file_stream ) {
+			return;
+		}
+
+		$file_size = filesize( $this->file_path );
+
+		// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_setopt
+		curl_setopt( $curl_handle, CURLOPT_PUT, true ); // The Requests lib only sets `CURLOPT_CUSTOMREQUEST`; we need to explicitly set `CURLOPT_PUT` as well.
+		curl_setopt( $curl_handle, CURLOPT_INFILE, $file_stream );
+		curl_setopt( $curl_handle, CURLOPT_INFILESIZE, $file_size );
+		curl_setopt( $curl_handle, CURLOPT_READFUNCTION, array( $this, 'handle_upload' ) );
+		// phpcs:enable WordPress.WP.AlternativeFunctions.curl_curl_setopt
+	}
+
+	public function handle_upload( $curl_handle, $file_stream, $length ) {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread
+		$data = fread( $file_stream, $length );
+		if ( ! $data ) {
+			return '';
+		}
+
+		return $data;
+	}
+}

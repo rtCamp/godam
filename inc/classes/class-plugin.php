@@ -123,7 +123,7 @@ class Plugin {
 
 	/**
 	 * Registers the elementor widgets if required.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function load_elementor_widgets() {

@@ -7,6 +7,11 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Filesystem\API_Cache;
+use RTGODAM\Inc\Filesystem\API_Client;
+
+const CACHE_GROUP = 'godam-files-acl';
+
 /**
  * This method is an improved version of PHP's filter_input() and
  * works well on PHP CLI as well which PHP default method does not.
@@ -202,8 +207,8 @@ function rtgodam_image_cta_html( $layer ) {
 }
 
 /**
- * Verify the api key for the plugin and return user data. 
- * 
+ * Verify the api key for the plugin and return user data.
+ *
  * @param int $timeout The time in seconds after which the user data should be refreshed.
  */
 function rtgodam_get_user_data( $timeout = 300 ) {
@@ -257,7 +262,7 @@ function rtgodam_get_user_data( $timeout = 300 ) {
 
 /**
  * Get the storage and bandwidth usage data.
- * 
+ *
  * @return array|WP_Error
  */
 function rtgodam_get_usage_data() {
@@ -302,7 +307,7 @@ function rtgodam_get_usage_data() {
 
 /**
  * Check if the api key is valid.
- * 
+ *
  * @return bool
  */
 function rtgodam_is_api_key_valid() {
@@ -310,3 +315,167 @@ function rtgodam_is_api_key_valid() {
 
 	return ! empty( $user_data['valid_api_key'] ) ? true : false;
 }
+
+// function rtgodam_new_api_client() {
+// return new API_Client(
+// 'https://app-godam.rt.gw/api/method/godam_core.api.file', // constant( 'FILE_SERVICE_URI' ),
+// '1', // constant( 'FILES_CLIENT_SITE_ID' ),
+// '8e4e72e8dfe1ad59eb4871bb36c3524f', // constant( 'FILES_ACCESS_TOKEN' ),
+// API_Cache::get_instance()
+// );
+// }
+
+define( 'FILES_CLIENT_SITE_ID', 1 );
+define( 'FILES_ACCESS_TOKEN', 'test-token' );
+define( 'VIP_FILESYSTEM_USE_STREAM_WRAPPER', true );
+
+function a8c_files_init() {
+	\RTGODAM\Inc\Stream_Wrapper::get_instance();
+}
+
+/**
+ * Prevent WP from creating intermediate image sizes
+ *
+ * Function name parallels wpcom's implementation to accommodate existing code
+ */
+function wpcom_intermediate_sizes() {
+	return __return_empty_array();
+}
+
+/**
+ * Figure out whether srcset is enabled or not. Should be run on init action
+ * earliest in order to allow clients to override this via theme's functions.php
+ *
+ * @return bool True if VIP Go File Service compatibile srcset solution is enabled.
+ */
+function is_vip_go_srcset_enabled() {
+	// Allow override via querystring for easy testing
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nonce is not available
+	if ( isset( $_GET['disable_vip_srcset'] ) ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return '0' === $_GET['disable_vip_srcset'];
+	}
+
+	$enabled = true;
+
+	/**
+	 * Filters the default state of VIP Go File Service compatible srcset solution.
+	 *
+	 * @param bool True if the srcset solution is turned on, False otherwise.
+	 */
+	return (bool) apply_filters( 'vip_go_srcset_enabled', $enabled );
+}
+
+/**
+ * Inject image sizes to attachment metadata.
+ *
+ * @param array $data          Attachment metadata.
+ * @param int   $attachment_id Attachment's post ID.
+ *
+ * @return array Attachment metadata.
+ */
+function a8c_files_maybe_inject_image_sizes( $data, $attachment_id ) {
+	// Can't do much if data is empty
+	if ( empty( $data ) ) {
+		return $data;
+	}
+
+	// Missing some critical data we need to determine sizes, so bail.
+	if ( ! isset( $data['file'] )
+		|| ! isset( $data['width'] )
+		|| ! isset( $data['height'] ) ) {
+		return $data;
+	}
+
+	static $cached_sizes = array();
+
+	// Don't process image sizes that we already processed.
+	if ( isset( $cached_sizes[ $attachment_id ] ) ) {
+		$data['sizes'] = $cached_sizes[ $attachment_id ];
+		return $data;
+	}
+
+	// Skip non-image attachments
+	$mime_type           = get_post_mime_type( $attachment_id );
+	$attachment_is_image = preg_match( '!^image/!', $mime_type );
+	if ( 1 !== $attachment_is_image ) {
+		return $data;
+	}
+
+	if ( ! isset( $data['sizes'] ) || ! is_array( $data['sizes'] ) ) {
+		$data['sizes'] = array();
+	}
+
+	$sizes_already_exist = false === empty( $data['sizes'] );
+
+	global $_wp_additional_image_sizes;
+
+	if ( is_array( $_wp_additional_image_sizes ) ) {
+		$available_sizes = array_keys( $_wp_additional_image_sizes );
+		$known_sizes     = array_keys( $data['sizes'] );
+		$missing_sizes   = array_diff( $available_sizes, $known_sizes );
+
+		if ( $sizes_already_exist && empty( $missing_sizes ) ) {
+			return $data;
+		}
+
+		$new_sizes = array();
+
+		foreach ( $missing_sizes as $size ) {
+			$new_width          = (int) $_wp_additional_image_sizes[ $size ]['width'];
+			$new_height         = (int) $_wp_additional_image_sizes[ $size ]['height'];
+			$new_sizes[ $size ] = array(
+				'file'      => basename( $data['file'] ),
+				'width'     => $new_width,
+				'height'    => $new_height,
+				'mime_type' => $mime_type,
+			);
+		}
+
+		if ( ! empty( $new_sizes ) ) {
+			$data['sizes'] = array_merge( $data['sizes'], $new_sizes );
+		}
+	}
+
+	$image_sizes   = new \RTGODAM\Inc\Filesystem\ImageSizes( $attachment_id, $data );
+	$data['sizes'] = $image_sizes->generate_sizes_meta();
+
+	$cached_sizes[ $attachment_id ] = $data['sizes'];
+
+	return $data;
+}
+
+if ( defined( 'FILES_CLIENT_SITE_ID' ) && defined( 'FILES_ACCESS_TOKEN' ) ) {
+	// Kick things off
+	a8c_files_init();
+
+	// Disable automatic creation of intermediate image sizes.
+	// We generate them on-the-fly on VIP.
+	add_filter( 'intermediate_image_sizes', 'wpcom_intermediate_sizes' );
+	add_filter( 'intermediate_image_sizes_advanced', 'wpcom_intermediate_sizes' );
+	add_filter( 'fallback_intermediate_image_sizes', 'wpcom_intermediate_sizes' );
+
+	// Conditionally load our srcset solution during our testing period.
+	add_action(
+		'init',
+		function () {
+			if ( true !== is_vip_go_srcset_enabled() ) {
+				return;
+			}
+
+			require_once __DIR__ . './../classes/filesystem/class-image.php';
+			require_once __DIR__ . './../classes/filesystem/class-image-sizes.php';
+
+			// Load the native VIP Go srcset solution on priority of 20, allowing other plugins to set sizes earlier.
+			add_filter( 'wp_get_attachment_metadata', 'a8c_files_maybe_inject_image_sizes', 20, 2 );
+		},
+		10,
+		0
+	);
+}
+
+/**
+ * WordPress 5.3 adds "big image" processing, for images over 2560px (by default).
+ * This is not needed on VIP Go since we use Photon for dynamic image work.
+ */
+add_filter( 'big_image_size_threshold', '__return_false' );
