@@ -175,7 +175,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const editVideoURL = `admin.php?page=rtgodam_video_editor&id=${ this.model.get( 'id' ) }`;
 		const analyticsURL = `admin.php?page=rtgodam_analytics&id=${ this.model.get( 'id' ) }`;
 
-		const activeUser = window?.MediaLibrary?.userData?.valid_api_key;
+		const activeUser = window?.MediaLibrary?.userData?.validApiKey;
 
 		if ( ! activeUser ) {
 			return `

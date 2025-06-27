@@ -82,7 +82,7 @@ class GoDAM_Player {
 			'godam-player-frontend-script',
 			'godamData',
 			array(
-				'api_base' => RTGODAM_API_BASE,
+				'apiBase' => RTGODAM_API_BASE,
 			)
 		);
 	}

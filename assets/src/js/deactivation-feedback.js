@@ -1,15 +1,17 @@
+/* global jQuery */
 
 jQuery( document ).ready( function( $ ) {
 	( 'use strict' );
 
 	const deactivateLink = $( '#deactivate-godam' );
+	const GoDAMDeactivation = window.GoDAMDeactivation || {};
 
 	const deactivateModal = function() {
 		const modalDOM = `
             <div class="rt-godam-modal-wrapper">
                 <div id="deactivation-feedback-popup" class="rt-godam-modal">
                     <div>
-                        <h2>${ GoDAMDeactivation.header_text }</h2>
+                        <h2>${ GoDAMDeactivation?.headerText }</h2>
                     </div>
                     <select id="deactivation-reason">
                         <option value="">Select a reason</option>
@@ -67,17 +69,17 @@ jQuery( document ).ready( function( $ ) {
 
 		const data = {
 			reason: selectedReason,
-			site_url: GoDAMDeactivation.site_url,
+			site_url: GoDAMDeactivation?.siteUrl,
 			user: {
-				name: GoDAMDeactivation.user_name,
-				email: GoDAMDeactivation.user_email,
+				name: GoDAMDeactivation?.userName,
+				email: GoDAMDeactivation?.userEmail,
 			},
-			nonce: GoDAMDeactivation.nonce,
+			nonce: GoDAMDeactivation?.nonce,
 			additional_feedback: feedback,
 		};
 
 		$.ajax( {
-			url: GoDAMDeactivation.api_url,
+			url: GoDAMDeactivation?.apiUrl,
 			method: 'POST',
 			data: JSON.stringify( data ),
 			contentType: 'application/json',

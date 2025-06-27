@@ -237,12 +237,12 @@ class RTGODAM_RetranscodeMedia {
 
 			wp_localize_script(
 				'rtgodam-retranscode-admin',
-				'rtgodam_retranscode',
+				'rtgodamRetranscode',
 				array(
-					'ids'           => $ids,
-					'stopping_text' => $stopping_text,
-					'text_goback'   => $text_goback,
-					'admin_url'     => $admin_url,
+					'ids'          => $ids,
+					'stoppingText' => $stopping_text,
+					'textGoback'   => $text_goback,
+					'adminUrl'     => $admin_url,
 				)
 			);
 

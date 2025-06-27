@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
  * @return {boolean} True if the user has a valid API Key, false otherwise.
  */
 function isAPIKeyValid() {
-	return window.MediaLibrary?.userData?.valid_api_key ? true : false;
+	return window.MediaLibrary?.userData?.validApiKey ? true : false;
 }
 
 /**
@@ -48,7 +48,7 @@ function isFolderOrgDisabled() {
 function addManageMediaButton() {
 	const referenceElement = document.querySelector( '.wrap .page-title-action' );
 
-	const godamMediaLink = window.godamRestRoute?.api_base + '/web/media-library';
+	const godamMediaLink = window.godamRestRoute?.apiBase + '/web/media-library';
 	const page = window.easydamMediaLibrary?.page || '';
 
 	// Insert the button after referenceElement

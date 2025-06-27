@@ -206,9 +206,10 @@ function rtgodam_image_cta_html( $layer ) {
 /**
  * Verify the api key for the plugin and return user data.
  *
- * @param int $timeout The time in seconds after which the user data should be refreshed.
+ * @param bool $use_for_localize_array Whether to use the data for localizing scripts. Defaults to false.
+ * @param int  $timeout                The time in seconds after which the user data should be refreshed.
  */
-function rtgodam_get_user_data( $timeout = 300 ) {
+function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = 300 ) {
 	$rtgodam_user_data = get_option( 'rtgodam_user_data', false );
 	$api_key           = get_option( 'rtgodam-api-key', '' );
 
@@ -252,6 +253,38 @@ function rtgodam_get_user_data( $timeout = 300 ) {
 
 		// Save the userData in wp_options.
 		update_option( 'rtgodam_user_data', $rtgodam_user_data );
+	}
+
+	if ( $use_for_localize_array ) {
+		// Prepare the data for localizing scripts.
+		$localized_array_data = array(
+			'currentUserId' => $rtgodam_user_data['currentUserId'],
+			'validApiKey'   => $rtgodam_user_data['valid_api_key'],
+			'userApiData'   => $rtgodam_user_data['user_data'],
+			'timestamp'     => $rtgodam_user_data['timestamp'],
+		);
+
+		if ( isset( $rtgodam_user_data['storageBandwidthError'] ) && ! empty( $rtgodam_user_data['storageBandwidthError'] ) ) {
+			$localized_array_data['storageBandwidthError'] = $rtgodam_user_data['storageBandwidthError'];
+		}
+
+		if ( isset( $rtgodam_user_data['storage_used'] ) && ! empty( $rtgodam_user_data['storage_used'] ) ) {
+			$localized_array_data['storageUsed'] = $rtgodam_user_data['storage_used'];
+		}
+
+		if ( isset( $rtgodam_user_data['total_storage'] ) && ! empty( $rtgodam_user_data['total_storage'] ) ) {
+			$localized_array_data['totalStorage'] = $rtgodam_user_data['total_storage'];
+		}
+
+		if ( isset( $rtgodam_user_data['bandwidth_used'] ) && ! empty( $rtgodam_user_data['bandwidth_used'] ) ) {
+			$localized_array_data['bandwidthUsed'] = $rtgodam_user_data['bandwidth_used'];
+		}
+
+		if ( isset( $rtgodam_user_data['total_bandwidth'] ) && ! empty( $rtgodam_user_data['total_bandwidth'] ) ) {
+			$localized_array_data['totalBandwidth'] = $rtgodam_user_data['total_bandwidth'];
+		}
+
+		return $localized_array_data;
 	}
 
 	return $rtgodam_user_data;

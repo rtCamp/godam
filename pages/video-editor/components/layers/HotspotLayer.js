@@ -108,7 +108,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	}, [] );
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
+	// const isValidAPIKey = window?.videoData?.validApiKey;
 
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
