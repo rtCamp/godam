@@ -15,6 +15,8 @@ use RTGODAM\Inc\Blocks;
 use RTGODAM\Inc\Assets;
 use RTGODAM\Inc\Deactivation;
 use RTGODAM\Inc\Media_Tracker;
+use RTGODAM\Inc\Rewrite;
+use RTGODAM\Inc\Video_Preview;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
@@ -22,6 +24,7 @@ use RTGODAM\Inc\REST_API\Jetpack;
 use RTGODAM\Inc\REST_API\GF;
 use RTGODAM\Inc\REST_API\CF7;
 use RTGODAM\Inc\REST_API\WPForms;
+use RTGODAM\INC\REST_API\SureForms;
 use RTGODAM\Inc\REST_API\Everest_Forms;
 use RTGODAM\Inc\REST_API\Settings;
 use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
@@ -60,6 +63,8 @@ class Plugin {
 		Media_Library_Ajax::get_instance();
 		Media_Tracker::get_instance();
 		Seo::get_instance();
+		Rewrite::get_instance();
+		Video_Preview::get_instance();
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
@@ -110,6 +115,7 @@ class Plugin {
 		GF::get_instance();
 		CF7::get_instance();
 		WPForms::get_instance();
+		SureForms::get_instance();
 		Everest_Forms::get_instance();
 		Settings::get_instance();
 		Meta_Rest_Fields::get_instance();
@@ -126,7 +132,7 @@ class Plugin {
 
 	/**
 	 * Registers the elementor widgets if required.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function load_elementor_widgets() {

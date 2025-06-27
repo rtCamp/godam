@@ -18,7 +18,7 @@ import { useGetSingleWPFormQuery } from '../../redux/api/wpforms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
 
-const CF7 = ( { layerID } ) => {
+const WPForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const wpForms = useSelector( ( state ) => state.videoReducer.wpforms );
@@ -111,4 +111,4 @@ const CF7 = ( { layerID } ) => {
 	);
 };
 
-export default CF7;
+export default WPForm;

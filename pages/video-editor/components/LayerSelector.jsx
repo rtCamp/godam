@@ -26,6 +26,7 @@ import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
 import Woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
+import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
 import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
 
 const Layers = [
@@ -36,8 +37,10 @@ const Layers = [
 		image: Form,
 		type: 'form',
 		formType: 'gravity',
-		requiresGf: true,
 		formIcon: GFIcon,
+		isRequired: true,
+		isActive: Boolean( window?.videoData?.gf_active ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://docs.gravityforms.com/installation/">${ __( 'Gravity Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
 		id: 2,
@@ -46,8 +49,10 @@ const Layers = [
 		image: Form,
 		type: 'form',
 		formType: 'wpforms',
-		requiresWPForms: true,
 		formIcon: WPFormsIcon,
+		isRequired: true,
+		isActive: Boolean( window?.videoData?.wpforms_active ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/wpforms-lite/">${ __( 'WP Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
 		id: 3,
@@ -56,8 +61,10 @@ const Layers = [
 		image: Form,
 		type: 'form',
 		formType: 'cf7',
-		requiresCF7: true,
 		formIcon: CF7Icon,
+		isRequired: true,
+		isActive: Boolean( window?.videoData?.cf7_active ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/contact-form-7/">${ __( 'Contact Form 7', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
 		id: 4,
@@ -68,58 +75,88 @@ const Layers = [
 		formType: 'jetpack',
 		requiresJetpack: true,
 		formIcon: JetpackIcon,
+		isRequired: true,
+		isActive: Boolean( window?.videoData?.jetpack_active ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/jetpack/">${ __( 'Jetpack', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
 		id: 5,
+		title: __( 'SureForms', 'godam' ),
+		description: __( 'Collect user input using Sureforms', 'godam' ),
+		image: Form,
+		type: 'form',
+		formType: 'sureforms',
+		requiresSureforms: true,
+		formIcon: SureformsIcon,
+		isRequired: true,
+		isActive: Boolean( window?.videoData?.sureformsActive ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/sureforms">${ __( 'SureForms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
+	},
+	{
+		id: 6,
 		title: __( 'Everest Forms', 'godam' ),
 		description: __( 'Collect user input using Everest Forms', 'godam' ),
 		image: Form,
 		type: 'form',
-		formType: 'everest-forms',
+		formType: 'everestforms',
 		requiresEverestForms: true,
 		formIcon: EverestFormsIcon,
 	},
 	{
-		id: 6,
+		id: 7,
 		title: __( 'CTA', 'godam' ),
 		description: __( 'Guide users toward a specific action', 'godam' ),
 		image: CTA,
 		type: 'cta',
 	},
 	{
-		id: 7,
+		id: 8,
 		title: __( 'Hotspot', 'godam' ),
 		description: __( 'Highlighting key areas with focus', 'godam' ),
 		image: Hotspot,
 		type: 'hotspot',
 	},
 	{
-		id: 8,
+		id: 9,
 		title: __( 'Ad', 'godam' ),
 		description: __( 'Redirect user to custom advertisement', 'godam' ),
 		image: Ad,
 		type: 'ad',
 	},
 	{
-		id: 9,
+		id: 10,
 		title: __( 'Poll', 'godam' ),
 		description: __( 'Gather opinions through interactive voting', 'godam' ),
 		image: Poll,
 		type: 'poll',
-		requiresWpPolls: true,
+		isRequired: true,
+		isActive: Boolean( window.easydamMediaLibrary.isPollPluginActive ),
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/wp-polls/">${ __( 'WP-Polls', 'godam' ) }</a> ${ __( 'plugin is required to use Poll layer', 'godam' ) }`,
 	},
 	{
-		id: 8,
+		id: 11,
 		title: __( 'WooCommerce', 'godam' ),
 		description: __( 'Display products using hotspots', 'godam' ),
 		image: Hotspot,
 		type: 'woo',
 		requiresWoo: true,
 		formIcon: Woo,
+		isRequired: true,
+		isActive: Boolean( window.easydamMediaLibrary.isWooActive ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/woocommerce/">${ __( 'WooCommerce', 'godam' ) }</a> ${ __( 'plugin is required to use Buy Now layer', 'godam' ) }`,
 	},
 ];
 
-const LayerSelector = ( { isGFPluginActive, isWPFormsPluginActive, isEverestFormsPluginActive, isCF7PluginActive, isJetpackPluginActive, closeModal, addNewLayer } ) => {
+/**
+ * Modal to select the layer to be added on the video at a particular timestamp.
+ *
+ * @param {Object}   param0             - Props passed to the LayerSelector component.
+ * @param {Function} param0.closeModal  - Function to close the modal.
+ * @param {Function} param0.addNewLayer - Function to add a new layer at the selected timestamp.
+ *
+ * @return {JSX.Element} The rendered LayerSelector component.
+ */
+const LayerSelector = ( { closeModal, addNewLayer } ) => {
 	const [ selectedLayer, setSelectedLayer ] = useState( null );
 
 	const handleLayerSelect = ( layer ) => {
@@ -144,30 +181,8 @@ const LayerSelector = ( { isGFPluginActive, isWPFormsPluginActive, isEverestForm
 
 			<div className="godam-layer-selector__list">
 				{ Layers.map( ( layer ) => {
-					let message = '';
-					const isDisabled = ( layer.requiresGf && ! isGFPluginActive ) ||
-										( layer.requiresWPForms && ! isWPFormsPluginActive ) ||
-										( layer.requiresCF7 && ! isCF7PluginActive ) ||
-										( layer.requiresJetpack && ! isJetpackPluginActive ) ||
-										( layer.requiresEverestForms && ! isEverestFormsPluginActive ) ||
-										( layer.requiresWpPolls && ! window.easydamMediaLibrary.isPollPluginActive ) ||
-										( layer.requiresWoo && ! window.easydamMediaLibrary.isWooActive );
-
-					if ( layer.requiresGf && ! isGFPluginActive ) {
-						message = `<a class="godam-link" href="https://docs.gravityforms.com/installation/">Gravity Forms</a> plugin is required to use Form layer`;
-					} else if ( layer.requiresWPForms && ! isWPFormsPluginActive ) {
-						message = `<a class="godam-link" href="https://wordpress.org/plugins/wpforms-lite/">WPForms</a> plugin is required to use Form layer`;
-					} else if ( layer.requiresEverestForms && ! isEverestFormsPluginActive ) {
-						message = `<a class="godam-link" href="https://wordpress.org/plugins/everest-forms/">Everest Forms</a> plugin is required to use Form layer`;
-					} else if ( layer.requiresCF7 && ! isCF7PluginActive ) {
-						message = `<a class="godam-link" href="https://wordpress.org/plugins/contact-form-7/">Contact Form 7</a> plugin is required to use Form layer`;
-					} else if ( layer.requiresJetpack && ! isJetpackPluginActive ) {
-						message = `<a class="godam-link" href="https://wordpress.org/plugins/jetpack/">Jetpack</a> plugin is required to use Form layer`;
-					} else if ( layer.requiresWpPolls && ! window.easydamMediaLibrary.isPollPluginActive ) {
-						message = `<a class="godam-link" href="https://wordpress.org/plugins/wp-polls/">WP-Polls</a> plugin is required to use Poll layer`;
-					} else if ( layer.requiresWoo && ! window.easydamMediaLibrary.isWooActive ) {
-						message = `<a class="godam-link" href="https://wordpress.org/plugins/woocommerce/">WooCommerce</a> plugin is required to use Buy Now layer`;
-					}
+					const isDisabled = true === layer?.isRequired && false === layer?.isActive;
+					const isRequiredMessage = layer?.requireMessage ?? '';
 
 					return ( <div key={ layer.id }>
 						<button
@@ -202,7 +217,7 @@ const LayerSelector = ( { isGFPluginActive, isWPFormsPluginActive, isEverestForm
 							isDisabled &&
 								<p className="godam-layer-selector__item__message">
 									<Icon icon={ cautionFilled } />
-									<div dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( message ) } } />
+									<div dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( isRequiredMessage ) } } />
 								</p>
 						}
 					</div> );

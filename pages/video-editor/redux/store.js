@@ -14,6 +14,7 @@ import { gravityFormsAPI } from './api/gravity-forms';
 import { contactForm7Api } from './api/cf7-forms';
 import { wpFormsApi } from './api/wpforms';
 import { jetpackFormsApi } from './api/jetpack-forms';
+import { sureformsApi } from './api/sureforms';
 import { everestFormsApi } from './api/everest-forms';
 
 export default configureStore( {
@@ -26,6 +27,7 @@ export default configureStore( {
 		[ contactForm7Api.reducerPath ]: contactForm7Api.reducer,
 		[ wpFormsApi.reducerPath ]: wpFormsApi.reducer,
 		[ jetpackFormsApi.reducerPath ]: jetpackFormsApi.reducer,
+		[ sureformsApi.reducerPath ]: sureformsApi.reducer,
 		[ everestFormsApi.reducerPath ]: everestFormsApi.reducer,
 
 	},
@@ -37,6 +39,7 @@ export default configureStore( {
 		contactForm7Api.middleware,
 		wpFormsApi.middleware,
 		jetpackFormsApi.middleware,
+		sureformsApi.middleware,
 		everestFormsApi.middleware,
 	),
 } );

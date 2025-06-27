@@ -14,23 +14,23 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
-import { useGetSingleEverestFormQuery } from '../../redux/api/everest-forms';
+import { useGetSingleSureformQuery } from '../../redux/api/sureforms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
 
-const EverestForm = ( { layerID } ) => {
+const SureForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
-	const everestForms = useSelector( ( state ) => state.videoReducer.everestForms );
-	const { data: formHTML, isFetching } = useGetSingleEverestFormQuery( layer.everest_form_id );
+	const sureforms = useSelector( ( state ) => state.videoReducer.sureforms );
+	const { data: formHTML, isFetching } = useGetSingleSureformQuery( layer.sureform_id );
 
-	const forms = everestForms?.map( ( form ) => ( {
+	const forms = sureforms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
 	} ) );
 
 	const changeFormID = ( formID ) => {
-		dispatch( updateLayerField( { id: layer.id, field: 'everest_form_id', value: formID } ) );
+		dispatch( updateLayerField( { id: layer.id, field: 'sureform_id', value: formID } ) );
 	};
 
 	// If we want to disable the premium layers the we can use this code
@@ -38,29 +38,23 @@ const EverestForm = ( { layerID } ) => {
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isEverestFormsPluginActive = Boolean( window?.videoData?.everestFormsActive );
+	const isSureformsPluginActive = Boolean( window?.videoData?.sureformsActive );
 
 	return (
 		<>
 			{
-				! isEverestFormsPluginActive &&
+				! isSureformsPluginActive &&
 				<Notice
 					className="mb-4"
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'Please activate the Everest Forms plugin to use this feature.', 'godam' ) }
+					{ __( 'Please activate the SureForms plugin to use this feature.', 'godam' ) }
 				</Notice>
 			}
 
 			{
-				<FormSelector
-					disabled={ ! isValidAPIKey || ! isEverestFormsPluginActive }
-					className="gravity-form-selector mb-4"
-					formID={ layer.everest_form_id }
-					forms={ forms }
-					handleChange={ changeFormID }
-				/>
+				<FormSelector disabled={ ! isValidAPIKey || ! isSureformsPluginActive } className="gravity-form-selector mb-4" formID={ layer.sureform_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<LayerControl>
@@ -92,7 +86,7 @@ const EverestForm = ( { layerID } ) => {
 						{
 							formHTML &&
 							<Button
-								href={ `${ window?.videoData?.adminUrl }admin.php?page=evf-builder&view=fields&form_id=${ layer.everest_form_id }` }
+								href={ `${ window?.videoData?.adminUrl }post.php?post=${ layer.sureform_id }&action=edit` }
 								target="_blank"
 								variant="secondary"
 								icon={ pencil }
@@ -117,4 +111,4 @@ const EverestForm = ( { layerID } ) => {
 	);
 };
 
-export default EverestForm;
+export default SureForm;
