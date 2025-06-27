@@ -156,9 +156,9 @@ class Forminator_Forms extends Base {
 		if ( is_wp_error( $form ) ) {
 			return new WP_Error( 'forminator_form_error', __( 'Error retrieving Forminator Form.', 'godam' ), array( 'status' => 500 ) );
 		}
-		// Prepare response.
-		$response = new WP_REST_Response( $form );
-		$response->set_status( 200 );
-		return $response;   
+
+		$forminator_form = do_shortcode( "[forminator_form id='{$form_id}']" );
+
+		return new WP_REST_Response( $forminator_form );
 	}
 }

@@ -818,7 +818,9 @@ function GODAMPlayer( videoRef = null ) {
 							layerObj.layerElement.querySelector( '.srfm-success-box.srfm-active' ) ||
 							layerObj.layerElement.querySelector( '.contact-form-success' ) ||
 							( ! layerObj.layerElement.querySelector( '.wp-polls-form' ) &&
-							layerObj.layerElement.querySelector( '.wp-polls-answer' ) )
+								layerObj.layerElement.querySelector( '.wp-polls-answer' ) ) ||
+							( layerObj.layerElement.querySelector( '.forminator-success' ) &&
+								layerObj.layerElement.querySelector( '.forminator-show' ) )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -864,6 +866,8 @@ function GODAMPlayer( videoRef = null ) {
 					} else if ( window.godamPluginDependencies?.jetpack && layer.form_type === 'jetpack' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.sureforms && layer.form_type === 'sureforms' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.forminator && layer.form_type === 'forminator' ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {
