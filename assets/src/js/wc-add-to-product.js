@@ -10,7 +10,7 @@ import {
 	Button,
 	Spinner,
 } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -21,7 +21,7 @@ jQuery( document ).ready( function( $ ) {
 	const videoList = $( '.godam-product-video-gallery-list' );
 
 	const tagIconSVG = `<img src="${ Ptag }"
-    alt="${ wp.i18n.__( 'Product tag', 'godam' ) }"
+    alt="${ __( 'Product tag', 'godam' ) }"
     class="godam-tag-icon" />`;
 
 	const CURRENT_ID = Number( RTGodamVideoGallery.currentProductId );
@@ -29,6 +29,7 @@ jQuery( document ).ready( function( $ ) {
 	/* ---------- NEW: “ + Add Products” button ---------- */
 	videoList.on( 'click', '.godam-add-product-button', function( e ) {
 		e.preventDefault();
+
 		const $button = $( this );
 		const $li = $( this ).closest( 'li' );
 		const url = $li.find( 'input[name="rtgodam_product_video_gallery_urls[]"]' ).val();
@@ -37,16 +38,35 @@ jQuery( document ).ready( function( $ ) {
 		openProductPicker( vidId, url, ( count ) => {
 			// When the modal closes, update the button text.
 			if ( count > 0 ) {
-				$button.html( `${ tagIconSVG }&nbsp;${ count } product${ count > 1 ? 's' : '' }` );
+				const productText = sprintf(
+					/* translators: 1: count, 2: plural suffix (s if >1) */
+					__( '%1$d product%2$s', 'godam' ),
+					count,
+					count > 1 ? 's' : '',
+				);
+
+				$button.html( `${ tagIconSVG }${ productText }` );
+
+				$button.attr(
+					'aria-label',
+					sprintf(
+						/* translators: 1: count, 2: plural suffix (s if >1) */
+						__( '%1$d product%2$s attached to this video', 'godam' ),
+						count,
+						count > 1 ? 's' : '',
+					),
+				);
 			} else {
-				$button.text( '+ Add Products' );
+				const addLabel = __( '+ Add Products', 'godam' );
+				$button.text( addLabel );
+				$button.attr( 'aria-label', addLabel );
 			}
 		}, $button, $li );
 	} );
 
 	const selectedProductsMap = new Map();
 
-	/* ---------- Modal implementation ---------- */
+	/* ---------- Product Picker Modal implementation ---------- */
 	const openProductPicker = ( attachmentId, url, onDone = () => {}, $button, $li ) => {
 		const container = document.createElement( 'div' );
 		document.body.appendChild( container );
@@ -57,6 +77,7 @@ jQuery( document ).ready( function( $ ) {
 			const [ loading, setLoading ] = wp.element.useState( false );
 
 			const dataAttr = $li.find( '.godam-add-product-button' ).attr( 'data-linked-products' ) || '[]';
+
 			const linkedFromBackend = JSON
 				.parse( dataAttr )
 				.filter( ( p ) => p.id !== CURRENT_ID );
@@ -64,6 +85,7 @@ jQuery( document ).ready( function( $ ) {
 			const initialSelected = linkedFromBackend.length
 				? linkedFromBackend
 				: ( selectedProductsMap.get( attachmentId ) || [] );
+
 			const [ selected, setSelected ] = wp.element.useState( initialSelected );
 
 			const doSearch = wp.element.useCallback( () => {
@@ -105,7 +127,7 @@ jQuery( document ).ready( function( $ ) {
 						},
 					} ).catch( () => {
 						// eslint-disable-next-line no-alert
-						window.alert( 'Failed to link video to product ' + product.id );
+						window.alert( __( 'Failed to link video to product', 'godam' ) + ' ' + product.id );
 					} );
 				} );
 
@@ -123,11 +145,11 @@ jQuery( document ).ready( function( $ ) {
 			};
 
 			return (
-				<Modal title="Attach video to other products" onRequestClose={ close } className="rt-godam-modal godam-video-picker-modal wc-godam-product-admin">
+				<Modal title={ __( 'Attach video to other products', 'godam' ) } onRequestClose={ close } className="rt-godam-modal godam-video-picker-modal wc-godam-product-admin">
 					<div style={ { display: 'flex', gap: '8px', marginBottom: '1rem' } }>
 						<div style={ { flex: 1 } }>
 							<TextControl
-								placeholder="Search product by name, ID, category, tag or brand…"
+								placeholder={ __( 'Search product by name, ID, category, tag or brand…', 'godam' ) }
 								value={ search }
 								onChange={ setSearch }
 								className="godam-input"
@@ -139,7 +161,7 @@ jQuery( document ).ready( function( $ ) {
 								} }
 							/>
 						</div>
-						<Button className="components-button godam-button is-secondary wc-godam-product-admin" variant="secondary" onClick={ doSearch } aria-label="Search" style={ {
+						<Button className="components-button godam-button is-secondary wc-godam-product-admin" variant="secondary" onClick={ doSearch } aria-label={ __( 'Search', 'godam' ) } style={ {
 							height: '100%',
 						} }>
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
@@ -158,6 +180,7 @@ jQuery( document ).ready( function( $ ) {
 									<button
 										type="button"
 										onClick={ () => toggleSelect( p ) }
+										aria-label={ __( 'Select product:', 'godam' ) + ' ' + p.name }
 										className="wc-godam-product-admin__item"
 										style={ {
 											display: 'flex',
@@ -191,7 +214,7 @@ jQuery( document ).ready( function( $ ) {
 								borderRadius: '4px',
 							} }
 						>
-							<strong>Attach Products to Video:</strong>
+							<strong>{ __( 'Attach Products to Video:', 'godam' ) }</strong>
 
 							<div
 								style={ {
@@ -234,7 +257,7 @@ jQuery( document ).ready( function( $ ) {
 														},
 													} ).catch( () => {
 														// eslint-disable-next-line no-alert
-														window.alert( 'Failed to unlink video from product ' + p.id );
+														window.alert( __( 'Failed to unlink video from product', 'godam' ) + ' ' + p.id );
 													} );
 
 													setSelected( ( prev ) => prev.filter( ( item ) => item.id !== p.id ) );
@@ -244,7 +267,7 @@ jQuery( document ).ready( function( $ ) {
 													top: '-9px',
 													right: '-9px',
 													background: '#f44336',
-													color: 'white',
+													color: '#fff',
 													border: 'none',
 													borderRadius: '50%',
 													width: '20px',
@@ -255,7 +278,7 @@ jQuery( document ).ready( function( $ ) {
 													fontSize: '14px',
 													padding: 0,
 												} }
-												aria-label="Remove product"
+												aria-label={ __( 'Remove product', 'godam' ) }
 											>
 												&times;
 											</button>
@@ -297,8 +320,9 @@ jQuery( document ).ready( function( $ ) {
 							disabled={ ! selected.length }
 							onClick={ addToProducts }
 							className="components-button ml-2 godam-button is-primary godam-margin-top-no-bottom wc-godam-product-admin"
+							aria-label={ __( 'Save selected products', 'godam' ) }
 						>
-							Save
+							{ __( 'Save', 'godam' ) }
 						</Button>
 					</div>
 				</Modal>
