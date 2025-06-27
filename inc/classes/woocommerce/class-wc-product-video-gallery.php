@@ -1,13 +1,28 @@
 <?php
+/**
+ * WC_Product_Video_Gallery class.
+ *
+ * @package GoDAM
+ */
 
 namespace RTGODAM\Inc\WooCommerce;
 
 use RTGODAM\Inc\Traits\Singleton;
 
+/**
+ * Class WC_Product_Video_Gallery
+ */
 class WC_Product_Video_Gallery {
 
 	use Singleton;
 
+	/**
+	 * Constructor method.
+	 *
+	 * Registers hooks for adding a meta box, saving video gallery data, enqueuing
+	 * media scripts, handling attachment deletion, and placing the meta box below
+	 * the built-in WC gallery. Also allows inline SVG in WP-Admin.
+	 */
 	public function __construct() {
 		add_action( 'add_meta_boxes', array( $this, 'add_video_gallery_metabox' ) );
 		add_action( 'save_post_product', array( $this, 'save_video_gallery' ) );
@@ -23,7 +38,7 @@ class WC_Product_Video_Gallery {
 			function ( $tags, $context ) {
 
 				if ( 'post' !== $context && 'data' !== $context ) {
-					return $tags; // leave front‑end/global contexts alone
+					return $tags; // leave front‑end/global contexts alone.
 				}
 
 				$tags['svg'] = array(
@@ -49,10 +64,17 @@ class WC_Product_Video_Gallery {
 				return $tags;
 			},
 			20,
-			2 
+			2
 		);
 	}
 
+	/**
+	 * Enqueue the media scripts and styles required for managing the video gallery for products.
+	 *
+	 * Only loads on the 'product' post type.
+	 *
+	 * @since 1.0.0
+	 */
 	public function enqueue_media_scripts() {
 		if ( get_post_type() === 'product' ) {
 
@@ -82,7 +104,7 @@ class WC_Product_Video_Gallery {
 					'namespace'        => 'godam/v1',
 					'productsEP'       => '/wcproducts',
 					'linkVideoEP'      => '/link-video',
-					'unLinkVideoEP'      => '/unlink-video',
+					'unLinkVideoEP'    => '/unlink-video',
 					'videoCountEP'     => '/video-product-count',
 					'currentProductId' => get_the_ID(),
 					'defaultThumbnail' => RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png',
@@ -91,6 +113,11 @@ class WC_Product_Video_Gallery {
 		}
 	}
 
+	/**
+	 * Add a meta box to the product post type edit screen to house the video gallery.
+	 *
+	 * @since 1.0.0
+	 */
 	public function add_video_gallery_metabox() {
 		add_meta_box(
 			'rtgodam_product_video_gallery',
@@ -102,6 +129,16 @@ class WC_Product_Video_Gallery {
 		);
 	}
 
+	/**
+	 * Modifies the meta box order on the product edit screen to place the RTGoDAM
+	 * video gallery below the built-in WC product gallery.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array $order The meta box order.
+	 *
+	 * @return array
+	 */
 	public function place_below_wc_gallery( $order ) {
 
 		if ( empty( $order['side'] ) ) {
@@ -127,6 +164,13 @@ class WC_Product_Video_Gallery {
 		return $order;
 	}
 
+	/**
+	 * Render the video gallery metabox on the product edit screen.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param WP_Post $post The current post object.
+	 */
 	public function render_video_gallery_metabox( $post ) {
 		$video_urls = get_post_meta( $post->ID, '_rtgodam_product_video_gallery', true );
 		$video_urls = is_array( $video_urls ) ? $video_urls : array();
@@ -158,7 +202,7 @@ class WC_Product_Video_Gallery {
 					$thumb_url = $thumb_id
 						? wp_get_attachment_image_url( $thumb_id, 'woocommerce_thumbnail' )
 						: wc_placeholder_img_src();
-					
+
 					return array(
 						'id'    => (int) $pid,
 						'name'  => get_the_title( $pid ),
@@ -181,7 +225,7 @@ class WC_Product_Video_Gallery {
 			} else {
 				$raw_label = esc_html__( '+ Add products', 'godam' );
 			}
-		
+
 			$label = $raw_label;
 
 			$video_title = $id ? get_the_title( $id ) : '';
@@ -217,9 +261,9 @@ class WC_Product_Video_Gallery {
 				esc_attr__( 'Remove video from gallery', 'godam' ),
 				esc_attr( $video_title ),
 				esc_html( $video_title ),
-				$linked_json,
+				$linked_json, // phpcs:ignore
 				esc_attr__( 'Associate products with this video', 'godam' ),
-				$label
+				$label // phpcs:ignore
 			);
 		}
 
@@ -242,6 +286,16 @@ class WC_Product_Video_Gallery {
 		echo '</div>';
 	}
 
+	/**
+	 * Saves the video gallery when a product is saved.
+	 *
+	 * It checks nonce and capability, then saves video urls and ids as meta in product.
+	 * After that, it checks each video attachment and adds the current product ID to the
+	 * '_video_parent_product_id' meta if it is not present yet. Then it removes the product
+	 * ID from any attachment that is not present in the current gallery.
+	 *
+	 * @param int $post_id The ID of the post being saved.
+	 */
 	public function save_video_gallery( $post_id ) {
 
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
@@ -305,35 +359,46 @@ class WC_Product_Video_Gallery {
 		}
 	}
 
+	/**
+	 * Handles the deletion of an attachment and updates related product metadata.
+	 *
+	 * This function removes the association of a deleted video attachment from all
+	 * WooCommerce products that had it in their video gallery. It updates the product
+	 * meta to remove the video URLs and IDs, ensuring the integrity of the product's
+	 * video gallery. Additionally, it cleans up the parent product reference from the
+	 * attachment metadata.
+	 *
+	 * @param int $attachment_id The ID of the attachment being deleted.
+	 */
 	public function on_attachment_deleted( $attachment_id ) {
 		$parent_meta_key = '_video_parent_product_id';
 		$product_ids     = get_post_meta( $attachment_id, $parent_meta_key, false );
-	
+
 		if ( empty( $product_ids ) ) {
 			return;
 		}
-	
+
 		foreach ( $product_ids as $product_id ) {
 			$video_urls = get_post_meta( $product_id, '_rtgodam_product_video_gallery', true ) ?: array();
 			$video_ids  = get_post_meta( $product_id, '_rtgodam_product_video_gallery_ids', true ) ?: array();
-	
+
 			// Find index of the deleted attachment.
 			$index = array_search( $attachment_id, $video_ids );
-	
+
 			if ( false !== $index ) {
 				unset( $video_ids[ $index ] );
 				unset( $video_urls[ $index ] );
-	
+
 				// Reindex arrays to keep them aligned.
 				$video_ids  = array_values( $video_ids );
 				$video_urls = array_values( $video_urls );
-	
+
 				// Save updated meta.
 				update_post_meta( $product_id, '_rtgodam_product_video_gallery', $video_urls );
 				update_post_meta( $product_id, '_rtgodam_product_video_gallery_ids', $video_ids );
 			}
 		}
-	
+
 		// Clean up parent reference from attachment.
 		delete_post_meta( $attachment_id, $parent_meta_key );
 	}
