@@ -72,6 +72,18 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 		return () => clearTimeout( debounce );
 	}, [ getVideos, setAttachments, search, page ] );
 
+	useEffect( () => {
+		const body = document.querySelector( 'body' );
+
+		// Return early if admin sidebar is already open.
+		if ( ! body || ! body.classList.contains( 'folded' ) ) {
+			return;
+		}
+
+		// Open the admin sidebar.
+		body.classList.remove( 'folded' );
+	}, [] );
+
 	if ( ! fetching && attachments.length === 0 ) {
 		return (
 			<div className="flex justify-end items-center flex-col mt-8">
