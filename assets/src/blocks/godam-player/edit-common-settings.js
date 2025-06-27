@@ -3,7 +3,7 @@
  */
 import { __, _x } from '@wordpress/i18n';
 import { ToggleControl, SelectControl } from '@wordpress/components';
-import { useMemo, useCallback, Platform } from '@wordpress/element';
+import { useMemo, useCallback } from '@wordpress/element';
 
 const options = [
 	{ value: 'auto', label: __( 'Auto', 'godam' ) },
@@ -15,13 +15,24 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 	const { autoplay, controls, loop, muted, preload } =
 		attributes;
 
-	const autoPlayHelpText = __( 'Autoplay may cause usability issues for some users.', 'godam' );
-	const getAutoplayHelp = Platform.select( {
-		web: useCallback( ( checked ) => {
-			return checked ? autoPlayHelpText : null;
-		}, [] ),
-		native: autoPlayHelpText,
-	} );
+	// Show a specific help for autoplay.
+	const getAutoplayHelp = useMemo( () => {
+		const autoPlayHelpText = __( 'Autoplay may cause usability issues for some users.', 'godam' );
+
+		// Show help text if autoplay and muted is on.
+		if ( autoplay && muted ) {
+			return autoPlayHelpText;
+		}
+
+		const disabledAutoPlayHelpText = __( 'Autoplay only works when video is muted.', 'godam' );
+
+		// Show disabled help text if video is not muted.
+		if ( ! autoplay && ! muted ) {
+			return disabledAutoPlayHelpText;
+		}
+
+		return null;
+	}, [ autoplay, muted ] );
 
 	const toggleFactory = useMemo( () => {
 		const toggleAttribute = ( attribute ) => {
