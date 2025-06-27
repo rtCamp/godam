@@ -82,6 +82,9 @@ class Forminator_Forms extends Base {
 									'description'       => __( 'The ID of the Forminator Form.', 'godam' ),
 									'type'              => 'integer',
 									'required'          => true,
+									'validate_callback' => function ( $param ) {
+										return is_numeric( $param ) && $param > 0;
+									},
 									'sanitize_callback' => 'absint',
 								),
 							)
