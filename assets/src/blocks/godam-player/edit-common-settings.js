@@ -58,7 +58,6 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 				__nextHasNoMarginBottom
 				label={ __( 'Autoplay', 'godam' ) }
 				onChange={ ( e ) => {
-					// When autoplay is enabled, mute the video.
 					/**
 					 * When autoplay is enabled, mute the video.
 					 * This behaviour follows core/video block.
