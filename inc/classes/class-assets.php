@@ -95,19 +95,24 @@ class Assets {
 		include_once ABSPATH . 'wp-admin/includes/plugin.php';
 		$is_gf_active       = is_plugin_active( 'gravityforms/gravityforms.php' );
 		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
-		$is_cf7_active      = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
-		$is_wpforms_active  = is_plugin_active( 'wpforms-lite/wpforms.php' );
-		$is_jetpack_active  = is_plugin_active( 'jetpack/jetpack.php' );
-		
+		$is_woo_active      = is_plugin_active( 'woocommerce/woocommerce.php' );
+
+		$is_cf7_active       = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
+		$is_wpforms_active   = is_plugin_active( 'wpforms-lite/wpforms.php' );
+		$is_jetpack_active   = is_plugin_active( 'jetpack/jetpack.php' );
+		$is_sure_form_active = is_plugin_active( 'sureforms/sureforms.php' );
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamPluginDependencies',
 			array(
 				'gravityforms' => $is_gf_active,
 				'wp_polls'     => $is_wp_polls_active,
+				'woocommerce'  => $is_woo_active,
 				'cf7'          => $is_cf7_active,
 				'wpforms'      => $is_wpforms_active,
 				'jetpack'      => $is_jetpack_active,
+				'sureforms'    => $is_sure_form_active,
 			)
 		);
 
@@ -265,6 +270,7 @@ class Assets {
 				'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
 				'enableFolderOrganization' => $enable_folder_organization,
 				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
+				'isWooActive'              => is_plugin_active( 'woocommerce/woocommerce.php' ),
 				'page'                     => $screen ? $screen->id : '',
 			)
 		);
