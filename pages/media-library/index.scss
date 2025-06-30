@@ -6,11 +6,20 @@
 
 #rt-transcoder-media-library-root {
 	min-width: 280px;
-	padding: 1.25rem;
+	padding: 0;
 	border: 1px solid #E0E0E0;
 
 	* {
 		box-sizing: border-box;
+	}
+
+	> * {
+	    padding: 1.25rem;
+		border-bottom: 1px solid #E0E0E0;
+	}
+
+	> :nth-last-child(3) {
+        border: none;
 	}
 
 	.components-button {
@@ -30,12 +39,8 @@
 
 	.button-group {
 		display: flex;
-		gap: 0.5rem;
+		gap: 1.25rem;
 		width: 100%;
-	}
-
-	.mb-spacing {
-		margin-bottom: 0.5rem;
 	}
 
 	.is-primary {
@@ -43,11 +48,16 @@
 		border-radius: 0.25rem;
 	}
 
+	.control-buttons {
+ display: flex;
+ flex-direction: column;
+ gap: 1.25rem;
+	}
+
 	.folder-list {
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
-		margin-bottom: 0.5rem;
 	}
 
 	.folder-list__item {
@@ -89,4 +99,12 @@
 
 .components-button.has-icon.has-text.text-flex-left {
 	justify-content: left !important;
+}
+
+.media-frame-menu:has( #rt-transcoder-media-library-root ) {
+
+    .media-menu {
+        background: #FFF;
+        z-index: -1;
+    }
 }

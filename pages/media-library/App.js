@@ -36,36 +36,38 @@ const App = () => {
 
 	return (
 		<>
-			<Button
-				icon="plus-alt2"
-				__next40pxDefaultSize
-				variant="primary"
-				text={ __( 'New Folder', 'godam' ) }
-				className="button--full mb-spacing new-folder-button"
-				onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
-			/>
-
-			<ButtonGroup className="button-group mb-spacing">
+			<div className="control-buttons">
 				<Button
-					icon="edit"
-					__next40pxDefaultSize
-					variant="secondary"
-					text={ __( 'Rename', 'godam' ) }
-					className="button--half"
-					onClick={ () => dispatch( openModal( 'rename' ) ) }
-					disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
-				/>
-				<Button
-					icon="trash"
+					icon="plus-alt2"
 					__next40pxDefaultSize
 					variant="primary"
-					text={ __( 'Delete', 'godam' ) }
-					className="button--half"
-					isDestructive={ true }
-					onClick={ () => dispatch( openModal( 'delete' ) ) }
-					disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
+					text={ __( 'New Folder', 'godam' ) }
+					className="button--full mb-spacing new-folder-button"
+					onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
 				/>
-			</ButtonGroup>
+
+				<ButtonGroup className="button-group mb-spacing">
+					<Button
+						icon="edit"
+						__next40pxDefaultSize
+						variant="secondary"
+						text={ __( 'Rename', 'godam' ) }
+						className="button--half"
+						onClick={ () => dispatch( openModal( 'rename' ) ) }
+						disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
+					/>
+					<Button
+						icon="trash"
+						__next40pxDefaultSize
+						variant="primary"
+						text={ __( 'Delete', 'godam' ) }
+						className="button--half"
+						isDestructive={ true }
+						onClick={ () => dispatch( openModal( 'delete' ) ) }
+						disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
+					/>
+				</ButtonGroup>
+			</div>
 
 			<div className="folder-list">
 				<button

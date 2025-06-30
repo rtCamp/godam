@@ -11,7 +11,8 @@
     }
 
     .wrap {
-        margin: 12px 0;
+        margin: 12px 0 0 0;
+        height: calc(100% - 12px);
     }
 
     .wp-heading-inline {
@@ -31,6 +32,7 @@
 
 #wpbody:has( #rt-transcoder-media-library-root ){
 	display: flex;
+	height: calc(100vh - 32px);
 }
 
 #wpcontent:has( #rt-transcoder-media-library-root ) {
