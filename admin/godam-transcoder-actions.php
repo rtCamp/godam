@@ -73,7 +73,7 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 				'helps' => sprintf(
 					// translators: %1$s URL to the settings page, %2$s API key label.
 					__( 'Activate the <a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a> to enable transcoding and adaptive bitrate streaming.', 'godam' ),
-					esc_url( admin_url( 'admin.php?page=rtgodam_settings' ) ),
+					esc_url( admin_url( 'admin.php?page=rtgodam_settings#video-settings' ) ),
 					esc_html__( 'API key', 'godam' )
 				),
 			);
