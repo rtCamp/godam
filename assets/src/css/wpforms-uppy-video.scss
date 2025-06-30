@@ -1,0 +1,18 @@
+@import "@uppy/core/dist/style.min.css";
+@import "@uppy/dashboard/dist/style.min.css";
+@import "@uppy/webcam/dist/style.min.css";
+@import "@uppy/screen-capture/dist/style.min.css";
+
+
+.wpforms-field.wpforms-field-video {
+    .uppy-video-upload-preview {
+        margin-top: 20px;
+        max-width: 100%;
+    }
+
+    .upp-video-upload-filename {
+        margin-top: 5px;
+        font-style: italic;
+        color: #666;
+    }
+}

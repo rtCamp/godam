@@ -129,6 +129,13 @@ const godamGallery = {
 	},
 };
 
+const godamGallery = {
+	...sharedConfig,
+	entry: {
+		'godam-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-gallery.js' ),
+	},
+};
+
 const gfGodamRecorderEditorJS = {
 	...sharedConfig,
 	entry: {
@@ -140,6 +147,13 @@ const gfEntryDetailJS = {
 	...sharedConfig,
 	entry: {
 		'gf-entry-detail': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gravity-form', 'gf-entry-detail.js' ),
+	},
+};
+
+const wpFormsGodamRecorderJS = {
+	...sharedConfig,
+	entry: {
+		'wpforms-godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'integrations', 'wpforms','gf-godam-recorder.js' ),
 	},
 };
 
@@ -246,6 +260,7 @@ module.exports = [
 	godamGallery,
 	gfGodamRecorderEditorJS,
 	gfEntryDetailJS,
+	wpFormsGodamRecorderJS,
 	jetpackFormJS,
 	styles, // Do not remove this.
 	pages,
