@@ -33,8 +33,12 @@
 	.srfm-form-container {
 		height: auto;
 
-		.srfm-form .srfm-submit-button .srfm-submit-wrap {
-			height: auto;
+		.srfm-form {
+			margin-block-end: 0;
+
+			.srfm-submit-button .srfm-submit-wrap {
+				height: auto;
+			}
 		}
 	}
 }
