@@ -36,7 +36,7 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 ✓ Customize video player appearance globally with custom CSS through the Video Player settings menu.
 ✓ Navigate videos easily with chapter markers for better content organization and viewer experience.
 
-📌 Elementor Integration
+📌 **Elementor Integration**
 ✓ Drag-and-drop GoDAM Video, Gallery, and Audio widgets for seamless content creation.
 ✓ Embed media content directly into Elementor pages.
 
@@ -86,12 +86,12 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 📌 **Automatic Video Transcription**
 ✓ AI-powered closed captions added automatically on upload for accessibility and engagement.
 
-Primary Benefits:
+### Primary Benefits:
 ✓ Simplifies asset management with automated transcoding and adaptive streaming.
 ✓ Enhances viewer engagement with interactive layers like forms, CTAs, and hotspots.
 ✓ Integrates seamlessly with WordPress for a familiar and user-friendly experience.
 
-Secondary Benefits:
+### Secondary Benefits:
 ✓ Cost-efficient pricing tailored to your actual usage.
 ✓ Scalable features suitable for small businesses, educators, and enterprise-level users.
 ✓ Monetization opportunities through ad placement and e-commerce integrations.
