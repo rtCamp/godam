@@ -102,26 +102,9 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			// Define data.
 			$primary = $field['properties']['inputs']['primary'];
 
-			if ( isset( $field['limit_enabled'] ) ) {
-				$limit_count = isset( $field['limit_count'] ) ? absint( $field['limit_count'] ) : 0;
-				$limit_mode  = isset( $field['limit_mode'] ) ? sanitize_key( $field['limit_mode'] ) : 'characters';
-
-				$primary['data']['form-id']  = $form_data['id'];
-				$primary['data']['field-id'] = $field['id'];
-
-				if ( 'characters' === $limit_mode ) {
-					$primary['class'][]            = 'wpforms-limit-characters-enabled';
-					$primary['attr']['maxlength']  = $limit_count;
-					$primary['data']['text-limit'] = $limit_count;
-				} else {
-					$primary['class'][]            = 'wpforms-limit-words-enabled';
-					$primary['data']['text-limit'] = $limit_count;
-				}
-			}
-
 			// Primary field.
 			printf(
-				'<input type="text" %s %s>',
+				'<input type="file" %s %s>',
 				wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ),
 				$primary['required'] // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			);
