@@ -8,7 +8,7 @@ import { CSS } from '@dnd-kit/utilities';
 /**
  * WordPress dependencies
  */
-import { Icon, file, chevronDown, chevronUp } from '@wordpress/icons';
+import { Icon, file } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -16,6 +16,7 @@ import { Icon, file, chevronDown, chevronUp } from '@wordpress/icons';
 import { toggleOpenClose, changeSelectedFolder } from '../../redux/slice/folders';
 import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
+import folderTreeChevron from '../../assets/folderTreeChevron.svg';
 
 const indentPerLevel = 12;
 
@@ -72,29 +73,20 @@ const TreeItem = ( { item, index, depth } ) => {
 					data-index={ index }
 					onClick={ () => handleClick() }
 				>
+					{ item.children?.length > 0
+						? <span className="tree-item__chevron" onClick={ ( event ) => handleChevronClick( event ) } onKeyDown={ ( e ) => {
+							if ( e.key === 'Enter' || e.key === ' ' ) {
+								e.preventDefault(); handleChevronClick( e );
+							}
+						} } role="button" tabIndex={ 0 } aria-label={ item.isOpen ? 'Collapse folder' : 'Expand folder' } >
+							<img src={ folderTreeChevron } alt="folder-tree-chevron" className={ item.isOpen ? 'tree-item__chevron_open' : '' } />
+						</span>
+						: <span className="tree-item__spacer" />
+					}
 					<div className="tree-item__content">
 						<Icon icon={ file } />
 						<span className="tree-item__text">{ item.name }</span>
 					</div>
-
-					{ item.children?.length > 0 &&
-					<span
-						className="tree-item__chevron"
-						onClick={ ( event ) => handleChevronClick( event ) }
-						onKeyDown={ ( e ) => {
-							if ( e.key === 'Enter' || e.key === ' ' ) {
-								e.preventDefault();
-								handleChevronClick( e );
-							}
-						} }
-						role="button"
-						tabIndex={ 0 }
-						aria-label={ item.isOpen ? 'Collapse folder' : 'Expand folder' }
-
-					>
-						<Icon icon={ item.isOpen ? chevronUp : chevronDown } />
-					</span>
-					}
 				</button>
 			</div>
 		</>
