@@ -164,9 +164,9 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 			</div>
 
 			{ /* Hotspots list */ }
-			<div className="flex flex-col gap-4">
+			<div className="flex items-center flex-col gap-4">
 				{ hotspots.map( ( hotspot, index ) => (
-					<div key={ hotspot.id } className="p-2 border rounded">
+					<div key={ hotspot.id } className="p-2 w-full border rounded">
 						<div className="flex justify-between items-center">
 							<Button
 								icon={ expandedHotspotIndex === index ? chevronUp : chevronDown }
@@ -318,10 +318,11 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 				) ) }
 
 				<Button
-					isPrimary
+					variant="primary"
 					id="add-hotspot-btn"
 					icon={ plus }
 					iconPosition="left"
+					className="godam-button"
 					onClick={ handleAddHotspot }
 					disabled={ ! isValidAPIKey }
 				>

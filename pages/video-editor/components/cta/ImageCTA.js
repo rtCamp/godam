@@ -111,7 +111,7 @@ const ImageCTA = ( { layerID } ) => {
 				<Button
 					onClick={ openImageCTAUploader }
 					variant="primary"
-					className="ml-2"
+					className="ml-2 godam-button"
 					aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
 				>
 					{ 0 === layer?.image || ! layer?.image ? __( 'Upload', 'godam' ) : __( 'Replace', 'godam' ) }

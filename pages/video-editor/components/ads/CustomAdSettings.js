@@ -107,7 +107,7 @@ const CustomAdSettings = ( { layerID } ) => {
 				<div className="flex gap-2">
 					<Button
 						__nextHasNoMarginBottom
-						className="mb-2"
+						className="mb-2 godam-button"
 						variant="primary"
 						onClick={ () => OpenVideoSelector() }
 						disabled={ adServer === 'ad-server' || ! isValidAPIKey }
@@ -116,6 +116,7 @@ const CustomAdSettings = ( { layerID } ) => {
 						layer?.ad_url &&
 						<Button
 							variant="secondary"
+							className="mb-2 godam-button"
 							isDestructive
 							onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) }
 							disabled={ adServer === 'ad-server' || ! isValidAPIKey }
