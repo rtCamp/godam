@@ -43,9 +43,18 @@ $video_upload_button_id = wp_unique_id( 'uppy-video-upload-' );
 $uppy_container_id = sprintf( 'uppy_container_%s_%s', $form_id, $block_id );
 $uppy_file_name_id = sprintf( 'uppy_filename_%s_%s', $form_id, $block_id );
 $uppy_preview_id   = sprintf( 'uppy_preview_%s_%s', $form_id, $block_id );
+
+/**
+ * Wrapper attributes.
+ */
+$wrapper_attributes = get_block_wrapper_attributes(
+	array(
+		'class' => 'godam_srfm_input_recorder_container srfm-block',
+	)
+);
 ?>
 
-<div class="godam_srfm_input_container">
+<div <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<input
 		type="hidden"
 		name="MAX_FILE_SIZE"
@@ -58,7 +67,20 @@ $uppy_preview_id   = sprintf( 'uppy_preview_%s_%s', $form_id, $block_id );
 		style="display: none;"
 		class="rtgodam-hidden"
 	/>
+	<label
+		for="<?php echo esc_attr( $video_upload_button_id ); ?>"
+		class="srfm-block-label"
+		><?php echo esc_html( $label ); ?>
+		<?php if ( $required ) : ?>
+			<span class="srfm-required" aria-label="required"> *</span>
+		<?php endif; ?>
+	</label>
+	<label
+		for="<?php echo esc_attr( $video_upload_button_id ); ?>"
+		class="srfm-description"
+		><?php echo esc_html( $help ); ?></label>
 	<div
+		style="margin: 4px 0;"
 		data-max-size="<?php echo esc_attr( $max_file_size ); ?>"
 		id="<?php echo esc_attr( $uppy_container_id ); ?>"
 		class="uppy-video-upload"
@@ -77,4 +99,15 @@ $uppy_preview_id   = sprintf( 'uppy_preview_%s_%s', $form_id, $block_id );
 		<div id="<?php echo esc_attr( $uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
 		<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename"></div>
 	</div>
+	<p class="srfm-description">
+		<?php
+			echo esc_html(
+				sprintf(
+					// Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
+					__( 'Maximum allowed on this server: %s MB', 'godam' ),
+					$max_file_size,
+				)
+			);
+			?>
+	</p>
 </div>
