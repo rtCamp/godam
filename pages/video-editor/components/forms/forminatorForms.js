@@ -86,7 +86,7 @@ const ForminatorForm = ( { layerID } ) => {
 						{
 							formHTML &&
 							<Button
-								href={ `${ window?.videoData?.adminUrl }post.php?post=${ layer.forminator_id }&action=edit` }
+								href={ `${ window?.videoData?.adminUrl }admin.php?page=forminator-cform-wizard&id=${ layer.forminator_id }` }
 								target="_blank"
 								variant="secondary"
 								icon={ pencil }
