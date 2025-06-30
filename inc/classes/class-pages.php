@@ -379,6 +379,11 @@ class Pages {
 				$this->enqueue_sureforms_styles();
 			}
 
+			// Enqueue Forminator Forms styles if the plugin is active.
+			if ( $is_forminator_active ) {
+				$this->enqueue_forminator_forms_styles();
+			}
+
 			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
@@ -690,5 +695,24 @@ class Pages {
 				$instance->enqueue_scripts_and_styles();
 			}
 		}
+	}
+
+	/**
+	 * Enqueue the Forminator assets.
+	 * 
+	 * @return void
+	 */
+	public function enqueue_forminator_forms_styles() {
+		// Check if Forminator is active and url is available.
+		if ( ! function_exists( 'forminator_plugin_url' ) && ! defined( 'FORMINATOR_VERSION' ) ) {
+			return;
+		}
+
+		// Get Forminator plugin URL.
+		$forminator_url = forminator_plugin_url();
+
+		// Enqueue the CSS files.
+		wp_enqueue_style( 'forminator-base', $forminator_url . 'assets/forminator-ui/css/src/form/forminator-form-default.base.min.css', array(), FORMINATOR_VERSION );
+		wp_enqueue_style( 'forminator-grid', $forminator_url . 'assets/forminator-ui/css/src/grid/forminator-grid.open.min.css', array(), FORMINATOR_VERSION );
 	}
 }
