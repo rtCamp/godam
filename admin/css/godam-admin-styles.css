@@ -1,0 +1,19 @@
+.godam-locked-input-wrapper {
+	position: relative;
+	display: inline-block;
+	width: 100%;
+}
+
+.godam-locked-input-wrapper input[type="text"] {
+	padding-right: 35px;
+	width: 100%;
+}
+
+.godam-lock-icon {
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+	pointer-events: none;
+	font-size: 18px;
+}
