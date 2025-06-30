@@ -4,15 +4,8 @@
 /**
  * WordPress dependencies
  */
-import {
-	Button,
-	CustomSelectControl,
-	Icon,
-	RangeControl,
-	TextareaControl,
-	TextControl,
-} from '@wordpress/components';
-import React, { useEffect, useState } from 'react';
+import { Button, CustomSelectControl, Icon, Notice, RangeControl, TextareaControl, TextControl } from '@wordpress/components';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { __ } from '@wordpress/i18n';
 
@@ -22,6 +15,21 @@ import { __ } from '@wordpress/i18n';
 import { updateLayerField } from '../../redux/slice/videoSlice';
 
 const ImageCTA = ( { layerID } ) => {
+	/**
+	 * State to manage the notice message and visibility.
+	 */
+	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
+
+	/**
+	 * To show a notice message.
+	 *
+	 * @param {string} message Text to display in the notice.
+	 * @param {string} status  Status of the notice, can be 'success', 'error', etc.
+	 */
+	const showNotice = ( message, status = 'success' ) => {
+		setNotice( { message, status, isVisible: true } );
+	};
+
 	const [ selectedImageUrl, setSelectedImageUrl ] = useState( '' );
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
@@ -56,6 +64,14 @@ const ImageCTA = ( { layerID } ) => {
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 
+			/**
+			 * This handles the case for the uploader tab of WordPress media library.
+			 */
+			if ( attachment.type !== 'image' ) {
+				showNotice( __( 'Only Image file is allowed', 'godam' ), 'error' );
+				return;
+			}
+
 			dispatch(
 				updateLayerField( {
 					id: layer.id,
@@ -72,7 +88,7 @@ const ImageCTA = ( { layerID } ) => {
 		dispatch( updateLayerField( { id: layer.id, field, value } ) );
 	};
 
-	const fetchOverlayMediaURL = ( mediaId ) => {
+	const fetchOverlayMediaURL = useCallback( ( mediaId ) => {
 		if ( ! mediaId ) {
 			return;
 		}
@@ -84,13 +100,14 @@ const ImageCTA = ( { layerID } ) => {
 				return response.json();
 			} )
 			.then( ( media ) => {
-				setSelectedImageUrl( media.source_url ); // URL of the media file
+				setSelectedImageUrl( media.source_url );
 			} );
-	};
+	},
+	[ restURL, setSelectedImageUrl ] );
 
 	useEffect( () => {
 		fetchOverlayMediaURL( layer.image );
-	}, [ layer ] );
+	}, [ layer, fetchOverlayMediaURL ] );
 
 	const removeCTAImage = () => {
 		updateField( 'image', 0 );
@@ -129,6 +146,15 @@ const ImageCTA = ( { layerID } ) => {
 							className="max-w-[200px]"
 						/>
 					</div>
+				) }
+				{ notice.isVisible && (
+					<Notice
+						className="my-4"
+						status={ notice.status }
+						onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+					>
+						{ notice.message }
+					</Notice>
 				) }
 			</div>
 

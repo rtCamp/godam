@@ -86,7 +86,7 @@
 	},
 	"scripts": {
 		"start:blocks": "wp-scripts start --config ./node_modules/@wordpress/scripts/config/webpack.config.js --webpack-src-dir=./assets/src/blocks/ --output-path=./assets/build/blocks/",
-		"start:js": "wp-scripts start --config ./webpack.config.js",
+		"start:js": "wp-scripts start --config ./webpack.dev.config.js",
 		"start": "npm-run-all --parallel start:*",
 		"build:dev": "cross-env NODE_ENV=development npm-run-all 'build:!(dev|prod)'",
 		"build:prod": "cross-env NODE_ENV=production npm-run-all 'build:!(dev|prod)'",
