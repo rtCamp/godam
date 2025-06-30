@@ -111,6 +111,28 @@ class Media_Library extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/create-media-entry',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_media_entry' ),
+					// 'permission_callback' => function () {
+					// 	return current_user_can( 'edit_posts' );
+					// },
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/attachment-by-id/(?P<id>[a-zA-Z0-9_-]+)',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_attachment_by_id' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+				),
+			),
 		);
 	}
 
@@ -353,5 +375,95 @@ class Media_Library extends Base {
 				'message' => 'Video thumbnail successfully set.',
 			)
 		);
+	}
+
+	/**
+	 * Summary of create_media_entry
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response | \WP_Error
+	 */
+	public function create_media_entry( $request ) {
+		$data = $request->get_json_params();
+
+		if ( empty( $data['id'] ) || empty( $data['title'] ) || empty( $data['url'] ) || empty( $data['mime'] ) ) {
+			return new \WP_Error( 'missing_params', 'Required fields are missing.', [ 'status' => 400 ] );
+		}
+
+		$godam_id = sanitize_text_field( $data['id'] );
+
+		// 🔍 Check if an attachment already exists with this GoDAM ID.
+		$existing = new \WP_Query( [
+			'post_type'  => 'attachment',
+			'meta_key'   => '_godam_original_id',
+			'meta_value' => $godam_id,
+			'post_status' => 'any',
+			'fields'     => 'ids',
+			'posts_per_page' => 1,
+		] );
+
+		if ( $existing->have_posts() ) {
+			$existing_id = $existing->posts[0];
+			return new \WP_REST_Response( [
+				'success'     => true,
+				'attachment'  => wp_prepare_attachment_for_js( $existing_id ),
+				'message'     => 'Attachment already exists',
+			], 200 );
+		}
+
+		// 🆕 No match found — create new attachment
+		$attachment = [
+			'post_title'     => sanitize_text_field( $data['title'] ),
+			'post_mime_type' => sanitize_text_field( $data['mime'] ),
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'guid'           => esc_url_raw( $data['url'] ),
+		];
+
+		$attach_id = wp_insert_attachment( $attachment, $data['title'] );
+
+		if ( is_wp_error( $attach_id ) ) {
+			return new \WP_REST_Response( [ 'success' => false, 'error' => $attach_id->get_error_message() ], 500 );
+		}
+
+		// Save custom metadata
+		update_post_meta( $attach_id, '_godam_original_id', $godam_id );
+		update_post_meta( $attach_id, '_godam_icon', esc_url_raw( $data['icon'] ?? '' ) );
+		update_post_meta( $attach_id, '_filesize_human', sanitize_text_field( $data['filesizeHumanReadable'] ?? '' ) );
+		update_post_meta( $attach_id, '_godam_label', sanitize_text_field( $data['label'] ?? '' ) );
+		update_post_meta( $attach_id, '_owner_email', sanitize_email( $data['owner'] ?? '' ) );
+		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['url'] ?? '' ) );
+		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' );
+		update_post_meta( $attach_id, 'icon', $data[ 'icon' ] );
+
+		return new \WP_REST_Response( [
+			'success'     => true,
+			'attachment'  => wp_prepare_attachment_for_js( $attach_id ),
+			'message'     => 'Attachment created',
+		], 201 );
+	}
+
+	public function get_attachment_by_id( $request ) {
+		$godam_id = sanitize_text_field( $request['id'] );
+
+		$query = new \WP_Query( [
+			'post_type'      => 'attachment',
+			'meta_key'       => '_godam_original_id',
+			'meta_value'     => $godam_id,
+			'post_status'    => 'inherit',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+		] );
+
+		$attachment_id = $godam_id;
+
+		if ( $query->have_posts() ) {
+			$attachment_id = $query->posts[0];
+		}
+
+		$internal_request = new \WP_REST_Request( 'GET', '/wp/v2/media/' . $attachment_id );
+		$response = rest_do_request( $internal_request );
+
+
+		return $response;
 	}
 }

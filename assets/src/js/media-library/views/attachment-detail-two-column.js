@@ -200,6 +200,20 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		// Check if the attachment is a video and render the edit buttons.
 		if ( this.model.get( 'type' ) === 'video' ) {
 			this.renderVideoActions();
+
+			const virtual = this.model.get( 'virtual' );
+
+			if ( undefined !== virtual && virtual ) {
+				const icon = this.model.get( 'icon' );
+				const videoContainer = this.$el.find( '.wp-video' );
+				videoContainer.empty().append(
+					`
+					<img src=${ icon }
+					width='100%'
+					>
+					`,
+				);
+			}
 		}
 
 		// Return this view.

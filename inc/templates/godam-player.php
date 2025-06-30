@@ -36,6 +36,24 @@ $preload            = ! empty( $attributes['preload'] ) ? esc_attr( $attributes[
 $caption            = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $tracks             = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id      = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$is_virtual         = ! is_numeric( $attachment_id );
+$original_id        = $attachment_id;
+
+if ( $is_virtual ) {
+	$query = new \WP_Query( [
+		'post_type'      => 'attachment',
+		'posts_per_page' => 1,
+		'post_status'    => 'any',
+		'meta_key'       => '_godam_original_id',
+		'meta_value'     => sanitize_text_field( $attachment_id ),
+		'fields'         => 'ids',
+	] );
+
+	if ( $query->have_posts() ) {
+		$original_id = $query->posts[0];
+	}
+}
+
 $video_preview      = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
 $overlay_time_range = ! empty( $attributes['overlayTimeRange'] ) ? floatval( $attributes['overlayTimeRange'] ) : 0;
 $show_overlay       = isset( $attributes['showOverlay'] ) ? $attributes['showOverlay'] : false;
@@ -46,6 +64,11 @@ $transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attribute
 
 // Retrieve 'rtgodam_meta' for the given attachment ID, defaulting to an empty array if not found.
 $easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_meta', true ) : array();
+
+if ( $is_virtual ) {
+	$easydam_meta_data = $original_id ? get_post_meta( $original_id, 'rtgodam_meta', true ) : array();
+}
+
 $easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : array();
 
 // Extract control bar settings with a fallback to an empty array.

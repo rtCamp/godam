@@ -322,6 +322,15 @@ class Media_Library_Ajax {
 		// Add transcoding status to response.
 		$response['transcoding_status'] = $transcoding_status ? strtolower( $transcoding_status ) : 'not_started';
 
+		$godam_original_id = get_post_meta( $attachment->ID, '_godam_original_id', true );
+
+		if ( ! empty( $godam_original_id ) ) {
+			$response[ 'virtual' ] = true;
+			$response[ 'icon' ] = get_post_meta( $attachment->ID, 'icon', true );
+			$response[ 'image' ] = array();
+			$response[ 'image' ][ 'src' ] = $response[ 'icon' ];
+		}
+
 		return $response;
 	}
 

@@ -18,6 +18,7 @@ import NoThumbnailImage from '../../assets/no-thumbnail.jpg';
 import { copyGoDAMVideoBlock } from '../../utils';
 
 const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
+	console.log( item );
 	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
 	const [ showSnackbar, setShowSnackbar ] = useState( false );
 
