@@ -37,11 +37,11 @@ const App = () => {
 	return (
 		<>
 			<Button
-				icon="plus"
+				icon="plus-alt2"
 				__next40pxDefaultSize
 				variant="primary"
 				text={ __( 'New Folder', 'godam' ) }
-				className="button--full mb-spacing"
+				className="button--full mb-spacing new-folder-button"
 				onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
 			/>
 
