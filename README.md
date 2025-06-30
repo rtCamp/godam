@@ -221,7 +221,7 @@ Yes, GoDAM provides robust analytics tools to track video engagement, including 
 35. Video Player Style Settings
 36. Chapters Interface
 
-## External services
+## External Services
 
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
 
