@@ -259,7 +259,7 @@
 			white-space: nowrap;
 		}
 		&:hover {
-			
+
 			.chapter-indicator--duration {
 				display: block;
 				position: absolute;
@@ -284,6 +284,12 @@
 
 	@media screen and (max-width: 782px) {
 		margin-left: 0;
+	}
+}
+
+.godam-video-list__video__thumbnail__overlay__menu {
+	.components-button.has-icon.has-text {
+		justify-content: flex-start !important;
 	}
 }
 

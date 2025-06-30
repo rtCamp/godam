@@ -16,6 +16,7 @@ import { wpFormsApi } from './api/wpforms';
 import { jetpackFormsApi } from './api/jetpack-forms';
 import { sureformsApi } from './api/sureforms';
 import { forminatorFormsApi } from './api/forminator-forms';
+import { fluentFormsApi } from './api/fluent-forms';
 
 export default configureStore( {
 	reducer: {
@@ -29,6 +30,7 @@ export default configureStore( {
 		[ jetpackFormsApi.reducerPath ]: jetpackFormsApi.reducer,
 		[ sureformsApi.reducerPath ]: sureformsApi.reducer,
 		[ forminatorFormsApi.reducerPath ]: forminatorFormsApi.reducer,
+		[ fluentFormsApi.reducerPath ]: fluentFormsApi.reducer,
 	},
 	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat(
 		videosAPI.middleware,
@@ -40,5 +42,6 @@ export default configureStore( {
 		jetpackFormsApi.middleware,
 		sureformsApi.middleware,
 		forminatorFormsApi.middleware,
+		fluentFormsApi.middleware,
 	),
 } );

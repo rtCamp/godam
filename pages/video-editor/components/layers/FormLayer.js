@@ -19,6 +19,7 @@ import WPForm from '../forms/WPForm';
 import CF7 from '../forms/CF7';
 import JetpackForm from '../forms/JetpackForm';
 import SureForm from '../forms/Sureform.js';
+import FluentForm from '../forms/FluentForm.js';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader.js';
 import ForminatorForm from '../forms/forminatorForms.js';
@@ -50,6 +51,10 @@ const FormLayerComponentType = {
 	forminator: {
 		isActive: Boolean( window?.videoData?.forminatorActive ) ?? false,
 		component: ForminatorForm,
+	},
+	fluentforms: {
+		isActive: Boolean( window?.videoData?.fluentformsActive ) ?? false,
+		component: FluentForm,
 	},
 };
 

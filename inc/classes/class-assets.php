@@ -102,7 +102,8 @@ class Assets {
 		$is_jetpack_active         = is_plugin_active( 'jetpack/jetpack.php' );
 		$is_sure_form_active       = is_plugin_active( 'sureforms/sureforms.php' );
 		$is_forminator_form_active = is_plugin_active( 'forminator/forminator.php' );
-
+		$is_fluent_forms_active    = is_plugin_active( 'fluentform/fluentform.php' );
+		
 		wp_localize_script(
 			'rtgodam-script',
 			'godamPluginDependencies',
@@ -115,6 +116,7 @@ class Assets {
 				'jetpack'      => $is_jetpack_active,
 				'sureforms'    => $is_sure_form_active,
 				'forminator'   => $is_forminator_form_active,
+				'fluentForms'  => $is_fluent_forms_active,
 			)
 		);
 

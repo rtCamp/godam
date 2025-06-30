@@ -15,6 +15,7 @@ import woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
 import ForminatorIcon from '../assets/layers/Forminator.png';
+import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 
 /**
  * WordPress dependencies
@@ -79,6 +80,12 @@ export const layerTypes = [
 				icon: ForminatorIcon,
 				isActive: window?.videoData?.forminatorActive ?? false,
 				tooltipMessage: __( 'Forminator Forms plugin is not active', 'godam' ),
+			},
+			fluentforms: {
+				layerText: __( 'Fluent Forms', 'godam' ),
+				icon: FluentFormsIcon,
+				isActive: window?.videoData?.fluentformsActive ?? false,
+				tooltipMessage: __( 'Fluent Forms plugin is not active', 'godam' ),
 			},
 		},
 	},
