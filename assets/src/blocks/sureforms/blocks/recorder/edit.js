@@ -18,7 +18,7 @@ import {
 	PanelBody,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
+import { InspectorControls, RichText, useBlockProps } from '@wordpress/block-editor';
 
 /**
  * Internal dependencies
@@ -37,8 +37,10 @@ import {
 export default function Edit( props ) {
 	const { clientId, attributes, setAttributes, className } = props;
 	const {
+		blockId,
 		label,
 		description,
+		recordButton,
 		formId,
 		required,
 		fileSelector,
@@ -49,12 +51,15 @@ export default function Edit( props ) {
 
 	const classes = clsx( className, {
 		'godam-srfm-recorder': true,
+		'srfm-block': true,
 	} );
 
 	const blockProps = useBlockProps( {
 		className: classes,
 	} );
+
 	const maxFileSizeLimit = getMaxFileSize();
+	const isRequired = required ? ' srfm-required' : '';
 
 	useEffect( () => {
 		if ( formId !== currentFormId ) {
@@ -210,7 +215,53 @@ export default function Edit( props ) {
 					</PanelBody>
 				</InspectorControls>
 				<>
-					Button
+					<RichText
+						tagName="label"
+						value={ '' === label ? __( 'Untitled', 'godam' ) : label }
+						onChange={ ( value ) => {
+							setAttributes( { label: value } );
+						} }
+						className={ `srfm-block-label${ isRequired }` }
+						id={ blockId + 'label' }
+						for={ blockId }
+						multiline={ false }
+						allowedFormats={ [] }
+					/>
+					{
+						description ? <RichText
+							tagName="label"
+							value={ description }
+							onChange={ ( value ) => {
+								setAttributes( { description: value } );
+							} }
+							className="srfm-description"
+							id={ blockId }
+							multiline={ false }
+							allowedFormats={ [] }
+						/> : null
+					}
+					<button
+						style={ {
+							margin: '4px 0',
+						} }
+						className="srfm-button"
+					>
+						<RichText
+							type="label"
+							value={ recordButton ?? 'Record Video' }
+							onChange={ ( value ) => {
+								setAttributes( { recordButton: value } );
+							} }
+							className="godam-srf-record-button"
+							multiline={ false }
+							allowedFormats={ [] }
+						/>
+					</button>
+					<p className="srfm-description">
+						{ sprintf(
+							// Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
+							__( 'Maximum allowed size: %s MB', 'godam' ), maxFileSize ) }
+					</p>
 				</>
 			</div>
 		</>

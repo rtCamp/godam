@@ -22,7 +22,7 @@
 		}
 	},
 	"attributes": {
-		"block_id": {
+		"blockId": {
 			"type": "string",
 			"default": ""
 		},
@@ -37,6 +37,9 @@
 		"description": {
 			"type": "string",
 			"default": ""
+		},
+		"recordButton": {
+			"type": "string"
 		},
 		"fileSelector": {
 			"type": "array",
