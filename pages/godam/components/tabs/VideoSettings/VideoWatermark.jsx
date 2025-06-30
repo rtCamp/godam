@@ -20,6 +20,7 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 	const watermarkText = useSelector( ( state ) => state.mediaSettings.video.watermark_text );
 	const enableWatermark = useSelector( ( state ) => state.mediaSettings.video.watermark );
 	const selectedMedia = useSelector( ( state ) => state.mediaSettings.video.watermark_url );
+	const watermarkImageId = useSelector( ( state ) => state.mediaSettings.video.watermark_image_id );
 
 	const openMediaPicker = () => {
 		const fileFrame = wp.media( {
@@ -37,8 +38,20 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 			if ( attachment.type === 'image' ) {
 				handleSettingChange( 'watermark_url', attachment.url );
+				handleSettingChange( 'watermark_image_id', attachment.id );
 			}
 		} );
+
+		if ( watermarkImageId ) {
+			const attachment = wp.media.attachment( watermarkImageId );
+			attachment.fetch();
+
+			fileFrame.on( 'open', function() {
+				const selection = fileFrame.state().get( 'selection' );
+				selection.reset();
+				selection.add( attachment );
+			} );
+		}
 
 		fileFrame.open();
 	};
@@ -120,9 +133,10 @@ const VideoWatermark = ( { handleSettingChange } ) => {
 													<Button
 														isDestructive
 														className="godam-button"
-														onClick={ () =>
-															handleSettingChange( 'watermark_url', '' )
-														}
+														onClick={ () => {
+															handleSettingChange( 'watermark_url', '' );
+															handleSettingChange( 'watermark_image_id', null );
+														} }
 														variant="secondary"
 													>
 														{ __( 'Remove Watermark', 'godam' ) }
