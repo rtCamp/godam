@@ -27,6 +27,7 @@ import CF7Icon from '../assets/layers/CF7Icon.svg';
 import Woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
+import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
 
 const Layers = [
@@ -92,8 +93,20 @@ const Layers = [
 		isActive: Boolean( window?.videoData?.sureformsActive ) ?? false,
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/sureforms/">${ __( 'SureForms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
+	{	id: 6,
+		title: __( 'Fluent Forms', 'godam' ),
+		description: __( 'Collect user input using Fluent Forms', 'godam' ),
+		image: Form,
+		type: 'form',
+		formType: 'fluentforms',
+		requiresFluentForms: true,
+		formIcon: FluentFormsIcon,
+		isRequired: true,
+		isActive: Boolean( window?.videoData?.fluentformsActive ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/fluentform">${ __( 'Fluent Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
+	},
 	{
-		id: 6,
+		id: 7,
 		title: __( 'Everest Forms', 'godam' ),
 		description: __( 'Collect user input using Everest Forms', 'godam' ),
 		image: Form,
@@ -106,28 +119,28 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/everest-forms/">${ __( 'Everest Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 7,
+		id: 8,
 		title: __( 'CTA', 'godam' ),
 		description: __( 'Guide users toward a specific action', 'godam' ),
 		image: CTA,
 		type: 'cta',
 	},
 	{
-		id: 8,
+		id: 9,
 		title: __( 'Hotspot', 'godam' ),
 		description: __( 'Highlighting key areas with focus', 'godam' ),
 		image: Hotspot,
 		type: 'hotspot',
 	},
 	{
-		id: 9,
+		id: 10,
 		title: __( 'Ad', 'godam' ),
 		description: __( 'Redirect user to custom advertisement', 'godam' ),
 		image: Ad,
 		type: 'ad',
 	},
 	{
-		id: 10,
+		id: 11,
 		title: __( 'Poll', 'godam' ),
 		description: __( 'Gather opinions through interactive voting', 'godam' ),
 		image: Poll,
@@ -137,7 +150,7 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/wp-polls/">${ __( 'WP-Polls', 'godam' ) }</a> ${ __( 'plugin is required to use Poll layer', 'godam' ) }`,
 	},
 	{
-		id: 11,
+		id: 12,
 		title: __( 'WooCommerce', 'godam' ),
 		description: __( 'Display products using hotspots', 'godam' ),
 		image: Hotspot,

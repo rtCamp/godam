@@ -6,6 +6,7 @@ import { useGetWPFormsQuery } from '../../redux/api/wpforms';
 import { useGetCF7FormsQuery } from '../../redux/api/cf7-forms';
 import { useGetJetpackFormsQuery } from '../../redux/api/jetpack-forms';
 import { useGetSureformsQuery } from '../../redux/api/sureforms';
+import { useGetFluentFormsQuery } from '../../redux/api/fluent-forms';
 import { useGetEverestFormsQuery } from '../../redux/api/everest-forms';
 
 export const useFetchForms = () => {
@@ -14,6 +15,7 @@ export const useFetchForms = () => {
 	const { data: wpForms, isFetching: isFetchingWPForms } = useGetWPFormsQuery();
 	const { data: jetpackForms, isFetching: isFetchingJetpack } = useGetJetpackFormsQuery();
 	const { data: sureforms, isFetching: isFetchingSureforms } = useGetSureformsQuery();
+	const { data: fluentForms, isFetching: isFetchingFluentForms } = useGetFluentFormsQuery();
 	const { data: everestForms, isFetching: isFetchingEverestForms } = useGetEverestFormsQuery();
 
 	const isFetching =
@@ -22,6 +24,7 @@ export const useFetchForms = () => {
 		isFetchingWPForms ||
 		isFetchingJetpack ||
 		isFetchingSureforms ||
+		isFetchingFluentForms ||
 		isFetchingEverestForms;
 
 	return {
@@ -30,6 +33,7 @@ export const useFetchForms = () => {
 		wpForms,
 		jetpackForms,
 		sureforms,
+		fluentForms,
 		everestForms,
 		isFetching,
 	};

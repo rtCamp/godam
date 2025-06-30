@@ -15,6 +15,7 @@ import { contactForm7Api } from './api/cf7-forms';
 import { wpFormsApi } from './api/wpforms';
 import { jetpackFormsApi } from './api/jetpack-forms';
 import { sureformsApi } from './api/sureforms';
+import { fluentFormsApi } from './api/fluent-forms';
 import { everestFormsApi } from './api/everest-forms';
 
 export default configureStore( {
@@ -28,6 +29,7 @@ export default configureStore( {
 		[ wpFormsApi.reducerPath ]: wpFormsApi.reducer,
 		[ jetpackFormsApi.reducerPath ]: jetpackFormsApi.reducer,
 		[ sureformsApi.reducerPath ]: sureformsApi.reducer,
+		[ fluentFormsApi.reducerPath ]: fluentFormsApi.reducer,
 		[ everestFormsApi.reducerPath ]: everestFormsApi.reducer,
 
 	},
@@ -40,6 +42,7 @@ export default configureStore( {
 		wpFormsApi.middleware,
 		jetpackFormsApi.middleware,
 		sureformsApi.middleware,
+		fluentFormsApi.middleware,
 		everestFormsApi.middleware,
 	),
 } );

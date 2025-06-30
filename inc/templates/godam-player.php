@@ -374,7 +374,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 								// Use the static helper method to get the rendered form HTML.
 								$form_html = \RTGODAM\Inc\REST_API\Jetpack::get_rendered_form_html_static( $layer['jp_id'] );
 
-								if ( $form_html && ! is_wp_error( $form_html ) ) :
+								if ( $form_html && ! is_wp_error( $form_html ) ):
 									?>
 									<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 										<div class="form-container jetpack-form-container" <?php echo ! empty( $origin_post_id ) ? 'data-origin-post-id="' . esc_attr( $origin_post_id ) . '"' : ''; ?>>
@@ -387,6 +387,21 @@ if ( $is_shortcode || $is_elementor_widget ) {
 									</div>
 									<?php
 								endif;
+								elseif ( 'fluentforms' === $form_type && ! empty( $layer['fluent_form_id'] ) ) :
+									?>
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div class="form-container">
+										<?php
+											echo do_shortcode(
+												sprintf(
+													"[fluentform id='%d']",
+													intval( $layer['fluent_form_id'] )
+												)
+											);
+										?>
+									</div>
+								</div>
+									<?php
 							elseif ( 'everestforms' === $form_type && ! empty( $layer['everest_form_id'] ) ) :
 								?>
 								<div
@@ -407,7 +422,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 								</div>
 								<?php
 							endif;
-							// Poll layer.
+								// Poll layer.
 						elseif ( isset( $layer['type'] ) && 'poll' === $layer['type'] ) :
 							?>
 							<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">

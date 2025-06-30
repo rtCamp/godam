@@ -20,6 +20,7 @@ import EverestForm from '../forms/EverestForm';
 import CF7 from '../forms/CF7';
 import JetpackForm from '../forms/JetpackForm';
 import SureForm from '../forms/Sureform.js';
+import FluentForm from '../forms/FluentForm.js';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader.js';
 
@@ -46,6 +47,10 @@ const FormLayerComponentType = {
 	sureforms: {
 		isActive: Boolean( window?.videoData?.sureformsActive ) ?? false,
 		component: SureForm,
+	},
+	fluentforms: {
+		isActive: Boolean( window?.videoData?.fluentformsActive ) ?? false,
+		component: FluentForm,
 	},
 	everestforms: {
 		isActive: Boolean( window?.videoData?.everestFormsActive ) ?? false,

@@ -101,6 +101,7 @@ class Assets {
 		$is_wpforms_active       = is_plugin_active( 'wpforms-lite/wpforms.php' );
 		$is_jetpack_active       = is_plugin_active( 'jetpack/jetpack.php' );
 		$is_sure_form_active     = is_plugin_active( 'sureforms/sureforms.php' );
+		$is_fluent_forms_active  = is_plugin_active( 'fluentform/fluentform.php' );
 		$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' );
 
 		wp_localize_script(
@@ -114,6 +115,7 @@ class Assets {
 				'wpforms'      => $is_wpforms_active,
 				'jetpack'      => $is_jetpack_active,
 				'sureforms'    => $is_sure_form_active,
+				'fluentForms'  => $is_fluent_forms_active,
 				'everestForms' => $is_everest_forms_active,
 			)
 		);

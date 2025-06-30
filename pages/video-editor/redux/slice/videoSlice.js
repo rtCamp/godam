@@ -48,6 +48,7 @@ const slice = createSlice( {
 		loading: false,
 		gforms: [],
 		cf7Forms: [],
+		fluentForms: [],
 		wpforms: [],
 		gformPluginActive: true,
 		jetpackForms: [],
@@ -152,6 +153,9 @@ const slice = createSlice( {
 		setJetpackForms: ( state, action ) => {
 			state.jetpackForms = action.payload;
 		},
+		setFluentForms: ( state, action ) => {
+			state.fluentForms = action.payload;
+		},
 		setJetpackPluginActive: ( state, action ) => {
 			state.jetpackPluginActive = action.payload;
 		},
@@ -185,6 +189,7 @@ export const {
 	setEverestForms,
 	setWPFormPluginActive,
 	setJetpackForms,
+	setFluentForms,
 	setJetpackPluginActive,
 	setSureforms,
 	setSureformsPluginActive,

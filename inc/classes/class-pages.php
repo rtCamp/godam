@@ -333,11 +333,12 @@ class Pages {
 				true
 			);
 
-			$is_gf_active        = is_plugin_active( 'gravityforms/gravityforms.php' );
-			$is_cf7_active       = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
-			$is_wpforms_active   = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
-			$is_jetpack_active   = is_plugin_active( 'jetpack/jetpack.php' );
-			$is_sure_form_active = is_plugin_active( 'sureforms/sureforms.php' );
+			$is_gf_active           = is_plugin_active( 'gravityforms/gravityforms.php' );
+			$is_cf7_active          = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
+			$is_wpforms_active      = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
+			$is_jetpack_active      = is_plugin_active( 'jetpack/jetpack.php' );
+			$is_sure_form_active    = is_plugin_active( 'sureforms/sureforms.php' );
+			$is_fluent_forms_active = is_plugin_active( 'fluentform/fluentform.php' );
 
 			// TODO Handle Everest Forms pro versions as well in future.
 			$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' );
@@ -347,16 +348,17 @@ class Pages {
 				'transcoder-page-script-video-editor',
 				'videoData',
 				array(
-					'nonce'              => wp_create_nonce( 'wp_rest' ),   // WordPress nonce for API requests.
-					'currentUserId'      => get_current_user_id(),          // Current user ID.
-					'currentUserRoles'   => wp_get_current_user()->roles,   // Current user roles.
-					'valid_api_key'      => rtgodam_is_api_key_valid(),
-					'adminUrl'           => admin_url(),
-					'gf_active'          => $is_gf_active,
-					'cf7_active'         => $is_cf7_active,
-					'wpforms_active'     => $is_wpforms_active,
-					'jetpack_active'     => $is_jetpack_active,
-					'sureformsActive'    => $is_sure_form_active,
+					'nonce'               => wp_create_nonce( 'wp_rest' ),   // WordPress nonce for API requests.
+					'currentUserId'       => get_current_user_id(),          // Current user ID.
+					'currentUserRoles'    => wp_get_current_user()->roles,   // Current user roles.
+					'valid_api_key'       => rtgodam_is_api_key_valid(),
+					'adminUrl'            => admin_url(),
+					'gf_active'           => $is_gf_active,
+					'cf7_active'          => $is_cf7_active,
+					'wpforms_active'      => $is_wpforms_active,
+					'jetpack_active'      => $is_jetpack_active,
+					'sureformsActive'     => $is_sure_form_active,
+					'fluentformsActive' => $is_fluent_forms_active,
 					'everestFormsActive' => $is_everest_forms_active,
 				)
 			);
@@ -379,6 +381,11 @@ class Pages {
 			// Enqueue Sure Forms style if the plugin is active.
 			if ( $is_sure_form_active ) {
 				$this->enqueue_sureforms_styles();
+			}
+
+			// Enqueue Fluent Forms styles if the plugin is active.
+			if ( $is_fluent_forms_active ) {
+				$this->enqueue_fluent_forms_styles();
 			}
 
 			$rtgodam_user_data = rtgodam_get_user_data();
@@ -692,5 +699,30 @@ class Pages {
 				$instance->enqueue_scripts_and_styles();
 			}
 		}
+	}
+
+	/**
+	 * Enqueue Fluent Forms styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_fluent_forms_styles() {
+		if ( ! defined( 'FLUENTFORM_VERSION' ) ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'fluent-forms-public',
+			plugins_url( 'fluentform/assets/css/fluent-forms-public.css' ),
+			array(),
+			FLUENTFORM_VERSION
+		);
+
+		wp_enqueue_style(
+			'fluent-forms-default',
+			plugins_url( 'fluentform/assets/css/fluentform-public-default.css' ),
+			array(),
+			FLUENTFORM_VERSION
+		);
 	}
 }
