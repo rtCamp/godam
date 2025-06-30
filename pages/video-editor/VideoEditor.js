@@ -25,6 +25,7 @@ import {
 	setCF7Forms,
 	setWPForms,
 	setSureforms,
+	setForminatorForms,
 	setFluentForms,
 } from './redux/slice/videoSlice';
 
@@ -54,7 +55,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
-	const { gravityForms, wpForms, cf7Forms, sureforms, fluentForms, isFetching } = useFetchForms();
+	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, isFetching } = useFetchForms();
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -137,11 +138,15 @@ const VideoEditor = ( { attachmentID } ) => {
 				dispatch( setSureforms( sureforms ) );
 			}
 
+			if ( forminatorForms && forminatorForms.length > 0 ) {
+				dispatch( setForminatorForms( forminatorForms ) );
+			}
+
 			if ( fluentForms && fluentForms.length > 0 ) {
 				dispatch( setFluentForms( fluentForms ) );
 			}
 		}
-	}, [ gravityForms, cf7Forms, wpForms, isFetching, dispatch, sureforms, fluentForms ] );
+	}, [ gravityForms, cf7Forms, wpForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {

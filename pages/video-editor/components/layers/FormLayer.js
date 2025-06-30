@@ -22,6 +22,7 @@ import SureForm from '../forms/Sureform.js';
 import FluentForm from '../forms/FluentForm.js';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader.js';
+import ForminatorForm from '../forms/forminatorForms.js';
 
 /**
  * FormLayer Components Object mapping.
@@ -46,6 +47,10 @@ const FormLayerComponentType = {
 	sureforms: {
 		isActive: Boolean( window?.videoData?.sureformsActive ) ?? false,
 		component: SureForm,
+	},
+	forminator: {
+		isActive: Boolean( window?.videoData?.forminatorActive ) ?? false,
+		component: ForminatorForm,
 	},
 	fluentforms: {
 		isActive: Boolean( window?.videoData?.fluentformsActive ) ?? false,
