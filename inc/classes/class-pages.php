@@ -388,6 +388,12 @@ class Pages {
 				$this->enqueue_fluent_forms_styles();
 			}
 
+			// Enqueue Everest Forms styles if the plugin is active.
+			if ( $is_everest_forms_active ) {
+				$this->enqueue_everest_forms_styles();
+			}
+
+
 			$rtgodam_user_data = rtgodam_get_user_data();
 
 			wp_localize_script(
@@ -724,5 +730,23 @@ class Pages {
 			array(),
 			FLUENTFORM_VERSION
 		);
+	}
+
+
+	/**
+	 * Enqueue Everest Forms styles.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function enqueue_everest_forms_styles() {
+		if ( ! defined( 'EVF_VERSION' ) ) {
+			return;
+		}
+
+		wp_enqueue_style( 'everest-forms-general', evf()->plugin_url() . '/assets/css/everest-forms.css', array(), EVF_VERSION );
+
+		\EVF_Frontend_Scripts::load_scripts();
 	}
 }
