@@ -14,23 +14,23 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
-import { useGetSingleWPFormQuery } from '../../redux/api/wpforms';
+import { useGetSingleForminatorFormQuery } from '../../redux/api/forminator-forms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
 
-const WPForm = ( { layerID } ) => {
+const ForminatorForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
-	const wpForms = useSelector( ( state ) => state.videoReducer.wpforms );
-	const { data: formHTML, isFetching } = useGetSingleWPFormQuery( layer.wpform_id );
+	const forminatorForms = useSelector( ( state ) => state.videoReducer.forminatorForms );
+	const { data: formHTML, isFetching } = useGetSingleForminatorFormQuery( layer.forminator_id );
 
-	const forms = wpForms?.map( ( form ) => ( {
+	const forms = forminatorForms?.map( ( form ) => ( {
 		value: form.id,
-		label: form.title,
+		label: form.name,
 	} ) );
 
 	const changeFormID = ( formID ) => {
-		dispatch( updateLayerField( { id: layer.id, field: 'wpform_id', value: formID } ) );
+		dispatch( updateLayerField( { id: layer.id, field: 'forminator_id', value: formID } ) );
 	};
 
 	// If we want to disable the premium layers the we can use this code
@@ -38,23 +38,23 @@ const WPForm = ( { layerID } ) => {
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isWPFormsPluginActive = Boolean( window?.videoData?.wpforms_active );
+	const isForminatorFormsPluginActive = Boolean( window?.videoData?.forminatorActive );
 
 	return (
 		<>
 			{
-				! isWPFormsPluginActive &&
+				! isForminatorFormsPluginActive &&
 				<Notice
 					className="mb-4"
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'Please activate the WPForms plugin to use this feature.', 'godam' ) }
+					{ __( 'Please activate the Forminator Forms plugin to use this feature.', 'godam' ) }
 				</Notice>
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isWPFormsPluginActive } className="gravity-form-selector mb-4" formID={ layer.wpform_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isValidAPIKey || ! isForminatorFormsPluginActive } className="gravity-form-selector mb-4" formID={ layer.forminator_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<LayerControl>
@@ -86,7 +86,7 @@ const WPForm = ( { layerID } ) => {
 						{
 							formHTML &&
 							<Button
-								href={ `${ window?.videoData?.adminUrl }admin.php?page=wpforms-builder&view=fields&form_id=${ layer.wpform_id }` }
+								href={ `${ window?.videoData?.adminUrl }admin.php?page=forminator-cform-wizard&id=${ layer.forminator_id }` }
 								target="_blank"
 								variant="secondary"
 								icon={ pencil }
@@ -111,4 +111,4 @@ const WPForm = ( { layerID } ) => {
 	);
 };
 
-export default WPForm;
+export default ForminatorForm;

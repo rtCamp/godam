@@ -815,9 +815,13 @@ function GODAMPlayer( videoRef = null ) {
 							layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ||
 							layerObj.layerElement.querySelector( '.wpforms-confirmation-container-full' ) ||
 							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' ) ||
+							layerObj.layerElement.querySelector( '.srfm-success-box.srfm-active' ) ||
+							layerObj.layerElement.querySelector( '.ff-message-success' ) ||
 							layerObj.layerElement.querySelector( '.contact-form-success' ) ||
 							( ! layerObj.layerElement.querySelector( '.wp-polls-form' ) &&
-							layerObj.layerElement.querySelector( '.wp-polls-answer' ) )
+								layerObj.layerElement.querySelector( '.wp-polls-answer' ) ) ||
+							( layerObj.layerElement.querySelector( '.forminator-success' ) &&
+								layerObj.layerElement.querySelector( '.forminator-show' ) )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -861,6 +865,12 @@ function GODAMPlayer( videoRef = null ) {
 					} else if ( window.godamPluginDependencies?.cf7 && layer.form_type === 'cf7' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.jetpack && layer.form_type === 'jetpack' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.sureforms && layer.form_type === 'sureforms' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.forminator && layer.form_type === 'forminator' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.fluentForms && layer.form_type === 'fluentforms' ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {
