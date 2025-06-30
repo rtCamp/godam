@@ -816,6 +816,7 @@ function GODAMPlayer( videoRef = null ) {
 							layerObj.layerElement.querySelector( '.wpforms-confirmation-container-full' ) ||
 							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' ) ||
 							layerObj.layerElement.querySelector( '.srfm-success-box.srfm-active' ) ||
+							layerObj.layerElement.querySelector( '.ff-message-success' ) ||
 							layerObj.layerElement.querySelector( '.contact-form-success' ) ||
 							( ! layerObj.layerElement.querySelector( '.wp-polls-form' ) &&
 							layerObj.layerElement.querySelector( '.wp-polls-answer' ) )
