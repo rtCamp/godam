@@ -1,10 +1,33 @@
 /**
  * WordPress dependencies
  */
-import { Button } from '@wordpress/components';
+import { Button, Notice } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
+	/**
+	 * State to manage the notice message and visibility.
+	 */
+	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
+
+	/**
+	 * To show a notice message.
+	 *
+	 * @param {string} message Text to display in the notice.
+	 * @param {string} status  Status of the notice, can be 'success', 'error', etc.
+	 */
+	const showNotice = ( message, status = 'success' ) => {
+		setNotice( { message, status, isVisible: true } );
+	};
+
+	/**
+	 * Function to open the WordPress media picker for selecting a brand image.
+	 * It restricts the selection to images only and handles the selection event.
+	 *
+	 * For the uploader tab of WordPress media library, it checks if the selected file is an image.
+	 * If not, it shows an error notice.
+	 */
 	const openBrandMediaPicker = () => {
 		const fileFrame = wp.media( {
 			title: __( 'Select Brand Image', 'godam' ),
@@ -20,12 +43,23 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 
+			/**
+			 * This handles the case for the uploader tab of WordPress media library.
+			 */
+			if ( attachment.type !== 'image' ) {
+				showNotice( __( 'Only Image file is allowed', 'godam' ), 'error' );
+				return;
+			}
+
 			handleSettingChange( 'brand_image', attachment.url );
 		} );
 
 		fileFrame.open();
 	};
 
+	/**
+	 * Handles the removal of the brand image.
+	 */
 	const removeBrandImage = () => {
 		handleSettingChange( 'brand_image', '' );
 	};
@@ -65,7 +99,15 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 					/>
 				</div>
 			) }
-
+			{ notice.isVisible && (
+				<Notice
+					className="my-4"
+					status={ notice.status }
+					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+				>
+					{ notice.message }
+				</Notice>
+			) }
 			<p className="help-text">
 				{ __( 'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos', 'godam' ) }
 			</p>
