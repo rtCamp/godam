@@ -24,6 +24,7 @@ use RTGODAM\Inc\REST_API\Jetpack;
 use RTGODAM\Inc\REST_API\GF;
 use RTGODAM\Inc\REST_API\CF7;
 use RTGODAM\Inc\REST_API\WPForms;
+use RTGODAM\Inc\REST_API\Forminator_Forms;
 use RTGODAM\INC\REST_API\SureForms;
 use RTGODAM\Inc\REST_API\Fluent_Forms;
 use RTGODAM\Inc\REST_API\Everest_Forms;
@@ -116,6 +117,7 @@ class Plugin {
 		GF::get_instance();
 		CF7::get_instance();
 		WPForms::get_instance();
+		Forminator_Forms::get_instance();
 		SureForms::get_instance();
 		Fluent_Forms::get_instance();
 		Everest_Forms::get_instance();
