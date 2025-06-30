@@ -45,15 +45,11 @@ $uppy_file_name_id = sprintf( 'uppy_filename_%s_%s', $form_id, $block_id );
 $uppy_preview_id   = sprintf( 'uppy_preview_%s_%s', $form_id, $block_id );
 ?>
 
-<div
-	class="godam_srfm_input_container"
-	data-allowed-extensions="<?php echo esc_attr( $allowed_extensions ); ?>"
-	data-max-files="<?php echo esc_attr( $max_files ); ?>"
->
+<div class="godam_srfm_input_container">
 	<input
 		type="hidden"
 		name="MAX_FILE_SIZE"
-		value="<?php echo esc_attr( $max_upload_size ); ?>"
+		value="<?php echo esc_attr( $max_file_size ); ?>"
 	/>
 	<input
 		name="<?php echo esc_attr( 'input_' . $form_id ); ?>"
@@ -63,7 +59,7 @@ $uppy_preview_id   = sprintf( 'uppy_preview_%s_%s', $form_id, $block_id );
 		class="rtgodam-hidden"
 	/>
 	<div
-		data-max-size="<?php echo esc_attr( $max_upload_size ); ?>"
+		data-max-size="<?php echo esc_attr( $max_file_size ); ?>"
 		id="<?php echo esc_attr( $uppy_container_id ); ?>"
 		class="uppy-video-upload"
 		data-input-id="<?php echo esc_attr( $block_id ); ?>"
@@ -73,17 +69,12 @@ $uppy_preview_id   = sprintf( 'uppy_preview_%s_%s', $form_id, $block_id );
 		<button
 			type="button"
 			id="<?php echo esc_attr( $video_upload_button_id ); ?>"
-			class="uppy-video-upload-button"
+			class="uppy-video-upload-button srfm-button"
 		>
 			<span class="dashicons dashicons-video-alt"></span>
-			<?php esc_html( $record_button ); ?>
+			<?php echo esc_html( $record_button ); ?>
 		</button>
 		<div id="<?php echo esc_attr( $uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
 		<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename"></div>
 	</div>
-	<?php if ( $rules_messages ) : ?>
-		<span class="gfield_description gform_fileupload_rules" id="<?php echo esc_attr( $rules_messages_id ); ?>">
-			<?php echo esc_html( $rules_messages ); ?>
-		</span>
-	<?php endif; ?>
 </div>

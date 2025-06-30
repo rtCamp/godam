@@ -67,6 +67,10 @@ export default function Edit( props ) {
 		}
 	}, [ formId, setAttributes, currentFormId ] );
 
+	useEffect( () => {
+		setAttributes( { blockId: clientId.substring( 0, 8 ) } );
+	}, [ clientId, setAttributes ] );
+
 	const {
 		// eslint-disable-next-line no-unused-vars
 		currentMessage: currentErrorMsg,
@@ -222,8 +226,7 @@ export default function Edit( props ) {
 							setAttributes( { label: value } );
 						} }
 						className={ `srfm-block-label${ isRequired }` }
-						id={ blockId + 'label' }
-						for={ blockId }
+						id={ blockId + '-label' }
 						multiline={ false }
 						allowedFormats={ [] }
 					/>
@@ -260,7 +263,7 @@ export default function Edit( props ) {
 					<p className="srfm-description">
 						{ sprintf(
 							// Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
-							__( 'Maximum allowed size: %s MB', 'godam' ), maxFileSize ) }
+							__( 'Maximum allowed size: %s MB', 'godam' ), isNaN( maxFileSize ) || undefined === maxFileSize ? maxFileSizeLimit : maxFileSize ) }
 					</p>
 				</>
 			</div>
