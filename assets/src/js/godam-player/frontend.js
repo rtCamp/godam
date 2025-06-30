@@ -44,6 +44,7 @@ import {
 	updateActiveChapter,
 	loadChapters,
 } from './chapters.js'; // Adjust path as needed
+const { applyFilters } = wp.hooks;
 
 /**
  * Global variables
@@ -111,7 +112,10 @@ function GODAMPlayer( videoRef = null ) {
 		const isPreviewEnabled = videoSetupOptions?.preview;
 
 		const player = videojs( video, videoSetupControls );
-		player.aspectRatio( '16:9' );
+
+		const playerAspectRatio = applyFilters( 'godamvideoplayeraspectratio', '16:9' );
+
+		player.aspectRatio( playerAspectRatio );
 
 		// Check if the player is inside a modal
 		const isInModal = video.closest( '.godam-modal' ) !== null;
@@ -122,7 +126,7 @@ function GODAMPlayer( videoRef = null ) {
 			if ( window.innerWidth < 420 ) {
 				player.aspectRatio( '9:16' );
 			} else {
-				player.aspectRatio( '16:9' );
+				player.aspectRatio( playerAspectRatio );
 			}
 		}
 

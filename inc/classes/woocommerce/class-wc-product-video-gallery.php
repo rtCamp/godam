@@ -113,9 +113,23 @@ class WC_Product_Video_Gallery {
 		);
 
 		if ( get_post_type() === 'product' ) {
+
+			// De-register the 'godam-player-frontend-script' first to prevent conflicts with the video carousel.
+			wp_deregister_script( 'godam-player-frontend-script' );
+
+			// Register the 'godam-player-frontend-script' again after the video carousel has been initialized so that we can modify the video player.
+			wp_register_script(
+				'godam-player-frontend-script',
+				RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
+				array( 'rtgodam-wc-video-carousel' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
+				true
+			);
+
 			wp_enqueue_style( 'rtgodam-swiper-style' );
 			wp_enqueue_script( 'rtgodam-swiper-script' );
 			wp_enqueue_script( 'rtgodam-wc-video-carousel' );
+			wp_enqueue_script( 'godam-player-frontend-script' );
 		}
 	}
 
