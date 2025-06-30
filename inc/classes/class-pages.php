@@ -732,7 +732,6 @@ class Pages {
 		);
 	}
 
-
 	/**
 	 * Enqueue Everest Forms styles.
 	 *
