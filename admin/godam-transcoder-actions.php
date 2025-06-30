@@ -20,7 +20,7 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 	 * @return array The modified array of attachment form fields.
 	 */
 	function rtgodam_add_transcoded_url_field( $form_fields, $post ) {
-	
+
 		// Check if post is of type attachment.
 		if ( 'attachment' !== $post->post_type ) {
 			return $form_fields;
@@ -36,10 +36,10 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 		$transcoded_url = get_post_meta( $post->ID, 'rtgodam_transcoded_url', true );
 
 		$easydam_settings = get_option( 'rtgodam-settings', array() );
-	
+
 		$adaptive_bitrate_enabled = ! empty( $easydam_settings['video']['adaptive_bitrate'] );
-	
-		// Determine if the site has a valid API key (i.e., Premium user)
+
+		// Determine if the site has a valid API key (i.e., Premium user).
 		$api_key = get_option( 'rtgodam-api-key', '' );
 
 		if ( ! empty( $api_key ) ) {
@@ -57,11 +57,12 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 				'helps' => __( 'The URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
 			);
 		} else {
-			// Display locked field with upsell message for free users
+			// Display locked field with upsell message for free users.
 			$form_fields['transcoded_url'] = array(
 				'label' => __( 'Transcoded CDN URL ', 'godam' ),
 				'input' => 'html',
 				'html'  => sprintf(
+					// translators: %s Message for the locked field.
 					'<div class="godam-locked-input-wrapper">
 						<input id="attachments-transcoded-url" type="text" value="%s" readonly disabled>
 						<span class="godam-lock-icon dashicons dashicons-lock"></span>
@@ -70,10 +71,11 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 				),
 				'value' => '',
 				'helps' => sprintf(
-					__( 'Activate the <a href="%s" target="_blank" rel="noopener noreferrer">%s</a> to enable transcoding and adaptive bitrate streaming.', 'godam' ),
+					// translators: %1$s URL to the settings page, %2$s API key label.
+					__( 'Activate the <a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a> to enable transcoding and adaptive bitrate streaming.', 'godam' ),
 					esc_url( admin_url( 'admin.php?page=rtgodam_settings' ) ),
 					esc_html__( 'API key', 'godam' )
-				)
+				),
 			);
 		}
 
@@ -218,21 +220,19 @@ if ( ! function_exists( 'rtgodam_rtt_update_wp_media_thumbnail' ) ) {
 
 add_action( 'rtgodam_transcoded_thumb_added', 'rtgodam_rtt_update_wp_media_thumbnail', 10, 2 );
 
-
 /**
  * Enqueue admin styles for GoDAM.
  *
  * @param string $hook_suffix The current admin page.
  */
 function enqueue_godam_admin_styles( $hook_suffix ) {
-
 	// Only enqueue styles on the media library list screen.
 	if ( 'upload.php' !== $hook_suffix ) {
 		return;
 	}
 
 	$css_file = RTGODAM_PATH . 'admin/css/godam-admin-styles.css';
-	$css_url  = RTGODAM_URL  . 'admin/css/godam-admin-styles.css';
+	$css_url  = RTGODAM_URL . 'admin/css/godam-admin-styles.css';
 
 	if ( file_exists( $css_file ) ) {
 		wp_enqueue_style(
