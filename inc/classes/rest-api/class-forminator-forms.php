@@ -118,13 +118,21 @@ class Forminator_Forms extends Base {
 				'publish',
 			);
 
-			if ( ! empty( $forms ) ) {
-				$all_forms = array_merge( $all_forms, $forms );
-				++$paged;
-			} else {
+			if ( empty( $forms ) ) {
 				// No more forms to retrieve.
 				break;
-			}   
+			}
+			
+			foreach ( $forms as $form ) {
+				// Prepare the form data.
+				$all_forms[] = array(
+					'id'        => $form->id,
+					'name'      => $form->name,
+					'client_id' => $form->client_id,
+					'status'    => $form->status,
+				);
+			}
+			++$paged;
 		} while ( true );
 		
 		if ( is_wp_error( $all_forms ) ) {
@@ -158,6 +166,9 @@ class Forminator_Forms extends Base {
 		}
 
 		$forminator_form = do_shortcode( "[forminator_form id='{$form_id}']" );
+
+		// Remove the display:none style manually as we don't need heavy JS and AJAX from forms in admin panel.
+		$forminator_form = str_replace( 'style="display: none;"', '', $forminator_form );
 
 		return new WP_REST_Response( $forminator_form );
 	}
