@@ -49,9 +49,9 @@
 	}
 
 	.control-buttons {
- display: flex;
- flex-direction: column;
- gap: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
 	}
 
 	.folder-list {
@@ -90,6 +90,10 @@
 
 	.tree-item:hover {
 	    background:#F5F5F5;
+	}
+
+	&.hide-sidebar {
+        display: none;
 	}
 }
 

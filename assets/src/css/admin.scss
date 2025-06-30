@@ -45,6 +45,29 @@ $media-frame-width: calc(300px + 2 * 24px);
 	left: $media-frame-width;
 }
 
+.media-modal-content {
+    border-radius: 12px;
+}
+
+.hide-sidebar {
+
+    .media-frame-menu {
+        display: none;
+    }
+
+    .media-frame-title {
+        left: 0;
+    }
+
+    .media-frame-router {
+        left: 0;
+    }
+
+    .media-frame-content {
+        left: 0;
+    }
+}
+
 #menu-item-library {
 	display: none;
 }
