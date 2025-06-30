@@ -219,29 +219,3 @@ if ( ! function_exists( 'rtgodam_rtt_update_wp_media_thumbnail' ) ) {
 }
 
 add_action( 'rtgodam_transcoded_thumb_added', 'rtgodam_rtt_update_wp_media_thumbnail', 10, 2 );
-
-/**
- * Enqueue admin styles for GoDAM.
- *
- * @param string $hook_suffix The current admin page.
- */
-function enqueue_godam_admin_styles( $hook_suffix ) {
-	// Only enqueue styles on the media library list screen.
-	if ( 'upload.php' !== $hook_suffix ) {
-		return;
-	}
-
-	$css_file = RTGODAM_PATH . 'admin/css/godam-admin-styles.css';
-	$css_url  = RTGODAM_URL . 'admin/css/godam-admin-styles.css';
-
-	if ( file_exists( $css_file ) ) {
-		wp_enqueue_style(
-			'godam-admin-styles',
-			$css_url,
-			array(),
-			filemtime( $css_file )
-		);
-	}
-}
-
-add_action( 'admin_enqueue_scripts', 'enqueue_godam_admin_styles' );
