@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
  */
 import { Button, TabPanel, Snackbar } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { seen } from '@wordpress/icons';
+import { copy, seen } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -25,18 +25,22 @@ import {
 	setCF7Forms,
 	setWPForms,
 	setSureforms,
+	setFluentForms,
 } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
 import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
+import { copyGoDAMVideoBlock } from './utils/index';
 
 const VideoEditor = ( { attachmentID } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
 	const [ duration, setDuration ] = useState( 0 );
+	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
+	const [ showSnackbar, setShowSnackbar ] = useState( false );
 
 	const playerRef = useRef( null );
 
@@ -50,7 +54,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
-	const { gravityForms, wpForms, cf7Forms, sureforms, isFetching } = useFetchForms();
+	const { gravityForms, wpForms, cf7Forms, sureforms, fluentForms, isFetching } = useFetchForms();
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -132,8 +136,12 @@ const VideoEditor = ( { attachmentID } ) => {
 			if ( sureforms && sureforms.length > 0 ) {
 				dispatch( setSureforms( sureforms ) );
 			}
+
+			if ( fluentForms && fluentForms.length > 0 ) {
+				dispatch( setFluentForms( fluentForms ) );
+			}
 		}
-	}, [ gravityForms, cf7Forms, wpForms, isFetching, dispatch, sureforms ] );
+	}, [ gravityForms, cf7Forms, wpForms, isFetching, dispatch, sureforms, fluentForms ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {
@@ -187,6 +195,21 @@ const VideoEditor = ( { attachmentID } ) => {
 			return `${ hrsStr }:${ minsStr }:${ secsStr }`;
 		}
 		return `${ minsStr }:${ secsStr }`;
+	};
+
+	const handleCopyGoDAMVideoBlock = async () => {
+		const result = await copyGoDAMVideoBlock( attachmentID );
+		if ( result ) {
+			setSnackbarMessage( __( 'GoDAM Video Block copied to clipboard', 'godam' ) );
+			setShowSnackbar( true );
+		} else {
+			setSnackbarMessage( __( 'Failed to copy GoDAM Video Block', 'godam' ) );
+			setShowSnackbar( true );
+		}
+	};
+
+	const handleOnSnackbarRemove = () => {
+		setShowSnackbar( false );
 	};
 
 	const tabConfig = [
@@ -297,8 +320,26 @@ const VideoEditor = ( { attachmentID } ) => {
 						)
 					}
 
+					{ showSnackbar && (
+						<Snackbar className="absolute bottom-4 right-4 opacity-70 z-50"
+							onRemove={ handleOnSnackbarRemove }
+						>
+							{ snackbarMessage }
+						</Snackbar>
+					) }
+
 					<div className="absolute top-4 left-4 right-4">
-						<div className="flex justify-end items-center">
+						<div className="flex space-x-2 justify-end items-center">
+							<Button
+								variant="secondary"
+								icon={ copy }
+								iconPosition="left"
+								onClick={ handleCopyGoDAMVideoBlock }
+								size="compact"
+								className="godam-button"
+							>
+								{ __( 'Copy Block', 'godam' ) }
+							</Button>
 							<Button
 								variant="secondary"
 								href={ `/?godam_page=video-preview&id=${ attachmentID }` }

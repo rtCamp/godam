@@ -55,7 +55,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'handle_callback' ),
-				'permission_callback' => '__return_true', // The endpoint must be public; otherwise, GoDAM (https://app.godam.io) won't be able to send a media transcoding callback request.
+				'permission_callback' => array( $this, 'verify_callback_permission' ),
 				'args'                => array(
 					'job_id'           => array(
 						'required'          => true,
@@ -119,6 +119,11 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					),
 					'job_manager_form' => array(
 						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'api_key'          => array(
+						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
@@ -269,5 +274,31 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		 * @param number    $job_id         The transcoding job ID
 		 */
 		do_action( 'rtgodam_handle_callback_finished', $attachment_id, $job_id );
+	}
+
+	/**
+	 * Verify callback permission by checking API key.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return bool|WP_Error True if permission granted, WP_Error otherwise.
+	 */
+	public function verify_callback_permission( $request ) {
+		$provided_api_key = $request->get_param( 'api_key' );
+		$stored_api_key   = get_option( 'rtgodam-api-key' );
+
+		// Validate API Key.
+		if ( empty( $provided_api_key ) ) {
+			return new WP_Error( 'forbidden', __( 'API key is required.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		if ( empty( $stored_api_key ) ) {
+			return new WP_Error( 'forbidden', __( 'API key not configured on the site.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		if ( $provided_api_key !== $stored_api_key ) {
+			return new WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		return true;
 	}
 }
