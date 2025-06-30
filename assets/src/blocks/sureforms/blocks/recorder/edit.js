@@ -140,8 +140,8 @@ export default function Edit( props ) {
 					<CheckboxControl
 						__nextHasNoMarginBottom
 						label={ __( 'Local files', 'godam' ) }
-						checked={ checkFileSelector( 'local' ) }
-						onChange={ () => updateFileSelector( 'local' ) }
+						checked={ checkFileSelector( 'file_input' ) }
+						onChange={ () => updateFileSelector( 'file_input' ) }
 					/>
 					<CheckboxControl
 						__nextHasNoMarginBottom
@@ -152,8 +152,8 @@ export default function Edit( props ) {
 					<CheckboxControl
 						__nextHasNoMarginBottom
 						label={ __( 'Screencast', 'godam' ) }
-						checked={ checkFileSelector( 'screencast' ) }
-						onChange={ () => updateFileSelector( 'screencast' ) }
+						checked={ checkFileSelector( 'screen_capture' ) }
+						onChange={ () => updateFileSelector( 'screen_capture' ) }
 					/>
 				</>
 			),

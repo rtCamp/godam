@@ -171,6 +171,13 @@ const elementorEditorJS = {
 	},
 };
 
+const godamRecorder = {
+	...sharedConfig,
+	entry: {
+		'godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-recorder', 'index.js' )
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -251,4 +258,5 @@ module.exports = [
 	pages,
 	elementorWidgetJS,
 	elementorEditorJS,
+	godamRecorder,
 ];
