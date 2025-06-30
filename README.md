@@ -225,72 +225,48 @@ Yes, GoDAM provides robust analytics tools to track video engagement, including 
 
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
 
-- **godam.io**:
-  Purpose: This service stores feedback submitted by users during plugin deactivation to help us improve the plugin and understand user concerns.
-
-  **Data Sent:**
-
-  - Site URL
-
-  - Reason for deactivation
-
-  - Name
-
-  - Email ID
-
-**When Data is Sent:**
-Data is sent only when a user submits the deactivation feedback form after clicking the deactivate button.
-
-**Service Provider:** [godam.io](https://godam.io)
-
-[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
-
-- **app.godam.io**:
-
-This service is used for transcoding media uploaded by users and verifying the API Key to ensure the plugin is authorized for use.
-
-**Data Sent:**
-
-- Site URL
-
-- API Key
-
-**When Data is Sent:**
-
-During media transcoding when the user uploads a video.
-
-When the plugin checks for a valid API Key.
-
-**Service Provider**: app.godam.io
-
-[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
-
-- **analytics.godam.io**:
-
-This service collects analytics data when a user watches a video on the frontend. It helps track video performance, user engagement, and campaign effectiveness.
-
-**Data Sent:**
-
-- IP Address
-
-- Email
-
-- Author of the post’s display name
-
-- Browser version, name, and browser language
-
-- User Agent String
-
-- The operating system of the user's device (e.g., Windows, macOS, Android)
-
-**When Data is Sent:**
-
-- When the page containing the video loads.
-
-- When the user exits the page after watching the video.
-
-**Service Provider**: analytics.godam.io
-
-[Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
+<table>
+  <thead>
+    <tr>
+      <th>Service</th>
+      <th>Purpose</th>
+      <th>Data Sent</th>
+      <th>When Data is Sent</th>
+      <th>Provider &amp; Policies</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>godam.io</td>
+      <td>Stores deactivation feedback</td>
+      <td>Site URL, Reason, Name, Email</td>
+      <td>On deactivation feedback form submission</td>
+      <td>
+        <a href="https://godam.io">godam.io</a><br>
+        <a href="https://godam.io/tos/">ToS</a> | <a href="https://godam.io/privacy-policy/">Privacy</a>
+      </td>
+    </tr>
+    <tr>
+      <td>app.godam.io</td>
+      <td>Transcoding &amp; API key verification</td>
+      <td>Site URL, API Key</td>
+      <td>On media upload &amp; API key check</td>
+      <td>
+        app.godam.io<br>
+        <a href="https://godam.io/tos/">ToS</a> | <a href="https://godam.io/privacy-policy/">Privacy</a>
+      </td>
+    </tr>
+    <tr>
+      <td>analytics.godam.io</td>
+      <td>Collects video analytics</td>
+      <td>IP, Email, Author, Browser info, OS, User Agent</td>
+      <td>On video page load &amp; exit</td>
+      <td>
+        analytics.godam.io<br>
+        <a href="https://godam.io/tos/">ToS</a> | <a href="https://godam.io/privacy-policy/">Privacy</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 Want to suggest a feature? Please submit it [here](https://github.com/rtCamp/godam/discussions/categories/feature-requests)
