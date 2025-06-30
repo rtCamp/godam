@@ -22,29 +22,28 @@
 		}
 	},
 	"attributes": {
-		"preview": {
-			"type": "boolean",
-			"default": false
-		},
 		"block_id": {
-			"type": "string"
+			"type": "string",
+			"default": ""
 		},
 		"required": {
 			"type": "boolean",
 			"default": false
 		},
 		"label": {
-			"type": "string"
+			"type": "string",
+			"default": ""
 		},
-		"help": {
+		"description": {
 			"type": "string",
 			"default": ""
 		},
 		"fileSelector": {
-			"type": "string"
+			"type": "array",
+			"default": []
 		},
 		"maxFileSize": {
-			"type": "string"
+			"type": "number"
 		},
 		"formId": {
 			"type": "number",
