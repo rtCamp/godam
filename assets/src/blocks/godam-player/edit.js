@@ -122,6 +122,7 @@ function VideoEdit( {
 		muted,
 		poster: poster || defaultPoster,
 		sources,
+		aspectRatio: '16:9',
 	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources ] );
 
 	// Memoize the video component to prevent rerenders

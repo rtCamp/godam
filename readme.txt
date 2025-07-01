@@ -1,10 +1,10 @@
 === GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more ===
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,9 +30,15 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 📌 **Interactive Video Layers for Engagement**
 ✓ Embed [clickable CTAs](https://godam.io/features/video-overlay/) to drive actions like sign-ups and purchases.
 ✓ Enhance your videos with [customizable hotspots](https://godam.io/features/video-hotspot/) that deliver additional context, links, and information exactly when and where your viewers need it.
-✓ Add interactive forms using [Gravity Forms](https://godam.io/features/gravity-forms/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), and [WPForms](https://wordpress.org/plugins/wpforms-lite/) to collect leads.
+✓ Add interactive forms using [Gravity Forms](https://godam.io/features/gravity-forms/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), [WPForms](https://wordpress.org/plugins/wpforms-lite/), and [Jetpack Forms](https://wordpress.org/plugins/jetpack/) to collect leads.
 ✓ Enable video submissions using the GoDAM Record field that supports webcam and screencast inside Gravity Forms.
 ✓ Add interactive Polls to gather viewer opinions during playback.
+✓ Customize video player appearance globally with custom CSS through the Video Player settings menu.
+✓ Navigate videos easily with chapter markers for better content organization and viewer experience.
+
+📌 **Elementor Integration**
+✓ Drag-and-drop GoDAM Video, Gallery, and Audio widgets for seamless content creation.
+✓ Embed media content directly into Elementor pages.
 
 📌 **Seamless Ad Monetization**
 ✓ Supports [self-hosted ads and third-party ad networks](https://godam.io/features/ads-integration/).
@@ -80,12 +86,12 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 📌 **Automatic Video Transcription**
 ✓ AI-powered closed captions added automatically on upload for accessibility and engagement.
 
-Primary Benefits:
+### Primary Benefits:
 ✓ Simplifies asset management with automated transcoding and adaptive streaming.
 ✓ Enhances viewer engagement with interactive layers like forms, CTAs, and hotspots.
 ✓ Integrates seamlessly with WordPress for a familiar and user-friendly experience.
 
-Secondary Benefits:
+### Secondary Benefits:
 ✓ Cost-efficient pricing tailored to your actual usage.
 ✓ Scalable features suitable for small businesses, educators, and enterprise-level users.
 ✓ Monetization opportunities through ad placement and e-commerce integrations.
@@ -116,6 +122,8 @@ GoDAM works seamlessly with popular WordPress plugins to enhance interactivity a
 - [WPForms](https://wordpress.org/plugins/wpforms-lite/) – Integrate lightweight forms for surveys, signups, or user inputs.
 - [Contact Form 7](https://wordpress.org/plugins/contact-form-7/) – Use a classic contact form plugin inside your videos for engagement.
 - [WP-Polls](https://wordpress.org/plugins/wp-polls/) – Add live polls to your videos and gather audience opinions in real-time.
+- [Jetpack Forms](https://wordpress.org/plugins/jetpack/) - Block Editor based forms for lead generation and engagement.
+- [Elementor](https://wordpress.org/plugins/elementor/) – Drag-and-drop GoDAM widgets for easy content creation.
 
 == Installation ==
 Method 1: WordPress Dashboard
@@ -191,16 +199,37 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 28. Image Upload to Central Media Manager
 29. GoDAM Video Gallery Block
 30. GoDAM Video Gallery Front-end
+31. Elementor GoDAM Audio Widget
+32. Elementor GoDAM Gallery Widget
+33. Elementor GoDAM Video Widget
+34. Jetpack Forms Integration
+35. Video Player Style Settings
+36. Chapters Interface
 
 == Changelog ==
 
+= v1.1.4 (June 25, 2025) =
+
+- Feat: Added [Jetpack Forms Integration](https://godam.io/features/jetpack/) to GoDAM Video Block
+- Feat: Added [Elementor widgets](https://godam.io/features/elementor/) for GoDAM Video, Gallery, and Audio to enable easy media embedding via drag-and-drop
+- Feat: Added Block Overlay feature to GoDAM Video Block with customizable timing
+- Feat: Added "Video Player" settings menu with support to add custom CSS to modify and style the UI of video player globally
+- Feat: Introduced `godam_player_enqueue_styles` hook for registering custom styles for GoDAM video blocks. Read more in [docs](https://godam.io/docs/overview/).
+- Feat: Consolidated video quality selector and playback speed controls into a unified player settings UI
+- Feat: Implemented chapters feature for enhanced video navigation
+- Enhancement: GoDAM Gallery Modal made more user-friendly and scrollable in fullscreen
+- Fix: GoDAM Record field data disappearing after invalid submission
+- Fix: Transcoded videos showing as Not Transcoded in DAM Tab
+- Fix: Show Transcoding Status for Retranscoding videos
+- Fix: Poll layer submission issues
+
 = v1.1.3 (June 6, 2025) =
 
-Fix: Implemented a custom endpoint to retrieve and display the list of WPForms on the Video Editor page.
-Fix: Enabled watermarking functionality for users on the Starter plan.
-Fix: Update overlapping Modal Popup UI for GoDAM Gallery.
-Enhancement: Reorganized the GoDAM admin menu for improved navigation.
-Enhancement: Added a clear guidance message on Analytics pages for cases where videos have been deleted.
+- Fix: Implemented a custom endpoint to retrieve and display the list of WPForms on the Video Editor page.
+- Fix: Enabled watermarking functionality for users on the Starter plan.
+- Fix: Update overlapping Modal Popup UI for GoDAM Gallery.
+- Enhancement: Reorganized the GoDAM admin menu for improved navigation.
+- Enhancement: Added a clear guidance message on Analytics pages for cases where videos have been deleted.
 
 = v1.1.2 (June 5, 2025) =
 

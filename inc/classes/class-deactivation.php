@@ -1,7 +1,7 @@
 <?php
 /**
  * Plguin Deactivation Survey Class.
- * 
+ *
  * @package GoDAM
  */
 
@@ -43,7 +43,7 @@ class Deactivation {
 
 		wp_register_script(
 			'godam-deactivation-survey-script',
-			RTGODAM_URL . 'assets/build/js/deactivation-feedback.min.js', 
+			RTGODAM_URL . 'assets/build/js/deactivation-feedback.min.js',
 			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/js/deactivation-feedback.min.js' ),
 			true
@@ -52,17 +52,17 @@ class Deactivation {
 		if ( is_admin() && 'plugins.php' === $pagenow ) {
 
 			wp_set_script_translations( 'godam-deactivation-survey-script', 'godam', RTGODAM_PATH . 'languages' );
-			wp_enqueue_script( 'godam-deactivation-survey-script' ); 
+			wp_enqueue_script( 'godam-deactivation-survey-script' );
 
 			$current_user = wp_get_current_user();
 
 			$rtgodam_deactivate = array(
-				'site_url'    => home_url(),
-				'nonce'       => wp_create_nonce( 'GoDAMDeactivationFeedback' ),
-				'user_name'   => $current_user->user_nicename,
-				'user_email'  => $current_user->user_email,
-				'header_text' => esc_html__( 'Please let us know why you are deactivating ', 'godam' ),
-				'api_url'     => esc_url( $this->api_url ),
+				'siteUrl'    => home_url(),
+				'nonce'      => wp_create_nonce( 'GoDAMDeactivationFeedback' ),
+				'userName'   => $current_user->user_nicename,
+				'userEmail'  => $current_user->user_email,
+				'headerText' => esc_html__( 'Please let us know why you are deactivating ', 'godam' ),
+				'apiUrl'     => esc_url( $this->api_url ),
 			);
 
 			wp_localize_script( 'godam-deactivation-survey-script', 'GoDAMDeactivation', $rtgodam_deactivate );

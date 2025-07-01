@@ -74,7 +74,7 @@ const CustomAdSettings = ( { layerID } ) => {
 	};
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
+	// const isValidAPIKey = window?.videoData?.validApiKey;
 
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
@@ -102,7 +102,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					{ __( 'This features is available in premium version', 'godam' ) }
 				</Notice>
 			}
-			<div className="flex flex-col items-start">
+			<div className="flex flex-col items-start mb-4">
 				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom Ad', 'godam' ) }</label>
 				<div className="flex gap-2">
 					<Button

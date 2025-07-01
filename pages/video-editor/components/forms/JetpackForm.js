@@ -40,7 +40,7 @@ const JetpackForm = ( { layerID } ) => {
 	// Initialize Jetpack forms data - useEffect must be called unconditionally
 	useEffect( () => {
 		// Set Jetpack plugin active status
-		dispatch( setJetpackPluginActive( Boolean( window?.videoData?.jetpack_active ) ) );
+		dispatch( setJetpackPluginActive( Boolean( window?.videoData?.jetpackActive ) ) );
 
 		// Update forms data when API response is available
 		if ( formsData ) {
@@ -87,12 +87,7 @@ const JetpackForm = ( { layerID } ) => {
 				} ) );
 			}
 		}
-	}, [ dispatch, formsData, formsError, layer?.jp_id ] );
-
-	// Add null check for layer
-	if ( ! layer ) {
-		return null;
-	}
+	}, [ changeFormID, dispatch, formsData, formsError, layer?.jp_id, layer?.id ] );
 
 	// Ensure forms is always an array with proper structure
 	const forms = Array.isArray( jetpackForms )
@@ -109,22 +104,42 @@ const JetpackForm = ( { layerID } ) => {
 	const changeFormID = ( formID ) => {
 		// Find the selected form to get the origin post ID
 		const selectedForm = forms.find( ( form ) => form.value === formID );
-		const originPostId = selectedForm ? selectedForm.origin_post_id : '';
 
+		// Extract post ID from form ID as fallback
+		const postIdFromFormId = getPostIdFromFormId( formID );
+		// Determine origin post ID with fallback logic
+		let originPostId = '';
+		if ( selectedForm && selectedForm.origin_post_id ) {
+			originPostId = selectedForm.origin_post_id;
+		} else if ( postIdFromFormId ) {
+			originPostId = String( postIdFromFormId );
+		}
 		// Update jp_id first
 		dispatch( updateLayerField( {
-			id: layer.id,
+			id: layer?.id,
 			field: 'jp_id',
 			value: formID,
 		} ) );
 
 		// Update origin_post_id separately
 		dispatch( updateLayerField( {
-			id: layer.id,
+			id: layer?.id,
 			field: 'origin_post_id',
 			value: originPostId,
 		} ) );
 	};
+
+	// Add a useEffect to fix missing origin_post_id when form is already selected
+	useEffect( () => {
+		if ( layer?.jp_id && ! layer?.origin_post_id && forms.length > 0 ) {
+			changeFormID( layer.jp_id );
+		}
+	}, [ layer?.jp_id, layer?.origin_post_id, forms.length ] );
+
+	// Add null check for layer
+	if ( ! layer ) {
+		return null;
+	}
 
 	// Helper function to extract post ID from form ID
 	const getPostIdFromFormId = ( formId ) => {
@@ -148,7 +163,7 @@ const JetpackForm = ( { layerID } ) => {
 	};
 
 	const isValidAPIKey = true;
-	const isJetpackPluginActive = Boolean( window?.videoData?.jetpack_active );
+	const isJetpackPluginActive = Boolean( window?.videoData?.jetpackActive );
 
 	return (
 		<>
