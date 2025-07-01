@@ -341,23 +341,27 @@ class Pages {
 			$is_forminator_active   = is_plugin_active( 'forminator/forminator.php' );
 			$is_fluent_forms_active = is_plugin_active( 'fluentform/fluentform.php' );
 
+			// TODO Handle Everest Forms pro versions as well in future.
+			$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' );
+
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
 				'videoData',
 				array(
-					'nonce'             => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
-					'currentUserId'     => get_current_user_id(),            // Current user ID.
-					'currentUserRoles'  => wp_get_current_user()->roles,     // Current user roles.
-					'valid_api_key'     => rtgodam_is_api_key_valid(),
-					'adminUrl'          => admin_url(),
-					'gf_active'         => $is_gf_active,
-					'cf7_active'        => $is_cf7_active,
-					'wpforms_active'    => $is_wpforms_active,
-					'jetpack_active'    => $is_jetpack_active,
-					'sureformsActive'   => $is_sure_form_active,
-					'forminatorActive'  => $is_forminator_active,
-					'fluentformsActive' => $is_fluent_forms_active,
+					'nonce'              => wp_create_nonce( 'wp_rest' ),   // WordPress nonce for API requests.
+					'currentUserId'      => get_current_user_id(),          // Current user ID.
+					'currentUserRoles'   => wp_get_current_user()->roles,   // Current user roles.
+					'valid_api_key'      => rtgodam_is_api_key_valid(),
+					'adminUrl'           => admin_url(),
+					'gf_active'          => $is_gf_active,
+					'cf7_active'         => $is_cf7_active,
+					'wpforms_active'     => $is_wpforms_active,
+					'jetpack_active'     => $is_jetpack_active,
+					'sureformsActive'    => $is_sure_form_active,
+					'forminatorActive'   => $is_forminator_active,
+					'fluentformsActive'  => $is_fluent_forms_active,
+					'everestFormsActive' => $is_everest_forms_active,
 				)
 			);
 
@@ -390,6 +394,12 @@ class Pages {
 			if ( $is_fluent_forms_active ) {
 				$this->enqueue_fluent_forms_styles();
 			}
+
+			// Enqueue Everest Forms styles if the plugin is active.
+			if ( $is_everest_forms_active ) {
+				$this->enqueue_everest_forms_styles();
+			}
+
 
 			$rtgodam_user_data = rtgodam_get_user_data();
 
@@ -706,7 +716,7 @@ class Pages {
 
 	/**
 	 * Enqueue the Forminator assets.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function enqueue_forminator_forms_styles() {
@@ -737,14 +747,31 @@ class Pages {
 			'fluent-forms-public',
 			plugins_url( 'fluentform/assets/css/fluent-forms-public.css' ),
 			array(),
-			FLUENTFORM_VERSION 
+			FLUENTFORM_VERSION
 		);
 
 		wp_enqueue_style(
 			'fluent-forms-default',
 			plugins_url( 'fluentform/assets/css/fluentform-public-default.css' ),
 			array(),
-			FLUENTFORM_VERSION 
+			FLUENTFORM_VERSION
 		);
+	}
+
+	/**
+	 * Enqueue Everest Forms styles.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function enqueue_everest_forms_styles() {
+		if ( ! defined( 'EVF_VERSION' ) ) {
+			return;
+		}
+
+		wp_enqueue_style( 'everest-forms-general', evf()->plugin_url() . '/assets/css/everest-forms.css', array(), EVF_VERSION );
+
+		\EVF_Frontend_Scripts::load_scripts();
 	}
 }

@@ -170,6 +170,9 @@ class Forminator_Forms extends Base {
 		// Remove the display:none style manually as we don't need heavy JS and AJAX from forms in admin panel.
 		$forminator_form = str_replace( 'style="display: none;"', '', $forminator_form );
 
+		// Remove edit link from shortcode output as we have custom edit button from js.
+		$forminator_form = preg_replace( '/<a[^>]+class="forminator-module-edit-link"[^>]*>.*?<\/a>/i', '', $forminator_form );
+
 		return new WP_REST_Response( $forminator_form );
 	}
 }

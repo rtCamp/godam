@@ -16,6 +16,7 @@ import { __ } from '@wordpress/i18n';
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import GravityForm from '../forms/GravityForm';
 import WPForm from '../forms/WPForm';
+import EverestForm from '../forms/EverestForm';
 import CF7 from '../forms/CF7';
 import JetpackForm from '../forms/JetpackForm';
 import SureForm from '../forms/Sureform.js';
@@ -55,6 +56,10 @@ const FormLayerComponentType = {
 	fluentforms: {
 		isActive: Boolean( window?.videoData?.fluentformsActive ) ?? false,
 		component: FluentForm,
+	},
+	everestforms: {
+		isActive: Boolean( window?.videoData?.everestFormsActive ) ?? false,
+		component: EverestForm,
 	},
 };
 
@@ -99,6 +104,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 			<FormLayerComponent layerID={ layer.id } />
 
 			<ToggleControl
+				__nextHasNoMarginBottom
 				className="mb-4 godam-toggle"
 				label={ __( 'Allow user to skip', 'godam' ) }
 				checked={ layer.allow_skip }
