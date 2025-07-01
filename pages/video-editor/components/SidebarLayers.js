@@ -49,25 +49,25 @@ export const layerTypes = [
 			gravity: {
 				layerText: __( 'Gravity Forms', 'godam' ),
 				icon: GFIcon,
-				isActive: window?.videoData?.gf_active ?? false,
+				isActive: window?.videoData?.gfActive ?? false,
 				tooltipMessage: __( 'Gravity Forms plugin is not active', 'godam' ),
 			},
 			wpforms: {
 				layerText: __( 'WPForms', 'godam' ),
 				icon: WPFormsIcon,
-				isActive: window?.videoData?.wpforms_active ?? false,
+				isActive: window?.videoData?.wpformsActive ?? false,
 				tooltipMessage: __( 'WPForms plugin is not active', 'godam' ),
 			},
 			cf7: {
 				layerText: __( 'Contact Form 7', 'godam' ),
-				isActive: window?.videoData?.cf7_active ?? false,
+				isActive: window?.videoData?.cf7Active ?? false,
 				icon: CF7Icon,
 				tooltipMessage: __( 'Contact Form 7 plugin is not active', 'godam' ),
 			},
 			jetpack: {
 				layerText: __( 'Jetpack Forms', 'godam' ),
 				icon: JetpackIcon,
-				isActive: window?.videoData?.jetpack_active ?? false,
+				isActive: window?.videoData?.jetpackActive ?? false,
 				tooltipMessage: __( 'Jetpack plugin is not active', 'godam' ),
 			},
 			sureforms: {
