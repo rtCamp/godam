@@ -74,12 +74,23 @@ class Form_Submit {
 		$accepted_file_size = 0;
 
 		/**
+		 * Is file required?
+		 */
+		$is_required = false;
+		$message     = __( 'The field is required', 'godam' );
+
+		/**
 		 * Check for max file size and look for maximum value.
 		 */
 		foreach ( $submission_data as $key => $value ) {
 			if ( str_ends_with( $key, '-max-file-size' ) ) {
 				$accepted_file_size = $value > $accepted_file_size ? $value : $accepted_file_size;
 				unset( $submission_data[ $key ] );
+			}
+
+			if ( str_ends_with( $key, '-error-message' ) ) {
+				$is_required = true;
+				$message     = $submission_data[ $key ];
 			}
 		}
 
@@ -103,6 +114,17 @@ class Form_Submit {
 			$file_size  = $file_data['size'];
 			$file_type  = $file_data['type'];
 			$file_error = $file_data['error'];
+
+			/**
+			 * Handle size, error, 0 means no size.
+			 */
+			if ( ( 0 === $file_size || $file_error ) && $is_required ) {
+				wp_send_json_error(
+					array(
+						'message' => $message,
+					)
+				);
+			}
 
 			if ( ! $file_name && ! $temp_path && ! $file_size && ! $file_type ) {
 				$submission_data[ $input_key ][] = '';

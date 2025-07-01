@@ -60,6 +60,13 @@ $wrapper_attributes = get_block_wrapper_attributes(
 		name="<?php echo esc_attr( 'godam-file-' . $block_id . '-lbl-' . rtrim( base64_encode( 'file-input' ), '=' ) . '-max-file-size' ); ?>"
 		value="<?php echo esc_attr( $max_file_size ); ?>"
 	/>
+	<?php if ( $required ) : ?>
+		<input
+			type="hidden"
+			name="<?php echo esc_attr( 'godam-upload-error' . $block_id . '-lbl-' . rtrim( base64_encode( 'errormsg' ), '=' ) . '-error-message' ); ?>"
+			value="<?php echo esc_attr( $error_msg ); ?>"
+		/>
+	<?php endif; ?>
 	<input
 		name="<?php echo esc_attr( 'godam-upload-' . $block_id . '-lbl-' . rtrim( base64_encode( $label ), '=' ) . '-input-recorder' ); ?>"
 		id="<?php echo esc_attr( $block_id ); ?>"
