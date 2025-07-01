@@ -390,13 +390,13 @@ class Media_Library_Ajax {
 
 			if ( 'uncategorized' === $media_category ) {
 				$query_args['tax_query'][] = array(
-					'taxonomy' => 'category',
+					'taxonomy' => 'media_category',
 					'field'    => 'term_id',
 					'operator' => 'NOT EXISTS',
 				);
 			} elseif ( 'all' !== $media_category && '' !== $media_category ) {
 				$query_args['tax_query'][] = array(
-					'taxonomy' => 'category',
+					'taxonomy' => 'media_category',
 					'field'    => 'slug',
 					'terms'    => $media_category,
 				);
@@ -407,11 +407,11 @@ class Media_Library_Ajax {
 			$media_tag = sanitize_text_field( wp_unslash( $_REQUEST['query']['media_tag'] ) );
 
 			if ( ! isset( $query_args['tax_query'] ) ) {
-				$query_args['tax_que ry'] = array(); // phpcs:ignore -- tax_query is required here to filter by taxonomy.
+				$query_args['tax_query'] = array(); // phpcs:ignore -- tax_query is required here to filter by taxonomy.
 			}
 
 			$query_args['tax_query'][] = array(
-				'taxonomy' => 'post_tag',
+				'taxonomy' => 'media_tag',
 				'field'    => 'slug',
 				'terms'    => $media_tag,
 			);
