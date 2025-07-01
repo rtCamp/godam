@@ -91,6 +91,7 @@ class Form_Submit {
 			if ( str_ends_with( $key, '-error-message' ) ) {
 				$is_required = true;
 				$message     = $submission_data[ $key ];
+				unset( $submission_data[ $key ] );
 			}
 		}
 
