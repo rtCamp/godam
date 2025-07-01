@@ -4,7 +4,7 @@
 /**
  * WordPress dependencies
  */
-import { Button, CustomSelectControl, Icon, Notice, RangeControl, TextareaControl, TextControl } from '@wordpress/components';
+import { Button, CustomSelectControl, Notice, RangeControl, TextareaControl, TextControl } from '@wordpress/components';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { __ } from '@wordpress/i18n';
@@ -13,6 +13,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
+import { replace, trash } from '@wordpress/icons';
 
 const ImageCTA = ( { layerID } ) => {
 	/**
@@ -125,26 +126,26 @@ const ImageCTA = ( { layerID } ) => {
 				>
 					{ __( 'Add Image', 'godam' ) }
 				</label>
-				<Button
+				{ ( 0 === layer?.image || ! layer?.image ) && <Button
 					onClick={ openImageCTAUploader }
 					variant="primary"
 					className="ml-2 godam-button"
 					aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
 				>
-					{ 0 === layer?.image || ! layer?.image ? __( 'Upload', 'godam' ) : __( 'Replace', 'godam' ) }
-				</Button>
+					{ __( 'Upload', 'godam' ) }
+				</Button> }
+				{ layer?.image && ! selectedImageUrl && ( <div className="mt-6 rounded-xl w-[160px] h-[160px] animate-pulse bg-gray-200"></div> ) }
 				{ selectedImageUrl && (
-					<div className="mt-2">
-						<Icon
-							icon={ 'no' }
-							className="relative top-[25px] left-[60%] cursor-pointer"
-							onClick={ removeCTAImage }
-						/>
+					<div className="flex mt-6">
 						<img
 							src={ selectedImageUrl }
 							alt={ __( 'Selected custom brand', 'godam' ) }
-							className="max-w-[200px]"
+							className="w-[160px] h-[160px] rounded-xl object-cover"
 						/>
+						<div className="ml-[6px] flex flex-col">
+							<Button className="!text-brand-neutral-900" icon={ replace } isDestructive onClick={ openImageCTAUploader } />
+							<Button className="mt-1" icon={ trash } isDestructive onClick={ removeCTAImage } />
+						</div>
 					</div>
 				) }
 				{ notice.isVisible && (
