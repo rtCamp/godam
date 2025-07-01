@@ -47,11 +47,11 @@ const CF7 = ( { layerID } ) => {
 	const formTheme = layer.theme || 'godam';
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
+	// const isValidAPIKey = window?.videoData?.validApiKey;
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isCF7PluginActive = Boolean( window?.videoData?.cf7_active );
+	const isCF7PluginActive = Boolean( window?.videoData?.cf7Active );
 
 	const handleThemeChange = ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'theme', value: value.selectedItem.key } ) );
 

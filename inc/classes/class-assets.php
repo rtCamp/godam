@@ -88,7 +88,7 @@ class Assets {
 			'rtgodam-script',
 			'godamAPIKeyData',
 			array(
-				'valid_api_key' => rtgodam_is_api_key_valid(),
+				'validApiKey' => rtgodam_is_api_key_valid(),
 			)
 		);
 
@@ -110,7 +110,7 @@ class Assets {
 			'godamPluginDependencies',
 			array(
 				'gravityforms' => $is_gf_active,
-				'wp_polls'     => $is_wp_polls_active,
+				'wpPolls'      => $is_wp_polls_active,
 				'woocommerce'  => $is_woo_active,
 				'cf7'          => $is_cf7_active,
 				'wpforms'      => $is_wpforms_active,
@@ -161,9 +161,9 @@ class Assets {
 			'rtgodam-jetpack-form',
 			'wpAjax',
 			array(
-				'ajaxurl' => admin_url( 'admin-ajax.php' ),
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'jetpack_form_nonce' ),
-			)
+			),
 		);
 
 		wp_enqueue_script( 'rtgodam-jetpack-form' );
@@ -209,10 +209,10 @@ class Assets {
 			'rtgodam-script',
 			'godamRestRoute',
 			array(
-				'url'      => get_rest_url( get_current_blog_id() ),
-				'home_url' => get_home_url( get_current_blog_id() ),
-				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'api_base' => RTGODAM_API_BASE,
+				'url'     => get_rest_url( get_current_blog_id() ),
+				'homeUrl' => get_home_url( get_current_blog_id() ),
+				'nonce'   => wp_create_nonce( 'wp_rest' ),
+				'apiBase' => RTGODAM_API_BASE,
 			)
 		);
 

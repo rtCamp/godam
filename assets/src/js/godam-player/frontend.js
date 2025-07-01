@@ -48,7 +48,7 @@ import {
 /**
  * Global variables
  */
-const validAPIKey = window?.godamAPIKeyData?.valid_api_key;
+const validAPIKey = window?.godamAPIKeyData?.validApiKey;
 
 library.add( fas );
 dom.watch();
@@ -422,7 +422,7 @@ function GODAMPlayer( videoRef = null ) {
 					<div class='share-input-container'>
 						<label>Page Link</label>
 						<div class="share-modal-input-group">
-							<input id="page-link" type="text" value="${ window.godamData.api_base }/web/video/${ this.player().jobId }" readonly />
+							<input id="page-link" type="text" value="${ window.godamData?.apiBase }/web/video/${ this.player().jobId }" readonly />
 							<button id="copy-page-link" class="copy-button">
 								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
 							</button>
@@ -432,7 +432,7 @@ function GODAMPlayer( videoRef = null ) {
 					<div class='share-input-container'>
 						<label>Embed</label>
 						<div class="share-modal-input-group">
-							<input id="embed-code" type="text" value='<iframe src="${ window.godamData.api_base }/web/embed/${ this.player().jobId }"></iframe>' readonly />
+							<input id="embed-code" type="text" value='<iframe src="${ window.godamData?.apiBase }/web/embed/${ this.player().jobId }"></iframe>' readonly />
 							<button id="copy-embed-code" class="copy-button">
 								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
 							</button>
@@ -481,7 +481,7 @@ function GODAMPlayer( videoRef = null ) {
 					.addEventListener( 'click', closeModal );
 
 				const link = encodeURI(
-					`${ window.godamData.api_base }/web/video/${ this.player().jobId }`,
+					`${ window.godamData?.apiBase }/web/video/${ this.player().jobId }`,
 				);
 				const msg = encodeURIComponent( 'Check out this video!' );
 
@@ -877,7 +877,7 @@ function GODAMPlayer( videoRef = null ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {
-					if ( window.godamPluginDependencies?.wp_polls ) {
+					if ( window.godamPluginDependencies?.wpPolls ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'woo' ) {
