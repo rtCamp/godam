@@ -9,6 +9,7 @@ namespace RTGODAM\Inc\Sureforms;
 
 use RTGODAM\Inc\Traits\Singleton;
 use RTGODAM\Inc\SureForms\Blocks\Register;
+use RTGODAM\Inc\Sureforms\Assets;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -70,5 +71,6 @@ class Init {
 		 * Register the blocks.
 		 */
 		Register::get_instance();
+		Assets::get_instance();
 	}
 }
