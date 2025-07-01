@@ -240,6 +240,7 @@ const pages = {
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
 	},
+	devtool: "source-map",
 };
 
 module.exports = [

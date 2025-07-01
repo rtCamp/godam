@@ -418,7 +418,7 @@ function GODAMPlayer( videoRef = null ) {
 						<a class="whatsapp social-icon" target="blank"><img src=${ Whatsapp } alt='Whatsapp icon' height={24} width={24}</a>
 						<a class="telegram social-icon" target="blank"><img src=${ Telegram } alt='Telegram icon' height={24} width={24}</a>
 					</div>
-					
+
 					<div class='share-input-container'>
 						<label>Page Link</label>
 						<div class="share-modal-input-group">
@@ -819,7 +819,10 @@ function GODAMPlayer( videoRef = null ) {
 							layerObj.layerElement.querySelector( '.ff-message-success' ) ||
 							layerObj.layerElement.querySelector( '.contact-form-success' ) ||
 							( ! layerObj.layerElement.querySelector( '.wp-polls-form' ) &&
-							layerObj.layerElement.querySelector( '.wp-polls-answer' ) )
+								layerObj.layerElement.querySelector( '.wp-polls-answer' ) ) ||
+							( layerObj.layerElement.querySelector( '.forminator-success' ) &&
+								layerObj.layerElement.querySelector( '.forminator-show' ) ) ||
+							layerObj.layerElement.querySelector( '.everest-forms-notice--success' )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -860,11 +863,15 @@ function GODAMPlayer( videoRef = null ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.wpforms && layer.form_type === 'wpforms' ) {
 						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.everestForms && layer.form_type === 'everestforms' ) {
+						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.cf7 && layer.form_type === 'cf7' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.jetpack && layer.form_type === 'jetpack' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.sureforms && layer.form_type === 'sureforms' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.forminator && layer.form_type === 'forminator' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.fluentForms && layer.form_type === 'fluentforms' ) {
 						handleLayerDisplay( layer );

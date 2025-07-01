@@ -75,7 +75,7 @@ class Assets {
 				'nonce' => wp_create_nonce( 'wp_rest' ),
 			)
 		);
-		
+
 		$localize_array = rtgodam_get_localize_array();
 
 		wp_localize_script(
@@ -83,7 +83,7 @@ class Assets {
 			'videoAnalyticsParams',
 			$localize_array
 		);
-		
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamAPIKeyData',
@@ -97,12 +97,14 @@ class Assets {
 		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
 		$is_woo_active      = is_plugin_active( 'woocommerce/woocommerce.php' );
 
-		$is_cf7_active          = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
-		$is_wpforms_active      = is_plugin_active( 'wpforms-lite/wpforms.php' );
-		$is_jetpack_active      = is_plugin_active( 'jetpack/jetpack.php' );
-		$is_sure_form_active    = is_plugin_active( 'sureforms/sureforms.php' );
-		$is_fluent_forms_active = is_plugin_active( 'fluentform/fluentform.php' );
-		
+		$is_cf7_active             = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
+		$is_wpforms_active         = is_plugin_active( 'wpforms-lite/wpforms.php' );
+		$is_jetpack_active         = is_plugin_active( 'jetpack/jetpack.php' );
+		$is_sure_form_active       = is_plugin_active( 'sureforms/sureforms.php' );
+		$is_forminator_form_active = is_plugin_active( 'forminator/forminator.php' );
+		$is_fluent_forms_active    = is_plugin_active( 'fluentform/fluentform.php' );
+		$is_everest_forms_active   = is_plugin_active( 'everest-forms/everest-forms.php' );
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamPluginDependencies',
@@ -114,7 +116,9 @@ class Assets {
 				'wpforms'      => $is_wpforms_active,
 				'jetpack'      => $is_jetpack_active,
 				'sureforms'    => $is_sure_form_active,
+				'forminator'   => $is_forminator_form_active,
 				'fluentForms'  => $is_fluent_forms_active,
+				'everestForms' => $is_everest_forms_active,
 			)
 		);
 
@@ -159,7 +163,7 @@ class Assets {
 			array(
 				'ajaxurl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'jetpack_form_nonce' ),
-			) 
+			)
 		);
 
 		wp_enqueue_script( 'rtgodam-jetpack-form' );
