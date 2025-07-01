@@ -75,7 +75,7 @@ class Assets {
 				'nonce' => wp_create_nonce( 'wp_rest' ),
 			)
 		);
-		
+
 		$localize_array = rtgodam_get_localize_array();
 
 		wp_localize_script(
@@ -83,7 +83,7 @@ class Assets {
 			'videoAnalyticsParams',
 			$localize_array
 		);
-		
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamAPIKeyData',
@@ -103,7 +103,8 @@ class Assets {
 		$is_sure_form_active       = is_plugin_active( 'sureforms/sureforms.php' );
 		$is_forminator_form_active = is_plugin_active( 'forminator/forminator.php' );
 		$is_fluent_forms_active    = is_plugin_active( 'fluentform/fluentform.php' );
-		
+		$is_everest_forms_active   = is_plugin_active( 'everest-forms/everest-forms.php' );
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamPluginDependencies',
@@ -117,6 +118,7 @@ class Assets {
 				'sureforms'    => $is_sure_form_active,
 				'forminator'   => $is_forminator_form_active,
 				'fluentForms'  => $is_fluent_forms_active,
+				'everestForms' => $is_everest_forms_active,
 			)
 		);
 
@@ -161,7 +163,7 @@ class Assets {
 			array(
 				'ajaxurl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'jetpack_form_nonce' ),
-			) 
+			)
 		);
 
 		wp_enqueue_script( 'rtgodam-jetpack-form' );

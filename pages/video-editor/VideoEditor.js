@@ -27,6 +27,7 @@ import {
 	setSureforms,
 	setForminatorForms,
 	setFluentForms,
+	setEverestForms,
 } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
@@ -55,7 +56,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
-	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, isFetching } = useFetchForms();
+	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, isFetching } = useFetchForms();
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -130,6 +131,10 @@ const VideoEditor = ( { attachmentID } ) => {
 				dispatch( setWPForms( wpForms ) );
 			}
 
+			if ( everestForms && everestForms.length > 0 ) {
+				dispatch( setEverestForms( everestForms ) );
+			}
+
 			if ( gravityForms && gravityForms.length > 0 ) {
 				dispatch( setGravityForms( gravityForms ) );
 			}
@@ -146,7 +151,7 @@ const VideoEditor = ( { attachmentID } ) => {
 				dispatch( setFluentForms( fluentForms ) );
 			}
 		}
-	}, [ gravityForms, cf7Forms, wpForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms ] );
+	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {

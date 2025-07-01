@@ -17,6 +17,7 @@ import { jetpackFormsApi } from './api/jetpack-forms';
 import { sureformsApi } from './api/sureforms';
 import { forminatorFormsApi } from './api/forminator-forms';
 import { fluentFormsApi } from './api/fluent-forms';
+import { everestFormsApi } from './api/everest-forms';
 
 export default configureStore( {
 	reducer: {
@@ -31,6 +32,8 @@ export default configureStore( {
 		[ sureformsApi.reducerPath ]: sureformsApi.reducer,
 		[ forminatorFormsApi.reducerPath ]: forminatorFormsApi.reducer,
 		[ fluentFormsApi.reducerPath ]: fluentFormsApi.reducer,
+		[ everestFormsApi.reducerPath ]: everestFormsApi.reducer,
+
 	},
 	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat(
 		videosAPI.middleware,
@@ -43,5 +46,6 @@ export default configureStore( {
 		sureformsApi.middleware,
 		forminatorFormsApi.middleware,
 		fluentFormsApi.middleware,
+		everestFormsApi.middleware,
 	),
 } );

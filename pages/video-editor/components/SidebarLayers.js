@@ -10,6 +10,7 @@ import { addLayer, setCurrentLayer } from '../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
+import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
 import woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
@@ -86,6 +87,12 @@ export const layerTypes = [
 				icon: FluentFormsIcon,
 				isActive: window?.videoData?.fluentformsActive ?? false,
 				tooltipMessage: __( 'Fluent Forms plugin is not active', 'godam' ),
+			},
+			everestforms: {
+				layerText: __( 'Everest Forms', 'godam' ),
+				icon: EverestFormsIcon,
+				isActive: window?.videoData?.everestFormsActive ?? false,
+				tooltipMessage: __( 'Everest Forms plugin is not active', 'godam' ),
 			},
 		},
 	},
