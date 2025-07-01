@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, ButtonGroup } from '@wordpress/components';
+import { Button, ButtonGroup, SelectControl } from '@wordpress/components';
 const { __ } = wp.i18n;
 /**
  * Internal dependencies
@@ -19,6 +19,7 @@ import {
 	openModal,
 	toggleMultiSelectMode,
 	clearMultiSelectedFolders,
+	setSortOrder,
 } from './redux/slice/folders';
 import { FolderCreationModal, RenameModal, DeleteModal } from './components/modal/index.jsx';
 import { triggerFilterChange } from './data/media-grid.js';
@@ -27,6 +28,7 @@ const App = () => {
 	const dispatch = useDispatch();
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
 	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
+	const currentSortOrder = useSelector( ( state ) => state.FolderReducer.sortOrder );
 
 	const handleClick = useCallback( ( id ) => {
 		if ( isMultiSelecting ) {
@@ -58,24 +60,21 @@ const App = () => {
 
 				<ButtonGroup className="button-group mb-spacing">
 					<Button
-						icon="edit"
 						__next40pxDefaultSize
 						variant="secondary"
 						text={ ! isMultiSelecting ? __( 'Select', 'godam' ) : __( 'Cancel', 'godam' ) }
 						className="button--half"
 						onClick={ () => dispatch( toggleMultiSelectMode() ) }
 					/>
-					<Button
-						icon="trash"
-						__next40pxDefaultSize
-						variant="primary"
-						text={ __( 'Delete', 'godam' ) }
-						className="button--half"
-						isDestructive={ true }
-						onClick={ () => dispatch( openModal( 'delete' ) ) }
-						disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
-					/>
 				</ButtonGroup>
+				<SelectControl
+					value={ currentSortOrder }
+					options={ [
+						{ label: __( '▲ By Name (A-Z)', 'godam' ), value: 'name-asc' },
+						{ label: __( '▼ By Name (Z-A)', 'godam' ), value: 'name-desc' },
+					] }
+					onChange={ ( newOrder ) => dispatch( setSortOrder( newOrder ) ) }
+				/>
 			</div>
 
 			<div className="folder-list">

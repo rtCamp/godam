@@ -42,6 +42,8 @@ const slice = createSlice( {
 		},
 		isMultiSelecting: false,
 		multiSelectedFolderIds: [],
+
+		sortOrder: 'name-asc',
 	},
 	reducers: {
 		changeSelectedFolder: ( state, action ) => {
@@ -151,6 +153,17 @@ const slice = createSlice( {
 		clearMultiSelectedFolders: ( state ) => {
 			state.multiSelectedFolderIds = [];
 		},
+		setSortOrder: ( state, action ) => {
+			state.sortOrder = action.payload;
+			state.folders.sort( ( a, b ) => {
+				if ( state.sortOrder === 'name-asc' ) {
+					return a.name.localeCompare( b.name );
+				} else if ( state.sortOrder === 'name-desc' ) {
+					return b.name.localeCompare( a.name );
+				}
+				return 0;
+			} );
+		},
 	},
 } );
 
@@ -169,6 +182,7 @@ export const {
 	removeMultiSelectedFolder,
 	toggleMultiSelectedFolder,
 	clearMultiSelectedFolders,
+	setSortOrder,
 } = slice.actions;
 
 export default slice.reducer;
