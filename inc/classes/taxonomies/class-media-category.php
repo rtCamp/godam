@@ -1,6 +1,6 @@
 <?php
 /**
- * Adds default WordPress `category` taxonomy to media library (attachments).
+ * Register `media_category` taxonomy for the media attachments.
  *
  * @package GoDAM
  */
@@ -9,47 +9,87 @@ namespace RTGODAM\Inc\Taxonomies;
 
 defined( 'ABSPATH' ) || exit;
 
-use RTGODAM\Inc\Traits\Singleton;
-
 /**
  * Class Media_Category
  */
-class Media_Category {
-
-	use Singleton;
+class Media_Category extends Base {
 
 	/**
-	 * Constructor.
-	 */
-	protected function __construct() {
-		$this->setup_hooks();
-	}
-
-	/**
-	 * Setup hooks.
-	 */
-	protected function setup_hooks() {
-		add_action( 'init', array( $this, 'register_category_for_media' ) );
-		add_action( 'restrict_manage_posts', array( $this, 'add_category_filter_dropdown' ) );
-		add_filter( 'parse_query', array( $this, 'filter_media_by_category' ) );
-	}
-
-	/**
-	 * Register category taxonomy for `attachment` post type.
+	 * Slug of taxonomy.
 	 *
-	 * Enables categories to be assigned to media attachments in the media library.
+	 * @var string
+	 */
+	const SLUG = 'media_category';
+
+	/**
+	 * To setup action/filter.
 	 *
 	 * @return void
 	 */
-	public function register_category_for_media() {
-		register_taxonomy_for_object_type( 'category', 'attachment' );
+	protected function setup_hooks() {
+		parent::setup_hooks();
+
+		add_action( 'restrict_manage_posts', array( $this, 'add_category_filter_dropdown' ) );
 	}
 
 	/**
-	 * Add category filter dropdown to media library list view.
+	 * Labels for taxonomy.
+	 *
+	 * @return array
+	 */
+	public function get_labels(): array {
+
+		return array(
+			'name'              => _x( 'Categories', 'Category', 'godam' ),
+			'singular_name'     => _x( 'Category', 'Category', 'godam' ),
+			'search_items'      => __( 'Search Categories', 'godam' ),
+			'all_items'         => __( 'All Categories', 'godam' ),
+			'parent_item'       => __( 'Parent Folder', 'godam' ),
+			'parent_item_colon' => __( 'Parent Folder:', 'godam' ),
+			'edit_item'         => __( 'Edit Category', 'godam' ),
+			'update_item'       => __( 'Update Category', 'godam' ),
+			'add_new_item'      => __( 'Add New Category', 'godam' ),
+			'new_item_name'     => __( 'New Category Name', 'godam' ),
+			'menu_name'         => __( 'Categories', 'godam' ),
+		);
+	}
+
+	/**
+	 * List of post types for taxonomy.
+	 *
+	 * @return array
+	 */
+	public function get_post_types(): array {
+
+		return array(
+			'attachment',
+		);
+	}
+
+	/**
+	 * To get argument to register taxonomy.
+	 *
+	 * @return array
+	 */
+	public function get_args(): array {
+
+		$args = parent::get_args();
+
+		$extra = array(
+			'hierarchical' => false,
+			'show_ui'      => true,
+			'show_in_rest' => true,
+			'query_var'    => true,
+		);
+
+		return array_merge( $args, $extra );
+	}
+
+	/**
+	 * Add Category filter dropdown to media library list view.
 	 *
 	 * Displays a dropdown filter in the media library admin page to filter
-	 * attachments by category. Uses WordPress native `wp_dropdown_categories` function.
+	 * attachments by Category. Uses WordPress native `wp_dropdown_categories` function.
 	 *
 	 * @return void
 	 */
@@ -61,56 +101,25 @@ class Media_Category {
 			return;
 		}
 
-		$taxonomy = 'category';
+		$taxonomy = 'media_category';
 		$selected = isset( $_GET[ $taxonomy ] ) ? sanitize_text_field( wp_unslash( $_GET[ $taxonomy ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The media filter form has nonce verification, so this is safe to use without additional nonce checks.
 
+		$has_terms = wp_count_terms( array( 'taxonomy' => $taxonomy ) );
+
+		$dropdown_args = array(
+			'show_option_all' => __( 'All Categories', 'godam' ),
+			'taxonomy'        => $taxonomy,
+			'name'            => $taxonomy,
+			'orderby'         => 'name',
+			'value_field'     => 'slug',
+			'selected'        => $selected,
+			'depth'           => 3,
+			'hide_empty'      => false,
+		);
 
 		wp_dropdown_categories(
-			array(
-				'show_option_all' => __( 'All Categories', 'godam' ),
-				'taxonomy'        => $taxonomy,
-				'name'            => $taxonomy,
-				'orderby'         => 'name',
-				'selected'        => $selected,
-				'depth'           => 3,
-				'hide_empty'      => false,
-			)
+			$has_terms ? $dropdown_args : array_merge( $dropdown_args, array( 'show_option_none' => __( 'No Categories', 'godam' ) ) )
 		);
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
-	}
-
-	/**
-	 * Filter media library query by selected category.
-	 *
-	 * Modifies the WordPress query to filter media attachments based on
-	 * the selected category from the dropdown filter.
-	 *
-	 * @param WP_Query $query The WordPress query object.
-	 *
-	 * @return WP_Query Modified query object.
-	 */
-	public function filter_media_by_category( $query ) {
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- The media filter form has nonce verification, so this is safe to use without additional nonce checks.
-		global $pagenow;
-
-		if ( ! is_admin() || 'upload.php' !== $pagenow ) {
-			return $query;
-		}
-
-		$taxonomy = 'category';
-
-		if ( isset( $_GET[ $taxonomy ] ) && ! empty( $_GET[ $taxonomy ] ) ) {
-			$term                           = sanitize_text_field( wp_unslash( $_GET[ $taxonomy ] ) );
-			$query->query_vars['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- This is a standard query modification for filtering media by category.
-				array(
-					'taxonomy' => $taxonomy,
-					'field'    => 'term_id',
-					'terms'    => $term,
-				),
-			);
-		}
-
-		return $query;
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended -- The media filter form has nonce verification, so this is safe to use without additional nonce checks.
 	}
 }
