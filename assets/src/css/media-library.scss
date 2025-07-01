@@ -2,44 +2,7 @@
  * global CSS for the media library.
  */
 
-#wpwrap:has( #rt-transcoder-media-library-root ) {
-    background: #FFF;
-
-    .media-frame {
-        background: #F5F5F5;
-        height: 100%;
-    }
-
-    .wrap {
-        margin: 12px 0 0 0;
-        height: calc(100% - 12px);
-    }
-
-    .wp-heading-inline {
-        margin: 0 24px;
-        padding: 9px 0 20px;
-    }
-
-    .media-frame-content {
-        padding: 16px 24px;
-    }
-
-    .media-toolbar {
-        border: none;
-        border-radius: 4px;
-    }
-}
-
-#wpbody:has( #rt-transcoder-media-library-root ){
-	display: flex;
-	height: calc(100vh - 32px);
-}
-
-#wpcontent:has( #rt-transcoder-media-library-root ) {
-	padding-left: 0 !important;
-}
-
-.godam-button {
+ .godam-button {
 	position: relative;
 	top: 9px;
 	margin-left: 24px !important;
@@ -58,8 +21,70 @@
 		background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTkuODkwNzIgOC4xMjIzMkw0LjA1Njc1IDEzLjk1NjNMMi41MjYxMiAxMi40MjU3QzEuNjQ0MyAxMS41NDM4IDIuMDY1NDkgMTAuMDM2NSAzLjI3ODg5IDkuNzQwNzdMOS44OTI1MSA4LjEyNDExTDkuODkwNzIgOC4xMjIzMloiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl83Nl85NikiLz4KPHBhdGggZD0iTTE3LjE2MzkgOC43MjA4NkwxNi41NTI4IDExLjIyMTFMOC45MzcyNCAxOC44MzY3TDUuMTI1IDE1LjAyNDRMMTIuNzYwMiA3LjM4OTE3TDE1LjIyODMgNi43ODUxN0MxNi4zOTUgNi41MDAxOSAxNy40NDg5IDcuNTU0MDcgMTcuMTYyMiA4LjcxOTA3TDE3LjE2MzkgOC43MjA4NloiIGZpbGw9InVybCgjcGFpbnQxX2xpbmVhcl83Nl85NikiLz4KPHBhdGggZD0iTTE1Ljg3MzUgMTQuMTI2NUwxNC4yNjA0IDIwLjcyMjJDMTMuOTYyOSAyMS45MzM4IDEyLjQ1NTYgMjIuMzU1IDExLjU3MzggMjEuNDczMkwxMC4wNTAzIDE5Ljk0OTdMMTUuODczNSAxNC4xMjY1WiIgZmlsbD0idXJsKCNwYWludDJfbGluZWFyXzc2Xzk2KSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzc2Xzk2IiB4MT0iMi40NzQ4OCIgeTE9IjEyLjg3NjYiIHgyPSI4LjU1OTk2IiB5Mj0iNi43OTE1NSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjQUIzQTZDIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0U2NTMzQSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MV9saW5lYXJfNzZfOTYiIHgxPSI2LjYxMjk0IiB5MT0iMTcuMzQ4NyIgeDI9IjE2Ljc0NjgiIHkyPSI3LjIxNDg3IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNBQjNBNkMiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTY1MzNBIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQyX2xpbmVhcl83Nl85NiIgeDE9IjExLjEyODEiIHkxPSIyMS41Mjg4IiB4Mj0iMTcuMjAyIiB5Mj0iMTUuNDU0OSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjQUIzQTZDIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0U2NTMzQSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=);
 		background-size: contain;
 	}
+ }
+
+#wpwrap:has( #rt-transcoder-media-library-root ) {
+    background: #FFF;
+
+    .button {
+        border: 1px solid #A3A3A3;
+        border-radius: 0.25rem;
+        color: #1c1c1c;
+    }
+
+    .button-primary {
+        background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+        color: #FFF;
+    }
+
+    .godam-button {
+        padding: 6px 8px;
+        height: 40px;
+        top: 4px;
+    }
+
+    .media-frame {
+        background: #F5F5F5;
+        height: 100%;
+    }
+
+    #wp-media-grid {
+        margin: 12px 0 0 0;
+        height: calc(100% - 12px);
+    }
+
+    .wp-heading-inline {
+        margin: 0 24px;
+        padding: 9px 0 20px;
+    }
+
+    .page-title-action {
+        background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+		border-radius: 0.25rem;
+		border: none;
+		color: #FFF;
+		padding: 6px 8px;
+    }
+
+    .media-frame-content {
+        padding: 16px 24px;
+    }
+
+    .media-toolbar {
+        border: none;
+        border-radius: 4px;
+    }
 }
 
+#wpbody:has( #rt-transcoder-media-library-root ){
+	display: flex;
+	height: calc(100vh - 32px);
+	font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+}
+
+#wpcontent:has( #rt-transcoder-media-library-root ) {
+	padding-left: 0 !important;
+}
 
 .media-library-bulk-actions {
 
@@ -98,8 +123,7 @@
 		gap: 0.5rem;
 		margin-bottom: 0.5rem;
 
-		.button {
-
+		&.button {
 			font-size: .75rem;
 			padding: .5rem 1rem;
 			text-transform: uppercase;
