@@ -17,9 +17,11 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import TreeItem from './TreeItem.jsx';
 import TreeItemPreview from './TreeItemPreview.jsx';
+import ContextMenu from '../context-menu/ContextMenu.jsx';
 
-import { setTree, updateSnackbar } from '../../redux/slice/folders.js';
+import { setTree, updateSnackbar, changeSelectedFolder } from '../../redux/slice/folders.js';
 import { utilities } from '../../data/utilities';
+import { triggerFilterChange } from '../../data/media-grid';
 
 import { useAssignFolderMutation, useGetFoldersQuery, useUpdateFolderMutation } from '../../redux/api/folders.js';
 import SnackbarComp from './SnackbarComp.jsx';
@@ -56,6 +58,13 @@ const FolderTree = () => {
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
 
 	const [ updateFolderMutation ] = useUpdateFolderMutation();
+
+	const [ contextMenu, setContextMenu ] = useState( {
+		visible: false,
+		x: 0,
+		y: 0,
+		folderId: null,
+	} );
 
 	useEffect( () => {
 		if ( folders ) {
@@ -146,6 +155,31 @@ const FolderTree = () => {
 		mouseSensor,
 		pointerSensor,
 	);
+
+	const handleContextMenu = ( e, folderId, folderItem ) => {
+		e.preventDefault(); // Prevent default browser context menu
+
+		if ( folderId === -1 ) {
+			triggerFilterChange( 'all' );
+		} else if ( folderId === 0 ) {
+			triggerFilterChange( 'uncategorized' );
+		} else {
+			triggerFilterChange( folderId );
+		}
+
+		dispatch( changeSelectedFolder( { item: folderItem } ) );
+
+		setContextMenu( {
+			visible: true,
+			x: e.clientX,
+			y: e.clientY,
+			folderId,
+		} );
+	};
+
+	const handleCloseContextMenu = () => {
+		setContextMenu( { ...contextMenu, visible: false } );
+	};
 
 	useEffect( () => {
 		/**
@@ -252,6 +286,7 @@ const FolderTree = () => {
 									item={ item }
 									key={ item.id }
 									depth={ item.id === activeId && projected ? projected.depth : item.depth }
+									onContextMenu={ ( e, id ) => handleContextMenu( e, id, item ) }
 								/>
 							);
 						} ) }
@@ -270,6 +305,15 @@ const FolderTree = () => {
 					</div>
 				) : null }
 			</DragOverlay>
+
+			{ contextMenu.visible && (
+				<ContextMenu
+					x={ contextMenu.x }
+					y={ contextMenu.y }
+					folderId={ contextMenu.folderId }
+					onClose={ handleCloseContextMenu }
+				/>
+			) }
 
 			<SnackbarComp />
 

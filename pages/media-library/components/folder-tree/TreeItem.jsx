@@ -16,11 +16,11 @@ import { Icon, file } from '@wordpress/icons';
 import { toggleOpenClose, changeSelectedFolder } from '../../redux/slice/folders';
 import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
-import folderTreeChevron from '../../assets/folderTreeChevron.svg';
+import { FolderTreeChevron } from '../icons';
 
 const indentPerLevel = 12;
 
-const TreeItem = ( { item, index, depth } ) => {
+const TreeItem = ( { item, index, depth, onContextMenu } ) => {
 	const { attributes, listeners, transform, transition, setNodeRef, isDragging } = useSortable( { id: item.id } );
 
 	const dispatch = useDispatch();
@@ -64,6 +64,7 @@ const TreeItem = ( { item, index, depth } ) => {
 				style={ style }
 				{ ...attributes }
 				{ ...listeners }
+				onContextMenu={ ( e ) => onContextMenu( e, item.id ) }
 			>
 				<button
 					style={ { paddingLeft: `${ depth * indentPerLevel }px` } }
@@ -79,7 +80,7 @@ const TreeItem = ( { item, index, depth } ) => {
 								e.preventDefault(); handleChevronClick( e );
 							}
 						} } role="button" tabIndex={ 0 } aria-label={ item.isOpen ? 'Collapse folder' : 'Expand folder' } >
-							<img src={ folderTreeChevron } alt="folder-tree-chevron" className={ item.isOpen ? 'tree-item__chevron_open' : '' } />
+							<FolderTreeChevron className={ item.isOpen ? 'tree-item__chevron_open' : '' } />
 						</span>
 						: <span className="tree-item__spacer" />
 					}

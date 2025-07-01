@@ -95,6 +95,10 @@
 	&.hide-sidebar {
         display: none;
 	}
+
+	.folder-context-menu__item {
+	    justify-content: flex-start !important;
+	}
 }
 
 .components-button.has-icon.has-text {
