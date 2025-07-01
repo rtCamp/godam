@@ -6,7 +6,11 @@ module.exports = {
 	],
 	theme: {
 		extend: {
-			colors: {},
+			colors: {
+				'brand-neutral': {
+					900: '#1C1C1C',
+				},
+			},
 		},
 	},
 	plugins: [
