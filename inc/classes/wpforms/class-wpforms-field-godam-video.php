@@ -109,9 +109,9 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			wp_enqueue_script(
 				'wpforms-godam-recorder-script',
-				RTGODAM_URL . 'assets/build/js/integrations/wpforms/wpforms-godam-recorder.min.js',
+				RTGODAM_URL . 'assets/build/js/wpforms-godam-recorder.min.js',
 				array( 'jquery' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/integrations/wpforms/wpforms-godam-recorder.min.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder.min.js' ),
 				true
 			);
 
@@ -122,7 +122,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			$form_id = isset( $form_data['id'] ) ? absint( $form_data['id'] ) : 0;
 			$field_id = isset( $field['id'] ) ? absint( $field['id'] ) : 0;
-
+			$file_input_id = "wpforms_file_input_{$form_id}_{$field_id}";
 			// Attributes - Max Upload Size
 			$max_upload_size = isset( $field['max_file_size'] ) ? absint( $field['max_file_size'] ) : 0;
 			$max_upload_size = $max_upload_size > 0 ? $max_upload_size * 1024 * 1024 : wp_max_upload_size(); // Convert MB to bytes.
@@ -140,6 +140,8 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				return $result;
 			}, array() );
 
+			$file_selectors= implode( ',', $file_selectors );
+
 			// Uppy container.
 			$uppy_container_id = "uppy_container_{$form_id}_{$field_id}";
 			$uppy_file_name_id = "uppy_filename_{$form_id}_{$field_id}";
@@ -148,22 +150,23 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		?>
 			<input
 				type="file"
+				id="<?php echo esc_attr( $file_input_id ); ?>"
 				style="display: none;"
 				<?php echo wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ); ?>
 				<?php echo $primary['required']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			/>
 			<div
-				data-max-size="<?php echo esc_attr( $max_upload_size ); ?>"
+				data-max-file-size="<?php echo esc_attr( $max_upload_size ); ?>"
 				id="<?php echo esc_attr( $uppy_container_id ); ?>"
 				class="uppy-video-upload"
-				data-input-id="<?php echo esc_attr( $field_id ); ?>"
+				data-input-id="<?php echo esc_attr( $file_input_id ); ?>"
 				data-video-upload-button-id="<?php echo esc_attr( $video_upload_button_id ); ?>"
 				data-file-selectors="<?php echo esc_attr( $file_selectors ); ?>"
 			>
 				<button
 					type="button"
 					id="<?php echo esc_attr( $video_upload_button_id ); ?>"
-					class="uppy-video-upload-button"
+					class="uppy-video-upload-button wpforms-submit"
 				>
 					<span class="dashicons dashicons-video-alt"></span>
 					<?php esc_html_e( 'Record Video', 'godam' ); ?>
