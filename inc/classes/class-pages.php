@@ -333,27 +333,35 @@ class Pages {
 				true
 			);
 
-			$is_gf_active        = is_plugin_active( 'gravityforms/gravityforms.php' );
-			$is_cf7_active       = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
-			$is_wpforms_active   = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
-			$is_jetpack_active   = is_plugin_active( 'jetpack/jetpack.php' );
-			$is_sure_form_active = is_plugin_active( 'sureforms/sureforms.php' );
+			$is_gf_active           = is_plugin_active( 'gravityforms/gravityforms.php' );
+			$is_cf7_active          = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
+			$is_wpforms_active      = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
+			$is_jetpack_active      = is_plugin_active( 'jetpack/jetpack.php' );
+			$is_sure_form_active    = is_plugin_active( 'sureforms/sureforms.php' );
+			$is_forminator_active   = is_plugin_active( 'forminator/forminator.php' );
+			$is_fluent_forms_active = is_plugin_active( 'fluentform/fluentform.php' );
+
+			// TODO Handle Everest Forms pro versions as well in future.
+			$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' );
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
 				'videoData',
 				array(
-					'nonce'            => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
-					'currentUserId'    => get_current_user_id(),            // Current user ID.
-					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
-					'validApiKey'      => rtgodam_is_api_key_valid(),
-					'adminUrl'         => admin_url(),
-					'gfActive'         => $is_gf_active,
-					'cf7Active'        => $is_cf7_active,
-					'wpformsActive'    => $is_wpforms_active,
-					'jetpackActive'    => $is_jetpack_active,
-					'sureformsActive'  => $is_sure_form_active,
+					'nonce'              => wp_create_nonce( 'wp_rest' ),   // WordPress nonce for API requests.
+					'currentUserId'      => get_current_user_id(),          // Current user ID.
+					'currentUserRoles'   => wp_get_current_user()->roles,   // Current user roles.
+					'validApiKey'        => rtgodam_is_api_key_valid(),
+					'adminUrl'           => admin_url(),
+					'gfActive'           => $is_gf_active,
+					'cf7Active'          => $is_cf7_active,
+					'wpformsActive'      => $is_wpforms_active,
+					'jetpackActive'      => $is_jetpack_active,
+					'sureformsActive'    => $is_sure_form_active,
+					'forminatorActive'   => $is_forminator_active,
+					'fluentformsActive'  => $is_fluent_forms_active,
+					'everestFormsActive' => $is_everest_forms_active,
 				)
 			);
 
@@ -375,6 +383,21 @@ class Pages {
 			// Enqueue Sure Forms style if the plugin is active.
 			if ( $is_sure_form_active ) {
 				$this->enqueue_sureforms_styles();
+			}
+
+			// Enqueue Forminator Forms styles if the plugin is active.
+			if ( $is_forminator_active ) {
+				$this->enqueue_forminator_forms_styles();
+			}
+
+			// Enqueue Fluent Forms styles if the plugin is active.
+			if ( $is_fluent_forms_active ) {
+				$this->enqueue_fluent_forms_styles();
+			}
+
+			// Enqueue Everest Forms styles if the plugin is active.
+			if ( $is_everest_forms_active ) {
+				$this->enqueue_everest_forms_styles();
 			}
 
 			$rtgodam_user_data = rtgodam_get_user_data( true );
@@ -688,5 +711,66 @@ class Pages {
 				$instance->enqueue_scripts_and_styles();
 			}
 		}
+	}
+
+	/**
+	 * Enqueue the Forminator assets.
+	 *
+	 * @return void
+	 */
+	public function enqueue_forminator_forms_styles() {
+		// Check if Forminator is active and url is available.
+		if ( ! function_exists( 'forminator_plugin_url' ) && ! defined( 'FORMINATOR_VERSION' ) ) {
+			return;
+		}
+
+		// Get Forminator plugin URL.
+		$forminator_url = forminator_plugin_url();
+
+		// Enqueue the CSS files.
+		wp_enqueue_style( 'forminator-base', $forminator_url . 'assets/forminator-ui/css/src/form/forminator-form-default.base.min.css', array(), FORMINATOR_VERSION );
+		wp_enqueue_style( 'forminator-grid', $forminator_url . 'assets/forminator-ui/css/src/grid/forminator-grid.open.min.css', array(), FORMINATOR_VERSION );
+	}
+
+	/**
+	 * Enqueue Fluent Forms styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_fluent_forms_styles() {
+		if ( ! defined( 'FLUENTFORM_VERSION' ) ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'fluent-forms-public',
+			plugins_url( 'fluentform/assets/css/fluent-forms-public.css' ),
+			array(),
+			FLUENTFORM_VERSION
+		);
+
+		wp_enqueue_style(
+			'fluent-forms-default',
+			plugins_url( 'fluentform/assets/css/fluentform-public-default.css' ),
+			array(),
+			FLUENTFORM_VERSION
+		);
+	}
+
+	/**
+	 * Enqueue Everest Forms styles.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function enqueue_everest_forms_styles() {
+		if ( ! defined( 'EVF_VERSION' ) ) {
+			return;
+		}
+
+		wp_enqueue_style( 'everest-forms-general', evf()->plugin_url() . '/assets/css/everest-forms.css', array(), EVF_VERSION );
+
+		\EVF_Frontend_Scripts::load_scripts();
 	}
 }

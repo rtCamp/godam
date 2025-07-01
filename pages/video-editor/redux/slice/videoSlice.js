@@ -48,12 +48,15 @@ const slice = createSlice( {
 		loading: false,
 		gforms: [],
 		cf7Forms: [],
+		fluentForms: [],
 		wpforms: [],
 		gformPluginActive: true,
 		jetpackForms: [],
 		jetpackPluginActive: false,
 		sureforms: [],
 		sureformsPlugnActive: false,
+		forminatorForms: [],
+		forminatorPluginActive: false,
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
@@ -143,11 +146,17 @@ const slice = createSlice( {
 		setWPForms: ( state, action ) => {
 			state.wpforms = action.payload;
 		},
+		setEverestForms: ( state, action ) => {
+			state.everestForms = action.payload;
+		},
 		setWPFormPluginActive: ( state, action ) => {
 			state.wpFormPluginActive = action.payload;
 		},
 		setJetpackForms: ( state, action ) => {
 			state.jetpackForms = action.payload;
+		},
+		setFluentForms: ( state, action ) => {
+			state.fluentForms = action.payload;
 		},
 		setJetpackPluginActive: ( state, action ) => {
 			state.jetpackPluginActive = action.payload;
@@ -157,6 +166,12 @@ const slice = createSlice( {
 		},
 		setSureformsPluginActive: ( state, action ) => {
 			state.sureformsPlugnActive = action.payload;
+		},
+		setForminatorForms: ( state, action ) => {
+			state.forminatorForms = action.payload;
+		},
+		setForminatorPluginActive: ( state, action ) => {
+			state.forminatorPluginActive = action.payload;
 		},
 	},
 } );
@@ -179,10 +194,14 @@ export const {
 	setCF7Forms,
 	SetCF7PluginActive,
 	setWPForms,
+	setEverestForms,
 	setWPFormPluginActive,
 	setJetpackForms,
+	setFluentForms,
 	setJetpackPluginActive,
 	setSureforms,
 	setSureformsPluginActive,
+	setForminatorForms,
+	setForminatorPluginActive,
 } = slice.actions;
 export default slice.reducer;
