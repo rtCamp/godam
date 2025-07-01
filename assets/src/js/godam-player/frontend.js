@@ -821,7 +821,8 @@ function GODAMPlayer( videoRef = null ) {
 							( ! layerObj.layerElement.querySelector( '.wp-polls-form' ) &&
 								layerObj.layerElement.querySelector( '.wp-polls-answer' ) ) ||
 							( layerObj.layerElement.querySelector( '.forminator-success' ) &&
-								layerObj.layerElement.querySelector( '.forminator-show' ) )
+								layerObj.layerElement.querySelector( '.forminator-show' ) ) ||
+							layerObj.layerElement.querySelector( '.everest-forms-notice--success' )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
