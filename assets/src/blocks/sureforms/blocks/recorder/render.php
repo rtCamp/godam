@@ -49,7 +49,7 @@ $uppy_preview_id   = sprintf( 'uppy_preview_%s_%s', $form_id, $block_id );
  */
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
-		'class' => 'godam_srfm_input_recorder_container srfm-block',
+		'class' => 'godam_srfm_input_recorder_container srfm-block srfm-block-single srfm-upload-block',
 	)
 );
 ?>
@@ -65,7 +65,8 @@ $wrapper_attributes = get_block_wrapper_attributes(
 		id="<?php echo esc_attr( $block_id ); ?>"
 		type="file"
 		style="display: none;"
-		class="rtgodam-hidden"
+		data-required="<?php echo esc_attr( $required ? 'true' : '' ); ?>"
+		class="rtgodam-hidden srfm-input-upload"
 	/>
 	<label
 		for="<?php echo esc_attr( $video_upload_button_id ); ?>"
@@ -96,18 +97,25 @@ $wrapper_attributes = get_block_wrapper_attributes(
 			<span class="dashicons dashicons-video-alt"></span>
 			<?php echo esc_html( $record_button ); ?>
 		</button>
+		<p class="srfm-description">
+			<?php
+				echo esc_html(
+					sprintf(
+						// Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
+						__( 'Maximum allowed on this server: %s MB', 'godam' ),
+						$max_file_size / 1048576,
+					)
+				);
+				?>
+		</p>
+		<div class="srfm-error-wrap">
+			<div
+				class="srfm-error-message"
+				data-srfm-id="srfm-error-<?php echo esc_attr( $block_id ); ?>"
+				data-error-msg="<?php echo esc_attr( $error_msg ); ?>"
+			><?php echo esc_html( $error_msg ); ?></div>
+		</div>
 		<div id="<?php echo esc_attr( $uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
-		<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename"></div>
+		<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename srfm-description"></div>
 	</div>
-	<p class="srfm-description">
-		<?php
-			echo esc_html(
-				sprintf(
-					// Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
-					__( 'Maximum allowed on this server: %s MB', 'godam' ),
-					$max_file_size / 1048576,
-				)
-			);
-			?>
-	</p>
 </div>
