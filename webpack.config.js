@@ -48,7 +48,6 @@ const sharedConfig = {
 		},
 		minimizer: defaultConfig.optimization.minimizer.concat( [ new CssMinimizerPlugin() ] ),
 	},
-	devtool: "source-map",
 };
 
 // Generate a webpack config which includes setup for CSS extraction.
@@ -78,8 +77,6 @@ const styles = {
 			( plugin ) => plugin.constructor.name !== 'DependencyExtractionWebpackPlugin',
 		),
 	],
-	devtool: "source-map",
-
 };
 
 // Example of how to add a new entry point for JS file.
