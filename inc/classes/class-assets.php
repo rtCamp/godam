@@ -250,6 +250,15 @@ class Assets {
 
 		wp_localize_script(
 			'easydam-media-library',
+			'godamTabCallback',
+			array(
+				'apiUrl' => rest_url( 'godam/v1/media-library/get-godam-cmm-files' ),
+				'nonce'  => wp_create_nonce( 'wp_rest' ),
+			)
+		);
+
+		wp_localize_script(
+			'easydam-media-library',
 			'transcoderSettings',
 			array(
 				'restUrl' => esc_url_raw( rest_url( 'godam/v1/transcoding/transcoding-status' ) ),

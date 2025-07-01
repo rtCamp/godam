@@ -298,7 +298,7 @@ class Media_Library_Ajax {
 	}
 
 	/**
-	 * Add transcoding URL to the media JS Object.
+	 * Add transcoding URL, virtual status to the media JS Object.
 	 *
 	 * @param array   $response Attachment response.
 	 * @param WP_Post $attachment Attachment object.
@@ -321,6 +321,19 @@ class Media_Library_Ajax {
 
 		// Add transcoding status to response.
 		$response['transcoding_status'] = $transcoding_status ? strtolower( $transcoding_status ) : 'not_started';
+
+		$godam_original_id = get_post_meta( $attachment->ID, '_godam_original_id', true );
+
+		// If a GoDAM original ID exists, mark this attachment as virtual.
+		if ( ! empty( $godam_original_id ) ) {
+			// Indicate that this is a virtual attachment.
+			$response['virtual'] = true;
+			// Set the icon to be used for the virtual media preview.
+			$response['icon'] = get_post_meta( $attachment->ID, 'icon', true );
+			// Populate the image field used by the media library to show previews.
+			$response['image']        = array();
+			$response['image']['src'] = $response['icon'];
+		}
 
 		return $response;
 	}

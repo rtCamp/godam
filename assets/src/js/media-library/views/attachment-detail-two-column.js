@@ -1,7 +1,10 @@
+/* global Backbone */
+
 /**
  * External dependencies
  */
 import DOMPurify from 'isomorphic-dompurify';
+import videojs from 'video.js';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -193,6 +196,18 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		`;
 	},
 
+	/**
+	 * Renders the custom attachment details view.
+	 *
+	 * - Calls the parent `AttachmentDetailsTwoColumn.render()` method to ensure core UI is in place.
+	 * - If the attachment is a video, renders custom action buttons (Edit Video, Analytics).
+	 * - If the video is marked as a "virtual" entry:
+	 * -- Injects a `<video>` player into the UI using video.js.
+	 * -- Applies a custom player configuration with minimal controls and responsive layout.
+	 * -- Ensures dynamic rendering via timeout to guarantee DOM readiness.
+	 *
+	 * @return {Backbone.View} The updated view instance for chaining.
+	 */
 	render() {
 		// Call the parent render method.
 		AttachmentDetailsTwoColumn.prototype.render.apply( this, arguments );
@@ -200,6 +215,54 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		// Check if the attachment is a video and render the edit buttons.
 		if ( this.model.get( 'type' ) === 'video' ) {
 			this.renderVideoActions();
+
+			const virtual = this.model.get( 'virtual' );
+
+			// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
+			if ( undefined !== virtual && virtual ) {
+				const videoUrl = this.model.get( 'transcoded_url' ); // Ensure it's a valid .mp4
+				const $container = this.$el.find( '.wp-video' );
+				const videoId = 'videojs-player-' + this.model.get( 'id' ); // Unique ID
+
+				// Clear default preview, Create a <video> element to be used by Video.js.
+				$container.empty().append( `
+					<video
+						id="${ videoId }"
+						class="video-js vjs-default-skin"
+						controls
+						preload="auto"
+						width="100%"
+						height="auto"
+					>
+						<source src="${ videoUrl }" type="application/dash+xml" />
+					</video>
+				` );
+
+				// Wait for DOM to fully render the core preview container.
+				setTimeout( () => {
+					const videoElement = document.getElementById( videoId );
+					if ( videoElement && typeof videojs !== 'undefined' ) {
+						// Initialize the player with minimal controls.
+						videojs( videoElement, {
+							width: '100%',
+							aspectRatio: '16:9',
+							controlBar: {
+								volumePanel: false,
+								fullscreenToggle: true,
+								currentTimeDisplay: true,
+								timeDivider: true,
+								durationDisplay: true,
+								remainingTimeDisplay: true,
+								progressControl: true,
+								playToggle: true,
+								captionsButton: false,
+								chaptersButton: false,
+								pictureInPictureToggle: false,
+							},
+						} );
+					}
+				}, 100 ); // Slight delay to ensure DOM update.
+			}
 		}
 
 		// Return this view.
