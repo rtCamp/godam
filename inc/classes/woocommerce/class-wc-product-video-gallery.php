@@ -107,9 +107,16 @@ class WC_Product_Video_Gallery {
 		wp_register_script(
 			'rtgodam-wc-video-carousel',
 			RTGODAM_URL . 'assets/build/js/wc-video-carousel.min.js',
-			array( 'jquery', 'rtgodam-swiper-script' ),
+			array( 'jquery', 'wp-hooks', 'rtgodam-swiper-script' ),
 			filemtime( RTGODAM_PATH . 'assets/src/libs/swiper/wc-video-carousel.min.js' ),
 			true
+		);
+
+		wp_register_style(
+			'rtgodam-wc-video-carousel-style',
+			RTGODAM_URL . 'assets/build/css/godam-video-carousel.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/godam-video-carousel.css' )
 		);
 
 		if ( get_post_type() === 'product' ) {
@@ -121,15 +128,17 @@ class WC_Product_Video_Gallery {
 			wp_register_script(
 				'godam-player-frontend-script',
 				RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
-				array( 'rtgodam-wc-video-carousel' ),
+				array( 'wp-hooks', 'rtgodam-wc-video-carousel' ),
 				filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
 				true
 			);
 
-			wp_enqueue_style( 'rtgodam-swiper-style' );
 			wp_enqueue_script( 'rtgodam-swiper-script' );
 			wp_enqueue_script( 'rtgodam-wc-video-carousel' );
 			wp_enqueue_script( 'godam-player-frontend-script' );
+
+			wp_enqueue_style( 'rtgodam-swiper-style' );
+			wp_enqueue_style( 'rtgodam-wc-video-carousel-style' );
 		}
 	}
 
@@ -435,6 +444,11 @@ class WC_Product_Video_Gallery {
 	 */
 	public function add_video_slider_to_single_product() {
 		global $post;
+
+		if ( ! apply_filters( 'rtgodam_display_video_slider_to_single_product', true ) ) {
+			return '';
+		}
+
 		$rtgodam_product_video_gallery_ids = get_post_meta( $post->ID, '_rtgodam_product_video_gallery_ids', true );
 
 		if ( empty( $rtgodam_product_video_gallery_ids ) ) {
@@ -451,6 +465,6 @@ class WC_Product_Video_Gallery {
 		$slider_html .= '<div class="swiper-button-next"></div>';
 		$slider_html .= '<div class="swiper-button-prev"></div>';
 		$slider_html .= '</div>';
-		echo $slider_html; // phpcs:ignore	
+		echo apply_filters( 'rtgodam_video_slider_html', $slider_html ); // phpcs:ignore
 	}
 }

@@ -1,0 +1,38 @@
+/**
+ * The following styles get applied on the front of your site
+ * You can customize them to fit your needs
+ */
+
+.rtgodam-product-video-gallery-slider {
+    max-width: 300px;
+    max-height: 540px;
+
+    .video-js .vjs-control {
+        width: 3em;
+    }
+
+    .animate-video-loading {
+        aspect-ratio: 9/16;
+    }
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+    outline: none;
+
+    &::after {
+        font-size: 20px;
+        color: var(--wp--preset--color--white);
+        padding: 9px 14px;
+        background-color: var(--wp--preset--color--cyan-bluish-gray);
+        border-radius: 20px;
+        border: 1px solid var(--wp--preset--color--white);
+        transition: all 0.3s ease;
+    }
+
+    &:hover {
+        &::after {
+            transform: scale(1.1);
+        }
+    }
+}
