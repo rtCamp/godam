@@ -24,6 +24,8 @@ class Media_Folders extends Base {
 	/**
 	 * Setup hooks for the taxonomy.
 	 *
+	 * @since n.e.x.t
+	 * 
 	 * @return void
 	 */
 	protected function setup_hooks() {
@@ -91,6 +93,10 @@ class Media_Folders extends Base {
 	 * Register term meta for media folder count.
 	 *
 	 * This meta will store the count of attachments in each media folder.
+	 * 
+	 * @since n.e.x.t
+	 * 
+	 * @return void
 	 */
 	public function register_term_meta() {
 		register_term_meta(

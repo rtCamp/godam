@@ -129,6 +129,8 @@ class Plugin {
 
 	/**
 	 * Load all the classes related to the media library.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */

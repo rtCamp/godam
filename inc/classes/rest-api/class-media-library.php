@@ -397,6 +397,8 @@ class Media_Library extends Base {
 	 * Download folder as ZIP.
 	 *
 	 * Create a ZIP file of the folder with the given ID.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response|\WP_Error

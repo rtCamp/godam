@@ -1,6 +1,8 @@
 <?php
 /**
  * Media Folder Utilities class - Centralized helper functions for media folder operations.
+ * 
+ * @since n.e.x.t
  *
  * @package GoDAM
  */
@@ -13,6 +15,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Media_Folder_Utils
+ * 
+ * @since n.e.x.t
  */
 class Media_Folder_Utils {
 
@@ -20,16 +24,22 @@ class Media_Folder_Utils {
 
 	/**
 	 * Cache group for media folder operations
+	 * 
+	 * @since n.e.x.t
 	 */
 	private const CACHE_GROUP = 'godam_media_folders';
 
 	/**
 	 * Default cache expiration time (15 days)
+	 * 
+	 * @since n.e.x.t
 	 */
 	private const CACHE_EXPIRATION = 15 * DAY_IN_SECONDS;
 
 	/**
 	 * Get the count of attachments in a folder with caching
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @param int  $folder_id - The ID of the media folder.
 	 * @param bool $force_refresh - Whether to bypass cache and get fresh count.
@@ -83,6 +93,8 @@ class Media_Folder_Utils {
 
 	/**
 	 * Invalidate attachment count cache for a specific folder
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @param int $folder_id - The ID of the media folder.
 	 */
@@ -97,6 +109,8 @@ class Media_Folder_Utils {
 
 	/**
 	 * Invalidate attachment count cache for multiple folders
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @param array $folder_ids - An array of media folder IDs.
 	 */
@@ -116,6 +130,8 @@ class Media_Folder_Utils {
 	/**
 	 * Clear all attachment count caches
 	 * Useful for bulk operations or when you want to force refresh all counts
+	 * 
+	 * @since n.e.x.t
 	 */
 	public function clear_all_attachment_count_caches() {
 		global $wpdb;
@@ -135,6 +151,8 @@ class Media_Folder_Utils {
 
 	/**
 	 * Check if a folder exists and is valid
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @param int $folder_id - The ID of the media folder.
 	 * @return bool - Whether the folder exists and is valid.
@@ -153,6 +171,8 @@ class Media_Folder_Utils {
 
 	/**
 	 * Get folder information with attachment count
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @param int  $folder_id - The ID of the media folder.
 	 * @param bool $force_refresh - Whether to bypass cache for the count.

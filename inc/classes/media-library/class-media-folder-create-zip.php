@@ -2,6 +2,8 @@
 /**
  * Media Folders REST API class - Optimized with batch processing.
  *
+ * @since n.e.x.t
+ * 
  * @package GoDAM
  */
 
@@ -13,6 +15,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Media_Folder_Create_Zip
+ * 
+ * @since n.e.x.t
  */
 class Media_Folder_Create_Zip {
 
@@ -20,6 +24,8 @@ class Media_Folder_Create_Zip {
 
 	/**
 	 * Batch size for processing attachments
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @var int - This is set to 50 to balance performance and memory usage.
 	 */
@@ -27,6 +33,8 @@ class Media_Folder_Create_Zip {
 
 	/**
 	 * Memory limit threshold (in bytes) - 80% of available memory
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @var int - This is set to 80% of the available memory limit to prevent memory exhaustion.
 	 */
@@ -34,6 +42,8 @@ class Media_Folder_Create_Zip {
 
 	/**
 	 * Constructor
+	 * 
+	 * @since n.e.x.t
 	 */
 	public function __construct() {
 		// Set memory threshold to 80% of available memory.
@@ -43,6 +53,8 @@ class Media_Folder_Create_Zip {
 
 	/**
 	 * Create a ZIP file from the attachments in a media folder.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @param int    $folder_id - The ID of the media folder.
 	 * @param string $zip_name - The name of the ZIP file to be created. Defaults to 'media-folder.zip'.
@@ -79,6 +91,8 @@ class Media_Folder_Create_Zip {
 
 	/**
 	 * Get attachments in batches for memory efficiency
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @param int $folder_id - The ID of the media folder.
 	 * @param int $offset - The offset for pagination.
@@ -125,6 +139,8 @@ class Media_Folder_Create_Zip {
 
 	/**
 	 * Create a ZIP file from attachments using batch processing
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @param int    $folder_id - The ID of the media folder.
 	 * @param string $zip_name - The name of the ZIP file to be created.
@@ -260,6 +276,8 @@ class Media_Folder_Create_Zip {
 
 	/**
 	 * Generate a unique filename for the ZIP archive
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @param string $filename - The original filename of the attachment.
 	 * @param int    $attachment_id - The ID of the attachment.
@@ -283,6 +301,8 @@ class Media_Folder_Create_Zip {
 
 	/**
 	 * Check if memory limit is approaching
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @return bool
 	 */
@@ -293,6 +313,8 @@ class Media_Folder_Create_Zip {
 
 	/**
 	 * Get memory limit in bytes
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @return int
 	 */
@@ -324,6 +346,8 @@ class Media_Folder_Create_Zip {
 
 	/**
 	 * Force garbage collection and cleanup
+	 * 
+	 * @since n.e.x.t
 	 */
 	private function cleanup_memory() {
 		if ( function_exists( 'gc_collect_cycles' ) ) {
@@ -337,6 +361,8 @@ class Media_Folder_Create_Zip {
 
 	/**
 	 * Cleanup the ZIP file after a scheduled time.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @param string $zip_path The path to the ZIP file to be cleaned up.
 	 */
