@@ -48,6 +48,7 @@ const sharedConfig = {
 		},
 		minimizer: defaultConfig.optimization.minimizer.concat( [ new CssMinimizerPlugin() ] ),
 	},
+	devtool: 'source-map'
 };
 
 // Generate a webpack config which includes setup for CSS extraction.
@@ -153,7 +154,7 @@ const gfEntryDetailJS = {
 const wpFormsGodamRecorderJS = {
 	...sharedConfig,
 	entry: {
-		'wpforms-godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'integrations', 'wpforms','gf-godam-recorder.js' ),
+		'wpforms-godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'integrations', 'wpforms','wpforms-godam-recorder.js' ),
 	},
 };
 
@@ -247,7 +248,7 @@ const pages = {
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
 	},
-	devtool: "source-map",
+	devtool: 'source-map'
 };
 
 module.exports = [
