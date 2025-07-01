@@ -23,7 +23,7 @@ $block_id      = ! empty( $attributes['blockId'] ) ? $attributes['blockId'] : ''
 $required      = ! empty( $attributes['required'] ) ? $attributes['required'] : false;
 $record_button = ! empty( $attributes['recordButton'] ) ? $attributes['recordButton'] : __( 'Record Video', 'godam' );
 $file_selector = ! empty( $attributes['fileSelector'] ) ? $attributes['fileSelector'] : array( 'file_input' );
-$max_file_size = ! empty( $attributes['maxFileSize'] ) ? $attributes['maxFileSize'] : $max_file_size;
+$max_file_size = ! empty( $attributes['maxFileSize'] ) ? absint( $attributes['maxFileSize'] ) * 1048576 : $max_file_size;
 $form_id       = ! empty( $attributes['formId'] ) ? $attributes['formId'] : '';
 $slug          = ! empty( $attributes['slug'] ) ? $attributes['slug'] : 'recorder';
 $error_msg     = ! empty( $attributes['errorMsg'] ) ? $attributes['errorMsg'] : __( 'The field is required', 'godam' );
@@ -57,11 +57,11 @@ $wrapper_attributes = get_block_wrapper_attributes(
 <div <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<input
 		type="hidden"
-		name="MAX_FILE_SIZE"
+		name="<?php echo esc_attr( 'godam-file-' . $block_id . '-lbl-' . rtrim( base64_encode( 'file-input' ), '=' ) . '-max-file-size' ); ?>"
 		value="<?php echo esc_attr( $max_file_size ); ?>"
 	/>
 	<input
-		name="<?php echo esc_attr( 'input_' . $form_id ); ?>"
+		name="<?php echo esc_attr( 'godam-upload-' . $block_id . '-lbl-' . rtrim( base64_encode( $label ), '=' ) . '-input-recorder' ); ?>"
 		id="<?php echo esc_attr( $block_id ); ?>"
 		type="file"
 		style="display: none;"
@@ -105,7 +105,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 				sprintf(
 					// Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
 					__( 'Maximum allowed on this server: %s MB', 'godam' ),
-					$max_file_size,
+					$max_file_size / 1048576,
 				)
 			);
 			?>
