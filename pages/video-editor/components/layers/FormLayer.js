@@ -16,6 +16,7 @@ import { __ } from '@wordpress/i18n';
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import GravityForm from '../forms/GravityForm';
 import WPForm from '../forms/WPForm';
+import EverestForm from '../forms/EverestForm';
 import CF7 from '../forms/CF7';
 import JetpackForm from '../forms/JetpackForm';
 import SureForm from '../forms/Sureform.js';
@@ -29,19 +30,19 @@ import ForminatorForm from '../forms/forminatorForms.js';
  */
 const FormLayerComponentType = {
 	gravity: {
-		isActive: Boolean( window?.videoData?.gf_active ) ?? false,
+		isActive: Boolean( window?.videoData?.gfActive ) ?? false,
 		component: GravityForm,
 	},
 	cf7: {
-		isActive: Boolean( window?.videoData?.cf7_active ) ?? false,
+		isActive: Boolean( window?.videoData?.cf7Active ) ?? false,
 		component: CF7,
 	},
 	jetpack: {
-		isActive: Boolean( window?.videoData?.jetpack_active ) ?? false,
+		isActive: Boolean( window?.videoData?.jetpackActive ) ?? false,
 		component: JetpackForm,
 	},
 	wpforms: {
-		isActive: Boolean( window?.videoData?.wpforms_active ) ?? false,
+		isActive: Boolean( window?.videoData?.wpformsActive ) ?? false,
 		component: WPForm,
 	},
 	sureforms: {
@@ -55,6 +56,10 @@ const FormLayerComponentType = {
 	fluentforms: {
 		isActive: Boolean( window?.videoData?.fluentformsActive ) ?? false,
 		component: FluentForm,
+	},
+	everestforms: {
+		isActive: Boolean( window?.videoData?.everestFormsActive ) ?? false,
+		component: EverestForm,
 	},
 };
 
@@ -73,7 +78,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
+	// const isValidAPIKey = window?.videoData?.validApiKey;
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
@@ -99,6 +104,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 			<FormLayerComponent layerID={ layer.id } />
 
 			<ToggleControl
+				__nextHasNoMarginBottom
 				className="mb-4 godam-toggle"
 				label={ __( 'Allow user to skip', 'godam' ) }
 				checked={ layer.allow_skip }

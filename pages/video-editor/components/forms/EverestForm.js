@@ -14,47 +14,53 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
-import { useGetSingleWPFormQuery } from '../../redux/api/wpforms';
+import { useGetSingleEverestFormQuery } from '../../redux/api/everest-forms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
 
-const WPForm = ( { layerID } ) => {
+const EverestForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
-	const wpForms = useSelector( ( state ) => state.videoReducer.wpforms );
-	const { data: formHTML, isFetching } = useGetSingleWPFormQuery( layer.wpform_id );
+	const everestForms = useSelector( ( state ) => state.videoReducer.everestForms ) || [];
+	const { data: formHTML, isFetching } = useGetSingleEverestFormQuery( layer.everest_form_id );
 
-	const forms = wpForms?.map( ( form ) => ( {
+	const forms = everestForms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
 	} ) );
 
 	const changeFormID = ( formID ) => {
-		dispatch( updateLayerField( { id: layer.id, field: 'wpform_id', value: formID } ) );
+		dispatch( updateLayerField( { id: layer.id, field: 'everest_form_id', value: formID } ) );
 	};
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.validApiKey;
+	// const isValidAPIKey = window?.videoData?.valid_api_key;
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isWPFormsPluginActive = Boolean( window?.videoData?.wpformsActive );
+	const isEverestFormsPluginActive = Boolean( window?.videoData?.everestFormsActive );
 
 	return (
 		<>
 			{
-				! isWPFormsPluginActive &&
+				! isEverestFormsPluginActive &&
 				<Notice
 					className="mb-4"
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'Please activate the WPForms plugin to use this feature.', 'godam' ) }
+					{ __( 'Please activate the Everest Forms plugin to use this feature.', 'godam' ) }
 				</Notice>
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isWPFormsPluginActive } className="gravity-form-selector mb-4" formID={ layer.wpform_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector
+					disabled={ ! isValidAPIKey || ! isEverestFormsPluginActive }
+					className="everest-form-selector mb-4"
+					formID={ layer.everest_form_id }
+					forms={ forms }
+					handleChange={ changeFormID }
+				/>
 			}
 
 			<LayerControl>
@@ -86,7 +92,7 @@ const WPForm = ( { layerID } ) => {
 						{
 							formHTML &&
 							<Button
-								href={ `${ window?.videoData?.adminUrl }admin.php?page=wpforms-builder&view=fields&form_id=${ layer.wpform_id }` }
+								href={ `${ window?.videoData?.adminUrl }admin.php?page=evf-builder&view=fields&form_id=${ layer.everest_form_id }` }
 								target="_blank"
 								variant="secondary"
 								icon={ pencil }
@@ -111,4 +117,4 @@ const WPForm = ( { layerID } ) => {
 	);
 };
 
-export default WPForm;
+export default EverestForm;

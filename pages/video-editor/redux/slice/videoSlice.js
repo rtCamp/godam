@@ -146,6 +146,9 @@ const slice = createSlice( {
 		setWPForms: ( state, action ) => {
 			state.wpforms = action.payload;
 		},
+		setEverestForms: ( state, action ) => {
+			state.everestForms = action.payload;
+		},
 		setWPFormPluginActive: ( state, action ) => {
 			state.wpFormPluginActive = action.payload;
 		},
@@ -191,6 +194,7 @@ export const {
 	setCF7Forms,
 	SetCF7PluginActive,
 	setWPForms,
+	setEverestForms,
 	setWPFormPluginActive,
 	setJetpackForms,
 	setFluentForms,

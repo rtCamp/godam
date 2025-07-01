@@ -296,6 +296,15 @@ class Media_Library extends Base {
 		}
 
 		foreach ( $thumbnail_array as $key => $thumbnail_src ) {
+				$file_url = $thumbnail_src;
+
+			if ( 0 === strpos( $file_url, $uploads['baseurl'] ) ||
+			0 === strpos( $file_url, 'http://' ) ||
+			0 === strpos( $file_url, 'https://' ) ) {
+				$thumbnail_src = $file_url;
+			} else {
+				$thumbnail_src = $uploads['baseurl'] . '/' . $file_url;
+			}
 			$thumbnail_array[ $key ] = $thumbnail_src;
 		}
 
@@ -303,6 +312,18 @@ class Media_Library extends Base {
 		$thumbnail_array = array_unique( $thumbnail_array );
 
 		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+
+		if ( ! empty( $selected_thumbnail ) ) {
+					$file_url = $selected_thumbnail;
+
+			if ( 0 === strpos( $file_url, $uploads['baseurl'] ) ||
+			0 === strpos( $file_url, 'http://' ) ||
+			0 === strpos( $file_url, 'https://' ) ) {
+				$selected_thumbnail = $file_url;
+			} else {
+				$selected_thumbnail = $uploads['baseurl'] . '/' . $file_url;
+			}
+		}
 
 		$data = array();
 
