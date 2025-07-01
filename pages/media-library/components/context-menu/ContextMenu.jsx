@@ -1,8 +1,8 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useEffect, useRef, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 /**
  * WordPress dependencies
@@ -31,6 +31,17 @@ import './css/context-menu.scss';
 const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	const dispatch = useDispatch();
 	const menuRef = useRef( null );
+
+	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
+	const multiSelectedFolderIds = useSelector( ( state ) => state.FolderReducer.multiSelectedFolderIds );
+	const targetFolderIds = useMemo( () => {
+		if ( isMultiSelecting && multiSelectedFolderIds.length > 0 ) {
+			return multiSelectedFolderIds;
+		}
+
+		return [ folderId ];
+	}, [ isMultiSelecting, multiSelectedFolderIds, folderId ] );
+	const isSpecialFolder = targetFolderIds.some( ( id ) => [ -1, 0 ].includes( id ) );
 
 	// Close menu if clicked outside.
 	useEffect( () => {
@@ -87,9 +98,6 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 		onClose(); // Close the menu after an action is performed
 	};
 
-	// Determine if the folder can be deleted/renamed (same logic as App.js)
-	const isSpecialFolder = [ -1, 0 ].includes( folderId ); // -1 for All Media, 0 for Uncategorized
-
 	return (
 		<div
 			className="folder-context-menu"
@@ -107,7 +115,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				icon={ RenameFolderIcon }
 				onClick={ () => handleMenuItemClick( 'rename' ) }
 				className="folder-context-menu__item"
-				disabled={ isSpecialFolder }
+				disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder }
 			>
 				{ __( 'Rename', 'godam' ) }
 			</Button>

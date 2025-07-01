@@ -56,6 +56,7 @@ const FolderTree = () => {
 	const dispatch = useDispatch();
 	const data = useSelector( ( state ) => state.FolderReducer.folders );
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
 
 	const [ updateFolderMutation ] = useUpdateFolderMutation();
 
@@ -287,6 +288,7 @@ const FolderTree = () => {
 									key={ item.id }
 									depth={ item.id === activeId && projected ? projected.depth : item.depth }
 									onContextMenu={ ( e, id ) => handleContextMenu( e, id, item ) }
+									isMultiSelecting={ isMultiSelecting }
 								/>
 							);
 						} ) }

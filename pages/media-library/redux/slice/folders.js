@@ -40,6 +40,8 @@ const slice = createSlice( {
 			message: '',
 			type: 'success',
 		},
+		isMultiSelecting: false,
+		multiSelectedFolderIds: [],
 	},
 	reducers: {
 		changeSelectedFolder: ( state, action ) => {
@@ -118,6 +120,37 @@ const slice = createSlice( {
 		setTree: ( state, action ) => {
 			state.folders = action.payload;
 		},
+		toggleMultiSelectMode: ( state ) => {
+			state.isMultiSelecting = ! state.isMultiSelecting;
+			if ( ! state.isMultiSelecting ) {
+				state.multiSelectedFolderIds = [];
+			}
+		},
+		addMultiSelectedFolder: ( state, action ) => {
+			const folderIdToAdd = action.payload.id;
+			if ( ! state.multiSelectedFolderIds.includes( folderIdToAdd ) ) {
+				state.multiSelectedFolderIds.push( folderIdToAdd );
+			}
+		},
+		removeMultiSelectedFolder: ( state, action ) => {
+			const folderIdToRemove = action.payload.id;
+			state.multiSelectedFolderIds = state.multiSelectedFolderIds.filter(
+				( id ) => id !== folderIdToRemove,
+			);
+		},
+		toggleMultiSelectedFolder: ( state, action ) => {
+			const folderIdToToggle = action.payload.id;
+			if ( state.multiSelectedFolderIds.includes( folderIdToToggle ) ) {
+				state.multiSelectedFolderIds = state.multiSelectedFolderIds.filter(
+					( id ) => id !== folderIdToToggle,
+				);
+			} else {
+				state.multiSelectedFolderIds.push( folderIdToToggle );
+			}
+		},
+		clearMultiSelectedFolders: ( state ) => {
+			state.multiSelectedFolderIds = [];
+		},
 	},
 } );
 
@@ -131,6 +164,11 @@ export const {
 	renameFolder,
 	deleteFolder,
 	setTree,
+	toggleMultiSelectMode,
+	addMultiSelectedFolder,
+	removeMultiSelectedFolder,
+	toggleMultiSelectedFolder,
+	clearMultiSelectedFolders,
 } = slice.actions;
 
 export default slice.reducer;

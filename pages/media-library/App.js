@@ -14,15 +14,25 @@ const { __ } = wp.i18n;
  */
 import FolderTree from './components/folder-tree/FolderTree.jsx';
 
-import { changeSelectedFolder, openModal } from './redux/slice/folders';
+import {
+	changeSelectedFolder,
+	openModal,
+	toggleMultiSelectMode,
+	clearMultiSelectedFolders,
+} from './redux/slice/folders';
 import { FolderCreationModal, RenameModal, DeleteModal } from './components/modal/index.jsx';
 import { triggerFilterChange } from './data/media-grid.js';
 
 const App = () => {
 	const dispatch = useDispatch();
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
 
 	const handleClick = useCallback( ( id ) => {
+		if ( isMultiSelecting ) {
+			dispatch( clearMultiSelectedFolders() );
+		}
+
 		if ( id === -1 ) {
 			triggerFilterChange( 'all' );
 		} else if ( id === 0 ) {
@@ -32,7 +42,7 @@ const App = () => {
 		}
 
 		dispatch( changeSelectedFolder( { item: { id } } ) );
-	}, [ dispatch ] );
+	}, [ dispatch, isMultiSelecting ] );
 
 	return (
 		<>
@@ -51,10 +61,9 @@ const App = () => {
 						icon="edit"
 						__next40pxDefaultSize
 						variant="secondary"
-						text={ __( 'Rename', 'godam' ) }
+						text={ ! isMultiSelecting ? __( 'Select', 'godam' ) : __( 'Cancel', 'godam' ) }
 						className="button--half"
-						onClick={ () => dispatch( openModal( 'rename' ) ) }
-						disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
+						onClick={ () => dispatch( toggleMultiSelectMode() ) }
 					/>
 					<Button
 						icon="trash"
