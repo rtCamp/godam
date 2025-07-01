@@ -260,7 +260,7 @@ class Assets {
 			array(
 				'terms' => get_terms(
 					array(
-						'taxonomy'   => 'category',
+						'taxonomy'   => 'media_category',
 						'hide_empty' => false,
 					)
 				),
@@ -273,7 +273,7 @@ class Assets {
 			array(
 				'terms' => get_terms(
 					array(
-						'taxonomy'   => 'post_tag',
+						'taxonomy'   => 'media_tag',
 						'hide_empty' => false,
 					)
 				),
