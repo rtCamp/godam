@@ -316,9 +316,11 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 										return layerData?.tooltipMessage;
 									}
 
-									return (
-										layerData?.tooltipMessage ?? ''
-									);
+									if ( layerData?.isActive === false ) {
+										return layerData?.tooltipMessage ?? '';
+									}
+
+									return '';
 								} )();
 
 								if ( '' !== tooltipMessage ) {
