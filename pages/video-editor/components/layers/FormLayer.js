@@ -104,6 +104,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 			<FormLayerComponent layerID={ layer.id } />
 
 			<ToggleControl
+				__nextHasNoMarginBottom
 				className="mb-4 godam-toggle"
 				label={ __( 'Allow user to skip', 'godam' ) }
 				checked={ layer.allow_skip }

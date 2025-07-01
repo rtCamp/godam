@@ -21,7 +21,7 @@ import FormSelector from './FormSelector';
 const EverestForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
-	const everestForms = useSelector( ( state ) => state.videoReducer.everestForms );
+	const everestForms = useSelector( ( state ) => state.videoReducer.everestForms ) || [];
 	const { data: formHTML, isFetching } = useGetSingleEverestFormQuery( layer.everest_form_id );
 
 	const forms = everestForms?.map( ( form ) => ( {
@@ -56,7 +56,7 @@ const EverestForm = ( { layerID } ) => {
 			{
 				<FormSelector
 					disabled={ ! isValidAPIKey || ! isEverestFormsPluginActive }
-					className="gravity-form-selector mb-4"
+					className="everest-form-selector mb-4"
 					formID={ layer.everest_form_id }
 					forms={ forms }
 					handleChange={ changeFormID }
