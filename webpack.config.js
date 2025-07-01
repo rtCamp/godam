@@ -129,24 +129,17 @@ const godamGallery = {
 	},
 };
 
-const gfGodamRecorderJS = {
-	...sharedConfig,
-	entry: {
-		'gf-godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-godam-recorder.js' ),
-	},
-};
-
 const gfGodamRecorderEditorJS = {
 	...sharedConfig,
 	entry: {
-		'gf-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-godam-recorder-editor.js' ),
+		'gf-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gravity-form', 'gf-godam-recorder-editor.js' ),
 	},
 };
 
 const gfEntryDetailJS = {
 	...sharedConfig,
 	entry: {
-		'gf-entry-detail': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-entry-detail.js' ),
+		'gf-entry-detail': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gravity-form', 'gf-entry-detail.js' ),
 	},
 };
 
@@ -251,7 +244,6 @@ module.exports = [
 	godamPlayerAnalytics,
 	deactivationJS,
 	godamGallery,
-	gfGodamRecorderJS,
 	gfGodamRecorderEditorJS,
 	gfEntryDetailJS,
 	jetpackFormJS,

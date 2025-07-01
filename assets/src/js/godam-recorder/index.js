@@ -1,3 +1,4 @@
+/* global jQuery */
 /**
  * External dependencies
  */
@@ -42,13 +43,19 @@ class UppyVideoUploader {
 		// Initialize Uppy and setup event listeners.
 		this.uppy = this.initializeUppy();
 		this.setupUppyEvents();
+
+		// Attach Gravity Forms AJAX rehydration handler.
+		this.setupGravityFormsAjaxHandler();
 	}
 
 	/**
 	 * Clears the persisted state on form submit confirmations.
 	 */
 	static clearUppyStateIfConfirmed() {
-		if ( document.querySelector( 'div[id^=gform_confirmation_message_]' ) ) {
+		if (
+			document.querySelector( 'div[id^=gform_confirmation_message_]' ) ||
+			document.querySelector( 'div.srfm-success-box.srfm-active' )
+		) {
 			Object.keys( localStorage )
 				.filter( ( key ) => key.startsWith( 'uppyState:' ) )
 				.forEach( ( key ) => localStorage.removeItem( key ) );
@@ -212,6 +219,57 @@ class UppyVideoUploader {
 			this.fileInput.value = '';
 		}
 	}
+
+	/**
+	 * Sets up the Gravity Forms `gform_post_render` hook to reattach triggers and restore files after AJAX submission.
+	 */
+	setupGravityFormsAjaxHandler() {
+		jQuery( document ).on( 'gform_post_render', ( _, formId ) => {
+			const submission = window?.gform?.submission;
+			if ( ! submission ) {
+				return;
+			}
+
+			const form = document.getElementById( `gform_${ formId }` );
+			if ( ! form ) {
+				return;
+			}
+
+			// Skip if submission is POSTBACK (non-AJAX).
+			if ( submission.getSubmissionMethod( form ) === submission.SUBMISSION_METHOD_POSTBACK ) {
+				return;
+			}
+
+			// Skip on initial load, run only after AJAX validation errors.
+			const gformWrapper = form.closest( 'div[id^=gform_wrapper_]' );
+			if ( ! gformWrapper.classList.contains( 'gform_validation_error' ) ) {
+				return;
+			}
+
+			this.handleUppyUIOnAjaxRequest();
+		} );
+	}
+
+	/**
+	 * Reattaches Uppy modal open handlers and restores file previews after Gravity Forms AJAX submission.
+	 */
+	handleUppyUIOnAjaxRequest() {
+		const dashboardTrigger = document.getElementById( this.uploadButtonId );
+
+		// Prevent duplicate listeners by checking marker attribute.
+		if ( ! dashboardTrigger.getAttribute( 'uppy-click-attached' ) ) {
+			dashboardTrigger.addEventListener( 'click', () => {
+				this.uppy.getPlugin( 'Dashboard' ).openModal();
+			} );
+			dashboardTrigger.setAttribute( 'uppy-click-attached', 'true' );
+		}
+
+		const restoredFile = this.uppy.getFiles()?.[ 0 ];
+		if ( restoredFile ) {
+			// Re-render preview on AJAX validation errors.
+			this.processVideoUpload( restoredFile );
+		}
+	}
 }
 
 /**
@@ -223,5 +281,14 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
 	document.querySelectorAll( '.uppy-video-upload' ).forEach( ( container ) => {
 		new UppyVideoUploader( container );
+	} );
+} );
+
+/**
+ * Clear the uppy state for gform_confirmation_loaded.
+ */
+jQuery( document ).ready( function() {
+	jQuery( document ).on( 'gform_confirmation_loaded', function() {
+		UppyVideoUploader.clearUppyStateIfConfirmed();
 	} );
 } );
