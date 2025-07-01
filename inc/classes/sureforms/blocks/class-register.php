@@ -60,6 +60,8 @@ class Register {
 	 */
 	public function add_additional_blocks( $blocks ) {
 
+		$new_blocks = array();
+
 		/**
 		 * Add all the blocks.
 		 */

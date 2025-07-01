@@ -105,7 +105,7 @@ class Form_Submit {
 			$file_error = $file_data['error'];
 
 			if ( ! $file_name && ! $temp_path && ! $file_size && ! $file_type ) {
-				$form_data[ $input_key ][] = '';
+				$submission_data[ $input_key ][] = '';
 				continue;
 			}
 
