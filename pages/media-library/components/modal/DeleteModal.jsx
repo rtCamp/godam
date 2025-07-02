@@ -25,6 +25,8 @@ const DeleteModal = () => {
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.delete );
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
+	const multiSelectedFolderIds = useSelector( ( state ) => state.FolderReducer.multiSelectedFolderIds );
 
 	const [ deleteFolderMutation ] = useDeleteFolderMutation();
 	const ref = useRef( null );
@@ -47,13 +49,19 @@ const DeleteModal = () => {
 		setIsLoading( true );
 
 		try {
-			await deleteFolderMutation( selectedFolder.id );
+			if ( ! isMultiSelecting ) {
+				await deleteFolderMutation( selectedFolder.id );
+			} else if ( multiSelectedFolderIds && multiSelectedFolderIds.length ) {
+				for ( const id of multiSelectedFolderIds ) {
+					await deleteFolderMutation( id );
+				}
+			}
 
 			dispatch( deleteFolder() );
 
 			dispatch( updateSnackbar(
 				{
-					message: __( 'Folder deleted successfully', 'godam' ),
+					message: isMultiSelecting ? __( 'Folders deleted successfully', 'godam' ) : __( 'Folder deleted successfully', 'godam' ),
 					type: 'success',
 				},
 			) );
@@ -86,7 +94,15 @@ const DeleteModal = () => {
 				className="modal__container"
 			>
 				<p className="modal__description">
-					Deleting the folder <span className="modal__highlight">{ selectedFolder.name }</span> will remove it and all its subfolders, but <span className="modal__highlight">media associated with it will not be deleted</span>.
+					{ isMultiSelecting ? (
+						<>
+							Deleting <span className="modal__highlight">these { multiSelectedFolderIds && multiSelectedFolderIds.length } folders</span> will remove them and all its subfolders, but <span className="modal__highlight">media associated with them will not be deleted</span>.
+						</>
+					) : (
+						<>
+							Deleting the folder <span className="modal__highlight">{ selectedFolder.name }</span> will remove it and all its subfolders, but <span className="modal__highlight">media associated with it will not be deleted</span>.
+						</>
+					) }
 				</p>
 				<p className="modal__warning">
 					{ __( 'Are you sure you want to proceed? This action cannot be undone.', 'godam' ) }

@@ -96,7 +96,7 @@ const slice = createSlice( {
 			}
 		},
 		deleteFolder: ( state ) => {
-			if ( ! state.selectedFolder ) {
+			if ( ! state.selectedFolder && ! state.isMultiSelecting ) {
 				return;
 			}
 
@@ -111,13 +111,22 @@ const slice = createSlice( {
 				} );
 			}
 
-			findChildren( state.selectedFolder.id );
+			if ( state.isMultiSelecting ) {
+				state.multiSelectedFolderIds.forEach( ( id ) => {
+					findChildren( id );
+				} );
+			} else {
+				findChildren( state.selectedFolder.id );
+			}
 
 			state.folders = state.folders.filter( ( item ) => ! idsToDelete.has( item.id ) );
 
 			state.selectedFolder = {
 				id: -1,
 			};
+
+			state.isMultiSelecting = false;
+			state.multiSelectedFolderIds = [];
 		},
 		setTree: ( state, action ) => {
 			state.folders = action.payload;
