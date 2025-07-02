@@ -3,38 +3,53 @@
 @import "@uppy/webcam/dist/style.min.css";
 @import "@uppy/screen-capture/dist/style.min.css";
 
-.wpforms-field.wpforms-field-video {
+/* Frontend styles for the video upload field. */
+.wpforms-container {
 
-    .uppy-video-upload-preview {
-        margin-top: 20px;
-        max-width: 100%;
+    .wpforms-field.wpforms-field-video {
+
+        .uppy-video-upload-preview {
+            margin-top: 20px;
+            max-width: 100%;
+        }
+
+        .upp-video-upload-filename {
+            margin-top: 5px;
+            font-style: italic;
+            color: #666;
+        }
+
+        /* Style the video upload button similar to the submit button. */
+        .uppy-video-upload-button {
+            background-color: var(--wpforms-button-background-color-alt, var(--wpforms-button-background-color));
+            color: var(--wpforms-button-text-color);
+            height: var(--wpforms-button-size-height);
+            background-color: var(--wpforms-button-background-color-alt, var(--wpforms-button-background-color));
+            border-radius: var(--wpforms-button-border-radius);
+            border-style: var(--wpforms-button-border-style);
+            border-color: var(--wpforms-button-border-color);
+            border-width: var(--wpforms-button-border-size);
+            box-shadow: none;
+            color: var(--wpforms-button-text-color);
+            padding: 0 var(--wpforms-button-size-padding-h);
+            font-family: inherit;
+            font-weight: 500;
+            font-size: var(--wpforms-button-size-font-size);
+            line-height: 100%;
+            cursor: pointer;
+            position: relative;
+            text-decoration: none;
+        }
     }
+}
 
-    .upp-video-upload-filename {
-        margin-top: 5px;
-        font-style: italic;
-        color: #666;
-    }
-
-    /* Style the video upload button similar to the submit button. */
+/* Backend styles for the video upload field. */
+#wpforms-builder {
     .uppy-video-upload-button {
-        background-color: var(--wpforms-button-background-color-alt, var(--wpforms-button-background-color));
-        color: var(--wpforms-button-text-color);
-        height: var(--wpforms-button-size-height);
-        background-color: var(--wpforms-button-background-color-alt, var(--wpforms-button-background-color));
-        border-radius: var(--wpforms-button-border-radius);
-        border-style: var(--wpforms-button-border-style);
-        border-color: var(--wpforms-button-border-color);
-        border-width: var(--wpforms-button-border-size);
-        box-shadow: none;
-        color: var(--wpforms-button-text-color);
-        padding: 0 var(--wpforms-button-size-padding-h);
-        font-family: inherit;
-        font-weight: 500;
-        font-size: var(--wpforms-button-size-font-size);
-        line-height: 100%;
-        cursor: pointer;
-        position: relative;
-        text-decoration: none;
+        padding: 10px 15px;
+
+        .dashicons-video-alt {
+            margin-right: 5px;
+        }
     }
 }

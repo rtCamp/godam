@@ -73,6 +73,12 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @param array $field Field settings.
 		 */
 		public function field_preview( $field ) {
+			wp_enqueue_style(
+				'wpforms-uppy-video-style',
+				RTGODAM_URL . 'assets/build/css/wpforms-uppy-video.css',
+				array(),
+				filemtime( RTGODAM_PATH . 'assets/build/css/wpforms-uppy-video.css' )
+			);
 
 			// Define data.
 			$placeholder   = ! empty( $field['placeholder'] ) ? $field['placeholder'] : '';
@@ -82,7 +88,16 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			$this->field_preview_option( 'label', $field );
 
 			// Primary input.
-			echo '<input type="file" placeholder="' . esc_attr( $placeholder ) . '" value="' . esc_attr( $default_value ) . '" class="primary-input" readonly>';
+			printf (
+				'<input type="file" style="display: none;" placeholder="%s" value="%s" class="primary-input" readonly>',
+				esc_attr( $placeholder ),
+				esc_attr($default_value )
+			);
+
+			// Render upload button.
+			printf( '<button type="button" class="uppy-video-upload-button">');
+			printf('<span class="dashicons dashicons-video-alt"></span>');
+			printf( esc_html__( 'Record Video', 'godam' ) );
 
 			// Description.
 			$this->field_preview_option( 'description', $field );
@@ -105,7 +120,6 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				array(),
 				filemtime( RTGODAM_PATH . 'assets/build/css/wpforms-uppy-video.css' )
 			);
-
 
 			wp_enqueue_script(
 				'wpforms-godam-recorder-script',
@@ -158,7 +172,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			<div
 				data-max-file-size="<?php echo esc_attr( $max_upload_size ); ?>"
 				id="<?php echo esc_attr( $uppy_container_id ); ?>"
-				class="uppy-video-upload"
+				class="uppy-video-upload <?php echo esc_attr( join(' ', $primary['class'] ) ); ?>"
 				data-input-id="<?php echo esc_attr( $file_input_id ); ?>"
 				data-video-upload-button-id="<?php echo esc_attr( $video_upload_button_id ); ?>"
 				data-file-selectors="<?php echo esc_attr( $file_selectors ); ?>"
@@ -166,7 +180,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				<button
 					type="button"
 					id="<?php echo esc_attr( $video_upload_button_id ); ?>"
-					class="uppy-video-upload-button wpforms-submit"
+					class="uppy-video-upload-button"
 				>
 					<span class="dashicons dashicons-video-alt"></span>
 					<?php esc_html_e( 'Record Video', 'godam' ); ?>
