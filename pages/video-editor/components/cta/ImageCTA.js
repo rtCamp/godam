@@ -4,7 +4,15 @@
 /**
  * WordPress dependencies
  */
-import { Button, CustomSelectControl, Notice, RangeControl, TextareaControl, TextControl } from '@wordpress/components';
+import {
+	Button,
+	CustomSelectControl,
+	Notice,
+	RangeControl,
+	TextareaControl,
+	TextControl,
+	Tooltip,
+} from '@wordpress/components';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { __ } from '@wordpress/i18n';
@@ -143,8 +151,12 @@ const ImageCTA = ( { layerID } ) => {
 							className="w-[160px] h-[160px] rounded-xl object-cover"
 						/>
 						<div className="ml-[6px] flex flex-col">
-							<Button className="!text-brand-neutral-900" icon={ replace } isDestructive onClick={ openImageCTAUploader } />
-							<Button className="mt-1" icon={ trash } isDestructive onClick={ removeCTAImage } />
+							<Tooltip text={ __( 'Replace Image', 'godam' ) } placement="right">
+								<Button className="!text-brand-neutral-900" icon={ replace } isDestructive onClick={ openImageCTAUploader } />
+							</Tooltip>
+							<Tooltip text={ __( 'Remove Image', 'godam' ) } placement="right">
+								<Button className="mt-1" icon={ trash } isDestructive onClick={ removeCTAImage } />
+							</Tooltip>
 						</div>
 					</div>
 				) }
