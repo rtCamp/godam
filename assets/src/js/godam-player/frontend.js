@@ -48,7 +48,7 @@ import {
 /**
  * Global variables
  */
-const validAPIKey = window?.godamAPIKeyData?.valid_api_key;
+const validAPIKey = window?.godamAPIKeyData?.validApiKey;
 
 library.add( fas );
 dom.watch();
@@ -418,11 +418,11 @@ function GODAMPlayer( videoRef = null ) {
 						<a class="whatsapp social-icon" target="blank"><img src=${ Whatsapp } alt='Whatsapp icon' height={24} width={24}</a>
 						<a class="telegram social-icon" target="blank"><img src=${ Telegram } alt='Telegram icon' height={24} width={24}</a>
 					</div>
-					
+
 					<div class='share-input-container'>
 						<label>Page Link</label>
 						<div class="share-modal-input-group">
-							<input id="page-link" type="text" value="${ window.godamData.api_base }/web/video/${ this.player().jobId }" readonly />
+							<input id="page-link" type="text" value="${ window.godamData?.apiBase }/web/video/${ this.player().jobId }" readonly />
 							<button id="copy-page-link" class="copy-button">
 								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
 							</button>
@@ -432,7 +432,7 @@ function GODAMPlayer( videoRef = null ) {
 					<div class='share-input-container'>
 						<label>Embed</label>
 						<div class="share-modal-input-group">
-							<input id="embed-code" type="text" value='<iframe src="${ window.godamData.api_base }/web/embed/${ this.player().jobId }"></iframe>' readonly />
+							<input id="embed-code" type="text" value='<iframe src="${ window.godamData?.apiBase }/web/embed/${ this.player().jobId }"></iframe>' readonly />
 							<button id="copy-embed-code" class="copy-button">
 								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
 							</button>
@@ -481,7 +481,7 @@ function GODAMPlayer( videoRef = null ) {
 					.addEventListener( 'click', closeModal );
 
 				const link = encodeURI(
-					`${ window.godamData.api_base }/web/video/${ this.player().jobId }`,
+					`${ window.godamData?.apiBase }/web/video/${ this.player().jobId }`,
 				);
 				const msg = encodeURIComponent( 'Check out this video!' );
 
@@ -816,9 +816,13 @@ function GODAMPlayer( videoRef = null ) {
 							layerObj.layerElement.querySelector( '.wpforms-confirmation-container-full' ) ||
 							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' ) ||
 							layerObj.layerElement.querySelector( '.srfm-success-box.srfm-active' ) ||
+							layerObj.layerElement.querySelector( '.ff-message-success' ) ||
 							layerObj.layerElement.querySelector( '.contact-form-success' ) ||
 							( ! layerObj.layerElement.querySelector( '.wp-polls-form' ) &&
-							layerObj.layerElement.querySelector( '.wp-polls-answer' ) )
+								layerObj.layerElement.querySelector( '.wp-polls-answer' ) ) ||
+							( layerObj.layerElement.querySelector( '.forminator-success' ) &&
+								layerObj.layerElement.querySelector( '.forminator-show' ) ) ||
+							layerObj.layerElement.querySelector( '.everest-forms-notice--success' )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -859,15 +863,21 @@ function GODAMPlayer( videoRef = null ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.wpforms && layer.form_type === 'wpforms' ) {
 						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.everestForms && layer.form_type === 'everestforms' ) {
+						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.cf7 && layer.form_type === 'cf7' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.jetpack && layer.form_type === 'jetpack' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.sureforms && layer.form_type === 'sureforms' ) {
 						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.forminator && layer.form_type === 'forminator' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.fluentForms && layer.form_type === 'fluentforms' ) {
+						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {
-					if ( window.godamPluginDependencies?.wp_polls ) {
+					if ( window.godamPluginDependencies?.wpPolls ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'woo' ) {

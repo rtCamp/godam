@@ -40,6 +40,11 @@
 		color: variables.$godam-black-color !important;
 	}
 
+	&.is-destructive{
+		background-color: variables.$godam-primary-color !important;
+		color: variables.$godam-light-color !important;
+	}
+
 	&:disabled:not( .is-busy ),
 	&[disabled]:not( .is-busy) {
 		color: #949494 !important;
@@ -202,7 +207,7 @@
 	.components-panel__body {
 		padding: 1.25rem;
 	}
-	
+
 
 }
 
@@ -215,7 +220,7 @@
 }
 
 .godam-form-group {
-	
+
 	.label-text {
 		font-size: 0.875rem !important;
 		line-height: 1.375rem !important;

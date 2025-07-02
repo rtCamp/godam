@@ -269,6 +269,10 @@ $media-frame-width: calc(300px + 2 * 24px);
 	vertical-align: middle;
 }
 
+.media-modal-content #media-date-range-filter {
+	vertical-align: bottom;
+}
+
 #media-attachment-date-filters,
 #filter-by-date,
 #media-date-range-filter-start,
@@ -512,4 +516,25 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 	pointer-events: none;
 	opacity: 0.5;
+}
+
+.godam-locked-input-wrapper {
+	position: relative;
+	display: inline-block;
+	width: 100%;
+
+	input[type="text"] {
+		padding-right: 35px;
+		width: 100%;
+	}
+
+	.godam-lock-icon {
+		position: absolute;
+		right: 10px;
+		top: 50%;
+		transform: translateY(-50%);
+		pointer-events: none;
+		font-size: 18px;
+		color: #ab3a6c;
+	}
 }

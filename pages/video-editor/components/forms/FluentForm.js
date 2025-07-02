@@ -14,47 +14,55 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
-import { useGetSingleWPFormQuery } from '../../redux/api/wpforms';
+import { useGetSingleFluentFormQuery } from '../../redux/api/fluent-forms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
 
-const WPForm = ( { layerID } ) => {
+const FluentForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
-	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
-	const wpForms = useSelector( ( state ) => state.videoReducer.wpforms );
-	const { data: formHTML, isFetching } = useGetSingleWPFormQuery( layer.wpform_id );
 
-	const forms = wpForms?.map( ( form ) => ( {
+	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
+
+	const fluentForms = useSelector( ( state ) => state.videoReducer.fluentForms );
+	const { data: formHTML, isFetching } = useGetSingleFluentFormQuery( layer.fluent_form_id );
+
+	const forms = fluentForms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
 	} ) );
 
 	const changeFormID = ( formID ) => {
-		dispatch( updateLayerField( { id: layer.id, field: 'wpform_id', value: formID } ) );
+		dispatch( updateLayerField( { id: layer.id, field: 'fluent_form_id', value: formID } ) );
 	};
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.validApiKey;
+	// const isValidAPIKey = window?.videoData?.valid_api_key;
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isWPFormsPluginActive = Boolean( window?.videoData?.wpformsActive );
+	const isFluentFormsPluginActive = Boolean( window?.videoData?.fluentformsActive );
 
 	return (
 		<>
 			{
-				! isWPFormsPluginActive &&
+				! isFluentFormsPluginActive &&
 				<Notice
 					className="mb-4"
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'Please activate the WPForms plugin to use this feature.', 'godam' ) }
+					{ __( 'Please activate the Fluent Forms plugin to use this feature.', 'godam' ) }
 				</Notice>
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isWPFormsPluginActive } className="gravity-form-selector mb-4" formID={ layer.wpform_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector
+					disabled={ ! isValidAPIKey || ! isFluentFormsPluginActive }
+					className="gravity-form-selector mb-4"
+					formID={ layer.fluent_form_id }
+					forms={ forms }
+					handleChange={ changeFormID }
+				/>
 			}
 
 			<LayerControl>
@@ -86,7 +94,7 @@ const WPForm = ( { layerID } ) => {
 						{
 							formHTML &&
 							<Button
-								href={ `${ window?.videoData?.adminUrl }admin.php?page=wpforms-builder&view=fields&form_id=${ layer.wpform_id }` }
+								href={ `${ window?.videoData?.adminUrl }admin.php?page=fluent_forms&route=editor&form_id=${ layer.fluent_form_id }` }
 								target="_blank"
 								variant="secondary"
 								icon={ pencil }
@@ -111,4 +119,4 @@ const WPForm = ( { layerID } ) => {
 	);
 };
 
-export default WPForm;
+export default FluentForm;

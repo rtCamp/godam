@@ -24,7 +24,10 @@ use RTGODAM\Inc\REST_API\Jetpack;
 use RTGODAM\Inc\REST_API\GF;
 use RTGODAM\Inc\REST_API\CF7;
 use RTGODAM\Inc\REST_API\WPForms;
+use RTGODAM\Inc\REST_API\Forminator_Forms;
 use RTGODAM\INC\REST_API\SureForms;
+use RTGODAM\Inc\REST_API\Fluent_Forms;
+use RTGODAM\Inc\REST_API\Everest_Forms;
 use RTGODAM\Inc\REST_API\Settings;
 use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
 use RTGODAM\Inc\REST_API\Media_Library;
@@ -41,7 +44,6 @@ use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
 
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
-
 use RTGODAM\Inc\Video_Metadata;
 
 /**
@@ -115,7 +117,10 @@ class Plugin {
 		GF::get_instance();
 		CF7::get_instance();
 		WPForms::get_instance();
+		Forminator_Forms::get_instance();
 		SureForms::get_instance();
+		Fluent_Forms::get_instance();
+		Everest_Forms::get_instance();
 		Settings::get_instance();
 		Meta_Rest_Fields::get_instance();
 		Media_Library::get_instance();
@@ -131,7 +136,7 @@ class Plugin {
 
 	/**
 	 * Registers the elementor widgets if required.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function load_elementor_widgets() {
