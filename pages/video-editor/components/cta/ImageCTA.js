@@ -162,6 +162,7 @@ const ImageCTA = ( { layerID } ) => {
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
+				className="godam-input"
 				label={ __( 'Text', 'godam' ) }
 				value={ layer.imageText }
 				onChange={ ( value ) => {
@@ -173,6 +174,7 @@ const ImageCTA = ( { layerID } ) => {
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
+				className="godam-input"
 				label={ __( 'URL', 'godam' ) }
 				value={ layer.imageLink }
 				onChange={ ( value ) => {
@@ -184,6 +186,7 @@ const ImageCTA = ( { layerID } ) => {
 			<TextareaControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
+				className="godam-input"
 				label={ __( 'Description', 'godam' ) }
 				value={ layer.imageDescription }
 				onChange={ ( value ) => {
@@ -195,6 +198,7 @@ const ImageCTA = ( { layerID } ) => {
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
+				className="godam-input"
 				label={ __( 'CTA Button Text', 'godam' ) }
 				value={ layer.imageCtaButtonText }
 				onChange={ ( value ) => {
@@ -219,6 +223,7 @@ const ImageCTA = ( { layerID } ) => {
 					<RangeControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
+						className="godam-input"
 						help={ __( 'Please select how transparent you would like this.', 'godam' ) }
 						initialPosition={ 0 }
 						max={ 1 }
