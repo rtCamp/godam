@@ -36,6 +36,7 @@ class Assets {
 		 */
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_block_editor_assets' ) );
 	}
 
 	/**
@@ -314,6 +315,28 @@ class Assets {
 				'brandImage' => $brand_image,
 				'brandColor' => $brand_color,
 			)
+		);
+	}
+
+	/**
+	 * Enqueue block editor assets
+	 */
+	public function enqueue_block_editor_assets() {
+		if ( ! function_exists( 'register_block_type' ) ) {
+			return;
+		}
+	
+		// Only enqueue if Forminator is active.
+		if ( ! class_exists( 'Forminator' ) ) {
+			return;
+		}
+	
+		wp_enqueue_script(
+			'godam-forminator-block-filter',
+			RTGODAM_URL . 'assets/build/js/forminator-block-filter.min.js',
+			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-editor', 'wp-compose', 'wp-data', 'wp-hooks', 'wp-api-fetch' ),
+			RTGODAM_VERSION,
+			true
 		);
 	}
 }
