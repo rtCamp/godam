@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, TabPanel, Snackbar } from '@wordpress/components';
+import { Button, TabPanel, Snackbar, Tooltip } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { copy, seen } from '@wordpress/icons';
 
@@ -340,16 +340,28 @@ const VideoEditor = ( { attachmentID } ) => {
 
 					<div className="absolute top-4 left-4 right-4">
 						<div className="flex space-x-2 justify-end items-center">
-							<Button
-								variant="secondary"
-								icon={ copy }
-								iconPosition="left"
-								onClick={ handleCopyGoDAMVideoBlock }
-								size="compact"
-								className="godam-button"
+							<Tooltip
+								text={
+									<p>
+										{ __( 'You can copy the block into one of the two options:', 'godam' ) }
+										<br />
+										{ __( '1. Insert as a block in the Block editor.', 'godam' ) }
+										<br />
+										{ __( '2. Insert as HTML content in the Block editor.', 'godam' ) }
+									</p>
+								}
 							>
-								{ __( 'Copy Block', 'godam' ) }
-							</Button>
+								<Button
+									variant="secondary"
+									icon={ copy }
+									iconPosition="left"
+									onClick={ handleCopyGoDAMVideoBlock }
+									size="compact"
+									className="godam-button"
+								>
+									{ __( 'Copy Block', 'godam' ) }
+								</Button>
+							</Tooltip>
 							<Button
 								variant="secondary"
 								href={ `/?godam_page=video-preview&id=${ attachmentID }` }
