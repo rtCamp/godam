@@ -353,7 +353,7 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	/**
 	 * Fetch stored API Key.
 	 */
-	$api_key = get_site_option( 'rtgodam-api-key', '' );
+	$api_key = get_option( 'rtgodam-api-key', '' );
 
 	/**
 	 * Watermark settings.
