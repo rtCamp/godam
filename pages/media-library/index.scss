@@ -99,6 +99,31 @@
 	.folder-context-menu__item {
 	    justify-content: flex-start !important;
 	}
+
+	.close-folder-menu-mobile {
+	display: none;
+	    position: absolute;
+        top: 0;
+        right: 0;
+        width: 12px;
+        transform: rotate(45deg);
+        border: none;
+        box-shadow: none;
+	}
+}
+
+.media-modal-content:has(#rt-transcoder-media-library-root) {
+
+    @media (max-width: 900px) {
+
+        .control-buttons {
+            padding-top: 48px;
+        }
+
+        .close-folder-menu-mobile {
+            display: block;
+        }
+    }
 }
 
 .components-button.has-icon.has-text {

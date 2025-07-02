@@ -46,6 +46,21 @@ const App = () => {
 		dispatch( changeSelectedFolder( { item: { id } } ) );
 	}, [ dispatch, isMultiSelecting ] );
 
+	const closeFolderMenu = () => {
+		const sidebar = document.getElementById( 'rt-transcoder-media-library-root' );
+		if ( sidebar ) {
+			sidebar.classList.add( 'hide-sidebar' );
+		}
+		const mediaModal = document.querySelector( '.media-modal-content' );
+		if ( mediaModal ) {
+			mediaModal.classList.add( 'hide-sidebar' );
+		}
+		const mediaToggleButton = document.getElementById( 'media-folder-toggle-button' );
+		if ( mediaToggleButton ) {
+			mediaToggleButton.innerHTML = mediaToggleButton.innerHTML.replace( /Hide/g, 'Show' );
+		}
+	};
+
 	return (
 		<>
 			<div className="control-buttons">
@@ -58,6 +73,14 @@ const App = () => {
 					onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
 				/>
 
+				<Button
+					icon="plus-alt2"
+					__next40pxDefaultSize
+					variant="secondary"
+					className="button--full close-folder-menu-mobile"
+					onClick={ () => closeFolderMenu() }
+				/>
+
 				<ButtonGroup className="button-group mb-spacing">
 					<Button
 						__next40pxDefaultSize
@@ -66,15 +89,16 @@ const App = () => {
 						className="button--half"
 						onClick={ () => dispatch( toggleMultiSelectMode() ) }
 					/>
+					<SelectControl
+						value={ currentSortOrder }
+						className="button--half"
+						options={ [
+							{ label: __( '▲ By Name (A-Z)', 'godam' ), value: 'name-asc' },
+							{ label: __( '▼ By Name (Z-A)', 'godam' ), value: 'name-desc' },
+						] }
+						onChange={ ( newOrder ) => dispatch( setSortOrder( newOrder ) ) }
+					/>
 				</ButtonGroup>
-				<SelectControl
-					value={ currentSortOrder }
-					options={ [
-						{ label: __( '▲ By Name (A-Z)', 'godam' ), value: 'name-asc' },
-						{ label: __( '▼ By Name (Z-A)', 'godam' ), value: 'name-desc' },
-					] }
-					onChange={ ( newOrder ) => dispatch( setSortOrder( newOrder ) ) }
-				/>
 			</div>
 
 			<div className="folder-list">
