@@ -39,6 +39,7 @@ use RTGODAM\Inc\REST_API\WC;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\Gravity_Forms;
+use RTGODAM\Inc\Forminator_Forms as Forminator;
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
@@ -77,6 +78,7 @@ class Plugin {
 		$this->load_plugin_configs();
 		$this->load_rest_api();
 		$this->init_gravity_forms();
+		$this->init_forminator_forms();
 
 		// Load cron jobs.
 		Retranscode_Failed_Media::get_instance();
@@ -152,5 +154,12 @@ class Plugin {
 	 */
 	public function init_gravity_forms() {
 		Gravity_Forms\Init::get_instance();
+	}
+
+	/**
+	 * Init Forminator Forms
+	 */
+	public function init_forminator_forms() {
+		Forminator\Init::get_instance();
 	}
 }
