@@ -108,6 +108,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					html: '',
 					link: '',
 					allow_skip: true,
+					imageOpacity: 1,
 				} ) );
 				break;
 			case 'hotspot':
