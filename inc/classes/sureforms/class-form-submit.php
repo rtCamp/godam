@@ -298,16 +298,50 @@ class Form_Submit {
 	 */
 	public function render_custom_field_markup( $markup, $value ) {
 
-		$video_output = do_shortcode( "[godam_video src='{$value}']" );
+		$entry_id = isset( $_GET['entry_id'] ) ? intval( sanitize_text_field( wp_unslash( $_GET['entry_id'] ) ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( ! $entry_id ) {
+			return $markup;
+		}
+
+		if ( ! class_exists( 'SRFM\Inc\Database\Tables\Entries' ) ) {
+			return $markup;
+		}
+
+		$entry_data = \SRFM\Inc\Database\Tables\Entries::get( $entry_id );
+
+		if ( empty( $entry_data ) ) {
+			return $entry_data;
+		}
+
+		$form_id = $entry_data['form_id'];
+
+		/**
+		 * Fetch the transcoding URL from meta.
+		 */
+		$transcoded_url_meta_key = 'rtgodam_transcoded_url_sureforms_' . $form_id . '_' . $entry_id;
+		$transcoded_url          = get_post_meta( $form_id, $transcoded_url_meta_key, true );
+		$transcoded_url_output   = '';
+
+		if ( ! empty( $transcoded_url ) ) {
+			$transcoded_url        = esc_url( $transcoded_url );
+			$transcoded_url        = "transcoded_url={$transcoded_url}";
+			$transcoded_url_output = sprintf(
+				"<li class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></li>",
+				esc_html__( 'Video saved and transcoded successfully on GoDAM', 'godam' )
+			);
+		}
+
+		$video_output = do_shortcode( "[godam_video src='{$value}' {$transcoded_url} ]" );
 		$video_output = '<div class="gf-godam-video-preview">' . $video_output . '</div>';
 
 		$download_url = sprintf(
 			'<div style="margin: 12px 0;"><a class="button" target="_blank" href="%s">%s</a></div>',
 			esc_url( $value ),
-			__( 'Download Video', 'godam' )
+			__( 'Click to view', 'godam' )
 		);
 
-		$video_output = '<td style="width: 75%;">' . $download_url . $video_output . '</td>';
+		$video_output = '<td style="width: 75%;">' . $download_url . $transcoded_url_output . $video_output . '</td>';
 
 		return $video_output;
 	}
