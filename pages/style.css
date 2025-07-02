@@ -192,6 +192,16 @@ input, textarea, select {
   margin-right: 0;
 }
 
+.wysiwyg-editor .ql-toolbar{
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.wysiwyg-editor .ql-container{
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
 .wysiwyg-editor .ql-editor {
   @apply min-h-[200px];
 }
