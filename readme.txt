@@ -202,6 +202,12 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.2.0 (July 2, 2025) =
+
+- Update: Bumped the version to reflect all major features and fixes added in the last release (v1.1.4)
+- Fix: Prevented creation of new image attachments for video thumbnails
+- Fix: Addressed security vulnerabilities in the transcoding callback process
+
 = v1.1.4 (June 25, 2025) =
 
 - Feat: Added [Jetpack Forms Integration](https://godam.io/features/jetpack/) to GoDAM Video Block
