@@ -223,7 +223,7 @@ const ImageCTA = ( { layerID } ) => {
 					<RangeControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						className="godam-input"
+						className="godam-input w-full"
 						help={ __( 'Please select how transparent you would like this.', 'godam' ) }
 						initialPosition={ 0 }
 						max={ 1 }
