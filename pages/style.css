@@ -178,7 +178,7 @@ input, textarea, select {
 }
 
 .code-editor {
-  @apply min-h-[200px] border mb-4;
+  @apply min-h-[200px] border mb-4 rounded-xl overflow-hidden;
   border: 1px solid var(--wp-components-color-gray-600, #949494);
 }
 
