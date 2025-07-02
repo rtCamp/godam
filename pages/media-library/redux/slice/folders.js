@@ -34,11 +34,22 @@ const slice = createSlice( {
 			folderCreation: false,
 			rename: false,
 			delete: false,
+
+			item: null,
 		},
 
 		snackbar: {
 			message: '',
 			type: 'success',
+		},
+
+		contextMenu: {
+			isOpen: false,
+			position: {
+				x: 0,
+				y: 0,
+			},
+			item: null,
 		},
 	},
 	reducers: {
@@ -46,9 +57,14 @@ const slice = createSlice( {
 			state.selectedFolder = action.payload.item;
 		},
 		openModal: ( state, action ) => {
-			const modalName = action.payload;
-			if ( state.modals.hasOwnProperty( modalName ) ) {
-				state.modals[ modalName ] = true;
+			const { type, item } = action.payload;
+
+			if ( type in state.modals ) {
+				state.modals[ type ] = true;
+			}
+
+			if ( item ) {
+				state.modals.item = item;
 			}
 		},
 		closeModal: ( state, action ) => {
@@ -56,6 +72,8 @@ const slice = createSlice( {
 			if ( state.modals.hasOwnProperty( modalName ) ) {
 				state.modals[ modalName ] = false;
 			}
+
+			state.modals.item = null;
 		},
 		updateSnackbar: ( state, action ) => {
 			state.snackbar.message = action.payload.message;
@@ -81,18 +99,18 @@ const slice = createSlice( {
 			state.folders.push( newItem );
 		},
 		renameFolder: ( state, action ) => {
-			if ( ! state.selectedFolder ) {
+			if ( ! state.modals.item ) {
 				return;
 			}
 
-			const folder = state.folders.find( ( item ) => item.id === state.selectedFolder.id );
+			const folder = state.folders.find( ( item ) => item.id === state.modals.item.id );
 
 			if ( folder ) {
 				folder.name = action.payload.name;
 			}
 		},
 		deleteFolder: ( state ) => {
-			if ( ! state.selectedFolder ) {
+			if ( ! state.modals.item ) {
 				return;
 			}
 
@@ -107,16 +125,51 @@ const slice = createSlice( {
 				} );
 			}
 
-			findChildren( state.selectedFolder.id );
+			findChildren( state.modals.item.id );
 
 			state.folders = state.folders.filter( ( item ) => ! idsToDelete.has( item.id ) );
 
-			state.selectedFolder = {
+			state.modals.item = {
 				id: -1,
 			};
 		},
 		setTree: ( state, action ) => {
 			state.folders = action.payload;
+		},
+		showContextMenu: ( state, action ) => {
+			state.contextMenu.isOpen = true;
+			state.contextMenu.position = action.payload.position;
+			state.contextMenu.item = action.payload.item;
+		},
+		hideContextMenu: ( state ) => {
+			state.contextMenu.isOpen = false;
+			state.contextMenu.position = { x: 0, y: 0 };
+			state.contextMenu.item = null;
+		},
+		updateContextMenuPosition: ( state, action ) => {
+			state.contextMenu.position = action.payload;
+		},
+		lockFolder: ( state, action ) => {
+			const folder = state.folders.find( ( item ) => item.id === action.payload.id );
+
+			if ( folder ) {
+				if ( ! folder.meta ) {
+					folder.meta = {};
+				}
+
+				folder.meta.locked = ! Boolean( folder.meta?.locked );
+			}
+		},
+		addBookmark: ( state, action ) => {
+			const folder = state.folders.find( ( item ) => item.id === action.payload.id );
+
+			if ( folder ) {
+				if ( ! folder.meta ) {
+					folder.meta = {};
+				}
+
+				folder.meta.bookmark = ! Boolean( folder.meta?.bookmark );
+			}
 		},
 	},
 } );
@@ -131,6 +184,11 @@ export const {
 	renameFolder,
 	deleteFolder,
 	setTree,
+	showContextMenu,
+	hideContextMenu,
+	lockFolder,
+	addBookmark,
+	updateContextMenuPosition,
 } = slice.actions;
 
 export default slice.reducer;

@@ -24,7 +24,7 @@ const DeleteModal = () => {
 	const dispatch = useDispatch();
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.delete );
-	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const selectedFolder = useSelector( ( state ) => state.FolderReducer.modals.item );
 
 	const [ deleteFolderMutation ] = useDeleteFolderMutation();
 	const ref = useRef( null );
@@ -63,7 +63,7 @@ const DeleteModal = () => {
 			dispatch( updateSnackbar(
 				{
 					message: __( 'Failed to delete folder', 'godam' ),
-					type: 'error',
+					type: 'fail',
 				},
 			) );
 		} finally {
@@ -79,7 +79,7 @@ const DeleteModal = () => {
 	};
 
 	return (
-		isOpen && (
+		( isOpen && selectedFolder ) && (
 			<Modal
 				title={ __( 'Confirm Delete', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'delete' ) ) }
