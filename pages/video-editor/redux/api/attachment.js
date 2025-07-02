@@ -31,10 +31,20 @@ export const attachmentAPI = createApi( {
 				},
 			} ),
 		} ),
+		getResolvedAttachment: builder.query( {
+			query: ( id ) => ( {
+				url: `/godam/v1/media-library/attachment-by-id/${ id }`,
+				method: 'GET',
+				headers: {
+					'X-WP-Nonce': window.videoData.nonce,
+				},
+			} ),
+		} ),
 	} ),
 } );
 
 export const {
 	useGetAttachmentMetaQuery,
 	useSaveAttachmentMetaMutation,
+	useGetResolvedAttachmentQuery,
 } = attachmentAPI;

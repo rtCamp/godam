@@ -2,6 +2,12 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
+/**
+ * Internal dependencies
+ */
+import Attachments from './models/attachments';
+
+/* global _ */
 
 /**
  * Utility function to check if the user has a valid API key.
@@ -74,4 +80,15 @@ function addManageMediaButton() {
 	}
 }
 
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton };
+/**
+ * Get an instance of our wp.media.model.Attachments extension
+ *
+ * @param {Object} props
+ */
+const getQuery = ( props ) => {
+	return new Attachments( null, {
+		props: _.extend( _.defaults( props || {}, {} ), { query: true } ),
+	} );
+};
+
+export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery };
