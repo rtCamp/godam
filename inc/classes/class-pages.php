@@ -10,6 +10,7 @@ namespace RTGODAM\Inc;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
+use WP_REST_Request;
 
 /**
  * Class Assets
@@ -816,8 +817,8 @@ class Pages {
 			return $form_data;
 		}
 
-		// Bail early if the request is a REST API request.
-		if ( ! defined( 'REST_REQUEST' ) || ! REST_REQUEST ) {
+		// Bail early if the global variable is not an instance of WP_REST_Request.
+		if ( ! $godam_current_rest_request instanceof \WP_REST_Request ) {
 			return $form_data;
 		}
 
@@ -833,6 +834,8 @@ class Pages {
 				}
 			}
 		}
+
+		$godam_current_rest_request = null;
 
 		return $form_data;
 	}
