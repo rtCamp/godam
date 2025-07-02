@@ -1,0 +1,88 @@
+.godam-pills-skin {
+	.vjs-control-bar {
+        width: 95%;
+        position: relative;
+        border-radius: 80px;
+        margin: -50px auto 0 auto;
+        z-index: 999;
+        background-color: var(--vjs-brand-color, #000) !important;
+	}
+
+    .video-player-settings-preview .vjs-big-play-button {
+        background-color: var(--vjs-brand-color, #2B333FB3) !important;
+    }
+
+    .vjs-volume-control.vjs-control.vjs-volume-vertical {
+        background-color: transparent !important;
+    }
+
+    [class^="vjs-skip-backward-"],
+    [class^="vjs-skip-forward-"] {
+        display: none;
+    }
+
+    .vjs-current-time, .vjs-time-divider, .vjs-duration {
+        display: inline-block !important;
+        padding: 0 !important;
+        min-width: 1.2em;
+    }
+
+    .vjs-fullscreen-control {
+        order: 4;
+    }
+
+    .vjs-subs-caps-button {
+        order: 2;
+    }
+
+    .vjs-volume-panel {
+        order: 1;
+    }
+
+    .vjs-settings-button {
+        order: 3;
+    }
+
+    .vjs-menu-content {
+        background-color: #fff !important;
+        color: #000;
+        border-radius: 4px;
+        
+        li {
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .master-settings-back-icon {
+            display: none;
+        }
+
+        span::before {
+            font-size: 16px;
+            color: #000;
+        }
+
+        .godam-back-item-container::after{
+            top: 35.5px;
+        }
+
+        .master-settings-back-icon, .godam-check-icon {
+            color: #000;
+        }
+    }
+
+    .vjs-button.godam-share-button{
+        background: #FFFFFF24;
+        border-radius: 4px;
+        width: 40px;
+        height: 36px;		
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        img {
+            height: 18px;
+            width: 16px;
+        }
+    }
+}

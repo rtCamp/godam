@@ -3,12 +3,14 @@
  */
 import { useSelector, useDispatch } from 'react-redux';
 import videojs from 'video.js';
+import 'video.js/dist/video-js.css';
 
 /**
  * WordPress dependencies
  */
-import { Button, Notice, ComboboxControl } from '@wordpress/components';
+import { Button, Notice, ComboboxControl, Icon } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { closeSmall } from '@wordpress/icons';
 import { useState, useRef, useEffect } from '@wordpress/element';
 
 /**
@@ -18,25 +20,20 @@ import { scrollToTop } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
 import BrandImageSelector from '../GeneralSettings/BrandImageSelector.jsx';
-import CustomVideoPlayerCSS from './CustomVideoPlayerCSS.jsx';
-import VideoJSPlayer from '../../../../video-editor/VideoJSPlayer.js';
-import {
-	useGetAttachmentMetaQuery,
-} from '../../../../video-editor/redux/api/attachment.js';
+import SettingsButton from '../../../../../assets/src/js/godam-player/masterSettings.js';
 import ColorPickerButton from '../../../../video-editor/components/shared/color-picker/ColorPickerButton.jsx';
+import '../../../../../assets/src/blocks/godam-player/minimal-skin.scss';
+import '../../../../../assets/src/blocks/godam-player/pills-skin.scss';
+import '../../../../../assets/src/blocks/godam-player/bubble-skin.scss';
+import Share from '../../../../../assets/src/images/share.svg';
+import ShareVariationOne from '../../../../../assets/src/images/share-variation-one.svg';
 
 const VideoPlayer = () => {
 	const dispatch = useDispatch();
 	const wrapperRef = useRef( null );
-	const [ currentTime, setCurrentTime ] = useState( 0 );
-	const [ sources, setSources ] = useState( [] );
-	const [ duration, setDuration ] = useState( 0 );
 	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] =
     useSaveMediaSettingsMutation();
 	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
-	const [ theme, setTheme ] = useState( 'Minimal' );
-	// const { data: attachmentConfig } = useGetAttachmentMetaQuery( attachmentID );
-
 	const handleSettingChange = ( key, value ) => {
 		dispatch( updateMediaSetting( { category: 'video_player', key, value } ) );
 	};
@@ -64,20 +61,6 @@ const VideoPlayer = () => {
 		}
 	};
 
-	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
-	const handlePlayerReady = ( player ) => {
-		if ( player ) {
-			const playerEl = player.el_;
-			const video = playerEl.querySelector( 'video' );
-
-			if ( video ) {
-				video.addEventListener( 'loadedmetadata', () => {
-					setDuration( player.duration() );
-				} );
-			}
-		}
-	};
-
 	useEffect( () => {
 		if ( ! wrapperRef.current ) {
 			return;
@@ -88,31 +71,134 @@ const VideoPlayer = () => {
 
 		wrapperRef.current.appendChild( videoElement );
 
+		const primarySource = {
+			src: 'https://n8e0ka87m9.gdcdn.us/vo15od683f/output.mpd',
+			type: 'application/dash+xml',
+		};
+
+		const fallbackSource = {
+			src: 'https://n8e0ka87m9.gdcdn.us/vo15od683f/rtcamp-video-1-orignal.mp4',
+			type: 'video/mp4',
+		};
+
+		const playerSkin = mediaSettings?.video_player?.player_skin || 'Default';
+
+		// Initialize Video.js player
 		const player = videojs( videoElement, {
 			controls: true,
 			autoplay: false,
 			preload: 'auto',
 			aspectRatio: '16:9',
 			fluid: false,
-			sources: [ {
-				src: 'http://godam.local/wp-content/uploads/2025/06/rtcamp-video-1.mp4',
-				type: 'video/mp4',
-			} ],
+			sources: [ primarySource ],
 			controlBar: {
 				playToggle: true,
-				volumePanel: true,
+				volumePanel: {
+					inline: ! ( playerSkin === 'Minimal' || playerSkin === 'Pills' ),
+				},
 				currentTimeDisplay: true,
 				timeDivider: true,
 				durationDisplay: true,
 				fullscreenToggle: true,
 				subsCapsButton: true,
+				remainingTimeDisplay: false,
+				pictureInPictureToggle: false,
 				skipButtons: {
 					forward: 10,
 					backward: 10,
 				},
 			},
 		}, () => {
-			console.log( 'Player is ready' );
+			// Register the unified settings button component
+			const controlBar = player.getChild( 'controlBar' );
+			if ( ! controlBar.getChild( 'SettingsButton' ) ) {
+				if ( ! videojs.getComponent( 'SettingsButton' ) ) {
+					videojs.registerComponent( 'SettingsButton', SettingsButton );
+				}
+				controlBar.addChild( 'SettingsButton', {} );
+			}
+			const settingsEl = document.querySelector( '.vjs-settings-button' );
+			if ( settingsEl ) {
+				settingsEl.querySelector( '.vjs-icon-placeholder' ).classList.add( 'vjs-icon-cog' );
+			}
+
+			// Share button
+			const ButtonBase = videojs.getComponent( 'Button' );
+
+			const ShareButtonImg = () => {
+				switch ( mediaSettings?.video_player?.player_skin ) {
+					case 'Minimal':
+						return ShareVariationOne;
+					case 'Pills':
+						return ShareVariationOne;
+					case 'Bubble':
+						return ShareVariationOne;
+					default:
+						return Share;
+				}
+			};
+			class GodamShareButton extends ButtonBase {
+				buildCSSClass() {
+					return `godam-share-button ${ super.buildCSSClass() }`;
+				}
+
+				// Set the button content
+				createEl() {
+					const el = super.createEl( 'button', {
+						className: 'vjs-button godam-share-button',
+						title: 'Disabled in preview mode', // native tooltip
+						disabled: true, // disables the button
+					} );
+
+					const img = document.createElement( 'img' );
+					img.src = ShareButtonImg();
+					img.alt = 'Share';
+					img.className = 'share-icon';
+
+					el.appendChild( img );
+					return el;
+				}
+				// Add click event for playback
+				handleClick( event ) {
+					event.preventDefault();
+				}
+			}
+
+			const playerWrapper = player.el();
+
+			if ( ! videojs.getComponent( 'GodamShareButton' ) ) {
+				videojs.registerComponent( 'GodamShareButton', GodamShareButton );
+			}
+
+			const shareButton = new GodamShareButton( player );
+			if ( playerSkin === 'Bubble' ) {
+				controlBar.addChild( 'GodamShareButton', {} );
+			} else {
+				playerWrapper.appendChild( shareButton.el() );
+			}
+		} );
+
+		player.ready( () => {
+			player.addRemoteTextTrack(
+				{
+					kind: 'subtitles',
+					label: 'Preview',
+					language: 'en',
+					src: '', // Empty src – it's just for UI purposes
+					default: false,
+				},
+				false,
+			);
+		} );
+
+		// Fallback handling
+		player.on( 'error', () => {
+			// Only try fallback once (you can also track a retry flag if needed)
+			if ( player.currentSrc() === primarySource.src ) {
+				player.src( fallbackSource );
+				player.load();
+				player.play();
+			}
 		} );
 
 		return () => {
@@ -120,41 +206,89 @@ const VideoPlayer = () => {
 				player.dispose();
 			}
 		};
-	}, [] );
+	}, [ mediaSettings?.video_player?.player_skin ] );
 
 	useEffect( () => {
 		const videoElement = wrapperRef.current?.querySelector( 'video-js' );
+		const player = videojs.getPlayer( videoElement.id );
+
+		if ( ! player ) {
+			return;
+		}
+
+		// Set custom brand color as CSS variable
 		const userSelectedStyles = {
-			'--vjs-brand-color': mediaSettings?.video_player?.brand_color || '#000000',
-			'--vjs-brand-image': mediaSettings?.video_player?.brand_image ? `url(${ mediaSettings?.video_player?.brand_image })` : 'none',
+			'--vjs-brand-color': mediaSettings?.video_player?.brand_color,
 		};
 
-		if ( mediaSettings?.video_player?.brand_color ) {
-			userSelectedStyles[ '--vjs-control-bar-background' ] = mediaSettings?.video_player?.brand_color;
-		}
-		Object.keys( userSelectedStyles ).forEach( ( key ) => {
-			videoElement.style.setProperty( key, userSelectedStyles[ key ] );
+		Object.entries( userSelectedStyles ).forEach( ( [ key, val ] ) => {
+			videoElement.style.setProperty( key, val );
 		} );
-	}, [ mediaSettings?.video_player?.brand_color, mediaSettings?.video_player?.brand_image ] );
 
-	const formatTimeForInput = ( seconds ) => {
-		if ( seconds === null || isNaN( seconds ) ) {
-			return '';
+		// Handle custom brand image button
+		const controlBar = player.getChild( 'controlBar' );
+		const brandImage = mediaSettings?.video_player?.brand_image?.trim();
+
+		if ( brandImage ) {
+			if ( ! controlBar.getChild( 'CustomButton' ) ) {
+				const CustomPlayButton = videojs.getComponent( 'Button' );
+
+				class CustomButton extends CustomPlayButton {
+					createEl() {
+						const el = super.createEl();
+						el.className += ' vjs-custom-play-button';
+						const img = document.createElement( 'img' );
+						img.src = brandImage;
+						img.alt = 'Branding';
+						img.className = 'branding-icon';
+						el.appendChild( img );
+						return el;
+					}
+					handleClick( event ) {
+						event.preventDefault();
+					}
+				}
+
+				if ( ! videojs.getComponent( 'CustomButton' ) ) {
+					videojs.registerComponent( 'CustomButton', CustomButton );
+				}
+
+				controlBar.addChild( 'CustomButton', {} );
+			}
+
+			// Update existing branding image if needed
+			const brandEl = document.querySelector( '.branding-icon' );
+			if ( brandEl ) {
+				brandEl.src = brandImage;
+			}
+		} else {
+			// Remove branding button if image is cleared
+			const customBtn = controlBar?.getChild( 'CustomButton' );
+			if ( customBtn ) {
+				controlBar.removeChild( customBtn );
+			}
 		}
 
-		const hrs = Math.floor( seconds / 3600 );
-		const mins = Math.floor( ( seconds % 3600 ) / 60 );
-		const secsRaw = seconds % 60;
+		// Apply player skin class
+		if ( mediaSettings?.video_player?.player_skin ) {
+			const selectedSkin = mediaSettings.video_player.player_skin;
 
-		const hrsStr = String( hrs ).padStart( 2, '0' );
-		const minsStr = String( mins ).padStart( 2, '0' );
-		const secsStr = secsRaw.toFixed( 2 ).padStart( 5, '0' ); // includes decimal, eg: 04.90
+			// Remove previous skin classes
+			videoElement.classList.remove(
+				'godam-minimal-skin',
+				'godam-pills-skin',
+				'godam-bubble-skin',
+			);
 
-		if ( hrs > 0 ) {
-			return `${ hrsStr }:${ minsStr }:${ secsStr }`;
+			if ( selectedSkin === 'Minimal' ) {
+				videoElement.classList.add( 'godam-minimal-skin' );
+			} else if ( selectedSkin === 'Pills' ) {
+				videoElement.classList.add( 'godam-pills-skin' );
+			} else if ( selectedSkin === 'Bubble' ) {
+				videoElement.classList.add( 'godam-bubble-skin' );
+			}
 		}
-		return `${ minsStr }:${ secsStr }`;
-	};
+	}, [ mediaSettings?.video_player?.brand_color, mediaSettings?.video_player?.brand_image, mediaSettings?.video_player?.player_skin ] );
 
 	return (
 		<>
@@ -168,77 +302,81 @@ const VideoPlayer = () => {
 				</Notice>
 			) }
 
-			{ /* <CustomVideoPlayerCSS handleSettingChange={ handleSettingChange } /> */ }
-			{ /* <VideoJSPlayer
-				options={ {
-					controls: true,
-					fluid: true,
-					preload: 'auto',
-					aspectRatio: '16:9',
-					sources: { src: '../../../../../../godam/assets/src/rtcamp-video.mp4', type: 'video/mp4' },
-					controlBar: {
-						playToggle: true,
-						volumePanel: true,
-						currentTimeDisplay: true,
-						timeDivider: true,
-						durationDisplay: true,
-						fullscreenToggle: true,
-						subsCapsButton: true,
-						skipButtons: {
-							forward: 10,
-							backward: 10,
-						},
-					},
-				} }
-				onTimeupdate={ handleTimeUpdate }
-				onReady={ handlePlayerReady }
-				playbackTime={ currentTime }
-				formatTimeForInput={ formatTimeForInput }
-			/> */ }
 			<div className="bg-neutral-50 p-6 rounded-lg shadow-sm">
 				<div ref={ wrapperRef } className="text-center"></div>
 
-				<div className="grid grid-cols-3 gap-6 items-start mt-8">
+				<div className="grid grid-cols-3 items-start w-[80%] mt-[35px] mx-auto gap-[3.5rem]">
+					<div className="godam-form-group">
+						<label className="label-text" htmlFor="brand-color">
+							{ __( 'Player Skin', 'godam' ) }
+						</label>
+
+						<ComboboxControl
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
+							label=""
+							onChange={ ( value ) => handleSettingChange( 'player_skin', value ) }
+							options={ [
+								{
+									label: 'Default',
+									value: 'Default',
+								},
+								{
+									label: 'Minimal',
+									value: 'Minimal',
+								},
+								{
+									label: 'Pills',
+									value: 'Pills',
+								},
+								{
+									label: 'Bubble',
+									value: 'Bubble',
+								},
+							] }
+							value={ mediaSettings?.video_player?.player_skin || 'Default' }
+							className="godam-player-skin-dropdown"
+						/>
+					</div>
 					<div className="godam-form-group">
 						<label className="label-text" htmlFor="brand-color">
 							{ __( 'Brand color', 'godam' ) }
 						</label>
-						<ColorPickerButton
-							label={ __( 'Brand color', 'godam' ) }
-							value={ mediaSettings?.video_player?.brand_color }
-							onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
-						/>
-						<p className="help-text">
-							{ __(
-								'Select a brand color to apply to the video block. This can be overridden for individual videos by the video editor',
-								'godam',
+						<div className="flex items-center gap-2">
+							<ColorPickerButton
+								label={ __( 'Brand color', 'godam' ) }
+								value={ mediaSettings?.video_player?.brand_color }
+								onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
+								disabled={ 'Minimal' === mediaSettings?.video_player?.player_skin }
+							/>
+							{ mediaSettings?.video_player?.brand_color && (
+								<button
+									type="button"
+									className="text-xs text-red-500 underline hover:text-red-600 bg-transparent cursor-pointer"
+									onClick={ () => handleSettingChange( 'brand_color', '' ) }
+									aria-haspopup="true"
+									aria-label={ __( 'Remove', 'godam' ) }
+								>
+									<Icon icon={ closeSmall } />
+								</button>
 							) }
+						</div>
+						<p className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
+							{
+								'Minimal' === mediaSettings?.video_player?.player_skin ? __(
+									'The brand color will not be applied to the player skin.',
+									'godam',
+								) : __(
+									'Select a brand color to apply to the video block. This can be overridden for individual videos by the video editor',
+									'godam',
+								)
+							}
 						</p>
 					</div>
+
 					<BrandImageSelector
 						mediaSettings={ mediaSettings }
 						handleSettingChange={ handleSettingChange }
-					/>
-					<ComboboxControl
-						__next40pxDefaultSize
-						__nextHasNoMarginBottom
-						label="Player Skin"
-						onChange={ ( value ) => setTheme( value ) }
-						options={ [
-							{
-								label: 'Minimal',
-								value: 'Minimal',
-							},
-							{
-								label: 'Pills',
-								value: 'Pills',
-							},
-							{
-								label: 'Bubble',
-								value: 'Bubble',
-							},
-						] }
-						value={ theme }
 					/>
 				</div>
 

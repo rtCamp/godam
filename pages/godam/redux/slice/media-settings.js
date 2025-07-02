@@ -26,6 +26,7 @@ const initialState = {
 		brand_image: '',
 		brand_color: '#000000',
 		custom_css: VideoCustomCSSTemplate,
+		player_skin: 'Default',
 	},
 };
 

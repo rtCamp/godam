@@ -46,8 +46,9 @@ class Settings extends Base {
 			),
 			'video_player' => array(
 				'brand_image' => '',
-				'brand_color' => '#000000',
+				'brand_color' => '#2B333FB3',
 				'custom_css'  => '',
+				'player_skin' => 'Default',
 			),
 		);
 	}
@@ -296,6 +297,7 @@ class Settings extends Base {
 				'brand_image' => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),
 				'brand_color' => sanitize_hex_color( $settings['video_player']['brand_color'] ?? $default['video_player']['brand_color'] ),
 				'custom_css'  => sanitize_textarea_field( $settings['video_player']['custom_css'] ) ?? $default['video_player']['custom_css'],
+				'player_skin' => sanitize_text_field( $settings['video_player']['player_skin'] ) ?? $default['video_player']['player_skin'],
 			),
 		);
 	}

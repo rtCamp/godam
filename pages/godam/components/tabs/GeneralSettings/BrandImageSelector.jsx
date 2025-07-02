@@ -42,32 +42,42 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 			<Button
 				onClick={ openBrandMediaPicker }
 				variant="primary"
-				className="godam-button godam-margin-right"
+				disabled={ 'Bubble' === mediaSettings?.video_player?.player_skin }
+				className="godam-button godam-margin-right mt-[0.3rem] mb-[0.7rem]"
 			>
-				{ mediaSettings?.general?.brand_image ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
+				{ mediaSettings?.video_player?.brand_image ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 			</Button>
-			{ mediaSettings?.general?.brand_image && (
+			{ mediaSettings?.video_player?.brand_image && (
 				<Button
 					onClick={ removeBrandImage }
 					variant="secondary"
 					isDestructive
-					className="godam-button"
+					className="godam-button ml-3"
+					disabled={ 'Bubble' === mediaSettings?.video_player?.player_skin }
 				>
 					{ __( 'Remove', 'godam' ) }
 				</Button>
 			) }
-			{ mediaSettings?.general?.brand_image && (
+			{ mediaSettings?.video_player?.brand_image && 'Bubble' !== mediaSettings?.video_player?.player_skin && (
 				<div className="mt-2">
 					<img
-						src={ mediaSettings?.general?.brand_image }
+						src={ mediaSettings?.video_player?.brand_image }
 						alt={ __( 'Selected custom brand', 'godam' ) }
 						className="max-w-[200px]"
 					/>
 				</div>
 			) }
 
-			<p className="help-text">
-				{ __( 'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos', 'godam' ) }
+			<p className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
+				{
+					'Bubble' === mediaSettings?.video_player?.player_skin ? __(
+						'The brand logo will not be applied to the player skin.',
+						'godam',
+					) : __(
+						'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos',
+						'godam',
+					)
+				}
 			</p>
 		</div>
 	);
