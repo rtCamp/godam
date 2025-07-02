@@ -218,7 +218,7 @@ const VideoPlayer = () => {
 
 		// Set custom brand color as CSS variable
 		const userSelectedStyles = {
-			'--vjs-brand-color': mediaSettings?.video_player?.brand_color,
+			'--rtgodam-control-bar-color': mediaSettings?.video_player?.brand_color,
 		};
 
 		Object.entries( userSelectedStyles ).forEach( ( [ key, val ] ) => {

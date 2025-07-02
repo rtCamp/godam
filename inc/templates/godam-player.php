@@ -101,6 +101,15 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 		);
 	}
 }
+$easydam_control_bar_color = ''; // Default color.
+$easydam_brand_image       = ''; // Default color.
+
+$godam_settings         = get_option( 'rtgodam-settings', array() );
+$brand_color            = isset( $godam_settings['video_player']['brand_color'] ) ? $godam_settings['video_player']['brand_color'] : null;
+$appearance_color       = isset( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
+$brand_image            = isset( $godam_settings['video_player']['brand_image'] ) ? $godam_settings['video_player']['brand_image'] : null;
+$individual_brand_image = isset( $easydam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $easydam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
+$player_skin            = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : 'Default';
 
 // Build the video setup options for data-setup.
 $video_setup = array(
@@ -113,6 +122,11 @@ $video_setup = array(
 	'fluid'       => true,
 	'sources'     => $sources,
 	'playsinline' => true,
+	'controlBar'  => array(
+		'volumePanel' => array(
+			'inline' => ! in_array( $player_skin, array( 'Minimal', 'Pills' ), true ),
+		),
+	),
 );
 if ( ! empty( $control_bar_settings ) ) {
 	$video_setup['controlBar'] = $control_bar_settings; // contains settings specific to control bar.
@@ -125,19 +139,20 @@ $video_config = wp_json_encode(
 		'layers'           => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
 		'chapters'         => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(), // contains list of chapters.
 		'overlayTimeRange' => $overlay_time_range, // Add overlay time range to video config.
+		'playerSkin'       => $player_skin, // Add player skin to video config.
 	)
 );
-
-$easydam_control_bar_color = '#2b333fb3'; // Default color.
-
-$godam_settings   = get_option( 'rtgodam-settings', array() );
-$brand_color      = isset( $godam_settings['video_player']['brand_color'] ) ? $godam_settings['video_player']['brand_color'] : null;
-$appearance_color = isset( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
 
 if ( ! empty( $appearance_color ) ) {
 	$easydam_control_bar_color = $appearance_color;
 } elseif ( ! empty( $brand_color ) ) {
 	$easydam_control_bar_color = $brand_color;
+}
+
+if ( ! empty( $individual_brand_image ) ) {
+	$easydam_brand_image = $individual_brand_image;
+} elseif ( ! empty( $brand_image ) ) {
+	$easydam_brand_image = $brand_image;
 }
 
 $easydam_hover_color        = ! empty( $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';
@@ -214,7 +229,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 				</div>
 			<?php endif; ?>
 
-			<div class="easydam-video-container animate-video-loading">
+			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin">
 				<div class="animate-play-btn">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>

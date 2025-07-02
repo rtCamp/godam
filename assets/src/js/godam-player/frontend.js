@@ -29,6 +29,7 @@ import 'quill/dist/quill.snow.css';
  */
 import GoDAM from '../../../../assets/src/images/GoDAM.png';
 import Share from '../../../../assets/src/images/share.svg';
+import ShareVariationOne from '../../../../assets/src/images/share-variation-one.svg';
 import CopyIcon from '../../../../assets/src/images/clipboard.svg';
 import Facebook from '../../../../assets/src/images/facebook.svg';
 import LinkedIn from '../../../../assets/src/images/linkedin.svg';
@@ -337,12 +338,25 @@ function GODAMPlayer( videoRef = null ) {
 				return `godam-share-button ${ super.buildCSSClass() }`;
 			}
 
+			shareButtonImg() {
+				switch ( videoSetupOptions?.playerSkin ) {
+					case 'Minimal':
+						return ShareVariationOne;
+					case 'Pills':
+						return ShareVariationOne;
+					case 'Bubble':
+						return ShareVariationOne;
+					default:
+						return Share;
+				}
+			}
+
 			// Set the button content
 			createEl() {
 				const el = super.createEl();
 				const img = document.createElement( 'img' );
 
-				img.src = Share;
+				img.src = this.shareButtonImg();
 
 				img.id = 'share-icon';
 				img.alt = 'Share';
@@ -522,7 +536,12 @@ function GODAMPlayer( videoRef = null ) {
 					'click',
 					shareButton.handleClick.bind( shareButton ),
 				);
-				videoContainer.appendChild( buttonEl );
+
+				if ( videoSetupOptions?.playerSkin === 'Bubble' ) {
+					player.controlBar.addChild( 'GodamShareButton', {} );
+				} else if ( videoContainer ) {
+					videoContainer.appendChild( buttonEl );
+				}
 			}
 
 			// FIXED: Initialize chapters after player is ready

@@ -801,7 +801,7 @@
 	 background-color: rgba(0, 0, 0, 0.7);
 	 color: #fff;
 	 border: none;
-	 cursor: pointer;
+	 cursor: pointer !important;
 	 font-size: 15px !important;
 	 transition: background-color 0.3s, color 0.3s;
 	 border-radius: 50%;
@@ -914,7 +914,7 @@
  }
  
  .vjs-control-bar {
-	 background-color: var(--rtgodam-control-bar-color) !important;
+	 background-color: var(--rtgodam-control-bar-color, #2b333fb3) !important;
 	 display: flex;
  }
  
@@ -1004,7 +1004,7 @@
 }
  
  .vjs-big-play-button {
-	 background-color: var(--rtgodam-control-bar-color) !important;
+	 background-color: var(--rtgodam-control-bar-color, #2b333fb3) !important;
  }
  
  .left-align {
@@ -1078,7 +1078,7 @@
 	 background: rgba(0, 0, 0, .4);
 	 -webkit-backdrop-filter: blur(5px);
 	 backdrop-filter: blur(5px);
-	 z-index: 99;
+	 z-index: 9999;
 	 max-width: unset !important;
 	 display: flex;
 	 align-items: center;

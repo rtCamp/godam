@@ -26,7 +26,7 @@
 }
 
 .video-player-settings-preview .vjs-control-bar, .video-player-settings-preview .vjs-big-play-button {
-	background-color: var(--vjs-brand-color, #2B333FB3) !important;
+	background-color: var(--rtgodam-control-bar-color, #2B333FB3) !important;
 }
 
 .branding-icon {
@@ -36,6 +36,7 @@
 }
 
 .godam-player-skin-dropdown {
+
 	.components-combobox-control__suggestions-container {
 		width: 100%;
 		display: flex;
@@ -68,6 +69,7 @@
  }
 
  .vjs-icon-cog {
+
 	&::before {
 		font-size: 1.6em;
     	line-height: 1.87;
@@ -135,7 +137,6 @@
     background-color: rgba(0, 0, 0, 0.7);
     color: #fff;
     border: none;
-    cursor: pointer;
     font-size: 15px !important;
 	border-radius: 50%;
 	display: flex;
@@ -145,22 +146,3 @@
 	pointer-events: auto;
 	transition: opacity 0.1s ease;
 }
-
-
-// .godam-minimal-skin {
-// 	button {
-// 		background-color: green;
-// 	}
-// }
-
-// .godam-pills-skin {
-// 	button {
-// 		background-color: blue;
-// 	}
-// }
-
-// .godam-bubble-skin {
-// 	button {
-// 		background-color: violet;
-// 	}
-// }
