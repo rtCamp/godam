@@ -106,7 +106,7 @@ class Form_Submit {
 
 		// Loop through each file and check for `recorder` field data.
 		foreach ( $_FILES as $input_key => $file_data ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			if ( ! str_ends_with( $input_key, '-input-recorder' ) ) {
+			if ( false === strpos( $input_key, '-input-recorder' ) ) {
 				continue;
 			}
 
@@ -198,7 +198,7 @@ class Form_Submit {
 		$form_data = $form_submit_response['data'];
 
 		foreach ( $form_data as $key => $value ) {
-			if ( str_ends_with( $key, 'input-recorder' ) ) {
+			if ( false !== strpos( $key, 'input-recorder' ) ) {
 				$this->send_data_to_godam( $form_name, $form_id, $entry_id, $value );
 			}
 		}
@@ -281,7 +281,7 @@ class Form_Submit {
 		/**
 		 * Return true if we have custom recorder field.
 		 */
-		if ( str_ends_with( $field_name, '-input-recorder' ) ) {
+		if ( false !== strpos( $field_name, '-input-recorder' ) ) {
 			return true;
 		}
 

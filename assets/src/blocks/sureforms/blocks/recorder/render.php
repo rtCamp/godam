@@ -27,6 +27,7 @@ $max_file_size = ! empty( $attributes['maxFileSize'] ) ? absint( $attributes['ma
 $form_id       = ! empty( $attributes['formId'] ) ? $attributes['formId'] : '';
 $slug          = ! empty( $attributes['slug'] ) ? $attributes['slug'] : 'recorder';
 $error_msg     = ! empty( $attributes['errorMsg'] ) ? $attributes['errorMsg'] : __( 'The field is required', 'godam' );
+$block_index   = ! empty( $attributes['blockIndex'] ) ? absint( $attributes['blockIndex'] ) : 1;
 
 if ( empty( $form_id ) ) {
 	return;
@@ -68,7 +69,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 		/>
 	<?php endif; ?>
 	<input
-		name="<?php echo esc_attr( 'godam-upload-' . $block_id . '-lbl-' . rtrim( base64_encode( $label ), '=' ) . '-input-recorder' ); ?>"
+		name="<?php echo esc_attr( 'godam-upload-' . $block_id . '-lbl-' . rtrim( base64_encode( $label ), '=' ) . '-input-recorder' . $block_index ); ?>"
 		id="<?php echo esc_attr( $block_id ); ?>"
 		type="file"
 		style="display: none;"

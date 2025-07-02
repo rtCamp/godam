@@ -58,6 +58,9 @@
 		"errorMsg": {
 			"type": "string",
 			"default": ""
+		},
+		"blockIndex": {
+			"type": "integer"
 		}
 	},
 	"editorScript": [

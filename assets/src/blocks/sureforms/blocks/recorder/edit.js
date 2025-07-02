@@ -7,6 +7,7 @@ import clsx from 'clsx';
  * WordPress dependencies
  */
 import { useEffect } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
 import {
 	CheckboxControl,
 	TextControl,
@@ -46,6 +47,7 @@ export default function Edit( props ) {
 		fileSelector,
 		maxFileSize,
 		errorMsg,
+		blockIndex,
 	} = attributes;
 	const currentFormId = useGetCurrentFormId( clientId );
 
@@ -76,6 +78,31 @@ export default function Edit( props ) {
 		currentMessage: currentErrorMsg,
 		setCurrentMessage: setCurrentErrorMsg,
 	} = useErrMessage( errorMsg );
+
+	/**
+	 * Calculate block index.
+	 */
+	const currentBlockIndex = useSelect( ( select ) => {
+		const { getBlocks } = select( 'core/block-editor' );
+		const allBlocks = getBlocks();
+
+		const blocksOfTypeRecorder = allBlocks.filter(
+			( block ) => block.name === 'godam/srfm-recorder',
+		);
+
+		const index = blocksOfTypeRecorder.findIndex(
+			( block ) => block.clientId === clientId,
+		);
+
+		return index;
+	}, [ clientId ] );
+
+	// Update the block index.
+	useEffect( () => {
+		if ( blockIndex !== currentBlockIndex + 1 ) {
+			setAttributes( { blockIndex: currentBlockIndex + 1 } );
+		}
+	}, [ blockIndex, currentBlockIndex, setAttributes ] );
 
 	/**
 	 * File selector option.
