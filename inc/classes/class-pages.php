@@ -780,7 +780,7 @@ class Pages {
 	}
 
 	/**
-	 * Save current rest api reqeust.
+	 * Save current rest api request.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -800,7 +800,7 @@ class Pages {
 	}
 
 	/**
-	 * Remove antismap settings from wpforms.
+	 * Remove anti-spam settings from wpforms.
 	 *
 	 * @since n.e.x.t
 	 *
