@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { cog, video, code } from '@wordpress/icons';
+import { cog, video, brush } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -43,7 +43,7 @@ const TABS = [
 		id: 'video-player',
 		label: __( 'Video Player', 'godam' ),
 		component: VideoPlayer,
-		icon: code,
+		icon: brush,
 	},
 ];
 
