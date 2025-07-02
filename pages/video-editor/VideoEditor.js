@@ -332,22 +332,20 @@ const VideoEditor = ( { attachmentID } ) => {
 								}
 							>
 								<Button
-									variant="secondary"
+									variant="primary"
 									icon={ copy }
 									iconPosition="left"
 									onClick={ handleCopyGoDAMVideoBlock }
-									size="compact"
 									className="godam-button"
 								>
 									{ __( 'Copy Block', 'godam' ) }
 								</Button>
 							</Tooltip>
 							<Button
-								variant="secondary"
+								variant="primary"
 								href={ `/?godam_page=video-preview&id=${ attachmentID }` }
 								target="_blank"
 								className="godam-button"
-								size="compact"
 								icon={ seen }
 							>
 								{ __( 'Preview', 'godam' ) }
