@@ -516,6 +516,10 @@ input, textarea, select {
 	position: relative;
 }
 
+.sidebar-video-container video{
+	border-radius: 12px;
+}
+
 .sidebar-video-container.disabled-video video {
 	pointer-events: none;
 	opacity: 0.6;

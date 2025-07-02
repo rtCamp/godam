@@ -8,12 +8,13 @@ import { useDispatch, useSelector } from 'react-redux';
  */
 import { Button, TextControl, ToggleControl, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 /**
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
+import { replace, trash } from '@wordpress/icons';
 
 const CustomAdSettings = ( { layerID } ) => {
 	const layer = useSelector( ( state ) =>
@@ -105,36 +106,29 @@ const CustomAdSettings = ( { layerID } ) => {
 			<div className="flex flex-col items-start mb-4">
 				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom Ad', 'godam' ) }</label>
 				<div className="flex gap-2">
-					<Button
+					{ ! layer?.ad_url && ( <Button
 						__nextHasNoMarginBottom
 						className="mb-2 godam-button"
 						variant="primary"
 						onClick={ () => OpenVideoSelector() }
 						disabled={ adServer === 'ad-server' || ! isValidAPIKey }
-					>{ layer?.ad_url ? __( 'Replace Ad video', 'godam' ) : __( 'Select Ad video', 'godam' ) }</Button>
-					{
-						layer?.ad_url &&
-						<Button
-							variant="secondary"
-							className="mb-2 godam-button"
-							isDestructive
-							onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) }
-							disabled={ adServer === 'ad-server' || ! isValidAPIKey }
-						>{ __( 'Remove Ad video', 'godam' ) }</Button>
-
-					}
+					>{ __( 'Select Ad video', 'godam' ) }</Button> ) }
 				</div>
-				{
-					layer?.ad_url && (
-						<div className={ `sidebar-video-container ${ adServer === 'ad-server' || ! isValidAPIKey ? 'disabled-video' : '' }` }>
+				{ layer?.ad_url && (
+					<div className="flex mt-4">
+						<div className={ `sidebar-video-container rounded-xl overflow-scroll ${ adServer === 'ad-server' || ! isValidAPIKey ? 'disabled-video' : '' }` }>
 							<video
 								src={ layer.ad_url }
 								controls={ adServer !== 'ad-server' }
 							/>
 							{ ( adServer === 'ad-server' || ! isValidAPIKey ) && <div className="video-overlay" /> }
 						</div>
-					)
-				}
+						<div className="ml-[6px] flex flex-col">
+							<Button className="!text-brand-neutral-900" icon={ replace } isDestructive onClick={ OpenVideoSelector } />
+							<Button className="mt-1" icon={ trash } isDestructive onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) } />
+						</div>
+					</div>
+				) }
 			</div>
 
 			<ToggleControl
