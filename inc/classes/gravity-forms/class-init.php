@@ -276,102 +276,68 @@ class Init {
 	 */
 	private function send_to_godam( $form_title, $file_url, $entry_id, $field_id, $index = 0 ) {
 
-		// Get file extension.
-		$file_extension = pathinfo( $file_url, PATHINFO_EXTENSION );
-
-		$default_settings = array(
-			'video' => array(
-				'adaptive_bitrate'     => true,
-				'watermark'            => false,
-				'watermark_text'       => '',
-				'watermark_url'        => '',
-				'video_thumbnails'     => 0,
-				'overwrite_thumbnails' => false,
-				'use_watermark_image'  => false,
-			),
-		);
-
-		$godam_settings = get_option( 'rtgodam-settings', $default_settings );
-
-		$rtgodam_watermark           = $godam_settings['video']['watermark'];
-		$rtgodam_use_watermark_image = $godam_settings['video']['use_watermark_image'];
-		$rtgodam_watermark_text      = sanitize_text_field( $godam_settings['video']['watermark_text'] );
-		$rtgodam_watermark_url       = esc_url( $godam_settings['video']['watermark_url'] );
-
-		$watermark_to_use = array();
-
-		// Include watermark settings only if watermark is enabled.
-		if ( $rtgodam_watermark ) {
-			if ( $rtgodam_use_watermark_image && ! empty( $rtgodam_watermark_url ) ) {
-				$watermark_to_use['watermark_url'] = $rtgodam_watermark_url;
-			} elseif ( ! $rtgodam_use_watermark_image && ! empty( $rtgodam_watermark_text ) ) {
-				$watermark_to_use['watermark_text'] = $rtgodam_watermark_text;
-			}
+		/**
+		 * Bail early if no file to send.
+		 */
+		if ( empty( $file_url ) ) {
+			return;
 		}
-
-		$callback_url = rest_url( 'godam/v1/transcoder-callback' );
 
 		/**
-		 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
+		 * Form Title.
 		 */
-		$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
+		$form_title = ! empty( $form_title ) ? $form_title : __( 'Gravity forms', 'godam' );
 
-		$api_key = get_site_option( 'rtgodam-api-key', '' );
+		/**
+		 * Send for transcoding.
+		 */
+		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'gf', $form_title, $file_url, $entry_id );
 
-		$body = array_merge(
-			array(
-				'api_token'       => $api_key,
-				'job_type'        => 'stream',
-				'job_for'         => 'gf-godam-recorder',
-				'file_origin'     => rawurlencode( $file_url ),
-				'callback_url'    => rawurlencode( $callback_url ),
-				'status_callback' => rawurlencode( $status_callback_url ),
-				'force'           => 0,
-				'formats'         => $file_extension,
-				'thumbnail_count' => 0,
-				'stream'          => true,
-				'watermark'       => boolval( $rtgodam_watermark ),
-				'resolutions'     => array( 'auto' ),
-				'folder_name'     => $form_title ?? 'Gravity Forms',
-			),
-			$watermark_to_use
-		);
-
-		$args = array(
-			'method'    => 'POST',
-			'sslverify' => false,
-			'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
-			'body'      => $body,
-		);
-
-		$transcoding_api_url = RTGODAM_API_BASE . '/api/';
-		$transcoding_url     = $transcoding_api_url . 'resource/Transcoder Job';
-
-		$upload_page = wp_remote_post( $transcoding_url, $args );
-
-		if ( ! is_wp_error( $upload_page ) &&
-			(
-				isset( $upload_page['response']['code'] ) &&
-				200 === intval( $upload_page['response']['code'] )
-			)
-		) {
-			$upload_info = json_decode( $upload_page['body'] );
-
-			if ( isset( $upload_info->data ) && isset( $upload_info->data->name ) ) {
-				$job_id = $upload_info->data->name;
-				gform_update_meta( $entry_id, 'rtgodam_transcoding_job_id_' . $field_id . '_' . $index, $job_id );
-				add_option(
-					$job_id,
-					array(
-						'source'   => 'gform_godam_recorder',
-						'entry_id' => $entry_id,
-						'field_id' => $field_id,
-						'index'    => $index,
-					)
-				);
-			}
+		/**
+		 * Error handling.
+		 */
+		if ( is_wp_error( $response_from_transcoding ) ) {
+			return wp_send_json_error(
+				$response_from_transcoding->get_error_message(),
+				$response_from_transcoding->get_error_code(),
+			);
 		}
 
-		// Todo: Handle error cases.
+		/**
+		 * If empty data or name send error.
+		 */
+		if ( empty( $response_from_transcoding->data ) || empty( $response_from_transcoding->data->name ) ) {
+			return wp_send_json_error(
+				__( 'Transcoding data not set', 'godam' ),
+				404
+			);
+		}
+
+		/**
+		 * Get job id.
+		 */
+		$job_id = $response_from_transcoding->data->name;
+
+		/**
+		 * Update gravity forms entry meta data.
+		 */
+		gform_update_meta(
+			$entry_id,
+			'rtgodam_transcoding_job_id' . $field_id . '_' . $index,
+			$job_id
+		);
+
+		/**
+		 * Add the job to options table.
+		 */
+		add_option(
+			$job_id,
+			array(
+				'source'   => 'gf_godam_recorder',
+				'entry_id' => $entry_id,
+				'field_id' => $field_id,
+				'index'    => $index,
+			)
+		);
 	}
 }
