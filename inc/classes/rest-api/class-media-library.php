@@ -446,7 +446,9 @@ class Media_Library extends Base {
 
 			// Prepare query arguments.
 			$request_args = array(
-				'api_key' => $api_key,
+				'api_key'   => $api_key,
+				'page_size' => $per_page,
+				'page'      => $page,
 			);
 
 			// For video, GoDAM expects `job_type=stream`.
@@ -477,30 +479,65 @@ class Media_Library extends Base {
 				)
 			);
 
-			// Decode the JSON response body.
+			// Check for WP_Error or non-200 status codes.
+			if ( is_wp_error( $response ) ) {
+				return rest_ensure_response(
+					array(
+						'success' => false,
+						'message' => 'Failed to fetch media from GoDAM: ' . $response->get_error_message(),
+					)
+				);
+			}
+
+			$response_code = wp_remote_retrieve_response_code( $response );
+
+			if ( 200 !== $response_code ) {
+				return rest_ensure_response(
+					array(
+						'success' => false,
+						'message' => "GoDAM API returned HTTP status {$response_code}.",
+					)
+				);
+			}
+
 			$body = json_decode( wp_remote_retrieve_body( $response ) );
 
-			$response = $body->message;
+			if ( empty( $body->message->files ) || ! is_array( $body->message->files ) ) {
+				return rest_ensure_response(
+					array(
+						'success' => false,
+						'message' => 'Unexpected API response format or no files found.',
+					)
+				);
+			}
+
+			if ( empty( $body->message->files ) || ! is_array( $body->message->files ) ) {
+				return rest_ensure_response(
+					array(
+						'success' => false,
+						'message' => 'Unexpected API response format or no files found.',
+					)
+				);
+			}
+
+			$response = $body->message->files;
+
+			$all_items = array();
 
 			// Prepare and normalize each media item for compatibility with WordPress Media Library.
 			foreach ( $response as $key => $item ) {
-				$response[ $key ] = Media_Library_Ajax::get_instance()->prepare_godam_media_item( $item );
-
+				$all_items[ $key ] = Media_Library_Ajax::get_instance()->prepare_godam_media_item( $item );
 				/**
 				 * For audio type, ensure that meta keys for artist and album exist.
 				 * 
 				 * Note - This is a temporary fix till API starts sending the meta fields as well.
 				 */
 				if ( 'audio' === $type ) {
-					$response[ $key ]['meta']           = isset( $response[ $key ]['meta'] ) ? $response[ $key ]['meta'] : array();
-					$response[ $key ]['meta']['artist'] = isset( $response[ $key ]['meta']['artist'] ) ? $response[ $key ]['meta']['artist'] : '';
-					$response[ $key ]['meta']['album']  = isset( $response[ $key ]['meta']['album'] ) ? $response[ $key ]['meta']['album'] : '';
+					$all_items[ $key ]['meta']           = isset( $all_items[ $key ]['meta'] ) ? $all_items[ $key ]['meta'] : array();
+					$all_items[ $key ]['meta']['artist'] = isset( $all_items[ $key ]['meta']['artist'] ) ? $all_items[ $key ]['meta']['artist'] : '';
+					$all_items[ $key ]['meta']['album']  = isset( $all_items[ $key ]['meta']['album'] ) ? $all_items[ $key ]['meta']['album'] : '';
 				}
 			}
-
-			// Store the final processed list.
-			$all_items = $response;
-
 		}
 
 		// Return a REST response with pagination and status details.
@@ -513,7 +550,7 @@ class Media_Library extends Base {
 				'mime_type'   => $type,
 				'page'        => $page,
 				'per_page'    => $per_page,
-				'has_more'    => count( $all_items ) === $per_page && $page < ( $total / $per_page ),
+				'has_more'    => $body->message->has_more,
 			) 
 		);
 	}

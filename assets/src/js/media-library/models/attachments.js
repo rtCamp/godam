@@ -39,7 +39,7 @@ const GODAMAttachementCollection = wp.media.model.Query.extend(
 			this._hasMore = false;
 			this._page = 1;
 			this._totalPages = 5;
-			this._perPage = 20;
+			this._perPage = 40;
 			this.totalAttachments = 20;
 
 			// Call parent initialize method.
@@ -114,9 +114,14 @@ const GODAMAttachementCollection = wp.media.model.Query.extend(
 						const items = response.data;
 
 						// Calculate total pages and update pagination state.
-						this._totalPages = ( response.total_items / response.per_page ) + ( response.total_items % response.per_page ? 1 : 0 );
+
 						this._hasMore = response.has_more;
-						this.totalAttachments = response.total_items - response.data.length;
+
+						if ( response.has_more ) {
+							this._totalPages++;
+						} else {
+							this.totalAttachments -= this._perPage;
+						}
 
 						options.success?.( items );
 						return items;
