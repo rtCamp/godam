@@ -171,6 +171,20 @@ const elementorEditorJS = {
 	},
 };
 
+const forminatorBlockFilter = {
+	...sharedConfig,
+	entry: {
+		'forminator-block-filter': path.resolve( process.cwd(), 'assets', 'src', 'js', 'forminator-block-filter.js' ),
+	},
+};
+
+const forminatorGodamRecorder = {
+	...sharedConfig,
+	entry: {
+		'forminator-godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'forminator-godam-recorder.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -233,7 +247,7 @@ const pages = {
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
 	},
-	devtool: "source-map",
+	devtool: 'source-map',
 };
 
 module.exports = [
@@ -252,4 +266,6 @@ module.exports = [
 	pages,
 	elementorWidgetJS,
 	elementorEditorJS,
+	forminatorBlockFilter,
+	forminatorGodamRecorder,
 ];
