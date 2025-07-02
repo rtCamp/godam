@@ -284,6 +284,30 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @param array $forms Forms on the current page.
 		 */
 		public function enqueue_frontend_js( $forms ) {
+			// Get fields.
+			$fields = array_map(
+				function( $form ) {
+					return empty( $form['fields'] ) ? [] : $form['fields'];
+				},
+				(array) $forms
+			);
+
+			// Make fields flat.
+			$fields = array_reduce(
+				$fields,
+				function( $accumulator, $current ) {
+					return array_merge( $accumulator, $current );
+				},
+				[]
+			);
+
+			$field_types = wp_list_pluck( $fields, 'type' );
+
+			// Do not enqueue if there are no video fields.
+			if ( ! in_array( 'video', $field_types, true ) ) {
+				return;
+			}
+
 			wp_enqueue_style(
 				'wpforms-uppy-video-style',
 				RTGODAM_URL . 'assets/build/css/wpforms-uppy-video.css',
