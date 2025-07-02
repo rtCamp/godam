@@ -189,6 +189,7 @@ class Form_Submit {
 		}
 
 		$form_name = $form_submit_response['form_name'] ?? '';
+		$form_id   = $form_submit_response['form_id'] ?? 0;
 		$entry_id  = $form_submit_response['entry_id'] ?? 0;
 
 		/**
@@ -198,7 +199,7 @@ class Form_Submit {
 
 		foreach ( $form_data as $key => $value ) {
 			if ( str_ends_with( $key, '-input-recorder' ) ) {
-				$this->send_data_to_godam( $form_name, $entry_id, $value );
+				$this->send_data_to_godam( $form_name, $form_id, $entry_id, $value );
 			}
 		}
 	}
@@ -207,10 +208,11 @@ class Form_Submit {
 	 * Send files to GoDam for transcoding.
 	 *
 	 * @param string $form_title Form Name.
+	 * @param int    $form_id    Form Id.
 	 * @param int    $entry_id   Entry Id.
 	 * @param string $file_url   File URL.
 	 */
-	private function send_data_to_godam( $form_title, $entry_id, $file_url ) {
+	private function send_data_to_godam( $form_title, $form_id, $entry_id, $file_url ) {
 
 		/**
 		 * Bail early if no file to send.
@@ -262,6 +264,7 @@ class Form_Submit {
 			array(
 				'source'   => 'sureforms_godam_recorder',
 				'entry_id' => $entry_id,
+				'form_id'  => $form_id,
 			)
 		);
 	}
