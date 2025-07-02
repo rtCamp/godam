@@ -104,7 +104,7 @@ const CustomAdSettings = ( { layerID } ) => {
 				</Notice>
 			}
 			<div className="flex flex-col items-start mb-4">
-				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom Ad', 'godam' ) }</label>
+				<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mt-2 godam-input-label">{ __( 'Custom Ad', 'godam' ) }</label>
 				<div className="flex gap-2">
 					{ ! layer?.ad_url && ( <Button
 						__nextHasNoMarginBottom
@@ -115,7 +115,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					>{ __( 'Select Ad video', 'godam' ) }</Button> ) }
 				</div>
 				{ layer?.ad_url && (
-					<div className="flex mt-4">
+					<div className="flex mt-3">
 						<div className={ `sidebar-video-container rounded-xl overflow-scroll ${ adServer === 'ad-server' || ! isValidAPIKey ? 'disabled-video' : '' }` }>
 							<video
 								src={ layer.ad_url }

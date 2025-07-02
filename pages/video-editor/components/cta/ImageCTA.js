@@ -130,7 +130,7 @@ const ImageCTA = ( { layerID } ) => {
 				<label
 					htmlFor="custom-play-button"
 					name="hover-slider"
-					className="custom-label"
+					className="godam-input-label"
 				>
 					{ __( 'Add Image', 'godam' ) }
 				</label>
@@ -144,7 +144,7 @@ const ImageCTA = ( { layerID } ) => {
 				</Button> }
 				{ layer?.image && ! selectedImageUrl && ( <div className="mt-6 rounded-xl w-[160px] h-[160px] animate-pulse bg-gray-200"></div> ) }
 				{ selectedImageUrl && (
-					<div className="flex mt-6">
+					<div className="flex mt-4">
 						<img
 							src={ selectedImageUrl }
 							alt={ __( 'Selected custom brand', 'godam' ) }

@@ -480,6 +480,15 @@ input, textarea, select {
   margin-bottom: 0.5rem;
 }
 
+.godam-input-label{
+  font-size: 0.875rem !important;
+  line-height: 1 !important;
+  font-weight: 500;
+  color: #212121;
+  margin-bottom: 0.75rem !important;
+  text-transform: none !important;
+}
+
 .button-tabs {
 	border-bottom: none;
 }
