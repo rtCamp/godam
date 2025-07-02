@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, TextControl, ToggleControl, Notice } from '@wordpress/components';
+import { Button, TextControl, ToggleControl, Notice, Tooltip } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import React, { useState } from 'react';
 
@@ -124,8 +124,12 @@ const CustomAdSettings = ( { layerID } ) => {
 							{ ( adServer === 'ad-server' || ! isValidAPIKey ) && <div className="video-overlay" /> }
 						</div>
 						<div className="ml-[6px] flex flex-col">
-							<Button className="!text-brand-neutral-900" icon={ replace } isDestructive onClick={ OpenVideoSelector } />
-							<Button className="mt-1" icon={ trash } isDestructive onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) } />
+							<Tooltip text={ __( 'Replace Ad Video', 'godam' ) } placement="right">
+								<Button className="!text-brand-neutral-900" icon={ replace } onClick={ OpenVideoSelector } />
+							</Tooltip>
+							<Tooltip text={ __( 'Remove Ad Video', 'godam' ) } placement="right">
+								<Button className="mt-1" icon={ trash } isDestructive onClick={ () => dispatch( updateLayerField( { id: layerID, field: 'ad_url', value: '' } ) ) } />
+							</Tooltip>
 						</div>
 					</div>
 				) }
@@ -133,7 +137,7 @@ const CustomAdSettings = ( { layerID } ) => {
 
 			<ToggleControl
 				__nextHasNoMarginBottom
-				className="mb-4"
+				className="mb-4 godam-toggle"
 				label={ __( 'Skippable', 'godam' ) }
 				checked={ layer?.skippable ?? false }
 				onChange={ ( value ) =>
@@ -148,7 +152,7 @@ const CustomAdSettings = ( { layerID } ) => {
 					label={ __( 'Skip time', 'godam' ) }
 					help={ __( 'Time in seconds after which the skip button will appear', 'godam' ) }
 					value={ layer?.skip_offset }
-					className="mb-4"
+					className="mb-4 godam-input"
 					onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'skip_offset', value } ) ) }
 					type="number"
 					min="0"
@@ -161,7 +165,7 @@ const CustomAdSettings = ( { layerID } ) => {
 				placeholder="https://example"
 				help={ __( 'Enter the URL to redirect when the ad is clicked', 'godam' ) }
 				value={ layer?.click_link }
-				className="mb-4"
+				className="mb-4 godam-input"
 				onChange={ handleChange }
 				disabled={ adServer === 'ad-server' || ! isValidAPIKey }
 				type="url"
