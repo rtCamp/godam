@@ -101,7 +101,7 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 		);
 	}
 }
-$easydam_control_bar_color = ''; // Default color.
+$easydam_control_bar_color = 'initial'; // Default color.
 $easydam_brand_image       = ''; // Default color.
 
 $godam_settings         = get_option( 'rtgodam-settings', array() );
