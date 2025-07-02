@@ -108,7 +108,7 @@ class Pages {
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
 
 		// Remove anti-spam field during shortcode render for WPForms in Video Editor Page.
-		// @see https://github.com/rtCamp/godam/issues/597
+		// @see https://github.com/rtCamp/godam/issues/597 issue link.
 		add_filter( 'rest_pre_dispatch', array( $this, 'save_current_rest_api_request' ), 10, 3 );
 		add_filter( 'wpforms_frontend_form_data', array( $this, 'remove_antispam_setting_from_wpforms' ), 10 );
 	}
@@ -788,7 +788,7 @@ class Pages {
 	 * @param \WP_REST_Server $server Server instance.
 	 * @param WP_REST_Request $request Request used to generate the response.
 	 *
-	 * @return void
+	 * @return mixed
 	 */
 	public function save_current_rest_api_request( $result, $server, $request ) {
 		global $godam_current_rest_request;
