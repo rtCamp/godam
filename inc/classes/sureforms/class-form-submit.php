@@ -327,7 +327,7 @@ class Form_Submit {
 			$transcoded_url        = esc_url( $transcoded_url );
 			$transcoded_url        = "transcoded_url={$transcoded_url}";
 			$transcoded_url_output = sprintf(
-				"<li class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></li>",
+				"<div style='margin: 8px 0;' class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></div>",
 				esc_html__( 'Video saved and transcoded successfully on GoDAM', 'godam' )
 			);
 		}
