@@ -25,7 +25,6 @@ import {
 	chevronUp,
 	moreVertical,
 	check,
-	background,
 } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useRef, useEffect } from '@wordpress/element';
@@ -145,22 +144,21 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 					>
 						<div className="flex justify-between items-center gap-3">
 							<Button
-								className="w-full justify-center"
+								className="w-full justify-center godam-button"
+								isTertiary
+								onClick={ () => setDeleteModalOpen( false ) }
+							>
+								{ __( 'Cancel', 'godam' ) }
+							</Button>
+							<Button
+								className="w-full justify-center godam-button"
 								isDestructive
-								variant="primary"
 								onClick={ () => {
 									handleDeleteLayer();
 									setDeleteModalOpen( false );
 								} }
 							>
 								{ __( 'Delete Layer', 'godam' ) }
-							</Button>
-							<Button
-								className="w-full justify-center"
-								variant="secondary"
-								onClick={ () => setDeleteModalOpen( false ) }
-							>
-								{ __( 'Cancel', 'godam' ) }
 							</Button>
 						</div>
 					</Modal>

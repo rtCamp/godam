@@ -93,7 +93,7 @@ const AddChapter = ( { chapterID, isError } ) => {
 				<div>
 					{ isError[ chapterID ]
 						? <Tooltip text={ generateTooltipText() } className="chapter-error-tooltip">
-							<Button icon={ cautionFilled } height={ 20 } width={ 20 } className="p-0" />
+							<Button icon={ cautionFilled } height={ 20 } width={ 20 } className="-ml-2" />
 						</Tooltip>
 						: <div className="w-[36px] pr-4"></div>
 					}
@@ -110,11 +110,12 @@ const AddChapter = ( { chapterID, isError } ) => {
 							handleChange( parsedValue.toString(), 'startTime' );
 						} }
 						type="text"
-						className={ isError[ chapterID ] ? 'godam-error' : '' }
+						className={ isError[ chapterID ] ? 'godam-error godam-input' : 'godam-input' }
 					/>
 					<TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
+						className="godam-input"
 						value={ chapter?.text || '' }
 						onChange={ ( value ) => handleChange( value, 'text' ) }
 					/>
