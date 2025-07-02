@@ -142,7 +142,7 @@ const ImageCTA = ( { layerID } ) => {
 				>
 					{ __( 'Upload', 'godam' ) }
 				</Button> }
-				{ layer?.image && ! selectedImageUrl && ( <div className="mt-6 rounded-xl w-[160px] h-[160px] animate-pulse bg-gray-200"></div> ) }
+				{ ( layer?.image !== 0 && ! selectedImageUrl ) && ( <div className="mt-6 rounded-xl w-[160px] h-[160px] animate-pulse bg-gray-200"></div> ) }
 				{ selectedImageUrl && (
 					<div className="flex mt-4">
 						<img
