@@ -101,6 +101,7 @@ class Assets {
 		$is_wpforms_active   = is_plugin_active( 'wpforms-lite/wpforms.php' );
 		$is_jetpack_active   = is_plugin_active( 'jetpack/jetpack.php' );
 		$is_sure_form_active = is_plugin_active( 'sureforms/sureforms.php' );
+		$is_met_form_active  = is_plugin_active( 'metform/metform.php' );
 
 		wp_localize_script(
 			'rtgodam-script',
@@ -113,6 +114,7 @@ class Assets {
 				'wpforms'      => $is_wpforms_active,
 				'jetpack'      => $is_jetpack_active,
 				'sureforms'    => $is_sure_form_active,
+				'metform'      => $is_met_form_active,
 			)
 		);
 

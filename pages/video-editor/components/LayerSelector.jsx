@@ -27,6 +27,7 @@ import CF7Icon from '../assets/layers/CF7Icon.svg';
 import Woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
+import MetFormIcon from '../assets/layers/MetFormIcon.png';
 
 const Layers = [
 	{
@@ -133,6 +134,18 @@ const Layers = [
 		isRequired: true,
 		isActive: Boolean( window.easydamMediaLibrary.isWooActive ) ?? false,
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/woocommerce/">${ __( 'WooCommerce', 'godam' ) }</a> ${ __( 'plugin is required to use Buy Now layer', 'godam' ) }`,
+	},
+	{
+		id: 11,
+		title: __( 'MetForm', 'godam' ),
+		description: __( 'Collect user input using MetForm', 'godam' ),
+		image: Form,
+		type: 'form',
+		formType: 'metform',
+		formIcon: MetFormIcon,
+		isRequired: true,
+		isActive: Boolean( window?.videoData?.metformActive ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/metform/">${ __( 'MetForm', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 ];
 

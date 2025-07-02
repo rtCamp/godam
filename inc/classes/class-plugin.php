@@ -36,6 +36,8 @@ use RTGODAM\Inc\REST_API\WC;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\Gravity_Forms;
+use RTGODAM\Inc\REST_API\MetForm;
+
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
@@ -127,6 +129,7 @@ class Plugin {
 		WC::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
+		MetForm::get_instance();
 	}
 
 	/**

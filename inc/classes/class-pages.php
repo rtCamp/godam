@@ -338,6 +338,7 @@ class Pages {
 			$is_wpforms_active   = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
 			$is_jetpack_active   = is_plugin_active( 'jetpack/jetpack.php' );
 			$is_sure_form_active = is_plugin_active( 'sureforms/sureforms.php' );
+			$is_met_form_active  = is_plugin_active( 'metform/metform.php' );
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
@@ -354,6 +355,7 @@ class Pages {
 					'wpforms_active'   => $is_wpforms_active,
 					'jetpack_active'   => $is_jetpack_active,
 					'sureformsActive'  => $is_sure_form_active,
+					'metformActive'    => $is_met_form_active,
 				)
 			);
 

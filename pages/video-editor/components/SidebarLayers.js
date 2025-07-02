@@ -14,6 +14,7 @@ import CF7Icon from '../assets/layers/CF7Icon.svg';
 import woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
+import MetformIcon from '../assets/layers/MetFormIcon.png';
 
 /**
  * WordPress dependencies
@@ -72,6 +73,12 @@ export const layerTypes = [
 				icon: SureformsIcon,
 				isActive: window?.videoData?.sureformsActive ?? false,
 				tooltipMessage: __( 'SureForms plugin is not active', 'godam' ),
+			},
+			metform: {
+				layerText: __( 'MetForm', 'godam' ),
+				icon: MetformIcon,
+				isActive: window?.videoData?.metformActive ?? false,
+				tooltipMessage: __( 'MetForm plugin is not active', 'godam' ),
 			},
 		},
 	},

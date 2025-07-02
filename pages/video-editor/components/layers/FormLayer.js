@@ -19,6 +19,7 @@ import WPForm from '../forms/WPForm';
 import CF7 from '../forms/CF7';
 import JetpackForm from '../forms/JetpackForm';
 import SureForm from '../forms/Sureform.js';
+import MetForm from '../forms/MetForm.js';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader.js';
 
@@ -45,6 +46,10 @@ const FormLayerComponentType = {
 	sureforms: {
 		isActive: Boolean( window?.videoData?.sureformsActive ) ?? false,
 		component: SureForm,
+	},
+	metform: {
+		isActive: Boolean( window?.videoData?.metformActive ) ?? false,
+		component: MetForm,
 	},
 };
 
