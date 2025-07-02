@@ -22,9 +22,9 @@ import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
 import BrandImageSelector from '../GeneralSettings/BrandImageSelector.jsx';
 import SettingsButton from '../../../../../assets/src/js/godam-player/masterSettings.js';
 import ColorPickerButton from '../../../../video-editor/components/shared/color-picker/ColorPickerButton.jsx';
-import '../../../../../assets/src/blocks/godam-player/minimal-skin.scss';
-import '../../../../../assets/src/blocks/godam-player/pills-skin.scss';
-import '../../../../../assets/src/blocks/godam-player/bubble-skin.scss';
+import '../../../../../assets/src/css/minimal-skin.scss';
+import '../../../../../assets/src/css/pills-skin.scss';
+import '../../../../../assets/src/css/bubble-skin.scss';
 import Share from '../../../../../assets/src/images/share.svg';
 import ShareVariationOne from '../../../../../assets/src/images/share-variation-one.svg';
 
