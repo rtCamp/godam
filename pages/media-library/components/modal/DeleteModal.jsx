@@ -52,9 +52,9 @@ const DeleteModal = () => {
 			if ( ! isMultiSelecting ) {
 				await deleteFolderMutation( selectedFolder.id );
 			} else if ( multiSelectedFolderIds && multiSelectedFolderIds.length ) {
-				for ( const id of multiSelectedFolderIds ) {
-					await deleteFolderMutation( id );
-				}
+				await Promise.all(
+					multiSelectedFolderIds.map( ( id ) => deleteFolderMutation( id ) ),
+				);
 			}
 
 			dispatch( deleteFolder() );
