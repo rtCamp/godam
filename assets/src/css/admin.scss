@@ -102,7 +102,7 @@ $media-frame-width: calc(300px + 2 * 24px);
             display: flex;
             align-items: center;
             width: 100%;
-            max-width: 20rem;
+            max-width: 10rem;
         }
 
         .media-toolbar {
@@ -124,7 +124,7 @@ $media-frame-width: calc(300px + 2 * 24px);
                 display: flex;
                 align-items: center;
                 flex-wrap: wrap;
-                gap: 16px;
+                gap: 1rem;
                 row-gap: 0;
 
                 .media-grid-view-switch {
@@ -150,7 +150,6 @@ $media-frame-width: calc(300px + 2 * 24px);
             .attachment-filters {
                 margin: 0;
                 max-width: 8rem;
-                margin-left: auto;
             }
 
             .media-attachments-filter-heading {
@@ -163,22 +162,24 @@ $media-frame-width: calc(300px + 2 * 24px);
           .media-toolbar {
             flex-direction: column;
             align-items: stretch;
-            gap: 16px;
-            width: calc(100% - 250px - 32px);
+            gap: 1rem;
+            width: calc(100% - 267px - 64px);
 
             .media-toolbar-secondary {
+                max-width: 100%;
                 width: 100%;
                 flex-wrap: wrap;
             }
 
             .media-toolbar-primary {
-              width: 100%;
-              flex-wrap: wrap;
-              margin: 0;
+                max-width: 100%;
+                width: 100%;
+                flex-wrap: wrap;
+                margin: 0;
             }
 
             .attachment-filters {
-                margin: 12px 0;
+                margin: 0.75rem 0;
             }
           }
 
@@ -196,7 +197,7 @@ $media-frame-width: calc(300px + 2 * 24px);
         background-color: #fff;
 
         svg {
-            padding-right: 8px;
+            padding-right: 0.5rem;
         }
 
         &:focus {
@@ -206,7 +207,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 
         &.media-frame-menu-toggle {
             left: 50px !important;
-                    top: 20px !important;
+            top: 20px !important;
       }
     }
 
@@ -264,6 +265,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 	padding: 0 24px 0 8px;
 	min-height: 30px;
 	max-width: 8rem;
+	border: 1px solid #A3A3A3;
 	vertical-align: middle;
 }
 
