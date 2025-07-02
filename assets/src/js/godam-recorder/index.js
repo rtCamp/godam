@@ -52,14 +52,24 @@ class UppyVideoUploader {
 	 * Clears the persisted state on form submit confirmations.
 	 */
 	static clearUppyStateIfConfirmed() {
-		if (
-			document.querySelector( 'div[id^=gform_confirmation_message_]' ) ||
-			document.querySelector( 'div.srfm-success-box.srfm-active' )
-		) {
-			Object.keys( localStorage )
-				.filter( ( key ) => key.startsWith( 'uppyState:' ) )
-				.forEach( ( key ) => localStorage.removeItem( key ) );
-		}
+		setTimeout( () => {
+			/**
+			 * Get all forms confirmation container.
+			 */
+			const gravityForms = document.querySelector( 'div[id^=gform_confirmation_message_]' );
+			const sureForms = document.querySelector( 'div.srfm-success-box' );
+
+			/**
+			 * If any of the forms have confirmation, remove uppy state.
+			 */
+			const removeUppyState = gravityForms || sureForms;
+
+			if ( removeUppyState ) {
+				Object.keys( localStorage )
+					.filter( ( key ) => key.startsWith( 'uppyState:' ) )
+					.forEach( ( key ) => localStorage.removeItem( key ) );
+			}
+		}, 500 );
 	}
 
 	/**
@@ -274,7 +284,7 @@ class UppyVideoUploader {
 
 /**
  * Initialize all video uploaders on DOM ready,
- * clearing persisted states if Gravity Form submission was confirmed.
+ * clearing persisted states if form submission were confirmed.
  */
 document.addEventListener( 'DOMContentLoaded', () => {
 	UppyVideoUploader.clearUppyStateIfConfirmed();
@@ -288,7 +298,17 @@ document.addEventListener( 'DOMContentLoaded', () => {
  * Clear the uppy state for gform_confirmation_loaded.
  */
 jQuery( document ).ready( function() {
+	/**
+	 * Gravity form confirmation.
+	 */
 	jQuery( document ).on( 'gform_confirmation_loaded', function() {
+		UppyVideoUploader.clearUppyStateIfConfirmed();
+	} );
+
+	/**
+	 * Sureforms confirmation.
+	 */
+	jQuery( document ).on( 'srfm_on_show_success_message', function() {
 		UppyVideoUploader.clearUppyStateIfConfirmed();
 	} );
 } );
