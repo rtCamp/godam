@@ -3,7 +3,7 @@
  * GoDAM video editor preview page class.
  *
  * @package godam
- * @since n.e.x.t
+ * @since 1.2.0
  */
 
 namespace RTGODAM\Inc;
@@ -27,7 +27,7 @@ class Video_Preview {
 	/**
 	 * To setup action/filter.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.2.0
 	 * 
 	 * @return void
 	 */
@@ -39,7 +39,7 @@ class Video_Preview {
 	/**
 	 * Load the video preview template.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.2.0
 	 * 
 	 * @param string $template The current template.
 	 * @return string The path to the video preview template.
@@ -54,7 +54,7 @@ class Video_Preview {
 	/**
 	 * Enqueue assets for the video preview page.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.2.0
 	 * 
 	 * This method registers the styles needed for the video preview page.
 	 */

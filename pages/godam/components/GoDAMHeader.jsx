@@ -59,7 +59,7 @@ const GodamHeader = () => {
 							iconSize={ 16 }
 							showTooltip={ true }
 							tooltipPosition="bottom center"
-							label={ ( ! window?.userData?.valid_api_key || ! window?.userData?.user_data?.active_plan ) ? __( 'Premium feature', 'godam' ) : __( 'GoDAM central media manager', 'godam' ) }
+							label={ ( ! window?.userData?.valid_api_key || ! window?.userData?.user_data?.active_plan ) ? __( 'Premium feature', 'godam' ) : __( 'GoDAM Central', 'godam' ) }
 							tooltipText={ __( 'Manage Media', 'godam' ) }
 							// disabled={ ! window?.userData?.valid_api_key || ! window?.userData?.user_data?.active_plan }
 						/>

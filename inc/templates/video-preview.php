@@ -3,7 +3,7 @@
  * GoDAM video preview template.
  *
  * @package godam
- * @since n.e.x.t
+ * @since 1.2.0
  */
 
 // Ensure this is being accessed via WordPress.
