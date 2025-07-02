@@ -217,12 +217,12 @@ const ImageCTA = ( { layerID } ) => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						help={ __( 'Please select how transparent you would like this.', 'godam' ) }
-						initialPosition={ 0 }
+						initialPosition={ 1 }
 						max={ 1 }
 						min={ 0 }
 						onChange={ ( value ) => updateField( 'imageOpacity', value ) }
 						step={ 0.1 }
-						value={ layer.imageOpacity }
+						value={ layer.imageOpacity ?? 1 }
 						label={ __( 'Opacity of background image', 'godam' ) }
 					/>
 				</div>
