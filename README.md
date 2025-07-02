@@ -73,8 +73,8 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 - Watermarking support to protect video content.
 - Automatically compress and resize videos on upload to reduce storage and bandwidth.
 
-#### 📌 Central Media Manager
-- Unified dashboard for managing all media assets in one place.
+#### 📌 GoDAM Central
+- Unified dashboard for managing all assets in one place.
 - Organize videos, images, and documents into folders with search, filters, and sharing options.
 - Each video gets a dedicated single video page with time-stamped comments and reactions for team collaboration.
 - Automatically sync uploaded videos with the WordPress Media Library for easy access across your site.
@@ -107,7 +107,7 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 - **_Content Platforms:_** Stream high-quality videos with minimal buffering and downtime.
 
 GoDAM is ideal for businesses, content creators, educators, and media platforms looking to streamline digital asset management while offering high-quality streaming experiences.
-Whether you’re running an e-learning site, an eCommerce store with product videos, or a media-heavy blog, GoDAM ensures your videos are delivered efficiently and engagingly.
+Whether you're running an e-learning site, an eCommerce store with product videos, or a media-heavy blog, GoDAM ensures your videos are delivered efficiently and engagingly.
 
 Get started today and revolutionize the way you manage and deliver video content on WordPress!
 
@@ -203,15 +203,15 @@ Yes, GoDAM provides robust analytics tools to track video engagement, including 
 17. Attachment Video Details
 18. Single Video Analytics
 19. Video Analytics Dashboard
-20. Central Media Selector Tab
+20. GoDAM Central Selector Tab
 21. Share Button
 22. GoDAM Recorder Field for Gravity Forms
 23. Gravity Form Entry Detail page
 24. Automatic Video Transcription
 25. Built-in Video SEO
 26. `[godam_video]` Shortcode
-27. Central Media Manager
-28. Image Upload to Central Media Manager
+27. GoDAM Central
+28. Image Upload to GoDAM Central
 29. GoDAM Video Gallery Block
 30. GoDAM Video Gallery Front-end
 31. Elementor GoDAM Audio Widget
