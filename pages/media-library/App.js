@@ -86,15 +86,14 @@ const App = () => {
 						__next40pxDefaultSize
 						variant="secondary"
 						text={ ! isMultiSelecting ? __( 'Select', 'godam' ) : __( 'Cancel', 'godam' ) }
-						className="button--half"
 						onClick={ () => dispatch( toggleMultiSelectMode() ) }
 					/>
 					<SelectControl
 						value={ currentSortOrder }
-						className="button--half"
+						className="folder-sort-select"
 						options={ [
-							{ label: __( '▲ By Name (A-Z)', 'godam' ), value: 'name-asc' },
-							{ label: __( '▼ By Name (Z-A)', 'godam' ), value: 'name-desc' },
+							{ label: __( 'By Name (A-Z)', 'godam' ), value: 'name-asc' },
+							{ label: __( 'By Name (Z-A)', 'godam' ), value: 'name-desc' },
 						] }
 						onChange={ ( newOrder ) => dispatch( setSortOrder( newOrder ) ) }
 					/>
