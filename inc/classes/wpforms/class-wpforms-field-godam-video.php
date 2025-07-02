@@ -22,7 +22,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Primary class constructor.
 		 *
-		 * @since 1.0.0
+		 * @since n.e.x.t
 		 */
 		public function init() {
 
@@ -35,14 +35,13 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			// Define additional field properties.
 			// add_filter( 'wpforms_field_properties_text', [ $this, 'field_properties' ], 5, 3 );
-			// add_action( 'wpforms_frontend_js', [ $this, 'frontend_js' ] );
+			add_action( 'wpforms_frontend_js', [ $this, 'enqueue_frontend_js' ] );
 		}
 
 		/**
 		 * Create the field options panel. Used by subclasses.
 		 *
-		 * @since 1.0.0
-		 * @since 1.5.0 Converted to abstract method, as it's required for all fields.
+		 * @since n.e.x.t
 		 *
 		 * @param array $video_field Field data and settings.
 		 */
@@ -106,29 +105,13 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Field display on the form front-end.
 		 *
-		 * @since 1.0.0
+		 * @since n.e.x.t
 		 *
 		 * @param array $field      Field settings.
 		 * @param array $deprecated Deprecated.
 		 * @param array $form_data  Form data and settings.
 		 */
 		public function field_display( $field, $deprecated, $form_data ) {
-
-			wp_enqueue_style(
-				'wpforms-uppy-video-style',
-				RTGODAM_URL . 'assets/build/css/wpforms-uppy-video.css',
-				array(),
-				filemtime( RTGODAM_PATH . 'assets/build/css/wpforms-uppy-video.css' )
-			);
-
-			wp_enqueue_script(
-				'wpforms-godam-recorder-script',
-				RTGODAM_URL . 'assets/build/js/wpforms-godam-recorder.min.js',
-				array( 'jquery' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder.min.js' ),
-				true
-			);
-
 			$video_upload_button_id = wp_unique_id( 'uppy-video-upload-' );
 
 			// Define data.
@@ -192,6 +175,14 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			echo ob_get_clean();
 		}
 
+		/**
+		 * Render file selection field element.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param array $video_field Video field.
+		 * @return void
+		 */
 		protected function file_selection_field_element( $video_field ) {
 			$label = $this->field_element(
 				'label',
@@ -237,6 +228,14 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			);
 		}
 
+		/**
+		 * Render max file upload size field element.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param array $video_field Video field settings.
+		 * @return void
+		 */
 		protected function max_file_size_field_element( $video_field ) {
 			$label = $this->field_element(
 				'label',
@@ -274,6 +273,30 @@ if ( class_exists( 'WPForms_Field' ) ) {
 					'slug'    => 'file-selector',
 					'content' => $label . $field,
 				)
+			);
+		}
+
+		/**
+		 * Form frontend JS enqueues.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param array $forms Forms on the current page.
+		 */
+		public function enqueue_frontend_js( $forms ) {
+			wp_enqueue_style(
+				'wpforms-uppy-video-style',
+				RTGODAM_URL . 'assets/build/css/wpforms-uppy-video.css',
+				array(),
+				filemtime( RTGODAM_PATH . 'assets/build/css/wpforms-uppy-video.css' )
+			);
+
+			wp_enqueue_script(
+				'wpforms-godam-recorder-script',
+				RTGODAM_URL . 'assets/build/js/wpforms-godam-recorder.min.js',
+				array( 'jquery' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder.min.js' ),
+				true
 			);
 		}
 	}
