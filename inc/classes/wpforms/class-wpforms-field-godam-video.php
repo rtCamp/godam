@@ -35,7 +35,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			// Define additional field properties.
 			// add_filter( 'wpforms_field_properties_text', [ $this, 'field_properties' ], 5, 3 );
-			add_action( 'wpforms_frontend_js', [ $this, 'enqueue_frontend_js' ] );
+			add_action( 'wpforms_frontend_js', array( $this, 'enqueue_frontend_js' ) );
 		}
 
 		/**
@@ -46,7 +46,6 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @param array $video_field Field data and settings.
 		 */
 		public function field_options( $video_field ) {
-
 			// Populate basic field options
 			$this->field_option( 'basic-options', $video_field, array( 'markup' => 'open' ) );
 			$this->field_option( 'label', $video_field );
@@ -87,15 +86,15 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			$this->field_preview_option( 'label', $field );
 
 			// Primary input.
-			printf (
+			printf(
 				'<input type="file" style="display: none;" placeholder="%s" value="%s" class="primary-input" readonly>',
 				esc_attr( $placeholder ),
-				esc_attr($default_value )
+				esc_attr( $default_value )
 			);
 
 			// Render upload button.
-			printf( '<button type="button" class="uppy-video-upload-button">');
-			printf('<span class="dashicons dashicons-video-alt"></span>');
+			printf( '<button type="button" class="uppy-video-upload-button">' );
+			printf( '<span class="dashicons dashicons-video-alt"></span>' );
 			printf( esc_html__( 'Record Video', 'godam' ) );
 
 			// Description.
@@ -117,34 +116,24 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			// Define data.
 			$primary = $field['properties']['inputs']['primary'];
 
-			$form_id = isset( $form_data['id'] ) ? absint( $form_data['id'] ) : 0;
-			$field_id = isset( $field['id'] ) ? absint( $field['id'] ) : 0;
+			$form_id       = isset( $form_data['id'] ) ? absint( $form_data['id'] ) : 0;
+			$field_id      = isset( $field['id'] ) ? absint( $field['id'] ) : 0;
 			$file_input_id = "wpforms_file_input_{$form_id}_{$field_id}";
+
 			// Attributes - Max Upload Size
 			$max_upload_size = isset( $field['max_file_size'] ) ? absint( $field['max_file_size'] ) : 0;
 			$max_upload_size = $max_upload_size > 0 ? $max_upload_size * 1024 * 1024 : wp_max_upload_size(); // Convert MB to bytes.
 
 			// Attributes - File Selectors
-			$raw_file_selectors = array_filter( $field, function( $value, $key ) {
-				return strpos( $key, 'file-selector_' ) === 0 && $value === '1';
-			}, ARRAY_FILTER_USE_BOTH );
-			$raw_file_selectors = array_keys( $raw_file_selectors );
-
-			$file_selectors = array_reduce(  $raw_file_selectors, function( $result, $file_selector) {
-				// Remove the prefix 'file-selector_' from the key.
-				$selector_key = str_replace( 'file-selector_', '', $file_selector );
-				$result[] = $selector_key;
-				return $result;
-			}, array() );
-
-			$file_selectors= implode( ',', $file_selectors );
+			$file_selectors = $this->extract_file_selectors_from_field( $field );
+			$file_selectors = join( ',', $file_selectors );
 
 			// Uppy container.
 			$uppy_container_id = "uppy_container_{$form_id}_{$field_id}";
 			$uppy_file_name_id = "uppy_filename_{$form_id}_{$field_id}";
 			$uppy_preview_id   = "uppy_preview_{$form_id}_{$field_id}";
 
-		?>
+			?>
 			<input
 				type="file"
 				id="<?php echo esc_attr( $file_input_id ); ?>"
@@ -155,7 +144,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			<div
 				data-max-file-size="<?php echo esc_attr( $max_upload_size ); ?>"
 				id="<?php echo esc_attr( $uppy_container_id ); ?>"
-				class="uppy-video-upload <?php echo esc_attr( join(' ', $primary['class'] ) ); ?>"
+				class="uppy-video-upload <?php echo esc_attr( join( ' ', $primary['class'] ) ); ?>"
 				data-input-id="<?php echo esc_attr( $file_input_id ); ?>"
 				data-video-upload-button-id="<?php echo esc_attr( $video_upload_button_id ); ?>"
 				data-file-selectors="<?php echo esc_attr( $file_selectors ); ?>"
@@ -171,7 +160,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				<div id="<?php echo esc_attr( $uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
 				<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename"></div>
 			</div>
-		<?php
+			<?php
 			echo ob_get_clean();
 		}
 
@@ -184,6 +173,8 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @return void
 		 */
 		protected function file_selection_field_element( $video_field ) {
+			$file_selectors_from_field = $this->extract_file_selectors_from_field( $video_field );
+
 			$label = $this->field_element(
 				'label',
 				$video_field,
@@ -209,7 +200,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 					array(
 						'slug'  => "file-selector_{$selector_slug}",
 						'desc'  => $selector_label,
-						'value' => isset( $video_field[ "file-selector_{$selector_slug}" ] ) ? '1' : '0',
+						'value' => in_array( $selector_slug, $file_selectors_from_field, true ) ? '1' : '0',
 					),
 					false
 				) . '</br>';
@@ -286,8 +277,8 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		public function enqueue_frontend_js( $forms ) {
 			// Get fields.
 			$fields = array_map(
-				function( $form ) {
-					return empty( $form['fields'] ) ? [] : $form['fields'];
+				function ( $form ) {
+					return empty( $form['fields'] ) ? array() : $form['fields'];
 				},
 				(array) $forms
 			);
@@ -295,10 +286,10 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			// Make fields flat.
 			$fields = array_reduce(
 				$fields,
-				function( $accumulator, $current ) {
+				function ( $accumulator, $current ) {
 					return array_merge( $accumulator, $current );
 				},
-				[]
+				array()
 			);
 
 			$field_types = wp_list_pluck( $fields, 'type' );
@@ -322,6 +313,34 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder.min.js' ),
 				true
 			);
+		}
+
+		public function extract_file_selectors_from_field( $field, $default = array( 'webcam', 'screen_capture' ) ) {
+			// Attributes - File Selectors
+			$raw_file_selectors = array_filter(
+				$field,
+				function ( $value, $key ) {
+					return strpos( $key, 'file-selector_' ) === 0 && $value === '1';
+				},
+				ARRAY_FILTER_USE_BOTH
+			);
+
+			$raw_file_selectors = array_keys( $raw_file_selectors );
+
+			$file_selectors = array_reduce(
+				$raw_file_selectors,
+				function ( $result, $file_selector ) {
+					// Remove the prefix 'file-selector_' from the key.
+					$selector_key = str_replace( 'file-selector_', '', $file_selector );
+					$result[]     = $selector_key;
+					return $result;
+				},
+				array()
+			);
+
+			$file_selectors = empty( $file_selectors ) ? $default : $file_selectors;
+
+			return $file_selectors;
 		}
 	}
 }
