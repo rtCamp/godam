@@ -237,12 +237,12 @@ class RTGODAM_RetranscodeMedia {
 
 			wp_localize_script(
 				'rtgodam-retranscode-admin',
-				'rtgodam_retranscode',
+				'rtgodamRetranscode',
 				array(
-					'ids'           => $ids,
-					'stopping_text' => $stopping_text,
-					'text_goback'   => $text_goback,
-					'admin_url'     => $admin_url,
+					'ids'          => $ids,
+					'stoppingText' => $stopping_text,
+					'textGoback'   => $text_goback,
+					'adminUrl'     => $admin_url,
 				)
 			);
 
@@ -770,15 +770,6 @@ class RTGODAM_RetranscodeMedia {
 
 			if ( ! empty( $primary_remote_thumbnail_url ) ) {
 				do_action( 'rtgodam_primary_remote_thumbnail_set', $media_id, $primary_remote_thumbnail_url );
-			}
-
-			// Insert transcoded thumbnail attachment.
-			require_once ABSPATH . 'wp-admin/includes/image.php';
-			$attachment_id = 0;
-			// Generate thumbnail for PDF file.
-			if ( 'application/pdf' === get_post_mime_type( $media_id ) ) {
-				$attach_data = wp_generate_attachment_metadata( $media_id, $thumbnail_src );
-				wp_update_attachment_metadata( $media_id, $attach_data );
 			}
 		}
 	}

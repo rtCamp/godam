@@ -46,6 +46,8 @@ use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\Video_Metadata;
 
+use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
+
 /**
  * Class Plugin.
  */
@@ -87,6 +89,8 @@ class Plugin {
 
 		// Load Elementor widgets.
 		$this->load_elementor_widgets();
+
+		$this->load_media_library();
 	}
 
 	/**
@@ -133,6 +137,17 @@ class Plugin {
 		WC::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
+	}
+
+	/**
+	 * Load all the classes related to the media library.
+	 * 
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	private function load_media_library() {
+		Media_Folders_REST_API::get_instance();
 	}
 
 	/**

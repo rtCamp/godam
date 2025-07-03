@@ -30,19 +30,19 @@ import ForminatorForm from '../forms/forminatorForms.js';
  */
 const FormLayerComponentType = {
 	gravity: {
-		isActive: Boolean( window?.videoData?.gf_active ) ?? false,
+		isActive: Boolean( window?.videoData?.gfActive ) ?? false,
 		component: GravityForm,
 	},
 	cf7: {
-		isActive: Boolean( window?.videoData?.cf7_active ) ?? false,
+		isActive: Boolean( window?.videoData?.cf7Active ) ?? false,
 		component: CF7,
 	},
 	jetpack: {
-		isActive: Boolean( window?.videoData?.jetpack_active ) ?? false,
+		isActive: Boolean( window?.videoData?.jetpackActive ) ?? false,
 		component: JetpackForm,
 	},
 	wpforms: {
-		isActive: Boolean( window?.videoData?.wpforms_active ) ?? false,
+		isActive: Boolean( window?.videoData?.wpformsActive ) ?? false,
 		component: WPForm,
 	},
 	sureforms: {
@@ -78,7 +78,7 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
+	// const isValidAPIKey = window?.videoData?.validApiKey;
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
