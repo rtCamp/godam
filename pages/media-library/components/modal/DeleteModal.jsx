@@ -14,7 +14,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { closeModal, deleteFolder, updateSnackbar } from '../../redux/slice/folders';
-import { useDeleteFolderMutation } from '../../redux/api/folders';
+import { useDeleteFolderMutation, useBulkDeleteFoldersMutation } from '../../redux/api/folders';
 import './scss/modal.scss';
 import { triggerFilterChange } from '../../data/media-grid';
 
@@ -29,6 +29,7 @@ const DeleteModal = () => {
 	const multiSelectedFolderIds = useSelector( ( state ) => state.FolderReducer.multiSelectedFolderIds );
 
 	const [ deleteFolderMutation ] = useDeleteFolderMutation();
+	const [ bulkDeleteFoldersMutation ] = useBulkDeleteFoldersMutation();
 	const ref = useRef( null );
 
 	useEffect( () => {
@@ -52,9 +53,7 @@ const DeleteModal = () => {
 			if ( ! isMultiSelecting ) {
 				await deleteFolderMutation( selectedFolder.id );
 			} else if ( multiSelectedFolderIds && multiSelectedFolderIds.length ) {
-				await Promise.all(
-					multiSelectedFolderIds.map( ( id ) => deleteFolderMutation( id ) ),
-				);
+				await bulkDeleteFoldersMutation( multiSelectedFolderIds );
 			}
 
 			dispatch( deleteFolder() );

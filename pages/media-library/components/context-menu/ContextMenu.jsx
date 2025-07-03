@@ -285,7 +285,11 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				downloadZip( currentFolder.id );
 				break;
 			case 'delete':
-				dispatch( openModal( 'delete', { folderId: currentFolder.id } ) );
+				if ( isMultiSelecting && multiSelectedFolderIds.length > 0 ) {
+					dispatch( openModal( 'delete', { folderIds: multiSelectedFolderIds } ) );
+				} else {
+					dispatch( openModal( 'delete', { folderId: currentFolder.id } ) );
+				}
 				break;
 			default:
 				break;

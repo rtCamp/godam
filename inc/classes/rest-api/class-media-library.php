@@ -131,6 +131,25 @@ class Media_Library extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/bulk-delete-folders',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'bulk_delete_folders' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+					'args'                => array(
+						'folder_ids' => array(
+							'required'    => true,
+							'type'        => 'array',
+							'items'       => array( 'type' => 'integer' ),
+							'description' => __( 'Array of folder IDs to delete.', 'godam' ),
+						),
+					),
+				),
+			),
 		);
 	}
 
@@ -400,7 +419,7 @@ class Media_Library extends Base {
 	 * Download folder as ZIP.
 	 *
 	 * Create a ZIP file of the folder with the given ID.
-	 * 
+	 *
 	 * @since n.e.x.t
 	 *
 	 * @param \WP_REST_Request $request REST API request.
@@ -433,5 +452,78 @@ class Media_Library extends Base {
 				'data'    => $result,
 			)
 		);
+	}
+
+	/**
+	 * Delete multiple folders.
+	 *
+	 * Deletes an array of folder IDs.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function bulk_delete_folders( $request ) {
+		$folder_ids = $request->get_param( 'folder_ids' );
+
+		if ( empty( $folder_ids ) || ! is_array( $folder_ids ) ) {
+			return new \WP_Error( 'invalid_ids', 'No folder IDs provided or invalid format.', array( 'status' => 400 ) );
+		}
+
+		$deleted_count = 0;
+		$errors        = array();
+
+		foreach ( $folder_ids as $folder_id ) {
+			if ( ! is_numeric( $folder_id ) || $folder_id <= 0 ) {
+				// translators: %s is the invalid folder ID.
+				$errors[] = sprintf( __( 'Invalid folder ID: %s', 'godam' ), $folder_id );
+				continue;
+			}
+
+			$term = get_term( $folder_id, 'media-folder' );
+
+			if ( ! $term || is_wp_error( $term ) ) {
+				// translators: %s is the invalid folder ID.
+				$errors[] = sprintf( __( 'Folder ID %s not found or invalid.', 'godam' ), $folder_id );
+				continue;
+			}
+
+			$result = wp_delete_term( $folder_id, 'media-folder' );
+
+			if ( is_wp_error( $result ) ) {
+				// translators: %s is the invalid folder ID where delete failed.
+				$errors[] = sprintf( __( 'Failed to delete folder %s', 'godam' ), $folder_id );
+			} elseif ( false === $result ) {
+				// translators: %s is the ID of folder not found.
+				$errors[] = sprintf( __( 'Folder ID %s not found during deletion attempt.', 'godam' ), $folder_id );
+			} elseif ( 0 === $result ) {
+				// translators: %s is the invalid folder ID.
+				$errors[] = sprintf( __( 'Folder ID %s cannot be deleted (possibly uncategorized or default term).', 'godam' ), $folder_id );
+			} else {
+				++$deleted_count;
+			}
+		}
+
+		if ( $deleted_count > 0 && empty( $errors ) ) {
+			return rest_ensure_response(
+				array(
+					'success' => true,
+					// translators: %d is the number of folders deleted.
+					'message' => sprintf( __( '%d folder(s) deleted successfully.', 'godam' ), $deleted_count ),
+				)
+			);
+		} elseif ( $deleted_count > 0 && ! empty( $errors ) ) {
+			return new \WP_REST_Response(
+				array(
+					'success'       => true, // Partial success
+					// translators: %1$d is the number of folders deleted, %2$s are the errors.
+					'message'       => sprintf( __( 'Error deleting some folders. Deleted: %1$d. Errors: %2$s', 'godam' ), $deleted_count, implode( ', ', $errors ) ),
+					'errors'        => $errors,
+					'deleted_count' => $deleted_count,
+				),
+				200 // HTTP OK for partial success.
+			);
+		} else {
+			return new \WP_Error( 'bulk_delete_failed', __( 'No folders were deleted.', 'godam' ) . ' Errors: ' . implode( ', ', $errors ), array( 'status' => 500 ) );
+		}
 	}
 }
