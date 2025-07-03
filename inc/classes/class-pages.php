@@ -10,6 +10,7 @@ namespace RTGODAM\Inc;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
+use WP_REST_Request;
 
 /**
  * Class Assets
@@ -106,6 +107,11 @@ class Pages {
 		add_action( 'admin_menu', array( $this, 'add_admin_pages' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
+
+		// Remove anti-spam field during shortcode render for WPForms in Video Editor Page.
+		// @see https://github.com/rtCamp/godam/issues/597 issue link.
+		add_filter( 'rest_pre_dispatch', array( $this, 'save_current_rest_api_request' ), 10, 3 );
+		add_filter( 'wpforms_frontend_form_data', array( $this, 'remove_antispam_setting_from_wpforms' ), 10 );
 	}
 
 	/**
@@ -661,5 +667,65 @@ class Pages {
 		wp_enqueue_style( 'grunion.css' );
 		// In admin, we need to load the block library styles which include button styles.
 		wp_enqueue_style( 'wp-block-library' );
+	}
+
+	/**
+	 * Save current rest api request.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed           $result Response to replace the requested version with. Can be anything a normal endpoint can return, or null to not hijack the request.
+	 * @param \WP_REST_Server $server Server instance.
+	 * @param WP_REST_Request $request Request used to generate the response.
+	 *
+	 * @return mixed
+	 */
+	public function save_current_rest_api_request( $result, $server, $request ) {
+		global $godam_current_rest_request;
+
+		// Save the current REST API request.
+		$godam_current_rest_request = $request;
+
+		return $result;
+	}
+
+	/**
+	 * Remove anti-spam settings from wpforms.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $form_data Form data to be modified.
+	 *
+	 * @return array
+	 */
+	public function remove_antispam_setting_from_wpforms( $form_data ) {
+		global $godam_current_rest_request;
+
+		// Check if the global variable is set and is an instance of WP_REST_Request.
+		if ( null === $godam_current_rest_request ) {
+			return $form_data;
+		}
+
+		// Bail early if the global variable is not an instance of WP_REST_Request.
+		if ( ! $godam_current_rest_request instanceof \WP_REST_Request ) {
+			return $form_data;
+		}
+
+		if ( '/godam/v1/wpform' !== $godam_current_rest_request->get_route() ) {
+			return $form_data;
+		}
+
+		// Remove the antispam settings from the form data.
+		if ( isset( $form_data['settings'] ) ) {
+			foreach ( $form_data['settings'] as $key => $value ) {
+				if ( str_starts_with( $key, 'antispam' ) ) {
+					unset( $form_data['settings'][ $key ] );
+				}
+			}
+		}
+
+		$godam_current_rest_request = null;
+
+		return $form_data;
 	}
 }
