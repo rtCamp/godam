@@ -817,6 +817,7 @@ function GODAMPlayer( videoRef = null ) {
 							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' ) ||
 							layerObj.layerElement.querySelector( '.srfm-success-box.srfm-active' ) ||
 							layerObj.layerElement.querySelector( '.contact-form-success' ) ||
+							layerObj.layerElement.querySelector( '.mf-response-msg>p' )?.textContent ||
 							( ! layerObj.layerElement.querySelector( '.wp-polls-form' ) &&
 							layerObj.layerElement.querySelector( '.wp-polls-answer' ) )
 						) {
@@ -864,6 +865,8 @@ function GODAMPlayer( videoRef = null ) {
 					} else if ( window.godamPluginDependencies?.jetpack && layer.form_type === 'jetpack' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.sureforms && layer.form_type === 'sureforms' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.metform && layer.form_type === 'metform' ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {

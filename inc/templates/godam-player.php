@@ -340,7 +340,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 										<?php
 											echo do_shortcode(
 												sprintf(
-													"[metform id='%d']",
+													"[metform form_id='%d']",
 													intval( $layer['metform_id'] )
 												)
 											);
