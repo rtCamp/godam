@@ -173,6 +173,28 @@ const slice = createSlice( {
 				return 0;
 			} );
 		},
+		lockFolder: ( state, action ) => {
+			const folder = state.folders.find( ( item ) => item.id === action.payload );
+
+			if ( folder ) {
+				if ( ! folder.meta ) {
+					folder.meta = {};
+				}
+
+				folder.meta.locked = ! Boolean( folder.meta?.locked );
+			}
+		},
+		addBookmark: ( state, action ) => {
+			const folder = state.folders.find( ( item ) => item.id === action.payload );
+
+			if ( folder ) {
+				if ( ! folder.meta ) {
+					folder.meta = {};
+				}
+
+				folder.meta.bookmark = ! Boolean( folder.meta?.bookmark );
+			}
+		},
 	},
 } );
 
@@ -192,6 +214,8 @@ export const {
 	toggleMultiSelectedFolder,
 	clearMultiSelectedFolders,
 	setSortOrder,
+	lockFolder,
+	addBookmark,
 } = slice.actions;
 
 export default slice.reducer;

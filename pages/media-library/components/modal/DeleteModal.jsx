@@ -71,7 +71,7 @@ const DeleteModal = () => {
 			dispatch( updateSnackbar(
 				{
 					message: __( 'Failed to delete folder', 'godam' ),
-					type: 'error',
+					type: 'fail',
 				},
 			) );
 		} finally {
@@ -87,7 +87,7 @@ const DeleteModal = () => {
 	};
 
 	return (
-		isOpen && (
+		( isOpen && selectedFolder ) && (
 			<Modal
 				title={ __( 'Confirm Delete', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'delete' ) ) }
