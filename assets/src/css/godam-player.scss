@@ -1167,6 +1167,13 @@
  
  
 	 @media screen and (max-width: 768px) {
+
+		.vjs-modal-dialog.vjs-text-track-settings {
+			.vjs-close-button {
+				right: 30px;
+				top: .7em;
+			}
+		 }
  
 		 .vjs-control-bar {
 			 height: 6em !important;
