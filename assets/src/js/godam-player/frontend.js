@@ -113,6 +113,8 @@ function GODAMPlayer( videoRef = null ) {
 
 		const isPreviewEnabled = videoSetupOptions?.preview;
 
+		const isMobileView = window.innerWidth <= 768;
+
 		const player = videojs( video, videoSetupControls );
 		player.aspectRatio( '16:9' );
 
@@ -194,16 +196,59 @@ function GODAMPlayer( videoRef = null ) {
 			try {
 				const playerElement = player.el_;
 				const newHeight = playerElement.offsetHeight;
+				const newWidth = playerElement.offsetWidth;
 
 				const skipButtons = playerElement.querySelectorAll(
 					'.vjs-skip-backward-5, .vjs-skip-backward-10, .vjs-skip-backward-30, .vjs-skip-forward-5, .vjs-skip-forward-10, .vjs-skip-forward-30',
 				);
 
-				skipButtons.forEach( ( button ) => {
-					button.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
-				} );
+				const playButton = playerElement.querySelector( '.vjs-play-control' );
+
+				if ( videoSetupOptions?.playerSkin === 'Pills' ) {
+					// Create or find the wrapper
+					let controlWrapper = playerElement.querySelector(
+						'.godam-central-controls',
+					);
+					if ( ! controlWrapper ) {
+						controlWrapper = document.createElement( 'div' );
+						controlWrapper.className = 'godam-central-controls';
+
+						// Insert the wrapper before the play button
+						playButton.parentNode.insertBefore( controlWrapper, playButton );
+
+						// Move play and skip buttons into the wrapper
+						const skipBack = playerElement.querySelector(
+							'.vjs-skip-backward-10',
+						);
+						const skipForward = playerElement.querySelector(
+							'.vjs-skip-forward-10',
+						);
+
+						if ( skipBack ) {
+							controlWrapper.appendChild( skipBack );
+						}
+						controlWrapper.appendChild( playButton );
+						if ( skipForward ) {
+							controlWrapper.appendChild( skipForward );
+						}
+					}
+
+					// Position the wrapper
+					controlWrapper.style.position = 'absolute';
+					controlWrapper.style.left = `${ newWidth / 4 }px`; // center-ish
+					controlWrapper.style.bottom = `${ newHeight / 2 }px`;
+					controlWrapper.style.width = `${ newWidth / 2 }px`;
+					playButton.style.setProperty( 'left', `${ ( newWidth / 4 ) - 24 }px` );
+				} else {
+					playButton.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+					playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
+					// Default skip button positioning for other skins
+					skipButtons.forEach( ( button ) => {
+						button.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+					} );
+				}
 			} catch ( error ) {
-				// Silently fail - do nothing.
+				// Silently fail
 			}
 		}
 
@@ -537,7 +582,7 @@ function GODAMPlayer( videoRef = null ) {
 					shareButton.handleClick.bind( shareButton ),
 				);
 
-				if ( videoSetupOptions?.playerSkin === 'Bubble' ) {
+				if ( videoSetupOptions?.playerSkin === 'Bubble' && ! isMobileView ) {
 					player.controlBar.addChild( 'GodamShareButton', {} );
 				} else if ( videoContainer ) {
 					videoContainer.appendChild( buttonEl );
