@@ -6,12 +6,13 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import {
 	Notice,
 	Panel,
 	PanelBody,
 	Button,
+	Spinner,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -19,36 +20,43 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
-import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
-
+import { updateMediaSetting, selectHasChanges, selectMediaSettings } from '../../../redux/slice/media-settings.js';
 import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
-
-import './video-settings.scss';
-
 import APISettings from './APISettings.jsx';
 import VideoCompressQuality from './VideoCompressQuality.jsx';
 import VideoThumbnails from './VideoThumbnails.jsx';
 import VideoWatermark from './VideoWatermark.jsx';
 
+/**
+ * Styles
+ */
+import './video-settings.scss';
+
 const VideoSettings = () => {
 	const dispatch = useDispatch();
-	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
+	const mediaSettings = useSelector( selectMediaSettings( 'video' ) );
+	const allMediaSettings = useSelector( ( state ) => state.mediaSettings.settings );
+	const isChanged = useSelector( selectHasChanges( 'video' ) );
 	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
-
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
+	// Show notice function to display messages
 	const showNotice = ( message, status = 'success' ) => {
 		setNotice( { message, status, isVisible: true } );
-		scrollToTop();
+		if ( window.scrollY > 0 ) {
+			scrollToTop();
+		}
 	};
 
+	// Handle setting changes
 	const handleSettingChange = ( key, value ) => {
 		dispatch( updateMediaSetting( { category: 'video', key, value } ) );
 	};
 
+	// Handle saving settings
 	const handleSaveSettings = async () => {
 		try {
-			const response = await saveMediaSettings( { settings: { video: mediaSettings?.video } } ).unwrap();
+			const response = await saveMediaSettings( { settings: allMediaSettings } ).unwrap();
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
@@ -59,6 +67,18 @@ const VideoSettings = () => {
 			showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 		}
 	};
+
+	// Add unsaved changes warning
+	useEffect( () => {
+		const handleBeforeUnload = ( event ) => {
+			if ( isChanged ) {
+				event.preventDefault();
+				event.returnValue = __( 'You have unsaved changes. Are you sure you want to leave?', 'godam' );
+			}
+		};
+		window.addEventListener( 'beforeunload', handleBeforeUnload );
+		return () => window.removeEventListener( 'beforeunload', handleBeforeUnload );
+	}, [ isChanged ] );
 
 	return (
 		<div>
@@ -97,9 +117,9 @@ const VideoSettings = () => {
 
 			{ hasValidAPIKey && (
 				<>
-					<VideoCompressQuality handleSettingChange={ handleSettingChange } />
-					<VideoThumbnails handleSettingChange={ handleSettingChange } />
-					<VideoWatermark handleSettingChange={ handleSettingChange } />
+					<VideoCompressQuality mediaSettings={ mediaSettings } handleSettingChange={ handleSettingChange } />
+					<VideoThumbnails mediaSettings={ mediaSettings } handleSettingChange={ handleSettingChange } />
+					<VideoWatermark mediaSettings={ mediaSettings } handleSettingChange={ handleSettingChange } />
 				</>
 			) }
 
@@ -107,11 +127,12 @@ const VideoSettings = () => {
 				<Button
 					variant="primary"
 					className="godam-button"
+					icon={ saveMediaSettingsLoading && <Spinner /> }
 					onClick={ handleSaveSettings }
 					isBusy={ saveMediaSettingsLoading }
-					disabled={ saveMediaSettingsLoading }
+					disabled={ ! isChanged }
 				>
-					{ __( 'Save Settings', 'godam' ) }
+					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 				</Button>
 			) }
 
