@@ -37,7 +37,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			// add_filter( 'wpforms_field_properties_text', [ $this, 'field_properties' ], 5, 3 );
 			add_action( 'wpforms_frontend_js', array( $this, 'enqueue_frontend_js' ) );
 
-			add_filter( 'wpforms_process_before_filter', array( $this, 'process_video_file' ), 10, 2 );
+			add_filter( 'wpforms_process_before_filter', array( $this, 'save_video_file' ), 10, 2 );
 
 			// Format field value for emails.
 			add_filter( 'wpforms_plaintext_field_value', array( $this, 'format_video_field_value_for_plaintext_email' ), 10, 3 );
@@ -306,14 +306,14 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			}
 
 			wp_enqueue_style(
-				'wpforms-uppy-video-style',
+				'wpforms-uppy-video',
 				RTGODAM_URL . 'assets/build/css/wpforms-uppy-video.css',
 				array(),
 				filemtime( RTGODAM_PATH . 'assets/build/css/wpforms-uppy-video.css' )
 			);
 
 			wp_enqueue_script(
-				'wpforms-godam-recorder-script',
+				'wpforms-godam-recorder',
 				RTGODAM_URL . 'assets/build/js/wpforms-godam-recorder.min.js',
 				array( 'jquery' ),
 				filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder.min.js' ),
@@ -321,6 +321,16 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			);
 		}
 
+		/**
+		 * Extract and return file selectors from the field.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param array $field Field data.
+		 * @param array $default Default values.
+		 *
+		 * @return array
+		 */
 		public function extract_file_selectors_from_field( $field, $default = array( 'webcam', 'screen_capture' ) ) {
 			// Attributes - File Selectors
 			$raw_file_selectors = array_filter(
@@ -349,20 +359,18 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			return $file_selectors;
 		}
 
-		/**
-		 * Validate field on form submitting.
-		 *
-		 * @since 1.0.0
-		 *
-		 * @param string|int $field_id     Field ID as a numeric string.
-		 * @param mixed      $field_submit Submitted field value (raw data).
-		 * @param array      $form_data    Form data and settings.
-		 */
-		public function validate( $field_id, $field_submit, $form_data ) {
-			parent::validate( $field_id, $field_submit, $form_data );
-		}
 
-		public function process_video_file( $entry, $form_data ) {
+		/**
+		 * Save godam video file.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param array $entry Entry submitted data.
+		 * @param array $form_data Form data and settings
+		 *
+		 * @return array
+		 */
+		public function save_video_file( $entry, $form_data ) {
 
 			if ( ! isset( $_FILES['wpforms']['name']['fields'] ) ) {
 				return $entry;
