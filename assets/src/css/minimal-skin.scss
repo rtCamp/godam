@@ -95,8 +95,14 @@
                 display: block;
                 position: absolute;
                 bottom: 0;
-                left: 40px;
+                left: 10px;
             }
+        }
+
+        [class^="vjs-skip-backward-"],
+        [class^="vjs-skip-forward-"] {
+            display: block;
+            background-color: unset !important;
         }
 
        .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel {
@@ -113,7 +119,7 @@
             width: 8em;
 
             .vjs-menu-content {
-                
+
                 .godam-back-item-container::after {
                     top: 24.5px;
                 }

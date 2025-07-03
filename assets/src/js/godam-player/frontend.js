@@ -240,7 +240,7 @@ function GODAMPlayer( videoRef = null ) {
 					controlWrapper.style.width = `${ newWidth / 2 }px`;
 					playButton.style.setProperty( 'left', `${ ( newWidth / 4 ) - 24 }px` );
 				} else {
-					playButton.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+					playButton.style.setProperty( 'bottom', `${ ( newHeight / 2 ) + 4 }px` );
 					playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
 					// Default skip button positioning for other skins
 					skipButtons.forEach( ( button ) => {
