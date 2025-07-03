@@ -205,6 +205,7 @@ export default function Edit( props ) {
 						setAttributes( { maxFileSize: parseInt( value, 10 ) } );
 					} }
 					max={ maxFileSizeLimit }
+					step={ 1 }
 					min={ 10 }
 					value={ parseInt( maxFileSize, 10 ) }
 				/>

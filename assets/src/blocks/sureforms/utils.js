@@ -44,5 +44,5 @@ export function getMaxFileSize() {
 	const numericPart = maxFileSizeUpload.replace( '/b$/i', '' );
 	const sizeInBytes = parseInt( numericPart, 10 );
 
-	return sizeInBytes / ( 1024 * 1024 );
+	return Math.floor( sizeInBytes / ( 1024 * 1024 ) );
 }
