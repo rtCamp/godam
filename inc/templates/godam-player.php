@@ -102,7 +102,6 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	}
 }
 $easydam_control_bar_color = 'initial'; // Default color.
-$easydam_brand_image       = ''; // Default color.
 
 $godam_settings         = get_option( 'rtgodam-settings', array() );
 $brand_color            = isset( $godam_settings['video_player']['brand_color'] ) ? $godam_settings['video_player']['brand_color'] : null;
@@ -139,7 +138,7 @@ $video_config = wp_json_encode(
 		'layers'           => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
 		'chapters'         => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(), // contains list of chapters.
 		'overlayTimeRange' => $overlay_time_range, // Add overlay time range to video config.
-		'playerSkin'       => $player_skin, // Add player skin to video config.
+		'playerSkin'       => $player_skin, // Add player skin to video config. Add brand image to video config.
 	)
 );
 
@@ -147,12 +146,6 @@ if ( ! empty( $appearance_color ) ) {
 	$easydam_control_bar_color = $appearance_color;
 } elseif ( ! empty( $brand_color ) ) {
 	$easydam_control_bar_color = $brand_color;
-}
-
-if ( ! empty( $individual_brand_image ) ) {
-	$easydam_brand_image = $individual_brand_image;
-} elseif ( ! empty( $brand_image ) ) {
-	$easydam_brand_image = $brand_image;
 }
 
 $easydam_hover_color        = ! empty( $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['hoverColor'] : '#fff';

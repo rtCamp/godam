@@ -101,7 +101,7 @@ const VideoPlayer = () => {
 				durationDisplay: true,
 				fullscreenToggle: true,
 				subsCapsButton: true,
-				remainingTimeDisplay: false,
+				remainingTimeDisplay: playerSkin === 'Default' ? true : false,
 				pictureInPictureToggle: false,
 				skipButtons: {
 					forward: 10,

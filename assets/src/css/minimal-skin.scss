@@ -18,9 +18,10 @@
     }
 
     .vjs-current-time, .vjs-time-divider, .vjs-duration {
-        display: inline-block !important;
+        display: flex !important;
         padding: 0 !important;
         min-width: 1.2em;
+        justify-content: center;
     }
 
     .vjs-menu-content {
@@ -72,5 +73,9 @@
             height: 18px;
             width: 16px;
         }
+    }
+
+    .vjs-remaining-time {
+        display: none;
     }
 }
