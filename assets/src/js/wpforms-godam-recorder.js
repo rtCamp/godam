@@ -95,104 +95,135 @@ const clearVideoUploadUIOnModalClose = ( selectedFiles, containerId ) => {
 };
 
 document.addEventListener( 'DOMContentLoaded', () => {
-	/**
-	 * Initialize all the WPForms video upload field type.
-	 */
-	document.querySelectorAll( '.wpforms-field .uppy-video-upload' ).forEach( ( container ) => {
-		const containerId = container.id;
-		const inputId = container.getAttribute( 'data-input-id' );
-		const fileInput = document.getElementById( inputId );
-		const uploadButtonId = container.getAttribute( 'data-video-upload-button-id' );
-		const uploadButton = container.querySelector( `#${ uploadButtonId }` );
+	document.querySelectorAll( '.wpforms-form' ).forEach( ( wpForm ) => {
+		/**
+		 * Clear uppy state after successful submission.
+		 */
+		if ( wpForm.classList.contains( '.wpforms-ajax-form' ) ) {
+			jQuery( document ).on( 'wpformsAjaxSubmitSuccess', function( event, json ) {
+				if ( true === json?.success ) {
+					const uppyKeys = Object.keys( localStorage ).filter( ( key ) => {
+						return key.startsWith( 'uppyState:' );
+					} );
 
-		if ( ! fileInput || ! uploadButton ) {
-			return;
-		}
-
-		const maxFileSize = Number( container.getAttribute( 'data-max-file-size' ) );
-
-		// Initialize Uppy.
-		const uppy = new Uppy( {
-			id: `uppy-${ inputId }-${ uploadButtonId }`,
-			autoProceed: false,
-			restrictions: {
-				maxNumberOfFiles: 1,
-				allowedFileTypes: [ 'video/*' ],
-			},
-			maxFileSize,
-		} );
-
-		// Get enabled selectors from data attributes.
-		const enabledSelectors = container.getAttribute( 'data-file-selectors' ) || 'webcam,screen_capture';
-		const selectorArray = enabledSelectors.split( ',' );
-
-		// Define available plugins based on enabled selectors.
-		const enabledPlugins = [];
-
-		if ( selectorArray.includes( 'webcam' ) ) {
-			enabledPlugins.push( 'Webcam' );
-		}
-
-		if ( selectorArray.includes( 'screen_capture' ) ) {
-			enabledPlugins.push( 'ScreenCapture' );
-		}
-
-		const localFileInput = selectorArray.includes( 'file_input' ) ? true : false;
-		const trigger = `#${ containerId } #${ uploadButtonId }`;
-
-		// Add Dashboard with webcam and screen capture.
-		uppy
-			.use( Dashboard, {
-				trigger,
-				inline: false,
-				closeModalOnClickOutside: true,
-				closeAfterFinish: true,
-				proudlyDisplayPoweredByUppy: false,
-				showProgressDetails: true,
-				plugins: enabledPlugins,
-				disableLocalFiles: ! localFileInput,
-			} )
-			.use( GoldenRetriever, {
-				expires: 10 * 60 * 1000, // 10 minutes.
+					for ( const key of uppyKeys ) {
+						localStorage.removeItem( key );
+					}
+				}
 			} );
+		} else {
+			jQuery( window ).on( 'unload', function( event ) {
+				const uppyKeys = Object.keys( localStorage ).filter( ( key ) => {
+					return key.startsWith( 'uppyState:' );
+				} );
 
-		// Conditionally add Webcam plugin.
-		if ( selectorArray.includes( 'webcam' ) ) {
-			uppy.use( Webcam, {
-				modes: [ 'video-audio' ],
-				mirror: false,
-				showRecordingLength: true,
+				for ( const key of uppyKeys ) {
+					localStorage.removeItem( key );
+				}
 			} );
 		}
 
-		// Conditionally add ScreenCapture plugin.
-		if ( selectorArray.includes( 'screen_capture' ) ) {
-			uppy.use( ScreenCapture, {
-				audio: true,
-			} );
-		}
+		const godamVideoFieldContainers = document.querySelectorAll( '.wpforms-field .uppy-video-upload' ) || [];
 
-		// Handle file restoration on reload.
-		uppy.on( 'restored', () => {
-			const restoredFile = uppy.getFiles()?.[ 0 ];
-			if ( ! restoredFile ) {
+		/**
+		 * Initialize all the WPForms video upload field type.
+		 */
+		godamVideoFieldContainers.forEach( ( container ) => {
+			const containerId = container.id;
+			const inputId = container.getAttribute( 'data-input-id' );
+			const fileInput = document.getElementById( inputId );
+			const uploadButtonId = container.getAttribute( 'data-video-upload-button-id' );
+			const uploadButton = container.querySelector( `#${ uploadButtonId }` );
 
+			if ( ! fileInput || ! uploadButton ) {
+				return;
 			}
 
-			processVideoUpload( restoredFile, container );
-		} );
+			const maxFileSize = Number( container.getAttribute( 'data-max-file-size' ) );
 
-		// Handle file selection.
-		uppy.on( 'file-added', ( file ) => {
-			const containerRef = document.getElementById( containerId );
-			processVideoUpload( file, containerRef );
-			uppy.getPlugin( 'Dashboard' ).closeModal();
-		} );
+			// Initialize Uppy.
+			const uppy = new Uppy( {
+				id: `uppy-${ inputId }-${ uploadButtonId }`,
+				autoProceed: false,
+				restrictions: {
+					maxNumberOfFiles: 1,
+					allowedFileTypes: [ 'video/*' ],
+				},
+				maxFileSize,
+			} );
 
-		// Handle dashboard close.
-		uppy.on( 'dashboard:modal-closed', () => {
-			const selectedFiles = uppy.getFiles();
-			clearVideoUploadUIOnModalClose( selectedFiles, containerId );
+			// Get enabled selectors from data attributes.
+			const enabledSelectors = container.getAttribute( 'data-file-selectors' ) || 'webcam,screen_capture';
+			const selectorArray = enabledSelectors.split( ',' );
+
+			// Define available plugins based on enabled selectors.
+			const enabledPlugins = [];
+
+			if ( selectorArray.includes( 'webcam' ) ) {
+				enabledPlugins.push( 'Webcam' );
+			}
+
+			if ( selectorArray.includes( 'screen_capture' ) ) {
+				enabledPlugins.push( 'ScreenCapture' );
+			}
+
+			const localFileInput = selectorArray.includes( 'file_input' ) ? true : false;
+			const trigger = `#${ containerId } #${ uploadButtonId }`;
+
+			// Add Dashboard with webcam and screen capture.
+			uppy
+				.use( Dashboard, {
+					trigger,
+					inline: false,
+					closeModalOnClickOutside: true,
+					closeAfterFinish: true,
+					proudlyDisplayPoweredByUppy: false,
+					showProgressDetails: true,
+					plugins: enabledPlugins,
+					disableLocalFiles: ! localFileInput,
+				} )
+				.use( GoldenRetriever, {
+					expires: 10 * 60 * 1000, // 10 minutes.
+				} );
+
+			// Conditionally add Webcam plugin.
+			if ( selectorArray.includes( 'webcam' ) ) {
+				uppy.use( Webcam, {
+					modes: [ 'video-audio' ],
+					mirror: false,
+					showRecordingLength: true,
+				} );
+			}
+
+			// Conditionally add ScreenCapture plugin.
+			if ( selectorArray.includes( 'screen_capture' ) ) {
+				uppy.use( ScreenCapture, {
+					audio: true,
+				} );
+			}
+
+			// Handle file restoration on reload.
+			uppy.on( 'restored', () => {
+				const restoredFile = uppy.getFiles()?.[ 0 ];
+				if ( ! restoredFile ) {
+
+				}
+
+				processVideoUpload( restoredFile, container );
+			} );
+
+			// Handle file selection.
+			uppy.on( 'file-added', ( file ) => {
+				const containerRef = document.getElementById( containerId );
+				processVideoUpload( file, containerRef );
+				uppy.getPlugin( 'Dashboard' ).closeModal();
+			} );
+
+			// Handle dashboard close.
+			uppy.on( 'dashboard:modal-closed', () => {
+				const selectedFiles = uppy.getFiles();
+				clearVideoUploadUIOnModalClose( selectedFiles, containerId );
+			} );
 		} );
 	} );
 } );
