@@ -192,6 +192,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 					modes: [ 'video-audio' ],
 					mirror: false,
 					showRecordingLength: true,
+					showVideoSourceDropdown: true,
 				} );
 			}
 
