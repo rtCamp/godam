@@ -61,6 +61,34 @@ export const folderApi = createApi( {
 				},
 			} ),
 		} ),
+		bulkLockFolders: builder.mutation( {
+			query: ( { folderIds, lockedStatus } ) => ( {
+				url: 'godam/v1/media-library/bulk-lock-folders',
+				method: 'POST',
+				body: {
+					folder_ids: folderIds,
+					locked_status: lockedStatus,
+				},
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
+					'Content-Type': 'application/json',
+				},
+			} ),
+		} ),
+		bulkBookmarkFolders: builder.mutation( {
+			query: ( { folderIds, bookmarkStatus } ) => ( {
+				url: 'godam/v1/media-library/bulk-bookmark-folders',
+				method: 'POST',
+				body: {
+					folder_ids: folderIds,
+					bookmark_status: bookmarkStatus,
+				},
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
+					'Content-Type': 'application/json',
+				},
+			} ),
+		} ),
 		assignFolder: builder.mutation( {
 			query: ( { attachmentIds, folderTermId } ) => ( {
 				url: 'godam/v1/media-library/assign-folder',
@@ -92,6 +120,8 @@ export const {
 	useUpdateFolderMutation,
 	useDeleteFolderMutation,
 	useBulkDeleteFoldersMutation,
+	useBulkLockFoldersMutation,
+	useBulkBookmarkFoldersMutation,
 	useAssignFolderMutation,
 	useDownloadZipMutation,
 } = folderApi;

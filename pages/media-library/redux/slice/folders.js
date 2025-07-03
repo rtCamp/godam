@@ -174,25 +174,53 @@ const slice = createSlice( {
 			} );
 		},
 		lockFolder: ( state, action ) => {
-			const folder = state.folders.find( ( item ) => item.id === action.payload );
+			if ( ! Array.isArray( action.payload ) ) {
+				const folder = state.folders.find( ( item ) => item.id === action.payload );
 
-			if ( folder ) {
-				if ( ! folder.meta ) {
-					folder.meta = {};
+				if ( folder ) {
+					if ( ! folder.meta ) {
+						folder.meta = {};
+					}
+
+					folder.meta.locked = ! Boolean( folder.meta?.locked );
 				}
+			} else {
+				const ids = action.payload;
 
-				folder.meta.locked = ! Boolean( folder.meta?.locked );
+				ids.forEach( ( id ) => {
+					const folder = state.folders.find( ( item ) => item.id === id );
+					if ( folder ) {
+						if ( ! folder.meta ) {
+							folder.meta = {};
+						}
+						folder.meta.locked = true;
+					}
+				} );
 			}
 		},
 		addBookmark: ( state, action ) => {
-			const folder = state.folders.find( ( item ) => item.id === action.payload );
+			if ( ! Array.isArray( action.payload ) ) {
+				const folder = state.folders.find( ( item ) => item.id === action.payload );
 
-			if ( folder ) {
-				if ( ! folder.meta ) {
-					folder.meta = {};
+				if ( folder ) {
+					if ( ! folder.meta ) {
+						folder.meta = {};
+					}
+
+					folder.meta.bookmark = ! Boolean( folder.meta?.bookmark );
 				}
+			} else {
+				const ids = action.payload;
 
-				folder.meta.bookmark = ! Boolean( folder.meta?.bookmark );
+				ids.forEach( ( id ) => {
+					const folder = state.folders.find( ( item ) => item.id === id );
+					if ( folder ) {
+						if ( ! folder.meta ) {
+							folder.meta = {};
+						}
+						folder.meta.bookmark = true;
+					}
+				} );
 			}
 		},
 	},
