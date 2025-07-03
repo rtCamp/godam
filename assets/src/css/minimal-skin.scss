@@ -78,4 +78,55 @@
     .vjs-remaining-time {
         display: none;
     }
+
+    @media screen and (max-width: 768px) {
+
+        .vjs-control-bar {
+            
+            .vjs-settings-button{
+                right: 40px;
+            }
+
+            .vjs-subs-caps-button {
+                right: 80px !important;
+            }
+
+            .vjs-control.vjs-custom-play-button {
+                display: block;
+                position: absolute;
+                bottom: 0;
+                left: 40px;
+            }
+        }
+
+       .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel {
+            display: none !important;
+        }
+
+        .vjs-button.godam-share-button {
+            background: transparent;
+            height: 24px;
+            width: 24px;
+        }
+
+        .vjs-menu {
+            width: 8em;
+
+            .vjs-menu-content {
+                
+                .godam-back-item-container::after {
+                    top: 24.5px;
+                }
+
+                li {
+                    font-size: 12px;
+                    padding: 4px;
+                }
+
+                .vjs-menu-item-text span {
+                    display: flex;
+                }
+            }
+        }
+    }
 }
