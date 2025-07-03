@@ -154,7 +154,7 @@ const gfEntryDetailJS = {
 const wpFormsGodamRecorderJS = {
 	...sharedConfig,
 	entry: {
-		'wpforms-godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'integrations', 'wpforms','wpforms-godam-recorder.js' ),
+		'wpforms-godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpforms-godam-recorder.js' ),
 	},
 };
 
