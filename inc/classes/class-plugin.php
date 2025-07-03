@@ -38,7 +38,7 @@ use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\WC;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
-use RTGODAM\Inc\REST_API\Vimeo_Migration;
+use RTGODAM\Inc\REST_API\Video_Migration;
 use RTGODAM\Inc\Gravity_Forms;
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
@@ -137,7 +137,7 @@ class Plugin {
 		WC::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
-		Vimeo_Migration::get_instance();
+		Video_Migration::get_instance();
 	}
 
 	/**

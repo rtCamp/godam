@@ -19,7 +19,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 	const intervalRef = useRef( null );
 
 	const handleMigrationClick = async () => {
-		const url = window.godamRestRoute?.url + 'godam/v1/vimeo-migrate';
+		const url = window.godamRestRoute?.url + 'godam/v1/video-migrate?type=core';
 
 		axios.post( url )
 			.then( ( response ) => {
@@ -31,7 +31,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 	};
 
 	const fetchMigrationStatus = async () => {
-		const url = window.godamRestRoute?.url + 'godam/v1/vimeo-migration/status';
+		const url = window.godamRestRoute?.url + 'godam/v1/video-migration/status?type=core';
 
 		try {
 			const response = await axios.get( url );
@@ -69,7 +69,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 
 	if ( ! migrationStatus ) {
 		return (
-			<div className="bg-white p-6 rounded-md">
+			<div className="bg-white p-6 rounded-md godam-panel">
 				<div className="flex-1 space-y-8 py-1">
 					<div className="h-2 max-w-xs rounded bg-gray-200"></div>
 					<div className="space-y-3">
