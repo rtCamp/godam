@@ -36,6 +36,12 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			// Define additional field properties.
 			// add_filter( 'wpforms_field_properties_text', [ $this, 'field_properties' ], 5, 3 );
 			add_action( 'wpforms_frontend_js', array( $this, 'enqueue_frontend_js' ) );
+
+			add_filter( 'wpforms_process_before_filter', array( $this, 'process_video_file' ), 10, 2 );
+
+			// Format field value for emails.
+			add_filter( 'wpforms_plaintext_field_value', array( $this, 'format_video_field_value_for_plaintext_email' ), 10, 3 );
+			add_filter( 'wpforms_html_field_value', array( $this, 'format_video_field_value_for_html_email' ), 10, 3 );
 		}
 
 		/**
@@ -341,6 +347,133 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			$file_selectors = empty( $file_selectors ) ? $default : $file_selectors;
 
 			return $file_selectors;
+		}
+
+		/**
+		 * Validate field on form submitting.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param string|int $field_id     Field ID as a numeric string.
+		 * @param mixed      $field_submit Submitted field value (raw data).
+		 * @param array      $form_data    Form data and settings.
+		 */
+		public function validate( $field_id, $field_submit, $form_data ) {
+			parent::validate( $field_id, $field_submit, $form_data );
+		}
+
+		public function process_video_file( $entry, $form_data ) {
+
+			if ( ! isset( $_FILES['wpforms']['name']['fields'] ) ) {
+				return $entry;
+			}
+
+			$field_ids = array_map( 'intval', array_keys( $_FILES['wpforms']['name']['fields'] ) );
+
+			// Filter field ids without errors.
+			$field_ids = array_filter(
+				$field_ids,
+				function ( $field_id ) {
+					return isset( $_FILES["wpforms"]["error"]["fields"][$field_id] ) && UPLOAD_ERR_OK === $_FILES["wpforms"]["error"]["fields"][$field_id];
+				}
+			);
+
+			// Convert the $_FILES array to a more manageable format.
+			$files = [];
+			foreach( $field_ids as $field_id ) {
+				foreach( $_FILES['wpforms'] as $key => $value ) {
+					if ( ! isset( $value['fields'][$field_id] ) ) {
+						continue;
+					}
+
+					$files[$field_id][$key] = $value['fields'][$field_id];
+				}
+			}
+
+			require_once ABSPATH . 'wp-admin/includes/media.php';
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			require_once ABSPATH . 'wp-admin/includes/image.php';
+
+			// Loop through each file, and creates attachments for video files.
+			foreach( $files as $field_id => $file ) {
+				// Check if the file is a video.
+				if ( ! isset( $file['type'] ) || ! str_starts_with( $file['type'], 'video/' )) {
+					continue;
+				}
+
+				$attachment_id = media_handle_sideload( $file );
+
+				if ( ! is_wp_error( $attachment_id ) ) {
+					$entry['fields'][ $field_id ] = $attachment_id;
+				}
+			}
+
+			return $entry;
+		}
+
+		/**
+		 * Format video field value for plain-text email.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param mixed $value Field value.
+		 * @param array $field Field data.
+		 * @param array $form_data Form data and settings.
+		 *
+		 * @return mixed
+		 */
+		public function format_video_field_value_for_plaintext_email( $value, $field, $form_data ) {
+			// Check if the field is not a video field.
+			if ( ! isset( $field['type'] ) || 'video' !== $field['type'] ) {
+				return $value;;
+			}
+
+			if ( 0 === $value || ! is_numeric( $value ) ) {
+				return $value;;
+			}
+
+			$attachment = get_post( $value );
+
+			if ( null === $attachment || 'attachment' !== $attachment->post_type ) {
+				return $value;
+			}
+
+			return wp_get_attachment_url( $value ) . PHP_EOL . PHP_EOL;
+		}
+
+		/**
+		 * Format video field value for HTML email.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param mixed $value Field value.
+		 * @param array $field Field data.
+		 * @param array $form_data Form data and settings.
+		 *
+		 * @return mixed
+		 */
+		public function format_video_field_value_for_html_email( $value, $field, $form_data ) {
+			// Check if the field is not a video field.
+			if ( ! isset( $field['type'] ) || 'video' !== $field['type'] ) {
+				return $value;;
+			}
+
+			if ( 0 === $value || ! is_numeric( $value ) ) {
+				return $value;;
+			}
+
+			$attachment = get_post( $value );
+
+			if ( null === $attachment || 'attachment' !== $attachment->post_type ) {
+				return $value;
+			}
+
+			$attachment_url  = wp_get_attachment_url( $value );
+			$attachment_name = $attachment->post_title;
+
+			return sprintf('<a href="%s" target="_blank">%s</a>', esc_url( $attachment_url ), esc_html( $attachment_name ) );
+
+			return $value;
 		}
 	}
 }
