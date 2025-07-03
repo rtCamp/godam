@@ -21,10 +21,11 @@
 	box-sizing: border-box;
 	border: none;
 	padding: 0;
-}
 
-.godam-bookmark-panel .components-panel__body .components-panel__body-title {
-	background: #fff;
+	.components-panel__body-title {
+	    background: #fff;
+		margin: -16px -16px 5px;
+	}
 }
 
 .godam-bookmark-panel .components-panel__body-toggle {
@@ -37,7 +38,10 @@
 }
 
 .godam-bookmark-tab__list {
-    padding-left: 1.5rem;
+
+    .tree-item {
+        padding-left: 0.5rem;
+    }
 }
 
 .godam-bookmark-panel .components-panel__body-content {
