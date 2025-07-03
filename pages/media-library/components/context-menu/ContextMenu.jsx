@@ -327,7 +327,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				icon={ LockFolderIcon }
 				onClick={ () => handleMenuItemClick( 'lockFolder' ) }
 				className="folder-context-menu__item"
-				disabled={ isSpecialFolder }
+				disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder }
 			>
 				{ currentFolder?.meta?.locked ? __( 'Unlock Folder', 'godam' ) : __( 'Lock Folder', 'godam' ) }
 			</Button>
@@ -335,7 +335,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				icon={ BookmarkStarIcon }
 				onClick={ () => handleMenuItemClick( 'addBookmark' ) }
 				className="folder-context-menu__item"
-				disabled={ isSpecialFolder }
+				disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder }
 			>
 				{ currentFolder?.meta?.bookmark ? __( 'Remove Bookmark', 'godam' ) : __( 'Add Bookmark', 'godam' ) }
 			</Button>

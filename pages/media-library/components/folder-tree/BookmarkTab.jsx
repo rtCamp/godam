@@ -9,7 +9,7 @@ import { useMemo } from 'react';
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Panel, PanelBody } from '@wordpress/components';
-import { lock as bookmarkIcon, starFilled } from '@wordpress/icons';
+import { starFilled } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -44,7 +44,6 @@ const BookmarkTab = () => {
 				<Panel className="godam-bookmark-panel">
 					<PanelBody
 						title={ __( 'Bookmarks', 'godam' ) }
-						icon={ bookmarkIcon }
 						initialOpen={ true }
 					>
 						<div className="godam-bookmark-tab__empty-state">
@@ -64,7 +63,6 @@ const BookmarkTab = () => {
 			<Panel className="godam-bookmark-panel">
 				<PanelBody
 					title={ panelTitle }
-					icon={ bookmarkIcon }
 					initialOpen={ true }
 				>
 					<div className="godam-bookmark-tab__list">

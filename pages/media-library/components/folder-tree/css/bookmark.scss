@@ -16,24 +16,28 @@
 
 .godam-bookmark-panel .components-panel__body {
 	background: #fff;
-	margin-bottom: 16px;
 	width: 100%;
 	max-width: 100%;
 	box-sizing: border-box;
+	border: none;
+	padding: 0;
 }
 
 .godam-bookmark-panel .components-panel__body .components-panel__body-title {
-	padding: 12px 16px;
-	background: #f6f7f7;
+	background: #fff;
 }
 
 .godam-bookmark-panel .components-panel__body-toggle {
-	font-weight: 600;
-	color: #1d2327;
+	color: #1c1c1c;
+
+    &:hover, &:active {
+        color: #1c1c1c;
+        background-color: #F5F5F5;
+    }
 }
 
-.godam-bookmark-panel .components-panel__body-toggle:hover {
-	color: #135e96;
+.godam-bookmark-tab__list {
+    padding-left: 1.5rem;
 }
 
 .godam-bookmark-panel .components-panel__body-content {
