@@ -29,7 +29,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			// Define field type information.
 			$this->name     = esc_html__( 'GoDAM Record', 'godam' );
 			$this->keywords = esc_html__( 'godam, video', 'godam' );
-			$this->type     = 'video';
+			$this->type     = 'godam-video';
 			$this->icon     = 'fa-video-camera';
 			$this->order    = 30;
 
@@ -301,7 +301,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			$field_types = wp_list_pluck( $fields, 'type' );
 
 			// Do not enqueue if there are no video fields.
-			if ( ! in_array( 'video', $field_types, true ) ) {
+			if ( ! in_array( 'godam-video', $field_types, true ) ) {
 				return;
 			}
 
@@ -424,7 +424,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 */
 		public function format_video_field_value_for_plaintext_email( $value, $field, $form_data ) {
 			// Check if the field is not a video field.
-			if ( ! isset( $field['type'] ) || 'video' !== $field['type'] ) {
+			if ( ! isset( $field['type'] ) || 'godam-video' !== $field['type'] ) {
 				return $value;;
 			}
 
@@ -454,7 +454,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 */
 		public function format_video_field_value_for_html_email( $value, $field, $form_data ) {
 			// Check if the field is not a video field.
-			if ( ! isset( $field['type'] ) || 'video' !== $field['type'] ) {
+			if ( ! isset( $field['type'] ) || 'godam-video' !== $field['type'] ) {
 				return $value;;
 			}
 
