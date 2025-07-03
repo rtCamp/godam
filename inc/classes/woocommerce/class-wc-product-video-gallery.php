@@ -107,7 +107,7 @@ class WC_Product_Video_Gallery {
 		wp_register_script(
 			'rtgodam-wc-video-carousel',
 			RTGODAM_URL . 'assets/build/js/wc-video-carousel.min.js',
-			array( 'jquery', 'wp-hooks', 'rtgodam-swiper-script' ),
+			array( 'jquery', 'rtgodam-swiper-script' ),
 			filemtime( RTGODAM_PATH . 'assets/src/libs/swiper/wc-video-carousel.min.js' ),
 			true
 		);
@@ -119,25 +119,10 @@ class WC_Product_Video_Gallery {
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-video-carousel.css' )
 		);
 
-		if ( get_post_type() === 'product' ) {
-
-			// De-register the 'godam-player-frontend-script' first to prevent conflicts with the video carousel.
-			wp_deregister_script( 'godam-player-frontend-script' );
-
-			// Register the 'godam-player-frontend-script' again after the video carousel has been initialized so that we can modify the video player.
-			wp_register_script(
-				'godam-player-frontend-script',
-				RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
-				array( 'wp-hooks', 'rtgodam-wc-video-carousel' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
-				true
-			);
-
+		if ( 'product' === get_post_type() ) {
 			wp_enqueue_script( 'rtgodam-swiper-script' );
-			wp_enqueue_script( 'rtgodam-wc-video-carousel' );
-			wp_enqueue_script( 'godam-player-frontend-script' );
-
 			wp_enqueue_style( 'rtgodam-swiper-style' );
+			wp_enqueue_script( 'rtgodam-wc-video-carousel' );
 			wp_enqueue_style( 'rtgodam-wc-video-carousel-style' );
 		}
 	}
@@ -449,15 +434,15 @@ class WC_Product_Video_Gallery {
 			return '';
 		}
 
-		$rtgodam_product_video_gallery_ids = get_post_meta( $post->ID, '_rtgodam_product_video_gallery_ids', true );
+		$rtgodam_product_video_gallery_urls = get_post_meta( $post->ID, '_rtgodam_product_video_gallery', true );
 
-		if ( empty( $rtgodam_product_video_gallery_ids ) ) {
+		if ( empty( $rtgodam_product_video_gallery_urls ) ) {
 			return '';
 		}
-		$slider_html = '<div class="rtgodam-product-video-gallery-slider swiper"><div class="swiper-wrapper">';
-		foreach ( $rtgodam_product_video_gallery_ids as $attachment_id ) {
+		$slider_html = '<div class="rtgodam-product-video-gallery-slider rtgodam-product-video-gallery-slider-loading swiper"><div class="swiper-wrapper">';
+		foreach ( $rtgodam_product_video_gallery_urls as $attachment_url ) {
 			$slider_html .= '<div class="rtgodam-product-video-gallery-slider-item swiper-slide">';
-			$slider_html .= do_shortcode( "[godam_video id='{$attachment_id}']" );
+			$slider_html .= "<video autoplay loop muted width='100%'><source src='{$attachment_url}' /></video>";
 			$slider_html .= '</div>';
 		}
 		$slider_html .= '</div>';

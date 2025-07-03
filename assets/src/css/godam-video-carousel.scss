@@ -4,15 +4,40 @@
  */
 
 .rtgodam-product-video-gallery-slider {
-    max-width: 300px;
-    max-height: 540px;
+    width: 100%;
+    cursor: grab;
 
-    .video-js .vjs-control {
-        width: 3em;
+    &:active {
+        cursor: grabbing;
     }
 
-    .animate-video-loading {
-        aspect-ratio: 9/16;
+    .swiper-slide {
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 350px;
+    }
+
+    video {
+        height: 100%;
+        width: auto;
+        max-width: 100%;
+        object-fit: cover;
+    }
+
+    &-loading::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: var(--wp--preset--color--white);
+        animation: dimWhite 2s ease-in-out infinite;
+        z-index: 1;
     }
 }
 
@@ -35,4 +60,17 @@
             transform: scale(1.1);
         }
     }
+}
+
+// Animation for the swiper-slide
+@keyframes dimWhite {
+  0% {
+    background-color: var(--wp--preset--color--white);
+  }
+  50% {
+    background-color: var(--wp--preset--color--cyan-bluish-gray);
+  }
+  100% {
+    background-color: var(--wp--preset--color--white);
+  }
 }
