@@ -99,7 +99,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			);
 
 			// Render upload button.
-			printf( '<button type="button" class="uppy-video-upload-button">' );
+			printf( '<button type="button" class="wpforms-btn uppy-video-upload-button">' );
 			printf( '<span class="dashicons dashicons-video-alt"></span>' );
 			printf( esc_html__( 'Record Video', 'godam' ) );
 
