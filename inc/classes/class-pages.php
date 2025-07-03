@@ -53,6 +53,13 @@ class Pages {
 	private $settings_slug = 'rtgodam_settings';
 
 	/**
+	 * Slug for tools page
+	 *
+	 * @var string
+	 */
+	private $tools_slug = 'rtgodam_tools2';
+
+	/**
 	 * Menu pag ID.
 	 *
 	 * @var string
@@ -86,6 +93,13 @@ class Pages {
 	 * @var string
 	 */
 	private $settings_page_id = 'godam_page_rtgodam_settings';
+
+	/**
+	 * Tools page ID.
+	 * 
+	 * @var string
+	 */
+	private $tools_page_id = 'godam_page_rtgodam_tools2';
 
 	/**
 	 * Construct method.
@@ -156,6 +170,16 @@ class Pages {
 
 		add_submenu_page(
 			$this->menu_slug,
+			__( 'Tools', 'godam' ),
+			__( 'Tools', 'godam' ),
+			'manage_options',
+			$this->tools_slug,
+			array( $this, 'render_tools_page' ),
+			5
+		);
+
+		add_submenu_page(
+			$this->menu_slug,
 			__( 'Settings', 'godam' ),
 			__( 'Settings', 'godam' ),
 			'edit_posts',
@@ -173,6 +197,17 @@ class Pages {
 			array( $this, 'render_help_page' ),
 			7
 		);
+	}
+
+	/**
+	 * To render the tools page.
+	 *
+	 * @return void
+	 */
+	public function render_tools_page() {
+		?>
+			<div id="root-godam-tools"></div>
+		<?php
 	}
 
 	/**
@@ -216,7 +251,7 @@ class Pages {
 	 */
 	public function render_godam_page() {
 		?>
-		<div id="root-easydam">
+		<div id="root-godam-settings">
 			<div class="wrap flex min-h-[80vh] gap-4 my-4">
 				<!-- Sidebar Skeleton -->
 				<div class="max-w-[220px] w-full rounded-lg bg-white shadow-md border border-gray-200">
@@ -310,7 +345,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id ), true ) ) {
 
 			wp_register_script(
 				'rtgodam-page-style',
@@ -603,6 +638,27 @@ class Pages {
 
 			wp_set_script_translations( 'transcoder-page-script-godam', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-godam' );
+		} elseif ( $screen && $this->tools_page_id === $screen->id ) {
+
+			wp_register_script(
+				'godam-page-script-tools',
+				RTGODAM_URL . 'assets/build/pages/tools.min.js',
+				array( 'wp-element', 'wp-i18n' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/tools.min.js' ),
+				true
+			);
+
+			wp_set_script_translations( 'godam-page-script-tools', 'godam', RTGODAM_PATH . 'languages' );
+
+			$rtgodam_user_data = rtgodam_get_user_data();
+
+			wp_localize_script(
+				'godam-page-script-tools',
+				'userData',
+				$rtgodam_user_data
+			);
+
+			wp_enqueue_script( 'godam-page-script-tools' );
 		}
 
 		wp_enqueue_style( 'wp-components' );

@@ -1,0 +1,87 @@
+#godam-tools {
+    .godam-tools {
+    
+        /**
+         * Styes used for the tabs for the main settings page.
+          */
+        &__container {
+            margin: 2rem auto;
+            padding-right: 20px;
+            max-width: 1440px;
+            display: flex;
+            justify-content: space-between;
+            gap: 2em;
+    
+            &__tabs {
+                margin-bottom: 2rem;
+    
+                nav {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+    
+                    a {
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                        white-space: nowrap;
+    
+                        font-size: 0.875rem;
+                        line-height: 1;
+                        font-weight: 500;
+                        color: rgba(119, 119, 119, 1);
+    
+                        padding: 0.5rem;
+                        border-radius: 0.5rem;
+    
+                        &.active {
+                            color: rgba(33, 33, 33, 1);
+    
+                            background-color: #fff;
+                        }
+    
+                        &:focus {
+                            box-shadow: none;
+                        }
+                    }
+                }
+            }
+    
+            &__content {
+                flex: 1;
+            }
+
+            p {
+                margin-top: 0;
+            }
+        }
+    }
+
+    .godam-url {
+        color: #ab3a6c;
+        &:hover {
+            color: #9a2b5c;
+        }
+        text-decoration: underline;
+    }
+
+    .sidebar-nav-item {
+
+		@apply flex items-center gap-2 p-2 font-medium rounded-md text-gray-600 hover:text-gray-900 border border-transparent transition-all;
+
+		&.active {
+
+			@apply bg-white font-semibold focus:ring-2 ring-indigo-200 text-gray-900 drop-shadow-sm;
+			border: 1px solid #ddd;
+		}
+	}
+
+    .godam-progress-bar {
+        @apply w-full h-2 bg-gray-200 rounded-full overflow-hidden;
+
+        &--fill {
+            @apply h-full bg-[#9a2b5c] transition-all duration-300 ease-in-out;
+        }
+    }
+
+}

@@ -21,10 +21,10 @@ import GoDAMFooter from './components/GoDAMFooter.jsx';
 
 import GeneralSettings from './components/tabs/GeneralSettings/GeneralSettings.jsx';
 import VideoSettings from './components/tabs/VideoSettings/VideoSettings.jsx';
+import VideoPlayer from './components/tabs/VideoPlayer/VideoPlayer.jsx';
 
 import { useGetMediaSettingsQuery } from './redux/api/media-settings.js';
 import { setMediaSettings } from './redux/slice/media-settings.js';
-import VideoPlayer from './components/tabs/VideoPlayer/VideoPlayer.jsx';
 
 const TABS = [
 	{
