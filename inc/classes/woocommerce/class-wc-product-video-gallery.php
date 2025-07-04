@@ -458,6 +458,10 @@ class WC_Product_Video_Gallery {
 		$slider_html .= '<div class="swiper-button-next"></div>';
 		$slider_html .= '<div class="swiper-button-prev"></div>';
 		$slider_html .= '</div>';
+		$slider_html .= '<div class="rtgodam-product-video-gallery-slider-modal">';
+		$slider_html .= '<div class="rtgodam-product-video-gallery-slider-modal-content"></div>';
+		$slider_html .= '<a href="#" class="rtgodam-product-video-gallery-slider-modal-close">&times;</a>';
+		$slider_html .= '</div>';
 
 		echo apply_filters( 'rtgodam_video_slider_html', $slider_html ); // phpcs:ignore
 	}
