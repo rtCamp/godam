@@ -93,6 +93,28 @@ class Transcoding extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/not-transcoded/',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_media_require_retranscoding' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_other_posts' );
+					},
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/retranscode/',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'retranscode_media' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_other_posts' );
+					},
+				),
+			),
 		);
 	}
 
@@ -274,5 +296,118 @@ class Transcoding extends Base {
 			return new \WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
 		}
 		return true;
+	}
+
+	/**
+	 * Permission callback for the transcoding status endpoint.
+	 *
+	 * @param \WP_REST_Request $request REST request object.
+	 * 
+	 * @return WP_REST_Response
+	 */
+	public function get_media_require_retranscoding( $request ) {
+		$all_posts = array();
+		$paged     = 1;
+		$per_page  = 200;
+
+		do {
+			$args = array(
+				'post_type'      => 'attachment',
+				'post_mime_type' => 'video',
+				'post_status'    => 'any',
+				'posts_per_page' => $per_page,
+				'paged'          => $paged,
+				'fields'         => 'ids',
+				'meta_query'     => array(
+					array(
+						'key'     => 'rtgodam_transcoded_url',
+						'compare' => 'NOT EXISTS',
+					),
+				),
+			);
+
+			$query = new \WP_Query( $args );
+
+			if ( $query->have_posts() ) {
+				$all_posts = array_merge( $all_posts, $query->posts );
+				++$paged;
+			} else {
+				break;
+			}
+		} while ( true );
+
+		return new \WP_REST_Response(
+			array(
+				'data' => $all_posts,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Retranscode media.
+	 *
+	 * This function is a placeholder for the retranscoding functionality.
+	 * It should be implemented to handle the retranscoding of media files.
+	 *
+	 * @param \WP_REST_Request $request REST request object.
+	 */
+	public function retranscode_media( \WP_REST_Request $request ) {
+		$attachment_id = $request->get_param( 'id' );
+
+		if ( empty( $attachment_id ) ) {
+			return new \WP_REST_Response(
+				array(
+					'message' => __( 'Attachment ID not provided', 'godam' ),
+				),
+				400
+			);
+		}
+
+		// Delete the transcoding job ID from the post meta.
+		// As we are retranscoding the media, we need to remove the previous transcoding job ID.
+		delete_post_meta( $attachment_id, 'rtgodam_transcoding_job_id' );
+
+		$mime_type = get_post_mime_type( $attachment_id );
+		$title     = get_the_title( $attachment_id );
+	
+		$wp_metadata['mime_type'] = $mime_type;
+		
+		// Retranscode the media.
+		$transcoder = new \RTGODAM_Transcoder_Handler( true );
+		$transcoder->wp_media_transcoding( $wp_metadata, $attachment_id );
+
+		// Check if the transcoding job ID is set.
+		$is_sent = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		if ( empty( $is_sent ) ) {
+
+			$message = sprintf(
+				// translators: 1: Attachment title, 2: Attachment ID.
+				__( '%1$s (ID %2$d) ranscoding request failed. Unknown error', 'godam' ),
+				esc_html( $title ),
+				absint( $attachment_id )
+			);
+
+			return new \WP_REST_Response(
+				array( 'message' => $message ),
+				500
+			);
+		}
+
+		// Update the post meta to indicate that the retranscoding request was sent.
+		update_post_meta( $attachment_id, 'rtgodam_retranscoding_sent', $is_sent );
+
+		$message = sprintf(
+			// translators: 1: Attachment title, 2: Attachment ID.
+			__( '%1$s (ID %2$d) transcoding request was sent successfully', 'godam' ),
+			esc_html( $title ),
+			absint( $attachment_id )
+		);
+
+		return new \WP_REST_Response(
+			array( 'message' => $message ),
+			200
+		);
 	}
 }

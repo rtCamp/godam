@@ -51,7 +51,7 @@ const App = () => {
 						<a
 							key={ id }
 							href={ `#${ id }` }
-							className={ `sidebar-nav-item ${ activeTab === id ? 'active' : '' }` }
+							className={ `sidebar-nav-item whitespace-nowrap ${ activeTab === id ? 'active' : '' }` }
 							onClick={ () => setActiveTab( id ) }
 						>
 							<Icon icon={ icon } />

@@ -13,8 +13,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Video_Migration
- * 
- * 
+ *
  * @since n.e.x.t
  */
 class Video_Migration extends Base {
@@ -242,7 +241,7 @@ class Video_Migration extends Base {
 	 * @since n.e.x.t
 	 * 
 	 * @param string $migration_type The type of migration being processed (e.g., 'core', 'vimeo').
-	 * @param array $all_post_ids Array of all post IDs to process.
+	 * @param array  $all_post_ids Array of all post IDs to process.
 	 * 
 	 * @return void
 	 */
@@ -325,8 +324,8 @@ class Video_Migration extends Base {
 	 * @since n.e.x.t
 	 * 
 	 * @param string $migration_type The type of migration being processed (e.g., 'core', 'vimeo').
-	 * @param array $post_ids Array of post IDs to process in this batch.
-	 * @param int   $batch_number The current batch number.
+	 * @param array  $post_ids Array of post IDs to process in this batch.
+	 * @param int    $batch_number The current batch number.
 	 * 
 	 * @return int Number of posts processed in this batch.
 	 */
@@ -557,7 +556,7 @@ class Video_Migration extends Base {
 				'done'      => 0,
 				'started'   => null,
 				'completed' => null,
-				'status'    => 'pending', //  processing | completed | error.
+				'status'    => 'pending', // processing | completed | error.
 			);
 		}
 

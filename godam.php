@@ -51,7 +51,7 @@ if ( ! defined( 'RTGODAM_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' ) ) {
 }
 
 if ( ! defined( 'RTGODAM_API_BASE' ) ) {
-	define( 'RTGODAM_API_BASE', 'https://app.godam.io' );
+	define( 'RTGODAM_API_BASE', 'https://app-godam.rt.gw' );
 }
 
 if ( ! defined( 'RTGODAM_ANALYTICS_BASE' ) ) {
