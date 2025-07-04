@@ -27,6 +27,10 @@ const initialState = {
 	video_player: {
 		custom_css: VideoCustomCSSTemplate,
 	},
+	ads_settings: {
+		enable_global_video_ads: false,
+		adTagUrl: '',
+	},
 };
 
 const mediaSettingsSlice = createSlice( {
