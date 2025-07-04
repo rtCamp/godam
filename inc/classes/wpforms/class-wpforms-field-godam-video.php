@@ -359,7 +359,6 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			return $file_selectors;
 		}
 
-
 		/**
 		 * Save godam video file.
 		 *
@@ -378,7 +377,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/image.php';
 
 			// Loop through each file, and creates attachments for video files.
-			foreach( $files as $field_id => $file ) {
+			foreach ( $files as $field_id => $file ) {
 				// Bail if there is not error set.
 				if ( ! isset( $file['error'] ) ) {
 					continue;
@@ -391,7 +390,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				}
 
 				// Check if the file is a video.
-				if ( ! isset( $file['type'] ) || ! str_starts_with( $file['type'], 'video/' )) {
+				if ( ! isset( $file['type'] ) || ! str_starts_with( $file['type'], 'video/' ) ) {
 					continue;
 				}
 
@@ -419,11 +418,13 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		public function format_video_field_value_for_plaintext_email( $value, $field, $form_data ) {
 			// Check if the field is not a video field.
 			if ( ! isset( $field['type'] ) || 'godam-video' !== $field['type'] ) {
-				return $value;;
+				return $value;
+
 			}
 
 			if ( 0 === $value || ! is_numeric( $value ) ) {
-				return $value;;
+				return $value;
+
 			}
 
 			$attachment = get_post( $value );
@@ -449,11 +450,13 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		public function format_video_field_value_for_html_email( $value, $field, $form_data ) {
 			// Check if the field is not a video field.
 			if ( ! isset( $field['type'] ) || 'godam-video' !== $field['type'] ) {
-				return $value;;
+				return $value;
+
 			}
 
 			if ( 0 === $value || ! is_numeric( $value ) ) {
-				return $value;;
+				return $value;
+
 			}
 
 			$attachment = get_post( $value );
@@ -465,7 +468,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			$attachment_url  = wp_get_attachment_url( $value );
 			$attachment_name = $attachment->post_title;
 
-			return sprintf('<a href="%s" target="_blank">%s</a>', esc_url( $attachment_url ), esc_html( $attachment_name ) );
+			return sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $attachment_url ), esc_html( $attachment_name ) );
 
 			return $value;
 		}
@@ -487,16 +490,16 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				return;
 			}
 
-			$file_upload_errors = [
-				UPLOAD_ERR_OK         => esc_html__('There is no error, the file uploaded with success', 'godam'),
-				UPLOAD_ERR_INI_SIZE   => esc_html__('The uploaded file exceeds the upload_max_filesize directive in php.ini', 'godam'),
-				UPLOAD_ERR_FORM_SIZE  => esc_html__('The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form', 'godam'),
-				UPLOAD_ERR_PARTIAL    => esc_html__('The uploaded file was only partially uploaded', 'godam'),
-				UPLOAD_ERR_NO_FILE    => esc_html__('No file was uploaded', 'godam'),
-				UPLOAD_ERR_NO_TMP_DIR => esc_html__('Missing a temporary folder', 'godam'),
-				UPLOAD_ERR_CANT_WRITE => esc_html__('Failed to write file to disk.', 'godam'),
-				UPLOAD_ERR_EXTENSION  => esc_html__('A PHP extension stopped the file upload.', 'godam'),
-			];
+			$file_upload_errors = array(
+				UPLOAD_ERR_OK         => esc_html__( 'There is no error, the file uploaded with success', 'godam' ),
+				UPLOAD_ERR_INI_SIZE   => esc_html__( 'The uploaded file exceeds the upload_max_filesize directive in php.ini', 'godam' ),
+				UPLOAD_ERR_FORM_SIZE  => esc_html__( 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form', 'godam' ),
+				UPLOAD_ERR_PARTIAL    => esc_html__( 'The uploaded file was only partially uploaded', 'godam' ),
+				UPLOAD_ERR_NO_FILE    => esc_html__( 'No file was uploaded', 'godam' ),
+				UPLOAD_ERR_NO_TMP_DIR => esc_html__( 'Missing a temporary folder', 'godam' ),
+				UPLOAD_ERR_CANT_WRITE => esc_html__( 'Failed to write file to disk.', 'godam' ),
+				UPLOAD_ERR_EXTENSION  => esc_html__( 'A PHP extension stopped the file upload.', 'godam' ),
+			);
 
 			$file = $this->format_global_files_array( $_FILES, $field_id );
 
@@ -512,30 +515,30 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @since n.e.x.t
 		 *
 		 * @param array $files Global files array.
-		 * @param int $field_id Field ID.
+		 * @param int   $field_id Field ID.
 		 *
 		 * @return array
 		 */
 		public function format_global_files_array( $files, $field_id = null ) {
 			if ( ! isset( $files['wpforms']['name']['fields'] ) ) {
-				return [];
+				return array();
 			}
 
 			$field_ids_in_files = array_map( 'intval', array_keys( $files['wpforms']['name']['fields'] ) );
 
 			// Convert the $_FILES array to a more manageable format.
-			$new_files = [];
-			foreach( $field_ids_in_files as $field_id_in_file ) {
-				foreach( $files['wpforms'] as $key => $value ) {
-					if ( ! isset( $value['fields'][$field_id_in_file] ) ) {
+			$new_files = array();
+			foreach ( $field_ids_in_files as $field_id_in_file ) {
+				foreach ( $files['wpforms'] as $key => $value ) {
+					if ( ! isset( $value['fields'][ $field_id_in_file ] ) ) {
 						continue;
 					}
 
-					$new_files[$field_id_in_file][$key] = $value['fields'][$field_id_in_file];
+					$new_files[ $field_id_in_file ][ $key ] = $value['fields'][ $field_id_in_file ];
 				}
 			}
 
-			return ! is_null( $field_id ) && isset( $new_files[ $field_id] ) ? $new_files[ $field_id ] : $new_files;
+			return ! is_null( $field_id ) && isset( $new_files[ $field_id ] ) ? $new_files[ $field_id ] : $new_files;
 		}
 	}
 }
