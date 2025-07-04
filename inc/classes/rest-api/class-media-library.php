@@ -138,7 +138,7 @@ class Media_Library extends Base {
 					'methods'             => \WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'bulk_delete_folders' ),
 					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
+						return current_user_can( 'upload_files' );
 					},
 					'args'                => array(
 						'folder_ids' => array(
@@ -157,7 +157,7 @@ class Media_Library extends Base {
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'bulk_update_folder_lock' ),
 					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
+						return current_user_can( 'upload_files' );
 					},
 					'args'                => array(
 						'folder_ids'    => array(
@@ -181,7 +181,7 @@ class Media_Library extends Base {
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'bulk_update_folder_bookmark' ),
 					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
+						return current_user_can( 'upload_files' );
 					},
 					'args'                => array(
 						'folder_ids'      => array(

@@ -67,6 +67,32 @@ $media-frame-width: calc(300px + 2 * 24px);
 }
 
 /**
+ * Admin page CSS changes for the top-level EasyDAM page.
+ */
+.toplevel_page_rtgodam,
+.godam_page_rtgodam_video_editor,
+.godam_page_rtgodam_help,
+.godam-analytics-container
+.godam-dashboard-container {
+	--wp-admin-theme-color: #ab3a6c;
+
+	button,
+	a,
+	input {
+
+		&:not(.is-destructive) {
+			--wp-components-color-accent: #ab3a6c;
+			--wp-components-color-accent-darker-10: #9a2d5e;
+			--wp-components-color-accent-darker-20: #6e2445;
+		}
+	}
+
+	.circle {
+		--wp-components-color-accent: #e6533a;
+	}
+}
+
+/**
  * Media Library modal styles.
  *
  */
@@ -95,16 +121,6 @@ $media-frame-width: calc(300px + 2 * 24px);
             left: 0;
         }
 
-        input, select, button {
-            height: 40px;
-            margin: 12px 0;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            width: 100%;
-            max-width: 10rem;
-        }
-
         .media-toolbar {
             border: none;
             border-radius: 4px;
@@ -118,6 +134,16 @@ $media-frame-width: calc(300px + 2 * 24px);
                 position: relative;
                 top: auto;
                 margin-right: 8px;
+            }
+
+            input, select, button {
+                height: 40px;
+                margin: 12px 0;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                width: 100%;
+                max-width: 10rem;
             }
 
             .media-toolbar-secondary {
@@ -211,6 +237,17 @@ $media-frame-width: calc(300px + 2 * 24px);
       }
     }
 
+    .attachment-actions {
+
+        .button {
+            background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+                border-radius: 0.25rem;
+                border: none;
+                color: #FFF;
+                padding: 6px 8px;
+        }
+    }
+
     .media-menu-item.active {
         border: none !important;
         border-bottom: 2px solid #AB3A6C !important;
@@ -286,32 +323,6 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 .daterangepicker {
 	z-index: calc(160000 + 1) !important; // for some reason media-model z-index is 160000
-}
-
-/**
- * Admin page CSS changes for the top-level EasyDAM page.
- */
-.toplevel_page_rtgodam,
-.godam_page_rtgodam_video_editor,
-.godam_page_rtgodam_help,
-.godam-analytics-container
-.godam-dashboard-container {
-	--wp-admin-theme-color: #ab3a6c;
-
-	button,
-	a,
-	input {
-
-		&:not(.is-destructive) {
-			--wp-components-color-accent: #ab3a6c;
-			--wp-components-color-accent-darker-10: #9a2d5e;
-			--wp-components-color-accent-darker-20: #6e2445;
-		}
-	}
-
-	.circle {
-		--wp-components-color-accent: #e6533a;
-	}
 }
 
 /**

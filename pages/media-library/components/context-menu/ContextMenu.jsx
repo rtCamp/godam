@@ -22,9 +22,6 @@ import {
 	LockFolderIcon,
 	NewFolderIcon,
 	RenameFolderIcon,
-	// CopyIcon,
-	// CutIcon,
-	// DuplicateFolderIcon,
 } from '../icons';
 
 import './css/context-menu.scss';
@@ -288,18 +285,6 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			case 'rename':
 				dispatch( openModal( 'rename', { folderId: currentFolder.id } ) );
 				break;
-			// case 'duplicate':
-			// 	// Implement duplication logic
-			// 	console.log( `Duplicate folder ${ folderId }` );
-			// 	break;
-			// case 'cut':
-			// 	// Implement cut logic
-			// 	console.log( `Cut folder ${ folderId }` );
-			// 	break;
-			// case 'copy':
-			// 	// Implement copy logic
-			// 	console.log( `Copy folder ${ folderId }` );
-			// 	break;
 			case 'lockFolder':
 				toggleFolderLock();
 				break;
@@ -332,6 +317,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				icon={ NewFolderIcon }
 				onClick={ () => handleMenuItemClick( 'newSubFolder' ) }
 				className="folder-context-menu__item"
+				disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder }
 			>
 				{ __( 'New Sub-folder', 'godam' ) }
 			</Button>
@@ -368,23 +354,6 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			>
 				{ ! currentFolder?.meta?.bookmark || isMultiSelecting ? __( 'Add Bookmark', 'godam' ) : __( 'Remove Bookmark', 'godam' ) }
 			</Button>
-			{ /*
-			<Button
-				icon={ CutIcon }
-				onClick={ () => handleMenuItemClick( 'cut' ) }
-				className="folder-context-menu__item"
-				disabled={ isSpecialFolder }
-			>
-				{ __( 'Cut', 'godam' ) }
-			</Button>
-			<Button
-				icon={ CopyIcon }
-				onClick={ () => handleMenuItemClick( 'copy' ) }
-				className="folder-context-menu__item"
-				disabled={ isSpecialFolder }
-			>
-				{ __( 'Copy', 'godam' ) }
-			</Button> */ }
 			<Button
 				icon={ DownloadZipIcon }
 				onClick={ () => handleMenuItemClick( 'downloadZip' ) }
