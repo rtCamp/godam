@@ -65,16 +65,17 @@ const wcVideoCarousel = {
 		// Show control only when enter on video.
 		document.querySelectorAll( '.rtgodam-product-video-gallery-slider video' ).forEach( ( video ) => {
 			video.addEventListener( 'click', () => {
-				video.setAttribute( 'controls', true );
-				if ( video.hasAttribute( 'controls' ) ) {
-					video.focus();
-				}
-			} );
-			video.addEventListener( 'mouseleave', () => {
-				video.removeAttribute( 'controls' );
+				console.log( 'clicked' );
 			} );
 		} );
 	},
+
+	/**
+	 * Removes the loading class from the video gallery slider.
+	 *
+	 * This method is used to hide the loading overlay on the video
+	 * gallery slider once the Swiper instance is initialized.
+	 */
 
 	hideLoading() {
 		const rtgodamProductVideoGallerySlider = document.querySelector( '.rtgodam-product-video-gallery-slider' );

@@ -28,7 +28,7 @@ class WC_Product_Video_Gallery {
 		add_action( 'save_post_product', array( $this, 'save_video_gallery' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
-		add_action( 'woocommerce_after_single_product_summary', array( $this, 'add_video_slider_to_single_product' ) );
+		add_action( 'woocommerce_after_add_to_cart_form', array( $this, 'add_video_slider_to_single_product' ) );
 		add_action( 'delete_attachment', array( $this, 'on_attachment_deleted' ) );
 		add_filter( 'get_user_option_meta-box-order_product', array( $this, 'place_below_wc_gallery' ) );
 	}
@@ -434,22 +434,31 @@ class WC_Product_Video_Gallery {
 			return '';
 		}
 
-		$rtgodam_product_video_gallery_urls = get_post_meta( $post->ID, '_rtgodam_product_video_gallery', true );
+		$rtgodam_product_video_gallery_ids = get_post_meta( $post->ID, '_rtgodam_product_video_gallery_ids', true );
 
-		if ( empty( $rtgodam_product_video_gallery_urls ) ) {
+		if ( empty( $rtgodam_product_video_gallery_ids ) ) {
 			return '';
 		}
+
 		$slider_html = '<div class="rtgodam-product-video-gallery-slider rtgodam-product-video-gallery-slider-loading swiper"><div class="swiper-wrapper">';
-		foreach ( $rtgodam_product_video_gallery_urls as $attachment_url ) {
+		foreach ( $rtgodam_product_video_gallery_ids as $attachment_id ) {
+
+			$attachment_url = wp_get_attachment_url( $attachment_id );
+			if ( empty( $attachment_url ) ) {
+				continue;
+			}
+
 			$slider_html .= '<div class="rtgodam-product-video-gallery-slider-item swiper-slide">';
 			$slider_html .= "<video autoplay loop muted width='100%'><source src='{$attachment_url}' /></video>";
 			$slider_html .= '</div>';
 		}
+
 		$slider_html .= '</div>';
 		$slider_html .= '<div class="swiper-pagination"></div>';
 		$slider_html .= '<div class="swiper-button-next"></div>';
 		$slider_html .= '<div class="swiper-button-prev"></div>';
 		$slider_html .= '</div>';
+
 		echo apply_filters( 'rtgodam_video_slider_html', $slider_html ); // phpcs:ignore
 	}
 }
