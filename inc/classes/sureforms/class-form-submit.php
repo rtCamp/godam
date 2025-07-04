@@ -156,11 +156,6 @@ class Form_Submit {
 			);
 			$move_file        = wp_handle_upload( $uploaded_file, $upload_overrides );
 
-			/**
-			 * Remove the upload DIR filter.
-			 */
-			remove_filter( 'upload_dir', array( $this, 'change_upload_dir' ) );
-
 			if ( $move_file && ! isset( $move_file['error'] ) ) {
 				$submission_data[ $input_key ] = $move_file['url'];
 			} else {
@@ -171,6 +166,11 @@ class Form_Submit {
 				);
 			}
 		}
+
+		/**
+		 * Remove the upload DIR filter.
+		 */
+		remove_filter( 'upload_dir', array( $this, 'change_upload_dir' ) );
 
 		return $submission_data;
 	}
@@ -355,7 +355,7 @@ class Form_Submit {
 	 */
 	public function change_upload_dir( $dirs ) {
 
-		$dirs['subdir'] = '/godam';
+		$dirs['subdir'] = '/godam/sureforms';
 		$dirs['path']   = $dirs['basedir'] . $dirs['subdir'];
 		$dirs['url']    = $dirs['baseurl'] . $dirs['subdir'];
 
