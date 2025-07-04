@@ -46,6 +46,16 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	}, [ isMultiSelecting, multiSelectedFolderIds, folderId ] );
 	const isSpecialFolder = targetFolderIds.some( ( id ) => [ -1, 0 ].includes( id ) );
 
+	const areAllTargetFoldersLocked = useMemo( () => {
+		const targets = allFolders.filter( ( folder ) => targetFolderIds.includes( folder.id ) );
+		return targets.length > 0 && targets.every( ( folder ) => folder?.meta?.locked );
+	}, [ allFolders, targetFolderIds ] );
+
+	const areAllTargetFoldersBookmarked = useMemo( () => {
+		const targets = allFolders.filter( ( folder ) => targetFolderIds.includes( folder.id ) );
+		return targets.length > 0 && targets.every( ( folder ) => folder?.meta?.bookmark );
+	}, [ allFolders, targetFolderIds ] );
+
 	const [ updateFolderMutation ] = useUpdateFolderMutation();
 	const [ downloadZipMutation ] = useDownloadZipMutation();
 	const [ bulkLockFoldersMutation ] = useBulkLockFoldersMutation();
@@ -172,7 +182,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	 * @param {Object} folder - The folder object to toggle bookmark status.
 	 */
 	const toggleBookmark = useCallback( async () => {
-		if ( ( isMultiSelecting && multiSelectedFolderIds.length <= 0 ) || ! currentFolder?.id ) {
+		if ( ( multiSelectedFolderIds.length <= 0 ) && ! currentFolder?.id ) {
 			dispatch( updateSnackbar( {
 				message: __( 'Invalid folder for bookmark.', 'godam' ),
 				type: 'fail',
@@ -189,7 +199,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			};
 
 			try {
-				if ( ! isMultiSelecting || multiSelectedFolderIds.length <= 0 ) {
+				if ( multiSelectedFolderIds.length <= 0 ) {
 					await updateFolderMutation( updatedFolder ).unwrap();
 
 					dispatch( addBookmark( folder.id ) );
@@ -201,9 +211,10 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 						type: 'success',
 					} ) );
 				} else {
-					const response = await bulkBookmarkFoldersMutation( { folderIds: multiSelectedFolderIds, bookmarkStatus: true } ).unwrap();
+					const areBookmarked = ! areAllTargetFoldersBookmarked;
+					const response = await bulkBookmarkFoldersMutation( { folderIds: multiSelectedFolderIds, bookmarkStatus: areBookmarked } ).unwrap();
 
-					dispatch( addBookmark( response.updated_ids ) );
+					dispatch( addBookmark( { ids: response.updated_ids, status: areBookmarked } ) );
 
 					dispatch( updateSnackbar( {
 						message: __( 'Bookmarks added successfully', 'godam' ),
@@ -217,7 +228,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				} ) );
 			}
 		}
-	}, [ dispatch, updateFolderMutation, bulkBookmarkFoldersMutation, currentFolder, multiSelectedFolderIds, isMultiSelecting ] );
+	}, [ dispatch, updateFolderMutation, bulkBookmarkFoldersMutation, currentFolder, multiSelectedFolderIds, areAllTargetFoldersBookmarked ] );
 
 	/**
 	 * Function to lock or unlock a folder
@@ -226,7 +237,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	 * @return {void}
 	 */
 	const toggleFolderLock = useCallback( async () => {
-		if ( ( isMultiSelecting && multiSelectedFolderIds.length <= 0 ) || ! currentFolder?.id ) {
+		if ( ( multiSelectedFolderIds.length <= 0 ) && ! currentFolder?.id ) {
 			dispatch( updateSnackbar( {
 				message: __( 'Invalid folder to lock.', 'godam' ),
 				type: 'fail',
@@ -243,7 +254,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			};
 
 			try {
-				if ( ! isMultiSelecting || multiSelectedFolderIds.length <= 0 ) {
+				if ( multiSelectedFolderIds.length <= 0 ) {
 					await updateFolderMutation( updatedFolder ).unwrap();
 
 					dispatch( lockFolder( updatedFolder.id ) );
@@ -257,9 +268,10 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 						} ),
 					);
 				} else {
-					const response = await bulkLockFoldersMutation( { folderIds: multiSelectedFolderIds, lockedStatus: true } ).unwrap();
+					const areLocked = ! areAllTargetFoldersLocked;
+					const response = await bulkLockFoldersMutation( { folderIds: multiSelectedFolderIds, lockedStatus: areLocked } ).unwrap();
 
-					dispatch( lockFolder( response.updated_ids ) );
+					dispatch( lockFolder( { ids: response.updated_ids, status: areLocked } ) );
 
 					dispatch( updateSnackbar( {
 						message: __( 'Folders locked successfully', 'godam' ),
@@ -275,7 +287,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				);
 			}
 		}
-	}, [ dispatch, updateFolderMutation, bulkLockFoldersMutation, currentFolder, multiSelectedFolderIds, isMultiSelecting ] );
+	}, [ dispatch, updateFolderMutation, bulkLockFoldersMutation, currentFolder, multiSelectedFolderIds, areAllTargetFoldersLocked ] );
 
 	const handleMenuItemClick = ( actionType ) => {
 		switch ( actionType ) {
@@ -329,22 +341,13 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			>
 				{ __( 'Rename', 'godam' ) }
 			</Button>
-			{ /* <Button
-				icon={ DuplicateFolderIcon }
-				onClick={ () => handleMenuItemClick( 'duplicate' ) }
-				className="folder-context-menu__item"
-				disabled={ isSpecialFolder }
-			>
-				{ __( 'Duplicate', 'godam' ) }
-			</Button>
-			 */ }
 			<Button
 				icon={ LockFolderIcon }
 				onClick={ () => handleMenuItemClick( 'lockFolder' ) }
 				className="folder-context-menu__item"
 				disabled={ isSpecialFolder }
 			>
-				{ ! currentFolder?.meta?.locked || isMultiSelecting ? __( 'Lock Folder', 'godam' ) : __( 'Unlock Folder', 'godam' ) }
+				{ ! currentFolder?.meta?.locked || ( isMultiSelecting && ! areAllTargetFoldersLocked ) ? __( 'Lock Folder', 'godam' ) : __( 'Unlock Folder', 'godam' ) }
 			</Button>
 			<Button
 				icon={ BookmarkStarIcon }
@@ -352,7 +355,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				className="folder-context-menu__item"
 				disabled={ isSpecialFolder }
 			>
-				{ ! currentFolder?.meta?.bookmark || isMultiSelecting ? __( 'Add Bookmark', 'godam' ) : __( 'Remove Bookmark', 'godam' ) }
+				{ ! currentFolder?.meta?.bookmark || ( isMultiSelecting && ! areAllTargetFoldersBookmarked ) ? __( 'Add Bookmark', 'godam' ) : __( 'Remove Bookmark', 'godam' ) }
 			</Button>
 			<Button
 				icon={ DownloadZipIcon }

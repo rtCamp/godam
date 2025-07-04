@@ -174,7 +174,9 @@ const slice = createSlice( {
 			} );
 		},
 		lockFolder: ( state, action ) => {
-			if ( ! Array.isArray( action.payload ) ) {
+			const { ids, status } = action.payload;
+
+			if ( ! Array.isArray( ids ) ) {
 				const folder = state.folders.find( ( item ) => item.id === action.payload );
 
 				if ( folder ) {
@@ -185,21 +187,21 @@ const slice = createSlice( {
 					folder.meta.locked = ! Boolean( folder.meta?.locked );
 				}
 			} else {
-				const ids = action.payload;
-
 				ids.forEach( ( id ) => {
 					const folder = state.folders.find( ( item ) => item.id === id );
 					if ( folder ) {
 						if ( ! folder.meta ) {
 							folder.meta = {};
 						}
-						folder.meta.locked = true;
+						folder.meta.locked = status;
 					}
 				} );
 			}
 		},
 		addBookmark: ( state, action ) => {
-			if ( ! Array.isArray( action.payload ) ) {
+			const { ids, status } = action.payload;
+
+			if ( ! Array.isArray( ids ) ) {
 				const folder = state.folders.find( ( item ) => item.id === action.payload );
 
 				if ( folder ) {
@@ -210,15 +212,13 @@ const slice = createSlice( {
 					folder.meta.bookmark = ! Boolean( folder.meta?.bookmark );
 				}
 			} else {
-				const ids = action.payload;
-
 				ids.forEach( ( id ) => {
 					const folder = state.folders.find( ( item ) => item.id === id );
 					if ( folder ) {
 						if ( ! folder.meta ) {
 							folder.meta = {};
 						}
-						folder.meta.bookmark = true;
+						folder.meta.bookmark = status;
 					}
 				} );
 			}
