@@ -8,23 +8,28 @@ import { CSS } from '@dnd-kit/utilities';
 /**
  * WordPress dependencies
  */
-import { Icon, file, lock, chevronDown, chevronUp } from '@wordpress/icons';
+import { Icon, file, lock } from '@wordpress/icons';
+import { CheckboxControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { toggleOpenClose, changeSelectedFolder, showContextMenu } from '../../redux/slice/folders';
+import { toggleOpenClose, changeSelectedFolder, toggleMultiSelectedFolder } from '../../redux/slice/folders';
 import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
+import { FolderTreeChevron } from '../icons';
 
 const indentPerLevel = 12;
 
-const TreeItem = ( { item, index, depth } ) => {
+const TreeItem = ( { item, index, depth, onContextMenu, isMultiSelecting } ) => {
 	const { attributes, listeners, transform, transition, setNodeRef, isDragging } = useSortable( { id: item.id } );
 
 	const dispatch = useDispatch();
 
 	const selectedFolderID = useSelector( ( state ) => state.FolderReducer.selectedFolder?.id );
+
+	const multiSelectedFolderIds = useSelector( ( state ) => state.FolderReducer.multiSelectedFolderIds );
+	const isChecked = multiSelectedFolderIds.includes( item.id );
 
 	/**
 	 * Handle click on the tree item to change the selected folder
@@ -36,6 +41,11 @@ const TreeItem = ( { item, index, depth } ) => {
 		dispatch( changeSelectedFolder( { item } ) );
 	};
 
+	const handleCheckboxChange = () => {
+		dispatch( toggleMultiSelectedFolder( { id: item.id } ) );
+		dispatch( changeSelectedFolder( { item } ) );
+	};
+
 	/**
 	 * Handle click on the chevron to toggle the open/close state of the folder.
 	 *
@@ -44,21 +54,6 @@ const TreeItem = ( { item, index, depth } ) => {
 	const handleChevronClick = ( e ) => {
 		e.stopPropagation();
 		dispatch( toggleOpenClose( { id: item.id } ) );
-	};
-
-	/**
-	 * Handle right-click context menu for the tree item.
-	 *
-	 * @param {Event} e - The event object.
-	 */
-	const handleContextMenu = ( e ) => {
-		e.preventDefault();
-		e.stopPropagation();
-
-		dispatch( showContextMenu( {
-			position: { x: e.clientX, y: e.clientY },
-			item,
-		} ) );
 	};
 
 	const style = {
@@ -78,7 +73,7 @@ const TreeItem = ( { item, index, depth } ) => {
 				style={ style }
 				{ ...attributes }
 				{ ...listeners }
-				onContextMenu={ handleContextMenu }
+				onContextMenu={ ( e ) => onContextMenu( e, item.id ) }
 			>
 				<button
 					style={ { paddingLeft: `${ depth * indentPerLevel }px` } }
@@ -88,6 +83,25 @@ const TreeItem = ( { item, index, depth } ) => {
 					data-index={ index }
 					onClick={ () => handleClick() }
 				>
+					{ item.children?.length > 0
+						? <span className="tree-item__chevron" onClick={ ( event ) => handleChevronClick( event ) } onKeyDown={ ( e ) => {
+							if ( e.key === 'Enter' || e.key === ' ' ) {
+								e.preventDefault(); handleChevronClick( e );
+							}
+						} } role="button" tabIndex={ 0 } aria-label={ item.isOpen ? 'Collapse folder' : 'Expand folder' } >
+							<FolderTreeChevron className={ item.isOpen ? 'tree-item__chevron_open' : '' } />
+						</span>
+						: <span className="tree-item__spacer" />
+					}
+					{ isMultiSelecting && (
+						<CheckboxControl
+							className="tree-item__checkbox"
+							checked={ isChecked }
+							onChange={ handleCheckboxChange }
+							onClick={ ( e ) => e.stopPropagation() }
+							__nextHasNoMarginBottom
+						/>
+					) }
 					<div className="tree-item__content">
 						<Icon icon={ item.meta?.locked ? lock : file } />
 						<span className="tree-item__text">{ item.name }</span>
@@ -96,25 +110,6 @@ const TreeItem = ( { item, index, depth } ) => {
 							{ item.attachmentCount ?? 0 }
 						</span>
 					</div>
-
-					{ item.children?.length > 0 &&
-					<span
-						className="tree-item__chevron"
-						onClick={ ( event ) => handleChevronClick( event ) }
-						onKeyDown={ ( e ) => {
-							if ( e.key === 'Enter' || e.key === ' ' ) {
-								e.preventDefault();
-								handleChevronClick( e );
-							}
-						} }
-						role="button"
-						tabIndex={ 0 }
-						aria-label={ item.isOpen ? 'Collapse folder' : 'Expand folder' }
-
-					>
-						<Icon icon={ item.isOpen ? chevronUp : chevronDown } />
-					</span>
-					}
 				</button>
 			</div>
 		</>
