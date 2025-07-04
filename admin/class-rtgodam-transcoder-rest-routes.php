@@ -253,13 +253,39 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 				$post_array = $request->get_params();
 				$data       = get_option( $job_id );
 				if ( ! empty( $data ) ) {
-					if ( 'gform_godam_recorder' === $data['source'] ) {
+					if ( 'gf_godam_recorder' === $data['source'] || 'gform_godam_recorder' === $data['source'] ) {
 						$entry_id   = $data['entry_id'];
 						$post_array = $request->get_params();
 						if ( $entry_id && function_exists( 'gform_update_meta' ) ) {
 							gform_update_meta( $entry_id, 'rtgodam_transcoded_url_' . $data['field_id'] . '_' . $data['index'], $post_array['download_url'] );
 						}
 					}
+				}
+			}
+		}
+
+		if ( ! empty( $job_for ) && 'sureforms-godam-recorder' === $job_for && ! empty( $job_id ) ) {
+			$post_array = $request->get_params();
+
+			/**
+			 * Get data stored in options based on job id.
+			 */
+			$data = get_option( $job_id );
+
+			/**
+			 * If we have data in options, proceed.
+			 */
+			if ( ! empty( $data ) && 'sureforms_godam_recorder' === $data['source'] && class_exists( 'SRFM\Inc\Database\Tables\Entries' ) ) {
+				$entry_id   = $data['entry_id'];
+				$entry_data = \SRFM\Inc\Database\Tables\Entries::get( $entry_id );
+
+				if ( ! empty( $entry_data ) && ! empty( $entry_data['form_id'] ) ) {
+					$form_id = $entry_data['form_id'];
+					update_post_meta(
+						$form_id,
+						'rtgodam_transcoded_url_sureforms_' . $form_id . '_' . $entry_id,
+						$post_array['download_url']
+					);
 				}
 			}
 		}
