@@ -371,32 +371,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @return array
 		 */
 		public function save_video_file( $entry, $form_data ) {
-
-			if ( ! isset( $_FILES['wpforms']['name']['fields'] ) ) {
-				return $entry;
-			}
-
-			$field_ids = array_map( 'intval', array_keys( $_FILES['wpforms']['name']['fields'] ) );
-
-			// Filter field ids without errors.
-			$field_ids = array_filter(
-				$field_ids,
-				function ( $field_id ) {
-					return isset( $_FILES["wpforms"]["error"]["fields"][$field_id] ) && UPLOAD_ERR_OK === $_FILES["wpforms"]["error"]["fields"][$field_id];
-				}
-			);
-
-			// Convert the $_FILES array to a more manageable format.
-			$files = [];
-			foreach( $field_ids as $field_id ) {
-				foreach( $_FILES['wpforms'] as $key => $value ) {
-					if ( ! isset( $value['fields'][$field_id] ) ) {
-						continue;
-					}
-
-					$files[$field_id][$key] = $value['fields'][$field_id];
-				}
-			}
+			$files = $this->format_global_files_array( $_FILES );
 
 			require_once ABSPATH . 'wp-admin/includes/media.php';
 			require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -404,6 +379,17 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			// Loop through each file, and creates attachments for video files.
 			foreach( $files as $field_id => $file ) {
+				// Bail if there is not error set.
+				if ( ! isset( $file['error'] ) ) {
+					continue;
+				}
+
+				// Check for upload errors.
+				if ( UPLOAD_ERR_OK !== $file['error'] ) {
+					$entry['fields'][ $field_id ] = '';
+					continue;
+				}
+
 				// Check if the file is a video.
 				if ( ! isset( $file['type'] ) || ! str_starts_with( $file['type'], 'video/' )) {
 					continue;
@@ -482,6 +468,74 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			return sprintf('<a href="%s" target="_blank">%s</a>', esc_url( $attachment_url ), esc_html( $attachment_name ) );
 
 			return $value;
+		}
+
+		/**
+		 * Validate field on form submit.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param int   $field_id     Field ID.
+		 * @param array $field_submit Submitted field value (raw data).
+		 * @param array $form_data    Form data.
+		 */
+		public function validate( $field_id, $field_submit, $form_data ) {
+			parent::validate( $field_id, $field_submit, $form_data );
+
+			// Bail if there is already an error present for the field.
+			if ( isset( wpforms()->obj( 'process' )->errors[ $form_data['id'] ][ $field_id ] ) ) {
+				return;
+			}
+
+			$file_upload_errors = [
+				UPLOAD_ERR_OK         => esc_html__('There is no error, the file uploaded with success', 'godam'),
+				UPLOAD_ERR_INI_SIZE   => esc_html__('The uploaded file exceeds the upload_max_filesize directive in php.ini', 'godam'),
+				UPLOAD_ERR_FORM_SIZE  => esc_html__('The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form', 'godam'),
+				UPLOAD_ERR_PARTIAL    => esc_html__('The uploaded file was only partially uploaded', 'godam'),
+				UPLOAD_ERR_NO_FILE    => esc_html__('No file was uploaded', 'godam'),
+				UPLOAD_ERR_NO_TMP_DIR => esc_html__('Missing a temporary folder', 'godam'),
+				UPLOAD_ERR_CANT_WRITE => esc_html__('Failed to write file to disk.', 'godam'),
+				UPLOAD_ERR_EXTENSION  => esc_html__('A PHP extension stopped the file upload.', 'godam'),
+			];
+
+			$file = $this->format_global_files_array( $_FILES, $field_id );
+
+			if ( isset( $file['error'] ) && UPLOAD_ERR_OK !== intval( $file['error'] ) ) {
+				wpforms()->obj( 'process' )->errors[ $form_data['id'] ][ $field_id ] = esc_html__( $file_upload_errors[ $file['error'] ] );
+				return;
+			}
+		}
+
+		/**
+		 * Format global files array in more manageable structure.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param array $files Global files array.
+		 * @param int $field_id Field ID.
+		 *
+		 * @return array
+		 */
+		public function format_global_files_array( $files, $field_id = null ) {
+			if ( ! isset( $files['wpforms']['name']['fields'] ) ) {
+				return [];
+			}
+
+			$field_ids_in_files = array_map( 'intval', array_keys( $files['wpforms']['name']['fields'] ) );
+
+			// Convert the $_FILES array to a more manageable format.
+			$new_files = [];
+			foreach( $field_ids_in_files as $field_id_in_file ) {
+				foreach( $files['wpforms'] as $key => $value ) {
+					if ( ! isset( $value['fields'][$field_id_in_file] ) ) {
+						continue;
+					}
+
+					$new_files[$field_id_in_file][$key] = $value['fields'][$field_id_in_file];
+				}
+			}
+
+			return ! is_null( $field_id ) && isset( $new_files[ $field_id] ) ? $new_files[ $field_id ] : $new_files;
 		}
 	}
 }
