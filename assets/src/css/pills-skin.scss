@@ -109,26 +109,12 @@
         }
     
         .vjs-control-bar {
-            margin: -55px auto 0;
-            height: 5em !important;
+            height: initial !important;
+            margin: -40px auto 0;
 
-            .vjs-fullscreen-control {
-                right: 10px
-            }
-            
-            .vjs-settings-button{
-                right: 50px;
-            }
-
-            .vjs-subs-caps-button {
-                right: 90px !important;
-            }
-
-            .vjs-control.vjs-custom-play-button {
-                display: block;
-                position: absolute;
-                bottom: 0;
-                left: 20px;
+            .vjs-fullscreen-control, .vjs-settings-button, div.vjs-subs-caps-button {
+                position: relative !important;
+                right: 0 !important;
             }
 
             [class^="vjs-skip-backward-"] {
@@ -147,7 +133,14 @@
             }
 
             .vjs-progress-control {
-                padding: 0 20px;
+                height: unset !important;
+                padding: 0 26px;
+                position: unset;
+                margin: 0 auto;
+
+                @media screen and (max-width: 481px) {
+					padding: 0 !important;
+				}
             }
 
             .vjs-play-control {
@@ -157,11 +150,29 @@
                     line-height: 1.3;
                 }
             }
+
+            .vjs-time-control.vjs-duration {
+                right: 120px;
+                transform: translateX(0%);
+
+                @media screen and (max-width: 481px) {
+					display: none !important;
+				}
+            }
+
+            .vjs-time-control.vjs-current-time {
+                left: 30px;
+
+                @media screen and (max-width: 481px) {
+					display: none !important;
+				}
+            }
+            
+            .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel, .vjs-control.vjs-custom-play-button {
+                display: none !important;
+            }
         }
 
-       .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel {
-            display: none !important;
-        }
 
         .vjs-button.godam-share-button {
             background-color: var(--rtgodam-control-bar-color, #000000AD);

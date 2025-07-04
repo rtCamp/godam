@@ -236,16 +236,28 @@ function GODAMPlayer( videoRef = null ) {
 					// Position the wrapper
 					controlWrapper.style.position = 'absolute';
 					controlWrapper.style.left = `${ newWidth / 4 }px`; // center-ish
-					controlWrapper.style.bottom = `${ newHeight / 2 }px`;
-					controlWrapper.style.width = `${ newWidth / 2 }px`;
-					playButton.style.setProperty( 'left', `${ ( newWidth / 4 ) - 24 }px` );
+					controlWrapper.style.bottom = `${ ( newHeight / 2 ) - 15 }px`;
+					controlWrapper.style.width = `${ ( newWidth / 2 ) - 15 }px`;
+					playButton.style.setProperty( 'left', `${ ( newWidth / 4 ) - 28 }px` );
 				} else {
-					playButton.style.setProperty( 'bottom', `${ ( newHeight / 2 ) }px` );
-					playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
-					// Default skip button positioning for other skins
-					skipButtons.forEach( ( button ) => {
-						button.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
-					} );
+					if ( videoSetupOptions?.playerSkin === 'Minimal' ) {
+						playButton.style.setProperty( 'bottom', `${ ( newHeight / 2 ) + 4 }px` );
+						skipButtons.forEach( ( button ) => {
+							button.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 5 }px` );
+						} );
+					}
+
+					if ( videoSetupOptions?.playerSkin !== 'Default' ) {
+						playButton.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+						playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
+					}
+
+					if ( videoSetupOptions?.playerSkin !== 'Minimal' ) {
+						// Default skip button positioning for other skins
+						skipButtons.forEach( ( button ) => {
+							button.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+						} );
+					}
 				}
 			} catch ( error ) {
 				// Silently fail

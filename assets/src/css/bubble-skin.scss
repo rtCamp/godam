@@ -260,6 +260,10 @@
 				span::before {
 					line-height: 1.8 !important;
 				}
+
+				@media screen and (max-width: 481px) {
+					display: none !important;
+				}
             }
 
             .vjs-progress-control {
@@ -278,7 +282,7 @@
     				line-height: 1.67;
 				}
 			}
-			
+
 			.vjs-time-control.vjs-current-time {
 				bottom: 0;
 				display: block !important;
@@ -335,10 +339,6 @@
 			left: 0 !important;
 
             .vjs-menu-content {
-                
-                .godam-back-item-container::after {
-                    top: 24.5px;
-                }
 
                 li {
                     font-size: 12px;
@@ -352,5 +352,27 @@
         }
     }
 
-  
+	@media screen and (max-width: 481px) {
+		
+		.vjs-menu {
+			
+			.vjs-menu-content {
+				gap: 0;
+
+				li {
+					font-size: 9px;
+					padding: 0;
+					height: 22px;
+				}
+
+				.vjs-back-item {
+					padding-top: 0;
+				}
+
+				.godam-back-item-container::after {
+					top: 28.5px;
+				}
+			}
+		}
+	}
 }
