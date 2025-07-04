@@ -64,6 +64,12 @@
 			"type": "string",
 			"default": "16/9"
 		},
+		"videoHeight": {
+			"type": "number"
+		},
+		"videoWidth": {
+			"type": "number"
+		},
 		"caption": {
 			"type": "string",
 			"default": ""

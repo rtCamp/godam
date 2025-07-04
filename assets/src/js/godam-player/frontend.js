@@ -116,23 +116,23 @@ function GODAMPlayer( videoRef = null ) {
 		const isMobileView = window.innerWidth <= 768;
 
 		const player = videojs( video, videoSetupControls );
-		// player.aspectRatio( '16:9' );
 
 		// Check if the player is inside a modal
-		const isInModal = video.closest( '.godam-modal' ) !== null;
-
-		// Set aspect ratio based on context
-		// if ( isInModal ) {
-		// 	// Only if in mobile view, set aspect ratio to 9:16. First check if the screen width is less than 768px.
-		// 	if ( window.innerWidth < 420 ) {
-		// 		player.aspectRatio( '9:16' );
-		// 	} else {
-		// 		player.aspectRatio( '16:9' );
-		// 	}
-		// }
-
-		// Move this logic inside player.ready to ensure it runs for each player instance
 		player.ready( function() {
+			// Move this logic inside player.ready to ensure it runs for each player instance
+			if ( videoSetupOptions?.aspectRatio === '16:9' ) {
+				player.aspectRatio( '16:9' );
+				const isInModal = video.closest( '.godam-modal' ) !== null;
+				if ( isInModal ) {
+					// Only if in mobile view, set aspect ratio to 9:16. First check if the screen width is less than 768px.
+					if ( window.innerWidth < 420 ) {
+						player.aspectRatio( '9:16' );
+					} else {
+						player.aspectRatio( '16:9' );
+					}
+				}
+			}
+			// Set aspect ratio based on context
 			const captionsButton = player.el().querySelector( '.vjs-subs-caps-button' );
 			const durationElement = player.el().querySelector( '.vjs-duration' );
 
@@ -277,6 +277,25 @@ function GODAMPlayer( videoRef = null ) {
 				return;
 			}
 
+			// Skip if video is fullscreen
+			if ( ! player || typeof player.isFullscreen !== 'function' ) {
+				return;
+			}
+
+			// Get control bar DOM element
+			const controlBarEl = player.controlBar?.el_;
+
+			// During fullscreen, remove forced positioning (if applicable)
+			if ( videoSetupOptions?.playerSkin === 'Pills' && controlBarEl ) {
+				if ( player.isFullscreen() ) {
+					controlBarEl.style.setProperty( 'position', 'absolute' );
+					controlBarEl.style.setProperty( 'margin', '0 auto' );
+				} else {
+					controlBarEl.style.removeProperty( 'position' );
+					controlBarEl.style.removeProperty( 'margin' );
+				}
+			}
+
 			// Apply debounce to avoid multiple calls.
 			if ( handleVideoResize.timeout ) {
 				clearTimeout( handleVideoResize.timeout );
@@ -289,7 +308,9 @@ function GODAMPlayer( videoRef = null ) {
 		handleVideoResize();
 
 		// On screen resize, update the video dimensions.
+		player.on( 'resize', handleVideoResize );
 		window.addEventListener( 'resize', handleVideoResize );
+		player.on( 'fullscreenchange', handleVideoResize );
 
 		let isPreview = null;
 
