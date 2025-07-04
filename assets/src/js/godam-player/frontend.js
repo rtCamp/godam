@@ -116,20 +116,31 @@ function GODAMPlayer( videoRef = null ) {
 		const isMobileView = window.innerWidth <= 768;
 
 		const player = videojs( video, videoSetupControls );
-		player.aspectRatio( '16:9' );
+		// player.aspectRatio( '16:9' );
 
 		// Check if the player is inside a modal
 		const isInModal = video.closest( '.godam-modal' ) !== null;
 
 		// Set aspect ratio based on context
-		if ( isInModal ) {
-			// Only if in mobile view, set aspect ratio to 9:16. First check if the screen width is less than 768px.
-			if ( window.innerWidth < 420 ) {
-				player.aspectRatio( '9:16' );
-			} else {
-				player.aspectRatio( '16:9' );
+		// if ( isInModal ) {
+		// 	// Only if in mobile view, set aspect ratio to 9:16. First check if the screen width is less than 768px.
+		// 	if ( window.innerWidth < 420 ) {
+		// 		player.aspectRatio( '9:16' );
+		// 	} else {
+		// 		player.aspectRatio( '16:9' );
+		// 	}
+		// }
+
+		// Move this logic inside player.ready to ensure it runs for each player instance
+		player.ready( function() {
+			const captionsButton = player.el().querySelector( '.vjs-subs-caps-button' );
+			const durationElement = player.el().querySelector( '.vjs-duration' );
+
+			// Add condition: if captions button has vjs-hidden class, add right-80 class to vjs-duration element
+			if ( captionsButton && captionsButton.classList.contains( 'vjs-hidden' ) && durationElement ) {
+				durationElement.classList.add( 'right-80' );
 			}
-		}
+		} );
 
 		const getChaptersData = () => {
 			if (
@@ -217,20 +228,16 @@ function GODAMPlayer( videoRef = null ) {
 						playButton.parentNode.insertBefore( controlWrapper, playButton );
 
 						// Move play and skip buttons into the wrapper
-						const skipBack = playerElement.querySelector(
-							'.vjs-skip-backward-10',
+						const skipBack = playerElement.querySelectorAll(
+							'.vjs-skip-backward-5, .vjs-skip-backward-10, .vjs-skip-backward-30',
 						);
-						const skipForward = playerElement.querySelector(
-							'.vjs-skip-forward-10',
+						const skipForward = playerElement.querySelectorAll(
+							'.vjs-skip-forward-5, .vjs-skip-forward-10, .vjs-skip-forward-30',
 						);
 
-						if ( skipBack ) {
-							controlWrapper.appendChild( skipBack );
-						}
+						skipBack.forEach( ( btn ) => controlWrapper.appendChild( btn ) );
 						controlWrapper.appendChild( playButton );
-						if ( skipForward ) {
-							controlWrapper.appendChild( skipForward );
-						}
+						skipForward.forEach( ( btn ) => controlWrapper.appendChild( btn ) );
 					}
 
 					// Position the wrapper

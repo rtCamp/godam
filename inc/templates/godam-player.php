@@ -125,6 +125,10 @@ $video_setup = array(
 		'volumePanel' => array(
 			'inline' => ! in_array( $player_skin, array( 'Minimal', 'Pills' ), true ),
 		),
+		'skipButtons' => array(
+			'forward'  => 10,
+			'backward' => 10,
+		),
 	),
 );
 if ( ! empty( $control_bar_settings ) ) {
