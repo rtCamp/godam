@@ -42,3 +42,18 @@
         }
     }
 }
+
+#wpforms-builder {
+
+    .wpforms-field.wpforms-field-godam-video {
+        .uppy-video-upload-button {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+
+            span {
+                margin-right: 5px;
+            }
+        }
+    }
+}
