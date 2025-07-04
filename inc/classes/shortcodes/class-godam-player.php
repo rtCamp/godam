@@ -78,6 +78,27 @@ class GoDAM_Player {
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player.css' )
 		);
 
+		wp_register_style(
+			'godam-player-minimal-skin',
+			RTGODAM_URL . 'assets/build/css/minimal-skin.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/minimal-skin.css' )
+		);
+
+		wp_register_style(
+			'godam-player-pills-skin',
+			RTGODAM_URL . 'assets/build/css/pills-skin.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/pills-skin.css' )
+		);
+
+		wp_register_style(
+			'godam-player-bubble-skin',
+			RTGODAM_URL . 'assets/build/css/bubble-skin.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/bubble-skin.css' )
+		);
+
 		wp_localize_script(
 			'godam-player-frontend-script',
 			'godamData',
@@ -113,6 +134,9 @@ class GoDAM_Player {
 		wp_enqueue_script( 'godam-player-analytics-script' );
 		wp_enqueue_style( 'godam-player-frontend-style' );
 		wp_enqueue_style( 'godam-player-style' );
+		wp_enqueue_style( 'godam-player-minimal-skin' );
+		wp_enqueue_style( 'godam-player-pills-skin' );
+		wp_enqueue_style( 'godam-player-bubble-skin' );
 
 		ob_start();
 		require RTGODAM_PATH . 'inc/templates/godam-player.php';

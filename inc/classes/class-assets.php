@@ -304,8 +304,8 @@ class Assets {
 	private function enqueue_godam_settings() {
 		$godam_settings = get_option( 'rtgodam-settings' );
 
-		$brand_image = $godam_settings['general']['brand_image'] ?? '';
-		$brand_color = $godam_settings['general']['brand_color'] ?? '';
+		$brand_image = $godam_settings['video_player']['brand_image'] ?? '';
+		$brand_color = $godam_settings['video_player']['brand_color'] ?? '';
 
 		wp_localize_script(
 			'rtgodam-script',
