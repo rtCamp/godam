@@ -99,6 +99,18 @@ $media-frame-width: calc(300px + 2 * 24px);
 .media-modal-content {
     border-radius: 12px;
 
+    &:has(#menu-item-godam[aria-selected="true"]) {
+
+        #media-folder-toggle-button {
+            display: none;
+        }
+
+        #rt-transcoder-media-library-root {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+    }
+
     .media-frame-title {
         height: 78px;
         padding: 24px 24px 0 24px;
@@ -308,6 +320,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 .media-modal-content #media-date-range-filter {
 	vertical-align: bottom;
+	margin: 12px 0;
 }
 
 #media-attachment-date-filters,
