@@ -510,7 +510,6 @@ function VideoEdit( {
 						__nextHasNoMarginBottom
 					>
 						<SelectControl
-							label={ __( 'Aspect Ratio', 'godam' ) }
 							value={ attributes.aspectRatio || '16:9' }
 							options={ [
 								{ label: __( '16:9 (Standard)', 'godam' ), value: '16:9' },
