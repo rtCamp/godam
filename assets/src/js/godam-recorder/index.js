@@ -206,6 +206,7 @@ class UppyVideoUploader {
 		}
 
 		this.fileInput.files = dataTransfer.files;
+		this.fileInput.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 	}
 
 	/**
@@ -228,6 +229,8 @@ class UppyVideoUploader {
 		if ( this.fileInput ) {
 			this.fileInput.value = '';
 		}
+
+		this.fileInput.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 	}
 
 	/**

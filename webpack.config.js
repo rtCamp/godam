@@ -167,7 +167,14 @@ const elementorEditorJS = {
 const godamRecorder = {
 	...sharedConfig,
 	entry: {
-		'godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-recorder', 'index.js' )
+		'godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-recorder', 'index.js' ),
+	},
+};
+
+const fluentForms = {
+	...sharedConfig,
+	entry: {
+		fluentforms: path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'index.js' ),
 	},
 };
 
@@ -233,7 +240,7 @@ const pages = {
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
 	},
-	devtool: "source-map",
+	devtool: 'source-map',
 };
 
 module.exports = [
@@ -252,4 +259,5 @@ module.exports = [
 	elementorWidgetJS,
 	elementorEditorJS,
 	godamRecorder,
+	fluentForms,
 ];

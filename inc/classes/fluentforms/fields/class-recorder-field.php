@@ -44,11 +44,15 @@ class Recorder_Field extends BaseFieldManager {
 
 		// Call parent constructor.
 		parent::__construct(
-			'recorder_field',
+			'godam-recorder_field',
 			'GoDAM Recorder',
 			array( 'godam', 'recorder' ),
 			'general',
 		);
+
+		// Add ajax action for the recorder field to upload the file to temp folder.
+		add_action( 'wp_ajax_ff_godam_recorder_upload', array( $this, 'upload_file_to_temp' ) );
+		add_action( 'wp_ajax_nopriv_ff_godam_recorder_upload', array( $this, 'upload_file_to_temp' ) );
 
 		/**
 		 * Initialize all values.
@@ -193,6 +197,32 @@ class Recorder_Field extends BaseFieldManager {
 				true
 			);
 		}
+
+		if ( ! wp_script_is( 'fluentforms-godam' ) ) {
+			/**
+			 * Enqueue script if not already enqueued.
+			 */
+			wp_enqueue_script(
+				'fluentforms-godam',
+				RTGODAM_URL . 'assets/build/js/fluentforms.min.js',
+				array( 'jquery' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/fluentforms.min.js' ),
+				true
+			);
+
+			/**
+			 * Localize the script for fluent forms.
+			 */
+			wp_localize_script(
+				'fluentforms-godam',
+				'RecorderFluentForms',
+				array(
+					'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+					'nonce'        => wp_create_nonce( 'recorder-fluentforms' ),
+					'uploadAction' => 'ff_godam_recorder_upload',
+				)
+			);
+		}
 	}
 
 	/**
@@ -251,7 +281,7 @@ class Recorder_Field extends BaseFieldManager {
 					value="<?php echo esc_attr( $max_file_size ); ?>"
 				/>
 				<input
-					name="<?php echo esc_attr( $name . '_' . $unique_element_key . '-godam-recorder' ); ?>"
+					name="<?php echo esc_attr( $name . '-godam-input-recorder' ); ?>"
 					id="<?php echo esc_attr( $input_id ); ?>"
 					type="file"
 					style="display: none;"
@@ -289,11 +319,106 @@ class Recorder_Field extends BaseFieldManager {
 					<div id="<?php echo esc_attr( $uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
 					<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename srfm-description"></div>
 				</div>
+				<div style="display: none;" class="ff-uploaded-list godam-recorder">
+					<div class="ff-upload-preview" data-src=""></div>
+				</div>
 			</div>
-
 		<?php
 		$return_content = ob_get_clean();
 
 		echo $return_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * Upload the file to temp folder.
+	 *
+	 * @return void
+	 */
+	public function upload_file_to_temp() {
+
+		/**
+		 * Verify nonce and ajax referrer.
+		 */
+		if ( ! check_ajax_referer( 'recorder-fluentforms', 'nonce' ) ) {
+			wp_send_json_error( __( 'Nonce is not valid', 'godam' ), 400 );
+		}
+
+		$data_to_send = array();
+
+		/**
+		 * Change the upload dir.
+		 */
+		add_filter( 'upload_dir', array( $this, 'change_upload_dir' ) );
+
+		// Work with files.
+		foreach ( $_FILES as $input_key => $file_data ) {
+			if ( false === strpos( $input_key, '-godam-input-recorder' ) ) {
+				continue;
+			}
+
+			$temp_path  = $file_data['tmp_name'];
+			$file_name  = $file_data['name'];
+			$file_size  = $file_data['size'];
+			$file_type  = $file_data['type'];
+			$file_error = $file_data['error'];
+
+			/**
+			 * Handle size, error, 0 means no size.
+			 */
+			if ( ( 0 === $file_size || $file_error ) ) {
+				wp_send_json_error(
+					array(
+						'message' => __( 'Error in file.', 'godam' ),
+					)
+				);
+			}
+
+			$uploaded_file = array(
+				'name'     => sanitize_file_name( $file_name ),
+				'type'     => $file_type,
+				'tmp_name' => $temp_path,
+				'error'    => $file_error,
+				'size'     => $file_size,
+			);
+
+			$upload_overrides = array(
+				'test_form' => false,
+			);
+			$move_file        = wp_handle_upload( $uploaded_file, $upload_overrides );
+
+			$data_to_send[] = array(
+				'file' => $move_file['file'],
+				'url'  => $move_file['url'],
+			);
+		}
+
+		/**
+		 * Remove the filter.
+		 */
+		remove_filter( 'upload_dir', array( $this, 'change_upload_dir' ) );
+
+		/**
+		 * Send the data.
+		 */
+		wp_send_json_success(
+			$data_to_send,
+			200
+		);
+	}
+
+	/**
+	 * Change upload dir to godam directory in uploads.
+	 *
+	 * @param array<mixed> $dirs upload directory.
+	 *
+	 * @return array<mixed>
+	 */
+	public function change_upload_dir( $dirs ) {
+
+		$dirs['subdir'] = '/godam-ff/temp';
+		$dirs['path']   = $dirs['basedir'] . $dirs['subdir'];
+		$dirs['url']    = $dirs['baseurl'] . $dirs['subdir'];
+
+		return $dirs;
 	}
 }
