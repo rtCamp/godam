@@ -503,8 +503,8 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			$file = $this->format_global_files_array( $_FILES, $field_id );
 
-			if ( isset( $file['error'] ) && UPLOAD_ERR_OK !== intval( $file['error'] ) ) {
-				wpforms()->obj( 'process' )->errors[ $form_data['id'] ][ $field_id ] = esc_html__( $file_upload_errors[ $file['error'] ] );
+			if ( isset( $file['error'] ) && ! in_array( intval( $file['error'] ),  [ UPLOAD_ERR_OK, UPLOAD_ERR_NO_FILE ], true ) ) {
+				\wpforms()->obj( 'process' )->errors[ $form_data['id'] ][ $field_id ] = esc_html__( $file_upload_errors[ $file['error'] ] );
 				return;
 			}
 		}
