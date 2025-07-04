@@ -42,10 +42,10 @@ $show_overlay       = isset( $attributes['showOverlay'] ) ? $attributes['showOve
 $vertical_alignment = ! empty( $attributes['verticalAlignment'] ) ? esc_attr( $attributes['verticalAlignment'] ) : 'center';
 $aspect_ratio       = ! empty( $attributes['aspectRatio'] ) && 'responsive' === $attributes['aspectRatio']
 	? ( ! empty( $attributes['videoWidth'] ) && ! empty( $attributes['videoHeight'] )
-		? $attributes['videoWidth'] . ':' . $attributes['videoHeight']
-		: '16:9'
+		? $attributes['videoWidth'] . '/' . $attributes['videoHeight']
+		: '16/9'
 	)
-	: ( ! empty( $attributes['aspectRatio'] ) ? $attributes['aspectRatio'] : '16:9' );
+	: '16/9';
 
 $src            = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
