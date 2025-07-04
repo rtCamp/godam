@@ -133,6 +133,8 @@ $easydam_control_bar_color = '#2b333fb3'; // Default color.
 $godam_settings   = get_option( 'rtgodam-settings', array() );
 $brand_color      = isset( $godam_settings['general']['brand_color'] ) ? $godam_settings['general']['brand_color'] : null;
 $appearance_color = isset( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
+$ads_settings     = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : '';
+$ads_settings     = wp_json_encode( $ads_settings );
 
 if ( ! empty( $appearance_color ) ) {
 	$easydam_control_bar_color = $appearance_color;
@@ -262,6 +264,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 					data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 					data-controls="<?php echo esc_attr( $video_setup ); ?>"
 					data-job_id="<?php echo esc_attr( $job_id ); ?>"
+					data-global_ads_settings="<?php echo esc_attr( $ads_settings ); ?>"
 				>
 					<?php
 					foreach ( $sources as $source ) :
