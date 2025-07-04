@@ -42,10 +42,10 @@ $show_overlay       = isset( $attributes['showOverlay'] ) ? $attributes['showOve
 $vertical_alignment = ! empty( $attributes['verticalAlignment'] ) ? esc_attr( $attributes['verticalAlignment'] ) : 'center';
 $aspect_ratio       = ! empty( $attributes['aspectRatio'] ) && 'responsive' === $attributes['aspectRatio']
 	? ( ! empty( $attributes['videoWidth'] ) && ! empty( $attributes['videoHeight'] )
-		? $attributes['videoWidth'] . '/' . $attributes['videoHeight']
-		: '16/9'
+		? $attributes['videoWidth'] . ':' . $attributes['videoHeight']
+		: '16:9'
 	)
-	: '16/9';
+	: '16:9';
 
 $src            = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
@@ -192,7 +192,7 @@ $custom_css_properties = array(
 );
 
 if ( ! empty( $attributes['aspectRatio'] ) ) {
-	$custom_css_properties['--rtgodam-video-aspect-ratio'] = $aspect_ratio;
+	$custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $aspect_ratio );
 }
 
 // Build the inline style string, escaping each value.
@@ -225,7 +225,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 	--rtgodam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
 	--rtgodam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
 	--rtgodam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
-	<?php echo $aspect_ratio ? '--rtgodam-video-aspect-ratio: ' . esc_attr( $aspect_ratio ) : ''; ?>
+	<?php echo $aspect_ratio ? '--rtgodam-video-aspect-ratio: ' . esc_attr( str_replace( ':', '/', $aspect_ratio ) ) : ''; ?>
 	">
 		<div class="godam-video-wrapper">
 			<?php if ( $show_overlay && ! empty( $inner_blocks_content ) ) : ?>
