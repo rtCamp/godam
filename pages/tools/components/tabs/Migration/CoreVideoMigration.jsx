@@ -12,34 +12,51 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import axios from 'axios';
-import ProgressBar from '../../Progressbar';
-import { useEffect, useRef } from '@wordpress/element';
+/**
+ * Internal dependencies
+ */
+import ProgressBar from '../../ProgressBar.jsx';
+import { useEffect, useRef, useCallback } from '@wordpress/element';
 
 const CoreVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 	const intervalRef = useRef( null );
 
 	const handleMigrationClick = async () => {
-		const url = window.godamRestRoute?.url + 'godam/v1/video-migrate?type=core';
+		const url = window.godamRestRoute?.url + 'godam/v1/video-migrate';
 
-		axios.post( url )
+		axios.post( url, {
+			type: 'core',
+		},
+		{
+			headers: {
+				'Content-Type': 'application/json',
+				'X-WP-Nonce': window.godamRestRoute?.nonce,
+			},
+		} )
 			.then( ( response ) => {
 				setMigrationStatus( response.data );
 			} )
 			.catch( ( error ) => {
+				// Handle error, e.g., show a notification instead of using console.
 				alert( __( 'An error occurred during migration: ', 'godam' ) + error.message );
 			} );
 	};
 
-	const fetchMigrationStatus = async () => {
+	const fetchMigrationStatus = useCallback( async () => {
 		const url = window.godamRestRoute?.url + 'godam/v1/video-migration/status?type=core';
 
 		try {
-			const response = await axios.get( url );
+			const response = await axios.get( url, {
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': window.godamRestRoute?.nonce,
+				},
+			} );
 			setMigrationStatus( response.data );
 		} catch ( error ) {
-			console.error( 'Error fetching migration status:', error );
+			// Optionally handle error, e.g., show a notification instead of using console
 		}
-	};
+	}, [ setMigrationStatus ] );
 
 	// Start polling when migration is processing
 	useEffect( () => {
@@ -65,7 +82,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 				clearInterval( intervalRef.current );
 			}
 		};
-	}, [ migrationStatus?.status ] );
+	}, [ migrationStatus?.status, fetchMigrationStatus ] );
 
 	if ( ! migrationStatus ) {
 		return (
@@ -120,7 +137,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 						onClick={ handleMigrationClick }
 						className="godam-button mt-2"
 						disabled={ ! migrationStatus || migrationStatus?.status === 'processing' }
-                	>
+					>
 						{ migrationStatus?.status === 'processing' ? __( 'Migration in progress' ) : __( 'Start Migration', 'godam' ) }
 					</Button>
 				</PanelBody>
