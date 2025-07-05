@@ -51,7 +51,7 @@ if ( ! defined( 'RTGODAM_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' ) ) {
 }
 
 if ( ! defined( 'RTGODAM_API_BASE' ) ) {
-	define( 'RTGODAM_API_BASE', 'https://app.godam.io' );
+	define( 'RTGODAM_API_BASE', 'https://app-godam.rt.gw' );
 }
 
 if ( ! defined( 'RTGODAM_ANALYTICS_BASE' ) ) {
@@ -66,6 +66,9 @@ require_once RTGODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPr
 require_once RTGODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RTGODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+
+require_once plugin_dir_path( __FILE__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
+
 
 global $rtgodam_transcoder_admin;
 

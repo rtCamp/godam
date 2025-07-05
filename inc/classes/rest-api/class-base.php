@@ -35,7 +35,7 @@ abstract class Base extends \WP_REST_Controller {
 	/**
 	 * Construct method.
 	 */
-	final protected function __construct() {
+	protected function __construct() {
 		$this->setup_hooks();
 	}
 
