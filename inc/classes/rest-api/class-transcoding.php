@@ -100,7 +100,7 @@ class Transcoding extends Base {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_media_require_retranscoding' ),
 					'permission_callback' => function () {
-						return current_user_can( 'edit_other_posts' );
+						return current_user_can( 'edit_others_posts' );
 					},
 				),
 			),
@@ -111,7 +111,7 @@ class Transcoding extends Base {
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'retranscode_media' ),
 					'permission_callback' => function () {
-						return current_user_can( 'edit_other_posts' );
+						return current_user_can( 'edit_others_posts' );
 					},
 				),
 			),
@@ -318,7 +318,7 @@ class Transcoding extends Base {
 				'posts_per_page' => $per_page,
 				'paged'          => $paged,
 				'fields'         => 'ids',
-				'meta_query'     => array(
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- This is a necessary query to find posts that need retranscoding.
 					array(
 						'key'     => 'rtgodam_transcoded_url',
 						'compare' => 'NOT EXISTS',
@@ -371,6 +371,7 @@ class Transcoding extends Base {
 		$mime_type = get_post_mime_type( $attachment_id );
 		$title     = get_the_title( $attachment_id );
 	
+		$wp_metadata              = array();
 		$wp_metadata['mime_type'] = $mime_type;
 		
 		// Retranscode the media.
