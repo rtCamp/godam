@@ -12,11 +12,15 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import axios from 'axios';
+/**
+ * Internal dependencies
+ */
 import ProgressBar from '../../Progressbar';
-import { useEffect, useRef } from '@wordpress/element';
+import { useState, useEffect, useRef } from '@wordpress/element';
 
 const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 	const intervalRef = useRef( null );
+	const [ godamMigrationCompleted, setGodamMigrationCompleted ] = useState( true );
 
 	const handleMigrationClick = async () => {
 		const url = window.godamRestRoute?.url + 'godam/v1/video-migrate?type=vimeo';
@@ -26,7 +30,10 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 				setMigrationStatus( response.data );
 			} )
 			.catch( ( error ) => {
-				alert( __( 'An error occurred during migration: ', 'godam' ) + error.message );
+				// Check if status is 400, set godamMigrationStatus
+				if ( error.response && error.response.status === 400 ) {
+					setGodamMigrationCompleted( false );
+				}
 			} );
 	};
 
@@ -92,9 +99,6 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 					<p>
 						{ __( 'This tool is used to replace WordPress vimeo embed blocks with GoDAM video block.', 'godam' ) }
 					</p>
-					<p>
-						<b>{ __( 'Action:', 'godam' ) }</b> <code>core/embed</code> with <code>godam/video</code>
-					</p>
 
 					{ /* Progressbar indicating video migration progress */ }
 					{ /* Horizontal progressbar, done/total */ }
@@ -116,6 +120,25 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 							{ __( 'Migration failed. Please try again.', 'godam' ) }
 						</div>
 					) }
+
+					{
+						! godamMigrationCompleted && (
+							<div className="godam-migration-status my-2 bg-gray-100 p-2 rounded">
+								{ __( 'Vimeo video migration in WordPress can only begin after all Vimeo videos have been successfully migrated to GoDAM Central ', 'godam' ) }
+								<a className="godam-url" href={ `${ window.godamRestRoute?.apiBase || 'https://app.godam.io' }/web/settings` } target="_blank" rel="noreferrer">
+									{ __( 'GoDAM Central', 'godam' ) }
+								</a>
+							</div>
+						)
+					}
+
+					{ /* Migration status */ }
+					{ migrationStatus?.status === 'processing' && (
+						<div className="godam-migration-status my-2">
+							{ __( 'Migration is in progress. Please wait...', 'godam' ) }
+						</div>
+					)
+					}
 
 					{ /* Migration button */ }
 					<Button

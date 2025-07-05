@@ -56,6 +56,41 @@ class Video_Migration extends Base {
 	}
 
 	/**
+	 * Get Vimeo migration status from GoDAM Central.
+	 * 
+	 * This function fetches the current Vimeo migration status from GoDAM Central API.
+	 * It requires a valid API key stored in WordPress options.
+	 * 
+	 * @since n.e.x.t
+	 * 
+	 * @return array|\WP_Error Migration status or error object on failure.
+	 */
+	public function get_vimeo_migration_status_from_godam_central() {
+		
+		$api_key = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) ) {
+			return new \WP_Error( 'missing_api_key', __( 'GoDAM API key is required to access this endpoint.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		// Add api_key query parameter.
+		$url = RTGODAM_API_BASE . '/api/method/godam_core.api.vimeo.check_migration_status';
+		$url = add_query_arg( 'api_key', $api_key, $url ); // Add api_key query parameter.
+
+		$response = wp_remote_get( $url );
+
+		if ( is_wp_error( $response ) ) {
+			return new \WP_Error( 'api_error', __( 'Error fetching migration status from GoDAM Central.', 'godam' ), array( 'status' => 500 ) );
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+
+		$body = json_decode( $body, true );
+
+		return $body;
+	}
+
+	/**
 	 * Permission callback for video migration endpoints.
 	 * 
 	 * @since n.e.x.t
@@ -87,6 +122,26 @@ class Video_Migration extends Base {
 
 		if ( ! in_array( $migration_type, array( 'core', 'vimeo' ), true ) ) {
 			return new \WP_Error( 'invalid_migration_type', __( 'Invalid migration type specified.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		if ( $migration_type === 'vimeo' ) {
+			// Check if Vimeo migration is enabled.
+			$godam_migration_status = $this->get_vimeo_migration_status_from_godam_central();
+			if ( is_wp_error( $godam_migration_status ) ) {
+				return $godam_migration_status; // Return error from GoDAM Central.
+			}
+
+			error_log( 'GoDAM Central vimeo migration status' . print_r( $godam_migration_status, true ) );
+
+			if ( isset( $godam_migration_status['message']['migration_status'] ) ) {
+				$status = $godam_migration_status['message']['migration_status'];
+				if ( 'completed' !== $status ) {
+					return new \WP_REST_Response(
+						$godam_migration_status,
+						400,
+					);
+				}
+			}
 		}
 
 		$wp_option_key = 'godam_' . $migration_type . '_video_migration_status';

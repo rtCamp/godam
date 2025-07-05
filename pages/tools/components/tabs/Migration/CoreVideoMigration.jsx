@@ -92,9 +92,6 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 					<p>
 						{ __( 'This tool is used to replace WordPress core video blocks with GoDAM video block.', 'godam' ) }
 					</p>
-					<p>
-						<b>{ __( 'Action:', 'godam' ) }</b> <code>core/video</code> with <code>godam/video</code>
-					</p>
 
 					{ /* Progressbar indicating video migration progress */ }
 					{ /* Horizontal progressbar, done/total */ }
