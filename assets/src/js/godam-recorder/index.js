@@ -58,11 +58,12 @@ class UppyVideoUploader {
 			 */
 			const gravityForms = document.querySelector( 'div[id^=gform_confirmation_message_]' );
 			const sureForms = document.querySelector( 'div.srfm-success-box' );
+			const fluentForms = document.querySelector( 'div.ff-message-success' );
 
 			/**
 			 * If any of the forms have confirmation, remove uppy state.
 			 */
-			const removeUppyState = gravityForms || sureForms;
+			const removeUppyState = gravityForms || sureForms || fluentForms;
 
 			if ( removeUppyState ) {
 				Object.keys( localStorage )
@@ -312,6 +313,10 @@ jQuery( document ).ready( function() {
 	 * Sureforms confirmation.
 	 */
 	jQuery( document ).on( 'srfm_on_show_success_message', function() {
+		UppyVideoUploader.clearUppyStateIfConfirmed();
+	} );
+
+	jQuery( document ).on( 'fluentform_submission_success', function() {
 		UppyVideoUploader.clearUppyStateIfConfirmed();
 	} );
 } );
