@@ -514,7 +514,7 @@ class Video_Migration extends Base {
 		$changed = false;
 
 		foreach ( $blocks as &$block ) {
-			if ( 'core/video' === $block['blockName'] ) {
+			if ( 'core/embed' === $block['blockName'] ) {
 				$attrs = $block['attrs'] ?? array();
 
 				if ( 'vimeo' !== $attrs['providerNameSlug'] ) {
@@ -523,11 +523,54 @@ class Video_Migration extends Base {
 				}
 
 				$vimeo_url = $attrs['url'] ?? '';
+				if ( empty( $vimeo_url ) ) {
+					continue;
+				}
 
 				// Create attachment from Vimeo URL.
-				$this->create_attachment_form_vimeo_video( $vimeo_url );
+				$attachment_id = $this->create_attachment_from_vimeo_video( $vimeo_url );
 
-				// ToDo: Replace block with custom video block.
+				if ( is_wp_error( $attachment_id ) ) {
+					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+					error_log(
+						sprintf(
+							'Error creating attachment for Vimeo video in post %d: %s',
+							$post_id,
+							$attachment_id->get_error_message()
+						)
+					);
+					continue;
+				}
+
+				// Get video source URL from attachment.
+				$video_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+				if ( empty( $video_url ) ) {
+					continue;
+				}
+
+				// Transform to custom block with attributes.
+				$block = array(
+					'blockName'    => 'godam/video',
+					'attrs'        => array(
+						'id'       => $attachment_id,
+						'src'      => $video_url,
+						'autoplay' => $attrs['autoplay'] ?? false,
+						'loop'     => $attrs['loop'] ?? false,
+						'muted'    => $attrs['muted'] ?? false,
+						'controls' => $attrs['controls'] ?? true,
+						'poster'   => $attrs['poster'] ?? '',
+						'preload'  => $attrs['preload'] ?? 'metadata',
+						'caption'  => $attrs['caption'] ?? '',
+						'seo'      => array(
+							'title'       => get_the_title( $attachment_id ),
+							'description' => get_the_content( null, false, $attachment_id ),
+						),
+					),
+					'innerContent' => '<div class="wp-block-godam-video"></div>',
+					'innerBlocks'  => array(),
+				);
+
+				$changed = true;
 			}
 		}
 
@@ -547,17 +590,79 @@ class Video_Migration extends Base {
 	/**
 	 * Create an attachment from a Vimeo video URL.
 	 * 
-	 * This function should implement the logic to create a WordPress attachment
-	 * from a Vimeo video URL. It is currently a placeholder and needs to be implemented.
+	 * Fetches video information from GoDAM Central and creates a WordPress attachment
+	 * with the transcoded video file path.
 	 * 
 	 * @since n.e.x.t
 	 *
 	 * @param string $vimeo_url The Vimeo video URL to create an attachment from.
 	 *
-	 * @return void
+	 * @return int|WP_Error Attachment ID on success, WP_Error object on failure.
 	 */
-	private function create_attachment_form_vimeo_video( $vimeo_url ) {
-		// ToDo: Implement logic to create an attachment from the Vimeo URL.
+	private function create_attachment_from_vimeo_video( $vimeo_url ) {
+		if ( empty( $vimeo_url ) ) {
+			return new \WP_Error( 'missing_url', __( 'Vimeo URL is required.', 'godam' ) );
+		}
+
+		// Get API key from options.
+		$api_key = get_option( 'rtgodam-api-key', '' );
+		if ( empty( $api_key ) ) {
+			return new \WP_Error( 'missing_api_key', __( 'GoDAM API key is required.', 'godam' ) );
+		}
+
+		// Build request URL for GoDAM Central.
+		$request_url = RTGODAM_API_BASE . '/api/method/godam_core.api.vimeo.get_vimeo_video_details';
+		$request_url = add_query_arg( 
+			array(
+				'api_key'   => $api_key,
+				'vimeo_url' => $vimeo_url,
+			),
+			$request_url
+		);
+
+		// Fetch video info from GoDAM Central.
+		$response = wp_remote_get( $request_url );
+		if ( is_wp_error( $response ) ) {
+			return new \WP_Error( 
+				'api_error',
+				sprintf(
+					/* translators: %s: error message */
+					__( 'Error fetching video info: %s', 'godam' ),
+					$response->get_error_message()
+				)
+			);
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		if ( empty( $data['message']['data'] ) || empty( $data['message']['data']['transcoded_file_path'] ) ) {
+			return new \WP_Error( 
+				'invalid_response',
+				__( 'Invalid response from GoDAM Central.', 'godam' )
+			);
+		}
+
+		$video_info = $data['message']['data'];
+
+		// Prepare attachment data.
+		$attachment = array(
+			'post_mime_type' => 'video/mp4',
+			'post_title'     => $video_info['orignal_file_name'] ?? '',
+			'post_status'    => 'inherit',
+		);
+
+		// Insert the attachment.
+		$attachment_id = wp_insert_attachment( $attachment );
+
+		if ( is_wp_error( $attachment_id ) ) {
+			return $attachment_id;
+		}
+
+		// Update attachment metadata.
+		update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $video_info['transcoded_file_path'] );
+
+		return $attachment_id;
 	}
 
 	/**
