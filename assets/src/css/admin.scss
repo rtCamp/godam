@@ -145,7 +145,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 
         .attachments-wrapper {
             margin: 24px;
-            width: calc(100% - 300px);
+            width: calc(100% - 300px - 2 * 24px);
         }
 
         .media-frame-toolbar {
