@@ -18,12 +18,10 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import TreeItem from './TreeItem.jsx';
 import TreeItemPreview from './TreeItemPreview.jsx';
-import ContextMenu from '../context-menu/ContextMenu.jsx';
 import SnackbarComp from './SnackbarComp.jsx';
 
-import { setTree, updateSnackbar, changeSelectedFolder } from '../../redux/slice/folders.js';
+import { setTree, updateSnackbar } from '../../redux/slice/folders.js';
 import { utilities } from '../../data/utilities';
-import { triggerFilterChange } from '../../data/media-grid';
 
 import { useAssignFolderMutation, useGetFoldersQuery, useUpdateFolderMutation } from '../../redux/api/folders.js';
 
@@ -51,7 +49,7 @@ const openLocalStorageItem = ( folders ) => {
 	return folders;
 };
 
-const FolderTree = () => {
+const FolderTree = ( { handleContextMenu } ) => {
 	const { data: folders, error, isLoading } = useGetFoldersQuery();
 
 	const dispatch = useDispatch();
@@ -60,13 +58,6 @@ const FolderTree = () => {
 	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
 
 	const [ updateFolderMutation ] = useUpdateFolderMutation();
-
-	const [ contextMenu, setContextMenu ] = useState( {
-		visible: false,
-		x: 0,
-		y: 0,
-		folderId: null,
-	} );
 
 	useEffect( () => {
 		if ( folders ) {
@@ -158,30 +149,6 @@ const FolderTree = () => {
 		pointerSensor,
 	);
 
-	const handleContextMenu = ( e, folderId, folderItem ) => {
-		e.preventDefault(); // Prevent default browser context menu
-
-		if ( folderId === -1 ) {
-			triggerFilterChange( 'all' );
-		} else if ( folderId === 0 ) {
-			triggerFilterChange( 'uncategorized' );
-		} else {
-			triggerFilterChange( folderId );
-		}
-
-		dispatch( changeSelectedFolder( { item: folderItem } ) );
-
-		setContextMenu( {
-			visible: true,
-			x: e.clientX,
-			y: e.clientY,
-			folderId,
-		} );
-	};
-
-	const handleCloseContextMenu = () => {
-		setContextMenu( { ...contextMenu, visible: false } );
-	};
 	/**
 	 * Update the attachment count of folders when items are moved between folders.
 	 *
@@ -353,15 +320,6 @@ const FolderTree = () => {
 					</div>
 				) : null }
 			</DragOverlay>
-
-			{ contextMenu.visible && (
-				<ContextMenu
-					x={ contextMenu.x }
-					y={ contextMenu.y }
-					folderId={ contextMenu.folderId }
-					onClose={ handleCloseContextMenu }
-				/>
-			) }
 
 			<SnackbarComp />
 

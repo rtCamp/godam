@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -13,6 +13,7 @@ const { __ } = wp.i18n;
  * Internal dependencies
  */
 import FolderTree from './components/folder-tree/FolderTree.jsx';
+import ContextMenu from './components/context-menu/ContextMenu.jsx';
 
 import {
 	changeSelectedFolder,
@@ -30,6 +31,13 @@ const App = () => {
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
 	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
 	const currentSortOrder = useSelector( ( state ) => state.FolderReducer.sortOrder );
+
+	const [ contextMenu, setContextMenu ] = useState( {
+		visible: false,
+		x: 0,
+		y: 0,
+		folderId: null,
+	} );
 
 	const handleClick = useCallback( ( id ) => {
 		if ( isMultiSelecting ) {
@@ -60,6 +68,31 @@ const App = () => {
 		if ( mediaToggleButton ) {
 			mediaToggleButton.innerHTML = mediaToggleButton.innerHTML.replace( /Hide/g, 'Show' );
 		}
+	};
+
+	const handleContextMenu = ( e, folderId, folderItem ) => {
+		e.preventDefault(); // Prevent default browser context menu
+
+		if ( folderId === -1 ) {
+			triggerFilterChange( 'all' );
+		} else if ( folderId === 0 ) {
+			triggerFilterChange( 'uncategorized' );
+		} else {
+			triggerFilterChange( folderId );
+		}
+
+		dispatch( changeSelectedFolder( { item: folderItem } ) );
+
+		setContextMenu( {
+			visible: true,
+			x: e.clientX,
+			y: e.clientY,
+			folderId,
+		} );
+	};
+
+	const handleCloseContextMenu = () => {
+		setContextMenu( { ...contextMenu, visible: false } );
 	};
 
 	return (
@@ -122,8 +155,17 @@ const App = () => {
 				</button>
 			</div>
 
-			<BookmarkTab />
-			<FolderTree />
+			<BookmarkTab handleContextMenu={ handleContextMenu } />
+			<FolderTree handleContextMenu={ handleContextMenu } />
+
+			{ contextMenu.visible && (
+				<ContextMenu
+					x={ contextMenu.x }
+					y={ contextMenu.y }
+					folderId={ contextMenu.folderId }
+					onClose={ handleCloseContextMenu }
+				/>
+			) }
 
 			<FolderCreationModal />
 			<RenameModal />
