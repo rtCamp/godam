@@ -266,6 +266,7 @@ class Recorder_Field extends BaseFieldManager {
 		$form_instance          = Helper::$formInstance; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		$form_id                = $form->id;
 		$form_instance_name     = 'fluent_form_ff_form_instance_' . $form_id . '_' . $form_instance;
+		$required               = $data['settings']['validation_rules']['required']['value'] ?? false;
 
 		/**
 		 * Uppy container.
@@ -286,55 +287,59 @@ class Recorder_Field extends BaseFieldManager {
 
 		ob_start();
 		?>
-			<div class="ff-godam-recorder-wrapper">
-				<input
-					type="hidden"
-					name="max-file-size"
-					value="<?php echo esc_attr( $max_file_size ); ?>"
-				/>
-				<input
-					name="<?php echo esc_attr( $name ); ?>"
-					id="<?php echo esc_attr( $input_id ); ?>"
-					data-form-id="<?php echo esc_attr( $form_id ); ?>"
-					data-form-instance="<?php echo esc_attr( $form_instance_name ); ?>"
-					type="file"
-					style="display: none;"
-					class="rtgodam-hidden <?php echo esc_attr( $class ); ?>"
-				/>
-				<?php echo $label_element; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				<div
-					style="margin: 4px 0;"
-					data-max-size="<?php echo esc_attr( $max_file_size ); ?>"
-					id="<?php echo esc_attr( $uppy_container_id ); ?>"
-					class="uppy-video-upload"
-					data-input-id="<?php echo esc_attr( $input_id ); ?>"
-					data-video-upload-button-id="<?php echo esc_attr( $video_upload_button_id ); ?>"
-					data-file-selectors="<?php echo esc_attr( implode( ',', $file_selectors ) ); ?>"
-				>
-					<button
-						type="button"
-						id="<?php echo esc_attr( $video_upload_button_id ); ?>"
-						class="uppy-video-upload-button ff-btn ff-btn-submit ff-btn-md ff_btn_style"
+			<div class="ff-godam-recorder-wrapper ff-el-group">
+				<div class="ff-el-input--content">
+					<input
+						type="hidden"
+						name="max-file-size"
+						value="<?php echo esc_attr( $max_file_size ); ?>"
+					/>
+					<input
+						name="<?php echo esc_attr( $name ); ?>"
+						id="<?php echo esc_attr( $input_id ); ?>"
+						data-form-id="<?php echo esc_attr( $form_id ); ?>"
+						data-form-instance="<?php echo esc_attr( $form_instance_name ); ?>"
+						type="file"
+						multiple="1"
+						aria-required="<?php echo esc_attr( $required ? 'true' : '' ); ?>"
+						style="display: none;"
+						class="rtgodam-hidden <?php echo esc_attr( $class ); ?>"
+					/>
+
+					<?php echo $label_element; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<div
+						style="margin: 4px 0;"
+						data-max-size="<?php echo esc_attr( $max_file_size ); ?>"
+						id="<?php echo esc_attr( $uppy_container_id ); ?>"
+						class="uppy-video-upload"
+						data-input-id="<?php echo esc_attr( $input_id ); ?>"
+						data-video-upload-button-id="<?php echo esc_attr( $video_upload_button_id ); ?>"
+						data-file-selectors="<?php echo esc_attr( implode( ',', $file_selectors ) ); ?>"
 					>
-						<span class="dashicons dashicons-video-alt"></span>
-						<?php echo esc_html( $button_text ); ?>
-					</button>
-					<div style="margin: 4px 0;">
-						<?php
-							echo esc_html(
-								sprintf(
-									// Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
-									__( 'Maximum allowed on this server: %s MB', 'godam' ),
-									$max_file_size / 1048576,
-								)
-							);
-						?>
+						<button
+							type="button"
+							id="<?php echo esc_attr( $video_upload_button_id ); ?>"
+							class="uppy-video-upload-button ff-btn ff-btn-submit ff-btn-md ff_btn_style"
+						>
+							<span class="dashicons dashicons-video-alt"></span>
+							<?php echo esc_html( $button_text ); ?>
+						</button>
+						<div style="margin: 4px 0;">
+							<?php
+								echo esc_html(
+									sprintf(
+										// Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
+										__( 'Maximum allowed on this server: %s MB', 'godam' ),
+										(int) ( $max_file_size / 1048576 ),
+									)
+								);
+							?>
+						</div>
+						<div id="<?php echo esc_attr( $uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
+						<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename"></div>
 					</div>
-					<div id="<?php echo esc_attr( $uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
-					<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename"></div>
-				</div>
-				<div style="display: none;" class="ff-uploaded-list godam-recorder">
-					<div class="ff-upload-preview" data-src=""></div>
+					<div style="display: none;" class="ff-uploaded-list godam-recorder">
+					</div>
 				</div>
 			</div>
 		<?php
@@ -446,10 +451,11 @@ class Recorder_Field extends BaseFieldManager {
 				'size'     => $file_size,
 			);
 
-			$upload_overrides = array(
+			$upload_overrides  = array(
 				'test_form' => false,
 			);
-			$move_file        = wp_handle_upload( $uploaded_file, $upload_overrides );
+			$move_file         = wp_handle_upload( $uploaded_file, $upload_overrides );
+			$move_file['file'] = wp_basename( $move_file['file'] );
 
 			$file = ArrayHelper::get( $move_file, 'file' );
 

@@ -170,10 +170,11 @@ class FluentForms {
 			return;
 		}
 
-		const previewElement = uploadedList.querySelector( '.ff-upload-preview' );
-		if ( previewElement ) {
-			previewElement.setAttribute( 'data-src', fileUrl );
-		}
+		const createPreviewElement = document.createElement( 'div' );
+		createPreviewElement.classList.add( 'ff-upload-preview' );
+		createPreviewElement.setAttribute( 'data-src', fileUrl );
+
+		uploadedList.appendChild( createPreviewElement );
 	}
 }
 
