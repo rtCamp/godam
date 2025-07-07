@@ -1521,13 +1521,11 @@ function GODAMPlayer( videoRef = null ) {
 				id: 'content_video',
 				adTagUrl,
 			} );
-		} else if ( globalAdsSettings ) {
-			if ( globalAdsSettings?.enable_global_video_ads && globalAdsSettings?.adTagUrl ) {
-				player.ima( {
-					id: 'content_video',
-					adTagUrl: globalAdsSettings.adTagUrl,
-				} );
-			}
+		} else if ( globalAdsSettings?.enable_global_video_ads && globalAdsSettings?.adTagUrl ) {
+			player.ima( {
+				id: 'content_video',
+				adTagUrl: globalAdsSettings.adTagUrl,
+			} );
 		}
 	} );
 }

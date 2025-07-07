@@ -86,7 +86,7 @@ const AdsSettings = () => {
 							label={ __( 'Ad Tag URL', 'godam' ) }
 							help={
 								<div>
-									{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads', 'godam' ) }
+									{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads ', 'godam' ) }
 									<a href="https://support.google.com/admanager/answer/177207?hl=en" target="_blank" rel="noreferrer noopener" className="text-blue-500 underline">{ __( 'Learn more.', 'godam' ) }</a>
 								</div>
 							}
