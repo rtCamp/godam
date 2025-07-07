@@ -63,7 +63,7 @@
         width: 100%;
         height: 100%;
         background-color: rgba(0, 0, 0, 0.8);
-        z-index: 9;
+        z-index: 99;
         display: flex;
         align-content: center;
         align-items: center;
@@ -79,34 +79,42 @@
             top: 5%;
             right: 5%;
             display: flex;
-            background-color: #141212;
-            border-radius: 50%;
+            background-color: var(--wp--preset--color--black);
+            border-radius: 10px;
             text-decoration: none;
-            width: 37px;
-            height: 32px;
+            width: 40px;
+            height: 30px;
             border: none;
-            font-size: 32px;
-            line-height: 32px;
+            font-size: 40px;
+            line-height: 40px;
             cursor: pointer;
-            color: #fff;
+            color: var(--wp--preset--color--white);
             transition: color 0.2s ease;
             flex-wrap: nowrap;
             justify-content: center;
             align-items: center;
-            padding-bottom: 5px;
+            padding-bottom: 10px;
+            z-index: 100;
         }
 
-        video {
-            object-fit: cover;
-        }
+        &-content {
+            max-width: 800px;
 
-        .video-js {
+            &-items {
+                background-color: var(--wp--preset--color--white);
+                max-width: calc(100% - 15px);
+                .swiper-button-next,
+                .swiper-button-prev {
+                    opacity: 1;
+                    position: fixed;
+                }
 
-            @media screen and (max-width: 640px) {
-                width: 270px;
-                height: 480px;
+                .swiper-slide {
+                    display: flex;
+                }
             }
         }
+
     }
 
     &:hover {

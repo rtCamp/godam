@@ -440,29 +440,118 @@ class WC_Product_Video_Gallery {
 			return '';
 		}
 
-		$slider_html = '<div class="rtgodam-product-video-gallery-slider rtgodam-product-video-gallery-slider-loading swiper"><div class="swiper-wrapper">';
-		foreach ( $rtgodam_product_video_gallery_ids as $attachment_id ) {
+		$srcsets = array_map(
+			function ( $attachment_id ) {
+				return wp_get_attachment_url( $attachment_id );
+			},
+			$rtgodam_product_video_gallery_ids
+		);
 
-			$attachment_url = wp_get_attachment_url( $attachment_id );
-			if ( empty( $attachment_url ) ) {
-				continue;
-			}
+		$srcsets_keys = array_keys( $srcsets );
 
-			$slider_html .= '<div class="rtgodam-product-video-gallery-slider-item swiper-slide">';
-			$slider_html .= "<video autoplay loop muted width='100%'><source src='{$attachment_url}' /></video>";
-			$slider_html .= '</div>';
+		$carousel_html = array_map(
+			function ( $item ) use ( $srcsets ) {
+				return sprintf(
+					'<div class="swiper-slide">
+						<video autoplay loop muted width="%1$s" class="video-js" data-index-id="%2$s"><source src="%3$s"/></video>
+					</div>',
+					esc_attr( '100%' ),
+					esc_attr( $item ),
+					esc_url( $srcsets[ $item ] ),
+				);
+			},
+			$srcsets_keys
+		);
+
+		$slider_html = $this->generate_video_carousel_mark_up(
+			array(
+				'carousel_html' => $carousel_html,
+			)
+		);
+
+		if ( empty( $slider_html ) ) {
+			return '';
 		}
 
-		$slider_html .= '</div>';
-		$slider_html .= '<div class="swiper-pagination"></div>';
-		$slider_html .= '<div class="swiper-button-next"></div>';
-		$slider_html .= '<div class="swiper-button-prev"></div>';
-		$slider_html .= '</div>';
+		$modal_carousel_html = array_map(
+			function ( $item ) use ( $srcsets ) {
+				return sprintf(
+					'
+					<div class="swiper-slide">
+						<div class="rtgodam-product-video-gallery-slider-modal-content-left">
+							<video autoplay loop muted class="video-js vjs-big-play-centered" data-index-id="%2$s">
+								<source src="%1$s"/>
+							</video>
+						</div>
+						<div class="rtgodam-product-video-gallery-slider-modal-content-right">
+							Some items will be displayed in here
+						</div>
+					</div>',
+					esc_url( $srcsets[ $item ] ),
+					esc_attr( $item ),
+				);
+			},
+			$srcsets_keys
+		);
+
+		$modal_slider_html = $this->generate_video_carousel_mark_up(
+			array(
+				'wrapper_class'        => 'rtgodam-product-video-gallery-slider-modal-content-items',
+				'wrapper_class_loader' => '',
+				'carousel_html'        => $modal_carousel_html,
+			)
+		);
+
 		$slider_html .= '<div class="rtgodam-product-video-gallery-slider-modal">';
-		$slider_html .= '<div class="rtgodam-product-video-gallery-slider-modal-content"></div>';
+		$slider_html .= '<div class="rtgodam-product-video-gallery-slider-modal-content">' . $modal_slider_html . '</div>';
 		$slider_html .= '<a href="#" class="rtgodam-product-video-gallery-slider-modal-close">&times;</a>';
 		$slider_html .= '</div>';
 
 		echo apply_filters( 'rtgodam_video_slider_html', $slider_html ); // phpcs:ignore
+	}
+
+	/**
+	 * Generates the HTML markup for the video carousel slider.
+	 *
+	 * @param array $args {
+	 *     Args for the video carousel slider.
+	 *
+	 *     @type string $wrapper_class        The class name for the wrapper container. Default is 'rtgodam-product-video-gallery-slider'.
+	 *     @type string $wrapper_class_loader The class name for the wrapper container when loading. Default is 'rtgodam-product-video-gallery-slider-loading'.
+	 *     @type array  $carousel_html        An array of HTML markup for the carousel items. Default is an empty array.
+	 * }
+	 *
+	 * @return string The HTML markup for the video carousel slider.
+	 */
+	public function generate_video_carousel_mark_up( $args ) {
+		$args = wp_parse_args(
+			$args,
+			array(
+				'wrapper_class'        => 'rtgodam-product-video-gallery-slider',
+				'wrapper_class_loader' => 'rtgodam-product-video-gallery-slider-loading',
+				'carousel_html'        => array(),
+			)
+		);
+
+		if ( empty( $args['carousel_html'] ) || ! is_array( $args['carousel_html'] ) ) {
+			return '';
+		}
+
+		$carousel_html = implode( '', $args['carousel_html'] );
+
+		return sprintf(
+			'
+			<div class="%1$s %2$s swiper">
+				<div class="swiper-wrapper">
+					%3$s
+				</div>
+				<div class="swiper-pagination"></div>
+				<div class="swiper-button-next"></div>
+				<div class="swiper-button-prev"></div>
+			</div>',
+			esc_attr( $args['wrapper_class'] ),
+			esc_attr( $args['wrapper_class_loader'] ),
+			$carousel_html
+		);
 	}
 }

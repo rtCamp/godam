@@ -10,6 +10,10 @@ import videojs from 'video.js';
  */
 const wcVideoCarousel = {
 
+	// Video carousel and modal elements.
+	swiper: null,
+	swiperModal: null,
+
 	/**
 	 * Initiate the video carousel and show controls on mouse enter.
 	 * Uses Swiper for the carousel.
@@ -21,6 +25,7 @@ const wcVideoCarousel = {
 			self.loadVideoCarousel();
 			self.openVideoModal();
 			self.closeVideoModal();
+			self.loadModalVideos();
 		} );
 	},
 
@@ -31,7 +36,7 @@ const wcVideoCarousel = {
 	loadVideoCarousel() {
 		const self = this;
 		// eslint-disable-next-line no-unused-vars
-		const swiper = new Swiper( '.rtgodam-product-video-gallery-slider', {
+		this.swiper = new Swiper( '.rtgodam-product-video-gallery-slider', {
 			loop: true,
 			navigation: {
 				nextEl: '.swiper-button-next',
@@ -62,6 +67,32 @@ const wcVideoCarousel = {
 	},
 
 	/**
+	 * Initializes and plays videos inside the modal.
+	 *
+	 * This function selects all video elements within the modal content items,
+	 * initializes them with Video.js for playback with controls, and starts playing
+	 * them automatically. Each video player is configured to have a control bar with
+	 * skip buttons for forward and backward navigation.
+	 */
+	loadModalVideos() {
+		const modalVideo = document.querySelectorAll( '.rtgodam-product-video-gallery-slider-modal-content-items video' );
+		modalVideo.forEach( ( item ) => {
+			const player = videojs( item, {
+				controls: true,
+				width: '450px',
+				height: '800px',
+				controlBar: {
+					skipButtons: {
+						forward: 10,
+						backward: 10,
+					},
+				},
+			} );
+			player.play();
+		} );
+	},
+
+	/**
 	 * Show a modal with a video player when a video is clicked.
 	 *
 	 * Listens for clicks on video elements in the video carousel, and shows a modal
@@ -70,45 +101,25 @@ const wcVideoCarousel = {
 	 * @return {void}
 	 */
 	openVideoModal() {
+		const self = this;
 		// Show control only when enter on video.
 		document.querySelectorAll( '.rtgodam-product-video-gallery-slider video' ).forEach( ( video ) => {
 			video.addEventListener( 'click', ( event ) => {
 				event.preventDefault();
-				const src = event.target.currentSrc;
-				const time = event.target.currentTime;
 
-				let videoElm = document.querySelector( '#rtgodam-product-video-gallery-slider-single-video' );
-				const videoElmModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal' );
-				const videoElmModalContant = document.querySelector( '.rtgodam-product-video-gallery-slider-modal-content' );
-
-				if ( videoElm ) {
-					videoElmModal.classList.remove( 'open' );
-					videojs( 'rtgodam-product-video-gallery-slider-single-video' ).dispose();
-					videoElm.remove();
-				}
-
-				videoElm = document.createElement( 'video' );
-				videoElm.setAttribute( 'id', 'rtgodam-product-video-gallery-slider-single-video' );
-				videoElm.setAttribute( 'class', 'video-js' );
-				const source = document.createElement( 'source' );
-				source.setAttribute( 'src', src );
-				videoElm.appendChild( source );
-				videoElmModalContant.appendChild( videoElm );
-				const player = videojs( 'rtgodam-product-video-gallery-slider-single-video', {
-					controls: true,
-					autoplay: true,
-					preload: 'auto',
-					width: '450px',
-					height: '800px',
-					controlBar: {
-						skipButtons: {
-							forward: 10,
-							backward: 10,
-						},
+				self.swiperModal = new Swiper( '.rtgodam-product-video-gallery-slider-modal-content-items', {
+					loop: true,
+					navigation: {
+						nextEl: '.swiper-button-next',
+						prevEl: '.swiper-button-prev',
 					},
+					freeMode: true,
+					autoplay: false,
 				} );
-				player.currentTime( time );
-				player.play();
+				const itemIndex = parseInt( event.target.getAttribute( 'data-index-id' ) );
+				self.swiperModal.slideTo( itemIndex );
+
+				const videoElmModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal' );
 				videoElmModal.classList.add( 'open' );
 			} );
 		} );
@@ -133,11 +144,14 @@ const wcVideoCarousel = {
 	 * This method is used to clean up the DOM when the modal is closed.
 	 */
 	closeVideoModal() {
+		const self = this;
 		const videoElmModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal' );
 		const videoElmModalClose = document.querySelector( '.rtgodam-product-video-gallery-slider-modal-close' );
-		videoElmModalClose.addEventListener( 'click', () => {
-			videojs( 'rtgodam-product-video-gallery-slider-single-video' ).dispose();
+		videoElmModalClose.addEventListener( 'click', ( event ) => {
+			event.preventDefault();
 			videoElmModal.classList.remove( 'open' );
+			self.swiperModal.destroy();
+			self.swiperModal = null;
 		} );
 	},
 };
