@@ -6,7 +6,7 @@ import clsx from 'clsx';
 /**
  * WordPress dependencies
  */
-import { useEffect } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import {
 	CheckboxControl,
@@ -17,6 +17,7 @@ import {
 	__experimentalNumberControl as NumberControl,
 	ToggleControl,
 	PanelBody,
+	Notice,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { InspectorControls, RichText, useBlockProps } from '@wordpress/block-editor';
@@ -51,6 +52,11 @@ export default function Edit( props ) {
 	} = attributes;
 	const currentFormId = useGetCurrentFormId( clientId );
 
+	/**
+	 * Set notice select file selector at least min.
+	 */
+	const [ notice, setNotice ] = useState( false );
+
 	const classes = clsx( className, {
 		'godam-srfm-recorder': true,
 		'srfm-block': true,
@@ -72,6 +78,15 @@ export default function Edit( props ) {
 	useEffect( () => {
 		setAttributes( { blockId: clientId.substring( 0, 8 ) } );
 	}, [ clientId, setAttributes ] );
+
+	/**
+	 * Set file selectors.
+	 */
+	useEffect( () => {
+		if ( 0 === fileSelector.length ) {
+			setAttributes( { fileSelector: [ 'webcam', 'screen_capture' ] } );
+		}
+	} );
 
 	const {
 		// eslint-disable-next-line no-unused-vars
@@ -117,6 +132,16 @@ export default function Edit( props ) {
 		} else {
 			updated = [ ...fileSelector, value ];
 		}
+
+		if ( 0 === updated.length ) {
+			setNotice( true );
+			return;
+		}
+
+		if ( notice ) {
+			setNotice( false );
+		}
+
 		setAttributes( { fileSelector: updated } );
 	};
 
@@ -168,6 +193,18 @@ export default function Edit( props ) {
 					<Text isBlock style={ { marginBottom: '20px' } }>
 						{ __( 'Choose file selector', 'godam' ) }
 					</Text>
+					{
+						notice &&
+						<div style={ { marginBottom: '16px' } }>
+							<Notice
+								isDismissible={ true }
+								onDismiss={ () => setNotice( false ) }
+								status="error"
+							>
+								{ __( 'Select min of 1 file selector' ) }
+							</Notice>
+						</div>
+					}
 					<CheckboxControl
 						__nextHasNoMarginBottom
 						label={ __( 'Local files', 'godam' ) }
@@ -195,6 +232,7 @@ export default function Edit( props ) {
 				<NumberControl
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
+					placeholder={ __( '100 MB', 'godam' ) }
 					label={ __( 'Maximum file size (in MB)', 'godam' ) }
 					help={ sprintf(
 						// Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
@@ -216,6 +254,7 @@ export default function Edit( props ) {
 			component: (
 				<ToggleControl
 					checked={ required }
+					label={ __( 'Is recorder field required?', 'godam' ) }
 					onChange={ () => setAttributes( { required: ! required } ) }
 				/>
 			),
@@ -224,10 +263,10 @@ export default function Edit( props ) {
 			id: 'error-message',
 			component: required ? (
 				<TextControl
-					label={ __( 'Error Message' ) }
+					label={ __( 'Required Error Message' ) }
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
-					help={ __( 'Enter the error message', 'godam' ) }
+					help={ __( 'Enter the required error message', 'godam' ) }
 					value={ currentErrorMsg }
 					onChange={ ( value ) => {
 						setCurrentErrorMsg( value );
