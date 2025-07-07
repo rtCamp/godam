@@ -1,3 +1,7 @@
+/**
+ * WordPress dependencies
+ */
+const { __ } = wp.i18n;
 
 /**
  * Internal dependencies
@@ -33,8 +37,18 @@ class MediaLibrary {
 		this.setupMediaLibraryRoot();
 		this.initializeDateRangeFilter();
 		addManageMediaButton();
+		this.addInputPlaceholder();
 
 		new ToggleFoldersButton();
+	}
+
+	async addInputPlaceholder() {
+		await new Promise( ( resolve ) => setTimeout( resolve, 500 ) ); // wait for the page to load.
+
+		const searchInput = document.getElementById( 'media-search-input' );
+		if ( searchInput ) {
+			searchInput.placeholder = __( 'Search Media', 'godam' );
+		}
 	}
 
 	setupAttachmentBrowser() {

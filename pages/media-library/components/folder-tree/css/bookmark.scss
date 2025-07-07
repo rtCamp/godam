@@ -24,7 +24,21 @@
 
 	.components-panel__body-title {
 	    background: #fff;
-		margin: -16px -16px 5px;
+
+		.components-button {
+		    padding: 16px 40px 16px 8px;
+
+			.components-panel__arrow {
+                right: 8px;
+			}
+		}
+	}
+
+	&.is-opened {
+
+    	.components-panel__body-title {
+    	    margin: 0;
+    	}
 	}
 }
 
