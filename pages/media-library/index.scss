@@ -10,8 +10,7 @@
 	border: 1px solid #E0E0E0;
 	display: flex;
 	flex-direction: column;
-	height: calc(100% - 2px);
-	overflow: auto;
+	min-height: calc(100vh - 34px);
 
 	* {
 		box-sizing: border-box;
@@ -24,6 +23,7 @@
 
 	> :nth-last-child(3) {
         border: none;
+        padding-bottom: 2.5rem;
 	}
 
 	.components-button {
