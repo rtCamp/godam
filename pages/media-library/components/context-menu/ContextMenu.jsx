@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useEffect, useRef, useMemo, useCallback, useState, useLayoutEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -29,6 +29,7 @@ import './css/context-menu.scss';
 const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	const dispatch = useDispatch();
 	const menuRef = useRef( null );
+	const [ position, setPosition ] = useState( { top: y, left: x } );
 
 	const allFolders = useSelector( ( state ) => state.FolderReducer.folders );
 	const currentFolder = useMemo( () => {
@@ -74,6 +75,40 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			document.removeEventListener( 'mousedown', handleClickOutside );
 		};
 	}, [ onClose ] );
+
+	useLayoutEffect( () => {
+		if ( ! menuRef.current ) {
+			return;
+		}
+
+		const menu = menuRef.current;
+		const menuWidth = menu.offsetWidth;
+		const menuHeight = menu.offsetHeight;
+
+		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
+
+		let newX = x;
+		let newY = y;
+
+		const padding = 10; // Small padding from the edge
+
+		if ( x + menuWidth + padding > viewportWidth ) {
+			newX = viewportWidth - menuWidth - padding;
+		}
+		if ( newX < padding ) {
+			newX = padding;
+		}
+
+		if ( y + menuHeight + padding > viewportHeight ) {
+			newY = viewportHeight - menuHeight - padding;
+		}
+		if ( newY < padding ) {
+			newY = padding;
+		}
+
+		setPosition( { top: newY, left: newX } );
+	}, [ x, y ] );
 
 	/**
 	 * Triggers a file download by creating a temporary anchor element and programmatically clicking it.
@@ -323,7 +358,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 		<div
 			className="folder-context-menu"
 			ref={ menuRef }
-			style={ { top: y, left: x } }
+			style={ { top: position.top, left: position.left } }
 		>
 			<Button
 				icon={ NewFolderIcon }
