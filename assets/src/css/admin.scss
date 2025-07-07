@@ -92,6 +92,25 @@ $media-frame-width: calc(300px + 2 * 24px);
 	}
 }
 
+.hide-sidebar {
+
+    .media-frame-menu {
+        display: none;
+    }
+
+    .media-frame-title {
+        left: 0;
+    }
+
+    .media-frame-router {
+        left: 0;
+    }
+
+    .media-frame-content {
+        left: 0;
+    }
+}
+
 /**
  * Media Library modal styles.
  *
@@ -197,35 +216,41 @@ $media-frame-width: calc(300px + 2 * 24px);
 
         @media (max-width: 1200px) {
 
-          .media-toolbar {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 1rem;
-            width: calc(100% - 267px - 64px);
+            .media-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                width: calc(100% - 267px - 64px);
 
-            .media-toolbar-secondary {
-                max-width: 100%;
-                width: 100%;
-                flex-wrap: wrap;
+                .media-toolbar-secondary {
+                    max-width: 100%;
+                    width: 100%;
+                    flex-wrap: wrap;
+                }
+
+                .media-toolbar-primary {
+                    max-width: 100%;
+                    width: 100%;
+                    flex-wrap: wrap;
+                    margin: 0;
+                }
+
+                .attachment-filters {
+                    margin: 0.75rem 0;
+                }
             }
 
-            .media-toolbar-primary {
-                max-width: 100%;
-                width: 100%;
-                flex-wrap: wrap;
-                margin: 0;
+            .attachments-wrapper {
+                top: 240px;
             }
-
-            .attachment-filters {
-                margin: 0.75rem 0;
-            }
-          }
-
-          .attachments-wrapper {
-              top: 240px;
-          }
-
+        }
     }
+
+    .edit-attachment-frame {
+
+        .media-frame-content {
+            top: 102px;
+        }
     }
 
     .button {
@@ -263,25 +288,6 @@ $media-frame-width: calc(300px + 2 * 24px);
     .media-menu-item.active {
         border: none !important;
         border-bottom: 2px solid #AB3A6C !important;
-    }
-}
-
-.hide-sidebar {
-
-    .media-frame-menu {
-        display: none;
-    }
-
-    .media-frame-title {
-        left: 0;
-    }
-
-    .media-frame-router {
-        left: 0;
-    }
-
-    .media-frame-content {
-        left: 0;
     }
 }
 
