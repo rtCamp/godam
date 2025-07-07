@@ -65,10 +65,10 @@
 			"default": "16:9"
 		},
 		"videoHeight": {
-			"type": "number"
+			"type": "string"
 		},
 		"videoWidth": {
-			"type": "number"
+			"type": "string"
 		},
 		"caption": {
 			"type": "string",
