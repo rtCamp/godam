@@ -162,6 +162,7 @@ export default function Edit( props ) {
 			id: 'label',
 			component: (
 				<TextControl
+					placeholder={ __( 'Enter label', 'godam' ) }
 					__next40pxDefaultSize
 					label={ __( 'Label', 'godam' ) }
 					help={ __( 'Enter label for the field', 'godam' ) }
@@ -176,6 +177,7 @@ export default function Edit( props ) {
 			id: 'description',
 			component: (
 				<TextControl
+					placeholder={ __( 'Enter description', 'godam' ) }
 					__next40pxDefaultSize
 					label={ __( 'Description', 'godam' ) }
 					help={ __( 'Enter description for the field', 'godam' ) }
@@ -263,6 +265,7 @@ export default function Edit( props ) {
 			id: 'error-message',
 			component: required ? (
 				<TextControl
+					placeholder={ __( 'Enter error message', 'godam' ) }
 					label={ __( 'Required Error Message' ) }
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
