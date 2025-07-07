@@ -115,7 +115,7 @@ class Recorder_Field extends BaseFieldManager {
 			),
 			'editor_options' => array(
 				'title'      => $this->editor_label,
-				'icon_class' => 'ff-edit-keyboard-o',
+				'icon_class' => 'ff-edit-files',
 				'template'   => 'inputText',
 			),
 		);
