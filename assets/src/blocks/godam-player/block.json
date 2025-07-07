@@ -62,7 +62,7 @@
 		},
 		"aspectRatio": {
 			"type": "string",
-			"default": "16/9"
+			"default": "16:9"
 		},
 		"videoHeight": {
 			"type": "number"

@@ -134,9 +134,16 @@ class GoDAM_Player {
 		wp_enqueue_script( 'godam-player-analytics-script' );
 		wp_enqueue_style( 'godam-player-frontend-style' );
 		wp_enqueue_style( 'godam-player-style' );
-		wp_enqueue_style( 'godam-player-minimal-skin' );
-		wp_enqueue_style( 'godam-player-pills-skin' );
-		wp_enqueue_style( 'godam-player-bubble-skin' );
+		
+		$godam_settings = get_option( 'rtgodam-settings', array() );
+		$selected_skin  = $godam_settings['video_player']['skin'] ?? '';
+		if ( 'Minimal' === $selected_skin ) {
+			wp_enqueue_style( 'godam-player-minimal-skin' );
+		} elseif ( 'Pills' === $selected_skin ) {
+			wp_enqueue_style( 'godam-player-pills-skin' );
+		} elseif ( 'Bubble' === $selected_skin ) {
+			wp_enqueue_style( 'godam-player-bubble-skin' );
+		}
 
 		ob_start();
 		require RTGODAM_PATH . 'inc/templates/godam-player.php';

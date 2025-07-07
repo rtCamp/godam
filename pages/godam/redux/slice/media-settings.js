@@ -24,7 +24,7 @@ const initialState = {
 	},
 	video_player: {
 		brand_image: '',
-		brand_color: '#000000',
+		brand_color: '#2B333FB3',
 		custom_css: VideoCustomCSSTemplate,
 		player_skin: 'Default',
 	},

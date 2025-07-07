@@ -67,7 +67,7 @@ const VideoPlayer = () => {
 		}
 
 		const videoElement = document.createElement( 'video-js' );
-		videoElement.classList.add( 'vjs-big-play-centered', 'video-player-settings-preview' );
+		videoElement.classList.add( 'video-js', 'vjs-big-play-centered', 'video-player-settings-preview' );
 
 		wrapperRef.current.appendChild( videoElement );
 
