@@ -9,7 +9,10 @@ namespace RTGODAM\Inc\FluentForms\Fields;
 
 use RTGODAM\Inc\Traits\Singleton;
 use FluentForm\App\Helpers\Helper;
+use FluentForm\App\Helpers\Protector;
+use FluentForm\App\Modules\Form\FormFieldsParser;
 use FluentForm\App\Services\FormBuilder\BaseFieldManager;
+use FluentForm\Framework\Helpers\ArrayHelper;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -44,7 +47,7 @@ class Recorder_Field extends BaseFieldManager {
 
 		// Call parent constructor.
 		parent::__construct(
-			'godam-recorder_field',
+			'godam-recorder-field',
 			'GoDAM Recorder',
 			array( 'godam', 'recorder' ),
 			'general',
@@ -82,24 +85,30 @@ class Recorder_Field extends BaseFieldManager {
 				'btn_text'           => $this->button_text,
 				'file_selector'      => array( 'screen_capture', 'webcam' ),
 				'validation_rules'   => array(
-					'required'       => array(
+					'required'           => array(
 						'value'          => false,
 						'global'         => true,
 						'message'        => Helper::getGlobalDefaultMessage( 'required' ),
 						'global_message' => Helper::getGlobalDefaultMessage( 'required' ),
 					),
-					'max_file_size'  => array(
+					'max_file_size'      => array(
 						'value'          => wp_max_upload_size(),
 						'_valueFrom'     => 'MB',
 						'global'         => true,
 						'message'        => Helper::getGlobalDefaultMessage( 'max_file_size' ),
 						'global_message' => Helper::getGlobalDefaultMessage( 'max_file_size' ),
 					),
-					'max_file_count' => array(
+					'max_file_count'     => array(
 						'value'          => 1,
 						'message'        => Helper::getGlobalDefaultMessage( 'max_file_count' ),
 						'global_message' => Helper::getGlobalDefaultMessage( 'max_file_count' ),
 						'global'         => true,
+					),
+					'allowed_file_types' => array(
+						'value'          => array( 'avi|divx|flv|mov|ogv|mkv|mp4|m4v|divx|mpg|mpeg|mpe|video/quicktime|qt' ),
+						'global'         => false,
+						'message'        => Helper::getGlobalDefaultMessage( 'allowed_file_types' ),
+						'global_message' => Helper::getGlobalDefaultMessage( 'allowed_file_types' ),
 					),
 				),
 				'conditional_logics' => array(),
@@ -229,7 +238,7 @@ class Recorder_Field extends BaseFieldManager {
 	 * Render the input field.
 	 *
 	 * @param array<mixed> $data Field data.
-	 * @param array<mixed> $form Form data.
+	 * @param object       $form Form data.
 	 *
 	 * @return void
 	 */
@@ -246,7 +255,7 @@ class Recorder_Field extends BaseFieldManager {
 		 * Get required data for markup.
 		 */
 		$max_file_size          = $data['settings']['validation_rules']['max_file_size']['value'] ?? wp_max_upload_size();
-		$name                   = $data['attributes']['name'] ?? 'recoder_field';
+		$name                   = $data['attributes']['name'] ?? 'godam-recorder';
 		$id                     = $this->makeElementId( $data, $form );
 		$class                  = $data['attributes']['class'] ?? 'godam-recorder';
 		$unique_element_key     = $data['uniqElKey'] ?? '';
@@ -254,6 +263,9 @@ class Recorder_Field extends BaseFieldManager {
 		$video_upload_button_id = wp_unique_id( 'uppy-video-upload-' );
 		$button_text            = $data['settings']['btn_text'] ?? __( 'Record Video', 'godam' );
 		$file_selectors         = $data['settings']['file_selector'] ?? array( 'screen_capture', 'webcam' );
+		$form_instance          = Helper::$formInstance; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$form_id                = $form->id;
+		$form_instance_name     = 'fluent_form_ff_form_instance_' . $form_id . '_' . $form_instance;
 
 		/**
 		 * Uppy container.
@@ -281,8 +293,10 @@ class Recorder_Field extends BaseFieldManager {
 					value="<?php echo esc_attr( $max_file_size ); ?>"
 				/>
 				<input
-					name="<?php echo esc_attr( $name . '-godam-input-recorder' ); ?>"
+					name="<?php echo esc_attr( $name ); ?>"
 					id="<?php echo esc_attr( $input_id ); ?>"
+					data-form-id="<?php echo esc_attr( $form_id ); ?>"
+					data-form-instance="<?php echo esc_attr( $form_instance_name ); ?>"
 					type="file"
 					style="display: none;"
 					class="rtgodam-hidden <?php echo esc_attr( $class ); ?>"
@@ -317,7 +331,7 @@ class Recorder_Field extends BaseFieldManager {
 						?>
 					</div>
 					<div id="<?php echo esc_attr( $uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
-					<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename srfm-description"></div>
+					<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename"></div>
 				</div>
 				<div style="display: none;" class="ff-uploaded-list godam-recorder">
 					<div class="ff-upload-preview" data-src=""></div>
@@ -343,6 +357,30 @@ class Recorder_Field extends BaseFieldManager {
 			wp_send_json_error( __( 'Nonce is not valid', 'godam' ), 400 );
 		}
 
+		/**
+		 * Get form ID.
+		 */
+		$form_id = ! empty( $_REQUEST['ff-form-id'] ) ? sanitize_text_field( $_REQUEST['ff-form-id'] ) : 0;
+
+		if ( ! function_exists( 'wpFluent' ) ) {
+			wp_send_json_success(
+				__( 'Fluent forms does not exits.', 'godam' ),
+				400
+			);
+		}
+
+		/**
+		 * Get the form.
+		 */
+		$form = wpFluent()->table( 'fluentform_forms' )->find( $form_id );
+
+		if ( empty( $form ) ) {
+			wp_send_json_error(
+				__( 'Form does not exists', 'godam' ),
+				400,
+			);
+		}
+
 		$data_to_send = array();
 
 		/**
@@ -352,8 +390,33 @@ class Recorder_Field extends BaseFieldManager {
 
 		// Work with files.
 		foreach ( $_FILES as $input_key => $file_data ) {
+
 			if ( false === strpos( $input_key, '-godam-input-recorder' ) ) {
 				continue;
+			}
+
+			/**
+			 * Get the field data.
+			 */
+			$field = FormFieldsParser::getField(
+				$form,
+				array( 'godam-recorder-field' ),
+				'godam-recorder-field',
+				array( 'rules', 'settings' )
+			);
+
+			if ( $field ) {
+				$validation_rules = $field['godam-recorder-field']['settings']['validation_rules'];
+				$errors           = $this->validate_file( $validation_rules, $file_data );
+
+				if ( $errors ) {
+					wp_send_json(
+						array(
+							'error' => $errors,
+						),
+						422,
+					);
+				}
 			}
 
 			$temp_path  = $file_data['tmp_name'];
@@ -373,8 +436,10 @@ class Recorder_Field extends BaseFieldManager {
 				);
 			}
 
+			$file_name = $this->update_filename( $file_name );
+
 			$uploaded_file = array(
-				'name'     => sanitize_file_name( $file_name ),
+				'name'     => $file_name,
 				'type'     => $file_type,
 				'tmp_name' => $temp_path,
 				'error'    => $file_error,
@@ -386,9 +451,18 @@ class Recorder_Field extends BaseFieldManager {
 			);
 			$move_file        = wp_handle_upload( $uploaded_file, $upload_overrides );
 
+			$file = ArrayHelper::get( $move_file, 'file' );
+
+			/**
+			 * Encrypt using fleuntforms class.
+			 */
+			$move_file['file'] = Protector::encrypt( $file );
+			$move_file['url']  = str_replace( $file, $move_file['file'], $move_file['url'] );
+
 			$data_to_send[] = array(
 				'file' => $move_file['file'],
 				'url'  => $move_file['url'],
+				'type' => $move_file['type'],
 			);
 		}
 
@@ -420,5 +494,73 @@ class Recorder_Field extends BaseFieldManager {
 		$dirs['url']    = $dirs['baseurl'] . $dirs['subdir'];
 
 		return $dirs;
+	}
+
+	/**
+	 * Update the filename to be unique.
+	 *
+	 * @param string $filename Current filename.
+	 *
+	 * @return string
+	 */
+	private function update_filename( $filename ) {
+
+		/**
+		 * Create a unique prefix.
+		 */
+		$prefix = 'godam-ff-' . md5( uniqid( wp_rand() ) ) . '-godam-ff-';
+
+		return $prefix . sanitize_file_name( $filename );
+	}
+
+	/**
+	 * Validate the given file with the validation errors.
+	 *
+	 * @param array<mixed> $validation_rules Validation rules.
+	 * @param array<mixed> $file_data        File data.
+	 *
+	 * @return string[]
+	 */
+	private function validate_file( $validation_rules, $file_data ) {
+
+		$file_size = $file_data['size'];
+		$file_name = $file_data['name'];
+
+		$max_size  = $validation_rules['max_file_size']['value'] ?? 1048576;
+		$file_type = $validation_rules['allowed_file_types']['value'] ?? array( 'avi|divx|flv|mov|ogv|mkv|mp4|m4v|divx|mpg|mpeg|mpe|video\/quicktime|qt|webem' );
+
+		$types_flat = array();
+
+		/**
+		 * Add to pattern foreach file type.
+		 */
+		foreach ( $file_type as $item ) {
+			$split = explode( '|', $item );
+			foreach ( $split as $type ) {
+				$types_flat[] = trim( $type );
+			}
+		}
+
+		$escaped_types = array_map(
+			function ( $type ) {
+				return preg_quote( $type, '/' );
+			},
+			$types_flat
+		);
+
+		$errors = array();
+
+		if ( $max_size < $file_size ) {
+			$errors[] = $validation_rules['max_file_size']['message'];
+		}
+
+		$pattern  = '/(' . implode( '|', $escaped_types ) . ')/i';
+		$file_ext = strtolower( pathinfo( $file_name, PATHINFO_EXTENSION ) );
+
+		if ( ! preg_match( $pattern, $file_ext ) ) {
+			$errors[] = $validation_rules['allowed_file_types']['message'];
+		}
+
+		return $errors;
 	}
 }
