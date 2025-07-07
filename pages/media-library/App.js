@@ -118,6 +118,7 @@ const App = () => {
 				<ButtonGroup className="button-group mb-spacing">
 					<Button
 						__next40pxDefaultSize
+						className="multiselect-button"
 						variant="secondary"
 						text={ ! isMultiSelecting ? __( 'Select', 'godam' ) : __( 'Cancel', 'godam' ) }
 						onClick={ () => dispatch( toggleMultiSelectMode() ) }
