@@ -41,7 +41,7 @@ export function getMaxFileSize() {
 	const maxFileSizeUpload =
 	window?._wpPluploadSettings?.defaults?.filters?.max_file_size;
 
-	const numericPart = maxFileSizeUpload.replace( '/b$/i', '' );
+	const numericPart = maxFileSizeUpload.replace( /b$/i, '' );
 	const sizeInBytes = parseInt( numericPart, 10 );
 
 	return Math.floor( sizeInBytes / ( 1024 * 1024 ) );

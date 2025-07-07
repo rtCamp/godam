@@ -311,7 +311,7 @@ class Form_Submit {
 		$entry_data = \SRFM\Inc\Database\Tables\Entries::get( $entry_id );
 
 		if ( empty( $entry_data ) ) {
-			return $entry_data;
+			return $markup;
 		}
 
 		$form_id = $entry_data['form_id'];
