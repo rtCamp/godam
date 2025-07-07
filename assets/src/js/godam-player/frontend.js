@@ -118,21 +118,26 @@ function GODAMPlayer( videoRef = null ) {
 		const player = videojs( video, videoSetupControls );
 
 		// Check if the player is inside a modal
-		player.ready( function() {
-			// Move this logic inside player.ready to ensure it runs for each player instance
-			if ( videoSetupOptions?.aspectRatio === '16:9' ) {
+		const isInModal = video.closest( '.godam-modal' ) !== null;
+
+		if ( isInModal ) {
+			// Only if in mobile view, set aspect ratio to 9:16. First check if the screen width is less than 768px.
+			if ( window.innerWidth < 420 ) {
+				player.aspectRatio( '9:16' );
+			} else {
 				player.aspectRatio( '16:9' );
-				const isInModal = video.closest( '.godam-modal' ) !== null;
-				if ( isInModal ) {
-					// Only if in mobile view, set aspect ratio to 9:16. First check if the screen width is less than 768px.
-					if ( window.innerWidth < 420 ) {
-						player.aspectRatio( '9:16' );
-					} else {
-						player.aspectRatio( '16:9' );
-					}
+			}
+		}
+		player.ready( function() {
+			// Set aspect ratio based on context
+			if ( ! isInModal ) {
+				if ( videoSetupOptions?.aspectRatio ) {
+					player.aspectRatio( videoSetupOptions.aspectRatio );
+				} else {
+					player.aspectRatio( '16:9' );
 				}
 			}
-			// Set aspect ratio based on context
+
 			const captionsButton = player.el().querySelector( '.vjs-subs-caps-button' );
 			const durationElement = player.el().querySelector( '.vjs-duration' );
 
