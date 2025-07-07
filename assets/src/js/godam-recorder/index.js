@@ -125,6 +125,7 @@ class UppyVideoUploader {
 				modes: [ 'video-audio' ],
 				mirror: false,
 				showRecordingLength: true,
+				showVideoSourceDropdown: true,
 			} );
 		}
 
