@@ -110,8 +110,8 @@ $wrapper_attributes = get_block_wrapper_attributes(
 				echo esc_html(
 					sprintf(
 						// Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
-						__( 'Maximum allowed on this server: %s MB', 'godam' ),
-						$max_file_size / 1048576,
+						__( 'Maximum allowed on this server: %d MB', 'godam' ),
+						(int) ( $max_file_size / 1048576 ),
 					)
 				);
 				?>

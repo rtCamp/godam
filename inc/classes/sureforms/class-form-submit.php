@@ -298,6 +298,11 @@ class Form_Submit {
 	 */
 	public function render_custom_field_markup( $markup, $value ) {
 
+		// Bail early, if value is empty or array.
+		if ( empty( $value ) || is_array( $value ) ) {
+			return $markup;
+		}
+
 		$entry_id = isset( $_GET['entry_id'] ) ? intval( sanitize_text_field( wp_unslash( $_GET['entry_id'] ) ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		if ( ! $entry_id ) {
@@ -311,7 +316,7 @@ class Form_Submit {
 		$entry_data = \SRFM\Inc\Database\Tables\Entries::get( $entry_id );
 
 		if ( empty( $entry_data ) ) {
-			return $entry_data;
+			return $markup;
 		}
 
 		$form_id = $entry_data['form_id'];
