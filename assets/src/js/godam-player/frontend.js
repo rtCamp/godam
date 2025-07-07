@@ -77,6 +77,10 @@ function GODAMPlayer( videoRef = null ) {
 			video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
 		}
 
+		const globalAdsSettings = video.dataset.global_ads_settings
+			? JSON.parse( video.dataset.global_ads_settings )
+			: {};
+
 		const adTagUrl = video.dataset.ad_tag_url;
 		let isVideoClicked = false;
 
@@ -1516,6 +1520,11 @@ function GODAMPlayer( videoRef = null ) {
 			player.ima( {
 				id: 'content_video',
 				adTagUrl,
+			} );
+		} else if ( globalAdsSettings?.enable_global_video_ads && globalAdsSettings?.adTagUrl ) {
+			player.ima( {
+				id: 'content_video',
+				adTagUrl: globalAdsSettings.adTagUrl,
 			} );
 		}
 	} );

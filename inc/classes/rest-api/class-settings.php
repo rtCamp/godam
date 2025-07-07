@@ -49,6 +49,10 @@ class Settings extends Base {
 			'video_player' => array(
 				'custom_css' => '',
 			),
+			'ads_settings' => array(
+				'enable_global_video_ads' => false,
+				'adTagUrl'                => '',
+			),
 		);
 	}
 
@@ -296,6 +300,10 @@ class Settings extends Base {
 			),
 			'video_player' => array(
 				'custom_css' => sanitize_textarea_field( $settings['video_player']['custom_css'] ) ?? $default['video_player']['custom_css'],
+			),
+			'ads_settings' => array(
+				'enable_global_video_ads' => rest_sanitize_boolean( $settings['ads_settings']['enable_global_video_ads'] ?? $default['ads_settings']['enable_global_video_ads'] ),
+				'adTagUrl'                => esc_url_raw( $settings['ads_settings']['adTagUrl'] ?? $default['ads_settings']['adTagUrl'] ),
 			),
 		);
 	}
