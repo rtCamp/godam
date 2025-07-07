@@ -79,6 +79,7 @@ class Plugin {
 		$this->load_plugin_configs();
 		$this->load_rest_api();
 		$this->init_gravity_forms();
+		$this->load_sureforms();
 
 		// Load cron jobs.
 		Retranscode_Failed_Media::get_instance();
@@ -167,5 +168,14 @@ class Plugin {
 	 */
 	public function init_gravity_forms() {
 		Gravity_Forms\Init::get_instance();
+	}
+
+	/**
+	 * Initialize SureForms Extension class.
+	 *
+	 * @return void
+	 */
+	public function load_sureforms() {
+		\RTGODAM\Inc\Sureforms\Init::get_instance();
 	}
 }
