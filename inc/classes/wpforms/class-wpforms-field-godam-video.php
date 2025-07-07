@@ -40,8 +40,8 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			add_filter( 'wpforms_process_before_filter', array( $this, 'save_video_file' ), 10, 2 );
 
 			// Format field value for emails.
-			add_filter( 'wpforms_plaintext_field_value', array( $this, 'format_video_field_value_for_plaintext_email' ), 10, 3 );
-			add_filter( 'wpforms_html_field_value', array( $this, 'format_video_field_value_for_html_email' ), 10, 3 );
+			add_filter( 'wpforms_plaintext_field_value', array( $this, 'format_field_value_for_plaintext' ), 10, 3 );
+			add_filter( 'wpforms_html_field_value', array( $this, 'format_field_value_for_html' ), 10, 4 );
 		}
 
 		/**
@@ -415,7 +415,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 *
 		 * @return mixed
 		 */
-		public function format_video_field_value_for_plaintext_email( $value, $field, $form_data ) {
+		public function format_plaintext_valu( $value, $field, $form_data ) {
 			// Check if the field is not a video field.
 			if ( ! isset( $field['type'] ) || 'godam-video' !== $field['type'] ) {
 				return $value;
@@ -444,10 +444,11 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @param mixed $value Field value.
 		 * @param array $field Field data.
 		 * @param array $form_data Form data and settings.
+		 * @param string $context Context: 'entry-single' or 'email-html'
 		 *
 		 * @return mixed
 		 */
-		public function format_video_field_value_for_html_email( $value, $field, $form_data ) {
+		public function format_field_value_for_html( $value, $field, $form_data, $context ) {
 			// Check if the field is not a video field.
 			if ( ! isset( $field['type'] ) || 'godam-video' !== $field['type'] ) {
 				return $value;
@@ -456,7 +457,6 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			if ( 0 === $value || ! is_numeric( $value ) ) {
 				return $value;
-
 			}
 
 			$attachment = get_post( $value );
@@ -467,10 +467,35 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			$attachment_url  = wp_get_attachment_url( $value );
 			$attachment_name = $attachment->post_title;
+			$thumbnail_url   = get_the_post_thumbnail_url( $attachment->ID );
+			$thumbnail_url   = $thumbnail_url ? $thumbnail_url : site_url('/wp-includes/images/media/video.svg');
 
-			return sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $attachment_url ), esc_html( $attachment_name ) );
+			$formatted_value = sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $attachment_url ), esc_html( $attachment_name ) );
 
-			return $value;
+			if ( 'entry-single' === $context && \wpforms_is_admin_page('entries', 'edit' ) ) {
+				wp_enqueue_style(
+					'wpforms-uppy-video-style',
+					RTGODAM_URL . 'assets/build/css/wpforms-uppy-video.css',
+					array(),
+					filemtime( RTGODAM_PATH . 'assets/build/css/wpforms-uppy-video.css' )
+				);
+
+				wp_enqueue_media();
+
+				$formatted_value = [
+					sprintf( '<input type="hidden" class="godam-video-field-input" %s />', $value, '' ),
+					sprintf('<a href="%s" target="_blank" class="godam-video-link">', $attachment_url ),
+					sprintf( '<img src="%s" "height="64" width="48" class="godam-video-file-thumbnail" />',  $thumbnail_url ),
+					sprintf('<span class="godam-video-name">%s</span>',$attachment_name ),
+					'</a>',
+					sprintf('<button type="button" class="button godam-video-upload-image %s">%s</button>', $attachment ? 'hidden' : '', __('Upload', 'godam') ),
+					sprintf('<button type="button" class="button godam-video-remove-image">%s</button>', __('Remove', 'godam')),
+				];
+
+				$formatted_value = join('', $formatted_value );
+			}
+
+			return $formatted_value;
 		}
 
 		/**

@@ -43,16 +43,21 @@
     }
 }
 
-#wpforms-builder {
+#wpforms-entries-single {
+    #wpforms-entry-fields {
+        .inside {
+            .wpforms-entry-field-value {
+                .godam-video-name {
+                    margin-bottom: 8px;
+                }
 
-    .wpforms-field.wpforms-field-godam-video {
-        .uppy-video-upload-button {
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
+                .godam-video-change-image {
+                    margin-right: 8px;
+                }
 
-            span {
-                margin-right: 5px;
+                .godam-video-remove-image {
+                    color: #d63638
+                }
             }
         }
     }
