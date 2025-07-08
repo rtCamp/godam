@@ -21,11 +21,10 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 	const folders = useSelector( ( state ) => state.FolderReducer?.folders || [] );
 
 	// Get all the bookmarks from folder where `meta.bookmark` is true
-	// and sort them by name (case-insensitive)
+	// and sort them based on the currentSortOrder
 	const bookmarks = useMemo( () => {
 		return folders
-			?.filter( ( folder ) => folder?.meta?.bookmark )
-			?.sort( ( a, b ) => a?.name?.toLowerCase().localeCompare( b?.name?.toLowerCase() ) ) || [];
+			?.filter( ( folder ) => folder?.meta?.bookmark ) || [];
 	}, [ folders ] );
 
 	const bookmarkCount = bookmarks?.length || 0;
