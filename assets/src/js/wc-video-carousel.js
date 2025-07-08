@@ -79,8 +79,8 @@ const wcVideoCarousel = {
 		modalVideo.forEach( ( item ) => {
 			const player = videojs( item, {
 				controls: true,
-				width: '450px',
-				height: '800px',
+				width: '405px',
+				height: '720px',
 				controlBar: {
 					skipButtons: {
 						forward: 10,

@@ -76,8 +76,8 @@
 
         &-close {
             position: absolute;
-            top: 5%;
-            right: 5%;
+            top: 2%;
+            right: 5px;
             display: flex;
             background-color: var(--wp--preset--color--black);
             border-radius: 10px;
@@ -98,11 +98,11 @@
         }
 
         &-content {
-            max-width: 800px;
+            max-width: min(calc(100% - 40px), 800px);
 
             &-items {
                 background-color: var(--wp--preset--color--white);
-                max-width: calc(100% - 15px);
+                border-radius: 20px;
                 .swiper-button-next,
                 .swiper-button-prev {
                     opacity: 1;
@@ -111,6 +111,93 @@
 
                 .swiper-slide {
                     display: flex;
+                }
+            }
+
+            &-right {
+                padding: 10px;
+                max-height: 700px;
+                overflow: scroll;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+
+            video {
+                object-fit: cover;
+            }
+
+            .product_title {
+                font-size: clamp(1.5rem, 2vw, 2.5rem);
+            }
+
+            .price {
+                font-size: clamp(1rem, 1.5vw, 1.5rem);
+            }
+
+            .qty {
+                margin-right: .5em;
+                padding: 0 5px;
+                width: 3em;
+                box-sizing: content-box;
+                text-align: center;
+            }
+
+            .quantity {
+                display: flex;
+            }
+
+            form {
+                display: flex;
+                margin-bottom: 1rem;
+            }
+
+            @media screen and (max-width: 768px) {
+                max-width: 360px;
+
+                .swiper-slide {
+                    position: relative;
+                }
+
+                .rtgodam-product-video-gallery-slider-modal-content-right {
+                    position: absolute;
+                    bottom: 0;
+                    display: flex;
+                    flex-direction: column;
+                    row-gap: 10px;
+                    backdrop-filter: saturate(180%) blur(10px);
+                    color: var(--wp--preset--color--white);
+                    margin: 10px;
+                    border-radius: 10px;
+                    padding: 15px;
+                }
+
+                .video-js {
+                    max-height: 640px;
+                }
+
+                .woocommerce-product-details__short-description {
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                }
+
+                .product_meta {
+                    display: none;
+                }
+
+                .product_title,
+                .price {
+                    margin: 0;
+                }
+
+            }
+
+            @media screen and (max-width: 540px) {
+                max-width: 300px;
+
+                .video-js {
+                    max-height: 533px;
                 }
             }
         }
