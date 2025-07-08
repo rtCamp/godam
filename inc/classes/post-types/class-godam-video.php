@@ -26,8 +26,10 @@ class GoDAM_Video extends Base {
 	 *
 	 * @return void
 	 */
-	protected function setup_hooks() { // phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found -- Method will be used later to create post entries automatically.
+	protected function setup_hooks() {
 		parent::setup_hooks();
+
+		add_action( 'add_attachment', array( $this, 'create_video_post_from_attachment' ) );
 	}
 
 	/**
@@ -77,5 +79,120 @@ class GoDAM_Video extends Base {
 	private function get_rewrite_slug() {
 		$settings = get_option( 'rtgodam-settings', array() );
 		return isset( $settings['video']['video_slug'] ) ? $settings['video']['video_slug'] : 'videos';
+	}
+
+	/**
+	 * Create video post from attachment when media is uploaded.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return int|false Post ID on success, false on failure.
+	 */
+	public function create_video_post_from_attachment( $attachment_id ) {
+
+		// Check if attachment is a video.
+		if ( ! $this->is_video_attachment( $attachment_id ) ) {
+			return false;
+		}
+
+		// Check if video post already exists for this attachment.
+		$query = new \WP_Query(
+			array(
+				'post_type'              => self::SLUG,
+				'posts_per_page'         => 1,
+				'post_status'            => 'any',
+				'no_found_rows'          => true,
+				'fields'                 => 'ids',
+				'update_post_term_cache' => false,
+				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check existing video post.
+					array(
+						'key'   => '_godam_attachment_id',
+						'value' => $attachment_id,
+					),
+				),
+			) 
+		);
+
+		if ( $query->have_posts() ) {
+			return $query->posts[0]->ID;
+		}
+
+		// Get attachment data.
+		$attachment = get_post( $attachment_id );
+		if ( ! $attachment ) {
+			return false;
+		}
+
+		// Prepare post data.
+		$post_data = array(
+			'post_title'   => $attachment->post_title ?: __( 'Untitled Video', 'godam' ),
+			'post_content' => $this->generate_video_content( $attachment_id ),
+			'post_excerpt' => $attachment->post_excerpt ?: $attachment->post_content,
+			'post_status'  => 'publish',
+			'post_author'  => $attachment->post_author,
+			'post_type'    => self::SLUG,
+		);
+
+		// Create the post entry.
+		$post_id = wp_insert_post( $post_data );
+
+		if ( is_wp_error( $post_id ) ) {
+			return false;
+		}
+
+		// Store attachment ID as meta.
+		update_post_meta( $post_id, '_godam_attachment_id', $attachment_id );
+
+		// Sync taxonomies.
+		$this->sync_attachment_taxonomies( $attachment_id, $post_id );
+
+		return $post_id;
+	}
+
+	/**
+	 * Generate video content with GoDAM player block.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return string Generated content.
+	 */
+	private function generate_video_content( $attachment_id ) {
+		return sprintf( 
+			'<!-- wp:godam/video {"id":%d} -->
+<div class="wp-block-godam-video"></div>
+<!-- /wp:godam/video -->',
+			$attachment_id
+		);
+	}
+
+	/**
+	 * Sync taxonomies from attachment to video post.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @param int $post_id       Video post ID.
+	 */
+	private function sync_attachment_taxonomies( $attachment_id, $post_id ) {
+
+		$categories = wp_get_post_terms( $attachment_id, 'category' );
+		$tags       = wp_get_post_terms( $attachment_id, 'post_tag' );
+
+		if ( ! is_wp_error( $categories ) && ! empty( $categories ) ) {
+			$category_ids = wp_list_pluck( $categories, 'term_id' );
+			wp_set_post_terms( $post_id, $category_ids, 'category' );
+		}
+
+		if ( ! is_wp_error( $tags ) && ! empty( $tags ) ) {
+			$tag_ids = wp_list_pluck( $tags, 'term_id' );
+			wp_set_post_terms( $post_id, $tag_ids, 'post_tag' );
+		}
+	}
+
+	/**
+	 * Check if attachment is a video.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return bool True if video, false otherwise.
+	 */
+	private function is_video_attachment( $attachment_id ) {
+		$mime_type = get_post_mime_type( $attachment_id );
+		return 0 === strpos( $mime_type, 'video/' );
 	}
 }
