@@ -83,5 +83,10 @@ class Init {
 		 * Add recorder field.
 		 */
 		Recorder_field::get_instance();
+
+		/**
+		 * Form Submission handler.
+		 */
+		Form_Submit::get_instance();
 	}
 }
