@@ -124,7 +124,11 @@ class Media_Library_Ajax {
 
 			$body = json_decode( wp_remote_retrieve_body( $response ) );
 
-			$response = $body->message;
+			if ( ! is_object( $body ) || ! isset( $body->message ) || ! isset( $body->message->files ) ) {
+				return $query_args;
+			}
+
+			$response = $body->message->files;
 
 			foreach ( $response as $key => $item ) {
 				$response[ $key ] = $this->prepare_godam_media_item( $item );
