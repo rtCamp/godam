@@ -76,6 +76,9 @@
 }
 
 .godam-bookmark-tab__list {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     .tree-item {
         padding-left: 0.5rem;
