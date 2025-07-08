@@ -25,7 +25,6 @@ const wcVideoCarousel = {
 			self.loadVideoCarousel();
 			self.openVideoModal();
 			self.closeVideoModal();
-			self.loadModalVideos();
 		} );
 	},
 
@@ -42,20 +41,20 @@ const wcVideoCarousel = {
 				nextEl: '.swiper-button-next',
 				prevEl: '.swiper-button-prev',
 			},
-			slidesPerView: 4,
+			slidesPerView: 3,
 			spaceBetween: 10,
 			grabCursor: true,
 			freeMode: true,
 			autoplay: false,
 			breakpoints: {
 				0: {
-					slidesPerView: 1,
+					slidesPerView: 2,
 				},
 				640: {
 					slidesPerView: 3,
 				},
 				1024: {
-					slidesPerView: 4,
+					slidesPerView: 3,
 				},
 			},
 			on: {
@@ -63,32 +62,6 @@ const wcVideoCarousel = {
 					self.hideLoading();
 				},
 			},
-		} );
-	},
-
-	/**
-	 * Initializes and plays videos inside the modal.
-	 *
-	 * This function selects all video elements within the modal content items,
-	 * initializes them with Video.js for playback with controls, and starts playing
-	 * them automatically. Each video player is configured to have a control bar with
-	 * skip buttons for forward and backward navigation.
-	 */
-	loadModalVideos() {
-		const modalVideo = document.querySelectorAll( '.rtgodam-product-video-gallery-slider-modal-content-items video' );
-		modalVideo.forEach( ( item ) => {
-			const player = videojs( item, {
-				controls: true,
-				width: '405px',
-				height: '720px',
-				controlBar: {
-					skipButtons: {
-						forward: 10,
-						backward: 10,
-					},
-				},
-			} );
-			player.play();
 		} );
 	},
 

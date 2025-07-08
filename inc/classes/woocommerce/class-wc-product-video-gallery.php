@@ -120,15 +120,6 @@ class WC_Product_Video_Gallery {
 		);
 
 		if ( 'product' === get_post_type() ) {
-
-			wp_dequeue_script( 'godam-player-frontend-script' );
-			wp_dequeue_script( 'godam-player-analytics-script' );
-			wp_dequeue_style( 'godam-player-style' );
-
-			if ( ! wp_style_is( 'godam-player-frontend-style', 'enqueued' ) ) {
-				wp_enqueue_style( 'godam-player-frontend-style' );
-			}
-
 			wp_enqueue_script( 'rtgodam-swiper-script' );
 			wp_enqueue_style( 'rtgodam-swiper-style' );
 			wp_enqueue_script( 'rtgodam-wc-video-carousel' );
@@ -451,7 +442,10 @@ class WC_Product_Video_Gallery {
 
 		$srcsets = array_map(
 			function ( $attachment_id ) {
-				return wp_get_attachment_url( $attachment_id );
+				return array(
+					'id'  => $attachment_id,
+					'src' => wp_get_attachment_url( $attachment_id ),
+				);
 			},
 			$rtgodam_product_video_gallery_ids
 		);
@@ -466,7 +460,7 @@ class WC_Product_Video_Gallery {
 					</div>',
 					esc_attr( '100%' ),
 					esc_attr( $item ),
-					esc_url( $srcsets[ $item ] ),
+					esc_url( $srcsets[ $item ]['src'] ),
 				);
 			},
 			$srcsets_keys
@@ -486,20 +480,18 @@ class WC_Product_Video_Gallery {
 
 		$modal_carousel_html = array_map(
 			function ( $item ) use ( $srcsets, $single_product_modal_summary ) {
+				$src_id = $srcsets[ $item ]['id'];
 				return sprintf(
 					'
 					<div class="swiper-slide">
 						<div class="rtgodam-product-video-gallery-slider-modal-content-left">
-							<video autoplay loop muted class="video-js vjs-big-play-centered" data-index-id="%2$s">
-								<source src="%1$s"/>
-							</video>
+							%1$s
 						</div>
 						<div class="rtgodam-product-video-gallery-slider-modal-content-right">
-							%3$s
+							%2$s
 						</div>
 					</div>',
-					esc_url( $srcsets[ $item ] ),
-					esc_attr( $item ),
+					do_shortcode( "[godam_video id='{$src_id}']" ),
 					$single_product_modal_summary,
 				);
 			},

@@ -106,6 +106,22 @@
         &-content {
             max-width: min(calc(100% - 40px), 800px);
 
+            &-left {
+                min-width: 405px;
+
+                figure {
+                    margin: 0;
+                }
+
+                @media screen and (max-width: 768px) {
+                    min-width: 360px;
+                }
+
+                @media screen and (max-width: 540px) {
+                    min-width: 300px;
+                }
+            }
+
             &-items {
                 background-color: var(--wp--preset--color--white);
                 border-radius: 20px;
@@ -126,6 +142,14 @@
                 overflow: scroll;
                 scrollbar-width: none;
                 -ms-overflow-style: none;
+            }
+
+            .easydam-video-container {
+                aspect-ratio: 9/16;
+            }
+
+            .video-js {
+                min-height: 720px;
             }
 
             video {
@@ -207,7 +231,9 @@
                 }
 
                 .video-js {
-                    max-height: 640px;
+                    max-width: 360px;
+                    min-height: 640px;
+                    padding-top: 0 !important;
                 }
 
                 .woocommerce-product-details__short-description {
@@ -243,13 +269,27 @@
                     display: none;
                 }
 
+                .vjs-skip-forward-5,
+                .vjs-skip-forward-10,
+                .vjs-skip-forward-15,
+                .vjs-skip-forward-20,
+                .vjs-skip-forward-30,
+                .vjs-skip-backward-5,
+                .vjs-skip-backward-10,
+                .vjs-skip-backward-15,
+                .vjs-skip-backward-20,
+                .vjs-skip-backward-30 {
+                    bottom: -160px !important;
+                }
+
             }
 
             @media screen and (max-width: 540px) {
                 max-width: 300px;
 
                 .video-js {
-                    max-height: 533px;
+                    max-width: 300px;
+                    min-height: 533px;
                 }
 
                 .vjs-control-bar {
