@@ -126,6 +126,13 @@ const godamGallery = {
 	},
 };
 
+const godamProductGallery = {
+	...sharedConfig,
+	entry: {
+		'godam-product-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-product-gallery.js' ),
+	},
+};
+
 const gfGodamRecorderJS = {
 	...sharedConfig,
 	entry: {
@@ -232,6 +239,7 @@ module.exports = [
 	godamPlayerAnalytics,
 	deactivationJS,
 	godamGallery,
+	godamProductGallery,
 	gfGodamRecorderJS,
 	gfGodamRecorderEditorJS,
 	gfEntryDetailJS,

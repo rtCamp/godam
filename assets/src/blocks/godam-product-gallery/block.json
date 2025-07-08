@@ -1,0 +1,115 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "godam/product-gallery",
+  "title": "GoDAM Product Gallery",
+  "category": "media",
+  "description": "Display a video gallery for selected WooCommerce products.",
+  "keywords": ["product", "gallery", "video", "godam"],
+  "textdomain": "godam",
+  "attributes": {
+    "autoplay": {
+      "type": "boolean",
+      "attribute": "autoplay"
+    },
+    "layout": {
+      "type": "string",
+      "default": "carousel"
+    },
+    "view": {
+      "type": "string",
+      "default": "4-3"
+    },
+    "product": {
+      "type": "string",
+      "default": ""
+    },
+    "playButtonEnabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "playButtonBgColor": {
+      "type": "string",
+      "default": "#000000"
+    },
+    "playButtonIconColor": {
+      "type": "string",
+      "default": "#ffffff"
+    },
+    "playButtonSize": {
+      "type": "number",
+      "default": 40
+    },
+    "playButtonBorderRadius": {
+      "type": "number",
+      "default": 50
+    },
+    "unmuteButtonEnabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "unmuteButtonBgColor": {
+      "type": "string",
+      "default": "rgba(0,0,0,0.4)"
+    },
+    "unmuteButtonIconColor": {
+      "type": "string",
+      "default": "#ffffff"
+    },
+    "arrowBgColor": { "type": "string", "default": "rgba(0,0,0,0.5)" },
+	  "arrowIconColor": { "type": "string", "default": "#ffffff" },
+    "arrowSize": {
+      "type": "number",
+      "default": 32
+    },
+    "arrowBorderRadius": { "type": "number", "default": 4 },
+    "arrowVisibility": { "type": "string", "default": "always" },
+    "ctaEnabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "ctaDisplayPosition": {
+      "type": "string",
+      "default": "below"
+    },
+    "ctaButtonBgColor": {
+      "type": "string",
+      "default": "#000000"
+    },
+    "ctaButtonIconColor": {
+      "type": "string",
+      "default": "#ffffff"
+    },
+    "ctaProductNameFontSize": {
+      "type": "number",
+      "default": 16
+    },
+    "ctaProductPriceFontSize": {
+      "type": "number",
+      "default": 14
+    },
+    "ctaProductNameColor": {
+      "type": "string",
+      "default": "#000000"
+    },
+    "ctaProductPriceColor": {
+      "type": "string",
+      "default": "#333333"
+    },
+    "ctaButtonBorderRadius": {
+      "type": "number",
+      "default": 30
+    }
+  },
+  "supports": {
+    "anchor": true,
+    "align": ["left", "center", "right", "wide", "full"],
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
+  },
+  "editorScript": ["file:./index.js"],
+  "render": "file:./render.php",
+  "editorStyle": ["file:./index.css"]
+}

@@ -35,6 +35,7 @@ use RTGODAM\Inc\Gravity_Forms;
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
+use RTGODAM\Inc\Shortcodes\GoDAM_Product_Gallery;
 
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 
@@ -64,6 +65,7 @@ class Plugin {
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
 		GoDAM_Video_Gallery::get_instance();
+		GoDAM_Product_Gallery::get_instance();
 
 		$this->load_post_types();
 		$this->load_taxonomies();
