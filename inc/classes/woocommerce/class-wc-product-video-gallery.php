@@ -574,6 +574,7 @@ class WC_Product_Video_Gallery {
 	 */
 	public function rtgodam_single_product_modal_summary() {
 		ob_start();
+		woocommerce_show_product_images();
 		woocommerce_template_single_title();
 		woocommerce_template_single_rating();
 		woocommerce_template_single_price();
