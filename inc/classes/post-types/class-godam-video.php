@@ -33,6 +33,7 @@ class GoDAM_Video extends Base {
 
 		add_action( 'add_attachment', array( $this, 'create_video_post_from_attachment' ) );
 		add_action( 'edit_attachment', array( $this, 'update_video_post_from_attachment' ) );
+		add_action( 'delete_attachment', array( $this, 'delete_video_post_from_attachment' ) );
 	}
 
 	/**
@@ -98,7 +99,7 @@ class GoDAM_Video extends Base {
 		}
 
 		// Check if video post already exists for this attachment.
-		$query = new \WP_Query(
+		$query = new WP_Query(
 			array(
 				'post_type'              => self::SLUG,
 				'posts_per_page'         => 1,
@@ -228,18 +229,31 @@ class GoDAM_Video extends Base {
 	}
 
 	/**
-	 * Generate video content with GoDAM player block.
+	 * Delete video post when attachment is deleted.
 	 *
 	 * @param int $attachment_id Attachment ID.
-	 * @return string Generated content.
 	 */
-	private function generate_video_content( $attachment_id ) {
-		return sprintf( 
-			'<!-- wp:godam/video {"id":%d} -->
-<div class="wp-block-godam-video"></div>
-<!-- /wp:godam/video -->',
-			$attachment_id
+	public function delete_video_post_from_attachment( $attachment_id ) {
+
+		$query = new WP_Query(
+			array(
+				'post_type'      => self::SLUG,
+				'posts_per_page' => -1,
+				'post_status'    => 'any',
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
+					array(
+						'key'   => '_godam_attachment_id',
+						'value' => $attachment_id,
+					),
+				),
+			) 
 		);
+
+		if ( $query->have_posts() ) {
+			foreach ( $query->posts as $post ) {
+				wp_delete_post( $post->ID, true );
+			}
+		}
 	}
 
 	/**
@@ -262,6 +276,21 @@ class GoDAM_Video extends Base {
 			$tag_ids = wp_list_pluck( $tags, 'term_id' );
 			wp_set_post_terms( $post_id, $tag_ids, 'post_tag' );
 		}
+	}
+
+	/**
+	 * Generate video content with GoDAM player block.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return string Generated content.
+	 */
+	private function generate_video_content( $attachment_id ) {
+		return sprintf( 
+			'<!-- wp:godam/video {"id":%d} -->
+<div class="wp-block-godam-video"></div>
+<!-- /wp:godam/video -->',
+			$attachment_id
+		);
 	}
 
 	/**
