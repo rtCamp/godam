@@ -648,17 +648,20 @@ class Video_Migration extends Base {
 		// Insert the attachment.
 		$attachment_id = wp_insert_attachment( $attachment );
 
+		// Update attachment metadata with dimensions.
+		$metadata = array(
+			'width'  => empty( $video_info['width'] ) ? 100 : $video_info['width'],
+			'height' => empty( $video_info['height'] ) ? 100 : $video_info['height'],
+		);
+		wp_update_attachment_metadata( $attachment_id, $metadata );
+
 		if ( is_wp_error( $attachment_id ) ) {
 			return $attachment_id;
 		}
 
 		// Set the attachment thumbnail.
 		if ( ! empty( $video_info['thumbnail_url'] ) ) {
-			$thumbnail_id = media_sideload_image( $video_info['thumbnail_url'], $attachment_id, null, 'id' );
-
-			if ( ! is_wp_error( $thumbnail_id ) ) {
-				set_post_thumbnail( $attachment_id, $thumbnail_id );
-			}
+			update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $video_info['thumbnail_url'] );
 		}
 
 		// Change the guid of the attachment to the transcoded file path.
@@ -667,8 +670,7 @@ class Video_Migration extends Base {
 		$wpdb->update(
 			$wpdb->posts,
 			array(
-				'guid'           => $video_info['transcoded_file_path'],
-				'post_mime_type' => 'application/dash+xml',
+				'guid' => $video_info['transcoded_file_path'],
 			),
 			array(
 				'ID' => $attachment_id,
