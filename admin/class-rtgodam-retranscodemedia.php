@@ -237,12 +237,12 @@ class RTGODAM_RetranscodeMedia {
 
 			wp_localize_script(
 				'rtgodam-retranscode-admin',
-				'rtgodam_retranscode',
+				'rtgodamRetranscode',
 				array(
-					'ids'           => $ids,
-					'stopping_text' => $stopping_text,
-					'text_goback'   => $text_goback,
-					'admin_url'     => $admin_url,
+					'ids'          => $ids,
+					'stoppingText' => $stopping_text,
+					'textGoback'   => $text_goback,
+					'adminUrl'     => $admin_url,
 				)
 			);
 
@@ -712,23 +712,6 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		$previous_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
-
-		if ( ! empty( $previous_thumbs ) && is_array( $previous_thumbs ) ) {
-
-			// Do not delete the current thumbnail of the video.
-			if ( ! rtgodam_is_override_thumbnail() ) {
-
-				$current_thumb = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
-
-				$key = array_search( $current_thumb, $previous_thumbs, true );
-				if ( false !== $key ) {
-					unset( $previous_thumbs[ $key ] );
-				}
-			}
-
-			rtgodam_delete_transcoded_files( $previous_thumbs );
-		}
 		delete_post_meta( $media_id, 'rtgodam_media_thumbnails' );
 	}
 
@@ -768,60 +751,25 @@ class RTGODAM_RetranscodeMedia {
 
 		$is_retranscoding_job = get_post_meta( $media_id, 'rtgodam_retranscoding_sent', true );
 
+		$new_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
+		$new_thumbs = is_array( $new_thumbs ) ? $new_thumbs : array();
+
 		if ( $is_retranscoding_job && ! rtgodam_is_override_thumbnail() ) {
+			$current_selected_thumb = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
 
-			$new_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
-
-			if ( ! empty( $new_thumbs ) && is_array( $new_thumbs ) ) {
-
-				$current_thumb = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
-				if ( $current_thumb ) {
-					$new_thumbs[] = $current_thumb;
-					update_post_meta( $media_id, 'rtgodam_media_thumbnails', $new_thumbs );
-				}
+			if ( $current_selected_thumb && ! empty( $current_selected_thumb ) && ! in_array( $current_selected_thumb, $new_thumbs, true ) ) {
+				$new_thumbs[] = $current_selected_thumb;
+				update_post_meta( $media_id, 'rtgodam_media_thumbnails', $new_thumbs );
 			}
-		}
-
-		// Add thumbnail in media library for user selection and set attachment thumbnail.
-		$thumbnail_array = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
-
-		if ( is_array( $thumbnail_array ) ) {
-			$uploads   = wp_upload_dir();
-			$thumbnail = $thumbnail_array[0];
-
-			if ( 0 === strpos( $thumbnail, $uploads['baseurl'] ) ) {
-				$thumbnail_src = $thumbnail;
-			} else {
-				$thumbnail_src = trailingslashit( $uploads['basedir'] ) . $thumbnail;
+		} else {
+			if ( ! empty( $new_thumbs ) ) {
+				update_post_meta( $media_id, 'rtgodam_media_video_thumbnail', $new_thumbs[0] );
 			}
 
-			$file_type = wp_check_filetype( basename( $thumbnail_src ), null );
+			$primary_remote_thumbnail_url = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
 
-			$attachment = array(
-				'post_mime_type' => $file_type['type'],
-				'post_title'     => preg_replace( '/\.[^.]+$/', '', basename( $thumbnail_src ) ),
-				'post_content'   => '',
-				'post_status'    => 'inherit',
-			);
-
-			// Insert transcoded thumbnail attachment.
-			require_once ABSPATH . 'wp-admin/includes/image.php';
-			$attachment_id = 0;
-			// Generate thumbnail for PDF file.
-			if ( 'application/pdf' === get_post_mime_type( $media_id ) ) {
-				$attach_data = wp_generate_attachment_metadata( $media_id, $thumbnail_src );
-				wp_update_attachment_metadata( $media_id, $attach_data );
-			} else {
-				// Insert transcoded thumbnail attachment for video/audio files.
-				$attachment_id = wp_insert_attachment( $attachment, $thumbnail_src, $media_id );
-			}
-
-			// Generate attachment metadata for thumbnail and set post thumbnail for video/audio files.
-			if ( ! is_wp_error( $attachment_id ) && 0 !== $attachment_id ) {
-				$attach_data = wp_generate_attachment_metadata( $attachment_id, $thumbnail_src );
-				wp_update_attachment_metadata( $attachment_id, $attach_data );
-				set_post_thumbnail( $media_id, $attachment_id );
-				update_post_meta( $attachment_id, 'rtgodam_amp_is_poster', true );
+			if ( ! empty( $primary_remote_thumbnail_url ) ) {
+				do_action( 'rtgodam_primary_remote_thumbnail_set', $media_id, $primary_remote_thumbnail_url );
 			}
 		}
 	}

@@ -40,7 +40,7 @@ const JetpackForm = ( { layerID } ) => {
 	// Initialize Jetpack forms data - useEffect must be called unconditionally
 	useEffect( () => {
 		// Set Jetpack plugin active status
-		dispatch( setJetpackPluginActive( Boolean( window?.videoData?.jetpack_active ) ) );
+		dispatch( setJetpackPluginActive( Boolean( window?.videoData?.jetpackActive ) ) );
 
 		// Update forms data when API response is available
 		if ( formsData ) {
@@ -87,7 +87,7 @@ const JetpackForm = ( { layerID } ) => {
 				} ) );
 			}
 		}
-	}, [ dispatch, formsData, formsError, layer?.jp_id ] );
+	}, [ changeFormID, dispatch, formsData, formsError, layer?.jp_id, layer?.id ] );
 
 	// Ensure forms is always an array with proper structure
 	const forms = Array.isArray( jetpackForms )
@@ -163,7 +163,7 @@ const JetpackForm = ( { layerID } ) => {
 	};
 
 	const isValidAPIKey = true;
-	const isJetpackPluginActive = Boolean( window?.videoData?.jetpack_active );
+	const isJetpackPluginActive = Boolean( window?.videoData?.jetpackActive );
 
 	return (
 		<>

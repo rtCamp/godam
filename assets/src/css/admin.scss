@@ -65,9 +65,10 @@ $media-frame-width: calc(300px + 2 * 24px);
  * CSS for custom filtering options for the media library.
  */
 #media-date-range-filter {
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
 	display: inline-block;
 	margin: 0 10px 0 0;
-
 	font-size: 14px;
 	line-height: 2;
 	color: #2c3338;
@@ -76,6 +77,10 @@ $media-frame-width: calc(300px + 2 * 24px);
 	min-height: 30px;
 	max-width: 10rem;
 	vertical-align: middle;
+}
+
+.media-modal-content #media-date-range-filter {
+	vertical-align: bottom;
 }
 
 #media-attachment-date-filters,
@@ -325,4 +330,25 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 	pointer-events: none;
 	opacity: 0.5;
+}
+
+.godam-locked-input-wrapper {
+	position: relative;
+	display: inline-block;
+	width: 100%;
+
+	input[type="text"] {
+		padding-right: 35px;
+		width: 100%;
+	}
+
+	.godam-lock-icon {
+		position: absolute;
+		right: 10px;
+		top: 50%;
+		transform: translateY(-50%);
+		pointer-events: none;
+		font-size: 18px;
+		color: #ab3a6c;
+	}
 }

@@ -259,7 +259,7 @@
 			white-space: nowrap;
 		}
 		&:hover {
-			
+
 			.chapter-indicator--duration {
 				display: block;
 				position: absolute;
@@ -287,6 +287,12 @@
 	}
 }
 
+.godam-video-list__video__thumbnail__overlay__menu {
+	.components-button.has-icon.has-text {
+		justify-content: flex-start !important;
+	}
+}
+
 .easydam-settings {
 
 	&-header {
@@ -299,7 +305,8 @@
 	opacity: 0.5;
 }
 
-.jetpack-form-preview .wp-block-jetpack-contact-form-container {
+.jetpack-form-preview .wp-block-jetpack-contact-form-container,
+.forminator-ui {
 	pointer-events: none;
 }
 
