@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 
 document.addEventListener( 'DOMContentLoaded', function() {
-	const videoContainers = document.querySelectorAll( '#wpforms-edit-entry-form .wpforms-edit-entry-field-godam-video .wpforms-entry-field-value' );
+	const videoContainers = document.querySelectorAll( '#wpforms-edit-entry-form .wpforms-edit-entry-field-godam-video .wpforms-field.wpforms-field-godam-video' );
 
 	const frame = wp.media( {
 		title: __( 'Select or Upload Video Of Your Choice', 'godam' ),

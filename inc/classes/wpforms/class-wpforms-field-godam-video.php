@@ -42,6 +42,10 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			// Format field value for emails.
 			add_filter( 'wpforms_plaintext_field_value', array( $this, 'format_field_value_for_plaintext' ), 10, 3 );
 			add_filter( 'wpforms_html_field_value', array( $this, 'format_field_value_for_html' ), 10, 4 );
+
+			add_filter( 'wpforms_pro_admin_entries_edit_field_editable', function( $editable, $type ) {
+				return 'godam-video' === $type ? true : $editable;
+			}, 10, 2 );
 		}
 
 		/**
@@ -117,57 +121,20 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @param array $form_data  Form data and settings.
 		 */
 		public function field_display( $field, $deprecated, $form_data ) {
-			$video_upload_button_id = wp_unique_id( 'uppy-video-upload-' );
+			if ( \wpforms_is_admin_page('entries', 'edit' ) ) {
+				 wp_enqueue_style(
+					'wpforms-uppy-video-style',
+					RTGODAM_URL . 'assets/build/css/wpforms-uppy-video.css',
+					array(),
+					filemtime( RTGODAM_PATH . 'assets/build/css/wpforms-uppy-video.css' )
+				);
 
-			// Define data.
-			$primary = $field['properties']['inputs']['primary'];
+				wp_enqueue_media();
 
-			$form_id       = isset( $form_data['id'] ) ? absint( $form_data['id'] ) : 0;
-			$field_id      = isset( $field['id'] ) ? absint( $field['id'] ) : 0;
-			$file_input_id = "wpforms_file_input_{$form_id}_{$field_id}";
-
-			// Attributes - Max Upload Size
-			$max_upload_size = isset( $field['max_file_size'] ) ? absint( $field['max_file_size'] ) : 0;
-			$max_upload_size = $max_upload_size > 0 ? $max_upload_size * 1024 * 1024 : wp_max_upload_size(); // Convert MB to bytes.
-
-			// Attributes - File Selectors
-			$file_selectors = $this->extract_file_selectors_from_field( $field );
-			$file_selectors = join( ',', $file_selectors );
-
-			// Uppy container.
-			$uppy_container_id = "uppy_container_{$form_id}_{$field_id}";
-			$uppy_file_name_id = "uppy_filename_{$form_id}_{$field_id}";
-			$uppy_preview_id   = "uppy_preview_{$form_id}_{$field_id}";
-
-			?>
-			<input
-				type="file"
-				id="<?php echo esc_attr( $file_input_id ); ?>"
-				style="display: none;"
-				<?php echo wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ); ?>
-				<?php echo $primary['required']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-			/>
-			<div
-				data-max-file-size="<?php echo esc_attr( $max_upload_size ); ?>"
-				id="<?php echo esc_attr( $uppy_container_id ); ?>"
-				class="uppy-video-upload <?php echo esc_attr( join( ' ', $primary['class'] ) ); ?>"
-				data-input-id="<?php echo esc_attr( $file_input_id ); ?>"
-				data-video-upload-button-id="<?php echo esc_attr( $video_upload_button_id ); ?>"
-				data-file-selectors="<?php echo esc_attr( $file_selectors ); ?>"
-			>
-				<button
-					type="button"
-					id="<?php echo esc_attr( $video_upload_button_id ); ?>"
-					class="uppy-video-upload-button"
-				>
-					<span class="dashicons dashicons-video-alt"></span>
-					<?php esc_html_e( 'Record Video', 'godam' ); ?>
-				</button>
-				<div id="<?php echo esc_attr( $uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
-				<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename"></div>
-			</div>
-			<?php
-			echo ob_get_clean();
+				require __DIR__ . '/wpforms-field-godam-video-edit.php';
+			} else {
+				require __DIR__ .'/wpforms-field-godam-video-frontend.php';
+			}
 		}
 
 		/**
@@ -415,7 +382,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 *
 		 * @return mixed
 		 */
-		public function format_plaintext_valu( $value, $field, $form_data ) {
+		public function format_field_value_for_plaintext( $value, $field, $form_data ) {
 			// Check if the field is not a video field.
 			if ( ! isset( $field['type'] ) || 'godam-video' !== $field['type'] ) {
 				return $value;
@@ -452,7 +419,6 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			// Check if the field is not a video field.
 			if ( ! isset( $field['type'] ) || 'godam-video' !== $field['type'] ) {
 				return $value;
-
 			}
 
 			if ( 0 === $value || ! is_numeric( $value ) ) {
@@ -462,38 +428,13 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			$attachment = get_post( $value );
 
 			if ( null === $attachment || 'attachment' !== $attachment->post_type ) {
-				return $value;
+				return __('Video not found', 'godam' ) ;
 			}
 
 			$attachment_url  = wp_get_attachment_url( $value );
 			$attachment_name = $attachment->post_title;
-			$thumbnail_url   = get_the_post_thumbnail_url( $attachment->ID );
-			$thumbnail_url   = $thumbnail_url ? $thumbnail_url : site_url('/wp-includes/images/media/video.svg');
 
 			$formatted_value = sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $attachment_url ), esc_html( $attachment_name ) );
-
-			if ( 'entry-single' === $context && \wpforms_is_admin_page('entries', 'edit' ) ) {
-				wp_enqueue_style(
-					'wpforms-uppy-video-style',
-					RTGODAM_URL . 'assets/build/css/wpforms-uppy-video.css',
-					array(),
-					filemtime( RTGODAM_PATH . 'assets/build/css/wpforms-uppy-video.css' )
-				);
-
-				wp_enqueue_media();
-
-				$formatted_value = [
-					sprintf( '<input type="hidden" class="godam-video-field-input" %s />', $value, '' ),
-					sprintf('<a href="%s" target="_blank" class="godam-video-link">', $attachment_url ),
-					sprintf( '<img src="%s" "height="64" width="48" class="godam-video-file-thumbnail" />',  $thumbnail_url ),
-					sprintf('<span class="godam-video-name">%s</span>',$attachment_name ),
-					'</a>',
-					sprintf('<button type="button" class="button godam-video-upload-image %s">%s</button>', $attachment ? 'hidden' : '', __('Upload', 'godam') ),
-					sprintf('<button type="button" class="button godam-video-remove-image">%s</button>', __('Remove', 'godam')),
-				];
-
-				$formatted_value = join('', $formatted_value );
-			}
 
 			return $formatted_value;
 		}

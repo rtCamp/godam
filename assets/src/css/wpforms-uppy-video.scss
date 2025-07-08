@@ -43,21 +43,27 @@
     }
 }
 
-#wpforms-entries-single {
-    #wpforms-entry-fields {
-        .inside {
-            .wpforms-entry-field-value {
-                .godam-video-name {
-                    margin-bottom: 8px;
-                }
+.wpforms-admin-page.wpforms_page_wpforms-entries {
+    .wpforms-edit-entry-container.wpforms-container {
+        .wpforms-field.wpforms-field-godam-video {
+            display: flex;
+            flex-direction: column;
 
-                .godam-video-change-image {
+            .godam-video-media-controls {
+                display: flex;
+                flex-direction: row;
+
+                .godam-video-upload-image {
                     margin-right: 8px;
                 }
 
                 .godam-video-remove-image {
                     color: #d63638
                 }
+            }
+
+            .godam-video-name {
+                margin-bottom: 8px;
             }
         }
     }
