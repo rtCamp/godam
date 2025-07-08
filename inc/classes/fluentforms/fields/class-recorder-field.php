@@ -58,6 +58,11 @@ class Recorder_Field extends BaseFieldManager {
 		add_action( 'wp_ajax_nopriv_ff_godam_recorder_upload', array( $this, 'upload_file_to_temp' ) );
 
 		/**
+		 * Filter the submission data.
+		 */
+		add_filter( 'fluentform/input_data_' . $this->key, array( $this, 'handle_recorder_field_data' ), 10, 2 );
+
+		/**
 		 * Initialize all values.
 		 */
 		$this->editor_label = __( 'Godam Recorder', 'godam' );
@@ -349,6 +354,47 @@ class Recorder_Field extends BaseFieldManager {
 	}
 
 	/**
+	 * Filter the submitted value for the recorder element.
+	 *
+	 * @param array|string $value Value from request.
+	 * @param array<mixed> $field Current field.
+	 *
+	 * @return array Updated value.
+	 */
+	public function handle_recorder_field_data( $value, $field ) {
+
+		// Bail early.
+		if ( $field['element'] !== $this->key ) {
+			return $value;
+		}
+
+		/**
+		 * Get the current value.
+		 */
+		$current_value = is_array( $value ) ? $value[0] : $value;
+
+		/**
+		 * Decrypt the URL.
+		 */
+		$decrypted_value = $this->decrypt_url_for_recroder( $current_value );
+
+		if ( empty( $decrypted_value ) ) {
+			return $value;
+		}
+
+		/**
+		 * Update the value.
+		 */
+		if ( is_array( $value ) ) {
+			$value[0] = $decrypted_value;
+		} else {
+			$value = $decrypted_value;
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Upload the file to temp folder.
 	 *
 	 * @return void
@@ -568,5 +614,36 @@ class Recorder_Field extends BaseFieldManager {
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * Function to decrypt the URL.
+	 *
+	 * @param string $url URL to be decrypted.
+	 *
+	 * @return string
+	 */
+	private function decrypt_url_for_recroder( $url ) {
+
+		/**
+		 * Create upload dir.
+		 */
+		$upload_dir = str_replace( '/', '\/', '/godam-ff/temp' ); // phpcs:ignore WordPressVIPMinimum.Security.StaticStrreplace.StaticStrreplace
+
+		/**
+		 * Create pattern.
+		 */
+		$pattern = "/(?<={$upload_dir}\/).*$/";
+
+		/**
+		 * Match the pattern with URL.
+		 */
+		preg_match( $pattern, $url, $match );
+
+		if ( ! empty( $match ) ) {
+			$url = str_replace( $match[0], Protector::decrypt( $match[0] ), $url );
+		}
+
+		return $url;
 	}
 }
