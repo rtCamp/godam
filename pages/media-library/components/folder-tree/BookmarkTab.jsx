@@ -9,7 +9,7 @@ import { useMemo } from 'react';
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Panel, PanelBody } from '@wordpress/components';
-import { lock as bookmarkIcon, starFilled } from '@wordpress/icons';
+import { starFilled } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -17,7 +17,7 @@ import { lock as bookmarkIcon, starFilled } from '@wordpress/icons';
 import BookmarkItem from './BookmarkItem.jsx';
 import './css/bookmark.scss';
 
-const BookmarkTab = () => {
+const BookmarkTab = ( { handleContextMenu } ) => {
 	const folders = useSelector( ( state ) => state.FolderReducer?.folders || [] );
 
 	// Get all the bookmarks from folder where `meta.bookmark` is true
@@ -44,7 +44,6 @@ const BookmarkTab = () => {
 				<Panel className="godam-bookmark-panel">
 					<PanelBody
 						title={ __( 'Bookmarks', 'godam' ) }
-						icon={ bookmarkIcon }
 						initialOpen={ true }
 					>
 						<div className="godam-bookmark-tab__empty-state">
@@ -64,7 +63,6 @@ const BookmarkTab = () => {
 			<Panel className="godam-bookmark-panel">
 				<PanelBody
 					title={ panelTitle }
-					icon={ bookmarkIcon }
 					initialOpen={ true }
 				>
 					<div className="godam-bookmark-tab__list">
@@ -74,6 +72,7 @@ const BookmarkTab = () => {
 								key={ bookmark?.id || index }
 								index={ index }
 								totalCount={ bookmarkCount }
+								onContextMenu={ ( e, id ) => handleContextMenu( e, id, bookmark ) }
 							/>
 						) ) }
 					</div>

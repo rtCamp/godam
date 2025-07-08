@@ -16,7 +16,7 @@ import { changeSelectedFolder } from '../../redux/slice/folders';
 import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
 
-const BookmarkItem = ( { item, index } ) => {
+const BookmarkItem = ( { item, index, onContextMenu } ) => {
 	const dispatch = useDispatch();
 	const selectedFolderID = useSelector( ( state ) => state.FolderReducer?.selectedFolder?.id );
 
@@ -43,6 +43,7 @@ const BookmarkItem = ( { item, index } ) => {
 		<div
 			className={ `tree-item ${ isActive ? 'tree-item--active' : '' }` }
 			data-id={ item.id }
+			onContextMenu={ ( e ) => onContextMenu( e, item.id ) }
 		>
 			<button
 				className="tree-item__button"

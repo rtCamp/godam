@@ -28,7 +28,7 @@ const FolderCreationModal = () => {
 	const dispatch = useDispatch();
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.folderCreation );
-	const selectedFolder = useSelector( ( state ) => state.FolderReducer.modals.item );
+	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
 
 	useEffect( () => {
 		if ( isOpen ) {
@@ -68,12 +68,21 @@ const FolderCreationModal = () => {
 
 			updateSelectDropdown( response.id, folderName );
 		} catch ( error ) {
-			dispatch( updateSnackbar(
-				{
-					message: __( 'Failed to create folder', 'godam' ),
-					type: 'fail',
-				},
-			) );
+			if ( error?.status === 400 ) {
+				dispatch( updateSnackbar(
+					{
+						message: __( 'Folder with that name already exists.', 'godam' ),
+						type: 'fail',
+					},
+				) );
+			} else {
+				dispatch( updateSnackbar(
+					{
+						message: __( 'Failed to create folder', 'godam' ),
+						type: 'fail',
+					},
+				) );
+			}
 		} finally {
 			setIsLoading( false );
 			dispatch( closeModal( 'folderCreation' ) );
