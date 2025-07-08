@@ -9,6 +9,8 @@ namespace RTGODAM\Inc\Post_Types;
 
 defined( 'ABSPATH' ) || exit;
 
+use WP_Query;
+
 /**
  * Class GoDAM_Video
  */
@@ -30,6 +32,7 @@ class GoDAM_Video extends Base {
 		parent::setup_hooks();
 
 		add_action( 'add_attachment', array( $this, 'create_video_post_from_attachment' ) );
+		add_action( 'edit_attachment', array( $this, 'update_video_post_from_attachment' ) );
 	}
 
 	/**
@@ -146,6 +149,82 @@ class GoDAM_Video extends Base {
 		$this->sync_attachment_taxonomies( $attachment_id, $post_id );
 
 		return $post_id;
+	}
+
+	/**
+	 * Update video post when attachment is updated.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 */
+	public function update_video_post_from_attachment( $attachment_id ) {
+
+		if ( ! $this->is_video_attachment( $attachment_id ) ) {
+			return;
+		}
+
+		$this->sync_attachment_to_video_post( $attachment_id );
+	}
+
+	/**
+	 * Sync attachment data to video post.
+	 *
+	 * @param int     $post_id     Post ID.
+	 * @param WP_Post $post        Post object.
+	 */
+	public function sync_attachment_to_video_post( $post_id, $post = null ) {
+
+		// If called from save_post hook, $post_id is the attachment ID.
+		$attachment_id = $post_id;
+		
+		// If called directly, $post_id might be the video post ID.
+		if ( $post && 'attachment' !== $post->post_type ) {
+			return;
+		}
+
+		if ( ! $this->is_video_attachment( $attachment_id ) ) {
+			return;
+		}
+
+		// Find the corresponding video post.
+		$query = new WP_Query(
+			array(
+				'post_type'              => self::SLUG,
+				'posts_per_page'         => 1,
+				'post_status'            => 'any',
+				'no_found_rows'          => true,
+				'fields'                 => 'ids',
+				'update_post_term_cache' => false,
+				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
+					array(
+						'key'   => '_godam_attachment_id',
+						'value' => $attachment_id,
+					),
+				),
+			) 
+		);
+
+		if ( ! $query->have_posts() ) {
+			// Create new video post if it doesn't exist.
+			$this->create_video_post_from_attachment( $attachment_id );
+			return;
+		}
+
+		$video_post_id = $query->posts[0]->ID;
+		$attachment    = get_post( $attachment_id );
+
+		// Update video post.
+		$updated_data = array(
+			'ID'           => $video_post_id,
+			'post_title'   => $attachment->post_title ?: __( 'Untitled Video', 'godam' ),
+			'post_content' => $this->generate_video_content( $attachment_id ),
+			'post_excerpt' => $attachment->post_excerpt ?: $attachment->post_content,
+			'post_author'  => $attachment->post_author,
+		);
+
+		wp_update_post( $updated_data );
+
+		// Sync taxonomies.
+		$this->sync_attachment_taxonomies( $attachment_id, $video_post_id );
 	}
 
 	/**
