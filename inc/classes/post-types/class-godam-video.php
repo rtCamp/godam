@@ -62,6 +62,20 @@ class GoDAM_Video extends Base {
 			'show_ui'      => false,
 			'has_archive'  => true,
 			'show_in_rest' => true,
+			'rewrite'      => array(
+				'slug'       => $this->get_rewrite_slug(),
+				'with_front' => false,
+			),
 		);
+	}
+
+	/**
+	 * Get rewrite slug from plugin settings or default.
+	 *
+	 * @return string
+	 */
+	private function get_rewrite_slug() {
+		$settings = get_option( 'rtgodam-settings', array() );
+		return isset( $settings['video']['video_slug'] ) ? $settings['video']['video_slug'] : 'videos';
 	}
 }
