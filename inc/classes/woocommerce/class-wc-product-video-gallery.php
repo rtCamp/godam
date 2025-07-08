@@ -28,7 +28,7 @@ class WC_Product_Video_Gallery {
 		add_action( 'save_post_product', array( $this, 'save_video_gallery' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
-		add_action( 'woocommerce_after_add_to_cart_form', array( $this, 'add_video_slider_to_single_product' ) );
+		add_action( 'woocommerce_single_product_summary', array( $this, 'add_video_slider_to_single_product' ), priority: 70 );
 		add_action( 'delete_attachment', array( $this, 'on_attachment_deleted' ) );
 		add_filter( 'get_user_option_meta-box-order_product', array( $this, 'place_below_wc_gallery' ) );
 	}
@@ -473,8 +473,10 @@ class WC_Product_Video_Gallery {
 			return '';
 		}
 
+		$single_product_modal_summary = apply_filters( 'rtgodam_single_product_modal_summary', $this->rtgodam_single_product_modal_summary() );
+
 		$modal_carousel_html = array_map(
-			function ( $item ) use ( $srcsets ) {
+			function ( $item ) use ( $srcsets, $single_product_modal_summary ) {
 				return sprintf(
 					'
 					<div class="swiper-slide">
@@ -484,11 +486,12 @@ class WC_Product_Video_Gallery {
 							</video>
 						</div>
 						<div class="rtgodam-product-video-gallery-slider-modal-content-right">
-							Some items will be displayed in here
+							%3$s
 						</div>
 					</div>',
 					esc_url( $srcsets[ $item ] ),
 					esc_attr( $item ),
+					$single_product_modal_summary,
 				);
 			},
 			$srcsets_keys
@@ -553,5 +556,22 @@ class WC_Product_Video_Gallery {
 			esc_attr( $args['wrapper_class_loader'] ),
 			$carousel_html
 		);
+	}
+
+	/**
+	 * Output the summary of a single product inside a modal.
+	 *
+	 * @return string The HTML markup of the summary.
+	 */
+	public function rtgodam_single_product_modal_summary() {
+		ob_start();
+		woocommerce_template_single_title();
+		woocommerce_template_single_rating();
+		woocommerce_template_single_price();
+		woocommerce_template_single_excerpt();
+		woocommerce_template_single_add_to_cart();
+		woocommerce_template_single_meta();
+		woocommerce_template_single_sharing();
+		return ob_get_clean();
 	}
 }
