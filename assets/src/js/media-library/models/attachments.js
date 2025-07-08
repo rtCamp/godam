@@ -40,7 +40,7 @@ const GODAMAttachementCollection = wp.media.model.Query.extend(
 			this._page = 1;
 			this._totalPages = 5;
 			this._perPage = 40;
-			this.totalAttachments = 20;
+			this.totalAttachments = 0;
 
 			// Call parent initialize method.
 			wp.media.model.Query.prototype.initialize.apply( this, arguments );
