@@ -648,7 +648,7 @@ class Video_Migration extends Base {
 		// Prepare attachment data.
 		$attachment = array(
 			'post_mime_type' => 'video/mp4',
-			'post_title'     => $video_info['orignal_file_name'] ?? '',
+			'post_title'     => $video_info['name'] ?? '',
 			'post_status'    => 'inherit',
 		);
 
@@ -657,6 +657,15 @@ class Video_Migration extends Base {
 
 		if ( is_wp_error( $attachment_id ) ) {
 			return $attachment_id;
+		}
+
+		// Set the attachment thumbnail.
+		if ( ! empty( $video_info['thumbnail_url'] ) ) {
+			$thumbnail_id = media_sideload_image( $video_info['thumbnail_url'], $attachment_id, null, 'id' );
+
+			if ( ! is_wp_error( $thumbnail_id ) ) {
+				set_post_thumbnail( $attachment_id, $thumbnail_id );
+			}
 		}
 
 		// Update attachment metadata.
