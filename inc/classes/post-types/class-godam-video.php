@@ -222,7 +222,6 @@ class GoDAM_Video extends Base {
 				'posts_per_page'         => 1,
 				'post_status'            => 'any',
 				'no_found_rows'          => true,
-				'fields'                 => 'ids',
 				'update_post_term_cache' => false,
 				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
 					array(
@@ -239,17 +238,37 @@ class GoDAM_Video extends Base {
 			return;
 		}
 
-		$video_post_id = $query->posts[0]->ID;
-		$attachment    = get_post( $attachment_id );
+		$current_video_post = $query->posts[0];
+		$video_post_id      = $current_video_post->ID;
+		$attachment         = get_post( $attachment_id );
+		$new_title          = $attachment->post_title ?: __( 'Untitled Video', 'godam' );
 
-		// Update video post.
+		// Get current title from the post we already have.
+		$current_title = $current_video_post->post_title;
+
+		// Prepare base update data.
 		$updated_data = array(
 			'ID'           => $video_post_id,
-			'post_title'   => $attachment->post_title ?: __( 'Untitled Video', 'godam' ),
+			'post_title'   => $new_title,
 			'post_content' => $this->generate_video_content( $attachment_id ),
 			'post_excerpt' => $attachment->post_excerpt ?: $attachment->post_content,
 			'post_author'  => $attachment->post_author,
 		);
+
+		/**
+		 * Update post slug if the title has changed.
+		 */
+		if ( $new_title !== $current_title ) {
+			// Generate unique slug based on new title.
+			$new_slug                  = wp_unique_post_slug(
+				sanitize_title( $new_title ),
+				$video_post_id,
+				'publish',
+				self::SLUG,
+				0
+			);
+			$updated_data['post_name'] = $new_slug;
+		}
 
 		wp_update_post( $updated_data );
 
