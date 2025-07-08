@@ -323,4 +323,44 @@ class GoDAM_Video extends Base {
 		$mime_type = get_post_mime_type( $attachment_id );
 		return 0 === strpos( $mime_type, 'video/' );
 	}
+
+	/**
+	 * Migrate existing video attachments to create corresponding video posts.
+	 * Handles all batch processing internally.
+	 *
+	 * @param int $batch_size Number of attachments to process per batch.
+	 * @return void
+	 */
+	public function migrate_existing_attachments( $batch_size = 50 ) {
+		$offset = 0;
+
+		do {
+			$query = new WP_Query(
+				array(
+					'post_type'      => 'attachment',
+					'post_status'    => 'inherit',
+					'posts_per_page' => $batch_size,
+					'offset'         => $offset,
+					'orderby'        => 'ID',
+					'order'          => 'ASC',
+				) 
+			);
+
+			if ( ! $query->have_posts() ) {
+				break;
+			}
+
+			foreach ( $query->posts as $attachment ) {
+				/**
+				 * Method checks if the attachment is a video and creates a video post.
+				 * If the video post already exists, it will skip creating a new one.
+				 */
+				$this->create_video_post_from_attachment( $attachment->ID );
+			}
+
+			$offset  += $batch_size;
+			$has_more = count( $query->posts ) === $batch_size;
+
+		} while ( $has_more );
+	}
 }
