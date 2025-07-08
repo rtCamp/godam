@@ -18,6 +18,8 @@ use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
 
+use RTGODAM\Inc\Post_Types\GoDAM_Video;
+
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
 use RTGODAM\Inc\REST_API\Jetpack;
@@ -97,6 +99,7 @@ class Plugin {
 	 * Load Post Types.
 	 */
 	public function load_post_types() {
+		GoDAM_Video::get_instance();
 	}
 
 	/**
