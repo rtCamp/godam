@@ -17,8 +17,12 @@
 			"default": true
 		},
 		"id": {
-			"type": "string",
+			"type": "number",
 			"role": "content"
+		},
+		"cmmId": {
+			"type": "number",
+			"default": ""
 		},
 		"loop": {
 			"type": "boolean"
