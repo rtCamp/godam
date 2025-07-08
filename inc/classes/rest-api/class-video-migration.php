@@ -668,6 +668,20 @@ class Video_Migration extends Base {
 			}
 		}
 
+		// Change the guid of the attachment to the transcoded file path.
+		global $wpdb;
+		//phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->update(
+			$wpdb->posts,
+			array(
+				'guid'           => $video_info['transcoded_file_path'],
+				'post_mime_type' => 'application/dash+xml',
+			),
+			array(
+				'ID' => $attachment_id,
+			)
+		);
+
 		// Update attachment metadata.
 		update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $video_info['transcoded_file_path'] );
 
