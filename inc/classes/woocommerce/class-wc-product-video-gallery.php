@@ -120,6 +120,15 @@ class WC_Product_Video_Gallery {
 		);
 
 		if ( 'product' === get_post_type() ) {
+
+			wp_dequeue_script( 'godam-player-frontend-script' );
+			wp_dequeue_script( 'godam-player-analytics-script' );
+			wp_dequeue_style( 'godam-player-style' );
+
+			if ( ! wp_style_is( 'godam-player-frontend-style', 'enqueued' ) ) {
+				wp_enqueue_style( 'godam-player-frontend-style' );
+			}
+
 			wp_enqueue_script( 'rtgodam-swiper-script' );
 			wp_enqueue_style( 'rtgodam-swiper-style' );
 			wp_enqueue_script( 'rtgodam-wc-video-carousel' );
