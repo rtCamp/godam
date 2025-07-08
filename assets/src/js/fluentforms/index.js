@@ -105,6 +105,14 @@ class FluentForms {
 
 	handleFileUpload( event, uploadedList ) {
 		const file = event.target.files[ 0 ];
+
+		/**
+		 * If we have clear action, remove from local storage as well.
+		 */
+		if ( 'clear' === event?.detail?.action ) {
+			localStorage.removeItem( 'godam-ff-recorder-data' );
+		}
+
 		if ( ! file ) {
 			return;
 		}
@@ -114,6 +122,22 @@ class FluentForms {
 		if ( ! validatedFileData || 0 !== validatedFileData.length ) {
 			this.showValidationError( uploadedList, validatedFileData );
 			return validatedFileData;
+		}
+
+		/**
+		 * If restored use local storage data.
+		 */
+		if ( 'restored' === event?.detail?.action ) {
+			const localStorageItem = localStorage.getItem( 'godam-ff-recorder-data' );
+			const parsedData = JSON.parse( localStorageItem ?? {} );
+
+			if ( parsedData?.url !== '' && Date.now() < parsedData?.expiresAt ) {
+				this.updateUploadedList( parsedData?.url ?? '', uploadedList );
+				return;
+			}
+
+			// Remove local storage if not used from restored or expired.
+			localStorage.removeItem( 'godam-ff-recorder-data' );
 		}
 
 		const formId = event.target.dataset.formId;
@@ -150,6 +174,11 @@ class FluentForms {
 			.then( ( responseData ) => {
 				if ( responseData.success && responseData.data && responseData.data[ 0 ].url ) {
 					this.updateUploadedList( responseData.data[ 0 ].url, uploadedList );
+
+					/**
+					 * Store the file URL in local storage for reload same as uppy.
+					 */
+					this.storeInLocalStorage( responseData.data[ 0 ].url );
 				} else if ( responseData.error ) {
 					this.showValidationError( uploadedList, responseData.error );
 				}
@@ -175,6 +204,20 @@ class FluentForms {
 		createPreviewElement.setAttribute( 'data-src', fileUrl );
 
 		uploadedList.appendChild( createPreviewElement );
+	}
+
+	/**
+	 * Store the file URL in local storage for 10 min.
+	 *
+	 * @param {string} fileUrl File URL.
+	 */
+	storeInLocalStorage( fileUrl ) {
+		const key = 'godam-ff-recorder-data';
+		const data = {
+			url: fileUrl,
+			expiresAt: Date.now() + ( 10 * 60 * 1000 ),
+		};
+		localStorage.setItem( key, JSON.stringify( data ) );
 	}
 }
 
