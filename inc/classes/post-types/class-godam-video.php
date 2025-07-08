@@ -34,6 +34,7 @@ class GoDAM_Video extends Base {
 		add_action( 'add_attachment', array( $this, 'create_video_post_from_attachment' ) );
 		add_action( 'edit_attachment', array( $this, 'update_video_post_from_attachment' ) );
 		add_action( 'delete_attachment', array( $this, 'delete_video_post_from_attachment' ) );
+		add_action( 'save_post_attachment', array( $this, 'sync_attachment_to_video_post' ), 10, 3 );
 	}
 
 	/**
@@ -167,6 +168,34 @@ class GoDAM_Video extends Base {
 	}
 
 	/**
+	 * Delete video post when attachment is deleted.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 */
+	public function delete_video_post_from_attachment( $attachment_id ) {
+
+		$query = new WP_Query(
+			array(
+				'post_type'      => self::SLUG,
+				'posts_per_page' => -1,
+				'post_status'    => 'any',
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
+					array(
+						'key'   => '_godam_attachment_id',
+						'value' => $attachment_id,
+					),
+				),
+			) 
+		);
+
+		if ( $query->have_posts() ) {
+			foreach ( $query->posts as $post ) {
+				wp_delete_post( $post->ID, true );
+			}
+		}
+	}
+
+	/**
 	 * Sync attachment data to video post.
 	 *
 	 * @param int     $post_id     Post ID.
@@ -226,34 +255,6 @@ class GoDAM_Video extends Base {
 
 		// Sync taxonomies.
 		$this->sync_attachment_taxonomies( $attachment_id, $video_post_id );
-	}
-
-	/**
-	 * Delete video post when attachment is deleted.
-	 *
-	 * @param int $attachment_id Attachment ID.
-	 */
-	public function delete_video_post_from_attachment( $attachment_id ) {
-
-		$query = new WP_Query(
-			array(
-				'post_type'      => self::SLUG,
-				'posts_per_page' => -1,
-				'post_status'    => 'any',
-				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
-					array(
-						'key'   => '_godam_attachment_id',
-						'value' => $attachment_id,
-					),
-				),
-			) 
-		);
-
-		if ( $query->have_posts() ) {
-			foreach ( $query->posts as $post ) {
-				wp_delete_post( $post->ID, true );
-			}
-		}
 	}
 
 	/**
