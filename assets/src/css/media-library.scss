@@ -25,27 +25,15 @@
 #wpwrap:has( #rt-transcoder-media-library-root ) {
     background: #FFF;
 
-    .button {
-        border: 1px solid #A3A3A3;
-        border-radius: 0.25rem;
-        color: #1c1c1c;
-        background-color: #fff;
-
-        svg {
-            padding-right: 8px;
-        }
-    }
-
-    .button-primary {
-        background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
-        color: #FFF;
-    }
-
     .godam-button {
         padding: 6px 8px;
         top: 4px;
        	margin-left: 24px;
         margin-bottom: 20px;
+        border: 1px solid #A3A3A3;
+        border-radius: 0.25rem;
+        color: #1c1c1c;
+        background-color: #fff;
     }
 
     .media-frame {
@@ -84,6 +72,17 @@
         border-radius: 4px;
         display: flex;
         flex-wrap: wrap;
+
+        .button {
+            border: 1px solid #A3A3A3;
+            border-radius: 0.25rem;
+            color: #1c1c1c;
+            background-color: #fff;
+
+            svg {
+                padding-right: 8px;
+            }
+        }
 
         .media-toolbar-secondary {
             display: flex;
