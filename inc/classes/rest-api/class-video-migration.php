@@ -552,21 +552,16 @@ class Video_Migration extends Base {
 				$block = array(
 					'blockName'    => 'godam/video',
 					'attrs'        => array(
-						'id'       => $attachment_id,
-						'src'      => $video_url,
 						'autoplay' => $attrs['autoplay'] ?? false,
+						'id'       => $attachment_id,
 						'loop'     => $attrs['loop'] ?? false,
 						'muted'    => $attrs['muted'] ?? false,
-						'controls' => $attrs['controls'] ?? true,
 						'poster'   => $attrs['poster'] ?? '',
-						'preload'  => $attrs['preload'] ?? 'metadata',
-						'caption'  => $attrs['caption'] ?? '',
-						'seo'      => array(
-							'title'       => get_the_title( $attachment_id ),
-							'description' => get_the_content( null, false, $attachment_id ),
-						),
+						'src'      => $video_url,
+						'sources'  => array(),
+						'seo'      => array(),
 					),
-					'innerContent' => '<div class="wp-block-godam-video"></div>',
+					'innerContent' => array( '<div class="wp-block-godam-video"></div>' ),
 					'innerBlocks'  => array(),
 				);
 
