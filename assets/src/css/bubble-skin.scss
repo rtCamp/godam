@@ -1,4 +1,6 @@
 .godam-bubble-skin {
+	container-type: inline-size;
+    container-name: godam-player-bubble-skin;
 	  // control bar styles
   
 	  .vjs-control-bar {
@@ -375,4 +377,16 @@
 			}
 		}
 	}
+}
+
+@container godam-player-bubble-skin (min-width: 768px) {
+
+	.vjs-current-time {
+		left: 65px !important;
+	}
+  
+	.vjs-duration-display {
+		right: 100px !important;
+	}
+  
 }
