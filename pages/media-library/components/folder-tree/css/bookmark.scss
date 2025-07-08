@@ -4,6 +4,23 @@
 	padding: 0;
 }
 
+.godam-bookmark-tab__empty-icon svg {
+	width: 48px;
+	height: 48px;
+	color: #646970;
+}
+
+.godam-bookmark-item__icon svg {
+	width: 100%;
+	height: 100%;
+	color: #2271b1;
+}
+
+.godam-bookmark-item__actions button svg {
+	width: 16px;
+	height: 16px;
+}
+
 /* Panel Styling */
 .godam-bookmark-panel {
 	border: none;
@@ -26,7 +43,14 @@
 	    background: #fff;
 
 		.components-button {
-		    padding: 16px 40px 16px 8px;
+            padding: 16px 40px 16px 24px;
+
+            > svg {
+                margin: 0;
+                fill: #F79009;
+                position: absolute;
+                left: 0;
+            }
 
 			.components-panel__arrow {
                 right: 8px;
@@ -89,12 +113,6 @@
 	opacity: 0.4;
 }
 
-.godam-bookmark-tab__empty-icon svg {
-	width: 48px;
-	height: 48px;
-	color: #646970;
-}
-
 .godam-bookmark-tab__empty-state h4 {
 	margin: 0 0 8px 0;
 	font-size: 16px;
@@ -136,12 +154,6 @@
 	flex-shrink: 0;
 	width: 20px;
 	height: 20px;
-}
-
-.godam-bookmark-item__icon svg {
-	width: 100%;
-	height: 100%;
-	color: #2271b1;
 }
 
 /* Bookmark Content */
@@ -199,9 +211,4 @@
 	background: #d63638;
 	border-color: #d63638;
 	color: #fff;
-}
-
-.godam-bookmark-item__actions button svg {
-	width: 16px;
-	height: 16px;
 }

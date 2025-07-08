@@ -45,6 +45,7 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 					<PanelBody
 						title={ __( 'Bookmarks', 'godam' ) }
 						initialOpen={ true }
+						icon={ starFilled }
 					>
 						<div className="godam-bookmark-tab__empty-state">
 							<div className="godam-bookmark-tab__empty-icon">
@@ -64,6 +65,7 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 				<PanelBody
 					title={ panelTitle }
 					initialOpen={ true }
+					icon={ starFilled }
 				>
 					<div className="godam-bookmark-tab__list">
 						{ bookmarks.map( ( bookmark, index ) => (
