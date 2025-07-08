@@ -281,11 +281,6 @@ function GODAMPlayer( videoRef = null ) {
 		}
 
 		function handleVideoResize() {
-			// if screen size if greater than 768px then skip.
-			if ( window.innerWidth > 768 ) {
-				return;
-			}
-
 			// Skip if video is fullscreen
 			if ( ! player || typeof player.isFullscreen !== 'function' ) {
 				return;
@@ -303,6 +298,11 @@ function GODAMPlayer( videoRef = null ) {
 					controlBarEl.style.removeProperty( 'position' );
 					controlBarEl.style.removeProperty( 'margin' );
 				}
+			}
+
+			// if screen size if greater than 768px then skip.
+			if ( window.innerWidth > 768 ) {
+				return;
 			}
 
 			// Apply debounce to avoid multiple calls.
