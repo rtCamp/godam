@@ -42,13 +42,13 @@ class MediaLibrary {
 		new ToggleFoldersButton();
 	}
 
-	async addInputPlaceholder() {
-		await new Promise( ( resolve ) => setTimeout( resolve, 500 ) ); // wait for the page to load.
-
-		const searchInput = document.getElementById( 'media-search-input' );
-		if ( searchInput ) {
-			searchInput.placeholder = __( 'Search Media', 'godam' );
-		}
+	addInputPlaceholder() {
+		wp.media.view.Search = wp.media.view.Search.extend( {
+			initialize() {
+				wp.media.view.Search.__super__.initialize.apply( this, arguments );
+				this.$el.attr( 'placeholder', __( 'Search Media', 'godam' ) );
+			},
+		} );
 	}
 
 	setupAttachmentBrowser() {
