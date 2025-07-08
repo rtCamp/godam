@@ -9,48 +9,48 @@ import { useMemo } from 'react';
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Panel, PanelBody } from '@wordpress/components';
-import { starFilled } from '@wordpress/icons';
+import { lock } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
-import TabItem from './TabItem.jsx';
 import './css/foldertabs.scss';
+import TabItem from './TabItem.jsx';
 
-const BookmarkTab = ( { handleContextMenu } ) => {
+const LockedTab = ( { handleContextMenu } ) => {
 	const folders = useSelector( ( state ) => state.FolderReducer?.folders || [] );
 
-	// Get all the bookmarks from folder where `meta.bookmark` is true
+	// Get all the locked folders where `meta.locked` is true
 	// and sort them based on the currentSortOrder
-	const bookmarks = useMemo( () => {
+	const locked = useMemo( () => {
 		return folders
-			?.filter( ( folder ) => folder?.meta?.bookmark ) || [];
+			?.filter( ( folder ) => folder?.meta?.locked ) || [];
 	}, [ folders ] );
 
-	const bookmarkCount = bookmarks?.length || 0;
+	const lockedCount = locked?.length || 0;
 
 	const panelTitle = useMemo( () => {
 		return sprintf(
-			/* translators: %d: number of bookmarks */
-			__( 'Bookmarks (%d)', 'godam' ),
-			bookmarkCount,
+			/* translators: %d: number of locked folders */
+			__( 'Locked (%d)', 'godam' ),
+			lockedCount,
 		);
-	}, [ bookmarkCount ] );
+	}, [ lockedCount ] );
 
-	if ( bookmarkCount === 0 ) {
+	if ( lockedCount === 0 ) {
 		return (
 			<div className="godam-folder-tab godam-folder-tab--empty">
 				<Panel className="godam-folder-tab-panel">
 					<PanelBody
-						title={ __( 'Bookmarks', 'godam' ) }
+						title={ __( 'Locked', 'godam' ) }
 						initialOpen={ true }
-						icon={ starFilled }
+						icon={ lock }
 					>
 						<div className="godam-folder-tab__empty-state">
 							<div className="godam-folder-tab__empty-icon">
-								{ starFilled }
+								{ lock }
 							</div>
-							<h4>{ __( 'No bookmarks yet', 'godam' ) }</h4>
+							<h4>{ __( 'No locked folders yet', 'godam' ) }</h4>
 						</div>
 					</PanelBody>
 				</Panel>
@@ -64,16 +64,16 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 				<PanelBody
 					title={ panelTitle }
 					initialOpen={ true }
-					icon={ starFilled }
+					icon={ lock }
 				>
 					<div className="godam-folder-tab__list">
-						{ bookmarks.map( ( bookmark, index ) => (
+						{ locked.map( ( lockedFolder, index ) => (
 							<TabItem
-								item={ bookmark }
-								key={ bookmark?.id || index }
+								item={ lockedFolder }
+								key={ lockedFolder?.id || index }
 								index={ index }
-								totalCount={ bookmarkCount }
-								onContextMenu={ ( e, id ) => handleContextMenu( e, id, bookmark ) }
+								totalCount={ lockedCount }
+								onContextMenu={ ( e, id ) => handleContextMenu( e, id, lockedFolder ) }
 							/>
 						) ) }
 					</div>
@@ -83,4 +83,4 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 	);
 };
 
-export default BookmarkTab;
+export default LockedTab;
