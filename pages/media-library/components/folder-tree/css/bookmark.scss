@@ -82,6 +82,10 @@
 
     .tree-item {
         padding-left: 0.5rem;
+
+        &__count {
+            margin-left: auto;
+        }
     }
 }
 
