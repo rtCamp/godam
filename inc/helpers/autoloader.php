@@ -54,14 +54,18 @@ function autoloader( $file_resource = '' ) {
 				$file_name = sprintf( 'trait-%s', trim( strtolower( $path[2] ) ) );
 				break;
 			case 'providers':
+			case 'media-library': // phpcs:ignore
 			case 'meta-boxes': // phpcs:ignore
 			case 'rest-controller': // phpcs:ignore
 			case 'taxonomies': // phpcs:ignore
 			case 'rest-api': // phpcs:ignore
 			case 'gravity-forms': // phpcs:ignore
+			case 'sureforms':
 			case 'shortcodes': // phpcs:ignore
 			case 'cron-jobs': // phpcs:ignore
 			case 'woocommerce': // phpcs:ignore
+			case 'elementor-widgets': // phpcs:ignore
+			case 'elementor-controls': // phpcs:ignore
 				/**
 				 * If there is class name provided for specific directory then load that.
 				 * otherwise find in inc/ directory.

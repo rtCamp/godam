@@ -18,7 +18,7 @@ import { useGetSingleWPFormQuery } from '../../redux/api/wpforms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
 
-const CF7 = ( { layerID } ) => {
+const WPForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const wpForms = useSelector( ( state ) => state.videoReducer.wpforms );
@@ -34,11 +34,11 @@ const CF7 = ( { layerID } ) => {
 	};
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
+	// const isValidAPIKey = window?.videoData?.validApiKey;
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isWPFormsPluginActive = Boolean( window?.videoData?.wpforms_active );
+	const isWPFormsPluginActive = Boolean( window?.videoData?.wpformsActive );
 
 	return (
 		<>
@@ -111,4 +111,4 @@ const CF7 = ( { layerID } ) => {
 	);
 };
 
-export default CF7;
+export default WPForm;

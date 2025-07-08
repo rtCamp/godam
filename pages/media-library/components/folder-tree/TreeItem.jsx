@@ -8,12 +8,12 @@ import { CSS } from '@dnd-kit/utilities';
 /**
  * WordPress dependencies
  */
-import { Icon, file, chevronDown, chevronUp } from '@wordpress/icons';
+import { Icon, file, lock, chevronDown, chevronUp } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
-import { toggleOpenClose, changeSelectedFolder } from '../../redux/slice/folders';
+import { toggleOpenClose, changeSelectedFolder, showContextMenu } from '../../redux/slice/folders';
 import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
 
@@ -26,11 +26,39 @@ const TreeItem = ( { item, index, depth } ) => {
 
 	const selectedFolderID = useSelector( ( state ) => state.FolderReducer.selectedFolder?.id );
 
+	/**
+	 * Handle click on the tree item to change the selected folder
+	 * and trigger the filter change in the media grid.
+	 */
 	const handleClick = () => {
 		triggerFilterChange( item.id );
 
-		dispatch( toggleOpenClose( { id: item.id } ) );
 		dispatch( changeSelectedFolder( { item } ) );
+	};
+
+	/**
+	 * Handle click on the chevron to toggle the open/close state of the folder.
+	 *
+	 * @param {Event} e - The event object.
+	 */
+	const handleChevronClick = ( e ) => {
+		e.stopPropagation();
+		dispatch( toggleOpenClose( { id: item.id } ) );
+	};
+
+	/**
+	 * Handle right-click context menu for the tree item.
+	 *
+	 * @param {Event} e - The event object.
+	 */
+	const handleContextMenu = ( e ) => {
+		e.preventDefault();
+		e.stopPropagation();
+
+		dispatch( showContextMenu( {
+			position: { x: e.clientX, y: e.clientY },
+			item,
+		} ) );
 	};
 
 	const style = {
@@ -50,6 +78,7 @@ const TreeItem = ( { item, index, depth } ) => {
 				style={ style }
 				{ ...attributes }
 				{ ...listeners }
+				onContextMenu={ handleContextMenu }
 			>
 				<button
 					style={ { paddingLeft: `${ depth * indentPerLevel }px` } }
@@ -60,12 +89,31 @@ const TreeItem = ( { item, index, depth } ) => {
 					onClick={ () => handleClick() }
 				>
 					<div className="tree-item__content">
-						<Icon icon={ file } />
+						<Icon icon={ item.meta?.locked ? lock : file } />
 						<span className="tree-item__text">{ item.name }</span>
+
+						<span className="tree-item__count">
+							{ item.attachmentCount ?? 0 }
+						</span>
 					</div>
 
 					{ item.children?.length > 0 &&
+					<span
+						className="tree-item__chevron"
+						onClick={ ( event ) => handleChevronClick( event ) }
+						onKeyDown={ ( e ) => {
+							if ( e.key === 'Enter' || e.key === ' ' ) {
+								e.preventDefault();
+								handleChevronClick( e );
+							}
+						} }
+						role="button"
+						tabIndex={ 0 }
+						aria-label={ item.isOpen ? 'Collapse folder' : 'Expand folder' }
+
+					>
 						<Icon icon={ item.isOpen ? chevronUp : chevronDown } />
+					</span>
 					}
 				</button>
 			</div>

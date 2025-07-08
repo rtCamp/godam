@@ -11,6 +11,9 @@ const RemoveEmptyScriptsPlugin = require( 'webpack-remove-empty-scripts' );
  */
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 
+const isProduction = process.env.NODE_ENV === 'production';
+const mode = isProduction ? 'production' : 'development';
+
 // Extend the default config.
 const sharedConfig = {
 	...defaultConfig,
@@ -133,24 +136,45 @@ const godamProductGallery = {
 	},
 };
 
-const gfGodamRecorderJS = {
-	...sharedConfig,
-	entry: {
-		'gf-godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-godam-recorder.js' ),
-	},
-};
-
 const gfGodamRecorderEditorJS = {
 	...sharedConfig,
 	entry: {
-		'gf-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-godam-recorder-editor.js' ),
+		'gf-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gravity-form', 'gf-godam-recorder-editor.js' ),
 	},
 };
 
 const gfEntryDetailJS = {
 	...sharedConfig,
 	entry: {
-		'gf-entry-detail': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-entry-detail.js' ),
+		'gf-entry-detail': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gravity-form', 'gf-entry-detail.js' ),
+	},
+};
+
+const jetpackFormJS = {
+	...sharedConfig,
+	entry: {
+		'jetpack-form': path.resolve( process.cwd(), 'assets', 'src', 'js', 'jetpack-form.js' ),
+	},
+};
+
+const elementorWidgetJS = {
+	...sharedConfig,
+	entry: {
+		'godam-elementor-frontend': path.resolve( process.cwd(), 'assets', 'src', 'js', 'elementor', 'frontend.js' ),
+	},
+};
+
+const elementorEditorJS = {
+	...sharedConfig,
+	entry: {
+		'godam-elementor-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'elementor', 'editor.js' ),
+	},
+};
+
+const godamRecorder = {
+	...sharedConfig,
+	entry: {
+		'godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-recorder', 'index.js' )
 	},
 };
 
@@ -184,6 +208,7 @@ fs.readdirSync( pagesDir ).forEach( ( folder ) => {
 entryPoints[ 'page-css' ] = path.resolve( process.cwd(), 'pages', 'index.js' );
 
 const pages = {
+	mode,
 	entry: entryPoints, // Dynamic entry points for each page
 	output: {
 		path: path.resolve( __dirname, './assets/build/pages' ), // Output directory
@@ -229,6 +254,7 @@ const pages = {
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
 	},
+	devtool: "source-map",
 };
 
 module.exports = [
@@ -245,6 +271,10 @@ module.exports = [
 	gfEntryDetailJS,
 	productVideoGalleryJS,
 	addToProductJS,
+	jetpackFormJS,
 	styles, // Do not remove this.
 	pages,
+	elementorWidgetJS,
+	elementorEditorJS,
+	godamRecorder,
 ];

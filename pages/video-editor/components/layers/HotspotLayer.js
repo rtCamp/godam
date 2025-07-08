@@ -108,10 +108,13 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	}, [] );
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
+	// const isValidAPIKey = window?.videoData?.validApiKey;
 
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
+
+	const isValidOrigin = ( url = '' ) =>
+		/^https?:\/\//i.test( url.trim() );
 
 	return (
 		<>
@@ -129,9 +132,10 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 			}
 
 			{ /* Duration */ }
-			<div className="mb-4">
+			<div className="mb-6">
 				<TextControl
 					label={ __( 'Layer Duration (seconds)', 'godam' ) }
+					className="godam-input"
 					type="number"
 					min="1"
 					value={ layer?.duration || '' }
@@ -147,6 +151,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 			{ /* Pause on hover */ }
 			<div className="mb-4">
 				<ToggleControl
+					className="godam-toggle"
 					label={ __( 'Pause video on hover', 'godam' ) }
 					checked={ layer?.pauseOnHover || false }
 					onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
@@ -161,9 +166,9 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 			</div>
 
 			{ /* Hotspots list */ }
-			<div className="flex flex-col gap-4">
+			<div className="flex items-center flex-col gap-4 pb-4">
 				{ hotspots.map( ( hotspot, index ) => (
-					<div key={ hotspot.id } className="p-2 border rounded">
+					<div key={ hotspot.id } className="p-2 w-full border rounded">
 						<div className="flex justify-between items-center">
 							<Button
 								icon={ expandedHotspotIndex === index ? chevronUp : chevronDown }
@@ -238,6 +243,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 						{ expandedHotspotIndex === index && (
 							<div className="mt-3">
 								<TextControl
+									className="godam-input"
 									label={ __( 'Tooltip Text', 'godam' ) }
 									placeholder={ __( 'Click Me!', 'godam' ) }
 									value={ hotspot.tooltipText }
@@ -255,16 +261,20 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 									label={ __( 'Link', 'godam' ) }
 									placeholder="https://www.example.com"
 									value={ hotspot.link }
-									onChange={ ( val ) =>
-										updateField(
-											'hotspots',
-											hotspots.map( ( h2, j ) =>
-												j === index ? { ...h2, link: val } : h2,
-											),
-										)
-									}
+									onChange={ ( val ) => {
+										const updated = hotspots.map( ( h2, j ) =>
+											j === index
+												? { ...h2, link: val, linkInvalid: val && ! isValidOrigin( val ) }
+												: h2,
+										);
+										updateField( 'hotspots', updated );
+									} }
+									className={ `${ hotspot.linkInvalid ? 'hotspot-link-error' : undefined } godam-input` }
 									disabled={ ! isValidAPIKey }
 								/>
+								{ hotspot.linkInvalid && (
+									<p className="text-red-600 text-xs mt-1">{ __( 'Invalid origin: must use either http or https as the scheme.', 'godam' ) }</p>
+								) }
 								{ hotspot.showIcon && (
 									<div className="flex flex-col gap-2 mt-2">
 										<FontAwesomeIconPicker
@@ -311,10 +321,11 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 				) ) }
 
 				<Button
-					isPrimary
+					variant="primary"
 					id="add-hotspot-btn"
 					icon={ plus }
 					iconPosition="left"
+					className="godam-button"
 					onClick={ handleAddHotspot }
 					disabled={ ! isValidAPIKey }
 				>

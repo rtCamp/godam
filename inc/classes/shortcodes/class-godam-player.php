@@ -34,7 +34,7 @@ class GoDAM_Player {
 	 */
 	public function godam_output_admin_player_css() {
 		$godam_settings = get_option( 'rtgodam-settings', array() );
-		$custom_css     = $godam_settings['video_player']['custom_css'];
+		$custom_css     = $godam_settings['video_player']['custom_css'] ?? '';
 		if ( ! empty( $custom_css ) ) {
 			echo '<style id="godam-player-inline-css">' . esc_html( $custom_css ) . '</style>';
 		}
@@ -78,11 +78,32 @@ class GoDAM_Player {
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player.css' )
 		);
 
+		wp_register_style(
+			'godam-player-minimal-skin',
+			RTGODAM_URL . 'assets/build/css/minimal-skin.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/minimal-skin.css' )
+		);
+
+		wp_register_style(
+			'godam-player-pills-skin',
+			RTGODAM_URL . 'assets/build/css/pills-skin.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/pills-skin.css' )
+		);
+
+		wp_register_style(
+			'godam-player-bubble-skin',
+			RTGODAM_URL . 'assets/build/css/bubble-skin.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/bubble-skin.css' )
+		);
+
 		wp_localize_script(
 			'godam-player-frontend-script',
 			'godamData',
 			array(
-				'api_base' => RTGODAM_API_BASE,
+				'apiBase' => RTGODAM_API_BASE,
 			)
 		);
 	}
@@ -113,6 +134,16 @@ class GoDAM_Player {
 		wp_enqueue_script( 'godam-player-analytics-script' );
 		wp_enqueue_style( 'godam-player-frontend-style' );
 		wp_enqueue_style( 'godam-player-style' );
+		
+		$godam_settings = get_option( 'rtgodam-settings', array() );
+		$selected_skin  = $godam_settings['video_player']['player_skin'] ?? '';
+		if ( 'Minimal' === $selected_skin ) {
+			wp_enqueue_style( 'godam-player-minimal-skin' );
+		} elseif ( 'Pills' === $selected_skin ) {
+			wp_enqueue_style( 'godam-player-pills-skin' );
+		} elseif ( 'Bubble' === $selected_skin ) {
+			wp_enqueue_style( 'godam-player-bubble-skin' );
+		}
 
 		ob_start();
 		require RTGODAM_PATH . 'inc/templates/godam-player.php';
