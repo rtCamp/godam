@@ -63,6 +63,11 @@ class Recorder_Field extends BaseFieldManager {
 		add_filter( 'fluentform/input_data_' . $this->key, array( $this, 'handle_recorder_field_data' ), 10, 2 );
 
 		/**
+		 * Validate input for empty field, other validation done on ajax request.
+		 */
+		add_filter( 'fluentform/validate_input_item_' . $this->key, array( $this, 'handle_recorder_field_validation' ), 10, 3 );
+
+		/**
 		 * Initialize all values.
 		 */
 		$this->editor_label = __( 'Godam Recorder', 'godam' );
@@ -392,6 +397,50 @@ class Recorder_Field extends BaseFieldManager {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Handle validation for the required field.
+	 *
+	 * @param string       $error_message Error Message.
+	 * @param array<mixed> $field         Current Field.
+	 * @param array<mixed> $form_data     Form Data.
+	 *
+	 * @return string
+	 */
+	public function handle_recorder_field_validation( $error_message, $field, $form_data ) {
+
+		/**
+		 * Get input name.
+		 */
+		$input_name = ArrayHelper::get( $field, 'raw.attributes.name' );
+
+		/**
+		 * Get value.
+		 */
+		$value = ArrayHelper::get( $form_data, $input_name );
+
+		// Bail if we have value.
+		if ( is_array( $value ) && ! empty( $value[0] ) ) {
+			return $error_message;
+		} elseif ( empty( $value ) ) {
+			return $error_message;
+		}
+
+		$is_required = ArrayHelper::get( $field, 'raw.settings.validation_rules.required.value' );
+
+		// Bail if input is not required.
+		if ( ! $is_required ) {
+			return $error_message;
+		}
+
+		/**
+		 * Extract error message for empty field, that is required.
+		 */
+		$error_message = ArrayHelper::get( $field, 'raw.settings.validation_rules.required.message' );
+
+		// Return erorr message string for required.
+		return $error_message;
 	}
 
 	/**
