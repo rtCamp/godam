@@ -11,6 +11,8 @@
 	display: flex;
 	flex-direction: column;
 	min-height: calc(100vh - 34px);
+	overflow: auto;
+    height: 100%;
 
 	* {
 		box-sizing: border-box;
