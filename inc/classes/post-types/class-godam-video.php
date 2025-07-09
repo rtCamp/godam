@@ -358,7 +358,7 @@ class GoDAM_Video extends Base {
 	 * @return void
 	 */
 	public function migrate_existing_attachments( $batch_size = 50 ) {
-		$offset = 0;
+		$page = 1;
 
 		do {
 			$query = new WP_Query(
@@ -366,7 +366,7 @@ class GoDAM_Video extends Base {
 					'post_type'      => 'attachment',
 					'post_status'    => 'inherit',
 					'posts_per_page' => $batch_size,
-					'offset'         => $offset,
+					'paged'          => $page,
 					'orderby'        => 'ID',
 					'order'          => 'ASC',
 				) 
@@ -384,7 +384,7 @@ class GoDAM_Video extends Base {
 				$this->create_video_post_from_attachment( $attachment->ID );
 			}
 
-			$offset  += $batch_size;
+			++$page;
 			$has_more = count( $query->posts ) === $batch_size;
 
 		} while ( $has_more );
