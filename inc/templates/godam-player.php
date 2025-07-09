@@ -40,6 +40,12 @@ $video_preview      = isset( $attributes['preview'] ) ? $attributes['preview'] :
 $overlay_time_range = ! empty( $attributes['overlayTimeRange'] ) ? floatval( $attributes['overlayTimeRange'] ) : 0;
 $show_overlay       = isset( $attributes['showOverlay'] ) ? $attributes['showOverlay'] : false;
 $vertical_alignment = ! empty( $attributes['verticalAlignment'] ) ? esc_attr( $attributes['verticalAlignment'] ) : 'center';
+$aspect_ratio       = ! empty( $attributes['aspectRatio'] ) && 'responsive' === $attributes['aspectRatio']
+	? ( ! empty( $attributes['videoWidth'] ) && ! empty( $attributes['videoHeight'] )
+		? $attributes['videoWidth'] . ':' . $attributes['videoHeight']
+		: '16:9'
+	)
+	: '16:9';
 
 $src            = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
@@ -101,6 +107,16 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 		);
 	}
 }
+$easydam_control_bar_color = 'initial'; // Default color.
+
+$godam_settings         = get_option( 'rtgodam-settings', array() );
+$brand_color            = isset( $godam_settings['video_player']['brand_color'] ) ? $godam_settings['video_player']['brand_color'] : null;
+$appearance_color       = isset( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
+$brand_image            = isset( $godam_settings['video_player']['brand_image'] ) ? $godam_settings['video_player']['brand_image'] : null;
+$individual_brand_image = isset( $easydam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $easydam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
+$player_skin            = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : 'Default';
+$ads_settings           = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
+$ads_settings           = wp_json_encode( $ads_settings );
 
 // Build the video setup options for data-setup.
 $video_setup = array(
@@ -113,6 +129,15 @@ $video_setup = array(
 	'fluid'       => true,
 	'sources'     => $sources,
 	'playsinline' => true,
+	'controlBar'  => array(
+		'volumePanel' => array(
+			'inline' => ! in_array( $player_skin, array( 'Minimal', 'Pills' ), true ),
+		),
+		'skipButtons' => array(
+			'forward'  => 10,
+			'backward' => 10,
+		),
+	),
 );
 if ( ! empty( $control_bar_settings ) ) {
 	$video_setup['controlBar'] = $control_bar_settings; // contains settings specific to control bar.
@@ -125,14 +150,10 @@ $video_config = wp_json_encode(
 		'layers'           => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
 		'chapters'         => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(), // contains list of chapters.
 		'overlayTimeRange' => $overlay_time_range, // Add overlay time range to video config.
+		'playerSkin'       => $player_skin, // Add player skin to video config. Add brand image to video config.
+		'aspectRatio'      => $aspect_ratio,
 	)
 );
-
-$easydam_control_bar_color = '#2b333fb3'; // Default color.
-
-$godam_settings   = get_option( 'rtgodam-settings', array() );
-$brand_color      = isset( $godam_settings['general']['brand_color'] ) ? $godam_settings['general']['brand_color'] : null;
-$appearance_color = isset( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
 
 if ( ! empty( $appearance_color ) ) {
 	$easydam_control_bar_color = $appearance_color;
@@ -173,7 +194,7 @@ $custom_css_properties = array(
 );
 
 if ( ! empty( $attributes['aspectRatio'] ) ) {
-	$custom_css_properties['--rtgodam-video-aspect-ratio'] = $attributes['aspectRatio'];
+	$custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $aspect_ratio );
 }
 
 // Build the inline style string, escaping each value.
@@ -206,7 +227,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 	--rtgodam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
 	--rtgodam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
 	--rtgodam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
-	<?php echo $attributes['aspectRatio'] ? '--rtgodam-video-aspect-ratio: ' . esc_attr( $attributes['aspectRatio'] ) : ''; ?>
+	<?php echo $aspect_ratio ? '--rtgodam-video-aspect-ratio: ' . esc_attr( str_replace( ':', '/', $aspect_ratio ) ) : ''; ?>
 	">
 		<div class="godam-video-wrapper">
 			<?php if ( $show_overlay && ! empty( $inner_blocks_content ) ) : ?>
@@ -222,8 +243,8 @@ if ( $is_shortcode || $is_elementor_widget ) {
 				</div>
 			<?php endif; ?>
 
-			<div class="easydam-video-container animate-video-loading" style="position: relative;">
-				<?php if ( ! empty( $heading ) ) : ?>
+			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin" style="position: relative;">
+			<?php if ( ! empty( $heading ) ) : ?>
 					<div
 						class="godam-video-heading-overlay"
 						data-heading-overlay
@@ -248,8 +269,8 @@ if ( $is_shortcode || $is_elementor_widget ) {
 						<?php echo wp_kses_post( $heading ); ?>
 					</div>
 				<?php endif; ?>
-
-				<div class="animate-play-btn">
+					
+			<div class="animate-play-btn">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 					</svg>
@@ -262,6 +283,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 					data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 					data-controls="<?php echo esc_attr( $video_setup ); ?>"
 					data-job_id="<?php echo esc_attr( $job_id ); ?>"
+					data-global_ads_settings="<?php echo esc_attr( $ads_settings ); ?>"
 				>
 					<?php
 					foreach ( $sources as $source ) :

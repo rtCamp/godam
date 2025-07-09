@@ -18,7 +18,6 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import TreeItem from './TreeItem.jsx';
 import TreeItemPreview from './TreeItemPreview.jsx';
-import ContextMenu from './ContextMenu.jsx';
 import SnackbarComp from './SnackbarComp.jsx';
 
 import { setTree, updateSnackbar } from '../../redux/slice/folders.js';
@@ -50,12 +49,13 @@ const openLocalStorageItem = ( folders ) => {
 	return folders;
 };
 
-const FolderTree = () => {
+const FolderTree = ( { handleContextMenu } ) => {
 	const { data: folders, error, isLoading } = useGetFoldersQuery();
 
 	const dispatch = useDispatch();
 	const data = useSelector( ( state ) => state.FolderReducer.folders );
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
 
 	const [ updateFolderMutation ] = useUpdateFolderMutation();
 
@@ -300,6 +300,8 @@ const FolderTree = () => {
 									item={ item }
 									key={ item.id }
 									depth={ item.id === activeId && projected ? projected.depth : item.depth }
+									onContextMenu={ ( e, id ) => handleContextMenu( e, id, item ) }
+									isMultiSelecting={ isMultiSelecting }
 								/>
 							);
 						} ) }
@@ -320,7 +322,6 @@ const FolderTree = () => {
 			</DragOverlay>
 
 			<SnackbarComp />
-			<ContextMenu />
 
 		</DndContext>
 	);

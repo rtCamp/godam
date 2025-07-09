@@ -167,7 +167,7 @@ const elementorEditorJS = {
 const godamRecorder = {
 	...sharedConfig,
 	entry: {
-		'godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-recorder', 'index.js' ),
+		'godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-recorder', 'index.js' )
 	},
 };
 

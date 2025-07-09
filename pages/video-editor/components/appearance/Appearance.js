@@ -16,6 +16,7 @@ import {
 	Notice,
 	TextareaControl,
 	ToggleControl,
+	Icon,
 } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -23,6 +24,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice';
 import GoDAM from '../../../../assets/src/images/GoDAM.png';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
+import { closeSmall } from '@wordpress/icons';
 
 const Appearance = () => {
 	const dispatch = useDispatch();
@@ -555,26 +557,46 @@ const Appearance = () => {
 					>
 						{ __( 'Player Theme', 'godam' ) }
 					</label>
-					<ColorPickerButton
-						value={ videoConfig.controlBar.appearanceColor }
-						label={ __( 'Player Appearance', 'godam' ) }
-						className="mb-0"
-						contentClassName="border-b-0"
-						enableAlpha={ true }
-						onChange={ ( value ) => {
-							if ( ! value ) {
-								value = '#2b333fb3';
-							}
-							dispatch(
-								updateVideoConfig( {
-									controlBar: {
-										...videoConfig.controlBar,
-										appearanceColor: value,
-									},
-								} ),
-							);
-						} }
-					/>
+					<div className="flex items-center gap-2">
+						<ColorPickerButton
+							value={ videoConfig.controlBar.appearanceColor }
+							label={ __( 'Player Appearance', 'godam' ) }
+							className="mb-0"
+							contentClassName="border-b-0"
+							enableAlpha={ true }
+							onChange={ ( value ) => {
+								if ( ! value ) {
+									value = '#2b333fb3';
+								}
+								dispatch(
+									updateVideoConfig( {
+										controlBar: {
+											...videoConfig.controlBar,
+											appearanceColor: value,
+										},
+									} ),
+								);
+							} }
+						/>
+						{ videoConfig.controlBar.appearanceColor && (
+							<button
+								type="button"
+								className="text-xs text-red-500 underline hover:text-red-600 bg-transparent cursor-pointer"
+								onClick={ () => dispatch(
+									updateVideoConfig( {
+										controlBar: {
+											...videoConfig.controlBar,
+											appearanceColor: '',
+										},
+									} ),
+								) }
+								aria-haspopup="true"
+								aria-label={ __( 'Remove', 'godam' ) }
+							>
+								<Icon icon={ closeSmall } />
+							</button>
+						) }
+					</div>
 					<ColorPickerButton
 						value={ videoConfig.controlBar.hoverColor }
 						label={ __( 'Icons hover color', 'godam' ) }
