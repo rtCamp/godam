@@ -46,7 +46,9 @@ use RTGODAM\Inc\Shortcodes\GoDAM_Product_Gallery;
 
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\Video_Metadata;
+
 use RTGODAM\Inc\WooCommerce\WC_Product_Video_Gallery;
+use RTGODAM\Inc\WooCommerce\WC_Featured_Video_Gallery;
 
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
 
@@ -122,6 +124,7 @@ class Plugin {
 	public function load_woocommerce_configs() {
 		if ( is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 			WC_Product_Video_Gallery::get_instance();
+			WC_Featured_Video_Gallery::get_instance();
 		}
 	}
 

@@ -54,98 +54,98 @@ document.addEventListener( 'DOMContentLoaded', function() {
 	// 	return interval;
 	// }
 
-// 	// Play button click
-// 	playButtons.forEach( ( btn ) => {
-// 		btn.addEventListener( 'click', function() {
-// 			const container = btn.closest( '.godam-product-video-item' );
-// 			const video = container.querySelector( 'video' );
+	// 	// Play button click
+	// 	playButtons.forEach( ( btn ) => {
+	// 		btn.addEventListener( 'click', function() {
+	// 			const container = btn.closest( '.godam-product-video-item' );
+	// 			const video = container.querySelector( 'video' );
 
-// 			userControlledVideos.add( video );
-// 			stopAllVideos( video );
-// 			removePlayButtons( btn );
+	// 			userControlledVideos.add( video );
+	// 			stopAllVideos( video );
+	// 			removePlayButtons( btn );
 
-// 			video.muted = false;
-// 			video.play();
-// 			btn.style.display = 'none';
+	// 			video.muted = false;
+	// 			video.play();
+	// 			btn.style.display = 'none';
 
-// 			// Video click toggles play/pause
-// 			video.onclick = function() {
-// 				if ( video.paused ) {
-// 					video.play();
-// 					btn.style.display = 'none';
-// 					stopAllVideos( video );
-// 				} else {
-// 					video.pause();
-// 					btn.style.display = 'flex';
+	// 			// Video click toggles play/pause
+	// 			video.onclick = function() {
+	// 				if ( video.paused ) {
+	// 					video.play();
+	// 					btn.style.display = 'none';
+	// 					stopAllVideos( video );
+	// 				} else {
+	// 					video.pause();
+	// 					btn.style.display = 'flex';
 
-// 					videos.forEach( ( vid ) => {
-// 						if ( vid !== video && ! userControlledVideos.has( vid ) ) {
-// 							vid.muted = true;
-// 							vid.play();
-// 							createLoop( vid );
-// 						}
-// 					} );
-// 				}
-// 			};
-// 		} );
-// 	} );
+	// 					videos.forEach( ( vid ) => {
+	// 						if ( vid !== video && ! userControlledVideos.has( vid ) ) {
+	// 							vid.muted = true;
+	// 							vid.play();
+	// 							createLoop( vid );
+	// 						}
+	// 					} );
+	// 				}
+	// 			};
+	// 		} );
+	// 	} );
 
-// 	// Unmute button click
-// 	unmuteButtons.forEach( ( btn ) => {
-// 		btn.addEventListener( 'click', function() {
-// 			const container = btn.closest( '.godam-product-video-item' );
-// 			const video = container.querySelector( 'video' );
+	// 	// Unmute button click
+	// 	unmuteButtons.forEach( ( btn ) => {
+	// 		btn.addEventListener( 'click', function() {
+	// 			const container = btn.closest( '.godam-product-video-item' );
+	// 			const video = container.querySelector( 'video' );
 
-// 			// First: reset all other videos & unmute buttons to "muted" state
-// 			unmuteButtons.forEach( ( otherBtn ) => {
-// 				const otherContainer = otherBtn.closest( '.godam-product-video-item' );
-// 				const otherVideo = otherContainer.querySelector( 'video' );
+	// 			// First: reset all other videos & unmute buttons to "muted" state
+	// 			unmuteButtons.forEach( ( otherBtn ) => {
+	// 				const otherContainer = otherBtn.closest( '.godam-product-video-item' );
+	// 				const otherVideo = otherContainer.querySelector( 'video' );
 
-// 				if ( otherBtn !== btn ) {
-// 					otherVideo.muted = true;
-// 					updateUnmuteIcon( otherBtn, true ); // show cross
-// 				}
-// 			} );
+	// 				if ( otherBtn !== btn ) {
+	// 					otherVideo.muted = true;
+	// 					updateUnmuteIcon( otherBtn, true ); // show cross
+	// 				}
+	// 			} );
 
-// 			const isNowMuted = ! video.muted;
-// 			video.muted = isNowMuted;
-// 			updateUnmuteIcon( btn, isNowMuted );
+	// 			const isNowMuted = ! video.muted;
+	// 			video.muted = isNowMuted;
+	// 			updateUnmuteIcon( btn, isNowMuted );
 
-// 			if ( isNowMuted ) {
-// 				video.pause();
-// 				video.currentTime = 0;
+	// 			if ( isNowMuted ) {
+	// 				video.pause();
+	// 				video.currentTime = 0;
 
-// 				videos.forEach( ( vid ) => {
-// 					if ( vid !== video && ! userControlledVideos.has( vid ) ) {
-// 						vid.muted = true;
-// 						vid.play();
-// 						createLoop( vid );
-// 					}
-// 				} );
-// 			} else {
-// 				userControlledVideos.add( video );
-// 				stopAllVideos( video );
-// 				video.play();
+	// 				videos.forEach( ( vid ) => {
+	// 					if ( vid !== video && ! userControlledVideos.has( vid ) ) {
+	// 						vid.muted = true;
+	// 						vid.play();
+	// 						createLoop( vid );
+	// 					}
+	// 				} );
+	// 			} else {
+	// 				userControlledVideos.add( video );
+	// 				stopAllVideos( video );
+	// 				video.play();
 
-// 				const playBtn = container.querySelector( '.godam-play-button' );
-// 				if ( playBtn ) {
-// 					playBtn.style.display = 'none';
-// 				}
-// 			}
-// 		} );
-// 	} );
+	// 				const playBtn = container.querySelector( '.godam-play-button' );
+	// 				if ( playBtn ) {
+	// 					playBtn.style.display = 'none';
+	// 				}
+	// 			}
+	// 		} );
+	// 	} );
 
-// 	// Update SVG icon (mute/unmute)
-// 	function updateUnmuteIcon( button, isMuted ) {
-// 		const svg = button.querySelector( 'svg' );
-// 		if ( ! svg ) {
-// 			return;
-// 		}
-// 		const cross = svg.querySelector( 'g' );
-// 		if ( cross ) {
-// 			cross.style.display = isMuted ? 'block' : 'none';
-// 		}
-// 	}
+	// 	// Update SVG icon (mute/unmute)
+	// 	function updateUnmuteIcon( button, isMuted ) {
+	// 		const svg = button.querySelector( 'svg' );
+	// 		if ( ! svg ) {
+	// 			return;
+	// 		}
+	// 		const cross = svg.querySelector( 'g' );
+	// 		if ( cross ) {
+	// 			cross.style.display = isMuted ? 'block' : 'none';
+	// 		}
+	// 	}
 
 	// Initial autoplay loop setup
 	videos.forEach( ( video ) => {
@@ -194,7 +194,7 @@ document.addEventListener( 'click', async function( e ) {
 		<div class="godam-product-modal-overlay"></div>
 		<div class="godam-product-modal-content">
 			<span class="godam-product-modal-close">&times;</span>
-			<div class="easydam-video-container animate-video-loading">
+			<div class="easydam-video-container animate-video-loading" style="aspect-ratio:9/16;">
 				<div class="animate-play-btn">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
@@ -235,14 +235,76 @@ document.addEventListener( 'click', async function( e ) {
 			container.classList.add( 'animate-video-loading' );
 		}
 
+		// try {
+		// 	const res = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ newVideoId }` );
+		// 	const data = await res.json();
+
+		// 	if ( data.status === 'success' && data.html ) {
+		// 		container.innerHTML = data.html;
+		// 		container.classList.remove( 'animate-video-loading' );
+
+		// 		const title = modal.querySelector( '.godam-video-title' );
+		// 		const date = modal.querySelector( '.godam-video-date' );
+		// 		if ( title ) {
+		// 			title.innerHTML = DOMPurify.sanitize( data.title || '' );
+		// 		}
+		// 		if ( date ) {
+		// 			date.textContent = data.date || '';
+		// 		}
+
+		// 		if ( typeof GODAMPlayer === 'function' ) {
+		// 			GODAMPlayer( modal );
+		// 			const player = modal.querySelector( '.video-js' );
+		// 			if ( player?.player ) {
+		// 				player.player.play();
+		// 			}
+		// 		}
+		// 	} else {
+		// 		container.innerHTML = `<div class="godam-error-message">Video could not be loaded.</div>`;
+		// 		container.classList.remove( 'animate-video-loading' );
+		// 	}
+		// } catch ( err ) {
+		// 	container.innerHTML = `<div class="godam-error-message">Video could not be loaded.</div>`;
+		// 	container.classList.remove( 'animate-video-loading' );
+		// } finally {
+		// 	modal.dataset.isLoading = 'false';
+		// }
+
 		try {
 			const res = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ newVideoId }` );
 			const data = await res.json();
 
 			if ( data.status === 'success' && data.html ) {
-				container.innerHTML = data.html;
+				let html = data.html;
+
+				// 🔁 Match and modify the `data-options` JSON string inside the HTML
+				html = html.replace( /data-options="([^"]+)"/, ( match, jsonEncoded ) => {
+					const decoded = jsonEncoded.replace( /&quot;/g, '"' );
+
+					try {
+						const json = JSON.parse( decoded );
+						json.aspectRatio = '9/16'; // update
+						json.playerSkin = 'Minimal'; // optionally change skin
+
+						// re-encode to match format
+						const updatedJson = JSON.stringify( json ).replace( /"/g, '&quot;' );
+						return `data-options="${ updatedJson }"`;
+					} catch ( err ) {
+						console.warn( 'Could not parse/replace data-options:', decoded );
+						return match; // fallback to original if it fails
+					}
+				} );
+
+				html = html.replace(
+					/--rtgodam-video-aspect-ratio:\s*[^;"]+/,
+					'--rtgodam-video-aspect-ratio: 9/16',
+				);
+
+				// ✅ Inject updated HTML with properly escaped attributes
+				container.innerHTML = html;
 				container.classList.remove( 'animate-video-loading' );
 
+				// title + date
 				const title = modal.querySelector( '.godam-video-title' );
 				const date = modal.querySelector( '.godam-video-date' );
 				if ( title ) {
@@ -252,8 +314,10 @@ document.addEventListener( 'click', async function( e ) {
 					date.textContent = data.date || '';
 				}
 
+				// player
 				if ( typeof GODAMPlayer === 'function' ) {
 					GODAMPlayer( modal );
+
 					const player = modal.querySelector( '.video-js' );
 					if ( player?.player ) {
 						player.player.play();
@@ -263,8 +327,8 @@ document.addEventListener( 'click', async function( e ) {
 				container.innerHTML = `<div class="godam-error-message">Video could not be loaded.</div>`;
 				container.classList.remove( 'animate-video-loading' );
 			}
-		} catch ( err ) {
-			container.innerHTML = `<div class="godam-error-message">Video could not be loaded.</div>`;
+		} catch ( error ) {
+			console.error( 'Fetch or parsing failed:', error );
 			container.classList.remove( 'animate-video-loading' );
 		} finally {
 			modal.dataset.isLoading = 'false';

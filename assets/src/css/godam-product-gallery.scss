@@ -509,7 +509,7 @@ video {
 /* Video player */
 
 /* Base modal wrapper */
-.godam-product-modal {
+#godam-product-modal {
 	position: fixed;
 	inset: 0;
 	z-index: 9999;
@@ -535,7 +535,7 @@ video {
 // /* Main modal content */
 .godam-product-modal-content {
 	// position: relative;
-	width: 50%;
+	// width: 50%;
 	// max-width: 450px;
 	// height: 100%;
 	// display: flex;
@@ -555,6 +555,21 @@ video {
 	color: #fff;
 	cursor: pointer;
 	z-index: 10;
+}
+
+.godam-product-modal-close + .easydam-video-container {
+	background: rgba(0, 0, 0, 0);
+	height: 100vh;
+	margin-top: 27%;
+
+	@media (max-width: 768px) {
+		margin: 0;
+	}
+}
+
+.animate-video-loading {
+	position: relative;
+    top: 50%;
 }
 
 // /* Footer (optional) */

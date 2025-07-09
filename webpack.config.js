@@ -266,7 +266,6 @@ module.exports = [
 	deactivationJS,
 	godamGallery,
 	godamProductGallery,
-	gfGodamRecorderJS,
 	gfGodamRecorderEditorJS,
 	gfEntryDetailJS,
 	productVideoGalleryJS,

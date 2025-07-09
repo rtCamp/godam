@@ -53,17 +53,20 @@ class GoDAM_Product_Gallery {
 		wp_register_script(
 			'godam-product-gallery-script',
 			RTGODAM_URL . 'assets/build/js/godam-product-gallery.min.js',
-			[ 'wp-data', 'wp-element', 'wp-hooks' ],
+			array( 'wp-data', 'wp-element', 'wp-hooks' ),
 			filemtime( RTGODAM_PATH . 'assets/build/js/godam-product-gallery.min.js' ),
 			true
 		);
 		
-		wp_localize_script( 'godam-product-gallery-script', 'godamVars', [
-			'api_nonce' => wp_create_nonce( 'wc_store_api' ),
-		] );
+		wp_localize_script(
+			'godam-product-gallery-script',
+			'godamVars',
+			array(
+				'api_nonce' => wp_create_nonce( 'wc_store_api' ),
+			) 
+		);
 		
 		wp_enqueue_script( 'godam-product-gallery-script' );
-		
 	}
 
 	/**
@@ -78,33 +81,33 @@ class GoDAM_Product_Gallery {
 		$default_atts = apply_filters(
 			'rtgodam_product_gallery_default_attributes',
 			array(
-				'layout'                   => 'carousel',
-				'view'                     => '4-3',
-				'product'                  => '',
-				'align'                    => '',
-				'autoplay'                 => '',
-				'play_button_enabled'      => '',
-				'play_button_bg_color'     => '#000000',
-				'play_button_icon_color'   => '#ffffff',
-				'play_button_size'         => 40,
-				'play_button_radius'       => 50,
-				'unmute_button_enabled'    => '',
-				'unmute_button_bg_color'   => 'rgba(0,0,0,0.4)',
-				'unmute_button_icon_color' => '#ffffff',
-				'arrow_bg_color'			 => 'rgba(0,0,0,0.5)',
-				'arrow_icon_color'		 => '#ffffff',
-				'arrow_size'				 => 32,
-				'arrow_border_radius'		 => 4,
-				'arrow_visibility'		 => 'always',
-				'cta_enabled'			 => false,
-				'cta_display_position'	 => 'below',
-				'cta_button_bg_color'		 => '#000000',
-				'cta_button_icon_color'	 => '#ffffff',
-				'cta_button_border_radius' => 30,
-				'cta_product_name_font_size' => 16,
-				'cta_product_price_font_size'=> 14,
-				'cta_product_name_color'	 => '#000000',
-				'cta_product_price_color'	 => '#333333',
+				'layout'                      => 'carousel',
+				'view'                        => '4-3',
+				'product'                     => '',
+				'align'                       => '',
+				'autoplay'                    => '',
+				'play_button_enabled'         => '',
+				'play_button_bg_color'        => '#000000',
+				'play_button_icon_color'      => '#ffffff',
+				'play_button_size'            => 40,
+				'play_button_radius'          => 50,
+				'unmute_button_enabled'       => '',
+				'unmute_button_bg_color'      => 'rgba(0,0,0,0.4)',
+				'unmute_button_icon_color'    => '#ffffff',
+				'arrow_bg_color'              => 'rgba(0,0,0,0.5)',
+				'arrow_icon_color'            => '#ffffff',
+				'arrow_size'                  => 32,
+				'arrow_border_radius'         => 4,
+				'arrow_visibility'            => 'always',
+				'cta_enabled'                 => false,
+				'cta_display_position'        => 'below',
+				'cta_button_bg_color'         => '#000000',
+				'cta_button_icon_color'       => '#ffffff',
+				'cta_button_border_radius'    => 30,
+				'cta_product_name_font_size'  => 16,
+				'cta_product_price_font_size' => 14,
+				'cta_product_name_color'      => '#000000',
+				'cta_product_price_color'     => '#333333',
 			)
 		);
 
@@ -188,7 +191,7 @@ class GoDAM_Product_Gallery {
 			if ( 'carousel' === $atts['layout'] ) {
 				echo '<div class="godam-carousel-wrapper">';
 			
-				echo sprintf(
+				printf(
 					'<button class="carousel-arrow left %s" style="background:%s;color:%s;border-radius:%dpx;width:%dpx;height:%dpx;font-size:%dpx;" aria-label="%s">&#10094;</button>',
 					esc_attr( $atts['arrow_visibility'] === 'hover' ? 'hide-until-hover' : '' ),
 					esc_attr( $this->hex_to_rgba( $atts['arrow_bg_color'] ) ),
@@ -219,7 +222,7 @@ class GoDAM_Product_Gallery {
 
 				$video_url = $video->guid;
 
-				$video_attached_products = get_post_meta($video_id, '_video_parent_product_id', false);
+				$video_attached_products = get_post_meta( $video_id, '_video_parent_product_id', false );
 
 				if ( ! empty( $video_url ) ) {
 
@@ -279,7 +282,7 @@ class GoDAM_Product_Gallery {
 							'1-1'  => '19rem',
 						);
 					
-						$cta_width = isset( $video_width_map[ $atts['view'] ] ) ? $video_width_map[ $atts['view'] ] : '100%';
+						$cta_width   = isset( $video_width_map[ $atts['view'] ] ) ? $video_width_map[ $atts['view'] ] : '100%';
 						$product_ids = array_map( 'absint', (array) $video_attached_products );
 
 						$main_product = wc_get_product( $product_ids[0] );
@@ -300,7 +303,7 @@ class GoDAM_Product_Gallery {
 										echo 'font-size:' . intval( $atts['cta_product_name_font_size'] ) . 'px;';
 										echo 'color:' . esc_attr( $atts['cta_product_name_color'] ) . ';';
 										echo 'margin-top:0;';
-									echo '">' . esc_html( $main_product->get_name() )  . '</p>';
+									echo '">' . esc_html( $main_product->get_name() ) . '</p>';
 						
 									echo '<p class="product-price" style="';
 										echo 'font-size:' . intval( $atts['cta_product_price_font_size'] ) . 'px;';
@@ -314,36 +317,36 @@ class GoDAM_Product_Gallery {
 								echo '</button>';
 
 								// Detached Dropdown
-								if ( $has_dropdown ) {
-									echo '<div class="cta-dropdown">';
-									foreach ( $product_ids as $product_id ) {
-										$product = wc_get_product( $product_id );
-										if ( $product ) {
-											echo '<div class="cta-dropdown-item">';
-												echo '<div class="cta-thumbnail-small">' . $product->get_image( 'woocommerce_gallery_thumbnail' ) . '</div>';
-												echo '<div class="cta-product-info">';
-													echo '<p class="product-title" style="';
-													echo 'font-size:' . intval( $atts['cta_product_name_font_size'] ) . 'px;';
-													echo 'color:' . esc_attr( $atts['cta_product_name_color'] ) . ';';
-													echo 'margin-top:0; ">' . esc_html( $product->get_name() ) . '</p>';
+							if ( $has_dropdown ) {
+								echo '<div class="cta-dropdown">';
+								foreach ( $product_ids as $product_id ) {
+									$product = wc_get_product( $product_id );
+									if ( $product ) {
+										echo '<div class="cta-dropdown-item">';
+											echo '<div class="cta-thumbnail-small">' . $product->get_image( 'woocommerce_gallery_thumbnail' ) . '</div>';
+											echo '<div class="cta-product-info">';
+												echo '<p class="product-title" style="';
+												echo 'font-size:' . intval( $atts['cta_product_name_font_size'] ) . 'px;';
+												echo 'color:' . esc_attr( $atts['cta_product_name_color'] ) . ';';
+												echo 'margin-top:0; ">' . esc_html( $product->get_name() ) . '</p>';
 
-													echo '<p class="product-price" style="';
-													echo 'font-size:' . intval( $atts['cta_product_price_font_size'] ) . 'px;';
-													echo 'color:' . esc_attr( $atts['cta_product_price_color'] ) . ';';
-													echo 'margin:4px 0 0;" >' . $product->get_price_html() . '</p>';
-												echo '</div>';
-												echo '<button class="cta-add-to-cart" data-product-id="' . esc_attr( $product_id ) . '"style="background-color:' . esc_attr( $atts['cta_button_bg_color'] ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">+</button>';
+												echo '<p class="product-price" style="';
+												echo 'font-size:' . intval( $atts['cta_product_price_font_size'] ) . 'px;';
+												echo 'color:' . esc_attr( $atts['cta_product_price_color'] ) . ';';
+												echo 'margin:4px 0 0;" >' . $product->get_price_html() . '</p>';
 											echo '</div>';
-										}
+											echo '<button class="cta-add-to-cart" data-product-id="' . esc_attr( $product_id ) . '"style="background-color:' . esc_attr( $atts['cta_button_bg_color'] ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">+</button>';
+										echo '</div>';
 									}
-									echo '</div>';
 								}
+								echo '</div>';
+							}
 
 							echo '</div>';
 						}
 
 						echo '</div>';
-					}					
+					}                   
 
 					echo '</div>';
 				}
@@ -355,7 +358,7 @@ class GoDAM_Product_Gallery {
 			if ( 'carousel' === $atts['layout'] ) {
 				echo '</div>'; // .carousel-track
 			
-				echo sprintf(
+				printf(
 					'<button class="carousel-arrow right %s" style="background:%s;color:%s;border-radius:%dpx;width:%dpx;height:%dpx;font-size:%dpx;" aria-label="%s">&#10095;</button>',
 					esc_attr( $atts['arrow_visibility'] === 'hover' ? 'hide-until-hover' : '' ),
 					esc_attr( $this->hex_to_rgba( $atts['arrow_bg_color'] ) ),
