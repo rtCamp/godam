@@ -198,8 +198,8 @@ class GoDAM_Video extends Base {
 	/**
 	 * Sync attachment data to video post.
 	 *
-	 * @param int     $post_id     Post ID.
-	 * @param WP_Post $post        Post object.
+	 * @param int     $post_id   Post ID.
+	 * @param WP_Post $post Post object.
 	 */
 	public function sync_attachment_to_video_post( $post_id, $post = null ) {
 
