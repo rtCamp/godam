@@ -52,6 +52,15 @@ class WPForms_Integration {
             filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder.min.js' ),
             true
         );
+
+        // Common godam rcorder script.
+        wp_register_script(
+            'godam-recorder-script',
+            RTGODAM_URL . 'assets/build/js/godam-recorder.min.js',
+            array( 'jquery' ),
+            filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
+            true
+        );
     }
 
     /**

@@ -262,7 +262,9 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			}
 
 			wp_enqueue_style('wpforms-uppy-video-style');
-			wp_enqueue_script('wpforms-godam-recorder');
+			// wp_enqueue_script('wpforms-godam-recorder');
+			wp_enqueue_script('godam-recorder-script');
+
 		}
 
 		/**

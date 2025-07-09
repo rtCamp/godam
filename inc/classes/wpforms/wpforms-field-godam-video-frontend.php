@@ -26,6 +26,9 @@ $uppy_file_name_id = "uppy_filename_{$form_id}_{$field_id}";
 $uppy_preview_id   = "uppy_preview_{$form_id}_{$field_id}";
 
 ?>
+<?php if ( $max_upload_size <= 2047 * 1048576 ) : // Hidden file input that will be populated by Uppy. ?>
+    <input type="hidden" name="MAX_FILE_SIZE" value="<?php echo esc_attr( $max_upload_size ); ?>" />
+<?php endif; ?>
 <input
     type="file"
     id="<?php echo esc_attr( $file_input_id ); ?>"
@@ -34,7 +37,7 @@ $uppy_preview_id   = "uppy_preview_{$form_id}_{$field_id}";
     <?php echo $primary['required']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 />
 <div
-    data-max-file-size="<?php echo esc_attr( $max_upload_size ); ?>"
+    data-max-size="<?php echo esc_attr( $max_upload_size ); ?>"
     id="<?php echo esc_attr( $uppy_container_id ); ?>"
     class="uppy-video-upload <?php echo esc_attr( join( ' ', $primary['class'] ) ); ?>"
     data-input-id="<?php echo esc_attr( $file_input_id ); ?>"

@@ -58,11 +58,12 @@ class UppyVideoUploader {
 			 */
 			const gravityForms = document.querySelector( 'div[id^=gform_confirmation_message_]' );
 			const sureForms = document.querySelector( 'div.srfm-success-box' );
+			const wpForms = document.querySelector( 'div.wpforms-confirmation-container-full' );
 
 			/**
 			 * If any of the forms have confirmation, remove uppy state.
 			 */
-			const removeUppyState = gravityForms || sureForms;
+			const removeUppyState = gravityForms || sureForms || wpForms;
 
 			if ( removeUppyState ) {
 				Object.keys( localStorage )
@@ -310,6 +311,13 @@ jQuery( document ).ready( function() {
 	 * Sureforms confirmation.
 	 */
 	jQuery( document ).on( 'srfm_on_show_success_message', function() {
+		UppyVideoUploader.clearUppyStateIfConfirmed();
+	} );
+
+	/**
+	 * WPForms confirmation.
+	 */
+	jQuery( document ).on( 'wpformsAjaxSubmitSuccess', function() {
 		UppyVideoUploader.clearUppyStateIfConfirmed();
 	} );
 } );
