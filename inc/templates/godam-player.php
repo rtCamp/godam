@@ -27,15 +27,41 @@ if ( isset( $is_elementor_widget ) && $is_elementor_widget ) {
 add_filter( 'gform_confirmation_anchor', '__return_false' );
 
 // attributes.
-$autoplay           = ! empty( $attributes['autoplay'] );
-$controls           = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
-$loop               = ! empty( $attributes['loop'] );
-$muted              = ! empty( $attributes['muted'] );
-$poster             = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
-$preload            = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$caption            = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
-$tracks             = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
-$attachment_id      = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$autoplay      = ! empty( $attributes['autoplay'] );
+$controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
+$loop          = ! empty( $attributes['loop'] );
+$muted         = ! empty( $attributes['muted'] );
+$poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
+$preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
+$caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
+$tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
+$attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+
+// Determine whether the attachment ID refers to a virtual (GoDAM) media item.
+// If it's not numeric, we assume it's a virtual reference (e.g., a GoDAM ID).
+$is_virtual  = ! is_numeric( $attachment_id );
+$original_id = $attachment_id;
+
+if ( $is_virtual ) {
+	// Query the WordPress Media Library to find an attachment post that has
+	// a meta key `_godam_original_id` matching this virtual media ID.
+	$query = new \WP_Query(
+		array(
+			'post_type'      => 'attachment',
+			'posts_per_page' => 1,
+			'post_status'    => 'any',
+			'meta_key'       => '_godam_original_id',
+			'meta_value'     => sanitize_text_field( $attachment_id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			'fields'         => 'ids',
+		) 
+	);
+
+	// If a matching media attachment exists, use its actual WordPress ID.
+	if ( $query->have_posts() ) {
+		$original_id = $query->posts[0];
+	}
+}
+
 $video_preview      = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
 $overlay_time_range = ! empty( $attributes['overlayTimeRange'] ) ? floatval( $attributes['overlayTimeRange'] ) : 0;
 $show_overlay       = isset( $attributes['showOverlay'] ) ? $attributes['showOverlay'] : false;
@@ -54,6 +80,9 @@ $transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attribute
 $easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_meta', true ) : array();
 $easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : array();
 
+if ( $is_virtual ) {
+	$easydam_meta_data = $original_id ? get_post_meta( $original_id, 'rtgodam_meta', true ) : array();
+}
 // Extract control bar settings with a fallback to an empty array.
 $control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? array();
 
