@@ -30,7 +30,7 @@ const Attachments = wp.media.model.Attachments.extend( {
  * Custom Query model to handle fetching DAM (GoDAM) media items from a custom REST endpoint.
  * This class mimics the native `wp.media.model.Query` but is wired to a different backend source.
  */
-const GODAMAttachementCollection = wp.media.model.Query.extend(
+const GODAMAttachmentCollection = wp.media.model.Query.extend(
 	{
 		/**
 		 * Initialize the custom query with pagination variables.
@@ -144,7 +144,7 @@ const GODAMAttachementCollection = wp.media.model.Query.extend(
 		 *
 		 * @param {Object} props   - Props for the query (e.g., type).
 		 * @param {Object} options - Additional options to pass to the collection.
-		 * @return {GODAMAttachementCollection}
+		 * @return {GODAMAttachmentCollection}
 		 */
 		get: ( () => {
 			const queries = [];
@@ -166,6 +166,6 @@ const GODAMAttachementCollection = wp.media.model.Query.extend(
 );
 
 // Assign the custom query to global `wp.media` namespace.
-wp.media.godamQuery = GODAMAttachementCollection;
+wp.media.godamQuery = GODAMAttachmentCollection;
 
 export default Attachments;
