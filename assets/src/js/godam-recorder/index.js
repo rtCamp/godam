@@ -85,8 +85,8 @@ class UppyVideoUploader {
 			restrictions: {
 				maxNumberOfFiles: 1,
 				allowedFileTypes: [ 'video/*' ],
+				maxFileSize: this.maxFileSize,
 			},
-			maxFileSize: this.maxFileSize,
 		} );
 	}
 
