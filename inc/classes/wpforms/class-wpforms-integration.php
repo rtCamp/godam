@@ -30,10 +30,9 @@ class WPForms_Integration {
 	 */
 	public function init() {
 		if ( is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' ) ) {
-			$this->register_assets();
-
-			// Assets need registration before actual field preview, as field preview happens before normal $this->register_assets().
-			add_action( 'wpforms_builder_fields_previews_godam-video', array( $this, 'register_assets' ) );
+			// Register assets.
+			add_action( 'admin_enqueue_scripts', [ $this, 'register_assets' ] );
+			add_action( 'wp_enqueue_scripts', [ $this, 'register_assets' ] );
 
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 
@@ -92,11 +91,17 @@ class WPForms_Integration {
 	 * @return void
 	 */
 	public function enqueue_admin_assets() {
-		if ( isset( $_GET['page'], $_GET['id'] ) && 'rtgodam_video_editor' === $_GET['page'] ) {
+		// GoDAM Video Editor page.
+		if ( isset( $_GET['page'] ) && 'rtgodam_video_editor' === $_GET['page'] ) {
 			// Enqueue the WPForms styles.
 			$frontend = wpforms()->obj( 'frontend' );
 			$frontend->assets_css();
 
+			wp_enqueue_style( 'wpforms-uppy-video-style' );
+		}
+
+		// Form builder page.
+		if ( isset( $_GET['page'], $_GET['view'] ) && 'wpforms-builder' === $_GET['page'] && 'fields' === $_GET['view'] ) {
 			wp_enqueue_style( 'wpforms-uppy-video-style' );
 		}
 	}
