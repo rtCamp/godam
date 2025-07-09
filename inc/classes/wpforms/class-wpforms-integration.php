@@ -31,8 +31,8 @@ class WPForms_Integration {
 	public function init() {
 		if ( is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' ) ) {
 			// Register assets.
-			add_action( 'admin_enqueue_scripts', [ $this, 'register_assets' ] );
-			add_action( 'wp_enqueue_scripts', [ $this, 'register_assets' ] );
+			add_action( 'admin_enqueue_scripts', array( $this, 'register_assets' ) );
+			add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
 
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 

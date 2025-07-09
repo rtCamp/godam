@@ -33,8 +33,6 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			$this->icon     = 'fa-video-camera';
 			$this->order    = 30;
 
-			// Define additional field properties.
-			// add_filter( 'wpforms_field_properties_text', [ $this, 'field_properties' ], 5, 3 );
 			add_action( 'wpforms_frontend_js', array( $this, 'enqueue_frontend_js' ) );
 
 			add_filter( 'wpforms_process_before_filter', array( $this, 'save_video_file' ), 10, 2 );
@@ -61,7 +59,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @param array $video_field Field data and settings.
 		 */
 		public function field_options( $video_field ) {
-			// Populate basic field options
+			// Populate basic field options.
 			$this->field_option( 'basic-options', $video_field, array( 'markup' => 'open' ) );
 			$this->field_option( 'label', $video_field );
 			$this->file_selection_field_element( $video_field );
@@ -215,7 +213,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 					'slug'        => 'max_file_size',
 					'placeholder' => '100MB',
 					'value'       => isset( $video_field['max_file_size'] ) ? absint( $video_field['max_file_size'] ) : absint( size_format( wp_max_upload_size() ) ),
-					'after'       => esc_html__( 'Maximum allowed on this server: ' . size_format( wp_max_upload_size() ), 'godam' ),
+					'after'       => sprintf( esc_html__( 'Maximum allowed on this server: %s ', 'godam' ) . size_format( wp_max_upload_size() ) ),
 					'class'       => array( 'wpforms-field-options-column', 'max-quantity-input' ),
 					'attrs'       => array(
 						'min'  => 0,
@@ -280,11 +278,11 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @return array
 		 */
 		public function extract_file_selectors_from_field( $field, $default = array( 'webcam', 'screen_capture' ) ) {
-			// Attributes - File Selectors
+			// Attributes - File Selectors.
 			$raw_file_selectors = array_filter(
 				$field,
 				function ( $value, $key ) {
-					return strpos( $key, 'file-selector_' ) === 0 && $value === '1';
+					return 0 === strpos( $key, 'file-selector_' ) && '1' === $value;
 				},
 				ARRAY_FILTER_USE_BOTH
 			);
@@ -313,7 +311,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @since n.e.x.t
 		 *
 		 * @param array $entry Entry submitted data.
-		 * @param array $form_data Form data and settings
+		 * @param array $form_data Form data and settings.
 		 *
 		 * @return array
 		 */
@@ -392,7 +390,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @param mixed  $value Field value.
 		 * @param array  $field Field data.
 		 * @param array  $form_data Form data and settings.
-		 * @param string $context Context: 'entry-single' or 'email-html'
+		 * @param string $context Context: 'entry-single' or 'email-html'.
 		 *
 		 * @return mixed
 		 */
@@ -451,7 +449,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			$file = $this->format_global_files_array( $_FILES, $field_id );
 
 			if ( isset( $file['error'] ) && ! in_array( intval( $file['error'] ), array( UPLOAD_ERR_OK, UPLOAD_ERR_NO_FILE ), true ) ) {
-				\wpforms()->obj( 'process' )->errors[ $form_data['id'] ][ $field_id ] = esc_html__( $file_upload_errors[ $file['error'] ] );
+				\wpforms()->obj( 'process' )->errors[ $form_data['id'] ][ $field_id ] = $file_upload_errors[ $file['error'] ];
 				return;
 			}
 		}
