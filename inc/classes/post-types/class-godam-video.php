@@ -141,7 +141,7 @@ class GoDAM_Video extends Base {
 		// Create the post entry.
 		$post_id = wp_insert_post( $post_data );
 
-		if ( is_wp_error( $post_id ) ) {
+		if ( empty( $post_id ) || is_wp_error( $post_id ) ) {
 			return false;
 		}
 
