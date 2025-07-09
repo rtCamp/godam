@@ -119,7 +119,7 @@ class WPForms_Integration {
 	 * @param int   $entry_id     Entry id.
 	 * @return void
 	 */
-	// phpcs:ignrore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+	// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 	public function load_godam_recorder_script_on_success( $confirmation, $form_data, $fields, $entry_id ) {
 		$field_with_types = wp_list_pluck( $fields, 'type', 'id' );
 
