@@ -283,8 +283,8 @@ class RTGODAM_Transcoder_Handler {
 			$transcoding_url = $this->transcoding_api_url . 'resource/Transcoder Job';
 
 			// Block if blacklisted ip address.
-			$key       = 'REMOTE_ADDR';
-			$client_ip = isset( $_SERVER[ $key ] ) ? filter_var( $_SERVER[ $key ], FILTER_VALIDATE_IP ) : '';
+			$remote_address_key = 'REMOTE_ADDR';
+			$client_ip          = isset( $_SERVER[ $remote_address_key ] ) ? filter_var( $_SERVER[ $remote_address_key ], FILTER_VALIDATE_IP ) : '';
 			if ( ! empty( $client_ip ) && in_array( $client_ip, rtgodam_get_blacklist_ip_addresses(), true ) ) {
 				return $metadata;
 			}
