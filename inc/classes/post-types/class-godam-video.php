@@ -172,6 +172,7 @@ class GoDAM_Video extends Base {
 
 	/**
 	 * Delete video post when attachment is deleted.
+	 * Ideally only one post is deleted, but deletion handed by loop to ensure all related posts are removed.
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 * 
@@ -179,25 +180,38 @@ class GoDAM_Video extends Base {
 	 */
 	public function delete_video_post_from_attachment( $attachment_id ) {
 
-		$query = new WP_Query(
-			array(
-				'post_type'      => self::SLUG,
-				'posts_per_page' => -1,
-				'post_status'    => 'any',
-				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
-					array(
-						'key'   => '_godam_attachment_id',
-						'value' => $attachment_id,
-					),
-				),
-			) 
-		);
+		$batch_size = 50;
+		$page       = 1;
 
-		if ( $query->have_posts() ) {
-			foreach ( $query->posts as $post ) {
-				wp_delete_post( $post->ID, true );
+		do {
+			$query = new WP_Query(
+				array(
+					'post_type'              => self::SLUG,
+					'posts_per_page'         => $batch_size,
+					'paged'                  => $page,
+					'post_status'            => 'any',
+					'fields'                 => 'ids',
+					'no_found_rows'          => true,
+					'update_post_term_cache' => false,
+					'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
+						array(
+							'key'   => '_godam_attachment_id',
+							'value' => $attachment_id,
+						),
+					),
+				) 
+			);
+
+			if ( $query->have_posts() ) {
+				foreach ( $query->posts as $post_id ) {
+					wp_delete_post( $post_id, true );
+				}
 			}
-		}
+
+			++$page;
+			$has_more = count( $query->posts ) === $batch_size;
+
+		} while ( $has_more );
 	}
 
 	/**
