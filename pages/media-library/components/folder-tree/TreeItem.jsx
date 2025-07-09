@@ -8,7 +8,7 @@ import { CSS } from '@dnd-kit/utilities';
 /**
  * WordPress dependencies
  */
-import { Icon, file, lock } from '@wordpress/icons';
+import { Icon, file, lock, starFilled } from '@wordpress/icons';
 import { CheckboxControl } from '@wordpress/components';
 
 /**
@@ -103,11 +103,14 @@ const TreeItem = ( { item, index, depth, onContextMenu, isMultiSelecting } ) => 
 						/>
 					) }
 					<div className="tree-item__content">
-						<Icon icon={ item.meta?.locked ? lock : file } />
+						<Icon icon={ file } />
 						<span className="tree-item__text">{ item.name }</span>
-
-						<span className="tree-item__count">
-							{ item.attachmentCount ?? 0 }
+						<span className="tree-item__status">
+							{ item.meta?.locked && <Icon icon={ lock } /> }
+							{ item.meta?.bookmark && <Icon icon={ starFilled } className="bookmark-star" /> }
+							<span className="tree-item__count">
+								{ item.attachmentCount ?? 0 }
+							</span>
 						</span>
 					</div>
 				</button>
