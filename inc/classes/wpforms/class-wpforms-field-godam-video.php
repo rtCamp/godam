@@ -214,7 +214,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 					'placeholder' => '100MB',
 					'value'       => isset( $video_field['max_file_size'] ) ? absint( $video_field['max_file_size'] ) : absint( size_format( wp_max_upload_size() ) ),
 					/* translators: %s : Maximum file upload size in human readable format */
-					'after'       => sprintf( esc_html__( 'Maximum allowed on this server: %s ', 'godam' ) . size_format( wp_max_upload_size() ) ),
+					'after'       => sprintf( esc_html__( 'Maximum allowed on this server: %s ', 'godam' ), size_format( wp_max_upload_size() ) ),
 					'class'       => array( 'wpforms-field-options-column', 'max-quantity-input' ),
 					'attrs'       => array(
 						'min'  => 0,
