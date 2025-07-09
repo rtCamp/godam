@@ -115,7 +115,7 @@ class Recorder_Field extends BaseFieldManager {
 						'global'         => true,
 					),
 					'allowed_file_types' => array(
-						'value'          => array( 'avi|divx|flv|mov|ogv|mkv|mp4|m4v|divx|mpg|mpeg|mpe|video/quicktime|qt' ),
+						'value'          => array( 'avi|divx|flv|mov|ogv|mkv|mp4|m4v|divx|mpg|mpeg|mpe|video/quicktime|qt|webm' ),
 						'global'         => false,
 						'message'        => Helper::getGlobalDefaultMessage( 'allowed_file_types' ),
 						'global_message' => Helper::getGlobalDefaultMessage( 'allowed_file_types' ),
