@@ -32,10 +32,10 @@ class WPForms_Integration {
 		if ( is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' ) ) {
 			$this->register_assets();
 
-			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
-			add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_frontend_assets' ] );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
 
-            add_action( 'wpforms_frontend_confirmation_message_before', [ $this, 'load_godam_recorder_script_on_success' ] , 10, 4 );
+			add_action( 'wpforms_frontend_confirmation_message_before', array( $this, 'load_godam_recorder_script_on_success' ), 10, 4 );
 		}
 	}
 
@@ -101,22 +101,22 @@ class WPForms_Integration {
 		wp_enqueue_style( 'wpforms-uppy-video-style' );
 	}
 
-    /**
-     * Load godam recorder script on success so that uppy states can be removed.
-     *
-     * @since n.e.x.t
-     *
-     * @param array $confirmation Current confirmation data.
-     * @param array $form_data    Form data and settings.
-     * @param array $fields       Sanitized field data.
-     * @param int   $entry_id     Entry id.
-     * @return void
-     */
-    public function load_godam_recorder_script_on_success( $confirmation, $form_data, $fields, $entry_id ) {
-        $field_with_types = wp_list_pluck( $fields, 'type', 'id' );
+	/**
+	 * Load godam recorder script on success so that uppy states can be removed.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $confirmation Current confirmation data.
+	 * @param array $form_data    Form data and settings.
+	 * @param array $fields       Sanitized field data.
+	 * @param int   $entry_id     Entry id.
+	 * @return void
+	 */
+	public function load_godam_recorder_script_on_success( $confirmation, $form_data, $fields, $entry_id ) {
+		$field_with_types = wp_list_pluck( $fields, 'type', 'id' );
 
-        if ( in_array( 'godam-video', $field_with_types, true ) ) {
-            wp_enqueue_script( 'godam-recorder-script' );
-        }
-    }
+		if ( in_array( 'godam-video', $field_with_types, true ) ) {
+			wp_enqueue_script( 'godam-recorder-script' );
+		}
+	}
 }
