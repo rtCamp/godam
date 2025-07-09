@@ -377,6 +377,13 @@ const VideoEditor = ( { attachmentID } ) => {
 										controls: true,
 										fluid: true,
 										preload: 'auto',
+										flvjs: {
+											mediaDataSource: {
+												isLive: true,
+												cors: false,
+												withCredentials: false,
+											},
+										},
 										aspectRatio: '16:9',
 										sources,
 										controlBar: {
