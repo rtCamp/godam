@@ -242,6 +242,7 @@ class GoDAM_Video extends Base {
 				'post_type'              => self::SLUG,
 				'posts_per_page'         => 1,
 				'post_status'            => 'any',
+				'fields'                 => 'ids',
 				'no_found_rows'          => true,
 				'update_post_term_cache' => false,
 				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
@@ -259,13 +260,12 @@ class GoDAM_Video extends Base {
 			return;
 		}
 
-		$current_video_post = $query->posts[0];
-		$video_post_id      = $current_video_post->ID;
-		$attachment         = get_post( $attachment_id );
-		$new_title          = $attachment->post_title ?: __( 'Untitled Video', 'godam' );
+		$video_post_id = $query->posts[0];
+		$attachment    = get_post( $attachment_id );
+		$new_title     = $attachment->post_title ?: __( 'Untitled Video', 'godam' );
 
 		// Get current title from the post we already have.
-		$current_title = $current_video_post->post_title;
+		$current_title = get_the_title( $video_post_id );
 
 		// Prepare base update data.
 		$updated_data = array(
