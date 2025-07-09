@@ -9,6 +9,8 @@ namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Post_Types\GoDAM_Video;
+
 /**
  * Class Settings
  */
@@ -270,6 +272,12 @@ class Settings extends Base {
 
 		// Flush rewrite rules if video slug was changed.
 		if ( $slug_changed ) {
+			/**
+			 * Re-register video post type to ensure the new slug is applied.
+			 * Flush rewrite rules to apply the new slug.
+			 */
+			$video_cpt = GoDAM_Video::get_instance();
+			$video_cpt->register_post_type();
 			flush_rewrite_rules();
 		}
 

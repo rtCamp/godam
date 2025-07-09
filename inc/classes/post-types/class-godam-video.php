@@ -131,7 +131,7 @@ class GoDAM_Video extends Base {
 		$post_data = array(
 			'post_title'   => $attachment->post_title ?: __( 'Untitled Video', 'godam' ),
 			'post_content' => $this->generate_video_content( $attachment_id ),
-			'post_excerpt' => $attachment->post_excerpt ?: $attachment->post_content,
+			'post_excerpt' => $attachment->post_content,
 			'post_status'  => 'publish',
 			'post_author'  => $attachment->post_author,
 			'post_type'    => self::SLUG,
@@ -251,7 +251,7 @@ class GoDAM_Video extends Base {
 			'ID'           => $video_post_id,
 			'post_title'   => $new_title,
 			'post_content' => $this->generate_video_content( $attachment_id ),
-			'post_excerpt' => $attachment->post_excerpt ?: $attachment->post_content,
+			'post_excerpt' => $attachment->post_content,
 			'post_author'  => $attachment->post_author,
 		);
 
