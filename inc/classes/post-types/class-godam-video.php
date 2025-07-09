@@ -319,7 +319,7 @@ class GoDAM_Video extends Base {
 			'<!-- wp:godam/video {"id":%d} -->
 <div class="wp-block-godam-video"></div>
 <!-- /wp:godam/video -->',
-			$attachment_id
+			esc_attr( $attachment_id )
 		);
 	}
 
