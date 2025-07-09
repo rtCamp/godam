@@ -119,7 +119,7 @@ class GoDAM_Video extends Base {
 		);
 
 		if ( $query->have_posts() ) {
-			return $query->posts[0]->ID;
+			return $query->posts[0];
 		}
 
 		// Get attachment data.
