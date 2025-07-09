@@ -184,17 +184,6 @@ class Assets {
 	 * @return void
 	 */
 	public function admin_enqueue_scripts() {
-
-		wp_enqueue_media();
-
-		wp_enqueue_script(
-			'wpforms-godam-recorder-editor-script',
-			RTGODAM_URL . 'assets/build/js/wpforms-godam-recorder-editor.min.js',
-			array( 'jquery', 'wp-i18n' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder-editor.min.js' ),
-			true
-		);
-
 		$screen = get_current_screen();
 
 		wp_register_script(

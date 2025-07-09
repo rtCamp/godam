@@ -81,12 +81,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @param array $field Field settings.
 		 */
 		public function field_preview( $field ) {
-			wp_enqueue_style(
-				'wpforms-uppy-video-style',
-				RTGODAM_URL . 'assets/build/css/wpforms-uppy-video.css',
-				array(),
-				filemtime( RTGODAM_PATH . 'assets/build/css/wpforms-uppy-video.css' )
-			);
+			wp_enqueue_style('wpforms-uppy-video-style');
 
 			// Define data.
 			$placeholder   = ! empty( $field['placeholder'] ) ? $field['placeholder'] : '';
@@ -122,13 +117,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 */
 		public function field_display( $field, $deprecated, $form_data ) {
 			if ( \wpforms_is_admin_page('entries', 'edit' ) ) {
-				 wp_enqueue_style(
-					'wpforms-uppy-video-style',
-					RTGODAM_URL . 'assets/build/css/wpforms-uppy-video.css',
-					array(),
-					filemtime( RTGODAM_PATH . 'assets/build/css/wpforms-uppy-video.css' )
-				);
-
+				wp_enqueue_style('wpforms-uppy-video-style');
 				wp_enqueue_media();
 
 				require __DIR__ . '/wpforms-field-godam-video-edit.php';
@@ -272,20 +261,8 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				return;
 			}
 
-			wp_enqueue_style(
-				'wpforms-uppy-video',
-				RTGODAM_URL . 'assets/build/css/wpforms-uppy-video.css',
-				array(),
-				filemtime( RTGODAM_PATH . 'assets/build/css/wpforms-uppy-video.css' )
-			);
-
-			wp_enqueue_script(
-				'wpforms-godam-recorder',
-				RTGODAM_URL . 'assets/build/js/wpforms-godam-recorder.min.js',
-				array( 'jquery' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder.min.js' ),
-				true
-			);
+			wp_enqueue_style('wpforms-uppy-video-style');
+			wp_enqueue_script('wpforms-godam-recorder');
 		}
 
 		/**
