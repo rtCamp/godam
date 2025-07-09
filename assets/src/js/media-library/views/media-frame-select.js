@@ -15,20 +15,33 @@ export default MediaFrameSelect?.extend( {
 	},
 
 	browseRouter( routerView ) {
-		routerView.set( {
-			upload: {
-				text: l10n.uploadFilesTitle,
-				priority: 20,
-			},
-			browse: {
-				text: l10n.mediaLibraryTitle,
-				priority: 40,
-			},
-			godam: {
-				text: 'GoDAM',
-				priority: 60,
-			},
-		} );
+		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey ) {
+			routerView.set( {
+				upload: {
+					text: l10n.uploadFilesTitle,
+					priority: 20,
+				},
+				browse: {
+					text: l10n.mediaLibraryTitle,
+					priority: 40,
+				},
+				godam: {
+					text: 'GoDAM',
+					priority: 60,
+				},
+			} );
+		} else {
+			routerView.set( {
+				upload: {
+					text: l10n.uploadFilesTitle,
+					priority: 20,
+				},
+				browse: {
+					text: l10n.mediaLibraryTitle,
+					priority: 40,
+				},
+			} );
+		}
 	},
 
 	GoDAMCreate() {

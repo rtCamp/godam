@@ -260,8 +260,9 @@ class Assets {
 			'easydam-media-library',
 			'godamTabCallback',
 			array(
-				'apiUrl' => rest_url( 'godam/v1/media-library/get-godam-cmm-files' ),
-				'nonce'  => wp_create_nonce( 'wp_rest' ),
+				'apiUrl'      => rest_url( 'godam/v1/media-library/get-godam-cmm-files' ),
+				'nonce'       => wp_create_nonce( 'wp_rest' ),
+				'validAPIKey' => rtgodam_is_api_key_valid(),
 			)
 		);
 

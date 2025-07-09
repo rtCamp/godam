@@ -490,7 +490,7 @@ class Media_Library extends Base {
 		// Extract and sanitize pagination and filter parameters from the request.
 		$page     = max( 1, absint( $request->get_param( 'page' ) ) );
 		$per_page = max( 1, absint( $request->get_param( 'per_page' ) ) );
-		$type     = $request->get_param( 'type' );
+		$type     = $request->get_param( 'type' ) ?? 'all';
 		$search   = $request->get_param( 'search' );
 
 		// For now, we hardcode total count as 20 for all types till we get the API endpoint ready.
@@ -562,15 +562,6 @@ class Media_Library extends Base {
 			}
 
 			$body = json_decode( wp_remote_retrieve_body( $response ) );
-
-			if ( empty( $body->message->files ) || ! is_array( $body->message->files ) ) {
-				return rest_ensure_response(
-					array(
-						'success' => false,
-						'message' => 'Unexpected API response format or no files found.',
-					)
-				);
-			}
 
 			if ( empty( $body->message->files ) || ! is_array( $body->message->files ) ) {
 				return rest_ensure_response(
