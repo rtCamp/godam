@@ -171,6 +171,16 @@ const Appearance = () => {
 			multiple: false, // Disable multiple selection
 		} );
 
+		fileFrame.on( 'open', function() {
+			const selection = fileFrame.state().get( 'selection' );
+
+			if ( videoConfig.controlBar.customPlayBtnImgId ) {
+				const attachment = wp.media.attachment( videoConfig.controlBar.customPlayBtnImgId );
+				attachment.fetch();
+				selection.add( attachment );
+			}
+		} );
+
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 
@@ -187,6 +197,7 @@ const Appearance = () => {
 					controlBar: {
 						...videoConfig.controlBar,
 						customPlayBtnImg: attachment.url,
+						customPlayBtnImgId: attachment.id,
 					},
 				} ),
 			);
@@ -232,6 +243,16 @@ const Appearance = () => {
 			multiple: false, // Disable multiple selection
 		} );
 
+		fileFrame.on( 'open', function() {
+			const selection = fileFrame.state().get( 'selection' );
+
+			if ( videoConfig.controlBar.customBrandImgId ) {
+				const attachment = wp.media.attachment( videoConfig.controlBar.customBrandImgId );
+				attachment.fetch();
+				selection.add( attachment );
+			}
+		} );
+
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 
@@ -248,6 +269,7 @@ const Appearance = () => {
 					controlBar: {
 						...videoConfig.controlBar,
 						customBrandImg: attachment.url,
+						customBrandImgId: attachment.id,
 					},
 				} ),
 			);
@@ -268,6 +290,7 @@ const Appearance = () => {
 				controlBar: {
 					...videoConfig.controlBar,
 					customBrandImg: '',
+					customBrandImgId: null,
 				},
 			} ),
 		);
@@ -283,6 +306,7 @@ const Appearance = () => {
 				controlBar: {
 					...videoConfig.controlBar,
 					customPlayBtnImg: '',
+					customPlayBtnImgId: null,
 				},
 			} ),
 		);

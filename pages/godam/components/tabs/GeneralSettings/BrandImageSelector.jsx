@@ -52,7 +52,19 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 			}
 
 			handleSettingChange( 'brand_image', attachment.url );
+			handleSettingChange( 'brand_image_id', attachment.id );
 		} );
+
+		if ( mediaSettings?.video_player?.brand_image_id ) {
+			const attachment = wp.media.attachment( mediaSettings.video_player.brand_image_id );
+			attachment.fetch();
+
+			fileFrame.on( 'open', function() {
+				const selection = fileFrame.state().get( 'selection' );
+				selection.reset();
+				selection.add( attachment );
+			} );
+		}
 
 		fileFrame.open();
 	};
@@ -62,6 +74,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 	 */
 	const removeBrandImage = () => {
 		handleSettingChange( 'brand_image', '' );
+		handleSettingChange( 'brand_image_id', null );
 	};
 
 	return (
