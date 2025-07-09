@@ -57,7 +57,6 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			} );
 
 			// Finally, open the modal on click
-			frame.open();
 		} );
 
 		// Delete image button on-click event handler
