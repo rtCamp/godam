@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 /**
  * WordPress dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Panel, PanelBody } from '@wordpress/components';
 import { lock } from '@wordpress/icons';
 
@@ -29,20 +29,12 @@ const LockedTab = ( { handleContextMenu } ) => {
 
 	const lockedCount = locked?.length || 0;
 
-	const panelTitle = useMemo( () => {
-		return sprintf(
-			/* translators: %d: number of locked folders */
-			__( 'Locked (%d)', 'godam' ),
-			lockedCount,
-		);
-	}, [ lockedCount ] );
-
 	if ( lockedCount === 0 ) {
 		return (
 			<div className="godam-folder-tab godam-folder-tab--empty">
 				<Panel className="godam-folder-tab-panel">
 					<PanelBody
-						title={ __( 'Locked', 'godam' ) }
+						title={ <><span className="folder-tab__count">{ lockedCount }</span> { __( 'Locked', 'godam' ) } </> }
 						initialOpen={ true }
 						icon={ lock }
 					>
@@ -62,7 +54,7 @@ const LockedTab = ( { handleContextMenu } ) => {
 		<div className="godam-folder-tab">
 			<Panel className="godam-folder-tab-panel">
 				<PanelBody
-					title={ panelTitle }
+					title={ <><span className="folder-tab__count">{ lockedCount }</span> { __( 'Locked', 'godam' ) } </> }
 					initialOpen={ true }
 					icon={ lock }
 				>

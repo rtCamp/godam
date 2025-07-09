@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 /**
  * WordPress dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Panel, PanelBody } from '@wordpress/components';
 import { starFilled } from '@wordpress/icons';
 
@@ -29,20 +29,12 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 
 	const bookmarkCount = bookmarks?.length || 0;
 
-	const panelTitle = useMemo( () => {
-		return sprintf(
-			/* translators: %d: number of bookmarks */
-			__( 'Bookmarks (%d)', 'godam' ),
-			bookmarkCount,
-		);
-	}, [ bookmarkCount ] );
-
 	if ( bookmarkCount === 0 ) {
 		return (
 			<div className="godam-folder-tab godam-folder-tab--empty">
 				<Panel className="godam-folder-tab-panel">
 					<PanelBody
-						title={ __( 'Bookmarks', 'godam' ) }
+						title={ <><span className="folder-tab__count">{ bookmarkCount }</span> { __( 'Bookmarks', 'godam' ) } </> }
 						initialOpen={ true }
 						icon={ starFilled }
 					>
@@ -62,7 +54,7 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 		<div className="godam-folder-tab">
 			<Panel className="godam-folder-tab-panel">
 				<PanelBody
-					title={ panelTitle }
+					title={ <><span className="folder-tab__count">{ bookmarkCount }</span> { __( 'Bookmarks', 'godam' ) } </> }
 					initialOpen={ true }
 					icon={ starFilled }
 				>
