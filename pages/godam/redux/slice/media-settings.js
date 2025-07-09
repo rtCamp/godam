@@ -22,6 +22,7 @@ const initialState = {
 		use_watermark_image: false,
 		watermark_text: '',
 		watermark_url: '',
+		watermark_image_id: null,
 		video_slug: 'videos',
 	},
 	general: {
@@ -30,6 +31,7 @@ const initialState = {
 	video_player: {
 		brand_image: '',
 		brand_color: '#2B333FB3',
+		brand_image_id: null,
 		custom_css: VideoCustomCSSTemplate,
 		player_skin: 'Default',
 	},
