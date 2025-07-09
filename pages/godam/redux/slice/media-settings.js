@@ -22,13 +22,11 @@ const initialState = {
 	},
 	general: {
 		enable_folder_organization: true,
-		brand_color: '#000000',
-		brand_image: '',
-		brand_image_id: null,
 	},
 	video_player: {
 		brand_image: '',
 		brand_color: '#2B333FB3',
+		brand_image_id: null,
 		custom_css: VideoCustomCSSTemplate,
 		player_skin: 'Default',
 	},

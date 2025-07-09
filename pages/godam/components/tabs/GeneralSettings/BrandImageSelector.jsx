@@ -55,8 +55,8 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 			handleSettingChange( 'brand_image_id', attachment.id );
 		} );
 
-		if ( mediaSettings?.general?.brand_image_id ) {
-			const attachment = wp.media.attachment( mediaSettings.general.brand_image_id );
+		if ( mediaSettings?.video_player?.brand_image_id ) {
+			const attachment = wp.media.attachment( mediaSettings.video_player.brand_image_id );
 			attachment.fetch();
 
 			fileFrame.on( 'open', function() {
