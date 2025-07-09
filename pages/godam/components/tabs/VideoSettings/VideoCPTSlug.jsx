@@ -8,9 +8,19 @@ import { useSelector } from 'react-redux';
  */
 import { TextControl, Panel, PanelBody } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { useState, useEffect } from '@wordpress/element';
 
 const VideoCPTSlug = ( { handleSettingChange } ) => {
 	const videoSlug = useSelector( ( state ) => state.mediaSettings.video?.video_slug ) || 'videos';
+	const [ inputValue, setInputValue ] = useState( videoSlug );
+	const [ hasUserInput, setHasUserInput ] = useState( false );
+
+	// Sync local state with Redux store when videoSlug changes (only if user hasn't been typing)
+	useEffect( () => {
+		if ( ! hasUserInput ) {
+			setInputValue( videoSlug );
+		}
+	}, [ videoSlug, hasUserInput ] );
 
 	const sanitizeSlug = ( value ) => {
 		return value
@@ -21,12 +31,14 @@ const VideoCPTSlug = ( { handleSettingChange } ) => {
 	};
 
 	const handleInputChange = ( value ) => {
+		setInputValue( value );
+		setHasUserInput( true );
 		const sanitizedValue = sanitizeSlug( value );
 		handleSettingChange( 'video_slug', sanitizedValue || 'videos' );
 	};
 
-	const sanitizedSlug = sanitizeSlug( videoSlug );
-	const showSanitizedPreview = videoSlug !== sanitizedSlug && videoSlug.length > 0;
+	const sanitizedSlug = sanitizeSlug( inputValue );
+	const showSanitizedPreview = hasUserInput && inputValue !== sanitizedSlug && inputValue.trim().length > 0;
 
 	return (
 		<Panel
@@ -38,7 +50,7 @@ const VideoCPTSlug = ( { handleSettingChange } ) => {
 					<TextControl
 						className="godam-input"
 						label={ __( 'Video Archive URL Slug', 'godam' ) }
-						value={ videoSlug }
+						value={ inputValue }
 						onChange={ handleInputChange }
 						help={ __( 'This slug will be used in the URL for video archive and single video pages (e.g., yoursite.com/videos/). This setting enables theme-compatible video archive and single page templates. Only lowercase letters, numbers, hyphens, and underscores are allowed.', 'godam' ) }
 						placeholder="videos"
