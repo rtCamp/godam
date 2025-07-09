@@ -22,6 +22,19 @@ class Media_Folders extends Base {
 	const SLUG = 'media-folder';
 
 	/**
+	 * Setup hooks for the taxonomy.
+	 *
+	 * @since n.e.x.t
+	 * 
+	 * @return void
+	 */
+	protected function setup_hooks() {
+		parent::setup_hooks();
+
+		add_action( 'init', array( $this, 'register_term_meta' ) );
+	}
+
+	/**
 	 * Labels for taxonomy.
 	 *
 	 * @return array
@@ -74,5 +87,36 @@ class Media_Folders extends Base {
 		);
 
 		return array_merge( $args, $extra );
+	}
+
+	/**
+	 * Register term meta for media folder count.
+	 *
+	 * This meta will store the count of attachments in each media folder.
+	 * 
+	 * @since n.e.x.t
+	 * 
+	 * @return void
+	 */
+	public function register_term_meta() {
+		register_term_meta(
+			static::SLUG,
+			'locked',
+			array(
+				'type'         => 'boolean',
+				'single'       => true,
+				'show_in_rest' => true,
+			)
+		);
+
+		register_term_meta(
+			static::SLUG,
+			'bookmark',
+			array(
+				'type'         => 'boolean',
+				'single'       => true,
+				'show_in_rest' => true,
+			)
+		);
 	}
 }

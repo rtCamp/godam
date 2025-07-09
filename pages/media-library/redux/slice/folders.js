@@ -40,6 +40,10 @@ const slice = createSlice( {
 			message: '',
 			type: 'success',
 		},
+		isMultiSelecting: false,
+		multiSelectedFolderIds: [],
+
+		sortOrder: 'name-asc',
 	},
 	reducers: {
 		changeSelectedFolder: ( state, action ) => {
@@ -92,7 +96,7 @@ const slice = createSlice( {
 			}
 		},
 		deleteFolder: ( state ) => {
-			if ( ! state.selectedFolder ) {
+			if ( ! state.selectedFolder && ! state.isMultiSelecting ) {
 				return;
 			}
 
@@ -107,16 +111,117 @@ const slice = createSlice( {
 				} );
 			}
 
-			findChildren( state.selectedFolder.id );
+			if ( state.isMultiSelecting ) {
+				state.multiSelectedFolderIds.forEach( ( id ) => {
+					findChildren( id );
+				} );
+			} else {
+				findChildren( state.selectedFolder.id );
+			}
 
 			state.folders = state.folders.filter( ( item ) => ! idsToDelete.has( item.id ) );
 
 			state.selectedFolder = {
 				id: -1,
 			};
+
+			state.isMultiSelecting = false;
+			state.multiSelectedFolderIds = [];
 		},
 		setTree: ( state, action ) => {
 			state.folders = action.payload;
+		},
+		toggleMultiSelectMode: ( state ) => {
+			state.isMultiSelecting = ! state.isMultiSelecting;
+			if ( ! state.isMultiSelecting ) {
+				state.multiSelectedFolderIds = [];
+			}
+		},
+		addMultiSelectedFolder: ( state, action ) => {
+			const folderIdToAdd = action.payload.id;
+			if ( ! state.multiSelectedFolderIds.includes( folderIdToAdd ) ) {
+				state.multiSelectedFolderIds.push( folderIdToAdd );
+			}
+		},
+		removeMultiSelectedFolder: ( state, action ) => {
+			const folderIdToRemove = action.payload.id;
+			state.multiSelectedFolderIds = state.multiSelectedFolderIds.filter(
+				( id ) => id !== folderIdToRemove,
+			);
+		},
+		toggleMultiSelectedFolder: ( state, action ) => {
+			const folderIdToToggle = action.payload.id;
+			if ( state.multiSelectedFolderIds.includes( folderIdToToggle ) ) {
+				state.multiSelectedFolderIds = state.multiSelectedFolderIds.filter(
+					( id ) => id !== folderIdToToggle,
+				);
+			} else {
+				state.multiSelectedFolderIds.push( folderIdToToggle );
+			}
+		},
+		clearMultiSelectedFolders: ( state ) => {
+			state.multiSelectedFolderIds = [];
+		},
+		setSortOrder: ( state, action ) => {
+			state.sortOrder = action.payload;
+			state.folders.sort( ( a, b ) => {
+				if ( state.sortOrder === 'name-asc' ) {
+					return a.name.localeCompare( b.name );
+				} else if ( state.sortOrder === 'name-desc' ) {
+					return b.name.localeCompare( a.name );
+				}
+				return 0;
+			} );
+		},
+		lockFolder: ( state, action ) => {
+			const { ids, status } = action.payload;
+
+			if ( ! Array.isArray( ids ) ) {
+				const folder = state.folders.find( ( item ) => item.id === action.payload );
+
+				if ( folder ) {
+					if ( ! folder.meta ) {
+						folder.meta = {};
+					}
+
+					folder.meta.locked = ! Boolean( folder.meta?.locked );
+				}
+			} else {
+				ids.forEach( ( id ) => {
+					const folder = state.folders.find( ( item ) => item.id === id );
+					if ( folder ) {
+						if ( ! folder.meta ) {
+							folder.meta = {};
+						}
+						folder.meta.locked = status;
+					}
+				} );
+			}
+		},
+		addBookmark: ( state, action ) => {
+			const { ids, status } = action.payload;
+
+			if ( ! Array.isArray( ids ) ) {
+				const folder = state.folders.find( ( item ) => item.id === action.payload );
+
+				if ( folder ) {
+					if ( ! folder.meta ) {
+						folder.meta = {};
+					}
+
+					folder.meta.bookmark = ! Boolean( folder.meta?.bookmark );
+				}
+			} else {
+				ids.forEach( ( id ) => {
+					const folder = state.folders.find( ( item ) => item.id === id );
+					if ( folder ) {
+						if ( ! folder.meta ) {
+							folder.meta = {};
+						}
+						folder.meta.bookmark = status;
+					}
+				} );
+			}
 		},
 	},
 } );
@@ -131,6 +236,14 @@ export const {
 	renameFolder,
 	deleteFolder,
 	setTree,
+	toggleMultiSelectMode,
+	addMultiSelectedFolder,
+	removeMultiSelectedFolder,
+	toggleMultiSelectedFolder,
+	clearMultiSelectedFolders,
+	setSortOrder,
+	lockFolder,
+	addBookmark,
 } = slice.actions;
 
 export default slice.reducer;

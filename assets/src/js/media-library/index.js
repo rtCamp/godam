@@ -1,3 +1,7 @@
+/**
+ * WordPress dependencies
+ */
+const { __ } = wp.i18n;
 
 /**
  * Internal dependencies
@@ -12,6 +16,7 @@ import mediaFrameSelect from './views/media-frame-select.js';
 
 import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-view.js';
 import MediaListViewTableDragHandler from './views/attachment-list.js';
+import ToggleFoldersButton from './views/filters/toggle-folders-button.js';
 
 import { isFolderOrgDisabled, isUploadPage, addManageMediaButton } from './utility.js';
 
@@ -32,6 +37,18 @@ class MediaLibrary {
 		this.setupMediaLibraryRoot();
 		this.initializeDateRangeFilter();
 		addManageMediaButton();
+		this.addInputPlaceholder();
+
+		new ToggleFoldersButton();
+	}
+
+	addInputPlaceholder() {
+		wp.media.view.Search = wp.media.view.Search.extend( {
+			initialize() {
+				wp.media.view.Search.__super__.initialize.apply( this, arguments );
+				this.$el.attr( 'placeholder', __( 'Search Media', 'godam' ) );
+			},
+		} );
 	}
 
 	setupAttachmentBrowser() {

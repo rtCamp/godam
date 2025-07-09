@@ -60,7 +60,8 @@ const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, up
 							onClick={ onToggle }
 							aria-expanded={ isDropDownOpen }
 							variant="secondary"
-							className="flex-grow flex items-center gap-2"
+							size="compact"
+							className="flex-grow flex items-center gap-2 godam-button"
 							disabled={ disabled }
 						>
 							{ hotspot.icon ? (

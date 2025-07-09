@@ -122,6 +122,7 @@ function VideoEdit( {
 		muted,
 		poster: poster || defaultPoster,
 		sources,
+		aspectRatio: '16:9',
 	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources ] );
 
 	// Memoize the video component to prevent rerenders
@@ -135,7 +136,8 @@ function VideoEdit( {
 						const video = playerEl.querySelector( 'video' );
 
 						video.addEventListener( 'loadedmetadata', () => {
-							setAttributes( { aspectRatio: `${ video.videoWidth } / ${ video.videoHeight }` } );
+							setAttributes( { videoWidth: `${ video.videoWidth }` } );
+							setAttributes( { videoHeight: `${ video.videoHeight }` } );
 							let _duration = player.duration();
 							setDuration( _duration );
 							if ( _duration ) {
@@ -500,6 +502,22 @@ function VideoEdit( {
 						>
 							{ __( 'SEO Settings', 'godam' ) }
 						</Button>
+					</BaseControl>
+
+					<BaseControl
+						id={ `video-block__video--selected-aspect-ratio-${ instanceId }` }
+						label={ __( 'Aspect Ratio', 'godam' ) }
+						__nextHasNoMarginBottom
+					>
+						<SelectControl
+							value={ attributes.aspectRatio || '16:9' }
+							options={ [
+								{ label: __( '16:9 (Standard)', 'godam' ), value: '16:9' },
+								{ label: __( 'Responsive', 'godam' ), value: 'responsive' },
+							] }
+							onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
+							help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
+						/>
 					</BaseControl>
 
 				</PanelBody>

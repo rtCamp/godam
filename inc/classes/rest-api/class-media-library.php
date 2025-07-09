@@ -7,6 +7,8 @@
 
 namespace RTGODAM\Inc\REST_API;
 
+use RTGODAM\Inc\Media_Library\Media_Folder_Create_Zip;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -107,6 +109,91 @@ class Media_Library extends Base {
 							'required'    => true,
 							'type'        => 'integer',
 							'description' => __( 'Attachment ID to get video thumbnail for.', 'godam' ),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/download-folder/(?P<folder_id>\d+)',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'download_folder' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+					'args'                => array(
+						'folder_id' => array(
+							'required'    => true,
+							'type'        => 'integer',
+							'description' => __( 'ID of the folder to create a ZIP file for.', 'godam' ),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/bulk-delete-folders',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'bulk_delete_folders' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'folder_ids' => array(
+							'required'    => true,
+							'type'        => 'array',
+							'items'       => array( 'type' => 'integer' ),
+							'description' => __( 'Array of folder IDs to delete.', 'godam' ),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/bulk-lock-folders',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'bulk_update_folder_lock' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'folder_ids'    => array(
+							'required'    => true,
+							'type'        => 'array',
+							'items'       => array( 'type' => 'integer' ),
+							'description' => __( 'Array of folder IDs to update lock status for.', 'godam' ),
+						),
+						'locked_status' => array(
+							'required'    => true,
+							'type'        => 'boolean',
+							'description' => __( 'The desired lock status (true for locked, false for unlocked).', 'godam' ),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/bulk-bookmark-folders',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'bulk_update_folder_bookmark' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'folder_ids'      => array(
+							'required'    => true,
+							'type'        => 'array',
+							'items'       => array( 'type' => 'integer' ),
+							'description' => __( 'Array of folder IDs to update bookmark status for.', 'godam' ),
+						),
+						'bookmark_status' => array(
+							'required'    => true,
+							'type'        => 'boolean',
+							'description' => __( 'The desired bookmark status (true for bookmarked, false for unbookmarked).', 'godam' ),
 						),
 					),
 				),
@@ -296,14 +383,15 @@ class Media_Library extends Base {
 		}
 
 		foreach ( $thumbnail_array as $key => $thumbnail_src ) {
-			$file_url = $thumbnail_src;
+				$file_url = $thumbnail_src;
 
-			if ( 0 === strpos( $file_url, $uploads['baseurl'] ) ) {
+			if ( 0 === strpos( $file_url, $uploads['baseurl'] ) ||
+			0 === strpos( $file_url, 'http://' ) ||
+			0 === strpos( $file_url, 'https://' ) ) {
 				$thumbnail_src = $file_url;
 			} else {
 				$thumbnail_src = $uploads['baseurl'] . '/' . $file_url;
 			}
-
 			$thumbnail_array[ $key ] = $thumbnail_src;
 		}
 
@@ -313,9 +401,11 @@ class Media_Library extends Base {
 		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 		if ( ! empty( $selected_thumbnail ) ) {
-			$file_url = $selected_thumbnail;
+					$file_url = $selected_thumbnail;
 
-			if ( 0 === strpos( $file_url, $uploads['baseurl'] ) ) {
+			if ( 0 === strpos( $file_url, $uploads['baseurl'] ) ||
+			0 === strpos( $file_url, 'http://' ) ||
+			0 === strpos( $file_url, 'https://' ) ) {
 				$selected_thumbnail = $file_url;
 			} else {
 				$selected_thumbnail = $uploads['baseurl'] . '/' . $file_url;
@@ -371,5 +461,278 @@ class Media_Library extends Base {
 				'message' => 'Video thumbnail successfully set.',
 			)
 		);
+	}
+
+	/**
+	 * Download folder as ZIP.
+	 *
+	 * Create a ZIP file of the folder with the given ID.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function download_folder( $request ) {
+		$folder_id = $request->get_param( 'folder_id' );
+
+		if ( ! $folder_id || ! is_numeric( $folder_id ) ) {
+			return new \WP_Error( 'invalid_folder_id', 'Invalid folder ID.', array( 'status' => 400 ) );
+		}
+
+		// Check if the term of the folder exists.
+		$term = get_term( $folder_id, 'media-folder' );
+
+		if ( ! $term || is_wp_error( $term ) ) {
+			return new \WP_Error( 'invalid_folder', 'Invalid folder term ID.', array( 'status' => 404 ) );
+		}
+
+		$result = Media_Folder_Create_Zip::get_instance()->create_zip( $folder_id, 'media-folder-' . $term->slug . '.zip' );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => 'ZIP file created successfully.',
+				'data'    => $result,
+			)
+		);
+	}
+
+	/**
+	 * Delete multiple folders.
+	 *
+	 * Deletes an array of folder IDs.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function bulk_delete_folders( $request ) {
+		$folder_ids = $request->get_param( 'folder_ids' );
+
+		if ( empty( $folder_ids ) || ! is_array( $folder_ids ) ) {
+			return new \WP_Error( 'invalid_ids', 'No folder IDs provided or invalid format.', array( 'status' => 400 ) );
+		}
+
+		$deleted_count = 0;
+		$errors        = array();
+
+		foreach ( $folder_ids as $folder_id ) {
+			if ( ! is_numeric( $folder_id ) || $folder_id <= 0 ) {
+				// translators: %s is the invalid folder ID.
+				$errors[] = sprintf( __( 'Invalid folder ID: %s', 'godam' ), $folder_id );
+				continue;
+			}
+
+			$term = get_term( $folder_id, 'media-folder' );
+
+			if ( ! $term || is_wp_error( $term ) ) {
+				// translators: %s is the invalid folder ID.
+				$errors[] = sprintf( __( 'Folder ID %s not found or invalid.', 'godam' ), $folder_id );
+				continue;
+			}
+
+			$result = wp_delete_term( $folder_id, 'media-folder' );
+
+			if ( is_wp_error( $result ) ) {
+				// translators: %s is the invalid folder ID where delete failed.
+				$errors[] = sprintf( __( 'Failed to delete folder %s', 'godam' ), $folder_id );
+			} elseif ( false === $result ) {
+				// translators: %s is the ID of folder not found.
+				$errors[] = sprintf( __( 'Folder ID %s not found during deletion attempt.', 'godam' ), $folder_id );
+			} elseif ( 0 === $result ) {
+				// translators: %s is the invalid folder ID.
+				$errors[] = sprintf( __( 'Folder ID %s cannot be deleted (possibly uncategorized or default term).', 'godam' ), $folder_id );
+			} else {
+				++$deleted_count;
+			}
+		}
+
+		if ( $deleted_count > 0 && empty( $errors ) ) {
+			return rest_ensure_response(
+				array(
+					'success' => true,
+					// translators: %d is the number of folders deleted.
+					'message' => sprintf( __( '%d folder(s) deleted successfully.', 'godam' ), $deleted_count ),
+				)
+			);
+		} elseif ( $deleted_count > 0 && ! empty( $errors ) ) {
+			return new \WP_REST_Response(
+				array(
+					'success'       => true, // Partial success
+					// translators: %1$d is the number of folders deleted, %2$s are the errors.
+					'message'       => sprintf( __( 'Error deleting some folders. Deleted: %1$d. Errors: %2$s', 'godam' ), $deleted_count, implode( ', ', $errors ) ),
+					'errors'        => $errors,
+					'deleted_count' => $deleted_count,
+				),
+				200 // HTTP OK for partial success.
+			);
+		} else {
+			return new \WP_Error( 'bulk_delete_failed', __( 'No folders were deleted.', 'godam' ) . ' Errors: ' . implode( ', ', $errors ), array( 'status' => 500 ) );
+		}
+	}
+
+	/**
+	 * Update meta status for multiple folders.
+	 * This is a helper method used by bulk_update_folder_lock_status and bulk_update_folder_bookmark_status.
+	 *
+	 * @param array  $folder_ids Array of folder IDs.
+	 * @param string $meta_key   The meta key to update ('locked' or 'bookmark').
+	 * @param bool   $value      The boolean value to set (true or false).
+	 * @return array Success status and messages.
+	 */
+	private function update_folder_meta_status( $folder_ids, $meta_key, $value ) {
+		$updated_count = 0;
+		$failed_ids    = array();
+		$errors        = array();
+
+		foreach ( $folder_ids as $folder_id ) {
+			if ( ! is_numeric( $folder_id ) || $folder_id <= 0 ) {
+				// translators: %s is the invalid folder ID.
+				$errors[] = sprintf( __( 'Invalid folder ID: %s', 'godam' ), $folder_id );
+				continue;
+			}
+
+			$term = get_term( $folder_id, 'media-folder' );
+
+			if ( ! $term || is_wp_error( $term ) ) {
+				// translators: %s is the invalid folder ID.
+				$errors[] = sprintf( __( 'Folder ID %s not found or invalid.', 'godam' ), $folder_id );
+				continue;
+			}
+
+			$result = update_term_meta( $folder_id, $meta_key, $value );
+
+			if ( false === $result ) {
+				++$updated_count;
+			} else {
+				++$updated_count;
+			}
+		}
+
+		return array(
+			'updated_count' => $updated_count,
+			'failed_ids'    => $failed_ids,
+			'errors'        => $errors,
+		);
+	}
+
+	/**
+	 * Bulk update folder lock status.
+	 *
+	 * Sets the 'locked' meta status for an array of folder IDs.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function bulk_update_folder_lock( $request ) {
+		$folder_ids    = $request->get_param( 'folder_ids' );
+		$locked_status = (bool) $request->get_param( 'locked_status' );
+
+		if ( empty( $folder_ids ) || ! is_array( $folder_ids ) ) {
+			return new \WP_Error( 'invalid_ids', 'No folder IDs provided or invalid format.', array( 'status' => 400 ) );
+		}
+
+		$result = $this->update_folder_meta_status( $folder_ids, 'locked', $locked_status );
+
+		if ( $result['updated_count'] > 0 && empty( $result['errors'] ) ) {
+			return rest_ensure_response(
+				array(
+					'success'       => true,
+					'message'       => sprintf(
+						$locked_status
+						// translators: %d number of folders.
+							? __( '%d folder(s) locked successfully.', 'godam' )
+							// translators: %d number of folders.
+							: __( '%d folder(s) unlocked successfully.', 'godam' ),
+						$result['updated_count']
+					),
+					'updated_ids'   => $folder_ids,
+					'locked_status' => $locked_status,
+				)
+			);
+		} elseif ( $result['updated_count'] > 0 && ! empty( $result['errors'] ) ) {
+			return new \WP_REST_Response(
+				array(
+					'success'       => true, // Partial success.
+					'message'       => sprintf(
+						$locked_status
+						// translators: %d number of folders.
+							? __( 'Some folders locked, but issues occurred with others. Locked: %d.', 'godam' )
+							// translators: %d number of folders.
+							: __( 'Some folders unlocked, but issues occurred with others. Unlocked: %d.', 'godam' ),
+						$result['updated_count']
+					),
+					'errors'        => $result['errors'],
+					'updated_count' => $result['updated_count'],
+					'updated_ids'   => array_diff( $folder_ids, $result['failed_ids'] ),
+					'locked_status' => $locked_status,
+				),
+				200
+			);
+		} else {
+			return new \WP_Error( 'bulk_lock_failed', __( 'No folders were updated for lock status.', 'godam' ) . ' Errors: ' . implode( ', ', $result['errors'] ), array( 'status' => 500 ) );
+		}
+	}
+
+	/**
+	 * Bulk update folder bookmark status.
+	 *
+	 * Sets the 'bookmark' meta status for an array of folder IDs.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function bulk_update_folder_bookmark( $request ) {
+		$folder_ids      = $request->get_param( 'folder_ids' );
+		$bookmark_status = (bool) $request->get_param( 'bookmark_status' );
+
+		if ( empty( $folder_ids ) || ! is_array( $folder_ids ) ) {
+			return new \WP_Error( 'invalid_ids', 'No folder IDs provided or invalid format.', array( 'status' => 400 ) );
+		}
+
+		$result = $this->update_folder_meta_status( $folder_ids, 'bookmark', $bookmark_status );
+
+		if ( $result['updated_count'] > 0 && empty( $result['errors'] ) ) {
+			return rest_ensure_response(
+				array(
+					'success'         => true,
+					'message'         => sprintf(
+						$bookmark_status
+						// translators: %d number of folders.
+							? __( '%d folder(s) bookmarked successfully.', 'godam' )
+							// translators: %d number of folders.
+							: __( '%d folder(s) unbookmarked successfully.', 'godam' ),
+						$result['updated_count']
+					),
+					'updated_ids'     => $folder_ids,
+					'bookmark_status' => $bookmark_status,
+				)
+			);
+		} elseif ( $result['updated_count'] > 0 && ! empty( $result['errors'] ) ) {
+			return new \WP_REST_Response(
+				array(
+					'success'         => true, // Partial success.
+					'message'         => sprintf(
+						$bookmark_status
+						// translators: %d number of folders.
+							? __( 'Some folders bookmarked, but issues occurred with others. Bookmarked: %d.', 'godam' )
+							// translators: %d number of folders.
+							: __( 'Some folders unbookmarked, but issues occurred with others. Unbookmarked: %d.', 'godam' ),
+						$result['updated_count'],
+					),
+					'errors'          => $result['errors'],
+					'updated_count'   => $result['updated_count'],
+					'updated_ids'     => array_diff( $folder_ids, $result['failed_ids'] ),
+					'bookmark_status' => $bookmark_status,
+				),
+				200
+			);
+		} else {
+			return new \WP_Error( 'bulk_bookmark_failed', __( 'No folders were updated for bookmark status.', 'godam' ) . ' Errors: ' . implode( ', ', $result['errors'] ), array( 'status' => 500 ) );
+		}
 	}
 }

@@ -40,6 +40,12 @@ $video_preview      = isset( $attributes['preview'] ) ? $attributes['preview'] :
 $overlay_time_range = ! empty( $attributes['overlayTimeRange'] ) ? floatval( $attributes['overlayTimeRange'] ) : 0;
 $show_overlay       = isset( $attributes['showOverlay'] ) ? $attributes['showOverlay'] : false;
 $vertical_alignment = ! empty( $attributes['verticalAlignment'] ) ? esc_attr( $attributes['verticalAlignment'] ) : 'center';
+$aspect_ratio       = ! empty( $attributes['aspectRatio'] ) && 'responsive' === $attributes['aspectRatio']
+	? ( ! empty( $attributes['videoWidth'] ) && ! empty( $attributes['videoHeight'] )
+		? $attributes['videoWidth'] . ':' . $attributes['videoHeight']
+		: '16:9'
+	)
+	: '16:9';
 
 $src            = ! empty( $attributes['src'] ) ? esc_url( $attributes['src'] ) : '';
 $transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attributes['transcoded_url'] ) : '';
@@ -60,7 +66,7 @@ $sources = array();
 if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$sources = $attributes['sources'];
 } elseif ( empty( $attachment_id ) &&
-	( ! empty( $src || ! empty( $transcoded_url ) ) ) 
+	( ! empty( $src || ! empty( $transcoded_url ) ) )
 ) {
 	$sources = array();
 	if ( ! empty( $transcoded_url ) ) {
@@ -80,7 +86,7 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
 	$video_src_type = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
 	$job_id         = $attachment_id && ! empty( $transcoded_url ) ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
-	
+
 	if ( ! empty( $transcoded_url ) ) {
 		$sources = array(
 			array(
@@ -101,6 +107,16 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 		);
 	}
 }
+$easydam_control_bar_color = 'initial'; // Default color.
+
+$godam_settings         = get_option( 'rtgodam-settings', array() );
+$brand_color            = isset( $godam_settings['video_player']['brand_color'] ) ? $godam_settings['video_player']['brand_color'] : null;
+$appearance_color       = isset( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
+$brand_image            = isset( $godam_settings['video_player']['brand_image'] ) ? $godam_settings['video_player']['brand_image'] : null;
+$individual_brand_image = isset( $easydam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $easydam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
+$player_skin            = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : 'Default';
+$ads_settings           = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
+$ads_settings           = wp_json_encode( $ads_settings );
 
 // Build the video setup options for data-setup.
 $video_setup = array(
@@ -113,6 +129,15 @@ $video_setup = array(
 	'fluid'       => true,
 	'sources'     => $sources,
 	'playsinline' => true,
+	'controlBar'  => array(
+		'volumePanel' => array(
+			'inline' => ! in_array( $player_skin, array( 'Minimal', 'Pills' ), true ),
+		),
+		'skipButtons' => array(
+			'forward'  => 10,
+			'backward' => 10,
+		),
+	),
 );
 if ( ! empty( $control_bar_settings ) ) {
 	$video_setup['controlBar'] = $control_bar_settings; // contains settings specific to control bar.
@@ -125,14 +150,10 @@ $video_config = wp_json_encode(
 		'layers'           => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
 		'chapters'         => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(), // contains list of chapters.
 		'overlayTimeRange' => $overlay_time_range, // Add overlay time range to video config.
+		'playerSkin'       => $player_skin, // Add player skin to video config. Add brand image to video config.
+		'aspectRatio'      => $aspect_ratio,
 	)
 );
-
-$easydam_control_bar_color = '#2b333fb3'; // Default color.
-
-$godam_settings   = get_option( 'rtgodam-settings', array() );
-$brand_color      = isset( $godam_settings['general']['brand_color'] ) ? $godam_settings['general']['brand_color'] : null;
-$appearance_color = isset( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
 
 if ( ! empty( $appearance_color ) ) {
 	$easydam_control_bar_color = $appearance_color;
@@ -164,46 +185,105 @@ endif;
 
 $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 
+// Create custom inline styles in a more maintainable way.
+$custom_css_properties = array(
+	'--rtgodam-control-bar-color'      => $easydam_control_bar_color,
+	'--rtgodam-control-hover-color'    => $easydam_hover_color,
+	'--rtgodam-control-hover-zoom'     => 1 + $easydam_hover_zoom,
+	'--rtgodam-custom-play-button-url' => $easydam_custom_btn_img ? 'url(' . esc_url( $easydam_custom_btn_img ) . ')' : '',
+);
+
+if ( ! empty( $attributes['aspectRatio'] ) ) {
+	$custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $aspect_ratio );
+}
+
+// Build the inline style string, escaping each value.
+$custom_inline_styles = '';
+foreach ( $custom_css_properties as $property => $value ) {
+	if ( ! empty( $value ) ) {
+		$custom_inline_styles .= $property . ': ' . $value . ';';
+	}
+}
+
+// Build the figure attributes for the <figure> element.
+if ( $is_shortcode || $is_elementor_widget ) {
+	$figure_attributes = ! empty( $custom_inline_styles )
+		? 'style="' . esc_attr( $custom_inline_styles ) . '"'
+		: '';
+} else {
+	$additional_attributes = array();
+	if ( ! empty( $custom_inline_styles ) ) {
+		$additional_attributes['style'] = esc_attr( $custom_inline_styles );
+	}
+	$figure_attributes = get_block_wrapper_attributes( $additional_attributes );
+}
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure 
+	<figure
 	<?php echo $is_shortcode || $is_elementor_widget ? '' : wp_kses_data( get_block_wrapper_attributes() ); ?>
 	style="
 	--rtgodam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
 	--rtgodam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
 	--rtgodam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
 	--rtgodam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
-	<?php echo $attributes['aspectRatio'] ? '--rtgodam-video-aspect-ratio: ' . esc_attr( $attributes['aspectRatio'] ) : ''; ?>
+	<?php echo $aspect_ratio ? '--rtgodam-video-aspect-ratio: ' . esc_attr( str_replace( ':', '/', $aspect_ratio ) ) : ''; ?>
 	">
 		<div class="godam-video-wrapper">
 			<?php if ( $show_overlay && ! empty( $inner_blocks_content ) ) : ?>
-				<div 
+				<div
 					class="godam-video-overlay-container godam-overlay-alignment-<?php echo esc_attr( $vertical_alignment ); ?>"
 					data-overlay-content
 					data-overlay-time-range="<?php echo esc_attr( $overlay_time_range ); ?>"
 				>
-					<?php 
+					<?php
 					// Safely output the inner blocks content.
-					echo wp_kses_post( $inner_blocks_content ); 
+					echo wp_kses_post( $inner_blocks_content );
 					?>
 				</div>
 			<?php endif; ?>
 
-			<div class="easydam-video-container animate-video-loading">
-				<div class="animate-play-btn">
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
-					<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
-				</svg>
+			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin" style="position: relative;">
+			<?php if ( ! empty( $heading ) ) : ?>
+					<div
+						class="godam-video-heading-overlay"
+						data-heading-overlay
+						style="
+							position: absolute;
+							top: 50%;
+							left: 20px;
+							right: 20px;
+							transform: translateY(-50%);
+							z-index: 10;
+							color: <?php echo esc_attr( $heading_color ); ?>;
+							background-color: <?php echo esc_attr( $heading_bg_color ); ?>;
+							font-size: 24px;
+							font-weight: bold;
+							text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+							padding: 8px;
+							border-radius: 4px;
+							opacity: 1;
+							transition: opacity 0.3s ease;
+						"
+					>
+						<?php echo wp_kses_post( $heading ); ?>
+					</div>
+				<?php endif; ?>
+					
+			<div class="animate-play-btn">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+					</svg>
 				</div>
 				<video
 					class="easydam-player video-js vjs-big-play-centered vjs-hidden"
 					data-options="<?php echo esc_attr( $video_config ); ?>"
 					data-ad_tag_url="<?php echo esc_url( $ad_tag_url ); ?>"
-					data-id="<?php echo esc_attr( $attachment_id ); ?>" 
+					data-id="<?php echo esc_attr( $attachment_id ); ?>"
 					data-instance-id="<?php echo esc_attr( $instance_id ); ?>"
 					data-controls="<?php echo esc_attr( $video_setup ); ?>"
 					data-job_id="<?php echo esc_attr( $job_id ); ?>"
+					data-global_ads_settings="<?php echo esc_attr( $ads_settings ); ?>"
 				>
 					<?php
 					foreach ( $sources as $source ) :
@@ -217,7 +297,7 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 						endif;
 					endforeach;
 
-					$display_caption = ( ! isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) || 
+					$display_caption = ( ! isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
 						( isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] );
 
 					if ( $display_caption ) {
@@ -294,28 +374,92 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 									</div>
 								</div>
 								<?php
+							elseif ( 'sureforms' === $form_type && ! empty( $layer['sureform_id'] ) ) :
+								?>
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div class="form-container">
+										<?php
+											echo do_shortcode(
+												sprintf(
+													"[sureforms id='%d']",
+													intval( $layer['sureform_id'] )
+												)
+											);
+										?>
+									</div>
+								</div>
+								<?php
+							elseif ( 'forminator' === $form_type && ! empty( $layer['forminator_id'] ) ) :
+								?>
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div class="form-container">
+										<?php
+											echo do_shortcode(
+												sprintf(
+													"[forminator_form id='%d']",
+													intval( $layer['forminator_id'] )
+												)
+											);
+										?>
+									</div>
+								</div>
+								<?php
 							elseif ( 'jetpack' === $form_type && ! empty( $layer['jp_id'] ) ) :
 								// Get the origin post ID from the layer data.
 								$origin_post_id = isset( $layer['origin_post_id'] ) ? $layer['origin_post_id'] : '';
-								
+
 								// Use the static helper method to get the rendered form HTML.
 								$form_html = \RTGODAM\Inc\REST_API\Jetpack::get_rendered_form_html_static( $layer['jp_id'] );
-								
-								if ( $form_html && ! is_wp_error( $form_html ) ) {
+
+								if ( $form_html && ! is_wp_error( $form_html ) ) :
 									?>
 									<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 										<div class="form-container jetpack-form-container" <?php echo ! empty( $origin_post_id ) ? 'data-origin-post-id="' . esc_attr( $origin_post_id ) . '"' : ''; ?>>
-											<?php 
+											<?php
 												// HTML generated dynamically using Block content.
 												// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-												echo $form_html; 
+												echo $form_html;
 											?>
 										</div>
 									</div>
 									<?php
-								}
+								endif;
+							elseif ( 'fluentforms' === $form_type && ! empty( $layer['fluent_form_id'] ) ) :
+								?>
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div class="form-container">
+										<?php
+											echo do_shortcode(
+												sprintf(
+													"[fluentform id='%d']",
+													intval( $layer['fluent_form_id'] )
+												)
+											);
+										?>
+									</div>
+								</div>
+									<?php
+							elseif ( 'everestforms' === $form_type && ! empty( $layer['everest_form_id'] ) ) :
+								?>
+								<div
+									id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
+									class="easydam-layer hidden"
+									style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>"
+								>
+									<div class="form-container everest-form">
+										<?php
+											echo do_shortcode(
+												sprintf(
+													"[everest_form id='%d' title='false' description='false']",
+													intval( $layer['everest_form_id'] )
+												)
+											);
+										?>
+									</div>
+								</div>
+								<?php
 							endif;
-							// Poll layer.
+								// Poll layer.
 						elseif ( isset( $layer['type'] ) && 'poll' === $layer['type'] ) :
 							?>
 							<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
@@ -380,5 +524,4 @@ $instance_id = 'video_' . bin2hex( random_bytes( 8 ) );
 			<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $caption ); ?></figcaption>
 		<?php endif; ?>
 	</figure>
-
 <?php endif; ?>

@@ -8,23 +8,28 @@ import { CSS } from '@dnd-kit/utilities';
 /**
  * WordPress dependencies
  */
-import { Icon, file, chevronDown, chevronUp } from '@wordpress/icons';
+import { Icon, file, lock } from '@wordpress/icons';
+import { CheckboxControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { toggleOpenClose, changeSelectedFolder } from '../../redux/slice/folders';
+import { toggleOpenClose, changeSelectedFolder, toggleMultiSelectedFolder } from '../../redux/slice/folders';
 import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
+import { FolderTreeChevron } from '../icons';
 
 const indentPerLevel = 12;
 
-const TreeItem = ( { item, index, depth } ) => {
+const TreeItem = ( { item, index, depth, onContextMenu, isMultiSelecting } ) => {
 	const { attributes, listeners, transform, transition, setNodeRef, isDragging } = useSortable( { id: item.id } );
 
 	const dispatch = useDispatch();
 
 	const selectedFolderID = useSelector( ( state ) => state.FolderReducer.selectedFolder?.id );
+
+	const multiSelectedFolderIds = useSelector( ( state ) => state.FolderReducer.multiSelectedFolderIds );
+	const isChecked = multiSelectedFolderIds.includes( item.id );
 
 	/**
 	 * Handle click on the tree item to change the selected folder
@@ -33,6 +38,11 @@ const TreeItem = ( { item, index, depth } ) => {
 	const handleClick = () => {
 		triggerFilterChange( item.id );
 
+		dispatch( changeSelectedFolder( { item } ) );
+	};
+
+	const handleCheckboxChange = () => {
+		dispatch( toggleMultiSelectedFolder( { id: item.id } ) );
 		dispatch( changeSelectedFolder( { item } ) );
 	};
 
@@ -63,6 +73,7 @@ const TreeItem = ( { item, index, depth } ) => {
 				style={ style }
 				{ ...attributes }
 				{ ...listeners }
+				onContextMenu={ ( e ) => onContextMenu( e, item.id ) }
 			>
 				<button
 					style={ { paddingLeft: `${ depth * indentPerLevel }px` } }
@@ -72,29 +83,33 @@ const TreeItem = ( { item, index, depth } ) => {
 					data-index={ index }
 					onClick={ () => handleClick() }
 				>
-					<div className="tree-item__content">
-						<Icon icon={ file } />
-						<span className="tree-item__text">{ item.name }</span>
-					</div>
-
-					{ item.children?.length > 0 &&
-					<span
-						className="tree-item__chevron"
-						onClick={ ( event ) => handleChevronClick( event ) }
-						onKeyDown={ ( e ) => {
+					{ item.children?.length > 0
+						? <span className="tree-item__chevron" onClick={ ( event ) => handleChevronClick( event ) } onKeyDown={ ( e ) => {
 							if ( e.key === 'Enter' || e.key === ' ' ) {
-								e.preventDefault();
-								handleChevronClick( e );
+								e.preventDefault(); handleChevronClick( e );
 							}
-						} }
-						role="button"
-						tabIndex={ 0 }
-						aria-label={ item.isOpen ? 'Collapse folder' : 'Expand folder' }
-
-					>
-						<Icon icon={ item.isOpen ? chevronUp : chevronDown } />
-					</span>
+						} } role="button" tabIndex={ 0 } aria-label={ item.isOpen ? 'Collapse folder' : 'Expand folder' } >
+							<FolderTreeChevron className={ item.isOpen ? 'tree-item__chevron_open' : '' } />
+						</span>
+						: <span className="tree-item__spacer" />
 					}
+					{ isMultiSelecting && (
+						<CheckboxControl
+							className="tree-item__checkbox"
+							checked={ isChecked }
+							onChange={ handleCheckboxChange }
+							onClick={ ( e ) => e.stopPropagation() }
+							__nextHasNoMarginBottom
+						/>
+					) }
+					<div className="tree-item__content">
+						<Icon icon={ item.meta?.locked ? lock : file } />
+						<span className="tree-item__text">{ item.name }</span>
+
+						<span className="tree-item__count">
+							{ item.attachmentCount ?? 0 }
+						</span>
+					</div>
 				</button>
 			</div>
 		</>
