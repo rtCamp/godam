@@ -1,20 +1,27 @@
 /**
  * External dependencies
  */
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
  * WordPress dependencies
  */
-import { Button } from '@wordpress/components';
+import { Button, ButtonGroup, SelectControl } from '@wordpress/components';
 const { __ } = wp.i18n;
 /**
  * Internal dependencies
  */
 import FolderTree from './components/folder-tree/FolderTree.jsx';
+import ContextMenu from './components/context-menu/ContextMenu.jsx';
 
-import { changeSelectedFolder, openModal } from './redux/slice/folders';
+import {
+	changeSelectedFolder,
+	openModal,
+	toggleMultiSelectMode,
+	clearMultiSelectedFolders,
+	setSortOrder,
+} from './redux/slice/folders';
 import { FolderCreationModal, RenameModal, DeleteModal } from './components/modal/index.jsx';
 import { triggerFilterChange } from './data/media-grid.js';
 import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
@@ -22,8 +29,21 @@ import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
 const App = () => {
 	const dispatch = useDispatch();
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
+	const currentSortOrder = useSelector( ( state ) => state.FolderReducer.sortOrder );
+
+	const [ contextMenu, setContextMenu ] = useState( {
+		visible: false,
+		x: 0,
+		y: 0,
+		folderId: null,
+	} );
 
 	const handleClick = useCallback( ( id ) => {
+		if ( isMultiSelecting ) {
+			dispatch( clearMultiSelectedFolders() );
+		}
+
 		if ( id === -1 ) {
 			triggerFilterChange( 'all' );
 		} else if ( id === 0 ) {
@@ -33,39 +53,86 @@ const App = () => {
 		}
 
 		dispatch( changeSelectedFolder( { item: { id } } ) );
-	}, [ dispatch ] );
+	}, [ dispatch, isMultiSelecting ] );
+
+	const closeFolderMenu = () => {
+		const sidebar = document.getElementById( 'rt-transcoder-media-library-root' );
+		if ( sidebar ) {
+			sidebar.classList.add( 'hide-sidebar' );
+		}
+		const mediaModal = document.querySelector( '.media-modal-content' );
+		if ( mediaModal ) {
+			mediaModal.classList.add( 'hide-sidebar' );
+		}
+		const mediaToggleButton = document.getElementById( 'media-folder-toggle-button' );
+		if ( mediaToggleButton ) {
+			mediaToggleButton.innerHTML = mediaToggleButton.innerHTML.replace( /Hide/g, 'Show' );
+		}
+	};
+
+	const handleContextMenu = ( e, folderId, folderItem ) => {
+		e.preventDefault(); // Prevent default browser context menu
+
+		if ( folderId === -1 ) {
+			triggerFilterChange( 'all' );
+		} else if ( folderId === 0 ) {
+			triggerFilterChange( 'uncategorized' );
+		} else {
+			triggerFilterChange( folderId );
+		}
+
+		dispatch( changeSelectedFolder( { item: folderItem } ) );
+
+		setContextMenu( {
+			visible: true,
+			x: e.clientX,
+			y: e.clientY,
+			folderId,
+		} );
+	};
+
+	const handleCloseContextMenu = () => {
+		setContextMenu( { ...contextMenu, visible: false } );
+	};
 
 	return (
 		<>
-			<Button
-				icon="plus"
-				__next40pxDefaultSize
-				variant="primary"
-				text={ __( 'New Folder', 'godam' ) }
-				className="button--full mb-spacing"
-				onClick={ () => dispatch( openModal( { type: 'folderCreation', item: selectedFolder } ) ) }
-			/>
-
-			<div className="button-group mb-spacing">
+			<div className="control-buttons">
 				<Button
-					icon="edit"
-					__next40pxDefaultSize
-					variant="secondary"
-					text={ __( 'Rename', 'godam' ) }
-					className="button--half"
-					onClick={ () => dispatch( openModal( { type: 'rename', item: selectedFolder } ) ) }
-					disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
-				/>
-				<Button
-					icon="trash"
+					icon="plus-alt2"
 					__next40pxDefaultSize
 					variant="primary"
-					text={ __( 'Delete', 'godam' ) }
-					className="button--half"
-					isDestructive={ true }
-					onClick={ () => dispatch( openModal( { type: 'delete', item: selectedFolder } ) ) }
-					disabled={ [ -1, 0 ].includes( selectedFolder.id ) }
+					text={ __( 'New Folder', 'godam' ) }
+					className="button--full mb-spacing new-folder-button"
+					onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
 				/>
+
+				<Button
+					icon="plus-alt2"
+					__next40pxDefaultSize
+					variant="secondary"
+					className="button--full close-folder-menu-mobile"
+					onClick={ () => closeFolderMenu() }
+				/>
+
+				<ButtonGroup className="button-group mb-spacing">
+					<Button
+						__next40pxDefaultSize
+						className="multiselect-button"
+						variant="secondary"
+						text={ ! isMultiSelecting ? __( 'Select', 'godam' ) : __( 'Cancel', 'godam' ) }
+						onClick={ () => dispatch( toggleMultiSelectMode() ) }
+					/>
+					<SelectControl
+						value={ currentSortOrder }
+						className="folder-sort-select"
+						options={ [
+							{ label: __( 'By Name (A-Z)', 'godam' ), value: 'name-asc' },
+							{ label: __( 'By Name (Z-A)', 'godam' ), value: 'name-desc' },
+						] }
+						onChange={ ( newOrder ) => dispatch( setSortOrder( newOrder ) ) }
+					/>
+				</ButtonGroup>
 			</div>
 
 			<div className="folder-list">
@@ -89,8 +156,17 @@ const App = () => {
 				</button>
 			</div>
 
-			<BookmarkTab />
-			<FolderTree />
+			<BookmarkTab handleContextMenu={ handleContextMenu } />
+			<FolderTree handleContextMenu={ handleContextMenu } />
+
+			{ contextMenu.visible && (
+				<ContextMenu
+					x={ contextMenu.x }
+					y={ contextMenu.y }
+					folderId={ contextMenu.folderId }
+					onClose={ handleCloseContextMenu }
+				/>
+			) }
 
 			<FolderCreationModal />
 			<RenameModal />
