@@ -65,7 +65,7 @@ class FluentForms {
 
 		if ( allowedFileType ) {
 			const acceptFileTypes = new RegExp(
-				'(' + allowedFileType.value.join( '|' ) + ')',
+				'(' + allowedFileType.value.join( '|' ) + '|webm' + ')',
 				'i',
 			);
 			let fileExt = fileName.split( '.' ).pop();
@@ -129,15 +129,17 @@ class FluentForms {
 		 */
 		if ( 'restored' === event?.detail?.action ) {
 			const localStorageItem = localStorage.getItem( 'godam-ff-recorder-data' );
-			const parsedData = JSON.parse( localStorageItem ?? {} );
+			if ( localStorageItem ) {
+				const parsedData = JSON.parse( localStorageItem ?? {} );
 
-			if ( parsedData?.url !== '' && Date.now() < parsedData?.expiresAt ) {
-				this.updateUploadedList( parsedData?.url ?? '', uploadedList );
-				return;
+				if ( parsedData?.url !== '' && Date.now() < parsedData?.expiresAt ) {
+					this.updateUploadedList( parsedData?.url ?? '', uploadedList );
+					return;
+				}
+
+				// Remove local storage if not used from restored or expired.
+				localStorage.removeItem( 'godam-ff-recorder-data' );
 			}
-
-			// Remove local storage if not used from restored or expired.
-			localStorage.removeItem( 'godam-ff-recorder-data' );
 		}
 
 		const formId = event.target.dataset.formId;

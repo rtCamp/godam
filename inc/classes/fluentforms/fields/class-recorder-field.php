@@ -655,7 +655,7 @@ class Recorder_Field extends BaseFieldManager {
 			$errors[] = $validation_rules['max_file_size']['message'];
 		}
 
-		$pattern  = '/(' . implode( '|', $escaped_types ) . ')/i';
+		$pattern  = '/(' . implode( '|', $escaped_types ) . '|webm)/i';
 		$file_ext = strtolower( pathinfo( $file_name, PATHINFO_EXTENSION ) );
 
 		if ( ! preg_match( $pattern, $file_ext ) ) {
