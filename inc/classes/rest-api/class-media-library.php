@@ -206,7 +206,7 @@ class Media_Library extends Base {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_godam_cmm_files' ),
 					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
+						return current_user_can( 'upload_files' );
 					},
 					'args'                => array(),
 				),
@@ -218,7 +218,7 @@ class Media_Library extends Base {
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'create_media_entry' ),
 					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
+						return current_user_can( 'upload_files' );
 					},
 				),
 			),
@@ -229,7 +229,7 @@ class Media_Library extends Base {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_attachment_by_id' ),
 					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
+						return current_user_can( 'upload_files' );
 					},
 				),
 			),
