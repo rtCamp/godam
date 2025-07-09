@@ -32,13 +32,24 @@ class WPForms_Integration {
 		if ( is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' ) ) {
 			$this->register_assets();
 
+			// Assets need registration before actual field preview, as field preview happens before normal $this->register_assets().
+			add_action( 'wpforms_builder_fields_previews_godam-video', array( $this, 'register_assets' ) );
+
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
-			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
 
 			add_action( 'wpforms_frontend_confirmation_message_before', array( $this, 'load_godam_recorder_script_on_success' ), 10, 4 );
+
+			add_action( 'wpforms_loaded', array( $this, 'init_godam_video_field' ) );
 		}
 	}
 
+	/**
+	 * Register all the assets.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
 	public function register_assets() {
 		wp_register_style(
 			'wpforms-uppy-video-style',
@@ -91,17 +102,6 @@ class WPForms_Integration {
 	}
 
 	/**
-	 * Enqueue assets in frontend area.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @return void
-	 */
-	public function enqueue_frontend_assets() {
-		wp_enqueue_style( 'wpforms-uppy-video-style' );
-	}
-
-	/**
 	 * Load godam recorder script on success so that uppy states can be removed.
 	 *
 	 * @since n.e.x.t
@@ -118,5 +118,16 @@ class WPForms_Integration {
 		if ( in_array( 'godam-video', $field_with_types, true ) ) {
 			wp_enqueue_script( 'godam-recorder-script' );
 		}
+	}
+
+	/**
+	 * Initialize godam field video.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function init_godam_video_field() {
+		new \RTGODAM\Inc\WPForms\WPForms_Field_GoDAM_Video();
 	}
 }

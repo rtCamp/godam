@@ -94,13 +94,6 @@ class Plugin {
 		$this->load_elementor_widgets();
 
 		$this->load_media_library();
-
-		add_action(
-			'wpforms_loaded',
-			function () {
-				new \RTGODAM\Inc\WPForms\WPForms_Field_GoDAM_Video();
-			}
-		);
 	}
 
 	/**

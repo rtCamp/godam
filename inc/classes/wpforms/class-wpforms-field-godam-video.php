@@ -49,7 +49,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 					return 'godam-video' === $type ? true : $editable;
 				},
 				10,
-				2 
+				2
 			);
 		}
 
@@ -97,7 +97,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			// Primary input.
 			printf(
-				'<input type="file" style="display: none;" placeholder="%s" value="%s" class="primary-input" readonly>',
+				'<input type="hidden" placeholder="%s" value="%s" class="primary-input" readonly>',
 				esc_attr( $placeholder ),
 				esc_attr( $default_value )
 			);
@@ -263,13 +263,10 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			$field_types = wp_list_pluck( $fields, 'type' );
 
 			// Do not enqueue if there are no video fields.
-			if ( ! in_array( 'godam-video', $field_types, true ) ) {
-				return;
+			if ( in_array( 'godam-video', $field_types, true ) ) {
+				wp_enqueue_style( 'wpforms-uppy-video-style' );
+				wp_enqueue_script( 'godam-recorder-script' );
 			}
-
-			wp_enqueue_style( 'wpforms-uppy-video-style' );
-			// wp_enqueue_script('wpforms-godam-recorder');
-			wp_enqueue_script( 'godam-recorder-script' );
 		}
 
 		/**

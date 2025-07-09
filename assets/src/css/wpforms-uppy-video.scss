@@ -43,6 +43,18 @@
     }
 }
 
+/** Style the field in the field preview **/
+.wpforms_page_wpforms-builder {
+    .wpforms-field-godam-video {
+        .uppy-video-upload-button {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+        }
+    }
+}
+
+/** Style the field in the entry edit page **/
 .wpforms-admin-page.wpforms_page_wpforms-entries {
     .wpforms-edit-entry-container.wpforms-container {
         .wpforms-field.wpforms-field-godam-video {
