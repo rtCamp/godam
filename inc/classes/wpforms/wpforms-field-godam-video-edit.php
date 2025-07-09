@@ -1,6 +1,11 @@
 <?php
-
-
+/**
+ * Template/View which is render on the WPForms Edit Entry page for the GoDAM Video Recorder field.
+ *
+ * @package GoDAM
+ *
+ * @since n.e.x.t
+ */
 
 // Check if the field is not a video field.
 if ( ! isset( $field['type'] ) || 'godam-video' !== $field['type'] ) {

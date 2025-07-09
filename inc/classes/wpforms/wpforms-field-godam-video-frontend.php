@@ -1,6 +1,10 @@
 <?php
 /**
  * Template which is rendered for the WPForms GoDAM Video Field on the frontend.
+ *
+ * @package GoDAM
+ *
+ * @since n.e.x.t
  */
 
 $video_upload_button_id = wp_unique_id( 'uppy-video-upload-' );
@@ -12,11 +16,11 @@ $form_id       = isset( $form_data['id'] ) ? absint( $form_data['id'] ) : 0;
 $field_id      = isset( $field['id'] ) ? absint( $field['id'] ) : 0;
 $file_input_id = "wpforms_file_input_{$form_id}_{$field_id}";
 
-// Attributes - Max Upload Size
+// Attributes - Max Upload Size.
 $max_upload_size = isset( $field['max_file_size'] ) ? absint( $field['max_file_size'] ) : 0;
 $max_upload_size = $max_upload_size > 0 ? $max_upload_size * 1024 * 1024 : wp_max_upload_size(); // Convert MB to bytes.
 
-// Attributes - File Selectors
+// Attributes - File Selectors.
 $file_selectors = $this->extract_file_selectors_from_field( $field );
 $file_selectors = join( ',', $file_selectors );
 
@@ -33,7 +37,7 @@ $uppy_preview_id   = "uppy_preview_{$form_id}_{$field_id}";
 	type="file"
 	id="<?php echo esc_attr( $file_input_id ); ?>"
 	style="display: none;"
-	<?php echo wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ); ?>
+	<?php echo wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ); ?> // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	<?php echo $primary['required']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 />
 <div
