@@ -58,7 +58,7 @@ class UppyVideoUploader {
 			 */
 			const gravityForms = document.querySelector( 'div[id^=gform_confirmation_message_]' );
 			const sureForms = document.querySelector( 'div.srfm-success-box' );
-			const wpForms = document.querySelector( 'div.wpforms-confirmation-container-full' );
+			const wpForms = document.querySelector( 'div.wpforms-confirmation-container-full, div.wpforms-confirmation-container' );
 
 			/**
 			 * If any of the forms have confirmation, remove uppy state.
