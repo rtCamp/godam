@@ -68,7 +68,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			$this->field_option( 'required', $video_field );
 			$this->field_option( 'basic-options', $video_field, array( 'markup' => 'close' ) );
 
-			// Populate advanced field options
+			// Populate advanced field options.
 			$this->field_option( 'advanced-options', $video_field, array( 'markup' => 'open' ) );
 			$this->field_option( 'size', $video_field );
 			$this->field_option( 'css', $video_field );
@@ -213,7 +213,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 					'slug'        => 'max_file_size',
 					'placeholder' => '100MB',
 					'value'       => isset( $video_field['max_file_size'] ) ? absint( $video_field['max_file_size'] ) : absint( size_format( wp_max_upload_size() ) ),
-					/* translators: %s : Maximum file upload size in human readable format */
+					/* translators: %s : Maximum file upload size in human readable format. */
 					'after'       => sprintf( esc_html__( 'Maximum allowed on this server: %s ', 'godam' ), size_format( wp_max_upload_size() ) ),
 					'class'       => array( 'wpforms-field-options-column', 'max-quantity-input' ),
 					'attrs'       => array(
@@ -274,11 +274,11 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @since n.e.x.t
 		 *
 		 * @param array $field Field data.
-		 * @param array $default Default values.
+		 * @param array $default_file_selectors Default file selectors.
 		 *
 		 * @return array
 		 */
-		public function extract_file_selectors_from_field( $field, $default = array( 'webcam', 'screen_capture' ) ) {
+		public function extract_file_selectors_from_field( $field, $default_file_selectors = array( 'webcam', 'screen_capture' ) ) {
 			// Attributes - File Selectors.
 			$raw_file_selectors = array_filter(
 				$field,
@@ -301,7 +301,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				array()
 			);
 
-			$file_selectors = empty( $file_selectors ) ? $default : $file_selectors;
+			$file_selectors = empty( $file_selectors ) ? $default_file_selectors : $file_selectors;
 
 			return $file_selectors;
 		}
@@ -317,6 +317,8 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @return array
 		 */
 		public function save_video_file( $entry, $form_data ) {
+			// No need to perform nonce verification as this is already done by the WPForms forms processor.
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$files = $this->format_global_files_array( $_FILES );
 
 			require_once ABSPATH . 'wp-admin/includes/media.php';
@@ -447,6 +449,8 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				UPLOAD_ERR_EXTENSION  => esc_html__( 'A PHP extension stopped the file upload.', 'godam' ),
 			);
 
+			// No need to perform nonce verification as this is already done by the WPForms forms processor.
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$file = $this->format_global_files_array( $_FILES, $field_id );
 
 			if ( isset( $file['error'] ) && ! in_array( intval( $file['error'] ), array( UPLOAD_ERR_OK, UPLOAD_ERR_NO_FILE ), true ) ) {

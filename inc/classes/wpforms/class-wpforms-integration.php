@@ -92,6 +92,7 @@ class WPForms_Integration {
 	 */
 	public function enqueue_admin_assets() {
 		// GoDAM Video Editor page.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		if ( isset( $_GET['page'] ) && 'rtgodam_video_editor' === $_GET['page'] ) {
 			// Enqueue the WPForms styles.
 			$frontend = wpforms()->obj( 'frontend' );
@@ -101,6 +102,7 @@ class WPForms_Integration {
 		}
 
 		// Form builder page.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		if ( isset( $_GET['page'], $_GET['view'] ) && 'wpforms-builder' === $_GET['page'] && 'fields' === $_GET['view'] ) {
 			wp_enqueue_style( 'wpforms-uppy-video-style' );
 		}
@@ -118,6 +120,7 @@ class WPForms_Integration {
 	 * @return void
 	 */
 	public function load_godam_recorder_script_on_success( $confirmation, $form_data, $fields, $entry_id ) {
+		// phpcs:ignrore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		$field_with_types = wp_list_pluck( $fields, 'type', 'id' );
 
 		if ( in_array( 'godam-video', $field_with_types, true ) ) {

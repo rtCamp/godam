@@ -29,7 +29,7 @@ $thumbnail_url   = $thumbnail_url ? $thumbnail_url : site_url( '/wp-includes/ima
 printf(
 	'<input type="hidden" value="%s" %s %s>',
 	$value,
-	wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ),
+	wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	$primary['required'] // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 );
 ?>
