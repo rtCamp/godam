@@ -1,0 +1,62 @@
+:root {
+    --godam-video-engagement-icon-color: rgb(113, 118, 123);
+    --godam-video-engagement-icon-color--like: rgb(249, 24, 128);
+    --godam-video-engagement-icon-color--like-background: rgb(249, 24, 128, 0.1);
+    --godam-video-engagement-icon-color--comment: rgb(29, 155, 240);
+    --godam-video-engagement-icon-color--comment-background: rgb(29, 155, 240, 0.1);
+    --godam-video-engagement-icon-color--view: rgb(0, 186, 124);
+    --godam-video-engagement-icon-color--view-background: rgb(0, 186, 124, 0.1);
+}
+
+.rtgodam-video-engagement {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 5px !important;
+
+    a {
+        color: var(--godam-video-engagement-icon-color);
+        text-decoration: none;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: flex-start;
+        transition: all 0.2s ease;
+
+        &:hover {
+
+            & .rtgodam-video-engagement--like-icon {
+                color: var(--godam-video-engagement-icon-color--like);
+                background-color: var(--godam-video-engagement-icon-color--like-background);
+            }
+
+            & .rtgodam-video-engagement--comment-icon {
+                color: var(--godam-video-engagement-icon-color--comment);
+                background-color: var(--godam-video-engagement-icon-color--comment-background);
+            }
+
+            & .rtgodam-video-engagement--view-icon {
+                color: var(--godam-video-engagement-icon-color--view);
+                background-color: var(--godam-video-engagement-icon-color--view-background);
+            }
+        }
+    }
+
+    &--like,
+    &--comment,
+    &--view {
+        &-icon {
+            display: flex;
+            padding: 10px;
+            justify-content: center;
+            align-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            border-radius: 50%;
+        }
+        &-count {
+            position: relative;
+            top: 5px;
+            left: -8px;
+        }
+    }
+}

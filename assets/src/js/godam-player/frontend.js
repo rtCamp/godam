@@ -45,6 +45,7 @@ import {
 	updateActiveChapter,
 	loadChapters,
 } from './chapters.js'; // Adjust path as needed
+import { engagement } from './engagement';
 
 /**
  * Global variables
@@ -1637,6 +1638,8 @@ function GODAMPlayer( videoRef = null ) {
 			} );
 		}
 	} );
+
+	engagement();
 }
 
 window.GODAMPlayer = GODAMPlayer;

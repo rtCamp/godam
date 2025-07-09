@@ -53,7 +53,7 @@ if ( $is_virtual ) {
 			'meta_key'       => '_godam_original_id',
 			'meta_value'     => sanitize_text_field( $attachment_id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'fields'         => 'ids',
-		) 
+		)
 	);
 
 	// If a matching media attachment exists, use its actual WordPress ID.
@@ -551,6 +551,9 @@ if ( $is_shortcode || $is_elementor_widget ) {
 
 		<?php if ( $caption && ! empty( $caption ) ) : ?>
 			<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $caption ); ?></figcaption>
-		<?php endif; ?>
+			<?php
+		endif;
+			do_action( 'rtgodam_after_video_html', $attributes, $instance_id, $easydam_meta_data );
+		?>
 	</figure>
 <?php endif; ?>
