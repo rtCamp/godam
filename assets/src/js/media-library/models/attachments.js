@@ -114,13 +114,10 @@ const GODAMAttachmentCollection = wp.media.model.Query.extend(
 						const items = response.data;
 
 						// Calculate total pages and update pagination state.
-
 						this._hasMore = response.has_more;
 
 						if ( response.has_more ) {
 							this._totalPages++;
-						} else {
-							this.totalAttachments -= this._perPage;
 						}
 
 						options.success?.( items );
