@@ -47,6 +47,7 @@ use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\Video_Metadata;
 
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
+use RTGODAM\Inc\WPForms\WPForms_Integration;
 
 /**
  * Class Plugin.
@@ -80,6 +81,8 @@ class Plugin {
 		$this->load_rest_api();
 		$this->init_gravity_forms();
 		$this->load_sureforms();
+
+		WPForms_Integration::get_instance()->init();
 
 		// Load cron jobs.
 		Retranscode_Failed_Media::get_instance();
