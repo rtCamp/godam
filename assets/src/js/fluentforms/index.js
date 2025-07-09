@@ -1,6 +1,12 @@
 /**
  * File to add upload src URL for fluent forms handling.
  */
+
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
 /**
  * class FluentForms.
  */
@@ -31,7 +37,7 @@ class FluentForms {
 				'.ff-uploaded-list.godam-recorder',
 			);
 
-			fileInput.addEventListener( 'change', ( e ) =>
+			fileInput.addEventListener( 'godamffchange', ( e ) =>
 				this.handleFileUpload( e, uploadedList ),
 			);
 		} );
@@ -124,6 +130,8 @@ class FluentForms {
 			return validatedFileData;
 		}
 
+		this.showFileProgress( uploadedList );
+
 		/**
 		 * If restored use local storage data.
 		 */
@@ -134,6 +142,7 @@ class FluentForms {
 
 				if ( parsedData?.url !== '' && Date.now() < parsedData?.expiresAt ) {
 					this.updateUploadedList( parsedData?.url ?? '', uploadedList );
+					this.removeFileProgress();
 					return;
 				}
 
@@ -181,12 +190,14 @@ class FluentForms {
 					 * Store the file URL in local storage for reload same as uppy.
 					 */
 					this.storeInLocalStorage( responseData.data[ 0 ].url );
+					this.removeFileProgress( uploadedList );
 				} else if ( responseData.error ) {
 					this.showValidationError( uploadedList, responseData.error );
+					this.removeFileProgress();
 				}
 			} )
 			.catch( () => {
-				// Catch error.
+				this.removeFileProgress();
 			} );
 	}
 
@@ -220,6 +231,31 @@ class FluentForms {
 			expiresAt: Date.now() + ( 10 * 60 * 1000 ),
 		};
 		localStorage.setItem( key, JSON.stringify( data ) );
+	}
+
+	/**
+	 * Show file progress div.
+	 *
+	 * @param {*} uploadedList
+	 */
+	showFileProgress( uploadedList ) {
+		const progressDiv = document.createElement( 'div' );
+		progressDiv.classList = 'godam-rec-progress';
+		progressDiv.style.fontSize = '11px';
+		progressDiv.innerText = __( 'File upload in progress…', 'godam' );
+
+		uploadedList.parentElement.append( progressDiv );
+	}
+
+	/**
+	 * Remove the progress div on success.
+	 */
+	removeFileProgress() {
+		const progressDiv = document.querySelector( '.godam-rec-progress' );
+
+		if ( progressDiv ) {
+			progressDiv.remove();
+		}
 	}
 }
 
