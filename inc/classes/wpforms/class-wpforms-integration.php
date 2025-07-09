@@ -53,7 +53,15 @@ class WPForms_Integration {
             true
         );
 
-        // Common godam rcorder script.
+        wp_register_script(
+            'wpforms-godam-recorder-editor',
+            RTGODAM_URL . 'assets/build/js/wpforms-godam-recorder-editor.min.js',
+            array( 'jquery' ),
+            filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder-editor.min.js' ),
+            true
+        );
+
+        // Common godam recorder script.
         wp_register_script(
             'godam-recorder-script',
             RTGODAM_URL . 'assets/build/js/godam-recorder.min.js',

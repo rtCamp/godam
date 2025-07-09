@@ -117,8 +117,9 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 */
 		public function field_display( $field, $deprecated, $form_data ) {
 			if ( \wpforms_is_admin_page('entries', 'edit' ) ) {
-				wp_enqueue_style('wpforms-uppy-video-style');
 				wp_enqueue_media();
+				wp_enqueue_style('wpforms-uppy-video-style');
+				wp_enqueue_script( 'wpforms-godam-recorder-editor');
 
 				require __DIR__ . '/wpforms-field-godam-video-edit.php';
 			} else {
@@ -407,7 +408,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			$attachment = get_post( $value );
 
 			if ( null === $attachment || 'attachment' !== $attachment->post_type ) {
-				return __('Video not found', 'godam' ) ;
+				return __('N/A', 'godam' ) ;
 			}
 
 			$attachment_url  = wp_get_attachment_url( $value );
