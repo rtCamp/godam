@@ -27,31 +27,31 @@ $uppy_preview_id   = "uppy_preview_{$form_id}_{$field_id}";
 
 ?>
 <?php if ( $max_upload_size <= 2047 * 1048576 ) : // Hidden file input that will be populated by Uppy. ?>
-    <input type="hidden" name="MAX_FILE_SIZE" value="<?php echo esc_attr( $max_upload_size ); ?>" />
+	<input type="hidden" name="MAX_FILE_SIZE" value="<?php echo esc_attr( $max_upload_size ); ?>" />
 <?php endif; ?>
 <input
-    type="file"
-    id="<?php echo esc_attr( $file_input_id ); ?>"
-    style="display: none;"
-    <?php echo wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ); ?>
-    <?php echo $primary['required']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+	type="file"
+	id="<?php echo esc_attr( $file_input_id ); ?>"
+	style="display: none;"
+	<?php echo wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ); ?>
+	<?php echo $primary['required']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 />
 <div
-    data-max-size="<?php echo esc_attr( $max_upload_size ); ?>"
-    id="<?php echo esc_attr( $uppy_container_id ); ?>"
-    class="uppy-video-upload <?php echo esc_attr( join( ' ', $primary['class'] ) ); ?>"
-    data-input-id="<?php echo esc_attr( $file_input_id ); ?>"
-    data-video-upload-button-id="<?php echo esc_attr( $video_upload_button_id ); ?>"
-    data-file-selectors="<?php echo esc_attr( $file_selectors ); ?>"
+	data-max-size="<?php echo esc_attr( $max_upload_size ); ?>"
+	id="<?php echo esc_attr( $uppy_container_id ); ?>"
+	class="uppy-video-upload <?php echo esc_attr( join( ' ', $primary['class'] ) ); ?>"
+	data-input-id="<?php echo esc_attr( $file_input_id ); ?>"
+	data-video-upload-button-id="<?php echo esc_attr( $video_upload_button_id ); ?>"
+	data-file-selectors="<?php echo esc_attr( $file_selectors ); ?>"
 >
-    <button
-        type="button"
-        id="<?php echo esc_attr( $video_upload_button_id ); ?>"
-        class="uppy-video-upload-button"
-    >
-        <span class="dashicons dashicons-video-alt"></span>
-        <?php esc_html_e( 'Record Video', 'godam' ); ?>
-    </button>
-    <div id="<?php echo esc_attr( $uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
-    <div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename"></div>
+	<button
+		type="button"
+		id="<?php echo esc_attr( $video_upload_button_id ); ?>"
+		class="uppy-video-upload-button"
+	>
+		<span class="dashicons dashicons-video-alt"></span>
+		<?php esc_html_e( 'Record Video', 'godam' ); ?>
+	</button>
+	<div id="<?php echo esc_attr( $uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
+	<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename"></div>
 </div>

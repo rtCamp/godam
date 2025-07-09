@@ -43,9 +43,14 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			add_filter( 'wpforms_plaintext_field_value', array( $this, 'format_field_value_for_plaintext' ), 10, 3 );
 			add_filter( 'wpforms_html_field_value', array( $this, 'format_field_value_for_html' ), 10, 4 );
 
-			add_filter( 'wpforms_pro_admin_entries_edit_field_editable', function( $editable, $type ) {
-				return 'godam-video' === $type ? true : $editable;
-			}, 10, 2 );
+			add_filter(
+				'wpforms_pro_admin_entries_edit_field_editable',
+				function ( $editable, $type ) {
+					return 'godam-video' === $type ? true : $editable;
+				},
+				10,
+				2 
+			);
 		}
 
 		/**
@@ -81,7 +86,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @param array $field Field settings.
 		 */
 		public function field_preview( $field ) {
-			wp_enqueue_style('wpforms-uppy-video-style');
+			wp_enqueue_style( 'wpforms-uppy-video-style' );
 
 			// Define data.
 			$placeholder   = ! empty( $field['placeholder'] ) ? $field['placeholder'] : '';
@@ -116,14 +121,14 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @param array $form_data  Form data and settings.
 		 */
 		public function field_display( $field, $deprecated, $form_data ) {
-			if ( \wpforms_is_admin_page('entries', 'edit' ) ) {
+			if ( \wpforms_is_admin_page( 'entries', 'edit' ) ) {
 				wp_enqueue_media();
-				wp_enqueue_style('wpforms-uppy-video-style');
-				wp_enqueue_script( 'wpforms-godam-recorder-editor');
+				wp_enqueue_style( 'wpforms-uppy-video-style' );
+				wp_enqueue_script( 'wpforms-godam-recorder-editor' );
 
 				require __DIR__ . '/wpforms-field-godam-video-edit.php';
 			} else {
-				require __DIR__ .'/wpforms-field-godam-video-frontend.php';
+				require __DIR__ . '/wpforms-field-godam-video-frontend.php';
 			}
 		}
 
@@ -262,10 +267,9 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				return;
 			}
 
-			wp_enqueue_style('wpforms-uppy-video-style');
+			wp_enqueue_style( 'wpforms-uppy-video-style' );
 			// wp_enqueue_script('wpforms-godam-recorder');
-			wp_enqueue_script('godam-recorder-script');
-
+			wp_enqueue_script( 'godam-recorder-script' );
 		}
 
 		/**
@@ -388,9 +392,9 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 *
 		 * @since n.e.x.t
 		 *
-		 * @param mixed $value Field value.
-		 * @param array $field Field data.
-		 * @param array $form_data Form data and settings.
+		 * @param mixed  $value Field value.
+		 * @param array  $field Field data.
+		 * @param array  $form_data Form data and settings.
 		 * @param string $context Context: 'entry-single' or 'email-html'
 		 *
 		 * @return mixed
@@ -408,7 +412,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			$attachment = get_post( $value );
 
 			if ( null === $attachment || 'attachment' !== $attachment->post_type ) {
-				return __('N/A', 'godam' ) ;
+				return __( 'N/A', 'godam' );
 			}
 
 			$attachment_url  = wp_get_attachment_url( $value );
@@ -449,7 +453,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			$file = $this->format_global_files_array( $_FILES, $field_id );
 
-			if ( isset( $file['error'] ) && ! in_array( intval( $file['error'] ),  [ UPLOAD_ERR_OK, UPLOAD_ERR_NO_FILE ], true ) ) {
+			if ( isset( $file['error'] ) && ! in_array( intval( $file['error'] ), array( UPLOAD_ERR_OK, UPLOAD_ERR_NO_FILE ), true ) ) {
 				\wpforms()->obj( 'process' )->errors[ $form_data['id'] ][ $field_id ] = esc_html__( $file_upload_errors[ $file['error'] ] );
 				return;
 			}
