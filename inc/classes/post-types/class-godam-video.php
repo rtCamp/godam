@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 use WP_Query;
 
 /**
- * Class GoDAM_Video
+ * Class GoDAM_Video.
  */
 class GoDAM_Video extends Base {
 
@@ -90,6 +90,7 @@ class GoDAM_Video extends Base {
 	 * Create video post from attachment when media is uploaded.
 	 *
 	 * @param int $attachment_id Attachment ID.
+	 * 
 	 * @return int|false Post ID on success, false on failure.
 	 */
 	public function create_video_post_from_attachment( $attachment_id ) {
@@ -157,6 +158,8 @@ class GoDAM_Video extends Base {
 	 * Update video post when attachment is updated.
 	 *
 	 * @param int $attachment_id Attachment ID.
+	 * 
+	 * @return void
 	 */
 	public function update_video_post_from_attachment( $attachment_id ) {
 
@@ -171,6 +174,8 @@ class GoDAM_Video extends Base {
 	 * Delete video post when attachment is deleted.
 	 *
 	 * @param int $attachment_id Attachment ID.
+	 * 
+	 * @return void
 	 */
 	public function delete_video_post_from_attachment( $attachment_id ) {
 
@@ -200,6 +205,8 @@ class GoDAM_Video extends Base {
 	 *
 	 * @param int     $post_id   Post ID.
 	 * @param WP_Post $post Post object.
+	 * 
+	 * @return void
 	 */
 	public function sync_attachment_to_video_post( $post_id, $post = null ) {
 
@@ -281,6 +288,8 @@ class GoDAM_Video extends Base {
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 * @param int $post_id       Video post ID.
+	 * 
+	 * @return void
 	 */
 	private function sync_attachment_taxonomies( $attachment_id, $post_id ) {
 
@@ -302,6 +311,7 @@ class GoDAM_Video extends Base {
 	 * Generate video content with GoDAM player block.
 	 *
 	 * @param int $attachment_id Attachment ID.
+	 * 
 	 * @return string Generated content.
 	 */
 	private function generate_video_content( $attachment_id ) {
@@ -317,6 +327,7 @@ class GoDAM_Video extends Base {
 	 * Check if attachment is a video.
 	 *
 	 * @param int $attachment_id Attachment ID.
+	 * 
 	 * @return bool True if video, false otherwise.
 	 */
 	private function is_video_attachment( $attachment_id ) {
@@ -329,6 +340,7 @@ class GoDAM_Video extends Base {
 	 * Handles all batch processing internally.
 	 *
 	 * @param int $batch_size Number of attachments to process per batch.
+	 * 
 	 * @return void
 	 */
 	public function migrate_existing_attachments( $batch_size = 50 ) {

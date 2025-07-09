@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
- * Class Base
+ * Class Base.
  */
 abstract class Base {
 
@@ -20,6 +20,8 @@ abstract class Base {
 
 	/**
 	 * Base constructor.
+	 * 
+	 * @return void
 	 */
 	protected function __construct() {
 
