@@ -1,0 +1,27 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "godam/video-thumbnail",
+	"title": "GoDAM Video Thumbnail",
+	"category": "media",
+	"description": "Display GoDAM video thumbnail",
+	"keywords": ["video", "gallery", "grid", "videos", "thumbnail"],
+	"textdomain": "godam",
+	"attributes": {
+		"linkToVideo": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"align": [ "left", "center", "right", "wide", "full" ],
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"editorScript": ["file:./index.js"],
+	"style": ["file:./style-index.css"],
+	"render": "file:./render.php"
+}
