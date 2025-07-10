@@ -37,7 +37,7 @@ $uppy_preview_id   = "uppy_preview_{$form_id}_{$field_id}";
 	type="file"
 	id="<?php echo esc_attr( $file_input_id ); ?>"
 	style="display: none;"
-	<?php echo wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ); ?> // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	<?php echo wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 	<?php echo $primary['required']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 />
 <div
