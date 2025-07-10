@@ -4,6 +4,11 @@
 import { __ } from '@wordpress/i18n';
 import { useBlockProps } from '@wordpress/block-editor';
 
+/**
+ * Internal dependencies
+ */
+import './editor.scss';
+
 function Edit() {
 	const blockProps = useBlockProps();
 
