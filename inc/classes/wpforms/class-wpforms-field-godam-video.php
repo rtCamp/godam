@@ -451,8 +451,6 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			$attachment_url  = wp_get_attachment_url( $value );
 			$attachment_name = $attachment->post_title;
-			$thumbnail_url   = wp_get_attachment_thumb_url( $attachment );
-			$transcoded_url  = rtgodam_get_transcoded_url_from_attachment( $attachment );
 
 			// Default formatting style.
 			$formatted_value = sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $attachment_url ), esc_html( $attachment_name ) );

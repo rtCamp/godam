@@ -66,6 +66,19 @@
             .godam-video-name {
                 margin-top: 8px;
             }
+
+            .godam-video-link-wrapper, .godam-transcoded-url-info {
+                display: flex;
+                flex-direction: row;
+                align-items: baseline;
+                column-gap: 12px;
+            }
+
+            .godam-transcoded-url-info {
+                align-items: center;
+                column-gap: 12px;
+                margin-top: 8px;
+            }
         }
     }
 }

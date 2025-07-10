@@ -590,10 +590,9 @@ function rtgodam_get_user_ip() {
  *
  * @since n.e.x.t
  *
- * @param int|\WP_Post $attachment
- * @param string       $type
+ * @param int|\WP_Post $attachment Attachment.
  *
- * @return string
+ * @return string|false
  */
 function rtgodam_get_transcoded_url_from_attachment( $attachment ) {
 	$attachment_id = 0;
@@ -608,5 +607,77 @@ function rtgodam_get_transcoded_url_from_attachment( $attachment ) {
 		return '';
 	}
 
+	$attachment_obj = get_post( $attachment_id );
+
+	if ( 'attachment' !== $attachment_obj->post_type ) {
+		return '';
+	}
+
 	return get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+}
+
+/**
+ * Return transcoded status from attachment.
+ *
+ * @since n.e.x.t
+ *
+ * @param int|\WP_Post $attachment Attachment.
+ *
+ * @return string
+ */
+function rtgodam_get_transcoded_status_from_attachment( $attachment ) {
+	$attachment_id = 0;
+
+	if ( $attachment instanceof \WP_Post ) {
+		$attachment_id = $attachment->ID;
+	} elseif ( is_numeric( $attachment ) ) {
+		$attachment_id = $attachment;
+	}
+
+	if ( $attachment_id <= 0 ) {
+		return '';
+	}
+
+	$attachment_obj = get_post( $attachment_id );
+
+	if ( 'attachment' !== $attachment_obj->post_type ) {
+		return '';
+	}
+
+	$status = strval( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) );
+	$status = function_exists( 'mb_strtolower' ) ? mb_strtolower( $status ) : strtolower( $status );
+	$status = empty( trim( $status ) ) ? 'not_started' : $status;
+
+	return $status;
+}
+
+/**
+ * Return transcoded error message from attachment.
+ *
+ * @since n.e.x.t
+ *
+ * @param int|\WP_Post $attachment Attachment.
+ *
+ * @return string|false
+ */
+function rtgodam_get_transcoded_error_message_from_attachment( $attachment ) {
+	$attachment_id = 0;
+
+	if ( $attachment instanceof \WP_Post ) {
+		$attachment_id = $attachment->ID;
+	} elseif ( is_numeric( $attachment ) ) {
+		$attachment_id = $attachment;
+	}
+
+	if ( $attachment_id <= 0 ) {
+		return '';
+	}
+
+	$attachment_obj = get_post( $attachment_id );
+
+	if ( 'attachment' !== $attachment_obj->post_type ) {
+		return '';
+	}
+
+	return strval( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
 }
