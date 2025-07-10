@@ -69,6 +69,7 @@
             .godam-video-media-controls {
                 display: flex;
                 flex-direction: row;
+                margin-top: 8px;
 
                 .godam-video-upload-image {
                     margin-right: 8px;
@@ -81,7 +82,6 @@
 
             .godam-video-name {
                 margin-top: 8px;
-                margin-bottom: 8px;
             }
         }
     }
