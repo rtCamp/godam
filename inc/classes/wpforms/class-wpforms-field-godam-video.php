@@ -160,9 +160,9 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				wp_enqueue_style( 'wpforms-uppy-video-style' );
 				wp_enqueue_script( 'wpforms-godam-recorder-editor' );
 
-				require untrailingslashit( RTGODAM_PATH ) . '/inc/classes/wpforms/wpforms-field-godam-video-entry-edit.php';
+				require untrailingslashit( RTGODAM_PATH ) . '/inc/classes/wpforms/wpforms-field-godam-record-entry-edit.php';
 			} else {
-				require untrailingslashit( RTGODAM_PATH ) . '/inc/classes/wpforms/wpforms-field-godam-video-frontend.php';
+				require untrailingslashit( RTGODAM_PATH ) . '/inc/classes/wpforms/wpforms-field-godam-record-frontend.php';
 			}
 		}
 
@@ -462,7 +462,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				wp_enqueue_style( 'wpforms-uppy-video-style' );
 
 				ob_start();
-				require untrailingslashit( RTGODAM_PATH ) . '/inc/classes/wpforms/wpforms-field-godam-video-entry-view.php';
+				require untrailingslashit( RTGODAM_PATH ) . '/inc/classes/wpforms/wpforms-field-godam-record-entry-view.php';
 
 				$formatted_value = ob_get_clean();
 
