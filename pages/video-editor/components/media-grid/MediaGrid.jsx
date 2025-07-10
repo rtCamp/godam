@@ -20,6 +20,7 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 	const [ hasMore, setHasMore ] = useState( true );
 	const [ fetching, setFetching ] = useState( false );
 	const observer = useRef();
+	const requestIdRef = useRef( 0 );
 
 	const lastItemRef = useCallback(
 		( node ) => {
@@ -47,10 +48,17 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 	 * Search item for the videos.
 	 */
 	useEffect( () => {
+		const currentRequestId = ++requestIdRef.current;
+
 		setFetching( true );
 
 		const fetch = async () => {
 			const response = await getVideos( { search, page } );
+
+			// Ignore stale responses.
+			if ( requestIdRef.current !== currentRequestId ) {
+				return;
+			}
 
 			const data = response?.data?.data || [];
 
