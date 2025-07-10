@@ -10,11 +10,19 @@ import { useBlockProps } from '@wordpress/block-editor';
 import './editor.scss';
 
 function Edit() {
-	const blockProps = useBlockProps();
+	const blockProps = useBlockProps(
+		{
+			className: 'godam-editor-video-item',
+		},
+	);
 
 	return (
 		<div { ...blockProps }>
-			<p>{ __( 'GoDAM Video Thumbnail Placeholder', 'godam' ) }</p>
+			<div className="godam-editor-video-thumbnail">
+				<span className="godam-editor-video-label">
+					{ __( 'GoDAM Video Thumbnail', 'godam' ) }
+				</span>
+			</div>
 		</div>
 	);
 }
