@@ -458,12 +458,17 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			$formatted_value = sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $attachment_url ), esc_html( $attachment_name ) );
 
 			// Format for entry view page.
-			if ( 'entry-single' === $context && \wpforms_is_admin_page( 'entries', 'detail' ) ) {
+			if ( 'entry-single' === $context && \wpforms_is_admin_page( 'entries', 'details' ) ) {
 				wp_enqueue_style( 'wpforms-uppy-video-style' );
 
+				ob_start();
 				require untrailingslashit( RTGODAM_PATH ) . '/inc/classes/wpforms/wpforms-field-godam-video-entry-view.php';
-			}
 
+				$formatted_value = ob_get_clean();
+
+				// We need to remove new lines as returned value will be passed through nl2br() which will replace new line characters with <br/>.
+				$formatted_value = str_replace( array( "\r", "\n" ), '', $formatted_value );
+			}
 
 			return $formatted_value;
 		}
