@@ -363,7 +363,7 @@ function rtgodam_get_blacklist_ip_addresses() {
  *
  * @param string $api_key The api key to verify.
  * @param bool   $save        Whether to save the API key in the site options.
- * 
+ *
  * @return array|WP_Error Array with status and data on success, WP_Error on failure.
  */
 function rtgodam_verify_api_key( $api_key, $save = false ) {
@@ -583,4 +583,31 @@ function rtgodam_get_user_ip() {
 	}
 
 	return $ip_address; // Return an empty string if invalid.
+}
+
+
+/**
+ * Return transcoded url from attachment.
+ *
+ * @since n.e.x.t
+ *
+ * @param int|\WP_Post $attachment
+ * @param string $type
+ *
+ * @return string|null Returns when attachment/video does not exists.
+ */
+function rtgodam_get_transcoded_url_from_attachment( $attachment ) {
+	$attachment_id = 0;
+
+	if ( $attachment instanceof \WP_Post ) {
+		$attachment_id = $attachment->ID;
+	} else if ( is_numeric( $attachment) ) {
+		$attachment_id = $attachment;
+	}
+
+	if ( $attachment_id <= 0 ) {
+		return null;
+	}
+
+	return get_post_meta($attachment_id, 'rtgodam_transcoded_url', true );
 }

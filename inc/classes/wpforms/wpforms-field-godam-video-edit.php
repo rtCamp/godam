@@ -24,7 +24,7 @@ $attachment      = get_post( $value );
 $attachment_url  = wp_get_attachment_url( $value );
 $attachment_name = $attachment->post_title;
 $thumbnail_url   = get_the_post_thumbnail_url( $attachment->ID );
-$thumbnail_url   = $thumbnail_url ? $thumbnail_url : site_url( '/wp-includes/images/media/video.svg' );
+$transcoded_url  = rtgodam_get_transcoded_url_from_attachment( $attachment );
 
 printf(
 	'<input type="hidden" value="%s" %s %s>',
@@ -33,17 +33,14 @@ printf(
 	$primary['required'] // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 );
 ?>
+<div class="godam-video-preview">
+	<?php echo do_shortcode( "[godam_video poster='{$thumbnail_url}' src='{$attachment_url}' transcoded_url='{$transcoded_url}' aspectRatio='4/3']" ); ?>
+</div>
 <a
 	href="<?php echo esc_url( $attachment_url ); ?>"
 	target="_blank"
 	class="godam-video-link <?php echo ( empty( $value ) ? 'hidden' : '' ); ?>"
 >
-	<img
-		src="<?php echo esc_url( $thumbnail_url ); ?>"
-		height="64"
-		width="48"
-		class="godam-video-file-thumbnail"
-	/>
 	<div class="godam-video-name"><?php echo esc_html( $attachment_name ); ?></div>
 </a>
 <div class="godam-video-media-controls">

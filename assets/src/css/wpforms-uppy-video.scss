@@ -56,9 +56,15 @@
 /** Style the field in the entry edit page **/
 .wpforms-admin-page.wpforms_page_wpforms-entries {
     .wpforms-edit-entry-container.wpforms-container {
-        .wpforms-field.wpforms-field-godam-video {
+        .wpforms-field-godam-video {
             display: flex;
             flex-direction: column;
+
+            .godam-video-preview {
+                figure {
+                    margin: 0px;
+                }
+            }
 
             .godam-video-media-controls {
                 display: flex;
@@ -74,6 +80,7 @@
             }
 
             .godam-video-name {
+                margin-top: 8px;
                 margin-bottom: 8px;
             }
         }
