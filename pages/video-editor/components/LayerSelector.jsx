@@ -340,6 +340,10 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 										<h3>{ layer.title }</h3>
 										<p>{ layer.description }</p>
 									</div>
+
+									<span className={ `godam-layer-selector__item__type type-${ layer.type ?? 'layer' }` }>
+										{ ( layer.type ?? __( 'Layer', 'godam' ) ).toUpperCase() }
+									</span>
 								</span>
 							</button>
 							{
