@@ -29,7 +29,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			// Define field type information.
 			$this->name     = esc_html__( 'GoDAM Record', 'godam' );
 			$this->keywords = esc_html__( 'godam, video', 'godam' );
-			$this->type     = 'godam-video';
+			$this->type     = 'godam_record';
 			$this->icon     = 'fa-video-camera';
 			$this->order    = 30;
 
@@ -298,7 +298,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			$field_types = wp_list_pluck( $fields, 'type' );
 
 			// Do not enqueue if there are no video fields.
-			if ( in_array( 'godam-video', $field_types, true ) ) {
+			if ( in_array( 'godam_record', $field_types, true ) ) {
 				wp_enqueue_style( 'wpforms-uppy-video-style' );
 				wp_enqueue_script( 'godam-recorder-script' );
 			}
@@ -402,7 +402,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 */
 		public function format_field_value_for_plaintext( $value, $field, $form_data ) {
 			// Check if the field is not a video field.
-			if ( ! isset( $field['type'] ) || 'godam-video' !== $field['type'] ) {
+			if ( ! isset( $field['type'] ) || 'godam_record' !== $field['type'] ) {
 				return $value;
 
 			}
@@ -435,7 +435,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 */
 		public function format_field_value_for_html( $value, $field, $form_data, $context ) {
 			// Check if the field is not a video field.
-			if ( ! isset( $field['type'] ) || 'godam-video' !== $field['type'] ) {
+			if ( ! isset( $field['type'] ) || 'godam_record' !== $field['type'] ) {
 				return $value;
 			}
 
@@ -554,7 +554,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @return boolean
 		 */
 		public function set_field_as_editable( $editable, $type ) {
-			return 'godam-video' === $type ? true : $editable;
+			return 'godam_record' === $type ? true : $editable;
 		}
 
 		/**
@@ -574,7 +574,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			$field_types = wp_list_pluck( $form_data['fields'], 'type', 'id' );
 
-			if ( in_array( 'godam-video', $field_types, true ) ) {
+			if ( in_array( 'godam_record', $field_types, true ) ) {
 				add_filter( 'wp_kses_allowed_html', array( $this, 'update_allowed_html_on_view' ), 10, 2 );
 			}
 		}
@@ -596,7 +596,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			$field_types = wp_list_pluck( $form_data['fields'], 'type', 'id' );
 
-			if ( in_array( 'godam-video', $field_types, true ) ) {
+			if ( in_array( 'godam_record', $field_types, true ) ) {
 				remove_filter( 'wp_kses_allowed_html', array( $this, 'update_allowed_html_on_view' ), 10, 2 );
 			}
 		}

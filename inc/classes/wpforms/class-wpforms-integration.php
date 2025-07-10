@@ -122,7 +122,7 @@ class WPForms_Integration {
 	public function load_godam_recorder_script_on_success( $confirmation, $form_data, $fields, $entry_id ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		$field_with_types = wp_list_pluck( $fields, 'type', 'id' );
 
-		if ( in_array( 'godam-video', $field_with_types, true ) ) {
+		if ( in_array( 'godam_record', $field_with_types, true ) ) {
 			wp_enqueue_script( 'godam-recorder-script' );
 		}
 	}

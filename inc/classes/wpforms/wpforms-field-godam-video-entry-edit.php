@@ -8,7 +8,7 @@
  */
 
 // Check if the field is not a video field.
-if ( ! isset( $field['type'] ) || 'godam-video' !== $field['type'] ) {
+if ( ! isset( $field['type'] ) || 'godam_record' !== $field['type'] ) {
 	return;
 }
 
