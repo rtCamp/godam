@@ -171,7 +171,41 @@ const VideoEditor = ( { attachmentID } ) => {
 	const seekToTime = ( time ) => playerRef.current?.currentTime( time );
 	const pauseVideo = () => playerRef.current?.pause();
 
+	const validateLayers = ( videoLayers ) => {
+		const formIDMap = {
+			cf7: 'cf7_id',
+			gravity: 'gf_id',
+			wpforms: 'wpform_id',
+			forminator: 'forminator_id',
+			sureforms: 'sureform_id',
+			fluentforms: 'fluent_form_id',
+			jetpack: 'jp_id',
+			everestforms: 'everest_form_id',
+		};
+
+		for ( const layer of videoLayers ) {
+			if ( layer.type === 'form' ) {
+				const formType = layer.form_type;
+				const fieldName = formIDMap[ formType ];
+				if ( ! fieldName || ! layer[ fieldName ] ) {
+					return false;
+				}
+			}
+		}
+		return true;
+	};
+
 	const handleSaveAttachmentMeta = async () => {
+		// Validate form layers before saving.
+		if ( ! validateLayers( layers ) ) {
+			setSnackbarMessage( __( 'Please Select forms on all the forms layers', 'godam' ) );
+			setShowSnackbar( true );
+			setTimeout( () => {
+				setShowSnackbar( false );
+			}, 3000 );
+			return;
+		}
+
 		const data = {
 			rtgodam_meta: { videoConfig, layers, chapters },
 		};
