@@ -116,7 +116,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 						alt="CTA ad"
 						height="300"
 						width="250"
-						style="opacity: ${ layer?.imageOpacity || 1 }"
+						style="opacity: ${ layer?.imageOpacity ?? 1 }"
 					/>
 					<div class="image-cta-description">
 						${ layer?.imageText ? `<h2>${ layer.imageText }</h2>` : '' }
