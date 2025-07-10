@@ -118,6 +118,13 @@ function VideoEdit( {
 		preload,
 		fluid: true,
 		playsinline: true,
+		flvjs: {
+			mediaDataSource: {
+				isLive: true,
+				cors: false,
+				withCredentials: false,
+			},
+		},
 		loop,
 		muted,
 		poster: poster || defaultPoster,
