@@ -53,6 +53,7 @@
     }
 }
 
+/** Style the field in the entry view page **/
 .wpforms_page_wpforms-entries {
     .wpforms-entries-fields-wrapper {
         .wpforms-field-godam_record {
@@ -60,6 +61,10 @@
                 figure {
                     margin: 0px;
                 }
+            }
+
+            .godam-video-name {
+                margin-top: 8px;
             }
         }
     }
