@@ -47,6 +47,7 @@ use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\Video_Metadata;
 
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
+use RTGODAM\Inc\Media_Library\Media_Edit_Enhancements;
 
 /**
  * Class Plugin.
@@ -141,13 +142,14 @@ class Plugin {
 
 	/**
 	 * Load all the classes related to the media library.
-	 * 
+	 *
 	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
 	private function load_media_library() {
 		Media_Folders_REST_API::get_instance();
+		Media_Edit_Enhancements::get_instance();
 	}
 
 	/**
