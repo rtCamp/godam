@@ -1,4 +1,6 @@
 .godam-bubble-skin {
+	container-type: inline-size;
+    container-name: godam-player-bubble-skin;
 	  // control bar styles
   
 	  .vjs-control-bar {
@@ -105,7 +107,7 @@
 			.vjs-duration-display {
 				position: absolute;
 				bottom: 25px;
-				right: 83px;
+				right: 90px;
 				z-index: 99;
 			}
 		}
@@ -117,7 +119,7 @@
 
 			.vjs-current-time-display {
 				position: absolute;
-				left: 34px;
+				left: 40px;
 				bottom: 25px;
 				z-index: 99;
 			}
@@ -375,4 +377,16 @@
 			}
 		}
 	}
+}
+
+@container godam-player-bubble-skin (min-width: 768px) {
+
+	.vjs-current-time {
+		left: 65px !important;
+	}
+  
+	.vjs-duration-display {
+		right: 100px !important;
+	}
+  
 }

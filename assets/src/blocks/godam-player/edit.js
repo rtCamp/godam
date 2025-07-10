@@ -90,6 +90,7 @@ function VideoEdit( {
 	const posterImageButton = useRef();
 	const {
 		id,
+		cmmId,
 		controls,
 		autoplay,
 		poster,
@@ -244,6 +245,7 @@ function VideoEdit( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
+			cmmId: media.id,
 			poster: undefined,
 			caption: media.caption,
 		} );
@@ -484,7 +486,7 @@ function VideoEdit( {
 					>
 						<Button
 							__next40pxDefaultSize
-							href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ id }` }
+							href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
 							target="_blank"
 							variant="primary"
 							className=""
