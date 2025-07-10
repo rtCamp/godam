@@ -1,0 +1,45 @@
+#godam-featured-video-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	background: rgba(0, 0, 0, 0.9);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+}
+
+/* Close button */
+.godam-featured-video-modal-close {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	font-size: 50px;
+	color: #fff;
+	cursor: pointer;
+	z-index: 10;
+}
+
+.godam-featured-video-modal-content {
+	width: 50%;
+	max-width: 467px;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	z-index: 1;
+}
+
+.godam-featured-video-modal-close + .easydam-video-container {
+	background: rgba(0, 0, 0, 0);
+	height: 100vh;
+
+	@media (max-width: 768px) {
+		margin: 0;
+	}
+}
+
+.animate-video-loading {
+	position: relative;
+    top: 20%;
+}

@@ -46,6 +46,8 @@ use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\Video_Metadata;
 
+use RTGODAM\Inc\WooCommerce\WC_Featured_Video_Gallery;
+
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
 
 /**
@@ -77,6 +79,7 @@ class Plugin {
 		$this->load_post_types();
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
+		$this->load_woocommerce_configs();
 		$this->load_rest_api();
 		$this->init_gravity_forms();
 		$this->load_sureforms();
@@ -110,6 +113,15 @@ class Plugin {
 	 * Load Plugin Configs.
 	 */
 	public function load_plugin_configs() {
+	}
+
+	/**
+	 * Load Woocommerce Configs.
+	 */
+	public function load_woocommerce_configs() {
+		if ( is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
+			WC_Featured_Video_Gallery::get_instance();
+		}
 	}
 
 	/**

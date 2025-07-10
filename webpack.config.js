@@ -171,6 +171,20 @@ const godamRecorder = {
 	},
 };
 
+const adminFeaturedVideoGalleryJS = {
+	...sharedConfig,
+	entry: {
+		'wc-admin-featured-video-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wc-admin-featured-video-gallery.js' ),
+	},
+};
+
+const featuredVideoGalleryJS = {
+	...sharedConfig,
+	entry: {
+		'wc-featured-video-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wc-featured-video-gallery.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -244,6 +258,8 @@ module.exports = [
 	godamPlayerAnalytics,
 	deactivationJS,
 	godamGallery,
+	adminFeaturedVideoGalleryJS,
+	featuredVideoGalleryJS,
 	gfGodamRecorderEditorJS,
 	gfEntryDetailJS,
 	jetpackFormJS,
