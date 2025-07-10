@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * WordPress dependencies
  */
-import { Button, Icon, Modal } from '@wordpress/components';
+import { Button, Icon, Modal, TextControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { cautionFilled } from '@wordpress/icons';
 
@@ -189,11 +189,32 @@ const Layers = [
  */
 const LayerSelector = ( { closeModal, addNewLayer } ) => {
 	const [ selectedLayer, setSelectedLayer ] = useState( null );
+	const [ searchQuery, setSearchQuery ] = useState( '' );
+	const [ filteredLayers, setFilteredLayers ] = useState( Layers );
+	const [ activeTab, setActiveTab ] = useState( 'all' );
 
+	const uniqueLayerTypes = useMemo( () => {
+		return Layers.reduce( ( acc, layer ) => {
+			if ( ! acc.includes( layer.type ) ) {
+				acc.push( layer.type );
+			}
+			return acc;
+		}, [] );
+	}, [] );
+
+	/**
+	 * Selects a layer when clicked.
+	 *
+	 * @param {Object} layer - The layer object selected by the user.
+	 */
 	const handleLayerSelect = ( layer ) => {
 		setSelectedLayer( layer );
 	};
 
+	/**
+	 * Customises and adds the selected layer.
+	 * If the layer is a form, also pass the formType.
+	 */
 	const handleCustomiseLayer = () => {
 		if ( selectedLayer.type === 'form' ) {
 			addNewLayer( selectedLayer.type, selectedLayer.formType || 'gravity' );
@@ -203,55 +224,132 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 		closeModal();
 	};
 
+	/**
+	 * Filters layers based on the user input in the search bar.
+	 *
+	 * @param {string} value - The search query string.
+	 */
+	const handleSearchChange = ( value ) => {
+		const lowerCaseQuery = value.toLowerCase();
+		setSearchQuery( value );
+
+		// Disable activeTab when user searches
+		if ( activeTab !== '' ) {
+			setActiveTab( '' );
+		}
+
+		const filtered = Layers.filter( ( layer ) =>
+			layer.title.toLowerCase().includes( lowerCaseQuery ) ||
+		layer.description.toLowerCase().includes( lowerCaseQuery ),
+		);
+		setFilteredLayers( filtered );
+	};
+
+	/**
+	 * Handles tab click and filters layers by type.
+	 * Toggles back to "all" if the same tab is clicked again.
+	 *
+	 * @param {string} type - The type of the layer to filter by.
+	 */
+	const handleTabClick = ( type ) => {
+		if ( activeTab === type ) {
+			setActiveTab( 'all' );
+			setFilteredLayers( Layers );
+			return;
+		}
+
+		// Disable search when tab is used
+		setSearchQuery( '' );
+
+		setActiveTab( type );
+		const filtered = Layers.filter( ( layer ) => layer.type === type );
+		setFilteredLayers( filtered );
+	};
+
 	return (
 		<Modal
 			className="godam-layer-selector"
 			title={ __( 'Layers', 'godam' ) }
 			onRequestClose={ closeModal }
 		>
+			<div className="godam-layer-selector__header">
+				<div className="layer-tabs">
+					{ uniqueLayerTypes.map( ( type ) => (
+						<button
+							key={ type }
+							className={ `layer-tab ${ activeTab === type ? 'active' : '' } ${ searchQuery ? 'disabled' : '' }` }
+							onClick={ () => {
+								if ( ! searchQuery ) {
+									handleTabClick( type );
+								}
+							} }
+							disabled={ !! searchQuery }
+						>
+							{ type.charAt( 0 ).toUpperCase() + type.slice( 1 ) }
+						</button>
+					) ) }
+				</div>
+
+				<div className="search-container">
+					<TextControl
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						value={ searchQuery }
+						onChange={ ( value ) => {
+							handleSearchChange( value );
+						} }
+						placeholder={ __( 'search layers…', 'godam' ) }
+						className="godam-input"
+					/>
+
+				</div>
+			</div>
 
 			<div className="godam-layer-selector__list">
-				{ Layers.map( ( layer ) => {
+				{ filteredLayers.map( ( layer ) => {
 					const isDisabled = true === layer?.isRequired && false === layer?.isActive;
 					const isRequiredMessage = layer?.requireMessage ?? '';
 
-					return ( <div key={ layer.id }>
-						<button
-							key={ layer.id }
-							className={ `godam-layer-selector__item ${ selectedLayer?.id === layer.id ? 'selected' : '' }` }
-							onClick={ () => handleLayerSelect( layer ) }
-							disabled={ isDisabled }
-						>
-							<div className="godam-layer-selector__item__image-container">
-								<img
-									className="godam-layer-selector__item__image-container__image"
-									src={ layer.image }
-									alt={ layer.title }
-								/>
-								{
-									( layer.type === 'form' || layer.type === 'woo' ) && layer.formIcon && (
+					return (
+						<div key={ layer.id }>
+							<button
+								key={ layer.id }
+								className={ `godam-layer-selector__item ${ selectedLayer?.id === layer.id ? 'selected' : '' }` }
+								onClick={ () => handleLayerSelect( layer ) }
+								disabled={ isDisabled }
+							>
+								<span className="godam-layer-selector__item__inner">
+									<div className="godam-layer-selector__item__image-container">
 										<img
-											className="godam-layer-selector__item__image-container__form-icon"
-											src={ layer.formIcon }
+											className="godam-layer-selector__item__image-container__image"
+											src={ layer.image }
 											alt={ layer.title }
 										/>
-									)
-								}
-							</div>
+										{
+											( layer.type === 'form' || layer.type === 'woo' ) && layer.formIcon && (
+												<img
+													className="godam-layer-selector__item__image-container__form-icon"
+													src={ layer.formIcon }
+													alt={ layer.title }
+												/>
+											)
+										}
+									</div>
 
-							<div className="godam-layer-selector__item__content">
-								<h3>{ layer.title }</h3>
-								<p>{ layer.description }</p>
-							</div>
-						</button>
-						{
-							isDisabled &&
+									<div className="godam-layer-selector__item__content">
+										<h3>{ layer.title }</h3>
+										<p>{ layer.description }</p>
+									</div>
+								</span>
+							</button>
+							{
+								isDisabled &&
 								<p className="godam-layer-selector__item__message">
 									<Icon icon={ cautionFilled } />
 									<div dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( isRequiredMessage ) } } />
 								</p>
-						}
-					</div> );
+							}
+						</div> );
 				} ) }
 			</div>
 
