@@ -109,7 +109,7 @@ const Appearance = () => {
 		const brandingLogo = document.querySelector( '#branding-icon' );
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 
-		setCustomBrandNotice( { ...setCustomBrandNotice, isVisible: false } );
+		setCustomBrandNotice( { ...customBrandNotice, isVisible: false } );
 
 		dispatch(
 			updateVideoConfig( {

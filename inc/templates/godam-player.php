@@ -249,15 +249,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure
-	<?php echo $is_shortcode || $is_elementor_widget ? '' : wp_kses_data( get_block_wrapper_attributes() ); ?>
-	style="
-	--rtgodam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
-	--rtgodam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
-	--rtgodam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
-	--rtgodam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
-	<?php echo $aspect_ratio ? '--rtgodam-video-aspect-ratio: ' . esc_attr( str_replace( ':', '/', $aspect_ratio ) ) : ''; ?>
-	">
+	<figure <?php echo wp_kses_data( $figure_attributes ); ?>>
 		<div class="godam-video-wrapper">
 			<?php if ( $show_overlay && ! empty( $inner_blocks_content ) ) : ?>
 				<div
@@ -272,34 +264,8 @@ if ( $is_shortcode || $is_elementor_widget ) {
 				</div>
 			<?php endif; ?>
 
-			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin" style="position: relative;">
-			<?php if ( ! empty( $heading ) ) : ?>
-					<div
-						class="godam-video-heading-overlay"
-						data-heading-overlay
-						style="
-							position: absolute;
-							top: 50%;
-							left: 20px;
-							right: 20px;
-							transform: translateY(-50%);
-							z-index: 10;
-							color: <?php echo esc_attr( $heading_color ); ?>;
-							background-color: <?php echo esc_attr( $heading_bg_color ); ?>;
-							font-size: 24px;
-							font-weight: bold;
-							text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-							padding: 8px;
-							border-radius: 4px;
-							opacity: 1;
-							transition: opacity 0.3s ease;
-						"
-					>
-						<?php echo wp_kses_post( $heading ); ?>
-					</div>
-				<?php endif; ?>
-					
-			<div class="animate-play-btn">
+			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin" >
+				<div class="animate-play-btn">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 					</svg>
