@@ -53,8 +53,20 @@
     }
 }
 
+.wpforms_page_wpforms-entries {
+    .wpforms-entries-fields-wrapper {
+        .wpforms-field-godam-video {
+            .godam-video-preview {
+                figure {
+                    margin: 0px;
+                }
+            }
+        }
+    }
+}
+
 /** Style the field in the entry edit page **/
-.wpforms-admin-page.wpforms_page_wpforms-entries {
+.wpforms_page_wpforms-entries {
     .wpforms-edit-entry-container.wpforms-container {
         .wpforms-field-godam-video {
             display: flex;

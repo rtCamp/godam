@@ -34,7 +34,7 @@ printf(
 );
 ?>
 <div class="godam-video-preview">
-	<?php echo do_shortcode( "[godam_video poster='{$thumbnail_url}' src='{$attachment_url}' transcoded_url='{$transcoded_url}' aspectRatio='4/3']" ); ?>
+	<?php echo do_shortcode( "[godam_video poster='{$thumbnail_url}' src='{$attachment_url}' transcoded_url='{$transcoded_url}']" ); ?>
 </div>
 <a
 	href="<?php echo esc_url( $attachment_url ); ?>"

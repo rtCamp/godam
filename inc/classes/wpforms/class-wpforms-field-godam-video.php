@@ -41,14 +41,50 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			add_filter( 'wpforms_plaintext_field_value', array( $this, 'format_field_value_for_plaintext' ), 10, 3 );
 			add_filter( 'wpforms_html_field_value', array( $this, 'format_field_value_for_html' ), 10, 4 );
 
-			add_filter(
-				'wpforms_pro_admin_entries_edit_field_editable',
-				function ( $editable, $type ) {
-					return 'godam-video' === $type ? true : $editable;
-				},
-				10,
-				2
+			add_filter( 'wpforms_pro_admin_entries_edit_field_editable', array( $this, 'set_field_as_editable' ), 10, 2 );
+
+			add_action( 'wpforms_entry_details_content', array( $this, 'maybe_allow_custom_field_html' ), 9, 2 );
+			add_action( 'wpforms_entry_details_content', array( $this, 'maybe_remove_custom_field_html_filter' ), 11, 2 );
+		}
+
+		/**
+		 * Update the allows html tags in the post context for wp_kses().
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param array  $allowed_tags Allowed tags.
+		 * @param string $context Context.
+		 *
+		 * @return array
+		 */
+		public function update_allowed_html_on_view( $allowed_tags, $context ) {
+			if ( 'post' !== $context ) {
+				return $allowed_tags;
+			}
+
+			$allowed_tags['source'] = array(
+				'src'  => true,
+				'type' => true,
 			);
+
+			$allowed_tags['svg'] = array(
+				'xlmns'   => true,
+				'width'   => true,
+				'height'  => true,
+				'src'     => true,
+				'style'   => true,
+				'class'   => true,
+				'fill'    => true,
+				'viewbox' => true,
+				'data-*'  => true,
+				'aria-*'  => true,
+			);
+
+			$allowed_tags['path'] = array(
+				'd' => true,
+			);
+
+			return $allowed_tags;
 		}
 
 		/**
@@ -124,9 +160,9 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				wp_enqueue_style( 'wpforms-uppy-video-style' );
 				wp_enqueue_script( 'wpforms-godam-recorder-editor' );
 
-				require __DIR__ . '/wpforms-field-godam-video-edit.php';
+				require untrailingslashit( RTGODAM_PATH ) . '/inc/classes/wpforms/wpforms-field-godam-video-entry-edit.php';
 			} else {
-				require __DIR__ . '/wpforms-field-godam-video-frontend.php';
+				require untrailingslashit( RTGODAM_PATH ) . '/inc/classes/wpforms/wpforms-field-godam-video-frontend.php';
 			}
 		}
 
@@ -415,8 +451,19 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			$attachment_url  = wp_get_attachment_url( $value );
 			$attachment_name = $attachment->post_title;
+			$thumbnail_url   = wp_get_attachment_thumb_url( $attachment );
+			$transcoded_url  = rtgodam_get_transcoded_url_from_attachment( $attachment );
 
+			// Default formatting style.
 			$formatted_value = sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $attachment_url ), esc_html( $attachment_name ) );
+
+			// Format for entry view page.
+			if ( 'entry-single' === $context && \wpforms_is_admin_page( 'entries', 'detail' ) ) {
+				wp_enqueue_style( 'wpforms-uppy-video-style' );
+
+				require untrailingslashit( RTGODAM_PATH ) . '/inc/classes/wpforms/wpforms-field-godam-video-entry-view.php';
+			}
+
 
 			return $formatted_value;
 		}
@@ -489,6 +536,64 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			}
 
 			return ! is_null( $field_id ) && isset( $new_files[ $field_id ] ) ? $new_files[ $field_id ] : $new_files;
+		}
+
+		/**
+		 * Set the WPForms GoDAM Recorder field as editable.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param boolean $editable Is editable?.
+		 * @param string  $type Field type.
+		 *
+		 * @return boolean
+		 */
+		public function set_field_as_editable( $editable, $type ) {
+			return 'godam-video' === $type ? true : $editable;
+		}
+
+		/**
+		 * May be hook into `wp_kses_allowed_html` if the form has godam video fields on WPForms entry view page.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param array $entry Entry data.
+		 * @param array $form_data Form data.
+		 *
+		 * @return void
+		 */
+		public function maybe_allow_custom_field_html( $entry, $form_data ) {
+			if ( ! isset( $form_data['fields'] ) ) {
+				return;
+			}
+
+			$field_types = wp_list_pluck( $form_data['fields'], 'type', 'id' );
+
+			if ( in_array( 'godam-video', $field_types, true ) ) {
+				add_filter( 'wp_kses_allowed_html', array( $this, 'update_allowed_html_on_view' ), 10, 2 );
+			}
+		}
+
+		/**
+		 * May be  remove hook into `wp_kses_allowed_html` if the form has godam video fields on WPForms entry view page.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param array $entry Entry data.
+		 * @param array $form_data Form data.
+		 *
+		 * @return void
+		 */
+		public function maybe_remove_custom_field_html_filter( $entry, $form_data ) {
+			if ( ! isset( $form_data['fields'] ) ) {
+				return;
+			}
+
+			$field_types = wp_list_pluck( $form_data['fields'], 'type', 'id' );
+
+			if ( in_array( 'godam-video', $field_types, true ) ) {
+				remove_filter( 'wp_kses_allowed_html', array( $this, 'update_allowed_html_on_view' ), 10, 2 );
+			}
 		}
 	}
 }

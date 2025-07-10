@@ -585,29 +585,28 @@ function rtgodam_get_user_ip() {
 	return $ip_address; // Return an empty string if invalid.
 }
 
-
 /**
  * Return transcoded url from attachment.
  *
  * @since n.e.x.t
  *
  * @param int|\WP_Post $attachment
- * @param string $type
+ * @param string       $type
  *
- * @return string|null Returns when attachment/video does not exists.
+ * @return string
  */
 function rtgodam_get_transcoded_url_from_attachment( $attachment ) {
 	$attachment_id = 0;
 
 	if ( $attachment instanceof \WP_Post ) {
 		$attachment_id = $attachment->ID;
-	} else if ( is_numeric( $attachment) ) {
+	} elseif ( is_numeric( $attachment ) ) {
 		$attachment_id = $attachment;
 	}
 
 	if ( $attachment_id <= 0 ) {
-		return null;
+		return '';
 	}
 
-	return get_post_meta($attachment_id, 'rtgodam_transcoded_url', true );
+	return get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
 }
