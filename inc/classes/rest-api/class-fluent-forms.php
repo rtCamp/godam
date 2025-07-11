@@ -106,8 +106,6 @@ class Fluent_Forms extends Base {
 			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		ob_start();
-
 		$fform = do_shortcode(
 			sprintf(
 				"[fluentform id='%d']",
@@ -115,17 +113,7 @@ class Fluent_Forms extends Base {
 			)
 		);
 
-
-		// Manually trigger footer actions so styles are printed.
-		do_action( 'wp_footer' );
-
-		$footer_styles = ob_get_clean();
-
-		// Combine form + styles.
-		$response_html = $fform . $footer_styles;
-
-
-		return rest_ensure_response( $response_html );
+		return rest_ensure_response( $fform );
 	}
 
 	/**
