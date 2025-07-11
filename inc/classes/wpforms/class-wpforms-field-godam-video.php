@@ -206,11 +206,11 @@ if ( class_exists( 'WPForms_Field' ) ) {
 						'value' => in_array( $selector_slug, $file_selectors_from_field, true ) ? '1' : '0',
 					),
 					false
-				) . '</br>';
+				) . '<br>';
 			}
 
-			// Remove the last </br> to avoid extra line break.
-			$checkboxes = substr( $checkboxes, 0, -1 * strlen( '</br>' ), );
+			// Remove the last <br> to avoid extra line break.
+			$checkboxes = substr( $checkboxes, 0, -1 * strlen( '<br>' ) );
 
 			$this->field_element(
 				'row',
