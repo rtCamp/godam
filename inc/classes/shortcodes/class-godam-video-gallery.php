@@ -25,18 +25,6 @@ class GoDAM_Video_Gallery {
 	final protected function __construct() {
 		add_shortcode( 'godam_video_gallery', array( $this, 'render' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
-
-		add_action(
-			'wp_enqueue_scripts',
-			function () {
-				if ( ! is_admin() ) {
-					wp_enqueue_script( 'godam-player-frontend-script' );
-					wp_enqueue_script( 'godam-player-analytics-script' );
-					wp_enqueue_style( 'godam-player-frontend-style' );
-					wp_enqueue_style( 'godam-player-style' );
-				}
-			} 
-		);
 	}
 
 	/**
@@ -57,7 +45,6 @@ class GoDAM_Video_Gallery {
 			filemtime( RTGODAM_PATH . 'assets/build/js/godam-gallery.min.js' ),
 			true
 		);
-		wp_enqueue_script( 'godam-gallery-script' );
 	}
 
 	/**
@@ -96,6 +83,15 @@ class GoDAM_Video_Gallery {
 		$atts = apply_filters( 'rtgodam_gallery_attributes', $atts );
 
 		wp_enqueue_style( 'godam-gallery-style' );
+
+		wp_enqueue_script( 'godam-gallery-script' );
+
+		if ( ! is_admin() ) {
+			wp_enqueue_script( 'godam-player-frontend-script' );
+			wp_enqueue_script( 'godam-player-analytics-script' );
+			wp_enqueue_style( 'godam-player-frontend-style' );
+			wp_enqueue_style( 'godam-player-style' );
+		}
 
 		$args = array(
 			'post_type'      => 'attachment',
