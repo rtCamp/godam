@@ -24,6 +24,7 @@ import SettingsButton from '../../../../../assets/src/js/godam-player/masterSett
 import ColorPickerButton from '../../../../video-editor/components/shared/color-picker/ColorPickerButton.jsx';
 import '../../../../../assets/src/css/minimal-skin.scss';
 import '../../../../../assets/src/css/pills-skin.scss';
+import '../../../../../assets/src/css/classic-skin.scss';
 import '../../../../../assets/src/css/bubble-skin.scss';
 import Share from '../../../../../assets/src/images/share.svg';
 import ShareVariationOne from '../../../../../assets/src/images/share-variation-one.svg';
@@ -278,6 +279,7 @@ const VideoPlayer = () => {
 				'godam-minimal-skin',
 				'godam-pills-skin',
 				'godam-bubble-skin',
+				'godam-classic-skin',
 			);
 
 			if ( selectedSkin === 'Minimal' ) {
@@ -286,6 +288,8 @@ const VideoPlayer = () => {
 				videoElement.classList.add( 'godam-pills-skin' );
 			} else if ( selectedSkin === 'Bubble' ) {
 				videoElement.classList.add( 'godam-bubble-skin' );
+			} else if ( selectedSkin === 'Classic' ) {
+				videoElement.classList.add( 'godam-classic-skin' );
 			}
 		}
 	}, [ mediaSettings?.video_player?.brand_color, mediaSettings?.video_player?.brand_image, mediaSettings?.video_player?.player_skin ] );
@@ -322,6 +326,10 @@ const VideoPlayer = () => {
 									value: 'Default',
 								},
 								{
+									label: 'Classic',
+									value: 'Classic',
+								},
+								{
 									label: 'Minimal',
 									value: 'Minimal',
 								},
@@ -347,7 +355,7 @@ const VideoPlayer = () => {
 								label={ __( 'Brand color', 'godam' ) }
 								value={ mediaSettings?.video_player?.brand_color }
 								onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
-								disabled={ 'Minimal' === mediaSettings?.video_player?.player_skin }
+								disabled={ 'Minimal' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin }
 							/>
 							{ mediaSettings?.video_player?.brand_color && (
 								<button

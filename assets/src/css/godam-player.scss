@@ -1016,8 +1016,8 @@
 	left: 53%;
 
 	span::before {
-		font-size: 1rem;
-		line-height: 3.2;
+		font-size: 1.7rem;
+    	line-height: 1.9;
 	}
 
 	&:hover {
@@ -1185,15 +1185,15 @@
 		 }
 	 }
  
+	 .vjs-modal-dialog.vjs-text-track-settings {
+		 .vjs-close-button {
+			 right: 30px;
+			 top: .7em;
+		 }
+	  }
  
 	 @media screen and (max-width: 768px) {
 
-		.vjs-modal-dialog.vjs-text-track-settings {
-			.vjs-close-button {
-				right: 30px;
-				top: .7em;
-			}
-		 }
  
 		 .vjs-control-bar {
 			 height: 6em !important;

@@ -99,6 +99,13 @@ class GoDAM_Player {
 			filemtime( RTGODAM_PATH . 'assets/build/css/bubble-skin.css' )
 		);
 
+		wp_register_style(
+			'godam-player-classic-skin',
+			RTGODAM_URL . 'assets/build/css/classic-skin.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/classic-skin.css' )
+		);
+
 		wp_localize_script(
 			'godam-player-frontend-script',
 			'godamData',
@@ -143,6 +150,8 @@ class GoDAM_Player {
 			wp_enqueue_style( 'godam-player-pills-skin' );
 		} elseif ( 'Bubble' === $selected_skin ) {
 			wp_enqueue_style( 'godam-player-bubble-skin' );
+		} elseif ( 'Classic' === $selected_skin ) {
+			wp_enqueue_style( 'godam-player-classic-skin' );
 		}
 
 		ob_start();
