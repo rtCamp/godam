@@ -128,7 +128,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 					{ /* Migration status message */ }
 					{ migrationStatus?.status === 'completed' && (
 						<div className="godam-migration-status my-2">
-							{ __( 'WordPress core video migration completed successfully 🎉', 'godam' ) }
+							{ __( 'WordPress Vimeo video migration completed successfully 🎉', 'godam' ) }
 						</div>
 					) }
 					{ migrationStatus?.status === 'failed' && (
