@@ -650,8 +650,8 @@ class Video_Migration extends Base {
 
 		// Update attachment metadata with dimensions.
 		$metadata = array(
-			'width'  => empty( $video_info['width'] ) ? 100 : $video_info['width'],
-			'height' => empty( $video_info['height'] ) ? 100 : $video_info['height'],
+			'width'  => empty( $video_info['width'] ) ? 1920 : $video_info['width'],
+			'height' => empty( $video_info['height'] ) ? 1080 : $video_info['height'],
 		);
 		wp_update_attachment_metadata( $attachment_id, $metadata );
 
