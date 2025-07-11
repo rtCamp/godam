@@ -9,7 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$link_to_video = isset( $attributes['linkToVideo'] ) ? $attributes['linkToVideo'] : false;
+$link_to_video    = isset( $attributes['linkToVideo'] ) ? $attributes['linkToVideo'] : false;
+$show_play_button = isset( $attributes['showPlayButton'] ) ? $attributes['showPlayButton'] : false;
 
 $video_post_id = get_the_ID();
 $thumbnail_url = '';
@@ -32,6 +33,9 @@ $wrapper_classes = 'godam-video-thumbnail__container';
 if ( empty( $thumbnail_url ) ) {
 	$wrapper_classes .= ' godam-video-thumbnail--not-found';
 }
+if ( $show_play_button ) {
+	$wrapper_classes .= ' godam-video-thumbnail--with-play-button';
+}
 
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
@@ -45,17 +49,37 @@ $wrapper_attributes = get_block_wrapper_attributes(
 		<?php if ( $link_to_video ) : ?>
 			<a href="<?php echo esc_url( get_permalink( $video_post_id ) ); ?>" class="godam-video-thumbnail__link">
 				<img src="<?php echo esc_url( $thumbnail_url ); ?>" alt="<?php echo esc_attr( $alt_text ); ?>" class="godam-video-thumbnail" />
+				<?php if ( $show_play_button ) : ?>
+					<div class="godam-video-thumbnail__play-button">
+						<span class="dashicons dashicons-controls-play"></span>
+					</div>
+				<?php endif; ?>
 			</a>
 		<?php else : ?>
 			<img src="<?php echo esc_url( $thumbnail_url ); ?>" alt="<?php echo esc_attr( $alt_text ); ?>" class="godam-video-thumbnail" />
+			<?php if ( $show_play_button ) : ?>
+				<div class="godam-video-thumbnail__play-button">
+					<span class="dashicons dashicons-controls-play"></span>
+				</div>
+			<?php endif; ?>
 		<?php endif; ?>
 	<?php else : ?>
 		<?php if ( $link_to_video ) : ?>
 			<a href="<?php echo esc_url( get_permalink( $video_post_id ) ); ?>" class="godam-video-thumbnail__link">
 				<div class="godam-video-thumbnail__fallback"></div>
+				<?php if ( $show_play_button ) : ?>
+					<div class="godam-video-thumbnail__play-button">
+						<span class="dashicons dashicons-controls-play"></span>
+					</div>
+				<?php endif; ?>
 			</a>
 		<?php else : ?>
 			<div class="godam-video-thumbnail__fallback"></div>
+			<?php if ( $show_play_button ) : ?>
+				<div class="godam-video-thumbnail__play-button">
+					<span class="dashicons dashicons-controls-play"></span>
+				</div>
+			<?php endif; ?>
 		<?php endif; ?>
 	<?php endif; ?>
 </div>

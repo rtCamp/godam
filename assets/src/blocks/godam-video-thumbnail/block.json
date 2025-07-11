@@ -11,6 +11,10 @@
 		"linkToVideo": {
 			"type": "boolean",
 			"default": false
+		},
+		"showPlayButton": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {
