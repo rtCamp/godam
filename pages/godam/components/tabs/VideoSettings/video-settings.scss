@@ -21,18 +21,17 @@
 }
 
 .vjs-big-play-centered.video-player-settings-preview.video-js {
-	width: 54%;
+	width: 100%;
 	padding-top: 352px;
-	min-width: 640px;
 }
 
 .video-js .vjs-big-play-button {
-	background-color: var(--rtgodam-control-bar-color, #000) !important;
+	background-color: var(--rtgodam-control-bar-color, #000);
 	border: none !important;
 	border-radius: 50% !important;
 	padding: 0 !important;
-	width: 50px !important;
-	height: 50px !important;
+	width: 50px;
+	height: 50px;
 	left: 53% !important;
 
    span::before {
@@ -43,10 +42,6 @@
    &:hover {
 		transform: scale(1.1);
 	}
-}
-
-.video-player-settings-preview .vjs-control-bar {
-	background-color: var(--rtgodam-control-bar-color, #2B333FB3) !important;
 }
 
 .branding-icon {

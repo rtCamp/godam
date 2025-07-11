@@ -27,6 +27,7 @@ class GoDAM_Player {
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'wp_head', array( $this, 'godam_output_admin_player_css' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'godam_skin_styles_enqueue' ) );
 	}
 	
 	/**
@@ -113,6 +114,25 @@ class GoDAM_Player {
 				'apiBase' => RTGODAM_API_BASE,
 			)
 		);
+	}
+
+	/**
+	 * Enqueue all player skin styles on the admin settings page.
+	 *
+	 * @param string $hook_suffix The current admin page.
+	 */
+	public function godam_skin_styles_enqueue( $hook_suffix ) {
+
+		if ( 'godam_page_rtgodam_settings' !== $hook_suffix ) {
+			return;
+		}
+
+		wp_enqueue_style( 'godam-player-frontend-style' );
+		wp_enqueue_style( 'godam-player-style' );
+		wp_enqueue_style( 'godam-player-minimal-skin' );
+		wp_enqueue_style( 'godam-player-pills-skin' );
+		wp_enqueue_style( 'godam-player-bubble-skin' );
+		wp_enqueue_style( 'godam-player-classic-skin' );
 	}
 
 	/**

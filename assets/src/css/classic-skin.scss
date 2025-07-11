@@ -3,20 +3,20 @@
     .vjs-big-play-button {
         box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.3);
         background-color: var(--rtgodam-control-bar-color, #fff) !important;
-        color: #1c1b1b;
-        height: 60px;
-        width: 60px;
+        color: #1c1b1b !important;
+        height: 60px !important;
+        width: 60px !important;
 
         span::before {
-            font-size: 2.4rem;
-            line-height: 1.6;
+            font-size: 2.4rem !important;
+            line-height: 1.6 !important;
         }
     }
 
     .vjs-control-bar {
         height: 6em !important;
         background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0) 100%) !important;
-        box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.3) !important;
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.3) !important;
         
         .vjs-progress-control {
             position: absolute;
@@ -37,28 +37,6 @@
             left: 0;
         }
 
-        // .vjs-skip-backward-5,
-        // .vjs-skip-backward-10,
-        // .vjs-skip-backward-15,
-        // .vjs-skip-backward-20,
-        // .vjs-skip-backward-30 {
-        //     position: absolute;
-        //     bottom: 120px;
-        //     background: var(--rtgodam-control-bar-color, #00000085);
-        //     height: 40px !important;
-        //     width: 40px;
-        //     border-radius: 999px;
-        //     left: 100px;
-
-        //     .vjs-icon-placeholder::before {
-        //         line-height: 2;
-        //     }
-
-        //     @media screen and (max-width: 420px) {
-        //         left: 60px;
-        //     }
-        // }
-
         [class^="vjs-skip-forward-"] {
             left: calc(2 * 40px + 6px);
             position: absolute;
@@ -72,51 +50,12 @@
             bottom: 0 !important;
         }
 
-        .vjs-play-control.vjs-paused {
-            left: 6px;
-            
-            span::before {
-                content: ''; /* Hide default icon */
-                background: url('../images/classic-play-icon.svg');
-                background-repeat: no-repeat;
-                background-size: contain;
-                display: inline-block;
-                width: 21px;
-            }
-        }
-
-        .vjs-play-control.vjs-playing {
-            left: 6px;
-            
-            span::before {
-                content: ''; /* Hide default icon */
-                background: url('../images/classic-playing-icon.svg');
-                background-repeat: no-repeat;
-                background-size: contain;
-                display: inline-block;
-                width: 21px;
-            }
-        }
-
-        .vjs-play-control.vjs-ended {
-            left: 6px;
-            
-            span::before {
-                content: ''; /* Hide default icon */
-                background: url('../images/classic-replay-icon.svg');
-                background-repeat: no-repeat;
-                background-size: contain;
-                display: inline-block;
-                width: 21px;
-            }
-        }
-
         .vjs-vol-3 {
             left: 6px;
 
             span::before {
                 content: '' !important; /* Hide default icon */
-                background: url('../images/classic-volume-3-icon.svg');
+                background: url(../images/classic-volume-3-icon.svg);
                 background-repeat: no-repeat;
                 background-size: contain;
                 display: inline-block;
@@ -129,7 +68,7 @@
 
             span::before {
                 content: '' !important; /* Hide default icon */
-                background: url('../images/classic-volume-2-icon.svg');
+                background: url(../images/classic-volume-2-icon.svg);
                 background-repeat: no-repeat;
                 background-size: contain;
                 display: inline-block;
@@ -142,7 +81,7 @@
 
             span::before {
                 content: '' !important; /* Hide default icon */
-                background: url('../images/classic-volume-1-icon.svg');
+                background: url(../images/classic-volume-1-icon.svg);
                 background-repeat: no-repeat;
                 background-size: contain;
                 display: inline-block;
@@ -155,7 +94,7 @@
 
             span::before {
                 content: '' !important; /* Hide default icon */
-                background: url('../images/classic-mute-icon.svg');
+                background: url(../images/classic-mute-icon.svg);
                 background-repeat: no-repeat;
                 background-size: contain;
                 display: inline-block;
@@ -167,7 +106,7 @@
             
             span::before {
                 content: ''; /* Hide default icon */
-                background: url('../images/classic-skip-forward-10.svg');
+                background: url(../images/classic-skip-forward-10.svg);
                 background-repeat: no-repeat;
                 background-size: contain;
                 display: inline-block;
@@ -179,7 +118,7 @@
             
             span::before {
                 content: ''; /* Hide default icon */
-                background: url('../images/classic-skip-backward-10.svg');
+                background: url(../images/classic-skip-backward-10.svg);
                 background-repeat: no-repeat;
                 background-size: contain;
                 display: inline-block;
@@ -191,7 +130,7 @@
             
             span::before {
                 content: ''; /* Hide default icon */
-                background: url('../images/classic-skip-forward-5.svg');
+                background: url(../images/classic-skip-forward-5.svg);
                 background-repeat: no-repeat;
                 background-size: contain;
                 display: inline-block;
@@ -203,7 +142,7 @@
             
             span::before {
                 content: ''; /* Hide default icon */
-                background: url('../images/classic-skip-backward-5.svg');
+                background: url(../images/classic-skip-backward-5.svg);
                 background-repeat: no-repeat;
                 background-size: contain;
                 display: inline-block;
@@ -215,7 +154,7 @@
             
             span::before {
                 content: ''; /* Hide default icon */
-                background: url('../images/classic-skip-forward-30.svg');
+                background: url(../images/classic-skip-forward-30.svg);
                 background-repeat: no-repeat;
                 background-size: contain;
                 display: inline-block;
@@ -227,7 +166,7 @@
             
             span::before {
                 content: ''; /* Hide default icon */
-                background: url('../images/classic-skip-backward-30.svg');
+                background: url(../images/classic-skip-backward-30.svg);
                 background-repeat: no-repeat;
                 background-size: contain;
                 display: inline-block;
@@ -235,7 +174,108 @@
             }
         }
 
+        .vjs-picture-in-picture-control {
+            position: absolute;
+            bottom: 0;
+            right: 40px;
+            height: 3em !important;
+            
+            span::before {
+                content: ''; /* Hide default icon */
+                background: url(../images/classic-pip.svg);
+                background-repeat: no-repeat;
+                background-size: contain;
+                display: inline-block;
+                height: 20px;
+                width: 20px;
+            }
+        }
+
+        .vjs-fullscreen-control {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            height: 3em !important;
+        
+            span::before {
+                content: ''; /* Hide default icon */
+                background: url(../images/classic-full-screen.svg);
+                background-repeat: no-repeat;
+                background-size: contain;
+                display: inline-block;
+                height: 20px;
+                width: 20px;
+            }
+        }
+
+        .vjs-settings-button button {
+            
+            span::before {
+                content: ''; /* Hide default icon */
+                background: url(../images/classic-settings-icon.svg);
+                background-repeat: no-repeat;
+                background-size: contain;
+                display: inline-block;
+                height: 20px;
+                width: 20px;
+            }
+        }
+
+        .vjs-play-control.vjs-paused {
+            left: 6px;
+            
+            span::before {
+                content: ''; /* Hide default icon */
+                background: url(../../src/images/classic-play-icon.svg);
+                background-repeat: no-repeat;
+                background-size: contain;
+                display: inline-block;
+                width: 21px;
+            }
+        }
+
+        .vjs-play-control.vjs-playing {
+            left: 6px;
+            
+            span::before {
+                content: ''; /* Hide default icon */
+                background: url(../images/classic-playing-icon.svg);
+                background-repeat: no-repeat;
+                background-size: contain;
+                display: inline-block;
+                width: 21px;
+            }
+        }
+
+        .vjs-play-control.vjs-ended {
+            left: 6px;
+            
+            span::before {
+                content: ''; /* Hide default icon */
+                background: url(../images/classic-replay-icon.svg);
+                background-repeat: no-repeat;
+                background-size: contain;
+                display: inline-block;
+                width: 21px;
+            }
+        }
+
+        .vjs-menu ul.vjs-menu-content {
+            background: #2c2c2c;
+            border-radius: 12px;
+            display: flex !important;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            padding: 2px 4px !important;
+        }
+
         .vjs-settings-button {
+            position: absolute;
+            bottom: 0;
+            right: 80px;
+            height: 3em !important;
+            z-index: 99;
 
             .vjs-menu-item:hover {
                 background-color: initial !important;
@@ -244,20 +284,14 @@
 
             /* Outer menu wrapper */
             .vjs-menu ul.vjs-menu-content {
-                background: #2c2c2c;
-                border-radius: 12px;
-                padding: 12px 16px;
-                display: flex !important;
-                flex-wrap: wrap;
-                gap: 8px;
-                align-items: center;
                 right: 0%; /* Prevent overflow */
-                padding: 2px 4px !important;
 
                 .godam-back-item-container {
 
                     span {
                         font-weight: 400;
+                        text-align: left;
+                        margin-left: 13px;
 
                         &:hover {
                             font-weight: 900;   
@@ -265,7 +299,7 @@
                     }
                 }
 
-                .godam-back-item-container:after{
+                .godam-back-item-container::after{
                     background-color: #827ef6;
                     width: 20%;
                     left: 10px;
@@ -278,18 +312,11 @@
                 width: 100%;
                 font-size: 14px;
                 font-weight: 600;
-                color: white;
+                color: #fff;
                 margin-bottom: 8px;
 
                 &:hover {
                     background-color: unset !important;
-                }
-            }
-
-            .godam-menu-item-container.godam-back-item-container {
-                span {
-                    text-align: left;
-                    margin-left: 13px;
                 }
             }
 
@@ -308,21 +335,7 @@
             .godam-check-icon {
                 width: 12px;
                 height: 12px;
-                color: white;
-            }
-
-
-            button {
-            
-                span::before {
-                    content: ''; /* Hide default icon */
-                    background: url('../images/classic-settings-icon.svg');
-                    background-repeat: no-repeat;
-                    background-size: contain;
-                    display: inline-block;
-                    height: 20px;
-                    width: 20px;
-                }
+                color: #fff;
             }
         }
 
@@ -335,37 +348,11 @@
 
             .vjs-icon-placeholder::before {
                 content: '' !important; /* Hide default icon */
-                background: url('../images/classic-caps-button.svg');
+                background: url(../images/classic-caps-button.svg);
                 background-repeat: no-repeat;
                 background-size: contain;
                 display: inline-block;
                 width: 21px;
-            }
-        }
-    
-        .vjs-picture-in-picture-control {
-            
-            span::before {
-                content: ''; /* Hide default icon */
-                background: url('../images/classic-pip.svg');
-                background-repeat: no-repeat;
-                background-size: contain;
-                display: inline-block;
-                height: 20px;
-                width: 20px;
-            }
-        }
-
-        .vjs-fullscreen-control {
-        
-            span::before {
-                content: ''; /* Hide default icon */
-                background: url('../images/classic-full-screen.svg');
-                background-repeat: no-repeat;
-                background-size: contain;
-                display: inline-block;
-                height: 20px;
-                width: 20px;
             }
         }
         
@@ -380,11 +367,9 @@
         .vjs-volume-control {
             border-radius: 8px;
             display: flex;
-            align-items: center;
             outline: transparent solid 1px;
-            height: 2rem;
             transition: background-color !important;
-            background: linear-gradient(to right, #333333, #666666);
+            background: linear-gradient(to right, #333, #666);
             height: 1.3rem !important;
             align-items: center;
             bottom: 0;
@@ -401,7 +386,7 @@
                 border-radius: 8px;
 
                 &::before{
-                    line-height: .65em
+                    line-height: .65
                 }
             }
         }
@@ -413,28 +398,6 @@
             height: 3em !important;
             z-index: 99;
         }
-        
-        .vjs-fullscreen-control {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            height: 3em !important;
-        }
-
-        .vjs-picture-in-picture-control {
-            position: absolute;
-            bottom: 0;
-            right: 40px;
-            height: 3em !important;
-        }
-
-        .vjs-settings-button {
-            position: absolute;
-            bottom: 0;
-            right: 80px;
-            height: 3em !important;
-            z-index: 99;
-       }
 
         .vjs-quality-menu-wrapper {
             position: absolute;
@@ -503,7 +466,8 @@
 
     .godam-submenu-open {
 
-        .vjs-settings-button {        
+        .vjs-settings-button {
+
             .vjs-menu ul.vjs-menu-content {
                 right: -30% !important;
                 width: max-content !important;
@@ -541,6 +505,7 @@
     }
 
     .vjs-subs-caps-button.vjs-menu-button.vjs-menu-button-popup.vjs-control.vjs-button {
+
         .vjs-menu ul.vjs-menu-content {
             display: unset !important;
 
@@ -564,6 +529,7 @@
         }
 
         .vjs-control-bar {
+
             [class^="vjs-skip-forward-"],
             [class^="vjs-skip-backward-"],
             .vjs-picture-in-picture-control,
@@ -584,6 +550,10 @@
             }
         }
 
+        .vjs-menu-item {
+            width: 100%;
+        }
+
         .vjs-menu ul.vjs-menu-content {
             -ms-overflow-style: none;  /* Internet Explorer 10+ */
             scrollbar-width: none;  /* Firefox, Safari 18.2+, Chromium 121+ */
@@ -596,34 +566,30 @@
 
         .godam-submenu-open {
             
-            .vjs-menu ul.vjs-menu-content {
-                right: -10% !important;
-                max-width: 250px;
-                // width: 100% !important;
-                padding: 0 10px;
+            .vjs-settings-button { 
 
-                .godam-back-item-container:after {
-                    // left: 0;
-                    // width: 100%;
-                    display: none;
+                .vjs-menu ul.vjs-menu-content {
+                    right: -10% !important;
+                    max-width: 250px;
+                    padding: 0 10px;
+
+                    .godam-back-item-container::after {
+                        display: none;
+                    }
+
+                    
                 }
-
                 
-            }
-            
-            .vjs-menu-item:not(.vjs-back-item) {
-                width: 70px;
-                padding: 6px 0;
-                font-size: 12px;
+                .vjs-menu-item:not(.vjs-back-item) {
+                    width: 70px;
+                    padding: 6px 0;
+                    font-size: 12px;
+                }
             }
         }
 
         .godam-chevron-icon {
             display: block;
-        }
-
-        .vjs-menu-item {
-            width: 100%;
         }
     }
 }
