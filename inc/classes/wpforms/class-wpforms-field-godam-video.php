@@ -140,6 +140,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			printf( '<button type="button" class="wpforms-btn uppy-video-upload-button">' );
 			printf( '<span class="dashicons dashicons-video-alt"></span>' );
 			printf( esc_html__( 'Record Video', 'godam' ) );
+			printf( '</button>' );
 
 			// Description.
 			$this->field_preview_option( 'description', $field );
