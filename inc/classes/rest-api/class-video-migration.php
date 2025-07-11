@@ -629,19 +629,19 @@ class Video_Migration extends Base {
 		$body = wp_remote_retrieve_body( $response );
 		$data = json_decode( $body, true );
 
-		if ( empty( $data['message']['data'] ) || empty( $data['message']['data']['transcoded_file_path'] ) ) {
+		if ( empty( $data['message'] ) || empty( $data['message']['transcoded_file_path'] ) ) {
 			return new \WP_Error( 
 				'invalid_response',
 				__( 'Invalid response from GoDAM Central.', 'godam' )
 			);
 		}
 
-		$video_info = $data['message']['data'];
+		$video_info = $data['message'];
 
 		// Prepare attachment data.
 		$attachment = array(
 			'post_mime_type' => 'video/mp4',
-			'post_title'     => $video_info['name'] ?? '',
+			'post_title'     => $video_info['orignal_file_name'] ?? '',
 			'post_status'    => 'inherit',
 		);
 
