@@ -15,14 +15,7 @@ const ACTIONS = {
 const engagementObj = {
 
 	init() {
-		register( this.store() );
-		this.unsubscribe = subscribe( this.watch.bind( this ), 'godam-video-engagement' );
-		this.dispatch = dispatch( 'godam-video-engagement' );
-		this.select = select( 'godam-video-engagement' );
-
-		// For testing purposes
-		window.gdm_dispatch = this.dispatch;
-		window.gdm_select = this.select;
+		this.initStore();
 	},
 
 	reducer( state = DEFAULT_STATE, action ) {
@@ -84,6 +77,17 @@ const engagementObj = {
 		console.log( 'Views:', views );
 		console.log( 'Likes:', likes );
 		console.log( 'Comments:', comments );
+	},
+
+	initStore() {
+		register( this.store() );
+		this.unsubscribe = subscribe( this.watch.bind( this ), 'godam-video-engagement' );
+		this.dispatch = dispatch( 'godam-video-engagement' );
+		this.select = select( 'godam-video-engagement' );
+
+		// For testing purposes
+		window.gdm_dispatch = this.dispatch;
+		window.gdm_select = this.select;
 	},
 };
 

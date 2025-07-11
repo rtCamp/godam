@@ -39,11 +39,17 @@ class Engagement extends Base {
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
 							array(
-								'id' => array(
-									'description'       => __( 'The ID of the Gravity Form.', 'godam' ),
+								'video_id' => array(
+									'description'       => __( 'The ID of the video.', 'godam' ),
 									'type'              => 'integer',
 									'required'          => true,
 									'sanitize_callback' => 'absint',
+								),
+								'site_url' => array(
+									'required'          => true,
+									'type'              => 'string',
+									'description'       => __( 'The Site URL associated with the video.', 'godam' ),
+									'sanitize_callback' => 'esc_url_raw',
 								),
 							)
 						),
@@ -60,28 +66,7 @@ class Engagement extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function get_likes( $request ) {
-		// Check if Gravity Forms plugin is active.
-		if ( ! class_exists( 'GFAPI' ) ) {
-			return new \WP_Error( 'gravity_forms_not_active', __( 'Gravity Forms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
-		}
 
-		// Get all forms.
-		$gforms = \GFAPI::get_forms();
-
-		// Get the output fields.
-		$fields = $request->get_param( 'fields' );
-
-		// Filter fields.
-		if ( ! empty( $fields ) ) {
-			$fields = explode( ',', $fields );
-			$gforms = array_map(
-				function ( $gform ) use ( $fields ) {
-					return array_intersect_key( $gform, array_flip( $fields ) );
-				},
-				$gforms
-			);
-		}
-
-		return rest_ensure_response( $gforms );
+		return $request->get_params();
 	}
 }

@@ -8,6 +8,7 @@
 namespace RTGODAM\Inc;
 
 use RTGODAM\Inc\Traits\Singleton;
+use WP_Error;
 
 /**
  * Class Video_Engagement
@@ -20,12 +21,37 @@ class Video_Engagement {
 	 * Construct method.
 	 */
 	protected function __construct() {
-		add_action( 'rtgodam_after_video_html', array( $this, 'add_engagement_options_to_video' ), 10, 3 );
+		add_action( 'rtgodam_after_video_html', array( $this, 'add_engagement_to_video' ), 10, 2 );
 	}
 
-	public function add_engagement_options_to_video( $attributes, $instance_id, $easydam_meta_data ) {
+
+	/**
+	 * Adds engagement elements to the video.
+	 *
+	 * @param array $attributes Video block attributes.
+	 * @param int   $instance_id The instance ID.
+	 *
+	 * @return string|void
+	 */
+	public function add_engagement_to_video( $attributes, $instance_id ) {
+		$attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+		if ( empty( $attachment_id ) ) {
+			return '';
+		}
+		$get_video_engagement_data = $this->get_video_engagement_data( $attachment_id );
+		if ( is_wp_error( $get_video_engagement_data ) ) {
+			return '';
+		}
+
+		$get_video_engagement_data = json_decode( $get_video_engagement_data, true );
+		$view_count                = ! empty( $get_video_engagement_data['data']['post_views'] ) ? $get_video_engagement_data['data']['post_views'] : 0;
+
+		if ( is_array( $view_count ) ) {
+			$view_count = array_sum( $view_count );
+		}
+
 		?>
-		<div class="rtgodam-video-engagement" data-engagement-id="engagement-<?php echo esc_attr( $instance_id );?>">
+		<div class="rtgodam-video-engagement" data-engagement-id="engagement-<?php echo esc_attr( $instance_id ); ?>" data-engagement-video-id="engagement-<?php echo esc_attr( $instance_id ); ?>">
 			<div class="rtgodam-video-engagement--like">
 				<a href="#" class="rtgodam-video-engagement--like-link">
 					<span class="rtgodam-video-engagement--like-icon">
@@ -85,10 +111,47 @@ class Video_Engagement {
 						</svg>
 
 					</span>
-					<span class="rtgodam-video-engagement--view-count">0</span>
+					<span class="rtgodam-video-engagement--view-count"><?php echo esc_html( $view_count ); ?></span>
 				</a>
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Retrieve video engagement data.
+	 *
+	 * @param int $video_id Post ID of the video.
+	 * @return mixed The response from the API, or a WP_Error on failure.
+	 */
+	public function get_video_engagement_data( $video_id ) {
+
+		$site_url     = get_site_url();
+		$api_endpoint = add_query_arg(
+			array(
+				'site_url' => $site_url,
+				'video_id' => $video_id,
+			),
+			$site_url . '/wp-json/godam/v1/analytics/fetch'
+		);
+
+		$args = array(
+			'timeout'   => 10,
+			'headers'   => array(
+				'Content-Type' => 'application/json',
+			),
+			'sslverify' => 'production' === wp_get_environment_type(),
+		);
+
+		$response = wp_remote_get(
+			$api_endpoint,
+			$args
+		);
+		if ( ! is_wp_error( $response ) ) {
+			$response = wp_remote_retrieve_body( $response );
+		} else {
+			$response = new WP_Error( 'failed_to_retrieve', __( 'Could not retrieve.', 'godam' ) );
+		}
+		return $response;
 	}
 }
