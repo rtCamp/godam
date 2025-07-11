@@ -53,7 +53,7 @@ if ( $is_virtual ) {
 			'meta_key'       => '_godam_original_id',
 			'meta_value'     => sanitize_text_field( $attachment_id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'fields'         => 'ids',
-		) 
+		)
 	);
 
 	// If a matching media attachment exists, use its actual WordPress ID.
@@ -156,6 +156,13 @@ $video_setup = array(
 	'preload'     => $preload,
 	'poster'      => empty( $poster ) ? $poster_image : $poster,
 	'fluid'       => true,
+	'flvjs'       => array(
+		'mediaDataSource' => array(
+			'isLive'          => true,
+			'cors'            => false,
+			'withCredentials' => false,
+		),
+	),
 	'sources'     => $sources,
 	'playsinline' => true,
 	'controlBar'  => array(
