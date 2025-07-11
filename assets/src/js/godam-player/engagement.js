@@ -1,4 +1,6 @@
 const { createReduxStore, register, select, dispatch, subscribe } = wp.data;
+const { apiFetch } = wp;
+const { addQueryArgs } = wp.url;
 
 const DEFAULT_STATE = {
 	views: 0,
@@ -12,7 +14,11 @@ const ACTIONS = {
 	USER_VIEWED: 'USER_VIEWED',
 };
 
-const engagementObj = {
+const getVideoEngagementData = () => {
+	const videoIds = document.querySelectorAll( '.rtgodam-video-engagement' );
+};
+
+const engagementStore = {
 
 	init() {
 		this.initStore();
@@ -56,6 +62,12 @@ const engagementObj = {
 				type: ACTIONS.USER_VIEWED,
 			};
 		},
+
+		loadDefaultData: () => {
+			return {
+				type: 'DEFAULT',
+			};
+		},
 	},
 
 	selectors: {
@@ -89,8 +101,9 @@ const engagementObj = {
 		window.gdm_dispatch = this.dispatch;
 		window.gdm_select = this.select;
 	},
+
 };
 
 export function engagement() {
-	engagementObj.init();
+	engagementStore.init();
 }

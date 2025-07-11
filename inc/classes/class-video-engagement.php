@@ -49,7 +49,7 @@ class Video_Engagement {
 		$view_count = $this->process_engagement_counts( $view_count );
 
 		?>
-		<div class="rtgodam-video-engagement" data-engagement-id="engagement-<?php echo esc_attr( $instance_id ); ?>" data-engagement-video-id="engagement-<?php echo esc_attr( $instance_id ); ?>">
+		<div class="rtgodam-video-engagement" data-engagement-id="engagement-<?php echo esc_attr( $instance_id ); ?>" data-engagement-video-id="engagement-<?php echo esc_attr( $attachment_id ); ?>">
 			<div class="rtgodam-video-engagement--like">
 				<a href="#" class="rtgodam-video-engagement--like-link">
 					<span class="rtgodam-video-engagement--like-icon">
