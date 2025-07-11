@@ -26,12 +26,13 @@ import {
 	MediaReplaceFlow,
 	useBlockProps,
 	InnerBlocks,
+	store as blockEditorStore,
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
-import { useDispatch } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { external, search, media as icon } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
@@ -84,10 +85,25 @@ function VideoEdit( {
 	className,
 	setAttributes,
 	insertBlocksAfter,
+	clientId,
 } ) {
+	// Check if this block is inside a Query Loop block.
+	const isInsideQueryLoop = useSelect( ( select ) => {
+		if ( ! clientId ) {
+			return false;
+		}
+
+		const parents = select( blockEditorStore ).getBlockParents( clientId );
+		const parentBlocks = select( blockEditorStore ).getBlocksByClientId( parents );
+
+		// Check if any parent block is a Query Loop.
+		return parentBlocks.some( ( block ) => block.name === 'core/query' );
+	}, [ clientId ] );
+
 	const instanceId = useInstanceId( VideoEdit );
 	const videoPlayer = useRef();
 	const posterImageButton = useRef();
+
 	const {
 		id,
 		cmmId,
@@ -150,7 +166,7 @@ function VideoEdit( {
 				} }
 			/>
 		</Disabled>
-	), [ isSingleSelected, videoOptions, setAttributes ] );
+	), [ isSingleSelected, videoOptions, setAttributes, attributes.seo ] );
 
 	useEffect( () => {
 		// Placeholder may be rendered.
@@ -209,7 +225,7 @@ function VideoEdit( {
 				}
 			} )();
 		}
-	}, [] );
+	}, [ id, setAttributes, dispatch ] );
 
 	function onSelectVideo( media ) {
 		if ( ! media || ! media.url ) {
@@ -332,18 +348,24 @@ function VideoEdit( {
 					className="block-editor-media-placeholder"
 					withIllustration={ ! isSingleSelected }
 					icon={ icon }
-					label={ __( 'GoDAM video', 'godam' ) }
-					instructions={ __(
-						'Drag and drop a video, upload, or choose from your library.',
-						'godam',
-					) }
+					label={ isInsideQueryLoop
+						? __( 'GoDAM video template', 'godam' )
+						: __( 'GoDAM video', 'godam' )
+					}
+					instructions={ isInsideQueryLoop
+						? __( 'This block will display videos dynamically when used in Query Loop. You can still choose a sample video to visualize the options.', 'godam' )
+						: __( 'Drag and drop a video, upload, or choose from your library.', 'godam' )
+					}
 				>
 					<MediaUpload
 						onSelect={ onSelectVideo }
 						allowedTypes={ ALLOWED_MEDIA_TYPES }
 						render={ ( { open } ) => (
 							<Button onClick={ open } variant="primary">
-								Select Video
+								{ isInsideQueryLoop
+									? __( 'Select Sample Video', 'godam' )
+									: __( 'Select Video', 'godam' )
+								}
 							</Button>
 						) }
 					/>
@@ -426,152 +448,160 @@ function VideoEdit( {
 					<VideoCommonSettings
 						setAttributes={ setAttributes }
 						attributes={ attributes }
-					/>
-					<BaseControl
-						id={ `video-block__poster-image-${ instanceId }` }
-						label={ __( 'Video Thumbnail', 'godam' ) }
-						__nextHasNoMarginBottom
-					>
-						<MediaUploadCheck>
-							<div className="editor-video-poster-control">
-								<MediaUpload
-									title={ __( 'Select Video Thumbnail', 'godam' ) }
-									onSelect={ onSelectPoster }
-									allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
-									render={ ( { open } ) => (
-										<Button
-											__next40pxDefaultSize
-											variant="primary"
-											onClick={ open }
-											ref={ posterImageButton }
-											aria-describedby={ videoPosterDescription }
-										>
-											{ ! poster ? __( 'Select', 'godam' ) : __( 'Replace', 'godam' ) }
-										</Button>
-									) }
-								/>
-								<p id={ videoPosterDescription } hidden>
-									{ poster
-										? sprintf(
-											/* translators: %s: poster image URL. */
-											__( 'The current poster image url is %s', 'godam' ),
-											poster,
-										)
-										: __( 'There is no poster image currently selected', 'godam' ) }
-								</p>
-								{ !! poster && (
-									<Button
-										__next40pxDefaultSize
-										onClick={ onRemovePoster }
-										variant="tertiary"
-									>
-										{ __( 'Remove', 'godam' ) }
-									</Button>
-								) }
-							</div>
-						</MediaUploadCheck>
-					</BaseControl>
-
-					<BaseControl
-						id={ `video-block__video-editor-${ instanceId }` }
-						label={ __( 'Customise Video', 'godam' ) }
-						__nextHasNoMarginBottom
-					>
-						<Button
-							__next40pxDefaultSize
-							href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
-							target="_blank"
-							variant="primary"
-							className=""
-							icon={ external }
-							iconPosition="right"
-						>
-							{ __( 'Customise', 'godam' ) }
-						</Button>
-					</BaseControl>
-
-					<BaseControl
-						id={ `video-block__video-seo-${ instanceId }` }
-						label={ __( 'SEO Settings', 'godam' ) }
-						__nextHasNoMarginBottom
-					>
-						<Button
-							__next40pxDefaultSize
-							onClick={ () => setIsSEOModelOpen( true ) }
-							variant="primary"
-							icon={ search }
-							iconPosition="right"
-						>
-							{ __( 'SEO Settings', 'godam' ) }
-						</Button>
-					</BaseControl>
-
-					<BaseControl
-						id={ `video-block__video--selected-aspect-ratio-${ instanceId }` }
-						label={ __( 'Aspect Ratio', 'godam' ) }
-						__nextHasNoMarginBottom
-					>
-						<SelectControl
-							value={ attributes.aspectRatio || '16:9' }
-							options={ [
-								{ label: __( '16:9 (Standard)', 'godam' ), value: '16:9' },
-								{ label: __( 'Responsive', 'godam' ), value: 'responsive' },
-							] }
-							onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
-							help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
-						/>
-					</BaseControl>
-
-				</PanelBody>
-
-				<PanelBody title={ __( 'Overlay Blocks', 'godam' ) }>
-					<ToggleControl
-						label={ __( 'Show overlay blocks', 'godam' ) }
-						checked={ showOverlay }
-						onChange={ ( value ) => setAttributes( { showOverlay: value } ) }
-						help={ __( 'Display blocks on top of the video player.', 'godam' ) }
+						isInsideQueryLoop={ isInsideQueryLoop }
 					/>
 
-					{ showOverlay && (
+					{ /* Only show additional settings when not inside a Query Loop */ }
+					{ ! isInsideQueryLoop && (
 						<>
-							<SelectControl
-								label={ __( 'Vertical alignment', 'godam' ) }
-								value={ verticalAlignment }
-								options={ [
-									{ label: __( 'Top', 'godam' ), value: 'top' },
-									{ label: __( 'Center', 'godam' ), value: 'center' },
-									{ label: __( 'Bottom', 'godam' ), value: 'bottom' },
-								] }
-								onChange={ onChangeVerticalAlignment }
-								help={ __( 'Choose where to position the overlay blocks vertically.', 'godam' ) }
-							/>
+							<BaseControl
+								id={ `video-block__poster-image-${ instanceId }` }
+								label={ __( 'Video Thumbnail', 'godam' ) }
+								__nextHasNoMarginBottom
+							>
+								<MediaUploadCheck>
+									<div className="editor-video-poster-control">
+										<MediaUpload
+											title={ __( 'Select Video Thumbnail', 'godam' ) }
+											onSelect={ onSelectPoster }
+											allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
+											render={ ( { open } ) => (
+												<Button
+													__next40pxDefaultSize
+													variant="primary"
+													onClick={ open }
+													ref={ posterImageButton }
+													aria-describedby={ videoPosterDescription }
+												>
+													{ ! poster ? __( 'Select', 'godam' ) : __( 'Replace', 'godam' ) }
+												</Button>
+											) }
+										/>
+										<p id={ videoPosterDescription } hidden>
+											{ poster
+												? sprintf(
+													/* translators: %s: poster image URL. */
+													__( 'The current poster image url is %s', 'godam' ),
+													poster,
+												)
+												: __( 'There is no poster image currently selected', 'godam' ) }
+										</p>
+										{ !! poster && (
+											<Button
+												__next40pxDefaultSize
+												onClick={ onRemovePoster }
+												variant="tertiary"
+											>
+												{ __( 'Remove', 'godam' ) }
+											</Button>
+										) }
+									</div>
+								</MediaUploadCheck>
+							</BaseControl>
 
-							<RangeControl
-								label={ __( 'Time range', 'godam' ) }
-								value={ overlayTimeRange }
-								onChange={ ( value ) => setAttributes( { overlayTimeRange: value } ) }
-								min={ 0 }
-								max={ duration || 100 }
-								step={ 0.1 }
-								help={ sprintf(
-									/* translators: %s: formatted time */
-									__( 'Overlay will be visible for %s from the start of the video.', 'godam' ),
-									formatTime( overlayTimeRange || 0 ),
-								) }
-							/>
+							<BaseControl
+								id={ `video-block__video-editor-${ instanceId }` }
+								label={ __( 'Customise Video', 'godam' ) }
+								__nextHasNoMarginBottom
+							>
+								<Button
+									__next40pxDefaultSize
+									href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
+									target="_blank"
+									variant="primary"
+									className=""
+									icon={ external }
+									iconPosition="right"
+								>
+									{ __( 'Customise', 'godam' ) }
+								</Button>
+							</BaseControl>
 
-							{ duration > 0 && (
-								<p style={ { fontSize: '12px', color: '#757575', marginTop: '8px' } }>
-									{ sprintf(
-										/* translators: %s: formatted time */
-										__( 'Video duration: %s', 'godam' ),
-										formatTime( duration ),
-									) }
-								</p>
-							) }
+							<BaseControl
+								id={ `video-block__video-seo-${ instanceId }` }
+								label={ __( 'SEO Settings', 'godam' ) }
+								__nextHasNoMarginBottom
+							>
+								<Button
+									__next40pxDefaultSize
+									onClick={ () => setIsSEOModelOpen( true ) }
+									variant="primary"
+									icon={ search }
+									iconPosition="right"
+								>
+									{ __( 'SEO Settings', 'godam' ) }
+								</Button>
+							</BaseControl>
+
+							<BaseControl
+								id={ `video-block__video--selected-aspect-ratio-${ instanceId }` }
+								label={ __( 'Aspect Ratio', 'godam' ) }
+								__nextHasNoMarginBottom
+							>
+								<SelectControl
+									value={ attributes.aspectRatio || '16:9' }
+									options={ [
+										{ label: __( '16:9 (Standard)', 'godam' ), value: '16:9' },
+										{ label: __( 'Responsive', 'godam' ), value: 'responsive' },
+									] }
+									onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
+									help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
+								/>
+							</BaseControl>
 						</>
 					) }
 				</PanelBody>
+
+				{ ! isInsideQueryLoop && (
+					<PanelBody title={ __( 'Overlay Blocks', 'godam' ) }>
+						<ToggleControl
+							label={ __( 'Show overlay blocks', 'godam' ) }
+							checked={ showOverlay }
+							onChange={ ( value ) => setAttributes( { showOverlay: value } ) }
+							help={ __( 'Display blocks on top of the video player.', 'godam' ) }
+						/>
+
+						{ showOverlay && (
+							<>
+								<SelectControl
+									label={ __( 'Vertical alignment', 'godam' ) }
+									value={ verticalAlignment }
+									options={ [
+										{ label: __( 'Top', 'godam' ), value: 'top' },
+										{ label: __( 'Center', 'godam' ), value: 'center' },
+										{ label: __( 'Bottom', 'godam' ), value: 'bottom' },
+									] }
+									onChange={ onChangeVerticalAlignment }
+									help={ __( 'Choose where to position the overlay blocks vertically.', 'godam' ) }
+								/>
+
+								<RangeControl
+									label={ __( 'Time range', 'godam' ) }
+									value={ overlayTimeRange }
+									onChange={ ( value ) => setAttributes( { overlayTimeRange: value } ) }
+									min={ 0 }
+									max={ duration || 100 }
+									step={ 0.1 }
+									help={ sprintf(
+										/* translators: %s: formatted time */
+										__( 'Overlay will be visible for %s from the start of the video.', 'godam' ),
+										formatTime( overlayTimeRange || 0 ),
+									) }
+								/>
+
+								{ duration > 0 && (
+									<p style={ { fontSize: '12px', color: '#757575', marginTop: '8px' } }>
+										{ sprintf(
+											/* translators: %s: formatted time */
+											__( 'Video duration: %s', 'godam' ),
+											formatTime( duration ),
+										) }
+									</p>
+								) }
+							</>
+						) }
+					</PanelBody>
+				) }
 			</InspectorControls>
 
 			<VideoSEOModal

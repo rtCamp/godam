@@ -11,7 +11,7 @@ const options = [
 	{ value: 'none', label: _x( 'None', 'Preload value', 'godam' ) },
 ];
 
-const VideoSettings = ( { setAttributes, attributes } ) => {
+const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
 	const { autoplay, controls, loop, muted, preload } =
 		attributes;
 
@@ -46,11 +46,11 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 			muted: toggleAttribute( 'muted' ),
 			controls: toggleAttribute( 'controls' ),
 		};
-	}, [] );
+	}, [ setAttributes ] );
 
 	const onChangePreload = useCallback( ( value ) => {
 		setAttributes( { preload: value } );
-	}, [] );
+	}, [ setAttributes ] );
 
 	return (
 		<>
@@ -88,15 +88,17 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 				onChange={ toggleFactory.controls }
 				checked={ !! controls }
 			/>
-			<SelectControl
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-				label={ __( 'Preload', 'godam' ) }
-				value={ preload }
-				onChange={ onChangePreload }
-				options={ options }
-				hideCancelButton
-			/>
+			{ ! isInsideQueryLoop && (
+				<SelectControl
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
+					label={ __( 'Preload', 'godam' ) }
+					value={ preload }
+					onChange={ onChangePreload }
+					options={ options }
+					hideCancelButton
+				/>
+			) }
 		</>
 	);
 };
