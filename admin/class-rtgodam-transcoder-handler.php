@@ -513,6 +513,10 @@ class RTGODAM_Transcoder_Handler {
 			$this->uploaded['media_author'] = $media[0]->media_author;
 		}
 
+		// rtMedia support.
+		update_post_meta( $post_id, '_rt_media_source', $post_thumbs_array['job_for'] );
+		update_post_meta( $post_id, '_rt_media_thumbnails', $thumbnail_urls );
+
 		update_post_meta( $post_id, 'rtgodam_media_source', $post_thumbs_array['job_for'] );
 		update_post_meta( $post_id, 'rtgodam_media_thumbnails', $thumbnail_urls );
 
@@ -523,6 +527,8 @@ class RTGODAM_Transcoder_Handler {
 			$is_retranscoding_job = get_post_meta( $post_id, 'rtgodam_retranscoding_sent', true );
 
 			if ( ! $is_retranscoding_job || rtgodam_is_override_thumbnail() ) {
+				// rtMedia support.
+				update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
 
 				if ( class_exists( 'RTMediaModel' ) ) {
 					$model->update( array( 'cover_art' => $first_thumbnail_url ), array( 'media_id' => $post_id ) );
