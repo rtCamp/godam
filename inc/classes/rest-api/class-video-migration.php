@@ -650,8 +650,13 @@ class Video_Migration extends Base {
 
 		// Update attachment metadata with dimensions.
 		$metadata = array(
-			'width'  => empty( $video_info['width'] ) ? 1920 : $video_info['width'],
-			'height' => empty( $video_info['height'] ) ? 1080 : $video_info['height'],
+			'width'            => empty( $video_info['width'] ) ? 1920 : $video_info['width'],
+			'height'           => empty( $video_info['height'] ) ? 1080 : $video_info['height'],
+			'filesize'         => empty( $video_info['file_size'] ) ? 0 : intval( $video_info['file_size'] ),
+			'mime_type'        => 'video/mp4',
+			'length'           => empty( $video_info['playtime'] ) ? 0 : intval( $video_info['playtime'] ),
+			'length_formatted' => empty( $video_info['playtime'] ) ? '00:00' : gmdate( 'i:s', intval( $video_info['playtime'] ) ),
+			'fileformat'       => 'mp4',
 		);
 		wp_update_attachment_metadata( $attachment_id, $metadata );
 
@@ -662,6 +667,21 @@ class Video_Migration extends Base {
 		// Set the attachment thumbnail.
 		if ( ! empty( $video_info['thumbnail_url'] ) ) {
 			update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $video_info['thumbnail_url'] );
+		}
+
+		// Set the attachment file size.
+		if ( ! empty( $video_info['file_size'] ) ) {
+			update_post_meta( $attachment_id, '_video_file_size', intval( $video_info['file_size'] ) );
+		}
+
+		// Set the attachment playtime.
+		if ( ! empty( $video_info['playtime'] ) ) {
+			update_post_meta( $attachment_id, '_video_duration', intval( $video_info['playtime'] ) );
+		}
+
+		// Set the attachment attached file string so name is displayed.
+		if ( ! empty( $video_info['orignal_file_name'] ) ) {
+			update_post_meta( $attachment_id, '_wp_attached_file', $video_info['orignal_file_name'] );
 		}
 
 		// Change the guid of the attachment to the transcoded file path.
