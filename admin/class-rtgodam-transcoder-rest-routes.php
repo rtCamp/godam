@@ -290,6 +290,41 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			}
 		}
 
+		if ( ! empty( $job_for ) && 'fluentforms-godam-recorder' === $job_for && ! empty( $job_id ) ) {
+			$post_array = $request->get_params();
+
+			/**
+			 * Get data stored in options based on job id.
+			 */
+			$data = get_option( $job_id );
+
+			/**
+			 * If we have data in options, proceed.
+			 */
+			if ( ! empty( $data ) && 'fluentforms_godam_recorder' === $data['source'] && function_exists( 'wpFluent' ) ) {
+				$entry_id   = $data['entry_id'];
+				$entry_data = wpFluent()->table( 'fluentform_submissions' )->find( $entry_id );
+
+				if ( ! empty( $entry_data ) && ! empty( $entry_data->form_id ) ) {
+					$form_id = $entry_data->form_id;
+
+					/**
+					 * Add to entry meta.
+					 */
+					wpFluent()->table( 'fluentform_submission_meta' )->insert(
+						array(
+							'response_id' => $entry_id,
+							'form_id'     => $form_id,
+							'meta_key'    => 'rtgodam_transcoded_url_fluentforms_' . $form_id . '_' . $entry_id,
+							'value'       => $post_array['download_url'],
+							'status'      => 'success',
+							'name'        => 'rtgodam_transcoded_url_fluentforms_' . $form_id . '_' . $entry_id,
+						)
+					);
+				}
+			}
+		}
+
 		/**
 		 * Allow users/plugins to perform action after response received from the transcoder is
 		 * processed

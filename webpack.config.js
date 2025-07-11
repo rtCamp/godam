@@ -171,6 +171,13 @@ const godamRecorder = {
 	},
 };
 
+const fluentForms = {
+	...sharedConfig,
+	entry: {
+		fluentforms: path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'index.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -233,7 +240,7 @@ const pages = {
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
 	},
-	devtool: "source-map",
+	devtool: 'source-map',
 };
 
 module.exports = [
@@ -252,4 +259,5 @@ module.exports = [
 	elementorWidgetJS,
 	elementorEditorJS,
 	godamRecorder,
+	fluentForms,
 ];
