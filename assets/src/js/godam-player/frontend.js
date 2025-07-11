@@ -136,7 +136,23 @@ function GODAMPlayer( videoRef = null ) {
 			// Set aspect ratio based on context
 			if ( ! isInModal ) {
 				if ( videoSetupOptions?.aspectRatio ) {
-					player.aspectRatio( videoSetupOptions.aspectRatio );
+					if ( videoSetupOptions.aspectRatio === 'responsive' ) {
+						video.addEventListener( 'loadedmetadata', function() {
+							const width = video.videoWidth;
+							const height = video.videoHeight;
+
+							function getSimplifiedAspectRatio( w, h ) {
+								const gcd = ( a, b ) => ( b === 0 ? a : gcd( b, a % b ) );
+								const divisor = gcd( w, h );
+								return ( w / divisor ) + ':' + ( h / divisor );
+							}
+
+							const aspectRatio = getSimplifiedAspectRatio( width, height );
+							player.aspectRatio( aspectRatio );
+						} );
+					} else {
+						player.aspectRatio( videoSetupOptions.aspectRatio );
+					}
 				} else {
 					player.aspectRatio( '16:9' );
 				}

@@ -153,7 +153,7 @@ jQuery( document ).ready( function( $ ) {
 					try {
 						const decoded = encoded.replace( /&quot;/g, '"' );
 						const options = JSON.parse( decoded );
-						options.aspectRatio = '9:16';
+						options.aspectRatio = 'responsive';
 						options.playerSkin = 'Minimal';
 						const reEncoded = JSON.stringify( options ).replace( /"/g, '&quot;' );
 						return `data-options="${ reEncoded }"`;
@@ -162,7 +162,7 @@ jQuery( document ).ready( function( $ ) {
 					}
 				} );
 
-				html = html.replace( /--rtgodam-video-aspect-ratio:\s*[^;"]+/, '--rtgodam-video-aspect-ratio: 9/16' );
+				html = html.replace( /--rtgodam-video-aspect-ratio:\s*[^;"]+/, '--rtgodam-video-aspect-ratio: responsive' );
 
 				container.innerHTML = html;
 				container.classList.remove( 'animate-video-loading' );
