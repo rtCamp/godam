@@ -10,7 +10,7 @@ import { Panel, PanelBody, SelectControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 const QUALITY_OPTIONS = [
-	{ label: __( 'No compression' ), value: 100 },
+	{ label: __( 'No compression', 'godam' ), value: 100 },
 	{ label: __( 'Highest quality', 'godam' ), value: 80 },
 	{ label: __( 'Medium quality', 'godam' ), value: 60 },
 	{ label: __( 'Lower Compression', 'godam' ), value: 40 },

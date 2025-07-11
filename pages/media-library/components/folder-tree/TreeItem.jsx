@@ -18,6 +18,7 @@ import { toggleOpenClose, changeSelectedFolder, toggleMultiSelectedFolder } from
 import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
 import { FolderTreeChevron } from '../icons';
+import { __ } from '@wordpress/i18n';
 
 const indentPerLevel = 12;
 
@@ -88,7 +89,7 @@ const TreeItem = ( { item, index, depth, onContextMenu, isMultiSelecting } ) => 
 							if ( e.key === 'Enter' || e.key === ' ' ) {
 								e.preventDefault(); handleChevronClick( e );
 							}
-						} } role="button" tabIndex={ 0 } aria-label={ item.isOpen ? 'Collapse folder' : 'Expand folder' } >
+						} } role="button" tabIndex={ 0 } aria-label={ item.isOpen ? __( 'Collapse folder', 'godam' ) : __( 'Expand folder', 'godam' ) } >
 							<FolderTreeChevron className={ item.isOpen ? 'tree-item__chevron_open' : '' } />
 						</span>
 						: <span className="tree-item__spacer" />

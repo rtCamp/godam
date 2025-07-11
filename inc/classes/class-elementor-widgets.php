@@ -77,6 +77,7 @@ class Elementor_Widgets {
 			RTGODAM_URL . 'assets/build/js/godam-elementor-frontend.min.js',
 			array(
 				'jquery',
+				'wp-i18n',
 				'godam-player-frontend-script',
 			),
 			filemtime( RTGODAM_PATH . 'assets/build/js/godam-elementor-frontend.min.js' ),

@@ -3,6 +3,12 @@
 /**
  * External dependencies
  */
+
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
 /**
  * VideoJs dependencies
  */
@@ -180,7 +186,7 @@ function GODAMPlayer( videoRef = null ) {
 				// Now convert to your format
 				return filteredChapters.map( ( chapter ) => ( {
 					startTime: parseFloat( chapter.startTime ) || 0,
-					text: chapter.text || 'Chapter',
+					text: chapter.text || __( 'Chapter', 'godam' ),
 					originalTime: chapter.originalTime,
 					endTime: null,
 				} ) );
@@ -514,8 +520,8 @@ function GODAMPlayer( videoRef = null ) {
 				const html = `
 				<div class="share-modal-message">
 					<div class="share-modal-header">
-						<h2>Share Media</h2>
-						<p>Copy the links below to share the selected media files.</p>
+						<h2>${ __( 'Share Media', 'godam' ) }</h2>
+						<p>${ __( 'Copy the links below to share the selected media files.', 'godam' ) }</p>
 					</div>
 
 					<div class="share-buttons">
@@ -528,27 +534,27 @@ function GODAMPlayer( videoRef = null ) {
 					</div>
 
 					<div class='share-input-container'>
-						<label>Page Link</label>
+						<label>${ __( 'Page Link', 'godam' ) }</label>
 						<div class="share-modal-input-group">
 							<input id="page-link" type="text" value="${ window.godamData?.apiBase }/web/video/${ this.player().jobId }" readonly />
 							<button id="copy-page-link" class="copy-button">
-								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
+								<img src=${ CopyIcon } alt='${ __( 'copy icon', 'godam' ) }' height=${ 24 } width=${ 24 }>
 							</button>
 						</div>
 					</div>
 
 					<div class='share-input-container'>
-						<label>Embed</label>
+						<label>${ __( 'Embed', 'godam' ) }</label>
 						<div class="share-modal-input-group">
 							<input id="embed-code" type="text" value='<iframe src="${ window.godamData?.apiBase }/web/embed/${ this.player().jobId }"></iframe>' readonly />
 							<button id="copy-embed-code" class="copy-button">
-								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
+								<img src=${ CopyIcon } alt='${ __( 'copy icon', 'godam' ) }' height=${ 24 } width=${ 24 }>
 							</button>
 						</div>
 					</div>
 
 					<div class="share-modal-footer">
-						<button id="cancel-button">Cancel</button>
+						<button id="cancel-button">${ __( 'Cancel', 'godam' ) }</button>
 					</div>
 				</div>
 			`;

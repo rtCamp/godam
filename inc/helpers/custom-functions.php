@@ -300,7 +300,7 @@ function rtgodam_get_usage_data() {
 	$api_key = get_option( 'rtgodam-api-key', '' );
 
 	if ( empty( $api_key ) ) {
-		return new \WP_Error( 'rtgodam_api_error', 'API key not found ( try refreshing the page )' );
+		return new \WP_Error( 'rtgodam_api_error', __( 'API key not found ( try refreshing the page )', 'godam' ) );
 	}
 
 	$endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
@@ -324,7 +324,7 @@ function rtgodam_get_usage_data() {
 
 	// Validate response structure.
 	if ( ! isset( $data['message'] ) || ! isset( $data['message']['storage_used'] ) || ! isset( $data['message']['bandwidth_used'] ) ) {
-		return new \WP_Error( 'rtgodam_api_error', 'Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )' );
+		return new \WP_Error( 'rtgodam_api_error', __( 'Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )', 'godam' ) );
 	}
 
 	return array(

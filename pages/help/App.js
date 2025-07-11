@@ -113,9 +113,9 @@ const App = () => {
 								<input
 									className="search-field w-full"
 									type="search"
-									placeholder="Search using keywords"
+									placeholder={ __( 'Search using keywords', 'godam' ) }
 									autoComplete="off"
-									aria-label="Search using keywords"
+									aria-label={ __( 'Search using keywords', 'godam' ) }
 									onChange={ ( e ) => setInput( e.target.value ) }
 									value={ input }
 								/>

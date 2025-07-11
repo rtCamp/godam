@@ -1,5 +1,10 @@
 /* global jQuery */
 
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
 jQuery( document ).ready( function( $ ) {
 	( 'use strict' );
 
@@ -14,22 +19,22 @@ jQuery( document ).ready( function( $ ) {
                         <h2>${ GoDAMDeactivation?.headerText }</h2>
                     </div>
                     <select id="deactivation-reason">
-                        <option value="">Select a reason</option>
-                        <option value="Found a better plugin">I found a better plugin</option>
-                        <option value="Not working as expected">The plugin is not working as expected</option>
-                        <option value="Just testing">I was just testing</option>
-                        <option value="Other">Other</option>
+                        <option value="">${ __( 'Select a reason', 'godam' ) }</option>
+                        <option value="Found a better plugin">${ __( 'I found a better plugin', 'godam' ) }</option>
+                        <option value="Not working as expected">${ __( 'The plugin is not working as expected', 'godam' ) }</option>
+                        <option value="Just testing">${ __( 'I was just testing', 'godam' ) }</option>
+                        <option value="Other">${ __( 'Other', 'godam' ) }</option>
                     </select>
-                    <textarea id="deactivation-feedback" placeholder="Additional details..." style="display: none;"></textarea>
+                    <textarea id="deactivation-feedback" placeholder="${ __( 'Additional details…', 'godam' ) }" style="display: none;"></textarea>
                     <div class='button-container'>
                     <button class="skip-feedback" id="godam-skip-feedback">
                         <a href="${ deactivateLink[ 0 ].href }">
-                            Skip & Deactivate
+                            ${ __( 'Skip & Deactivate', 'godam' ) }
                         </a>
                     </button>
                     <div>
-                        <button class="cancel-deactivation" id="cancel-deactivation">Cancel</button>
-                        <button class="submit-feedback" id="submit-feedback" disabled>Submit & Deactivate</button>
+                        <button class="cancel-deactivation" id="cancel-deactivation">${ __( 'Cancel', 'godam' ) }</button>
+                        <button class="submit-feedback" id="submit-feedback" disabled>${ __( 'Submit & Deactivate', 'godam' ) }</button>
                     </div>
                     </div>
                 </div>
