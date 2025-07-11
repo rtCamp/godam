@@ -527,6 +527,7 @@ class RTGODAM_Transcoder_Handler {
 			$is_retranscoding_job = get_post_meta( $post_id, 'rtgodam_retranscoding_sent', true );
 
 			if ( ! $is_retranscoding_job || rtgodam_is_override_thumbnail() ) {
+				// rtMedia support.
 				update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
 
 				if ( class_exists( 'RTMediaModel' ) ) {
