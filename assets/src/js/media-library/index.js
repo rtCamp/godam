@@ -40,12 +40,14 @@ class MediaLibrary {
 	}
 
 	addInputPlaceholder() {
-		wp.media.view.Search = wp.media.view.Search.extend( {
-			initialize() {
-				wp.media.view.Search.__super__.initialize.apply( this, arguments );
-				this.$el.attr( 'placeholder', __( 'Search Media', 'godam' ) );
-			},
-		} );
+		if ( wp?.media?.view?.Search ) {
+			wp.media.view.Search = wp?.media?.view?.Search?.extend( {
+				initialize() {
+					wp.media.view.Search.__super__.initialize.apply( this, arguments );
+					this.$el.attr( 'placeholder', __( 'Search Media', 'godam' ) );
+				},
+			} );
+		}
 	}
 
 	setupAttachmentBrowser() {
