@@ -9,6 +9,21 @@ export const folderApi = createApi( {
 	reducerPath: 'folderApi',
 	baseQuery: fetchBaseQuery( { baseUrl: restURL } ),
 	endpoints: ( builder ) => ( {
+		getAllMediaCount: builder.query( {
+			async queryFn( arg, api, extraOptions, baseQuery ) {
+				const result = await baseQuery( {
+					url: 'wp/v2/media',
+					params: { _fields: 'id', per_page: 1 },
+				} );
+				if ( result.error ) {
+					return { error: result.error };
+				}
+
+				const totalMediaCount = result.meta?.response?.headers.get( 'X-WP-Total' );
+
+				return { data: totalMediaCount };
+			},
+		} ),
 		getFolders: builder.query( {
 			query: () => ( {
 				url: 'wp/v2/media-folder',
@@ -115,6 +130,7 @@ export const folderApi = createApi( {
 } );
 
 export const {
+	useGetAllMediaCountQuery,
 	useGetFoldersQuery,
 	useCreateFolderMutation,
 	useUpdateFolderMutation,
