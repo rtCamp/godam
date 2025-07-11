@@ -10,8 +10,9 @@
         bottom: unset !important;
 	}
 
-    .video-player-settings-preview .vjs-big-play-button {
-        background-color: var(--rtgodam-control-bar-color, #2B333FB3) !important;
+    .vjs-big-play-button {
+        background-color: var(--rtgodam-control-bar-color, #000) !important;
+        border-radius: unset !important;
     }
 
     .vjs-volume-control.vjs-control.vjs-volume-vertical {

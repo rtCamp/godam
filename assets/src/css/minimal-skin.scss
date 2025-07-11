@@ -4,8 +4,14 @@
         background-color: transparent !important;
     }
 
-    .video-player-settings-preview .vjs-big-play-button {
-        background-color: var(--rtgodam-control-bar-color, #2B333FB3) !important;
+    .vjs-big-play-button {
+        background-color: transparent !important;
+        border: 3px solid #fff !important;
+
+        span::before {
+            line-height: 1.6 !important;
+            font-size: 1.7rem !important;
+        }
     }
 	
     .vjs-volume-control.vjs-control.vjs-volume-vertical {

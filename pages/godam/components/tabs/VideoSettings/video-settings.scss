@@ -25,25 +25,6 @@
 	padding-top: 352px;
 }
 
-.video-js .vjs-big-play-button {
-	background-color: var(--rtgodam-control-bar-color, #000);
-	border: none !important;
-	border-radius: 50% !important;
-	padding: 0 !important;
-	width: 50px;
-	height: 50px;
-	left: 53% !important;
-
-   span::before {
-	   font-size: 1rem;
-	   line-height: 3.2;
-   }
-
-   &:hover {
-		transform: scale(1.1);
-	}
-}
-
 .branding-icon {
 	height: 100%;
 	width: 100%;
