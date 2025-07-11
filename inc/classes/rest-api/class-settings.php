@@ -9,6 +9,8 @@ namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Post_Types\GoDAM_Video;
+
 /**
  * Class Settings
  */
@@ -41,6 +43,7 @@ class Settings extends Base {
 				'watermark_url'          => '',
 				'watermark_image_id'     => null,
 				'use_watermark_image'    => false,
+				'video_slug'             => 'videos',
 			),
 			'general'      => array(
 				'enable_folder_organization' => true,
@@ -258,11 +261,27 @@ class Settings extends Base {
 			$existing_settings = array();
 		}
 
+		// Check if video_slug is being changed to flush rewrite rules.
+		$old_video_slug = isset( $existing_settings['video']['video_slug'] ) ? $existing_settings['video']['video_slug'] : 'videos';
+		$new_video_slug = isset( $new_settings['video']['video_slug'] ) ? $new_settings['video']['video_slug'] : $old_video_slug;
+		$slug_changed   = $old_video_slug !== $new_video_slug;
+
 		// Merge the new settings with the existing ones.
 		$updated_settings = array_replace_recursive( $existing_settings, $new_settings );
 
 		// Save updated settings to the database.
 		update_option( 'rtgodam-settings', $updated_settings );
+
+		// Flush rewrite rules if video slug was changed.
+		if ( $slug_changed ) {
+			/**
+			 * Re-register video post type to ensure the new slug is applied.
+			 * Flush rewrite rules to apply the new slug.
+			 */
+			$video_cpt = GoDAM_Video::get_instance();
+			$video_cpt->register_post_type();
+			flush_rewrite_rules();
+		}
 
 		return new \WP_REST_Response(
 			array(
@@ -296,6 +315,7 @@ class Settings extends Base {
 				'watermark_url'          => esc_url_raw( $settings['video']['watermark_url'] ?? $default['video']['watermark_url'] ),
 				'watermark_image_id'     => absint( $settings['video']['watermark_image_id'] ?? $default['video']['watermark_image_id'] ),
 				'use_watermark_image'    => rest_sanitize_boolean( $settings['video']['use_watermark_image'] ?? $default['video']['use_watermark_image'] ),
+				'video_slug'             => sanitize_title( $settings['video']['video_slug'] ?? $default['video']['video_slug'] ),
 			),
 			'general'      => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),

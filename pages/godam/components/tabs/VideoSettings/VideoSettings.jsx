@@ -29,6 +29,7 @@ import APISettings from './APISettings.jsx';
 import VideoCompressQuality from './VideoCompressQuality.jsx';
 import VideoThumbnails from './VideoThumbnails.jsx';
 import VideoWatermark from './VideoWatermark.jsx';
+import VideoCPTSlug from './VideoCPTSlug.jsx';
 
 const VideoSettings = () => {
 	const dispatch = useDispatch();
@@ -94,6 +95,8 @@ const VideoSettings = () => {
 			) }
 
 			<APISettings setNotice={ setNotice } />
+
+			<VideoCPTSlug handleSettingChange={ handleSettingChange } />
 
 			{ hasValidAPIKey && (
 				<>
