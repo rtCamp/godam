@@ -679,9 +679,9 @@ class Video_Migration extends Base {
 			update_post_meta( $attachment_id, '_video_duration', intval( $video_info['playtime'] ) );
 		}
 
-		// Set the attachment attached file string so name is displayed.
-		if ( ! empty( $video_info['orignal_file_name'] ) ) {
-			update_post_meta( $attachment_id, '_wp_attached_file', $video_info['orignal_file_name'] );
+		// Set the attachment attached file.
+		if ( ! empty( $video_info['transcoded_mp4_url'] ) ) {
+			update_post_meta( $attachment_id, '_wp_attached_file', $video_info['transcoded_mp4_url'] );
 		}
 
 		// Change the guid of the attachment to the transcoded file path.
