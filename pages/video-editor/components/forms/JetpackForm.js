@@ -87,7 +87,7 @@ const JetpackForm = ( { layerID } ) => {
 				} ) );
 			}
 		}
-	}, [ changeFormID, dispatch, formsData, formsError, layer?.jp_id, layer?.id ] );
+	}, [ dispatch, formsData, formsError, layer?.jp_id, layer?.id ] );
 
 	// Ensure forms is always an array with proper structure
 	const forms = Array.isArray( jetpackForms )
