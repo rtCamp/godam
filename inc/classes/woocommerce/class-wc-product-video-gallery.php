@@ -46,6 +46,7 @@ class WC_Product_Video_Gallery {
 					'productsEP'       => '/wcproducts',
 					'linkVideoEP'      => '/link-video',
 					'unLinkVideoEP'    => '/unlink-video',
+					'timestampEP'	   => '/save-product-meta',
 					'videoCountEP'     => '/video-product-count',
 					'currentProductId' => get_the_ID(),
 					'defaultThumbnail' => RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png',

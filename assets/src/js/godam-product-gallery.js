@@ -169,7 +169,7 @@ document.addEventListener( 'click', async function( e ) {
 	}
 
 	const productVideo = playButton.previousElementSibling;
-	const videoId = productVideo?.classList.contains( 'godam-product-video' )
+	const videoId = productVideo && ( productVideo.classList.contains( 'godam-product-video' ) || productVideo.classList.contains( 'godam-product-video-thumbnail' ) )
 		? productVideo.getAttribute( 'data-video-id' )
 		: null;
 
@@ -235,41 +235,6 @@ document.addEventListener( 'click', async function( e ) {
 			container.classList.add( 'animate-video-loading' );
 		}
 
-		// try {
-		// 	const res = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ newVideoId }` );
-		// 	const data = await res.json();
-
-		// 	if ( data.status === 'success' && data.html ) {
-		// 		container.innerHTML = data.html;
-		// 		container.classList.remove( 'animate-video-loading' );
-
-		// 		const title = modal.querySelector( '.godam-video-title' );
-		// 		const date = modal.querySelector( '.godam-video-date' );
-		// 		if ( title ) {
-		// 			title.innerHTML = DOMPurify.sanitize( data.title || '' );
-		// 		}
-		// 		if ( date ) {
-		// 			date.textContent = data.date || '';
-		// 		}
-
-		// 		if ( typeof GODAMPlayer === 'function' ) {
-		// 			GODAMPlayer( modal );
-		// 			const player = modal.querySelector( '.video-js' );
-		// 			if ( player?.player ) {
-		// 				player.player.play();
-		// 			}
-		// 		}
-		// 	} else {
-		// 		container.innerHTML = `<div class="godam-error-message">Video could not be loaded.</div>`;
-		// 		container.classList.remove( 'animate-video-loading' );
-		// 	}
-		// } catch ( err ) {
-		// 	container.innerHTML = `<div class="godam-error-message">Video could not be loaded.</div>`;
-		// 	container.classList.remove( 'animate-video-loading' );
-		// } finally {
-		// 	modal.dataset.isLoading = 'false';
-		// }
-
 		try {
 			const res = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ newVideoId }` );
 			const data = await res.json();
@@ -283,7 +248,7 @@ document.addEventListener( 'click', async function( e ) {
 
 					try {
 						const json = JSON.parse( decoded );
-						json.aspectRatio = '9/16'; // update
+						json.aspectRatio = '9:16'; // update
 						json.playerSkin = 'Minimal'; // optionally change skin
 
 						// re-encode to match format
@@ -441,10 +406,11 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	document.querySelectorAll( '.main-cta' ).forEach( ( button ) => {
 		button.addEventListener( 'click', ( e ) => {
 			const wrapper = e.target.closest( '.godam-product-cta' );
-			const icon = e.target.textContent.trim();
+			const dropdown = e.target.dataset.productDropdown;
 			const productId = e.target.dataset.productId;
+			const cartAction = e.target.dataset.productCart;
 
-			if ( icon === '▾' ) {
+			if ( dropdown === '1' ) {
 				if ( activeButton === e.target ) {
 					if ( activeDropdown ) {
 						activeDropdown.remove();
@@ -479,11 +445,11 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
 				cloned.querySelectorAll( '.cta-add-to-cart' ).forEach( ( btn ) => {
 					btn.addEventListener( 'click', ( event ) => {
-						addToCart( event.target.dataset.productId );
+						addToCart( event.target.dataset.productId, e.target.dataset.productCart );
 					} );
 				} );
 			} else {
-				addToCart( productId );
+				addToCart( productId, cartAction );
 			}
 		} );
 	} );
@@ -498,73 +464,9 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		}
 	} );
 
-	// function addToCart( productId ) {
-	// 	console.log( godamVars.api_nonce );
-	// 	fetch( '/wp-json/wc/store/cart/add-item', {
-	// 		method: 'POST',
-	// 		headers: {
-	// 			'Content-Type': 'application/json',
-	// 			Nonce: godamVars.api_nonce,
-	// 		},
-	// 		body: JSON.stringify( {
-	// 			id: parseInt( productId ),
-	// 			quantity: 1,
-	// 		} ),
-	// 	} )
-	// 		.then( ( response ) => {
-	// 			if ( ! response.ok ) {
-	// 				throw new Error( 'Network response was not OK' );
-	// 			}
-	// 			return response.json();
-	// 		} )
-	// 		.then( ( data ) => {
-	// 			if ( data ) {
-	// 				console.log( 'yes' );
-	// 				// Open WooCommerce Mini Cart drawer
-	// 				// const openCartEvent = new CustomEvent( 'wc-blocks_mini-cart_toggle', {
-	// 				// 	detail: { isOpen: true },
-	// 				// } );
-	// 				// document.dispatchEvent( openCartEvent );
-	// 				refreshMiniCart();
-	// 				openMiniCartDrawer();
-	// 			}
-	// 		} )
-	// 		.catch( ( error ) => {
-	// 			console.error( 'Add to cart failed:', error );
-	// 		} );
-	// }
+	let cartTab = null;
 
-	// function openMiniCartDrawer() {
-	// 	const cartButton = document.querySelector( '.wc-block-mini-cart__button' );
-	// 	if ( cartButton ) {
-	// 		cartButton.click();
-	// 	}
-	// }
-
-	// function refreshMiniCart() {
-	// 	fetch( '/?wc-ajax=get_refreshed_fragments', {
-	// 		method: 'POST',
-	// 		headers: {
-	// 			'Content-Type': 'application/x-www-form-urlencoded',
-	// 		},
-	// 	} )
-	// 		.then( ( res ) => res.json() )
-	// 		.then( ( data ) => {
-	// 			// Replace with the selector you confirmed exists
-	// 			// const html = data.fragments[ 'div.widget_shopping_cart_content' ];
-	// 			const target = document.querySelector( 'div.wp-block-woocommerce-mini-cart-contents' );
-
-	// 			if ( target ) {
-	// 				// target.innerHTML = html;
-	// 				console.log( '✅ Mini cart content updated' );
-	// 				jQuery( document.body ).trigger( 'wc_fragments_loaded' );
-	// 			} else {
-	// 				console.warn( '⚠️ Mini cart container not found or HTML missing' );
-	// 			}
-	// 		} );
-	// }
-
-	function addToCart( productId ) {
+	function addToCart( productId, cartAction = 'mini-cart' ) {
 		fetch( '/?wc-ajax=add_to_cart', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -577,6 +479,18 @@ document.addEventListener( 'DOMContentLoaded', () => {
 					return;
 				}
 
+				// Skip mini cart if cartAction is redirect.
+				if ( cartAction === 'redirect' ) {
+					if ( cartTab && ! cartTab.closed ) {
+						cartTab.location.href = '/cart/';
+						cartTab.focus();
+					} else {
+						cartTab = window.open( '/cart/', '_blank' );
+					}
+					return;
+				}
+
+				// Show mini-cart.
 				const miniCartWrapper = getOrCreateMiniCartWrapper();
 				const themeCartFragment = data.fragments[ 'div.widget_shopping_cart_content' ];
 

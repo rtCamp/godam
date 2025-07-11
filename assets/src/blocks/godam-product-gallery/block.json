@@ -5,7 +5,7 @@
   "title": "GoDAM Product Gallery",
   "category": "media",
   "description": "Display a video gallery for selected WooCommerce products.",
-  "keywords": ["product", "gallery", "video", "godam"],
+  "keywords": ["product", "gallery", "video", "godam", "carousel", "grid"],
   "textdomain": "godam",
   "attributes": {
     "autoplay": {
@@ -56,14 +56,30 @@
       "type": "string",
       "default": "#ffffff"
     },
-    "arrowBgColor": { "type": "string", "default": "rgba(0,0,0,0.5)" },
-	  "arrowIconColor": { "type": "string", "default": "#ffffff" },
+    "carouselCardWidth": {
+      "type": "number",
+      "default": null
+    },
+    "arrowBgColor": {
+      "type": "string",
+      "default": "rgba(0,0,0,0.5)" 
+    },
+	  "arrowIconColor": {
+      "type": "string",
+      "default": "#ffffff"
+    },
     "arrowSize": {
       "type": "number",
       "default": 32
     },
-    "arrowBorderRadius": { "type": "number", "default": 4 },
-    "arrowVisibility": { "type": "string", "default": "always" },
+    "arrowBorderRadius": {
+      "type": "number",
+      "default": 4
+    },
+    "arrowVisibility": {
+      "type": "string",
+      "default": "always"
+    },
     "ctaEnabled": {
       "type": "boolean",
       "default": false
@@ -99,6 +115,10 @@
     "ctaButtonBorderRadius": {
       "type": "number",
       "default": 30
+    },
+    "ctaCartAction": {
+      "type": "string",
+      "default": "mini-cart"
     }
   },
   "supports": {

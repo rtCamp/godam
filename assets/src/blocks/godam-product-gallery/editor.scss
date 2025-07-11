@@ -10,45 +10,38 @@
 	width: 100%;
 }
 
+/* Product Video Item */
 .godam-editor-product-video-item {
 	flex-shrink: 0;
 	scroll-snap-align: start;
-	background: #f7f7f7;
-	padding: 0.625rem;
-	box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
 
 	// 16:9 Widescreen
 	&.view-16-9 .godam-editor-product-video-thumbnail {
 		aspect-ratio: 16 / 9;
-		min-width: 40rem;
 		max-width: 100%;
 	}
 
 	// 4:3 Standard
 	&.view-4-3 .godam-editor-product-video-thumbnail {
 		aspect-ratio: 4 / 3;
-		min-width: 19.5rem;
 		max-width: 100%;
 	}
 
     // 9:16 Reels/Tiktok
     &.view-9-16 .godam-editor-product-video-thumbnail {
         aspect-ratio: 9 / 16;
-        min-width: 16.5rem;
         max-width: 100%;
     }
 
 	// 3:4 Portrait
 	&.view-3-4 .godam-editor-product-video-thumbnail {
 		aspect-ratio: 3 / 4;
-		min-width: 16.5rem;
 		max-width: 100%;
 	}
 
 	// 1:1 Square
 	&.view-1-1 .godam-editor-product-video-thumbnail {
 		aspect-ratio: 1 / 1;
-		min-width: 17rem;
 		max-width: 100%;
 	}
 }
@@ -88,6 +81,7 @@
 	color: #333;
 }
 
+/* Unmute Button */
 .godam-unmute-button {
 	position: absolute;
 	bottom: 10px;
@@ -172,6 +166,7 @@
 	border: 1px solid #ddd;
 	border-radius: 8px;
 	position: relative;
+	box-sizing: border-box;
 
 	.cta-thumbnail {
 		width: 80px;

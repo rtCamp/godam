@@ -70,14 +70,16 @@ class GoDAM_Product_Gallery {
 	}
 
 	/**
-	 * Render the product gallery shortcode.
+	 * Render callback for the [godam_product_gallery] shortcode.
+	 *
+	 * Outputs a dynamic product video gallery based on provided or default attributes.
 	 *
 	 * @param array $atts Shortcode attributes.
-	 * @return string HTML output of the gallery.
+	 * @return string Rendered HTML for the gallery.
 	 */
 	public function render( $atts ) {
 
-		// Add filter for default attributes.
+		// 1. Define default attributes and allow filtering. Add filter for default attributes.
 		$default_atts = apply_filters(
 			'rtgodam_product_gallery_default_attributes',
 			array(
@@ -94,6 +96,7 @@ class GoDAM_Product_Gallery {
 				'unmute_button_enabled'       => '',
 				'unmute_button_bg_color'      => 'rgba(0,0,0,0.4)',
 				'unmute_button_icon_color'    => '#ffffff',
+				'carousel_card_width'         => 21.5,
 				'arrow_bg_color'              => 'rgba(0,0,0,0.5)',
 				'arrow_icon_color'            => '#ffffff',
 				'arrow_size'                  => 32,
@@ -108,20 +111,23 @@ class GoDAM_Product_Gallery {
 				'cta_product_price_font_size' => 14,
 				'cta_product_name_color'      => '#000000',
 				'cta_product_price_color'     => '#333333',
+				'cta_cart_action'             => 'mini-cart',
 			)
 		);
 
+		// 2. Merge provided attributes with defaults.
 		$atts = shortcode_atts(
 			$default_atts,
 			$atts,
 			'godam_product_gallery'
 		);
 
-		// Add filter for processed attributes.
+		// 3. Allow filtering of final attributes. Add filter for processed attributes.
 		$atts = apply_filters( 'rtgodam_product_gallery_attributes', $atts );
 
 		$product_ids = array();
 
+		// 4. Sanitize product IDs.
 		if ( ! empty( $atts['product'] ) ) {
 			// Logic for "random" argument.
 			if ( strtolower( $atts['product'] ) === 'random' ) {
@@ -132,7 +138,7 @@ class GoDAM_Product_Gallery {
 						'post_status'    => 'publish',
 						'fields'         => 'ids',
 						'posts_per_page' => -1,
-						'meta_query'     => array(
+						'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 							array(
 								'key'     => '_video_parent_product_id',
 								'compare' => 'EXISTS',
@@ -149,6 +155,7 @@ class GoDAM_Product_Gallery {
 			}
 		}
 
+		// 5. Build WP_Query args for fetching videos.
 		$args = array(
 			'post_type'      => 'attachment',
 			'post_mime_type' => 'video',
@@ -172,6 +179,7 @@ class GoDAM_Product_Gallery {
 			);
 		}
 
+		// 6. Fetch videos.
 		$video_posts = get_posts( $args );
 
 		ob_start();
@@ -181,6 +189,9 @@ class GoDAM_Product_Gallery {
 			// Add action before gallery output.
 			do_action( 'rtgodam_product_gallery_before_output', $video_posts, $atts );
 
+			/**
+			 * Start of godam-product-gallery rendering.
+			 */
 			$alignment_class = ! empty( $atts['align'] ) ? ' align' . $atts['align'] : '';
 
 			echo '<div class="godam-product-gallery layout-' . esc_attr( $atts['layout'] ) . 
@@ -193,7 +204,7 @@ class GoDAM_Product_Gallery {
 			
 				printf(
 					'<button class="carousel-arrow left %s" style="background:%s;color:%s;border-radius:%dpx;width:%dpx;height:%dpx;font-size:%dpx;" aria-label="%s">&#10094;</button>',
-					esc_attr( $atts['arrow_visibility'] === 'hover' ? 'hide-until-hover' : '' ),
+					esc_attr( 'hover' ? 'hide-until-hover' : '' === $atts['arrow_visibility'] ),
 					esc_attr( $this->hex_to_rgba( $atts['arrow_bg_color'] ) ),
 					esc_attr( $atts['arrow_icon_color'] ),
 					intval( $atts['arrow_border_radius'] ),
@@ -224,18 +235,30 @@ class GoDAM_Product_Gallery {
 
 				$video_attached_products = get_post_meta( $video_id, '_video_parent_product_id', false );
 
-				if ( ! empty( $video_url ) ) {
+				echo '<div class="godam-product-video-item view-' . esc_attr( $atts['view'] ) . '">';
 
-					echo '<div class="godam-product-video-item view-' . esc_attr( $atts['view'] ) . '">';
+				if ( ! empty( $video_url ) ) {
 
 					echo '<div class="godam-video-wrapper">';
 
 					if ( ! $atts['autoplay'] ) {
-						echo '<div class="godam-product-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '">';
+						// Thumbnail video.
+						printf(
+							'<div class="godam-product-video-thumbnail" data-video-id="%s" style="width:%srem;">',
+							esc_attr( $video_id ),
+							esc_attr( $atts['carousel_card_width'] )
+						);
 						echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
-						echo '</div>';
+						echo '</div>'; // .godam-product-video-thumbnail ends.
 					} else {
-						echo '<video class="godam-product-video" data-video-id="' . esc_attr( $video_id ) . '" src="' . esc_url( $video_url ) . '"' . $video_attrs . ' playsinline></video>';
+						// Autoplay video.
+						printf(
+							'<video class="godam-product-video" data-video-id="%s" src="%s" %s playsinline style="width:%srem;"></video>',
+							esc_attr( $video_id ),
+							esc_url( $video_url ),
+							esc_attr( $video_attrs ),
+							esc_attr( $atts['carousel_card_width'] )
+						);
 					}
 
 					if ( $atts['play_button_enabled'] ) {
@@ -247,56 +270,52 @@ class GoDAM_Product_Gallery {
                                 </svg>
                             </button>',
 							esc_attr( $this->hex_to_rgba( $atts['play_button_bg_color'] ) ),
-							$atts['play_button_size'],
-							$atts['play_button_radius'],
+							esc_attr( $atts['play_button_size'] ),
+							esc_attr( $atts['play_button_radius'] ),
 							esc_attr( $atts['play_button_icon_color'] ),
 							esc_attr__( 'Play video', 'godam' ),
 							intval( $atts['play_button_size'] / 2 )
 						);
 
 					} elseif ( $atts['autoplay'] ) {
-							printf(
-								'<button class="godam-unmute-button" style="background:%1$s;color:%2$s;width:30px;height:30px;font-size:16px;border-radius:50%%;" aria-label="%3$s">
-                                    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-                                        <path d="M5 9v6h4l5 5V4l-5 5H5z" />
-                                        <g transform="translate(17, 9)">
-                                            <line x1="0" y1="0" x2="6" y2="6" stroke="currentColor" stroke-width="2" />
-                                            <line x1="0" y1="6" x2="6" y2="0" stroke="currentColor" stroke-width="2" />
-                                        </g>
-                                    </svg>
-                                </button>',
-								esc_attr( $this->hex_to_rgba( $atts['unmute_button_bg_color'] ) ),
-								esc_attr( $atts['unmute_button_icon_color'] ),
-								esc_attr__( 'Unmute video', 'godam' )
-							);
+						// Unmute button overlay.
+						printf(
+							'<button class="godam-unmute-button" style="background:%1$s;color:%2$s;width:30px;height:30px;font-size:16px;border-radius:50%%;" aria-label="%3$s">
+                                <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                                    <path d="M5 9v6h4l5 5V4l-5 5H5z" />
+                                    <g transform="translate(17, 9)">
+                                        <line x1="0" y1="0" x2="6" y2="6" stroke="currentColor" stroke-width="2" />
+                                        <line x1="0" y1="6" x2="6" y2="0" stroke="currentColor" stroke-width="2" />
+                                    </g>
+                                </svg>
+                            </button>',
+							esc_attr( $this->hex_to_rgba( $atts['unmute_button_bg_color'] ) ),
+							esc_attr( $atts['unmute_button_icon_color'] ),
+							esc_attr__( 'Unmute video', 'godam' )
+						);
 					}
 
-					echo '</div>';
+					echo '</div>'; // .godam-video-wrapper ends.
 
-					if ( $atts['cta_enabled'] && $atts['cta_display_position'] === 'below' ) {
-						$video_width_map = array(
-							'16-9' => '42rem',
-							'4-3'  => '21.5rem',
-							'9-16' => '18.5rem',
-							'3-4'  => '18.5rem',
-							'1-1'  => '19rem',
-						);
-					
-						$cta_width   = isset( $video_width_map[ $atts['view'] ] ) ? $video_width_map[ $atts['view'] ] : '100%';
+					if ( $atts['cta_enabled'] && 'below' === $atts['cta_display_position'] ) {
+
 						$product_ids = array_map( 'absint', (array) $video_attached_products );
 
 						$main_product = wc_get_product( $product_ids[0] );
-						// $other_products = array_slice( $product_ids, 1 );
+
 						$has_dropdown = count( $video_attached_products ) > 1;
 
 						echo '<div class="godam-product-cta-wrapper">';
 					
 						if ( $main_product ) {
-							echo '<div class="godam-product-cta" style="width:' . esc_attr( $cta_width ) . ';">';
+							printf(
+								'<div class="godam-product-cta" style="width:%srem;">',
+								esc_attr( $atts['carousel_card_width'] )
+							);
 
 								echo '<div class="cta-thumbnail">';
-									echo $main_product->get_image( 'woocommerce_thumbnail' );
-								echo '</div>';
+									echo wp_kses_post( $main_product->get_image( 'woocommerce_thumbnail' ) );
+								echo '</div>'; // .cta-thumbnail ends.
 
 								echo '<div class="cta-details">';
 									echo '<p class="product-title" style="';
@@ -309,21 +328,21 @@ class GoDAM_Product_Gallery {
 										echo 'font-size:' . intval( $atts['cta_product_price_font_size'] ) . 'px;';
 										echo 'color:' . esc_attr( $atts['cta_product_price_color'] ) . ';';
 										echo 'margin:4px 0 0;';
-									echo '">' . $main_product->get_price_html() . '</p>';
-								echo '</div>';
+									echo '">' . wp_kses_post( $main_product->get_price_html() ) . '</p>';
+								echo '</div>'; // .cta-details ends
 
-								echo '<button class="cta-add-to-cart main-cta" data-product-id="' . esc_attr( $main_product->get_id() ) . '" style="background-color:' . esc_attr( $atts['cta_button_bg_color'] ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">';
-									echo $has_dropdown ? '▾' : '+';
+								echo '<button class="cta-add-to-cart main-cta" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-dropdown="' . esc_attr( $has_dropdown ) . '" data-product-id="' . esc_attr( $main_product->get_id() ) . '" style="background-color:' . esc_attr( $atts['cta_button_bg_color'] ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">';
+									echo $has_dropdown ? '&#9662;' : '+';
 								echo '</button>';
 
-								// Detached Dropdown
+							// Detached Dropdown for more products.
 							if ( $has_dropdown ) {
 								echo '<div class="cta-dropdown">';
 								foreach ( $product_ids as $product_id ) {
 									$product = wc_get_product( $product_id );
 									if ( $product ) {
 										echo '<div class="cta-dropdown-item">';
-											echo '<div class="cta-thumbnail-small">' . $product->get_image( 'woocommerce_gallery_thumbnail' ) . '</div>';
+											echo '<div class="cta-thumbnail-small">' . wp_kses_post( $product->get_image( 'woocommerce_gallery_thumbnail' ) ) . '</div>';
 											echo '<div class="cta-product-info">';
 												echo '<p class="product-title" style="';
 												echo 'font-size:' . intval( $atts['cta_product_name_font_size'] ) . 'px;';
@@ -333,34 +352,35 @@ class GoDAM_Product_Gallery {
 												echo '<p class="product-price" style="';
 												echo 'font-size:' . intval( $atts['cta_product_price_font_size'] ) . 'px;';
 												echo 'color:' . esc_attr( $atts['cta_product_price_color'] ) . ';';
-												echo 'margin:4px 0 0;" >' . $product->get_price_html() . '</p>';
-											echo '</div>';
-											echo '<button class="cta-add-to-cart" data-product-id="' . esc_attr( $product_id ) . '"style="background-color:' . esc_attr( $atts['cta_button_bg_color'] ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">+</button>';
-										echo '</div>';
+												echo 'margin:4px 0 0;" >' . wp_kses_post( $product->get_price_html() ) . '</p>';
+											echo '</div>'; // .cta-product-info ends.
+											echo '<button class="cta-add-to-cart" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-id="' . esc_attr( $product_id ) . '"style="background-color:' . esc_attr( $atts['cta_button_bg_color'] ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">+</button>';
+										echo '</div>'; // .cta-dropdown-item ends.
 									}
 								}
-								echo '</div>';
+								echo '</div>'; // .cta-dropdown ends.
 							}
 
-							echo '</div>';
+							echo '</div>'; // .godam-product-cta ends.
 						}
 
-						echo '</div>';
-					}                   
-
-					echo '</div>';
+						echo '</div>'; // .godam-product-cta-wrapper ends.
+					}               
 				}
+
+				echo '</div>'; // .godam-product-video-item ends.
 
 				// Add action after each video item.
 				do_action( 'rtgodam_product_gallery_after_video_item', $video, $atts );
 			}
 
 			if ( 'carousel' === $atts['layout'] ) {
-				echo '</div>'; // .carousel-track
+				echo '</div>'; // .carousel-track ends.
 			
+				// Right Scroll Arrow.
 				printf(
 					'<button class="carousel-arrow right %s" style="background:%s;color:%s;border-radius:%dpx;width:%dpx;height:%dpx;font-size:%dpx;" aria-label="%s">&#10095;</button>',
-					esc_attr( $atts['arrow_visibility'] === 'hover' ? 'hide-until-hover' : '' ),
+					esc_attr( 'hover' ? 'hide-until-hover' : '' === $atts['arrow_visibility'] ),
 					esc_attr( $this->hex_to_rgba( $atts['arrow_bg_color'] ) ),
 					esc_attr( $atts['arrow_icon_color'] ),
 					intval( $atts['arrow_border_radius'] ),
@@ -370,10 +390,10 @@ class GoDAM_Product_Gallery {
 					esc_attr__( 'Scroll right', 'godam' )
 				);
 			
-				echo '</div>'; // .godam-carousel-wrapper
+				echo '</div>'; // .godam-carousel-wrapper ends.
 			}
 			
-			echo '</div>'; // .godam-product-gallery
+			echo '</div>'; // .godam-product-gallery ends.
 
 			// Add action after gallery output.
 			do_action( 'rtgodam_product_gallery_after_output', $video_posts, $atts );
@@ -385,6 +405,18 @@ class GoDAM_Product_Gallery {
 		return ob_get_clean();
 	}
 
+	/**
+	 * Helper function: Converts a hex color code to an RGB or RGBA string.
+	 *
+	 * This function handles hex codes in the following formats:
+	 * - 8-digit hex (e.g., #RRGGBBAA) → returns `rgba(r, g, b, a)`
+	 * - 6-digit hex (e.g., #RRGGBB)   → returns `rgb(r, g, b)`
+	 * - If the input is already in `rgb(...)` or `rgba(...)` format, it is returned as-is.
+	 * - Any other format is returned with the '#' prefix unchanged.
+	 *
+	 * @param string $hex The color value in hex, rgb, or rgba format.
+	 * @return string The color value converted to `rgb(...)`, `rgba(...)`, or unchanged.
+	 */
 	private function hex_to_rgba( $hex ) {
 
 		// If already in rgba or rgb format, return as is.

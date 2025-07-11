@@ -130,6 +130,37 @@ class WC extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/save-product-meta',
+				'args'      => array(
+					array(
+						'methods'             => \WP_REST_Server::CREATABLE,
+						'callback'            => array( $this, 'save_product_meta' ),
+						'permission_callback' => function ( \WP_REST_Request $req ) {
+							$product_id = (int) $req->get_param( 'product_id' );
+							return current_user_can( 'edit_post', $product_id );
+						},
+						'args'                => array(
+							'product_id' => array(
+								'required'          => true,
+								'type'              => 'integer',
+								'sanitize_callback' => 'absint',
+							),
+							'meta_key'   => array(
+								'required'          => true,
+								'type'              => 'string',
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+							'meta_value' => array(
+								'required'          => true,
+								'type'              => 'string',
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+						),
+					),
+				),
+			),          
 		);
 	}
 
@@ -580,5 +611,30 @@ class WC extends Base {
 		delete_post_meta( $attachment_id, '_video_parent_product_id', $product_id );
 
 		return rest_ensure_response( array( 'success' => true ) );
+	}
+
+	/**
+	 * Save custom meta (like timestamp) for a product.
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function save_product_meta( \WP_REST_Request $request ) {
+		$product_id = (int) $request->get_param( 'product_id' );
+		$meta_key   = sanitize_text_field( $request->get_param( 'meta_key' ) );
+		$meta_value = sanitize_text_field( $request->get_param( 'meta_value' ) );
+
+		if ( empty( $product_id ) || empty( $meta_key ) ) {
+			return new \WP_Error( 'missing_params', 'Product ID and meta key are required.', array( 'status' => 400 ) );
+		}
+
+		update_post_meta( $product_id, $meta_key, $meta_value );
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => 'Meta saved successfully.',
+			) 
+		);
 	}
 }

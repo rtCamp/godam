@@ -25,6 +25,7 @@ $attributes = wp_parse_args(
 		'unmuteButtonEnabled'     => false,
 		'unmuteButtonBgColor'     => 'rgba(0,0,0,0.4)',
 		'unmuteButtonIconColor'   => '#ffffff',
+		'carouselCardWidth'       => 21.5,
 		'arrowBgColor'            => 'rgba(0,0,0,0.5)',
 		'arrowIconColor'          => '#ffffff',
 		'arrowSize'               => 32,
@@ -39,11 +40,23 @@ $attributes = wp_parse_args(
 		'ctaProductPriceFontSize' => 14,
 		'ctaProductNameColor'     => '#000000',
 		'ctaProductPriceColor'    => '#333333',
+		'ctaCartAction'           => 'mini-cart',
 	)
 );
 
 if ( ! function_exists( 'sanitize_rgba_color' ) ) {
 
+	/**
+	 * Sanitizes a color value to ensure it is a valid RGBA or HEX color string.
+	 *
+	 * This function accepts 8-digit hex (`#RRGGBBAA`), 6-digit hex (`#RRGGBB`),
+	 * and `rgba(R, G, B, A)` formats. If the input is invalid or an array,
+	 * it returns an empty string.
+	 *
+	 * @param string $color The color value to sanitize.
+	 *
+	 * @return string Sanitized color string if valid, otherwise an empty string.
+	 */
 	function sanitize_rgba_color( $color ) {
 		if ( empty( $color ) || is_array( $color ) ) {
 			return '';
@@ -61,7 +74,7 @@ if ( ! function_exists( 'sanitize_rgba_color' ) ) {
 			return $color;
 		}
 
-		// rgba().
+		// rgba data.
 		if ( preg_match( '/^rgba\((\d{1,3}), ?(\d{1,3}), ?(\d{1,3}), ?(0|1|0?\.\d+)\)$/', $color ) ) {
 			return $color;
 		}
@@ -85,6 +98,7 @@ $shortcode_atts = array(
 	'unmute_button_enabled'       => filter_var( $attributes['unmuteButtonEnabled'], FILTER_VALIDATE_BOOLEAN ),
 	'unmute_button_bg_color'      => sanitize_rgba_color( $attributes['unmuteButtonBgColor'] ),
 	'unmute_button_icon_color'    => sanitize_hex_color( $attributes['unmuteButtonIconColor'] ),
+	'carousel_card_width'         => intval( $attributes['carouselCardWidth'] ),
 	'arrow_bg_color'              => sanitize_rgba_color( $attributes['arrowBgColor'] ),
 	'arrow_icon_color'            => sanitize_hex_color( $attributes['arrowIconColor'] ),
 	'arrow_size'                  => intval( $attributes['arrowSize'] ),
@@ -99,6 +113,7 @@ $shortcode_atts = array(
 	'cta_product_price_font_size' => intval( $attributes['ctaProductPriceFontSize'] ),
 	'cta_product_name_color'      => sanitize_hex_color( $attributes['ctaProductNameColor'] ),
 	'cta_product_price_color'     => sanitize_hex_color( $attributes['ctaProductPriceColor'] ),
+	'cta_cart_action'             => sanitize_text_field( $attributes['ctaCartAction'] ),
 );
 
 // Convert attributes to shortcode string.

@@ -9,7 +9,10 @@ import {
 	TextControl,
 	Button,
 	Spinner,
+	Tooltip,
+	Icon,
 } from '@wordpress/components';
+import { info } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
@@ -45,7 +48,7 @@ jQuery( document ).ready( function( $ ) {
 					count > 1 ? 's' : '',
 				);
 
-				$button.html( `${ tagIconSVG }${ productText }` );
+				$button.html( `${ tagIconSVG }&nbsp;${ productText }` );
 
 				$button.attr(
 					'aria-label',
@@ -117,6 +120,8 @@ jQuery( document ).ready( function( $ ) {
 					if ( product.id === CURRENT_ID ) {
 						return;
 					}
+
+					// Save link between product and video.
 					apiFetch( {
 						path: `${ RTGodamVideoGallery.namespace }${ RTGodamVideoGallery.linkVideoEP }`,
 						method: 'POST',
@@ -128,6 +133,24 @@ jQuery( document ).ready( function( $ ) {
 					} ).catch( () => {
 						// eslint-disable-next-line no-alert
 						window.alert( __( 'Failed to link video to product', 'godam' ) + ' ' + product.id );
+					} );
+
+					// Get timestamp input value for the product
+					const input = document.getElementById( `timestamp_${ product.id }` );
+					const timestampValue = input ? input.value.trim() : '';
+
+					// Save timestamp as product meta.
+					apiFetch( {
+						path: `${ RTGodamVideoGallery.namespace }${ RTGodamVideoGallery.timestampEP }`,
+						method: 'POST',
+						data: {
+							product_id: product.id,
+							meta_key: `godam_product_timestamp_meta_${ attachmentId }`,
+							meta_value: timestampValue,
+						},
+					} ).catch( () => {
+						// eslint-disable-next-line no-alert
+						window.alert( __( `Failed to save timestamp for product`, 'godam' ) );
 					} );
 				} );
 
@@ -236,7 +259,6 @@ jQuery( document ).ready( function( $ ) {
 												alignItems: 'center',
 												width: '110px',
 												minWidth: '100px',
-												height: '110px',
 												border: '1px solid #ddd',
 												borderRadius: '6px',
 												padding: '8px',
@@ -308,13 +330,75 @@ jQuery( document ).ready( function( $ ) {
 											>
 												{ p.name }
 											</span>
+											<div className="godam-product-timestamp-input" style={ {
+												textAlign: 'center',
+												marginTop: '8px',
+											} }>
+												<input
+													type="text"
+													name={ `timestamp_${ p.id }` }
+													id={ `timestamp_${ p.id }` }
+													placeholder="e.g. 01:23"
+													style={ {
+														fontSize: '13px',
+														width: '86%',
+														border: '1px solid #ddd',
+														borderRadius: '10px',
+														boxSizing: 'border-box',
+														outline: 'none',
+														backgroundColor: '#fff',
+													} }
+												/>
+											</div>
 										</div>
 									) ) }
 							</div>
 						</div>
 					) }
 
-					<div style={ { marginTop: '1rem' } }>
+					<div style={ {
+						display: 'flex',
+						justifyContent: 'space-between',
+						alignItems: 'center',
+						marginTop: '1rem',
+						marginBottom: '1rem',
+					} }>
+						<div style={ { display: 'flex', alignItems: 'center' } }>
+							<Button
+								variant="secondary"
+								onClick={ () => {
+									window.open( url, '_blank' );
+								} }
+								className="components-button godam-button is-secondary godam-margin-top-no-bottom wc-godam-product-admin"
+								aria-label={ __( 'Watch video in new tab', 'godam' ) }
+							>
+								{ __( 'Watch Video', 'godam' ) }
+							</Button>
+
+							<Tooltip
+								text={ __( 'Opens video in a new tab. Tag products using timestamps when they appear.', 'godam' ) }
+								placement="top-end"
+							>
+								<span
+									style={ {
+										display: 'inline-flex',
+										alignItems: 'center',
+										marginLeft: '2px',
+									} }
+								>
+									<Icon
+										icon={ info }
+										style={ {
+											cursor: 'pointer',
+											width: '21px',
+											height: '21px',
+											fill: '#ab3a6c',
+										} }
+									/>
+								</span>
+							</Tooltip>
+						</div>
+
 						<Button
 							variant="primary"
 							disabled={ ! selected.length }

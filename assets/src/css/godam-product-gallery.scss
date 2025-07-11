@@ -22,7 +22,7 @@
 	&.view-16-9 .godam-product-video-thumbnail,
 	&.view-16-9 video {
 		aspect-ratio: 16 / 9;
-		width: 42rem;
+		// width: 42rem;
 		max-width: 100%;
         height: auto;
 	}
@@ -31,7 +31,7 @@
 	&.view-4-3 .godam-product-video-thumbnail,
 	&.view-4-3 video {
 		aspect-ratio: 4 / 3;
-		width: 21.5rem;
+		// width: 21.5rem;
 		max-width: 100%;
         height: auto;
 	}
@@ -40,7 +40,7 @@
 	&.view-9-16 .godam-product-video-thumbnail,
 	&.view-9-16 video {
 		aspect-ratio: 9 / 16;
-        width: 18.5rem;
+        // width: 18.5rem;
         max-width: 100%;
         height: auto;
 	}
@@ -49,7 +49,7 @@
 	&.view-3-4 .godam-product-video-thumbnail,
 	&.view-3-4 video {
 		aspect-ratio: 3 / 4;
-		width: 18.5rem;
+		// width: 18.5rem;
 		max-width: 100%;
         height: auto;
 	}
@@ -58,7 +58,7 @@
 	&.view-1-1 .godam-product-video-thumbnail,
 	&.view-1-1 video {
 		aspect-ratio: 1 / 1;
-		width: 19rem;
+		// width: 19rem;
 		max-width: 100%;
         height: auto;
 	}

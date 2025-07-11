@@ -1,3 +1,6 @@
+// eslint-disable-next-line eslint-comments/disable-enable-pair
+/* eslint-disable react-hooks/exhaustive-deps */
+
 /**
  * WordPress dependencies
  */
@@ -18,6 +21,15 @@ import { useMemo, useRef, useEffect, useCallback, Platform } from '@wordpress/el
  */
 import './editor.scss';
 
+/**
+ * The edit function describes the structure of your block in the context of the
+ * editor. This represents what the editor will render when the block is used.
+ *
+ * @param {Object}   props               Block props.
+ * @param {Object}   props.attributes    Block attributes.
+ * @param {Function} props.setAttributes Function to set block attributes.
+ * @return {WPElement} Element to render.
+ */
 export default function Edit( { attributes, setAttributes } ) {
 	const {
 		autoplay,
@@ -29,9 +41,10 @@ export default function Edit( { attributes, setAttributes } ) {
 		playButtonIconColor,
 		playButtonSize,
 		playButtonBorderRadius,
-		unmuteButtonEnabled,
+		// unmuteButtonEnabled,
 		unmuteButtonBgColor,
 		unmuteButtonIconColor,
+		carouselCardWidth,
 		arrowBgColor,
 		arrowIconColor,
 		arrowSize,
@@ -46,10 +59,15 @@ export default function Edit( { attributes, setAttributes } ) {
 		ctaProductPriceFontSize,
 		ctaProductNameColor,
 		ctaProductPriceColor,
+		ctaCartAction,
 	} = attributes;
 
 	const blockProps = useBlockProps();
 
+	// Refrence to preview view value.
+	const previousViewRef = useRef( view );
+
+	// Help text warning for autoplay usage and callback for Autoplay settings.
 	const autoPlayHelpText = __( 'Autoplay may cause usability issues for some users.', 'godam' );
 	const getAutoplayHelp = Platform.select( {
 		web: useCallback( ( checked ) => {
@@ -58,6 +76,7 @@ export default function Edit( { attributes, setAttributes } ) {
 		native: autoPlayHelpText,
 	} );
 
+	// Factory to generate toggle attribute function for autoplay.
 	const toggleFactory = useMemo( () => {
 		const toggleAttribute = ( attribute ) => {
 			return ( newValue ) => {
@@ -70,49 +89,79 @@ export default function Edit( { attributes, setAttributes } ) {
 		};
 	}, [] );
 
+	// Ensure play button is shown when autoplay is off.
 	useEffect( () => {
 		if ( ! autoplay && ! playButtonEnabled ) {
 			setAttributes( { playButtonEnabled: true } );
 		}
 	}, [ autoplay ] );
 
+	// Update card width on view change.
+	useEffect( () => {
+		const defaultWidth = parseFloat( getCTAWidthForView( view ) );
+
+		// If view has changed, reset to default width, else do nothing.
+		if ( previousViewRef.current !== view ) {
+			setAttributes( { carouselCardWidth: defaultWidth } );
+			previousViewRef.current = view;
+		}
+	}, [ view ] );
+
 	const scrollRef = useRef();
 
+	// Scroll Carousel left.
 	const scrollLeft = () => {
 		if ( scrollRef.current ) {
 			scrollRef.current.scrollBy( { left: -300, behavior: 'smooth' } );
 		}
 	};
 
+	// Scroll Carousel right.
 	const scrollRight = () => {
 		if ( scrollRef.current ) {
 			scrollRef.current.scrollBy( { left: 300, behavior: 'smooth' } );
 		}
 	};
 
+	/**
+	 * Returns default CTA width (in rem) based on selected view ratio.
+	 *
+	 * @param {string} v - View ratio (e.g., '16-9', '4-3', etc.).
+	 * @return {string} CTA width in rem units as a string.
+	 */
 	const getCTAWidthForView = ( v ) => {
 		switch ( v ) {
 			case '16-9':
-				return '40rem';
+				return '42';
 			case '4-3':
-				return '19.5rem';
+				return '21.5';
 			case '9-16':
 			case '3-4':
-				return '16.5rem';
+				return '18.5';
 			case '1-1':
-				return '17rem';
-			default:
-				return '100%';
+				return '19';
 		}
 	};
 
+	/**
+	 * Generate sample videos for preview in editor.
+	 */
 	const GoDAMVideos = Array.from( { length: 10 }, ( _, i ) => {
 		return (
-			<div className={ `godam-editor-product-video-item view-${ view }` } key={ i }>
+			<div
+				className={ `godam-editor-product-video-item view-${ view }` }
+				key={ i }
+				style={ {
+					minWidth: '12.5rem',
+					width: `${ carouselCardWidth }rem`,
+				} }
+			>
 				<div className="godam-editor-product-video-thumbnail">
 					<span className="godam-editor-product-video-label">
 						{ __( 'Product Video', 'godam' ) }
 					</span>
+
+					{ /* Play button overlay */ }
 					{ playButtonEnabled && (
 						<button
 							className="godam-play-button"
@@ -139,6 +188,8 @@ export default function Edit( { attributes, setAttributes } ) {
 							</svg>
 						</button>
 					) }
+
+					{ /* Unmute button when autoplay is enabled and play button is hidden */ }
 					{ autoplay && ! playButtonEnabled && (
 						<button
 							className="godam-unmute-button"
@@ -169,11 +220,13 @@ export default function Edit( { attributes, setAttributes } ) {
 						</button>
 					) }
 				</div>
+
+				{ /* CTA Display below video */ }
 				{ ctaEnabled && ctaDisplayPosition === 'below' && (
 					<div
 						className="godam-product-cta"
 						style={ {
-							width: getCTAWidthForView( view ),
+							width: `${ carouselCardWidth }rem`,
 						} }
 					>
 						<div className="cta-thumbnail" />
@@ -185,7 +238,7 @@ export default function Edit( { attributes, setAttributes } ) {
 									color: ctaProductNameColor,
 								} }
 							>
-								Sample Product Name That Is Too Long
+								{ __( 'Sample Product Name That Is Too Long', 'godam' ) }
 							</div>
 							<p
 								className="product-price"
@@ -194,7 +247,7 @@ export default function Edit( { attributes, setAttributes } ) {
 									color: ctaProductPriceColor,
 								} }
 							>
-								$99.99
+								{ __( '$99.99', 'your-text-domain' ) }
 							</p>
 						</div>
 						<button
@@ -204,9 +257,9 @@ export default function Edit( { attributes, setAttributes } ) {
 								color: ctaButtonIconColor,
 								borderRadius: `${ ctaButtonBorderRadius }%`,
 							} }
-							aria-label="Add to cart"
+							aria-label={ __( 'Add to cart', 'godam' ) }
 						>
-							+
+							<span aria-hidden="true">+</span>
 						</button>
 					</div>
 				) }
@@ -215,6 +268,7 @@ export default function Edit( { attributes, setAttributes } ) {
 		);
 	} );
 
+	// Render block markup and controls.
 	return (
 		<>
 			<InspectorControls>
@@ -271,6 +325,15 @@ export default function Edit( { attributes, setAttributes } ) {
 
 				{ layout === 'carousel' && (
 					<PanelBody title={ __( 'Carousel Settings', 'godam' ) } initialOpen={ false }>
+
+						<RangeControl
+							label={ __( 'Card Size (rem)', 'godam' ) }
+							value={ carouselCardWidth ?? parseFloat( getCTAWidthForView( view ) ) }
+							onChange={ ( value ) => setAttributes( { carouselCardWidth: value } ) }
+							min={ 12.5 }
+							max={ 70.5 }
+						/>
+
 						<p><strong>{ __( 'Arrow Background Color', 'godam' ) }</strong></p>
 						<ColorPalette
 							enableAlpha
@@ -435,13 +498,22 @@ export default function Edit( { attributes, setAttributes } ) {
 							min={ 0 }
 							max={ 50 }
 						/>
+
+						<SelectControl
+							label={ __( 'After Add to Cart Action', 'godam' ) }
+							value={ ctaCartAction }
+							options={ [
+								{ label: __( 'Open Mini Cart', 'godam' ), value: 'mini-cart' },
+								{ label: __( 'Redirect to Cart Page', 'godam' ), value: 'redirect' },
+							] }
+							onChange={ ( value ) => setAttributes( { ctaCartAction: value } ) }
+						/>
 					</PanelBody>
 				) }
 
 			</InspectorControls>
 			<div { ...blockProps }>
 				<div className={ `godam-editor-product-gallery layout-${ layout }` }>
-					{ /* { GoDAMVideos } */ }
 					{ layout === 'carousel' ? (
 						<div className="godam-carousel-wrapper">
 							<button
@@ -455,6 +527,7 @@ export default function Edit( { attributes, setAttributes } ) {
 									height: arrowSize,
 									fontSize: arrowSize / 2,
 								} }
+								aria-label={ __( 'Scroll left', 'godam' ) }
 							>
 								&#10094;
 							</button>
@@ -472,6 +545,7 @@ export default function Edit( { attributes, setAttributes } ) {
 									height: arrowSize,
 									fontSize: arrowSize / 2,
 								} }
+								aria-label={ __( 'Scroll right', 'godam' ) }
 							>
 								&#10095;
 							</button>
