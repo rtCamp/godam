@@ -46,9 +46,7 @@ class Video_Engagement {
 		$get_video_engagement_data = json_decode( $get_video_engagement_data, true );
 		$view_count                = ! empty( $get_video_engagement_data['data']['post_views'] ) ? $get_video_engagement_data['data']['post_views'] : 0;
 
-		if ( is_array( $view_count ) ) {
-			$view_count = array_sum( $view_count );
-		}
+		$view_count = $this->process_engagement_counts( $view_count );
 
 		?>
 		<div class="rtgodam-video-engagement" data-engagement-id="engagement-<?php echo esc_attr( $instance_id ); ?>" data-engagement-video-id="engagement-<?php echo esc_attr( $instance_id ); ?>">
@@ -97,7 +95,7 @@ class Video_Engagement {
 				</a>
 			</div>
 			<div class="rtgodam-video-engagement--view">
-				<a href="#" class="rtgodam-video-engagement--view-link">
+				<a href=":void(0)" class="rtgodam-video-engagement--view-link" onclick="return false;">
 					<span class="rtgodam-video-engagement--view-icon">
 						<svg 
 							xmlns="http://www.w3.org/2000/svg" 
@@ -136,12 +134,15 @@ class Video_Engagement {
 		);
 
 		$args = array(
-			'timeout'   => 10,
-			'headers'   => array(
+			'timeout' => 30,
+			'headers' => array(
 				'Content-Type' => 'application/json',
 			),
-			'sslverify' => 'production' === wp_get_environment_type(),
 		);
+
+		if ( 'development' === wp_get_environment_type() ) {
+			$args['sslverify'] = false;
+		}
 
 		$response = wp_remote_get(
 			$api_endpoint,
@@ -153,5 +154,25 @@ class Video_Engagement {
 			$response = new WP_Error( 'failed_to_retrieve', __( 'Could not retrieve.', 'godam' ) );
 		}
 		return $response;
+	}
+
+	/**
+	 * Process engagement counts.
+	 *
+	 * @param int|array $counter The counter count.
+	 *
+	 * @return string The processed counter count.
+	 */
+	public function process_engagement_counts( $counter ) {
+
+		if ( is_array( $counter ) ) {
+			$counter = array_sum( $counter );
+		}
+
+		if ( 1000 < $counter ) {
+			$counter = number_format( $counter / 1000, 1 ) . 'k';
+		}
+
+		return $counter;
 	}
 }
