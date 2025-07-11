@@ -110,7 +110,10 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 			<Panel header={ __( 'Vimeo video Migration', 'godam' ) } className="godam-panel">
 				<PanelBody opened>
 					<p>
-						{ __( 'This tool is used to replace WordPress vimeo embed blocks with GoDAM video block.', 'godam' ) }
+						{ __( 'This tool is used to replace WordPress Vimeo Embed blocks with GoDAM Video block.', 'godam' ) }
+					</p>
+					<p style={ { background: '#fffbe6', border: '1px solid #ffe58f', padding: '8px', borderRadius: '4px', color: '#ad8b00' } }>
+						{ __( 'This migrator will only migrate Vimeo videos that are already fetched on GoDAM Central.', 'godam' ) }
 					</p>
 
 					{ /* Progressbar indicating video migration progress */ }
