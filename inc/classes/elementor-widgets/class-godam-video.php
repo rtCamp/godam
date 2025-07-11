@@ -21,7 +21,7 @@ class GoDAM_Video extends Base {
 	 */
 	public function set_default_config() {
 		return array(
-			'name'            => 'godam-video',
+			'name'            => 'godam_record',
 			'title'           => _x( 'GoDAM Video', 'Widget Title', 'godam' ),
 			'icon'            => 'eicon-video',
 			'categories'      => array( 'godam' ),
@@ -117,7 +117,7 @@ class GoDAM_Video extends Base {
 		);
 
 		$this->end_popover();
-		
+
 		$this->add_control(
 			'seo_settings_popover_toggle',
 			array(

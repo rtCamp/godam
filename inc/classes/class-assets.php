@@ -97,8 +97,9 @@ class Assets {
 		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
 		$is_woo_active      = is_plugin_active( 'woocommerce/woocommerce.php' );
 
-		$is_cf7_active             = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
-		$is_wpforms_active         = is_plugin_active( 'wpforms-lite/wpforms.php' );
+		$is_cf7_active     = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
+		$is_wpforms_active = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
+
 		$is_jetpack_active         = is_plugin_active( 'jetpack/jetpack.php' );
 		$is_sure_form_active       = is_plugin_active( 'sureforms/sureforms.php' );
 		$is_forminator_form_active = is_plugin_active( 'forminator/forminator.php' );
@@ -184,7 +185,6 @@ class Assets {
 	 * @return void
 	 */
 	public function admin_enqueue_scripts() {
-
 		$screen = get_current_screen();
 
 		wp_register_script(

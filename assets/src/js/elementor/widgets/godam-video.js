@@ -35,7 +35,7 @@ window.addEventListener( 'elementor/frontend/init', () => {
 		elementor.hooks.addAction(
 			'panel/open_editor/widget',
 			( panel, model ) => {
-				if ( model.get( 'widgetType' ) !== 'godam-video' ) {
+				if ( model.get( 'widgetType' ) !== 'godam_record' ) {
 					return;
 				}
 
