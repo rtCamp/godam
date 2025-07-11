@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import videojs from 'video.js';
 
 document.addEventListener( 'DOMContentLoaded', function() {
-	const videoContainers = document.querySelectorAll( '#wpforms-edit-entry-form .wpforms-edit-entry-field-godam-video .wpforms-field.wpforms-field-godam-video' );
+	const videoContainers = document.querySelectorAll( '#wpforms-edit-entry-form .wpforms-edit-entry-field-godam_record .wpforms-field.wpforms-field-godam_record' );
 
 	const frame = wp.media( {
 		title: __( 'Select or Upload Video Of Your Choice', 'godam' ),
@@ -25,8 +25,8 @@ document.addEventListener( 'DOMContentLoaded', function() {
 	videoContainers.forEach( ( videoContainer ) => {
 		const videoPreviewElement = videoContainer.querySelector( '.godam-video-preview' );
 		const videoElement = videoPreviewElement.querySelector( '.video-js' );
-		const uploadVideoBtn = videoContainer.querySelector( '.godam-video-upload-image' );
-		const removeVideoBtn = videoContainer.querySelector( '.godam-video-remove-image' );
+		const uploadVideoBtn = videoContainer.querySelector( '.godam-video-upload-btn' );
+		const removeVideoBtn = videoContainer.querySelector( '.godam-video-remove-btn' );
 		const videoInput = videoContainer.querySelector( '.godam-video-field-input' );
 		const videoLink = videoContainer.querySelector( '.godam-video-link' );
 		const videoName = videoContainer.querySelector( '.godam-video-name' );
@@ -48,8 +48,8 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 				videoLink.href = attachment?.url;
 
-				// Send the attachment id to our hidden input
-				videoInput.value = attachment.id;
+				// Send the attachment url to our hidden input
+				videoInput.value = attachment?.url;
 
 				// Hide the add image link
 				uploadVideoBtn.classList.add( 'hidden' );
@@ -88,7 +88,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 			removeVideoBtn.classList.add( 'hidden' );
 
 			// Delete the image id from the hidden input
-			videoInput.value = 0;
+			videoInput.value = '';
 		} );
 	} );
 } );

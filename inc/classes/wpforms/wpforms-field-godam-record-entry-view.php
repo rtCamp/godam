@@ -7,12 +7,11 @@
  * @since n.e.x.t
  */
 
-$attachment_url                  = wp_get_attachment_url( $value );
-$attachment_name                 = $attachment->post_title;
-$thumbnail_url                   = wp_get_attachment_thumb_url( $attachment );
-$transcoded_url                  = rtgodam_get_transcoded_url_from_attachment( $attachment );
-$transcoded_status               = rtgodam_get_transcoded_status_from_attachment( $attachment );
-$transcoded_status_error_message = rtgodam_get_transcoded_error_message_from_attachment( $attachment );
+$attachment_url                  = $value; // URL of the saved file, which is under /uploads/godam/wpforms
+$attachment_name                 = basename( $value );
+$transcoded_url                  = '';
+$transcoded_status               = '';
+$transcoded_status_error_message = '';
 ?>
 
 <div class="godam-video-preview">

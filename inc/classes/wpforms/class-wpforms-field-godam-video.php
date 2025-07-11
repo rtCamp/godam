@@ -354,13 +354,26 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @return array
 		 */
 		public function save_video_file( $entry, $form_data ) {
+			global $wp_filesystem;
+
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+
+			WP_Filesystem();
+
+			if ( null === $wp_filesystem ) {
+				return $entry;
+			}
+
+			$upload_dir  = wp_get_upload_dir();
+			$wpforms_dir = untrailingslashit( $upload_dir['basedir']  ) . '/godam/wpforms';
+
+			if ( false === wp_mkdir_p( $wpforms_dir ) ) {
+				return $entry;
+			}
+
 			// No need to perform nonce verification as this is already done by the WPForms forms processor.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$files = $this->format_global_files_array( $_FILES );
-
-			require_once ABSPATH . 'wp-admin/includes/media.php';
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-			require_once ABSPATH . 'wp-admin/includes/image.php';
 
 			// Loop through each file, and creates attachments for video files.
 			foreach ( $files as $field_id => $file ) {
@@ -380,10 +393,12 @@ if ( class_exists( 'WPForms_Field' ) ) {
 					continue;
 				}
 
-				$attachment_id = media_handle_sideload( $file );
+				$filename = wp_unique_filename( $wpforms_dir, $file['name'] );
 
-				if ( ! is_wp_error( $attachment_id ) ) {
-					$entry['fields'][ $field_id ] = $attachment_id;
+				$moved_file = $wp_filesystem->move( $file['tmp_name'], "{$wpforms_dir}/{$filename}" );
+
+				if ( $moved_file ) {
+					$entry['fields'][ $field_id ] =  untrailingslashit( $upload_dir['baseurl'] ) . "/godam/wpforms/{$filename}";
 				}
 			}
 
@@ -440,21 +455,12 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				return $value;
 			}
 
-			if ( 0 === $value || ! is_numeric( $value ) ) {
+			if ( empty( trim( $value ) ) ) {
 				return $value;
 			}
 
-			$attachment = get_post( $value );
-
-			if ( null === $attachment || 'attachment' !== $attachment->post_type ) {
-				return __( 'N/A', 'godam' );
-			}
-
-			$attachment_url  = wp_get_attachment_url( $value );
-			$attachment_name = $attachment->post_title;
-
 			// Default formatting style.
-			$formatted_value = sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $attachment_url ), esc_html( $attachment_name ) );
+			$formatted_value = sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $value ), esc_html( basename( $value ) ) );
 
 			// Format for entry view page.
 			if ( 'entry-single' === $context && \wpforms_is_admin_page( 'entries', 'details' ) ) {

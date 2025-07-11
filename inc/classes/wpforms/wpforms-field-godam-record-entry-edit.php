@@ -12,19 +12,17 @@ if ( ! isset( $field['type'] ) || 'godam_record' !== $field['type'] ) {
 	return;
 }
 
-$value = 0;
+$value = ''; // Video file url, which is saved under the /uploads/godam/wpforms directory.
 if ( $field['properties']['inputs']['primary']['attr']['value'] ) {
-	$value = intval( $field['properties']['inputs']['primary']['attr']['value'] );
+	$value = trim( $field['properties']['inputs']['primary']['attr']['value'] );
 }
 
 $primary            = $field['properties']['inputs']['primary'];
 $primary['class'][] = 'godam-video-field-input';
 
-$attachment      = get_post( $value );
-$attachment_url  = wp_get_attachment_url( $value );
-$attachment_name = $attachment->post_title;
-$thumbnail_url   = get_the_post_thumbnail_url( $attachment->ID );
-$transcoded_url  = rtgodam_get_transcoded_url_from_attachment( $attachment );
+$video_name = basename( $value );
+$thumbnail_url   = '';
+$transcoded_url  = '';
 
 printf(
 	'<input type="hidden" value="%s" %s %s>',
@@ -34,23 +32,23 @@ printf(
 );
 ?>
 <div class="godam-video-preview">
-	<?php echo do_shortcode( "[godam_video poster='{$thumbnail_url}' src='{$attachment_url}' transcoded_url='{$transcoded_url}']" ); ?>
+	<?php echo do_shortcode( "[godam_video poster='{$thumbnail_url}' src='{$value}' transcoded_url='{$transcoded_url}']" ); ?>
 </div>
 <a
-	href="<?php echo esc_url( $attachment_url ); ?>"
+	href="<?php echo esc_url( $value ); ?>"
 	target="_blank"
 	class="godam-video-link <?php echo ( empty( $value ) ? 'hidden' : '' ); ?>"
 >
-	<div class="godam-video-name"><?php echo esc_html( $attachment_name ); ?></div>
+	<div class="godam-video-name"><?php echo esc_html( $video_name ); ?></div>
 </a>
 <div class="godam-video-media-controls">
 	<button
 		type="button"
-		class="button godam-video-upload-image <?php echo ( empty( $value ) ? '' : 'hidden' ); ?>"
+		class="button godam-video-upload-btn <?php echo ( empty( $value ) ? '' : 'hidden' ); ?>"
 	><?php esc_html_e( 'Upload', 'godam' ); ?></button>
 
 	<button
 		type="button"
-		class="button godam-video-remove-image <?php echo ( empty( $value ) ? 'hidden' : '' ); ?>"
+		class="button godam-video-remove-btn <?php echo ( empty( $value ) ? 'hidden' : '' ); ?>"
 	><?php esc_html_e( 'Remove', 'godam' ); ?></button>
 </div>
