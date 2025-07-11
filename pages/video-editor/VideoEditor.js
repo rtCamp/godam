@@ -319,7 +319,7 @@ const VideoEditor = ( { attachmentID } ) => {
 					</Button>
 				</div>
 
-				<main className="flex flex-col items-center p-4 relative overflow-y-auto">
+				<main className="flex flex-col items-center p-4 overflow-y-auto">
 
 					{
 						// Display a success message when video changes are saved.
