@@ -26,7 +26,7 @@ import { FolderCreationModal, RenameModal, DeleteModal } from './components/moda
 import { triggerFilterChange } from './data/media-grid.js';
 import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
 import LockedTab from './components/folder-tree/LockedTab.jsx';
-import { useGetAllMediaCountQuery } from './redux/api/folders.js';
+import { useGetAllMediaCountQuery, useGetCategoryMediaCountQuery } from './redux/api/folders.js';
 
 const App = () => {
 	const dispatch = useDispatch();
@@ -34,6 +34,7 @@ const App = () => {
 	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
 	const currentSortOrder = useSelector( ( state ) => state.FolderReducer.sortOrder );
 	const { data: allMediaCount } = useGetAllMediaCountQuery();
+	const { data: uncategorizedCount } = useGetCategoryMediaCountQuery( { folderId: 0 } );
 
 	const [ contextMenu, setContextMenu ] = useState( {
 		visible: false,
@@ -157,6 +158,7 @@ const App = () => {
 					data-id={ 0 }
 				>
 					<p className="folder-list__text">{ __( 'Uncategorized', 'godam' ) }</p>
+					{ uncategorizedCount?.count && <p>{ uncategorizedCount?.count }</p> }
 				</button>
 			</div>
 

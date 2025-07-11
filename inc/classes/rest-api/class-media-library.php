@@ -233,6 +233,17 @@ class Media_Library extends Base {
 					},
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/category-count/(?P<folder_id>\d+)',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_count_by_category' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+				),
+			),
 		);
 	}
 
@@ -882,7 +893,7 @@ class Media_Library extends Base {
 				$all_items[ $key ] = Media_Library_Ajax::get_instance()->prepare_godam_media_item( $item );
 				/**
 				 * For audio type, ensure that meta keys for artist and album exist.
-				 * 
+				 *
 				 * Note - This is a temporary fix till API starts sending the meta fields as well.
 				 */
 				if ( 'audio' === $type ) {
@@ -904,7 +915,7 @@ class Media_Library extends Base {
 				'page'        => $page,
 				'per_page'    => $per_page,
 				'has_more'    => $body->message->has_more,
-			) 
+			)
 		);
 	}
 
@@ -939,7 +950,7 @@ class Media_Library extends Base {
 				'post_status'    => 'any',
 				'fields'         => 'ids',
 				'posts_per_page' => 1,
-			) 
+			)
 		);
 
 		// If found, return existing attachment instead of duplicating.
@@ -951,7 +962,7 @@ class Media_Library extends Base {
 					'attachment' => wp_prepare_attachment_for_js( $existing_id ),
 					'message'    => 'Attachment already exists',
 				),
-				200 
+				200
 			);
 		}
 
@@ -974,7 +985,7 @@ class Media_Library extends Base {
 					'success' => false,
 					'error'   => $attach_id->get_error_message(),
 				),
-				500 
+				500
 			);
 		}
 
@@ -995,7 +1006,7 @@ class Media_Library extends Base {
 				'attachment' => wp_prepare_attachment_for_js( $attach_id ),
 				'message'    => 'Attachment created',
 			),
-			201 
+			201
 		);
 	}
 
@@ -1027,7 +1038,7 @@ class Media_Library extends Base {
 				'post_status'    => 'inherit',
 				'posts_per_page' => 1,
 				'fields'         => 'ids',
-			) 
+			)
 		);
 
 		// If a match is found, use that attachment ID.
@@ -1045,5 +1056,62 @@ class Media_Library extends Base {
 
 		// Return the full media object (or WP_Error if not found).
 		return $response;
+	}
+
+	/**
+	 * Get the number of items in a media folder by id.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_count_by_category( $request ) {
+		if ( ! isset( $request['folder_id'] ) ) {
+			return rest_ensure_response(
+				array(
+					'message' => __( 'A Folder ID is required', 'godam' ),
+				)
+			);
+		}
+
+		$folder_id = (int) sanitize_text_field( $request['folder_id'] );
+		$args      = array();
+		if ( 0 === $folder_id ) {
+			$args = array(
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+				'fields'         => 'ids',
+				'posts_per_page' => -1,
+				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+					array(
+						'taxonomy' => 'media-folder',
+						'field'    => 'term_id',
+						'operator' => 'NOT EXISTS',
+					),
+				),
+			);
+		} else {
+			$args = array(
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+				'fields'         => 'ids',
+				'posts_per_page' => -1,
+				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+					array(
+						'taxonomy' => 'media-folder',
+						'field'    => 'term_id',
+						'terms'    => $folder_id,
+					),
+				),
+			);
+
+		}
+		$query = new \WP_Query( $args );
+
+		return rest_ensure_response(
+			array(
+				'folder_id' => $folder_id,
+				'count'     => $query->found_posts,
+			)
+		);
 	}
 }

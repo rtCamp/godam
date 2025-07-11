@@ -24,6 +24,14 @@ export const folderApi = createApi( {
 				return { data: totalMediaCount };
 			},
 		} ),
+		getCategoryMediaCount: builder.query( {
+			query: ( { folderId } ) => ( {
+				url: `godam/v1/media-library/category-count/${ folderId }`,
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
+				},
+			} ),
+		} ),
 		getFolders: builder.query( {
 			query: () => ( {
 				url: 'wp/v2/media-folder',
@@ -131,6 +139,7 @@ export const folderApi = createApi( {
 
 export const {
 	useGetAllMediaCountQuery,
+	useGetCategoryMediaCountQuery,
 	useGetFoldersQuery,
 	useCreateFolderMutation,
 	useUpdateFolderMutation,
