@@ -45,6 +45,7 @@ import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
 import { secondsToISO8601 } from './utils';
+import './editor.scss';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -341,35 +342,44 @@ function VideoEdit( {
 		className: classes,
 	} );
 
+	if ( isInsideQueryLoop ) {
+		<h1>Hello</h1>;
+	}
+
 	if ( ! src && ! temporaryURL ) {
 		return (
 			<div { ...blockProps }>
-				<Placeholder
-					className="block-editor-media-placeholder"
-					withIllustration={ ! isSingleSelected }
-					icon={ icon }
-					label={ isInsideQueryLoop
-						? __( 'GoDAM video template', 'godam' )
-						: __( 'GoDAM video', 'godam' )
-					}
-					instructions={ isInsideQueryLoop
-						? __( 'This block will display videos dynamically when used in Query Loop. You can still choose a sample video to visualize the options.', 'godam' )
-						: __( 'Drag and drop a video, upload, or choose from your library.', 'godam' )
-					}
-				>
-					<MediaUpload
-						onSelect={ onSelectVideo }
-						allowedTypes={ ALLOWED_MEDIA_TYPES }
-						render={ ( { open } ) => (
-							<Button onClick={ open } variant="primary">
-								{ isInsideQueryLoop
-									? __( 'Select Sample Video', 'godam' )
-									: __( 'Select Video', 'godam' )
-								}
-							</Button>
+				{ isInsideQueryLoop ? (
+					<div className="godam-editor-video-item">
+						<div className="godam-editor-video-placeholder">
+							<span className="godam-editor-video-label">
+								{ __( 'GoDAM Video', 'godam' ) }
+							</span>
+						</div>
+					</div>
+				) : (
+					<Placeholder
+						className="block-editor-media-placeholder"
+						withIllustration={ ! isSingleSelected }
+						icon={ icon }
+						label={ __( 'GoDAM video', 'godam' ) }
+						instructions={ __(
+							'Drag and drop a video, upload, or choose from your library.',
+							'godam',
 						) }
-					/>
-				</Placeholder>
+					>
+						<MediaUpload
+							onSelect={ onSelectVideo }
+							allowedTypes={ ALLOWED_MEDIA_TYPES }
+							render={ ( { open } ) => (
+								<Button onClick={ open } variant="primary">
+									{ __( 'Select Video', 'godam' ) }
+								</Button>
+							) }
+						/>
+					</Placeholder>
+
+				) }
 			</div>
 		);
 	}
