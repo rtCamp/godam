@@ -75,20 +75,6 @@ class Engagement extends Base {
 		$video_id      = $request->get_param( 'video_id' );
 		$site_url      = $request->get_param( 'site_url' );
 
-		// Test data start.
-		$likes                        = get_post_meta( $video_id, 'likes', true );
-		$views                        = get_post_meta( $video_id, 'views', true );
-		$response_data['likes_count'] = ! empty( $likes ) ? $likes : 0;
-		$response_data['views_count'] = ! empty( $views ) ? $views : 0;
-		return new WP_REST_Response(
-			array(
-				'status' => 'success',
-				'data'   => $response_data,
-			),
-			200
-		);
-		// Test data end.
-
 		$account_creadentials = $this->access_creadentials_check();
 
 		if ( $account_creadentials instanceof WP_REST_Response ) {
@@ -110,8 +96,11 @@ class Engagement extends Base {
 		}
 
 		if ( ! empty( $analytics_data['processed_analytics'] ) ) {
-			$response_data['views_count'] = $analytics_data['processed_analytics']['post_views'] ?? array();
+			$response_data['views_count'] = array_sum( $analytics_data['processed_analytics']['post_views'] ?? array() );
 		}
+
+		$likes                        = get_post_meta( $video_id, 'likes', true );
+		$response_data['likes_count'] = ! empty( $likes ) ? $likes : 0;
 
 		return new WP_REST_Response(
 			array(
