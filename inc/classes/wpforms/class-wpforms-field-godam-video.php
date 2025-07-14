@@ -398,7 +398,20 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				$moved_file = $wp_filesystem->move( $file['tmp_name'], "{$wpforms_dir}/{$filename}" );
 
 				if ( $moved_file ) {
-					$entry['fields'][ $field_id ] = untrailingslashit( $upload_dir['baseurl'] ) . "/godam/wpforms/{$filename}";
+					$saved_file_url               = untrailingslashit( $upload_dir['baseurl'] ) . "/godam/wpforms/{$filename}";
+					$entry['fields'][ $field_id ] = $saved_file_url;
+
+					/**
+					 * Fires after the video file is moved to the uploads/godam/wpforms directory.
+					 *
+					 * @since n.e.x.t
+					 *
+					 * @param string $saved_file_url Saved file URL.
+					 * @param array $entry Entry data.
+					 * @param array $form_data Form data.
+					 * @param \RTGODAM\Inc\WPForms\WPForms_Field_GoDAM_Video $field Instance of \RTGODAM\Inc\WPForms\WPForms_Field_GoDAM_Video.
+					 */
+					do_action( 'rtgodam_wpforms_recorder_field_video_saved', $saved_file_url, $entry, $form_data, $this );
 				}
 			}
 

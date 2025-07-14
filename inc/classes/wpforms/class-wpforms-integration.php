@@ -39,6 +39,8 @@ class WPForms_Integration {
 			add_action( 'wpforms_frontend_confirmation_message_before', array( $this, 'load_godam_recorder_script_on_success' ), 10, 4 );
 
 			add_action( 'wpforms_loaded', array( $this, 'init_godam_video_field' ) );
+
+			add_action( 'rtgodam_wpforms_recorder_field_video_saved', array( $this, 'send_saved_files_for_transcoding' ), 10, 3 );
 		}
 	}
 
@@ -136,5 +138,23 @@ class WPForms_Integration {
 	 */
 	public function init_godam_video_field() {
 		new \RTGODAM\Inc\WPForms\WPForms_Field_GoDAM_Video();
+	}
+
+	/**
+	 * Sent saved files by WPForms Recorder Field to the transcoding service.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $saved_file_url Saved file URL.
+	 * @param array  $entry Entry data.
+	 * @param array  $form_data Form data.
+	 *
+	 * @return void
+	 */
+	public function send_saved_files_for_transcoding( $saved_file_url, $entry, $form_data ) {
+		$form_title = isset( $form_data['settings']['form_title'] ) ? trim( $form_data['settings']['form_title'] ) : __( 'Untitled Form', 'godam' );
+		$entry_id   = isset( $entry['id'] ) ? $entry['id'] : 0;
+
+		rtgodam_send_video_to_godam_for_transcoding( 'wpforms', $form_title, $saved_file_url, $entry_id );
 	}
 }
