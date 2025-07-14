@@ -21,7 +21,7 @@ class GoDAM_Video extends Base {
 	 *
 	 * @var string
 	 */
-	const SLUG = 'godam_video';
+	const SLUG = 'godam-video';
 
 	/**
 	 * Setup hooks for the post type.
