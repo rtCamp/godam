@@ -568,8 +568,8 @@ class Recorder_Field extends BaseFieldManager {
 		$form_id = ! empty( $_REQUEST['ff-form-id'] ) ? sanitize_text_field( $_REQUEST['ff-form-id'] ) : 0;
 
 		if ( ! function_exists( 'wpFluent' ) ) {
-			wp_send_json_success(
-				__( 'Fluent forms does not exits.', 'godam' ),
+			wp_send_json_error(
+				__( 'Fluent forms does not exists.', 'godam' ),
 				400
 			);
 		}
@@ -733,7 +733,7 @@ class Recorder_Field extends BaseFieldManager {
 		$file_name = $file_data['name'];
 
 		$max_size  = $validation_rules['max_file_size']['value'] ?? 1048576;
-		$file_type = $validation_rules['allowed_file_types']['value'] ?? array( 'avi|divx|flv|mov|ogv|mkv|mp4|m4v|divx|mpg|mpeg|mpe|video\/quicktime|qt|webem' );
+		$file_type = $validation_rules['allowed_file_types']['value'] ?? array( 'avi|divx|flv|mov|ogv|mkv|mp4|m4v|divx|mpg|mpeg|mpe|video\/quicktime|qt|webm' );
 
 		$types_flat = array();
 

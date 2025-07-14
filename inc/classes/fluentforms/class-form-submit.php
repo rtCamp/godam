@@ -32,7 +32,7 @@ class Form_Submit {
 	public function setup_hooks() {
 
 		/**
-		 * Handle the submissiona and send data to GoDAM.
+		 * Handle the submission and send data to GoDAM.
 		 */
 		add_action( 'fluentform/submission_inserted', array( $this, 'handle_godam_recorder_submission' ), 10, 3 );
 	}
