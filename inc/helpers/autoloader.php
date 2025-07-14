@@ -61,6 +61,7 @@ function autoloader( $file_resource = '' ) {
 			case 'rest-api': // phpcs:ignore
 			case 'gravity-forms': // phpcs:ignore
 			case 'sureforms':
+			case 'fluentforms':
 			case 'shortcodes': // phpcs:ignore
 			case 'cron-jobs': // phpcs:ignore
 			case 'elementor-widgets': // phpcs:ignore
