@@ -23,7 +23,6 @@ const initialState = {
 		watermark_text: '',
 		watermark_url: '',
 		watermark_image_id: null,
-		video_slug: 'videos',
 	},
 	general: {
 		enable_folder_organization: true,
