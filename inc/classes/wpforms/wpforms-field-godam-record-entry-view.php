@@ -18,7 +18,6 @@ $attachment_name                 = basename( $value );
 $transcoded_url                  = WPForms_Integration_Helper::get_transcoded_url( $form_id, $entry_id, $field_id );
 $hls_transcoded_url              = WPForms_Integration_Helper::get_hls_transcoded_url( $form_id, $entry_id, $field_id );
 $transcoded_status               = WPForms_Integration_Helper::get_transcoded_status( $form_id, $entry_id, $field_id );
-$transcoded_status_error_message = '';
 ?>
 
 <div class="godam-video-preview">
@@ -34,7 +33,6 @@ $transcoded_status_error_message = '';
 	</div>
 
 	<div class="godam-transcoded-url-info">
-	<?php if ( empty( $transcoded_status_error_message ) ) : ?>
 		<?php if ( 'not_started' === $transcoded_status ) : ?>
 			<span class='dashicons dashicons-controls-play'></span><strong><?php esc_html_e( 'Video transcoding process has not started.', 'godam' ); ?></strong>
 		<?php elseif ( 'transcoded' === $transcoded_status ) : ?>
@@ -42,9 +40,6 @@ $transcoded_status_error_message = '';
 		<?php else : ?>
 			<span class='dashicons dashicons-hourglass'></span><strong><?php esc_html_e( 'Video transcoding process is in-progress.', 'godam' ); ?></strong>
 		<?php endif; ?>
-	<?php else : ?>
-		<span class='dashicons dashicons-dismiss'></span><strong><?php echo esc_html( $transcoded_status_error_message ); ?></strong>
-	<?php endif; ?>
 	</div>
 
 	<?php
