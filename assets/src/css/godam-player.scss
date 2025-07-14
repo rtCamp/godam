@@ -1010,8 +1010,9 @@
 	background-color: var(--rtgodam-control-bar-color, #2b333fb3) !important;
 	transition: all 0.3s ease !important;
 
+	&:focus,
 	&:hover {
-		scale: 1.05;
+		transform: scale(1.05);
 	}
 }
 
