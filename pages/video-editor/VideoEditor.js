@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from 'react-redux';
  * WordPress dependencies
  */
 import { Button, TabPanel, Snackbar, Tooltip } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, _n } from '@wordpress/i18n';
 import { copy, seen } from '@wordpress/icons';
 
 /**
@@ -200,7 +200,7 @@ const VideoEditor = ( { attachmentID } ) => {
 		// Validate form layers before saving.
 		if ( invalidLayers.length > 0 ) {
 			const layerTimes = invalidLayers.join( ', ' );
-			setSnackbarMessage( __( 'Please select a form at layers: ', 'godam' ) + layerTimes );
+			setSnackbarMessage( _n( 'Please select a form at layer: ', 'Please select forms at layers: ', invalidLayers.length, 'godam' ) + layerTimes );
 			setShowSnackbar( true );
 			setTimeout( () => {
 				setShowSnackbar( false );
