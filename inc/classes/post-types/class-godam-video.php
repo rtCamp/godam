@@ -82,8 +82,7 @@ class GoDAM_Video extends Base {
 	 * @return string
 	 */
 	private function get_rewrite_slug() {
-		$settings = get_option( 'rtgodam-settings', array() );
-		return isset( $settings['video']['video_slug'] ) ? $settings['video']['video_slug'] : 'videos';
+		return get_option( 'rtgodam_video_slug', 'videos' );
 	}
 
 	/**

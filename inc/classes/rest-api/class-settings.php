@@ -43,7 +43,6 @@ class Settings extends Base {
 				'watermark_url'          => '',
 				'watermark_image_id'     => null,
 				'use_watermark_image'    => false,
-				'video_slug'             => 'videos',
 			),
 			'general'      => array(
 				'enable_folder_organization' => true,
@@ -240,7 +239,7 @@ class Settings extends Base {
 	public function get_easydam_settings() {
 		// Retrieve settings from the database.
 		$easydam_settings = get_option( 'rtgodam-settings', $this->get_default_settings() );
-
+		
 		return new \WP_REST_Response( $easydam_settings, 200 );
 	}
 
@@ -261,27 +260,11 @@ class Settings extends Base {
 			$existing_settings = array();
 		}
 
-		// Check if video_slug is being changed to flush rewrite rules.
-		$old_video_slug = isset( $existing_settings['video']['video_slug'] ) ? $existing_settings['video']['video_slug'] : 'videos';
-		$new_video_slug = isset( $new_settings['video']['video_slug'] ) ? $new_settings['video']['video_slug'] : $old_video_slug;
-		$slug_changed   = $old_video_slug !== $new_video_slug;
-
 		// Merge the new settings with the existing ones.
 		$updated_settings = array_replace_recursive( $existing_settings, $new_settings );
 
 		// Save updated settings to the database.
 		update_option( 'rtgodam-settings', $updated_settings );
-
-		// Flush rewrite rules if video slug was changed.
-		if ( $slug_changed ) {
-			/**
-			 * Re-register video post type to ensure the new slug is applied.
-			 * Flush rewrite rules to apply the new slug.
-			 */
-			$video_cpt = GoDAM_Video::get_instance();
-			$video_cpt->register_post_type();
-			flush_rewrite_rules();
-		}
 
 		return new \WP_REST_Response(
 			array(
