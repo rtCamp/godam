@@ -122,7 +122,7 @@ function rtgodam_plugin_activate() {
 	update_option( 'rtgodam_plugin_activation_time', time() );
 
 	// Flush rewrite rules to ensure CPT rules are applied.
-	flush_rewrite_rules();
+	flush_rewrite_rules( true );
 }
 
 register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
@@ -133,6 +133,9 @@ register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
 function rtgodam_plugin_deactivate() {
 	delete_option( 'rtgodam_plugin_activation_time' );
 	delete_option( 'rtgodam_video_metadata_migration_completed' );
+
+	// Flush rewrite rules to remove CPT rules.
+	flush_rewrite_rules( true );
 }
 
 register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
