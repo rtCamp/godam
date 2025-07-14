@@ -365,7 +365,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 			}
 
 			$upload_dir  = wp_get_upload_dir();
-			$wpforms_dir = untrailingslashit( $upload_dir['basedir']  ) . '/godam/wpforms';
+			$wpforms_dir = untrailingslashit( $upload_dir['basedir'] ) . '/godam/wpforms';
 
 			if ( false === wp_mkdir_p( $wpforms_dir ) ) {
 				return $entry;
@@ -398,7 +398,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				$moved_file = $wp_filesystem->move( $file['tmp_name'], "{$wpforms_dir}/{$filename}" );
 
 				if ( $moved_file ) {
-					$entry['fields'][ $field_id ] =  untrailingslashit( $upload_dir['baseurl'] ) . "/godam/wpforms/{$filename}";
+					$entry['fields'][ $field_id ] = untrailingslashit( $upload_dir['baseurl'] ) . "/godam/wpforms/{$filename}";
 				}
 			}
 

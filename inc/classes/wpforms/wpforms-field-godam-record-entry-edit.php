@@ -20,9 +20,9 @@ if ( $field['properties']['inputs']['primary']['attr']['value'] ) {
 $primary            = $field['properties']['inputs']['primary'];
 $primary['class'][] = 'godam-video-field-input';
 
-$video_name = basename( $value );
-$thumbnail_url   = '';
-$transcoded_url  = '';
+$video_name     = basename( $value );
+$thumbnail_url  = '';
+$transcoded_url = '';
 
 printf(
 	'<input type="hidden" value="%s" %s %s>',
