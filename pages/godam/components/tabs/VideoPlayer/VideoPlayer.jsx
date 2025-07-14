@@ -306,7 +306,7 @@ const VideoPlayer = () => {
 			) }
 
 			<div className="bg-neutral-50 p-6 rounded-lg shadow-sm">
-				<div ref={ wrapperRef } className="text-center w-[650px] mx-auto"></div>
+				<div ref={ wrapperRef } className="text-center w-[650px] mx-auto shadow-xl rounded-lg overflow-hidden"></div>
 
 				<div className="grid grid-cols-3 items-start w-[80%] mt-[35px] mx-auto gap-[3.5rem]">
 					<div className="godam-form-group">
