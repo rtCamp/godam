@@ -91,15 +91,32 @@
 		align-items: center;
 		gap: 0.5rem;
 		width: 100%;
+
+		svg {
+			overflow: initial;
+		}
 	}
 
 	&__text {
 		font-size: 0.875rem;
 		color: #4a4a4a;
+		white-space: normal;
+		overflow-wrap: break-word;
+		word-break: break-word;
+		max-width: 150px;
 	}
 
 	&__spacer {
         padding: 0 24px 0 0;
+	}
+
+	&__status {
+	    margin-left: auto;
+		display: flex;
+
+		.bookmark-star {
+		    fill:#F79009;
+		}
 	}
 
 	&__count {
@@ -118,7 +135,6 @@
 
 		background-color: #F5F5F5;
 
-		margin-left: auto;
 		margin-right: 0.5rem;
 
 		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
