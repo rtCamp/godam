@@ -223,7 +223,7 @@ $custom_css_properties = array(
 	'--rtgodam-custom-play-button-url' => $easydam_custom_btn_img ? 'url(' . esc_url( $easydam_custom_btn_img ) . ')' : '',
 );
 
-if ( ! empty( $attributes['aspectRatio'] ) ) {
+if ( ! empty( $aspect_ratio ) ) {
 	$custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $aspect_ratio );
 }
 
