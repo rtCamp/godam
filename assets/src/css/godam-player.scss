@@ -174,19 +174,6 @@
 .easydam-player.video-js {
 	aspect-ratio: var(--rtgodam-video-aspect-ratio);
 	cursor: pointer;
-
-	.vjs-big-play-button {
-		transition: all 0.3s ease;
-	}
-
-	// Add the button hover styles
-	&:hover,
-	&:focus {
-
-		.vjs-big-play-button {
-			transform: scale(1.05);
-		}
-	}
 }
 
 .form-container {
