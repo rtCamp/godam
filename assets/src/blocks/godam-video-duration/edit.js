@@ -12,7 +12,7 @@ function Edit( {} ) {
 	return (
 		<>
 			<div { ...blockProps }>
-				<h1>{ __( 'Video Duration', 'godam' ) }</h1>
+				<p>{ __( 'SS', 'godam' ) }</p>
 			</div>
 		</>
 	);
