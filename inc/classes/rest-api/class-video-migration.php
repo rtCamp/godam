@@ -682,6 +682,7 @@ class Video_Migration extends Base {
 		// Set the attachment attached file.
 		if ( ! empty( $video_info['transcoded_mp4_url'] ) ) {
 			update_post_meta( $attachment_id, '_wp_attached_file', $video_info['transcoded_mp4_url'] );
+			update_post_meta( $attachment_id, 'rtgodam_is_migrated_vimeo_video', true );
 		}
 
 		// Change the guid of the attachment to the transcoded file path.
