@@ -486,7 +486,7 @@ class Recorder_Field extends BaseFieldManager {
 		/**
 		 * Decrypt the URL.
 		 */
-		$decrypted_value = $this->decrypt_url_for_recroder( $current_value );
+		$decrypted_value = $this->decrypt_url_for_recorder( $current_value );
 
 		if ( empty( $decrypted_value ) ) {
 			return $value;
@@ -777,7 +777,7 @@ class Recorder_Field extends BaseFieldManager {
 	 *
 	 * @return string
 	 */
-	private function decrypt_url_for_recroder( $url ) {
+	private function decrypt_url_for_recorder( $url ) {
 
 		/**
 		 * Create upload dir.
