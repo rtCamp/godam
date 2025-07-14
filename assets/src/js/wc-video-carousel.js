@@ -1,8 +1,6 @@
 /* global Swiper */
-/**
- * External dependencies
- */
-import videojs from 'video.js';
+
+const { dispatch } = wp.data;
 
 /**
  * Initializes and manages the video carousel functionality for WooCommerce.
@@ -25,6 +23,7 @@ const wcVideoCarousel = {
 			self.loadVideoCarousel();
 			self.openVideoModal();
 			self.closeVideoModal();
+			self.addToCartModalProductAjax();
 		} );
 	},
 
@@ -76,7 +75,7 @@ const wcVideoCarousel = {
 	openVideoModal() {
 		const self = this;
 		// Show control only when enter on video.
-		document.querySelectorAll( '.rtgodam-product-video-gallery-slider video' ).forEach( ( video ) => {
+		document.querySelectorAll( '.rtgodam-product-video-gallery-slider .swiper-slide' ).forEach( ( video ) => {
 			video.addEventListener( 'click', ( event ) => {
 				event.preventDefault();
 
@@ -125,6 +124,33 @@ const wcVideoCarousel = {
 			videoElmModal.classList.remove( 'open' );
 			self.swiperModal.destroy();
 			self.swiperModal = null;
+		} );
+	},
+
+	/**
+	 * Adds an event listener to the cart form in the video modal.
+	 *
+	 * Listens for submits on the cart form in the video modal, and adds the item to the
+	 * cart using the `wc/store/cart` store.
+	 *
+	 * @return {void}
+	 */
+	addToCartModalProductAjax() {
+		const cartForm = document.querySelectorAll( '.rtgodam-product-video-gallery-slider-modal-content--cart-form' );
+		cartForm.forEach( ( form ) => {
+			form.querySelector( 'form' ).addEventListener( 'submit', ( event ) => {
+				event.preventDefault();
+				const formData = new FormData( event.target );
+				const quantity = formData.get( 'quantity' );
+				const subMitButton = form.querySelector( 'button[name="add-to-cart"]' );
+				const productId = subMitButton.value;
+				subMitButton.disabled = true;
+				subMitButton.classList.add( 'loading' );
+				dispatch( 'wc/store/cart' ).addItemToCart( productId, quantity ).then( ( response ) => {
+					subMitButton.disabled = false;
+					subMitButton.classList.remove( 'loading' );
+				} ).catch( ( err ) => {} );
+			} );
 		} );
 	},
 };
