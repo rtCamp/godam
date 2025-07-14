@@ -9,6 +9,7 @@ import {
 	Button,
 	Panel,
 	PanelBody,
+	Snackbar,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import axios from 'axios';
@@ -112,9 +113,9 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 					<p>
 						{ __( 'This tool is used to replace WordPress Vimeo Embed blocks with GoDAM Video block.', 'godam' ) }
 					</p>
-					<p style={ { background: '#fffbe6', border: '1px solid #ffe58f', padding: '8px', borderRadius: '4px', color: '#ad8b00' } }>
+					<Snackbar actions={ [ { label: __( 'Open', 'godam' ), url: 'https://app-godam.rt.gw/web/' } ] } className="snackbar-warning">
 						{ __( 'This migrator will only migrate Vimeo videos that are already fetched on GoDAM Central.', 'godam' ) }
-					</p>
+					</Snackbar>
 
 					{ /* Progressbar indicating video migration progress */ }
 					{ /* Horizontal progressbar, done/total */ }
@@ -127,14 +128,10 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 
 					{ /* Migration status message */ }
 					{ migrationStatus?.status === 'completed' && (
-						<div className="godam-migration-status my-2">
-							{ __( 'WordPress Vimeo video migration completed successfully 🎉', 'godam' ) }
-						</div>
+						<Snackbar className="snackbar-success">{ __( 'Vimeo Video Migration has been successfully completed for all posts and pages 🎉', 'godam' ) }</Snackbar>
 					) }
 					{ migrationStatus?.status === 'failed' && (
-						<div className="godam-migration-status my-2">
-							{ __( 'Migration failed. Please try again.', 'godam' ) }
-						</div>
+						<Snackbar className="snackbar-error">{ __( 'Vimeo Video Migration failed. Please try again.', 'godam' ) }</Snackbar>
 					) }
 
 					{

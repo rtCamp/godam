@@ -9,6 +9,7 @@ import {
 	Button,
 	Panel,
 	PanelBody,
+	Snackbar,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import axios from 'axios';
@@ -38,6 +39,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 			} )
 			.catch( ( error ) => {
 				// Handle error, e.g., show a notification instead of using console.
+				// eslint-disable-next-line no-alert
 				alert( __( 'An error occurred during migration: ', 'godam' ) + error.message );
 			} );
 	};
@@ -121,14 +123,10 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 
 					{ /* Migration status message */ }
 					{ migrationStatus?.status === 'completed' && (
-						<div className="godam-migration-status my-2">
-							{ __( 'WordPress core video migration completed successfully 🎉', 'godam' ) }
-						</div>
+						<Snackbar className="snackbar-success">{ __( 'WordPress core video migration completed successfully 🎉', 'godam' ) }</Snackbar>
 					) }
 					{ migrationStatus?.status === 'failed' && (
-						<div className="godam-migration-status my-2">
-							{ __( 'Migration failed. Please try again.', 'godam' ) }
-						</div>
+						<Snackbar className="snackbar-error">{ __( 'WordPress core video migration failed. Please try again.', 'godam' ) }</Snackbar>
 					) }
 
 					{ /* Migration button */ }
