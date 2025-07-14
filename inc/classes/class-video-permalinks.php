@@ -41,12 +41,6 @@ class Video_Permalinks {
 		
 		// Save permalink settings.
 		add_action( 'admin_init', array( $this, 'save_permalink_settings' ) );
-		
-		// Display admin notice when permalink slug is updated.
-		add_action( 'admin_notices', array( $this, 'display_slug_updated_notice' ) );
-		
-		// Detect option changes and handle slug updates.
-		add_action( 'update_option_rtgodam_video_slug', array( $this, 'handle_slug_change' ), 10, 2 );
 	}
 
 	/**
@@ -118,25 +112,6 @@ class Video_Permalinks {
 		</p>
 		<?php
 	}
-
-	/**
-	 * Display a notice when the video slug is updated.
-	 *
-	 * @return void
-	 */
-	public function display_slug_updated_notice() {
-		if ( get_transient( 'rtgodam_video_slug_updated' ) ) {
-			wp_admin_notice(
-				__( 'GoDAM video permalink slug updated successfully!', 'godam' ),
-				array(
-					'type'        => 'success',
-					'dismissible' => true,
-				)
-			);
-			// Remove the transient so the notice doesn't show up again.
-			delete_transient( 'rtgodam_video_slug_updated' );
-		}
-	}
 	
 	/**
 	 * Save permalink settings.
@@ -167,27 +142,11 @@ class Video_Permalinks {
 				// Only update if changed.
 				if ( $old_value !== $video_slug ) {
 					update_option( 'rtgodam_video_slug', $video_slug );
+					
+					// Flush rewrite rules to apply new video slug.
+					flush_rewrite_rules();
 				}
 			}
-		}
-	}
-
-	/**
-	 * Handle slug change.
-	 *
-	 * @param string $old_value The old option value.
-	 * @param string $new_value The new option value.
-	 * 
-	 * @return void
-	 */
-	public function handle_slug_change( $old_value, $new_value ) {
-		// Check if the value actually changed.
-		if ( $old_value !== $new_value ) {
-			// Flush rewrite rules to apply new video slug.
-			flush_rewrite_rules();
-
-			// Set transient to show a success message.
-			set_transient( 'rtgodam_video_slug_updated', true, 60 );
 		}
 	}
 }
