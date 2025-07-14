@@ -7,10 +7,17 @@
  * @since n.e.x.t
  */
 
+use RTGODAM\Inc\WPForms\WPForms_Integration_Helper;
+
+$form_id  = absint( $form_data['id'] );
+$entry_id = isset( $_GET['entry_id'] ) ? absint( $_GET['entry_id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$field_id = absint( $field['id'] );
+
 $attachment_url                  = $value; // URL of the saved file, which is under /uploads/godam/wpforms.
 $attachment_name                 = basename( $value );
-$transcoded_url                  = '';
-$transcoded_status               = '';
+$transcoded_url                  = WPForms_Integration_Helper::get_transcoded_url( $form_id, $entry_id, $field_id );
+$hls_transcoded_url              = WPForms_Integration_Helper::get_hls_transcoded_url( $form_id, $entry_id, $field_id );
+$transcoded_status               = WPForms_Integration_Helper::get_transcoded_status( $form_id, $entry_id, $field_id );
 $transcoded_status_error_message = '';
 ?>
 
@@ -41,7 +48,7 @@ $transcoded_status_error_message = '';
 			<span class='dashicons dashicons-hourglass'></span><strong><?php esc_html_e( 'Video transcoding process is in-progress.', 'godam' ); ?></strong>
 		<?php endif; ?>
 	<?php else : ?>
-		<span class='dashicons dashicons-controls-play'></span><strong><?php echo esc_html( $transcoded_status_error_message ); ?></strong>
+		<span class='dashicons dashicons-dismiss'></span><strong><?php echo esc_html( $transcoded_status_error_message ); ?></strong>
 	<?php endif; ?>
 	</div>
 </div>

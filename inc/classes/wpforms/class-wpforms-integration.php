@@ -40,7 +40,9 @@ class WPForms_Integration {
 
 			add_action( 'wpforms_loaded', array( $this, 'init_godam_video_field' ) );
 
-			add_action( 'rtgodam_wpforms_recorder_field_video_saved', array( $this, 'send_saved_files_for_transcoding' ), 10, 3 );
+			add_action( 'wpforms_process_entry_saved', array( $this, 'send_saved_files_for_transcoding' ), 10, 4 );
+
+			add_action( 'rtgodam_handle_callback_finished', array( $this, 'handle_transcoded_webhook_callback' ), 10, 4 );
 		}
 	}
 
@@ -145,16 +147,155 @@ class WPForms_Integration {
 	 *
 	 * @since n.e.x.t
 	 *
-	 * @param string $saved_file_url Saved file URL.
-	 * @param array  $entry Entry data.
-	 * @param array  $form_data Form data.
+	 * @param array $fields     Fields data.
+	 * @param array $entry      User submitted data.
+	 * @param array $form_data  Form data.
+	 * @param int   $entry_id   Entry ID.
 	 *
 	 * @return void
 	 */
-	public function send_saved_files_for_transcoding( $saved_file_url, $entry, $form_data ) {
+	public function send_saved_files_for_transcoding( $fields, $entry, $form_data, $entry_id ) {
+		$index      = 0;
 		$form_title = isset( $form_data['settings']['form_title'] ) ? trim( $form_data['settings']['form_title'] ) : __( 'Untitled Form', 'godam' );
-		$entry_id   = isset( $entry['id'] ) ? $entry['id'] : 0;
+		$form_id    = isset( $form_data['id'] ) ? trim( $form_data['id'] ) : __( 'Untitled Form', 'godam' );
 
-		rtgodam_send_video_to_godam_for_transcoding( 'wpforms', $form_title, $saved_file_url, $entry_id );
+		foreach ( $fields as $field ) {
+			if ( ! isset( $field['type'] ) || 'godam_record' !== $field['type'] ) {
+				continue;
+			}
+
+			$response = rtgodam_send_video_to_godam_for_transcoding( 'wpforms', $form_title, $field['value'], $entry_id );
+
+			if ( is_wp_error( $response ) ) {
+				return wp_send_json_error(
+					$response->get_error_message(),
+					$response->get_error_code(),
+				);
+			}
+
+			if ( empty( $response->data ) || empty( $response->data->name ) ) {
+				return wp_send_json_error(
+					__( 'Transcoding data not set', 'godam' ),
+					404
+				);
+			}
+
+			$job_id = $response->data->name;
+
+			$entry_meta_obj = wpforms()->entry_meta;
+
+			if ( $entry_meta_obj ) {
+				$key = 'rtgodam_transcoding_job_id_' . $field['id'] . '_' . $index;
+
+				$meta_value = $entry_meta_obj->get_meta(
+					array(
+						'entry_id' => $entry_id,
+						'form_id'  => $form_id,
+						'type'     => $key,
+					)
+				);
+
+				if ( ! $meta_value ) {
+					$entry_meta_obj->add(
+						array(
+							'entry_id' => $entry_id,
+							'form_id'  => $form_id,
+							'type'     => $key,
+							'data'     => $job_id,
+						)
+					);
+				}
+			}
+
+			add_option(
+				$job_id,
+				array(
+					'source'   => 'wpforms_godam_recorder',
+					'form_id'  => $form_id,
+					'entry_id' => $entry_id,
+					'field_id' => $field['id'],
+					'index'    => $index,
+				)
+			);
+		}
+	}
+
+	/**
+	 * Handle webhook callback by the transcoder service once it has finished transcoding videos.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param number      $attachment_id  Attachment ID for which the callback has sent from the transcoder.
+	 * @param number      $job_id         The transcoding job ID.
+	 * @param string      $job_for        Job for.
+	 * @param \WP_Request $request      WP_Request instance.
+	 *
+	 * @return void
+	 */
+	public function handle_transcoded_webhook_callback( $attachment_id, $job_id, $job_for, $request ) {
+		if ( empty( $job_id ) || empty( $job_for ) ) {
+			return;
+		}
+
+		if ( 'wpforms-godam-recorder' !== $job_for ) {
+			return;
+		}
+
+		$post_array = $request->get_params();
+		$data       = get_option( $job_id );
+
+		$source   = isset( $data['source'] ) ? trim( $data['source'] ) : '';
+		$form_id  = isset( $data['form_id'] ) ? absint( $data['form_id'] ) : 0;
+		$entry_id = isset( $data['entry_id'] ) ? absint( $data['entry_id'] ) : 0;
+		$field_id = isset( $data['field_id'] ) ? absint( $data['field_id'] ) : 0;
+		$index    = isset( $data['index'] ) ? absint( $data['index'] ) : 0;
+
+		if ( 'wpforms_godam_recorder' !== $source ) {
+			return;
+		}
+
+		if ( 0 === $form_id || 0 === $entry_id || 0 === $field_id ) {
+			return;
+		}
+
+		$entry_meta_obj = wpforms()->entry_meta;
+
+		if ( $entry_meta_obj ) {
+			$key = 'rtgodam_transcoding_job_id_' . $field_id . '_' . $index;
+
+			$meta_value = $entry_meta_obj->get_meta(
+				array(
+					'entry_id' => $entry_id,
+					'form_id'  => $form_id,
+					'type'     => $key,
+				)
+			);
+
+			if ( ! $meta_value ) {
+				return;
+			}
+
+
+			$meta_values = array(
+				array(
+					'type' => "rtgodam_transcoded_url_{$field_id}_{$index}",
+					'data' => $post_array['download_url'],
+				),
+				array(
+					'type' => "rtgodam_hls_transcoded_url_{$field_id}_{$index}",
+					'data' => $post_array['hls_path'],
+				),
+				array(
+					'type' => "rtgodam_transcoded_status_{$field_id}_{$index}",
+					'data' => $post_array['status'],
+				),
+				array(
+					'type' => "rtgodam_transcoded_thumbnails_{$field_id}_{$index}",
+					'data' => wp_json_encode( $post_array['thumbnail'] ),
+				),
+			);
+
+			WPForms_Integration_Helper::save_meta_values_to_entry( $form_id, $entry_id, $meta_values );
+		}
 	}
 }
