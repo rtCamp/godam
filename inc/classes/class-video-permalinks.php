@@ -1,6 +1,6 @@
 <?php
 /**
- * Permalinks settings for GoDAM.
+ * Permalinks settings for GoDAM Video CPT slug.
  *
  * @package GoDAM
  */
