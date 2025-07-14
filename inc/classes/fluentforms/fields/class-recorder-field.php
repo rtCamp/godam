@@ -68,10 +68,115 @@ class Recorder_Field extends BaseFieldManager {
 		add_filter( 'fluentform/validate_input_item_' . $this->key, array( $this, 'handle_recorder_field_validation' ), 10, 3 );
 
 		/**
+		 * Filter to change entry markup data.
+		 */
+		add_filter( 'fluentform/response_render_' . $this->key, array( $this, 'render_recorder_field_markup' ), 10, 4 );
+
+		/**
+		 * Register the script to eneque for the fluent forms admin.
+		 */
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_player_scripts' ), PHP_INT_MAX );
+
+		/**
 		 * Initialize all values.
 		 */
 		$this->editor_label = __( 'Godam Recorder', 'godam' );
 		$this->button_text  = __( 'Record Video', 'godam' );
+	}
+
+	/**
+	 * Register the script to enqueue on entries.
+	 *
+	 * @return void
+	 */
+	public function enqueue_player_scripts() {
+
+		/**
+		 * Get entry details page.
+		 */
+		$fluent_form_route = empty( $_GET['route'] ) ? '' : sanitize_text_field( $_GET['route'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		/**
+		 * Check for fluent forms page.
+		 */
+		if ( ! Helper::isFluentAdminPage() || 'entries' !== sanitize_text_field( $fluent_form_route ) ) {
+			return;
+		}
+
+		/**
+		 * Enqueue scripts.
+		 */
+		if ( ! wp_script_is( 'godam-fluentforms-editor' ) ) {
+			wp_enqueue_script(
+				'godam-fluentforms-editor',
+				RTGODAM_URL . 'assets/build/js/godam-fluentforms-editor.min.js',
+				array(),
+				filemtime( RTGODAM_PATH . 'assets/build/js/godam-fluentforms-editor.min.js' ),
+				true
+			);
+		}
+
+		wp_enqueue_script(
+			'godam-player-frontend',
+			RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
+			array( 'godam-fluentforms-editor' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
+			true
+		);
+
+		wp_enqueue_script(
+			'godam-player-analytics',
+			RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
+			array( 'godam-player-frontend' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js' ),
+			true
+		);
+
+		wp_enqueue_style(
+			'godam-player-frontend-style',
+			RTGODAM_URL . 'assets/build/css/godam-player-frontend.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player-frontend.css' )
+		);
+
+		wp_enqueue_style(
+			'godam-player-style',
+			RTGODAM_URL . 'assets/build/css/godam-player.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player.css' )
+		);
+
+		wp_enqueue_style(
+			'godam-player-minimal-skin',
+			RTGODAM_URL . 'assets/build/css/minimal-skin.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/minimal-skin.css' )
+		);
+
+		wp_enqueue_style(
+			'godam-player-pills-skin',
+			RTGODAM_URL . 'assets/build/css/pills-skin.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/pills-skin.css' )
+		);
+
+		wp_enqueue_style(
+			'godam-player-bubble-skin',
+			RTGODAM_URL . 'assets/build/css/bubble-skin.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/bubble-skin.css' )
+		);
+
+		/**
+		 * Localize the script.
+		 */
+		wp_localize_script(
+			'godam-player-frontend',
+			'godamData',
+			array(
+				'apiBase' => RTGODAM_API_BASE,
+			)
+		);
 	}
 
 	/**
@@ -694,5 +799,43 @@ class Recorder_Field extends BaseFieldManager {
 		}
 
 		return $url;
+	}
+
+	/**
+	 * To add the entry detail markup for the recorder field.
+	 *
+	 * @param array<mixed> $response Response.
+	 * @param array<mixed> $field    Field Id.
+	 * @param int          $form_id  Form Id.
+	 * @param bool         $is_html  Is HTML markup to use.
+	 *
+	 * @return string
+	 */
+	public function render_recorder_field_markup( $response, $field, $form_id, $is_html ) {
+
+		// Bail early.
+		if ( empty( $response ) || empty( $response[0] ) ) {
+			return $response;
+		}
+
+		if ( ! $is_html ) {
+			return $response;
+		}
+
+		// Get video URL.
+		$video_url = $response[0];
+
+		$video_output = do_shortcode( "[godam_video src='{$video_url}' ]" );
+		$video_output = '<div class="gf-godam-video-preview">' . $video_output . '</div>';
+
+		$download_url = sprintf(
+			'<div style="margin: 12px 0;"><a type="button" class="el-button el-button--primary el-button--small" target="_blank" href="%s">%s</a></div>',
+			esc_url( $video_url ),
+			__( 'Click to view', 'godam' )
+		);
+
+		$video_output = $download_url . $video_output;
+
+		return $video_output;
 	}
 }

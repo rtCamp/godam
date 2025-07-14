@@ -167,7 +167,7 @@ const elementorEditorJS = {
 const godamRecorder = {
 	...sharedConfig,
 	entry: {
-		'godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-recorder', 'index.js' )
+		'godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-recorder', 'index.js' ),
 	},
 };
 
@@ -175,6 +175,7 @@ const fluentForms = {
 	...sharedConfig,
 	entry: {
 		fluentforms: path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'index.js' ),
+		'godam-fluentforms-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'editor.js' ),
 	},
 };
 

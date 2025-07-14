@@ -70,6 +70,11 @@ class Init {
 		 * Load the new field on `fluentform/loaded`.
 		 */
 		add_action( 'fluentform/loaded', array( $this, 'on_fluentforms_loaded' ) );
+
+		/**
+		 * Filter to exclude godam scripts on fluent forms pages.
+		 */
+		add_filter( 'fluentform/exclude_js_slugs_from_dequeue', array( $this, 'exclude_godam_scripts' ) );
 	}
 
 	/**
@@ -88,5 +93,27 @@ class Init {
 		 * Form Submission handler.
 		 */
 		Form_Submit::get_instance();
+	}
+
+	/**
+	 * Exclude slugs from dequeue.
+	 *
+	 * @param array $slugs Script handle to exclude from dequeue.
+	 *
+	 * @return array
+	 */
+	public function exclude_godam_scripts( $slugs ) {
+
+		/**
+		 * Frontend player and analytics.
+		 */
+		$new = array( 'godam-player-frontend', 'godam-player-analytics', 'admin' );
+
+		/**
+		 * Add to slugs array.
+		 */
+		array_push( $slugs, ...$new );
+
+		return $slugs;
 	}
 }
