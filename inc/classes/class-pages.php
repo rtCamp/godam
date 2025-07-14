@@ -532,7 +532,7 @@ class Pages {
 			wp_register_script(
 				'transcoder-page-script-analytics',
 				RTGODAM_URL . 'assets/build/pages/analytics.min.js',
-				array( 'wp-element' ),
+				array( 'wp-element', 'wp-i18n' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/analytics.min.js' ),
 				true
 			);
@@ -783,7 +783,7 @@ class Pages {
 	/**
 	 * Save current rest api request.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.2.0
 	 *
 	 * @param mixed           $result Response to replace the requested version with. Can be anything a normal endpoint can return, or null to not hijack the request.
 	 * @param \WP_REST_Server $server Server instance.
@@ -803,7 +803,7 @@ class Pages {
 	/**
 	 * Remove anti-spam settings from wpforms.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.2.0
 	 *
 	 * @param array $form_data Form data to be modified.
 	 *

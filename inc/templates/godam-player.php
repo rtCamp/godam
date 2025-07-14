@@ -27,15 +27,41 @@ if ( isset( $is_elementor_widget ) && $is_elementor_widget ) {
 add_filter( 'gform_confirmation_anchor', '__return_false' );
 
 // attributes.
-$autoplay           = ! empty( $attributes['autoplay'] );
-$controls           = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
-$loop               = ! empty( $attributes['loop'] );
-$muted              = ! empty( $attributes['muted'] );
-$poster             = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
-$preload            = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$caption            = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
-$tracks             = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
-$attachment_id      = ! empty( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$autoplay      = ! empty( $attributes['autoplay'] );
+$controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
+$loop          = ! empty( $attributes['loop'] );
+$muted         = ! empty( $attributes['muted'] );
+$poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
+$preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
+$caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
+$tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
+$attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+
+// Determine whether the attachment ID refers to a virtual (GoDAM) media item.
+// If it's not numeric, we assume it's a virtual reference (e.g., a GoDAM ID).
+$is_virtual  = ! is_numeric( $attachment_id );
+$original_id = $attachment_id;
+
+if ( $is_virtual ) {
+	// Query the WordPress Media Library to find an attachment post that has
+	// a meta key `_godam_original_id` matching this virtual media ID.
+	$query = new \WP_Query(
+		array(
+			'post_type'      => 'attachment',
+			'posts_per_page' => 1,
+			'post_status'    => 'any',
+			'meta_key'       => '_godam_original_id',
+			'meta_value'     => sanitize_text_field( $attachment_id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			'fields'         => 'ids',
+		) 
+	);
+
+	// If a matching media attachment exists, use its actual WordPress ID.
+	if ( $query->have_posts() ) {
+		$original_id = $query->posts[0];
+	}
+}
+
 $video_preview      = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
 $overlay_time_range = ! empty( $attributes['overlayTimeRange'] ) ? floatval( $attributes['overlayTimeRange'] ) : 0;
 $show_overlay       = isset( $attributes['showOverlay'] ) ? $attributes['showOverlay'] : false;
@@ -54,6 +80,9 @@ $transcoded_url = ! empty( $attributes['transcoded_url'] ) ? esc_url( $attribute
 $easydam_meta_data = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_meta', true ) : array();
 $easydam_meta_data = is_array( $easydam_meta_data ) ? $easydam_meta_data : array();
 
+if ( $is_virtual ) {
+	$easydam_meta_data = $original_id ? get_post_meta( $original_id, 'rtgodam_meta', true ) : array();
+}
 // Extract control bar settings with a fallback to an empty array.
 $control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? array();
 
@@ -220,15 +249,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure
-	<?php echo $is_shortcode || $is_elementor_widget ? '' : wp_kses_data( get_block_wrapper_attributes() ); ?>
-	style="
-	--rtgodam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
-	--rtgodam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
-	--rtgodam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
-	--rtgodam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
-	<?php echo $aspect_ratio ? '--rtgodam-video-aspect-ratio: ' . esc_attr( str_replace( ':', '/', $aspect_ratio ) ) : ''; ?>
-	">
+	<figure <?php echo wp_kses_data( $figure_attributes ); ?>>
 		<div class="godam-video-wrapper">
 			<?php if ( $show_overlay && ! empty( $inner_blocks_content ) ) : ?>
 				<div
@@ -243,34 +264,8 @@ if ( $is_shortcode || $is_elementor_widget ) {
 				</div>
 			<?php endif; ?>
 
-			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin" style="position: relative;">
-			<?php if ( ! empty( $heading ) ) : ?>
-					<div
-						class="godam-video-heading-overlay"
-						data-heading-overlay
-						style="
-							position: absolute;
-							top: 50%;
-							left: 20px;
-							right: 20px;
-							transform: translateY(-50%);
-							z-index: 10;
-							color: <?php echo esc_attr( $heading_color ); ?>;
-							background-color: <?php echo esc_attr( $heading_bg_color ); ?>;
-							font-size: 24px;
-							font-weight: bold;
-							text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-							padding: 8px;
-							border-radius: 4px;
-							opacity: 1;
-							transition: opacity 0.3s ease;
-						"
-					>
-						<?php echo wp_kses_post( $heading ); ?>
-					</div>
-				<?php endif; ?>
-					
-			<div class="animate-play-btn">
+			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin" >
+				<div class="animate-play-btn">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 					</svg>
