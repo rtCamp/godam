@@ -121,6 +121,10 @@ add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 )
 function rtgodam_plugin_activate() {
 	update_option( 'rtgodam_plugin_activation_time', time() );
 
+	// Explicitly register post types to ensure they are available before flushing.
+	$godam_video = \RTGODAM\Inc\Post_Types\GoDAM_Video::get_instance();
+	$godam_video->register_post_type();
+
 	// Flush rewrite rules to ensure CPT rules are applied.
 	flush_rewrite_rules( true );
 }
