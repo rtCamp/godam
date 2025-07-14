@@ -26,13 +26,12 @@ import {
 	MediaReplaceFlow,
 	useBlockProps,
 	InnerBlocks,
-	store as blockEditorStore,
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { useDispatch } from '@wordpress/data';
 import { external, search, media as icon } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
@@ -50,7 +49,7 @@ import './editor.scss';
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
 
-// Define allowed blocks for the overlay
+// Define allowed blocks for the overlay.
 const ALLOWED_BLOCKS = [
 	'core/paragraph',
 	'core/heading',
@@ -64,7 +63,7 @@ const ALLOWED_BLOCKS = [
 	'core/shortcode',
 ];
 
-// Define template for initial blocks
+// Define template for initial blocks.
 const TEMPLATE = [
 	[ 'core/group', {
 		className: 'godam-video-overlay',
@@ -86,21 +85,8 @@ function VideoEdit( {
 	className,
 	setAttributes,
 	insertBlocksAfter,
-	clientId,
+	context,
 } ) {
-	// Check if this block is inside a Query Loop block.
-	const isInsideQueryLoop = useSelect( ( select ) => {
-		if ( ! clientId ) {
-			return false;
-		}
-
-		const parents = select( blockEditorStore ).getBlockParents( clientId );
-		const parentBlocks = select( blockEditorStore ).getBlocksByClientId( parents );
-
-		// Check if any parent block is a Query Loop.
-		return parentBlocks.some( ( block ) => block.name === 'core/query' );
-	}, [ clientId ] );
-
 	const instanceId = useInstanceId( VideoEdit );
 	const videoPlayer = useRef();
 	const posterImageButton = useRef();
@@ -126,10 +112,11 @@ function VideoEdit( {
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
 	const [ videoResponse, setVideoResponse ] = useState( {} );
 	const [ duration, setDuration ] = useState( 0 );
+	const isInsideQueryLoop = context?.hasOwnProperty( 'queryId' );
 
 	const dispatch = useDispatch();
 
-	// Memoize video options to prevent unnecessary rerenders
+	// Memoize video options to prevent unnecessary rerenders.
 	const videoOptions = useMemo( () => ( {
 		controls,
 		autoplay,
@@ -143,7 +130,7 @@ function VideoEdit( {
 		aspectRatio: '16:9',
 	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources ] );
 
-	// Memoize the video component to prevent rerenders
+	// Memoize the video component to prevent rerenders.
 	const videoComponent = useMemo( () => (
 		<Disabled isDisabled={ ! isSingleSelected }>
 			<Video
@@ -336,50 +323,36 @@ function VideoEdit( {
 	const classes = clsx( className, {
 		'easydam-video-block': true,
 		'is-transient': !! temporaryURL,
+		'godam-editor-video-item': isInsideQueryLoop,
 	} );
 
 	const blockProps = useBlockProps( {
 		className: classes,
 	} );
 
-	if ( isInsideQueryLoop ) {
-		<h1>Hello</h1>;
-	}
-
-	if ( ! src && ! temporaryURL ) {
+	if ( ! src && ! temporaryURL && ! isInsideQueryLoop ) {
 		return (
 			<div { ...blockProps }>
-				{ isInsideQueryLoop ? (
-					<div className="godam-editor-video-item">
-						<div className="godam-editor-video-placeholder">
-							<span className="godam-editor-video-label">
-								{ __( 'GoDAM Video', 'godam' ) }
-							</span>
-						</div>
-					</div>
-				) : (
-					<Placeholder
-						className="block-editor-media-placeholder"
-						withIllustration={ ! isSingleSelected }
-						icon={ icon }
-						label={ __( 'GoDAM video', 'godam' ) }
-						instructions={ __(
-							'Drag and drop a video, upload, or choose from your library.',
-							'godam',
+				<Placeholder
+					className="block-editor-media-placeholder"
+					withIllustration={ ! isSingleSelected }
+					icon={ icon }
+					label={ __( 'GoDAM video', 'godam' ) }
+					instructions={ __(
+						'Drag and drop a video, upload, or choose from your library.',
+						'godam',
+					) }
+				>
+					<MediaUpload
+						onSelect={ onSelectVideo }
+						allowedTypes={ ALLOWED_MEDIA_TYPES }
+						render={ ( { open } ) => (
+							<Button onClick={ open } variant="primary">
+								{ __( 'Select Video', 'godam' ) }
+							</Button>
 						) }
-					>
-						<MediaUpload
-							onSelect={ onSelectVideo }
-							allowedTypes={ ALLOWED_MEDIA_TYPES }
-							render={ ( { open } ) => (
-								<Button onClick={ open } variant="primary">
-									{ __( 'Select Video', 'godam' ) }
-								</Button>
-							) }
-						/>
-					</Placeholder>
-
-				) }
+					/>
+				</Placeholder>
 			</div>
 		);
 	}
@@ -397,12 +370,12 @@ function VideoEdit( {
 
 	const videoPosterDescription = `video-block__poster-image-description-${ instanceId }`;
 
-	// Add function to handle vertical alignment change
+	// Add function to handle vertical alignment change.
 	const onChangeVerticalAlignment = ( alignment ) => {
 		setAttributes( { verticalAlignment: alignment } );
 	};
 
-	// Format time for display
+	// Format time for display.
 	const formatTime = ( seconds ) => {
 		const hours = Math.floor( seconds / 3600 );
 		const minutes = Math.floor( ( seconds % 3600 ) / 60 );
@@ -613,46 +586,59 @@ function VideoEdit( {
 					</PanelBody>
 				) }
 			</InspectorControls>
-
-			<VideoSEOModal
-				isOpen={ isSEOModalOpen }
-				setIsOpen={ setIsSEOModelOpen }
-				attachmentData={ videoResponse }
-				attributes={ attributes }
-				setAttributes={ setAttributes }
-				duration={ attributes?.seo?.duration || '' }
-			/>
-
-			<figure { ...blockProps }>
-				<div className="godam-video-wrapper">
-					{ showOverlay && (
-						<div
-							className={ `godam-video-overlay-container godam-overlay-alignment-${ verticalAlignment }` }
-						>
-							<InnerBlocks
-								allowedBlocks={ ALLOWED_BLOCKS }
-								template={ TEMPLATE }
-								templateLock={ false }
-								renderAppender={ isSingleSelected ? InnerBlocks.ButtonBlockAppender : false }
-								__experimentalLayout={ {
-									type: 'default',
-									inherit: true,
-								} }
-							/>
+			{
+				isInsideQueryLoop ? (
+					<div { ...blockProps }>
+						<div className="godam-editor-video-placeholder">
+							<span className="godam-editor-video-label">
+								{ __( 'GoDAM Video', 'godam' ) }
+							</span>
 						</div>
-					) }
-					{ videoComponent }
-					{ !! temporaryURL && <Spinner /> }
-				</div>
-				<Caption
-					attributes={ attributes }
-					setAttributes={ setAttributes }
-					isSelected={ isSingleSelected }
-					insertBlocksAfter={ insertBlocksAfter }
-					label={ __( 'Video caption text', 'godam' ) }
-					showToolbarButton={ isSingleSelected }
-				/>
-			</figure>
+					</div>
+				) : (
+					<>
+						<VideoSEOModal
+							isOpen={ isSEOModalOpen }
+							setIsOpen={ setIsSEOModelOpen }
+							attachmentData={ videoResponse }
+							attributes={ attributes }
+							setAttributes={ setAttributes }
+							duration={ attributes?.seo?.duration || '' }
+						/>
+
+						<figure { ...blockProps }>
+							<div className="godam-video-wrapper">
+								{ showOverlay && (
+									<div
+										className={ `godam-video-overlay-container godam-overlay-alignment-${ verticalAlignment }` }
+									>
+										<InnerBlocks
+											allowedBlocks={ ALLOWED_BLOCKS }
+											template={ TEMPLATE }
+											templateLock={ false }
+											renderAppender={ isSingleSelected ? InnerBlocks.ButtonBlockAppender : false }
+											__experimentalLayout={ {
+												type: 'default',
+												inherit: true,
+											} }
+										/>
+									</div>
+								) }
+								{ videoComponent }
+								{ !! temporaryURL && <Spinner /> }
+							</div>
+							<Caption
+								attributes={ attributes }
+								setAttributes={ setAttributes }
+								isSelected={ isSingleSelected }
+								insertBlocksAfter={ insertBlocksAfter }
+								label={ __( 'Video caption text', 'godam' ) }
+								showToolbarButton={ isSingleSelected }
+							/>
+						</figure>
+					</>
+				)
+			}
 		</>
 	);
 }
