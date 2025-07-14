@@ -7,7 +7,7 @@
  * @since n.e.x.t
  */
 
-$attachment_url                  = $value; // URL of the saved file, which is under /uploads/godam/wpforms
+$attachment_url                  = $value; // URL of the saved file, which is under /uploads/godam/wpforms.
 $attachment_name                 = basename( $value );
 $transcoded_url                  = '';
 $transcoded_status               = '';
