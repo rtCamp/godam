@@ -15,11 +15,22 @@
 		}
 	},
 	"supports": {
-		"anchor": true,
-		"align": [ "left", "center", "right", "wide", "full" ],
+		"align": true,
+		"ariaLabel": true,
+		"color": {
+			"background": true,
+			"text": true
+		},
+		"customClassName": true,
+		"shadow": true,
 		"spacing": {
 			"margin": true,
 			"padding": true
+		},
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true,
+			"textAlign": true
 		}
 	},
 	"editorScript": ["file:./index.js"],

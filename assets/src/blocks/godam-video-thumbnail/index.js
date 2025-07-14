@@ -20,6 +20,9 @@ export const settings = {
 	icon,
 	edit,
 	save,
+	example: {
+		viewportWidth: 350,
+	},
 };
 
 export const init = () => initBlock( { name, metadata, settings } );

@@ -23,7 +23,18 @@
 		"spacing": {
 			"margin": true,
 			"padding": true
-		}
+		},
+		"alignWide": true,
+		"color": {
+			"background": true,
+			"gradients": true
+		},
+		"dimensions": {
+			"aspectRatio": true,
+			"minHeight": true
+		},
+		"shadow": true,
+		"customClassName": true
 	},
 	"editorScript": ["file:./index.js"],
 	"style": ["file:./style-index.css"],
