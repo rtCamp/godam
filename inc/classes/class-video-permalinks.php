@@ -126,11 +126,14 @@ class Video_Permalinks {
 	 */
 	public function display_slug_updated_notice() {
 		if ( get_transient( 'rtgodam_video_slug_updated' ) ) {
-			?>
-			<div class='notice notice-success is-dismissible'>
-				<p><?php esc_html_e( 'GoDAM video permalink slug updated successfully!', 'godam' ); ?></p>
-			</div>
-			<?php
+			wp_admin_notice(
+				__( 'GoDAM video permalink slug updated successfully!', 'godam' ),
+				array(
+					'type'        => 'success',
+					'dismissible' => true,
+				)
+			);
+			// Remove the transient so the notice doesn't show up again.
 			delete_transient( 'rtgodam_video_slug_updated' );
 		}
 	}
