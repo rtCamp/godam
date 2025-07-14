@@ -30,6 +30,10 @@
 		"muted": {
 			"type": "boolean"
 		},
+		"hoverOverlay": {
+			"type": "boolean",
+			"default": true
+		},
 		"poster": {
 			"type": "string"
 		},

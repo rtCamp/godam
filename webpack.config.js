@@ -182,6 +182,14 @@ const godamRecorder = {
 	},
 };
 
+const fluentForms = {
+	...sharedConfig,
+	entry: {
+		fluentforms: path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'index.js' ),
+		'godam-fluentforms-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'editor.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -264,4 +272,5 @@ module.exports = [
 	elementorWidgetJS,
 	elementorEditorJS,
 	godamRecorder,
+	fluentForms,
 ];

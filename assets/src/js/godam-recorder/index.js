@@ -58,12 +58,13 @@ class UppyVideoUploader {
 			 */
 			const gravityForms = document.querySelector( 'div[id^=gform_confirmation_message_]' );
 			const sureForms = document.querySelector( 'div.srfm-success-box' );
+			const fluentForms = document.querySelector( 'div.ff-message-success' );
 			const wpForms = document.querySelector( 'div.wpforms-confirmation-container-full, div.wpforms-confirmation-container' );
 
 			/**
 			 * If any of the forms have confirmation, remove uppy state.
 			 */
-			const removeUppyState = gravityForms || sureForms || wpForms;
+			const removeUppyState = gravityForms || sureForms || fluentForms || wpForms;
 
 			if ( removeUppyState ) {
 				Object.keys( localStorage )
@@ -139,13 +140,15 @@ class UppyVideoUploader {
 		this.uppy.on( 'restored', () => {
 			const restoredFile = this.uppy.getFiles()?.[ 0 ];
 			if ( restoredFile ) {
-				this.processVideoUpload( restoredFile );
+				this.processVideoUpload( restoredFile, 'restored' );
+			} else {
+				localStorage.removeItem( 'godam-ff-recorder-data' );
 			}
 		} );
 
 		// Handle file addition: process video and close modal.
 		this.uppy.on( 'file-added', ( file ) => {
-			this.processVideoUpload( file );
+			this.processVideoUpload( file, 'added' );
 			this.uppy.getPlugin( 'Dashboard' ).closeModal();
 		} );
 
@@ -161,9 +164,10 @@ class UppyVideoUploader {
 	/**
 	 * Processes the uploaded video, updating preview UI and syncing with file input for submission.
 	 *
-	 * @param {File} file - The uploaded or recorded file from Uppy.
+	 * @param {File}   file   - The uploaded or recorded file from Uppy.
+	 * @param {string} action - Restored or file added.
 	 */
-	processVideoUpload( file ) {
+	processVideoUpload( file, action = 'added' ) {
 		const filenameElement = this.container.querySelector(
 			'.upp-video-upload-filename',
 		);
@@ -208,6 +212,17 @@ class UppyVideoUploader {
 		}
 
 		this.fileInput.files = dataTransfer.files;
+		this.fileInput.dispatchEvent(
+			new CustomEvent(
+				'godamffchange',
+				{
+					bubbles: true,
+					detail: {
+						action,
+					},
+				},
+			),
+		);
 	}
 
 	/**
@@ -230,6 +245,18 @@ class UppyVideoUploader {
 		if ( this.fileInput ) {
 			this.fileInput.value = '';
 		}
+
+		this.fileInput.dispatchEvent(
+			new CustomEvent(
+				'godamffchange',
+				{
+					bubbles: true,
+					detail: {
+						action: 'clear',
+					},
+				},
+			),
+		);
 	}
 
 	/**
@@ -279,7 +306,7 @@ class UppyVideoUploader {
 		const restoredFile = this.uppy.getFiles()?.[ 0 ];
 		if ( restoredFile ) {
 			// Re-render preview on AJAX validation errors.
-			this.processVideoUpload( restoredFile );
+			this.processVideoUpload( restoredFile, 'restored' );
 		}
 	}
 }
@@ -312,6 +339,15 @@ jQuery( document ).ready( function() {
 	 */
 	jQuery( document ).on( 'srfm_on_show_success_message', function() {
 		UppyVideoUploader.clearUppyStateIfConfirmed();
+	} );
+
+	jQuery( document ).on( 'fluentform_submission_success', function() {
+		UppyVideoUploader.clearUppyStateIfConfirmed();
+
+		/**
+		 * Remove the fileURL stored in local storage.
+		 */
+		localStorage.removeItem( 'godam-ff-recorder-data' );
 	} );
 
 	/**
