@@ -152,7 +152,7 @@ class WPForms_Integration {
 	 * @param array $form_data  Form data.
 	 * @param int   $entry_id   Entry ID.
 	 *
-	 * @return void
+	 * @return \WP_Error|void
 	 */
 	public function send_saved_files_for_transcoding( $fields, $entry, $form_data, $entry_id ) {
 		$index      = 0;
