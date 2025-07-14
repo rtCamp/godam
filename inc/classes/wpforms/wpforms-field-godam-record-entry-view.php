@@ -22,12 +22,6 @@ $transcoded_status_error_message = '';
 ?>
 
 <div class="godam-video-preview">
-	<?php
-		// No need to escape here, the entire template will be returned as strings,
-		// which will be later on escaped using wp_kses_post() by WPForms before rendering the field.
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo force_balance_tags( do_shortcode( "[godam_video poster='{$thumbnail_url}' src='{$attachment_url}' transcoded_url='{$transcoded_url}']" ) );
-	?>
 	<div class="godam-video-link-wrapper">
 		<span><?php esc_html_e( 'URL: ', 'godam' ); ?></span>
 		<a
@@ -38,6 +32,7 @@ $transcoded_status_error_message = '';
 			<div class="godam-video-name"><?php echo esc_html( $attachment_name ); ?></div>
 		</a>
 	</div>
+
 	<div class="godam-transcoded-url-info">
 	<?php if ( empty( $transcoded_status_error_message ) ) : ?>
 		<?php if ( 'not_started' === $transcoded_status ) : ?>
@@ -51,4 +46,11 @@ $transcoded_status_error_message = '';
 		<span class='dashicons dashicons-dismiss'></span><strong><?php echo esc_html( $transcoded_status_error_message ); ?></strong>
 	<?php endif; ?>
 	</div>
+
+	<?php
+		// No need to escape here, the entire template will be returned as strings,
+		// which will be later on escaped using wp_kses_post() by WPForms before rendering the field.
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo force_balance_tags( do_shortcode( "[godam_video poster='{$thumbnail_url}' src='{$attachment_url}' transcoded_url='{$transcoded_url}']" ) );
+	?>
 </div>
