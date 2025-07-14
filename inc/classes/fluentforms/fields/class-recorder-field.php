@@ -825,6 +825,54 @@ class Recorder_Field extends BaseFieldManager {
 		// Get video URL.
 		$video_url = $response[0];
 
+		// Fetch the entry id.
+		$entry_id = 0;
+
+		// Global object.
+		global $wp;
+
+		/**
+		 * Get entry ID from rest route.
+		 */
+		if ( ! empty( $wp->query_vars['rest_route'] ) && preg_match( '#^/fluentform/v1/submissions/(\d+)$#', $wp->query_vars['rest_route'], $matches ) ) {
+			$entry_id = intval( $matches[1] );
+		}
+
+		if ( 0 === $entry_id ) {
+			return $response;
+		}
+
+		/**
+		 * Fetch the transcoding URL from meta.
+		 */
+		$transcoded_url_meta_key = 'rtgodam_transcoded_url_fluentforms_' . $form_id . '_' . $entry_id;
+
+		/**
+		 * Get submission meta data.
+		 */
+		$submission_meta = wpFluent()->table( 'fluentform_submission_meta' )
+							->where( 'meta_key', $transcoded_url_meta_key )
+							->where( 'form_id', $form_id )
+							->where( 'response_id', $entry_id )
+							->first();
+
+		/**
+		 * Transcoded URL output.
+		 */
+		$transcoded_url_output = '';
+
+		if ( ! empty( $submission_meta ) ) {
+			$transcoded_url        = esc_url( $submission_meta->value );
+			$transcoded_url        = "transcoded_url={$transcoded_url}";
+			$transcoded_url_output = sprintf(
+				"<div style='margin: 8px 0;' class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></div>",
+				esc_html__( 'Video saved and transcoded successfully on GoDAM', 'godam' )
+			);
+		}
+
+		/**
+		 * Generate video output.
+		 */
 		$video_output = do_shortcode( "[godam_video src='{$video_url}' ]" );
 		$video_output = '<div class="gf-godam-video-preview">' . $video_output . '</div>';
 
@@ -834,7 +882,7 @@ class Recorder_Field extends BaseFieldManager {
 			__( 'Click to view', 'godam' )
 		);
 
-		$video_output = $download_url . $video_output;
+		$video_output = $download_url . $transcoded_url_output . $video_output;
 
 		return $video_output;
 	}
