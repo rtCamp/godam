@@ -341,8 +341,20 @@ class GoDAM_Product_Gallery {
 								foreach ( $product_ids as $product_id ) {
 									$product = wc_get_product( $product_id );
 									if ( $product ) {
+										$timestamp_meta_key = 'godam_product_timestamp_meta_' . $video_id;
+										$timestamp          = get_post_meta( $product_id, $timestamp_meta_key, true );
+
 										echo '<div class="cta-dropdown-item">';
-											echo '<div class="cta-thumbnail-small">' . wp_kses_post( $product->get_image( 'woocommerce_gallery_thumbnail' ) ) . '</div>';
+											echo '<div class="cta-thumbnail-small">';
+												echo wp_kses_post( $product->get_image( 'woocommerce_gallery_thumbnail' ) );
+										
+												// Add play icon if timestamp is available.
+										if ( ! empty( $timestamp ) ) {
+											echo '<button class="product-play-timestamp-button" data-video-id="' . esc_attr( $video_id ) . '" data-timestamp="' . esc_attr( $timestamp ) . '" aria-label="Play at timestamp">';
+												echo '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/></svg>';
+											echo '</button>';
+										}
+											echo '</div>'; // .cta-thumbnail-small ends.
 											echo '<div class="cta-product-info">';
 												echo '<p class="product-title" style="';
 												echo 'font-size:' . intval( $atts['cta_product_name_font_size'] ) . 'px;';

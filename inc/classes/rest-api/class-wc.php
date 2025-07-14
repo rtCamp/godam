@@ -152,7 +152,7 @@ class WC extends Base {
 								'type'              => 'string',
 								'sanitize_callback' => 'sanitize_text_field',
 							),
-							'meta_value' => array(
+							'meta_value' => array( // phpcs:ignore
 								'required'          => true,
 								'type'              => 'string',
 								'sanitize_callback' => 'sanitize_text_field',
@@ -160,7 +160,30 @@ class WC extends Base {
 						),
 					),
 				),
-			),          
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/get-product-meta',
+				'args'      => array(
+					array(
+						'methods'             => \WP_REST_Server::READABLE,
+						'callback'            => array( $this, 'get_product_meta' ),
+						'permission_callback' => '__return_true',
+						'args'                => array(
+							'product_id'    => array(
+								'required'          => true,
+								'type'              => 'integer',
+								'sanitize_callback' => 'absint',
+							),
+							'attachment_id' => array(
+								'required'          => true,
+								'type'              => 'integer',
+								'sanitize_callback' => 'absint',
+							),
+						),
+					),
+				),
+			),       
 		);
 	}
 
@@ -614,7 +637,7 @@ class WC extends Base {
 	}
 
 	/**
-	 * Save custom meta (like timestamp) for a product.
+	 * Save timestamp meta for a product.
 	 *
 	 * @param \WP_REST_Request $request REST request.
 	 * @return \WP_REST_Response|\WP_Error
@@ -634,6 +657,31 @@ class WC extends Base {
 			array(
 				'success' => true,
 				'message' => 'Meta saved successfully.',
+			) 
+		);
+	}
+
+	/**
+	 * Save timestamp meta for a product.
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_product_meta( \WP_REST_Request $request ) {
+		$product_id    = (int) $request->get_param( 'product_id' );
+		$attachment_id = (int) $request->get_param( 'attachment_id' );
+	
+		if ( empty( $product_id ) || empty( $attachment_id ) ) {
+			return new \WP_Error( 'missing_params', 'Product ID and meta key are required.', array( 'status' => 400 ) );
+		}
+
+		$meta_key = 'godam_product_timestamp_meta_' . $attachment_id;
+	
+		$meta_value = get_post_meta( $product_id, $meta_key, true );
+	
+		return rest_ensure_response(
+			array(
+				'product_meta_value' => $meta_value,
 			) 
 		);
 	}

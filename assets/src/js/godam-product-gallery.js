@@ -164,20 +164,32 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 document.addEventListener( 'click', async function( e ) {
 	const playButton = e.target.closest( '.godam-play-button' ) || e.target.closest( '.godam-unmute-button' );
-	if ( ! playButton ) {
+	const timestampBtn = e.target.closest( '.product-play-timestamp-button' );
+
+	if ( ! playButton && ! timestampBtn ) {
 		return;
 	}
 
-	const productVideo = playButton.previousElementSibling;
-	const videoId = productVideo && ( productVideo.classList.contains( 'godam-product-video' ) || productVideo.classList.contains( 'godam-product-video-thumbnail' ) )
-		? productVideo.getAttribute( 'data-video-id' )
-		: null;
+	let getVideoId = null;
+
+	if ( playButton ) {
+		const productVideo = playButton.previousElementSibling;
+		getVideoId = productVideo && ( productVideo.classList.contains( 'godam-product-video' ) || productVideo.classList.contains( 'godam-product-video-thumbnail' ) )
+			? productVideo.getAttribute( 'data-video-id' )
+			: null;
+	}
+
+	if ( timestampBtn ) {
+		getVideoId = timestampBtn?.getAttribute( 'data-video-id' );
+	}
+
+	const videoId = getVideoId;
 
 	if ( ! videoId ) {
 		return;
 	}
 
-	const currentGallery = playButton.closest( '.godam-product-gallery' );
+	const currentGallery = ( playButton || timestampBtn ).closest( '.godam-product-gallery' );
 
 	let modal = document.getElementById( 'godam-product-modal' );
 	if ( ! modal ) {
@@ -242,7 +254,7 @@ document.addEventListener( 'click', async function( e ) {
 			if ( data.status === 'success' && data.html ) {
 				let html = data.html;
 
-				// 🔁 Match and modify the `data-options` JSON string inside the HTML
+				// Match and modify the `data-options` JSON string inside the HTML
 				html = html.replace( /data-options="([^"]+)"/, ( match, jsonEncoded ) => {
 					const decoded = jsonEncoded.replace( /&quot;/g, '"' );
 
@@ -315,6 +327,36 @@ document.addEventListener( 'click', async function( e ) {
 	} );
 
 	await loadNewVideo( videoId );
+
+	// Timestamp button logic.
+	function parseTimestamp( raw ) {
+		if ( ! raw ) {
+			return 0;
+		}
+		if ( raw.includes( ':' ) ) {
+			return raw.split( ':' ).reduce( ( acc, time ) => ( 60 * acc ) + Number( time ), 0 );
+		}
+		return parseFloat( raw );
+	}
+
+	if ( timestampBtn ) {
+		const timestamp = parseTimestamp( timestampBtn.getAttribute( 'data-timestamp' ) );
+
+		if ( ! isNaN( timestamp ) ) {
+			const trySeek = () => {
+				const player = modal.querySelector( '.video-js' );
+				if ( player?.player ) {
+					player.player.ready( () => {
+						player.player.currentTime( timestamp );
+						player.player.play();
+					} );
+				} else {
+					setTimeout( trySeek, 200 );
+				}
+			};
+			trySeek();
+		}
+	}
 
 	/** Scroll/swipe nav for modal */
 	const getVideoItems = () => currentGallery?.querySelectorAll( '.godam-product-video' ) || [];

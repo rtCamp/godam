@@ -167,6 +167,24 @@ jQuery( document ).ready( function( $ ) {
 				container.remove();
 			};
 
+			/* ----- Fetch timestamps when selected products are loaded ----- */
+			wp.element.useEffect( () => {
+				selected.forEach( ( p ) => {
+					const input = document.getElementById( `timestamp_${ p.id }` );
+					const attachment = attachmentId;
+
+					if ( input ) {
+						apiFetch( {
+							path: `${ RTGodamVideoGallery.namespace }${ RTGodamVideoGallery.getTimestampEP }?product_id=${ p.id }&attachment_id=${ attachment }`,
+						} ).then( ( res ) => {
+							if ( res?.product_meta_value ) {
+								input.value = res.product_meta_value;
+							}
+						} );
+					}
+				} );
+			}, [ selected ] );
+
 			return (
 				<Modal title={ __( 'Attach video to other products', 'godam' ) } onRequestClose={ close } className="rt-godam-modal godam-video-picker-modal wc-godam-product-admin">
 					<div style={ { display: 'flex', gap: '8px', marginBottom: '1rem' } }>
@@ -338,7 +356,7 @@ jQuery( document ).ready( function( $ ) {
 													type="text"
 													name={ `timestamp_${ p.id }` }
 													id={ `timestamp_${ p.id }` }
-													placeholder="e.g. 01:23"
+													placeholder="hh:mm:ss"
 													style={ {
 														fontSize: '13px',
 														width: '86%',
@@ -347,6 +365,7 @@ jQuery( document ).ready( function( $ ) {
 														boxSizing: 'border-box',
 														outline: 'none',
 														backgroundColor: '#fff',
+														textAlign: 'center',
 													} }
 												/>
 											</div>
@@ -384,6 +403,8 @@ jQuery( document ).ready( function( $ ) {
 										display: 'inline-flex',
 										alignItems: 'center',
 										marginLeft: '2px',
+										position: 'relative',
+										top: '28px',
 									} }
 								>
 									<Icon
