@@ -4,6 +4,10 @@
  * External dependencies
  */
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+/**
  * VideoJs dependencies
  */
 import 'video.js/dist/video-js.css';
@@ -1181,7 +1185,11 @@ function GODAMPlayer( videoRef = null ) {
 				productLink.target = '_blank';
 				productLink.rel = 'noopener noreferrer';
 				productLink.style.background = hotspot.backgroundColor;
-				productLink.textContent = hotspot.shopText;
+
+				// Product Button Label.
+				const defaultLabel = hotspot.addToCart ? __( 'View Product', 'godam' ) : __( 'Buy Now', 'godam' );
+				const shopText = hotspot.shopText?.trim();
+				productLink.textContent = shopText ? shopText : defaultLabel;
 				productDetailsDiv.appendChild( productLink );
 
 				hotspotContent.appendChild( productBoxDiv );
