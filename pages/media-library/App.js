@@ -146,8 +146,9 @@ const App = () => {
 					}` }
 					onClick={ () => handleClick( -1 ) }
 				>
-					<p className="folder-list__text">{ __( 'All Media', 'godam' ) }</p>
-					{ allMediaCount && <p>{ allMediaCount }</p> }
+					<p className="folder-list__text">{ __( 'All Media', 'godam' ) }
+						<span className="folder-list__count">{ allMediaCount || 0 }</span>
+					</p>
 				</button>
 
 				<button
@@ -157,8 +158,9 @@ const App = () => {
 					onClick={ () => handleClick( 0 ) }
 					data-id={ 0 }
 				>
-					<p className="folder-list__text">{ __( 'Uncategorized', 'godam' ) }</p>
-					{ uncategorizedCount?.count && <p>{ uncategorizedCount?.count }</p> }
+					<p className="folder-list__text">{ __( 'Uncategorized', 'godam' ) }
+						<span className="folder-list__count">{ uncategorizedCount?.count || 0 }</span>
+					</p>
 				</button>
 			</div>
 
