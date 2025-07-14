@@ -329,12 +329,15 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		 * Allow users/plugins to perform action after response received from the transcoder is
 		 * processed
 		 *
+		 * @since n.e.x.t Added $job_for and $request parameter.
 		 * @since 1.0.9
 		 *
-		 * @param number    $attachment_id  Attachment ID for which the callback has sent from the transcoder
-		 * @param number    $job_id         The transcoding job ID
+		 * @param number    $attachment_id  Attachment ID for which the callback has sent from the transcoder.
+		 * @param number    $job_id         The transcoding job ID.
+		 * @param string    $job_for        Job for.
+		 * @param \WP_Request $request      WP_Request instance.
 		 */
-		do_action( 'rtgodam_handle_callback_finished', $attachment_id, $job_id );
+		do_action( 'rtgodam_handle_callback_finished', $attachment_id, $job_id, $job_for, $request );
 	}
 
 	/**

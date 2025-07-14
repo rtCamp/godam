@@ -59,11 +59,12 @@ class UppyVideoUploader {
 			const gravityForms = document.querySelector( 'div[id^=gform_confirmation_message_]' );
 			const sureForms = document.querySelector( 'div.srfm-success-box' );
 			const fluentForms = document.querySelector( 'div.ff-message-success' );
+			const wpForms = document.querySelector( 'div.wpforms-confirmation-container-full, div.wpforms-confirmation-container' );
 
 			/**
 			 * If any of the forms have confirmation, remove uppy state.
 			 */
-			const removeUppyState = gravityForms || sureForms || fluentForms;
+			const removeUppyState = gravityForms || sureForms || fluentForms || wpForms;
 
 			if ( removeUppyState ) {
 				Object.keys( localStorage )
@@ -347,5 +348,12 @@ jQuery( document ).ready( function() {
 		 * Remove the fileURL stored in local storage.
 		 */
 		localStorage.removeItem( 'godam-ff-recorder-data' );
+	} );
+
+	/**
+	 * WPForms confirmation.
+	 */
+	jQuery( document ).on( 'wpformsAjaxSubmitSuccess', function() {
+		UppyVideoUploader.clearUppyStateIfConfirmed();
 	} );
 } );

@@ -16,6 +16,7 @@ const mode = isProduction ? 'production' : 'development';
 
 // Extend the default config.
 const sharedConfig = {
+	mode,
 	...defaultConfig,
 	output: {
 		path: path.resolve( process.cwd(), 'assets', 'build', 'js' ),
@@ -48,11 +49,13 @@ const sharedConfig = {
 		},
 		minimizer: defaultConfig.optimization.minimizer.concat( [ new CssMinimizerPlugin() ] ),
 	},
+	devtool: 'source-map',
 };
 
 // Generate a webpack config which includes setup for CSS extraction.
 // Look for css/scss files and extract them into a build/css directory.
 const styles = {
+	mode,
 	...sharedConfig,
 	entry: () => {
 		const entries = {};
@@ -77,6 +80,7 @@ const styles = {
 			( plugin ) => plugin.constructor.name !== 'DependencyExtractionWebpackPlugin',
 		),
 	],
+	devtool: 'source-map',
 };
 
 // Example of how to add a new entry point for JS file.
@@ -140,6 +144,13 @@ const gfEntryDetailJS = {
 	...sharedConfig,
 	entry: {
 		'gf-entry-detail': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gravity-form', 'gf-entry-detail.js' ),
+	},
+};
+
+const wpFormsGodamRecorderEditorJS = {
+	...sharedConfig,
+	entry: {
+		'wpforms-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpforms-godam-recorder-editor.js' ),
 	},
 };
 
@@ -254,6 +265,7 @@ module.exports = [
 	godamGallery,
 	gfGodamRecorderEditorJS,
 	gfEntryDetailJS,
+	wpFormsGodamRecorderEditorJS,
 	jetpackFormJS,
 	styles, // Do not remove this.
 	pages,
