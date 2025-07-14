@@ -8,7 +8,12 @@
 	"description": "Display GoDAM video's duration",
 	"keywords": ["video", "gallery", "grid", "videos"],
 	"textdomain": "godam",
-	"attributes": {},
+	"attributes": {
+		"durationFormat": {
+			"type": "string",
+			"default": "default"
+		}
+	},
 	"supports": {
 		"anchor": true,
 		"align": [ "left", "center", "right", "wide", "full" ],

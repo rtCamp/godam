@@ -478,3 +478,39 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 
 	return json_decode( $response['body'] );
 }
+
+/**
+ * Format video duration based on the selected format for GoDAM block.
+ *
+ * @param string $duration       The raw duration value in seconds.
+ * @param string $duration_format The format to use (default, minutes, seconds).
+ * 
+ * @return string The formatted duration string.
+ */
+function rtgodam_block_format_video_duration( $duration, $duration_format = 'default' ) {
+	if ( empty( $duration ) ) {
+		return '';
+	}
+
+	// Parse the duration - assuming it's stored in seconds.
+	$total_seconds = intval( $duration );
+	$hours         = floor( $total_seconds / 3600 );
+	$minutes       = floor( ( $total_seconds % 3600 ) / 60 );
+	$seconds       = $total_seconds % 60;
+
+	switch ( $duration_format ) {
+		case 'minutes':
+			// Show as MM:SS.
+			$total_minutes = floor( $total_seconds / 60 );
+			return sprintf( '%02d:%02d', $total_minutes, $seconds );
+
+		case 'seconds':
+			// Show total seconds with 's' suffix.
+			return $total_seconds . __( 's', 'godam' );
+
+		case 'default':
+		default:
+			// Show as HH:MM:SS.
+			return sprintf( '%02d:%02d:%02d', $hours, $minutes, $seconds );
+	}
+}
