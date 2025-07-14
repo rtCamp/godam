@@ -182,22 +182,25 @@ const VideoEditor = ( { attachmentID } ) => {
 	const pauseVideo = () => playerRef.current?.pause();
 
 	const validateLayers = ( videoLayers ) => {
+		const invalidFormLayers = [];
 		for ( const layer of videoLayers ) {
 			if ( layer.type === 'form' ) {
 				const formType = layer.form_type;
 				const fieldName = formIDMap[ formType ];
 				if ( ! fieldName || ! layer[ fieldName ] ) {
-					return false;
+					invalidFormLayers.push( layer.displayTime );
 				}
 			}
 		}
-		return true;
+		return invalidFormLayers;
 	};
 
 	const handleSaveAttachmentMeta = async () => {
+		const invalidLayers = validateLayers( layers );
 		// Validate form layers before saving.
-		if ( ! validateLayers( layers ) ) {
-			setSnackbarMessage( __( 'Please select a form for each form layer', 'godam' ) );
+		if ( invalidLayers.length > 0 ) {
+			const layerTimes = invalidLayers.join( ', ' );
+			setSnackbarMessage( __( 'Please select a form at layers: ', 'godam' ) + layerTimes );
 			setShowSnackbar( true );
 			setTimeout( () => {
 				setShowSnackbar( false );
