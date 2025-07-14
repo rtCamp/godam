@@ -23,6 +23,7 @@ import SettingsButton from '../../../../../assets/src/js/godam-player/masterSett
 import ColorPickerButton from '../../../../video-editor/components/shared/color-picker/ColorPickerButton.jsx';
 import Share from '../../../../../assets/src/images/share.svg';
 import ShareVariationOne from '../../../../../assets/src/images/share-variation-one.svg';
+import CustomVideoPlayerCSS from './CustomVideoPlayerCSS.jsx';
 
 const VideoPlayer = () => {
 	const dispatch = useDispatch();
@@ -385,6 +386,14 @@ const VideoPlayer = () => {
 						mediaSettings={ mediaSettings }
 						handleSettingChange={ handleSettingChange }
 					/>
+				</div>
+
+				<div className="godam-form-group mb-8 mx-auto w-[80%]">
+					<label className="label-text" htmlFor="brand-color">{ __( 'Custom CSS', 'godam' ) }</label>
+					<CustomVideoPlayerCSS handleSettingChange={ handleSettingChange } />
+					<div className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
+						{ __( 'Any custom CSS you add will be applied to all player skins. It’s global and not tied to a specific skin style.', 'godam' ) }
+					</div>
 				</div>
 
 				<Button
