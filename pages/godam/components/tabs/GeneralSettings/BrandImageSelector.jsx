@@ -97,7 +97,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 					<img
 						src={ mediaSettings?.video_player?.brand_image }
 						alt={ __( 'Selected custom brand', 'godam' ) }
-						className="max-w-[200px]"
+						className="max-w-[150px]"
 					/>
 				</div>
 			) }
