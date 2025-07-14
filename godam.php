@@ -120,6 +120,9 @@ add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 )
  */
 function rtgodam_plugin_activate() {
 	update_option( 'rtgodam_plugin_activation_time', time() );
+
+	// Flush rewrite rules to ensure CPT rules are applied.
+	flush_rewrite_rules();
 }
 
 register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
