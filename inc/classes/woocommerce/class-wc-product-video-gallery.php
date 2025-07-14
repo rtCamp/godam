@@ -107,8 +107,8 @@ class WC_Product_Video_Gallery {
 		wp_register_script(
 			'rtgodam-wc-video-carousel',
 			RTGODAM_URL . 'assets/build/js/wc-video-carousel.min.js',
-			array( 'jquery', 'rtgodam-swiper-script' ),
-			filemtime( RTGODAM_PATH . 'assets/src/libs/swiper/wc-video-carousel.min.js' ),
+			array( 'jquery', 'rtgodam-swiper-script', 'wp-data' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/wc-video-carousel.min.js' ),
 			true
 		);
 
@@ -571,7 +571,18 @@ class WC_Product_Video_Gallery {
 		woocommerce_template_single_rating();
 		woocommerce_template_single_price();
 		woocommerce_template_single_excerpt();
-		woocommerce_template_single_add_to_cart();
+		?>
+		<div class="rtgodam-product-video-gallery-slider-modal-content--cart">
+			<div class="rtgodam-product-video-gallery-slider-modal-content--cart-form">
+				<?php woocommerce_template_single_add_to_cart(); ?>
+			</div>
+			<div class="rtgodam-product-video-gallery-slider-modal-content--cart-basket">
+				<?php
+					echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore
+				?>
+			</div>
+		</div>
+		<?php
 		woocommerce_template_single_meta();
 		woocommerce_template_single_sharing();
 		return ob_get_clean();
