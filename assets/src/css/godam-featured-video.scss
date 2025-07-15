@@ -144,15 +144,7 @@
   }
 
   .animate-play-btn {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
+   display: none !important;
   }
 
   // Responsive: Mobile Fullscreen Video Styles
