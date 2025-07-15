@@ -24,7 +24,9 @@ const FluentForm = ( { layerID } ) => {
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 
 	const fluentForms = useSelector( ( state ) => state.videoReducer.fluentForms );
-	const { data: formHTML, isFetching } = useGetSingleFluentFormQuery( layer.fluent_form_id );
+	const { data: formHTML, isFetching } = useGetSingleFluentFormQuery( layer.fluent_form_id, {
+		skip: 'undefined' === typeof layer?.fluent_form_id,
+	} );
 
 	const forms = fluentForms?.map( ( form ) => ( {
 		value: form.id,

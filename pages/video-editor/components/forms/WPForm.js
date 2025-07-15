@@ -22,7 +22,9 @@ const WPForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const wpForms = useSelector( ( state ) => state.videoReducer.wpforms );
-	const { data: formHTML, isFetching } = useGetSingleWPFormQuery( layer.wpform_id );
+	const { data: formHTML, isFetching } = useGetSingleWPFormQuery( layer.wpform_id, {
+		skip: 'undefined' === typeof layer.wpform_id,
+	} );
 
 	const forms = wpForms?.map( ( form ) => ( {
 		value: form.id,
