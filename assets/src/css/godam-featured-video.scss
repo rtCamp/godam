@@ -18,26 +18,25 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     background: rgba(0, 0, 0, 0.5) !important;
     position: relative;
   }
 
-  .easydam-video-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100vw;
-    height: 100vh;
-    background: transparent;
-    padding: 0;
-    box-shadow: none !important;
+  .godam-featured-video-modal-overlay{
+    width: 100vw !important;
+    height: 100vh !important;
+  }
+
+  .godam-featured-video-modal-content{
+    width: 100vw !important;
+    height: 100vh !important;
   }
 
   // Portrait video wrapper/container fix
   .godam-video-wrapper:has(video.is-portrait),
-  .video-js:has(video.is-portrait) {
+  .video-js:has(video.is-portrait) , .easydam-video-container:has(video.is-portrait) {
     aspect-ratio: 9/16 !important;
     width: auto !important;
     max-width: 420px !important; // or 40vw if you want it responsive
@@ -75,7 +74,7 @@
 
   // Landscape video style - always centered, max size
   .godam-video-wrapper:not(:has(video.is-portrait)),
-  .video-js:not(:has(video.is-portrait)) {
+  .video-js:not(:has(video.is-portrait))  {
     aspect-ratio: 16/9;
     width: 70vw;
     max-width: 900px;
@@ -147,6 +146,9 @@
    display: none !important;
   }
 
+
+  
+
   // Responsive: Mobile Fullscreen Video Styles
   @media (max-width: 768px) {
     .godam-video-wrapper:has(video.is-portrait) {
@@ -161,21 +163,7 @@
       margin: 0 !important;
     }
 
-    .godam-featured-video-modal-content,
-    .easydam-video-container {
-      width: 100vw !important;
-      height: 100vh !important;
-      max-width: none !important;
-      max-height: none !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: center !important;
-      justify-content: center !important;
-      background: #000 !important;
-      position: relative;
-    }
+
 
     .godam-video-wrapper,
     .video-js {
