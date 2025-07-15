@@ -33,7 +33,9 @@ const GravityForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const gforms = useSelector( ( state ) => state.videoReducer.gforms );
-	const { data: formHTML, isFetching } = useGetSingleGravityFormQuery( { id: layer.gf_id, theme: layer.theme || 'orbital' } );
+	const { data: formHTML, isFetching } = useGetSingleGravityFormQuery( { id: layer.gf_id, theme: layer.theme || 'orbital' }, {
+		skip: 'undefined' === typeof layer?.gf_id,
+	} );
 
 	const forms = gforms?.map( ( form ) => ( {
 		value: form.id,
