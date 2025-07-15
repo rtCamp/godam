@@ -406,7 +406,7 @@ function VideoEdit( {
 
 	return (
 		<>
-			{ isSingleSelected && (
+			{ ( isSingleSelected && ! isInsideQueryLoop ) && (
 				<BlockControls group="other">
 					<MediaReplaceFlow
 						mediaId={ id }
