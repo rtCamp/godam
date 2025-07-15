@@ -23,7 +23,7 @@ if ( $post && is_object( $post ) ) {
 	 * Set ID attribute if not already set.
 	 */
 	if ( ! empty( $query_loop_attachment_id ) ) {
-		$attributes['id'] = $attributes['id'] ?? $query_loop_attachment_id;
+		$attributes['id'] = $query_loop_attachment_id;
 	}
 }
 
