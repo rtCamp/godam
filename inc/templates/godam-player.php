@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use RTGODAM\Inc\Form_Layer;
+
 if ( isset( $is_shortcode ) && $is_shortcode ) {
 	$is_shortcode = true;
 } else {
@@ -343,6 +345,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 							</div>
 								<?php
 							elseif ( 'cf7' === $form_type && ! empty( $layer['cf7_id'] ) ) :
+								Form_Layer::add_form_godam_identifier( $attachment_id, $form_type, $layer['cf7_id'] );
 								$form_theme = ! empty( $layer['theme'] ) ? $layer['theme'] : 'godam';
 								?>
 								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
@@ -350,7 +353,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 										<?php
 											echo do_shortcode(
 												sprintf(
-													"[contact-form-7 id='%d' title='false' ajax='true']",
+													"[contact-form-7 id='%d' html_class='godam-video' title='false' ajax='true']",
 													intval( $layer['cf7_id'] )
 												)
 											);
