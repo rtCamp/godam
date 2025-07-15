@@ -92,6 +92,9 @@ class SettingsButton extends videojs.getComponent( 'MenuButton' ) {
 				this.menu.addChild( item );
 			} );
 
+			const playerEl = this.player_.el();
+      playerEl.classList.remove("godam-submenu-open");
+
 			// Reset original items reference
 			this.originalItems_ = null;
 		}
@@ -110,6 +113,8 @@ function openSubmenu( menuButton, items, title = '' ) {
 	if ( ! menuButton.originalItems_ ) {
 		menuButton.originalItems_ = menuButton.menu.children().slice();
 	}
+
+	menuButton.player_.el().classList.add( 'godam-submenu-open' );
 
 	// Clear existing menu items using Video.js methods
 	const mainMenuItems = menuButton.menu.children().slice();

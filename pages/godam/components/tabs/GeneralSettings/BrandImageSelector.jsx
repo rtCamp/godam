@@ -89,7 +89,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 			<Button
 				onClick={ openBrandMediaPicker }
 				variant="primary"
-				disabled={ 'Bubble' === mediaSettings?.video_player?.player_skin }
+				disabled={ 'Bubble' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin }
 				className="godam-button godam-margin-right mt-[0.3rem] mb-[0.7rem]"
 			>
 				{ mediaSettings?.video_player?.brand_image ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
@@ -100,17 +100,17 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 					variant="secondary"
 					isDestructive
 					className="godam-button ml-3"
-					disabled={ 'Bubble' === mediaSettings?.video_player?.player_skin }
+					disabled={ 'Bubble' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin }
 				>
 					{ __( 'Remove', 'godam' ) }
 				</Button>
 			) }
-			{ mediaSettings?.video_player?.brand_image && 'Bubble' !== mediaSettings?.video_player?.player_skin && (
-				<div className="mt-2">
+			{ mediaSettings?.video_player?.brand_image && (
+				<div className="mt-2 border-2 border-blue-700 rounded-lg p-2 block bg-gray-200 w-fit">
 					<img
 						src={ mediaSettings?.video_player?.brand_image }
 						alt={ __( 'Selected custom brand', 'godam' ) }
-						className="max-w-[200px]"
+						className="max-w-[150px]"
 					/>
 				</div>
 			) }
@@ -126,7 +126,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 
 			<p className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
 				{
-					'Bubble' === mediaSettings?.video_player?.player_skin ? __(
+					( 'Bubble' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin ) ? __(
 						'The brand logo will not be applied to the player skin.',
 						'godam',
 					) : __(

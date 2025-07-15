@@ -1034,62 +1034,81 @@
 	background: inherit;
 	z-index: 10;
 }
+ 
+.video-js .vjs-big-play-button {
+	background-color: var(--rtgodam-control-bar-color, #000) !important;
+	border: none;
+	cursor: pointer;
+	border-radius: 50%;
+	padding: 0;
+	z-index: 10;
+	width: 50px;
+	height: 50px;
+	left: 53%;
+	transition: transform 0.3s ease;
 
-.vjs-big-play-button {
-	background-color: var(--rtgodam-control-bar-color, #2b333fb3) !important;
-}
-
-.left-align {
-	left: 3em !important;
-}
-
-.right-align {
-	left: auto !important;
-	right: 1.5em;
-}
-
-.top-align {
-	top: 1.5em !important;
-}
-
-.bottom-align {
-	top: auto !important;
-	bottom: 1.5em;
-}
-
-.vjs-control-bar-vertical {
-	width: 10% !important;
-	height: 100% !important;
-	flex-direction: column;
-	overflow: scroll;
-}
-
-.vjs-control-vertical,
-.vjs-volume-control-vertical {
-	height: 6em !important;
-	width: 6em !important;
-}
-
-.vjs-control.vjs-custom-play-button {
-	width: auto !important;
-	order: 8;
-
-	@media screen and (max-width: 768px) {
-		display: none;
+	span::before {
+		font-size: 1.7rem;
+    	line-height: 1.9;
 	}
 
-	#branding-icon {
-		height: 100%;
-		width: auto;
-		object-fit: fill;
+	&:hover, &:focus {
+		transform: scale(1.1);
 	}
-}
+ }
+ 
+ .left-align {
+	 left: 3em !important;
+ }
+ 
+ .right-align {
+	 left:auto !important;
+	 right:1.5em;
+ }
+ 
+ .top-align {
+	 top: 1.5em !important;
+ }
+ 
+ .bottom-align {
+	 top:auto !important;
+	 bottom:1.5em;
+ }
+ 
+ .vjs-control-bar-vertical {
+	 width: 10% !important;
+	 height: 100% !important;
+	 flex-direction: column;
+	 overflow: scroll;
+ }
+ 
+ .vjs-control-vertical, .vjs-volume-control-vertical {
+	 height: 6em !important;
+	 width: 6em !important;
+ }
+ 
+ .vjs-control.vjs-custom-play-button {
+	 width: auto !important;
+	 order: 8;
+ 
+	 @media screen and (max-width: 768px) {
+		 display: none;
+	 }
+ 
+	 #branding-icon {
+		 height: 100%;
+		 width: auto;
+		 object-fit: fill;
+	 }
+ }
 
 .vjs-big-play-button.custom-play-image {
 	height: unset;
 	border: unset;
+	width: 3em;
 	border-radius: unset;
 	background-color: transparent !important;
+	left: 50%;
 }
 
 .share-icon {

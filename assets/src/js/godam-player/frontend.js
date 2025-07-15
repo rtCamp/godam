@@ -288,7 +288,11 @@ function GODAMPlayer( videoRef = null ) {
 
 		function handleVideoResize() {
 			// Skip if video is fullscreen
-			if ( ! player || typeof player.isFullscreen !== 'function' ) {
+			if (
+				! player ||
+        typeof player.isFullscreen !== 'function' ||
+        videoSetupOptions?.playerSkin === 'Classic'
+			) {
 				return;
 			}
 
