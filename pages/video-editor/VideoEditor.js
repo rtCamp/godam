@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from 'react-redux';
  * WordPress dependencies
  */
 import { Button, TabPanel, Snackbar, Tooltip } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, _n } from '@wordpress/i18n';
 import { copy, seen } from '@wordpress/icons';
 
 /**
@@ -37,6 +37,16 @@ import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
 
 const VideoEditor = ( { attachmentID } ) => {
+	const formIDMap = {
+		cf7: 'cf7_id',
+		gravity: 'gf_id',
+		wpforms: 'wpform_id',
+		forminator: 'forminator_id',
+		sureforms: 'sureform_id',
+		fluentforms: 'fluent_form_id',
+		jetpack: 'jp_id',
+		everestforms: 'everest_form_id',
+	};
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
@@ -177,7 +187,33 @@ const VideoEditor = ( { attachmentID } ) => {
 	const seekToTime = ( time ) => playerRef.current?.currentTime( time );
 	const pauseVideo = () => playerRef.current?.pause();
 
+	const validateLayers = ( videoLayers ) => {
+		const invalidFormLayers = [];
+		for ( const layer of videoLayers ) {
+			if ( layer.type === 'form' ) {
+				const formType = layer.form_type;
+				const fieldName = formIDMap[ formType ];
+				if ( ! fieldName || ! layer[ fieldName ] ) {
+					invalidFormLayers.push( layer.displayTime );
+				}
+			}
+		}
+		return invalidFormLayers;
+	};
+
 	const handleSaveAttachmentMeta = async () => {
+		const invalidLayers = validateLayers( layers );
+		// Validate form layers before saving.
+		if ( invalidLayers.length > 0 ) {
+			const layerTimes = invalidLayers.join( ', ' );
+			setSnackbarMessage( _n( 'Please select a form for the layer at timestamp: ', 'Please select a form for the layers at timestamps: ', invalidLayers.length, 'godam' ) + layerTimes );
+			setShowSnackbar( true );
+			setTimeout( () => {
+				setShowSnackbar( false );
+			}, 3000 );
+			return;
+		}
+
 		const data = {
 			rtgodam_meta: { videoConfig, layers, chapters },
 		};
