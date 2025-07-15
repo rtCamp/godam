@@ -200,7 +200,7 @@ const VideoEditor = ( { attachmentID } ) => {
 		// Validate form layers before saving.
 		if ( invalidLayers.length > 0 ) {
 			const layerTimes = invalidLayers.join( ', ' );
-			setSnackbarMessage( _n( 'Please select a form at layer: ', 'Please select forms at layers: ', invalidLayers.length, 'godam' ) + layerTimes );
+			setSnackbarMessage( _n( 'Please select a form for the layer at timestamp: ', 'Please select a form for the layers at timestamps: ', invalidLayers.length, 'godam' ) + layerTimes );
 			setShowSnackbar( true );
 			setTimeout( () => {
 				setShowSnackbar( false );
