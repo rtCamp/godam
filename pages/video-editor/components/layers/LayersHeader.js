@@ -145,7 +145,7 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 						<div className="flex justify-between items-center gap-3">
 							<Button
 								isTertiary
-								className="w-full justify-center godam-buttom"
+								className="w-full justify-center godam-button"
 								onClick={ () => setOpen( false ) }
 							>
 								{ __( 'Cancel', 'godam' ) }

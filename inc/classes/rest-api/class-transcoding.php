@@ -136,7 +136,7 @@ class Transcoding extends Base {
 		if ( ! $attachment_id ) {
 			wp_send_json_error(
 				array(
-					'message' => 'Attachment not found.',
+					'message' => __( 'Attachment not found.', 'godam' ),
 				)
 			);
 		}

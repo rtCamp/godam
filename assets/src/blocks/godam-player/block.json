@@ -20,11 +20,19 @@
 			"type": "number",
 			"role": "content"
 		},
+		"cmmId": {
+			"type": "number",
+			"default": ""
+		},
 		"loop": {
 			"type": "boolean"
 		},
 		"muted": {
 			"type": "boolean"
+		},
+		"hoverOverlay": {
+			"type": "boolean",
+			"default": true
 		},
 		"poster": {
 			"type": "string"
@@ -62,7 +70,13 @@
 		},
 		"aspectRatio": {
 			"type": "string",
-			"default": "16/9"
+			"default": "16:9"
+		},
+		"videoHeight": {
+			"type": "string"
+		},
+		"videoWidth": {
+			"type": "string"
 		},
 		"caption": {
 			"type": "string",
@@ -142,7 +156,7 @@
 		}
 	},
 	"editorStyle": ["file:./index.css", "godam-player-frontend-style"],
-	"style": ["godam-player-style", "godam-player-frontend-style"],
+	"style": ["godam-player-style", "godam-player-frontend-style", "godam-player-minimal-skin", "godam-player-pills-skin", "godam-player-bubble-skin", "godam-player-classic-skin"],
 	"editorScript": ["file:./index.js"],
 	"viewScript": ["godam-player-frontend-script", "godam-player-analytics-script"],
 	"render": "file:./render.php"

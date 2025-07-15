@@ -80,6 +80,7 @@
 	&:hover {
 		color: var(--rtgodam-control-hover-color, #fff);
 	}
+
 	&.hidden {
 		display: none;
 	}
@@ -87,7 +88,7 @@
 
 .easydam-video-container {
 	position: relative;
-	aspect-ratio: var(--rtgodam-video-aspect-ratio);
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16/9);
 	background-color: rgba(149, 149, 149, 0.2);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
@@ -132,7 +133,7 @@
 
 
 .easydam-player.video-js {
-	aspect-ratio: var(--rtgodam-video-aspect-ratio);
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16/9);
 }
 
 .form-container {
@@ -510,6 +511,7 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+
 	.product-hotspot-box {
 		width: 11em;
 		font-size: 13px;

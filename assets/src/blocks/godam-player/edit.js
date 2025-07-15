@@ -90,6 +90,7 @@ function VideoEdit( {
 	const posterImageButton = useRef();
 	const {
 		id,
+		cmmId,
 		controls,
 		autoplay,
 		poster,
@@ -136,7 +137,8 @@ function VideoEdit( {
 						const video = playerEl.querySelector( 'video' );
 
 						video.addEventListener( 'loadedmetadata', () => {
-							setAttributes( { aspectRatio: `${ video.videoWidth } / ${ video.videoHeight }` } );
+							setAttributes( { videoWidth: `${ video.videoWidth }` } );
+							setAttributes( { videoHeight: `${ video.videoHeight }` } );
 							let _duration = player.duration();
 							setDuration( _duration );
 							if ( _duration ) {
@@ -236,6 +238,7 @@ function VideoEdit( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
+			cmmId: media.id,
 			poster: undefined,
 			caption: media.caption,
 		} );
@@ -424,6 +427,20 @@ function VideoEdit( {
 						setAttributes={ setAttributes }
 						attributes={ attributes }
 					/>
+
+					<BaseControl
+						id={ `video-block__hover-${ instanceId }` }
+						label={ __( 'Hover Options', 'godam' ) }
+						__nextHasNoMarginBottom
+					>
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label={ __( 'Hover Overlay', 'godam' ) }
+							onChange={ ( value ) => setAttributes( { hoverOverlay: value } ) }
+							checked={ !! attributes.hoverOverlay }
+						/>
+					</BaseControl>
+
 					<BaseControl
 						id={ `video-block__poster-image-${ instanceId }` }
 						label={ __( 'Video Thumbnail', 'godam' ) }
@@ -476,7 +493,7 @@ function VideoEdit( {
 					>
 						<Button
 							__next40pxDefaultSize
-							href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ id }` }
+							href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
 							target="_blank"
 							variant="primary"
 							className=""
@@ -501,6 +518,22 @@ function VideoEdit( {
 						>
 							{ __( 'SEO Settings', 'godam' ) }
 						</Button>
+					</BaseControl>
+
+					<BaseControl
+						id={ `video-block__video--selected-aspect-ratio-${ instanceId }` }
+						label={ __( 'Aspect Ratio', 'godam' ) }
+						__nextHasNoMarginBottom
+					>
+						<SelectControl
+							value={ attributes.aspectRatio || '16:9' }
+							options={ [
+								{ label: __( '16:9 (Standard)', 'godam' ), value: '16:9' },
+								{ label: __( 'Responsive', 'godam' ), value: 'responsive' },
+							] }
+							onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
+							help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
+						/>
 					</BaseControl>
 
 				</PanelBody>

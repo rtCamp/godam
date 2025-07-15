@@ -10,6 +10,7 @@ import {
 	Button,
 	Panel,
 	PanelBody,
+	Snackbar,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useRef } from '@wordpress/element';
@@ -55,11 +56,19 @@ const RetranscodeTab = () => {
 			},
 		} )
 			.then( ( response ) => {
-				if ( response.data?.data && Array.isArray( response.data.data ) ) {
+				console.log( 'Fetched media for retranscoding:', response.data );
+				if ( response.data?.data && Array.isArray( response.data.data ) && response.data.data.length > 0 ) {
 					setAttachments( response.data.data );
+					console.log( 'Media files fetched for retranscoding:', response.data.data );
+				} else {
+					setError( {
+						message: __( 'No media files found for retranscoding.', 'godam' ),
+						details: __( 'Please ensure you have media files that require retranscoding.', 'godam' ),
+					} );
 				}
 			} )
 			.catch( ( err ) => {
+				console.error( 'Error fetching media for retranscoding:', err );
 				setError( {
 					message: __( 'An error occurred while fetching media for retranscoding.', 'godam' ),
 					details: err.response ? err.response.data.message : err.message,
@@ -159,10 +168,10 @@ const RetranscodeTab = () => {
 
 					{
 						error &&
-						<p className="godam-error">
+						<Snackbar className="snackbar-error">
 							{ error?.message }
 							{ error?.details && <span className="godam-error-details">: { error.details }</span> }
-						</p>
+						</Snackbar>
 					}
 
 					{

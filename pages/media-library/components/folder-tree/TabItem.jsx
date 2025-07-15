@@ -7,7 +7,7 @@ import { useCallback } from 'react';
 /**
  * WordPress dependencies
  */
-import { Icon, file, lock } from '@wordpress/icons';
+import { Icon, file } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -16,12 +16,11 @@ import { changeSelectedFolder } from '../../redux/slice/folders';
 import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
 
-const BookmarkItem = ( { item, index } ) => {
+const TabItem = ( { item, index, onContextMenu } ) => {
 	const dispatch = useDispatch();
 	const selectedFolderID = useSelector( ( state ) => state.FolderReducer?.selectedFolder?.id );
 
 	const isActive = item?.id === selectedFolderID;
-	const isLocked = item?.meta?.locked;
 	const attachmentCount = item?.attachmentCount ?? 0;
 
 	/**
@@ -43,6 +42,7 @@ const BookmarkItem = ( { item, index } ) => {
 		<div
 			className={ `tree-item ${ isActive ? 'tree-item--active' : '' }` }
 			data-id={ item.id }
+			onContextMenu={ ( e ) => onContextMenu( e, item.id ) }
 		>
 			<button
 				className="tree-item__button"
@@ -50,7 +50,7 @@ const BookmarkItem = ( { item, index } ) => {
 				onClick={ handleClick }
 			>
 				<div className="tree-item__content">
-					<Icon icon={ isLocked ? lock : file } />
+					<Icon icon={ file } />
 					<span className="tree-item__text">{ item?.name || '' }</span>
 					<span className="tree-item__count">
 						{ attachmentCount }
@@ -61,4 +61,4 @@ const BookmarkItem = ( { item, index } ) => {
 	);
 };
 
-export default BookmarkItem;
+export default TabItem;

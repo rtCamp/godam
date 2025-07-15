@@ -52,7 +52,19 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 			}
 
 			handleSettingChange( 'brand_image', attachment.url );
+			handleSettingChange( 'brand_image_id', attachment.id );
 		} );
+
+		if ( mediaSettings?.video_player?.brand_image_id ) {
+			const attachment = wp.media.attachment( mediaSettings.video_player.brand_image_id );
+			attachment.fetch();
+
+			fileFrame.on( 'open', function() {
+				const selection = fileFrame.state().get( 'selection' );
+				selection.reset();
+				selection.add( attachment );
+			} );
+		}
 
 		fileFrame.open();
 	};
@@ -62,6 +74,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 	 */
 	const removeBrandImage = () => {
 		handleSettingChange( 'brand_image', '' );
+		handleSettingChange( 'brand_image_id', null );
 	};
 
 	return (
@@ -76,26 +89,28 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 			<Button
 				onClick={ openBrandMediaPicker }
 				variant="primary"
-				className="godam-button godam-margin-right"
+				disabled={ 'Bubble' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin }
+				className="godam-button godam-margin-right mt-[0.3rem] mb-[0.7rem]"
 			>
-				{ mediaSettings?.general?.brand_image ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
+				{ mediaSettings?.video_player?.brand_image ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 			</Button>
-			{ mediaSettings?.general?.brand_image && (
+			{ mediaSettings?.video_player?.brand_image && (
 				<Button
 					onClick={ removeBrandImage }
 					variant="secondary"
 					isDestructive
-					className="godam-button"
+					className="godam-button ml-3"
+					disabled={ 'Bubble' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin }
 				>
 					{ __( 'Remove', 'godam' ) }
 				</Button>
 			) }
-			{ mediaSettings?.general?.brand_image && (
-				<div className="mt-2">
+			{ mediaSettings?.video_player?.brand_image && (
+				<div className="mt-2 border-2 border-blue-700 rounded-lg p-2 block bg-gray-200 w-fit">
 					<img
-						src={ mediaSettings?.general?.brand_image }
+						src={ mediaSettings?.video_player?.brand_image }
 						alt={ __( 'Selected custom brand', 'godam' ) }
-						className="max-w-[200px]"
+						className="max-w-[150px]"
 					/>
 				</div>
 			) }
@@ -108,8 +123,17 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 					{ notice.message }
 				</Notice>
 			) }
-			<p className="help-text">
-				{ __( 'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos', 'godam' ) }
+
+			<p className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
+				{
+					( 'Bubble' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin ) ? __(
+						'The brand logo will not be applied to the player skin.',
+						'godam',
+					) : __(
+						'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos',
+						'godam',
+					)
+				}
 			</p>
 		</div>
 	);

@@ -3,7 +3,7 @@
  * Rewrite class.
  *
  * @package godam
- * @since n.e.x.t
+ * @since 1.2.0
  */
 
 namespace RTGODAM\Inc;
@@ -13,7 +13,7 @@ use RTGODAM\Inc\Traits\Singleton;
 /**
  * Class Rewrite
  * 
- * @since n.e.x.t
+ * @since 1.2.0
  */
 class Rewrite {
 
@@ -22,7 +22,7 @@ class Rewrite {
 	/**
 	 * Construct method.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.2.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -31,7 +31,7 @@ class Rewrite {
 	/**
 	 * To setup action/filter.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.2.0
 	 * 
 	 * @return void
 	 */
@@ -42,7 +42,7 @@ class Rewrite {
 	/**
 	 * Adds a query vars to identify and render video preview page.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.2.0
 	 * 
 	 * @param array $vars The existing query variables.
 	 * @return array The modified query variables.
