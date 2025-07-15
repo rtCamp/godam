@@ -28,7 +28,7 @@ import ForminatorForm from '../forms/forminatorForms.js';
 /**
  * FormLayer Components Object mapping.
  */
-const FormLayerComponentType = {
+export const FormLayerComponentType = {
 	gravity: {
 		isActive: Boolean( window?.videoData?.gfActive ) ?? false,
 		component: GravityForm,
