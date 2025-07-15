@@ -33,7 +33,9 @@ const CF7 = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const cf7Forms = useSelector( ( state ) => state.videoReducer.cf7Forms );
-	const { data: formHTML, isFetching } = useGetSingleCF7FormQuery( { id: layer.cf7_id, theme: layer.theme || 'godam' } );
+	const { data: formHTML, isFetching } = useGetSingleCF7FormQuery( { id: layer.cf7_id, theme: layer.theme || 'godam' }, {
+		skip: 'undefined' === typeof layer?.cf7_id,
+	} );
 
 	const forms = cf7Forms?.map( ( form ) => ( {
 		value: form.id,
