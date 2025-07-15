@@ -39,7 +39,7 @@ const CustomVideoPlayerCSS = ( { handleSettingChange } ) => {
 	);
 
 	return (
-		<Panel heading={ __( 'Video Thumbnails', 'godam' ) } className="rounded-xl">
+		<Panel heading={ __( 'Custom CSS', 'godam' ) } className="rounded-xl">
 			<PanelBody>
 				<div className="godam-form-group">
 					<Editor
