@@ -60,6 +60,31 @@ class Engagement extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/user-hit-like',
+				'args'      => array(
+					array(
+						'methods'             => WP_REST_Server::CREATABLE,
+						'callback'            => array( $this, 'user_hit_like' ),
+						'permission_callback' => '__return_true',
+						'args'                => array(
+							'video_id' => array(
+								'description'       => __( 'The ID of the video.', 'godam' ),
+								'type'              => 'integer',
+								'required'          => true,
+								'sanitize_callback' => 'absint',
+							),
+							'site_url' => array(
+								'required'          => true,
+								'type'              => 'string',
+								'description'       => __( 'The Site URL associated with the video.', 'godam' ),
+								'sanitize_callback' => 'esc_url_raw',
+							),
+						),
+					),
+				),
+			),
 		);
 	}
 
@@ -100,7 +125,11 @@ class Engagement extends Base {
 		}
 
 		$likes                        = get_post_meta( $video_id, 'likes', true );
-		$response_data['likes_count'] = ! empty( $likes ) ? $likes : 0;
+		$likes                        = ! empty( $likes ) && is_array( $likes ) ? $likes : array();
+		$current_user                 = get_current_user_id();
+		$current_user_key             = "liked_by_use_id_{$current_user}";
+		$response_data['is_liked']    = isset( $likes[ $current_user_key ] ) ? true : false;
+		$response_data['likes_count'] = count( $likes );
 
 		return new WP_REST_Response(
 			array(
@@ -205,5 +234,59 @@ class Engagement extends Base {
 		$analytics_response = wp_remote_get( $analytics_url );
 
 		return $this->process_response( $analytics_response );
+	}
+
+	public function user_hit_like( $request ) {
+
+		$response_data = array();
+		$video_id      = $request->get_param( 'video_id' );
+		$site_url      = $request->get_param( 'site_url' );
+
+		$account_creadentials = $this->access_creadentials_check();
+
+		if ( $account_creadentials instanceof WP_REST_Response ) {
+			return $account_creadentials;
+		}
+
+		$status           = false;
+		$current_user     = get_current_user_id();
+		$current_user_key = "liked_by_use_id_{$current_user}";
+
+		$like_data = array(
+			'video_id' => $video_id,
+			'site_url' => $site_url,
+			'user_id'  => $current_user,
+		);
+
+		$likes = get_post_meta( $video_id, 'likes', true );
+		$likes = ! empty( $likes ) && is_array( $likes ) ? $likes : array();
+
+		if ( ! isset( $likes[ $current_user_key ] ) ) {
+			$likes[ $current_user_key ] = $like_data;
+			$status                     = true;
+		} else {
+			unset( $likes[ $current_user_key ] );
+		}
+
+		$status_updated = update_post_meta( $video_id, 'likes', $likes );
+		if ( $status_updated ) {
+			return new WP_REST_Response(
+				array(
+					'status'      => 'success',
+					'isUserLiked' => $status,
+					'likes_count' => count( $likes ),
+				),
+				200
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'status'    => 'error',
+				'message'   => __( 'Failed to update likes.', 'godam' ),
+				'errorType' => 'failed_to_update_likes',
+			),
+			200
+		);
 	}
 }

@@ -26,6 +26,7 @@
         align-items: flex-start;
         transition: all 0.2s ease;
 
+        &.is-progressing,
         &:hover {
 
             & .rtgodam-video-engagement--like-icon {
@@ -41,6 +42,21 @@
             & .rtgodam-video-engagement--view-icon {
                 color: var(--godam-video-engagement-icon-color--view);
                 background-color: var(--godam-video-engagement-icon-color--view-background);
+            }
+        }
+
+        &.is-progressing {
+            cursor: not-allowed;
+            pointer-events: none;
+            opacity: 0.6;
+            animation: pop 0.4s ease;
+            animation-iteration-count: infinite;
+        }
+
+        &.is-liked {
+            svg {
+                fill: var(--godam-video-engagement-icon-color--like);
+                stroke: var(--godam-video-engagement-icon-color--like);
             }
         }
     }
@@ -63,4 +79,10 @@
             left: -8px;
         }
     }
+}
+
+@keyframes pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
