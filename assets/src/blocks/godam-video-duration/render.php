@@ -1,6 +1,6 @@
 <?php
 /**
- * Render template for the GoDAM Video Thumbnail Block.
+ * Render template for the GoDAM Video Duration Block.
  *
  * @package GoDAM
  */

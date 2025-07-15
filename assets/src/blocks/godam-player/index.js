@@ -22,7 +22,7 @@ import save from './save';
  */
 registerBlockType( 'godam/video', {
 	icon,
-	usesContext: [ 'queryId', 'postId', 'postType' ],
+	usesContext: [ 'queryId' ],
 	/**
 	 * @see ./edit.js
 	 */
