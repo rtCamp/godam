@@ -45,49 +45,43 @@ $wrapper_attributes = get_block_wrapper_attributes(
 ?>
 
 <div <?php echo wp_kses_data( $wrapper_attributes ); ?>>
-	<?php if ( ! empty( $thumbnail_url ) ) : ?>
-		<?php if ( $link_to_video ) : ?>
-			<a href="<?php echo esc_url( get_permalink( $video_post_id ) ); ?>" class="godam-video-thumbnail__link"<?php echo $open_in_new_tab ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>>
-				<img src="<?php echo esc_url( $thumbnail_url ); ?>" alt="<?php echo esc_attr( $alt_text ); ?>" class="godam-video-thumbnail" />
-				<?php if ( $show_play_button ) : ?>
-					<div class="godam-video-thumbnail__play-button">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="60" height="60" aria-hidden="true" focusable="false">
-							<path d="M8 5v14l11-7z" fill="currentColor"></path>
-						</svg>
-					</div>
-				<?php endif; ?>
-			</a>
-		<?php else : ?>
-			<img src="<?php echo esc_url( $thumbnail_url ); ?>" alt="<?php echo esc_attr( $alt_text ); ?>" class="godam-video-thumbnail" />
-			<?php if ( $show_play_button ) : ?>
-				<div class="godam-video-thumbnail__play-button">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="60" height="60" aria-hidden="true" focusable="false">
-						<path d="M8 5v14l11-7z" fill="currentColor"></path>
-					</svg>
-				</div>
-			<?php endif; ?>
-		<?php endif; ?>
-	<?php else : ?>
-		<?php if ( $link_to_video ) : ?>
-			<a href="<?php echo esc_url( get_permalink( $video_post_id ) ); ?>" class="godam-video-thumbnail__link"<?php echo $open_in_new_tab ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>>
-				<div class="godam-video-thumbnail__fallback"></div>
-				<?php if ( $show_play_button ) : ?>
-					<div class="godam-video-thumbnail__play-button">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="60" height="60" aria-hidden="true" focusable="false">
-							<path d="M8 5v14l11-7z" fill="currentColor"></path>
-						</svg>
-					</div>
-				<?php endif; ?>
-			</a>
-		<?php else : ?>
-			<div class="godam-video-thumbnail__fallback"></div>
-			<?php if ( $show_play_button ) : ?>
-				<div class="godam-video-thumbnail__play-button">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="60" height="60" aria-hidden="true" focusable="false">
-						<path d="M8 5v14l11-7z" fill="currentColor"></path>
-					</svg>
-				</div>
-			<?php endif; ?>
-		<?php endif; ?>
+	<?php
+
+	// Link attributes.
+	$link_attrs = '';
+	if ( $link_to_video ) {
+		$link_attrs = ' href="' . esc_url( get_permalink( $video_post_id ) ) . '" class="godam-video-thumbnail__link"';
+		if ( $open_in_new_tab ) {
+			$link_attrs .= ' target="_blank" rel="noopener noreferrer"';
+		}
+	}
+
+	// Content to display (thumbnail or fallback).
+	$content = ! empty( $thumbnail_url )
+		? '<img src="' . esc_url( $thumbnail_url ) . '" alt="' . esc_attr( $alt_text ) . '" class="godam-video-thumbnail" />'
+		: '<div class="godam-video-thumbnail__fallback"></div>';
+	?>
+
+	<!-- Opening link tag -->
+	<?php if ( $link_to_video ) : ?>
+		<a <?php echo wp_kses_data( $link_attrs ); ?>>
 	<?php endif; ?>
+
+	<!-- Thumbnail content -->
+	<?php echo wp_kses_post( $content ); ?>
+	
+	<!-- Play button -->
+	<?php if ( $show_play_button ) : ?>
+		<div class="godam-video-thumbnail__play-button">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="60" height="60" aria-hidden="true" focusable="false">
+				<path d="M8 5v14l11-7z" fill="currentColor"></path>
+			</svg>
+		</div>
+	<?php endif; ?>
+
+	<!-- Closing link tag -->
+	<?php if ( $link_to_video ) : ?>
+		</a>
+	<?php endif; ?>
+
 </div>
