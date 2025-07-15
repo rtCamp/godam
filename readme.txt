@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -201,6 +201,10 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 36. Chapters Interface
 
 == Changelog ==
+
+= v1.2.1 (July 11, 2025) =
+
+- Fix: Resolved thumbnail issue with rtMedia for transcoded videos
 
 = v1.2.0 (July 2, 2025) =
 

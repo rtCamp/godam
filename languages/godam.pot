@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 1.2.0\n"
+"Project-Id-Version: GoDAM 1.2.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-07-02T11:49:28+00:00\n"
+"POT-Creation-Date: 2025-07-11T12:32:23+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -17,8 +17,8 @@ msgstr ""
 #. Plugin Name of the plugin
 #: godam.php
 #: inc/classes/class-elementor-widgets.php:133
-#: inc/classes/class-pages.php:118
-#: inc/classes/class-pages.php:119
+#: inc/classes/class-pages.php:124
+#: inc/classes/class-pages.php:125
 #: pages/video-editor/components/forms/CF7.js:24
 msgid "GoDAM"
 msgstr ""
@@ -265,45 +265,45 @@ msgstr ""
 msgid "Transcoding service can not be activated on the localhost"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:642
+#: admin/class-rtgodam-transcoder-handler.php:648
 msgid "Could not read file."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:655
+#: admin/class-rtgodam-transcoder-handler.php:661
 msgid "Transcoding: Download Failed"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:656
-#: admin/class-rtgodam-transcoder-handler.php:789
-#: admin/class-rtgodam-transcoder-handler.php:792
+#: admin/class-rtgodam-transcoder-handler.php:662
+#: admin/class-rtgodam-transcoder-handler.php:795
+#: admin/class-rtgodam-transcoder-handler.php:798
 msgid "Media"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:656
+#: admin/class-rtgodam-transcoder-handler.php:662
 msgid " was successfully encoded but there was an error while downloading:"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:656
+#: admin/class-rtgodam-transcoder-handler.php:662
 msgid "You can "
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:656
+#: admin/class-rtgodam-transcoder-handler.php:662
 msgid "retry the download"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:669
+#: admin/class-rtgodam-transcoder-handler.php:675
 msgid "Done"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:785
+#: admin/class-rtgodam-transcoder-handler.php:791
 msgid "Transcoding: Something went wrong."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:788
+#: admin/class-rtgodam-transcoder-handler.php:794
 msgid " There was unexpected error occurred while transcoding this following media."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:793
+#: admin/class-rtgodam-transcoder-handler.php:799
 msgid " there was unexpected error occurred while transcoding this media."
 msgstr ""
 
@@ -379,8 +379,8 @@ msgid "Your browser does not support the audio element."
 msgstr ""
 
 #: godam.php:104
-#: inc/classes/class-pages.php:159
-#: inc/classes/class-pages.php:160
+#: inc/classes/class-pages.php:165
+#: inc/classes/class-pages.php:166
 #: assets/src/blocks/godam-audio/edit.js:136
 #: assets/src/blocks/godam-player/edit.js:422
 msgid "Settings"
@@ -439,38 +439,38 @@ msgstr ""
 msgid "Please deactivate the <strong>%1$s</strong> plugin to ensure the <strong>%2$s</strong> plugin functions correctly."
 msgstr ""
 
-#: inc/classes/class-pages.php:129
-#: inc/classes/class-pages.php:130
+#: inc/classes/class-pages.php:135
+#: inc/classes/class-pages.php:136
 msgid "Dashboard"
 msgstr ""
 
-#: inc/classes/class-pages.php:139
-#: inc/classes/class-pages.php:140
+#: inc/classes/class-pages.php:145
+#: inc/classes/class-pages.php:146
 msgid "Video Editor"
 msgstr ""
 
-#: inc/classes/class-pages.php:149
-#: inc/classes/class-pages.php:150
+#: inc/classes/class-pages.php:155
+#: inc/classes/class-pages.php:156
 msgid "Analytics"
 msgstr ""
 
-#: inc/classes/class-pages.php:169
-#: inc/classes/class-pages.php:170
+#: inc/classes/class-pages.php:175
+#: inc/classes/class-pages.php:176
 msgid "Help"
 msgstr ""
 
-#: inc/classes/class-pages.php:404
-#: inc/classes/class-pages.php:429
+#: inc/classes/class-pages.php:410
+#: inc/classes/class-pages.php:435
 msgid "Your last request is still being processed. Please wait a while ..."
 msgstr ""
 
-#: inc/classes/class-pages.php:405
-#: inc/classes/class-pages.php:430
+#: inc/classes/class-pages.php:411
+#: inc/classes/class-pages.php:436
 msgid "Please choose a valid poll answer."
 msgstr ""
 
-#: inc/classes/class-pages.php:406
-#: inc/classes/class-pages.php:431
+#: inc/classes/class-pages.php:412
+#: inc/classes/class-pages.php:437
 msgid "Maximum number of choices allowed: "
 msgstr ""
 
@@ -1383,7 +1383,7 @@ msgid "Video Preview: "
 msgstr ""
 
 #: inc/templates/video-preview.php:43
-msgid "Note: This is a simple video preview. This video may display differently when added to your page based on normal inheritance from parent theme styles."
+msgid "Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles."
 msgstr ""
 
 #: assets/src/blocks/godam-audio/caption.js:24
@@ -2401,7 +2401,7 @@ msgid "Add video"
 msgstr ""
 
 #: pages/video-editor/components/ads/CustomAdSettings.js:92
-#: pages/video-editor/components/SidebarLayers.js:184
+#: pages/video-editor/components/SidebarLayers.js:185
 msgid "This ad will be overriden by Ad server's ads"
 msgstr ""
 
@@ -2856,26 +2856,26 @@ msgstr ""
 #: pages/video-editor/components/layers/LayersHeader.js:42
 #: pages/video-editor/components/layers/LayersHeader.js:50
 #: pages/video-editor/components/LayerSelector.jsx:32
-#: pages/video-editor/components/SidebarLayers.js:205
+#: pages/video-editor/components/SidebarLayers.js:206
 #: pages/video-editor/VideoJSPlayer.js:29
 msgid "Gravity Forms"
 msgstr ""
 
 #: pages/video-editor/components/layers/LayersHeader.js:44
 #: pages/video-editor/components/LayerSelector.jsx:42
-#: pages/video-editor/components/SidebarLayers.js:208
+#: pages/video-editor/components/SidebarLayers.js:209
 msgid "WPForms"
 msgstr ""
 
 #: pages/video-editor/components/layers/LayersHeader.js:46
 #: pages/video-editor/components/LayerSelector.jsx:52
-#: pages/video-editor/components/SidebarLayers.js:211
+#: pages/video-editor/components/SidebarLayers.js:212
 msgid "Contact Form 7"
 msgstr ""
 
 #: pages/video-editor/components/layers/LayersHeader.js:48
 #: pages/video-editor/components/LayerSelector.jsx:62
-#: pages/video-editor/components/SidebarLayers.js:214
+#: pages/video-editor/components/SidebarLayers.js:215
 msgid "Jetpack Forms"
 msgstr ""
 
@@ -3019,43 +3019,43 @@ msgstr ""
 msgid "Quick actions."
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:124
+#: pages/video-editor/components/SidebarLayers.js:125
 msgid "Click me!"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:181
+#: pages/video-editor/components/SidebarLayers.js:182
 msgid "This feature is available in the premium version"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:187
+#: pages/video-editor/components/SidebarLayers.js:188
 msgid "Gravity Forms plugin is not active"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:190
+#: pages/video-editor/components/SidebarLayers.js:191
 msgid "WPForms plugin is not active"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:193
+#: pages/video-editor/components/SidebarLayers.js:194
 msgid "Contact Form 7 plugin is not active"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:196
+#: pages/video-editor/components/SidebarLayers.js:197
 msgid "Poll plugin is not active"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:251
+#: pages/video-editor/components/SidebarLayers.js:252
 msgid "No layers added"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:282
+#: pages/video-editor/components/SidebarLayers.js:283
 msgid "Add layer at "
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:286
+#: pages/video-editor/components/SidebarLayers.js:287
 msgid "There is already a layer at this timestamp. Please choose a different timestamp."
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:292
+#: pages/video-editor/components/SidebarLayers.js:293
 msgid "Play video to add layer."
 msgstr ""
 
@@ -3067,11 +3067,23 @@ msgstr ""
 msgid "Video changes saved successfully"
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:331
-msgid "Copy Block"
+#: pages/video-editor/VideoEditor.js:326
+msgid "You can copy the block into one of the two options:"
+msgstr ""
+
+#: pages/video-editor/VideoEditor.js:328
+msgid "1. Insert as a block in the Block editor."
+msgstr ""
+
+#: pages/video-editor/VideoEditor.js:330
+msgid "2. Insert as HTML content in the Block editor."
 msgstr ""
 
 #: pages/video-editor/VideoEditor.js:341
+msgid "Copy Block"
+msgstr ""
+
+#: pages/video-editor/VideoEditor.js:351
 msgid "Preview"
 msgstr ""
 
