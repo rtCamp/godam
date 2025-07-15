@@ -1082,37 +1082,27 @@ class Media_Library extends Base {
 		}
 
 		$folder_id = absint( sanitize_text_field( $request['folder_id'] ) );
-		$args      = array();
-		if ( 0 === $folder_id ) {
-			$args = array(
-				'post_type'      => 'attachment',
-				'post_status'    => 'inherit',
-				'fields'         => 'ids',
-				'posts_per_page' => -1,
-				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-					array(
-						'taxonomy' => 'media-folder',
-						'field'    => 'term_id',
-						'operator' => 'NOT EXISTS',
-					),
-				),
-			);
-		} else {
-			$args = array(
-				'post_type'      => 'attachment',
-				'post_status'    => 'inherit',
-				'fields'         => 'ids',
-				'posts_per_page' => -1,
-				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-					array(
-						'taxonomy' => 'media-folder',
-						'field'    => 'term_id',
-						'terms'    => $folder_id,
-					),
-				),
-			);
+		$tax_query = array(
+			array(
+				'taxonomy' => 'media-folder',
+				'field'    => 'term_id',
+				'operator' => ( 0 === $folder_id ) ? 'NOT EXISTS' : 'IN',
+			),
+		);
 
+		if ( 0 !== $folder_id ) {
+			$tax_query[0]['terms'] = $folder_id;
 		}
+
+		$args = array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'fields'         => 'ids',
+			'posts_per_page' => 1,
+			'no_found_rows'  => false,
+			'tax_query'      => $tax_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+		);
+
 		$query = new \WP_Query( $args );
 
 		return rest_ensure_response(
