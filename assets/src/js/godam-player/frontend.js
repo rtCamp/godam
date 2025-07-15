@@ -18,6 +18,7 @@ import 'videojs-ima/dist/videojs.ima.css';
 import videojs from 'video.js';
 import 'videojs-contrib-ads';
 import 'videojs-ima';
+import 'videojs-flvjs-es6';
 
 /**
  * FontAwesome dependencies

@@ -157,6 +157,13 @@ $video_setup = array(
 	'preload'     => $preload,
 	'poster'      => empty( $poster ) ? $poster_image : $poster,
 	'fluid'       => true,
+	'flvjs'       => array(
+		'mediaDataSource' => array(
+			'isLive'          => true,
+			'cors'            => false,
+			'withCredentials' => false,
+		),
+	),
 	'sources'     => $sources,
 	'playsinline' => true,
 	'controlBar'  => array(

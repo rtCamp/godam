@@ -96,7 +96,13 @@ const VideoEditor = ( { attachmentID } ) => {
 		const videoSources = [];
 
 		if ( sourceURL && mimeType ) {
-			videoSources.push( { src: sourceURL, type: mimeType } );
+			/**
+			 * Fix for `mov` files, for able to play in VideoJS.
+			 * This is a workaround for QuickTime files that are not natively supported by VideoJS.
+			 * Since mov files are often encoded in h.264, we can treat them as mp4.
+			 */
+			const adjustedMimeType = mimeType === 'video/quicktime' ? 'video/mp4' : mimeType;
+			videoSources.push( { src: sourceURL, type: adjustedMimeType } );
 		}
 
 		// Add transcoded video source if valid
@@ -379,6 +385,13 @@ const VideoEditor = ( { attachmentID } ) => {
 										controls: true,
 										fluid: true,
 										preload: 'auto',
+										flvjs: {
+											mediaDataSource: {
+												isLive: true,
+												cors: false,
+												withCredentials: false,
+											},
+										},
 										aspectRatio: '16:9',
 										sources,
 										controlBar: {
