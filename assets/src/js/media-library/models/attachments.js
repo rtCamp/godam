@@ -11,7 +11,7 @@
  * Extended Attachments Collection to override the default `_requery` behavior.
  * It mirrors the query with a custom query model (`wp.media.godamQuery`).
  */
-const Attachments = wp.media.model.Attachments.extend( {
+const Attachments = wp?.media?.model?.Attachments.extend( {
 	/**
 	 * Custom requery method to fetch updated attachments when properties change.
 	 *
@@ -30,7 +30,7 @@ const Attachments = wp.media.model.Attachments.extend( {
  * Custom Query model to handle fetching DAM (GoDAM) media items from a custom REST endpoint.
  * This class mimics the native `wp.media.model.Query` but is wired to a different backend source.
  */
-const GODAMAttachmentCollection = wp.media.model.Query.extend(
+const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 	{
 		/**
 		 * Initialize the custom query with pagination variables.
@@ -163,6 +163,8 @@ const GODAMAttachmentCollection = wp.media.model.Query.extend(
 );
 
 // Assign the custom query to global `wp.media` namespace.
-wp.media.godamQuery = GODAMAttachmentCollection;
+if ( wp?.media ) {
+	wp.media.godamQuery = GODAMAttachmentCollection;
+}
 
 export default Attachments;

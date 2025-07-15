@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, TabPanel, Snackbar } from '@wordpress/components';
+import { Button, TabPanel, Snackbar, Tooltip } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { copy, seen } from '@wordpress/icons';
 
@@ -319,7 +319,7 @@ const VideoEditor = ( { attachmentID } ) => {
 					</Button>
 				</div>
 
-				<main className="flex justify-center items-center p-4 relative overflow-y-auto">
+				<main className="flex flex-col items-center p-4 overflow-y-auto">
 
 					{
 						// Display a success message when video changes are saved.
@@ -338,29 +338,37 @@ const VideoEditor = ( { attachmentID } ) => {
 						</Snackbar>
 					) }
 
-					<div className="absolute top-4 left-4 right-4">
-						<div className="flex space-x-2 justify-end items-center">
+					<div className="flex space-x-2 justify-end items-center w-full mb-4">
+						<Tooltip
+							text={
+								<p>
+									{ __( 'You can copy the block into one of the two options:', 'godam' ) }
+									<br />
+									{ __( '1. Insert as a block in the Block editor.', 'godam' ) }
+									<br />
+									{ __( '2. Insert as HTML content in the Block editor.', 'godam' ) }
+								</p>
+							}
+						>
 							<Button
-								variant="secondary"
+								variant="primary"
 								icon={ copy }
 								iconPosition="left"
 								onClick={ handleCopyGoDAMVideoBlock }
-								size="compact"
 								className="godam-button"
 							>
 								{ __( 'Copy Block', 'godam' ) }
 							</Button>
-							<Button
-								variant="secondary"
-								href={ `/?godam_page=video-preview&id=${ attachmentID }` }
-								target="_blank"
-								className="godam-button"
-								size="compact"
-								icon={ seen }
-							>
-								{ __( 'Preview', 'godam' ) }
-							</Button>
-						</div>
+						</Tooltip>
+						<Button
+							variant="primary"
+							href={ `/?godam_page=video-preview&id=${ attachmentID }` }
+							target="_blank"
+							className="godam-button"
+							icon={ seen }
+						>
+							{ __( 'Preview', 'godam' ) }
+						</Button>
 					</div>
 
 					{ attachmentConfig && sources.length > 0 && (

@@ -3,7 +3,7 @@
  * GoDAM video preview template.
  *
  * @package godam
- * @since n.e.x.t
+ * @since 1.2.0
  */
 
 // Ensure this is being accessed via WordPress.
@@ -40,7 +40,7 @@ if ( ! $video_attachment || 'attachment' !== $video_attachment->post_type ) {
 
 	<div class="godam-video-preview--container">
 		<div class="godam-video-preview--notice">
-			<?php esc_html_e( 'Note: This is a simple video preview. This video may display differently when added to your page based on normal inheritance from parent theme styles.', 'godam' ); ?>
+			<?php esc_html_e( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' ); ?>
 		</div>
 	</div>
 

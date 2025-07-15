@@ -200,7 +200,7 @@ class Settings extends Base {
 			return new \WP_REST_Response(
 				array(
 					'status'  => 'success',
-					'message' => 'API key deactivated successfully.',
+					'message' => __( 'API key deactivated successfully.', 'godam' ),
 				),
 				200
 			);
@@ -209,7 +209,7 @@ class Settings extends Base {
 		return new \WP_REST_Response(
 			array(
 				'status'  => 'error',
-				'message' => 'Failed to deactivate the API key. It might not exist.',
+				'message' => __( 'Failed to deactivate the API key. It might not exist.', 'godam' ),
 			),
 			400
 		);
@@ -269,7 +269,7 @@ class Settings extends Base {
 		return new \WP_REST_Response(
 			array(
 				'status'  => 'success',
-				'message' => 'EasyDAM settings updated successfully!',
+				'message' => __( 'EasyDAM settings updated successfully!', 'godam' ),
 			),
 			200
 		);

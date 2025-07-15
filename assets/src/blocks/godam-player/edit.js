@@ -433,108 +433,122 @@ function VideoEdit( {
 						attributes={ attributes }
 						isInsideQueryLoop={ isInsideQueryLoop }
 					/>
+					{
+						! isInsideQueryLoop && (
+							<>
+								<BaseControl
+									id={ `video-block__hover-${ instanceId }` }
+									label={ __( 'Hover Options', 'godam' ) }
+									__nextHasNoMarginBottom
+								>
+									<ToggleControl
+										__nextHasNoMarginBottom
+										label={ __( 'Hover Overlay', 'godam' ) }
+										onChange={ ( value ) => setAttributes( { hoverOverlay: value } ) }
+										checked={ !! attributes.hoverOverlay }
+									/>
+								</BaseControl>
 
-					{ /* Only show additional settings when not inside a Query Loop */ }
-					{ ! isInsideQueryLoop && (
-						<>
-							<BaseControl
-								id={ `video-block__poster-image-${ instanceId }` }
-								label={ __( 'Video Thumbnail', 'godam' ) }
-								__nextHasNoMarginBottom
-							>
-								<MediaUploadCheck>
-									<div className="editor-video-poster-control">
-										<MediaUpload
-											title={ __( 'Select Video Thumbnail', 'godam' ) }
-											onSelect={ onSelectPoster }
-											allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
-											render={ ( { open } ) => (
+								<BaseControl
+									id={ `video-block__poster-image-${ instanceId }` }
+									label={ __( 'Video Thumbnail', 'godam' ) }
+									__nextHasNoMarginBottom
+								>
+									<MediaUploadCheck>
+										<div className="editor-video-poster-control">
+											<MediaUpload
+												title={ __( 'Select Video Thumbnail', 'godam' ) }
+												onSelect={ onSelectPoster }
+												allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
+												render={ ( { open } ) => (
+													<Button
+														__next40pxDefaultSize
+														variant="primary"
+														onClick={ open }
+														ref={ posterImageButton }
+														aria-describedby={ videoPosterDescription }
+													>
+														{ ! poster ? __( 'Select', 'godam' ) : __( 'Replace', 'godam' ) }
+													</Button>
+												) }
+											/>
+											<p id={ videoPosterDescription } hidden>
+												{ poster
+													? sprintf(
+														/* translators: %s: poster image URL. */
+														__( 'The current poster image url is %s', 'godam' ),
+														poster,
+													)
+													: __( 'There is no poster image currently selected', 'godam' ) }
+											</p>
+											{ !! poster && (
 												<Button
 													__next40pxDefaultSize
-													variant="primary"
-													onClick={ open }
-													ref={ posterImageButton }
-													aria-describedby={ videoPosterDescription }
+													onClick={ onRemovePoster }
+													variant="tertiary"
 												>
-													{ ! poster ? __( 'Select', 'godam' ) : __( 'Replace', 'godam' ) }
+													{ __( 'Remove', 'godam' ) }
 												</Button>
 											) }
-										/>
-										<p id={ videoPosterDescription } hidden>
-											{ poster
-												? sprintf(
-													/* translators: %s: poster image URL. */
-													__( 'The current poster image url is %s', 'godam' ),
-													poster,
-												)
-												: __( 'There is no poster image currently selected', 'godam' ) }
-										</p>
-										{ !! poster && (
-											<Button
-												__next40pxDefaultSize
-												onClick={ onRemovePoster }
-												variant="tertiary"
-											>
-												{ __( 'Remove', 'godam' ) }
-											</Button>
-										) }
-									</div>
-								</MediaUploadCheck>
-							</BaseControl>
+										</div>
+									</MediaUploadCheck>
+								</BaseControl>
 
-							<BaseControl
-								id={ `video-block__video-editor-${ instanceId }` }
-								label={ __( 'Customise Video', 'godam' ) }
-								__nextHasNoMarginBottom
-							>
-								<Button
-									__next40pxDefaultSize
-									href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
-									target="_blank"
-									variant="primary"
-									className=""
-									icon={ external }
-									iconPosition="right"
+								<BaseControl
+									id={ `video-block__video-editor-${ instanceId }` }
+									label={ __( 'Customise Video', 'godam' ) }
+									__nextHasNoMarginBottom
 								>
-									{ __( 'Customise', 'godam' ) }
-								</Button>
-							</BaseControl>
+									<Button
+										__next40pxDefaultSize
+										href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
+										target="_blank"
+										variant="primary"
+										className=""
+										icon={ external }
+										iconPosition="right"
+									>
+										{ __( 'Customise', 'godam' ) }
+									</Button>
+								</BaseControl>
 
-							<BaseControl
-								id={ `video-block__video-seo-${ instanceId }` }
-								label={ __( 'SEO Settings', 'godam' ) }
-								__nextHasNoMarginBottom
-							>
-								<Button
-									__next40pxDefaultSize
-									onClick={ () => setIsSEOModelOpen( true ) }
-									variant="primary"
-									icon={ search }
-									iconPosition="right"
+								<BaseControl
+									id={ `video-block__video-seo-${ instanceId }` }
+									label={ __( 'SEO Settings', 'godam' ) }
+									__nextHasNoMarginBottom
 								>
-									{ __( 'SEO Settings', 'godam' ) }
-								</Button>
-							</BaseControl>
+									<Button
+										__next40pxDefaultSize
+										onClick={ () => setIsSEOModelOpen( true ) }
+										variant="primary"
+										icon={ search }
+										iconPosition="right"
+									>
+										{ __( 'SEO Settings', 'godam' ) }
+									</Button>
+								</BaseControl>
 
-							<BaseControl
-								id={ `video-block__video--selected-aspect-ratio-${ instanceId }` }
-								label={ __( 'Aspect Ratio', 'godam' ) }
-								__nextHasNoMarginBottom
-							>
-								<SelectControl
-									value={ attributes.aspectRatio || '16:9' }
-									options={ [
-										{ label: __( '16:9 (Standard)', 'godam' ), value: '16:9' },
-										{ label: __( 'Responsive', 'godam' ), value: 'responsive' },
-									] }
-									onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
-									help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
-								/>
-							</BaseControl>
-						</>
-					) }
+								<BaseControl
+									id={ `video-block__video--selected-aspect-ratio-${ instanceId }` }
+									label={ __( 'Aspect Ratio', 'godam' ) }
+									__nextHasNoMarginBottom
+								>
+									<SelectControl
+										value={ attributes.aspectRatio || '16:9' }
+										options={ [
+											{ label: __( '16:9 (Standard)', 'godam' ), value: '16:9' },
+											{ label: __( 'Responsive', 'godam' ), value: 'responsive' },
+										] }
+										onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
+										help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
+									/>
+								</BaseControl>
+							</>
+						)
+					}
 				</PanelBody>
 
+				{ /* Only show additional settings when not inside a Query Loop */ }
 				{ ! isInsideQueryLoop && (
 					<PanelBody title={ __( 'Overlay Blocks', 'godam' ) }>
 						<ToggleControl

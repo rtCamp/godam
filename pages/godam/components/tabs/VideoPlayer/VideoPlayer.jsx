@@ -3,7 +3,6 @@
  */
 import { useSelector, useDispatch } from 'react-redux';
 import videojs from 'video.js';
-import 'video.js/dist/video-js.css';
 
 /**
  * WordPress dependencies
@@ -22,11 +21,9 @@ import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
 import BrandImageSelector from '../GeneralSettings/BrandImageSelector.jsx';
 import SettingsButton from '../../../../../assets/src/js/godam-player/masterSettings.js';
 import ColorPickerButton from '../../../../video-editor/components/shared/color-picker/ColorPickerButton.jsx';
-import '../../../../../assets/src/css/minimal-skin.scss';
-import '../../../../../assets/src/css/pills-skin.scss';
-import '../../../../../assets/src/css/bubble-skin.scss';
 import Share from '../../../../../assets/src/images/share.svg';
 import ShareVariationOne from '../../../../../assets/src/images/share-variation-one.svg';
+import CustomVideoPlayerCSS from './CustomVideoPlayerCSS.jsx';
 
 const VideoPlayer = () => {
 	const dispatch = useDispatch();
@@ -102,7 +99,7 @@ const VideoPlayer = () => {
 				fullscreenToggle: true,
 				subsCapsButton: true,
 				remainingTimeDisplay: playerSkin === 'Default' ? true : false,
-				pictureInPictureToggle: false,
+				pictureInPictureToggle: true,
 				skipButtons: {
 					forward: 10,
 					backward: 10,
@@ -274,18 +271,25 @@ const VideoPlayer = () => {
 			const selectedSkin = mediaSettings.video_player.player_skin;
 
 			// Remove previous skin classes
-			videoElement.classList.remove(
+			const parent = videoElement.parentElement;
+
+			// First remove all previous skin classes
+			parent.classList.remove(
 				'godam-minimal-skin',
 				'godam-pills-skin',
 				'godam-bubble-skin',
+				'godam-classic-skin',
 			);
 
+			// Then add the selected skin class
 			if ( selectedSkin === 'Minimal' ) {
-				videoElement.classList.add( 'godam-minimal-skin' );
+				parent.classList.add( 'godam-minimal-skin' );
 			} else if ( selectedSkin === 'Pills' ) {
-				videoElement.classList.add( 'godam-pills-skin' );
+				parent.classList.add( 'godam-pills-skin' );
 			} else if ( selectedSkin === 'Bubble' ) {
-				videoElement.classList.add( 'godam-bubble-skin' );
+				parent.classList.add( 'godam-bubble-skin' );
+			} else if ( selectedSkin === 'Classic' ) {
+				parent.classList.add( 'godam-classic-skin' );
 			}
 		}
 	}, [ mediaSettings?.video_player?.brand_color, mediaSettings?.video_player?.brand_image, mediaSettings?.video_player?.player_skin ] );
@@ -303,7 +307,7 @@ const VideoPlayer = () => {
 			) }
 
 			<div className="bg-neutral-50 p-6 rounded-lg shadow-sm">
-				<div ref={ wrapperRef } className="text-center"></div>
+				<div ref={ wrapperRef } className="text-center w-[650px] mx-auto shadow-xl rounded-lg overflow-hidden"></div>
 
 				<div className="grid grid-cols-3 items-start w-[80%] mt-[35px] mx-auto gap-[3.5rem]">
 					<div className="godam-form-group">
@@ -320,6 +324,10 @@ const VideoPlayer = () => {
 								{
 									label: 'Default',
 									value: 'Default',
+								},
+								{
+									label: 'Classic',
+									value: 'Classic',
 								},
 								{
 									label: 'Minimal',
@@ -347,7 +355,7 @@ const VideoPlayer = () => {
 								label={ __( 'Brand color', 'godam' ) }
 								value={ mediaSettings?.video_player?.brand_color }
 								onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
-								disabled={ 'Minimal' === mediaSettings?.video_player?.player_skin }
+								disabled={ 'Minimal' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin }
 							/>
 							{ mediaSettings?.video_player?.brand_color && (
 								<button
@@ -378,6 +386,14 @@ const VideoPlayer = () => {
 						mediaSettings={ mediaSettings }
 						handleSettingChange={ handleSettingChange }
 					/>
+				</div>
+
+				<div className="godam-form-group mb-8 mx-auto w-[80%]">
+					<label className="label-text" htmlFor="brand-color">{ __( 'Custom CSS', 'godam' ) }</label>
+					<CustomVideoPlayerCSS handleSettingChange={ handleSettingChange } />
+					<div className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
+						{ __( 'Any custom CSS you add will be applied to all player skins. It’s global and not tied to a specific skin style.', 'godam' ) }
+					</div>
 				</div>
 
 				<Button

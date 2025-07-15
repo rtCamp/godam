@@ -1,16 +1,18 @@
 .godam-pills-skin {
 
 	.vjs-control-bar {
-        width: 95%;
+        width: 95% !important;
         position: relative;
         border-radius: 80px;
         margin: -50px auto 0 auto;
         z-index: 999;
         background-color: var(--rtgodam-control-bar-color, #000) !important;
+        bottom: unset !important;
 	}
 
-    .video-player-settings-preview .vjs-big-play-button {
-        background-color: var(--rtgodam-control-bar-color, #2B333FB3) !important;
+    .vjs-big-play-button {
+        background-color: var(--rtgodam-control-bar-color, #000) !important;
+        border-radius: 10px !important;
     }
 
     .vjs-volume-control.vjs-control.vjs-volume-vertical {

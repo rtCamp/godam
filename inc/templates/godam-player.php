@@ -33,6 +33,7 @@ $loop          = ! empty( $attributes['loop'] );
 $muted         = ! empty( $attributes['muted'] );
 $poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
 $preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
+$hover_overlay = isset( $attributes['hoverOverlay'] ) ? $attributes['hoverOverlay'] : true;
 $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
@@ -53,7 +54,7 @@ if ( $is_virtual ) {
 			'meta_key'       => '_godam_original_id',
 			'meta_value'     => sanitize_text_field( $attachment_id ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			'fields'         => 'ids',
-		) 
+		)
 	);
 
 	// If a matching media attachment exists, use its actual WordPress ID.
@@ -222,7 +223,7 @@ $custom_css_properties = array(
 	'--rtgodam-custom-play-button-url' => $easydam_custom_btn_img ? 'url(' . esc_url( $easydam_custom_btn_img ) . ')' : '',
 );
 
-if ( ! empty( $attributes['aspectRatio'] ) ) {
+if ( ! empty( $aspect_ratio ) ) {
 	$custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $aspect_ratio );
 }
 
@@ -249,15 +250,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure
-	<?php echo $is_shortcode || $is_elementor_widget ? '' : wp_kses_data( get_block_wrapper_attributes() ); ?>
-	style="
-	--rtgodam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
-	--rtgodam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
-	--rtgodam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
-	--rtgodam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
-	<?php echo $aspect_ratio ? '--rtgodam-video-aspect-ratio: ' . esc_attr( str_replace( ':', '/', $aspect_ratio ) ) : ''; ?>
-	">
+	<figure <?php echo wp_kses_data( $figure_attributes ); ?>>
 		<div class="godam-video-wrapper">
 			<?php if ( $show_overlay && ! empty( $inner_blocks_content ) ) : ?>
 				<div
@@ -272,34 +265,11 @@ if ( $is_shortcode || $is_elementor_widget ) {
 				</div>
 			<?php endif; ?>
 
-			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin" style="position: relative;">
-			<?php if ( ! empty( $heading ) ) : ?>
-					<div
-						class="godam-video-heading-overlay"
-						data-heading-overlay
-						style="
-							position: absolute;
-							top: 50%;
-							left: 20px;
-							right: 20px;
-							transform: translateY(-50%);
-							z-index: 10;
-							color: <?php echo esc_attr( $heading_color ); ?>;
-							background-color: <?php echo esc_attr( $heading_bg_color ); ?>;
-							font-size: 24px;
-							font-weight: bold;
-							text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-							padding: 8px;
-							border-radius: 4px;
-							opacity: 1;
-							transition: opacity 0.3s ease;
-						"
-					>
-						<?php echo wp_kses_post( $heading ); ?>
-					</div>
+			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin" >
+				<?php if ( isset( $hover_overlay ) && $hover_overlay ) : ?>
+					<div class="godam-player-overlay"></div>
 				<?php endif; ?>
-					
-			<div class="animate-play-btn">
+				<div class="animate-play-btn">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 					</svg>

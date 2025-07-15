@@ -376,11 +376,6 @@ class Pages {
 				$this->enqueue_gravity_forms_styles();
 			}
 
-			// Enqueue WPForms styles if the plugin is active.
-			if ( $is_wpforms_active ) {
-				$this->enqueue_wpforms_styles();
-			}
-
 			// Enqueue Jetpack Forms styles if the plugin is active.
 			if ( $is_jetpack_active ) {
 				$this->enqueue_jetpack_forms_styles();
@@ -532,7 +527,7 @@ class Pages {
 			wp_register_script(
 				'transcoder-page-script-analytics',
 				RTGODAM_URL . 'assets/build/pages/analytics.min.js',
-				array( 'wp-element' ),
+				array( 'wp-element', 'wp-i18n' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/analytics.min.js' ),
 				true
 			);
@@ -663,26 +658,6 @@ class Pages {
 	}
 
 	/**
-	 * Enqueue WPForms styles.
-	 *
-	 * @return void
-	 */
-	public function enqueue_wpforms_styles() {
-
-		if ( ! defined( 'WPFORMS_PLUGIN_URL' ) ) {
-			return;
-		}
-
-		// Enqueue the WPForms styles.
-		wp_enqueue_style(
-			'wpforms-full',
-			WPFORMS_PLUGIN_URL . 'assets/css/frontend/classic/wpforms-full.css',
-			array(),
-			WPFORMS_VERSION
-		);
-	}
-
-	/**
 	 * Enqueue Jetpack Forms styles.
 	 *
 	 * @return void
@@ -783,7 +758,7 @@ class Pages {
 	/**
 	 * Save current rest api request.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.2.0
 	 *
 	 * @param mixed           $result Response to replace the requested version with. Can be anything a normal endpoint can return, or null to not hijack the request.
 	 * @param \WP_REST_Server $server Server instance.
@@ -803,7 +778,7 @@ class Pages {
 	/**
 	 * Remove anti-spam settings from wpforms.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.2.0
 	 *
 	 * @param array $form_data Form data to be modified.
 	 *
