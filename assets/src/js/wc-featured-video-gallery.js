@@ -63,10 +63,14 @@ jQuery( document ).ready( function( $ ) {
 					$img.attr( 'src', thumbUrl )
 						.attr( 'data-video-id', videoId )
 						.addClass( 'godam-video-thumbnail' )
-						.off( 'click' )
-						.on( 'click', function() {
-							openVideoModal( videoId );
-						} );
+						.off( 'click touchstart' )
+						.on( 'click touchstart', function(e) {
+							// Prevent double firing on some devices
+							if (e.type === 'touchstart') {
+								e.preventDefault();
+							}
+							openVideoModal(videoId);
+						});
 				} );
 			},
 		);
@@ -90,7 +94,7 @@ jQuery( document ).ready( function( $ ) {
 		modal.dataset.isLoading = 'false';
 
 		modal.innerHTML = `
-			<div class="godam-featured-video-modal-overlay"></div>
+			<div class="godam-featured-video-modal-overlay">
 				<div class="godam-featured-video-modal-content">
 					<span class="godam-featured-video-modal-close">&times;</span>
 					<div class="easydam-video-container animate-video-loading">
