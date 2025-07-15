@@ -365,7 +365,7 @@ const Analytics = ( { attachmentID } ) => {
 						:	<div className="api-key-overlay-banner">
 							<p>
 								{ analyticsDataFetched?.message + ' ' || __(
-									'An unknown error occured. Please check your plugin settings.',
+									'An unknown error occurred. Please check your plugin settings.',
 									'godam',
 								) }
 							</p>

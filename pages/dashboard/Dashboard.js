@@ -239,7 +239,7 @@ const Dashboard = () => {
 						:	<div className="api-key-overlay-banner">
 							<p>
 								{ dashboardMetrics?.message + ' ' || __(
-									'An unknown error occured. Please check your plugin settings.',
+									'An unknown error occurred. Please check your plugin settings.',
 									'godam',
 								) }
 							</p>
