@@ -22,11 +22,10 @@ if ( $video_post_id ) {
 	$attachment_id = get_post_meta( $video_post_id, '_godam_attachment_id', true );
 
 	// Get thumbnail URL directly from attachment's meta.
-	$thumbnail_url = get_post_meta( $video_post_id, '_godam_video_thumbnail_url', true );
+	$thumbnail_url = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 	// Set alt text to the post title.
 	$alt_text = get_the_title();
-
 }
 
 $wrapper_classes = 'godam-video-thumbnail__container';
@@ -51,7 +50,9 @@ $wrapper_attributes = get_block_wrapper_attributes(
 				<img src="<?php echo esc_url( $thumbnail_url ); ?>" alt="<?php echo esc_attr( $alt_text ); ?>" class="godam-video-thumbnail" />
 				<?php if ( $show_play_button ) : ?>
 					<div class="godam-video-thumbnail__play-button">
-						<span class="dashicons dashicons-controls-play"></span>
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="60" height="60" aria-hidden="true" focusable="false">
+							<path d="M8 5v14l11-7z" fill="currentColor"></path>
+						</svg>
 					</div>
 				<?php endif; ?>
 			</a>
@@ -59,7 +60,9 @@ $wrapper_attributes = get_block_wrapper_attributes(
 			<img src="<?php echo esc_url( $thumbnail_url ); ?>" alt="<?php echo esc_attr( $alt_text ); ?>" class="godam-video-thumbnail" />
 			<?php if ( $show_play_button ) : ?>
 				<div class="godam-video-thumbnail__play-button">
-					<span class="dashicons dashicons-controls-play"></span>
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="60" height="60" aria-hidden="true" focusable="false">
+						<path d="M8 5v14l11-7z" fill="currentColor"></path>
+					</svg>
 				</div>
 			<?php endif; ?>
 		<?php endif; ?>
@@ -69,7 +72,9 @@ $wrapper_attributes = get_block_wrapper_attributes(
 				<div class="godam-video-thumbnail__fallback"></div>
 				<?php if ( $show_play_button ) : ?>
 					<div class="godam-video-thumbnail__play-button">
-						<span class="dashicons dashicons-controls-play"></span>
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="60" height="60" aria-hidden="true" focusable="false">
+							<path d="M8 5v14l11-7z" fill="currentColor"></path>
+						</svg>
 					</div>
 				<?php endif; ?>
 			</a>
@@ -77,7 +82,9 @@ $wrapper_attributes = get_block_wrapper_attributes(
 			<div class="godam-video-thumbnail__fallback"></div>
 			<?php if ( $show_play_button ) : ?>
 				<div class="godam-video-thumbnail__play-button">
-					<span class="dashicons dashicons-controls-play"></span>
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="60" height="60" aria-hidden="true" focusable="false">
+						<path d="M8 5v14l11-7z" fill="currentColor"></path>
+					</svg>
 				</div>
 			<?php endif; ?>
 		<?php endif; ?>
