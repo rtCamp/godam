@@ -322,8 +322,12 @@ class GoDAM_Product_Gallery {
 										echo 'font-size:' . intval( $atts['cta_product_name_font_size'] ) . 'px;';
 										echo 'color:' . esc_attr( $atts['cta_product_name_color'] ) . ';';
 										echo 'margin-top:0;';
-									echo '">' . esc_html( $main_product->get_name() ) . '</p>';
-						
+									echo '">';
+										echo '<a href="' . esc_url( get_permalink( $main_product->get_id() ) ) . '" class="product-title-link">';
+											echo esc_html( $main_product->get_name() );
+										echo '</a>';
+									echo '</p>';
+							
 									echo '<p class="product-price" style="';
 										echo 'font-size:' . intval( $atts['cta_product_price_font_size'] ) . 'px;';
 										echo 'color:' . esc_attr( $atts['cta_product_price_color'] ) . ';';
@@ -357,9 +361,13 @@ class GoDAM_Product_Gallery {
 											echo '</div>'; // .cta-thumbnail-small ends.
 											echo '<div class="cta-product-info">';
 												echo '<p class="product-title" style="';
-												echo 'font-size:' . intval( $atts['cta_product_name_font_size'] ) . 'px;';
-												echo 'color:' . esc_attr( $atts['cta_product_name_color'] ) . ';';
-												echo 'margin-top:0; ">' . esc_html( $product->get_name() ) . '</p>';
+													echo 'font-size:' . intval( $atts['cta_product_name_font_size'] ) . 'px;';
+													echo 'color:' . esc_attr( $atts['cta_product_name_color'] ) . ';';
+													echo 'margin-top:0;">';
+														echo '<a href="' . esc_url( get_permalink( $product->get_id() ) ) . '" class="product-title-link">';
+															echo esc_html( $product->get_name() );
+														echo '</a>';
+												echo '</p>';
 
 												echo '<p class="product-price" style="';
 												echo 'font-size:' . intval( $atts['cta_product_price_font_size'] ) . 'px;';

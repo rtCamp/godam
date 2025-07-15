@@ -474,7 +474,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 				const cloned = originalDropdown.cloneNode( true );
 				cloned.classList.add( 'visible' );
 				cloned.style.position = 'absolute';
-				cloned.style.zIndex = 9999;
+				cloned.style.zIndex = 9990;
 				document.body.appendChild( cloned );
 
 				activeDropdown = cloned;

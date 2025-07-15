@@ -272,9 +272,8 @@ video {
 	border: 1px solid #ddd;
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 	border-radius: 8px;
-	// width: 280px;
 	box-sizing: border-box;
-	z-index: 9999;
+	z-index: 9990;
 	display: none;
 	padding: 10px;
 }
@@ -288,6 +287,27 @@ video {
 	align-items: center;
 	gap: 10px;
 	margin-bottom: 10px;
+}
+
+.product-title-link {
+	position: relative;
+	text-decoration: none;
+	color: inherit;
+}
+
+.product-title-link::after {
+	content: '';
+	position: absolute;
+	width: 0;
+	left: 0;
+	bottom: -2px;
+	height: 2px;
+	background-color: currentColor;
+	transition: width 0.3s ease;
+}
+
+.product-title-link:hover::after {
+	width: 100%;
 }
 
 .product-play-timestamp-button {
