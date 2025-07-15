@@ -36,32 +36,26 @@
 	}
 
 	&-header a {
-			margin: auto;
+		margin: auto;
 	}
 
 	&-footer a {
-			margin: auto;
-	}
-
-	&-header a:hover {
-				text-decoration: none;
+		margin: auto;
 	}
 
 	&-footer {
 		font-size: 0.975rem;
 		font-weight: 400;
 	}
-
-
 }
-
-
 
 .api-key-message a:hover {
 	text-decoration: underline;
 }
 
-
+.api-key-overlay-banner-header a:hover {
+	text-decoration: none;
+}
 
 .top-media-container {
 
