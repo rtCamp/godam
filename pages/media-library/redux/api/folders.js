@@ -19,7 +19,7 @@ export const folderApi = createApi( {
 					return { error: result.error };
 				}
 
-				const totalMediaCount = result.meta?.response?.headers.get( 'X-WP-Total' );
+				const totalMediaCount = parseInt( result.meta?.response?.headers.get( 'X-WP-Total' ) || '0', 10 );
 
 				return { data: totalMediaCount };
 			},

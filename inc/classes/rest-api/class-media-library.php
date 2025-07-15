@@ -1081,7 +1081,7 @@ class Media_Library extends Base {
 			);
 		}
 
-		$folder_id = (int) sanitize_text_field( $request['folder_id'] );
+		$folder_id = absint( sanitize_text_field( $request['folder_id'] ) );
 		$args      = array();
 		if ( 0 === $folder_id ) {
 			$args = array(
