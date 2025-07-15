@@ -10,10 +10,6 @@
 import { __ } from '@wordpress/i18n';
 
 /**
- * WordPress dependencies
- */
-import { __ } from '@wordpress/i18n';
-/**
  * VideoJs dependencies
  */
 import 'video.js/dist/video-js.css';
