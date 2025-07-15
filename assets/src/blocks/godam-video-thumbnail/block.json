@@ -38,7 +38,19 @@
 			"minHeight": true
 		},
 		"shadow": true,
-		"customClassName": true
+		"customClassName": true,
+		"__experimentalBorder": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true,
+			"__experimentalDefaultControls": {
+				"color": true,
+				"radius": true,
+				"style": true,
+				"width": true
+			}
+		}
 	},
 	"editorScript": ["file:./index.js"],
 	"style": ["file:./style-index.css"],
