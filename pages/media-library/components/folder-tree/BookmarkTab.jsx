@@ -7,47 +7,39 @@ import { useMemo } from 'react';
 /**
  * WordPress dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Panel, PanelBody } from '@wordpress/components';
 import { starFilled } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
-import BookmarkItem from './BookmarkItem.jsx';
-import './css/bookmark.scss';
+import TabItem from './TabItem.jsx';
+import './css/foldertabs.scss';
 
 const BookmarkTab = ( { handleContextMenu } ) => {
 	const folders = useSelector( ( state ) => state.FolderReducer?.folders || [] );
 
 	// Get all the bookmarks from folder where `meta.bookmark` is true
-	// and sort them by name (case-insensitive)
+	// and sort them based on the currentSortOrder
 	const bookmarks = useMemo( () => {
 		return folders
-			?.filter( ( folder ) => folder?.meta?.bookmark )
-			?.sort( ( a, b ) => a?.name?.toLowerCase().localeCompare( b?.name?.toLowerCase() ) ) || [];
+			?.filter( ( folder ) => folder?.meta?.bookmark ) || [];
 	}, [ folders ] );
 
 	const bookmarkCount = bookmarks?.length || 0;
 
-	const panelTitle = useMemo( () => {
-		return sprintf(
-			/* translators: %d: number of bookmarks */
-			__( 'Bookmarks (%d)', 'godam' ),
-			bookmarkCount,
-		);
-	}, [ bookmarkCount ] );
-
 	if ( bookmarkCount === 0 ) {
 		return (
-			<div className="godam-bookmark-tab godam-bookmark-tab--empty">
-				<Panel className="godam-bookmark-panel">
+			<div className="godam-folder-tab godam-folder-tab--empty">
+				<Panel className="godam-folder-tab-panel">
 					<PanelBody
-						title={ __( 'Bookmarks', 'godam' ) }
+						title={ <><span className="folder-tab__count">{ bookmarkCount }</span> { __( 'Bookmarks', 'godam' ) } </> }
 						initialOpen={ true }
+						icon={ starFilled }
 					>
-						<div className="godam-bookmark-tab__empty-state">
-							<div className="godam-bookmark-tab__empty-icon">
+						<div className="godam-folder-tab__empty-state">
+							<div className="godam-folder-tab__empty-icon">
 								{ starFilled }
 							</div>
 							<h4>{ __( 'No bookmarks yet', 'godam' ) }</h4>
@@ -59,15 +51,16 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 	}
 
 	return (
-		<div className="godam-bookmark-tab">
-			<Panel className="godam-bookmark-panel">
+		<div className="godam-folder-tab">
+			<Panel className="godam-folder-tab-panel">
 				<PanelBody
-					title={ panelTitle }
+					title={ <><span className="folder-tab__count">{ bookmarkCount }</span> { __( 'Bookmarks', 'godam' ) } </> }
 					initialOpen={ true }
+					icon={ starFilled }
 				>
-					<div className="godam-bookmark-tab__list">
+					<div className="godam-folder-tab__list">
 						{ bookmarks.map( ( bookmark, index ) => (
-							<BookmarkItem
+							<TabItem
 								item={ bookmark }
 								key={ bookmark?.id || index }
 								index={ index }

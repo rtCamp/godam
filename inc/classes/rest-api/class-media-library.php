@@ -8,6 +8,7 @@
 namespace RTGODAM\Inc\REST_API;
 
 use RTGODAM\Inc\Media_Library\Media_Folder_Create_Zip;
+use RTGODAM\Inc\Media_Library_Ajax;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -198,6 +199,40 @@ class Media_Library extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/get-godam-cmm-files',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_godam_cmm_files' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/create-media-entry',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_media_entry' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/attachment-by-id/(?P<id>[a-zA-Z0-9_-]+)',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_attachment_by_id' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+				),
+			),
 		);
 	}
 
@@ -218,14 +253,14 @@ class Media_Library extends Base {
 				$return = $this->remove_all_terms_from_id( $attachment_id, 'media-folder' );
 
 				if ( is_wp_error( $return ) ) {
-					return new \WP_Error( 'term_assignment_failed', 'Failed to remove folder from the attachments.', array( 'status' => 500 ) );
+					return new \WP_Error( 'term_assignment_failed', __( 'Failed to remove folder from the attachments.', 'godam' ), array( 'status' => 500 ) );
 				}
 			}
 
 			return rest_ensure_response(
 				array(
 					'success' => true,
-					'message' => 'Attachments successfully removed from the folder.',
+					'message' => __( 'Attachments successfully removed from the folder.', 'godam' ),
 				)
 			);
 		}
@@ -233,25 +268,25 @@ class Media_Library extends Base {
 		$term = get_term( $folder_term_id, 'media-folder' );
 
 		if ( ! $term || is_wp_error( $term ) ) {
-			return new \WP_Error( 'invalid_term', 'Invalid folder term ID.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_term', __( 'Invalid folder term ID.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		foreach ( $attachment_ids as $attachment_id ) {
 			if ( get_post_type( $attachment_id ) !== 'attachment' ) {
-				return new \WP_Error( 'invalid_attachment', 'Invalid attachment ID.', array( 'status' => 400 ) );
+				return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ), array( 'status' => 400 ) );
 			}
 
 			$return = wp_set_object_terms( $attachment_id, $folder_term_id, 'media-folder' );
 
 			if ( is_wp_error( $return ) ) {
-				return new \WP_Error( 'term_assignment_failed', 'Failed to associate attachments with the folder.', array( 'status' => 500 ) );
+				return new \WP_Error( 'term_assignment_failed', __( 'Failed to associate attachments with the folder.', 'godam' ), array( 'status' => 500 ) );
 			}
 		}
 
 		return rest_ensure_response(
 			array(
 				'success' => true,
-				'message' => 'Attachments successfully associated with the folder.',
+				'message' => __( 'Attachments successfully associated with the folder.', 'godam' ),
 			)
 		);
 	}
@@ -266,7 +301,7 @@ class Media_Library extends Base {
 	 */
 	private function remove_all_terms_from_id( $post_id, $taxonomy ) {
 		if ( ! taxonomy_exists( $taxonomy ) ) {
-			return new \WP_Error( 'invalid_taxonomy', 'Invalid taxonomy.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_taxonomy', __( 'Invalid taxonomy.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Get all terms associated with the post ID for the taxonomy.
@@ -294,14 +329,14 @@ class Media_Library extends Base {
 		$file_path = get_attached_file( $attachment_id );
 
 		if ( ! file_exists( $file_path ) ) {
-			return new \WP_Error( 'image_not_found', 'Image file not found.', array( 'status' => 404 ) );
+			return new \WP_Error( 'image_not_found', __( 'Image file not found.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		// Read EXIF data from the image.
 		$exif_data = exif_read_data( $file_path, 0, true );
 
 		if ( false === $exif_data ) {
-			return new \WP_Error( 'exif_data_not_found', 'No EXIF data found.', array( 'status' => 204 ) );
+			return new \WP_Error( 'exif_data_not_found', __( 'No EXIF data found.', 'godam' ), array( 'status' => 204 ) );
 		}
 
 		// Extract and filter the desired EXIF data fields.
@@ -367,13 +402,13 @@ class Media_Library extends Base {
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
-			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 404 ) );
+			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		$thumbnail_array = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
 
 		if ( ! is_array( $thumbnail_array ) ) {
-			return new \WP_Error( 'thumbnails_not_found', 'No thumbnails found.', array( 'status' => 204 ) );
+			return new \WP_Error( 'thumbnails_not_found', __( 'No thumbnails found.', 'godam' ), array( 'status' => 204 ) );
 		}
 
 		if ( function_exists( 'wp_get_upload_dir' ) ) {
@@ -444,12 +479,12 @@ class Media_Library extends Base {
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
-			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Check if the thumbnail URL is valid.
 		if ( ! filter_var( $thumbnail_url, FILTER_VALIDATE_URL ) ) {
-			return new \WP_Error( 'invalid_thumbnail_url', 'Invalid thumbnail URL.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_thumbnail_url', __( 'Invalid thumbnail URL.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Update the video thumbnail.
@@ -458,7 +493,7 @@ class Media_Library extends Base {
 		return rest_ensure_response(
 			array(
 				'success' => true,
-				'message' => 'Video thumbnail successfully set.',
+				'message' => __( 'Video thumbnail successfully set.', 'godam' ),
 			)
 		);
 	}
@@ -477,14 +512,14 @@ class Media_Library extends Base {
 		$folder_id = $request->get_param( 'folder_id' );
 
 		if ( ! $folder_id || ! is_numeric( $folder_id ) ) {
-			return new \WP_Error( 'invalid_folder_id', 'Invalid folder ID.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_folder_id', __( 'Invalid folder ID.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Check if the term of the folder exists.
 		$term = get_term( $folder_id, 'media-folder' );
 
 		if ( ! $term || is_wp_error( $term ) ) {
-			return new \WP_Error( 'invalid_folder', 'Invalid folder term ID.', array( 'status' => 404 ) );
+			return new \WP_Error( 'invalid_folder', __( 'Invalid folder term ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		$result = Media_Folder_Create_Zip::get_instance()->create_zip( $folder_id, 'media-folder-' . $term->slug . '.zip' );
@@ -496,7 +531,7 @@ class Media_Library extends Base {
 		return rest_ensure_response(
 			array(
 				'success' => true,
-				'message' => 'ZIP file created successfully.',
+				'message' => __( 'ZIP file created successfully.', 'godam' ),
 				'data'    => $result,
 			)
 		);
@@ -514,7 +549,7 @@ class Media_Library extends Base {
 		$folder_ids = $request->get_param( 'folder_ids' );
 
 		if ( empty( $folder_ids ) || ! is_array( $folder_ids ) ) {
-			return new \WP_Error( 'invalid_ids', 'No folder IDs provided or invalid format.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_ids', __( 'No folder IDs provided or invalid format.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		$deleted_count = 0;
@@ -633,7 +668,7 @@ class Media_Library extends Base {
 		$locked_status = (bool) $request->get_param( 'locked_status' );
 
 		if ( empty( $folder_ids ) || ! is_array( $folder_ids ) ) {
-			return new \WP_Error( 'invalid_ids', 'No folder IDs provided or invalid format.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_ids', __( 'No folder IDs provided or invalid format.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		$result = $this->update_folder_meta_status( $folder_ids, 'locked', $locked_status );
@@ -691,7 +726,7 @@ class Media_Library extends Base {
 		$bookmark_status = (bool) $request->get_param( 'bookmark_status' );
 
 		if ( empty( $folder_ids ) || ! is_array( $folder_ids ) ) {
-			return new \WP_Error( 'invalid_ids', 'No folder IDs provided or invalid format.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_ids', __( 'No folder IDs provided or invalid format.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		$result = $this->update_folder_meta_status( $folder_ids, 'bookmark', $bookmark_status );
@@ -734,5 +769,289 @@ class Media_Library extends Base {
 		} else {
 			return new \WP_Error( 'bulk_bookmark_failed', __( 'No folders were updated for bookmark status.', 'godam' ) . ' Errors: ' . implode( ', ', $result['errors'] ), array( 'status' => 500 ) );
 		}
+	}
+
+	/**
+	 * Handles a REST API request to fetch media files from GoDAM CMM.
+	 *
+	 * This endpoint retrieves a list of media files (video, audio, etc.) from the GoDAM API
+	 * using an API key stored in WordPress options. The response is paginated based on
+	 * `page` and `per_page` parameters. The media type can be filtered using the `type` parameter.
+	 *
+	 * Supported types: 'video', 'audio', 'image', etc.
+	 * For 'video' type, the job type is sent as 'stream' to the external API.
+	 *
+	 * The returned response contains the processed list of media items with additional meta
+	 * fields (like artist and album for audio), total count, and pagination information.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response JSON-formatted response containing:
+	 */
+	public function get_godam_cmm_files( $request ) {
+		// Extract and sanitize pagination and filter parameters from the request.
+		$page     = max( 1, absint( $request->get_param( 'page' ) ) );
+		$per_page = max( 1, absint( $request->get_param( 'per_page' ) ) );
+		$type     = $request->get_param( 'type' ) ?? 'all';
+		$search   = $request->get_param( 'search' );
+
+		// For now, we hardcode total count as 20 for all types till we get the API endpoint ready.
+		$total     = 'video' === $type ? 20 : ( 'audio' === $type ? 20 : 20 );
+		$all_items = array();
+
+		// Retrieve the GoDAM API key stored in WordPress options.
+		$api_key = get_option( 'rtgodam-api-key', '' );
+
+		// Proceed only if the media type is provided and API key exists.
+		if ( isset( $type ) && ! empty( $api_key ) ) {
+			// Construct the GoDAM API endpoint URL.
+			$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.file.get_list_of_files_with_api_key';
+
+			// Prepare query arguments.
+			$request_args = array(
+				'api_key'   => $api_key,
+				'page_size' => $per_page,
+				'page'      => $page,
+			);
+
+			// For video, GoDAM expects `job_type=stream`.
+			if ( 'video' === $type ) {
+				$request_args['job_type'] = 'stream';
+			} else {
+				$request_args['job_type'] = $type;
+			}
+
+			// Set the search argument.
+			if ( ! empty( $search ) ) {
+				$request_args['search'] = $search;
+			}
+
+			// Add query params to the API URL.
+			$api_url = add_query_arg(
+				$request_args,
+				$api_url
+			);
+
+			// Make the API request to GoDAM.
+			$response = wp_remote_get(
+				$api_url,
+				array(
+					'headers' => array(
+						'Content-Type' => 'application/json',
+					),
+				)
+			);
+
+			// Check for WP_Error or non-200 status codes.
+			if ( is_wp_error( $response ) ) {
+				return rest_ensure_response(
+					array(
+						'success' => false,
+						'message' => sprintf(
+							// translators: %s is the error message from the GoDAM API request.
+							__( 'GoDAM API request failed: %s', 'godam' ),
+							$response->get_error_message()
+						),
+					)
+				);
+			}
+
+			$response_code = wp_remote_retrieve_response_code( $response );
+
+			if ( 200 !== $response_code ) {
+				return rest_ensure_response(
+					array(
+						'success' => false,
+						'message' => sprintf(
+							// translators: %s is the HTTP status code from the GoDAM API response.
+							__( 'GoDAM API returned HTTP status: %s', 'godam' ),
+							$response_code
+						),
+					)
+				);
+			}
+
+			$body = json_decode( wp_remote_retrieve_body( $response ) );
+
+			if ( empty( $body->message->files ) || ! is_array( $body->message->files ) ) {
+				return rest_ensure_response(
+					array(
+						'success' => false,
+						'message' => __( 'Unexpected API response format or no files found.', 'godam' ),
+					)
+				);
+			}
+
+			$response = $body->message->files;
+
+			$all_items = array();
+
+			// Prepare and normalize each media item for compatibility with WordPress Media Library.
+			foreach ( $response as $key => $item ) {
+				$all_items[ $key ] = Media_Library_Ajax::get_instance()->prepare_godam_media_item( $item );
+				/**
+				 * For audio type, ensure that meta keys for artist and album exist.
+				 * 
+				 * Note - This is a temporary fix till API starts sending the meta fields as well.
+				 */
+				if ( 'audio' === $type ) {
+					$all_items[ $key ]['meta']           = isset( $all_items[ $key ]['meta'] ) ? $all_items[ $key ]['meta'] : array();
+					$all_items[ $key ]['meta']['artist'] = isset( $all_items[ $key ]['meta']['artist'] ) ? $all_items[ $key ]['meta']['artist'] : '';
+					$all_items[ $key ]['meta']['album']  = isset( $all_items[ $key ]['meta']['album'] ) ? $all_items[ $key ]['meta']['album'] : '';
+				}
+			}
+		}
+
+		// Return a REST response with pagination and status details.
+		return rest_ensure_response(
+			array(
+				'success'     => true,
+				'message'     => __( 'Filtered GoDAM files by MIME type.', 'godam' ),
+				'data'        => array_values( $all_items ),
+				'total_items' => $total,
+				'mime_type'   => $type,
+				'page'        => $page,
+				'per_page'    => $per_page,
+				'has_more'    => $body->message->has_more,
+			) 
+		);
+	}
+
+	/**
+	 * Creates a virtual media attachment entry in the WordPress Media Library.
+	 *
+	 * This is primarily used to allow external media (like GoDAM-hosted videos/audios)
+	 * to be represented within the native Media Library interface, enabling support
+	 * for layering, editing, or interaction via Gutenberg/Elementor blocks.
+	 *
+	 * @param \WP_REST_Request $request REST API request object.
+	 * @return \WP_REST_Response|\WP_Error API response with attachment data or error.
+	 */
+	public function create_media_entry( $request ) {
+		// Retrieve request payload.
+		$data = $request->get_json_params();
+
+		// Validate required fields.
+		if ( empty( $data['id'] ) || empty( $data['title'] ) || empty( $data['url'] ) || empty( $data['mime'] ) ) {
+			return new \WP_Error( 'missing_params', 'Required fields are missing.', array( 'status' => 400 ) );
+		}
+
+		// Sanitize the GoDAM ID.
+		$godam_id = sanitize_text_field( $data['id'] );
+
+		// Check if a media entry already exists for this GoDAM ID.
+		$existing = new \WP_Query(
+			array(
+				'post_type'      => 'attachment',
+				'meta_key'       => '_godam_original_id',
+				'meta_value'     => $godam_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'post_status'    => 'any',
+				'fields'         => 'ids',
+				'posts_per_page' => 1,
+			) 
+		);
+
+		// If found, return existing attachment instead of duplicating.
+		if ( $existing->have_posts() ) {
+			$existing_id = $existing->posts[0];
+			return new \WP_REST_Response(
+				array(
+					'success'    => true,
+					'attachment' => wp_prepare_attachment_for_js( $existing_id ),
+					'message'    => 'Attachment already exists',
+				),
+				200 
+			);
+		}
+
+		// Prepare post data for the virtual media entry.
+		$attachment = array(
+			'post_title'     => sanitize_text_field( $data['title'] ),
+			'post_mime_type' => sanitize_text_field( $data['mime'] ),
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'guid'           => esc_url_raw( $data['url'] ),
+		);
+
+		// Insert the attachment into WordPress.
+		$attach_id = wp_insert_attachment( $attachment, $data['title'] );
+
+		// If creation fails, return an error response.
+		if ( is_wp_error( $attach_id ) ) {
+			return new \WP_REST_Response(
+				array(
+					'success' => false,
+					'error'   => $attach_id->get_error_message(),
+				),
+				500 
+			);
+		}
+
+		// Set custom metadata to track GoDAM-related properties.
+		update_post_meta( $attach_id, '_godam_original_id', $godam_id );
+		update_post_meta( $attach_id, '_godam_icon', esc_url_raw( $data['icon'] ?? '' ) );
+		update_post_meta( $attach_id, '_filesize_human', sanitize_text_field( $data['filesizeHumanReadable'] ?? '' ) );
+		update_post_meta( $attach_id, '_godam_label', sanitize_text_field( $data['label'] ?? '' ) );
+		update_post_meta( $attach_id, '_owner_email', sanitize_email( $data['owner'] ?? '' ) );
+		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['url'] ?? '' ) );
+		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' );
+		update_post_meta( $attach_id, 'icon', $data['icon'] );
+
+		// Return the newly created media object.
+		return new \WP_REST_Response(
+			array(
+				'success'    => true,
+				'attachment' => wp_prepare_attachment_for_js( $attach_id ),
+				'message'    => 'Attachment created',
+			),
+			201 
+		);
+	}
+
+	/**
+	 * Retrieves a media attachment by its GoDAM ID.
+	 *
+	 * If an attachment exists in the Media Library with `_godam_original_id` matching
+	 * the given ID, its corresponding media object is fetched using the core WP REST API.
+	 *
+	 * If no match is found, the method assumes the GoDAM ID is already a valid
+	 * WordPress attachment ID and attempts to fetch it directly.
+	 *
+	 * This is useful for clients who want to retrieve media metadata via REST,
+	 * regardless of whether it's a native or virtual entry.
+	 *
+	 * @param \WP_REST_Request $request The REST request containing the GoDAM media ID.
+	 * @return \WP_REST_Response|\WP_Error The media object response or an error if not found.
+	 */
+	public function get_attachment_by_id( $request ) {
+		// Sanitize the GoDAM media ID from the request.
+		$godam_id = sanitize_text_field( $request['id'] );
+
+		// Try to find an attachment that matches the GoDAM original ID.
+		$query = new \WP_Query(
+			array(
+				'post_type'      => 'attachment',
+				'meta_key'       => '_godam_original_id',
+				'meta_value'     => $godam_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'post_status'    => 'inherit',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+			) 
+		);
+
+		// If a match is found, use that attachment ID.
+		// Otherwise, fallback to assuming $godam_id itself is a WordPress attachment ID.
+		$attachment_id = $godam_id;
+
+		if ( $query->have_posts() ) {
+			$attachment_id = $query->posts[0];
+		}
+
+		// Prepare an internal REST request to fetch media item via core endpoint.
+		$internal_request = new \WP_REST_Request( 'GET', '/wp/v2/media/' . $attachment_id );
+		// Execute the request and capture the response.
+		$response = rest_do_request( $internal_request );
+
+		// Return the full media object (or WP_Error if not found).
+		return $response;
 	}
 }

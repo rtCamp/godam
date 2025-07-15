@@ -25,6 +25,7 @@ import {
 import { FolderCreationModal, RenameModal, DeleteModal } from './components/modal/index.jsx';
 import { triggerFilterChange } from './data/media-grid.js';
 import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
+import LockedTab from './components/folder-tree/LockedTab.jsx';
 
 const App = () => {
 	const dispatch = useDispatch();
@@ -156,7 +157,10 @@ const App = () => {
 				</button>
 			</div>
 
-			<BookmarkTab handleContextMenu={ handleContextMenu } />
+			<div className="folder-tabs">
+				<BookmarkTab handleContextMenu={ handleContextMenu } />
+				<LockedTab handleContextMenu={ handleContextMenu } />
+			</div>
 			<FolderTree handleContextMenu={ handleContextMenu } />
 
 			{ contextMenu.visible && (

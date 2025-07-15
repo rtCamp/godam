@@ -20,11 +20,19 @@
 			"type": "number",
 			"role": "content"
 		},
+		"cmmId": {
+			"type": "number",
+			"default": ""
+		},
 		"loop": {
 			"type": "boolean"
 		},
 		"muted": {
 			"type": "boolean"
+		},
+		"hoverOverlay": {
+			"type": "boolean",
+			"default": true
 		},
 		"poster": {
 			"type": "string"

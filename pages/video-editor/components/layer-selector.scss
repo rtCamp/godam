@@ -1,23 +1,69 @@
 .godam-layer-selector {
-
+	position: relative;
+	width: 70vw;
 	border-radius: 0.75rem;
+
+	&__header {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 0.5rem 0 1rem;
+		justify-content: space-between;
+
+		position: sticky;
+		top: -4px; /* height of the padding to modal */
+		z-index: 10;
+		background-color: #fff;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+		.layer-tabs {
+			display: flex;
+			gap: 0.1rem;
+			border-radius: 0.5rem;
+			overflow: hidden;
+		}
+
+		.layer-tab {
+			padding: 0.75rem 1.25rem;
+			cursor: pointer;
+			font-weight: 600;
+			font-size: 0.875rem;
+			border: none;
+			background: #f3f4f6; // subtle background
+			color: #111827; // dark neutral
+			transition: all 0.2s ease-in-out;
+
+			&.active {
+				background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+				color: #fff;
+			}
+
+			&.disabled {
+				pointer-events: none;
+				cursor: not-allowed;
+				opacity: 0.5;
+			}
+		}
+	}
 
 	&__list {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
 		grid-gap: 1rem;
+
+		padding-top: 1rem;
 	}
 
 	&__item {
+		position: relative;
+		padding: 1px; // To show border effect using background
+		background: rgba(225, 225, 225, 1);
+		border: none;
 		width: 100%;
-		padding: 1rem;
-		border: 1px solid rgba(225, 225, 225, 1);
 		border-radius: 0.5rem;
 		display: flex;
 		align-items: center;
 		gap: 1.5rem;
-
-		background: none;
 		cursor: pointer;
 
 		&:disabled {
@@ -26,9 +72,56 @@
 		}
 
 		&.selected {
-			border: 2px solid;
-			border-image-source: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
-			border-image-slice: 1;
+			background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+		}
+
+		&__inner {
+			display: flex;
+			align-items: center;
+			gap: 1.5rem;
+			width: 100%;
+			padding: 1rem;
+			border-radius: 0.5rem;
+			background: #fff;
+
+			position: relative;
+		}
+
+		&__type {
+			position: absolute;
+			top: 0.5rem;
+			right: 0.5rem;
+			font-size: 0.75rem;
+			padding: 0.5rem 0.75rem;
+			border-radius: 0.375rem;
+			text-transform: capitalize;
+			color: #fff;
+			font-weight: 500;
+			background-color: #527bff;
+
+			&.type-form {
+				background-color: #527bff;
+			}
+
+			&.type-cta {
+				background-color: #ffe452;
+			}
+
+			&.type-hotspot {
+				background-color: #ff6b6b;
+			}
+
+			&.type-poll {
+				background-color: #52ff7e;
+			}
+
+			&.type-ad {
+				background-color: #ff9752;
+			}
+
+			&.type-woo {
+				background-color: #00c4cc;
+			}
 		}
 
 		&__image-container {
@@ -66,7 +159,7 @@
 
 			p {
 				font-size: 1rem;
-				line-height: 1.375rem;
+				line-height: 1.375;
 				margin: 0;
 				color: rgba(119, 119, 119, 1);
 				text-align: left;

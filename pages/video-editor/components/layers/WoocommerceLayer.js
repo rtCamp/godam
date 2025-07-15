@@ -284,7 +284,9 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 							<div className="mt-3">
 								<TextControl
 									label={ __( 'Shop Button', 'godam' ) }
-									placeholder={ __( 'Click Me!', 'godam' ) }
+									placeholder={ productHotspot.addToCart
+										? __( 'View Product', 'godam' )
+										: __( 'Buy Now', 'godam' ) }
 									value={ productHotspot.shopText }
 									onChange={ ( val ) =>
 										updateField(
@@ -526,7 +528,15 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 														rel="noopener noreferrer"
 														style={ { background: productHotspot.backgroundColor } }
 													>
-														{ productHotspot.shopText }
+														{ ( () => {
+															const defaultLabel = productHotspot.addToCart
+																? __( 'View Product', 'godam' )
+																: __( 'Buy Now', 'godam' );
+
+															const shopText = productHotspot.shopText?.trim();
+
+															return shopText ? shopText : defaultLabel;
+														} )() }
 													</a>
 												</div>
 											</div>

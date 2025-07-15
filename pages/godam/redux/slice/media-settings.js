@@ -10,6 +10,10 @@ import { VideoCustomCSSTemplate } from '../../components/VideoCustomCSSTemplate'
 
 const initialState = {
 	video: {
+		sync_from_godam: false,
+		adaptive_bitrate: false,
+		optimize_videos: false,
+		video_format: 'auto',
 		video_quality: [],
 		video_compress_quality: 100,
 		video_thumbnails: 5,
@@ -18,6 +22,7 @@ const initialState = {
 		use_watermark_image: false,
 		watermark_text: '',
 		watermark_url: '',
+		watermark_image_id: null,
 	},
 	general: {
 		enable_folder_organization: true,
@@ -25,6 +30,7 @@ const initialState = {
 	video_player: {
 		brand_image: '',
 		brand_color: '#2B333FB3',
+		brand_image_id: null,
 		custom_css: VideoCustomCSSTemplate,
 		player_skin: 'Default',
 	},
