@@ -1,6 +1,15 @@
 .godam-bubble-skin {
 	container-type: inline-size;
     container-name: godam-player-bubble-skin;
+
+	.vjs-big-play-button {
+		border-radius: 17px;
+		border: 2px solid #fff;
+
+		span::before {
+			font-size: 1.5rem;
+		}
+	}
 	  // control bar styles
   
 	  .vjs-control-bar {

@@ -9,6 +9,8 @@ namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Post_Types\GoDAM_Video;
+
 /**
  * Class Settings
  */
@@ -198,7 +200,7 @@ class Settings extends Base {
 			return new \WP_REST_Response(
 				array(
 					'status'  => 'success',
-					'message' => 'API key deactivated successfully.',
+					'message' => __( 'API key deactivated successfully.', 'godam' ),
 				),
 				200
 			);
@@ -207,7 +209,7 @@ class Settings extends Base {
 		return new \WP_REST_Response(
 			array(
 				'status'  => 'error',
-				'message' => 'Failed to deactivate the API key. It might not exist.',
+				'message' => __( 'Failed to deactivate the API key. It might not exist.', 'godam' ),
 			),
 			400
 		);
@@ -237,7 +239,7 @@ class Settings extends Base {
 	public function get_easydam_settings() {
 		// Retrieve settings from the database.
 		$easydam_settings = get_option( 'rtgodam-settings', $this->get_default_settings() );
-
+		
 		return new \WP_REST_Response( $easydam_settings, 200 );
 	}
 
@@ -267,7 +269,7 @@ class Settings extends Base {
 		return new \WP_REST_Response(
 			array(
 				'status'  => 'success',
-				'message' => 'EasyDAM settings updated successfully!',
+				'message' => __( 'EasyDAM settings updated successfully!', 'godam' ),
 			),
 			200
 		);
@@ -296,6 +298,7 @@ class Settings extends Base {
 				'watermark_url'          => esc_url_raw( $settings['video']['watermark_url'] ?? $default['video']['watermark_url'] ),
 				'watermark_image_id'     => absint( $settings['video']['watermark_image_id'] ?? $default['video']['watermark_image_id'] ),
 				'use_watermark_image'    => rest_sanitize_boolean( $settings['video']['use_watermark_image'] ?? $default['video']['use_watermark_image'] ),
+				'video_slug'             => sanitize_title( $settings['video']['video_slug'] ?? $default['video']['video_slug'] ),
 			),
 			'general'      => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),

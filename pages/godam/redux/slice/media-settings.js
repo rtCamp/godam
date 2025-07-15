@@ -10,6 +10,10 @@ import { VideoCustomCSSTemplate } from '../../components/VideoCustomCSSTemplate'
 
 const initialState = {
 	video: {
+		sync_from_godam: false,
+		adaptive_bitrate: false,
+		optimize_videos: false,
+		video_format: 'auto',
 		video_quality: [],
 		video_compress_quality: 100,
 		video_thumbnails: 5,

@@ -17,6 +17,9 @@ use RTGODAM\Inc\Deactivation;
 use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
+use RTGODAM\Inc\Video_Permalinks;
+
+use RTGODAM\Inc\Post_Types\GoDAM_Video;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
@@ -47,6 +50,7 @@ use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
 use RTGODAM\Inc\Video_Metadata;
 
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
+use RTGODAM\Inc\WPForms\WPForms_Integration;
 use RTGODAM\Inc\Media_Library\Media_Edit_Enhancements;
 
 /**
@@ -70,6 +74,7 @@ class Plugin {
 		Seo::get_instance();
 		Rewrite::get_instance();
 		Video_Preview::get_instance();
+		Video_Permalinks::get_instance();
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
@@ -81,6 +86,9 @@ class Plugin {
 		$this->load_rest_api();
 		$this->init_gravity_forms();
 		$this->load_sureforms();
+		$this->load_fluentforms();
+
+		WPForms_Integration::get_instance()->init();
 
 		// Load cron jobs.
 		Retranscode_Failed_Media::get_instance();
@@ -98,6 +106,7 @@ class Plugin {
 	 * Load Post Types.
 	 */
 	public function load_post_types() {
+		GoDAM_Video::get_instance();
 	}
 
 	/**
@@ -179,5 +188,14 @@ class Plugin {
 	 */
 	public function load_sureforms() {
 		\RTGODAM\Inc\Sureforms\Init::get_instance();
+	}
+
+	/**
+	 * Initialize FluentForms Extension class.
+	 *
+	 * @return void
+	 */
+	public function load_fluentforms() {
+		\RTGODAM\Inc\FluentForms\Init::get_instance();
 	}
 }

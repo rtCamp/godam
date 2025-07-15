@@ -434,6 +434,20 @@ function VideoEdit( {
 						setAttributes={ setAttributes }
 						attributes={ attributes }
 					/>
+
+					<BaseControl
+						id={ `video-block__hover-${ instanceId }` }
+						label={ __( 'Hover Options', 'godam' ) }
+						__nextHasNoMarginBottom
+					>
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label={ __( 'Hover Overlay', 'godam' ) }
+							onChange={ ( value ) => setAttributes( { hoverOverlay: value } ) }
+							checked={ !! attributes.hoverOverlay }
+						/>
+					</BaseControl>
+
 					<BaseControl
 						id={ `video-block__poster-image-${ instanceId }` }
 						label={ __( 'Video Thumbnail', 'godam' ) }
