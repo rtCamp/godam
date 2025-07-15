@@ -7,13 +7,13 @@ MediaTagFilter = MediaTagFilter?.extend( {
 		const filters = {};
 		filters.all = {
 			text: 'All Tags',
-			props: { media_tag: '' },
+			props: { rtgodam_media_tag: '' },
 		};
 
 		MediaLibraryTagFilterData.terms.forEach( ( term ) => {
 			filters[ term.slug ] = {
 				text: term.name,
-				props: { media_tag: term.slug },
+				props: { rtgodam_media_tag: term.slug },
 			};
 		} );
 

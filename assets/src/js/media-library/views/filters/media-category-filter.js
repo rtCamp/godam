@@ -7,13 +7,13 @@ MediaCategoryFilter = MediaCategoryFilter?.extend( {
 		const filters = {};
 		filters.all = {
 			text: 'All Categories',
-			props: { media_category: '' },
+			props: { rtgodam_media_category: '' },
 		};
 
 		MediaLibraryCategoryFilterData.terms.forEach( ( term ) => {
 			filters[ term.slug ] = {
 				text: term.name,
-				props: { media_category: term.slug },
+				props: { rtgodam_media_category: term.slug },
 			};
 		} );
 

@@ -272,7 +272,7 @@ class Assets {
 			array(
 				'terms' => get_terms(
 					array(
-						'taxonomy'   => 'media_category',
+						'taxonomy'   => 'rtgodam_media_category',
 						'hide_empty' => false,
 					)
 				),
@@ -285,7 +285,7 @@ class Assets {
 			array(
 				'terms' => get_terms(
 					array(
-						'taxonomy'   => 'media_tag',
+						'taxonomy'   => 'rtgodam_media_tag',
 						'hide_empty' => false,
 					)
 				),

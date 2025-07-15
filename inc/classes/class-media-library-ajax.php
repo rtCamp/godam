@@ -398,8 +398,8 @@ class Media_Library_Ajax {
 			unset( $query_args['media-folder'] );
 		}
 
-		if ( isset( $_REQUEST['query']['media_category'] ) ) {
-			$media_category = sanitize_text_field( wp_unslash( $_REQUEST['query']['media_category'] ) );
+		if ( isset( $_REQUEST['query']['rtgodam_media_category'] ) ) {
+			$media_category = sanitize_text_field( wp_unslash( $_REQUEST['query']['rtgodam_media_category'] ) );
 
 			if ( ! isset( $query_args['tax_query'] ) ) {
 				$query_args['tax_query'] = array(); // phpcs:ignore -- tax_query is required here to filter by taxonomy.
@@ -407,28 +407,28 @@ class Media_Library_Ajax {
 
 			if ( 'uncategorized' === $media_category ) {
 				$query_args['tax_query'][] = array(
-					'taxonomy' => 'media_category',
+					'taxonomy' => 'rtgodam_media_category',
 					'field'    => 'term_id',
 					'operator' => 'NOT EXISTS',
 				);
 			} elseif ( 'all' !== $media_category && '' !== $media_category ) {
 				$query_args['tax_query'][] = array(
-					'taxonomy' => 'media_category',
+					'taxonomy' => 'rtgodam_media_category',
 					'field'    => 'slug',
 					'terms'    => $media_category,
 				);
 			}
 		}
 
-		if ( isset( $_REQUEST['query']['media_tag'] ) && '' !== $_REQUEST['query']['media_tag'] ) {
-			$media_tag = sanitize_text_field( wp_unslash( $_REQUEST['query']['media_tag'] ) );
+		if ( isset( $_REQUEST['query']['rtgodam_media_tag'] ) && '' !== $_REQUEST['query']['rtgodam_media_tag'] ) {
+			$media_tag = sanitize_text_field( wp_unslash( $_REQUEST['query']['rtgodam_media_tag'] ) );
 
 			if ( ! isset( $query_args['tax_query'] ) ) {
 				$query_args['tax_query'] = array(); // phpcs:ignore -- tax_query is required here to filter by taxonomy.
 			}
 
 			$query_args['tax_query'][] = array(
-				'taxonomy' => 'media_tag',
+				'taxonomy' => 'rtgodam_media_tag',
 				'field'    => 'slug',
 				'terms'    => $media_tag,
 			);

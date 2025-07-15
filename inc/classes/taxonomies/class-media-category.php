@@ -1,6 +1,6 @@
 <?php
 /**
- * Register `media_category` taxonomy for the media attachments.
+ * Register `rtgodam_media_category` taxonomy for the media attachments.
  *
  * @package GoDAM
  */
@@ -19,7 +19,7 @@ class Media_Category extends Base {
 	 *
 	 * @var string
 	 */
-	const SLUG = 'media_category';
+	const SLUG = 'rtgodam_media_category';
 
 	/**
 	 * To setup action/filter.
@@ -101,7 +101,7 @@ class Media_Category extends Base {
 			return;
 		}
 
-		$taxonomy = 'media_category';
+		$taxonomy = 'rtgodam_media_category';
 		$selected = isset( $_GET[ $taxonomy ] ) ? sanitize_text_field( wp_unslash( $_GET[ $taxonomy ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The media filter form has nonce verification, so this is safe to use without additional nonce checks.
 
 		$has_terms = wp_count_terms( array( 'taxonomy' => $taxonomy ) );
