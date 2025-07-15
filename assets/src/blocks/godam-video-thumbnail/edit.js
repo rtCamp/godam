@@ -17,7 +17,7 @@ import {
 import './editor.scss';
 
 function Edit( { attributes, setAttributes } ) {
-	const { linkToVideo, showPlayButton } = attributes;
+	const { linkToVideo, showPlayButton, openInNewTab } = attributes;
 	const blockProps = useBlockProps(
 		{
 			className: 'godam-editor-video-item',
@@ -29,15 +29,6 @@ function Edit( { attributes, setAttributes } ) {
 			<InspectorControls>
 				<PanelBody title={ __( 'Thumbnail Settings', 'godam' ) }>
 					<ToggleControl
-						label={ __( 'Link to post', 'godam' ) }
-						checked={ linkToVideo }
-						onChange={ ( value ) => setAttributes( { linkToVideo: value } ) }
-						help={ linkToVideo
-							? __( 'Thumbnail will link to the video page.', 'godam' )
-							: __( 'Thumbnail will not be linked.', 'godam' )
-						}
-					/>
-					<ToggleControl
 						label={ __( 'Show play button overlay', 'godam' ) }
 						checked={ showPlayButton }
 						onChange={ ( value ) => setAttributes( { showPlayButton: value } ) }
@@ -46,6 +37,26 @@ function Edit( { attributes, setAttributes } ) {
 							: __( 'No play button will be displayed.', 'godam' )
 						}
 					/>
+					<ToggleControl
+						label={ __( 'Link to post', 'godam' ) }
+						checked={ linkToVideo }
+						onChange={ ( value ) => setAttributes( { linkToVideo: value } ) }
+						help={ linkToVideo
+							? __( 'Thumbnail will link to the video page.', 'godam' )
+							: __( 'Thumbnail will not be linked.', 'godam' )
+						}
+					/>
+					{ linkToVideo && (
+						<ToggleControl
+							label={ __( 'Open in new tab', 'godam' ) }
+							checked={ openInNewTab }
+							onChange={ ( value ) => setAttributes( { openInNewTab: value } ) }
+							help={ openInNewTab
+								? __( 'Link will open in a new tab.', 'godam' )
+								: __( 'Link will open in the same tab.', 'godam' )
+							}
+						/>
+					) }
 				</PanelBody>
 			</InspectorControls>
 			<div { ...blockProps }>

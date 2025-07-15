@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $link_to_video    = isset( $attributes['linkToVideo'] ) ? $attributes['linkToVideo'] : false;
 $show_play_button = isset( $attributes['showPlayButton'] ) ? $attributes['showPlayButton'] : false;
+$open_in_new_tab  = isset( $attributes['openInNewTab'] ) ? $attributes['openInNewTab'] : false;
 
 $video_post_id = get_the_ID();
 $thumbnail_url = '';
@@ -46,7 +47,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 <div <?php echo wp_kses_data( $wrapper_attributes ); ?>>
 	<?php if ( ! empty( $thumbnail_url ) ) : ?>
 		<?php if ( $link_to_video ) : ?>
-			<a href="<?php echo esc_url( get_permalink( $video_post_id ) ); ?>" class="godam-video-thumbnail__link">
+			<a href="<?php echo esc_url( get_permalink( $video_post_id ) ); ?>" class="godam-video-thumbnail__link"<?php echo $open_in_new_tab ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>>
 				<img src="<?php echo esc_url( $thumbnail_url ); ?>" alt="<?php echo esc_attr( $alt_text ); ?>" class="godam-video-thumbnail" />
 				<?php if ( $show_play_button ) : ?>
 					<div class="godam-video-thumbnail__play-button">
@@ -68,7 +69,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 		<?php endif; ?>
 	<?php else : ?>
 		<?php if ( $link_to_video ) : ?>
-			<a href="<?php echo esc_url( get_permalink( $video_post_id ) ); ?>" class="godam-video-thumbnail__link">
+			<a href="<?php echo esc_url( get_permalink( $video_post_id ) ); ?>" class="godam-video-thumbnail__link"<?php echo $open_in_new_tab ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>>
 				<div class="godam-video-thumbnail__fallback"></div>
 				<?php if ( $show_play_button ) : ?>
 					<div class="godam-video-thumbnail__play-button">

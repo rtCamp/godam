@@ -15,6 +15,10 @@
 		"showPlayButton": {
 			"type": "boolean",
 			"default": false
+		},
+		"openInNewTab": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {
