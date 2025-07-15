@@ -20,6 +20,7 @@ import SingleMetrics from '../analytics/SingleMetrics';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import chevronLeft from '../../assets/src/images/chevron-left.svg';
 import chevronRight from '../../assets/src/images/chevron-right.svg';
+import upgradePlanBackground from '../../assets/src/images/upgrade-plan-dashboard-bg.png';
 
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
@@ -202,7 +203,20 @@ const Dashboard = () => {
 				</div>
 			</div>
 
-			<div id="api-key-overlay" className="api-key-overlay hidden">
+			<div
+				id="api-key-overlay"
+				className="api-key-overlay hidden"
+				style={
+					dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key'
+						? {
+							backgroundImage: `url(${ upgradePlanBackground })`,
+							backgroundSize: '100% calc(100% - 32px)',
+							backgroundRepeat: 'no-repeat',
+							backgroundPosition: 'center 32px',
+						}
+						: {}
+				}
+			>
 				<div className="api-key-message">
 					{ dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key'
 						? <div className="api-key-overlay-banner">
@@ -225,13 +239,13 @@ const Dashboard = () => {
 						:	<div className="api-key-overlay-banner">
 							<p>
 								{ dashboardMetrics?.message + ' ' || __(
-									'Your API key is missing or invalid. Please check your plugin settings.',
+									'An unknown error occured. Please check your plugin settings.',
 									'godam',
 								) }
-								<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-									{ __( 'Go to plugin settings', 'godam' ) }
-								</a>
 							</p>
+							<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+								{ __( 'Go to plugin settings', 'godam' ) }
+							</a>
 						</div>
 					}
 				</div>

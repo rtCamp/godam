@@ -17,6 +17,7 @@ import {
 import { calculateEngagementRate, calculatePlayRate, generateLineChart } from './helper';
 import DOMPurify from 'isomorphic-dompurify';
 import './charts.js';
+import upgradePlanBackground from '../../assets/src/images/upgrade-plan-analytics-bg.png';
 
 /**
  * WordPress dependencies
@@ -328,7 +329,20 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
-			<div id="api-key-overlay" className="api-key-overlay hidden">
+			<div
+				id="api-key-overlay"
+				className="api-key-overlay hidden"
+				style={
+					analyticsDataFetched?.errorType === 'invalid_key' || analyticsDataFetched?.errorType === 'missing_key'
+						? {
+							backgroundImage: `url(${ upgradePlanBackground })`,
+							backgroundSize: '100% calc(100% - 32px)',
+							backgroundRepeat: 'no-repeat',
+							backgroundPosition: 'center 32px',
+						}
+						: {}
+				}
+			>
 				<div className="api-key-message">
 					{ analyticsDataFetched?.errorType === 'invalid_key' || analyticsDataFetched?.errorType === 'missing_key'
 						? <div className="api-key-overlay-banner">
@@ -351,13 +365,13 @@ const Analytics = ( { attachmentID } ) => {
 						:	<div className="api-key-overlay-banner">
 							<p>
 								{ analyticsDataFetched?.message + ' ' || __(
-									'Your API key is missing or invalid. Please check your plugin settings.',
+									'An unknown error occured. Please check your plugin settings.',
 									'godam',
 								) }
-								<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-									{ __( 'Go to plugin settings', 'godam' ) }
-								</a>
 							</p>
+							<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+								{ __( 'Go to plugin settings', 'godam' ) }
+							</a>
 						</div>
 					}
 				</div>
