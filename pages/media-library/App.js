@@ -26,12 +26,15 @@ import { FolderCreationModal, RenameModal, DeleteModal } from './components/moda
 import { triggerFilterChange } from './data/media-grid.js';
 import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
 import LockedTab from './components/folder-tree/LockedTab.jsx';
+import { useGetAllMediaCountQuery, useGetCategoryMediaCountQuery } from './redux/api/folders.js';
 
 const App = () => {
 	const dispatch = useDispatch();
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
 	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
 	const currentSortOrder = useSelector( ( state ) => state.FolderReducer.sortOrder );
+	const { data: allMediaCount } = useGetAllMediaCountQuery();
+	const { data: uncategorizedCount } = useGetCategoryMediaCountQuery( { folderId: 0 } );
 
 	const [ contextMenu, setContextMenu ] = useState( {
 		visible: false,
@@ -143,7 +146,9 @@ const App = () => {
 					}` }
 					onClick={ () => handleClick( -1 ) }
 				>
-					<p className="folder-list__text">{ __( 'All Media', 'godam' ) }</p>
+					<p className="folder-list__text">{ __( 'All Media', 'godam' ) }
+						<span className="folder-list__count">{ allMediaCount ?? 0 }</span>
+					</p>
 				</button>
 
 				<button
@@ -153,7 +158,9 @@ const App = () => {
 					onClick={ () => handleClick( 0 ) }
 					data-id={ 0 }
 				>
-					<p className="folder-list__text">{ __( 'Uncategorized', 'godam' ) }</p>
+					<p className="folder-list__text">{ __( 'Uncategorized', 'godam' ) }
+						<span className="folder-list__count">{ uncategorizedCount?.count ?? 0 }</span>
+					</p>
 				</button>
 			</div>
 
