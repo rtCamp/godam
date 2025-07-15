@@ -40,7 +40,7 @@ export default AttachmentsBrowser?.extend( {
 		// Make sure to load the original toolbar
 		AttachmentsBrowser.prototype.createToolbar.call( this );
 
-		if ( ToggleFoldersButton ) {
+		if ( ToggleFoldersButton && ! isUploadPage() ) {
 			this.toolbar.set(
 				'ToggleFoldersButton',
 				new ToggleFoldersButton( {
