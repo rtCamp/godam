@@ -10,6 +10,7 @@ namespace RTGODAM\Inc;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
+use WP_REST_Request;
 
 /**
  * Class Assets
@@ -106,6 +107,11 @@ class Pages {
 		add_action( 'admin_menu', array( $this, 'add_admin_pages' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
+
+		// Remove anti-spam field during shortcode render for WPForms in Video Editor Page.
+		// @see https://github.com/rtCamp/godam/issues/597 issue link.
+		add_filter( 'rest_pre_dispatch', array( $this, 'save_current_rest_api_request' ), 10, 3 );
+		add_filter( 'wpforms_frontend_form_data', array( $this, 'remove_antispam_setting_from_wpforms' ), 10 );
 	}
 
 	/**
@@ -370,11 +376,6 @@ class Pages {
 				$this->enqueue_gravity_forms_styles();
 			}
 
-			// Enqueue WPForms styles if the plugin is active.
-			if ( $is_wpforms_active ) {
-				$this->enqueue_wpforms_styles();
-			}
-
 			// Enqueue Jetpack Forms styles if the plugin is active.
 			if ( $is_jetpack_active ) {
 				$this->enqueue_jetpack_forms_styles();
@@ -526,7 +527,7 @@ class Pages {
 			wp_register_script(
 				'transcoder-page-script-analytics',
 				RTGODAM_URL . 'assets/build/pages/analytics.min.js',
-				array( 'wp-element' ),
+				array( 'wp-element', 'wp-i18n' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/analytics.min.js' ),
 				true
 			);
@@ -657,26 +658,6 @@ class Pages {
 	}
 
 	/**
-	 * Enqueue WPForms styles.
-	 *
-	 * @return void
-	 */
-	public function enqueue_wpforms_styles() {
-
-		if ( ! defined( 'WPFORMS_PLUGIN_URL' ) ) {
-			return;
-		}
-
-		// Enqueue the WPForms styles.
-		wp_enqueue_style(
-			'wpforms-full',
-			WPFORMS_PLUGIN_URL . 'assets/css/frontend/classic/wpforms-full.css',
-			array(),
-			WPFORMS_VERSION
-		);
-	}
-
-	/**
 	 * Enqueue Jetpack Forms styles.
 	 *
 	 * @return void
@@ -772,5 +753,65 @@ class Pages {
 		wp_enqueue_style( 'everest-forms-general', evf()->plugin_url() . '/assets/css/everest-forms.css', array(), EVF_VERSION );
 
 		\EVF_Frontend_Scripts::load_scripts();
+	}
+
+	/**
+	 * Save current rest api request.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param mixed           $result Response to replace the requested version with. Can be anything a normal endpoint can return, or null to not hijack the request.
+	 * @param \WP_REST_Server $server Server instance.
+	 * @param WP_REST_Request $request Request used to generate the response.
+	 *
+	 * @return mixed
+	 */
+	public function save_current_rest_api_request( $result, $server, $request ) {
+		global $godam_current_rest_request;
+
+		// Save the current REST API request.
+		$godam_current_rest_request = $request;
+
+		return $result;
+	}
+
+	/**
+	 * Remove anti-spam settings from wpforms.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param array $form_data Form data to be modified.
+	 *
+	 * @return array
+	 */
+	public function remove_antispam_setting_from_wpforms( $form_data ) {
+		global $godam_current_rest_request;
+
+		// Check if the global variable is set and is an instance of WP_REST_Request.
+		if ( null === $godam_current_rest_request ) {
+			return $form_data;
+		}
+
+		// Bail early if the global variable is not an instance of WP_REST_Request.
+		if ( ! $godam_current_rest_request instanceof \WP_REST_Request ) {
+			return $form_data;
+		}
+
+		if ( '/godam/v1/wpform' !== $godam_current_rest_request->get_route() ) {
+			return $form_data;
+		}
+
+		// Remove the antispam settings from the form data.
+		if ( isset( $form_data['settings'] ) ) {
+			foreach ( $form_data['settings'] as $key => $value ) {
+				if ( str_starts_with( $key, 'antispam' ) ) {
+					unset( $form_data['settings'][ $key ] );
+				}
+			}
+		}
+
+		$godam_current_rest_request = null;
+
+		return $form_data;
 	}
 }

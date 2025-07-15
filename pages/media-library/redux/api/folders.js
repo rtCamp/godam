@@ -13,7 +13,7 @@ export const folderApi = createApi( {
 			query: () => ( {
 				url: 'wp/v2/media-folder',
 				params: {
-					_fields: 'id,name,parent',
+					_fields: 'id,name,parent,attachmentCount,meta',
 					per_page: 100, // Note: 100 is the max per page. Implement pagination if total folders > 100
 				},
 			} ),
@@ -50,6 +50,45 @@ export const folderApi = createApi( {
 				},
 			} ),
 		} ),
+		bulkDeleteFolders: builder.mutation( {
+			query: ( folderIds ) => ( {
+				url: 'godam/v1/media-library/bulk-delete-folders',
+				method: 'DELETE',
+				body: { folder_ids: folderIds, force: true },
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
+					'Content-Type': 'application/json',
+				},
+			} ),
+		} ),
+		bulkLockFolders: builder.mutation( {
+			query: ( { folderIds, lockedStatus } ) => ( {
+				url: 'godam/v1/media-library/bulk-lock-folders',
+				method: 'POST',
+				body: {
+					folder_ids: folderIds,
+					locked_status: lockedStatus,
+				},
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
+					'Content-Type': 'application/json',
+				},
+			} ),
+		} ),
+		bulkBookmarkFolders: builder.mutation( {
+			query: ( { folderIds, bookmarkStatus } ) => ( {
+				url: 'godam/v1/media-library/bulk-bookmark-folders',
+				method: 'POST',
+				body: {
+					folder_ids: folderIds,
+					bookmark_status: bookmarkStatus,
+				},
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
+					'Content-Type': 'application/json',
+				},
+			} ),
+		} ),
 		assignFolder: builder.mutation( {
 			query: ( { attachmentIds, folderTermId } ) => ( {
 				url: 'godam/v1/media-library/assign-folder',
@@ -63,6 +102,15 @@ export const folderApi = createApi( {
 				},
 			} ),
 		} ),
+		downloadZip: builder.mutation( {
+			query: ( { folderId } ) => ( {
+				url: `godam/v1/media-library/download-folder/${ folderId }`,
+				method: 'POST',
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
+				},
+			} ),
+		} ),
 	} ),
 } );
 
@@ -71,5 +119,9 @@ export const {
 	useCreateFolderMutation,
 	useUpdateFolderMutation,
 	useDeleteFolderMutation,
+	useBulkDeleteFoldersMutation,
+	useBulkLockFoldersMutation,
+	useBulkBookmarkFoldersMutation,
 	useAssignFolderMutation,
+	useDownloadZipMutation,
 } = folderApi;

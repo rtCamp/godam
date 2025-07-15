@@ -4,7 +4,15 @@
 /**
  * WordPress dependencies
  */
-import { Button, Icon, Notice, RangeControl, SelectControl, TextareaControl, TextControl } from '@wordpress/components';
+import {
+	Button,
+	CustomSelectControl,
+	Notice,
+	RangeControl,
+	TextareaControl,
+	TextControl,
+	Tooltip,
+} from '@wordpress/components';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { __ } from '@wordpress/i18n';
@@ -13,6 +21,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
+import { replace, trash } from '@wordpress/icons';
 
 const ImageCTA = ( { layerID } ) => {
 	/**
@@ -37,6 +46,17 @@ const ImageCTA = ( { layerID } ) => {
 	const dispatch = useDispatch();
 
 	const restURL = window.godamRestRoute.url || '';
+
+	const imageOrientationOptions = [
+		{
+			name: __( 'Landscape', 'godam' ),
+			key: 'landscape',
+		},
+		{
+			name: __( 'Portrait', 'godam' ),
+			key: 'portrait',
+		},
+	];
 
 	const openImageCTAUploader = () => {
 		const fileFrame = wp.media( {
@@ -110,30 +130,34 @@ const ImageCTA = ( { layerID } ) => {
 				<label
 					htmlFor="custom-play-button"
 					name="hover-slider"
-					className="custom-label"
+					className="godam-input-label"
 				>
 					{ __( 'Add Image', 'godam' ) }
 				</label>
-				<Button
+				{ ( 0 === layer?.image || ! layer?.image ) && <Button
 					onClick={ openImageCTAUploader }
 					variant="primary"
-					className="ml-2"
+					className="ml-2 godam-button"
 					aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
 				>
-					{ 0 === layer?.image || ! layer?.image ? __( 'Upload', 'godam' ) : __( 'Replace', 'godam' ) }
-				</Button>
+					{ __( 'Upload', 'godam' ) }
+				</Button> }
+				{ ( layer?.image !== 0 && ! selectedImageUrl ) && ( <div className="mt-6 rounded-xl w-[160px] h-[160px] animate-pulse bg-gray-200"></div> ) }
 				{ selectedImageUrl && (
-					<div className="mt-2">
-						<Icon
-							icon={ 'no' }
-							className="relative top-[25px] left-[60%] cursor-pointer"
-							onClick={ removeCTAImage }
-						/>
+					<div className="flex mt-4">
 						<img
 							src={ selectedImageUrl }
 							alt={ __( 'Selected custom brand', 'godam' ) }
-							className="max-w-[200px]"
+							className="w-[160px] h-[160px] rounded-xl object-cover"
 						/>
+						<div className="ml-[6px] flex flex-col">
+							<Tooltip text={ __( 'Replace Image', 'godam' ) } placement="right">
+								<Button className="!text-brand-neutral-900" icon={ replace } isDestructive onClick={ openImageCTAUploader } />
+							</Tooltip>
+							<Tooltip text={ __( 'Remove Image', 'godam' ) } placement="right">
+								<Button className="mt-1" icon={ trash } isDestructive onClick={ removeCTAImage } />
+							</Tooltip>
+						</div>
 					</div>
 				) }
 				{ notice.isVisible && (
@@ -150,6 +174,7 @@ const ImageCTA = ( { layerID } ) => {
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
+				className="godam-input"
 				label={ __( 'Text', 'godam' ) }
 				value={ layer.imageText }
 				onChange={ ( value ) => {
@@ -161,6 +186,7 @@ const ImageCTA = ( { layerID } ) => {
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
+				className="godam-input"
 				label={ __( 'URL', 'godam' ) }
 				value={ layer.imageLink }
 				onChange={ ( value ) => {
@@ -172,6 +198,7 @@ const ImageCTA = ( { layerID } ) => {
 			<TextareaControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
+				className="godam-input"
 				label={ __( 'Description', 'godam' ) }
 				value={ layer.imageDescription }
 				onChange={ ( value ) => {
@@ -183,6 +210,7 @@ const ImageCTA = ( { layerID } ) => {
 			<TextControl
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
+				className="godam-input"
 				label={ __( 'CTA Button Text', 'godam' ) }
 				value={ layer.imageCtaButtonText }
 				onChange={ ( value ) => {
@@ -191,24 +219,15 @@ const ImageCTA = ( { layerID } ) => {
 				placeholder={ __( 'Buy Now', 'godam' ) }
 			/>
 
-			<SelectControl
+			<CustomSelectControl
 				__next40pxDefaultSize
+				className="mb-4 godam-input"
 				label={ __( 'Select orientation', 'godam' ) }
-				className="mb-4"
-				options={ [
-					{
-						label: __( 'Landscape', 'godam' ),
-						value: 'landscape',
-					},
-					{
-						label: __( 'Portrait', 'godam' ),
-						value: 'portrait',
-					},
-				] }
-				value={ layer.imageCtaOrientation }
 				onChange={ ( value ) => {
-					updateField( 'imageCtaOrientation', value );
+					updateField( 'imageCtaOrientation', value.selectedItem.key );
 				} }
+				options={ imageOrientationOptions }
+				value={ imageOrientationOptions.find( ( option ) => option.key === layer.imageCtaOrientation ) }
 			/>
 
 			<div className="mb-4">
@@ -216,13 +235,14 @@ const ImageCTA = ( { layerID } ) => {
 					<RangeControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
+						className="godam-input w-full"
 						help={ __( 'Please select how transparent you would like this.', 'godam' ) }
-						initialPosition={ 0 }
+						initialPosition={ 1 }
 						max={ 1 }
 						min={ 0 }
 						onChange={ ( value ) => updateField( 'imageOpacity', value ) }
 						step={ 0.1 }
-						value={ layer.imageOpacity }
+						value={ layer.imageOpacity ?? 1 }
 						label={ __( 'Opacity of background image', 'godam' ) }
 					/>
 				</div>

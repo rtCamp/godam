@@ -1,8 +1,9 @@
 /* global jQuery -- from WordPress context */
+
 /**
  * External dependencies
  */
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { closestCenter, DndContext, DragOverlay, MouseSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -17,12 +18,12 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import TreeItem from './TreeItem.jsx';
 import TreeItemPreview from './TreeItemPreview.jsx';
+import SnackbarComp from './SnackbarComp.jsx';
 
 import { setTree, updateSnackbar } from '../../redux/slice/folders.js';
 import { utilities } from '../../data/utilities';
 
 import { useAssignFolderMutation, useGetFoldersQuery, useUpdateFolderMutation } from '../../redux/api/folders.js';
-import SnackbarComp from './SnackbarComp.jsx';
 
 import './css/tree.scss';
 
@@ -48,12 +49,13 @@ const openLocalStorageItem = ( folders ) => {
 	return folders;
 };
 
-const FolderTree = () => {
+const FolderTree = ( { handleContextMenu } ) => {
 	const { data: folders, error, isLoading } = useGetFoldersQuery();
 
 	const dispatch = useDispatch();
 	const data = useSelector( ( state ) => state.FolderReducer.folders );
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
 
 	const [ updateFolderMutation ] = useUpdateFolderMutation();
 
@@ -147,6 +149,29 @@ const FolderTree = () => {
 		pointerSensor,
 	);
 
+	/**
+	 * Update the attachment count of folders when items are moved between folders.
+	 *
+	 * @param {number} selectedFolderId    - The ID of the folder from which items are being moved.
+	 * @param {number} destinationFolderId - The ID of the folder to which items are being moved.
+	 * @param {number} count               - The number of items being moved.
+	 */
+	const updateAttachmentCountOfFolders = useCallback( ( selectedFolderId, destinationFolderId, count ) => {
+		const updatedFolders = data.map( ( folder ) => {
+			if ( folder.id === selectedFolderId ) {
+				const currentCount = Number( folder.attachmentCount ) || 0;
+				return { ...folder, attachmentCount: currentCount - count };
+			}
+			if ( folder.id === destinationFolderId ) {
+				const currentCount = Number( folder.attachmentCount ) || 0;
+				return { ...folder, attachmentCount: currentCount + count };
+			}
+			return folder;
+		} );
+
+		dispatch( setTree( updatedFolders ) );
+	}, [ data, dispatch ] );
+
 	useEffect( () => {
 		/**
 		 * Initialize and manage droppable functionality for tree items.
@@ -168,7 +193,27 @@ const FolderTree = () => {
 						/**
 						 * Prevent assigning items to the same folder they are already in.
 						 */
-						if ( selectedFolder.id === targetFolderId ) {
+						if ( selectedFolder?.id === targetFolderId ) {
+							return;
+						}
+
+						// do not allow assigning item to other folder from the locked folder.
+						if ( selectedFolder?.meta?.locked ) {
+							dispatch( updateSnackbar( {
+								message: __( 'This folder is locked and cannot be modified', 'godam' ),
+								type: 'fail',
+							} ) );
+							return;
+						}
+
+						const targetFolder = data.find( ( folder ) => folder.id === targetFolderId );
+
+						// do not allow assigning items to a locked folder.
+						if ( targetFolder?.meta?.locked ) {
+							dispatch( updateSnackbar( {
+								message: __( 'This folder is locked and cannot be modified', 'godam' ),
+								type: 'fail',
+							} ) );
 							return;
 						}
 
@@ -186,10 +231,13 @@ const FolderTree = () => {
 								) );
 							}
 
+							// Update the folder tree count that reflects the new state.
+							updateAttachmentCountOfFolders( selectedFolder?.id, targetFolderId, draggedItems.length );
+
 							/**
 							 * Remove the dragged items from the attachment view if they are meant to be removed.
 							 */
-							if ( selectedFolder.id !== -1 ) {
+							if ( selectedFolder?.id !== -1 ) {
 								draggedItems.forEach( ( attachmentId ) => {
 									jQuery( `li.attachment[data-id="${ attachmentId }"]` ).remove(); // for attachment grid view.
 									jQuery( `tr#post-${ attachmentId }` ).remove(); // for attachment list view.
@@ -198,7 +246,7 @@ const FolderTree = () => {
 						} catch {
 							dispatch( updateSnackbar( {
 								message: __( 'Failed to assign items', 'godam' ),
-								type: 'error',
+								type: 'fail',
 							},
 							) );
 						}
@@ -220,7 +268,7 @@ const FolderTree = () => {
 				} );
 			}
 		};
-	}, [ data, assignFolderMutation, dispatch, selectedFolder ] );
+	}, [ data, assignFolderMutation, dispatch, selectedFolder, updateAttachmentCountOfFolders ] );
 
 	if ( isLoading ) {
 		return <div>{ __( 'Loading…', 'godam' ) }</div>;
@@ -252,6 +300,8 @@ const FolderTree = () => {
 									item={ item }
 									key={ item.id }
 									depth={ item.id === activeId && projected ? projected.depth : item.depth }
+									onContextMenu={ ( e, id ) => handleContextMenu( e, id, item ) }
+									isMultiSelecting={ isMultiSelecting }
 								/>
 							);
 						} ) }

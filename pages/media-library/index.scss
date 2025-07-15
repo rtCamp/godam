@@ -5,11 +5,35 @@
  */
 
 #rt-transcoder-media-library-root {
-	min-width: 300px;
-	padding: 1.5rem 1.25rem;
-	
+	min-width: 280px;
+	padding: 0;
+	border: 1px solid #E0E0E0;
+	display: flex;
+	flex-direction: column;
+	min-height: calc(100vh - 34px);
+	overflow: auto;
+	height: 100%;
+
 	* {
 		box-sizing: border-box;
+	}
+
+	> * {
+		padding: 1.25rem;
+		border-bottom: 1px solid #E0E0E0;
+	}
+
+	.tree-container {
+		padding-bottom: 2.5rem;
+	}
+
+	.folder-tabs {
+		padding: 1.25rem 1rem;
+	}
+
+
+	.components-button {
+		border-radius: 0.25rem;
 	}
 
 	.button--full {
@@ -25,25 +49,49 @@
 
 	.button-group {
 		display: flex;
-		gap: 0.5rem;
+		gap: 1.25rem;
 		width: 100%;
+		justify-content: space-between;
 	}
 
-	.mb-spacing {
-		margin-bottom: 0.5rem;
+	.new-folder-button {
+		background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%) !important;
+		border-radius: 0.25rem;
+	}
+
+	.multiselect-button {
+		color: #1c1c1c;
+		background: #fff;
+		border: 1px solid #A3A3A3;
+		box-shadow: none;
+
+		&:hover {
+			background: #F5F5F5;
+		}
+	}
+
+	.control-buttons {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+
+	.folder-sort-select {
+		flex: 1;
+		border-radius: 4px;
+		height: 40px;
+		min-width: 8rem;
 	}
 
 	.folder-list {
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
-		margin-bottom: 0.5rem;
 	}
 
 	.folder-list__item {
 		all: unset;
 		box-sizing: border-box;
-		padding: 0;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
@@ -55,11 +103,11 @@
 		z-index: 1;
 
 		&:hover {
-			background-color: #e5e7eb;
+			background-color: #F5F5F5;
 		}
 
 		&--active {
-			background-color: #e5e7eb;
+			background-color: #F5F5F5;
 		}
 	}
 
@@ -67,6 +115,43 @@
 		font-size: 0.875rem;
 		color: #000;
 		margin: 0;
+	}
+
+	.tree-item:hover {
+		background:#F5F5F5;
+	}
+
+	&.hide-sidebar {
+		display: none;
+	}
+
+	.folder-context-menu__item {
+		justify-content: flex-start !important;
+	}
+
+	.close-folder-menu-mobile {
+	display: none;
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 12px;
+		transform: rotate(45deg);
+		border: none;
+		box-shadow: none;
+	}
+}
+
+.media-modal-content:has(#rt-transcoder-media-library-root) {
+
+	@media (max-width: 900px) {
+
+		.control-buttons {
+			padding-top: 48px;
+		}
+
+		.close-folder-menu-mobile {
+			display: block;
+		}
 	}
 }
 
@@ -76,4 +161,12 @@
 
 .components-button.has-icon.has-text.text-flex-left {
 	justify-content: left !important;
+}
+
+.media-frame-menu:has( #rt-transcoder-media-library-root ) {
+
+	.media-menu {
+		background: #FFF;
+		z-index: -1;
+	}
 }

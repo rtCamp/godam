@@ -144,19 +144,18 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 					>
 						<div className="flex justify-between items-center gap-3">
 							<Button
-								className="w-full justify-center"
-								isDestructive
-								variant="primary"
-								onClick={ handleDeleteLayer }
-							>
-								{ __( 'Delete layer', 'godam' ) }
-							</Button>
-							<Button
-								className="w-full justify-center"
-								variant="secondary"
+								isTertiary
+								className="w-full justify-center godam-button"
 								onClick={ () => setOpen( false ) }
 							>
 								{ __( 'Cancel', 'godam' ) }
+							</Button>
+							<Button
+								className="w-full justify-center godam-button"
+								isDestructive
+								onClick={ handleDeleteLayer }
+							>
+								{ __( 'Delete layer', 'godam' ) }
 							</Button>
 						</div>
 					</Modal>

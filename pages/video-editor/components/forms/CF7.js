@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Notice, SelectControl } from '@wordpress/components';
+import { Button, CustomSelectControl, Notice } from '@wordpress/components';
 import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
@@ -20,12 +20,12 @@ import FormSelector from './FormSelector';
 
 const templateOptions = [
 	{
-		value: 'godam',
-		label: __( 'GoDAM', 'godam' ),
+		key: 'godam',
+		name: __( 'GoDAM', 'godam' ),
 	},
 	{
-		value: 'default',
-		label: __( 'Default', 'godam' ),
+		key: 'default',
+		name: __( 'Default', 'godam' ),
 	},
 ];
 
@@ -53,6 +53,8 @@ const CF7 = ( { layerID } ) => {
 
 	const isCF7PluginActive = Boolean( window?.videoData?.cf7Active );
 
+	const handleThemeChange = ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'theme', value: value.selectedItem.key } ) );
+
 	return (
 		<>
 			{
@@ -69,14 +71,13 @@ const CF7 = ( { layerID } ) => {
 				<FormSelector disabled={ ! isValidAPIKey || ! isCF7PluginActive } className="gravity-form-selector mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
-			<SelectControl
-				className="mb-4"
+			<CustomSelectControl
+				__next40pxDefaultSize
+				className="mb-4 godam-input"
 				label={ __( 'Select form theme', 'godam' ) }
 				options={ templateOptions }
-				value={ layer.theme || 'godam' }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
-				}
+				value={ layer.theme ? templateOptions.find( ( option ) => option.key === layer.theme ) : { key: 'godam', name: __( 'GoDAM', 'godam' ) } }
+				onChange={ handleThemeChange }
 				disabled={ ! isValidAPIKey || ! isCF7PluginActive }
 			/>
 
