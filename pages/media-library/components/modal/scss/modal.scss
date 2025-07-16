@@ -4,7 +4,7 @@
  * The .components-modal__screen-overlay is used in the gutenberg modal block.
  * It creates a different stacking context with the z-index of 10000.
  * Because the default media library has the stacking context of 160000, this popup would not show without this modification.
- */ 
+ */
 .components-modal__screen-overlay:has( .modal__container ) {
 	z-index: calc(160000 * 2) !important; // for some reason media-model z-index is 160000
 }
@@ -15,23 +15,31 @@
 		font-size: 0.875rem;
 		color: #4a4a4a;
 	}
-	
+
 	&__warning {
 		font-size: 0.875rem;
 		color: #757575;
 		margin-top: 0.5rem;
 	}
-	
+
 	&__highlight {
 		font-weight: 600;
 	}
-	
+
 	&__button-group {
 		display: flex;
 		gap: 0.5rem;
 		margin-top: 1rem;
 		width: 100%;
+
+		.is-primary.is-primary {
+            background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+            border-radius: 0.25rem;
+		}
+
+		.is-primary.is-destructive {
+            background: #cc1818;
+		    border-radius: 0.25rem;
+		}
 	}
 }
-
-
