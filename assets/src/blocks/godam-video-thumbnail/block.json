@@ -5,7 +5,7 @@
 	"title": "GoDAM Video Thumbnail",
 	"category": "media",
 	"description": "Display GoDAM video thumbnail",
-	"keywords": ["video", "gallery", "grid", "videos", "thumbnail"],
+	"keywords": [ "video", "gallery", "grid", "videos", "thumbnail" ],
 	"textdomain": "godam",
 	"attributes": {
 		"linkToVideo": {
@@ -52,8 +52,8 @@
 			}
 		}
 	},
-	"editorScript": ["file:./index.js"],
-	"style": ["file:./style-index.css"],
-	"editorStyle": ["file:./index.css"],
+	"editorScript": [ "file:./index.js" ],
+	"style": [ "file:./style-index.css" ],
+	"editorStyle": [ "file:./index.css" ],
 	"render": "file:./render.php"
 }

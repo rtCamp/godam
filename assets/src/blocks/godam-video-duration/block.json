@@ -6,7 +6,7 @@
 	"category": "media",
 	"icon": "clock",
 	"description": "Display GoDAM video's duration",
-	"keywords": ["video", "gallery", "grid", "videos"],
+	"keywords": [ "video", "gallery", "grid", "videos" ],
 	"textdomain": "godam",
 	"attributes": {
 		"durationFormat": {
@@ -33,7 +33,7 @@
 			"textAlign": true
 		}
 	},
-	"editorScript": ["file:./index.js"],
-	"style": ["file:./style-index.css"],
+	"editorScript": [ "file:./index.js" ],
+	"style": [ "file:./style-index.css" ],
 	"render": "file:./render.php"
 }
