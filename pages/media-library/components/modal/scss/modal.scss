@@ -33,13 +33,21 @@
 		width: 100%;
 
 		.is-primary.is-primary {
-            background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
-            border-radius: 0.25rem;
+			background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+			border-radius: 0.25rem;
+
+			&:hover {
+				background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+			}
 		}
 
 		.is-primary.is-destructive {
-            background: #cc1818;
-		    border-radius: 0.25rem;
+			background: #cc1818;
+			border-radius: 0.25rem;
+
+			&:hover {
+				background: #cc1818;
+			}
 		}
 	}
 }

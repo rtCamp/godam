@@ -52,6 +52,10 @@
 		gap: 1rem;
 		width: 100%;
 		justify-content: space-between;
+
+		.components-base-control {
+		    width: 100%;
+		}
 	}
 
 	.new-folder-button {
@@ -83,6 +87,7 @@
 		border-radius: 4px;
 		height: 40px;
 		min-width: 8rem;
+		width: 100%;
 	}
 
 	.folder-list {
