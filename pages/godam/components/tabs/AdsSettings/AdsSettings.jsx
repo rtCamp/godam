@@ -27,32 +27,37 @@ import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-
 
 const AdsSettings = () => {
 	const dispatch = useDispatch();
-	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
-	// const mediaSettings = useSelector( ( state ) => state.mediaSettings );
 
+	// Selectors to get media settings and change flag
 	const { mediaSettings, isChanged } = useSelector( ( state ) => ( {
 		mediaSettings: state.mediaSettings,
 		isChanged: state.mediaSettings.isChanged,
 	} ) );
 
+	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
+	// Function to show a notice message
 	const showNotice = ( message, status = 'success' ) => {
 		setNotice( { message, status, isVisible: true } );
-		scrollToTop();
+		if ( window.scrollY > 0 ) {
+			scrollToTop();
+		}
 	};
 
+	// Function to handle setting change
 	const handleSettingChange = ( key, value ) => {
 		dispatch( updateMediaSetting( { category: 'ads_settings', key, value } ) );
 	};
 
+	// Function to handle saving settings
 	const handleSaveSettings = async () => {
 		try {
 			const response = await saveMediaSettings( { settings: mediaSettings } ).unwrap();
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
-				dispatch( resetChangeFlag() ); // Reset isChanged flag
+				dispatch( resetChangeFlag() );
 			} else {
 				showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 			}
