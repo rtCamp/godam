@@ -482,7 +482,7 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 /**
  * Format video duration based on the selected format for GoDAM block.
  *
- * @param string $duration       The raw duration value in seconds.
+ * @param string $duration        The raw duration value in seconds.
  * @param string $duration_format The format to use (default, minutes, seconds).
  * 
  * @return string The formatted duration string.
