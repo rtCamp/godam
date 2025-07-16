@@ -573,7 +573,7 @@
 		font-size: 12px;
 	}
 
-	/* stylelint-disable-next-line no-descending-specificity */
+	/* stylelint-disable-next-line no-descending-specificity -- as styles are grouped  */
 	a {
 		text-underline-offset: 0 !important;
 		text-decoration: none !important;
@@ -769,7 +769,7 @@
 	border-radius: 2px;
 }
 
-/* stylelint-disable-next-line no-descending-specificity */
+/* stylelint-disable-next-line no-descending-specificity -- as styles are grouped  */
 .hotspot-tooltip a {
 	overflow-wrap: break-word;
 	word-break: break-word;

@@ -26,7 +26,6 @@
 
 .easydam-video-block {
 
-
 	video {
 		width: 100%;
 		height: auto;
@@ -34,7 +33,6 @@
 }
 
 .wp-block-easydam-video {
-
 
 	video {
 		width: 100%;
@@ -210,7 +208,7 @@
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
-.fullscreen-layer .poll-container, .poll-container{
+.poll-container, .fullscreen-layer .poll-container {
 	color: #000;
 	padding: 32px 20%;
 	font-size: 1.375rem; 
@@ -378,6 +376,164 @@
 	background: transparent;
 }
 
+
+/* Product Hotspot */
+.product-hotspot-box {
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	visibility: hidden;
+	background-color: rgba(255, 255, 255);
+	color: #000;
+	text-align: center;
+	border-radius: 3px;
+	z-index: 200;
+	pointer-events: auto;
+	font-size: 14px;
+	line-height: 1.2;
+	opacity: 0;
+	transition: opacity 0.2s ease, visibility 0.2s ease;
+	word-wrap: break-word;
+	width: 20em;
+}
+
+.product-hotspot-box::after {
+	content: "";
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	border-width: 5px;
+	border-style: solid;
+	border-color: rgba(255, 255, 255) transparent transparent transparent;
+}
+
+.product-hotspot-woo-display {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	max-width: 600px;
+	border-radius: 6px;
+	overflow: hidden;
+	align-items: stretch;
+}
+
+/* 50% width for both image and details */
+.product-hotspot-woo-image-wrapper,
+.product-hotspot-woo-details {
+	width: 50%;
+	flex: 0 0 50%;
+	box-sizing: border-box;
+}
+
+.product-hotspot-woo-image-wrapper {
+	display: flex;
+}
+
+/* Image stretches to fill wrapper height */
+.product-hotspot-woo-image {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.product-hotspot-woo-details {
+	padding: 1rem;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	box-sizing: border-box;
+	align-items: flex-start;
+    text-align: left;
+}
+
+.product-hotspot-woo-name {
+	font-weight: 300;
+	font-size: 16px;
+	margin-bottom: 1rem;
+	color: #8f8b8b;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	line-height: 1.3rem;
+	max-height: 2.6em;
+}
+
+.product-hotspot-woo-price {
+	color: #000;
+	margin-bottom: 1rem;
+	font-size: 14px;
+}
+
+.product-hotspot-woo-link {
+	display: inline-block;
+	width: 100%;
+	text-align: center;
+	padding: 10px 0;
+	color: #fff;
+	border-radius: 3px;
+	text-decoration: none;
+	font-size: 14px;
+	box-sizing: border-box;
+}
+
+.product-hotspot-woo-link:hover {
+	cursor: pointer;
+	pointer-events: auto;
+}
+
+.product-hotspot-box a {
+	overflow-wrap: break-word;
+	word-break: break-word;
+}
+
+.product-hotspot-box a:hover {
+	color: #fff;
+	text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+
+	.product-hotspot-box {
+		width: 11em;
+		font-size: 13px;
+	}
+
+	.product-hotspot-woo-display {
+		flex-direction: column;
+		max-width: 100%;
+	}
+
+	.product-hotspot-woo-image-wrapper {
+		width: 100%;
+		height: auto;
+	}
+
+	.product-hotspot-woo-image {
+		height: auto;
+		max-height: 100px;
+	}
+
+	.product-hotspot-woo-details {
+		width: 100%;
+		padding: 0.75rem;
+	}
+
+	.product-hotspot-woo-name {
+		font-size: 15px;
+	}
+
+	.product-hotspot-woo-price,
+	.product-hotspot-woo-link {
+		font-size: 13px;
+	}
+}
+
 /* Hotspot layer*/
 .hotspot {
 	pointer-events: auto;
@@ -440,7 +596,7 @@
 		font-size: 12px;
 	}
 
-	/* stylelint-disable-next-line no-descending-specificity */
+	/* stylelint-disable-next-line no-descending-specificity -- as styles are grouped */
 	a {
 		text-underline-offset: 0 !important;
 		text-decoration: none !important;
@@ -593,7 +749,7 @@
 	border-radius: 2px;
   }
 
-/* stylelint-disable-next-line no-descending-specificity */
+/* stylelint-disable-next-line no-descending-specificity -- as styles are grouped  */
 .hotspot-tooltip a {
 	overflow-wrap: break-word;
 	word-break: break-word;
