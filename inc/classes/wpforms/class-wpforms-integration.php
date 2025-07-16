@@ -155,6 +155,11 @@ class WPForms_Integration {
 	 * @return \WP_Error|void
 	 */
 	public function send_saved_files_for_transcoding( $fields, $entry, $form_data, $entry_id ) {
+		// Skip sending files for transcoding if the api key is invalid.
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return;
+		}
+
 		$index      = 0;
 		$form_title = isset( $form_data['settings']['form_title'] ) ? trim( $form_data['settings']['form_title'] ) : __( 'Untitled Form', 'godam' );
 		$form_id    = isset( $form_data['id'] ) ? trim( $form_data['id'] ) : __( 'Untitled Form', 'godam' );
