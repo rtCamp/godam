@@ -17,7 +17,7 @@ import { useState, useRef, useEffect } from '@wordpress/element';
  */
 import { scrollToTop } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
-import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
+import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
 import BrandImageSelector from '../GeneralSettings/BrandImageSelector.jsx';
 import SettingsButton from '../../../../../assets/src/js/godam-player/masterSettings.js';
 import ColorPickerButton from '../../../../video-editor/components/shared/color-picker/ColorPickerButton.jsx';
@@ -28,20 +28,29 @@ import CustomVideoPlayerCSS from './CustomVideoPlayerCSS.jsx';
 const VideoPlayer = () => {
 	const dispatch = useDispatch();
 	const wrapperRef = useRef( null );
-	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] =
-    useSaveMediaSettingsMutation();
-	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
+	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
+
+	// Select media settings and isChanged state from Redux store
+	const { mediaSettings, isChanged } = useSelector( ( state ) => ( {
+		mediaSettings: state.mediaSettings,
+		isChanged: state.mediaSettings.isChanged,
+	} ) );
+
+	// Function to handle setting changes
 	const handleSettingChange = ( key, value ) => {
 		dispatch( updateMediaSetting( { category: 'video_player', key, value } ) );
 	};
 
+	// Set Notice
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
+	// Function to show a notice message
 	const showNotice = ( message, status = 'success' ) => {
 		setNotice( { message, status, isVisible: true } );
 		scrollToTop();
 	};
 
+	// Function to handle setting save
 	const handleSaveSettings = async () => {
 		try {
 			const response = await saveMediaSettings( {
@@ -50,6 +59,7 @@ const VideoPlayer = () => {
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
+				dispatch( resetChangeFlag() ); // Reset isChanged flag
 			} else {
 				showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 			}
@@ -401,7 +411,7 @@ const VideoPlayer = () => {
 					className="godam-button"
 					onClick={ handleSaveSettings }
 					isBusy={ saveMediaSettingsLoading }
-					disabled={ saveMediaSettingsLoading }
+					disabled={ saveMediaSettingsLoading || ! isChanged }
 				>
 					{ __( 'Save Settings', 'godam' ) }
 				</Button>
