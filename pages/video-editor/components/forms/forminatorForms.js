@@ -56,7 +56,7 @@ const ForminatorForm = ( { layerID } ) => {
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isForminatorFormsPluginActive } className="gravity-form-selector mb-4" formID={ layer.forminator_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isValidAPIKey || ! isForminatorFormsPluginActive } className="mb-4" formID={ layer.forminator_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<LayerControl>
