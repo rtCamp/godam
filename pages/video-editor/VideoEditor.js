@@ -47,6 +47,7 @@ const VideoEditor = ( { attachmentID } ) => {
 		fluentforms: 'fluent_form_id',
 		jetpack: 'jp_id',
 		everestforms: 'everest_form_id',
+		metform: 'metform_id',
 	};
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
