@@ -7,7 +7,7 @@ import { createSlice } from '@reduxjs/toolkit';
  * Internal dependencies
  */
 import { VideoCustomCSSTemplate } from '../../components/VideoCustomCSSTemplate';
-import { generalAPI } from '../api/media-settings.js';
+import { generalAPI } from '../api/media-settings';
 
 const initialState = {
 	video: {
