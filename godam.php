@@ -3,7 +3,7 @@
  * Plugin Name: GoDAM
  * Plugin URI: https://godam.io
  * Description: Seamlessly manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, gravity forms integration, and ad integration.
- * Version: 1.1.4
+ * Version: 1.2.1
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Text Domain: godam
@@ -43,7 +43,7 @@ if ( ! defined( 'RTGODAM_VERSION' ) ) {
 	/**
 	 * The version of the plugin
 	 */
-	define( 'RTGODAM_VERSION', '1.1.4' );
+	define( 'RTGODAM_VERSION', '1.2.1' );
 }
 
 if ( ! defined( 'RTGODAM_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' ) ) {
@@ -120,6 +120,13 @@ add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 )
  */
 function rtgodam_plugin_activate() {
 	update_option( 'rtgodam_plugin_activation_time', time() );
+
+	// Explicitly register post types to ensure they are available before flushing.
+	$godam_video = \RTGODAM\Inc\Post_Types\GoDAM_Video::get_instance();
+	$godam_video->register_post_type();
+
+	// Flush rewrite rules to ensure CPT rules are applied.
+	flush_rewrite_rules( true );
 }
 
 register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
@@ -130,6 +137,9 @@ register_activation_hook( __FILE__, 'rtgodam_plugin_activate' );
 function rtgodam_plugin_deactivate() {
 	delete_option( 'rtgodam_plugin_activation_time' );
 	delete_option( 'rtgodam_video_metadata_migration_completed' );
+
+	// Flush rewrite rules to remove CPT rules.
+	flush_rewrite_rules( true );
 }
 
 register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );

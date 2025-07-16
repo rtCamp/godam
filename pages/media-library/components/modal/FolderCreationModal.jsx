@@ -68,12 +68,21 @@ const FolderCreationModal = () => {
 
 			updateSelectDropdown( response.id, folderName );
 		} catch ( error ) {
-			dispatch( updateSnackbar(
-				{
-					message: __( 'Failed to create folder', 'godam' ),
-					type: 'error',
-				},
-			) );
+			if ( error?.status === 400 ) {
+				dispatch( updateSnackbar(
+					{
+						message: __( 'Folder with that name already exists.', 'godam' ),
+						type: 'fail',
+					},
+				) );
+			} else {
+				dispatch( updateSnackbar(
+					{
+						message: __( 'Failed to create folder', 'godam' ),
+						type: 'fail',
+					},
+				) );
+			}
 		} finally {
 			setIsLoading( false );
 			dispatch( closeModal( 'folderCreation' ) );
@@ -87,7 +96,7 @@ const FolderCreationModal = () => {
 	};
 
 	return (
-		isOpen && (
+		( isOpen && selectedFolder ) && (
 			<Modal
 				title={ __( 'Create a new folder', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'folderCreation' ) ) }

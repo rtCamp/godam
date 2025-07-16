@@ -22,7 +22,9 @@ const SureForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const sureforms = useSelector( ( state ) => state.videoReducer.sureforms );
-	const { data: formHTML, isFetching } = useGetSingleSureformQuery( layer.sureform_id );
+	const { data: formHTML, isFetching } = useGetSingleSureformQuery( layer.sureform_id, {
+		skip: 'undefined' === typeof layer?.sureform_id,
+	} );
 
 	const forms = sureforms?.map( ( form ) => ( {
 		value: form.id,

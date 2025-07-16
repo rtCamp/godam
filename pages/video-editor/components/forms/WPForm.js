@@ -22,7 +22,9 @@ const WPForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const wpForms = useSelector( ( state ) => state.videoReducer.wpforms );
-	const { data: formHTML, isFetching } = useGetSingleWPFormQuery( layer.wpform_id );
+	const { data: formHTML, isFetching } = useGetSingleWPFormQuery( layer.wpform_id, {
+		skip: 'undefined' === typeof layer?.wpform_id,
+	} );
 
 	const forms = wpForms?.map( ( form ) => ( {
 		value: form.id,
@@ -34,11 +36,11 @@ const WPForm = ( { layerID } ) => {
 	};
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
+	// const isValidAPIKey = window?.videoData?.validApiKey;
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isWPFormsPluginActive = Boolean( window?.videoData?.wpforms_active );
+	const isWPFormsPluginActive = Boolean( window?.videoData?.wpformsActive );
 
 	return (
 		<>

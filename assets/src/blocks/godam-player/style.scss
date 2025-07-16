@@ -87,7 +87,7 @@
 
 .easydam-video-container {
 	position: relative;
-	aspect-ratio: var(--rtgodam-video-aspect-ratio);
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16/9);
 	background-color: rgba(149, 149, 149, 0.2);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
@@ -132,7 +132,7 @@
 
 
 .easydam-player.video-js {
-	aspect-ratio: var(--rtgodam-video-aspect-ratio);
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16/9);
 }
 
 .form-container {

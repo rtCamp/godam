@@ -47,12 +47,12 @@ class WPForms extends Base {
 							$this->get_collection_params(), // Default collection params.
 							array(
 								'id'    => array(
-									'description' => __( 'The ID of the Contact Form 7 Form.', 'godam' ),
+									'description' => __( 'The ID of the WPForms Form.', 'godam' ),
 									'type'        => 'string',
 									'required'    => true,
 								),
 								'theme' => array(
-									'description'       => __( 'The theme to be applied to the Contact Form 7 Form.', 'godam' ),
+									'description'       => __( 'The theme to be applied to the WPForms Form.', 'godam' ),
 									'type'              => 'string',
 									'required'          => false,
 									'sanitize_callback' => 'sanitize_text_field',

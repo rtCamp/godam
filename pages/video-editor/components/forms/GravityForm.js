@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Notice, SelectControl } from '@wordpress/components';
+import { Button, CustomSelectControl, Notice } from '@wordpress/components';
 import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
@@ -20,12 +20,12 @@ import FormSelector from './FormSelector';
 
 const templateOptions = [
 	{
-		value: 'orbital',
-		label: __( 'Orbital', 'godam' ),
+		key: 'orbital',
+		name: __( 'Orbital', 'godam' ),
 	},
 	{
-		value: 'gravity',
-		label: __( 'Gravity', 'godam' ),
+		key: 'gravity',
+		name: __( 'Gravity', 'godam' ),
 	},
 ];
 
@@ -33,7 +33,9 @@ const GravityForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const gforms = useSelector( ( state ) => state.videoReducer.gforms );
-	const { data: formHTML, isFetching } = useGetSingleGravityFormQuery( { id: layer.gf_id, theme: layer.theme || 'orbital' } );
+	const { data: formHTML, isFetching } = useGetSingleGravityFormQuery( { id: layer.gf_id, theme: layer.theme || 'orbital' }, {
+		skip: 'undefined' === typeof layer?.gf_id,
+	} );
 
 	const forms = gforms?.map( ( form ) => ( {
 		value: form.id,
@@ -45,11 +47,13 @@ const GravityForm = ( { layerID } ) => {
 	};
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
+	// const isValidAPIKey = window?.videoData?.validApiKey;
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isGFPluginActive = Boolean( window?.videoData?.gf_active );
+	const isGFPluginActive = Boolean( window?.videoData?.gfActive );
+
+	const handleThemeChange = ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'theme', value: value.selectedItem.key } ) );
 
 	return (
 		<>
@@ -68,14 +72,13 @@ const GravityForm = ( { layerID } ) => {
 				<FormSelector disabled={ ! isValidAPIKey || ! isGFPluginActive } className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
-			<SelectControl
-				className="mb-4"
+			<CustomSelectControl
+				__next40pxDefaultSize
+				className="mb-4 godam-input"
 				label={ __( 'Select form theme', 'godam' ) }
 				options={ templateOptions }
-				value={ layer.theme || 'orbital' }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
-				}
+				value={ layer.theme ? templateOptions.find( ( option ) => option.key === layer.theme ) : { key: 'orbital', name: __( 'Orbital', 'godam' ) } }
+				onChange={ handleThemeChange }
 				disabled={ ! isValidAPIKey || ! isGFPluginActive }
 			/>
 

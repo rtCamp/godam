@@ -29,7 +29,7 @@ function createGoDAMVideoBlockMarkup( attrs ) {
 
 function createVideoAttributes( attachmentId, mediaData ) {
 	const baseAttrs = {
-		id: attachmentId,
+		id: Number( attachmentId ),
 		aspectRatio: '16/9',
 	};
 

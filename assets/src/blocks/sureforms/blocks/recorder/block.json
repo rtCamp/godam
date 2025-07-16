@@ -1,0 +1,70 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "godam/srfm-recorder",
+	"title": "Godam Recorder",
+	"icon": "video-alt",
+	"category": "sureforms",
+	"description": "Recorder field for sureforms",
+	"keywords": [
+		"sureforms",
+		"godam",
+		"recorder"
+	],
+	"textdomain": "godam",
+	"supports": {
+		"reusable": false,
+		"html": false
+	},
+	"example": {
+		"attributes": {
+			"preview": true
+		}
+	},
+	"attributes": {
+		"blockId": {
+			"type": "string"
+		},
+		"required": {
+			"type": "boolean",
+			"default": false
+		},
+		"label": {
+			"type": "string",
+			"default": ""
+		},
+		"description": {
+			"type": "string",
+			"default": ""
+		},
+		"recordButton": {
+			"type": "string"
+		},
+		"fileSelector": {
+			"type": "array",
+			"default": [ "screen_capture", "webcam" ]
+		},
+		"maxFileSize": {
+			"type": "number"
+		},
+		"formId": {
+			"type": "number",
+			"default": ""
+		},
+		"slug": {
+			"type": "string",
+			"default": ""
+		},
+		"errorMsg": {
+			"type": "string",
+			"default": ""
+		},
+		"blockIndex": {
+			"type": "integer"
+		}
+	},
+	"editorScript": [
+		"file:./index.js"
+	],
+	"render": "file:./render.php"
+}
