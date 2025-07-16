@@ -26,6 +26,7 @@ import JetpackForm from '../forms/JetpackForm';
 import SureForm from '../forms/Sureform.js';
 import FluentForm from '../forms/FluentForm.js';
 import ForminatorForm from '../forms/forminatorForms.js';
+import NinjaForm from '../forms/NinjaForm.js';
 
 /**
  * FormLayer Components Object mapping.
@@ -86,6 +87,10 @@ export const FormLayerComponentType = {
 		component: EverestForm,
 		idField: 'everest_form_id',
 		settingsUrl: 'admin.php?page=evf-builder&view=fields&form_id={formId}&tab=settings',
+	},
+	ninjaforms: {
+		isActive: Boolean( window?.videoData?.ninjaFormsActive ) ?? false,
+		component: NinjaForm,
 	},
 };
 

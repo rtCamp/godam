@@ -51,6 +51,8 @@ use RTGODAM\Inc\Video_Metadata;
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
 use RTGODAM\Inc\WPForms\WPForms_Integration;
 use RTGODAM\Inc\Media_Library\Media_Edit_Enhancements;
+use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Rest_Api;
+use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Integration;
 
 /**
  * Class Plugin.
@@ -88,6 +90,7 @@ class Plugin {
 		$this->load_fluentforms();
 
 		WPForms_Integration::get_instance()->init();
+		Ninja_Forms_Integration::get_instance()->init();
 
 		// Load cron jobs.
 		Retranscode_Failed_Media::get_instance();
@@ -135,6 +138,7 @@ class Plugin {
 		SureForms::get_instance();
 		Fluent_Forms::get_instance();
 		Everest_Forms::get_instance();
+		Ninja_Forms_Rest_Api::get_instance();
 		Settings::get_instance();
 		Meta_Rest_Fields::get_instance();
 		Media_Library::get_instance();

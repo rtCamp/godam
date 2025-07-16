@@ -936,7 +936,8 @@ function GODAMPlayer( videoRef = null ) {
 								layerObj.layerElement.querySelector( '.wp-polls-answer' ) ) ||
 							( layerObj.layerElement.querySelector( '.forminator-success' ) &&
 								layerObj.layerElement.querySelector( '.forminator-show' ) ) ||
-							layerObj.layerElement.querySelector( '.everest-forms-notice--success' )
+							layerObj.layerElement.querySelector( '.everest-forms-notice--success' ) ||
+							( layerObj.layerElement.querySelector( '.nf-response-msg' ) && '' !== layerObj.layerElement.querySelector( '.nf-response-msg' ).innerHTML )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -988,6 +989,8 @@ function GODAMPlayer( videoRef = null ) {
 					} else if ( window.godamPluginDependencies?.forminator && layer.form_type === 'forminator' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.fluentForms && layer.form_type === 'fluentforms' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.ninjaForms && layer.form_type === 'ninjaforms' ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {

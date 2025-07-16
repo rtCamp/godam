@@ -28,6 +28,7 @@ import {
 	setForminatorForms,
 	setFluentForms,
 	setEverestForms,
+	setNinjaForms,
 } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
@@ -38,6 +39,17 @@ import { copyGoDAMVideoBlock } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
 
 const VideoEditor = ( { attachmentID } ) => {
+	const formIDMap = {
+		cf7: 'cf7_id',
+		gravity: 'gf_id',
+		wpforms: 'wpform_id',
+		forminator: 'forminator_id',
+		sureforms: 'sureform_id',
+		fluentforms: 'fluent_form_id',
+		jetpack: 'jp_id',
+		everestforms: 'everest_form_id',
+		ninjaforms: 'ninja_form_id',
+	};
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
@@ -57,7 +69,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
-	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, isFetching } = useFetchForms();
+	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, isFetching } = useFetchForms();
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -157,8 +169,12 @@ const VideoEditor = ( { attachmentID } ) => {
 			if ( fluentForms && fluentForms.length > 0 ) {
 				dispatch( setFluentForms( fluentForms ) );
 			}
+
+			if ( ninjaForms && ninjaForms.length > 0 ) {
+				dispatch( setNinjaForms( ninjaForms ) );
+			}
 		}
-	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms ] );
+	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {

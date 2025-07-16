@@ -29,6 +29,7 @@ import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
 import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
+import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 
 const Layers = [
 	{
@@ -134,27 +135,40 @@ const Layers = [
 	},
 	{
 		id: 9,
+		title: __( 'Ninja Forms', 'godam' ),
+		description: __( 'Collect user input using Ninja Forms', 'godam' ),
+		image: Form,
+		type: 'form',
+		formType: 'ninjaforms',
+		requiresNinjaForms: true,
+		formIcon: NinjaFormsIcon,
+		isRequired: true,
+		isActive: Boolean( window?.videoData?.ninjaFormsActive ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/ninja-forms/">${ __( 'Ninja Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
+	},
+	{
+		id: 10,
 		title: __( 'CTA', 'godam' ),
 		description: __( 'Guide users toward a specific action', 'godam' ),
 		image: CTA,
 		type: 'cta',
 	},
 	{
-		id: 10,
+		id: 11,
 		title: __( 'Hotspot', 'godam' ),
 		description: __( 'Highlighting key areas with focus', 'godam' ),
 		image: Hotspot,
 		type: 'hotspot',
 	},
 	{
-		id: 11,
+		id: 12,
 		title: __( 'Ad', 'godam' ),
 		description: __( 'Redirect user to custom advertisement', 'godam' ),
 		image: Ad,
 		type: 'ad',
 	},
 	{
-		id: 12,
+		id: 13,
 		title: __( 'Poll', 'godam' ),
 		description: __( 'Gather opinions through interactive voting', 'godam' ),
 		image: Poll,
@@ -162,6 +176,18 @@ const Layers = [
 		isRequired: true,
 		isActive: Boolean( window.easydamMediaLibrary.isPollPluginActive ),
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/wp-polls/">${ __( 'WP-Polls', 'godam' ) }</a> ${ __( 'plugin is required to use Poll layer', 'godam' ) }`,
+	},
+	{
+		id: 14,
+		title: __( 'WooCommerce', 'godam' ),
+		description: __( 'Display products using hotspots', 'godam' ),
+		image: Hotspot,
+		type: 'woo',
+		requiresWoo: true,
+		formIcon: Woo,
+		isRequired: true,
+		isActive: Boolean( window.easydamMediaLibrary.isWooActive ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/woocommerce/">${ __( 'WooCommerce', 'godam' ) }</a> ${ __( 'plugin is required to use Buy Now layer', 'godam' ) }`,
 	},
 ];
 
