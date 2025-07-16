@@ -68,7 +68,9 @@ const MetForm = ( { layerID } ) => {
 
 						{
 							( formHTML && ! isFetching ) &&
-							<div className="form-container" dangerouslySetInnerHTML={ { __html: formHTML } } />
+							<div className="form-container">
+								<iframe title="MetForm" src={ formHTML } height={ 600 } className="w-full" />
+							</div>
 						}
 
 						{

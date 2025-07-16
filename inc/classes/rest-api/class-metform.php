@@ -163,7 +163,7 @@ class MetForm extends Base {
 			return new WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		$met_form = do_shortcode( "[metform form_id='{$form_id}']" );
+		$met_form = get_post_embed_url( $form_id );
 
 		return new WP_REST_Response( $met_form );
 	}
