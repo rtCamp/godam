@@ -59,6 +59,29 @@ class Video_Permalinks {
 				'default'           => 'videos',
 			)
 		);
+		
+		// Settings for archive and single visibility.
+		register_setting(
+			'permalink',
+			'rtgodam_video_has_archive',
+			array(
+				'type'              => 'boolean',
+				'description'       => __( 'GoDAM Video archive visibility', 'godam' ),
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'default'           => true,
+			)
+		);
+		
+		register_setting(
+			'permalink',
+			'rtgodam_video_publicly_queryable',
+			array(
+				'type'              => 'boolean',
+				'description'       => __( 'GoDAM Video single page visibility', 'godam' ),
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'default'           => true,
+			)
+		);
 	}
 
 	/**
@@ -78,6 +101,23 @@ class Video_Permalinks {
 			'rtgodam_video_slug',
 			__( 'Video archive URL slug', 'godam' ),
 			array( $this, 'video_slug_field' ),
+			'permalink',
+			'godam-permalink-settings'
+		);
+		
+		// Add new settings fields for visibility.
+		add_settings_field(
+			'rtgodam_video_has_archive',
+			__( 'Video archive page visibility', 'godam' ),
+			array( $this, 'video_archive_visibility_field' ),
+			'permalink',
+			'godam-permalink-settings'
+		);
+		
+		add_settings_field(
+			'rtgodam_video_publicly_queryable',
+			__( 'Video single page visibility', 'godam' ),
+			array( $this, 'video_single_visibility_field' ),
 			'permalink',
 			'godam-permalink-settings'
 		);
@@ -114,6 +154,48 @@ class Video_Permalinks {
 	}
 	
 	/**
+	 * Video archive visibility field.
+	 *
+	 * @return void
+	 */
+	public function video_archive_visibility_field() {
+		$value = get_option( 'rtgodam_video_has_archive', true );
+		?>
+		<input 
+			type='checkbox' 
+			name='rtgodam_video_has_archive' 
+			id='rtgodam_video_has_archive' 
+			value='1' 
+			<?php checked( $value ); ?> 
+		/>
+		<p class='description'>
+			<?php echo esc_html__( 'Enable this to allow public access to the video archive page. When disabled, the video archive page will return 404.', 'godam' ); ?>
+		</p>
+		<?php
+	}
+	
+	/**
+	 * Video single page visibility field.
+	 *
+	 * @return void
+	 */
+	public function video_single_visibility_field() {
+		$value = get_option( 'rtgodam_video_publicly_queryable', true );
+		?>
+		<input 
+			type='checkbox' 
+			name='rtgodam_video_publicly_queryable' 
+			id='rtgodam_video_publicly_queryable' 
+			value='1' 
+			<?php checked( $value ); ?> 
+		/>
+		<p class='description'>
+			<?php echo esc_html__( 'Enable this to allow public access to individual video pages. When disabled, single video pages will return 404 but videos will still be available in Query Loop blocks.', 'godam' ); ?>
+		</p>
+		<?php
+	}
+	
+	/**
 	 * Save permalink settings.
 	 *
 	 * @return void
@@ -144,8 +226,31 @@ class Video_Permalinks {
 					update_option( 'rtgodam_video_slug', $video_slug );
 					
 					// Flush rewrite rules to apply new video slug.
-					flush_rewrite_rules();
+					$should_flush = true;
 				}
+			}
+			
+			// Save archive visibility option.
+			$has_archive     = isset( $_POST['rtgodam_video_has_archive'] ) ? true : false;
+			$old_has_archive = get_option( 'rtgodam_video_has_archive', true );
+			
+			if ( $old_has_archive !== $has_archive ) {
+				update_option( 'rtgodam_video_has_archive', $has_archive );
+				$should_flush = true;
+			}
+			
+			// Save single page visibility option.
+			$publicly_queryable     = isset( $_POST['rtgodam_video_publicly_queryable'] ) ? true : false;
+			$old_publicly_queryable = get_option( 'rtgodam_video_publicly_queryable', true );
+			
+			if ( $old_publicly_queryable !== $publicly_queryable ) {
+				update_option( 'rtgodam_video_publicly_queryable', $publicly_queryable );
+				$should_flush = true;
+			}
+			
+			// Flush rewrite rules if any permalink-related setting was changed.
+			if ( isset( $should_flush ) && $should_flush ) {
+				flush_rewrite_rules();
 			}
 		}
 	}

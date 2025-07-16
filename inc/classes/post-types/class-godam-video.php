@@ -35,8 +35,11 @@ class GoDAM_Video extends Base {
 		add_action( 'edit_attachment', array( $this, 'update_video_post_from_attachment' ) );
 		add_action( 'delete_attachment', array( $this, 'delete_video_post_from_attachment' ) );
 		add_action( 'save_post_attachment', array( $this, 'sync_attachment_to_video_post' ), 10, 3 );
+		
+		// Handle direct URL access based on user settings.
+		add_action( 'template_redirect', array( $this, 'handle_url_access' ) );
 	}
-
+	
 	/**
 	 * Labels for post type.
 	 *
@@ -57,22 +60,37 @@ class GoDAM_Video extends Base {
 	 * @return array
 	 */
 	public function get_args() {
-
-		return array(
-			'label'        => __( 'GoDAM Video', 'godam' ),
-			'description'  => __( 'GoDAM Video posts for theme template support', 'godam' ),
-			'labels'       => $this->get_labels(),
-			'supports'     => array( 'title', 'editor', 'excerpt', 'author', 'custom-fields' ),
-			'taxonomies'   => array( 'category', 'post_tag' ),
-			'hierarchical' => false,
-			'public'       => true,
-			'show_ui'      => false,
-			'has_archive'  => true,
-			'show_in_rest' => true,
-			'rewrite'      => array(
+		$has_archive        = $this->get_has_archive();
+		$publicly_queryable = $this->get_publicly_queryable();
+		
+		// For Query Loop compatibility, we need publicly_queryable to be true regardless of user settings.
+		// Store the user preference to handle URL behavior separately.
+		$user_publicly_queryable = $publicly_queryable;
+		$publicly_queryable      = true;
+		
+		// Determine rewrite rules based on settings.
+		$rewrite = false;
+		if ( $has_archive || $user_publicly_queryable ) {
+			$rewrite = array(
 				'slug'       => $this->get_rewrite_slug(),
 				'with_front' => false,
-			),
+			);
+		}
+
+		return array(
+			'label'               => __( 'GoDAM Video', 'godam' ),
+			'description'         => __( 'GoDAM Video posts for theme template support', 'godam' ),
+			'labels'              => $this->get_labels(),
+			'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'custom-fields' ),
+			'taxonomies'          => array( 'category', 'post_tag' ),
+			'hierarchical'        => false,
+			'public'              => true, 
+			'publicly_queryable'  => $publicly_queryable, // Always true for Query Loop compatibility.
+			'exclude_from_search' => ! $user_publicly_queryable, // Still respect user setting for search.
+			'show_ui'             => false,
+			'has_archive'         => $has_archive,
+			'show_in_rest'        => true, // Also needed for Query Loop block.
+			'rewrite'             => $rewrite,
 		);
 	}
 
@@ -83,6 +101,24 @@ class GoDAM_Video extends Base {
 	 */
 	private function get_rewrite_slug() {
 		return get_option( 'rtgodam_video_slug', 'videos' );
+	}
+	
+	/**
+	 * Get has_archive setting from plugin options.
+	 *
+	 * @return bool
+	 */
+	private function get_has_archive() {
+		return (bool) get_option( 'rtgodam_video_has_archive', true );
+	}
+	
+	/**
+	 * Get publicly_queryable setting from plugin options.
+	 *
+	 * @return bool
+	 */
+	private function get_publicly_queryable() {
+		return (bool) get_option( 'rtgodam_video_publicly_queryable', true );
 	}
 
 	/**
@@ -387,5 +423,31 @@ class GoDAM_Video extends Base {
 			$has_more = count( $query->posts ) === $batch_size;
 
 		} while ( $has_more );
+	}
+
+	/**
+	 * Handle URL access for both single and archive pages based on user settings.
+	 * This ensures videos appear in Query Loop but respect visibility settings for direct URLs.
+	 *
+	 * @return void
+	 */
+	public function handle_url_access() {
+		global $wp_query;
+		
+		// Block direct access to single video pages when publicly_queryable is disabled.
+		if ( is_singular( self::SLUG ) && ! $this->get_publicly_queryable() ) {
+			$wp_query->set_404();
+			status_header( 404 );
+			include get_query_template( '404' );
+			exit;
+		}
+		
+		// Block access to archive page when has_archive is disabled.
+		if ( is_post_type_archive( self::SLUG ) && ! $this->get_has_archive() ) {
+			$wp_query->set_404();
+			status_header( 404 );
+			include get_query_template( '404' );
+			exit;
+		}
 	}
 }
