@@ -53,9 +53,7 @@ const VideoPlayer = () => {
 	// Function to handle setting save
 	const handleSaveSettings = async () => {
 		try {
-			const response = await saveMediaSettings( {
-				settings: { video_player: mediaSettings?.video_player },
-			} ).unwrap();
+			const response = await saveMediaSettings( { settings: mediaSettings } ).unwrap();
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );

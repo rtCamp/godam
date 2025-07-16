@@ -49,7 +49,7 @@ const GeneralSettings = () => {
 
 	const handleSaveSettings = async () => {
 		try {
-			const response = await saveMediaSettings( { settings: { general: mediaSettings?.general } } ).unwrap();
+			const response = await saveMediaSettings( { settings: mediaSettings } ).unwrap();
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );

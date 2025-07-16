@@ -39,7 +39,7 @@ const initialState = {
 		enable_global_video_ads: false,
 		adTagUrl: '',
 	},
-	isChanged: false, // Tracks if settings have been modified
+	isChanged: false,
 };
 
 const mediaSettingsSlice = createSlice( {

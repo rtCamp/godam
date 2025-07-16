@@ -47,9 +47,7 @@ const AdsSettings = () => {
 
 	const handleSaveSettings = async () => {
 		try {
-			const response = await saveMediaSettings( {
-				settings: { ads_settings: mediaSettings?.ads_settings },
-			} ).unwrap();
+			const response = await saveMediaSettings( { settings: mediaSettings } ).unwrap();
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
