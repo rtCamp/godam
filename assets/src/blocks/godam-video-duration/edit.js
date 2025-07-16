@@ -26,6 +26,7 @@ function Edit( { attributes, setAttributes } ) {
 	const { durationFormat } = attributes;
 	const blockProps = useBlockProps();
 
+	// Duration formats.
 	const durationOptions = [
 		{
 			value: 'default',

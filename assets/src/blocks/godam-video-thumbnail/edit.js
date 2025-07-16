@@ -70,9 +70,13 @@ function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 			<div { ...blockProps }>
 				<div className="godam-editor-video-thumbnail">
+
+					{ /* Placeholder text */ }
 					<span className="godam-editor-video-label">
 						{ __( 'GoDAM Video Thumbnail', 'godam' ) }
 					</span>
+
+					{ /* Play button overlay */ }
 					{ showPlayButton && (
 						<div className="godam-editor-video-play-button">
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="60" height="60" aria-hidden="true" focusable="false">
