@@ -162,6 +162,7 @@ document.addEventListener( 'DOMContentLoaded', function() {
 	} );
 } );
 
+/* Show GoDAM video Popup */
 document.addEventListener( 'click', async function( e ) {
 	const playButton = e.target.closest( '.godam-play-button' ) || e.target.closest( '.godam-unmute-button' );
 	const timestampBtn = e.target.closest( '.product-play-timestamp-button' );
@@ -171,16 +172,21 @@ document.addEventListener( 'click', async function( e ) {
 	}
 
 	let getVideoId = null;
+	let getProductIds = null;
 
 	if ( playButton ) {
 		const productVideo = playButton.previousElementSibling;
 		getVideoId = productVideo && ( productVideo.classList.contains( 'godam-product-video' ) || productVideo.classList.contains( 'godam-product-video-thumbnail' ) )
 			? productVideo.getAttribute( 'data-video-id' )
 			: null;
+		getProductIds = productVideo && ( productVideo.classList.contains( 'godam-product-video' ) || productVideo.classList.contains( 'godam-product-video-thumbnail' ) )
+			? productVideo.getAttribute( 'data-video-attached-product-ids' )
+			: null;
 	}
 
 	if ( timestampBtn ) {
 		getVideoId = timestampBtn?.getAttribute( 'data-video-id' );
+		getProductIds = timestampBtn?.getAttribute( 'data-video-attached-product-id' );
 	}
 
 	const videoId = getVideoId;
@@ -188,6 +194,8 @@ document.addEventListener( 'click', async function( e ) {
 	if ( ! videoId ) {
 		return;
 	}
+
+	const videoProductIds = getProductIds;
 
 	const currentGallery = ( playButton || timestampBtn ).closest( '.godam-product-gallery' );
 
@@ -204,6 +212,7 @@ document.addEventListener( 'click', async function( e ) {
 
 	modal.innerHTML = `
 		<div class="godam-product-modal-overlay"></div>
+		<div class="godam-product-sidebar"></div>
 		<div class="godam-product-modal-content">
 			<span class="godam-product-modal-close">&times;</span>
 			<div class="easydam-video-container animate-video-loading" style="aspect-ratio:9/16;">
@@ -223,6 +232,10 @@ document.addEventListener( 'click', async function( e ) {
 	`;
 
 	modal.classList.remove( 'hidden' );
+
+	const sidebarModal = modal.querySelector( '.godam-product-sidebar' );
+	// sidebarModal.classList.add( 'hidden' );
+
 	document.body.style.overflow = 'hidden';
 
 	const loadNewVideo = async ( newVideoId ) => {
@@ -312,21 +325,197 @@ document.addEventListener( 'click', async function( e ) {
 		}
 	};
 
+	function showAddToCartNotification( message, isError = false ) {
+		const toast = document.getElementById( 'godam-add-to-cart-toast' );
+		if ( ! toast ) {
+			return;
+		}
+
+		toast.textContent = message;
+		toast.className = ''; // clear previous classes
+		toast.classList.add( 'visible' );
+		if ( isError ) {
+			toast.classList.add( 'error' );
+		}
+
+		clearTimeout( toast._timeout );
+		toast._timeout = setTimeout( () => {
+			toast.classList.remove( 'visible', 'error' );
+		}, 3000 );
+	}
+
+	async function loadSidebarProducts( productIds, sidebarElement ) {
+		if ( ! productIds || ! sidebarElement ) {
+			return;
+		}
+
+		const idsArray = productIds
+			.split( ',' )
+			.map( ( id ) => parseInt( id ) )
+			.filter( Boolean );
+
+		// If only one product, fetch the full product page
+		if ( idsArray.length === 1 ) {
+			try {
+				const productId = idsArray[ 0 ];
+
+				const response = await fetch(
+					`/wp-admin/admin-ajax.php?action=godam_get_product_html&product_id=${ productId }`,
+				);
+
+				const result = await response.json();
+
+				if ( result.success ) {
+					const productHtml = result.data;
+
+					sidebarElement.innerHTML = `
+						<div class="godam-sidebar-header">
+							<h3>Product</h3>
+							<button class="godam-sidebar-close" aria-label="Close sidebar">&times;</button>
+						</div>
+						<div class="godam-sidebar-full-product">
+							${ productHtml }
+						</div>
+					`;
+
+					requestAnimationFrame( () => {
+						sidebarElement.classList.add( 'active' );
+						modal.classList.add( 'sidebar-active' );
+					} );
+				} else {
+					console.warn( 'Product content not found:', result.data );
+				}
+			} catch ( err ) {
+				console.error( 'Failed to load full product page:', err );
+			}
+			return;
+		}
+
+		try {
+			const res = await fetch( '/wp-json/godam/v1/wcproducts-by-ids', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify( { ids: idsArray } ),
+			} );
+
+			const products = await res.json();
+
+			if ( Array.isArray( products ) ) {
+				sidebarElement.innerHTML = `
+					<div class="godam-sidebar-header">
+						<h3>Products seen in the video</h3>
+						<button class="godam-sidebar-close" aria-label="Close sidebar">&times;</button>
+					</div>
+					<div class="godam-sidebar-products">
+						${ products.map(
+		( product ) => `
+								<div class="godam-sidebar-product-details">
+									<a href="${ product.link }" target="_blank">
+										<img src="${ product.image }" alt="${ product.name }" />
+										<h4>${ product.name }</h4>
+										<p>${ product.price }</p>
+									</a>
+									<button class="product-sidebar-add-to-cart-button" data-product-id="${ product.id }">Add to Cart</button>
+								</div>
+							`,
+	).join( '' ) }
+					</div>
+				`;
+
+				sidebarElement.querySelectorAll( '.product-sidebar-add-to-cart-button' ).forEach( ( button ) => {
+					button.addEventListener( 'click', async ( e ) => {
+						const productId = button.dataset.productId;
+						if ( ! productId ) {
+							return;
+						}
+
+						if ( ! document.getElementById( 'godam-add-to-cart-toast' ) ) {
+							const toast = document.createElement( 'div' );
+							toast.id = 'godam-add-to-cart-toast';
+							document.body.appendChild( toast );
+						}
+
+						try {
+							// Add to cart via WooCommerce AJAX
+							const response = await fetch( '/?wc-ajax=add_to_cart', {
+								method: 'POST',
+								headers: {
+									'Content-Type': 'application/x-www-form-urlencoded',
+								},
+								body: new URLSearchParams( {
+									product_id: productId,
+									quantity: 1,
+								} ),
+							} );
+
+							const result = await response.json();
+
+							if ( result && result.fragments ) {
+								// Optional: Update cart fragments (mini cart)
+								Object.entries( result.fragments ).forEach( ( [ selector, html ] ) => {
+									const el = document.querySelector( selector );
+									if ( el ) {
+										el.innerHTML = html;
+									}
+								} );
+
+								showAddToCartNotification( 'Product added successfully!' );
+							} else {
+								showAddToCartNotification( 'Something went wrong. Try again.', true );
+							}
+						} catch ( err ) {
+							console.error( 'Add to cart failed', err );
+							showAddToCartNotification( 'Error adding product.', true );
+						}
+					} );
+				} );
+
+				// Slide in the sidebar
+				requestAnimationFrame( () => {
+					// sidebarModal.classList.remove( 'hidden' );
+					sidebarElement.classList.add( 'active' );
+					modal.classList.add( 'sidebar-active' );
+				} );
+			}
+		} catch ( err ) {
+			console.error( 'Failed to load sidebar products:', err );
+		}
+	}
+
 	const close = () => {
 		modal.classList.add( 'hidden' );
 		document.body.style.overflow = '';
 		const players = modal.querySelectorAll( '.video-js' );
 		players.forEach( ( p ) => p?.player?.dispose?.() );
+
+		sidebarModal?.classList.remove( 'active' );
+	};
+
+	const closeSidebar = () => {
+		sidebarModal?.classList.remove( 'active' );
 	};
 
 	modal.querySelector( '.godam-product-modal-close' )?.addEventListener( 'click', close );
+	sidebarModal.addEventListener( 'click', ( ev ) => {
+		const closeBtn = ev.target.closest( '.godam-sidebar-close' );
+		if ( closeBtn ) {
+			closeSidebar();
+		}
+	} );
 	modal.addEventListener( 'click', ( ev ) => {
-		if ( ! ev.target.closest( '.godam-product-modal-content' ) ) {
+		if (
+			! ev.target.closest( '.godam-product-modal-content' ) &&
+			! ev.target.closest( '.godam-product-sidebar' )
+		) {
 			close();
 		}
 	} );
 
 	await loadNewVideo( videoId );
+
+	await loadSidebarProducts( videoProductIds, sidebarModal );
 
 	// Timestamp button logic.
 	function parseTimestamp( raw ) {
@@ -382,7 +571,11 @@ document.addEventListener( 'click', async function( e ) {
 		const newId = newVideo.getAttribute( 'data-video-id' );
 		if ( newId && newId !== currentId ) {
 			lastScroll = Date.now();
+
+			const newProductIds = newVideo.getAttribute( 'data-video-attached-product-ids' );
 			await loadNewVideo( newId );
+
+			await loadSidebarProducts( newProductIds, sidebarModal );
 		}
 	};
 

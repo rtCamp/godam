@@ -183,7 +183,27 @@ class WC extends Base {
 						),
 					),
 				),
-			),       
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/wcproducts-by-ids',
+				'args'      => array(
+					array(
+						'methods'             => \WP_REST_Server::CREATABLE,
+						'callback'            => array( $this, 'get_products_by_ids' ),
+						'permission_callback' => '__return_true',
+						'args'                => array(
+							'ids' => array(
+								'type'              => 'array',
+								'required'          => true,
+								'sanitize_callback' => function ( $param ) {
+									return array_map( 'absint', (array) $param );
+								},
+							),
+						),
+					),
+				),
+			),      
 		);
 	}
 
@@ -685,4 +705,35 @@ class WC extends Base {
 			) 
 		);
 	}
+
+	/**
+	 * Get multiple products by an array of IDs.
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_products_by_ids( \WP_REST_Request $request ) {
+		$ids = $request->get_param( 'ids' );
+	
+		if ( ! is_array( $ids ) || empty( $ids ) ) {
+			return new \WP_Error( 'invalid_ids', 'Invalid or missing IDs.', array( 'status' => 400 ) );
+		}
+	
+		$products = array();
+		foreach ( $ids as $id ) {
+			$product = wc_get_product( $id );
+			if ( $product ) {
+				$products[] = array(
+					'id'    => $product->get_id(),
+					'name'  => $product->get_name(),
+					'price' => wc_price( $product->get_price() ),
+					'image' => wp_get_attachment_url( $product->get_image_id() ) ?: wc_placeholder_img_src(),
+					'link'  => get_permalink( $product->get_id() ),
+				);
+			}
+		}
+	
+		return rest_ensure_response( $products );
+	}
+	
 }

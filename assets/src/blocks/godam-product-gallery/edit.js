@@ -444,8 +444,10 @@ export default function Edit( { attributes, setAttributes } ) {
 							label={ __( 'CTA Display Position', 'godam' ) }
 							value={ ctaDisplayPosition }
 							options={ [
-								{ label: __( 'Below Video', 'godam' ), value: 'below' },
-								{ label: __( 'Inside Video', 'godam' ), value: 'inside' },
+								{ label: __( 'Only Below the Video', 'godam' ), value: 'below' },
+								{ label: __( 'Only Inside the Video', 'godam' ), value: 'inside' },
+								{ label: __( 'Below & Inside the Video', 'godam' ), value: 'below-inside' },
+								{ label: __( 'Nowhere', 'godam' ), value: 'nowhere' },
 							] }
 							onChange={ ( value ) => setAttributes( { ctaDisplayPosition: value } ) }
 						/>
