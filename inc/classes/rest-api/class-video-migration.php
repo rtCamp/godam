@@ -375,7 +375,7 @@ class Video_Migration extends Base {
 
 
 		if ( empty( $post_ids ) || ! is_array( $post_ids ) ) {
-			return;
+			return 0; // No posts to process.
 		}
 
 		$wp_option_key = 'godam_' . $migration_type . '_video_migration_status';
