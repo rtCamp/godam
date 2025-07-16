@@ -11,6 +11,18 @@ const options = [
 	{ value: 'none', label: _x( 'None', 'Preload value', 'godam' ) },
 ];
 
+/**
+ * Video settings component.
+ *
+ * This component is used to render common settings like autoplay, loop for a video block.
+ *
+ * @param {Object}   props                           Component props.
+ * @param {Function} props.setAttributes             Function to set block attributes.
+ * @param {Object}   props.attributes                Block attributes.
+ * @param {boolean}  [props.isInsideQueryLoop=false] Whether the video is inside a query loop.
+ *
+ * @return {WPElement} The video settings component.
+ */
 const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
 	const { autoplay, controls, loop, muted, preload } =
 		attributes;

@@ -14,6 +14,9 @@ const { name } = metadata;
 
 export { metadata, name };
 
+/**
+ * Block registration settings.
+ */
 export const settings = {
 	edit,
 	save,

@@ -79,6 +79,19 @@ const TEMPLATE = [
 	] ],
 ];
 
+/**
+ * Edit component for the GoDAM Player block.
+ *
+ * @param {Object}   props                   - The properties passed to the component.
+ * @param {boolean}  props.isSelected        - Whether the block is currently selected.
+ * @param {Object}   props.attributes        - The block attributes.
+ * @param {string}   props.className         - The class name for the component for styling.
+ * @param {Function} props.setAttributes     - Function to update the block's attributes.
+ * @param {Function} props.insertBlocksAfter - Function to insert blocks after the current block.
+ * @param {Object}   props.context           - The block context.
+ *
+ * @return {JSX.Element} The rendered video block component with optional overlays and controls.
+ */
 function VideoEdit( {
 	isSelected: isSingleSelected,
 	attributes,

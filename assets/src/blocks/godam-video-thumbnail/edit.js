@@ -16,6 +16,15 @@ import {
  */
 import './editor.scss';
 
+/**
+ * Edit component for the GoDAM Video Thumbnail block.
+ *
+ * @param {Object}   props
+ * @param {Object}   props.attributes    - The block attributes.
+ * @param {Function} props.setAttributes - Function to update block attributes.
+ *
+ * @return {JSX.Element} The rendered video thumbnail block.
+ */
 function Edit( { attributes, setAttributes } ) {
 	const { linkToVideo, showPlayButton, openInNewTab } = attributes;
 	const blockProps = useBlockProps(

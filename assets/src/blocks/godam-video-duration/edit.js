@@ -11,6 +11,17 @@ import {
 	SelectControl,
 } from '@wordpress/components';
 
+/**
+ * Edit component for the GoDAM Video Duration Block.
+ *
+ * Provides a settings panel with a dropdown to select the duration format.
+ *
+ * @param {Object}   props               - The properties passed to the component.
+ * @param {Object}   props.attributes    - The block attributes.
+ * @param {Function} props.setAttributes - Function to update the block's attributes.
+ *
+ * @return {JSX.Element} Video Duration placeholder display.
+ */
 function Edit( { attributes, setAttributes } ) {
 	const { durationFormat } = attributes;
 	const blockProps = useBlockProps();
