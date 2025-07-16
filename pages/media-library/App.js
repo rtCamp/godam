@@ -124,7 +124,7 @@ const App = () => {
 						__next40pxDefaultSize
 						className="multiselect-button"
 						variant="secondary"
-						text={ ! isMultiSelecting ? __( 'Select', 'godam' ) : __( 'Cancel', 'godam' ) }
+						text={ ! isMultiSelecting ? __( 'Bulk Select', 'godam' ) : __( 'Cancel', 'godam' ) }
 						onClick={ () => dispatch( toggleMultiSelectMode() ) }
 					/>
 					<SelectControl
