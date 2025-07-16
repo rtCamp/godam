@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, TabPanel, Snackbar, Tooltip } from '@wordpress/components';
+import { Button, TabPanel, Snackbar, Tooltip, Spinner } from '@wordpress/components';
 import { __, _n } from '@wordpress/i18n';
 import { copy, seen } from '@wordpress/icons';
 
@@ -353,11 +353,12 @@ const VideoEditor = ( { attachmentID } ) => {
 					<Button
 						className="godam-button absolute right-4 bottom-8"
 						variant="primary"
-						disabled={ ! isChanged }
+						icon={ isSavingMeta && <Spinner /> }
 						onClick={ handleSaveAttachmentMeta }
 						isBusy={ isSavingMeta }
+						disabled={ ! isChanged }
 					>
-						{ __( 'Save', 'godam' ) }
+						{ isSavingMeta ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 					</Button>
 				</div>
 

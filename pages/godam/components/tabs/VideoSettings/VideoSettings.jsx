@@ -12,6 +12,7 @@ import {
 	Panel,
 	PanelBody,
 	Button,
+	Spinner,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -116,10 +117,11 @@ const VideoSettings = () => {
 					variant="primary"
 					className="godam-button"
 					onClick={ handleSaveSettings }
+					icon={ saveMediaSettingsLoading && <Spinner /> }
 					isBusy={ saveMediaSettingsLoading }
 					disabled={ saveMediaSettingsLoading || ! isChanged }
 				>
-					{ __( 'Save Settings', 'godam' ) }
+					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 				</Button>
 			) }
 

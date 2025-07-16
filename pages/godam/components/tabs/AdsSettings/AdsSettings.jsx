@@ -13,6 +13,7 @@ import {
 	PanelBody,
 	Button,
 	TextareaControl,
+	Spinner,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
@@ -104,10 +105,11 @@ const AdsSettings = () => {
 				variant="primary"
 				className="godam-button"
 				onClick={ handleSaveSettings }
+				icon={ saveMediaSettingsLoading && <Spinner /> }
 				isBusy={ saveMediaSettingsLoading }
 				disabled={ saveMediaSettingsLoading || ! isChanged }
 			>
-				{ __( 'Save Settings', 'godam' ) }
+				{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 			</Button>
 		</>
 	);
