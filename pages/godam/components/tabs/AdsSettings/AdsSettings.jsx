@@ -22,13 +22,17 @@ import { useState } from '@wordpress/element';
  */
 import { scrollToTop } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
-import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
+import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
 
 const AdsSettings = () => {
 	const dispatch = useDispatch();
-	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] =
-    useSaveMediaSettingsMutation();
-	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
+	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
+	// const mediaSettings = useSelector( ( state ) => state.mediaSettings );
+
+	const { mediaSettings, isChanged } = useSelector( ( state ) => ( {
+		mediaSettings: state.mediaSettings,
+		isChanged: state.mediaSettings.isChanged,
+	} ) );
 
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
@@ -49,6 +53,7 @@ const AdsSettings = () => {
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
+				dispatch( resetChangeFlag() ); // Reset isChanged flag
 			} else {
 				showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 			}
@@ -102,7 +107,7 @@ const AdsSettings = () => {
 				className="godam-button"
 				onClick={ handleSaveSettings }
 				isBusy={ saveMediaSettingsLoading }
-				disabled={ saveMediaSettingsLoading }
+				disabled={ saveMediaSettingsLoading || ! isChanged }
 			>
 				{ __( 'Save Settings', 'godam' ) }
 			</Button>
