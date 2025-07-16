@@ -17,6 +17,7 @@ import { updateLayerField } from '../../redux/slice/videoSlice';
 import { useGetSingleMetformQuery } from '../../redux/api/metform';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
+import { useEffect, useRef } from 'react';
 
 const MetForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
@@ -39,6 +40,35 @@ const MetForm = ( { layerID } ) => {
 	const isValidAPIKey = true;
 
 	const isMetformPluginActive = Boolean( window?.videoData?.metformActive );
+
+	const iframeRef = useRef( null );
+
+	// Remove extra DOM elements from iframe.
+	useEffect( () => {
+		const iframe = iframeRef.current;
+		if ( ! iframe ) {
+			return;
+		}
+
+		iframe.onload = () => {
+			try {
+				const doc = iframe.contentDocument || iframe.contentWindow.document;
+				doc.body.style.background = 'none';
+
+				const elementToRemove = doc.querySelector( '.elementor-widget-heading' );
+				if ( elementToRemove ) {
+					elementToRemove.remove();
+				}
+				const qmOverlay = doc.querySelector( '#query-monitor-main' );
+				if ( qmOverlay ) {
+					qmOverlay.remove();
+				}
+			} catch ( err ) {
+				//eslint-disable-next-line no-console
+				console.warn( 'Unable to access iframe DOM', err );
+			}
+		};
+	}, [ formHTML ] );
 
 	return (
 		<>
@@ -63,13 +93,13 @@ const MetForm = ( { layerID } ) => {
 						style={ {
 							backgroundColor: layer.bg_color,
 						} }
-						className="easydam-layer"
+						className="easydam-layer "
 					>
 
 						{
 							( formHTML && ! isFetching ) &&
 							<div className="form-container">
-								<iframe title="MetForm" src={ formHTML } height={ 600 } className="w-full" />
+								<iframe title="MetForm" src={ formHTML } ref={ iframeRef } height={ 600 } className="w-full" />
 							</div>
 						}
 
