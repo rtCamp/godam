@@ -23,15 +23,19 @@ import BrandImageSelector from './BrandImageSelector.jsx';
 import ColorPickerButton from '../../../../video-editor/components/shared/color-picker/ColorPickerButton.jsx';
 
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
-import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
+import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
 
 import { scrollToTop } from '../../../utils/index.js';
 
 const GeneralSettings = () => {
 	const dispatch = useDispatch();
-	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
-	const [ saveMediaSettings, { isLoading: saveMediaSettingLoading } ] = useSaveMediaSettingsMutation();
+	// const mediaSettings = useSelector( ( state ) => state.mediaSettings );
+	const { mediaSettings, isChanged } = useSelector( ( state ) => ( {
+		mediaSettings: state.mediaSettings,
+		isChanged: state.mediaSettings.isChanged,
+	} ) );
 
+	const [ saveMediaSettings, { isLoading: saveMediaSettingLoading } ] = useSaveMediaSettingsMutation();
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
 	const showNotice = ( message, status = 'success' ) => {
@@ -49,6 +53,7 @@ const GeneralSettings = () => {
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
+				dispatch( resetChangeFlag() ); // Reset isChanged flag
 			} else {
 				showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 			}
@@ -88,7 +93,7 @@ const GeneralSettings = () => {
 				className="godam-button"
 				onClick={ handleSaveSettings }
 				isBusy={ saveMediaSettingLoading }
-				disabled={ saveMediaSettingLoading }
+				disabled={ saveMediaSettingLoading || ! isChanged }
 			>
 				{ __( 'Save Settings', 'godam' ) }
 			</Button>
