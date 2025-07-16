@@ -155,7 +155,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 				<p className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</p>
 				<SelectControl
 					__next40pxDefaultSize
-					className="mb-4 gsodam-input"
+					className="mb-4"
 					label={ __( 'Select type', 'godam' ) }
 					onChange={ handleCTATypeSelect }
 					options={ ctaLayerOptions }
