@@ -19,20 +19,26 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
-import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
-
+import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
 import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
-
-import './video-settings.scss';
-
 import APISettings from './APISettings.jsx';
 import VideoCompressQuality from './VideoCompressQuality.jsx';
 import VideoThumbnails from './VideoThumbnails.jsx';
 import VideoWatermark from './VideoWatermark.jsx';
 
+/**
+ * Styles
+ */
+import './video-settings.scss';
+
 const VideoSettings = () => {
 	const dispatch = useDispatch();
-	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
+	// const mediaSettings = useSelector( ( state ) => state.mediaSettings );
+	const { mediaSettings, isChanged } = useSelector( ( state ) => ( {
+		mediaSettings: state.mediaSettings,
+		isChanged: state.mediaSettings.isChanged,
+	} ) );
+
 	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
 
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
@@ -52,6 +58,7 @@ const VideoSettings = () => {
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
+				dispatch( resetChangeFlag() ); // Reset isChanged flag
 			} else {
 				showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 			}
@@ -109,7 +116,7 @@ const VideoSettings = () => {
 					className="godam-button"
 					onClick={ handleSaveSettings }
 					isBusy={ saveMediaSettingsLoading }
-					disabled={ saveMediaSettingsLoading }
+					disabled={ saveMediaSettingsLoading || ! isChanged }
 				>
 					{ __( 'Save Settings', 'godam' ) }
 				</Button>
