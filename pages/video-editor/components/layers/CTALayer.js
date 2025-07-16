@@ -10,7 +10,7 @@ import DOMPurify from 'isomorphic-dompurify';
 import {
 	Button,
 	Panel,
-	PanelBody, CustomSelectControl,
+	PanelBody, SelectControl,
 } from '@wordpress/components';
 import { chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
@@ -56,16 +56,16 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 	const ctaLayerOptions = [
 		{
-			name: __( 'Text', 'godam' ),
-			key: 'text',
+			label: __( 'Text', 'godam' ),
+			value: 'text',
 		},
 		{
-			name: __( 'HTML', 'godam' ),
-			key: 'html',
+			label: __( 'HTML', 'godam' ),
+			value: 'html',
 		},
 		{
-			name: __( 'Image', 'godam' ),
-			key: 'image',
+			label: __( 'Image', 'godam' ),
+			value: 'image',
 		},
 	];
 
@@ -74,7 +74,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			updateLayerField( {
 				id: layer.id,
 				field: 'cta_type',
-				value: val.selectedItem.key,
+				value: val,
 			} ),
 		);
 	};
@@ -153,13 +153,13 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 			<div className="flex flex-col godam-form-group">
 				<p className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</p>
-				<CustomSelectControl
+				<SelectControl
 					__next40pxDefaultSize
-					className="mb-4 godam-input"
+					className="mb-4 gsodam-input"
 					label={ __( 'Select type', 'godam' ) }
 					onChange={ handleCTATypeSelect }
 					options={ ctaLayerOptions }
-					value={ ctaLayerOptions.find( ( option ) => option.key === layer.cta_type ) }
+					value={ layer.cta_type }
 				/>
 
 				{ renderSelectedCTAInputs() }

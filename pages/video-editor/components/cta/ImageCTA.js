@@ -6,9 +6,8 @@
  */
 import {
 	Button,
-	CustomSelectControl,
 	Notice,
-	RangeControl,
+	RangeControl, SelectControl,
 	TextareaControl,
 	TextControl,
 	Tooltip,
@@ -49,12 +48,12 @@ const ImageCTA = ( { layerID } ) => {
 
 	const imageOrientationOptions = [
 		{
-			name: __( 'Landscape', 'godam' ),
-			key: 'landscape',
+			label: __( 'Landscape', 'godam' ),
+			value: 'landscape',
 		},
 		{
-			name: __( 'Portrait', 'godam' ),
-			key: 'portrait',
+			label: __( 'Portrait', 'godam' ),
+			value: 'portrait',
 		},
 	];
 
@@ -219,15 +218,15 @@ const ImageCTA = ( { layerID } ) => {
 				placeholder={ __( 'Buy Now', 'godam' ) }
 			/>
 
-			<CustomSelectControl
+			<SelectControl
 				__next40pxDefaultSize
-				className="mb-4 godam-input"
+				className="mb-4"
 				label={ __( 'Select orientation', 'godam' ) }
 				onChange={ ( value ) => {
-					updateField( 'imageCtaOrientation', value.selectedItem.key );
+					updateField( 'imageCtaOrientation', value );
 				} }
 				options={ imageOrientationOptions }
-				value={ imageOrientationOptions.find( ( option ) => option.key === layer.imageCtaOrientation ) }
+				value={ layer.imageCtaOrientation }
 			/>
 
 			<div className="mb-4">
