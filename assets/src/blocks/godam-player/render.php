@@ -18,7 +18,7 @@ if ( $post && is_object( $post ) ) {
 	 * Inside a query loop or single post context.
 	 * Get attachment ID from postmeta.
 	 */
-	$query_loop_attachment_id = get_post_meta( get_the_ID(), '_godam_attachment_id', true );
+	$query_loop_attachment_id = get_post_meta( $post->ID, '_godam_attachment_id', true );
 	
 	/**
 	 * Set ID attribute if not already set.
