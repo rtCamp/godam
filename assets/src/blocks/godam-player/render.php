@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 global $post;
+
 if ( $post && is_object( $post ) ) {
 	/**
 	 * Inside a query loop or single post context.
