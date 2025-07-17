@@ -321,24 +321,66 @@ const engagementStore = {
 	},
 };
 
-function Comment( { comment, setCommentsData, storeObj, videoAttachmentId } ) {
-	const { text, authorName, authorImg, children } = comment;
+function CommentForm( props ) {
+	const { comment, setCommentsData, storeObj, videoAttachmentId, isExpanded, setIsExpanded } = props;
+	const [ commentText, setCommentText ] = useState( '' );
+	const [ isSending, setIsSending ] = useState( false );
+
 	return (
-		<div className="rtgodam-video-engagement--comment-parent">
+		<div className="rtgodam-video-engagement--comment-form">
+			<div className="rtgodam-video-engagement--comment-form-textarea">
+				<textarea
+					name="comment"
+					value={ commentText }
+					onChange={ ( e ) => setCommentText( e.target.value ) }
+				/>
+			</div>
+			<div className="rtgodam-video-engagement--comment-form-submit">
+				<button className="rtgodam-video-engagement--comment-button" disabled={ isSending } onClick={ () => console.log( videoAttachmentId, commentText ) }>
+					{ __( 'Submit', 'godam' ) }
+				</button>
+				<button className="rtgodam-video-engagement--comment-button" onClick={ () => setIsExpanded( false ) }>
+					{ __( 'Cancel', 'godam' ) }
+				</button>
+			</div>
+		</div>
+	);
+}
+
+function Comment( props ) {
+	const { comment, setCommentsData, storeObj, videoAttachmentId } = props;
+	const { text, authorName, authorImg, children } = comment;
+	const [ isExpanded, setIsExpanded ] = useState( false );
+
+	return (
+		<div className={ 'rtgodam-video-engagement--comment-parent ' + ( children && children.length > 0 ? 'has-children' : '' ) }>
 			<div className="rtgodam-video-engagement--comment-details">
 				<div className="rtgodam-video-engagement--comment-author">
 					<img className="rtgodam-video-engagement--comment-author-image" src={ authorImg } alt={ authorName } />
 				</div>
-				<div className="rtgodam-video-engagement--comment-content">
-					<div className="rtgodam-video-engagement--comment-author-name">
-						{ authorName }
+				<div className="rtgodam-video-engagement--comment-content-wrapper">
+					<div className="rtgodam-video-engagement--comment-content">
+						<div className="rtgodam-video-engagement--comment-author-name">
+							{ authorName }
+						</div>
+						<div className="rtgodam-video-engagement--comment-text">
+							{ text }
+						</div>
 					</div>
-					<div className="rtgodam-video-engagement--comment-text">
-						{ text }
+					<div className="rtgodam-video-engagement--comment-reply">
+						{ ! isExpanded && (
+							<button className="rtgodam-video-engagement--comment-button" onClick={ () => setIsExpanded( true ) }>
+								{ __( 'Reply', 'godam' ) }
+							</button>
+						) }
 					</div>
+					{ isExpanded && (
+						<div className="rtgodam-video-engagement--comment-form">
+							<CommentForm { ...props } isExpanded={ isExpanded } setIsExpanded={ setIsExpanded } />
+						</div>
+					) }
 				</div>
 			</div>
-
 			{ children && children.length > 0 && (
 				<div className="rtgodam-video-engagement--comment-child">
 					{ children.map( ( child ) => (
@@ -370,8 +412,8 @@ function CommentBox( props ) {
 	return (
 		<div className={ baseClass }>
 			<button className={ `${ baseClass }--close-button` } onClick={ () => props.storeObj.root.unmount() }>&times;</button>
-			<div className={ 'rtgodam-video-engagement--comment-modal-content' }>
-				{ __( 'Comments will appear here', 'godam' ) }
+			<div className={ baseClass + '-content' }>
+				<h3 className={ baseClass + '-title' }>{ __( 'All Comments', 'godam' ) }</h3>
 				<CommentList { ...props } />
 			</div>
 		</div>
