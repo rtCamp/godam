@@ -827,6 +827,9 @@
 
 .godam-share-button {
 	position: absolute;
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
 	top: 10px;
 	right: 10px;
 	z-index: 10;
@@ -836,9 +839,19 @@
 	border: none;
 	cursor: pointer !important;
 	font-size: 15px !important;
-	transition: background-color 0.3s, color 0.3s;
 	border-radius: 50%;
 	display: flex;
+	transition:
+		opacity 0.3s ease,
+		visibility 0.3s ease,
+		background-color 0.3s,
+		color 0.3s;
+}
+
+.godam-share-button.visible {
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
 }
 
 /* Index in the top-left corner */
