@@ -66,7 +66,7 @@ class GoDAM_Video extends Base {
 
 		foreach ( $metaboxes as $metabox ) {
 			ob_start();
-			call_user_func( $metabox['render_callback'], $post );
+			call_user_func( $metabox['render_callback'], $godam_video_id );
 			$field_html = ob_get_clean();
 
 			$form_fields[ $metabox['id'] ] = array(
