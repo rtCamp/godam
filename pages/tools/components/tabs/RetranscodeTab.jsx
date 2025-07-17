@@ -28,6 +28,7 @@ const RetranscodeTab = () => {
 	const [ aborted, setAborted ] = useState( false );
 	const [ logs, setLogs ] = useState( [] );
 	const [ done, setDone ] = useState( false );
+	const [ forceRetranscode, setForceRetranscode ] = useState( false );
 
 	// Use a ref to track if the operation should be aborted.
 	const abortRef = useRef( false );
@@ -47,7 +48,8 @@ const RetranscodeTab = () => {
 		setFetchingMedia( true );
 		setError( null );
 
-		const url = `${ window.godamRestRoute?.url }godam/v1/transcoding/not-transcoded`;
+		// Add force param if checkbox is checked
+		const url = `${ window.godamRestRoute?.url }godam/v1/transcoding/not-transcoded${ forceRetranscode ? '?force=1' : '' }`;
 
 		axios.get( url, {
 			headers: {
@@ -164,6 +166,20 @@ const RetranscodeTab = () => {
 					<p>
 						{ __( 'To begin, just press the button below.', 'godam' ) }
 					</p>
+
+					{ /* Force retranscode checkbox */ }
+					<div style={ { marginBottom: '1em' } }>
+						{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
+						<label>
+							<input
+								type="checkbox"
+								checked={ forceRetranscode }
+								onChange={ ( e ) => setForceRetranscode( e.target.checked ) }
+								style={ { marginRight: '0.5em' } }
+							/>
+							{ __( 'Force retranscode (even if already transcoded)', 'godam' ) }
+						</label>
+					</div>
 
 					{
 						error &&

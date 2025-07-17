@@ -57,9 +57,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 				},
 			} );
 			setMigrationStatus( response.data );
-		} catch ( error ) {
-			// Handle error, e.g., show a notification instead of using console
-		}
+		} catch ( error ) {}
 	}, [ setMigrationStatus ] );
 
 	// Start polling when migration is processing

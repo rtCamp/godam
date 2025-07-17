@@ -310,6 +310,8 @@ class Transcoding extends Base {
 		$paged     = 1;
 		$per_page  = 200;
 
+		$force = $request->get_param( 'force' );
+
 		do {
 			$args = array(
 				'post_type'      => 'attachment',
@@ -325,6 +327,12 @@ class Transcoding extends Base {
 					),
 				),
 			);
+
+			// If force is set, fetch all video regardless of transcoded_url.
+			if ( $force ) {
+				// remove the meta query condition.
+				$args['meta_query'] = null; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- False positive check for meta query.
+			}
 
 			$query = new \WP_Query( $args );
 
