@@ -35,18 +35,9 @@ import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redu
 import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
+import { getFormIdFromLayer } from './components/layers/FormLayer';
 
 const VideoEditor = ( { attachmentID } ) => {
-	const formIDMap = {
-		cf7: 'cf7_id',
-		gravity: 'gf_id',
-		wpforms: 'wpform_id',
-		forminator: 'forminator_id',
-		sureforms: 'sureform_id',
-		fluentforms: 'fluent_form_id',
-		jetpack: 'jp_id',
-		everestforms: 'everest_form_id',
-	};
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
@@ -192,8 +183,8 @@ const VideoEditor = ( { attachmentID } ) => {
 		for ( const layer of videoLayers ) {
 			if ( layer.type === 'form' ) {
 				const formType = layer.form_type;
-				const fieldName = formIDMap[ formType ];
-				if ( ! fieldName || ! layer[ fieldName ] ) {
+				const formId = getFormIdFromLayer( layer, formType );
+				if ( ! formId ) {
 					invalidFormLayers.push( layer.displayTime );
 				}
 			}
