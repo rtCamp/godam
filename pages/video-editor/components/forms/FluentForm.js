@@ -61,7 +61,7 @@ const FluentForm = ( { layerID } ) => {
 			{
 				<FormSelector
 					disabled={ ! isValidAPIKey || ! isFluentFormsPluginActive }
-					className="gravity-form-selector mb-4"
+					className="mb-4"
 					formID={ layer.fluent_form_id }
 					forms={ forms }
 					handleChange={ changeFormID }

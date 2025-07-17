@@ -57,7 +57,7 @@ const SureForm = ( { layerID } ) => {
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isSureformsPluginActive } className="gravity-form-selector mb-4" formID={ layer.sureform_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isValidAPIKey || ! isSureformsPluginActive } className="mb-4" formID={ layer.sureform_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<AjaxWarning />
