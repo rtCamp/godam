@@ -8,6 +8,7 @@
     --godam-video-engagement-icon-color--comment-background: rgba(29, 155, 240, 0.1);
     --godam-video-engagement-icon-color--view: rgb(0, 186, 124);
     --godam-video-engagement-icon-color--view-background: rgba(0, 186, 124, 0.1);
+    --godam-video-engagement-comment--border-color: rgb(136, 136, 136, 0.5);
 }
 
 .rtgodam-video-engagement {
@@ -101,7 +102,28 @@
             border-radius: 10px;
             padding: 20px;
             max-width: 600px;
-            width: calc( 100% - 20px );
+            max-height: 650px;
+            width: calc(100% - 20px);
+            height: calc(100% - 150px);
+            overflow-y: scroll;
+
+            &::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            &::-webkit-scrollbar-track {
+                background:  var(--wp--preset--color--white, #fff);
+                border-radius: 5px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: var(--godam-video-engagement-comment--border-color);
+                border-radius: 5px;
+            }
+
+            &::-webkit-scrollbar-thumb:hover {
+                background: var(--wp--preset--color--black, #000);
+            }
         }    
 
         &--close-button {
@@ -118,6 +140,48 @@
             border-radius: 10px;
             width: 40px;
             height: 40px;
+        }
+    }
+
+    &--comment {
+
+        &-child {
+            padding-left: min(35px, 7%);
+            
+            &:last-child {
+                padding-bottom: 0;
+            }
+        }
+
+        &-details {
+            display: flex;
+            align-items: flex-start;
+            flex-wrap: nowrap;
+            margin: 15px 0;
+            gap: 15px;
+        }
+
+        &-content {
+            border-left: 1px solid var(--godam-video-engagement-background-color);
+            padding: 15px;
+            border: 1px solid var(--godam-video-engagement-comment--border-color);
+            border-radius: 10px;
+        }
+
+        &-author {
+
+            &-name {
+                font-weight: 700;
+                margin-bottom: 10px;
+            }
+            
+            &-image {
+                border-radius: 50%;
+            }
+        }
+
+        &-text {
+            font-size: 15px;
         }
     }
 }

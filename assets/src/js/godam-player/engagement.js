@@ -1,15 +1,96 @@
+/**
+ * Internal dependencies
+ */
 const { createReduxStore, register, select, dispatch, subscribe } = wp.data;
 const { apiFetch } = wp;
 const { addQueryArgs } = wp.url;
 const { createRoot, useState } = wp.element;
+const { __ } = wp.i18n;
 const { nonceData, DOMPurify } = window;
+const Gravater = 'https://secure.gravatar.com/avatar/5edfa2692bdacc5e6ee805c626c50cb44cebb065f092d9a1067d89f74dacd326?s=40&d=mm&r=g';
 
+const DEMO_COMMENTS = [
+	{
+		id: 1,
+		userId: 5,
+		text: 'This is my first comment',
+		authorName: 'John Doe',
+		authorImg: Gravater,
+		children: [
+			{
+				id: 2,
+				userId: 6,
+				text: 'This is my first comment - reply 1',
+				authorName: 'John Doe',
+				authorImg: Gravater,
+				children: [
+					{
+						id: 2,
+						userId: 6,
+						text: 'This is my first comment - reply of reply 1',
+						authorName: 'John Doe',
+						authorImg: Gravater,
+						children: [],
+					},
+				],
+			},
+			{
+				id: 3,
+				userId: 6,
+				text: 'This is my first comment - reply 2',
+				authorName: 'John Doe',
+				authorImg: Gravater,
+				children: [],
+			},
+		],
+	},
+	{
+		id: 4,
+		userId: 5,
+		text: 'This is my first comment',
+		authorName: 'John Doe',
+		authorImg: Gravater,
+		children: [
+			{
+				id: 5,
+				userId: 6,
+				text: 'This is my first comment - reply 1',
+				authorName: 'John Doe',
+				authorImg: Gravater,
+				children: [
+					{
+						id: 6,
+						userId: 6,
+						text: 'This is my first comment - reply of reply 1',
+						authorName: 'John Doe',
+						authorImg: Gravater,
+						children: [],
+					},
+				],
+			},
+			{
+				id: 7,
+				userId: 6,
+				text: 'This is my first comment - reply 2',
+				authorName: 'John Doe',
+				authorImg: Gravater,
+				children: [],
+			},
+		],
+	},
+];
+
+// Demo comments for testing.
 const DEFAULT_STATE = {
 	views: {},
 	likes: {},
 	IsUserLiked: {},
-	comments: {},
+	comments: {
+		70: DEMO_COMMENTS,
+		96: DEMO_COMMENTS,
+	},
 };
+// Demo comments for testing end.
 
 const ACTIONS = {
 	LOAD_VIDEO_ENGAGEMENT_DATA: 'LOAD_VIDEO_ENGAGEMENT_DATA',
@@ -240,16 +321,58 @@ const engagementStore = {
 	},
 };
 
-function CommentBox( { videoAttachmentId, siteUrl, storeObj } ) {
-	const baseClass = 'rtgodam-video-engagement--comment-modal';
+function Comment( { comment, setCommentsData, storeObj, videoAttachmentId } ) {
+	const { text, authorName, authorImg, children } = comment;
+	return (
+		<div className="rtgodam-video-engagement--comment-parent">
+			<div className="rtgodam-video-engagement--comment-details">
+				<div className="rtgodam-video-engagement--comment-author">
+					<img className="rtgodam-video-engagement--comment-author-image" src={ authorImg } alt={ authorName } />
+				</div>
+				<div className="rtgodam-video-engagement--comment-content">
+					<div className="rtgodam-video-engagement--comment-author-name">
+						{ authorName }
+					</div>
+					<div className="rtgodam-video-engagement--comment-text">
+						{ text }
+					</div>
+				</div>
+			</div>
+
+			{ children && children.length > 0 && (
+				<div className="rtgodam-video-engagement--comment-child">
+					{ children.map( ( child ) => (
+						<Comment key={ child.id } comment={ child } setCommentsData={ setCommentsData } storeObj={ storeObj } videoAttachmentId={ videoAttachmentId } />
+					) ) }
+				</div>
+			) }
+		</div>
+	);
+}
+
+function CommentList( props ) {
+	const { videoAttachmentId, storeObj } = props;
 	const comments = storeObj.select.getComments()[ videoAttachmentId ] || {};
-	const [ commentData, setCommentData ] = useState( comments );
+	const [ commentsData, setCommentsData ] = useState( comments );
+
+	return (
+		<div className="rtgodam-video-engagement--comment-list">
+			{ commentsData.map( ( comment ) => (
+				<Comment key={ comment.id } comment={ comment } setCommentsData={ setCommentsData } storeObj={ storeObj } videoAttachmentId={ videoAttachmentId } />
+			) ) }
+		</div>
+	);
+}
+
+function CommentBox( props ) {
+	const baseClass = 'rtgodam-video-engagement--comment-modal';
 
 	return (
 		<div className={ baseClass }>
-			<button className={ `${ baseClass }--close-button` } onClick={ () => storeObj.root.unmount() }>&times;</button>
+			<button className={ `${ baseClass }--close-button` } onClick={ () => props.storeObj.root.unmount() }>&times;</button>
 			<div className={ 'rtgodam-video-engagement--comment-modal-content' }>
-				Comments will appear here
+				{ __( 'Comments will appear here', 'godam' ) }
+				<CommentList { ...props } />
 			</div>
 		</div>
 	);
