@@ -5,76 +5,7 @@
 /**
  * Internal dependencies
  */
-import GravityForm from '../components/forms/GravityForm';
-import WPForm from '../components/forms/WPForm';
-import EverestForm from '../components/forms/EverestForm';
-import CF7 from '../components/forms/CF7';
-import JetpackForm from '../components/forms/JetpackForm';
-import SureForm from '../components/forms/Sureform.js';
-import FluentForm from '../components/forms/FluentForm.js';
-import ForminatorForm from '../components/forms/forminatorForms.js';
-
-/**
- * FormLayer Components Object mapping.
- */
-export const FormLayerComponentType = {
-	gravity: {
-		isActive: Boolean( window?.videoData?.gfActive ) ?? false,
-		component: GravityForm,
-		idField: 'gf_id',
-		settingsUrl: 'admin.php?subview=confirmation&page=gf_edit_forms&id={formId}&view=settings',
-	},
-	cf7: {
-		isActive: Boolean( window?.videoData?.cf7Active ) ?? false,
-		component: CF7,
-		idField: 'cf7_id',
-		settingsUrl: 'admin.php?page=wpcf7&post={formId}&action=edit',
-	},
-	jetpack: {
-		isActive: Boolean( window?.videoData?.jetpackActive ) ?? false,
-		component: JetpackForm,
-		idField: 'jp_id',
-		settingsUrl: 'admin.php?page=jetpack-forms-admin#/responses',
-		// Special handling for Jetpack forms (extract post ID from form ID)
-		getFormId: ( formId ) => {
-			if ( ! formId ) {
-				return null;
-			}
-			const parts = formId.split( '-' );
-			return parts[ 0 ] ? parseInt( parts[ 0 ] ) : null;
-		},
-	},
-	wpforms: {
-		isActive: Boolean( window?.videoData?.wpformsActive ) ?? false,
-		component: WPForm,
-		idField: 'wpform_id',
-		settingsUrl: 'admin.php?page=wpforms-builder&view=settings&form_id={formId}&section=general',
-	},
-	sureforms: {
-		isActive: Boolean( window?.videoData?.sureformsActive ) ?? false,
-		component: SureForm,
-		idField: 'sureform_id',
-		settingsUrl: 'post.php?post={formId}&action=edit',
-	},
-	forminator: {
-		isActive: Boolean( window?.videoData?.forminatorActive ) ?? false,
-		component: ForminatorForm,
-		idField: 'forminator_id',
-		settingsUrl: 'admin.php?page=forminator-cform-wizard&id={formId}',
-	},
-	fluentforms: {
-		isActive: Boolean( window?.videoData?.fluentformsActive ) ?? false,
-		component: FluentForm,
-		idField: 'fluent_form_id',
-		settingsUrl: 'admin.php?page=fluent_forms&form_id={formId}&route=settings&sub_route=form_settings',
-	},
-	everestforms: {
-		isActive: Boolean( window?.videoData?.everestFormsActive ) ?? false,
-		component: EverestForm,
-		idField: 'everest_form_id',
-		settingsUrl: 'admin.php?page=evf-builder&view=fields&form_id={formId}&tab=settings',
-	},
-};
+import { FormLayerComponentType } from '../components/layers/FormLayer';
 
 /**
  * Helper function to get form ID from layer data
