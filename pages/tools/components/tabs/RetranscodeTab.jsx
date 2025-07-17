@@ -13,7 +13,7 @@ import {
 	Snackbar,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { useState, useRef } from '@wordpress/element';
+import { useState, useRef, useEffect } from '@wordpress/element';
 /**
  * Internal dependencies
  */
@@ -29,6 +29,31 @@ const RetranscodeTab = () => {
 	const [ logs, setLogs ] = useState( [] );
 	const [ done, setDone ] = useState( false );
 	const [ forceRetranscode, setForceRetranscode ] = useState( false );
+	const [ selectedIds, setSelectedIds ] = useState( null );
+
+	// On mount, check for 'media_ids' in the URL
+	useEffect( () => {
+		const params = new URLSearchParams( window.location.search );
+		const idsParam = params.get( 'media_ids' );
+		const nonce = params.get( '_wpnonce' );
+
+		// Verify the nonce if media_ids are present
+		if ( idsParam && nonce ) {
+			// Process the IDs only if we have a valid nonce from the URL
+			if ( nonce === window.easydamMediaLibrary?.godamToolsNonce ) {
+				const idsArr = idsParam.split( ',' ).map( ( id ) => parseInt( id, 10 ) ).filter( Boolean );
+				if ( idsArr.length > 0 ) {
+					setAttachments( idsArr );
+					setSelectedIds( idsArr );
+				}
+			} else {
+				setError( {
+					message: __( 'The requested operation is not allowed.', 'godam' ),
+					details: __( 'The nonce provided in the URL is invalid or expired.', 'godam' ),
+				} );
+			}
+		}
+	}, [] );
 
 	// Use a ref to track if the operation should be aborted.
 	const abortRef = useRef( false );
@@ -157,6 +182,15 @@ const RetranscodeTab = () => {
 		<>
 			<Panel header={ __( 'Retranscode Media', 'godam' ) } className="godam-panel">
 				<PanelBody opened>
+					{ selectedIds && selectedIds.length > 0 && (
+						<Snackbar className="snackbar-warning">
+							{ sprintf(
+								// translators: %d is the number of selected media files.
+								__( 'You are retranscoding %d selected media file(s) from the Media Library.', 'godam' ),
+								selectedIds.length,
+							) }
+						</Snackbar>
+					) }
 					<p>
 						{ __( 'This tool will fetch all media remains to transcode and retranscode all video media uploaded to your website. This can be handy if you need to transcode media files uploaded in the past.', 'godam' ) }
 					</p>
@@ -208,7 +242,11 @@ const RetranscodeTab = () => {
 					{
 						attachments?.length > 0 &&
 						<div className="my-5 text-lg text-gray-600">
-							{ ! forceRetranscode && sprintf(
+							{ selectedIds && selectedIds.length > 0 && (
+								// translators: %d is the number of selected media files.
+								sprintf( __( '%d selected media file(s) will be retranscoded.', 'godam' ), selectedIds.length )
+							) }
+							{ ! selectedIds && ! forceRetranscode && sprintf(
 								// translators: %d is the number of media files that require retranscoding.
 								__( '%d media file(s) require retranscoding.', 'godam' ),
 								attachments.length,
