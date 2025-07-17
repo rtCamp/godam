@@ -35,7 +35,7 @@ import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redu
 import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
-import { getFormIdFromLayer } from './components/layers/FormLayer';
+import { getFormIdFromLayer } from './utils/formUtils';
 
 const VideoEditor = ( { attachmentID } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );

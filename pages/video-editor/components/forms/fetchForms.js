@@ -9,7 +9,7 @@ import { useGetSureformsQuery } from '../../redux/api/sureforms';
 import { useGetForminatorFormsQuery } from '../../redux/api/forminator-forms';
 import { useGetFluentFormsQuery } from '../../redux/api/fluent-forms';
 import { useGetEverestFormsQuery } from '../../redux/api/everest-forms';
-import { FormLayerComponentType } from '../layers/FormLayer';
+import { FormLayerComponentType } from '../../utils/formUtils';
 
 export const useFetchForms = () => {
 	const { data: cf7Forms = [], isFetching: isFetchingCF7 = false } = useGetCF7FormsQuery( undefined, {

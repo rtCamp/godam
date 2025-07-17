@@ -8,7 +8,7 @@ import { error } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { buildSettingsUrl } from '../layers/FormLayer';
+import { buildSettingsUrl } from '../../utils/formUtils';
 
 const AjaxWarning = ( { formType, formId } ) => {
 	const settingsUrl = buildSettingsUrl( formType, formId );
@@ -27,7 +27,7 @@ const AjaxWarning = ( { formType, formId } ) => {
 			>
 				{ __( 'form settings', 'godam' ) }
 			</a>
-			{ __( '.', 'godam' ) }
+			{ '.' }
 		</p>
 	);
 };
