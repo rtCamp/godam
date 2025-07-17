@@ -675,6 +675,10 @@
 	font-size: 16px;
 	font-weight: 700;
 
+	.share-modal-header {
+		color: #000 !important;
+	}
+
 	h2 {
 		text-align: left;
 		font-size: 16px;
@@ -715,7 +719,7 @@
 		margin-top: 20px;
 
 		label {
-			color: var(--wp--preset--color--accent-4);
+			color: #52525B;
 			font-size: 12px;
 			text-align: left;
 
@@ -730,13 +734,14 @@
 		input {
 			width: 80%;
 			padding: 10px;
+			color: #000;
 		}
 
 		button {
 			padding: 4px;
 			cursor: pointer;
 			background: transparent;
-			border: 1px solid var(--wp--preset--color--accent-4);
+			border: 1px solid #e5e7eb;
 			border-radius: 5px;
 
 			img {
@@ -752,8 +757,9 @@
 		button {
 			padding: 8px;
 			background-color: #fff;
+			color: #000;
 			cursor: pointer;
-			border: 1px solid var(--wp--preset--color--accent-4);
+			border: 1px solid #e5e7eb;
 			border-radius: 5px;
 		}
 	}
