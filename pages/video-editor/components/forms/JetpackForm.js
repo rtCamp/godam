@@ -18,6 +18,7 @@ import { updateLayerField, setJetpackForms, setJetpackPluginActive } from '../..
 import { useGetSingleJetpackFormQuery, useGetJetpackFormsQuery } from '../../redux/api/jetpack-forms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
+import AjaxWarning from './AjaxWarning';
 
 const JetpackForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
@@ -182,6 +183,8 @@ const JetpackForm = ( { layerID } ) => {
 					handleChange={ changeFormID }
 				/>
 			}
+
+			<AjaxWarning />
 
 			<LayerControl>
 				<>

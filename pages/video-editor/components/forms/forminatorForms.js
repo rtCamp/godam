@@ -17,6 +17,7 @@ import { updateLayerField } from '../../redux/slice/videoSlice';
 import { useGetSingleForminatorFormQuery } from '../../redux/api/forminator-forms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
+import AjaxWarning from './AjaxWarning';
 
 const ForminatorForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
@@ -58,6 +59,8 @@ const ForminatorForm = ( { layerID } ) => {
 			{
 				<FormSelector disabled={ ! isValidAPIKey || ! isForminatorFormsPluginActive } className="gravity-form-selector mb-4" formID={ layer.forminator_id } forms={ forms } handleChange={ changeFormID } />
 			}
+
+			<AjaxWarning />
 
 			<LayerControl>
 				<>

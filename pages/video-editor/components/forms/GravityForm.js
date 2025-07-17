@@ -17,6 +17,7 @@ import { updateLayerField } from '../../redux/slice/videoSlice';
 import { useGetSingleGravityFormQuery } from '../../redux/api/gravity-forms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
+import AjaxWarning from './AjaxWarning';
 
 const templateOptions = [
 	{
@@ -71,6 +72,8 @@ const GravityForm = ( { layerID } ) => {
 			{
 				<FormSelector disabled={ ! isValidAPIKey || ! isGFPluginActive } className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
 			}
+
+			<AjaxWarning />
 
 			<CustomSelectControl
 				__next40pxDefaultSize

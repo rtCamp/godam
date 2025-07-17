@@ -17,6 +17,7 @@ import { updateLayerField } from '../../redux/slice/videoSlice';
 import { useGetSingleEverestFormQuery } from '../../redux/api/everest-forms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
+import AjaxWarning from './AjaxWarning';
 
 const EverestForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
@@ -64,6 +65,8 @@ const EverestForm = ( { layerID } ) => {
 					handleChange={ changeFormID }
 				/>
 			}
+
+			<AjaxWarning />
 
 			<LayerControl>
 				<>

@@ -17,6 +17,7 @@ import { updateLayerField } from '../../redux/slice/videoSlice';
 import { useGetSingleSureformQuery } from '../../redux/api/sureforms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
+import AjaxWarning from './AjaxWarning';
 
 const SureForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
@@ -58,6 +59,8 @@ const SureForm = ( { layerID } ) => {
 			{
 				<FormSelector disabled={ ! isValidAPIKey || ! isSureformsPluginActive } className="gravity-form-selector mb-4" formID={ layer.sureform_id } forms={ forms } handleChange={ changeFormID } />
 			}
+
+			<AjaxWarning />
 
 			<LayerControl>
 				<>

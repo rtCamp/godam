@@ -17,6 +17,7 @@ import { updateLayerField } from '../../redux/slice/videoSlice';
 import { useGetSingleCF7FormQuery } from '../../redux/api/cf7-forms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
+import AjaxWarning from './AjaxWarning';
 
 const templateOptions = [
 	{
@@ -72,6 +73,8 @@ const CF7 = ( { layerID } ) => {
 			{
 				<FormSelector disabled={ ! isValidAPIKey || ! isCF7PluginActive } className="gravity-form-selector mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
 			}
+
+			<AjaxWarning />
 
 			<CustomSelectControl
 				__next40pxDefaultSize
