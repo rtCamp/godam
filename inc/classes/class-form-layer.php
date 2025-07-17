@@ -57,6 +57,29 @@ class Form_Layer {
 					}
 				);
 				break;
+			case 'gravity':
+				// Gravity Forms.
+				add_filter(
+					'gform_get_form_filter_' . $form_id,
+					function ( $content ) use ( $godam_identifier ) {
+						global $godam_rending_form;
+
+						// Check if we are rendering the a form layer.
+						if ( ! $godam_rending_form ) {
+							return $content;
+						}
+						// Append the hidden input field to the form content.
+						$content = str_replace(
+							'</form>',
+							'<input type="hidden" name="godam_source" value="' . esc_attr( wp_json_encode( $godam_identifier ) ) . '"></form>',
+							$content
+						);
+						return $content;
+					},
+					10,
+					2
+				);
+				break;
 		}
 	}
 }

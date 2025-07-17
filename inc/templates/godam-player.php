@@ -332,6 +332,9 @@ if ( $is_shortcode || $is_elementor_widget ) {
 							<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 								<div class="form-container">
 									<?php
+										global $godam_rending_form;
+										$godam_rending_form = true;
+										Form_Layer::add_form_godam_identifier( $attachment_id, $form_type, $layer['gf_id'] );
 										$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
 										echo do_shortcode(
 											sprintf(
@@ -340,6 +343,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 												$theme ? " theme='$theme'" : ''
 											)
 										);
+										$godam_rending_form = false;
 									?>
 								</div>
 							</div>
