@@ -285,7 +285,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 							} }
 							disabled={ !! searchQuery }
 						>
-							{ type.charAt( 0 ).toUpperCase() + type.slice( 1 ) }
+							{ type === 'cta' ? type.toUpperCase() : type.charAt( 0 ).toUpperCase() + type.slice( 1 ) }
 						</button>
 					) ) }
 				</div>
