@@ -228,7 +228,7 @@ const RetranscodeTab = () => {
 							<pre className="w-full h-[120px] max-h-[120px] overflow-y-auto bg-gray-100 p-3 rounded">
 								{ logs.map( ( log, index ) => (
 									<div key={ index } className="text-sm text-gray-700">
-										{ log }
+										• { log }
 									</div>
 								) ) }
 							</pre>
@@ -266,7 +266,16 @@ const RetranscodeTab = () => {
 								style={ { backgroundColor: '#dc3545', color: 'white' } }
 							>
 								{ __( 'Abort Operation', 'godam' ) }
-							</Button>
+							</Button> &&
+							// Show x/y media retranscoded.
+							<span className="text-gray-600">
+								{ sprintf(
+									// translators: %d is the number of media files sent for retranscoding.
+									__( '%1$d/%2$d media files sent for retranscoding…', 'godam' ),
+									mediaCount,
+									attachments.length,
+								) }
+							</span>
 						}
 
 						{
