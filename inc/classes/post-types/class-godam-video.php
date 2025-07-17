@@ -35,6 +35,72 @@ class GoDAM_Video extends Base {
 		add_action( 'edit_attachment', array( $this, 'update_video_post_from_attachment' ) );
 		add_action( 'delete_attachment', array( $this, 'delete_video_post_from_attachment' ) );
 		add_action( 'save_post_attachment', array( $this, 'sync_attachment_to_video_post' ), 10, 3 );
+		add_filter( 'attachment_fields_to_edit', array( $this, 'add_custom_attachment_fields' ), 10, 2 );
+		add_filter( 'attachment_fields_to_save', array( $this, 'save_custom_attachment_fields' ), 10, 2 );
+	}
+
+	/**
+	 * Add custom fields to the attachment edit screen.
+	 *
+	 * @param array   $form_fields Existing form fields.
+	 * @param WP_Post $post        The attachment post object.
+	 *
+	 * @return array Modified form fields.
+	 */
+	public function add_custom_attachment_fields( $form_fields, $post ) {
+		if ( ! $this->is_video_attachment( $post->ID ) ) {
+			return $form_fields;
+		}
+
+		$godam_video_id = $this->get_godam_video_from_attachment( $post->ID );
+
+		// If no video post exists, create one.
+		if ( ! $godam_video_id ) {
+			$godam_video_id = $this->create_video_post_from_attachment( $post->ID );
+		}
+
+		/**
+		 * Collects custom fields for the video post type.
+		 */
+		$metaboxes = apply_filters( 'godam_register_video_meta_boxes', array(), $godam_video_id );
+
+		foreach ( $metaboxes as $metabox ) {
+			ob_start();
+			call_user_func( $metabox['render_callback'], $post );
+			$field_html = ob_get_clean();
+
+			$form_fields[ $metabox['id'] ] = array(
+				'label' => $metabox['title'],
+				'input' => 'html',
+				'html'  => $field_html,
+			);
+		}
+
+		return $form_fields;
+	}
+
+	/**
+	 * Save custom fields from the attachment edit screen.
+	 *
+	 * @param array $post The post data.
+	 *
+	 * @return array Modified post data.
+	 */
+	public function save_custom_attachment_fields( $post ) {
+		if ( ! $this->is_video_attachment( $post['ID'] ) ) {
+			return $post;
+		}
+
+		$godam_video_id = $this->get_godam_video_from_attachment( $post['ID'] );
+
+		// If no video post exists, create one.
+		if ( ! $godam_video_id ) {
+			$godam_video_id = $this->create_video_post_from_attachment( $post['ID'] );
+		}
+
+		do_action( 'godam_save_video_meta', $godam_video_id );
+
+		return $post;
 	}
 
 	/**
@@ -114,7 +180,7 @@ class GoDAM_Video extends Base {
 						'value' => $attachment_id,
 					),
 				),
-			) 
+			)
 		);
 
 		if ( $query->have_posts() ) {
@@ -387,5 +453,37 @@ class GoDAM_Video extends Base {
 			$has_more = count( $query->posts ) === $batch_size;
 
 		} while ( $has_more );
+	}
+
+	/**
+	 * Get the GoDAM video post ID from an attachment ID.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * 
+	 * @return int|false Video post ID or false if not found.
+	 */
+	public function get_godam_video_from_attachment( $attachment_id ) {
+		$query = new WP_Query(
+			array(
+				'post_type'              => self::SLUG,
+				'posts_per_page'         => 1,
+				'post_status'            => 'any',
+				'fields'                 => 'ids',
+				'no_found_rows'          => true,
+				'update_post_term_cache' => false,
+				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
+					array(
+						'key'   => '_godam_attachment_id',
+						'value' => $attachment_id,
+					),
+				),
+			)
+		);
+
+		if ( $query->have_posts() ) {
+			return $query->posts[0];
+		}
+
+		return false;
 	}
 }
