@@ -570,8 +570,8 @@
 
   .share-modal-message {
 	background: #fff;
-    padding: 10px 40px;
-    border-radius: 5px;
+    padding: 24px 16px;
+    border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
     text-align: center;
     font-size: 16px;
@@ -579,6 +579,11 @@
 
 	.share-modal-header {
 		color: #000 !important;
+
+		/* stylelint-disable-next-line no-descending-specificity */
+		p {
+			font-weight: 400;
+		}
 	}
 
 	h2 {
@@ -587,6 +592,7 @@
 		font-weight: 600;
 	}
 
+	/* stylelint-disable-next-line no-descending-specificity */
 	p {
 		font-size: 12px;
 	}
@@ -616,7 +622,6 @@
 	.share-input-container {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
 		justify-content: left;
 		margin-top: 20px;
 
