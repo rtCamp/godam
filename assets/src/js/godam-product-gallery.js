@@ -100,6 +100,13 @@ document.addEventListener( 'click', async function( e ) {
 					</svg>
 				</div>
 			</div>
+			<div class="godam-swipe-overlay">
+				<div class="godam-swipe-hint">
+					<div class="chevron chevron-up"></div>
+					<div class="chevron chevron-down"></div>
+					<span>Swipe up/down for more</span>
+				</div>
+			</div>
 		</div>
 	`;
 
@@ -173,6 +180,40 @@ document.addEventListener( 'click', async function( e ) {
 					const player = modal.querySelector( '.video-js' );
 					if ( player?.player ) {
 						player.player.play();
+
+						const swipeHint = modal.querySelector( '.godam-swipe-hint' );
+						const swipeOverlay = modal.querySelector( '.godam-swipe-overlay' );
+
+						// Clear any running swipe animations for previous videos.
+						stopSwipeAnimationLoop();
+
+						// Hide swipe hint and overlay initially.
+						swipeHint?.classList.remove( 'show' );
+						swipeOverlay?.classList.remove( 'visible' );
+
+						// Restart swipe animation loop only when current video ends.
+						player.player.on( 'ended', () => {
+							swipeHint?.classList.add( 'show' );
+							swipeOverlay?.classList.add( 'visible' );
+
+							startSwipeAnimationLoop( swipeHint, swipeOverlay );
+						} );
+
+						// Hide and stop swipe hint on play (user replays).
+						player.player.on( 'play', () => {
+							swipeHint?.classList.remove( 'show' );
+							swipeOverlay?.classList.remove( 'visible' );
+
+							stopSwipeAnimationLoop(); // prevent overlapping loops
+						} );
+
+						// Hide and stop swipe hint on seek.
+						player.player.on( 'seeked', () => {
+							swipeHint?.classList.remove( 'show' );
+							swipeOverlay?.classList.remove( 'visible' );
+
+							stopSwipeAnimationLoop(); // prevent overlapping loops
+						} );
 					}
 				}
 			} else {
@@ -186,6 +227,35 @@ document.addEventListener( 'click', async function( e ) {
 			modal.dataset.isLoading = 'false';
 		}
 	};
+
+	let swipeAnimationInterval = null;
+
+	function startSwipeAnimationLoop( swipeHint, swipeOverlay ) {
+		stopSwipeAnimationLoop(); // prevent multiple intervals
+
+		const showHint = () => {
+			swipeHint.classList.add( 'show' );
+			swipeOverlay.classList.add( 'visible' );
+
+			setTimeout( () => {
+				swipeHint.classList.remove( 'show' );
+				swipeOverlay.classList.remove( 'visible' );
+			}, 5000 ); // show for 5s
+		};
+
+		showHint(); // run immediately
+
+		swipeAnimationInterval = setInterval( () => {
+			showHint();
+		}, 13000 ); // 5s show + 8s pause
+	}
+
+	function stopSwipeAnimationLoop() {
+		if ( swipeAnimationInterval ) {
+			clearInterval( swipeAnimationInterval );
+			swipeAnimationInterval = null;
+		}
+	}
 
 	function showAddToCartNotification( message, isError = false ) {
 		const toast = document.getElementById( 'godam-add-to-cart-toast' );
@@ -472,6 +542,8 @@ document.addEventListener( 'click', async function( e ) {
 		if ( newVideoId && newVideoId !== currentId ) {
 			lastScrollTime = currentTime;
 			const newProductIds = newVideo.getAttribute( 'data-video-attached-product-ids' );
+			modal.querySelector( '.godam-swipe-hint' ).classList.remove( 'show' );
+			modal.querySelector( '.godam-swipe-overlay' ).classList.remove( 'visible' );
 			await loadNewVideo( newVideoId );
 			await loadSidebarProducts( newProductIds, sidebarModal );
 		}
