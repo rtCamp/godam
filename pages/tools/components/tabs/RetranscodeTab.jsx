@@ -264,8 +264,14 @@ const RetranscodeTab = () => {
 								} }
 								disabled={ fetchingMedia }
 							>
-								{ /* Change the transcoding message if attachments fetched */ }
-								{ ( attachments?.length > 0 ) ? __( 'Start Retranscoding', 'godam' ) : __( 'Retranscode Media', 'godam' ) }
+								{ ( () => {
+									if ( attachments.length === 0 ) {
+										return __( 'Fetch Media', 'godam' );
+									} else if ( ! done && ! aborted ) {
+										return __( 'Start Retranscoding', 'godam' );
+									}
+									return __( 'Restart Retranscoding', 'godam' );
+								} )() }
 							</Button>
 						}
 
