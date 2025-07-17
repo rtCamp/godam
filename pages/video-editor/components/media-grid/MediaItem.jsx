@@ -21,6 +21,9 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
 	const [ showSnackbar, setShowSnackbar ] = useState( false );
 
+	const currentUserId = Number( window?.easydamMediaLibrary?.userId );
+	const currentItemAuthor = Number( item?.author );
+
 	const handleItemClick = ( e ) => {
 		if ( e.target.closest( '.godam-video-list__video__thumbnail__overlay' ) ) {
 			return;
@@ -46,7 +49,7 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 
 	return (
 		<div
-			className="godam-video-list__video"
+			className={ `godam-video-list__video ${ currentItemAuthor !== currentUserId ? 'disabled' : '' }` }
 			onClick={ handleItemClick }
 			role="button"
 			ref={ ref }
