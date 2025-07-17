@@ -94,7 +94,7 @@ const NinjaForm = ( { layerID } ) => {
 						{
 							formHTML &&
 							<Button
-								href={ `${ window?.videoData?.adminUrl }admin.php?page=evf-builder&view=fields&form_id=${ layer.ninja_form_id }` }
+								href={ `${ window?.videoData?.adminUrl }admin.php?page=ninja-forms&form_id=${ layer.ninja_form_id }` }
 								target="_blank"
 								variant="secondary"
 								icon={ pencil }
