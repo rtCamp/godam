@@ -89,11 +89,10 @@ document.addEventListener( 'click', async function( e ) {
 	modal.dataset.isLoading = 'false';
 
 	modal.innerHTML = `
-		<div class="godam-product-modal-overlay"></div>
 		<div class="godam-product-sidebar"></div>
 		<div class="godam-product-modal-content">
-			<span class="godam-product-modal-close">&times;</span>
-			<div class="easydam-video-container animate-video-loading" style="aspect-ratio:9/16;">
+			<div class="godam-product-modal-close"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg></div>
+			<div class="video-container animate-video-loading" style="aspect-ratio:responsive;">
 				<div class="animate-play-btn">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
@@ -125,7 +124,7 @@ document.addEventListener( 'click', async function( e ) {
 		modal.dataset.isLoading = 'true';
 		modal.dataset.currentVideoId = newVideoId;
 
-		const container = modal.querySelector( '.easydam-video-container' );
+		const container = modal.querySelector( '.video-container' );
 		if ( container ) {
 			container.innerHTML = `
 				<div class="animate-video-loading">
@@ -152,7 +151,7 @@ document.addEventListener( 'click', async function( e ) {
 
 					try {
 						const json = JSON.parse( decoded );
-						json.aspectRatio = '9:16'; // update
+						json.aspectRatio = 'responsive'; // update
 						json.playerSkin = 'Minimal'; // optionally change skin
 
 						// re-encode to match format
@@ -166,7 +165,7 @@ document.addEventListener( 'click', async function( e ) {
 
 				html = html.replace(
 					/--rtgodam-video-aspect-ratio:\s*[^;"]+/,
-					'--rtgodam-video-aspect-ratio: 9/16',
+					'--rtgodam-video-aspect-ratio: responsive',
 				);
 
 				// ✅ Inject updated HTML with properly escaped attributes
