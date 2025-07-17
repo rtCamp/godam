@@ -221,6 +221,7 @@ const RetranscodeTab = () => {
 					{
 						/* Force retranscode checkbox */
 						! ( selectedIds && selectedIds.length > 0 ) &&
+						( attachments.length === 0 ) &&
 						<div style={ { marginBottom: '1em' } }>
 							{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 							<label>
@@ -347,8 +348,8 @@ const RetranscodeTab = () => {
 						}
 
 						{
-							// Show reset button after completion or abort.
-							( aborted || ( ! retranscoding && attachments.length > 0 && mediaCount > 0 ) ) &&
+							// Show reset button after completion or abort or after fetching media.
+							( aborted || ( ! retranscoding && attachments.length > 0 ) ) &&
 							<Button
 								variant="tertiary"
 								className="godam-button"
