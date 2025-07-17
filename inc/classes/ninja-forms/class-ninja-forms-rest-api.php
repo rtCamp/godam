@@ -124,7 +124,11 @@ class Ninja_Forms_Rest_Api extends Base {
 
 		$form = Ninja_Forms()->form( $form_id );
 
-		$ninja_form = do_shortcode( "[ninja_form id={$form_id}]" );
+		if ( $form ) {
+			$ninja_form = do_shortcode( "[ninja_form id={$form_id}]" );
+		} else {
+			$ninja_form = sprintf( __('Unable to find the Ninja Form with ID:%d', $form_id ) );
+		}
 
 		return rest_ensure_response( $ninja_form );
 	}

@@ -32,8 +32,44 @@ class Ninja_Forms_integration {
 	}
 
 	public function setup_hooks() {
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_form_assets_on_video_editor_page' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_form_assets_on_video_editor_page' ) );
+		// add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_form_assets_on_video_editor_page' ) );
+		// add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_form_assets_on_video_editor_page' ) );
+
+		add_action( 'admin_enqueue_scripts', function() {
+			$custom_css = <<<CSS
+				.form-container.form-render {
+					margin: unset;
+					height: 100%;
+					overflow: unset !important;
+				}
+
+				.form-container.form-render iframe {
+					height: 100%;
+				}
+			CSS;
+
+
+			wp_add_inline_style( 'rtgodam-style', $custom_css );
+		});
+
+		add_filter( 'query_vars', function( $query_vars ) {
+			$query_vars[] = 'rtgodam-render-layer';
+			$query_vars[] = 'rtgodam-form-id';
+
+			return $query_vars;
+		});
+
+		add_filter( 'template_include', function( $template ) {
+			$layer = get_query_var( 'rtgodam-render-layer');
+			$form_id = get_query_var( 'rtgodam-form-id');
+
+			if ( ! empty( $layer ) && ! empty( $form_id )) {
+				$template = require __DIR__ . '/sagar.php';
+			}
+
+			return $template;
+
+		});
 	}
 
 	public function enqueue_form_assets_on_video_editor_page() {
@@ -46,10 +82,15 @@ class Ninja_Forms_integration {
 
 		// wp_localize_script( 'nf-front-end', 'nfi18n', \Ninja_Forms::config( 'i18nFrontEnd' ) );
 
-		// \NF_Display_Render::localize(0);
 
-		// \NF_Display_Render::enqueue_scripts( 0 );
+		\NF_Display_Render::localize(0);
 
-		// \NF_Display_Render::enqueue_styles_display( $css_dir );
+		\NF_Display_Render::output_templates();
+
+		\NF_Display_Render::enqueue_scripts( 0 );
+
+		\NF_Display_Render::enqueue_styles_display( $css_dir );
+
+
 	}
 }

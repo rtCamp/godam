@@ -76,7 +76,14 @@ const NinjaForm = ( { layerID } ) => {
 
 						{
 							( formHTML && ! isFetching ) &&
-							<div className="form-container" dangerouslySetInnerHTML={ { __html: formHTML } } />
+							<div className="form-container form-render">
+								<iframe
+									src={ window.godamRestRoute.homeUrl + '?rtgodam-render-layer=ninja-forms&rtgodam-form-id=' + layer?.ninja_form_id }
+									title="Ninja Form"
+									scrolling="auto"
+									width="100%"
+								></iframe>
+							</div>
 						}
 
 						{
