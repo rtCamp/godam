@@ -21,8 +21,13 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
 	const [ showSnackbar, setShowSnackbar ] = useState( false );
 
-	const currentUserId = Number( window?.easydamMediaLibrary?.userId );
-	const currentItemAuthor = Number( item?.author );
+	const canManageAttachment = () => {
+		const currentUserId = Number( window?.easydamMediaLibrary?.userId );
+		const canEditOthersMedia = window?.easydamMediaLibrary?.canEditOthersMedia;
+		const attachmentAuthorId = Number( item?.author );
+
+		return canEditOthersMedia || currentUserId === attachmentAuthorId;
+	};
 
 	const handleItemClick = ( e ) => {
 		if ( e.target.closest( '.godam-video-list__video__thumbnail__overlay' ) ) {
@@ -49,7 +54,7 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 
 	return (
 		<div
-			className={ `godam-video-list__video ${ currentItemAuthor !== currentUserId ? 'disabled' : '' }` }
+			className={ `godam-video-list__video ${ ! canManageAttachment() ? 'disabled' : '' }` }
 			onClick={ handleItemClick }
 			role="button"
 			ref={ ref }
