@@ -1,12 +1,14 @@
 const { createReduxStore, register, select, dispatch, subscribe } = wp.data;
 const { apiFetch } = wp;
 const { addQueryArgs } = wp.url;
+const { createRoot, useState } = wp.element;
 const { nonceData, DOMPurify } = window;
 
 const DEFAULT_STATE = {
 	views: {},
 	likes: {},
 	IsUserLiked: {},
+	comments: {},
 };
 
 const ACTIONS = {
@@ -18,6 +20,22 @@ const ACTIONS = {
 const engagementStore = {
 	init() {
 		this.initStore();
+	},
+
+	initStore() {
+		register( this.store() );
+		this.unsubscribe = subscribe(
+			this.watch.bind( this ),
+			'godam-video-engagement',
+		);
+		this.dispatch = dispatch( 'godam-video-engagement' );
+		this.select = select( 'godam-video-engagement' );
+
+		this.dispatch.loadDefaultData( this );
+
+		// For testing purposes
+		window.gdm_dispatch = this.dispatch;
+		window.gdm_select = this.select;
 	},
 
 	reducer( state = DEFAULT_STATE, action ) {
@@ -80,6 +98,7 @@ const engagementStore = {
 
 	selectors: {
 		getState: ( state ) => state,
+		getComments: ( state ) => state.comments,
 	},
 
 	resolvers: {},
@@ -180,6 +199,7 @@ const engagementStore = {
 			const videoAttachmentId = item.getAttribute( 'data-engagement-video-id' );
 			const siteUrl = item.getAttribute( 'data-engagement-site-url' );
 			const likeLink = item.querySelector( '.rtgodam-video-engagement--like-link' );
+			const commentLink = item.querySelector( '.rtgodam-video-engagement--comment-link' );
 
 			if ( likeLink ) {
 				likeLink.addEventListener( 'click', ( event ) => {
@@ -187,6 +207,13 @@ const engagementStore = {
 					likeLink.classList.add( 'is-progressing' );
 					likeLink.disabled = true;
 					self.dispatch.userHitiLke( videoAttachmentId, siteUrl, self, likeLink );
+				} );
+			}
+
+			if ( commentLink ) {
+				commentLink.addEventListener( 'click', ( event ) => {
+					event.preventDefault();
+					self.generateCommentModal( videoAttachmentId, siteUrl );
 				} );
 			}
 
@@ -198,22 +225,35 @@ const engagementStore = {
 		return collections;
 	},
 
-	initStore() {
-		register( this.store() );
-		this.unsubscribe = subscribe(
-			this.watch.bind( this ),
-			'godam-video-engagement',
-		);
-		this.dispatch = dispatch( 'godam-video-engagement' );
-		this.select = select( 'godam-video-engagement' );
+	generateCommentModal( videoAttachmentId, siteUrl ) {
+		const modalId = 'rtgodam-video-engagement--comment-modal';
+		let commentModal = document.getElementById( modalId );
 
-		this.dispatch.loadDefaultData( this );
-
-		// For testing purposes
-		window.gdm_dispatch = this.dispatch;
-		window.gdm_select = this.select;
+		if ( commentModal ) {
+			commentModal.remove();
+		}
+		commentModal = document.createElement( 'div' );
+		commentModal.setAttribute( 'id', modalId );
+		document.body.appendChild( commentModal );
+		this.root = createRoot( commentModal );
+		this.root.render( <CommentBox videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } storeObj={ this } /> );
 	},
 };
+
+function CommentBox( { videoAttachmentId, siteUrl, storeObj } ) {
+	const baseClass = 'rtgodam-video-engagement--comment-modal';
+	const comments = storeObj.select.getComments()[ videoAttachmentId ] || {};
+	const [ commentData, setCommentData ] = useState( comments );
+
+	return (
+		<div className={ baseClass }>
+			<button className={ `${ baseClass }--close-button` } onClick={ () => storeObj.root.unmount() }>&times;</button>
+			<div className={ 'rtgodam-video-engagement--comment-modal-content' }>
+				Comments will appear here
+			</div>
+		</div>
+	);
+}
 
 export function engagement() {
 	engagementStore.init();
