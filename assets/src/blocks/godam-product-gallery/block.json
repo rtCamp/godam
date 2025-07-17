@@ -86,7 +86,7 @@
     },
     "ctaDisplayPosition": {
       "type": "string",
-      "default": "below"
+      "default": "below-inside"
     },
     "ctaButtonBgColor": {
       "type": "string",

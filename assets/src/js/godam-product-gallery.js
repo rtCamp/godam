@@ -1,9 +1,11 @@
+/* global GODAMPlayer */
+
 /**
  * External dependencies
  */
 import DOMPurify from 'isomorphic-dompurify';
-/* global GODAMPlayer */
 
+/* Autoplay Product Gallery videos only for 5 seconds */
 document.addEventListener( 'DOMContentLoaded', function() {
 	const gallery = document.querySelector( '.godam-product-gallery' );
 	if ( ! gallery ) {
@@ -11,146 +13,10 @@ document.addEventListener( 'DOMContentLoaded', function() {
 	}
 
 	const videos = gallery.querySelectorAll( 'video' );
-	// const playButtons = gallery.querySelectorAll( '.godam-play-button' );
-	// const unmuteButtons = gallery.querySelectorAll( '.godam-unmute-button' );
 
-	// let loopingIntervals = [];
-	// const userControlledVideos = new WeakSet(); // Track videos that should NOT loop
-
-	// function stopAllVideos( except = null ) {
-	// 	videos.forEach( ( vid ) => {
-	// 		if ( vid !== except ) {
-	// 			vid.pause();
-	// 			vid.currentTime = 0;
-	// 		}
-	// 	} );
-	// 	loopingIntervals.forEach( clearInterval );
-	// 	loopingIntervals = [];
-	// }
-
-	// function removePlayButtons( except = null ) {
-	// 	playButtons.forEach( ( btn ) => {
-	// 		if ( ! except || btn !== except ) {
-	// 			btn.style.display = 'flex';
-	// 		}
-	// 	} );
-	// }
-
-	// function createLoop( video ) {
-	// 	// Skip loop if video is user-controlled
-	// 	if ( userControlledVideos.has( video ) ) {
-	// 		return;
-	// 	}
-
-	// 	const interval = setInterval( () => {
-	// 		if ( ! video.paused && video.currentTime >= 5 ) {
-	// 			video.pause();
-	// 			video.currentTime = 0;
-	// 			video.play();
-	// 		}
-	// 	}, 1000 );
-
-	// 	loopingIntervals.push( interval );
-	// 	return interval;
-	// }
-
-	// 	// Play button click
-	// 	playButtons.forEach( ( btn ) => {
-	// 		btn.addEventListener( 'click', function() {
-	// 			const container = btn.closest( '.godam-product-video-item' );
-	// 			const video = container.querySelector( 'video' );
-
-	// 			userControlledVideos.add( video );
-	// 			stopAllVideos( video );
-	// 			removePlayButtons( btn );
-
-	// 			video.muted = false;
-	// 			video.play();
-	// 			btn.style.display = 'none';
-
-	// 			// Video click toggles play/pause
-	// 			video.onclick = function() {
-	// 				if ( video.paused ) {
-	// 					video.play();
-	// 					btn.style.display = 'none';
-	// 					stopAllVideos( video );
-	// 				} else {
-	// 					video.pause();
-	// 					btn.style.display = 'flex';
-
-	// 					videos.forEach( ( vid ) => {
-	// 						if ( vid !== video && ! userControlledVideos.has( vid ) ) {
-	// 							vid.muted = true;
-	// 							vid.play();
-	// 							createLoop( vid );
-	// 						}
-	// 					} );
-	// 				}
-	// 			};
-	// 		} );
-	// 	} );
-
-	// 	// Unmute button click
-	// 	unmuteButtons.forEach( ( btn ) => {
-	// 		btn.addEventListener( 'click', function() {
-	// 			const container = btn.closest( '.godam-product-video-item' );
-	// 			const video = container.querySelector( 'video' );
-
-	// 			// First: reset all other videos & unmute buttons to "muted" state
-	// 			unmuteButtons.forEach( ( otherBtn ) => {
-	// 				const otherContainer = otherBtn.closest( '.godam-product-video-item' );
-	// 				const otherVideo = otherContainer.querySelector( 'video' );
-
-	// 				if ( otherBtn !== btn ) {
-	// 					otherVideo.muted = true;
-	// 					updateUnmuteIcon( otherBtn, true ); // show cross
-	// 				}
-	// 			} );
-
-	// 			const isNowMuted = ! video.muted;
-	// 			video.muted = isNowMuted;
-	// 			updateUnmuteIcon( btn, isNowMuted );
-
-	// 			if ( isNowMuted ) {
-	// 				video.pause();
-	// 				video.currentTime = 0;
-
-	// 				videos.forEach( ( vid ) => {
-	// 					if ( vid !== video && ! userControlledVideos.has( vid ) ) {
-	// 						vid.muted = true;
-	// 						vid.play();
-	// 						createLoop( vid );
-	// 					}
-	// 				} );
-	// 			} else {
-	// 				userControlledVideos.add( video );
-	// 				stopAllVideos( video );
-	// 				video.play();
-
-	// 				const playBtn = container.querySelector( '.godam-play-button' );
-	// 				if ( playBtn ) {
-	// 					playBtn.style.display = 'none';
-	// 				}
-	// 			}
-	// 		} );
-	// 	} );
-
-	// 	// Update SVG icon (mute/unmute)
-	// 	function updateUnmuteIcon( button, isMuted ) {
-	// 		const svg = button.querySelector( 'svg' );
-	// 		if ( ! svg ) {
-	// 			return;
-	// 		}
-	// 		const cross = svg.querySelector( 'g' );
-	// 		if ( cross ) {
-	// 			cross.style.display = isMuted ? 'block' : 'none';
-	// 		}
-	// 	}
-
-	// Initial autoplay loop setup
+	// Initial autoplay loop setup.
 	videos.forEach( ( video ) => {
 		if ( video.hasAttribute( 'autoplay' ) ) {
-			// createLoop( video );
 			setInterval( () => {
 				if ( video.currentTime >= 5 ) {
 					video.pause();
@@ -173,6 +39,8 @@ document.addEventListener( 'click', async function( e ) {
 
 	let getVideoId = null;
 	let getProductIds = null;
+	let getCTAEnabled = null;
+	let getCTADisplayPosition = null;
 
 	if ( playButton ) {
 		const productVideo = playButton.previousElementSibling;
@@ -182,11 +50,19 @@ document.addEventListener( 'click', async function( e ) {
 		getProductIds = productVideo && ( productVideo.classList.contains( 'godam-product-video' ) || productVideo.classList.contains( 'godam-product-video-thumbnail' ) )
 			? productVideo.getAttribute( 'data-video-attached-product-ids' )
 			: null;
+		getCTAEnabled = productVideo && ( productVideo.classList.contains( 'godam-product-video' ) || productVideo.classList.contains( 'godam-product-video-thumbnail' ) )
+			? productVideo.getAttribute( 'data-cta-enabled' )
+			: null;
+		getCTADisplayPosition = productVideo && ( productVideo.classList.contains( 'godam-product-video' ) || productVideo.classList.contains( 'godam-product-video-thumbnail' ) )
+			? productVideo.getAttribute( 'data-cta-display-position' )
+			: null;
 	}
 
 	if ( timestampBtn ) {
 		getVideoId = timestampBtn?.getAttribute( 'data-video-id' );
 		getProductIds = timestampBtn?.getAttribute( 'data-video-attached-product-id' );
+		getCTAEnabled = timestampBtn?.getAttribute( 'data-cta-enabled' );
+		getCTADisplayPosition = timestampBtn?.getAttribute( 'data-cta-display-position' );
 	}
 
 	const videoId = getVideoId;
@@ -196,6 +72,8 @@ document.addEventListener( 'click', async function( e ) {
 	}
 
 	const videoProductIds = getProductIds;
+	const ctaEnabled = getCTAEnabled;
+	const ctaDisplayPosition = getCTADisplayPosition;
 
 	const currentGallery = ( playButton || timestampBtn ).closest( '.godam-product-gallery' );
 
@@ -220,12 +98,6 @@ document.addEventListener( 'click', async function( e ) {
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 					</svg>
-				</div>
-			</div>
-			<div class="godam-modal-footer">
-				<div class="godam-video-info">
-					<h3 class="godam-video-title"></h3>
-					<span class="godam-video-date"></span>
 				</div>
 			</div>
 		</div>
@@ -294,16 +166,6 @@ document.addEventListener( 'click', async function( e ) {
 				container.innerHTML = html;
 				container.classList.remove( 'animate-video-loading' );
 
-				// title + date
-				const title = modal.querySelector( '.godam-video-title' );
-				const date = modal.querySelector( '.godam-video-date' );
-				if ( title ) {
-					title.innerHTML = DOMPurify.sanitize( data.title || '' );
-				}
-				if ( date ) {
-					date.textContent = data.date || '';
-				}
-
 				// player
 				if ( typeof GODAMPlayer === 'function' ) {
 					GODAMPlayer( modal );
@@ -349,6 +211,14 @@ document.addEventListener( 'click', async function( e ) {
 			return;
 		}
 
+		if ( ! ctaEnabled ) {
+			return;
+		}
+
+		if ( ctaDisplayPosition !== 'below-inside' && ctaDisplayPosition !== 'inside' ) {
+			return;
+		}
+
 		const idsArray = productIds
 			.split( ',' )
 			.map( ( id ) => parseInt( id ) )
@@ -370,13 +240,14 @@ document.addEventListener( 'click', async function( e ) {
 
 					sidebarElement.innerHTML = `
 						<div class="godam-sidebar-header">
-							<h3>Product</h3>
 							<button class="godam-sidebar-close" aria-label="Close sidebar">&times;</button>
 						</div>
 						<div class="godam-sidebar-full-product">
 							${ productHtml }
 						</div>
 					`;
+
+					attachAddToCartListeners( sidebarElement );
 
 					requestAnimationFrame( () => {
 						sidebarElement.classList.add( 'active' );
@@ -424,53 +295,7 @@ document.addEventListener( 'click', async function( e ) {
 					</div>
 				`;
 
-				sidebarElement.querySelectorAll( '.product-sidebar-add-to-cart-button' ).forEach( ( button ) => {
-					button.addEventListener( 'click', async ( e ) => {
-						const productId = button.dataset.productId;
-						if ( ! productId ) {
-							return;
-						}
-
-						if ( ! document.getElementById( 'godam-add-to-cart-toast' ) ) {
-							const toast = document.createElement( 'div' );
-							toast.id = 'godam-add-to-cart-toast';
-							document.body.appendChild( toast );
-						}
-
-						try {
-							// Add to cart via WooCommerce AJAX
-							const response = await fetch( '/?wc-ajax=add_to_cart', {
-								method: 'POST',
-								headers: {
-									'Content-Type': 'application/x-www-form-urlencoded',
-								},
-								body: new URLSearchParams( {
-									product_id: productId,
-									quantity: 1,
-								} ),
-							} );
-
-							const result = await response.json();
-
-							if ( result && result.fragments ) {
-								// Optional: Update cart fragments (mini cart)
-								Object.entries( result.fragments ).forEach( ( [ selector, html ] ) => {
-									const el = document.querySelector( selector );
-									if ( el ) {
-										el.innerHTML = html;
-									}
-								} );
-
-								showAddToCartNotification( 'Product added successfully!' );
-							} else {
-								showAddToCartNotification( 'Something went wrong. Try again.', true );
-							}
-						} catch ( err ) {
-							console.error( 'Add to cart failed', err );
-							showAddToCartNotification( 'Error adding product.', true );
-						}
-					} );
-				} );
+				attachAddToCartListeners( sidebarElement );
 
 				// Slide in the sidebar
 				requestAnimationFrame( () => {
@@ -481,6 +306,61 @@ document.addEventListener( 'click', async function( e ) {
 			}
 		} catch ( err ) {
 			console.error( 'Failed to load sidebar products:', err );
+		}
+
+		function attachAddToCartListeners( containerElement ) {
+			if ( ! containerElement ) {
+				return;
+			}
+
+			const buttons = containerElement.querySelectorAll( '.product-sidebar-add-to-cart-button' );
+
+			buttons.forEach( ( button ) => {
+				button.addEventListener( 'click', async ( e ) => {
+					console.log( 'yes' );
+
+					const productId = button.dataset.productId;
+					if ( ! productId ) {
+						return;
+					}
+
+					if ( ! document.getElementById( 'godam-add-to-cart-toast' ) ) {
+						const toast = document.createElement( 'div' );
+						toast.id = 'godam-add-to-cart-toast';
+						document.body.appendChild( toast );
+					}
+
+					try {
+						const response = await fetch( '/?wc-ajax=add_to_cart', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/x-www-form-urlencoded',
+							},
+							body: new URLSearchParams( {
+								product_id: productId,
+								quantity: 1,
+							} ),
+						} );
+
+						const result = await response.json();
+
+						if ( result && result.fragments ) {
+							Object.entries( result.fragments ).forEach( ( [ selector, html ] ) => {
+								const el = document.querySelector( selector );
+								if ( el ) {
+									el.innerHTML = html;
+								}
+							} );
+							showAddToCartNotification( 'Product added successfully!' );
+						} else {
+							showAddToCartNotification( 'Something went wrong. Try again.', true );
+						}
+					} catch ( err ) {
+						console.error( 'Add to cart failed', err );
+						showAddToCartNotification( 'Error adding product.', true );
+					}
+				} );
+			} );
 		}
 	}
 
@@ -548,62 +428,93 @@ document.addEventListener( 'click', async function( e ) {
 	}
 
 	/** Scroll/swipe nav for modal */
-	const getVideoItems = () => currentGallery?.querySelectorAll( '.godam-product-video' ) || [];
 	const SCROLL_COOLDOWN = 800;
-	let lastScroll = 0;
+	let lastScrollTime = 0;
+	let scrollTimeout;
 
-	const handleNextPrev = async ( direction ) => {
-		const videos = getVideoItems();
+	// Utility: fetch current video items fresh from gallery
+	const getCurrentVideoItems = () => {
+		return currentGallery?.querySelectorAll( '.godam-product-video' ) || [];
+	};
+
+	// Navigation handler
+	const handleScrollOrSwipe = async ( direction ) => {
+		const currentTime = Date.now();
+		if ( currentTime - lastScrollTime < SCROLL_COOLDOWN ) {
+			return;
+		}
+
+		const videoItems = getCurrentVideoItems();
 		const currentId = modal.dataset.currentVideoId;
-		const index = Array.from( videos ).findIndex( ( el ) =>
+		const currentIndex = Array.from( videoItems ).findIndex( ( el ) =>
 			el.getAttribute( 'data-video-id' ) === currentId,
 		);
-		if ( index === -1 ) {
+		if ( currentIndex === -1 ) {
 			return;
 		}
 
-		const newIndex = direction === 'next' ? index + 1 : index - 1;
-		const newVideo = videos[ newIndex ];
-		if ( ! newVideo ) {
-			return;
+		let newIndex;
+		if ( direction === 'next' ) {
+			if ( currentIndex === videoItems.length - 1 ) {
+			// Already at last, attempt dynamic load if needed (optional)
+				return;
+			}
+			newIndex = currentIndex + 1;
+		} else {
+			if ( currentIndex === 0 ) {
+				return;
+			}
+			newIndex = currentIndex - 1;
 		}
 
-		const newId = newVideo.getAttribute( 'data-video-id' );
-		if ( newId && newId !== currentId ) {
-			lastScroll = Date.now();
-
+		const newVideo = videoItems[ newIndex ];
+		const newVideoId = newVideo?.getAttribute( 'data-video-id' );
+		if ( newVideoId && newVideoId !== currentId ) {
+			lastScrollTime = currentTime;
 			const newProductIds = newVideo.getAttribute( 'data-video-attached-product-ids' );
-			await loadNewVideo( newId );
-
+			await loadNewVideo( newVideoId );
 			await loadSidebarProducts( newProductIds, sidebarModal );
 		}
 	};
 
-	// Wheel nav (desktop)
-	let scrollTimeout;
+	// Scroll (wheel) for desktop
 	modal.addEventListener( 'wheel', ( ev ) => {
 		ev.preventDefault();
+		ev.stopPropagation();
+
 		clearTimeout( scrollTimeout );
 		scrollTimeout = setTimeout( () => {
-			if ( Date.now() - lastScroll < SCROLL_COOLDOWN ) {
-				return;
-			}
-			handleNextPrev( ev.deltaY > 0 ? 'next' : 'prev' );
+			const direction = ev.deltaY > 0 ? 'next' : 'prev';
+			handleScrollOrSwipe( direction );
 		}, 150 );
 	}, { passive: false } );
 
-	// Swipe nav (mobile)
+	// Touch swipe for mobile
 	let touchStartY = 0;
+	let touchEndY = 0;
+
 	modal.addEventListener( 'touchstart', ( ev ) => {
 		touchStartY = ev.touches[ 0 ].clientY;
 	}, { passive: false } );
 
+	modal.addEventListener( 'touchmove', ( ev ) => {
+		ev.preventDefault();
+		ev.stopPropagation();
+	}, { passive: false } );
+
 	modal.addEventListener( 'touchend', ( ev ) => {
-		const touchEndY = ev.changedTouches[ 0 ].clientY;
+		touchEndY = ev.changedTouches[ 0 ].clientY;
 		const diff = touchStartY - touchEndY;
-		if ( Math.abs( diff ) > 50 && Date.now() - lastScroll > SCROLL_COOLDOWN ) {
-			handleNextPrev( diff > 0 ? 'next' : 'prev' );
+
+		if ( Math.abs( diff ) < 50 ) {
+			return;
 		}
+
+		clearTimeout( scrollTimeout );
+		scrollTimeout = setTimeout( () => {
+			const direction = diff > 0 ? 'next' : 'prev';
+			handleScrollOrSwipe( direction );
+		}, 150 );
 	}, { passive: false } );
 } );
 

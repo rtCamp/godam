@@ -106,7 +106,7 @@ class GoDAM_Product_Gallery {
 				'arrow_border_radius'         => 4,
 				'arrow_visibility'            => 'always',
 				'cta_enabled'                 => false,
-				'cta_display_position'        => 'below',
+				'cta_display_position'        => 'below-inside',
 				'cta_button_bg_color'         => '#000000',
 				'cta_button_icon_color'       => '#ffffff',
 				'cta_button_border_radius'    => 30,
@@ -249,9 +249,11 @@ class GoDAM_Product_Gallery {
 					if ( ! $atts['autoplay'] ) {
 						// Thumbnail video.
 						printf(
-							'<div class="godam-product-video-thumbnail" data-video-id="%s" data-video-attached-product-ids="%s" style="width:%srem;">',
+							'<div class="godam-product-video-thumbnail" data-video-id="%s" data-video-attached-product-ids="%s" data-cta-enabled="%s" data-cta-display-position="%s" style="width:%srem;">',
 							esc_attr( $video_id ),
 							esc_attr( $data_product_ids ),
+							esc_attr( $atts['cta_enabled']),
+							esc_attr( $atts['cta_display_position'] ),
 							esc_attr( $atts['carousel_card_width'] )
 						);
 						echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
@@ -259,9 +261,11 @@ class GoDAM_Product_Gallery {
 					} else {
 						// Autoplay video.
 						printf(
-							'<video class="godam-product-video" data-video-id="%s" data-video-attached-product-ids="%s" src="%s" %s playsinline style="width:%srem;"></video>',
+							'<video class="godam-product-video" data-video-id="%s" data-video-attached-product-ids="%s" data-cta-enabled="%s" data-cta-display-position="%s" src="%s" %s playsinline style="width:%srem;"></video>',
 							esc_attr( $video_id ),
 							esc_attr( $data_product_ids ),
+							esc_attr( $atts['cta_enabled']),
+							esc_attr( $atts['cta_display_position'] ),
 							esc_url( $video_url ),
 							esc_attr( $video_attrs ),
 							esc_attr( $atts['carousel_card_width'] )
@@ -304,7 +308,7 @@ class GoDAM_Product_Gallery {
 
 					echo '</div>'; // .godam-video-wrapper ends.
 
-					if ( $atts['cta_enabled'] && 'below' === $atts['cta_display_position'] ) {
+					if ( $atts['cta_enabled'] && ( 'below' === $atts['cta_display_position'] || 'below-inside' === $atts['cta_display_position'] ) ) {
 
 						$product_ids = array_map( 'absint', (array) $video_attached_products );
 
@@ -361,7 +365,7 @@ class GoDAM_Product_Gallery {
 										
 												// Add play icon if timestamp is available.
 										if ( ! empty( $timestamp ) ) {
-											echo '<button class="product-play-timestamp-button" data-video-id="' . esc_attr( $video_id ) . '" data-timestamp="' . esc_attr( $timestamp ) . '" data-video-attached-product-id="' . esc_attr( $product_id ) . '"aria-label="Play at timestamp">';
+											echo '<button class="product-play-timestamp-button" data-video-id="' . esc_attr( $video_id ) . '" data-timestamp="' . esc_attr( $timestamp ) . '" data-video-attached-product-id="' . esc_attr( $product_id ) . '" data-cta-enabled="' . esc_attr( $atts['cta_enabled']) . '" data-cta-display-position="' . esc_attr( $atts[ 'cta_display_position' ] ) . '"aria-label="Play at timestamp">';
 												echo '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/></svg>';
 											echo '</button>';
 										}
@@ -484,7 +488,7 @@ class GoDAM_Product_Gallery {
 			wp_send_json_error( 'Invalid product ID' );
 		}
 	
-		// Set up post and product for WooCommerce template functions
+		// Set up post and product for WooCommerce template functions.
 		global $post, $product;
 		$product = wc_get_product( $product_id );
 	
@@ -503,7 +507,10 @@ class GoDAM_Product_Gallery {
 			woocommerce_template_single_rating();
 			woocommerce_template_single_price();
 			woocommerce_template_single_excerpt();
-			woocommerce_template_single_add_to_cart();
+
+			// Replace Woo's form/button with Product Sidebar Add to Cart button.
+			echo '<button class="product-sidebar-add-to-cart-button" data-product-id="' . esc_attr( $product_id ) . '">' . esc_html__( 'Add to Cart', 'godam' ) . '</button>';
+
 			woocommerce_template_single_meta();
 			woocommerce_template_single_sharing();
 			?>
