@@ -24,6 +24,7 @@ import FluentForm from '../forms/FluentForm.js';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader.js';
 import ForminatorForm from '../forms/forminatorForms.js';
+import AjaxWarning from '../forms/AjaxWarning.js';
 
 /**
  * FormLayer Components Object mapping.
@@ -86,6 +87,30 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 	const FormLayerComponent = FormLayerData?.component;
 	const isPluginActive = FormLayerData?.isActive;
 
+	// Get the form ID based on form type
+	const getFormId = () => {
+		switch ( layer?.form_type ) {
+			case 'wpforms':
+				return layer.wpform_id;
+			case 'gravity':
+				return layer.gf_id;
+			case 'cf7':
+				return layer.cf7_id;
+			case 'fluentforms':
+				return layer.fluent_form_id;
+			case 'everestforms':
+				return layer.everest_form_id;
+			case 'forminator':
+				return layer.forminator_id;
+			case 'sureforms':
+				return layer.sureform_id;
+			case 'jetpack':
+				return layer.jp_id;
+			default:
+				return '';
+		}
+	};
+
 	return (
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
@@ -102,6 +127,8 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 			}
 
 			<FormLayerComponent layerID={ layer.id } />
+
+			<AjaxWarning formType={ layer?.form_type } formId={ getFormId() } />
 
 			<ToggleControl
 				__nextHasNoMarginBottom

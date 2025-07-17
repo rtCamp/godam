@@ -17,7 +17,6 @@ import { updateLayerField } from '../../redux/slice/videoSlice';
 import { useGetSingleFluentFormQuery } from '../../redux/api/fluent-forms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
-import AjaxWarning from './AjaxWarning';
 
 const FluentForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
@@ -67,8 +66,6 @@ const FluentForm = ( { layerID } ) => {
 					handleChange={ changeFormID }
 				/>
 			}
-
-			<AjaxWarning />
 
 			<LayerControl>
 				<>

@@ -17,7 +17,6 @@ import { updateLayerField } from '../../redux/slice/videoSlice';
 import { useGetSingleWPFormQuery } from '../../redux/api/wpforms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
-import AjaxWarning from './AjaxWarning';
 
 const WPForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
@@ -59,8 +58,6 @@ const WPForm = ( { layerID } ) => {
 			{
 				<FormSelector disabled={ ! isValidAPIKey || ! isWPFormsPluginActive } className="mb-4" formID={ layer.wpform_id } forms={ forms } handleChange={ changeFormID } />
 			}
-
-			<AjaxWarning />
 
 			<LayerControl>
 				<>
