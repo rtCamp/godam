@@ -208,9 +208,14 @@ const RetranscodeTab = () => {
 					{
 						attachments?.length > 0 &&
 						<div className="my-5 text-lg text-gray-600">
-							{ sprintf(
+							{ ! forceRetranscode && sprintf(
 								// translators: %d is the number of media files that require retranscoding.
-								__( '%d media files requires retranscoding.', 'godam' ),
+								__( '%d media file(s) require retranscoding.', 'godam' ),
+								attachments.length,
+							) }
+							{ forceRetranscode && sprintf(
+								// translators: %d is the number of media files that will be retranscoded.
+								__( '%d media file(s) will be retranscoded regardless of their current state.', 'godam' ),
 								attachments.length,
 							) }
 						</div>
