@@ -10,6 +10,7 @@ import { useGetForminatorFormsQuery } from '../../redux/api/forminator-forms';
 import { useGetFluentFormsQuery } from '../../redux/api/fluent-forms';
 import { useGetEverestFormsQuery } from '../../redux/api/everest-forms';
 import { FormLayerComponentType } from '../layers/FormLayer';
+import { useGetMetformsQuery } from '../../redux/api/metform';
 
 export const useFetchForms = () => {
 	const { data: cf7Forms = [], isFetching: isFetchingCF7 = false } = useGetCF7FormsQuery( undefined, {
@@ -36,6 +37,10 @@ export const useFetchForms = () => {
 	const { data: everestForms = [], isFetching: isFetchingEverestForms = false } = useGetEverestFormsQuery( undefined, {
 		skip: ! FormLayerComponentType?.everestforms.isActive,
 	} );
+	const { data: metforms = [], isFetching: isFetchingMetforms = false } = useGetMetformsQuery( undefined, {
+		skip: ! FormLayerComponentType?.metform.isActive,
+	});
+
 
 	const isFetching =
 		isFetchingCF7 ||
@@ -45,7 +50,8 @@ export const useFetchForms = () => {
 		isFetchingSureforms ||
 		isFetchingForminator ||
 		isFetchingFluentForms ||
-		isFetchingEverestForms;
+		isFetchingEverestForms ||
+		isFetchingMetforms;
 
 	return {
 		cf7Forms,
@@ -56,6 +62,7 @@ export const useFetchForms = () => {
 		forminatorForms,
 		fluentForms,
 		everestForms,
+		metforms,
 		isFetching,
 	};
 };

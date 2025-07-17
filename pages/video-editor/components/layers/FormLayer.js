@@ -21,6 +21,7 @@ import CF7 from '../forms/CF7';
 import JetpackForm from '../forms/JetpackForm';
 import SureForm from '../forms/Sureform.js';
 import FluentForm from '../forms/FluentForm.js';
+import MetForm from '../forms/MetForm.js';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader.js';
 import ForminatorForm from '../forms/forminatorForms.js';
@@ -60,6 +61,10 @@ export const FormLayerComponentType = {
 	everestforms: {
 		isActive: Boolean( window?.videoData?.everestFormsActive ) ?? false,
 		component: EverestForm,
+	},
+	metform: {
+		isActive: Boolean( window?.videoData?.metformActive ) ?? false,
+		component: MetForm,
 	},
 };
 

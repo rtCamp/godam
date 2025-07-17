@@ -105,6 +105,7 @@ class Assets {
 		$is_forminator_form_active = is_plugin_active( 'forminator/forminator.php' );
 		$is_fluent_forms_active    = is_plugin_active( 'fluentform/fluentform.php' );
 		$is_everest_forms_active   = is_plugin_active( 'everest-forms/everest-forms.php' );
+		$is_met_form_active        = is_plugin_active( 'metform/metform.php' );
 
 		wp_localize_script(
 			'rtgodam-script',
@@ -120,6 +121,7 @@ class Assets {
 				'forminator'   => $is_forminator_form_active,
 				'fluentForms'  => $is_fluent_forms_active,
 				'everestForms' => $is_everest_forms_active,
+				'metform'      => $is_met_form_active,
 			)
 		);
 
