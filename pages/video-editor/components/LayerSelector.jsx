@@ -84,7 +84,7 @@ const Layers = [
 	{
 		id: 5,
 		title: __( 'SureForms', 'godam' ),
-		description: __( 'Collect user input using Sureforms', 'godam' ),
+		description: __( 'Collect user input using SureForms', 'godam' ),
 		image: Form,
 		type: 'form',
 		formType: 'sureforms',
