@@ -55,6 +55,13 @@ const RetranscodeTab = () => {
 		}
 	}, [] );
 
+	// Whenever selectedIds are provided, set forceRetranscode to false
+	useEffect( () => {
+		if ( selectedIds && selectedIds.length > 0 ) {
+			setForceRetranscode( false );
+		}
+	}, [ selectedIds ] );
+
 	// Use a ref to track if the operation should be aborted.
 	const abortRef = useRef( false );
 
@@ -109,6 +116,7 @@ const RetranscodeTab = () => {
 		abortRef.current = true;
 		setAborted( true );
 		setRetranscoding( false );
+		setLogs( ( prevLogs ) => [ ...prevLogs, __( 'Retranscoding operation aborted.', 'godam' ) ] );
 	};
 
 	const startRetranscoding = async () => {
@@ -175,7 +183,16 @@ const RetranscodeTab = () => {
 		setRetranscoding( false );
 		setLogs( [] );
 		setDone( false );
+		setForceRetranscode( false );
+		setSelectedIds( null );
 		abortRef.current = false;
+
+		// Reset the URL to remove media_ids, goback and nonce
+		const url = new URL( window.location.href );
+		url.searchParams.delete( 'media_ids' );
+		url.searchParams.delete( '_wpnonce' );
+		url.searchParams.delete( 'goback' );
+		window.history.replaceState( {}, '', url.toString() );
 	};
 
 	return (
@@ -201,19 +218,22 @@ const RetranscodeTab = () => {
 						{ __( 'To begin, just press the button below.', 'godam' ) }
 					</p>
 
-					{ /* Force retranscode checkbox */ }
-					<div style={ { marginBottom: '1em' } }>
-						{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
-						<label>
-							<input
-								type="checkbox"
-								checked={ forceRetranscode }
-								onChange={ ( e ) => setForceRetranscode( e.target.checked ) }
-								style={ { marginRight: '0.5em' } }
-							/>
-							{ __( 'Force retranscode (even if already transcoded)', 'godam' ) }
-						</label>
-					</div>
+					{
+						/* Force retranscode checkbox */
+						! ( selectedIds && selectedIds.length > 0 ) &&
+						<div style={ { marginBottom: '1em' } }>
+							{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
+							<label>
+								<input
+									type="checkbox"
+									checked={ forceRetranscode }
+									onChange={ ( e ) => setForceRetranscode( e.target.checked ) }
+									style={ { marginRight: '0.5em' } }
+								/>
+								{ __( 'Force retranscode (even if already transcoded)', 'godam' ) }
+							</label>
+						</div>
+					}
 
 					{
 						error &&
