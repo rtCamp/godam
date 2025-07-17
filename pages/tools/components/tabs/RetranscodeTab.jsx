@@ -222,6 +222,19 @@ const RetranscodeTab = () => {
 					}
 
 					{
+						retranscoding &&
+						// Show x/y media retranscoded.
+						<span className="text-gray-600">
+							{ sprintf(
+								// translators: %d is the number of media files sent for retranscoding.
+								__( '%1$d/%2$d media files sent for retranscoding…', 'godam' ),
+								mediaCount,
+								attachments.length,
+							) }
+						</span>
+					}
+
+					{
 						( retranscoding || aborted || done ) &&
 						<div className="mb-4">
 							<ProgressBar total={ attachments?.length } done={ mediaCount } />
@@ -266,16 +279,7 @@ const RetranscodeTab = () => {
 								style={ { backgroundColor: '#dc3545', color: 'white' } }
 							>
 								{ __( 'Abort Operation', 'godam' ) }
-							</Button> &&
-							// Show x/y media retranscoded.
-							<span className="text-gray-600">
-								{ sprintf(
-									// translators: %d is the number of media files sent for retranscoding.
-									__( '%1$d/%2$d media files sent for retranscoding…', 'godam' ),
-									mediaCount,
-									attachments.length,
-								) }
-							</span>
+							</Button>
 						}
 
 						{
