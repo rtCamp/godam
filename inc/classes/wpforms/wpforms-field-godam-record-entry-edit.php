@@ -4,7 +4,7 @@
  *
  * @package GoDAM
  *
- * @since n.e.x.t
+ * @since 1.3.0
  */
 
 // Check if the field is not a video field.

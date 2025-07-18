@@ -152,7 +152,7 @@ class Plugin {
 	/**
 	 * Load all the classes related to the media library.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */

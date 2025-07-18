@@ -2,7 +2,7 @@
 /**
  * Main WPForms Integration class.
  *
- * @since n.e.x.t
+ * @since 1.3.0
  *
  * @package GoDAM
  */
@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * WPForms Integration class.
  *
- * @since n.e.x.t
+ * @since 1.3.0
  */
 class WPForms_Integration {
 	use Singleton;
@@ -24,7 +24,7 @@ class WPForms_Integration {
 	/**
 	 * Initialize.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -49,7 +49,7 @@ class WPForms_Integration {
 	/**
 	 * Register all the assets.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -90,7 +90,7 @@ class WPForms_Integration {
 	/**
 	 * Enqueue assets in the admin area.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -115,7 +115,7 @@ class WPForms_Integration {
 	/**
 	 * Load godam recorder script on success so that uppy states can be removed.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @param array $confirmation Current confirmation data.
 	 * @param array $form_data    Form data and settings.
@@ -134,7 +134,7 @@ class WPForms_Integration {
 	/**
 	 * Initialize godam field video.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
@@ -145,7 +145,7 @@ class WPForms_Integration {
 	/**
 	 * Sent saved files by WPForms Recorder Field to the transcoding service.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @param array $fields     Fields data.
 	 * @param array $entry      User submitted data.
@@ -228,7 +228,7 @@ class WPForms_Integration {
 	/**
 	 * Handle webhook callback by the transcoder service once it has finished transcoding videos.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @param number      $attachment_id  Attachment ID for which the callback has sent from the transcoder.
 	 * @param number      $job_id         The transcoding job ID.
