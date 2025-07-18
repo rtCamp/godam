@@ -472,14 +472,15 @@ class GoDAM_Video extends Base {
 	 * @return int|false Video post ID or false if not found.
 	 */
 	public function get_godam_video_from_attachment( $attachment_id ) {
-		$godam_videos = get_posts(
+		$query = new WP_Query(
 			array(
-				'post_type'        => self::SLUG,
-				'posts_per_page'   => 1,
-				'post_status'      => 'any',
-				'fields'           => 'ids',
-				'suppress_filters' => false,
-				'meta_query'       => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
+				'post_type'              => self::SLUG,
+				'posts_per_page'         => 1,
+				'post_status'            => 'any',
+				'fields'                 => 'ids',
+				'no_found_rows'          => true,
+				'update_post_term_cache' => false,
+				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
 					array(
 						'key'   => '_godam_attachment_id',
 						'value' => $attachment_id,
@@ -488,8 +489,8 @@ class GoDAM_Video extends Base {
 			)
 		);
 
-		if ( ! empty( $godam_videos ) ) {
-			return $godam_videos[0];
+		if ( $query->have_posts() ) {
+			return $query->posts[0];
 		}
 
 		return false;
