@@ -570,7 +570,7 @@
 
   .share-modal-message {
 	background: #fff;
-    padding: 24px 16px;
+    padding: 24px;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
     text-align: center;
@@ -606,7 +606,7 @@
 
 	.share-buttons {
 		display: flex;
-		gap: 15px;
+		gap: 18px;
 		justify-content: center;
 	}
 
@@ -635,16 +635,17 @@
 		.share-modal-input-group {
 			display: flex;
 			justify-content: space-between;
-			gap: 10px;
+			gap: 12px;
 		}
 
 		input {
-			width: 80%;
 			padding: 10px;
+			font-size: 14px;
 			color: #000;
 		}
 
 		button {
+			width: 12%;
 			padding: 4px;
 			cursor: pointer;
 			background: transparent;
