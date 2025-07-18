@@ -240,11 +240,11 @@ class Video_Permalinks {
 			}
 			
 			// Save single page visibility option.
-			$publicly_queryable     = isset( $_POST['rtgodam_video_post_allow_single'] ) ? true : false;
-			$old_publicly_queryable = get_option( 'rtgodam_video_post_allow_single', false );
+			$allow_single     = isset( $_POST['rtgodam_video_post_allow_single'] ) ? true : false;
+			$old_allow_single = get_option( 'rtgodam_video_post_allow_single', false );
 			
-			if ( $old_publicly_queryable !== $publicly_queryable ) {
-				update_option( 'rtgodam_video_post_allow_single', $publicly_queryable );
+			if ( $old_allow_single !== $allow_single ) {
+				update_option( 'rtgodam_video_post_allow_single', $allow_single );
 				$should_flush = true;
 			}
 			
