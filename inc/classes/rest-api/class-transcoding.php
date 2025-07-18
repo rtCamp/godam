@@ -393,7 +393,7 @@ class Transcoding extends Base {
 
 			$message = sprintf(
 				// translators: 1: Attachment title, 2: Attachment ID.
-				__( '%1$s (ID %2$d) ranscoding request failed. Unknown error', 'godam' ),
+				__( '%1$s (ID %2$d) transcoding request failed. Unknown error', 'godam' ),
 				esc_html( $title ),
 				absint( $attachment_id )
 			);
