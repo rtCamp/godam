@@ -29,7 +29,7 @@ jQuery( document ).ready( function( $ ) {
 	// Called after each resize. Updates debug information and the progress bar.
 	function RetranscodeMediaUpdateStatus( id, success, response ) {
 		$( '#retranscodemedia-bar' ).progressbar( 'value', ( rtCount / rtTotal ) * 100 );
-		$( '#retranscodemedia-bar-percent' ).html( Math.round( ( rtCount / rtTotal ) * 1000 ) / 10 + '%' );
+		$( '#retranscodemedia-bar-percent' ).html( ( Math.round( ( rtCount / rtTotal ) * 1000 ) / 10 ) + '%' );
 		rtCount = rtCount + 1;
 
 		if ( success ) {
