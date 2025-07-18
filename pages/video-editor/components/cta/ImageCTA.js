@@ -10,17 +10,23 @@ import {
 	RangeControl, SelectControl,
 	TextareaControl,
 	TextControl,
+	Icon,
 	Tooltip,
 } from '@wordpress/components';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { __ } from '@wordpress/i18n';
+import { closeSmall, replace, trash } from '@wordpress/icons';
+
+/**
+ * Internal dependencies
+ */
+import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 
 /**
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
-import { replace, trash } from '@wordpress/icons';
 
 const ImageCTA = ( { layerID } ) => {
 	/**
@@ -114,14 +120,31 @@ const ImageCTA = ( { layerID } ) => {
 	[ restURL, setSelectedImageUrl ] );
 
 	useEffect( () => {
-		fetchOverlayMediaURL( layer.image );
-	}, [ layer, fetchOverlayMediaURL ] );
+		if ( 'image' === layer?.cta_type && layer?.image ) {
+			fetchOverlayMediaURL( layer.image );
+		}
+	}, [ layer?.cta_type, layer?.image ] );
 
 	const removeCTAImage = () => {
 		updateField( 'image', 0 );
 
 		setSelectedImageUrl( '' );
 	};
+
+	// prevent color picker flickering.
+	const colorDebounceRef = useRef();
+
+	const debouncedColorUpdate = useCallback(
+		( value ) => {
+			if ( colorDebounceRef.current ) {
+				clearTimeout( colorDebounceRef.current );
+			}
+			colorDebounceRef.current = setTimeout( () => {
+				updateField( 'imageCtaButtonColor', value );
+			}, 150 );
+		},
+		[],
+	);
 
 	return (
 		<div className="mt-2 flex flex-col gap-6">
@@ -217,6 +240,28 @@ const ImageCTA = ( { layerID } ) => {
 				} }
 				placeholder={ __( 'Buy Now', 'godam' ) }
 			/>
+
+			<div className="flex items-center gap-2">
+				<ColorPickerButton
+					value={ layer?.imageCtaButtonColor ?? '#eeab95' }
+					label={ __( 'CTA Button Background Color', 'godam' ) }
+					className="mb-0"
+					enableAlpha={ true }
+					onChange={ debouncedColorUpdate }
+				/>
+				{ layer.imageCtaButtonColor && (
+					<button
+						type="button"
+						className="text-xs text-red-500 underline hover:text-red-600 bg-transparent cursor-pointer"
+						onClick={ () => updateField( 'imageCtaButtonColor', '#eeab95' )
+						}
+						aria-haspopup="true"
+						aria-label={ __( 'Remove', 'godam' ) }
+					>
+						<Icon icon={ closeSmall } />
+					</button>
+				) }
+			</div>
 
 			<SelectControl
 				__next40pxDefaultSize
