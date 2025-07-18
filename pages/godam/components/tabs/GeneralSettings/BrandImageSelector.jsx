@@ -9,7 +9,11 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 	/**
 	 * State to manage the notice message and visibility.
 	 */
-	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
+	const [ notice, setNotice ] = useState( {
+		message: '',
+		status: 'success',
+		isVisible: false,
+	} );
 
 	/**
 	 * To show a notice message.
@@ -51,7 +55,12 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 				return;
 			}
 
-			handleSettingChange( 'brand_image', attachment.url );
+			const imageUrl =
+		attachment.mime === 'image/gif'
+			? attachment.sizes.full.url
+			: attachment.url;
+
+			handleSettingChange( 'brand_image', imageUrl );
 		} );
 
 		fileFrame.open();
@@ -66,10 +75,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 
 	return (
 		<div className="godam-form-group godam-margin-bottom">
-			<label
-				className="label-text"
-				htmlFor="custom-brand-logo"
-			>
+			<label className="label-text" htmlFor="custom-brand-logo">
 				{ __( 'Custom brand logo', 'godam' ) }
 			</label>
 
@@ -78,7 +84,9 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 				variant="primary"
 				className="godam-button godam-margin-right"
 			>
-				{ mediaSettings?.general?.brand_image ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
+				{ mediaSettings?.general?.brand_image
+					? __( 'Replace', 'godam' )
+					: __( 'Upload', 'godam' ) }
 			</Button>
 			{ mediaSettings?.general?.brand_image && (
 				<Button
@@ -109,7 +117,10 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 				</Notice>
 			) }
 			<p className="help-text">
-				{ __( 'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos', 'godam' ) }
+				{ __(
+					'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos',
+					'godam',
+				) }
 			</p>
 		</div>
 	);
