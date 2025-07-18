@@ -1,4 +1,5 @@
 
+/* global jQuery, GoDAMDeactivation */
 jQuery( document ).ready( function( $ ) {
 	( 'use strict' );
 
