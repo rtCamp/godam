@@ -474,11 +474,12 @@ class GoDAM_Video extends Base {
 	public function get_godam_video_from_attachment( $attachment_id ) {
 		$godam_videos = get_posts(
 			array(
-				'post_type'      => self::SLUG,
-				'posts_per_page' => 1,
-				'post_status'    => 'any',
-				'fields'         => 'ids',
-				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
+				'post_type'        => self::SLUG,
+				'posts_per_page'   => 1,
+				'post_status'      => 'any',
+				'fields'           => 'ids',
+				'suppress_filters' => false,
+				'meta_query'       => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
 					array(
 						'key'   => '_godam_attachment_id',
 						'value' => $attachment_id,
