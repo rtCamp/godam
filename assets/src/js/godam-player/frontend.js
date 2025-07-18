@@ -137,9 +137,9 @@ function GODAMPlayer( videoRef = null ) {
 			if ( ! isInModal ) {
 				if ( videoSetupOptions?.aspectRatio ) {
 					if ( videoSetupOptions.aspectRatio === 'responsive' ) {
-						video.addEventListener( 'loadedmetadata', function() {
-							const width = video.videoWidth;
-							const height = video.videoHeight;
+						const handleResponsiveAspectRatio = () => {
+							const width = video?.videoWidth;
+							const height = video?.videoHeight;
 
 							function getSimplifiedAspectRatio( w, h ) {
 								const gcd = ( a, b ) => ( b === 0 ? a : gcd( b, a % b ) );
@@ -162,7 +162,14 @@ function GODAMPlayer( videoRef = null ) {
 							const aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
 							document.querySelector( '.video-container' ).classList.add( `is-${ aspectRatioClass }` );
 							player.aspectRatio( aspectRatio );
-						} );
+						};
+						// Check if metadata is already available (common on mobile/cached videos)
+						if ( video.readyState >= 1 ) {
+							handleResponsiveAspectRatio();
+						} else {
+							// Listen for the event if metadata isn't ready yet
+							video.addEventListener( 'loadedmetadata', handleResponsiveAspectRatio );
+						}
 					} else {
 						player.aspectRatio( videoSetupOptions.aspectRatio );
 					}
