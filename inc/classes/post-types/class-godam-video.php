@@ -91,25 +91,25 @@ class GoDAM_Video extends Base {
 	/**
 	 * Save custom fields from the attachment edit screen.
 	 *
-	 * @param array $post The post data.
+	 * @param array $attachment_data The attachment data.
 	 *
-	 * @return array Modified post data.
+	 * @return array Modified attachment data.
 	 */
-	public function save_custom_attachment_fields( $post ) {
-		if ( ! $this->is_video_attachment( $post['ID'] ) ) {
-			return $post;
+	public function save_custom_attachment_fields( $attachment_data ) {
+		if ( ! $this->is_video_attachment( $attachment_data['ID'] ) ) {
+			return $attachment_data;
 		}
 
-		$godam_video_id = $this->get_godam_video_from_attachment( $post['ID'] );
+		$godam_video_id = $this->get_godam_video_from_attachment( $attachment_data['ID'] );
 
 		// If no video post exists, create one.
 		if ( ! $godam_video_id ) {
-			$godam_video_id = $this->create_video_post_from_attachment( $post['ID'] );
+			$godam_video_id = $this->create_video_post_from_attachment( $attachment_data['ID'] );
 		}
 
 		do_action( 'godam_save_video_meta', $godam_video_id );
 
-		return $post;
+		return $attachment_data;
 	}
 
 	/**
@@ -468,19 +468,17 @@ class GoDAM_Video extends Base {
 	 * Get the GoDAM video post ID from an attachment ID.
 	 *
 	 * @param int $attachment_id Attachment ID.
-	 * 
+	 *
 	 * @return int|false Video post ID or false if not found.
 	 */
 	public function get_godam_video_from_attachment( $attachment_id ) {
-		$query = new WP_Query(
+		$godam_videos = get_posts(
 			array(
-				'post_type'              => self::SLUG,
-				'posts_per_page'         => 1,
-				'post_status'            => 'any',
-				'fields'                 => 'ids',
-				'no_found_rows'          => true,
-				'update_post_term_cache' => false,
-				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
+				'post_type'      => self::SLUG,
+				'posts_per_page' => 1,
+				'post_status'    => 'any',
+				'fields'         => 'ids',
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
 					array(
 						'key'   => '_godam_attachment_id',
 						'value' => $attachment_id,
@@ -489,8 +487,8 @@ class GoDAM_Video extends Base {
 			)
 		);
 
-		if ( $query->have_posts() ) {
-			return $query->posts[0];
+		if ( ! empty( $godam_videos ) ) {
+			return $godam_videos[0];
 		}
 
 		return false;
