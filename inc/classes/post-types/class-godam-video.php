@@ -433,7 +433,7 @@ class GoDAM_Video extends Base {
 		if ( is_singular( self::SLUG ) && ! $this->get_allow_single() ) {
 			$wp_query->set_404();
 			status_header( 404 );
-			include get_query_template( '404' );
+			require get_query_template( '404' );
 			exit;
 		}
 		
@@ -441,7 +441,7 @@ class GoDAM_Video extends Base {
 		if ( is_post_type_archive( self::SLUG ) && ! $this->get_allow_archive() ) {
 			$wp_query->set_404();
 			status_header( 404 );
-			include get_query_template( '404' );
+			require get_query_template( '404' );
 			exit;
 		}
 	}
