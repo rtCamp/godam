@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GoDAM
  * Plugin URI: https://godam.io
- * Description: Seamlessly manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, gravity forms integration, and ad integration.
+ * Description: Seamlessly manage and deliver your media assets directly from the cloud-based media management. Store assets efficiently, stream them via a CDN, and enhance your website's performance and user experience. Featuring adaptive bit rate streaming, adding interactive layers in videos, and taking full advantage of a digital asset management solution within WordPress.
  * Version: 1.2.1
  * Requires at least: 6.5
  * Requires PHP: 7.4
