@@ -63,23 +63,23 @@ class Video_Permalinks {
 		// Settings for archive and single visibility.
 		register_setting(
 			'permalink',
-			'rtgodam_video_has_archive',
+			'rtgodam_video_post_allow_archive',
 			array(
 				'type'              => 'boolean',
 				'description'       => __( 'GoDAM Video archive visibility', 'godam' ),
 				'sanitize_callback' => 'rest_sanitize_boolean',
-				'default'           => true,
+				'default'           => false,
 			)
 		);
 		
 		register_setting(
 			'permalink',
-			'rtgodam_video_publicly_queryable',
+			'rtgodam_video_post_allow_single',
 			array(
 				'type'              => 'boolean',
 				'description'       => __( 'GoDAM Video single page visibility', 'godam' ),
 				'sanitize_callback' => 'rest_sanitize_boolean',
-				'default'           => true,
+				'default'           => false,
 			)
 		);
 	}
@@ -107,7 +107,7 @@ class Video_Permalinks {
 		
 		// Add new settings fields for visibility.
 		add_settings_field(
-			'rtgodam_video_has_archive',
+			'rtgodam_video_post_allow_archive',
 			__( 'Video archive page visibility', 'godam' ),
 			array( $this, 'video_archive_visibility_field' ),
 			'permalink',
@@ -115,7 +115,7 @@ class Video_Permalinks {
 		);
 		
 		add_settings_field(
-			'rtgodam_video_publicly_queryable',
+			'rtgodam_video_post_allow_single',
 			__( 'Video single page visibility', 'godam' ),
 			array( $this, 'video_single_visibility_field' ),
 			'permalink',
@@ -159,12 +159,12 @@ class Video_Permalinks {
 	 * @return void
 	 */
 	public function video_archive_visibility_field() {
-		$value = get_option( 'rtgodam_video_has_archive', true );
+		$value = get_option( 'rtgodam_video_post_allow_archive', false );
 		?>
 		<input 
 			type='checkbox' 
-			name='rtgodam_video_has_archive' 
-			id='rtgodam_video_has_archive' 
+			name='rtgodam_video_post_allow_archive' 
+			id='rtgodam_video_post_allow_archive' 
 			value='1' 
 			<?php checked( $value ); ?> 
 		/>
@@ -180,12 +180,12 @@ class Video_Permalinks {
 	 * @return void
 	 */
 	public function video_single_visibility_field() {
-		$value = get_option( 'rtgodam_video_publicly_queryable', true );
+		$value = get_option( 'rtgodam_video_post_allow_single', false );
 		?>
 		<input 
 			type='checkbox' 
-			name='rtgodam_video_publicly_queryable' 
-			id='rtgodam_video_publicly_queryable' 
+			name='rtgodam_video_post_allow_single' 
+			id='rtgodam_video_post_allow_single' 
 			value='1' 
 			<?php checked( $value ); ?> 
 		/>
@@ -231,20 +231,20 @@ class Video_Permalinks {
 			}
 			
 			// Save archive visibility option.
-			$has_archive     = isset( $_POST['rtgodam_video_has_archive'] ) ? true : false;
-			$old_has_archive = get_option( 'rtgodam_video_has_archive', true );
+			$has_archive     = isset( $_POST['rtgodam_video_post_allow_archive'] ) ? true : false;
+			$old_has_archive = get_option( 'rtgodam_video_post_allow_archive', false );
 			
 			if ( $old_has_archive !== $has_archive ) {
-				update_option( 'rtgodam_video_has_archive', $has_archive );
+				update_option( 'rtgodam_video_post_allow_archive', $has_archive );
 				$should_flush = true;
 			}
 			
 			// Save single page visibility option.
-			$publicly_queryable     = isset( $_POST['rtgodam_video_publicly_queryable'] ) ? true : false;
-			$old_publicly_queryable = get_option( 'rtgodam_video_publicly_queryable', true );
+			$publicly_queryable     = isset( $_POST['rtgodam_video_post_allow_single'] ) ? true : false;
+			$old_publicly_queryable = get_option( 'rtgodam_video_post_allow_single', false );
 			
 			if ( $old_publicly_queryable !== $publicly_queryable ) {
-				update_option( 'rtgodam_video_publicly_queryable', $publicly_queryable );
+				update_option( 'rtgodam_video_post_allow_single', $publicly_queryable );
 				$should_flush = true;
 			}
 			
