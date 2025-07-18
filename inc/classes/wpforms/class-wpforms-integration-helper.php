@@ -2,7 +2,7 @@
 /**
  * Helper functions related to WPForms Integration.
  *
- * @since n.e.x.t
+ * @since 1.3.0
  *
  * @package GoDAM
  */
@@ -14,14 +14,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class containing helper functions related to WPForms Integration.
  *
- * @since n.e.x.t
+ * @since 1.3.0
  */
 class WPForms_Integration_Helper {
 
 	/**
 	 * Save multiple meta values to entry.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @param integer $form_id Form ID.
 	 * @param integer $entry_id Entry ID.
@@ -65,7 +65,7 @@ class WPForms_Integration_Helper {
 	/**
 	 * Return transcode status stored in the entry's meta.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @param integer $form_id Form ID.
 	 * @param integer $entry_id Entry ID.
@@ -103,7 +103,7 @@ class WPForms_Integration_Helper {
 	/**
 	 * Return transcode url stored in the entry's meta.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @param integer $form_id Form ID.
 	 * @param integer $entry_id Entry ID.
@@ -139,7 +139,7 @@ class WPForms_Integration_Helper {
 	/**
 	 * Return transcode url stored in the entry's meta.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @param integer $form_id Form ID.
 	 * @param integer $entry_id Entry ID.
@@ -175,7 +175,7 @@ class WPForms_Integration_Helper {
 	/**
 	 * Return transcode thumbnails stored in the entry's meta.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @param integer $form_id Form ID.
 	 * @param integer $entry_id Entry ID.

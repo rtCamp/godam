@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class SureForms
  *
- * @since n.e.x.t
+ * @since 1.3.0
  */
 class SureForms extends Base {
 

@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ForminatorForms
  * 
- * @since n.e.x.t
+ * @since 1.3.0
  */
 class Forminator_Forms extends Base {
 

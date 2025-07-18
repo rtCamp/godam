@@ -2,7 +2,7 @@
 /**
  * Media Folders REST API class.
  * 
- * @since n.e.x.t
+ * @since 1.3.0
  *
  * @package GoDAM
  */
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Media_Folders_REST_API
  * 
- * @since n.e.x.t
+ * @since 1.3.0
  */
 class Media_Folders_REST_API {
 
@@ -26,7 +26,7 @@ class Media_Folders_REST_API {
 	/**
 	 * Construct method.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -35,7 +35,7 @@ class Media_Folders_REST_API {
 	/**
 	 * Setup hooks for the class.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 */
 	private function setup_hooks() {
 		add_filter( 'rest_prepare_media-folder', array( $this, 'add_data_to_media_folder_rest_api' ), 10, 2 );
@@ -49,7 +49,7 @@ class Media_Folders_REST_API {
 	/**
 	 * Add additional data to the media folder REST API response.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @param \WP_REST_Response $response The response object.
 	 * @param \WP_Term          $term     The term object.
@@ -65,7 +65,7 @@ class Media_Folders_REST_API {
 	/**
 	 * Invalidate the attachment count cache when attachments are added or removed from a media folder.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @param int    $object_id  Object ID.
 	 * @param array  $terms      An array of object term IDs or slugs.
@@ -88,7 +88,7 @@ class Media_Folders_REST_API {
 	/**
 	 * Invalidate all attachment count caches when a term is deleted.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @param int    $object_id The term ID.
 	 * @param array  $tt_ids  An array of term taxonomy IDs.
@@ -128,7 +128,7 @@ class Media_Folders_REST_API {
 	 * This method is called via an action hook to ensure that the ZIP file is deleted
 	 * after it has been downloaded, preventing unnecessary storage usage.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @param string $zip_path The path to the ZIP file to be cleaned up.
 	 */
