@@ -63,23 +63,15 @@ class Video_Permalinks {
 		// Settings for archive and single visibility.
 		register_setting(
 			'permalink',
-			'rtgodam_video_post_allow_archive',
+			'rtgodam_video_post_settings',
 			array(
-				'type'              => 'boolean',
-				'description'       => __( 'GoDAM Video archive visibility', 'godam' ),
-				'sanitize_callback' => 'rest_sanitize_boolean',
-				'default'           => false,
-			)
-		);
-		
-		register_setting(
-			'permalink',
-			'rtgodam_video_post_allow_single',
-			array(
-				'type'              => 'boolean',
-				'description'       => __( 'GoDAM Video single page visibility', 'godam' ),
-				'sanitize_callback' => 'rest_sanitize_boolean',
-				'default'           => false,
+				'type'              => 'object',
+				'description'       => __( 'GoDAM Video post visibility settings', 'godam' ),
+				'sanitize_callback' => array( $this, 'sanitize_video_post_settings' ),
+				'default'           => array(
+					'allow_archive' => false,
+					'allow_single'  => false,
+				),
 			)
 		);
 	}
@@ -159,11 +151,18 @@ class Video_Permalinks {
 	 * @return void
 	 */
 	public function video_archive_visibility_field() {
-		$value = get_option( 'rtgodam_video_post_allow_archive', false );
+		$settings = get_option(
+			'rtgodam_video_post_settings',
+			array(
+				'allow_archive' => false,
+				'allow_single'  => false,
+			) 
+		);
+		$value    = isset( $settings['allow_archive'] ) ? $settings['allow_archive'] : false;
 		?>
 		<input 
 			type='checkbox' 
-			name='rtgodam_video_post_allow_archive' 
+			name='rtgodam_video_post_settings[allow_archive]' 
 			id='rtgodam_video_post_allow_archive' 
 			value='1' 
 			<?php checked( $value ); ?> 
@@ -180,11 +179,18 @@ class Video_Permalinks {
 	 * @return void
 	 */
 	public function video_single_visibility_field() {
-		$value = get_option( 'rtgodam_video_post_allow_single', false );
+		$settings = get_option(
+			'rtgodam_video_post_settings',
+			array(
+				'allow_archive' => false,
+				'allow_single'  => false,
+			) 
+		);
+		$value    = isset( $settings['allow_single'] ) ? $settings['allow_single'] : false;
 		?>
 		<input 
 			type='checkbox' 
-			name='rtgodam_video_post_allow_single' 
+			name='rtgodam_video_post_settings[allow_single]' 
 			id='rtgodam_video_post_allow_single' 
 			value='1' 
 			<?php checked( $value ); ?> 
@@ -230,21 +236,25 @@ class Video_Permalinks {
 				}
 			}
 			
-			// Save archive visibility option.
-			$has_archive     = isset( $_POST['rtgodam_video_post_allow_archive'] ) ? true : false;
-			$old_has_archive = get_option( 'rtgodam_video_post_allow_archive', false );
+			// Save archive and single visibility options.
+			$current_settings = get_option(
+				'rtgodam_video_post_settings',
+				array(
+					'allow_archive' => false,
+					'allow_single'  => false,
+				) 
+			);
+			$new_settings     = array();
 			
-			if ( $old_has_archive !== $has_archive ) {
-				update_option( 'rtgodam_video_post_allow_archive', $has_archive );
-				$should_flush = true;
-			}
+			// Handle archive visibility.
+			$new_settings['allow_archive'] = isset( $_POST['rtgodam_video_post_settings']['allow_archive'] ) ? true : false;
 			
-			// Save single page visibility option.
-			$allow_single     = isset( $_POST['rtgodam_video_post_allow_single'] ) ? true : false;
-			$old_allow_single = get_option( 'rtgodam_video_post_allow_single', false );
+			// Handle single page visibility.
+			$new_settings['allow_single'] = isset( $_POST['rtgodam_video_post_settings']['allow_single'] ) ? true : false;
 			
-			if ( $old_allow_single !== $allow_single ) {
-				update_option( 'rtgodam_video_post_allow_single', $allow_single );
+			// Check if settings changed.
+			if ( $current_settings !== $new_settings ) {
+				update_option( 'rtgodam_video_post_settings', $new_settings );
 				$should_flush = true;
 			}
 			
@@ -253,5 +263,32 @@ class Video_Permalinks {
 				flush_rewrite_rules();
 			}
 		}
+	}
+
+	/**
+	 * Sanitize video post settings.
+	 *
+	 * @param array $input The input array to sanitize.
+	 * 
+	 * @return array The sanitized array.
+	 */
+	public function sanitize_video_post_settings( $input ) {
+		$sanitized = array();
+		
+		// Sanitize allow_archive setting.
+		if ( isset( $input['allow_archive'] ) ) {
+			$sanitized['allow_archive'] = rest_sanitize_boolean( $input['allow_archive'] );
+		} else {
+			$sanitized['allow_archive'] = false;
+		}
+		
+		// Sanitize allow_single setting.
+		if ( isset( $input['allow_single'] ) ) {
+			$sanitized['allow_single'] = rest_sanitize_boolean( $input['allow_single'] );
+		} else {
+			$sanitized['allow_single'] = false;
+		}
+		
+		return $sanitized;
 	}
 }

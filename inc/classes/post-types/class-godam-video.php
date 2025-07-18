@@ -104,7 +104,8 @@ class GoDAM_Video extends Base {
 	 * @return bool
 	 */
 	private function get_allow_archive() {
-		return (bool) get_option( 'rtgodam_video_post_allow_archive', false );
+		$settings = get_option( 'rtgodam_video_post_settings' );
+		return (bool) ( isset( $settings['allow_archive'] ) ? $settings['allow_archive'] : false );
 	}
 	
 	/**
@@ -113,7 +114,8 @@ class GoDAM_Video extends Base {
 	 * @return bool
 	 */
 	private function get_allow_single() {
-		return (bool) get_option( 'rtgodam_video_post_allow_single', false );
+		$settings = get_option( 'rtgodam_video_post_settings' );
+		return (bool) ( isset( $settings['allow_single'] ) ? $settings['allow_single'] : false );
 	}
 
 	/**
