@@ -32,6 +32,7 @@ const RetranscodeTab = () => {
 	const [ selectedIds, setSelectedIds ] = useState( null );
 	const [ successCount, setSuccessCount ] = useState( 0 );
 	const [ failureCount, setFailureCount ] = useState( 0 );
+	const [ totalMediaCount, setTotalMediaCount ] = useState( 0 );
 
 	// On mount, check for 'media_ids' in the URL
 	useEffect( () => {
@@ -67,17 +68,6 @@ const RetranscodeTab = () => {
 	// Use a ref to track if the operation should be aborted.
 	const abortRef = useRef( false );
 
-	const mediaPageUrl = `${ window.godamRestRoute?.adminUrl || '/wp-admin/' }upload.php`;
-
-	const description = sprintf(
-		// translators: %s is the URL to the Media page in the WordPress admin.
-		__(
-			"You can retranscode specific media files (rather than ALL pending media) from the <a class='godam-url' href='%s'>Media</a> page using Bulk Action via drop down or mouse hover a specific media video file.",
-			'godam',
-		),
-		mediaPageUrl,
-	);
-
 	const fetchRetranscodeMedia = () => {
 		setFetchingMedia( true );
 		setError( null );
@@ -92,9 +82,11 @@ const RetranscodeTab = () => {
 			},
 		} )
 			.then( ( response ) => {
-				//console.log( 'Fetched media for retranscoding:', response.data );
 				if ( response.data?.data && Array.isArray( response.data.data ) && response.data.data.length > 0 ) {
 					setAttachments( response.data.data );
+					if ( response.data?.total_media_count ) {
+						setTotalMediaCount( response.data.total_media_count );
+					}
 					//console.log( 'Media files fetched for retranscoding:', response.data.data );
 				} else {
 					setError( {
@@ -217,13 +209,23 @@ const RetranscodeTab = () => {
 						</Snackbar>
 					) }
 					<p>
-						{ __( 'This tool will fetch all media remains to transcode and retranscode all video media uploaded to your website. This can be handy if you need to transcode media files uploaded in the past.', 'godam' ) }
+						{ __(
+							'This tool allows you to retranscode your media files. You can either retranscode specific files selected from the Media Library, or only those that are not yet transcoded.',
+							'godam',
+						) }
 					</p>
 
-					<p dangerouslySetInnerHTML={ { __html: description } } />
+					<p>
+						{ __( 'Checking the "Force retranscode" option will retranscode all media files regardless of their current state.', 'godam' ) }
+					</p>
 
 					<p>
-						{ __( 'To begin, just press the button below.', 'godam' ) }
+						<i>
+							{ __(
+								'Note: Retranscoding will use your bandwidth allowance. Use the force retranscode option carefully.',
+								'godam',
+							) }
+						</i>
 					</p>
 
 					{
@@ -279,13 +281,15 @@ const RetranscodeTab = () => {
 							) }
 							{ ! selectedIds && ! forceRetranscode && sprintf(
 								// translators: %d is the number of media files that require retranscoding.
-								__( '%d media file(s) require retranscoding.', 'godam' ),
+								__( '%1$d/%2$d media file(s) require retranscoding.', 'godam' ),
 								attachments.length,
+								totalMediaCount,
 							) }
 							{ forceRetranscode && sprintf(
 								// translators: %d is the number of media files that will be retranscoded.
-								__( '%d media file(s) will be retranscoded regardless of their current state.', 'godam' ),
+								__( '%1$d/%1$d media file(s) will be retranscoded regardless of their current state.', 'godam' ),
 								attachments.length,
+								totalMediaCount,
 							) }
 						</div>
 					}

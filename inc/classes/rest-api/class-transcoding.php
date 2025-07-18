@@ -346,7 +346,8 @@ class Transcoding extends Base {
 
 		return new \WP_REST_Response(
 			array(
-				'data' => $all_posts,
+				'data'              => $all_posts,
+				'total_media_count' => array_sum( (array) wp_count_attachments( 'video' ) ),
 			),
 			200
 		);
