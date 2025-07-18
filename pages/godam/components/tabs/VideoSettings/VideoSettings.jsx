@@ -6,12 +6,13 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import {
 	Notice,
 	Panel,
 	PanelBody,
 	Button,
+	Spinner,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -19,39 +20,51 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
-import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
-
+import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
 import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
-
-import './video-settings.scss';
-
 import APISettings from './APISettings.jsx';
 import VideoCompressQuality from './VideoCompressQuality.jsx';
 import VideoThumbnails from './VideoThumbnails.jsx';
 import VideoWatermark from './VideoWatermark.jsx';
 
+/**
+ * Styles
+ */
+import './video-settings.scss';
+
 const VideoSettings = () => {
 	const dispatch = useDispatch();
-	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
-	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
 
+	// Selectors to get media settings and change flag
+	const { mediaSettings, isChanged } = useSelector( ( state ) => ( {
+		mediaSettings: state.mediaSettings,
+		isChanged: state.mediaSettings.isChanged,
+	} ) );
+
+	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
+	// Function to show a notice message
 	const showNotice = ( message, status = 'success' ) => {
 		setNotice( { message, status, isVisible: true } );
-		scrollToTop();
+		if ( window.scrollY > 0 ) {
+			scrollToTop();
+		}
 	};
 
+	// Function to handle setting change
 	const handleSettingChange = ( key, value ) => {
 		dispatch( updateMediaSetting( { category: 'video', key, value } ) );
 	};
 
+	// Function to handle saving settings
 	const handleSaveSettings = async () => {
 		try {
-			const response = await saveMediaSettings( { settings: { video: mediaSettings?.video } } ).unwrap();
+			const response = await saveMediaSettings( { settings: mediaSettings } ).unwrap();
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
+				dispatch( resetChangeFlag() );
 			} else {
 				showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 			}
@@ -59,6 +72,18 @@ const VideoSettings = () => {
 			showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 		}
 	};
+
+	// Add unsaved changes warning
+	useEffect( () => {
+		const handleBeforeUnload = ( event ) => {
+			if ( isChanged ) {
+				event.preventDefault();
+				event.returnValue = __( 'You have unsaved changes. Are you sure you want to leave?', 'godam' );
+			}
+		};
+		window.addEventListener( 'beforeunload', handleBeforeUnload );
+		return () => window.removeEventListener( 'beforeunload', handleBeforeUnload );
+	}, [ isChanged ] );
 
 	return (
 		<div>
@@ -108,10 +133,11 @@ const VideoSettings = () => {
 					variant="primary"
 					className="godam-button"
 					onClick={ handleSaveSettings }
+					icon={ saveMediaSettingsLoading && <Spinner /> }
 					isBusy={ saveMediaSettingsLoading }
-					disabled={ saveMediaSettingsLoading }
+					disabled={ saveMediaSettingsLoading || ! isChanged }
 				>
-					{ __( 'Save Settings', 'godam' ) }
+					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 				</Button>
 			) }
 
