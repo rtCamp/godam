@@ -181,10 +181,10 @@ class Video_Metadata {
 			$thumbnail_url   = get_post_meta( $response['id'], 'rtgodam_media_video_thumbnail', true );
 			$attachment_meta = get_post_meta( $response['id'], '_wp_attachment_metadata', true );
 
-			if ( ! empty( $thumbnail_url ) && isset( $attachment_meta['width'] ) && isset( $attachment_meta['height'] ) ) {
+			if ( ! empty( $thumbnail_url ) ) {
 				$response['image']['src']    = esc_url( $thumbnail_url );
-				$response['image']['height'] = $attachment_meta['width'];
-				$response['image']['width']  = $attachment_meta['height'];
+				$response['image']['width']  = $attachment_meta['width'] ?? 640;
+				$response['image']['height'] = $attachment_meta['height'] ?? 480;
 			}
 		}
 		return $response;
