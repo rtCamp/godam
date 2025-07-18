@@ -30,6 +30,8 @@ const RetranscodeTab = () => {
 	const [ done, setDone ] = useState( false );
 	const [ forceRetranscode, setForceRetranscode ] = useState( false );
 	const [ selectedIds, setSelectedIds ] = useState( null );
+	const [ successCount, setSuccessCount ] = useState( 0 );
+	const [ failureCount, setFailureCount ] = useState( 0 );
 
 	// On mount, check for 'media_ids' in the URL
 	useEffect( () => {
@@ -109,6 +111,8 @@ const RetranscodeTab = () => {
 			} )
 			.finally( () => {
 				setFetchingMedia( false );
+				setSuccessCount( 0 );
+				setFailureCount( 0 );
 			} );
 	};
 
@@ -116,7 +120,7 @@ const RetranscodeTab = () => {
 		abortRef.current = true;
 		setAborted( true );
 		setRetranscoding( false );
-		setLogs( ( prevLogs ) => [ ...prevLogs, __( 'Retranscoding operation aborted.', 'godam' ) ] );
+		setLogs( ( prevLogs ) => [ ...prevLogs, __( 'Aborting operation to send media for retranscoding.', 'godam' ) ] );
 	};
 
 	const startRetranscoding = async () => {
@@ -127,6 +131,8 @@ const RetranscodeTab = () => {
 			setLogs( [] );
 			setDone( false );
 			abortRef.current = false;
+			setSuccessCount( 0 );
+			setFailureCount( 0 );
 
 			for ( let i = 0; i < attachments.length; i++ ) {
 				// Check if abort was requested.
@@ -153,6 +159,7 @@ const RetranscodeTab = () => {
 					if ( data?.message ) {
 						// Log the success message
 						setLogs( ( prevLogs ) => [ ...prevLogs, data.message ] );
+						setSuccessCount( ( prevCount ) => prevCount + 1 );
 					}
 				} catch ( err ) {
 					const data = err.response.data;
@@ -160,6 +167,7 @@ const RetranscodeTab = () => {
 						// Log the success message
 						setLogs( ( prevLogs ) => [ ...prevLogs, data.message ] );
 					}
+					setFailureCount( ( prevCount ) => prevCount + 1 );
 				} finally {
 					setMediaCount( ( prevCount ) => prevCount + 1 );
 				}
@@ -262,6 +270,8 @@ const RetranscodeTab = () => {
 
 					{
 						attachments?.length > 0 &&
+						! done &&
+						! aborted &&
 						<div className="my-5 text-lg text-gray-600">
 							{ selectedIds && selectedIds.length > 0 && (
 								// translators: %d is the number of selected media files.
@@ -278,6 +288,30 @@ const RetranscodeTab = () => {
 								attachments.length,
 							) }
 						</div>
+					}
+
+					{
+						( done || aborted ) &&
+						successCount > 0 &&
+						<Snackbar className="snackbar-success">
+							{ sprintf(
+								// translators: %d is the number of media files retranscoded.
+								__( 'Successfully sent %d media file(s) for retranscoding.', 'godam' ),
+								successCount,
+							) }
+						</Snackbar>
+					}
+
+					{
+						( done || aborted ) &&
+						failureCount > 0 &&
+						<Snackbar className="snackbar-error">
+							{ sprintf(
+								// translators: %d is the number of media files that failed to retranscode.
+								__( 'Failed to send %d media file(s) for retranscoding.', 'godam' ),
+								failureCount,
+							) }
+						</Snackbar>
 					}
 
 					{
