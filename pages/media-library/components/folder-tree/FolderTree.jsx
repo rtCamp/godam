@@ -283,6 +283,62 @@ const FolderTree = ( { handleContextMenu } ) => {
 
 		setupDroppable();
 
+		// Disable the Add Media Button and the Upload button for locked folders
+		if ( selectedFolder?.meta?.locked ) {
+		// Media Library Add media button
+			jQuery( '#wp-media-grid .page-title-action' ).prop( 'disabled', true )
+				.css( {
+					'pointer-events': 'none',
+					opacity: '0.5',
+				} );
+
+			// Edit Post add media button
+			jQuery( '#__wp-uploader-id-1' ).prop( 'disabled', true )
+				.css( 'pointer-events', 'none' );
+
+			// Media Library Drag and Drop
+			jQuery( '#wpwrap' ).on( 'dragover.lock drop.lock', function( e ) {
+				e.preventDefault();
+				e.stopPropagation();
+			} );
+
+			// Edit post Drag and Drop
+			jQuery( '.media-modal-content' ).on( 'dragover.lock drop.lock', function( e ) {
+				e.preventDefault();
+				e.stopPropagation();
+			} );
+
+			// Tell WordPress uploader to ignore drop
+			if ( wp?.media?.frames?.frame?.uploader?.dropzone ) {
+				wp.media.frames.frame.uploader.dropzone.off( 'drop' );
+			}
+		} else {
+			// Media Library Add media button
+			jQuery( '#wp-media-grid .page-title-action' ).prop( 'disabled', false )
+				.css( {
+					'pointer-events': 'auto',
+					opacity: '1',
+				} );
+
+			// Edit Post add media button
+			jQuery( '#__wp-uploader-id-1' ).prop( 'disabled', false )
+				.css( 'pointer-events', 'auto' );
+
+			// Media Library Drag and Drop
+			jQuery( '#wpwrap' ).off( 'dragover.lock drop.lock' );
+
+			// Edit post Drag and Drop
+			jQuery( '.media-modal-content' ).off( 'dragover.lock drop.lock' );
+
+			// Restore default dropzone
+			if ( wp?.media?.frames?.frame?.uploader?.dropzone ) {
+				// eslint-disable-next-line no-unused-vars
+				wp.media.frames.frame.uploader.dropzone.on( 'drop', function( e ) {
+					// Normally handled by WP
+				} );
+			}
+		}
+
 		// Cleanup to avoid multiple event bindings
 		return () => {
 			if ( jQuery.fn.droppable ) {
