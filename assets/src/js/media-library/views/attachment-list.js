@@ -52,6 +52,12 @@ class MediaListViewTableDragHandler {
 
 			if ( ids && ids.length > 0 && mediaFolderId && ! ids.includes( mediaFolderId ) ) {
 				this.setupDragHandlers();
+			} else if ( ids.includes( mediaFolderId ) ) {
+				jQuery( '#wpbody-content .page-title-action' ).prop( 'disabled', true )
+					.css( {
+						'pointer-events': 'none',
+						opacity: '0.5',
+					} );
 			}
 		} );
 
