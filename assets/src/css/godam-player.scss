@@ -7,6 +7,7 @@
 
 // CF7 Form style.
 @use "./cf7-godam-theme";
+@use './variables';
 
 .rtgodam-video-caption {
 
@@ -97,15 +98,37 @@
 	pointer-events: none; /* Prevent interaction with the overlay */
 }
 
+.video-js .vjs-big-play-button {
+	background-color: var(--rtgodam-control-bar-color, #000) !important;
+	border: none;
+	cursor: pointer;
+	border-radius: 50%;
+	padding: 0;
+	z-index: 10;
+	width: 50px;
+	height: 50px;
+	left: 53%;
+	transition: transform 0.3s ease;
+
+	span::before {
+		font-size: 1.7rem;
+		line-height: 1.9;
+	}
+
+	.vjs-big-play-button {
+		transition: transform 0.3s ease;
+	}
+
+	&:hover, &:focus {
+		transform: scale(1.1);
+	}
+}
+
 .easydam-video-container {
 	position: relative;
 	background-color: rgba(149, 149, 149, 0.2);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
-
-	.vjs-big-play-button {
-		transition: transform 0.3s ease;
-	}
 
 	&:has(.vjs-has-started) {
 
@@ -681,12 +704,21 @@
 
 .share-modal-message {
 	background: #fff;
-	padding: 10px 40px;
-	border-radius: 5px;
+	padding: 24px;
+	border-radius: 8px;
 	box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
 	text-align: center;
 	font-size: 16px;
 	font-weight: 700;
+
+	.share-modal-header {
+		color: #000 !important;
+
+		/* stylelint-disable-next-line no-descending-specificity */
+		p {
+			font-weight: 400;
+		}
+	}
 
 	h2 {
 		text-align: left;
@@ -694,10 +726,12 @@
 		font-weight: 600;
 	}
 
+	/* stylelint-disable-next-line no-descending-specificity */
 	p {
 		font-size: 12px;
 	}
 
+	/* stylelint-disable-next-line no-descending-specificity */
 	a {
 		text-underline-offset: 0 !important;
 		text-decoration: none !important;
@@ -706,8 +740,13 @@
 
 	.share-buttons {
 		display: flex;
-		gap: 15px;
+		gap: 18px;
 		justify-content: center;
+
+		.social-icon img{
+				width: 20px;
+				height: 20px;
+		}
 	}
 
 	.vjs-volume-panel-vertical {
@@ -722,35 +761,36 @@
 	.share-input-container {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
 		justify-content: left;
 		margin-top: 20px;
 
 		label {
-			color: var(--wp--preset--color--accent-4);
+			color: variables.$godam-share-modal-gray;
 			font-size: 12px;
 			text-align: left;
-
 		}
 
 		.share-modal-input-group {
 			display: flex;
 			justify-content: space-between;
-			gap: 10px;
+			gap: 12px;
 		}
 
 		input {
-			width: 80%;
 			padding: 10px;
+			font-size: 14px;
+			color: #000;
 		}
 
 		button {
+			width: 12%;
 			padding: 4px;
 			cursor: pointer;
 			background: transparent;
-			border: 1px solid var(--wp--preset--color--accent-4);
+			border: 1px solid variables.$godam-share-modal-light-gray;
 			border-radius: 5px;
 
+			/* stylelint-disable-next-line no-descending-specificity */
 			img {
 				height: 15px;
 			}
@@ -764,8 +804,9 @@
 		button {
 			padding: 8px;
 			background-color: #fff;
+			color: #000;
 			cursor: pointer;
-			border: 1px solid var(--wp--preset--color--accent-4);
+			border: 1px solid variables.$godam-share-modal-light-gray;
 			border-radius: 5px;
 		}
 	}
@@ -839,6 +880,9 @@
 
 .godam-share-button {
 	position: absolute;
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
 	top: 10px;
 	right: 10px;
 	z-index: 10;
@@ -848,9 +892,19 @@
 	border: none;
 	cursor: pointer !important;
 	font-size: 15px !important;
-	transition: background-color 0.3s, color 0.3s;
 	border-radius: 50%;
 	display: flex;
+	transition: all 0.3s ease
+}
+
+.easydam-video-container:hover .godam-share-button {
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
+	
+	&:hover{
+		background-color: #AB3A6C;
+	}
 }
 
 /* Index in the top-left corner */
@@ -867,6 +921,7 @@
 	border-radius: 2px;
 }
 
+/* stylelint-disable-next-line no-descending-specificity */
 .hotspot-tooltip a {
 	overflow-wrap: break-word;
 	word-break: break-word;
@@ -1047,28 +1102,6 @@
 	background: inherit;
 	z-index: 10;
 }
-
-.video-js .vjs-big-play-button {
-	background-color: var(--rtgodam-control-bar-color, #000) !important;
-	border: none;
-	cursor: pointer;
-	border-radius: 50%;
-	padding: 0;
-	z-index: 10;
-	width: 50px;
-	height: 50px;
-	left: 53%;
-	transition: transform 0.3s ease;
-
-	span::before {
-		font-size: 1.7rem;
-		line-height: 1.9;
-	}
-
-	&:hover, &:focus {
-		transform: scale(1.1);
-	}
- }
 
  .left-align {
 	 left: 3em !important;

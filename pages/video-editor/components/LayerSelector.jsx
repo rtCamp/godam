@@ -255,9 +255,9 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 		const lowerCaseQuery = value.toLowerCase();
 		setSearchQuery( value );
 
-		// Disable activeTab when user searches
-		if ( activeTab !== '' ) {
-			setActiveTab( '' );
+		// Set activeTab to 'all' when user searches
+		if ( activeTab !== 'all' ) {
+			setActiveTab( 'all' );
 		}
 
 		const filtered = Layers.filter( ( layer ) =>
