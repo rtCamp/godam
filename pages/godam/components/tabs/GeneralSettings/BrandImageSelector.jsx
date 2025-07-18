@@ -105,7 +105,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 					{ __( 'Remove', 'godam' ) }
 				</Button>
 			) }
-			{ mediaSettings?.video_player?.brand_image && (
+			{ mediaSettings?.video_player?.brand_image && 'Bubble' !== mediaSettings?.video_player?.player_skin && 'Classic' !== mediaSettings?.video_player?.player_skin && (
 				<div className="mt-2 border-2 border-blue-700 rounded-lg p-2 block bg-gray-200 w-fit">
 					<img
 						src={ mediaSettings?.video_player?.brand_image }
