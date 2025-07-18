@@ -321,10 +321,50 @@ const engagementStore = {
 	},
 };
 
+function updateCommentTree( comments, comment, text, authorImg ) {
+	return comments.map( ( item ) => {
+		// console.log( item );
+		if ( item.id === comment.id ) {
+			return {
+				...item,
+				children: [
+					...item.children,
+					{
+						id: 10,
+						userId: 20,
+						text,
+						authorName: 'Rockey',
+						authorImg,
+						children: [],
+					},
+				],
+			};
+		}
+
+		if ( item.children.length > 0 ) {
+			return {
+				...item,
+				children: updateCommentTree( item.children, comment, text, authorImg ),
+			};
+		}
+
+		return item;
+	} );
+}
+
 function CommentForm( props ) {
-	const { comment, setCommentsData, storeObj, videoAttachmentId, isExpanded, setIsExpanded } = props;
+	const { comment, setCommentsData, storeObj, videoAttachmentId, setIsExpanded } = props;
 	const [ commentText, setCommentText ] = useState( '' );
 	const [ isSending, setIsSending ] = useState( false );
+
+	function handleSubmit() {
+		setIsExpanded( false );
+		setCommentsData( ( prevComments ) => {
+			const newCommentTree = updateCommentTree( prevComments, comment, commentText, 'https://secure.gravatar.com/avatar/5edfa2692bdacc5e6ee805c626c50cb44cebb065f092d9a1067d89f74dacd326?s=40&d=mm&r=g' );
+
+			return [ ...newCommentTree ];
+		} );
+	}
 
 	return (
 		<div className="rtgodam-video-engagement--comment-form">
@@ -336,7 +376,7 @@ function CommentForm( props ) {
 				/>
 			</div>
 			<div className="rtgodam-video-engagement--comment-form-submit">
-				<button className="rtgodam-video-engagement--comment-button" disabled={ isSending } onClick={ () => console.log( videoAttachmentId, commentText ) }>
+				<button className="rtgodam-video-engagement--comment-button" disabled={ isSending } onClick={ handleSubmit }>
 					{ __( 'Submit', 'godam' ) }
 				</button>
 				<button className="rtgodam-video-engagement--comment-button" onClick={ () => setIsExpanded( false ) }>
@@ -376,7 +416,7 @@ function Comment( props ) {
 					</div>
 					{ isExpanded && (
 						<div className="rtgodam-video-engagement--comment-form">
-							<CommentForm { ...props } isExpanded={ isExpanded } setIsExpanded={ setIsExpanded } />
+							<CommentForm { ...props } setIsExpanded={ setIsExpanded } />
 						</div>
 					) }
 				</div>
