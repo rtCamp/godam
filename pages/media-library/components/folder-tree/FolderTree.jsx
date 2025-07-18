@@ -226,7 +226,7 @@ const FolderTree = ( { handleContextMenu } ) => {
 						// do not allow assigning item to other folder from the locked folder.
 						if ( selectedFolder?.meta?.locked ) {
 							dispatch( updateSnackbar( {
-								message: __( 'This folder is locked and cannot be modified', 'godam' ),
+								message: __( 'Currently opened folder is locked and cannot be modified', 'godam' ),
 								type: 'fail',
 							} ) );
 							return;

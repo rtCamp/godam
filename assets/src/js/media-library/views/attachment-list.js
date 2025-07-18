@@ -45,7 +45,22 @@ class MediaListViewTableDragHandler {
 		}
 
 		this.tableRows = document.querySelectorAll( '.wp-list-table.media tbody tr' );
-		this.setupDragHandlers();
+		window.addEventListener( 'godam:lockedFolderLoaded', ( e ) => {
+			const { ids } = e.detail;
+			const params = new URLSearchParams( window.location.search );
+			const mediaFolderId = parseInt( params.get( 'media-folder' ) );
+
+			if ( ids && ids.length > 0 && mediaFolderId && ! ids.includes( mediaFolderId ) ) {
+				this.setupDragHandlers();
+			}
+		} );
+
+		// This check is done here to ensure drag handlers are set up on initial load if applicable.
+		const params = new URLSearchParams( window.location.search );
+		const mediaFolderId = parseInt( params.get( 'media-folder' ) );
+		if ( ! mediaFolderId ) { // Only set up if no media folder is currently selected in the URL (for all media and uncategorized pages)
+			this.setupDragHandlers();
+		}
 	}
 
 	/**
