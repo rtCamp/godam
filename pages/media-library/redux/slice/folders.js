@@ -193,7 +193,9 @@ const slice = createSlice( {
 						window.godam.selectedFolder = { ...state.selectedFolder, meta: { ...state.selectedFolder.meta, locked: folder.meta.locked } };
 					}
 
-					state.selectedFolder.meta.locked = folder.meta.locked;
+					if ( state?.selectedFolder?.meta ) {
+						state.selectedFolder.meta.locked = folder.meta.locked;
+					}
 				}
 			} else {
 				ids.forEach( ( id ) => {
