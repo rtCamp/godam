@@ -93,6 +93,9 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			} )
 			.then( ( media ) => {
 				setImageCtaUrl( media.source_url ); // URL of the media file
+			} )
+			.catch( ( ) => {
+				setImageCtaUrl( '' );
 			} );
 	};
 
@@ -110,6 +113,11 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 	};
 
 	const imageCtaHtml = () => {
+		// Don't generate HTML if there's no image URL
+		if ( ! imageCtaUrl ) {
+			return '';
+		}
+
 		return `<div class="${ 'portrait' === layer?.imageCtaOrientation ? 'vertical-image-cta-container' : 'image-cta-container' }">
 					<img
 						src="${ imageCtaUrl }"
@@ -142,15 +150,17 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 	// Fetch the media URL when the image ID changes
 	useEffect( () => {
-		if ( 'image' === layer?.cta_type && layer?.image ) {
+		if ( 'image' === layer?.cta_type && layer?.image && layer?.image !== 0 ) {
 			fetchOverlayMediaURL( layer.image );
+		} else {
+			setImageCtaUrl( '' );
 		}
 	}, [ layer?.cta_type, layer?.image ] );
 
 	// Update the HTML only after imageCtaUrl is updated
 	useEffect( () => {
 		if ( 'image' === layer?.cta_type ) {
-			setFormHTML( imageCtaUrl ? imageCtaHtml : '' );
+			setFormHTML( imageCtaUrl ? imageCtaHtml() : '' );
 		}
 	}, [ imageCtaUrl, layer ] );
 
@@ -175,7 +185,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 				<Panel className="-mx-4 border-x-0">
 					<PanelBody
-						title={ __( 'Advance', 'godam' ) }
+						title={ __( 'Advanced', 'godam' ) }
 						initialOpen={ false }
 					>
 						{ /* Layer background color */ }

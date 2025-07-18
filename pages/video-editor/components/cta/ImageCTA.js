@@ -103,7 +103,8 @@ const ImageCTA = ( { layerID } ) => {
 	};
 
 	const fetchOverlayMediaURL = useCallback( ( mediaId ) => {
-		if ( ! mediaId ) {
+		if ( ! mediaId || mediaId === 0 ) {
+			setSelectedImageUrl( '' );
 			return;
 		}
 		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ mediaId }` ] ) )
@@ -115,13 +116,18 @@ const ImageCTA = ( { layerID } ) => {
 			} )
 			.then( ( media ) => {
 				setSelectedImageUrl( media.source_url );
+			} )
+			.catch( ( ) => {
+				setSelectedImageUrl( '' );
 			} );
 	},
-	[ restURL, setSelectedImageUrl ] );
+	[ restURL ] );
 
 	useEffect( () => {
-		if ( 'image' === layer?.cta_type && layer?.image ) {
+		if ( 'image' === layer?.cta_type && layer?.image && layer?.image !== 0 ) {
 			fetchOverlayMediaURL( layer.image );
+		} else {
+			setSelectedImageUrl( '' );
 		}
 	}, [ layer?.cta_type, layer?.image ] );
 
@@ -156,15 +162,19 @@ const ImageCTA = ( { layerID } ) => {
 				>
 					{ __( 'Add Image', 'godam' ) }
 				</label>
-				{ ( 0 === layer?.image || ! layer?.image ) && <Button
-					onClick={ openImageCTAUploader }
-					variant="primary"
-					className="ml-2 godam-button"
-					aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
-				>
-					{ __( 'Upload', 'godam' ) }
-				</Button> }
-				{ ( layer?.image !== 0 && ! selectedImageUrl ) && ( <div className="mt-6 rounded-xl w-[160px] h-[160px] animate-pulse bg-gray-200"></div> ) }
+				{ ( layer?.image === 0 || ! layer?.image ) && (
+					<Button
+						onClick={ openImageCTAUploader }
+						variant="primary"
+						className="ml-2 godam-button"
+						aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
+					>
+						{ __( 'Upload', 'godam' ) }
+					</Button>
+				) }
+				{ ( layer?.image && layer?.image !== 0 && ! selectedImageUrl ) ? (
+					<div className="mt-6 rounded-xl w-[160px] h-[160px] animate-pulse bg-gray-200"></div>
+				) : null }
 				{ selectedImageUrl && (
 					<div className="flex mt-4">
 						<img
