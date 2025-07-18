@@ -148,7 +148,7 @@ class Video_Permalinks {
 			class='regular-text code'
 		/>
 		<p class='description'>
-			<?php echo esc_html__( 'This slug will be used in the URL for video archive and single video pages (e.g., yoursite.com/videos/). Only lowercase letters, numbers, hyphens, and underscores are allowed.', 'godam' ); ?>
+			<?php esc_html_e( 'This slug will be used in the URL for video archive and single video pages (e.g., yoursite.com/videos/). Only lowercase letters, numbers, hyphens, and underscores are allowed.', 'godam' ); ?>
 		</p>
 		<?php
 	}
@@ -169,7 +169,7 @@ class Video_Permalinks {
 			<?php checked( $value ); ?> 
 		/>
 		<p class='description'>
-			<?php echo esc_html__( 'Enable this to allow public access to the video archive page. When disabled, the video archive page will return 404.', 'godam' ); ?>
+			<?php esc_html_e( 'Enable this to allow public access to the video archive page. When disabled, the video archive page will return 404.', 'godam' ); ?>
 		</p>
 		<?php
 	}
@@ -190,7 +190,7 @@ class Video_Permalinks {
 			<?php checked( $value ); ?> 
 		/>
 		<p class='description'>
-			<?php echo esc_html__( 'Enable this to allow public access to individual video pages. When disabled, single video pages will return 404 but videos will still be available in Query Loop blocks.', 'godam' ); ?>
+			<?php esc_html_e( 'Enable this to allow public access to individual video pages. When disabled, single video pages will return 404 but videos will still be available in Query Loop blocks.', 'godam' ); ?>
 		</p>
 		<?php
 	}
