@@ -530,12 +530,12 @@ function GODAMPlayer( videoRef = null ) {
 					</div>
 
 					<div class="share-buttons">
-						<a class="facebook social-icon" target="blank"><img src=${ Facebook } alt='Facebook icon' height={24} width={24}</a>
-						<a class="twitter social-icon" target="blank"><img src=${ Twitter } alt='Twitter icon' height={24} width={24}</a>
-						<a class="linkedin social-icon" target="blank"><img src=${ LinkedIn } alt='Linkedin icon' height={24} width={24}</a>
-						<a class="reddit social-icon" target="blank"><img src=${ Reddit } alt='Reddit icon' height={24} width={24}</a>
-						<a class="whatsapp social-icon" target="blank"><img src=${ Whatsapp } alt='Whatsapp icon' height={24} width={24}</a>
-						<a class="telegram social-icon" target="blank"><img src=${ Telegram } alt='Telegram icon' height={24} width={24}</a>
+						<a class="facebook social-icon" target="_blank"><img src=${ Facebook } alt='Facebook icon' height="20" width="20"/> </a>
+						<a class="twitter social-icon" target="_blank"><img src=${ Twitter } alt='Twitter icon' height="20" width="20"/> </a>
+						<a class="linkedin social-icon" target="_blank"><img src=${ LinkedIn } alt='Linkedin icon' height="20" width="20"/> </a>
+						<a class="reddit social-icon" target="_blank"><img src=${ Reddit } alt='Reddit icon' height="20" width="20"/> </a>
+						<a class="whatsapp social-icon" target="_blank"><img src=${ Whatsapp } alt='Whatsapp icon' height="20" width="20"/> </a>
+						<a class="telegram social-icon" target="_blank"><img src=${ Telegram } alt='Telegram icon' height="20" width="20"/> </a>
 					</div>
 
 					<div class='share-input-container'>
