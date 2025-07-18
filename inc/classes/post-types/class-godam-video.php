@@ -60,17 +60,12 @@ class GoDAM_Video extends Base {
 	 * @return array
 	 */
 	public function get_args() {
-		$has_archive        = $this->get_has_archive();
-		$publicly_queryable = $this->get_publicly_queryable();
-		
-		// For Query Loop compatibility, we need publicly_queryable to be true regardless of user settings.
-		// Store the user preference to handle URL behavior separately.
-		$user_publicly_queryable = $publicly_queryable;
-		$publicly_queryable      = true;
+		$allow_archive = $this->get_allow_archive();
+		$allow_single  = $this->get_allow_single();
 		
 		// Determine rewrite rules based on settings.
 		$rewrite = false;
-		if ( $has_archive || $user_publicly_queryable ) {
+		if ( $allow_archive || $allow_single ) {
 			$rewrite = array(
 				'slug'       => $this->get_rewrite_slug(),
 				'with_front' => false,
@@ -85,10 +80,10 @@ class GoDAM_Video extends Base {
 			'taxonomies'          => array( 'category', 'post_tag' ),
 			'hierarchical'        => false,
 			'public'              => true, 
-			'publicly_queryable'  => $publicly_queryable, // Always true for Query Loop compatibility.
-			'exclude_from_search' => ! $user_publicly_queryable, // Still respect user setting for search.
+			'publicly_queryable'  => true, // Always true for Query Loop compatibility.
+			'exclude_from_search' => ! $allow_single, // Respect user setting for search visibility.
 			'show_ui'             => false,
-			'has_archive'         => $has_archive,
+			'has_archive'         => $allow_archive,
 			'show_in_rest'        => true, // Also needed for Query Loop block.
 			'rewrite'             => $rewrite,
 		);
@@ -104,21 +99,21 @@ class GoDAM_Video extends Base {
 	}
 	
 	/**
-	 * Get has_archive setting from plugin options.
+	 * Get allow_archive setting from plugin options.
 	 *
 	 * @return bool
 	 */
-	private function get_has_archive() {
-		return (bool) get_option( 'rtgodam_video_has_archive', true );
+	private function get_allow_archive() {
+		return (bool) get_option( 'rtgodam_video_post_allow_archive', true );
 	}
 	
 	/**
-	 * Get publicly_queryable setting from plugin options.
+	 * Get allow_single setting from plugin options.
 	 *
 	 * @return bool
 	 */
-	private function get_publicly_queryable() {
-		return (bool) get_option( 'rtgodam_video_publicly_queryable', true );
+	private function get_allow_single() {
+		return (bool) get_option( 'rtgodam_video_post_allow_single', true );
 	}
 
 	/**
@@ -434,16 +429,16 @@ class GoDAM_Video extends Base {
 	public function handle_url_access() {
 		global $wp_query;
 		
-		// Block direct access to single video pages when publicly_queryable is disabled.
-		if ( is_singular( self::SLUG ) && ! $this->get_publicly_queryable() ) {
+		// Block direct access to single video pages when single access is disabled.
+		if ( is_singular( self::SLUG ) && ! $this->get_allow_single() ) {
 			$wp_query->set_404();
 			status_header( 404 );
 			include get_query_template( '404' );
 			exit;
 		}
 		
-		// Block access to archive page when has_archive is disabled.
-		if ( is_post_type_archive( self::SLUG ) && ! $this->get_has_archive() ) {
+		// Block access to archive page when archive access is disabled.
+		if ( is_post_type_archive( self::SLUG ) && ! $this->get_allow_archive() ) {
 			$wp_query->set_404();
 			status_header( 404 );
 			include get_query_template( '404' );
