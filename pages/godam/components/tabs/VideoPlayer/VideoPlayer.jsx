@@ -294,6 +294,8 @@ const VideoPlayer = () => {
 		}
 	}, [ mediaSettings?.video_player?.brand_color, mediaSettings?.video_player?.brand_image, mediaSettings?.video_player?.player_skin ] );
 
+	const isMinimalOrClassic = 'Minimal' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin;
+
 	return (
 		<>
 			{ notice.isVisible && (
@@ -355,7 +357,7 @@ const VideoPlayer = () => {
 								label={ __( 'Brand color', 'godam' ) }
 								value={ mediaSettings?.video_player?.brand_color }
 								onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
-								disabled={ 'Minimal' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin }
+								disabled={ isMinimalOrClassic }
 							/>
 							{ mediaSettings?.video_player?.brand_color && (
 								<button
@@ -372,7 +374,7 @@ const VideoPlayer = () => {
 
 						<p className="text-[0.75rem] leading-[1.2] text-[#777]">
 							{
-								'Minimal' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin
+								isMinimalOrClassic
 									? ( <div className="flex items-center gap-2 mt-[-4px]">
 										<Icon icon={ error } style={ { fill: '#EAB308' } } size={ 28 } />
 										<p className="text-[#AB3A6C] text-[0.75rem] leading-[1.2]">{ __(
