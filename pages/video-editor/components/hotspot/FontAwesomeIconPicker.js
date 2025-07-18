@@ -16,7 +16,7 @@ library.add( fas );
 
 const FontAwesomeIconPicker = ( { hotspot, disabled = false, index, hotspots, updateField } ) => {
 	const [ searchQuery, setSearchQuery ] = useState( '' );
-	const [ isOpen, setIsOpen ] = useState( false );
+	const [ setIsOpen ] = useState( false );
 
 	const iconList = Object.values( fas )
 		.map( ( icon ) => ( {

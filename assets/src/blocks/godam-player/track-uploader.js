@@ -84,7 +84,7 @@ function SingleTrackEditor( { track, onChange, onClose, onRemove } ) {
 			<span>
 				{ __( 'File', 'godam' ) }: <b>{ fileName }</b>
 			</span>
-			<div columns={ 2 } gap={ 4 }>
+			<div className="block-library-video-tracks-editor__single-track-editor-fields">
 				<TextControl
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
