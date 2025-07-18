@@ -90,6 +90,20 @@ const FolderTree = ( { handleContextMenu } ) => {
 	const projected = activeId && overId ? utilities.getProjection( filteredData, activeId, overId, offsetLeft ) : null;
 
 	function handleDragStart( { active: { id: draggedItemId } } ) {
+		const draggedFolder = data.find( ( folder ) => folder.id === draggedItemId );
+
+		// If the dragged folder has a parent and that parent is locked, prevent dragging.
+		if ( draggedFolder?.parent && draggedFolder.parent !== 0 ) {
+			const parentFolder = data.find( ( folder ) => folder.id === draggedFolder.parent );
+			if ( parentFolder?.meta?.locked ) {
+				dispatch( updateSnackbar( {
+					message: __( 'The parent folder is locked, so this folder cannot be moved.', 'godam' ),
+					type: 'fail',
+				} ) );
+				return;
+			}
+		}
+
 		setActiveId( draggedItemId );
 		setOverId( draggedItemId );
 	}
@@ -106,6 +120,18 @@ const FolderTree = ( { handleContextMenu } ) => {
 
 			if ( ! parent ) {
 				parent = 0;
+			}
+
+			// Do not allow reordering/move if the destination folder (new parent) is locked.
+			if ( parent !== 0 ) {
+				const destinationFolder = data.find( ( folder ) => folder.id === parent );
+				if ( destinationFolder?.meta?.locked ) {
+					dispatch( updateSnackbar( {
+						message: __( 'The destination folder is locked and cannot be modified', 'godam' ),
+						type: 'fail',
+					} ) );
+					return;
+				}
 			}
 
 			const clonedItems = JSON.parse(
