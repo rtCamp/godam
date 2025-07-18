@@ -36,7 +36,7 @@ class GoDAM_Video extends Base {
 		add_action( 'delete_attachment', array( $this, 'delete_video_post_from_attachment' ) );
 		add_action( 'save_post_attachment', array( $this, 'sync_attachment_to_video_post' ), 10, 3 );
 		add_filter( 'attachment_fields_to_edit', array( $this, 'add_custom_attachment_fields' ), 10, 2 );
-		add_filter( 'attachment_fields_to_save', array( $this, 'save_custom_attachment_fields' ), 10, 2 );
+		add_filter( 'attachment_fields_to_save', array( $this, 'save_custom_attachment_fields' ), 10, 1 );
 	}
 
 	/**
@@ -65,8 +65,17 @@ class GoDAM_Video extends Base {
 		$metaboxes = apply_filters( 'godam_register_video_meta_boxes', array(), $godam_video_id );
 
 		foreach ( $metaboxes as $metabox ) {
+			// Check if the id, title, and render_callback are set.
+			if ( ! isset( $metabox['id'], $metabox['title'], $metabox['render_callback'] ) ) {
+				continue;
+			}
+
 			ob_start();
-			call_user_func( $metabox['render_callback'], $godam_video_id );
+
+			if ( is_callable( $metabox['render_callback'] ) ) {
+				call_user_func( $metabox['render_callback'], $godam_video_id );
+			}
+
 			$field_html = ob_get_clean();
 
 			$form_fields[ $metabox['id'] ] = array(
