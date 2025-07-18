@@ -202,6 +202,28 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.3.0 (July 22, 2025) =
+
+- Feat: Integrated Everest Forms
+- Feat: Integrated Forminator Forms
+- Feat: Integrated Fluent Forms and added GoDAM Recorder Field integration
+- Feat: Integrated SureForms and added GoDAM Recorder Field integration
+- Feat: Added GoDAM Recorder Field integration for WPForms to capture video submissions
+- Feat: Implemented theme support for customizable video player appearance
+- Feat: Added Global Ads settings for centralized advertisement management
+- Feat: Implemented automatic autoplay disable when video audio is unmuted for better user experience
+- Feat: Added Bookmarks and Lock functionality for improved Media Library folder organization
+- Feat: Extended free version support to include MOV files and FLV formats (some codecs)
+- Feat: Introduced Background Color for Image CTA Layer Button
+- Enhancement: Added Custom Post Type support for GoDAM Videos
+- Enhancement: Redesigned Media Library user interface for improved usability and navigation
+- Enhancement: Improved Layer Selection interface with tabs and search functionality
+- Fix: Resolved overlapping button issues in Video Editor when viewing video content
+- Fix: Added comprehensive translations for previously untranslated interface strings
+- Fix: Eliminated display of "0" value after removing images in Image CTA Layer
+- Fix: Updated Share Button and Share Modal visibility on GoDAM Video block
+- Fix: Added validation for empty form selection in form layers
+
 = v1.2.1 (July 11, 2025) =
 
 - Fix: Resolved thumbnail issue with rtMedia for transcoded videos
