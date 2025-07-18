@@ -24,6 +24,16 @@ class Video_Metadata {
 	const BATCH_SIZE = 50;
 
 	/**
+	 * Default width for video thumbnails in pixels.
+	 */
+	const DEFAULT_THUMBNAIL_WIDTH = 640;
+
+	/**
+	 * Default height for video thumbnails in pixels.
+	 */
+	const DEFAULT_THUMBNAIL_HEIGHT = 480;
+
+	/**
 	 * Constructor.
 	 */
 	final protected function __construct() {
@@ -183,8 +193,8 @@ class Video_Metadata {
 
 			if ( ! empty( $thumbnail_url ) ) {
 				$response['image']['src']    = esc_url( $thumbnail_url );
-				$response['image']['width']  = $attachment_meta['width'] ?? 640;
-				$response['image']['height'] = $attachment_meta['height'] ?? 480;
+				$response['image']['width']  = $attachment_meta['width'] ?? self::DEFAULT_THUMBNAIL_WIDTH;
+				$response['image']['height'] = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
 			}
 		}
 		return $response;
