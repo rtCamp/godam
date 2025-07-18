@@ -1,9 +1,10 @@
 /**
  * WordPress dependencies
  */
-import { Button, Notice } from '@wordpress/components';
+import { Button, Notice, Icon } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { error } from '@wordpress/icons';
 
 const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 	/**
@@ -126,13 +127,19 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 
 			<p className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
 				{
-					( 'Bubble' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin ) ? __(
-						'The brand logo will not be applied to the player skin.',
-						'godam',
-					) : __(
-						'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos',
-						'godam',
-					)
+					( 'Bubble' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin )
+						? ( <div className="flex items-center gap-2">
+							<Icon icon={ error } style={ { fill: '#EAB308' } } size={ 28 } />
+							<p className="text-[#AB3A6C] text-[0.75rem] leading-[1.2]">{ __(
+								'The brand logo will not be applied to the player skin.',
+								'godam',
+							) }
+							</p>
+						</div>
+						) : __(
+							'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos',
+							'godam',
+						)
 				}
 			</p>
 		</div>
