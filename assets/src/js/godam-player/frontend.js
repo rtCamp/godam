@@ -647,21 +647,6 @@ function GODAMPlayer( videoRef = null ) {
 				} else if ( videoContainer ) {
 					videoContainer.appendChild( buttonEl );
 				}
-
-				// Show the share button immediately when video starts playing.
-				player.on( 'play', () => {
-					buttonEl.classList.add( 'visible' );
-				} );
-
-				// Show the share button when the user interacts (e.g., moves mouse or touches screen).
-				player.on( 'useractive', () => {
-					buttonEl.classList.add( 'visible' );
-				} );
-
-				// Hide the share button when the user is inactive for a while.
-				player.on( 'userinactive', () => {
-					buttonEl.classList.remove( 'visible' );
-				} );
 			}
 
 			// FIXED: Initialize chapters after player is ready

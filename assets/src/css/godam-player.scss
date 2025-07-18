@@ -853,13 +853,13 @@
 	border-radius: 50%;
 	display: flex;
 	transition:
-		opacity 0.3s ease,
-		visibility 0.3s ease,
+		opacity 0.5s ease,
+		visibility 0.5s ease,
 		background-color 0.3s,
 		color 0.3s;
 }
 
-.godam-share-button.visible {
+.easydam-video-container:hover .godam-share-button {
 	opacity: 1;
 	visibility: visible;
 	pointer-events: auto;
