@@ -40,7 +40,8 @@ class MediaListViewTableDragHandler {
 	 * Sets up drag functionality for all media table rows if folder organization is enabled.
 	 */
 	init() {
-		if ( isFolderOrgDisabled() ) {
+		const currentSelectedFolder = window.godam?.selectedFolder;
+		if ( isFolderOrgDisabled() || currentSelectedFolder?.meta?.locked ) {
 			return;
 		}
 
@@ -225,4 +226,3 @@ class MediaListViewTableDragHandler {
 }
 
 export default MediaListViewTableDragHandler;
-
