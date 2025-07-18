@@ -1,3 +1,4 @@
 /vendor
 assets/src/libs
 assets/build/
+admin/css/jquery-ui-1.7.2.custom.css
