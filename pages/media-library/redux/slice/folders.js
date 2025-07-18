@@ -48,6 +48,8 @@ const slice = createSlice( {
 	reducers: {
 		changeSelectedFolder: ( state, action ) => {
 			state.selectedFolder = action.payload.item;
+			window.godam = window.godam || {};
+			window.godam.selectedFolder = action.payload.item;
 		},
 		openModal: ( state, action ) => {
 			const modalName = action.payload;
@@ -185,6 +187,11 @@ const slice = createSlice( {
 					}
 
 					folder.meta.locked = ! Boolean( folder.meta?.locked );
+
+					if ( state.selectedFolder && state.selectedFolder.id === folder.id ) {
+						window.godam = window.godam || {};
+						window.godam.selectedFolder = { ...state.selectedFolder, meta: { ...state.selectedFolder.meta, locked: folder.meta.locked } };
+					}
 				}
 			} else {
 				ids.forEach( ( id ) => {
@@ -194,6 +201,11 @@ const slice = createSlice( {
 							folder.meta = {};
 						}
 						folder.meta.locked = status;
+
+						if ( state.selectedFolder && state.selectedFolder.id === folder.id ) {
+							window.godam = window.godam || {};
+							window.godam.selectedFolder = { ...state.selectedFolder, meta: { ...state.selectedFolder.meta, locked: folder.meta.locked } };
+						}
 					}
 				} );
 			}

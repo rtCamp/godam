@@ -73,7 +73,14 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 			opacity: 0.7,
 			appendTo: 'body',
 			cursorAt: { top: 5, left: 5 },
-
+			// eslint-disable-next-line no-unused-vars
+			start: ( event, ui ) => {
+				// Cancel drag if folder is locked
+				if ( window.godam?.selectedFolder?.meta?.locked ) {
+					event.preventDefault();
+					$( event.target ).draggable( 'cancel' );
+				}
+			},
 		} );
 	},
 
