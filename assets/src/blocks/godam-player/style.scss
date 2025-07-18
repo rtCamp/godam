@@ -626,7 +626,7 @@
 		margin-top: 20px;
 
 		label {
-			color: #52525B;
+			color: variables.$godam-share-modal-gray;
 			font-size: 12px;
 			text-align: left;
 
@@ -649,7 +649,7 @@
 			padding: 4px;
 			cursor: pointer;
 			background: transparent;
-			border: 1px solid #e5e7eb;
+			border: 1px solid variables.$godam-share-modal-light-gray;
 			border-radius: 5px;
 
 			img {
@@ -667,7 +667,7 @@
 				background-color: #fff;
 				color: #000;
 				cursor: pointer;
-				border: 1px solid #e5e7eb;
+				border: 1px solid variables.$godam-share-modal-light-gray;
 				border-radius: 5px;
 			}
 		}

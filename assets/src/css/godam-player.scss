@@ -706,6 +706,11 @@
 		display: flex;
 		gap: 18px;
 		justify-content: center;
+
+		.social-icon img{
+				width: 20px;
+				height: 20px;
+		}
 	}
 
 	.vjs-volume-panel-vertical {
@@ -724,10 +729,9 @@
 		margin-top: 20px;
 
 		label {
-			color: #52525B;
+			color: variables.$godam-share-modal-gray;
 			font-size: 12px;
 			text-align: left;
-
 		}
 
 		.share-modal-input-group {
@@ -747,9 +751,10 @@
 			padding: 4px;
 			cursor: pointer;
 			background: transparent;
-			border: 1px solid #e5e7eb;
+			border: 1px solid variables.$godam-share-modal-light-gray;
 			border-radius: 5px;
 
+			/* stylelint-disable-next-line no-descending-specificity */
 			img {
 				height: 15px;
 			}
@@ -765,7 +770,7 @@
 			background-color: #fff;
 			color: #000;
 			cursor: pointer;
-			border: 1px solid #e5e7eb;
+			border: 1px solid variables.$godam-share-modal-light-gray;
 			border-radius: 5px;
 		}
 	}
@@ -853,21 +858,17 @@
 	font-size: 15px !important;
 	border-radius: 50%;
 	display: flex;
-	transition:
-		opacity 0.3s ease,
-		visibility 0.3s ease,
-		background-color 0.3s,
-		color 0.3s;
-}
-
-.godam-share-button:hover{
-	background-color: #AB3A6C;
+	transition: all 0.3s ease
 }
 
 .easydam-video-container:hover .godam-share-button {
 	opacity: 1;
 	visibility: visible;
 	pointer-events: auto;
+	
+	&:hover{
+		background-color: #AB3A6C;
+	}
 }
 
 /* Index in the top-left corner */
