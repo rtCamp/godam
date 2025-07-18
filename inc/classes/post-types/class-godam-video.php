@@ -36,7 +36,7 @@ class GoDAM_Video extends Base {
 		add_action( 'delete_attachment', array( $this, 'delete_video_post_from_attachment' ) );
 		add_action( 'save_post_attachment', array( $this, 'sync_attachment_to_video_post' ), 10, 3 );
 		add_filter( 'attachment_fields_to_edit', array( $this, 'add_custom_attachment_fields' ), 10, 2 );
-		add_filter( 'attachment_fields_to_save', array( $this, 'save_custom_attachment_fields' ), 10, 1 );
+		add_filter( 'attachment_fields_to_save', array( $this, 'save_custom_attachment_fields' ) );
 	}
 
 	/**
@@ -57,10 +57,23 @@ class GoDAM_Video extends Base {
 		// If no video post exists, create one.
 		if ( ! $godam_video_id ) {
 			$godam_video_id = $this->create_video_post_from_attachment( $post->ID );
+
+			// If creation failed, return original fields.
+			if ( ! $godam_video_id ) {
+				return $form_fields;
+			}
 		}
 
 		/**
-		 * Collects custom fields for the video post type.
+		 * Filters an array of metaboxes display on the godam video edit screen.
+		 *
+		 * Each metabox should have an 'id', 'title', and 'render_callback'.
+		 *  - The 'id' is used as the field name.
+		 *  - The 'title' is displayed as the label.
+		 *  - The 'render_callback' should be a callable that outputs the HTML for the field. The parameter `$godam_video_id` the current video post ID is passed to the callback.
+		 *
+		 * @param array $metaboxes An array of metaboxes.
+		 * @param int   $post_id   The video post ID.
 		 */
 		$metaboxes = apply_filters( 'godam_register_video_meta_boxes', array(), $godam_video_id );
 
@@ -105,8 +118,21 @@ class GoDAM_Video extends Base {
 		// If no video post exists, create one.
 		if ( ! $godam_video_id ) {
 			$godam_video_id = $this->create_video_post_from_attachment( $attachment_data['ID'] );
+			
+			// If creation failed, return original attachment data.
+			if ( ! $godam_video_id ) {
+				return $attachment_data;
+			}
 		}
 
+		/**
+		 * Fires saving the godam video.
+		 *  - This action allows other plugins or themes to save additional metadata registered via `godam_register_video_meta_boxes`.
+		 *  - Also allows to perform additional actions when a GoDAM video post is saved.
+		 *  - The updated video meta can be accessed from the global $_POST variable.
+		 *
+		 * @param int $godam_video_id The ID of the GoDAM video post being saved.
+		 */
 		do_action( 'godam_save_video_meta', $godam_video_id );
 
 		return $attachment_data;
@@ -174,26 +200,11 @@ class GoDAM_Video extends Base {
 			return false;
 		}
 
-		// Check if video post already exists for this attachment.
-		$query = new WP_Query(
-			array(
-				'post_type'              => self::SLUG,
-				'posts_per_page'         => 1,
-				'post_status'            => 'any',
-				'no_found_rows'          => true,
-				'fields'                 => 'ids',
-				'update_post_term_cache' => false,
-				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check existing video post.
-					array(
-						'key'   => '_godam_attachment_id',
-						'value' => $attachment_id,
-					),
-				),
-			)
-		);
+		$godam_video_id = $this->get_godam_video_from_attachment( $attachment_id );
 
-		if ( $query->have_posts() ) {
-			return $query->posts[0];
+		// Check if video post already exists for this attachment.
+		if ( $godam_video_id ) {
+			return $godam_video_id;
 		}
 
 		// Get attachment data.
@@ -311,32 +322,15 @@ class GoDAM_Video extends Base {
 		}
 
 		// Find the corresponding video post.
-		$query = new WP_Query(
-			array(
-				'post_type'              => self::SLUG,
-				'posts_per_page'         => 1,
-				'post_status'            => 'any',
-				'fields'                 => 'ids',
-				'no_found_rows'          => true,
-				'update_post_term_cache' => false,
-				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
-					array(
-						'key'   => '_godam_attachment_id',
-						'value' => $attachment_id,
-					),
-				),
-			) 
-		);
-
-		if ( ! $query->have_posts() ) {
-			// Create new video post if it doesn't exist.
+		$video_post_id = $this->get_godam_video_from_attachment( $attachment_id );
+		if ( ! $video_post_id ) {
+			// If no video post exists, create one.
 			$this->create_video_post_from_attachment( $attachment_id );
 			return;
 		}
-
-		$video_post_id = $query->posts[0];
-		$attachment    = get_post( $attachment_id );
-		$new_title     = $attachment->post_title ?: __( 'Untitled Video', 'godam' );
+		
+		$attachment = get_post( $attachment_id );
+		$new_title  = $attachment->post_title ?: __( 'Untitled Video', 'godam' );
 
 		// Get current title from the post we already have.
 		$current_title = get_the_title( $video_post_id );
