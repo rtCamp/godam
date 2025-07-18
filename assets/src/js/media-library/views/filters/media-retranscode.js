@@ -1,6 +1,5 @@
 
 let MediaRetranscode = wp?.media?.view?.Button;
-const homeUrl = window.godamRestRoute.home_url || window.location.origin;
 
 MediaRetranscode = MediaRetranscode?.extend( {
 
