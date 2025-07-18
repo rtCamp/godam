@@ -84,7 +84,7 @@ const Layers = [
 	{
 		id: 5,
 		title: __( 'SureForms', 'godam' ),
-		description: __( 'Collect user input using Sureforms', 'godam' ),
+		description: __( 'Collect user input using SureForms', 'godam' ),
 		image: Form,
 		type: 'form',
 		formType: 'sureforms',
@@ -285,7 +285,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 							} }
 							disabled={ !! searchQuery }
 						>
-							{ type.charAt( 0 ).toUpperCase() + type.slice( 1 ) }
+							{ type === 'cta' ? type.toUpperCase() : type.charAt( 0 ).toUpperCase() + type.slice( 1 ) }
 						</button>
 					) ) }
 				</div>
