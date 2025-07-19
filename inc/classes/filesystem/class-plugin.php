@@ -129,14 +129,6 @@ class Plugin {
 	}
 
 	/**
-	 * Get the godam:// path for the bucket.
-	 */
-	public function get_godam_path() {
-		$uploads_dir = wp_upload_dir();
-		return $uploads_dir['basedir'];
-	}
-
-	/**
 	 * Get the GoDAM URL base for uploads.
 	 *
 	 * @return string
@@ -161,8 +153,8 @@ class Plugin {
 	public function filter_upload_dir( array $dirs ) {
 
 		$this->original_upload_dir = $dirs;
-		$godam_path                = $this->get_godam_path();
 
+		$godam_path      = 'godam://wp-content/uploads';
 		$dirs['path']    = str_replace( path_join( WP_CONTENT_DIR, 'uploads' ), $godam_path, $dirs['path'] );
 		$dirs['basedir'] = str_replace( path_join( WP_CONTENT_DIR, 'uploads' ), $godam_path, $dirs['basedir'] );
 		$dirs['url']     = str_replace( $godam_path, $this->get_godam_cdn_url(), $dirs['path'] );
