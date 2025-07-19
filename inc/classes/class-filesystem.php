@@ -22,16 +22,24 @@ class FileSystem {
 	 * Construct method.
 	 */
 	protected function __construct() {
+		$this->init_filesystem();
 
-		$this->init_file_system();
+		if ( rtgodam_is_api_key_valid() ) {
+			$rtgodam_settings = get_option( 'rtgodam-settings', array() );
+
+			if ( $rtgodam_settings['uploads']['offload_media'] ) {
+				$instance = \RTGODAM\Inc\Filesystem\Plugin::get_instance();
+				$instance->setup();
+			}
+		}
 	}
 
 	/**
-	 * To initialize file system.
+	 * To initialize filesystem.
 	 *
 	 * @return void
 	 */
-	protected function init_file_system() {
+	protected function init_filesystem() {
 
 		global $wp_filesystem;
 

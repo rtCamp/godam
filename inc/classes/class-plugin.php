@@ -57,6 +57,7 @@ class Plugin {
 		// Load plugin classes.
 		Assets::get_instance();
 		Blocks::get_instance();
+		Filesystem::get_instance();
 		Pages::get_instance();
 		Media_Library_Ajax::get_instance();
 		Media_Tracker::get_instance();
@@ -127,7 +128,7 @@ class Plugin {
 
 	/**
 	 * Registers the elementor widgets if required.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function load_elementor_widgets() {

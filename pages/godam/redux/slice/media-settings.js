@@ -24,6 +24,9 @@ const initialState = {
 		brand_color: '#000000',
 		brand_image: '',
 	},
+	uploads: {
+		offload_media: false,
+	},
 	video_player: {
 		custom_css: VideoCustomCSSTemplate,
 	},

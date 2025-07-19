@@ -7,6 +7,8 @@
 
 namespace RTGODAM\Inc\REST_API;
 
+use RTGODAM\Inc\Filesystem\Chunk_Uploader;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -45,6 +47,9 @@ class Settings extends Base {
 				'enable_folder_organization' => true,
 				'brand_image'                => '',
 				'brand_color'                => '#000000',
+			),
+			'uploads'      => array(
+				'offload_media' => false,
 			),
 			'video_player' => array(
 				'custom_css' => '',
@@ -293,6 +298,9 @@ class Settings extends Base {
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
 				'brand_image'                => sanitize_text_field( $settings['general']['brand_image'] ?? $default['general']['brand_image'] ),
 				'brand_color'                => sanitize_hex_color( $settings['general']['brand_color'] ?? $default['general']['brand_color'] ),
+			),
+			'uploads'      => array(
+				'offload_media' => rest_sanitize_boolean( $settings['uploads']['offload_media'] ?? $default['uploads']['offload_media'] ),
 			),
 			'video_player' => array(
 				'custom_css' => sanitize_textarea_field( $settings['video_player']['custom_css'] ) ?? $default['video_player']['custom_css'],

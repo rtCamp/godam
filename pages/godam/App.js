@@ -1,4 +1,3 @@
-
 /**
  * External dependencies
  */
@@ -7,7 +6,7 @@ import { useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { cog, video, code } from '@wordpress/icons';
+import { cog, video, upload } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -21,10 +20,13 @@ import GoDAMFooter from './components/GoDAMFooter.jsx';
 
 import GeneralSettings from './components/tabs/GeneralSettings/GeneralSettings.jsx';
 import VideoSettings from './components/tabs/VideoSettings/VideoSettings.jsx';
+import UploadsSettings from './components/tabs/UploadsSettings/UploadsSettings.jsx';
 
 import { useGetMediaSettingsQuery } from './redux/api/media-settings.js';
 import { setMediaSettings } from './redux/slice/media-settings.js';
 import VideoPlayer from './components/tabs/VideoPlayer/VideoPlayer.jsx';
+
+import { isAPIKeyValid } from '../../assets/src/js/media-library/utility';
 
 const TABS = [
 	{
@@ -32,20 +34,51 @@ const TABS = [
 		label: __( 'General Settings', 'godam' ),
 		component: GeneralSettings,
 		icon: cog,
+		weight: 10,
 	},
 	{
 		id: 'video-settings',
 		label: __( 'Video Settings', 'godam' ),
 		component: VideoSettings,
 		icon: video,
+		weight: 20,
 	},
 	{
 		id: 'video-player',
 		label: __( 'Video Player', 'godam' ),
 		component: VideoPlayer,
-		icon: code,
+		weight: 30,
 	},
 ];
+
+const addTab = ( isPremium, id, label, component, icon, weight ) => {
+	// Return early if the tab already exists
+	if ( TABS.some( ( tab ) => tab.id === id ) ) {
+		return;
+	}
+
+	if ( isPremium ) {
+		if ( isAPIKeyValid() ) {
+			TABS.push( {
+				id,
+				label,
+				component,
+				icon,
+				weight,
+			} );
+		}
+
+		return;
+	}
+
+	TABS.push( {
+		id,
+		label,
+		component,
+		icon,
+		weight,
+	} );
+};
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( TABS[ 0 ].id );
@@ -68,6 +101,12 @@ const App = () => {
 	if ( isLoading ) {
 		return <Skeleton />;
 	}
+
+	// Add tabs dynamically based on the API key validity
+	addTab( true, 'uploads-settings', __( 'Uploads Settings', 'godam' ), UploadsSettings, upload, 15 );
+
+	// Sort tabs by weight
+	TABS.sort( ( a, b ) => a.weight - b.weight );
 
 	const activeTabData = TABS.find( ( tab ) => tab.id === activeTab );
 

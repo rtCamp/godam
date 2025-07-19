@@ -303,6 +303,52 @@ function rtgodam_get_usage_data() {
 }
 
 /**
+ * Get the storage and bandwidth usage data.
+ *
+ * @param string $base_path Optional base path to append to the CDN host.
+ *
+ * @return string
+ */
+function rtgodam_get_cdn_host( $base_path = '' ) {
+
+	$api_key = get_option( 'rtgodam-api-key', '' );
+
+	if ( empty( $api_key ) ) {
+		return get_home_url(); // Return home URL if API key is not set.
+	}
+
+	$data = rtgodam_verify_api_key( $api_key );
+
+	// Return the error if verification fails.
+	if ( is_wp_error( $data ) ) {
+		return get_home_url();
+	}
+
+	// Return home URL if the API key verification is not successful.
+	if ( ! isset( $data['status'] ) || 'success' !== $data['status'] ) {
+		return get_home_url();
+	}
+
+	// Return home URL if the account status is not active.
+	if ( ! isset( $data['data']['status'] ) || 'active' !== strtolower( $data['data']['status'] ) ) {
+		return get_home_url();
+	}
+
+	// Return home URL if account token is not set.
+	if ( ! isset( $data['data']['account_token'] ) ) {
+		return get_home_url();
+	}
+
+	// If a base path is provided, append it to the CDN URL.
+	if ( ! empty( $base_path ) ) {
+		return sprintf( 'https://%s.gdcdn.us/%s', $data['data']['account_token'], ltrim( $base_path, '/' ) );
+	}
+
+	// Return the CDN URL with the account token.
+	return sprintf( 'https://%s.gdcdn.us', $data['data']['account_token'] );
+}
+
+/**
  * Check if the api key is valid.
  *
  * @return bool
@@ -311,4 +357,46 @@ function rtgodam_is_api_key_valid() {
 	$user_data = rtgodam_get_user_data();
 
 	return ! empty( $user_data['valid_api_key'] ) ? true : false;
+}
+
+/**
+ * Check if media migration is needed.
+ *
+ * This function checks if there are any attachments that have not been migrated to GoDAM.
+ * It returns true if migration is needed, otherwise false.
+ *
+ * @return bool True if media migration is needed, false otherwise.
+ */
+function rtgodam_need_media_migration() {
+	$attachments = get_posts(
+		array(
+			'post_type'      => 'attachment',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				array(
+					'key'     => '_is_media_migrated_to_godam',
+					'compare' => 'NOT EXISTS',
+				),
+			),
+		)
+	);
+
+	if ( empty( $attachments ) ) {
+		// No attachments found, no migration needed.
+		return false;
+	}
+
+	$media_migrated = get_option( 'rtgodam_media_migrated', false );
+
+	if ( ! $media_migrated ) {
+		return true;
+	}
+
+	// Check if the media migration is complete.
+	if ( ! is_array( $media_migrated ) || ! isset( $media_migrated['status'] ) || 'complete' !== $media_migrated['status'] ) {
+		return true;
+	}
+
+	return false;
 }

@@ -9,6 +9,7 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Filesystem\Chunk_Uploader;
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -568,6 +569,21 @@ class Pages {
 					'transcoder-page-script-godam',
 					'userData',
 					$rtgodam_user_data
+				);
+			}
+
+			// Pass data only if the API key is valid.
+			if ( rtgodam_is_api_key_valid() ) {
+				$chunk_uploader = Chunk_Uploader::get_instance();
+
+				wp_localize_script(
+					'transcoder-page-script-godam',
+					'goDAMUploadsData',
+					array(
+						'max_upload_size'               => $chunk_uploader->max_upload_size,
+						'godam_default_max_upload_size' => $chunk_uploader->get_upload_limit(),
+						'need_media_migration'          => rtgodam_need_media_migration(),
+					)
 				);
 			}
 

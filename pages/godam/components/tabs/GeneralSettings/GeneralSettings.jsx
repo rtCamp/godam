@@ -25,7 +25,7 @@ import ColorPickerButton from '../../../../video-editor/components/shared/color-
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
 
-import { scrollToTop } from '../../../utils/index.js';
+import { scrollToTop } from '../../../utils';
 
 const GeneralSettings = () => {
 	const dispatch = useDispatch();

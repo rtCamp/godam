@@ -55,6 +55,7 @@ function autoloader( $file_resource = '' ) {
 				break;
 			case 'providers':
 			case 'meta-boxes': // phpcs:ignore
+			case 'filesystem': // phpcs:ignore
 			case 'rest-controller': // phpcs:ignore
 			case 'taxonomies': // phpcs:ignore
 			case 'rest-api': // phpcs:ignore
