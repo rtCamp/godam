@@ -10,7 +10,7 @@ Tested up to: 6.8.1
 
 Requires PHP: 7.4
 
-Stable tag: 1.1.4
+Stable tag: 1.2.1
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -73,8 +73,8 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 - Watermarking support to protect video content.
 - Automatically compress and resize videos on upload to reduce storage and bandwidth.
 
-#### 📌 Central Media Manager
-- Unified dashboard for managing all media assets in one place.
+#### 📌 GoDAM Central
+- Unified dashboard for managing all assets in one place.
 - Organize videos, images, and documents into folders with search, filters, and sharing options.
 - Each video gets a dedicated single video page with time-stamped comments and reactions for team collaboration.
 - Automatically sync uploaded videos with the WordPress Media Library for easy access across your site.
@@ -107,7 +107,7 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 - **_Content Platforms:_** Stream high-quality videos with minimal buffering and downtime.
 
 GoDAM is ideal for businesses, content creators, educators, and media platforms looking to streamline digital asset management while offering high-quality streaming experiences.
-Whether you’re running an e-learning site, an eCommerce store with product videos, or a media-heavy blog, GoDAM ensures your videos are delivered efficiently and engagingly.
+Whether you're running an e-learning site, an eCommerce store with product videos, or a media-heavy blog, GoDAM ensures your videos are delivered efficiently and engagingly.
 
 Get started today and revolutionize the way you manage and deliver video content on WordPress!
 
@@ -184,42 +184,37 @@ Yes! You can start with a 7-day free trial to explore all features. If you decid
 Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and heatmaps to see which parts of your videos are most engaging. These insights help you optimize your content strategy.
 
 ### Screenshots
+
 1. General Settings
-2. Video Settings without API Key
-3. Video Settings with valid API Key
-4. Video Editor
-5. Video Layer Selection
-6. CTA Layer
-7. Hotspot Layer
-8. Ads Integration
-9. Polls Layer
-10. Gravity Forms Integration
-11. Contact Form 7 Integration
-12. WP Forms Integration
-13. Player Settings
-14. Enhanced Media Library (DAM)
-15. GoDAM Video Block
-16. Post-Specific Video Settings
-17. Attachment Video Details
-18. Single Video Analytics
-19. Video Analytics Dashboard
-20. Central Media Selector Tab
-21. Share Button
-22. GoDAM Recorder Field for Gravity Forms
-23. Gravity Form Entry Detail page
-24. Automatic Video Transcription
-25. Built-in Video SEO
-26. `[godam_video]` Shortcode
-27. Central Media Manager
-28. Image Upload to Central Media Manager
-29. GoDAM Video Gallery Block
-30. GoDAM Video Gallery Front-end
-31. Elementor GoDAM Audio Widget
-32. Elementor GoDAM Gallery Widget
-33. Elementor GoDAM Video Widget
-34. Jetpack Forms Integration
-35. Video Player Style Settings
-36. Chapters Interface
+2. Video Settings with valid API Key
+3. Video Editor
+4. Video Layer Selection
+5. Hotspot Layer
+6. Ads Integration
+7. Gravity Forms Integration
+8. Contact Form 7 Integration
+9. WP Forms Integration
+10. Player Settings
+11. Enhanced Media Library (DAM)
+12. GoDAM Video Block
+13. Post-Specific Video Settings
+14. Attachment Video Details
+15. Single Video Analytics
+16. Video Analytics Dashboard
+17. GoDAM Central Selector Tab
+18. GoDAM Recorder Field for Gravity Forms
+19. Gravity Form Entry Detail page
+20. Automatic Video Transcription
+21. `[godam_video]` Shortcode
+22. GoDAM Central
+23. Image Upload to GoDAM Central
+24. GoDAM Video Gallery Block
+25. Elementor GoDAM Audio Widget
+26. Elementor GoDAM Gallery Widget
+27. Elementor GoDAM Video Widget
+28. Jetpack Forms Integration
+29. Video Player Style Settings
+30. Chapters Interface
 
 ## External Services
 
