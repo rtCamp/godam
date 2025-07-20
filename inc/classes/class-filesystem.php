@@ -22,8 +22,8 @@ class FileSystem {
 	 * Construct method.
 	 */
 	protected function __construct() {
-
-		$this->init_file_system();
+		// Defer filesystem initialization until WordPress is fully loaded
+		add_action( 'init', array( $this, 'init_file_system' ) );
 	}
 
 	/**
@@ -31,15 +31,24 @@ class FileSystem {
 	 *
 	 * @return void
 	 */
-	protected function init_file_system() {
+	public function init_file_system() {
 
 		global $wp_filesystem;
 
+		// Only initialize if we haven't already done so
+		if ( ! empty( $wp_filesystem ) && is_a( $wp_filesystem, 'WP_Filesystem_Base' ) ) {
+			return;
+		}
+
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 
-		if ( empty( $wp_filesystem ) || ! is_a( $wp_filesystem, 'WP_Filesystem_Base' ) ) {
-			$creds = request_filesystem_credentials( site_url() );
-			wp_filesystem( $creds );
+		// Try to initialize without credentials first (for most hosting environments)
+		if ( ! WP_Filesystem() ) {
+			// If that fails, check if we're in admin context before requesting credentials
+			if ( is_admin() ) {
+				$creds = request_filesystem_credentials( site_url() );
+				wp_filesystem( $creds );
+			}
 		}
 	}
 
@@ -56,7 +65,15 @@ class FileSystem {
 			return false;
 		}
 
+		// Ensure filesystem is initialized
+		static::ensure_filesystem_initialized();
+
 		global $wp_filesystem;
+
+		// Fallback to native PHP if filesystem is not available
+		if ( empty( $wp_filesystem ) || ! is_a( $wp_filesystem, 'WP_Filesystem_Base' ) ) {
+			return file_exists( $file );
+		}
 
 		return $wp_filesystem->exists( $file );
 	}
@@ -74,8 +91,26 @@ class FileSystem {
 			return false;
 		}
 
+		// Ensure filesystem is initialized
+		static::ensure_filesystem_initialized();
+
 		global $wp_filesystem;
 
+		// Fallback to native PHP if filesystem is not available
+		if ( empty( $wp_filesystem ) || ! is_a( $wp_filesystem, 'WP_Filesystem_Base' ) ) {
+			return unlink( $file );
+		}
+
 		return $wp_filesystem->delete( $file );
+	}
+
+	/**
+	 * Ensure filesystem is initialized before use.
+	 *
+	 * @return void
+	 */
+	protected static function ensure_filesystem_initialized() {
+		$instance = static::get_instance();
+		$instance->init_file_system();
 	}
 }

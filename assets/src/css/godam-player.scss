@@ -422,7 +422,7 @@
 	text-transform: capitalize;
 }
 
-  .vjs-menu-item:hover, .vjs-back-item:hover {
+  .vjs-back-item:hover {
 	background: rgba(115, 133, 159, 0.5) !important;
 }
 
@@ -435,6 +435,36 @@
 
 	span {
 		margin: 0 auto;
+	}
+
+	svg {
+		flex-shrink: 0;
+		margin-left: auto;
+	}
+}
+
+// Selected menu item styling for better visual feedback
+.vjs-menu-item.vjs-selected,
+.vjs-menu-item:has(.selected-menu-item svg) {
+	background-color: #1976d2 !important;
+	color: white !important;
+	
+	.vjs-menu-item-text {
+		color: white !important;
+	}
+}
+
+// Smooth transition for menu items
+.vjs-menu-item {
+	transition: background-color 0.2s ease, color 0.2s ease;
+	
+	&:hover {
+		background-color: rgba(115, 133, 159, 0.5) !important;
+		transition: background-color 0.1s ease;
+	}
+	
+	&.vjs-selected:hover {
+		background-color: #1565c0 !important;
 	}
 }
 

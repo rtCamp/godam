@@ -190,9 +190,11 @@ function openSubmenu( menuButton, items, title = '' ) {
 					this.handleSpeedSelection( label );
 				}
 
-				// Close menu after selection
-				// menuButton.menu.hide();
-				menuButton.el_.focus();
+				// Close menu smoothly after selection
+				setTimeout(() => {
+					menuButton.menu.hide();
+					menuButton.resetToDefaultMenu();
+				}, 100);
 			}
 
 			handleQualitySelection( qualityLabel ) {
@@ -214,9 +216,6 @@ function openSubmenu( menuButton, items, title = '' ) {
 					}
 					selectedQuality = selectedHeight + 'p';
 				}
-
-				menuButton.el_.focus(); // keep menu focused
-				openSubmenu( menuButton, items, title ); // refresh menu to update ticks
 			}
 
 			handleSpeedSelection( speed ) {
@@ -237,9 +236,6 @@ function openSubmenu( menuButton, items, title = '' ) {
 							// silently fail.
 						}
 					} );
-
-				menuButton.el_.focus();
-				openSubmenu( menuButton, items, title ); // refresh menu to show new tick
 			}
 		}
 
@@ -337,11 +333,10 @@ class SpeedMenuItem extends videojs.getComponent( 'MenuItem' ) {
 			'Speed',
 		);
 
-		// Fix: re-focus and ensure menu behaves consistently
+		// Improved menu behavior - no more forced locking
 		setTimeout( () => {
 			settingsButton.el_.focus();
-			settingsButton.menuButtonPressed_ = true; // maintain pressed state
-			settingsButton.menu.lockShowing(); // keep menu visible
+			settingsButton.menu.show();
 		}, 0 );
 	}
 }
