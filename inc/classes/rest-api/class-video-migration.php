@@ -242,7 +242,7 @@ class Video_Migration extends Base {
 			$post_type_total = 0;
 			
 			do {
-				$posts = get_posts(
+				$posts = get_posts(  // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
 					array(
 						'post_type'              => $post_type,
 						'posts_per_page'         => $posts_per_page,
