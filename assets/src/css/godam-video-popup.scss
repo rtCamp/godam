@@ -13,9 +13,16 @@
 
 
     .godam-product-modal-close{
+        background-color:rgba(0, 0, 0, 0.8);
         position: absolute;
         top: 12px;
+        display: flex;
+        cursor: pointer !important;
+        justify-content: center;
+        align-items: center;
         right: 12px;
+        opacity: 1;
+        border-radius: 50%;
         z-index: 1000;
         cursor: pointer;
         width: 48px;

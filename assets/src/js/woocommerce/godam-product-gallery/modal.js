@@ -82,7 +82,7 @@ export function initVideoModal() {
 			<div class="godam-product-modal-overlay"></div>
 			<div class="godam-product-sidebar"></div>
 			<div class="godam-product-modal-content">
-				<span class="godam-product-modal-close" aria-label="${ __( 'Close modal', 'godam' ) }" title="${ __( 'Close', 'godam' ) }">&times;</span>
+				<span class="godam-product-modal-close" aria-label="${ __( 'Close modal', 'godam' ) }" title="${ __( 'Close', 'godam' ) }"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg></span>
 				<div class="video-container animate-video-loading" style="aspect-ratio:responsive;">
 					<div class="animate-play-btn">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
@@ -531,7 +531,7 @@ async function loadSidebarProducts( productIds, sidebarElement, ctaEnabled, ctaD
 
 				sidebarElement.innerHTML = `
 					<div class="godam-sidebar-header">
-						<button class="godam-sidebar-close" aria-label="${ __( 'Close sidebar', 'godam' ) }">&times;</button>
+						<button class="godam-sidebar-close" aria-label="${ __( 'Close sidebar', 'godam' ) }"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg></button>
 					</div>
 					<div class="godam-sidebar-full-product">
 						${ productHtml }
@@ -569,7 +569,7 @@ async function loadSidebarProducts( productIds, sidebarElement, ctaEnabled, ctaD
 			sidebarElement.innerHTML = `
 			<div class="godam-sidebar-header">
 				<h3>Products seen in the video</h3>
-				<button class="godam-sidebar-close" aria-label="${ __( 'Close sidebar', 'godam' ) }">&times;</button>
+				<button class="godam-sidebar-close" aria-label="${ __( 'Close sidebar', 'godam' ) }"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg></button>
 			</div>
 			<div class="godam-sidebar-products">
 				${ products.map( ( product ) => `
