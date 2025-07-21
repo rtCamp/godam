@@ -164,12 +164,9 @@ class Chunk_Uploader {
 		$chunk        = isset( $_REQUEST['chunk'] ) ? absint( $_REQUEST['chunk'] ) : 0;
 		$current_part = $chunk + 1;
 		$chunks       = isset( $_REQUEST['chunks'] ) ? absint( $_REQUEST['chunks'] ) : 0;
+
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- This is a file name, not user input.
-		$async_upload_name = ! empty( $_FILES['async-upload']['name'] ) ? $_FILES['async-upload']['name'] : '';
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- This is a file name, not user input.
-		$async_upload_tmp_name = ! empty( $_FILES['async-upload']['tmp_name'] ) ? $_FILES['async-upload']['tmp_name'] : '';
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- This is a file name, not user input.
-		$file_name = $_REQUEST['name'] ?? $async_upload_name;
+		$file_name = $_REQUEST['name'] ?? $this->get_async_filename();
 
 		// Use WordPress helper for file system operations.
 		$upload_dir     = wp_get_upload_dir();
@@ -212,7 +209,7 @@ class Chunk_Uploader {
 		}
 
 		$godam_max_upload_size = $this->get_upload_limit();
-		if ( file_exists( $file_path ) && filesize( $file_path ) + filesize( $async_upload_tmp_name ) > $godam_max_upload_size ) {
+		if ( file_exists( $file_path ) && filesize( $file_path ) + filesize( $this->get_async_tempname() ) > $godam_max_upload_size ) {
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				$this->debug( 'GoDAM: File size limit exceeded.' );
 			}
@@ -266,11 +263,11 @@ class Chunk_Uploader {
 
 		if ( $out ) {
 			// Read binary input stream and append it to temp file.
-			$in = @fopen( $async_upload_tmp_name, 'rb' );
+			$in = @fopen( $this->get_async_tempname(), 'rb' );
 
 			if ( $in ) {
 				// Explain why we use a while loop here.
-				while ( $buff = @fread( $in, ( 50 * MB_IN_BYTES ) ) ) {
+				while ( $buff = @fread( $in, 4096 ) ) {
 					@fwrite( $out, $buff );
 				}
 			} else {
@@ -315,7 +312,7 @@ class Chunk_Uploader {
 
 			@fclose( $in );
 			@fclose( $out );
-			@unlink( $async_upload_tmp_name );
+			@unlink( $this->get_async_tempname() );
 		} else {
 			// Failed to open output stream.
 			$this->debug( "GoDAM: Failed to open output stream $file_path to write part $current_part of $chunks." );
@@ -362,10 +359,9 @@ class Chunk_Uploader {
 			$_FILES['async-upload']['tmp_name'] = $file_path;
 
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- This is a file name, not user input.
-			$async_upload_tmp_name          = $_FILES['async-upload']['tmp_name'];
-			$async_upload_name              = $file_name;
-			$_FILES['async-upload']['size'] = filesize( $async_upload_tmp_name );
-			$wp_filetype                    = wp_check_filetype_and_ext( $async_upload_tmp_name, $async_upload_name );
+			$_FILES['async-upload']['name'] = $file_name;
+			$_FILES['async-upload']['size'] = filesize( $this->get_async_tempname() );
+			$wp_filetype                    = wp_check_filetype_and_ext( $this->get_async_tempname(), $this->get_async_filename() );
 			$_FILES['async-upload']['type'] = $wp_filetype['type'];
 
 			header( 'Content-Type: text/plain; charset=' . get_option( 'blog_charset' ) );
@@ -407,7 +403,7 @@ class Chunk_Uploader {
 						sprintf(
 						/* translators: %s: Name of the file that failed to upload. */
 							esc_html__( '&#8220;%s&#8221; has failed to upload.', 'godam' ),
-							esc_html( ! empty( $async_upload_name ) ? $async_upload_name : '' )
+							esc_html( ! empty( $this->get_async_filename() ) ? $this->get_async_filename() : '' )
 						),
 						esc_html( $id->get_error_message() )
 					);
@@ -446,6 +442,26 @@ class Chunk_Uploader {
 	}
 
 	/**
+	 * Get the filename for the async upload.
+	 *
+	 * @return string
+	 */
+	public function get_async_filename() {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing
+		return ! empty( $_FILES['async-upload']['name'] ) ? $_FILES['async-upload']['name'] : '';
+	}
+
+	/**
+	 * Get the temporary file name for the async upload.
+	 *
+	 * @return string
+	 */
+	public function get_async_tempname() {
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing
+		return ! empty( $_FILES['async-upload']['tmp_name'] ) ? $_FILES['async-upload']['tmp_name'] : '';
+	}
+
+	/**
 	 * Copied from wp-admin/includes/ajax-actions.php because we have to override the args for
 	 * the media_handle_upload function. As of WP 6.0.1.
 	 */
@@ -463,7 +479,7 @@ class Chunk_Uploader {
 					'success' => false,
 					'data'    => array(
 						'message'  => esc_html__( 'Sorry, you are not allowed to upload files.', 'godam' ),
-						'filename' => ! empty( $async_upload_name ) ? $async_upload_name : '',
+						'filename' => ! empty( $this->get_async_filename() ) ? $this->get_async_filename() : '',
 					),
 				)
 			);
@@ -480,7 +496,7 @@ class Chunk_Uploader {
 						'success' => false,
 						'data'    => array(
 							'message'  => esc_html__( 'Sorry, you are not allowed to attach files to this post.', 'godam' ),
-							'filename' => ! empty( $async_upload_name ) ? $async_upload_name : '',
+							'filename' => ! empty( $this->get_async_filename() ) ? $this->get_async_filename() : '',
 						),
 					)
 				);
@@ -500,7 +516,7 @@ class Chunk_Uploader {
 
 		// If the context is custom header or background, make sure the uploaded file is an image.
 		if ( isset( $post_data['context'] ) && in_array( $post_data['context'], array( 'custom-header', 'custom-background' ), true ) ) {
-			$wp_filetype = wp_check_filetype_and_ext( ! empty( $async_upload_tmp_name ) ? $async_upload_tmp_name : '', ! empty( $async_upload_name ) ? $async_upload_name : '' );
+			$wp_filetype = wp_check_filetype_and_ext( ! empty( $this->get_async_tempname() ) ? $this->get_async_tempname() : '', ! empty( $this->get_async_filename() ) ? $this->get_async_filename() : '' );
 
 			if ( ! wp_match_mime_types( 'image', $wp_filetype['type'] ) ) {
 				echo wp_json_encode(
@@ -508,7 +524,7 @@ class Chunk_Uploader {
 						'success' => false,
 						'data'    => array(
 							'message'  => esc_html__( 'The uploaded file is not a valid image. Please try again.', 'godam' ),
-							'filename' => ! empty( $async_upload_name ) ? $async_upload_name : '',
+							'filename' => ! empty( $this->get_async_filename() ) ? $this->get_async_filename() : '',
 						),
 					)
 				);
@@ -534,7 +550,7 @@ class Chunk_Uploader {
 					'success' => false,
 					'data'    => array(
 						'message'  => esc_html( $attachment_id->get_error_message() ),
-						'filename' => ! empty( $async_upload_name ) ? $async_upload_name : '',
+						'filename' => ! empty( $this->get_async_filename() ) ? $this->get_async_filename() : '',
 					),
 				)
 			);
