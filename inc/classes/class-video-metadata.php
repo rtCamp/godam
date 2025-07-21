@@ -206,6 +206,8 @@ class Video_Metadata {
 	 *
 	 * This filter modifies the attachment URL to return the remote URL
 	 * if the video has been migrated from Vimeo.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function filter_vimeo_migrated_urls(): void {
 		add_filter(

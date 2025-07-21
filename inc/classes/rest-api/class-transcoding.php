@@ -302,6 +302,8 @@ class Transcoding extends Base {
 	 * Permission callback for the transcoding status endpoint.
 	 *
 	 * @param \WP_REST_Request $request REST request object.
+	 *
+	 * @since n.e.x.t
 	 * 
 	 * @return WP_REST_Response
 	 */
@@ -358,6 +360,8 @@ class Transcoding extends Base {
 	 *
 	 * This function is a placeholder for the retranscoding functionality.
 	 * It should be implemented to handle the retranscoding of media files.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param \WP_REST_Request $request REST request object.
 	 */

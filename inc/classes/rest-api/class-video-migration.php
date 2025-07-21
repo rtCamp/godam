@@ -4,6 +4,8 @@
  * 
  * This class handles the migration of Vimeo videos in Gutenberg blocks.
  *
+ * @since n.e.x.t
+ *
  * @package GoDAM
  */
 
@@ -30,6 +32,8 @@ class Video_Migration extends Base {
 
 	/**
 	 * Get REST routes.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function get_rest_routes() {
 		return array(

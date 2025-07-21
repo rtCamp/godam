@@ -208,6 +208,8 @@ class Pages {
 	/**
 	 * To render the tools page.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return void
 	 */
 	public function render_tools_page() {
