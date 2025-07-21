@@ -1,4 +1,5 @@
 
+@import url(https://vjs.zencdn.net/8.3.0/video-js.css);
 @import "_common"; // stylelint-disable-line scss/load-no-partial-leading-underscore
 
 $GREEN: #4CAF50;
@@ -33,6 +34,27 @@ $media-frame-width: calc(300px + 2 * 24px);
 	width: $media-frame-width;
 }
 
+@media (max-width: 900px) {
+
+    .media-frame-menu {
+        position: absolute !important;
+           width: 100% !important;
+           z-index: 1000;
+           background-color: #fff;
+       }
+
+       .media-frame-menu.hide-menu {
+           display: none;
+       }
+}
+
+@media (max-width: 1024px) {
+
+    .media-sidebar {
+        width: 200px;
+    }
+}
+
 .media-frame-title {
 	left: $media-frame-width;
 }
@@ -43,62 +65,6 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 .media-frame-content {
 	left: $media-frame-width;
-}
-
-#menu-item-library {
-	display: none;
-}
-
-.media-frame-menu-heading {
-	display: none;
-}
-
-.search-form {
-
-	label {
-		white-space: nowrap;
-	}
-}
-
-/**
- * CSS for custom filtering options for the media library.
- */
-#media-date-range-filter {
-	border: 1px solid #8c8f94;
-	border-radius: 3px;
-	display: inline-block;
-	margin: 0 10px 0 0;
-	font-size: 14px;
-	line-height: 2;
-	color: #2c3338;
-	box-shadow: none;
-	padding: 0 24px 0 8px;
-	min-height: 30px;
-	max-width: 10rem;
-	vertical-align: middle;
-}
-
-.media-modal-content #media-date-range-filter {
-	vertical-align: bottom;
-}
-
-#media-attachment-date-filters,
-#filter-by-date,
-#media-date-range-filter-start,
-#media-date-range-filter-end {
-	display: none !important;
-}
-
-#media-folder-filter {
-	display: none !important;
-}
-
-.media-attachments-filter-heading + #media-date-range-filter {
-	margin-top: 32px;
-}
-
-.daterangepicker {
-	z-index: calc(160000 + 1) !important; // for some reason media-model z-index is 160000
 }
 
 /**
@@ -125,6 +91,266 @@ $media-frame-width: calc(300px + 2 * 24px);
 	.circle {
 		--wp-components-color-accent: #e6533a;
 	}
+}
+
+.hide-sidebar {
+
+    .media-frame-menu {
+        display: none;
+    }
+
+    .media-frame-title {
+        left: 0;
+    }
+
+    .media-frame-router {
+        left: 0;
+    }
+
+    .media-frame-content {
+        left: 0;
+    }
+}
+
+/**
+ * Media Library modal styles.
+ *
+ */
+.media-modal-content {
+    border-radius: 12px;
+
+    &:has(#menu-item-godam[aria-selected="true"]) {
+
+        #media-folder-toggle-button {
+            display: none;
+        }
+
+        #rt-transcoder-media-library-root {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+    }
+
+    .media-frame-title {
+        height: 78px;
+        padding: 24px 24px 0 24px;
+    }
+
+    .media-frame-router {
+        top: 104px;
+        padding: 0 24px;
+    }
+
+    .media-frame-content {
+        top: 138px;
+
+        .attachments-wrapper {
+            margin: 24px;
+            width: calc(100% - 300px - 2 * 24px);
+        }
+
+        .media-frame-toolbar {
+            left: 0;
+        }
+
+        .media-toolbar {
+            border: none;
+            border-radius: 4px;
+            display: flex;
+            flex-wrap: wrap;
+            position: relative;
+            height: auto;
+            width: calc(100% - 300px - 2 * 16px);
+
+            #media-search-input {
+                background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEgNy45NTY0M0MxIDkuODAxMzkgMS43MzI5MSAxMS41NzA4IDMuMDM3NDkgMTIuODc1NEM0LjM0MjA4IDE0LjE4IDYuMTExNDcgMTQuOTEyOSA3Ljk1NjQzIDE0LjkxMjlDOS44MDEzOSAxNC45MTI5IDExLjU3MDggMTQuMTggMTIuODc1NCAxMi44NzU0QzE0LjE4IDExLjU3MDggMTQuOTEyOSA5LjgwMTM5IDE0LjkxMjkgNy45NTY0M0MxNC45MTI5IDYuMTExNDcgMTQuMTggNC4zNDIwOCAxMi44NzU0IDMuMDM3NDlDMTEuNTcwOCAxLjczMjkxIDkuODAxMzkgMSA3Ljk1NjQzIDFDNi4xMTE0NyAxIDQuMzQyMDggMS43MzI5MSAzLjAzNzQ5IDMuMDM3NDlDMS43MzI5MSA0LjM0MjA4IDEgNi4xMTE0NyAxIDcuOTU2NDNaIiBzdHJva2U9IiM1MjUyNTIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMTYuOTk5NSAxNi45OTk1TDEyLjg3NSAxMi44NzUiIHN0cm9rZT0iIzUyNTI1MiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=);
+                background-repeat: no-repeat;
+                background-size: 16px 16px;
+                background-position: 10px center;
+                padding-left: 36px;
+            }
+
+            .media-search-input-label {
+                position: relative;
+                top: auto;
+                margin-right: 8px;
+            }
+
+            input, select, button {
+                height: 40px;
+                margin: 12px 0;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                width: 100%;
+                max-width: 10rem;
+            }
+
+            .media-toolbar-secondary {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 1rem;
+                row-gap: 0;
+
+                .media-grid-view-switch {
+                    display: flex;
+                    margin: auto 0;
+                }
+            }
+
+            .media-toolbar-primary {
+                display: flex;
+                align-items: center;
+                margin: 0 0 0 auto;
+
+                .media-search-input-label {
+                    display: none;
+                }
+            }
+
+            button.hidden {
+                display: none;
+            }
+
+            .attachment-filters {
+                margin: 0;
+                max-width: 8rem;
+            }
+
+            .media-attachments-filter-heading {
+                display: none;
+            }
+        }
+
+        @media (max-width: 1200px) {
+
+            .media-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                width: calc(100% - 267px - 64px);
+
+                .media-toolbar-secondary {
+                    max-width: 100%;
+                    width: 100%;
+                    flex-wrap: wrap;
+                }
+
+                .media-toolbar-primary {
+                    max-width: 100%;
+                    width: 100%;
+                    flex-wrap: wrap;
+                    margin: 0;
+                }
+
+                .attachment-filters {
+                    margin: 0.75rem 0;
+                }
+            }
+
+            .attachments-wrapper {
+                top: 240px;
+            }
+        }
+    }
+
+    .edit-attachment-frame {
+
+        .media-frame-content {
+            top: 102px;
+        }
+    }
+
+    .button {
+        border: 1px solid #A3A3A3;
+        border-radius: 0.25rem;
+        color: #1c1c1c;
+        background-color: #fff;
+
+        svg {
+            padding-right: 0.5rem;
+        }
+
+        &:focus {
+            color: #000;
+            border-color: #000;
+        }
+
+        &.media-frame-menu-toggle {
+            left: 50px !important;
+            top: 20px !important;
+      }
+    }
+
+    .attachment-actions {
+
+        .button {
+            background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+                border-radius: 0.25rem;
+                border: none;
+                color: #FFF;
+                padding: 6px 8px;
+        }
+    }
+
+    .media-menu-item.active {
+        border: none !important;
+        border-bottom: 2px solid #AB3A6C !important;
+    }
+}
+
+#menu-item-library, #menu-item-featured-image {
+	display: none;
+}
+
+.media-frame-menu-heading {
+	display: none;
+}
+
+.search-form {
+
+	label {
+		white-space: nowrap;
+	}
+}
+
+/**
+ * CSS for custom filtering options for the media library.
+ */
+#media-date-range-filter {
+	display: inline-block;
+	margin: 0 10px 0 0;
+	margin-right: auto;
+	font-size: 14px;
+	line-height: 2;
+	color: #2c3338;
+	box-shadow: none;
+	padding: 0 24px 0 8px;
+	min-height: 30px;
+	max-width: 8rem;
+	border: 1px solid #A3A3A3;
+	vertical-align: middle;
+}
+
+.media-modal-content #media-date-range-filter {
+	vertical-align: bottom;
+	margin: 12px 0;
+}
+
+#media-attachment-date-filters,
+#filter-by-date,
+#media-date-range-filter-start,
+#media-date-range-filter-end {
+	display: none !important;
+}
+
+#media-folder-filter {
+	display: none !important;
+}
+
+.daterangepicker {
+	z-index: calc(160000 + 1) !important; // for some reason media-model z-index is 160000
 }
 
 /**

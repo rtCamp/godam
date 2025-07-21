@@ -20,6 +20,7 @@ import SingleMetrics from '../analytics/SingleMetrics';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import chevronLeft from '../../assets/src/images/chevron-left.svg';
 import chevronRight from '../../assets/src/images/chevron-right.svg';
+import upgradePlanBackground from '../../assets/src/images/upgrade-plan-dashboard-bg.png';
 
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
@@ -202,17 +203,51 @@ const Dashboard = () => {
 				</div>
 			</div>
 
-			<div id="api-key-overlay" className="api-key-overlay hidden">
+			<div
+				id="api-key-overlay"
+				className="api-key-overlay hidden"
+				style={
+					dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key'
+						? {
+							backgroundImage: `url(${ upgradePlanBackground })`,
+							backgroundSize: '100% calc(100% - 32px)',
+							backgroundRepeat: 'no-repeat',
+							backgroundPosition: 'center 32px',
+						}
+						: {}
+				}
+			>
 				<div className="api-key-message">
-					<p>
-						{ dashboardMetrics?.message + ' ' || __(
-							'Your API key is missing or invalid. Please check your plugin settings.',
-							'godam',
-						) }
-						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( 'Go to plugin settings', 'godam' ) }
-						</a>
-					</p>
+					{ dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key'
+						? <div className="api-key-overlay-banner">
+							<p className="api-key-overlay-banner-header">
+								{ __(
+									'Upgrade to unlock the media performance report.',
+									'godam',
+								) }
+
+								<a href="https://godam.io/pricing/" className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
+							</p>
+
+							<p className="api-key-overlay-banner-footer">
+								{ __( 'If you already have a premium plan, connect your ' ) }
+								<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+									{ __( 'API in the settings', 'godam' ) }
+								</a>
+							</p>
+						</div>
+						:	<div className="api-key-overlay-banner">
+							<p>
+								{ dashboardMetrics?.message + ' ' || __(
+									'An unknown error occurred. Please check your plugin settings.',
+									'godam',
+								) }
+							</p>
+							<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+								{ __( 'Go to plugin settings', 'godam' ) }
+							</a>
+						</div>
+					}
 				</div>
 			</div>
 

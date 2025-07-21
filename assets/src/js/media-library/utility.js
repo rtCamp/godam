@@ -2,6 +2,12 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
+/**
+ * Internal dependencies
+ */
+import Attachments from './models/attachments';
+
+/* global _ */
 
 /**
  * Utility function to check if the user has a valid API key.
@@ -9,7 +15,7 @@ import { __ } from '@wordpress/i18n';
  * @return {boolean} True if the user has a valid API Key, false otherwise.
  */
 function isAPIKeyValid() {
-	return window.MediaLibrary?.userData?.valid_api_key ? true : false;
+	return window.MediaLibrary?.userData?.validApiKey ? true : false;
 }
 
 /**
@@ -48,7 +54,7 @@ function isFolderOrgDisabled() {
 function addManageMediaButton() {
 	const referenceElement = document.querySelector( '.wrap .page-title-action' );
 
-	const godamMediaLink = window.godamRestRoute?.api_base + '/web/media-library';
+	const godamMediaLink = window.godamRestRoute?.apiBase + '/web/media-library';
 	const page = window.easydamMediaLibrary?.page || '';
 
 	// Insert the button after referenceElement
@@ -74,4 +80,15 @@ function addManageMediaButton() {
 	}
 }
 
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton };
+/**
+ * Get an instance of our wp.media.model.Attachments extension
+ *
+ * @param {Object} props
+ */
+const getQuery = ( props ) => {
+	return new Attachments( null, {
+		props: _.extend( _.defaults( props || {}, {} ), { query: true } ),
+	} );
+};
+
+export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery };

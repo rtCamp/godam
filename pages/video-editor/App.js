@@ -15,9 +15,23 @@ import '../../assets/src/css/godam-player.scss';
  */
 import AttachmentPicker from './AttachmentPicker.jsx';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
+import { useGetResolvedAttachmentQuery } from './redux/api/attachment.js';
 
 const App = () => {
 	const [ attachmentID, setAttachmentID ] = useState( null );
+	const [ rawID, setRawID ] = useState( null );
+	const {
+		data: resolvedAttachment,
+		isSuccess,
+	} = useGetResolvedAttachmentQuery( rawID, {
+		skip: ! rawID || ! isNaN( rawID ), // skip if it's already a number
+	} );
+
+	useEffect( () => {
+		if ( isSuccess && resolvedAttachment?.id ) {
+			setAttachmentID( resolvedAttachment.id );
+		}
+	}, [ isSuccess, resolvedAttachment ] );
 
 	/**
 	 * Handle the back/forward navigation
@@ -30,8 +44,13 @@ const App = () => {
 		const id = urlParams.get( 'id' );
 
 		// Check if valid attachment ID is present
-		if ( id && ! isNaN( id ) ) {
-			setAttachmentID( id );
+		if ( id ) {
+			setRawID( id );
+
+			// If ID is already a number, use it directly
+			if ( ! isNaN( id ) ) {
+				setAttachmentID( id );
+			}
 		}
 
 		// Handle back/forward navigation
