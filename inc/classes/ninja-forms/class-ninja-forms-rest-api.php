@@ -98,7 +98,7 @@ class Ninja_Forms_Rest_Api extends Base {
 	}
 
 	/**
-	 * Get a single Gravity Form.
+	 * Get a single Ninja Form.
 	 *
 	 * @since n.e.x.t
 	 *
