@@ -91,6 +91,8 @@ export const FormLayerComponentType = {
 	ninjaforms: {
 		isActive: Boolean( window?.videoData?.ninjaFormsActive ) ?? false,
 		component: NinjaForm,
+		idField: 'ninja_form_id',
+		settingsUrl: 'admin.php?page=ninja-forms&form_id={formId}',
 	},
 };
 
