@@ -350,6 +350,9 @@ class Pages {
 			// TODO Handle Everest Forms pro versions as well in future.
 			$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' );
 
+			$is_ninja_forms_active = is_plugin_active( 'ninja-forms/ninja-forms.php' );
+
+
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
@@ -368,6 +371,7 @@ class Pages {
 					'forminatorActive'   => $is_forminator_active,
 					'fluentformsActive'  => $is_fluent_forms_active,
 					'everestFormsActive' => $is_everest_forms_active,
+					'ninjaFormsActive'   => $is_ninja_forms_active,
 				)
 			);
 
