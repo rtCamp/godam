@@ -159,7 +159,7 @@ class Video_Migration extends Base {
 			'started'   => current_time( 'mysql' ),
 			'completed' => null,
 			'status'    => 'processing', // pending | processing | completed | error.
-			'message'   => 'Migration queued for processing',
+			'message'   => __( 'Migration queued for processing', 'godam' ),
 		);
 		
 		update_option( $wp_option_key, $initial_status );
@@ -194,14 +194,14 @@ class Video_Migration extends Base {
 		// Update status to processing.
 		$status            = get_option( $wp_option_key, array() );
 		$status['status']  = 'processing';
-		$status['message'] = 'Finding all posts to migrate';
+		$status['message'] = __( 'Finding all posts to migrate', 'godam' );
 		update_option( $wp_option_key, $status );
 
 		// Get all post types that support Gutenberg editor.
 		$post_types = $this->get_gutenberg_enabled_post_types();
 		
 		if ( empty( $post_types ) ) {
-			$this->update_migration_status_error( $wp_option_key, 'No post types with Gutenberg support found' );
+			$this->update_migration_status_error( $wp_option_key, __( 'No post types with Gutenberg support found', 'godam' ) );
 			return;
 		}
 
@@ -312,7 +312,11 @@ class Video_Migration extends Base {
 		
 		// Update status.
 		$status            = get_option( 'godam_vimeo_video_migration_status', array() );
-		$status['message'] = "Scheduled {$batch_number} batches for processing";
+		$status['message'] = sprintf(
+		/* translators: %d is the number of batches scheduled for processing */
+			__( 'Scheduled %d batches for processing', 'godam' ),
+			$batch_number,
+		);
 		update_option( 'godam_vimeo_video_migration_status', $status );
 	}
 
@@ -415,13 +419,23 @@ class Video_Migration extends Base {
 				$progress = round( ( $migration_status['done'] / $migration_status['total'] ) * 100, 2 );
 			}
 			
-			$migration_status['message'] = "Processed {$migration_status['done']}/{$migration_status['total']} posts ({$progress}%)";
+			$migration_status['message'] = sprintf(
+				/* translators: %1$d is the number of posts processed, %2$d is the total number of posts, %3$f is the progress percentage */
+				__( 'Processed %1$d/%2$d posts (%3$f%% complete)', 'godam' ),
+				$migration_status['done'],
+				$migration_status['total'],
+				$progress
+			);
 			
 			// Check if migration is complete.
 			if ( $migration_status['done'] >= $migration_status['total'] ) {
 				$migration_status['status']    = 'completed';
 				$migration_status['completed'] = current_time( 'mysql' );
-				$migration_status['message']   = "Migration completed! Processed {$migration_status['total']} posts.";
+				$migration_status['message']   = sprintf(
+					/* translators: %d is the total number of posts processed */
+					__( 'Migration completed! Processed %d posts.', 'godam' ),
+					$migration_status['total'],
+				);
 			}
 			
 			update_option( $wp_option_key, $migration_status );
