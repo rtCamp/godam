@@ -2,7 +2,7 @@
 /**
  * Register the Uppy Video field for WPForms.
  *
- * @since n.e.x.t
+ * @since 1.3.0
  *
  * @package GoDAM
  */
@@ -15,14 +15,14 @@ if ( class_exists( 'WPForms_Field' ) ) {
 	/**
 	 * WPForms GoDAM Video Field Class
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 */
 	class WPForms_Field_GoDAM_Video extends \WPForms_Field {
 
 		/**
 		 * Primary class constructor.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 */
 		public function init() {
 
@@ -50,7 +50,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Update the allows html tags in the post context for wp_kses().
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param array  $allowed_tags Allowed tags.
 		 * @param string $context Context.
@@ -90,7 +90,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Create the field options panel. Used by subclasses.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param array $video_field Field data and settings.
 		 */
@@ -149,7 +149,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Field display on the form front-end.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param array $field      Field settings.
 		 * @param array $deprecated Deprecated.
@@ -170,7 +170,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Render file selection field element.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param array $video_field Video field.
 		 * @return void
@@ -225,7 +225,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Render max file upload size field element.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param array $video_field Video field settings.
 		 * @return void
@@ -274,7 +274,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Form frontend JS enqueues.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param array $forms Forms on the current page.
 		 */
@@ -308,7 +308,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Extract and return file selectors from the field.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param array $field Field data.
 		 * @param array $default_file_selectors Default file selectors.
@@ -346,7 +346,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Save godam video file.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param array $entry Entry submitted data.
 		 * @param array $form_data Form data and settings.
@@ -409,7 +409,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Format video field value for plain-text email.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param mixed $value Field value.
 		 * @param array $field Field data.
@@ -441,7 +441,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Format video field value for HTML email.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param mixed  $value Field value.
 		 * @param array  $field Field data.
@@ -482,7 +482,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Validate field on form submit.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param int   $field_id     Field ID.
 		 * @param array $field_submit Submitted field value (raw data).
@@ -520,7 +520,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Format global files array in more manageable structure.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param array $files Global files array.
 		 * @param int   $field_id Field ID.
@@ -552,7 +552,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Set the WPForms GoDAM Recorder field as editable.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param boolean $editable Is editable?.
 		 * @param string  $type Field type.
@@ -566,7 +566,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * May be hook into `wp_kses_allowed_html` if the form has godam video fields on WPForms entry view page.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param array $entry Entry data.
 		 * @param array $form_data Form data.
@@ -588,7 +588,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * May be  remove hook into `wp_kses_allowed_html` if the form has godam video fields on WPForms entry view page.
 		 *
-		 * @since n.e.x.t
+		 * @since 1.3.0
 		 *
 		 * @param array $entry Entry data.
 		 * @param array $form_data Form data.

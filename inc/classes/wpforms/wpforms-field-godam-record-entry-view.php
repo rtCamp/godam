@@ -4,7 +4,7 @@
  *
  * @package GoDAM
  *
- * @since n.e.x.t
+ * @since 1.3.0
  */
 
 use RTGODAM\Inc\WPForms\WPForms_Integration_Helper;
