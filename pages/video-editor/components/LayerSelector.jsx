@@ -84,7 +84,7 @@ const Layers = [
 	{
 		id: 5,
 		title: __( 'SureForms', 'godam' ),
-		description: __( 'Collect user input using Sureforms', 'godam' ),
+		description: __( 'Collect user input using SureForms', 'godam' ),
 		image: Form,
 		type: 'form',
 		formType: 'sureforms',
@@ -202,6 +202,28 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 		}, [] );
 	}, [] );
 
+	// Create tabs array with "all" as the first item
+	const allTabs = useMemo( () => {
+		return [ 'all', ...uniqueLayerTypes ];
+	}, [ uniqueLayerTypes ] );
+
+	/**
+	 * Gets the display text for a tab type.
+	 *
+	 * @param {string} type - The tab type.
+	 * @return {string} The display text for the tab.
+	 */
+	const getTabDisplayText = ( type ) => {
+		switch ( type ) {
+			case 'all':
+				return __( 'All', 'godam' );
+			case 'cta':
+				return type.toUpperCase();
+			default:
+				return type.charAt( 0 ).toUpperCase() + type.slice( 1 );
+		}
+	};
+
 	/**
 	 * Selects a layer when clicked.
 	 *
@@ -233,9 +255,9 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 		const lowerCaseQuery = value.toLowerCase();
 		setSearchQuery( value );
 
-		// Disable activeTab when user searches
-		if ( activeTab !== '' ) {
-			setActiveTab( '' );
+		// Set activeTab to 'all' when user searches
+		if ( activeTab !== 'all' ) {
+			setActiveTab( 'all' );
 		}
 
 		const filtered = Layers.filter( ( layer ) =>
@@ -262,8 +284,12 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 		setSearchQuery( '' );
 
 		setActiveTab( type );
-		const filtered = Layers.filter( ( layer ) => layer.type === type );
-		setFilteredLayers( filtered );
+		if ( type === 'all' ) {
+			setFilteredLayers( Layers );
+		} else {
+			const filtered = Layers.filter( ( layer ) => layer.type === type );
+			setFilteredLayers( filtered );
+		}
 	};
 
 	return (
@@ -274,7 +300,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 		>
 			<div className="godam-layer-selector__header">
 				<div className="layer-tabs">
-					{ uniqueLayerTypes.map( ( type ) => (
+					{ allTabs.map( ( type ) => (
 						<button
 							key={ type }
 							className={ `layer-tab ${ activeTab === type ? 'active' : '' } ${ searchQuery ? 'disabled' : '' }` }
@@ -285,7 +311,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 							} }
 							disabled={ !! searchQuery }
 						>
-							{ type.charAt( 0 ).toUpperCase() + type.slice( 1 ) }
+							{ getTabDisplayText( type ) }
 						</button>
 					) ) }
 				</div>

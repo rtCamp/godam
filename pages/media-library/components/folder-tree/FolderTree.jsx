@@ -90,6 +90,20 @@ const FolderTree = ( { handleContextMenu } ) => {
 	const projected = activeId && overId ? utilities.getProjection( filteredData, activeId, overId, offsetLeft ) : null;
 
 	function handleDragStart( { active: { id: draggedItemId } } ) {
+		const draggedFolder = data.find( ( folder ) => folder.id === draggedItemId );
+
+		// If the dragged folder has a parent and that parent is locked, prevent dragging.
+		if ( draggedFolder?.parent && draggedFolder.parent !== 0 ) {
+			const parentFolder = data.find( ( folder ) => folder.id === draggedFolder.parent );
+			if ( parentFolder?.meta?.locked ) {
+				dispatch( updateSnackbar( {
+					message: __( 'The parent folder is locked, so this folder cannot be moved.', 'godam' ),
+					type: 'fail',
+				} ) );
+				return;
+			}
+		}
+
 		setActiveId( draggedItemId );
 		setOverId( draggedItemId );
 	}
@@ -106,6 +120,18 @@ const FolderTree = ( { handleContextMenu } ) => {
 
 			if ( ! parent ) {
 				parent = 0;
+			}
+
+			// Do not allow reordering/move if the destination folder (new parent) is locked.
+			if ( parent !== 0 ) {
+				const destinationFolder = data.find( ( folder ) => folder.id === parent );
+				if ( destinationFolder?.meta?.locked ) {
+					dispatch( updateSnackbar( {
+						message: __( 'The destination folder is locked and cannot be modified', 'godam' ),
+						type: 'fail',
+					} ) );
+					return;
+				}
 			}
 
 			const clonedItems = JSON.parse(
@@ -200,7 +226,7 @@ const FolderTree = ( { handleContextMenu } ) => {
 						// do not allow assigning item to other folder from the locked folder.
 						if ( selectedFolder?.meta?.locked ) {
 							dispatch( updateSnackbar( {
-								message: __( 'This folder is locked and cannot be modified', 'godam' ),
+								message: __( 'Currently opened folder is locked and cannot be modified', 'godam' ),
 								type: 'fail',
 							} ) );
 							return;
@@ -256,6 +282,62 @@ const FolderTree = ( { handleContextMenu } ) => {
 		};
 
 		setupDroppable();
+
+		// Disable the Add Media Button and the Upload button for locked folders
+		if ( selectedFolder?.meta?.locked ) {
+		// Media Library Add media button
+			jQuery( '#wp-media-grid .page-title-action' ).prop( 'disabled', true )
+				.css( {
+					'pointer-events': 'none',
+					opacity: '0.5',
+				} );
+
+			// Edit Post add media button
+			jQuery( '#__wp-uploader-id-1' ).prop( 'disabled', true )
+				.css( 'pointer-events', 'none' );
+
+			// Media Library Drag and Drop
+			jQuery( '#wpwrap' ).on( 'dragover.lock drop.lock', function( e ) {
+				e.preventDefault();
+				e.stopPropagation();
+			} );
+
+			// Edit post Drag and Drop
+			jQuery( '.media-modal-content' ).on( 'dragover.lock drop.lock', function( e ) {
+				e.preventDefault();
+				e.stopPropagation();
+			} );
+
+			// Tell WordPress uploader to ignore drop
+			if ( wp?.media?.frames?.frame?.uploader?.dropzone ) {
+				wp.media.frames.frame.uploader.dropzone.off( 'drop' );
+			}
+		} else {
+			// Media Library Add media button
+			jQuery( '#wp-media-grid .page-title-action' ).prop( 'disabled', false )
+				.css( {
+					'pointer-events': 'auto',
+					opacity: '1',
+				} );
+
+			// Edit Post add media button
+			jQuery( '#__wp-uploader-id-1' ).prop( 'disabled', false )
+				.css( 'pointer-events', 'auto' );
+
+			// Media Library Drag and Drop
+			jQuery( '#wpwrap' ).off( 'dragover.lock drop.lock' );
+
+			// Edit post Drag and Drop
+			jQuery( '.media-modal-content' ).off( 'dragover.lock drop.lock' );
+
+			// Restore default dropzone
+			if ( wp?.media?.frames?.frame?.uploader?.dropzone ) {
+				// eslint-disable-next-line no-unused-vars
+				wp.media.frames.frame.uploader.dropzone.on( 'drop', function( e ) {
+					// Normally handled by WP
+				} );
+			}
+		}
 
 		// Cleanup to avoid multiple event bindings
 		return () => {

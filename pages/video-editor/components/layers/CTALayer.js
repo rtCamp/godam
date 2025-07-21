@@ -93,6 +93,9 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			} )
 			.then( ( media ) => {
 				setImageCtaUrl( media.source_url ); // URL of the media file
+			} )
+			.catch( ( ) => {
+				setImageCtaUrl( '' );
 			} );
 	};
 
@@ -110,6 +113,11 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 	};
 
 	const imageCtaHtml = () => {
+		// Don't generate HTML if there's no image URL
+		if ( ! imageCtaUrl ) {
+			return '';
+		}
+
 		return `<div class="${ 'portrait' === layer?.imageCtaOrientation ? 'vertical-image-cta-container' : 'image-cta-container' }">
 					<img
 						src="${ imageCtaUrl }"
@@ -121,7 +129,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 					<div class="image-cta-description">
 						${ layer?.imageText ? `<h2>${ layer.imageText }</h2>` : '' }
 						${ layer?.imageDescription ? `<p>${ layer.imageDescription }</p>` : '' }
-						<a class="image-cta-btn" href="${ layer?.imageLink || '/' }" target="_blank">
+						<a class="image-cta-btn" href="${ layer?.imageLink || '/' }" target="_blank" style="background-color: ${ layer?.imageCtaButtonColor ?? '#eeab95' }">
 							${ layer?.imageCtaButtonText || __( 'Buy Now', 'godam' ) }
 						</a>
 					</div>
@@ -137,15 +145,24 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			setFormHTML( layer.text );
 		} else if ( 'html' === layer?.cta_type ) {
 			setFormHTML( layer.html );
-		} else if ( 'image' === layer?.cta_type ) {
-			fetchOverlayMediaURL( layer?.image );
-			if ( imageCtaUrl.length !== 0 ) {
-				setFormHTML( imageCtaHtml );
-			} else {
-				setFormHTML( '' );
-			}
 		}
-	}, [ layer, imageCtaUrl ] );
+	}, [ layer ] );
+
+	// Fetch the media URL when the image ID changes
+	useEffect( () => {
+		if ( 'image' === layer?.cta_type && layer?.image && layer?.image !== 0 ) {
+			fetchOverlayMediaURL( layer.image );
+		} else {
+			setImageCtaUrl( '' );
+		}
+	}, [ layer?.cta_type, layer?.image ] );
+
+	// Update the HTML only after imageCtaUrl is updated
+	useEffect( () => {
+		if ( 'image' === layer?.cta_type ) {
+			setFormHTML( imageCtaUrl ? imageCtaHtml() : '' );
+		}
+	}, [ imageCtaUrl, layer ] );
 
 	return (
 		<>
@@ -168,7 +185,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 				<Panel className="-mx-4 border-x-0">
 					<PanelBody
-						title={ __( 'Advance', 'godam' ) }
+						title={ __( 'Advanced', 'godam' ) }
 						initialOpen={ false }
 					>
 						{ /* Layer background color */ }

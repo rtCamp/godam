@@ -10,17 +10,23 @@ import {
 	RangeControl, SelectControl,
 	TextareaControl,
 	TextControl,
+	Icon,
 	Tooltip,
 } from '@wordpress/components';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { __ } from '@wordpress/i18n';
+import { closeSmall, replace, trash } from '@wordpress/icons';
+
+/**
+ * Internal dependencies
+ */
+import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 
 /**
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
-import { replace, trash } from '@wordpress/icons';
 
 const ImageCTA = ( { layerID } ) => {
 	/**
@@ -97,7 +103,8 @@ const ImageCTA = ( { layerID } ) => {
 	};
 
 	const fetchOverlayMediaURL = useCallback( ( mediaId ) => {
-		if ( ! mediaId ) {
+		if ( ! mediaId || mediaId === 0 ) {
+			setSelectedImageUrl( '' );
 			return;
 		}
 		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ mediaId }` ] ) )
@@ -109,19 +116,41 @@ const ImageCTA = ( { layerID } ) => {
 			} )
 			.then( ( media ) => {
 				setSelectedImageUrl( media.source_url );
+			} )
+			.catch( ( ) => {
+				setSelectedImageUrl( '' );
 			} );
 	},
-	[ restURL, setSelectedImageUrl ] );
+	[ restURL ] );
 
 	useEffect( () => {
-		fetchOverlayMediaURL( layer.image );
-	}, [ layer, fetchOverlayMediaURL ] );
+		if ( 'image' === layer?.cta_type && layer?.image && layer?.image !== 0 ) {
+			fetchOverlayMediaURL( layer.image );
+		} else {
+			setSelectedImageUrl( '' );
+		}
+	}, [ layer?.cta_type, layer?.image ] );
 
 	const removeCTAImage = () => {
 		updateField( 'image', 0 );
 
 		setSelectedImageUrl( '' );
 	};
+
+	// prevent color picker flickering.
+	const colorDebounceRef = useRef();
+
+	const debouncedColorUpdate = useCallback(
+		( value ) => {
+			if ( colorDebounceRef.current ) {
+				clearTimeout( colorDebounceRef.current );
+			}
+			colorDebounceRef.current = setTimeout( () => {
+				updateField( 'imageCtaButtonColor', value );
+			}, 150 );
+		},
+		[],
+	);
 
 	return (
 		<div className="mt-2 flex flex-col gap-6">
@@ -133,15 +162,19 @@ const ImageCTA = ( { layerID } ) => {
 				>
 					{ __( 'Add Image', 'godam' ) }
 				</label>
-				{ ( 0 === layer?.image || ! layer?.image ) && <Button
-					onClick={ openImageCTAUploader }
-					variant="primary"
-					className="ml-2 godam-button"
-					aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
-				>
-					{ __( 'Upload', 'godam' ) }
-				</Button> }
-				{ ( layer?.image !== 0 && ! selectedImageUrl ) && ( <div className="mt-6 rounded-xl w-[160px] h-[160px] animate-pulse bg-gray-200"></div> ) }
+				{ ( layer?.image === 0 || ! layer?.image ) && (
+					<Button
+						onClick={ openImageCTAUploader }
+						variant="primary"
+						className="ml-2 godam-button"
+						aria-label={ __( 'Upload or Replace CTA Image', 'godam' ) }
+					>
+						{ __( 'Upload', 'godam' ) }
+					</Button>
+				) }
+				{ ( layer?.image && layer?.image !== 0 && ! selectedImageUrl ) ? (
+					<div className="mt-6 rounded-xl w-[160px] h-[160px] animate-pulse bg-gray-200"></div>
+				) : null }
 				{ selectedImageUrl && (
 					<div className="flex mt-4">
 						<img
@@ -217,6 +250,28 @@ const ImageCTA = ( { layerID } ) => {
 				} }
 				placeholder={ __( 'Buy Now', 'godam' ) }
 			/>
+
+			<div className="flex items-center gap-2">
+				<ColorPickerButton
+					value={ layer?.imageCtaButtonColor ?? '#eeab95' }
+					label={ __( 'CTA Button Background Color', 'godam' ) }
+					className="mb-0"
+					enableAlpha={ true }
+					onChange={ debouncedColorUpdate }
+				/>
+				{ layer.imageCtaButtonColor && (
+					<button
+						type="button"
+						className="text-xs text-red-500 underline hover:text-red-600 bg-transparent cursor-pointer"
+						onClick={ () => updateField( 'imageCtaButtonColor', '#eeab95' )
+						}
+						aria-haspopup="true"
+						aria-label={ __( 'Remove', 'godam' ) }
+					>
+						<Icon icon={ closeSmall } />
+					</button>
+				) }
+			</div>
 
 			<SelectControl
 				__next40pxDefaultSize

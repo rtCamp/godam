@@ -7,6 +7,7 @@
 
 // CF7 Form style.
 @use "./cf7-godam-theme";
+@use './variables';
 
 .rtgodam-video-caption {
 
@@ -91,18 +92,39 @@
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.14) 0%, rgba(0, 0, 0, 0.14) 0%, rgba(0, 0, 0, 0.3) 100%);
 	z-index: 10;
-	opacity: 0.7;
+	opacity: 0;
 	transition: opacity 0.3s ease;
 	pointer-events: none; /* Prevent interaction with the overlay */
+}
+
+.video-js .vjs-big-play-button {
+	background-color: var(--rtgodam-control-bar-color, #000) !important;
+	border: none;
+	cursor: pointer;
+	border-radius: 50%;
+	padding: 0;
+	z-index: 10;
+	width: 50px;
+	height: 50px;
+	left: 53%;
+	transition: transform 0.3s ease;
+
+	span::before {
+		font-size: 1.7rem;
+		line-height: 1.9;
+	}
+
+	&:hover, &:focus {
+		transform: scale(1.1);
+	}
 }
 
 .easydam-video-container {
 	position: relative;
 	background-color: rgba(149, 149, 149, 0.2);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16/9);
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 
 	&:has(.vjs-has-started) {
 
@@ -114,8 +136,18 @@
 
 	&:hover {
 
+		.vjs-big-play-button {
+			transform: scale(1.1);
+		}
+
 		.godam-player-overlay {
-			opacity: 0;
+			background: radial-gradient(
+				ellipse at center,
+				rgba(0, 0, 0, 0.05) 0%,
+				rgba(0, 0, 0, 0.1) 50%,
+				rgba(0, 0, 0, 0.15) 100%
+			);
+			opacity: 0.7;
 		}
 	}
 }
@@ -127,7 +159,7 @@
 .animate-video-loading {
 	position: relative;
 	animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
-	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16/9);
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 
 	.animate-play-btn {
 		width: 100px;
@@ -172,7 +204,7 @@
 }
 
 .easydam-player.video-js {
-	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16/9 );
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9 );
 	cursor: pointer;
 }
 
@@ -668,12 +700,21 @@
 
 .share-modal-message {
 	background: #fff;
-	padding: 10px 40px;
-	border-radius: 5px;
+	padding: 24px;
+	border-radius: 8px;
 	box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
 	text-align: center;
 	font-size: 16px;
 	font-weight: 700;
+
+	.share-modal-header {
+		color: #000 !important;
+
+		/* stylelint-disable-next-line no-descending-specificity */
+		p {
+			font-weight: 400;
+		}
+	}
 
 	h2 {
 		text-align: left;
@@ -681,10 +722,12 @@
 		font-weight: 600;
 	}
 
+	/* stylelint-disable-next-line no-descending-specificity */
 	p {
 		font-size: 12px;
 	}
 
+	/* stylelint-disable-next-line no-descending-specificity */
 	a {
 		text-underline-offset: 0 !important;
 		text-decoration: none !important;
@@ -693,8 +736,13 @@
 
 	.share-buttons {
 		display: flex;
-		gap: 15px;
+		gap: 18px;
 		justify-content: center;
+
+		.social-icon img{
+				width: 20px;
+				height: 20px;
+		}
 	}
 
 	.vjs-volume-panel-vertical {
@@ -709,35 +757,36 @@
 	.share-input-container {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
 		justify-content: left;
 		margin-top: 20px;
 
 		label {
-			color: var(--wp--preset--color--accent-4);
+			color: variables.$godam-share-modal-gray;
 			font-size: 12px;
 			text-align: left;
-
 		}
 
 		.share-modal-input-group {
 			display: flex;
 			justify-content: space-between;
-			gap: 10px;
+			gap: 12px;
 		}
 
 		input {
-			width: 80%;
 			padding: 10px;
+			font-size: 14px;
+			color: #000;
 		}
 
 		button {
+			width: 12%;
 			padding: 4px;
 			cursor: pointer;
 			background: transparent;
-			border: 1px solid var(--wp--preset--color--accent-4);
+			border: 1px solid variables.$godam-share-modal-light-gray;
 			border-radius: 5px;
 
+			/* stylelint-disable-next-line no-descending-specificity */
 			img {
 				height: 15px;
 			}
@@ -751,8 +800,9 @@
 		button {
 			padding: 8px;
 			background-color: #fff;
+			color: #000;
 			cursor: pointer;
-			border: 1px solid var(--wp--preset--color--accent-4);
+			border: 1px solid variables.$godam-share-modal-light-gray;
 			border-radius: 5px;
 		}
 	}
@@ -826,6 +876,9 @@
 
 .godam-share-button {
 	position: absolute;
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
 	top: 10px;
 	right: 10px;
 	z-index: 10;
@@ -835,9 +888,19 @@
 	border: none;
 	cursor: pointer !important;
 	font-size: 15px !important;
-	transition: background-color 0.3s, color 0.3s;
 	border-radius: 50%;
 	display: flex;
+	transition: all 0.3s ease
+}
+
+.easydam-video-container:hover .godam-share-button {
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
+	
+	&:hover{
+		background-color: #AB3A6C;
+	}
 }
 
 /* Index in the top-left corner */
@@ -854,6 +917,7 @@
 	border-radius: 2px;
 }
 
+/* stylelint-disable-next-line no-descending-specificity */
 .hotspot-tooltip a {
 	overflow-wrap: break-word;
 	word-break: break-word;
@@ -1034,67 +1098,45 @@
 	background: inherit;
 	z-index: 10;
 }
- 
-.video-js .vjs-big-play-button {
-	background-color: var(--rtgodam-control-bar-color, #000) !important;
-	border: none;
-	cursor: pointer;
-	border-radius: 50%;
-	padding: 0;
-	z-index: 10;
-	width: 50px;
-	height: 50px;
-	left: 53%;
-	transition: transform 0.3s ease;
 
-	span::before {
-		font-size: 1.7rem;
-    	line-height: 1.9;
-	}
-
-	&:hover, &:focus {
-		transform: scale(1.1);
-	}
- }
- 
  .left-align {
 	 left: 3em !important;
  }
- 
+
  .right-align {
 	 left:auto !important;
 	 right:1.5em;
  }
- 
+
  .top-align {
 	 top: 1.5em !important;
  }
- 
+
  .bottom-align {
 	 top:auto !important;
 	 bottom:1.5em;
  }
- 
+
  .vjs-control-bar-vertical {
 	 width: 10% !important;
 	 height: 100% !important;
 	 flex-direction: column;
 	 overflow: scroll;
  }
- 
+
  .vjs-control-vertical, .vjs-volume-control-vertical {
 	 height: 6em !important;
 	 width: 6em !important;
  }
- 
+
  .vjs-control.vjs-custom-play-button {
 	 width: auto !important;
 	 order: 8;
- 
+
 	 @media screen and (max-width: 768px) {
 		 display: none;
 	 }
- 
+
 	 #branding-icon {
 		 height: 100%;
 		 width: auto;
@@ -1167,6 +1209,98 @@
 	padding: 15px;
 }
 
+// Captions settings popup styles
+
+.vjs-modal-dialog.vjs-text-track-settings {
+
+	color: #111;
+    z-index: 999;
+    background-color: #fff;
+    border-radius: 8px;
+    outline: 0;
+    width: 90%;
+    max-width: 400px;
+    height: 90%;
+    max-height: 260px;
+    margin: 0 auto;
+    font-size: 12px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+	-webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #e5e5e5 #fff;
+
+	.vjs-close-button {
+		display: none;
+	}
+
+	.vjs-modal-dialog-content {
+		grid-template-columns: 1fr;
+		background-color: #fff;
+		height: auto;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: thin;
+		scrollbar-color: #e5e5e5 #fff;
+
+		fieldset {
+
+			legend {
+				color: #fff;
+				text-align: center;
+				background-color: #222;
+				width: 100%;
+				margin: 0 0 15px 0;
+				font-size: 13px;
+				display: inline-block;
+			}
+
+			select {
+				width: 100%;
+				max-width: unset;
+			}
+			
+			span {
+				display: flex;
+				height: auto;
+				flex-direction: column;
+
+				label {
+					height: 20px;
+    				width: fit-content;
+					padding: 0 0 0 15px;
+    				font-size: 12px;
+				}
+
+				select {
+					width: 100%;
+					max-width: unset;
+				}
+			}
+		}
+
+		.vjs-track-settings-controls {
+			text-align: center;
+			border-top: 1px solid #ccc;
+			width: 100%;
+			padding-top: 5px;
+			position: sticky;
+			bottom: 0;
+			z-index: 99;
+			background: #fff;
+
+			button {
+				cursor: pointer;
+				text-shadow: none;
+				background: #e5e5e5;
+				border-radius: 3px;
+				padding: 4px 10px;
+				font-size: 12px;
+			}
+		}
+	}
+}
+
 @keyframes fadeInOut {
 
 	0% {
@@ -1227,12 +1361,11 @@
 
 	@media screen and (max-width: 768px) {
 
-		.vjs-modal-dialog.vjs-text-track-settings {
+		.vjs-modal-dialog-content {
+			padding: 15px 15px 0 15px;
 
-			.vjs-close-button {
-
-				right: 30px;
-				top: .7em;
+			.vjs-text-track-settings fieldset {
+				margin: 0;
 			}
 		}
 
