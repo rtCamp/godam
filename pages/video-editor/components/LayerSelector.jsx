@@ -177,18 +177,6 @@ const Layers = [
 		isActive: Boolean( window.easydamMediaLibrary.isPollPluginActive ),
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/wp-polls/">${ __( 'WP-Polls', 'godam' ) }</a> ${ __( 'plugin is required to use Poll layer', 'godam' ) }`,
 	},
-	{
-		id: 14,
-		title: __( 'WooCommerce', 'godam' ),
-		description: __( 'Display products using hotspots', 'godam' ),
-		image: Hotspot,
-		type: 'woo',
-		requiresWoo: true,
-		formIcon: Woo,
-		isRequired: true,
-		isActive: Boolean( window.easydamMediaLibrary.isWooActive ) ?? false,
-		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/woocommerce/">${ __( 'WooCommerce', 'godam' ) }</a> ${ __( 'plugin is required to use Buy Now layer', 'godam' ) }`,
-	},
 ];
 
 /**
