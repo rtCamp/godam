@@ -17,7 +17,7 @@ import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
 import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
-import NinjaFormsIcon from '../assets/layers/FluentFormsIcon.png';
+import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 
 /**
  * WordPress dependencies

@@ -11,7 +11,7 @@
 
 namespace RTGODAM\Inc\Ninja_Forms;
 
-use EverestForms\Traits\Singleton;
+use RTGODAM\Inc\Traits\Singleton;
 use RTGODAM\Inc\REST_API\Base;
 
 
@@ -98,7 +98,7 @@ class Ninja_Forms_Rest_Api extends Base {
 	}
 
 	/**
-	 * Get a single Gravity Form.
+	 * Get a single Ninja Form.
 	 *
 	 * @since n.e.x.t
 	 *
