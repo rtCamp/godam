@@ -131,6 +131,10 @@ class Engagement extends Base {
 		$response_data['is_liked']    = isset( $likes[ $current_user_key ] ) ? true : false;
 		$response_data['likes_count'] = count( $likes );
 
+		$comments                        = $this->get_comments( $video_id );
+		$response_data['comments']       = $comments['comments'];
+		$response_data['comments_count'] = $comments['total'];
+
 		return new WP_REST_Response(
 			array(
 				'status' => 'success',
@@ -236,6 +240,12 @@ class Engagement extends Base {
 		return $this->process_response( $analytics_response );
 	}
 
+	/**
+	 * Update like status for a video.
+	 *
+	 * @param WP_REST_Request $request REST request object.
+	 * @return WP_REST_Response REST response object.
+	 */
 	public function user_hit_like( $request ) {
 
 		$response_data = array();
@@ -287,6 +297,55 @@ class Engagement extends Base {
 				'errorType' => 'failed_to_update_likes',
 			),
 			200
+		);
+	}
+
+	/**
+	 * Get all comments for a video.
+	 *
+	 * @param int $video_id Video Post ID.
+	 *
+	 * @return array
+	 */
+	public function get_comments( $video_id ) {
+
+		$comments = get_comments(
+			array(
+				'post_id' => $video_id,
+				'status'  => 'approve',
+			)
+		);
+
+		$comment_tree  = array();
+		$comment_index = array();
+
+		foreach ( $comments as $comment ) {
+			$comment_index[ $comment->comment_ID ] = array(
+				'id'           => $comment->comment_ID,
+				'parent_id'    => $comment->comment_parent,
+				'text'         => $comment->comment_content,
+				'user_id'      => $comment->user_id,
+				'author_name'  => $comment->comment_author,
+				'author_image' => get_avatar_url( $comment->comment_author_email ),
+				'children'     => array(),
+			);
+		}
+
+		foreach ( $comment_index as $id => $comment ) {
+			if ( 0 !== (int) $comment['parent_id'] && isset( $comment_index[ $comment['parent_id'] ] ) ) {
+				$comment_index[ $comment['parent_id'] ]['children'][] = &$comment_index[ $id ];
+			}
+		}
+
+		foreach ( $comment_index as $comment ) {
+			if ( 0 === (int) $comment['parent_id'] ) {
+				$comment_tree[] = $comment;
+			}
+		}
+
+		return array(
+			'comments' => $comment_tree,
+			'total'    => count( $comments ),
 		);
 	}
 }

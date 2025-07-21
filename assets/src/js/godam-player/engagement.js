@@ -85,10 +85,8 @@ const DEFAULT_STATE = {
 	views: {},
 	likes: {},
 	IsUserLiked: {},
-	comments: {
-		70: DEMO_COMMENTS,
-		96: DEMO_COMMENTS,
-	},
+	comments: {},
+	commentsCount: {},
 };
 // Demo comments for testing end.
 
@@ -180,6 +178,7 @@ const engagementStore = {
 	selectors: {
 		getState: ( state ) => state,
 		getComments: ( state ) => state.comments,
+		getCommentsCount: ( state ) => state.commentsCount,
 	},
 
 	resolvers: {},
@@ -202,22 +201,30 @@ const engagementStore = {
 		const engagementLikesData = {};
 		const engagementViewsData = {};
 		const engagementIsUserLikedData = {};
+		const engagementCommentsData = {};
+		const engagementCommentsCountData = {};
 		collections.forEach( ( item ) => {
 			engagementLikesData[ item.videoAttachmentId ] = item.data.likes_count;
 			engagementIsUserLikedData[ item.videoAttachmentId ] = item.data.is_liked;
 			engagementViewsData[ item.videoAttachmentId ] = item.data.views_count;
+			engagementCommentsData[ item.videoAttachmentId ] = item.data.comments;
+			engagementCommentsCountData[ item.videoAttachmentId ] = item.data.comments_count;
 		} );
 
 		return {
 			views: engagementViewsData,
 			likes: engagementLikesData,
 			IsUserLiked: engagementIsUserLikedData,
+			comments: engagementCommentsData,
+			commentsCount: engagementCommentsCountData,
 		};
 	},
 
 	distributeData( state ) {
+		console.log( state );
 		const likes = state.likes;
 		const views = state.views;
+		const comments = state.commentsCount;
 		const videoIds = document.querySelectorAll( '.rtgodam-video-engagement' );
 		if ( 0 === videoIds.length ) {
 			return null;
@@ -227,9 +234,11 @@ const engagementStore = {
 			const likeLink = item.querySelector( '.rtgodam-video-engagement--like-link' );
 			const likeCount = item.querySelector( '.rtgodam-video-engagement--like-count' );
 			const viewCount = item.querySelector( '.rtgodam-video-engagement--view-count' );
+			const commentsCount = item.querySelector( '.rtgodam-video-engagement--comment-count' );
 			likeLink.classList.toggle( 'is-liked', state.IsUserLiked[ videoAttachmentId ] );
 			likeCount.innerHTML = DOMPurify.sanitize( likes[ videoAttachmentId ] ) || 0;
 			viewCount.innerHTML = DOMPurify.sanitize( views[ videoAttachmentId ] ) || 0;
+			commentsCount.innerHTML = DOMPurify.sanitize( comments[ videoAttachmentId ] ) || 0;
 		} );
 	},
 
@@ -333,8 +342,8 @@ function updateCommentTree( comments, comment, text, authorImg ) {
 						id: 10,
 						userId: 20,
 						text,
-						authorName: 'Rockey',
-						authorImg,
+						author_name: 'Rockey',
+						author_image: authorImg,
 						children: [],
 					},
 				],
@@ -389,7 +398,12 @@ function CommentForm( props ) {
 
 function Comment( props ) {
 	const { comment, setCommentsData, storeObj, videoAttachmentId } = props;
-	const { text, authorName, authorImg, children } = comment;
+	const {
+		text,
+		author_name: authorName,
+		author_image: authorImg,
+		children,
+	} = comment;
 	const [ isExpanded, setIsExpanded ] = useState( false );
 
 	return (
@@ -434,7 +448,7 @@ function Comment( props ) {
 
 function CommentList( props ) {
 	const { videoAttachmentId, storeObj } = props;
-	const comments = storeObj.select.getComments()[ videoAttachmentId ] || {};
+	const comments = storeObj.select.getComments()[ videoAttachmentId ] || [];
 	const [ commentsData, setCommentsData ] = useState( comments );
 
 	return (
@@ -447,13 +461,15 @@ function CommentList( props ) {
 }
 
 function CommentBox( props ) {
+	const { videoAttachmentId, storeObj } = props;
 	const baseClass = 'rtgodam-video-engagement--comment-modal';
+	const commentsCount = storeObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
 
 	return (
 		<div className={ baseClass }>
-			<button className={ `${ baseClass }--close-button` } onClick={ () => props.storeObj.root.unmount() }>&times;</button>
+			<button className={ `${ baseClass }--close-button` } onClick={ () => storeObj.root.unmount() }>&times;</button>
 			<div className={ baseClass + '-content' }>
-				<h3 className={ baseClass + '-title' }>{ __( 'All Comments', 'godam' ) }</h3>
+				<h3 className={ baseClass + '-title' }>{ __( 'All Comments', 'godam' ) } - { commentsCount }</h3>
 				<CommentList { ...props } />
 			</div>
 		</div>

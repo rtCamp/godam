@@ -108,17 +108,17 @@
             overflow-y: scroll;
 
             &::-webkit-scrollbar {
-                width: 8px;
+                width: 5px;
             }
 
             &::-webkit-scrollbar-track {
-                background:  var(--wp--preset--color--white, #fff);
+                background:  transparent;
                 border-radius: 5px;
             }
 
             &::-webkit-scrollbar-thumb {
                 background: var(--godam-video-engagement-comment--border-color);
-                border-radius: 5px;
+                border-radius: 10px;
             }
 
             &::-webkit-scrollbar-thumb:hover {
@@ -155,16 +155,14 @@
         &-parent {
             position: relative;
 
-            &.has-children {
-                &::after {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: 20px;
-                    width: 1px;
-                    height: 100%;
-                    background-color: var(--godam-video-engagement-comment--border-color);
-                }
+            &::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 20px;
+                width: 1px;
+                height: 100%;
+                background-color: var(--godam-video-engagement-comment--border-color);
             }
         }
 
@@ -190,7 +188,7 @@
                     border-left: 1px solid var(--godam-video-engagement-comment--border-color);
                 }
 
-                &:last-child {
+                &:last-child:not(.has-children) {
                     &::after {
                         content: "";
                         position: absolute;
@@ -235,6 +233,7 @@
             
             &-image {
                 border-radius: 50%;
+                width: 40px;
             }
         }
 
