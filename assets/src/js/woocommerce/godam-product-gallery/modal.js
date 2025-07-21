@@ -335,6 +335,19 @@ async function loadNewVideo( newVideoId, modal ) {
 
 					// Restart swipe animation loop only when current video ends.
 					player.player.on( 'ended', () => {
+						const videoContainer = modal.querySelector( '.video-container' );
+						const classList = videoContainer.classList;
+						classList.forEach( ( className ) => {
+							console.log( 'className', className );
+							if ( className.includes( 'is-landscape' ) ) {
+								swipeOverlay.classList.remove( 'is-portrait' );
+								swipeOverlay.classList.add( 'is-landscape' );
+							}
+							if ( className.includes( 'is-portrait' ) ) {
+								swipeOverlay.classList.remove( 'is-landscape' );
+								swipeOverlay.classList.add( 'is-portrait' );
+							}
+						} );
 						swipeHint?.classList.add( 'show' );
 						swipeOverlay?.classList.add( 'visible' );
 

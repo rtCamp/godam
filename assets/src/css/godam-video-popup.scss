@@ -75,6 +75,15 @@
 
 
 @media (max-width: 720px) {
+    .godam-swipe-overlay.is-landscape{
+        max-width: 95vw !important;
+        width: 95vw !important;
+        min-width: 95vw !important;
+        height: 100% !important;
+        min-height: 40vh !important;
+        max-height: 40vh !important;
+    }
+
     #godam-product-modal .video-container.is-portrait .godam-video-wrapper,
     #godam-product-modal .video-container.is-portrait .easydam-video-container,
     #godam-product-modal .video-container.is-portrait .video-js
@@ -123,6 +132,8 @@
         min-height: 100vh !important;
         max-height: 100vh !important;
     }
+
+
 }
 
 // code for tab screens
@@ -152,7 +163,7 @@
     }
    
     .video-container.is-landscape{
-        .godam-video-wrapper, .easydam-video-container, .video-js  {
+        .godam-video-wrapper, .easydam-video-container, .video-js {
             max-width: 95vw !important;
             min-width: 95vw !important;
             width: 95vw !important;
@@ -166,61 +177,97 @@
         }
 
     }
+
+    .godam-swipe-overlay.is-landscape{
+        max-width: 95vw !important;
+            min-width: 95vw !important;
+            width: 95vw !important;
+            height: 100% !important;
+            min-height: 60vh !important;
+            max-height: 60vh !important;
+    }
+    
 }
 
 
-// .godam-swipe-overlay {
-// 	position: absolute;
-// 	top: 0;
-// 	left: 50%;
-// 	transform: translateX(-50%);
-// 	background-color: rgba(255, 255, 255, 0.179); /* initially transparent */
-// 	pointer-events: none;
-// 	transition: background-color 0.3s ease;
-// 	z-index: 1;
-// 	width: 420px !important;
-// 	height: 100% !important;
-// }
+.godam-swipe-overlay {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background-color: transparent; /* initially transparent */
+	pointer-events: none;
+	transition: background-color 0.3s ease;
+	z-index: 1;
+	width: 420px !important;
+	height: 100% !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+}
 
-// .godam-swipe-overlay.visible {
-// 	background-color: rgba(255, 255, 255, 0.5); /* whitish translucent overlay */
-// }
 
-// .godam-swipe-hint.show {
-// 	display: flex;
-// 	opacity: 1;
-// }
+.godam-swipe-overlay.is-landscape{
+    border-radius: 12px;
+    width: 70vw;
+    min-width: 70vw;
+    max-width: 70vw;
+    min-height: 75vh;
+    max-height: 75vh;
+}
 
-// .godam-swipe-hint .chevron {
-// 	width: 20px;
-// 	height: 20px;
-// 	border-style: solid;
-// 	border-width: 0 2px 2px 0;
-// 	display: inline-block;
-// 	margin: 2px auto;
-// 	opacity: 0.8;
-// }
+.godam-swipe-overlay.is-portrait{
+	width: 420px !important;
+}
 
-// .godam-swipe-hint .chevron-up {
-// 	transform: rotate(-135deg);
-// 	animation: swipeUpAnim 1.5s infinite;
-// 	animation-delay: 0s;
-// }
+// Override absolute positioning for children to allow flexbox centering
+.godam-swipe-overlay .godam-swipe-hint {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+}
 
-// .godam-swipe-hint .chevron-down {
-// 	transform: rotate(45deg);
-// 	animation: swipeDownAnim 1.5s infinite;
-// 	animation-delay: 0.6s;
-// }
+.godam-swipe-overlay.visible {
+	background-color: rgba(255, 255, 255, 0.5) !important; /* whitish translucent overlay */
+}
 
-// @keyframes swipeUpAnim {
-// 	0%   { opacity: 0; transform: translateY(0) rotate(-135deg); }
-// 	50%  { opacity: 1; transform: translateY(-6px) rotate(-135deg); }
-// 	100% { opacity: 0; transform: translateY(0) rotate(-135deg); }
-// }
+.godam-swipe-hint.show {
+	display: flex;
+	opacity: 1;
+}
 
-// @keyframes swipeDownAnim {
-// 	0%   { opacity: 0; transform: translateY(0) rotate(45deg); }
-// 	50%  { opacity: 1; transform: translateY(6px) rotate(45deg); }
-// 	100% { opacity: 0; transform: translateY(0) rotate(45deg); }
-// }
+.godam-swipe-hint .chevron {
+	width: 20px;
+	height: 20px;
+	border-style: solid;
+	border-width: 0 2px 2px 0;
+	display: inline-block;
+	margin: 2px auto;
+	opacity: 0.8;
+}
+
+.godam-swipe-hint .chevron-up {
+	transform: rotate(-135deg);
+	animation: swipeUpAnim 1.5s infinite;
+	animation-delay: 0s;
+}
+
+.godam-swipe-hint .chevron-down {
+	transform: rotate(45deg);
+	animation: swipeDownAnim 1.5s infinite;
+	animation-delay: 0.6s;
+}
+
+@keyframes swipeUpAnim {
+	0%   { opacity: 0; transform: translateY(0) rotate(-135deg); }
+	50%  { opacity: 1; transform: translateY(-6px) rotate(-135deg); }
+	100% { opacity: 0; transform: translateY(0) rotate(-135deg); }
+}
+
+@keyframes swipeDownAnim {
+	0%   { opacity: 0; transform: translateY(0) rotate(45deg); }
+	50%  { opacity: 1; transform: translateY(6px) rotate(45deg); }
+	100% { opacity: 0; transform: translateY(0) rotate(45deg); }
+}
