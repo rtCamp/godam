@@ -87,7 +87,6 @@ const RetranscodeTab = () => {
 					if ( response.data?.total_media_count ) {
 						setTotalMediaCount( response.data.total_media_count );
 					}
-					//console.log( 'Media files fetched for retranscoding:', response.data.data );
 				} else {
 					setError( {
 						message: __( 'No media files found for retranscoding.', 'godam' ),
