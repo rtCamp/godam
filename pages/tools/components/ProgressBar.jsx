@@ -1,10 +1,10 @@
 // Alternative inline version (similar to your original)
 const ProgressBar = ( { showInitialProgress, done, total } ) => {
-	const calculateSafePercentage = ( done, total ) => {
-		if ( ! done || ! total || total === 0 ) {
+	const calculateSafePercentage = ( currentDone, currentTotal ) => {
+		if ( ! currentDone || ! currentTotal || currentTotal === 0 ) {
 			return 0;
 		}
-		let percentage = ( done / total ) * 100;
+		let percentage = ( currentDone / currentTotal ) * 100;
 
 		if ( showInitialProgress && percentage < 16 ) {
 			percentage = 16; // Ensure at least 16% is shown initially.
@@ -12,8 +12,6 @@ const ProgressBar = ( { showInitialProgress, done, total } ) => {
 
 		return Math.min( Math.max( percentage, 0 ), 100 );
 	};
-
-	console.log( 'showInitialProgress', showInitialProgress, 'done', done, 'total', total );
 
 	return (
 		<div>
