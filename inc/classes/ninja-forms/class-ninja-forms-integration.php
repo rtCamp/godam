@@ -14,15 +14,21 @@ use RTGODAM\Inc\Traits\Singleton;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class Ninja_Forms_integration
+ * Class Ninja_Forms_Integration
  *
  * @since n.e.x.t
  */
-
-class Ninja_Forms_integration {
+class Ninja_Forms_Integration {
 
 	use Singleton;
 
+	/**
+	 * Initialize class.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
 	public function init() {
 		if ( ! is_plugin_active( 'ninja-forms/ninja-forms.php' ) ) {
 			return;
@@ -31,66 +37,87 @@ class Ninja_Forms_integration {
 		$this->setup_hooks();
 	}
 
+	/**
+	 * Setup hooks.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
 	public function setup_hooks() {
-		// add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_form_assets_on_video_editor_page' ) );
-		// add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_form_assets_on_video_editor_page' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'add_additional_css_for_video_editor' ), 11 );
+		add_action( 'rtgodam_render_layer_for_video_editor_before', array( $this, 'add_css_for_the_layer_inside_iframe' ), 10, 2 );
+		add_action( 'rtgodam_render_layer_for_video_editor', array( $this, 'render_layer_form_for_video_editor' ), 10, 2 );
+	}
 
-		add_action( 'admin_enqueue_scripts', function() {
+	/**
+	 * Add additional css for video editor.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function add_additional_css_for_video_editor() {
+		$custom_css = <<<CSS
+			.form-container.ninja-form {
+				margin: unset;
+				height: 100%;
+				overflow: unset !important;
+				align-content: center;
+				text-align: center;
+			}
+
+			.form-container.ninja-form iframe {
+				height: 100%;
+			}
+		CSS;
+
+
+		wp_add_inline_style( 'rtgodam-style', $custom_css );
+	}
+
+	/**
+	 * Add css for the layer inside iframe.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $layer Layer name.
+	 * @param string $layer_id Layer ID.
+	 *
+	 * @return void
+	 */
+	public function add_css_for_the_layer_inside_iframe( $layer, $layer_id ) {
+		if ( 'ninja-forms' === $layer && ! empty( $layer_id ) ) {
 			$custom_css = <<<CSS
-				.form-container.ninja-form {
-					margin: unset;
-					height: 100%;
-					overflow: unset !important;
+				html {
+					margin: 0 !important;
+					padding: 0 !important;
 				}
 
-				.form-container.ninja-form iframe {
-					height: 100%;
+				body {
+					background: unset;
+					height: 100vh;
+					align-content: center;
 				}
 			CSS;
 
-
-			wp_add_inline_style( 'rtgodam-style', $custom_css );
-		});
-
-		add_filter( 'query_vars', function( $query_vars ) {
-			$query_vars[] = 'rtgodam-render-layer';
-			$query_vars[] = 'rtgodam-form-id';
-
-			return $query_vars;
-		});
-
-		add_filter( 'template_include', function( $template ) {
-			$layer = get_query_var( 'rtgodam-render-layer');
-			$form_id = get_query_var( 'rtgodam-form-id');
-
-			if ( ! empty( $layer ) && ! empty( $form_id )) {
-				$template = require __DIR__ . '/sagar.php';
-			}
-
-			return $template;
-
-		});
+			echo '<style>' . $custom_css . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
 	}
 
-	public function enqueue_form_assets_on_video_editor_page() {
-		// $ver     = \Ninja_Forms::VERSION;
-		// $js_dir  = \Ninja_Forms::$url . 'assets/js/min/';
-		$css_dir = \Ninja_Forms::$url . 'assets/css/';
-
-		// wp_enqueue_script( 'nf-front-end-deps', $js_dir . 'front-end-deps.js', array( 'jquery', 'backbone' ), $ver );
-		// wp_enqueue_script( 'nf-front-end',      $js_dir . 'front-end.js',      array( 'nf-front-end-deps'  ), $ver );
-
-		// wp_localize_script( 'nf-front-end', 'nfi18n', \Ninja_Forms::config( 'i18nFrontEnd' ) );
-
-
-		\NF_Display_Render::localize(0);
-
-		\NF_Display_Render::output_templates();
-
-		\NF_Display_Render::enqueue_scripts( 0 );
-
-		\NF_Display_Render::enqueue_styles_display( $css_dir );
-
-
+	/**
+	 * Render ninja form for video editor.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $layer Layer name.
+	 * @param string $layer_id Layer ID.
+	 *
+	 * @return void
+	 */
+	public function render_layer_form_for_video_editor( $layer, $layer_id ) {
+		if ( 'ninja-forms' === $layer && ! empty( $layer_id ) ) {
+			echo do_shortcode( "[ninja_form id='{$layer_id}']" ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
 	}
 }

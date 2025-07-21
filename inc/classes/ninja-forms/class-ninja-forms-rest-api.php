@@ -22,7 +22,6 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since n.e.x.t
  */
-
 class Ninja_Forms_Rest_Api extends Base {
 
 	/**
@@ -56,7 +55,7 @@ class Ninja_Forms_Rest_Api extends Base {
 							$this->get_collection_params(), // Default collection params.
 							array(
 								'id' => array(
-									'description'       => __( 'The ID of the Gravity Form.', 'godam' ),
+									'description'       => __( 'The ID of the Ninja Form.', 'godam' ),
 									'type'              => 'integer',
 									'required'          => true,
 									'sanitize_callback' => 'absint',
@@ -127,7 +126,8 @@ class Ninja_Forms_Rest_Api extends Base {
 		if ( $form ) {
 			$ninja_form = do_shortcode( "[ninja_form id={$form_id}]" );
 		} else {
-			$ninja_form = sprintf( __('Unable to find the Ninja Form with ID:%d', $form_id ) );
+			/* translators: %d is the Ninja Form ID */
+			$ninja_form = sprintf( __( 'Unable to find the Ninja Form with ID:%d', 'godam' ), $form_id );
 		}
 
 		return rest_ensure_response( $ninja_form );

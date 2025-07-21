@@ -219,10 +219,6 @@
 	background: none;
 	border-radius: 8px;
 	align-items: center;
-
-	.loading {
-		justify-content: center;
-	}
 }
 
 .cta-button {
@@ -933,28 +929,6 @@
 	background: inherit;
 	z-index: 10;
 }
-
-.video-js .vjs-big-play-button {
-	background-color: var(--rtgodam-control-bar-color, #000) !important;
-	border: none;
-	cursor: pointer;
-	border-radius: 50%;
-	padding: 0;
-	z-index: 10;
-	width: 50px;
-	height: 50px;
-	left: 53%;
-	transition: transform 0.3s ease;
-
-	span::before {
-		font-size: 1.7rem;
-    	line-height: 1.9;
-	}
-
-	&:hover, &:focus {
-		transform: scale(1.1);
-	}
- }
 
  .left-align {
 	 left: 3em !important;

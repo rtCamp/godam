@@ -13,8 +13,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { setLoading, updateLayerField } from '../../redux/slice/videoSlice';
-import { useGetSingleNinjaFormQuery } from '../../redux/api/ninja-forms';
+import { updateLayerField } from '../../redux/slice/videoSlice';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
 import { useState } from 'react';
@@ -24,9 +23,6 @@ const NinjaForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const ninjaForms = useSelector( ( state ) => state.videoReducer.ninjaForms ) || [];
-	// const { data: formHTML, isFetching } = useGetSingleNinjaFormQuery( layer.ninja_form_id, {
-	// 	skip: 'undefined' === typeof layer?.ninja_form_id,
-	// } );
 
 	const [ isFetching, setIsFetching ] = useState( true );
 
@@ -80,15 +76,15 @@ const NinjaForm = ( { layerID } ) => {
 					>
 
 						{
-							<div className={ clsx( 'form-container', 'ninja-form', 'loading' && isFetching ) }>
-								<iframe
-									src={ window.godamRestRoute.homeUrl + '?rtgodam-render-layer=ninja-forms&rtgodam-form-id=' + layer?.ninja_form_id }
+							<div className={ clsx( 'form-container', 'ninja-form', { loading: isFetching } ) }>
+								{ <iframe
+									src={ window.godamRestRoute.homeUrl + '?rtgodam-render-layer=ninja-forms&rtgodam-layer-id=' + layer?.ninja_form_id }
 									title="Ninja Form"
 									scrolling="auto"
 									width="100%"
 									className={ isFetching ? 'hidden' : '' }
 									onLoad={ () => setIsFetching( false ) }
-								></iframe>
+								></iframe> }
 
 								{
 									isFetching &&

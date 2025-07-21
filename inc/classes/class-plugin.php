@@ -102,6 +102,10 @@ class Plugin {
 		$this->load_elementor_widgets();
 
 		$this->load_media_library();
+
+		// Handle layer rendering for video editor.
+		add_filter( 'query_vars', array( $this, 'add_render_layer_query_var_for_video_editor' ) );
+		add_filter( 'template_include', array( $this, 'update_render_layer_template_for_video_editor' ) );
 	}
 
 	/**
@@ -199,5 +203,41 @@ class Plugin {
 	 */
 	public function load_fluentforms() {
 		\RTGODAM\Inc\FluentForms\Init::get_instance();
+	}
+
+	/**
+	 * Update the template for rendering layers in the video editor.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $template The current template.
+	 *
+	 * @return string Updated template path.
+	 */
+	public function update_render_layer_template_for_video_editor( $template ) {
+		$layer_type = get_query_var( 'rtgodam-render-layer' );
+		$layer_id   = get_query_var( 'rtgodam-layer-id' );
+
+		if ( $layer_type && $layer_id ) {
+			$template = untrailingslashit( RTGODAM_PATH ) . '/inc/templates/render-layer-video-editor.php';
+		}
+
+		return $template;
+	}
+
+	/**
+	 * Add query vars for render layer in video editor.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $query_vars The existing query vars.
+	 *
+	 * @return array Modified query vars.
+	 */
+	public function add_render_layer_query_var_for_video_editor( $query_vars ) {
+		$query_vars[] = 'rtgodam-render-layer';
+		$query_vars[] = 'rtgodam-layer-id';
+
+		return $query_vars;
 	}
 }
