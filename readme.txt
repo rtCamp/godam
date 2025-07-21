@@ -211,20 +211,20 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 = v1.3.0 (July 22, 2025) =
 
-- Feat: Integrated [Everest Forms](https://godam.io/features/everest-forms/)
-- Feat: Integrated [Forminator Forms](https://godam.io/features/forminator-forms/)
-- Feat: Integrated [Fluent Forms](https://godam.io/features/fluent-forms/) and added GoDAM Recorder Field integration
-- Feat: Integrated [SureForms](https://godam.io/features/sure-forms/) and added GoDAM Recorder Field integration
-- Feat: Added GoDAM Recorder Field integration for [WPForms](https://godam.io/features/wp-forms/) to capture video submissions
-- Feat: Implemented theme support for customizable video player appearance
-- Feat: Added Global Ads settings for centralized advertisement management
-- Feat: Implemented automatic autoplay disable when video audio is unmuted for better user experience
-- Feat: Added Bookmarks and Lock functionality for improved Media Library folder organization
-- Feat: Extended free version support to include MOV files and FLV formats (some codecs)
-- Feat: Introduced Background Color for Image CTA Layer Button
-- Enhancement: Added Custom Post Type support for GoDAM Videos
-- Enhancement: Redesigned Media Library user interface for improved usability and navigation
-- Enhancement: Improved Layer Selection interface with tabs and search functionality
+- New: Integrated [Everest Forms](https://godam.io/features/everest-forms/)
+- New: Integrated [Forminator Forms](https://godam.io/features/forminator-forms/)
+- New: Integrated [Fluent Forms](https://godam.io/features/fluent-forms/) and added GoDAM Recorder Field integration
+- New: Integrated [SureForms](https://godam.io/features/sure-forms/) and added GoDAM Recorder Field integration
+- New: Added GoDAM Recorder Field integration for [WPForms](https://godam.io/features/wp-forms/) to capture video submissions
+- New: Implemented theme support for customizable video player appearance
+- New: Added Global Ads settings for centralized advertisement management
+- New: Implemented automatic autoplay disable when video audio is unmuted for better user experience
+- New: Added Bookmarks and Lock functionality for improved Media Library folder organization
+- New: Extended free version support to include MOV files and FLV formats (some codecs)
+- New: Introduced Background Color for Image CTA Layer Button
+- Tweak: Added Custom Post Type support for GoDAM Videos
+- Tweak: Redesigned Media Library user interface for improved usability and navigation
+- Tweak: Improved Layer Selection interface with tabs and search functionality
 - Fix: Resolved overlapping button issues in Video Editor when viewing video content
 - Fix: Added comprehensive translations for previously untranslated interface strings
 - Fix: Eliminated display of "0" value after removing images in Image CTA Layer
@@ -243,14 +243,14 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 = v1.1.4 (June 25, 2025) =
 
-- Feat: Added [Jetpack Forms Integration](https://godam.io/features/jetpack/) to GoDAM Video Block
-- Feat: Added [Elementor widgets](https://godam.io/features/elementor/) for GoDAM Video, Gallery, and Audio to enable easy media embedding via drag-and-drop
-- Feat: Added Block Overlay feature to GoDAM Video Block with customizable timing
-- Feat: Added "Video Player" settings menu with support to add custom CSS to modify and style the UI of video player globally
-- Feat: Introduced `godam_player_enqueue_styles` hook for registering custom styles for GoDAM video blocks. Read more in [docs](https://godam.io/docs/overview/).
-- Feat: Consolidated video quality selector and playback speed controls into a unified player settings UI
-- Feat: Implemented chapters feature for enhanced video navigation
-- Enhancement: GoDAM Gallery Modal made more user-friendly and scrollable in fullscreen
+- New: Added [Jetpack Forms Integration](https://godam.io/features/jetpack/) to GoDAM Video Block
+- New: Added [Elementor widgets](https://godam.io/features/elementor/) for GoDAM Video, Gallery, and Audio to enable easy media embedding via drag-and-drop
+- New: Added Block Overlay feature to GoDAM Video Block with customizable timing
+- New: Added "Video Player" settings menu with support to add custom CSS to modify and style the UI of video player globally
+- New: Introduced `godam_player_enqueue_styles` hook for registering custom styles for GoDAM video blocks. Read more in [docs](https://godam.io/docs/overview/).
+- New: Consolidated video quality selector and playback speed controls into a unified player settings UI
+- New: Implemented chapters feature for enhanced video navigation
+- Tweak: GoDAM Gallery Modal made more user-friendly and scrollable in fullscreen
 - Fix: GoDAM Record field data disappearing after invalid submission
 - Fix: Transcoded videos showing as Not Transcoded in DAM Tab
 - Fix: Show Transcoding Status for Retranscoding videos
@@ -261,13 +261,13 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Implemented a custom endpoint to retrieve and display the list of WPForms on the Video Editor page.
 - Fix: Enabled watermarking functionality for users on the Starter plan.
 - Fix: Update overlapping Modal Popup UI for GoDAM Gallery.
-- Enhancement: Reorganized the GoDAM admin menu for improved navigation.
-- Enhancement: Added a clear guidance message on Analytics pages for cases where videos have been deleted.
+- Tweak: Reorganized the GoDAM admin menu for improved navigation.
+- Tweak: Added a clear guidance message on Analytics pages for cases where videos have been deleted.
 
 = v1.1.2 (June 5, 2025) =
 
-- Feat: Added a “Share” button to enable sharing of single video pages in the Central Media Manager.
-- Feat: Introduced the GoDAM Video Gallery block and shortcode for displaying videos on the frontend.
+- New: Added a “Share” button to enable sharing of single video pages in the Central Media Manager.
+- New: Introduced the GoDAM Video Gallery block and shortcode for displaying videos on the frontend.
 - Enhance: Improved video player UI for better mobile viewing experience.
 
 = v1.1.1 (May 30, 2025) =
@@ -276,19 +276,19 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 = v1.1.0 (May 29, 2025) =
 
-- Feat: Central Media Manager – Unified media dashboard with folders, filters, search, and public sharing.
-- Feat: Central Media Selector Tab – New tab to import media from the Central Media Manager directly into the WordPress media library.
-- Feat: Image Upload to Central Media Manager – Upload and organize image files into the central media library.
-- Feat: GoDAM Recorder Field for Gravity Forms – Record webcam or screen video directly within a form submission.
-- Feat: Automatic Video Transcription – AI-generated captions added automatically to uploaded videos.
-- Feat: Built-in Video SEO – Generate video schema with title, description, thumbnail and more for improved search engine discoverability.
-- Feat: Video Optimization at Upload – Auto-compression and resizing of uploaded videos to optimize bandwidth and storage.
-- Feat: WPForms & Contact Form 7 Integration – Add interactive form layers to videos using your preferred form plugins.
-- Feat: [godam_video] Shortcode – Embed a video anywhere using its media ID.
-- Feat: Advanced Video Analytics Dashboard – View plays, watch time, engagement, regional performance, and top-performing videos.
-- Enhancement: Improved Single Video Analytics Page – Compare videos, view playback metrics, and explore geographical heatmaps.
-- Enhancement: Video Editor UX – Edit timestamps for interactive video layers.
-- Enhancement: Keyboard Accessibility – Improved keyboard navigation and accessibility within the GoDAM video player.
+- New: Central Media Manager – Unified media dashboard with folders, filters, search, and public sharing.
+- New: Central Media Selector Tab – New tab to import media from the Central Media Manager directly into the WordPress media library.
+- New: Image Upload to Central Media Manager – Upload and organize image files into the central media library.
+- New: GoDAM Recorder Field for Gravity Forms – Record webcam or screen video directly within a form submission.
+- New: Automatic Video Transcription – AI-generated captions added automatically to uploaded videos.
+- New: Built-in Video SEO – Generate video schema with title, description, thumbnail and more for improved search engine discoverability.
+- New: Video Optimization at Upload – Auto-compression and resizing of uploaded videos to optimize bandwidth and storage.
+- New: WPForms & Contact Form 7 Integration – Add interactive form layers to videos using your preferred form plugins.
+- New: [godam_video] Shortcode – Embed a video anywhere using its media ID.
+- New: Advanced Video Analytics Dashboard – View plays, watch time, engagement, regional performance, and top-performing videos.
+- Tweak: Improved Single Video Analytics Page – Compare videos, view playback metrics, and explore geographical heatmaps.
+- Tweak: Video Editor UX – Edit timestamps for interactive video layers.
+- Tweak: Keyboard Accessibility – Improved keyboard navigation and accessibility within the GoDAM video player.
 
 = v1.0.8 (May 27, 2025) =
 - Fix: Renamed functions and added checks for function existence to prevent fatal errors caused by other plugin functions.
@@ -302,24 +302,24 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 = v1.0.5 (May 15, 2025) =
 - Fix: Updated plugin to support translations and localization.
-- Enhancement: Added compatibility for displaying thumbnails in the rtMedia gallery view.
+- Tweak: Added compatibility for displaying thumbnails in the rtMedia gallery view.
 
 = v1.0.4 (May 14, 2025) =
 
 - Fix: Added CDN detection to prevent conflicts with GoDAM’s transcoding.
 - Fix: Resolved translation issues across plugin interfaces.
-- Enhancement: Redesigned the Video Editor interface for a smoother editing experience.
-- Enhancement: Refreshed the UI of Settings pages for improved usability.
-- Feat: Added support for interactive Polls layer in video editor.
-- Feat: Introduced the new GoDAM Audio Block for displaying audio content from CDN.
+- Tweak: Redesigned the Video Editor interface for a smoother editing experience.
+- Tweak: Refreshed the UI of Settings pages for improved usability.
+- New: Added support for interactive Polls layer in video editor.
+- New: Introduced the new GoDAM Audio Block for displaying audio content from CDN.
 
 = v1.0.3 (April 22, 2025) =
 
 - Fix: Video player ads related console errors, and add optional chaining to avoid console errors.
 - Fix: Addressed an edge case where users couldn't save a new API key if the previous one had expired.
 - Fix: Update the settings page links and wordings.
-- Feat: Improve the GoDAM video player UI.
-- Feat: Enabled the watermark feature for users on the Starter plan.
+- New: Improve the GoDAM video player UI.
+- New: Enabled the watermark feature for users on the Starter plan.
 
 = v1.0.2 (April 15, 2025) =
 
@@ -333,14 +333,14 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 = v1.0.0 (March 05, 2025) =
 
-- Feat: Initial release of GoDAM plugin.
-- Feat: Automatic transcoding for audio and video files.
-- Feat: Adaptive bitrate streaming for smooth playback.
-- Feat: Interactive video layers (CTAs, forms, hotspots, ads).
-- Feat: Customizable video player with branding option.
-- Feat: Cloud storage and CDN integration.
-- Feat: Advanced analytics and engagement tracking.
-- Feat: Enhanced WordPress Media Library for better asset management.
+- New: Initial release of GoDAM plugin.
+- New: Automatic transcoding for audio and video files.
+- New: Adaptive bitrate streaming for smooth playback.
+- New: Interactive video layers (CTAs, forms, hotspots, ads).
+- New: Customizable video player with branding option.
+- New: Cloud storage and CDN integration.
+- New: Advanced analytics and engagement tracking.
+- New: Enhanced WordPress Media Library for better asset management.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
