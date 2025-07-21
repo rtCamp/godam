@@ -589,7 +589,6 @@ class Pages {
 					array(
 						'max_upload_size'               => $chunk_uploader->max_upload_size,
 						'godam_default_max_upload_size' => $chunk_uploader->get_upload_limit(),
-						'need_media_migration'          => Files_Migration::need_migration(),
 						'media_migration_progress'      => Files_Migration::get_progress(),
 						'ajax_url'                      => admin_url( 'admin-ajax.php' ),
 						'nonce'                         => wp_create_nonce( 'files_migration_nonce' ),
