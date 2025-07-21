@@ -1,9 +1,14 @@
 /* global jQuery, RTGodamVideoGallery */
+
 /**
  * WordPress dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
-import { render } from '@wordpress/element';
+
+/**
+ * External dependencies
+ */
+import { createRoot } from 'react-dom/client';
 import {
 	Modal,
 	TextControl,
@@ -18,7 +23,7 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import Ptag from '../images/product-tag.svg';
+import Ptag from '../../../images/product-tag.svg';
 
 jQuery( document ).ready( function( $ ) {
 	const videoList = $( '.godam-product-video-gallery-list' );
@@ -163,7 +168,7 @@ jQuery( document ).ready( function( $ ) {
 			};
 
 			const close = () => {
-				render( null, container );
+				root.unmount();
 				container.remove();
 			};
 
@@ -434,6 +439,7 @@ jQuery( document ).ready( function( $ ) {
 			);
 		};
 
-		render( <Picker />, container );
+		const root = createRoot( container );
+		root.render( <Picker /> );
 	};
 } );

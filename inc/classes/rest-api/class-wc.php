@@ -735,5 +735,4 @@ class WC extends Base {
 	
 		return rest_ensure_response( $products );
 	}
-	
 }

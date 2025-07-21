@@ -56,7 +56,7 @@
       "type": "string",
       "default": "#ffffff"
     },
-    "carouselCardWidth": {
+    "cardWidth": {
       "type": "number",
       "default": null
     },
@@ -80,6 +80,22 @@
       "type": "string",
       "default": "always"
     },
+    "gridColumns": {
+      "type": "number",
+      "default": 4
+    },
+    "gridRowGap": {
+      "type": "number",
+      "default": 16
+    },
+    "gridColumnGap": {
+      "type": "number",
+      "default": 16
+    },
+    "gridCardAlignment": {
+      "type": "string",
+      "default": "start"
+    },
     "ctaEnabled": {
       "type": "boolean",
       "default": false
@@ -87,6 +103,10 @@
     "ctaDisplayPosition": {
       "type": "string",
       "default": "below-inside"
+    },
+    "ctaBgColor": {
+      "type": "string",
+      "default": "#ffffff"
     },
     "ctaButtonBgColor": {
       "type": "string",

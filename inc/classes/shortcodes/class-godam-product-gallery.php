@@ -99,14 +99,19 @@ class GoDAM_Product_Gallery {
 				'unmute_button_enabled'       => '',
 				'unmute_button_bg_color'      => 'rgba(0,0,0,0.4)',
 				'unmute_button_icon_color'    => '#ffffff',
-				'carousel_card_width'         => 21.5,
+				'card_width'                  => 21.5,
 				'arrow_bg_color'              => 'rgba(0,0,0,0.5)',
 				'arrow_icon_color'            => '#ffffff',
 				'arrow_size'                  => 32,
 				'arrow_border_radius'         => 4,
 				'arrow_visibility'            => 'always',
+				'grid_columns'                => 4,
+				'grid_row_gap'                => 16,
+				'grid_column_gap'             => 16,
+				'grid_card_alignment'         => 'start',
 				'cta_enabled'                 => false,
 				'cta_display_position'        => 'below-inside',
+				'cta_bg_color'                => '#ffffff',
 				'cta_button_bg_color'         => '#000000',
 				'cta_button_icon_color'       => '#ffffff',
 				'cta_button_border_radius'    => 30,
@@ -202,6 +207,9 @@ class GoDAM_Product_Gallery {
 				data-product="' . esc_attr( $atts['product'] ) . '"
 			>';
 
+			/**
+			 * Layout Logic begins here.
+			 */
 			if ( 'carousel' === $atts['layout'] ) {
 				echo '<div class="godam-carousel-wrapper">';
 			
@@ -218,8 +226,21 @@ class GoDAM_Product_Gallery {
 				);
 			
 				echo '<div class="carousel-track">';
+			} elseif ( 'grid' === $atts['layout'] ) {
+				echo '<div class="godam-grid-wrapper">';
+
+				printf(
+					'<div class="grid-container" style="display: grid;grid-template-columns: repeat(%1$d, 1fr); row-gap: %2$dpx; column-gap: %3$dpx; justify-items: %4$s;">',
+					intval( $atts['grid_columns'] ),
+					intval( $atts['grid_row_gap'] ),
+					intval( $atts['grid_column_gap'] ),
+					esc_attr( $atts['grid_card_alignment'] ),
+				);
 			}
 
+			/**
+			 * Video Wrapper Begins here.
+			 */
 			$video_attrs = $atts['autoplay'] ? ' autoplay muted loop playsinline' : '';
 
 			foreach ( $video_posts as $video ) {
@@ -252,9 +273,9 @@ class GoDAM_Product_Gallery {
 							'<div class="godam-product-video-thumbnail" data-video-id="%s" data-video-attached-product-ids="%s" data-cta-enabled="%s" data-cta-display-position="%s" style="width:%srem;">',
 							esc_attr( $video_id ),
 							esc_attr( $data_product_ids ),
-							esc_attr( $atts['cta_enabled']),
+							esc_attr( $atts['cta_enabled'] ),
 							esc_attr( $atts['cta_display_position'] ),
-							esc_attr( $atts['carousel_card_width'] )
+							esc_attr( $atts['card_width'] )
 						);
 						echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
 						echo '</div>'; // .godam-product-video-thumbnail ends.
@@ -264,11 +285,11 @@ class GoDAM_Product_Gallery {
 							'<video class="godam-product-video" data-video-id="%s" data-video-attached-product-ids="%s" data-cta-enabled="%s" data-cta-display-position="%s" src="%s" %s playsinline style="width:%srem;"></video>',
 							esc_attr( $video_id ),
 							esc_attr( $data_product_ids ),
-							esc_attr( $atts['cta_enabled']),
+							esc_attr( $atts['cta_enabled'] ),
 							esc_attr( $atts['cta_display_position'] ),
 							esc_url( $video_url ),
 							esc_attr( $video_attrs ),
-							esc_attr( $atts['carousel_card_width'] )
+							esc_attr( $atts['card_width'] )
 						);
 					}
 
@@ -320,8 +341,9 @@ class GoDAM_Product_Gallery {
 					
 						if ( $main_product ) {
 							printf(
-								'<div class="godam-product-cta" style="width:%srem;">',
-								esc_attr( $atts['carousel_card_width'] )
+								'<div class="godam-product-cta" style="width:%srem;background-color:%s">',
+								esc_attr( $atts['card_width'] ),
+								esc_attr( $this->hex_to_rgba( $atts['cta_bg_color'] ) ),
 							);
 
 								echo '<div class="cta-thumbnail">';
@@ -346,7 +368,7 @@ class GoDAM_Product_Gallery {
 									echo '">' . wp_kses_post( $main_product->get_price_html() ) . '</p>';
 								echo '</div>'; // .cta-details ends
 
-								echo '<button class="cta-add-to-cart main-cta" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-dropdown="' . esc_attr( $has_dropdown ) . '" data-product-id="' . esc_attr( $main_product->get_id() ) . '" style="background-color:' . esc_attr( $atts['cta_button_bg_color'] ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">';
+								echo '<button class="cta-add-to-cart main-cta" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-dropdown="' . esc_attr( $has_dropdown ) . '" data-product-id="' . esc_attr( $main_product->get_id() ) . '" style="background-color:' . esc_attr( $this->hex_to_rgba( $atts['cta_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">';
 									echo $has_dropdown ? '&#9662;' : '+';
 								echo '</button>';
 
@@ -365,7 +387,7 @@ class GoDAM_Product_Gallery {
 										
 												// Add play icon if timestamp is available.
 										if ( ! empty( $timestamp ) ) {
-											echo '<button class="product-play-timestamp-button" data-video-id="' . esc_attr( $video_id ) . '" data-timestamp="' . esc_attr( $timestamp ) . '" data-video-attached-product-id="' . esc_attr( $product_id ) . '" data-cta-enabled="' . esc_attr( $atts['cta_enabled']) . '" data-cta-display-position="' . esc_attr( $atts[ 'cta_display_position' ] ) . '"aria-label="Play at timestamp">';
+											echo '<button class="product-play-timestamp-button" data-video-id="' . esc_attr( $video_id ) . '" data-timestamp="' . esc_attr( $timestamp ) . '" data-video-attached-product-id="' . esc_attr( $product_id ) . '" data-cta-enabled="' . esc_attr( $atts['cta_enabled'] ) . '" data-cta-display-position="' . esc_attr( $atts['cta_display_position'] ) . '"aria-label="Play at timestamp" style="background-color:' . esc_attr( $this->hex_to_rgba( $atts['play_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['play_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['play_button_radius'] ) . '%;">';
 												echo '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/></svg>';
 											echo '</button>';
 										}
@@ -385,7 +407,7 @@ class GoDAM_Product_Gallery {
 												echo 'color:' . esc_attr( $atts['cta_product_price_color'] ) . ';';
 												echo 'margin:4px 0 0;" >' . wp_kses_post( $product->get_price_html() ) . '</p>';
 											echo '</div>'; // .cta-product-info ends.
-											echo '<button class="cta-add-to-cart" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-id="' . esc_attr( $product_id ) . '"style="background-color:' . esc_attr( $atts['cta_button_bg_color'] ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">+</button>';
+											echo '<button class="cta-add-to-cart" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-id="' . esc_attr( $product_id ) . '"style="background-color:' . esc_attr( $this->hex_to_rgba( $atts['cta_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">+</button>';
 										echo '</div>'; // .cta-dropdown-item ends.
 									}
 								}
@@ -405,6 +427,9 @@ class GoDAM_Product_Gallery {
 				do_action( 'rtgodam_product_gallery_after_video_item', $video, $atts );
 			}
 
+			/**
+			 * Layout Logic ends here.
+			 */
 			if ( 'carousel' === $atts['layout'] ) {
 				echo '</div>'; // .carousel-track ends.
 			
@@ -422,6 +447,8 @@ class GoDAM_Product_Gallery {
 				);
 			
 				echo '</div>'; // .godam-carousel-wrapper ends.
+			} elseif ( 'grid' === $atts['layout'] ) {
+				echo '</div></div>'; // .godam-grid-wrapper ends, .grid-container ends.
 			}
 			
 			echo '</div>'; // .godam-product-gallery ends.
@@ -519,9 +546,7 @@ class GoDAM_Product_Gallery {
 		wp_reset_postdata();
 	
 		$html = ob_get_clean();
-
-		error_log($html);
 	
 		wp_send_json_success( $html );
-	}	
+	}   
 }

@@ -1,14 +1,9 @@
 .godam-product-gallery {
-	// display: flex;
-	// flex-wrap: nowrap;
-	// overflow-x: auto;
-	// gap: 1rem;
-	// padding: 0.75rem;
+	width: 100%;
+}
 
-	// &.layout-carousel {
-	// 	scroll-snap-type: x mandatory;
-	// }
-
+/* Grid Wrapper */
+.godam-grid-wrapper .grid-container {
 	width: 100%;
 }
 
@@ -314,10 +309,7 @@ video {
 	position: absolute;
 	top: 14px;
 	right: 13px;
-	background: rgba(0,0,0);
-	color: #fff;
 	border: none;
-	border-radius: 50%;
 	width: 24px;
 	height: 24px;
 	cursor: pointer;
