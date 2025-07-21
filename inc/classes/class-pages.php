@@ -661,14 +661,6 @@ class Pages {
 				$rtgodam_user_data
 			);
 
-			wp_localize_script(
-				'godam-page-script-tools',
-				'godamData',
-				array(
-					'apiBase' => RTGODAM_API_BASE,
-				)
-			);
-
 			wp_enqueue_script( 'godam-page-script-tools' );
 		}
 

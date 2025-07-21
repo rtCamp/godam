@@ -111,7 +111,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 					<p>
 						{ __( 'This tool is used to replace WordPress Vimeo Embed blocks with GoDAM Video block.', 'godam' ) }
 					</p>
-					<Snackbar actions={ [ { label: __( 'Open', 'godam' ), url: window.godamData?.apiBase + '/web/' } ] } className="snackbar-warning">
+					<Snackbar actions={ [ { label: __( 'Open', 'godam' ), url: window.godamRestRoute?.apiBase + '/web/' } ] } className="snackbar-warning">
 						{ __( 'This migrator will only migrate Vimeo videos that are already fetched on GoDAM Central.', 'godam' ) }
 					</Snackbar>
 
