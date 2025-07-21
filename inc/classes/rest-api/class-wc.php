@@ -719,14 +719,56 @@ class WC extends Base {
 			return new \WP_Error( 'invalid_ids', 'Invalid or missing IDs.', array( 'status' => 400 ) );
 		}
 	
-		$products = array();
+		$products = array(); 
 		foreach ( $ids as $id ) {
 			$product = wc_get_product( $id );
+
+			$type         = $product->get_type();
+			$name_display = $product->get_name();
+
+			if ( 'variable' === $type ) {
+
+				// Get variation prices.
+				$min_price = $product->get_variation_price( 'min', true );
+				$max_price = $product->get_variation_price( 'max', true );
+	
+				if ( $min_price === $max_price ) {
+					$price_display = wc_price( $min_price );
+				} else {
+					$price_display = wc_price( $min_price ) . ' - ' . wc_price( $max_price );
+				}       
+			} elseif ( 'grouped' === $type ) {
+	
+				$child_ids   = $product->get_children();
+				$child_count = count( $child_ids );
+			
+				// Get all child prices.
+				$child_prices = array_map(
+					function ( $child_id ) {
+						$child_product = wc_get_product( $child_id );
+						return $child_product ? $child_product->get_price() : null;
+					},
+					$child_ids 
+				);
+			
+				$child_prices = array_filter( $child_prices );
+				$min_price    = count( $child_prices ) ? min( $child_prices ) : 0;
+			
+				// Format name and price.
+				$name_display  = $product->get_name() . " ({$child_count} items)";
+				$price_display = $min_price > 0 ? 'From: ' . wc_price( $min_price ) . ' + more' : 'N/A';
+	
+			} else {
+	
+				$price_display = wc_price( $product->get_price() );
+			}
+
 			if ( $product ) {
 				$products[] = array(
 					'id'    => $product->get_id(),
-					'name'  => $product->get_name(),
-					'price' => wc_price( $product->get_price() ),
+					'name'  => $name_display,
+					'type'  => $type,
+					'price' => $price_display,
 					'image' => wp_get_attachment_url( $product->get_image_id() ) ?: wc_placeholder_img_src(),
 					'link'  => get_permalink( $product->get_id() ),
 				);
