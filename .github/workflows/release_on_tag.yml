@@ -44,9 +44,13 @@ jobs:
           name: godam
           path: '${{ steps.deploy.outputs.zip-path }}'
 <<<<<<< HEAD
+<<<<<<< HEAD
           compression-level: 0
 =======
 >>>>>>> c0afdeeb (ci(release): update workflow to include develop branch for dry-run (#679))
+=======
+          compression-level: 0
+>>>>>>> b63cd7cd (ci(release): set compression level 0 for already zipped file (#706))
 
       - name: Upload Release Artifact
         if: startsWith(github.ref, 'refs/tags/dry') == false && github.ref != 'refs/heads/develop'
