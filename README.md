@@ -1,4 +1,5 @@
-![Banner V3](https://github.com/user-attachments/assets/1c2cdf13-5cab-432a-b548-34cd3876e93f)
+![Banner V3](https://github.com/user-attachments/assets/73cfb2c2-0779-44c2-85e7-67e812dd82b6)
+
 # GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more
 Contributors: [rtcamp](https://profiles.wordpress.org/rtcamp), [elifvish](https://profiles.wordpress.org/elifvish), [subodhrajpopat](https://profiles.wordpress.org/subodhrajpopat), [kuldipchaudhary](https://profiles.wordpress.org/kuldipchaudhary), [prachigarg19](https://profiles.wordpress.org/prachigarg19), [juzar](https://profiles.wordpress.org/juzar), [geekofshire](https://profiles.wordpress.org/geekofshire), [nazmulhassann20](https://profiles.wordpress.org/nazmulhassann20), [abhinavbelhekar03](https://profiles.wordpress.org/abhinavbelhekar03)
 
