@@ -13,18 +13,22 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { updateLayerField } from '../../redux/slice/videoSlice';
+import { setLoading, updateLayerField } from '../../redux/slice/videoSlice';
 import { useGetSingleNinjaFormQuery } from '../../redux/api/ninja-forms';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
+import { useState } from 'react';
+import clsx from 'clsx';
 
 const NinjaForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const ninjaForms = useSelector( ( state ) => state.videoReducer.ninjaForms ) || [];
-	const { data: formHTML, isFetching } = useGetSingleNinjaFormQuery( layer.ninja_form_id, {
-		skip: 'undefined' === typeof layer?.ninja_form_id,
-	} );
+	// const { data: formHTML, isFetching } = useGetSingleNinjaFormQuery( layer.ninja_form_id, {
+	// 	skip: 'undefined' === typeof layer?.ninja_form_id,
+	// } );
+
+	const [ isFetching, setIsFetching ] = useState( true );
 
 	const forms = ninjaForms?.map( ( form ) => ( {
 		value: form.id,
@@ -32,6 +36,7 @@ const NinjaForm = ( { layerID } ) => {
 	} ) );
 
 	const changeFormID = ( formID ) => {
+		setIsFetching( true );
 		dispatch( updateLayerField( { id: layer.id, field: 'ninja_form_id', value: formID } ) );
 	};
 
@@ -75,21 +80,20 @@ const NinjaForm = ( { layerID } ) => {
 					>
 
 						{
-							( formHTML && ! isFetching ) &&
-							<div className="form-container form-render">
+							<div className={ clsx( 'form-container', 'ninja-form', 'loading' && isFetching ) }>
 								<iframe
 									src={ window.godamRestRoute.homeUrl + '?rtgodam-render-layer=ninja-forms&rtgodam-form-id=' + layer?.ninja_form_id }
 									title="Ninja Form"
 									scrolling="auto"
 									width="100%"
+									className={ isFetching ? 'hidden' : '' }
+									onLoad={ () => setIsFetching( false ) }
 								></iframe>
-							</div>
-						}
 
-						{
-							isFetching &&
-							<div className="form-container">
-								<p>{ __( 'Loading form…', 'godam' ) }</p>
+								{
+									isFetching &&
+									<p>{ __( 'Loading form…', 'godam' ) }</p>
+								}
 							</div>
 						}
 
@@ -99,7 +103,7 @@ const NinjaForm = ( { layerID } ) => {
 						}
 
 						{
-							formHTML &&
+							! isFetching &&
 							<Button
 								href={ `${ window?.videoData?.adminUrl }admin.php?page=ninja-forms&form_id=${ layer.ninja_form_id }` }
 								target="_blank"

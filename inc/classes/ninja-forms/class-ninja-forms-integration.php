@@ -37,13 +37,13 @@ class Ninja_Forms_integration {
 
 		add_action( 'admin_enqueue_scripts', function() {
 			$custom_css = <<<CSS
-				.form-container.form-render {
+				.form-container.ninja-form {
 					margin: unset;
 					height: 100%;
 					overflow: unset !important;
 				}
 
-				.form-container.form-render iframe {
+				.form-container.ninja-form iframe {
 					height: 100%;
 				}
 			CSS;
