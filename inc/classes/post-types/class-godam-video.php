@@ -482,8 +482,9 @@ class GoDAM_Video extends Base {
 				),
 			)
 		);
-
-		if ( $query->have_posts() ) {
+		
+		// Check if the query returned post.
+		if ( count( $query->posts ) > 0 ) {
 			return $query->posts[0];
 		}
 
