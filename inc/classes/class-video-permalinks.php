@@ -148,6 +148,8 @@ class Video_Permalinks {
 	/**
 	 * Video archive visibility field.
 	 *
+	 * @since n.e.x.t
+	 * 
 	 * @return void
 	 */
 	public function video_archive_visibility_field() {
@@ -175,6 +177,8 @@ class Video_Permalinks {
 	
 	/**
 	 * Video single page visibility field.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -267,6 +271,8 @@ class Video_Permalinks {
 
 	/**
 	 * Sanitize video post settings.
+	 * 
+	 * @since n.e.x.t
 	 *
 	 * @param array $input The input array to sanitize.
 	 * 
