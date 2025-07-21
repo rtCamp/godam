@@ -46,6 +46,8 @@ class Ninja_Forms_Integration {
 	 */
 	public function setup_hooks() {
 		add_action( 'admin_enqueue_scripts', array( $this, 'add_additional_css_for_video_editor' ), 11 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'add_additional_css_for_godam_player' ), 11 );
+
 		add_action( 'rtgodam_render_layer_for_video_editor_before', array( $this, 'add_css_for_the_layer_inside_iframe' ), 10, 2 );
 		add_action( 'rtgodam_render_layer_for_video_editor', array( $this, 'render_layer_form_for_video_editor' ), 10, 2 );
 	}
@@ -74,6 +76,24 @@ class Ninja_Forms_Integration {
 
 
 		wp_add_inline_style( 'rtgodam-style', $custom_css );
+	}
+
+	/**
+	 * Add additional css for godam player.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function add_additional_css_for_godam_player() {
+		$custom_css = <<<CSS
+			.easydam-layer.ninjaforms .form-container {
+				position: static;
+			}
+		CSS;
+
+
+		wp_add_inline_style( 'godam-player-style', $custom_css );
 	}
 
 	/**

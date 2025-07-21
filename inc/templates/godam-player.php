@@ -466,7 +466,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 								<?php
 							elseif ( 'ninjaforms' === $form_type && ! empty( $layer['ninja_form_id'] ) ) :
 								?>
-								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $form_type ); ?>" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
 										<?php
 											echo do_shortcode(
