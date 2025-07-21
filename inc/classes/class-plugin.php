@@ -39,6 +39,7 @@ use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
 
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
+use RTGODAM\Inc\Cron_Jobs\Files_Migration;
 
 use RTGODAM\Inc\Video_Metadata;
 
@@ -77,6 +78,7 @@ class Plugin {
 
 		// Load cron jobs.
 		Retranscode_Failed_Media::get_instance();
+		Files_Migration::get_instance();
 
 		// Load video metadata.
 		Video_Metadata::get_instance();

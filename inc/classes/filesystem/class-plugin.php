@@ -92,6 +92,7 @@ class Plugin {
 
 		add_filter( 'upload_dir', array( $this, 'filter_upload_dir' ) );
 		add_filter( 'wp_image_editors', array( $this, 'filter_editors' ), 9 );
+		add_action( 'add_attachment', array( $this, 'add_extra_metadata' ) );
 		add_action( 'delete_attachment', array( $this, 'delete_attachment_files' ) );
 		add_filter( 'wp_read_image_metadata', array( $this, 'wp_filter_read_image_metadata' ), 10, 2 );
 		add_filter( 'wp_resource_hints', array( $this, 'wp_filter_resource_hints' ), 10, 2 );
@@ -101,6 +102,9 @@ class Plugin {
 
 		add_filter( 'wp_handle_upload_prefilter', array( $this, 'filter_validate_file' ) );
 		add_filter( 'wp_handle_sideload_prefilter', array( $this, 'filter_validate_file' ) );
+
+		// Update the upload directory to use GoDAM.
+		wp_get_upload_dir();
 	}
 
 	/**
@@ -225,6 +229,16 @@ class Plugin {
 		array_unshift( $editors, __NAMESPACE__ . '\\Image_Editor_Imagick' );
 
 		return $editors;
+	}
+
+	/**
+	 * Add extra metadata to the attachment when it is added.
+	 *
+	 * @param int $attachment_id The ID of the attachment.
+	 */
+	public function add_extra_metadata( int $attachment_id ) {
+		// Add meta to check if media file is uploaded to GoDAM.
+		update_post_meta( $attachment_id, '_media_migrated_to_godam_cdn', true );
 	}
 
 	/**

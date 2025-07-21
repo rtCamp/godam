@@ -20,8 +20,15 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings';
-import { formatSize, getMaxUploadSize, getGodamMaxUploadSize, needMediaMigration, scrollToTop } from '../../../utils';
+import {
+	formatSize,
+	getMaxUploadSize,
+	getGodamMaxUploadSize,
+	scrollToTop,
+} from '../../../utils';
 import { updateMediaSetting } from '../../../redux/slice/media-settings';
+
+import MediaMigration from './MediaMigration.jsx';
 
 const UploadsSettings = () => {
 	const dispatch = useDispatch();
@@ -74,22 +81,12 @@ const UploadsSettings = () => {
 				</Notice>
 			) }
 
-			{ mediaSettings.uploads?.offload_media && needMediaMigration() && (
-				<Notice
-					className="mb-4"
-					status={ 'warning' }
-					isDismissible={ false }
-				>
-					{ __( 'Migrate existing media assets to GoDAM to prevent broken media links on the frontend.' ) }
-				</Notice>
-			) }
-
 			<Panel header={ __( 'Uploads Settings', 'godam' ) } className="godam-panel">
 				<PanelBody opened>
 					{ mediaSettings?.uploads?.offload_media && (
 						<Notice
 							className="mb-4"
-							status={ 'info' }
+							status={ 'warning' }
 							isDismissible={ false }
 						>
 							{ sprintf(
@@ -109,6 +106,9 @@ const UploadsSettings = () => {
 					/>
 				</PanelBody>
 			</Panel>
+			{ mediaSettings.uploads?.offload_media && (
+				<MediaMigration />
+			) }
 			<Button
 				variant="primary"
 				className="godam-button"

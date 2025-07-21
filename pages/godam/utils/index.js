@@ -86,3 +86,13 @@ export function formatSize( size ) {
 export function needMediaMigration() {
 	return window?.goDAMUploadsData?.need_media_migration || false;
 }
+
+export function getMediaMigrationProgress() {
+	// Fetch data from database or API.
+	return window?.goDAMUploadsData?.media_migration_progress || {
+		status: 'idle',
+		remaining: 0,
+		completed: 0,
+		failed: 0,
+	};
+}
