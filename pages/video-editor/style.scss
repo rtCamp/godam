@@ -305,7 +305,8 @@
 	opacity: 0.5;
 }
 
-.jetpack-form-preview .wp-block-jetpack-contact-form-container {
+.jetpack-form-preview .wp-block-jetpack-contact-form-container,
+.forminator-ui {
 	pointer-events: none;
 }
 

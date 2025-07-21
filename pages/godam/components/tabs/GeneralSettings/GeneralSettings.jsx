@@ -19,8 +19,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import BrandImageSelector from './BrandImageSelector.jsx';
-import ColorPickerButton from '../../../../video-editor/components/shared/color-picker/ColorPickerButton.jsx';
 
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
@@ -80,24 +78,6 @@ const GeneralSettings = () => {
 						onChange={ ( value ) => handleSettingChange( 'enable_folder_organization', value ) }
 					/>
 
-					<BrandImageSelector mediaSettings={ mediaSettings } handleSettingChange={ handleSettingChange } />
-
-					<div className="godam-form-group">
-						<label
-							className="label-text"
-							htmlFor="brand-color"
-						>
-							{ __( 'Brand color', 'godam' ) }
-						</label>
-						<ColorPickerButton
-							label={ __( 'Brand color', 'godam' ) }
-							value={ mediaSettings?.general?.brand_color }
-							onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
-						/>
-						<p className="help-text">
-							{ __( 'Select a brand color to apply to the video block. This can be overridden for individual videos by the video editor', 'godam' ) }
-						</p>
-					</div>
 				</PanelBody>
 			</Panel>
 

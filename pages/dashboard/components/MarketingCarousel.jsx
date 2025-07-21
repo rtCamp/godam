@@ -111,7 +111,7 @@ const MarketingCarousel = () => {
 								>
 									<img
 										src={ currentSlide.image }
-										alt="Feature Screenshot"
+										alt={ __( 'Feature Screenshot', 'godam' ) }
 										className="w-full max-w-full max-h-[346px] rounded mx-auto object-contain"
 									/>
 								</a>

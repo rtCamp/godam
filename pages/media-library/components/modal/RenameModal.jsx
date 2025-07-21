@@ -62,7 +62,7 @@ const RenameModal = () => {
 			dispatch( updateSnackbar(
 				{
 					message: __( 'Failed to rename folder', 'godam' ),
-					type: 'error',
+					type: 'fail',
 				},
 			) );
 		} finally {
@@ -78,7 +78,7 @@ const RenameModal = () => {
 	};
 
 	return (
-		isOpen && (
+		( isOpen && selectedFolder ) && (
 			<Modal
 				title={ __( 'Rename folder', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'rename' ) ) }

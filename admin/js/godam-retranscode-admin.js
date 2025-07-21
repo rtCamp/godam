@@ -1,7 +1,7 @@
 /* global jQuery */
 
 jQuery( document ).ready( function( $ ) {
-	const rtMedia = window.rtgodam_retranscode?.ids;
+	const rtMedia = window.rtgodamRetranscode?.ids;
 	const rtTotal = rtMedia.length;
 	let rtCount = 1;
 	let rtSuccesses = 0;
@@ -20,7 +20,7 @@ jQuery( document ).ready( function( $ ) {
 	// Stop button
 	$( '#retranscodemedia-stop' ).click( function() {
 		rtContinue = false;
-		$( '#retranscodemedia-stop' ).val( window.rtgodam_retranscode?.stoppingText );
+		$( '#retranscodemedia-stop' ).val( window.rtgodamRetranscode?.stoppingText );
 	} );
 
 	// Clear out the empty list element that's there for HTML validation purposes
@@ -52,9 +52,9 @@ jQuery( document ).ready( function( $ ) {
 		$( '#retranscodemedia-stop' ).hide();
 
 		if ( rtErrors > 0 ) {
-			rtResultText = `All done! ${ rtSuccesses } media file(s) were successfully sent for transcoding in ${ rtTotaltime } seconds and there were ${ rtErrors } failure(s). To try transcoding the failed media again, <a href="${ window.rtgodam_retranscode?.admin_url }&ids=${ rtFailedlist }">click here</a>. ${ window.rtgodam_retranscode?.text_goback }`;
+			rtResultText = `All done! ${ rtSuccesses } media file(s) were successfully sent for transcoding in ${ rtTotaltime } seconds and there were ${ rtErrors } failure(s). To try transcoding the failed media again, <a href="${ window.rtgodamRetranscode?.adminUrl }&ids=${ rtFailedlist }">click here</a>. ${ window.rtgodamRetranscode?.textGoback }`;
 		} else {
-			rtResultText = `All done! ${ rtSuccesses } media file(s) were successfully sent for transcoding in ${ rtTotaltime } seconds and there were 0 failures. ${ window.rtgodam_retranscode?.text_goback }`;
+			rtResultText = `All done! ${ rtSuccesses } media file(s) were successfully sent for transcoding in ${ rtTotaltime } seconds and there were 0 failures. ${ window.rtgodamRetranscode?.textGoback }`;
 		}
 		$( '#message' ).html( '<p><strong>' + rtResultText + '</strong></p>' );
 		$( '#message' ).show();

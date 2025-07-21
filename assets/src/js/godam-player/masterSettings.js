@@ -5,26 +5,31 @@ import videojs from 'video.js';
 import 'videojs-contrib-quality-levels';
 import DOMPurify from 'isomorphic-dompurify';
 
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
 const BackIcon = () => {
 	return `
 		<svg class="godam-chevron-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" width="12" height="12">
-			<path fill="#fff" d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 246.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z"/>
+			<path fill="currentColor" d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 246.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z"/>
 		</svg>
 	`;
 };
 
 const ForwardIcon = () => {
 	return `
-		<svg class="godam-chevron-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" width="12" height="12">
-			<path fill="#fff" d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
+		<svg class="godam-chevron-icon master-settings-back-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" width="12" height="12">
+			<path fill="currentColor" d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/>
 		</svg>
 	`;
 };
 
 const checkIcon = () => {
 	return `
-		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="12" height="12">
-			<path fill="#fff" d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/>
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="12" height="12" class="godam-check-icon">
+			<path fill="currentColor" d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/>
 		</svg>
 		`;
 };
@@ -87,6 +92,9 @@ class SettingsButton extends videojs.getComponent( 'MenuButton' ) {
 				this.menu.addChild( item );
 			} );
 
+			const playerEl = this.player_.el();
+			playerEl.classList.remove( 'godam-submenu-open' );
+
 			// Reset original items reference
 			this.originalItems_ = null;
 		}
@@ -105,6 +113,8 @@ function openSubmenu( menuButton, items, title = '' ) {
 	if ( ! menuButton.originalItems_ ) {
 		menuButton.originalItems_ = menuButton.menu.children().slice();
 	}
+
+	menuButton.player_.el().classList.add( 'godam-submenu-open' );
 
 	// Clear existing menu items using Video.js methods
 	const mainMenuItems = menuButton.menu.children().slice();
@@ -170,7 +180,7 @@ function openSubmenu( menuButton, items, title = '' ) {
 						<span class="vjs-menu-item-text">${ itemData.html }</span>
 					</div>`;
 				} else {
-					html = '<span class="vjs-menu-item-text">Invalid item</span>';
+					html = `<span class="vjs-menu-item-text">${ __( 'Invalid item', 'godam' ) }</span>`;
 				}
 
 				el.innerHTML = DOMPurify.sanitize( html );
