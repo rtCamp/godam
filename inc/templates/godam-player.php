@@ -254,6 +254,37 @@ if ( $is_shortcode || $is_elementor_widget ) {
 	}
 	$figure_attributes = get_block_wrapper_attributes( $additional_attributes );
 }
+
+/**
+ * Fetch AI Generated video tracks from REST endpoint
+ */
+if ( ! empty( $attachment_id ) ) {
+	$api_key = get_option( 'rtgodam-api-key', '' ); // Adjust this if your API key is stored elsewhere.
+
+	$rest_url = add_query_arg(
+		array(
+			'job_name' => urlencode( $job_id ),
+			'api_key'  => urlencode( $api_key ),
+		),
+		RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_transcription'
+	);
+
+	$response = wp_remote_get( $rest_url );
+	if ( ! is_wp_error( $response ) && wp_remote_retrieve_response_code( $response ) === 200 ) {
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+		if ( is_array( $data['message'] ) && ! empty( $data['message']['transcript_path'] ) && 'Transcribed' === $data['message']['transcription_status'] ) {
+			$transcript_path = $data['message']['transcript_path'];
+			$tracks[]        = array(
+				'src'     => esc_url( $transcript_path ),
+				'kind'    => 'subtitles',
+				'label'   => 'English',
+				'srclang' => 'en',
+			);
+		}
+	}
+}
+
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
