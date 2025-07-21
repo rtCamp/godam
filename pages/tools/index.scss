@@ -92,25 +92,25 @@
 
     .snackbar-success {
 
-        @apply bg-green-100 text-green-800 border border-green-200 p-4 rounded-md shadow-md w-full;
+        @apply bg-green-100 text-green-800 border border-green-200 p-4 rounded-md shadow-md w-full cursor-text;
         margin-bottom: 1rem;
     }
 
     .snackbar-warning {
 
-        @apply bg-yellow-100 text-yellow-800 border border-yellow-200 p-4 rounded-md shadow-md w-full;
+        @apply bg-yellow-100 text-yellow-800 border border-yellow-200 p-4 rounded-md shadow-md w-full cursor-text;
         margin-bottom: 1rem;
 
        a.is-link {
 
-            @apply text-yellow-800 underline hover:text-yellow-900;
+            @apply text-yellow-800 underline hover:text-yellow-900 font-bold;
             text-decoration: none;
         }
     }
 
     .snackbar-error {
 
-        @apply bg-red-100 text-red-800 border border-red-200 p-4 rounded-md shadow-md w-full;
+        @apply bg-red-100 text-red-800 border border-red-200 p-4 rounded-md shadow-md w-full cursor-text;
         margin-bottom: 1rem;
     }
 
