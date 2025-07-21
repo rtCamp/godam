@@ -332,7 +332,7 @@ class Video_Migration extends Base {
 			'started'   => current_time( 'mysql' ),
 			'completed' => current_time( 'mysql' ),
 			'status'    => 'completed',
-			'message'   => 'No posts found that need migration',
+			'message'   => __( 'No posts found that need migration', 'godam' ),
 		);
 		
 		update_option( $wp_option_key, $status );
