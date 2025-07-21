@@ -26,7 +26,7 @@ $transcoded_url = '';
 
 printf(
 	'<input type="hidden" value="%s" %s %s>',
-	$value,
+	esc_url( $value ), // $value is the video file URL.
 	wpforms_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	$primary['required'] // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 );
