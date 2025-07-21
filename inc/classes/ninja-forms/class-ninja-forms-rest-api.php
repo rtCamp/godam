@@ -11,7 +11,7 @@
 
 namespace RTGODAM\Inc\Ninja_Forms;
 
-use EverestForms\Traits\Singleton;
+use RTGODAM\Inc\Traits\Singleton;
 use RTGODAM\Inc\REST_API\Base;
 
 
