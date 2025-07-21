@@ -653,7 +653,7 @@ class Pages {
 
 			wp_set_script_translations( 'godam-page-script-tools', 'godam', RTGODAM_PATH . 'languages' );
 
-			$rtgodam_user_data = rtgodam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data( true );
 
 			wp_localize_script(
 				'godam-page-script-tools',
