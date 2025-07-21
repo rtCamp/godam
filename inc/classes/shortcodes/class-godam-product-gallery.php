@@ -65,7 +65,14 @@ class GoDAM_Product_Gallery {
 			'godam-product-gallery-script',
 			'godamVars',
 			array(
-				'api_nonce' => wp_create_nonce( 'wc_store_api' ),
+				'namespaceRoot'        => '/wp-json/godam/v1',
+				'videoShortcodeEP'     => '/video-shortcode',
+				'productByIdsEP'       => '/wcproducts-by-ids',
+				'addToCartAjax'        => '/?wc-ajax=add_to_cart',
+				'ajaxUrl'              => admin_url( 'admin-ajax.php' ),
+				'getProductHtmlAction' => 'godam_get_product_html',
+				'productGalleryNonce'  => wp_create_nonce( 'godam_get_product_html' ),
+				'api_nonce'            => wp_create_nonce( 'wc_store_api' ),
 			) 
 		);
 		
@@ -368,7 +375,7 @@ class GoDAM_Product_Gallery {
 									echo '">' . wp_kses_post( $main_product->get_price_html() ) . '</p>';
 								echo '</div>'; // .cta-details ends
 
-								echo '<button class="cta-add-to-cart main-cta" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-dropdown="' . esc_attr( $has_dropdown ) . '" data-product-id="' . esc_attr( $main_product->get_id() ) . '" style="background-color:' . esc_attr( $this->hex_to_rgba( $atts['cta_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">';
+								echo '<button class="cta-add-to-cart main-cta" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-dropdown="' . esc_attr( $has_dropdown ) . '" data-product-id="' . esc_attr( $main_product->get_id() ) . '" data-product-page-url="' . esc_url( get_permalink( $main_product->get_id() ) ) . '"  style="background-color:' . esc_attr( $this->hex_to_rgba( $atts['cta_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">';
 									echo $has_dropdown ? '&#9662;' : '+';
 								echo '</button>';
 
@@ -407,7 +414,7 @@ class GoDAM_Product_Gallery {
 												echo 'color:' . esc_attr( $atts['cta_product_price_color'] ) . ';';
 												echo 'margin:4px 0 0;" >' . wp_kses_post( $product->get_price_html() ) . '</p>';
 											echo '</div>'; // .cta-product-info ends.
-											echo '<button class="cta-add-to-cart" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-id="' . esc_attr( $product_id ) . '"style="background-color:' . esc_attr( $this->hex_to_rgba( $atts['cta_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">+</button>';
+											echo '<button class="cta-add-to-cart" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-id="' . esc_attr( $product_id ) . '" data-product-page-url="' . esc_url( get_permalink( $product->get_id() ) ) . '" style="background-color:' . esc_attr( $this->hex_to_rgba( $atts['cta_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">+</button>';
 										echo '</div>'; // .cta-dropdown-item ends.
 									}
 								}
@@ -502,7 +509,22 @@ class GoDAM_Product_Gallery {
 		return "#{$hex}";
 	}
 
-	function godam_get_product_html_callback() {
+	/**
+	 * AJAX callback to fetch and return a product's HTML content.
+	 *
+	 * This function is triggered via an AJAX request and returns rendered HTML for a single product,
+	 * typically used in quick views, sidebars, or modal popups.
+	 *
+	 * @return void
+	 */
+	public function godam_get_product_html_callback() {
+
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( $_GET['_wpnonce'] ) : '';
+
+		if ( ! wp_verify_nonce( $nonce, 'godam_get_product_html' ) ) {
+			wp_send_json_error( 'Invalid request.' );
+		}
+
 		if ( ! isset( $_GET['product_id'] ) ) {
 			wp_send_json_error( 'Missing product ID' );
 		}
@@ -516,7 +538,7 @@ class GoDAM_Product_Gallery {
 		}
 	
 		// Set up post and product for WooCommerce template functions.
-		global $post, $product;
+		global $product;
 		$product = wc_get_product( $product_id );
 	
 		if ( ! $product ) {
@@ -535,8 +557,14 @@ class GoDAM_Product_Gallery {
 			woocommerce_template_single_price();
 			woocommerce_template_single_excerpt();
 
-			// Replace Woo's form/button with Product Sidebar Add to Cart button.
-			echo '<button class="product-sidebar-add-to-cart-button" data-product-id="' . esc_attr( $product_id ) . '">' . esc_html__( 'Add to Cart', 'godam' ) . '</button>';
+			// Replace Woo's form/button with Product Sidebar Add to Cart button or Product Sidebar View Product button.
+			$product_url = get_permalink( $product_id );
+
+			if ( $product->is_type( 'variable' ) || $product->is_type( 'grouped' ) || $product->is_type( 'external' ) ) {
+				echo '<a class="product-sidebar-view-product-button" href="' . esc_url( $product_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'View Product', 'godam' ) . '</a>';
+			} else {
+				echo '<button class="product-sidebar-add-to-cart-button" data-product-id="' . esc_attr( $product_id ) . '">' . esc_html__( 'Add to Cart', 'godam' ) . '</button>';
+			}
 
 			woocommerce_template_single_meta();
 			woocommerce_template_single_sharing();
@@ -548,5 +576,5 @@ class GoDAM_Product_Gallery {
 		$html = ob_get_clean();
 	
 		wp_send_json_success( $html );
-	}   
+	}
 }

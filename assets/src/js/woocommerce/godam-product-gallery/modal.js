@@ -5,6 +5,7 @@
  *
  * Requires:
  * - Global GODAMPlayer function
+ * - Localized godamVars variables
  * - WordPress REST and AJAX APIs for fetching videos and WooCommerce products
  */
 
@@ -13,7 +14,7 @@
  */
 import { __ } from '@wordpress/i18n';
 
-/* global GODAMPlayer */
+/* global GODAMPlayer, godamVars */
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable no-console */
 
@@ -283,7 +284,7 @@ async function loadNewVideo( newVideoId, modal ) {
 	}
 
 	try {
-		const res = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ newVideoId }` );
+		const res = await fetch( `${ godamVars.namespaceRoot }${ godamVars.videoShortcodeEP }?id=${ newVideoId }` );
 		const data = await res.json();
 
 		if ( data.status === 'success' && data.html ) {
@@ -433,7 +434,7 @@ function attachAddToCartListeners( containerElement ) {
 			}
 
 			try {
-				const response = await fetch( '/?wc-ajax=add_to_cart', {
+				const response = await fetch( godamVars.addToCartAjax, {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/x-www-form-urlencoded',
@@ -507,7 +508,7 @@ async function loadSidebarProducts( productIds, sidebarElement, ctaEnabled, ctaD
 			const productId = idsArray[ 0 ];
 
 			const response = await fetch(
-				`/wp-admin/admin-ajax.php?action=godam_get_product_html&product_id=${ productId }`,
+				`${ godamVars.ajaxUrl }?action=${ godamVars.getProductHtmlAction }&product_id=${ productId }&_wpnonce=${ godamVars.productGalleryNonce }`,
 			);
 
 			const result = await response.json();
@@ -541,7 +542,7 @@ async function loadSidebarProducts( productIds, sidebarElement, ctaEnabled, ctaD
 
 	// Multiple products mode: fetch lightweight data from REST API.
 	try {
-		const res = await fetch( '/wp-json/godam/v1/wcproducts-by-ids', {
+		const res = await fetch( `${ godamVars.namespaceRoot }${ godamVars.productByIdsEP }`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -555,7 +556,7 @@ async function loadSidebarProducts( productIds, sidebarElement, ctaEnabled, ctaD
 			sidebarElement.innerHTML = `
 			<div class="godam-sidebar-header">
 				<h3>Products seen in the video</h3>
-				<button class="godam-sidebar-close" aria-label="${ __( 'Close sidebar', 'godam' ) }>&times;</button>
+				<button class="godam-sidebar-close" aria-label="${ __( 'Close sidebar', 'godam' ) }">&times;</button>
 			</div>
 			<div class="godam-sidebar-products">
 				${ products.map( ( product ) => `
@@ -565,7 +566,7 @@ async function loadSidebarProducts( productIds, sidebarElement, ctaEnabled, ctaD
 						<h4>${ product.name }</h4>
 						<p>${ product.price }</p>
 					</a>
-					<button class="product-sidebar-add-to-cart-button" data-product-id="${ product.id }" aria-label="${ __( 'Add to Cart', 'godam' ) }">${ __( 'Add to Cart', 'godam' ) }</button>
+					${ [ 'variable', 'grouped', 'external' ].includes( product.type ) ? `<a class="product-sidebar-add-to-cart-button" href="${ product.link }" target="_blank" aria-label="${ __( 'View Product', 'godam' ) }">${ __( 'View Product', 'godam' ) }</a>` : `<button class="product-sidebar-add-to-cart-button" data-product-id="${ product.id }" aria-label="${ __( 'Add to Cart', 'godam' ) }">${ __( 'Add to Cart', 'godam' ) }</button>` }
 				</div>` ).join( '' ) }
 			</div>`;
 
