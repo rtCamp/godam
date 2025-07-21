@@ -1,5 +1,8 @@
-// eslint-disable-next-line eslint-comments/disable-enable-pair
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable no-nested-ternary */
 /* eslint-disable react-hooks/exhaustive-deps */
+
+/* global RTGoDAMProductGalleryBlockSettings */
 
 /**
  * WordPress dependencies
@@ -7,6 +10,7 @@
 import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import {
+	Notice,
 	PanelBody,
 	SelectControl,
 	ToggleControl,
@@ -41,17 +45,21 @@ export default function Edit( { attributes, setAttributes } ) {
 		playButtonIconColor,
 		playButtonSize,
 		playButtonBorderRadius,
-		// unmuteButtonEnabled,
 		unmuteButtonBgColor,
 		unmuteButtonIconColor,
-		carouselCardWidth,
+		cardWidth,
 		arrowBgColor,
 		arrowIconColor,
 		arrowSize,
 		arrowBorderRadius,
 		arrowVisibility,
+		gridColumns,
+		gridRowGap,
+		gridColumnGap,
+		gridCardAlignment,
 		ctaEnabled,
 		ctaDisplayPosition,
+		ctaBgColor,
 		ctaButtonBgColor,
 		ctaButtonIconColor,
 		ctaButtonBorderRadius,
@@ -98,11 +106,11 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	// Update card width on view change.
 	useEffect( () => {
-		const defaultWidth = parseFloat( getCTAWidthForView( view ) );
+		const defaultWidth = parseFloat( getCardWidthForView( view, layout ) );
 
 		// If view has changed, reset to default width, else do nothing.
 		if ( previousViewRef.current !== view ) {
-			setAttributes( { carouselCardWidth: defaultWidth } );
+			setAttributes( { cardWidth: defaultWidth } );
 			previousViewRef.current = view;
 		}
 	}, [ view ] );
@@ -124,23 +132,30 @@ export default function Edit( { attributes, setAttributes } ) {
 	};
 
 	/**
-	 * Returns default CTA width (in rem) based on selected view ratio.
+	 * Returns default CTA width (in rem) based on selected view ratio and layout.
 	 *
 	 * @param {string} v - View ratio (e.g., '16-9', '4-3', etc.).
+	 * @param {string} l - Layout (e.g., 'carousel', 'grid', etc.).
 	 * @return {string} CTA width in rem units as a string.
 	 */
-	const getCTAWidthForView = ( v ) => {
-		switch ( v ) {
-			case '16-9':
-				return '42';
-			case '4-3':
-				return '21.5';
-			case '9-16':
-			case '3-4':
-				return '18.5';
-			case '1-1':
-				return '19';
+	const getCardWidthForView = ( v, l ) => {
+		if ( l === 'carousel' ) {
+			switch ( v ) {
+				case '16-9':
+					return '42';
+				case '4-3':
+					return '21.5';
+				case '9-16':
+				case '3-4':
+					return '18.5';
+				case '1-1':
+					return '19';
+			}
+		} else if ( l === 'grid' ) {
+			return '17';
 		}
+
+		return '0';
 	};
 
 	/**
@@ -153,7 +168,7 @@ export default function Edit( { attributes, setAttributes } ) {
 				key={ i }
 				style={ {
 					minWidth: '12.5rem',
-					width: `${ carouselCardWidth }rem`,
+					width: `${ cardWidth }rem`,
 				} }
 			>
 				<div className="godam-editor-product-video-thumbnail">
@@ -226,7 +241,8 @@ export default function Edit( { attributes, setAttributes } ) {
 					<div
 						className="godam-product-cta"
 						style={ {
-							width: `${ carouselCardWidth }rem`,
+							width: `${ cardWidth }rem`,
+							backgroundColor: ctaBgColor,
 						} }
 					>
 						<div className="cta-thumbnail" />
@@ -267,6 +283,20 @@ export default function Edit( { attributes, setAttributes } ) {
 
 		);
 	} );
+
+	/**
+	 * Return if WooCommerce is not Active.
+	 */
+	if (
+		typeof RTGoDAMProductGalleryBlockSettings !== 'undefined' &&
+		RTGoDAMProductGalleryBlockSettings.isWooActive === false
+	) {
+		return (
+			<Notice status="error" isDismissible={ false }>
+				{ __( 'Activate WooCommerce to use this block.', 'godam' ) }
+			</Notice>
+		);
+	}
 
 	// Render block markup and controls.
 	return (
@@ -328,10 +358,11 @@ export default function Edit( { attributes, setAttributes } ) {
 
 						<RangeControl
 							label={ __( 'Card Size (rem)', 'godam' ) }
-							value={ carouselCardWidth ?? parseFloat( getCTAWidthForView( view ) ) }
-							onChange={ ( value ) => setAttributes( { carouselCardWidth: value } ) }
+							value={ cardWidth ?? parseFloat( getCardWidthForView( view, layout ) ) }
+							onChange={ ( value ) => setAttributes( { cardWidth: value } ) }
 							min={ 12.5 }
 							max={ 70.5 }
+							step={ 0.5 }
 						/>
 
 						<p><strong>{ __( 'Arrow Background Color', 'godam' ) }</strong></p>
@@ -371,6 +402,54 @@ export default function Edit( { attributes, setAttributes } ) {
 								{ label: __( 'Show on hover', 'godam' ), value: 'hover' },
 							] }
 							onChange={ ( value ) => setAttributes( { arrowVisibility: value } ) }
+						/>
+					</PanelBody>
+				) }
+
+				{ layout === 'grid' && (
+					<PanelBody title={ __( 'Grid Settings', 'godam' ) } initialOpen={ false }>
+						<RangeControl
+							label={ __( 'Columns', 'godam' ) }
+							value={ gridColumns }
+							onChange={ ( value ) => setAttributes( { gridColumns: value } ) }
+							min={ 1 }
+							max={ 6 }
+						/>
+
+						<RangeControl
+							label={ __( 'Row Gap (px)', 'godam' ) }
+							value={ gridRowGap }
+							onChange={ ( value ) => setAttributes( { gridRowGap: value } ) }
+							min={ 0 }
+							max={ 64 }
+						/>
+
+						<RangeControl
+							label={ __( 'Column Gap (px)', 'godam' ) }
+							value={ gridColumnGap }
+							onChange={ ( value ) => setAttributes( { gridColumnGap: value } ) }
+							min={ 0 }
+							max={ 64 }
+						/>
+
+						<RangeControl
+							label={ __( 'Card Size (rem)', 'godam' ) }
+							value={ cardWidth ?? parseFloat( getCardWidthForView( view, layout ) ) }
+							onChange={ ( value ) => setAttributes( { cardWidth: value } ) }
+							min={ 12.5 }
+							max={ 70.5 }
+							step={ 0.5 }
+						/>
+
+						<SelectControl
+							label={ __( 'Card Alignment', 'godam' ) }
+							value={ gridCardAlignment }
+							options={ [
+								{ label: __( 'Left', 'godam' ), value: 'start' },
+								{ label: __( 'Center', 'godam' ), value: 'center' },
+								{ label: __( 'Right', 'godam' ), value: 'end' },
+							] }
+							onChange={ ( value ) => setAttributes( { gridCardAlignment: value } ) }
 						/>
 					</PanelBody>
 				) }
@@ -460,6 +539,12 @@ export default function Edit( { attributes, setAttributes } ) {
 							max={ 30 }
 						/>
 
+						<p><strong>{ __( 'CTA Background Color', 'godam' ) }</strong></p>
+						<ColorPalette
+							value={ ctaBgColor }
+							onChange={ ( color ) => setAttributes( { ctaBgColor: color } ) }
+						/>
+
 						<p><strong>{ __( 'Product Name Color', 'godam' ) }</strong></p>
 						<ColorPalette
 							value={ ctaProductNameColor }
@@ -480,21 +565,21 @@ export default function Edit( { attributes, setAttributes } ) {
 							onChange={ ( color ) => setAttributes( { ctaProductPriceColor: color } ) }
 						/>
 
-						<p><strong>{ __( 'CTA Cart Background', 'godam' ) }</strong></p>
+						<p><strong>{ __( 'CTA Cart Button Background', 'godam' ) }</strong></p>
 						<ColorPalette
 							enableAlpha
 							value={ ctaButtonBgColor }
 							onChange={ ( color ) => setAttributes( { ctaButtonBgColor: color } ) }
 						/>
 
-						<p><strong>{ __( 'CTA Cart Icon Color', 'godam' ) }</strong></p>
+						<p><strong>{ __( 'CTA Cart Button Icon Color', 'godam' ) }</strong></p>
 						<ColorPalette
 							value={ ctaButtonIconColor }
 							onChange={ ( color ) => setAttributes( { ctaButtonIconColor: color } ) }
 						/>
 
 						<RangeControl
-							label={ __( 'CTA Cart Border Radius (%)', 'godam' ) }
+							label={ __( 'CTA Cart Button Border Radius (%)', 'godam' ) }
 							value={ ctaButtonBorderRadius }
 							onChange={ ( value ) => setAttributes( { ctaButtonBorderRadius: value } ) }
 							min={ 0 }
@@ -551,6 +636,21 @@ export default function Edit( { attributes, setAttributes } ) {
 							>
 								&#10095;
 							</button>
+						</div>
+					) : layout === 'grid' ? (
+						<div className="godam-grid-wrapper">
+							<div
+								className="grid-container"
+								style={ {
+									display: 'grid',
+									gridTemplateColumns: `repeat(${ gridColumns }, 1fr)`,
+									rowGap: `${ gridRowGap }px`,
+									columnGap: `${ gridColumnGap }px`,
+									justifyItems: gridCardAlignment,
+								} }
+							>
+								{ GoDAMVideos }
+							</div>
 						</div>
 					) : (
 						<>{ GoDAMVideos }</>

@@ -1,12 +1,4 @@
 .godam-editor-product-gallery {
-	// display: flex;
-	// overflow-x: auto;
-	// gap: 1rem;
-	// padding: 0.75rem;
-
-	// &.layout-carousel {
-	// 	scroll-snap-type: x mandatory;
-	// }
 	width: 100%;
 }
 
@@ -18,67 +10,66 @@
 	// 16:9 Widescreen
 	&.view-16-9 .godam-editor-product-video-thumbnail {
 		aspect-ratio: 16 / 9;
-		max-width: 100%;
 	}
 
 	// 4:3 Standard
 	&.view-4-3 .godam-editor-product-video-thumbnail {
 		aspect-ratio: 4 / 3;
-		max-width: 100%;
 	}
 
     // 9:16 Reels/Tiktok
     &.view-9-16 .godam-editor-product-video-thumbnail {
         aspect-ratio: 9 / 16;
-        max-width: 100%;
     }
 
 	// 3:4 Portrait
 	&.view-3-4 .godam-editor-product-video-thumbnail {
 		aspect-ratio: 3 / 4;
-		max-width: 100%;
 	}
 
 	// 1:1 Square
 	&.view-1-1 .godam-editor-product-video-thumbnail {
 		aspect-ratio: 1 / 1;
-		max-width: 100%;
 	}
-}
 
-.godam-editor-product-video-thumbnail {
-	width: 100%;
-	background-color: #ccc;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	overflow: hidden;
-	position: relative;
-
-	.godam-play-button {
-		position: absolute;
+	// Video Thumbnail
+	.godam-editor-product-video-thumbnail {
+		width: 100%;
+		background-color: #ccc;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		border: none;
-		cursor: pointer;
-		transition: transform 0.2s ease;
-		padding: 0;
-		z-index: 10;
-
-		svg {
-			display: block;
-		}
-
-		&:hover {
-			transform: scale(1.1);
+		overflow: hidden;
+		position: relative;
+		max-width: 100%;
+	
+		// Play Button
+		.godam-play-button {
+			position: absolute;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border: none;
+			cursor: pointer;
+			transition: transform 0.2s ease;
+			padding: 0;
+			z-index: 10;
+	
+			svg {
+				display: block;
+			}
+	
+			&:hover {
+				transform: scale(1.1);
+			}
 		}
 	}
-}
 
-.godam-editor-product-video-label {
-	font-size: 0.875rem;
-	color: #333;
+	// Video Label
+	.godam-editor-product-video-label {
+		font-size: 0.875rem;
+		color: #333;
+	}
 }
 
 /* Unmute Button */
@@ -98,6 +89,11 @@
 	}
 }
 
+/* Grid Wrapper */
+.godam-grid-wrapper .grid-container {
+	width: 100%;
+}
+
 /* Carousel wrapper */
 .godam-carousel-wrapper {
 	position: relative;
@@ -105,55 +101,58 @@
 	align-items: center;
 	overflow: hidden;
 	width: 100%;
-}
 
-.carousel-track {
-	display: flex;
-	overflow-x: auto;
-	scroll-behavior: smooth;
-	scroll-snap-type: x mandatory;
-	gap: 1rem;
-	padding: 0.75rem;
-	flex: 1;
-
-	&::-webkit-scrollbar {
-		display: none;
+	.carousel-track {
+		display: flex;
+		overflow-x: auto;
+		scroll-behavior: smooth;
+		scroll-snap-type: x mandatory;
+		gap: 1rem;
+		padding: 0.75rem;
+		flex: 1;
+	
+		&::-webkit-scrollbar {
+			display: none;
+		}
 	}
-}
 
-.carousel-arrow {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	border: none;
-	cursor: pointer;
-	z-index: 10;
-	padding: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	// Carousel Arrows
+	.carousel-arrow {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		border: none;
+		cursor: pointer;
+		z-index: 10;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	
+		&.left {
+			left: 0;
+		}
+		&.right {
+			right: 0;
+		}
+	
+		&:hover {
+			filter: brightness(1.2);
+		}
 
-	&.left {
-		left: 0;
-	}
-	&.right {
-		right: 0;
+		&.hide-until-hover {
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 0.3s ease;
+		}
 	}
 
 	&:hover {
-		filter: brightness(1.2);
+		.carousel-arrow.hide-until-hover {
+			opacity: 1;
+			pointer-events: auto;
+		}
 	}
-}
-
-.godam-carousel-wrapper:hover .carousel-arrow.hide-until-hover {
-	opacity: 1;
-	pointer-events: auto;
-}
-
-.carousel-arrow.hide-until-hover {
-	opacity: 0;
-	pointer-events: none;
-	transition: opacity 0.3s ease;
 }
 
 /* CTA */

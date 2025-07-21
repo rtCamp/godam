@@ -132,7 +132,7 @@ const godamGallery = {
 const godamProductGallery = {
 	...sharedConfig,
 	entry: {
-		'godam-product-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-product-gallery.js' ),
+		'godam-product-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'godam-product-gallery', 'godam-product-gallery.js' ),
 	},
 };
 
@@ -181,14 +181,14 @@ const godamRecorder = {
 const productVideoGalleryJS = {
 	...sharedConfig,
 	entry: {
-		'wc-product-video-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wc-product-video-gallery.js' ),
+		'wc-product-video-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'admin', 'wc-product-video-gallery.js' ),
 	},
 };
 
 const addToProductJS = {
 	...sharedConfig,
 	entry: {
-		'wc-add-to-product': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wc-add-to-product.js' ),
+		'wc-add-to-product': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'admin', 'wc-add-to-product.js' ),
 	},
 };
 

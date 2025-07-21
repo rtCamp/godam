@@ -9,6 +9,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Return if WooCommerce is not Active.
+if ( ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
+	return;
+}
+
 $attributes = wp_parse_args(
 	$attributes,
 	array(
@@ -25,14 +30,19 @@ $attributes = wp_parse_args(
 		'unmuteButtonEnabled'     => false,
 		'unmuteButtonBgColor'     => 'rgba(0,0,0,0.4)',
 		'unmuteButtonIconColor'   => '#ffffff',
-		'carouselCardWidth'       => 21.5,
+		'cardWidth'               => 21.5,
 		'arrowBgColor'            => 'rgba(0,0,0,0.5)',
 		'arrowIconColor'          => '#ffffff',
 		'arrowSize'               => 32,
 		'arrowBorderRadius'       => 4,
 		'arrowVisibility'         => 'always',
+		'gridColumns'             => 4,
+		'gridRowGap'              => 16,
+		'gridColumnGap'           => 16,
+		'gridCardAlignment'       => 'start',
 		'ctaEnabled'              => false,
 		'ctaDisplayPosition'      => 'below-inside',
+		'ctaBgColor'              => '#ffffff',
 		'ctaButtonBgColor'        => '#000000',
 		'ctaButtonIconColor'      => '#ffffff',
 		'ctaButtonBorderRadius'   => 30,
@@ -98,14 +108,19 @@ $shortcode_atts = array(
 	'unmute_button_enabled'       => filter_var( $attributes['unmuteButtonEnabled'], FILTER_VALIDATE_BOOLEAN ),
 	'unmute_button_bg_color'      => sanitize_rgba_color( $attributes['unmuteButtonBgColor'] ),
 	'unmute_button_icon_color'    => sanitize_hex_color( $attributes['unmuteButtonIconColor'] ),
-	'carousel_card_width'         => intval( $attributes['carouselCardWidth'] ),
+	'card_width'                  => intval( $attributes['cardWidth'] ),
 	'arrow_bg_color'              => sanitize_rgba_color( $attributes['arrowBgColor'] ),
 	'arrow_icon_color'            => sanitize_hex_color( $attributes['arrowIconColor'] ),
 	'arrow_size'                  => intval( $attributes['arrowSize'] ),
 	'arrow_border_radius'         => intval( $attributes['arrowBorderRadius'] ),
 	'arrow_visibility'            => sanitize_text_field( $attributes['arrowVisibility'] ),
+	'grid_columns'                => intval( $attributes['gridColumns'] ),
+	'grid_row_gap'                => intval( $attributes['gridRowGap'] ),
+	'grid_column_gap'             => intval( $attributes['gridColumnGap'] ),
+	'grid_card_alignment'         => sanitize_text_field( $attributes['gridCardAlignment'] ),
 	'cta_enabled'                 => filter_var( $attributes['ctaEnabled'], FILTER_VALIDATE_BOOLEAN ),
 	'cta_display_position'        => sanitize_text_field( $attributes['ctaDisplayPosition'] ),
+	'cta_bg_color'                => sanitize_rgba_color( $attributes['ctaBgColor'] ),
 	'cta_button_bg_color'         => sanitize_rgba_color( $attributes['ctaButtonBgColor'] ),
 	'cta_button_icon_color'       => sanitize_hex_color( $attributes['ctaButtonIconColor'] ),
 	'cta_button_border_radius'    => intval( $attributes['ctaButtonBorderRadius'] ),
