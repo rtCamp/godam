@@ -7,6 +7,7 @@ import CTALayer from './CTALayer';
 import HotspotLayer from './HotspotLayer';
 import Ads from './AdsLayer';
 import PollLayer from './PollLayer';
+import WoocommerceLayer from './WoocommerceLayer';
 
 /**
  * Layer Component that needs to be used.
@@ -26,6 +27,9 @@ const LayerComponents = {
 	},
 	poll: {
 		component: PollLayer,
+	},
+	woo: {
+		component: WoocommerceLayer,
 	},
 };
 
