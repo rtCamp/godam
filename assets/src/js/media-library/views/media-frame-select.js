@@ -52,7 +52,7 @@ export default MediaFrameSelect?.extend( {
 		if ( ! mimeTypes ) {
 			mimeTypes = 'all';
 		} else {
-			mimeTypes = mimeTypes.join( '-' );
+			mimeTypes = Array.isArray( mimeTypes ) ? mimeTypes.join( '-' ) : mimeTypes;
 		}
 
 		this.$el.removeClass( 'hide-toolbar' );

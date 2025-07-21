@@ -52,6 +52,7 @@ use RTGODAM\Inc\Video_Metadata;
 
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
 use RTGODAM\Inc\WPForms\WPForms_Integration;
+use RTGODAM\Inc\Media_Library\Media_Edit_Enhancements;
 
 /**
  * Class Plugin.
@@ -153,12 +154,13 @@ class Plugin {
 	/**
 	 * Load all the classes related to the media library.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
 	private function load_media_library() {
 		Media_Folders_REST_API::get_instance();
+		Media_Edit_Enhancements::get_instance();
 	}
 
 	/**

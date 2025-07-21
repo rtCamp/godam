@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from 'react-redux';
  * WordPress dependencies
  */
 import { Button, TabPanel, Snackbar, Tooltip } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, _n } from '@wordpress/i18n';
 import { copy, seen } from '@wordpress/icons';
 
 /**
@@ -35,6 +35,7 @@ import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redu
 import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
+import { getFormIdFromLayer } from './utils/formUtils';
 
 const VideoEditor = ( { attachmentID } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
@@ -96,7 +97,13 @@ const VideoEditor = ( { attachmentID } ) => {
 		const videoSources = [];
 
 		if ( sourceURL && mimeType ) {
-			videoSources.push( { src: sourceURL, type: mimeType } );
+			/**
+			 * Fix for `mov` files, for able to play in VideoJS.
+			 * This is a workaround for QuickTime files that are not natively supported by VideoJS.
+			 * Since mov files are often encoded in h.264, we can treat them as mp4.
+			 */
+			const adjustedMimeType = mimeType === 'video/quicktime' ? 'video/mp4' : mimeType;
+			videoSources.push( { src: sourceURL, type: adjustedMimeType } );
 		}
 
 		// Add transcoded video source if valid
@@ -171,7 +178,33 @@ const VideoEditor = ( { attachmentID } ) => {
 	const seekToTime = ( time ) => playerRef.current?.currentTime( time );
 	const pauseVideo = () => playerRef.current?.pause();
 
+	const validateLayers = ( videoLayers ) => {
+		const invalidFormLayers = [];
+		for ( const layer of videoLayers ) {
+			if ( layer.type === 'form' ) {
+				const formType = layer.form_type;
+				const formId = getFormIdFromLayer( layer, formType );
+				if ( ! formId ) {
+					invalidFormLayers.push( layer.displayTime );
+				}
+			}
+		}
+		return invalidFormLayers;
+	};
+
 	const handleSaveAttachmentMeta = async () => {
+		const invalidLayers = validateLayers( layers );
+		// Validate form layers before saving.
+		if ( invalidLayers.length > 0 ) {
+			const layerTimes = invalidLayers.join( ', ' );
+			setSnackbarMessage( _n( 'Please select a form for the layer at timestamp: ', 'Please select a form for the layers at timestamps: ', invalidLayers.length, 'godam' ) + layerTimes );
+			setShowSnackbar( true );
+			setTimeout( () => {
+				setShowSnackbar( false );
+			}, 3000 );
+			return;
+		}
+
 		const data = {
 			rtgodam_meta: { videoConfig, layers, chapters },
 		};
@@ -379,6 +412,13 @@ const VideoEditor = ( { attachmentID } ) => {
 										controls: true,
 										fluid: true,
 										preload: 'auto',
+										flvjs: {
+											mediaDataSource: {
+												isLive: true,
+												cors: false,
+												withCredentials: false,
+											},
+										},
 										aspectRatio: '16:9',
 										sources,
 										controlBar: {

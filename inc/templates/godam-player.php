@@ -33,7 +33,7 @@ $loop          = ! empty( $attributes['loop'] );
 $muted         = ! empty( $attributes['muted'] );
 $poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
 $preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$hover_overlay = isset( $attributes['hoverOverlay'] ) ? $attributes['hoverOverlay'] : true;
+$hover_overlay = isset( $attributes['hoverOverlay'] ) ? $attributes['hoverOverlay'] : false;
 $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
@@ -157,6 +157,13 @@ $video_setup = array(
 	'preload'     => $preload,
 	'poster'      => empty( $poster ) ? $poster_image : $poster,
 	'fluid'       => true,
+	'flvjs'       => array(
+		'mediaDataSource' => array(
+			'isLive'          => true,
+			'cors'            => false,
+			'withCredentials' => false,
+		),
+	),
 	'sources'     => $sources,
 	'playsinline' => true,
 	'controlBar'  => array(

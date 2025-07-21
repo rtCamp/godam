@@ -20,7 +20,7 @@ abstract class Base {
 
 	/**
 	 * Base constructor.
-	 * 
+	 *
 	 * @return void
 	 */
 	protected function __construct() {
@@ -56,7 +56,7 @@ abstract class Base {
 			$args['labels'] = $labels;
 		}
 
-		register_post_type( static::SLUG, $args );
+		register_post_type( static::SLUG, $args ); // phpcs:ignore WordPress.NamingConventions.ValidPostTypeSlug.NotStringLiteral
 	}
 
 	/**

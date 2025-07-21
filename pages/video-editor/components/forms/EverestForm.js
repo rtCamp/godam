@@ -22,7 +22,9 @@ const EverestForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const everestForms = useSelector( ( state ) => state.videoReducer.everestForms ) || [];
-	const { data: formHTML, isFetching } = useGetSingleEverestFormQuery( layer.everest_form_id );
+	const { data: formHTML, isFetching } = useGetSingleEverestFormQuery( layer.everest_form_id, {
+		skip: 'undefined' === typeof layer?.everest_form_id,
+	} );
 
 	const forms = everestForms?.map( ( form ) => ( {
 		value: form.id,

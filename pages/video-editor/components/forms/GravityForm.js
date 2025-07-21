@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, CustomSelectControl, Notice } from '@wordpress/components';
+import { Button, Notice, SelectControl } from '@wordpress/components';
 import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
@@ -20,12 +20,12 @@ import FormSelector from './FormSelector';
 
 const templateOptions = [
 	{
-		key: 'orbital',
-		name: __( 'Orbital', 'godam' ),
+		value: 'orbital',
+		label: __( 'Orbital', 'godam' ),
 	},
 	{
-		key: 'gravity',
-		name: __( 'Gravity', 'godam' ),
+		value: 'gravity',
+		label: __( 'Gravity', 'godam' ),
 	},
 ];
 
@@ -33,7 +33,9 @@ const GravityForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const gforms = useSelector( ( state ) => state.videoReducer.gforms );
-	const { data: formHTML, isFetching } = useGetSingleGravityFormQuery( { id: layer.gf_id, theme: layer.theme || 'orbital' } );
+	const { data: formHTML, isFetching } = useGetSingleGravityFormQuery( { id: layer.gf_id, theme: layer.theme || 'orbital' }, {
+		skip: 'undefined' === typeof layer?.gf_id,
+	} );
 
 	const forms = gforms?.map( ( form ) => ( {
 		value: form.id,
@@ -51,7 +53,7 @@ const GravityForm = ( { layerID } ) => {
 
 	const isGFPluginActive = Boolean( window?.videoData?.gfActive );
 
-	const handleThemeChange = ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'theme', value: value.selectedItem.key } ) );
+	const handleThemeChange = ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) );
 
 	return (
 		<>
@@ -67,15 +69,15 @@ const GravityForm = ( { layerID } ) => {
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isGFPluginActive } className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isValidAPIKey || ! isGFPluginActive } className="mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
-			<CustomSelectControl
+			<SelectControl
 				__next40pxDefaultSize
-				className="mb-4 godam-input"
+				className="mb-4"
 				label={ __( 'Select form theme', 'godam' ) }
 				options={ templateOptions }
-				value={ layer.theme ? templateOptions.find( ( option ) => option.key === layer.theme ) : { key: 'orbital', name: __( 'Orbital', 'godam' ) } }
+				value={ layer.theme || 'orbital' }
 				onChange={ handleThemeChange }
 				disabled={ ! isValidAPIKey || ! isGFPluginActive }
 			/>

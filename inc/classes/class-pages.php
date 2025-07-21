@@ -797,7 +797,7 @@ class Pages {
 	/**
 	 * Enqueue Everest Forms styles.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */

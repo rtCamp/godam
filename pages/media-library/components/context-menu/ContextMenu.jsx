@@ -364,7 +364,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				icon={ NewFolderIcon }
 				onClick={ () => handleMenuItemClick( 'newSubFolder' ) }
 				className="folder-context-menu__item"
-				disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder }
+				disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder || currentFolder?.meta?.locked }
 			>
 				{ __( 'New Sub-folder', 'godam' ) }
 			</Button>

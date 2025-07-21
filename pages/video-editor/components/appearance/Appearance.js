@@ -397,7 +397,7 @@ const Appearance = () => {
 						htmlFor="custom-brand-logo"
 						className="label-text"
 					>
-						{ __( 'Display settings', 'godam' ) }
+						{ __( 'Display Settings', 'godam' ) }
 					</label>
 
 					<div className="flex flex-col gap-3">
@@ -567,7 +567,7 @@ const Appearance = () => {
 								name: '30',
 							},
 						] }
-						label={ __( 'Adjust skip duration', 'godam' ) }
+						label={ __( 'Adjust Skip Duration', 'godam' ) }
 						value={ {
 							key: videoConfig.controlBar.skipButtons.forward.toString(),
 							name: videoConfig.controlBar.skipButtons.forward.toString(),
@@ -646,7 +646,7 @@ const Appearance = () => {
 						htmlFor="custom-hover-color"
 						className="label-text"
 					>
-						{ __( 'Select Ad server', 'godam' ) }
+						{ __( 'Select Ad Server', 'godam' ) }
 					</label>
 					<ToggleControl
 						className="godam-toggle"
