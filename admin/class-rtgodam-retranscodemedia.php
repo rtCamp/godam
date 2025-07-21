@@ -81,7 +81,6 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueues' ) );
 		add_action( 'wp_ajax_retranscodemedia', array( $this, 'ajax_process_retranscode_request' ) );
 		add_filter( 'media_row_actions', array( $this, 'add_media_row_action' ), 10, 2 );
@@ -108,24 +107,6 @@ class RTGODAM_RetranscodeMedia {
 		// Create class object and register routes.
 		$transcoder_rest_routes = new RTGODAM_Transcoder_Rest_Routes();
 		add_action( 'rest_api_init', array( $transcoder_rest_routes, 'register_routes' ) );
-	}
-
-	/**
-	 * Register the management page.
-	 *
-	 * @return void
-	 */
-	public function add_admin_menu() {
-
-		$this->menu_id = add_submenu_page(
-			'rtgodam',
-			__( 'Tools', 'godam' ),
-			__( 'Tools', 'godam' ),
-			$this->capability,
-			'rtgodam_tools',
-			array( $this, 'render_tools_page' ),
-			3
-		);
 	}
 
 	/**
