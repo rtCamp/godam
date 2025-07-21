@@ -114,6 +114,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @param {Object} data - The video thumbnail data to render.
 	 */
 	renderThumbnail( data ) {
+		if ( ! this.canManageAttachment() ) {
+			return;
+		}
+
 		const { thumbnails, selected } = data;
 		const attachmentID = this.model.get( 'id' );
 
@@ -165,6 +169,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Renders the Edit Video and Analytics buttons in the attachment details view.
 	 */
 	renderVideoActions() {
+		if ( ! this.canManageAttachment() ) {
+			return;
+		}
+
 		const buttonsHTML = this.getButtonsHTML();
 		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-video-actions">${ buttonsHTML }</div>` ) );
 	},
@@ -194,6 +202,19 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>
 		<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>
 		`;
+	},
+
+	/**
+	 * Checks if the current user is allowed to manage this attachment.
+	 *
+	 * @return {boolean} Returns true if the user can manage the attachment, false otherwise.
+	 */
+	canManageAttachment() {
+		const currentUserId = window?.easydamMediaLibrary?.userId;
+		const canEditOthersMedia = window?.easydamMediaLibrary?.canEditOthersMedia;
+		const attachmentAuthorId = this.model.get( 'author' );
+
+		return canEditOthersMedia || currentUserId === attachmentAuthorId;
 	},
 
 	/**
