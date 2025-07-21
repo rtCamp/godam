@@ -35,8 +35,11 @@ class GoDAM_Video extends Base {
 		add_action( 'edit_attachment', array( $this, 'update_video_post_from_attachment' ) );
 		add_action( 'delete_attachment', array( $this, 'delete_video_post_from_attachment' ) );
 		add_action( 'save_post_attachment', array( $this, 'sync_attachment_to_video_post' ), 10, 3 );
+		
+		// Handle direct URL access based on user settings.
+		add_action( 'template_redirect', array( $this, 'handle_url_access' ) );
 	}
-
+	
 	/**
 	 * Labels for post type.
 	 *
@@ -57,22 +60,32 @@ class GoDAM_Video extends Base {
 	 * @return array
 	 */
 	public function get_args() {
-
-		return array(
-			'label'        => __( 'GoDAM Video', 'godam' ),
-			'description'  => __( 'GoDAM Video posts for theme template support', 'godam' ),
-			'labels'       => $this->get_labels(),
-			'supports'     => array( 'title', 'editor', 'excerpt', 'author', 'custom-fields' ),
-			'taxonomies'   => array( 'category', 'post_tag' ),
-			'hierarchical' => false,
-			'public'       => true,
-			'show_ui'      => false,
-			'has_archive'  => true,
-			'show_in_rest' => true,
-			'rewrite'      => array(
+		$allow_archive = $this->get_allow_archive();
+		$allow_single  = $this->get_allow_single();
+		
+		// Determine rewrite rules based on settings.
+		$rewrite = false;
+		if ( $allow_archive || $allow_single ) {
+			$rewrite = array(
 				'slug'       => $this->get_rewrite_slug(),
 				'with_front' => false,
-			),
+			);
+		}
+
+		return array(
+			'label'               => __( 'GoDAM Video', 'godam' ),
+			'description'         => __( 'GoDAM Video posts for theme template support', 'godam' ),
+			'labels'              => $this->get_labels(),
+			'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'custom-fields' ),
+			'taxonomies'          => array( 'category', 'post_tag' ),
+			'hierarchical'        => false,
+			'public'              => true, 
+			'publicly_queryable'  => true, // Always true for Query Loop compatibility.
+			'exclude_from_search' => ! $allow_single, // Respect user setting for search visibility.
+			'show_ui'             => false,
+			'has_archive'         => $allow_archive,
+			'show_in_rest'        => true, // Also needed for Query Loop block.
+			'rewrite'             => $rewrite,
 		);
 	}
 
@@ -83,6 +96,30 @@ class GoDAM_Video extends Base {
 	 */
 	private function get_rewrite_slug() {
 		return get_option( 'rtgodam_video_slug', 'videos' );
+	}
+	
+	/**
+	 * Get allow_archive setting from plugin options.
+	 * 
+	 * @since n.e.x.t
+	 *
+	 * @return bool
+	 */
+	private function get_allow_archive() {
+		$settings = get_option( 'rtgodam_video_post_settings' );
+		return (bool) ( isset( $settings['allow_archive'] ) ? $settings['allow_archive'] : false );
+	}
+	
+	/**
+	 * Get allow_single setting from plugin options.
+	 * 
+	 * @since n.e.x.t
+	 *
+	 * @return bool
+	 */
+	private function get_allow_single() {
+		$settings = get_option( 'rtgodam_video_post_settings' );
+		return (bool) ( isset( $settings['allow_single'] ) ? $settings['allow_single'] : false );
 	}
 
 	/**
@@ -387,5 +424,33 @@ class GoDAM_Video extends Base {
 			$has_more = count( $query->posts ) === $batch_size;
 
 		} while ( $has_more );
+	}
+
+	/**
+	 * Handle URL access for both single and archive pages based on user settings.
+	 * This ensures videos appear in Query Loop but respect visibility settings for direct URLs.
+	 * 
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function handle_url_access() {
+		global $wp_query;
+		
+		// Block direct access to single video pages when single access is disabled.
+		if ( is_singular( self::SLUG ) && ! $this->get_allow_single() ) {
+			$wp_query->set_404();
+			status_header( 404 );
+			require get_query_template( '404' );
+			exit;
+		}
+		
+		// Block access to archive page when archive access is disabled.
+		if ( is_post_type_archive( self::SLUG ) && ! $this->get_allow_archive() ) {
+			$wp_query->set_404();
+			status_header( 404 );
+			require get_query_template( '404' );
+			exit;
+		}
 	}
 }
