@@ -38,6 +38,7 @@ use RTGODAM\Inc\REST_API\Ads;
 use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Polls;
+use RTGODAM\Inc\REST_API\WC;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\Gravity_Forms;
@@ -143,6 +144,7 @@ class Plugin {
 		Analytics::get_instance();
 		Deactivation::get_instance();
 		Polls::get_instance();
+		WC::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
 	}
