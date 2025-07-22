@@ -67,38 +67,12 @@ export function initVideoModal() {
 
 		const currentGallery = ( playButton || timestampBtn ).closest( '.godam-product-gallery' );
 
-		let modal = document.getElementById( 'godam-product-modal' );
-		if ( ! modal ) {
-			modal = document.createElement( 'div' );
-			modal.id = 'godam-product-modal';
-			modal.className = 'godam-product-modal';
-			document.body.appendChild( modal );
-		}
+		const modal = document.querySelector( `.godam-product-modal-container[data-modal-video-id="${ videoId }"]` );
+
+		modal.classList.add( 'open' );
 
 		modal.dataset.currentVideoId = videoId;
 		modal.dataset.isLoading = 'false';
-
-		modal.innerHTML = `
-			<div class="godam-product-modal-overlay"></div>
-			<div class="godam-product-sidebar"></div>
-			<div class="godam-product-modal-content">
-				<span class="godam-product-modal-close" aria-label="${ __( 'Close modal', 'godam' ) }" title="${ __( 'Close', 'godam' ) }"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg></span>
-				<div class="video-container animate-video-loading" style="aspect-ratio:responsive;">
-					<div class="animate-play-btn">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
-							<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
-						</svg>
-					</div>
-				</div>
-				<div class="godam-swipe-overlay">
-					<div class="godam-swipe-hint">
-						<div class="chevron chevron-up"></div>
-						<div class="chevron chevron-down"></div>
-						<span class="godam-scroll-or-swipe-text"></span>
-					</div>
-				</div>
-			</div>
-		`;
 
 		const sidebarModal = modal.querySelector( '.godam-product-sidebar' );
 
@@ -118,7 +92,7 @@ export function initVideoModal() {
 
 		/* Close Modal and Product sidebar on clicking x */
 		modal.querySelector( '.godam-product-modal-close' )?.addEventListener( 'click', () => close( modal, sidebarModal ) );
-		sidebarModal.addEventListener( 'click', ( ev ) => {
+		sidebarModal?.addEventListener( 'click', ( ev ) => {
 			const closeBtn = ev.target.closest( '.godam-sidebar-close' );
 			if ( closeBtn ) {
 				closeSidebar( sidebarModal );
@@ -139,8 +113,8 @@ export function initVideoModal() {
 		modal.classList.remove( 'hidden' );
 		await loadNewVideo( videoId, modal );
 
-		/* Loads Product Sidebar */
-		await loadSidebarProducts( videoProductIds, sidebarModal, ctaEnabled, ctaDisplayPosition, modal );
+		// /* Loads Product Sidebar */
+		// await loadSidebarProducts( videoProductIds, sidebarModal, ctaEnabled, ctaDisplayPosition, modal );
 
 		/* Timestamp button logic. */
 		if ( timestampBtn ) {

@@ -203,7 +203,7 @@ class WC extends Base {
 						),
 					),
 				),
-			),      
+			),   
 		);
 	}
 

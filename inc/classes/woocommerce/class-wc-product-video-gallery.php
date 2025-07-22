@@ -401,7 +401,7 @@ class WC_Product_Video_Gallery {
 			$video_ids  = get_post_meta( $product_id, '_rtgodam_product_video_gallery_ids', true ) ?: array();
 
 			// Find index of the deleted attachment.
-			$index = array_search( $attachment_id, $video_ids );
+			$index = array_search( $attachment_id, $video_ids, true );
 
 			if ( false !== $index ) {
 				unset( $video_ids[ $index ] );
