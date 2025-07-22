@@ -1,22 +1,46 @@
 <?php
+/**
+ * WC_Product_Video_Gallery class.
+ *
+ * @package GoDAM
+ */
 
 namespace RTGODAM\Inc\WooCommerce;
 
 use RTGODAM\Inc\Traits\Singleton;
 
+/**
+ * Class WC_Product_Video_Gallery
+ */
 class WC_Product_Video_Gallery {
 
 	use Singleton;
 
+	/**
+	 * Constructor method.
+	 *
+	 * Registers hooks for adding a meta box, saving video gallery data, enqueuing
+	 * media scripts, handling attachment deletion, and placing the meta box below
+	 * the built-in WC gallery. Also allows inline SVG in WP-Admin.
+	 */
 	public function __construct() {
 		add_action( 'add_meta_boxes', array( $this, 'add_video_gallery_metabox' ) );
 		add_action( 'save_post_product', array( $this, 'save_video_gallery' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_media_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
+		add_action( 'woocommerce_single_product_summary', array( $this, 'add_video_slider_to_single_product' ), priority: 70 );
 		add_action( 'delete_attachment', array( $this, 'on_attachment_deleted' ) );
 		add_filter( 'get_user_option_meta-box-order_product', array( $this, 'place_below_wc_gallery' ) );
 	}
 
-	public function enqueue_media_scripts() {
+	/**
+	 * Enqueue the media scripts and styles required for managing the video gallery for products.
+	 *
+	 * Only loads on the 'product' post type.
+	 *
+	 * @since 1.0.0
+	 */
+	public function enqueue_admin_assets() {
 		if ( get_post_type() === 'product' ) {
 
 			wp_enqueue_media();
@@ -58,6 +82,58 @@ class WC_Product_Video_Gallery {
 		}
 	}
 
+	/**
+	 * Registers and enqueues frontend assets for the video carousel on the product page.
+	 *
+	 * Registers the Swiper library and a custom script for initializing the carousel.
+	 * Enqueues the styles and scripts if the current post type is 'product'.
+	 *
+	 * @since 1.0.0
+	 */
+	public function enqueue_frontend_assets() {
+		wp_register_script(
+			'rtgodam-swiper-script',
+			RTGODAM_URL . 'assets/src/libs/swiper/swiper-bundle.min.js',
+			array( 'jquery' ),
+			filemtime( RTGODAM_PATH . 'assets/src/libs/swiper/swiper-bundle.min.js' ),
+			true
+		);
+
+		wp_register_style(
+			'rtgodam-swiper-style',
+			RTGODAM_URL . 'assets/src/libs/swiper/swiper-bundle.min.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/src/libs/swiper/swiper-bundle.min.css' )
+		);
+
+		wp_register_script(
+			'rtgodam-wc-video-carousel',
+			RTGODAM_URL . 'assets/build/js/wc-video-carousel.min.js',
+			array( 'jquery', 'rtgodam-swiper-script', 'wp-data' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/wc-video-carousel.min.js' ),
+			true
+		);
+
+		wp_register_style(
+			'rtgodam-wc-video-carousel-style',
+			RTGODAM_URL . 'assets/build/css/godam-video-carousel.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/godam-video-carousel.css' )
+		);
+
+		if ( 'product' === get_post_type() ) {
+			wp_enqueue_script( 'rtgodam-swiper-script' );
+			wp_enqueue_style( 'rtgodam-swiper-style' );
+			wp_enqueue_script( 'rtgodam-wc-video-carousel' );
+			wp_enqueue_style( 'rtgodam-wc-video-carousel-style' );
+		}
+	}
+
+	/**
+	 * Add a meta box to the product post type edit screen to house the video gallery.
+	 *
+	 * @since 1.0.0
+	 */
 	public function add_video_gallery_metabox() {
 		add_meta_box(
 			'rtgodam_product_video_gallery',
@@ -69,6 +145,16 @@ class WC_Product_Video_Gallery {
 		);
 	}
 
+	/**
+	 * Modifies the meta box order on the product edit screen to place the RTGoDAM
+	 * video gallery below the built-in WC product gallery.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array $order The meta box order.
+	 *
+	 * @return array
+	 */
 	public function place_below_wc_gallery( $order ) {
 
 		if ( empty( $order['side'] ) ) {
@@ -94,6 +180,13 @@ class WC_Product_Video_Gallery {
 		return $order;
 	}
 
+	/**
+	 * Render the video gallery metabox on the product edit screen.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param WP_Post $post The current post object.
+	 */
 	public function render_video_gallery_metabox( $post ) {
 		$video_urls = get_post_meta( $post->ID, '_rtgodam_product_video_gallery', true );
 		$video_urls = is_array( $video_urls ) ? $video_urls : array();
@@ -122,7 +215,7 @@ class WC_Product_Video_Gallery {
 					$thumb_url = $thumb_id
 						? wp_get_attachment_image_url( $thumb_id, 'woocommerce_thumbnail' )
 						: wc_placeholder_img_src();
-					
+
 					return array(
 						'id'    => (int) $pid,
 						'name'  => get_the_title( $pid ),
@@ -152,7 +245,7 @@ class WC_Product_Video_Gallery {
 				$raw_label  = esc_html__( '+ Add products', 'godam' );
 				$aria_label = __( 'Associate products with this video', 'godam' );
 			}
-		
+
 			$label = $raw_label;
 
 			$video_title = $id ? get_the_title( $id ) : '';
@@ -211,6 +304,16 @@ class WC_Product_Video_Gallery {
 		echo '</button></div></div>';
 	}
 
+	/**
+	 * Saves the video gallery when a product is saved.
+	 *
+	 * It checks nonce and capability, then saves video urls and ids as meta in product.
+	 * After that, it checks each video attachment and adds the current product ID to the
+	 * '_video_parent_product_id' meta if it is not present yet. Then it removes the product
+	 * ID from any attachment that is not present in the current gallery.
+	 *
+	 * @param int $post_id The ID of the post being saved.
+	 */
 	public function save_video_gallery( $post_id ) {
 
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
@@ -274,36 +377,216 @@ class WC_Product_Video_Gallery {
 		}
 	}
 
+	/**
+	 * Handles the deletion of an attachment and updates related product metadata.
+	 *
+	 * This function removes the association of a deleted video attachment from all
+	 * WooCommerce products that had it in their video gallery. It updates the product
+	 * meta to remove the video URLs and IDs, ensuring the integrity of the product's
+	 * video gallery. Additionally, it cleans up the parent product reference from the
+	 * attachment metadata.
+	 *
+	 * @param int $attachment_id The ID of the attachment being deleted.
+	 */
 	public function on_attachment_deleted( $attachment_id ) {
 		$parent_meta_key = '_video_parent_product_id';
 		$product_ids     = get_post_meta( $attachment_id, $parent_meta_key, false );
-	
+
 		if ( empty( $product_ids ) ) {
 			return;
 		}
-	
+
 		foreach ( $product_ids as $product_id ) {
 			$video_urls = get_post_meta( $product_id, '_rtgodam_product_video_gallery', true ) ?: array();
 			$video_ids  = get_post_meta( $product_id, '_rtgodam_product_video_gallery_ids', true ) ?: array();
-	
+
 			// Find index of the deleted attachment.
 			$index = array_search( $attachment_id, $video_ids );
-	
+
 			if ( false !== $index ) {
 				unset( $video_ids[ $index ] );
 				unset( $video_urls[ $index ] );
-	
+
 				// Reindex arrays to keep them aligned.
 				$video_ids  = array_values( $video_ids );
 				$video_urls = array_values( $video_urls );
-	
+
 				// Save updated meta.
 				update_post_meta( $product_id, '_rtgodam_product_video_gallery', $video_urls );
 				update_post_meta( $product_id, '_rtgodam_product_video_gallery_ids', $video_ids );
 			}
 		}
-	
+
 		// Clean up parent reference from attachment.
 		delete_post_meta( $attachment_id, $parent_meta_key );
+	}
+
+	/**
+	 * Renders a video slider in a single product page.
+	 *
+	 * The method retrieves the video attachment IDs associated with the current product
+	 * from the '_rtgodam_product_video_gallery_ids' meta key. If the array is not empty,
+	 * it outputs a Swiper slider with pagination and navigation controls. The slider items
+	 * are generated using the [godam_video] shortcode.
+	 */
+	public function add_video_slider_to_single_product() {
+		global $post;
+
+		if ( ! apply_filters( 'rtgodam_display_video_slider_to_single_product', true ) ) {
+			return '';
+		}
+
+		$rtgodam_product_video_gallery_ids = get_post_meta( $post->ID, '_rtgodam_product_video_gallery_ids', true );
+
+		if ( empty( $rtgodam_product_video_gallery_ids ) ) {
+			return '';
+		}
+
+		$srcsets = array_map(
+			function ( $attachment_id ) {
+				return array(
+					'id'  => $attachment_id,
+					'src' => wp_get_attachment_url( $attachment_id ),
+				);
+			},
+			$rtgodam_product_video_gallery_ids
+		);
+
+		$srcsets_keys = array_keys( $srcsets );
+
+		$carousel_html = array_map(
+			function ( $item ) use ( $srcsets ) {
+				return sprintf(
+					'<div class="swiper-slide">
+						<video autoplay loop muted width="%1$s" class="video-js" data-index-id="%2$s"><source src="%3$s"/></video>
+					</div>',
+					esc_attr( '100%' ),
+					esc_attr( $item ),
+					esc_url( $srcsets[ $item ]['src'] ),
+				);
+			},
+			$srcsets_keys
+		);
+
+		$slider_html = $this->generate_video_carousel_mark_up(
+			array(
+				'carousel_html' => $carousel_html,
+			)
+		);
+
+		if ( empty( $slider_html ) ) {
+			return '';
+		}
+
+		$single_product_modal_summary = apply_filters( 'rtgodam_single_product_modal_summary', $this->rtgodam_single_product_modal_summary() );
+
+		$modal_carousel_html = array_map(
+			function ( $item ) use ( $srcsets, $single_product_modal_summary ) {
+				$src_id = $srcsets[ $item ]['id'];
+				return sprintf(
+					'
+					<div class="swiper-slide">
+						<div class="rtgodam-product-video-gallery-slider-modal-content-left">
+							%1$s
+						</div>
+						<div class="rtgodam-product-video-gallery-slider-modal-content-right">
+							%2$s
+						</div>
+					</div>',
+					do_shortcode( "[godam_video id='{$src_id}']" ),
+					$single_product_modal_summary,
+				);
+			},
+			$srcsets_keys
+		);
+
+		$modal_slider_html = $this->generate_video_carousel_mark_up(
+			array(
+				'wrapper_class'        => 'rtgodam-product-video-gallery-slider-modal-content-items',
+				'wrapper_class_loader' => '',
+				'carousel_html'        => $modal_carousel_html,
+			)
+		);
+
+		$slider_html .= '<div class="rtgodam-product-video-gallery-slider-modal">';
+		$slider_html .= '<div class="rtgodam-product-video-gallery-slider-modal-content">' . $modal_slider_html . '</div>';
+		$slider_html .= '<a href="#" class="rtgodam-product-video-gallery-slider-modal-close">&times;</a>';
+		$slider_html .= '</div>';
+
+		echo apply_filters( 'rtgodam_video_slider_html', $slider_html ); // phpcs:ignore
+	}
+
+	/**
+	 * Generates the HTML markup for the video carousel slider.
+	 *
+	 * @param array $args {
+	 *     Args for the video carousel slider.
+	 *
+	 *     @type string $wrapper_class        The class name for the wrapper container. Default is 'rtgodam-product-video-gallery-slider'.
+	 *     @type string $wrapper_class_loader The class name for the wrapper container when loading. Default is 'rtgodam-product-video-gallery-slider-loading'.
+	 *     @type array  $carousel_html        An array of HTML markup for the carousel items. Default is an empty array.
+	 * }
+	 *
+	 * @return string The HTML markup for the video carousel slider.
+	 */
+	public function generate_video_carousel_mark_up( $args ) {
+		$args = wp_parse_args(
+			$args,
+			array(
+				'wrapper_class'        => 'rtgodam-product-video-gallery-slider',
+				'wrapper_class_loader' => 'rtgodam-product-video-gallery-slider-loading',
+				'carousel_html'        => array(),
+			)
+		);
+
+		if ( empty( $args['carousel_html'] ) || ! is_array( $args['carousel_html'] ) ) {
+			return '';
+		}
+
+		$carousel_html = implode( '', $args['carousel_html'] );
+
+		return sprintf(
+			'
+			<div class="%1$s %2$s swiper">
+				<div class="swiper-wrapper">
+					%3$s
+				</div>
+				<div class="swiper-pagination"></div>
+				<div class="swiper-button-next"></div>
+				<div class="swiper-button-prev"></div>
+			</div>',
+			esc_attr( $args['wrapper_class'] ),
+			esc_attr( $args['wrapper_class_loader'] ),
+			$carousel_html
+		);
+	}
+
+	/**
+	 * Output the summary of a single product inside a modal.
+	 *
+	 * @return string The HTML markup of the summary.
+	 */
+	public function rtgodam_single_product_modal_summary() {
+		ob_start();
+		woocommerce_show_product_images();
+		woocommerce_template_single_title();
+		woocommerce_template_single_rating();
+		woocommerce_template_single_price();
+		woocommerce_template_single_excerpt();
+		?>
+		<div class="rtgodam-product-video-gallery-slider-modal-content--cart">
+			<div class="rtgodam-product-video-gallery-slider-modal-content--cart-form">
+				<?php woocommerce_template_single_add_to_cart(); ?>
+			</div>
+			<div class="rtgodam-product-video-gallery-slider-modal-content--cart-basket">
+				<?php
+					echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore
+				?>
+			</div>
+		</div>
+		<?php
+		woocommerce_template_single_meta();
+		woocommerce_template_single_sharing();
+		return ob_get_clean();
 	}
 }
