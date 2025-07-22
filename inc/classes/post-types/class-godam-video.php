@@ -95,7 +95,14 @@ class GoDAM_Video extends Base {
 	 * @return string
 	 */
 	private function get_rewrite_slug() {
-		return get_option( 'rtgodam_video_slug', 'videos' );
+		$settings = get_option( 'rtgodam_video_post_settings', false );
+		
+		// Fallback to old option if new settings don't exist.
+		if ( false === $settings || ! isset( $settings['video_slug'] ) ) {
+			return get_option( 'rtgodam_video_slug', 'videos' );
+		}
+		
+		return $settings['video_slug'];
 	}
 	
 	/**
@@ -106,7 +113,7 @@ class GoDAM_Video extends Base {
 	 * @return bool
 	 */
 	private function get_allow_archive() {
-		$settings = get_option( 'rtgodam_video_post_settings' );
+		$settings = get_option( 'rtgodam_video_post_settings', array( 'allow_archive' => false ) );
 		return (bool) ( isset( $settings['allow_archive'] ) ? $settings['allow_archive'] : false );
 	}
 	
@@ -118,7 +125,7 @@ class GoDAM_Video extends Base {
 	 * @return bool
 	 */
 	private function get_allow_single() {
-		$settings = get_option( 'rtgodam_video_post_settings' );
+		$settings = get_option( 'rtgodam_video_post_settings', array( 'allow_single' => false ) );
 		return (bool) ( isset( $settings['allow_single'] ) ? $settings['allow_single'] : false );
 	}
 
