@@ -11,6 +11,8 @@
 
 namespace RTGODAM\Inc\REST_API;
 
+use RTGODAM\Inc\Post_Types\GoDAM_Video;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -702,6 +704,9 @@ class Video_Migration extends Base {
 			update_post_meta( $attachment_id, '_wp_attached_file', $video_info['transcoded_mp4_url'] );
 			update_post_meta( $attachment_id, 'rtgodam_is_migrated_vimeo_video', true );
 		}
+
+		// Set status as transcoded.
+		update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'Transcoded' );
 
 		// Change the guid of the attachment to the transcoded file path.
 		global $wpdb;
