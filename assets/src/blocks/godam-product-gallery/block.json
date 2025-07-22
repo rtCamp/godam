@@ -30,7 +30,7 @@
     },
     "playButtonBgColor": {
       "type": "string",
-      "default": "#000000"
+      "default": "#AB3A6C"
     },
     "playButtonIconColor": {
       "type": "string",
@@ -62,7 +62,7 @@
     },
     "arrowBgColor": {
       "type": "string",
-      "default": "rgba(0,0,0,0.5)" 
+      "default": "rgba(171, 58, 108, 0.5)" 
     },
 	  "arrowIconColor": {
       "type": "string",
@@ -110,7 +110,7 @@
     },
     "ctaButtonBgColor": {
       "type": "string",
-      "default": "#000000"
+      "default": "#AB3A6C"
     },
     "ctaButtonIconColor": {
       "type": "string",

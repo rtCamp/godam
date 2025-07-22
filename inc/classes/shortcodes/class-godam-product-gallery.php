@@ -197,6 +197,9 @@ class GoDAM_Product_Gallery {
 		// 6. Fetch videos.
 		$video_posts = get_posts( $args );
 
+		// Allow developers to modify fetched video posts before rendering.
+		$video_posts = apply_filters( 'rtgodam_product_gallery_video_posts', $video_posts, $atts );
+
 		ob_start();
 
 		if ( $video_posts ) {
@@ -344,87 +347,98 @@ class GoDAM_Product_Gallery {
 
 						$has_dropdown = count( $video_attached_products ) > 1;
 
-						echo '<div class="godam-product-cta-wrapper">';
-					
-						if ( $main_product ) {
-							printf(
-								'<div class="godam-product-cta" style="width:%srem;background-color:%s">',
-								esc_attr( $atts['card_width'] ),
-								esc_attr( $this->hex_to_rgba( $atts['cta_bg_color'] ) ),
-							);
+						// Add action to allow overriding CTA markup.
+						if ( apply_filters( 'rtgodam_product_gallery_render_cta', true, $main_product, $product_ids, $atts ) ) {
 
-								echo '<div class="cta-thumbnail">';
-									echo wp_kses_post( $main_product->get_image( 'woocommerce_thumbnail' ) );
-								echo '</div>'; // .cta-thumbnail ends.
+							echo '<div class="godam-product-cta-wrapper">';
+						
+							if ( $main_product ) {
+								printf(
+									'<div class="godam-product-cta" style="width:%srem;background-color:%s">',
+									esc_attr( $atts['card_width'] ),
+									esc_attr( $this->hex_to_rgba( $atts['cta_bg_color'] ) ),
+								);
 
-								echo '<div class="cta-details">';
-									echo '<p class="product-title" style="';
-										echo 'font-size:' . intval( $atts['cta_product_name_font_size'] ) . 'px;';
-										echo 'color:' . esc_attr( $atts['cta_product_name_color'] ) . ';';
-										echo 'margin-top:0;';
-									echo '">';
-										echo '<a href="' . esc_url( get_permalink( $main_product->get_id() ) ) . '" class="product-title-link">';
-											echo esc_html( $main_product->get_name() );
-										echo '</a>';
-									echo '</p>';
-							
-									echo '<p class="product-price" style="';
-										echo 'font-size:' . intval( $atts['cta_product_price_font_size'] ) . 'px;';
-										echo 'color:' . esc_attr( $atts['cta_product_price_color'] ) . ';';
-										echo 'margin:4px 0 0;';
-									echo '">' . wp_kses_post( $main_product->get_price_html() ) . '</p>';
-								echo '</div>'; // .cta-details ends
+									echo '<div class="cta-thumbnail">';
+										echo wp_kses_post( $main_product->get_image( 'woocommerce_thumbnail' ) );
+									echo '</div>'; // .cta-thumbnail ends.
 
-								echo '<button class="cta-add-to-cart main-cta" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-dropdown="' . esc_attr( $has_dropdown ) . '" data-product-id="' . esc_attr( $main_product->get_id() ) . '" data-product-page-url="' . esc_url( get_permalink( $main_product->get_id() ) ) . '"  style="background-color:' . esc_attr( $this->hex_to_rgba( $atts['cta_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">';
-									echo $has_dropdown ? '&#9662;' : '+';
-								echo '</button>';
+									echo '<div class="cta-details">';
+										echo '<p class="product-title" style="';
+											echo 'font-size:' . intval( $atts['cta_product_name_font_size'] ) . 'px;';
+											echo 'color:' . esc_attr( $atts['cta_product_name_color'] ) . ';';
+											echo 'margin-top:0;';
+										echo '">';
+											echo '<a href="' . esc_url( get_permalink( $main_product->get_id() ) ) . '" class="product-title-link">';
+												echo esc_html( $main_product->get_name() );
+											echo '</a>';
+										echo '</p>';
+								
+										echo '<p class="product-price" style="';
+											echo 'font-size:' . intval( $atts['cta_product_price_font_size'] ) . 'px;';
+											echo 'color:' . esc_attr( $atts['cta_product_price_color'] ) . ';';
+											echo 'margin:4px 0 0;';
+										echo '">' . wp_kses_post( $main_product->get_price_html() ) . '</p>';
+									echo '</div>'; // .cta-details ends
 
-							// Detached Dropdown for more products.
-							if ( $has_dropdown ) {
-								echo '<div class="cta-dropdown">';
-								foreach ( $product_ids as $product_id ) {
-									$product = wc_get_product( $product_id );
-									if ( $product ) {
-										$timestamp_meta_key = 'godam_product_timestamp_meta_' . $video_id;
-										$timestamp          = get_post_meta( $product_id, $timestamp_meta_key, true );
+									echo '<button class="cta-add-to-cart main-cta" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-dropdown="' . esc_attr( $has_dropdown ) . '" data-product-id="' . esc_attr( $main_product->get_id() ) . '" data-product-page-url="' . esc_url( get_permalink( $main_product->get_id() ) ) . '"  style="background-color:' . esc_attr( $this->hex_to_rgba( $atts['cta_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">';
+										echo $has_dropdown ? '&#9662;' : '+';
+									echo '</button>';
 
-										echo '<div class="cta-dropdown-item">';
-											echo '<div class="cta-thumbnail-small">';
-												echo wp_kses_post( $product->get_image( 'woocommerce_gallery_thumbnail' ) );
-										
-												// Add play icon if timestamp is available.
-										if ( ! empty( $timestamp ) ) {
-											echo '<button class="product-play-timestamp-button" data-video-id="' . esc_attr( $video_id ) . '" data-timestamp="' . esc_attr( $timestamp ) . '" data-video-attached-product-id="' . esc_attr( $product_id ) . '" data-cta-enabled="' . esc_attr( $atts['cta_enabled'] ) . '" data-cta-display-position="' . esc_attr( $atts['cta_display_position'] ) . '"aria-label="Play at timestamp" style="background-color:' . esc_attr( $this->hex_to_rgba( $atts['play_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['play_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['play_button_radius'] ) . '%;">';
-												echo '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/></svg>';
-											echo '</button>';
+								// Add action before the dropdown.
+								do_action( 'rtgodam_product_gallery_cta_dropdown_before', $product_ids, $video, $atts );
+
+								// Detached Dropdown for more products.
+								if ( $has_dropdown ) {
+									echo '<div class="cta-dropdown">';
+									foreach ( $product_ids as $product_id ) {
+										$product = wc_get_product( $product_id );
+										if ( $product ) {
+											$timestamp_meta_key = 'godam_product_timestamp_meta_' . $video_id;
+											$timestamp          = get_post_meta( $product_id, $timestamp_meta_key, true );
+
+											echo '<div class="cta-dropdown-item">';
+												echo '<div class="cta-thumbnail-small">';
+													echo wp_kses_post( $product->get_image( 'woocommerce_gallery_thumbnail' ) );
+											
+													// Add play icon if timestamp is available.
+											if ( ! empty( $timestamp ) ) {
+												echo '<button class="product-play-timestamp-button" data-video-id="' . esc_attr( $video_id ) . '" data-timestamp="' . esc_attr( $timestamp ) . '" data-video-attached-product-id="' . esc_attr( $product_id ) . '" data-cta-enabled="' . esc_attr( $atts['cta_enabled'] ) . '" data-cta-display-position="' . esc_attr( $atts['cta_display_position'] ) . '"aria-label="Play at timestamp" style="background-color:' . esc_attr( $this->hex_to_rgba( $atts['play_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['play_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['play_button_radius'] ) . '%;">';
+													echo '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/></svg>';
+												echo '</button>';
+											}
+												echo '</div>'; // .cta-thumbnail-small ends.
+												echo '<div class="cta-product-info">';
+													echo '<p class="product-title" style="';
+														echo 'font-size:' . intval( $atts['cta_product_name_font_size'] ) . 'px;';
+														echo 'color:' . esc_attr( $atts['cta_product_name_color'] ) . ';';
+														echo 'margin-top:0;">';
+															echo '<a href="' . esc_url( get_permalink( $product->get_id() ) ) . '" class="product-title-link">';
+																echo esc_html( $product->get_name() );
+															echo '</a>';
+													echo '</p>';
+
+													echo '<p class="product-price" style="';
+													echo 'font-size:' . intval( $atts['cta_product_price_font_size'] ) . 'px;';
+													echo 'color:' . esc_attr( $atts['cta_product_price_color'] ) . ';';
+													echo 'margin:4px 0 0;" >' . wp_kses_post( $product->get_price_html() ) . '</p>';
+												echo '</div>'; // .cta-product-info ends.
+												echo '<button class="cta-add-to-cart" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-id="' . esc_attr( $product_id ) . '" data-product-page-url="' . esc_url( get_permalink( $product->get_id() ) ) . '" style="background-color:' . esc_attr( $this->hex_to_rgba( $atts['cta_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">+</button>';
+											echo '</div>'; // .cta-dropdown-item ends.
 										}
-											echo '</div>'; // .cta-thumbnail-small ends.
-											echo '<div class="cta-product-info">';
-												echo '<p class="product-title" style="';
-													echo 'font-size:' . intval( $atts['cta_product_name_font_size'] ) . 'px;';
-													echo 'color:' . esc_attr( $atts['cta_product_name_color'] ) . ';';
-													echo 'margin-top:0;">';
-														echo '<a href="' . esc_url( get_permalink( $product->get_id() ) ) . '" class="product-title-link">';
-															echo esc_html( $product->get_name() );
-														echo '</a>';
-												echo '</p>';
-
-												echo '<p class="product-price" style="';
-												echo 'font-size:' . intval( $atts['cta_product_price_font_size'] ) . 'px;';
-												echo 'color:' . esc_attr( $atts['cta_product_price_color'] ) . ';';
-												echo 'margin:4px 0 0;" >' . wp_kses_post( $product->get_price_html() ) . '</p>';
-											echo '</div>'; // .cta-product-info ends.
-											echo '<button class="cta-add-to-cart" data-product-cart="' . esc_attr( $atts['cta_cart_action'] ) . '" data-product-id="' . esc_attr( $product_id ) . '" data-product-page-url="' . esc_url( get_permalink( $product->get_id() ) ) . '" style="background-color:' . esc_attr( $this->hex_to_rgba( $atts['cta_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['cta_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['cta_button_border_radius'] ) . '%;" aria-label="Add to cart">+</button>';
-										echo '</div>'; // .cta-dropdown-item ends.
 									}
+									echo '</div>'; // .cta-dropdown ends.
 								}
-								echo '</div>'; // .cta-dropdown ends.
+
+								// Add action after the dropdown.
+								do_action( 'rtgodam_product_gallery_cta_dropdown_after', $product_ids, $video, $atts );
+
+								echo '</div>'; // .godam-product-cta ends.
 							}
 
-							echo '</div>'; // .godam-product-cta ends.
-						}
+							echo '</div>'; // .godam-product-cta-wrapper ends.
 
-						echo '</div>'; // .godam-product-cta-wrapper ends.
+						}
 					}               
 				}
 
@@ -574,6 +588,12 @@ class GoDAM_Product_Gallery {
 		wp_reset_postdata();
 	
 		$html = ob_get_clean();
+
+		// Add filter to change html markup for product sidebar.
+		$html = apply_filters( 'rtgodam_ajax_product_html', $html, $product_id );
+
+		// Add action before sending JSON response.
+		do_action( 'rtgodam_ajax_product_html_sent', $product_id );
 	
 		wp_send_json_success( $html );
 	}

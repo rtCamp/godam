@@ -526,7 +526,6 @@ export default function Edit( { attributes, setAttributes } ) {
 								{ label: __( 'Below & Inside the Video', 'godam' ), value: 'below-inside' },
 								{ label: __( 'Only Below the Video', 'godam' ), value: 'below' },
 								{ label: __( 'Only Inside the Video', 'godam' ), value: 'inside' },
-								{ label: __( 'Nowhere', 'godam' ), value: 'nowhere' },
 							] }
 							onChange={ ( value ) => setAttributes( { ctaDisplayPosition: value } ) }
 						/>

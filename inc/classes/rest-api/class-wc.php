@@ -401,7 +401,7 @@ class WC extends Base {
 					)
 				);
 
-				return array(
+				$data = array(
 					'id'         => $product->get_id(),
 					'name'       => $name_display,
 					'price'      => $price_display,
@@ -412,12 +412,20 @@ class WC extends Base {
 					'tags'       => $tags,
 					'brands'     => $brands,
 				);
+
+				/**
+				 * Filter the formatted product array before adding to response.
+				 *
+				 * @param array $data Product data.
+				 * @param \WC_Product $product Product object.
+				 */
+				return apply_filters( 'godam_rest_product_response_data', $data, $product );
 			},
 			$all_posts 
 		);
 	
 		return rest_ensure_response( $products );
-	}   
+	}
 
 	/**
 	 * Get a single WooCommerce product.
@@ -536,6 +544,15 @@ class WC extends Base {
 			'brands'     => $brands,
 		);
 
+		/**
+		 * Filter the final product response data before sending it.
+		 *
+		 * @param array $data Array of product response data.
+		 * @param \WC_Product $product Product object.
+		 * @param \WP_REST_Request $request The request object.
+		 */
+		$data = apply_filters( 'godam_rest_single_product_response_data', $data, $product, $request );
+
 		return rest_ensure_response( $data );
 	}
 
@@ -564,8 +581,19 @@ class WC extends Base {
 		if ( ! in_array( $attachment_id, $ids, true ) ) {
 			$ids[]  = $attachment_id;
 			$urls[] = $url;
+
+			/**
+			 * Action before video meta is saved.
+			 */
+			do_action( 'rtgodam_before_link_video', $product_id, $attachment_id, $url );
+
 			update_post_meta( $product_id, '_rtgodam_product_video_gallery_ids', $ids );
 			update_post_meta( $product_id, '_rtgodam_product_video_gallery', $urls );
+
+			/**
+			 * Action after video is successfully linked to product.
+			 */
+			do_action( 'rtgodam_after_link_video', $product_id, $attachment_id, $url );
 		}
 
 		/* ---- 2. update attachment meta ---- */
@@ -577,10 +605,31 @@ class WC extends Base {
 			// If the value is not present, create a new meta‑row.
 			if ( ! in_array( $product_id, array_map( 'intval', $existing ), true ) ) {
 				add_post_meta( $attachment_id, $parent_meta_key, $product_id, false );
+
+				/**
+				 * Fires when attachment is linked to a product.
+				 */
+				do_action( 'rtgodam_link_attachment_to_product', $attachment_id, $product_id );
 			}
 		}
 
-		return rest_ensure_response( array( 'success' => true ) );
+		/**
+		 * Filter the REST response for video-to-product linking.
+		 *
+		 * @param array $response REST response array.
+		 * @param int   $product_id Product ID.
+		 * @param int   $attachment_id Attachment ID.
+		 * @param string $url Video URL.
+		 */
+		$response = apply_filters(
+			'rtgodam_link_video_to_product_response',
+			array( 'success' => true ),
+			$product_id,
+			$attachment_id,
+			$url
+		);
+
+		return rest_ensure_response( $response );
 	}
 
 	/**
@@ -605,11 +654,19 @@ class WC extends Base {
 						? wp_get_attachment_image_url( $thumb_id, 'woocommerce_thumbnail' )
 						: wc_placeholder_img_src();
 					
-					return array(
+					$product_data = array(
 						'id'    => (int) $pid,
 						'name'  => get_the_title( $pid ),
 						'image' => $thumb_url,
 					);
+
+				/**
+				 * Filter individual linked product data.
+				 *
+				 * @param array $product_data
+				 * @param int   $pid Product ID
+				 */
+				return apply_filters( 'rtgodam_video_linked_product_data', $product_data, $pid );
 			},
 			$product_ids
 		);
@@ -636,6 +693,18 @@ class WC extends Base {
 			return new \WP_Error( 'missing_params', 'Required parameters missing.', array( 'status' => 400 ) );
 		}
 
+		/**
+		 * Allow modification or validation before unlinking a video.
+		 *
+		 * @param bool $proceed Whether to continue with unlinking.
+		 * @param int  $product_id
+		 * @param int  $attachment_id
+		 */
+		$proceed = apply_filters( 'rtgodam_allow_unlink_video', true, $product_id, $attachment_id );
+		if ( ! $proceed ) {
+			return new \WP_Error( 'unlink_disallowed', 'Unlinking was prevented by a filter.', array( 'status' => 403 ) );
+		}
+
 		/* ---- 1. update product meta ---- */
 		$ids  = get_post_meta( $product_id, '_rtgodam_product_video_gallery_ids', true ) ?: array();
 		$urls = get_post_meta( $product_id, '_rtgodam_product_video_gallery', true ) ?: array();
@@ -643,17 +712,50 @@ class WC extends Base {
 		$index = array_search( $attachment_id, $ids, true );
 
 		if ( false !== $index ) {
+
+			/**
+			 * Action before video is unlinked from the product.
+			 */
+			do_action( 'rtgodam_before_unlink_video', $product_id, $attachment_id );
+
 			unset( $ids[ $index ] );
 			unset( $urls[ $index ] );
 
 			update_post_meta( $product_id, '_rtgodam_product_video_gallery_ids', array_values( $ids ) );
 			update_post_meta( $product_id, '_rtgodam_product_video_gallery', array_values( $urls ) );
+
+			/**
+			 * Action after product meta is updated and video is unlinked.
+			 */
+			do_action( 'rtgodam_after_unlink_video', $product_id, $attachment_id );
 		}
 
 		/* ---- 2. update attachment meta ---- */
 		delete_post_meta( $attachment_id, '_video_parent_product_id', $product_id );
 
-		return rest_ensure_response( array( 'success' => true ) );
+		/**
+		 * Filter to add additional cleanup logic or custom meta deletion from product or attachment.
+		 *
+		 * @param int $product_id
+		 * @param int $attachment_id
+		 */
+		do_action( 'rtgodam_cleanup_unlinked_video_meta', $product_id, $attachment_id );
+
+		/**
+		 * Filter the final REST response after unlinking.
+		 *
+		 * @param array $response
+		 * @param int   $product_id
+		 * @param int   $attachment_id
+		 */
+		$response = apply_filters(
+			'rtgodam_unlink_video_from_product_response',
+			array( 'success' => true ),
+			$product_id,
+			$attachment_id
+		);
+
+		return rest_ensure_response( $response );
 	}
 
 	/**
@@ -671,7 +773,38 @@ class WC extends Base {
 			return new \WP_Error( 'missing_params', 'Product ID and meta key are required.', array( 'status' => 400 ) );
 		}
 
+		/**
+		 * Allow short-circuiting the meta update logic.
+		 * Returning a non-null value here will skip update_post_meta().
+		 * 
+		 * @hook godam_rest_pre_save_product_meta
+		 *
+		 * @param mixed           $pre         Default null. If not null, short-circuits the meta save.
+		 * @param int             $product_id  ID of the product being updated.
+		 * @param string          $meta_key    Meta key to update.
+		 * @param mixed           $meta_value  Meta value to save.
+		 * @param \WP_REST_Request $request    The REST API request object.
+		 *
+		 * @return mixed|null Custom response or null to proceed with default logic.
+		 */
+		$pre = apply_filters( 'godam_rest_pre_save_product_meta', null, $product_id, $meta_key, $meta_value, $request );
+		if ( null !== $pre ) {
+			return rest_ensure_response( $pre );
+		}
+
 		update_post_meta( $product_id, $meta_key, $meta_value );
+
+		/**
+		* Fires after product meta is successfully saved.
+		*
+		* @hook godam_rest_product_meta_saved
+		*
+		* @param int             $product_id  ID of the product that was updated.
+		* @param string          $meta_key    Meta key that was updated.
+		* @param mixed           $meta_value  Meta value that was saved.
+		* @param \WP_REST_Request $request    The REST API request object.
+		*/
+		do_action( 'godam_rest_product_meta_saved', $product_id, $meta_key, $meta_value, $request );
 
 		return rest_ensure_response(
 			array(
@@ -690,6 +823,15 @@ class WC extends Base {
 	public function get_product_meta( \WP_REST_Request $request ) {
 		$product_id    = (int) $request->get_param( 'product_id' );
 		$attachment_id = (int) $request->get_param( 'attachment_id' );
+
+		/**
+		 * Action hook before getting product meta.
+		 *
+		 * @hook godam_before_get_product_meta
+		 * @param int $product_id
+		 * @param int $attachment_id
+		 */
+		do_action( 'godam_before_get_product_meta', $product_id, $attachment_id );
 	
 		if ( empty( $product_id ) || empty( $attachment_id ) ) {
 			return new \WP_Error( 'missing_params', 'Product ID and meta key are required.', array( 'status' => 400 ) );
@@ -698,6 +840,17 @@ class WC extends Base {
 		$meta_key = 'godam_product_timestamp_meta_' . $attachment_id;
 	
 		$meta_value = get_post_meta( $product_id, $meta_key, true );
+
+		/**
+		 * Action hook after getting product meta.
+		 *
+		 * @hook godam_after_get_product_meta
+		 * @param int    $product_id
+		 * @param int    $attachment_id
+		 * @param string $meta_key
+		 * @param mixed  $meta_value
+		 */
+		do_action( 'godam_after_get_product_meta', $product_id, $attachment_id, $meta_key, $meta_value );
 	
 		return rest_ensure_response(
 			array(
@@ -764,7 +917,7 @@ class WC extends Base {
 			}
 
 			if ( $product ) {
-				$products[] = array(
+				$product_data = array(
 					'id'    => $product->get_id(),
 					'name'  => $name_display,
 					'type'  => $type,
@@ -772,6 +925,16 @@ class WC extends Base {
 					'image' => wp_get_attachment_url( $product->get_image_id() ) ?: wc_placeholder_img_src(),
 					'link'  => get_permalink( $product->get_id() ),
 				);
+
+				/**
+				 * Filter the final product response data.
+				 *
+				 * @param array $product_data Product data to be returned.
+				 * @param \WC_Product $product Product object.
+				 */
+				$product_data = apply_filters( 'godam_rest_product_by_id_response_data', $product_data, $product );
+
+				$products[] = $product_data;
 			}
 		}
 	
