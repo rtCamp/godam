@@ -4,7 +4,7 @@
 const { createReduxStore, register, select, dispatch, subscribe } = wp.data;
 const { apiFetch } = wp;
 const { addQueryArgs } = wp.url;
-const { createRoot, useState } = wp.element;
+const { createRoot, useState, useMemo } = wp.element;
 const { __ } = wp.i18n;
 const { nonceData, DOMPurify } = window;
 const Gravater = 'https://secure.gravatar.com/avatar/5edfa2692bdacc5e6ee805c626c50cb44cebb065f092d9a1067d89f74dacd326?s=40&d=mm&r=g';
@@ -362,17 +362,32 @@ function updateCommentTree( comments, comment, text, authorImg ) {
 }
 
 function CommentForm( props ) {
-	const { comment, setCommentsData, storeObj, videoAttachmentId, setIsExpanded } = props;
+	const { comment, setCommentsData, storeObj, videoAttachmentId, setIsExpanded, type, siteUrl } = props;
 	const [ commentText, setCommentText ] = useState( '' );
 	const [ isSending, setIsSending ] = useState( false );
 
-	function handleSubmit() {
-		setIsExpanded( false );
-		setCommentsData( ( prevComments ) => {
-			const newCommentTree = updateCommentTree( prevComments, comment, commentText, 'https://secure.gravatar.com/avatar/5edfa2692bdacc5e6ee805c626c50cb44cebb065f092d9a1067d89f74dacd326?s=40&d=mm&r=g' );
+	async function handleSubmit() {
+		//setIsExpanded( false );
+		// setCommentsData( ( prevComments ) => {
+		// 	const newCommentTree = updateCommentTree( prevComments, comment, commentText, 'https://secure.gravatar.com/avatar/5edfa2692bdacc5e6ee805c626c50cb44cebb065f092d9a1067d89f74dacd326?s=40&d=mm&r=g' );
 
-			return [ ...newCommentTree ];
+		// 	return [ ...newCommentTree ];
+		// } );
+		const parentId = comment.id ? comment.id : 0;
+		const queryParams = {
+			site_url: siteUrl,
+			video_id: videoAttachmentId,
+			comment_parent_id: parentId,
+			comment_text: commentText,
+		};
+		apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
+		const result = await apiFetch( {
+			path: addQueryArgs( '/godam/v1/engagement/user-comment' ),
+			method: 'POST',
+			data: queryParams,
 		} );
+
+		console.log( result );
 	}
 
 	return (
@@ -386,18 +401,20 @@ function CommentForm( props ) {
 			</div>
 			<div className="rtgodam-video-engagement--comment-form-submit">
 				<button className="rtgodam-video-engagement--comment-button" disabled={ isSending } onClick={ handleSubmit }>
-					{ __( 'Submit', 'godam' ) }
+					{ 'thread-reply' === type ? __( 'Reply', 'godam' ) : __( 'Comment', 'godam' ) }
 				</button>
-				<button className="rtgodam-video-engagement--comment-button" onClick={ () => setIsExpanded( false ) }>
-					{ __( 'Cancel', 'godam' ) }
-				</button>
+				{ 'thread-reply' === type &&
+					<button className="rtgodam-video-engagement--comment-button" onClick={ () => setIsExpanded( false ) }>
+						{ __( 'Cancel', 'godam' ) }
+					</button>
+				}
 			</div>
 		</div>
 	);
 }
 
 function Comment( props ) {
-	const { comment, setCommentsData, storeObj, videoAttachmentId } = props;
+	const { comment, setCommentsData, storeObj, videoAttachmentId, siteUrl } = props;
 	const {
 		text,
 		author_name: authorName,
@@ -430,7 +447,7 @@ function Comment( props ) {
 					</div>
 					{ isExpanded && (
 						<div className="rtgodam-video-engagement--comment-form">
-							<CommentForm { ...props } setIsExpanded={ setIsExpanded } />
+							<CommentForm { ...props } setIsExpanded={ setIsExpanded } type="thread-reply" siteUrl={ siteUrl } />
 						</div>
 					) }
 				</div>
@@ -447,30 +464,36 @@ function Comment( props ) {
 }
 
 function CommentList( props ) {
-	const { videoAttachmentId, storeObj } = props;
-	const comments = storeObj.select.getComments()[ videoAttachmentId ] || [];
-	const [ commentsData, setCommentsData ] = useState( comments );
+	const { videoAttachmentId, storeObj, commentsData, setCommentsData, siteUrl } = props;
 
 	return (
 		<div className="rtgodam-video-engagement--comment-list">
 			{ commentsData.map( ( comment ) => (
-				<Comment key={ comment.id } comment={ comment } setCommentsData={ setCommentsData } storeObj={ storeObj } videoAttachmentId={ videoAttachmentId } />
+				<Comment key={ comment.id } comment={ comment } setCommentsData={ setCommentsData } storeObj={ storeObj } videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } />
 			) ) }
 		</div>
 	);
 }
 
 function CommentBox( props ) {
-	const { videoAttachmentId, storeObj } = props;
+	const { videoAttachmentId, storeObj, siteUrl } = props;
 	const baseClass = 'rtgodam-video-engagement--comment-modal';
 	const commentsCount = storeObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
+	const comments = storeObj.select.getComments()[ videoAttachmentId ] || [];
+	const [ commentsData, setCommentsData ] = useState( comments );
+
+	const memoizedStoreObj = useMemo( () => storeObj, [ storeObj ] );
 
 	return (
 		<div className={ baseClass }>
 			<button className={ `${ baseClass }--close-button` } onClick={ () => storeObj.root.unmount() }>&times;</button>
 			<div className={ baseClass + '-content' }>
-				<h3 className={ baseClass + '-title' }>{ __( 'All Comments', 'godam' ) } - { commentsCount }</h3>
-				<CommentList { ...props } />
+				<h3 className={ baseClass + '-title' }>{ __( 'All Comments', 'godam' ) } ({ commentsCount })</h3>
+				<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } />
+				<div className={ baseClass + '-leave-comment' }>
+					<h5 className={ baseClass + '-leave-comment-title' }>{ __( 'Leave a comment', 'godam' ) }</h5>
+					<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" />
+				</div>
 			</div>
 		</div>
 	);
