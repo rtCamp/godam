@@ -9,7 +9,7 @@ import videojs from 'video.js';
  */
 import { Button, Notice, ComboboxControl, Icon, Spinner } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { closeSmall } from '@wordpress/icons';
+import { closeSmall, error } from '@wordpress/icons';
 import { useState, useRef, useEffect } from '@wordpress/element';
 
 /**
@@ -62,7 +62,7 @@ const VideoPlayer = () => {
 			} else {
 				showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 			}
-		} catch ( error ) {
+		} catch ( err ) {
 			showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 		}
 	};
@@ -315,6 +315,8 @@ const VideoPlayer = () => {
 		return () => window.removeEventListener( 'beforeunload', handleBeforeUnload );
 	}, [ isChanged ] );
 
+	const isMinimalOrClassic = 'Minimal' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin;
+
 	return (
 		<>
 			{ notice.isVisible && (
@@ -376,7 +378,7 @@ const VideoPlayer = () => {
 								label={ __( 'Brand color', 'godam' ) }
 								value={ mediaSettings?.video_player?.brand_color }
 								onChange={ ( value ) => handleSettingChange( 'brand_color', value ) }
-								disabled={ 'Minimal' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin }
+								disabled={ isMinimalOrClassic }
 							/>
 							{ mediaSettings?.video_player?.brand_color && (
 								<button
@@ -390,15 +392,22 @@ const VideoPlayer = () => {
 								</button>
 							) }
 						</div>
-						<p className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
+
+						<p className="text-[0.75rem] leading-[1.2] text-[#777]">
 							{
-								'Minimal' === mediaSettings?.video_player?.player_skin ? __(
-									'The brand color will not be applied to the player skin.',
-									'godam',
-								) : __(
-									'Select a brand color to apply to the video block. This can be overridden for individual videos by the video editor',
-									'godam',
-								)
+								isMinimalOrClassic
+									? ( <div className="flex items-center gap-2 mt-[-4px]">
+										<Icon icon={ error } style={ { fill: '#EAB308' } } size={ 28 } />
+										<p className="text-[#AB3A6C] text-[0.75rem] leading-[1.2]">{ __(
+											'The brand color will not be applied to the player skin.',
+											'godam',
+										) }
+										</p>
+									</div>
+									) : __(
+										'Select a brand color to apply to the video block. This can be overridden for individual videos by the video editor',
+										'godam',
+									)
 							}
 						</p>
 					</div>

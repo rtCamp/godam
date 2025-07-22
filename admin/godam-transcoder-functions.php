@@ -588,7 +588,7 @@ function rtgodam_get_user_ip() {
 /**
  * Return transcoded url from attachment.
  *
- * @since n.e.x.t
+ * @since 1.3.0
  *
  * @param int|\WP_Post $attachment Attachment.
  *
@@ -619,7 +619,7 @@ function rtgodam_get_transcoded_url_from_attachment( $attachment ) {
 /**
  * Return transcoded status from attachment.
  *
- * @since n.e.x.t
+ * @since 1.3.0
  *
  * @param int|\WP_Post $attachment Attachment.
  *
@@ -654,7 +654,7 @@ function rtgodam_get_transcoded_status_from_attachment( $attachment ) {
 /**
  * Return transcoded error message from attachment.
  *
- * @since n.e.x.t
+ * @since 1.3.0
  *
  * @param int|\WP_Post $attachment Attachment.
  *

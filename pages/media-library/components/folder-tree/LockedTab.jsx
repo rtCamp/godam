@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { useSelector } from 'react-redux';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 
 /**
  * WordPress dependencies
@@ -26,6 +26,14 @@ const LockedTab = ( { handleContextMenu } ) => {
 		return folders
 			?.filter( ( folder ) => folder?.meta?.locked ) || [];
 	}, [ folders ] );
+
+	useEffect( () => {
+		const event = new CustomEvent( 'godam:lockedFolderLoaded', {
+			detail: { ids: locked.map( ( folder ) => folder.id ) },
+		} );
+
+		window.dispatchEvent( event );
+	}, [ locked ] );
 
 	const lockedCount = locked?.length || 0;
 

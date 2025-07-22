@@ -14,6 +14,10 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
+import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
+import LayersHeader from './LayersHeader.js';
+import AjaxWarning from '../forms/AjaxWarning.js';
+import { getFormIdFromLayer } from '../../utils/formUtils';
 import GravityForm from '../forms/GravityForm';
 import WPForm from '../forms/WPForm';
 import EverestForm from '../forms/EverestForm';
@@ -21,9 +25,8 @@ import CF7 from '../forms/CF7';
 import JetpackForm from '../forms/JetpackForm';
 import SureForm from '../forms/Sureform.js';
 import FluentForm from '../forms/FluentForm.js';
-import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
-import LayersHeader from './LayersHeader.js';
 import ForminatorForm from '../forms/forminatorForms.js';
+import NinjaForm from '../forms/NinjaForm.js';
 
 /**
  * FormLayer Components Object mapping.
@@ -32,34 +35,64 @@ export const FormLayerComponentType = {
 	gravity: {
 		isActive: Boolean( window?.videoData?.gfActive ) ?? false,
 		component: GravityForm,
+		idField: 'gf_id',
+		settingsUrl: 'admin.php?subview=confirmation&page=gf_edit_forms&id={formId}&view=settings',
 	},
 	cf7: {
 		isActive: Boolean( window?.videoData?.cf7Active ) ?? false,
 		component: CF7,
+		idField: 'cf7_id',
+		settingsUrl: 'admin.php?page=wpcf7&post={formId}&action=edit',
 	},
 	jetpack: {
 		isActive: Boolean( window?.videoData?.jetpackActive ) ?? false,
 		component: JetpackForm,
+		idField: 'jp_id',
+		settingsUrl: 'admin.php?page=jetpack-forms-admin#/responses',
+		// Special handling for Jetpack forms (extract post ID from form ID)
+		getFormId: ( formId ) => {
+			if ( ! formId ) {
+				return null;
+			}
+			const parts = formId.split( '-' );
+			return parts[ 0 ] ? parseInt( parts[ 0 ] ) : null;
+		},
 	},
 	wpforms: {
 		isActive: Boolean( window?.videoData?.wpformsActive ) ?? false,
 		component: WPForm,
+		idField: 'wpform_id',
+		settingsUrl: 'admin.php?page=wpforms-builder&view=settings&form_id={formId}&section=general',
 	},
 	sureforms: {
 		isActive: Boolean( window?.videoData?.sureformsActive ) ?? false,
 		component: SureForm,
+		idField: 'sureform_id',
+		settingsUrl: 'post.php?post={formId}&action=edit',
 	},
 	forminator: {
 		isActive: Boolean( window?.videoData?.forminatorActive ) ?? false,
 		component: ForminatorForm,
+		idField: 'forminator_id',
+		settingsUrl: 'admin.php?page=forminator-cform-wizard&id={formId}',
 	},
 	fluentforms: {
 		isActive: Boolean( window?.videoData?.fluentformsActive ) ?? false,
 		component: FluentForm,
+		idField: 'fluent_form_id',
+		settingsUrl: 'admin.php?page=fluent_forms&form_id={formId}&route=settings&sub_route=form_settings',
 	},
 	everestforms: {
 		isActive: Boolean( window?.videoData?.everestFormsActive ) ?? false,
 		component: EverestForm,
+		idField: 'everest_form_id',
+		settingsUrl: 'admin.php?page=evf-builder&view=fields&form_id={formId}&tab=settings',
+	},
+	ninjaforms: {
+		isActive: Boolean( window?.videoData?.ninjaFormsActive ) ?? false,
+		component: NinjaForm,
+		idField: 'ninja_form_id',
+		settingsUrl: 'admin.php?page=ninja-forms&form_id={formId}',
 	},
 };
 
@@ -86,6 +119,11 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 	const FormLayerComponent = FormLayerData?.component;
 	const isPluginActive = FormLayerData?.isActive;
 
+	// Get the form ID using the centralized configuration
+	const getFormId = () => {
+		return getFormIdFromLayer( layer, layer?.form_type );
+	};
+
 	return (
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
@@ -102,6 +140,8 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 			}
 
 			<FormLayerComponent layerID={ layer.id } />
+
+			<AjaxWarning formType={ layer?.form_type } formId={ getFormId() } />
 
 			<ToggleControl
 				__nextHasNoMarginBottom

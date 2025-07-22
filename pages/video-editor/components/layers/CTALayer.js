@@ -10,7 +10,7 @@ import DOMPurify from 'isomorphic-dompurify';
 import {
 	Button,
 	Panel,
-	PanelBody, CustomSelectControl,
+	PanelBody, SelectControl,
 } from '@wordpress/components';
 import { chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
@@ -56,16 +56,16 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 	const ctaLayerOptions = [
 		{
-			name: __( 'Text', 'godam' ),
-			key: 'text',
+			label: __( 'Text', 'godam' ),
+			value: 'text',
 		},
 		{
-			name: __( 'HTML', 'godam' ),
-			key: 'html',
+			label: __( 'HTML', 'godam' ),
+			value: 'html',
 		},
 		{
-			name: __( 'Image', 'godam' ),
-			key: 'image',
+			label: __( 'Image', 'godam' ),
+			value: 'image',
 		},
 	];
 
@@ -74,7 +74,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			updateLayerField( {
 				id: layer.id,
 				field: 'cta_type',
-				value: val.selectedItem.key,
+				value: val,
 			} ),
 		);
 	};
@@ -93,6 +93,9 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			} )
 			.then( ( media ) => {
 				setImageCtaUrl( media.source_url ); // URL of the media file
+			} )
+			.catch( ( ) => {
+				setImageCtaUrl( '' );
 			} );
 	};
 
@@ -110,6 +113,11 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 	};
 
 	const imageCtaHtml = () => {
+		// Don't generate HTML if there's no image URL
+		if ( ! imageCtaUrl ) {
+			return '';
+		}
+
 		return `<div class="${ 'portrait' === layer?.imageCtaOrientation ? 'vertical-image-cta-container' : 'image-cta-container' }">
 					<img
 						src="${ imageCtaUrl }"
@@ -121,7 +129,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 					<div class="image-cta-description">
 						${ layer?.imageText ? `<h2>${ layer.imageText }</h2>` : '' }
 						${ layer?.imageDescription ? `<p>${ layer.imageDescription }</p>` : '' }
-						<a class="image-cta-btn" href="${ layer?.imageLink || '/' }" target="_blank">
+						<a class="image-cta-btn" href="${ layer?.imageLink || '/' }" target="_blank" style="background-color: ${ layer?.imageCtaButtonColor ?? '#eeab95' }">
 							${ layer?.imageCtaButtonText || __( 'Buy Now', 'godam' ) }
 						</a>
 					</div>
@@ -137,15 +145,24 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			setFormHTML( layer.text );
 		} else if ( 'html' === layer?.cta_type ) {
 			setFormHTML( layer.html );
-		} else if ( 'image' === layer?.cta_type ) {
-			fetchOverlayMediaURL( layer?.image );
-			if ( imageCtaUrl.length !== 0 ) {
-				setFormHTML( imageCtaHtml );
-			} else {
-				setFormHTML( '' );
-			}
 		}
-	}, [ layer, imageCtaUrl ] );
+	}, [ layer ] );
+
+	// Fetch the media URL when the image ID changes
+	useEffect( () => {
+		if ( 'image' === layer?.cta_type && layer?.image && layer?.image !== 0 ) {
+			fetchOverlayMediaURL( layer.image );
+		} else {
+			setImageCtaUrl( '' );
+		}
+	}, [ layer?.cta_type, layer?.image ] );
+
+	// Update the HTML only after imageCtaUrl is updated
+	useEffect( () => {
+		if ( 'image' === layer?.cta_type ) {
+			setFormHTML( imageCtaUrl ? imageCtaHtml() : '' );
+		}
+	}, [ imageCtaUrl, layer ] );
 
 	return (
 		<>
@@ -153,13 +170,13 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 			<div className="flex flex-col godam-form-group">
 				<p className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</p>
-				<CustomSelectControl
+				<SelectControl
 					__next40pxDefaultSize
-					className="mb-4 godam-input"
+					className="mb-4"
 					label={ __( 'Select type', 'godam' ) }
 					onChange={ handleCTATypeSelect }
 					options={ ctaLayerOptions }
-					value={ ctaLayerOptions.find( ( option ) => option.key === layer.cta_type ) }
+					value={ layer.cta_type }
 				/>
 
 				{ renderSelectedCTAInputs() }
@@ -168,7 +185,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 				<Panel className="-mx-4 border-x-0">
 					<PanelBody
-						title={ __( 'Advance', 'godam' ) }
+						title={ __( 'Advanced', 'godam' ) }
 						initialOpen={ false }
 					>
 						{ /* Layer background color */ }

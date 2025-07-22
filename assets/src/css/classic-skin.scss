@@ -181,7 +181,7 @@
             height: 3em !important;
             
             span::before {
-                content: ''; /* Hide default icon */
+                content: '' !important; /* Hide default icon */
                 background: url(../images/classic-pip.svg);
                 background-repeat: no-repeat;
                 background-size: contain;
