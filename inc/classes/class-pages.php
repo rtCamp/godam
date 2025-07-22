@@ -174,15 +174,18 @@ class Pages {
 			2
 		);
 
-		add_submenu_page(
-			$this->menu_slug,
-			__( 'Tools', 'godam' ),
-			__( 'Tools', 'godam' ),
-			'manage_options',
-			$this->tools_slug,
-			array( $this, 'render_tools_page' ),
-			5
-		);
+		// Only add Tools submenu if a valid API key is set.
+		if ( rtgodam_is_api_key_valid() ) {
+			add_submenu_page(
+				$this->menu_slug,
+				__( 'Tools', 'godam' ),
+				__( 'Tools', 'godam' ),
+				'manage_options',
+				$this->tools_slug,
+				array( $this, 'render_tools_page' ),
+				5
+			);
+		}
 
 		add_submenu_page(
 			$this->menu_slug,
