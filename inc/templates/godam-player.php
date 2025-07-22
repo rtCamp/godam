@@ -263,8 +263,8 @@ if ( ! empty( $attachment_id ) ) {
 
 	$rest_url = add_query_arg(
 		array(
-			'job_name' => urlencode( $job_id ),
-			'api_key'  => urlencode( $api_key ),
+			'job_name' => rawurlencode( $job_id ),
+			'api_key'  => rawurlencode( $api_key ),
 		),
 		RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_transcription'
 	);
