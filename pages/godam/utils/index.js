@@ -83,12 +83,19 @@ export function formatSize( size ) {
 	return size + ' Bytes';
 }
 
-export function getMediaMigrationProgress() {
+export function getMediaMigrationInfo() {
 	// Fetch data from database or API.
 	return window?.goDAMUploadsData?.media_migration_progress || {
 		status: 'idle',
 		remaining: 0,
 		completed: 0,
 		failed: 0,
+		total: 0,
+		total_size: 0,
+		remaining_size: 0,
+		migrating: {
+			filename: '',
+			size: 0,
+		},
 	};
 }

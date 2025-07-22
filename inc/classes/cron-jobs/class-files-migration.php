@@ -64,6 +64,11 @@ class Files_Migration {
 	const FAILED_FILES_OPTION = 'godam_cdn_failed_files_list';
 
 	/**
+	 * Current migrating file.
+	 */
+	const CURRENT_FILE_OPTION = 'godam_cdn_migrating_current_file';
+
+	/**
 	 * Constructor.
 	 *
 	 * This method initializes the cron job for files migration to CDN.
@@ -111,8 +116,8 @@ class Files_Migration {
 					'message' => 'Files migration stopped.',
 				)
 			);
-		} elseif ( 'progress' === $sub_action ) {
-			$status = self::get_progress();
+		} elseif ( 'info' === $sub_action ) {
+			$status = self::get_info();
 			wp_send_json_success( $status );
 		} else {
 			wp_send_json_error( 'Invalid action.', 400 );
@@ -140,6 +145,19 @@ class Files_Migration {
 			delete_option( self::STATUS_OPTION );
 		}
 
+		// If the status is 'scheduled', we do not start a new migration.
+		if ( 'scheduled' === $status ) {
+			self::debug( 'Files migration is already scheduled.' );
+			return;
+		}
+
+		if ( ! self::can_migrate() ) {
+			self::debug( 'Not enough storage space to migrate files.' );
+			return false;
+		}
+
+
+
 		self::schedule_cron();
 	}
 
@@ -152,12 +170,12 @@ class Files_Migration {
 	public static function schedule_cron() {
 		// If the cron job is already scheduled, we do not schedule it again.
 		if ( wp_next_scheduled( self::CRON_HOOK ) ) {
-			return;
+			return false;
 		}
 
 		// If the status is 'stopped', we do not schedule a new cron job.
 		if ( 'stopped' === get_option( self::STATUS_OPTION, 'idle' ) ) {
-			return;
+			return false;
 		}
 
 		// Schedule the cron job to run after 5 seconds.
@@ -165,7 +183,7 @@ class Files_Migration {
 
 		// Update the status to running if cron job is scheduled.
 		if ( wp_next_scheduled( self::CRON_HOOK ) ) {
-			update_option( self::STATUS_OPTION, 'running' );
+			update_option( self::STATUS_OPTION, 'scheduled' );
 			self::debug( 'Files migration cron job scheduled.' );
 		} else {
 			self::debug( 'Failed to schedule files migration cron job.' );
@@ -179,10 +197,18 @@ class Files_Migration {
 	 * uploads them to the CDN, and updates their metadata accordingly.
 	 */
 	public static function process_batch() {
+		// If the status is 'stopped', we do not process the files.
+		if ( 'stopped' === get_option( self::STATUS_OPTION, 'idle' ) ) {
+			self::debug( 'Files migration was stopped manually.' );
+			return;
+		}
+
+		update_option( self::STATUS_OPTION, 'running' );
+
 		$all_files       = self::get_all_upload_files();
 		$migrated_files  = get_option( self::MIGRATED_FILES_OPTION, array() );
 		$failed_files    = get_option( self::FAILED_FILES_OPTION, array() );
-		$remaining_files = array_diff( $all_files, $migrated_files );
+		$remaining_files = array_diff( wp_list_pluck( $all_files, 'path' ), $migrated_files );
 		$batch           = array_slice( $remaining_files, 0, self::BATCH_SIZE );
 
 		if ( empty( $batch ) ) {
@@ -196,6 +222,14 @@ class Files_Migration {
 			$source_path = self::get_source_path( $file_path );
 			$plugin      = Plugin::get_instance();
 			$client      = $plugin->client();
+
+			if ( 'stopped' === get_option( self::STATUS_OPTION, 'idle' ) ) {
+				// If the status is 'stopped', we do not process the files.
+				self::debug( 'Files migration was stopped manually.' );
+				return;
+			}
+
+			update_option( self::CURRENT_FILE_OPTION, $file_path );
 
 			if ( file_exists( $destination ) ) {
 				self::debug( 'File with same name exists on CDN!' );
@@ -215,7 +249,9 @@ class Files_Migration {
 
 			if ( is_wp_error( $status ) ) {
 				self::debug( 'Error uploading file to CDN: ' . $status->get_error_message() );
-				$failed_files[] = $file_path;
+				if ( ! in_array( $failed_files, $file_path, true ) ) {
+					$failed_files[] = $file_path;
+				}
 				continue;
 			}
 
@@ -228,6 +264,9 @@ class Files_Migration {
 		if ( count( $remaining_files ) > self::BATCH_SIZE ) {
 			// schedule next batch.
 			self::schedule_cron();
+			if ( 'stopped' !== get_option( self::STATUS_OPTION, 'idle' ) ) {
+				update_option( self::STATUS_OPTION, 'paused' );
+			}
 		} else {
 			delete_option( self::STATUS_OPTION );
 			self::debug( 'Files migration fully processed.' );
@@ -284,31 +323,64 @@ class Files_Migration {
 	 *
 	 * @return array An array containing the status, completed count, and remaining count.
 	 */
-	public static function get_progress() {
+	public static function get_info() {
 		$status          = self::get_status();
-		$all_files       = self::get_all_upload_files();
-		$migrated_files  = get_option( self::MIGRATED_FILES_OPTION, array() );
+		$all_files       = array_column( self::get_all_upload_files(), 'size', 'path' );
+		$completed_files = get_option( self::MIGRATED_FILES_OPTION, array() );
 		$failed_files    = get_option( self::FAILED_FILES_OPTION, array() );
-		$completed_count = count( $migrated_files );
-		$remaining_count = count( $all_files ) - $completed_count;
+		$total_size      = array_sum( array_values( $all_files ) );
+		$current_file    = get_option( self::CURRENT_FILE_OPTION, '' );
+		$remaining_size  = 0;
+		foreach ( $all_files as $file_path => $size ) {
+			if ( ! in_array( $file_path, $completed_files, true ) && ! in_array( $file_path, $failed_files, true ) ) {
+				$remaining_size += $size;
+			}
+		}
 
 		return array(
-			'status'    => $status,
-			'completed' => $completed_count,
-			'remaining' => $remaining_count,
-			'failed'    => count( $failed_files ),
-			'total'     => count( $all_files ),
+			'status'         => $status,
+			'total'          => count( $all_files ),
+			'completed'      => count( $completed_files ),
+			'remaining'      => count( $all_files ) - count( $completed_files ) - count( $failed_files ),
+			'failed'         => count( $failed_files ),
+			'total_size'     => $total_size,
+			'remaining_size' => $remaining_size,
+			'migrating'      => array(
+				'filename' => basename( $current_file ),
+				'size'     => $all_files[ $current_file ] ?? 0,
+			),
+			'cron_scheduled' => self::varify_cron(),
 		);
 	}
 
 	/**
-	 * Check if files migration to CDN is needed.
+	 * Check if files can be migrated to the CDN.
 	 *
-	 * @return bool True if migration is needed, false otherwise.
+	 * This function checks the storage usage and the size of remaining files to determine
+	 * if there is enough space available for migration.
+	 *
+	 * @return bool True if files can be migrated, false otherwise.
 	 */
-	public static function need_migration() {
-		$progress = self::get_progress();
-		return $progress['remaining'] > 0 && 'running' !== $progress['status'];
+	public static function can_migrate() {
+		$storage_usage   = rtgodam_get_usage_data();
+		$all_files       = array_column( self::get_all_upload_files(), 'size', 'path' );
+		$completed_files = get_option( self::MIGRATED_FILES_OPTION, array() );
+		$failed_files    = get_option( self::FAILED_FILES_OPTION, array() );
+
+		$remaining_size = 0;
+		foreach ( $all_files as $file_path => $size ) {
+			if ( ! in_array( $file_path, $completed_files, true ) && ! in_array( $file_path, $failed_files, true ) ) {
+				$remaining_size += $size;
+			}
+		}
+
+		$can_migrate = false;
+		if ( ! is_wp_error( $storage_usage ) ) {
+			$available_storage = ( $storage_usage['total_storage'] * GB_IN_BYTES ) - ( $storage_usage['storage_used'] * GB_IN_BYTES );
+			$can_migrate       = $remaining_size < $available_storage;
+		}
+
+		return $can_migrate;
 	}
 
 	/**
@@ -332,11 +404,73 @@ class Files_Migration {
 
 		foreach ( $iterator as $file ) {
 			if ( $file->isFile() ) {
-				$files[] = str_replace( trailingslashit( $upload_dir ), '', $file->getPathname() );
+				$_file   = str_replace( trailingslashit( $upload_dir ), '', $file->getPathname() );
+				$files[] = array(
+					'path' => $_file,
+					'size' => $file->getSize(),
+				);
 			}
 		}
 
+		// Handle option data to remove files that are not in the uploads directory.
+		self::handle_option_data( $files );
+
 		return $files;
+	}
+
+	/**
+	 * Handle option data to remove files that are not in the uploads directory.
+	 *
+	 * This function filters the migrated and failed files options to ensure they only contain
+	 * file paths that are present in the provided list of files.
+	 *
+	 * @param array $files List of files with their paths.
+	 */
+	private static function handle_option_data( $files ) {
+		// Remove file paths that are not in the uploads directory from migrated and failed files.
+		$files          = wp_list_pluck( $files, 'path' );
+		$migrated_files = get_option( self::MIGRATED_FILES_OPTION, array() );
+		$failed_files   = get_option( self::FAILED_FILES_OPTION, array() );
+
+		$migrated_files = array_filter(
+			$migrated_files,
+			function ( $file ) use ( $files ) {
+				return in_array( $file, $files, true );
+			}
+		);
+
+		$failed_files = array_filter(
+			$failed_files,
+			function ( $file ) use ( $files ) {
+				return in_array( $file, $files, true );
+			}
+		);
+
+		update_option( self::MIGRATED_FILES_OPTION, array_unique( $migrated_files ) );
+		update_option( self::FAILED_FILES_OPTION, array_unique( $failed_files ) );
+	}
+
+	/**
+	 * Verify if the cron job is scheduled or if the migration is running.
+	 *
+	 * This function checks if the cron job for files migration is scheduled and
+	 * if the status of the migration is 'running'. It returns true if either condition
+	 * is met, indicating that the migration can proceed.
+	 *
+	 * @return bool True if the cron job is scheduled or the status is 'running', false otherwise.
+	 */
+	public static function varify_cron() {
+		// Check if the cron job is scheduled.
+		if ( wp_next_scheduled( self::CRON_HOOK ) ) {
+			return true;
+		}
+
+		// Check if the status is 'running'.
+		if ( get_option( self::STATUS_OPTION, 'idle' ) === 'running' ) {
+			return true;
+		}
+
+		return true;
 	}
 
 	/**

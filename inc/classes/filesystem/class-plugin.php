@@ -90,7 +90,10 @@ class Plugin {
 		// Register the chunk uploader.
 		Chunk_Uploader::get_instance();
 
+		// Update the upload directory to use GoDAM.
 		add_filter( 'upload_dir', array( $this, 'filter_upload_dir' ) );
+		$this->get_original_upload_dir();
+
 		add_filter( 'wp_image_editors', array( $this, 'filter_editors' ), 9 );
 		add_action( 'add_attachment', array( $this, 'add_extra_metadata' ) );
 		add_action( 'delete_attachment', array( $this, 'delete_attachment_files' ) );
@@ -102,9 +105,6 @@ class Plugin {
 
 		add_filter( 'wp_handle_upload_prefilter', array( $this, 'filter_validate_file' ) );
 		add_filter( 'wp_handle_sideload_prefilter', array( $this, 'filter_validate_file' ) );
-
-		// Update the upload directory to use GoDAM.
-		wp_get_upload_dir();
 	}
 
 	/**
@@ -130,6 +130,24 @@ class Plugin {
 		$acl = defined( 'GODAM_UPLOADS_OBJECT_ACL' ) ? GODAM_UPLOADS_OBJECT_ACL : 'public-read';
 		stream_context_set_option( stream_context_get_default(), 'godam', 'ACL', $acl );
 		stream_context_set_option( stream_context_get_default(), 'godam', 'seekable', true );
+	}
+
+	/**
+	 * Get the original upload directory before it was replaced by S3 uploads.
+	 *
+	 * @return array{path: string, basedir: string, baseurl: string, url: string}
+	 */
+	public function get_original_upload_dir(): array {
+
+		if ( empty( $this->original_upload_dir ) ) {
+			wp_upload_dir();
+		}
+
+		/**
+		 * @var array{path: string, basedir: string, baseurl: string, url: string}
+		 */
+		$upload_dir = $this->original_upload_dir;
+		return $upload_dir;
 	}
 
 	/**
