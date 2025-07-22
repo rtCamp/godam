@@ -337,7 +337,7 @@ class RTGODAM_RetranscodeMedia {
 		$redirect_url = add_query_arg(
 			'_wpnonce',
 			wp_create_nonce( 'rtgodam_tools' ),
-			get_admin_url( get_current_blog_id(), 'admin.php?page=rtgodam_tools2&goback=1&media_ids=' . $ids )
+			get_admin_url( get_current_blog_id(), 'admin.php?page=rtgodam_tools&goback=1&media_ids=' . $ids )
 		);
 
 		wp_safe_redirect( $redirect_url );

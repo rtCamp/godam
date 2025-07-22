@@ -58,7 +58,7 @@ class Pages {
 	 *
 	 * @var string
 	 */
-	private $tools_slug = 'rtgodam_tools2';
+	private $tools_slug = 'rtgodam_tools';
 
 	/**
 	 * Menu pag ID.
@@ -100,7 +100,7 @@ class Pages {
 	 * 
 	 * @var string
 	 */
-	private $tools_page_id = 'godam_page_rtgodam_tools2';
+	private $tools_page_id = 'godam_page_rtgodam_tools';
 
 	/**
 	 * Construct method.
