@@ -30,7 +30,6 @@ use RTGODAM\Inc\REST_API\WPForms;
 use RTGODAM\Inc\REST_API\Forminator_Forms;
 use RTGODAM\INC\REST_API\SureForms;
 use RTGODAM\Inc\REST_API\Fluent_Forms;
-use RTGODAM\Inc\REST_API\Everest_Forms;
 use RTGODAM\Inc\REST_API\Settings;
 use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
 use RTGODAM\Inc\REST_API\Media_Library;
@@ -47,6 +46,7 @@ use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
 
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
+use RTGODAM\Inc\Everest_Forms\Everest_Forms_Integration;
 use RTGODAM\Inc\Video_Metadata;
 
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
@@ -81,6 +81,8 @@ class Plugin {
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
 		GoDAM_Video_Gallery::get_instance();
+
+		Everest_Forms_Integration::get_instance()->init();
 
 		$this->load_post_types();
 		$this->load_taxonomies();
@@ -142,7 +144,6 @@ class Plugin {
 		Forminator_Forms::get_instance();
 		SureForms::get_instance();
 		Fluent_Forms::get_instance();
-		Everest_Forms::get_instance();
 		Ninja_Forms_Rest_Api::get_instance();
 		Settings::get_instance();
 		Meta_Rest_Fields::get_instance();
