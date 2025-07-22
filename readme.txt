@@ -177,35 +177,31 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Screenshots ==
 1. General Settings
-3. Video Settings with valid API Key
-4. Video Editor
-5. Video Layer Selection
-7. Hotspot Layer
-8. Ads Integration
-10. Gravity Forms Integration
-11. Contact Form 7 Integration
-12. WP Forms Integration
-13. Player Settings
-14. Enhanced Media Library (DAM)
-15. GoDAM Video Block
-16. Post-Specific Video Settings
-17. Attachment Video Details
-18. Single Video Analytics
-19. Video Analytics Dashboard
-20. GoDAM Central Selector Tab
-22. GoDAM Recorder Field for Gravity Forms
-23. Gravity Form Entry Detail page
-24. Automatic Video Transcription
-26. [godam_video] Shortcode
-27. GoDAM Central
-28. Image Upload to GoDAM Central
-29. GoDAM Video Gallery Block
-31. Elementor GoDAM Audio Widget
-32. Elementor GoDAM Gallery Widget
-33. Elementor GoDAM Video Widget
-34. Jetpack Forms Integration
-35. Video Player Style Settings
-36. Chapters Interface
+2. Video Settings with valid API Key
+3. Video Editor
+4. Video Layer Selection
+5. Hotspot Layer
+6. Ads Integration
+7. Gravity Forms Integration
+8. Player Settings
+9. Enhanced Media Library (DAM)
+10. Post-Specific Video Settings
+11. Attachment Video Details
+12. Single Video Analytics
+13. Video Analytics Dashboard
+14. GoDAM Central Selector Tab
+15. GoDAM Recorder Field for Gravity Forms
+16. Automatic Video Transcription
+17. GoDAM Central
+18. Image Upload to GoDAM Central
+19. Single Video Page in  GoDAM Central
+20. Settings Page in GoDAM Central
+21. GoDAM Video Gallery Block
+22. Elementor GoDAM Gallery Widget
+23. Elementor GoDAM Video Widget
+24. Video Player Style Settings
+25. Global Ads Settings
+26. Chapters Interface
 
 == Changelog ==
 
