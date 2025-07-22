@@ -212,10 +212,11 @@ class Assets {
 			'rtgodam-script',
 			'godamRestRoute',
 			array(
-				'url'     => get_rest_url( get_current_blog_id() ),
-				'homeUrl' => get_home_url( get_current_blog_id() ),
-				'nonce'   => wp_create_nonce( 'wp_rest' ),
-				'apiBase' => RTGODAM_API_BASE,
+				'url'      => get_rest_url( get_current_blog_id() ),
+				'homeUrl'  => get_home_url( get_current_blog_id() ),
+				'adminUrl' => admin_url(),
+				'nonce'    => wp_create_nonce( 'wp_rest' ),
+				'apiBase'  => RTGODAM_API_BASE,
 			)
 		);
 

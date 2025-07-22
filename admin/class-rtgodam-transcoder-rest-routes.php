@@ -224,6 +224,8 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 						if ( ! empty( $post_array['files']['mpd'] ) ) {
 							update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $post_array['download_url'] );
 
+							delete_post_meta( $attachment_id, 'rtgodam_retranscoding_sent' );
+
 							$latest_attachment = get_option( 'rtgodam_new_attachment', false );
 
 							if ( ! empty( $latest_attachment ) && $latest_attachment['attachment_id'] === $attachment_id ) {
