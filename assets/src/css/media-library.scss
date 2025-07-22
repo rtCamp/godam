@@ -329,6 +329,32 @@
 	}
 }
 
+.upload-thumbnail-tile {
+	border: 2px dashed #ccc;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 150px;
+	position: relative;
+	cursor: pointer;
+}
+
+.upload-box {
+	cursor: pointer;
+
+	.upload-label {
+		display: none;
+	}
+}
+
+.plus-icon {
+	font-size: 24px;
+	display: block;
+	margin-bottom: 4px;
+	cursor: pointer;
+}
+
+
 .elementor-editor-active .attachments-browser #media-date-range-filter {
 	background-color: unset;
 }

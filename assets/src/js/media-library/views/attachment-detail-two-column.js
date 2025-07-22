@@ -117,6 +117,23 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const { thumbnails, selected } = data;
 		const attachmentID = this.model.get( 'id' );
 
+		// Upload tile HTML as first element
+		const uploadTileHTML = `
+	<li class="upload-thumbnail-tile" title="Upload Custom Thumbnail">
+		<label for="custom-thumbnail-upload" class="custom-thumbnail-label">
+			<div class="upload-box">
+				<span class="plus-icon">➕</span>
+				<span class="upload-label">Upload Custom Thumbnail</span>
+			</div>
+			<input 
+				type="file" 
+				id="custom-thumbnail-upload" 
+				accept="image/png, image/jpeg, image/webp" 
+				style="display: none;" 
+			/>
+		</label>
+	</li>`;
+
 		const thumbnailsHTML = thumbnails.map( ( thumbnail ) =>
 			`<li class="${ thumbnail === selected ? 'selected' : '' }">
 				<img src="${ thumbnail }" alt="Video Thumbnail" />
@@ -125,11 +142,22 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const thumbnailDiv = `
 			<div class="attachment-video-thumbnails">
 				<div class="attachment-video-title"><h4>Video Thumbnails</h4></div>
-				<ul>${ thumbnailsHTML }</ul>
+				<ul>
+					${ uploadTileHTML }
+					${ thumbnailsHTML }
+				</ul>
 			</div>`;
 
 		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( thumbnailDiv ) );
 		this.setupThumbnailClickHandler( attachmentID );
+
+		// Handle file upload interaction
+		this.$el.find( '#custom-thumbnail-upload' ).on( 'change', ( e ) => {
+			const file = e.target.files[ 0 ];
+			if ( file ) {
+				this.handleThumbnailUpload( file );
+			}
+		} );
 	},
 
 	/**
