@@ -100,7 +100,7 @@ class GoDAM_Video extends Base {
 		
 		// Fallback to old option if new settings don't exist.
 		if ( false === $settings || ! isset( $settings['video_slug'] ) ) {
-			return get_option( 'rtgodam_video_slug', 'videos' );
+			return get_option( 'rtgodam_video_slug', Video_Permalinks::DEFAULT_VIDEO_SLUG );
 		}
 		
 		return $settings['video_slug'];
