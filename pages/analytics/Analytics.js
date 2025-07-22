@@ -214,6 +214,23 @@ const Analytics = ( { attachmentID } ) => {
 		}
 	}, [ analyticsData, abTestComparisonAnalyticsData ] );
 
+	useEffect( () => {
+		const analyticsVideoEl = document.getElementById( 'analytics-video' );
+
+		if ( ! analyticsVideoEl ) {
+			return;
+		}
+
+		const existingPlayer = videojs.getPlayer( 'analytics-video' );
+		if ( existingPlayer ) {
+			existingPlayer.dispose();
+		}
+
+		videojs( 'analytics-video', {
+			aspectRatio: '16:9',
+		} );
+	}, [ analyticsData ] );
+
 	const openVideoUploader = () => {
 		const fileFrame = wp.media( {
 			title: __( 'Select Video to Perform Performance Comparison Testing', 'godam' ),

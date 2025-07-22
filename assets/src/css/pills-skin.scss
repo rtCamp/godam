@@ -48,6 +48,13 @@
         order: 3;
     }
 
+    .vjs-custom-play-button img {
+        height: 100%;
+        width: auto;
+        object-fit: fill;
+        margin-right: 20px;
+    }
+
     .vjs-menu-content {
         background-color: #fff !important;
         color: #000;
