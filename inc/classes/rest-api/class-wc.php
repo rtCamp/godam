@@ -130,6 +130,80 @@ class WC extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/save-product-meta',
+				'args'      => array(
+					array(
+						'methods'             => \WP_REST_Server::CREATABLE,
+						'callback'            => array( $this, 'save_product_meta' ),
+						'permission_callback' => function ( \WP_REST_Request $req ) {
+							$product_id = (int) $req->get_param( 'product_id' );
+							return current_user_can( 'edit_post', $product_id );
+						},
+						'args'                => array(
+							'product_id' => array(
+								'required'          => true,
+								'type'              => 'integer',
+								'sanitize_callback' => 'absint',
+							),
+							'meta_key'   => array(
+								'required'          => true,
+								'type'              => 'string',
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+							'meta_value' => array( // phpcs:ignore
+								'required'          => true,
+								'type'              => 'string',
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/get-product-meta',
+				'args'      => array(
+					array(
+						'methods'             => \WP_REST_Server::READABLE,
+						'callback'            => array( $this, 'get_product_meta' ),
+						'permission_callback' => '__return_true',
+						'args'                => array(
+							'product_id'    => array(
+								'required'          => true,
+								'type'              => 'integer',
+								'sanitize_callback' => 'absint',
+							),
+							'attachment_id' => array(
+								'required'          => true,
+								'type'              => 'integer',
+								'sanitize_callback' => 'absint',
+							),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/wcproducts-by-ids',
+				'args'      => array(
+					array(
+						'methods'             => \WP_REST_Server::CREATABLE,
+						'callback'            => array( $this, 'get_products_by_ids' ),
+						'permission_callback' => '__return_true',
+						'args'                => array(
+							'ids' => array(
+								'type'              => 'array',
+								'required'          => true,
+								'sanitize_callback' => function ( $param ) {
+									return array_map( 'absint', (array) $param );
+								},
+							),
+						),
+					),
+				),
+			),      
 		);
 	}
 
@@ -142,38 +216,35 @@ class WC extends Base {
 	 * @return array{term_id:int,taxonomy:string}|false Array with term ID and taxonomy, or false when no match
 	 */
 	public function godam_find_term( $search_term, array $taxonomies ) {
+		$matches = array();
+	
 		foreach ( $taxonomies as $tax ) {
 			$found = term_exists( $search_term, $tax );
-
+	
 			if ( ! $found ) {
 				continue;
 			}
-
-			// Normalise every possible return type.
+	
 			if ( is_int( $found ) ) {
-				return array(
+				$matches[] = array(
 					'term_id'  => $found,
 					'taxonomy' => $tax,
 				);
-			}
-
-			if ( $found instanceof \WP_Term ) { 
-				return array(
+			} elseif ( $found instanceof \WP_Term ) {
+				$matches[] = array(
 					'term_id'  => $found->term_id,
 					'taxonomy' => $found->taxonomy,
 				);
-			}
-
-			if ( is_array( $found ) ) {
-				return array(
+			} elseif ( is_array( $found ) ) {
+				$matches[] = array(
 					'term_id'  => (int) $found['term_id'],
 					'taxonomy' => $tax,
 				);
 			}
 		}
-
-		return false; // Nothing matched.
-	}
+	
+		return ! empty( $matches ) ? $matches : false;
+	}   
 
 	/**
 	 * Get all WooCommerce products.
@@ -184,38 +255,65 @@ class WC extends Base {
 	public function get_products( $request ) {
 		$search     = sanitize_text_field( $request->get_param( 'search' ) );
 		$is_numeric = is_numeric( $search );
-		$term_info  = $this->godam_find_term( $search, array( 'product_cat', 'product_tag', 'product_brand' ) );
+		$term_info  = $is_numeric ? false : $this->godam_find_term( $search, array( 'product_cat', 'product_tag', 'product_brand' ) );
 	
 		$args = array(
 			'post_type'      => 'product',
 			'post_status'    => 'publish',
 			'posts_per_page' => 20,
 		);
+
+		$taxonomy_query = array();
 	
 		// Allow numeric search by ID.
 		if ( $is_numeric ) {
 			$args['post__in'] = array( (int) $search );
-		} elseif ( $term_info ) {
-			$args['tax_query'] = array( // phpcs:ignore
-				'relation' => 'OR',
-				array(
-					'taxonomy' => $term_info['taxonomy'],
+		} elseif ( is_array( $term_info ) && ! empty( $term_info ) ) {
+			$tax_query = array( 'relation' => 'OR' );
+		
+			foreach ( $term_info as $term ) {
+				if ( ! isset( $term['taxonomy'] ) ) {
+					continue;
+				}
+		
+				$tax_query[] = array(
+					'taxonomy' => $term['taxonomy'],
 					'field'    => 'slug',
 					'terms'    => array( $search ),
 					'operator' => 'IN',
-				),
-				array(
-					'taxonomy' => $term_info['taxonomy'],
+				);
+		
+				$tax_query[] = array(
+					'taxonomy' => $term['taxonomy'],
 					'field'    => 'name',
 					'terms'    => $search,
 					'operator' => 'LIKE',
-				),
-			);
+				);
+			}
+			$args['tax_query'] = $tax_query; // phpcs:ignore
+
+			$taxonomy_query = new \WP_Query( $args );
+
+			unset( $args['tax_query'] );
+			$args['s'] = $search;
+
 		} else {
 			$args['s'] = $search;
 		}
 	
 		$query = new \WP_Query( $args );
+
+		$all_posts = $query->posts;
+
+		if ( $taxonomy_query instanceof \WP_Query ) {
+			$existing_ids = wp_list_pluck( $all_posts, 'ID' );
+
+			foreach ( $taxonomy_query->posts as $post ) {
+				if ( ! in_array( $post->ID, $existing_ids, true ) ) {
+					$all_posts[] = $post;
+				}
+			}
+		}
 	
 		$products = array_map(
 			function ( $post ) {
@@ -315,7 +413,7 @@ class WC extends Base {
 					'brands'     => $brands,
 				);
 			},
-			$query->posts 
+			$all_posts 
 		);
 	
 		return rest_ensure_response( $products );
@@ -556,5 +654,127 @@ class WC extends Base {
 		delete_post_meta( $attachment_id, '_video_parent_product_id', $product_id );
 
 		return rest_ensure_response( array( 'success' => true ) );
+	}
+
+	/**
+	 * Save timestamp meta for a product.
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function save_product_meta( \WP_REST_Request $request ) {
+		$product_id = (int) $request->get_param( 'product_id' );
+		$meta_key   = sanitize_text_field( $request->get_param( 'meta_key' ) );
+		$meta_value = sanitize_text_field( $request->get_param( 'meta_value' ) );
+
+		if ( empty( $product_id ) || empty( $meta_key ) ) {
+			return new \WP_Error( 'missing_params', 'Product ID and meta key are required.', array( 'status' => 400 ) );
+		}
+
+		update_post_meta( $product_id, $meta_key, $meta_value );
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => 'Meta saved successfully.',
+			) 
+		);
+	}
+
+	/**
+	 * Save timestamp meta for a product.
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_product_meta( \WP_REST_Request $request ) {
+		$product_id    = (int) $request->get_param( 'product_id' );
+		$attachment_id = (int) $request->get_param( 'attachment_id' );
+	
+		if ( empty( $product_id ) || empty( $attachment_id ) ) {
+			return new \WP_Error( 'missing_params', 'Product ID and meta key are required.', array( 'status' => 400 ) );
+		}
+
+		$meta_key = 'godam_product_timestamp_meta_' . $attachment_id;
+	
+		$meta_value = get_post_meta( $product_id, $meta_key, true );
+	
+		return rest_ensure_response(
+			array(
+				'product_meta_value' => $meta_value,
+			) 
+		);
+	}
+
+	/**
+	 * Get multiple products by an array of IDs.
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_products_by_ids( \WP_REST_Request $request ) {
+		$ids = $request->get_param( 'ids' );
+	
+		if ( ! is_array( $ids ) || empty( $ids ) ) {
+			return new \WP_Error( 'invalid_ids', 'Invalid or missing IDs.', array( 'status' => 400 ) );
+		}
+	
+		$products = array(); 
+		foreach ( $ids as $id ) {
+			$product = wc_get_product( $id );
+
+			$type         = $product->get_type();
+			$name_display = $product->get_name();
+
+			if ( 'variable' === $type ) {
+
+				// Get variation prices.
+				$min_price = $product->get_variation_price( 'min', true );
+				$max_price = $product->get_variation_price( 'max', true );
+	
+				if ( $min_price === $max_price ) {
+					$price_display = wc_price( $min_price );
+				} else {
+					$price_display = wc_price( $min_price ) . ' - ' . wc_price( $max_price );
+				}       
+			} elseif ( 'grouped' === $type ) {
+	
+				$child_ids   = $product->get_children();
+				$child_count = count( $child_ids );
+			
+				// Get all child prices.
+				$child_prices = array_map(
+					function ( $child_id ) {
+						$child_product = wc_get_product( $child_id );
+						return $child_product ? $child_product->get_price() : null;
+					},
+					$child_ids 
+				);
+			
+				$child_prices = array_filter( $child_prices );
+				$min_price    = count( $child_prices ) ? min( $child_prices ) : 0;
+			
+				// Format name and price.
+				$name_display  = $product->get_name() . " ({$child_count} items)";
+				$price_display = $min_price > 0 ? 'From: ' . wc_price( $min_price ) . ' + more' : 'N/A';
+	
+			} else {
+	
+				$price_display = wc_price( $product->get_price() );
+			}
+
+			if ( $product ) {
+				$products[] = array(
+					'id'    => $product->get_id(),
+					'name'  => $name_display,
+					'type'  => $type,
+					'price' => $price_display,
+					'image' => wp_get_attachment_url( $product->get_image_id() ) ?: wc_placeholder_img_src(),
+					'link'  => get_permalink( $product->get_id() ),
+				);
+			}
+		}
+	
+		return rest_ensure_response( $products );
 	}
 }

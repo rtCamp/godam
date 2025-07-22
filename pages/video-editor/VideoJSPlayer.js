@@ -91,7 +91,9 @@ export const VideoJS = ( props ) => {
 
 			const player = ( playerRef.current = videojs( videoElement, options, () => {
 				videojs.log( 'player is ready' );
-				onReady && onReady( player );
+				if ( onReady ) {
+					onReady( player );
+				}
 			} ) );
 
 			// Add a 'timeupdate' event listener
@@ -259,16 +261,6 @@ export const VideoJS = ( props ) => {
 			);
 		}
 
-		//play button image
-		const playButtonElement = document.querySelector( '.vjs-big-play-button' );
-		playButtonElement.style.backgroundImage = `url(${ videoConfig.controlBar.customPlayBtnImg })`;
-
-		playButtonElement.style.setProperty(
-			'background-image',
-			`url(${ videoConfig.controlBar.customPlayBtnImg })`,
-			'important',
-		);
-
 		//control bar position
 		if ( 'vertical' === videoConfig.controlBar.controlBarPosition ) {
 			controlBar.classList.add( 'vjs-control-bar-vertical' );
@@ -282,6 +274,39 @@ export const VideoJS = ( props ) => {
 				if ( control.classList.contains( 'vjs-volume-horizontal' ) ) {
 					control.classList.add( 'vjs-volume-vertical' );
 				}
+			}
+		}
+
+		const customPlayBtnImg = videoConfig.controlBar.customPlayBtnImg;
+		const playButtonElement = document.querySelector( '.vjs-big-play-button' );
+
+		if ( customPlayBtnImg ) {
+			// Create new image element
+			const imgElement = document.createElement( 'img' );
+			imgElement.src = customPlayBtnImg;
+			imgElement.alt = __( 'Custom Play Button', 'godam' );
+			imgElement.className = 'vjs-big-play-button custom-play-image';
+
+			playButtonElement.classList.forEach( ( cls ) => {
+				imgElement.classList.add( cls );
+			} );
+
+			imgElement.classList.add( 'custom-play-image' );
+
+			imgElement.style.cursor = 'pointer';
+
+			// Replace the original button with the new image
+			playButtonElement.parentNode.replaceChild( imgElement, playButtonElement );
+		}
+
+		if ( playerRef.current ) {
+			const player = playerRef.current;
+			const customPlayBtn = document.querySelector( '.vjs-big-play-button' );
+			if ( customPlayBtn ) {
+				customPlayBtn.addEventListener( 'click', function( e ) {
+					e.preventDefault();
+					player.play();
+				} );
 			}
 		}
 	}, [ videoConfig ] );
@@ -305,7 +330,11 @@ export const VideoJS = ( props ) => {
 	}, [ layers, chapters ] );
 
 	useEffect( () => {
-		if ( playerRef.current ) {
+		if ( ! playerRef.current ) {
+			return;
+		}
+
+		try {
 			const player = playerRef.current;
 
 			// player.sources( options.sources );
@@ -322,6 +351,8 @@ export const VideoJS = ( props ) => {
 			} else if ( ! options.controlBar.playToggle && volumePanel ) {
 				player.controlBar.removeChild( 'volumePanel' );
 			}
+		} catch {
+			// Ignoring - "No compatible source was found for this media" error will be shown on the video element.
 		}
 	}, [ options ] );
 
@@ -523,6 +554,8 @@ const Slider = ( props ) => {
 								'--hover-width': layer?.duration ? `${ Math.min( ( layer.duration / max ) * 100, 100 - layerLeft ) }%` : '8px',
 							} }
 							onClick={ () => onLayerSelect( layer ) }
+							role="button"
+							tabIndex={ 0 }
 						>
 							<div className="layer-indicator--container">
 								<div className={ `icon ${ layer.id === currentLayerID ? 'active' : '' }` }>
@@ -563,10 +596,17 @@ const Slider = ( props ) => {
 							} }
 						>
 							<div className="chapter-indicator--duration">
-								{ `${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) } - ${ chapter?.originalTime }` }
+								{ `${ chapter?.originalTime } - ${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) }` }
 							</div>
-							<div className="chapter-indicator--text">
-								{ chapter?.text }
+							<div
+								className="chapter-indicator--text"
+								style={ {
+									'--hover-width': `${ hoverWidth }%`,
+								} }
+							>
+								{ chapter?.text?.length > 13
+									? `${ chapter.text.slice( 0, 13 ) }...`
+									: chapter?.text }
 							</div>
 						</div>
 					);

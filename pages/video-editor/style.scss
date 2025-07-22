@@ -259,7 +259,7 @@
 			white-space: nowrap;
 		}
 		&:hover {
-			
+
 			.chapter-indicator--duration {
 				display: block;
 				position: absolute;
@@ -267,6 +267,13 @@
 				left: 50%;
 				white-space: nowrap;
 				font-size: 11px;
+			}
+
+			.chapter-indicator--text {
+				max-width: var(--hover-width, 8px);
+				overflow: hidden;
+				white-space: nowrap;
+				text-overflow: ellipsis;
 			}
 		}
 	}
@@ -280,6 +287,12 @@
 	}
 }
 
+.godam-video-list__video__thumbnail__overlay__menu {
+	.components-button.has-icon.has-text {
+		justify-content: flex-start !important;
+	}
+}
+
 .easydam-settings {
 
 	&-header {
@@ -290,4 +303,13 @@
 .disabled .components-combobox-control__suggestions-container {
 	pointer-events: none;
 	opacity: 0.5;
+}
+
+.jetpack-form-preview .wp-block-jetpack-contact-form-container,
+.forminator-ui {
+	pointer-events: none;
+}
+
+#branding-icon {
+	order: 9;
 }

@@ -9,9 +9,8 @@ import DOMPurify from 'isomorphic-dompurify';
  */
 import {
 	Button,
-	SelectControl,
 	Panel,
-	PanelBody,
+	PanelBody, CustomSelectControl,
 } from '@wordpress/components';
 import { chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
@@ -27,6 +26,7 @@ import HtmlCTA from '../cta/HtmlCTA';
 import LayerControls from '../LayerControls';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader.js';
+import React from 'react';
 
 // A DOMPurify config similar to what wp_kses_post() allows
 const wpKsesAllowed = {
@@ -54,12 +54,27 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
 
+	const ctaLayerOptions = [
+		{
+			name: __( 'Text', 'godam' ),
+			key: 'text',
+		},
+		{
+			name: __( 'HTML', 'godam' ),
+			key: 'html',
+		},
+		{
+			name: __( 'Image', 'godam' ),
+			key: 'image',
+		},
+	];
+
 	const handleCTATypeSelect = ( val ) => {
 		dispatch(
 			updateLayerField( {
 				id: layer.id,
 				field: 'cta_type',
-				value: val,
+				value: val.selectedItem.key,
 			} ),
 		);
 	};
@@ -138,27 +153,15 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 
 			<div className="flex flex-col godam-form-group">
 				<p className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</p>
-				<SelectControl
+				<CustomSelectControl
 					__next40pxDefaultSize
+					className="mb-4 godam-input"
 					label={ __( 'Select type', 'godam' ) }
-					className="mb-4 godam-select"
-					options={ [
-						{
-							label: __( 'Text', 'godam' ),
-							value: 'text',
-						},
-						{
-							label: __( 'HTML', 'godam' ),
-							value: 'html',
-						},
-						{
-							label: __( 'Image', 'godam' ),
-							value: 'image',
-						},
-					] }
-					value={ layer.cta_type }
 					onChange={ handleCTATypeSelect }
+					options={ ctaLayerOptions }
+					value={ ctaLayerOptions.find( ( option ) => option.key === layer.cta_type ) }
 				/>
+
 				{ renderSelectedCTAInputs() }
 
 				{ /* Common settings */ }

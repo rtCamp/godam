@@ -29,6 +29,7 @@ import 'quill/dist/quill.snow.css';
  */
 import GoDAM from '../../../../assets/src/images/GoDAM.png';
 import Share from '../../../../assets/src/images/share.svg';
+import ShareVariationOne from '../../../../assets/src/images/share-variation-one.svg';
 import CopyIcon from '../../../../assets/src/images/clipboard.svg';
 import Facebook from '../../../../assets/src/images/facebook.svg';
 import LinkedIn from '../../../../assets/src/images/linkedin.svg';
@@ -48,7 +49,7 @@ import {
 /**
  * Global variables
  */
-const validAPIKey = window?.godamAPIKeyData?.valid_api_key;
+const validAPIKey = window?.godamAPIKeyData?.validApiKey;
 
 library.add( fas );
 dom.watch();
@@ -73,7 +74,13 @@ function GODAMPlayer( videoRef = null ) {
 
 		const currentPlayerVideoInstanceId = video.dataset.instanceId;
 
-		video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
+		if ( video.closest( '.animate-video-loading' ) ) {
+			video.closest( '.animate-video-loading' ).classList.remove( 'animate-video-loading' );
+		}
+
+		const globalAdsSettings = video.dataset.global_ads_settings
+			? JSON.parse( video.dataset.global_ads_settings )
+			: {};
 
 		const adTagUrl = video.dataset.ad_tag_url;
 		let isVideoClicked = false;
@@ -110,13 +117,13 @@ function GODAMPlayer( videoRef = null ) {
 
 		const isPreviewEnabled = videoSetupOptions?.preview;
 
+		const isMobileView = window.innerWidth <= 768;
+
 		const player = videojs( video, videoSetupControls );
-		player.aspectRatio( '16:9' );
 
 		// Check if the player is inside a modal
 		const isInModal = video.closest( '.godam-modal' ) !== null;
 
-		// Set aspect ratio based on context
 		if ( isInModal ) {
 			// Only if in mobile view, set aspect ratio to 9:16. First check if the screen width is less than 768px.
 			if ( window.innerWidth < 420 ) {
@@ -125,17 +132,58 @@ function GODAMPlayer( videoRef = null ) {
 				player.aspectRatio( '16:9' );
 			}
 		}
+		player.ready( function() {
+			// Set aspect ratio based on context
+			if ( ! isInModal ) {
+				if ( videoSetupOptions?.aspectRatio ) {
+					if ( videoSetupOptions.aspectRatio === 'responsive' ) {
+						const handleResponsiveAspectRatio = () => {
+							const width = video?.videoWidth;
+							const height = video?.videoHeight;
 
-		video.addEventListener( 'loadedmetadata', () => {
-			const playerElement = player.el_;
+							function getSimplifiedAspectRatio( w, h ) {
+								const gcd = ( a, b ) => ( b === 0 ? a : gcd( b, a % b ) );
+								const divisor = gcd( w, h );
+								return ( w / divisor ) + ':' + ( h / divisor );
+							}
 
-			const captionControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-subs-caps-button.vjs-control.vjs-hidden' );
-
-			if ( captionControlBtn ) {
-				const qualityControlBtn = playerElement.querySelector( '.vjs-control-bar .vjs-quality-menu-wrapper' );
-				if ( qualityControlBtn ) {
-					qualityControlBtn.classList.add( 'mobile-right-80' );
+							const aspectRatio = getSimplifiedAspectRatio( width, height );
+							const aspectRatioOrientation = {
+								'1:1': 'landscape', // or "portrait" - square can go either way
+								'4:3': 'landscape',
+								'3:2': 'landscape',
+								'5:4': 'landscape',
+								'16:9': 'landscape',
+								'21:9': 'landscape',
+								'9:16': 'portrait',
+								'2:3': 'portrait',
+								'3:4': 'portrait',
+							};
+							const aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
+							document.querySelector( '.video-container' ).classList.add( `is-${ aspectRatioClass }` );
+							player.aspectRatio( aspectRatio );
+						};
+						// Check if metadata is already available (common on mobile/cached videos)
+						if ( video.readyState >= 1 ) {
+							handleResponsiveAspectRatio();
+						} else {
+							// Listen for the event if metadata isn't ready yet
+							video.addEventListener( 'loadedmetadata', handleResponsiveAspectRatio );
+						}
+					} else {
+						player.aspectRatio( videoSetupOptions.aspectRatio );
+					}
+				} else {
+					player.aspectRatio( '16:9' );
 				}
+			}
+
+			const captionsButton = player.el().querySelector( '.vjs-subs-caps-button' );
+			const durationElement = player.el().querySelector( '.vjs-duration' );
+
+			// Add condition: if captions button has vjs-hidden class, add right-80 class to vjs-duration element
+			if ( captionsButton && captionsButton.classList.contains( 'vjs-hidden' ) && durationElement ) {
+				durationElement.classList.add( 'right-80' );
 			}
 		} );
 
@@ -204,16 +252,67 @@ function GODAMPlayer( videoRef = null ) {
 			try {
 				const playerElement = player.el_;
 				const newHeight = playerElement.offsetHeight;
+				const newWidth = playerElement.offsetWidth;
 
 				const skipButtons = playerElement.querySelectorAll(
 					'.vjs-skip-backward-5, .vjs-skip-backward-10, .vjs-skip-backward-30, .vjs-skip-forward-5, .vjs-skip-forward-10, .vjs-skip-forward-30',
 				);
 
-				skipButtons.forEach( ( button ) => {
-					button.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
-				} );
+				const playButton = playerElement.querySelector( '.vjs-play-control' );
+
+				if ( videoSetupOptions?.playerSkin === 'Pills' ) {
+					// Create or find the wrapper
+					let controlWrapper = playerElement.querySelector(
+						'.godam-central-controls',
+					);
+					if ( ! controlWrapper ) {
+						controlWrapper = document.createElement( 'div' );
+						controlWrapper.className = 'godam-central-controls';
+
+						// Insert the wrapper before the play button
+						playButton.parentNode.insertBefore( controlWrapper, playButton );
+
+						// Move play and skip buttons into the wrapper
+						const skipBack = playerElement.querySelectorAll(
+							'.vjs-skip-backward-5, .vjs-skip-backward-10, .vjs-skip-backward-30',
+						);
+						const skipForward = playerElement.querySelectorAll(
+							'.vjs-skip-forward-5, .vjs-skip-forward-10, .vjs-skip-forward-30',
+						);
+
+						skipBack.forEach( ( btn ) => controlWrapper.appendChild( btn ) );
+						controlWrapper.appendChild( playButton );
+						skipForward.forEach( ( btn ) => controlWrapper.appendChild( btn ) );
+					}
+
+					// Position the wrapper
+					controlWrapper.style.position = 'absolute';
+					controlWrapper.style.left = `${ newWidth / 4 }px`; // center-ish
+					controlWrapper.style.bottom = `${ ( newHeight / 2 ) - 15 }px`;
+					controlWrapper.style.width = `${ ( newWidth / 2 ) - 15 }px`;
+					playButton.style.setProperty( 'left', `${ ( newWidth / 4 ) - 28 }px` );
+				} else {
+					if ( videoSetupOptions?.playerSkin === 'Minimal' ) {
+						playButton.style.setProperty( 'bottom', `${ ( newHeight / 2 ) + 4 }px` );
+						skipButtons.forEach( ( button ) => {
+							button.style.setProperty( 'bottom', `${ ( newHeight / 2 ) - 5 }px` );
+						} );
+					}
+
+					if ( videoSetupOptions?.playerSkin !== 'Default' ) {
+						playButton.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+						playButton.style.setProperty( 'left', `${ ( newWidth / 2 ) - 20 }px` );
+					}
+
+					if ( videoSetupOptions?.playerSkin !== 'Minimal' ) {
+						// Default skip button positioning for other skins
+						skipButtons.forEach( ( button ) => {
+							button.style.setProperty( 'bottom', `${ newHeight / 2 }px` );
+						} );
+					}
+				}
 			} catch ( error ) {
-				// Silently fail - do nothing.
+				// Silently fail
 			}
 		}
 
@@ -221,6 +320,25 @@ function GODAMPlayer( videoRef = null ) {
 			// if screen size if greater than 768px then skip.
 			if ( window.innerWidth > 768 ) {
 				return;
+			}
+
+			// Skip if video is fullscreen
+			if ( ! player || typeof player.isFullscreen !== 'function' ) {
+				return;
+			}
+
+			// Get control bar DOM element
+			const controlBarEl = player.controlBar?.el_;
+
+			// During fullscreen, remove forced positioning (if applicable)
+			if ( videoSetupOptions?.playerSkin === 'Pills' && controlBarEl ) {
+				if ( player.isFullscreen() ) {
+					controlBarEl.style.setProperty( 'position', 'absolute' );
+					controlBarEl.style.setProperty( 'margin', '0 auto' );
+				} else {
+					controlBarEl.style.removeProperty( 'position' );
+					controlBarEl.style.removeProperty( 'margin' );
+				}
 			}
 
 			// Apply debounce to avoid multiple calls.
@@ -235,7 +353,9 @@ function GODAMPlayer( videoRef = null ) {
 		handleVideoResize();
 
 		// On screen resize, update the video dimensions.
+		player.on( 'resize', handleVideoResize );
 		window.addEventListener( 'resize', handleVideoResize );
+		player.on( 'fullscreenchange', handleVideoResize );
 
 		let isPreview = null;
 
@@ -348,12 +468,25 @@ function GODAMPlayer( videoRef = null ) {
 				return `godam-share-button ${ super.buildCSSClass() }`;
 			}
 
+			shareButtonImg() {
+				switch ( videoSetupOptions?.playerSkin ) {
+					case 'Minimal':
+						return ShareVariationOne;
+					case 'Pills':
+						return ShareVariationOne;
+					case 'Bubble':
+						return ShareVariationOne;
+					default:
+						return Share;
+				}
+			}
+
 			// Set the button content
 			createEl() {
 				const el = super.createEl();
 				const img = document.createElement( 'img' );
 
-				img.src = Share;
+				img.src = this.shareButtonImg();
 
 				img.id = 'share-icon';
 				img.alt = 'Share';
@@ -429,11 +562,11 @@ function GODAMPlayer( videoRef = null ) {
 						<a class="whatsapp social-icon" target="blank"><img src=${ Whatsapp } alt='Whatsapp icon' height={24} width={24}</a>
 						<a class="telegram social-icon" target="blank"><img src=${ Telegram } alt='Telegram icon' height={24} width={24}</a>
 					</div>
-					
+
 					<div class='share-input-container'>
 						<label>Page Link</label>
 						<div class="share-modal-input-group">
-							<input id="page-link" type="text" value="${ window.godamData.api_base }/web/video/${ this.player().jobId }" readonly />
+							<input id="page-link" type="text" value="${ window.godamData?.apiBase }/web/video/${ this.player().jobId }" readonly />
 							<button id="copy-page-link" class="copy-button">
 								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
 							</button>
@@ -443,7 +576,7 @@ function GODAMPlayer( videoRef = null ) {
 					<div class='share-input-container'>
 						<label>Embed</label>
 						<div class="share-modal-input-group">
-							<input id="embed-code" type="text" value='<iframe src="${ window.godamData.api_base }/web/embed/${ this.player().jobId }"></iframe>' readonly />
+							<input id="embed-code" type="text" value='<iframe src="${ window.godamData?.apiBase }/web/embed/${ this.player().jobId }"></iframe>' readonly />
 							<button id="copy-embed-code" class="copy-button">
 								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
 							</button>
@@ -458,6 +591,27 @@ function GODAMPlayer( videoRef = null ) {
 
 				shareModal.innerHTML = DOMPurify.sanitize( html );
 
+				// Function to close the modal
+				const closeModal = () => {
+					shareModal.remove();
+				};
+
+				// Close modal when clicking outside
+				shareModal.addEventListener( 'click', ( modalEvent ) => {
+					if ( modalEvent.target === shareModal ) {
+						closeModal();
+					}
+				} );
+
+				// Close modal on escape key
+				const handleEscapeKey = ( modalEvent ) => {
+					if ( modalEvent.key === 'Escape' ) {
+						closeModal();
+						document.removeEventListener( 'keydown', handleEscapeKey );
+					}
+				};
+				document.addEventListener( 'keydown', handleEscapeKey );
+
 				shareModal
 					.querySelector( '#copy-page-link' )
 					.addEventListener( 'click', () => this.copyToClipboard( 'page-link' ) );
@@ -468,13 +622,10 @@ function GODAMPlayer( videoRef = null ) {
 
 				shareModal
 					.querySelector( '#cancel-button' )
-					.addEventListener( 'click', function() {
-						const cancelButton = shareModal.querySelector( '#cancel-button' );
-						cancelButton.closest( '.share-modal-container' ).remove();
-					} );
+					.addEventListener( 'click', closeModal );
 
 				const link = encodeURI(
-					`${ window.godamData.api_base }/web/video/${ this.player().jobId }`,
+					`${ window.godamData?.apiBase }/web/video/${ this.player().jobId }`,
 				);
 				const msg = encodeURIComponent( 'Check out this video!' );
 
@@ -515,7 +666,12 @@ function GODAMPlayer( videoRef = null ) {
 					'click',
 					shareButton.handleClick.bind( shareButton ),
 				);
-				videoContainer.appendChild( buttonEl );
+
+				if ( videoSetupOptions?.playerSkin === 'Bubble' && ! isMobileView ) {
+					player.controlBar.addChild( 'GodamShareButton', {} );
+				} else if ( videoContainer ) {
+					videoContainer.appendChild( buttonEl );
+				}
 			}
 
 			// FIXED: Initialize chapters after player is ready
@@ -525,16 +681,19 @@ function GODAMPlayer( videoRef = null ) {
 			}
 		} );
 
-		// Handle overlay removal on first play
-		let hasPlayedOnce = false;
+		// Handle overlay removal based on time range
 		const videoContainerWrapper = video.closest( '.godam-video-wrapper' );
 		const overlay = videoContainerWrapper ? videoContainerWrapper.querySelector( '[data-overlay-content]' ) : null;
 
 		if ( overlay ) {
+			// Get overlay time range from video configuration
+			const overlayTimeRange = videoSetupOptions?.overlayTimeRange || 0;
+			let overlayHidden = false;
+
 			// Function to hide overlay
 			const hideOverlay = function() {
-				if ( ! hasPlayedOnce ) {
-					hasPlayedOnce = true;
+				if ( ! overlayHidden ) {
+					overlayHidden = true;
 					overlay.style.opacity = '0';
 
 					// Remove the overlay after the transition
@@ -544,8 +703,27 @@ function GODAMPlayer( videoRef = null ) {
 				}
 			};
 
-			// Listen for the first play event
-			player.one( 'play', hideOverlay );
+			// Handle overlay visibility based on time range
+			if ( overlayTimeRange > 0 ) {
+				// Listen for timeupdate to check if we should hide the overlay
+				player.on( 'timeupdate', function() {
+					const currentTime = player.currentTime();
+
+					if ( currentTime >= overlayTimeRange && ! overlayHidden ) {
+						hideOverlay();
+					}
+				} );
+			} else {
+				// If time range is 0, hide overlay on first play (original behavior)
+				let hasPlayedOnce = false;
+				const hideOnFirstPlay = function() {
+					if ( ! hasPlayedOnce ) {
+						hasPlayedOnce = true;
+						hideOverlay();
+					}
+				};
+				player.one( 'play', hideOnFirstPlay );
+			}
 		}
 
 		player.ready( function() {
@@ -578,12 +756,39 @@ function GODAMPlayer( videoRef = null ) {
 				controlBar.removeChild( 'volumePanel' );
 			}
 
-			videojs.registerComponent( 'SettingsButton', SettingsButton );
-			controlBar.addChild( 'SettingsButton', {} );
+			if ( ! controlBar.getChild( 'SettingsButton' ) ) {
+				if ( ! videojs.getComponent( 'SettingsButton' ) ) {
+					videojs.registerComponent( 'SettingsButton', SettingsButton );
+				}
+				controlBar.addChild( 'SettingsButton', {} );
+			}
 
 			document.querySelectorAll( '.vjs-settings-button' ).forEach( ( button ) => {
 				button.querySelector( '.vjs-icon-placeholder' ).classList.add( 'vjs-icon-cog' );
 			} );
+
+			if ( controlBarSettings?.customPlayBtnImg ) {
+				const playButtonElement = player.getChild( 'bigPlayButton' );
+
+				const imgElement = document.createElement( 'img' );
+				imgElement.src = controlBarSettings?.customPlayBtnImg;
+				imgElement.alt = 'Custom Play Button';
+
+				playButtonElement.el_.classList.forEach( ( cls ) => {
+					imgElement.classList.add( cls );
+				} );
+
+				imgElement.classList.add( 'custom-play-image' );
+
+				imgElement.style.cursor = 'pointer';
+				imgElement.addEventListener( 'click', function() {
+					const videoPlayer = imgElement.closest( '.easydam-player' );
+					const videoElement = videoPlayer?.querySelector( 'video' );
+					videoElement.play();
+				} );
+				// Replace the original button with the new image
+				playButtonElement.el_.parentNode.replaceChild( imgElement, playButtonElement.el_ );
+			}
 
 			if ( controlBarSettings?.brandingIcon || ! validAPIKey ) {
 				const CustomPlayButton = videojs.getComponent( 'Button' );
@@ -620,9 +825,12 @@ function GODAMPlayer( videoRef = null ) {
 					}
 				}
 
-				// Register the component before using it
-				videojs.registerComponent( 'CustomButton', CustomButton );
-				controlBar.addChild( 'CustomButton', {} );
+				if ( ! controlBar.getChild( 'CustomButton' ) ) {
+					if ( ! videojs.getComponent( 'CustomButton' ) ) {
+						videojs.registerComponent( 'CustomButton', CustomButton );
+					}
+					controlBar.addChild( 'CustomButton', {} );
+				}
 			}
 		} );
 
@@ -755,7 +963,15 @@ function GODAMPlayer( videoRef = null ) {
 						if (
 							layerObj.layerElement.querySelector( '.gform_confirmation_message' ) ||
 							layerObj.layerElement.querySelector( '.wpforms-confirmation-container-full' ) ||
-							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' )
+							layerObj.layerElement.querySelector( 'form.wpcf7-form.sent' ) ||
+							layerObj.layerElement.querySelector( '.srfm-success-box.srfm-active' ) ||
+							layerObj.layerElement.querySelector( '.ff-message-success' ) ||
+							layerObj.layerElement.querySelector( '.contact-form-success' ) ||
+							( ! layerObj.layerElement.querySelector( '.wp-polls-form' ) &&
+								layerObj.layerElement.querySelector( '.wp-polls-answer' ) ) ||
+							( layerObj.layerElement.querySelector( '.forminator-success' ) &&
+								layerObj.layerElement.querySelector( '.forminator-show' ) ) ||
+							layerObj.layerElement.querySelector( '.everest-forms-notice--success' )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -796,11 +1012,21 @@ function GODAMPlayer( videoRef = null ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.wpforms && layer.form_type === 'wpforms' ) {
 						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.everestForms && layer.form_type === 'everestforms' ) {
+						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.cf7 && layer.form_type === 'cf7' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.jetpack && layer.form_type === 'jetpack' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.sureforms && layer.form_type === 'sureforms' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.forminator && layer.form_type === 'forminator' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.fluentForms && layer.form_type === 'fluentforms' ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {
-					if ( window.godamPluginDependencies?.wp_polls ) {
+					if ( window.godamPluginDependencies?.wpPolls ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'woo' ) {
@@ -1439,6 +1665,11 @@ function GODAMPlayer( videoRef = null ) {
 			player.ima( {
 				id: 'content_video',
 				adTagUrl,
+			} );
+		} else if ( globalAdsSettings?.enable_global_video_ads && globalAdsSettings?.adTagUrl ) {
+			player.ima( {
+				id: 'content_video',
+				adTagUrl: globalAdsSettings.adTagUrl,
 			} );
 		}
 	} );

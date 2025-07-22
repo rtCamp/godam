@@ -11,6 +11,7 @@ import AttachmentDetailsTwoColumn from './views/attachment-detail-two-column.js'
 import mediaFrameSelect from './views/media-frame-select.js';
 
 import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-view.js';
+import MediaListViewTableDragHandler from './views/attachment-list.js';
 
 import { isFolderOrgDisabled, isUploadPage, addManageMediaButton } from './utility.js';
 
@@ -49,6 +50,8 @@ class MediaLibrary {
 		if ( wp?.media?.view?.MediaFrame?.Select && mediaFrameSelect ) {
 			wp.media.view.MediaFrame.Select = mediaFrameSelect;
 		}
+
+		new MediaListViewTableDragHandler();
 	}
 
 	setupMediaLibraryRoot() {

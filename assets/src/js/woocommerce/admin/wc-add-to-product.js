@@ -1,21 +1,29 @@
 /* global jQuery, RTGodamVideoGallery */
+
 /**
  * WordPress dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
-import { render } from '@wordpress/element';
+
+/**
+ * External dependencies
+ */
+import { createRoot } from 'react-dom/client';
 import {
 	Modal,
 	TextControl,
 	Button,
 	Spinner,
+	Tooltip,
+	Icon,
 } from '@wordpress/components';
+import { info } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import Ptag from '../images/product-tag.svg';
+import Ptag from '../../../images/product-tag.svg';
 
 jQuery( document ).ready( function( $ ) {
 	const videoList = $( '.godam-product-video-gallery-list' );
@@ -45,7 +53,7 @@ jQuery( document ).ready( function( $ ) {
 					count > 1 ? 's' : '',
 				);
 
-				$button.html( `${ tagIconSVG }${ productText }` );
+				$button.html( `${ tagIconSVG }&nbsp;${ productText }` );
 
 				$button.attr(
 					'aria-label',
@@ -117,6 +125,8 @@ jQuery( document ).ready( function( $ ) {
 					if ( product.id === CURRENT_ID ) {
 						return;
 					}
+
+					// Save link between product and video.
 					apiFetch( {
 						path: `${ RTGodamVideoGallery.namespace }${ RTGodamVideoGallery.linkVideoEP }`,
 						method: 'POST',
@@ -129,6 +139,24 @@ jQuery( document ).ready( function( $ ) {
 						// eslint-disable-next-line no-alert
 						window.alert( __( 'Failed to link video to product', 'godam' ) + ' ' + product.id );
 					} );
+
+					// Get timestamp input value for the product
+					const input = document.getElementById( `timestamp_${ product.id }` );
+					const timestampValue = input ? input.value.trim() : '';
+
+					// Save timestamp as product meta.
+					apiFetch( {
+						path: `${ RTGodamVideoGallery.namespace }${ RTGodamVideoGallery.timestampEP }`,
+						method: 'POST',
+						data: {
+							product_id: product.id,
+							meta_key: `godam_product_timestamp_meta_${ attachmentId }`,
+							meta_value: timestampValue,
+						},
+					} ).catch( () => {
+						// eslint-disable-next-line no-alert
+						window.alert( __( `Failed to save timestamp for product`, 'godam' ) );
+					} );
 				} );
 
 				selectedProductsMap.set( attachmentId, selected );
@@ -140,9 +168,27 @@ jQuery( document ).ready( function( $ ) {
 			};
 
 			const close = () => {
-				render( null, container );
+				root.unmount();
 				container.remove();
 			};
+
+			/* ----- Fetch timestamps when selected products are loaded ----- */
+			wp.element.useEffect( () => {
+				selected.forEach( ( p ) => {
+					const input = document.getElementById( `timestamp_${ p.id }` );
+					const attachment = attachmentId;
+
+					if ( input ) {
+						apiFetch( {
+							path: `${ RTGodamVideoGallery.namespace }${ RTGodamVideoGallery.getTimestampEP }?product_id=${ p.id }&attachment_id=${ attachment }`,
+						} ).then( ( res ) => {
+							if ( res?.product_meta_value ) {
+								input.value = res.product_meta_value;
+							}
+						} );
+					}
+				} );
+			}, [ selected ] );
 
 			return (
 				<Modal title={ __( 'Attach video to other products', 'godam' ) } onRequestClose={ close } className="rt-godam-modal godam-video-picker-modal wc-godam-product-admin">
@@ -236,7 +282,6 @@ jQuery( document ).ready( function( $ ) {
 												alignItems: 'center',
 												width: '110px',
 												minWidth: '100px',
-												height: '110px',
 												border: '1px solid #ddd',
 												borderRadius: '6px',
 												padding: '8px',
@@ -308,13 +353,78 @@ jQuery( document ).ready( function( $ ) {
 											>
 												{ p.name }
 											</span>
+											<div className="godam-product-timestamp-input" style={ {
+												textAlign: 'center',
+												marginTop: '8px',
+											} }>
+												<input
+													type="text"
+													name={ `timestamp_${ p.id }` }
+													id={ `timestamp_${ p.id }` }
+													placeholder="hh:mm:ss"
+													style={ {
+														fontSize: '13px',
+														width: '86%',
+														border: '1px solid #ddd',
+														borderRadius: '10px',
+														boxSizing: 'border-box',
+														outline: 'none',
+														backgroundColor: '#fff',
+														textAlign: 'center',
+													} }
+												/>
+											</div>
 										</div>
 									) ) }
 							</div>
 						</div>
 					) }
 
-					<div style={ { marginTop: '1rem' } }>
+					<div style={ {
+						display: 'flex',
+						justifyContent: 'space-between',
+						alignItems: 'center',
+						marginTop: '1rem',
+						marginBottom: '1rem',
+					} }>
+						<div style={ { display: 'flex', alignItems: 'center' } }>
+							<Button
+								variant="secondary"
+								onClick={ () => {
+									window.open( url, '_blank' );
+								} }
+								className="components-button godam-button is-secondary godam-margin-top-no-bottom wc-godam-product-admin"
+								aria-label={ __( 'Watch video in new tab', 'godam' ) }
+							>
+								{ __( 'Watch Video', 'godam' ) }
+							</Button>
+
+							<Tooltip
+								text={ __( 'Opens video in a new tab. Tag products using timestamps when they appear.', 'godam' ) }
+								placement="top-end"
+							>
+								<span
+									style={ {
+										display: 'inline-flex',
+										alignItems: 'center',
+										marginLeft: '2px',
+										position: 'relative',
+										top: '28px',
+									} }
+								>
+									<Icon
+										icon={ info }
+										style={ {
+											cursor: 'pointer',
+											width: '21px',
+											height: '21px',
+											fill: '#ab3a6c',
+										} }
+									/>
+								</span>
+							</Tooltip>
+						</div>
+
 						<Button
 							variant="primary"
 							disabled={ ! selected.length }
@@ -329,6 +439,7 @@ jQuery( document ).ready( function( $ ) {
 			);
 		};
 
-		render( <Picker />, container );
+		const root = createRoot( container );
+		root.render( <Picker /> );
 	};
 } );

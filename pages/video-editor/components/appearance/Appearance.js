@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 /**
  * Internal dependencies
@@ -13,9 +13,11 @@ import '../../video-control.css';
 import {
 	Button,
 	CustomSelectControl,
+	Notice,
 	TextareaControl,
 	ToggleControl,
 } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateVideoConfig, setCurrentLayer } from '../../redux/slice/videoSlice';
@@ -25,10 +27,32 @@ import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 const Appearance = () => {
 	const dispatch = useDispatch();
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
-	const [ selectedBrandImage, setSelectedBrandImage ] = useState( videoConfig.controlBar.customBrandImg.length > 0 );
-	const [ selectedCustomBgImg, setSelectedCustomBgImg ] = useState(
-		videoConfig.controlBar.customPlayBtnImg.length > 0,
-	);
+
+	/**
+	 * State to manage the notice message and visibility.
+	 */
+	const [ customBrandNotice, setCustomBrandNotice ] = useState( { message: '', status: 'success', isVisible: false } );
+	const [ customPlayNotice, setCustomPlayNotice ] = useState( { message: '', status: 'success', isVisible: false } );
+
+	/**
+	 * To show a notice message for custom brand upload field.
+	 *
+	 * @param {string} message Text to display in the notice.
+	 * @param {string} status  Status of the notice, can be 'success', 'error', etc.
+	 */
+	const showCustomBrandNotice = ( message, status = 'success' ) => {
+		setCustomBrandNotice( { message, status, isVisible: true } );
+	};
+
+	/**
+	 * To show a notice message for custom play button upload field.
+	 *
+	 * @param {string} message Text to display in the notice.
+	 * @param {string} status  Status of the notice, can be 'success', 'error', etc.
+	 */
+	const showCustomPlayNotice = ( message, status = 'success' ) => {
+		setCustomPlayNotice( { message, status, isVisible: true } );
+	};
 
 	useEffect( () => {
 		//class gets re added upon component load, so we need to remove it.
@@ -83,6 +107,8 @@ const Appearance = () => {
 		const brandingLogo = document.querySelector( '#branding-icon' );
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 
+		setCustomBrandNotice( { ...setCustomBrandNotice, isVisible: false } );
+
 		dispatch(
 			updateVideoConfig( {
 				controlBar: {
@@ -109,6 +135,7 @@ const Appearance = () => {
 				controlBar: {
 					...videoConfig.controlBar,
 					playButtonPosition: e.selectedItem.key,
+					playButtonPositionName: e.selectedItem.name,
 				},
 			} ),
 		);
@@ -128,12 +155,13 @@ const Appearance = () => {
 		}
 	}
 
+	let originalPlayButton = null;
+
 	const openCustomBtnImg = () => {
-		setSelectedCustomBgImg( true );
 		const fileFrame = wp.media( {
-			title: __( 'Select Custom Background Image', 'godam' ),
+			title: __( 'Select Custom Play Button Image', 'godam' ),
 			button: {
-				text: __( 'Use this Background Image', 'godam' ),
+				text: __( 'Use this Image', 'godam' ),
 			},
 			library: {
 				type: 'image', // Restrict to images only
@@ -143,7 +171,14 @@ const Appearance = () => {
 
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
-			const playButtonElement = document.querySelector( '.vjs-big-play-button' );
+
+			/**
+			 * This handles the case for the uploader tab of WordPress media library.
+			 */
+			if ( attachment?.type !== 'image' ) {
+				showCustomPlayNotice( __( 'Only Image file is allowed', 'godam' ), 'error' );
+				return;
+			}
 
 			dispatch(
 				updateVideoConfig( {
@@ -154,16 +189,36 @@ const Appearance = () => {
 				} ),
 			);
 
-			// Apply custom background via class
-			playButtonElement.style.backgroundImage = `url(${ attachment.url })`;
-			playButtonElement.classList.add( 'custom-bg' ); // Add the custom CSS class
+			const playButtonElement = document.querySelector( '.vjs-big-play-button' );
+
+			// Replace button with image tag
+			if ( playButtonElement ) {
+				if ( ! originalPlayButton ) {
+					originalPlayButton = playButtonElement.cloneNode( true );
+				}
+
+				// Create new image element
+				const imgElement = document.createElement( 'img' );
+				imgElement.src = attachment.url;
+				imgElement.alt = __( 'Custom Play Button', 'godam' );
+
+				playButtonElement.classList.forEach( ( cls ) => {
+					imgElement.classList.add( cls );
+				} );
+
+				imgElement.classList.add( 'custom-play-image' );
+
+				imgElement.style.cursor = 'pointer';
+
+				// Replace the original button with the new image
+				playButtonElement.parentNode.replaceChild( imgElement, playButtonElement );
+			}
 		} );
 
 		fileFrame.open();
 	};
 
 	const openBrandMediaPicker = () => {
-		setSelectedBrandImage( true );
 		const fileFrame = wp.media( {
 			title: __( 'Select Brand Image', 'godam' ),
 			button: {
@@ -177,7 +232,14 @@ const Appearance = () => {
 
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
-			const brandImg = document.querySelector( '#branding-icon' );
+
+			/**
+			 * This handles the case for the uploader tab of WordPress media library.
+			 */
+			if ( attachment?.type !== 'image' ) {
+				showCustomBrandNotice( __( 'Only Image file is allowed', 'godam' ), 'error' );
+				return;
+			}
 
 			dispatch(
 				updateVideoConfig( {
@@ -187,6 +249,8 @@ const Appearance = () => {
 					},
 				} ),
 			);
+
+			const brandImg = document.querySelector( '#branding-icon' );
 
 			if ( brandImg ) {
 				brandImg.src = `${ attachment.url }`;
@@ -205,7 +269,6 @@ const Appearance = () => {
 				},
 			} ),
 		);
-		setSelectedBrandImage( false );
 		const brandImg = document.querySelector( '#branding-icon' );
 		if ( brandImg ) {
 			brandImg.src = GoDAM;
@@ -221,9 +284,38 @@ const Appearance = () => {
 				},
 			} ),
 		);
-		setSelectedCustomBgImg( false );
-		const playButtonElement = document.querySelector( '.vjs-big-play-button' );
-		playButtonElement.style.backgroundImage = '';
+
+		// Find the custom image element and restore original button
+		const customImageElement = document.querySelector( '.custom-play-image' );
+
+		if ( customImageElement && originalPlayButton ) {
+		// Clone the original button to avoid issues with reusing DOM nodes
+			const restoredButton = originalPlayButton.cloneNode( true );
+
+			// Replace the image with the original button
+			customImageElement.parentNode.replaceChild( restoredButton, customImageElement );
+		} else {
+		// Fallback: create a new default play button if original is not available
+			const playButtonContainer = document.querySelector( '.video-js' );
+			const existingCustomImage = document.querySelector( '.custom-play-image' );
+
+			if ( playButtonContainer && existingCustomImage ) {
+			// Create default Video.js play button
+				const defaultButton = document.createElement( 'button' );
+				defaultButton.className = 'vjs-big-play-button';
+				defaultButton.type = 'button';
+				defaultButton.setAttribute( 'aria-label', 'Play Video' );
+
+				// Add the play icon span
+				const iconSpan = document.createElement( 'span' );
+				iconSpan.setAttribute( 'aria-hidden', 'true' );
+				iconSpan.className = 'vjs-icon-placeholder';
+				defaultButton.appendChild( iconSpan );
+
+				// Replace the image with the default button
+				existingCustomImage.parentNode.replaceChild( defaultButton, existingCustomImage );
+			}
+		}
 	};
 
 	function handleSkipTimeSettings( e ) {
@@ -273,7 +365,7 @@ const Appearance = () => {
 
 	return (
 		<div id="easydam-player-settings" className="pb-20">
-			<div className="accordion-item--content mt-2 flex flex-col gap-6">
+			<div className="accordion-item--content mt-4 flex flex-col gap-6">
 				<div className="display-settings godam-form-group">
 					<label
 						htmlFor="custom-brand-logo"
@@ -321,9 +413,9 @@ const Appearance = () => {
 							variant="primary"
 							className="mr-2 godam-button"
 						>
-							{ selectedBrandImage ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
+							{ videoConfig.controlBar.customBrandImg?.length > 0 ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 						</Button>
-						{ selectedBrandImage && (
+						{ videoConfig.controlBar.customBrandImg?.length > 0 && (
 							<Button
 								onClick={ removeBrandImage }
 								variant="secondary"
@@ -333,7 +425,7 @@ const Appearance = () => {
 								{ __( 'Remove', 'godam' ) }
 							</Button>
 						) }
-						{ selectedBrandImage && (
+						{ videoConfig.controlBar.customBrandImg?.length > 0 && (
 							<div className="mt-2">
 								<img
 									src={ videoConfig.controlBar.customBrandImg }
@@ -341,6 +433,15 @@ const Appearance = () => {
 									className="max-w-[200px]"
 								/>
 							</div>
+						) }
+						{ customBrandNotice.isVisible && (
+							<Notice
+								className="my-4"
+								status={ customBrandNotice.status }
+								onRemove={ () => setCustomBrandNotice( { ...customBrandNotice, isVisible: false } ) }
+							>
+								{ customBrandNotice.message }
+							</Notice>
 						) }
 					</div>
 				) }
@@ -374,7 +475,7 @@ const Appearance = () => {
 						] }
 						value={ {
 							key: videoConfig.controlBar.playButtonPosition,
-							name: videoConfig.controlBar.playButtonPosition,
+							name: videoConfig.controlBar.playButtonPositionName,
 						} }
 					/>
 				</div>
@@ -390,9 +491,9 @@ const Appearance = () => {
 						variant="primary"
 						className="mr-2 godam-button"
 					>
-						{ selectedCustomBgImg ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
+						{ videoConfig.controlBar.customPlayBtnImg?.length > 0 ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 					</Button>
-					{ selectedCustomBgImg && (
+					{ videoConfig.controlBar.customPlayBtnImg?.length > 0 && (
 						<Button
 							onClick={ removeCustomPlayBtnImage }
 							variant="secondary"
@@ -402,7 +503,7 @@ const Appearance = () => {
 							{ __( 'Remove', 'godam' ) }
 						</Button>
 					) }
-					{ selectedCustomBgImg && (
+					{ videoConfig.controlBar.customPlayBtnImg?.length > 0 && (
 						<div className="mt-2">
 							<img
 								src={ videoConfig.controlBar.customPlayBtnImg }
@@ -410,6 +511,15 @@ const Appearance = () => {
 								className="max-w-[200px] mt-2"
 							/>
 						</div>
+					) }
+					{ customPlayNotice.isVisible && (
+						<Notice
+							className="my-4"
+							status={ customPlayNotice.status }
+							onRemove={ () => setCustomPlayNotice( { ...customPlayNotice, isVisible: false } ) }
+						>
+							{ customPlayNotice.message }
+						</Notice>
 					) }
 				</div>
 				<div className="form-group">

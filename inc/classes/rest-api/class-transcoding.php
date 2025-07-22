@@ -34,7 +34,7 @@ class Transcoding extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'update_transcoding_status' ),
-					'permission_callback' => '__return_true',
+					'permission_callback' => array( $this, 'verify_status_permission' ),
 					'args'                => array(
 						'job_id'     => array(
 							'required'          => true,
@@ -64,6 +64,11 @@ class Transcoding extends Base {
 							'required'          => false,
 							'type'              => 'string',
 							'description'       => __( 'The error code of the transcoding job.', 'godam' ),
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'api_key'    => array(
+							'required'          => true,
+							'type'              => 'string',
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 					),
@@ -199,11 +204,11 @@ class Transcoding extends Base {
 
 		// Define status messages.
 		$status_messages = array(
-			'Queued'      => __( 'Video is queued for transcoding.', 'godam' ),
-			'Downloading' => __( 'Video is downloading for transcoding.', 'godam' ),
-			'Downloaded'  => __( 'Video is downloaded for transcoding.', 'godam' ),
-			'Transcoding' => __( 'Video is transcoding.', 'godam' ),
-			'Transcoded'  => __( 'Video is transcoded.', 'godam' ),
+			'Queued'      => __( 'Media is queued for transcoding.', 'godam' ),
+			'Downloading' => __( 'Media is downloading for transcoding.', 'godam' ),
+			'Downloaded'  => __( 'Media is downloaded for transcoding.', 'godam' ),
+			'Transcoding' => __( 'Media is transcoding.', 'godam' ),
+			'Transcoded'  => __( 'Media is transcoded.', 'godam' ),
 		);
 
 		// Set default message for unknown status.
@@ -246,5 +251,28 @@ class Transcoding extends Base {
 		} else {
 			return false;
 		}
+	}
+
+	/**
+	 * Permission callback for the transcoding status endpoint.
+	 *
+	 * @param \WP_REST_Request $request REST request object.
+	 *
+	 * @return bool|WP_Error
+	 */
+	public function verify_status_permission( $request ) {
+		$provided_api_key = $request->get_param( 'api_key' );
+		$stored_api_key   = get_option( 'rtgodam-api-key' );
+
+		if ( empty( $provided_api_key ) ) {
+			return new \WP_Error( 'forbidden', __( 'API key is required.', 'godam' ), array( 'status' => 403 ) );
+		}
+		if ( empty( $stored_api_key ) ) {
+			return new \WP_Error( 'forbidden', __( 'API key not configured.', 'godam' ), array( 'status' => 403 ) );
+		}
+		if ( $provided_api_key !== $stored_api_key ) {
+			return new \WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
+		}
+		return true;
 	}
 }

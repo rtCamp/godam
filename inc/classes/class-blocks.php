@@ -33,6 +33,22 @@ class Blocks {
 	 */
 	public function setup_hooks() {
 		add_action( 'init', array( $this, 'register_blocks' ) );
+		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_block_assets' ) );
+	}
+
+	/**
+	 * Enqueue Block Assets.
+	 * 
+	 * @return void
+	 */
+	public function enqueue_block_assets() {
+
+		// Check for WooCommerce activation status.
+		wp_add_inline_script(
+			'godam-product-gallery-editor-script',
+			'window.RTGoDAMProductGalleryBlockSettings = { isWooActive: ' . ( is_plugin_active( 'woocommerce/woocommerce.php' ) ? 'true' : 'false' ) . ' };',
+			'before'
+		);
 	}
 
 	/**
@@ -53,6 +69,10 @@ class Blocks {
 
 		register_block_type(
 			RTGODAM_PATH . '/assets/build/blocks/godam-gallery/'
+		);
+
+		register_block_type(
+			RTGODAM_PATH . '/assets/build/blocks/godam-product-gallery/'
 		);
 	}
 }
