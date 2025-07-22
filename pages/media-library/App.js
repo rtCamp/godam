@@ -27,6 +27,7 @@ import { triggerFilterChange } from './data/media-grid.js';
 import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
 import LockedTab from './components/folder-tree/LockedTab.jsx';
 import { useGetAllMediaCountQuery, useGetCategoryMediaCountQuery } from './redux/api/folders.js';
+import SearchBar from './components/search-bar/SearchBar.jsx';
 
 const App = () => {
 	const dispatch = useDispatch();
@@ -102,6 +103,7 @@ const App = () => {
 	return (
 		<>
 			<div className="control-buttons">
+				<SearchBar />
 				<Button
 					icon="plus-alt2"
 					__next40pxDefaultSize
