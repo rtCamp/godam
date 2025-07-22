@@ -283,7 +283,7 @@
             transition: all 0.3s ease;
             margin-right: 10px;
 
-            &:hover {
+            &:not(:disabled):hover {
                 background-color: var(--wp--preset--color--black, #000);
                 color: var(--wp--preset--color--white, #fff);
             }

@@ -9,7 +9,6 @@ const { __ } = wp.i18n;
 const { nonceData, DOMPurify } = window;
 const storeName = 'godam-video-engagement';
 
-// Demo comments for testing.
 const DEFAULT_STATE = {
 	views: {},
 	likes: {},
@@ -25,10 +24,18 @@ const ACTIONS = {
 };
 
 const engagementStore = {
+	/**
+	 * Initialize the engagement store and subscribe to its state.
+	 */
 	init() {
 		this.initStore();
 	},
 
+	/**
+	 * Initializes the Redux store for video engagement, registers the store,
+	 * sets up dispatch and select functions, subscribes to state changes, and
+	 * exposes dispatch and select functions for testing purposes.
+	 */
 	initStore() {
 		register( this.store() );
 		this.unsubscribe = subscribe(
@@ -45,6 +52,14 @@ const engagementStore = {
 		window.gdm_select = this.select;
 	},
 
+	/**
+	 * Handles Redux actions for video engagement data.
+	 *
+	 * @param {Object} state  - The current state of engagement data.
+	 * @param {Object} action - The Redux action to handle.
+	 *
+	 * @return {Object} The new state of engagement data.
+	 */
 	reducer( state = DEFAULT_STATE, action ) {
 		switch ( action.type ) {
 			case ACTIONS.LOAD_VIDEO_ENGAGEMENT_DATA:
@@ -86,6 +101,17 @@ const engagementStore = {
 	},
 
 	actions: {
+		/**
+		 * Dispatches an action to update the like status for a video.
+		 *
+		 * @async
+		 * @param {string}      videoAttachmentId - The ID of the video attachment.
+		 * @param {string}      siteUrl           - The URL of the site where the video is hosted.
+		 * @param {Object}      storeObj          - The store object that handles video engagement data.
+		 * @param {HTMLElement} likeLink          - The HTML element for the like button/link.
+		 * @return {Object} An action object containing the type and like data.
+		 */
+
 		userHitiLke: async ( videoAttachmentId, siteUrl, storeObj, likeLink ) => {
 			const likeData = await storeObj.sendLikeData( videoAttachmentId, siteUrl );
 			likeLink.disabled = false;
@@ -95,6 +121,13 @@ const engagementStore = {
 				likeData,
 			};
 		},
+		/**
+		 * Dispatches an action to update the comment count for a video.
+		 *
+		 * @param {string} videoAttachmentId - The ID of the video attachment.
+		 * @param {Array}  commentData       - The comment data returned by the API. This should be an array of comment objects.
+		 * @return {Object} An action object containing the type, comment data, and video attachment ID.
+		 */
 		userCommented: ( videoAttachmentId, commentData ) => {
 			return {
 				type: ACTIONS.USER_COMMENTED,
@@ -103,6 +136,13 @@ const engagementStore = {
 			};
 		},
 
+		/**
+		 * Dispatches an action to load the default engagement data for videos.
+		 *
+		 * @async
+		 * @param {Object} storeObj - The store object that handles video engagement data.
+		 * @return {Object} An action object containing the type and new state.
+		 */
 		loadDefaultData: async ( storeObj ) => {
 			const collections = await storeObj.getVideoEngagementData();
 			const newState = storeObj.processEngagements( collections );
@@ -121,6 +161,11 @@ const engagementStore = {
 
 	resolvers: {},
 
+	/**
+	 * Returns a Redux store with the specified reducer, actions, selectors, and resolvers.
+	 *
+	 * @return {Object} The Redux store.
+	 */
 	store() {
 		return createReduxStore( 'godam-video-engagement', {
 			reducer: this.reducer,
@@ -130,11 +175,23 @@ const engagementStore = {
 		} );
 	},
 
+	/**
+	 * Watches the Redux state and triggers the distribution of engagement data when it changes.
+	 *
+	 * @return {void}
+	 */
 	watch() {
 		const state = this.select.getState();
 		this.distributeData( state );
 	},
 
+	/**
+	 * Process the engagement data received from the server.
+	 *
+	 * @param {Array} collections An array of objects containing video attachment IDs and their respective engagement data.
+	 *
+	 * @return {Object} The processed engagement data.
+	 */
 	processEngagements( collections ) {
 		const engagementLikesData = {};
 		const engagementViewsData = {};
@@ -158,6 +215,13 @@ const engagementStore = {
 		};
 	},
 
+	/**
+	 * Distributes the engagement data to the respective video engagement elements.
+	 *
+	 * @param {Object} state The engagement state.
+	 *
+	 * @return {void}
+	 */
 	distributeData( state ) {
 		const likes = state.likes;
 		const views = state.views;
@@ -179,6 +243,14 @@ const engagementStore = {
 		} );
 	},
 
+	/**
+	 * Sends a request to the server to update the like status of a video.
+	 *
+	 * @param {number} videoAttachmentId The ID of the video attachment.
+	 * @param {string} siteUrl           The URL of the site.
+	 *
+	 * @return {Promise} A promise that resolves to an object containing the video attachment ID and the response from the server.
+	 */
 	async sendLikeData( videoAttachmentId, siteUrl ) {
 		const queryParams = {
 			site_url: siteUrl,
@@ -197,6 +269,15 @@ const engagementStore = {
 		} );
 	},
 
+	/**
+	 * Fetches the engagement data for a video.
+	 *
+	 * @param {number} videoId           The ID of the video.
+	 * @param {number} videoAttachmentId The ID of the video attachment.
+	 * @param {string} siteUrl           The URL of the site.
+	 *
+	 * @return {Promise} A promise that resolves to an object containing the video attachment ID and the response from the server.
+	 */
 	async fetchVideoData( videoId, videoAttachmentId, siteUrl ) {
 		const queryParams = {
 			site_url: siteUrl,
@@ -210,6 +291,11 @@ const engagementStore = {
 		} );
 	},
 
+	/**
+	 * Fetches the engagement data for all videos on the page.
+	 *
+	 * @return {Promise} A promise that resolves to an array of objects, each containing the video attachment ID and the response from the server.
+	 */
 	async getVideoEngagementData() {
 		const self = this;
 		const collections = [];
@@ -252,6 +338,12 @@ const engagementStore = {
 		return collections;
 	},
 
+	/**
+	 * Generates a modal for posting a comment on a video.
+	 *
+	 * @param {number} videoAttachmentId The video attachment ID.
+	 * @param {string} siteUrl           The site URL.
+	 */
 	generateCommentModal( videoAttachmentId, siteUrl ) {
 		const modalId = 'rtgodam-video-engagement--comment-modal';
 		let commentModal = document.getElementById( modalId );
@@ -267,6 +359,15 @@ const engagementStore = {
 	},
 };
 
+/**
+ * Updates a comment tree with new data.
+ *
+ * @param {Array}  comments The comment tree.
+ * @param {Object} comment  The comment object.
+ * @param {Object} data     The new data to add to the comment tree.
+ *
+ * @return {Array} The updated comment tree.
+ */
 function updateCommentTree( comments, comment, data ) {
 	if ( 0 === parseInt( data.parent_id ) || ! data.parent_id ) {
 		return [ data, ...comments ];
@@ -293,6 +394,25 @@ function updateCommentTree( comments, comment, data ) {
 		return item;
 	} );
 }
+
+/**
+ * CommentForm component for handling user comments and replies.
+ *
+ * This component renders a form for users to submit comments or replies
+ * to a video. It manages the comment text input, handles the submission
+ * process, and updates the comment tree state with the new comment data.
+ *
+ * Props:
+ *
+ * @param {Object}   props                   - The component props.
+ * @param {Object}   props.comment           - The current comment object.
+ * @param {Function} props.setCommentsData   - Function to update the comments data state.
+ * @param {Object}   props.storeObj          - Store object for managing state and dispatching actions.
+ * @param {string}   props.videoAttachmentId - The ID of the video attachment.
+ * @param {Function} props.setIsExpanded     - Function to toggle the expanded state.
+ * @param {string}   props.type              - The type of comment form, either 'reply' or 'thread-reply'.
+ * @param {string}   props.siteUrl           - The site URL for API requests.
+ */
 
 function CommentForm( props ) {
 	const { comment, setCommentsData, storeObj, videoAttachmentId, setIsExpanded, type, siteUrl } = props;
@@ -352,6 +472,18 @@ function CommentForm( props ) {
 	);
 }
 
+/**
+ * A single comment component.
+ *
+ * @param {Object}   props                   Component props.
+ * @param {Object}   props.comment           Comment object.
+ * @param {Function} props.setCommentsData   Function to update comments state.
+ * @param {Object}   props.storeObj          A store object.
+ * @param {number}   props.videoAttachmentId A video attachment ID.
+ * @param {string}   props.siteUrl           A site URL.
+ *
+ * @return {JSX.Element} A single comment component.
+ */
 function Comment( props ) {
 	const { comment, setCommentsData, storeObj, videoAttachmentId, siteUrl } = props;
 	const {
@@ -371,7 +503,7 @@ function Comment( props ) {
 				<div className="rtgodam-video-engagement--comment-content-wrapper">
 					<div className="rtgodam-video-engagement--comment-content">
 						<div className="rtgodam-video-engagement--comment-author-name">
-							{ authorName }
+							{ authorName || __( 'Anonymous', 'godam' ) }
 						</div>
 						<div className="rtgodam-video-engagement--comment-text">
 							{ text }
@@ -402,6 +534,18 @@ function Comment( props ) {
 	);
 }
 
+/**
+ * Renders a list of comments.
+ *
+ * @param {Object}   props                   Component props.
+ * @param {number}   props.videoAttachmentId Video attachment ID.
+ * @param {Object}   props.storeObj          Store object.
+ * @param {Array}    props.commentsData      Array of comment objects.
+ * @param {Function} props.setCommentsData   Function to set the commentsData state.
+ * @param {string}   props.siteUrl           Site URL.
+ *
+ * @return {ReactElement} A React element representing the comment list.
+ */
 function CommentList( props ) {
 	const { videoAttachmentId, storeObj, commentsData, setCommentsData, siteUrl } = props;
 
@@ -414,6 +558,16 @@ function CommentList( props ) {
 	);
 }
 
+/**
+ * Renders a comment box modal.
+ *
+ * @param {Object} props                   Component props.
+ * @param {number} props.videoAttachmentId Video attachment ID.
+ * @param {Object} props.storeObj          Store object.
+ * @param {string} props.siteUrl           Site URL.
+ *
+ * @return {ReactElement} A React element representing the comment box modal.
+ */
 function CommentBox( props ) {
 	const { videoAttachmentId, storeObj, siteUrl } = props;
 	const baseClass = 'rtgodam-video-engagement--comment-modal';
@@ -438,6 +592,12 @@ function CommentBox( props ) {
 	);
 }
 
+/**
+ * Initializes the video engagement store.
+ *
+ * This function should be called once to initialize the video engagement store.
+ * It is called automatically on page load by the Godam plugin.
+ */
 export function engagement() {
 	engagementStore.init();
 }
