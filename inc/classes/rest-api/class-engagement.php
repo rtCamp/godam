@@ -345,7 +345,6 @@ class Engagement extends Base {
 	 */
 	public function user_comment( $request ) {
 
-		$response_data     = array();
 		$video_id          = $request->get_param( 'video_id' );
 		$site_url          = $request->get_param( 'site_url' );
 		$comment_parent_id = $request->get_param( 'comment_parent_id' );
@@ -357,41 +356,39 @@ class Engagement extends Base {
 			return $account_creadentials;
 		}
 
-		return new WP_REST_Response(
-			array(
-				'status' => 'success',
-				'data'   => $request->get_params(),
-			),
-			200
+		$current_user_id    = get_current_user_id();
+		$current_user       = get_user_by( 'id', $current_user_id );
+		$current_user_email = $current_user->user_email;
+		$current_user_name  = $current_user->display_name;
+
+		$commentdata = array(
+			'comment_post_ID'      => $video_id,
+			'comment_author'       => $current_user_name,
+			'comment_author_email' => $current_user_email,
+			'comment_content'      => $comment_text,
+			'comment_parent'       => $comment_parent_id,
+			'user_id'              => $current_user_id,
+			'comment_approved'     => 1,
 		);
 
-		$status           = false;
-		$current_user     = get_current_user_id();
-		$current_user_key = "liked_by_use_id_{$current_user}";
+		$comment_id = wp_insert_comment( $commentdata );
 
-		$like_data = array(
-			'video_id' => $video_id,
-			'site_url' => $site_url,
-			'user_id'  => $current_user,
-		);
+		if ( $comment_id ) {
 
-		$likes = get_post_meta( $video_id, 'likes', true );
-		$likes = ! empty( $likes ) && is_array( $likes ) ? $likes : array();
+			$response_data = array(
+				'id'           => $comment_id,
+				'parent_id'    => $comment_parent_id,
+				'user_id'      => $current_user_id,
+				'text'         => $comment_text,
+				'author_name'  => $current_user_name,
+				'author_image' => get_avatar_url( $current_user_id ),
+				'children'     => array(),
+			);
 
-		if ( ! isset( $likes[ $current_user_key ] ) ) {
-			$likes[ $current_user_key ] = $like_data;
-			$status                     = true;
-		} else {
-			unset( $likes[ $current_user_key ] );
-		}
-
-		$status_updated = update_post_meta( $video_id, 'likes', $likes );
-		if ( $status_updated ) {
 			return new WP_REST_Response(
 				array(
-					'status'      => 'success',
-					'isUserLiked' => $status,
-					'likes_count' => count( $likes ),
+					'status' => 'success',
+					'data'   => $response_data,
 				),
 				200
 			);
@@ -400,8 +397,8 @@ class Engagement extends Base {
 		return new WP_REST_Response(
 			array(
 				'status'    => 'error',
-				'message'   => __( 'Failed to update likes.', 'godam' ),
-				'errorType' => 'failed_to_update_likes',
+				'message'   => __( 'Failed to update comment.', 'godam' ),
+				'errorType' => 'failed_to_update_comment',
 			),
 			200
 		);

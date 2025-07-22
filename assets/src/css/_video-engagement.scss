@@ -287,6 +287,33 @@
                 background-color: var(--wp--preset--color--black, #000);
                 color: var(--wp--preset--color--white, #fff);
             }
+
+            &.is-comment-progressing {
+                cursor: not-allowed;
+                pointer-events: none;
+                opacity: 0.5;
+                position: relative;
+                overflow: hidden;
+
+                &::before {
+
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 300%;
+                    height: 100%;
+                    background: repeating-linear-gradient(
+                        45deg,
+                        var(--wp--preset--color--white, #fff) 0,
+                        var(--wp--preset--color--white, #fff) 10px,
+                        var(--wp--preset--color--black, #000) 10px,
+                        var(--wp--preset--color--black, #000) 20px
+                    );
+                    animation: comment-sending 1.5s infinite;
+                    opacity: 0.5;
+                }
+            }
         }
     }
 }
@@ -295,4 +322,13 @@
   0%   { transform: scale(1); }
   50%  { transform: scale(1.2); }
   100% { transform: scale(1); }
+}
+
+@keyframes comment-sending {
+  0% {
+    left: -200%;
+  }
+  100% {
+    left: -100%;
+  }
 }

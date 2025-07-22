@@ -7,78 +7,7 @@ const { addQueryArgs } = wp.url;
 const { createRoot, useState, useMemo } = wp.element;
 const { __ } = wp.i18n;
 const { nonceData, DOMPurify } = window;
-const Gravater = 'https://secure.gravatar.com/avatar/5edfa2692bdacc5e6ee805c626c50cb44cebb065f092d9a1067d89f74dacd326?s=40&d=mm&r=g';
-
-const DEMO_COMMENTS = [
-	{
-		id: 1,
-		userId: 5,
-		text: 'This is my first comment',
-		authorName: 'John Doe',
-		authorImg: Gravater,
-		children: [
-			{
-				id: 2,
-				userId: 6,
-				text: 'This is my first comment - reply 1',
-				authorName: 'John Doe',
-				authorImg: Gravater,
-				children: [
-					{
-						id: 2,
-						userId: 6,
-						text: 'This is my first comment - reply of reply 1',
-						authorName: 'John Doe',
-						authorImg: Gravater,
-						children: [],
-					},
-				],
-			},
-			{
-				id: 3,
-				userId: 6,
-				text: 'This is my first comment - reply 2',
-				authorName: 'John Doe',
-				authorImg: Gravater,
-				children: [],
-			},
-		],
-	},
-	{
-		id: 4,
-		userId: 5,
-		text: 'This is my first comment',
-		authorName: 'John Doe',
-		authorImg: Gravater,
-		children: [
-			{
-				id: 5,
-				userId: 6,
-				text: 'This is my first comment - reply 1',
-				authorName: 'John Doe',
-				authorImg: Gravater,
-				children: [
-					{
-						id: 6,
-						userId: 6,
-						text: 'This is my first comment - reply of reply 1',
-						authorName: 'John Doe',
-						authorImg: Gravater,
-						children: [],
-					},
-				],
-			},
-			{
-				id: 7,
-				userId: 6,
-				text: 'This is my first comment - reply 2',
-				authorName: 'John Doe',
-				authorImg: Gravater,
-				children: [],
-			},
-		],
-	},
-];
+const storeName = 'godam-video-engagement';
 
 // Demo comments for testing.
 const DEFAULT_STATE = {
@@ -88,12 +17,11 @@ const DEFAULT_STATE = {
 	comments: {},
 	commentsCount: {},
 };
-// Demo comments for testing end.
 
 const ACTIONS = {
 	LOAD_VIDEO_ENGAGEMENT_DATA: 'LOAD_VIDEO_ENGAGEMENT_DATA',
 	USER_HIT_LIKE: 'USER_HIT_LIKE',
-	USER_VIEWED: 'USER_VIEWED',
+	USER_COMMENTED: 'USER_COMMENTED',
 };
 
 const engagementStore = {
@@ -105,10 +33,10 @@ const engagementStore = {
 		register( this.store() );
 		this.unsubscribe = subscribe(
 			this.watch.bind( this ),
-			'godam-video-engagement',
+			storeName,
 		);
-		this.dispatch = dispatch( 'godam-video-engagement' );
-		this.select = select( 'godam-video-engagement' );
+		this.dispatch = dispatch( storeName );
+		this.select = select( storeName );
 
 		this.dispatch.loadDefaultData( this );
 
@@ -140,9 +68,17 @@ const engagementStore = {
 				return {
 					...state,
 				};
-			case ACTIONS.USER_VIEWED:
+			case ACTIONS.USER_COMMENTED:
 				return {
 					...state,
+					comments: {
+						...state.comments,
+						[ action.videoAttachmentId ]: action.commentData,
+					},
+					commentsCount: {
+						...state.commentsCount,
+						[ action.videoAttachmentId ]: state.commentsCount[ action.videoAttachmentId ] + 1,
+					},
 				};
 			default:
 				return state;
@@ -159,9 +95,11 @@ const engagementStore = {
 				likeData,
 			};
 		},
-		userShared: () => {
+		userCommented: ( videoAttachmentId, commentData ) => {
 			return {
-				type: ACTIONS.USER_VIEWED,
+				type: ACTIONS.USER_COMMENTED,
+				commentData,
+				videoAttachmentId,
 			};
 		},
 
@@ -221,7 +159,6 @@ const engagementStore = {
 	},
 
 	distributeData( state ) {
-		console.log( state );
 		const likes = state.likes;
 		const views = state.views;
 		const comments = state.commentsCount;
@@ -330,22 +267,18 @@ const engagementStore = {
 	},
 };
 
-function updateCommentTree( comments, comment, text, authorImg ) {
+function updateCommentTree( comments, comment, data ) {
+	if ( 0 === parseInt( data.parent_id ) || ! data.parent_id ) {
+		return [ data, ...comments ];
+	}
+
 	return comments.map( ( item ) => {
-		// console.log( item );
 		if ( item.id === comment.id ) {
 			return {
 				...item,
 				children: [
 					...item.children,
-					{
-						id: 10,
-						userId: 20,
-						text,
-						author_name: 'Rockey',
-						author_image: authorImg,
-						children: [],
-					},
+					data,
 				],
 			};
 		}
@@ -353,7 +286,7 @@ function updateCommentTree( comments, comment, text, authorImg ) {
 		if ( item.children.length > 0 ) {
 			return {
 				...item,
-				children: updateCommentTree( item.children, comment, text, authorImg ),
+				children: updateCommentTree( item.children, comment, data ),
 			};
 		}
 
@@ -367,12 +300,7 @@ function CommentForm( props ) {
 	const [ isSending, setIsSending ] = useState( false );
 
 	async function handleSubmit() {
-		//setIsExpanded( false );
-		// setCommentsData( ( prevComments ) => {
-		// 	const newCommentTree = updateCommentTree( prevComments, comment, commentText, 'https://secure.gravatar.com/avatar/5edfa2692bdacc5e6ee805c626c50cb44cebb065f092d9a1067d89f74dacd326?s=40&d=mm&r=g' );
-
-		// 	return [ ...newCommentTree ];
-		// } );
+		setIsSending( true );
 		const parentId = comment.id ? comment.id : 0;
 		const queryParams = {
 			site_url: siteUrl,
@@ -387,7 +315,18 @@ function CommentForm( props ) {
 			data: queryParams,
 		} );
 
-		console.log( result );
+		if ( 'success' === result.status ) {
+			setCommentText( '' );
+			setIsSending( false );
+			if ( 'thread-reply' === type ) {
+				setIsExpanded( false );
+			}
+			setCommentsData( ( prevComments ) => {
+				const newCommentTree = updateCommentTree( prevComments, comment, result.data );
+				storeObj.dispatch.userCommented( videoAttachmentId, newCommentTree );
+				return [ ...newCommentTree ];
+			} );
+		}
 	}
 
 	return (
@@ -400,7 +339,7 @@ function CommentForm( props ) {
 				/>
 			</div>
 			<div className="rtgodam-video-engagement--comment-form-submit">
-				<button className="rtgodam-video-engagement--comment-button" disabled={ isSending } onClick={ handleSubmit }>
+				<button className={ 'rtgodam-video-engagement--comment-button' + ( isSending ? ' is-comment-progressing' : '' ) } disabled={ isSending || ! commentText } onClick={ handleSubmit }>
 					{ 'thread-reply' === type ? __( 'Reply', 'godam' ) : __( 'Comment', 'godam' ) }
 				</button>
 				{ 'thread-reply' === type &&
