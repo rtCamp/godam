@@ -32,7 +32,7 @@ class Everest_Forms_Integration {
 	public function init() {
 		// Backward compatibility for Everest Forms REST API.
 		// Previously it was registered as RTGODAM\Inc\REST_API\Everest_Forms under rest-api directory.
-		// TODO: Remove this in future versions.
+		// TODO: Remove this in future versions. Added in @n.e.x.t version.
 		class_alias( 'RTGODAM\Inc\Everest_Forms\Everest_Forms_Rest_Api', 'RTGODAM\Inc\REST_API\Everest_Forms' );
 
 		if ( ! $this->is_evf_active() ) {
@@ -52,6 +52,13 @@ class Everest_Forms_Integration {
 	 * @return void
 	 */
 	public function setup_hooks() {
+		add_filter( 'everest_forms_fields', array( $this, 'register_fields' ) );
+	}
+
+	public function register_fields( $fields ) {
+		$fields[] = Everest_Forms_Field_GoDAM_Video::class;
+
+		return $fields;
 	}
 
 	/**
