@@ -775,7 +775,7 @@ class Video_Migration extends Base {
 
 		foreach ( $post_types as $post_type ) {
 			// Check if post type supports editor and Gutenberg is not disabled.
-			if ( post_type_supports( $post_type->name, 'editor' ) && use_block_editor_for_post_type( $post_type->name ) ) {
+			if ( post_type_supports( $post_type->name, 'editor' ) && use_block_editor_for_post_type( $post_type->name ) && GoDAM_Video::SLUG !== $post_type->name ) {
 				$gutenberg_post_types[] = $post_type->name;
 			}
 		}
