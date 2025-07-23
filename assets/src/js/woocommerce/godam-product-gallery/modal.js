@@ -215,6 +215,7 @@ function stopSwipeAnimationLoop() {
  */
 function close( modal, sidebarModal ) {
 	modal.classList.add( 'hidden' );
+	modal.classList.remove( 'open' );
 	document.body.style.overflow = '';
 	const players = modal.querySelectorAll( '.video-js' );
 	players.forEach( ( p ) => p?.player?.dispose?.() );
@@ -306,12 +307,15 @@ async function loadNewVideo( newVideoId, modal ) {
 			container.innerHTML = html;
 			container.classList.remove( 'animate-video-loading' );
 
+			console.log( container.classList );
+
 			// Initialize GODAM player.
 			if ( typeof GODAMPlayer === 'function' ) {
 				GODAMPlayer( modal );
 
 				const player = modal.querySelector( '.video-js' );
 				if ( player?.player ) {
+					console.log( 'player will now play' );
 					player.player.play();
 
 					const swipeHint = modal.querySelector( '.godam-swipe-hint' );
@@ -326,8 +330,8 @@ async function loadNewVideo( newVideoId, modal ) {
 					player.player.on( 'ended', () => {
 						const videoContainer = modal.querySelector( '.video-container' );
 						const classList = videoContainer.classList;
+						console.log( classList );
 						classList.forEach( ( className ) => {
-							console.log( 'className', className );
 							if ( className.includes( 'is-landscape' ) ) {
 								swipeOverlay.classList.remove( 'is-portrait' );
 								swipeOverlay.classList.add( 'is-landscape' );

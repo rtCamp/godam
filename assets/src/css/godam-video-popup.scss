@@ -1,10 +1,295 @@
+// .godam-product-modal-container {
+//     display: none !important;
+// }
+// .godam-product-modal-container.open {
+//     display: flex !important;
+// }
+// .godam-product-modal-container {
+// 	position: fixed;
+// 	inset: 0;
+// 	z-index: 9999;
+// 	background: rgba(0, 0, 0, 0.8);
+// 	width: 100vw;
+//     display: flex;
+//     justify-content: center;
+//     align-items: center;
+// 	height: 100vh;
+// 	// overflow: hidden;
+
+//     .godam-product-modal-close{
+//         background-color:rgba(0, 0, 0, 0.8);
+//         position: absolute;
+//         top: 12px;
+//         display: flex;
+//         cursor: pointer !important;
+//         justify-content: center;
+//         align-items: center;
+//         right: 12px;
+//         opacity: 1;
+//         border-radius: 50%;
+//         z-index: 1000;
+//         cursor: pointer;
+//         width: 48px;
+//         height: 48px;
+//     }
+
+
+//     .video-container.is-landscape{
+//         display: flex;
+//         justify-content: center;
+//         align-items: center;
+//         height: 100vh !important;
+//         max-height: 100vh !important;
+
+//         .godam-video-wrapper, .easydam-video-container, .video-js  {
+//             max-width: 70vw;
+//             width: 70vw;
+//             margin: 0 auto !important;
+//             height: 100% !important;
+//             min-height: 75vh !important;
+//             max-height: 75vh !important;
+//             border-radius: 12px !important;
+//             overflow: hidden !important;
+//         }
+
+//         .video-js{
+//             padding-top: 0 !important ;
+//         }
+        
+//     }
+
+
+//     .video-container.is-portrait{
+//         display: flex;
+//         justify-content: center;
+//         align-items: center;
+//         height: 100vh !important;
+//         max-height: 100vh !important;
+//         width: 100%;
+//         padding: 12px;
+//         box-sizing: border-box;
+//         .godam-video-wrapper, .easydam-video-container, .video-js  {
+//             max-width: 420px !important;
+//             width: 420px !important;
+//             margin: 0 auto !important;
+//             height: 100% !important;
+//             min-height: 100vh !important;
+//             max-height: 100vh !important;
+//             border-radius: 12px !important;
+//             overflow: hidden !important;
+//         }
+//         .video-js{
+//             padding-top: 0 !important ;
+//         }
+//     }
+// }
+
+
+// @media (max-width: 720px) {
+//     .godam-swipe-overlay.is-landscape{
+//         max-width: 95vw !important;
+//         width: 95vw !important;
+//         min-width: 95vw !important;
+//         height: 100% !important;
+//         min-height: 40vh !important;
+//         max-height: 40vh !important;
+//     }
+
+//     #godam-product-modal .video-container.is-portrait .godam-video-wrapper,
+//     #godam-product-modal .video-container.is-portrait .easydam-video-container,
+//     #godam-product-modal .video-container.is-portrait .video-js
+//     {
+//         max-width: 100vw !important;
+//         width: 100vw !important;
+//         height: 100% !important;
+//         min-height: 100vh !important;
+//         max-height: 100vh !important;
+//         min-width: 320px !important;
+//     }
+//     .godam-product-modal-content{
+//         width: 100% !important;
+//         height: 100% !important;
+//         display: flex;
+//         justify-content: center;
+//         align-items: center;
+//         padding: 0 !important;
+//         margin: 0 !important;
+//         max-width: 100vw !important;
+//     }
+//     #godam-product-modal  .video-container.is-landscape{
+//         .godam-video-wrapper, .easydam-video-container, .video-js {
+//             max-width: 95vw !important;
+//             width: 95vw !important;
+//             min-width: 95vw !important;
+//             height: 100% !important;
+//             min-height: 40vh !important;
+//             max-height: 40vh !important;
+//         }
+
+//         .video-js{
+//             padding-top: 0 !important ;
+//         }
+
+//     }
+
+//     //fallback
+//     .video-container .godam-video-wrapper,
+//     .video-container .easydam-video-container,
+//     .video-container .video-js{
+//         max-width: 95vw !important;
+//         width: 95vw !important;
+//         min-width: 95vw !important;
+//         height: 100% !important;
+//         min-height: 100vh !important;
+//         max-height: 100vh !important;
+//     }
+
+
+// }
+
+// // code for tab screens
+// @media (max-width: 1024px) and (min-width: 720px) {
+
+//     .video-container{
+//        .godam-video-wrapper, .easydam-video-container, .video-js  {
+//         max-width: 95vw !important;
+//         width: 95vw !important;
+//         height: 100% !important;
+//         min-height: 100vh !important;
+//         max-height: 100vh !important;
+//        }
+
+//        .video-js{
+//         padding-top: 0 !important ;
+//         min-height: 100vh !important;
+//         min-width: 720px !important;
+//         max-width:95vw !important;
+//         max-height: 100vh !important;
+//        }
+//        .video-js .vjs-control-bar .vjs-skip-backward-10,
+//        .video-js .vjs-control-bar .vjs-skip-forward-10{
+//         bottom: 50vh !important;
+        
+//        }
+//     }
+   
+//     .video-container.is-landscape{
+//         .godam-video-wrapper, .easydam-video-container, .video-js {
+//             max-width: 95vw !important;
+//             min-width: 95vw !important;
+//             width: 95vw !important;
+//             height: 100% !important;
+//             min-height: 60vh !important;
+//             max-height: 60vh !important;
+//         }
+
+//         .video-js{
+//             padding-top: 0 !important ;
+//         }
+
+//     }
+
+//     .godam-swipe-overlay.is-landscape{
+//         max-width: 95vw !important;
+//             min-width: 95vw !important;
+//             width: 95vw !important;
+//             height: 100% !important;
+//             min-height: 60vh !important;
+//             max-height: 60vh !important;
+//     }
+    
+// }
+
+
+// .godam-swipe-overlay {
+// 	position: absolute;
+// 	top: 50%;
+// 	left: 50%;
+// 	transform: translate(-50%, -50%);
+// 	background-color: transparent; /* initially transparent */
+// 	pointer-events: none;
+// 	transition: background-color 0.3s ease;
+// 	z-index: 1;
+// 	width: 420px !important;
+// 	height: 100% !important;
+//     display: flex;
+//     justify-content: center;
+//     align-items: center;
+    
+// }
+
+
+// .godam-swipe-overlay.is-landscape{
+//     border-radius: 12px;
+//     width: 70vw;
+//     min-width: 70vw;
+//     max-width: 70vw;
+//     min-height: 75vh;
+//     max-height: 75vh;
+// }
+
+// .godam-swipe-overlay.is-portrait{
+// 	width: 420px !important;
+// }
+
+// // Override absolute positioning for children to allow flexbox centering
+// .godam-swipe-overlay .godam-swipe-hint {
+//     position: relative !important;
+//     bottom: auto !important;
+//     left: auto !important;
+//     transform: none !important;
+// }
+
+// .godam-swipe-overlay.visible {
+// 	background-color: rgba(255, 255, 255, 0.5) !important; /* whitish translucent overlay */
+// }
+
+// .godam-swipe-hint.show {
+// 	display: flex;
+// 	opacity: 1;
+// }
+
+// .godam-swipe-hint .chevron {
+// 	width: 20px;
+// 	height: 20px;
+// 	border-style: solid;
+// 	border-width: 0 2px 2px 0;
+// 	display: inline-block;
+// 	margin: 2px auto;
+// 	opacity: 0.8;
+// }
+
+// .godam-swipe-hint .chevron-up {
+// 	transform: rotate(-135deg);
+// 	animation: swipeUpAnim 1.5s infinite;
+// 	animation-delay: 0s;
+// }
+
+// .godam-swipe-hint .chevron-down {
+// 	transform: rotate(45deg);
+// 	animation: swipeDownAnim 1.5s infinite;
+// 	animation-delay: 0.6s;
+// }
+
+// @keyframes swipeUpAnim {
+// 	0%   { opacity: 0; transform: translateY(0) rotate(-135deg); }
+// 	50%  { opacity: 1; transform: translateY(-6px) rotate(-135deg); }
+// 	100% { opacity: 0; transform: translateY(0) rotate(-135deg); }
+// }
+
+// @keyframes swipeDownAnim {
+// 	0%   { opacity: 0; transform: translateY(0) rotate(45deg); }
+// 	50%  { opacity: 1; transform: translateY(6px) rotate(45deg); }
+// 	100% { opacity: 0; transform: translateY(0) rotate(45deg); }
+// }
+
 .godam-product-modal-container {
     display: none !important;
 }
 .godam-product-modal-container.open {
     display: flex !important;
 }
-#godam-product-modal {
+.godam-product-modal-container {
 	position: fixed;
 	inset: 0;
 	z-index: 9999;
@@ -14,41 +299,183 @@
     justify-content: center;
     align-items: center;
 	height: 100vh;
-	// overflow: hidden;
 
-    .godam-product-modal-close{
-        background-color:rgba(0, 0, 0, 0.8);
-        position: absolute;
-        top: 12px;
-        display: flex;
-        cursor: pointer !important;
-        justify-content: center;
-        align-items: center;
-        right: 12px;
-        opacity: 1;
-        border-radius: 50%;
-        z-index: 1000;
-        cursor: pointer;
+    .loader {
         width: 48px;
         height: 48px;
+        display: inline-block;
+        position: relative;
+      }
+      .loader::after,
+      .loader::before {
+        content: '';  
+        box-sizing: border-box;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 2px solid #FFF;
+        position: absolute;
+        left: 0;
+        top: 0;
+        animation: animloader 2s linear infinite;
+      }
+      .loader::after {
+        animation-delay: 1s;
+      }
+      
+      @keyframes animloader {
+        0% {
+          transform: scale(0);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0;
+        }
+      }
+}
+
+.godam-product-modal-content{
+    max-width: 65vw;
+    width: 65vw;
+    height: 100%;
+    min-height: 90vh ;
+    max-height: 90vh;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    
+    @media (max-width: 768px) {
+        max-width: 95vw;
+        width: 95vw;
+        min-height: 80vh;
+        max-height: 80vh;
+    }
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    background-color: #fff;
+    border-radius: 12px;
+}
+
+.godam-product-modal-content.no-sidebar{
+    background-color: transparent !important;
+    width: max-content !important;
+    height: 90vh !important;
+    max-height: 90vh !important;
+    max-width: max-content !important;
+    min-height: 90vh !important;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
+
+
+    .video-container.is-portrait{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 90vh !important;
+        max-height: 90vh !important;
+        width: 100% !important;
+        box-sizing: border-box;
+        .godam-video-wrapper, .easydam-video-container, .video-js  {
+            max-width: 420px !important;
+            width: 420px !important;
+            margin: 0 auto !important;
+            height: 100% !important;
+            min-height: 90vh ;
+            max-height: 90vh;
+            border-radius: 12px !important;
+            overflow: hidden !important;
+
+        }
+
+        @media (max-width: 768px) {
+            .godam-video-wrapper, .easydam-video-container, .video-js  {
+                max-width: 95vw !important;
+                width: 95vw !important;
+                min-height: 80vh ;
+                max-height: 80vh;
+            }
+        }
+
+
+        .video-js{
+            min-height: 90vh !important;
+            max-height: 90vh !important;
+            padding-top: 0 !important ;
+        }
+        .vjs-tech{
+            min-height: 90vh !important;
+            max-height: 90vh !important;
+        }
+        }
+
+    .godam-product-video-container{
+        background-color: transparent !important;
+    }
+    .video-container.is-landscape {
+        width: 70vw !important;
+        height: 90vh !important;
+        max-height: 90vh !important;
+        min-height: 90vh !important;
+        
+        @media (max-width: 768px) {
+            width: 95vw !important;
+            height: 40vh !important;
+            max-height: 40vh !important;
+            min-height: 40vh !important;
+        }
+        
+        .godam-video-wrapper, .easydam-video-container, .video-js , .vjs-tech , video  {
+            max-width:70vw !important;
+            width:70vw !important;
+            margin: 0 auto !important;
+            height: 100% !important;
+            min-height: 90vh !important;
+            max-height: 90vh !important;
+            border-radius: 12px !important;
+            overflow: hidden !important;
+            
+            @media (max-width: 768px) {
+                max-width: 95vw !important;
+                width: 95vw !important;
+                min-height: 40vh !important;
+                max-height: 40vh !important;
+            }
+        }
     }
 
+}
+
+.godam-product-video-container {
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+   
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-height: 90vh !important;
+}
 
     .video-container.is-landscape{
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh !important;
-        max-height: 100vh !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        width: 27vw !important;
 
         .godam-video-wrapper, .easydam-video-container, .video-js  {
-            max-width: 70vw;
-            width: 70vw;
+            max-width: 27vw;
+            width: 27vw;
             margin: 0 auto !important;
             height: 100% !important;
-            min-height: 75vh !important;
-            max-height: 75vh !important;
-            border-radius: 12px !important;
+            min-height: 40vh !important;
+            max-height: 40vh !important;
+            border-radius: 0px !important;
             overflow: hidden !important;
         }
 
@@ -63,222 +490,386 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh !important;
-        max-height: 100vh !important;
-        width: 100%;
-        padding: 12px;
+        height: 90vh !important;
+        max-height: 90vh !important;
+        width: 100% !important;
         box-sizing: border-box;
         .godam-video-wrapper, .easydam-video-container, .video-js  {
-            max-width: 420px !important;
-            width: 420px !important;
+            max-width: 27vw !important;
+            width: 27vw !important;
             margin: 0 auto !important;
             height: 100% !important;
-            min-height: 100vh !important;
-            max-height: 100vh !important;
+            min-height: 90vh !important;
+            max-height: 90vh !important;
             border-radius: 12px !important;
             overflow: hidden !important;
         }
         .video-js{
+            min-height: 90vh !important;
+            max-height: 90vh !important;
             padding-top: 0 !important ;
         }
-    }
+        .vjs-tech{
+            min-height: 90vh !important;
+            max-height: 90vh !important;
+        }
 }
 
-
-@media (max-width: 720px) {
-    .godam-swipe-overlay.is-landscape{
-        max-width: 95vw !important;
-        width: 95vw !important;
-        min-width: 95vw !important;
-        height: 100% !important;
-        min-height: 40vh !important;
-        max-height: 40vh !important;
-    }
-
-    #godam-product-modal .video-container.is-portrait .godam-video-wrapper,
-    #godam-product-modal .video-container.is-portrait .easydam-video-container,
-    #godam-product-modal .video-container.is-portrait .video-js
-    {
-        max-width: 100vw !important;
-        width: 100vw !important;
-        height: 100% !important;
-        min-height: 100vh !important;
-        max-height: 100vh !important;
-        min-width: 320px !important;
-    }
-    .godam-product-modal-content{
-        width: 100% !important;
-        height: 100% !important;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 0 !important;
-        margin: 0 !important;
-        max-width: 100vw !important;
-    }
-    #godam-product-modal  .video-container.is-landscape{
-        .godam-video-wrapper, .easydam-video-container, .video-js {
-            max-width: 95vw !important;
-            width: 95vw !important;
-            min-width: 95vw !important;
-            height: 100% !important;
-            min-height: 40vh !important;
-            max-height: 40vh !important;
-        }
-
-        .video-js{
-            padding-top: 0 !important ;
-        }
-
-    }
-
-    //fallback
-    .video-container .godam-video-wrapper,
-    .video-container .easydam-video-container,
-    .video-container .video-js{
-        max-width: 95vw !important;
-        width: 95vw !important;
-        min-width: 95vw !important;
-        height: 100% !important;
-        min-height: 100vh !important;
-        max-height: 100vh !important;
-    }
-
-
+.godam-product-modal-container.hidden{
+    pointer-events: none !important;
+    display: none !important;
+    transition: all 0.3s ease;
 }
 
-// code for tab screens
-@media (max-width: 1024px) and (min-width: 720px) {
-
-    .video-container{
-       .godam-video-wrapper, .easydam-video-container, .video-js  {
-        max-width: 95vw !important;
-        width: 95vw !important;
-        height: 100% !important;
-        min-height: 100vh !important;
-        max-height: 100vh !important;
-       }
-
-       .video-js{
-        padding-top: 0 !important ;
-        min-height: 100vh !important;
-        min-width: 720px !important;
-        max-width:95vw !important;
-        max-height: 100vh !important;
-       }
-       .video-js .vjs-control-bar .vjs-skip-backward-10,
-       .video-js .vjs-control-bar .vjs-skip-forward-10{
-        bottom: 50vh !important;
-        
-       }
-    }
-   
-    .video-container.is-landscape{
-        .godam-video-wrapper, .easydam-video-container, .video-js {
-            max-width: 95vw !important;
-            min-width: 95vw !important;
-            width: 95vw !important;
-            height: 100% !important;
-            min-height: 60vh !important;
-            max-height: 60vh !important;
-        }
-
-        .video-js{
-            padding-top: 0 !important ;
-        }
-
-    }
-
-    .godam-swipe-overlay.is-landscape{
-        max-width: 95vw !important;
-            min-width: 95vw !important;
-            width: 95vw !important;
-            height: 100% !important;
-            min-height: 60vh !important;
-            max-height: 60vh !important;
-    }
-    
-}
-
-
-.godam-swipe-overlay {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	background-color: transparent; /* initially transparent */
-	pointer-events: none;
-	transition: background-color 0.3s ease;
-	z-index: 1;
-	width: 420px !important;
-	height: 100% !important;
+.godam-product-modal-close{
+    position: absolute;
+    padding: 0;
+    margin: 0;
+    top: 12px;
+    right: 12px;
+    cursor: pointer;
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.godam-product-sidebar{
+    width: 100%;
+    height: 100%;
+    overflow: auto !important;
+    padding: 1rem 2rem !important;
+    box-sizing: border-box;
+
+    .godam-sidebar-header{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+
+        h3{
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .godam-sidebar-close{
+            cursor: pointer;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        button{
+            padding: 0;
+            margin: 0;
+            align-items: center;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            font-weight: 600;
+            width:40px;
+            height:40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+        }
+    }
+    .godam-sidebar-content{
+        width: 100%;
+    }
+
+    .wc-block-mini-cart__button .wc-block-mini-cart__icon{
+        height: 1.2rem !important;
+        width: 1.2rem !important;
+    }
+
+    .godam-product-sidebar-grid{
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        
+        @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .godam-sidebar-product-item{
+        margin: 1rem 0 !important;
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        justify-content: start;
+        gap: 12px;
+        border-radius: 12px;
+
+        .godam-sidebar-product-image {
+            width: 100%;
+            height: 100%;
+            max-height: 200px !important;
+            min-height: 200px !important;
+            object-fit: cover;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        img{
+            width: 100%;
+            height: 100%;
+            max-height: 200px !important;
+            min-height: 200px !important;
+            object-fit: cover;
+            object-position: center;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+    }
+   
+    .godam-sidebar-product-title{   
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    a.godam-product-sidebar-add-to-cart-button{
+        width: 100%;
+        height: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        cursor: pointer !important;
+        text-decoration: none !important;
+        color: #fff !important;
+    }
+    .godam-sidebar-header-actions{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
     
 }
 
 
-.godam-swipe-overlay.is-landscape{
-    border-radius: 12px;
-    width: 70vw;
-    min-width: 70vw;
-    max-width: 70vw;
-    min-height: 75vh;
-    max-height: 75vh;
+// godam single sidebar
+
+.single-product-sidebar .godam-sidebar-header{
+    display: flex;
+    justify-content:flex-end;
+    width: 100%;
+    align-self: flex-end;
+    margin-bottom: 1rem;
 }
 
-.godam-swipe-overlay.is-portrait{
-	width: 420px !important;
+
+.godam-product-sidebar-single{
+
+  
+    woocommerce-product-gallery{
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 200px !important;
+        min-height: 200px !important;
+        opacity: 1 !important;
+        .woocommerce-product-gallery__wrapper{
+            width: 100% !important;
+            height: 100% !important;
+            max-height: 200px !important;
+            min-height: 200px !important;
+            opacity: 1 !important;
+            .woocommerce-product-gallery__image{
+                width: 100% !important;
+                height: 100% !important;
+                max-height: 200px !important;
+                min-height: 200px !important;
+            }
+        }
+    }
+    
+    .single-product-sidebar-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: space-between;
+        align-items: center;
+
+        .product-sidebar-view-product-button,
+        .product-sidebar-add-to-cart-button {
+            width: 100%;
+            height: 100%;
+        }
+
+        .wc-block-mini-cart button{
+            width:40px;
+            padding: 0 !important;
+            margin: 0 !important;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: none;
+            cursor: pointer;
+        }
+
+    }
 }
 
-// Override absolute positioning for children to allow flexbox centering
-.godam-swipe-overlay .godam-swipe-hint {
-    position: relative !important;
-    bottom: auto !important;
-    left: auto !important;
-    transform: none !important;
+
+
+// product image gallery
+
+/* Product Image Gallery Styles */
+.godam-product-gallery-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
 }
 
-.godam-swipe-overlay.visible {
-	background-color: rgba(255, 255, 255, 0.5) !important; /* whitish translucent overlay */
+/* Main Image Container */
+.godam-main-image-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f8f8f8;
 }
 
-.godam-swipe-hint.show {
-	display: flex;
-	opacity: 1;
+.godam-main-product-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease;
 }
 
-.godam-swipe-hint .chevron {
-	width: 20px;
-	height: 20px;
-	border-style: solid;
-	border-width: 0 2px 2px 0;
-	display: inline-block;
-	margin: 2px auto;
-	opacity: 0.8;
+.godam-main-product-image:hover {
+    transform: scale(1.02);
 }
 
-.godam-swipe-hint .chevron-up {
-	transform: rotate(-135deg);
-	animation: swipeUpAnim 1.5s infinite;
-	animation-delay: 0s;
+/* Thumbnail Carousel */
+.godam-thumbnail-carousel {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
 }
 
-.godam-swipe-hint .chevron-down {
-	transform: rotate(45deg);
-	animation: swipeDownAnim 1.5s infinite;
-	animation-delay: 0.6s;
+.godam-thumbnail-track {
+    display: flex;
+    gap: 10px;
+    transition: transform 0.3s ease;
+    padding: 0 40px; /* Space for navigation arrows */
 }
 
-@keyframes swipeUpAnim {
-	0%   { opacity: 0; transform: translateY(0) rotate(-135deg); }
-	50%  { opacity: 1; transform: translateY(-6px) rotate(-135deg); }
-	100% { opacity: 0; transform: translateY(0) rotate(-135deg); }
+.godam-thumbnail-item {
+    flex: 0 0 80px;
+    height: 80px;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
-@keyframes swipeDownAnim {
-	0%   { opacity: 0; transform: translateY(0) rotate(45deg); }
-	50%  { opacity: 1; transform: translateY(6px) rotate(45deg); }
-	100% { opacity: 0; transform: translateY(0) rotate(45deg); }
+.godam-thumbnail-item:hover {
+    border-color: #007cba;
+    transform: translateY(-2px);
+}
+
+.godam-thumbnail-item.active {
+    border-color: #007cba;
+    box-shadow: 0 2px 8px rgba(0, 124, 186, 0.3);
+}
+
+.godam-thumbnail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Navigation Arrows */
+.godam-thumbnail-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.godam-thumbnail-nav:hover {
+    background: #fff;
+    color: #007cba;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.godam-thumbnail-nav:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.godam-thumbnail-prev {
+    left: 5px;
+}
+
+.godam-thumbnail-next {
+    right: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .godam-product-gallery-container {
+        max-width: 100%;
+    }
+    
+    .godam-thumbnail-item {
+        flex: 0 0 60px;
+        height: 60px;
+    }
+    
+    .godam-thumbnail-track {
+        gap: 8px;
+        padding: 0 35px;
+    }
+    
+    .godam-thumbnail-nav {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+/* Loading State */
+.godam-main-image-container.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* No Images State */
+.godam-no-images {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    background: #f8f8f8;
+    border-radius: 8px;
 }

@@ -167,16 +167,16 @@ function GODAMPlayer( videoRef = null ) {
 								'3:4': 'portrait',
 							};
 							const aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
-							document.querySelector( '.video-container' ).classList.add( `is-${ aspectRatioClass }` );
+							const godamProductModalContainer = document.querySelector( '.godam-product-modal-container.open' );
+							if ( godamProductModalContainer ) {
+								const videoContainer = godamProductModalContainer.querySelector( '.video-container' );
+								if ( videoContainer ) {
+									videoContainer.classList.add( `is-${ aspectRatioClass ? aspectRatioClass : 'portrait' }` );
+								}
+							}
 							player.aspectRatio( aspectRatio );
 						};
-						// Check if metadata is already available (common on mobile/cached videos)
-						if ( video.readyState >= 1 ) {
-							handleResponsiveAspectRatio();
-						} else {
-							// Listen for the event if metadata isn't ready yet
-							video.addEventListener( 'loadedmetadata', handleResponsiveAspectRatio );
-						}
+						video.addEventListener( 'loadedmetadata', handleResponsiveAspectRatio );
 					} else {
 						player.aspectRatio( videoSetupOptions.aspectRatio );
 					}
