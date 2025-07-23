@@ -1,0 +1,42 @@
+@import "@uppy/core/dist/style.min.css";
+@import "@uppy/dashboard/dist/style.min.css";
+@import "@uppy/webcam/dist/style.min.css";
+@import "@uppy/screen-capture/dist/style.min.css";
+
+// Styles for Everest Forms builder page
+.everest-forms_page_evf-builder {
+    .evf-icon-godam-record {
+        font-family: dashicons !important;
+
+        &::before {
+            content: "\f234";
+        }
+    }
+
+    .everest-forms-field-godam_record {
+        .dashicons {
+            margin-right: 5px;;
+        }
+
+        .uppy-video-upload-button {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+        }
+    }
+}
+
+// Styles for Everest Forms frontend
+.evf-multi-device-form-preview {
+    .evf-field-godam_record {
+        .dashicons {
+            margin-right: 5px;;
+        }
+
+        .uppy-video-upload-button {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+        }
+    }
+}
