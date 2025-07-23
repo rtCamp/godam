@@ -22,7 +22,9 @@ const SureForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const sureforms = useSelector( ( state ) => state.videoReducer.sureforms );
-	const { data: formHTML, isFetching } = useGetSingleSureformQuery( layer.sureform_id );
+	const { data: formHTML, isFetching } = useGetSingleSureformQuery( layer.sureform_id, {
+		skip: 'undefined' === typeof layer?.sureform_id,
+	} );
 
 	const forms = sureforms?.map( ( form ) => ( {
 		value: form.id,
@@ -54,7 +56,7 @@ const SureForm = ( { layerID } ) => {
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isSureformsPluginActive } className="gravity-form-selector mb-4" formID={ layer.sureform_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isValidAPIKey || ! isSureformsPluginActive } className="mb-4" formID={ layer.sureform_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<LayerControl>

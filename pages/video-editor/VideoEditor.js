@@ -7,8 +7,8 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, TabPanel, Snackbar } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { Button, TabPanel, Snackbar, Tooltip, Spinner } from '@wordpress/components';
+import { __, _n } from '@wordpress/i18n';
 import { copy, seen } from '@wordpress/icons';
 
 /**
@@ -28,6 +28,7 @@ import {
 	setForminatorForms,
 	setFluentForms,
 	setEverestForms,
+	setNinjaForms,
 } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
@@ -35,8 +36,20 @@ import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redu
 import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
+import { getFormIdFromLayer } from './utils/formUtils';
 
 const VideoEditor = ( { attachmentID } ) => {
+	const formIDMap = {
+		cf7: 'cf7_id',
+		gravity: 'gf_id',
+		wpforms: 'wpform_id',
+		forminator: 'forminator_id',
+		sureforms: 'sureform_id',
+		fluentforms: 'fluent_form_id',
+		jetpack: 'jp_id',
+		everestforms: 'everest_form_id',
+		ninjaforms: 'ninja_form_id',
+	};
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
@@ -56,7 +69,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
-	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, isFetching } = useFetchForms();
+	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, isFetching } = useFetchForms();
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -96,7 +109,13 @@ const VideoEditor = ( { attachmentID } ) => {
 		const videoSources = [];
 
 		if ( sourceURL && mimeType ) {
-			videoSources.push( { src: sourceURL, type: mimeType } );
+			/**
+			 * Fix for `mov` files, for able to play in VideoJS.
+			 * This is a workaround for QuickTime files that are not natively supported by VideoJS.
+			 * Since mov files are often encoded in h.264, we can treat them as mp4.
+			 */
+			const adjustedMimeType = mimeType === 'video/quicktime' ? 'video/mp4' : mimeType;
+			videoSources.push( { src: sourceURL, type: adjustedMimeType } );
 		}
 
 		// Add transcoded video source if valid
@@ -150,8 +169,12 @@ const VideoEditor = ( { attachmentID } ) => {
 			if ( fluentForms && fluentForms.length > 0 ) {
 				dispatch( setFluentForms( fluentForms ) );
 			}
+
+			if ( ninjaForms && ninjaForms.length > 0 ) {
+				dispatch( setNinjaForms( ninjaForms ) );
+			}
 		}
-	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms ] );
+	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {
@@ -171,7 +194,33 @@ const VideoEditor = ( { attachmentID } ) => {
 	const seekToTime = ( time ) => playerRef.current?.currentTime( time );
 	const pauseVideo = () => playerRef.current?.pause();
 
+	const validateLayers = ( videoLayers ) => {
+		const invalidFormLayers = [];
+		for ( const layer of videoLayers ) {
+			if ( layer.type === 'form' ) {
+				const formType = layer.form_type;
+				const formId = getFormIdFromLayer( layer, formType );
+				if ( ! formId ) {
+					invalidFormLayers.push( layer.displayTime );
+				}
+			}
+		}
+		return invalidFormLayers;
+	};
+
 	const handleSaveAttachmentMeta = async () => {
+		const invalidLayers = validateLayers( layers );
+		// Validate form layers before saving.
+		if ( invalidLayers.length > 0 ) {
+			const layerTimes = invalidLayers.join( ', ' );
+			setSnackbarMessage( _n( 'Please select a form for the layer at timestamp: ', 'Please select a form for the layers at timestamps: ', invalidLayers.length, 'godam' ) + layerTimes );
+			setShowSnackbar( true );
+			setTimeout( () => {
+				setShowSnackbar( false );
+			}, 3000 );
+			return;
+		}
+
 		const data = {
 			rtgodam_meta: { videoConfig, layers, chapters },
 		};
@@ -311,15 +360,16 @@ const VideoEditor = ( { attachmentID } ) => {
 					<Button
 						className="godam-button absolute right-4 bottom-8"
 						variant="primary"
-						disabled={ ! isChanged }
+						icon={ isSavingMeta && <Spinner /> }
 						onClick={ handleSaveAttachmentMeta }
 						isBusy={ isSavingMeta }
+						disabled={ ! isChanged }
 					>
-						{ __( 'Save', 'godam' ) }
+						{ isSavingMeta ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 					</Button>
 				</div>
 
-				<main className="flex justify-center items-center p-4 relative overflow-y-auto">
+				<main className="flex flex-col items-center p-4 overflow-y-auto">
 
 					{
 						// Display a success message when video changes are saved.
@@ -338,29 +388,37 @@ const VideoEditor = ( { attachmentID } ) => {
 						</Snackbar>
 					) }
 
-					<div className="absolute top-4 left-4 right-4">
-						<div className="flex space-x-2 justify-end items-center">
+					<div className="flex space-x-2 justify-end items-center w-full mb-4">
+						<Tooltip
+							text={
+								<p>
+									{ __( 'You can copy the block into one of the two options:', 'godam' ) }
+									<br />
+									{ __( '1. Insert as a block in the Block editor.', 'godam' ) }
+									<br />
+									{ __( '2. Insert as HTML content in the Block editor.', 'godam' ) }
+								</p>
+							}
+						>
 							<Button
-								variant="secondary"
+								variant="primary"
 								icon={ copy }
 								iconPosition="left"
 								onClick={ handleCopyGoDAMVideoBlock }
-								size="compact"
 								className="godam-button"
 							>
 								{ __( 'Copy Block', 'godam' ) }
 							</Button>
-							<Button
-								variant="secondary"
-								href={ `/?godam_page=video-preview&id=${ attachmentID }` }
-								target="_blank"
-								className="godam-button"
-								size="compact"
-								icon={ seen }
-							>
-								{ __( 'Preview', 'godam' ) }
-							</Button>
-						</div>
+						</Tooltip>
+						<Button
+							variant="primary"
+							href={ `/?godam_page=video-preview&id=${ attachmentID }` }
+							target="_blank"
+							className="godam-button"
+							icon={ seen }
+						>
+							{ __( 'Preview', 'godam' ) }
+						</Button>
 					</div>
 
 					{ attachmentConfig && sources.length > 0 && (
@@ -371,6 +429,13 @@ const VideoEditor = ( { attachmentID } ) => {
 										controls: true,
 										fluid: true,
 										preload: 'auto',
+										flvjs: {
+											mediaDataSource: {
+												isLive: true,
+												cors: false,
+												withCredentials: false,
+											},
+										},
 										aspectRatio: '16:9',
 										sources,
 										controlBar: {

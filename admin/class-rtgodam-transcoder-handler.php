@@ -282,6 +282,13 @@ class RTGODAM_Transcoder_Handler {
 
 			$transcoding_url = $this->transcoding_api_url . 'resource/Transcoder Job';
 
+			// Block if blacklisted ip address.
+			$remote_address_key = 'REMOTE_ADDR';
+			$client_ip          = isset( $_SERVER[ $remote_address_key ] ) ? filter_var( $_SERVER[ $remote_address_key ], FILTER_VALIDATE_IP ) : '';
+			if ( ! empty( $client_ip ) && in_array( $client_ip, rtgodam_get_blacklist_ip_addresses(), true ) ) {
+				return $metadata;
+			}
+
 			$upload_page = wp_remote_post( $transcoding_url, $args );
 
 			if ( ! is_wp_error( $upload_page ) &&
@@ -506,6 +513,10 @@ class RTGODAM_Transcoder_Handler {
 			$this->uploaded['media_author'] = $media[0]->media_author;
 		}
 
+		// rtMedia support.
+		update_post_meta( $post_id, '_rt_media_source', $post_thumbs_array['job_for'] );
+		update_post_meta( $post_id, '_rt_media_thumbnails', $thumbnail_urls );
+
 		update_post_meta( $post_id, 'rtgodam_media_source', $post_thumbs_array['job_for'] );
 		update_post_meta( $post_id, 'rtgodam_media_thumbnails', $thumbnail_urls );
 
@@ -516,6 +527,8 @@ class RTGODAM_Transcoder_Handler {
 			$is_retranscoding_job = get_post_meta( $post_id, 'rtgodam_retranscoding_sent', true );
 
 			if ( ! $is_retranscoding_job || rtgodam_is_override_thumbnail() ) {
+				// rtMedia support.
+				update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
 
 				if ( class_exists( 'RTMediaModel' ) ) {
 					$model->update( array( 'cover_art' => $first_thumbnail_url ), array( 'media_id' => $post_id ) );

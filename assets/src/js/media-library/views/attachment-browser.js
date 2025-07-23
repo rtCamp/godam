@@ -6,6 +6,7 @@
 import MediaLibraryTaxonomyFilter from './filters/media-library-taxonomy-filter';
 import MediaDateRangeFilter from './filters/media-date-range-filter';
 import MediaRetranscode from './filters/media-retranscode';
+import ToggleFoldersButton from './filters/toggle-folders-button';
 
 import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled } from '../utility';
 
@@ -38,6 +39,17 @@ export default AttachmentsBrowser?.extend( {
 	createToolbar() {
 		// Make sure to load the original toolbar
 		AttachmentsBrowser.prototype.createToolbar.call( this );
+
+		if ( ToggleFoldersButton && ! isUploadPage() ) {
+			this.toolbar.set(
+				'ToggleFoldersButton',
+				new ToggleFoldersButton( {
+					controller: this.controller,
+					model: this.collection.props,
+					priority: -105,
+				} ).render(),
+			);
+		}
 
 		if ( MediaLibraryTaxonomyFilter ) {
 			this.toolbar.set(

@@ -34,37 +34,27 @@ const slice = createSlice( {
 			folderCreation: false,
 			rename: false,
 			delete: false,
-
-			item: null,
 		},
 
 		snackbar: {
 			message: '',
 			type: 'success',
 		},
+		isMultiSelecting: false,
+		multiSelectedFolderIds: [],
 
-		contextMenu: {
-			isOpen: false,
-			position: {
-				x: 0,
-				y: 0,
-			},
-			item: null,
-		},
+		sortOrder: 'name-asc',
 	},
 	reducers: {
 		changeSelectedFolder: ( state, action ) => {
 			state.selectedFolder = action.payload.item;
+			window.godam = window.godam || {};
+			window.godam.selectedFolder = action.payload.item;
 		},
 		openModal: ( state, action ) => {
-			const { type, item } = action.payload;
-
-			if ( type in state.modals ) {
-				state.modals[ type ] = true;
-			}
-
-			if ( item ) {
-				state.modals.item = item;
+			const modalName = action.payload;
+			if ( state.modals.hasOwnProperty( modalName ) ) {
+				state.modals[ modalName ] = true;
 			}
 		},
 		closeModal: ( state, action ) => {
@@ -72,8 +62,6 @@ const slice = createSlice( {
 			if ( state.modals.hasOwnProperty( modalName ) ) {
 				state.modals[ modalName ] = false;
 			}
-
-			state.modals.item = null;
 		},
 		updateSnackbar: ( state, action ) => {
 			state.snackbar.message = action.payload.message;
@@ -99,18 +87,18 @@ const slice = createSlice( {
 			state.folders.push( newItem );
 		},
 		renameFolder: ( state, action ) => {
-			if ( ! state.modals.item ) {
+			if ( ! state.selectedFolder ) {
 				return;
 			}
 
-			const folder = state.folders.find( ( item ) => item.id === state.modals.item.id );
+			const folder = state.folders.find( ( item ) => item.id === state.selectedFolder.id );
 
 			if ( folder ) {
 				folder.name = action.payload.name;
 			}
 		},
 		deleteFolder: ( state ) => {
-			if ( ! state.modals.item ) {
+			if ( ! state.selectedFolder && ! state.isMultiSelecting ) {
 				return;
 			}
 
@@ -125,50 +113,130 @@ const slice = createSlice( {
 				} );
 			}
 
-			findChildren( state.modals.item.id );
+			if ( state.isMultiSelecting ) {
+				state.multiSelectedFolderIds.forEach( ( id ) => {
+					findChildren( id );
+				} );
+			} else {
+				findChildren( state.selectedFolder.id );
+			}
 
 			state.folders = state.folders.filter( ( item ) => ! idsToDelete.has( item.id ) );
 
-			state.modals.item = {
+			state.selectedFolder = {
 				id: -1,
 			};
+
+			state.isMultiSelecting = false;
+			state.multiSelectedFolderIds = [];
 		},
 		setTree: ( state, action ) => {
 			state.folders = action.payload;
 		},
-		showContextMenu: ( state, action ) => {
-			state.contextMenu.isOpen = true;
-			state.contextMenu.position = action.payload.position;
-			state.contextMenu.item = action.payload.item;
+		toggleMultiSelectMode: ( state ) => {
+			state.isMultiSelecting = ! state.isMultiSelecting;
+			if ( ! state.isMultiSelecting ) {
+				state.multiSelectedFolderIds = [];
+			}
 		},
-		hideContextMenu: ( state ) => {
-			state.contextMenu.isOpen = false;
-			state.contextMenu.position = { x: 0, y: 0 };
-			state.contextMenu.item = null;
+		addMultiSelectedFolder: ( state, action ) => {
+			const folderIdToAdd = action.payload.id;
+			if ( ! state.multiSelectedFolderIds.includes( folderIdToAdd ) ) {
+				state.multiSelectedFolderIds.push( folderIdToAdd );
+			}
 		},
-		updateContextMenuPosition: ( state, action ) => {
-			state.contextMenu.position = action.payload;
+		removeMultiSelectedFolder: ( state, action ) => {
+			const folderIdToRemove = action.payload.id;
+			state.multiSelectedFolderIds = state.multiSelectedFolderIds.filter(
+				( id ) => id !== folderIdToRemove,
+			);
+		},
+		toggleMultiSelectedFolder: ( state, action ) => {
+			const folderIdToToggle = action.payload.id;
+			if ( state.multiSelectedFolderIds.includes( folderIdToToggle ) ) {
+				state.multiSelectedFolderIds = state.multiSelectedFolderIds.filter(
+					( id ) => id !== folderIdToToggle,
+				);
+			} else {
+				state.multiSelectedFolderIds.push( folderIdToToggle );
+			}
+		},
+		clearMultiSelectedFolders: ( state ) => {
+			state.multiSelectedFolderIds = [];
+		},
+		setSortOrder: ( state, action ) => {
+			state.sortOrder = action.payload;
+			state.folders.sort( ( a, b ) => {
+				if ( state.sortOrder === 'name-asc' ) {
+					return a.name.localeCompare( b.name );
+				} else if ( state.sortOrder === 'name-desc' ) {
+					return b.name.localeCompare( a.name );
+				}
+				return 0;
+			} );
 		},
 		lockFolder: ( state, action ) => {
-			const folder = state.folders.find( ( item ) => item.id === action.payload.id );
+			const { ids, status } = action.payload;
 
-			if ( folder ) {
-				if ( ! folder.meta ) {
-					folder.meta = {};
+			if ( ! Array.isArray( ids ) ) {
+				const folder = state.folders.find( ( item ) => item.id === action.payload );
+
+				if ( folder ) {
+					if ( ! folder.meta ) {
+						folder.meta = {};
+					}
+
+					folder.meta.locked = ! Boolean( folder.meta?.locked );
+
+					if ( state.selectedFolder && state.selectedFolder.id === folder.id ) {
+						window.godam = window.godam || {};
+						window.godam.selectedFolder = { ...state.selectedFolder, meta: { ...state.selectedFolder.meta, locked: folder.meta.locked } };
+					}
+
+					if ( state?.selectedFolder?.meta ) {
+						state.selectedFolder.meta.locked = folder.meta.locked;
+					}
 				}
+			} else {
+				ids.forEach( ( id ) => {
+					const folder = state.folders.find( ( item ) => item.id === id );
+					if ( folder ) {
+						if ( ! folder.meta ) {
+							folder.meta = {};
+						}
+						folder.meta.locked = status;
 
-				folder.meta.locked = ! Boolean( folder.meta?.locked );
+						if ( state.selectedFolder && state.selectedFolder.id === folder.id ) {
+							window.godam = window.godam || {};
+							window.godam.selectedFolder = { ...state.selectedFolder, meta: { ...state.selectedFolder.meta, locked: folder.meta.locked } };
+						}
+					}
+				} );
 			}
 		},
 		addBookmark: ( state, action ) => {
-			const folder = state.folders.find( ( item ) => item.id === action.payload.id );
+			const { ids, status } = action.payload;
 
-			if ( folder ) {
-				if ( ! folder.meta ) {
-					folder.meta = {};
+			if ( ! Array.isArray( ids ) ) {
+				const folder = state.folders.find( ( item ) => item.id === action.payload );
+
+				if ( folder ) {
+					if ( ! folder.meta ) {
+						folder.meta = {};
+					}
+
+					folder.meta.bookmark = ! Boolean( folder.meta?.bookmark );
 				}
-
-				folder.meta.bookmark = ! Boolean( folder.meta?.bookmark );
+			} else {
+				ids.forEach( ( id ) => {
+					const folder = state.folders.find( ( item ) => item.id === id );
+					if ( folder ) {
+						if ( ! folder.meta ) {
+							folder.meta = {};
+						}
+						folder.meta.bookmark = status;
+					}
+				} );
 			}
 		},
 	},
@@ -184,11 +252,14 @@ export const {
 	renameFolder,
 	deleteFolder,
 	setTree,
-	showContextMenu,
-	hideContextMenu,
+	toggleMultiSelectMode,
+	addMultiSelectedFolder,
+	removeMultiSelectedFolder,
+	toggleMultiSelectedFolder,
+	clearMultiSelectedFolders,
+	setSortOrder,
 	lockFolder,
 	addBookmark,
-	updateContextMenuPosition,
 } = slice.actions;
 
 export default slice.reducer;

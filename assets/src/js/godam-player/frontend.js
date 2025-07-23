@@ -3,6 +3,12 @@
 /**
  * External dependencies
  */
+
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
 /**
  * VideoJs dependencies
  */
@@ -12,6 +18,7 @@ import 'videojs-ima/dist/videojs.ima.css';
 import videojs from 'video.js';
 import 'videojs-contrib-ads';
 import 'videojs-ima';
+import 'videojs-flvjs-es6';
 
 /**
  * FontAwesome dependencies
@@ -216,7 +223,7 @@ function GODAMPlayer( videoRef = null ) {
 				// Now convert to your format
 				return filteredChapters.map( ( chapter ) => ( {
 					startTime: parseFloat( chapter.startTime ) || 0,
-					text: chapter.text || 'Chapter',
+					text: chapter.text || __( 'Chapter', 'godam' ),
 					originalTime: chapter.originalTime,
 					endTime: null,
 				} ) );
@@ -317,13 +324,12 @@ function GODAMPlayer( videoRef = null ) {
 		}
 
 		function handleVideoResize() {
-			// if screen size if greater than 768px then skip.
-			if ( window.innerWidth > 768 ) {
-				return;
-			}
-
 			// Skip if video is fullscreen
-			if ( ! player || typeof player.isFullscreen !== 'function' ) {
+			if (
+				! player ||
+        typeof player.isFullscreen !== 'function' ||
+        videoSetupOptions?.playerSkin === 'Classic'
+			) {
 				return;
 			}
 
@@ -339,6 +345,11 @@ function GODAMPlayer( videoRef = null ) {
 					controlBarEl.style.removeProperty( 'position' );
 					controlBarEl.style.removeProperty( 'margin' );
 				}
+			}
+
+			// if screen size if greater than 768px then skip.
+			if ( window.innerWidth > 768 ) {
+				return;
 			}
 
 			// Apply debounce to avoid multiple calls.
@@ -550,41 +561,41 @@ function GODAMPlayer( videoRef = null ) {
 				const html = `
 				<div class="share-modal-message">
 					<div class="share-modal-header">
-						<h2>Share Media</h2>
-						<p>Copy the links below to share the selected media files.</p>
+						<h2>${ __( 'Share Media', 'godam' ) }</h2>
+						<p>${ __( 'Copy the links below to share the selected media files.', 'godam' ) }</p>
 					</div>
 
 					<div class="share-buttons">
-						<a class="facebook social-icon" target="blank"><img src=${ Facebook } alt='Facebook icon' height={24} width={24}</a>
-						<a class="twitter social-icon" target="blank"><img src=${ Twitter } alt='Twitter icon' height={24} width={24}</a>
-						<a class="linkedin social-icon" target="blank"><img src=${ LinkedIn } alt='Linkedin icon' height={24} width={24}</a>
-						<a class="reddit social-icon" target="blank"><img src=${ Reddit } alt='Reddit icon' height={24} width={24}</a>
-						<a class="whatsapp social-icon" target="blank"><img src=${ Whatsapp } alt='Whatsapp icon' height={24} width={24}</a>
-						<a class="telegram social-icon" target="blank"><img src=${ Telegram } alt='Telegram icon' height={24} width={24}</a>
+						<a class="facebook social-icon" target="_blank"><img src=${ Facebook } alt='Facebook icon' height="20" width="20"/> </a>
+						<a class="twitter social-icon" target="_blank"><img src=${ Twitter } alt='Twitter icon' height="20" width="20"/> </a>
+						<a class="linkedin social-icon" target="_blank"><img src=${ LinkedIn } alt='Linkedin icon' height="20" width="20"/> </a>
+						<a class="reddit social-icon" target="_blank"><img src=${ Reddit } alt='Reddit icon' height="20" width="20"/> </a>
+						<a class="whatsapp social-icon" target="_blank"><img src=${ Whatsapp } alt='Whatsapp icon' height="20" width="20"/> </a>
+						<a class="telegram social-icon" target="_blank"><img src=${ Telegram } alt='Telegram icon' height="20" width="20"/> </a>
 					</div>
 
 					<div class='share-input-container'>
-						<label>Page Link</label>
+						<label>${ __( 'Page Link', 'godam' ) }</label>
 						<div class="share-modal-input-group">
 							<input id="page-link" type="text" value="${ window.godamData?.apiBase }/web/video/${ this.player().jobId }" readonly />
 							<button id="copy-page-link" class="copy-button">
-								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
+								<img src=${ CopyIcon } alt='${ __( 'copy icon', 'godam' ) }' height=${ 24 } width=${ 24 }>
 							</button>
 						</div>
 					</div>
 
 					<div class='share-input-container'>
-						<label>Embed</label>
+						<label>${ __( 'Embed', 'godam' ) }</label>
 						<div class="share-modal-input-group">
 							<input id="embed-code" type="text" value='<iframe src="${ window.godamData?.apiBase }/web/embed/${ this.player().jobId }"></iframe>' readonly />
 							<button id="copy-embed-code" class="copy-button">
-								<img src=${ CopyIcon } alt='copy icon' height=${ 24 } width=${ 24 }>
+								<img src=${ CopyIcon } alt='${ __( 'copy icon', 'godam' ) }' height=${ 24 } width=${ 24 }>
 							</button>
 						</div>
 					</div>
 
 					<div class="share-modal-footer">
-						<button id="cancel-button">Cancel</button>
+						<button id="cancel-button">${ __( 'Cancel', 'godam' ) }</button>
 					</div>
 				</div>
 			`;
@@ -971,7 +982,8 @@ function GODAMPlayer( videoRef = null ) {
 								layerObj.layerElement.querySelector( '.wp-polls-answer' ) ) ||
 							( layerObj.layerElement.querySelector( '.forminator-success' ) &&
 								layerObj.layerElement.querySelector( '.forminator-show' ) ) ||
-							layerObj.layerElement.querySelector( '.everest-forms-notice--success' )
+							layerObj.layerElement.querySelector( '.everest-forms-notice--success' ) ||
+							( layerObj.layerElement.querySelector( '.nf-response-msg' ) && '' !== layerObj.layerElement.querySelector( '.nf-response-msg' ).innerHTML )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -1023,6 +1035,8 @@ function GODAMPlayer( videoRef = null ) {
 					} else if ( window.godamPluginDependencies?.forminator && layer.form_type === 'forminator' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.fluentForms && layer.form_type === 'fluentforms' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.ninjaForms && layer.form_type === 'ninjaforms' ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {
@@ -1333,7 +1347,11 @@ function GODAMPlayer( videoRef = null ) {
 				productLink.target = '_blank';
 				productLink.rel = 'noopener noreferrer';
 				productLink.style.background = hotspot.backgroundColor;
-				productLink.textContent = hotspot.shopText;
+
+				// Product Button Label.
+				const defaultLabel = hotspot.addToCart ? __( 'View Product', 'godam' ) : __( 'Buy Now', 'godam' );
+				const shopText = hotspot.shopText?.trim();
+				productLink.textContent = shopText ? shopText : defaultLabel;
 				productDetailsDiv.appendChild( productLink );
 
 				hotspotContent.appendChild( productBoxDiv );

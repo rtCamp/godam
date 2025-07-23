@@ -1,10 +1,10 @@
 === GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more ===
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.1.4
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,11 +26,12 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 ✓ The [DAM functionality](https://godam.io/features/wordpress-advanced-media-management/) streamlines file organization for websites with large libraries of images, videos, documents, and more.
 ✓ Organize media assets efficiently with enhanced WordPress Media Library folders and filtering with a smart Media Library Assistant.
 ✓ Manage files easily with a built-in folder-based File Manager for drag-and-drop organization.
+✓ Bookmark and Lock folders for improved folder organization
 
 📌 **Interactive Video Layers for Engagement**
 ✓ Embed [clickable CTAs](https://godam.io/features/video-overlay/) to drive actions like sign-ups and purchases.
 ✓ Enhance your videos with [customizable hotspots](https://godam.io/features/video-hotspot/) that deliver additional context, links, and information exactly when and where your viewers need it.
-✓ Add interactive forms using [Gravity Forms](https://godam.io/features/gravity-forms/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), [WPForms](https://wordpress.org/plugins/wpforms-lite/), and [Jetpack Forms](https://wordpress.org/plugins/jetpack/) to collect leads.
+✓ Add interactive forms using [Gravity Forms](https://godam.io/features/gravity-forms/), [WPForms](https://godam.io/features/wp-forms/), [Contact Form 7](https://godam.io/features/contact-form-7/), [Jetpack Forms](https://godam.io/features/jetpack-form/), [Forminator Forms](https://godam.io/features/forminator-forms/), [Fluent Forms](https://godam.io/features/fluent-forms/), [SureForms](https://godam.io/features/sure-forms/), and [Everest Forms](https://godam.io/features/everest-forms/) to collect leads.
 ✓ Enable video submissions using the GoDAM Record field that supports webcam and screencast inside Gravity Forms.
 ✓ Add interactive Polls to gather viewer opinions during playback.
 ✓ Customize video player appearance globally with custom CSS through the Video Player settings menu.
@@ -42,6 +43,7 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 
 📌 **Seamless Ad Monetization**
 ✓ Supports [self-hosted ads and third-party ad networks](https://godam.io/features/ads-integration/).
+✓ Global Ads settings for centralized advertisement management
 ✓ Flexible ad placements (pre-roll, mid-roll, post-roll) to maximize revenue.
 ✓ Boost revenue and engagement with clickable ad redirections
 
@@ -66,11 +68,12 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 ✓ Ensures smooth playback by dynamically adjusting quality based on network speed.
 ✓ Supported audio formats: MP3, M4A, WAV, OGG
 ✓ Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
+✓ In Free version these video formats are not supported: 3G2, 3GP, AVI, OGV, WMV
 ✓ Watermarking support to protect video content.
 ✓ Automatically compress and resize videos on upload to reduce storage and bandwidth.
 
-📌 **Central Media Manager**
-✓ Unified dashboard for managing all media assets in one place.
+📌 **GoDAM Central**
+✓ Unified dashboard for managing all assets in one place.
 ✓ Organize videos, images, and documents into folders with search, filters, and sharing options.
 ✓ Each video gets a dedicated single video page with time-stamped comments and reactions for team collaboration.
 ✓ Automatically sync uploaded videos with the WordPress Media Library for easy access across your site.
@@ -103,7 +106,7 @@ Use Cases:
 ✓ Content Platforms: Stream high-quality videos with minimal buffering and downtime.
 
 GoDAM is ideal for businesses, content creators, educators, and media platforms looking to streamline digital asset management while offering high-quality streaming experiences.
-Whether you’re running an e-learning site, an eCommerce store with product videos, or a media-heavy blog, GoDAM ensures your videos are delivered efficiently and engagingly.
+Whether you're running an e-learning site, an eCommerce store with product videos, or a media-heavy blog, GoDAM ensures your videos are delivered efficiently and engagingly.
 
 Get started today and revolutionize the way you manage and deliver video content on WordPress!
 
@@ -119,10 +122,14 @@ Get started today and revolutionize the way you manage and deliver video content
 GoDAM works seamlessly with popular WordPress plugins to enhance interactivity and engagement:
 
 - [Gravity Forms](https://godam.io/features/gravity-forms/) – Add forms directly to your videos to collect leads and feedback.
-- [WPForms](https://wordpress.org/plugins/wpforms-lite/) – Integrate lightweight forms for surveys, signups, or user inputs.
-- [Contact Form 7](https://wordpress.org/plugins/contact-form-7/) – Use a classic contact form plugin inside your videos for engagement.
+- [WPForms](https://godam.io/features/wp-forms/) – Integrate lightweight forms for surveys, signups, or user inputs.
+- [Contact Form 7](https://godam.io/features/contact-form-7/) – Use a classic contact form plugin inside your videos for engagement.
+- [Jetpack Forms](https://godam.io/features/jetpack-form/) - Block Editor based forms for lead generation and engagement.
+- [Forminator Forms](https://godam.io/features/forminator-forms/) – Advanced form builder with powerful features for lead capture.
+- [Fluent Forms](https://godam.io/features/fluent-forms/) – Modern form builder with advanced conditional logic and integrations.
+- [SureForms](https://godam.io/features/sure-forms/) – Professional form solution with advanced features and analytics.
+- [Everest Forms](https://godam.io/features/everest-forms/) – User-friendly form builder with drag-and-drop functionality.
 - [WP-Polls](https://wordpress.org/plugins/wp-polls/) – Add live polls to your videos and gather audience opinions in real-time.
-- [Jetpack Forms](https://wordpress.org/plugins/jetpack/) - Block Editor based forms for lead generation and engagement.
 - [Elementor](https://wordpress.org/plugins/elementor/) – Drag-and-drop GoDAM widgets for easy content creation.
 
 == Installation ==
@@ -170,14 +177,11 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Screenshots ==
 1. General Settings
-2. Video Settings without API Key
 3. Video Settings with valid API Key
 4. Video Editor
 5. Video Layer Selection
-6. CTA Layer
 7. Hotspot Layer
 8. Ads Integration
-9. Polls Layer
 10. Gravity Forms Integration
 11. Contact Form 7 Integration
 12. WP Forms Integration
@@ -188,17 +192,14 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 17. Attachment Video Details
 18. Single Video Analytics
 19. Video Analytics Dashboard
-20. Central Media Selector Tab
-21. Share Button
+20. GoDAM Central Selector Tab
 22. GoDAM Recorder Field for Gravity Forms
 23. Gravity Form Entry Detail page
 24. Automatic Video Transcription
-25. Built-in Video SEO
 26. [godam_video] Shortcode
-27. Central Media Manager
-28. Image Upload to Central Media Manager
+27. GoDAM Central
+28. Image Upload to GoDAM Central
 29. GoDAM Video Gallery Block
-30. GoDAM Video Gallery Front-end
 31. Elementor GoDAM Audio Widget
 32. Elementor GoDAM Gallery Widget
 33. Elementor GoDAM Video Widget
@@ -207,6 +208,38 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 36. Chapters Interface
 
 == Changelog ==
+
+= v1.3.0 (July 22, 2025) =
+
+- Feat: Integrated [Everest Forms](https://godam.io/features/everest-forms/)
+- Feat: Integrated [Forminator Forms](https://godam.io/features/forminator-forms/)
+- Feat: Integrated [Fluent Forms](https://godam.io/features/fluent-forms/) and added GoDAM Recorder Field integration
+- Feat: Integrated [SureForms](https://godam.io/features/sure-forms/) and added GoDAM Recorder Field integration
+- Feat: Added GoDAM Recorder Field integration for [WPForms](https://godam.io/features/wp-forms/) to capture video submissions
+- Feat: Implemented theme support for customizable video player appearance
+- Feat: Added Global Ads settings for centralized advertisement management
+- Feat: Implemented automatic autoplay disable when video audio is unmuted for better user experience
+- Feat: Added Bookmarks and Lock functionality for improved Media Library folder organization
+- Feat: Extended free version support to include MOV files and FLV formats (some codecs)
+- Feat: Introduced Background Color for Image CTA Layer Button
+- Enhancement: Added Custom Post Type support for GoDAM Videos
+- Enhancement: Redesigned Media Library user interface for improved usability and navigation
+- Enhancement: Improved Layer Selection interface with tabs and search functionality
+- Fix: Resolved overlapping button issues in Video Editor when viewing video content
+- Fix: Added comprehensive translations for previously untranslated interface strings
+- Fix: Eliminated display of "0" value after removing images in Image CTA Layer
+- Fix: Updated Share Button and Share Modal visibility on GoDAM Video block
+- Fix: Added validation for empty form selection in form layers
+
+= v1.2.1 (July 11, 2025) =
+
+- Fix: Resolved thumbnail issue with rtMedia for transcoded videos
+
+= v1.2.0 (July 2, 2025) =
+
+- Update: Bumped the version to reflect all major features and fixes added in the last release (v1.1.4)
+- Fix: Prevented creation of new image attachments for video thumbnails
+- Fix: Addressed security vulnerabilities in the transcoding callback process
 
 = v1.1.4 (June 25, 2025) =
 
@@ -360,7 +393,7 @@ Data Sent:
 
 2. Email
 
-3. Author of the post’s display name
+3. Author of the post's display name
 
 4. Browser version, name, and browser language
 

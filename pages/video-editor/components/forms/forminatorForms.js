@@ -22,7 +22,9 @@ const ForminatorForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const forminatorForms = useSelector( ( state ) => state.videoReducer.forminatorForms );
-	const { data: formHTML, isFetching } = useGetSingleForminatorFormQuery( layer.forminator_id );
+	const { data: formHTML, isFetching } = useGetSingleForminatorFormQuery( layer.forminator_id, {
+		skip: 'undefined' === typeof layer?.forminator_id,
+	} );
 
 	const forms = forminatorForms?.map( ( form ) => ( {
 		value: form.id,
@@ -54,7 +56,7 @@ const ForminatorForm = ( { layerID } ) => {
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isForminatorFormsPluginActive } className="gravity-form-selector mb-4" formID={ layer.forminator_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isValidAPIKey || ! isForminatorFormsPluginActive } className="mb-4" formID={ layer.forminator_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<LayerControl>

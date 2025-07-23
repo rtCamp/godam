@@ -28,14 +28,9 @@ const JetpackForm = ( { layerID } ) => {
 	const { data: formsData, error: formsError } = useGetJetpackFormsQuery();
 
 	// Use existing query for single form
-	const { data: formHTML, isFetching, error } = useGetSingleJetpackFormQuery(
-		{
-			id: layer?.jp_id,
-		},
-		{
-			skip: ! layer?.jp_id,
-		},
-	);
+	const { data: formHTML, isFetching, error } = useGetSingleJetpackFormQuery( { id: layer?.jp_id }, {
+		skip: 'undefined' === typeof layer?.jp_id,
+	} );
 
 	// Initialize Jetpack forms data - useEffect must be called unconditionally
 	useEffect( () => {
@@ -87,7 +82,7 @@ const JetpackForm = ( { layerID } ) => {
 				} ) );
 			}
 		}
-	}, [ changeFormID, dispatch, formsData, formsError, layer?.jp_id, layer?.id ] );
+	}, [ dispatch, formsData, formsError, layer?.jp_id, layer?.id ] );
 
 	// Ensure forms is always an array with proper structure
 	const forms = Array.isArray( jetpackForms )

@@ -9,6 +9,29 @@ export const folderApi = createApi( {
 	reducerPath: 'folderApi',
 	baseQuery: fetchBaseQuery( { baseUrl: restURL } ),
 	endpoints: ( builder ) => ( {
+		getAllMediaCount: builder.query( {
+			async queryFn( arg, api, extraOptions, baseQuery ) {
+				const result = await baseQuery( {
+					url: 'wp/v2/media',
+					params: { _fields: 'id', per_page: 1 },
+				} );
+				if ( result.error ) {
+					return { error: result.error };
+				}
+
+				const totalMediaCount = parseInt( result.meta?.response?.headers.get( 'X-WP-Total' ) || '0', 10 );
+
+				return { data: totalMediaCount };
+			},
+		} ),
+		getCategoryMediaCount: builder.query( {
+			query: ( { folderId } ) => ( {
+				url: `godam/v1/media-library/category-count/${ folderId }`,
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
+				},
+			} ),
+		} ),
 		getFolders: builder.query( {
 			query: () => ( {
 				url: 'wp/v2/media-folder',
@@ -50,6 +73,45 @@ export const folderApi = createApi( {
 				},
 			} ),
 		} ),
+		bulkDeleteFolders: builder.mutation( {
+			query: ( folderIds ) => ( {
+				url: 'godam/v1/media-library/bulk-delete-folders',
+				method: 'DELETE',
+				body: { folder_ids: folderIds, force: true },
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
+					'Content-Type': 'application/json',
+				},
+			} ),
+		} ),
+		bulkLockFolders: builder.mutation( {
+			query: ( { folderIds, lockedStatus } ) => ( {
+				url: 'godam/v1/media-library/bulk-lock-folders',
+				method: 'POST',
+				body: {
+					folder_ids: folderIds,
+					locked_status: lockedStatus,
+				},
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
+					'Content-Type': 'application/json',
+				},
+			} ),
+		} ),
+		bulkBookmarkFolders: builder.mutation( {
+			query: ( { folderIds, bookmarkStatus } ) => ( {
+				url: 'godam/v1/media-library/bulk-bookmark-folders',
+				method: 'POST',
+				body: {
+					folder_ids: folderIds,
+					bookmark_status: bookmarkStatus,
+				},
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
+					'Content-Type': 'application/json',
+				},
+			} ),
+		} ),
 		assignFolder: builder.mutation( {
 			query: ( { attachmentIds, folderTermId } ) => ( {
 				url: 'godam/v1/media-library/assign-folder',
@@ -76,10 +138,15 @@ export const folderApi = createApi( {
 } );
 
 export const {
+	useGetAllMediaCountQuery,
+	useGetCategoryMediaCountQuery,
 	useGetFoldersQuery,
 	useCreateFolderMutation,
 	useUpdateFolderMutation,
 	useDeleteFolderMutation,
+	useBulkDeleteFoldersMutation,
+	useBulkLockFoldersMutation,
+	useBulkBookmarkFoldersMutation,
 	useAssignFolderMutation,
 	useDownloadZipMutation,
 } = folderApi;

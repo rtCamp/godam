@@ -5,6 +5,11 @@ import videojs from 'video.js';
 import 'videojs-contrib-quality-levels';
 import DOMPurify from 'isomorphic-dompurify';
 
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
 const BackIcon = () => {
 	return `
 		<svg class="godam-chevron-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" width="12" height="12">
@@ -87,6 +92,9 @@ class SettingsButton extends videojs.getComponent( 'MenuButton' ) {
 				this.menu.addChild( item );
 			} );
 
+			const playerEl = this.player_.el();
+      playerEl.classList.remove("godam-submenu-open");
+
 			// Reset original items reference
 			this.originalItems_ = null;
 		}
@@ -105,6 +113,8 @@ function openSubmenu( menuButton, items, title = '' ) {
 	if ( ! menuButton.originalItems_ ) {
 		menuButton.originalItems_ = menuButton.menu.children().slice();
 	}
+
+	menuButton.player_.el().classList.add( 'godam-submenu-open' );
 
 	// Clear existing menu items using Video.js methods
 	const mainMenuItems = menuButton.menu.children().slice();
@@ -170,7 +180,7 @@ function openSubmenu( menuButton, items, title = '' ) {
 						<span class="vjs-menu-item-text">${ itemData.html }</span>
 					</div>`;
 				} else {
-					html = '<span class="vjs-menu-item-text">Invalid item</span>';
+					html = `<span class="vjs-menu-item-text">${ __( 'Invalid item', 'godam' ) }</span>`;
 				}
 
 				el.innerHTML = DOMPurify.sanitize( html );

@@ -17,6 +17,7 @@ import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
 import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
+import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 
 /**
  * WordPress dependencies
@@ -93,6 +94,12 @@ export const layerTypes = [
 				icon: EverestFormsIcon,
 				isActive: window?.videoData?.everestFormsActive ?? false,
 				tooltipMessage: __( 'Everest Forms plugin is not active', 'godam' ),
+			},
+			ninjaforms: {
+				layerText: __( 'Ninja Forms', 'godam' ),
+				icon: NinjaFormsIcon,
+				isActive: window?.videoData?.ninjaFormsActive ?? false,
+				tooltipMessage: __( 'Ninja Forms plugin is not active', 'godam' ),
 			},
 		},
 	},
@@ -205,6 +212,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					html: '',
 					link: '',
 					allow_skip: true,
+					imageOpacity: 1,
 				} ) );
 				break;
 			case 'hotspot':
