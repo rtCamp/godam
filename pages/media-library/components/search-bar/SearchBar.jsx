@@ -23,13 +23,16 @@ const SearchBar = () => {
 	const [ debouncedSearchTerm, setDebouncedSearchTerm ] = useState( '' );
 	const [ currentPage, setCurrentPage ] = useState( 1 );
 	const [ showPopover, setShowPopover ] = useState( null );
+	const [ searchResults, setSearchResults ] = useState( [] );
 	const inputRef = useRef();
 	const popoverRef = useRef();
+	const lastFetchedPage = useRef( 1 );
 
 	useEffect( () => {
 		const handler = setTimeout( () => {
 			setDebouncedSearchTerm( searchTerm );
 			setCurrentPage( 1 );
+			setSearchResults( [] );
 		}, 500 );
 
 		return () => {
@@ -37,13 +40,28 @@ const SearchBar = () => {
 		};
 	}, [ searchTerm ] );
 
+	useEffect( () => {
+		lastFetchedPage.current = currentPage;
+	}, [ currentPage ] );
+
 	const { data, isFetching, isError } = useSearchFoldersQuery(
 		{ searchTerm: debouncedSearchTerm, page: currentPage, perPage: 10 },
 		{ skip: debouncedSearchTerm.trim().length === 0 },
 	);
 
-	const searchResults = data?.items || [];
 	const totalPages = data?.totalPages || 0;
+
+	useEffect( () => {
+		if ( ! data?.items ) {
+			return;
+		}
+
+		if ( lastFetchedPage.current === 1 ) {
+			setSearchResults( data.items );
+		} else {
+			setSearchResults( ( prev ) => [ ...prev, ...data.items ] );
+		}
+	}, [ data ] );
 
 	const handleSearchChange = ( value ) => {
 		setSearchTerm( value );
@@ -61,9 +79,16 @@ const SearchBar = () => {
 		setSearchTerm( '' );
 		setCurrentPage( 1 );
 		setShowPopover( null );
+		setSearchResults( [] );
 
 		if ( inputRef.current ) {
 			inputRef.current.querySelector( 'input' ).value = ''; // Clear input field
+		}
+	};
+
+	const handleLoadMore = () => {
+		if ( currentPage < totalPages && ! isFetching ) {
+			setCurrentPage( ( prev ) => prev + 1 );
 		}
 	};
 
@@ -130,6 +155,18 @@ const SearchBar = () => {
 											</Button>
 										</li>
 									) ) }
+									{ currentPage < totalPages && (
+										<div className="search-load-more">
+											<Button
+												onClick={ handleLoadMore }
+												isBusy={ isFetching && currentPage > 1 }
+												disabled={ isFetching }
+												variant="secondary"
+											>
+												{ __( 'Load More', 'godam' ) }
+											</Button>
+										</div>
+									) }
 								</ul>
 							</div>
 						) }
