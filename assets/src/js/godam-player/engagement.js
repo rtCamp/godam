@@ -4,7 +4,7 @@
 const { createReduxStore, register, select, dispatch, subscribe } = wp.data;
 const { apiFetch } = wp;
 const { addQueryArgs } = wp.url;
-const { createRoot, useState, useMemo } = wp.element;
+const { createRoot, useState, useMemo, useEffect, useRef } = wp.element;
 const { __ } = wp.i18n;
 const { nonceData, DOMPurify } = window;
 const storeName = 'godam-video-engagement';
@@ -326,7 +326,7 @@ const engagementStore = {
 			if ( commentLink ) {
 				commentLink.addEventListener( 'click', ( event ) => {
 					event.preventDefault();
-					self.generateCommentModal( videoAttachmentId, siteUrl );
+					self.generateCommentModal( videoAttachmentId, siteUrl, videoId );
 				} );
 			}
 
@@ -343,8 +343,9 @@ const engagementStore = {
 	 *
 	 * @param {number} videoAttachmentId The video attachment ID.
 	 * @param {string} siteUrl           The site URL.
+	 * @param {string} videoId           The video attachment ID.
 	 */
-	generateCommentModal( videoAttachmentId, siteUrl ) {
+	generateCommentModal( videoAttachmentId, siteUrl, videoId ) {
 		const modalId = 'rtgodam-video-engagement--comment-modal';
 		let commentModal = document.getElementById( modalId );
 
@@ -355,7 +356,7 @@ const engagementStore = {
 		commentModal.setAttribute( 'id', modalId );
 		document.body.appendChild( commentModal );
 		this.root = createRoot( commentModal );
-		this.root.render( <CommentBox videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } storeObj={ this } /> );
+		this.root.render( <CommentBox videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } storeObj={ this } videoId={ videoId } /> );
 	},
 };
 
@@ -526,7 +527,7 @@ function Comment( props ) {
 			{ children && children.length > 0 && (
 				<div className="rtgodam-video-engagement--comment-child">
 					{ children.map( ( child ) => (
-						<Comment key={ child.id } comment={ child } setCommentsData={ setCommentsData } storeObj={ storeObj } videoAttachmentId={ videoAttachmentId } />
+						<Comment key={ child.id } comment={ child } setCommentsData={ setCommentsData } storeObj={ storeObj } videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } />
 					) ) }
 				</div>
 			) }
@@ -569,7 +570,7 @@ function CommentList( props ) {
  * @return {ReactElement} A React element representing the comment box modal.
  */
 function CommentBox( props ) {
-	const { videoAttachmentId, storeObj, siteUrl } = props;
+	const { videoAttachmentId, storeObj, siteUrl, videoId } = props;
 	const baseClass = 'rtgodam-video-engagement--comment-modal';
 	const commentsCount = storeObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
 	const comments = storeObj.select.getComments()[ videoAttachmentId ] || [];
@@ -577,10 +578,31 @@ function CommentBox( props ) {
 
 	const memoizedStoreObj = useMemo( () => storeObj, [ storeObj ] );
 
+	const videoKey = videoId.replace( 'engagement-', '' );
+	const videoContainerRef = useRef( null );
+	const videoFigureId = `godam-player-container-${ videoKey }`;
+
+	useEffect( () => {
+		const currentVideoParent = document.getElementById( videoFigureId );
+		const currentVideo = currentVideoParent.querySelector( '.godam-video-wrapper' );
+		const currentVideoClass = currentVideoParent.className;
+		const currentVideoStyles = currentVideoParent.getAttribute( 'style' );
+
+		const videoContainer = videoContainerRef.current;
+		videoContainer.className = currentVideoClass;
+		videoContainer.style = currentVideoStyles;
+		videoContainer.appendChild( currentVideo );
+
+		return () => {
+			currentVideoParent.insertBefore( currentVideo, currentVideoParent.firstChild );
+		};
+	}, [ videoFigureId ] );
+
 	return (
 		<div className={ baseClass }>
 			<button className={ `${ baseClass }--close-button` } onClick={ () => storeObj.root.unmount() }>&times;</button>
 			<div className={ baseClass + '-content' }>
+				<figure ref={ videoContainerRef }></figure>
 				<h3 className={ baseClass + '-title' }>{ __( 'All Comments', 'godam' ) } ({ commentsCount })</h3>
 				<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } />
 				<div className={ baseClass + '-leave-comment' }>

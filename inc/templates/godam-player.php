@@ -250,6 +250,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 
 <?php if ( ! empty( $sources ) ) : ?>
 	<figure
+	id="godam-player-container-<?php echo esc_attr( $instance_id ); ?>"
 	<?php echo $is_shortcode || $is_elementor_widget ? '' : wp_kses_data( get_block_wrapper_attributes() ); ?>
 	style="
 	--rtgodam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
