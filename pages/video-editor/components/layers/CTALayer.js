@@ -9,9 +9,8 @@ import DOMPurify from 'isomorphic-dompurify';
  */
 import {
 	Button,
-	SelectControl,
 	Panel,
-	PanelBody,
+	PanelBody, SelectControl,
 } from '@wordpress/components';
 import { chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
@@ -27,6 +26,7 @@ import HtmlCTA from '../cta/HtmlCTA';
 import LayerControls from '../LayerControls';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader.js';
+import React from 'react';
 
 // A DOMPurify config similar to what wp_kses_post() allows
 const wpKsesAllowed = {
@@ -54,6 +54,21 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
 
+	const ctaLayerOptions = [
+		{
+			label: __( 'Text', 'godam' ),
+			value: 'text',
+		},
+		{
+			label: __( 'HTML', 'godam' ),
+			value: 'html',
+		},
+		{
+			label: __( 'Image', 'godam' ),
+			value: 'image',
+		},
+	];
+
 	const handleCTATypeSelect = ( val ) => {
 		dispatch(
 			updateLayerField( {
@@ -78,6 +93,9 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			} )
 			.then( ( media ) => {
 				setImageCtaUrl( media.source_url ); // URL of the media file
+			} )
+			.catch( ( ) => {
+				setImageCtaUrl( '' );
 			} );
 	};
 
@@ -95,6 +113,11 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 	};
 
 	const imageCtaHtml = () => {
+		// Don't generate HTML if there's no image URL
+		if ( ! imageCtaUrl ) {
+			return '';
+		}
+
 		return `<div class="${ 'portrait' === layer?.imageCtaOrientation ? 'vertical-image-cta-container' : 'image-cta-container' }">
 					<img
 						src="${ imageCtaUrl }"
@@ -106,7 +129,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 					<div class="image-cta-description">
 						${ layer?.imageText ? `<h2>${ layer.imageText }</h2>` : '' }
 						${ layer?.imageDescription ? `<p>${ layer.imageDescription }</p>` : '' }
-						<a class="image-cta-btn" href="${ layer?.imageLink || '/' }" target="_blank">
+						<a class="image-cta-btn" href="${ layer?.imageLink || '/' }" target="_blank" style="background-color: ${ layer?.imageCtaButtonColor ?? '#eeab95' }">
 							${ layer?.imageCtaButtonText || __( 'Buy Now', 'godam' ) }
 						</a>
 					</div>
@@ -122,15 +145,24 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 			setFormHTML( layer.text );
 		} else if ( 'html' === layer?.cta_type ) {
 			setFormHTML( layer.html );
-		} else if ( 'image' === layer?.cta_type ) {
-			fetchOverlayMediaURL( layer?.image );
-			if ( imageCtaUrl.length !== 0 ) {
-				setFormHTML( imageCtaHtml );
-			} else {
-				setFormHTML( '' );
-			}
 		}
-	}, [ layer, imageCtaUrl ] );
+	}, [ layer ] );
+
+	// Fetch the media URL when the image ID changes
+	useEffect( () => {
+		if ( 'image' === layer?.cta_type && layer?.image && layer?.image !== 0 ) {
+			fetchOverlayMediaURL( layer.image );
+		} else {
+			setImageCtaUrl( '' );
+		}
+	}, [ layer?.cta_type, layer?.image ] );
+
+	// Update the HTML only after imageCtaUrl is updated
+	useEffect( () => {
+		if ( 'image' === layer?.cta_type ) {
+			setFormHTML( imageCtaUrl ? imageCtaHtml() : '' );
+		}
+	}, [ imageCtaUrl, layer ] );
 
 	return (
 		<>
@@ -140,32 +172,20 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 				<p className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</p>
 				<SelectControl
 					__next40pxDefaultSize
+					className="mb-4"
 					label={ __( 'Select type', 'godam' ) }
-					className="mb-4 godam-select"
-					options={ [
-						{
-							label: __( 'Text', 'godam' ),
-							value: 'text',
-						},
-						{
-							label: __( 'HTML', 'godam' ),
-							value: 'html',
-						},
-						{
-							label: __( 'Image', 'godam' ),
-							value: 'image',
-						},
-					] }
-					value={ layer.cta_type }
 					onChange={ handleCTATypeSelect }
+					options={ ctaLayerOptions }
+					value={ layer.cta_type }
 				/>
+
 				{ renderSelectedCTAInputs() }
 
 				{ /* Common settings */ }
 
 				<Panel className="-mx-4 border-x-0">
 					<PanelBody
-						title={ __( 'Advance', 'godam' ) }
+						title={ __( 'Advanced', 'godam' ) }
 						initialOpen={ false }
 					>
 						{ /* Layer background color */ }

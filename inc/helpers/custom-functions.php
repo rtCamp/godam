@@ -163,6 +163,7 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
  *     - 'imageDescription' (string): Description text for the CTA.
  *     - 'imageLink' (string): URL for the CTA link.
  *     - 'imageCtaButtonText' (string): Text for the CTA button.
+ *     - 'imageCtaButtonColor' (string): Background color for the CTA button.
  *
  * @return string The generated HTML string for the image CTA overlay.
  */
@@ -173,11 +174,12 @@ function rtgodam_image_cta_html( $layer ) {
 		? 'vertical-image-cta-container'
 		: 'image-cta-container';
 
-	$image_opacity     = isset( $layer['imageOpacity'] ) ? $layer['imageOpacity'] : 1;
-	$image_text        = isset( $layer['imageText'] ) ? $layer['imageText'] : '';
-	$image_description = isset( $layer['imageDescription'] ) ? $layer['imageDescription'] : '';
-	$image_link        = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '/';
-	$cta_button_text   = ! empty( $layer['imageCtaButtonText'] ) ? $layer['imageCtaButtonText'] : 'Buy Now'; // Null coalescing with empty check.
+	$image_opacity        = isset( $layer['imageOpacity'] ) ? $layer['imageOpacity'] : 1;
+	$image_text           = isset( $layer['imageText'] ) ? $layer['imageText'] : '';
+	$image_description    = isset( $layer['imageDescription'] ) ? $layer['imageDescription'] : '';
+	$image_link           = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '/';
+	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? $layer['imageCtaButtonColor'] : '#eeab95';
+	$cta_button_text      = ! empty( $layer['imageCtaButtonText'] ) ? $layer['imageCtaButtonText'] : 'Buy Now'; // Null coalescing with empty check.
 
 	return "
 	<div class= \"image-cta-overlay-container\">
@@ -193,7 +195,7 @@ function rtgodam_image_cta_html( $layer ) {
 				<div class=\"image-cta-description\">
 					" . ( ! empty( $image_text ) ? "<h2>{$image_text}</h2>" : '' ) . '
 					' . ( ! empty( $image_description ) ? "<p>{$image_description}</p>" : '' ) . "
-					<a class=\"image-cta-btn\" href=\"{$image_link}\" target=\"_blank\">
+					<a class=\"image-cta-btn\" href=\"{$image_link}\" target=\"_blank\" style=\"background-color: {$cta_background_color};\">
 						{$cta_button_text}
 					</a>
 				</div>
@@ -206,9 +208,10 @@ function rtgodam_image_cta_html( $layer ) {
 /**
  * Verify the api key for the plugin and return user data.
  *
- * @param int $timeout The time in seconds after which the user data should be refreshed.
+ * @param bool $use_for_localize_array Whether to use the data for localizing scripts. Defaults to false.
+ * @param int  $timeout                The time in seconds after which the user data should be refreshed.
  */
-function rtgodam_get_user_data( $timeout = 300 ) {
+function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = 300 ) {
 	$rtgodam_user_data = get_option( 'rtgodam_user_data', false );
 	$api_key           = get_option( 'rtgodam-api-key', '' );
 
@@ -254,6 +257,38 @@ function rtgodam_get_user_data( $timeout = 300 ) {
 		update_option( 'rtgodam_user_data', $rtgodam_user_data );
 	}
 
+	if ( $use_for_localize_array ) {
+		// Prepare the data for localizing scripts.
+		$localized_array_data = array(
+			'currentUserId' => $rtgodam_user_data['currentUserId'],
+			'validApiKey'   => $rtgodam_user_data['valid_api_key'],
+			'userApiData'   => $rtgodam_user_data['user_data'],
+			'timestamp'     => $rtgodam_user_data['timestamp'],
+		);
+
+		if ( isset( $rtgodam_user_data['storageBandwidthError'] ) && ! empty( $rtgodam_user_data['storageBandwidthError'] ) ) {
+			$localized_array_data['storageBandwidthError'] = $rtgodam_user_data['storageBandwidthError'];
+		}
+
+		if ( isset( $rtgodam_user_data['storage_used'] ) && ! empty( $rtgodam_user_data['storage_used'] ) ) {
+			$localized_array_data['storageUsed'] = $rtgodam_user_data['storage_used'];
+		}
+
+		if ( isset( $rtgodam_user_data['total_storage'] ) && ! empty( $rtgodam_user_data['total_storage'] ) ) {
+			$localized_array_data['totalStorage'] = $rtgodam_user_data['total_storage'];
+		}
+
+		if ( isset( $rtgodam_user_data['bandwidth_used'] ) && ! empty( $rtgodam_user_data['bandwidth_used'] ) ) {
+			$localized_array_data['bandwidthUsed'] = $rtgodam_user_data['bandwidth_used'];
+		}
+
+		if ( isset( $rtgodam_user_data['total_bandwidth'] ) && ! empty( $rtgodam_user_data['total_bandwidth'] ) ) {
+			$localized_array_data['totalBandwidth'] = $rtgodam_user_data['total_bandwidth'];
+		}
+
+		return $localized_array_data;
+	}
+
 	return $rtgodam_user_data;
 }
 
@@ -267,7 +302,7 @@ function rtgodam_get_usage_data() {
 	$api_key = get_option( 'rtgodam-api-key', '' );
 
 	if ( empty( $api_key ) ) {
-		return new \WP_Error( 'rtgodam_api_error', 'API key not found ( try refreshing the page )' );
+		return new \WP_Error( 'rtgodam_api_error', __( 'API key not found ( try refreshing the page )', 'godam' ) );
 	}
 
 	$endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
@@ -291,7 +326,7 @@ function rtgodam_get_usage_data() {
 
 	// Validate response structure.
 	if ( ! isset( $data['message'] ) || ! isset( $data['message']['storage_used'] ) || ! isset( $data['message']['bandwidth_used'] ) ) {
-		return new \WP_Error( 'rtgodam_api_error', 'Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )' );
+		return new \WP_Error( 'rtgodam_api_error', __( 'Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )', 'godam' ) );
 	}
 
 	return array(
@@ -311,4 +346,137 @@ function rtgodam_is_api_key_valid() {
 	$user_data = rtgodam_get_user_data();
 
 	return ! empty( $user_data['valid_api_key'] ) ? true : false;
+}
+
+/**
+ * Send Video file to GoDAM for transcoding.
+ *
+ * @param string  $form_type  Form Type.
+ * @param string  $form_title Form Title.
+ * @param string  $file_url   File URL.
+ * @param integer $entry_id   Entry Id.
+ *
+ * @return array|WP_Error
+ */
+function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_title = '', $file_url = '', $entry_id = 0 ) {
+
+	/**
+	 * Extract file extension.
+	 */
+	$file_extension = pathinfo( $file_url, PATHINFO_EXTENSION );
+
+	/**
+	 * Set the default settings.
+	 */
+	$default_settings = array(
+		'video' => array(
+			'adaptive_bitrate'     => true,
+			'watermark'            => false,
+			'watermark_text'       => '',
+			'watermark_url'        => '',
+			'video_thumbnails'     => 0,
+			'overwrite_thumbnails' => false,
+			'use_watermark_image'  => false,
+		),
+	);
+
+	/**
+	 * Fetch Godam site settings.
+	 */
+	$godam_settings = get_option( 'rtgodam-settings', $default_settings );
+
+	/**
+	 * Fetch stored API Key.
+	 */
+	$api_key = get_option( 'rtgodam-api-key', '' );
+
+	/**
+	 * Watermark settings.
+	 */
+	$rtgodam_watermark           = $godam_settings['video']['watermark'];
+	$rtgodam_use_watermark_image = $godam_settings['video']['use_watermark_image'];
+	$rtgodam_watermark_text      = sanitize_text_field( $godam_settings['video']['watermark_text'] );
+	$rtgodam_watermark_url       = esc_url( $godam_settings['video']['watermark_url'] );
+
+	$watermark_to_use = array();
+
+	/**
+	 * Include watermark if set.
+	 */
+	if ( $rtgodam_watermark && $rtgodam_use_watermark_image ) {
+
+		if ( ! empty( $rtgodam_watermark_url ) ) {
+			$watermark_to_use['watermark_url'] = $rtgodam_watermark_url;
+		}
+
+		if ( ! empty( $rtgodam_watermark_text ) ) {
+			$watermark_to_use['watermark_text'] = $rtgodam_watermark_text;
+		}
+	}
+
+	/**
+	 * Callback URL from CMM to plugin for transcoding.
+	 */
+	$callback_url = rest_url( 'godam/v1/transcoder-callback' );
+
+	/**
+	 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
+	 */
+	$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
+
+	/**
+	 * Prepare data to send as post request to CMM.
+	 */
+	$body = array_merge(
+		array(
+			'api_token'       => $api_key,
+			'job_type'        => 'stream',
+			'job_for'         => ! empty( $form_type ) ? $form_type . '-godam-recorder' : 'gf-godam-recorder',
+			'file_origin'     => rawurlencode( $file_url ),
+			'callback_url'    => rawurlencode( $callback_url ),
+			'status_callback' => rawurlencode( $status_callback_url ),
+			'force'           => 0,
+			'formats'         => $file_extension,
+			'thumbnail_count' => 0,
+			'stream'          => true,
+			'watermark'       => boolval( $rtgodam_watermark ),
+			'resolutions'     => array( 'auto' ),
+			'folder_name'     => ! empty( $form_title ) ? $form_title : __( 'Gravity forms', 'godam' ),
+		),
+		$watermark_to_use
+	);
+
+	/**
+	 * Prepare the args to pass to request.
+	 */
+	$args = array(
+		'method'    => 'POST',
+		'sslverify' => false,
+		'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
+		'body'      => $body,
+	);
+
+	/**
+	 * CMM Api key construction.
+	 */
+	$transcoding_api_url = RTGODAM_API_BASE . '/api/';
+	$transcoding_url     = $transcoding_api_url . 'resource/Transcoder Job';
+
+	/**
+	 * Response from post request.
+	 */
+	$response = wp_remote_post( $transcoding_url, $args );
+
+	if ( is_wp_error( $response ) || empty( $response['response']['code'] ) || 200 !== intval( $response['response']['code'] ) ) {
+		return new WP_Error(
+			400,
+			sprintf(
+				/* translators: %s: Entry ID for which transcoding failed */
+				__( 'Transcoding failed | entry Id: %s', 'godam' ),
+				$entry_id
+			)
+		);
+	}
+
+	return json_decode( $response['body'] );
 }

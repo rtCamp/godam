@@ -1,3 +1,7 @@
+/**
+ * WordPress dependencies
+ */
+const { __ } = wp.i18n;
 
 /**
  * Internal dependencies
@@ -32,6 +36,18 @@ class MediaLibrary {
 		this.setupMediaLibraryRoot();
 		this.initializeDateRangeFilter();
 		addManageMediaButton();
+		this.addInputPlaceholder();
+	}
+
+	addInputPlaceholder() {
+		if ( wp?.media?.view?.Search ) {
+			wp.media.view.Search = wp?.media?.view?.Search?.extend( {
+				initialize() {
+					wp.media.view.Search.__super__.initialize.apply( this, arguments );
+					this.$el.attr( 'placeholder', __( 'Search Media', 'godam' ) );
+				},
+			} );
+		}
 	}
 
 	setupAttachmentBrowser() {

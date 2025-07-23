@@ -24,6 +24,16 @@ class Video_Metadata {
 	const BATCH_SIZE = 50;
 
 	/**
+	 * Default width for video thumbnails in pixels.
+	 */
+	const DEFAULT_THUMBNAIL_WIDTH = 640;
+
+	/**
+	 * Default height for video thumbnails in pixels.
+	 */
+	const DEFAULT_THUMBNAIL_HEIGHT = 480;
+
+	/**
 	 * Constructor.
 	 */
 	final protected function __construct() {
@@ -181,10 +191,10 @@ class Video_Metadata {
 			$thumbnail_url   = get_post_meta( $response['id'], 'rtgodam_media_video_thumbnail', true );
 			$attachment_meta = get_post_meta( $response['id'], '_wp_attachment_metadata', true );
 
-			if ( ! empty( $thumbnail_url ) && isset( $attachment_meta['width'] ) && isset( $attachment_meta['height'] ) ) {
+			if ( ! empty( $thumbnail_url ) ) {
 				$response['image']['src']    = esc_url( $thumbnail_url );
-				$response['image']['height'] = $attachment_meta['width'];
-				$response['image']['width']  = $attachment_meta['height'];
+				$response['image']['width']  = $attachment_meta['width'] ?? self::DEFAULT_THUMBNAIL_WIDTH;
+				$response['image']['height'] = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
 			}
 		}
 		return $response;
