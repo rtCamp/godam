@@ -776,6 +776,7 @@
 			padding: 10px;
 			font-size: 14px;
 			color: #000;
+			width: 80%;
 		}
 
 		button {
@@ -890,7 +891,15 @@
 	font-size: 15px !important;
 	border-radius: 50%;
 	display: flex;
-	transition: all 0.3s ease
+	transition: all 0.3s ease;
+
+	@media screen and (max-width: 768px) {
+
+		&  {
+			opacity: 1;
+			visibility: visible;
+		}
+	}
 }
 
 .easydam-video-container:hover .godam-share-button {
