@@ -9,6 +9,7 @@
     --godam-video-engagement-icon-color--view: rgb(0, 186, 124);
     --godam-video-engagement-icon-color--view-background: rgba(0, 186, 124, 0.1);
     --godam-video-engagement-comment--border-color: rgb(136, 136, 136, 0.5);
+    --godam-video-engagement-font-family: sans-serif;
 }
 
 .no-scroll {
@@ -58,6 +59,10 @@
         flex-wrap: nowrap;
         align-items: flex-start;
         transition: all 0.2s ease;
+        font-size: 1.2rem;
+        line-height: 1;
+        font-family: var(--godam-video-engagement-font-family);
+        font-weight: 400;
 
         &.is-progressing,
         &:hover {
@@ -108,7 +113,7 @@
         }
         &-count {
             position: relative;
-            top: 5px;
+            top: 10px;
             left: -8px;
         }
     }
@@ -170,7 +175,7 @@
             cursor: pointer;
             background-color: var(--wp--preset--color--black, #000);
             border: none;
-            font-family: sans-serif;
+            font-family: var(--godam-video-engagement-font-family);
             border-radius: 10px;
             width: 40px;
             height: 40px;
@@ -188,7 +193,7 @@
             bottom: 0;
             background-color: var(--wp--preset--color--white, #fff);
             z-index: 10;
-            padding: 20px 0 20px 0;
+            padding: 15px 0 15px 0;
 
             &-title {
                 margin-top: 10px;
@@ -295,14 +300,20 @@
             line-height: 1;
         }
 
-        &-form-textarea {
-            textarea {
-                font-family: sans-serif;
-                width: 100%;
-                height: 50px;
-                border: 1px solid var(--godam-video-engagement-comment--border-color);
-                border-radius: 10px;
-                padding: 10px;
+        &-form {
+            &-textarea {
+                textarea {
+                    font-family: var(--godam-video-engagement-font-family);
+                    width: 100%;
+                    height: 50px;
+                    border: 1px solid var(--godam-video-engagement-comment--border-color);
+                    border-radius: 10px;
+                    padding: 10px;
+                }
+            }
+
+            &-submit {
+                display: flex;
             }
         }
 
@@ -312,7 +323,7 @@
 
         &-button {
             border: 1px solid var(--godam-video-engagement-comment--border-color);
-            padding: 5px 10px;
+            padding: 7px 10px;
             border-radius: 5px;
             background-color: transparent;
             cursor: pointer;
@@ -327,27 +338,25 @@
             &.is-comment-progressing {
                 cursor: not-allowed;
                 pointer-events: none;
-                opacity: 0.5;
+                opacity: 0.7;
                 position: relative;
-                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                align-content: center;
+                flex-wrap: wrap;
+                text-align: center;
+                color: transparent;
 
                 &::before {
-
-                    content: "";
+                    content: '';
                     position: absolute;
-                    top: 0;
-                    left: -100%;
-                    width: 300%;
-                    height: 100%;
-                    background: repeating-linear-gradient(
-                        45deg,
-                        var(--wp--preset--color--white, #fff) 0,
-                        var(--wp--preset--color--white, #fff) 10px,
-                        var(--wp--preset--color--black, #000) 10px,
-                        var(--wp--preset--color--black, #000) 20px
-                    );
-                    animation: comment-sending 1.5s infinite;
-                    opacity: 0.5;
+                    width: 10px;
+                    height: 10px;
+                    border: 2px solid var(--wp--preset--color--white, #fff);
+                    border-top: 2px solid var(--wp--preset--color--black, #000);
+                    border-radius: 50%;
+                    animation: comment-loading 1s linear infinite;
                 }
             }
         }
@@ -358,15 +367,6 @@
   0%   { transform: scale(1); }
   50%  { transform: scale(1.2); }
   100% { transform: scale(1); }
-}
-
-@keyframes comment-sending {
-  0% {
-    left: -200%;
-  }
-  100% {
-    left: -100%;
-  }
 }
 
 @keyframes comment-loading {
