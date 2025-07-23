@@ -113,7 +113,7 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	}
 } else {
 	$transcoded_url     = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true ) : '';
-	$hls_transcoded_url = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', true ): '';
+	$hls_transcoded_url = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', true ) : '';
 	$video_src          = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
 	$video_src_type     = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
 	$job_id             = $attachment_id && ! empty( $transcoded_url ) ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
