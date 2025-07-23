@@ -4,7 +4,7 @@
  *
  * @package GoDAM
  *
- * @since n.e.x.t
+ * @since 1.3.0
  */
 
 $video_upload_button_id = wp_unique_id( 'uppy-video-upload-' );

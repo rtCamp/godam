@@ -33,7 +33,7 @@ $loop          = ! empty( $attributes['loop'] );
 $muted         = ! empty( $attributes['muted'] );
 $poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
 $preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$hover_overlay = isset( $attributes['hoverOverlay'] ) ? $attributes['hoverOverlay'] : true;
+$hover_overlay = isset( $attributes['hoverOverlay'] ) ? $attributes['hoverOverlay'] : false;
 $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
@@ -458,6 +458,21 @@ if ( $is_shortcode || $is_elementor_widget ) {
 												sprintf(
 													"[everest_form id='%d' title='false' description='false']",
 													intval( $layer['everest_form_id'] )
+												)
+											);
+										?>
+									</div>
+								</div>
+								<?php
+							elseif ( 'ninjaforms' === $form_type && ! empty( $layer['ninja_form_id'] ) ) :
+								?>
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $form_type ); ?>" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div class="form-container">
+										<?php
+											echo do_shortcode(
+												sprintf(
+													"[ninja_form id='%d']",
+													intval( $layer['ninja_form_id'] )
 												)
 											);
 										?>

@@ -530,12 +530,12 @@ function GODAMPlayer( videoRef = null ) {
 					</div>
 
 					<div class="share-buttons">
-						<a class="facebook social-icon" target="blank"><img src=${ Facebook } alt='Facebook icon' height={24} width={24}</a>
-						<a class="twitter social-icon" target="blank"><img src=${ Twitter } alt='Twitter icon' height={24} width={24}</a>
-						<a class="linkedin social-icon" target="blank"><img src=${ LinkedIn } alt='Linkedin icon' height={24} width={24}</a>
-						<a class="reddit social-icon" target="blank"><img src=${ Reddit } alt='Reddit icon' height={24} width={24}</a>
-						<a class="whatsapp social-icon" target="blank"><img src=${ Whatsapp } alt='Whatsapp icon' height={24} width={24}</a>
-						<a class="telegram social-icon" target="blank"><img src=${ Telegram } alt='Telegram icon' height={24} width={24}</a>
+						<a class="facebook social-icon" target="_blank"><img src=${ Facebook } alt='Facebook icon' height="20" width="20"/> </a>
+						<a class="twitter social-icon" target="_blank"><img src=${ Twitter } alt='Twitter icon' height="20" width="20"/> </a>
+						<a class="linkedin social-icon" target="_blank"><img src=${ LinkedIn } alt='Linkedin icon' height="20" width="20"/> </a>
+						<a class="reddit social-icon" target="_blank"><img src=${ Reddit } alt='Reddit icon' height="20" width="20"/> </a>
+						<a class="whatsapp social-icon" target="_blank"><img src=${ Whatsapp } alt='Whatsapp icon' height="20" width="20"/> </a>
+						<a class="telegram social-icon" target="_blank"><img src=${ Telegram } alt='Telegram icon' height="20" width="20"/> </a>
 					</div>
 
 					<div class='share-input-container'>
@@ -946,7 +946,8 @@ function GODAMPlayer( videoRef = null ) {
 								layerObj.layerElement.querySelector( '.wp-polls-answer' ) ) ||
 							( layerObj.layerElement.querySelector( '.forminator-success' ) &&
 								layerObj.layerElement.querySelector( '.forminator-show' ) ) ||
-							layerObj.layerElement.querySelector( '.everest-forms-notice--success' )
+							layerObj.layerElement.querySelector( '.everest-forms-notice--success' ) ||
+							( layerObj.layerElement.querySelector( '.nf-response-msg' ) && '' !== layerObj.layerElement.querySelector( '.nf-response-msg' ).innerHTML )
 						) {
 							// Update the Skip button to Continue
 							skipButton.textContent = 'Continue';
@@ -998,6 +999,8 @@ function GODAMPlayer( videoRef = null ) {
 					} else if ( window.godamPluginDependencies?.forminator && layer.form_type === 'forminator' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.fluentForms && layer.form_type === 'fluentforms' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.ninjaForms && layer.form_type === 'ninjaforms' ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {

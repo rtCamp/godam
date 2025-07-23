@@ -109,6 +109,7 @@ const App = () => {
 					text={ __( 'New Folder', 'godam' ) }
 					className="button--full mb-spacing new-folder-button"
 					onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
+					disabled={ selectedFolder?.meta?.locked }
 				/>
 
 				<Button
