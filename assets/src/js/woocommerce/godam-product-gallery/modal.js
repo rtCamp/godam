@@ -61,13 +61,27 @@ export function initVideoModal() {
 			return;
 		}
 
-		const videoProductIds = getProductIds;
+		const videoProductIds = getProductIds; // Timestamped product id.
 		const ctaEnabled = getCTAEnabled;
 		const ctaDisplayPosition = getCTADisplayPosition;
 
 		const currentGallery = ( playButton || timestampBtn ).closest( '.godam-product-gallery' );
 
-		const modal = document.querySelector( `.godam-product-modal-container[data-modal-video-id="${ videoId }"]` );
+		let getModal = null;
+
+		if ( timestampBtn ) {
+			getModal = document.querySelector(
+				`.godam-product-modal-container[data-modal-video-id="${ videoId }"][data-modal-timestamped="1"][data-modal-attached-product-id="${ videoProductIds }"]`,
+			);
+		} else {
+			getModal = document.querySelector(
+				`.godam-product-modal-container[data-modal-video-id="${ videoId }"]:not([data-modal-timestamped]), 
+				 .godam-product-modal-container[data-modal-video-id="${ videoId }"][data-modal-timestamped="0"]`,
+			);
+		}
+
+		const modal = getModal;
+		console.log( modal );
 
 		modal.classList.add( 'open' );
 

@@ -406,6 +406,8 @@ class GoDAM_Product_Gallery {
 												echo '<button class="product-play-timestamp-button" data-video-id="' . esc_attr( $video_id ) . '" data-timestamp="' . esc_attr( $timestamp ) . '" data-video-attached-product-id="' . esc_attr( $product_id ) . '" data-cta-enabled="' . esc_attr( $atts['cta_enabled'] ) . '" data-cta-display-position="' . esc_attr( $atts['cta_display_position'] ) . '"aria-label="Play at timestamp" style="background-color:' . esc_attr( $this->hex_to_rgba( $atts['play_button_bg_color'] ) ) . ';color:' . esc_attr( $atts['play_button_icon_color'] ) . ';border-radius:' . esc_attr( $atts['play_button_radius'] ) . '%;">';
 													echo '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/></svg>';
 												echo '</button>';
+
+												$this->generate_product_gallery_video_modal_markup( $atts['cta_enabled'], $atts['cta_display_position'], $video_id, $product_id, true );
 											}
 												echo '</div>'; // .cta-thumbnail-small ends.
 												echo '<div class="cta-product-info">';
@@ -525,7 +527,7 @@ class GoDAM_Product_Gallery {
 		return "#{$hex}";
 	}
 
-	public function generate_product_gallery_video_modal_markup( $cta_enabled, $cta_display_position, $video_id, $product_ids ) {
+	public function generate_product_gallery_video_modal_markup( $cta_enabled, $cta_display_position, $video_id, $product_ids, $timestamped = false ) {
 
 		if( $cta_enabled && ( 'inside' === $cta_display_position || 'below-inside' === $cta_display_position ) ) {
 
@@ -537,7 +539,7 @@ class GoDAM_Product_Gallery {
 				echo $this->generate_cta_enabled_muliple_product_modal_markup( $product_ids_array, $video_id );
 			} else {
 				// single - show full product
-				echo $this->generate_cta_enabled_single_product_modal_markup( $product_ids, $video_id );
+				echo $this->generate_cta_enabled_single_product_modal_markup( $product_ids, $video_id, $timestamped );
 			}
 
 		} else {
@@ -575,7 +577,7 @@ class GoDAM_Product_Gallery {
 								?>
 							</div>
 							<button class="godam-sidebar-close" aria-label="<?php __( 'Close sidebar', 'godam' ) ?>">
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: rotate(45deg);"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
 							</button>
 						</div>
 						<div class="godam-product-sidebar-grid">
@@ -625,9 +627,12 @@ class GoDAM_Product_Gallery {
 		<?php
 	}
 
-	private function generate_cta_enabled_single_product_modal_markup( $product_id, $video_id ) {
+	private function generate_cta_enabled_single_product_modal_markup( $product_id, $video_id, $timestamped ) {
+		if(!$timestamped) {
+			$timestamped = 0;
+		}
 		?>
-			<div class="godam-product-modal-container" data-modal-video-id="<?php echo $video_id ?>"> <!-- overlay container -->
+			<div class="godam-product-modal-container" data-modal-video-id="<?php echo $video_id ?>" data-modal-timestamped="<?php echo $timestamped ?>" data-modal-attached-product-id="<?php echo $product_id ?>"> <!-- overlay container -->
 				<div class="godam-product-modal-content">
 					<div class="godam-product-video-container column">
 						<div class="video-container animate-video-loading" style="aspect-ratio:responsive;">
@@ -648,7 +653,7 @@ class GoDAM_Product_Gallery {
 					<div class="godam-product-sidebar">
 						<div class="godam-sidebar-header">
 							<button class="godam-sidebar-close" aria-label="<?php __( 'Close sidebar', 'godam' ) ?>">
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: rotate(45deg);"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
 							</button>
 						</div>
 						<div class="godam-product-sidebar-single">
