@@ -103,25 +103,26 @@ const App = () => {
 	return (
 		<>
 			<div className="control-buttons">
-				<SearchBar />
-				<Button
-					icon="plus-alt2"
-					__next40pxDefaultSize
-					variant="primary"
-					text={ __( 'New Folder', 'godam' ) }
-					className="button--full mb-spacing new-folder-button"
-					onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
-					disabled={ selectedFolder?.meta?.locked }
-				/>
+				<ButtonGroup className="button-group mb-spacing">
+					<SearchBar />
+					<Button
+						icon="plus-alt2"
+						__next40pxDefaultSize
+						variant="primary"
+						text={ __( 'New Folder', 'godam' ) }
+						className="button--full mb-spacing new-folder-button"
+						onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
+						disabled={ selectedFolder?.meta?.locked }
+					/>
 
-				<Button
-					icon="plus-alt2"
-					__next40pxDefaultSize
-					variant="secondary"
-					className="button--full close-folder-menu-mobile"
-					onClick={ () => closeFolderMenu() }
-				/>
-
+					<Button
+						icon="plus-alt2"
+						__next40pxDefaultSize
+						variant="secondary"
+						className="button--full close-folder-menu-mobile"
+						onClick={ () => closeFolderMenu() }
+					/>
+				</ButtonGroup>
 				<ButtonGroup className="button-group mb-spacing">
 					<Button
 						__next40pxDefaultSize

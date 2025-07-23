@@ -16,6 +16,7 @@ import { changeSelectedFolder } from '../../redux/slice/folders';
 import { useSearchFoldersQuery } from '../../redux/api/folders';
 import { triggerFilterChange } from '../../data/media-grid';
 import { useDispatch } from 'react-redux';
+import './css/searchbar.scss';
 
 const SearchBar = () => {
 	const dispatch = useDispatch();
@@ -134,7 +135,7 @@ const SearchBar = () => {
 					className="search-results-popover"
 					focusOnMount={ false }
 					placement="bottom-start"
-					offset={ 8 }
+					offset={ 4 }
 				>
 					<div ref={ popoverRef }>
 						{ isFetching && <div className="search-loading">{ __( 'Searching…', 'godam' ) }</div> }
@@ -142,7 +143,7 @@ const SearchBar = () => {
 						{ ! isFetching && ! isError && searchResults.length === 0 && searchTerm.length > 0 && (
 							<div className="search-no-results">{ __( 'No folders found.', 'godam' ) }</div>
 						) }
-						{ ! isFetching && debouncedSearchTerm.length > 0 && searchResults.length > 0 && (
+						{ debouncedSearchTerm.length > 0 && searchResults.length > 0 && (
 							<div className="search-results-list">
 								<ul>
 									{ searchResults.map( ( folder ) => (
