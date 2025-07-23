@@ -231,6 +231,7 @@ const engagementStore = {
 			return null;
 		}
 		videoIds.forEach( ( item ) => {
+			item.classList.remove( 'rtgodam-video-engagement--link-disabled' );
 			const videoAttachmentId = item.getAttribute( 'data-engagement-video-id' );
 			const likeLink = item.querySelector( '.rtgodam-video-engagement--like-link' );
 			const likeCount = item.querySelector( '.rtgodam-video-engagement--like-count' );
@@ -413,6 +414,8 @@ function updateCommentTree( comments, comment, data ) {
  * @param {Function} props.setIsExpanded     - Function to toggle the expanded state.
  * @param {string}   props.type              - The type of comment form, either 'reply' or 'thread-reply'.
  * @param {string}   props.siteUrl           - The site URL for API requests.
+ *
+ * @return {JSX.Element} A single comment component.
  */
 
 function CommentForm( props ) {
@@ -545,7 +548,7 @@ function Comment( props ) {
  * @param {Function} props.setCommentsData   Function to set the commentsData state.
  * @param {string}   props.siteUrl           Site URL.
  *
- * @return {ReactElement} A React element representing the comment list.
+ * @return {JSX.Element} A React element representing the comment list.
  */
 function CommentList( props ) {
 	const { videoAttachmentId, storeObj, commentsData, setCommentsData, siteUrl } = props;
@@ -567,7 +570,7 @@ function CommentList( props ) {
  * @param {Object} props.storeObj          Store object.
  * @param {string} props.siteUrl           Site URL.
  *
- * @return {ReactElement} A React element representing the comment box modal.
+ * @return {JSX.Element} A React element representing the comment box modal.
  */
 function CommentBox( props ) {
 	const { videoAttachmentId, storeObj, siteUrl, videoId } = props;
@@ -575,9 +578,7 @@ function CommentBox( props ) {
 	const commentsCount = storeObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
 	const comments = storeObj.select.getComments()[ videoAttachmentId ] || [];
 	const [ commentsData, setCommentsData ] = useState( comments );
-
 	const memoizedStoreObj = useMemo( () => storeObj, [ storeObj ] );
-
 	const videoKey = videoId.replace( 'engagement-', '' );
 	const videoContainerRef = useRef( null );
 	const videoFigureId = `godam-player-container-${ videoKey }`;
@@ -592,9 +593,11 @@ function CommentBox( props ) {
 		videoContainer.className = currentVideoClass;
 		videoContainer.style = currentVideoStyles;
 		videoContainer.appendChild( currentVideo );
+		document.body.classList.add( 'no-scroll' );
 
 		return () => {
 			currentVideoParent.insertBefore( currentVideo, currentVideoParent.firstChild );
+			document.body.classList.remove( 'no-scroll' );
 		};
 	}, [ videoFigureId ] );
 

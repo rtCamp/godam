@@ -11,6 +11,11 @@
     --godam-video-engagement-comment--border-color: rgb(136, 136, 136, 0.5);
 }
 
+.no-scroll {
+    overflow: hidden;
+    height: 100vh;
+}
+
 .rtgodam-video-engagement {
     display: flex;
     gap: 10px;
@@ -19,6 +24,32 @@
     border: 1px solid var(--godam-video-engagement-background-color);
     background-color: var(--godam-video-engagement-background-color);
     border-radius: 0 0 8px 8px;
+
+    &--link-disabled {
+        cursor: not-allowed;
+        pointer-events: none;
+
+        a {
+            position: relative;
+
+            span {
+                opacity: 0;
+            }
+
+            &::after {
+                content: '';
+                position: absolute;
+                top: 12px;
+                left: 22px;
+                width: 10px;
+                height: 10px;
+                border: 2px solid var(--wp--preset--color--white, #fff);
+                border-top: 2px solid var(--wp--preset--color--black, #000);
+                border-radius: 50%;
+                animation: comment-loading 1s linear infinite;
+            }
+        }
+    }
 
     a {
         color: var(--godam-video-engagement-icon-color);
@@ -116,12 +147,12 @@
 
             &::-webkit-scrollbar-track {
                 background:  transparent;
-                border-radius: 5px;
+                border-radius: 20px;
             }
 
             &::-webkit-scrollbar-thumb {
                 background: var(--godam-video-engagement-comment--border-color);
-                border-radius: 10px;
+                border-radius: 20px;
             }
 
             &::-webkit-scrollbar-thumb:hover {
@@ -146,7 +177,7 @@
         }
 
         &-title {
-            font-size: 1.5em;
+            font-size: 1.3rem;
             font-weight: 600;
             margin-bottom: 10px;
             margin-top: 0;
@@ -234,7 +265,7 @@
 
         &-content {
             border-left: 1px solid var(--godam-video-engagement-background-color);
-            padding: 15px;
+            padding: 12px;
             border: 1px solid var(--godam-video-engagement-comment--border-color);
             border-radius: 10px;
             margin-bottom: 10px;
@@ -247,6 +278,8 @@
             z-index: 1;
 
             &-name {
+                font-size: 1rem;
+                line-height: 1;
                 font-weight: 700;
                 margin-bottom: 10px;
             }
@@ -258,7 +291,8 @@
         }
 
         &-text {
-            font-size: 15px;
+            font-size: 0.9rem;
+            line-height: 1;
         }
 
         &-form-textarea {
@@ -332,5 +366,14 @@
   }
   100% {
     left: -100%;
+  }
+}
+
+@keyframes comment-loading {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }
