@@ -178,31 +178,34 @@ function VideoEdit( {
 						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
 					}
 
-					if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
-						const transcodedUrl = response.meta.rtgodam_transcoded_url;
+					if ( response ) {
+						const newSources = [
+							{
+								src: response.source_url,
+								type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
+							},
+						];
 
-						setAttributes( {
-							sources: [
-								{
-									src: transcodedUrl,
-									type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : response.mime_type,
-								},
-								{
-									src: response.source_url,
-									type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
-								},
-							],
-						} );
-					} else {
-						// If meta not present, use media url.
-						setAttributes( {
-							sources: [
-								{
-									src: response.source_url,
-									type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
-								},
-							],
-						} );
+						if ( response?.meta && response?.meta?.rtgodam_hls_transcoded_url ) {
+							const hlsTranscodedUrl = response.meta.rtgodam_hls_transcoded_url;
+
+							newSources.push( {
+								src: hlsTranscodedUrl,
+								type: hlsTranscodedUrl.endsWith( '.m3u8' ) ? 'application/x-mpegURL' : response.mime_type,
+							} );
+						}
+
+						if ( response?.meta && response?.meta?.rtgodam_transcoded_url ) {
+							const transcodedUrl = response.meta.rtgodam_transcoded_url;
+
+							newSources.push( {
+								src: transcodedUrl,
+								type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : response.mime_type,
+							} );
+						}
+
+						// Reverse the sources to ensure the preferred format is first. MPD -> HLD -> Origin
+						setAttributes( { sources: newSources.reverse() } );
 					}
 				} catch ( error ) {
 					// Show error notice if fetching media fails.
