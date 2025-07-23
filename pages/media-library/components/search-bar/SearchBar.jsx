@@ -135,11 +135,9 @@ const SearchBar = () => {
 					className="search-results-popover"
 					focusOnMount={ false }
 					placement="bottom-start"
-					offset={ 4 }
+					offset={ 8 }
 				>
-					<div ref={ popoverRef }>
-						{ isFetching && <div className="search-loading">{ __( 'Searching…', 'godam' ) }</div> }
-						{ ! isFetching && isError && <div className="search-error">{ __( 'Error fetching results.', 'godam' ) }</div> }
+					<div className="search-results-popover-content" ref={ popoverRef }>
 						{ ! isFetching && ! isError && searchResults.length === 0 && searchTerm.length > 0 && (
 							<div className="search-no-results">{ __( 'No folders found.', 'godam' ) }</div>
 						) }
@@ -171,6 +169,8 @@ const SearchBar = () => {
 								</ul>
 							</div>
 						) }
+						{ isFetching && <div className="search-loading">{ __( 'Searching…', 'godam' ) }</div> }
+						{ ! isFetching && isError && <div className="search-error">{ __( 'Error fetching results.', 'godam' ) }</div> }
 					</div>
 				</Popover>
 			) }

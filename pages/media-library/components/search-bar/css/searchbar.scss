@@ -12,3 +12,69 @@
 		display: none;
 	}
 }
+
+.search-results-popover {
+	width: calc(280px - 2 * 1.25rem);
+	color: #1C1C1C;
+
+	.components-popover__content {
+		width: 100%;
+
+		.search-results-popover-content {
+			max-height: 600px;
+			overflow-x: hidden;
+			scrollbar-width: thin;
+
+			&::-webkit-scrollbar {
+			  width: 6px;
+			}
+
+			.search-results-list {
+
+				ul {
+					margin: 0.5rem 0;
+				}
+
+				li {
+					margin: 0;
+					padding: 0 1rem;
+
+					&:hover {
+						background: #F5F5F5;
+					}
+
+					button {
+						width: 100%;
+						padding: 0;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						display: inline;
+						text-align: start;
+
+						&:hover {
+							color: #1C1C1C;
+						}
+					}
+				}
+
+				.search-load-more {
+
+					.components-button {
+						border: none;
+						color: #AB3A6C;
+						width: 100%;
+						padding: 0.75rem 1rem;
+
+						&:not(:focus) {
+							box-shadow: none;
+						}
+					}
+				}
+			}
+
+			.search-no-results, .search-loading, .search-error {
+				margin: 1rem;
+			}
+		}
+	}
+}
