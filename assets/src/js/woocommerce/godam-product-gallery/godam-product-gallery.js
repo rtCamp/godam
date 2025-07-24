@@ -18,7 +18,6 @@ import { initAutoplayGalleries } from './autoplay.js';
 import { initVideoModal } from './modal.js';
 import { initCarouselSlider } from './slider.js';
 import { initMinicartAndCtaDropdown } from './cart.js';
-
 /**
  * Initializing components.
  */

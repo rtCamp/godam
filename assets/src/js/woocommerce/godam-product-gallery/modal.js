@@ -13,7 +13,7 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-
+import { initSidebar } from './sidebar.js';
 /* global GODAMPlayer, godamVars */
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable no-console */
@@ -84,6 +84,7 @@ export function initVideoModal() {
 		console.log( modal );
 
 		modal.classList.add( 'open' );
+		initSidebar();
 
 		modal.dataset.currentVideoId = videoId;
 		modal.dataset.isLoading = 'false';

@@ -343,17 +343,17 @@
     max-height: 90vh;
     border-radius: 12px !important;
     overflow: hidden !important;
-    
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    background-color: #fff;
+    border-radius: 12px;
+
     @media (max-width: 768px) {
         max-width: 95vw;
         width: 95vw;
         min-height: 80vh;
         max-height: 80vh;
     }
-    display: grid;
-    grid-template-columns: 5fr 7fr;
-    background-color: #fff;
-    border-radius: 12px;
 }
 
 .godam-product-modal-content.no-sidebar{
@@ -790,35 +790,13 @@
     display: block;
 }
 
-/* Navigation Arrows */
-.godam-thumbnail-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 32px;
-    height: 32px;
-    border: none;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
-    color: #333;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    z-index: 2;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
 
-.godam-thumbnail-nav:hover {
-    background: #fff;
-    color: #007cba;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
+
 
 .godam-thumbnail-nav:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+   
 }
 
 .godam-thumbnail-prev {
@@ -873,3 +851,247 @@
     background: #f8f8f8;
     border-radius: 8px;
 }
+
+/* ===== GODAM IMAGE GALLERY STYLES - START ===== */
+
+.godam-image-gallery {
+    width: 100%;
+    margin: 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Main Image Container */
+.godam-main-image {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background: #f8f9fa;
+    overflow: hidden;
+    display: flex;
+    border-radius: 12px;
+    align-items: center;
+    justify-content: center;
+}
+
+.godam-main-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.godam-main-image img:hover {
+    transform: scale(1.02);
+}
+
+/* Thumbnail Carousel with Horizontal Scroll */
+.godam-thumbnail-carousel {
+    position: relative;
+    padding: 20px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.godam-thumbnail-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.godam-thumbnail-track {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    padding: 4px 0;
+    scroll-behavior: smooth;
+}
+
+.godam-thumbnail-track::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.godam-thumbnail-item {
+    flex: 0 0 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+    background: #f8f9fa;
+}
+
+.godam-thumbnail-item:hover {
+    border-color: #007cba;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 124, 186, 0.2);
+}
+
+.godam-thumbnail-item.active {
+    border-color: #007cba;
+    box-shadow: 0 4px 16px rgba(0, 124, 186, 0.3);
+    transform: translateY(-2px);
+}
+
+.godam-thumbnail-item.active::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 124, 186, 0.1);
+    pointer-events: none;
+}
+
+.godam-thumbnail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.godam-thumbnail-item:hover .godam-thumbnail-image {
+    transform: scale(1.05);
+}
+
+/* Navigation Arrows */
+.godam-thumbnail-nav {
+    background-color: #f3f3f3 !important;
+    width: 32px;
+    height: 32px;
+   padding: 0 !important;
+   border: 1px solid #000;
+   border-radius: 50%;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+.godam-thumbnail-nav:hover:not(:disabled) {
+    background: #fff;
+}
+
+.godam-thumbnail-nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .godam-image-gallery {
+        max-width: 100%;
+        border-radius: 8px;
+    }
+    
+    .godam-main-image {
+        height: 300px;
+    }
+    
+    .godam-thumbnail-item {
+        flex: 0 0 60px;
+        height: 60px;
+    }
+    
+    .godam-thumbnail-track {
+        gap: 8px;
+    }
+    
+    .godam-thumbnail-carousel {
+        padding: 15px;
+        gap: 8px;
+    }
+    
+    .godam-thumbnail-nav {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .godam-thumbnail-nav svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .godam-main-image {
+        height: 250px;
+    }
+    
+    .godam-thumbnail-item {
+        flex: 0 0 50px;
+        height: 50px;
+    }
+    
+    .godam-thumbnail-track {
+        gap: 6px;
+    }
+    
+    .godam-thumbnail-carousel {
+        padding: 12px;
+        gap: 6px;
+    }
+}
+
+/* Loading State */
+.godam-main-image.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.godam-main-image.loading::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 32px;
+    height: 32px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007cba;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 1;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Focus States for Accessibility */
+.godam-thumbnail-item:focus {
+    outline: 2px solid #007cba;
+    outline-offset: 2px;
+}
+
+.godam-thumbnail-nav:focus {
+    outline: 2px solid #007cba;
+    outline-offset: 2px;
+}
+
+/* Smooth Scrolling for Thumbnail Track */
+.godam-thumbnail-track {
+    scroll-behavior: smooth;
+}
+
+/* ===== GODAM IMAGE GALLERY STYLES - END ===== */
+

@@ -676,35 +676,46 @@ class GoDAM_Product_Gallery {
 								global $product;
 								$product = wc_get_product( $product_id );
 
-								ob_start();
+								echo '<div class="godam-image-gallery">';
+								echo '<!-- main image display -->';
+								echo '<div class="godam-main-image">';
+								echo '<img src="https://images.unsplash.com/photo-1505438157249-00e1b44ee34f?ixlib=rb-0.3.5&q=85&fm=jpg&crop=entropy&cs=srgb&ixid=eyJhcHBfaWQiOjE0NTg5fQ&s=dfc554074f522ec42818a052152dac21g" alt="" />';
+								echo '</div>';
 
-								// Get all product images (main image + gallery images)
-								$product_main_image_id = $product->get_image_id();
-								$product_gallery_images = $product->get_gallery_image_ids();
-
-								// Combine main image with gallery images
-								$all_product_images = array();
-								if ($product_main_image_id) {
-								    $all_product_images[] = $product_main_image_id;
-								}
-								if (!empty($product_gallery_images)) {
-								    $all_product_images = array_merge($all_product_images, $product_gallery_images);
-								}
-
-								// Display all product images in thumbnail size
-								if (!empty($all_product_images)) {
-								    echo '<div class="product-image-gallery">';
-								    foreach ($all_product_images as $product_image_id) {
-								        echo '<div class="product-image-gallery-item">';
-								        echo wp_get_attachment_image($product_image_id, 'thumbnail');
-								        echo '</div>';
-								    }
-								    echo '</div>';
-								} else {
-								    echo '<div class="product-image-gallery">';
-								    echo '<p>' . esc_html__('No product images available', 'godam') . '</p>';
-								    echo '</div>';
-								}
+								echo '<!-- thumbnail carousel with horizontal scroll -->';
+								echo '<div class="godam-thumbnail-carousel">';
+								echo '<button class="godam-thumbnail-nav godam-thumbnail-prev" aria-label="Previous thumbnails">';
+								echo '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="M15 19V5l-8 7z"></path></svg>';
+								echo '</button>';
+								
+								echo '<div class="godam-thumbnail-container">';
+								echo '<div class="godam-thumbnail-track">';
+								echo '<div class="godam-thumbnail-item active" data-index="0">';
+								echo '<img class="godam-thumbnail-image" src="https://images.unsplash.com/photo-1505438157249-00e1b44ee34f?ixlib=rb-0.3.5&q=85&fm=jpg&crop=entropy&cs=srgb&ixid=eyJhcHBfaWQiOjE0NTg5fQ&s=dfc554074f522ec42818a052152dac21g" alt="Image 1">';
+								echo '</div>';
+								echo '<div class="godam-thumbnail-item" data-index="1">';
+								echo '<img class="godam-thumbnail-image" src="https://images.unsplash.com/photo-1515870672913-a4c298575776?ixlib=rb-0.3.5&q=85&fm=jpg&crop=entropy&cs=srgb&ixid=eyJhcHBfaWQiOjE0NTg5fQ&s=aa80486fd3343134706e785c034b339d" alt="Image 2">';
+								echo '</div>';
+								echo '<div class="godam-thumbnail-item" data-index="2">';
+								echo '<img class="godam-thumbnail-image" src="https://images.unsplash.com/photo-1521651201144-634f700b36ef?ixlib=rb-0.3.5&q=85&fm=jpg&crop=entropy&cs=srgb&ixid=eyJhcHBfaWQiOjE0NTg5fQ&s=e26ec8c74dc99aff53a60741538cad5f" alt="Image 3">';
+								echo '</div>';
+								echo '<div class="godam-thumbnail-item" data-index="3">';
+								echo '<img class="godam-thumbnail-image" src="https://images.unsplash.com/photo-1504618223053-559bdef9dd5a?ixlib=rb-0.3.5&q=85&fm=jpg&crop=entropy&cs=srgb&ixid=eyJhcHBfaWQiOjE0NTg5fQ&s=583c2bf56c8006e507e2a9905fc1e54c" alt="Image 4">';
+								echo '</div>';
+								echo '<div class="godam-thumbnail-item" data-index="4">';
+								echo '<img class="godam-thumbnail-image" src="https://images.unsplash.com/photo-1504208434309-cb69f4fe52b0?ixlib=rb-0.3.5&q=85&fm=jpg&crop=entropy&cs=srgb&ixid=eyJhcHBfaWQiOjE0NTg5fQ&s=69093505f999d8170e9a1aab3771c07e" alt="Image 5">';
+								echo '</div>';
+								echo '<div class="godam-thumbnail-item" data-index="5">';
+								echo '<img class="godam-thumbnail-image" src="https://images.unsplash.com/photo-1485199433301-8b7102e86995?ixlib=rb-0.3.5&q=85&fm=jpg&crop=entropy&cs=srgb&ixid=eyJhcHBfaWQiOjE0NTg5fQ&s=c7783fe3a697b1a2248450120435cbc3" alt="Image 6">';
+								echo '</div>';
+								echo '</div>';
+								echo '</div>';
+								
+								echo '<button class="godam-thumbnail-nav godam-thumbnail-next" aria-label="Next thumbnails">';
+								echo '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="m9 19 8-7-8-7z"></path></svg>';
+								echo '</button>';
+								echo '</div>';
+								echo '</div>';
 
 								echo '<h3>' . esc_html( $product->get_name() ) . '</h3>';
 								echo '<p>' . wp_kses_post( $product->get_price_html() ) . '</p>';
@@ -725,9 +736,6 @@ class GoDAM_Product_Gallery {
 								echo '</div>';
 								
 								echo '</div>';
-
-								$html = ob_get_clean();
-								echo wp_kses_post( $html );
 							?>
 						</div>
 					</div>
