@@ -139,6 +139,34 @@ class Media_Library extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/replace-custom-video-thumbnail',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'replace_custom_video_thumbnail' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+					'args'                => array(
+						'attachment_id' => array(
+							'required'    => true,
+							'type'        => 'integer',
+							'description' => __( 'Attachment ID to get video thumbnail for.', 'godam' ),
+						),
+						'thumbnail_id'  => array(
+							'required'    => true,
+							'type'        => 'integer',
+							'description' => __( 'Attachment ID of custom thumbnail.', 'godam' ),
+						),
+						'old_thumbnail' => array(
+							'required'    => true,
+							'type'        => 'string',
+							'description' => __( 'URL of the old thumbnail to be replaced.', 'godam' ),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/download-folder/(?P<folder_id>\d+)',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
@@ -520,7 +548,7 @@ class Media_Library extends Base {
 		$uploads   = wp_get_upload_dir();
 		$image_url = $uploads['baseurl'] . '/' . get_post_meta( $thumbnail_id, '_wp_attached_file', true );
 		if ( ! $image_url ) {
-			return new \WP_REST_Response( array( 'message' => 'Unable to retrieve image.' ), 404 );
+			return new \WP_Error( 'image_not_found', __( 'Unable to retrieve image.', 'godam' ), array( 'status' => 404 ) );
 		}
 	
 		// Get current thumbnails
@@ -546,6 +574,59 @@ class Media_Library extends Base {
 				'success' => true,
 				'data'    => array(
 					'selected'         => $image_url,
+					'customThumbnails' => $existing_thumbnails,
+				),
+			),
+			200 
+		);
+	}
+
+	function replace_custom_video_thumbnail( $request ) {
+		$attachment_id = $request->get_param( 'attachment_id' );
+		$thumbnail_id  = $request->get_param( 'thumbnail_id' );
+		$old_thumbnail = $request->get_param( 'old_thumbnail' );
+	
+		$mime_type = get_post_mime_type( $attachment_id );
+		if ( ! preg_match( '/^video\//', $mime_type ) ) {
+			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		$uploads       = wp_get_upload_dir();
+		$new_image_url = $uploads['baseurl'] . '/' . get_post_meta( $thumbnail_id, '_wp_attached_file', true );
+		if ( ! $new_image_url ) {
+			return new \WP_Error( 'image_not_found', __( 'Unable to retrieve image.', 'godam' ), array( 'status' => 404 ) );
+		}
+	
+		// Get current thumbnails
+		$existing_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
+		if ( ! is_array( $existing_thumbnails ) ) {
+			return new \WP_Error( 'thumbnails_not_found', __( 'Unable to retrieve thumbnails.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		// remove old thumbnail if it exists
+		if ( in_array( $old_thumbnail, $existing_thumbnails, true ) ) {
+			$existing_thumbnails = array_diff( $existing_thumbnails, array( $old_thumbnail ) );
+		} else {
+			return new \WP_Error( 'thumbnail_not_found', __( 'Old thumbnail not found in the list.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		// Add new custom thumbnail at beginning
+		array_unshift( $existing_thumbnails, $new_image_url );
+	
+		// Remove duplicates
+		$existing_thumbnails = array_unique( $existing_thumbnails );
+	
+		// Save updated thumbnails
+		update_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', $existing_thumbnails );
+	
+		// Also set as selected thumbnail
+		update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $new_image_url );
+	
+		return new \WP_REST_Response(
+			array(
+				'success' => true,
+				'data'    => array(
+					'selected'         => $new_image_url,
 					'customThumbnails' => $existing_thumbnails,
 				),
 			),
