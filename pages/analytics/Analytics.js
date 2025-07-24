@@ -394,11 +394,7 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
-			<div id="screen-size-overlay" className="screen-size-overlay hidden">
-				<div className="screen-size-message">
-					<p>{ __( 'You need to use desktop to access this feature. ', 'godam' ) }</p>
-				</div>
-			</div>
+			
 
 			{ attachmentData && ! mediaNotFound && (
 				<div id="analytics-content" className="hidden">

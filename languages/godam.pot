@@ -2415,11 +2415,7 @@ msgstr ""
 #: pages/dashboard/Dashboard.js:247
 msgid "Go to plugin settings"
 msgstr ""
-
-#: pages/analytics/Analytics.js:382
-#: pages/dashboard/Dashboard.js:256
-msgid "You need to use desktop to access this feature. "
-msgstr ""
+ 
 
 #: pages/analytics/Analytics.js:391
 msgid "Analytics report of "
