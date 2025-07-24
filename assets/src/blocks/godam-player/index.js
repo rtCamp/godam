@@ -7,13 +7,12 @@
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
  */
 import { registerBlockType } from '@wordpress/blocks';
-import { media as icon } from '@wordpress/icons';
-
 /**
  * Internal dependencies
  */
 import Edit from './edit';
 import save from './save';
+import { GodamLogo } from '../common/godam-logo';
 
 /**
  * Every block starts by registering a new block type definition.
@@ -21,7 +20,7 @@ import save from './save';
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
  */
 registerBlockType( 'godam/video', {
-	icon,
+	icon: GodamLogo,
 	/**
 	 * @see ./edit.js
 	 */
