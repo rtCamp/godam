@@ -339,8 +339,9 @@
 	cursor: pointer;
 }
 
-.upload-box {
-	cursor: pointer;
+.custom-thumbnail-media-upload {
+	background: unset;
+    border: unset;
 
 	.upload-label {
 		display: none;

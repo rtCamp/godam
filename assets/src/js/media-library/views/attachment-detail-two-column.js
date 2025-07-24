@@ -17,13 +17,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 */
 	initialize() {
 		AttachmentDetailsTwoColumn.prototype.initialize.apply( this, arguments );
-		const attachmentId = this.model.get( 'id' );
-
-		if ( this.model.get( 'type' ) === 'video' ) {
-			this.fetchAndRender( this.getVideoThumbnails( attachmentId ), this.renderThumbnail );
-		}
-
-		this.fetchAndRender( this.getExifDetails( attachmentId ), this.renderExifDetails );
 	},
 
 	/**
@@ -117,27 +110,50 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const { thumbnails, selected } = data;
 		const attachmentID = this.model.get( 'id' );
 
-		// Upload tile HTML as first element
+		// Use WordPress media uploader for custom thumbnail upload
 		const uploadTileHTML = `
-	<li class="upload-thumbnail-tile" title="Upload Custom Thumbnail">
-		<label for="custom-thumbnail-upload" class="custom-thumbnail-label">
-			<div class="upload-box">
-				<span class="plus-icon">➕</span>
-				<span class="upload-label">Upload Custom Thumbnail</span>
-			</div>
-			<input 
-				type="file" 
-				id="custom-thumbnail-upload" 
-				accept="image/png, image/jpeg, image/webp" 
-				style="display: none;" 
-			/>
-		</label>
-	</li>`;
+			<li class="upload-thumbnail-tile" title="Upload Custom Thumbnail">
+				<button type="button" class="custom-thumbnail-media-upload">
+					<span class="plus-icon">➕</span>
+					<span class="upload-label">Upload Custom Thumbnail</span>
+				</button>
+			</li>`;
 
-		const thumbnailsHTML = thumbnails.map( ( thumbnail ) =>
-			`<li class="${ thumbnail === selected ? 'selected' : '' }">
+		// Attach click handler after rendering
+		setTimeout( () => {
+			const $btn = this.$el.find( '.custom-thumbnail-media-upload' );
+			if ( $btn.length && window.wp && window.wp.media ) {
+				$btn.off( 'click' ).on( 'click', () => {
+					const uploader = wp.media( {
+						title: 'Select Custom Thumbnail',
+						button: { text: 'Use this image' },
+						multiple: false,
+						library: { type: [ 'image' ] },
+					} );
+					uploader.on( 'select', () => {
+						const attachment = uploader
+							.state()
+							.get( 'selection' )
+							.first()
+							.toJSON();
+						if ( attachment && attachment.url && attachment.id ) {
+							this.handleThumbnailUploadFromUrl( attachment.url, attachment.id );
+						}
+					} );
+					uploader.open();
+				} );
+			}
+		}, 0 );
+
+		const thumbnailArray = Object.values( thumbnails || {} );
+
+		const thumbnailsHTML = thumbnailArray?.map(
+			( thumbnail ) =>
+				`<li class="${ thumbnail === selected ? 'selected' : '' }">
 				<img src="${ thumbnail }" alt="Video Thumbnail" />
-			</li>` ).join( '' );
+			</li>`,
+		)
+			.join( '' );
 
 		const thumbnailDiv = `
 			<div class="attachment-video-thumbnails">
@@ -148,16 +164,43 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				</ul>
 			</div>`;
 
-		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( thumbnailDiv ) );
+		this.$el
+			.find( '.attachment-actions' )
+			.append( DOMPurify.sanitize( thumbnailDiv ) );
 		this.setupThumbnailClickHandler( attachmentID );
 
 		// Handle file upload interaction
-		this.$el.find( '#custom-thumbnail-upload' ).on( 'change', ( e ) => {
-			const file = e.target.files[ 0 ];
-			if ( file ) {
-				this.handleThumbnailUpload( file );
-			}
-		} );
+		// this.$el.find( '#custom-thumbnail-upload' ).on( 'change', ( e ) => {
+		// 	const file = e.target.files[ 0 ];
+		// 	if ( file ) {
+		// 		this.handleThumbnailUpload( file );
+		// 	}
+		// } );
+	},
+
+	handleThumbnailUploadFromUrl( url, attachmentID ) {
+		const formData = new FormData();
+		// formData.append( 'file', file );
+		formData.append( 'attachment_id', this.model.get( 'id' ) );
+		formData.append( 'thumbnail_id', attachmentID );
+
+		fetch( window.pathJoin( [ restURL, '/godam/v1/media-library/upload-custom-video-thumbnail' ] ), {
+			method: 'POST',
+			body: formData,
+			headers: {
+				'X-WP-Nonce': window.wpApiSettings?.nonce || '',
+			},
+		} )
+			.then( ( response ) => response.json() )
+			.then( ( data ) => {
+				if ( data.success ) {
+					document.querySelector( '.attachment-video-thumbnails' ).remove();
+					this.render(); // full re-render
+				} else {
+					alert( 'Failed to upload thumbnail.' );
+				}
+			} )
+			.catch( () => alert( 'An error occurred while uploading the thumbnail.' ) );
 	},
 
 	/**
@@ -167,6 +210,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 */
 	setupThumbnailClickHandler( attachmentID ) {
 		document.querySelectorAll( '.attachment-video-thumbnails li' ).forEach( ( li ) => {
+			if ( li.classList.contains( 'upload-thumbnail-tile' ) ) {
+				// Skip the upload tile
+				return;
+			}
 			li.addEventListener( 'click', function() {
 				// Remove the selected class from all thumbnails and add it to the clicked thumbnail.
 				document.querySelectorAll( '.attachment-video-thumbnails li' ).forEach( ( item ) => item.classList.remove( 'selected' ) );
@@ -242,8 +289,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		// Check if the attachment is a video and render the edit buttons.
 		if ( this.model.get( 'type' ) === 'video' ) {
-			this.renderVideoActions();
-
 			const virtual = this.model.get( 'virtual' );
 
 			// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
@@ -291,6 +336,17 @@ export default AttachmentDetailsTwoColumn?.extend( {
 					}
 				}, 100 ); // Slight delay to ensure DOM update.
 			}
+
+			this.renderVideoActions();
+			const attachmentId = this.model.get( 'id' );
+			this.fetchAndRender(
+				this.getVideoThumbnails( attachmentId ),
+				this.renderThumbnail,
+			);
+			this.fetchAndRender(
+				this.getExifDetails( attachmentId ),
+				this.renderExifDetails,
+			);
 		}
 
 		// Return this view.
