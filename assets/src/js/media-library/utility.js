@@ -117,7 +117,6 @@ async function getGodamSettings() {
 
 		return await response.json();
 	} catch ( error ) {
-		throw error;
 	}
 }
 
