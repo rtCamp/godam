@@ -98,6 +98,9 @@ class Video_Permalinks {
 	 * @return void
 	 */
 	public function video_slug_field() {
+		$settings = get_option( 'rtgodam_video_post_settings', [] );
+        $value = isset( $settings['slug'] ) ? $settings['slug'] : get_option( 'rtgodam_video_slug', 'videos' );
+
 		$value = get_option( 'rtgodam_video_slug', 'videos' );
 		?>
 		<input 
@@ -137,11 +140,24 @@ class Video_Permalinks {
 				$video_slug = sanitize_title( wp_unslash( $_POST['rtgodam_video_slug'] ) );
 				
 				// Get the old value to compare.
+
+				$settings = get_option( 'rtgodam_video_post_settings', [] );
+                $old_value = isset( $settings['slug'] ) ? $settings['slug'] : get_option( 'rtgodam_video_slug', 'videos' );
+
+				
+				// Only update if changed.
+				if ( $old_value !== $video_slug ) {
+					$settings = get_option( 'rtgodam_video_post_settings', [] );
+                    $settings['slug'] = $video_slug;
+                    update_option( 'rtgodam_video_post_settings', $settings );
+                    delete_option( 'rtgodam_video_slug' );
+
 				$old_value = get_option( 'rtgodam_video_slug', 'videos' );
 				
 				// Only update if changed.
 				if ( $old_value !== $video_slug ) {
 					update_option( 'rtgodam_video_slug', $video_slug );
+
 					
 					// Flush rewrite rules to apply new video slug.
 					flush_rewrite_rules();
@@ -149,4 +165,5 @@ class Video_Permalinks {
 			}
 		}
 	}
+}
 }

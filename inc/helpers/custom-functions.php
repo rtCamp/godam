@@ -480,3 +480,26 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 
 	return json_decode( $response['body'] );
 }
+
+/**
+ * Migrate old `rtgodam_video_slug` to new consolidated option `rtgodam_video_post_settings`.
+ */
+function rtgodam_migrate_video_slug_option() {
+	$old_slug = get_option( 'rtgodam_video_slug', false );
+
+	if ( false !== $old_slug ) {
+		$settings = get_option( 'rtgodam_video_post_settings', array() );
+
+		if ( ! isset( $settings['slug'] ) ) {
+			$settings['slug'] = $old_slug;
+			update_option( 'rtgodam_video_post_settings', $settings );
+		}
+
+		// Clean up old option.
+		delete_option( 'rtgodam_video_slug' );
+	}
+}
+
+add_action( 'init', 'rtgodam_migrate_video_slug_option' );
+
+

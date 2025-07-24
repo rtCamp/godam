@@ -143,3 +143,27 @@ function rtgodam_plugin_deactivate() {
 }
 
 register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
+/**
+ * Migrate `rtgodam_video_slug` into `rtgodam_video_post_settings`.
+ * This runs once in the admin and then deletes the old option.
+ */
+function migrate_rtgodam_settings() {
+    // Get existing post settings
+    $settings = get_option( 'rtgodam_video_post_settings', [] );
+
+    // Check if old slug exists and is not yet migrated
+    if ( ! isset( $settings['slug'] ) ) {
+        $old_slug = get_option( 'rtgodam_video_slug', false );
+
+        // If old slug is found, migrate it
+        if ( false !== $old_slug ) {
+            $settings['slug'] = $old_slug;
+            update_option( 'rtgodam_video_post_settings', $settings );
+
+            // Clean up old option
+            delete_option( 'rtgodam_video_slug' );
+        }
+    }
+}
+add_action( 'admin_init', 'migrate_rtgodam_settings' );
+
