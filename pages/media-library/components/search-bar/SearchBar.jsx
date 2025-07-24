@@ -81,10 +81,6 @@ const SearchBar = () => {
 		setCurrentPage( 1 );
 		setShowPopover( null );
 		setSearchResults( [] );
-
-		if ( inputRef.current ) {
-			inputRef.current.querySelector( 'input' ).value = ''; // Clear input field
-		}
 	};
 
 	const handleLoadMore = () => {
@@ -169,7 +165,7 @@ const SearchBar = () => {
 								</ul>
 							</div>
 						) }
-						{ isFetching && <div className="search-loading">{ __( 'Searching…', 'godam' ) }</div> }
+						{ isFetching && <div className="search-loading">{ currentPage <= 1 ? __( 'Searching…', 'godam' ) : __( 'Loading more results…', 'godam' ) }</div> }
 						{ ! isFetching && isError && <div className="search-error">{ __( 'Error fetching results.', 'godam' ) }</div> }
 					</div>
 				</Popover>
