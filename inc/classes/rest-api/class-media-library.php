@@ -441,6 +441,8 @@ class Media_Library extends Base {
 
 		$thumbnail_array = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
 
+		$custom_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
+
 		if ( ! is_array( $thumbnail_array ) ) {
 			return new \WP_Error( 'thumbnails_not_found', __( 'No thumbnails found.', 'godam' ), array( 'status' => 204 ) );
 		}
@@ -467,6 +469,13 @@ class Media_Library extends Base {
 		// only filter for the unique values.
 		$thumbnail_array = array_unique( $thumbnail_array );
 
+		if ( is_array( $custom_thumbnails ) ) {
+			$custom_thumbnails = array_unique( $custom_thumbnails );
+		} else {
+			$custom_thumbnails = array();
+		}
+		
+
 		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 		if ( ! empty( $selected_thumbnail ) ) {
@@ -489,6 +498,8 @@ class Media_Library extends Base {
 
 		$data['thumbnails'] = $thumbnail_array;
 
+		$data['customThumbnails'] = $custom_thumbnails;
+
 		return rest_ensure_response(
 			array(
 				'success' => true,
@@ -501,10 +512,6 @@ class Media_Library extends Base {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumbnail_id  = $request->get_param( 'thumbnail_id' );
 	
-		// if ( empty( $_FILES['file'] ) || ! is_numeric( $attachment_id ) ) {
-		// return new \WP_Error( 'invalid_thumbnail', __( 'Custom thumbnail is empty.', 'godam' ), array( 'status' => 400 ) );
-		// }
-	
 		$mime_type = get_post_mime_type( $attachment_id );
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
 			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
@@ -516,19 +523,8 @@ class Media_Library extends Base {
 			return new \WP_REST_Response( array( 'message' => 'Unable to retrieve image.' ), 404 );
 		}
 	
-		// Upload the file
-		// $uploaded_id = media_handle_upload( 'file', 0 );
-		// if ( is_wp_error( $uploaded_id ) ) {
-		// return new \WP_REST_Response( [ 'message' => $uploaded_id->get_error_message() ], 500 );
-		// }
-	
-		// $image_url = wp_get_attachment_url( $thumbnail_id );
-		// if ( ! $image_url ) {
-		// return new \WP_REST_Response( [ 'message' => 'Image upload failed.' ], 500 );
-		// }
-	
 		// Get current thumbnails
-		$existing_thumbnails = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
+		$existing_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
 		if ( ! is_array( $existing_thumbnails ) ) {
 			$existing_thumbnails = array();
 		}
@@ -540,7 +536,7 @@ class Media_Library extends Base {
 		$existing_thumbnails = array_unique( $existing_thumbnails );
 	
 		// Save updated thumbnails
-		update_post_meta( $attachment_id, 'rtgodam_media_thumbnails', $existing_thumbnails );
+		update_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', $existing_thumbnails );
 	
 		// Also set as selected thumbnail
 		update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $image_url );
@@ -549,8 +545,8 @@ class Media_Library extends Base {
 			array(
 				'success' => true,
 				'data'    => array(
-					'selected'   => $image_url,
-					'thumbnails' => $existing_thumbnails,
+					'selected'         => $image_url,
+					'customThumbnails' => $existing_thumbnails,
 				),
 			),
 			200 
