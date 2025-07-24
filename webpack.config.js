@@ -119,6 +119,13 @@ const deactivationJS = {
 	},
 };
 
+const whatsNewJS = {
+	...sharedConfig,
+	entry: {
+		'whats-new': path.resolve( process.cwd(), 'assets', 'src', 'js', 'whats-new.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -135,6 +142,7 @@ fs.readdirSync( pagesDir ).forEach( ( folder ) => {
 entryPoints[ 'page-css' ] = path.resolve( process.cwd(), 'pages', 'index.js' );
 
 const pages = {
+	mode: 'development', // Set to 'production' for production builds
 	entry: entryPoints, // Dynamic entry points for each page
 	output: {
 		path: path.resolve( __dirname, './assets/build/pages' ), // Output directory
@@ -157,7 +165,7 @@ const pages = {
 				use: [ 'style-loader', 'css-loader', 'postcss-loader', 'sass-loader' ],
 			},
 			{
-				test: /\.(png|jpg|jpeg|gif|svg)$/, // Handle image files
+				test: /\.(png|jpg|jpeg|gif|svg|webp)$/, // Handle image files
 				use: [
 					{
 						loader: 'file-loader',
@@ -188,6 +196,7 @@ module.exports = [
 	godamPlayerFrontend,
 	godamPlayerAnalytics,
 	deactivationJS,
+	whatsNewJS,
 	styles, // Do not remove this.
 	pages,
 ];

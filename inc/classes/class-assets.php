@@ -202,7 +202,7 @@ class Assets {
 			'easydam-media-library',
 			RTGODAM_URL . 'assets/build/js/media-library.js',
 			array(),
-			filemtime( RTGODAM_PATH . '/assets/build/js/media-library.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/media-library.js' ),
 			true
 		);
 

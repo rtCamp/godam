@@ -54,6 +54,13 @@ class Pages {
 	private $dashboard_slug = 'rtgodam_dashboard';
 
 	/**
+	 * Slug for the what's new page.
+	 *
+	 * @var string
+	 */
+	private $whats_new_slug = 'rtgodam_whats_new';
+
+	/**
 	 * Menu pag ID.
 	 *
 	 * @var string
@@ -87,6 +94,13 @@ class Pages {
 	 * @var string
 	 */
 	private $dashboard_page_id = 'godam_page_rtgodam_dashboard';
+
+	/**
+	 * Whats new page ID.
+	 *
+	 * @var string
+	 */
+	private $whats_new_page_id = 'godam_page_rtgodam_whats_new';
 
 	/**
 	 * Construct method.
@@ -164,13 +178,23 @@ class Pages {
 		);
 
 		add_submenu_page(
-			'rtgodam',
+			$this->menu_slug,
 			__( 'Help', 'godam' ),
 			__( 'Help', 'godam' ),
 			'edit_posts',
 			$this->help_slug,
 			array( $this, 'render_help_page' ),
 			5
+		);
+
+		add_submenu_page(
+			$this->menu_slug,
+			__( 'What\'s new', 'godam' ),
+			__( 'What\'s new', 'godam' ),
+			'read',
+			$this->whats_new_slug,
+			array( $this, 'render_whats_new_page' ),
+			6
 		);
 	}
 
@@ -195,7 +219,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->dashboard_page_id ) ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->dashboard_page_id, $this->whats_new_page_id ) ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
@@ -298,6 +322,18 @@ class Pages {
 	public function render_analytics_page() {
 		?>
 		<div id="root-video-analytics"></div>
+		<?php
+	}
+
+	/**
+	 * To render the what's new page.
+	 *
+	 * @return void
+	 */
+	public function render_whats_new_page() {
+		// require RTGODAM_PATH . 'inc/templates/whats-new.php';
+		?>
+		<div id="root-whats-new"></div>
 		<?php
 	}
 
@@ -567,6 +603,28 @@ class Pages {
 
 			wp_enqueue_script( 'godam-page-script-dashboard' );
 			wp_enqueue_script( 'd3-js' );
+		} elseif ( $screen && $this->whats_new_page_id === $screen->id ) {
+
+			wp_register_script(
+				'godam-page-script-whats-new',
+				RTGODAM_URL . 'assets/build/pages/whats-new.js',
+				array( 'wp-element', 'wp-i18n' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/whats-new.js' ),
+				true
+			);
+			wp_set_script_translations( 'godam-page-script-whats-new', 'godam', RTGODAM_PATH . 'languages' );
+
+			wp_register_script(
+				'godam-script-whats-new',
+				RTGODAM_URL . 'assets/build/js/whats-new.js',
+				array( 'godam-page-script-whats-new' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/whats-new.js' ),
+				true
+			);
+			wp_set_script_translations( 'godam-page-script-whats-new', 'godam', RTGODAM_PATH . 'languages' );
+
+			// wp_enqueue_script( 'godam-page-script-whats-new' );
+			wp_enqueue_script( 'godam-script-whats-new' );
 		}
 
 		wp_enqueue_style( 'wp-components' );

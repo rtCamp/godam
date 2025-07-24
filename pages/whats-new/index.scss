@@ -1,0 +1,383 @@
+
+// SCSS Variables (better for SCSS usage)
+$primary-red: #AB3A6C;
+$light-red: #f9f8f2;
+$dark-text: #202124;
+$grey-text: #5f6368;
+
+#wpcontent {
+	padding-left: 0;
+  background-color: #fff;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+// Banner Styles
+.banner {
+  background-color: $light-red;
+  padding: 5rem 0;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+  margin: 1.5rem;
+  border-radius: 1rem;
+  height: 320px;
+  box-sizing: border-box;
+  background-position: center;
+
+  &-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  h1 {
+    font-size: 42px;
+    font-weight: 500;
+    color: #fff;
+    text-align: center;
+    background-clip: text;
+    background-color: #E6533A;
+    background-image: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
+    -webkit-text-fill-color: transparent;
+    line-height: 1.5;
+  }
+}
+
+.godam-logo {
+  &-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  width: 5rem;
+  height: 5rem;
+  margin-top: -60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  background-color: $light-red;
+  border-radius: 1000px;
+  z-index: 999;
+
+  img {
+    width: 3rem;
+    height: 3rem;
+    position: relative;
+    bottom: 4px;
+  }
+}
+
+// Feature Section Styles
+.feature {
+  padding: 4rem 0;
+
+  &-content {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+
+    &.reverse {
+      flex-direction: row-reverse;
+    }
+  }
+
+  &-image {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    position: relative;
+
+    img {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+  }
+
+  &-text {
+    flex: 1;
+  }
+
+  h2 {
+    font-size: 2rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    line-height: 1.25;
+  }
+
+  p {
+    color: $grey-text;
+    margin-bottom: 1.5rem;
+  }
+
+  ol {
+    padding-left: 1.5rem;
+  }
+
+  li {
+    margin-bottom: 1rem;
+  }
+
+  strong {
+    font-weight: 500;
+  }
+}
+
+// Tag Style
+.tag {
+  display: inline-block;
+  background-color: $light-red;
+  color: $primary-red;
+  padding: 4px 1rem;
+  border-radius: 1rem;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+}
+
+// More Features Section Styles
+.more-features {
+  padding: 3rem 0;
+  background-color: #fff;
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 3rem;
+    text-align: center;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.feature-card {
+  background-color: $light-red;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: transparent 1px solid;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-4px);
+    border: 1px solid $primary-red;
+  }
+
+  h3 {
+    font-size: 18px;
+    font-weight: 500;
+  }
+}
+
+.card {
+  &-image {
+    height: 200px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 1rem;
+    }
+  }
+
+  &-content {
+    padding: 1.5rem;
+  }
+}
+
+.folded #wpcontent .modal {
+  left: 36px;
+}
+
+// Modal Styles
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 160px;
+  right: 0;
+  top: 0;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.3s;
+
+  &-content {
+    position: relative;
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 40px;
+    width: 80%;
+    max-width: 1200px;
+    border-radius: 1rem;
+    box-shadow: 0 4px 1.5rem rgba(0, 0, 0, 0.1);
+    animation: slideDown 0.3s;
+  }
+
+  &-body {
+    display: none;
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    p {
+      color: $grey-text;
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    ol, ul {
+      padding-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+  }
+
+  &-tag {
+    margin-bottom: 12px;
+  }
+
+  &-image {
+    margin-top: 2rem;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+    img {
+      width: 100%;
+      display: block;
+    }
+  }
+}
+
+.close-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: #aaa;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  background: #f1f3f4;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  &:hover {
+    background-color: #ddd;
+    color: $primary-red;
+  }
+}
+
+.date {
+  color: $grey-text;
+  font-size: 14px;
+  margin-bottom: 1.5rem;
+  margin-top: 8px;
+}
+
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+// Responsive Styles
+@media (max-width: 900px) {
+  .feature {
+    &-content {
+      flex-direction: column;
+
+      &.reverse {
+        flex-direction: column;
+      }
+    }
+  }
+
+  .banner {
+    h1 {
+      font-size: 2rem;
+    }
+  }
+
+  .qr-section {
+    position: relative;
+    right: auto;
+    margin-top: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    padding: 1.5rem;
+    margin: 10% auto;
+  }
+
+  .modal-body {
+    h2 {
+      font-size: 1.5rem;
+      line-height: 1.4;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature {
+    h2 {
+      font-size: 1.5rem;
+      line-height: 1.4;
+    }
+  }
+}
+
+@media only screen and (max-width: 960px) {
+  .modal {
+    left: 36px;  
+  }
+}
