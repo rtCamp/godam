@@ -6,29 +6,28 @@ import { useState } from 'react';
 /**
  * WordPress dependencies
  */
-import { Button, Panel, PanelBody, TextControl } from '@wordpress/components';
+import { Button, Panel, PanelBody, TextControl, Spinner } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { useDeactivateAPIKeyMutation, useVerifyAPIKeyMutation } from '../../../redux/api/media-settings.js';
-
 import { hasValidAPIKey, maskedAPIKey, scrollToTop } from '../../../utils/index.js';
 import UsageData from './UsageData.jsx';
 
 const APISettings = ( { setNotice } ) => {
 	const [ apiKey, setAPIKey ] = useState( hasValidAPIKey ? maskedAPIKey : '' );
-
 	const [ verifyAPIKey, { isLoading: isAPIKeyLoading } ] = useVerifyAPIKeyMutation();
 	const [ deactivateAPIKey, { isLoading: isDeactivateLoading } ] = useDeactivateAPIKeyMutation();
 
+	// Function to render help text based on API key validity
 	const renderHelpText = () => {
 		if ( ! hasValidAPIKey ) {
 			return (
 				<>
 					{ __( 'Your API key is required to access the features. You can get your active API key from your ', 'godam' ) }
-					<a href={ ( window.godamRestRoute?.api_base ?? 'https://app.godam.io' ) + '/web/my-account?accTab=API' } target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+					<a href={ ( window.godamRestRoute?.apiBase ?? 'https://app.godam.io' ) + '/web/my-account?accTab=API' } target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
 						{ __( 'Account', 'godam' ) }
 					</a>.
 				</>
@@ -37,6 +36,7 @@ const APISettings = ( { setNotice } ) => {
 		return null;
 	};
 
+	// Function to handle saving the API key
 	const handleSaveAPIKey = async () => {
 		if ( ! apiKey.trim() ) {
 			setNotice( {
@@ -68,6 +68,7 @@ const APISettings = ( { setNotice } ) => {
 		scrollToTop();
 	};
 
+	// Function to handle deactivating the API key
 	const handleDeactivateAPIKey = async () => {
 		try {
 			const response = await deactivateAPIKey().unwrap();
@@ -107,11 +108,12 @@ const APISettings = ( { setNotice } ) => {
 						<Button
 							className="godam-button godam-margin-right"
 							onClick={ handleSaveAPIKey }
-							disabled={ isAPIKeyLoading || hasValidAPIKey }
+							icon={ isAPIKeyLoading && <Spinner /> }
+							disabled={ isAPIKeyLoading || hasValidAPIKey || ! apiKey.trim() }
 							variant="primary"
 							isBusy={ isAPIKeyLoading }
 						>
-							{ __( 'Save API Key', 'godam' ) }
+							{ isAPIKeyLoading ? __( 'Saving…', 'godam' ) : __( 'Save API Key', 'godam' ) }
 						</Button>
 						<Button
 							className="godam-button"

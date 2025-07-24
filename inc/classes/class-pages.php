@@ -9,8 +9,8 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
-use NF_Display_Render;
 use RTGODAM\Inc\Traits\Singleton;
+use WP_REST_Request;
 
 /**
  * Class Assets
@@ -54,6 +54,13 @@ class Pages {
 	private $settings_slug = 'rtgodam_settings';
 
 	/**
+	 * Slug for tools page
+	 *
+	 * @var string
+	 */
+	private $tools_slug = 'rtgodam_tools';
+
+	/**
 	 * Menu pag ID.
 	 *
 	 * @var string
@@ -89,6 +96,13 @@ class Pages {
 	private $settings_page_id = 'godam_page_rtgodam_settings';
 
 	/**
+	 * Tools page ID.
+	 * 
+	 * @var string
+	 */
+	private $tools_page_id = 'godam_page_rtgodam_tools';
+
+	/**
 	 * Construct method.
 	 */
 	protected function __construct() {
@@ -107,6 +121,11 @@ class Pages {
 		add_action( 'admin_menu', array( $this, 'add_admin_pages' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
+
+		// Remove anti-spam field during shortcode render for WPForms in Video Editor Page.
+		// @see https://github.com/rtCamp/godam/issues/597 issue link.
+		add_filter( 'rest_pre_dispatch', array( $this, 'save_current_rest_api_request' ), 10, 3 );
+		add_filter( 'wpforms_frontend_form_data', array( $this, 'remove_antispam_setting_from_wpforms' ), 10 );
 	}
 
 	/**
@@ -155,6 +174,19 @@ class Pages {
 			2
 		);
 
+		// Only add Tools submenu if a valid API key is set.
+		if ( rtgodam_is_api_key_valid() ) {
+			add_submenu_page(
+				$this->menu_slug,
+				__( 'Tools', 'godam' ),
+				__( 'Tools', 'godam' ),
+				'manage_options',
+				$this->tools_slug,
+				array( $this, 'render_tools_page' ),
+				5
+			);
+		}
+
 		add_submenu_page(
 			$this->menu_slug,
 			__( 'Settings', 'godam' ),
@@ -174,6 +206,19 @@ class Pages {
 			array( $this, 'render_help_page' ),
 			7
 		);
+	}
+
+	/**
+	 * To render the tools page.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function render_tools_page() {
+		?>
+			<div id="root-godam-tools"></div>
+		<?php
 	}
 
 	/**
@@ -217,7 +262,7 @@ class Pages {
 	 */
 	public function render_godam_page() {
 		?>
-		<div id="root-easydam">
+		<div id="root-godam-settings">
 			<div class="wrap flex min-h-[80vh] gap-4 my-4">
 				<!-- Sidebar Skeleton -->
 				<div class="max-w-[220px] w-full rounded-lg bg-white shadow-md border border-gray-200">
@@ -311,7 +356,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id ), true ) ) {
 
 			wp_register_script(
 				'rtgodam-page-style',
@@ -334,25 +379,39 @@ class Pages {
 				true
 			);
 
-			$is_gf_active      = is_plugin_active( 'gravityforms/gravityforms.php' );
-			$is_cf7_active     = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
-			$is_wpforms_active = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
-			$is_jetpack_active = is_plugin_active( 'jetpack/jetpack.php' );
+			$is_gf_active           = is_plugin_active( 'gravityforms/gravityforms.php' );
+			$is_cf7_active          = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
+			$is_wpforms_active      = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
+			$is_jetpack_active      = is_plugin_active( 'jetpack/jetpack.php' );
+			$is_sure_form_active    = is_plugin_active( 'sureforms/sureforms.php' );
+			$is_forminator_active   = is_plugin_active( 'forminator/forminator.php' );
+			$is_fluent_forms_active = is_plugin_active( 'fluentform/fluentform.php' );
+
+			// TODO Handle Everest Forms pro versions as well in future.
+			$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' );
+
+			$is_ninja_forms_active = is_plugin_active( 'ninja-forms/ninja-forms.php' );
+
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
 				'videoData',
 				array(
-					'nonce'            => wp_create_nonce( 'wp_rest' ),     // WordPress nonce for API requests.
-					'currentUserId'    => get_current_user_id(),            // Current user ID.
-					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
-					'valid_api_key'    => rtgodam_is_api_key_valid(),
-					'adminUrl'         => admin_url(),
-					'gf_active'        => $is_gf_active,
-					'cf7_active'       => $is_cf7_active,
-					'wpforms_active'   => $is_wpforms_active,
-					'jetpack_active'   => $is_jetpack_active,
+					'nonce'              => wp_create_nonce( 'wp_rest' ),   // WordPress nonce for API requests.
+					'currentUserId'      => get_current_user_id(),          // Current user ID.
+					'currentUserRoles'   => wp_get_current_user()->roles,   // Current user roles.
+					'validApiKey'        => rtgodam_is_api_key_valid(),
+					'adminUrl'           => admin_url(),
+					'gfActive'           => $is_gf_active,
+					'cf7Active'          => $is_cf7_active,
+					'wpformsActive'      => $is_wpforms_active,
+					'jetpackActive'      => $is_jetpack_active,
+					'sureformsActive'    => $is_sure_form_active,
+					'forminatorActive'   => $is_forminator_active,
+					'fluentformsActive'  => $is_fluent_forms_active,
+					'everestFormsActive' => $is_everest_forms_active,
+					'ninjaFormsActive'   => $is_ninja_forms_active,
 				)
 			);
 
@@ -361,17 +420,32 @@ class Pages {
 				$this->enqueue_gravity_forms_styles();
 			}
 
-			// Enqueue WPForms styles if the plugin is active.
-			if ( $is_wpforms_active ) {
-				$this->enqueue_wpforms_styles();
-			}
-
 			// Enqueue Jetpack Forms styles if the plugin is active.
 			if ( $is_jetpack_active ) {
 				$this->enqueue_jetpack_forms_styles();
 			}
 
-			$rtgodam_user_data = rtgodam_get_user_data();
+			// Enqueue Sure Forms style if the plugin is active.
+			if ( $is_sure_form_active ) {
+				$this->enqueue_sureforms_styles();
+			}
+
+			// Enqueue Forminator Forms styles if the plugin is active.
+			if ( $is_forminator_active ) {
+				$this->enqueue_forminator_forms_styles();
+			}
+
+			// Enqueue Fluent Forms styles if the plugin is active.
+			if ( $is_fluent_forms_active ) {
+				$this->enqueue_fluent_forms_styles();
+			}
+
+			// Enqueue Everest Forms styles if the plugin is active.
+			if ( $is_everest_forms_active ) {
+				$this->enqueue_everest_forms_styles();
+			}
+
+			$rtgodam_user_data = rtgodam_get_user_data( true );
 
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
@@ -401,12 +475,12 @@ class Pages {
 					'wp-polls',
 					'pollsL10n',
 					array(
-						'ajax_url'      => admin_url( 'admin-ajax.php' ),
-						'text_wait'     => __( 'Your last request is still being processed. Please wait a while ...', 'godam' ),
-						'text_valid'    => __( 'Please choose a valid poll answer.', 'godam' ),
-						'text_multiple' => __( 'Maximum number of choices allowed: ', 'godam' ),
-						'show_loading'  => (int) $poll_ajax_style['loading'],
-						'show_fading'   => (int) $poll_ajax_style['fading'],
+						'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+						'textWait'     => __( 'Your last request is still being processed. Please wait a while ...', 'godam' ),
+						'textValid'    => __( 'Please choose a valid poll answer.', 'godam' ),
+						'textMultiple' => __( 'Maximum number of choices allowed: ', 'godam' ),
+						'showLoading'  => (int) $poll_ajax_style['loading'],
+						'showFading'   => (int) $poll_ajax_style['fading'],
 					)
 				);
 			}
@@ -426,12 +500,12 @@ class Pages {
 					'wp-polls',
 					'pollsL10n',
 					array(
-						'ajax_url'      => admin_url( 'admin-ajax.php' ),
-						'text_wait'     => __( 'Your last request is still being processed. Please wait a while ...', 'godam' ),
-						'text_valid'    => __( 'Please choose a valid poll answer.', 'godam' ),
-						'text_multiple' => __( 'Maximum number of choices allowed: ', 'godam' ),
-						'show_loading'  => (int) $poll_ajax_style['loading'],
-						'show_fading'   => (int) $poll_ajax_style['fading'],
+						'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+						'textWait'     => __( 'Your last request is still being processed. Please wait a while ...', 'godam' ),
+						'textValid'    => __( 'Please choose a valid poll answer.', 'godam' ),
+						'textMultiple' => __( 'Maximum number of choices allowed: ', 'godam' ),
+						'showLoading'  => (int) $poll_ajax_style['loading'],
+						'showFading'   => (int) $poll_ajax_style['fading'],
 					)
 				);
 			}
@@ -452,7 +526,7 @@ class Pages {
 				true
 			);
 
-			$rtgodam_user_data = rtgodam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data( true );
 
 			wp_localize_script(
 				'godam-page-script-dashboard',
@@ -497,7 +571,7 @@ class Pages {
 			wp_register_script(
 				'transcoder-page-script-analytics',
 				RTGODAM_URL . 'assets/build/pages/analytics.min.js',
-				array( 'wp-element' ),
+				array( 'wp-element', 'wp-i18n' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/analytics.min.js' ),
 				true
 			);
@@ -516,7 +590,7 @@ class Pages {
 				)
 			);
 
-			$rtgodam_user_data = rtgodam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data( true );
 
 			wp_localize_script(
 				'transcoder-page-script-analytics',
@@ -543,7 +617,7 @@ class Pages {
 				true
 			);
 
-			$rtgodam_user_data = rtgodam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data( true );
 
 			wp_localize_script(
 				'godam-page-script-help',
@@ -562,7 +636,7 @@ class Pages {
 				true
 			);
 
-			$rtgodam_user_data = rtgodam_get_user_data();
+			$rtgodam_user_data = rtgodam_get_user_data( true );
 
 			if ( ! empty( $rtgodam_user_data ) ) {
 				wp_localize_script(
@@ -574,6 +648,27 @@ class Pages {
 
 			wp_set_script_translations( 'transcoder-page-script-godam', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-godam' );
+		} elseif ( $screen && $this->tools_page_id === $screen->id ) {
+
+			wp_register_script(
+				'godam-page-script-tools',
+				RTGODAM_URL . 'assets/build/pages/tools.min.js',
+				array( 'wp-element', 'wp-i18n' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/tools.min.js' ),
+				true
+			);
+
+			wp_set_script_translations( 'godam-page-script-tools', 'godam', RTGODAM_PATH . 'languages' );
+
+			$rtgodam_user_data = rtgodam_get_user_data( true );
+
+			wp_localize_script(
+				'godam-page-script-tools',
+				'userData',
+				$rtgodam_user_data
+			);
+
+			wp_enqueue_script( 'godam-page-script-tools' );
 		}
 
 		wp_enqueue_style( 'wp-components' );
@@ -596,7 +691,7 @@ class Pages {
 			'MediaLibrary',
 			array(
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'userData' => rtgodam_get_user_data(),
+				'userData' => rtgodam_get_user_data( true ),
 			)
 		);
 	}
@@ -628,26 +723,6 @@ class Pages {
 	}
 
 	/**
-	 * Enqueue WPForms styles.
-	 *
-	 * @return void
-	 */
-	public function enqueue_wpforms_styles() {
-
-		if ( ! defined( 'WPFORMS_PLUGIN_URL' ) ) {
-			return;
-		}
-
-		// Enqueue the WPForms styles.
-		wp_enqueue_style(
-			'wpforms-full',
-			WPFORMS_PLUGIN_URL . 'assets/css/frontend/classic/wpforms-full.css',
-			array(),
-			WPFORMS_VERSION
-		);
-	}
-
-	/**
 	 * Enqueue Jetpack Forms styles.
 	 *
 	 * @return void
@@ -662,5 +737,146 @@ class Pages {
 		wp_enqueue_style( 'grunion.css' );
 		// In admin, we need to load the block library styles which include button styles.
 		wp_enqueue_style( 'wp-block-library' );
+	}
+
+	/**
+	 * Enqueue sureforms styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_sureforms_styles() {
+
+		/**
+		 * Enqueue the sureforms assets.
+		 */
+		if ( class_exists( 'SRFM\Inc\Frontend_Assets' ) ) {
+			$instance = \SRFM\Inc\Frontend_Assets::get_instance();
+
+			if ( $instance ) {
+				$instance->register_scripts();
+				$instance->enqueue_scripts_and_styles();
+			}
+		}
+	}
+
+	/**
+	 * Enqueue the Forminator assets.
+	 *
+	 * @return void
+	 */
+	public function enqueue_forminator_forms_styles() {
+		// Check if Forminator is active and url is available.
+		if ( ! function_exists( 'forminator_plugin_url' ) && ! defined( 'FORMINATOR_VERSION' ) ) {
+			return;
+		}
+
+		// Get Forminator plugin URL.
+		$forminator_url = forminator_plugin_url();
+
+		// Enqueue the CSS files.
+		wp_enqueue_style( 'forminator-base', $forminator_url . 'assets/forminator-ui/css/src/form/forminator-form-default.base.min.css', array(), FORMINATOR_VERSION );
+		wp_enqueue_style( 'forminator-grid', $forminator_url . 'assets/forminator-ui/css/src/grid/forminator-grid.open.min.css', array(), FORMINATOR_VERSION );
+	}
+
+	/**
+	 * Enqueue Fluent Forms styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_fluent_forms_styles() {
+		if ( ! defined( 'FLUENTFORM_VERSION' ) ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'fluent-forms-public',
+			plugins_url( 'fluentform/assets/css/fluent-forms-public.css' ),
+			array(),
+			FLUENTFORM_VERSION
+		);
+
+		wp_enqueue_style(
+			'fluent-forms-default',
+			plugins_url( 'fluentform/assets/css/fluentform-public-default.css' ),
+			array(),
+			FLUENTFORM_VERSION
+		);
+	}
+
+	/**
+	 * Enqueue Everest Forms styles.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @return void
+	 */
+	public function enqueue_everest_forms_styles() {
+		if ( ! defined( 'EVF_VERSION' ) ) {
+			return;
+		}
+
+		wp_enqueue_style( 'everest-forms-general', evf()->plugin_url() . '/assets/css/everest-forms.css', array(), EVF_VERSION );
+
+		\EVF_Frontend_Scripts::load_scripts();
+	}
+
+	/**
+	 * Save current rest api request.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param mixed           $result Response to replace the requested version with. Can be anything a normal endpoint can return, or null to not hijack the request.
+	 * @param \WP_REST_Server $server Server instance.
+	 * @param WP_REST_Request $request Request used to generate the response.
+	 *
+	 * @return mixed
+	 */
+	public function save_current_rest_api_request( $result, $server, $request ) {
+		global $godam_current_rest_request;
+
+		// Save the current REST API request.
+		$godam_current_rest_request = $request;
+
+		return $result;
+	}
+
+	/**
+	 * Remove anti-spam settings from wpforms.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param array $form_data Form data to be modified.
+	 *
+	 * @return array
+	 */
+	public function remove_antispam_setting_from_wpforms( $form_data ) {
+		global $godam_current_rest_request;
+
+		// Check if the global variable is set and is an instance of WP_REST_Request.
+		if ( null === $godam_current_rest_request ) {
+			return $form_data;
+		}
+
+		// Bail early if the global variable is not an instance of WP_REST_Request.
+		if ( ! $godam_current_rest_request instanceof \WP_REST_Request ) {
+			return $form_data;
+		}
+
+		if ( '/godam/v1/wpform' !== $godam_current_rest_request->get_route() ) {
+			return $form_data;
+		}
+
+		// Remove the antispam settings from the form data.
+		if ( isset( $form_data['settings'] ) ) {
+			foreach ( $form_data['settings'] as $key => $value ) {
+				if ( str_starts_with( $key, 'antispam' ) ) {
+					unset( $form_data['settings'][ $key ] );
+				}
+			}
+		}
+
+		$godam_current_rest_request = null;
+
+		return $form_data;
 	}
 }

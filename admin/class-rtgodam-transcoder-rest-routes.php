@@ -55,7 +55,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'handle_callback' ),
-				'permission_callback' => '__return_true', // The endpoint must be public; otherwise, GoDAM (https://app.godam.io) won't be able to send a media transcoding callback request.
+				'permission_callback' => array( $this, 'verify_callback_permission' ),
 				'args'                => array(
 					'job_id'           => array(
 						'required'          => true,
@@ -119,6 +119,11 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					),
 					'job_manager_form' => array(
 						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'api_key'          => array(
+						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
@@ -219,6 +224,8 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 						if ( ! empty( $post_array['files']['mpd'] ) ) {
 							update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $post_array['download_url'] );
 
+							delete_post_meta( $attachment_id, 'rtgodam_retranscoding_sent' );
+
 							$latest_attachment = get_option( 'rtgodam_new_attachment', false );
 
 							if ( ! empty( $latest_attachment ) && $latest_attachment['attachment_id'] === $attachment_id ) {
@@ -248,7 +255,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 				$post_array = $request->get_params();
 				$data       = get_option( $job_id );
 				if ( ! empty( $data ) ) {
-					if ( 'gform_godam_recorder' === $data['source'] ) {
+					if ( 'gf_godam_recorder' === $data['source'] || 'gform_godam_recorder' === $data['source'] ) {
 						$entry_id   = $data['entry_id'];
 						$post_array = $request->get_params();
 						if ( $entry_id && function_exists( 'gform_update_meta' ) ) {
@@ -259,15 +266,105 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			}
 		}
 
+		if ( ! empty( $job_for ) && 'sureforms-godam-recorder' === $job_for && ! empty( $job_id ) ) {
+			$post_array = $request->get_params();
+
+			/**
+			 * Get data stored in options based on job id.
+			 */
+			$data = get_option( $job_id );
+
+			/**
+			 * If we have data in options, proceed.
+			 */
+			if ( ! empty( $data ) && 'sureforms_godam_recorder' === $data['source'] && class_exists( 'SRFM\Inc\Database\Tables\Entries' ) ) {
+				$entry_id   = $data['entry_id'];
+				$entry_data = \SRFM\Inc\Database\Tables\Entries::get( $entry_id );
+
+				if ( ! empty( $entry_data ) && ! empty( $entry_data['form_id'] ) ) {
+					$form_id = $entry_data['form_id'];
+					update_post_meta(
+						$form_id,
+						'rtgodam_transcoded_url_sureforms_' . $form_id . '_' . $entry_id,
+						$post_array['download_url']
+					);
+				}
+			}
+		}
+
+		if ( ! empty( $job_for ) && 'fluentforms-godam-recorder' === $job_for && ! empty( $job_id ) ) {
+			$post_array = $request->get_params();
+
+			/**
+			 * Get data stored in options based on job id.
+			 */
+			$data = get_option( $job_id );
+
+			/**
+			 * If we have data in options, proceed.
+			 */
+			if ( ! empty( $data ) && 'fluentforms_godam_recorder' === $data['source'] && function_exists( 'wpFluent' ) ) {
+				$entry_id   = $data['entry_id'];
+				$entry_data = wpFluent()->table( 'fluentform_submissions' )->find( $entry_id );
+
+				if ( ! empty( $entry_data ) && ! empty( $entry_data->form_id ) ) {
+					$form_id = $entry_data->form_id;
+
+					/**
+					 * Add to entry meta.
+					 */
+					wpFluent()->table( 'fluentform_submission_meta' )->insert(
+						array(
+							'response_id' => $entry_id,
+							'form_id'     => $form_id,
+							'meta_key'    => 'rtgodam_transcoded_url_fluentforms_' . $form_id . '_' . $entry_id,
+							'value'       => $post_array['download_url'],
+							'status'      => 'success',
+							'name'        => 'rtgodam_transcoded_url_fluentforms_' . $form_id . '_' . $entry_id,
+						)
+					);
+				}
+			}
+		}
+
 		/**
 		 * Allow users/plugins to perform action after response received from the transcoder is
 		 * processed
 		 *
+		 * @since 1.3.0 Added $job_for and $request parameter.
 		 * @since 1.0.9
 		 *
-		 * @param number    $attachment_id  Attachment ID for which the callback has sent from the transcoder
-		 * @param number    $job_id         The transcoding job ID
+		 * @param number    $attachment_id  Attachment ID for which the callback has sent from the transcoder.
+		 * @param number    $job_id         The transcoding job ID.
+		 * @param string    $job_for        Job for.
+		 * @param \WP_Request $request      WP_Request instance.
 		 */
-		do_action( 'rtgodam_handle_callback_finished', $attachment_id, $job_id );
+		do_action( 'rtgodam_handle_callback_finished', $attachment_id, $job_id, $job_for, $request );
+	}
+
+	/**
+	 * Verify callback permission by checking API key.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return bool|WP_Error True if permission granted, WP_Error otherwise.
+	 */
+	public function verify_callback_permission( $request ) {
+		$provided_api_key = $request->get_param( 'api_key' );
+		$stored_api_key   = get_option( 'rtgodam-api-key' );
+
+		// Validate API Key.
+		if ( empty( $provided_api_key ) ) {
+			return new WP_Error( 'forbidden', __( 'API key is required.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		if ( empty( $stored_api_key ) ) {
+			return new WP_Error( 'forbidden', __( 'API key not configured on the site.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		if ( $provided_api_key !== $stored_api_key ) {
+			return new WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		return true;
 	}
 }

@@ -10,6 +10,7 @@ namespace RTGODAM\Inc;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
+use WP_Post;
 
 /**
  * Class Video_Metadata
@@ -21,6 +22,16 @@ class Video_Metadata {
 	 * Batch size for processing videos.
 	 */
 	const BATCH_SIZE = 50;
+
+	/**
+	 * Default width for video thumbnails in pixels.
+	 */
+	const DEFAULT_THUMBNAIL_WIDTH = 640;
+
+	/**
+	 * Default height for video thumbnails in pixels.
+	 */
+	const DEFAULT_THUMBNAIL_HEIGHT = 480;
 
 	/**
 	 * Constructor.
@@ -37,6 +48,9 @@ class Video_Metadata {
 	protected function setup_hooks() {
 		add_action( 'init', array( $this, 'maybe_migrate_existing_videos' ) );
 		add_action( 'add_attachment', array( $this, 'save_video_metadata' ) );
+
+		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'set_media_library_thumbnail' ), 10, 3 );
+		add_action( 'init', array( $this, 'filter_vimeo_migrated_urls' ) );
 	}
 
 	/**
@@ -47,7 +61,7 @@ class Video_Metadata {
 	public function maybe_migrate_existing_videos() {
 		// Check if migration has been run, if not, run it once.
 		$migration_completed = get_option( 'rtgodam_video_metadata_migration_completed', false );
-		
+
 		if ( ! $migration_completed ) {
 			$this->migrate_existing_video_metadata();
 			update_option( 'rtgodam_video_metadata_migration_completed', true );
@@ -72,24 +86,24 @@ class Video_Metadata {
 	 */
 	private function process_video_metadata( $attachment_id ) {
 		$file_path = get_attached_file( $attachment_id );
-		
+
 		if ( $this->is_video_attachment( $attachment_id ) && file_exists( $file_path ) ) {
 			// Check if metadata already exists to avoid unnecessary processing.
 			$existing_duration = get_post_meta( $attachment_id, '_video_duration', true );
 			$existing_size     = get_post_meta( $attachment_id, '_video_file_size', true );
-			
+
 			if ( empty( $existing_duration ) || empty( $existing_size ) ) {
 				if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 					require_once ABSPATH . 'wp-admin/includes/media.php';
 				}
-				
+
 				$metadata = wp_read_video_metadata( $file_path );
-				
+
 				// Save duration.
 				if ( ! empty( $metadata['length'] ) ) {
 					update_post_meta( $attachment_id, '_video_duration', intval( $metadata['length'] ) );
 				}
-				
+
 				// Save file size.
 				$file_size = filesize( $file_path );
 				if ( $file_size ) {
@@ -119,7 +133,7 @@ class Video_Metadata {
 	private function migrate_existing_video_metadata() {
 		$offset          = 0;
 		$has_more_videos = true;
-		
+
 		while ( $has_more_videos ) {
 			// Get a batch of video attachments without metadata.
 			//phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
@@ -143,16 +157,16 @@ class Video_Metadata {
 					),
 				)
 			);
-			
+
 			if ( ! empty( $videos ) ) {
 				// Process this batch.
 				foreach ( $videos as $video ) {
 					$this->process_video_metadata( $video->ID );
 				}
-				
+
 				// Move to the next batch.
 				$offset += self::BATCH_SIZE;
-				
+
 				// If we got fewer videos than batch size, we're done.
 				if ( count( $videos ) < self::BATCH_SIZE ) {
 					$has_more_videos = false;
@@ -162,5 +176,54 @@ class Video_Metadata {
 				$has_more_videos = false;
 			}
 		}
+	}
+
+	/**
+	 * Show thumbnails in the media library from URL present in the post meta.
+	 *
+	 * @param array       $response Array of attachment data.
+	 * @param WP_Post     $attachment Attachment object.
+	 * @param array|false $meta Array of attachment meta data.
+	 * @return array
+	 */
+	public function set_media_library_thumbnail( $response, $attachment, $meta ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $attachment and $meta are not modified.
+		if ( strpos( $response['mime'], 'video/' ) === 0 ) {
+
+			$thumbnail_url   = get_post_meta( $response['id'], 'rtgodam_media_video_thumbnail', true );
+			$attachment_meta = get_post_meta( $response['id'], '_wp_attachment_metadata', true );
+
+			if ( ! empty( $thumbnail_url ) ) {
+				$response['image']['src']    = esc_url( $thumbnail_url );
+				$response['image']['width']  = $attachment_meta['width'] ?? self::DEFAULT_THUMBNAIL_WIDTH;
+				$response['image']['height'] = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
+			}
+		}
+		return $response;
+	}
+
+	/**
+	 * Filter to return the remote URL for Vimeo migrated videos.
+	 *
+	 * This filter modifies the attachment URL to return the remote URL
+	 * if the video has been migrated from Vimeo.
+	 *
+	 * @since n.e.x.t
+	 */
+	public function filter_vimeo_migrated_urls(): void {
+		add_filter(
+			'wp_get_attachment_url',
+			function ( $url, $post_id ) {
+				$is_vimeo_migrated = get_post_meta( $post_id, 'rtgodam_is_migrated_vimeo_video', true );
+				if ( $is_vimeo_migrated ) {
+					$remote_url = get_post_meta( $post_id, '_wp_attached_file', true );
+					if ( ! empty( $remote_url ) ) {
+						return $remote_url;
+					}
+				}
+				return $url;
+			},
+			10,
+			2 
+		);
 	}
 }

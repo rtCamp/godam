@@ -8,7 +8,8 @@
 		"phpunit/phpunit": "^9.6",
 		"wp-phpunit/wp-phpunit": "^6.2",
 		"yoast/phpunit-polyfills": "^1.0",
-		"wp-cli/i18n-command": "^v2.6"
+		"wp-cli/i18n-command": "^v2.6",
+		"squizlabs/php_codesniffer": "^3.13"
 	},
 	"config": {
 		"allow-plugins": {
@@ -20,5 +21,8 @@
 		"npm run lint:staged"
 		],
 		"pot": "WP_CLI_PHP_ARGS='-d memory_limit=1024M' ./vendor/bin/wp i18n make-pot . --exclude=\"assets/src,assets/node_modules,tests,vendor\" ./languages/godam.pot"
+	},
+	"require": {
+		"woocommerce/action-scheduler": "^3.9"
 	}
 }

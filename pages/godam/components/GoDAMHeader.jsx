@@ -11,10 +11,10 @@ import godamLogo from '../../../assets/src/images/godam-logo.png';
 import { help } from '@wordpress/icons';
 
 const GodamHeader = () => {
-	const helpLink = window.godamRestRoute?.api_base + '/helpdesk';
-	const upgradePlanLink = window.godamRestRoute?.api_base + '/subscription/plans';
+	const helpLink = window.godamRestRoute?.apiBase + '/helpdesk';
+	const upgradePlanLink = window.godamRestRoute?.apiBase + '/subscription/plans';
 	const pricingLink = 'https://godam.io/pricing';
-	const godamMediaLink = window.godamRestRoute?.api_base + '/web/media-library';
+	const godamMediaLink = window.godamRestRoute?.apiBase + '/web/media-library';
 
 	return (
 		<header>
@@ -25,8 +25,8 @@ const GodamHeader = () => {
 						<div className="ml-3">
 							<div className="text-xs font-normal leading-4">{ `v${ window?.pluginInfo?.version }` }</div>
 							{
-								window?.userData?.user_data?.active_plan &&
-								<div className="text-xs font-bold py-[2px] px-2 rounded bg-indigo-100 mt-1">{ window?.userData?.user_data?.active_plan }</div>
+								window?.userData?.userApiData?.active_plan &&
+								<div className="text-xs font-bold py-[2px] px-2 rounded bg-indigo-100 mt-1">{ window?.userData?.userApiData?.active_plan }</div>
 							}
 						</div>
 					</h1>
@@ -43,12 +43,12 @@ const GodamHeader = () => {
 
 						}
 						<Button
-							className={ `ml-2 godam-button ${ ( ! window?.userData?.valid_api_key || ! window?.userData?.user_data?.active_plan ) ? 'disabled' : '' }` }
+							className={ `ml-2 godam-button ${ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? 'disabled' : '' }` }
 							variant="primary"
 							size="compact"
-							target={ ( window?.userData?.valid_api_key && window?.userData?.user_data?.active_plan ) ? '_blank' : undefined }
+							target={ ( window?.userData?.validApiKey && window?.userData?.userApiData?.active_plan ) ? '_blank' : undefined }
 							text={ __( 'Manage Media', 'godam' ) }
-							href={ ( window?.userData?.valid_api_key && window?.userData?.user_data?.active_plan ) ? godamMediaLink : '#' }
+							href={ ( window?.userData?.validApiKey && window?.userData?.userApiData?.active_plan ) ? godamMediaLink : '#' }
 							icon={
 								<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
 									<path d="M25.5578 20.0911L8.05587 37.593L3.46397 33.0011C0.818521 30.3556 2.0821 25.8336 5.72228 24.9464L25.5632 20.0964L25.5578 20.0911Z" fill="white" />
@@ -59,13 +59,13 @@ const GodamHeader = () => {
 							iconSize={ 16 }
 							showTooltip={ true }
 							tooltipPosition="bottom center"
-							label={ ( ! window?.userData?.valid_api_key || ! window?.userData?.user_data?.active_plan ) ? __( 'Premium feature', 'godam' ) : __( 'GoDAM central media manager', 'godam' ) }
+							label={ ( ! window?.userData?.valid_api_key || ! window?.userData?.user_data?.active_plan ) ? __( 'Premium feature', 'godam' ) : __( 'GoDAM Central', 'godam' ) }
 							tooltipText={ __( 'Manage Media', 'godam' ) }
-							// disabled={ ! window?.userData?.valid_api_key || ! window?.userData?.user_data?.active_plan }
+							// disabled={ ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan }
 						/>
 
 						{
-							( window?.userData?.valid_api_key && window?.userData?.user_data?.active_plan && ( window?.userData?.user_data?.active_plan )?.toLowerCase() !== 'platinum' ) &&
+							( window?.userData?.validApiKey && window?.userData?.userApiData?.active_plan && ( window?.userData?.userApiData?.active_plan )?.toLowerCase() !== 'platinum' ) &&
 							<Button
 								className="ml-2 godam-button"
 								variant="primary"
@@ -76,7 +76,7 @@ const GodamHeader = () => {
 							/>
 						}
 						{
-							( ! window?.userData?.valid_api_key || ! window?.userData?.user_data?.active_plan ) &&
+							( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) &&
 								<Button
 									className="ml-2 godam-button"
 									variant="primary"
