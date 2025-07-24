@@ -127,7 +127,7 @@ const SingleMetrics = ( {
 	}, [ processedAnalyticsHistory, analyticsDataFetched, metricType, mode ] );
 
 	return (
-		<div className="analytics-info flex justify-between max-lg:flex-col border border-zinc-200 w-full md:w-[calc(50%-0.5rem)]">
+		<div className="analytics-info flex justify-between max-lg:flex-col border border-zinc-200 w-full md:w-[calc(50%-0.5rem)] lg:w-full">
 			<div className="analytics-single-info">
 				<div className="flex justify-between items-center flex-row w-full">
 					<div className="analytics-info-heading">
