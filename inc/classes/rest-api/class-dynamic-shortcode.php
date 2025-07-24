@@ -72,10 +72,10 @@ class Dynamic_Shortcode extends Base {
 			);
 		}
 
-		$transcoded_url     = $id ? rtgodam_get_transcoded_url_from_attachment( $id ) : '';
-		$hls_transcoded_url = $id ? rtgodam_get_hls_transcoded_url_from_attachment( $id ) : '';
-		$video_src          = $id ? wp_get_attachment_url( $id ) : '';
-		$video_src_type     = $id ? get_post_mime_type( $id ) : '';
+		$transcoded_url     = strval( rtgodam_get_transcoded_url_from_attachment( $id ) );
+		$hls_transcoded_url = strval( rtgodam_get_hls_transcoded_url_from_attachment( $id ) );
+		$video_src          = strval( wp_get_attachment_url( $id ) );
+		$video_src_type     = strval( get_post_mime_type( $id ) );
 		$sources            = array();
 
 		if ( ! empty( $transcoded_url ) ) {
