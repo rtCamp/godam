@@ -228,6 +228,11 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 							$latest_attachment = get_option( 'rtgodam_new_attachment', false );
 
+							// Save hls url as well.
+							if ( isset( $post_array['hls_path'] ) && ! empty( trim( $post_array['hls_path'] ) ) ) {
+								update_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', sanitize_url( $post_array['hls_path'] ) );
+							}
+
 							if ( ! empty( $latest_attachment ) && $latest_attachment['attachment_id'] === $attachment_id ) {
 								$latest_attachment['transcoding_status'] = 'success';
 								update_option( 'rtgodam_new_attachment', $latest_attachment, '', true );
