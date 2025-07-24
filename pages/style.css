@@ -96,22 +96,60 @@ input, textarea, select {
 
 .gravity-form-selector .components-combobox-control__suggestions-container {
   position: relative;
+  border: none;
+  border-radius: unset;
+  box-shadow: none;
 }
+
+.gravity-form-selector .components-base-control__label{
+  font-size: 0.875rem !important;
+  line-height: 1 !important;
+  font-weight: 500;
+  color: rgb(33, 33, 33);
+  margin-bottom: 0.75rem !important;
+  text-transform: none !important;
+}
+
+.gravity-form-selector .components-combobox-control__suggestions-container .components-flex{
+  border: 1px solid rgba(225, 225, 225, 1) !important;
+  background: rgba(255, 255, 255, 1) !important;
+  border-radius: 0.5rem !important;
+  padding: 0.75rem !important;
+  height: auto !important;
+  font-size: 0.875rem !important;
+  line-height: 1.375rem !important;
+  font-weight: 400;
+}
+
+.gravity-form-selector .components-combobox-control__input{
+  padding: 0;
+  font-size: 0.875rem !important;
+}
+
 .gravity-form-selector ul {
   position: absolute;
-  top: 102%;
+  top: 100%;
+  margin-top: 1rem;
   left: 0;
   width: 100%;
   background: white;
-  border: 1px solid #ccc;
-  border-radius: var(--radius);
   z-index: 9;
-  border: 1px solid;
-  border-top: 0;
-  border-color: var(--wp-admin-theme-color);
-  box-shadow: 0 0 0 .5px var(--wp-admin-theme-color);
+  border: 1px solid rgba(225, 225, 225, 1);
+  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
+.gravity-form-selector ul li{
+  padding: 1rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.gravity-form-selector ul li.is-selected{
+  color: rgb(172, 58, 107);
+  background: rgb(245, 245, 245);
+}
 
 .video-editor-container main {
   @apply h-full flex-1;
@@ -140,7 +178,7 @@ input, textarea, select {
 }
 
 .code-editor {
-  @apply min-h-[200px] border mb-4;
+  @apply min-h-[200px] border mb-4 rounded-xl overflow-hidden;
   border: 1px solid var(--wp-components-color-gray-600, #949494);
 }
 
@@ -152,6 +190,16 @@ input, textarea, select {
 }
 .wysiwyg-editor .ql-toolbar.ql-snow .ql-formats {
   margin-right: 0;
+}
+
+.wysiwyg-editor .ql-toolbar{
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.wysiwyg-editor .ql-container{
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
 }
 
 .wysiwyg-editor .ql-editor {
@@ -178,7 +226,7 @@ input, textarea, select {
 
 	/* Keep tooltip visible when hovering over hotspot or tooltip */
 	&:hover .hotspot-tooltip,
-	.hotspot-tooltip:hover {
+	.hotspot-tooltip:hover{
 		visibility: visible;
 		opacity: 1;
 		transition: opacity 0.6s ease;
@@ -245,7 +293,7 @@ input, textarea, select {
 	word-wrap: break-word;
 }
 
-.hotspot-tooltip a {
+.hotspot-tooltip a{
 	overflow-wrap: break-word;
 	word-break: break-word;
 }
@@ -395,6 +443,15 @@ input, textarea, select {
   margin-bottom: 0.5rem;
 }
 
+.godam-input-label{
+  font-size: 0.875rem !important;
+  line-height: 1 !important;
+  font-weight: 500;
+  color: #212121;
+  margin-bottom: 0.75rem !important;
+  text-transform: none !important;
+}
+
 .button-tabs {
 	border-bottom: none;
 }
@@ -439,6 +496,10 @@ input, textarea, select {
 /* Sidebar Ad Layer Settings */
 .sidebar-video-container {
 	position: relative;
+}
+
+.sidebar-video-container video{
+	border-radius: 12px;
 }
 
 .sidebar-video-container.disabled-video video {
@@ -590,6 +651,7 @@ input, textarea, select {
 
 /* Mobile Overlay for video-editor-container */
 @media screen and (max-width: 600px) {
+	
 	.video-editor-container {
 		position: relative;
 	}

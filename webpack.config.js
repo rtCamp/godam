@@ -16,6 +16,7 @@ const mode = isProduction ? 'production' : 'development';
 
 // Extend the default config.
 const sharedConfig = {
+	mode,
 	...defaultConfig,
 	output: {
 		path: path.resolve( process.cwd(), 'assets', 'build', 'js' ),
@@ -48,11 +49,13 @@ const sharedConfig = {
 		},
 		minimizer: defaultConfig.optimization.minimizer.concat( [ new CssMinimizerPlugin() ] ),
 	},
+	devtool: 'source-map',
 };
 
 // Generate a webpack config which includes setup for CSS extraction.
 // Look for css/scss files and extract them into a build/css directory.
 const styles = {
+	mode,
 	...sharedConfig,
 	entry: () => {
 		const entries = {};
@@ -77,6 +80,7 @@ const styles = {
 			( plugin ) => plugin.constructor.name !== 'DependencyExtractionWebpackPlugin',
 		),
 	],
+	devtool: 'source-map',
 };
 
 // Example of how to add a new entry point for JS file.
@@ -129,24 +133,24 @@ const godamGallery = {
 	},
 };
 
-const gfGodamRecorderJS = {
-	...sharedConfig,
-	entry: {
-		'gf-godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-godam-recorder.js' ),
-	},
-};
-
 const gfGodamRecorderEditorJS = {
 	...sharedConfig,
 	entry: {
-		'gf-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-godam-recorder-editor.js' ),
+		'gf-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gravity-form', 'gf-godam-recorder-editor.js' ),
 	},
 };
 
 const gfEntryDetailJS = {
 	...sharedConfig,
 	entry: {
-		'gf-entry-detail': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gf-entry-detail.js' ),
+		'gf-entry-detail': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gravity-form', 'gf-entry-detail.js' ),
+	},
+};
+
+const wpFormsGodamRecorderEditorJS = {
+	...sharedConfig,
+	entry: {
+		'wpforms-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpforms-godam-recorder-editor.js' ),
 	},
 };
 
@@ -168,6 +172,21 @@ const elementorEditorJS = {
 	...sharedConfig,
 	entry: {
 		'godam-elementor-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'elementor', 'editor.js' ),
+	},
+};
+
+const godamRecorder = {
+	...sharedConfig,
+	entry: {
+		'godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-recorder', 'index.js' ),
+	},
+};
+
+const fluentForms = {
+	...sharedConfig,
+	entry: {
+		fluentforms: path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'index.js' ),
+		'godam-fluentforms-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'editor.js' ),
 	},
 };
 
@@ -233,6 +252,7 @@ const pages = {
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
 	},
+	devtool: 'source-map',
 };
 
 module.exports = [
@@ -243,12 +263,14 @@ module.exports = [
 	godamPlayerAnalytics,
 	deactivationJS,
 	godamGallery,
-	gfGodamRecorderJS,
 	gfGodamRecorderEditorJS,
 	gfEntryDetailJS,
+	wpFormsGodamRecorderEditorJS,
 	jetpackFormJS,
 	styles, // Do not remove this.
 	pages,
 	elementorWidgetJS,
 	elementorEditorJS,
+	godamRecorder,
+	fluentForms,
 ];

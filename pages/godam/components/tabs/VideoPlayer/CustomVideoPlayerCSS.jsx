@@ -39,7 +39,7 @@ const CustomVideoPlayerCSS = ( { handleSettingChange } ) => {
 	);
 
 	return (
-		<Panel heading={ __( 'Video Thumbnails', 'godam' ) } className="godam-panel">
+		<Panel heading={ __( 'Custom CSS', 'godam' ) } className="rounded-xl">
 			<PanelBody>
 				<div className="godam-form-group">
 					<Editor
@@ -54,9 +54,6 @@ const CustomVideoPlayerCSS = ( { handleSettingChange } ) => {
 						onMount={ handleEditorMount }
 						onChange={ ( value ) => handleSettingChange( 'custom_css', value ) }
 					/>
-					<div className="help-text">
-						{ __( 'Add custom css for GoDAM Video Block', 'godam' ) }
-					</div>
 				</div>
 			</PanelBody>
 		</Panel>

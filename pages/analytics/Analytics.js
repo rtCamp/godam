@@ -17,6 +17,7 @@ import {
 import { calculateEngagementRate, calculatePlayRate, generateLineChart } from './helper';
 import DOMPurify from 'isomorphic-dompurify';
 import './charts.js';
+import upgradePlanBackground from '../../assets/src/images/upgrade-plan-analytics-bg.png';
 
 /**
  * WordPress dependencies
@@ -213,6 +214,23 @@ const Analytics = ( { attachmentID } ) => {
 		}
 	}, [ analyticsData, abTestComparisonAnalyticsData ] );
 
+	useEffect( () => {
+		const analyticsVideoEl = document.getElementById( 'analytics-video' );
+
+		if ( ! analyticsVideoEl ) {
+			return;
+		}
+
+		const existingPlayer = videojs.getPlayer( 'analytics-video' );
+		if ( existingPlayer ) {
+			existingPlayer.dispose();
+		}
+
+		videojs( 'analytics-video', {
+			aspectRatio: '16:9',
+		} );
+	}, [ analyticsData ] );
+
 	const openVideoUploader = () => {
 		const fileFrame = wp.media( {
 			title: __( 'Select Video to Perform Performance Comparison Testing', 'godam' ),
@@ -328,17 +346,51 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
-			<div id="api-key-overlay" className="api-key-overlay hidden">
+			<div
+				id="api-key-overlay"
+				className="api-key-overlay hidden"
+				style={
+					analyticsDataFetched?.errorType === 'invalid_key' || analyticsDataFetched?.errorType === 'missing_key'
+						? {
+							backgroundImage: `url(${ upgradePlanBackground })`,
+							backgroundSize: '100% calc(100% - 32px)',
+							backgroundRepeat: 'no-repeat',
+							backgroundPosition: 'center 32px',
+						}
+						: {}
+				}
+			>
 				<div className="api-key-message">
-					<p>
-						{ analyticsDataFetched?.message + ' ' || __(
-							'Your API key is missing or invalid. Please check your plugin settings.',
-							'godam',
-						) }
-						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( 'Go to plugin settings', 'godam' ) }
-						</a>
-					</p>
+					{ analyticsDataFetched?.errorType === 'invalid_key' || analyticsDataFetched?.errorType === 'missing_key'
+						? <div className="api-key-overlay-banner">
+							<p className="api-key-overlay-banner-header">
+								{ __(
+									'Upgrade to unlock the media performance report.',
+									'godam',
+								) }
+
+								<a href="https://godam.io/pricing/" className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
+							</p>
+
+							<p className="api-key-overlay-banner-footer">
+								{ __( 'If you already have a premium plan, connect your ' ) }
+								<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+									{ __( 'API in the settings', 'godam' ) }
+								</a>
+							</p>
+						</div>
+						:	<div className="api-key-overlay-banner">
+							<p>
+								{ analyticsDataFetched?.message + ' ' || __(
+									'An unknown error occurred. Please check your plugin settings.',
+									'godam',
+								) }
+							</p>
+							<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+								{ __( 'Go to plugin settings', 'godam' ) }
+							</a>
+						</div>
+					}
 				</div>
 			</div>
 

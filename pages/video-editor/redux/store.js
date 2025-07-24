@@ -14,6 +14,10 @@ import { gravityFormsAPI } from './api/gravity-forms';
 import { contactForm7Api } from './api/cf7-forms';
 import { wpFormsApi } from './api/wpforms';
 import { jetpackFormsApi } from './api/jetpack-forms';
+import { sureformsApi } from './api/sureforms';
+import { forminatorFormsApi } from './api/forminator-forms';
+import { fluentFormsApi } from './api/fluent-forms';
+import { everestFormsApi } from './api/everest-forms';
 
 export default configureStore( {
 	reducer: {
@@ -25,6 +29,11 @@ export default configureStore( {
 		[ contactForm7Api.reducerPath ]: contactForm7Api.reducer,
 		[ wpFormsApi.reducerPath ]: wpFormsApi.reducer,
 		[ jetpackFormsApi.reducerPath ]: jetpackFormsApi.reducer,
+		[ sureformsApi.reducerPath ]: sureformsApi.reducer,
+		[ forminatorFormsApi.reducerPath ]: forminatorFormsApi.reducer,
+		[ fluentFormsApi.reducerPath ]: fluentFormsApi.reducer,
+		[ everestFormsApi.reducerPath ]: everestFormsApi.reducer,
+
 	},
 	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat(
 		videosAPI.middleware,
@@ -34,5 +43,9 @@ export default configureStore( {
 		contactForm7Api.middleware,
 		wpFormsApi.middleware,
 		jetpackFormsApi.middleware,
+		sureformsApi.middleware,
+		forminatorFormsApi.middleware,
+		fluentFormsApi.middleware,
+		everestFormsApi.middleware,
 	),
 } );
