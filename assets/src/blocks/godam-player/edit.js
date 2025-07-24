@@ -204,7 +204,7 @@ function VideoEdit( {
 							} );
 						}
 
-						// Reverse the sources to ensure the preferred format is first. MPD -> HLD -> Origin
+						// Reverse the sources to ensure the preferred format is first. MPD -> HLS -> Origin
 						setAttributes( { sources: newSources.reverse() } );
 					}
 				} catch ( error ) {
