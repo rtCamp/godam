@@ -32,6 +32,7 @@ const TABS = [
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( TABS[ 0 ].id );
+	const [ isSidebarOpen, setIsSidebarOpen ] = useState( false );
 
 	useEffect( () => {
 		const hash = window.location.hash.replace( '#', '' );
@@ -45,14 +46,33 @@ const App = () => {
 	return (
 		<div id="godam-tools">
 			<GodamHeader />
+
+			{ /* Hamburger for smaller screens */ }
+			<button
+				className="godam-tools__hamburger lg:hidden"
+				onClick={ () => setIsSidebarOpen( ! isSidebarOpen ) }
+				aria-label="Toggle menu"
+			>
+				☰
+			</button>
+
+			{ /* Optional overlay */ }
+			{ isSidebarOpen && (
+				<div className="godam-tools__overlay" onClick={ () => setIsSidebarOpen( false ) } />
+			) }
+
 			<div className="godam-tools__container">
-				<nav className="godam-tools__container__tabs">
+				<nav className={ `godam-tools__container__tabs ${ isSidebarOpen ? 'open' : '' }` }>
 					{ TABS.map( ( { id, label, icon } ) => (
 						<a
 							key={ id }
 							href={ `#${ id }` }
 							className={ `sidebar-nav-item whitespace-nowrap ${ activeTab === id ? 'active' : '' }` }
-							onClick={ () => setActiveTab( id ) }
+							// onClick={ () => setActiveTab( id ) }
+							onClick={ () => {
+								setActiveTab( id );
+								setIsSidebarOpen( false );
+							} }
 						>
 							<Icon icon={ icon } />
 							{ label }
