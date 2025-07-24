@@ -56,7 +56,7 @@ GoDAM consists of multiple repositories:
 
 ### 🐛 Bug Reports
 Help us improve by reporting bugs with detailed information about the issue. \
-Please try to provide as much information as you can so the bug can be reproduced, and consecutively fixed easily.
+Please try to provide as much information as you can so the bug can be reproduced, and consequently fixed easily.
 
 
 ### 💡 Feature Requests
