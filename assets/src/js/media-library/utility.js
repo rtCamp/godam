@@ -103,21 +103,13 @@ async function getGodamSettings() {
 	const url = `${ baseUrl }godam-settings`;
 
 	try {
-		const response = await fetch( url, {
+		const response = await wp.apiFetch( {
+			path: url,
 			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-WP-Nonce': window.wpApiSettings?.nonce || '',
-			},
 		} );
 
-		if ( ! response.ok ) {
-			throw new Error( `HTTP error! status: ${ response.status }` );
-		}
-
-		return await response.json();
+		return response;
 	} catch ( error ) {
 	}
 }
-
 export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings };
