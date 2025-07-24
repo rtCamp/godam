@@ -373,7 +373,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 		padding: 2px;
 		border-radius: 50%;
 
-		--status-text: "Not Started";
+		--status-text: "Not Transcoded";
 
 		&__progress {
 			transform: rotate(-90deg); /* Rotates the circle so progress starts from top */
