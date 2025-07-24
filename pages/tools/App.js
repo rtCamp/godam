@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { addSubmenu, cloudDownload } from '@wordpress/icons';
+import { addSubmenu, cloudDownload, alignJustify, close } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -47,22 +47,42 @@ const App = () => {
 		<div id="godam-tools">
 			<GodamHeader />
 
-			{ /* Hamburger for smaller screens */ }
-			<button
-				className="godam-tools__hamburger lg:hidden"
-				onClick={ () => setIsSidebarOpen( ! isSidebarOpen ) }
-				aria-label="Toggle menu"
-			>
-				☰
-			</button>
+			<div className="godam-tools__hamburger-container">
+				<button
+					className="godam-tools__hamburger lg:hidden"
+					onClick={ () => setIsSidebarOpen( ! isSidebarOpen ) }
+					aria-label="Open Menu"
+				>
+					<Icon icon={ alignJustify } className="open-btn" />
+				</button>
+			</div>
 
 			{ /* Optional overlay */ }
 			{ isSidebarOpen && (
-				<div className="godam-tools__overlay" onClick={ () => setIsSidebarOpen( false ) } />
+				<div
+					className="godam-tools__overlay"
+					onClick={ () => setIsSidebarOpen( false ) }
+					aria-label="Close Sidebar"
+					role="button"
+					tabIndex={ 0 }
+					onKeyDown={ ( e ) => {
+						if ( e.key === 'Enter' || e.key === ' ' ) {
+							setIsSidebarOpen( false );
+						}
+					} }
+				/>
 			) }
 
 			<div className="godam-tools__container">
 				<nav className={ `godam-tools__container__tabs ${ isSidebarOpen ? 'open' : '' }` }>
+					<button
+						className="godam-tools__close-btn"
+						onClick={ () => setIsSidebarOpen( false ) }
+						aria-label="Close Sidebar"
+					>
+						<Icon icon={ close } />
+					</button>
+
 					{ TABS.map( ( { id, label, icon } ) => (
 						<a
 							key={ id }
