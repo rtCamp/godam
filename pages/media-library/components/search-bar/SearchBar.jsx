@@ -12,7 +12,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { changeSelectedFolder } from '../../redux/slice/folders';
+import { changeSelectedFolder, expandParents } from '../../redux/slice/folders';
 import { useSearchFoldersQuery } from '../../redux/api/folders';
 import { triggerFilterChange } from '../../data/media-grid';
 import { useDispatch } from 'react-redux';
@@ -76,6 +76,7 @@ const SearchBar = () => {
 	const handleFolderSelect = ( folderId ) => {
 		triggerFilterChange( folderId );
 		dispatch( changeSelectedFolder( { item: { id: folderId } } ) );
+		dispatch( expandParents( { id: folderId } ) );
 
 		setSearchTerm( '' );
 		setCurrentPage( 1 );
