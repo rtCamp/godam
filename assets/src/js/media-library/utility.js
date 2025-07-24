@@ -99,8 +99,8 @@ const getQuery = ( props ) => {
  */
 async function getGodamSettings() {
 	const restURL = window.godamRestRoute?.url || '';
-	const baseUrl = `${ restURL }godam/v1/settings/`;
-	const url = `${ baseUrl }godam-settings`;
+	const baseUrl = `${ restURL }godam/v1/settings`;
+	const url = `${ baseUrl }/godam-settings`;
 
 	try {
 		const response = await wp.apiFetch( {
