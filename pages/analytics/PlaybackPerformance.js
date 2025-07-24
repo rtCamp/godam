@@ -453,9 +453,28 @@ export default function PlaybackPerformanceDashboard( {
 		};
 	}, [ selectedPeriod, selectedMetrics, parsedData ] );
 
+	useEffect( () => {
+		if ( ! chartRef.current ) {
+			return;
+		}
+
+		const resizeObserver = new ResizeObserver( () => {
+			if ( parsedData && parsedData.length > 0 ) {
+				// Small delay to ensure the DOM has updated
+				setTimeout( () => renderChart(), 0 );
+			}
+		} );
+
+		resizeObserver.observe( chartRef.current );
+
+		return () => {
+			resizeObserver.disconnect();
+		};
+	}, [ parsedData, selectedMetrics, selectedPeriod ] );
+
 	return (
 		<div className="w-full border rounded-lg p-4 shadow-sm h-[400px]">
-			<div className="flex justify-between gap-8">
+			<div className="flex flex-col justify-between gap-2 lg:gap-8 lg:flex-row lg:w-full">
 				<h2 className="text-base font-bold text-gray-800 m-0 whitespace-nowrap">
 					{ __( 'Playback Performance', 'godam' ) }
 				</h2>
