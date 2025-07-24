@@ -85,6 +85,8 @@ class GoDAM_Video extends Base {
 		$settings = get_option( 'rtgodam_video_post_settings', [] );
         return isset( $settings['slug'] ) ? $settings['slug'] : get_option( 'rtgodam_video_slug', 'videos' );
 
+
+		return get_option( 'rtgodam_video_slug', 'videos' );
 	}
 
 	/**
