@@ -112,30 +112,32 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 		);
 	}
 } else {
-	$transcoded_url = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true ) : '';
-	$video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
-	$video_src_type = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
-	$job_id         = $attachment_id && ! empty( $transcoded_url ) ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
+	$transcoded_url     = $attachment_id ? rtgodam_get_transcoded_url_from_attachment( $attachment_id ) : '';
+	$hls_transcoded_url = $attachment_id ? rtgodam_get_hls_transcoded_url_from_attachment( $attachment_id ) : '';
+	$video_src          = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
+	$video_src_type     = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
+	$job_id             = $attachment_id && ! empty( $transcoded_url ) ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
+
+	$sources = array();
 
 	if ( ! empty( $transcoded_url ) ) {
-		$sources = array(
-			array(
-				'src'  => $transcoded_url,
-				'type' => 'application/dash+xml',
-			),
-			array(
-				'src'  => $video_src,
-				'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
-			),
-		);
-	} else {
-		$sources = array(
-			array(
-				'src'  => $video_src,
-				'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
-			),
+		$sources[] = array(
+			'src'  => $transcoded_url,
+			'type' => 'application/dash+xml',
 		);
 	}
+
+	if ( ! empty( $hls_transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $hls_transcoded_url,
+			'type' => 'application/x-mpegURL',
+		);
+	}
+
+	$sources[] = array(
+		'src'  => $video_src,
+		'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
+	);
 }
 $easydam_control_bar_color = 'initial'; // Default color.
 
