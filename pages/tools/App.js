@@ -51,18 +51,17 @@ const App = () => {
 				<button
 					className="godam-tools__hamburger lg:hidden"
 					onClick={ () => setIsSidebarOpen( ! isSidebarOpen ) }
+					title="Open Menu"
 					aria-label="Open Menu"
 				>
 					<Icon icon={ alignJustify } className="open-btn" />
 				</button>
 			</div>
 
-			{ /* Optional overlay */ }
 			{ isSidebarOpen && (
 				<div
 					className="godam-tools__overlay"
 					onClick={ () => setIsSidebarOpen( false ) }
-					aria-label="Close Sidebar"
 					role="button"
 					tabIndex={ 0 }
 					onKeyDown={ ( e ) => {
@@ -76,9 +75,10 @@ const App = () => {
 			<div className="godam-tools__container">
 				<nav className={ `godam-tools__container__tabs ${ isSidebarOpen ? 'open' : '' }` }>
 					<button
-						className="godam-tools__close-btn"
+						className={ `godam-tools__close-btn ${ isSidebarOpen ? 'open' : '' }` }
 						onClick={ () => setIsSidebarOpen( false ) }
-						aria-label="Close Sidebar"
+						title="Close Menu"
+						aria-label="Close Menu"
 					>
 						<Icon icon={ close } />
 					</button>
@@ -88,7 +88,6 @@ const App = () => {
 							key={ id }
 							href={ `#${ id }` }
 							className={ `sidebar-nav-item whitespace-nowrap ${ activeTab === id ? 'active' : '' }` }
-							// onClick={ () => setActiveTab( id ) }
 							onClick={ () => {
 								setActiveTab( id );
 								setIsSidebarOpen( false );
