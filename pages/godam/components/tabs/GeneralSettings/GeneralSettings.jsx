@@ -19,8 +19,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import BrandImageSelector from './BrandImageSelector.jsx';
-import ColorPickerButton from '../../../../video-editor/components/shared/color-picker/ColorPickerButton.jsx';
 
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting } from '../../../redux/slice/media-settings.js';

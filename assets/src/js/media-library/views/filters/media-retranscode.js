@@ -1,6 +1,5 @@
 
 let MediaRetranscode = wp?.media?.view?.Button;
-const homeUrl = window.godamRestRoute.homeUrl || window.location.origin; // eslint-disable-line no-unused-vars
 
 MediaRetranscode = MediaRetranscode?.extend( {
 
