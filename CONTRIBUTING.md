@@ -55,7 +55,8 @@ GoDAM consists of multiple repositories:
 
 
 ### 🐛 Bug Reports
-Help us improve by reporting bugs with detailed information about the issue.
+Help us improve by reporting bugs with detailed information about the issue. \
+Please try to provide as much information as you can so the bug can be reproduced, and consequently fixed easily.
 
 
 ### 💡 Feature Requests
@@ -63,19 +64,25 @@ Suggest new features or improvements to existing functionality.
 
 
 ### 📝 Documentation
-Improve documentation, tutorials, and help content.
+Improve documentation, tutorials, and help content. \
+Documentation is present in form of Markdown files & Docblock comments in code.
 
 
 ### 🔧 Code Contributions
-Fix bugs, implement features, or improve performance.
+Fix bugs, implement features, or improve performance of the plugin.
 
 
 ### 🌍 Translations
-Help translate GoDAM into different languages.
+Help translate GoDAM into different languages for all people around the world. \
+You can contribute translations to GoDAM on [translate.wordpress.org](https://translate.wordpress.org/projects/wp-plugins/godam)
 
 
 ### 🧪 Testing
 Test new features and provide feedback on beta releases.
+
+
+> [!NOTE]
+> For all code related contributions, we recommend you to create an accompanying [issue](https://github.com/rtcamp/godam/issues) on GitHub first
 
 
 ## Development Setup
@@ -231,11 +238,20 @@ $message = sprintf( __( 'Video "%s" uploaded successfully', 'godam' ), $title );
 
 
 ### Branch Naming
+
+This repository has two important branches:
+- `main` - Contains stable code that is part of current public release
+- `develop` - The latest development iteration of the plugin lives here with new features & fixes
+
+For naming your branches, you can follow the below convention
+
 - `feature/description` - New features
 - `fix/description` - Bug fixes
 - `hotfix/description` - Critical fixes
 - `docs/description` - Documentation updates
 
+> [!IMPORTANT]
+> When you are raising a PR to the GoDAM repository, please open it against the `develop` branch instead of `main`
 
 ### Commit Messages
 Follow the conventional commit format:
