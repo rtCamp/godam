@@ -139,34 +139,6 @@ class Media_Library extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/replace-custom-video-thumbnail',
-				'args'      => array(
-					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'replace_custom_video_thumbnail' ),
-					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
-					},
-					'args'                => array(
-						'attachment_id' => array(
-							'required'    => true,
-							'type'        => 'integer',
-							'description' => __( 'Attachment ID to get video thumbnail for.', 'godam' ),
-						),
-						'thumbnail_url' => array(
-							'required'    => true,
-							'type'        => 'string',
-							'description' => __( 'Attachment URL of new custom thumbnail.', 'godam' ),
-						),
-						'old_thumbnail' => array(
-							'required'    => true,
-							'type'        => 'string',
-							'description' => __( 'URL of the old thumbnail to be replaced.', 'godam' ),
-						),
-					),
-				),
-			),
-			array(
-				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/delete-custom-video-thumbnail',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
@@ -581,62 +553,17 @@ class Media_Library extends Base {
 		if ( ! is_array( $existing_thumbnails ) ) {
 			$existing_thumbnails = array();
 		}
-	
-		// Add new custom thumbnail at beginning.
-		array_unshift( $existing_thumbnails, $thumbnail_url );
-	
-		// Remove duplicates.
-		$existing_thumbnails = array_unique( $existing_thumbnails );
-	
-		// Save updated thumbnails.
-		update_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', $existing_thumbnails );
-	
-		// Also set as selected thumbnail.
-		update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $thumbnail_url );
-	
-		return new \WP_REST_Response(
-			array(
-				'success' => true,
-				'data'    => array(
-					'selected'         => $thumbnail_url,
-					'customThumbnails' => $existing_thumbnails,
-				),
-			),
-			200 
-		);
-	}
 
-	/**
-	 * Replace video thumbnail.
-	 *
-	 * Replace the video thumbnail for the thumbnail URL.
-	 *
-	 * @param \WP_REST_Request $request REST API request.
-	 * @return \WP_REST_Response
-	 */
-	public function replace_custom_video_thumbnail( $request ) {
-		$attachment_id = $request->get_param( 'attachment_id' );
-		$thumbnail_url = $request->get_param( 'thumbnail_url' );
-		$old_thumbnail = $request->get_param( 'old_thumbnail' );
-	
-		$mime_type = get_post_mime_type( $attachment_id );
-		if ( ! preg_match( '/^video\//', $mime_type ) ) {
-			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
-		}
-	
-		// Get current thumbnails.
-		$existing_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
-		if ( ! is_array( $existing_thumbnails ) ) {
-			return new \WP_Error( 'thumbnails_not_found', __( 'Unable to retrieve thumbnails.', 'godam' ), array( 'status' => 404 ) );
+		// Prevent more than 3 thumbnails.
+		if ( count( $existing_thumbnails ) >= 3 && ! in_array( $thumbnail_url, $existing_thumbnails, true ) ) {
+			return new \WP_Error(
+				'thumbnail_limit_reached',
+				__( 'Only 3 custom thumbnails are allowed per video.', 'godam' ),
+				array( 'status' => 400 )
+			);
 		}
 
-		// remove old thumbnail if it exists.
-		if ( in_array( $old_thumbnail, $existing_thumbnails, true ) ) {
-			$existing_thumbnails = array_diff( $existing_thumbnails, array( $old_thumbnail ) );
-		} else {
-			return new \WP_Error( 'thumbnail_not_found', __( 'Old thumbnail not found in the list.', 'godam' ), array( 'status' => 404 ) );
-		}
-
+	
 		// Add new custom thumbnail at beginning.
 		array_unshift( $existing_thumbnails, $thumbnail_url );
 	

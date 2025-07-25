@@ -8,7 +8,6 @@ import videojs from 'video.js';
 /**
  * WordPress dependencies
  */
-// import { replace, trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
@@ -107,18 +106,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	},
 
 	setupThumbnailActions() {
-		// Replace handler
-		document.querySelectorAll( '.replace-thumbnail' ).forEach( ( btn ) => {
-			btn.addEventListener( 'click', ( event ) => {
-				event.preventDefault();
-				event.stopPropagation();
-				const existingThumb = btn.dataset.thumbnail;
-				this.openMediaUploader( ( attachment ) => {
-					this.replaceCustomThumbnail( existingThumb, attachment.url );
-				} );
-			} );
-		} );
-
 		// Remove handler
 		document.querySelectorAll( '.remove-thumbnail' ).forEach( ( btn ) => {
 			btn.addEventListener( 'click', ( event ) => {
@@ -128,37 +115,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				this.removeThumbnailImage( thumbnail );
 			} );
 		} );
-	},
-
-	replaceCustomThumbnail( oldThumbnail, newThumbnail ) {
-		const formData = new FormData();
-		formData.append( 'attachment_id', this.model.get( 'id' ) );
-		formData.append( 'old_thumbnail', oldThumbnail );
-		formData.append( 'thumbnail_url', newThumbnail );
-
-		fetch(
-			window.pathJoin( [
-				restURL,
-				'/godam/v1/media-library/replace-custom-video-thumbnail',
-			] ),
-			{
-				method: 'POST',
-				body: formData,
-				headers: {
-					'X-WP-Nonce': window.wpApiSettings?.nonce || '',
-				},
-			},
-		)
-			.then( ( response ) => response.json() )
-			.then( ( data ) => {
-				if ( data.success ) {
-					document.querySelector( '.attachment-video-thumbnails' ).remove();
-					this.render(); // full re-render
-				}
-			} )
-			.catch( () => {
-				// silent fail
-			} );
 	},
 
 	removeThumbnailImage( thumbnailURL ) {
@@ -222,24 +178,27 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const { thumbnails, selected, customThumbnails } = data;
 		const attachmentID = this.model.get( 'id' );
 
-		const replaceIcon = `
-		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-			<path d="M16 10h4c.6 0 1-.4 1-1V5c0-.6-.4-1-1-1h-4c-.6 0-1 .4-1 1v4c0 .6.4 1 1 1zm-8 4H4c-.6 0-1 .4-1 1v4c0 .6.4 1 1 1h4c.6 0 1-.4 1-1v-4c0-.6-.4-1-1-1zm10-2.6L14.5 15l1.1 1.1 1.7-1.7c-.1 1.1-.3 2.3-.9 2.9-.3.3-.7.5-1.3.5h-4.5v1.5H15c.9 0 1.7-.3 2.3-.9 1-1 1.3-2.7 1.4-4l1.8 1.8 1.1-1.1-3.6-3.7zM6.8 9.7c.1-1.1.3-2.3.9-2.9.4-.4.8-.6 1.3-.6h4.5V4.8H9c-.9 0-1.7.3-2.3.9-1 1-1.3 2.7-1.4 4L3.5 8l-1 1L6 12.6 9.5 9l-1-1-1.7 1.7z"></path>
-		</svg>`;
+		const addIcon = `
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36">
+				<path fill="#31373D" d="M31 15H21V5c0-1.657-1.343-3-3-3s-3 1.343-3 3v10H5c-1.657 0-3 1.343-3 3s1.343 3 3 3h10v10c0 1.657 1.343 3 3 3s3-1.343 3-3V21h10c1.657 0 3-1.343 3-3s-1.343-3-3-3z"/>
+			</svg>`;
 
 		const trashIcon = `
 		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
 			<path fill-rule="evenodd" clip-rule="evenodd" d="M12 5.5A2.25 2.25 0 0 0 9.878 7h4.244A2.251 2.251 0 0 0 12 5.5ZM12 4a3.751 3.751 0 0 0-3.675 3H5v1.5h1.27l.818 8.997a2.75 2.75 0 0 0 2.739 2.501h4.347a2.75 2.75 0 0 0 2.738-2.5L17.73 8.5H19V7h-3.325A3.751 3.751 0 0 0 12 4Zm4.224 4.5H7.776l.806 8.861a1.25 1.25 0 0 0 1.245 1.137h4.347a1.25 1.25 0 0 0 1.245-1.137l.805-8.861Z"></path>
 		</svg>`;
 
-		// Use WordPress media uploader for custom thumbnail upload
+		const customThumbnailsArray = Object.values( customThumbnails || {} );
+
+		// Disable upload button if limit is reached
+		const uploadDisabled = customThumbnailsArray.length >= 3;
+
 		const uploadTileHTML = `
-			<li class="upload-thumbnail-tile" title="Upload Custom Thumbnail">
-				<button type="button" class="custom-thumbnail-media-upload">
-					<span class="plus-icon">➕</span>
-					<span class="upload-label">Upload Custom Thumbnail</span>
-				</button>
-			</li>`;
+	<li class="upload-thumbnail-tile" title="${ uploadDisabled ? 'Only 3 custom thumbnails allowed' : 'Upload Custom Thumbnail' }" ${ uploadDisabled ? 'style="opacity: 0.5; cursor: not-allowed;"' : '' }>
+		<button type="button" class="custom-thumbnail-media-upload" ${ uploadDisabled ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '' }>
+			<span class="plus-icon" ${ uploadDisabled ? 'style="cursor: not-allowed;"' : '' }>${ addIcon }</span>
+		</button>
+	</li>`;
 
 		// Attach click handler after rendering
 		setTimeout( () => {
@@ -258,24 +217,18 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const thumbnailsHTML = thumbnailArray
 			?.map(
 				( thumbnail ) =>
-					`<li>
-				<img class="${ thumbnail === selected ? 'selected' : '' }" src="${ thumbnail }" alt="Video Thumbnail" />
+					`<li class="${ thumbnail === selected ? 'selected' : '' }">
+				<img src="${ thumbnail }" alt="Video Thumbnail" />
 			</li>`,
 			)
 			.join( '' );
 
-		const customThumbnailsArray = Object.values( customThumbnails || {} );
 		const customThumbnailsHTML = customThumbnailsArray
 			?.map(
 				( thumbnail ) =>
-					`<li class="custom-thumbnail-container">
-				<img class="${ thumbnail === selected ? 'selected' : '' }" src="${ thumbnail }" alt="Custom Video Thumbnail" />
+					`<li class="${ thumbnail === selected ? 'selected' : '' } custom-thumbnail-container">
+				<img src="${ thumbnail }" alt="Custom Video Thumbnail" />
 				<div class="controls">
-					<div class="tooltip" title="${ __( 'Replace Image', 'godam' ) }">
-						<button class="custom-thumbnail-control replace-thumbnail" aria-label="Replace Image" data-thumbnail="${ thumbnail }">
-							${ replaceIcon }
-						</button>
-					</div>
 					<div class="tooltip mt-1" title="${ __( 'Remove Image', 'godam' ) }">
 						<button class="custom-thumbnail-control remove-thumbnail" aria-label="Remove Image" data-thumbnail="${ thumbnail }">
 							${ trashIcon }
@@ -342,13 +295,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			}
 			li.addEventListener( 'click', function() {
 				// Remove the selected class from all thumbnails
-				document.querySelectorAll( '.attachment-video-thumbnails li img' ).forEach( ( item ) => item.classList.remove( 'selected' ) );
+				document.querySelectorAll( '.attachment-video-thumbnails li' ).forEach( ( item ) => item.classList.remove( 'selected' ) );
 
 				// Add selected class to the clicked thumbnail image
+				this.classList.add( 'selected' );
+
 				const img = this.querySelector( 'img' );
-				if ( img ) {
-					img.classList.add( 'selected' );
-				}
 
 				const thumbnailURL = img?.src;
 

@@ -22,6 +22,51 @@
 	}
  }
 
+
+
+.custom-thumbnail-container {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+
+	.controls {
+		position: absolute;
+    	left: 0;
+		fill: #000;
+
+		.custom-thumbnail-control {
+			border: none;
+			cursor: pointer;
+			position: absolute;
+			top: 4px;
+			left: 4px;
+			width: 15px;
+    		height: 24px;
+			background: #ffffffc7;;
+			border-radius: 50%;
+			color: #fff;
+			font-size: 16px;
+			line-height: 24px;
+			text-align: center;
+			transition: transform 0.2s ease;
+			z-index: 10;
+			display: flex;
+			align-items: center;
+			box-shadow: 0 1px 3px 0 #6c5e5e;
+
+			svg {
+				fill: #cc1818;
+			}
+
+			&:hover {
+				cursor: pointer;
+				transform: scale(1.1);
+				background: #fff;
+			}
+		}
+	}
+}
+
 #wpwrap:has( #rt-transcoder-media-library-root ) {
     background: #FFF;
 
@@ -291,34 +336,36 @@
 			position: relative;
 			border-radius: 8px;
 			overflow: hidden;
+			height: 72px;
 
 			img {
-				max-width: 8rem;
 				display: block;
 				border-radius: 4px;
-				object-fit: cover;
+				object-fit: fill;
 				transition: opacity, transform 0.2s ease;
+				width: 8rem;
+				height: 100%;
+			}
+			
+			&.selected {
+				border: 4px solid #007bff;
 
-				&.selected {
-					border: 4px solid #007bff;
-	
-					&::after {
-						content: "\2714";
-						position: absolute;
-						top: 4px;
-						right: 4px;
-						width: 24px;
-						height: 24px;
-						background-color: #007bff;
-						color: #fff;
-						font-size: 16px;
-						font-weight: 700;
-						display: flex;
-						align-items: center;
-						justify-content: center;
-						border-radius: 50%;
-						box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
-					}
+				&::after {
+					content: "\2714";
+					position: absolute;
+					top: 4px;
+					right: 4px;
+					width: 24px;
+					height: 24px;
+					background-color: #007bff;
+					color: #fff;
+					font-size: 16px;
+					font-weight: 700;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					border-radius: 50%;
+					box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 				}
 			}
 
@@ -347,23 +394,6 @@
 
 	.upload-label {
 		display: none;
-	}
-}
-
-.custom-thumbnail-container {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-
-	.controls {
-		display: flex;
-		justify-content: end;
-
-		.custom-thumbnail-control {
-			background: none;
-			border: none;
-			cursor: pointer;
-		}
 	}
 }
 

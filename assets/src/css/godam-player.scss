@@ -693,6 +693,10 @@
 	}
 }
 
+.vjs-poster img {
+	object-fit: fill;
+}
+
 // CSS to override the elementor image CSS in editor.
 .elementor .vjs-poster img {
 	height: 100% !important;
