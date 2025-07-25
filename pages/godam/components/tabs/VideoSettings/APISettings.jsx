@@ -93,7 +93,7 @@ const APISettings = ( { setNotice } ) => {
 
 	return (
 		<Panel header={ __( 'API Settings', 'godam' ) } className="godam-panel">
-			<PanelBody initialOpen className="flex gap-8">
+			<PanelBody initialOpen className="flex gap-8 flex-col sm:flex-row">
 				<div className="flex flex-col gap-2 b-4m">
 					<TextControl
 						label={ __( 'API Key', 'godam' ) }
