@@ -1,6 +1,80 @@
+// Initialize the variables for the settings page
+$settings-page-color-white: #fff;
+$settings-page-border: 1px solid #e0e0e0;
+$settings-page-breakpoint: 782px;
+
 #godam-settings {
 
 	.godam-settings {
+
+		&__hamburger-container {
+			position: sticky;
+			top: 60px;
+			z-index: 1000;
+			background: $settings-page-color-white;
+			border-radius: .75rem;
+			margin: 20px;
+			border: $settings-page-border;
+
+			@media (min-width: $settings-page-breakpoint) {
+				display: none;
+			}
+
+			@media (max-width: 600px) {
+				top: 10px;
+			}
+		}
+
+		&__hamburger {
+
+			svg {
+				height: 30px;
+				width: 30px;
+				fill: #64748B;
+			}
+
+			@media (max-width: $settings-page-breakpoint) {
+				padding: 0 12px;
+				outline: none;
+				border-right: $settings-page-border;
+				font-size: 42px;
+				background: none;
+				cursor: pointer;
+			}
+		}
+
+		&__close-btn {
+			width: fit-content;
+			background: none;
+			border: $settings-page-border;
+			border-radius: 50%;
+			align-self: end;
+			cursor: pointer;
+			outline: none;
+			padding: 4px;
+			margin-bottom: 10px;
+			transition: all 0.3s ease;
+			display: none;
+
+			@media (max-width: $settings-page-breakpoint) {
+				display: flex;
+			}
+
+			&:hover {
+				background: #f0f0f0;
+			}
+		}
+
+		&__overlay {
+
+			@media (max-width: $settings-page-breakpoint) {
+				position: fixed;
+				inset: 0;
+				background-color: rgba(0, 0, 0, 0.4);
+				backdrop-filter: blur(3px);
+				z-index: 1000;
+			}
+		}
 
 		&-header {
 			background: #fff;
@@ -33,49 +107,71 @@
 		 */
 		&__container {
 			margin: 2rem auto;
-			padding-right: 20px;
+			padding: 0 20px;
 			max-width: 1440px;
 			display: flex;
 			justify-content: space-between;
 			gap: 2em;
-	
+			position: relative;
+
+			@media (max-width: $settings-page-breakpoint) {
+				margin: 20px auto;
+			}
+
 			&__tabs {
-	
 				margin-bottom: 2rem;
-	
+				display: flex;
+				flex-direction: column;
+				gap: 0.5rem;
+
+				@media (max-width: $settings-page-breakpoint) {
+					position: fixed;
+					top: 46px;
+					left: 0;
+					width: 270px;
+					height: 100vh;
+					background: $settings-page-color-white;
+					padding: 1rem;
+					box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+					transform: translateX(-100%);
+					overflow: auto;
+					transition: transform 0.3s ease-in-out;
+					z-index: 1001;
+
+					&.open {
+						transform: translateX(0);
+					}
+				}
+
 				nav {
 					display: flex;
 					flex-direction: column;
 					gap: 0.5rem;
-	
+
 					a {
-	
 						display: flex;
 						align-items: center;
 						gap: 0.5rem;
 						white-space: nowrap;
-	
 						font-size: 0.875rem;
 						line-height: 1;
 						font-weight: 500;
 						color: rgba(119, 119, 119, 1);
-	
 						padding: 0.5rem;
 						border-radius: 0.5rem;
-	
+
 						&.active {
 							color: rgba(33, 33, 33, 1);
-	
 							background-color: #fff;
 						}
-	
+
 						&:focus {
 							box-shadow: none;
 						}
 					}
 				}
 			}
-	
+
 			&__content {
 				flex: 1;
 			}

@@ -10,24 +10,36 @@ $tools-page-breakpoint: 782px;
 	.godam-tools {
 
 		&__hamburger-container {
-			display: none;
+			position: sticky;
+			top: 60px;
+			z-index: 1000;
+			background: $tools-page-color-white;
+			border-radius: .75rem;
+			margin: 20px;
+			border: $tools-page-border;
 
-			@media (max-width: $tools-page-breakpoint) {
-				display: block;
-				border-radius: .75rem;
-				margin: 20px;
-				background: $tools-page-color-white;
-				border: $tools-page-border;
+			@media (min-width: $tools-page-breakpoint) {
+				display: none;
+			}
+
+			@media (max-width: 600px) {
+				top: 10px;
 			}
 		}
 
 		&__hamburger {
 
+			svg {
+				height: 30px;
+				width: 30px;
+				fill: #64748B;
+			}
+
 			@media (max-width: $tools-page-breakpoint) {
 				padding: 0 12px;
 				outline: none;
 				border-right: $tools-page-border;
-				font-size: 35px;
+				font-size: 42px;
 				background: none;
 				cursor: pointer;
 			}
