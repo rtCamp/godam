@@ -94,8 +94,7 @@ const getQuery = ( props ) => {
 /**
  * Helper function to fetch media settings.
  *
- * @return {Promise<Object>} A promise that resolves with the JSON response from the API.
- * @throws {Error} If the network request fails or the response status is not OK.
+ * @return {Promise<Object | undefined>} A promise that resolves with the JSON response from the API, or undefined if the request fails.
  */
 async function getGodamSettings() {
 	const restURL = window.godamRestRoute?.url || '';
