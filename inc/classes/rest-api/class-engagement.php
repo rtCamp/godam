@@ -163,12 +163,10 @@ class Engagement extends Base {
 
 		$transcoder_job_id = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
 
-		$likes                        = get_post_meta( $video_id, 'likes', true );
-		$likes                        = ! empty( $likes ) && is_array( $likes ) ? $likes : array();
 		$current_user                 = get_current_user_id();
-		$current_user_key             = "liked_by_use_id_{$current_user}";
-		$response_data['is_liked']    = isset( $likes[ $current_user_key ] ) ? true : false;
-		$response_data['likes_count'] = count( $likes );
+		$likes                        = $this->get_likes( $transcoder_job_id, $account_creadentials, $current_user );
+		$response_data['is_liked']    = $likes['has_liked_by_user'];
+		$response_data['likes_count'] = $likes['likes'];
 
 		$comments                        = $this->get_comments( $transcoder_job_id, $account_creadentials );
 		$response_data['comments']       = $comments['comments'];
@@ -490,5 +488,44 @@ class Engagement extends Base {
 			'comments' => $comment_tree,
 			'total'    => $count,
 		);
+	}
+
+	/**
+	 * Retrieve like information for a transcoded video.
+	 *
+	 * This function queries the Godam API to get the like status and count for a
+	 * specific video based on the transcoder job ID. It checks if the current user
+	 * has liked the video and returns the like data.
+	 *
+	 * @param string $transcoder_job_id   The ID of the transcoder job associated with the video.
+	 * @param array  $account_creadentials The API credentials for accessing Godam services.
+	 * @param int    $current_user_id     The ID of the current user.
+	 * @return array                      An array containing 'has_liked_by_user' and 'likes' count.
+	 */
+	public function get_likes( $transcoder_job_id, $account_creadentials, $current_user_id ) {
+
+		$current_user       = get_user_by( 'id', $current_user_id );
+		$current_user_email = $current_user->user_email;
+
+		$query_params = array(
+			'name'          => $transcoder_job_id,
+			'api_key'       => $account_creadentials['api_key'],
+			'comment_email' => $current_user_email,
+		);
+
+		$likes_endpoint   = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.get_wp_likes';
+		$likes_url        = add_query_arg( $query_params, $likes_endpoint );
+		$likes_response   = wp_remote_get( $likes_url );
+		$process_response = $this->process_response( $likes_response );
+
+		if ( $process_response instanceof WP_REST_Response || empty( $process_response['message']['status'] ) || 'success' !== $process_response['message']['status'] ) {
+
+			return array(
+				'has_liked_by_user' => false,
+				'likes'             => 0,
+			);
+		}
+
+		return $process_response['message'];
 	}
 }
