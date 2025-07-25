@@ -148,6 +148,19 @@ function GODAMPlayer( videoRef = null ) {
 							}
 
 							const aspectRatio = getSimplifiedAspectRatio( width, height );
+							const aspectRatioOrientation = {
+								"1:1": "landscape", // or "portrait" - square can go either way
+								"4:3": "landscape", 
+								"3:2": "landscape",
+								"5:4": "landscape",
+								"16:9": "landscape",
+								"21:9": "landscape",
+								"9:16": "portrait",
+								"2:3": "portrait", 
+								"3:4": "portrait"
+							  };
+							const aspectRatioClass = aspectRatioOrientation[aspectRatio]
+							video.classList.add(`is-${aspectRatioClass}`)
 							player.aspectRatio( aspectRatio );
 						} );
 					} else {
