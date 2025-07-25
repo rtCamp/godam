@@ -11,7 +11,6 @@ import { __ } from '@wordpress/i18n';
  */
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import GoDAMFooter from '../godam/components/GoDAMFooter.jsx';
-
 import MigrationTab from './components/tabs/Migration/MigrationTab.jsx';
 import RetranscodeTab from './components/tabs/RetranscodeTab.jsx';
 
@@ -19,13 +18,13 @@ const TABS = [
 	{
 		id: 'retranscode-media',
 		label: __( 'Retranscode Media', 'godam' ),
-		component: <RetranscodeTab />,
+		component: RetranscodeTab,
 		icon: addSubmenu,
 	},
 	{
 		id: 'video-migration',
 		label: __( 'Video Migration', 'godam' ),
-		component: <MigrationTab />,
+		component: MigrationTab,
 		icon: cloudDownload,
 	},
 ];
@@ -99,7 +98,7 @@ const App = () => {
 					) ) }
 				</nav>
 				<div id="main-content" className="godam-tools__container__content">
-					{ activeTabData && activeTabData.component }
+					{ activeTabData && <activeTabData.component /> }
 				</div>
 			</div>
 			<GoDAMFooter />
