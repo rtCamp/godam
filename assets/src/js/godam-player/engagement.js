@@ -72,7 +72,7 @@ const engagementStore = {
 					...state,
 					likes: {
 						...state.likes,
-						[ action.likeData.videoAttachmentId ]: action.likeData.likes_count,
+						[ action.likeData.videoAttachmentId ]: state.likes[ action.likeData.videoAttachmentId ] + action.likeData.value,
 					},
 					IsUserLiked: {
 						...state.IsUserLiked,
@@ -113,7 +113,8 @@ const engagementStore = {
 		 */
 
 		userHitiLke: async ( videoAttachmentId, siteUrl, storeObj, likeLink ) => {
-			const likeData = await storeObj.sendLikeData( videoAttachmentId, siteUrl );
+			const likeStatus = storeObj.select.getIsUserLiked()[ videoAttachmentId ];
+			const likeData = await storeObj.sendLikeData( videoAttachmentId, siteUrl, ! likeStatus );
 			likeLink.disabled = false;
 			likeLink.classList.remove( 'is-progressing' );
 			return {
@@ -154,6 +155,7 @@ const engagementStore = {
 	},
 
 	selectors: {
+		getIsUserLiked: ( state ) => state.IsUserLiked,
 		getState: ( state ) => state,
 		getComments: ( state ) => state.comments,
 		getCommentsCount: ( state ) => state.commentsCount,
@@ -247,15 +249,17 @@ const engagementStore = {
 	/**
 	 * Sends a request to the server to update the like status of a video.
 	 *
-	 * @param {number} videoAttachmentId The ID of the video attachment.
-	 * @param {string} siteUrl           The URL of the site.
+	 * @param {number}  videoAttachmentId The ID of the video attachment.
+	 * @param {string}  siteUrl           The URL of the site.
 	 *
+	 * @param {boolean} likeStatus        The current like status.
 	 * @return {Promise} A promise that resolves to an object containing the video attachment ID and the response from the server.
 	 */
-	async sendLikeData( videoAttachmentId, siteUrl ) {
+	async sendLikeData( videoAttachmentId, siteUrl, likeStatus ) {
 		const queryParams = {
 			site_url: siteUrl,
 			video_id: videoAttachmentId,
+			like_status: likeStatus,
 		};
 		apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
 		return await apiFetch( {

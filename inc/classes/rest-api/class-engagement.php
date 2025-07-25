@@ -288,6 +288,7 @@ class Engagement extends Base {
 		$response_data = array();
 		$video_id      = $request->get_param( 'video_id' );
 		$site_url      = $request->get_param( 'site_url' );
+		$like_status   = $request->get_param( 'like_status' );
 
 		$account_creadentials = $this->access_creadentials_check();
 
@@ -295,33 +296,46 @@ class Engagement extends Base {
 			return $account_creadentials;
 		}
 
-		$status           = false;
-		$current_user     = get_current_user_id();
-		$current_user_key = "liked_by_use_id_{$current_user}";
+		$current_user_id    = get_current_user_id();
+		$current_user       = get_user_by( 'id', $current_user_id );
+		$current_user_email = $current_user->user_email;
+		$current_user_name  = $current_user->display_name;
+		$transcoder_job_id  = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
 
-		$like_data = array(
-			'video_id' => $video_id,
-			'site_url' => $site_url,
-			'user_id'  => $current_user,
+		$query_params = array(
+			'api_key'        => $account_creadentials['api_key'],
+			'is_like'        => $like_status,
+			'reference_name' => $transcoder_job_id,
+			'comment_email'  => $current_user_email,
+			'comment_by'     => $current_user_name,
 		);
 
-		$likes = get_post_meta( $video_id, 'likes', true );
-		$likes = ! empty( $likes ) && is_array( $likes ) ? $likes : array();
+		$likes_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.wp_like';
+		$likes_response = wp_remote_post(
+			$likes_endpoint,
+			array(
+				'method'  => 'POST',
+				'timeout' => 30,
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
+				'body'    => json_encode( $query_params ),
+			)
+		);
 
-		if ( ! isset( $likes[ $current_user_key ] ) ) {
-			$likes[ $current_user_key ] = $like_data;
-			$status                     = true;
-		} else {
-			unset( $likes[ $current_user_key ] );
+		$process_response = $this->process_response( $likes_response );
+
+		if ( $process_response instanceof WP_REST_Response ) {
+			return $process_response;
 		}
 
-		$status_updated = update_post_meta( $video_id, 'likes', $likes );
-		if ( $status_updated ) {
+		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
+
 			return new WP_REST_Response(
 				array(
 					'status'      => 'success',
-					'isUserLiked' => $status,
-					'likes_count' => count( $likes ),
+					'isUserLiked' => $like_status,
+					'value'       => $like_status ? +1 : -1,
 				),
 				200
 			);
@@ -374,9 +388,8 @@ class Engagement extends Base {
 		}
 
 		$comments_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.wp_comment';
-		$comments_url      = add_query_arg( $query_params, $comments_endpoint );
 		$comments_response = wp_remote_post(
-			$comments_url,
+			$comments_endpoint,
 			array(
 				'method'  => 'POST',
 				'timeout' => 30,
