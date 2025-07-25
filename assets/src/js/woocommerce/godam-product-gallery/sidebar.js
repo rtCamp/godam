@@ -1,6 +1,17 @@
 export function initSidebar() {
-    console.log('Sidebar initialized');
     initImageGallery();
+    addCloseSidebarListener();
+}
+
+function addCloseSidebarListener() {
+    const modalContainer = document.querySelector('.godam-product-modal-container.open');
+    const sidebarClose = modalContainer.querySelector('.godam-sidebar-close');
+    sidebarClose.addEventListener('click', () => {
+        const sidebarElement = modalContainer.querySelector('.godam-product-sidebar');
+        sidebarElement.classList.add('close');
+        modalContainer?.querySelector('.godam-product-modal-content')?.classList?.add('no-sidebar');
+        modalContainer?.querySelector('.godam-product-modal-content')?.classList?.remove('sidebar');
+    });
 }
 
 function initImageGallery() {
@@ -188,4 +199,6 @@ function initImageGallery() {
 
     // Initialize the gallery
     initGallery();
+
+
 }

@@ -113,12 +113,12 @@ export function initVideoModal() {
 
 		/* Close Modal and Product sidebar on clicking x */
 		modal.querySelector( '.godam-product-modal-close' )?.addEventListener( 'click', () => close( modal, sidebarModal ) );
-		sidebarModal?.addEventListener( 'click', ( ev ) => {
-			const closeBtn = ev.target.closest( '.godam-sidebar-close' );
-			if ( closeBtn ) {
-				closeSidebar( sidebarModal );
-			}
-		} );
+		// sidebarModal?.addEventListener( 'click', ( ev ) => {
+		// 	const closeBtn = ev.target.closest( '.godam-sidebar-close' );
+		// 	if ( closeBtn ) {
+		// 		closeSidebar( sidebarModal );
+		// 	}
+		// } );
 
 		/* Clicking outside the modal content and sidebar closes the Modal */
 		modal.addEventListener( 'click', ( ev ) => {
@@ -158,7 +158,7 @@ export function initVideoModal() {
 		}
 
 		/** Scroll/swipe nav for modal */
-		initScrollSwipeNavigation( modal, currentGallery, sidebarModal, ctaEnabled, ctaDisplayPosition );
+		// initScrollSwipeNavigation( modal, currentGallery, sidebarModal, ctaEnabled, ctaDisplayPosition );
 	} );
 }
 
@@ -226,8 +226,10 @@ function close( modal, sidebarModal ) {
 	document.body.style.overflow = '';
 	const players = modal.querySelectorAll( '.video-js' );
 	players.forEach( ( p ) => p?.player?.dispose?.() );
-
-	sidebarModal?.classList.remove( 'active' );
+	const sidebar = modal.querySelector( '.godam-product-sidebar' );
+	sidebar.classList.remove( 'close' );
+	modal.querySelector( '.godam-product-modal-content' ).classList.remove( 'no-sidebar' );
+	modal.querySelector( '.godam-product-modal-content' ).classList.add( 'sidebar' );
 }
 
 /**

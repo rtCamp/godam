@@ -744,7 +744,7 @@ class GoDAM_Product_Gallery {
 					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
 					</button>
-				</div>	
+				</div>
 			<div class="godam-product-modal-content">
 					<div class="godam-product-video-container column">
 						<div class="video-container animate-video-loading" style="aspect-ratio:responsive;">
