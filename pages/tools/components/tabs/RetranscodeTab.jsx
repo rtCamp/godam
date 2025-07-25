@@ -67,7 +67,118 @@ const RetranscodeTab = () => {
 
 	// Use a ref to track if the operation should be aborted.
 	const abortRef = useRef( false );
+	// Ref to hold polling interval so we can clear it when finished
+	const pollIntervalRef = useRef( null );
 
+	// Fetch the current queue status, used both for polling and initial mount
+	const fetchQueueStatus = async () => {
+		try {
+			const url = `${ window.godamRestRoute?.url }godam/v1/transcoding/retranscode-queue/status`;
+			const res = await axios.get( url, {
+				headers: {
+					'X-WP-Nonce': window.godamRestRoute?.nonce,
+				},
+			} );
+			const data = res.data;
+
+			if ( data?.total ) {
+				// Mirror the total in attachments so existing UI remains unchanged.
+				setAttachments( new Array( data.total ).fill( 0 ) );
+			}
+			setMediaCount( data?.processed || 0 );
+			setSuccessCount( data?.success || 0 );
+			setFailureCount( data?.failure || 0 );
+			setLogs( data?.logs || [] );
+
+			if ( data?.status === 'running' ) {
+				setRetranscoding( true );
+				// Ensure continuous polling across page reloads.
+				if ( ! pollIntervalRef.current ) {
+					beginPolling();
+				}
+			} else if ( data?.status === 'idle' || ! data?.status ) {
+				// Fresh state, ensure UI reset (in case user refreshed after reset).
+				setAttachments( [] );
+				setLogs( [] );
+				setMediaCount( 0 );
+				setSuccessCount( 0 );
+				setFailureCount( 0 );
+				setAborted( false );
+				setDone( false );
+				setRetranscoding( false );
+				clearInterval( pollIntervalRef.current );
+				pollIntervalRef.current = null;
+			} else {
+				setRetranscoding( false );
+				// Stop polling when not running.
+				clearInterval( pollIntervalRef.current );
+				pollIntervalRef.current = null;
+			}
+
+			if ( data?.status === 'done' ) {
+				setDone( true );
+				clearInterval( pollIntervalRef.current );
+			} else if ( data?.status === 'aborted' ) {
+				setAborted( true );
+				clearInterval( pollIntervalRef.current );
+			}
+		} catch ( e ) {
+			// Fail silently as polling errors are non-fatal.
+		}
+	};
+
+	// Kick off polling helper
+	const beginPolling = () => {
+		if ( pollIntervalRef.current ) {
+			clearInterval( pollIntervalRef.current );
+		}
+		pollIntervalRef.current = setInterval( fetchQueueStatus, 5000 );
+	};
+
+	const abortRetranscoding = () => {
+		// Tell the backend to abort and stop polling.
+		axios.post( `${ window.godamRestRoute?.url }godam/v1/transcoding/retranscode-queue/abort`, {}, {
+			headers: {
+				'X-WP-Nonce': window.godamRestRoute?.nonce,
+			},
+		} );
+		setAborted( true );
+		setRetranscoding( false );
+		clearInterval( pollIntervalRef.current );
+		setLogs( ( prevLogs ) => [ ...prevLogs, __( 'Aborting operation to send media for retranscoding.', 'godam' ) ] );
+	};
+
+	const startRetranscoding = async () => {
+		if ( attachments?.length > 0 ) {
+			setRetranscoding( true );
+			setAborted( false );
+			setMediaCount( 0 );
+			setLogs( [] );
+			setDone( false );
+			setSuccessCount( 0 );
+			setFailureCount( 0 );
+
+			try {
+				const url = `${ window.godamRestRoute?.url }godam/v1/transcoding/retranscode-queue`;
+				await axios.post( url, { ids: attachments }, {
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': window.godamRestRoute?.nonce,
+					},
+				} );
+				fetchQueueStatus();
+				beginPolling();
+			} catch ( err ) {
+				setError( {
+					message: __( 'An error occurred while starting retranscoding.', 'godam' ),
+					details: err.response ? err.response.data.message : err.message,
+				} );
+				setRetranscoding( false );
+			}
+		}
+	};
+
+	// Function to fetch media that require retranscoding (kept from original implementation)
 	const fetchRetranscodeMedia = () => {
 		setFetchingMedia( true );
 		setError( null );
@@ -107,72 +218,15 @@ const RetranscodeTab = () => {
 			} );
 	};
 
-	const abortRetranscoding = () => {
-		abortRef.current = true;
-		setAborted( true );
-		setRetranscoding( false );
-		setLogs( ( prevLogs ) => [ ...prevLogs, __( 'Aborting operation to send media for retranscoding.', 'godam' ) ] );
-	};
-
-	const startRetranscoding = async () => {
-		if ( attachments?.length > 0 ) {
-			setRetranscoding( true );
-			setAborted( false );
-			setMediaCount( 0 );
-			setLogs( [] );
-			setDone( false );
-			abortRef.current = false;
-			setSuccessCount( 0 );
-			setFailureCount( 0 );
-
-			for ( let i = 0; i < attachments.length; i++ ) {
-				// Check if abort was requested.
-				if ( abortRef.current ) {
-					break;
-				}
-
-				const attachment = attachments[ i ];
-
-				try {
-					const url = `${ window.godamRestRoute?.url }godam/v1/transcoding/retranscode`;
-
-					const res = await axios.post( url, {
-						id: attachment,
-					}, {
-						headers: {
-							'Content-Type': 'application/json',
-							'X-WP-Nonce': window.godamRestRoute?.nonce,
-						},
-					} );
-
-					const data = res.data;
-
-					if ( data?.message ) {
-						// Log the success message
-						setLogs( ( prevLogs ) => [ ...prevLogs, data.message ] );
-						setSuccessCount( ( prevCount ) => prevCount + 1 );
-					}
-				} catch ( err ) {
-					const data = err.response.data;
-					if ( data?.message ) {
-						// Log the success message
-						setLogs( ( prevLogs ) => [ ...prevLogs, data.message ] );
-					}
-					setFailureCount( ( prevCount ) => prevCount + 1 );
-				} finally {
-					setMediaCount( ( prevCount ) => prevCount + 1 );
-				}
+	// On mount, check if a queue is already running so we can resume progress.
+	useEffect( () => {
+		fetchQueueStatus();
+		return () => {
+			if ( pollIntervalRef.current ) {
+				clearInterval( pollIntervalRef.current );
 			}
-
-			setRetranscoding( false );
-			setDone( true );
-
-			// Reset abort state after completion.
-			if ( abortRef.current ) {
-				setAborted( false );
-			}
-		}
-	};
+		};
+	}, [] );
 
 	const resetState = () => {
 		setAttachments( [] );
@@ -181,9 +235,22 @@ const RetranscodeTab = () => {
 		setError( null );
 		setRetranscoding( false );
 		setLogs( [] );
+		setSuccessCount( 0 );
+		setFailureCount( 0 );
 		setDone( false );
 		setForceRetranscode( false );
 		setSelectedIds( null );
+		// Stop any active polling.
+		if ( pollIntervalRef.current ) {
+			clearInterval( pollIntervalRef.current );
+			pollIntervalRef.current = null;
+		}
+		// Inform backend to reset queue and progress so subsequent visits start fresh.
+		axios.post( `${ window.godamRestRoute?.url }godam/v1/transcoding/retranscode-queue/reset`, {}, {
+			headers: {
+				'X-WP-Nonce': window.godamRestRoute?.nonce,
+			},
+		} ).catch( () => {} );
 		abortRef.current = false;
 
 		// Reset the URL to remove media_ids, goback and nonce
@@ -294,8 +361,8 @@ const RetranscodeTab = () => {
 					}
 
 					{
-						( done || aborted ) &&
-						successCount > 0 &&
+						( ( done || aborted ) &&
+						successCount > 0 ) &&
 						<Snackbar className="snackbar-success">
 							{ sprintf(
 								// translators: %d is the number of media files retranscoded.
@@ -306,8 +373,8 @@ const RetranscodeTab = () => {
 					}
 
 					{
-						( done || aborted ) &&
-						failureCount > 0 &&
+						( ( done || aborted ) &&
+						failureCount > 0 ) &&
 						<Snackbar className="snackbar-error">
 							{ sprintf(
 								// translators: %d is the number of media files that failed to retranscode.
