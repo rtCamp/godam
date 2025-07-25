@@ -16,6 +16,7 @@ import {
 	MenuItem,
 	ColorPalette,
 	Notice,
+	Tooltip,
 } from '@wordpress/components';
 import {
 	arrowLeft,
@@ -38,11 +39,20 @@ import LayerControls from '../LayerControls';
 import ProductSelector from '../woocommerce/ProductSelector';
 import FontAwesomeIconPicker from '../woocommerce/FontAwesomeIconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 
 const WoocommerceLayer = ( { layerID, goBack } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
+	);
+
+	const allLayers = useSelector( ( state ) =>
+		state.videoReducer.layers,
+	);
+
+	const firstWoocommerceLayer = useSelector( ( state ) =>
+		state.videoReducer.layers.find( ( _layer ) => _layer.id === layer.firstWooLayerId ),
 	);
 
 	const productHotspots = layer?.productHotspots || [];
@@ -78,6 +88,7 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 			oSize: { diameter: 48 },
 			oPosition: { x: 50, y: 50 },
 			backgroundColor: '#0c80dfa6',
+			miniCart: true,
 			icon: '',
 		};
 		updateField( 'productHotspots', [ ...productHotspots, newProductHotspot ] );
@@ -118,6 +129,14 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 		window.addEventListener( 'resize', recalcRatio );
 		return () => window.removeEventListener( 'resize', recalcRatio );
 	}, [] );
+
+	const updateAllWooLayersMiniCart = ( isChecked ) => {
+		allLayers
+			.filter( ( l ) => l.type === 'woo' )
+			.forEach( ( l ) => {
+				dispatch( updateLayerField( { id: l.id, field: 'miniCart', value: isChecked } ) );
+			} );
+	};
 
 	// If we want to disable the premium layers the we can use this code
 	// const isValidAPIKey = window?.videoData?.valid_api_key;
@@ -205,6 +224,35 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 						'Player will pause the video while the layer is displayed and users hover over the product hotspots.',
 						'godam',
 					) }
+				</p>
+			</div>
+
+			{ /* Mini Cart Icon */ }
+			<div className="mb-4">
+				<ToggleControl
+					label={ __( 'Enable/Disable Mini Cart', 'godam' ) }
+					checked={
+						layer?.previousDisplayTime
+							? firstWoocommerceLayer?.miniCart
+							: layer?.miniCart || false
+					}
+					onChange={ ( isChecked ) => {
+						updateAllWooLayersMiniCart( isChecked ); // Updates all layers.
+						updateField( 'miniCart', isChecked ); // Updates current layer.
+					} }
+					disabled={ ! isValidAPIKey || !! layer?.previousDisplayTime }
+				/>
+				<p className="text-xs text-gray-500 mt-1">
+					{ !! layer?.previousDisplayTime
+						? __(
+							'Mini Cart toggle is disabled. Edit it from the first WooCommerce layer you added in this video.',
+							'godam',
+						)
+						: __(
+							'Display the WooCommerce Mini Cart throughout the video.',
+							'godam',
+						)
+					}
 				</p>
 			</div>
 
@@ -411,6 +459,40 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 
 			{ /* The actual layer content */ }
 			<LayerControls>
+				{ layer?.miniCart && (
+					<div
+						className="absolute inset-0 woo-mini-cart-button"
+						style={ {
+							zIndex: '11',
+							left: '93%',
+							top: '4%',
+						} }
+					>
+						<Tooltip
+							text={ __( 'This is just a preview for Mini Cart. It will change styles according to your theme.', 'godam' ) }
+							placement="top-end"
+						>
+							<div
+								className="
+								block
+								transform
+								sm:scale-75 sm:-translate-x-6
+								md:scale-90 md:-translate-x-6
+								lg:scale-95 lg:translate-x-[-10px]
+								xl:scale-105 xl:translate-x-0
+								transition-transform duration-200 ease-in-out
+							"
+							>
+								<Button
+									isPrimary
+									className="cursor-pointer rounded-full !p-2"
+									label={ __( 'Mini Cart', 'godam' ) }
+									icon={ <FontAwesomeIcon icon={ faShoppingCart } /> }
+								/>
+							</div>
+						</Tooltip>
+					</div>
+				) }
 				<div
 					ref={ containerRef }
 					className="easydam-layer hotspot-layer"

@@ -580,6 +580,11 @@
 			font-size: 14px;
 			box-sizing: border-box;
 
+			&.loading {
+				opacity: 0.5;
+                pointer-events: none;
+			}
+
 			&:hover {
 				cursor: pointer;
 				pointer-events: auto;
