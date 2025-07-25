@@ -123,7 +123,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		document.querySelectorAll( '.remove-thumbnail' ).forEach( ( btn ) => {
 			btn.addEventListener( 'click', ( event ) => {
 				event.preventDefault();
-        		event.stopPropagation();
+				event.stopPropagation();
 				const thumbnail = btn.dataset.thumbnail;
 				this.removeThumbnailImage( thumbnail );
 			} );
@@ -132,7 +132,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 	replaceCustomThumbnail( oldThumbnail, newThumbnail ) {
 		const formData = new FormData();
-		// formData.append( 'file', file );
 		formData.append( 'attachment_id', this.model.get( 'id' ) );
 		formData.append( 'old_thumbnail', oldThumbnail );
 		formData.append( 'thumbnail_url', newThumbnail );
@@ -155,20 +154,17 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				if ( data.success ) {
 					document.querySelector( '.attachment-video-thumbnails' ).remove();
 					this.render(); // full re-render
-				} else {
-					alert( 'Failed to upload thumbnail.' );
 				}
 			} )
-			.catch( () => alert( 'An error occurred while uploading the thumbnail.' ) );
+			.catch( () => {
+				// silent fail
+			} );
 	},
 
 	removeThumbnailImage( thumbnailURL ) {
 		const formData = new FormData();
-		// formData.append( 'file', file );
 		formData.append( 'attachment_id', this.model.get( 'id' ) );
 		formData.append( 'thumbnail_url', thumbnailURL );
-
-		console.log( 'deleting thumbnail:', thumbnailURL );
 
 		fetch(
 			window.pathJoin( [
@@ -188,11 +184,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				if ( data.success ) {
 					document.querySelector( '.attachment-video-thumbnails' ).remove();
 					this.render(); // full re-render
-				} else {
-					alert( 'Failed to upload thumbnail.' );
 				}
 			} )
-			.catch( () => alert( 'An error occurred while uploading the thumbnail.' ) );
+			.catch( () => {
+				// silent fail
+			} );
 	},
 
 	openMediaUploader( onSelect ) {
@@ -306,19 +302,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		this.setupThumbnailClickHandler( attachmentID );
 
 		this.setupThumbnailActions();
-
-		// Handle file upload interaction
-		// this.$el.find( '#custom-thumbnail-upload' ).on( 'change', ( e ) => {
-		// 	const file = e.target.files[ 0 ];
-		// 	if ( file ) {
-		// 		this.handleThumbnailUpload( file );
-		// 	}
-		// } );
 	},
 
 	handleThumbnailUploadFromUrl( url ) {
 		const formData = new FormData();
-		// formData.append( 'file', file );
 		formData.append( 'attachment_id', this.model.get( 'id' ) );
 
 		formData.append( 'thumbnail_url', url );
@@ -335,11 +322,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				if ( data.success ) {
 					document.querySelector( '.attachment-video-thumbnails' ).remove();
 					this.render(); // full re-render
-				} else {
-					alert( 'Failed to upload thumbnail.' );
 				}
 			} )
-			.catch( () => alert( 'An error occurred while uploading the thumbnail.' ) );
+			.catch( () => {
+				// silent fail
+			} );
 	},
 
 	/**
