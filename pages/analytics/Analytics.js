@@ -43,7 +43,7 @@ const RenderVideo = ( { attachmentID, attachmentData, className, videoId } ) => 
 	};
 
 	return (
-		<video id={ videoId } className={ `video-js ${ className }` } data-id={ attachmentID }>
+		<video id={ videoId } className={ `video-js ${ className }` } data-id={ attachmentID } playsInline>
 			<source
 				src={ attachmentData.source_url || '' }
 				type={ getMimiType( attachmentData.mime_type ) || 'video/mp4' }
@@ -73,6 +73,7 @@ const Analytics = ( { attachmentID } ) => {
 	const [ isABTestCompleted, setIsABTestCompleted ] = useState( false );
 	const [ mediaLibraryAttachment, setMediaLibraryAttachment ] = useState( null );
 	const [ mediaNotFound, setMediaNotFound ] = useState( false );
+	const [ isMobile, setIsMobile ] = useState( window.innerWidth <= 1024 );
 
 	// RTK Query hooks
 	const siteUrl = window.location.origin;
@@ -189,8 +190,8 @@ const Analytics = ( { attachmentID } ) => {
 				'#performance-line-chart',
 				originalVideo,
 				'.performance-line-chart-tooltip',
-				525,
-				300,
+				isMobile ? 300 : 525,
+				isMobile ? 200 : 300,
 			);
 		}
 
@@ -208,11 +209,11 @@ const Analytics = ( { attachmentID } ) => {
 				'#comparison-line-chart',
 				comparisonVideo,
 				'.comparison-line-chart-tooltip',
-				525,
-				300,
+				isMobile ? 300 : 525,
+				isMobile ? 200 : 300,
 			);
 		}
-	}, [ analyticsData, abTestComparisonAnalyticsData ] );
+	}, [ analyticsData, abTestComparisonAnalyticsData, isMobile ] );
 
 	useEffect( () => {
 		const analyticsVideoEl = document.getElementById( 'analytics-video' );
@@ -227,6 +228,7 @@ const Analytics = ( { attachmentID } ) => {
 		}
 
 		videojs( 'analytics-video', {
+			fluid: true,
 			aspectRatio: '16:9',
 		} );
 	}, [ analyticsData ] );
@@ -298,19 +300,7 @@ const Analytics = ( { attachmentID } ) => {
 
 	useEffect( () => {
 		const handleResize = () => {
-			const smallSize = window.innerWidth <= 1024;
-			const responsiveOverlay = document.getElementById( 'screen-size-overlay' );
-			const analyticsContainer = document.getElementById( 'root-video-analytics' );
-
-			if ( responsiveOverlay && analyticsContainer ) {
-				if ( smallSize ) {
-					responsiveOverlay.classList.remove( 'hidden' );
-					analyticsContainer.style.overflow = 'hidden';
-				} else {
-					responsiveOverlay.classList.add( 'hidden' );
-					analyticsContainer.style.overflow = 'auto';
-				}
-			}
+			setIsMobile( window.innerWidth <= 1024 );
 		};
 
 		// Initial check
@@ -394,12 +384,6 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
-			<div id="screen-size-overlay" className="screen-size-overlay hidden">
-				<div className="screen-size-message">
-					<p>{ __( 'You need to use desktop to access this feature. ', 'godam' ) }</p>
-				</div>
-			</div>
-
 			{ attachmentData && ! mediaNotFound && (
 				<div id="analytics-content" className="hidden">
 					<div>
@@ -416,12 +400,12 @@ const Analytics = ( { attachmentID } ) => {
 					</div>
 					<div
 						id="video-analytics-container"
-						className="video-analytics-container hidden"
+						className="video-analytics-container"
 					>
 						<div>
-							<div className="flex gap-10 items-center max-lg:flex-col">
-								<div className="flex-grow">
-									<div className="analytics-info-container max-lg:flex-row flex-col items-center">
+							<div className="flex flex-col lg:flex-row gap-10 items-center">
+								<div className="flex-grow w-full">
+									<div className="analytics-info-container flex-col lg:flex-row items-center">
 										<SingleMetrics
 											metricType={ 'engagement-rate' }
 											label={ __( 'Average Engagement', 'godam' ) }
@@ -467,7 +451,7 @@ const Analytics = ( { attachmentID } ) => {
 										/>
 									</div>
 								</div>
-								<div className="min-w-[750px]">
+								<div className="min-w-0 lg:min-w-[750px] w-full">
 									<div>
 										<div className="video-container">
 											<RenderVideo
@@ -477,7 +461,7 @@ const Analytics = ( { attachmentID } ) => {
 											/>
 											<div className="video-chart-container">
 												<div id="chart-container">
-													<svg id="line-chart" width="640" height="300"></svg>
+													<svg id="line-chart" width="100%" height="300"></svg>
 													<div className="line-chart-tooltip"></div>
 												</div>
 											</div>
@@ -489,7 +473,7 @@ const Analytics = ( { attachmentID } ) => {
 							</div>
 						</div>
 					</div>
-					<div className="grid grid-cols-[4fr_2fr_2fr] gap-4 px-10 metrics-container">
+					<div className="grid grid-cols-1 lg:grid-cols-[4fr_2fr_2fr] gap-4 px-10 metrics-container">
 						<PlaybackPerformanceDashboard
 							attachmentID={ attachmentID }
 							initialData={ processedAnalyticsHistory }
@@ -573,7 +557,7 @@ const Analytics = ( { attachmentID } ) => {
 								</div>
 							) }
 							<div className="p-6">
-								<div className="flex w-full overflow-scroll">
+								<div className="flex w-full overflow-x-auto">
 									<div className="flex-1">
 										{ abTestComparisonUrl.length === 0 && (
 											<div className="flex justify-center items-center flex-1 h-[280px] gap-6 flex-col">
@@ -604,8 +588,8 @@ const Analytics = ( { attachmentID } ) => {
 											</div>
 										) }
 										{ mediaLibraryAttachment && (
-											<div className="flex gap-12 w-full h-full pt-6 justify-center">
-												<div className="block w-[525px] h-[350px]">
+											<div className="flex flex-col lg:flex-row gap-12 w-full h-full pt-6 justify-center">
+												<div className="block w-full lg:w-[525px] h-auto lg:h-[350px]">
 													<div className="relative">
 														<RenderVideo
 															attachmentData={ attachmentData }
@@ -615,7 +599,7 @@ const Analytics = ( { attachmentID } ) => {
 														/>
 														<div className="original-video-chart-container relative">
 															<div id="original-chart-container">
-																<svg id="performance-line-chart" width="525" height="320"></svg>
+																<svg id="performance-line-chart" width="100%" height="320"></svg>
 																<div className="performance-line-chart-tooltip"></div>
 															</div>
 														</div>
@@ -624,8 +608,8 @@ const Analytics = ( { attachmentID } ) => {
 														<h4 className="text-center m-0 mt-6">{ attachmentData?.title?.rendered }</h4>
 													</div>
 												</div>
-												<div className="w-px bg-gray-200 mx-4 divide-dashed"></div>
-												<div className="block w-[525px] h-[350px]">
+												<div className="w-full lg:w-px bg-gray-200 mx-4 divide-dashed"></div>
+												<div className="block w-full lg:w-[525px] h-auto lg:h-[350px]">
 													<div className="relative">
 														<RenderVideo
 															attachmentData={ mediaLibraryAttachment }
@@ -635,7 +619,7 @@ const Analytics = ( { attachmentID } ) => {
 														/>
 														<div className="original-video-chart-container relative">
 															<div id="comparison-chart-container">
-																<svg id="comparison-line-chart" width="525" height="320"></svg>
+																<svg id="comparison-line-chart" width="100%" height="320"></svg>
 																<div className="comparison-line-chart-tooltip"></div>
 															</div>
 														</div>
@@ -652,70 +636,72 @@ const Analytics = ( { attachmentID } ) => {
 								</div>
 
 								{ analyticsData && abTestComparisonAnalyticsData && (
-									<table className="w-full ab-testing-table rounded-xl">
-										<tbody>
-											<tr
-												className={ highlightClass(
-													analyticsData?.plays,
-													abTestComparisonAnalyticsData?.plays ?? 0,
-												) }
-											>
-												<td>{ analyticsData?.plays }</td>
-												<td>{ __( 'Views', 'godam' ) }</td>
-												<td>{ abTestComparisonAnalyticsData?.plays ?? 0 }</td>
-											</tr>
-											<tr
-												className={ highlightClass(
-													engagementRate,
-													comparisonEngagementRate,
-												) }
-											>
-												<td>{ engagementRate }</td>
-												<td>{ __( 'Average Engagement', 'godam' ) }</td>
-												<td>{ comparisonEngagementRate }</td>
-											</tr>
-											<tr className={ highlightClass( plays, comparisonPlays ) }>
-												<td>{ plays }</td>
-												<td>{ __( 'Total Plays', 'godam' ) }</td>
-												<td>{ comparisonPlays }</td>
-											</tr>
-											<tr
-												className={ highlightClass( playRate, comparisonPlayRate ) }
-											>
-												<td>{ playRate }</td>
-												<td>{ __( 'Play Rate', 'godam' ) }</td>
-												<td>{ comparisonPlayRate }</td>
-											</tr>
-											<tr
-												className={ highlightClass(
-													analyticsData?.page_load,
-													abTestComparisonAnalyticsData?.page_load,
-												) }
-											>
-												<td>{ analyticsData?.page_load }</td>
-												<td>{ __( 'Page Loads', 'godam' ) }</td>
-												<td>{ abTestComparisonAnalyticsData?.page_load }</td>
-											</tr>
-											<tr
-												className={ highlightClass(
-													analyticsData?.play_time,
-													abTestComparisonAnalyticsData?.play_time,
-												) }
-											>
-												<td>{ analyticsData?.play_time?.toFixed( 2 ) }s</td>
-												<td>{ __( 'Play Time', 'godam' ) }</td>
-												<td>
-													{ abTestComparisonAnalyticsData?.play_time?.toFixed( 2 ) }
-													s
-												</td>
-											</tr>
-											<tr>
-												<td>{ analyticsData?.video_length }s</td>
-												<td>{ __( 'Video Length', 'godam' ) }</td>
-												<td>{ abTestComparisonAnalyticsData?.video_length }s</td>
-											</tr>
-										</tbody>
-									</table>
+									<div className="overflow-x-auto">
+										<table className="w-full ab-testing-table rounded-xl mt-6">
+											<tbody>
+												<tr
+													className={ highlightClass(
+														analyticsData?.plays,
+														abTestComparisonAnalyticsData?.plays ?? 0,
+													) }
+												>
+													<td>{ analyticsData?.plays }</td>
+													<td>{ __( 'Views', 'godam' ) }</td>
+													<td>{ abTestComparisonAnalyticsData?.plays ?? 0 }</td>
+												</tr>
+												<tr
+													className={ highlightClass(
+														engagementRate,
+														comparisonEngagementRate,
+													) }
+												>
+													<td>{ engagementRate }</td>
+													<td>{ __( 'Average Engagement', 'godam' ) }</td>
+													<td>{ comparisonEngagementRate }</td>
+												</tr>
+												<tr className={ highlightClass( plays, comparisonPlays ) }>
+													<td>{ plays }</td>
+													<td>{ __( 'Total Plays', 'godam' ) }</td>
+													<td>{ comparisonPlays }</td>
+												</tr>
+												<tr
+													className={ highlightClass( playRate, comparisonPlayRate ) }
+												>
+													<td>{ playRate }</td>
+													<td>{ __( 'Play Rate', 'godam' ) }</td>
+													<td>{ comparisonPlayRate }</td>
+												</tr>
+												<tr
+													className={ highlightClass(
+														analyticsData?.page_load,
+														abTestComparisonAnalyticsData?.page_load,
+													) }
+												>
+													<td>{ analyticsData?.page_load }</td>
+													<td>{ __( 'Page Loads', 'godam' ) }</td>
+													<td>{ abTestComparisonAnalyticsData?.page_load }</td>
+												</tr>
+												<tr
+													className={ highlightClass(
+														analyticsData?.play_time,
+														abTestComparisonAnalyticsData?.play_time,
+													) }
+												>
+													<td>{ analyticsData?.play_time?.toFixed( 2 ) }s</td>
+													<td>{ __( 'Play Time', 'godam' ) }</td>
+													<td>
+														{ abTestComparisonAnalyticsData?.play_time?.toFixed( 2 ) }
+														s
+													</td>
+												</tr>
+												<tr>
+													<td>{ analyticsData?.video_length }s</td>
+													<td>{ __( 'Video Length', 'godam' ) }</td>
+													<td>{ abTestComparisonAnalyticsData?.video_length }s</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
 								) }
 							</div>
 						</div>
