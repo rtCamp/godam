@@ -559,7 +559,15 @@ class Media_Library extends Base {
 		);
 	}
 
-	function upload_custom_video_thumbnail( $request ) {
+	/**
+	 * Upload custom video thumbnail.
+	 *
+	 * Upload the custom video thumbnail for the thumbnail ID.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function upload_custom_video_thumbnail( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
 	
@@ -568,22 +576,22 @@ class Media_Library extends Base {
 			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
 		}
 	
-		// Get current thumbnails
+		// Get current thumbnails.
 		$existing_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
 		if ( ! is_array( $existing_thumbnails ) ) {
 			$existing_thumbnails = array();
 		}
 	
-		// Add new custom thumbnail at beginning
+		// Add new custom thumbnail at beginning.
 		array_unshift( $existing_thumbnails, $thumbnail_url );
 	
-		// Remove duplicates
+		// Remove duplicates.
 		$existing_thumbnails = array_unique( $existing_thumbnails );
 	
-		// Save updated thumbnails
+		// Save updated thumbnails.
 		update_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', $existing_thumbnails );
 	
-		// Also set as selected thumbnail
+		// Also set as selected thumbnail.
 		update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $thumbnail_url );
 	
 		return new \WP_REST_Response(
@@ -598,7 +606,15 @@ class Media_Library extends Base {
 		);
 	}
 
-	function replace_custom_video_thumbnail( $request ) {
+	/**
+	 * Replace video thumbnail.
+	 *
+	 * Replace the video thumbnail for the thumbnail URL.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function replace_custom_video_thumbnail( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
 		$old_thumbnail = $request->get_param( 'old_thumbnail' );
@@ -607,36 +623,30 @@ class Media_Library extends Base {
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
 			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
 		}
-
-		// $uploads       = wp_get_upload_dir();
-		// $new_image_url = $uploads['baseurl'] . '/' . get_post_meta( $thumbnail_id, '_wp_attached_file', true );
-		// if ( ! $new_image_url ) {
-		// return new \WP_Error( 'image_not_found', __( 'Unable to retrieve image.', 'godam' ), array( 'status' => 404 ) );
-		// }
 	
-		// Get current thumbnails
+		// Get current thumbnails.
 		$existing_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
 		if ( ! is_array( $existing_thumbnails ) ) {
 			return new \WP_Error( 'thumbnails_not_found', __( 'Unable to retrieve thumbnails.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		// remove old thumbnail if it exists
+		// remove old thumbnail if it exists.
 		if ( in_array( $old_thumbnail, $existing_thumbnails, true ) ) {
 			$existing_thumbnails = array_diff( $existing_thumbnails, array( $old_thumbnail ) );
 		} else {
 			return new \WP_Error( 'thumbnail_not_found', __( 'Old thumbnail not found in the list.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		// Add new custom thumbnail at beginning
+		// Add new custom thumbnail at beginning.
 		array_unshift( $existing_thumbnails, $thumbnail_url );
 	
-		// Remove duplicates
+		// Remove duplicates.
 		$existing_thumbnails = array_unique( $existing_thumbnails );
 	
-		// Save updated thumbnails
+		// Save updated thumbnails.
 		update_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', $existing_thumbnails );
 	
-		// Also set as selected thumbnail
+		// Also set as selected thumbnail.
 		update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $thumbnail_url );
 	
 		return new \WP_REST_Response(
@@ -651,7 +661,15 @@ class Media_Library extends Base {
 		);
 	}
 
-	function remove_custom_video_thumbnail( $request ) {
+	/**
+	 * Remove video thumbnail.
+	 *
+	 * Remove the video thumbnail for the thumbnail URL.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function remove_custom_video_thumbnail( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
 
@@ -660,13 +678,13 @@ class Media_Library extends Base {
 			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
 		}
 
-		// Get current custom thumbnails
+		// Get current custom thumbnails.
 		$custom_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
 		if ( ! is_array( $custom_thumbnails ) || ! in_array( $thumbnail_url, $custom_thumbnails, true ) ) {
 			return new \WP_Error( 'thumbnail_not_found', __( 'Custom thumbnail not found.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		// Remove the specified thumbnail
+		// Remove the specified thumbnail.
 		$custom_thumbnails = array_diff( $custom_thumbnails, array( $thumbnail_url ) );
 
 		if ( empty( $custom_thumbnails ) ) {
@@ -683,7 +701,7 @@ class Media_Library extends Base {
 
 		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
-		if ( $selected_thumbnail === $thumbnail_id ) {
+		if ( $selected_thumbnail === $thumbnail_url ) {
 			// If the removed thumbnail was the selected one, unset it.
 			delete_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail' );
 		}
