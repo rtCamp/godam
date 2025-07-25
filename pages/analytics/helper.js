@@ -681,6 +681,10 @@ export function generateLineChart( data, selector, videoPlayer, tooltipSelector,
 				const videoDuration = videoPlayer.duration();
 				const videoTime = ( index / data.length ) * videoDuration;
 
+				if ( isNaN( videoTime ) || ! isFinite( videoTime ) ) {
+					return;
+				}
+
 				focus
 					.style( 'opacity', 1 )
 					.attr( 'cx', xScale( index ) )
