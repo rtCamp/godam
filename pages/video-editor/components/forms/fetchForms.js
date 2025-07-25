@@ -9,16 +9,38 @@ import { useGetSureformsQuery } from '../../redux/api/sureforms';
 import { useGetForminatorFormsQuery } from '../../redux/api/forminator-forms';
 import { useGetFluentFormsQuery } from '../../redux/api/fluent-forms';
 import { useGetEverestFormsQuery } from '../../redux/api/everest-forms';
+import { useGetNinjaFormsQuery } from '../../redux/api/ninja-forms';
+import { FormLayerComponentType } from '../layers/FormLayer';
 
 export const useFetchForms = () => {
-	const { data: cf7Forms, isFetching: isFetchingCF7 } = useGetCF7FormsQuery();
-	const { data: gravityForms, isFetching: isFetchingGravity } = useGetGravityFormsQuery();
-	const { data: wpForms, isFetching: isFetchingWPForms } = useGetWPFormsQuery();
-	const { data: jetpackForms, isFetching: isFetchingJetpack } = useGetJetpackFormsQuery();
-	const { data: sureforms, isFetching: isFetchingSureforms } = useGetSureformsQuery();
-	const { data: forminatorForms, isFetching: isFetchingForminator } = useGetForminatorFormsQuery();
-	const { data: fluentForms, isFetching: isFetchingFluentForms } = useGetFluentFormsQuery();
-	const { data: everestForms, isFetching: isFetchingEverestForms } = useGetEverestFormsQuery();
+	const { data: cf7Forms = [], isFetching: isFetchingCF7 = false } = useGetCF7FormsQuery( undefined, {
+		skip: ! FormLayerComponentType?.cf7.isActive,
+	} );
+	const { data: gravityForms = [], isFetching: isFetchingGravity = false } = useGetGravityFormsQuery( undefined, {
+		skip: ! FormLayerComponentType?.gravity.isActive,
+	} );
+	const { data: wpForms = [], isFetching: isFetchingWPForms = false } = useGetWPFormsQuery( undefined, {
+		skip: ! FormLayerComponentType?.wpforms.isActive,
+	} );
+	const { data: jetpackForms = [], isFetching: isFetchingJetpack = false } = useGetJetpackFormsQuery( undefined, {
+		skip: ! FormLayerComponentType?.jetpack.isActive,
+	} );
+	const { data: sureforms = [], isFetching: isFetchingSureforms = false } = useGetSureformsQuery( undefined, {
+		skip: ! FormLayerComponentType?.sureforms.isActive,
+	} );
+	const { data: forminatorForms = [], isFetching: isFetchingForminator = false } = useGetForminatorFormsQuery( undefined, {
+		skip: ! FormLayerComponentType?.forminator.isActive,
+	} );
+	const { data: fluentForms = [], isFetching: isFetchingFluentForms = false } = useGetFluentFormsQuery( undefined, {
+		skip: ! FormLayerComponentType?.fluentforms.isActive,
+	} );
+	const { data: everestForms = [], isFetching: isFetchingEverestForms = false } = useGetEverestFormsQuery( undefined, {
+		skip: ! FormLayerComponentType?.everestforms.isActive,
+	} );
+
+	const { data: ninjaForms = [], isFetching: isFetchingNinjaForms = false } = useGetNinjaFormsQuery( undefined, {
+		skip: ! FormLayerComponentType?.ninjaforms.isActive,
+	} );
 
 	const isFetching =
 		isFetchingCF7 ||
@@ -28,7 +50,8 @@ export const useFetchForms = () => {
 		isFetchingSureforms ||
 		isFetchingForminator ||
 		isFetchingFluentForms ||
-		isFetchingEverestForms;
+		isFetchingEverestForms ||
+		isFetchingNinjaForms;
 
 	return {
 		cf7Forms,
@@ -39,6 +62,7 @@ export const useFetchForms = () => {
 		forminatorForms,
 		fluentForms,
 		everestForms,
+		ninjaForms,
 		isFetching,
 	};
 };

@@ -24,6 +24,16 @@ class Video_Metadata {
 	const BATCH_SIZE = 50;
 
 	/**
+	 * Default width for video thumbnails in pixels.
+	 */
+	const DEFAULT_THUMBNAIL_WIDTH = 640;
+
+	/**
+	 * Default height for video thumbnails in pixels.
+	 */
+	const DEFAULT_THUMBNAIL_HEIGHT = 480;
+
+	/**
 	 * Constructor.
 	 */
 	final protected function __construct() {
@@ -40,6 +50,7 @@ class Video_Metadata {
 		add_action( 'add_attachment', array( $this, 'save_video_metadata' ) );
 
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'set_media_library_thumbnail' ), 10, 3 );
+		add_action( 'init', array( $this, 'filter_vimeo_migrated_urls' ) );
 	}
 
 	/**
@@ -181,12 +192,38 @@ class Video_Metadata {
 			$thumbnail_url   = get_post_meta( $response['id'], 'rtgodam_media_video_thumbnail', true );
 			$attachment_meta = get_post_meta( $response['id'], '_wp_attachment_metadata', true );
 
-			if ( ! empty( $thumbnail_url ) && isset( $attachment_meta['width'] ) && isset( $attachment_meta['height'] ) ) {
+			if ( ! empty( $thumbnail_url ) ) {
 				$response['image']['src']    = esc_url( $thumbnail_url );
-				$response['image']['height'] = $attachment_meta['width'];
-				$response['image']['width']  = $attachment_meta['height'];
+				$response['image']['width']  = $attachment_meta['width'] ?? self::DEFAULT_THUMBNAIL_WIDTH;
+				$response['image']['height'] = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
 			}
 		}
 		return $response;
+	}
+
+	/**
+	 * Filter to return the remote URL for Vimeo migrated videos.
+	 *
+	 * This filter modifies the attachment URL to return the remote URL
+	 * if the video has been migrated from Vimeo.
+	 *
+	 * @since n.e.x.t
+	 */
+	public function filter_vimeo_migrated_urls(): void {
+		add_filter(
+			'wp_get_attachment_url',
+			function ( $url, $post_id ) {
+				$is_vimeo_migrated = get_post_meta( $post_id, 'rtgodam_is_migrated_vimeo_video', true );
+				if ( $is_vimeo_migrated ) {
+					$remote_url = get_post_meta( $post_id, '_wp_attached_file', true );
+					if ( ! empty( $remote_url ) ) {
+						return $remote_url;
+					}
+				}
+				return $url;
+			},
+			10,
+			2 
+		);
 	}
 }

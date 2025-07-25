@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, CustomSelectControl, Notice } from '@wordpress/components';
+import { Button, Notice, SelectControl } from '@wordpress/components';
 import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
@@ -20,12 +20,12 @@ import FormSelector from './FormSelector';
 
 const templateOptions = [
 	{
-		key: 'godam',
-		name: __( 'GoDAM', 'godam' ),
+		value: 'godam',
+		label: __( 'GoDAM', 'godam' ),
 	},
 	{
-		key: 'default',
-		name: __( 'Default', 'godam' ),
+		value: 'default',
+		label: __( 'Default', 'godam' ),
 	},
 ];
 
@@ -33,7 +33,9 @@ const CF7 = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const cf7Forms = useSelector( ( state ) => state.videoReducer.cf7Forms );
-	const { data: formHTML, isFetching } = useGetSingleCF7FormQuery( { id: layer.cf7_id, theme: layer.theme || 'godam' } );
+	const { data: formHTML, isFetching } = useGetSingleCF7FormQuery( { id: layer.cf7_id, theme: layer.theme || 'godam' }, {
+		skip: 'undefined' === typeof layer?.cf7_id,
+	} );
 
 	const forms = cf7Forms?.map( ( form ) => ( {
 		value: form.id,
@@ -53,7 +55,7 @@ const CF7 = ( { layerID } ) => {
 
 	const isCF7PluginActive = Boolean( window?.videoData?.cf7Active );
 
-	const handleThemeChange = ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'theme', value: value.selectedItem.key } ) );
+	const handleThemeChange = ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) );
 
 	return (
 		<>
@@ -68,15 +70,15 @@ const CF7 = ( { layerID } ) => {
 				</Notice>
 			}
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isCF7PluginActive } className="gravity-form-selector mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isValidAPIKey || ! isCF7PluginActive } className="mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
-			<CustomSelectControl
+			<SelectControl
 				__next40pxDefaultSize
-				className="mb-4 godam-input"
+				className="mb-4"
 				label={ __( 'Select form theme', 'godam' ) }
 				options={ templateOptions }
-				value={ layer.theme ? templateOptions.find( ( option ) => option.key === layer.theme ) : { key: 'godam', name: __( 'GoDAM', 'godam' ) } }
+				value={ layer.theme || 'godam' }
 				onChange={ handleThemeChange }
 				disabled={ ! isValidAPIKey || ! isCF7PluginActive }
 			/>

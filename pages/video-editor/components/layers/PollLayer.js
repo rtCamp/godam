@@ -42,7 +42,7 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
 						label={ __( 'Select poll', 'godam' ) }
-						className="godam-combobox gravity-form-selector mb-4"
+						className="godam-combobox mb-4"
 						value={ layer.poll_id }
 						onChange={ handlePollChange }
 						options={ polls.map( ( poll ) => ( { value: poll.pollq_id, label: poll.pollq_question } ) ) }

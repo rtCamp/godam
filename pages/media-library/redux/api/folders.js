@@ -9,6 +9,29 @@ export const folderApi = createApi( {
 	reducerPath: 'folderApi',
 	baseQuery: fetchBaseQuery( { baseUrl: restURL } ),
 	endpoints: ( builder ) => ( {
+		getAllMediaCount: builder.query( {
+			async queryFn( arg, api, extraOptions, baseQuery ) {
+				const result = await baseQuery( {
+					url: 'wp/v2/media',
+					params: { _fields: 'id', per_page: 1 },
+				} );
+				if ( result.error ) {
+					return { error: result.error };
+				}
+
+				const totalMediaCount = parseInt( result.meta?.response?.headers.get( 'X-WP-Total' ) || '0', 10 );
+
+				return { data: totalMediaCount };
+			},
+		} ),
+		getCategoryMediaCount: builder.query( {
+			query: ( { folderId } ) => ( {
+				url: `godam/v1/media-library/category-count/${ folderId }`,
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
+				},
+			} ),
+		} ),
 		getFolders: builder.query( {
 			query: () => ( {
 				url: 'wp/v2/media-folder',
@@ -115,6 +138,8 @@ export const folderApi = createApi( {
 } );
 
 export const {
+	useGetAllMediaCountQuery,
+	useGetCategoryMediaCountQuery,
 	useGetFoldersQuery,
 	useCreateFolderMutation,
 	useUpdateFolderMutation,

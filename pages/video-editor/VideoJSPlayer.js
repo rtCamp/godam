@@ -11,6 +11,8 @@ import 'videojs-ima/dist/videojs.ima.css';
 import videojs from 'video.js';
 import 'videojs-contrib-ads';
 import 'videojs-ima';
+import 'videojs-flvjs-es6';
+
 /**
  * Internal dependencies
  */
@@ -49,11 +51,6 @@ const layerTypes = [
 		title: __( 'Poll', 'godam' ),
 		icon: thumbsUp,
 		type: 'poll',
-	},
-	{
-		title: __( 'WooCommerce', 'godam' ),
-		icon: customPostType,
-		type: 'woo',
 	},
 ];
 
@@ -336,7 +333,6 @@ export const VideoJS = ( props ) => {
 
 		try {
 			const player = playerRef.current;
-
 			// player.sources( options.sources );
 			player.poster( options.poster );
 			player.autoplay( options.autoplay );

@@ -14,7 +14,6 @@
 		top: -4px; /* height of the padding to modal */
 		z-index: 10;
 		background-color: #fff;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
 		.layer-tabs {
 			display: flex;
@@ -112,15 +111,11 @@
 			}
 
 			&.type-poll {
-				background-color: #52ff7e;
+				background-color: #3bb371;
 			}
 
 			&.type-ad {
 				background-color: #ff9752;
-			}
-
-			&.type-woo {
-				background-color: #00c4cc;
 			}
 		}
 

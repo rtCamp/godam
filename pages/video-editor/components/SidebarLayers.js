@@ -12,11 +12,11 @@ import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
 import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
-import woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
 import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
+import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 
 /**
  * WordPress dependencies
@@ -94,6 +94,12 @@ export const layerTypes = [
 				isActive: window?.videoData?.everestFormsActive ?? false,
 				tooltipMessage: __( 'Everest Forms plugin is not active', 'godam' ),
 			},
+			ninjaforms: {
+				layerText: __( 'Ninja Forms', 'godam' ),
+				icon: NinjaFormsIcon,
+				isActive: window?.videoData?.ninjaFormsActive ?? false,
+				tooltipMessage: __( 'Ninja Forms plugin is not active', 'godam' ),
+			},
 		},
 	},
 	{
@@ -118,15 +124,6 @@ export const layerTypes = [
 		layerText: __( 'Poll', 'godam' ),
 		isActive: Boolean( window?.easydamMediaLibrary?.isPollPluginActive ) ?? false,
 		tooltipMessage: __( 'Poll plugin is not active', 'godam' ),
-		isPremium: false,
-	},
-	{
-		title: __( 'WooCommerce', 'godam' ),
-		icon: woo,
-		type: 'woo',
-		layerText: __( 'WooCommerce', 'godam' ),
-		isActive: Boolean( window?.easydamMediaLibrary?.isWooActive ) ?? false,
-		tooltipMessage: __( 'WooCommerce is not active', 'godam' ),
 		isPremium: false,
 	},
 ];
@@ -255,34 +252,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					custom_css: '',
 				} ) );
 				break;
-			case 'woo':
-				dispatch(
-					addLayer( {
-						id: uuidv4(),
-						displayTime: currentTime,
-						type,
-						duration: 5,
-						pauseOnHover: false,
-						productHotspots: [
-							{
-								id: uuidv4(),
-								productId: '',
-								productDetails: '',
-								addToCart: false,
-								shopText: __( 'Shop Me', 'godam' ),
-								position: { x: 50, y: 50 },
-								size: { diameter: 48 },
-								oSize: { diameter: 48 },
-								oPosition: { x: 50, y: 50 },
-								backgroundColor: '#0c80dfa6',
-								showStyle: false,
-								showIcon: false,
-								icon: '',
-							},
-						],
-					} ),
-				);
-				break;
 			default:
 				break;
 		}
@@ -345,7 +314,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 											>
 												<div className="flex items-center gap-2">
 													{
-														formType || 'woo' === layer.type ? (
+														formType ? (
 															<img src={ icon } alt={ layer.type } className="w-6 h-6" />
 														) : (
 															<Icon icon={ icon } />
