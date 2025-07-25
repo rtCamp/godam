@@ -71,12 +71,18 @@
 	},
 	"supports": {
 		"anchor": true,
-		"align": [ "left", "center", "right", "wide", "full" ],
+		"align": [ "wide", "full" ],
 		"spacing": {
 			"margin": true,
 			"padding": true
 		}
 	},
+	"parent": [
+		"core/group",
+		"core/columns",
+		"core/column",
+		"core/grid"
+	],
 	"editorStyle": ["file:./index.css"],
 	"editorScript": ["file:./index.js"],
 	"render": "file:./render.php"
