@@ -123,6 +123,7 @@ $settings-page-breakpoint: 782px;
 				display: flex;
 				flex-direction: column;
 				gap: 0.5rem;
+				min-width: 200px;
 
 				@media (max-width: $settings-page-breakpoint) {
 					position: fixed;

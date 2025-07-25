@@ -99,6 +99,7 @@ $tools-page-breakpoint: 782px;
 				display: flex;
 				flex-direction: column;
 				gap: 0.5rem;
+				min-width: 200px;
 
 				@media (max-width: $tools-page-breakpoint) {
 					position: fixed;
