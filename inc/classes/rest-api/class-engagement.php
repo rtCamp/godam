@@ -161,6 +161,8 @@ class Engagement extends Base {
 			$response_data['views_count'] = array_sum( $analytics_data['processed_analytics']['post_views'] ?? array() );
 		}
 
+		$transcoder_job_id = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
+
 		$likes                        = get_post_meta( $video_id, 'likes', true );
 		$likes                        = ! empty( $likes ) && is_array( $likes ) ? $likes : array();
 		$current_user                 = get_current_user_id();
@@ -168,7 +170,7 @@ class Engagement extends Base {
 		$response_data['is_liked']    = isset( $likes[ $current_user_key ] ) ? true : false;
 		$response_data['likes_count'] = count( $likes );
 
-		$comments                        = $this->get_comments( $video_id );
+		$comments                        = $this->get_comments( $transcoder_job_id, $account_creadentials );
 		$response_data['comments']       = $comments['comments'];
 		$response_data['comments_count'] = $comments['total'];
 
@@ -404,52 +406,67 @@ class Engagement extends Base {
 		);
 	}
 
+
 	/**
-	 * Get all comments for a video.
+	 * Gets comments for a transcoder job ID.
 	 *
-	 * @param int $video_id Video Post ID.
+	 * @param string $transcoder_job_id Transcoder job ID.
+	 * @param array  $account_creadentials Account credentials.
 	 *
 	 * @return array
 	 */
-	public function get_comments( $video_id ) {
-
-		$comments = get_comments(
-			array(
-				'post_id' => $video_id,
-				'status'  => 'approve',
-			)
-		);
+	public function get_comments( $transcoder_job_id, $account_creadentials ) {
 
 		$comment_tree  = array();
 		$comment_index = array();
+		$query_params  = array(
+			'name'    => $transcoder_job_id,
+			'api_key' => $account_creadentials['api_key'],
+		);
+
+		$comments_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.get_wp_comments';
+		$comments_url      = add_query_arg( $query_params, $comments_endpoint );
+		$comments_response = wp_remote_get( $comments_url );
+		$process_response  = $this->process_response( $comments_response );
+
+		if ( $process_response instanceof WP_REST_Response || empty( $process_response['message']['comments'] ) || ! is_array( $process_response['message']['comments'] ) ) {
+
+			return array(
+				'comments' => $comment_tree,
+				'total'    => 0,
+			);
+		}
+
+		$comments = $process_response['message']['comments'];
+		$count    = $process_response['message']['count'];
 
 		foreach ( $comments as $comment ) {
-			$comment_index[ $comment->comment_ID ] = array(
-				'id'           => $comment->comment_ID,
-				'parent_id'    => $comment->comment_parent,
-				'text'         => $comment->comment_content,
-				'user_id'      => $comment->user_id,
-				'author_name'  => $comment->comment_author,
-				'author_image' => get_avatar_url( $comment->comment_author_email ),
+			$comment_index[ $comment['name'] ] = array(
+				'id'           => $comment['name'],
+				'parent_id'    => $comment['custom_reply_to'],
+				'text'         => $comment['content'],
+				'user_id'      => $comment['name'],
+				'author_name'  => $comment['comment_by'],
+				'author_image' => get_avatar_url( $comment['comment_email'] ),
 				'children'     => array(),
 			);
 		}
 
 		foreach ( $comment_index as $id => $comment ) {
-			if ( 0 !== (int) $comment['parent_id'] && isset( $comment_index[ $comment['parent_id'] ] ) ) {
+			if ( ! empty( $comment['parent_id'] ) && isset( $comment_index[ $comment['parent_id'] ] ) ) {
 				$comment_index[ $comment['parent_id'] ]['children'][] = &$comment_index[ $id ];
 			}
 		}
 
 		foreach ( $comment_index as $comment ) {
-			if ( 0 === (int) $comment['parent_id'] ) {
+			if ( empty( $comment['parent_id'] ) ) {
 				$comment_tree[] = $comment;
 			}
 		}
 
 		return array(
 			'comments' => $comment_tree,
-			'total'    => count( $comments ),
+			'total'    => $count,
 		);
 	}
 }
