@@ -573,12 +573,12 @@ class GoDAM_Product_Gallery {
 							</div>
 						</div>
 					</div>
-					<div class="godam-product-sidebar">
+					<div class="godam-product-sidebar" data-product-ids="<?php echo esc_attr( $data_product_ids ); ?>">
 						<div class="godam-sidebar-header">
-							<h3><?php esc_html_e( 'Products seen in the video', 'godam' ) ?></h3>
-			
+							<h3 class="godam-header-text"><?php esc_html_e( 'Products seen in the video', 'godam' ) ?></h3>
+
 							<div class="godam-sidebar-header-actions">
-							<div class="godam-product-video-gallery--cart-basket">
+							<div class="godam-product-video-gallery-sidebar--cart-basket">
 								<?php
 									echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore
 								?>
@@ -588,50 +588,8 @@ class GoDAM_Product_Gallery {
 							</button>
 							</div>
 						</div>
-						<div class="godam-product-sidebar-grid">
-							<?php foreach ( $product_ids as $product_id ) :
-								$product = wc_get_product( $product_id );
-								if ( ! $product ) {
-									continue;
-								}
-								$product_link = get_permalink( $product_id );
-								$product_image = $product->get_image();
-								$product_title = $product->get_name();
-								$product_price = $product->get_price_html();
-								$product_rating_customer_count = $product->get_rating_count(); // @todo Rating display
-								$product_rating_average_count = $product->get_average_rating();
-								$product_type = $product->get_type();
-								?>
-								<div class="godam-sidebar-product-item">
-									<div class="godam-sidebar-product-image"><?php echo $product_image; ?></div>
-									<div class="godam-sidebar-product-content">
-									<div class="godam-sidebar-product-title"><?php echo esc_html( $product_title ); ?></div>
-									<div class="godam-sidebar-product-price"><?php echo wp_kses_post( $product_price ); ?></div>
-									<?php
-									if ( in_array( $product_type, array( 'variable', 'grouped', 'external' ), true ) ) {
-										?>
-										<button>
-										<a class="godam-product-sidebar-add-to-cart-button"
-										   href="<?php echo esc_url( $product_link ); ?>"
-										   target="_blank"
-										   aria-label="<?php esc_attr_e( 'View Product', 'godam' ); ?>">
-											<?php esc_html_e( 'View Product', 'godam' ); ?>
-										</a>
-										</button>
-										<?php
-									} else {
-										?>
-										<button class="godam-product-sidebar-add-to-cart-button"
-												data-product-id="<?php echo esc_attr( $product->get_id() ); ?>"
-												aria-label="<?php esc_attr_e( 'Add to Cart', 'godam' ); ?>">
-											<?php esc_html_e( 'Add to Cart', 'godam' ); ?>
-										</button>
-										<?php
-									}
-									?>
-									</div>
-								</div>
-							<?php endforeach; ?>
+						<div class="godam-sidebar-product">
+							<div class="spinner"></div>
 						</div>
 					</div>
 				</div>
@@ -649,7 +607,7 @@ class GoDAM_Product_Gallery {
 					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ) ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
 					</button>
-				</div>	
+				</div>
 			<div class="godam-product-modal-content">
 					<div class="godam-product-video-container column">
 						<div class="video-container animate-video-loading" style="aspect-ratio:responsive;">
@@ -669,94 +627,21 @@ class GoDAM_Product_Gallery {
 					</div>
 					<div class="godam-product-sidebar single-product-sidebar">
 						<div class="godam-sidebar-header">
-							<button class="godam-sidebar-close" aria-label="<?php __( 'Close sidebar', 'godam' ) ?>">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
-							</button>
+							<h3 class="godam-header-text hidden"><?php esc_html_e( 'Products seen in the video', 'godam' ); ?></h3>
+
+							<div class="godam-sidebar-header-actions">
+								<div class="godam-product-video-gallery-sidebar--cart-basket">
+									<?php
+										echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore
+									?>
+								</div>
+								<button class="godam-sidebar-close" aria-label="<?php __( 'Close sidebar', 'godam' ); ?>">
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
+								</button>
+							</div>
 						</div>
-						<div class="godam-product-sidebar-single">
-							<?php
-							global $product;
-							$product = wc_get_product( $product_id );
-							// Get the main product image first
-							$main_image_id = $product->get_image_id();
-							if ( $main_image_id ) {
-								$main_image_url = wp_get_attachment_image_url( $main_image_id, 'full' );
-								if ( $main_image_url ) {
-									$product_images[] = $main_image_url;
-								}
-							}
-
-							// Get all gallery images
-							$gallery_image_ids = $product->get_gallery_image_ids();
-							foreach ( $gallery_image_ids as $gallery_image_id ) {
-								$gallery_image_url = wp_get_attachment_image_url( $gallery_image_id, 'full' );
-								if ( $gallery_image_url ) {
-									$product_images[] = $gallery_image_url;
-								}
-							}
-
-							// Fallback to placeholder if no images found
-							if ( empty( $product_images ) ) {
-								$product_images[] = wc_placeholder_img_src( 'full' );
-							}
-							?>
-
-							<div class="mobile-product-sidebar-content">
-							<div class="godam-image-gallery">
-								<!-- main image display -->
-								<div class="godam-main-image">
-									<img src="<?php echo esc_url( $product_images[0] ); ?>" alt="<?php echo esc_attr( $product->get_name() ); ?>" />
-								</div>
-
-								<!-- thumbnail carousel with horizontal scroll -->
-								<div class="godam-thumbnail-carousel">
-									<button class="godam-thumbnail-nav godam-thumbnail-prev" aria-label="<?php echo esc_attr__( 'Previous thumbnails', 'godam' ); ?>">
-										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="M15 19V5l-8 7z"></path></svg>
-									</button>
-									
-									<div class="godam-thumbnail-container">
-										<div class="godam-thumbnail-track">
-											<?php foreach ( $product_images as $index => $image_url ) : ?>
-												<div class="godam-thumbnail-item <?php echo ( $index === 0 ) ? 'active' : ''; ?>" data-index="<?php echo esc_attr( $index ); ?>">
-													<img class="godam-thumbnail-image" src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( sprintf( __( 'Image %d', 'godam' ), $index + 1 ) ); ?>">
-												</div>
-											<?php endforeach; ?>
-										</div>
-									</div>
-									
-									<button class="godam-thumbnail-nav godam-thumbnail-next" aria-label="<?php echo esc_attr__( 'Next thumbnails', 'godam' ); ?>">
-										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="m9 19 8-7-8-7z"></path></svg>
-									</button>
-								</div>
-							</div>
-
-							<div class="godam-product-sidebar-single-content">
-								<h3><?php echo esc_html( $product->get_name() ); ?></h3>
-								<p class="godam-product-sidebar-single-price"><?php echo wp_kses_post( $product->get_price_html() ); ?></p>
-								<p class="godam-product-sidebar-single-description"><?php echo wp_kses_post( $product->get_short_description() ); ?></p>
-							</div>
-							</div>
-
-							
-							<?php
-							// Replace Woo's form/button with Product Sidebar Add to Cart button or Product Sidebar View Product button.
-							$product_url = get_permalink( $product_id );
-							?>
-							<div class="single-product-sidebar-actions">
-								<?php if ( $product->is_type( 'variable' ) || $product->is_type( 'grouped' ) || $product->is_type( 'external' ) ) : ?>
-									<a class="product-sidebar-view-product-button" href="<?php echo esc_url( $product_url ); ?>" target="_blank" rel="noopener noreferrer">
-										<?php echo esc_html__( 'View Product', 'godam' ); ?>
-									</a>
-								<?php else : ?>
-									<button class="product-sidebar-add-to-cart-button" data-product-id="<?php echo esc_attr( $product_id ); ?>">
-										<?php echo esc_html__( 'Add to Cart', 'godam' ); ?>
-									</button>
-								<?php endif; ?>
-
-								<div class="rtgodam-product-video-gallery-slider-modal-content--cart-basket">
-									<?php echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore ?>
-								</div>
-							</div>
+						<div class="godam-sidebar-product">
+							<div class="spinner"></div>
 						</div>
 					</div>
 				</div>
