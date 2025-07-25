@@ -1,5 +1,10 @@
 @import './retranscode-media';
 
+// Initialize the variables for the tools page
+$tools-page-color-white: #fff;
+$tools-page-border: 1px solid #e0e0e0;
+$tools-page-breakpoint: 782px;
+
 #godam-tools {
 
 	.godam-tools {
@@ -7,21 +12,21 @@
 		&__hamburger-container {
 			display: none;
 
-			@media (max-width: 782px) {
+			@media (max-width: $tools-page-breakpoint) {
 				display: block;
 				border-radius: .75rem;
 				margin: 20px;
-				background: #fff;
-				border: 1px solid #e0e0e0;
+				background: $tools-page-color-white;
+				border: $tools-page-border;
 			}
 		}
 
 		&__hamburger {
 
-			@media (max-width: 782px) {
+			@media (max-width: $tools-page-breakpoint) {
 				padding: 0 12px;
 				outline: none;
-				border-right: 1px solid #e0e0e0;
+				border-right: $tools-page-border;
 				font-size: 35px;
 				background: none;
 				cursor: pointer;
@@ -30,9 +35,8 @@
 
 		&__close-btn {
 			width: fit-content;
-			background: #475569;
-			fill: #fff;
-			border: 1px solid #d8d8d8;
+			background: none;
+			border: $tools-page-border;
 			border-radius: 50%;
 			align-self: end;
 			cursor: pointer;
@@ -42,20 +46,18 @@
 			transition: all 0.3s ease;
 			display: none;
 
-			@media (max-width: 782px) {
+			@media (max-width: $tools-page-breakpoint) {
 				display: flex;
 			}
 
 			&:hover {
 				background: #f0f0f0;
-				border-radius: 4px;
-				fill: unset;
 			}
 		}
 
 		&__overlay {
 
-			@media (max-width: 782px) {
+			@media (max-width: $tools-page-breakpoint) {
 				position: fixed;
 				inset: 0;
 				background-color: rgba(0, 0, 0, 0.4);
@@ -68,7 +70,7 @@
 		 * Styes used for the tabs for the main settings page.
 		  */
 		&__container {
-			margin: 20px auto 32px;
+			margin: 2rem auto;
 			padding: 0 20px;
 			max-width: 1440px;
 			display: flex;
@@ -76,22 +78,27 @@
 			gap: 2em;
 			position: relative;
 
+			@media (max-width: $tools-page-breakpoint) {
+				margin: 20px auto;
+			}
+
 			&__tabs {
 				margin-bottom: 2rem;
 				display: flex;
 				flex-direction: column;
 				gap: 0.5rem;
 
-				@media (max-width: 782px) {
+				@media (max-width: $tools-page-breakpoint) {
 					position: fixed;
 					top: 46px;
 					left: 0;
 					width: 270px;
 					height: 100vh;
-					background: #fff;
+					background: $tools-page-color-white;
 					padding: 1rem;
 					box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 					transform: translateX(-100%);
+					overflow: auto;
 					transition: transform 0.3s ease-in-out;
 					z-index: 1001;
 
@@ -119,7 +126,7 @@
 
 						&.active {
 							color: rgba(33, 33, 33, 1);
-							background-color: #fff;
+							background-color: $tools-page-color-white;
 						}
 
 						&:focus {
