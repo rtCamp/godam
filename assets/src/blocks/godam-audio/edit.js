@@ -36,6 +36,18 @@ import './editor.scss';
 
 const ALLOWED_MEDIA_TYPES = [ 'audio' ];
 
+/**
+ * Edit component for the GoDAM Audio block.
+ *
+ * @param {Object}   props                   - The properties passed to the component.
+ * @param {Object}   props.attributes        - The block attributes.
+ * @param {string}   props.className         - The class name for the component for styling.
+ * @param {Function} props.setAttributes     - Function to update the block's attributes.
+ * @param {boolean}  props.isSelected        - Whether the block is currently selected.
+ * @param {Function} props.insertBlocksAfter - Function to insert blocks after the current block.
+ *
+ * @return {JSX.Element} The rendered audio block component with optional controls and captions.
+ */
 function AudioEdit( {
 	attributes,
 	className,
