@@ -19,6 +19,22 @@ class Video_Permalinks {
 	use Singleton;
 
 	/**
+	 * Option slug for video post settings.
+	 *
+	 * @since n.e.x.t
+	 * @var string
+	 */
+	const OPTION_SLUG = 'rtgodam_video_post_settings';
+
+	/**
+	 * Default video slug.
+	 *
+	 * @since n.e.x.t
+	 * @var string
+	 */
+	const DEFAULT_VIDEO_SLUG = 'videos';
+
+	/**
 	 * Construct method.
 	 * 
 	 * @return void
@@ -49,26 +65,16 @@ class Video_Permalinks {
 	 * @return void
 	 */
 	public function register_permalink_settings() {
+		// Combined settings for video slug and visibility options.
 		register_setting(
 			'permalink',
-			'rtgodam_video_slug',
-			array(
-				'type'              => 'string',
-				'description'       => __( 'GoDAM Video slug', 'godam' ),
-				'sanitize_callback' => 'sanitize_title',
-				'default'           => 'videos',
-			)
-		);
-		
-		// Settings for archive and single visibility.
-		register_setting(
-			'permalink',
-			'rtgodam_video_post_settings',
+			self::OPTION_SLUG,
 			array(
 				'type'              => 'object',
-				'description'       => __( 'GoDAM Video post visibility settings', 'godam' ),
+				'description'       => __( 'GoDAM Video post settings', 'godam' ),
 				'sanitize_callback' => array( $this, 'sanitize_video_post_settings' ),
 				'default'           => array(
+					'video_slug'    => self::DEFAULT_VIDEO_SLUG,
 					'allow_archive' => false,
 					'allow_single'  => false,
 				),
@@ -126,15 +132,23 @@ class Video_Permalinks {
 
 	/**
 	 * Video slug field.
-	 *
+	 * 
 	 * @return void
 	 */
 	public function video_slug_field() {
-		$value = get_option( 'rtgodam_video_slug', 'videos' );
+		$settings = get_option( self::OPTION_SLUG, array( 'video_slug' => self::DEFAULT_VIDEO_SLUG ) );
+
+		// If video_slug key doesn't exist in currently stored settings, check old option for display.
+		if ( ! isset( $settings['video_slug'] ) ) {
+			$value = get_option( 'rtgodam_video_slug', self::DEFAULT_VIDEO_SLUG );
+		} else {
+			$value = $settings['video_slug'];
+		}
+
 		?>
 		<input 
 			type='text' 
-			name='rtgodam_video_slug' 
+			name='rtgodam_video_post_settings[video_slug]' 
 			id='rtgodam_video_slug' 
 			value='<?php echo esc_attr( $value ); ?>' 
 			class='regular-text code'
@@ -153,13 +167,7 @@ class Video_Permalinks {
 	 * @return void
 	 */
 	public function video_archive_visibility_field() {
-		$settings = get_option(
-			'rtgodam_video_post_settings',
-			array(
-				'allow_archive' => false,
-				'allow_single'  => false,
-			) 
-		);
+		$settings = get_option( self::OPTION_SLUG, array( 'allow_archive' => false ) );
 		$value    = isset( $settings['allow_archive'] ) ? $settings['allow_archive'] : false;
 		?>
 		<input 
@@ -183,13 +191,7 @@ class Video_Permalinks {
 	 * @return void
 	 */
 	public function video_single_visibility_field() {
-		$settings = get_option(
-			'rtgodam_video_post_settings',
-			array(
-				'allow_archive' => false,
-				'allow_single'  => false,
-			) 
-		);
+		$settings = get_option( self::OPTION_SLUG, array( 'allow_single' => false ) );
 		$value    = isset( $settings['allow_single'] ) ? $settings['allow_single'] : false;
 		?>
 		<input 
@@ -224,41 +226,45 @@ class Video_Permalinks {
 		// Nonce verification.
 		if ( isset( $_POST['permalink_structure'] ) && isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( $_POST['_wpnonce'] ), 'update-permalink' ) ) {
 			
-			// Save video slug if it exists in the POST data.
-			if ( isset( $_POST['rtgodam_video_slug'] ) ) {
-				$video_slug = sanitize_title( wp_unslash( $_POST['rtgodam_video_slug'] ) );
+			// Get current settings with migration fallback for video_slug.
+			$current_settings = get_option( self::OPTION_SLUG, false );
+			if ( false === $current_settings || ! isset( $current_settings['video_slug'] ) ) {
+				$old_video_slug = get_option( 'rtgodam_video_slug', self::DEFAULT_VIDEO_SLUG );
 				
-				// Get the old value to compare.
-				$old_value = get_option( 'rtgodam_video_slug', 'videos' );
-				
-				// Only update if changed.
-				if ( $old_value !== $video_slug ) {
-					update_option( 'rtgodam_video_slug', $video_slug );
-					
-					// Flush rewrite rules to apply new video slug.
-					$should_flush = true;
+				// If settings don't exist, create new array, otherwise preserve existing settings.
+				if ( false === $current_settings ) {
+					$current_settings = array(
+						'video_slug'    => $old_video_slug,
+						'allow_archive' => false,
+						'allow_single'  => false,
+					);
+				} else {
+					// Settings exist but missing video_slug, add it.
+					$current_settings['video_slug'] = $old_video_slug;
 				}
+				
+				// Delete old option since we've migrated its value.
+				delete_option( 'rtgodam_video_slug' );
 			}
 			
-			// Save archive and single visibility options.
-			$current_settings = get_option(
-				'rtgodam_video_post_settings',
-				array(
-					'allow_archive' => false,
-					'allow_single'  => false,
-				) 
-			);
-			$new_settings     = array();
+			$new_settings = array();
+			
+			// Handle video slug.
+			if ( isset( $_POST[ self::OPTION_SLUG ]['video_slug'] ) ) {
+				$new_settings['video_slug'] = sanitize_title( wp_unslash( $_POST[ self::OPTION_SLUG ]['video_slug'] ) );
+			} else {
+				$new_settings['video_slug'] = isset( $current_settings['video_slug'] ) ? $current_settings['video_slug'] : self::DEFAULT_VIDEO_SLUG;
+			}
 			
 			// Handle archive visibility.
-			$new_settings['allow_archive'] = isset( $_POST['rtgodam_video_post_settings']['allow_archive'] ) ? true : false;
+			$new_settings['allow_archive'] = isset( $_POST[ self::OPTION_SLUG ]['allow_archive'] ) ? true : false;
 			
 			// Handle single page visibility.
-			$new_settings['allow_single'] = isset( $_POST['rtgodam_video_post_settings']['allow_single'] ) ? true : false;
+			$new_settings['allow_single'] = isset( $_POST[ self::OPTION_SLUG ]['allow_single'] ) ? true : false;
 			
-			// Check if settings changed.
+			// Check if any settings changed.
 			if ( $current_settings !== $new_settings ) {
-				update_option( 'rtgodam_video_post_settings', $new_settings );
+				update_option( self::OPTION_SLUG, $new_settings );
 				$should_flush = true;
 			}
 			
@@ -280,6 +286,13 @@ class Video_Permalinks {
 	 */
 	public function sanitize_video_post_settings( $input ) {
 		$sanitized = array();
+		
+		// Sanitize video slug.
+		if ( isset( $input['video_slug'] ) ) {
+			$sanitized['video_slug'] = sanitize_title( $input['video_slug'] );
+		} else {
+			$sanitized['video_slug'] = self::DEFAULT_VIDEO_SLUG;
+		}
 		
 		// Sanitize allow_archive setting.
 		if ( isset( $input['allow_archive'] ) ) {
