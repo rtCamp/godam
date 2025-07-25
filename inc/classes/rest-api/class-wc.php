@@ -879,51 +879,25 @@ class WC extends Base {
 			$type         = $product->get_type();
 			$name_display = $product->get_name();
 
-			if ( 'variable' === $type ) {
-
-				// Get variation prices.
-				$min_price = $product->get_variation_price( 'min', true );
-				$max_price = $product->get_variation_price( 'max', true );
-	
-				if ( $min_price === $max_price ) {
-					$price_display = wc_price( $min_price );
-				} else {
-					$price_display = wc_price( $min_price ) . ' - ' . wc_price( $max_price );
-				}       
-			} elseif ( 'grouped' === $type ) {
+			if ( 'grouped' === $type ) {
 	
 				$child_ids   = $product->get_children();
 				$child_count = count( $child_ids );
 			
-				// Get all child prices.
-				$child_prices = array_map(
-					function ( $child_id ) {
-						$child_product = wc_get_product( $child_id );
-						return $child_product ? $child_product->get_price() : null;
-					},
-					$child_ids 
-				);
-			
-				$child_prices = array_filter( $child_prices );
-				$min_price    = count( $child_prices ) ? min( $child_prices ) : 0;
-			
-				// Format name and price.
-				$name_display  = $product->get_name() . " ({$child_count} items)";
-				$price_display = $min_price > 0 ? 'From: ' . wc_price( $min_price ) . ' + more' : 'N/A';
-	
-			} else {
-	
-				$price_display = wc_price( $product->get_price() );
+				// Format name.
+				$name_display = $product->get_name() . " ({$child_count} items)";
 			}
 
 			if ( $product ) {
 				$product_data = array(
-					'id'    => $product->get_id(),
-					'name'  => $name_display,
-					'type'  => $type,
-					'price' => $price_display,
-					'image' => wp_get_attachment_url( $product->get_image_id() ) ?: wc_placeholder_img_src(),
-					'link'  => get_permalink( $product->get_id() ),
+					'id'                    => $product->get_id(),
+					'name'                  => $name_display,
+					'type'                  => $type,
+					'price'                 => $product->get_price_html(),
+					'image'                 => $product->get_image(),
+					'link'                  => get_permalink( $product->get_id() ),
+					'rating_customer_count' => $product->get_rating_count(),
+					'rating_average'        => $product->get_average_rating(),
 				);
 
 				/**
