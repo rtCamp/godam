@@ -9,10 +9,8 @@
  * - Binds click events to `.main-cta` buttons.
  * - Displays and positions dynamic dropdown menus for products with additional options.
  * - Sends AJAX request to add products to WooCommerce cart via `godamVars.addToCartAjax`.
- * - Displays a mini-cart sidebar with live cart fragments on successful addition.
+ * - Displays a mini-cart sidebar with WooCommerce Mini Cart.
  * - Falls back to redirection if the mini-cart fails or is not applicable.
- * - Creates and manages the mini-cart DOM structure and overlay backdrop if not already present.
- * - Allows users to close the mini-cart via close buttons, backdrop click, or continue shopping.
  *
  * Requires:
  * - WordPress WooCommerce AJAX API for adding product to cart.
@@ -22,7 +20,7 @@
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { dispatch } from '@wordpress/data';
 
 /* global godamVars */
 /* eslint-disable eslint-comments/disable-enable-pair */
@@ -114,21 +112,8 @@ export function initMinicartAndCtaDropdown() {
 	 * @param {string}        [productURL]             - The fallback product URL to redirect to if add-to-cart fails.
 	 */
 	function addToCart( productId, cartAction = 'mini-cart', productURL ) {
-		fetch( godamVars.addToCartAjax, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-			body: new URLSearchParams( { product_id: productId, quantity: 1 } ),
-		} )
-			.then( ( res ) => res.json() )
-			.then( ( data ) => {
-				if ( data.error ) {
-					// Redirect to product page in new tab.
-					if ( productURL ) {
-						window.open( productURL, '_blank' );
-					}
-					return;
-				}
-
+		dispatch( godamVars.addToCartAjax ).addItemToCart( productId, 1 )
+			.then( () => {
 				// Skip mini cart if cartAction is redirect.
 				if ( cartAction === 'redirect' ) {
 					if ( cartTab && ! cartTab.closed ) {
@@ -141,71 +126,17 @@ export function initMinicartAndCtaDropdown() {
 				}
 
 				// Show mini-cart.
-				const miniCartWrapper = getOrCreateMiniCartWrapper();
-				const themeCartFragment = data.fragments[ 'div.widget_shopping_cart_content' ];
-
-				let cartContentHTML = `
-					<div class="mini-cart-header">
-						<h3>${ __( 'Cart', 'godam' ) }</h3>
-						<button id="close-mini-cart" aria-label="${ __( 'Close cart', 'godam' ) }">×</button>
-					</div>
-				`;
-
-				if ( themeCartFragment ) {
-					cartContentHTML += themeCartFragment;
-				} else {
-					// Full fallback UI (View Cart + Checkout + Continue).
-					cartContentHTML += `
-						<p>${ __( 'Your cart has been updated.', 'godam' ) }</p>
-						<p><a href="/cart/">${ __( 'Go to cart', 'godam' ) }</a></p>
-						<div class="mini-cart-footer">
-							<a href="/cart/" class="button view-cart" aria-label="${ __( 'View Cart', 'godam' ) }">${ __( 'View Cart', 'godam' ) }</a>
-							<a href="/checkout/" class="button checkout" aria-label="${ __( 'Checkout', 'godam' ) }">${ __( 'Checkout', 'godam' ) }</a>
-							<button class="button continue-shopping" id="continue-shopping-btn" aria-label="${ __( 'Continue Shopping', 'godam' ) }">${ __( 'Continue Shopping', 'godam' ) }</button>
-						</div>
-					`;
+				const miniCartButton = document.querySelector( '.wc-block-mini-cart__button' );
+				if ( miniCartButton ) {
+					// Open mini cart of woocommerce.
+					miniCartButton.click();
 				}
-
-				miniCartWrapper.innerHTML = cartContentHTML;
-				document.body.classList.add( 'mini-cart-open' );
-
-				document.getElementById( 'close-mini-cart' ).addEventListener( 'click', closeMiniCart );
-				document.querySelector( '.mini-cart-backdrop' )?.addEventListener( 'click', closeMiniCart );
-				document.getElementById( 'continue-shopping-btn' )?.addEventListener( 'click', closeMiniCart );
+			} )
+			.catch( () => {
+				// Redirect to product page in new tab.
+				if ( productURL ) {
+					window.open( productURL, '_blank' );
+				}
 			} );
-	}
-
-	/**
-	 * Retrieves the existing mini cart sidebar and backdrop elements,
-	 * or creates and appends them to the DOM if they don't exist.
-	 *
-	 * @return {HTMLElement} The mini cart sidebar element.
-	 */
-	function getOrCreateMiniCartWrapper() {
-		let sidebar = document.querySelector( '#mini-cart-sidebar' );
-		let backdrop = document.querySelector( '.mini-cart-backdrop' );
-
-		if ( ! sidebar ) {
-			sidebar = document.createElement( 'div' );
-			sidebar.id = 'mini-cart-sidebar';
-			sidebar.className = 'mini-cart-sidebar';
-			document.body.appendChild( sidebar );
-		}
-
-		if ( ! backdrop ) {
-			backdrop = document.createElement( 'div' );
-			backdrop.className = 'mini-cart-backdrop';
-			document.body.appendChild( backdrop );
-		}
-
-		return sidebar;
-	}
-
-	/**
-	 * Closes the mini cart by removing the `mini-cart-open` class from the body.
-	 * Typically used to hide the sidebar and backdrop.
-	 */
-	function closeMiniCart() {
-		document.body.classList.remove( 'mini-cart-open' );
 	}
 }

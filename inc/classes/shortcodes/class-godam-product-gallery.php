@@ -37,6 +37,7 @@ class GoDAM_Product_Gallery {
 				}
 			} 
 		);
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_default_button_styles' ), 20 );
 
 		add_action( 'wp_ajax_godam_get_product_html', array( $this, 'godam_get_product_html_callback' ) );
 		add_action( 'wp_ajax_nopriv_godam_get_product_html', array( $this, 'godam_get_product_html_callback' ) );
@@ -68,7 +69,7 @@ class GoDAM_Product_Gallery {
 				'namespaceRoot'        => '/wp-json/godam/v1',
 				'videoShortcodeEP'     => '/video-shortcode',
 				'productByIdsEP'       => '/wcproducts-by-ids',
-				'addToCartAjax'        => '/?wc-ajax=add_to_cart',
+				'addToCartAjax'        => 'wc/store/cart',
 				'ajaxUrl'              => admin_url( 'admin-ajax.php' ),
 				'getProductHtmlAction' => 'godam_get_product_html',
 				'productGalleryNonce'  => wp_create_nonce( 'godam_get_product_html' ),
@@ -78,6 +79,79 @@ class GoDAM_Product_Gallery {
 		
 		wp_enqueue_script( 'godam-product-gallery-script' );
 	}
+
+	/**
+	 * Enqueues default button styles for specific Godam components using the active theme's design tokens if they are not available.
+	 *
+	 * The styles apply specifically to Godam UI components for both parent and child themes using
+	 * `body.wp-theme-{slug}` and `body.wp-child-theme-{slug}` selectors.
+	 */
+	public function enqueue_default_button_styles() {
+		$theme      = wp_get_theme();
+		$theme_slug = sanitize_html_class( strtolower( $theme->get_stylesheet() ) );
+	
+		// Step 1: Get theme settings.
+		$settings = wp_get_global_settings();
+	
+		// Step 2: Resolve color slugs.
+		$available_colors = isset( $settings['color']['palette']['theme'] ) ? $settings['color']['palette']['theme'] : array();
+		$available_colors = wp_list_pluck( $available_colors, 'slug' );
+	
+		$find_slug = function ( $candidates, $available ) {
+			foreach ( $candidates as $needle ) {
+				foreach ( $available as $haystack ) {
+					if ( stripos( $haystack, $needle ) !== false ) {
+						return $haystack;
+					}
+				}
+			}
+			return null;
+		};
+	
+		$foreground_slug = $find_slug( array( 'base', 'foreground', 'contrast', 'secondary', 'text', 'white' ), $available_colors );
+		$background_slug = $find_slug( array( 'primary', 'accent', 'background', 'black' ), $available_colors );
+	
+		$fg_var = $foreground_slug ? "--wp--preset--color--$foreground_slug" : '--wp--preset--color--secondary';
+		$bg_var = $background_slug ? "--wp--preset--color--$background_slug" : '--wp--preset--color--primary';
+	
+		// Step 3: Resolve font size.
+		$available_font_sizes = isset( $settings['typography']['fontSizes']['theme'] ) ? $settings['typography']['fontSizes']['theme'] : array();
+		$font_size_slug       = $find_slug( array( 'medium', 'normal', 'base' ), wp_list_pluck( $available_font_sizes, 'slug' ) );
+		$font_size_var        = $font_size_slug ? "--wp--preset--font-size--$font_size_slug" : '--wp--preset--font-size--medium';
+	
+		// Step 4: Resolve border radius (uses spacing presets).
+		$available_spacing = isset( $settings['spacing']['spacingSizes']['theme'] ) ? $settings['spacing']['spacingSizes']['theme'] : array();
+		$radius_slug       = $find_slug( array( 'radius', 'rounded' ), wp_list_pluck( $available_spacing, 'slug' ) );
+		$radius_var        = $radius_slug ? "--wp--preset--spacing--$radius_slug" : '--wp--preset--spacing--rounded';
+	
+		// Step 5: Build inline CSS.
+		$inline_css = "
+			body.wp-theme-{$theme_slug} .godam-sidebar-close,
+			body.wp-theme-{$theme_slug} .godam-product-modal-close,
+			body.wp-theme-{$theme_slug} .godam-product-sidebar-add-to-cart-button,
+			body.wp-theme-{$theme_slug} .godam-thumbnail-nav,
+			body.wp-theme-{$theme_slug} .rtgodam-product-video-gallery-slider-modal-content--cart-basket .wc-block-mini-cart__button,
+			body.wp-theme-{$theme_slug} .godam-product-video-gallery-sidebar--cart-basket .wc-block-mini-cart__button,
+			body.wp-theme-{$theme_slug} .godam-product-video-gallery--cart-basket .wc-block-mini-cart__button,
+			body.wp-child-theme-{$theme_slug} .godam-sidebar-close,
+			body.wp-child-theme-{$theme_slug} .godam-product-modal-close,
+			body.wp-child-theme-{$theme_slug} .godam-product-sidebar-add-to-cart-button,
+			body.wp-child-theme-{$theme_slug} .godam-thumbnail-nav,
+			body.wp-child-theme-{$theme_slug} .rtgodam-product-video-gallery-slider-modal-content--cart-basket .wc-block-mini-cart__button,
+			body.wp-child-theme-{$theme_slug} .godam-product-video-gallery-sidebar--cart-basket .wc-block-mini-cart__button,
+			body.wp-child-theme-{$theme_slug} .godam-product-video-gallery--cart-basket .wc-block-mini-cart__button {
+				background-color: var({$bg_var}, #000000);
+				color: var({$fg_var}, #ffffff);
+				font-size: var({$font_size_var}, 16px);
+				border-radius: var({$radius_var}, 0px);
+				font-family: inherit;
+				cursor: pointer;
+				padding: 10px;
+			}
+		";
+	
+		wp_add_inline_style( 'wp-block-library', $inline_css );
+	}   
 
 	/**
 	 * Render callback for the [godam_product_gallery] shortcode.
@@ -475,6 +549,11 @@ class GoDAM_Product_Gallery {
 			} elseif ( 'grid' === $atts['layout'] ) {
 				echo '</div></div>'; // .godam-grid-wrapper ends, .grid-container ends.
 			}
+
+			// Add Mini Cart for fetching it when CTA cart action is Mini Cart.
+			echo '<div class="godam-product-video-gallery--cart-basket hidden">';
+				echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore
+			echo '</div>';
 			
 			echo '</div>'; // .godam-product-gallery ends.
 
@@ -527,32 +606,70 @@ class GoDAM_Product_Gallery {
 		return "#{$hex}";
 	}
 
+	/**
+	 * Generates and echoes the appropriate video modal markup based on CTA settings and product data.
+	 *
+	 * This function decides which modal markup to render for a product gallery video, depending on
+	 * whether the CTA (Call-To-Action) is enabled and where it should be displayed.
+	 *
+	 * Behavior:
+	 * - If CTA is enabled and positioned 'inside' or 'below-inside':
+	 *   - Parses the `$product_ids` into an array.
+	 *   - If multiple products are present, renders a modal showing all products.
+	 *   - If only one product is present, renders a single product modal with optional timestamping.
+	 * - If CTA is disabled or positioned differently, renders a basic video modal.
+	 *
+	 * @param bool   $cta_enabled         Whether CTA is enabled.
+	 * @param string $cta_display_position Position of the CTA (e.g., 'inside', 'below-inside').
+	 * @param int    $video_id            The ID of the video.
+	 * @param string $product_ids         Comma-separated list of product IDs.
+	 * @param bool   $timestamped         Whether the modal should be timestamp-aware (default false).
+	 */
 	public function generate_product_gallery_video_modal_markup( $cta_enabled, $cta_display_position, $video_id, $product_ids, $timestamped = false ) {
 
-		if( $cta_enabled && ( 'inside' === $cta_display_position || 'below-inside' === $cta_display_position ) ) {
+		if ( $cta_enabled && ( 'inside' === $cta_display_position || 'below-inside' === $cta_display_position ) ) {
 
 			$product_ids_array = array_map( 'absint', explode( ',', $product_ids ) );
-			$no_of_products = count( $product_ids_array ) > 1;
+			$no_of_products    = count( $product_ids_array ) > 1;
 
-			// Mutiple - show all products
+			// Mutiple - show all products.
 			if ( $no_of_products ) {
-				echo $this->generate_cta_enabled_muliple_product_modal_markup( $product_ids_array, $video_id );
+				echo wp_kses_post( $this->generate_cta_enabled_muliple_product_modal_markup( $product_ids_array, $video_id ) );
 			} else {
-				// single - show full product
-				echo $this->generate_cta_enabled_single_product_modal_markup( $product_ids, $video_id, $timestamped );
-			}
-
+				// single - show full product.
+				echo wp_kses_post( $this->generate_cta_enabled_single_product_modal_markup( $product_ids, $video_id, $timestamped ) );
+			}       
 		} else {
-			// video modal markup
-			echo $this->generate_video_modal_markup( $video_id );
+			// video modal markup.
+			echo wp_kses_post( $this->generate_video_modal_markup( $video_id ) );
 		}
 	}
 
+	/**
+	 * Outputs the modal HTML markup for videos with multiple associated products and CTA enabled.
+	 *
+	 * This private function generates the complete modal structure when a video is linked to 
+	 * multiple products and the Call-To-Action (CTA) is active. It includes:
+	 * - A modal container with a close button.
+	 * - A video placeholder with a play icon and swipe hints.
+	 * - A sidebar containing:
+	 *   - A header showing the label "Products seen in the video".
+	 *   - A WooCommerce mini-cart block.
+	 *   - A close button for the sidebar.
+	 *   - A placeholder for dynamically loaded product content.
+	 *
+	 * The product IDs are safely cast to integers and embedded as a comma-separated string 
+	 * in the `data-product-ids` attribute of the sidebar for client-side JavaScript access.
+	 *
+	 * @param array $product_ids Array of product IDs associated with the video.
+	 * @param int   $video_id    The ID of the video for which the modal is being rendered.
+	 */
 	private function generate_cta_enabled_muliple_product_modal_markup( $product_ids, $video_id ) {
+		$data_product_ids = implode( ',', array_map( 'absint', (array) $product_ids ) );
 		?>
-			<div class="godam-product-modal-container" data-modal-video-id="<?php echo $video_id ?>"> <!-- overlay container -->
+			<div class="godam-product-modal-container" data-modal-video-id="<?php echo esc_attr( $video_id ); ?>"> <!-- overlay container -->
 				<div class="close">
-					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ) ?>">
+					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
 					</button>
 				</div>
@@ -575,17 +692,17 @@ class GoDAM_Product_Gallery {
 					</div>
 					<div class="godam-product-sidebar" data-product-ids="<?php echo esc_attr( $data_product_ids ); ?>">
 						<div class="godam-sidebar-header">
-							<h3 class="godam-header-text"><?php esc_html_e( 'Products seen in the video', 'godam' ) ?></h3>
-
+							<h3 class="godam-header-text"><?php esc_html_e( 'Products seen in the video', 'godam' ); ?></h3>
+			
 							<div class="godam-sidebar-header-actions">
-							<div class="godam-product-video-gallery-sidebar--cart-basket">
-								<?php
-									echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore
-								?>
-							</div>
-							<button class="godam-sidebar-close" aria-label="<?php __( 'Close sidebar', 'godam' ) ?>">
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
-							</button>
+								<div class="godam-product-video-gallery-sidebar--cart-basket">
+									<?php
+										echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore
+									?>
+								</div>
+								<button class="godam-sidebar-close" aria-label="<?php __( 'Close sidebar', 'godam' ); ?>">
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
+								</button>
 							</div>
 						</div>
 						<div class="godam-sidebar-product">
@@ -597,14 +714,34 @@ class GoDAM_Product_Gallery {
 		<?php
 	}
 
+	/**
+	 * Outputs the modal HTML markup for a video with a single associated product and CTA enabled.
+	 *
+	 * This private function renders a modal structure specifically for a video linked to one product.
+	 * It includes:
+	 * - A modal container with `data-modal-video-id`, `data-modal-timestamped`, and `data-modal-attached-product-id`.
+	 * - A close button to dismiss the modal.
+	 * - A video display section with a loading animation and swipe indicators.
+	 * - A sidebar section containing:
+	 *   - A hidden heading for accessibility.
+	 *   - A WooCommerce mini-cart block.
+	 *   - A close button for the sidebar.
+	 *   - A placeholder for dynamic product content.
+	 *
+	 * The `$timestamped` value defaults to `0` if not set, and all dynamic attributes are safely rendered.
+	 *
+	 * @param int  $product_id   The single product ID associated with the video.
+	 * @param int  $video_id     The ID of the video the modal is for.
+	 * @param bool $timestamped  Whether the modal should include timestamping (default false).
+	 */
 	private function generate_cta_enabled_single_product_modal_markup( $product_id, $video_id, $timestamped ) {
-		if(!$timestamped) {
+		if ( ! $timestamped ) {
 			$timestamped = 0;
 		}
 		?>
-			<div class="godam-product-modal-container" data-modal-video-id="<?php echo $video_id ?>" data-modal-timestamped="<?php echo $timestamped ?>" data-modal-attached-product-id="<?php echo $product_id ?>"> <!-- overlay container -->
+			<div class="godam-product-modal-container" data-modal-video-id="<?php echo esc_attr( $video_id ); ?>" data-modal-timestamped="<?php echo esc_attr( $timestamped ); ?>" data-modal-attached-product-id="<?php echo esc_attr( $product_id ); ?>"> <!-- overlay container -->
 			<div class="close">
-					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ) ?>">
+					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
 					</button>
 				</div>
@@ -625,7 +762,7 @@ class GoDAM_Product_Gallery {
 							</div>
 						</div>
 					</div>
-					<div class="godam-product-sidebar single-product-sidebar">
+					<div class="godam-product-sidebar single-product-sidebar" data-product-ids="<?php echo esc_attr( $product_id ); ?>">
 						<div class="godam-sidebar-header">
 							<h3 class="godam-header-text hidden"><?php esc_html_e( 'Products seen in the video', 'godam' ); ?></h3>
 
@@ -649,11 +786,24 @@ class GoDAM_Product_Gallery {
 		<?php
 	}
 
+	/**
+	 * Outputs the modal HTML markup for a video without any associated products or CTA.
+	 *
+	 * This private function renders a simplified video modal that contains:
+	 * - A modal container with `data-modal-video-id` to identify the associated video.
+	 * - A close button to dismiss the modal.
+	 * - A video display section with loading animation and a play icon.
+	 * - Swipe hint overlay indicating vertical interaction.
+	 *
+	 * This markup is used when no product or CTA is linked to the video, focusing solely on video playback.
+	 *
+	 * @param int $video_id The ID of the video for which the modal is being rendered.
+	 */
 	private function generate_video_modal_markup( $video_id ) {
 		?>
-		<div class="godam-product-modal-container " data-modal-video-id="<?php echo $video_id ?>"> <!-- overlay container -->
+		<div class="godam-product-modal-container " data-modal-video-id="<?php echo esc_attr( $video_id ); ?>"> <!-- overlay container -->
 		<div class="close">
-					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ) ?>">
+					<button class="godam-product-modal-close" aria-label="<?php __( 'Close modal', 'godam' ); ?>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
 					</button>
 				</div>	
@@ -676,7 +826,7 @@ class GoDAM_Product_Gallery {
 				</div>
 			</div>
 		</div>
-	<?php
+		<?php
 	}
 
 	/**
@@ -716,22 +866,90 @@ class GoDAM_Product_Gallery {
 		}
 	
 		setup_postdata( $post );
+
+		$product = wc_get_product( $product_id );
+
+		// Get the main product image first.
+		$main_image_id = $product->get_image_id();
+		if ( $main_image_id ) {
+			$main_image_url = wp_get_attachment_image_url( $main_image_id, 'full' );
+			if ( $main_image_url ) {
+				$product_images[] = $main_image_url;
+			}
+		}
+
+		// Get all gallery images.
+		$gallery_image_ids = $product->get_gallery_image_ids();
+		foreach ( $gallery_image_ids as $gallery_image_id ) {
+			$gallery_image_url = wp_get_attachment_image_url( $gallery_image_id, 'full' );
+			if ( $gallery_image_url ) {
+				$product_images[] = $gallery_image_url;
+			}
+		}
+
+		// Fallback to placeholder if no images found.
+		if ( empty( $product_images ) ) {
+			$product_images[] = wc_placeholder_img_src( 'full' );
+		}
 	
 		ob_start();
 		?>
-		<div class="single-product">
-			<?php
-			
+		<div class="godam-image-gallery">
+			<!-- main image display -->
+			<div class="godam-main-image">
+				<img src="<?php echo esc_url( $product_images[0] ); ?>" alt="<?php echo esc_attr( $product->get_name() ); ?>" />
+			</div>
 
-			
-			?>
+			<!-- thumbnail carousel with horizontal scroll -->
+			<div class="godam-thumbnail-carousel">
+				<button class="godam-thumbnail-nav godam-thumbnail-prev" aria-label="<?php echo esc_attr__( 'Previous thumbnails', 'godam' ); ?>">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="M15 19V5l-8 7z"></path></svg>
+				</button>
+				
+				<div class="godam-thumbnail-container">
+					<div class="godam-thumbnail-track">
+						<?php foreach ( $product_images as $index => $image_url ) : ?>
+							<div class="godam-thumbnail-item <?php echo ( 0 === $index ) ? 'active' : ''; ?>" data-index="<?php echo esc_attr( $index ); ?>">
+								<?php // translators: %d refers to the image index (1-based). ?>
+								<img class="godam-thumbnail-image" src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( sprintf( __( 'Image %d', 'godam' ), $index + 1 ) ); ?>">
+							</div>
+						<?php endforeach; ?>
+					</div>
+				</div>
+				
+				<button class="godam-thumbnail-nav godam-thumbnail-next" aria-label="<?php echo esc_attr__( 'Next thumbnails', 'godam' ); ?>">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="m9 19 8-7-8-7z"></path></svg>
+				</button>
+			</div>
+		</div>
+
+		<h3><?php echo esc_html( $product->get_name() ); ?></h3>
+		<p><?php echo wp_kses_post( $product->get_price_html() ); ?></p>
+		<p><?php echo wp_kses_post( $product->get_short_description() ); ?></p>
+		<?php
+		// Replace Woo's form/button with Product Sidebar Add to Cart button or Product Sidebar View Product button.
+		$product_url = get_permalink( $product_id );
+		?>
+		<div class="single-product-sidebar-actions">
+			<?php if ( $product->is_type( 'variable' ) || $product->is_type( 'grouped' ) || $product->is_type( 'external' ) ) : ?>
+				<a class="product-sidebar-view-product-button" href="<?php echo esc_url( $product_url ); ?>" target="_blank" rel="noopener noreferrer">
+					<?php echo esc_html__( 'View Product', 'godam' ); ?>
+				</a>
+			<?php else : ?>
+				<button class="product-sidebar-add-to-cart-button" data-product-id="<?php echo esc_attr( $product_id ); ?>">
+					<?php echo esc_html__( 'Add to Cart', 'godam' ); ?>
+				</button>
+			<?php endif; ?>
+
+			<div class="rtgodam-product-video-gallery-slider-modal-content--cart-basket">
+				<?php echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore ?>
+			</div>
 		</div>
 		<?php
+		
 		wp_reset_postdata();
 	
-		$html = ob_get_clean();
-
-		error_log($html);
+		$html = ob_get_clean();     
 
 		// Add filter to change html markup for product sidebar.
 		$html = apply_filters( 'rtgodam_ajax_product_html', $html, $product_id );
