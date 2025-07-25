@@ -604,6 +604,7 @@ class GoDAM_Product_Gallery {
 								?>
 								<div class="godam-sidebar-product-item">
 									<div class="godam-sidebar-product-image"><?php echo $product_image; ?></div>
+									<div class="godam-sidebar-product-content">
 									<div class="godam-sidebar-product-title"><?php echo esc_html( $product_title ); ?></div>
 									<div class="godam-sidebar-product-price"><?php echo wp_kses_post( $product_price ); ?></div>
 									<?php
@@ -628,6 +629,7 @@ class GoDAM_Product_Gallery {
 										<?php
 									}
 									?>
+									</div>
 								</div>
 							<?php endforeach; ?>
 						</div>
@@ -699,6 +701,7 @@ class GoDAM_Product_Gallery {
 							}
 							?>
 
+							<div class="mobile-product-sidebar-content">
 							<div class="godam-image-gallery">
 								<!-- main image display -->
 								<div class="godam-main-image">
@@ -727,10 +730,14 @@ class GoDAM_Product_Gallery {
 								</div>
 							</div>
 
-							<h3><?php echo esc_html( $product->get_name() ); ?></h3>
-							<p><?php echo wp_kses_post( $product->get_price_html() ); ?></p>
-							<p><?php echo wp_kses_post( $product->get_short_description() ); ?></p>
+							<div class="godam-product-sidebar-single-content">
+								<h3><?php echo esc_html( $product->get_name() ); ?></h3>
+								<p class="godam-product-sidebar-single-price"><?php echo wp_kses_post( $product->get_price_html() ); ?></p>
+								<p class="godam-product-sidebar-single-description"><?php echo wp_kses_post( $product->get_short_description() ); ?></p>
+							</div>
+							</div>
 
+							
 							<?php
 							// Replace Woo's form/button with Product Sidebar Add to Cart button or Product Sidebar View Product button.
 							$product_url = get_permalink( $product_id );

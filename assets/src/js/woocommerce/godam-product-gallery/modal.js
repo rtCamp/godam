@@ -152,7 +152,7 @@ export function initVideoModal() {
 		}
 
 		/** Scroll/swipe nav for modal */
-		initScrollSwipeNavigation( modal, currentGallery, sidebarModal, ctaEnabled, ctaDisplayPosition );
+		// initScrollSwipeNavigation( modal, currentGallery, sidebarModal, ctaEnabled, ctaDisplayPosition );
 	} );
 }
 
