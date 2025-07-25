@@ -371,7 +371,7 @@ const engagementStore = {
  * @return {Array} The updated comment tree.
  */
 function updateCommentTree( comments, comment, data ) {
-	if ( 0 === parseInt( data.parent_id ) || ! data.parent_id ) {
+	if ( ! data.parent_id ) {
 		return [ data, ...comments ];
 	}
 
@@ -425,7 +425,7 @@ function CommentForm( props ) {
 
 	async function handleSubmit() {
 		setIsSending( true );
-		const parentId = comment.id ? comment.id : 0;
+		const parentId = comment.id ? comment.id : '';
 		const queryParams = {
 			site_url: siteUrl,
 			video_id: videoAttachmentId,

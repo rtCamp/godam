@@ -108,9 +108,9 @@ class Engagement extends Base {
 							),
 							'comment_parent_id' => array(
 								'description'       => __( 'The ID of the parent comment.', 'godam' ),
-								'type'              => 'integer',
+								'type'              => 'string',
 								'required'          => true,
-								'sanitize_callback' => 'absint',
+								'sanitize_callback' => 'sanitize_text_field',
 							),
 							'comment_text'      => array(
 								'required'          => true,
@@ -348,7 +348,6 @@ class Engagement extends Base {
 	public function user_comment( $request ) {
 
 		$video_id          = $request->get_param( 'video_id' );
-		$site_url          = $request->get_param( 'site_url' );
 		$comment_parent_id = $request->get_param( 'comment_parent_id' );
 		$comment_text      = $request->get_param( 'comment_text' );
 
@@ -362,28 +361,51 @@ class Engagement extends Base {
 		$current_user       = get_user_by( 'id', $current_user_id );
 		$current_user_email = $current_user->user_email;
 		$current_user_name  = $current_user->display_name;
+		$transcoder_job_id  = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
 
-		$commentdata = array(
-			'comment_post_ID'      => $video_id,
-			'comment_author'       => $current_user_name,
-			'comment_author_email' => $current_user_email,
-			'comment_content'      => $comment_text,
-			'comment_parent'       => $comment_parent_id,
-			'user_id'              => $current_user_id,
-			'comment_approved'     => 1,
+		$query_params = array(
+			'api_key'        => $account_creadentials['api_key'],
+			'reference_name' => $transcoder_job_id,
+			'content'        => $comment_text,
+			'comment_email'  => $current_user_email,
+			'comment_by'     => $current_user_name,
 		);
 
-		$comment_id = wp_insert_comment( $commentdata );
+		if ( ! empty( $comment_parent_id ) ) {
+			$query_params['custom_reply_to'] = $comment_parent_id;
+		}
 
-		if ( $comment_id ) {
+		$comments_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.wp_comment';
+		$comments_url      = add_query_arg( $query_params, $comments_endpoint );
+		$comments_response = wp_remote_post(
+			$comments_url,
+			array(
+				'method'  => 'POST',
+				'timeout' => 30,
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
+				'body'    => json_encode( $query_params ),
+			)
+		);
+
+		$process_response = $this->process_response( $comments_response );
+
+		if ( $process_response instanceof WP_REST_Response ) {
+			return $process_response;
+		}
+
+		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
+
+			$comment = $process_response['message']['data'];
 
 			$response_data = array(
-				'id'           => $comment_id,
-				'parent_id'    => $comment_parent_id,
+				'id'           => $comment['name'],
+				'parent_id'    => isset( $comment['custom_reply_to'] ) ? $comment['custom_reply_to'] : null,
 				'user_id'      => $current_user_id,
-				'text'         => $comment_text,
-				'author_name'  => $current_user_name,
-				'author_image' => get_avatar_url( $current_user_id ),
+				'text'         => $comment['content'],
+				'author_name'  => $comment['comment_by'],
+				'author_image' => get_avatar_url( $comment['comment_email'] ),
 				'children'     => array(),
 			);
 
