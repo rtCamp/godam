@@ -5,6 +5,11 @@
  */
 import DOMPurify from 'isomorphic-dompurify';
 import videojs from 'video.js';
+/**
+ * WordPress dependencies
+ */
+// import { replace, trash } from '@wordpress/icons';
+import { __ } from '@wordpress/i18n';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -101,14 +106,135 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		this.$el.find( '.details' ).append( DOMPurify.sanitize( exifDiv ) );
 	},
 
+	setupThumbnailActions() {
+		// Replace handler
+		document.querySelectorAll( '.replace-thumbnail' ).forEach( ( btn ) => {
+			btn.addEventListener( 'click', ( event ) => {
+				event.preventDefault();
+				event.stopPropagation();
+				const existingThumb = btn.dataset.thumbnail;
+				this.openMediaUploader( ( attachment ) => {
+					this.replaceCustomThumbnail( existingThumb, attachment.url );
+				} );
+			} );
+		} );
+
+		// Remove handler
+		document.querySelectorAll( '.remove-thumbnail' ).forEach( ( btn ) => {
+			btn.addEventListener( 'click', ( event ) => {
+				event.preventDefault();
+        		event.stopPropagation();
+				const thumbnail = btn.dataset.thumbnail;
+				this.removeThumbnailImage( thumbnail );
+			} );
+		} );
+	},
+
+	replaceCustomThumbnail( oldThumbnail, newThumbnail ) {
+		const formData = new FormData();
+		// formData.append( 'file', file );
+		formData.append( 'attachment_id', this.model.get( 'id' ) );
+		formData.append( 'old_thumbnail', oldThumbnail );
+		formData.append( 'thumbnail_url', newThumbnail );
+
+		fetch(
+			window.pathJoin( [
+				restURL,
+				'/godam/v1/media-library/replace-custom-video-thumbnail',
+			] ),
+			{
+				method: 'POST',
+				body: formData,
+				headers: {
+					'X-WP-Nonce': window.wpApiSettings?.nonce || '',
+				},
+			},
+		)
+			.then( ( response ) => response.json() )
+			.then( ( data ) => {
+				if ( data.success ) {
+					document.querySelector( '.attachment-video-thumbnails' ).remove();
+					this.render(); // full re-render
+				} else {
+					alert( 'Failed to upload thumbnail.' );
+				}
+			} )
+			.catch( () => alert( 'An error occurred while uploading the thumbnail.' ) );
+	},
+
+	removeThumbnailImage( thumbnailURL ) {
+		const formData = new FormData();
+		// formData.append( 'file', file );
+		formData.append( 'attachment_id', this.model.get( 'id' ) );
+		formData.append( 'thumbnail_url', thumbnailURL );
+
+		console.log( 'deleting thumbnail:', thumbnailURL );
+
+		fetch(
+			window.pathJoin( [
+				restURL,
+				'/godam/v1/media-library/delete-custom-video-thumbnail',
+			] ),
+			{
+				method: 'POST',
+				body: formData,
+				headers: {
+					'X-WP-Nonce': window.wpApiSettings?.nonce || '',
+				},
+			},
+		)
+			.then( ( response ) => response.json() )
+			.then( ( data ) => {
+				if ( data.success ) {
+					document.querySelector( '.attachment-video-thumbnails' ).remove();
+					this.render(); // full re-render
+				} else {
+					alert( 'Failed to upload thumbnail.' );
+				}
+			} )
+			.catch( () => alert( 'An error occurred while uploading the thumbnail.' ) );
+	},
+
+	openMediaUploader( onSelect ) {
+		if ( ! window.wp || ! window.wp.media ) {
+			return;
+		}
+
+		const uploader = wp.media( {
+			title: 'Select Custom Thumbnail',
+			button: { text: 'Use this image' },
+			multiple: false,
+			library: { type: [ 'image' ] },
+		} );
+
+		uploader.on( 'select', () => {
+			const attachment = uploader.state().get( 'selection' ).first().toJSON();
+			if ( attachment && attachment.url && attachment.id ) {
+				onSelect( attachment ); // Use callback for custom behavior
+			}
+		} );
+
+		uploader.open();
+	},
+
 	/**
 	 * Renders video thumbnails in the attachment details view.
 	 *
 	 * @param {Object} data - The video thumbnail data to render.
 	 */
 	renderThumbnail( data ) {
-		const { thumbnails, selected } = data;
+		const { thumbnails, selected, customThumbnails } = data;
 		const attachmentID = this.model.get( 'id' );
+
+		const replaceIcon = `
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+			<path d="M16 10h4c.6 0 1-.4 1-1V5c0-.6-.4-1-1-1h-4c-.6 0-1 .4-1 1v4c0 .6.4 1 1 1zm-8 4H4c-.6 0-1 .4-1 1v4c0 .6.4 1 1 1h4c.6 0 1-.4 1-1v-4c0-.6-.4-1-1-1zm10-2.6L14.5 15l1.1 1.1 1.7-1.7c-.1 1.1-.3 2.3-.9 2.9-.3.3-.7.5-1.3.5h-4.5v1.5H15c.9 0 1.7-.3 2.3-.9 1-1 1.3-2.7 1.4-4l1.8 1.8 1.1-1.1-3.6-3.7zM6.8 9.7c.1-1.1.3-2.3.9-2.9.4-.4.8-.6 1.3-.6h4.5V4.8H9c-.9 0-1.7.3-2.3.9-1 1-1.3 2.7-1.4 4L3.5 8l-1 1L6 12.6 9.5 9l-1-1-1.7 1.7z"></path>
+		</svg>`;
+
+		const trashIcon = `
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+			<path fill-rule="evenodd" clip-rule="evenodd" d="M12 5.5A2.25 2.25 0 0 0 9.878 7h4.244A2.251 2.251 0 0 0 12 5.5ZM12 4a3.751 3.751 0 0 0-3.675 3H5v1.5h1.27l.818 8.997a2.75 2.75 0 0 0 2.739 2.501h4.347a2.75 2.75 0 0 0 2.738-2.5L17.73 8.5H19V7h-3.325A3.751 3.751 0 0 0 12 4Zm4.224 4.5H7.776l.806 8.861a1.25 1.25 0 0 0 1.245 1.137h4.347a1.25 1.25 0 0 0 1.245-1.137l.805-8.861Z"></path>
+		</svg>`;
 
 		// Use WordPress media uploader for custom thumbnail upload
 		const uploadTileHTML = `
@@ -122,37 +248,46 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		// Attach click handler after rendering
 		setTimeout( () => {
 			const $btn = this.$el.find( '.custom-thumbnail-media-upload' );
-			if ( $btn.length && window.wp && window.wp.media ) {
+			if ( $btn.length ) {
 				$btn.off( 'click' ).on( 'click', () => {
-					const uploader = wp.media( {
-						title: 'Select Custom Thumbnail',
-						button: { text: 'Use this image' },
-						multiple: false,
-						library: { type: [ 'image' ] },
+					this.openMediaUploader( ( attachment ) => {
+						this.handleThumbnailUploadFromUrl( attachment.url );
 					} );
-					uploader.on( 'select', () => {
-						const attachment = uploader
-							.state()
-							.get( 'selection' )
-							.first()
-							.toJSON();
-						if ( attachment && attachment.url && attachment.id ) {
-							this.handleThumbnailUploadFromUrl( attachment.url, attachment.id );
-						}
-					} );
-					uploader.open();
 				} );
 			}
 		}, 0 );
 
 		const thumbnailArray = Object.values( thumbnails || {} );
 
-		const thumbnailsHTML = thumbnailArray?.map(
-			( thumbnail ) =>
-				`<li class="${ thumbnail === selected ? 'selected' : '' }">
-				<img src="${ thumbnail }" alt="Video Thumbnail" />
+		const thumbnailsHTML = thumbnailArray
+			?.map(
+				( thumbnail ) =>
+					`<li>
+				<img class="${ thumbnail === selected ? 'selected' : '' }" src="${ thumbnail }" alt="Video Thumbnail" />
 			</li>`,
-		)
+			)
+			.join( '' );
+
+		const customThumbnailsArray = Object.values( customThumbnails || {} );
+		const customThumbnailsHTML = customThumbnailsArray
+			?.map(
+				( thumbnail ) =>
+					`<li class="custom-thumbnail-container">
+				<img class="${ thumbnail === selected ? 'selected' : '' }" src="${ thumbnail }" alt="Custom Video Thumbnail" />
+				<div class="controls">
+					<div class="tooltip" title="${ __( 'Replace Image', 'godam' ) }">
+						<button class="custom-thumbnail-control replace-thumbnail" aria-label="Replace Image" data-thumbnail="${ thumbnail }">
+							${ replaceIcon }
+						</button>
+					</div>
+					<div class="tooltip mt-1" title="${ __( 'Remove Image', 'godam' ) }">
+						<button class="custom-thumbnail-control remove-thumbnail" aria-label="Remove Image" data-thumbnail="${ thumbnail }">
+							${ trashIcon }
+						</button>
+					</div>
+				</div>
+			</li>`,
+			)
 			.join( '' );
 
 		const thumbnailDiv = `
@@ -160,6 +295,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				<div class="attachment-video-title"><h4>Video Thumbnails</h4></div>
 				<ul>
 					${ uploadTileHTML }
+					${ customThumbnailsHTML }
 					${ thumbnailsHTML }
 				</ul>
 			</div>`;
@@ -168,6 +304,8 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			.find( '.attachment-actions' )
 			.append( DOMPurify.sanitize( thumbnailDiv ) );
 		this.setupThumbnailClickHandler( attachmentID );
+
+		this.setupThumbnailActions();
 
 		// Handle file upload interaction
 		// this.$el.find( '#custom-thumbnail-upload' ).on( 'change', ( e ) => {
@@ -178,11 +316,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		// } );
 	},
 
-	handleThumbnailUploadFromUrl( url, attachmentID ) {
+	handleThumbnailUploadFromUrl( url ) {
 		const formData = new FormData();
 		// formData.append( 'file', file );
 		formData.append( 'attachment_id', this.model.get( 'id' ) );
-		formData.append( 'thumbnail_id', attachmentID );
+
+		formData.append( 'thumbnail_url', url );
 
 		fetch( window.pathJoin( [ restURL, '/godam/v1/media-library/upload-custom-video-thumbnail' ] ), {
 			method: 'POST',
@@ -215,11 +354,16 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				return;
 			}
 			li.addEventListener( 'click', function() {
-				// Remove the selected class from all thumbnails and add it to the clicked thumbnail.
-				document.querySelectorAll( '.attachment-video-thumbnails li' ).forEach( ( item ) => item.classList.remove( 'selected' ) );
-				this.classList.add( 'selected' );
+				// Remove the selected class from all thumbnails
+				document.querySelectorAll( '.attachment-video-thumbnails li img' ).forEach( ( item ) => item.classList.remove( 'selected' ) );
 
-				const thumbnailURL = this.querySelector( 'img' ).src;
+				// Add selected class to the clicked thumbnail image
+				const img = this.querySelector( 'img' );
+				if ( img ) {
+					img.classList.add( 'selected' );
+				}
+
+				const thumbnailURL = img?.src;
 
 				/**
 				 * Send a POST request to the server to set the selected thumbnail for the video.
