@@ -78,7 +78,6 @@ const Analytics = ( { attachmentID } ) => {
 	const siteUrl = window.location.origin;
 	const {
 		data: analyticsDataFetched,
-		refetch,
 	} = useFetchAnalyticsDataQuery(
 		{ videoId: attachmentID, siteUrl },
 		{ skip: ! attachmentID },
@@ -98,7 +97,6 @@ const Analytics = ( { attachmentID } ) => {
 
 	const {
 		data: abTestComparisonAnalyticsDataFetched,
-		refetch: refetchAB,
 	} = useFetchAnalyticsDataQuery(
 		{
 			videoId: abTestComparisonAttachmentData?.id,
@@ -168,11 +166,7 @@ const Analytics = ( { attachmentID } ) => {
 	async function startABTesting() {
 		setIsABResultsLoading( true );
 		setIsABTestCompleted( false );
-		await refetch();
 		setAbTestComparisonAttachmentData( mediaLibraryAttachment );
-		if ( mediaLibraryAttachment ) {
-			await refetchAB();
-		}
 	}
 
 	useEffect( () => {
