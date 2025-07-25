@@ -21,6 +21,7 @@ const ACTIONS = {
 	LOAD_VIDEO_ENGAGEMENT_DATA: 'LOAD_VIDEO_ENGAGEMENT_DATA',
 	USER_HIT_LIKE: 'USER_HIT_LIKE',
 	USER_COMMENTED: 'USER_COMMENTED',
+	ERROR: 'ERROR',
 };
 
 const engagementStore = {
@@ -79,10 +80,6 @@ const engagementStore = {
 						[ action.likeData.videoAttachmentId ]: action.likeData.isUserLiked,
 					},
 				};
-			case ACTIONS.USER_CANCELED_LIKED:
-				return {
-					...state,
-				};
 			case ACTIONS.USER_COMMENTED:
 				return {
 					...state,
@@ -94,6 +91,10 @@ const engagementStore = {
 						...state.commentsCount,
 						[ action.videoAttachmentId ]: state.commentsCount[ action.videoAttachmentId ] + 1,
 					},
+				};
+			case ACTIONS.ERROR:
+				return {
+					...state,
 				};
 			default:
 				return state;
@@ -109,7 +110,7 @@ const engagementStore = {
 		 * @param {string}      siteUrl           - The URL of the site where the video is hosted.
 		 * @param {Object}      storeObj          - The store object that handles video engagement data.
 		 * @param {HTMLElement} likeLink          - The HTML element for the like button/link.
-		 * @return {Object} An action object containing the type and like data.
+		 * @return {Object|null} An action object containing the type and like data.
 		 */
 
 		userHitiLke: async ( videoAttachmentId, siteUrl, storeObj, likeLink ) => {
@@ -117,6 +118,10 @@ const engagementStore = {
 			const likeData = await storeObj.sendLikeData( videoAttachmentId, siteUrl, ! likeStatus );
 			likeLink.disabled = false;
 			likeLink.classList.remove( 'is-progressing' );
+			if ( 'error' === likeData.status ) {
+				storeObj.dispatch.errorHappened( likeData.message );
+				return;
+			}
 			return {
 				type: ACTIONS.USER_HIT_LIKE,
 				likeData,
@@ -150,6 +155,15 @@ const engagementStore = {
 			return {
 				type: ACTIONS.LOAD_VIDEO_ENGAGEMENT_DATA,
 				newState,
+			};
+		},
+
+		errorHappened: ( message ) => {
+			// eslint-disable-next-line no-alert
+			alert( message );
+			return {
+				type: ACTIONS.ERROR,
+				message,
 			};
 		},
 	},
@@ -443,18 +457,22 @@ function CommentForm( props ) {
 			data: queryParams,
 		} );
 
-		if ( 'success' === result.status ) {
-			setCommentText( '' );
+		if ( 'error' === result.status ) {
 			setIsSending( false );
-			if ( 'thread-reply' === type ) {
-				setIsExpanded( false );
-			}
-			setCommentsData( ( prevComments ) => {
-				const newCommentTree = updateCommentTree( prevComments, comment, result.data );
-				storeObj.dispatch.userCommented( videoAttachmentId, newCommentTree );
-				return [ ...newCommentTree ];
-			} );
+			storeObj.dispatch.errorHappened( result.message );
+			return;
 		}
+
+		setCommentText( '' );
+		setIsSending( false );
+		if ( 'thread-reply' === type ) {
+			setIsExpanded( false );
+		}
+		setCommentsData( ( prevComments ) => {
+			const newCommentTree = updateCommentTree( prevComments, comment, result.data );
+			storeObj.dispatch.userCommented( videoAttachmentId, newCommentTree );
+			return [ ...newCommentTree ];
+		} );
 	}
 
 	return (
