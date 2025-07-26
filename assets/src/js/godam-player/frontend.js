@@ -145,10 +145,10 @@ function GODAMPlayer( videoRef = null ) {
 				if ( videoSetupOptions?.aspectRatio ) {
 					if ( videoSetupOptions.aspectRatio === 'responsive' ) {
 						// Add a flag to prevent multiple executions
-						let aspectRatioHandled = false;
+						const aspectRatioHandled = false;
 
 						const handleResponsiveAspectRatio = () => {
-							if (aspectRatioHandled) {
+							if ( aspectRatioHandled ) {
 								return; // Prevent multiple executions
 							}
 
@@ -161,21 +161,14 @@ function GODAMPlayer( videoRef = null ) {
 								return ( w / divisor ) + ':' + ( h / divisor );
 							}
 
-							console.log( 'width', width );
-							console.log( 'height', height );
-
 							// Check if dimensions are valid
-							if (!width || !height || width === 0 || height === 0) {
-								console.log('Invalid dimensions detected, trying alternative methods');
-
+							if ( ! width || ! height || width === 0 || height === 0 ) {
 								// Try to get dimensions from the player
 								const playerWidth = player.videoWidth();
 								const playerHeight = player.videoHeight();
 
-								if (playerWidth && playerHeight && playerWidth > 0 && playerHeight > 0) {
-									console.log('Using player dimensions:', playerWidth, playerHeight);
-									const aspectRatio = getSimplifiedAspectRatio(playerWidth, playerHeight);
-									console.log('aspectRatio from player', aspectRatio);
+								if ( playerWidth && playerHeight && playerWidth > 0 && playerHeight > 0 ) {
+									const aspectRatio = getSimplifiedAspectRatio( playerWidth, playerHeight );
 
 									// Apply the aspect ratio logic here
 									const aspectRatioOrientation = {
@@ -189,31 +182,30 @@ function GODAMPlayer( videoRef = null ) {
 										'2:3': 'portrait',
 										'3:4': 'portrait',
 									};
-									const aspectRatioClass = aspectRatioOrientation[aspectRatio];
-									const godamProductModalContainer = document.querySelector('.godam-product-modal-container.open');
-									if (godamProductModalContainer) {
-										const videoContainer = godamProductModalContainer.querySelector('.video-container');
-										if (videoContainer) {
-											videoContainer.classList.add(`is-${aspectRatioClass ? aspectRatioClass : 'portrait'}`);
+									const aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
+									const godamProductModalContainer = document.querySelector( '.godam-product-modal-container.open' );
+									if ( godamProductModalContainer ) {
+										const videoContainer = godamProductModalContainer.querySelector( '.video-container' );
+										if ( videoContainer ) {
+											videoContainer.classList.add( `is-${ aspectRatioClass ? aspectRatioClass : 'portrait' }` );
 										}
-										const sidebarContainer = godamProductModalContainer.querySelector('.godam-product-sidebar');
-										if (sidebarContainer) {
-											sidebarContainer.classList.add(`is-${aspectRatioClass ? aspectRatioClass : 'portrait'}`);
+										const sidebarContainer = godamProductModalContainer.querySelector( '.godam-product-sidebar' );
+										if ( sidebarContainer ) {
+											sidebarContainer.classList.add( `is-${ aspectRatioClass ? aspectRatioClass : 'portrait' }` );
 										}
 									}
-									player.aspectRatio(aspectRatio);
+									player.aspectRatio( aspectRatio );
 									return;
 								}
 
 								// If still no valid dimensions, use a default aspect ratio
-								console.log('No valid dimensions found, using default 16:9');
-								player.aspectRatio('16:9');
+								player.aspectRatio( '16:9' );
 								return;
 							}
 
 							// Original logic for when dimensions are valid
-							const aspectRatio = getSimplifiedAspectRatio(width, height);
-							console.log('aspectRatio', aspectRatio);
+							const aspectRatio = getSimplifiedAspectRatio( width, height );
+
 							const aspectRatioOrientation = {
 								'1:1': 'landscape', // or "portrait" - square can go either way
 								'4:3': 'landscape',
@@ -225,7 +217,7 @@ function GODAMPlayer( videoRef = null ) {
 								'2:3': 'portrait',
 								'3:4': 'portrait',
 							};
-							console.log( 'aspectRatio', aspectRatio );
+
 							const aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
 							const godamProductModalContainer = document.querySelector( '.godam-product-modal-container.open' );
 							if ( godamProductModalContainer ) {
@@ -241,29 +233,28 @@ function GODAMPlayer( videoRef = null ) {
 							player.aspectRatio( aspectRatio );
 						};
 						// Add the event listener to both the video element and the player
-						video.addEventListener('loadedmetadata', handleResponsiveAspectRatio);
-						player.on('loadedmetadata', handleResponsiveAspectRatio);
+						video.addEventListener( 'loadedmetadata', handleResponsiveAspectRatio );
+						player.on( 'loadedmetadata', handleResponsiveAspectRatio );
 
 						// Also try other events that might fire on mobile
-						video.addEventListener('loadeddata', handleResponsiveAspectRatio);
-						player.on('loadeddata', handleResponsiveAspectRatio);
+						video.addEventListener( 'loadeddata', handleResponsiveAspectRatio );
+						player.on( 'loadeddata', handleResponsiveAspectRatio );
 
 						// Add a timeout to handle cases where loadedmetadata never fires
-						const timeoutId = setTimeout(() => {
-							if (!aspectRatioHandled) {
+						const timeoutId = setTimeout( () => {
+							if ( ! aspectRatioHandled ) {
 								handleResponsiveAspectRatio();
 							}
-						}, 5000); // 5 second timeout
+						}, 5000 ); // 5 second timeout
 
 						// Clear timeout when metadata loads
 						const clearTimeoutOnMetadata = () => {
-							clearTimeout(timeoutId);
+							clearTimeout( timeoutId );
 							handleResponsiveAspectRatio();
 						};
 
-						video.addEventListener('loadedmetadata', clearTimeoutOnMetadata);
-						player.on('loadedmetadata', clearTimeoutOnMetadata);
-
+						video.addEventListener( 'loadedmetadata', clearTimeoutOnMetadata );
+						player.on( 'loadedmetadata', clearTimeoutOnMetadata );
 					} else {
 						player.aspectRatio( videoSetupOptions.aspectRatio );
 					}

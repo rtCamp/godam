@@ -37,7 +37,6 @@ class GoDAM_Product_Gallery {
 				}
 			} 
 		);
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_default_button_styles' ), 20 );
 
 		add_action( 'wp_ajax_godam_get_product_html', array( $this, 'godam_get_product_html_callback' ) );
 		add_action( 'wp_ajax_nopriv_godam_get_product_html', array( $this, 'godam_get_product_html_callback' ) );
@@ -81,77 +80,37 @@ class GoDAM_Product_Gallery {
 	}
 
 	/**
-	 * Enqueues default button styles for specific Godam components using the active theme's design tokens if they are not available.
+	 * Appends inline CSS styles for the product modal based on passed attributes.
 	 *
-	 * The styles apply specifically to Godam UI components for both parent and child themes using
-	 * `body.wp-theme-{slug}` and `body.wp-child-theme-{slug}` selectors.
+	 * @param array $atts Associative array of CSS attribute values.
 	 */
-	public function enqueue_default_button_styles() {
-		$theme      = wp_get_theme();
-		$theme_slug = sanitize_html_class( strtolower( $theme->get_stylesheet() ) );
-	
-		// Step 1: Get theme settings.
-		$settings = wp_get_global_settings();
-	
-		// Step 2: Resolve color slugs.
-		$available_colors = isset( $settings['color']['palette']['theme'] ) ? $settings['color']['palette']['theme'] : array();
-		$available_colors = wp_list_pluck( $available_colors, 'slug' );
-	
-		$find_slug = function ( $candidates, $available ) {
-			foreach ( $candidates as $needle ) {
-				foreach ( $available as $haystack ) {
-					if ( stripos( $haystack, $needle ) !== false ) {
-						return $haystack;
-					}
+	public function define_css_for_modal( $atts ) {
+		$bg_color      = $atts['cta_bg_color'];
+		$icon_bg_color = $atts['cta_button_bg_color'];
+		$icon_color    = $atts['cta_button_icon_color'];
+		$radius        = $atts['cta_button_border_radius'];
+		$price_color   = $atts['cta_product_price_color'];
+
+		$css = "
+			<style>
+				.godam-product-sidebar {
+					background-color: {$bg_color};
 				}
-			}
-			return null;
-		};
-	
-		$foreground_slug = $find_slug( array( 'base', 'foreground', 'contrast', 'secondary', 'text', 'white' ), $available_colors );
-		$background_slug = $find_slug( array( 'primary', 'accent', 'background', 'black' ), $available_colors );
-	
-		$fg_var = $foreground_slug ? "--wp--preset--color--$foreground_slug" : '--wp--preset--color--secondary';
-		$bg_var = $background_slug ? "--wp--preset--color--$background_slug" : '--wp--preset--color--primary';
-	
-		// Step 3: Resolve font size.
-		$available_font_sizes = isset( $settings['typography']['fontSizes']['theme'] ) ? $settings['typography']['fontSizes']['theme'] : array();
-		$font_size_slug       = $find_slug( array( 'medium', 'normal', 'base' ), wp_list_pluck( $available_font_sizes, 'slug' ) );
-		$font_size_var        = $font_size_slug ? "--wp--preset--font-size--$font_size_slug" : '--wp--preset--font-size--medium';
-	
-		// Step 4: Resolve border radius (uses spacing presets).
-		$available_spacing = isset( $settings['spacing']['spacingSizes']['theme'] ) ? $settings['spacing']['spacingSizes']['theme'] : array();
-		$radius_slug       = $find_slug( array( 'radius', 'rounded' ), wp_list_pluck( $available_spacing, 'slug' ) );
-		$radius_var        = $radius_slug ? "--wp--preset--spacing--$radius_slug" : '--wp--preset--spacing--rounded';
-	
-		// Step 5: Build inline CSS.
-		$inline_css = "
-			body.wp-theme-{$theme_slug} .godam-sidebar-close,
-			body.wp-theme-{$theme_slug} .godam-product-modal-close,
-			body.wp-theme-{$theme_slug} .godam-product-sidebar-add-to-cart-button,
-			body.wp-theme-{$theme_slug} .godam-thumbnail-nav,
-			body.wp-theme-{$theme_slug} .rtgodam-product-video-gallery-slider-modal-content--cart-basket .wc-block-mini-cart__button,
-			body.wp-theme-{$theme_slug} .godam-product-video-gallery-sidebar--cart-basket .wc-block-mini-cart__button,
-			body.wp-theme-{$theme_slug} .godam-product-video-gallery--cart-basket .wc-block-mini-cart__button,
-			body.wp-child-theme-{$theme_slug} .godam-sidebar-close,
-			body.wp-child-theme-{$theme_slug} .godam-product-modal-close,
-			body.wp-child-theme-{$theme_slug} .godam-product-sidebar-add-to-cart-button,
-			body.wp-child-theme-{$theme_slug} .godam-thumbnail-nav,
-			body.wp-child-theme-{$theme_slug} .rtgodam-product-video-gallery-slider-modal-content--cart-basket .wc-block-mini-cart__button,
-			body.wp-child-theme-{$theme_slug} .godam-product-video-gallery-sidebar--cart-basket .wc-block-mini-cart__button,
-			body.wp-child-theme-{$theme_slug} .godam-product-video-gallery--cart-basket .wc-block-mini-cart__button {
-				background-color: var({$bg_var}, #000000);
-				color: var({$fg_var}, #ffffff);
-				font-size: var({$font_size_var}, 16px);
-				border-radius: var({$radius_var}, 0px);
-				font-family: inherit;
-				cursor: pointer;
-				padding: 10px;
-			}
+				.godam-product-sidebar button,
+				.godam-product-sidebar a,
+				.godam-product-modal-close {
+					background-color: {$icon_bg_color};
+					color: {$icon_color};
+					border-radius: {$radius}%;
+				}
+				.godam-sidebar-product-price {
+					color: {$price_color};
+				}
+			</style>
 		";
-	
-		wp_add_inline_style( 'wp-block-library', $inline_css );
-	}   
+
+		echo $css; // phpcs:ignore
+	}
 
 	/**
 	 * Render callback for the [godam_product_gallery] shortcode.
@@ -213,6 +172,12 @@ class GoDAM_Product_Gallery {
 
 		// 3. Allow filtering of final attributes. Add filter for processed attributes.
 		$atts = apply_filters( 'rtgodam_product_gallery_attributes', $atts );
+
+		if ( ! defined( 'GODAM_PRODUCT_GALLERY_CSS_PRINTED' ) ) {
+			define( 'GODAM_PRODUCT_GALLERY_CSS_PRINTED', true );
+			// Add CSS for Video Modal.
+			$this->define_css_for_modal( $atts );
+		}
 
 		$product_ids = array();
 
@@ -923,20 +888,22 @@ class GoDAM_Product_Gallery {
 			</div>
 		</div>
 
-		<h3><?php echo esc_html( $product->get_name() ); ?></h3>
-		<p><?php echo wp_kses_post( $product->get_price_html() ); ?></p>
-		<p><?php echo wp_kses_post( $product->get_short_description() ); ?></p>
+		<div class="godam-sidebar-product-title">
+			<h3><?php echo esc_html( $product->get_name() ); ?></h3>
+		</div>
+		<p class="godam-sidebar-product-price"><?php echo wp_kses_post( $product->get_price_html() ); ?></p>
+		<p class="godam-sidebar-product-description"><?php echo wp_kses_post( $product->get_short_description() ); ?></p>
 		<?php
 		// Replace Woo's form/button with Product Sidebar Add to Cart button or Product Sidebar View Product button.
 		$product_url = get_permalink( $product_id );
 		?>
 		<div class="single-product-sidebar-actions">
 			<?php if ( $product->is_type( 'variable' ) || $product->is_type( 'grouped' ) || $product->is_type( 'external' ) ) : ?>
-				<a class="product-sidebar-view-product-button" href="<?php echo esc_url( $product_url ); ?>" target="_blank" rel="noopener noreferrer">
+				<a class="godam-product-sidebar-view-product-button" href="<?php echo esc_url( $product_url ); ?>" target="_blank" rel="noopener noreferrer">
 					<?php echo esc_html__( 'View Product', 'godam' ); ?>
 				</a>
 			<?php else : ?>
-				<button class="product-sidebar-add-to-cart-button" data-product-id="<?php echo esc_attr( $product_id ); ?>">
+				<button class="godam-product-sidebar-add-to-cart-button" data-product-id="<?php echo esc_attr( $product_id ); ?>">
 					<?php echo esc_html__( 'Add to Cart', 'godam' ); ?>
 				</button>
 			<?php endif; ?>

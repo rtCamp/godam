@@ -71,7 +71,7 @@ export function initVideoModal() {
 		const ctaEnabled = getCTAEnabled;
 		const ctaDisplayPosition = getCTADisplayPosition;
 
-		const currentGallery = ( playButton || timestampBtn ).closest( '.godam-product-gallery' );
+		let gallery = ( playButton || timestampBtn ).closest( '.godam-product-gallery' );
 
 		let getModal = null;
 
@@ -80,12 +80,20 @@ export function initVideoModal() {
 			getModal = activeDropdown?.querySelector(
 				`.godam-product-modal-container[data-modal-video-id="${ videoId }"][data-modal-timestamped="1"][data-modal-attached-product-id="${ videoProductIds }"]`,
 			);
+
+			if ( gallery === null ) {
+				const sourceId = activeDropdown?.dataset.sourceDropdownId;
+				const originalDropdown = document.querySelector( `.cta-dropdown[data-source-dropdown-id="${ sourceId }"]` );
+				gallery = originalDropdown?.closest( '.godam-product-gallery' );
+			}
 		} else {
 			getModal = document.querySelector(
 				`.godam-product-modal-container[data-modal-video-id="${ videoId }"]:not([data-modal-timestamped]), 
 				 .godam-product-modal-container[data-modal-video-id="${ videoId }"][data-modal-timestamped="0"]`,
 			);
 		}
+
+		const currentGallery = gallery;
 
 		const modal = getModal;
 
@@ -113,12 +121,6 @@ export function initVideoModal() {
 
 		/* Close Modal and Product sidebar on clicking x */
 		modal.querySelector( '.godam-product-modal-close' )?.addEventListener( 'click', () => close( modal, sidebarModal ) );
-		// sidebarModal?.addEventListener( 'click', ( ev ) => {
-		// 	const closeBtn = ev.target.closest( '.godam-sidebar-close' );
-		// 	if ( closeBtn ) {
-		// 		closeSidebar( sidebarModal );
-		// 	}
-		// } );
 
 		/* Clicking outside the modal content and sidebar closes the Modal */
 		modal.addEventListener( 'click', ( ev ) => {
@@ -135,7 +137,7 @@ export function initVideoModal() {
 		await loadNewVideo( videoId, modal );
 
 		// /* Loads Product Sidebar */
-		await loadSidebarProducts( videoProductIds, sidebarModal, ctaEnabled, ctaDisplayPosition, modal );
+		await loadSidebarProducts( videoProductIds, sidebarModal, ctaEnabled, ctaDisplayPosition );
 
 		/* Timestamp button logic. */
 		if ( timestampBtn ) {
@@ -158,7 +160,7 @@ export function initVideoModal() {
 		}
 
 		/** Scroll/swipe nav for modal */
-		// initScrollSwipeNavigation( modal, currentGallery, sidebarModal, ctaEnabled, ctaDisplayPosition );
+		initScrollSwipeNavigation( modal, currentGallery, sidebarModal, ctaEnabled, ctaDisplayPosition );
 	} );
 }
 
@@ -223,11 +225,15 @@ function stopSwipeAnimationLoop() {
 function close( modal, sidebarModal ) {
 	modal.classList.add( 'hidden' );
 	modal.classList.remove( 'open' );
+
 	document.body.style.overflow = '';
+	document.querySelector( '.cta-dropdown.visible' ).classList.remove( 'visible' );
+
 	const players = modal.querySelectorAll( '.video-js' );
 	players.forEach( ( p ) => p?.player?.dispose?.() );
-	const sidebar = modal.querySelector( '.godam-product-sidebar' );
-	sidebar.classList.remove( 'close' );
+
+	sidebarModal.classList.remove( 'close' );
+
 	modal.querySelector( '.godam-product-modal-content' ).classList.remove( 'no-sidebar' );
 	modal.querySelector( '.godam-product-modal-content' ).classList.add( 'sidebar' );
 }
@@ -267,8 +273,17 @@ async function loadNewVideo( newVideoId, modal ) {
 	modal.dataset.isLoading = 'true';
 	modal.dataset.currentVideoId = newVideoId;
 
+	const sidebarElement = modal.querySelector( '.godam-sidebar-product' );
+	if ( sidebarElement ) {
+		sidebarElement.innerHTML = '<div class="spinner"></div>';
+	}
+
 	const container = modal.querySelector( '.video-container' );
 	if ( container ) {
+		const videoContainer = modal.querySelector( '.video-container' );
+		if ( videoContainer ) {
+			videoContainer.classList.remove( 'is-landscape', 'is-portrait' );
+		}
 		container.innerHTML = `
 		<div class="animate-video-loading">
 			<div class="animate-play-btn">
@@ -414,7 +429,7 @@ function showAddToCartNotification( message, isError = false ) {
 /**
  * Attaches "Add to Cart" click listeners to buttons inside the given container.
  *
- * - Targets elements with the `.product-sidebar-add-to-cart-button` class.
+ * - Targets elements with the `.godam-product-sidebar-add-to-cart-button` class.
  * - On click, retrieves the associated product ID and sends an AJAX request to WooCommerce.
  * - If successful, updates WooCommerce fragments (e.g. cart count) on the page.
  * - Displays a toast notification for success or failure.
@@ -431,6 +446,8 @@ function attachAddToCartListeners( containerElement ) {
 
 	buttons.forEach( ( button ) => {
 		button.addEventListener( 'click', async () => {
+			button.classList.add( 'loading' );
+
 			const productId = button.dataset.productId;
 			if ( ! productId ) {
 				return;
@@ -445,12 +462,15 @@ function attachAddToCartListeners( containerElement ) {
 
 			try {
 				dispatch( godamVars.addToCartAjax ).addItemToCart( productId, 1 ).then( () => {
+					button.classList.remove( 'loading' );
 					showAddToCartNotification( __( 'Product added successfully!', 'godam' ) );
 				} ).catch( () => {
+					button.classList.remove( 'loading' );
 					showAddToCartNotification( __( 'Something went wrong. Try again.', 'godam' ), true );
 				} );
 			} catch ( err ) {
 				console.error( 'Add to cart failed', err );
+				button.classList.remove( 'loading' );
 				showAddToCartNotification( __( 'Error adding product.', 'godam' ), true );
 			}
 		} );
@@ -472,9 +492,8 @@ function attachAddToCartListeners( containerElement ) {
  * @param {HTMLElement} sidebarModal       - DOM element where the product content will be rendered.
  * @param {boolean}     ctaEnabled         - Whether the call-to-action sidebar should be displayed.
  * @param {string}      ctaDisplayPosition - Where the CTA should be shown (`'inside'` or `'below-inside'`).
- * @param {HTMLElement} modal              - The main modal element used to toggle sidebar visibility classes.
  */
-async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDisplayPosition, modal ) {
+async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDisplayPosition ) {
 	if ( ! productIds || ! sidebarModal ) {
 		return;
 	}
@@ -488,9 +507,6 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 	}
 
 	const sidebarElement = sidebarModal.querySelector( '.godam-sidebar-product' );
-	if ( sidebarElement ) {
-		sidebarElement.innerHTML = '<div class="spinner"></div>';
-	}
 
 	const idsArray = productIds
 		.split( ',' )
@@ -505,6 +521,8 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 			const response = await fetch(
 				`${ godamVars.ajaxUrl }?action=${ godamVars.getProductHtmlAction }&product_id=${ productId }&_wpnonce=${ godamVars.productGalleryNonce }`,
 			);
+
+			sidebarModal.classList.add( 'single-product-sidebar' );
 
 			const result = await response.json();
 
@@ -543,6 +561,8 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 
 		const products = await res.json();
 
+		sidebarModal.classList.remove( 'single-product-sidebar' );
+
 		sidebarElement.classList.remove( 'godam-product-sidebar-single' );
 		sidebarElement.classList.add( 'godam-product-sidebar-grid' );
 
@@ -555,7 +575,7 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 						<div class="godam-sidebar-product-title">${ product.name }</div>
 						<div class="godam-sidebar-product-price">${ product.price }</div>
 					</div>
-					${ [ 'variable', 'grouped', 'external' ].includes( product.type ) ? `<button><a class="godam-product-sidebar-view-product-button" href="${ product.link }" target="_blank" aria-label="${ __( 'View Product', 'godam' ) }">${ __( 'View Product', 'godam' ) }</a></button>` : `<button class="godam-product-sidebar-add-to-cart-button" data-product-id="${ product.id }" aria-label="${ __( 'Add to Cart', 'godam' ) }">${ __( 'Add to Cart', 'godam' ) }</button>` }
+					${ [ 'variable', 'grouped', 'external' ].includes( product.type ) ? `<a class="godam-product-sidebar-view-product-button" href="${ product.link }" target="_blank" aria-label="${ __( 'View Product', 'godam' ) }">${ __( 'View Product', 'godam' ) }</a>` : `<button class="godam-product-sidebar-add-to-cart-button" data-product-id="${ product.id }" aria-label="${ __( 'Add to Cart', 'godam' ) }">${ __( 'Add to Cart', 'godam' ) }</button>` }
 				</div>` ).join( '' ) }`;
 
 			attachAddToCartListeners( sidebarModal );
@@ -612,7 +632,12 @@ function initScrollSwipeNavigation( modal, currentGallery, sidebarModal, ctaEnab
 
 	// Utility: fetch current video items fresh from gallery.
 	const getCurrentVideoItems = () => {
-		return currentGallery?.querySelectorAll( '.godam-product-video' ) || [];
+		const videos = currentGallery?.querySelectorAll( '.godam-product-video' );
+		if ( videos?.length ) {
+			return videos;
+		}
+
+		return currentGallery?.querySelectorAll( '.godam-product-video-thumbnail' ) || [];
 	};
 
 	const videoModal = modal.querySelector( '.godam-product-video-container' );
@@ -655,7 +680,7 @@ function initScrollSwipeNavigation( modal, currentGallery, sidebarModal, ctaEnab
 			modal.querySelector( '.godam-swipe-hint' ).classList.remove( 'show' );
 			modal.querySelector( '.godam-swipe-overlay' ).classList.remove( 'visible' );
 			await loadNewVideo( newVideoId, modal );
-			await loadSidebarProducts( newProductIds, sidebarModal, ctaEnabled, ctaDisplayPosition, modal );
+			await loadSidebarProducts( newProductIds, sidebarModal, ctaEnabled, ctaDisplayPosition );
 		}
 	};
 

@@ -57,8 +57,13 @@ export function initMinicartAndCtaDropdown() {
 					return;
 				}
 
+				// Set a unique ID on the original dropdown and pass it to the clone.
+				const dropdownId = `dropdown-${ productId }`;
+				originalDropdown.dataset.sourceDropdownId = dropdownId;
+
 				const cloned = originalDropdown.cloneNode( true );
 				cloned.classList.add( 'visible' );
+				cloned.dataset.sourceDropdownId = dropdownId;
 				cloned.style.position = 'absolute';
 				cloned.style.zIndex = 9990;
 				document.body.appendChild( cloned );
@@ -74,11 +79,11 @@ export function initMinicartAndCtaDropdown() {
 				cloned.querySelectorAll( '.cta-add-to-cart' ).forEach( ( btn ) => {
 					btn.addEventListener( 'click', ( event ) => {
 						const productDataset = event.target.dataset;
-						addToCart( productDataset.productId, cartAction, productDataset.productPageUrl );
+						addToCart( event.target, productDataset.productId, cartAction, productDataset.productPageUrl );
 					} );
 				} );
 			} else {
-				addToCart( productId, cartAction, productPageURL );
+				addToCart( e.target, productId, cartAction, productPageURL );
 			}
 		} );
 	} );
@@ -107,11 +112,14 @@ export function initMinicartAndCtaDropdown() {
 	 * If the product cannot be added via AJAX (e.g., due to validation errors), the user is redirected
 	 * to the product page to complete the action.
 	 *
+	 * @param                 button
 	 * @param {number|string} productId                - The ID of the product to add to the cart.
 	 * @param {string}        [cartAction='mini-cart'] - The action after adding to cart. Either 'mini-cart' or 'redirect'.
 	 * @param {string}        [productURL]             - The fallback product URL to redirect to if add-to-cart fails.
 	 */
-	function addToCart( productId, cartAction = 'mini-cart', productURL ) {
+	function addToCart( button, productId, cartAction = 'mini-cart', productURL ) {
+		button.classList.add( 'loading' );
+
 		dispatch( godamVars.addToCartAjax ).addItemToCart( productId, 1 )
 			.then( () => {
 				// Skip mini cart if cartAction is redirect.
@@ -125,6 +133,8 @@ export function initMinicartAndCtaDropdown() {
 					return;
 				}
 
+				button.classList.remove( 'loading' );
+
 				// Show mini-cart.
 				const miniCartButton = document.querySelector( '.wc-block-mini-cart__button' );
 				if ( miniCartButton ) {
@@ -133,6 +143,7 @@ export function initMinicartAndCtaDropdown() {
 				}
 			} )
 			.catch( () => {
+				button.classList.remove( 'loading' );
 				// Redirect to product page in new tab.
 				if ( productURL ) {
 					window.open( productURL, '_blank' );
