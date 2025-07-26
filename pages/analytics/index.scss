@@ -14,6 +14,7 @@
 }
 
 .godam-button-icon {
+
 	svg {
 		fill: #ab3a6c;
 	}
@@ -56,8 +57,8 @@
 		@apply bg-white overflow-auto h-[400px];
 	}
 
-	.media-frame-menu, 
-	.media-frame-router, 
+	.media-frame-menu,
+	.media-frame-router,
 	.media-frame-content .upload-ui {
 		display: none !important;
 	}
@@ -65,7 +66,6 @@
 	.analytics-info-container {
 		display: flex;
 		gap: 12px;
-		height: 100%;
 
 		.analytics-info {
 			display: flex;
@@ -317,13 +317,46 @@
 }
 
 .api-key-message a {
-	color: #3b82f6;
+	color: #ab3a6c;
 	text-decoration: none;
 	font-weight: 600;
 }
 
+.api-key-overlay-banner {
+	display: flex;
+	flex-direction: column;
+	margin: 0 2rem;
+	font-size: 1rem;
+	font-weight: 400;
+
+	&-header {
+		font-size: 1.25rem;
+		font-weight: 500;
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	&-header a {
+		margin: auto;
+	}
+
+	&-footer a {
+		margin: auto;
+	}
+
+	&-footer {
+		font-size: 0.975rem;
+		font-weight: 400;
+	}
+}
+
 .api-key-message a:hover {
 	text-decoration: underline;
+}
+
+.api-key-overlay-banner-header a:hover {
+	text-decoration: none;
 }
 
 .hidden {
@@ -454,7 +487,7 @@
 		color: #166534;
 		font-weight: 600;
 	}
-	
+
 }
 
 .legend {
@@ -473,8 +506,8 @@
 	}
 
 	.pie-chart-legend {
-		text-decoration: none; 
-		color: inherit; 
+		text-decoration: none;
+		color: inherit;
 		cursor: pointer;
 
 		&:hover {
@@ -485,32 +518,6 @@
 
 .performance-status-container {
 	border-radius: 12px 12px 0 0;
-}
-
-.legend {
-	// flex-direction: column;
-	align-items: center;
-	gap: 12px;
-	flex-wrap: wrap;
-
-	.legend-item {
-		background-color: #F2F2F7;
-		padding: 4px 8px;
-		border-radius: 4px;
-		display: flex;
-		align-items: center;
-		width: fit-content;
-	}
-
-	.pie-chart-legend {
-		text-decoration: none; 
-		color: inherit; 
-		cursor: pointer;
-
-		&:hover {
-			text-decoration: underline;
-		}
-	}
 }
 
 .posts-count-container {

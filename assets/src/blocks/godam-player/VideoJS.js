@@ -5,6 +5,7 @@ import React from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import 'videojs-contrib-quality-menu';
+import 'videojs-flvjs-es6';
 
 /**
  * WordPress dependencies

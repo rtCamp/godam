@@ -29,4 +29,16 @@
         padding: 1rem !important;
         background: #f0f0f0;
     }
+
+	.srfm-form-container {
+		height: auto;
+
+		.srfm-form {
+			margin-block-end: 0;
+
+			.srfm-submit-button .srfm-submit-wrap {
+				height: auto;
+			}
+		}
+	}
 }
