@@ -32,6 +32,8 @@ export function initMinicartAndCtaDropdown() {
 
 	document.querySelectorAll( '.main-cta' ).forEach( ( button ) => {
 		button.addEventListener( 'click', ( e ) => {
+			e.stopPropagation();
+
 			const wrapper = e.target.closest( '.godam-product-cta' );
 			const dropdown = e.target.dataset.productDropdown;
 			const productId = e.target.dataset.productId;
@@ -71,6 +73,31 @@ export function initMinicartAndCtaDropdown() {
 				activeDropdown = cloned;
 				activeButton = e.target;
 
+				const items = cloned.querySelectorAll( '.cta-dropdown-item' );
+
+				// Handle scrollable dropdown if more than 3 items.
+				if ( items.length > 3 ) {
+					let totalHeight = 0;
+
+					for ( let i = 0; i < 3; i++ ) {
+						if ( items[ i ] ) {
+							totalHeight += items[ i ].getBoundingClientRect().height;
+						}
+					}
+
+					const computedStyles = window.getComputedStyle( cloned );
+
+					const parsePx = ( val ) => parseFloat( val ) || 0;
+
+					const paddingTop = parsePx( computedStyles.paddingTop );
+					const paddingBottom = parsePx( computedStyles.paddingBottom );
+
+					const extraHeight = paddingTop + paddingBottom;
+
+					cloned.style.maxHeight = `${ totalHeight + extraHeight }px`;
+					cloned.style.overflowY = 'auto';
+				}
+
 				const rect = wrapper.getBoundingClientRect();
 				cloned.style.top = `${ rect.bottom + window.scrollY }px`;
 				cloned.style.left = `${ rect.left + window.scrollX }px`;
@@ -88,6 +115,7 @@ export function initMinicartAndCtaDropdown() {
 		} );
 	} );
 
+	// Close dropdown on click outside dropdown.
 	document.addEventListener( 'click', ( e ) => {
 		if ( ! e.target.closest( '.main-cta' ) && ! e.target.closest( '.cta-dropdown' ) ) {
 			if ( activeDropdown ) {
@@ -97,6 +125,15 @@ export function initMinicartAndCtaDropdown() {
 			}
 		}
 	} );
+
+	// Close dropdown on scroll outside dropdown.
+	window.addEventListener( 'scroll', ( event ) => {
+		if ( activeDropdown && ! activeDropdown.contains( event.target ) && ! activeButton?.contains( event.target ) ) {
+			activeDropdown.remove();
+			activeDropdown = null;
+			activeButton = null;
+		}
+	}, true );
 
 	/* --------------------------------------------- Helper Functions ------------------------------------------------ */
 

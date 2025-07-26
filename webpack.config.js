@@ -214,7 +214,21 @@ const addToProductJS = {
 const wcVideoCarouselJS = {
 	...sharedConfig,
 	entry: {
-		'wc-video-carousel': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wc-video-carousel.js' ),
+		'wc-video-carousel': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'single-product-story', 'wc-video-carousel.js' ),
+	},
+};
+
+const adminFeaturedVideoGalleryJS = {
+	...sharedConfig,
+	entry: {
+		'wc-admin-featured-video-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'admin', 'wc-admin-featured-video-gallery.js' ),
+	},
+};
+
+const featuredVideoGalleryJS = {
+	...sharedConfig,
+	entry: {
+		'wc-featured-video-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'woocommerce', 'featured-video', 'wc-featured-video-gallery.js' ),
 	},
 };
 
@@ -292,6 +306,8 @@ module.exports = [
 	deactivationJS,
 	godamGallery,
 	godamProductGallery,
+	adminFeaturedVideoGalleryJS,
+	featuredVideoGalleryJS,
 	gfGodamRecorderEditorJS,
 	gfEntryDetailJS,
 	wpFormsGodamRecorderEditorJS,

@@ -98,7 +98,10 @@ export function initVideoModal() {
 		const modal = getModal;
 
 		modal.classList.add( 'open' );
-		initSidebar();
+
+		if ( ctaEnabled && ( ctaDisplayPosition === 'below-inside' && ctaDisplayPosition === 'inside' ) ) {
+			initSidebar();
+		}
 
 		modal.dataset.currentVideoId = videoId;
 		modal.dataset.isLoading = 'false';
@@ -227,12 +230,12 @@ function close( modal, sidebarModal ) {
 	modal.classList.remove( 'open' );
 
 	document.body.style.overflow = '';
-	document.querySelector( '.cta-dropdown.visible' ).classList.remove( 'visible' );
+	document.querySelector( '.cta-dropdown.visible' )?.classList.remove( 'visible' );
 
 	const players = modal.querySelectorAll( '.video-js' );
 	players.forEach( ( p ) => p?.player?.dispose?.() );
 
-	sidebarModal.classList.remove( 'close' );
+	sidebarModal?.classList.remove( 'close' );
 
 	modal.querySelector( '.godam-product-modal-content' ).classList.remove( 'no-sidebar' );
 	modal.querySelector( '.godam-product-modal-content' ).classList.add( 'sidebar' );
@@ -273,9 +276,26 @@ async function loadNewVideo( newVideoId, modal ) {
 	modal.dataset.isLoading = 'true';
 	modal.dataset.currentVideoId = newVideoId;
 
+	/* Determine if user is on mobile or desktop */
+	const isMobile = window.matchMedia( '(pointer: coarse)' ).matches;
+
 	const sidebarElement = modal.querySelector( '.godam-sidebar-product' );
+
+	/* Don't show spinner on mobile */
+	const sidebarSpinner = sidebarElement?.querySelector( '.spinner' );
+
+	if ( isMobile ) {
+		sidebarSpinner?.classList.add( 'hidden' );
+	} else {
+		sidebarSpinner?.classList.remove( 'hidden' );
+	}
+
 	if ( sidebarElement ) {
-		sidebarElement.innerHTML = '<div class="spinner"></div>';
+		if ( isMobile ) {
+			sidebarElement.innerHTML = '<div class="spinner hidden"></div>';
+		} else {
+			sidebarElement.innerHTML = '<div class="spinner"></div>';
+		}
 	}
 
 	const container = modal.querySelector( '.video-container' );
@@ -284,15 +304,17 @@ async function loadNewVideo( newVideoId, modal ) {
 		if ( videoContainer ) {
 			videoContainer.classList.remove( 'is-landscape', 'is-portrait' );
 		}
+
 		container.innerHTML = `
-		<div class="animate-video-loading">
-			<div class="animate-play-btn">
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
-					<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
-				</svg>
+			<div class="animate-video-loading">
+				<div class="animate-play-btn">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+					</svg>
+				</div>
 			</div>
-		</div>
-	`;
+		`;
+
 		container.classList.add( 'animate-video-loading' );
 	}
 
@@ -310,7 +332,6 @@ async function loadNewVideo( newVideoId, modal ) {
 				try {
 					const json = JSON.parse( decoded );
 					json.aspectRatio = 'responsive';
-					json.playerSkin = 'Minimal';
 
 					// re-encode to match format.
 					const updatedJson = JSON.stringify( json ).replace( /"/g, '&quot;' );
