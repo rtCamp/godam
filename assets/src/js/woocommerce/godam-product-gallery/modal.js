@@ -99,7 +99,7 @@ export function initVideoModal() {
 
 		modal.classList.add( 'open' );
 
-		if ( ctaEnabled && ( ctaDisplayPosition === 'below-inside' && ctaDisplayPosition === 'inside' ) ) {
+		if ( ctaEnabled && ( ctaDisplayPosition === 'below-inside' || ctaDisplayPosition === 'inside' ) ) {
 			initSidebar();
 		}
 
@@ -140,7 +140,7 @@ export function initVideoModal() {
 		await loadNewVideo( videoId, modal );
 
 		// /* Loads Product Sidebar */
-		await loadSidebarProducts( videoProductIds, sidebarModal, ctaEnabled, ctaDisplayPosition );
+		await loadSidebarProducts( videoProductIds, sidebarModal, ctaEnabled, ctaDisplayPosition, modal );
 
 		/* Timestamp button logic. */
 		if ( timestampBtn ) {
@@ -510,11 +510,12 @@ function attachAddToCartListeners( containerElement ) {
  *
  * @async
  * @param {string}      productIds         - Comma-separated string of WooCommerce product IDs.
- * @param {HTMLElement} sidebarModal       - DOM element where the product content will be rendered.
+ * @param {HTMLElement} sidebarModal       - DOM element where the sidebar product content will be rendered.
  * @param {boolean}     ctaEnabled         - Whether the call-to-action sidebar should be displayed.
  * @param {string}      ctaDisplayPosition - Where the CTA should be shown (`'inside'` or `'below-inside'`).
+ * @param {HTMLElement} modal              - DOM element where the product content will be rendered.
  */
-async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDisplayPosition ) {
+async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDisplayPosition, modal ) {
 	if ( ! productIds || ! sidebarModal ) {
 		return;
 	}
@@ -526,6 +527,11 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 	if ( ctaDisplayPosition !== 'below-inside' && ctaDisplayPosition !== 'inside' ) {
 		return;
 	}
+
+	sidebarModal.classList.remove( 'close' );
+
+	modal.querySelector( '.godam-product-modal-content' )?.classList?.remove( 'no-sidebar' );
+	modal.querySelector( '.godam-product-modal-content' )?.classList?.add( 'sidebar' );
 
 	const sidebarElement = sidebarModal.querySelector( '.godam-sidebar-product' );
 
@@ -701,7 +707,7 @@ function initScrollSwipeNavigation( modal, currentGallery, sidebarModal, ctaEnab
 			modal.querySelector( '.godam-swipe-hint' ).classList.remove( 'show' );
 			modal.querySelector( '.godam-swipe-overlay' ).classList.remove( 'visible' );
 			await loadNewVideo( newVideoId, modal );
-			await loadSidebarProducts( newProductIds, sidebarModal, ctaEnabled, ctaDisplayPosition );
+			await loadSidebarProducts( newProductIds, sidebarModal, ctaEnabled, ctaDisplayPosition, modal );
 		}
 	};
 

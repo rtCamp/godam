@@ -252,7 +252,7 @@ class WC_Featured_Video_Gallery {
 			</ul>
 			<input type="hidden" id="product_image_gallery" name="product_image_gallery" value="<?php echo esc_attr( implode( ',', $gallery_ids ) ); ?>" />
 		</div>
-		<p class="add_product_images hide-if-no-js">
+		<p class="add_product_images hide-if-no-js" id="godam-featured-gallery">
 			<a href="#" data-choose="<?php esc_attr_e( 'Add images and videos to product gallery', 'godam' ); ?>"
 				data-update="<?php esc_attr_e( 'Add to gallery', 'godam' ); ?>"
 				data-delete="<?php esc_attr_e( 'Delete', 'godam' ); ?>"

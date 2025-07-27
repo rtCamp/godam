@@ -10,6 +10,8 @@
 		const $galleryWrapper = $( '#product_images_container' );
 		const $galleryList = $galleryWrapper.find( 'ul.product_images' );
 		const $galleryInput = $( '#product_image_gallery' );
+		const $container = document.getElementById( 'godam-featured-gallery' );
+		$container.querySelector( '.woocommerce-help-tip' ).remove();
 
 		/**
 		 * Update the hidden input field with current gallery attachment IDs.
