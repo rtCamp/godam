@@ -26,6 +26,8 @@ const slice = createSlice( {
 	name: 'folder',
 	initialState: {
 		folders: [],
+		bookmarks: [],
+		lockedFolders: [],
 		selectedFolder: {
 			id: selectedFolderId,
 		},
@@ -196,6 +198,12 @@ const slice = createSlice( {
 					if ( state?.selectedFolder?.meta ) {
 						state.selectedFolder.meta.locked = folder.meta.locked;
 					}
+
+					if ( ! folder.meta.locked ) {
+						state.lockedFolders = state.lockedFolders.filter( ( item ) => item.id !== folder.id );
+					} else {
+						state.lockedFolders.push( folder );
+					}
 				}
 			} else {
 				ids.forEach( ( id ) => {
@@ -210,11 +218,17 @@ const slice = createSlice( {
 							window.godam = window.godam || {};
 							window.godam.selectedFolder = { ...state.selectedFolder, meta: { ...state.selectedFolder.meta, locked: folder.meta.locked } };
 						}
+
+						if ( status ) {
+							state.lockedFolders.push( folder );
+						} else {
+							state.lockedFolders = state.lockedFolders.filter( ( item ) => item.id !== folder.id );
+						}
 					}
 				} );
 			}
 		},
-		addBookmark: ( state, action ) => {
+		updateBookmarks: ( state, action ) => {
 			const { ids, status } = action.payload;
 
 			if ( ! Array.isArray( ids ) ) {
@@ -226,6 +240,12 @@ const slice = createSlice( {
 					}
 
 					folder.meta.bookmark = ! Boolean( folder.meta?.bookmark );
+
+					if ( ! folder.meta.bookmark ) {
+						state.bookmarks = state.bookmarks.filter( ( item ) => item.id !== folder.id );
+					} else {
+						state.bookmarks.push( folder );
+					}
 				}
 			} else {
 				ids.forEach( ( id ) => {
@@ -235,9 +255,23 @@ const slice = createSlice( {
 							folder.meta = {};
 						}
 						folder.meta.bookmark = status;
+
+						if ( status ) {
+							state.bookmarks.push( folder );
+						} else {
+							state.bookmarks = state.bookmarks.filter( ( item ) => item.id !== folder.id );
+						}
 					}
 				} );
 			}
+		},
+		initializeBookmarks: ( state, action ) => {
+			const bookmarks = action.payload || [];
+			state.bookmarks = bookmarks;
+		},
+		initializeLockedFolders: ( state, action ) => {
+			const lockedFolders = action.payload || [];
+			state.lockedFolders = lockedFolders;
 		},
 	},
 } );
@@ -259,7 +293,9 @@ export const {
 	clearMultiSelectedFolders,
 	setSortOrder,
 	lockFolder,
-	addBookmark,
+	updateBookmarks,
+	initializeBookmarks,
+	initializeLockedFolders,
 } = slice.actions;
 
 export default slice.reducer;

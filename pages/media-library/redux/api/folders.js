@@ -33,13 +33,26 @@ export const folderApi = createApi( {
 			} ),
 		} ),
 		getFolders: builder.query( {
-			query: () => ( {
-				url: 'wp/v2/media-folder',
-				params: {
+			query: ( options = {} ) => {
+				const params = {
 					_fields: 'id,name,parent,attachmentCount,meta',
 					per_page: 100, // Note: 100 is the max per page. Implement pagination if total folders > 100
-				},
-			} ),
+				};
+
+				// Only add bookmark if it's explicitly passed and truthy
+				if ( options.bookmark ) {
+					params.bookmark = true;
+				}
+
+				if ( options.locked ) {
+					params.locked = true;
+				}
+
+				return {
+					url: 'wp/v2/media-folder',
+					params,
+				};
+			},
 		} ),
 		createFolder: builder.mutation( {
 			query: ( data ) => ( {
