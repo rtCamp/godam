@@ -36,21 +36,30 @@ export const folderApi = createApi( {
 			query: ( options = {} ) => {
 				const params = {
 					_fields: 'id,name,parent,attachmentCount,meta',
-					per_page: 100, // Note: 100 is the max per page. Implement pagination if total folders > 100
+					per_page: 2,
 				};
 
 				// Only add bookmark if it's explicitly passed and truthy
 				if ( options.bookmark ) {
 					params.bookmark = true;
+					params.per_page = 100; // Reset per_page to 100 if bookmark
 				}
 
 				if ( options.locked ) {
 					params.locked = true;
+					params.per_page = 100; // Reset per_page to 100 if locked
+				}
+
+				if ( options.page ) {
+					params.page = options.page;
 				}
 
 				return {
-					url: 'wp/v2/media-folder',
+					url: 'godam/v1/media-library/media-folders',
 					params,
+					headers: {
+						'X-WP-Nonce': window.MediaLibrary.nonce,
+					},
 				};
 			},
 		} ),

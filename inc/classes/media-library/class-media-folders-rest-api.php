@@ -24,6 +24,13 @@ class Media_Folders_REST_API {
 	use Singleton;
 
 	/**
+	 * Pagination info for parent terms.
+	 *
+	 * @var array
+	 */
+	private $pagination_info = array();
+
+	/**
 	 * Construct method.
 	 *
 	 * @since 1.3.0
@@ -38,67 +45,10 @@ class Media_Folders_REST_API {
 	 * @since 1.3.0
 	 */
 	private function setup_hooks() {
-		add_filter( 'rest_prepare_media-folder', array( $this, 'add_data_to_media_folder_rest_api' ), 10, 2 );
-		add_filter( 'rest_media-folder_query', array( $this, 'filter_media_folder_query' ), 10, 2 );
-
 		add_action( 'set_object_terms', array( $this, 'invalidate_attachment_count_cache' ), 10, 4 );
 		add_action( 'delete_term_relationships', array( $this, 'invalidate_attachment_cache_on_delete_relationship' ), 10, 3 );
 
 		add_action( 'godam_cleanup_zip', array( $this, 'godam_cleanup_zip_file' ), 10, 1 );
-	}
-
-	/**
-	 * Add additional data to the media folder REST API response.
-	 *
-	 * @since 1.3.0
-	 *
-	 * @param \WP_REST_Response $response The response object.
-	 * @param \WP_Term          $term     The term object.
-	 * @return \WP_REST_Response
-	 */
-	public function add_data_to_media_folder_rest_api( $response, $term ) {
-		// Add the attachment count to the response.
-		$response->data['attachmentCount'] = (int) Media_Folder_Utils::get_instance()->get_attachment_count( $term->term_id );
-
-		return $response;
-	}
-
-	/**
-	 * Filter the media folder query to include bookmarks and locked folders.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @param array            $args    The query arguments.
-	 * @param \WP_REST_Request $request The REST request object.
-	 * @return array
-	 */
-	public function filter_media_folder_query( $args, $request ) {
-		// Ensure we only modify the query for media folders.
-		if ( ! isset( $args['taxonomy'] ) || Media_Folders::SLUG !== $args['taxonomy'] ) {
-			return $args;
-		}
-
-		$bookmark = (bool) $request->get_param( 'bookmark' );
-
-		if ( $bookmark ) {
-			$args['meta_query'][] = array(
-				'key'     => 'bookmark',
-				'value'   => '1',
-				'compare' => '=',
-			);
-		}
-
-		$locked = (bool) $request->get_param( 'locked' );
-
-		if ( $locked ) {
-			$args['meta_query'][] = array(
-				'key'     => 'locked',
-				'value'   => '1',
-				'compare' => '=',
-			);
-		}
-
-		return $args;
 	}
 
 	/**

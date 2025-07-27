@@ -20,7 +20,7 @@ import TreeItem from './TreeItem.jsx';
 import TreeItemPreview from './TreeItemPreview.jsx';
 import SnackbarComp from './SnackbarComp.jsx';
 
-import { setTree, updateSnackbar } from '../../redux/slice/folders.js';
+import { setTree, updatePage, updateSnackbar } from '../../redux/slice/folders.js';
 import { utilities } from '../../data/utilities';
 
 import { useAssignFolderMutation, useGetFoldersQuery, useUpdateFolderMutation } from '../../redux/api/folders.js';
@@ -50,7 +50,21 @@ const openLocalStorageItem = ( folders ) => {
 };
 
 const FolderTree = ( { handleContextMenu } ) => {
-	const { data: folders, error, isLoading } = useGetFoldersQuery();
+	const page = useSelector( ( state ) => state.FolderReducer.page );
+	const currentPage = page.current;
+
+	const { data: folders, error, isLoading, refetch: refetchFolders, isUninitialized: isFoldersUninitialized, isFetching } = useGetFoldersQuery(
+		{
+			page: currentPage,
+		},
+	);
+
+	useEffect( () => {
+		// Refetch folders when the current page changes
+		if ( page.current > 1 ) {
+			refetchFolders();
+		}
+	}, [ refetchFolders, page ] );
 
 	const dispatch = useDispatch();
 	const data = useSelector( ( state ) => state.FolderReducer.folders );
@@ -62,8 +76,13 @@ const FolderTree = ( { handleContextMenu } ) => {
 	useEffect( () => {
 		if ( folders ) {
 			dispatch( setTree( openLocalStorageItem( folders ) ) );
+
+			if ( folders.length === 0 && currentPage > 1 ) {
+				// If no folders are returned, reset to the first page
+				dispatch( updatePage( { hasNext: false } ) );
+			}
 		}
-	}, [ dispatch, folders ] );
+	}, [ dispatch, folders, isFoldersUninitialized, currentPage ] );
 
 	const [ activeId, setActiveId ] = useState( null );
 	const [ overId, setOverId ] = useState( null );
@@ -174,6 +193,10 @@ const FolderTree = ( { handleContextMenu } ) => {
 		mouseSensor,
 		pointerSensor,
 	);
+
+	function handleLoadMore() {
+		dispatch( updatePage( { current: page.current + 1 } ) );
+	}
 
 	/**
 	 * Update the attachment count of folders when items are moved between folders.
@@ -389,6 +412,14 @@ const FolderTree = ( { handleContextMenu } ) => {
 						} ) }
 					</SortableContext>
 				</div>
+				{ page.hasNext && ( <button
+					className="tree-load-more"
+					onClick={ () => {
+						handleLoadMore();
+					} }
+				>
+					{ isFetching ? __( 'Loading…', 'godam' ) : __( 'Load More', 'godam' ) }
+				</button> ) }
 			</div>
 
 			<DragOverlay>

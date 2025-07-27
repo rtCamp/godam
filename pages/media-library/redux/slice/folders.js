@@ -32,6 +32,11 @@ const slice = createSlice( {
 			id: selectedFolderId,
 		},
 
+		page: {
+			current: 1,
+			hasNext: true,
+		},
+
 		modals: {
 			folderCreation: false,
 			rename: false,
@@ -133,8 +138,26 @@ const slice = createSlice( {
 			state.multiSelectedFolderIds = [];
 		},
 		setTree: ( state, action ) => {
-			state.folders = action.payload;
+			const newFolders = action.payload;
+
+			if ( state.folders.length > 0 ) {
+				const folderMap = new Map( state.folders.map( ( folder ) => [ folder.id, folder ] ) );
+
+				newFolders.forEach( ( folder ) => {
+					if ( folderMap.has( folder.id ) ) {
+						// Update existing folder
+						Object.assign( folderMap.get( folder.id ), folder );
+					} else {
+						// Add new folder
+						state.folders.push( folder );
+					}
+				} );
+			} else {
+				// No existing folders, just set
+				state.folders = newFolders;
+			}
 		},
+
 		toggleMultiSelectMode: ( state ) => {
 			state.isMultiSelecting = ! state.isMultiSelecting;
 			if ( ! state.isMultiSelecting ) {
@@ -273,6 +296,16 @@ const slice = createSlice( {
 			const lockedFolders = action.payload || [];
 			state.lockedFolders = lockedFolders;
 		},
+		updatePage: ( state, action ) => {
+			const { current, total, hasNext, perPage } = action.payload;
+			state.page = {
+				current: current ?? state.page.current,
+				total: total ?? state.page.total,
+				hasNext: hasNext ?? state.page.hasNext,
+				perPage: perPage ?? state.page.perPage,
+			};
+		},
+
 	},
 } );
 
@@ -296,6 +329,7 @@ export const {
 	updateBookmarks,
 	initializeBookmarks,
 	initializeLockedFolders,
+	updatePage,
 } = slice.actions;
 
 export default slice.reducer;
