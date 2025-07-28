@@ -38,20 +38,15 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attachmentData, attr
 
 			setVideoData( initialVideoData );
 
-			// Only set attributes once when attachmentData is first available
-			setAttributes( {
-				...attributes,
-				seo: { ...attributes.seo, ...initialVideoData },
-			} );
+			// Only set once if attributes.seo is empty
+			if ( ! attributes?.seo || isObjectEmpty( attributes.seo ) ) {
+				setAttributes( {
+					...attributes,
+					seo: initialVideoData,
+				} );
+			}
 		}
-	}, [ attachmentData ] ); // Remove isOpen from dependencies
-
-	// Add separate effect to sync modal data when opened
-	useEffect( () => {
-		if ( isOpen && attributes?.seo ) {
-			setVideoData( attributes.seo );
-		}
-	}, [ isOpen ] ); // Only depend on isOpen
+	}, [ attachmentData, attributes, setAttributes ] ); // Remove isOpen from dependencies
 
 	const updateField = ( field, value ) => {
 		setVideoData( { ...videoData, [ field ]: value } );
