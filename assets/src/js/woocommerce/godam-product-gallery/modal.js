@@ -222,12 +222,12 @@ function stopSwipeAnimationLoop() {
  * - Hides the main modal by adding the 'hidden' class.
  * - Resets the body's overflow style to restore scrolling.
  * - Disposes of any video.js player instances inside the modal to free up resources.
- * - Optionally removes the 'active' class from the sidebar modal if provided.
+ * - Optionally removes the 'close' class from the sidebar modal if cta is enabled and is inside.
  *
  * @param {HTMLElement} modal              - The main modal element to be closed.
  * @param {HTMLElement} [sidebarModal]     - Optional Product sidebar modal element to be deactivated.
- * @param {boolean}     ctaEnabled
- * @param {string}      ctaDisplayPosition
+ * @param {boolean}     ctaEnabled         - Whether the call-to-action sidebar should be displayed.
+ * @param {string}      ctaDisplayPosition - Where the CTA should be shown (`'inside'` or `'below-inside'`).
  */
 function close( modal, sidebarModal, ctaEnabled, ctaDisplayPosition ) {
 	modal.classList.add( 'hidden' );

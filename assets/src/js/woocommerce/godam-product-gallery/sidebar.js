@@ -1,7 +1,26 @@
+/**
+ * Handles the initialization of the product modal sidebar and image gallery.
+ *
+ * This module provides:
+ * 1. Sidebar close functionality for the product modal.
+ * 2. A fully functional image gallery with:
+ * - Thumbnail navigation
+ * - Horizontal scroll with buttons, mouse wheel, and touch/swipe support
+ * - Accessibility support (keyboard navigation, ARIA labels)
+ */
+
+/**
+ * Initializes the sidebar functionality by attaching
+ * the close button event listener.
+ */
 export function initSidebar() {
 	addCloseSidebarListener();
 }
 
+/**
+ * Adds an event listener to the sidebar close button to close
+ * the product sidebar and adjust modal content layout accordingly.
+ */
 function addCloseSidebarListener() {
 	const modalContainer = document.querySelector( '.godam-product-modal-container.open' );
 	const sidebarClose = modalContainer.querySelector( '.godam-sidebar-close' );
@@ -13,15 +32,24 @@ function addCloseSidebarListener() {
 	} );
 }
 
+/**
+ * Initializes the image gallery functionality within the open product modal.
+ *
+ * Features:
+ * - Thumbnail selection with active state
+ * - Horizontal scroll navigation
+ * - Touch/swipe gestures for image switching
+ * - Mouse wheel horizontal scrolling
+ * - Accessibility (keyboard navigation and ARIA labels)
+ */
 export function initImageGallery() {
-	// Find the open modal container
 	const modalContainer = document.querySelector( '.godam-product-modal-container.open' );
 
 	if ( ! modalContainer ) {
 		return;
 	}
 
-	// Get gallery elements
+	// Get gallery elements.
 	const mainImage = modalContainer.querySelector( '.godam-main-image img' );
 	const thumbnails = modalContainer.querySelectorAll( '.godam-thumbnail-item' );
 
@@ -29,11 +57,11 @@ export function initImageGallery() {
 		return;
 	}
 
-	// Hide thumbnail carousel if there's only one image
+	// Hide thumbnail carousel if there's only one image.
 	const thumbnailCarousel = modalContainer.querySelector( '.godam-thumbnail-carousel' );
 	if ( thumbnails.length === 1 && thumbnailCarousel ) {
 		thumbnailCarousel.style.display = 'none';
-		return; // Exit early since there's no need for gallery functionality with one image
+		return;
 	}
 
 	const thumbnailImages = modalContainer.querySelectorAll( '.godam-thumbnail-image' );
@@ -41,15 +69,16 @@ export function initImageGallery() {
 	const prevBtn = modalContainer.querySelector( '.godam-thumbnail-prev' );
 	const nextBtn = modalContainer.querySelector( '.godam-thumbnail-next' );
 
-	// Initialize gallery
+	/**
+	 * Initializes the gallery with thumbnail, scroll, touch, and mouse support.
+	 */
 	function initGallery() {
-		// Add click event listeners to thumbnails
 		thumbnails.forEach( ( thumbnail, index ) => {
 			thumbnail.addEventListener( 'click', () => {
 				showImage( index );
 			} );
 
-			// Add keyboard support
+			// Add keyboard support.
 			thumbnail.setAttribute( 'tabindex', '0' );
 			thumbnail.setAttribute( 'role', 'button' );
 			thumbnail.setAttribute( 'aria-label', `View image ${ index + 1 }` );
@@ -62,42 +91,47 @@ export function initImageGallery() {
 			} );
 		} );
 
-		// Initialize horizontal scroll navigation
+		// Initialize horizontal scroll navigation.
 		initHorizontalScroll();
 
-		// Add touch/swipe support for mobile
+		// Add touch/swipe support for mobile.
 		initTouchSupport();
 
-		// Add mouse wheel support
+		// Add mouse wheel support.
 		initMouseWheelSupport();
 	}
 
+	/**
+	 * Updates the main image based on selected thumbnail.
+	 *
+	 * @param {number} index - Index of the selected thumbnail.
+	 */
 	function showImage( index ) {
-		// Remove active class from all thumbnails
 		thumbnails.forEach( ( thumb ) => {
 			thumb.classList.remove( 'active' );
 		} );
 
-		// Add active class to clicked thumbnail
 		if ( thumbnails[ index ] ) {
 			thumbnails[ index ].classList.add( 'active' );
 		}
 
-		// Update main image
+		// Update main image.
 		if ( thumbnailImages[ index ] ) {
 			mainImage.src = thumbnailImages[ index ].src;
 			mainImage.alt = thumbnailImages[ index ].alt;
 		}
 
-		// Add smooth transition effect
 		mainImage.style.opacity = '0';
 		setTimeout( () => {
 			mainImage.style.opacity = '1';
 		}, 150 );
 	}
 
+	/**
+	 * Enables horizontal scrolling for thumbnails with navigation buttons.
+	 */
 	function initHorizontalScroll() {
-		const scrollStep = 120; // pixels to scroll per click (thumbnail width + gap)
+		const scrollStep = 120;
 		let currentScrollLeft = 0;
 		const maxScrollLeft = thumbnailTrack.scrollWidth - thumbnailTrack.clientWidth;
 
@@ -115,7 +149,7 @@ export function initImageGallery() {
 		function scrollThumbnails( direction ) {
 			const newScrollLeft = currentScrollLeft + ( direction * scrollStep );
 
-			// Clamp scroll position
+			// Clamp scroll position.
 			currentScrollLeft = Math.max( 0, Math.min( newScrollLeft, maxScrollLeft ) );
 
 			thumbnailTrack.scrollTo( {
@@ -126,7 +160,7 @@ export function initImageGallery() {
 			updateNavigationButtons();
 		}
 
-		// Add click event listeners to navigation buttons
+		// Add click event listeners to navigation buttons.
 		if ( prevBtn ) {
 			prevBtn.addEventListener( 'click', () => {
 				scrollThumbnails( -1 );
@@ -139,22 +173,25 @@ export function initImageGallery() {
 			} );
 		}
 
-		// Update scroll position on manual scroll
+		// Update scroll position on manual scroll.
 		thumbnailTrack.addEventListener( 'scroll', () => {
 			currentScrollLeft = thumbnailTrack.scrollLeft;
 			updateNavigationButtons();
 		} );
 
-		// Initialize button states
+		// Initialize button states.
 		updateNavigationButtons();
 	}
 
+	/**
+	 * Adds mouse wheel support for horizontal thumbnail scrolling.
+	 */
 	function initMouseWheelSupport() {
 		thumbnailTrack.addEventListener( 'wheel', ( e ) => {
 			e.preventDefault();
 
 			const scrollAmount = e.deltaY > 0 ? 1 : -1;
-			const scrollStep = 60; // Smaller step for wheel scrolling
+			const scrollStep = 60; // Smaller step for wheel scrolling.
 
 			const currentScrollLeft = thumbnailTrack.scrollLeft;
 			const newScrollLeft = currentScrollLeft + ( scrollAmount * scrollStep );
@@ -167,6 +204,9 @@ export function initImageGallery() {
 		} );
 	}
 
+	/**
+	 * Adds touch/swipe gesture support for switching main images.
+	 */
 	function initTouchSupport() {
 		let startX = 0;
 		let endX = 0;
@@ -194,16 +234,16 @@ export function initImageGallery() {
 
 			if ( Math.abs( diff ) > swipeThreshold ) {
 				if ( diff > 0 && currentActiveIndex < thumbnails.length - 1 ) {
-					// Swipe left - next image
+					// Swipe left - next image.
 					showImage( currentActiveIndex + 1 );
 				} else if ( diff < 0 && currentActiveIndex > 0 ) {
-					// Swipe right - previous image
+					// Swipe right - previous image.
 					showImage( currentActiveIndex - 1 );
 				}
 			}
 		}
 	}
 
-	// Initialize the gallery
+	// Initialize the gallery.
 	initGallery();
 }
