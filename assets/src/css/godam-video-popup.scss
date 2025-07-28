@@ -190,6 +190,15 @@
 	align-content: center;
 	align-items: center;
 
+	@media (max-width: 768px) {
+		width: 100vw !important;
+		height: 100vh !important;
+		max-height: 100vh !important;
+		min-height: 100vh !important;
+		max-width: 100vw !important;
+
+	}
+
 	.video-container.animate-video-loading{
 		width: 100vw !important;
 		margin: 0 auto !important;
@@ -223,26 +232,38 @@
 
 		}
 
-		@media (max-width: 768px) {
-
-			.godam-video-wrapper, .easydam-video-container, .video-js  {
-				max-width: 100vw !important;
-				width: 100vw !important;
-				min-height: 100vh ;
-				max-height: 100vh;
-			}
-		}
-
 		.video-js{
 			min-height: 90vh !important;
 			max-height: 90vh !important;
 			padding-top: 0 !important ;
+			@media (max-width: 768px) {
+				height: 100vh !important;
+				max-height: 100vh !important;
+				min-height: 100vh !important;
+			}
 		}
 
 		.vjs-tech{
 			min-height: 90vh !important;
 			max-height: 90vh !important;
+			@media (max-width: 768px) {
+				height: 100vh !important;
+				max-height: 100vh !important;
+				min-height: 100vh !important;
+			}
 		}
+
+		@media (max-width: 768px) {
+
+			.godam-video-wrapper, .easydam-video-container, .video-js  {
+				max-width: 100vw !important;
+				width: 100vw !important;
+				min-height: 100vh  !important;
+				max-height: 100vh !important;
+			}
+		}
+
+	
 	}
 
 	.godam-product-video-container{
@@ -1003,10 +1024,21 @@
 		display: none !important;
 	}
 
-	.godam-product-modal-content.no-sidebar .video-container.is-portrait .vjs-tech,.godam-product-modal-content.no-sidebar .video-container.is-portrait .video-js{
-		height: 100vh !important;
+	.godam-product-modal-content.no-sidebar {
+		.video-container.is-portrait .vjs-tech,.godam-product-modal-content.no-sidebar .video-container.is-portrait .video-js{
+			height: 100vh !important;
+			max-height: 100vh !important;
+			min-height: 100vh !important;
+		}
+	}
+
+	.godam-product-video-container{
+		width: 100% !important;
+		height: 100% !important;
 		max-height: 100vh !important;
 		min-height: 100vh !important;
+		max-width: 100% !important;
+		min-width: 100% !important;
 	}
 
 	.godam-product-modal-container:has(.godam-product-sidebar) {
