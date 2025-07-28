@@ -38,6 +38,10 @@ class HoverManager {
 		this.init();
 	}
 
+	/**
+	 * Initializes the hover manager based on the hoverSelect type.
+	 * Sets up event listeners for the appropriate behavior.
+	 */
 	init() {
 		if ( this.hoverSelect === 'start-preview' ) {
 			this.setupPreview();
@@ -46,12 +50,20 @@ class HoverManager {
 		}
 	}
 
+	/**
+	 * Sets up event listeners for preview mode behavior.
+	 * Handles mouseenter, mouseleave, and click events for video previews.
+	 */
 	setupPreview() {
 		this.videoElement.addEventListener( 'mouseenter', this.handleMouseEnter.bind( this ) );
 		this.videoElement.addEventListener( 'mouseleave', this.handleMouseLeave.bind( this ) );
 		this.videoElement.addEventListener( 'click', this.handleVideoClick.bind( this ) );
 	}
 
+	/**
+	 * Sets up event listeners for controls visibility mode.
+	 * Manages showing/hiding controls based on hover and playback state.
+	 */
 	setupControlsVisibility() {
 		this.videoElement.addEventListener( 'mouseenter', this.handleShowControls.bind( this ) );
 		this.videoElement.addEventListener( 'mouseleave', this.handleHideControls.bind( this ) );
@@ -61,7 +73,9 @@ class HoverManager {
 		this.player.on( 'play', this.handlePlay.bind( this ) );
 	}
 
-	// Preview handlers
+	/**
+	 * Handles mouse enter events - starts preview if conditions are met.
+	 */
 	handleMouseEnter() {
 		this.isHovered = true;
 
@@ -71,6 +85,9 @@ class HoverManager {
 		this.startPreview();
 	}
 
+	/**
+	 * Handles mouse leave events - stops preview if currently active.
+	 */
 	handleMouseLeave() {
 		this.isHovered = false;
 
@@ -79,6 +96,9 @@ class HoverManager {
 		}
 	}
 
+	/**
+	 * Handles video click events - switches from preview to normal playback.
+	 */
 	handleVideoClick() {
 		if ( this.isPreview ) {
 			this.isVideoClicked = true;
@@ -100,29 +120,42 @@ class HoverManager {
 		this.isVideoClicked = true;
 	}
 
-	// Controls visibility handlers
+	/**
+	 * Shows video controls when mouse enters the video element.
+	 */
 	handleShowControls() {
 		this.isHovered = true;
 		this.player.addClass( 'vjs-has-started' );
 		this.player.controls( true );
 	}
 
+	/**
+	 * Hides video controls when mouse leaves the video element.
+	 */
 	handleHideControls() {
 		this.isHovered = false;
 		this.player.removeClass( 'vjs-has-started' );
 	}
 
+	/**
+	 * Keeps controls visible when video is paused.
+	 */
 	handlePause() {
 		this.player.controls( true );
 	}
 
+	/**
+	 * Hides controls when video starts playing (if not hovered).
+	 */
 	handlePlay() {
 		if ( ! this.isHovered ) {
 			this.player.controls( false );
 		}
 	}
 
-	// Preview methods
+	/**
+	 * Starts muted preview playback from the beginning.
+	 */
 	startPreview() {
 		this.player.volume( 0 );
 		this.player.currentTime( 0 );
@@ -136,6 +169,9 @@ class HoverManager {
 		this.player.play();
 	}
 
+	/**
+	 * Stops preview, resets video to start, and shows controls.
+	 */
 	stopPreview() {
 		const controlBar = this.player.controlBar?.el();
 		if ( controlBar ) {
