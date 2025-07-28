@@ -81,6 +81,8 @@ class WC_Featured_Video_Gallery {
 				'nonce'   => wp_create_nonce( 'godam_admin_featured_video_gallery_nonce' ),
 			) 
 		);
+
+		do_action( 'rtgodam_featured_gallery_after_enqueue_admin_scripts' );
 	}
 
 	/**
@@ -115,6 +117,8 @@ class WC_Featured_Video_Gallery {
 		);
 
 		wp_enqueue_script( 'rtgodam-wc-featured-video-gallery' );
+
+		do_action( 'rtgodam_featured_gallery_after_register_frontend_scripts' );
 	}
 
 	/**
@@ -138,6 +142,33 @@ class WC_Featured_Video_Gallery {
 		$mime_type = get_post_mime_type( $attachment_id );
 		$is_video  = strpos( $mime_type, 'video/' ) === 0;
 
+		$html = apply_filters(
+			'rtgodam_featured_gallery_thumbnail_html',
+			$this->get_thumbnail_html( $attachment_id, $is_video ),
+			$attachment_id,
+			$is_video
+		);
+
+		wp_send_json_success( $html );
+	}
+
+	/**
+	 * Generates the HTML for a product gallery thumbnail (image or video).
+	 *
+	 * This function creates a `<li>` element containing the thumbnail image 
+	 * for a WooCommerce product gallery. If the attachment is a video, 
+	 * it retrieves a custom video thumbnail (or a fallback image if not set). 
+	 * For non-video attachments, it uses the default WordPress attachment image.
+	 * 
+	 * @param int  $attachment_id The ID of the media attachment.
+	 * @param bool $is_video      Whether the attachment is a video. 
+	 *                                - true  → Uses a custom video thumbnail or fallback image.
+	 *                                - false → Uses the standard WordPress image thumbnail.
+	 *
+	 * @return string The generated HTML string for the thumbnail list item.
+	 */
+	private function get_thumbnail_html( $attachment_id, $is_video ) {
+
 		$html = '<li class="image" data-attachment_id="' . esc_attr( $attachment_id ) . '">';
 
 		if ( $is_video ) {
@@ -155,7 +186,7 @@ class WC_Featured_Video_Gallery {
 		$html .= '<ul class="actions"><li><a href="#" class="delete tips" data-tip="' . esc_attr__( 'Delete image', 'godam' ) . '">' . esc_html__( 'Delete', 'godam' ) . '</a></li></ul>';
 		$html .= '</li>';
 
-		wp_send_json_success( $html );
+		return $html;
 	}
 
 	/**
@@ -184,6 +215,8 @@ class WC_Featured_Video_Gallery {
 		if ( isset( $_POST['product_image_gallery'] ) ) {
 			$gallery_ids = array_filter( array_map( 'absint', explode( ',', sanitize_text_field( $_POST['product_image_gallery'] ) ) ) );
 			update_post_meta( $post_id, '_product_image_gallery', implode( ',', $gallery_ids ) );
+
+			do_action( 'rtgodam_featured_gallery_after_save_gallery_ids', $gallery_ids, $post_id );
 		}
 	}
 
