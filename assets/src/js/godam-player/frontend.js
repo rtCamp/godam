@@ -765,7 +765,8 @@ function GODAMPlayer( videoRef = null ) {
 				playButtonElement.el_.parentNode.replaceChild( imgElement, playButtonElement.el_ );
 			}
 
-			if ( controlBarSettings?.brandingIcon || ! validAPIKey ) {
+			// Consider true if not toggled manually in the video editor manually.
+			if ( ( controlBarSettings?.brandingIcon ?? true ) || ! validAPIKey ) {
 				const CustomPlayButton = videojs.getComponent( 'Button' );
 
 				class CustomButton extends CustomPlayButton {
