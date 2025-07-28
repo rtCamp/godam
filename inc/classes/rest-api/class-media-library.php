@@ -1232,6 +1232,7 @@ class Media_Library extends Base {
 	 * This method formats the term data for the REST API response.
 	 *
 	 * @param array|\WP_Error $terms The terms to prepare.
+	 
 	 * @return array Prepared term data.
 	 */
 	private function prepare_term_responses( $terms ) {
