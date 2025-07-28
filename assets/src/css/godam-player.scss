@@ -575,7 +575,7 @@ body.godam-share-modal-open {
 
 .share-modal-popup {
 	background: #fff;
-	color: #353B41;
+	color: variables.$godam-share-modal-text-color;
 	padding: 24px;
 	border-radius: 8px;
 	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -584,7 +584,7 @@ body.godam-share-modal-open {
 	max-width: 500px;
 	display: flex;
 	flex-direction: column;
-
+	font-family: Roboto, sans-serif !important;
 	opacity: 0;
 	transform: scale(0.95);
 	animation: fadeInScale 0.3s ease forwards;
@@ -621,19 +621,21 @@ body.godam-share-modal-open {
 
 	&__close-button {
 		color: #878787;
-		font-size: 17px;
-		background: #F7FAFB;
-		height: 33px;
-		width: 33px;
+		font-size: 22px;
+		background: variables.$godam-share-modal-gray-accent-1;
+		height: 35px;
+		width: 35px;
 		cursor: pointer;
 		border: none;
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		line-height: 1;
+		padding-bottom: 2px;
 
 		&:hover {
-			background: #eaeef1;
+			background: variables.$godam-share-modal-gray-accent-2;
 		}
 	}
 
@@ -645,10 +647,10 @@ body.godam-share-modal-open {
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: center;
-		gap: 20px;
+		gap: 18px;
 
 		@media screen and (max-width: 600px) {
-			gap: 16px;
+			gap: 12px;
 		}
 
 		a.social-icon {
@@ -657,13 +659,14 @@ body.godam-share-modal-open {
 			display: flex;
 			justify-content: center;
 			align-items: center;
-			background: #F7FAFB;
+			background: variables.$godam-share-modal-gray-accent-1;
 			border-radius: 50%;
 			transition: all 0.2s ease;
+			outline: none;
 
 			@media screen and (max-width: 600px) {
-				height: 50px;
-				width: 50px;
+				height: 45px;
+				width: 45px;
 			}
 
 			img {
@@ -671,23 +674,14 @@ body.godam-share-modal-open {
 				width: 20px;
 
 				@media screen and (max-width: 600px) {
-					height: 18px;
-					width: 18px;
+					height: 16px;
+					width: 16px;
 				}
 			}
 
 			&:hover {
-				background: #eaeef1;
+				background: variables.$godam-share-modal-gray-accent-2;
 			}
-		}
-	}
-
-	.vjs-volume-panel-vertical {
-		flex-direction: column;
-
-		button {
-			height: 50% !important;
-			left: 10px !important;
 		}
 	}
 
@@ -717,28 +711,41 @@ body.godam-share-modal-open {
 				height: 25px;
 				padding: 24px 16px;
 				font-size: 14px;
-				color: #353B41;
-				background: #F7FAFB;
-				border: none;
+				color: rgb(120, 120, 120) !important;
+				background: variables.$godam-share-modal-gray-accent-1 !important;
+				border: none !important;
 				border-radius: 8px;
 				box-sizing: border-box;
 				outline: none;
+				letter-spacing: 0.5px;
+				box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.09) !important;
+				font-style: normal;
+				font-weight: 400;
+				line-height: 24px;
+				font-family: Roboto, sans-serif !important;
+
+				&:focus {
+					background: variables.$godam-share-modal-gray-accent-1 !important;
+					color: rgb(0, 0, 0) !important;
+					border: none !important;
+				}
 			}
 
-			button {
+			.copy-button {
+				height: 100%;
 				position: absolute;
 				top: 50%;
 				right: 0;
 				transform: translateY(-50%);
-				background: #F7FAFB;
+				background: variables.$godam-share-modal-gray-accent-1;
 				border: none;
 				cursor: pointer;
-				padding: 14px;
+				padding: 10px 14px;
 				border-radius: 0 8px 8px 0;
 				outline: none;
 
 				&:hover {
-					background: #eaeef1;
+					background: variables.$godam-share-modal-gray-accent-2;
 				}
 
 				img {
@@ -1181,22 +1188,22 @@ body.godam-share-modal-open {
 .vjs-modal-dialog.vjs-text-track-settings {
 
 	color: #111;
-    z-index: 999;
-    background-color: #fff;
-    border-radius: 8px;
-    outline: 0;
-    width: 90%;
-    max-width: 400px;
-    height: 90%;
-    max-height: 260px;
-    margin: 0 auto;
-    font-size: 12px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+	z-index: 999;
+	background-color: #fff;
+	border-radius: 8px;
+	outline: 0;
+	width: 90%;
+	max-width: 400px;
+	height: 90%;
+	max-height: 260px;
+	margin: 0 auto;
+	font-size: 12px;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 	-webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: #e5e5e5 #fff;
+	scrollbar-width: thin;
+	scrollbar-color: #e5e5e5 #fff;
 
 	.vjs-close-button {
 		display: none;
@@ -1234,9 +1241,9 @@ body.godam-share-modal-open {
 
 				label {
 					height: 20px;
-    				width: fit-content;
+					width: fit-content;
 					padding: 0 0 0 15px;
-    				font-size: 12px;
+					font-size: 12px;
 				}
 
 				select {
