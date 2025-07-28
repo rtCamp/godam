@@ -183,7 +183,8 @@ function GODAMPlayer( videoRef = null ) {
 										'3:4': 'portrait',
 									};
 									const aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
-									const godamProductModalContainer = document.querySelector( '.godam-product-modal-container.open' );
+									const godamProductModalContainer = document.querySelector( '.godam-product-modal-container.open' ) || document.querySelector( '.godam-woocommerce-featured-video-modal-container.open' );
+									console.log( 'godamProductModalContainer' , godamProductModalContainer);
 									if ( godamProductModalContainer ) {
 										const videoContainer = godamProductModalContainer.querySelector( '.video-container' );
 										if ( videoContainer ) {
@@ -219,7 +220,8 @@ function GODAMPlayer( videoRef = null ) {
 							};
 
 							const aspectRatioClass = aspectRatioOrientation[ aspectRatio ];
-							const godamProductModalContainer = document.querySelector( '.godam-product-modal-container.open' );
+							const godamProductModalContainer = document.querySelector( '.godam-product-modal-container.open' ) || document.querySelector( '.godam-woocommerce-featured-video-modal-container.open' );
+							// console.log( 'godamProductModalContainer' , godamProductModalContainer);
 							if ( godamProductModalContainer ) {
 								const videoContainer = godamProductModalContainer.querySelector( '.video-container' );
 								if ( videoContainer ) {
