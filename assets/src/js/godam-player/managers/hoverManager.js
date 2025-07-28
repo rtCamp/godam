@@ -24,7 +24,6 @@
  *
  * @example
  * const hoverManager = new HoverManager(playerInstance, videoElement);
- *
  */
 class HoverManager {
 	constructor( player, videoElement, options = {} ) {
@@ -33,6 +32,7 @@ class HoverManager {
 		this.hoverSelect = videoElement.dataset.hoverSelect || 'none';
 		this.isVideoClicked = false;
 		this.isPreview = false;
+		this.isHovered = false; // Track hover state
 		this.options = options;
 
 		this.init();
@@ -63,14 +63,17 @@ class HoverManager {
 
 	// Preview handlers
 	handleMouseEnter() {
+		this.isHovered = true;
+
 		if ( this.player.currentTime() > 0 || this.isVideoClicked ) {
 			return;
 		}
-
 		this.startPreview();
 	}
 
 	handleMouseLeave() {
+		this.isHovered = false;
+
 		if ( this.isPreview ) {
 			this.stopPreview();
 		}
@@ -99,11 +102,13 @@ class HoverManager {
 
 	// Controls visibility handlers
 	handleShowControls() {
+		this.isHovered = true;
 		this.player.addClass( 'vjs-has-started' );
 		this.player.controls( true );
 	}
 
 	handleHideControls() {
+		this.isHovered = false;
 		this.player.removeClass( 'vjs-has-started' );
 	}
 
@@ -112,7 +117,7 @@ class HoverManager {
 	}
 
 	handlePlay() {
-		if ( ! this.videoElement.matches( ':hover' ) ) {
+		if ( ! this.isHovered ) {
 			this.player.controls( false );
 		}
 	}
@@ -140,10 +145,6 @@ class HoverManager {
 		this.isPreview = false;
 		this.player.pause();
 		this.player.currentTime( 0 );
-	}
-
-	destroy() {
-
 	}
 }
 

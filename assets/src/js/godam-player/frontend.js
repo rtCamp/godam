@@ -151,9 +151,7 @@ function GODAMPlayer( videoRef = null ) {
 				}
 			}
 
-			const hoverManager = new HoverManager( player, video, {
-				previewDuration: 10000, // 10 seconds
-			} );
+			const hoverManager = new HoverManager( player, video );
 
 			player.hoverManager = hoverManager;
 
