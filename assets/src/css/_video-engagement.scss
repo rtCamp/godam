@@ -345,6 +345,19 @@
                     }
                 }
             }
+
+            &-number {
+                cursor: pointer;
+                background-color: transparent;
+                border: none;
+                font-size: 12px;
+                padding: 5px 8px;
+                margin-left: 45px;
+                margin-bottom: 15px;
+                position: relative;
+                top: -10px;
+                border-left: 3px solid var(--godam-video-engagement-brand-neutral-shades-100);
+            }
         }
 
         &-details {
@@ -391,7 +404,6 @@
 
         &-time {
             color: #E6533A;
-;
         }
 
         &-text {

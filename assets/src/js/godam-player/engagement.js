@@ -531,6 +531,7 @@ function Comment( props ) {
 		children,
 	} = comment;
 	const [ isExpanded, setIsExpanded ] = useState( false );
+	const [ showChildComments, setShowChildComments ] = useState( false );
 
 	return (
 		<div className={ 'rtgodam-video-engagement--comment-parent ' + ( children && children.length > 0 ? 'has-children' : '' ) }>
@@ -565,7 +566,18 @@ function Comment( props ) {
 					) }
 				</div>
 			</div>
-			{ children && children.length > 0 && (
+
+			{ children && children.length > 0 && ! showChildComments && (
+				<button
+					className="rtgodam-video-engagement--comment-child-number"
+					onClick={ () => setShowChildComments( true ) }
+				>
+					{
+						children.length > 1 ? children.length + ' ' + __( 'Replies', 'godam' ) : children.length + ' ' + __( 'Reply', 'godam' )
+					}
+				</button>
+			) }
+			{ children && children.length > 0 && showChildComments && (
 				<div className="rtgodam-video-engagement--comment-child">
 					{ children.map( ( child ) => (
 						<Comment key={ child.id } comment={ child } setCommentsData={ setCommentsData } storeObj={ storeObj } videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } />
