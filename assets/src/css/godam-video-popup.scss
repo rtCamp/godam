@@ -559,6 +559,10 @@
 		align-items: center;
 		gap: 12px;
 	}
+
+	.godam-sidebar-header-actions.hide{
+		display: none !important;
+	}
 }
 
 // godam single sidebar

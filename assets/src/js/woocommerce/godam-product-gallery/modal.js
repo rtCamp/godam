@@ -97,6 +97,8 @@ export function initVideoModal() {
 
 		const modal = getModal;
 
+		modal.querySelector( '.godam-sidebar-header-actions' )?.classList.add( 'hide' );
+
 		modal.classList.add( 'open' );
 
 		if ( ctaEnabled && ( ctaDisplayPosition === 'below-inside' || ctaDisplayPosition === 'inside' ) ) {
@@ -573,6 +575,8 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 					const headerText = sidebarModal.querySelector( '.godam-header-text' );
 					headerText.classList.add( 'hidden' );
 				} );
+
+				modal.querySelector( '.godam-sidebar-header-actions' )?.classList.remove( 'hide' );
 			} else {
 				console.warn( 'Product content not found:', result.data );
 			}
@@ -617,6 +621,7 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 				const headerText = sidebarModal.querySelector( '.godam-header-text' );
 				headerText.classList.remove( 'hidden' );
 			} );
+			modal.querySelector( '.godam-sidebar-header-actions' )?.classList.remove( 'hide' );
 		}
 	} catch ( err ) {
 		console.error( 'Failed to load sidebar products:', err );
@@ -712,6 +717,7 @@ function initScrollSwipeNavigation( modal, currentGallery, sidebarModal, ctaEnab
 			const newProductIds = newVideo.getAttribute( 'data-video-attached-product-ids' );
 			modal.querySelector( '.godam-swipe-hint' ).classList.remove( 'show' );
 			modal.querySelector( '.godam-swipe-overlay' ).classList.remove( 'visible' );
+			modal.querySelector( '.godam-sidebar-header-actions' )?.classList.add( 'hide' );
 			await loadNewVideo( newVideoId, modal );
 			await loadSidebarProducts( newProductIds, sidebarModal, ctaEnabled, ctaDisplayPosition, modal );
 		}
