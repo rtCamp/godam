@@ -196,10 +196,21 @@ const MediaMigration = () => {
 								></div>
 							</div>
 							<div className="leading-6 mr-6">
-								<div className="easydam-settings-label text-base"><b>{ __( 'STORAGE ', 'godam' ) }{ formatSize( parseInt( window?.userData.total_storage - window?.userData.storage_used ) * 1024 * 1024 * 1024 ) }</b></div>
-								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ formatSize( parseInt( window?.userData.storage_used ) * 1024 * 1024 * 1024 ) }
+								<div className="easydam-settings-label text-base">
+									<b>{ __( 'STORAGE ', 'godam' ) }</b>
+									{ formatSize(
+										parseInt(
+											( window?.userData?.total_storage || 0 ) - ( window?.userData?.storage_used || 0 ),
+										) * 1024 * 1024 * 1024,
+									) }
+								</div>
+								<strong>{ __( 'Used: ', 'godam' ) }</strong>
+								{ formatSize(
+									parseInt( window?.userData?.storage_used || 0 ) * 1024 * 1024 * 1024,
+								) }
 								<br />
-								<strong>{ __( 'Files Size: ', 'godam' ) }</strong>{ formatSize( mediaMigrationInfo.total_size ) }
+								<strong>{ __( 'Files Size: ', 'godam' ) }</strong>
+								{ formatSize( mediaMigrationInfo.total_size || 0 ) }
 							</div>
 							<div className="leading-6 mr-6">
 								<div className="easydam-settings-label text-base">&nbsp;</div>
@@ -209,9 +220,11 @@ const MediaMigration = () => {
 							</div>
 							<div className="leading-6 mr-6">
 								<div className="easydam-settings-label text-base">&nbsp;</div>
-								<strong>{ __( 'Remaining Files: ', 'godam' ) }</strong>{ mediaMigrationInfo.remaining } { _x( 'Files', 'files', 'godam' ) }
+								<strong>{ __( 'Remaining Files: ', 'godam' ) }</strong>
+								{ mediaMigrationInfo.remaining || 0 } { _x( 'Files', 'files', 'godam' ) }
 								<br />
-								<strong>{ __( 'Remaining Size: ', 'godam' ) }</strong>{ formatSize( parseInt( mediaMigrationInfo?.remaining_size ) ) }
+								<strong>{ __( 'Remaining Size: ', 'godam' ) }</strong>
+								{ formatSize( parseInt( mediaMigrationInfo?.remaining_size || 0 ) ) }
 							</div>
 							<div className="leading-6 mr-6">
 								<div className="easydam-settings-label text-base">&nbsp;</div>
