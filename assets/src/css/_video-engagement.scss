@@ -11,6 +11,7 @@
     --godam-video-engagement-comment--border-color: rgb(136, 136, 136, 0.5);
     --godam-video-engagement-font-family: sans-serif;
     --godam-video-engagement-brand-neutral-shades-25: #E0E0E0;
+    --godam-video-engagement-brand-neutral-shades-100: #B8B8B8;
     --godam-video-engagement-modal-close-button-shadow: 0px 2.09px 4.18px 2.09px #00000012;
 }
 
@@ -285,11 +286,6 @@
                     }
                 }
             }
-
-
-            .rtgodam-video-engagement--comment-form-textarea textarea {
-                width: calc(100% - 24px);
-            }
         }
     }
 
@@ -360,7 +356,7 @@
         }
 
         &-content {
-            margin-bottom: 10px;
+            margin-bottom: 1rem;
         }
 
         &-author {
@@ -405,23 +401,94 @@
 
         &-form {
             &-textarea {
+                display: flex;
+                border: 1px solid var(--godam-video-engagement-brand-neutral-shades-100);
+                border-radius: 8px;
+                min-height: 48px;
+                align-items: center;
+                justify-content: space-between;
+                padding-right: 12px;
+
                 textarea {
                     font-family: var(--godam-video-engagement-font-family);
                     width: 100%;
-                    height: 50px;
-                    border: 1px solid var(--godam-video-engagement-comment--border-color);
-                    border-radius: 10px;
-                    padding: 10px;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 12px;
+                    outline: none;
                 }
-            }
 
-            &-submit {
-                display: flex;
+                button {
+                    margin: 0;
+                    border: none;
+                    padding: 0;
+                    width: 24px;
+                    height: 24px;
+                    color: transparent;
+                    background-image: url('../images/comment-send.svg');
+                    background-size: 100% 100%;
+                    background-position: center;
+                    background-repeat: no-repeat;
+
+                    &:is(:disabled) {
+                        opacity: 0.5;
+                        pointer-events: none;
+                        cursor: not-allowed;
+                    }
+
+                    &.is-comment-progressing {
+                        position: relative;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        align-content: center;
+                        flex-wrap: wrap;
+                        background: none;
+
+                        &::before {
+                            content: '';
+                            position: absolute;
+                            width: 10px;
+                            height: 10px;
+                            border: 2px solid var(--wp--preset--color--white, #fff);
+                            border-top: 2px solid var(--wp--preset--color--black, #000);
+                            border-radius: 50%;
+                            animation: comment-loading 1s linear infinite;
+                        }
+                    }
+                }
             }
         }
 
         &-reply {
             margin-bottom: 10px;
+
+            button {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                border: none;
+                padding: 0;
+                font-size: 12px;
+                line-height: 18px;
+                font-weight: 500;
+                color: #666;
+
+                &::before {
+                    content: '';
+                    display: block;
+                    width: 16px;
+                    height: 16px;
+                    background-image: url('../images/charm_reply.svg');
+                    background-size: 100% 100%;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                }
+
+                &:hover {
+                    color: var(--wp--preset--color--black, #000);
+                }
+            }
         }
 
         &-button {
@@ -433,34 +500,9 @@
             transition: all 0.3s ease;
             margin-right: 10px;
 
-            &:not(:disabled):hover {
+            &.button-general:hover {
                 background-color: var(--wp--preset--color--black, #000);
                 color: var(--wp--preset--color--white, #fff);
-            }
-
-            &.is-comment-progressing {
-                cursor: not-allowed;
-                pointer-events: none;
-                opacity: 0.7;
-                position: relative;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                align-content: center;
-                flex-wrap: wrap;
-                text-align: center;
-                color: transparent;
-
-                &::before {
-                    content: '';
-                    position: absolute;
-                    width: 10px;
-                    height: 10px;
-                    border: 2px solid var(--wp--preset--color--white, #fff);
-                    border-top: 2px solid var(--wp--preset--color--black, #000);
-                    border-radius: 50%;
-                    animation: comment-loading 1s linear infinite;
-                }
             }
         }
     }

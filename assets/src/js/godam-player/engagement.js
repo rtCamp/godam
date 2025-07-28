@@ -490,17 +490,20 @@ function CommentForm( props ) {
 					value={ commentText }
 					onChange={ ( e ) => setCommentText( e.target.value ) }
 				/>
-			</div>
-			<div className="rtgodam-video-engagement--comment-form-submit">
-				<button className={ 'rtgodam-video-engagement--comment-button' + ( isSending ? ' is-comment-progressing' : '' ) } disabled={ isSending || ! commentText } onClick={ handleSubmit }>
+				<button
+					className={ 'rtgodam-video-engagement--comment-button' +
+					( isSending ? ' is-comment-progressing' : '' ) }
+					disabled={ isSending || ! commentText }
+					onClick={ handleSubmit }
+				>
 					{ 'thread-reply' === type ? __( 'Reply', 'godam' ) : __( 'Comment', 'godam' ) }
 				</button>
-				{ 'thread-reply' === type &&
-					<button className="rtgodam-video-engagement--comment-button" onClick={ () => setIsExpanded( false ) }>
-						{ __( 'Cancel', 'godam' ) }
-					</button>
-				}
 			</div>
+			{ 'thread-reply' === type &&
+				<button className="rtgodam-video-engagement--comment-button button-general" onClick={ () => setIsExpanded( false ) }>
+					{ __( 'Cancel', 'godam' ) }
+				</button>
+			}
 		</div>
 	);
 }
@@ -548,13 +551,13 @@ function Comment( props ) {
 							{ text }
 						</div>
 					</div>
-					<div className="rtgodam-video-engagement--comment-reply">
-						{ ! isExpanded && (
+					{ ! isExpanded && (
+						<div className="rtgodam-video-engagement--comment-reply">
 							<button className="rtgodam-video-engagement--comment-button" onClick={ () => setIsExpanded( true ) }>
 								{ __( 'Reply', 'godam' ) }
 							</button>
-						) }
-					</div>
+						</div>
+					) }
 					{ isExpanded && (
 						<div className="rtgodam-video-engagement--comment-form">
 							<CommentForm { ...props } setIsExpanded={ setIsExpanded } type="thread-reply" siteUrl={ siteUrl } />
