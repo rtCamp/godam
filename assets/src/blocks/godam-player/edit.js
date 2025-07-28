@@ -440,14 +440,22 @@ function VideoEdit( {
 
 					<BaseControl
 						id={ `video-block__hover-${ instanceId }` }
-						label={ __( 'Hover Options', 'godam' ) }
 						__nextHasNoMarginBottom
 					>
-						<ToggleControl
+						<SelectControl
 							__nextHasNoMarginBottom
-							label={ __( 'Hover Overlay', 'godam' ) }
-							onChange={ ( value ) => setAttributes( { hoverOverlay: value } ) }
-							checked={ !! attributes.hoverOverlay }
+							label={ __( 'Hover Option', 'godam' ) }
+							help={ __( 'Choose the action to perform on video hover.', 'godam' ) }
+							value={ attributes.hoverSelect || 'none' }
+							onChange={ ( value ) => setAttributes( { hoverSelect: value } ) }
+							options={
+								[
+									{ label: __( 'None', 'godam' ), value: 'none' },
+									{ label: __( 'Show Player Controls', 'godam' ), value: 'show-player-controls' },
+									{ label: __( 'Start Preview', 'godam' ), value: 'start-preview' },
+									{ label: __( 'Custom Overlay', 'godam' ), value: 'custom-overlay' },
+								]
+							}
 						/>
 					</BaseControl>
 

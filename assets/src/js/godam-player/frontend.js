@@ -53,6 +53,8 @@ import {
 	loadChapters,
 } from './chapters.js'; // Adjust path as needed
 
+import HoverManager from './managers/hoverManager.js';
+
 /**
  * Global variables
  */
@@ -148,6 +150,12 @@ function GODAMPlayer( videoRef = null ) {
 					player.aspectRatio( '16:9' );
 				}
 			}
+
+			const hoverManager = new HoverManager( player, video, {
+				previewDuration: 10000, // 10 seconds
+			} );
+
+			player.hoverManager = hoverManager;
 
 			const captionsButton = player.el().querySelector( '.vjs-subs-caps-button' );
 			const durationElement = player.el().querySelector( '.vjs-duration' );
