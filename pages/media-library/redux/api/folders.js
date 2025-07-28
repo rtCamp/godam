@@ -34,25 +34,15 @@ export const folderApi = createApi( {
 		} ),
 		getFolders: builder.query( {
 			query: ( options = {} ) => {
+				const isSpecial = options.bookmark || options.locked;
+
 				const params = {
 					_fields: 'id,name,parent,attachmentCount,meta',
-					per_page: 10, // Default per_page to 10
+					per_page: isSpecial ? 100 : 10,
+					...( options.bookmark ? { bookmark: true } : {} ),
+					...( options.locked ? { locked: true } : {} ),
+					...( options.page ? { page: options.page } : {} ),
 				};
-
-				// Only add bookmark if it's explicitly passed and truthy
-				if ( options.bookmark ) {
-					params.bookmark = true;
-					params.per_page = 100; // Reset per_page to 100 if bookmark
-				}
-
-				if ( options.locked ) {
-					params.locked = true;
-					params.per_page = 100; // Reset per_page to 100 if locked
-				}
-
-				if ( options.page ) {
-					params.page = options.page;
-				}
 
 				return {
 					url: 'godam/v1/media-library/media-folders',

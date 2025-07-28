@@ -1130,6 +1130,7 @@ class Media_Library extends Base {
 	 * Get media-folders terms by various parameters.
 	 *
 	 * @param \WP_REST_Request $request REST API request.
+	 *
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function get_media_folders( $request ) {
@@ -1142,10 +1143,10 @@ class Media_Library extends Base {
 			'hide_empty' => false,
 			'orderby'    => 'name',
 			'order'      => 'ASC',
+			'per_page'   => 100, // Default to 100 items per page.
 		);
 
 		if ( ! empty( $bookmark ) ) {
-			$args['per_page']   = 100; // Get all terms if bookmark filter is applied.
 			$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Meta query is needed to filter by bookmark.
 				array(
 					'key'   => 'bookmark',
@@ -1155,7 +1156,6 @@ class Media_Library extends Base {
 		}
 
 		if ( ! empty( $locked ) ) {
-			$args['per_page']     = 100; // Get all terms if bookmark filter is applied.
 			$args['meta_query'][] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Meta query is needed to filter by locked.
 				'key'   => 'locked',
 				'value' => $locked,
@@ -1198,6 +1198,7 @@ class Media_Library extends Base {
 	 *
 	 * @param array|\WP_Error $terms    The terms to get children for.
 	 * @param string          $taxonomy The taxonomy to query.
+	 *
 	 * @return array An array of all child terms.
 	 */
 	private function get_all_children_terms( $terms, $taxonomy ) {

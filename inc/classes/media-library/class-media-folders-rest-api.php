@@ -24,13 +24,6 @@ class Media_Folders_REST_API {
 	use Singleton;
 
 	/**
-	 * Pagination info for parent terms.
-	 *
-	 * @var array
-	 */
-	private $pagination_info = array();
-
-	/**
 	 * Construct method.
 	 *
 	 * @since 1.3.0
