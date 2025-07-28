@@ -263,13 +263,26 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 				} ) );
 				break;
 			case 'woo':
+				const lastWooLayer = [ ...layers ]
+					.reverse()
+					.find( ( layer ) => layer.type === 'woo' );
+
+				const previousDisplayTime = lastWooLayer?.displayTime ?? null;
+
+				const firstWooLayer = layers.find( ( layer ) => layer.type === 'woo' );
+				const firstWooLayerId = firstWooLayer?.id;
+				const firstWooLayerMiniCart = firstWooLayer?.miniCart;
+
 				dispatch(
 					addLayer( {
 						id: uuidv4(),
+						firstWooLayerId,
 						displayTime: currentTime,
+						previousDisplayTime,
 						type,
 						duration: 5,
 						pauseOnHover: false,
+						miniCart: firstWooLayerMiniCart,
 						productHotspots: [
 							{
 								id: uuidv4(),
@@ -359,6 +372,11 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 														)
 													}
 													<p className="m-0 text-base">{ layerText } layer at <b>{ layer.displayTime }s</b></p>
+													{ layer.type === 'woo' && layer.previousDisplayTime === null && (
+														<span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full">
+															mini-cart
+														</span>
+													) }
 												</div>
 												<div>
 													<Icon icon={ arrowRight } />

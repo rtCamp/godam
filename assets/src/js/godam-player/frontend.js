@@ -8,6 +8,7 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { dispatch } from '@wordpress/data';
 
 /**
  * VideoJs dependencies
@@ -1026,6 +1027,7 @@ function GODAMPlayer( videoRef = null ) {
 					show: true,
 					productHotspots: layer.productHotspots || [],
 					pauseOnHover: layer.pauseOnHover || false,
+					miniCart: layer.miniCart || false,
 				} );
 			}
 
@@ -1320,6 +1322,8 @@ function GODAMPlayer( videoRef = null ) {
 			const baseWidth = 800;
 			const baseHeight = 600;
 
+			const miniCart = layerObj.miniCart;
+
 			layerObj.productHotspots.forEach( ( hotspot ) => {
 				// Create the outer div
 				const hotspotDiv = document.createElement( 'div' );
@@ -1420,19 +1424,64 @@ function GODAMPlayer( videoRef = null ) {
 				productPriceDiv.innerHTML = hotspot.productDetails.price;
 				productDetailsDiv.appendChild( productPriceDiv );
 
-				// Product link
-				const productLink = document.createElement( 'a' );
-				productLink.classList.add( 'product-hotspot-woo-link' );
-				productLink.href = hotspot.addToCart ? hotspot.productDetails.link : `/cart/?add-to-cart=${ hotspot.productId }`;
-				productLink.target = '_blank';
-				productLink.rel = 'noopener noreferrer';
-				productLink.style.background = hotspot.backgroundColor;
+				if ( ! miniCart ) {
+				// Product link when Mini Cart is false.
+					const productLink = document.createElement( 'a' );
+					productLink.classList.add( 'product-hotspot-woo-link' );
+					productLink.href = hotspot.addToCart ? hotspot.productDetails.link : `/cart/?add-to-cart=${ hotspot.productId }`;
+					productLink.target = '_blank';
+					productLink.rel = 'noopener noreferrer';
+					productLink.style.background = hotspot.backgroundColor;
 
-				// Product Button Label.
-				const defaultLabel = hotspot.addToCart ? __( 'View Product', 'godam' ) : __( 'Buy Now', 'godam' );
-				const shopText = hotspot.shopText?.trim();
-				productLink.textContent = shopText ? shopText : defaultLabel;
-				productDetailsDiv.appendChild( productLink );
+					// Product Button Label.
+					const defaultLabel = hotspot.addToCart ? __( 'View Product', 'godam' ) : __( 'Buy Now', 'godam' );
+					const shopText = hotspot.shopText?.trim();
+					productLink.textContent = shopText ? shopText : defaultLabel;
+					productDetailsDiv.appendChild( productLink );
+				} else {
+				// Product Link Button when Mini Cart is True.
+					const productLinkButton = document.createElement( 'button' );
+					productLinkButton.classList.add( 'product-hotspot-woo-link' );
+					productLinkButton.style.background = hotspot.backgroundColor;
+
+					// Product link button text
+					const defaultLabel = hotspot.addToCart ? __( 'View Product', 'godam' ) : __( 'Buy Now', 'godam' );
+					const shopText = hotspot.shopText?.trim();
+					productLinkButton.textContent = shopText ? shopText : defaultLabel;
+
+					// Disable Product Link button during async operation
+					productLinkButton.addEventListener( 'click', ( event ) => {
+						event.preventDefault();
+						productLinkButton.disabled = true;
+						productLinkButton.classList.add( 'loading' );
+
+						if ( hotspot.addToCart ) {
+							// Redirect to product details page
+							window.open( hotspot.productDetails.link, '_blank' );
+							productLinkButton.disabled = false;
+							productLinkButton.classList.remove( 'loading' );
+						} else {
+							// Add to cart
+							const productId = hotspot.productId;
+							const quantity = 1;
+
+							dispatch( 'wc/store/cart' )
+								.addItemToCart( productId, quantity )
+								.then( () => {
+									productLinkButton.disabled = false;
+									productLinkButton.classList.remove( 'loading' );
+								} )
+								.catch( ( err ) => {
+									// eslint-disable-next-line no-console
+									console.error( 'Add to cart failed', err );
+									productLinkButton.disabled = false;
+									productLinkButton.classList.remove( 'loading' );
+								} );
+						}
+					} );
+
+					productDetailsDiv.appendChild( productLinkButton );
+				}
 
 				hotspotContent.appendChild( productBoxDiv );
 				hotspotDiv.appendChild( hotspotContent );
