@@ -748,14 +748,12 @@
 }
 
 .godam-thumbnail-item:hover {
-	border-color: var(--wp--preset--color--primary, #007cba);
+	border-color: var(--wp--preset--color--primary, rgba(0, 124, 186, 0.3));
 	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(0, 124, 186, 0.2);
 }
 
 .godam-thumbnail-item.active {
-	border-color: var(--wp--preset--color--primary, #007cba);
-	box-shadow: 0 2px 8px var(--wp--preset--color--primary, rgba(0, 124, 186, 0.3));
+	border-color: var(--wp--preset--color--primary, rgba(0, 124, 186, 0.3));
 }
 
 .godam-thumbnail-item.active::after {
@@ -805,7 +803,7 @@
 }
 
 .godam-thumbnail-nav:focus {
-	outline: 2px solid #007cba;
+	outline: 2px solid var(--wp--preset--color--primary, rgba(0, 124, 186, 0.3));
 	outline-offset: 2px;
 }
 

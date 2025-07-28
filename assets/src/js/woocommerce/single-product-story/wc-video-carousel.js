@@ -88,7 +88,7 @@ const wcVideoCarousel = {
 					freeMode: true,
 					autoplay: false,
 				} );
-				const itemIndex = parseInt( event.target.getAttribute( 'data-index-id' ) );
+				const itemIndex = parseInt( event.target.getAttribute( 'data-swiper-slide-index' ) );
 				self.swiperModal.slideTo( itemIndex );
 
 				const videoElmModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal' );
