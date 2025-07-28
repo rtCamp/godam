@@ -550,32 +550,57 @@ body.godam-share-modal-open {
 }
 
 .share-modal-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-	background: rgba(0, 0, 0, .4);
-	-webkit-backdrop-filter: blur(5px);
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: rgba(0, 0, 0, 0.4);
 	backdrop-filter: blur(5px);
 	z-index: 9999;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
-}
+	padding: 16px;
+	box-sizing: border-box;
 
-.share-icon {
-	height: 18px;
-	cursor: pointer;
+	opacity: 0;
+	animation: fadeOverlayIn 0.3s ease forwards;
+
+	&--closing {
+		animation: fadeOverlayOut 0.3s ease forwards;
+	}
 }
 
 .share-modal-popup {
 	background: #fff;
+	color: #353B41;
 	padding: 24px;
 	border-radius: 8px;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 	font-size: 16px;
+	width: 100%;
+	max-width: 500px;
+	display: flex;
+	flex-direction: column;
+
+	opacity: 0;
+	transform: scale(0.95);
+	animation: fadeInScale 0.3s ease forwards;
+
+	&--closing {
+		animation: fadeOutScale 0.3s ease forwards;
+	}
+
+	@media screen and (max-width: 600px) {
+		padding: 16px;
+		font-size: 14px;
+	}
+
+	> *:not(:first-child) {
+		margin-top: 24px;
+	}
 
 	&__header {
 		display: flex;
@@ -588,40 +613,67 @@ body.godam-share-modal-open {
 	&__title {
 		font-size: 20px;
 		font-weight: 600;
+
+		@media screen and (max-width: 600px) {
+			font-size: 18px;
+		}
 	}
 
 	&__close-button {
 		color: #878787;
 		font-size: 17px;
-		background: #f3f3f3;
+		background: #F7FAFB;
 		height: 33px;
 		width: 33px;
 		cursor: pointer;
 		border: none;
 		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
-	&____description {
-		margin: 16px 0;
-		font-size: 14px;
-		color: #555;
+	&__content {
+		margin-top: 20px;
 	}
 
 	&__social-links{
 		display: flex;
-		justify-content: space-between;
-		align-items: center;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 20px;
+
+		@media screen and (max-width: 600px) {
+			gap: 16px;
+		}
 
 		a.social-icon {
-			height: 50px;
-			width: 50px;
-			font-size: 20px;
-			text-decoration: none;
-			border: 1px solid transparent;
+			height: 60px;
+			width: 60px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			background: #F7FAFB;
+			border-radius: 50%;
+			transition: all 0.2s ease;
 
-			img {
+			@media screen and (max-width: 600px) {
 				height: 50px;
 				width: 50px;
+			}
+
+			img {
+				height: 20px;
+				width: 20px;
+
+				@media screen and (max-width: 600px) {
+					height: 18px;
+					width: 18px;
+				}
+			}
+
+			&:hover {
+				background: #eaeef1;
 			}
 		}
 	}
@@ -635,58 +687,111 @@ body.godam-share-modal-open {
 		}
 	}
 
-	.share-input-container {
+	&__footer {
+		margin-top: 20px;
 		display: flex;
 		flex-direction: column;
-		justify-content: left;
-		margin-top: 20px;
+		gap: 14px;
+	}
 
-		label {
-			color: variables.$godam-share-modal-gray;
-			font-size: 12px;
-			text-align: left;
+	&__input-container {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+
+		.share-modal-input-text {
+			font-size: 14px;
+			margin: 0;
 		}
 
 		.share-modal-input-group {
 			display: flex;
-			justify-content: space-between;
-			gap: 12px;
-		}
+			position: relative;
 
-		input {
-			padding: 10px;
-			font-size: 14px;
-			color: #000;
-			width: 80%;
-		}
+			input {
+				width: 100%;
+				height: 25px;
+				padding: 24px 16px;
+				font-size: 14px;
+				color: #353B41;
+				background: #F7FAFB;
+				border: none;
+				border-radius: 8px;
+				box-sizing: border-box;
+				outline: none;
+			}
 
-		button {
-			width: 12%;
-			padding: 4px;
-			cursor: pointer;
-			background: transparent;
-			border: 1px solid variables.$godam-share-modal-light-gray;
-			border-radius: 5px;
+			button {
+				position: absolute;
+				top: 50%;
+				right: 0;
+				transform: translateY(-50%);
+				background: #F7FAFB;
+				border: none;
+				cursor: pointer;
+				padding: 14px;
+				border-radius: 0 8px 8px 0;
+				outline: none;
 
-			/* stylelint-disable-next-line no-descending-specificity */
-			img {
-				height: 15px;
+				img {
+					height: 18px;
+					width: 18px;
+
+					@media screen and (max-width: 600px) {
+						height: 16px;
+						width: 16px;
+					}
+				}
 			}
 		}
 	}
+}
 
-	.share-modal-footer {
-		text-align: right;
-		margin-top: 20px;
+@keyframes fadeInScale {
 
-		button {
-			padding: 8px;
-			background-color: #fff;
-			color: #000;
-			cursor: pointer;
-			border: 1px solid variables.$godam-share-modal-light-gray;
-			border-radius: 5px;
-		}
+	from {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+@keyframes fadeOutScale {
+
+	from {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	to {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+}
+
+@keyframes fadeOverlayIn {
+
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes fadeOverlayOut {
+
+	from {
+		opacity: 1;
+	}
+
+	to {
+		opacity: 0;
 	}
 }
 

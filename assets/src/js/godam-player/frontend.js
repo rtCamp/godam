@@ -480,7 +480,7 @@ function GODAMPlayer( videoRef = null ) {
 				};
 
 				const resetStyle = () => {
-					button.style.backgroundColor = 'transparent'; // reset background
+					button.style.backgroundColor = 'revert-layer'; // reset background
 					button.querySelector( 'img' ).src = CopyIcon;
 				};
 
@@ -526,21 +526,19 @@ function GODAMPlayer( videoRef = null ) {
 					</div>
 
 					<div class="share-modal-popup__content">
-						<p class="share-modal-popup__description">${ __( 'Copy the links below to share the selected media files.', 'godam' ) }</p>
 						<div class="share-modal-popup__social-links">
-							<a class="facebook social-icon" target="_blank">${ Facebook }</a>
-							<a class="twitter social-icon" target="_blank">${ Twitter }</a>
-							<a class="linkedin social-icon" target="_blank">${ LinkedIn }</a>
-							<a class="reddit social-icon" target="_blank">${ Reddit }</a>
-							<a class="whatsapp social-icon" target="_blank">${ Whatsapp }</a>
-							<a class="telegram social-icon" target="_blank">${ Telegram }</a>
+							<a class="facebook social-icon" target="_blank"><img src=${ Facebook } alt='Facebook icon' height="20" width="20"/></a>
+							<a class="twitter social-icon" target="_blank"><img src=${ Twitter } alt='Twitter icon' height="20" width="20"/></a>
+							<a class="linkedin social-icon" target="_blank"><img src=${ LinkedIn } alt='LinkedIn icon' height="20" width="20"/></a>
+							<a class="reddit social-icon" target="_blank"><img src=${ Reddit } alt='Reddit icon' height="20" width="20"/></a>
+							<a class="whatsapp social-icon" target="_blank"><img src=${ Whatsapp } alt='WhatsApp icon' height="20" width="20"/></a>
+							<a class="telegram social-icon" target="_blank"><img src=${ Telegram } alt='Telegram icon' height="20" width="20"/></a>
 						</div>
 					</div>
 
-					<div class="share-modal-footer">
-						<p>${ __( 'You can also share the page link or embed code below.', 'godam' ) }</p>
-						<div class='share-input-container'>
-							<label>${ __( 'Page Link', 'godam' ) }</label>
+					<div class="share-modal-popup__footer">
+						<div class='share-modal-popup__input-container'>
+							<p class='share-modal-input-text'>${ __( 'Page Link', 'godam' ) }</p>
 							<div class="share-modal-input-group">
 								<input id="page-link" type="text" value="${ window.godamData?.apiBase }/web/video/${ this.player().jobId }" readonly />
 								<button id="copy-page-link" class="copy-button">
@@ -549,8 +547,8 @@ function GODAMPlayer( videoRef = null ) {
 							</div>
 						</div>
 					
-						<div class='share-input-container'>
-							<label>${ __( 'Embed', 'godam' ) }</label>
+						<div class='share-modal-popup__input-container'>
+							<p class='share-modal-input-text'>${ __( 'Embed', 'godam' ) }</p>
 							<div class="share-modal-input-group">
 								<input id="embed-code" type="text" value='<iframe src="${ window.godamData?.apiBase }/web/embed/${ this.player().jobId }"></iframe>' readonly />
 								<button id="copy-embed-code" class="copy-button">
@@ -568,8 +566,16 @@ function GODAMPlayer( videoRef = null ) {
 
 				// Function to close the modal
 				const closeModal = () => {
-					shareModal.remove();
-					document.body.classList.remove( 'godam-share-modal-open' );
+					const popup = shareModal.querySelector( '.share-modal-popup' );
+					const container = shareModal;
+
+					popup.classList.add( 'share-modal-popup--closing' );
+					container.classList.add( 'share-modal-container--closing' );
+
+					setTimeout( () => {
+						shareModal.remove();
+						document.body.classList.remove( 'godam-share-modal-open' );
+					}, 300 );
 				};
 
 				// Close modal when clicking outside
