@@ -1,4 +1,6 @@
 .godam-minimal-skin {
+    container-type: inline-size;
+    container-name: godam-player-minimal-skin;
 
     .vjs-control-bar {
         background-color: transparent !important;
@@ -85,12 +87,52 @@
         display: none;
     }
 
-    @media screen and (max-width: 768px) {
-
+    @container godam-player-minimal-skin (max-width: 580px) {
+        
         .vjs-control-bar {
-            
+			height: 6em !important;
+
+            .vjs-control {
+				height: 3em !important;
+			}
+
+            [class^="vjs-skip-backward-"],
+            [class^="vjs-skip-forward-"] {
+                display: block;
+                background-color: unset !important;
+                height: 40px !important;
+                width: 40px;
+    
+                .vjs-icon-placeholder::before {
+                    line-height: 2;
+                }
+            }
+    
+            [class^="vjs-skip-backward-"] {
+                left: 60px;
+                position: absolute;
+            }
+    
+            [class^="vjs-skip-forward-"] {
+               right: 60px;
+               position: absolute;
+               
+            }
+
+			.vjs-progress-control {
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				width: 100%;
+				height: 2em !important;
+			}
+
             .vjs-settings-button{
                 right: 40px;
+                bottom: 0;
+                position: absolute;
+                z-index: 99;
             }
 
             .vjs-subs-caps-button {
@@ -103,15 +145,32 @@
                 bottom: 0;
                 left: 10px;
             }
-        }
 
-        [class^="vjs-skip-backward-"],
-        [class^="vjs-skip-forward-"] {
-            display: block;
-            background-color: unset !important;
-        }
+			.vjs-play-control {
+				position: absolute;
+			}
 
-       .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel {
+			.vjs-fullscreen-control {
+				position: absolute;
+				bottom: 0;
+				right: 0;
+				height: 3em !important;
+			}
+
+			.mobile-right-80 {
+				right: 80px;
+			}
+
+		}
+
+		.vjs-control-bar>.vjs-subs-caps-button.vjs-control {
+			position: absolute;
+			bottom: 0;
+			right: calc(3 * 40px);
+			height: 3em !important;
+		}
+
+       .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel, .vjs-remaining-time {
             display: none !important;
         }
 
