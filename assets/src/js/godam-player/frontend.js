@@ -311,8 +311,11 @@ function GODAMPlayer( videoRef = null ) {
 				}
 			}
 
-			// if screen size if greater than 768px then skip.
-			if ( window.innerWidth > 768 ) {
+			// Get the video container element
+			const videoContainer = video.closest( '.easydam-video-container' );
+
+			// if video container width is greater than 580px then skip.
+			if ( videoContainer && videoContainer.offsetWidth > 580 ) {
 				return;
 			}
 

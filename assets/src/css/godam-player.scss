@@ -111,8 +111,8 @@
 	transition: transform 0.3s ease;
 
 	span::before {
-		font-size: 1.7rem;
-		line-height: 1.9;
+		font-size: 28px;
+		line-height: 1.8;
 	}
 
 	&:hover, &:focus {
@@ -125,6 +125,8 @@
 	background-color: rgba(149, 149, 149, 0.2);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+	container-type: inline-size;
+	container-name: godam-player-default-skin;
 
 	&:has(.vjs-has-started) {
 
@@ -179,7 +181,7 @@
 			height: 28px;
 		}
 
-		@media screen and (max-width: 768px) {
+		@container godam-player-default-skin (max-width: 580px) {
 			width: 50px;
 			height: 30px;
 
@@ -1199,7 +1201,7 @@
 	}
 
 
-	@media screen and (max-width: 768px) {
+	@container godam-player-default-skin (max-width: 580px) {
 
 		.vjs-modal-dialog-content {
 			padding: 15px 15px 0 15px;
@@ -1248,7 +1250,7 @@
 					line-height: 2;
 				}
 
-				@media screen and (max-width: 420px) {
+				@container godam-player-default-skin (max-width: 420px) {
 					left: 60px;
 				}
 			}
@@ -1270,7 +1272,7 @@
 					line-height: 2;
 				}
 
-				@media screen and (max-width: 420px) {
+				@container godam-player-default-skin (max-width: 420px) {
 					right: 60px;
 				}
 			}
@@ -1351,7 +1353,7 @@
 					display: none;
 				}
 
-				@media screen and (max-width: 420px) {
+				@container godam-player-default-skin (max-width: 420px) {
 					display: none !important;
 				}
 			}
@@ -1367,7 +1369,7 @@
 	}
 
 	// Screen size greater than 768px
-	@media screen and (min-width: 768px) {
+	@container godam-player-default-skin (min-width: 580px) {
 
 		.vjs-control-bar {
 
@@ -1388,6 +1390,11 @@
 			}
 		}
 	}
+}
+
+.video-js .vjs-time-tooltip,
+.video-js .vjs-volume-tooltip {
+	white-space: nowrap;
 }
 
 /* GoDAM Video Heading Overlay Styles */
@@ -1600,7 +1607,7 @@
 			align-items: flex-end;
 		}
 
-		@media (max-width: 781px) {
+		@container godam-player-default-skin (max-width: 580px) {
 
 			&:not(.is-not-stacked-on-mobile) {
 

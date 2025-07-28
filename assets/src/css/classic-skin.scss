@@ -1,4 +1,6 @@
 .godam-classic-skin {
+	container-type: inline-size;
+    container-name: godam-player-classic-skin;
 
     .vjs-big-play-button {
         box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.3);
@@ -8,7 +10,7 @@
         width: 60px !important;
 
         span::before {
-            font-size: 2.4rem !important;
+            font-size: 38px !important;
             line-height: 1.6 !important;
         }
     }
@@ -42,12 +44,14 @@
             position: absolute;
             position: absolute;
             bottom: 0 !important;
+            background: unset !important;
         }
 
         [class^="vjs-skip-backward-"] {
             left: calc(1 * 40px + 6px);
             position: absolute;
             bottom: 0 !important;
+            background: unset !important;
         }
 
         .vjs-vol-3 {
@@ -516,7 +520,7 @@
         }
     }
 
-    @media screen and (max-width: 768px) {
+    @container godam-player-classic-skin (max-width: 580px) {
 
         .vjs-big-play-button {
             height: 50px;
