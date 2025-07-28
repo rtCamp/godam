@@ -139,6 +139,10 @@
                 right: 80px !important;
             }
 
+            div.vjs-subs-caps-button {
+                z-index: 99;
+            }
+
             .vjs-control.vjs-custom-play-button {
                 display: block;
                 position: absolute;

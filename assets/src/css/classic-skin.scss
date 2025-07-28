@@ -537,12 +537,19 @@
             [class^="vjs-skip-forward-"],
             [class^="vjs-skip-backward-"],
             .vjs-picture-in-picture-control,
-            .vjs-volume-control {
-                display: none;
+            .vjs-volume-control,  
+            .vjs-duration, 
+            .vjs-current-time, 
+            .vjs-time-divider {
+                display: none !important;
             }
 
             .vjs-settings-button {
                 right: 40px;
+            }
+
+            .vjs-settings-button, div.vjs-subs-caps-button {
+                z-index: 99;
             }
 
             .vjs-volume-panel {
