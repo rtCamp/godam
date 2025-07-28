@@ -350,8 +350,9 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 									{ ( () => {
 										const isGrouped = productHotspot.productDetails.type === 'grouped';
 										const isExternal = productHotspot.productDetails.type === 'external';
-										const forceProductPage = isGrouped || isExternal;
-										const isDisabled = ! isValidAPIKey || isGrouped || isExternal;
+										const isVariable = productHotspot.productDetails.type === 'variable';
+										const forceProductPage = isGrouped || isExternal || isVariable;
+										const isDisabled = ! isValidAPIKey || isGrouped || isExternal || isVariable;
 
 										if ( forceProductPage && ! productHotspot.addToCart ) {
 											updateField(
@@ -368,6 +369,8 @@ const WoocommerceLayer = ( { layerID, goBack } ) => {
 											help = __( 'Grouped products cannot be added to the cart directly.', 'godam' );
 										} else if ( isExternal ) {
 											help = __( 'External/Affiliate products cannot be added to the cart directly.', 'godam' );
+										} else if ( isVariable ) {
+											help = __( 'Variable products cannot be added to the cart directly.', 'godam' );
 										} else if ( productHotspot.addToCart ) {
 											help = __( 'Users will be redirected to the product page.', 'godam' );
 										} else {
