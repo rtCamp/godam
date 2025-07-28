@@ -18,17 +18,39 @@ import { triggerFilterChange } from '../../data/media-grid';
 import { useDispatch } from 'react-redux';
 import './css/searchbar.scss';
 
+/**
+ * SearchBar component for searching media folders in the sidebar.
+ *
+ * @return {JSX.Element} The SearchBar component.
+ */
 const SearchBar = () => {
 	const dispatch = useDispatch();
+
 	const [ searchTerm, setSearchTerm ] = useState( '' );
 	const [ debouncedSearchTerm, setDebouncedSearchTerm ] = useState( '' );
+
 	const [ currentPage, setCurrentPage ] = useState( 1 );
-	const [ showPopover, setShowPopover ] = useState( null );
 	const [ searchResults, setSearchResults ] = useState( [] );
+	const [ showPopover, setShowPopover ] = useState( null );
+
 	const inputRef = useRef();
 	const popoverRef = useRef();
 	const lastFetchedPage = useRef( 1 );
 
+	/**
+	 * Fetch search results.
+	 * Skips the query if the debounced search term is empty.
+	 */
+	const { data, isFetching, isError } = useSearchFoldersQuery(
+		{ searchTerm: debouncedSearchTerm, page: currentPage, perPage: 10 },
+		{ skip: debouncedSearchTerm.trim().length === 0 },
+	);
+
+	const totalPages = data?.totalPages || 0;
+
+	/**
+	 * Debounce the search term and reset pagination/results.
+	 */
 	useEffect( () => {
 		const handler = setTimeout( () => {
 			setDebouncedSearchTerm( searchTerm );
@@ -41,17 +63,17 @@ const SearchBar = () => {
 		};
 	}, [ searchTerm ] );
 
+	/**
+	 * Update lastFetchedPage whenever currentPage changes.
+	 */
 	useEffect( () => {
 		lastFetchedPage.current = currentPage;
 	}, [ currentPage ] );
 
-	const { data, isFetching, isError } = useSearchFoldersQuery(
-		{ searchTerm: debouncedSearchTerm, page: currentPage, perPage: 10 },
-		{ skip: debouncedSearchTerm.trim().length === 0 },
-	);
-
-	const totalPages = data?.totalPages || 0;
-
+	/**
+	 * Update search results based on fetched data.
+	 * Appends new results when loading more pages, or replaces them when it's the first page.
+	 */
 	useEffect( () => {
 		if ( ! data?.items ) {
 			return;
@@ -64,39 +86,24 @@ const SearchBar = () => {
 		}
 	}, [ data ] );
 
-	const handleSearchChange = ( value ) => {
-		setSearchTerm( value );
-		if ( value.length > 0 && inputRef.current ) {
-			setShowPopover( inputRef.current );
-		} else {
-			setShowPopover( null );
-		}
-	};
-
-	const handleFolderSelect = ( folderId ) => {
-		triggerFilterChange( folderId );
-		dispatch( changeSelectedFolder( { item: { id: folderId } } ) );
-		dispatch( expandParents( { id: folderId } ) );
-
-		setSearchTerm( '' );
-		setCurrentPage( 1 );
-		setShowPopover( null );
-		setSearchResults( [] );
-	};
-
-	const handleLoadMore = () => {
-		if ( currentPage < totalPages && ! isFetching ) {
-			setCurrentPage( ( prev ) => prev + 1 );
-		}
-	};
-
+	/**
+	 * Handles closing the popover.
+	 */
 	const handleClosePopover = useCallback( () => {
 		if ( ! isFetching ) {
 			setShowPopover( null );
 		}
 	}, [ isFetching ] );
 
+	/**
+	 * Handle clicks outside the popover and search input to close the popover.
+	 */
 	useEffect( () => {
+		/**
+		 * Event handler for mousedown events to detect clicks outside the popover.
+		 *
+		 * @param {MouseEvent} event The mousedown event.
+		 */
 		const handleClickOutside = ( event ) => {
 			if (
 				popoverRef.current &&
@@ -116,6 +123,49 @@ const SearchBar = () => {
 		};
 	}, [ showPopover, isFetching, handleClosePopover ] );
 
+	/**
+	 * Handle changes in the search input.
+	 * Updates the searchTerm state and toggles the popover visibility.
+	 *
+	 * @param {string} value The new value of the search input.
+	 */
+	const handleSearchChange = ( value ) => {
+		setSearchTerm( value );
+		if ( value.length > 0 && inputRef.current ) {
+			setShowPopover( inputRef.current );
+		} else {
+			setShowPopover( null );
+		}
+	};
+
+	/**
+	 * Handle folder selection from the search results.
+	 * Triggers filter changes, updates selected folder, expands parent folders,
+	 * and resets the search UI.
+	 *
+	 * @param {string} folderId The ID of the selected folder.
+	 */
+	const handleFolderSelect = ( folderId ) => {
+		triggerFilterChange( folderId );
+		dispatch( changeSelectedFolder( { item: { id: folderId } } ) );
+		dispatch( expandParents( { id: folderId } ) );
+
+		setSearchTerm( '' );
+		setCurrentPage( 1 );
+		setShowPopover( null );
+		setSearchResults( [] );
+	};
+
+	/**
+	 * Handles the "Load More" button click.
+	 * Increments the currentPage if there are more pages to load and not currently fetching.
+	 */
+	const handleLoadMore = () => {
+		if ( currentPage < totalPages && ! isFetching ) {
+			setCurrentPage( ( prev ) => prev + 1 );
+		}
+	};
+
 	return (
 		<div className="folder-search-bar-container" ref={ inputRef }>
 			<SearchControl
@@ -127,7 +177,7 @@ const SearchBar = () => {
 			/>
 			{ showPopover && (
 				<Popover
-					anchorRef={ showPopover }
+					anchor={ showPopover }
 					onClose={ handleClosePopover }
 					className="search-results-popover"
 					focusOnMount={ false }
