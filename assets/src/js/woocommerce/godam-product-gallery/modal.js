@@ -123,7 +123,7 @@ export function initVideoModal() {
 		}
 
 		/* Close Modal and Product sidebar on clicking x */
-		modal.querySelector( '.godam-product-modal-close' )?.addEventListener( 'click', () => close( modal, sidebarModal ) );
+		modal.querySelector( '.godam-product-modal-close' )?.addEventListener( 'click', () => close( modal, sidebarModal, ctaEnabled, ctaDisplayPosition ) );
 
 		/* Clicking outside the modal content and sidebar closes the Modal */
 		modal.addEventListener( 'click', ( ev ) => {
@@ -131,7 +131,7 @@ export function initVideoModal() {
 				! ev.target.closest( '.godam-product-modal-content' ) &&
 				! ev.target.closest( '.godam-product-sidebar' )
 			) {
-				close( modal, sidebarModal );
+				close( modal, sidebarModal, ctaEnabled, ctaDisplayPosition );
 			}
 		} );
 
@@ -222,10 +222,12 @@ function stopSwipeAnimationLoop() {
  * - Disposes of any video.js player instances inside the modal to free up resources.
  * - Optionally removes the 'active' class from the sidebar modal if provided.
  *
- * @param {HTMLElement} modal          - The main modal element to be closed.
- * @param {HTMLElement} [sidebarModal] - Optional Product sidebar modal element to be deactivated.
+ * @param {HTMLElement} modal              - The main modal element to be closed.
+ * @param {HTMLElement} [sidebarModal]     - Optional Product sidebar modal element to be deactivated.
+ * @param {boolean}     ctaEnabled
+ * @param {string}      ctaDisplayPosition
  */
-function close( modal, sidebarModal ) {
+function close( modal, sidebarModal, ctaEnabled, ctaDisplayPosition ) {
 	modal.classList.add( 'hidden' );
 	modal.classList.remove( 'open' );
 
@@ -235,10 +237,12 @@ function close( modal, sidebarModal ) {
 	const players = modal.querySelectorAll( '.video-js' );
 	players.forEach( ( p ) => p?.player?.dispose?.() );
 
-	sidebarModal?.classList.remove( 'close' );
+	if ( ctaEnabled && ( ctaDisplayPosition === 'below-inside' || ctaDisplayPosition === 'inside' ) ) {
+		sidebarModal?.classList.remove( 'close' );
 
-	modal.querySelector( '.godam-product-modal-content' ).classList.remove( 'no-sidebar' );
-	modal.querySelector( '.godam-product-modal-content' ).classList.add( 'sidebar' );
+		modal.querySelector( '.godam-product-modal-content' ).classList.remove( 'no-sidebar' );
+		modal.querySelector( '.godam-product-modal-content' ).classList.add( 'sidebar' );
+	}
 }
 
 /**
