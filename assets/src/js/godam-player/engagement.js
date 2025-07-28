@@ -173,6 +173,8 @@ const engagementStore = {
 		getState: ( state ) => state,
 		getComments: ( state ) => state.comments,
 		getCommentsCount: ( state ) => state.commentsCount,
+		getLikes: ( state ) => state.likes,
+		getViews: ( state ) => state.views,
 	},
 
 	resolvers: {},
@@ -598,6 +600,8 @@ function CommentBox( props ) {
 	const { videoAttachmentId, storeObj, siteUrl, videoId } = props;
 	const baseClass = 'rtgodam-video-engagement--comment-modal';
 	const commentsCount = storeObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
+	const likesCount = storeObj.select.getLikes()[ videoAttachmentId ] || 0;
+	const viewsCount = storeObj.select.getViews()[ videoAttachmentId ] || 0;
 	const comments = storeObj.select.getComments()[ videoAttachmentId ] || [];
 	const [ commentsData, setCommentsData ] = useState( comments );
 	const memoizedStoreObj = useMemo( () => storeObj, [ storeObj ] );
@@ -638,6 +642,10 @@ function CommentBox( props ) {
 						<h3 className={ baseClass + '--video-info-title' }>{ __( 'Comments', 'godam' ) } ({ commentsCount })</h3>
 						<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } />
 						<div className={ baseClass + '-leave-comment' }>
+							<div className={ baseClass + '-leave-comment-impressions' }>
+								<span className={ baseClass + '-leave-comment-impressions-likes' }>{ likesCount }</span>
+								<span className={ baseClass + '-leave-comment-impressions-views' }>{ viewsCount }</span>
+							</div>
 							<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" />
 						</div>
 					</div>
