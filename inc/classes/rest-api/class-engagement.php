@@ -410,7 +410,7 @@ class Engagement extends Base {
 		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
 
 			$comment      = $process_response['message']['data'];
-			$created_date = new \DateTime( $comment['creation'] );
+			$created_date = $this->calculate_days( $comment['creation'] );
 
 			$response_data = array(
 				'id'              => $comment['name'],
@@ -418,8 +418,8 @@ class Engagement extends Base {
 				'user_id'         => $current_user_id,
 				'text'            => $comment['content'],
 				'author_name'     => $comment['comment_by'],
-				'created_at_date' => $created_date->format( 'jS F, Y' ),
-				'created_at_time' => $created_date->format( 'g:i A' ),
+				'created_at_date' => $created_date['date'],
+				'created_at_time' => $created_date['time'],
 				'author_image'    => get_avatar_url( $comment['comment_email'] ),
 				'children'        => array(),
 			);
@@ -478,7 +478,7 @@ class Engagement extends Base {
 		$count    = $process_response['message']['count'];
 
 		foreach ( $comments as $comment ) {
-			$created_date = new \DateTime( $comment['creation'] );
+			$created_date = $this->calculate_days( $comment['creation'] );
 			$text         = preg_replace( '/^<p>(.*?)<\/p>$/i', '$1', $comment['content'] );
 
 			$comment_index[ $comment['name'] ] = array(
@@ -487,8 +487,8 @@ class Engagement extends Base {
 				'text'            => $text,
 				'user_id'         => $comment['name'],
 				'author_name'     => $comment['comment_by'],
-				'created_at_date' => $created_date->format( 'jS F, Y' ),
-				'created_at_time' => $created_date->format( 'g:i A' ),
+				'created_at_date' => $created_date['date'],
+				'created_at_time' => $created_date['time'],
 				'author_image'    => get_avatar_url( $comment['comment_email'] ),
 				'children'        => array(),
 			);
@@ -549,5 +549,36 @@ class Engagement extends Base {
 		}
 
 		return $process_response['message'];
+	}
+
+	/**
+	 * Calculates the difference in days between the current date and a given date.
+	 *
+	 * The function takes a given date as a string and returns an array containing
+	 * a string representation of the difference in days and the given date in
+	 * 12-hour format.
+	 *
+	 * @param string $given_date The date to compare with the current date.
+	 * @return array             Array containing 'date_str' and 'time' keys.
+	 */
+	public function calculate_days( $given_date ) {
+		$current_date  = new \DateTime();
+		$given_date    = new \DateTime( $given_date, wp_timezone() );
+		$interval_days = $current_date->diff( $given_date )->days;
+		$time          = $given_date->format( 'g:i A' );
+		$date_str      = '';
+		if ( 0 === $interval_days ) {
+			$date_str = esc_html__( 'Today', 'godam' );
+		} elseif ( 1 === $interval_days ) {
+			$date_str = esc_html__( 'Yesterday', 'godam' );
+		} elseif ( 2 <= $interval_days && $interval_days <= 7 ) {
+			$date_str = $interval_days . esc_html__( ' days ago', 'godam' );
+		} else {
+			$date_str = $given_date->format( 'F jS, Y' );
+		}
+		return array(
+			'date' => $date_str,
+			'time' => $time,
+		);
 	}
 }
