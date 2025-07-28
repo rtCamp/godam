@@ -674,16 +674,17 @@ class GoDAM_Product_Gallery {
 				</button>
 			</div>
 		</div>
-
-		<div class="godam-sidebar-product-title">
-			<h3><?php echo esc_html( $product->get_name() ); ?></h3>
-		</div>
-		<p class="godam-sidebar-product-price"><?php echo wp_kses_post( $product->get_price_html() ); ?></p>
-		<p class="godam-sidebar-product-description"><?php echo wp_kses_post( $product->get_short_description() ); ?></p>
-		<?php
-		// Replace Woo's form/button with Product Sidebar Add to Cart button or Product Sidebar View Product button.
-		$product_url = get_permalink( $product_id );
-		?>
+		<div class="godam-single-product-sidebar-content">
+			<div class="godam-sidebar-product-title">
+				<h3><?php echo esc_html( $product->get_name() ); ?></h3>
+			</div>
+			<p class="godam-sidebar-product-price"><?php echo wp_kses_post( $product->get_price_html() ); ?></p>
+			<p class="godam-sidebar-product-description"><?php echo wp_kses_post( $product->get_short_description() ); ?></p>
+		
+			<?php
+			// Replace Woo's form/button with Product Sidebar Add to Cart button or Product Sidebar View Product button.
+			$product_url = get_permalink( $product_id );
+			?>
 		<div class="single-product-sidebar-actions">
 			<?php if ( $product->is_type( 'variable' ) || $product->is_type( 'grouped' ) || $product->is_type( 'external' ) ) : ?>
 				<a class="godam-product-sidebar-view-product-button" href="<?php echo esc_url( $product_url ); ?>" target="_blank" rel="noopener noreferrer">
@@ -700,6 +701,9 @@ class GoDAM_Product_Gallery {
 			</div>
 		</div>
 		<?php
+		
+		echo '</div>';
+		
 		
 		wp_reset_postdata();
 	
