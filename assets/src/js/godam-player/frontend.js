@@ -482,12 +482,12 @@ function GODAMPlayer( videoRef = null ) {
 				}
 
 				const setSuccessStyle = () => {
-					button.style.backgroundColor = '#4caf50'; // green
+					button.style.backgroundColor = '#4CAF50'; // green
 					button.querySelector( 'img' ).src = Complete;
 				};
 
 				const resetStyle = () => {
-					button.style.backgroundColor = 'revert-layer';
+					button.style.backgroundColor = '#F7FAFB';
 					button.querySelector( 'img' ).src = CopyIcon;
 				};
 
@@ -535,7 +535,7 @@ function GODAMPlayer( videoRef = null ) {
 
 				const socialLinksData = [
 					{ className: 'facebook', href: `https://www.facebook.com/share.php?u=${ encodedLink }`, icon: Facebook, alt: 'Facebook icon' },
-					{ className: 'twitter', href: `https://twitter.com/share?url=${ encodedLink }&text=${ msg }`, icon: Twitter, alt: 'Twitter icon' },
+					{ className: 'twitter', href: `https://twitter.com/intent/tweet?url=${ encodedLink }&text=${ msg }`, icon: Twitter, alt: 'Twitter icon' },
 					{ className: 'linkedin', href: `https://www.linkedin.com/sharing/share-offsite/?url=${ encodedLink }&text=${ msg }`, icon: LinkedIn, alt: 'LinkedIn icon' },
 					{ className: 'reddit', href: `http://www.reddit.com/submit?url=${ encodedLink }&title=${ msg }`, icon: Reddit, alt: 'Reddit icon' },
 					{ className: 'whatsapp', href: `https://api.whatsapp.com/send?text=${ msg }: ${ encodedLink }`, icon: Whatsapp, alt: 'WhatsApp icon' },
