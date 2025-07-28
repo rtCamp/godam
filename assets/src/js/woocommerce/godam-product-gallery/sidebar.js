@@ -1,205 +1,209 @@
 export function initSidebar() {
-    addCloseSidebarListener();
+	addCloseSidebarListener();
 }
 
 function addCloseSidebarListener() {
-    const modalContainer = document.querySelector('.godam-product-modal-container.open');
-    const sidebarClose = modalContainer.querySelector('.godam-sidebar-close');
-    sidebarClose.addEventListener('click', () => {
-        const sidebarElement = modalContainer.querySelector('.godam-product-sidebar');
-        sidebarElement.classList.add('close');
-        modalContainer?.querySelector('.godam-product-modal-content')?.classList?.add('no-sidebar');
-        modalContainer?.querySelector('.godam-product-modal-content')?.classList?.remove('sidebar');
-    });
+	const modalContainer = document.querySelector( '.godam-product-modal-container.open' );
+	const sidebarClose = modalContainer.querySelector( '.godam-sidebar-close' );
+	sidebarClose.addEventListener( 'click', () => {
+		const sidebarElement = modalContainer.querySelector( '.godam-product-sidebar' );
+		sidebarElement.classList.add( 'close' );
+		modalContainer?.querySelector( '.godam-product-modal-content' )?.classList?.add( 'no-sidebar' );
+		modalContainer?.querySelector( '.godam-product-modal-content' )?.classList?.remove( 'sidebar' );
+	} );
 }
 
 export function initImageGallery() {
-    // Find the open modal container
-    const modalContainer = document.querySelector('.godam-product-modal-container.open');
-    
-    if (!modalContainer) {
-        console.log('No open modal container found');
-        return;
-    }
+	// Find the open modal container
+	const modalContainer = document.querySelector( '.godam-product-modal-container.open' );
 
-    // Get gallery elements
-    const mainImage = modalContainer.querySelector('.godam-main-image img');
-    const thumbnails = modalContainer.querySelectorAll('.godam-thumbnail-item');
-    const thumbnailImages = modalContainer.querySelectorAll('.godam-thumbnail-image');
-    const thumbnailTrack = modalContainer.querySelector('.godam-thumbnail-track');
-    const prevBtn = modalContainer.querySelector('.godam-thumbnail-prev');
-    const nextBtn = modalContainer.querySelector('.godam-thumbnail-next');
+	if ( ! modalContainer ) {
+		return;
+	}
 
-    console.log(mainImage, thumbnails, thumbnailImages, thumbnailTrack, prevBtn, nextBtn);
+	// Get gallery elements
+	const mainImage = modalContainer.querySelector( '.godam-main-image img' );
+	const thumbnails = modalContainer.querySelectorAll( '.godam-thumbnail-item' );
 
-    if (!mainImage || thumbnails.length === 0) {
-        console.log('Gallery elements not found');
-        return;
-    }
+	if ( ! mainImage || thumbnails.length === 0 ) {
+		return;
+	}
 
-    // Initialize gallery
-    function initGallery() {
-        // Add click event listeners to thumbnails
-        thumbnails.forEach((thumbnail, index) => {
-            thumbnail.addEventListener('click', () => {
-                showImage(index);
-            });
+	// Hide thumbnail carousel if there's only one image
+	const thumbnailCarousel = modalContainer.querySelector( '.godam-thumbnail-carousel' );
+	if ( thumbnails.length === 1 && thumbnailCarousel ) {
+		thumbnailCarousel.style.display = 'none';
+		return; // Exit early since there's no need for gallery functionality with one image
+	}
 
-            // Add keyboard support
-            thumbnail.setAttribute('tabindex', '0');
-            thumbnail.setAttribute('role', 'button');
-            thumbnail.setAttribute('aria-label', `View image ${index + 1}`);
-            
-            thumbnail.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    showImage(index);
-                }
-            });
-        });
+	const thumbnailImages = modalContainer.querySelectorAll( '.godam-thumbnail-image' );
+	const thumbnailTrack = modalContainer.querySelector( '.godam-thumbnail-track' );
+	const prevBtn = modalContainer.querySelector( '.godam-thumbnail-prev' );
+	const nextBtn = modalContainer.querySelector( '.godam-thumbnail-next' );
 
-        // Initialize horizontal scroll navigation
-        initHorizontalScroll();
-        
-        // Add touch/swipe support for mobile
-        initTouchSupport();
-        
-        // Add mouse wheel support
-        initMouseWheelSupport();
-    }
+	// Initialize gallery
+	function initGallery() {
+		// Add click event listeners to thumbnails
+		thumbnails.forEach( ( thumbnail, index ) => {
+			thumbnail.addEventListener( 'click', () => {
+				showImage( index );
+			} );
 
-    function showImage(index) {
-        // Remove active class from all thumbnails
-        thumbnails.forEach(thumb => {
-            thumb.classList.remove('active');
-        });
+			// Add keyboard support
+			thumbnail.setAttribute( 'tabindex', '0' );
+			thumbnail.setAttribute( 'role', 'button' );
+			thumbnail.setAttribute( 'aria-label', `View image ${ index + 1 }` );
 
-        // Add active class to clicked thumbnail
-        if (thumbnails[index]) {
-            thumbnails[index].classList.add('active');
-        }
+			thumbnail.addEventListener( 'keydown', ( e ) => {
+				if ( e.key === 'Enter' || e.key === ' ' ) {
+					e.preventDefault();
+					showImage( index );
+				}
+			} );
+		} );
 
-        // Update main image
-        if (thumbnailImages[index]) {
-            mainImage.src = thumbnailImages[index].src;
-            mainImage.alt = thumbnailImages[index].alt;
-        }
+		// Initialize horizontal scroll navigation
+		initHorizontalScroll();
 
-        // Add smooth transition effect
-        mainImage.style.opacity = '0';
-        setTimeout(() => {
-            mainImage.style.opacity = '1';
-        }, 150);
-    }
+		// Add touch/swipe support for mobile
+		initTouchSupport();
 
-    function initHorizontalScroll() {
-        const scrollStep = 120; // pixels to scroll per click (thumbnail width + gap)
-        let currentScrollLeft = 0;
-        const maxScrollLeft = thumbnailTrack.scrollWidth - thumbnailTrack.clientWidth;
+		// Add mouse wheel support
+		initMouseWheelSupport();
+	}
 
-        function updateNavigationButtons() {
-            if (prevBtn) {
-                prevBtn.disabled = currentScrollLeft <= 0;
-                prevBtn.style.opacity = currentScrollLeft <= 0 ? '0.3' : '1';
-            }
-            if (nextBtn) {
-                nextBtn.disabled = currentScrollLeft >= maxScrollLeft;
-                nextBtn.style.opacity = currentScrollLeft >= maxScrollLeft ? '0.3' : '1';
-            }
-        }
+	function showImage( index ) {
+		// Remove active class from all thumbnails
+		thumbnails.forEach( ( thumb ) => {
+			thumb.classList.remove( 'active' );
+		} );
 
-        function scrollThumbnails(direction) {
-            const newScrollLeft = currentScrollLeft + (direction * scrollStep);
-            
-            // Clamp scroll position
-            currentScrollLeft = Math.max(0, Math.min(newScrollLeft, maxScrollLeft));
-            
-            thumbnailTrack.scrollTo({
-                left: currentScrollLeft,
-                behavior: 'smooth'
-            });
-            
-            updateNavigationButtons();
-        }
+		// Add active class to clicked thumbnail
+		if ( thumbnails[ index ] ) {
+			thumbnails[ index ].classList.add( 'active' );
+		}
 
-        // Add click event listeners to navigation buttons
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => {
-                scrollThumbnails(-1);
-            });
-        }
+		// Update main image
+		if ( thumbnailImages[ index ] ) {
+			mainImage.src = thumbnailImages[ index ].src;
+			mainImage.alt = thumbnailImages[ index ].alt;
+		}
 
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                scrollThumbnails(1);
-            });
-        }
+		// Add smooth transition effect
+		mainImage.style.opacity = '0';
+		setTimeout( () => {
+			mainImage.style.opacity = '1';
+		}, 150 );
+	}
 
-        // Update scroll position on manual scroll
-        thumbnailTrack.addEventListener('scroll', () => {
-            currentScrollLeft = thumbnailTrack.scrollLeft;
-            updateNavigationButtons();
-        });
+	function initHorizontalScroll() {
+		const scrollStep = 120; // pixels to scroll per click (thumbnail width + gap)
+		let currentScrollLeft = 0;
+		const maxScrollLeft = thumbnailTrack.scrollWidth - thumbnailTrack.clientWidth;
 
-        // Initialize button states
-        updateNavigationButtons();
-    }
+		function updateNavigationButtons() {
+			if ( prevBtn ) {
+				prevBtn.disabled = currentScrollLeft <= 0;
+				prevBtn.style.opacity = currentScrollLeft <= 0 ? '0.3' : '1';
+			}
+			if ( nextBtn ) {
+				nextBtn.disabled = currentScrollLeft >= maxScrollLeft;
+				nextBtn.style.opacity = currentScrollLeft >= maxScrollLeft ? '0.3' : '1';
+			}
+		}
 
-    function initMouseWheelSupport() {
-        thumbnailTrack.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            
-            const scrollAmount = e.deltaY > 0 ? 1 : -1;
-            const scrollStep = 60; // Smaller step for wheel scrolling
-            
-            const currentScrollLeft = thumbnailTrack.scrollLeft;
-            const newScrollLeft = currentScrollLeft + (scrollAmount * scrollStep);
-            const maxScrollLeft = thumbnailTrack.scrollWidth - thumbnailTrack.clientWidth;
-            
-            thumbnailTrack.scrollTo({
-                left: Math.max(0, Math.min(newScrollLeft, maxScrollLeft)),
-                behavior: 'smooth'
-            });
-        });
-    }
+		function scrollThumbnails( direction ) {
+			const newScrollLeft = currentScrollLeft + ( direction * scrollStep );
 
-    function initTouchSupport() {
-        let startX = 0;
-        let endX = 0;
-        const mainImageContainer = modalContainer.querySelector('.godam-main-image');
+			// Clamp scroll position
+			currentScrollLeft = Math.max( 0, Math.min( newScrollLeft, maxScrollLeft ) );
 
-        if (!mainImageContainer) return;
+			thumbnailTrack.scrollTo( {
+				left: currentScrollLeft,
+				behavior: 'smooth',
+			} );
 
-        mainImageContainer.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-        });
+			updateNavigationButtons();
+		}
 
-        mainImageContainer.addEventListener('touchend', (e) => {
-            endX = e.changedTouches[0].clientX;
-            handleSwipe();
-        });
+		// Add click event listeners to navigation buttons
+		if ( prevBtn ) {
+			prevBtn.addEventListener( 'click', () => {
+				scrollThumbnails( -1 );
+			} );
+		}
 
-        function handleSwipe() {
-            const swipeThreshold = 50;
-            const diff = startX - endX;
-            const currentActiveIndex = Array.from(thumbnails).findIndex(thumb => 
-                thumb.classList.contains('active')
-            );
+		if ( nextBtn ) {
+			nextBtn.addEventListener( 'click', () => {
+				scrollThumbnails( 1 );
+			} );
+		}
 
-            if (Math.abs(diff) > swipeThreshold) {
-                if (diff > 0 && currentActiveIndex < thumbnails.length - 1) {
-                    // Swipe left - next image
-                    showImage(currentActiveIndex + 1);
-                } else if (diff < 0 && currentActiveIndex > 0) {
-                    // Swipe right - previous image
-                    showImage(currentActiveIndex - 1);
-                }
-            }
-        }
-    }
+		// Update scroll position on manual scroll
+		thumbnailTrack.addEventListener( 'scroll', () => {
+			currentScrollLeft = thumbnailTrack.scrollLeft;
+			updateNavigationButtons();
+		} );
 
-    // Initialize the gallery
-    initGallery();
+		// Initialize button states
+		updateNavigationButtons();
+	}
 
+	function initMouseWheelSupport() {
+		thumbnailTrack.addEventListener( 'wheel', ( e ) => {
+			e.preventDefault();
 
+			const scrollAmount = e.deltaY > 0 ? 1 : -1;
+			const scrollStep = 60; // Smaller step for wheel scrolling
+
+			const currentScrollLeft = thumbnailTrack.scrollLeft;
+			const newScrollLeft = currentScrollLeft + ( scrollAmount * scrollStep );
+			const maxScrollLeft = thumbnailTrack.scrollWidth - thumbnailTrack.clientWidth;
+
+			thumbnailTrack.scrollTo( {
+				left: Math.max( 0, Math.min( newScrollLeft, maxScrollLeft ) ),
+				behavior: 'smooth',
+			} );
+		} );
+	}
+
+	function initTouchSupport() {
+		let startX = 0;
+		let endX = 0;
+		const mainImageContainer = modalContainer.querySelector( '.godam-main-image' );
+
+		if ( ! mainImageContainer ) {
+			return;
+		}
+
+		mainImageContainer.addEventListener( 'touchstart', ( e ) => {
+			startX = e.touches[ 0 ].clientX;
+		} );
+
+		mainImageContainer.addEventListener( 'touchend', ( e ) => {
+			endX = e.changedTouches[ 0 ].clientX;
+			handleSwipe();
+		} );
+
+		function handleSwipe() {
+			const swipeThreshold = 50;
+			const diff = startX - endX;
+			const currentActiveIndex = Array.from( thumbnails ).findIndex( ( thumb ) =>
+				thumb.classList.contains( 'active' ),
+			);
+
+			if ( Math.abs( diff ) > swipeThreshold ) {
+				if ( diff > 0 && currentActiveIndex < thumbnails.length - 1 ) {
+					// Swipe left - next image
+					showImage( currentActiveIndex + 1 );
+				} else if ( diff < 0 && currentActiveIndex > 0 ) {
+					// Swipe right - previous image
+					showImage( currentActiveIndex - 1 );
+				}
+			}
+		}
+	}
+
+	// Initialize the gallery
+	initGallery();
 }

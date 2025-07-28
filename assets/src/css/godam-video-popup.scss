@@ -180,15 +180,28 @@
 
 .godam-product-modal-content.no-sidebar{
 	background-color: transparent !important;
-	width: max-content !important;
+	width: 100% !important;
 	height: 90vh !important;
 	max-height: 90vh !important;
-	max-width: max-content !important;
+	max-width: 70vw !important;
 	min-height: 90vh !important;
 	display: flex;
 	justify-content: center;
 	align-content: center;
 	align-items: center;
+
+	.video-container.animate-video-loading{
+		width: 100vw !important;
+		margin: 0 auto !important;
+		height: 100vh !important;
+		min-height: 90vh ;
+		max-height: 90vh;
+		overflow: hidden !important;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+	}
 
 	.video-container.is-portrait{
 		display: flex;
@@ -633,6 +646,7 @@
 .godam-image-gallery {
 	width: 100%;
 	margin: 0 auto;
+	margin-bottom: 12px;
 	border-radius: 12px;
 	overflow: hidden;
 }
@@ -709,7 +723,7 @@
 }
 
 .godam-thumbnail-item:hover {
-	border-color: #007cba;
+	border-color: var(--wp--preset--color--primary, #007cba);
 	transform: translateY(-2px);
 	box-shadow: 0 4px 12px rgba(0, 124, 186, 0.2);
 }
