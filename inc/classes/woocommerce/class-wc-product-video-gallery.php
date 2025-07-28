@@ -135,9 +135,11 @@ class WC_Product_Video_Gallery {
 	 * @since 1.0.0
 	 */
 	public function add_video_gallery_metabox() {
+		$title = apply_filters( 'rtgodam_video_gallery_metabox_title', __( 'Video Gallery', 'godam' ) );
+
 		add_meta_box(
 			'rtgodam_product_video_gallery',
-			__( 'Video Gallery', 'godam' ),
+			$title,
 			array( $this, 'render_video_gallery_metabox' ),
 			'product',
 			'side',
@@ -185,7 +187,7 @@ class WC_Product_Video_Gallery {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param WP_Post $post The current post object.
+	 * @param \WP_Post $post The current post object.
 	 */
 	public function render_video_gallery_metabox( $post ) {
 		$video_urls = get_post_meta( $post->ID, '_rtgodam_product_video_gallery', true );
@@ -339,6 +341,9 @@ class WC_Product_Video_Gallery {
 			? array_filter( array_map( 'intval', $_POST['rtgodam_product_video_gallery_ids'] ) )
 			: array();
 
+		$urls = apply_filters( 'rtgodam_product_gallery_save_video_gallery_urls', $urls, $post_id );
+		$ids  = apply_filters( 'rtgodam_product_gallery_save_video_gallery_ids', $ids, $post_id );
+
 		// Save video urls and id as meta in product.
 		update_post_meta( $post_id, '_rtgodam_product_video_gallery', $urls );
 		update_post_meta( $post_id, '_rtgodam_product_video_gallery_ids', $ids );
@@ -375,6 +380,15 @@ class WC_Product_Video_Gallery {
 				delete_post_meta( $prev_id, $parent_meta_key, $post_id );
 			}
 		}
+
+		/**
+		 * Action hook for developers to save additional meta after video gallery save.
+		 *
+		 * @param int   $post_id Current product ID.
+		 * @param array $urls    Saved video URLs.
+		 * @param array $ids     Saved video attachment IDs.
+		 */
+		do_action( 'rtgodam_product_gallery_after_save_video_gallery', $post_id, $urls, $ids );
 	}
 
 	/**
@@ -414,6 +428,15 @@ class WC_Product_Video_Gallery {
 				// Save updated meta.
 				update_post_meta( $product_id, '_rtgodam_product_video_gallery', $video_urls );
 				update_post_meta( $product_id, '_rtgodam_product_video_gallery_ids', $video_ids );
+
+				/**
+				 * Action hook for developers to delete additional meta
+				 * when a video attachment is removed from a product.
+				 *
+				 * @param int $product_id     The product ID.
+				 * @param int $attachment_id  The attachment being deleted.
+				 */
+				do_action( 'rtgodam_product_gallery_after_video_meta_deleted', $product_id, $attachment_id );
 			}
 		}
 
