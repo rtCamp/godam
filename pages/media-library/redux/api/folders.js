@@ -36,7 +36,7 @@ export const folderApi = createApi( {
 			query: ( options = {} ) => {
 				const params = {
 					_fields: 'id,name,parent,attachmentCount,meta',
-					per_page: 2,
+					per_page: 10, // Default per_page to 10
 				};
 
 				// Only add bookmark if it's explicitly passed and truthy

@@ -1173,13 +1173,13 @@ class Media_Library extends Base {
 			$per_page = (int) $request->get_param( 'per_page' );
 
 			if ( $per_page < 1 ) {
-				$per_page = 5; // Default to 5 items per page if not set or invalid.
+				$per_page = 10; // Default to 10 items per page if not set or invalid.
 			}
 
 			$args['number'] = $per_page;
 			$args['offset'] = ( $page - 1 ) * $per_page;
 
-			$args['parent'] = (int) $request->get_param( 'parent' ) ?? 0;
+			$args['parent'] = (int) ( $request->get_param( 'parent' ) ?? 0 );
 		}
 
 		$terms = get_terms( $args );

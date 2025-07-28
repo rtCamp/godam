@@ -53,7 +53,7 @@ const FolderTree = ( { handleContextMenu } ) => {
 	const page = useSelector( ( state ) => state.FolderReducer.page );
 	const currentPage = page.current;
 
-	const { data: folders, error, isLoading, refetch: refetchFolders, isUninitialized: isFoldersUninitialized, isFetching } = useGetFoldersQuery(
+	const { data: folders, error, isLoading, refetch: refetchFolders, isFetching } = useGetFoldersQuery(
 		{
 			page: currentPage,
 		},
@@ -77,12 +77,12 @@ const FolderTree = ( { handleContextMenu } ) => {
 		if ( folders ) {
 			dispatch( setTree( openLocalStorageItem( folders ) ) );
 
-			if ( folders.length === 0 && currentPage > 1 ) {
+			if ( Array.isArray( folders ) && folders.length === 0 && currentPage > 1 ) {
 				// If no folders are returned, reset to the first page
 				dispatch( updatePage( { hasNext: false } ) );
 			}
 		}
-	}, [ dispatch, folders, isFoldersUninitialized, currentPage ] );
+	}, [ dispatch, folders, currentPage ] );
 
 	const [ activeId, setActiveId ] = useState( null );
 	const [ overId, setOverId ] = useState( null );
