@@ -86,27 +86,27 @@ jQuery( document ).ready( function( $ ) {
 
 		singlePageProductModal?.classList.add( 'hidden' );
 
-		let modal = document.getElementById( 'godam-product-modal-container' );
+		let modal = document.getElementById( 'godam-woocommerce-featured-video-modal-container' );
+
 		if ( ! modal ) {
 			modal = document.createElement( 'div' );
-			modal.id = 'godam-product-modal-container';
-			modal.className = 'godam-product-modal-container featured-video-modal-container';
+			modal.id = 'godam-woocommerce-featured-video-modal-container';
+			modal.className = 'godam-woocommerce-featured-video-modal-container';
 			document.body.appendChild( modal );
 		}
 
 		modal.classList.add( 'open' );
 		modal.dataset.currentVideoId = videoId;
 		modal.dataset.isLoading = 'false';
-
 		modal.innerHTML = `
-			<div class="godam-product-modal-container-overlay">
+			<div class="godam-woocommerce-featured-video-modal-container-overlay">
 				<div class="close">
-					<button class="godam-product-modal-close" aria-label="">
+					<button class="godam-woocommerce-featured-video-modal-close" aria-label="">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
 					</button>
 				</div>
-				<div class="godam-product-modal-container-content">
-					<div class="godam-product-modal-content no-sidebar">
+				<div class="godam-woocommerce-featured-video-modal-container-content">
+					<div class="godam-woocommerce-featured-video-modal-content">
 					<div class="video-container animate-video-loading">
 						<div class="animate-play-btn">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
@@ -121,9 +121,9 @@ jQuery( document ).ready( function( $ ) {
 		modal.classList.remove( 'hidden' );
 		document.body.style.overflow = 'hidden';
 
-		modal.querySelector( '.godam-product-modal-container-close' )?.addEventListener( 'click', closeModal );
+		modal.querySelector( '.godam-woocommerce-featured-video-modal-container-close' )?.addEventListener( 'click', closeModal );
 		modal.addEventListener( 'click', ( e ) => {
-			if ( ! e.target.closest( '.godam-product-modal-container-content' ) ) {
+			if ( ! e.target.closest( '.godam-woocommerce-featured-video-modal-container-content' ) ) {
 				closeModal();
 			}
 		} );
@@ -137,7 +137,7 @@ jQuery( document ).ready( function( $ ) {
 	 * @param {number} videoId
 	 */
 	async function loadVideoById( videoId ) {
-		const modal = document.getElementById( 'godam-product-modal-container' );
+		const modal = document.getElementById( 'godam-woocommerce-featured-video-modal-container' );
 		const container = modal?.querySelector( '.video-container' );
 		if ( ! modal || ! container || modal.dataset.isLoading === 'true' ) {
 			return;
@@ -201,7 +201,7 @@ jQuery( document ).ready( function( $ ) {
 	 * Closes and resets the video modal.
 	 */
 	function closeModal() {
-		const modal = document.getElementById( 'godam-product-modal-container' );
+		const modal = document.getElementById( 'godam-woocommerce-featured-video-modal-container' );
 		if ( ! modal ) {
 			return;
 		}

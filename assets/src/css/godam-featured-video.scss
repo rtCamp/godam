@@ -1,6 +1,8 @@
-// override videojs default styles for featured video modal
-.featured-video-modal-container{
+@import 'godam-video-popup';
+
+.godam-woocommerce-featured-video-modal-container{
 	.video-js,.vjs-tech{
-    object-fit: cover !important;
-  }
+		object-fit: cover !important;
+	}
 }
+
