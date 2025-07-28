@@ -1,4 +1,6 @@
 .godam-pills-skin {
+    container-type: inline-size;
+    container-name: godam-player-pills-skin;
 
 	.vjs-control-bar {
         width: 95% !important;
@@ -102,7 +104,7 @@
         display: none;
     }
 
-    @media screen and (max-width: 768px) {
+    @container godam-player-pills-skin (max-width: 580px) {
 
         .godam-central-controls {
             display: flex;
@@ -120,6 +122,18 @@
         .vjs-control-bar {
             height: initial !important;
             margin: -40px auto 0;
+
+            .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel, .vjs-remaining-time {
+                display: none !important;
+            }
+
+            .vjs-control {
+				height: 3em !important;
+			}
+
+            .vjs-settings-button, div.vjs-subs-caps-button {
+                z-index: 99;
+            }
 
             .vjs-fullscreen-control, .vjs-settings-button, div.vjs-subs-caps-button {
                 position: relative !important;
@@ -139,21 +153,25 @@
             [class^="vjs-skip-backward-"], [class^="vjs-skip-forward-"] {
                 display: block;
                 background-color: unset;
+                height: 40px !important;
+                width: 40px;
+                position: absolute;
+
+                .vjs-icon-placeholder::before {
+                    line-height: 2;
+                }
             }
 
             .vjs-progress-control {
                 height: unset !important;
-                padding: 0 26px;
                 position: unset;
                 margin: 0 auto;
-
-                @media screen and (max-width: 481px) {
-					padding: 0 !important;
-				}
+                padding: 0 !important;
             }
 
             .vjs-play-control {
                 bottom: -4px;
+                position: absolute;
 
                 span::before{
                     line-height: 1.3;
@@ -163,18 +181,10 @@
             .vjs-time-control.vjs-duration {
                 right: 120px;
                 transform: translateX(0%);
-
-                @media screen and (max-width: 481px) {
-					display: none !important;
-				}
             }
 
             .vjs-time-control.vjs-current-time {
                 left: 30px;
-
-                @media screen and (max-width: 481px) {
-					display: none !important;
-				}
             }
             
             .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel, .vjs-control.vjs-custom-play-button {
