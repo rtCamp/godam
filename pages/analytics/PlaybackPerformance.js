@@ -460,8 +460,8 @@ export default function PlaybackPerformanceDashboard( {
 
 		const resizeObserver = new ResizeObserver( () => {
 			if ( parsedData && parsedData.length > 0 ) {
-				// Small delay to ensure the DOM has updated
-				setTimeout( () => renderChart(), 0 );
+				// Small delay to ensure the DOM has updated.
+				setTimeout( () => renderChart(), 20 );
 			}
 		} );
 
