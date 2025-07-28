@@ -10,6 +10,7 @@
     --godam-video-engagement-icon-color--view-background: rgba(0, 186, 124, 0.1);
     --godam-video-engagement-comment--border-color: rgb(136, 136, 136, 0.5);
     --godam-video-engagement-font-family: sans-serif;
+    --godam-video-engagement-brand-neutral-shades-25: #E0E0E0;
 }
 
 .no-scroll {
@@ -134,41 +135,83 @@
         backdrop-filter: blur(40px);
         -webkit-backdrop-filter: blur(40px);
 
+            &-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-bottom: 24px;
+            }
+
         &-content {
-            margin: 15px;
             background-color: var(--wp--preset--color--white, #fff);
             border-radius: 10px;
-            padding: 15px 15px 0 15px;
-            max-width: 600px;
-            max-height: 650px;
-            width: calc(100% - 20px);
-            height: calc(100% - 150px);
-            overflow-y: scroll;
+            padding: 40px;
+            width: calc(100% - 150px);
+            height: calc(100% - 200px);
             position: relative;
+        }
 
-            &::-webkit-scrollbar {
-                width: 5px;
+        &--video {
+            display: flex;
+            gap: 1.5rem;
+            height: calc( 100% - 65px );
+
+            &-figure {
+                flex-basis: 70%;
+                width: 70%;
+
+                figure,
+                .godam-video-wrapper,
+                .easydam-video-container,
+                .video-js {
+                    width: 100%;
+                    height: 100% !important;
+                    border-radius: 8px;
+                }
             }
 
-            &::-webkit-scrollbar-track {
-                background:  transparent;
-                border-radius: 20px;
-            }
+            &-info {
+                flex-basis: 30%;
+                overflow-y: scroll;
+                overflow-x: hidden;
+                border: 1px solid var(--godam-video-engagement-brand-neutral-shades-25);
+                border-radius: 8px;
+                box-shadow: 0px 2.09px 4.18px 2.09px #00000012;
 
-            &::-webkit-scrollbar-thumb {
-                background: var(--godam-video-engagement-comment--border-color);
-                border-radius: 20px;
-            }
+                &::-webkit-scrollbar {
+                    width: 3px;
+                }
 
-            &::-webkit-scrollbar-thumb:hover {
-                background: var(--wp--preset--color--black, #000);
+                &::-webkit-scrollbar-track {
+                    background:  transparent;
+                    border-radius: 20px;
+                }
+
+                &::-webkit-scrollbar-thumb {
+                    background: var(--godam-video-engagement-brand-neutral-shades-25);
+                    border-radius: 20px;
+                }
+
+                &::-webkit-scrollbar-thumb:hover {
+                    background: var(--wp--preset--color--black, #000);
+                }
+
+                &-title {
+                    font-size: 1.3rem;
+                    font-weight: 600;
+                    margin-bottom: 10px;
+                    margin-top: 0;
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
+                    background-color: var(--wp--preset--color--white, #fff);
+                    padding: 1.5rem;
+                    border-bottom: 1px solid var(--godam-video-engagement-brand-neutral-shades-25);
+                }
             }
-        }    
+        }
 
         &--close-button {
-            position: absolute;
-            top: 45px;
-            right: 5px;
             color: var(--wp--preset--color--white, #fff);
             font-size: 40px;
             line-height: 40px;
@@ -184,35 +227,35 @@
         &-title {
             font-size: 1.3rem;
             font-weight: 600;
-            margin-bottom: 10px;
-            margin-top: 0;
+            margin: 0;
         }
 
         &-leave-comment {
             position: sticky;
-            bottom: 0;
+            bottom: 0px;
             background-color: var(--wp--preset--color--white, #fff);
             z-index: 10;
-            padding: 15px 0 15px 0;
+            padding: 1.5rem;
+            box-shadow: -7.94px -2.65px 15.87px 6.61px #0000000D;
 
-            &-title {
-                margin-top: 10px;
-                margin-bottom: 10px;
-            }
 
             .rtgodam-video-engagement--comment-form-textarea textarea {
-                width: calc(100% - 20px);
+                width: calc(100% - 24px);
             }
         }
     }
 
     &--comment {
 
+        &-list {
+            padding: 1.5rem;
+        }
+
         &-parent {
             position: relative;
 
             &::after {
-                content: '';
+                // content: '';
                 position: absolute;
                 top: 0;
                 left: 20px;
@@ -223,7 +266,7 @@
         }
 
         &-child {
-            padding-left: 30px;
+            padding-left: 1rem;
             
             &:last-child {
                 padding-bottom: 0;
@@ -233,7 +276,7 @@
 
                 &::before {
                     display: block;
-                    content: "";
+                    // content: "";
                     position: absolute;
                     top: 15px;
                     left: -10px;
@@ -246,7 +289,7 @@
 
                 &:last-child:not(.has-children) {
                     &::after {
-                        content: "";
+                        // content: "";
                         position: absolute;
                         top: 16px;
                         left: -14px;
@@ -269,10 +312,6 @@
         }
 
         &-content {
-            border-left: 1px solid var(--godam-video-engagement-background-color);
-            padding: 12px;
-            border: 1px solid var(--godam-video-engagement-comment--border-color);
-            border-radius: 10px;
             margin-bottom: 10px;
         }
 

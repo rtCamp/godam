@@ -625,14 +625,22 @@ function CommentBox( props ) {
 
 	return (
 		<div className={ baseClass }>
-			<button className={ `${ baseClass }--close-button` } onClick={ () => storeObj.root.unmount() }>&times;</button>
 			<div className={ baseClass + '-content' }>
-				<figure ref={ videoContainerRef }></figure>
-				<h3 className={ baseClass + '-title' }>{ __( 'All Comments', 'godam' ) } ({ commentsCount })</h3>
-				<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } />
-				<div className={ baseClass + '-leave-comment' }>
-					<h5 className={ baseClass + '-leave-comment-title' }>{ __( 'Leave a comment', 'godam' ) }</h5>
-					<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" />
+				<div className={ baseClass + '-header' }>
+					<h3 className={ baseClass + '-title' }>GoDAM Intro Video</h3>
+					<button className={ `${ baseClass }--close-button` } onClick={ () => storeObj.root.unmount() }>&times;</button>
+				</div>
+				<div className={ baseClass + '--video' }>
+					<div className={ `${ baseClass }--video-figure` }>
+						<figure ref={ videoContainerRef }></figure>
+					</div>
+					<div className={ baseClass + '--video-info' }>
+						<h3 className={ baseClass + '--video-info-title' }>{ __( 'Comments', 'godam' ) } ({ commentsCount })</h3>
+						<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } />
+						<div className={ baseClass + '-leave-comment' }>
+							<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" />
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
