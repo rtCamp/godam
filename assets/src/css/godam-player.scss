@@ -631,6 +631,10 @@ body.godam-share-modal-open {
 		display: flex;
 		align-items: center;
 		justify-content: center;
+
+		&:hover {
+			background: #eaeef1;
+		}
 	}
 
 	&__content {
@@ -732,6 +736,10 @@ body.godam-share-modal-open {
 				padding: 14px;
 				border-radius: 0 8px 8px 0;
 				outline: none;
+
+				&:hover {
+					background: #eaeef1;
+				}
 
 				img {
 					height: 18px;
