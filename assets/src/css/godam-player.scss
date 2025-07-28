@@ -975,15 +975,18 @@
 	 width: auto !important;
 	 order: 8;
 
-	 @media screen and (max-width: 768px) {
-		 display: none;
-	 }
-
 	 #branding-icon {
 		 height: 100%;
 		 width: auto;
 		 object-fit: fill;
 	 }
+
+	 @container godam-player-default-skin (max-width: 580px) {
+
+		& {
+			display: none;
+		}
+	}
  }
 
 .vjs-big-play-button.custom-play-image {
@@ -1368,7 +1371,7 @@
 		}
 	}
 
-	// Screen size greater than 768px
+	// Screen size greater than 580px
 	@container godam-player-default-skin (min-width: 580px) {
 
 		.vjs-control-bar {
