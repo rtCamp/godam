@@ -528,30 +528,66 @@ function GODAMPlayer( videoRef = null ) {
 				// Initialize
 				const jobId = this.player().jobId;
 				const baseUrl = window.godamData?.apiBase || '';
+
+				// Bail out if no jobId or baseUrl
+				if ( ! jobId || ! baseUrl ) {
+					return;
+				}
+
 				const videoLink = `${ baseUrl }/web/video/${ jobId }`;
 				const embedCode = `<iframe src="${ baseUrl }/web/embed/${ jobId }"></iframe>`;
 				const encodedLink = encodeURI( videoLink );
-				const msg = encodeURIComponent( 'Check out this video!' );
+				const message = encodeURIComponent( __( 'Check out this video!', 'godam' ) );
 
 				const socialLinksData = [
-					{ className: 'facebook', href: `https://www.facebook.com/share.php?u=${ encodedLink }`, icon: Facebook, alt: 'Facebook icon' },
-					{ className: 'twitter', href: `https://twitter.com/intent/tweet?url=${ encodedLink }&text=${ msg }`, icon: Twitter, alt: 'Twitter icon' },
-					{ className: 'linkedin', href: `https://www.linkedin.com/sharing/share-offsite/?url=${ encodedLink }&text=${ msg }`, icon: LinkedIn, alt: 'LinkedIn icon' },
-					{ className: 'reddit', href: `http://www.reddit.com/submit?url=${ encodedLink }&title=${ msg }`, icon: Reddit, alt: 'Reddit icon' },
-					{ className: 'whatsapp', href: `https://api.whatsapp.com/send?text=${ msg }: ${ encodedLink }`, icon: Whatsapp, alt: 'WhatsApp icon' },
-					{ className: 'telegram', href: `https://telegram.me/share/url?url=${ encodedLink }&text=${ msg }`, icon: Telegram, alt: 'Telegram icon' },
+					{
+						className: 'facebook',
+						href: `https://www.facebook.com/share.php?u=${ encodedLink }`,
+						icon: Facebook,
+						alt: __( 'Facebook icon', 'godam' ),
+					},
+					{
+						className: 'twitter',
+						href: `https://twitter.com/intent/tweet?url=${ encodedLink }&text=${ message }`,
+						icon: Twitter,
+						alt: __( 'Twitter icon', 'godam' ),
+					},
+					{
+						className: 'linkedin',
+						href: `https://www.linkedin.com/sharing/share-offsite/?url=${ encodedLink }&text=${ message }`,
+						icon: LinkedIn,
+						alt: __( 'LinkedIn icon', 'godam' ),
+					},
+					{
+						className: 'reddit',
+						href: `http://www.reddit.com/submit?url=${ encodedLink }&title=${ message }`,
+						icon: Reddit,
+						alt: __( 'Reddit icon', 'godam' ),
+					},
+					{
+						className: 'whatsapp',
+						href: `https://api.whatsapp.com/send?text=${ message }: ${ encodedLink }`,
+						icon: Whatsapp,
+						alt: __( 'WhatsApp icon', 'godam' ),
+					},
+					{
+						className: 'telegram',
+						href: `https://telegram.me/share/url?url=${ encodedLink }&text=${ message }`,
+						icon: Telegram,
+						alt: __( 'Telegram icon', 'godam' ),
+					},
 				];
 
 				const html = `
 					<div class="share-modal-popup">
 						<div class="share-modal-popup__header">
 							<span class="share-modal-popup__title">${ __( 'Share Media', 'godam' ) }</span>
-							<div id="cancel-button" class="share-modal-popup__close-button">&times;</div>
+							<div id="cancel-button" class="share-modal-popup__close-button" tabindex="0">&times;</div>
 						</div>
 
 						<div class="share-modal-popup__content">
 							<div class="share-modal-popup__social-links">
-								${ socialLinksData.map( ( { className, icon, alt } ) => `<a class="${ className } social-icon" target="_blank" rel="noopener noreferrer"><img src="${ icon }" alt="${ alt }" height="20" width="20"/></a>` ).join( '' ) }
+								${ socialLinksData.map( ( { className, icon, alt } ) => `<a class="${ className } social-icon" target="_blank" rel="noopener noreferrer" tabindex="0"><img src="${ icon }" alt="${ alt }" height="20" width="20" /></a>` ).join( '' ) }
 							</div>
 						</div>
 
@@ -559,8 +595,8 @@ function GODAMPlayer( videoRef = null ) {
 							<div class='share-modal-popup__input-container'>
 								<p class='share-modal-input-text'>${ __( 'Page Link', 'godam' ) }</p>
 								<div class="share-modal-input-group">
-									<input id="page-link" type="text" value="${ videoLink }" readonly />
-									<span id="copy-page-link" class="copy-button">
+									<input id="page-link" type="text" value="${ videoLink }" readonly tabindex="0" />
+									<span id="copy-page-link" class="copy-button" tabindex="0">
 										<img src="${ CopyIcon }" alt='${ __( 'copy icon', 'godam' ) }' height="24" width="24" />
 									</span>
 								</div>
@@ -569,8 +605,8 @@ function GODAMPlayer( videoRef = null ) {
 							<div class='share-modal-popup__input-container'>
 								<p class='share-modal-input-text'>${ __( 'Embed', 'godam' ) }</p>
 								<div class="share-modal-input-group">
-									<input id="embed-code" type="text" value='${ embedCode }' readonly />
-									<span id="copy-embed-code" class="copy-button">
+									<input id="embed-code" type="text" value='${ embedCode }' readonly tabindex="0" />
+									<span id="copy-embed-code" class="copy-button" tabindex="0">
 										<img src="${ CopyIcon }" alt='${ __( 'copy icon', 'godam' ) }' height="24" width="24" />
 									</span>
 								</div>
@@ -630,10 +666,29 @@ function GODAMPlayer( videoRef = null ) {
 				};
 				document.addEventListener( 'keydown', handleEscapeKey );
 
+				// Event listeners for copy buttons on Enter or Space
+				const handleCopyButtonKeyDown = ( e, inputId ) => {
+					if ( e.key === 'Enter' || e.key === ' ' ) {
+						e.preventDefault();
+						this.copyToClipboard( inputId );
+					}
+				};
+
 				// Event listeners for copy buttons
 				copyPageLinkBtn.addEventListener( 'click', () => this.copyToClipboard( 'page-link' ) );
 				copyEmbedCodeBtn.addEventListener( 'click', () => this.copyToClipboard( 'embed-code' ) );
+
+				// Listen for Enter/Space on copy buttons
+				copyPageLinkBtn.addEventListener( 'keydown', ( e ) => handleCopyButtonKeyDown( e, 'page-link' ) );
+				copyEmbedCodeBtn.addEventListener( 'keydown', ( e ) => handleCopyButtonKeyDown( e, 'embed-code' ) );
+
 				cancelButton.addEventListener( 'click', closeModal );
+				cancelButton.addEventListener( 'keydown', ( e ) => {
+					if ( e.key === 'Enter' || e.key === ' ' ) {
+						e.preventDefault();
+						closeModal();
+					}
+				} );
 			}
 		}
 

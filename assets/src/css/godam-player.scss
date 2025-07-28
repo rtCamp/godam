@@ -555,7 +555,7 @@ body.godam-share-modal-open {
 	left: 0;
 	width: 100vw;
 	height: 100vh;
-	background: rgba(0, 0, 0, 0.4);
+	background: variables.$godam-share-modal-overlay-background;
 	backdrop-filter: blur(5px);
 	z-index: 9999;
 	display: flex;
@@ -578,7 +578,6 @@ body.godam-share-modal-open {
 	color: variables.$godam-share-modal-text-color;
 	padding: 24px;
 	border-radius: 8px;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 	font-size: 16px;
 	width: 100%;
 	max-width: 500px;
@@ -608,7 +607,7 @@ body.godam-share-modal-open {
 		justify-content: space-between;
 		align-items: center;
 		padding-bottom: 16px;
-		border-bottom: 1px solid #ebedf9;
+		border-bottom: 1px solid variables.$godam-share-modal-divider-color;
 	}
 
 	&__title {
@@ -621,10 +620,10 @@ body.godam-share-modal-open {
 	}
 
 	&__close-button {
-		color: #878787;
 		font-size: 22px;
+		color: variables.$godam-share-modal-close-btn-color;
 		background: variables.$godam-share-modal-gray-accent-1;
-		height: 35px;
+		height: 33px;
 		width: 35px;
 		cursor: pointer;
 		border: none;
@@ -644,7 +643,7 @@ body.godam-share-modal-open {
 		margin-top: 20px;
 	}
 
-	&__social-links{
+	&__social-links {
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: center;
@@ -663,7 +662,6 @@ body.godam-share-modal-open {
 			background: variables.$godam-share-modal-gray-accent-1;
 			border-radius: 50%;
 			transition: all 0.2s ease;
-			outline: none;
 
 			@media screen and (max-width: 600px) {
 				height: 50px;
@@ -743,7 +741,6 @@ body.godam-share-modal-open {
 				cursor: pointer;
 				padding: 15px;
 				border-radius: 0 8px 8px 0;
-				outline: none;
 
 				&:hover {
 					background: variables.$godam-share-modal-gray-accent-2;
