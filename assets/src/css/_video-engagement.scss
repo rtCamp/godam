@@ -142,6 +142,7 @@
                 justify-content: space-between;
                 align-items: center;
                 padding-bottom: 24px;
+                gap: 1.5rem;
             }
 
         &-content {
@@ -152,6 +153,10 @@
             max-width: 1800px;
             height: calc(100% - 200px);
             position: relative;
+
+            @media screen and (max-width: 768px) {
+                overflow-y: scroll;
+            }
         }
 
         &--video {
@@ -172,6 +177,28 @@
                     border-radius: 8px;
                     padding-top: 0 !important;
                 }
+
+                @media screen and (max-width: 993px) {
+                    flex-basis: 60%;
+                    width: 60%;                
+                }
+
+                @media screen and (max-width: 768px) {
+                    flex-basis: 100%;
+                    width: 100%;
+
+                    figure,
+                    .godam-video-wrapper,
+                    .easydam-video-container,
+                    .video-js {
+                        height: auto !important;
+                    }
+                }
+            }
+
+            @media screen and (max-width: 768px) {
+                flex-direction: column;
+                height: auto;
             }
 
             &-info {
@@ -212,6 +239,15 @@
                     background-color: var(--wp--preset--color--white, #fff);
                     padding: 1.5rem;
                     border-bottom: 1px solid var(--godam-video-engagement-brand-neutral-shades-25);
+                }
+
+                @media screen and (max-width: 993px) {
+                    flex-basis: 40%;
+                }
+
+                @media screen and (max-width: 768px) {
+                    flex-basis: 100%;
+                    overflow: auto;
                 }
             }
         }
