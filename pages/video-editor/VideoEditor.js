@@ -38,7 +38,7 @@ import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
 
-const VideoEditor = ( { attachmentID } ) => {
+const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const formIDMap = {
 		cf7: 'cf7_id',
 		gravity: 'gf_id',
@@ -96,6 +96,10 @@ const VideoEditor = ( { attachmentID } ) => {
 	useEffect( () => {
 		if ( ! attachmentConfig ) {
 			return;
+		}
+
+		if ( ! canManageAttachment( attachmentConfig ) ) {
+			onBackToAttachmentPicker();
 		}
 
 		const { rtgodam_meta: rtGodamMeta, source_url: sourceURL, mime_type: mimeType, meta } = attachmentConfig;
@@ -175,6 +179,14 @@ const VideoEditor = ( { attachmentID } ) => {
 			}
 		}
 	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms ] );
+
+	const canManageAttachment = ( attachment ) => {
+		const currentUserId = Number( window?.easydamMediaLibrary?.userId );
+		const canEditOthersMedia = window?.easydamMediaLibrary?.canEditOthersMedia;
+		const attachmentAuthorId = attachment.author;
+
+		return canEditOthersMedia || currentUserId === attachmentAuthorId;
+	};
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {
