@@ -1,5 +1,4 @@
 export function initSidebar() {
-    initImageGallery();
     addCloseSidebarListener();
 }
 
@@ -14,7 +13,7 @@ function addCloseSidebarListener() {
     });
 }
 
-function initImageGallery() {
+export function initImageGallery() {
     // Find the open modal container
     const modalContainer = document.querySelector('.godam-product-modal-container.open');
     
@@ -30,6 +29,8 @@ function initImageGallery() {
     const thumbnailTrack = modalContainer.querySelector('.godam-thumbnail-track');
     const prevBtn = modalContainer.querySelector('.godam-thumbnail-prev');
     const nextBtn = modalContainer.querySelector('.godam-thumbnail-next');
+
+    console.log(mainImage, thumbnails, thumbnailImages, thumbnailTrack, prevBtn, nextBtn);
 
     if (!mainImage || thumbnails.length === 0) {
         console.log('Gallery elements not found');

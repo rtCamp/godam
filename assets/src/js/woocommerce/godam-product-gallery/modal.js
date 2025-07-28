@@ -18,7 +18,7 @@ import { dispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { initSidebar } from './sidebar.js';
+import { initSidebar, initImageGallery } from './sidebar.js';
 
 /* global GODAMPlayer, godamVars */
 /* eslint-disable eslint-comments/disable-enable-pair */
@@ -563,6 +563,8 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 
 				attachAddToCartListeners( sidebarModal );
 
+				initImageGallery();
+
 				requestAnimationFrame( () => {
 					const headerText = sidebarModal.querySelector( '.godam-header-text' );
 					headerText.classList.add( 'hidden' );
@@ -601,8 +603,8 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 					<div class="godam-sidebar-product-content">
 						<div class="godam-sidebar-product-title">${ product.name }</div>
 						<div class="godam-sidebar-product-price">${ product.price }</div>
+						${ [ 'variable', 'grouped', 'external' ].includes( product.type ) ? `<a class="godam-product-sidebar-view-product-button" href="${ product.link }" target="_blank" aria-label="${ __( 'View Product', 'godam' ) }">${ __( 'View Product', 'godam' ) }</a>` : `<button class="godam-product-sidebar-add-to-cart-button" data-product-id="${ product.id }" aria-label="${ __( 'Add to Cart', 'godam' ) }">${ __( 'Add to Cart', 'godam' ) }</button>` }
 					</div>
-					${ [ 'variable', 'grouped', 'external' ].includes( product.type ) ? `<a class="godam-product-sidebar-view-product-button" href="${ product.link }" target="_blank" aria-label="${ __( 'View Product', 'godam' ) }">${ __( 'View Product', 'godam' ) }</a>` : `<button class="godam-product-sidebar-add-to-cart-button" data-product-id="${ product.id }" aria-label="${ __( 'Add to Cart', 'godam' ) }">${ __( 'Add to Cart', 'godam' ) }</button>` }
 				</div>` ).join( '' ) }`;
 
 			attachAddToCartListeners( sidebarModal );
