@@ -732,7 +732,7 @@ body.godam-share-modal-open {
 			}
 
 			.copy-button {
-				height: 100%;
+				display: flex;
 				position: absolute;
 				top: 50%;
 				right: 0;
@@ -740,7 +740,7 @@ body.godam-share-modal-open {
 				background: variables.$godam-share-modal-gray-accent-1;
 				border: none;
 				cursor: pointer;
-				padding: 10px 14px;
+				padding: 15px;
 				border-radius: 0 8px 8px 0;
 				outline: none;
 
