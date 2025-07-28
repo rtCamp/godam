@@ -10,6 +10,7 @@ const { nonceData, DOMPurify } = window;
 const storeName = 'godam-video-engagement';
 
 const DEFAULT_STATE = {
+	titles: {},
 	views: {},
 	likes: {},
 	IsUserLiked: {},
@@ -175,6 +176,7 @@ const engagementStore = {
 		getCommentsCount: ( state ) => state.commentsCount,
 		getLikes: ( state ) => state.likes,
 		getViews: ( state ) => state.views,
+		getTitles: ( state ) => state.titles,
 	},
 
 	resolvers: {},
@@ -211,12 +213,14 @@ const engagementStore = {
 	 * @return {Object} The processed engagement data.
 	 */
 	processEngagements( collections ) {
+		const engagementTitleData = {};
 		const engagementLikesData = {};
 		const engagementViewsData = {};
 		const engagementIsUserLikedData = {};
 		const engagementCommentsData = {};
 		const engagementCommentsCountData = {};
 		collections.forEach( ( item ) => {
+			engagementTitleData[ item.videoAttachmentId ] = item.data.title;
 			engagementLikesData[ item.videoAttachmentId ] = item.data.likes_count;
 			engagementIsUserLikedData[ item.videoAttachmentId ] = item.data.is_liked;
 			engagementViewsData[ item.videoAttachmentId ] = item.data.views_count;
@@ -225,6 +229,7 @@ const engagementStore = {
 		} );
 
 		return {
+			titles: engagementTitleData,
 			views: engagementViewsData,
 			likes: engagementLikesData,
 			IsUserLiked: engagementIsUserLikedData,
@@ -518,6 +523,8 @@ function Comment( props ) {
 		text,
 		author_name: authorName,
 		author_image: authorImg,
+		created_at_date: createdAtDate,
+		created_at_time: createdAtTime,
 		children,
 	} = comment;
 	const [ isExpanded, setIsExpanded ] = useState( false );
@@ -530,8 +537,12 @@ function Comment( props ) {
 				</div>
 				<div className="rtgodam-video-engagement--comment-content-wrapper">
 					<div className="rtgodam-video-engagement--comment-content">
-						<div className="rtgodam-video-engagement--comment-author-name">
-							{ authorName || __( 'Anonymous', 'godam' ) }
+						<div className="rtgodam-video-engagement--comment-author">
+							<div className="rtgodam-video-engagement--comment-author-name">
+								{ authorName || __( 'Anonymous', 'godam' ) }
+							</div>
+							<span className="rtgodam-video-engagement--comment-time">{ createdAtTime }</span>
+							<span className="rtgodam-video-engagement--comment-date">{ createdAtDate }</span>
 						</div>
 						<div className="rtgodam-video-engagement--comment-text">
 							{ text }
@@ -602,6 +613,7 @@ function CommentBox( props ) {
 	const commentsCount = storeObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
 	const likesCount = storeObj.select.getLikes()[ videoAttachmentId ] || 0;
 	const viewsCount = storeObj.select.getViews()[ videoAttachmentId ] || 0;
+	const titles = storeObj.select.getTitles()[ videoAttachmentId ] || __( 'GoDAM Video', 'godam' );
 	const comments = storeObj.select.getComments()[ videoAttachmentId ] || [];
 	const [ commentsData, setCommentsData ] = useState( comments );
 	const memoizedStoreObj = useMemo( () => storeObj, [ storeObj ] );
@@ -631,7 +643,7 @@ function CommentBox( props ) {
 		<div className={ baseClass }>
 			<div className={ baseClass + '-content' }>
 				<div className={ baseClass + '-header' }>
-					<h3 className={ baseClass + '-title' }>GoDAM Intro Video</h3>
+					<h3 className={ baseClass + '-title' }>{ titles }</h3>
 					<button className={ `${ baseClass }--close-button` } onClick={ () => storeObj.root.unmount() }>&times;</button>
 				</div>
 				<div className={ baseClass + '--video' }>

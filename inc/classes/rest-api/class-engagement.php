@@ -171,6 +171,7 @@ class Engagement extends Base {
 		$comments                        = $this->get_comments( $transcoder_job_id, $account_creadentials );
 		$response_data['comments']       = $comments['comments'];
 		$response_data['comments_count'] = $comments['total'];
+		$response_data['title']          = get_the_title( $video_id );
 
 		return new WP_REST_Response(
 			array(
@@ -408,16 +409,19 @@ class Engagement extends Base {
 
 		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
 
-			$comment = $process_response['message']['data'];
+			$comment      = $process_response['message']['data'];
+			$created_date = new \DateTime( $comment['creation'] );
 
 			$response_data = array(
-				'id'           => $comment['name'],
-				'parent_id'    => isset( $comment['custom_reply_to'] ) ? $comment['custom_reply_to'] : null,
-				'user_id'      => $current_user_id,
-				'text'         => $comment['content'],
-				'author_name'  => $comment['comment_by'],
-				'author_image' => get_avatar_url( $comment['comment_email'] ),
-				'children'     => array(),
+				'id'              => $comment['name'],
+				'parent_id'       => isset( $comment['custom_reply_to'] ) ? $comment['custom_reply_to'] : null,
+				'user_id'         => $current_user_id,
+				'text'            => $comment['content'],
+				'author_name'     => $comment['comment_by'],
+				'created_at_date' => $created_date->format( 'jS F, Y' ),
+				'created_at_time' => $created_date->format( 'g:i A' ),
+				'author_image'    => get_avatar_url( $comment['comment_email'] ),
+				'children'        => array(),
 			);
 
 			return new WP_REST_Response(
@@ -474,14 +478,19 @@ class Engagement extends Base {
 		$count    = $process_response['message']['count'];
 
 		foreach ( $comments as $comment ) {
+			$created_date = new \DateTime( $comment['creation'] );
+			$text         = preg_replace( '/^<p>(.*?)<\/p>$/i', '$1', $comment['content'] );
+
 			$comment_index[ $comment['name'] ] = array(
-				'id'           => $comment['name'],
-				'parent_id'    => $comment['custom_reply_to'],
-				'text'         => $comment['content'],
-				'user_id'      => $comment['name'],
-				'author_name'  => $comment['comment_by'],
-				'author_image' => get_avatar_url( $comment['comment_email'] ),
-				'children'     => array(),
+				'id'              => $comment['name'],
+				'parent_id'       => $comment['custom_reply_to'],
+				'text'            => $text,
+				'user_id'         => $comment['name'],
+				'author_name'     => $comment['comment_by'],
+				'created_at_date' => $created_date->format( 'jS F, Y' ),
+				'created_at_time' => $created_date->format( 'g:i A' ),
+				'author_image'    => get_avatar_url( $comment['comment_email'] ),
+				'children'        => array(),
 			);
 		}
 
