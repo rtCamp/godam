@@ -3,12 +3,14 @@
     container-name: godam-player-minimal-skin;
 
     .vjs-control-bar {
-        background-color: transparent !important;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0) 100%) !important;
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.3) !important;
     }
 
     .vjs-big-play-button {
         background-color: transparent !important;
         border: 3px solid #fff !important;
+        box-shadow: inset 8px 6px 15px 0 #4240408f;
 
         span::before {
             line-height: 1.77 !important;
