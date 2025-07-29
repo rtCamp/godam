@@ -30,7 +30,11 @@ const engagementStore = {
 	 * Initialize the engagement store and subscribe to its state.
 	 */
 	init() {
-		this.initStore();
+		if ( select( storeName ) ) {
+			dispatch( storeName ).loadDefaultData( this );
+		} else {
+			this.initStore();
+		}
 	},
 
 	/**
@@ -67,7 +71,30 @@ const engagementStore = {
 			case ACTIONS.LOAD_VIDEO_ENGAGEMENT_DATA:
 				return {
 					...state,
-					...action.newState,
+					IsUserLiked: {
+						...state.IsUserLiked,
+						...action.newState.IsUserLiked,
+					},
+					likes: {
+						...state.likes,
+						...action.newState.likes,
+					},
+					views: {
+						...state.views,
+						...action.newState.views,
+					},
+					comments: {
+						...state.comments,
+						...action.newState.comments,
+					},
+					commentsCount: {
+						...state.commentsCount,
+						...action.newState.commentsCount,
+					},
+					titles: {
+						...state.titles,
+						...action.newState.titles,
+					},
 				};
 			case ACTIONS.USER_HIT_LIKE:
 				return {
@@ -334,6 +361,10 @@ const engagementStore = {
 		const promises = [];
 
 		videoIds.forEach( ( item ) => {
+			if ( item.hasAttribute( 'data-engagement-bind' ) ) {
+				return;
+			}
+
 			const videoId = item.getAttribute( 'data-engagement-id' );
 			const videoAttachmentId = item.getAttribute( 'data-engagement-video-id' );
 			const siteUrl = item.getAttribute( 'data-engagement-site-url' );
@@ -357,6 +388,7 @@ const engagementStore = {
 			}
 
 			promises.push( self.fetchVideoData( videoId, videoAttachmentId, siteUrl ) );
+			item.setAttribute( 'data-engagement-bind', 'true' );
 		} );
 
 		const results = await Promise.all( promises );
