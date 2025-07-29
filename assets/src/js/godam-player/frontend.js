@@ -535,44 +535,45 @@ function GODAMPlayer( videoRef = null ) {
 				}
 
 				const videoLink = `${ baseUrl }/web/video/${ jobId }`;
-				const embedCode = `<iframe src="${ baseUrl }/web/embed/${ jobId }"></iframe>`;
+				const embedUrl = `${ baseUrl }/web/embed/${ jobId }`;
+				const embedCode = `<iframe src="${ embedUrl }"></iframe>`;
 				const encodedLink = encodeURI( videoLink );
 				const message = encodeURIComponent( __( 'Check out this video!', 'godam' ) );
 
 				const socialLinksData = [
 					{
 						className: 'facebook',
-						href: `https://www.facebook.com/share.php?u=${ encodedLink }`,
+						href: 'https://www.facebook.com/share.php?u=',
 						icon: Facebook,
 						alt: __( 'Facebook icon', 'godam' ),
 					},
 					{
 						className: 'twitter',
-						href: `https://twitter.com/intent/tweet?url=${ encodedLink }&text=${ message }`,
+						href: `https://twitter.com/intent/tweet?text=${ message }&url=`,
 						icon: Twitter,
 						alt: __( 'Twitter icon', 'godam' ),
 					},
 					{
 						className: 'linkedin',
-						href: `https://www.linkedin.com/sharing/share-offsite/?url=${ encodedLink }&text=${ message }`,
+						href: `https://www.linkedin.com/sharing/share-offsite/?text=${ message }&url=`,
 						icon: LinkedIn,
 						alt: __( 'LinkedIn icon', 'godam' ),
 					},
 					{
 						className: 'reddit',
-						href: `http://www.reddit.com/submit?url=${ encodedLink }&title=${ message }`,
+						href: `http://www.reddit.com/submit?title=${ message }&url=`,
 						icon: Reddit,
 						alt: __( 'Reddit icon', 'godam' ),
 					},
 					{
 						className: 'whatsapp',
-						href: `https://api.whatsapp.com/send?text=${ message }: ${ encodedLink }`,
+						href: `https://api.whatsapp.com/send?text=${ message }: `,
 						icon: Whatsapp,
 						alt: __( 'WhatsApp icon', 'godam' ),
 					},
 					{
 						className: 'telegram',
-						href: `https://telegram.me/share/url?url=${ encodedLink }&text=${ message }`,
+						href: `https://telegram.me/share/url?text=${ message }&url=`,
 						icon: Telegram,
 						alt: __( 'Telegram icon', 'godam' ),
 					},
@@ -647,7 +648,7 @@ function GODAMPlayer( videoRef = null ) {
 				socialLinksData.forEach( ( { className, href } ) => {
 					const el = shareModal.querySelector( `.${ className }` );
 					if ( el ) {
-						el.href = href;
+						el.href = href + encodedLink;
 					}
 				} );
 
@@ -728,7 +729,8 @@ function GODAMPlayer( videoRef = null ) {
 						: null;
 
 					const fullPage = timestamp ? `${ videoLink }?t=${ timestamp }` : videoLink;
-					const fullEmbed = `<iframe src="${ fullPage }"></iframe>`;
+					const fullEmbed = timestamp ? `<iframe src="${ embedUrl }?t=${ timestamp }"></iframe>` : embedCode;
+					const encodedHref = encodeURI( fullPage );
 
 					pageLinkInput.value = fullPage;
 					embedInput.value = fullEmbed;
@@ -737,7 +739,7 @@ function GODAMPlayer( videoRef = null ) {
 					socialLinksData.forEach( ( { className, href } ) => {
 						const el = shareModal.querySelector( `.${ className }` );
 						if ( el ) {
-							el.href = href.replace( /url=([^&]*)/, `url=${ encodeURIComponent( fullPage ) }` );
+							el.href = href + encodedHref;
 						}
 					} );
 				};
