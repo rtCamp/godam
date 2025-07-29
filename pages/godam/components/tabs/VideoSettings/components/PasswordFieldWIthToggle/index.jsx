@@ -11,10 +11,25 @@ import { seen, unseen } from '@wordpress/icons';
  */
 import './style.scss';
 
+/**
+ * PasswordFieldWithToggle component
+ *
+ * @param {Object}   param0                - Props passed to the PasswordFieldWithToggle component.
+ * @param {boolean}  param0.hasValidAPIKey - Indicates if the API key is valid.
+ * @param {string}   param0.maskedAPIKey   - The masked version of the API key.
+ * @param {string}   param0.apiKey         - The current API key value.
+ * @param {Function} param0.setAPIKey      - Function to update the API key value.
+ *
+ * @return {JSX.Element} the rendered component.
+ */
 const PasswordFieldWithToggle = ( { hasValidAPIKey, maskedAPIKey, apiKey, setAPIKey } ) => {
 	const [ showPassword, setShowPassword ] = useState( false );
 
-	// Function to render help text based on API key validity
+	/**
+	 * Function to render help text based on the API key validity.
+	 *
+	 * @return {JSX.Element|null} Returns help text if API key is not valid, otherwise null.
+	 */
 	const renderHelpText = () => {
 		if ( ! hasValidAPIKey ) {
 			return (
@@ -29,53 +44,38 @@ const PasswordFieldWithToggle = ( { hasValidAPIKey, maskedAPIKey, apiKey, setAPI
 		return null;
 	};
 
-	const togglePasswordVisibility = () => {
-		setShowPassword( ! showPassword );
-	};
+	/**
+	 * Renders the TextControl component with shared props
+	 *
+	 * @param {string} inputType - The input type ('text' or 'password')
+	 * @return {JSX.Element} The TextControl component
+	 */
+	const renderTextControl = ( inputType = 'text' ) => (
+		<TextControl
+			label={ __( 'API Key', 'godam' ) }
+			value={ apiKey }
+			onChange={ setAPIKey }
+			help={ renderHelpText() }
+			placeholder={ __( 'Enter your API key here', 'godam' ) }
+			className={ `godam-input ${ ! hasValidAPIKey && maskedAPIKey ? 'invalid-api-key' : '' }` }
+			disabled={ hasValidAPIKey }
+			type={ inputType }
+		/>
+	);
 
 	// If API key is valid, render simple TextControl without toggle
 	if ( hasValidAPIKey ) {
-		return (
-			<TextControl
-				label={ __( 'API Key', 'godam' ) }
-				value={ apiKey }
-				onChange={ setAPIKey }
-				help={ renderHelpText() }
-				placeholder={ __( 'Enter your API key here', 'godam' ) }
-				className={ `godam-input ${ ! hasValidAPIKey && maskedAPIKey ? 'invalid-api-key' : '' }` }
-				disabled={ hasValidAPIKey }
-				type="text"
-			/>
-		);
+		return renderTextControl();
 	}
 
 	// If API key is not valid, render with password toggle
 	return (
-		<div className="godam-password-field-wrapper" style={ { position: 'relative' } }>
-			<TextControl
-				label={ __( 'API Key', 'godam' ) }
-				value={ apiKey }
-				onChange={ setAPIKey }
-				help={ renderHelpText() }
-				placeholder={ __( 'Enter your API key here', 'godam' ) }
-				className={ `godam-input ${ ! hasValidAPIKey && maskedAPIKey ? 'invalid-api-key' : '' }` }
-				disabled={ hasValidAPIKey }
-				type={ showPassword ? 'text' : 'password' }
-			/>
+		<div className="godam-password-field-wrapper">
+			{ renderTextControl( showPassword ? 'text' : 'password' ) }
 			<Button
 				icon={ showPassword ? seen : unseen }
-				onClick={ togglePasswordVisibility }
+				onClick={ () => setShowPassword( ! showPassword ) }
 				className="godam-password-toggle"
-				style={ {
-					position: 'absolute',
-					right: '8px',
-					top: '32px',
-					background: 'none',
-					border: 'none',
-					padding: '4px',
-					minWidth: 'auto',
-					height: 'auto',
-				} }
 				aria-label={ showPassword ? __( 'Hide password', 'godam' ) : __( 'Show password', 'godam' ) }
 			/>
 		</div>
