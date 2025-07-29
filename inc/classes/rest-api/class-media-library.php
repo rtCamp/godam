@@ -1146,24 +1146,28 @@ class Media_Library extends Base {
 			'per_page'   => 100, // Default to 100 items per page.
 		);
 
+		// Initialize meta_query as empty array.
+		$meta_queries = array();
+
 		if ( ! empty( $bookmark ) ) {
-			$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Meta query is needed to filter by bookmark.
-				array(
-					'key'   => 'bookmark',
-					'value' => $bookmark,
-				),
+			$meta_queries[] = array(
+				'key'   => 'bookmark',
+				'value' => $bookmark,
 			);
 		}
 
 		if ( ! empty( $locked ) ) {
-			$args['meta_query'][] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Meta query is needed to filter by locked.
+			$meta_queries[] = array(
 				'key'   => 'locked',
 				'value' => $locked,
 			);
 		}
 
-		if ( ! $locked && ! $bookmark ) {
+		if ( ! empty( $meta_queries ) ) {
+			$args['meta_query'] = $meta_queries; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Meta query is needed to filter by bookmark and locked.
+		}
 
+		if ( ! $locked && ! $bookmark ) {
 			$page = (int) $request->get_param( 'page' );
 
 			if ( $page < 1 ) {
@@ -1232,7 +1236,7 @@ class Media_Library extends Base {
 	 * This method formats the term data for the REST API response.
 	 *
 	 * @param array|\WP_Error $terms The terms to prepare.
-	 
+	 *
 	 * @return array Prepared term data.
 	 */
 	private function prepare_term_responses( $terms ) {
