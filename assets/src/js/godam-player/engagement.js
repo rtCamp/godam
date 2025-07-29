@@ -249,6 +249,11 @@ const engagementStore = {
 	watch() {
 		const state = this.select.getState();
 		this.distributeData( state );
+
+		if ( this.root && this.modalData && 0 !== Object.keys( this.modalData ).length ) {
+			const { videoAttachmentId, siteUrl, videoId } = this.modalData;
+			this.root.render( <CommentBox videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } storeObj={ this } videoId={ videoId } /> );
+		}
 	},
 
 	/**
@@ -423,6 +428,7 @@ const engagementStore = {
 	 * @param {string} videoId           The video attachment ID.
 	 */
 	generateCommentModal( videoAttachmentId, siteUrl, videoId ) {
+		this.modalData = { videoAttachmentId, siteUrl, videoId };
 		const modalId = 'rtgodam-video-engagement--comment-modal';
 		let commentModal = document.getElementById( modalId );
 
@@ -676,16 +682,21 @@ function CommentList( props ) {
 function CommentBox( props ) {
 	const { videoAttachmentId, storeObj, siteUrl, videoId } = props;
 	const baseClass = 'rtgodam-video-engagement--comment-modal';
-	const commentsCount = storeObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
-	const likesCount = storeObj.select.getLikes()[ videoAttachmentId ] || 0;
-	const viewsCount = storeObj.select.getViews()[ videoAttachmentId ] || 0;
-	const titles = storeObj.select.getTitles()[ videoAttachmentId ] || __( 'GoDAM Video', 'godam' );
-	const comments = storeObj.select.getComments()[ videoAttachmentId ] || [];
-	const [ commentsData, setCommentsData ] = useState( comments );
 	const memoizedStoreObj = useMemo( () => storeObj, [ storeObj ] );
+	const commentsCount = memoizedStoreObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
+	const likesCount = memoizedStoreObj.select.getLikes()[ videoAttachmentId ] || 0;
+	const viewsCount = memoizedStoreObj.select.getViews()[ videoAttachmentId ] || 0;
+	const titles = memoizedStoreObj.select.getTitles()[ videoAttachmentId ] || __( 'GoDAM Video', 'godam' );
+	const comments = memoizedStoreObj.select.getComments()[ videoAttachmentId ] || [];
+	const [ commentsData, setCommentsData ] = useState( comments );
 	const videoKey = videoId.replace( 'engagement-', '' );
 	const videoContainerRef = useRef( null );
 	const videoFigureId = `godam-player-container-${ videoKey }`;
+
+	useEffect( () => {
+		setCommentsData( comments );
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ commentsCount ] );
 
 	useEffect( () => {
 		const currentVideoParent = document.getElementById( videoFigureId );
@@ -702,15 +713,22 @@ function CommentBox( props ) {
 		return () => {
 			currentVideoParent.insertBefore( currentVideo, currentVideoParent.firstChild );
 			document.body.classList.remove( 'no-scroll' );
+			memoizedStoreObj.modalData = {};
+
+			// Godam gallery cleanup if needed
+			const godamGalleryModalCloseer = document.querySelector( '.godam-modal.is-gallery .godam-modal-close' );
+			if ( godamGalleryModalCloseer ) {
+				godamGalleryModalCloseer.click();
+			}
 		};
-	}, [ videoFigureId ] );
+	}, [ videoFigureId, memoizedStoreObj ] );
 
 	return (
 		<div className={ baseClass }>
 			<div className={ baseClass + '-content' }>
 				<div className={ baseClass + '-header' }>
 					<h3 className={ baseClass + '-title' }>{ titles }</h3>
-					<button className={ `${ baseClass }--close-button` } onClick={ () => storeObj.root.unmount() }>&times;</button>
+					<button className={ `${ baseClass }--close-button` } onClick={ () => memoizedStoreObj.root.unmount() }>&times;</button>
 				</div>
 				<div className={ baseClass + '--video' }>
 					<div className={ `${ baseClass }--video-figure` }>

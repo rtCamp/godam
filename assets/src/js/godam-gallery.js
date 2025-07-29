@@ -162,6 +162,7 @@ document.addEventListener( 'click', async function( e ) {
 			modal.className = 'godam-modal';
 			document.body.appendChild( modal );
 		}
+		modal.classList.add( 'is-gallery' );
 
 		// Store current video ID and loading state
 		modal.dataset.currentVideoId = videoId;
@@ -255,6 +256,10 @@ document.addEventListener( 'click', async function( e ) {
 							const videoPlayer = modal.querySelector( '.video-js' );
 							if ( videoPlayer && videoPlayer.player ) {
 								videoPlayer.player.play();
+								const engagementComment = modal.querySelector( '.rtgodam-video-engagement .rtgodam-video-engagement--comment-link' );
+								if ( engagementComment ) {
+									engagementComment.click();
+								}
 							}
 						}
 					}
