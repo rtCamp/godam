@@ -711,17 +711,18 @@ function GODAMPlayer( videoRef = null ) {
 				input.readOnly = ! checkbox.checked;
 
 				// Helper functions
-				const secondsToMMSS = ( sec ) => `${ Math.floor( sec / 60 ) }:${ String( Math.floor( sec % 60 ) ).padStart( 2, '0' ) }`;
+				const secondsToMMSS = ( sec ) => `${ String( Math.floor( sec / 60 ) ).padStart( 2, '0' ) }:${ String( Math.floor( sec % 60 ) ).padStart( 2, '0' ) }`;
 				const mmssToSeconds = ( str ) => str.split( ':' ).reduce( ( min, sec ) => ( ( +min ) * 60 ) + ( +sec ) );
+				const validateMMSS = ( str ) => /^(\d{1,2}):([0-5]\d)$/.test( str );
 
 				// Function to update share links every time the timestamp changes
 				const updateLinks = () => {
-					const timestamp = checkbox.checked && input.value.match( /^\d{1,2}:\d{2}$/ )
+					const timestamp = checkbox.checked && validateMMSS( input.value )
 						? mmssToSeconds( input.value )
 						: null;
 
 					const fullPage = timestamp ? `${ videoLink }?t=${ timestamp }` : videoLink;
-					const fullEmbed = `${ timestamp ? `${ embedCode }?t=${ timestamp }` : embedCode }`;
+					const fullEmbed = `<iframe src="${ fullPage }"></iframe>`;
 
 					pageLinkInput.value = fullPage;
 					embedInput.value = fullEmbed;
@@ -746,8 +747,13 @@ function GODAMPlayer( videoRef = null ) {
 
 				// Live auto-format mm:ss
 				input.addEventListener( 'input', () => {
-					//todo
-					updateLinks();
+					const isValid = validateMMSS( input.value );
+					if ( ! isValid ) {
+						input.classList.add( 'invalid' );
+					} else {
+						input.classList.remove( 'invalid' );
+						updateLinks();
+					}
 				} );
 			}
 		}

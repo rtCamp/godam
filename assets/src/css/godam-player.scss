@@ -759,6 +759,10 @@ body.godam-share-modal-open {
 		flex-direction: column;
 		gap: 10px;
 
+		label {
+			width: fit-content;
+		}
+
 		input[type="text"] {
 			width: 50px;
 			border: none;
