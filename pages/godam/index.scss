@@ -193,6 +193,39 @@ $settings-page-breakpoint: 782px;
 
 			&__content {
 				flex: 1;
+				container-type: inline-size;
+				container-name: godamvideoplayer;
+			}
+
+			&__global-settings {
+				width: 80%;
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 3.5rem;
+				align-items: flex-start;
+
+				.godam-color-picker {
+					margin: 0;
+				}
+
+
+				@container godamvideoplayer (max-width: 732px) {
+					width: 100%;
+					gap: 1.5rem;
+					grid-template-columns: 1fr;
+				}
+			}
+
+			&__custom-css {
+				width: 80%;
+
+				.components-panel__body {
+					border: none;
+				}
+
+				@container godamvideoplayer (max-width: 732px) {
+					width: 100%;
+				}
 			}
 		}
 	}
