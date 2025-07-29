@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { help, trendingUp } from '@wordpress/icons';
+import { help, trendingUp, download } from '@wordpress/icons';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -82,6 +82,8 @@ const GodamHeader = () => {
 										size="compact"
 										href={ pricingLink }
 										target="_blank"
+										icon={ download }
+										iconSize={ 16 }
 										text={ __( 'Get GoDAM', 'godam' ) }
 									/>
 								) }
