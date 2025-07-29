@@ -53,11 +53,6 @@ import {
 	loadChapters,
 } from './chapters.js'; // Adjust path as needed
 
-/**
- * Global variables
- */
-const validAPIKey = window?.godamAPIKeyData?.validApiKey;
-
 library.add( fas );
 dom.watch();
 
@@ -768,7 +763,7 @@ function GODAMPlayer( videoRef = null ) {
 				playButtonElement.el_.parentNode.replaceChild( imgElement, playButtonElement.el_ );
 			}
 
-			if ( controlBarSettings?.brandingIcon || ! validAPIKey ) {
+			if ( controlBarSettings?.brandingIcon || ! window?.godamAPIKeyData?.validApiKey ) {
 				const CustomPlayButton = videojs.getComponent( 'Button' );
 
 				class CustomButton extends CustomPlayButton {
