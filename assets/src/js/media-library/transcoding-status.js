@@ -31,6 +31,11 @@ if ( 'list' === checkMediaLibraryView() ) {
 		}, 100 );
 	} );
 
+	document.addEventListener( 'media-frame-opened', () => {
+		initGridView();
+		gridView.reAttachEvent();
+	} );
+
 	if ( wp?.Uploader ) {
 		( function( $ ) {
 			$.extend( wp.Uploader.prototype, {
