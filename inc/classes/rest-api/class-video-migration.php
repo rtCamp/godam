@@ -512,6 +512,53 @@ class Video_Migration extends Base {
 	}
 
 	/**
+	 * Build sources array for a video attachment.
+	 * 
+	 * This function creates the sources array that matches the format expected by the block editor.
+	 * 
+	 * @since n.e.x.t
+	 *
+	 * @param int $attachment_id The attachment ID.
+	 *
+	 * @return array Array of video sources with src and type properties.
+	 */
+	private function build_video_sources_array( $attachment_id ) {
+		$sources = array();
+
+		// Get the original source URL.
+		$source_url = wp_get_attachment_url( $attachment_id );
+		$mime_type  = get_post_mime_type( $attachment_id );
+
+		if ( ! empty( $source_url ) ) {
+			$sources[] = array(
+				'src'  => $source_url,
+				'type' => ( strpos( $source_url, '.mov' ) !== false ) ? 'video/mp4' : $mime_type,
+			);
+		}
+
+		// Get HLS transcoded URL.
+		$hls_transcoded_url = get_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', true );
+		if ( ! empty( $hls_transcoded_url ) ) {
+			$sources[] = array(
+				'src'  => $hls_transcoded_url,
+				'type' => ( strpos( $hls_transcoded_url, '.m3u8' ) !== false ) ? 'application/x-mpegURL' : $mime_type,
+			);
+		}
+
+		// Get transcoded URL (MPD).
+		$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+		if ( ! empty( $transcoded_url ) ) {
+			$sources[] = array(
+				'src'  => $transcoded_url,
+				'type' => ( strpos( $transcoded_url, '.mpd' ) !== false ) ? 'application/dash+xml' : $mime_type,
+			);
+		}
+
+		// Reverse the sources to ensure the preferred format is first. MPD -> HLS -> Origin.
+		return array_reverse( $sources );
+	}
+
+	/**
 	 * Migrate Vimeo video blocks for a single post.
 	 * 
 	 * @since n.e.x.t
@@ -566,6 +613,9 @@ class Video_Migration extends Base {
 					continue;
 				}
 
+				// Build sources array immediately during migration.
+				$sources = $this->build_video_sources_array( $attachment_id );
+
 				// Transform to custom block with attributes.
 				$block = array(
 					'blockName'    => 'godam/video',
@@ -576,7 +626,7 @@ class Video_Migration extends Base {
 						'muted'    => $attrs['muted'] ?? false,
 						'poster'   => $attrs['poster'] ?? '',
 						'src'      => $video_url,
-						'sources'  => array(),
+						'sources'  => $sources,
 						'seo'      => array(),
 					),
 					'innerContent' => array( '<div class="wp-block-godam-video"></div>' ),
@@ -723,6 +773,11 @@ class Video_Migration extends Base {
 
 		// Update attachment metadata.
 		update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $video_info['transcoded_file_path'] );
+
+		// Store HLS URL if available from GoDAM Central.
+		if ( ! empty( $video_info['hls_url'] ) ) {
+			update_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', $video_info['hls_url'] );
+		}
 
 		return $attachment_id;
 	}
