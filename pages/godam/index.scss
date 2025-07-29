@@ -198,10 +198,10 @@ $settings-page-breakpoint: 782px;
 			}
 
 			&__global-settings {
-				width: 80%;
+				width: 90%;
 				display: grid;
 				grid-template-columns: repeat(3, 1fr);
-				gap: 3.5rem;
+				gap: 3rem;
 				align-items: flex-start;
 
 				.godam-color-picker {
