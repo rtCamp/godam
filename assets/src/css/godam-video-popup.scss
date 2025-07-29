@@ -514,10 +514,13 @@
 	}
    
 	.godam-sidebar-product-title h3 , .godam-sidebar-product-title{   
-		font-size: 1rem;
+		font-size: 1.4rem;
 		font-weight: 700 !important;
 		margin: 0;
 		margin-bottom: 0.5rem !important;
+		@media (max-width: 768px) {
+			font-size: 1rem;
+		}
 	}
 
 	button.godam-product-sidebar-add-to-cart-button,
@@ -531,8 +534,11 @@
 		justify-content: center !important;
 		border-radius: 0.2rem;
 		overflow: hidden;
+		outline: none !important;
 		border: none !important;
-		padding: 0.7rem !important;
+		padding: 0 !important;
+		font-size: 0.8rem !important;
+		line-height: 1rem !important;
 		margin: 0 !important;
 		cursor: pointer !important;
 		text-decoration: none !important;
@@ -1085,15 +1091,12 @@
 			align-items: flex-end !important;
 
 			.godam-sidebar-header{
-				margin-bottom: 12px !important;
-				position: absolute ;
-				top: -20px;
-				right: 12px;
+				margin-bottom: 5px !important;
+				position: relative !important;
 				width: 100%;
 				justify-content: flex-end !important;
 				z-index: 999 !important;
 				height: max-content !important;
-
 				h3,.godam-product-video-gallery--cart-basket{
 					display: none !important;
 				}
@@ -1109,7 +1112,8 @@
 
 			.godam-product-sidebar-grid{
 				display: flex !important;
-				max-width: 95vw !important;
+				max-width: 95% !important;
+				margin: 0 auto !important;
 				overflow-x: auto;
 				scrollbar-width: none;
 				-ms-overflow-style: none;
@@ -1120,6 +1124,7 @@
 				scroll-snap-type: x mandatory;
 				
 				.godam-sidebar-product-item{
+					margin: 0 auto !important;
 					height: auto !important;
 					background: rgba(255, 255, 255, 0.849);
 					border-radius: 16px;
