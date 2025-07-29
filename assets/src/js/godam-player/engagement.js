@@ -22,6 +22,7 @@ const ACTIONS = {
 	LOAD_VIDEO_ENGAGEMENT_DATA: 'LOAD_VIDEO_ENGAGEMENT_DATA',
 	USER_HIT_LIKE: 'USER_HIT_LIKE',
 	USER_COMMENTED: 'USER_COMMENTED',
+	GENERATE_COMMENT_MODAL: 'GENERATE_COMMENT_MODAL',
 	ERROR: 'ERROR',
 };
 
@@ -120,10 +121,6 @@ const engagementStore = {
 						[ action.videoAttachmentId ]: state.commentsCount[ action.videoAttachmentId ] + 1,
 					},
 				};
-			case ACTIONS.ERROR:
-				return {
-					...state,
-				};
 			default:
 				return state;
 		}
@@ -140,7 +137,6 @@ const engagementStore = {
 		 * @param {HTMLElement} likeLink          - The HTML element for the like button/link.
 		 * @return {Object|null} An action object containing the type and like data.
 		 */
-
 		userHitiLke: async ( videoAttachmentId, siteUrl, storeObj, likeLink ) => {
 			const likeStatus = storeObj.select.getIsUserLiked()[ videoAttachmentId ];
 			const likeData = await storeObj.sendLikeData( videoAttachmentId, siteUrl, ! likeStatus );
@@ -155,6 +151,7 @@ const engagementStore = {
 				likeData,
 			};
 		},
+
 		/**
 		 * Dispatches an action to update the comment count for a video.
 		 *
@@ -186,6 +183,28 @@ const engagementStore = {
 			};
 		},
 
+		/**
+		 * Dispatches an action to generate a comment modal.
+		 *
+		 * @param {string} videoAttachmentId - The ID of the video attachment.
+		 * @param {string} siteUrl           - The URL of the site where the video is hosted.
+		 * @param {string} videoId           - The ID of the video.
+		 * @return {Object} An action object containing the type.
+		 */
+		initiateCommentModal: ( videoAttachmentId, siteUrl, videoId ) => {
+			engagementStore.generateCommentModal( videoAttachmentId, siteUrl, videoId );
+			return {
+				type: ACTIONS.GENERATE_COMMENT_MODAL,
+			};
+		},
+
+		/**
+		 * Dispatches an action to handle an error that occurred while performing an
+		 * engagement action (e.g. liking a video).
+		 *
+		 * @param {string} message - The error message.
+		 * @return {Object} An action object containing the type and error message.
+		 */
 		errorHappened: ( message ) => {
 			// eslint-disable-next-line no-alert
 			alert( message );
