@@ -611,6 +611,20 @@ function GODAMPlayer( videoRef = null ) {
 									</span>
 								</div>
 							</div>
+							<div class='share-modal-popup__timestamp-container'>
+								<label for="use-timestamp">
+								<input
+									type="checkbox"
+									id="use-timestamp"
+								/>
+								<span>${ __( 'Start at', 'godam' ) }</span>
+								<input
+									id="timestamp-input"
+									type="text"
+									placeholder="0:00"
+								/>
+								</label>
+							</div>
 						</div>
 					</div>
 				`;
