@@ -19,7 +19,7 @@ const GodamHeader = () => {
 	return (
 		<header>
 			<div className="easydam-settings-header border-b -ml-[32px] pl-[32px] bg-white">
-				<div className="max-w-[1440px] mx-auto pl-4 pr-9 flex items-center justify-between">
+				<div className="max-w-[1440px] mx-auto pl-4 pr-6 flex items-center justify-between">
 					<div className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-end">
 						<img className="h-12" src={ godamLogo } alt="GoDAM" />
 						<div className="ml-3">
@@ -30,7 +30,7 @@ const GodamHeader = () => {
 							}
 						</div>
 					</div>
-					<div className="flex items-center">
+					<div className="flex items-center flex-wrap">
 						<Button
 							variant="tertiary"
 							href={ helpLink }
