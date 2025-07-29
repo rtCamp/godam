@@ -97,6 +97,7 @@
         img {
             height: 18px;
             width: 16px;
+            max-width: unset;
         }
     }
 
@@ -104,7 +105,7 @@
         display: none;
     }
 
-    @container godam-player-pills-skin (max-width: 580px) {
+    @container godam-player-pills-skin (max-width: 480px) {
 
         .godam-central-controls {
             display: flex;

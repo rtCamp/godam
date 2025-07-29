@@ -181,7 +181,7 @@
 			height: 28px;
 		}
 
-		@container godam-player-default-skin (max-width: 580px) {
+		@container godam-player-default-skin (max-width: 480px) {
 			width: 50px;
 			height: 30px;
 
@@ -981,7 +981,7 @@
 		 object-fit: fill;
 	 }
 
-	 @container godam-player-default-skin (max-width: 580px) {
+	 @container godam-player-default-skin (max-width: 480px) {
 
 		& {
 			display: none;
@@ -1204,7 +1204,7 @@
 	}
 
 
-	@container godam-player-default-skin (max-width: 580px) {
+	@container godam-player-default-skin (max-width: 480px) {
 
 		.vjs-modal-dialog-content {
 			padding: 15px 15px 0 15px;
@@ -1371,8 +1371,8 @@
 		}
 	}
 
-	// Screen size greater than 580px
-	@container godam-player-default-skin (min-width: 580px) {
+	// Screen size greater than 480px
+	@container godam-player-default-skin (min-width: 480px) {
 
 		.vjs-control-bar {
 
@@ -1396,7 +1396,9 @@
 }
 
 .video-js .vjs-time-tooltip,
-.video-js .vjs-volume-tooltip {
+.video-js .vjs-volume-tooltip,
+.vjs-duration-display,
+.vjs-current-time-display {
 	white-space: nowrap;
 }
 
@@ -1610,7 +1612,7 @@
 			align-items: flex-end;
 		}
 
-		@container godam-player-default-skin (max-width: 580px) {
+		@container godam-player-default-skin (max-width: 480px) {
 
 			&:not(.is-not-stacked-on-mobile) {
 

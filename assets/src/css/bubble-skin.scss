@@ -7,7 +7,7 @@
 		border: 2px solid #fff;
 
 		span::before {
-			font-size: 1.5rem;
+			font-size: 24px;
 		}
 	}
 	  // control bar styles
@@ -211,6 +211,7 @@
 	
 			img {
 				height: 12px;
+				max-width: unset;
 			}
 		}
 
@@ -230,7 +231,17 @@
 		}
 	}
 
-	@container godam-player-bubble-skin (max-width: 580px) {
+	@container godam-player-bubble-skin (max-width: 600px) {
+
+		.vjs-control-bar {
+
+			.vjs-progress-control {
+				max-width: 72%;
+			}
+		}
+	}
+
+	@container godam-player-bubble-skin (max-width: 480px) {
 
         .vjs-control-bar {
             margin: -55px auto 0;
@@ -346,11 +357,9 @@
 
 
         .vjs-button.godam-share-button {
-            background-color: var(--rtgodam-control-bar-color, #000000AD);
-            border: 0.26px solid #FFF3;
-            height: 32px;
-            padding: 12px;
-            border-radius: 12px;
+            bottom: 136px !important;
+			height: 24px !important;
+			border-radius: 12px !important;
 			display: flex;
 			align-items: center;
         }

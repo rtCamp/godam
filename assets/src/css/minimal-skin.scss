@@ -89,7 +89,7 @@
         display: none;
     }
 
-    @container godam-player-minimal-skin (max-width: 580px) {
+    @container godam-player-minimal-skin (max-width: 480px) {
         
         .vjs-control-bar {
 			height: 6em !important;
@@ -145,13 +145,6 @@
                 z-index: 99;
             }
 
-            .vjs-control.vjs-custom-play-button {
-                display: block;
-                position: absolute;
-                bottom: 0;
-                left: 10px;
-            }
-
 			.vjs-play-control {
 				position: absolute;
 			}
@@ -176,7 +169,7 @@
 			height: 3em !important;
 		}
 
-       .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel, .vjs-remaining-time {
+       .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control, .vjs-volume-panel, .vjs-remaining-time, .vjs-custom-play-button {
             display: none !important;
         }
 
@@ -184,6 +177,7 @@
             background: transparent;
             height: 24px;
             width: 24px;
+            padding: 0;
         }
 
         .vjs-menu {

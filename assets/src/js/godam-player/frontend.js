@@ -119,8 +119,6 @@ function GODAMPlayer( videoRef = null ) {
 
 		const isPreviewEnabled = videoSetupOptions?.preview;
 
-		const isMobileView = window.innerWidth <= 768;
-
 		const player = videojs( video, videoSetupControls );
 
 		// Check if the player is inside a modal
@@ -309,8 +307,8 @@ function GODAMPlayer( videoRef = null ) {
 			// Get the video container element
 			const videoContainer = video.closest( '.easydam-video-container' );
 
-			// if video container width is greater than 580px then skip.
-			if ( videoContainer && videoContainer.offsetWidth > 580 ) {
+			// if video container width is greater than 480px then skip.
+			if ( videoContainer && videoContainer.offsetWidth > 480 ) {
 				return;
 			}
 
@@ -640,7 +638,7 @@ function GODAMPlayer( videoRef = null ) {
 					shareButton.handleClick.bind( shareButton ),
 				);
 
-				if ( videoSetupOptions?.playerSkin === 'Bubble' && ! isMobileView ) {
+				if ( videoSetupOptions?.playerSkin === 'Bubble' && videoContainer.offsetWidth > 480 ) {
 					player.controlBar.addChild( 'GodamShareButton', {} );
 				} else if ( videoContainer ) {
 					videoContainer.appendChild( buttonEl );
