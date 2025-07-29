@@ -621,7 +621,7 @@ function GODAMPlayer( videoRef = null ) {
 								<input
 									id="timestamp-input"
 									type="text"
-									placeholder="0:00"
+									placeholder="00:00"
 								/>
 								</label>
 							</div>
@@ -702,6 +702,53 @@ function GODAMPlayer( videoRef = null ) {
 						e.preventDefault();
 						closeModal();
 					}
+				} );
+
+				const checkbox = shareModal.querySelector( '#use-timestamp' );
+				const input = shareModal.querySelector( '#timestamp-input' );
+				const pageLinkInput = shareModal.querySelector( '#page-link' );
+				const embedInput = shareModal.querySelector( '#embed-code' );
+				input.readOnly = ! checkbox.checked;
+
+				// Helper functions
+				const secondsToMMSS = ( sec ) => `${ Math.floor( sec / 60 ) }:${ String( Math.floor( sec % 60 ) ).padStart( 2, '0' ) }`;
+				const mmssToSeconds = ( str ) => str.split( ':' ).reduce( ( min, sec ) => ( ( +min ) * 60 ) + ( +sec ) );
+
+				// Function to update share links every time the timestamp changes
+				const updateLinks = () => {
+					const timestamp = checkbox.checked && input.value.match( /^\d{1,2}:\d{2}$/ )
+						? mmssToSeconds( input.value )
+						: null;
+
+					const fullPage = timestamp ? `${ videoLink }?t=${ timestamp }` : videoLink;
+					const fullEmbed = `${ timestamp ? `${ embedCode }?t=${ timestamp }` : embedCode }`;
+
+					pageLinkInput.value = fullPage;
+					embedInput.value = fullEmbed;
+
+					// Update social share URLs
+					const link = encodeURI( fullPage );
+					socialLinksData.forEach( ( { className } ) => {
+						const el = shareModal.querySelector( `.${ className }` );
+						if ( el ) {
+							el.href = link;
+						}
+					} );
+				};
+
+				// Auto-fill input with current time when checked
+				checkbox.addEventListener( 'change', () => {
+					if ( checkbox.checked && video ) {
+						input.value = secondsToMMSS( video.currentTime || 0 );
+					}
+					input.readOnly = ! checkbox.checked;
+					updateLinks();
+				} );
+
+				// Live auto-format mm:ss
+				input.addEventListener( 'input', () => {
+					//todo
+					updateLinks();
 				} );
 			}
 		}
