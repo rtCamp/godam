@@ -537,18 +537,30 @@
 		font-weight: 700 !important;
 		margin: 0;
 		font-size: 1.1rem;
+		line-height: 1.2rem;
 		margin-bottom: 0.5rem !important;
 		@media (max-width: 768px) {
-			font-size: 1rem;
+			font-size: 1rem !important;
+			line-height: 1.1rem !important;
 		}
 
 		@media (min-width: 1080x) {
-			font-size: 0.9rem;
+			font-size: 0.9rem !important;
+			line-height: 1rem !important;
 		}
 	}
 
-	.godam-sidebar-product-price{
-		font-size:0.9rem;
+	.godam-sidebar-product-price,.godam-sidebar-product-description{
+		font-size:0.9rem !important;
+		line-height: 1rem !important;
+		@media (min-width: 1080x) {
+			font-size:0.8rem !important;
+			line-height: 0.9rem !important;
+		}
+	}
+
+	.godam-sidebar-product-description{
+		margin: 1rem 0 !important;
 	}
 
 	button.godam-product-sidebar-add-to-cart-button,
@@ -949,7 +961,10 @@
 	flex-direction: column;
 	justify-content: flex-start;
 	align-items: flex-start;
-	gap: 12px;
+	gap: 6px !important;
+	@media (max-width: 768px) {
+		gap: 12px !important;
+	}
 }
 
 /* ===== GODAM IMAGE GALLERY STYLES - END ===== */
