@@ -179,9 +179,21 @@
 	}
 }
 
+.godam-product-modal-content.no-sidebar:has(.video-container.is-portrait){
+	width: 420px !important;
+	margin: 0 auto !important;
+	height: 100% !important;
+
+	@media (max-width: 992px) {
+		width: 100% !important;
+		height: 100% !important;
+		max-height: 100% !important;
+		min-height: 100% !important;
+	}
+}
+
 .godam-product-modal-content.no-sidebar , .godam-woocommerce-featured-video-modal-content{
 	background-color: transparent !important;
-	width: 100% !important;
 	height: 90vh !important;
 	max-height: 90vh !important;
 	max-width: 70vw !important;
@@ -271,6 +283,9 @@
 		background-color: transparent !important;
 	}
 
+
+
+	
 	.video-container.is-landscape {
 		width: 70vw !important;
 		height: 90vh !important;
