@@ -23,6 +23,7 @@ import Whatsapp from '../../../../../assets/src/images/whatsapp.svg';
 import Complete from '../../../../../assets/src/images/check.svg';
 
 import videojs from 'video.js';
+import { formatTime, parseTime, validateTimeString } from '../utils/dataHelpers.js';
 
 import { KEYBOARD_CONTROLS } from '../utils/constants';
 
@@ -122,32 +123,32 @@ class ShareManager {
 		return [
 			{
 				className: 'facebook',
-				href: `https://www.facebook.com/share.php?u=${ encodedLink }`,
+				href: `https://www.facebook.com/share.php?u=`,
 				icon: Facebook,
 			},
 			{
 				className: 'twitter',
-				href: `https://twitter.com/intent/tweet?url=${ encodedLink }&text=${ message }`,
+				href: `https://twitter.com/intent/tweet?text=${ message }&url=`,
 				icon: Twitter,
 			},
 			{
 				className: 'linkedin',
-				href: `https://www.linkedin.com/sharing/share-offsite/?url=${ encodedLink }&text=${ message }`,
+				href: `https://www.linkedin.com/sharing/share-offsite/?text=${ message }&url=`,
 				icon: LinkedIn,
 			},
 			{
 				className: 'reddit',
-				href: `http://www.reddit.com/submit?url=${ encodedLink }&title=${ message }`,
+				href: `http://www.reddit.com/submit?title=${ message }&url=`,
 				icon: Reddit,
 			},
 			{
 				className: 'whatsapp',
-				href: `https://api.whatsapp.com/send?text=${ message }: ${ encodedLink }`,
+				href: `https://api.whatsapp.com/send?text=${ message }: `,
 				icon: Whatsapp,
 			},
 			{
 				className: 'telegram',
-				href: `https://telegram.me/share/url?url=${ encodedLink }&text=${ message }`,
+				href: `https://telegram.me/share/url?text=${ message }&url=`,
 				icon: Telegram,
 			},
 		];
@@ -156,10 +157,10 @@ class ShareManager {
 	/**
 	 * Copies the input field content to clipboard and provides visual feedback.
 	 *
-	 * @param {string} inputId - The ID of the input element to copy from.
+	 * @param {string} inputSelector - The selector of the input element to copy from.
 	 */
-	copyToClipboard( inputId ) {
-		const input = document.getElementById( inputId );
+	copyToClipboard( inputSelector ) {
+		const input = document.querySelector( inputSelector );
 		if ( ! input ) {
 			return;
 		}
@@ -245,7 +246,7 @@ class ShareManager {
 		const socialLinks = this.createSocialLinksConfig( urls.encodedLink, urls.message );
 		const modalHtml = this.buildModalHtml( socialLinks, urls.videoLink, urls.embedCode );
 
-		this.injectModalIntoDOM( modalHtml, socialLinks );
+		this.injectModalIntoDOM( modalHtml, socialLinks, urls );
 	}
 
 	/**
@@ -261,11 +262,12 @@ class ShareManager {
 		}
 
 		const videoLink = `${ baseUrl }/web/video/${ jobId }`;
-		const embedCode = `<iframe src="${ baseUrl }/web/embed/${ jobId }"></iframe>`;
+		const embedUrl = `${ baseUrl }/web/embed/${ jobId }`;
+		const embedCode = `<iframe src="${ embedUrl }"></iframe>`;
 		const encodedLink = encodeURI( videoLink );
 		const message = encodeURIComponent( __( 'Check out this video!', 'godam' ) );
 
-		return { videoLink, embedCode, encodedLink, message };
+		return { videoLink, embedUrl, embedCode, encodedLink, message };
 	}
 
 	/**
@@ -292,7 +294,7 @@ class ShareManager {
 			<div class="${ MODAL_POPUP_CLASS }">
 				<div class="${ MODAL_POPUP_CLASS }__header">
 					<span class="${ MODAL_POPUP_CLASS }__title">${ __( 'Share Media', 'godam' ) }</span>
-					<div id="cancel-button" class="${ MODAL_POPUP_CLASS }__close-button" tabindex="0">&times;</div>
+					<div class="${ MODAL_POPUP_CLASS }__close-button" tabindex="0">&times;</div>
 				</div>
 				<div class="${ MODAL_POPUP_CLASS }__content">
 					<div class="${ MODAL_POPUP_CLASS }__social-links">
@@ -303,6 +305,21 @@ class ShareManager {
 					${ this.renderCopySection( 'page-link', videoLink, __( 'Page Link', 'godam' ) ) }
 					${ this.renderCopySection( 'embed-code', embedCode, __( 'Embed', 'godam' ) ) }
 				</div>
+				<div class="${ MODAL_POPUP_CLASS }__timestamp-container">
+					<label for="use-timestamp">
+					<input
+						type="checkbox"
+						id="use-timestamp"
+						class="use-timestamp"
+					/>
+					<span>${ __( 'Start at', 'godam' ) }</span>
+					<input
+						class="timestamp-input"
+						type="text"
+						placeholder=${ __( 'mm:ss', 'godam' ) }
+					/>
+					</label>
+				</div>
 			</div>
 		`;
 	}
@@ -312,8 +329,9 @@ class ShareManager {
 	 *
 	 * @param {string} modalHtml   - The HTML content for the modal.
 	 * @param {Array}  socialLinks - Array of social media link configurations.
+	 * @param {Array}  urls        - Array of generated social media links.
 	 */
-	injectModalIntoDOM( modalHtml, socialLinks ) {
+	injectModalIntoDOM( modalHtml, socialLinks, urls ) {
 		const container = document.createElement( 'div' );
 		container.className = MODAL_CONTAINER_CLASS;
 		container.innerHTML = DOMPurify.sanitize( modalHtml, { ADD_ATTR: [ 'target', 'rel' ] } );
@@ -321,7 +339,7 @@ class ShareManager {
 		document.body.appendChild( container );
 		document.body.classList.add( BODY_MODAL_OPEN_CLASS );
 
-		this.setupModalEventListeners( container, socialLinks );
+		this.setupModalEventListeners( container, socialLinks, urls );
 	}
 
 	/**
@@ -329,15 +347,17 @@ class ShareManager {
 	 *
 	 * @param {HTMLElement} container   - The modal container element.
 	 * @param {Array}       socialLinks - Array of social media link configurations.
+	 * @param {Array}       urls        - Array of generated social media links.
 	 */
-	setupModalEventListeners( container, socialLinks ) {
-		const cancelButton = container.querySelector( '#cancel-button' );
-		const copyPageLink = container.querySelector( '#copy-page-link' );
-		const copyEmbedCode = container.querySelector( '#copy-embed-code' );
+	setupModalEventListeners( container, socialLinks, urls ) {
+		const cancelButton = container.querySelector( '.share-modal-popup__close-button' );
+		const copyPageLink = container.querySelector( '.copy-page-link' );
+		const copyEmbedCode = container.querySelector( '.copy-embed-code' );
 
-		this.setupSocialLinkUrls( container, socialLinks );
+		this.setupSocialLinkUrls( container, socialLinks, urls );
 		this.setupModalCloseHandlers( container, cancelButton );
 		this.setupCopyButtonHandlers( copyPageLink, copyEmbedCode );
+		this.setupTimestampControls( container, socialLinks, urls );
 	}
 
 	/**
@@ -345,12 +365,13 @@ class ShareManager {
 	 *
 	 * @param {HTMLElement} container   - The modal container.
 	 * @param {Array}       socialLinks - Array of social link configurations.
+	 * @param {Array}       urls        - Array of generated social links.
 	 */
-	setupSocialLinkUrls( container, socialLinks ) {
+	setupSocialLinkUrls( container, socialLinks, urls ) {
 		socialLinks.forEach( ( { className, href } ) => {
 			const element = container.querySelector( `.${ className }` );
 			if ( element ) {
-				element.href = href;
+				element.href = href + urls.encodedLink;
 			}
 		} );
 	}
@@ -407,18 +428,87 @@ class ShareManager {
 	 */
 	setupCopyButtonHandlers( copyPageLink, copyEmbedCode ) {
 		const copyButtons = [
-			{ button: copyPageLink, inputId: 'page-link' },
-			{ button: copyEmbedCode, inputId: 'embed-code' },
+			{ button: copyPageLink, inputSelector: '.page-link' },
+			{ button: copyEmbedCode, inputSelector: '.embed-code' },
 		];
 
-		copyButtons.forEach( ( { button, inputId } ) => {
-			button.addEventListener( 'click', () => this.copyToClipboard( inputId ) );
+		copyButtons.forEach( ( { button, inputSelector } ) => {
+			button.addEventListener( 'click', () => this.copyToClipboard( inputSelector ) );
 			button.addEventListener( 'keydown', ( event ) => {
 				if ( [ KEYBOARD_CONTROLS.ENTER, KEYBOARD_CONTROLS.SPACE ].includes( event.key ) ) {
 					event.preventDefault();
-					this.copyToClipboard( inputId );
+					this.copyToClipboard( inputSelector );
 				}
 			} );
+		} );
+	}
+
+	/**
+	 * Sets up timestamp input event handlers.
+	 *
+	 * @param {HTMLElement} container   - The modal container.
+	 * @param {HTMLElement} socialLinks - Array of social media link configurations.
+	 * @param {HTMLElement} urls        - Array of generated social media links.
+	 */
+	setupTimestampControls( container, socialLinks, urls ) {
+		// Initialize timestamp checkbox and input
+		const checkbox = container.querySelector( '.use-timestamp' );
+		const input = container.querySelector( '.timestamp-input' );
+		const pageLinkInput = container.querySelector( '.page-link' );
+		const embedInput = container.querySelector( '.embed-code' );
+
+		if ( ! checkbox || ! input || ! pageLinkInput || ! embedInput ) {
+			return;
+		}
+
+		input.readOnly = ! checkbox.checked;
+
+		// Function to update share links every time the timestamp changes
+		const updateLinks = () => {
+			const timestamp = checkbox.checked && validateTimeString( input.value )
+				? parseTime( input.value )
+				: null;
+
+			const fullPage = timestamp ? `${ urls.videoLink }?t=${ timestamp }` : urls.videoLink;
+			const fullEmbed = timestamp ? `<iframe src="${ urls.embedUrl }?t=${ timestamp }"></iframe>` : urls.embedCode;
+			const encodedHref = encodeURI( fullPage );
+
+			pageLinkInput.value = fullPage;
+			embedInput.value = fullEmbed;
+
+			// Update social share URLs
+			socialLinks.forEach( ( { className, href } ) => {
+				const el = container.querySelector( `.${ className }` );
+				if ( el ) {
+					el.href = href + encodedHref;
+				}
+			} );
+		};
+
+		// Auto-fill input with current time when checked
+		checkbox.addEventListener( 'change', () => {
+			if ( checkbox.checked && this.video ) {
+				input.value = formatTime( this.video.currentTime || 0 );
+			}
+			input.readOnly = ! checkbox.checked;
+			updateLinks();
+		} );
+
+		// Live auto-format mm:ss
+		let debounceTimeout;
+
+		input.addEventListener( 'input', ( e ) => {
+			clearTimeout( debounceTimeout );
+
+			// Sanitize input to allow only digits and colons
+			const cleaned = e.target.value.replace( /[^0-9:]/g, '' );
+			if ( cleaned !== e.target.value ) {
+				e.target.value = cleaned;
+			}
+
+			debounceTimeout = setTimeout( () => {
+				updateLinks();
+			}, 300 );
 		} );
 	}
 
@@ -435,8 +525,8 @@ class ShareManager {
 			<div class='${ MODAL_POPUP_CLASS }__input-container'>
 				<p class='share-modal-input-text'>${ label }</p>
 				<div class="share-modal-input-group">
-					<input id="${ id }" type="text" value='${ value }' readonly tabindex="0" />
-					<span id="copy-${ id }" class="copy-button" tabindex="0">
+					<input class="${ id }" type="text" value='${ value }' readonly tabindex="0" />
+					<span class="copy-button copy-${ id }" tabindex="0">
 						<img src="${ CopyIcon }" alt="${ __( 'copy icon', 'godam' ) }" height="24" width="24" />
 					</span>
 				</div>
@@ -467,7 +557,10 @@ class ShareManager {
 
 			handleClick( event ) {
 				event.preventDefault();
-				self.createShareModal( self.player.jobId );
+				self.player = this.player_;
+				self.video = this.player_.el().querySelector( 'video' );
+
+				self.createShareModal( this.player_.jobId );
 			}
 		}
 
