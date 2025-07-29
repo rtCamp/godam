@@ -456,6 +456,8 @@
 		}
 
 		.godam-sidebar-close{
+			// temporary hide close button
+			display: none;
 			cursor: pointer;
 			font-size: 1.5rem;
 			font-weight: 600;
@@ -972,10 +974,11 @@
 
 		.godam-product-sidebar-single{
 			display: grid;
+			margin: 0 auto;
 			grid-template-columns: 4fr 8fr;
 			gap: 12px;
 			padding: 12px !important;
-			width: 100% !important;
+			width: 95% !important;
 			background: rgba(255, 255, 255, 0.849);
 			border-radius: 16px;
 			box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
