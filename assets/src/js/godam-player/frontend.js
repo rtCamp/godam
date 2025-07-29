@@ -727,11 +727,10 @@ function GODAMPlayer( videoRef = null ) {
 					embedInput.value = fullEmbed;
 
 					// Update social share URLs
-					const link = encodeURI( fullPage );
-					socialLinksData.forEach( ( { className } ) => {
+					socialLinksData.forEach( ( { className, href } ) => {
 						const el = shareModal.querySelector( `.${ className }` );
 						if ( el ) {
-							el.href = link;
+							el.href = href.replace( /url=([^&]*)/, `url=${ encodeURIComponent( fullPage ) }` );
 						}
 					} );
 				};
