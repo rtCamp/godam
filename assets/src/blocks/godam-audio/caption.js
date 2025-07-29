@@ -15,6 +15,28 @@ import {
 import { TextControl, ToolbarButton } from '@wordpress/components';
 import { caption as captionIcon } from '@wordpress/icons';
 
+/**
+ * Renders a caption for an Audio or Video block.
+ *
+ * @function
+ * @since 1.0.0
+ * @param {Object}      props                           - Component props.
+ * @param {string}      [props.attributeKey]            - Attribute key on the block to store the caption.
+ * @param {Object}      props.attributes                - Block attributes.
+ * @param {Function}    props.setAttributes             - Function to update block attributes.
+ * @param {boolean}     props.isSelected                - Whether the block is currently selected.
+ * @param {Function}    props.insertBlocksAfter         - Function to insert blocks after the current block.
+ * @param {string}      [props.placeholder]             - Placeholder text for the caption.
+ * @param {string}      [props.label]                   - Label for the caption.
+ * @param {boolean}     [props.showToolbarButton]       - Whether to show the toolbar button to toggle the caption.
+ * @param {string}      [props.excludeElementClassName] - Class name to exclude from the caption element.
+ * @param {string}      [props.className]               - Class name for the caption element.
+ * @param {string}      [props.tagName]                 - Tag name for the caption element.
+ * @param {string}      [props.addLabel]                - Label for the "Add caption" button.
+ * @param {string}      [props.removeLabel]             - Label for the "Remove caption" button.
+ * @param {JSX.Element} [props.icon]                    - Icon for the caption button.
+ * @return {JSX.Element} The rendered caption component.
+ */
 export function Caption( {
 	attributeKey = 'caption',
 	attributes,

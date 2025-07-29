@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { audio as icon } from '@wordpress/icons';
+import { video as icon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -21,14 +21,11 @@ export { metadata, name };
  */
 export const settings = {
 	icon,
-	example: {
-		attributes: {
-			src: 'https://upload.wikimedia.org/wikipedia/commons/d/dd/Armstrong_Small_Step.ogg',
-		},
-		viewportWidth: 350,
-	},
 	edit,
 	save,
+	example: {
+		viewportWidth: 350,
+	},
 };
 
 export const init = () => initBlock( { name, metadata, settings } );

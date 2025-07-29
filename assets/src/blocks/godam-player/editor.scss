@@ -1,1 +1,13 @@
 @import url(https://vjs.zencdn.net/8.3.0/video-js.css);
+
+.wp-block-godam-video .godam-editor-video-placeholder {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #e5e5e5;
+	border-radius: 6px;
+	position: relative;
+	aspect-ratio: 16 / 9;
+}
