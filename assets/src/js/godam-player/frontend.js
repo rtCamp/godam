@@ -621,7 +621,7 @@ function GODAMPlayer( videoRef = null ) {
 								<input
 									id="timestamp-input"
 									type="text"
-									placeholder="00:00"
+									placeholder=${ __( 'mm:ss', 'godam' ) }
 								/>
 								</label>
 							</div>
@@ -704,10 +704,16 @@ function GODAMPlayer( videoRef = null ) {
 					}
 				} );
 
+				// Initialize timestamp checkbox and input
 				const checkbox = shareModal.querySelector( '#use-timestamp' );
 				const input = shareModal.querySelector( '#timestamp-input' );
 				const pageLinkInput = shareModal.querySelector( '#page-link' );
 				const embedInput = shareModal.querySelector( '#embed-code' );
+
+				if ( ! checkbox || ! input || ! pageLinkInput || ! embedInput ) {
+					return;
+				}
+
 				input.readOnly = ! checkbox.checked;
 
 				// Helper functions
