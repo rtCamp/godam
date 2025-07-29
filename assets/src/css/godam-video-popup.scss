@@ -533,13 +533,22 @@
 	}
    
 	.godam-sidebar-product-title h3 , .godam-sidebar-product-title{   
-		font-size: 1.4rem;
+		
 		font-weight: 700 !important;
 		margin: 0;
+		font-size: 1.1rem;
 		margin-bottom: 0.5rem !important;
 		@media (max-width: 768px) {
 			font-size: 1rem;
 		}
+
+		@media (min-width: 1080x) {
+			font-size: 0.9rem;
+		}
+	}
+
+	.godam-sidebar-product-price{
+		font-size:0.9rem;
 	}
 
 	button.godam-product-sidebar-add-to-cart-button,
