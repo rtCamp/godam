@@ -24,6 +24,8 @@
 		justify-content: center;
 		align-items: center;
 		z-index: 100;
+		border: none !important;
+		outline: none !important;
 	}
 
 	.loader {
@@ -168,7 +170,7 @@
 	border-radius: 12px !important;
 	overflow: hidden !important;
 	display: grid;
-	grid-template-columns: 5fr 7fr;
+	grid-template-columns: 6fr 6fr;
 	background-color: #fff;
 
 	@media (max-width: 768px) {
@@ -196,7 +198,7 @@
 	background-color: transparent !important;
 	height: 90vh !important;
 	max-height: 90vh !important;
-	max-width: 70vw !important;
+	max-width: 65vw !important;
 	min-height: 90vh !important;
 	display: flex;
 	justify-content: center;
@@ -287,7 +289,7 @@
 
 	
 	.video-container.is-landscape {
-		width: 70vw !important;
+		width: 65vw !important;
 		height: 90vh !important;
 		max-height: 90vh !important;
 		min-height: 90vh !important;
@@ -300,8 +302,8 @@
 		}
 		
 		.godam-video-wrapper, .easydam-video-container, .video-js , .vjs-tech , video  {
-			max-width:70vw !important;
-			width:70vw !important;
+			max-width:65vw !important;
+			width:65vw !important;
 			margin: 0 auto !important;
 			height: 100% !important;
 			min-height: 90vh !important;
@@ -335,11 +337,11 @@
 	align-items: center;
 	height: 100% !important;
 	max-height: 100% !important;
-	width: 27vw !important;
+	width: 32.5vw !important;
 
 	.godam-video-wrapper, .easydam-video-container, .video-js  {
-		max-width: 27vw;
-		width: 27vw;
+		max-width: 32.5vw;
+		width: 32.5vw;
 		margin: 0 auto !important;
 		height: 100% !important;
 		min-height: 40vh !important;
@@ -387,8 +389,8 @@
 	}
 
 	.godam-video-wrapper, .easydam-video-container, .video-js  {
-		max-width: 27vw !important;
-		width: 27vw !important;
+		max-width: 32.5vw !important;
+		width: 32.5vw !important;
 		margin: 0 auto !important;
 		height: 100% !important;
 		min-height: 90vh !important;
