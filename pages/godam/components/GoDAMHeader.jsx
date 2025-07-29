@@ -20,7 +20,7 @@ const GodamHeader = () => {
 		<header>
 			<div className="easydam-settings-header border-b -ml-[32px] pl-[32px] bg-white">
 				<div className="max-w-[1440px] mx-auto pl-4 pr-9 flex items-center justify-between">
-					<h1 className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-end">
+					<div className="py-6 m-0 text-4xl leading-4 font-semibold text-slate-900 flex items-end">
 						<img className="h-12" src={ godamLogo } alt="GoDAM" />
 						<div className="ml-3">
 							<div className="text-xs font-normal leading-4">{ `v${ window?.pluginInfo?.version }` }</div>
@@ -29,7 +29,7 @@ const GodamHeader = () => {
 								<div className="text-xs font-bold py-[2px] px-2 rounded bg-indigo-100 mt-1">{ window?.userData?.userApiData?.active_plan }</div>
 							}
 						</div>
-					</h1>
+					</div>
 					<div className="flex items-center">
 						<Button
 							variant="tertiary"
@@ -39,9 +39,7 @@ const GodamHeader = () => {
 							label={ __( 'Need help?', 'godam' ) }
 							icon={ help }
 						/>
-						{
 
-						}
 						<Button
 							className={ `ml-2 godam-button ${ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? 'disabled' : '' }` }
 							variant="primary"
@@ -64,18 +62,18 @@ const GodamHeader = () => {
 						/>
 
 						{
-							( window?.userData?.validApiKey && window?.userData?.userApiData?.active_plan && ( window?.userData?.userApiData?.active_plan )?.toLowerCase() !== 'platinum' ) &&
-							<Button
-								className="ml-2 godam-button"
-								variant="primary"
-								size="compact"
-								href={ upgradePlanLink }
-								target="_blank"
-								text={ __( 'Upgrade plan', 'godam' ) }
-							/>
-						}
+							( window?.userData?.validApiKey && window?.userData?.userApiData?.active_plan && ( window?.userData?.userApiData?.active_plan )?.toLowerCase() !== 'platinum' ) && (
+								<Button
+									className="ml-2 godam-button"
+									variant="primary"
+									size="compact"
+									href={ upgradePlanLink }
+									target="_blank"
+									text={ __( 'Upgrade plan', 'godam' ) }
+								/>
+							) }
 						{
-							( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) &&
+							( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) && (
 								<Button
 									className="ml-2 godam-button"
 									variant="primary"
@@ -84,7 +82,7 @@ const GodamHeader = () => {
 									target="_blank"
 									text={ __( 'Get GoDAM', 'godam' ) }
 								/>
-						}
+							) }
 					</div>
 				</div>
 			</div>

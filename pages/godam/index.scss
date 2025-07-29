@@ -192,12 +192,17 @@ $settings-page-breakpoint: 782px;
 
 	.sidebar-nav-item {
 
-		@apply flex items-center gap-2 p-2 mb-0.5 font-medium rounded-md text-gray-600 hover:text-gray-900 border border-transparent transition-all;
+		@apply flex items-center gap-2 p-2 mb-0.5 font-medium rounded-md focus:ring-2 ring-indigo-200 text-gray-600 hover:text-gray-900 border border-transparent transition-all;
 
 		&.active {
 
-			@apply bg-white font-semibold focus:ring-2 ring-indigo-200 text-gray-900 drop-shadow-sm;
+			@apply bg-white font-semibold text-gray-900 drop-shadow-sm;
 			border: 1px solid #ddd;
+		}
+
+		&:not(.active):hover {
+
+			@apply bg-gray-50;
 		}
 	}
 
