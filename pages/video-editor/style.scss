@@ -280,11 +280,7 @@
 }
 
 .godam-video-list-wrapper {
-	margin-left: -20px;
-
-	@media screen and (max-width: 782px) {
-		margin-left: 0;
-	}
+	margin-left: -20px !important;
 }
 
 .godam-video-list__video__thumbnail__overlay__menu {

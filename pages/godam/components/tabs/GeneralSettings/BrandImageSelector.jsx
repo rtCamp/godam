@@ -141,10 +141,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 							) }
 							</p>
 						</div>
-						) : __(
-							'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos',
-							'godam',
-						)
+						) : __( 'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos', 'godam' )
 				}
 			</p>
 		</div>
