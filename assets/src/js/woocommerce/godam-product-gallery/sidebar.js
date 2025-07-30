@@ -15,6 +15,7 @@
  */
 export function initSidebar() {
 	addCloseSidebarListener();
+	addOpenSidebarListener();
 }
 
 /**
@@ -24,11 +25,29 @@ export function initSidebar() {
 function addCloseSidebarListener() {
 	const modalContainer = document.querySelector( '.godam-product-modal-container.open' );
 	const sidebarClose = modalContainer.querySelector( '.godam-sidebar-close' );
+	const sidebarOpenButton = modalContainer.querySelector( '.sidebar-collapsible-open-button.hidden' );
 	sidebarClose.addEventListener( 'click', () => {
 		const sidebarElement = modalContainer.querySelector( '.godam-product-sidebar' );
 		sidebarElement.classList.add( 'close' );
 		modalContainer?.querySelector( '.godam-product-modal-content' )?.classList?.add( 'no-sidebar' );
 		modalContainer?.querySelector( '.godam-product-modal-content' )?.classList?.remove( 'sidebar' );
+		sidebarOpenButton?.classList.remove( 'hidden' );
+	} );
+}
+
+/**
+ * Adds an event listener to the sidebar open button to open
+ * the product sidebar and adjust modal content layout accordingly.
+ */
+function addOpenSidebarListener() {
+	const modalContainer = document.querySelector( '.godam-product-modal-container.open' );
+	const sidebarOpen = modalContainer.querySelector( '.sidebar-collapsible-open-button' );
+	sidebarOpen.addEventListener( 'click', () => {
+		const sidebarElement = modalContainer.querySelector( '.godam-product-sidebar' );
+		sidebarElement.classList.remove( 'close' );
+		modalContainer?.querySelector( '.godam-product-modal-content' )?.classList?.remove( 'no-sidebar' );
+		modalContainer?.querySelector( '.godam-product-modal-content' )?.classList?.add( 'sidebar' );
+		sidebarOpen?.classList.add( 'hidden' );
 	} );
 }
 
