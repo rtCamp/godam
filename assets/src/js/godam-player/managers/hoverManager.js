@@ -67,10 +67,6 @@ class HoverManager {
 	setupControlsVisibility() {
 		this.videoElement.addEventListener( 'mouseenter', this.handleShowControls.bind( this ) );
 		this.videoElement.addEventListener( 'mouseleave', this.handleHideControls.bind( this ) );
-
-		// Show controls when paused
-		this.player.on( 'pause', this.handlePause.bind( this ) );
-		this.player.on( 'play', this.handlePlay.bind( this ) );
 	}
 
 	/**
@@ -133,24 +129,13 @@ class HoverManager {
 	 * Hides video controls when mouse leaves the video element.
 	 */
 	handleHideControls() {
+		if ( this.player.currentTime() > 0 ) {
+			// If video is already playing, do not show controls
+			return;
+		}
+
 		this.isHovered = false;
 		this.player.removeClass( 'vjs-has-started' );
-	}
-
-	/**
-	 * Keeps controls visible when video is paused.
-	 */
-	handlePause() {
-		this.player.controls( true );
-	}
-
-	/**
-	 * Hides controls when video starts playing (if not hovered).
-	 */
-	handlePlay() {
-		if ( ! this.isHovered ) {
-			this.player.controls( false );
-		}
 	}
 
 	/**
