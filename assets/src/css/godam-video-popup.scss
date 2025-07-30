@@ -250,6 +250,7 @@
 		.video-js{
 			min-height: 90vh !important;
 			max-height: 90vh !important;
+			object-fit: cover !important;
 			padding-top: 0 !important ;
 			@media (max-width: 768px) {
 				height: 100vh !important;
@@ -259,6 +260,7 @@
 		}
 
 		.vjs-tech{
+			object-fit: cover !important;
 			min-height: 90vh !important;
 			max-height: 90vh !important;
 			@media (max-width: 768px) {
@@ -411,6 +413,7 @@
 		min-height: 90vh !important;
 		max-height: 90vh !important;
 		padding-top: 0 !important ;
+		object-fit: cover !important;
 
 		@media (max-width: 768px) {
 			height: 100vh !important;
@@ -423,6 +426,7 @@
 	.vjs-tech{
 		min-height: 90vh !important;
 		max-height: 90vh !important;
+		object-fit: cover !important;
 
 		@media (max-width: 768px) {
 			height: 100vh !important;
@@ -560,6 +564,7 @@
 	}
 
 	.godam-sidebar-product-description{
+		opacity: 0.7;
 		margin: 1rem 0 !important;
 	}
 
@@ -623,6 +628,13 @@
 }
 
 .godam-product-sidebar-single{
+
+
+	ul,li,ol{
+		opacity: 0.8 !important;
+		font-size: 0.9rem !important;
+		line-height: 1rem !important;
+	}
 
 	woocommerce-product-gallery{
 		width: 100% !important;
@@ -1012,6 +1024,10 @@
 			-webkit-backdrop-filter: blur(9.2px);
 			border: 1px solid rgba(255, 255, 255, 0.3);
 
+			ul,li,ol{
+				display: none !important;
+			}
+
 			.godam-sidebar-product-price{
 				margin-bottom: 10px !important;
 			}
@@ -1211,7 +1227,7 @@
 .spinner {
 	position: absolute;
 	top: 50%;
-	left: 61%;
+	left: 65%;
 	width: 48px;
 	height: 48px;
 	border: 5px solid #e0e0e0;
