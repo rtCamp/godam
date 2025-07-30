@@ -42,6 +42,8 @@ class Media_Library_Ajax {
 
 		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
 		add_action( 'delete_attachment', array( $this, 'handle_media_deletion' ), 10, 1 );
+
+		add_action( 'admin_notices', array( $this, 'media_library_offer_banner' ) );
 	}
 
 	/**
@@ -599,5 +601,27 @@ class Media_Library_Ajax {
 				'headers' => array( 'Content-Type' => 'application/json' ),
 			)
 		);
+	}
+
+	/**
+	 * Display an offer banner in the media library if the API key is invalid.
+	 *
+	 * @return void
+	 */
+	public function media_library_offer_banner() {
+		$screen = get_current_screen();
+
+		$show_offer_banner = true; // This can be set to false to disable showing offer banner.
+
+		// Only show on the Media Library page.
+		if ( $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
+			ob_start();
+
+			echo '<div class="notice" style="padding: 0; border: none;">';
+			echo '<img src="' . esc_url( RTGODAM_URL . '/assets/src/images/Annual Plan Offer Banner (Plugin).png' ) . '" style="width: 100%; height: auto;">';
+			echo '</div>';
+
+			ob_flush();
+		}
 	}
 }
