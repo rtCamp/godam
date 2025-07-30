@@ -43,6 +43,7 @@ import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
+import { appendTimezoneOffsetToUTC, secondsToISO8601 } from './utils/index.js';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -106,7 +107,6 @@ function VideoEdit( {
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
-	const [ videoResponse, setVideoResponse ] = useState( {} );
 	const [ duration, setDuration ] = useState( 0 );
 
 	const dispatch = useDispatch();
@@ -166,8 +166,6 @@ function VideoEdit( {
 			( async () => {
 				try {
 					const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
-
-					setVideoResponse( response );
 
 					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
 						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
@@ -252,54 +250,87 @@ function VideoEdit( {
 			setDefaultPoster( media.image?.src );
 		}
 
+		if ( media?.origin === 'godam' ) {
+			setAttributes( {
+				seo: {
+					contentUrl: media?.url,
+					headline: media?.title || '',
+					description: media?.description || '',
+					uploadDate: appendTimezoneOffsetToUTC( media?.date || '' ),
+					duration: secondsToISO8601( media?.duration || '' ),
+					thumbnailUrl: media?.thumbnail_url || '',
+					isFamilyFriendly: true, // Default value
+				},
+			} );
+
+			setAttributes( {
+				sources: [
+					{
+						src: media.url,
+						type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
+					},
+				],
+			} );
+		} else {
 		// Fetch transcoded URL from media meta.
-		( async () => {
-			try {
-				const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
-
-				setVideoResponse( response );
-
-				if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
-					const transcodedUrl = response.meta.rtgodam_transcoded_url;
-
-					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
-						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
-					}
+			( async () => {
+				try {
+					const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
 
 					setAttributes( {
-						sources: [
-							{
-								src: transcodedUrl,
-								type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : media.mime,
-							},
-							{
-								src: media.url,
-								type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
-							},
-						],
+						seo: {
+							contentUrl: response.meta?.rtgodam_transcoded_url || response.source_url,
+							headline: response.title?.rendered || '',
+							description: response.description?.rendered || '',
+							uploadDate: appendTimezoneOffsetToUTC( response.date_gmt ),
+							duration: response.video_duration_iso8601 || '',
+							thumbnailUrl: response.meta?.rtgodam_media_video_thumbnail || '',
+							isFamilyFriendly: true, // Default value
+						},
 					} );
-				} else {
+
+					if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
+						const transcodedUrl = response.meta.rtgodam_transcoded_url;
+
+						if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
+							setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
+						}
+
+						setAttributes( {
+							sources: [
+								{
+									src: transcodedUrl,
+									type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : media.mime,
+								},
+								{
+									src: media.url,
+									type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
+								},
+							],
+						} );
+					} else {
 					// If meta not present, use media url.
+						setAttributes( {
+							sources: [
+								{
+									src: media.url,
+									type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
+								},
+							],
+						} );
+					}
+				} catch ( error ) {
 					setAttributes( {
 						sources: [
 							{
 								src: media.url,
-								type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
+								type: media.mime,
 							},
 						],
 					} );
 				}
-			} catch ( error ) {
-				setAttributes( {
-					sources: [
-						{
-							src: media.url,
-							type: media.mime,
-						},
-					],
-				} );
-			}
-		} )();
+			} )();
+		}
 
 		setTemporaryURL();
 	}
@@ -596,7 +627,6 @@ function VideoEdit( {
 			<VideoSEOModal
 				isOpen={ isSEOModalOpen }
 				setIsOpen={ setIsSEOModelOpen }
-				attachmentData={ videoResponse }
 				attributes={ attributes }
 				setAttributes={ setAttributes }
 			/>

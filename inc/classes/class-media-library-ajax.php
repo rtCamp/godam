@@ -32,7 +32,6 @@ class Media_Library_Ajax {
 	 */
 	public function setup_hooks() {
 		add_filter( 'ajax_query_attachments_args', array( $this, 'filter_media_library_by_taxonomy' ) );
-		add_filter( 'ajax_query_attachments_args', array( $this, 'godam_media_library_ajax' ) );
 		add_action( 'pre_get_posts', array( $this, 'pre_get_post_filter' ) );
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
@@ -42,103 +41,6 @@ class Media_Library_Ajax {
 
 		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
 		add_action( 'delete_attachment', array( $this, 'handle_media_deletion' ), 10, 1 );
-	}
-
-	/**
-	 * Short-circuit the media library AJAX request if the mime type is 'godam'.
-	 *
-	 * @param array $query_args Query arguments.
-	 * @return array
-	 */
-	public function godam_media_library_ajax( $query_args ) {
-
-		$api_key = get_option( 'rtgodam-api-key', '' );
-
-		if ( empty( $api_key ) ) {
-			return $query_args;
-		}
-
-		if ( isset( $query_args['post_mime_type'] ) && is_array( $query_args['post_mime_type'] ) ) {
-
-			$post_mime_type = $query_args['post_mime_type'][0];
-			$mime_type      = '';
-			if ( false === strpos( $post_mime_type, 'godam/' ) ) {
-				return $query_args;
-			} else {
-				// mime_type is godam/{mime_type}.
-				$mime_type = str_replace( 'godam/', '', $post_mime_type );
-				$mime_type = explode( '-', $mime_type );
-				$mime_type = $mime_type[0];
-				if ( 'all' === $mime_type ) {
-					$mime_type = '';
-				}
-			}
-
-			$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.file.get_list_of_files_with_api_key';
-
-
-			$order_by = 'creation asc';
-			if ( isset( $query_args['order'] ) && 'DESC' === $query_args['order'] ) {
-				$order_by = 'creation desc';
-			}
-
-			$request_args = array(
-				'api_key'  => $api_key,
-				'order_by' => $order_by,
-			);
-
-			if ( ! empty( $mime_type ) ) {
-				if ( 'video' === $mime_type ) {
-					$request_args['job_type'] = 'stream';
-				} else {
-					$request_args['job_type'] = $mime_type;
-				}
-			}
-
-			if ( isset( $query_args['s'] ) && ! empty( $query_args['s'] ) ) {
-				$request_args['search'] = $query_args['s'];
-			}
-
-			if ( isset( $query_args['posts_per_page'] ) && ! empty( $query_args['paged'] ) ) {
-				$request_args['page_size'] = intval( $query_args['posts_per_page'] );
-				$request_args['page']      = intval( $query_args['paged'] );
-			}
-
-			$api_url = add_query_arg(
-				$request_args,
-				$api_url
-			);
-
-			$response = wp_remote_get(
-				$api_url,
-				array(
-					'headers' => array(
-						'Content-Type' => 'application/json',
-					),
-				)
-			);
-
-			if ( is_wp_error( $response ) ) {
-				return $query_args;
-			}
-
-			$body = json_decode( wp_remote_retrieve_body( $response ) );
-
-			if ( ! is_object( $body ) || ! isset( $body->message ) || ! isset( $body->message->files ) ) {
-				return $query_args;
-			}
-
-			$response = $body->message->files;
-
-			foreach ( $response as $key => $item ) {
-				$response[ $key ] = $this->prepare_godam_media_item( $item );
-			}
-
-			wp_send_json_success( $response );
-
-		} else {
-			return $query_args;
-		}
 	}
 
 	/**
@@ -170,6 +72,9 @@ class Media_Library_Ajax {
 			'filesizeHumanReadable' => size_format( $item['file_size'] ),
 			'owner'                 => $item['owner'] ?? '',
 			'label'                 => $item['file_label'] ?? '',
+			'origin'                => 'godam',
+			'thumbnail_url'         => $item['thumbnail_url'] ?? '',
+			'duration'              => $item['playtime'] ?? '',
 		);
 
 		if ( 'stream' === $item['job_type'] ) {

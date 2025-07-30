@@ -19,20 +19,20 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import './video-seo-modal.scss';
-import { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty } from '../utils';
+import { getFirstNonEmpty, isObjectEmpty } from '../utils';
 
-export default function VideoSEOModal( { isOpen, setIsOpen, attachmentData, attributes, setAttributes } ) {
+export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttributes } ) {
 	const [ videoData, setVideoData ] = useState( {} );
 
 	useEffect( () => {
-		if ( attachmentData && ! isObjectEmpty( attachmentData ) ) {
+		if ( attributes.seo && ! isObjectEmpty( attributes.seo ) ) {
 			const initialVideoData = {
-				contentUrl: getFirstNonEmpty( attributes?.seo?.contentUrl, attachmentData?.meta?.rtgodam_transcoded_url, attachmentData?.source_url ),
-				headline: getFirstNonEmpty( attributes?.seo?.headline, attachmentData?.title?.rendered ),
-				description: getFirstNonEmpty( attributes?.seo?.description, attachmentData?.description?.rendered ),
-				uploadDate: getFirstNonEmpty( attributes?.seo?.uploadDate, appendTimezoneOffsetToUTC( attachmentData?.date_gmt ) ),
-				duration: getFirstNonEmpty( attributes?.seo?.duration, attachmentData?.video_duration_iso8601 ),
-				thumbnailUrl: getFirstNonEmpty( attributes?.seo?.thumbnailUrl, attachmentData?.meta?.rtgodam_media_video_thumbnail ),
+				contentUrl: getFirstNonEmpty( attributes?.seo?.contentUrl ),
+				headline: getFirstNonEmpty( attributes?.seo?.headline ),
+				description: getFirstNonEmpty( attributes?.seo?.description ),
+				uploadDate: getFirstNonEmpty( attributes?.seo?.uploadDate ),
+				duration: getFirstNonEmpty( attributes?.seo?.duration ),
+				thumbnailUrl: getFirstNonEmpty( attributes?.seo?.thumbnailUrl ),
 				isFamilyFriendly: getFirstNonEmpty( attributes?.seo?.isFamilyFriendly, true ),
 			};
 
@@ -46,7 +46,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attachmentData, attr
 				} );
 			}
 		}
-	}, [ attachmentData, attributes, setAttributes ] ); // Remove isOpen from dependencies
+	}, [ attributes, setAttributes ] ); // Remove isOpen from dependencies
 
 	const updateField = ( field, value ) => {
 		setVideoData( { ...videoData, [ field ]: value } );
