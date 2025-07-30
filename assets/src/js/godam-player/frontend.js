@@ -719,8 +719,14 @@ function GODAMPlayer( videoRef = null ) {
 
 				// Helper functions
 				const secondsToMMSS = ( sec ) => `${ String( Math.floor( sec / 60 ) ).padStart( 2, '0' ) }:${ String( Math.floor( sec % 60 ) ).padStart( 2, '0' ) }`;
-				const mmssToSeconds = ( str ) => str.split( ':' ).reduce( ( min, sec ) => ( ( +min ) * 60 ) + ( +sec ) );
-				const validateMMSS = ( str ) => /^(\d{1,2}):([0-5]\d)$/.test( str );
+				const mmssToSeconds = ( str ) => {
+					if ( ! validateMMSS( str ) ) {
+						return 0; // Return 0 for invalid input
+					}
+					const [ min = '0', sec = '0' ] = str.split( ':' );
+					return ( +min * 60 ) + +sec;
+				};
+				const validateMMSS = ( str ) => /^(0?[0-5]?\d):([0-5]\d)$/.test( str );
 
 				// Function to update share links every time the timestamp changes
 				const updateLinks = () => {
@@ -754,14 +760,13 @@ function GODAMPlayer( videoRef = null ) {
 				} );
 
 				// Live auto-format mm:ss
+				let debounceTimeout;
+
 				input.addEventListener( 'input', () => {
-					const isValid = validateMMSS( input.value );
-					if ( ! isValid ) {
-						input.classList.add( 'invalid' );
-					} else {
-						input.classList.remove( 'invalid' );
+					clearTimeout( debounceTimeout );
+					debounceTimeout = setTimeout( () => {
 						updateLinks();
-					}
+					}, 300 );
 				} );
 			}
 		}
