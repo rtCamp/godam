@@ -88,9 +88,22 @@ const wcVideoCarousel = {
 					freeMode: true,
 					autoplay: false,
 				} );
-				const itemIndex = parseInt( event.target.getAttribute( 'data-swiper-slide-index' ) );
+				const itemIndex = parseInt( video.getAttribute( 'data-swiper-slide-index' ) );
 				self.swiperModal.slideTo( itemIndex );
+				self.swiperModal.on( 'transitionEnd', () => {
+					self.swiperModal.slides.forEach( ( slideItem ) => {
+						const videoPlayer = slideItem.querySelector( '.video-js' );
+						if ( videoPlayer && videoPlayer.player ) {
+							videoPlayer.player.pause();
+						}
+					} );
 
+					const activeSlide = self.swiperModal.slides[ self.swiperModal.activeIndex ];
+					const videoPlayer = activeSlide.querySelector( '.video-js' );
+					if ( videoPlayer && videoPlayer.player ) {
+						videoPlayer.player.play();
+					}
+				} );
 				const videoElmModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal' );
 				videoElmModal.classList.add( 'open' );
 			} );
