@@ -7,7 +7,7 @@
 	display: none !important;
 	justify-content: center;
 	align-items: center;
-	height: 100vh;
+	height: 100dvh;
 
 	.godam-product-modal-close,.godam-woocommerce-featured-video-modal-close{
 		position: absolute;
@@ -165,8 +165,8 @@
 	max-width: 65vw;
 	width: 65vw;
 	height: 100%;
-	min-height: 90vh ;
-	max-height: 90vh;
+	min-height: 90dvh ;
+	max-height: 90dvh;
 	border-radius: 12px !important;
 	overflow: hidden !important;
 	display: grid;
@@ -176,8 +176,8 @@
 	@media (max-width: 768px) {
 		max-width: 95vw;
 		width: 95vw;
-		min-height: 80vh;
-		max-height: 80vh;
+		min-height: 80dvh;
+		max-height: 80dvh;
 	}
 }
 
@@ -196,10 +196,10 @@
 
 .godam-product-modal-content.no-sidebar , .godam-woocommerce-featured-video-modal-content{
 	background-color: transparent !important;
-	height: 90vh !important;
-	max-height: 90vh !important;
+	height: 90dvh !important;
+	max-height: 90dvh !important;
 	max-width: 65vw !important;
-	min-height: 90vh !important;
+	min-height: 90dvh !important;
 	display: flex;
 	justify-content: center;
 	align-content: center;
@@ -207,9 +207,9 @@
 
 	@media (max-width: 768px) {
 		width: 100vw !important;
-		height: 100vh !important;
-		max-height: 100vh !important;
-		min-height: 100vh !important;
+		height: 100dvh !important;
+		max-height: 100dvh !important;
+		min-height: 100dvh !important;
 		max-width: 100vw !important;
 
 	}
@@ -217,9 +217,9 @@
 	.video-container.animate-video-loading{
 		width: 100vw !important;
 		margin: 0 auto !important;
-		height: 100vh !important;
-		min-height: 90vh ;
-		max-height: 90vh;
+		height: 100dvh !important;
+		min-height: 90dvh ;
+		max-height: 90dvh;
 		overflow: hidden !important;
 		display: flex;
 		justify-content: center;
@@ -231,8 +231,8 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		height: 90vh !important;
-		max-height: 90vh !important;
+		height: 90dvh !important;
+		max-height: 90dvh !important;
 		width: 100% !important;
 		box-sizing: border-box;
 
@@ -241,32 +241,32 @@
 			width: 420px !important;
 			margin: 0 auto !important;
 			height: 100% !important;
-			min-height: 90vh ;
-			max-height: 90vh;
+			min-height: 90dvh ;
+			max-height: 90dvh;
 			overflow: hidden !important;
 
 		}
 
 		.video-js{
-			min-height: 90vh !important;
-			max-height: 90vh !important;
+			min-height: 90dvh !important;
+			max-height: 90dvh !important;
 			object-fit: cover !important;
 			padding-top: 0 !important ;
 			@media (max-width: 768px) {
-				height: 100vh !important;
-				max-height: 100vh !important;
-				min-height: 100vh !important;
+				height: 100dvh !important;
+				max-height: 100dvh !important;
+				min-height: 100dvh !important;
 			}
 		}
 
 		.vjs-tech{
 			object-fit: cover !important;
-			min-height: 90vh !important;
-			max-height: 90vh !important;
+			min-height: 90dvh !important;
+			max-height: 90dvh !important;
 			@media (max-width: 768px) {
-				height: 100vh !important;
-				max-height: 100vh !important;
-				min-height: 100vh !important;
+				height: 100dvh !important;
+				max-height: 100dvh !important;
+				min-height: 100dvh !important;
 			}
 		}
 
@@ -275,8 +275,8 @@
 			.godam-video-wrapper, .easydam-video-container, .video-js  {
 				max-width: 100vw !important;
 				width: 100vw !important;
-				min-height: 100vh  !important;
-				max-height: 100vh !important;
+				min-height: 100dvh  !important;
+				max-height: 100dvh !important;
 			}
 		}
 
@@ -292,15 +292,15 @@
 	
 	.video-container.is-landscape {
 		width: 65vw !important;
-		height: 90vh !important;
-		max-height: 90vh !important;
-		min-height: 90vh !important;
+		height: 90dvh !important;
+		max-height: 90dvh !important;
+		min-height: 90dvh !important;
 		
 		@media (max-width: 768px) {
 			width: 95vw !important;
-			height: 40vh !important;
-			max-height: 40vh !important;
-			min-height: 40vh !important;
+			height: 40dvh !important;
+			max-height: 40dvh !important;
+			min-height: 40dvh !important;
 		}
 		
 		.godam-video-wrapper, .easydam-video-container, .video-js , .vjs-tech , video  {
@@ -308,15 +308,15 @@
 			width:65vw !important;
 			margin: 0 auto !important;
 			height: 100% !important;
-			min-height: 90vh !important;
-			max-height: 90vh !important;
+			min-height: 90dvh !important;
+			max-height: 90dvh !important;
 			overflow: hidden !important;
 			
 			@media (max-width: 768px) {
 				max-width: 95vw !important;
 				width: 95vw !important;
-				min-height: 40vh !important;
-				max-height: 40vh !important;
+				min-height: 40dvh !important;
+				max-height: 40dvh !important;
 			}
 		}
 	}
@@ -329,7 +329,7 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	max-height: 90vh !important;
+	max-height: 90dvh !important;
 	position: relative !important;
 }
 
@@ -346,16 +346,16 @@
 		width: 32.5vw;
 		margin: 0 auto !important;
 		height: 100% !important;
-		min-height: 40vh !important;
-		max-height: 40vh !important;
+		min-height: 40dvh !important;
+		max-height: 40dvh !important;
 		border-radius: 0 !important;
 		overflow: hidden !important;
 
 		@media (max-width: 768px) {
 			max-width: 95vw !important;
 			width: 95vw !important;
-			min-height: 40vh !important;
-			max-height: 40vh !important;
+			min-height: 40dvh !important;
+			max-height: 40dvh !important;
 		}
 	}
 
@@ -366,9 +366,9 @@
 	@media (max-width: 768px) {
 
 		.vjs-tech{
-			height: 40vh !important;
-			max-height: 40vh !important;
-			min-height: 40vh !important;
+			height: 40dvh !important;
+			max-height: 40dvh !important;
+			min-height: 40dvh !important;
 		}
 	}
 }
@@ -377,16 +377,16 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 90vh !important;
-	max-height: 90vh !important;
+	height: 90dvh !important;
+	max-height: 90dvh !important;
 	width: 100% !important;
 	box-sizing: border-box;
 
 	@media (max-width: 768px) {
 		width: 100vw !important;
-		height: 100vh !important;
-		max-height: 100vh !important;
-		min-height: 100vh !important;
+		height: 100dvh !important;
+		max-height: 100dvh !important;
+		min-height: 100dvh !important;
 		border-radius: 0 !important;
 	}
 
@@ -395,43 +395,43 @@
 		width: 32.5vw !important;
 		margin: 0 auto !important;
 		height: 100% !important;
-		min-height: 90vh !important;
-		max-height: 90vh !important;
+		min-height: 90dvh !important;
+		max-height: 90dvh !important;
 		overflow: hidden !important;
 
 		@media (max-width: 768px) {
 			max-width: 100vw !important;
 			width: 100vw !important;
-			height: 100vh !important;
-			max-height: 100vh !important;
-			min-height: 100vh !important;
+			height: 100dvh !important;
+			max-height: 100dvh !important;
+			min-height: 100dvh !important;
 			border-radius: 0 !important;
 		}
 	}
 
 	.video-js{
-		min-height: 90vh !important;
-		max-height: 90vh !important;
+		min-height: 90dvh !important;
+		max-height: 90dvh !important;
 		padding-top: 0 !important ;
 		object-fit: cover !important;
 
 		@media (max-width: 768px) {
-			height: 100vh !important;
-			max-height: 100vh !important;
-			min-height: 100vh !important;
+			height: 100dvh !important;
+			max-height: 100dvh !important;
+			min-height: 100dvh !important;
 		}
    
 	}
 
 	.vjs-tech{
-		min-height: 90vh !important;
-		max-height: 90vh !important;
+		min-height: 90dvh !important;
+		max-height: 90dvh !important;
 		object-fit: cover !important;
 
 		@media (max-width: 768px) {
-			height: 100vh !important;
-			max-height: 100vh !important;
-			min-height: 100vh !important;
+			height: 100dvh !important;
+			max-height: 100dvh !important;
+			min-height: 100dvh !important;
 		}
   
 	}
@@ -987,7 +987,7 @@
 
 	
 	#godam-add-to-cart-toast{
-		top: 10vh !important;
+		top: 10dvh !important;
 		height: max-content !important;
 		left: 50% !important;
 		transform: translateX(-50%) !important;
@@ -1095,17 +1095,17 @@
 
 	.godam-product-modal-content.no-sidebar {
 		.video-container.is-portrait .vjs-tech,.godam-product-modal-content.no-sidebar .video-container.is-portrait .video-js{
-			height: 100vh !important;
-			max-height: 100vh !important;
-			min-height: 100vh !important;
+			height: 100dvh !important;
+			max-height: 100dvh !important;
+			min-height: 100dvh !important;
 		}
 	}
 
 	.godam-product-video-container{
 		width: 100% !important;
 		height: 100% !important;
-		max-height: 100vh !important;
-		min-height: 100vh !important;
+		max-height: 100dvh !important;
+		min-height: 100dvh !important;
 		max-width: 100% !important;
 		min-width: 100% !important;
 	}
@@ -1124,8 +1124,8 @@
 		.godam-product-video-container{
 			width: 100% !important;
 			height: 100% !important;
-			max-height: 100vh !important;
-			min-height: 100vh !important;
+			max-height: 100dvh !important;
+			min-height: 100dvh !important;
 			max-width: 100% !important;
 			min-width: 100% !important;
 		}
@@ -1141,7 +1141,7 @@
 			background-color: transparent !important;
 			height: max-content !important;
 			min-height: max-content !important;
-			max-height: 30vh !important;
+			max-height: 30dvh !important;
 			bottom: 12px !important;
 			width: 85% !important;
 			margin: 0 7.5%;
