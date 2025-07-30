@@ -487,6 +487,10 @@
 	text-transform: capitalize;
 }
 
+.vjs-control, .vjs-menu-button {
+	background-color: unset !important;
+}
+
 .vjs-menu-item:hover,
 .vjs-back-item:hover {
 	background: rgba(115, 133, 159, 0.5) !important;
