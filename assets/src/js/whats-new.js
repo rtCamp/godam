@@ -41,7 +41,6 @@ document.addEventListener( 'DOMContentLoaded', function() {
 	} );
 
 	document.querySelectorAll( '.feature-card' )?.forEach( ( button ) => {
-		console.log( 'Adding click event listener to feature card button' );
 		button.addEventListener( 'click', function() {
 			const contentId = this.getAttribute( 'data-target' );
 			openModal( contentId );
