@@ -487,8 +487,9 @@
 	text-transform: capitalize;
 }
 
-.vjs-control, .vjs-menu-button {
-	background-color: unset !important;
+.vjs-control:not(.godam-share-button),
+.vjs-menu-button {
+    background-color: unset !important;
 }
 
 .vjs-menu-item:hover,
@@ -1247,7 +1248,7 @@
 			.vjs-skip-backward-30 {
 				position: absolute;
 				bottom: 120px;
-				background: var(--rtgodam-control-bar-color, #00000085);
+				background: var(--rtgodam-control-bar-color, #00000085) !important;
 				height: 40px !important;
 				width: 40px;
 				border-radius: 999px;
@@ -1269,7 +1270,7 @@
 			.vjs-skip-forward-30 {
 				position: absolute;
 				bottom: 120px;
-				background: var(--rtgodam-control-bar-color, #00000085);
+				background: var(--rtgodam-control-bar-color, #00000085) !important;
 				height: 40px !important;
 				width: 40px;
 				border-radius: 999px;

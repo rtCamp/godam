@@ -143,6 +143,7 @@
 			background-color: var(--rtgodam-control-bar-color, #000000AD) !important;
 			border-radius: 80px;
 			padding: 24px 40px;
+			box-shadow: 0 0 3px 2px #2f2c2cf2;
   
 			&:hover {
 			  transform: translateY(-50%);
@@ -204,6 +205,8 @@
 			cursor: not-allowed;
 			pointer-events: auto;
 			background-color: var(--rtgodam-control-bar-color, #000000AD) !important;
+			opacity: 1;
+			visibility: visible;
 	
 			&:hover {
 				background: #1C1C1C;
@@ -224,6 +227,7 @@
 			align-items: center;
 			justify-content: center;
 			position: absolute;
+			box-shadow: 0 0 3px 2px #2f2c2cf2;
 
 			&:hover {
 			  background: #1C1C1C;

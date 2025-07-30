@@ -4,7 +4,6 @@
 
     .vjs-control-bar {
         background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0) 100%) !important;
-        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.3) !important;
     }
 
     .vjs-big-play-button {
@@ -174,7 +173,6 @@
         }
 
         .vjs-button.godam-share-button {
-            background: transparent;
             height: 24px;
             width: 24px;
             padding: 0;
