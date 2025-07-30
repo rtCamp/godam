@@ -96,24 +96,24 @@ const SearchBar = () => {
 	}, [ isFetching ] );
 
 	/**
+	 * Event handler for mousedown events to detect clicks outside the popover.
+	 *
+	 * @param {MouseEvent} event The mousedown event.
+	 */
+	const handleClickOutside = useCallback( ( event ) => {
+		if (
+			popoverRef.current &&
+			! popoverRef.current.contains( event.target ) &&
+			! inputRef.current.contains( event.target )
+		) {
+			handleClosePopover();
+		}
+	}, [ handleClosePopover ] );
+
+	/**
 	 * Handle clicks outside the popover and search input to close the popover.
 	 */
 	useEffect( () => {
-		/**
-		 * Event handler for mousedown events to detect clicks outside the popover.
-		 *
-		 * @param {MouseEvent} event The mousedown event.
-		 */
-		const handleClickOutside = ( event ) => {
-			if (
-				popoverRef.current &&
-					! popoverRef.current.contains( event.target ) &&
-					! inputRef.current.contains( event.target )
-			) {
-				handleClosePopover();
-			}
-		};
-
 		if ( showPopover ) {
 			document.addEventListener( 'mousedown', handleClickOutside );
 		}
@@ -121,7 +121,7 @@ const SearchBar = () => {
 		return () => {
 			document.removeEventListener( 'mousedown', handleClickOutside );
 		};
-	}, [ showPopover, isFetching, handleClosePopover ] );
+	}, [ showPopover, isFetching, handleClickOutside ] );
 
 	/**
 	 * Handle changes in the search input.
