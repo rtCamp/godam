@@ -77,12 +77,12 @@ const FolderTree = ( { handleContextMenu } ) => {
 		if ( folders ) {
 			dispatch( setTree( openLocalStorageItem( folders ) ) );
 
-			if ( Array.isArray( folders ) && folders.length === 0 && currentPage > 1 ) {
+			if ( Array.isArray( folders ) && folders.length === 0 && ! isFetching ) {
 				// If no folders are returned, reset to the first page
 				dispatch( updatePage( { hasNext: false } ) );
 			}
 		}
-	}, [ dispatch, folders, currentPage ] );
+	}, [ dispatch, folders, currentPage, isFetching ] );
 
 	const [ activeId, setActiveId ] = useState( null );
 	const [ overId, setOverId ] = useState( null );
