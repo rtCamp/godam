@@ -6,8 +6,9 @@
 import MediaLibraryTaxonomyFilter from './filters/media-library-taxonomy-filter';
 import MediaDateRangeFilter from './filters/media-date-range-filter';
 import MediaRetranscode from './filters/media-retranscode';
+import ToggleFoldersButton from './filters/toggle-folders-button';
 
-import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled } from '../utility';
+import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled, getGodamSettings } from '../utility';
 
 const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
 
@@ -35,9 +36,29 @@ export default AttachmentsBrowser?.extend( {
 		this.collection.props.on( 'change', this.addUploadParam, this );
 	},
 
-	createToolbar() {
+	async createToolbar() {
 		// Make sure to load the original toolbar
 		AttachmentsBrowser.prototype.createToolbar.call( this );
+
+		let showFoldersInMediaLibrary = false;
+		if ( ! isUploadPage() ) {
+			try {
+				const settings = await getGodamSettings();
+				showFoldersInMediaLibrary = settings?.general?.enable_folder_organization === true;
+			} catch ( error ) {
+			}
+		}
+
+		if ( ToggleFoldersButton && ! isUploadPage() && showFoldersInMediaLibrary ) {
+			this.toolbar.set(
+				'ToggleFoldersButton',
+				new ToggleFoldersButton( {
+					controller: this.controller,
+					model: this.collection.props,
+					priority: -105,
+				} ).render(),
+			);
+		}
 
 		if ( MediaLibraryTaxonomyFilter ) {
 			this.toolbar.set(
@@ -81,10 +102,32 @@ export default AttachmentsBrowser?.extend( {
 			setTimeout( () => {
 				$( '.media-frame' ).removeClass( 'hide-menu' );
 
-				const menu = $( '.media-frame' ).find( '.media-frame-menu' );
+				if ( window.elementor ) {
+					const visibleContainers = Array.from( document.querySelectorAll( '.supports-drag-drop' ) ).filter(
+						( container ) => getComputedStyle( container ).display !== 'none',
+					);
 
-				if ( menu.length ) {
-					menu.append( '<div id="rt-transcoder-media-library-root"></div>' );
+					const activeContainer = visibleContainers.at( -1 ); // most recently opened visible one
+
+					if ( activeContainer ) {
+						const menu = activeContainer.querySelector( '.media-frame-menu' );
+						if ( menu ) {
+							menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
+							const div = document.createElement( 'div' );
+							div.id = 'rt-transcoder-media-library-root';
+							if ( menu.firstChild ) {
+								menu.firstChild.appendChild( div );
+							} else {
+								menu.appendChild( div );
+							}
+						}
+					}
+				} else {
+					const menu = $( '.media-frame' ).find( '.media-frame-menu' );
+
+					if ( menu.length ) {
+						menu.append( '<div id="rt-transcoder-media-library-root"></div>' );
+					}
 				}
 
 				const event = new CustomEvent( 'media-frame-opened' );

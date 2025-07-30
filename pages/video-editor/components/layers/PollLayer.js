@@ -8,32 +8,26 @@ import Editor from '@monaco-editor/react';
 /**
  * WordPress dependencies
  */
-import { Button, ToggleControl, ComboboxControl, Modal, Panel, PanelBody } from '@wordpress/components';
-import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
+import { Button, ToggleControl, ComboboxControl, Panel, PanelBody } from '@wordpress/components';
+import { chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
+import { updateLayerField } from '../../redux/slice/videoSlice';
 import LayerControl from '../LayerControls';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 
 import { useGetPollsQuery, useGetPollQuery } from '../../redux/api/polls';
+import LayersHeader from './LayersHeader.js';
 
-const PollLayer = ( { layerID, goBack } ) => {
-	const [ isOpen, setOpen ] = useState( false );
+const PollLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 
 	const { data: polls } = useGetPollsQuery();
 	const { data: currentPoll } = useGetPollQuery( layer.poll_id, { skip: ! layer.poll_id } );
-
-	const handleDeleteLayer = () => {
-		dispatch( removeLayer( { id: layer.id } ) );
-		goBack();
-	};
 
 	const handlePollChange = ( value ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'poll_id', value } ) );
@@ -41,24 +35,7 @@ const PollLayer = ( { layerID, goBack } ) => {
 
 	return (
 		<>
-			<div className="flex justify-between items-center border-b mb-3">
-				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="text-base">{ __( 'Poll layer at', 'godam' ) } { layer.displayTime }s</p>
-				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
-				{ isOpen && (
-					<Modal title={ __( 'Delete layer', 'godam' ) } onRequestClose={ () => setOpen( false ) }>
-						<div className="flex justify-between items-center gap-3">
-							<Button className="w-full justify-center" isDestructive variant="primary" onClick={ handleDeleteLayer }>
-								{ __( 'Delete layer', 'godam' ) }
-							</Button>
-							<Button className="w-full justify-center" variant="secondary" onClick={ () => setOpen( false ) }>
-								{ __( 'Cancel', 'godam' ) }
-							</Button>
-						</div>
-					</Modal>
-				) }
-			</div>
-
+			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 			{
 				polls?.length > 0 &&
 					<ComboboxControl
@@ -138,7 +115,6 @@ const PollLayer = ( { layerID, goBack } ) => {
 						icon={ chevronRight }
 						iconSize="18"
 						iconPosition="right"
-						onClick={ () => setOpen( false ) }
 					>
 						{ __( 'Skip', 'godam' ) }
 					</Button>

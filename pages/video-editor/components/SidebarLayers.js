@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useSelector, useDispatch } from 'react-redux';
+
 /**
  * Internal dependencies
  */
@@ -9,54 +10,150 @@ import { addLayer, setCurrentLayer } from '../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
+import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
+import JetpackIcon from '../assets/layers/JetpackIcon.svg';
+import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
+import ForminatorIcon from '../assets/layers/Forminator.png';
+import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
+import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 
 /**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
 import { Button, Icon, Tooltip } from '@wordpress/components';
-import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp } from '@wordpress/icons';
+import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp, error } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
 
 import Layer from './layers/Layer';
 import LayerSelector from './LayerSelector.jsx';
 
-const layerTypes = [
+/**
+ * Layer types with detail related to title, text and premium feature.
+ */
+export const layerTypes = [
 	{
 		title: __( 'CTA', 'godam' ),
 		icon: customLink,
 		type: 'cta',
+		layerText: __( 'CTA', 'godam' ),
+		isPremium: false,
 	},
 	{
 		title: __( 'Forms', 'godam' ),
 		icon: preformatted,
 		type: 'form',
+		isPremium: true,
+		formType: {
+			gravity: {
+				layerText: __( 'Gravity Forms', 'godam' ),
+				icon: GFIcon,
+				isActive: window?.videoData?.gfActive ?? false,
+				tooltipMessage: __( 'Gravity Forms plugin is not active', 'godam' ),
+			},
+			wpforms: {
+				layerText: __( 'WPForms', 'godam' ),
+				icon: WPFormsIcon,
+				isActive: window?.videoData?.wpformsActive ?? false,
+				tooltipMessage: __( 'WPForms plugin is not active', 'godam' ),
+			},
+			cf7: {
+				layerText: __( 'Contact Form 7', 'godam' ),
+				isActive: window?.videoData?.cf7Active ?? false,
+				icon: CF7Icon,
+				tooltipMessage: __( 'Contact Form 7 plugin is not active', 'godam' ),
+			},
+			jetpack: {
+				layerText: __( 'Jetpack Forms', 'godam' ),
+				icon: JetpackIcon,
+				isActive: window?.videoData?.jetpackActive ?? false,
+				tooltipMessage: __( 'Jetpack plugin is not active', 'godam' ),
+			},
+			sureforms: {
+				layerText: __( 'SureForms', 'godam' ),
+				icon: SureformsIcon,
+				isActive: window?.videoData?.sureformsActive ?? false,
+				tooltipMessage: __( 'SureForms plugin is not active', 'godam' ),
+			},
+			forminator: {
+				layerText: __( 'Forminator Forms', 'godam' ),
+				icon: ForminatorIcon,
+				isActive: window?.videoData?.forminatorActive ?? false,
+				tooltipMessage: __( 'Forminator Forms plugin is not active', 'godam' ),
+			},
+			fluentforms: {
+				layerText: __( 'Fluent Forms', 'godam' ),
+				icon: FluentFormsIcon,
+				isActive: window?.videoData?.fluentformsActive ?? false,
+				tooltipMessage: __( 'Fluent Forms plugin is not active', 'godam' ),
+			},
+			everestforms: {
+				layerText: __( 'Everest Forms', 'godam' ),
+				icon: EverestFormsIcon,
+				isActive: window?.videoData?.everestFormsActive ?? false,
+				tooltipMessage: __( 'Everest Forms plugin is not active', 'godam' ),
+			},
+			ninjaforms: {
+				layerText: __( 'Ninja Forms', 'godam' ),
+				icon: NinjaFormsIcon,
+				isActive: window?.videoData?.ninjaFormsActive ?? false,
+				tooltipMessage: __( 'Ninja Forms plugin is not active', 'godam' ),
+			},
+		},
 	},
 	{
 		title: __( 'Hotspot', 'godam' ),
 		icon: customPostType,
 		type: 'hotspot',
+		layerText: __( 'Hotspot', 'godam' ),
+		isPremium: true,
 	},
 	{
 		title: __( 'Ad', 'godam' ),
 		icon: video,
 		type: 'ad',
+		layerText: __( 'Ad', 'godam' ),
+		tooltipMessage: __( 'This ad will be overriden by Ad server\'s ads', 'godam' ),
+		isPremium: true,
 	},
 	{
 		title: __( 'Poll', 'godam' ),
 		icon: thumbsUp,
 		type: 'poll',
+		layerText: __( 'Poll', 'godam' ),
+		isActive: Boolean( window?.easydamMediaLibrary?.isPollPluginActive ) ?? false,
+		tooltipMessage: __( 'Poll plugin is not active', 'godam' ),
+		isPremium: false,
 	},
 ];
 
-const premiumLayers = [ 'form', 'hotspot', 'ad' ];
+/**
+ * Premium tooltip message.
+ */
+const premiumMessage = __( 'This feature is available in the premium version', 'godam' );
 
-const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
+/**
+ * Sidebar component to display and select different types of layers to be added to the video.
+ *
+ * @param {Object}   param0               - Props passed to SidebarLayers component.
+ * @param {number}   param0.currentTime   - The current playback time of the video (in seconds or milliseconds).
+ * @param {Function} param0.onSelectLayer - Callback function invoked when a layer is selected.
+ * @param {Function} param0.onPauseVideo  - Function to pause the video playback.
+ * @param {number}   param0.duration      - The total duration of the video (in seconds or milliseconds).
+ *
+ * @return {JSX.Element} The rendered SidebarLayers component.
+ */
+const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const loading = useSelector( ( state ) => state.videoReducer.loading );
 
-	const openModal = () => setOpen( true );
+	const openModal = () => {
+		setOpen( true );
+		if ( onPauseVideo ) {
+			onPauseVideo();
+		}
+	};
 	const closeModal = () => setOpen( false );
 
 	const dispatch = useDispatch();
@@ -75,7 +172,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 	const isValidAPiKey = true;
 
 	const addNewLayer = ( type, formType ) => {
-		if ( premiumLayers.includes( type ) && ! isValidAPiKey ) {
+		const layerType = layerTypes.find( ( l ) => l.type === type );
+		const isPremiumLayer = ! isValidAPiKey && layerType && layerType?.isPremium;
+
+		if ( isPremiumLayer ) {
 			return;
 		}
 
@@ -102,6 +202,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 					html: '',
 					link: '',
 					allow_skip: true,
+					imageOpacity: 1,
 				} ) );
 				break;
 			case 'hotspot':
@@ -163,55 +264,44 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 					<div id="sidebar-layers" className="pt-4 h-max">
 						{
 							sortedLayers?.map( ( layer ) => {
-								const isAdServerAd = adServer === 'ad-server' && layer.type === 'ad';
-								const isGFPluginNotActive = layer.type === 'form' && ! window?.videoData?.gf_active;
-								const isWPFormsPluginNotActive = layer.type === 'form' && ! window?.videoData?.wpforms_active;
-								const isCF7PluginNotActive = layer.type === 'form' && ! window?.videoData?.cf7_active;
-								const isPollPluginNotActive = layer.type === 'poll' && ! window.easydamMediaLibrary.isPollPluginActive;
 								let addWarning = false;
-								let toolTipMessage = '';
+								const layerData = layerTypes.find( ( l ) => l.type === layer.type );
+								const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
+								const icon = formType ? formType?.icon : layerData?.icon;
+								const layerText = formType ? formType?.layerText : layerData.layerText;
 
-								if ( premiumLayers.includes( layer.type ) && ! isValidAPiKey ) {
-									toolTipMessage = __( 'This feature is available in the premium version', 'godam' );
-									addWarning = true;
-								} else if ( isAdServerAd ) {
-									toolTipMessage = __( 'This ad will be overriden by Ad server\'s ads', 'godam' );
-									addWarning = true;
-								} else if ( isGFPluginNotActive && layer.form_type === 'gravity' ) {
-									toolTipMessage = __( 'Gravity Forms plugin is not active', 'godam' );
-									addWarning = true;
-								} else if ( isWPFormsPluginNotActive && layer.form_type === 'wpforms' ) {
-									toolTipMessage = __( 'WPForms plugin is not active', 'godam' );
-									addWarning = true;
-								} else if ( isCF7PluginNotActive && layer.form_type === 'cf7' ) {
-									toolTipMessage = __( 'Contact Form 7 plugin is not active', 'godam' );
-									addWarning = true;
-								} else if ( isPollPluginNotActive ) {
-									toolTipMessage = __( 'Poll plugin is not active', 'godam' );
-									addWarning = true;
-								} else {
-									toolTipMessage = '';
-								}
+								/**
+								 * Get Tooltip message.
+								 */
+								const tooltipMessage = ( () => {
+									if ( layerData.isPremium && ! isValidAPiKey ) {
+										return premiumMessage;
+									}
 
-								let icon, layerText;
-								if ( layer.type === 'form' && layer.form_type === 'gravity' ) {
-									icon = GFIcon;
-									layerText = __( 'Gravity Forms', 'godam' );
-								} else if ( layer.type === 'form' && layer.form_type === 'wpforms' ) {
-									icon = WPFormsIcon;
-									layerText = __( 'WPForms', 'godam' );
-								} else if ( layer.type === 'form' && layer.form_type === 'cf7' ) {
-									icon = CF7Icon;
-									layerText = __( 'Contact Form 7', 'godam' );
-								} else {
-									layerText = layer?.type?.toUpperCase();
+									if ( formType && ! formType.isActive ) {
+										return formType.tooltipMessage;
+									}
+
+									if ( 'ad-server' === adServer && 'ad' === layerData?.type ) {
+										return layerData?.tooltipMessage;
+									}
+
+									if ( layerData?.isActive === false ) {
+										return layerData?.tooltipMessage ?? '';
+									}
+
+									return '';
+								} )();
+
+								if ( '' !== tooltipMessage ) {
+									addWarning = true;
 								}
 
 								return (
 									<Tooltip
 										key={ layer.id }
 										className="w-full flex justify-between items-center px-2 py-3 border rounded-md mb-2 hover:bg-gray-50 cursor-pointer"
-										text={ toolTipMessage }
+										text={ tooltipMessage }
 										placement="right"
 									>
 										<div className="border rounded-lg mb-2">
@@ -223,8 +313,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 												} }
 											>
 												<div className="flex items-center gap-2">
-													{ icon && <img src={ icon } alt={ layer.type } className="w-6 h-6" /> }
-													{ ! icon && <Icon icon={ layerTypes.find( ( l ) => l.type === layer.type )?.icon } /> }
+													{
+														formType ? (
+															<img src={ icon } alt={ layer.type } className="w-6 h-6" />
+														) : (
+															<Icon icon={ icon } />
+														)
+													}
 													<p className="m-0 text-base">{ layerText } layer at <b>{ layer.displayTime }s</b></p>
 												</div>
 												<div>
@@ -240,7 +335,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 							! loading && layers.length === 0 && (
 								<>
 									<h3 className="text-2xl m-0 text-center">{ __( 'No layers added', 'godam' ) }</h3>
-									<p className="text-center mb-10 text-gray-400">{ __( 'Play video to add layer.', 'godam' ) }</p>
 								</>
 							)
 						}
@@ -278,15 +372,18 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 											{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
 										</p>
 									) }
+									{ ! currentTime && (
+										<div className="flex items-center gap-2">
+											<Icon icon={ error } className="w-4 h-4" style={ { fill: '#EAB308' } } />
+											<p className="text-center text-[#AB3A6C]">{ __( 'Play video to add layer.', 'godam' ) }</p>
+										</div>
+									) }
 								</div>
 							)
 						}
 
 						{ isOpen && (
 							<LayerSelector
-								isGFPluginActive={ window?.videoData?.gf_active }
-								isWPFormsPluginActive={ window?.videoData?.wpforms_active }
-								isCF7PluginActive={ window?.videoData?.cf7_active }
 								closeModal={ closeModal }
 								addNewLayer={ addNewLayer }
 							/>
@@ -294,7 +391,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer } ) => {
 					</div>
 				) : (
 					<div id="sidebar-layers">
-						<Layer layer={ currentLayer } goBack={ () => dispatch( setCurrentLayer( null ) ) } />
+						<Layer layer={ currentLayer } goBack={ () => dispatch( setCurrentLayer( null ) ) } duration={ duration } />
 					</div>
 				)
 			}

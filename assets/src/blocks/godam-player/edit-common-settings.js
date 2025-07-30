@@ -3,7 +3,7 @@
  */
 import { __, _x } from '@wordpress/i18n';
 import { ToggleControl, SelectControl } from '@wordpress/components';
-import { useMemo, useCallback, Platform } from '@wordpress/element';
+import { useMemo, useCallback } from '@wordpress/element';
 
 const options = [
 	{ value: 'auto', label: __( 'Auto', 'godam' ) },
@@ -15,13 +15,23 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 	const { autoplay, controls, loop, muted, preload } =
 		attributes;
 
-	const autoPlayHelpText = __( 'Autoplay may cause usability issues for some users.', 'godam' );
-	const getAutoplayHelp = Platform.select( {
-		web: useCallback( ( checked ) => {
-			return checked ? autoPlayHelpText : null;
-		}, [] ),
-		native: autoPlayHelpText,
-	} );
+	// Show a specific help for autoplay setting.
+	const getAutoplayHelp = useMemo( () => {
+		if ( autoplay && muted ) {
+			return __( 'Autoplay may cause usability issues for some users.', 'godam' );
+		}
+
+		return null;
+	}, [ autoplay, muted ] );
+
+	// Show a specific help for muted setting.
+	const getMutedHelp = useMemo( () => {
+		if ( autoplay && muted ) {
+			return __( 'Muted because of Autoplay.', 'godam' );
+		}
+
+		return null;
+	}, [ autoplay, muted ] );
 
 	const toggleFactory = useMemo( () => {
 		const toggleAttribute = ( attribute ) => {
@@ -47,7 +57,14 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 			<ToggleControl
 				__nextHasNoMarginBottom
 				label={ __( 'Autoplay', 'godam' ) }
-				onChange={ toggleFactory.autoplay }
+				onChange={ ( e ) => {
+					/**
+					 * When autoplay is enabled, mute the video.
+					 * This behaviour follows core/video block.
+					 */
+					toggleFactory.muted( e );
+					toggleFactory.autoplay( e );
+				} }
 				checked={ !! autoplay }
 				help={ getAutoplayHelp }
 			/>
@@ -61,7 +78,9 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 				__nextHasNoMarginBottom
 				label={ __( 'Muted', 'godam' ) }
 				onChange={ toggleFactory.muted }
+				disabled={ autoplay }
 				checked={ !! muted }
+				help={ getMutedHelp }
 			/>
 			<ToggleControl
 				__nextHasNoMarginBottom

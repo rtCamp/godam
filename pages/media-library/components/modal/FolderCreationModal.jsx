@@ -16,6 +16,7 @@ import { closeModal, createFolder, updateSnackbar } from '../../redux/slice/fold
 import { useCreateFolderMutation } from '../../redux/api/folders';
 import { updateSelectDropdown } from '../../data/media-grid';
 import './scss/modal.scss';
+import { __ } from '@wordpress/i18n';
 
 const FolderCreationModal = () => {
 	const [ folderName, setFolderName ] = useState( '' );
@@ -58,7 +59,7 @@ const FolderCreationModal = () => {
 
 			dispatch( updateSnackbar(
 				{
-					message: 'Folder created successfully',
+					message: __( 'Folder created successfully', 'godam' ),
 					type: 'success',
 				},
 			) );
@@ -67,12 +68,21 @@ const FolderCreationModal = () => {
 
 			updateSelectDropdown( response.id, folderName );
 		} catch ( error ) {
-			dispatch( updateSnackbar(
-				{
-					message: 'Failed to create folder',
-					type: 'error',
-				},
-			) );
+			if ( error?.status === 400 ) {
+				dispatch( updateSnackbar(
+					{
+						message: __( 'Folder with that name already exists.', 'godam' ),
+						type: 'fail',
+					},
+				) );
+			} else {
+				dispatch( updateSnackbar(
+					{
+						message: __( 'Failed to create folder', 'godam' ),
+						type: 'fail',
+					},
+				) );
+			}
 		} finally {
 			setIsLoading( false );
 			dispatch( closeModal( 'folderCreation' ) );
@@ -86,16 +96,16 @@ const FolderCreationModal = () => {
 	};
 
 	return (
-		isOpen && (
+		( isOpen && selectedFolder ) && (
 			<Modal
-				title="Create a new folder"
+				title={ __( 'Create a new folder', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'folderCreation' ) ) }
 				className="modal__container"
 			>
 				<TextControl
 					ref={ inputRef }
 					onKeyDown={ handleKeyDown }
-					label="Folder Name"
+					label={ __( 'Folder Name', 'godam' ) }
 					value={ folderName }
 					onChange={ ( value ) => setFolderName( value ) }
 				/>
@@ -103,13 +113,13 @@ const FolderCreationModal = () => {
 				<div className="modal__button-group">
 					<Button
 						isBusy={ isLoading }
-						text="Create"
+						text={ __( 'Create', 'godam' ) }
 						variant="primary"
 						onClick={ () => handleSubmit() }
 						disabled={ ! folderName }
 					/>
 					<Button
-						text="Cancel"
+						text={ __( 'Cancel', 'godam' ) }
 						onClick={ () => dispatch( closeModal( 'folderCreation' ) ) }
 						isDestructive
 					/>

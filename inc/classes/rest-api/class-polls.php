@@ -36,10 +36,10 @@ class Polls extends Base {
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_poll' ),
 						'permission_callback' => '__return_true',
-						'args'                => 
+						'args'                =>
 							array(
 								'id' => array(
-									'description'       => 'The ID of the Poll.',
+									'description'       => __( 'The ID of the Poll.', 'godam' ),
 									'type'              => 'integer',
 									'required'          => true,
 									'sanitize_callback' => 'absint',
@@ -58,25 +58,25 @@ class Polls extends Base {
 	 */
 	public function get_polls() {
 		global $wpdb;
-	
+
 		if ( ! $this->is_poll_plugin_active() ) {
-			return new \WP_Error( 'poll_plugin_not_active', 'Poll plugin is not active.', array( 'status' => 404 ) );
+			return new \WP_Error( 'poll_plugin_not_active', __( 'Poll plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}
-	
+
 		$cache_key   = 'polls_lists';
 		$cache_group = 'godam_polls';
-	
+
 		// Try to get polls from cache.
 		$polls = wp_cache_get( $cache_key, $cache_group );
-	
+
 		if ( false === $polls ) {
 			// Not cached — run the query.
 			$polls = $wpdb->get_results( "SELECT * FROM $wpdb->pollsq ORDER BY pollq_timestamp DESC" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- direct query is needed because custom table.
-	
+
 			// Cache the results for 10 minutes.
 			wp_cache_set( $cache_key, $polls, $cache_group, 10 * MINUTE_IN_SECONDS );
 		}
-	
+
 		return rest_ensure_response( $polls );
 	}
 
@@ -88,13 +88,13 @@ class Polls extends Base {
 	 */
 	public function get_poll( $request ) {
 		if ( ! $this->is_poll_plugin_active() ) {
-			return new \WP_Error( 'poll_plugin_not_active', 'Poll plugin is not active.', array( 'status' => 404 ) );
+			return new \WP_Error( 'poll_plugin_not_active', __( 'Poll plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		$poll_id = $request->get_param( 'id' );
 
 		if ( empty( $poll_id ) ) {
-			return new \WP_Error( 'invalid_poll_id', 'Invalid poll ID.', array( 'status' => 404 ) );
+			return new \WP_Error( 'invalid_poll_id', __( 'Invalid poll ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		$poll_html = get_poll( $poll_id, false );

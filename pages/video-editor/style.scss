@@ -14,14 +14,6 @@
 	}
 }
 
-.folded .media-modal.wp-core-ui {
-	margin-left: 36px;
-}
-
-.folded .media-modal-backdrop {
-	margin-left: 36px;
-}
-
 .media-modal.wp-core-ui {
 	margin-left: 160px;
 	margin-top: var(--wp-admin--admin-bar--height, 32px);
@@ -40,6 +32,14 @@
 	margin-top: var(--wp-admin--admin-bar--height, 32px);
 	background-color: #fff;
 	z-index: 90 !important;
+}
+
+.folded .media-modal.wp-core-ui {
+	margin-left: 36px;
+}
+
+.folded .media-modal-backdrop {
+	margin-left: 36px;
 }
 
 #easydam-video-player {
@@ -145,33 +145,6 @@
 			}
 		}
 
-		&:hover {
-			background-color: rgb(255, 177, 31);
-			box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-			z-index: 99;
-
-			.layer-indicator--container {
-				display: block;
-			}
-
-			width: var(--hover-width, 8px);
-
-			.layer-indicator--container {
-
-				.icon {
-					border-radius: 0.5rem;
-
-					div {
-						display: flex;
-					}
-				}
-
-				.info {
-					display: flex;
-				}
-			}
-		}
-
 		&--container {
 			position: relative;
 			// display: none;
@@ -244,6 +217,63 @@
 				display: none;
 			}
 		}
+
+		&:hover {
+			background-color: rgb(255, 177, 31);
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+			z-index: 99;
+			width: var(--hover-width, 8px);
+
+			.layer-indicator--container {
+				display: block;
+
+				.icon {
+					border-radius: 0.5rem;
+
+					div {
+						display: flex;
+					}
+				}
+
+				.info {
+					display: flex;
+				}
+			}
+		}
+	}
+
+	.chapter-indicator {
+
+		&--duration {
+			display: none;
+		}
+
+		&--text {
+			position: absolute;
+			left: 50%;
+			bottom: -20px;
+			font-size: 11px;
+			white-space: nowrap;
+		}
+
+		&:hover {
+
+			.chapter-indicator--duration {
+				display: block;
+				position: absolute;
+				top: -20px;
+				left: 50%;
+				white-space: nowrap;
+				font-size: 11px;
+			}
+
+			.chapter-indicator--text {
+				max-width: var(--hover-width, 8px);
+				overflow: hidden;
+				white-space: nowrap;
+				text-overflow: ellipsis;
+			}
+		}
 	}
 }
 
@@ -252,6 +282,13 @@
 
 	@media screen and (max-width: 782px) {
 		margin-left: 0;
+	}
+}
+
+.godam-video-list__video__thumbnail__overlay__menu {
+
+	.components-button.has-icon.has-text {
+		justify-content: flex-start !important;
 	}
 }
 
@@ -265,4 +302,13 @@
 .disabled .components-combobox-control__suggestions-container {
 	pointer-events: none;
 	opacity: 0.5;
+}
+
+.jetpack-form-preview .wp-block-jetpack-contact-form-container,
+.forminator-ui {
+	pointer-events: none;
+}
+
+#branding-icon {
+	order: 9;
 }

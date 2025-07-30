@@ -9,24 +9,24 @@ import DOMPurify from 'isomorphic-dompurify';
  */
 import {
 	Button,
-	Modal,
-	SelectControl,
 	Panel,
-	PanelBody,
+	PanelBody, SelectControl,
 } from '@wordpress/components';
-import { arrowLeft, chevronRight, trash } from '@wordpress/icons';
+import { chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import { removeLayer, updateLayerField } from '../../redux/slice/videoSlice';
+import { updateLayerField } from '../../redux/slice/videoSlice';
 import TextCTA from '../cta/TextCTA';
 import ImageCTA from '../cta/ImageCTA';
 import HtmlCTA from '../cta/HtmlCTA';
 import LayerControls from '../LayerControls';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
+import LayersHeader from './LayersHeader.js';
+import React from 'react';
 
 // A DOMPurify config similar to what wp_kses_post() allows
 const wpKsesAllowed = {
@@ -43,8 +43,7 @@ const wpKsesAllowed = {
 	ALLOW_DATA_ATTR: false,
 };
 
-const CTALayer = ( { layerID, goBack } ) => {
-	const [ isOpen, setOpen ] = useState( false );
+const CTALayer = ( { layerID, goBack, duration } ) => {
 	const [ formHTML, setFormHTML ] = useState( '' );
 	const [ imageCtaUrl, setImageCtaUrl ] = useState( '' );
 	const dispatch = useDispatch();
@@ -54,10 +53,21 @@ const CTALayer = ( { layerID, goBack } ) => {
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
-	const handleDeleteLayer = () => {
-		dispatch( removeLayer( { id: layer.id } ) );
-		goBack();
-	};
+
+	const ctaLayerOptions = [
+		{
+			label: __( 'Text', 'godam' ),
+			value: 'text',
+		},
+		{
+			label: __( 'HTML', 'godam' ),
+			value: 'html',
+		},
+		{
+			label: __( 'Image', 'godam' ),
+			value: 'image',
+		},
+	];
 
 	const handleCTATypeSelect = ( val ) => {
 		dispatch(
@@ -83,6 +93,9 @@ const CTALayer = ( { layerID, goBack } ) => {
 			} )
 			.then( ( media ) => {
 				setImageCtaUrl( media.source_url ); // URL of the media file
+			} )
+			.catch( ( ) => {
+				setImageCtaUrl( '' );
 			} );
 	};
 
@@ -100,18 +113,23 @@ const CTALayer = ( { layerID, goBack } ) => {
 	};
 
 	const imageCtaHtml = () => {
+		// Don't generate HTML if there's no image URL
+		if ( ! imageCtaUrl ) {
+			return '';
+		}
+
 		return `<div class="${ 'portrait' === layer?.imageCtaOrientation ? 'vertical-image-cta-container' : 'image-cta-container' }">
 					<img
 						src="${ imageCtaUrl }"
 						alt="CTA ad"
 						height="300"
 						width="250"
-						style="opacity: ${ layer?.imageOpacity || 1 }"
+						style="opacity: ${ layer?.imageOpacity ?? 1 }"
 					/>
 					<div class="image-cta-description">
 						${ layer?.imageText ? `<h2>${ layer.imageText }</h2>` : '' }
 						${ layer?.imageDescription ? `<p>${ layer.imageDescription }</p>` : '' }
-						<a class="image-cta-btn" href="${ layer?.imageLink || '/' }" target="_blank">
+						<a class="image-cta-btn" href="${ layer?.imageLink || '/' }" target="_blank" style="background-color: ${ layer?.imageCtaButtonColor ?? '#eeab95' }">
 							${ layer?.imageCtaButtonText || __( 'Buy Now', 'godam' ) }
 						</a>
 					</div>
@@ -127,66 +145,47 @@ const CTALayer = ( { layerID, goBack } ) => {
 			setFormHTML( layer.text );
 		} else if ( 'html' === layer?.cta_type ) {
 			setFormHTML( layer.html );
-		} else if ( 'image' === layer?.cta_type ) {
-			fetchOverlayMediaURL( layer?.image );
-			if ( imageCtaUrl.length !== 0 ) {
-				setFormHTML( imageCtaHtml );
-			} else {
-				setFormHTML( '' );
-			}
 		}
-	}, [ layer, imageCtaUrl ] );
+	}, [ layer ] );
+
+	// Fetch the media URL when the image ID changes
+	useEffect( () => {
+		if ( 'image' === layer?.cta_type && layer?.image && layer?.image !== 0 ) {
+			fetchOverlayMediaURL( layer.image );
+		} else {
+			setImageCtaUrl( '' );
+		}
+	}, [ layer?.cta_type, layer?.image ] );
+
+	// Update the HTML only after imageCtaUrl is updated
+	useEffect( () => {
+		if ( 'image' === layer?.cta_type ) {
+			setFormHTML( imageCtaUrl ? imageCtaHtml() : '' );
+		}
+	}, [ imageCtaUrl, layer ] );
 
 	return (
 		<>
-			<div className="flex justify-between items-center border-b mb-3">
-				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="text-base">{ __( 'CTA layer at', 'godam' ) } { layer.displayTime }s</p>
-				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
-				{ isOpen && (
-					<Modal title={ __( 'Delete layer', 'godam' ) } onRequestClose={ () => setOpen( false ) }>
-						<div className="flex justify-between items-center gap-3">
-							<Button className="w-full justify-center" isDestructive variant="primary" onClick={ handleDeleteLayer }>
-								{ __( 'Delete layer', 'godam' ) }
-							</Button>
-							<Button className="w-full justify-center" variant="secondary" onClick={ () => setOpen( false ) }>
-								{ __( 'Cancel', 'godam' ) }
-							</Button>
-						</div>
-					</Modal>
-				) }
-			</div>
+			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
 			<div className="flex flex-col godam-form-group">
 				<p className="mb-4 label-text">{ __( 'Call to Action', 'godam' ) }</p>
 				<SelectControl
 					__next40pxDefaultSize
+					className="mb-4"
 					label={ __( 'Select type', 'godam' ) }
-					className="mb-4 godam-select"
-					options={ [
-						{
-							label: 'Text',
-							value: 'text',
-						},
-						{
-							label: 'HTML',
-							value: 'html',
-						},
-						{
-							label: 'Image',
-							value: 'image',
-						},
-					] }
-					value={ layer.cta_type }
 					onChange={ handleCTATypeSelect }
+					options={ ctaLayerOptions }
+					value={ layer.cta_type }
 				/>
+
 				{ renderSelectedCTAInputs() }
 
 				{ /* Common settings */ }
 
 				<Panel className="-mx-4 border-x-0">
 					<PanelBody
-						title={ __( 'Advance', 'godam' ) }
+						title={ __( 'Advanced', 'godam' ) }
 						initialOpen={ false }
 					>
 						{ /* Layer background color */ }

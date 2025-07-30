@@ -1,8 +1,9 @@
 /* global jQuery -- from WordPress context */
+
 /**
  * External dependencies
  */
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { closestCenter, DndContext, DragOverlay, MouseSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -10,19 +11,19 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-ki
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import TreeItem from './TreeItem.jsx';
 import TreeItemPreview from './TreeItemPreview.jsx';
+import SnackbarComp from './SnackbarComp.jsx';
 
 import { setTree, updateSnackbar } from '../../redux/slice/folders.js';
 import { utilities } from '../../data/utilities';
 
 import { useAssignFolderMutation, useGetFoldersQuery, useUpdateFolderMutation } from '../../redux/api/folders.js';
-import SnackbarComp from './SnackbarComp.jsx';
 
 import './css/tree.scss';
 
@@ -48,12 +49,13 @@ const openLocalStorageItem = ( folders ) => {
 	return folders;
 };
 
-const FolderTree = () => {
+const FolderTree = ( { handleContextMenu } ) => {
 	const { data: folders, error, isLoading } = useGetFoldersQuery();
 
 	const dispatch = useDispatch();
 	const data = useSelector( ( state ) => state.FolderReducer.folders );
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
 
 	const [ updateFolderMutation ] = useUpdateFolderMutation();
 
@@ -88,6 +90,20 @@ const FolderTree = () => {
 	const projected = activeId && overId ? utilities.getProjection( filteredData, activeId, overId, offsetLeft ) : null;
 
 	function handleDragStart( { active: { id: draggedItemId } } ) {
+		const draggedFolder = data.find( ( folder ) => folder.id === draggedItemId );
+
+		// If the dragged folder has a parent and that parent is locked, prevent dragging.
+		if ( draggedFolder?.parent && draggedFolder.parent !== 0 ) {
+			const parentFolder = data.find( ( folder ) => folder.id === draggedFolder.parent );
+			if ( parentFolder?.meta?.locked ) {
+				dispatch( updateSnackbar( {
+					message: __( 'The parent folder is locked, so this folder cannot be moved.', 'godam' ),
+					type: 'fail',
+				} ) );
+				return;
+			}
+		}
+
 		setActiveId( draggedItemId );
 		setOverId( draggedItemId );
 	}
@@ -104,6 +120,18 @@ const FolderTree = () => {
 
 			if ( ! parent ) {
 				parent = 0;
+			}
+
+			// Do not allow reordering/move if the destination folder (new parent) is locked.
+			if ( parent !== 0 ) {
+				const destinationFolder = data.find( ( folder ) => folder.id === parent );
+				if ( destinationFolder?.meta?.locked ) {
+					dispatch( updateSnackbar( {
+						message: __( 'The destination folder is locked and cannot be modified', 'godam' ),
+						type: 'fail',
+					} ) );
+					return;
+				}
 			}
 
 			const clonedItems = JSON.parse(
@@ -147,6 +175,29 @@ const FolderTree = () => {
 		pointerSensor,
 	);
 
+	/**
+	 * Update the attachment count of folders when items are moved between folders.
+	 *
+	 * @param {number} selectedFolderId    - The ID of the folder from which items are being moved.
+	 * @param {number} destinationFolderId - The ID of the folder to which items are being moved.
+	 * @param {number} count               - The number of items being moved.
+	 */
+	const updateAttachmentCountOfFolders = useCallback( ( selectedFolderId, destinationFolderId, count ) => {
+		const updatedFolders = data.map( ( folder ) => {
+			if ( folder.id === selectedFolderId ) {
+				const currentCount = Number( folder.attachmentCount ) || 0;
+				return { ...folder, attachmentCount: currentCount - count };
+			}
+			if ( folder.id === destinationFolderId ) {
+				const currentCount = Number( folder.attachmentCount ) || 0;
+				return { ...folder, attachmentCount: currentCount + count };
+			}
+			return folder;
+		} );
+
+		dispatch( setTree( updatedFolders ) );
+	}, [ data, dispatch ] );
+
 	useEffect( () => {
 		/**
 		 * Initialize and manage droppable functionality for tree items.
@@ -156,18 +207,39 @@ const FolderTree = () => {
 		 */
 		const setupDroppable = () => {
 			jQuery( '.tree-item' ).droppable( {
-				accept: 'li.attachment, th.check-column',
+				accept: 'li.attachment, tr',
 				hoverClass: 'droppable-hover',
 				tolerance: 'pointer',
 				drop: async ( event, ui ) => {
 					const draggedItems = ui.draggable.data( 'draggedItems' );
+
 					if ( draggedItems ) {
 						const targetFolderId = jQuery( event.target ).data( 'id' );
 
 						/**
 						 * Prevent assigning items to the same folder they are already in.
 						 */
-						if ( selectedFolder.id === targetFolderId ) {
+						if ( selectedFolder?.id === targetFolderId ) {
+							return;
+						}
+
+						// do not allow assigning item to other folder from the locked folder.
+						if ( selectedFolder?.meta?.locked ) {
+							dispatch( updateSnackbar( {
+								message: __( 'Currently opened folder is locked and cannot be modified', 'godam' ),
+								type: 'fail',
+							} ) );
+							return;
+						}
+
+						const targetFolder = data.find( ( folder ) => folder.id === targetFolderId );
+
+						// do not allow assigning items to a locked folder.
+						if ( targetFolder?.meta?.locked ) {
+							dispatch( updateSnackbar( {
+								message: __( 'This folder is locked and cannot be modified', 'godam' ),
+								type: 'fail',
+							} ) );
 							return;
 						}
 
@@ -185,18 +257,22 @@ const FolderTree = () => {
 								) );
 							}
 
+							// Update the folder tree count that reflects the new state.
+							updateAttachmentCountOfFolders( selectedFolder?.id, targetFolderId, draggedItems.length );
+
 							/**
 							 * Remove the dragged items from the attachment view if they are meant to be removed.
 							 */
-							if ( selectedFolder.id !== -1 ) {
+							if ( selectedFolder?.id !== -1 ) {
 								draggedItems.forEach( ( attachmentId ) => {
-									jQuery( `li.attachment[data-id="${ attachmentId }"]` ).remove();
+									jQuery( `li.attachment[data-id="${ attachmentId }"]` ).remove(); // for attachment grid view.
+									jQuery( `tr#post-${ attachmentId }` ).remove(); // for attachment list view.
 								} );
 							}
 						} catch {
 							dispatch( updateSnackbar( {
 								message: __( 'Failed to assign items', 'godam' ),
-								type: 'error',
+								type: 'fail',
 							},
 							) );
 						}
@@ -206,6 +282,62 @@ const FolderTree = () => {
 		};
 
 		setupDroppable();
+
+		// Disable the Add Media Button and the Upload button for locked folders
+		if ( selectedFolder?.meta?.locked ) {
+		// Media Library Add media button
+			jQuery( '#wp-media-grid .page-title-action' ).prop( 'disabled', true )
+				.css( {
+					'pointer-events': 'none',
+					opacity: '0.5',
+				} );
+
+			// Edit Post add media button
+			jQuery( '#__wp-uploader-id-1' ).prop( 'disabled', true )
+				.css( 'pointer-events', 'none' );
+
+			// Media Library Drag and Drop
+			jQuery( '#wpwrap' ).on( 'dragover.lock drop.lock', function( e ) {
+				e.preventDefault();
+				e.stopPropagation();
+			} );
+
+			// Edit post Drag and Drop
+			jQuery( '.media-modal-content' ).on( 'dragover.lock drop.lock', function( e ) {
+				e.preventDefault();
+				e.stopPropagation();
+			} );
+
+			// Tell WordPress uploader to ignore drop
+			if ( wp?.media?.frames?.frame?.uploader?.dropzone ) {
+				wp.media.frames.frame.uploader.dropzone.off( 'drop' );
+			}
+		} else {
+			// Media Library Add media button
+			jQuery( '#wp-media-grid .page-title-action' ).prop( 'disabled', false )
+				.css( {
+					'pointer-events': 'auto',
+					opacity: '1',
+				} );
+
+			// Edit Post add media button
+			jQuery( '#__wp-uploader-id-1' ).prop( 'disabled', false )
+				.css( 'pointer-events', 'auto' );
+
+			// Media Library Drag and Drop
+			jQuery( '#wpwrap' ).off( 'dragover.lock drop.lock' );
+
+			// Edit post Drag and Drop
+			jQuery( '.media-modal-content' ).off( 'dragover.lock drop.lock' );
+
+			// Restore default dropzone
+			if ( wp?.media?.frames?.frame?.uploader?.dropzone ) {
+				// eslint-disable-next-line no-unused-vars
+				wp.media.frames.frame.uploader.dropzone.on( 'drop', function( e ) {
+					// Normally handled by WP
+				} );
+			}
+		}
 
 		// Cleanup to avoid multiple event bindings
 		return () => {
@@ -218,14 +350,15 @@ const FolderTree = () => {
 				} );
 			}
 		};
-	}, [ data, assignFolderMutation, dispatch, selectedFolder ] );
+	}, [ data, assignFolderMutation, dispatch, selectedFolder, updateAttachmentCountOfFolders ] );
 
 	if ( isLoading ) {
 		return <div>{ __( 'Loading…', 'godam' ) }</div>;
 	}
 
 	if ( error ) {
-		return <div>Error: { error.message }</div>;
+		/* translators: %s is the error message */
+		return <div>{ sprintf( __( 'Error: %s', 'godam' ), error.message ) }</div>;
 	}
 
 	return (
@@ -249,6 +382,8 @@ const FolderTree = () => {
 									item={ item }
 									key={ item.id }
 									depth={ item.id === activeId && projected ? projected.depth : item.depth }
+									onContextMenu={ ( e, id ) => handleContextMenu( e, id, item ) }
+									isMultiSelecting={ isMultiSelecting }
 								/>
 							);
 						} ) }

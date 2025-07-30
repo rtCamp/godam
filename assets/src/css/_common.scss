@@ -40,10 +40,31 @@
 		color: variables.$godam-black-color !important;
 	}
 
+	&.is-destructive{
+		background-color: variables.$godam-primary-color !important;
+		color: variables.$godam-light-color !important;
+	}
+
 	&:disabled:not( .is-busy ),
 	&[disabled]:not( .is-busy) {
 		color: #949494 !important;
 		background: variables.$godam-gray-color !important;
+	}
+
+	&.disabled {
+		opacity: 0.6 !important;
+
+		&:hover {
+			transform: none !important;
+		}
+	}
+
+	&.has-icon.has-text {
+		padding: 0.75rem 1.5rem;
+
+		.components-spinner {
+			margin: 0 8px 0 0;
+		}
 	}
 }
 
@@ -63,6 +84,7 @@
 	}
 
 	input,
+	textarea,
 	button {
 		border: 1px solid rgba(225, 225, 225, 1) !important;
 		background: rgba(255, 255, 255, 1) !important;
@@ -205,7 +227,7 @@
 		padding: 1.25rem;
 		border-top: 0;
 	}
-	
+
 
 }
 
@@ -218,7 +240,7 @@
 }
 
 .godam-form-group {
-	
+
 	.label-text {
 		font-size: 0.875rem !important;
 		line-height: 1.375 !important;

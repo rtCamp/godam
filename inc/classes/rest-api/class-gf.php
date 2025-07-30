@@ -1,7 +1,7 @@
 <?php
 /**
  * Register REST API endpoints for Gravity Forms.
- * 
+ *
  * Get all Gravity Forms and a single Gravity Form.
  *
  * @package GoDAM
@@ -12,7 +12,7 @@ namespace RTGODAM\Inc\REST_API;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class LocationAPI
+ * Class GF
  */
 class GF extends Base {
 
@@ -45,13 +45,13 @@ class GF extends Base {
 							$this->get_collection_params(), // Default collection params.
 							array(
 								'id'    => array(
-									'description'       => 'The ID of the Gravity Form.',
+									'description'       => __( 'The ID of the Gravity Form.', 'godam' ),
 									'type'              => 'integer',
 									'required'          => true,
 									'sanitize_callback' => 'absint',
 								),
 								'theme' => array(
-									'description'       => 'The theme to be applied to the Gravity Form.',
+									'description'       => __( 'The theme to be applied to the Gravity Form.', 'godam' ),
 									'type'              => 'string',
 									'required'          => false,
 									'sanitize_callback' => 'sanitize_text_field',
@@ -73,7 +73,7 @@ class GF extends Base {
 	public function get_gforms( $request ) {
 		// Check if Gravity Forms plugin is active.
 		if ( ! class_exists( 'GFAPI' ) ) {
-			return new \WP_Error( 'gravity_forms_not_active', 'Gravity Forms plugin is not active.', array( 'status' => 404 ) );
+			return new \WP_Error( 'gravity_forms_not_active', __( 'Gravity Forms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		// Get all forms.
@@ -105,7 +105,7 @@ class GF extends Base {
 	public function get_gform( $request ) {
 		// Check if Gravity Forms plugin is active.
 		if ( ! class_exists( 'GFAPI' ) ) {
-			return new \WP_Error( 'gravity_forms_not_active', 'Gravity Forms plugin is not active.', array( 'status' => 404 ) );
+			return new \WP_Error( 'gravity_forms_not_active', __( 'Gravity Forms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		$form_id = $request->get_param( 'id' );
@@ -113,7 +113,7 @@ class GF extends Base {
 		$form_id = absint( $form_id );
 
 		if ( empty( $form_id ) ) {
-			return new \WP_Error( 'invalid_form_id', 'Invalid form ID.', array( 'status' => 404 ) );
+			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		$gform = do_shortcode( "[gravityform id='{$form_id}' title='false' description='false' ajax='true' theme='{$theme}']" );

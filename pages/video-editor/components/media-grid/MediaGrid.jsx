@@ -20,6 +20,7 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 	const [ hasMore, setHasMore ] = useState( true );
 	const [ fetching, setFetching ] = useState( false );
 	const observer = useRef();
+	const requestIdRef = useRef( 0 );
 
 	const lastItemRef = useCallback(
 		( node ) => {
@@ -47,10 +48,17 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 	 * Search item for the videos.
 	 */
 	useEffect( () => {
+		const currentRequestId = ++requestIdRef.current;
+
 		setFetching( true );
 
 		const fetch = async () => {
 			const response = await getVideos( { search, page } );
+
+			// Ignore stale responses.
+			if ( requestIdRef.current !== currentRequestId ) {
+				return;
+			}
 
 			const data = response?.data?.data || [];
 
@@ -72,6 +80,18 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 		return () => clearTimeout( debounce );
 	}, [ getVideos, setAttachments, search, page ] );
 
+	useEffect( () => {
+		const body = document.querySelector( 'body' );
+
+		// Return early if admin sidebar is already open.
+		if ( ! body || ! body.classList.contains( 'folded' ) ) {
+			return;
+		}
+
+		// Open the admin sidebar.
+		body.classList.remove( 'folded' );
+	}, [] );
+
 	if ( ! fetching && attachments.length === 0 ) {
 		return (
 			<div className="flex justify-end items-center flex-col mt-8">
@@ -88,7 +108,7 @@ const MediaGrid = ( { search, page, handleAttachmentClick, setPage, attachments,
 				<p className="text-sm text-gray-500 m-0 text-center">
 					{ __( 'Upload videos from WordPress ', 'godam' ) }
 					<a
-						href={ `${ window?.videoData?.admin_url }upload.php` }
+						href={ `${ window?.videoData?.adminUrl }upload.php` }
 						target="_blank"
 						rel="noopener noreferrer"
 						className="text-blue-500 underline"

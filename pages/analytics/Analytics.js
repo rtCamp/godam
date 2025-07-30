@@ -17,6 +17,7 @@ import {
 import { calculateEngagementRate, calculatePlayRate, generateLineChart } from './helper';
 import DOMPurify from 'isomorphic-dompurify';
 import './charts.js';
+import upgradePlanBackground from '../../assets/src/images/upgrade-plan-analytics-bg.png';
 
 /**
  * WordPress dependencies
@@ -71,6 +72,7 @@ const Analytics = ( { attachmentID } ) => {
 	const [ isABResultsLoading, setIsABResultsLoading ] = useState( false );
 	const [ isABTestCompleted, setIsABTestCompleted ] = useState( false );
 	const [ mediaLibraryAttachment, setMediaLibraryAttachment ] = useState( null );
+	const [ mediaNotFound, setMediaNotFound ] = useState( false );
 
 	// RTK Query hooks
 	const siteUrl = window.location.origin;
@@ -107,15 +109,18 @@ const Analytics = ( { attachmentID } ) => {
 
 	// Sync main analytics data
 	useEffect( () => {
-		if ( analyticsDataFetched?.errorType === 'invalid_key' ) {
-			const loadingEl = document.getElementById( 'loading-analytics-animation' );
-			const container = document.getElementById( 'video-analytics-container' );
-			const overlay = document.getElementById( 'api-key-overlay' );
+		const loadingEl = document.getElementById( 'loading-analytics-animation' );
+		const container = document.getElementById( 'video-analytics-container' );
+		const overlay = document.getElementById( 'api-key-overlay' );
+
+		const shouldShowOverlay =
+			analyticsDataFetched?.errorType === 'invalid_key' ||
+			analyticsDataFetched?.errorType === 'missing_key' ||
+			analyticsDataFetched?.errorType === 'microservice_error';
+
+		if ( shouldShowOverlay ) {
 			if ( loadingEl ) {
 				loadingEl.style.display = 'none';
-			}
-			if ( container ) {
-				container.classList.remove( 'hidden' );
 			}
 			if ( container ) {
 				container.classList.add( 'blurred' );
@@ -140,12 +145,22 @@ const Analytics = ( { attachmentID } ) => {
 	useEffect( () => {
 		if ( attachmentID ) {
 			const url = window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] );
+			const loadingEl = document.getElementById( 'loading-analytics-animation' );
 
 			axios
 				.get( url )
 				.then( ( response ) => {
 					const data = response.data;
 					setAttachmentData( data );
+					setMediaNotFound( false );
+				} )
+				.catch( ( error ) => {
+					if ( error.response?.data?.code === 'rest_post_invalid_id' ) {
+						setMediaNotFound( true );
+						if ( loadingEl ) {
+							loadingEl.style.display = 'none';
+						}
+					}
 				} );
 		}
 	}, [ attachmentID ] );
@@ -198,6 +213,23 @@ const Analytics = ( { attachmentID } ) => {
 			);
 		}
 	}, [ analyticsData, abTestComparisonAnalyticsData ] );
+
+	useEffect( () => {
+		const analyticsVideoEl = document.getElementById( 'analytics-video' );
+
+		if ( ! analyticsVideoEl ) {
+			return;
+		}
+
+		const existingPlayer = videojs.getPlayer( 'analytics-video' );
+		if ( existingPlayer ) {
+			existingPlayer.dispose();
+		}
+
+		videojs( 'analytics-video', {
+			aspectRatio: '16:9',
+		} );
+	}, [ analyticsData ] );
 
 	const openVideoUploader = () => {
 		const fileFrame = wp.media( {
@@ -303,15 +335,62 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
-			<div id="api-key-overlay" className="api-key-overlay hidden">
+			<div id="media-not-found-overlay" className={ `api-key-overlay ${ ! mediaNotFound ? 'hidden' : '' }` }>
 				<div className="api-key-message">
 					<p>
-						{ __( 'Please ', 'godam' ) }
-						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( 'activate your API key', 'godam' ) }
+						{ __( 'This media doesn\'t exist. ', 'godam' ) }
+						<a href="admin.php?page=rtgodam">
+							{ __( 'Go to Dashboard', 'godam' ) }
 						</a>
-						{ __( ' to access the Analytics feature', 'godam' ) }
 					</p>
+				</div>
+			</div>
+
+			<div
+				id="api-key-overlay"
+				className="api-key-overlay hidden"
+				style={
+					analyticsDataFetched?.errorType === 'invalid_key' || analyticsDataFetched?.errorType === 'missing_key'
+						? {
+							backgroundImage: `url(${ upgradePlanBackground })`,
+							backgroundSize: '100% calc(100% - 32px)',
+							backgroundRepeat: 'no-repeat',
+							backgroundPosition: 'center 32px',
+						}
+						: {}
+				}
+			>
+				<div className="api-key-message">
+					{ analyticsDataFetched?.errorType === 'invalid_key' || analyticsDataFetched?.errorType === 'missing_key'
+						? <div className="api-key-overlay-banner">
+							<p className="api-key-overlay-banner-header">
+								{ __(
+									'Upgrade to unlock the media performance report.',
+									'godam',
+								) }
+
+								<a href="https://godam.io/pricing/" className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
+							</p>
+
+							<p className="api-key-overlay-banner-footer">
+								{ __( 'If you already have a premium plan, connect your ' ) }
+								<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+									{ __( 'API in the settings', 'godam' ) }
+								</a>
+							</p>
+						</div>
+						:	<div className="api-key-overlay-banner">
+							<p>
+								{ analyticsDataFetched?.message + ' ' || __(
+									'An unknown error occurred. Please check your plugin settings.',
+									'godam',
+								) }
+							</p>
+							<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+								{ __( 'Go to plugin settings', 'godam' ) }
+							</a>
+						</div>
+					}
 				</div>
 			</div>
 
@@ -321,7 +400,7 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
-			{ attachmentData && (
+			{ attachmentData && ! mediaNotFound && (
 				<div id="analytics-content" className="hidden">
 					<div>
 						<div className="subheading-container pt-6">

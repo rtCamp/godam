@@ -37,6 +37,7 @@ class Media_Library_Ajax {
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
 		add_action( 'add_attachment', array( $this, 'add_media_library_taxonomy_on_media_upload' ), 10, 1 );
+		add_action( 'add_attachment', array( $this, 'upload_media_to_frappe_backend' ), 10, 1 );
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
 
 		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
@@ -51,14 +52,14 @@ class Media_Library_Ajax {
 	 */
 	public function godam_media_library_ajax( $query_args ) {
 
-		$api_key = get_site_option( 'rtgodam-api-key', '' );
+		$api_key = get_option( 'rtgodam-api-key', '' );
 
 		if ( empty( $api_key ) ) {
 			return $query_args;
 		}
 
 		if ( isset( $query_args['post_mime_type'] ) && is_array( $query_args['post_mime_type'] ) ) {
-			
+
 			$post_mime_type = $query_args['post_mime_type'][0];
 			$mime_type      = '';
 			if ( false === strpos( $post_mime_type, 'godam/' ) ) {
@@ -114,7 +115,7 @@ class Media_Library_Ajax {
 					'headers' => array(
 						'Content-Type' => 'application/json',
 					),
-				) 
+				)
 			);
 
 			if ( is_wp_error( $response ) ) {
@@ -123,7 +124,11 @@ class Media_Library_Ajax {
 
 			$body = json_decode( wp_remote_retrieve_body( $response ) );
 
-			$response = $body->message;
+			if ( ! is_object( $body ) || ! isset( $body->message ) || ! isset( $body->message->files ) ) {
+				return $query_args;
+			}
+
+			$response = $body->message->files;
 
 			foreach ( $response as $key => $item ) {
 				$response[ $key ] = $this->prepare_godam_media_item( $item );
@@ -144,7 +149,7 @@ class Media_Library_Ajax {
 	 */
 	public function prepare_godam_media_item( $item ) {
 		// Ensure $item is an array.
-		$item = (array) $item; 
+		$item = (array) $item;
 
 		if ( empty( $item['name'] ) || empty( $item['file_origin'] ) ) {
 			return array();
@@ -173,6 +178,67 @@ class Media_Library_Ajax {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Upload media to the Frappe backend.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return void
+	 */
+	public function upload_media_to_frappe_backend( $attachment_id ) {
+		// Only if attachment type if image.
+		if ( 'image' !== substr( get_post_mime_type( $attachment_id ), 0, 5 ) ) {
+			return;
+		}
+
+		$api_key = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) ) {
+			return;
+		}
+
+		$api_url = RTGODAM_API_BASE . '/api/resource/Transcoder Job';
+
+		$attachment_url = wp_get_attachment_url( $attachment_id );
+
+		$file_title = get_the_title( $attachment_id );
+		$file_name  = pathinfo( $attachment_url, PATHINFO_FILENAME ) . '.' . pathinfo( $attachment_url, PATHINFO_EXTENSION );
+
+		// Request params.
+		$params = array(
+			'api_token'         => $api_key,
+			'job_type'          => 'image',
+			'file_origin'       => $attachment_url,
+			'orignal_file_name' => $file_name ?? $file_title,
+		);
+
+		$upload_media = wp_remote_post(
+			$api_url,
+			array(
+				'body'    => wp_json_encode( $params ),
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
+			)
+		);
+
+		if ( ! is_wp_error( $upload_media ) &&
+			(
+				isset( $upload_media['response']['code'] ) &&
+				200 === intval( $upload_media['response']['code'] )
+			)
+		) {
+			$upload_info = json_decode( $upload_media['body'] );
+
+			if ( isset( $upload_info->data ) && isset( $upload_info->data->name ) ) {
+				$job_id = $upload_info->data->name;
+				update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
+			}
+		}
+
+		// Note: For now media is only uploaded to the GoDAM and we are storing the transcoding job ID in the attachment meta.
+		// Todo: In future we can add more logic to handle the transcoded image URLs to provide image CDN feature.
 	}
 
 	/**
@@ -236,7 +302,7 @@ class Media_Library_Ajax {
 	}
 
 	/**
-	 * Add transcoding URL to the media JS Object.
+	 * Add transcoding URL, virtual status to the media JS Object.
 	 *
 	 * @param array   $response Attachment response.
 	 * @param WP_Post $attachment Attachment object.
@@ -248,12 +314,29 @@ class Media_Library_Ajax {
 			return $response;
 		}
 
-		$transcoded_url = get_post_meta( $attachment->ID, 'rtgodam_transcoded_url', true );
+		$transcoded_url     = get_post_meta( $attachment->ID, 'rtgodam_transcoded_url', true );
+		$transcoding_status = get_post_meta( $attachment->ID, 'rtgodam_transcoding_status', true );
 
 		if ( ! empty( $transcoded_url ) ) {
 			$response['transcoded_url'] = $transcoded_url;
 		} else {
 			$response['transcoded_url'] = false;
+		}
+
+		// Add transcoding status to response.
+		$response['transcoding_status'] = $transcoding_status ? strtolower( $transcoding_status ) : 'not_started';
+
+		$godam_original_id = get_post_meta( $attachment->ID, '_godam_original_id', true );
+
+		// If a GoDAM original ID exists, mark this attachment as virtual.
+		if ( ! empty( $godam_original_id ) ) {
+			// Indicate that this is a virtual attachment.
+			$response['virtual'] = true;
+			// Set the icon to be used for the virtual media preview.
+			$response['icon'] = get_post_meta( $attachment->ID, 'icon', true );
+			// Populate the image field used by the media library to show previews.
+			$response['image']        = array();
+			$response['image']['src'] = $response['icon'];
 		}
 
 		return $response;

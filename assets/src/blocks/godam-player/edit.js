@@ -14,6 +14,9 @@ import {
 	PanelBody,
 	Spinner,
 	Placeholder,
+	ToggleControl,
+	RangeControl,
+	SelectControl,
 } from '@wordpress/components';
 import {
 	BlockControls,
@@ -22,6 +25,7 @@ import {
 	MediaUploadCheck,
 	MediaReplaceFlow,
 	useBlockProps,
+	InnerBlocks,
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
@@ -38,11 +42,40 @@ import VideoCommonSettings from './edit-common-settings';
 import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
-
 import VideoSEOModal from './components/VideoSEOModal.js';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
+
+// Define allowed blocks for the overlay
+const ALLOWED_BLOCKS = [
+	'core/paragraph',
+	'core/heading',
+	'core/button',
+	'core/image',
+	'core/group',
+	'core/columns',
+	'core/column',
+	'core/spacer',
+	'core/html',
+	'core/shortcode',
+];
+
+// Define template for initial blocks
+const TEMPLATE = [
+	[ 'core/group', {
+		className: 'godam-video-overlay',
+		layout: {
+			type: 'default',
+			inherit: true,
+		},
+	}, [
+		[ 'core/heading', {
+			level: 2,
+			placeholder: __( 'Add a heading…', 'godam' ),
+		} ],
+	] ],
+];
 
 function VideoEdit( {
 	isSelected: isSingleSelected,
@@ -54,12 +87,27 @@ function VideoEdit( {
 	const instanceId = useInstanceId( VideoEdit );
 	const videoPlayer = useRef();
 	const posterImageButton = useRef();
-	const { id, controls, autoplay, poster, src, tracks, sources, muted, loop, preload } = attributes;
+	const {
+		id,
+		cmmId,
+		controls,
+		autoplay,
+		poster,
+		src,
+		tracks,
+		sources,
+		muted,
+		loop,
+		preload,
+		verticalAlignment,
+		overlayTimeRange,
+		showOverlay,
+	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
-
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
 	const [ videoResponse, setVideoResponse ] = useState( {} );
+	const [ duration, setDuration ] = useState( 0 );
 
 	const dispatch = useDispatch();
 
@@ -70,10 +118,18 @@ function VideoEdit( {
 		preload,
 		fluid: true,
 		playsinline: true,
+		flvjs: {
+			mediaDataSource: {
+				isLive: true,
+				cors: false,
+				withCredentials: false,
+			},
+		},
 		loop,
 		muted,
 		poster: poster || defaultPoster,
 		sources,
+		aspectRatio: '16:9',
 	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources ] );
 
 	// Memoize the video component to prevent rerenders
@@ -87,7 +143,10 @@ function VideoEdit( {
 						const video = playerEl.querySelector( 'video' );
 
 						video.addEventListener( 'loadedmetadata', () => {
-							setAttributes( { aspectRatio: `${ video.videoWidth } / ${ video.videoHeight }` } );
+							setAttributes( { videoWidth: `${ video.videoWidth }` } );
+							setAttributes( { videoHeight: `${ video.videoHeight }` } );
+							const _duration = player.duration();
+							setDuration( _duration );
 						} );
 					}
 				} }
@@ -114,31 +173,34 @@ function VideoEdit( {
 						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
 					}
 
-					if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
-						const transcodedUrl = response.meta.rtgodam_transcoded_url;
+					if ( response ) {
+						const newSources = [
+							{
+								src: response.source_url,
+								type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
+							},
+						];
 
-						setAttributes( {
-							sources: [
-								{
-									src: transcodedUrl,
-									type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : response.mime_type,
-								},
-								{
-									src: response.source_url,
-									type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
-								},
-							],
-						} );
-					} else {
-						// If meta not present, use media url.
-						setAttributes( {
-							sources: [
-								{
-									src: response.source_url,
-									type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
-								},
-							],
-						} );
+						if ( response?.meta && response?.meta?.rtgodam_hls_transcoded_url ) {
+							const hlsTranscodedUrl = response.meta.rtgodam_hls_transcoded_url;
+
+							newSources.push( {
+								src: hlsTranscodedUrl,
+								type: hlsTranscodedUrl.endsWith( '.m3u8' ) ? 'application/x-mpegURL' : response.mime_type,
+							} );
+						}
+
+						if ( response?.meta && response?.meta?.rtgodam_transcoded_url ) {
+							const transcodedUrl = response.meta.rtgodam_transcoded_url;
+
+							newSources.push( {
+								src: transcodedUrl,
+								type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : response.mime_type,
+							} );
+						}
+
+						// Reverse the sources to ensure the preferred format is first. MPD -> HLS -> Origin
+						setAttributes( { sources: newSources.reverse() } );
 					}
 				} catch ( error ) {
 					// Show error notice if fetching media fails.
@@ -181,6 +243,7 @@ function VideoEdit( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
+			cmmId: media.id,
 			poster: undefined,
 			caption: media.caption,
 		} );
@@ -307,29 +370,61 @@ function VideoEdit( {
 
 	const videoPosterDescription = `video-block__poster-image-description-${ instanceId }`;
 
+	// Add function to handle vertical alignment change
+	const onChangeVerticalAlignment = ( alignment ) => {
+		setAttributes( { verticalAlignment: alignment } );
+	};
+
+	// Format time for display
+	const formatTime = ( seconds ) => {
+		const hours = Math.floor( seconds / 3600 );
+		const minutes = Math.floor( ( seconds % 3600 ) / 60 );
+		const remainingSeconds = Math.floor( seconds % 60 );
+
+		let timeString = '';
+
+		if ( hours > 0 ) {
+			timeString += `${ hours } hour${ hours !== 1 ? 's' : '' }`;
+		}
+
+		if ( minutes > 0 ) {
+			if ( timeString ) {
+				timeString += ', ';
+			}
+			timeString += `${ minutes } minute${ minutes !== 1 ? 's' : '' }`;
+		}
+
+		if ( remainingSeconds > 0 || timeString === '' ) {
+			if ( timeString ) {
+				timeString += ', ';
+			}
+			timeString += `${ remainingSeconds } second${ remainingSeconds !== 1 ? 's' : '' }`;
+		}
+
+		return timeString;
+	};
+
 	return (
 		<>
 			{ isSingleSelected && (
-				<>
-					<BlockControls group="other">
-						<MediaReplaceFlow
-							mediaId={ id }
-							mediaURL={ src }
-							allowedTypes={ ALLOWED_MEDIA_TYPES }
-							accept="video/*"
-							onSelect={ onSelectVideo }
-							onSelectURL={ onSelectURL }
-							onError={ onUploadError }
-							onReset={ () => onSelectVideo( undefined ) }
-						/>
-						<TracksEditor
-							tracks={ tracks }
-							onChange={ ( newTracks ) => {
-								setAttributes( { tracks: newTracks } );
-							} }
-						/>
-					</BlockControls>
-				</>
+				<BlockControls group="other">
+					<MediaReplaceFlow
+						mediaId={ id }
+						mediaURL={ src }
+						allowedTypes={ ALLOWED_MEDIA_TYPES }
+						accept="video/*"
+						onSelect={ onSelectVideo }
+						onSelectURL={ onSelectURL }
+						onError={ onUploadError }
+						onReset={ () => onSelectVideo( undefined ) }
+					/>
+					<TracksEditor
+						tracks={ tracks }
+						onChange={ ( newTracks ) => {
+							setAttributes( { tracks: newTracks } );
+						} }
+					/>
+				</BlockControls>
 			) }
 			<InspectorControls>
 				<PanelBody title={ __( 'Settings', 'godam' ) }>
@@ -337,15 +432,29 @@ function VideoEdit( {
 						setAttributes={ setAttributes }
 						attributes={ attributes }
 					/>
+
+					<BaseControl
+						id={ `video-block__hover-${ instanceId }` }
+						label={ __( 'Hover Options', 'godam' ) }
+						__nextHasNoMarginBottom
+					>
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label={ __( 'Hover Overlay', 'godam' ) }
+							onChange={ ( value ) => setAttributes( { hoverOverlay: value } ) }
+							checked={ !! attributes.hoverOverlay }
+						/>
+					</BaseControl>
+
 					<BaseControl
 						id={ `video-block__poster-image-${ instanceId }` }
-						label={ __( 'Poster image', 'godam' ) }
+						label={ __( 'Video Thumbnail', 'godam' ) }
 						__nextHasNoMarginBottom
 					>
 						<MediaUploadCheck>
 							<div className="editor-video-poster-control">
 								<MediaUpload
-									title={ __( 'Select poster image', 'godam' ) }
+									title={ __( 'Select Video Thumbnail', 'godam' ) }
 									onSelect={ onSelectPoster }
 									allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
 									render={ ( { open } ) => (
@@ -389,7 +498,7 @@ function VideoEdit( {
 					>
 						<Button
 							__next40pxDefaultSize
-							href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ id }` }
+							href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
 							target="_blank"
 							variant="primary"
 							className=""
@@ -409,7 +518,6 @@ function VideoEdit( {
 							__next40pxDefaultSize
 							onClick={ () => setIsSEOModelOpen( true ) }
 							variant="primary"
-							className="editor-video-customisation-cta"
 							icon={ search }
 							iconPosition="right"
 						>
@@ -417,6 +525,71 @@ function VideoEdit( {
 						</Button>
 					</BaseControl>
 
+					<BaseControl
+						id={ `video-block__video--selected-aspect-ratio-${ instanceId }` }
+						label={ __( 'Aspect Ratio', 'godam' ) }
+						__nextHasNoMarginBottom
+					>
+						<SelectControl
+							value={ attributes.aspectRatio || '16:9' }
+							options={ [
+								{ label: __( '16:9 (Standard)', 'godam' ), value: '16:9' },
+								{ label: __( 'Responsive', 'godam' ), value: 'responsive' },
+							] }
+							onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
+							help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
+						/>
+					</BaseControl>
+
+				</PanelBody>
+
+				<PanelBody title={ __( 'Overlay Blocks', 'godam' ) }>
+					<ToggleControl
+						label={ __( 'Show overlay blocks', 'godam' ) }
+						checked={ showOverlay }
+						onChange={ ( value ) => setAttributes( { showOverlay: value } ) }
+						help={ __( 'Display blocks on top of the video player.', 'godam' ) }
+					/>
+
+					{ showOverlay && (
+						<>
+							<SelectControl
+								label={ __( 'Vertical alignment', 'godam' ) }
+								value={ verticalAlignment }
+								options={ [
+									{ label: __( 'Top', 'godam' ), value: 'top' },
+									{ label: __( 'Center', 'godam' ), value: 'center' },
+									{ label: __( 'Bottom', 'godam' ), value: 'bottom' },
+								] }
+								onChange={ onChangeVerticalAlignment }
+								help={ __( 'Choose where to position the overlay blocks vertically.', 'godam' ) }
+							/>
+
+							<RangeControl
+								label={ __( 'Time range', 'godam' ) }
+								value={ overlayTimeRange }
+								onChange={ ( value ) => setAttributes( { overlayTimeRange: value } ) }
+								min={ 0 }
+								max={ duration || 100 }
+								step={ 0.1 }
+								help={ sprintf(
+									/* translators: %s: formatted time */
+									__( 'Overlay will be visible for %s from the start of the video.', 'godam' ),
+									formatTime( overlayTimeRange || 0 ),
+								) }
+							/>
+
+							{ duration > 0 && (
+								<p style={ { fontSize: '12px', color: '#757575', marginTop: '8px' } }>
+									{ sprintf(
+										/* translators: %s: formatted time */
+										__( 'Video duration: %s', 'godam' ),
+										formatTime( duration ),
+									) }
+								</p>
+							) }
+						</>
+					) }
 				</PanelBody>
 			</InspectorControls>
 
@@ -429,8 +602,26 @@ function VideoEdit( {
 			/>
 
 			<figure { ...blockProps }>
-				{ videoComponent }
-				{ !! temporaryURL && <Spinner /> }
+				<div className="godam-video-wrapper">
+					{ showOverlay && (
+						<div
+							className={ `godam-video-overlay-container godam-overlay-alignment-${ verticalAlignment }` }
+						>
+							<InnerBlocks
+								allowedBlocks={ ALLOWED_BLOCKS }
+								template={ TEMPLATE }
+								templateLock={ false }
+								renderAppender={ isSingleSelected ? InnerBlocks.ButtonBlockAppender : false }
+								__experimentalLayout={ {
+									type: 'default',
+									inherit: true,
+								} }
+							/>
+						</div>
+					) }
+					{ videoComponent }
+					{ !! temporaryURL && <Spinner /> }
+				</div>
 				<Caption
 					attributes={ attributes }
 					setAttributes={ setAttributes }

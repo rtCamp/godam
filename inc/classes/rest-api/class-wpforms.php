@@ -1,13 +1,15 @@
 <?php
 /**
  * Register REST API endpoints for WPForms.
- * 
+ *
  * Get a single WPForm.
  *
  * @package GoDAM
  */
 
 namespace RTGODAM\Inc\REST_API;
+
+use WP_Query;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,6 +25,18 @@ class WPForms extends Base {
 		return array(
 			array(
 				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/wpforms',
+				'args'      => array(
+					array(
+						'methods'             => \WP_REST_Server::READABLE,
+						'callback'            => array( $this, 'get_gforms' ),
+						'permission_callback' => '__return_true',
+						'args'                => $this->get_collection_params(),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/wpform',
 				'args'      => array(
 					array(
@@ -33,12 +47,12 @@ class WPForms extends Base {
 							$this->get_collection_params(), // Default collection params.
 							array(
 								'id'    => array(
-									'description' => 'The ID of the Contact Form 7 Form.',
+									'description' => __( 'The ID of the WPForms Form.', 'godam' ),
 									'type'        => 'string',
 									'required'    => true,
 								),
 								'theme' => array(
-									'description'       => 'The theme to be applied to the Contact Form 7 Form.',
+									'description'       => __( 'The theme to be applied to the WPForms Form.', 'godam' ),
 									'type'              => 'string',
 									'required'          => false,
 									'sanitize_callback' => 'sanitize_text_field',
@@ -52,6 +66,58 @@ class WPForms extends Base {
 	}
 
 	/**
+	 * Get all WPForms.
+	 *
+	 * @param \WP_REST_Request $request Request Object.
+	 * @return \WP_REST_Response
+	 */
+	public function get_gforms( $request ) {
+		// Check if WPForms plugin is active.
+		$is_wpforms_active = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
+		if ( ! $is_wpforms_active ) {
+			return new \WP_Error( 'wpforms_not_active', __( 'WPForms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		// Fetch all WPForms in a paginated manner.
+		// Using pagination to avoid memory issues with large datasets.
+		$paged    = 1;
+		$per_page = 50;
+		$forms    = array();
+
+		do {
+			$query = new WP_Query(
+				array(
+					'post_type'      => 'wpforms',
+					'posts_per_page' => $per_page,
+					'paged'          => $paged,
+					'post_status'    => 'publish',
+				)
+			);
+
+			if ( ! empty( $query->posts ) ) {
+				$forms = array_merge( $forms, $query->posts );
+				++$paged;
+			} else {
+				break;
+			}
+		} while ( true );
+
+		$wpforms = array();
+
+		if ( ! empty( $forms ) && ! is_wp_error( $forms ) ) {
+			foreach ( $forms as $form ) {
+				$wpforms[] = array(
+					'id'          => $form->ID,
+					'title'       => $form->post_title,
+					'description' => $form->post_excerpt,
+				);
+			}
+		}
+
+		return rest_ensure_response( $wpforms );
+	}
+
+	/**
 	 * Get a single Gravity Form.
 	 *
 	 * @param \WP_REST_Request $request Request Object.
@@ -60,7 +126,7 @@ class WPForms extends Base {
 	public function get_wpforms_form( $request ) {
 		// Check if Gravity Forms plugin is active.
 		if ( ! is_plugin_active( 'wpforms-lite/wpforms.php' ) && ! is_plugin_active( 'wpforms/wpforms.php' ) ) {
-			return new \WP_Error( 'wpforms_not_active', 'WPForms plugin is not active.', array( 'status' => 404 ) );
+			return new \WP_Error( 'wpforms_not_active', __( 'WPForms plugin is not active.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		$form_id     = $request->get_param( 'id' );
@@ -70,7 +136,7 @@ class WPForms extends Base {
 		$description = empty( $description ) ? 'false' : 'true';
 
 		if ( empty( $form_id ) ) {
-			return new \WP_Error( 'invalid_form_id', 'Invalid form ID.', array( 'status' => 404 ) );
+			return new \WP_Error( 'invalid_form_id', __( 'Invalid form ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		$wpform = do_shortcode( "[wpforms id='{$form_id}' title='{$title}' description='{$description}' ajax='true']" );

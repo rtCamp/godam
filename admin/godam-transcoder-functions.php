@@ -271,8 +271,13 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 		return;
 	}
 
-	$transcoded_files  = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
-	$transcoded_thumbs = get_post_meta( $post_id, 'rtgodam_media_thumbnails', true );
+	$transcoded_files = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
+
+	// only display the check status button for media that are transcoding.
+	$transcoding_status = get_post_meta( $post_id, 'rtgodam_transcoding_status', true );
+	if ( empty( $transcoding_status ) && empty( $transcoded_files ) ) {
+		return;
+	}
 
 	if ( empty( $transcoded_files ) && rtgodam_is_file_being_transcoded( $post_id ) ) {
 		$check_button_text = __( 'Check Status', 'godam' );
@@ -291,7 +296,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 		<button type="button" id="btn_check_status<?php echo esc_attr( $post_id ); ?>" name="check_status_btn" data-value='<?php echo esc_attr( $post_id ); ?>'><?php echo esc_html( $check_button_text ); ?></button>
 		<?php
 
-	} elseif ( ! empty( $transcoded_files ) && ! empty( $transcoded_thumbs ) ) {
+	} elseif ( ! empty( $transcoded_files ) ) {
 		echo esc_html__( 'File is transcoded.', 'godam' );
 	}
 }
@@ -358,7 +363,7 @@ function rtgodam_get_blacklist_ip_addresses() {
  *
  * @param string $api_key The api key to verify.
  * @param bool   $save        Whether to save the API key in the site options.
- * 
+ *
  * @return array|WP_Error Array with status and data on success, WP_Error on failure.
  */
 function rtgodam_verify_api_key( $api_key, $save = false ) {
@@ -578,4 +583,132 @@ function rtgodam_get_user_ip() {
 	}
 
 	return $ip_address; // Return an empty string if invalid.
+}
+
+/**
+ * Return transcoded url from attachment.
+ *
+ * @since 1.3.0
+ *
+ * @param int|\WP_Post $attachment Attachment.
+ *
+ * @return string|false
+ */
+function rtgodam_get_transcoded_url_from_attachment( $attachment ) {
+	$attachment_id = 0;
+
+	if ( $attachment instanceof \WP_Post ) {
+		$attachment_id = $attachment->ID;
+	} elseif ( is_numeric( $attachment ) ) {
+		$attachment_id = $attachment;
+	}
+
+	if ( $attachment_id <= 0 ) {
+		return '';
+	}
+
+	$attachment_obj = get_post( $attachment_id );
+
+	if ( 'attachment' !== $attachment_obj->post_type ) {
+		return '';
+	}
+
+	return get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+}
+
+/**
+ * Return hls transcoded url from attachment.
+ *
+ * @since n.e.x.t
+ *
+ * @param int|\WP_Post $attachment Attachment.
+ *
+ * @return string|false
+ */
+function rtgodam_get_hls_transcoded_url_from_attachment( $attachment ) {
+	$attachment_id = 0;
+
+	if ( $attachment instanceof \WP_Post ) {
+		$attachment_id = $attachment->ID;
+	} elseif ( is_numeric( $attachment ) ) {
+		$attachment_id = $attachment;
+	}
+
+	if ( $attachment_id <= 0 ) {
+		return '';
+	}
+
+	$attachment_obj = get_post( $attachment_id );
+
+	if ( 'attachment' !== $attachment_obj->post_type ) {
+		return '';
+	}
+
+	return get_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', true );
+}
+
+/**
+ * Return transcoded status from attachment.
+ *
+ * @since 1.3.0
+ *
+ * @param int|\WP_Post $attachment Attachment.
+ *
+ * @return string
+ */
+function rtgodam_get_transcoded_status_from_attachment( $attachment ) {
+	$attachment_id = 0;
+
+	if ( $attachment instanceof \WP_Post ) {
+		$attachment_id = $attachment->ID;
+	} elseif ( is_numeric( $attachment ) ) {
+		$attachment_id = $attachment;
+	}
+
+	if ( $attachment_id <= 0 ) {
+		return '';
+	}
+
+	$attachment_obj = get_post( $attachment_id );
+
+	if ( 'attachment' !== $attachment_obj->post_type ) {
+		return '';
+	}
+
+	$status = strval( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) );
+	$status = function_exists( 'mb_strtolower' ) ? mb_strtolower( $status ) : strtolower( $status );
+	$status = empty( trim( $status ) ) ? 'not_started' : $status;
+
+	return $status;
+}
+
+/**
+ * Return transcoded error message from attachment.
+ *
+ * @since 1.3.0
+ *
+ * @param int|\WP_Post $attachment Attachment.
+ *
+ * @return string|false
+ */
+function rtgodam_get_transcoded_error_message_from_attachment( $attachment ) {
+	$attachment_id = 0;
+
+	if ( $attachment instanceof \WP_Post ) {
+		$attachment_id = $attachment->ID;
+	} elseif ( is_numeric( $attachment ) ) {
+		$attachment_id = $attachment;
+	}
+
+	if ( $attachment_id <= 0 ) {
+		return '';
+	}
+
+	$attachment_obj = get_post( $attachment_id );
+
+	if ( 'attachment' !== $attachment_obj->post_type ) {
+		return '';
+	}
+
+	return strval( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
 }

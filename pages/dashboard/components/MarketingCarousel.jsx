@@ -2,27 +2,42 @@
  * External dependencies
  */
 import { useEffect, useState, useRef } from 'react';
+
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
 /**
  * Internal dependencies
  */
-import giftIcon from '../../../assets/src/images/gift.png';
+import addLayersImage from '../../../assets/src/images/Add Layers.png';
+import centralMediaManagerImage from '../../../assets/src/images/Central Media Manager.png';
+import videoAnalyticsImage from '../../../assets/src/images/Video Analytics.png';
+import comparisonAnalyticsImage from '../../../assets/src/images/Video Analytics (Comparison).png';
+import singleVideoImage from '../../../assets/src/images/Single Video.png';
 
 const carouselSlides = [
+	{}, // "What's New" slide
 	{
-		title: 'Welcome to Your GoDAM Dashboard',
-		description: 'Visualize performance, track engagement, and get real-time insights across all your media.',
+		image: centralMediaManagerImage,
+		link: 'https://godam.io/features/central-media-manager/',
 	},
 	{
-		tip: 'Your analytics are updated every 15 minutes with the latest data.',
+		image: singleVideoImage,
+		link: 'https://godam.io/features/central-media-manager/',
 	},
 	{
-		tip: 'Monitor average engagement and watch time to understand what content works best.',
+		image: addLayersImage,
+		link: 'https://godam.io/features/video-overlay/',
 	},
 	{
-		tip: 'Keep tabs on your bandwidth and storage — no surprises, just clarity.',
+		image: videoAnalyticsImage,
+		link: 'https://godam.io/features/analytics/',
 	},
 	{
-		tip: 'View global reach and top countries your videos are being watched in.',
+		image: comparisonAnalyticsImage,
+		link: 'https://godam.io/features/analytics/',
 	},
 ];
 
@@ -50,40 +65,60 @@ const MarketingCarousel = () => {
 	const currentSlide = carouselSlides[ currentIndex ];
 
 	return (
-		<div className="dashboard-donut-container hero-donut-block border border-zinc-200 p-4 flex-1 min-w-[300px] flex flex-col items-center justify-center text-center relative">
-			<div className="w-full h-[140px] overflow-hidden relative">
-				<img src={ giftIcon } alt="Gift Icon" className="w-16 h-16 mb-3 mx-auto" />
+		<div className="dashboard-donut-container hero-donut-block border border-zinc-200 flex-1 min-w-[300px] h-[346px] flex flex-col items-center justify-center text-center relative">
+			<div className="w-full h-full overflow-hidden relative">
+				<div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+					{ carouselSlides.map( ( _, index ) => (
+						<span
+							role="button"
+							tabIndex="0"
+							key={ index }
+							onClick={ () => goToSlide( index ) }
+							onKeyDown={ ( e ) => {
+								if ( e.key === 'Enter' || e.key === ' ' ) {
+									goToSlide( index );
+								}
+							} }
+							className={ `w-2 h-2 rounded-full transition-all duration-300 cursor-pointer ${
+								index === currentIndex ? 'bg-[#AB3A6C]' : 'bg-[#D9CDB5]'
+							}` }
+						></span>
+					) ) }
+				</div>
 				<div
 					key={ currentIndex }
-					className="w-full h-full transition-transform duration-500 transform translate-x-0 animate-slide-in"
+					className="w-full h-full flex flex-col items-center justify-center transition-transform duration-500 transform translate-x-0 animate-slide-in"
 				>
-					{ currentSlide.title && (
-						<h3 className="text-lg font-semibold mb-2">
-							{ currentSlide.title }
-						</h3>
+					{ currentIndex === 0 ? (
+						<>
+							<h3 className="text-lg font-semibold mb-2 text-pink-800">{ __( 'What\'s New', 'godam' ) }</h3>
+							<a
+								href="https://godam.io/blog/whats-new-in-godam-v1-1-0/"
+								target="_blank"
+								rel="noopener noreferrer"
+								className="marketing-carousel-read-more"
+							>
+								{ __( 'Read More', 'godam' ) }
+							</a>
+						</>
+					) : (
+						<>
+							{ currentSlide.image && (
+								<a
+									href={ currentSlide.link }
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<img
+										src={ currentSlide.image }
+										alt={ __( 'Feature Screenshot', 'godam' ) }
+										className="w-full max-w-full max-h-[346px] rounded mx-auto object-contain"
+									/>
+								</a>
+							) }
+						</>
 					) }
-					<p className="text-sm text-center px-4">
-						{ currentSlide.description || currentSlide.tip }
-					</p>
 				</div>
-			</div>
-			<div className="flex gap-2 mt-4">
-				{ carouselSlides.map( ( _, index ) => (
-					<span
-						role="button"
-						tabIndex="0"
-						key={ index }
-						onClick={ () => goToSlide( index ) }
-						onKeyDown={ ( e ) => {
-							if ( e.key === 'Enter' || e.key === ' ' ) {
-								goToSlide( index );
-							}
-						} }
-						className={ `w-2 h-2 rounded-full transition-all duration-300 cursor-pointer ${
-							index === currentIndex ? 'bg-[#AB3A6C]' : 'bg-[#D9CDB5]'
-						}` }
-					></span>
-				) ) }
 			</div>
 		</div>
 	);

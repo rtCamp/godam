@@ -11,13 +11,17 @@ const RemoveEmptyScriptsPlugin = require( 'webpack-remove-empty-scripts' );
  */
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 
+const isProduction = process.env.NODE_ENV === 'production';
+const mode = isProduction ? 'production' : 'development';
+
 // Extend the default config.
 const sharedConfig = {
+	mode,
 	...defaultConfig,
 	output: {
 		path: path.resolve( process.cwd(), 'assets', 'build', 'js' ),
-		filename: '[name].js',
-		chunkFilename: '[name].js',
+		filename: '[name].min.js',
+		chunkFilename: '[name].min.js',
 	},
 	plugins: [
 		...defaultConfig.plugins
@@ -45,11 +49,14 @@ const sharedConfig = {
 		},
 		minimizer: defaultConfig.optimization.minimizer.concat( [ new CssMinimizerPlugin() ] ),
 	},
+	// Only generate source maps in development mode
+	devtool: isProduction ? false : 'source-map',
 };
 
 // Generate a webpack config which includes setup for CSS extraction.
 // Look for css/scss files and extract them into a build/css directory.
 const styles = {
+	mode,
 	...sharedConfig,
 	entry: () => {
 		const entries = {};
@@ -74,6 +81,8 @@ const styles = {
 			( plugin ) => plugin.constructor.name !== 'DependencyExtractionWebpackPlugin',
 		),
 	],
+	// Only generate source maps in development mode
+	devtool: isProduction ? false : 'source-map',
 };
 
 // Example of how to add a new entry point for JS file.
@@ -126,6 +135,70 @@ const whatsNewJS = {
 	},
 };
 
+const godamGallery = {
+	...sharedConfig,
+	entry: {
+		'godam-gallery': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-gallery.js' ),
+	},
+};
+
+const gfGodamRecorderEditorJS = {
+	...sharedConfig,
+	entry: {
+		'gf-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gravity-form', 'gf-godam-recorder-editor.js' ),
+	},
+};
+
+const gfEntryDetailJS = {
+	...sharedConfig,
+	entry: {
+		'gf-entry-detail': path.resolve( process.cwd(), 'assets', 'src', 'js', 'gravity-form', 'gf-entry-detail.js' ),
+	},
+};
+
+const wpFormsGodamRecorderEditorJS = {
+	...sharedConfig,
+	entry: {
+		'wpforms-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpforms-godam-recorder-editor.js' ),
+	},
+};
+
+const jetpackFormJS = {
+	...sharedConfig,
+	entry: {
+		'jetpack-form': path.resolve( process.cwd(), 'assets', 'src', 'js', 'jetpack-form.js' ),
+	},
+};
+
+const elementorWidgetJS = {
+	...sharedConfig,
+	entry: {
+		'godam-elementor-frontend': path.resolve( process.cwd(), 'assets', 'src', 'js', 'elementor', 'frontend.js' ),
+	},
+};
+
+const elementorEditorJS = {
+	...sharedConfig,
+	entry: {
+		'godam-elementor-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'elementor', 'editor.js' ),
+	},
+};
+
+const godamRecorder = {
+	...sharedConfig,
+	entry: {
+		'godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-recorder', 'index.js' ),
+	},
+};
+
+const fluentForms = {
+	...sharedConfig,
+	entry: {
+		fluentforms: path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'index.js' ),
+		'godam-fluentforms-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'editor.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -142,11 +215,12 @@ fs.readdirSync( pagesDir ).forEach( ( folder ) => {
 entryPoints[ 'page-css' ] = path.resolve( process.cwd(), 'pages', 'index.js' );
 
 const pages = {
-	mode: 'development', // Set to 'production' for production builds
+	mode,
 	entry: entryPoints, // Dynamic entry points for each page
 	output: {
 		path: path.resolve( __dirname, './assets/build/pages' ), // Output directory
-		filename: '[name].js', // Each entry gets its own output file
+		filename: '[name].min.js', // Each entry gets its own output file
+		chunkFilename: '[name].min.js',
 	},
 	module: {
 		rules: [
@@ -187,6 +261,8 @@ const pages = {
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
 	},
+	// Only generate source maps in development mode
+	devtool: isProduction ? false : 'source-map',
 };
 
 module.exports = [
@@ -197,6 +273,15 @@ module.exports = [
 	godamPlayerAnalytics,
 	deactivationJS,
 	whatsNewJS,
+	godamGallery,
+	gfGodamRecorderEditorJS,
+	gfEntryDetailJS,
+	wpFormsGodamRecorderEditorJS,
+	jetpackFormJS,
 	styles, // Do not remove this.
 	pages,
+	elementorWidgetJS,
+	elementorEditorJS,
+	godamRecorder,
+	fluentForms,
 ];

@@ -9,7 +9,6 @@ import { useDispatch, useSelector } from 'react-redux';
  */
 import {
 	Button,
-	Modal,
 	TextControl,
 	ToggleControl,
 	DropdownMenu,
@@ -18,7 +17,6 @@ import {
 	Notice,
 } from '@wordpress/components';
 import {
-	arrowLeft,
 	trash,
 	plus,
 	chevronDown,
@@ -26,28 +24,26 @@ import {
 	moreVertical,
 	check,
 } from '@wordpress/icons';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { useState, useRef, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
+import { updateLayerField } from '../../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import LayerControls from '../LayerControls';
 import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import LayersHeader from './LayersHeader';
 
-const HotspotLayer = ( { layerID, goBack } ) => {
+const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
 
 	const hotspots = layer?.hotspots || [];
-
-	// Delete modal
-	const [ isDeleteModalOpen, setDeleteModalOpen ] = useState( false );
 	// Track expanded hotspot
 	const [ expandedHotspotIndex, setExpandedHotspotIndex ] = useState( null );
 
@@ -87,11 +83,6 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 		);
 	};
 
-	const handleDeleteLayer = () => {
-		dispatch( removeLayer( { id: layer.id } ) );
-		goBack();
-	};
-
 	// Expand/hide a hotspot’s panel
 	const toggleHotspotExpansion = ( index ) => {
 		setExpandedHotspotIndex( expandedHotspotIndex === index ? null : index );
@@ -117,51 +108,17 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 	}, [] );
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
+	// const isValidAPIKey = window?.videoData?.validApiKey;
 
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
+	const isValidOrigin = ( url = '' ) =>
+		/^https?:\/\//i.test( url.trim() );
+
 	return (
 		<>
-			<div className="flex justify-between items-center pb-3 border-b mb-3">
-				<Button icon={ arrowLeft } onClick={ goBack } />
-				<p className="font-semibold">
-					{ __( 'Hotspot Layer at', 'godam' ) } { layer.displayTime }s
-				</p>
-				<Button
-					icon={ trash }
-					isDestructive
-					onClick={ () => setDeleteModalOpen( true ) }
-				/>
-				{ isDeleteModalOpen && (
-					<Modal
-						title={ __( 'Delete Hotspot Layer', 'godam' ) }
-						onRequestClose={ () => setDeleteModalOpen( false ) }
-					>
-						<div className="flex justify-between items-center gap-3">
-							<Button
-								className="w-full justify-center"
-								isDestructive
-								variant="primary"
-								onClick={ () => {
-									handleDeleteLayer();
-									setDeleteModalOpen( false );
-								} }
-							>
-								{ __( 'Delete Layer', 'godam' ) }
-							</Button>
-							<Button
-								className="w-full justify-center"
-								variant="secondary"
-								onClick={ () => setDeleteModalOpen( false ) }
-							>
-								{ __( 'Cancel', 'godam' ) }
-							</Button>
-						</div>
-					</Modal>
-				) }
-			</div>
+			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
 			{
 				! isValidAPIKey &&
@@ -175,9 +132,10 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			}
 
 			{ /* Duration */ }
-			<div className="mb-4">
+			<div className="mb-6">
 				<TextControl
 					label={ __( 'Layer Duration (seconds)', 'godam' ) }
+					className="godam-input"
 					type="number"
 					min="1"
 					value={ layer?.duration || '' }
@@ -193,6 +151,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			{ /* Pause on hover */ }
 			<div className="mb-4">
 				<ToggleControl
+					className="godam-toggle"
 					label={ __( 'Pause video on hover', 'godam' ) }
 					checked={ layer?.pauseOnHover || false }
 					onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
@@ -207,21 +166,26 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 			</div>
 
 			{ /* Hotspots list */ }
-			<div className="flex flex-col gap-4">
+			<div className="flex items-center flex-col gap-4 pb-4">
 				{ hotspots.map( ( hotspot, index ) => (
-					<div key={ hotspot.id } className="p-2 border rounded">
+					<div key={ hotspot.id } className="p-2 w-full border rounded">
 						<div className="flex justify-between items-center">
 							<Button
 								icon={ expandedHotspotIndex === index ? chevronUp : chevronDown }
 								className="flex-1 text-left"
 								onClick={ () => toggleHotspotExpansion( index ) }
 							>
-								{ `Hotspot ${ index + 1 }` }
+								{
+									/* translators: %d is the hotspot index */
+									sprintf( __( 'Hotspot %d', 'godam' ), index + 1 )
+								}
 							</Button>
 							<DropdownMenu
 								icon={ moreVertical }
 								label={ `Hotspot ${ index + 1 } options` }
-								toggleProps={ { 'aria-label': `Options for Hotspot ${ index + 1 }` } }
+								/* translators: %d is the hotspot index */
+								toggleProps={ { 'aria-label': sprintf( __( 'Options for Hotspot %d', 'godam' ), index + 1 ) } }
+
 							>
 								{ () => (
 									<>
@@ -279,6 +243,7 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 						{ expandedHotspotIndex === index && (
 							<div className="mt-3">
 								<TextControl
+									className="godam-input"
 									label={ __( 'Tooltip Text', 'godam' ) }
 									placeholder={ __( 'Click Me!', 'godam' ) }
 									value={ hotspot.tooltipText }
@@ -296,16 +261,20 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 									label={ __( 'Link', 'godam' ) }
 									placeholder="https://www.example.com"
 									value={ hotspot.link }
-									onChange={ ( val ) =>
-										updateField(
-											'hotspots',
-											hotspots.map( ( h2, j ) =>
-												j === index ? { ...h2, link: val } : h2,
-											),
-										)
-									}
+									onChange={ ( val ) => {
+										const updated = hotspots.map( ( h2, j ) =>
+											j === index
+												? { ...h2, link: val, linkInvalid: val && ! isValidOrigin( val ) }
+												: h2,
+										);
+										updateField( 'hotspots', updated );
+									} }
+									className={ `${ hotspot.linkInvalid ? 'hotspot-link-error' : undefined } godam-input` }
 									disabled={ ! isValidAPIKey }
 								/>
+								{ hotspot.linkInvalid && (
+									<p className="text-red-600 text-xs mt-1">{ __( 'Invalid origin: must use either http or https as the scheme.', 'godam' ) }</p>
+								) }
 								{ hotspot.showIcon && (
 									<div className="flex flex-col gap-2 mt-2">
 										<FontAwesomeIconPicker
@@ -352,10 +321,11 @@ const HotspotLayer = ( { layerID, goBack } ) => {
 				) ) }
 
 				<Button
-					isPrimary
+					variant="primary"
 					id="add-hotspot-btn"
 					icon={ plus }
 					iconPosition="left"
+					className="godam-button"
 					onClick={ handleAddHotspot }
 					disabled={ ! isValidAPIKey }
 				>

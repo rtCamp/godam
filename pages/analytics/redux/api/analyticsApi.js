@@ -25,11 +25,11 @@ export const analyticsApi = createApi( {
 				},
 			} ),
 			transformResponse: ( response ) => {
-				if (
-					response.status === 'error' &&
-					response.message.includes( 'Invalid or unverified API key' )
-				) {
-					return { errorType: 'invalid_key' };
+				if ( response.status === 'error' ) {
+					return {
+						errorType: response.errorType || 'unknown_error',
+						message: response.message,
+					};
 				}
 
 				if ( response.status !== 'success' ) {

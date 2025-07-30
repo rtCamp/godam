@@ -1,5 +1,7 @@
 /* global d3 */
-export function generateUsageDonutChart( selector, used, total, type = 'bandwidth', label = 'Used' ) {
+export function generateUsageDonutChart( selector, usedRaw, totalRaw, type = 'bandwidth', label = 'Used' ) {
+	const used = parseFloat( usedRaw ) || 0;
+	const total = parseFloat( totalRaw ) || 0;
 	const width = 300;
 	const height = 300;
 	const margin = 20;
@@ -73,9 +75,9 @@ export function generateUsageDonutChart( selector, used, total, type = 'bandwidt
 		.style( 'stroke-width', '2px' );
 
 	const percent = total > 0 ? ( used / total ) * 100 : 0;
-	const usedText = `${ used.toFixed( 1 ) }`;
-	const totalText = `${ total.toFixed( 1 ) } GB`;
-	const availableText = `${ ( total - used ).toFixed( 1 ) } GB available of ${ totalText }`;
+	const usedText = `${ formatGBToTB( used, false ) }`;
+	const totalText = formatGBToTB( total );
+	const availableText = `${ formatGBToTB( total - used ) } available of ${ totalText }`;
 
 	if ( type === 'bandwidth' ) {
 		svg
@@ -126,6 +128,32 @@ export function generateUsageDonutChart( selector, used, total, type = 'bandwidt
 	}
 }
 
+function formatWatchTime( seconds ) {
+	const hrs = Math.floor( seconds / 3600 );
+	const mins = Math.floor( ( seconds % 3600 ) / 60 );
+	const secs = Math.floor( seconds % 60 );
+
+	const parts = [];
+	if ( hrs > 0 ) {
+		parts.push( `${ hrs }h` );
+	}
+	if ( mins > 0 ) {
+		parts.push( `${ mins }m` );
+	}
+	if ( secs > 0 || parts.length === 0 ) {
+		parts.push( `${ secs }s` );
+	}
+
+	return parts.join( ' ' );
+}
+
+function formatGBToTB( gb, unit = true ) {
+	if ( gb >= 1000 ) {
+		return ( gb / 1000 ).toFixed( 1 ) + ( unit ? ' TB' : '' );
+	}
+	return gb.toFixed( 1 ) + ( unit ? ' GB' : '' );
+}
+
 function main() {
 	const dashboardMetrics = window.dashboardMetrics;
 
@@ -149,7 +177,7 @@ function main() {
 
 	const playRateEl = document.getElementById( 'play-rate' );
 	if ( playRateEl ) {
-		playRateEl.innerText = `${ playRate.toFixed( 2 ) }%`;
+		playRateEl.innerText = `${ playRate?.toFixed( 2 ) }%`;
 	}
 
 	const playsEl = document.getElementById( 'plays' );
@@ -159,7 +187,7 @@ function main() {
 
 	const watchTimeEl = document.getElementById( 'watch-time' );
 	if ( watchTimeEl ) {
-		watchTimeEl.innerText = `${ playTime.toFixed( 2 ) }s`;
+		watchTimeEl.innerText = `${ formatWatchTime( playTime.toFixed( 2 ) ) }`;
 	}
 
 	const analyticsContainer = document.getElementById( 'video-analytics-container' );

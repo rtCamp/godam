@@ -1,11 +1,12 @@
 /**
  * External dependencies
  */
+import React, { useEffect, useState, useRef } from 'react';
+
 /**
  * WordPress dependencies
  */
-import React, { useEffect, useState, useRef } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -13,15 +14,13 @@ import { __ } from '@wordpress/i18n';
 import { generateCountryHeatmap } from '../analytics/helper';
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
 import ExportBtn from '../../assets/src/images/export.svg';
-import Tooltip from '../analytics/Tooltip.js';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchTopVideosQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import SingleMetrics from '../analytics/SingleMetrics';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
-import { generateUsageDonutChart } from './components/ChartsDashboard.js';
-import MarketingCarousel from './components/MarketingCarousel.jsx';
 import chevronLeft from '../../assets/src/images/chevron-left.svg';
 import chevronRight from '../../assets/src/images/chevron-right.svg';
+import upgradePlanBackground from '../../assets/src/images/upgrade-plan-dashboard-bg.png';
 
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
@@ -41,11 +40,16 @@ const Dashboard = () => {
 	const totalTopVideosPages = topVideosResponse?.totalPages || 1;
 
 	useEffect( () => {
-		if ( dashboardMetrics?.errorType === 'invalid_key' ) {
-			const loadingEl = document.getElementById( 'loading-analytics-animation' );
-			const container = document.getElementById( 'dashboard-container' );
-			const overlay = document.getElementById( 'api-key-overlay' );
+		const loadingEl = document.getElementById( 'loading-analytics-animation' );
+		const container = document.getElementById( 'dashboard-container' );
+		const overlay = document.getElementById( 'api-key-overlay' );
 
+		const shouldShowOverlay =
+			dashboardMetrics?.errorType === 'invalid_key' ||
+			dashboardMetrics?.errorType === 'missing_key' ||
+			dashboardMetrics?.errorType === 'microservice_error';
+
+		if ( shouldShowOverlay ) {
 			if ( loadingEl ) {
 				loadingEl.style.display = 'none';
 			}
@@ -94,9 +98,9 @@ const Dashboard = () => {
 
 		const rows = topVideosData?.map( ( item ) => {
 			return [
-				`Video ID: ${ item.video_id }`,
-				item.title || `Video ID: ${ item.video_id }`,
-				( item.video_size ? item.video_size.toFixed( 2 ) : 0 ) + ' MB',,
+				item.title || item.video_id,
+				`ID: ${ item.video_id }`,
+				( item.video_size ? item.video_size.toFixed( 2 ) : 0 ) + ' MB',
 				( ( item.plays / ( item.plays + 5 ) ) * 100 ).toFixed( 2 ) + '%',
 				item.plays,
 				item.play_time?.toFixed( 2 ) + 's',
@@ -154,20 +158,6 @@ const Dashboard = () => {
 
 			if ( bandwidthEl && storageEl && window?.userData ) {
 				clearInterval( checkExist );
-
-				generateUsageDonutChart(
-					'#bandwidth-donut-chart',
-					window.userData.bandwidth_used ?? 0,
-					window.userData.total_bandwidth ?? 0,
-					'bandwidth',
-				);
-
-				generateUsageDonutChart(
-					'#storage-donut-chart',
-					window.userData.storage_used ?? 0,
-					window.userData.total_storage ?? 0,
-					'storage',
-				);
 			}
 		}, 100 );
 
@@ -213,15 +203,51 @@ const Dashboard = () => {
 				</div>
 			</div>
 
-			<div id="api-key-overlay" className="api-key-overlay hidden">
+			<div
+				id="api-key-overlay"
+				className="api-key-overlay hidden"
+				style={
+					dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key'
+						? {
+							backgroundImage: `url(${ upgradePlanBackground })`,
+							backgroundSize: '100% calc(100% - 32px)',
+							backgroundRepeat: 'no-repeat',
+							backgroundPosition: 'center 32px',
+						}
+						: {}
+				}
+			>
 				<div className="api-key-message">
-					<p>
-						{ __( 'Please ', 'godam' ) }
-						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( 'activate your API key', 'godam' ) }
-						</a>
-						{ __( ' to access the Dashboard feature', 'godam' ) }
-					</p>
+					{ dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key'
+						? <div className="api-key-overlay-banner">
+							<p className="api-key-overlay-banner-header">
+								{ __(
+									'Upgrade to unlock the media performance report.',
+									'godam',
+								) }
+
+								<a href="https://godam.io/pricing/" className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
+							</p>
+
+							<p className="api-key-overlay-banner-footer">
+								{ __( 'If you already have a premium plan, connect your ' ) }
+								<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+									{ __( 'API in the settings', 'godam' ) }
+								</a>
+							</p>
+						</div>
+						:	<div className="api-key-overlay-banner">
+							<p>
+								{ dashboardMetrics?.message + ' ' || __(
+									'An unknown error occurred. Please check your plugin settings.',
+									'godam',
+								) }
+							</p>
+							<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+								{ __( 'Go to plugin settings', 'godam' ) }
+							</a>
+						</div>
+					}
 				</div>
 			</div>
 
@@ -287,30 +313,7 @@ const Dashboard = () => {
 					</div>
 				</div>
 
-				<div className="flex flex-wrap gap-3 py-4">
-					<div className="dashboard-donut-container bg-white border border-zinc-200 p-2">
-						<div className="flex items-center gap-1 mb-1">
-							<h2 className="text-sm font-medium text-zinc-600 m-0">
-								{ __( 'Bandwidth Usage', 'godam' ) }
-							</h2>
-							<Tooltip text={ __( 'Bandwidth used for all media delivery. This resets monthly.', 'godam' ) } />
-						</div>
-						<div id="bandwidth-donut-chart"></div>
-					</div>
-
-					<div className="dashboard-donut-container bg-white border border-zinc-200 p-2">
-						<div className="flex items-center gap-1 mb-1">
-							<h2 className="text-sm font-medium text-zinc-600 m-0">
-								{ __( 'Storage Usage', 'godam' ) }
-							</h2>
-							<Tooltip text={ __( 'Storage space consumed by all uploaded media files. Storage is a one-time allocation.', 'godam' ) } />
-						</div>
-						<div id="storage-donut-chart"></div>
-					</div>
-					<MarketingCarousel />
-				</div>
-
-				<div className="mx-auto">
+				<div className="mx-auto py-4">
 					<div className="playback-country-container flex flex-wrap">
 						<div className="playback-performance flex-1 min-w-[600px]" id="global-analytics-container">
 							<PlaybackPerformanceDashboard
@@ -326,23 +329,23 @@ const Dashboard = () => {
 				</div>
 
 				<div className="top-media-container">
-					<div className="flex justify-between pt-8">
-						<h2>Top Videos</h2>
+					<div className="flex justify-between pt-4">
+						<h2>{ __( 'Top Videos', 'godam' ) }</h2>
 						<button onClick={ handleExportCSV } className="export-button">
 							<img src={ ExportBtn } alt="Export" className="export-icon" />
-							Export
+							{ __( 'Export', 'godam' ) }
 						</button>
 					</div>
 					<div className="table-container">
 						<table className="w-full">
 							<tbody>
 								<tr>
-									<th>Name</th>
-									<th>Size</th>
-									<th>Play Rate</th>
-									<th>Total Plays</th>
-									<th>Total Watch Time</th>
-									<th>Average Engagement</th>
+									<th>{ __( 'Name', 'godam' ) }</th>
+									<th>{ __( 'Size', 'godam' ) }</th>
+									<th>{ __( 'Play Rate', 'godam' ) }</th>
+									<th>{ __( 'Total Plays', 'godam' ) }</th>
+									<th>{ __( 'Total Watch Time', 'godam' ) }</th>
+									<th>{ __( 'Average Engagement', 'godam' ) }</th>
 								</tr>
 								{ isTopVideosFetching ? (
 									<tr>
@@ -359,21 +362,39 @@ const Dashboard = () => {
 										<tr key={ index }>
 											<td>
 												<div className="video-info">
-													<a className="thumbnail-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
-														<img
-															src={ item.thumbnail_url || DefaultThumbnail }
-															alt={ item.title || 'Video thumbnail' }
-														/>
-													</a>
-													<a className="title-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
-														<div className="w-full max-w-40 text-left flex-1">
-															<p className="font-semibold">{ item.title || `Video ID: ${ item.video_id }` }</p>
-														</div>
-													</a>
+													{ item.exists ? (
+														<>
+															<a className="thumbnail-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
+																<img
+																	src={ item.thumbnail_url || DefaultThumbnail }
+																	alt={ item.title || __( 'Video thumbnail', 'godam' ) }
+																/>
+															</a>
+															<a className="title-link" href={ `admin.php?page=rtgodam_analytics&id=${ item.video_id }` }>
+																<div className="w-full max-w-40 text-left flex-1">
+																	<p className="font-semibold">{ item.title || `Video ID: ${ item.video_id }` }</p>
+																</div>
+															</a>
+														</>
+													) : (
+														<>
+															<div className="thumbnail-link">
+																<img
+																	src={ DefaultThumbnail }
+																	alt={ item.title || __( 'Video thumbnail', 'godam' ) }
+																/>
+															</div>
+															<div className="title-link">
+																<div className="w-full max-w-40 text-left flex-1">
+																	<p className="font-semibold">{ item.title }</p>
+																</div>
+															</div>
+														</>
+													) }
 												</div>
 											</td>
 											<td>
-												{ item.video_size ? `${ item.video_size.toFixed( 2 ) } MB` : '0 MB' }
+												{ item.video_size ? `${ item.video_size.toFixed( 2 ) } MB` : '' }
 											</td>
 											<td>
 												{ item.plays > 0 && item.page_load > 0
@@ -390,12 +411,23 @@ const Dashboard = () => {
 										</tr>
 									) )
 								) }
+								{ topVideosData.length === 0 && (
+									<tr>
+										<td colSpan="6" className="text-center py-4 text-lg">
+											{ __( 'No videos found.', 'godam' ) }
+										</td>
+									</tr>
+								) }
 							</tbody>
+
 						</table>
 					</div>
 					<div className="flex items-center justify-between mt-4">
 						<p className="text-sm text-gray-500">
-							Page { topVideosPage } of { totalTopVideosPages }
+							{
+								/* translators: %1$d is the current page number, %2$d is the total number of pages */
+								sprintf( __( 'Page %1$d of %2$d', 'godam' ), topVideosPage, totalTopVideosPages )
+							}
 						</p>
 						<div className="flex items-center gap-4">
 							<button
@@ -408,14 +440,14 @@ const Dashboard = () => {
 									alt="Previous"
 									className={ `w-4 h-4 chevron-icon ${ topVideosPage === 1 ? 'icon-disabled' : '' }` }
 								/>
-								<span>Previous</span>
+								<span>{ __( 'Previous', 'godam' ) }</span>
 							</button>
 							<button
 								className="next-btn flex items-center gap-1"
 								disabled={ topVideosPage >= totalTopVideosPages }
 								onClick={ () => setTopVideosPage( ( prev ) => prev + 1 ) }
 							>
-								<span>Next</span>
+								<span>{ __( 'Next', 'godam' ) }</span>
 								<img
 									src={ chevronRight }
 									alt="Next"

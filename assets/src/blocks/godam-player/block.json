@@ -20,11 +20,19 @@
 			"type": "number",
 			"role": "content"
 		},
+		"cmmId": {
+			"type": "number",
+			"default": ""
+		},
 		"loop": {
 			"type": "boolean"
 		},
 		"muted": {
 			"type": "boolean"
+		},
+		"hoverOverlay": {
+			"type": "boolean",
+			"default": false
 		},
 		"poster": {
 			"type": "string"
@@ -62,7 +70,13 @@
 		},
 		"aspectRatio": {
 			"type": "string",
-			"default": "16/9"
+			"default": "16:9"
+		},
+		"videoHeight": {
+			"type": "string"
+		},
+		"videoWidth": {
+			"type": "string"
 		},
 		"caption": {
 			"type": "string",
@@ -71,6 +85,24 @@
 		"seo": {
 			"type": "object",
 			"default": {}
+		},
+		"verticalAlignment": {
+			"type": "string",
+			"default": "center"
+		},
+		"overlayTimeRange": {
+			"type": "number",
+			"default": 0
+		},
+		"showOverlay": {
+			"type": "boolean",
+			"default": false
+		},
+		"layout": {
+			"type": "object",
+			"default": {
+				"type": "default"
+			}
 		}
 	},
 	"supports": {
@@ -99,11 +131,33 @@
 		"shadow": true,
 		"interactivity": {
 			"clientNavigation": true
+		},
+		"innerBlocks": {
+			"allowedBlocks": [
+				"core/paragraph",
+				"core/heading",
+				"core/button",
+				"core/image",
+				"core/group",
+				"core/columns",
+				"core/column",
+				"core/spacer",
+				"core/html",
+				"core/shortcode"
+			]
+		},
+		"layout": {
+			"allowSwitching": true,
+			"allowEditing": true,
+			"allowInheriting": true,
+			"default": {
+				"type": "default"
+			}
 		}
 	},
-    "editorStyle": ["file:./index.css", "godam-player-frontend-style"],
-	"style": ["godam-player-style", "godam-player-frontend-style"],
+	"editorStyle": ["file:./index.css", "godam-player-frontend-style"],
+	"style": ["godam-player-style", "godam-player-frontend-style", "godam-player-minimal-skin", "godam-player-pills-skin", "godam-player-bubble-skin", "godam-player-classic-skin"],
 	"editorScript": ["file:./index.js"],
-    "viewScript": ["godam-player-frontend-script", "godam-player-analytics-script"],
-    "render": "file:./render.php"
+	"viewScript": ["godam-player-frontend-script", "godam-player-analytics-script"],
+	"render": "file:./render.php"
 }

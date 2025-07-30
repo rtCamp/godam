@@ -1,8 +1,152 @@
 /**
  * global CSS for the media library.
  */
+
+ .godam-button {
+	position: relative;
+	top: 9px;
+	font-weight: 400;
+
+	&.disable {
+		opacity: 0.5;
+	}
+
+	.godam-icon {
+		width: 18px;
+		height: 18px;
+		display: inline-block;
+		position: relative;
+		top: 3px;
+		background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTkuODkwNzIgOC4xMjIzMkw0LjA1Njc1IDEzLjk1NjNMMi41MjYxMiAxMi40MjU3QzEuNjQ0MyAxMS41NDM4IDIuMDY1NDkgMTAuMDM2NSAzLjI3ODg5IDkuNzQwNzdMOS44OTI1MSA4LjEyNDExTDkuODkwNzIgOC4xMjIzMloiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl83Nl85NikiLz4KPHBhdGggZD0iTTE3LjE2MzkgOC43MjA4NkwxNi41NTI4IDExLjIyMTFMOC45MzcyNCAxOC44MzY3TDUuMTI1IDE1LjAyNDRMMTIuNzYwMiA3LjM4OTE3TDE1LjIyODMgNi43ODUxN0MxNi4zOTUgNi41MDAxOSAxNy40NDg5IDcuNTU0MDcgMTcuMTYyMiA4LjcxOTA3TDE3LjE2MzkgOC43MjA4NloiIGZpbGw9InVybCgjcGFpbnQxX2xpbmVhcl83Nl85NikiLz4KPHBhdGggZD0iTTE1Ljg3MzUgMTQuMTI2NUwxNC4yNjA0IDIwLjcyMjJDMTMuOTYyOSAyMS45MzM4IDEyLjQ1NTYgMjIuMzU1IDExLjU3MzggMjEuNDczMkwxMC4wNTAzIDE5Ljk0OTdMMTUuODczNSAxNC4xMjY1WiIgZmlsbD0idXJsKCNwYWludDJfbGluZWFyXzc2Xzk2KSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzc2Xzk2IiB4MT0iMi40NzQ4OCIgeTE9IjEyLjg3NjYiIHgyPSI4LjU1OTk2IiB5Mj0iNi43OTE1NSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjQUIzQTZDIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0U2NTMzQSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MV9saW5lYXJfNzZfOTYiIHgxPSI2LjYxMjk0IiB5MT0iMTcuMzQ4NyIgeDI9IjE2Ljc0NjgiIHkyPSI3LjIxNDg3IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNBQjNBNkMiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRTY1MzNBIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQyX2xpbmVhcl83Nl85NiIgeDE9IjExLjEyODEiIHkxPSIyMS41Mjg4IiB4Mj0iMTcuMjAyIiB5Mj0iMTUuNDU0OSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjQUIzQTZDIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0U2NTMzQSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=);
+		background-size: contain;
+	}
+ }
+
+#wpwrap:has( #rt-transcoder-media-library-root ) {
+    background: #FFF;
+
+    .godam-button {
+        padding: 6px 8px;
+        top: 4px;
+       	margin-left: 0.75rem;
+        margin-bottom: 20px;
+        border: 1px solid #A3A3A3;
+        border-radius: 0.25rem;
+        color: #1c1c1c;
+        background-color: #fff;
+    }
+
+    .media-frame {
+        background: #F5F5F5;
+        height: 100%;
+    }
+
+    #wp-media-grid {
+        margin: 12px 0 0 0;
+        height: calc(100% - 12px);
+    }
+
+    .wp-heading-inline {
+        margin: 0 24px;
+        padding: 9px 0 20px;
+    }
+
+    .page-title-action {
+		border-radius: 0.25rem;
+		padding: 6px 8px;
+		top: -2px;
+    }
+
+    .media-frame-content {
+        padding: 1rem 1.5rem;
+    }
+
+    .close-folder-menu-mobile {
+        display: none;
+    }
+
+    .media-toolbar {
+        border: none;
+        border-radius: 4px;
+        display: flex;
+        flex-wrap: wrap;
+
+        #media-search-input {
+            background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEgNy45NTY0M0MxIDkuODAxMzkgMS43MzI5MSAxMS41NzA4IDMuMDM3NDkgMTIuODc1NEM0LjM0MjA4IDE0LjE4IDYuMTExNDcgMTQuOTEyOSA3Ljk1NjQzIDE0LjkxMjlDOS44MDEzOSAxNC45MTI5IDExLjU3MDggMTQuMTggMTIuODc1NCAxMi44NzU0QzE0LjE4IDExLjU3MDggMTQuOTEyOSA5LjgwMTM5IDE0LjkxMjkgNy45NTY0M0MxNC45MTI5IDYuMTExNDcgMTQuMTggNC4zNDIwOCAxMi44NzU0IDMuMDM3NDlDMTEuNTcwOCAxLjczMjkxIDkuODAxMzkgMSA3Ljk1NjQzIDFDNi4xMTE0NyAxIDQuMzQyMDggMS43MzI5MSAzLjAzNzQ5IDMuMDM3NDlDMS43MzI5MSA0LjM0MjA4IDEgNi4xMTE0NyAxIDcuOTU2NDNaIiBzdHJva2U9IiM1MjUyNTIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMTYuOTk5NSAxNi45OTk1TDEyLjg3NSAxMi44NzUiIHN0cm9rZT0iIzUyNTI1MiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=);
+            background-repeat: no-repeat;
+            background-size: 16px 16px;
+            background-position: 10px center;
+            padding-left: 36px;
+        }
+
+        .button {
+            border: 1px solid #A3A3A3;
+            border-radius: 0.25rem;
+            color: #1c1c1c;
+            background-color: #fff;
+
+            svg {
+                padding-right: 8px;
+            }
+        }
+
+        .media-toolbar-secondary {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            row-gap: 0;
+
+            .media-grid-view-switch {
+                display: flex;
+                margin: auto 0;
+            }
+        }
+
+        .media-toolbar-primary {
+            display: flex;
+            align-items: center;
+            margin: auto;
+            margin-right: 0;
+
+            .media-search-input-label {
+                display: none;
+            }
+        }
+
+        input, select, button {
+            height: 40px;
+            margin: 12px 0;
+            border-radius: 4px;
+            border: 1px solid #A3A3A3;
+            display: flex;
+            align-items: center;
+        }
+
+        button.hidden {
+            display: none;
+        }
+    }
+
+    @media (max-width: 1000px) {
+
+      .media-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+      }
+
+      .media-toolbar-secondary,
+      .media-toolbar-primary {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+    }
+}
+
 #wpbody:has( #rt-transcoder-media-library-root ){
 	display: flex;
+	font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
 }
 
 #wpcontent:has( #rt-transcoder-media-library-root ) {
@@ -35,6 +179,22 @@
 	}
 }
 
+#posts-filter {
+    padding: 1rem;
+
+    .wp-filter {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    @media (max-width: 1000px) {
+
+        .wp-filter {
+            flex-direction: column;
+        }
+    }
+}
+
 /**
  * Attachment Thumbnail styles.
  */
@@ -46,8 +206,7 @@
 		gap: 0.5rem;
 		margin-bottom: 0.5rem;
 
-		.button {
-
+		&.button {
 			font-size: .75rem;
 			padding: .5rem 1rem;
 			text-transform: uppercase;
@@ -78,9 +237,11 @@
 			position: relative;
 
 			.button {
+
 				&-secondary {
 
 					transition: all 0.2s ease;
+
 					&:hover {
 						transform: scale(1);
 						background: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
@@ -89,7 +250,7 @@
 					}
 				}
 			}
-			
+
 			span {
 				position: absolute;
 				right: -8px;
@@ -131,6 +292,14 @@
 			border-radius: 8px;
 			overflow: hidden;
 
+			img {
+				max-width: 8rem;
+				display: block;
+				border-radius: 4px;
+				object-fit: cover;
+				transition: opacity, transform 0.2s ease;
+			}
+
 			&:hover img {
 				transform: scale(1.1);
 			}
@@ -139,7 +308,7 @@
 				border: 4px solid #007bff;
 
 				&::after {
-					content: "✔";
+					content: "\2714";
 					position: absolute;
 					top: 4px;
 					right: 4px;
@@ -148,7 +317,7 @@
 					background-color: #007bff;
 					color: #fff;
 					font-size: 16px;
-					font-weight: bold;
+					font-weight: 700;
 					display: flex;
 					align-items: center;
 					justify-content: center;
@@ -156,16 +325,10 @@
 					box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 				}
 			}
-
-			img {
-				max-width: 8rem;
-				display: block;
-				border-radius: 4px;
-				transition: opacity 0.2s ease;
-				display: block;
-				object-fit: cover;
-				transition: transform 0.2s ease;
-			}
 		}
 	}
+}
+
+.elementor-editor-active .attachments-browser #media-date-range-filter {
+	background-color: unset;
 }

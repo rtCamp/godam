@@ -21,11 +21,11 @@ import FormSelector from './FormSelector';
 const templateOptions = [
 	{
 		value: 'godam',
-		label: 'GoDAM',
+		label: __( 'GoDAM', 'godam' ),
 	},
 	{
 		value: 'default',
-		label: 'Default',
+		label: __( 'Default', 'godam' ),
 	},
 ];
 
@@ -33,7 +33,9 @@ const CF7 = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 	const cf7Forms = useSelector( ( state ) => state.videoReducer.cf7Forms );
-	const { data: formHTML, isFetching } = useGetSingleCF7FormQuery( { id: layer.cf7_id, theme: layer.theme || 'godam' } );
+	const { data: formHTML, isFetching } = useGetSingleCF7FormQuery( { id: layer.cf7_id, theme: layer.theme || 'godam' }, {
+		skip: 'undefined' === typeof layer?.cf7_id,
+	} );
 
 	const forms = cf7Forms?.map( ( form ) => ( {
 		value: form.id,
@@ -47,11 +49,13 @@ const CF7 = ( { layerID } ) => {
 	const formTheme = layer.theme || 'godam';
 
 	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
+	// const isValidAPIKey = window?.videoData?.validApiKey;
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isCF7PluginActive = Boolean( window?.videoData?.cf7_active );
+	const isCF7PluginActive = Boolean( window?.videoData?.cf7Active );
+
+	const handleThemeChange = ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) );
 
 	return (
 		<>
@@ -66,17 +70,16 @@ const CF7 = ( { layerID } ) => {
 				</Notice>
 			}
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isCF7PluginActive } className="gravity-form-selector mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isValidAPIKey || ! isCF7PluginActive } className="mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<SelectControl
+				__next40pxDefaultSize
 				className="mb-4"
 				label={ __( 'Select form theme', 'godam' ) }
 				options={ templateOptions }
 				value={ layer.theme || 'godam' }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'theme', value } ) )
-				}
+				onChange={ handleThemeChange }
 				disabled={ ! isValidAPIKey || ! isCF7PluginActive }
 			/>
 

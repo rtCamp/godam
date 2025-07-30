@@ -11,6 +11,8 @@ import 'videojs-ima/dist/videojs.ima.css';
 import videojs from 'video.js';
 import 'videojs-contrib-ads';
 import 'videojs-ima';
+import 'videojs-flvjs-es6';
+
 /**
  * Internal dependencies
  */
@@ -55,7 +57,8 @@ const layerTypes = [
 export const VideoJS = ( props ) => {
 	const videoRef = useRef( null );
 	const playerRef = useRef( null );
-	const { options, onReady, onTimeupdate, playbackTime } = props;
+	const { options, onReady, onTimeupdate, playbackTime, formatTimeForInput } =
+    props;
 
 	const [ duration, setDuration ] = useState( 0 );
 	const [ sliderValue, setSliderValue ] = useState( 0 );
@@ -66,6 +69,7 @@ export const VideoJS = ( props ) => {
 	const videoMeta = useSelector( ( state ) => state.videoReducer );
 	const videoConfig = videoMeta.videoConfig;
 	const layers = videoMeta.layers;
+	const chapters = videoMeta.chapters;
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const currentTab = useSelector( ( state ) => state.videoReducer.currentTab );
 
@@ -84,7 +88,9 @@ export const VideoJS = ( props ) => {
 
 			const player = ( playerRef.current = videojs( videoElement, options, () => {
 				videojs.log( 'player is ready' );
-				onReady && onReady( player );
+				if ( onReady ) {
+					onReady( player );
+				}
 			} ) );
 
 			// Add a 'timeupdate' event listener
@@ -252,16 +258,6 @@ export const VideoJS = ( props ) => {
 			);
 		}
 
-		//play button image
-		const playButtonElement = document.querySelector( '.vjs-big-play-button' );
-		playButtonElement.style.backgroundImage = `url(${ videoConfig.controlBar.customPlayBtnImg })`;
-
-		playButtonElement.style.setProperty(
-			'background-image',
-			`url(${ videoConfig.controlBar.customPlayBtnImg })`,
-			'important',
-		);
-
 		//control bar position
 		if ( 'vertical' === videoConfig.controlBar.controlBarPosition ) {
 			controlBar.classList.add( 'vjs-control-bar-vertical' );
@@ -275,6 +271,39 @@ export const VideoJS = ( props ) => {
 				if ( control.classList.contains( 'vjs-volume-horizontal' ) ) {
 					control.classList.add( 'vjs-volume-vertical' );
 				}
+			}
+		}
+
+		const customPlayBtnImg = videoConfig.controlBar.customPlayBtnImg;
+		const playButtonElement = document.querySelector( '.vjs-big-play-button' );
+
+		if ( customPlayBtnImg ) {
+			// Create new image element
+			const imgElement = document.createElement( 'img' );
+			imgElement.src = customPlayBtnImg;
+			imgElement.alt = __( 'Custom Play Button', 'godam' );
+			imgElement.className = 'vjs-big-play-button custom-play-image';
+
+			playButtonElement.classList.forEach( ( cls ) => {
+				imgElement.classList.add( cls );
+			} );
+
+			imgElement.classList.add( 'custom-play-image' );
+
+			imgElement.style.cursor = 'pointer';
+
+			// Replace the original button with the new image
+			playButtonElement.parentNode.replaceChild( imgElement, playButtonElement );
+		}
+
+		if ( playerRef.current ) {
+			const player = playerRef.current;
+			const customPlayBtn = document.querySelector( '.vjs-big-play-button' );
+			if ( customPlayBtn ) {
+				customPlayBtn.addEventListener( 'click', function( e ) {
+					e.preventDefault();
+					player.play();
+				} );
 			}
 		}
 	}, [ videoConfig ] );
@@ -295,12 +324,15 @@ export const VideoJS = ( props ) => {
 				} );
 			}
 		}
-	}, [ layers ] );
+	}, [ layers, chapters ] );
 
 	useEffect( () => {
-		if ( playerRef.current ) {
-			const player = playerRef.current;
+		if ( ! playerRef.current ) {
+			return;
+		}
 
+		try {
+			const player = playerRef.current;
 			// player.sources( options.sources );
 			player.poster( options.poster );
 			player.autoplay( options.autoplay );
@@ -315,6 +347,8 @@ export const VideoJS = ( props ) => {
 			} else if ( ! options.controlBar.playToggle && volumePanel ) {
 				player.controlBar.removeChild( 'volumePanel' );
 			}
+		} catch {
+			// Ignoring - "No compatible source was found for this media" error will be shown on the video element.
 		}
 	}, [ options ] );
 
@@ -388,6 +422,30 @@ export const VideoJS = ( props ) => {
 						} }
 						disabled={ currentLayer }
 						currentLayerID={ currentLayer?.id }
+						chapters={ [] }
+						formatTimeForInput={ formatTimeForInput }
+					/>
+				)
+			}
+
+			{
+				currentTab === 'chapters' && (
+					<Slider
+						className="mt-12 mb-6"
+						value={ sliderValue }
+						onChange={ ( value ) => {
+							setSliderValue( value );
+							if ( playerRef.current ) {
+								playerRef.current.currentTime( value );
+							}
+						} }
+						max={ duration }
+						chapters={ chapters }
+						onLayerSelect={ ( chapter ) => {
+							playerRef.current.currentTime( chapter?.originalTime );
+						} }
+						layers={ [] }
+						formatTimeForInput={ formatTimeForInput }
 					/>
 				)
 			}
@@ -396,7 +454,7 @@ export const VideoJS = ( props ) => {
 };
 
 const Slider = ( props ) => {
-	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID } = props;
+	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID, chapters, formatTimeForInput } = props;
 
 	const [ sliderValue, setSliderValue ] = useState( value );
 	const [ hoverValue, setHoverValue ] = useState( null ); // Hover value
@@ -405,8 +463,24 @@ const Slider = ( props ) => {
 		setSliderValue( value );
 	}, [ value ] );
 
-	// Sort the array (ascending order)
-	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
+	// Sort the array (ascending order) and remove garbage values
+	const seenTimes = new Set();
+	const sortedChapters = chapters
+		?.filter( ( chapter ) => {
+			const time = parseFloat( chapter.startTime );
+			if (
+				isNaN( time ) ||
+			time < 0 ||
+			seenTimes.has( time )
+			) {
+				return false;
+			}
+			seenTimes.add( time );
+			return true;
+		} )
+		.sort( ( a, b ) => a.startTime - b.startTime );
+
+	const sortedLayers = [ ...layers ]?.sort( ( a, b ) => a.displayTime - b.displayTime );
 
 	const handleHover = ( e ) => {
 		const rect = e.target.getBoundingClientRect();
@@ -463,7 +537,7 @@ const Slider = ( props ) => {
 				)
 			}
 			{
-				sortedLayers.map( ( layer ) => {
+				sortedLayers?.map( ( layer ) => {
 					const layerLeft = layer.displayTime / max * 100;
 
 					return (
@@ -476,10 +550,12 @@ const Slider = ( props ) => {
 								'--hover-width': layer?.duration ? `${ Math.min( ( layer.duration / max ) * 100, 100 - layerLeft ) }%` : '8px',
 							} }
 							onClick={ () => onLayerSelect( layer ) }
+							role="button"
+							tabIndex={ 0 }
 						>
 							<div className="layer-indicator--container">
 								<div className={ `icon ${ layer.id === currentLayerID ? 'active' : '' }` }>
-									<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type ).icon } />
+									<Icon icon={ layerTypes.find( ( type ) => type.type === layer.type )?.icon } />
 									<div>
 										{ layer?.type?.toUpperCase() }
 										{
@@ -497,6 +573,42 @@ const Slider = ( props ) => {
 					);
 				} )
 			}
+			{
+				sortedChapters?.map( ( chapter, index ) => {
+					const chapterLeft = ( chapter.startTime / max ) * 100;
+
+					// Calculate difference to next chapter
+					const nextChapter = sortedChapters[ index + 1 ];
+					const nextStart = nextChapter ? nextChapter.startTime : max; // fallback to end
+					const hoverWidth = ( ( nextStart - chapter.startTime ) / max ) * 100;
+
+					return (
+						<div
+							key={ chapter.id }
+							className="layer-indicator hotspot-indicator chapter-indicator"
+							style={ {
+								left: `${ chapterLeft }%`,
+								'--hover-width': `${ hoverWidth }%`,
+							} }
+						>
+							<div className="chapter-indicator--duration">
+								{ `${ chapter?.originalTime } - ${ nextChapter ? nextChapter?.originalTime : formatTimeForInput( max ) }` }
+							</div>
+							<div
+								className="chapter-indicator--text"
+								style={ {
+									'--hover-width': `${ hoverWidth }%`,
+								} }
+							>
+								{ chapter?.text?.length > 13
+									? `${ chapter.text.slice( 0, 13 ) }...`
+									: chapter?.text }
+							</div>
+						</div>
+					);
+				} )
+			}
+
 		</div>
 	);
 };
