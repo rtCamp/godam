@@ -4,15 +4,98 @@
  * Used to style and display the custom media library.
  */
 
+.godam-media-library-submenu-container {
+	position: sticky;
+	z-index: 1000;
+	background: #fff;
+	border-radius: .75rem;
+	border: 1px solid #e0e0e0;
+
+	@media (min-width: 782px) {
+		display: none;
+	}
+
+	.godam-media-library-submenu-hamburger {
+
+		&:hover {
+			background: #f0f0f0;
+		}
+
+		svg {
+			height: 30px;
+			width: 30px;
+			fill: #64748B;
+		}
+
+		@media (max-width: 782px) {
+			border-radius: 0.75rem 0 0 0.75rem;
+			padding: 0 12px;
+			border: none;
+			border-right: 1px solid #e0e0e0 !important;
+			font-size: 42px;
+			background: none;
+			cursor: pointer;
+		}
+	}
+}
+
+.godam-media-library-close-btn {
+		width: fit-content;
+		background: none;
+		border: 1px solid #e0e0e0;
+		border-radius: 50%;
+		align-self: end;
+		cursor: pointer;
+		padding: 4px;
+		transition: all 0.3s ease;
+		display: none;
+
+		svg {
+			fill: #9d9d9d;
+		}
+
+		@media (max-width: 782px) {
+			display: flex;
+		}
+
+		&:hover {
+			background: #f0f0f0;
+		}
+}
+
+.godam-media-library-overlay {
+
+	@media (max-width: 782px) {
+		position: fixed;
+		inset: 0;
+		background-color: rgba(0, 0, 0, 0.4);
+		backdrop-filter: blur(3px);
+		z-index: 999998;
+	}
+}
+
 #rt-transcoder-media-library-root {
 	min-width: 280px;
-	padding: 0;
-	border: 1px solid #E0E0E0;
 	display: flex;
 	flex-direction: column;
-	min-height: calc(100vh - 34px);
-	overflow: auto;
-	height: 100%;
+
+	@media (max-width: 782px) {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 270px;
+		height: 100vh;
+		background: #fff;
+		box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+		transform: translateX(-100%);
+		overflow: auto;
+		transition: transform 0.3s ease-in-out;
+		z-index: 999999;
+
+		&.open {
+			transform: translateX(0);
+		}
+	}
 
 	* {
 		box-sizing: border-box;

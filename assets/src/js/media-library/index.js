@@ -17,7 +17,7 @@ import mediaFrameSelect from './views/media-frame-select.js';
 import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-view.js';
 import MediaListViewTableDragHandler from './views/attachment-list.js';
 
-import { isFolderOrgDisabled, isUploadPage, addManageMediaButton } from './utility.js';
+import { isFolderOrgDisabled, isUploadPage, addManageMediaButton, addHamburgerToggle } from './utility.js';
 
 /**
  * MediaLibrary class.
@@ -36,6 +36,7 @@ class MediaLibrary {
 		this.setupMediaLibraryRoot();
 		this.initializeDateRangeFilter();
 		addManageMediaButton();
+		addHamburgerToggle();
 		this.addInputPlaceholder();
 	}
 

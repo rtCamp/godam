@@ -2,6 +2,7 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
+
 /**
  * Internal dependencies
  */
@@ -49,6 +50,95 @@ function isUploadPage() {
  */
 function isFolderOrgDisabled() {
 	return ! window.easydamMediaLibrary?.enableFolderOrganization || false;
+}
+
+function addHamburgerToggle() {
+	const observer = new MutationObserver( () => {
+		const referenceElement = document.querySelector( '.media-toolbar.wp-filter' );
+
+		if ( referenceElement ) {
+			// Create the container for the hamburger button
+			const hamburgerContainer = document.createElement( 'div' );
+			hamburgerContainer.className = 'godam-media-library-submenu-container';
+
+			// Create the button itself
+			const hamburgerButton = document.createElement( 'button' );
+			hamburgerButton.className = 'godam-media-library-submenu-hamburger';
+			hamburgerButton.title = 'Open Menu';
+			hamburgerButton.setAttribute( 'aria-label', 'Open Menu' );
+			hamburgerButton.innerHTML = `
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+					<line x1="3" y1="12" x2="21" y2="12"></line>
+					<line x1="3" y1="6" x2="21" y2="6"></line>
+					<line x1="3" y1="18" x2="17" y2="18"></line>
+				</svg>
+			`;
+
+			// Append the button to the container
+			hamburgerContainer.appendChild( hamburgerButton );
+
+			// Insert the hamburger container before the reference element (the media toolbar)
+			referenceElement.insertAdjacentElement( 'beforebegin', hamburgerContainer );
+
+			// Set up the click event to toggle the sidebar
+			hamburgerButton.addEventListener( 'click', () => {
+				toggleSidebar();
+			} );
+
+			// Disconnect the observer after adding the button to prevent unnecessary checks
+			observer.disconnect();
+		}
+	} );
+
+	// Start observing the document body for changes (add nodes)
+	observer.observe( document.body, { childList: true, subtree: true } );
+}
+
+function openMediaLibrarySidebar() {
+	const root = document.getElementById( 'rt-transcoder-media-library-root' );
+	if ( root && ! root.classList.contains( 'open' ) ) {
+		root.classList.add( 'open' );
+
+		let overlay = document.querySelector( '.godam-media-library-overlay' );
+		if ( ! overlay ) {
+			overlay = document.createElement( 'div' );
+			overlay.className = 'godam-media-library-overlay';
+			overlay.setAttribute( 'role', 'button' );
+			overlay.setAttribute( 'tabindex', 0 );
+
+			overlay.addEventListener( 'click', closeMediaLibrarySidebar );
+			overlay.addEventListener( 'keydown', ( e ) => {
+				if ( e.key === 'Enter' || e.key === ' ' ) {
+					closeMediaLibrarySidebar();
+				}
+			} );
+
+			document.body.appendChild( overlay );
+		}
+	}
+}
+
+function closeMediaLibrarySidebar() {
+	const root = document.getElementById( 'rt-transcoder-media-library-root' );
+	if ( root && root.classList.contains( 'open' ) ) {
+		root.classList.remove( 'open' );
+
+		const overlay = document.querySelector( '.godam-media-library-overlay' );
+		if ( overlay ) {
+			overlay.remove();
+		}
+	}
+}
+
+function toggleSidebar() {
+	const root = document.getElementById( 'rt-transcoder-media-library-root' );
+	const sidebarActuallyOpen = root?.classList.contains( 'open' );
+
+	if ( sidebarActuallyOpen ) {
+		closeMediaLibrarySidebar();
+	} else {
+		openMediaLibrarySidebar();
+	}
 }
 
 function addManageMediaButton() {
@@ -111,4 +201,5 @@ async function getGodamSettings() {
 	} catch ( error ) {
 	}
 }
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings };
+
+export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, addHamburgerToggle, closeMediaLibrarySidebar, openMediaLibrarySidebar };

@@ -51,7 +51,7 @@ $tools-page-breakpoint: 782px;
 			svg {
 				height: 30px;
 				width: 30px;
-				fill: #64748B;
+				fill: #9d9d9d;
 			}
 
 			@media (max-width: $tools-page-breakpoint) {
@@ -75,6 +75,10 @@ $tools-page-breakpoint: 782px;
 			margin-bottom: 10px;
 			transition: all 0.3s ease;
 			display: none;
+
+			svg {
+				fill: #9d9d9d;
+			}
 
 			@media (max-width: $tools-page-breakpoint) {
 				display: flex;

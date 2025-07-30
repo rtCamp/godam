@@ -7,13 +7,16 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, ButtonGroup, SelectControl } from '@wordpress/components';
-const { __ } = wp.i18n;
+import { Button, ButtonGroup, SelectControl, Icon } from '@wordpress/components';
+import { close } from '@wordpress/icons';
+import { __ } from '@wordpress/i18n';
+
 /**
  * Internal dependencies
  */
 import FolderTree from './components/folder-tree/FolderTree.jsx';
 import ContextMenu from './components/context-menu/ContextMenu.jsx';
+import { closeMediaLibrarySidebar } from '../../assets/src/js/media-library/utility.js';
 
 import {
 	changeSelectedFolder,
@@ -103,6 +106,14 @@ const App = () => {
 		<>
 			<div className="control-buttons">
 				<Button
+					className="godam-media-library-close-btn"
+					onClick={ closeMediaLibrarySidebar }
+					title="Close Menu"
+					aria-label="Close Menu"
+				>
+					<Icon icon={ close } />
+				</Button>
+				<Button
 					icon="plus-alt2"
 					__next40pxDefaultSize
 					variant="primary"
@@ -145,7 +156,11 @@ const App = () => {
 					className={ `folder-list__item all-media ${
 						selectedFolder.id === -1 ? 'folder-list__item--active' : ''
 					}` }
-					onClick={ () => handleClick( -1 ) }
+					// onClick={ () => handleClick( -1 ) }
+					onClick={ () => {
+						handleClick( -1 );
+						closeMediaLibrarySidebar();
+					} }
 				>
 					<p className="folder-list__text">{ __( 'All Media', 'godam' ) }
 						<span className="folder-list__count">{ allMediaCount ?? 0 }</span>
@@ -156,7 +171,11 @@ const App = () => {
 					className={ `folder-list__item tree-item ${
 						selectedFolder.id === 0 ? 'folder-list__item--active' : ''
 					}` }
-					onClick={ () => handleClick( 0 ) }
+					// onClick={ () => handleClick( 0 ) }
+					onClick={ () => {
+						handleClick( 0 );
+						closeMediaLibrarySidebar();
+					} }
 					data-id={ 0 }
 				>
 					<p className="folder-list__text">{ __( 'Uncategorized', 'godam' ) }
