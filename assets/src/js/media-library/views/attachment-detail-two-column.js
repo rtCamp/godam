@@ -10,6 +10,11 @@ import videojs from 'video.js';
  */
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Internal dependencies
+ */
+import { addIcon, trashIcon } from '../media-library-icons';
+
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
 const restURL = window.godamRestRoute.url || '';
@@ -105,6 +110,9 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		this.$el.find( '.details' ).append( DOMPurify.sanitize( exifDiv ) );
 	},
 
+	/**
+	 * Sets up click handlers for removing custom video thumbnails.
+	 */
 	setupThumbnailActions() {
 		// Remove handler
 		document.querySelectorAll( '.remove-thumbnail' ).forEach( ( btn ) => {
@@ -117,6 +125,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		} );
 	},
 
+	/**
+	 * Removes a custom video thumbnail image.
+	 *
+	 * @param {string} thumbnailURL - The URL of the thumbnail to remove.
+	 */
 	removeThumbnailImage( thumbnailURL ) {
 		const formData = new FormData();
 		formData.append( 'attachment_id', this.model.get( 'id' ) );
@@ -147,14 +160,19 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			} );
 	},
 
+	/**
+	 * Opens the media uploader to select a custom thumbnail.
+	 *
+	 * @param {Function} onSelect - Callback function to handle the selected attachment.
+	 */
 	openMediaUploader( onSelect ) {
 		if ( ! window.wp || ! window.wp.media ) {
 			return;
 		}
 
 		const uploader = wp.media( {
-			title: 'Select Custom Thumbnail',
-			button: { text: 'Use this image' },
+			title: __( 'Select Custom Thumbnail', 'godam' ),
+			button: { text: __( 'Use this image', 'godam' ) },
 			multiple: false,
 			library: { type: [ 'image' ] },
 		} );
@@ -170,6 +188,108 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	},
 
 	/**
+	 * Creates a tile for uploading custom thumbnails.
+	 *
+	 * @param {boolean} uploadDisabled - Whether the upload button should be disabled.
+	 * @return {HTMLElement} - The created upload tile element.
+	 */
+	createUploadTile( uploadDisabled ) {
+		const sanitizedIcon = DOMPurify.sanitize( addIcon );
+
+		const li = document.createElement( 'li' );
+		li.className = 'upload-thumbnail-tile';
+		li.title = uploadDisabled
+			? __( 'Only 3 custom thumbnails allowed', 'godam' )
+			: __( 'Upload Custom Thumbnail', 'godam' );
+
+		const button = document.createElement( 'button' );
+		button.type = 'button';
+		button.className = 'custom-thumbnail-media-upload';
+
+		if ( uploadDisabled ) {
+			button.disabled = true;
+			button.style.opacity = '0.5';
+			button.style.cursor = 'not-allowed';
+		}
+
+		const span = document.createElement( 'span' );
+		span.className = 'plus-icon';
+
+		if ( uploadDisabled ) {
+			span.style.cursor = 'not-allowed';
+		}
+
+		span.innerHTML = sanitizedIcon;
+
+		button.appendChild( span );
+		li.appendChild( button );
+
+		return li;
+	},
+
+	/**
+	 * Creates a custom thumbnail tile with controls.
+	 *
+	 * @param {string} thumbnailURL  - The URL of the thumbnail image.
+	 * @param {string} selectedURL   - The URL of the currently selected thumbnail.
+	 * @param {string} trashIconHTML - The HTML for the trash icon.
+	 * @return {HTMLElement} - The created custom thumbnail tile element.
+	 */
+	createCustomThumbnailTile( thumbnailURL, selectedURL, trashIconHTML ) {
+		const li = document.createElement( 'li' );
+		li.className = 'custom-thumbnail-container';
+		if ( thumbnailURL === selectedURL ) {
+			li.classList.add( 'selected' );
+		}
+
+		const img = document.createElement( 'img' );
+		img.src = DOMPurify.sanitize( thumbnailURL );
+		img.alt = 'Custom Video Thumbnail';
+
+		const controls = document.createElement( 'div' );
+		controls.className = 'controls';
+
+		const tooltip = document.createElement( 'div' );
+		tooltip.className = 'tooltip mt-1';
+		tooltip.title = __( 'Remove Image', 'godam' );
+
+		const button = document.createElement( 'button' );
+		button.className = 'custom-thumbnail-control remove-thumbnail';
+		button.setAttribute( 'aria-label', __( 'Remove Image', 'godam' ) );
+		button.dataset.thumbnail = thumbnailURL;
+
+		const sanitizedTrashIcon = DOMPurify.sanitize( trashIconHTML );
+		button.innerHTML = sanitizedTrashIcon;
+
+		tooltip.appendChild( button );
+		controls.appendChild( tooltip );
+
+		li.appendChild( img );
+		li.appendChild( controls );
+
+		return li;
+	},
+
+	/**
+	 * Creates a default thumbnail tile.
+	 *
+	 * @param {string} thumbnailURL - The URL of the thumbnail image.
+	 * @param {string} selectedURL  - The URL of the currently selected thumbnail.
+	 * @return {HTMLElement} - The created default thumbnail tile element.
+	 */
+	createDefaultThumbnailTile( thumbnailURL, selectedURL ) {
+		const li = document.createElement( 'li' );
+		if ( thumbnailURL === selectedURL ) {
+			li.classList.add( 'selected' );
+		}
+		const img = document.createElement( 'img' );
+		img.src = DOMPurify.sanitize( thumbnailURL );
+		img.alt = 'Video Thumbnail';
+		li.appendChild( img );
+		return li;
+	},
+
+	/**
 	 * Renders video thumbnails in the attachment details view.
 	 *
 	 * @param {Object} data - The video thumbnail data to render.
@@ -178,29 +298,42 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const { thumbnails, selected, customThumbnails } = data;
 		const attachmentID = this.model.get( 'id' );
 
-		const addIcon = `
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36">
-				<path fill="#31373D" d="M31 15H21V5c0-1.657-1.343-3-3-3s-3 1.343-3 3v10H5c-1.657 0-3 1.343-3 3s1.343 3 3 3h10v10c0 1.657 1.343 3 3 3s3-1.343 3-3V21h10c1.657 0 3-1.343 3-3s-1.343-3-3-3z"/>
-			</svg>`;
-
-		const trashIcon = `
-		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-			<path fill-rule="evenodd" clip-rule="evenodd" d="M12 5.5A2.25 2.25 0 0 0 9.878 7h4.244A2.251 2.251 0 0 0 12 5.5ZM12 4a3.751 3.751 0 0 0-3.675 3H5v1.5h1.27l.818 8.997a2.75 2.75 0 0 0 2.739 2.501h4.347a2.75 2.75 0 0 0 2.738-2.5L17.73 8.5H19V7h-3.325A3.751 3.751 0 0 0 12 4Zm4.224 4.5H7.776l.806 8.861a1.25 1.25 0 0 0 1.245 1.137h4.347a1.25 1.25 0 0 0 1.245-1.137l.805-8.861Z"></path>
-		</svg>`;
-
-		const customThumbnailsArray = Object.values( customThumbnails || {} );
+		const customThumbnailsArray = Array.isArray( customThumbnails )
+			? customThumbnails
+			: Object.values( customThumbnails || {} );
 
 		// Disable upload button if limit is reached
 		const uploadDisabled = customThumbnailsArray.length >= 3;
 
-		const uploadTileHTML = `
-	<li class="upload-thumbnail-tile" title="${ uploadDisabled ? 'Only 3 custom thumbnails allowed' : 'Upload Custom Thumbnail' }" ${ uploadDisabled ? 'style="opacity: 0.5; cursor: not-allowed;"' : '' }>
-		<button type="button" class="custom-thumbnail-media-upload" ${ uploadDisabled ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '' }>
-			<span class="plus-icon" ${ uploadDisabled ? 'style="cursor: not-allowed;"' : '' }>${ addIcon }</span>
-		</button>
-	</li>`;
+		const ul = document.createElement( 'ul' );
+		ul.appendChild( this.createUploadTile( uploadDisabled ) );
 
-		// Attach click handler after rendering
+		customThumbnailsArray.forEach( ( thumbnail ) =>
+			ul.appendChild(
+				this.createCustomThumbnailTile( thumbnail, selected, trashIcon ),
+			),
+		);
+
+		const thumbnailArray = Array.isArray( thumbnails ) ? thumbnails : Object.values( thumbnails || {} );
+		thumbnailArray.forEach( ( thumbnail ) =>
+			ul.appendChild( this.createDefaultThumbnailTile( thumbnail, selected ) ),
+		);
+
+		// Compose full container
+		const div = document.createElement( 'div' );
+		div.className = 'attachment-video-thumbnails';
+		div.innerHTML = `<div class="attachment-video-title"><h4>${ __( 'Video Thumbnails', 'godam' ) }</h4></div>`;
+		div.appendChild( ul );
+
+		// Remove old and append new
+		const actionsEl = this.$el.find( '.attachment-actions' );
+		actionsEl.find( '.attachment-video-thumbnails' ).remove(); // Remove old thumbnails if any
+		actionsEl.append( div );
+
+		this.setupThumbnailClickHandler( attachmentID );
+		this.setupThumbnailActions();
+
+		// Set upload click after DOM added
 		setTimeout( () => {
 			const $btn = this.$el.find( '.custom-thumbnail-media-upload' );
 			if ( $btn.length ) {
@@ -211,52 +344,13 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				} );
 			}
 		}, 0 );
-
-		const thumbnailArray = Object.values( thumbnails || {} );
-
-		const thumbnailsHTML = thumbnailArray
-			?.map(
-				( thumbnail ) =>
-					`<li class="${ thumbnail === selected ? 'selected' : '' }">
-				<img src="${ thumbnail }" alt="Video Thumbnail" />
-			</li>`,
-			)
-			.join( '' );
-
-		const customThumbnailsHTML = customThumbnailsArray
-			?.map(
-				( thumbnail ) =>
-					`<li class="${ thumbnail === selected ? 'selected' : '' } custom-thumbnail-container">
-				<img src="${ thumbnail }" alt="Custom Video Thumbnail" />
-				<div class="controls">
-					<div class="tooltip mt-1" title="${ __( 'Remove Image', 'godam' ) }">
-						<button class="custom-thumbnail-control remove-thumbnail" aria-label="Remove Image" data-thumbnail="${ thumbnail }">
-							${ trashIcon }
-						</button>
-					</div>
-				</div>
-			</li>`,
-			)
-			.join( '' );
-
-		const thumbnailDiv = `
-			<div class="attachment-video-thumbnails">
-				<div class="attachment-video-title"><h4>Video Thumbnails</h4></div>
-				<ul>
-					${ uploadTileHTML }
-					${ customThumbnailsHTML }
-					${ thumbnailsHTML }
-				</ul>
-			</div>`;
-
-		this.$el
-			.find( '.attachment-actions' )
-			.append( DOMPurify.sanitize( thumbnailDiv ) );
-		this.setupThumbnailClickHandler( attachmentID );
-
-		this.setupThumbnailActions();
 	},
 
+	/**
+	 * Handles the upload of a custom video thumbnail from a URL.
+	 *
+	 * @param {string} url - The URL of the thumbnail to upload.
+	 */
 	handleThumbnailUploadFromUrl( url ) {
 		const formData = new FormData();
 		formData.append( 'attachment_id', this.model.get( 'id' ) );

@@ -544,12 +544,14 @@ class Media_Library extends Base {
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
 	
 		$mime_type = get_post_mime_type( $attachment_id );
+
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
 			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
 		}
 	
 		// Get current thumbnails.
 		$existing_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
+
 		if ( ! is_array( $existing_thumbnails ) ) {
 			$existing_thumbnails = array();
 		}
@@ -564,11 +566,10 @@ class Media_Library extends Base {
 		}
 
 	
-		// Add new custom thumbnail at beginning.
-		array_unshift( $existing_thumbnails, $thumbnail_url );
-	
-		// Remove duplicates.
-		$existing_thumbnails = array_unique( $existing_thumbnails );
+		// Add new custom thumbnail at beginning and remove duplicates.
+		if ( ! in_array( $thumbnail_url, $existing_thumbnails, true ) ) {
+			array_unshift( $existing_thumbnails, $thumbnail_url );
+		}
 	
 		// Save updated thumbnails.
 		update_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', $existing_thumbnails );
@@ -584,7 +585,7 @@ class Media_Library extends Base {
 					'customThumbnails' => $existing_thumbnails,
 				),
 			),
-			200 
+			200
 		);
 	}
 
@@ -601,12 +602,14 @@ class Media_Library extends Base {
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
 
 		$mime_type = get_post_mime_type( $attachment_id );
+
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
 			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Get current custom thumbnails.
 		$custom_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
+
 		if ( ! is_array( $custom_thumbnails ) || ! in_array( $thumbnail_url, $custom_thumbnails, true ) ) {
 			return new \WP_Error( 'thumbnail_not_found', __( 'Custom thumbnail not found.', 'godam' ), array( 'status' => 404 ) );
 		}
@@ -616,6 +619,7 @@ class Media_Library extends Base {
 
 		if ( empty( $custom_thumbnails ) ) {
 			delete_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails' );
+
 			return rest_ensure_response(
 				array(
 					'success' => true,
