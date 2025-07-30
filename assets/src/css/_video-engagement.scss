@@ -292,7 +292,8 @@
                     gap: 1.5rem;
                     padding-bottom: 1.4rem;
 
-                span {
+                span,
+                button {
                     display: flex;
                     align-items: center;
                     font-size: 1rem;
@@ -309,9 +310,29 @@
                 }
 
                 &-likes {
+                    cursor: pointer;
+                    border: none;
+                    background: none;
 
                     &::before {
                         background-image: url('../images/likes-count.svg');
+                    }
+
+                    &.is-liked {
+
+                        &::before {
+                            mask-image: url('../images/likes-count.svg');
+                            mask-repeat: no-repeat;
+                            background-color: var(--godam-video-engagement-icon-color--like);
+                        }
+                    }
+
+                    &.is-progressing {
+                        cursor: not-allowed;
+                        pointer-events: none;
+                        opacity: 0.6;
+                        animation: pop 0.4s ease;
+                        animation-iteration-count: infinite;
                     }
                 }
 

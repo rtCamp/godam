@@ -233,7 +233,7 @@ const engagementStore = {
 	 * @return {Object} The Redux store.
 	 */
 	store() {
-		return createReduxStore( 'godam-video-engagement', {
+		return createReduxStore( storeName, {
 			reducer: this.reducer,
 			actions: this.actions,
 			selectors: this.selectors,
@@ -264,29 +264,27 @@ const engagementStore = {
 	 * @return {Object} The processed engagement data.
 	 */
 	processEngagements( collections ) {
-		const engagementTitleData = {};
-		const engagementLikesData = {};
-		const engagementViewsData = {};
-		const engagementIsUserLikedData = {};
-		const engagementCommentsData = {};
-		const engagementCommentsCountData = {};
-		collections.forEach( ( item ) => {
-			engagementTitleData[ item.videoAttachmentId ] = item.data.title;
-			engagementLikesData[ item.videoAttachmentId ] = item.data.likes_count;
-			engagementIsUserLikedData[ item.videoAttachmentId ] = item.data.is_liked;
-			engagementViewsData[ item.videoAttachmentId ] = item.data.views_count;
-			engagementCommentsData[ item.videoAttachmentId ] = item.data.comments;
-			engagementCommentsCountData[ item.videoAttachmentId ] = item.data.comments_count;
+		const engagementData = collections.reduce( ( acc, item ) => {
+			const id = item.videoAttachmentId;
+			const data = item.data;
+			acc.titles[ id ] = data.title;
+			acc.likes[ id ] = data.likes_count;
+			acc.views[ id ] = data.views_count;
+			acc.IsUserLiked[ id ] = data.is_liked;
+			acc.comments[ id ] = data.comments;
+			acc.commentsCount[ id ] = data.comments_count;
+
+			return acc;
+		}, {
+			titles: {},
+			likes: {},
+			views: {},
+			IsUserLiked: {},
+			comments: {},
+			commentsCount: {},
 		} );
 
-		return {
-			titles: engagementTitleData,
-			views: engagementViewsData,
-			likes: engagementLikesData,
-			IsUserLiked: engagementIsUserLikedData,
-			comments: engagementCommentsData,
-			commentsCount: engagementCommentsCountData,
-		};
+		return engagementData;
 	},
 
 	/**
@@ -686,12 +684,15 @@ function CommentBox( props ) {
 	const commentsCount = memoizedStoreObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
 	const likesCount = memoizedStoreObj.select.getLikes()[ videoAttachmentId ] || 0;
 	const viewsCount = memoizedStoreObj.select.getViews()[ videoAttachmentId ] || 0;
+	const isUserLIked = memoizedStoreObj.select.getIsUserLiked()[ videoAttachmentId ] || false;
 	const titles = memoizedStoreObj.select.getTitles()[ videoAttachmentId ] || __( 'GoDAM Video', 'godam' );
 	const comments = memoizedStoreObj.select.getComments()[ videoAttachmentId ] || [];
 	const [ commentsData, setCommentsData ] = useState( comments );
 	const videoKey = videoId.replace( 'engagement-', '' );
 	const videoContainerRef = useRef( null );
+	const likeLinkRef = useRef( null );
 	const videoFigureId = `godam-player-container-${ videoKey }`;
+	const [ isSending, setIsSending ] = useState( false );
 
 	useEffect( () => {
 		setCommentsData( comments );
@@ -723,6 +724,17 @@ function CommentBox( props ) {
 		};
 	}, [ videoFigureId, memoizedStoreObj ] );
 
+	function handleLike() {
+		setIsSending( true );
+		memoizedStoreObj.dispatch.userHitiLke( videoAttachmentId, siteUrl, memoizedStoreObj, likeLinkRef.current )
+			.then( ( result ) => {
+				if ( ACTIONS.USER_HIT_LIKE === result.type ) {
+					setIsSending( false );
+				}
+			} )
+			.catch( () => {} );
+	}
+
 	return (
 		<div className={ baseClass }>
 			<div className={ baseClass + '-content' }>
@@ -739,7 +751,11 @@ function CommentBox( props ) {
 						<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } />
 						<div className={ baseClass + '-leave-comment' }>
 							<div className={ baseClass + '-leave-comment-impressions' }>
-								<span className={ baseClass + '-leave-comment-impressions-likes' }>{ likesCount }</span>
+								<button
+									onClick={ handleLike }
+									className={ baseClass + '-leave-comment-impressions-likes' + ( isUserLIked ? ' is-liked' : '' ) + ( isSending ? ' is-progressing' : '' ) }
+									ref={ likeLinkRef }
+								>{ likesCount }</button>
 								<span className={ baseClass + '-leave-comment-impressions-views' }>{ viewsCount }</span>
 							</div>
 							<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" />
