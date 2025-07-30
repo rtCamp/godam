@@ -27,6 +27,7 @@ import SureForm from '../forms/Sureform.js';
 import FluentForm from '../forms/FluentForm.js';
 import ForminatorForm from '../forms/forminatorForms.js';
 import NinjaForm from '../forms/NinjaForm.js';
+import HubSpotForm from '../forms/HubSpotForm.js';
 
 /**
  * FormLayer Components Object mapping.
@@ -94,6 +95,12 @@ export const FormLayerComponentType = {
 		idField: 'ninja_form_id',
 		settingsUrl: 'admin.php?page=ninja-forms&form_id={formId}',
 	},
+	hubspot: {
+		isActive: false,
+		component: HubSpotForm,
+		idField: 'hubspot_id',
+		settingsUrl: '',
+	},
 };
 
 /**
@@ -108,7 +115,9 @@ export const FormLayerComponentType = {
  */
 const FormLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
-	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
+	const layer = useSelector( ( state ) => [ ...state.videoReducer.layers, ...state.videoReducer.godamCentralLayers ].find( ( _layer ) => _layer.id === layerID ) );
+
+	const isGodamCentralLayer = useSelector( ( state ) => state.videoReducer.godamCentralLayers.some( ( _layer ) => _layer.id === layerID ) );
 
 	// If we want to disable the premium layers the we can use this code
 	// const isValidAPIKey = window?.videoData?.validApiKey;
@@ -141,55 +150,59 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 
 			<FormLayerComponent layerID={ layer.id } />
 
-			<AjaxWarning formType={ layer?.form_type } formId={ getFormId() } />
+			{ ! isGodamCentralLayer &&
+			<>
+				<AjaxWarning formType={ layer?.form_type } formId={ getFormId() } />
 
-			<ToggleControl
-				__nextHasNoMarginBottom
-				className="mb-4 godam-toggle"
-				label={ __( 'Allow user to skip', 'godam' ) }
-				checked={ layer.allow_skip }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
-				}
-				help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
-				disabled={ ! isValidAPIKey || ! isPluginActive }
-			/>
+				<ToggleControl
+					__nextHasNoMarginBottom
+					className="mb-4 godam-toggle"
+					label={ __( 'Allow user to skip', 'godam' ) }
+					checked={ layer.allow_skip }
+					onChange={ ( value ) =>
+						dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
+					}
+					help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
+					disabled={ ! isValidAPIKey || ! isPluginActive }
+				/>
 
-			<Panel className="-mx-4 border-x-0">
-				<PanelBody
-					title={ __( 'Advance', 'godam' ) }
-					initialOpen={ false }
-				>
+				<Panel className="-mx-4 border-x-0">
+					<PanelBody
+						title={ __( 'Advance', 'godam' ) }
+						initialOpen={ false }
+					>
 
-					{ /* Layer background color */ }
-					<label htmlFor="color" className="easydam-label">{ __( 'Color', 'godam' ) }</label>
-					<ColorPickerButton
-						className="mb-4"
-						value={ layer?.bg_color ?? '#FFFFFFB3' }
-						label={ __( 'Layer background color', 'godam' ) }
-						enableAlpha={ true }
-						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
-						disabled={ ! isValidAPIKey || ! isPluginActive }
-					/>
-
-					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'godam' ) }</label>
-
-					<div className={ ( ! isValidAPIKey || ! isPluginActive ) ? 'pointer-events-none opacity-50' : '' }>
-						<Editor
-							id="custom-css"
-							className="code-editor"
-							defaultLanguage="css"
-							options={ {
-								minimap: { enabled: false },
-							} }
-							defaultValue={ layer.custom_css }
-							onChange={ ( value ) =>
-								dispatch( updateLayerField( { id: layer.id, field: 'custom_css', value } ) )
-							}
+						{ /* Layer background color */ }
+						<label htmlFor="color" className="easydam-label">{ __( 'Color', 'godam' ) }</label>
+						<ColorPickerButton
+							className="mb-4"
+							value={ layer?.bg_color ?? '#FFFFFFB3' }
+							label={ __( 'Layer background color', 'godam' ) }
+							enableAlpha={ true }
+							onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
+							disabled={ ! isValidAPIKey || ! isPluginActive }
 						/>
-					</div>
-				</PanelBody>
-			</Panel>
+
+						<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'godam' ) }</label>
+
+						<div className={ ( ! isValidAPIKey || ! isPluginActive ) ? 'pointer-events-none opacity-50' : '' }>
+							<Editor
+								id="custom-css"
+								className="code-editor"
+								defaultLanguage="css"
+								options={ {
+									minimap: { enabled: false },
+								} }
+								defaultValue={ layer.custom_css }
+								onChange={ ( value ) =>
+									dispatch( updateLayerField( { id: layer.id, field: 'custom_css', value } ) )
+								}
+							/>
+						</div>
+					</PanelBody>
+				</Panel>
+			</>
+			}
 		</>
 	);
 };

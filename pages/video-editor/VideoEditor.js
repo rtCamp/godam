@@ -29,6 +29,7 @@ import {
 	setFluentForms,
 	setEverestForms,
 	setNinjaForms,
+	addGodamCentralLayers,
 } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
@@ -37,8 +38,10 @@ import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
+import { useGetHubSpotFormsQuery } from './redux/api/hubspot-forms';
 
 const VideoEditor = ( { attachmentID } ) => {
+// eslint-disable-next-line no-unused-vars
 	const formIDMap = {
 		cf7: 'cf7_id',
 		gravity: 'gf_id',
@@ -70,6 +73,26 @@ const VideoEditor = ( { attachmentID } ) => {
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
 	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, isFetching } = useFetchForms();
+	const { data: hubspotForms, isLoading: isHubspotFormsLoading } = useGetHubSpotFormsQuery( attachmentID );
+
+	useEffect( () => {
+		if ( ! isHubspotFormsLoading && hubspotForms ) {
+			const hubspotLayers = hubspotForms?.layers?.map( ( form ) => {
+				return {
+					id: form.id,
+					allow_skip: form.allowSkip,
+					hubspot_id: form.formId,
+					form_type: form.formProvider,
+					displayTime: form.timestamp.toFixed( 2 ),
+					backgroundColor: form.backgroundColor,
+					backgroundOpacity: form.backgroundOpacity,
+					type: 'form',
+				};
+			} );
+
+			dispatch( addGodamCentralLayers( hubspotLayers ) );
+		}
+	}, [ hubspotForms, isHubspotFormsLoading, dispatch ] );
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {

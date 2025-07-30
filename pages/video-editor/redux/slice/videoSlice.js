@@ -41,6 +41,7 @@ const slice = createSlice( {
 			},
 		},
 		layers: [],
+		godamCentralLayers: [],
 		chapters: [],
 		isChanged: false,
 		currentLayer: null,
@@ -93,6 +94,9 @@ const slice = createSlice( {
 			const ind = state.layers.findIndex( ( l ) => l.id === id );
 			state.layers[ ind ][ field ] = value;
 			state.isChanged = true;
+		},
+		addGodamCentralLayers: ( state, action ) => {
+			state.godamCentralLayers = [ ...state.godamCentralLayers, ...action.payload ];
 		},
 		addChapter: ( state, action ) => {
 			const newChapter = action.payload;
@@ -211,5 +215,6 @@ export const {
 	setForminatorPluginActive,
 	setNinjaForms,
 	setNinjaPluginActive,
+	addGodamCentralLayers,
 } = slice.actions;
 export default slice.reducer;

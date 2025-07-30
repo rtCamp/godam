@@ -17,6 +17,7 @@ import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
 import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
+import HubSpotIcon from '../assets/layers/HubSpotIcon.svg';
 
 /**
  * WordPress dependencies
@@ -100,6 +101,12 @@ export const layerTypes = [
 				isActive: window?.videoData?.ninjaFormsActive ?? false,
 				tooltipMessage: __( 'Ninja Forms plugin is not active', 'godam' ),
 			},
+			hubspot: {
+				layerText: __( 'HubSpot Forms', 'godam' ),
+				icon: HubSpotIcon,
+				isActive: false,
+				tooltipMessage: __( 'HubSpot Forms cannot be edited.', 'godam' ),
+			},
 		},
 	},
 	{
@@ -158,12 +165,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 
 	const dispatch = useDispatch();
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
+	const godamCentralLayers = useSelector( ( state ) => state.videoReducer.godamCentralLayers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 
 	// Sort the array (ascending order)
-	const sortedLayers = [ ...layers ].sort( ( a, b ) => a.displayTime - b.displayTime );
+	const sortedLayers = [ ...layers, ...godamCentralLayers ].sort( ( a, b ) => a.displayTime - b.displayTime );
 
 	// If we want to disable the premium layers the we can use this code
 	// const isValidAPiKey = window?.videoData?.valid_license;
@@ -332,7 +340,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 							} )
 						}
 						{
-							! loading && layers.length === 0 && (
+							! loading && sortedLayers.length === 0 && (
 								<>
 									<h3 className="text-2xl m-0 text-center">{ __( 'No layers added', 'godam' ) }</h3>
 								</>
@@ -364,10 +372,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 										icon={ plus }
 										iconPosition="left"
 										onClick={ openModal }
-										disabled={ ! currentTime || layers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
+										disabled={ ! currentTime || sortedLayers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
 									>{ __( 'Add layer at ', 'godam' ) } { currentTime }s
 									</Button>
-									{ layers.find( ( l ) => l.displayTime === currentTime ) && (
+									{ sortedLayers.find( ( l ) => l.displayTime === currentTime ) && (
 										<p className="text-slate-500 text-center">
 											{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
 										</p>
