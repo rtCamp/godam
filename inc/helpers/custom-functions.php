@@ -481,3 +481,18 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 
 	return json_decode( $response['body'] );
 }
+
+/**
+ * Determine whether the version change is a major release.
+ *
+ * @param string $old_version Previous plugin version.
+ * @param string $new_version Current plugin version.
+ *
+ * @return boolean True if it's a mjor version bump, false otherwise.
+ */
+function rtgodam_is_major_release( $old_version, $new_version ) {
+	$old_version_parts = explode( '.', $old_version );
+	$new_version_parts = explode( '.', $new_version );
+
+	return $new_version_parts[0] > $old_version_parts[0];
+}
