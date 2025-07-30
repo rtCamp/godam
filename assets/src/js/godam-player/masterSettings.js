@@ -93,7 +93,7 @@ class SettingsButton extends videojs.getComponent( 'MenuButton' ) {
 			} );
 
 			const playerEl = this.player_.el();
-      playerEl.classList.remove("godam-submenu-open");
+			playerEl.classList.remove( 'godam-submenu-open' );
 
 			// Reset original items reference
 			this.originalItems_ = null;
