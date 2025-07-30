@@ -46,6 +46,8 @@ const SearchBar = () => {
 		{ skip: debouncedSearchTerm.trim().length === 0 },
 	);
 
+	const isDebouncing = searchTerm.length > 0 && searchTerm !== debouncedSearchTerm;
+
 	const totalPages = data?.totalPages || 0;
 
 	/**
@@ -55,7 +57,6 @@ const SearchBar = () => {
 		const handler = setTimeout( () => {
 			setDebouncedSearchTerm( searchTerm );
 			setCurrentPage( 1 );
-			setSearchResults( [] );
 		}, 500 );
 
 		return () => {
@@ -75,7 +76,7 @@ const SearchBar = () => {
 	 * Appends new results when loading more pages, or replaces them when it's the first page.
 	 */
 	useEffect( () => {
-		if ( ! data?.items ) {
+		if ( isFetching || ! data?.items ) {
 			return;
 		}
 
@@ -84,7 +85,7 @@ const SearchBar = () => {
 		} else {
 			setSearchResults( ( prev ) => [ ...prev, ...data.items ] );
 		}
-	}, [ data ] );
+	}, [ data, searchTerm, debouncedSearchTerm, isFetching ] );
 
 	/**
 	 * Handles closing the popover.
@@ -96,24 +97,24 @@ const SearchBar = () => {
 	}, [ isFetching ] );
 
 	/**
+	 * Event handler for mousedown events to detect clicks outside the popover.
+	 *
+	 * @param {MouseEvent} event The mousedown event.
+	 */
+	const handleClickOutside = useCallback( ( event ) => {
+		if (
+			popoverRef.current &&
+			! popoverRef.current.contains( event.target ) &&
+			! inputRef.current.contains( event.target )
+		) {
+			handleClosePopover();
+		}
+	}, [ handleClosePopover ] );
+
+	/**
 	 * Handle clicks outside the popover and search input to close the popover.
 	 */
 	useEffect( () => {
-		/**
-		 * Event handler for mousedown events to detect clicks outside the popover.
-		 *
-		 * @param {MouseEvent} event The mousedown event.
-		 */
-		const handleClickOutside = ( event ) => {
-			if (
-				popoverRef.current &&
-					! popoverRef.current.contains( event.target ) &&
-					! inputRef.current.contains( event.target )
-			) {
-				handleClosePopover();
-			}
-		};
-
 		if ( showPopover ) {
 			document.addEventListener( 'mousedown', handleClickOutside );
 		}
@@ -121,7 +122,7 @@ const SearchBar = () => {
 		return () => {
 			document.removeEventListener( 'mousedown', handleClickOutside );
 		};
-	}, [ showPopover, isFetching, handleClosePopover ] );
+	}, [ showPopover, isFetching, handleClickOutside ] );
 
 	/**
 	 * Handle changes in the search input.
@@ -185,10 +186,10 @@ const SearchBar = () => {
 					offset={ 8 }
 				>
 					<div className="search-results-popover-content" ref={ popoverRef }>
-						{ ! isFetching && ! isError && searchResults.length === 0 && searchTerm.length > 0 && (
+						{ ! isFetching && ! isError && searchResults.length === 0 && debouncedSearchTerm.length > 0 && (
 							<div className="search-no-results">{ __( 'No folders found.', 'godam' ) }</div>
 						) }
-						{ debouncedSearchTerm.length > 0 && searchResults.length > 0 && (
+						{ ! isFetching && debouncedSearchTerm.length > 0 && searchResults.length > 0 && ! isDebouncing && (
 							<div className="search-results-list">
 								<ul>
 									{ searchResults.map( ( folder ) => (
