@@ -19,7 +19,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import './video-seo-modal.scss';
-import { getFirstNonEmpty, isObjectEmpty } from '../utils';
+import { isObjectEmpty } from '../utils';
 
 export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttributes } ) {
 	const [ videoData, setVideoData ] = useState( {} );
@@ -27,13 +27,13 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 	useEffect( () => {
 		if ( attributes.seo && ! isObjectEmpty( attributes.seo ) ) {
 			const initialVideoData = {
-				contentUrl: getFirstNonEmpty( attributes?.seo?.contentUrl ),
-				headline: getFirstNonEmpty( attributes?.seo?.headline ),
-				description: getFirstNonEmpty( attributes?.seo?.description ),
-				uploadDate: getFirstNonEmpty( attributes?.seo?.uploadDate ),
-				duration: getFirstNonEmpty( attributes?.seo?.duration ),
-				thumbnailUrl: getFirstNonEmpty( attributes?.seo?.thumbnailUrl ),
-				isFamilyFriendly: getFirstNonEmpty( attributes?.seo?.isFamilyFriendly, true ),
+				contentUrl: attributes?.seo?.contentUrl || '',
+				headline: attributes?.seo?.headline || '',
+				description: attributes?.seo?.description || '',
+				uploadDate: attributes?.seo?.uploadDate || '',
+				duration: attributes?.seo?.duration || '',
+				thumbnailUrl: attributes?.seo?.thumbnailUrl || '',
+				isFamilyFriendly: attributes?.seo?.isFamilyFriendly || true,
 			};
 
 			setVideoData( initialVideoData );
