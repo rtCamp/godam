@@ -137,11 +137,9 @@ const engagementStore = {
 		 * @param {HTMLElement} likeLink          - The HTML element for the like button/link.
 		 * @return {Object|null} An action object containing the type and like data.
 		 */
-		userHitiLke: async ( videoAttachmentId, siteUrl, storeObj, likeLink ) => {
+		userHitiLke: async ( videoAttachmentId, siteUrl, storeObj ) => {
 			const likeStatus = storeObj.select.getIsUserLiked()[ videoAttachmentId ];
 			const likeData = await storeObj.sendLikeData( videoAttachmentId, siteUrl, ! likeStatus );
-			likeLink.disabled = false;
-			likeLink.classList.remove( 'is-progressing' );
 			if ( 'error' === likeData.status ) {
 				storeObj.dispatch.errorHappened( likeData.message );
 				return;
@@ -398,7 +396,10 @@ const engagementStore = {
 					event.preventDefault();
 					likeLink.classList.add( 'is-progressing' );
 					likeLink.disabled = true;
-					self.dispatch.userHitiLke( videoAttachmentId, siteUrl, self, likeLink );
+					self.dispatch.userHitiLke( videoAttachmentId, siteUrl, self ).then( () => {
+						likeLink.classList.remove( 'is-progressing' );
+						likeLink.disabled = false;
+					} );
 				} );
 			}
 
@@ -690,7 +691,6 @@ function CommentBox( props ) {
 	const [ commentsData, setCommentsData ] = useState( comments );
 	const videoKey = videoId.replace( 'engagement-', '' );
 	const videoContainerRef = useRef( null );
-	const likeLinkRef = useRef( null );
 	const videoFigureId = `godam-player-container-${ videoKey }`;
 	const [ isSending, setIsSending ] = useState( false );
 
@@ -726,7 +726,7 @@ function CommentBox( props ) {
 
 	function handleLike() {
 		setIsSending( true );
-		memoizedStoreObj.dispatch.userHitiLke( videoAttachmentId, siteUrl, memoizedStoreObj, likeLinkRef.current )
+		memoizedStoreObj.dispatch.userHitiLke( videoAttachmentId, siteUrl, memoizedStoreObj )
 			.then( ( result ) => {
 				if ( ACTIONS.USER_HIT_LIKE === result.type ) {
 					setIsSending( false );
@@ -754,7 +754,6 @@ function CommentBox( props ) {
 								<button
 									onClick={ handleLike }
 									className={ baseClass + '-leave-comment-impressions-likes' + ( isUserLIked ? ' is-liked' : '' ) + ( isSending ? ' is-progressing' : '' ) }
-									ref={ likeLinkRef }
 								>{ likesCount }</button>
 								<span className={ baseClass + '-leave-comment-impressions-views' }>{ viewsCount }</span>
 							</div>
