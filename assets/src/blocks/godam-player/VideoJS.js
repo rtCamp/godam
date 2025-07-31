@@ -27,8 +27,10 @@ export const VideoJS = ( props ) => {
 			videoElement.classList.add( 'vjs-styles-dimensions' );
 			videoRef.current.appendChild( videoElement );
 
-			const player = ( playerRef.current = videojs( videoElement, options ), () => {
-				onReady && onReady( playerRef.current );
+			playerRef.current = videojs( videoElement, options, () => {
+				if ( onReady ) {
+					onReady( playerRef.current );
+				}
 			} );
 
 			// Add quality menu

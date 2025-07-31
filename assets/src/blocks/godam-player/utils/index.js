@@ -9,7 +9,7 @@
  */
 function getFirstNonEmpty( ...values ) {
 	for ( const value of values ) {
-		if ( value !== undefined && value !== null && value !== '' ) {
+		if ( value !== undefined && value !== null ) {
 			return value;
 		}
 	}

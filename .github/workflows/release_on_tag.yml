@@ -20,6 +20,7 @@ jobs:
       - name: Install dependencies & build assets
         shell: bash
         run: |
+          composer install --no-dev --optimize-autoloader
           npm install
           npm run build:prod
 
