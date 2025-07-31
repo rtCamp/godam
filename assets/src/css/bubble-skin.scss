@@ -1,6 +1,6 @@
 .godam-bubble-skin {
 	container-type: inline-size;
-    container-name: godam-player-bubble-skin;
+	container-name: godam-player-bubble-skin;
 
 	.vjs-big-play-button {
 		border-radius: 17px;
@@ -82,7 +82,7 @@
 
 			.vjs-menu {
 				bottom: -25px;
-    			left: -11em;
+				left: -11em;
 			}
 		}
   
@@ -181,7 +181,7 @@
 	
 			span::before {
 				font-size: 1.2em !important;
-    			line-height: 2 !important;
+				line-height: 2 !important;
 			}
 	
 			.godam-back-item-container::after{
@@ -247,43 +247,43 @@
 
 	@container godam-player-bubble-skin (max-width: 480px) {
 
-        .vjs-control-bar {
-            margin: -55px auto 0;
-            height: 5em !important;
+		.vjs-control-bar {
+			margin: -55px auto 0;
+			height: 5em !important;
 
 			.vjs-control {
 				height: 3em !important;
 			}
 
-            .vjs-fullscreen-control {
-                right: 10px
-            }
-            
-            .vjs-settings-button{
-                right: 55px;
+			.vjs-fullscreen-control {
+				right: 10px
+			}
+			
+			.vjs-settings-button{
+				right: 55px;
 				z-index: 99;
-            }
+			}
 
-            div.vjs-subs-caps-button {
-                right: 100px !important;
+			div.vjs-subs-caps-button {
+				right: 100px !important;
 				left: unset;
 				bottom: 3px !important;
 				z-index: 99;
-            }
+			}
 
-            .vjs-control.vjs-custom-play-button {
-                display: block;
-                position: absolute;
-                bottom: 0;
-                left: 20px;
-            }
+			.vjs-control.vjs-custom-play-button {
+				display: block;
+				position: absolute;
+				bottom: 0;
+				left: 20px;
+			}
 
 			.vjs-control, .vjs-settings-button {
 				border-radius: 12px !important;
 			}
 
-            [class^="vjs-skip-backward-"], [class^="vjs-skip-forward-"] {
-                display: block !important;
+			[class^="vjs-skip-backward-"], [class^="vjs-skip-forward-"] {
+				display: block !important;
 				background-color: var(--rtgodam-control-bar-color, #000000AD) !important;
 				padding: 2px 6px;
 				height: 32px !important;
@@ -292,7 +292,7 @@
 				span::before {
 					line-height: 1.8 !important;
 				}
-            }
+			}
 
 			[class^="vjs-skip-backward-"] {
 				left: 100px;
@@ -302,7 +302,7 @@
 				right: 100px;
 			}
 
-            .vjs-progress-control {
+			.vjs-progress-control {
 				max-width: 94%;
 				transform: translateY(-56%);
 				left: 0;
@@ -310,7 +310,7 @@
 				right: 0;
 				top: 0;
 				width: 100%;
-            }
+			}
 			
 			.vjs-control, .vjs-settings-button, div.vjs-subs-caps-button {
 				padding: unset !important;	
@@ -320,7 +320,7 @@
 				
 				span::before {
 					font-size: 1.8em;
-    				line-height: 1.67;
+					line-height: 1.67;
 				}
 			}
 
@@ -360,40 +360,40 @@
 		}
 
 
-        .vjs-button.godam-share-button {
-            bottom: 136px !important;
+		.vjs-button.godam-share-button {
+			bottom: 136px !important;
 			height: 24px !important;
 			border-radius: 12px !important;
 			display: flex;
 			align-items: center;
-        }
+		}
 
 		.share-icon {
-            height: 12px;
-        }
+			height: 12px;
+		}
 
-        .vjs-menu {
-            width: 8em;
+		.vjs-menu {
+			width: 8em;
 			bottom: 0 !important;
 			left: 0 !important;
 
-            .vjs-menu-content {
+			.vjs-menu-content {
 
-                li {
-                    font-size: 12px;
-                    padding: 4px;
-                }
+				li {
+					font-size: 12px;
+					padding: 4px;
+				}
 
-                .vjs-menu-item-text span {
-                    display: flex;
-                }
-            }
-        }
+				.vjs-menu-item-text span {
+					display: flex;
+				}
+			}
+		}
 
 		div.vjs-subs-caps-button .vjs-menu::before {
 			display: none;
 		}
-    }
+	}
 
 	@container godam-player-bubble-skin (max-width: 420px) {
 
