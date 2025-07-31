@@ -34,22 +34,28 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 
 	return (
 		<>
-			{ showOfferBanner && ! window?.userData?.validApiKey &&
-			<div className="notice annual-plan-offer-banner px-10">
-				<img
-					src={ AnnualPlanOfferBanner }
-					alt="Annual Plan Offer Banner"
-					className="annual-plan-offer-banner__img"
-				/>
-				<button
-					type="button"
-					className="annual-plan-offer-banner__dismiss"
-					onClick={ handleDismissBanner }
-				>
-					&times;
-				</button>
-			</div>
-			}
+			{ showOfferBanner && ! window?.userData?.validApiKey && (
+				<div className="notice annual-plan-offer-banner px-10">
+					<a
+						href={ `http://godam.io/pricing?utm_campaign=annual-plan&utm_source=${
+							window?.location?.host || ''
+						}&utm_medium=plugin&utm_content=banner` }
+					>
+						<img
+							src={ AnnualPlanOfferBanner }
+							alt="Annual Plan Offer Banner"
+							className="annual-plan-offer-banner__img"
+						/>
+					</a>
+					<button
+						type="button"
+						className="annual-plan-offer-banner__dismiss"
+						onClick={ handleDismissBanner }
+					>
+						&times;
+					</button>
+				</div>
+			) }
 			<div className="h-full overflow-auto is-dismissable godam-video-list-wrapper px-10 bg-white">
 				<div className="godam-video-list-header py-10">
 					<h1 className="godam-video-list__title">{ __( 'Videos', 'godam' ) }</h1>

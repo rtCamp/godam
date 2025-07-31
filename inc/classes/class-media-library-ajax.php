@@ -633,10 +633,14 @@ class Media_Library_Ajax {
 
 		// Only show on the Media Library page.
 		if ( $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
+			$host = wp_parse_url( home_url(), PHP_URL_HOST );
+
 			ob_start();
 
 			echo '<div class="notice annual-plan-offer-banner">';
+			echo '<a href="http://godam.io/pricing?utm_campaign=annual-plan&utm_source=' . esc_attr( $host ) . '&utm_medium=plugin&utm_content=banner">';
 			echo '<img src="' . esc_url( RTGODAM_URL . '/assets/src/images/Annual Plan Offer Banner (Plugin).png' ) . '" class="annual-plan-offer-banner__img">';
+			echo '</a>';
 			echo '<button type="button" class="annual-plan-offer-banner__dismiss" >&times;</button>';
 			echo '</div>';
 
