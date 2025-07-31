@@ -635,16 +635,36 @@ class Media_Library_Ajax {
 		if ( $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
 			$host = wp_parse_url( home_url(), PHP_URL_HOST );
 
-			ob_start();
+			$banner_html = sprintf(
+				'<div class="notice annual-plan-offer-banner">
+					<a href="%1$s">
+						<img src="%2$s" class="annual-plan-offer-banner__img">
+					</a>
+					<button type="button" class="annual-plan-offer-banner__dismiss">&times;</button>
+				</div>',
+				esc_url( 'https://godam.io/pricing?utm_campaign=annual-plan&utm_source=' . $host . '&utm_medium=plugin&utm_content=banner' ),
+				esc_url( RTGODAM_URL . '/assets/src/images/annual-plan-offer-banner.png' )
+			);
 
-			echo '<div class="notice annual-plan-offer-banner">';
-			echo '<a href="https://godam.io/pricing?utm_campaign=annual-plan&utm_source=' . esc_attr( $host ) . '&utm_medium=plugin&utm_content=banner">';
-			echo '<img src="' . esc_url( RTGODAM_URL . '/assets/src/images/Annual Plan Offer Banner (Plugin).png' ) . '" class="annual-plan-offer-banner__img">';
-			echo '</a>';
-			echo '<button type="button" class="annual-plan-offer-banner__dismiss" >&times;</button>';
-			echo '</div>';
+			echo wp_kses(
+				$banner_html,
+				array(
+					'div'    => array( 'class' => array() ),
+					'a'      => array(
+						'href'  => array(),
+						'class' => array(),
+					),
+					'img'    => array(
+						'src'   => array(),
+						'class' => array(),
+					),
+					'button' => array(
+						'type'  => array(),
+						'class' => array(),
+					),
+				)
+			);
 
-			ob_flush();
 		}
 	}
 }

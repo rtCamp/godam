@@ -14,7 +14,7 @@ import { Icon, search } from '@wordpress/icons';
  */
 import MediaGrid from './components/media-grid/MediaGrid.jsx';
 import './attachment-picker.scss';
-import AnnualPlanOfferBanner from '../../assets/src/images/Annual Plan Offer Banner (Plugin).png';
+import AnnualPlanOfferBanner from '../../assets/src/images/annual-plan-offer-banner.png';
 
 const AttachmentPicker = ( { handleAttachmentClick } ) => {
 	const [ searchTerm, setSearchTerm ] = useState( '' );
