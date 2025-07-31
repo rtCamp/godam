@@ -3,18 +3,12 @@
 
 	.godam-video-list {
 
-		&-wrapper {
-			margin-left: -20px;
-	
-			@media screen and (max-width: 782px) {
-				margin-left: 0;
-			}
-		}
-
 		&-header {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
+			gap: 1rem;
+			flex-wrap: wrap;
 		}
 
 		&__title {
@@ -23,6 +17,10 @@
 		}
 
 		&__filters {
+
+			@media screen and (max-width: 480px) {
+				width: 100%;
+			}
 
 			&__search {
 				position: relative;
@@ -51,6 +49,10 @@
 
 					&:focus {
 						border: 1px solid rgba(56, 88, 233, 1);
+					}
+
+					@media screen and (max-width: 480px) {
+						width: 100%;
 					}
 				}
 			}

@@ -330,9 +330,9 @@ const VideoPlayer = () => {
 			) }
 
 			<div className="bg-neutral-50 p-6 rounded-lg shadow-sm">
-				<div ref={ wrapperRef } className="text-center w-[650px] mx-auto shadow-xl rounded-lg overflow-hidden"></div>
+				<div ref={ wrapperRef } className="text-center max-w-[650px] mx-auto shadow-xl rounded-lg overflow-hidden"></div>
 
-				<div className="grid grid-cols-3 items-start w-[80%] mt-[35px] mx-auto gap-[3.5rem]">
+				<div className="godam-settings__container__global-settings w-4/5 mt-9 mb-6 mx-auto">
 					<div className="godam-form-group">
 						<label className="label-text" htmlFor="brand-color">
 							{ __( 'Player Skin', 'godam' ) }
@@ -418,7 +418,7 @@ const VideoPlayer = () => {
 					/>
 				</div>
 
-				<div className="godam-form-group mb-8 mx-auto w-[80%]">
+				<div className="godam-form-group godam-settings__container__custom-css mb-8 mx-auto">
 					<label className="label-text" htmlFor="brand-color">{ __( 'Custom CSS', 'godam' ) }</label>
 					<CustomVideoPlayerCSS handleSettingChange={ handleSettingChange } />
 					<div className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">

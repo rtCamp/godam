@@ -5,6 +5,21 @@ $settings-page-breakpoint: 782px;
 
 #godam-settings {
 
+	.godam-settings-header-content {
+
+		@media (max-width: 420px) {
+			padding-left: 4px;
+			padding-right: 14px;
+		}
+	}
+
+	.components-button.has-icon.has-text {
+
+		@media (max-width: 640px) {
+			padding: .75rem 0.75rem;
+		}
+	}
+
 	.godam-settings {
 
 		&__hamburger-container {
@@ -27,6 +42,10 @@ $settings-page-breakpoint: 782px;
 
 		&__hamburger {
 
+			&:hover {
+				background: #f0f0f0;
+			}
+
 			svg {
 				height: 30px;
 				width: 30px;
@@ -34,8 +53,8 @@ $settings-page-breakpoint: 782px;
 			}
 
 			@media (max-width: $settings-page-breakpoint) {
+				border-radius: 0.75rem 0 0 0.75rem;
 				padding: 0 12px;
-				outline: none;
 				border-right: $settings-page-border;
 				font-size: 42px;
 				background: none;
@@ -50,7 +69,6 @@ $settings-page-breakpoint: 782px;
 			border-radius: 50%;
 			align-self: end;
 			cursor: pointer;
-			outline: none;
 			padding: 4px;
 			margin-bottom: 10px;
 			transition: all 0.3s ease;
@@ -175,6 +193,39 @@ $settings-page-breakpoint: 782px;
 
 			&__content {
 				flex: 1;
+				container-type: inline-size;
+				container-name: godamvideoplayer;
+			}
+
+			&__global-settings {
+				width: 90%;
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 3rem;
+				align-items: flex-start;
+
+				.godam-color-picker {
+					margin: 0;
+				}
+
+
+				@container godamvideoplayer (max-width: 732px) {
+					width: 100%;
+					gap: 1.5rem;
+					grid-template-columns: 1fr;
+				}
+			}
+
+			&__custom-css {
+				width: 80%;
+
+				.components-panel__body {
+					border: none;
+				}
+
+				@container godamvideoplayer (max-width: 732px) {
+					width: 100%;
+				}
 			}
 		}
 	}
@@ -192,12 +243,17 @@ $settings-page-breakpoint: 782px;
 
 	.sidebar-nav-item {
 
-		@apply flex items-center gap-2 p-2 mb-0.5 font-medium rounded-md text-gray-600 hover:text-gray-900 border border-transparent transition-all;
+		@apply flex items-center gap-2 p-2 mb-0.5 font-medium rounded-md focus:ring-2 ring-indigo-200 text-gray-600 hover:text-gray-900 border border-transparent transition-all;
 
 		&.active {
 
-			@apply bg-white font-semibold focus:ring-2 ring-indigo-200 text-gray-900 drop-shadow-sm;
+			@apply bg-white font-semibold text-gray-900 drop-shadow-sm;
 			border: 1px solid #ddd;
+		}
+
+		&:not(.active):hover {
+
+			@apply bg-gray-50;
 		}
 	}
 
