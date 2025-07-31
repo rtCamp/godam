@@ -35,17 +35,6 @@ import 'quill/dist/quill.snow.css';
  * Internal dependencies
  */
 import GoDAM from '../../../../assets/src/images/GoDAM.png';
-import Share from '../../../../assets/src/images/share.svg';
-import ShareVariationOne from '../../../../assets/src/images/share-variation-one.svg';
-import CopyIcon from '../../../../assets/src/images/clipboard.svg';
-import Facebook from '../../../../assets/src/images/facebook.svg';
-import LinkedIn from '../../../../assets/src/images/linkedin.svg';
-import Reddit from '../../../../assets/src/images/reddit.svg';
-import Telegram from '../../../../assets/src/images/telegram.svg';
-import Twitter from '../../../../assets/src/images/twitter-x.svg';
-import Whatsapp from '../../../../assets/src/images/whatsapp.svg';
-import Complete from '../../../../assets/src/images/check.svg';
-import DOMPurify from 'isomorphic-dompurify';
 import SettingsButton from './masterSettings';
 import {
 	createChapterMarkers,
@@ -54,6 +43,7 @@ import {
 } from './chapters.js'; // Adjust path as needed
 
 import HoverManager from './managers/hoverManager.js';
+import ShareManager from './managers/shareManager.js';
 
 library.add( fas );
 dom.watch();
@@ -144,7 +134,9 @@ function GODAMPlayer( videoRef = null ) {
 				}
 			}
 			const hoverManager = new HoverManager( player, video );
+			const shareManager = new ShareManager( player, video, videoSetupOptions );
 			player.hoverManager = hoverManager;
+			player.shareManager = shareManager;
 
 			const captionsButton = player.el().querySelector( '.vjs-subs-caps-button' );
 			const durationElement = player.el().querySelector( '.vjs-duration' );
@@ -436,286 +428,12 @@ function GODAMPlayer( videoRef = null ) {
 
 		player.jobId = '';
 
-		const Button = videojs.getComponent( 'Button' );
-
-		class GodamShareButton extends Button {
-			buildCSSClass() {
-				return `godam-share-button ${ super.buildCSSClass() }`;
-			}
-
-			shareButtonImg() {
-				switch ( videoSetupOptions?.playerSkin ) {
-					case 'Minimal':
-					case 'Pills':
-					case 'Bubble':
-						return ShareVariationOne;
-					default:
-						return Share;
-				}
-			}
-
-			// Set the button content
-			createEl() {
-				const el = super.createEl();
-				const img = document.createElement( 'img' );
-
-				img.src = this.shareButtonImg();
-
-				img.id = 'share-icon';
-				img.alt = 'Share';
-				img.className = 'share-icon';
-				el.appendChild( img );
-				return el;
-			}
-
-			copyToClipboard( inputId ) {
-				const input = document.getElementById( inputId );
-
-				if ( ! input ) {
-					return;
-				}
-
-				const button = input.nextElementSibling; // assuming button is right after input
-
-				if ( ! button ) {
-					return;
-				}
-
-				const setSuccessStyle = () => {
-					button.style.backgroundColor = '#4CAF50'; // green
-					button.querySelector( 'img' ).src = Complete;
-				};
-
-				const resetStyle = () => {
-					button.style.backgroundColor = '#F7FAFB';
-					button.querySelector( 'img' ).src = CopyIcon;
-				};
-
-				// Common feedback function to handle success
-				const doFeedback = () => {
-					setSuccessStyle();
-					setTimeout( resetStyle, 2000 ); // revert after 2 seconds
-				};
-
-				if ( navigator.clipboard && navigator.clipboard.writeText ) {
-					navigator.clipboard
-						.writeText( input.value )
-						.then( doFeedback )
-						.catch( () => {
-							// silently fail
-						} );
-				} else {
-					input.select();
-					input.setSelectionRange( 0, 99999 ); // for mobile
-					try {
-						document.execCommand( 'copy' );
-						doFeedback(); // Use the common feedback function
-					} catch ( err ) {
-						// silently fail
-					}
-				}
-			}
-
-			// Add click event for playback
-			handleClick( event ) {
-				event.preventDefault();
-
-				// Prevent multiple modals
-				if ( document.querySelector( '.share-modal-container' ) ) {
-					return;
-				}
-
-				// Initialize
-				const jobId = this.player().jobId;
-				const baseUrl = window.godamData?.apiBase || '';
-
-				// Bail out if no jobId or baseUrl
-				if ( ! jobId || ! baseUrl ) {
-					return;
-				}
-
-				const videoLink = `${ baseUrl }/web/video/${ jobId }`;
-				const embedCode = `<iframe src="${ baseUrl }/web/embed/${ jobId }"></iframe>`;
-				const encodedLink = encodeURI( videoLink );
-				const message = encodeURIComponent( __( 'Check out this video!', 'godam' ) );
-
-				const socialLinksData = [
-					{
-						className: 'facebook',
-						href: `https://www.facebook.com/share.php?u=${ encodedLink }`,
-						icon: Facebook,
-						alt: __( 'Facebook icon', 'godam' ),
-					},
-					{
-						className: 'twitter',
-						href: `https://twitter.com/intent/tweet?url=${ encodedLink }&text=${ message }`,
-						icon: Twitter,
-						alt: __( 'Twitter icon', 'godam' ),
-					},
-					{
-						className: 'linkedin',
-						href: `https://www.linkedin.com/sharing/share-offsite/?url=${ encodedLink }&text=${ message }`,
-						icon: LinkedIn,
-						alt: __( 'LinkedIn icon', 'godam' ),
-					},
-					{
-						className: 'reddit',
-						href: `http://www.reddit.com/submit?url=${ encodedLink }&title=${ message }`,
-						icon: Reddit,
-						alt: __( 'Reddit icon', 'godam' ),
-					},
-					{
-						className: 'whatsapp',
-						href: `https://api.whatsapp.com/send?text=${ message }: ${ encodedLink }`,
-						icon: Whatsapp,
-						alt: __( 'WhatsApp icon', 'godam' ),
-					},
-					{
-						className: 'telegram',
-						href: `https://telegram.me/share/url?url=${ encodedLink }&text=${ message }`,
-						icon: Telegram,
-						alt: __( 'Telegram icon', 'godam' ),
-					},
-				];
-
-				const html = `
-					<div class="share-modal-popup">
-						<div class="share-modal-popup__header">
-							<span class="share-modal-popup__title">${ __( 'Share Media', 'godam' ) }</span>
-							<div id="cancel-button" class="share-modal-popup__close-button" tabindex="0">&times;</div>
-						</div>
-
-						<div class="share-modal-popup__content">
-							<div class="share-modal-popup__social-links">
-								${ socialLinksData.map( ( { className, icon, alt } ) => `<a class="${ className } social-icon" target="_blank" rel="noopener noreferrer" tabindex="0"><img src="${ icon }" alt="${ alt }" height="20" width="20" /></a>` ).join( '' ) }
-							</div>
-						</div>
-
-						<div class="share-modal-popup__footer">
-							<div class='share-modal-popup__input-container'>
-								<p class='share-modal-input-text'>${ __( 'Page Link', 'godam' ) }</p>
-								<div class="share-modal-input-group">
-									<input id="page-link" type="text" value="${ videoLink }" readonly tabindex="0" />
-									<span id="copy-page-link" class="copy-button" tabindex="0">
-										<img src="${ CopyIcon }" alt='${ __( 'copy icon', 'godam' ) }' height="24" width="24" />
-									</span>
-								</div>
-							</div>
-
-							<div class='share-modal-popup__input-container'>
-								<p class='share-modal-input-text'>${ __( 'Embed', 'godam' ) }</p>
-								<div class="share-modal-input-group">
-									<input id="embed-code" type="text" value='${ embedCode }' readonly tabindex="0" />
-									<span id="copy-embed-code" class="copy-button" tabindex="0">
-										<img src="${ CopyIcon }" alt='${ __( 'copy icon', 'godam' ) }' height="24" width="24" />
-									</span>
-								</div>
-							</div>
-						</div>
-					</div>
-				`;
-
-				// Create the modal container and append it to the body
-				const shareModal = document.createElement( 'div' );
-				shareModal.className = 'share-modal-container';
-				shareModal.innerHTML = DOMPurify.sanitize( html, {
-					ADD_ATTR: [ 'target', 'rel' ],
-				} );
-				document.body.appendChild( shareModal );
-				document.body.classList.add( 'godam-share-modal-open' );
-
-				// Cache elements
-				const cancelButton = shareModal.querySelector( '#cancel-button' );
-				const copyPageLinkBtn = shareModal.querySelector( '#copy-page-link' );
-				const copyEmbedCodeBtn = shareModal.querySelector( '#copy-embed-code' );
-
-				// Assign social links hrefs
-				socialLinksData.forEach( ( { className, href } ) => {
-					const el = shareModal.querySelector( `.${ className }` );
-					if ( el ) {
-						el.href = href;
-					}
-				} );
-
-				// Function to close the modal
-				const closeModal = () => {
-					const popup = shareModal.querySelector( '.share-modal-popup' );
-					popup.classList.add( 'share-modal-popup--closing' );
-					shareModal.classList.add( 'share-modal-container--closing' );
-
-					setTimeout( () => {
-						shareModal.remove();
-						document.body.classList.remove( 'godam-share-modal-open' );
-						document.removeEventListener( 'keydown', handleEscapeKey );
-					}, 300 );
-				};
-
-				// Close modal on outside click
-				shareModal.addEventListener( 'click', ( e ) => {
-					if ( e.target === shareModal ) {
-						closeModal();
-					}
-				} );
-
-				// Close modal on Escape key
-				const handleEscapeKey = ( e ) => {
-					if ( e.key === 'Escape' ) {
-						closeModal();
-						document.removeEventListener( 'keydown', handleEscapeKey );
-					}
-				};
-				document.addEventListener( 'keydown', handleEscapeKey );
-
-				// Event listeners for copy buttons on Enter or Space
-				const handleCopyButtonKeyDown = ( e, inputId ) => {
-					if ( e.key === 'Enter' || e.key === ' ' ) {
-						e.preventDefault();
-						this.copyToClipboard( inputId );
-					}
-				};
-
-				// Event listeners for copy buttons
-				copyPageLinkBtn.addEventListener( 'click', () => this.copyToClipboard( 'page-link' ) );
-				copyEmbedCodeBtn.addEventListener( 'click', () => this.copyToClipboard( 'embed-code' ) );
-
-				// Listen for Enter/Space on copy buttons
-				copyPageLinkBtn.addEventListener( 'keydown', ( e ) => handleCopyButtonKeyDown( e, 'page-link' ) );
-				copyEmbedCodeBtn.addEventListener( 'keydown', ( e ) => handleCopyButtonKeyDown( e, 'embed-code' ) );
-
-				cancelButton.addEventListener( 'click', closeModal );
-				cancelButton.addEventListener( 'keydown', ( e ) => {
-					if ( e.key === 'Enter' || e.key === ' ' ) {
-						e.preventDefault();
-						closeModal();
-					}
-				} );
-			}
-		}
-
-		// Register the new component
-		videojs.registerComponent( 'GodamShareButton', GodamShareButton );
-
 		// FIXED: Store chapters data at player level
 		let chaptersData = [];
 
 		// Add the button to the control bar after the player is ready
 		player.ready( function() {
 			player.jobId = video.dataset.job_id; // Store the result when it's available
-			const videoContainer = player.el().closest( '.easydam-video-container' );
-			if ( videoContainer && player.jobId !== '' ) {
-				const shareButton = new GodamShareButton( player );
-				const buttonEl = shareButton.createEl();
-				buttonEl.addEventListener(
-					'click',
-					shareButton.handleClick.bind( shareButton ),
-				);
-
-				if ( videoSetupOptions?.playerSkin === 'Bubble' && videoContainer.offsetWidth > 480 ) {
-					player.controlBar.addChild( 'GodamShareButton', {} );
-				} else if ( videoContainer ) {
-					videoContainer.appendChild( buttonEl );
-				}
-			}
 
 			// FIXED: Initialize chapters after player is ready
 			chaptersData = getChaptersData();
