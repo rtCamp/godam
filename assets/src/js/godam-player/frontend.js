@@ -53,11 +53,6 @@ import {
 	loadChapters,
 } from './chapters.js'; // Adjust path as needed
 
-/**
- * Global variables
- */
-const validAPIKey = window?.godamAPIKeyData?.validApiKey;
-
 library.add( fas );
 dom.watch();
 
@@ -123,8 +118,6 @@ function GODAMPlayer( videoRef = null ) {
 		}
 
 		const isPreviewEnabled = videoSetupOptions?.preview;
-
-		const isMobileView = window.innerWidth <= 768;
 
 		const player = videojs( video, videoSetupControls );
 
@@ -311,8 +304,11 @@ function GODAMPlayer( videoRef = null ) {
 				}
 			}
 
-			// if screen size if greater than 768px then skip.
-			if ( window.innerWidth > 768 ) {
+			// Get the video container element
+			const videoContainer = video.closest( '.easydam-video-container' );
+
+			// if video container width is greater than 480px then skip.
+			if ( videoContainer && videoContainer.offsetWidth > 480 ) {
 				return;
 			}
 
@@ -710,7 +706,7 @@ function GODAMPlayer( videoRef = null ) {
 					shareButton.handleClick.bind( shareButton ),
 				);
 
-				if ( videoSetupOptions?.playerSkin === 'Bubble' && ! isMobileView ) {
+				if ( videoSetupOptions?.playerSkin === 'Bubble' && videoContainer.offsetWidth > 480 ) {
 					player.controlBar.addChild( 'GodamShareButton', {} );
 				} else if ( videoContainer ) {
 					videoContainer.appendChild( buttonEl );
@@ -833,7 +829,7 @@ function GODAMPlayer( videoRef = null ) {
 				playButtonElement.el_.parentNode.replaceChild( imgElement, playButtonElement.el_ );
 			}
 
-			if ( controlBarSettings?.brandingIcon || ! validAPIKey ) {
+			if ( controlBarSettings?.brandingIcon || ! window?.godamAPIKeyData?.validApiKey ) {
 				const CustomPlayButton = videojs.getComponent( 'Button' );
 
 				class CustomButton extends CustomPlayButton {
