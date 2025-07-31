@@ -127,7 +127,7 @@ class ListViewTranscodingStatus {
 	 * @param {number}      progress - Progress percentage (0-100)
 	 */
 	updateProgress( loader, progress ) {
-		if ( ! progress || progress < 0 || progress > 100 ) {
+		if ( progress === null || typeof progress !== 'number' || progress < 0 || progress > 100 ) {
 			return;
 		}
 
@@ -136,7 +136,7 @@ class ListViewTranscodingStatus {
 			return;
 		}
 
-		const radius = circle.r.baseVal.value;
+		const radius = circle?.r?.baseVal?.value;
 		const circumference = 2 * Math.PI * radius;
 
 		circle.style.strokeDasharray = `${ circumference } ${ circumference }`;
