@@ -661,6 +661,13 @@ function CommentList( props ) {
 
 	return (
 		<div className="rtgodam-video-engagement--comment-list">
+			{
+				commentsData.length === 0 && (
+					<div className="rtgodam-video-engagement--comment-empty">
+						{ __( 'No comments yet. Be the first to comment!', 'godam' ) }
+					</div>
+				)
+			}
 			{ commentsData.map( ( comment ) => (
 				<Comment key={ comment.id } comment={ comment } setCommentsData={ setCommentsData } storeObj={ storeObj } videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } />
 			) ) }
@@ -693,6 +700,7 @@ function CommentBox( props ) {
 	const videoContainerRef = useRef( null );
 	const videoFigureId = `godam-player-container-${ videoKey }`;
 	const [ isSending, setIsSending ] = useState( false );
+	const [ expendComment, setExpendComment ] = useState( false );
 
 	useEffect( () => {
 		setCommentsData( comments );
@@ -746,8 +754,15 @@ function CommentBox( props ) {
 					<div className={ `${ baseClass }--video-figure` }>
 						<figure ref={ videoContainerRef }></figure>
 					</div>
-					<div className={ baseClass + '--video-info' }>
-						<h3 className={ baseClass + '--video-info-title' }>{ __( 'Comments', 'godam' ) } ({ commentsCount })</h3>
+					<div className={ baseClass + '--video-info' + ( expendComment ? ' is-comment-expanded' : '' ) }>
+						<h3 className={ baseClass + '--video-info-title' }>
+							<button
+								className={ baseClass + '--video-info-expend' }
+								onClick={ () => setExpendComment( ! expendComment ) }>
+								{ expendComment ? '-' : '+' }
+							</button>
+							{ __( 'Comments', 'godam' ) } ({ commentsCount })
+						</h3>
 						<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } />
 						<div className={ baseClass + '-leave-comment' }>
 							<div className={ baseClass + '-leave-comment-impressions' }>

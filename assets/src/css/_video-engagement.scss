@@ -185,6 +185,7 @@
 
             @media screen and (max-width: 768px) {
                 flex-direction: column;
+                position: relative;
             }
 
             &-info {
@@ -225,6 +226,31 @@
                     background-color: var(--wp--preset--color--white, #fff);
                     padding: 1.5rem;
                     border-bottom: 1px solid var(--godam-video-engagement-brand-neutral-shades-25);
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+
+                &-expend {
+                    display: none;
+                    background-color: transparent;
+                    border: none;
+                    font-size: 1.5rem;
+                    cursor: pointer;
+                    background-image: url('../images/expend-comment.svg');
+                    background-position: center;
+                    background-size: 100% 100%;
+                    background-repeat: no-repeat;
+                    width: 20px;
+                    height: 20px;
+                    color: transparent;
+
+                    @media screen and (max-width: 768px) {
+                        display: block;
+                        transform: rotate(180deg);
+                        position: relative;
+                        top: -2px;
+                    }
                 }
 
                 @media screen and (max-width: 993px) {
@@ -232,8 +258,23 @@
                 }
 
                 @media screen and (max-width: 768px) {
+
                     flex-basis: 100%;
                     overflow: auto;
+
+                    &.is-comment-expanded {
+                        position: absolute;
+                        top: 10%;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
+                        background-color: var(--wp--preset--color--white, #fff);
+
+                        .rtgodam-video-engagement--comment-modal--video-info-expend {
+                            transform: rotate(0deg);
+                            top: 0;
+                        }
+                    }
                 }
             }
         }
