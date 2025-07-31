@@ -1,4 +1,4 @@
-/* global jQuery, RTGodamVideoGallery */
+/* global jQuery, RTGodamVideoGallery, GODAMPlayer */
 
 /**
  * WordPress dependencies
@@ -19,6 +19,7 @@ import {
 } from '@wordpress/components';
 import { info } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
+import { useRef, useEffect } from 'react';
 
 /**
  * Internal dependencies
@@ -172,6 +173,73 @@ jQuery( document ).ready( function( $ ) {
 				container.remove();
 			};
 
+			/* Adds Automatic Scroll for Selected Products */
+			const scrollContainerRef = useRef( null );
+
+			useEffect( () => {
+				if ( scrollContainerRef.current ) {
+					scrollContainerRef.current.scrollTo( {
+						left: scrollContainerRef.current.scrollWidth,
+						behavior: 'smooth',
+					} );
+				}
+			}, [ selected ] );
+
+			/* Fetches GODAM video for display */
+			wp.element.useEffect( () => {
+				const fetchVideo = async () => {
+					try {
+						const modalEl = document.querySelector( '.godam-video-picker-modal' );
+						const videoContainer = modalEl?.querySelector( '.godam-admin-video-add-to-product-container' );
+						const spinner = modalEl?.querySelector( '.godam-admin-video-add-to-product-spinner' );
+						const tooltip = modalEl?.querySelector( '.godam-admin-video-add-to-product-tooltip' );
+
+						if ( ! videoContainer ) {
+							return;
+						}
+
+						const response = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ attachmentId }` );
+						const data = await response.json();
+
+						if ( data.status === 'success' && data.html ) {
+							const tempDiv = document.createElement( 'div' );
+							tempDiv.innerHTML = data.html;
+
+							// Find and hide .animate-play-btn.
+							const playBtn = tempDiv.querySelector( '.animate-play-btn' );
+							if ( playBtn ) {
+								playBtn.style.display = 'none';
+							}
+
+							// Update video container HTML.
+							videoContainer.innerHTML = tempDiv.innerHTML;
+							videoContainer.classList.remove( 'animate-video-loading' );
+
+							if ( spinner ) {
+								spinner.style.display = 'none';
+							}
+
+							tooltip.style.display = 'block';
+
+							// Reinitialize player.
+							if ( typeof GODAMPlayer === 'function' ) {
+								GODAMPlayer( modalEl );
+
+								const videoPlayer = modalEl.querySelector( '.video-js' );
+								if ( videoPlayer && videoPlayer.player ) {
+									videoPlayer.player.pause();
+								}
+							}
+						}
+					} catch ( error ) {
+						// eslint-disable-next-line no-console
+						console.error( 'Failed to fetch video', error );
+					}
+				};
+
+				fetchVideo();
+			}, [ attachmentId ] );
+
 			/* ----- Fetch timestamps when selected products are loaded ----- */
 			wp.element.useEffect( () => {
 				selected.forEach( ( p ) => {
@@ -191,249 +259,249 @@ jQuery( document ).ready( function( $ ) {
 			}, [ selected ] );
 
 			return (
-				<Modal title={ __( 'Attach video to other products', 'godam' ) } onRequestClose={ close } className="rt-godam-modal godam-video-picker-modal wc-godam-product-admin">
-					<div style={ { display: 'flex', gap: '8px', marginBottom: '1rem' } }>
-						<div style={ { flex: 1 } }>
-							<TextControl
-								placeholder={ __( 'Search product by name, ID, category, tag or brand…', 'godam' ) }
-								value={ search }
-								onChange={ setSearch }
-								className="godam-input"
-								onKeyDown={ ( e ) => {
-									if ( e.key === 'Enter' ) {
-										e.preventDefault();
-										doSearch();
-									}
-								} }
-							/>
-						</div>
-						<Button className="components-button godam-button is-secondary wc-godam-product-admin" variant="secondary" onClick={ doSearch } aria-label={ __( 'Search', 'godam' ) } style={ {
-							height: '100%',
-						} }>
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-								<path d="M12.9 14.32a8 8 0 111.414-1.414l4.387 4.386-1.414 1.415-4.387-4.387zM8 14A6 6 0 108 2a6 6 0 000 12z" />
-							</svg>
-						</Button>
-					</div>
+				<Modal title={ __( 'Attach video to other products', 'godam' ) } onRequestClose={ close } className="rt-godam-modal godam-video-picker-modal wc-godam-product-admin" style={ { top: '18%' } }>
+					<div style={ { display: 'flex' } }>
 
-					{ loading && <Spinner className="wc-godam-product-admin" /> }
-
-					<ul style={ { maxHeight: '250px', overflowY: 'auto', listStyle: 'none', padding: 0 } }>
-						{ results.map( ( p ) => {
-							const isSelected = selected.includes( p );
-							return (
-								<li key={ p.id } className="wc-godam-product-admin" style={ { listStyle: 'none' } }>
-									<button
-										type="button"
-										onClick={ () => toggleSelect( p ) }
-										aria-label={ __( 'Select product:', 'godam' ) + ' ' + p.name }
-										className="wc-godam-product-admin__item"
-										style={ {
-											display: 'flex',
-											alignItems: 'center',
-											width: '100%',
-											padding: '6px 10px',
-											background: isSelected
-												? 'var(--wp-components-color-accent)'
-												: 'transparent',
-											borderRadius: '5px',
-											color: isSelected ? '#ffffff' : '#000000',
-											border: 'none',
-											borderBottom: '1px solid #eee',
-											cursor: 'pointer',
-											textAlign: 'left',
-										} }
-									>
-										<strong>{ p.name }</strong>
-									</button>
-								</li>
-							);
-						} ) }
-					</ul>
-
-					{ selected.length > 0 && (
-						<div
-							style={ {
-								marginTop: '1rem',
-								background: '#f8f8f8',
-								padding: '10px',
-								borderRadius: '4px',
-							} }
-						>
-							<strong>{ __( 'Attach Products to Video:', 'godam' ) }</strong>
-
-							<div
-								style={ {
-									display: 'flex',
-									overflowX: 'auto',
-									gap: '12px',
-									paddingTop: '10px',
-								} }
-							>
-								{ selected
-									.filter( ( p ) => p.id !== CURRENT_ID )
-									.map( ( p ) => (
-										<div
-											key={ p.id }
-											style={ {
-												position: 'relative',
-												display: 'flex',
-												flexDirection: 'column',
-												alignItems: 'center',
-												width: '110px',
-												minWidth: '100px',
-												border: '1px solid #ddd',
-												borderRadius: '6px',
-												padding: '8px',
-												background: '#fff',
-												boxSizing: 'border-box',
-												flexShrink: 0,
-											} }
-										>
-											<button
-												type="button"
-												onClick={ () => {
-													apiFetch( {
-														path: `${ RTGodamVideoGallery.namespace }${ RTGodamVideoGallery.unLinkVideoEP }`,
-														method: 'POST',
-														data: {
-															product_id: p.id,
-															attachment_id: attachmentId,
-														},
-													} ).catch( () => {
-														// eslint-disable-next-line no-alert
-														window.alert( __( 'Failed to unlink video from product', 'godam' ) + ' ' + p.id );
-													} );
-
-													setSelected( ( prev ) => prev.filter( ( item ) => item.id !== p.id ) );
-												} }
-												style={ {
-													position: 'absolute',
-													top: '-9px',
-													right: '-9px',
-													background: '#f44336',
-													color: '#fff',
-													border: 'none',
-													borderRadius: '50%',
-													width: '20px',
-													height: '20px',
-													cursor: 'pointer',
-													fontWeight: 'bold',
-													lineHeight: '16px',
-													fontSize: '14px',
-													padding: 0,
-												} }
-												aria-label={ __( 'Remove product', 'godam' ) }
-											>
-												&times;
-											</button>
-
-											{ p.image && (
-												<img
-													src={ p.image }
-													alt={ p.name }
-													style={ {
-														width: 64,
-														height: 64,
-														objectFit: 'cover',
-														borderRadius: 4,
-														marginBottom: 6,
-													} }
-												/>
-											) }
-											<span
-												style={ {
-													fontSize: '13px',
-													textAlign: 'center',
-													whiteSpace: 'nowrap',
-													overflow: 'hidden',
-													textOverflow: 'ellipsis',
-													width: '100%',
-												} }
-											>
-												{ p.name }
-											</span>
-											<div className="godam-product-timestamp-input" style={ {
-												textAlign: 'center',
-												marginTop: '8px',
-											} }>
-												<input
-													type="text"
-													name={ `timestamp_${ p.id }` }
-													id={ `timestamp_${ p.id }` }
-													placeholder="hh:mm:ss"
-													style={ {
-														fontSize: '13px',
-														width: '86%',
-														border: '1px solid #ddd',
-														borderRadius: '10px',
-														boxSizing: 'border-box',
-														outline: 'none',
-														backgroundColor: '#fff',
-														textAlign: 'center',
-													} }
-												/>
-											</div>
-										</div>
-									) ) }
-							</div>
-						</div>
-					) }
-
-					<div style={ {
-						display: 'flex',
-						justifyContent: 'space-between',
-						alignItems: 'center',
-						marginTop: '1rem',
-						marginBottom: '1rem',
-					} }>
-						<div style={ { display: 'flex', alignItems: 'center' } }>
-							<Button
-								variant="secondary"
-								onClick={ () => {
-									window.open( url, '_blank' );
-								} }
-								className="components-button godam-button is-secondary godam-margin-top-no-bottom wc-godam-product-admin"
-								aria-label={ __( 'Watch video in new tab', 'godam' ) }
-							>
-								{ __( 'Watch Video', 'godam' ) }
-							</Button>
-
-							<Tooltip
-								text={ __( 'Opens video in a new tab. Tag products using timestamps when they appear.', 'godam' ) }
-								placement="top-end"
-							>
-								<span
-									style={ {
-										display: 'inline-flex',
-										alignItems: 'center',
-										marginLeft: '2px',
-										position: 'relative',
-										top: '28px',
-									} }
-								>
-									<Icon
-										icon={ info }
-										style={ {
-											cursor: 'pointer',
-											width: '21px',
-											height: '21px',
-											fill: '#ab3a6c',
+						{ /* LEFT SIDE - Products */ }
+						<div style={ { flex: 1, display: 'flex', flexDirection: 'column', paddingRight: '15px', overflow: 'hidden' } }>
+							<div style={ { display: 'flex', gap: '8px', marginBottom: '0.5rem', width: '100%' } }>
+								<div style={ { flex: 5 } }>
+									<TextControl
+										placeholder={ __( 'Search product by name, ID, category, tag or brand…', 'godam' ) }
+										value={ search }
+										onChange={ setSearch }
+										className="godam-input"
+										onKeyDown={ ( e ) => {
+											if ( e.key === 'Enter' ) {
+												e.preventDefault();
+												doSearch();
+											}
 										} }
 									/>
-								</span>
-							</Tooltip>
+								</div>
+								<Button className="components-button godam-button is-secondary wc-godam-product-admin" variant="secondary" onClick={ doSearch } aria-label={ __( 'Search', 'godam' ) } style={ {
+									height: '86%',
+								} }>
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+										<path d="M12.9 14.32a8 8 0 111.414-1.414l4.387 4.386-1.414 1.415-4.387-4.387zM8 14A6 6 0 108 2a6 6 0 000 12z" />
+									</svg>
+								</Button>
+							</div>
+
+							{ loading && <Spinner className="wc-godam-product-admin" /> }
+
+							<ul style={ { maxHeight: '115px', overflowY: 'auto', listStyle: 'none', padding: 0 } }>
+								{ results.map( ( p ) => {
+									const isSelected = selected.includes( p );
+									return (
+										<li key={ p.id } className="wc-godam-product-admin" style={ { listStyle: 'none' } }>
+											<button
+												type="button"
+												onClick={ () => toggleSelect( p ) }
+												aria-label={ __( 'Select product:', 'godam' ) + ' ' + p.name }
+												className="wc-godam-product-admin__item"
+												style={ {
+													display: 'flex',
+													alignItems: 'center',
+													width: '100%',
+													padding: '6px 10px',
+													background: isSelected
+														? 'var(--wp-components-color-accent)'
+														: 'transparent',
+													borderRadius: '5px',
+													color: isSelected ? '#ffffff' : '#000000',
+													border: 'none',
+													borderBottom: '1px solid #eee',
+													cursor: 'pointer',
+													textAlign: 'left',
+												} }
+											>
+												<strong>{ p.name }</strong>
+											</button>
+										</li>
+									);
+								} ) }
+							</ul>
+
+							{ selected.length > 0 && (
+								<div
+									style={ {
+										marginTop: '1rem',
+										background: '#f8f8f8',
+										padding: '10px',
+										borderRadius: '4px',
+									} }
+								>
+									<strong>{ __( 'Attach Products to Video:', 'godam' ) }</strong>
+
+									<div
+										ref={ scrollContainerRef }
+										style={ {
+											display: 'flex',
+											overflowX: 'auto',
+											gap: '12px',
+											paddingTop: '10px',
+											maxWidth: '100%',
+										} }
+									>
+										{ selected
+											.filter( ( p ) => p.id !== CURRENT_ID )
+											.map( ( p ) => (
+												<div
+													key={ p.id }
+													style={ {
+														position: 'relative',
+														display: 'flex',
+														flexDirection: 'column',
+														alignItems: 'center',
+														width: '110px',
+														minWidth: '100px',
+														border: '1px solid #ddd',
+														borderRadius: '6px',
+														padding: '8px',
+														background: '#fff',
+														boxSizing: 'border-box',
+														flexShrink: 0,
+													} }
+												>
+													<button
+														type="button"
+														onClick={ () => {
+															apiFetch( {
+																path: `${ RTGodamVideoGallery.namespace }${ RTGodamVideoGallery.unLinkVideoEP }`,
+																method: 'POST',
+																data: {
+																	product_id: p.id,
+																	attachment_id: attachmentId,
+																},
+															} ).catch( () => {
+																// eslint-disable-next-line no-alert
+																window.alert( __( 'Failed to unlink video from product', 'godam' ) + ' ' + p.id );
+															} );
+
+															setSelected( ( prev ) => prev.filter( ( item ) => item.id !== p.id ) );
+														} }
+														style={ {
+															position: 'absolute',
+															top: '-9px',
+															right: '-9px',
+															background: '#f44336',
+															color: '#fff',
+															border: 'none',
+															borderRadius: '50%',
+															width: '20px',
+															height: '20px',
+															cursor: 'pointer',
+															fontWeight: 'bold',
+															lineHeight: '16px',
+															fontSize: '14px',
+															padding: 0,
+														} }
+														aria-label={ __( 'Remove product', 'godam' ) }
+													>
+														&times;
+													</button>
+
+													{ p.image && (
+														<img
+															src={ p.image }
+															alt={ p.name }
+															style={ {
+																width: 64,
+																height: 64,
+																objectFit: 'cover',
+																borderRadius: 4,
+																marginBottom: 6,
+															} }
+														/>
+													) }
+													<span
+														style={ {
+															fontSize: '13px',
+															textAlign: 'center',
+															whiteSpace: 'nowrap',
+															overflow: 'hidden',
+															textOverflow: 'ellipsis',
+															width: '100%',
+														} }
+													>
+														{ p.name }
+													</span>
+													<div className="godam-product-timestamp-input" style={ {
+														textAlign: 'center',
+														marginTop: '8px',
+													} }>
+														<input
+															type="text"
+															name={ `timestamp_${ p.id }` }
+															id={ `timestamp_${ p.id }` }
+															placeholder="hh:mm:ss"
+															style={ {
+																fontSize: '13px',
+																width: '86%',
+																border: '1px solid #ddd',
+																borderRadius: '10px',
+																boxSizing: 'border-box',
+																outline: 'none',
+																backgroundColor: '#fff',
+																textAlign: 'center',
+															} }
+														/>
+													</div>
+												</div>
+											) ) }
+									</div>
+								</div>
+							) }
+
+							<div style={ {
+								display: 'flex',
+								justifyContent: 'space-between',
+								alignItems: 'center',
+								marginTop: '1rem',
+								marginBottom: '2rem',
+							} }>
+
+								<Button
+									variant="primary"
+									disabled={ ! selected.length }
+									onClick={ addToProducts }
+									className="components-button ml-2 godam-button is-primary godam-margin-top-no-bottom wc-godam-product-admin"
+									aria-label={ __( 'Save selected products', 'godam' ) }
+								>
+									{ __( 'Save', 'godam' ) }
+								</Button>
+							</div>
 						</div>
 
-						<Button
-							variant="primary"
-							disabled={ ! selected.length }
-							onClick={ addToProducts }
-							className="components-button ml-2 godam-button is-primary godam-margin-top-no-bottom wc-godam-product-admin"
-							aria-label={ __( 'Save selected products', 'godam' ) }
-						>
-							{ __( 'Save', 'godam' ) }
-						</Button>
+						{ /* RIGHT SIDE - Video */ }
+						<div style={ { flex: 1, borderLeft: '1px solid #ddd', paddingLeft: '15px', position: 'relative' } }>
+							<Spinner className="godam-admin-video-add-to-product-spinner" style={ {
+								position: 'absolute',
+								top: '50%',
+								left: '50%',
+								transform: 'translate(-50%, -50%)',
+								zIndex: 10,
+							} } />
+
+							<div className="godam-admin-video-add-to-product-container animate-video-loading"></div>
+
+							<div
+								className="godam-admin-video-add-to-product-tooltip"
+								style={ {
+									background: 'rgb(255, 244, 244)',
+									border: '1px solid rgb(194, 0, 0)',
+									borderRadius: '4px',
+									padding: '8px',
+									fontSize: '13px',
+									color: 'rgb(194, 0, 0)',
+									marginTop: '1rem',
+									display: 'none',
+								} }
+							>
+								{ __( 'Use the video to add timestamps for the products when they appear in the video.', 'godam' ) }
+							</div>
+						</div>
 					</div>
 				</Modal>
 			);

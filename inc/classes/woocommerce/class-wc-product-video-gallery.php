@@ -56,7 +56,7 @@ class WC_Product_Video_Gallery {
 			wp_enqueue_script(
 				'rtgodam-wc-add-to-product',
 				RTGODAM_URL . 'assets/build/js/wc-add-to-product.min.js',
-				array( 'jquery', 'wp-api-fetch', 'wp-components', 'wp-element' ),
+				array( 'jquery', 'wp-api-fetch', 'wp-components', 'wp-element', 'godam-player-frontend-script' ),
 				filemtime( RTGODAM_PATH . 'assets/build/js/wc-add-to-product.min.js' ),
 				true
 			);

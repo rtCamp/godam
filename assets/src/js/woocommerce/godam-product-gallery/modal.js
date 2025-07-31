@@ -244,18 +244,9 @@ function close( modal, sidebarModal, ctaEnabled, ctaDisplayPosition ) {
 
 		modal.querySelector( '.godam-product-modal-content' ).classList.remove( 'no-sidebar' );
 		modal.querySelector( '.godam-product-modal-content' ).classList.add( 'sidebar' );
-	}
-}
 
-/**
- * Closes the sidebar modal if it exists.
- *
- * - Removes the 'active' class from the sidebar modal.
- *
- * @param {HTMLElement} sidebarModal - The Product sidebar modal element to be deactivated.
- */
-function closeSidebar( sidebarModal ) {
-	sidebarModal?.classList.remove( 'active' );
+		modal.querySelector( '.sidebar-collapsible-open-button' ).classList.add( 'hidden' );
+	}
 }
 
 /**
@@ -534,10 +525,10 @@ async function loadSidebarProducts( productIds, sidebarModal, ctaEnabled, ctaDis
 		return;
 	}
 
-	sidebarModal.classList.remove( 'close' );
+	// sidebarModal.classList.remove( 'close' );
 
-	modal.querySelector( '.godam-product-modal-content' )?.classList?.remove( 'no-sidebar' );
-	modal.querySelector( '.godam-product-modal-content' )?.classList?.add( 'sidebar' );
+	// modal.querySelector( '.godam-product-modal-content' )?.classList?.remove( 'no-sidebar' );
+	// modal.querySelector( '.godam-product-modal-content' )?.classList?.add( 'sidebar' );
 
 	const sidebarElement = sidebarModal.querySelector( '.godam-sidebar-product' );
 

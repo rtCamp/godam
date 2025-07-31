@@ -454,7 +454,7 @@
 	inset: 0;
 	z-index: 2;
 	color: var(--wp--preset--color--base, var(--wp--preset--color--secondary, #fff));
-	left: 92%;
+	left: 2%;
 	top: 3%;
 
 	.wc-block-mini-cart.wp-block-woocommerce-mini-cart {
@@ -463,17 +463,12 @@
 	}
 
 	@media (max-width: 640px) {
-		transform: scale(0.9) translateX(-6px);
+		transform: translateX(6px);
 		transform-origin: center;
 	}
 
 	@media (max-width: 500px) {
-		transform: scale(0.9) translateX(-22px);
-		transform-origin: center;
-	}
-
-	@media (max-width: 310px) {
-		transform: scale(0.8) translateX(-27px);
+		transform: scale(0.9) translateX(-10px);
 		transform-origin: center;
 	}
 }
