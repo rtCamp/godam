@@ -575,6 +575,17 @@
             }
         }
     }
+
+    &--title {
+        margin-right: auto;
+        margin-left: 10px;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        text-overflow: clip;
+        white-space: nowrap;
+        flex: 1;
+    }
 }
 
 @keyframes pop {

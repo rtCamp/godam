@@ -40,6 +40,15 @@ class Video_Engagement {
 		}
 		?>
 		<div class="rtgodam-video-engagement rtgodam-video-engagement--link-disabled" data-engagement-id="engagement-<?php echo esc_attr( $instance_id ); ?>" data-engagement-video-id="<?php echo esc_attr( $attachment_id ); ?>" data-engagement-site-url="<?php echo esc_url( get_site_url() ); ?>">
+			<div class="rtgodam-video-engagement--title">
+			<?php
+			if ( ! empty( $attributes['title'] ) ) {
+				echo esc_html( $attributes['title'] );
+			} else {
+				echo esc_html( get_the_title( $attachment_id ) );
+			}
+			?>
+			</div>
 			<div class="rtgodam-video-engagement--like">
 				<a href="#" class="rtgodam-video-engagement--like-link">
 					<span class="rtgodam-video-engagement--like-icon">
