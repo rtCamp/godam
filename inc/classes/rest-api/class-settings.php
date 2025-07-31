@@ -305,15 +305,45 @@ class Settings extends Base {
 			),
 			'video_player' => array(
 				'brand_image'    => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),
-				'brand_color'    => sanitize_hex_color( $settings['video_player']['brand_color'] ?? $default['video_player']['brand_color'] ),
+				'brand_color'    => $this->sanitize_color_value( $settings['video_player']['brand_color'] ?? $default['video_player']['brand_color'] ),
 				'brand_image_id' => absint( $settings['video_player']['brand_image_id'] ?? $default['video_player']['brand_image_id'] ),
-				'custom_css'     => sanitize_textarea_field( $settings['video_player']['custom_css'] ) ?? $default['video_player']['custom_css'],
-				'player_skin'    => sanitize_text_field( $settings['video_player']['player_skin'] ) ?? $default['video_player']['player_skin'],
+				'custom_css'     => sanitize_textarea_field( $settings['video_player']['custom_css'] ?? $default['video_player']['custom_css'] ),
+				'player_skin'    => sanitize_text_field( $settings['video_player']['player_skin'] ?? $default['video_player']['player_skin'] ),
 			),
 			'ads_settings' => array(
 				'enable_global_video_ads' => rest_sanitize_boolean( $settings['ads_settings']['enable_global_video_ads'] ?? $default['ads_settings']['enable_global_video_ads'] ),
 				'adTagUrl'                => esc_url_raw( $settings['ads_settings']['adTagUrl'] ?? $default['ads_settings']['adTagUrl'] ),
 			),
 		);
+	}
+
+	/**
+	 * Sanitize color value to handle both hex and rgba colors.
+	 *
+	 * @param string $color The color value to sanitize.
+	 * @return string
+	 */
+	private function sanitize_color_value( $color ) {
+		if ( empty( $color ) ) {
+			return '';
+		}
+		
+		// Handle hex colors (3, 6, or 8 characters with alpha).
+		if ( preg_match( '/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/', $color ) ) {
+			return $color;
+		}
+		
+		// Handle rgba colors.
+		if ( preg_match( '/^rgba?\([^)]+\)$/', $color ) ) {
+			return $color;
+		}
+		
+		// Handle named colors or other formats.
+		if ( preg_match( '/^[a-zA-Z]+$/', $color ) ) {
+			return $color;
+		}
+		
+		// If none of the above, return empty string.
+		return '';
 	}
 }
