@@ -51,6 +51,7 @@ use RTGODAM\Inc\Video_Metadata;
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
 use RTGODAM\Inc\WPForms\WPForms_Integration;
 use RTGODAM\Inc\Media_Library\Media_Edit_Enhancements;
+use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
 
 /**
  * Class Plugin.
@@ -99,6 +100,8 @@ class Plugin {
 		$this->load_elementor_widgets();
 
 		$this->load_media_library();
+
+		$this->load_lifter_lms();
 	}
 
 	/**
@@ -150,9 +153,8 @@ class Plugin {
 	/**
 	 * Load all the classes related to the media library.
 	 *
-	 * @since 1.3.0
-	 *
 	 * @return void
+	 * @since 1.3.0
 	 */
 	private function load_media_library() {
 		Media_Folders_REST_API::get_instance();
@@ -195,5 +197,14 @@ class Plugin {
 	 */
 	public function load_fluentforms() {
 		\RTGODAM\Inc\FluentForms\Init::get_instance();
+	}
+
+	/**
+	 * Load LifterLMS integration.
+	 *
+	 * @return void
+	 */
+	public function load_lifter_lms() {
+		Lifter_LMS::get_instance();
 	}
 }
