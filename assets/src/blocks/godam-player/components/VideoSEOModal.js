@@ -21,6 +21,17 @@ import { __ } from '@wordpress/i18n';
 import './video-seo-modal.scss';
 import { isObjectEmpty } from '../utils';
 
+/**
+ * Video SEO Modal component
+ *
+ * @param {*}        param0
+ * @param {boolean}  param0.isOpen        - Whether the modal is open
+ * @param {Function} param0.setIsOpen     - Function to set modal open state
+ * @param {Object}   param0.attributes    - Block attributes
+ * @param {Function} param0.setAttributes - Function to set block attributes
+ *
+ * @return {JSX.Element|null} returns the Video SEO Modal component or null if not open
+ */
 export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttributes } ) {
 	const [ videoData, setVideoData ] = useState( {} );
 
