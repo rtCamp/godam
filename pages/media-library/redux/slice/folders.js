@@ -34,6 +34,7 @@ const slice = createSlice( {
 
 		page: {
 			current: 1,
+			perPage: 10,
 			hasNext: true,
 		},
 
