@@ -638,7 +638,7 @@ class Media_Library_Ajax {
 			$banner_html = sprintf(
 				'<div class="notice annual-plan-offer-banner">
 					<a href="%1$s">
-						<img src="%2$s" class="annual-plan-offer-banner__img">
+						<img src="%2$s" class="annual-plan-offer-banner__img" alt="Annual Plan Offer Banner">
 					</a>
 					<button type="button" class="annual-plan-offer-banner__dismiss">&times;</button>
 				</div>',
@@ -657,6 +657,7 @@ class Media_Library_Ajax {
 					'img'    => array(
 						'src'   => array(),
 						'class' => array(),
+						'alt'   => array(),
 					),
 					'button' => array(
 						'type'  => array(),
