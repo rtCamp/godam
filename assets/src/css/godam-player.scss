@@ -1522,6 +1522,17 @@ body.godam-share-modal-open {
 	position: relative;
 }
 
+.gf-godam-video-preview {
+
+	.easydam-video-container {
+		height: 100%;
+
+		.easydam-player.video-js {
+			margin-top: -2.125rem;
+		}
+	}
+}
+
 .godam-video-overlay-container {
 	display: block;
 	pointer-events: none;
