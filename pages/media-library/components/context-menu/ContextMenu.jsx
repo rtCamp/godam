@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { openModal, updateSnackbar, addBookmark, lockFolder } from '../../redux/slice/folders';
+import { openModal, updateSnackbar, updateBookmarks, lockFolder } from '../../redux/slice/folders';
 import { useDownloadZipMutation, useUpdateFolderMutation, useBulkLockFoldersMutation, useBulkBookmarkFoldersMutation } from '../../redux/api/folders';
 import {
 	BookmarkStarIcon,
@@ -230,6 +230,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				meta: {
 					...folder?.meta,
 					bookmark: ! isBookmarked,
+					locked: Boolean( folder?.meta?.locked ?? false ), // Ensure locked status remains unchanged
 				},
 			};
 
@@ -237,7 +238,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				if ( multiSelectedFolderIds.length <= 0 ) {
 					await updateFolderMutation( updatedFolder ).unwrap();
 
-					dispatch( addBookmark( folder.id ) );
+					dispatch( updateBookmarks( folder.id ) );
 
 					dispatch( updateSnackbar( {
 						message: isBookmarked
@@ -249,7 +250,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 					const areBookmarked = ! areAllTargetFoldersBookmarked;
 					const response = await bulkBookmarkFoldersMutation( { folderIds: multiSelectedFolderIds, bookmarkStatus: areBookmarked } ).unwrap();
 
-					dispatch( addBookmark( { ids: response.updated_ids, status: areBookmarked } ) );
+					dispatch( updateBookmarks( { ids: response.updated_ids, status: areBookmarked } ) );
 
 					dispatch( updateSnackbar( {
 						message: __( 'Bookmarks added successfully', 'godam' ),
@@ -285,6 +286,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				meta: {
 					...folder?.meta,
 					locked: ! isCurrentlyLocked,
+					bookmark: Boolean( folder?.meta?.bookmark ?? false ), // Ensure bookmark status remains unchanged
 				},
 			};
 
