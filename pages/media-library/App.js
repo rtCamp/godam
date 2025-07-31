@@ -30,6 +30,7 @@ import { triggerFilterChange } from './data/media-grid.js';
 import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
 import LockedTab from './components/folder-tree/LockedTab.jsx';
 import { useGetAllMediaCountQuery, useGetCategoryMediaCountQuery } from './redux/api/folders.js';
+import SearchBar from './components/search-bar/SearchBar.jsx';
 
 const App = () => {
 	const dispatch = useDispatch();
@@ -105,35 +106,37 @@ const App = () => {
 	return (
 		<>
 			<div className="control-buttons">
-				<Button
-					className="godam-media-library-close-btn"
-					onClick={ closeMediaLibrarySidebar }
-					title="Close Menu"
-					aria-label="Close Menu"
-				>
-					<Icon icon={ close } />
-				</Button>
-				<Button
-					icon="plus-alt2"
-					__next40pxDefaultSize
-					variant="primary"
-					text={ __( 'New Folder', 'godam' ) }
-					className="button--full mb-spacing new-folder-button"
-					onClick={ () => {
-						dispatch( openModal( 'folderCreation' ) );
-						closeMediaLibrarySidebar();
-					} }
-					disabled={ selectedFolder?.meta?.locked }
-				/>
+				<ButtonGroup className="button-group mb-spacing">
+					<Button
+						className="godam-media-library-close-btn"
+						onClick={ closeMediaLibrarySidebar }
+						title="Close Menu"
+						aria-label="Close Menu"
+					>
+						<Icon icon={ close } />
+					</Button>
+					<SearchBar />
+					<Button
+						icon="plus-alt2"
+						__next40pxDefaultSize
+						variant="primary"
+						text={ __( 'New Folder', 'godam' ) }
+						className="button--full mb-spacing new-folder-button"
+						onClick={ () => {
+							dispatch( openModal( 'folderCreation' ) );
+							closeMediaLibrarySidebar();
+						} }
+						disabled={ selectedFolder?.meta?.locked }
+					/>
 
-				<Button
-					icon="plus-alt2"
-					__next40pxDefaultSize
-					variant="secondary"
-					className="button--full close-folder-menu-mobile"
-					onClick={ () => closeFolderMenu() }
-				/>
-
+					<Button
+						icon="plus-alt2"
+						__next40pxDefaultSize
+						variant="secondary"
+						className="button--full close-folder-menu-mobile"
+						onClick={ () => closeFolderMenu() }
+					/>
+				</ButtonGroup>
 				<ButtonGroup className="button-group mb-spacing">
 					<Button
 						__next40pxDefaultSize
@@ -159,7 +162,6 @@ const App = () => {
 					className={ `folder-list__item all-media ${
 						selectedFolder.id === -1 ? 'folder-list__item--active' : ''
 					}` }
-					// onClick={ () => handleClick( -1 ) }
 					onClick={ () => {
 						handleClick( -1 );
 						closeMediaLibrarySidebar();
@@ -174,7 +176,6 @@ const App = () => {
 					className={ `folder-list__item tree-item ${
 						selectedFolder.id === 0 ? 'folder-list__item--active' : ''
 					}` }
-					// onClick={ () => handleClick( 0 ) }
 					onClick={ () => {
 						handleClick( 0 );
 						closeMediaLibrarySidebar();

@@ -53,11 +53,6 @@ import {
 	loadChapters,
 } from './chapters.js'; // Adjust path as needed
 
-/**
- * Global variables
- */
-const validAPIKey = window?.godamAPIKeyData?.validApiKey;
-
 library.add( fas );
 dom.watch();
 
@@ -123,8 +118,6 @@ function GODAMPlayer( videoRef = null ) {
 		}
 
 		const isPreviewEnabled = videoSetupOptions?.preview;
-
-		const isMobileView = window.innerWidth <= 768;
 
 		const player = videojs( video, videoSetupControls );
 
@@ -311,8 +304,11 @@ function GODAMPlayer( videoRef = null ) {
 				}
 			}
 
-			// if screen size if greater than 768px then skip.
-			if ( window.innerWidth > 768 ) {
+			// Get the video container element
+			const videoContainer = video.closest( '.easydam-video-container' );
+
+			// if video container width is greater than 480px then skip.
+			if ( videoContainer && videoContainer.offsetWidth > 480 ) {
 				return;
 			}
 
@@ -446,9 +442,7 @@ function GODAMPlayer( videoRef = null ) {
 			shareButtonImg() {
 				switch ( videoSetupOptions?.playerSkin ) {
 					case 'Minimal':
-						return ShareVariationOne;
 					case 'Pills':
-						return ShareVariationOne;
 					case 'Bubble':
 						return ShareVariationOne;
 					default:
@@ -472,15 +466,24 @@ function GODAMPlayer( videoRef = null ) {
 
 			copyToClipboard( inputId ) {
 				const input = document.getElementById( inputId );
+
+				if ( ! input ) {
+					return;
+				}
+
 				const button = input.nextElementSibling; // assuming button is right after input
 
+				if ( ! button ) {
+					return;
+				}
+
 				const setSuccessStyle = () => {
-					button.style.backgroundColor = '#4caf50'; // green background
+					button.style.backgroundColor = '#4CAF50'; // green
 					button.querySelector( 'img' ).src = Complete;
 				};
 
 				const resetStyle = () => {
-					button.style.backgroundColor = 'transparent'; // reset background
+					button.style.backgroundColor = '#F7FAFB';
 					button.querySelector( 'img' ).src = CopyIcon;
 				};
 
@@ -493,9 +496,7 @@ function GODAMPlayer( videoRef = null ) {
 				if ( navigator.clipboard && navigator.clipboard.writeText ) {
 					navigator.clipboard
 						.writeText( input.value )
-						.then( () => {
-							doFeedback(); // Use the common feedback function
-						} )
+						.then( doFeedback )
 						.catch( () => {
 							// silently fail
 						} );
@@ -514,113 +515,176 @@ function GODAMPlayer( videoRef = null ) {
 			// Add click event for playback
 			handleClick( event ) {
 				event.preventDefault();
-				const shareModal = document.createElement( 'div' );
-				const videoContainer = this.player().el_.closest(
-					'.easydam-video-container',
-				);
-				if ( videoContainer ) {
-					videoContainer.appendChild( shareModal );
+
+				// Prevent multiple modals
+				if ( document.querySelector( '.share-modal-container' ) ) {
+					return;
 				}
-				shareModal.className = 'share-modal-container';
+
+				// Initialize
+				const jobId = this.player().jobId;
+				const baseUrl = window.godamData?.apiBase || '';
+
+				// Bail out if no jobId or baseUrl
+				if ( ! jobId || ! baseUrl ) {
+					return;
+				}
+
+				const videoLink = `${ baseUrl }/web/video/${ jobId }`;
+				const embedCode = `<iframe src="${ baseUrl }/web/embed/${ jobId }"></iframe>`;
+				const encodedLink = encodeURI( videoLink );
+				const message = encodeURIComponent( __( 'Check out this video!', 'godam' ) );
+
+				const socialLinksData = [
+					{
+						className: 'facebook',
+						href: `https://www.facebook.com/share.php?u=${ encodedLink }`,
+						icon: Facebook,
+						alt: __( 'Facebook icon', 'godam' ),
+					},
+					{
+						className: 'twitter',
+						href: `https://twitter.com/intent/tweet?url=${ encodedLink }&text=${ message }`,
+						icon: Twitter,
+						alt: __( 'Twitter icon', 'godam' ),
+					},
+					{
+						className: 'linkedin',
+						href: `https://www.linkedin.com/sharing/share-offsite/?url=${ encodedLink }&text=${ message }`,
+						icon: LinkedIn,
+						alt: __( 'LinkedIn icon', 'godam' ),
+					},
+					{
+						className: 'reddit',
+						href: `http://www.reddit.com/submit?url=${ encodedLink }&title=${ message }`,
+						icon: Reddit,
+						alt: __( 'Reddit icon', 'godam' ),
+					},
+					{
+						className: 'whatsapp',
+						href: `https://api.whatsapp.com/send?text=${ message }: ${ encodedLink }`,
+						icon: Whatsapp,
+						alt: __( 'WhatsApp icon', 'godam' ),
+					},
+					{
+						className: 'telegram',
+						href: `https://telegram.me/share/url?url=${ encodedLink }&text=${ message }`,
+						icon: Telegram,
+						alt: __( 'Telegram icon', 'godam' ),
+					},
+				];
+
 				const html = `
-				<div class="share-modal-message">
-					<div class="share-modal-header">
-						<h2>${ __( 'Share Media', 'godam' ) }</h2>
-						<p>${ __( 'Copy the links below to share the selected media files.', 'godam' ) }</p>
-					</div>
+					<div class="share-modal-popup">
+						<div class="share-modal-popup__header">
+							<span class="share-modal-popup__title">${ __( 'Share Media', 'godam' ) }</span>
+							<div id="cancel-button" class="share-modal-popup__close-button" tabindex="0">&times;</div>
+						</div>
 
-					<div class="share-buttons">
-						<a class="facebook social-icon" target="_blank"><img src=${ Facebook } alt='Facebook icon' height="20" width="20"/> </a>
-						<a class="twitter social-icon" target="_blank"><img src=${ Twitter } alt='Twitter icon' height="20" width="20"/> </a>
-						<a class="linkedin social-icon" target="_blank"><img src=${ LinkedIn } alt='Linkedin icon' height="20" width="20"/> </a>
-						<a class="reddit social-icon" target="_blank"><img src=${ Reddit } alt='Reddit icon' height="20" width="20"/> </a>
-						<a class="whatsapp social-icon" target="_blank"><img src=${ Whatsapp } alt='Whatsapp icon' height="20" width="20"/> </a>
-						<a class="telegram social-icon" target="_blank"><img src=${ Telegram } alt='Telegram icon' height="20" width="20"/> </a>
-					</div>
+						<div class="share-modal-popup__content">
+							<div class="share-modal-popup__social-links">
+								${ socialLinksData.map( ( { className, icon, alt } ) => `<a class="${ className } social-icon" target="_blank" rel="noopener noreferrer" tabindex="0"><img src="${ icon }" alt="${ alt }" height="20" width="20" /></a>` ).join( '' ) }
+							</div>
+						</div>
 
-					<div class='share-input-container'>
-						<label>${ __( 'Page Link', 'godam' ) }</label>
-						<div class="share-modal-input-group">
-							<input id="page-link" type="text" value="${ window.godamData?.apiBase }/web/video/${ this.player().jobId }" readonly />
-							<button id="copy-page-link" class="copy-button">
-								<img src=${ CopyIcon } alt='${ __( 'copy icon', 'godam' ) }' height=${ 24 } width=${ 24 }>
-							</button>
+						<div class="share-modal-popup__footer">
+							<div class='share-modal-popup__input-container'>
+								<p class='share-modal-input-text'>${ __( 'Page Link', 'godam' ) }</p>
+								<div class="share-modal-input-group">
+									<input id="page-link" type="text" value="${ videoLink }" readonly tabindex="0" />
+									<span id="copy-page-link" class="copy-button" tabindex="0">
+										<img src="${ CopyIcon }" alt='${ __( 'copy icon', 'godam' ) }' height="24" width="24" />
+									</span>
+								</div>
+							</div>
+
+							<div class='share-modal-popup__input-container'>
+								<p class='share-modal-input-text'>${ __( 'Embed', 'godam' ) }</p>
+								<div class="share-modal-input-group">
+									<input id="embed-code" type="text" value='${ embedCode }' readonly tabindex="0" />
+									<span id="copy-embed-code" class="copy-button" tabindex="0">
+										<img src="${ CopyIcon }" alt='${ __( 'copy icon', 'godam' ) }' height="24" width="24" />
+									</span>
+								</div>
+							</div>
 						</div>
 					</div>
+				`;
 
-					<div class='share-input-container'>
-						<label>${ __( 'Embed', 'godam' ) }</label>
-						<div class="share-modal-input-group">
-							<input id="embed-code" type="text" value='<iframe src="${ window.godamData?.apiBase }/web/embed/${ this.player().jobId }"></iframe>' readonly />
-							<button id="copy-embed-code" class="copy-button">
-								<img src=${ CopyIcon } alt='${ __( 'copy icon', 'godam' ) }' height=${ 24 } width=${ 24 }>
-							</button>
-						</div>
-					</div>
+				// Create the modal container and append it to the body
+				const shareModal = document.createElement( 'div' );
+				shareModal.className = 'share-modal-container';
+				shareModal.innerHTML = DOMPurify.sanitize( html, {
+					ADD_ATTR: [ 'target', 'rel' ],
+				} );
+				document.body.appendChild( shareModal );
+				document.body.classList.add( 'godam-share-modal-open' );
 
-					<div class="share-modal-footer">
-						<button id="cancel-button">${ __( 'Cancel', 'godam' ) }</button>
-					</div>
-				</div>
-			`;
+				// Cache elements
+				const cancelButton = shareModal.querySelector( '#cancel-button' );
+				const copyPageLinkBtn = shareModal.querySelector( '#copy-page-link' );
+				const copyEmbedCodeBtn = shareModal.querySelector( '#copy-embed-code' );
 
-				shareModal.innerHTML = DOMPurify.sanitize( html );
+				// Assign social links hrefs
+				socialLinksData.forEach( ( { className, href } ) => {
+					const el = shareModal.querySelector( `.${ className }` );
+					if ( el ) {
+						el.href = href;
+					}
+				} );
 
 				// Function to close the modal
 				const closeModal = () => {
-					shareModal.remove();
+					const popup = shareModal.querySelector( '.share-modal-popup' );
+					popup.classList.add( 'share-modal-popup--closing' );
+					shareModal.classList.add( 'share-modal-container--closing' );
+
+					setTimeout( () => {
+						shareModal.remove();
+						document.body.classList.remove( 'godam-share-modal-open' );
+						document.removeEventListener( 'keydown', handleEscapeKey );
+					}, 300 );
 				};
 
-				// Close modal when clicking outside
-				shareModal.addEventListener( 'click', ( modalEvent ) => {
-					if ( modalEvent.target === shareModal ) {
+				// Close modal on outside click
+				shareModal.addEventListener( 'click', ( e ) => {
+					if ( e.target === shareModal ) {
 						closeModal();
 					}
 				} );
 
-				// Close modal on escape key
-				const handleEscapeKey = ( modalEvent ) => {
-					if ( modalEvent.key === 'Escape' ) {
+				// Close modal on Escape key
+				const handleEscapeKey = ( e ) => {
+					if ( e.key === 'Escape' ) {
 						closeModal();
 						document.removeEventListener( 'keydown', handleEscapeKey );
 					}
 				};
 				document.addEventListener( 'keydown', handleEscapeKey );
 
-				shareModal
-					.querySelector( '#copy-page-link' )
-					.addEventListener( 'click', () => this.copyToClipboard( 'page-link' ) );
+				// Event listeners for copy buttons on Enter or Space
+				const handleCopyButtonKeyDown = ( e, inputId ) => {
+					if ( e.key === 'Enter' || e.key === ' ' ) {
+						e.preventDefault();
+						this.copyToClipboard( inputId );
+					}
+				};
 
-				shareModal
-					.querySelector( '#copy-embed-code' )
-					.addEventListener( 'click', () => this.copyToClipboard( 'embed-code' ) );
+				// Event listeners for copy buttons
+				copyPageLinkBtn.addEventListener( 'click', () => this.copyToClipboard( 'page-link' ) );
+				copyEmbedCodeBtn.addEventListener( 'click', () => this.copyToClipboard( 'embed-code' ) );
 
-				shareModal
-					.querySelector( '#cancel-button' )
-					.addEventListener( 'click', closeModal );
+				// Listen for Enter/Space on copy buttons
+				copyPageLinkBtn.addEventListener( 'keydown', ( e ) => handleCopyButtonKeyDown( e, 'page-link' ) );
+				copyEmbedCodeBtn.addEventListener( 'keydown', ( e ) => handleCopyButtonKeyDown( e, 'embed-code' ) );
 
-				const link = encodeURI(
-					`${ window.godamData?.apiBase }/web/video/${ this.player().jobId }`,
-				);
-				const msg = encodeURIComponent( 'Check out this video!' );
-
-				const fb = document.querySelector( '.facebook' );
-				fb.href = `https://www.facebook.com/share.php?u=${ link }`;
-
-				const twitter = document.querySelector( '.twitter' );
-				twitter.href = `http://twitter.com/share?&url=${ link }&text=${ msg }`;
-
-				const linkedIn = document.querySelector( '.linkedin' );
-				linkedIn.href = `https://www.linkedin.com/sharing/share-offsite/?url=${ link }&text=${ msg }`;
-
-				const reddit = document.querySelector( '.reddit' );
-				reddit.href = `http://www.reddit.com/submit?url=${ link }&title=${ msg }`;
-
-				const whatsapp = document.querySelector( '.whatsapp' );
-				whatsapp.href = `https://api.whatsapp.com/send?text=${ msg }: ${ link }`;
-
-				const telegram = document.querySelector( '.telegram' );
-				telegram.href = `https://telegram.me/share/url?url=${ link }&text=${ msg }`;
+				cancelButton.addEventListener( 'click', closeModal );
+				cancelButton.addEventListener( 'keydown', ( e ) => {
+					if ( e.key === 'Enter' || e.key === ' ' ) {
+						e.preventDefault();
+						closeModal();
+					}
+				} );
 			}
 		}
 
@@ -642,7 +706,7 @@ function GODAMPlayer( videoRef = null ) {
 					shareButton.handleClick.bind( shareButton ),
 				);
 
-				if ( videoSetupOptions?.playerSkin === 'Bubble' && ! isMobileView ) {
+				if ( videoSetupOptions?.playerSkin === 'Bubble' && videoContainer.offsetWidth > 480 ) {
 					player.controlBar.addChild( 'GodamShareButton', {} );
 				} else if ( videoContainer ) {
 					videoContainer.appendChild( buttonEl );
@@ -765,7 +829,7 @@ function GODAMPlayer( videoRef = null ) {
 				playButtonElement.el_.parentNode.replaceChild( imgElement, playButtonElement.el_ );
 			}
 
-			if ( controlBarSettings?.brandingIcon || ! validAPIKey ) {
+			if ( controlBarSettings?.brandingIcon || ! window?.godamAPIKeyData?.validApiKey ) {
 				const CustomPlayButton = videojs.getComponent( 'Button' );
 
 				class CustomButton extends CustomPlayButton {
