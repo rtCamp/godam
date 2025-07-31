@@ -21,7 +21,7 @@
 			"role": "content"
 		},
 		"cmmId": {
-			"type": "number",
+			"type": "string",
 			"default": ""
 		},
 		"loop": {
