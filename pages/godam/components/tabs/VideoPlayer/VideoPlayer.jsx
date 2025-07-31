@@ -7,7 +7,7 @@ import videojs from 'video.js';
 /**
  * WordPress dependencies
  */
-import { Button, Notice, ComboboxControl, Icon } from '@wordpress/components';
+import { Button, Notice, ComboboxControl, Icon, Spinner } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { closeSmall, error } from '@wordpress/icons';
 import { useState, useRef, useEffect } from '@wordpress/element';
@@ -17,7 +17,7 @@ import { useState, useRef, useEffect } from '@wordpress/element';
  */
 import { scrollToTop } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
-import { updateMediaSetting } from '../../../redux/slice/media-settings.js';
+import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
 import BrandImageSelector from '../GeneralSettings/BrandImageSelector.jsx';
 import SettingsButton from '../../../../../assets/src/js/godam-player/masterSettings.js';
 import ColorPickerButton from '../../../../video-editor/components/shared/color-picker/ColorPickerButton.jsx';
@@ -28,28 +28,37 @@ import CustomVideoPlayerCSS from './CustomVideoPlayerCSS.jsx';
 const VideoPlayer = () => {
 	const dispatch = useDispatch();
 	const wrapperRef = useRef( null );
-	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] =
-    useSaveMediaSettingsMutation();
-	const mediaSettings = useSelector( ( state ) => state.mediaSettings );
+
+	// Selectors to get media settings and change flag
+	const { mediaSettings, isChanged } = useSelector( ( state ) => ( {
+		mediaSettings: state.mediaSettings,
+		isChanged: state.mediaSettings.isChanged,
+	} ) );
+
+	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
+	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
+
+	// Function to show a notice message
+	const showNotice = ( message, status = 'success' ) => {
+		setNotice( { message, status, isVisible: true } );
+		if ( window.scrollY > 0 ) {
+			scrollToTop();
+		}
+	};
+
+	// Function to handle setting changes
 	const handleSettingChange = ( key, value ) => {
 		dispatch( updateMediaSetting( { category: 'video_player', key, value } ) );
 	};
 
-	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
-
-	const showNotice = ( message, status = 'success' ) => {
-		setNotice( { message, status, isVisible: true } );
-		scrollToTop();
-	};
-
+	// Function to handle saving settings
 	const handleSaveSettings = async () => {
 		try {
-			const response = await saveMediaSettings( {
-				settings: { video_player: mediaSettings?.video_player },
-			} ).unwrap();
+			const response = await saveMediaSettings( { settings: mediaSettings } ).unwrap();
 
 			if ( response?.status === 'success' ) {
 				showNotice( __( 'Settings saved successfully.', 'godam' ) );
+				dispatch( resetChangeFlag() );
 			} else {
 				showNotice( __( 'Failed to save settings.', 'godam' ), 'error' );
 			}
@@ -294,6 +303,18 @@ const VideoPlayer = () => {
 		}
 	}, [ mediaSettings?.video_player?.brand_color, mediaSettings?.video_player?.brand_image, mediaSettings?.video_player?.player_skin ] );
 
+	// Add unsaved changes warning
+	useEffect( () => {
+		const handleBeforeUnload = ( event ) => {
+			if ( isChanged ) {
+				event.preventDefault();
+				event.returnValue = __( 'You have unsaved changes. Are you sure you want to leave?', 'godam' );
+			}
+		};
+		window.addEventListener( 'beforeunload', handleBeforeUnload );
+		return () => window.removeEventListener( 'beforeunload', handleBeforeUnload );
+	}, [ isChanged ] );
+
 	const isMinimalOrClassic = 'Minimal' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin;
 
 	return (
@@ -409,10 +430,11 @@ const VideoPlayer = () => {
 					variant="primary"
 					className="godam-button"
 					onClick={ handleSaveSettings }
+					icon={ saveMediaSettingsLoading && <Spinner /> }
 					isBusy={ saveMediaSettingsLoading }
-					disabled={ saveMediaSettingsLoading }
+					disabled={ saveMediaSettingsLoading || ! isChanged }
 				>
-					{ __( 'Save Settings', 'godam' ) }
+					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 				</Button>
 			</div>
 		</>

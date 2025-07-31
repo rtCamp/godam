@@ -26,8 +26,16 @@ const slice = createSlice( {
 	name: 'folder',
 	initialState: {
 		folders: [],
+		bookmarks: [],
+		lockedFolders: [],
 		selectedFolder: {
 			id: selectedFolderId,
+		},
+
+		page: {
+			current: 1,
+			perPage: 10,
+			hasNext: true,
 		},
 
 		modals: {
@@ -35,6 +43,8 @@ const slice = createSlice( {
 			rename: false,
 			delete: false,
 		},
+
+		currentContextMenuFolder: null,
 
 		snackbar: {
 			message: '',
@@ -87,18 +97,18 @@ const slice = createSlice( {
 			state.folders.push( newItem );
 		},
 		renameFolder: ( state, action ) => {
-			if ( ! state.selectedFolder ) {
+			if ( ! state.currentContextMenuFolder ) {
 				return;
 			}
 
-			const folder = state.folders.find( ( item ) => item.id === state.selectedFolder.id );
+			const folder = state.folders.find( ( item ) => item.id === state.currentContextMenuFolder.id );
 
 			if ( folder ) {
 				folder.name = action.payload.name;
 			}
 		},
 		deleteFolder: ( state ) => {
-			if ( ! state.selectedFolder && ! state.isMultiSelecting ) {
+			if ( ! state.currentContextMenuFolder && ! state.isMultiSelecting ) {
 				return;
 			}
 
@@ -118,12 +128,12 @@ const slice = createSlice( {
 					findChildren( id );
 				} );
 			} else {
-				findChildren( state.selectedFolder.id );
+				findChildren( state.currentContextMenuFolder.id );
 			}
 
 			state.folders = state.folders.filter( ( item ) => ! idsToDelete.has( item.id ) );
 
-			state.selectedFolder = {
+			state.currentContextMenuFolder = {
 				id: -1,
 			};
 
@@ -131,8 +141,26 @@ const slice = createSlice( {
 			state.multiSelectedFolderIds = [];
 		},
 		setTree: ( state, action ) => {
-			state.folders = action.payload;
+			const newFolders = action.payload;
+
+			if ( state.folders.length > 0 ) {
+				const folderMap = new Map( state.folders.map( ( folder ) => [ folder.id, folder ] ) );
+
+				newFolders.forEach( ( folder ) => {
+					if ( folderMap.has( folder.id ) ) {
+						// Update existing folder
+						Object.assign( folderMap.get( folder.id ), folder );
+					} else {
+						// Add new folder
+						state.folders.push( folder );
+					}
+				} );
+			} else {
+				// No existing folders, just set
+				state.folders = newFolders;
+			}
 		},
+
 		toggleMultiSelectMode: ( state ) => {
 			state.isMultiSelecting = ! state.isMultiSelecting;
 			if ( ! state.isMultiSelecting ) {
@@ -196,6 +224,12 @@ const slice = createSlice( {
 					if ( state?.selectedFolder?.meta ) {
 						state.selectedFolder.meta.locked = folder.meta.locked;
 					}
+
+					if ( ! folder.meta.locked ) {
+						state.lockedFolders = state.lockedFolders.filter( ( item ) => item.id !== folder.id );
+					} else {
+						state.lockedFolders.push( folder );
+					}
 				}
 			} else {
 				ids.forEach( ( id ) => {
@@ -210,11 +244,17 @@ const slice = createSlice( {
 							window.godam = window.godam || {};
 							window.godam.selectedFolder = { ...state.selectedFolder, meta: { ...state.selectedFolder.meta, locked: folder.meta.locked } };
 						}
+
+						if ( status ) {
+							state.lockedFolders.push( folder );
+						} else {
+							state.lockedFolders = state.lockedFolders.filter( ( item ) => item.id !== folder.id );
+						}
 					}
 				} );
 			}
 		},
-		addBookmark: ( state, action ) => {
+		updateBookmarks: ( state, action ) => {
 			const { ids, status } = action.payload;
 
 			if ( ! Array.isArray( ids ) ) {
@@ -226,6 +266,12 @@ const slice = createSlice( {
 					}
 
 					folder.meta.bookmark = ! Boolean( folder.meta?.bookmark );
+
+					if ( ! folder.meta.bookmark ) {
+						state.bookmarks = state.bookmarks.filter( ( item ) => item.id !== folder.id );
+					} else {
+						state.bookmarks.push( folder );
+					}
 				}
 			} else {
 				ids.forEach( ( id ) => {
@@ -235,9 +281,48 @@ const slice = createSlice( {
 							folder.meta = {};
 						}
 						folder.meta.bookmark = status;
+
+						if ( status ) {
+							state.bookmarks.push( folder );
+						} else {
+							state.bookmarks = state.bookmarks.filter( ( item ) => item.id !== folder.id );
+						}
 					}
 				} );
 			}
+		},
+		expandParents: ( state, action ) => {
+			const _folderId = action.payload.id;
+			let currentFolder = state.folders.find( ( item ) => item.id === _folderId );
+
+			while ( currentFolder && currentFolder.parent !== 0 ) {
+				const parentFolder = state.folders.find( ( item ) => item.id === currentFolder.parent );
+				if ( parentFolder ) {
+					parentFolder.isOpen = true;
+					currentFolder = parentFolder;
+				} else {
+					break;
+				}
+			}
+		},
+		initializeBookmarks: ( state, action ) => {
+			const bookmarks = action.payload || [];
+			state.bookmarks = bookmarks;
+		},
+		initializeLockedFolders: ( state, action ) => {
+			const lockedFolders = action.payload || [];
+			state.lockedFolders = lockedFolders;
+		},
+		updatePage: ( state, action ) => {
+			const { current, hasNext, perPage } = action.payload;
+			state.page = {
+				current: current ?? state.page.current,
+				hasNext: hasNext ?? state.page.hasNext,
+				perPage: perPage ?? state.page.perPage,
+			};
+		},
+		setCurrentContextMenuFolder: ( state, action ) => {
+			state.currentContextMenuFolder = action.payload;
 		},
 	},
 } );
@@ -259,7 +344,12 @@ export const {
 	clearMultiSelectedFolders,
 	setSortOrder,
 	lockFolder,
-	addBookmark,
+	updateBookmarks,
+	initializeBookmarks,
+	initializeLockedFolders,
+	updatePage,
+	expandParents,
+	setCurrentContextMenuFolder,
 } = slice.actions;
 
 export default slice.reducer;

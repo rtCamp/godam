@@ -104,6 +104,8 @@ class Assets {
 		$is_forminator_form_active = is_plugin_active( 'forminator/forminator.php' );
 		$is_fluent_forms_active    = is_plugin_active( 'fluentform/fluentform.php' );
 		$is_everest_forms_active   = is_plugin_active( 'everest-forms/everest-forms.php' );
+		$is_ninja_forms_active     = is_plugin_active( 'ninja-forms/ninja-forms.php' );
+
 
 		wp_localize_script(
 			'rtgodam-script',
@@ -118,6 +120,7 @@ class Assets {
 				'forminator'   => $is_forminator_form_active,
 				'fluentForms'  => $is_fluent_forms_active,
 				'everestForms' => $is_everest_forms_active,
+				'ninjaForms'   => $is_ninja_forms_active,
 			)
 		);
 
@@ -207,10 +210,11 @@ class Assets {
 			'rtgodam-script',
 			'godamRestRoute',
 			array(
-				'url'     => get_rest_url( get_current_blog_id() ),
-				'homeUrl' => get_home_url( get_current_blog_id() ),
-				'nonce'   => wp_create_nonce( 'wp_rest' ),
-				'apiBase' => RTGODAM_API_BASE,
+				'url'      => get_rest_url( get_current_blog_id() ),
+				'homeUrl'  => get_home_url( get_current_blog_id() ),
+				'adminUrl' => admin_url(),
+				'nonce'    => wp_create_nonce( 'wp_rest' ),
+				'apiBase'  => RTGODAM_API_BASE,
 			)
 		);
 
@@ -314,13 +318,20 @@ class Assets {
 		$brand_image = $godam_settings['video_player']['brand_image'] ?? '';
 		$brand_color = $godam_settings['video_player']['brand_color'] ?? '';
 
+		$godam_settings_obj = array(
+			'brandImage' => $brand_image,
+			'brandColor' => $brand_color,
+		);
+
+		if ( ! rtgodam_is_api_key_valid() ) {
+			$godam_settings_obj['showOfferBanner']      = get_option( 'rtgodam-offer-banner', '1' );
+			$godam_settings_obj['showOfferBannerNonce'] = wp_create_nonce( 'godam-dismiss-offer-banner-nonce' );
+		}
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamSettings',
-			array(
-				'brandImage' => $brand_image,
-				'brandColor' => $brand_color,
-			)
+			$godam_settings_obj,
 		);
 	}
 }

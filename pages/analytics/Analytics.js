@@ -78,7 +78,6 @@ const Analytics = ( { attachmentID } ) => {
 	const siteUrl = window.location.origin;
 	const {
 		data: analyticsDataFetched,
-		refetch,
 	} = useFetchAnalyticsDataQuery(
 		{ videoId: attachmentID, siteUrl },
 		{ skip: ! attachmentID },
@@ -98,7 +97,6 @@ const Analytics = ( { attachmentID } ) => {
 
 	const {
 		data: abTestComparisonAnalyticsDataFetched,
-		refetch: refetchAB,
 	} = useFetchAnalyticsDataQuery(
 		{
 			videoId: abTestComparisonAttachmentData?.id,
@@ -168,11 +166,7 @@ const Analytics = ( { attachmentID } ) => {
 	async function startABTesting() {
 		setIsABResultsLoading( true );
 		setIsABTestCompleted( false );
-		await refetch();
 		setAbTestComparisonAttachmentData( mediaLibraryAttachment );
-		if ( mediaLibraryAttachment ) {
-			await refetchAB();
-		}
 	}
 
 	useEffect( () => {
@@ -369,7 +363,7 @@ const Analytics = ( { attachmentID } ) => {
 									'godam',
 								) }
 
-								<a href="https://godam.io/pricing/" className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
+								<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
 							</p>
 
 							<p className="api-key-overlay-banner-footer">

@@ -3,6 +3,19 @@
 @import "@uppy/webcam/dist/style.min.css";
 @import "@uppy/screen-capture/dist/style.min.css";
 
+/** Style the field in the field preview **/
+.wpforms_page_wpforms-builder {
+	
+    .wpforms-field-godam_record {
+		
+        .uppy-video-upload-button {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+        }
+    }
+}
+
 /* Frontend styles for the video upload field. */
 .wpforms-container {
 
@@ -22,7 +35,6 @@
         /* Style the video upload button similar to the submit button. */
         .uppy-video-upload-button {
             background-color: var(--wpforms-button-background-color-alt, var(--wpforms-button-background-color));
-            color: var(--wpforms-button-text-color);
             height: var(--wpforms-button-size-height);
             border-radius: var(--wpforms-button-border-radius);
             border-style: var(--wpforms-button-border-style);
@@ -34,7 +46,7 @@
             font-family: inherit;
             font-weight: 500;
             font-size: var(--wpforms-button-size-font-size);
-            line-height: 100%;
+            line-height: 1rem;
             cursor: pointer;
             position: relative;
             text-decoration: none;
@@ -42,24 +54,17 @@
     }
 }
 
-/** Style the field in the field preview **/
-.wpforms_page_wpforms-builder {
-    .wpforms-field-godam_record {
-        .uppy-video-upload-button {
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
-        }
-    }
-}
-
 /** Style the field in the entry view page **/
 .wpforms_page_wpforms-entries {
+
     .wpforms-entries-fields-wrapper {
+
         .wpforms-field-godam_record {
+
             .godam-video-preview {
+
                 figure {
-                    margin: 0px;
+                    margin: 0;
                 }
             }
 
@@ -81,18 +86,17 @@
             }
         }
     }
-}
 
-/** Style the field in the entry edit page **/
-.wpforms_page_wpforms-entries {
-    .wpforms-edit-entry-container.wpforms-container {
+	.wpforms-edit-entry-container.wpforms-container {
+		
         .wpforms-field-godam_record {
             display: flex;
             flex-direction: column;
 
             .godam-video-preview {
+				
                 figure {
-                    margin: 0px;
+                    margin: 0;
                 }
             }
 
@@ -116,3 +120,4 @@
         }
     }
 }
+
