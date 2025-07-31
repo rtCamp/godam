@@ -322,8 +322,10 @@ class Assets {
 			'rtgodam-script',
 			'godamSettings',
 			array(
-				'brandImage' => $brand_image,
-				'brandColor' => $brand_color,
+				'brandImage'           => $brand_image,
+				'brandColor'           => $brand_color,
+				'showOfferBanner'      => get_option( 'rtgodam-offer-banner', '1' ),
+				'showOfferBannerNonce' => wp_create_nonce( 'godam-dismiss-offer-banner-nonce' ),
 			)
 		);
 	}

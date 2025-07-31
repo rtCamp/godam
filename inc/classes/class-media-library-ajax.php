@@ -44,6 +44,7 @@ class Media_Library_Ajax {
 		add_action( 'delete_attachment', array( $this, 'handle_media_deletion' ), 10, 1 );
 
 		add_action( 'admin_notices', array( $this, 'media_library_offer_banner' ) );
+		add_action( 'wp_ajax_godam_dismiss_offer_banner', array( $this, 'dismiss_offer_banner' ) );
 	}
 
 	/**
@@ -608,17 +609,35 @@ class Media_Library_Ajax {
 	 *
 	 * @return void
 	 */
+	public function dismiss_offer_banner() {
+		check_ajax_referer( 'godam-dismiss-offer-banner-nonce', 'nonce' );
+
+		if ( get_option( 'rtgodam-offer-banner' ) === false ) {
+			add_option( 'rtgodam-offer-banner', 0 );
+		} else {
+			update_option( 'rtgodam-offer-banner', 0 );
+		}
+
+		wp_send_json_success( array( 'message' => __( 'Offer banner dismissed successfully.', 'godam' ) ) );
+	}
+
+	/**
+	 * Renders an offer banner on the media library page for non-premium users.
+	 *
+	 * @return void
+	 */
 	public function media_library_offer_banner() {
 		$screen = get_current_screen();
 
-		$show_offer_banner = true; // This can be set to false to disable showing offer banner.
+		$show_offer_banner = get_option( 'rtgodam-offer-banner', 1 );
 
 		// Only show on the Media Library page.
 		if ( $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
 			ob_start();
 
-			echo '<div class="notice" style="padding: 0; border: none;">';
-			echo '<img src="' . esc_url( RTGODAM_URL . '/assets/src/images/Annual Plan Offer Banner (Plugin).png' ) . '" style="width: 100%; height: auto;">';
+			echo '<div class="notice annual-plan-offer-banner">';
+			echo '<img src="' . esc_url( RTGODAM_URL . '/assets/src/images/Annual Plan Offer Banner (Plugin).png' ) . '" class="annual-plan-offer-banner__img">';
+			echo '<button type="button" class="annual-plan-offer-banner__dismiss" >&times;</button>';
 			echo '</div>';
 
 			ob_flush();

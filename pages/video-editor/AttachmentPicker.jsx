@@ -20,20 +20,37 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 	const [ searchTerm, setSearchTerm ] = useState( '' );
 	const [ page, setPage ] = useState( 1 );
 	const [ attachments, setAttachments ] = useState( [] );
+	const [ showOfferBanner, setShowOfferBanner ] = useState( ( '0' !== window?.godamSettings?.showOfferBanner ) );
 
-	const showOfferBanner = true; // This can be set to false to disable showing offer banner.
+	const handleDismissBanner = () => {
+		setShowOfferBanner( false );
+
+		if ( window.wp && window.wp.ajax ) {
+			window.wp.ajax.post( 'godam_dismiss_offer_banner', {
+				nonce: window?.godamSettings?.showOfferBannerNonce || '',
+			} );
+		}
+	};
 
 	return (
 		<>
 			{ showOfferBanner && ! window?.userData?.validApiKey &&
-			<div className="notice annual-plan-offer-banner">
+			<div className="notice annual-plan-offer-banner px-10">
 				<img
 					src={ AnnualPlanOfferBanner }
 					alt="Annual Plan Offer Banner"
+					className="annual-plan-offer-banner__img"
 				/>
+				<button
+					type="button"
+					className="annual-plan-offer-banner__dismiss"
+					onClick={ handleDismissBanner }
+				>
+					&times;
+				</button>
 			</div>
 			}
-			<div className="h-full overflow-auto godam-video-list-wrapper px-10 bg-white">
+			<div className="h-full overflow-auto is-dismissable godam-video-list-wrapper px-10 bg-white">
 				<div className="godam-video-list-header py-10">
 					<h1 className="godam-video-list__title">{ __( 'Videos', 'godam' ) }</h1>
 
