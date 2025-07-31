@@ -146,6 +146,39 @@ export const folderApi = createApi( {
 				},
 			} ),
 		} ),
+		searchFolders: builder.query( {
+			async queryFn( { searchTerm, page = 1, perPage = 10 }, api, extraOptions, baseQuery ) {
+				const result = await baseQuery( {
+					url: `wp/v2/media-folder`,
+					params: {
+						search: searchTerm,
+						page,
+						per_page: perPage,
+						_fields: 'id,name',
+					},
+					headers: {
+						'X-WP-Nonce': window.MediaLibrary.nonce,
+					},
+				} );
+
+				if ( result.error ) {
+					return { error: result.error };
+				}
+
+				const totalPages = parseInt(
+					result.meta?.response?.headers.get( 'X-WP-Totalpages' ) || '0',
+					10,
+				);
+
+				return {
+					data: {
+						items: result.data,
+						totalPages,
+						currentPage: page,
+					},
+				};
+			},
+		} ),
 	} ),
 } );
 
@@ -161,4 +194,5 @@ export const {
 	useBulkBookmarkFoldersMutation,
 	useAssignFolderMutation,
 	useDownloadZipMutation,
+	useSearchFoldersQuery,
 } = folderApi;

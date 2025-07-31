@@ -289,6 +289,20 @@ const slice = createSlice( {
 				} );
 			}
 		},
+		expandParents: ( state, action ) => {
+			const _folderId = action.payload.id;
+			let currentFolder = state.folders.find( ( item ) => item.id === _folderId );
+
+			while ( currentFolder && currentFolder.parent !== 0 ) {
+				const parentFolder = state.folders.find( ( item ) => item.id === currentFolder.parent );
+				if ( parentFolder ) {
+					parentFolder.isOpen = true;
+					currentFolder = parentFolder;
+				} else {
+					break;
+				}
+			}
+		},
 		initializeBookmarks: ( state, action ) => {
 			const bookmarks = action.payload || [];
 			state.bookmarks = bookmarks;
@@ -298,10 +312,9 @@ const slice = createSlice( {
 			state.lockedFolders = lockedFolders;
 		},
 		updatePage: ( state, action ) => {
-			const { current, total, hasNext, perPage } = action.payload;
+			const { current, hasNext, perPage } = action.payload;
 			state.page = {
 				current: current ?? state.page.current,
-				total: total ?? state.page.total,
 				hasNext: hasNext ?? state.page.hasNext,
 				perPage: perPage ?? state.page.perPage,
 			};
@@ -331,6 +344,7 @@ export const {
 	initializeBookmarks,
 	initializeLockedFolders,
 	updatePage,
+	expandParents,
 } = slice.actions;
 
 export default slice.reducer;
