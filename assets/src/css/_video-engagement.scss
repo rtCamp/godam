@@ -261,14 +261,16 @@
 
                     flex-basis: 100%;
                     overflow: auto;
+                    max-height: 80%;
+                    transition: max-height 0.3s ease;
 
                     &.is-comment-expanded {
                         position: absolute;
-                        top: 10%;
                         bottom: 0;
                         left: 0;
                         right: 0;
                         background-color: var(--wp--preset--color--white, #fff);
+                        max-height: 90%;
 
                         .rtgodam-video-engagement--comment-modal--video-info-expend {
                             transform: rotate(0deg);

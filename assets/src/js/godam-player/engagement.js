@@ -754,13 +754,19 @@ function CommentBox( props ) {
 					<div className={ `${ baseClass }--video-figure` }>
 						<figure ref={ videoContainerRef }></figure>
 					</div>
-					<div className={ baseClass + '--video-info' + ( expendComment ? ' is-comment-expanded' : '' ) }>
+					<div
+						className={ baseClass + '--video-info' + ( expendComment ? ' is-comment-expanded' : '' ) }
+					>
 						<h3 className={ baseClass + '--video-info-title' }>
-							<button
-								className={ baseClass + '--video-info-expend' }
-								onClick={ () => setExpendComment( ! expendComment ) }>
-								{ expendComment ? '-' : '+' }
-							</button>
+							{
+								commentsCount > 5 && (
+									<button
+										className={ baseClass + '--video-info-expend' }
+										onClick={ () => setExpendComment( ! expendComment ) }>
+										{ expendComment ? '-' : '+' }
+									</button>
+								)
+							}
 							{ __( 'Comments', 'godam' ) } ({ commentsCount })
 						</h3>
 						<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } />
