@@ -14,6 +14,11 @@ const GoDAMLifterLMSIntegration = {
 	config: {},
 
 	/**
+	 * Storage key prefix for localStorage
+	 */
+	storagePrefix: 'godam_llms_video_progress_',
+
+	/**
 	 * Initialize the video completion handler
 	 */
 	init() {
@@ -53,10 +58,91 @@ const GoDAMLifterLMSIntegration = {
 			const videoPlayer = videoContainer.querySelector( 'video' );
 
 			if ( videoPlayer ) {
+				videoPlayer.addEventListener( 'timeupdate', ( event ) => {
+					this.handleVideoProgress( event, this.config );
+				} );
+
 				videoPlayer.addEventListener( 'ended', ( event ) => {
 					this.handleVideoComplete( event, videoContainer, this.config );
 				} );
+
+				videoPlayer.addEventListener( 'loadedmetadata', ( event ) => {
+					this.handleVideoLoaded( event, this.config );
+				} );
 			}
+		}
+	},
+
+	/**
+	 * Get storage key for current post
+	 *
+	 * @param {Object} configuration
+	 */
+	getStorageKey( configuration ) {
+		return this.storagePrefix + configuration.post_id;
+	},
+
+	/**
+	 * Store video progress in localStorage
+	 *
+	 * @param {number} currentTime
+	 * @param {Object} configuration
+	 */
+	storeVideoProgress( currentTime, configuration ) {
+		try {
+			const storageKey = this.getStorageKey( configuration );
+			const progressData = {
+				currentTime: Math.floor( currentTime ),
+				timestamp: Date.now(),
+				postId: configuration.post_id,
+			};
+			localStorage.setItem( storageKey, JSON.stringify( progressData ) );
+		} catch ( error ) {
+
+		}
+	},
+
+	/**
+	 * Get stored video progress from localStorage
+	 *
+	 * @param {Object} configuration
+	 */
+	getStoredProgress( configuration ) {
+		try {
+			const storageKey = this.getStorageKey( configuration );
+			const stored = localStorage.getItem( storageKey );
+			return stored ? JSON.parse( stored ) : null;
+		} catch ( error ) {
+			return null;
+		}
+	},
+
+	/**
+	 * Remove stored video progress from localStorage
+	 *
+	 * @param {Object} configuration
+	 */
+	removeStoredProgress( configuration ) {
+		try {
+			const storageKey = this.getStorageKey( configuration );
+			localStorage.removeItem( storageKey );
+		} catch ( error ) {
+			// localStorage might be unavailable.
+		}
+	},
+
+	/**
+	 * Handle video loaded event to restore progress
+	 *
+	 * @param {Event}  event
+	 * @param {Object} configuration
+	 */
+	handleVideoLoaded( event, configuration ) {
+		const video = event.target;
+		const storedProgress = this.getStoredProgress( configuration );
+
+		if ( storedProgress && storedProgress.currentTime > 0 ) {
+			video.currentTime = storedProgress.currentTime;
 		}
 	},
 
@@ -146,6 +232,27 @@ const GoDAMLifterLMSIntegration = {
 	},
 
 	/**
+	 * Handle video progress updates
+	 *
+	 * @param {Event}  event
+	 * @param {Object} configuration
+	 */
+	handleVideoProgress( event, configuration ) {
+		const video = event.target;
+		const currentTime = video.currentTime;
+
+		// Only store progress if video has been playing for at least 1 second
+		// and hasn't reached the end
+		if ( currentTime > 1 && currentTime < video.duration - 1 ) {
+			// Throttle storage updates to every 2 seconds to avoid excessive writes
+			if ( ! this.lastProgressUpdate || Date.now() - this.lastProgressUpdate > 2000 ) {
+				this.storeVideoProgress( currentTime, configuration );
+				this.lastProgressUpdate = Date.now();
+			}
+		}
+	},
+
+	/**
 	 * Handle AJAX request for video completion
 	 *
 	 * @param {Element} container
@@ -213,6 +320,9 @@ const GoDAMLifterLMSIntegration = {
 	 * @param {Object}  configuration
 	 */
 	handleVideoComplete( event, container, configuration ) {
+		// Remove stored progress since video is completed.
+		this.removeStoredProgress( configuration );
+
 		// Process completion via AJAX.
 		this.processVideoCompletion( container, configuration );
 
@@ -230,4 +340,3 @@ document.addEventListener( 'DOMContentLoaded', function() {
 
 // Make available globally if needed.
 window.GoDAMLifterLMSIntegration = GoDAMLifterLMSIntegration;
-

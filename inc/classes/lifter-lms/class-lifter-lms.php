@@ -29,6 +29,8 @@ class Lifter_LMS {
 	 */
 	private function setup_hooks() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'load_lifterlms_integration_script' ) );
+
+		add_filter( 'godam_player_block_attributes', array( $this, 'modify_godam_player_block_attributes' ) );
 	}
 
 	/**
@@ -56,6 +58,28 @@ class Lifter_LMS {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Check if the current post is a LifterLMS lesson.
+	 *
+	 * @return bool
+	 */
+	public function is_lifterlms_lesson(): bool {
+		if ( function_exists( 'is_lesson' ) && is_lesson() ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if the autoplay is enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_lifterlms_autoplay_on() {
+		return 'no' !== get_option( 'llms_av_prog_auto_play', 'no' );
 	}
 
 	/**
@@ -89,5 +113,21 @@ class Lifter_LMS {
 		if ( $this->is_lifterlms_active() && $this->is_lifterlms_content() && $this->has_godam_video_block() ) {
 			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/src/js/lifterlms/index.js', array( 'jquery' ), filemtime( RTGODAM_PATH . 'assets/src/js/lifterlms/index.js' ), true );
 		}
+	}
+
+	/**
+	 * Add autoplay attribute to Godam Player Block attributes,
+	 * if LifterLMS is active and on a lesson page with autoplay enabled.
+	 *
+	 * @param mixed $attributes Block attributes.
+	 *
+	 * @return mixed
+	 */
+	public function modify_godam_player_block_attributes( $attributes ) {
+		if ( $this->is_lifterlms_active() && $this->is_lifterlms_lesson() && $this->is_lifterlms_autoplay_on() ) {
+			$attributes['autoplay'] = true;
+		}
+
+		return $attributes;
 	}
 }
