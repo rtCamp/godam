@@ -473,8 +473,8 @@ function GODAMPlayer( videoRef = null ) {
 				return el;
 			}
 
-			copyToClipboard( inputId ) {
-				const input = document.getElementById( inputId );
+			copyToClipboard( inputSelector ) {
+				const input = document.querySelector( inputSelector );
 
 				if ( ! input ) {
 					return;
@@ -588,7 +588,7 @@ function GODAMPlayer( videoRef = null ) {
 					<div class="share-modal-popup">
 						<div class="share-modal-popup__header">
 							<span class="share-modal-popup__title">${ __( 'Share Media', 'godam' ) }</span>
-							<div id="cancel-button" class="share-modal-popup__close-button" tabindex="0">&times;</div>
+							<div class="share-modal-popup__close-button" tabindex="0">&times;</div>
 						</div>
 
 						<div class="share-modal-popup__content">
@@ -601,8 +601,8 @@ function GODAMPlayer( videoRef = null ) {
 							<div class='share-modal-popup__input-container'>
 								<p class='share-modal-input-text'>${ __( 'Page Link', 'godam' ) }</p>
 								<div class="share-modal-input-group">
-									<input id="page-link" type="text" value="${ videoLink }" readonly tabindex="0" />
-									<span id="copy-page-link" class="copy-button" tabindex="0">
+									<input class="page-link" type="text" value="${ videoLink }" readonly tabindex="0" />
+									<span class="copy-page-link copy-button" tabindex="0">
 										<img src="${ CopyIcon }" alt='${ __( 'copy icon', 'godam' ) }' height="24" width="24" />
 									</span>
 								</div>
@@ -611,8 +611,8 @@ function GODAMPlayer( videoRef = null ) {
 							<div class='share-modal-popup__input-container'>
 								<p class='share-modal-input-text'>${ __( 'Embed', 'godam' ) }</p>
 								<div class="share-modal-input-group">
-									<input id="embed-code" type="text" value='${ embedCode }' readonly tabindex="0" />
-									<span id="copy-embed-code" class="copy-button" tabindex="0">
+									<input class="embed-code" type="text" value='${ embedCode }' readonly tabindex="0" />
+									<span class="copy-embed-code copy-button" tabindex="0">
 										<img src="${ CopyIcon }" alt='${ __( 'copy icon', 'godam' ) }' height="24" width="24" />
 									</span>
 								</div>
@@ -621,11 +621,11 @@ function GODAMPlayer( videoRef = null ) {
 								<label for="use-timestamp">
 								<input
 									type="checkbox"
-									id="use-timestamp"
+									class="use-timestamp"
 								/>
 								<span>${ __( 'Start at', 'godam' ) }</span>
 								<input
-									id="timestamp-input"
+									class="timestamp-input"
 									type="text"
 									placeholder=${ __( 'mm:ss', 'godam' ) }
 								/>
@@ -645,9 +645,9 @@ function GODAMPlayer( videoRef = null ) {
 				document.body.classList.add( 'godam-share-modal-open' );
 
 				// Cache elements
-				const cancelButton = shareModal.querySelector( '#cancel-button' );
-				const copyPageLinkBtn = shareModal.querySelector( '#copy-page-link' );
-				const copyEmbedCodeBtn = shareModal.querySelector( '#copy-embed-code' );
+				const cancelButton = shareModal.querySelector( '.share-modal-popup__close-button' );
+				const copyPageLinkBtn = shareModal.querySelector( '.copy-page-link' );
+				const copyEmbedCodeBtn = shareModal.querySelector( '.copy-embed-code' );
 
 				// Assign social links hrefs
 				socialLinksData.forEach( ( { className, href } ) => {
@@ -687,20 +687,20 @@ function GODAMPlayer( videoRef = null ) {
 				document.addEventListener( 'keydown', handleEscapeKey );
 
 				// Event listeners for copy buttons on Enter or Space
-				const handleCopyButtonKeyDown = ( e, inputId ) => {
+				const handleCopyButtonKeyDown = ( e, inputSelector ) => {
 					if ( e.key === 'Enter' || e.key === ' ' ) {
 						e.preventDefault();
-						this.copyToClipboard( inputId );
+						this.copyToClipboard( inputSelector );
 					}
 				};
 
 				// Event listeners for copy buttons
-				copyPageLinkBtn.addEventListener( 'click', () => this.copyToClipboard( 'page-link' ) );
-				copyEmbedCodeBtn.addEventListener( 'click', () => this.copyToClipboard( 'embed-code' ) );
+				copyPageLinkBtn.addEventListener( 'click', () => this.copyToClipboard( '.page-link' ) );
+				copyEmbedCodeBtn.addEventListener( 'click', () => this.copyToClipboard( '.embed-code' ) );
 
 				// Listen for Enter/Space on copy buttons
-				copyPageLinkBtn.addEventListener( 'keydown', ( e ) => handleCopyButtonKeyDown( e, 'page-link' ) );
-				copyEmbedCodeBtn.addEventListener( 'keydown', ( e ) => handleCopyButtonKeyDown( e, 'embed-code' ) );
+				copyPageLinkBtn.addEventListener( 'keydown', ( e ) => handleCopyButtonKeyDown( e, '.page-link' ) );
+				copyEmbedCodeBtn.addEventListener( 'keydown', ( e ) => handleCopyButtonKeyDown( e, '.embed-code' ) );
 
 				cancelButton.addEventListener( 'click', closeModal );
 				cancelButton.addEventListener( 'keydown', ( e ) => {
@@ -711,10 +711,10 @@ function GODAMPlayer( videoRef = null ) {
 				} );
 
 				// Initialize timestamp checkbox and input
-				const checkbox = shareModal.querySelector( '#use-timestamp' );
-				const input = shareModal.querySelector( '#timestamp-input' );
-				const pageLinkInput = shareModal.querySelector( '#page-link' );
-				const embedInput = shareModal.querySelector( '#embed-code' );
+				const checkbox = shareModal.querySelector( '.use-timestamp' );
+				const input = shareModal.querySelector( '.timestamp-input' );
+				const pageLinkInput = shareModal.querySelector( '.page-link' );
+				const embedInput = shareModal.querySelector( '.embed-code' );
 
 				if ( ! checkbox || ! input || ! pageLinkInput || ! embedInput ) {
 					return;

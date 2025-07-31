@@ -763,10 +763,10 @@ body.godam-share-modal-open {
 			width: fit-content;
 		}
 
-		#timestamp-input {
+		.timestamp-input {
 			width: 50px;
 			border: none;
-			border-bottom: 1px solid #000;
+			border-bottom: 1px solid variables.$godam-share-modal-divider-color;
 			outline: none;
 			text-align: center;
 		}
