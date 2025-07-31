@@ -239,6 +239,20 @@ const slice = createSlice( {
 				} );
 			}
 		},
+		expandParents: ( state, action ) => {
+			const _folderId = action.payload.id;
+			let currentFolder = state.folders.find( ( item ) => item.id === _folderId );
+
+			while ( currentFolder && currentFolder.parent !== 0 ) {
+				const parentFolder = state.folders.find( ( item ) => item.id === currentFolder.parent );
+				if ( parentFolder ) {
+					parentFolder.isOpen = true;
+					currentFolder = parentFolder;
+				} else {
+					break;
+				}
+			}
+		},
 	},
 } );
 
@@ -260,6 +274,7 @@ export const {
 	setSortOrder,
 	lockFolder,
 	addBookmark,
+	expandParents,
 } = slice.actions;
 
 export default slice.reducer;

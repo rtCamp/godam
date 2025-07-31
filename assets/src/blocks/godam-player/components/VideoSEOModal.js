@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * WordPress dependencies
@@ -21,13 +21,11 @@ import { __ } from '@wordpress/i18n';
 import './video-seo-modal.scss';
 import { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty } from '../utils';
 
-export default function VideoSEOModal( { isOpen, setIsOpen, attachmentData, attributes, setAttributes, duration } ) {
+export default function VideoSEOModal( { isOpen, setIsOpen, attachmentData, attributes, setAttributes } ) {
 	const [ videoData, setVideoData ] = useState( {} );
 
-	const hasInitialized = useRef( false );
-
 	useEffect( () => {
-		if ( attachmentData && ! isObjectEmpty( attachmentData ) && ! hasInitialized.current ) {
+		if ( attachmentData && ! isObjectEmpty( attachmentData ) ) {
 			const initialVideoData = {
 				contentUrl: getFirstNonEmpty( attributes?.seo?.contentUrl, attachmentData?.meta?.rtgodam_transcoded_url, attachmentData?.source_url ),
 				headline: getFirstNonEmpty( attributes?.seo?.headline, attachmentData?.title?.rendered ),
@@ -40,20 +38,15 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attachmentData, attr
 
 			setVideoData( initialVideoData );
 
-			setAttributes( {
-				...attributes,
-				seo: initialVideoData,
-			} );
-
-			hasInitialized.current = true;
+			// Only set once if attributes.seo is empty
+			if ( ! attributes?.seo || isObjectEmpty( attributes.seo ) ) {
+				setAttributes( {
+					...attributes,
+					seo: initialVideoData,
+				} );
+			}
 		}
-	}, [ attachmentData, attributes, setAttributes ] );
-
-	useEffect( () => {
-		if ( duration ) {
-			setVideoData( { ...videoData, duration } );
-		}
-	}, [ duration ] );
+	}, [ attachmentData, attributes, setAttributes ] ); // Remove isOpen from dependencies
 
 	const updateField = ( field, value ) => {
 		setVideoData( { ...videoData, [ field ]: value } );
