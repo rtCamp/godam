@@ -755,20 +755,26 @@ body.godam-share-modal-open {
 	}
 
 	&__timestamp-container {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-
+		
 		label {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+			font-size: 14px;
 			width: fit-content;
 		}
 
 		.timestamp-input {
+			font-size: inherit;
 			width: 50px;
 			border: none;
 			border-bottom: 1px solid variables.$godam-share-modal-divider-color;
-			outline: none;
 			text-align: center;
+		}
+
+		.use-timestamp {
+			height: 16px;
+			width: 16px;
 		}
 	}
 }
