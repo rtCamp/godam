@@ -150,9 +150,7 @@ function GODAMPlayer( videoRef = null ) {
 					player.aspectRatio( '16:9' );
 				}
 			}
-
 			const hoverManager = new HoverManager( player, video );
-
 			player.hoverManager = hoverManager;
 
 			const captionsButton = player.el().querySelector( '.vjs-subs-caps-button' );

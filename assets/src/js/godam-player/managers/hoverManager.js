@@ -31,8 +31,7 @@ class HoverManager {
 		this.videoElement = videoElement;
 		this.hoverSelect = videoElement.dataset.hoverSelect || 'none';
 		this.isVideoClicked = false;
-		this.isPreview = false;
-		this.isHovered = false; // Track hover state
+		this.isHovered = false;
 		this.options = options;
 
 		this.init();
@@ -67,17 +66,21 @@ class HoverManager {
 	setupControlsVisibility() {
 		this.videoElement.addEventListener( 'mouseenter', this.handleShowControls.bind( this ) );
 		this.videoElement.addEventListener( 'mouseleave', this.handleHideControls.bind( this ) );
+		this.videoElement.addEventListener( 'click', this.handleControlVisibilityClick.bind( this ) );
 	}
 
 	/**
 	 * Handles mouse enter events - starts preview if conditions are met.
 	 */
 	handleMouseEnter() {
-		this.isHovered = true;
-
-		if ( this.player.currentTime() > 0 || this.isVideoClicked ) {
+		if ( this.isVideoClicked ) {
 			return;
 		}
+
+		this.isHovered = true;
+		this.player.addClass( 'vjs-has-started' );
+		this.player.removeClass( 'godam-hover-started' );
+
 		this.startPreview();
 	}
 
@@ -85,10 +88,15 @@ class HoverManager {
 	 * Handles mouse leave events - stops preview if currently active.
 	 */
 	handleMouseLeave() {
-		this.isHovered = false;
+		if ( this.isVideoClicked ) {
+			return;
+		}
 
-		if ( this.isPreview ) {
+		if ( this.isHovered ) {
+			this.player.removeClass( 'vjs-has-started' );
+			this.player.addClass( 'godam-hover-started' );
 			this.stopPreview();
+			this.isHovered = false;
 		}
 	}
 
@@ -96,32 +104,32 @@ class HoverManager {
 	 * Handles video click events - switches from preview to normal playback.
 	 */
 	handleVideoClick() {
-		if ( this.isPreview ) {
+		if ( this.isVideoClicked ) {
+			return;
+		}
+
+		if ( this.isHovered ) {
 			this.isVideoClicked = true;
-			this.isPreview = false;
 
-			// Unmute and continue playing
 			this.player.volume( 1 );
-			this.player.play(); // Ensures playback continues
+			this.player.play();
 
-			// Show controls
 			const controlBar = this.player.controlBar?.el();
 			if ( controlBar ) {
 				controlBar.classList.remove( 'hide' );
 			}
-
-			return; // Prevent default pause
 		}
-
-		this.isVideoClicked = true;
 	}
 
 	/**
 	 * Shows video controls when mouse enters the video element.
 	 */
 	handleShowControls() {
-		this.isHovered = true;
-		this.player.addClass( 'vjs-has-started' );
+		if ( this.isVideoClicked || this.player.currentTime() > 0 ) {
+			return;
+		}
+
+		this.player.addClass( 'vjs-has-started', 'godam-hover-started' );
 		this.player.controls( true );
 	}
 
@@ -129,17 +137,31 @@ class HoverManager {
 	 * Hides video controls when mouse leaves the video element.
 	 */
 	handleHideControls() {
-		if ( this.player.currentTime() > 0 ) {
-			// If video is already playing, do not show controls
+		if ( this.isVideoClicked || this.player.currentTime() > 0 ) {
 			return;
 		}
 
-		this.isHovered = false;
-		this.player.removeClass( 'vjs-has-started' );
+		this.player.removeClass( 'vjs-has-started', 'godam-hover-started' );
 	}
 
 	/**
-	 * Starts muted preview playback from the beginning.
+	 * Handles click events to toggle control visibility.
+	 * If the video is clicked or has started playing, it does nothing.
+	 * Otherwise, it removes the hover classes to allow normal playback.
+	 * This is used to prevent accidental clicks during hover interactions.
+	 */
+	handleControlVisibilityClick() {
+		if ( this.isVideoClicked || this.player.currentTime() > 0 ) {
+			return;
+		}
+
+		this.player.removeClass( 'vjs-has-started', 'godam-hover-started' );
+
+		this.isVideoClicked = true;
+	}
+
+	/**
+	 * Starts the video preview by playing the video muted and hiding controls.
 	 */
 	startPreview() {
 		this.player.volume( 0 );
@@ -150,7 +172,6 @@ class HoverManager {
 			controlBar.classList.add( 'hide' );
 		}
 
-		this.isPreview = true;
 		this.player.play();
 	}
 
@@ -158,12 +179,6 @@ class HoverManager {
 	 * Stops preview, resets video to start, and shows controls.
 	 */
 	stopPreview() {
-		const controlBar = this.player.controlBar?.el();
-		if ( controlBar ) {
-			controlBar.classList.remove( 'hide' );
-		}
-
-		this.isPreview = false;
 		this.player.pause();
 		this.player.currentTime( 0 );
 	}
