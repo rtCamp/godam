@@ -105,7 +105,7 @@ class Seo {
 				$schemas[] = $block['attrs']['seo'];
 			}
 		}
-	
+
 		if ( ! empty( $block['innerBlocks'] ) ) {
 			foreach ( $block['innerBlocks'] as $inner_block ) {
 				$schemas = array_merge(
@@ -114,7 +114,7 @@ class Seo {
 				);
 			}
 		}
-	
+
 		return $schemas;
 	}
 
@@ -128,14 +128,14 @@ class Seo {
 	public function add_video_duration_for_video_seo( $response, $post ) {
 		if ( 'video' === $post->post_mime_type || str_starts_with( $post->post_mime_type, 'video/' ) ) {
 			$meta = wp_get_attachment_metadata( $post->ID );
-	
+
 			if ( ! empty( $meta['length'] ) && is_numeric( $meta['length'] ) ) {
 				$duration_seconds = (int) $meta['length'];
-	
+
 				$hours   = floor( $duration_seconds / 3600 );
 				$minutes = floor( ( $duration_seconds % 3600 ) / 60 );
 				$seconds = $duration_seconds % 60;
-	
+
 				$iso_duration = 'PT';
 				if ( $hours > 0 ) {
 					$iso_duration .= $hours . 'H';
@@ -146,11 +146,11 @@ class Seo {
 				if ( $seconds > 0 || 'PT' === $iso_duration ) {
 					$iso_duration .= $seconds . 'S';
 				}
-	
+
 				$response->data['video_duration_iso8601'] = $iso_duration;
 			}
 		}
-	
+
 		return $response;
 	}
 
@@ -172,31 +172,31 @@ class Seo {
 		if ( ! is_singular() ) {
 			return;
 		}
-	
+
 		global $post;
-	
+
 		$raw = get_post_meta( $post->ID, self::VIDEO_SEO_SCHEMA_META_KEY, true );
-	
+
 		// Normalize and validate raw data.
 		if ( empty( $raw ) ) {
 			return;
 		}
-	
+
 		if ( ! is_array( $raw ) ) {
 			$raw = maybe_unserialize( $raw );
 		}
-	
+
 		if ( ! is_array( $raw ) || empty( $raw ) ) {
 			return;
 		}
-	
+
 		$schemas = array();
-	
+
 		foreach ( $raw as $video ) {
 			if ( ! is_array( $video ) ) {
 				continue;
 			}
-	
+
 			$schema = array(
 				'@context'         => 'https://schema.org',
 				'@type'            => 'VideoObject',
@@ -206,22 +206,22 @@ class Seo {
 				'uploadDate'       => sanitize_text_field( $video['uploadDate'] ?? '' ),
 				'isFamilyFriendly' => isset( $video['isFamilyFriendly'] ) ? (bool) $video['isFamilyFriendly'] : true,
 			);
-	
+
 			if ( ! empty( $video['thumbnailUrl'] ) ) {
 				$schema['thumbnailUrl'] = esc_url_raw( $video['thumbnailUrl'] );
 			}
-	
+
 			if ( ! empty( $video['duration'] ) ) {
 				$schema['duration'] = sanitize_text_field( $video['duration'] );
 			}
-	
+
 			$schemas[] = $schema;
 		}
 
 		if ( empty( $schemas ) ) {
 			return;
 		}
-	
+
 		// Output a single <script> with all VideoObject schemas.
 		echo '<script type="application/ld+json">' . wp_json_encode(
 			count( $schemas ) === 1 ? $schemas[0] : $schemas,

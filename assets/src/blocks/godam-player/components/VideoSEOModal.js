@@ -19,21 +19,32 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import './video-seo-modal.scss';
-import { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty } from '../utils';
+import { isObjectEmpty } from '../utils';
 
-export default function VideoSEOModal( { isOpen, setIsOpen, attachmentData, attributes, setAttributes } ) {
+/**
+ * Video SEO Modal component
+ *
+ * @param {*}        param0
+ * @param {boolean}  param0.isOpen        - Whether the modal is open
+ * @param {Function} param0.setIsOpen     - Function to set modal open state
+ * @param {Object}   param0.attributes    - Block attributes
+ * @param {Function} param0.setAttributes - Function to set block attributes
+ *
+ * @return {JSX.Element|null} returns the Video SEO Modal component or null if not open
+ */
+export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttributes } ) {
 	const [ videoData, setVideoData ] = useState( {} );
 
 	useEffect( () => {
-		if ( attachmentData && ! isObjectEmpty( attachmentData ) ) {
+		if ( attributes.seo && ! isObjectEmpty( attributes.seo ) ) {
 			const initialVideoData = {
-				contentUrl: getFirstNonEmpty( attributes?.seo?.contentUrl, attachmentData?.meta?.rtgodam_transcoded_url, attachmentData?.source_url ),
-				headline: getFirstNonEmpty( attributes?.seo?.headline, attachmentData?.title?.rendered ),
-				description: getFirstNonEmpty( attributes?.seo?.description, attachmentData?.description?.rendered ),
-				uploadDate: getFirstNonEmpty( attributes?.seo?.uploadDate, appendTimezoneOffsetToUTC( attachmentData?.date_gmt ) ),
-				duration: getFirstNonEmpty( attributes?.seo?.duration, attachmentData?.video_duration_iso8601 ),
-				thumbnailUrl: getFirstNonEmpty( attributes?.seo?.thumbnailUrl, attachmentData?.meta?.rtgodam_media_video_thumbnail ),
-				isFamilyFriendly: getFirstNonEmpty( attributes?.seo?.isFamilyFriendly, true ),
+				contentUrl: attributes?.seo?.contentUrl || '',
+				headline: attributes?.seo?.headline || '',
+				description: attributes?.seo?.description || '',
+				uploadDate: attributes?.seo?.uploadDate || '',
+				duration: attributes?.seo?.duration || '',
+				thumbnailUrl: attributes?.seo?.thumbnailUrl || '',
+				isFamilyFriendly: attributes?.seo?.isFamilyFriendly || true,
 			};
 
 			setVideoData( initialVideoData );
@@ -46,7 +57,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attachmentData, attr
 				} );
 			}
 		}
-	}, [ attachmentData, attributes, setAttributes ] ); // Remove isOpen from dependencies
+	}, [ attributes, setAttributes ] ); // Remove isOpen from dependencies
 
 	const updateField = ( field, value ) => {
 		setVideoData( { ...videoData, [ field ]: value } );
