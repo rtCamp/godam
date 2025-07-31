@@ -275,7 +275,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 			<?php endif; ?>
 
 			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin" >
-				<?php if ( isset( $hover_select ) && 'custom-overlay' === $hover_select ) : ?>
+				<?php if ( isset( $hover_select ) && 'shadow-overlay' === $hover_select ) : ?>
 					<div class="godam-player-overlay"></div>
 				<?php endif; ?>
 				<div class="animate-play-btn">

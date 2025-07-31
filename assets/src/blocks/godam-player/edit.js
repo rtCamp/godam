@@ -453,7 +453,7 @@ function VideoEdit( {
 									{ label: __( 'None', 'godam' ), value: 'none' },
 									{ label: __( 'Show Player Controls', 'godam' ), value: 'show-player-controls' },
 									{ label: __( 'Start Preview', 'godam' ), value: 'start-preview' },
-									{ label: __( 'Custom Overlay', 'godam' ), value: 'custom-overlay' },
+									{ label: __( 'Shadow Overlay', 'godam' ), value: 'shadow-overlay' },
 								]
 							}
 						/>
