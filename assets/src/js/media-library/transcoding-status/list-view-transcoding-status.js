@@ -1,6 +1,11 @@
 /* global transcoderSettings */
 
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import TranscodingChecker from './transcoding-checker';
@@ -172,7 +177,7 @@ class ListViewTranscodingStatus {
 
 		this._replaceIcon( loader, existingIcon, ICONS.exclamation );
 
-		const failureMessage = 'Transcoding failed, please try again.';
+		const failureMessage = __( 'Transcoding failed, please try again.', 'godam' );
 		loader.style.setProperty( '--status-text', failureMessage );
 		statusText.textContent = failureMessage;
 	}
@@ -191,7 +196,7 @@ class ListViewTranscodingStatus {
 
 		this._replaceIcon( loader, existingIcon, ICONS.exclamation );
 
-		const notStartedMessage = 'Not started';
+		const notStartedMessage = __( 'Not started', 'godam' );
 		loader.style.setProperty( '--status-text', notStartedMessage );
 		statusText.textContent = notStartedMessage;
 	}
@@ -211,7 +216,7 @@ class ListViewTranscodingStatus {
 		this._replaceIcon( loader, existingIcon, ICONS.check );
 
 		loader.style.removeProperty( '--status-text' );
-		statusText.textContent = 'Transcoding completed';
+		statusText.textContent = __( 'Transcoding completed', 'godam' );
 	}
 
 	/**
@@ -228,7 +233,7 @@ class ListViewTranscodingStatus {
 
 		this.updateProgress( loader, data.progress );
 
-		const progressMessage = `${ data.message || 'Transcoding...' } (${ data.progress }%)`;
+		const progressMessage = `${ data.message || __( 'Transcoding…', 'godam' ) } (${ data.progress }%)`;
 		statusText.textContent = progressMessage;
 		loader.style.setProperty( '--status-text', progressMessage );
 	}
