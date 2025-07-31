@@ -7,7 +7,7 @@
 	display: none !important;
 	justify-content: center;
 	align-items: center;
-	height: 100vh;
+	height: 100dvh;
 
 	.godam-product-modal-close,.godam-woocommerce-featured-video-modal-close{
 		position: absolute;
@@ -24,6 +24,8 @@
 		justify-content: center;
 		align-items: center;
 		z-index: 100;
+		border: none !important;
+		outline: none !important;
 	}
 
 	.loader {
@@ -163,29 +165,41 @@
 	max-width: 65vw;
 	width: 65vw;
 	height: 100%;
-	min-height: 90vh ;
-	max-height: 90vh;
+	min-height: 90dvh ;
+	max-height: 90dvh;
 	border-radius: 12px !important;
 	overflow: hidden !important;
 	display: grid;
-	grid-template-columns: 5fr 7fr;
+	grid-template-columns: 6fr 6fr;
 	background-color: #fff;
 
 	@media (max-width: 768px) {
 		max-width: 95vw;
 		width: 95vw;
-		min-height: 80vh;
-		max-height: 80vh;
+		min-height: 80dvh;
+		max-height: 80dvh;
+	}
+}
+
+.godam-product-modal-content.no-sidebar:has(.video-container.is-portrait){
+	width: 420px !important;
+	margin: 0 auto !important;
+	height: 100% !important;
+
+	@media (max-width: 992px) {
+		width: 100% !important;
+		height: 100% !important;
+		max-height: 100% !important;
+		min-height: 100% !important;
 	}
 }
 
 .godam-product-modal-content.no-sidebar , .godam-woocommerce-featured-video-modal-content{
 	background-color: transparent !important;
-	width: 100% !important;
-	height: 90vh !important;
-	max-height: 90vh !important;
-	max-width: 70vw !important;
-	min-height: 90vh !important;
+	height: 90dvh !important;
+	max-height: 90dvh !important;
+	max-width: 65vw !important;
+	min-height: 90dvh !important;
 	display: flex;
 	justify-content: center;
 	align-content: center;
@@ -193,9 +207,9 @@
 
 	@media (max-width: 768px) {
 		width: 100vw !important;
-		height: 100vh !important;
-		max-height: 100vh !important;
-		min-height: 100vh !important;
+		height: 100dvh !important;
+		max-height: 100dvh !important;
+		min-height: 100dvh !important;
 		max-width: 100vw !important;
 
 	}
@@ -203,9 +217,9 @@
 	.video-container.animate-video-loading{
 		width: 100vw !important;
 		margin: 0 auto !important;
-		height: 100vh !important;
-		min-height: 90vh ;
-		max-height: 90vh;
+		height: 100dvh !important;
+		min-height: 90dvh ;
+		max-height: 90dvh;
 		overflow: hidden !important;
 		display: flex;
 		justify-content: center;
@@ -217,8 +231,8 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		height: 90vh !important;
-		max-height: 90vh !important;
+		height: 90dvh !important;
+		max-height: 90dvh !important;
 		width: 100% !important;
 		box-sizing: border-box;
 
@@ -227,30 +241,32 @@
 			width: 420px !important;
 			margin: 0 auto !important;
 			height: 100% !important;
-			min-height: 90vh ;
-			max-height: 90vh;
+			min-height: 90dvh ;
+			max-height: 90dvh;
 			overflow: hidden !important;
 
 		}
 
 		.video-js{
-			min-height: 90vh !important;
-			max-height: 90vh !important;
+			min-height: 90dvh !important;
+			max-height: 90dvh !important;
+			object-fit: cover !important;
 			padding-top: 0 !important ;
 			@media (max-width: 768px) {
-				height: 100vh !important;
-				max-height: 100vh !important;
-				min-height: 100vh !important;
+				height: 100dvh !important;
+				max-height: 100dvh !important;
+				min-height: 100dvh !important;
 			}
 		}
 
 		.vjs-tech{
-			min-height: 90vh !important;
-			max-height: 90vh !important;
+			object-fit: cover !important;
+			min-height: 90dvh !important;
+			max-height: 90dvh !important;
 			@media (max-width: 768px) {
-				height: 100vh !important;
-				max-height: 100vh !important;
-				min-height: 100vh !important;
+				height: 100dvh !important;
+				max-height: 100dvh !important;
+				min-height: 100dvh !important;
 			}
 		}
 
@@ -259,8 +275,8 @@
 			.godam-video-wrapper, .easydam-video-container, .video-js  {
 				max-width: 100vw !important;
 				width: 100vw !important;
-				min-height: 100vh  !important;
-				max-height: 100vh !important;
+				min-height: 100dvh  !important;
+				max-height: 100dvh !important;
 			}
 		}
 
@@ -271,33 +287,36 @@
 		background-color: transparent !important;
 	}
 
+
+
+	
 	.video-container.is-landscape {
-		width: 70vw !important;
-		height: 90vh !important;
-		max-height: 90vh !important;
-		min-height: 90vh !important;
+		width: 65vw !important;
+		height: 90dvh !important;
+		max-height: 90dvh !important;
+		min-height: 90dvh !important;
 		
 		@media (max-width: 768px) {
 			width: 95vw !important;
-			height: 40vh !important;
-			max-height: 40vh !important;
-			min-height: 40vh !important;
+			height: 40dvh !important;
+			max-height: 40dvh !important;
+			min-height: 40dvh !important;
 		}
 		
 		.godam-video-wrapper, .easydam-video-container, .video-js , .vjs-tech , video  {
-			max-width:70vw !important;
-			width:70vw !important;
+			max-width:65vw !important;
+			width:65vw !important;
 			margin: 0 auto !important;
 			height: 100% !important;
-			min-height: 90vh !important;
-			max-height: 90vh !important;
+			min-height: 90dvh !important;
+			max-height: 90dvh !important;
 			overflow: hidden !important;
 			
 			@media (max-width: 768px) {
 				max-width: 95vw !important;
 				width: 95vw !important;
-				min-height: 40vh !important;
-				max-height: 40vh !important;
+				min-height: 40dvh !important;
+				max-height: 40dvh !important;
 			}
 		}
 	}
@@ -310,7 +329,7 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	max-height: 90vh !important;
+	max-height: 90dvh !important;
 	position: relative !important;
 }
 
@@ -320,23 +339,23 @@
 	align-items: center;
 	height: 100% !important;
 	max-height: 100% !important;
-	width: 27vw !important;
+	width: 32.5vw !important;
 
 	.godam-video-wrapper, .easydam-video-container, .video-js  {
-		max-width: 27vw;
-		width: 27vw;
+		max-width: 32.5vw;
+		width: 32.5vw;
 		margin: 0 auto !important;
 		height: 100% !important;
-		min-height: 40vh !important;
-		max-height: 40vh !important;
+		min-height: 40dvh !important;
+		max-height: 40dvh !important;
 		border-radius: 0 !important;
 		overflow: hidden !important;
 
 		@media (max-width: 768px) {
 			max-width: 95vw !important;
 			width: 95vw !important;
-			min-height: 40vh !important;
-			max-height: 40vh !important;
+			min-height: 40dvh !important;
+			max-height: 40dvh !important;
 		}
 	}
 
@@ -347,9 +366,9 @@
 	@media (max-width: 768px) {
 
 		.vjs-tech{
-			height: 40vh !important;
-			max-height: 40vh !important;
-			min-height: 40vh !important;
+			height: 40dvh !important;
+			max-height: 40dvh !important;
+			min-height: 40dvh !important;
 		}
 	}
 }
@@ -358,59 +377,61 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 90vh !important;
-	max-height: 90vh !important;
+	height: 90dvh !important;
+	max-height: 90dvh !important;
 	width: 100% !important;
 	box-sizing: border-box;
 
 	@media (max-width: 768px) {
 		width: 100vw !important;
-		height: 100vh !important;
-		max-height: 100vh !important;
-		min-height: 100vh !important;
+		height: 100dvh !important;
+		max-height: 100dvh !important;
+		min-height: 100dvh !important;
 		border-radius: 0 !important;
 	}
 
 	.godam-video-wrapper, .easydam-video-container, .video-js  {
-		max-width: 27vw !important;
-		width: 27vw !important;
+		max-width: 32.5vw !important;
+		width: 32.5vw !important;
 		margin: 0 auto !important;
 		height: 100% !important;
-		min-height: 90vh !important;
-		max-height: 90vh !important;
+		min-height: 90dvh !important;
+		max-height: 90dvh !important;
 		overflow: hidden !important;
 
 		@media (max-width: 768px) {
 			max-width: 100vw !important;
 			width: 100vw !important;
-			height: 100vh !important;
-			max-height: 100vh !important;
-			min-height: 100vh !important;
+			height: 100dvh !important;
+			max-height: 100dvh !important;
+			min-height: 100dvh !important;
 			border-radius: 0 !important;
 		}
 	}
 
 	.video-js{
-		min-height: 90vh !important;
-		max-height: 90vh !important;
+		min-height: 90dvh !important;
+		max-height: 90dvh !important;
 		padding-top: 0 !important ;
+		object-fit: cover !important;
 
 		@media (max-width: 768px) {
-			height: 100vh !important;
-			max-height: 100vh !important;
-			min-height: 100vh !important;
+			height: 100dvh !important;
+			max-height: 100dvh !important;
+			min-height: 100dvh !important;
 		}
    
 	}
 
 	.vjs-tech{
-		min-height: 90vh !important;
-		max-height: 90vh !important;
+		min-height: 90dvh !important;
+		max-height: 90dvh !important;
+		object-fit: cover !important;
 
 		@media (max-width: 768px) {
-			height: 100vh !important;
-			max-height: 100vh !important;
-			min-height: 100vh !important;
+			height: 100dvh !important;
+			max-height: 100dvh !important;
+			min-height: 100dvh !important;
 		}
   
 	}
@@ -441,6 +462,8 @@
 		}
 
 		.godam-sidebar-close{
+			// temporary hide close button
+			display: none;
 			cursor: pointer;
 			font-size: 1.5rem;
 			font-weight: 600;
@@ -514,10 +537,35 @@
 	}
    
 	.godam-sidebar-product-title h3 , .godam-sidebar-product-title{   
-		font-size: 1rem;
+		
 		font-weight: 700 !important;
 		margin: 0;
+		font-size: 1.1rem;
+		line-height: 1.2rem;
 		margin-bottom: 0.5rem !important;
+		@media (max-width: 768px) {
+			font-size: 1rem !important;
+			line-height: 1.1rem !important;
+		}
+
+		@media (min-width: 1080x) {
+			font-size: 0.9rem !important;
+			line-height: 1rem !important;
+		}
+	}
+
+	.godam-sidebar-product-price,.godam-sidebar-product-description{
+		font-size:0.9rem !important;
+		line-height: 1rem !important;
+		@media (min-width: 1080x) {
+			font-size:0.8rem !important;
+			line-height: 0.9rem !important;
+		}
+	}
+
+	.godam-sidebar-product-description{
+		opacity: 0.7;
+		margin: 1rem 0 !important;
 	}
 
 	button.godam-product-sidebar-add-to-cart-button,
@@ -531,8 +579,11 @@
 		justify-content: center !important;
 		border-radius: 0.2rem;
 		overflow: hidden;
+		outline: none !important;
 		border: none !important;
-		padding: 0.7rem !important;
+		padding: 0 !important;
+		font-size: 0.8rem !important;
+		line-height: 1rem !important;
 		margin: 0 !important;
 		cursor: pointer !important;
 		text-decoration: none !important;
@@ -577,6 +628,13 @@
 }
 
 .godam-product-sidebar-single{
+
+
+	ul,li,ol{
+		opacity: 0.8 !important;
+		font-size: 0.9rem !important;
+		line-height: 1rem !important;
+	}
 
 	woocommerce-product-gallery{
 		width: 100% !important;
@@ -915,7 +973,10 @@
 	flex-direction: column;
 	justify-content: flex-start;
 	align-items: flex-start;
-	gap: 12px;
+	gap: 6px !important;
+	@media (max-width: 768px) {
+		gap: 12px !important;
+	}
 }
 
 /* ===== GODAM IMAGE GALLERY STYLES - END ===== */
@@ -926,7 +987,7 @@
 
 	
 	#godam-add-to-cart-toast{
-		top: 10vh !important;
+		top: 10dvh !important;
 		height: max-content !important;
 		left: 50% !important;
 		transform: translateX(-50%) !important;
@@ -951,16 +1012,21 @@
 
 		.godam-product-sidebar-single{
 			display: grid;
+			margin: 0 auto;
 			grid-template-columns: 4fr 8fr;
 			gap: 12px;
 			padding: 12px !important;
-			width: 100% !important;
+			width: 95% !important;
 			background: rgba(255, 255, 255, 0.849);
 			border-radius: 16px;
 			box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 			backdrop-filter: blur(9.2px);
 			-webkit-backdrop-filter: blur(9.2px);
 			border: 1px solid rgba(255, 255, 255, 0.3);
+
+			ul,li,ol{
+				display: none !important;
+			}
 
 			.godam-sidebar-product-price{
 				margin-bottom: 10px !important;
@@ -1029,17 +1095,17 @@
 
 	.godam-product-modal-content.no-sidebar {
 		.video-container.is-portrait .vjs-tech,.godam-product-modal-content.no-sidebar .video-container.is-portrait .video-js{
-			height: 100vh !important;
-			max-height: 100vh !important;
-			min-height: 100vh !important;
+			height: 100dvh !important;
+			max-height: 100dvh !important;
+			min-height: 100dvh !important;
 		}
 	}
 
 	.godam-product-video-container{
 		width: 100% !important;
 		height: 100% !important;
-		max-height: 100vh !important;
-		min-height: 100vh !important;
+		max-height: 100dvh !important;
+		min-height: 100dvh !important;
 		max-width: 100% !important;
 		min-width: 100% !important;
 	}
@@ -1058,14 +1124,14 @@
 		.godam-product-video-container{
 			width: 100% !important;
 			height: 100% !important;
-			max-height: 100vh !important;
-			min-height: 100vh !important;
+			max-height: 100dvh !important;
+			min-height: 100dvh !important;
 			max-width: 100% !important;
 			min-width: 100% !important;
 		}
 
 		.godam-product-sidebar.is-portrait{
-			bottom: 55px !important;
+			bottom: 15dvh !important;
 		}
 
 		.godam-product-sidebar{
@@ -1075,8 +1141,8 @@
 			background-color: transparent !important;
 			height: max-content !important;
 			min-height: max-content !important;
-			max-height: 30vh !important;
-			bottom: 12px !important;
+			max-height: 30dvh !important;
+			bottom: 10dvh !important;
 			width: 85% !important;
 			margin: 0 7.5%;
 			display: flex;
@@ -1085,15 +1151,12 @@
 			align-items: flex-end !important;
 
 			.godam-sidebar-header{
-				margin-bottom: 12px !important;
-				position: absolute ;
-				top: -20px;
-				right: 12px;
+				margin-bottom: 5px !important;
+				position: relative !important;
 				width: 100%;
 				justify-content: flex-end !important;
 				z-index: 999 !important;
 				height: max-content !important;
-
 				h3,.godam-product-video-gallery--cart-basket{
 					display: none !important;
 				}
@@ -1109,7 +1172,8 @@
 
 			.godam-product-sidebar-grid{
 				display: flex !important;
-				max-width: 95vw !important;
+				max-width: 95% !important;
+				margin: 0 auto !important;
 				overflow-x: auto;
 				scrollbar-width: none;
 				-ms-overflow-style: none;
@@ -1120,6 +1184,7 @@
 				scroll-snap-type: x mandatory;
 				
 				.godam-sidebar-product-item{
+					margin: 0 auto !important;
 					height: auto !important;
 					background: rgba(255, 255, 255, 0.849);
 					border-radius: 16px;
@@ -1162,7 +1227,7 @@
 .spinner {
 	position: absolute;
 	top: 50%;
-	left: 61%;
+	left: 65%;
 	width: 48px;
 	height: 48px;
 	border: 5px solid #e0e0e0;
