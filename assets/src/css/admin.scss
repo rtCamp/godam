@@ -583,3 +583,19 @@ $media-frame-width: calc(300px + 2 * 24px);
 	box-shadow: 0 0 0 0.7px #ab3a6c;
 	border-color: #ab3a6c;
 }
+
+.godam-admin-video-add-to-product-container {
+	.vjs-control.vjs-custom-play-button {
+		width: auto !important;
+
+		@media screen and (max-width: 768px) {
+			display: none;
+		}
+
+		#branding-icon {
+			height: 100%;
+			width: auto;
+			object-fit: fill;
+		}
+	}
+}
