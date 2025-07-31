@@ -106,15 +106,15 @@ const App = () => {
 	return (
 		<>
 			<div className="control-buttons">
+				<Button
+					className="godam-media-library-close-btn"
+					onClick={ closeMediaLibrarySidebar }
+					title={ __( 'Close Menu', 'godam' ) }
+					aria-label="Close Menu"
+				>
+					<Icon icon={ close } />
+				</Button>
 				<ButtonGroup className="button-group mb-spacing">
-					<Button
-						className="godam-media-library-close-btn"
-						onClick={ closeMediaLibrarySidebar }
-						title="Close Menu"
-						aria-label="Close Menu"
-					>
-						<Icon icon={ close } />
-					</Button>
 					<SearchBar />
 					<Button
 						icon="plus-alt2"

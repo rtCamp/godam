@@ -23,7 +23,7 @@ import {
 	NewFolderIcon,
 	RenameFolderIcon,
 } from '../icons';
-
+import { closeMediaLibrarySidebar } from '../../../../assets/src/js/media-library/utility';
 import './css/context-menu.scss';
 
 const ContextMenu = ( { x, y, folderId, onClose } ) => {
@@ -328,9 +328,11 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 		switch ( actionType ) {
 			case 'newSubFolder':
 				dispatch( openModal( 'folderCreation', { parentId: folderId } ) );
+				closeMediaLibrarySidebar();
 				break;
 			case 'rename':
 				dispatch( openModal( 'rename', { folderId: currentFolder.id } ) );
+				closeMediaLibrarySidebar();
 				break;
 			case 'lockFolder':
 				toggleFolderLock();
@@ -344,8 +346,10 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			case 'delete':
 				if ( isMultiSelecting && multiSelectedFolderIds.length > 0 ) {
 					dispatch( openModal( 'delete', { folderIds: multiSelectedFolderIds } ) );
+					closeMediaLibrarySidebar();
 				} else {
 					dispatch( openModal( 'delete', { folderId: currentFolder.id } ) );
+					closeMediaLibrarySidebar();
 				}
 				break;
 			default:

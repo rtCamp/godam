@@ -12,6 +12,7 @@ import { Icon, file } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import { closeMediaLibrarySidebar } from '../../../../assets/src/js/media-library/utility';
 import { changeSelectedFolder } from '../../redux/slice/folders';
 import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
@@ -31,6 +32,7 @@ const TabItem = ( { item, index, onContextMenu } ) => {
 		if ( item?.id ) {
 			triggerFilterChange( item.id );
 			dispatch( changeSelectedFolder( { item } ) );
+			closeMediaLibrarySidebar();
 		}
 	}, [ dispatch, item ] );
 

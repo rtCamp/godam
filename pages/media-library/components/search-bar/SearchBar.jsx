@@ -13,6 +13,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { changeSelectedFolder, expandParents } from '../../redux/slice/folders';
+import { closeMediaLibrarySidebar } from '../../../../assets/src/js/media-library/utility';
 import { useSearchFoldersQuery } from '../../redux/api/folders';
 import { triggerFilterChange } from '../../data/media-grid';
 import { useDispatch } from 'react-redux';
@@ -196,7 +197,10 @@ const SearchBar = () => {
 										<li key={ folder.id }>
 											<Button
 												className="search-result-item"
-												onClick={ () => handleFolderSelect( folder.id ) }
+												onClick={ () => {
+													handleFolderSelect( folder.id );
+													closeMediaLibrarySidebar();
+												} }
 											>
 												{ folder.name }
 											</Button>
