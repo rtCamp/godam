@@ -44,6 +44,8 @@ const slice = createSlice( {
 			delete: false,
 		},
 
+		currentContextMenuFolder: null,
+
 		snackbar: {
 			message: '',
 			type: 'success',
@@ -95,18 +97,18 @@ const slice = createSlice( {
 			state.folders.push( newItem );
 		},
 		renameFolder: ( state, action ) => {
-			if ( ! state.selectedFolder ) {
+			if ( ! state.currentContextMenuFolder ) {
 				return;
 			}
 
-			const folder = state.folders.find( ( item ) => item.id === state.selectedFolder.id );
+			const folder = state.folders.find( ( item ) => item.id === state.currentContextMenuFolder.id );
 
 			if ( folder ) {
 				folder.name = action.payload.name;
 			}
 		},
 		deleteFolder: ( state ) => {
-			if ( ! state.selectedFolder && ! state.isMultiSelecting ) {
+			if ( ! state.currentContextMenuFolder && ! state.isMultiSelecting ) {
 				return;
 			}
 
@@ -126,12 +128,12 @@ const slice = createSlice( {
 					findChildren( id );
 				} );
 			} else {
-				findChildren( state.selectedFolder.id );
+				findChildren( state.currentContextMenuFolder.id );
 			}
 
 			state.folders = state.folders.filter( ( item ) => ! idsToDelete.has( item.id ) );
 
-			state.selectedFolder = {
+			state.currentContextMenuFolder = {
 				id: -1,
 			};
 
@@ -319,7 +321,9 @@ const slice = createSlice( {
 				perPage: perPage ?? state.page.perPage,
 			};
 		},
-
+		setCurrentContextMenuFolder: ( state, action ) => {
+			state.currentContextMenuFolder = action.payload;
+		},
 	},
 } );
 
@@ -345,6 +349,7 @@ export const {
 	initializeLockedFolders,
 	updatePage,
 	expandParents,
+	setCurrentContextMenuFolder,
 } = slice.actions;
 
 export default slice.reducer;
