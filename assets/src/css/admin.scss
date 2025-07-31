@@ -455,6 +455,17 @@ $media-frame-width: calc(300px + 2 * 24px);
 	}
 }
 
+/* overwrite list view specific styles */
+.transcoding-status-list {
+
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+
+	.transcoding-status__loader {
+		position: unset;
+	}
+}
 
 .rt-godam-modal {
 	display: flex;
