@@ -19,6 +19,7 @@ import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
 import { FolderTreeChevron } from '../icons';
 import { __ } from '@wordpress/i18n';
+import { closeMediaLibrarySidebar } from '../../../../assets/src/js/media-library/utility';
 
 const indentPerLevel = 12;
 
@@ -38,8 +39,8 @@ const TreeItem = ( { item, index, depth, onContextMenu, isMultiSelecting } ) => 
 	 */
 	const handleClick = () => {
 		triggerFilterChange( item.id );
-
 		dispatch( changeSelectedFolder( { item } ) );
+		closeMediaLibrarySidebar();
 	};
 
 	const handleCheckboxChange = () => {
