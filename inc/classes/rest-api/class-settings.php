@@ -332,17 +332,17 @@ class Settings extends Base {
 		if ( preg_match( '/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/', $color ) ) {
 			return $color;
 		}
-		
+
 		// Handle rgba colors.
 		if ( preg_match( '/^rgba?\([^)]+\)$/', $color ) ) {
 			return $color;
 		}
-		
+
 		// Handle named colors or other formats.
 		if ( preg_match( '/^[a-zA-Z]+$/', $color ) ) {
 			return $color;
 		}
-		
+
 		// If none of the above, return empty string.
 		return '';
 	}
