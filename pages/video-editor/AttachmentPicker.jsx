@@ -37,7 +37,7 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 			{ showOfferBanner && ! window?.userData?.validApiKey && (
 				<div className="notice annual-plan-offer-banner px-10">
 					<a
-						href={ `http://godam.io/pricing?utm_campaign=annual-plan&utm_source=${
+						href={ `https://godam.io/pricing?utm_campaign=annual-plan&utm_source=${
 							window?.location?.host || ''
 						}&utm_medium=plugin&utm_content=banner` }
 					>

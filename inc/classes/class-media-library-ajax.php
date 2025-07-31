@@ -605,7 +605,7 @@ class Media_Library_Ajax {
 	}
 
 	/**
-	 * Display an offer banner in the media library if the API key is invalid.
+	 * Dismiss the offer banner by updating the option in the database.
 	 *
 	 * @return void
 	 */
@@ -638,7 +638,7 @@ class Media_Library_Ajax {
 			ob_start();
 
 			echo '<div class="notice annual-plan-offer-banner">';
-			echo '<a href="http://godam.io/pricing?utm_campaign=annual-plan&utm_source=' . esc_attr( $host ) . '&utm_medium=plugin&utm_content=banner">';
+			echo '<a href="https://godam.io/pricing?utm_campaign=annual-plan&utm_source=' . esc_attr( $host ) . '&utm_medium=plugin&utm_content=banner">';
 			echo '<img src="' . esc_url( RTGODAM_URL . '/assets/src/images/Annual Plan Offer Banner (Plugin).png' ) . '" class="annual-plan-offer-banner__img">';
 			echo '</a>';
 			echo '<button type="button" class="annual-plan-offer-banner__dismiss" >&times;</button>';

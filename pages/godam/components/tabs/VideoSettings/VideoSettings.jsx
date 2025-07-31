@@ -106,7 +106,7 @@ const VideoSettings = () => {
 
 						<div className="button-group">
 							<Button
-								href={ `http://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=settings` }
+								href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=settings` }
 								target="_blank"
 								variant="primary"
 								className="godam-button"
