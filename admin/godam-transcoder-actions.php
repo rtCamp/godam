@@ -33,7 +33,8 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 			return $form_fields;
 		}
 
-		$transcoded_url = get_post_meta( $post->ID, 'rtgodam_transcoded_url', true );
+		$transcoded_url     = rtgodam_get_transcoded_url_from_attachment( $post->ID );
+		$hls_transcoded_url = rtgodam_get_hls_transcoded_url_from_attachment( $post->ID );
 
 		$easydam_settings = get_option( 'rtgodam-settings', array() );
 
@@ -45,16 +46,29 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 		if ( ! empty( $api_key ) ) {
 			// Add the transcoded URL field.
 			$form_fields['transcoded_url'] = array(
-				'label' => __( 'Transcoded CDN URL', 'godam' ),
+				'label' => __( 'Transcoded CDN URL (MPD)', 'godam' ),
 				'input' => 'html',
 				'html'  => sprintf(
-					'<input type="text" name="attachments[%d][transcoded_url]" id="attachments-%d-transcoded_url" value="%s" readonly>',
+					'<input type="text" class="widefat" name="attachments[%d][transcoded_url]" id="attachments-%d-transcoded_url" value="%s" readonly>',
 					(int) $post->ID,
 					(int) $post->ID,
 					esc_url( $transcoded_url )
 				),
 				'value' => esc_url( $transcoded_url ),
 				'helps' => __( 'The URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
+			);
+
+			$form_fields['hls_transcoded_url'] = array(
+				'label' => __( 'Transcoded CDN URL (HLS)', 'godam' ),
+				'input' => 'html',
+				'html'  => sprintf(
+					'<input type="text" class="widefat" name="attachments[%d][hls_transcoded_url]" id="attachments-%d-hls-transcoded_url" value="%s" readonly>',
+					(int) $post->ID,
+					(int) $post->ID,
+					esc_url( $hls_transcoded_url )
+				),
+				'value' => esc_url( $hls_transcoded_url ),
+				'helps' => __( 'The HLS URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
 			);
 		} else {
 			// Display locked field with upsell message for free users.
@@ -98,13 +112,13 @@ if ( ! function_exists( 'rtgodam_save_transcoded_url_field' ) ) {
 	function rtgodam_save_transcoded_url_field( $post, $attachment ) {
 		// Check if adaptive bitrate streaming is enabled.
 		$easydam_settings = get_option( 'rtgodam-settings', array() );
-	
+
 		$adaptive_bitrate_enabled = ! empty( $easydam_settings['video']['adaptive_bitrate'] );
-	
+
 		if ( ! $adaptive_bitrate_enabled ) {
 			return $post;
 		}
-	
+
 		if ( isset( $attachment['transcoded_url'] ) ) {
 			// Check the user's permissions.
 			if ( ! current_user_can( 'edit_post', $post['ID'] ) ) {
@@ -113,7 +127,7 @@ if ( ! function_exists( 'rtgodam_save_transcoded_url_field' ) ) {
 			// Update the post meta with the new value.
 			update_post_meta( $post['ID'], 'rtgodam_transcoded_url', esc_url_raw( $attachment['transcoded_url'] ) );
 		}
-	
+
 		return $post;
 	}
 }
@@ -204,12 +218,12 @@ if ( ! function_exists( 'rtgodam_rtt_update_wp_media_thumbnail' ) ) {
 		if ( class_exists( 'RTMediaModel' ) ) {
 			$model = new RTMediaModel();
 			$media = $model->get( array( 'media_id' => $attachment_id ) );
-	
+
 			if ( ! empty( $media ) && ! empty( $media[0] ) ) {
 				$attachment_id = $media[0]->media_id;
 				$media_type    = $media[0]->media_type;
 				$cover_art     = $media[0]->cover_art;
-	
+
 				if ( 'video' === $media_type && empty( $cover_art ) && ! empty( $thumb_url ) ) {
 					$model->update( array( 'cover_art' => $thumb_url ), array( 'media_id' => $attachment_id ) );
 				}

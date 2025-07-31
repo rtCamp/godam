@@ -1,6 +1,7 @@
-![Banner V3](https://github.com/user-attachments/assets/1c2cdf13-5cab-432a-b548-34cd3876e93f)
+![Banner V3](https://github.com/user-attachments/assets/73cfb2c2-0779-44c2-85e7-67e812dd82b6)
+
 # GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more
-Contributors: [rtcamp](https://profiles.wordpress.org/rtcamp), [elifvish](https://profiles.wordpress.org/elifvish), [subodhrajpopat](https://profiles.wordpress.org/subodhrajpopat), [kuldipchaudhary](https://profiles.wordpress.org/kuldipchaudhary), [prachigarg19](https://profiles.wordpress.org/prachigarg19), [juzar](https://profiles.wordpress.org/juzar), [geekofshire](https://profiles.wordpress.org/geekofshire), [nazmulhassann20](https://profiles.wordpress.org/nazmulhassann20), [abhinavbelhekar03](https://profiles.wordpress.org/abhinavbelhekar03)
+Contributors: [rtcamp](https://profiles.wordpress.org/rtcamp), [elifvish](https://profiles.wordpress.org/elifvish), [subodhrajpopat](https://profiles.wordpress.org/subodhrajpopat), [kuldipchaudhary](https://profiles.wordpress.org/kuldipchaudhary), [prachigarg19](https://profiles.wordpress.org/prachigarg19), [juzar](https://profiles.wordpress.org/juzar), [geekofshire](https://profiles.wordpress.org/geekofshire), [nazmulhassann20](https://profiles.wordpress.org/nazmulhassann20), [abhinavbelhekar03](https://profiles.wordpress.org/abhinavbelhekar03), [gautam23](https://profiles.wordpress.org/gautam23)
 
 Tags: transcoder, video, media library, folders, file manager
 
@@ -10,7 +11,7 @@ Tested up to: 6.8.1
 
 Requires PHP: 7.4
 
-Stable tag: 1.2.1
+Stable tag: 1.3.0
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -30,11 +31,12 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 - The [DAM functionality](https://godam.io/features/wordpress-advanced-media-management/) streamlines file organization for websites with large libraries of images, videos, documents, and more.
 - Organize media assets efficiently with enhanced WordPress Media Library folders and filtering with a smart Media Library Assistant.
 - Manage files easily with a built-in folder-based File Manager for drag-and-drop organization.
+- Bookmark and Lock folders for improved folder organization
 
 #### 📌 Interactive Video Layers for Engagement
 - Embed [clickable CTAs](https://godam.io/features/video-overlay/) to drive actions like sign-ups and purchases.
 - Enhance your videos with [customizable hotspots](https://godam.io/features/video-hotspot/) that deliver additional context, links, and information exactly when and where your viewers need it.
-- Add interactive forms using [Gravity Forms](https://godam.io/features/gravity-forms/), [Contact Form 7](https://wordpress.org/plugins/contact-form-7/), [WPForms](https://wordpress.org/plugins/wpforms-lite/), and [Jetpack Forms](https://wordpress.org/plugins/jetpack/) to collect leads.
+- Add interactive forms using [Gravity Forms](https://godam.io/features/gravity-forms/), [WPForms](https://godam.io/features/wp-forms/), [Contact Form 7](https://godam.io/features/contact-form-7/), [Jetpack Forms](https://godam.io/features/jetpack-form/), [Forminator Forms](https://godam.io/features/forminator-forms/), [Fluent Forms](https://godam.io/features/fluent-forms/), [SureForms](https://godam.io/features/sure-forms/), and [Everest Forms](https://godam.io/features/everest-forms/) to collect leads.
 - Enable video submissions using the GoDAM Record field that supports webcam and screencast inside Gravity Forms.
 - Add interactive Polls to gather viewer opinions during playback.
 - Customize video player appearance globally with custom CSS through the Video Player settings menu.
@@ -46,6 +48,7 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 
 #### 📌 Seamless Ad Monetization
 - Supports [self-hosted ads and third-party ad networks](https://godam.io/features/ads-integration/).
+- Global Ads settings for centralized advertisement management
 - Flexible ad placements (pre-roll, mid-roll, post-roll) to maximize revenue.
 - Boost revenue and engagement with clickable ad redirections
 
@@ -70,6 +73,7 @@ Read our blog: [GoDAM blog](https://godam.io/blog/)
 - Ensures smooth playback by dynamically adjusting quality based on network speed.
 - Supported audio formats: MP3, M4A, WAV, OGG
 - Supported video formats: 3G2, 3GP, AVI, FLV, M4V, MOV (QDM2 only), MP4, OGV, WEBM, WMV
+- In Free version these video formats are not supported: 3G2, 3GP, AVI, OGV, WMV
 - Watermarking support to protect video content.
 - Automatically compress and resize videos on upload to reduce storage and bandwidth.
 
@@ -123,10 +127,14 @@ Get started today and revolutionize the way you manage and deliver video content
 GoDAM works seamlessly with popular WordPress plugins to enhance interactivity and engagement:
 
 - [Gravity Forms](https://godam.io/features/gravity-forms/) – Add forms directly to your videos to collect leads and feedback.
-- [WPForms](https://wordpress.org/plugins/wpforms-lite/) – Integrate lightweight forms for surveys, signups, or user inputs.
-- [Contact Form 7](https://wordpress.org/plugins/contact-form-7/) – Use a classic contact form plugin inside your videos for engagement.
+- [WPForms](https://godam.io/features/wp-forms/) – Integrate lightweight forms for surveys, signups, or user inputs.
+- [Contact Form 7](https://godam.io/features/contact-form-7/) – Use a classic contact form plugin inside your videos for engagement.
+- [Jetpack Forms](https://godam.io/features/jetpack-form/) - Block Editor based forms for lead generation and engagement.
+- [Forminator Forms](https://godam.io/features/forminator-forms/) – Advanced form builder with powerful features for lead capture.
+- [Fluent Forms](https://godam.io/features/fluent-forms/) – Modern form builder with advanced conditional logic and integrations.
+- [SureForms](https://godam.io/features/sure-forms/) – Professional form solution with advanced features and analytics.
+- [Everest Forms](https://godam.io/features/everest-forms/) – User-friendly form builder with drag-and-drop functionality.
 - [WP-Polls](https://wordpress.org/plugins/wp-polls/) – Add live polls to your videos and gather audience opinions in real-time.
-- [Jetpack Forms](https://wordpress.org/plugins/jetpack/) - Block Editor based forms for lead generation and engagement.
 - [Elementor](https://wordpress.org/plugins/elementor/) – Drag-and-drop GoDAM widgets for easy content creation.
 
 ## Installation
@@ -192,29 +200,25 @@ Yes, GoDAM provides robust analytics tools to track video engagement, including 
 5. Hotspot Layer
 6. Ads Integration
 7. Gravity Forms Integration
-8. Contact Form 7 Integration
-9. WP Forms Integration
-10. Player Settings
-11. Enhanced Media Library (DAM)
-12. GoDAM Video Block
-13. Post-Specific Video Settings
-14. Attachment Video Details
-15. Single Video Analytics
-16. Video Analytics Dashboard
-17. GoDAM Central Selector Tab
-18. GoDAM Recorder Field for Gravity Forms
-19. Gravity Form Entry Detail page
-20. Automatic Video Transcription
-21. `[godam_video]` Shortcode
-22. GoDAM Central
-23. Image Upload to GoDAM Central
-24. GoDAM Video Gallery Block
-25. Elementor GoDAM Audio Widget
-26. Elementor GoDAM Gallery Widget
-27. Elementor GoDAM Video Widget
-28. Jetpack Forms Integration
-29. Video Player Style Settings
-30. Chapters Interface
+8. Player Settings
+9. Enhanced Media Library (DAM)
+10. Post-Specific Video Settings
+11. Attachment Video Details
+12. Single Video Analytics
+13. Video Analytics Dashboard
+14. GoDAM Central Selector Tab
+15. GoDAM Recorder Field for Gravity Forms
+16. Automatic Video Transcription
+17. GoDAM Central
+18. Image Upload to GoDAM Central
+19. Single Video Page in  GoDAM Central
+20. Settings Page in GoDAM Central
+21. GoDAM Video Gallery Block
+22. Elementor GoDAM Gallery Widget
+23. Elementor GoDAM Video Widget
+24. Video Player Style Settings
+25. Global Ads Settings
+26. Chapters Interface
 
 ## External Services
 

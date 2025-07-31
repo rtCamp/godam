@@ -24,12 +24,12 @@ import Poll from '../assets/layers/Poll.png';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
-import Woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
 import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
+import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetFormIcon from '../assets/layers/MetFormIcon.png';
 
 const Layers = [
@@ -85,7 +85,7 @@ const Layers = [
 	{
 		id: 5,
 		title: __( 'SureForms', 'godam' ),
-		description: __( 'Collect user input using Sureforms', 'godam' ),
+		description: __( 'Collect user input using SureForms', 'godam' ),
 		image: Form,
 		type: 'form',
 		formType: 'sureforms',
@@ -136,6 +136,19 @@ const Layers = [
 	},
 	{
 		id: 9,
+		title: __( 'Ninja Forms', 'godam' ),
+		description: __( 'Collect user input using Ninja Forms', 'godam' ),
+		image: Form,
+		type: 'form',
+		formType: 'ninjaforms',
+		requiresNinjaForms: true,
+		formIcon: NinjaFormsIcon,
+		isRequired: true,
+		isActive: Boolean( window?.videoData?.ninjaFormsActive ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/ninja-forms/">${ __( 'Ninja Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
+	},
+	{
+		id: 10,
 		title: __( 'MetForm', 'godam' ),
 		description: __( 'Collect user input using MetForm', 'godam' ),
 		image: Form,
@@ -147,28 +160,28 @@ const Layers = [
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/metform/">${ __( 'MetForm', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
 	},
 	{
-		id: 10,
+		id: 11,
 		title: __( 'CTA', 'godam' ),
 		description: __( 'Guide users toward a specific action', 'godam' ),
 		image: CTA,
 		type: 'cta',
 	},
 	{
-		id: 11,
+		id: 12,
 		title: __( 'Hotspot', 'godam' ),
 		description: __( 'Highlighting key areas with focus', 'godam' ),
 		image: Hotspot,
 		type: 'hotspot',
 	},
 	{
-		id: 12,
+		id: 13,
 		title: __( 'Ad', 'godam' ),
 		description: __( 'Redirect user to custom advertisement', 'godam' ),
 		image: Ad,
 		type: 'ad',
 	},
 	{
-		id: 13,
+		id: 14,
 		title: __( 'Poll', 'godam' ),
 		description: __( 'Gather opinions through interactive voting', 'godam' ),
 		image: Poll,
@@ -176,18 +189,6 @@ const Layers = [
 		isRequired: true,
 		isActive: Boolean( window.easydamMediaLibrary.isPollPluginActive ),
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/wp-polls/">${ __( 'WP-Polls', 'godam' ) }</a> ${ __( 'plugin is required to use Poll layer', 'godam' ) }`,
-	},
-	{
-		id: 14,
-		title: __( 'WooCommerce', 'godam' ),
-		description: __( 'Display products using hotspots', 'godam' ),
-		image: Hotspot,
-		type: 'woo',
-		requiresWoo: true,
-		formIcon: Woo,
-		isRequired: true,
-		isActive: Boolean( window.easydamMediaLibrary.isWooActive ) ?? false,
-		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/woocommerce/">${ __( 'WooCommerce', 'godam' ) }</a> ${ __( 'plugin is required to use Buy Now layer', 'godam' ) }`,
 	},
 ];
 
@@ -214,6 +215,28 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 			return acc;
 		}, [] );
 	}, [] );
+
+	// Create tabs array with "all" as the first item
+	const allTabs = useMemo( () => {
+		return [ 'all', ...uniqueLayerTypes ];
+	}, [ uniqueLayerTypes ] );
+
+	/**
+	 * Gets the display text for a tab type.
+	 *
+	 * @param {string} type - The tab type.
+	 * @return {string} The display text for the tab.
+	 */
+	const getTabDisplayText = ( type ) => {
+		switch ( type ) {
+			case 'all':
+				return __( 'All', 'godam' );
+			case 'cta':
+				return type.toUpperCase();
+			default:
+				return type.charAt( 0 ).toUpperCase() + type.slice( 1 );
+		}
+	};
 
 	/**
 	 * Selects a layer when clicked.
@@ -246,9 +269,9 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 		const lowerCaseQuery = value.toLowerCase();
 		setSearchQuery( value );
 
-		// Disable activeTab when user searches
-		if ( activeTab !== '' ) {
-			setActiveTab( '' );
+		// Set activeTab to 'all' when user searches
+		if ( activeTab !== 'all' ) {
+			setActiveTab( 'all' );
 		}
 
 		const filtered = Layers.filter( ( layer ) =>
@@ -275,8 +298,12 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 		setSearchQuery( '' );
 
 		setActiveTab( type );
-		const filtered = Layers.filter( ( layer ) => layer.type === type );
-		setFilteredLayers( filtered );
+		if ( type === 'all' ) {
+			setFilteredLayers( Layers );
+		} else {
+			const filtered = Layers.filter( ( layer ) => layer.type === type );
+			setFilteredLayers( filtered );
+		}
 	};
 
 	return (
@@ -287,7 +314,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 		>
 			<div className="godam-layer-selector__header">
 				<div className="layer-tabs">
-					{ uniqueLayerTypes.map( ( type ) => (
+					{ allTabs.map( ( type ) => (
 						<button
 							key={ type }
 							className={ `layer-tab ${ activeTab === type ? 'active' : '' } ${ searchQuery ? 'disabled' : '' }` }
@@ -298,7 +325,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 							} }
 							disabled={ !! searchQuery }
 						>
-							{ type.charAt( 0 ).toUpperCase() + type.slice( 1 ) }
+							{ getTabDisplayText( type ) }
 						</button>
 					) ) }
 				</div>
@@ -339,7 +366,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 											alt={ layer.title }
 										/>
 										{
-											( layer.type === 'form' || layer.type === 'woo' ) && layer.formIcon && (
+											( layer.type === 'form' ) && layer.formIcon && (
 												<img
 													className="godam-layer-selector__item__image-container__form-icon"
 													src={ layer.formIcon }

@@ -91,4 +91,24 @@ const getQuery = ( props ) => {
 	} );
 };
 
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery };
+/**
+ * Helper function to fetch media settings.
+ *
+ * @return {Promise<Object | undefined>} A promise that resolves with the JSON response from the API, or undefined if the request fails.
+ */
+async function getGodamSettings() {
+	const restURL = window.godamRestRoute?.url || '';
+	const baseUrl = `${ restURL }godam/v1/settings`;
+	const url = `${ baseUrl }/godam-settings`;
+
+	try {
+		const response = await wp.apiFetch( {
+			path: url,
+			method: 'GET',
+		} );
+
+		return response;
+	} catch ( error ) {
+	}
+}
+export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings };

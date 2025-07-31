@@ -21,7 +21,7 @@ const Index = () => {
 	);
 };
 
-const rootElement = document.getElementById( 'root-easydam' );
+const rootElement = document.getElementById( 'root-godam-settings' );
 
 if ( rootElement ) {
 	const root = ReactDOM.createRoot( rootElement );

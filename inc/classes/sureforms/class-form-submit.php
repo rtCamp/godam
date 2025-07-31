@@ -188,6 +188,11 @@ class Form_Submit {
 			return;
 		}
 
+		// Skip sending files for transcoding if the api key is invalid.
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return;
+		}
+
 		$form_name = $form_submit_response['form_name'] ?? '';
 		$form_id   = $form_submit_response['form_id'] ?? 0;
 		$entry_id  = $form_submit_response['entry_id'] ?? 0;

@@ -9,6 +9,7 @@ import { useGetSureformsQuery } from '../../redux/api/sureforms';
 import { useGetForminatorFormsQuery } from '../../redux/api/forminator-forms';
 import { useGetFluentFormsQuery } from '../../redux/api/fluent-forms';
 import { useGetEverestFormsQuery } from '../../redux/api/everest-forms';
+import { useGetNinjaFormsQuery } from '../../redux/api/ninja-forms';
 import { FormLayerComponentType } from '../layers/FormLayer';
 import { useGetMetformsQuery } from '../../redux/api/metform';
 
@@ -37,6 +38,10 @@ export const useFetchForms = () => {
 	const { data: everestForms = [], isFetching: isFetchingEverestForms = false } = useGetEverestFormsQuery( undefined, {
 		skip: ! FormLayerComponentType?.everestforms.isActive,
 	} );
+
+	const { data: ninjaForms = [], isFetching: isFetchingNinjaForms = false } = useGetNinjaFormsQuery( undefined, {
+		skip: ! FormLayerComponentType?.ninjaforms.isActive,
+	} );
 	const { data: metforms = [], isFetching: isFetchingMetforms = false } = useGetMetformsQuery( undefined, {
 		skip: ! FormLayerComponentType?.metform.isActive,
 	});
@@ -51,6 +56,7 @@ export const useFetchForms = () => {
 		isFetchingForminator ||
 		isFetchingFluentForms ||
 		isFetchingEverestForms ||
+		isFetchingNinjaForms ||
 		isFetchingMetforms;
 
 	return {
@@ -62,6 +68,7 @@ export const useFetchForms = () => {
 		forminatorForms,
 		fluentForms,
 		everestForms,
+		ninjaForms,
 		metforms,
 		isFetching,
 	};

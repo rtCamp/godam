@@ -53,6 +53,11 @@ class Form_Submit {
 			return;
 		}
 
+		// Skip sending files for transcoding if the api key is invalid.
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return;
+		}
+
 		$form_name = $form->title ?? __( 'Fluentforms', 'godam' );
 		$form_id   = $form->id ?? 0;
 

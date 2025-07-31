@@ -95,7 +95,6 @@ class Assets {
 		include_once ABSPATH . 'wp-admin/includes/plugin.php';
 		$is_gf_active       = is_plugin_active( 'gravityforms/gravityforms.php' );
 		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
-		$is_woo_active      = is_plugin_active( 'woocommerce/woocommerce.php' );
 
 		$is_cf7_active     = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
 		$is_wpforms_active = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
@@ -105,6 +104,8 @@ class Assets {
 		$is_forminator_form_active = is_plugin_active( 'forminator/forminator.php' );
 		$is_fluent_forms_active    = is_plugin_active( 'fluentform/fluentform.php' );
 		$is_everest_forms_active   = is_plugin_active( 'everest-forms/everest-forms.php' );
+		$is_ninja_forms_active     = is_plugin_active( 'ninja-forms/ninja-forms.php' );
+
 		$is_met_form_active        = is_plugin_active( 'metform/metform.php' );
 
 		wp_localize_script(
@@ -113,7 +114,6 @@ class Assets {
 			array(
 				'gravityforms' => $is_gf_active,
 				'wpPolls'      => $is_wp_polls_active,
-				'woocommerce'  => $is_woo_active,
 				'cf7'          => $is_cf7_active,
 				'wpforms'      => $is_wpforms_active,
 				'jetpack'      => $is_jetpack_active,
@@ -121,6 +121,7 @@ class Assets {
 				'forminator'   => $is_forminator_form_active,
 				'fluentForms'  => $is_fluent_forms_active,
 				'everestForms' => $is_everest_forms_active,
+				'ninjaForms'   => $is_ninja_forms_active,
 				'metform'      => $is_met_form_active,
 			)
 		);
@@ -211,10 +212,11 @@ class Assets {
 			'rtgodam-script',
 			'godamRestRoute',
 			array(
-				'url'     => get_rest_url( get_current_blog_id() ),
-				'homeUrl' => get_home_url( get_current_blog_id() ),
-				'nonce'   => wp_create_nonce( 'wp_rest' ),
-				'apiBase' => RTGODAM_API_BASE,
+				'url'      => get_rest_url( get_current_blog_id() ),
+				'homeUrl'  => get_home_url( get_current_blog_id() ),
+				'adminUrl' => admin_url(),
+				'nonce'    => wp_create_nonce( 'wp_rest' ),
+				'apiBase'  => RTGODAM_API_BASE,
 			)
 		);
 
@@ -288,7 +290,6 @@ class Assets {
 				'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
 				'enableFolderOrganization' => $enable_folder_organization,
 				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
-				'isWooActive'              => is_plugin_active( 'woocommerce/woocommerce.php' ),
 				'page'                     => $screen ? $screen->id : '',
 			)
 		);

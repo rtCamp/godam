@@ -109,6 +109,7 @@ const App = () => {
 					text={ __( 'New Folder', 'godam' ) }
 					className="button--full mb-spacing new-folder-button"
 					onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
+					disabled={ selectedFolder?.meta?.locked }
 				/>
 
 				<Button
@@ -124,7 +125,7 @@ const App = () => {
 						__next40pxDefaultSize
 						className="multiselect-button"
 						variant="secondary"
-						text={ ! isMultiSelecting ? __( 'Select', 'godam' ) : __( 'Cancel', 'godam' ) }
+						text={ ! isMultiSelecting ? __( 'Bulk Select', 'godam' ) : __( 'Cancel', 'godam' ) }
 						onClick={ () => dispatch( toggleMultiSelectMode() ) }
 					/>
 					<SelectControl
