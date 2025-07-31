@@ -32,6 +32,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Fetches data from an API and renders it using the provided render method.
 	 *
 	 * @param {Promise}  fetchPromise - The promise that resolves to the fetched data.
+	 *
 	 * @param {Function} renderMethod - The method to render the fetched data.
 	 */
 	async fetchAndRender( fetchPromise, renderMethod ) {
@@ -45,7 +46,9 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Fetches data from a given URL with the provided attachment ID.
 	 *
 	 * @param {string} url          - The API endpoint URL.
+	 *
 	 * @param {number} attachmentId - The ID of the attachment.
+	 *
 	 * @return {Promise<Object|null>} - The fetched data or null on failure.
 	 */
 	async fetchData( url, attachmentId ) {
@@ -76,6 +79,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Retrieves video thumbnails for the given attachment ID.
 	 *
 	 * @param {number} attachmentId - The ID of the attachment.
+	 *
 	 * @return {Promise<Object|null>} - The fetched thumbnails data or null.
 	 */
 	getVideoThumbnails( attachmentId ) {
@@ -90,6 +94,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Retrieves EXIF details for the given attachment ID.
 	 *
 	 * @param {number} attachmentId - The ID of the attachment.
+	 *
 	 * @return {Promise<Object|null>} - The fetched EXIF data or null.
 	 */
 	getExifDetails( attachmentId ) {
@@ -191,6 +196,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Creates a tile for uploading custom thumbnails.
 	 *
 	 * @param {boolean} uploadDisabled - Whether the upload button should be disabled.
+	 *
 	 * @return {HTMLElement} - The created upload tile element.
 	 */
 	createUploadTile( uploadDisabled ) {
@@ -231,8 +237,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Creates a custom thumbnail tile with controls.
 	 *
 	 * @param {string} thumbnailURL  - The URL of the thumbnail image.
+	 *
 	 * @param {string} selectedURL   - The URL of the currently selected thumbnail.
+	 *
 	 * @param {string} trashIconHTML - The HTML for the trash icon.
+	 *
 	 * @return {HTMLElement} - The created custom thumbnail tile element.
 	 */
 	createCustomThumbnailTile( thumbnailURL, selectedURL, trashIconHTML ) {
@@ -244,7 +253,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		const img = document.createElement( 'img' );
 		img.src = DOMPurify.sanitize( thumbnailURL );
-		img.alt = 'Custom Video Thumbnail';
+		img.alt = __( 'Custom Video Thumbnail', 'godam' );
 
 		const controls = document.createElement( 'div' );
 		controls.className = 'controls';
@@ -274,7 +283,9 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Creates a default thumbnail tile.
 	 *
 	 * @param {string} thumbnailURL - The URL of the thumbnail image.
+	 *
 	 * @param {string} selectedURL  - The URL of the currently selected thumbnail.
+	 *
 	 * @return {HTMLElement} - The created default thumbnail tile element.
 	 */
 	createDefaultThumbnailTile( thumbnailURL, selectedURL ) {
@@ -284,7 +295,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		}
 		const img = document.createElement( 'img' );
 		img.src = DOMPurify.sanitize( thumbnailURL );
-		img.alt = 'Video Thumbnail';
+		img.alt = __( 'Video Thumbnail', 'godam' );
 		li.appendChild( img );
 		return li;
 	},
@@ -322,7 +333,16 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		// Compose full container
 		const div = document.createElement( 'div' );
 		div.className = 'attachment-video-thumbnails';
-		div.innerHTML = `<div class="attachment-video-title"><h4>${ __( 'Video Thumbnails', 'godam' ) }</h4></div>`;
+
+		const containerDiv = document.createElement( 'div' );
+		containerDiv.className = 'attachment-video-title';
+
+		const heading = document.createElement( 'h4' );
+		heading.textContent = __( 'Video Thumbnails', 'godam' );
+
+		containerDiv.appendChild( heading );
+		div.appendChild( containerDiv );
+
 		div.appendChild( ul );
 
 		// Remove old and append new
