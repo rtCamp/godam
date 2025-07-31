@@ -230,6 +230,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				meta: {
 					...folder?.meta,
 					bookmark: ! isBookmarked,
+					locked: Boolean( folder?.meta?.locked ?? false ), // Ensure locked status remains unchanged
 				},
 			};
 
@@ -285,6 +286,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				meta: {
 					...folder?.meta,
 					locked: ! isCurrentlyLocked,
+					bookmark: Boolean( folder?.meta?.bookmark ?? false ), // Ensure bookmark status remains unchanged
 				},
 			};
 
