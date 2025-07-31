@@ -1,11 +1,4 @@
 /**
- * ShareManager is responsible for integrating a customizable share button into the Video.js player,
- * creating a modal UI with copyable links and social media sharing options.
- *
- * @module ShareManager
- */
-
-/**
  * External dependencies
  */
 import DOMPurify from 'isomorphic-dompurify';
@@ -32,7 +25,36 @@ import Complete from '../../../../../assets/src/images/check.svg';
 import videojs from 'video.js';
 
 /**
- * Class to manage share functionality in a Video.js player.
+ * ShareManager
+ *
+ * A utility class for managing share functionality in a Video.js player.
+ * It adds a custom share button to the player interface and displays a modal
+ * with shareable links and social media options.
+ *
+ * Core Features:
+ *
+ * 1. **Custom Share Button Integration**
+ * - Registers a new Video.js button component (`GodamShareButton`).
+ * - Dynamically selects icon based on player skin.
+ * - Appends button to control bar or DOM based on layout and screen size.
+ *
+ * 2. **Share Modal with Social and Embed Options**
+ * - Generates modal with page and embed links for the video.
+ * - Provides copy-to-clipboard functionality with visual feedback.
+ * - Includes social sharing links for platforms like Facebook, Twitter, LinkedIn, Reddit, WhatsApp, and Telegram.
+ *
+ * 3. **Accessibility and UX Enhancements**
+ * - Keyboard interaction supported (Enter and Space on buttons).
+ * - ESC key and outside-click handling for modal dismissal.
+ * - Uses `DOMPurify` to sanitize injected HTML content safely.
+ *
+ * @class ShareManager
+ * @param {Object}      player            - The Video.js player instance.
+ * @param {HTMLElement} video             - The target video element.
+ * @param {Object}      videoSetupOptions - Player setup configuration (e.g., skin style).
+ *
+ * @example
+ * const shareManager = new ShareManager(playerInstance, videoElement, setupOptions);
  */
 class ShareManager {
 	/**
