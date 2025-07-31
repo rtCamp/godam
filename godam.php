@@ -119,39 +119,6 @@ add_filter( 'plugin_action_links', 'rtgodam_action_links', 11, 2 );
 add_filter( 'network_admin_plugin_action_links', 'rtgodam_action_links', 11, 2 );
 
 /**
- * Check if plugin was updated and handle major version change.
- *
- * @param WP_Upgrader $upgrader_object WordPress upgrader instance.
- * @param array       $options Options passed to the upgrader.
- */
-function rtgodam_check_plugin_update( $upgrader_object, $options ) {
-	if (
-		'update' !== $options['action'] ||
-		'plugin' !== $options['type'] ||
-		! isset( $options['plugins'] )
-	) {
-		return;
-	}
-
-	foreach ( $options['plugins'] as $plugin_name ) {
-		if ( RTGODAM_BASE_NAME === $plugin_name ) {
-			$saved_version   = get_option( 'rtgodam_plugin_version' );
-			$current_version = RTGODAM_VERSION;
-
-			if ( version_compare( $current_version, $saved_version, '>' ) ) {
-				if ( rtgodam_is_major_release( $saved_version, $current_version ) ) {
-					set_transient( 'rtgodam_show_whats_new', true );
-				}
-
-				update_option( 'rtgodam_plugin_version', $current_version );
-			}
-		}
-	}
-}
-
-add_action( 'upgrader_process_complete', 'rtgodam_check_plugin_update', 10, 2 );
-
-/**
  * Runs when the plugin is activated.
  */
 function rtgodam_plugin_activate() {
