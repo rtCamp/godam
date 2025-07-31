@@ -35,7 +35,7 @@ class Video_Engagement {
 	 */
 	public function add_engagement_to_video( $attributes, $instance_id ) {
 		$attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
-		if ( empty( $attachment_id ) ) {
+		if ( empty( $attachment_id ) || ( isset( $attributes['displayEngagements'] ) && 'hide' === $attributes['displayEngagements'] ) ) {
 			return '';
 		}
 		?>
