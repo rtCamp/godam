@@ -51,7 +51,12 @@ import {
 	createChapterMarkers,
 	updateActiveChapter,
 	loadChapters,
-} from './chapters.js'; // Adjust path as needed
+} from './chapters.js';
+import {
+	formatTime,
+	validateTimeString,
+	parseTime,
+} from '../../utils/time-utils.js';
 
 /**
  * Global variables
@@ -717,21 +722,10 @@ function GODAMPlayer( videoRef = null ) {
 
 				input.readOnly = ! checkbox.checked;
 
-				// Helper functions
-				const secondsToMMSS = ( sec ) => `${ String( Math.floor( sec / 60 ) ).padStart( 2, '0' ) }:${ String( Math.floor( sec % 60 ) ).padStart( 2, '0' ) }`;
-				const mmssToSeconds = ( str ) => {
-					if ( ! validateMMSS( str ) ) {
-						return 0; // Return 0 for invalid input
-					}
-					const [ min = '0', sec = '0' ] = str.split( ':' );
-					return ( +min * 60 ) + +sec;
-				};
-				const validateMMSS = ( str ) => /^(0?[0-5]?\d):([0-5]\d)$/.test( str );
-
 				// Function to update share links every time the timestamp changes
 				const updateLinks = () => {
-					const timestamp = checkbox.checked && validateMMSS( input.value )
-						? mmssToSeconds( input.value )
+					const timestamp = checkbox.checked && validateTimeString( input.value )
+						? parseTime( input.value )
 						: null;
 
 					const fullPage = timestamp ? `${ videoLink }?t=${ timestamp }` : videoLink;
@@ -753,7 +747,7 @@ function GODAMPlayer( videoRef = null ) {
 				// Auto-fill input with current time when checked
 				checkbox.addEventListener( 'change', () => {
 					if ( checkbox.checked && video ) {
-						input.value = secondsToMMSS( video.currentTime || 0 );
+						input.value = formatTime( video.currentTime || 0 );
 					}
 					input.readOnly = ! checkbox.checked;
 					updateLinks();
