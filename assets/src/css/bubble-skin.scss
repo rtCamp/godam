@@ -2,7 +2,7 @@
 	container-type: inline-size;
 	container-name: godam-player-bubble-skin;
 
-	.vjs-big-play-button {
+	.video-js .vjs-big-play-button {
 		border-radius: 17px;
 		border: 2px solid #fff;
 
@@ -10,9 +10,13 @@
 			font-size: 24px;
 		}
 	}
+
+	.video-js .vjs-control .vjs-button {
+		margin: 0;
+	}
+
 	  // control bar styles
-  
-	  .vjs-control-bar {
+	  .video-js .vjs-control-bar {
 			background-color: transparent !important;
 			flex-direction: row-reverse;
 			margin: 0 auto;
@@ -24,6 +28,9 @@
 			span::before {
 				font-size: 1.7em;
 				line-height: 2.3;
+				display: flex;
+				align-items: center;
+				justify-content: center;
 			}
 		}
   
@@ -143,7 +150,6 @@
 			background-color: var(--rtgodam-control-bar-color, #000000AD) !important;
 			border-radius: 80px;
 			padding: 24px 40px;
-			box-shadow: 0 0 3px 2px #2f2c2cf2;
   
 			&:hover {
 			  transform: translateY(-50%);
@@ -227,7 +233,6 @@
 			align-items: center;
 			justify-content: center;
 			position: absolute;
-			box-shadow: 0 0 3px 2px #2f2c2cf2;
 
 			&:hover {
 			  background: #1C1C1C;
@@ -237,7 +242,7 @@
 
 	@container godam-player-bubble-skin (max-width: 600px) {
 
-		.vjs-control-bar {
+		.video-js .vjs-control-bar {
 
 			.vjs-progress-control {
 				max-width: 72%;
@@ -247,7 +252,7 @@
 
 	@container godam-player-bubble-skin (max-width: 480px) {
 
-		.vjs-control-bar {
+		.video-js .vjs-control-bar {
 			margin: -55px auto 0;
 			height: 5em !important;
 
@@ -397,7 +402,7 @@
 
 	@container godam-player-bubble-skin (max-width: 420px) {
 
-		.vjs-control-bar {
+		.video-js .vjs-control-bar {
 
 			[class^="vjs-skip-backward-"], [class^="vjs-skip-forward-"] { 
 				display: none !important;
@@ -429,16 +434,16 @@
 			}
 		}
 	}
-}
 
-@container godam-player-bubble-skin (min-width: 768px) {
-
-	.vjs-current-time {
-		left: 65px !important;
+	@container godam-player-bubble-skin (min-width: 768px) {
+	
+		.vjs-current-time {
+			left: 65px !important;
+		}
+	  
+		.vjs-duration-display {
+			right: 100px !important;
+		}
+	  
 	}
-  
-	.vjs-duration-display {
-		right: 100px !important;
-	}
-  
 }

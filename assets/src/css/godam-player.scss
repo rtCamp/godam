@@ -98,7 +98,7 @@
 	pointer-events: none; /* Prevent interaction with the overlay */
 }
 
-.video-js .vjs-big-play-button {
+.easydam-video-container .video-js .vjs-big-play-button {
 	background-color: var(--rtgodam-control-bar-color, #000) !important;
 	border: none;
 	cursor: pointer;
@@ -109,6 +109,7 @@
 	height: 50px;
 	left: 53%;
 	transition: transform 0.3s ease;
+	min-height: unset;
 
 	span::before {
 		font-size: 28px;
@@ -810,7 +811,7 @@ body.godam-share-modal-open {
 	}
 }
 
-.godam-share-button {
+.easydam-video-container .vjs-button.godam-share-button {
 	position: absolute;
 	opacity: 0;
 	visibility: hidden;
@@ -827,6 +828,8 @@ body.godam-share-modal-open {
 	border-radius: 50%;
 	display: flex;
 	transition: all 0.3s ease;
+	min-height: unset;
+	margin: 0;
 
 	@media screen and (max-width: 768px) {
 
@@ -837,7 +840,7 @@ body.godam-share-modal-open {
 	}
 }
 
-.easydam-video-container:hover .godam-share-button {
+.easydam-video-container:hover .vjs-button.godam-share-button {
 	opacity: 1;
 	visibility: visible;
 	pointer-events: auto;
@@ -994,6 +997,10 @@ body.godam-share-modal-open {
 
 .vjs-menu-content {
 	background-color: rgba(43, 51, 63, 0.9);
+}
+
+.vjs-menu .vjs-menu-content li {
+	margin-left: 0;
 }
 
 .vjs-menu ul.vjs-menu-content {
