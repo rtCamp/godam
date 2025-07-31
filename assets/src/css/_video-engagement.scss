@@ -149,10 +149,11 @@
         &-content {
             background-color: var(--wp--preset--color--white, #fff);
             border-radius: 10px;
-            padding: 40px;
-            width: calc(100% - 150px);
-            max-width: 1800px;
-            height: calc(100% - 200px);
+            padding: clamp(16px, 3.5vw, 40px);
+            width: calc(100% - clamp(72px, 16vw, 244px));
+            max-width: 1756px;
+            height: calc(100% - clamp(72px, 24vw, 254px) );
+            max-height: 906px;
             position: relative;
         }
 
@@ -260,6 +261,10 @@
             line-height: 1.5;
             font-weight: 700;
             margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
         }
 
         &-leave-comment {
