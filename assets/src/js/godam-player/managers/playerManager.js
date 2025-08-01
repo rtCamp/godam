@@ -5,6 +5,7 @@
 /**
  * WordPress dependencies
  */
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * VideoJs dependencies
@@ -210,7 +211,8 @@ export default class PlayerManager {
 	 */
 	seekBackward( player ) {
 		player.currentTime( Math.max( 0, player.currentTime() - 5 ) );
-		this.showIndicator( player.el(), 'backward', '<i class="fa-solid fa-backward"></i> 5s' );
+		/* translators: %d: number of seconds to seek backward */
+		this.showIndicator( player.el(), 'backward', sprintf( '<i class="fa-solid fa-backward"></i> %s', __( '5s', 'godam' ) ) );
 	}
 
 	/**
@@ -220,7 +222,8 @@ export default class PlayerManager {
 	 */
 	seekForward( player ) {
 		player.currentTime( player.currentTime() + 5 );
-		this.showIndicator( player.el(), 'forward', '5s <i class="fa-solid fa-forward"></i>' );
+		/* translators: %s: number of seconds to seek forward */
+		this.showIndicator( player.el(), 'forward', sprintf( '%s <i class="fa-solid fa-forward"></i>', __( '5s', 'godam' ) ) );
 	}
 
 	/**

@@ -5,7 +5,7 @@
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * VideoJs dependencies
@@ -847,7 +847,7 @@ export default class GodamVideoPlayer {
 		const imgElement = document.createElement( 'img' );
 
 		imgElement.src = controlBarSettings.customPlayBtnImg;
-		imgElement.alt = 'Custom Play Button';
+		imgElement.alt = __( 'Custom Play Button', 'godam' );
 		imgElement.style.cursor = 'pointer';
 
 		// Copy classes from original button
@@ -890,7 +890,7 @@ export default class GodamVideoPlayer {
 		class CustomButton extends CustomPlayButton {
 			constructor( p, options ) {
 				super( p, options );
-				this.controlText( 'Branding' );
+				this.controlText( __( 'Branding', 'godam' ) );
 			}
 
 			createEl() {
@@ -907,7 +907,7 @@ export default class GodamVideoPlayer {
 				}
 
 				img.id = 'branding-icon';
-				img.alt = 'Branding';
+				img.alt = __( 'Branding', 'godam' );
 				img.className = 'branding-icon';
 				el.appendChild( img );
 				return el;
@@ -1121,12 +1121,12 @@ export default class GodamVideoPlayer {
 	 */
 	getSkipText( layerType ) {
 		const skipTexts = {
-			[ LAYER_TYPES.FORM ]: 'Skip Form',
-			[ LAYER_TYPES.CTA ]: 'Skip',
-			[ LAYER_TYPES.POLL ]: 'Skip Poll',
+			[ LAYER_TYPES.FORM ]: __( 'Skip Form', 'godam' ),
+			[ LAYER_TYPES.CTA ]: __( 'Skip', 'godam' ),
+			[ LAYER_TYPES.POLL ]: __( 'Skip Poll', 'godam' ),
 		};
 
-		return skipTexts[ layerType ] || 'Skip';
+		return skipTexts[ layerType ] || __( 'Skip', 'godam' );
 	}
 
 	/**
@@ -1197,7 +1197,7 @@ export default class GodamVideoPlayer {
 	setupFormObserver( layerObj, skipButton ) {
 		const observer = new MutationObserver( () => {
 			if ( this.hasConfirmationMessage( layerObj.layerElement ) ) {
-				skipButton.textContent = 'Continue';
+				skipButton.textContent = __( 'Continue', 'godam' );
 				skipButton.classList.remove( 'hidden' );
 				observer.disconnect();
 			}
@@ -1416,13 +1416,15 @@ export default class GodamVideoPlayer {
 	createHotspotTooltip( hotspot, index ) {
 		const tooltipDiv = document.createElement( 'div' );
 		tooltipDiv.classList.add( 'hotspot-tooltip' );
-		tooltipDiv.textContent = hotspot.tooltipText || `Hotspot ${ index + 1 }`;
+		/* translators: %d: hotspot number */
+		tooltipDiv.textContent = hotspot.tooltipText || sprintf( __( 'Hotspot %d', 'godam' ), index + 1 );
 
 		if ( hotspot.link ) {
 			const hotspotLink = document.createElement( 'a' );
 			hotspotLink.href = hotspot.link;
 			hotspotLink.target = '_blank';
-			hotspotLink.textContent = hotspot.tooltipText || `Hotspot ${ index + 1 }`;
+			/* translators: %d: hotspot number */
+			hotspotLink.textContent = hotspot.tooltipText || sprintf( __( 'Hotspot %d', 'godam' ), index + 1 );
 			tooltipDiv.textContent = '';
 			tooltipDiv.appendChild( hotspotLink );
 		}
