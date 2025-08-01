@@ -98,6 +98,8 @@ export const FormLayerComponentType = {
 	metform: {
 		isActive: Boolean( window?.videoData?.metformActive ) ?? false,
 		component: MetForm,
+		idField: 'metform_id',
+		settingsUrl: '?post={formId}&action=elementor',
 	},
 };
 

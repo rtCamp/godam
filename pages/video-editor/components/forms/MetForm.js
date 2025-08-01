@@ -14,16 +14,17 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
-import { useGetSingleMetformQuery } from '../../redux/api/metform';
 import LayerControl from '../LayerControls';
 import FormSelector from './FormSelector';
-import { useEffect, useRef } from 'react';
+import { useState } from 'react';
+import clsx from 'clsx';
 
 const MetForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
-	const metforms = useSelector( ( state ) => state.videoReducer.metforms );
-	const { data: formHTML, isFetching } = useGetSingleMetformQuery( layer.metform_id );
+	const metforms = useSelector( ( state ) => state.videoReducer.metforms ) || [];
+
+	const [ isFetching, setIsFetching ] = useState( true );
 
 	const forms = metforms?.map( ( form ) => ( {
 		value: form.id,
@@ -31,6 +32,7 @@ const MetForm = ( { layerID } ) => {
 	} ) );
 
 	const changeFormID = ( formID ) => {
+		setIsFetching( true );
 		dispatch( updateLayerField( { id: layer.id, field: 'metform_id', value: formID } ) );
 	};
 
@@ -39,41 +41,12 @@ const MetForm = ( { layerID } ) => {
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isMetformPluginActive = Boolean( window?.videoData?.metformActive );
-
-	const iframeRef = useRef( null );
-
-	// Remove extra DOM elements from iframe.
-	useEffect( () => {
-		const iframe = iframeRef.current;
-		if ( ! iframe ) {
-			return;
-		}
-
-		iframe.onload = () => {
-			try {
-				const doc = iframe.contentDocument || iframe.contentWindow.document;
-				doc.body.style.background = 'none';
-
-				const elementToRemove = doc.querySelector( '.elementor-widget-heading' );
-				if ( elementToRemove ) {
-					elementToRemove.remove();
-				}
-				const qmOverlay = doc.querySelector( '#query-monitor-main' );
-				if ( qmOverlay ) {
-					qmOverlay.remove();
-				}
-			} catch ( err ) {
-				//eslint-disable-next-line no-console
-				console.warn( 'Unable to access iframe DOM', err );
-			}
-		};
-	}, [ formHTML ] );
+	const isMetFormPluginActive = Boolean( window?.videoData?.metformActive );
 
 	return (
 		<>
 			{
-				! isMetformPluginActive &&
+				! isMetFormPluginActive &&
 				<Notice
 					className="mb-4"
 					status="warning"
@@ -84,7 +57,13 @@ const MetForm = ( { layerID } ) => {
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isMetformPluginActive } className="gravity-form-selector mb-4" formID={ layer.metform_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector
+					disabled={ ! isValidAPIKey || ! isMetFormPluginActive }
+					className="met-form-selector mb-4"
+					formID={ layer.metform_id }
+					forms={ forms }
+					handleChange={ changeFormID }
+				/>
 			}
 
 			<LayerControl>
@@ -93,32 +72,36 @@ const MetForm = ( { layerID } ) => {
 						style={ {
 							backgroundColor: layer.bg_color,
 						} }
-						className="easydam-layer "
+						className="easydam-layer"
 					>
 
 						{
-							( formHTML && ! isFetching ) &&
-							<div className="form-container">
-								<iframe title="MetForm" src={ formHTML } ref={ iframeRef } height={ 600 } className="w-full" />
-							</div>
-						}
+							<div className={ clsx( 'form-container', 'metform', { loading: isFetching } ) }>
+								{ <iframe
+									src={ window.godamRestRoute.homeUrl + '?rtgodam-render-layer=metform&rtgodam-layer-id=' + layer?.metform_id }
+									title="Met Form"
+									scrolling="auto"
+									width="100%"
+									className={ isFetching ? 'hidden' : '' }
+									onLoad={ () => setIsFetching( false ) }
+								></iframe> }
 
-						{
-							isFetching &&
-							<div className="form-container">
-								<p>{ __( 'Loading form… ', 'godam' ) }</p>
+								{
+									isFetching &&
+									<p>{ __( 'Loading form…', 'godam' ) }</p>
+								}
 							</div>
 						}
 
 						{
 							! isValidAPIKey &&
-							<p className="text-sm text-gray-500">{ __( 'This feature is available in the premium version', 'godam' ) }</p>
+							<p className="text-sm text-gray-500">{ __( 'This features is available in premium version', 'godam' ) }</p>
 						}
 
 						{
-							formHTML &&
+							! isFetching &&
 							<Button
-								href={ `${ window?.videoData?.adminUrl }post.php?post=${ layer.metform_id }&action=edit` }
+								href={ `${ window?.videoData?.adminUrl }?post=${ layer.metform_id }&action=elementor` }
 								target="_blank"
 								variant="secondary"
 								icon={ pencil }
