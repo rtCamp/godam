@@ -15,7 +15,7 @@ import videojs from 'video.js';
 /**
  * Internal dependencies
  */
-import VideoPlayer from './videoPlayer.js';
+import VideoPlayer from '../videoPlayer.js';
 
 /**
  * Constants

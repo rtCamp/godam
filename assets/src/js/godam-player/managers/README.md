@@ -1,12 +1,14 @@
 # Video Player Refactoring
 
-This directory contains the refactored video player code that breaks down the large `GodamVideoPlayer` class into smaller, more manageable components following the Single Responsibility Principle.
+This directory contains the refactored video player manager components that support the main `videoPlayer.js` class. The main video player class is located at the parent level alongside `frontend.js`.
 
 ## File Structure
 
-### Core Files
-
+### Main Files (Parent Directory)
 - **`videoPlayer.js`** - Main video player class that orchestrates all managers
+- **`frontend.js`** - Existing frontend functionality
+
+### Manager Files (This Directory)
 - **`configurationManager.js`** - Handles video configuration and data parsing
 - **`controlsManager.js`** - Manages video controls, UI elements, and player customization
 - **`previewManager.js`** - Handles video preview functionality and state management
@@ -54,14 +56,14 @@ Each manager class has a single, well-defined responsibility:
 
 ### Original Usage (Deprecated)
 ```javascript
-import GodamVideoPlayer from './videoPlayer.js';
+import GodamVideoPlayer from './videoPlayer.js'; // Old large file
 const player = new GodamVideoPlayer(video, isDisplayingLayers);
 player.initialize();
 ```
 
 ### New Usage (Recommended)
 ```javascript
-import GodamVideoPlayer from './managers/videoPlayer.js';
+import GodamVideoPlayer from './videoPlayer.js'; // New refactored file
 const player = new GodamVideoPlayer(video, isDisplayingLayers);
 player.initialize();
 ```
@@ -81,18 +83,18 @@ The refactored architecture uses explicit communication between managers:
 
 To complete the migration:
 
-1. **Update imports** in files that use the video player
+1. **Update imports** in files that use the video player (now at `./videoPlayer.js`)
 2. **Test thoroughly** to ensure all functionality works as expected
-3. **Remove the original file** after confirming everything works
+3. **Remove the original large file** after confirming everything works
 4. **Update any documentation** that references the old file structure
 
 ## File Size Comparison
 
-- **Original file**: ~1600 lines
-- **Refactored files**: 
-  - Main player: ~200 lines
-  - Individual managers: 50-400 lines each
-  - Total: Similar line count but better organized
+- **Original file**: ~1600 lines (single large file)
+- **Refactored structure**: 
+  - Main player: ~200 lines (`videoPlayer.js`)
+  - Individual managers: 50-400 lines each (in `managers/` directory)
+  - Total: Similar line count but better organized and maintainable
 
 ## Next Steps
 

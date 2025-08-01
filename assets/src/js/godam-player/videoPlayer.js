@@ -6,14 +6,14 @@ import videojs from 'video.js';
 /**
  * Internal dependencies
  */
-import ConfigurationManager from './configurationManager.js';
-import ControlsManager from './controlsManager.js';
-import PreviewManager from './previewManager.js';
-import LayersManager from './layersManager.js';
-import EventsManager from './eventsManager.js';
-import AdsManager from './adsManager.js';
-import HoverManager from './hoverManager.js';
-import ShareManager from './shareManager.js';
+import ConfigurationManager from './managers/configurationManager.js';
+import ControlsManager from './managers/controlsManager.js';
+import PreviewManager from './managers/previewManager.js';
+import LayersManager from './managers/layersManager.js';
+import EventsManager from './managers/eventsManager.js';
+import AdsManager from './managers/adsManager.js';
+import HoverManager from './managers/hoverManager.js';
+import ShareManager from './managers/shareManager.js';
 
 /**
  * Refactored Video Player Class
