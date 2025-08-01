@@ -51,7 +51,12 @@ import {
 	createChapterMarkers,
 	updateActiveChapter,
 	loadChapters,
-} from './chapters.js'; // Adjust path as needed
+} from './chapters.js';
+import {
+	formatTime,
+	validateTimeString,
+	parseTime,
+} from '../../utils/time-utils.js';
 
 import HoverManager from './managers/hoverManager.js';
 
@@ -468,8 +473,8 @@ function GODAMPlayer( videoRef = null ) {
 				return el;
 			}
 
-			copyToClipboard( inputId ) {
-				const input = document.getElementById( inputId );
+			copyToClipboard( inputSelector ) {
+				const input = document.querySelector( inputSelector );
 
 				if ( ! input ) {
 					return;
@@ -535,44 +540,45 @@ function GODAMPlayer( videoRef = null ) {
 				}
 
 				const videoLink = `${ baseUrl }/web/video/${ jobId }`;
-				const embedCode = `<iframe src="${ baseUrl }/web/embed/${ jobId }"></iframe>`;
+				const embedUrl = `${ baseUrl }/web/embed/${ jobId }`;
+				const embedCode = `<iframe src="${ embedUrl }"></iframe>`;
 				const encodedLink = encodeURI( videoLink );
 				const message = encodeURIComponent( __( 'Check out this video!', 'godam' ) );
 
 				const socialLinksData = [
 					{
 						className: 'facebook',
-						href: `https://www.facebook.com/share.php?u=${ encodedLink }`,
+						href: 'https://www.facebook.com/share.php?u=',
 						icon: Facebook,
 						alt: __( 'Facebook icon', 'godam' ),
 					},
 					{
 						className: 'twitter',
-						href: `https://twitter.com/intent/tweet?url=${ encodedLink }&text=${ message }`,
+						href: `https://twitter.com/intent/tweet?text=${ message }&url=`,
 						icon: Twitter,
 						alt: __( 'Twitter icon', 'godam' ),
 					},
 					{
 						className: 'linkedin',
-						href: `https://www.linkedin.com/sharing/share-offsite/?url=${ encodedLink }&text=${ message }`,
+						href: `https://www.linkedin.com/sharing/share-offsite/?text=${ message }&url=`,
 						icon: LinkedIn,
 						alt: __( 'LinkedIn icon', 'godam' ),
 					},
 					{
 						className: 'reddit',
-						href: `http://www.reddit.com/submit?url=${ encodedLink }&title=${ message }`,
+						href: `http://www.reddit.com/submit?title=${ message }&url=`,
 						icon: Reddit,
 						alt: __( 'Reddit icon', 'godam' ),
 					},
 					{
 						className: 'whatsapp',
-						href: `https://api.whatsapp.com/send?text=${ message }: ${ encodedLink }`,
+						href: `https://api.whatsapp.com/send?text=${ message }: `,
 						icon: Whatsapp,
 						alt: __( 'WhatsApp icon', 'godam' ),
 					},
 					{
 						className: 'telegram',
-						href: `https://telegram.me/share/url?url=${ encodedLink }&text=${ message }`,
+						href: `https://telegram.me/share/url?text=${ message }&url=`,
 						icon: Telegram,
 						alt: __( 'Telegram icon', 'godam' ),
 					},
@@ -582,7 +588,7 @@ function GODAMPlayer( videoRef = null ) {
 					<div class="share-modal-popup">
 						<div class="share-modal-popup__header">
 							<span class="share-modal-popup__title">${ __( 'Share Media', 'godam' ) }</span>
-							<div id="cancel-button" class="share-modal-popup__close-button" tabindex="0">&times;</div>
+							<div class="share-modal-popup__close-button" tabindex="0">&times;</div>
 						</div>
 
 						<div class="share-modal-popup__content">
@@ -595,8 +601,8 @@ function GODAMPlayer( videoRef = null ) {
 							<div class='share-modal-popup__input-container'>
 								<p class='share-modal-input-text'>${ __( 'Page Link', 'godam' ) }</p>
 								<div class="share-modal-input-group">
-									<input id="page-link" type="text" value="${ videoLink }" readonly tabindex="0" />
-									<span id="copy-page-link" class="copy-button" tabindex="0">
+									<input class="page-link" type="text" value="${ videoLink }" readonly tabindex="0" />
+									<span class="copy-page-link copy-button" tabindex="0">
 										<img src="${ CopyIcon }" alt='${ __( 'copy icon', 'godam' ) }' height="24" width="24" />
 									</span>
 								</div>
@@ -605,11 +611,25 @@ function GODAMPlayer( videoRef = null ) {
 							<div class='share-modal-popup__input-container'>
 								<p class='share-modal-input-text'>${ __( 'Embed', 'godam' ) }</p>
 								<div class="share-modal-input-group">
-									<input id="embed-code" type="text" value='${ embedCode }' readonly tabindex="0" />
-									<span id="copy-embed-code" class="copy-button" tabindex="0">
+									<input class="embed-code" type="text" value='${ embedCode }' readonly tabindex="0" />
+									<span class="copy-embed-code copy-button" tabindex="0">
 										<img src="${ CopyIcon }" alt='${ __( 'copy icon', 'godam' ) }' height="24" width="24" />
 									</span>
 								</div>
+							</div>
+							<div class='share-modal-popup__timestamp-container'>
+								<label for="use-timestamp">
+								<input
+									type="checkbox"
+									class="use-timestamp"
+								/>
+								<span>${ __( 'Start at', 'godam' ) }</span>
+								<input
+									class="timestamp-input"
+									type="text"
+									placeholder=${ __( 'mm:ss', 'godam' ) }
+								/>
+								</label>
 							</div>
 						</div>
 					</div>
@@ -625,15 +645,15 @@ function GODAMPlayer( videoRef = null ) {
 				document.body.classList.add( 'godam-share-modal-open' );
 
 				// Cache elements
-				const cancelButton = shareModal.querySelector( '#cancel-button' );
-				const copyPageLinkBtn = shareModal.querySelector( '#copy-page-link' );
-				const copyEmbedCodeBtn = shareModal.querySelector( '#copy-embed-code' );
+				const cancelButton = shareModal.querySelector( '.share-modal-popup__close-button' );
+				const copyPageLinkBtn = shareModal.querySelector( '.copy-page-link' );
+				const copyEmbedCodeBtn = shareModal.querySelector( '.copy-embed-code' );
 
 				// Assign social links hrefs
 				socialLinksData.forEach( ( { className, href } ) => {
 					const el = shareModal.querySelector( `.${ className }` );
 					if ( el ) {
-						el.href = href;
+						el.href = href + encodedLink;
 					}
 				} );
 
@@ -667,20 +687,20 @@ function GODAMPlayer( videoRef = null ) {
 				document.addEventListener( 'keydown', handleEscapeKey );
 
 				// Event listeners for copy buttons on Enter or Space
-				const handleCopyButtonKeyDown = ( e, inputId ) => {
+				const handleCopyButtonKeyDown = ( e, inputSelector ) => {
 					if ( e.key === 'Enter' || e.key === ' ' ) {
 						e.preventDefault();
-						this.copyToClipboard( inputId );
+						this.copyToClipboard( inputSelector );
 					}
 				};
 
 				// Event listeners for copy buttons
-				copyPageLinkBtn.addEventListener( 'click', () => this.copyToClipboard( 'page-link' ) );
-				copyEmbedCodeBtn.addEventListener( 'click', () => this.copyToClipboard( 'embed-code' ) );
+				copyPageLinkBtn.addEventListener( 'click', () => this.copyToClipboard( '.page-link' ) );
+				copyEmbedCodeBtn.addEventListener( 'click', () => this.copyToClipboard( '.embed-code' ) );
 
 				// Listen for Enter/Space on copy buttons
-				copyPageLinkBtn.addEventListener( 'keydown', ( e ) => handleCopyButtonKeyDown( e, 'page-link' ) );
-				copyEmbedCodeBtn.addEventListener( 'keydown', ( e ) => handleCopyButtonKeyDown( e, 'embed-code' ) );
+				copyPageLinkBtn.addEventListener( 'keydown', ( e ) => handleCopyButtonKeyDown( e, '.page-link' ) );
+				copyEmbedCodeBtn.addEventListener( 'keydown', ( e ) => handleCopyButtonKeyDown( e, '.embed-code' ) );
 
 				cancelButton.addEventListener( 'click', closeModal );
 				cancelButton.addEventListener( 'keydown', ( e ) => {
@@ -688,6 +708,59 @@ function GODAMPlayer( videoRef = null ) {
 						e.preventDefault();
 						closeModal();
 					}
+				} );
+
+				// Initialize timestamp checkbox and input
+				const checkbox = shareModal.querySelector( '.use-timestamp' );
+				const input = shareModal.querySelector( '.timestamp-input' );
+				const pageLinkInput = shareModal.querySelector( '.page-link' );
+				const embedInput = shareModal.querySelector( '.embed-code' );
+
+				if ( ! checkbox || ! input || ! pageLinkInput || ! embedInput ) {
+					return;
+				}
+
+				input.readOnly = ! checkbox.checked;
+
+				// Function to update share links every time the timestamp changes
+				const updateLinks = () => {
+					const timestamp = checkbox.checked && validateTimeString( input.value )
+						? parseTime( input.value )
+						: null;
+
+					const fullPage = timestamp ? `${ videoLink }?t=${ timestamp }` : videoLink;
+					const fullEmbed = timestamp ? `<iframe src="${ embedUrl }?t=${ timestamp }"></iframe>` : embedCode;
+					const encodedHref = encodeURI( fullPage );
+
+					pageLinkInput.value = fullPage;
+					embedInput.value = fullEmbed;
+
+					// Update social share URLs
+					socialLinksData.forEach( ( { className, href } ) => {
+						const el = shareModal.querySelector( `.${ className }` );
+						if ( el ) {
+							el.href = href + encodedHref;
+						}
+					} );
+				};
+
+				// Auto-fill input with current time when checked
+				checkbox.addEventListener( 'change', () => {
+					if ( checkbox.checked && video ) {
+						input.value = formatTime( video.currentTime || 0 );
+					}
+					input.readOnly = ! checkbox.checked;
+					updateLinks();
+				} );
+
+				// Live auto-format mm:ss
+				let debounceTimeout;
+
+				input.addEventListener( 'input', () => {
+					clearTimeout( debounceTimeout );
+					debounceTimeout = setTimeout( () => {
+						updateLinks();
+					}, 300 );
 				} );
 			}
 		}

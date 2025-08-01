@@ -1,20 +1,10 @@
+/**
+ * Internal dependencies
+ */
+import { formatTime } from '../../utils/time-utils.js';
+
 // let chapters = [];
 let currentChapterIndex = -1;
-
-// Function to format time in MM:SS format
-function formatTime( seconds ) {
-	if ( seconds >= 3600 ) {
-		// HH:MM:SS format
-		const hours = Math.floor( seconds / 3600 );
-		const mins = Math.floor( ( seconds % 3600 ) / 60 );
-		const secs = Math.floor( seconds % 60 );
-		return `${ hours }:${ mins.toString().padStart( 2, '0' ) }:${ secs.toString().padStart( 2, '0' ) }`;
-	}
-	// MM:SS format
-	const mins = Math.floor( seconds / 60 );
-	const secs = Math.floor( seconds % 60 );
-	return `${ mins }:${ secs.toString().padStart( 2, '0' ) }`;
-}
 
 // Function to create chapter markers on progress bar
 export function createChapterMarkers( player, chapters ) {
