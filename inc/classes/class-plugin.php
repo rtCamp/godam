@@ -18,6 +18,7 @@ use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Permalinks;
+use RTGODAM\Inc\Update;
 
 use RTGODAM\Inc\Post_Types\GoDAM_Video;
 
@@ -41,6 +42,7 @@ use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\REST_API\Video_Migration;
+use RTGODAM\Inc\REST_API\Release_posts;
 use RTGODAM\Inc\Gravity_Forms;
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
@@ -68,6 +70,7 @@ class Plugin {
 	protected function __construct() {
 
 		// Load plugin classes.
+		Update::get_instance();
 		Assets::get_instance();
 		Blocks::get_instance();
 		Pages::get_instance();
@@ -107,9 +110,6 @@ class Plugin {
 		// Handle layer rendering for video editor.
 		add_filter( 'query_vars', array( $this, 'add_render_layer_query_var_for_video_editor' ) );
 		add_filter( 'template_include', array( $this, 'update_render_layer_template_for_video_editor' ) );
-
-		// Check and update plugin version on admin initialization.
-		add_action( 'admin_init', array( $this, 'rtgodam_update_plugin_version' ) );
 	}
 
 	/**
@@ -158,6 +158,7 @@ class Plugin {
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
 		Video_Migration::get_instance();
+		Release_Posts::get_instance();
 	}
 
 	/**
@@ -244,23 +245,5 @@ class Plugin {
 		$query_vars[] = 'rtgodam-layer-id';
 
 		return $query_vars;
-	}
-
-	/**
-	 * Update the stored plugin version on version change.
-	 *
-	 * If major update is detected, sets a transient to show the "What's New" page.
-	 */
-	public function rtgodam_update_plugin_version() {
-		$saved_version   = get_option( 'rtgodam_plugin_version' );
-		$current_version = RTGODAM_VERSION;
-
-		if ( version_compare( $current_version, $saved_version, '>' ) ) {
-			if ( rtgodam_is_major_release( $saved_version, $current_version ) ) {
-				set_transient( 'rtgodam_show_whats_new', true );
-			}
-
-			update_option( 'rtgodam_plugin_version', $current_version );
-		}
 	}
 }

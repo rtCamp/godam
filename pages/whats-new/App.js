@@ -15,8 +15,24 @@ const App = () => {
 	const [ majorReleaseData, setFeatures ] = useState( {} );
 
 	useEffect( () => {
-		setFeatures( data );
+		const fetchData = async () => {
+			try {
+				const response = await fetch( '/wp-json/godam/v1/release-posts' );
+				const resData = await response.json();
+				setFeatures( resData );
+			} catch ( error ) {
+				setFeatures( data );
+			}
+		};
+
+		fetchData();
 	}, [] );
+
+	useEffect( () => {
+		if ( majorReleaseData.features && majorReleaseData.features.length > 0 ) {
+			document.dispatchEvent( new CustomEvent( 'whatsNewContentReady' ) );
+		}
+	}, [ majorReleaseData ] );
 
 	const primaryUpdates = majorReleaseData.features ? majorReleaseData.features.slice( 0, 3 ) : [];
 	const otherUpdates = majorReleaseData.features ? majorReleaseData.features.slice( 3 ) : [];
@@ -93,7 +109,6 @@ const App = () => {
 									<span className="tag">{ feature.tag }</span>
 									<h2>{ feature.title }</h2>
 									<p>{ feature.description }</p>
-									<h3>{ feature.tag }</h3>
 									<ol>
 										{ feature?.points?.map( ( point, pointIndex ) => (
 											<li key={ pointIndex }>{ point }</li>

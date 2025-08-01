@@ -941,8 +941,6 @@ class Pages {
 
 	/**
 	 * Redirects to "What's New" admin page after a major plugin update.
-	 *
-	 * @return void
 	 */
 	public function redirect_to_whats_new() {
 		if ( ! is_admin() ) {
@@ -950,7 +948,11 @@ class Pages {
 		}
 
 		if ( get_transient( 'rtgodam_show_whats_new' ) ) {
+			// Redirect only once, then clean up any related transient data.
 			delete_transient( 'rtgodam_show_whats_new' );
+			delete_transient( 'rtgodam_major_release_data' );
+
+			// Redirect to "What's New" admin page.
 			wp_safe_redirect( admin_url( 'admin.php?page=' . $this->whats_new_slug ) );
 			exit;
 		}
