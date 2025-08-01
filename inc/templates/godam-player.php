@@ -93,11 +93,14 @@ $poster_image = ! empty( $poster_image ) ? $poster_image : '';
 $job_id = '';
 
 $sources = array();
+
+if ( empty( $attachment_id ) ) {
+	$job_id = ! empty( $attributes['cmmId'] ) ? sanitize_text_field( $attributes['cmmId'] ) : '';
+}
+
 if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$sources = $attributes['sources'];
-} elseif ( empty( $attachment_id ) &&
-	( ! empty( $src || ! empty( $transcoded_url ) ) )
-) {
+} elseif ( empty( $attachment_id ) && ! ( empty( $src ) && empty( $transcoded_url ) ) ) {
 	$sources = array();
 	if ( ! empty( $transcoded_url ) ) {
 		$sources[] = array(
@@ -139,6 +142,7 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 		'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
 	);
 }
+
 $easydam_control_bar_color = 'initial'; // Default color.
 
 $godam_settings         = get_option( 'rtgodam-settings', array() );
