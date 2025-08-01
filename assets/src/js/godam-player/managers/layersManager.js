@@ -4,26 +4,9 @@
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
- * Constants
+ * Internal dependencies
  */
-const FORM_TYPES = {
-	GRAVITY: 'gravity',
-	WPFORMS: 'wpforms',
-	EVEREST: 'everestforms',
-	CF7: 'cf7',
-	JETPACK: 'jetpack',
-	SUREFORMS: 'sureforms',
-	FORMINATOR: 'forminator',
-	FLUENT: 'fluentforms',
-	NINJA: 'ninjaforms',
-};
-
-const LAYER_TYPES = {
-	FORM: 'form',
-	CTA: 'cta',
-	POLL: 'poll',
-	HOTSPOT: 'hotspot',
-};
+import { LAYER_TYPES, FORM_TYPES } from '../utils/constants.js';
 
 /**
  * Layers Manager

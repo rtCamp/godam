@@ -6,16 +6,7 @@ import {
 	updateActiveChapter,
 	loadChapters,
 } from '../chapters.js';
-
-/**
- * Constants
- */
-const PLAYER_SKINS = {
-	DEFAULT: 'Default',
-	MINIMAL: 'Minimal',
-	PILLS: 'Pills',
-	CLASSIC: 'Classic',
-};
+import { PLAYER_SKINS } from '../utils/constants.js';
 
 /**
  * Events Manager

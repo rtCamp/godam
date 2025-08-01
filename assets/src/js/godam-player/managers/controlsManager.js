@@ -13,16 +13,7 @@ import { __ } from '@wordpress/i18n';
  */
 import GoDAM from '../../../../../assets/src/images/GoDAM.png';
 import SettingsButton from '../masterSettings.js';
-
-/**
- * Constants
- */
-const PLAYER_SKINS = {
-	DEFAULT: 'Default',
-	MINIMAL: 'Minimal',
-	PILLS: 'Pills',
-	CLASSIC: 'Classic',
-};
+import { PLAYER_SKINS } from '../utils/constants.js';
 
 /**
  * Controls Manager

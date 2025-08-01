@@ -16,17 +16,7 @@ import videojs from 'video.js';
  * Internal dependencies
  */
 import VideoPlayer from '../videoPlayer.js';
-
-/**
- * Constants
- */
-const KEYBOARD_CONTROLS = {
-	FULLSCREEN: 'f',
-	SEEK_BACKWARD: 'arrowleft',
-	SEEK_FORWARD: 'arrowright',
-	PLAY_PAUSE: ' ',
-	PLAY_PAUSE_ALT: 'spacebar',
-};
+import { KEYBOARD_CONTROLS } from '../utils/constants.js';
 
 /**
  * Main GoDAM Player Manager Class
