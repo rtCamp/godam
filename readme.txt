@@ -80,11 +80,15 @@ Check out our source code and contribute to the plugin on GitHub: [Official GoDA
 ✓ Watermarking support to protect video content.
 ✓ Automatically compress and resize videos on upload to reduce storage and bandwidth.
 
+[youtube https://www.youtube.com/watch?v=ZTdH530k1Xk]
+
 📌 **GoDAM Central**
 ✓ Unified dashboard for managing all assets in one place.
 ✓ Organize videos, images, and documents into folders with search, filters, and sharing options.
 ✓ Each video gets a dedicated single video page with time-stamped comments and reactions for team collaboration.
 ✓ Automatically sync uploaded videos with the WordPress Media Library for easy access across your site.
+
+[youtube https://www.youtube.com/watch?v=X4NPuLDHS-U]
 
 📌 **Advanced Video Analytics**
 ✓ Monitor viewer behavior and engagement through [detailed metrics and heatmaps](https://godam.io/features/analytics/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=analytics).
