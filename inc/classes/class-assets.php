@@ -105,7 +105,6 @@ class Assets {
 		$is_fluent_forms_active    = is_plugin_active( 'fluentform/fluentform.php' );
 		$is_everest_forms_active   = is_plugin_active( 'everest-forms/everest-forms.php' );
 		$is_ninja_forms_active     = is_plugin_active( 'ninja-forms/ninja-forms.php' );
-
 		$is_met_form_active        = is_plugin_active( 'metform/metform.php' );
 
 		wp_localize_script(
