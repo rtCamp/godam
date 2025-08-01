@@ -11,6 +11,7 @@ import ControlsManager from './managers/controlsManager.js';
 import PreviewManager from './managers/previewManager.js';
 import LayersManager from './managers/layersManager.js';
 import EventsManager from './managers/eventsManager.js';
+import ChaptersManager from './managers/chaptersManager.js';
 import AdsManager from './managers/adsManager.js';
 import HoverManager from './managers/hoverManager.js';
 import ShareManager from './managers/shareManager.js';
@@ -32,6 +33,7 @@ export default class GodamVideoPlayer {
 		this.previewManager = null;
 		this.layersManager = null;
 		this.eventsManager = null;
+		this.chaptersManager = null;
 		this.adsManager = null;
 		this.hoverManager = null;
 		this.shareManager = null;
@@ -128,6 +130,9 @@ export default class GodamVideoPlayer {
 		// Initialize events manager
 		this.eventsManager = new EventsManager( this.player, this.video, this.configManager );
 
+		// Initialize chapters manager
+		this.chaptersManager = new ChaptersManager( this.player );
+
 		// Initialize ads manager
 		this.adsManager = new AdsManager( this.player, this.configManager );
 
@@ -177,7 +182,7 @@ export default class GodamVideoPlayer {
 	initializeChapters() {
 		const chaptersData = this.configManager.getChaptersData();
 		if ( chaptersData?.length > 0 ) {
-			this.eventsManager.processChaptersData( chaptersData );
+			this.chaptersManager.processChaptersData( chaptersData );
 		}
 	}
 

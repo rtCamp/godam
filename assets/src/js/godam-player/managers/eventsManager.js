@@ -1,11 +1,6 @@
 /**
  * Internal dependencies
  */
-import {
-	createChapterMarkers,
-	updateActiveChapter,
-	loadChapters,
-} from '../chapters.js';
 import { PLAYER_SKINS } from '../utils/constants.js';
 
 /**
@@ -17,7 +12,6 @@ export default class EventsManager {
 		this.player = player;
 		this.video = video;
 		this.config = config;
-		this.chaptersData = [];
 		this.handleVideoResize = this.handleVideoResize.bind( this );
 	}
 
@@ -65,31 +59,10 @@ export default class EventsManager {
 	}
 
 	/**
-	 * Set chapters data
-	 *
-	 * @param {Array} chaptersData - Chapters data array
-	 */
-	setChaptersData( chaptersData ) {
-		this.chaptersData = chaptersData;
-	}
-
-	/**
 	 * Handle duration change events
 	 */
 	handleDurationChange() {
-		const duration = this.player.duration();
-		if ( ! duration || duration === Infinity || ! this.chaptersData?.length ) {
-			return;
-		}
-
-		// Filter chapters beyond duration
-		this.chaptersData = this.chaptersData.filter( ( ch ) => ch.startTime < duration );
-
-		// Set endTime for the last valid chapter
-		if ( this.chaptersData.length > 0 ) {
-			this.chaptersData[ this.chaptersData.length - 1 ].endTime = duration;
-			createChapterMarkers( this.player, this.chaptersData );
-		}
+		// Duration change handling can be extended here if needed
 	}
 
 	/**
@@ -97,11 +70,6 @@ export default class EventsManager {
 	 */
 	handleTimeUpdate() {
 		const currentTime = this.player.currentTime();
-
-		// Update chapters
-		if ( this.chaptersData?.length > 0 ) {
-			updateActiveChapter( currentTime, this.chaptersData );
-		}
 
 		// Call external time update handler
 		if ( this.onTimeUpdate ) {
@@ -235,28 +203,5 @@ export default class EventsManager {
 			};
 			this.player.one( 'play', hideOnFirstPlay );
 		}
-	}
-
-	/**
-	 * Process chapters data
-	 *
-	 * @param {Array} chaptersData - Chapters data array
-	 */
-	processChaptersData( chaptersData ) {
-		// Sort chapters by start time
-		chaptersData.sort( ( a, b ) => a.startTime - b.startTime );
-
-		// Calculate end times
-		chaptersData.forEach( ( chapter, index ) => {
-			if ( index < chaptersData.length - 1 ) {
-				chapter.endTime = chaptersData[ index + 1 ].startTime;
-			} else {
-				chapter.endTime = null; // Will be set to video duration when available
-			}
-		} );
-
-		// Load chapters using the chapters.js module
-		loadChapters( this.player, chaptersData );
-		this.setChaptersData( chaptersData );
 	}
 }
