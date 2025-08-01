@@ -32,6 +32,13 @@ if ( ! defined( 'RTGODAM_URL' ) ) {
 	define( 'RTGODAM_URL', plugin_dir_url( __FILE__ ) );
 }
 
+if ( ! defined( 'RTGODAM_FILE' ) ) {
+	/**
+	 * The main plugin file path
+	 */
+	define( 'RTGODAM_FILE', __FILE__ );
+}
+
 if ( ! defined( 'RTGODAM_BASE_NAME' ) ) {
 	/**
 	 * The base name of the plugin directory
@@ -64,22 +71,41 @@ if ( ! defined( 'RTGODAM_IO_API_BASE' ) ) {
 
 require_once RTGODAM_PATH . 'inc/helpers/autoloader.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RTGODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
+require_once RTGODAM_PATH . 'inc/helpers/filesystem-utils.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RTGODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
 global $rtgodam_transcoder_admin;
 
 /**
- * Initiate file system.
+ * Load plugin textdomain for translations.
  */
-\RTGODAM\Inc\FileSystem::get_instance();
+function rtgodam_load_textdomain() {
+	load_plugin_textdomain(
+		'godam',
+		false,
+		dirname( RTGODAM_BASE_NAME ) . '/languages'
+	);
+}
+
+// Load translations on init hook (proper timing)
+add_action( 'init', 'rtgodam_load_textdomain', 1 );
+
+/**
+ * Initiate file system when WordPress is ready.
+ */
+add_action( 'plugins_loaded', function() {
+	\RTGODAM\Inc\FileSystem::get_instance();
+} );
 
 $rtgodam_transcoder_admin = new RTGODAM_Transcoder_Admin();
 
 /**
- * Initiate blocks.
+ * Initiate plugin main class when WordPress and translations are ready.
  */
-\RTGODAM\Inc\Plugin::get_instance();
+add_action( 'init', function() {
+	\RTGODAM\Inc\Plugin::get_instance();
+}, 10 );
 
 /**
  * Add Settings/Docs link to plugins area.
@@ -101,7 +127,7 @@ function rtgodam_action_links( $links, $file ) {
 	$settings_url = sprintf(
 		'<a href="%1$s">%2$s</a>',
 		esc_url( admin_url( 'admin.php?page=rtgodam_settings' ) ),
-		esc_html__( 'Settings', 'godam' )
+		esc_html( 'Settings' ) // Remove early translation call
 	);
 
 	return array_merge(
