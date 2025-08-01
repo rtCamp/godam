@@ -43,7 +43,6 @@ export default class GodamVideoPlayer {
 	initialize() {
 		this.setupVideoElement();
 		this.initializePlayer();
-		this.setupEventListeners();
 	}
 
 	/**
@@ -89,6 +88,9 @@ export default class GodamVideoPlayer {
 			this.setupCaptionsButton();
 			this.player.jobId = this.video.dataset.job_id;
 			this.initializeChapters();
+
+			// Now that managers are initialized, we can safely access them
+			this.setupEventListeners();
 		} );
 	}
 
@@ -183,9 +185,9 @@ export default class GodamVideoPlayer {
 	 * Setup event listeners
 	 */
 	setupEventListeners() {
-		this.eventsManager.setupEventListeners();
-		this.layersManager.setupLayers();
-		this.adsManager.setupAdsIntegration();
+		this.eventsManager?.setupEventListeners();
+		this.layersManager?.setupLayers();
+		this.adsManager?.setupAdsIntegration();
 	}
 
 	/**
