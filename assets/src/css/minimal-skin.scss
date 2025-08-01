@@ -2,11 +2,11 @@
 	container-type: inline-size;
 	container-name: godam-player-minimal-skin;
 
-	.vjs-control-bar {
+	.video-js .vjs-control-bar {
 		background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0) 100%) !important;
 	}
 
-	.vjs-big-play-button {
+	.video-js .vjs-big-play-button {
 		background-color: transparent !important;
 		border: 3px solid #fff !important;
 		box-shadow: inset 8px 6px 15px 0 #4240408f;
@@ -17,12 +17,12 @@
 		}
 	}
 	
-	.vjs-volume-control.vjs-control.vjs-volume-vertical {
+	.video-js .vjs-volume-control.vjs-control.vjs-volume-vertical {
 		background-color: transparent !important;
 	}
 
-	[class^="vjs-skip-backward-"],
-	[class^="vjs-skip-forward-"] {
+	.video-js [class^="vjs-skip-backward-"],
+	.video-js [class^="vjs-skip-forward-"] {
 		display: none;
 	}
 
@@ -33,7 +33,7 @@
 		justify-content: center;
 	}
 
-	.vjs-menu-content {
+	.video-js .vjs-menu-content {
 		background-color: #fff !important;
 		color: #000;
 		border-radius: 4px;
@@ -61,11 +61,11 @@
 		}
 	}
 
-	.vjs-fullscreen-control {
+	.video-js .vjs-fullscreen-control {
 		order: 3;
 	}
 
-	.vjs-settings-button {
+	.video-js .vjs-settings-button {
 		order: 2;
 	}
 
@@ -84,13 +84,13 @@
 		}
 	}
 
-	.vjs-remaining-time {
+	.video-js .vjs-remaining-time {
 		display: none;
 	}
 
 	@container godam-player-minimal-skin (max-width: 480px) {
 		
-		.vjs-control-bar {
+		.video-js .vjs-control-bar {
 			height: 6em !important;
 
 			.vjs-control {
@@ -161,7 +161,7 @@
 
 		}
 
-		.vjs-control-bar>.vjs-subs-caps-button.vjs-control {
+		.video-js .vjs-control-bar>.vjs-subs-caps-button.vjs-control {
 			position: absolute;
 			bottom: 0;
 			right: calc(3 * 40px);
@@ -178,7 +178,7 @@
 			padding: 0;
 		}
 
-		.vjs-menu {
+		.video-js .vjs-menu {
 			width: 8em;
 
 			.vjs-menu-content {
