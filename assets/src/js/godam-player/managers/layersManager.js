@@ -444,9 +444,28 @@ export default class LayersManager {
 	handlePreviewStateChange( newValue ) {
 		this.formLayers.forEach( ( layer ) => {
 			if ( ! newValue ) {
-				this.handleLayerDisplay( layer );
+				const layerConfig = this.mapLayerToConfig( layer );
+				this.handleLayerDisplay( layerConfig );
 			}
 		} );
+	}
+
+	/**
+	 * Map a layer object to the expected layer configuration format
+	 *
+	 * @param {Object} layerObj - Layer object from formLayers
+	 * @return {Object} - Layer configuration object
+	 */
+	mapLayerToConfig( layerObj ) {
+		return {
+			id: layerObj.id || 'unknown',
+			type: layerObj.type || 'form',
+			displayTime: layerObj.displayTime,
+			allow_skip: layerObj.allowSkip,
+			custom_css: layerObj.custom_css,
+			// Map the layerElement back to what handleLayerDisplay expects
+			element: layerObj.layerElement,
+		};
 	}
 
 	/**
