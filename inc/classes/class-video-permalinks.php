@@ -21,7 +21,7 @@ class Video_Permalinks {
 	/**
 	 * Option slug for video post settings.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.1
 	 * @var string
 	 */
 	const OPTION_SLUG = 'rtgodam_video_post_settings';
@@ -29,7 +29,7 @@ class Video_Permalinks {
 	/**
 	 * Default video slug.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.1
 	 * @var string
 	 */
 	const DEFAULT_VIDEO_SLUG = 'videos';
@@ -162,7 +162,7 @@ class Video_Permalinks {
 	/**
 	 * Video archive visibility field.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.1
 	 * 
 	 * @return void
 	 */
@@ -186,7 +186,7 @@ class Video_Permalinks {
 	/**
 	 * Video single page visibility field.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.3.1
 	 *
 	 * @return void
 	 */
@@ -278,7 +278,7 @@ class Video_Permalinks {
 	/**
 	 * Sanitize video post settings.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.3.1
 	 *
 	 * @param array $input The input array to sanitize.
 	 * 
