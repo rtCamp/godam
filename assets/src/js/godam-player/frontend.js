@@ -1000,6 +1000,7 @@ function GODAMPlayer( videoRef = null ) {
 							layerObj.layerElement.querySelector( '.srfm-success-box.srfm-active' ) ||
 							layerObj.layerElement.querySelector( '.ff-message-success' ) ||
 							layerObj.layerElement.querySelector( '.contact-form-success' ) ||
+							layerObj.layerElement.querySelector( '.mf-response-msg>p' )?.textContent ||
 							( ! layerObj.layerElement.querySelector( '.wp-polls-form' ) &&
 								layerObj.layerElement.querySelector( '.wp-polls-answer' ) ) ||
 							( layerObj.layerElement.querySelector( '.forminator-success' ) &&
@@ -1059,6 +1060,8 @@ function GODAMPlayer( videoRef = null ) {
 					} else if ( window.godamPluginDependencies?.fluentForms && layer.form_type === 'fluentforms' ) {
 						handleLayerDisplay( layer );
 					} else if ( window.godamPluginDependencies?.ninjaForms && layer.form_type === 'ninjaforms' ) {
+						handleLayerDisplay( layer );
+					} else if ( window.godamPluginDependencies?.metform && layer.form_type === 'metform' ) {
 						handleLayerDisplay( layer );
 					}
 				} else if ( layer.type === 'poll' ) {
