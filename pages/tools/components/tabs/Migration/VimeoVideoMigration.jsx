@@ -9,7 +9,8 @@ import {
 	Button,
 	Panel,
 	PanelBody,
-	Snackbar,
+	Icon,
+	ExternalLink,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import axios from 'axios';
@@ -18,8 +19,9 @@ import axios from 'axios';
  */
 import ProgressBar from '../../ProgressBar.jsx';
 import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
+import { error } from '@wordpress/icons';
 
-const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
+const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice } ) => {
 	const intervalRef = useRef( null );
 	const [ godamMigrationCompleted, setGodamMigrationCompleted ] = useState( true );
 
@@ -78,6 +80,13 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 			intervalRef.current = null;
 		}
 
+		// Set notice based on migration status
+		if ( migrationStatus?.status === 'completed' ) {
+			showNotice( __( 'Vimeo Video Migration has been successfully completed for all posts and pages 🎉', 'godam' ), 'success' );
+		} else if ( migrationStatus?.status === 'failed' ) {
+			showNotice( __( 'Vimeo Video Migration failed. Please try again.', 'godam' ), 'error' );
+		}
+
 		// Cleanup interval on component unmount
 		return () => {
 			if ( intervalRef.current ) {
@@ -111,9 +120,12 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 					<p>
 						{ __( 'This tool is used to replace WordPress Vimeo Embed blocks with GoDAM Video block.', 'godam' ) }
 					</p>
-					<Snackbar actions={ [ { label: __( 'Open', 'godam' ), url: window.godamRestRoute?.apiBase + '/web/' } ] } className="snackbar-warning">
-						{ __( 'This migrator will only migrate Vimeo videos that are already fetched on GoDAM Central.', 'godam' ) }
-					</Snackbar>
+
+					<div className="flex items-center gap-2">
+						<Icon icon={ error } className="w-4 h-4" style={ { fill: '#EAB308' } } />
+						<p className="text-center m-0 text-[#AB3A6C]">{ __( 'This migrator will only migrate Vimeo videos that are already fetched on GoDAM Central.', 'godam' ) }</p>
+						<ExternalLink href={ `${ window.godamRestRoute?.apiBase }/web` } className="godam-url">{ __( 'Open', 'godam' ) }</ExternalLink>
+					</div>
 
 					{ /* Progressbar indicating video migration progress */ }
 					{ /* Horizontal progressbar, done/total */ }
@@ -122,14 +134,6 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 							<ProgressBar showInitialProgress={ 'processing' === migrationStatus?.status } done={ migrationStatus?.done } total={ migrationStatus?.total } />
 							<div className="mt-1 mb-3 px-1 py-[1px] bg-gray-200 inline-flex rounded">{ migrationStatus?.message }</div>
 						</div>
-					) }
-
-					{ /* Migration status message */ }
-					{ migrationStatus?.status === 'completed' && (
-						<Snackbar className="snackbar-success">{ __( 'Vimeo Video Migration has been successfully completed for all posts and pages 🎉', 'godam' ) }</Snackbar>
-					) }
-					{ migrationStatus?.status === 'failed' && (
-						<Snackbar className="snackbar-error">{ __( 'Vimeo Video Migration failed. Please try again.', 'godam' ) }</Snackbar>
 					) }
 
 					{

@@ -9,7 +9,6 @@ import {
 	Button,
 	Panel,
 	PanelBody,
-	Snackbar,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import axios from 'axios';
@@ -19,7 +18,7 @@ import axios from 'axios';
 import ProgressBar from '../../ProgressBar.jsx';
 import { useEffect, useRef, useCallback } from '@wordpress/element';
 
-const CoreVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
+const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice } ) => {
 	const intervalRef = useRef( null );
 
 	const handleMigrationClick = async () => {
@@ -78,6 +77,13 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 			intervalRef.current = null;
 		}
 
+		// Set notice based on migration status
+		if ( migrationStatus?.status === 'completed' ) {
+			showNotice( __( 'WordPress core video migration completed successfully 🎉', 'godam' ), 'success' );
+		} else if ( migrationStatus?.status === 'failed' ) {
+			showNotice( __( 'WordPress core video migration failed. Please try again.', 'godam' ), 'error' );
+		}
+
 		// Cleanup interval on component unmount
 		return () => {
 			if ( intervalRef.current ) {
@@ -108,7 +114,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 		<>
 			<Panel header={ __( 'Core video Migration', 'godam' ) } className="godam-panel">
 				<PanelBody opened>
-					<p>
+					<p className="m-0">
 						{ __( 'This tool is used to replace WordPress core video blocks with GoDAM video block.', 'godam' ) }
 					</p>
 
@@ -119,14 +125,6 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus } ) => {
 							<ProgressBar showInitialProgress={ 'processing' === migrationStatus?.status } done={ migrationStatus?.done } total={ migrationStatus?.total } />
 							<div className="mt-1 mb-3 px-1 py-[1px] bg-gray-200 inline-flex rounded">{ migrationStatus?.message }</div>
 						</div>
-					) }
-
-					{ /* Migration status message */ }
-					{ migrationStatus?.status === 'completed' && (
-						<Snackbar className="snackbar-success">{ __( 'WordPress core video migration completed successfully 🎉', 'godam' ) }</Snackbar>
-					) }
-					{ migrationStatus?.status === 'failed' && (
-						<Snackbar className="snackbar-error">{ __( 'WordPress core video migration failed. Please try again.', 'godam' ) }</Snackbar>
 					) }
 
 					{ /* Migration button */ }
