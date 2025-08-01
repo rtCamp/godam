@@ -112,7 +112,7 @@ const MetForm = ( { layerID } ) => {
 
 						{
 							! isValidAPIKey &&
-							<p className="text-sm text-gray-500">{ __( 'This features is available in premium version', 'godam' ) }</p>
+							<p className="text-sm text-gray-500">{ __( 'This feature is available in the premium version', 'godam' ) }</p>
 						}
 
 						{
