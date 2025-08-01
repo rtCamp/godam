@@ -24,6 +24,13 @@ import Complete from '../../../../../assets/src/images/check.svg';
 
 import videojs from 'video.js';
 
+// Keyboard event keys
+const KEYBOARD_KEYS = {
+	ENTER: 'Enter',
+	SPACE: ' ',
+	ESCAPE: 'Escape',
+};
+
 /**
  * ShareManager
  *
@@ -57,16 +64,32 @@ import videojs from 'video.js';
  * const shareManager = new ShareManager(playerInstance, videoElement, setupOptions);
  */
 class ShareManager {
-	/**
-	 * @param {Object}      player            - The Video.js player instance.
-	 * @param {HTMLElement} video             - The video DOM element.
-	 * @param {Object}      videoSetupOptions - Configuration options like skin.
-	 */
 	constructor( player, video, videoSetupOptions ) {
 		this.player = player;
 		this.video = video;
 		this.videoSetupOptions = videoSetupOptions;
 		this.Button = videojs.getComponent( 'Button' );
+
+		// Class constants
+		this.MODAL_CONTAINER_CLASS = 'share-modal-container';
+		this.MODAL_POPUP_CLASS = 'share-modal-popup';
+		this.BODY_MODAL_OPEN_CLASS = 'godam-share-modal-open';
+		this.CLOSING_CLASS_SUFFIX = '--closing';
+		this.MODAL_CLOSE_DELAY = 300;
+		this.COPY_FEEDBACK_DELAY = 2000;
+		this.MIN_BUBBLE_WIDTH = 480;
+
+		// Success styles for copy feedback
+		this.COPY_SUCCESS_STYLES = {
+			backgroundColor: '#4CAF50',
+		};
+
+		this.COPY_DEFAULT_STYLES = {
+			backgroundColor: '#F7FAFB',
+		};
+
+		// Skins that use variation icon
+		this.VARIATION_ICON_SKINS = [ 'Minimal', 'Pills', 'Bubble' ];
 
 		this.init();
 	}
@@ -84,15 +107,55 @@ class ShareManager {
 	 *
 	 * @return {string} Path to the icon image.
 	 */
-	shareButtonImg() {
+	getShareButtonIcon() {
 		const skin = this.videoSetupOptions?.playerSkin;
-		return [ 'Minimal', 'Pills', 'Bubble' ].includes( skin )
-			? ShareVariationOne
-			: Share;
+		return this.VARIATION_ICON_SKINS.includes( skin ) ? ShareVariationOne : Share;
 	}
 
 	/**
-	 * Copies the input field content to clipboard and gives feedback.
+	 * Creates social media sharing links configuration.
+	 *
+	 * @param {string} encodedLink - URL encoded video link.
+	 * @param {string} message     - Encoded share message.
+	 * @return {Array} Array of social link objects.
+	 */
+	createSocialLinksConfig( encodedLink, message ) {
+		return [
+			{
+				className: 'facebook',
+				href: `https://www.facebook.com/share.php?u=${ encodedLink }`,
+				icon: Facebook,
+			},
+			{
+				className: 'twitter',
+				href: `https://twitter.com/intent/tweet?url=${ encodedLink }&text=${ message }`,
+				icon: Twitter,
+			},
+			{
+				className: 'linkedin',
+				href: `https://www.linkedin.com/sharing/share-offsite/?url=${ encodedLink }&text=${ message }`,
+				icon: LinkedIn,
+			},
+			{
+				className: 'reddit',
+				href: `http://www.reddit.com/submit?url=${ encodedLink }&title=${ message }`,
+				icon: Reddit,
+			},
+			{
+				className: 'whatsapp',
+				href: `https://api.whatsapp.com/send?text=${ message }: ${ encodedLink }`,
+				icon: Whatsapp,
+			},
+			{
+				className: 'telegram',
+				href: `https://telegram.me/share/url?url=${ encodedLink }&text=${ message }`,
+				icon: Telegram,
+			},
+		];
+	}
+
+	/**
+	 * Copies the input field content to clipboard and provides visual feedback.
 	 *
 	 * @param {string} inputId - The ID of the input element to copy from.
 	 */
@@ -112,30 +175,56 @@ class ShareManager {
 			return;
 		}
 
-		const setSuccessStyle = () => {
-			button.style.backgroundColor = '#4CAF50';
+		this.applyCopyFeedback( button, icon );
+	}
+
+	/**
+	 * Applies visual feedback for copy operation.
+	 *
+	 * @param {HTMLElement} button - The copy button element.
+	 * @param {HTMLElement} icon   - The icon element within the button.
+	 */
+	applyCopyFeedback( button, icon ) {
+		const input = button.previousElementSibling;
+
+		const showSuccessState = () => {
+			Object.assign( button.style, this.COPY_SUCCESS_STYLES );
 			icon.src = Complete;
 		};
 
-		const resetStyle = () => {
-			button.style.backgroundColor = '#F7FAFB';
+		const resetToDefaultState = () => {
+			Object.assign( button.style, this.COPY_DEFAULT_STYLES );
 			icon.src = CopyIcon;
 		};
 
-		const doFeedback = () => {
-			setSuccessStyle();
-			setTimeout( resetStyle, 2000 );
+		const provideFeedback = () => {
+			showSuccessState();
+			setTimeout( resetToDefaultState, this.COPY_FEEDBACK_DELAY );
 		};
 
 		if ( navigator.clipboard?.writeText ) {
-			navigator.clipboard.writeText( input.value ).then( doFeedback ).catch( () => {} );
+			navigator.clipboard.writeText( input.value )
+				.then( provideFeedback )
+				.catch( () => {} );
 		} else {
-			input.select();
-			input.setSelectionRange( 0, 99999 );
-			try {
-				document.execCommand( 'copy' );
-				doFeedback();
-			} catch ( _ ) {}
+			this.fallbackCopyToClipboard( input, provideFeedback );
+		}
+	}
+
+	/**
+	 * Fallback method for copying to clipboard when modern API is not available.
+	 *
+	 * @param {HTMLElement} input    - The input element to copy from.
+	 * @param {Function}    callback - Callback to execute on successful copy.
+	 */
+	fallbackCopyToClipboard( input, callback ) {
+		input.select();
+		input.setSelectionRange( 0, 99999 );
+		try {
+			document.execCommand( 'copy' );
+			callback();
+		} catch ( error ) {
+			// Silent fail for old browsers
 		}
 	}
 
@@ -145,13 +234,31 @@ class ShareManager {
 	 * @param {string} jobId - The ID of the video job to construct URLs.
 	 */
 	createShareModal( jobId ) {
-		if ( document.querySelector( '.share-modal-container' ) ) {
+		if ( document.querySelector( `.${ this.MODAL_CONTAINER_CLASS }` ) ) {
 			return;
 		}
 
+		const urls = this.generateShareUrls( jobId );
+		if ( ! urls ) {
+			return;
+		}
+
+		const socialLinks = this.createSocialLinksConfig( urls.encodedLink, urls.message );
+		const modalHtml = this.buildModalHtml( socialLinks, urls.videoLink, urls.embedCode );
+
+		this.injectModalIntoDOM( modalHtml, socialLinks );
+	}
+
+	/**
+	 * Generates the necessary URLs for sharing.
+	 *
+	 * @param {string} jobId - The video job ID.
+	 * @return {Object|null} Object containing URLs or null if invalid.
+	 */
+	generateShareUrls( jobId ) {
 		const baseUrl = window.godamData?.apiBase;
 		if ( ! jobId || ! baseUrl ) {
-			return;
+			return null;
 		}
 
 		const videoLink = `${ baseUrl }/web/video/${ jobId }`;
@@ -159,89 +266,160 @@ class ShareManager {
 		const encodedLink = encodeURI( videoLink );
 		const message = encodeURIComponent( __( 'Check out this video!', 'godam' ) );
 
-		const socialLinks = [
-			{ className: 'facebook', href: `https://www.facebook.com/share.php?u=${ encodedLink }`, icon: Facebook },
-			{ className: 'twitter', href: `https://twitter.com/intent/tweet?url=${ encodedLink }&text=${ message }`, icon: Twitter },
-			{ className: 'linkedin', href: `https://www.linkedin.com/sharing/share-offsite/?url=${ encodedLink }&text=${ message }`, icon: LinkedIn },
-			{ className: 'reddit', href: `http://www.reddit.com/submit?url=${ encodedLink }&title=${ message }`, icon: Reddit },
-			{ className: 'whatsapp', href: `https://api.whatsapp.com/send?text=${ message }: ${ encodedLink }`, icon: Whatsapp },
-			{ className: 'telegram', href: `https://telegram.me/share/url?url=${ encodedLink }&text=${ message }`, icon: Telegram },
-		];
+		return { videoLink, embedCode, encodedLink, message };
+	}
 
-		const html = `
-			<div class="share-modal-popup">
-				<div class="share-modal-popup__header">
-					<span class="share-modal-popup__title">${ __( 'Share Media', 'godam' ) }</span>
-					<div id="cancel-button" class="share-modal-popup__close-button" tabindex="0">&times;</div>
+	/**
+	 * Builds the HTML structure for the share modal.
+	 *
+	 * @param {Array}  socialLinks - Array of social media link configurations.
+	 * @param {string} videoLink   - The direct video link.
+	 * @param {string} embedCode   - The embed code for the video.
+	 * @return {string} Complete HTML string for the modal.
+	 */
+	buildModalHtml( socialLinks, videoLink, embedCode ) {
+		const socialLinksHtml = socialLinks.map( ( link ) =>
+			`<a class="${ link.className } social-icon" target="_blank" rel="noopener noreferrer" tabindex="0">
+				<img
+					src="${ link.icon }"
+					alt="${ `${ link.className } icon` }"
+					height="20"
+					width="20"
+				/>
+			</a>`,
+		).join( '' );
+
+		return `
+			<div class="${ this.MODAL_POPUP_CLASS }">
+				<div class="${ this.MODAL_POPUP_CLASS }__header">
+					<span class="${ this.MODAL_POPUP_CLASS }__title">${ __( 'Share Media', 'godam' ) }</span>
+					<div id="cancel-button" class="${ this.MODAL_POPUP_CLASS }__close-button" tabindex="0">&times;</div>
 				</div>
-				<div class="share-modal-popup__content">
-					<div class="share-modal-popup__social-links">
-						${ socialLinks.map( ( link ) =>
-		`<a class="${ link.className } social-icon" target="_blank" rel="noopener noreferrer" tabindex="0">
-								<img
-									src="${ link.icon }"
-									alt="${ `${ link.className } icon` }"
-									height="20"
-									width="20"
-								/>
-							</a>` ).join( '' ) }
+				<div class="${ this.MODAL_POPUP_CLASS }__content">
+					<div class="${ this.MODAL_POPUP_CLASS }__social-links">
+						${ socialLinksHtml }
 					</div>
 				</div>
-				<div class="share-modal-popup__footer">
+				<div class="${ this.MODAL_POPUP_CLASS }__footer">
 					${ this.renderCopySection( 'page-link', videoLink, __( 'Page Link', 'godam' ) ) }
 					${ this.renderCopySection( 'embed-code', embedCode, __( 'Embed', 'godam' ) ) }
 				</div>
 			</div>
 		`;
+	}
 
+	/**
+	 * Injects the modal HTML into the DOM and sets up event listeners.
+	 *
+	 * @param {string} modalHtml   - The HTML content for the modal.
+	 * @param {Array}  socialLinks - Array of social media link configurations.
+	 */
+	injectModalIntoDOM( modalHtml, socialLinks ) {
 		const container = document.createElement( 'div' );
-		container.className = 'share-modal-container';
-		container.innerHTML = DOMPurify.sanitize( html, { ADD_ATTR: [ 'target', 'rel' ] } );
-		document.body.appendChild( container );
-		document.body.classList.add( 'godam-share-modal-open' );
+		container.className = this.MODAL_CONTAINER_CLASS;
+		container.innerHTML = DOMPurify.sanitize( modalHtml, { ADD_ATTR: [ 'target', 'rel' ] } );
 
+		document.body.appendChild( container );
+		document.body.classList.add( this.BODY_MODAL_OPEN_CLASS );
+
+		this.setupModalEventListeners( container, socialLinks );
+	}
+
+	/**
+	 * Sets up all event listeners for the modal.
+	 *
+	 * @param {HTMLElement} container   - The modal container element.
+	 * @param {Array}       socialLinks - Array of social media link configurations.
+	 */
+	setupModalEventListeners( container, socialLinks ) {
 		const cancelButton = container.querySelector( '#cancel-button' );
 		const copyPageLink = container.querySelector( '#copy-page-link' );
 		const copyEmbedCode = container.querySelector( '#copy-embed-code' );
 
+		this.setupSocialLinkUrls( container, socialLinks );
+		this.setupModalCloseHandlers( container, cancelButton );
+		this.setupCopyButtonHandlers( copyPageLink, copyEmbedCode );
+	}
+
+	/**
+	 * Sets up URLs for social media links.
+	 *
+	 * @param {HTMLElement} container   - The modal container.
+	 * @param {Array}       socialLinks - Array of social link configurations.
+	 */
+	setupSocialLinkUrls( container, socialLinks ) {
 		socialLinks.forEach( ( { className, href } ) => {
-			const el = container.querySelector( `.${ className }` );
-			if ( el ) {
-				el.href = href;
+			const element = container.querySelector( `.${ className }` );
+			if ( element ) {
+				element.href = href;
 			}
 		} );
+	}
 
+	/**
+	 * Sets up modal close event handlers.
+	 *
+	 * @param {HTMLElement} container    - The modal container.
+	 * @param {HTMLElement} cancelButton - The close button element.
+	 */
+	setupModalCloseHandlers( container, cancelButton ) {
 		const closeModal = () => {
-			container.classList.add( 'share-modal-container--closing' );
-			container.querySelector( '.share-modal-popup' ).classList.add( 'share-modal-popup--closing' );
+			container.classList.add( `${ this.MODAL_CONTAINER_CLASS }${ this.CLOSING_CLASS_SUFFIX }` );
+			container.querySelector( `.${ this.MODAL_POPUP_CLASS }` )
+				.classList.add( `${ this.MODAL_POPUP_CLASS }${ this.CLOSING_CLASS_SUFFIX }` );
+
 			setTimeout( () => {
 				container.remove();
-				document.body.classList.remove( 'godam-share-modal-open' );
-			}, 300 );
+				document.body.classList.remove( this.BODY_MODAL_OPEN_CLASS );
+			}, this.MODAL_CLOSE_DELAY );
 		};
 
-		const handleEscape = ( e ) => e.key === 'Escape' && closeModal();
-
-		container.addEventListener( 'click', ( e ) => e.target === container && closeModal() );
-		document.addEventListener( 'keydown', handleEscape );
-
-		[ copyPageLink, copyEmbedCode ].forEach( ( btn, i ) => {
-			const id = i === 0 ? 'page-link' : 'embed-code';
-			btn.addEventListener( 'click', () => this.copyToClipboard( id ) );
-			btn.addEventListener( 'keydown', ( e ) => {
-				if ( [ 'Enter', ' ' ].includes( e.key ) ) {
-					e.preventDefault();
-					this.copyToClipboard( id );
-				}
-			} );
-		} );
-
-		cancelButton.addEventListener( 'click', closeModal );
-		cancelButton.addEventListener( 'keydown', ( e ) => {
-			if ( [ 'Enter', ' ' ].includes( e.key ) ) {
-				e.preventDefault();
+		const handleKeyboardClose = ( event ) => {
+			if ( event.key === KEYBOARD_KEYS.ESCAPE ) {
 				closeModal();
 			}
+		};
+
+		// Click outside to close
+		container.addEventListener( 'click', ( event ) => {
+			if ( event.target === container ) {
+				closeModal();
+			}
+		} );
+
+		// ESC key to close
+		document.addEventListener( 'keydown', handleKeyboardClose );
+
+		// Close button handlers
+		cancelButton.addEventListener( 'click', closeModal );
+		cancelButton.addEventListener( 'keydown', ( event ) => {
+			if ( [ KEYBOARD_KEYS.ENTER, KEYBOARD_KEYS.SPACE ].includes( event.key ) ) {
+				event.preventDefault();
+				closeModal();
+			}
+		} );
+	}
+
+	/**
+	 * Sets up copy button event handlers.
+	 *
+	 * @param {HTMLElement} copyPageLink  - Page link copy button.
+	 * @param {HTMLElement} copyEmbedCode - Embed code copy button.
+	 */
+	setupCopyButtonHandlers( copyPageLink, copyEmbedCode ) {
+		const copyButtons = [
+			{ button: copyPageLink, inputId: 'page-link' },
+			{ button: copyEmbedCode, inputId: 'embed-code' },
+		];
+
+		copyButtons.forEach( ( { button, inputId } ) => {
+			button.addEventListener( 'click', () => this.copyToClipboard( inputId ) );
+			button.addEventListener( 'keydown', ( event ) => {
+				if ( [ KEYBOARD_KEYS.ENTER, KEYBOARD_KEYS.SPACE ].includes( event.key ) ) {
+					event.preventDefault();
+					this.copyToClipboard( inputId );
+				}
+			} );
 		} );
 	}
 
@@ -251,11 +429,11 @@ class ShareManager {
 	 * @param {string} id    - The input ID.
 	 * @param {string} value - The input value.
 	 * @param {string} label - The label above input.
-	 * @return {string} Sanitized HTML string.
+	 * @return {string} HTML string for the copy section.
 	 */
 	renderCopySection( id, value, label ) {
 		return `
-			<div class='share-modal-popup__input-container'>
+			<div class='${ this.MODAL_POPUP_CLASS }__input-container'>
 				<p class='share-modal-input-text'>${ label }</p>
 				<div class="share-modal-input-group">
 					<input id="${ id }" type="text" value='${ value }' readonly tabindex="0" />
@@ -278,14 +456,14 @@ class ShareManager {
 			}
 
 			createEl() {
-				const el = super.createEl();
+				const element = super.createEl();
 				const img = document.createElement( 'img' );
-				img.src = self.shareButtonImg();
+				img.src = self.getShareButtonIcon();
 				img.alt = 'Share';
 				img.className = 'share-icon';
 				img.id = 'share-icon';
-				el.appendChild( img );
-				return el;
+				element.appendChild( img );
+				return element;
 			}
 
 			handleClick( event ) {
@@ -300,7 +478,7 @@ class ShareManager {
 	}
 
 	/**
-	 * Appends the share button to the control bar or DOM based on skin/responsiveness.
+	 * Appends the share button to the control bar or DOM based on skin and screen size.
 	 */
 	addShareButton() {
 		const jobId = this.video.dataset.job_id;
@@ -312,16 +490,27 @@ class ShareManager {
 		}
 
 		const ShareButton = videojs.getComponent( 'GodamShareButton' );
-		const shareBtnInstance = new ShareButton( this.player );
-		const btnEl = shareBtnInstance.createEl();
+		const shareButtonInstance = new ShareButton( this.player );
+		const buttonElement = shareButtonInstance.createEl();
 
-		btnEl.addEventListener( 'click', shareBtnInstance.handleClick.bind( shareBtnInstance ) );
+		buttonElement.addEventListener( 'click', shareButtonInstance.handleClick.bind( shareButtonInstance ) );
 
-		if ( this.videoSetupOptions?.playerSkin === 'Bubble' && container.offsetWidth > 480 ) {
+		if ( this.shouldAddToControlBar( container ) ) {
 			this.player.controlBar.addChild( 'GodamShareButton', {} );
 		} else {
-			container.appendChild( btnEl );
+			container.appendChild( buttonElement );
 		}
+	}
+
+	/**
+	 * Determines whether the share button should be added to the control bar.
+	 *
+	 * @param {HTMLElement} container - The video container element.
+	 * @return {boolean} True if button should be added to control bar.
+	 */
+	shouldAddToControlBar( container ) {
+		return this.videoSetupOptions?.playerSkin === 'Bubble' &&
+				container.offsetWidth > this.MIN_BUBBLE_WIDTH;
 	}
 }
 
