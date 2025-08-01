@@ -100,7 +100,7 @@ if ( empty( $attachment_id ) ) {
 
 if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$sources = $attributes['sources'];
-} elseif ( empty( $attachment_id ) && ( ! empty( $src ) || ! empty( $transcoded_url ) ) ) {
+} elseif ( empty( $attachment_id ) && ! ( empty( $src ) && empty( $transcoded_url ) ) ) {
 	$sources = array();
 	if ( ! empty( $transcoded_url ) ) {
 		$sources[] = array(
