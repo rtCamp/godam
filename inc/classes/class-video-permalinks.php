@@ -251,7 +251,8 @@ class Video_Permalinks {
 			
 			// Handle video slug.
 			if ( isset( $_POST[ self::OPTION_SLUG ]['video_slug'] ) ) {
-				$new_settings['video_slug'] = sanitize_title( wp_unslash( $_POST[ self::OPTION_SLUG ]['video_slug'] ) );
+				$sanitized_slug             = sanitize_title( wp_unslash( $_POST[ self::OPTION_SLUG ]['video_slug'] ) );
+				$new_settings['video_slug'] = empty( $sanitized_slug ) ? self::DEFAULT_VIDEO_SLUG : $sanitized_slug;
 			} else {
 				$new_settings['video_slug'] = isset( $current_settings['video_slug'] ) ? $current_settings['video_slug'] : self::DEFAULT_VIDEO_SLUG;
 			}
@@ -289,7 +290,8 @@ class Video_Permalinks {
 		
 		// Sanitize video slug.
 		if ( isset( $input['video_slug'] ) ) {
-			$sanitized['video_slug'] = sanitize_title( $input['video_slug'] );
+			$sanitized_slug          = sanitize_title( $input['video_slug'] );
+			$sanitized['video_slug'] = empty( $sanitized_slug ) ? self::DEFAULT_VIDEO_SLUG : $sanitized_slug;
 		} else {
 			$sanitized['video_slug'] = self::DEFAULT_VIDEO_SLUG;
 		}
