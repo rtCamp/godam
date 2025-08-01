@@ -114,7 +114,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 		<>
 			<Panel header={ __( 'Core video Migration', 'godam' ) } className="godam-panel">
 				<PanelBody opened>
-					<p>
+					<p className="m-0">
 						{ __( 'This tool is used to replace WordPress core video blocks with GoDAM video block.', 'godam' ) }
 					</p>
 

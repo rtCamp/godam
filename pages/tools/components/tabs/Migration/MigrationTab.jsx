@@ -60,24 +60,26 @@ const MigrationTab = () => {
 	return (
 		<>
 			{ /* Migration status messages */ }
-			{ coreMigrationNotice.isVisible && (
-				<Notice
-					status={ coreMigrationNotice.status }
-					className="my-2"
-					onRemove={ () => setCoreMigrationNotice( { ...coreMigrationNotice, isVisible: false } ) }
-				>
-					{ coreMigrationNotice.message }
-				</Notice>
-			) }
-			{ vimeoMigrationNotice.isVisible && (
-				<Notice
-					status={ vimeoMigrationNotice.status }
-					className="my-2"
-					onRemove={ () => setVimeoMigrationNotice( { ...vimeoMigrationNotice, isVisible: false } ) }
-				>
-					{ vimeoMigrationNotice.message }
-				</Notice>
-			) }
+			<div className="status-notices-container">
+				{ coreMigrationNotice.isVisible && (
+					<Notice
+						status={ coreMigrationNotice.status }
+						className="my-2"
+						onRemove={ () => setCoreMigrationNotice( { ...coreMigrationNotice, isVisible: false } ) }
+					>
+						{ coreMigrationNotice.message }
+					</Notice>
+				) }
+				{ vimeoMigrationNotice.isVisible && (
+					<Notice
+						status={ vimeoMigrationNotice.status }
+						className="my-2"
+						onRemove={ () => setVimeoMigrationNotice( { ...vimeoMigrationNotice, isVisible: false } ) }
+					>
+						{ vimeoMigrationNotice.message }
+					</Notice>
+				) }
+			</div>
 
 			<CoreVideoMigration
 				migrationStatus={ migrationStatus }
