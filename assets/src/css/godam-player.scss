@@ -740,6 +740,7 @@ body.godam-share-modal-open {
 				font-weight: 400;
 				line-height: 1.5;
 				font-family: Roboto, sans-serif !important;
+				margin-bottom: unset;
 
 				&:focus {
 					background: variables.$godam-share-modal-gray-accent-1 !important;
