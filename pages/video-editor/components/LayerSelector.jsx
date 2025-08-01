@@ -24,7 +24,6 @@ import Poll from '../assets/layers/Poll.png';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
-import Woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
 import ForminatorIcon from '../assets/layers/Forminator.png';
@@ -163,18 +162,6 @@ const Layers = [
 		isRequired: true,
 		isActive: Boolean( window.easydamMediaLibrary.isPollPluginActive ),
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/wp-polls/">${ __( 'WP-Polls', 'godam' ) }</a> ${ __( 'plugin is required to use Poll layer', 'godam' ) }`,
-	},
-	{
-		id: 13,
-		title: __( 'WooCommerce', 'godam' ),
-		description: __( 'Display products using hotspots', 'godam' ),
-		image: Hotspot,
-		type: 'woo',
-		requiresWoo: true,
-		formIcon: Woo,
-		isRequired: true,
-		isActive: Boolean( window.easydamMediaLibrary.isWooActive ) ?? false,
-		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/woocommerce/">${ __( 'WooCommerce', 'godam' ) }</a> ${ __( 'plugin is required to use Buy Now layer', 'godam' ) }`,
 	},
 ];
 
@@ -352,7 +339,7 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 											alt={ layer.title }
 										/>
 										{
-											( layer.type === 'form' || layer.type === 'woo' ) && layer.formIcon && (
+											( layer.type === 'form' ) && layer.formIcon && (
 												<img
 													className="godam-layer-selector__item__image-container__form-icon"
 													src={ layer.formIcon }

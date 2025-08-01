@@ -226,9 +226,7 @@ input, textarea, select {
 
 	/* Keep tooltip visible when hovering over hotspot or tooltip */
 	&:hover .hotspot-tooltip,
-	.hotspot-tooltip:hover,
-	&:hover .product-hotspot-box,
-	.product-hotspot-box:hover {
+	.hotspot-tooltip:hover{
 		visibility: visible;
 		opacity: 1;
 		transition: opacity 0.6s ease;
@@ -295,45 +293,12 @@ input, textarea, select {
 	word-wrap: break-word;
 }
 
-.product-hotspot-box {
-	position: absolute;
-	bottom: 100%;
-	left: 50%;
-	transform: translateX(-50%);
-	visibility: hidden;
-	background-color: rgba(255, 255, 255);
-	color: #000;
-	text-align: center;
-	border-radius: 3px;
-	z-index: 200;
-	pointer-events: auto;
-	font-size: 14px;
-	line-height: 1.2;
-	opacity: 0;
-	transition: opacity 0.2s ease, visibility 0.2s ease;
-	word-wrap: break-word;
-	width: 600%;
-}
-
-.product-hotspot-box::after {
-	content: "";
-	position: absolute;
-	top: 100%;
-	left: 50%;
-	transform: translateX(-50%);
-	border-width: 5px;
-	border-style: solid;
-	border-color: rgba(255, 255, 255) transparent transparent transparent;
-}
-
-.hotspot-tooltip a,
-.product-hotspot-box a {
+.hotspot-tooltip a{
 	overflow-wrap: break-word;
 	word-break: break-word;
 }
 
-.hotspot-tooltip a:hover,
-.product-hotspot-box a:hover {
+.hotspot-tooltip a:hover {
 	color: #fff;
 	text-decoration: underline;
 }
@@ -382,9 +347,7 @@ input, textarea, select {
 
 	/* Keep tooltip visible when hovering over hotspot or tooltip */
 	&:hover .hotspot-tooltip,
-	.hotspot-tooltip:hover,
-	&:hover .product-hotspot-box,
-	.product-hotspot-box:hover {
+	.hotspot-tooltip:hover {
 		visibility: visible;
 		opacity: 1;
 		transition: opacity 0.6s ease;
@@ -688,6 +651,7 @@ input, textarea, select {
 
 /* Mobile Overlay for video-editor-container */
 @media screen and (max-width: 600px) {
+	
 	.video-editor-container {
 		position: relative;
 	}
@@ -712,100 +676,5 @@ input, textarea, select {
 		font-size: 1.2rem;
 		font-weight: bold;
 		z-index: 99;
-	}
-}
-
-/* Product Hotspot */
-.product-hotspot-woo-display {
-	display: flex;
-	flex-direction: row;
-	width: 100%;
-	max-width: 600px;
-	border-radius: 6px;
-	overflow: hidden;
-	align-items: stretch;
-}
-
-/* 50% width for both image and details */
-.product-hotspot-woo-image-wrapper,
-.product-hotspot-woo-details {
-	width: 50%;
-	flex: 0 0 50%;
-	box-sizing: border-box;
-}
-
-.product-hotspot-woo-image-wrapper {
-	display: flex;
-}
-
-/* Image stretches to fill wrapper height */
-.product-hotspot-woo-image {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	display: block;
-}
-
-.product-hotspot-woo-details {
-	padding: 1rem;
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	box-sizing: border-box;
-	align-items: flex-start;
-    text-align: left;
-}
-
-.product-hotspot-woo-name {
-	font-weight: 300;
-	font-size: 16px;
-	margin-bottom: 1rem;
-	color: #8f8b8b;
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	line-height: 1.3em;
-	max-height: 2.6em;
-}
-
-.product-hotspot-woo-price {
-	color: #000;
-	margin-bottom: 1rem;
-	font-size: 14px;
-}
-
-.product-hotspot-woo-link {
-	display: inline-block;
-	width: 100%;
-	text-align: center;
-	padding: 10px 0;
-	color: #fff;
-	border-radius: 3px;
-	text-decoration: none;
-	font-size: 14px;
-	box-sizing: border-box;
-}
-
-.product-hotspot-woo-link:hover {
-	cursor: pointer;
-	pointer-events: auto;
-}
-
-/* Responsive adjustments */
-@media (max-width: 600px) {
-
-	.product-hotspot-woo-display {
-		flex-direction: column;
-	}
-
-	.product-hotspot-woo-image-wrapper {
-		width: 100%;
-		height: 200px;
-	}
-
-	.product-hotspot-woo-details {
-		width: 100%;
 	}
 }
