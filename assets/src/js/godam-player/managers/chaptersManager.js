@@ -1,10 +1,21 @@
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
+ */
+import { parseDataAttribute, formatTime } from '../utils/dataHelpers.js';
+
+/**
  * Chapters Manager
  * Handles video chapters, markers, and navigation
  */
 export default class ChaptersManager {
-	constructor( player ) {
+	constructor( player, video ) {
 		this.player = player;
+		this.video = video;
 		this.chaptersData = [];
 		this.currentChapterIndex = -1;
 		this.bindMethods();
@@ -28,23 +39,49 @@ export default class ChaptersManager {
 	}
 
 	/**
-	 * Format time in MM:SS or HH:MM:SS format
+	 * Get chapters data from video options
 	 *
-	 * @param {number} seconds - Time in seconds
-	 * @return {string} Formatted time string
+	 * @return {Array} Processed chapters data
 	 */
-	formatTime( seconds ) {
-		if ( seconds >= 3600 ) {
-			// HH:MM:SS format
-			const hours = Math.floor( seconds / 3600 );
-			const mins = Math.floor( ( seconds % 3600 ) / 60 );
-			const secs = Math.floor( seconds % 60 );
-			return `${ hours }:${ mins.toString().padStart( 2, '0' ) }:${ secs.toString().padStart( 2, '0' ) }`;
+	getChaptersData() {
+		const videoSetupOptions = parseDataAttribute( this.video, 'options', {} );
+		const chapters = videoSetupOptions?.chapters;
+
+		if ( ! Array.isArray( chapters ) || chapters.length === 0 ) {
+			return [];
 		}
-		// MM:SS format
-		const mins = Math.floor( seconds / 60 );
-		const secs = Math.floor( seconds % 60 );
-		return `${ mins }:${ secs.toString().padStart( 2, '0' ) }`;
+
+		const seenTimes = new Set();
+
+		// Filter out invalid entries
+		const filteredChapters = chapters.filter( ( chapter ) => {
+			const time = parseFloat( chapter.startTime );
+
+			if ( ! chapter.startTime || isNaN( time ) || time < 0 || seenTimes.has( time ) ) {
+				return false;
+			}
+
+			seenTimes.add( time );
+			return true;
+		} );
+
+		// Convert to required format
+		return filteredChapters.map( ( chapter ) => ( {
+			startTime: parseFloat( chapter.startTime ) || 0,
+			text: chapter.text || __( 'Chapter', 'godam' ),
+			originalTime: chapter.originalTime,
+			endTime: null,
+		} ) );
+	}
+
+	/**
+	 * Initialize chapters from video data
+	 */
+	initialize() {
+		const chaptersData = this.getChaptersData();
+		if ( chaptersData?.length > 0 ) {
+			this.processChaptersData( chaptersData );
+		}
 	}
 
 	/**
@@ -101,7 +138,7 @@ export default class ChaptersManager {
 
 			const tooltip = document.createElement( 'div' );
 			tooltip.className = 'chapter-tooltip';
-			tooltip.textContent = `${ this.formatTime( chapter.startTime ) } - ${ chapter.text }`;
+			tooltip.textContent = `${ formatTime( chapter.startTime ) } - ${ chapter.text }`;
 			segment.appendChild( tooltip );
 
 			segment.addEventListener( 'click', ( e ) => {

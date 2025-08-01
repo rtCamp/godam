@@ -1,7 +1,7 @@
 /**
- * WordPress dependencies
+ * Internal dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { parseDataAttribute } from '../utils/dataHelpers.js';
 
 /**
  * Configuration Manager
@@ -23,28 +23,13 @@ export default class ConfigurationManager {
 	 * Initialize configuration
 	 */
 	initialize() {
-		this.globalAdsSettings = this.parseDataAttribute( 'global_ads_settings', {} );
+		this.globalAdsSettings = parseDataAttribute( this.video, 'global_ads_settings', {} );
 		this.adTagUrl = this.video.dataset.ad_tag_url;
-		this.videoSetupOptions = this.parseDataAttribute( 'options', {} );
-		this.videoSetupControls = this.parseDataAttribute( 'controls', this.getDefaultControls() );
+		this.videoSetupOptions = parseDataAttribute( this.video, 'options', {} );
+		this.videoSetupControls = parseDataAttribute( this.video, 'controls', this.getDefaultControls() );
 		this.isPreviewEnabled = this.videoSetupOptions?.preview;
 
 		this.ensureControlBarDefaults();
-	}
-
-	/**
-	 * Parse data attribute safely
-	 *
-	 * @param {string} attribute    - Data attribute to parse
-	 * @param {*}      defaultValue - Default value if parsing fails
-	 * @return {*} Parsed value or default
-	 */
-	parseDataAttribute( attribute, defaultValue ) {
-		try {
-			return this.video.dataset[ attribute ] ? JSON.parse( this.video.dataset[ attribute ] ) : defaultValue;
-		} catch {
-			return defaultValue;
-		}
 	}
 
 	/**
@@ -81,40 +66,5 @@ export default class ConfigurationManager {
 				},
 			};
 		}
-	}
-
-	/**
-	 * Get chapters data from video options
-	 *
-	 * @return {Array} Processed chapters data
-	 */
-	getChaptersData() {
-		const chapters = this.videoSetupOptions?.chapters;
-
-		if ( ! Array.isArray( chapters ) || chapters.length === 0 ) {
-			return [];
-		}
-
-		const seenTimes = new Set();
-
-		// Filter out invalid entries
-		const filteredChapters = chapters.filter( ( chapter ) => {
-			const time = parseFloat( chapter.startTime );
-
-			if ( ! chapter.startTime || isNaN( time ) || time < 0 || seenTimes.has( time ) ) {
-				return false;
-			}
-
-			seenTimes.add( time );
-			return true;
-		} );
-
-		// Convert to required format
-		return filteredChapters.map( ( chapter ) => ( {
-			startTime: parseFloat( chapter.startTime ) || 0,
-			text: chapter.text || __( 'Chapter', 'godam' ),
-			originalTime: chapter.originalTime,
-			endTime: null,
-		} ) );
 	}
 }

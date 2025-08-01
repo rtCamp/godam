@@ -131,7 +131,7 @@ export default class GodamVideoPlayer {
 		this.eventsManager = new EventsManager( this.player, this.video, this.configManager );
 
 		// Initialize chapters manager
-		this.chaptersManager = new ChaptersManager( this.player );
+		this.chaptersManager = new ChaptersManager( this.player, this.video );
 
 		// Initialize ads manager
 		this.adsManager = new AdsManager( this.player, this.configManager );
@@ -180,10 +180,7 @@ export default class GodamVideoPlayer {
 	 * Initialize chapters
 	 */
 	initializeChapters() {
-		const chaptersData = this.configManager.getChaptersData();
-		if ( chaptersData?.length > 0 ) {
-			this.chaptersManager.processChaptersData( chaptersData );
-		}
+		this.chaptersManager.initialize();
 	}
 
 	/**
