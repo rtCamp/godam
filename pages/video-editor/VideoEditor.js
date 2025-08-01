@@ -40,18 +40,6 @@ import { copyGoDAMVideoBlock } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
 
 const VideoEditor = ( { attachmentID } ) => {
-	const formIDMap = {
-		cf7: 'cf7_id',
-		gravity: 'gf_id',
-		wpforms: 'wpform_id',
-		forminator: 'forminator_id',
-		sureforms: 'sureform_id',
-		fluentforms: 'fluent_form_id',
-		jetpack: 'jp_id',
-		everestforms: 'everest_form_id',
-		ninjaforms: 'ninja_form_id',
-		metform: 'metform_id',
-	};
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );

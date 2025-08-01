@@ -13,7 +13,7 @@ import { help } from '@wordpress/icons';
 const GodamHeader = () => {
 	const helpLink = window.godamRestRoute?.apiBase + '/helpdesk';
 	const upgradePlanLink = window.godamRestRoute?.apiBase + '/subscription/plans';
-	const pricingLink = 'https://godam.io/pricing';
+	const pricingLink = `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=header`;
 	const godamMediaLink = window.godamRestRoute?.apiBase + '/web/media-library';
 
 	return (
@@ -59,8 +59,7 @@ const GodamHeader = () => {
 							iconSize={ 16 }
 							showTooltip={ true }
 							tooltipPosition="bottom center"
-							label={ ( ! window?.userData?.valid_api_key || ! window?.userData?.user_data?.active_plan ) ? __( 'Premium feature', 'godam' ) : __( 'GoDAM Central', 'godam' ) }
-							tooltipText={ __( 'Manage Media', 'godam' ) }
+							label={ ( ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan ) ? __( 'Premium feature', 'godam' ) : __( 'GoDAM Central', 'godam' ) }
 							// disabled={ ! window?.userData?.validApiKey || ! window?.userData?.userApiData?.active_plan }
 						/>
 

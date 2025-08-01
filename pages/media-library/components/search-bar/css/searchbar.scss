@@ -1,0 +1,80 @@
+.folder-search-bar-container {
+
+	.components-input-control__input {
+		background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEgNy45NTY0M0MxIDkuODAxMzkgMS43MzI5MSAxMS41NzA4IDMuMDM3NDkgMTIuODc1NEM0LjM0MjA4IDE0LjE4IDYuMTExNDcgMTQuOTEyOSA3Ljk1NjQzIDE0LjkxMjlDOS44MDEzOSAxNC45MTI5IDExLjU3MDggMTQuMTggMTIuODc1NCAxMi44NzU0QzE0LjE4IDExLjU3MDggMTQuOTEyOSA5LjgwMTM5IDE0LjkxMjkgNy45NTY0M0MxNC45MTI5IDYuMTExNDcgMTQuMTggNC4zNDIwOCAxMi44NzU0IDMuMDM3NDlDMTEuNTcwOCAxLjczMjkxIDkuODAxMzkgMSA3Ljk1NjQzIDFDNi4xMTE0NyAxIDQuMzQyMDggMS43MzI5MSAzLjAzNzQ5IDMuMDM3NDlDMS43MzI5MSA0LjM0MjA4IDEgNi4xMTE0NyAxIDcuOTU2NDNaIiBzdHJva2U9IiM1MjUyNTIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMTYuOTk5NSAxNi45OTk1TDEyLjg3NSAxMi44NzUiIHN0cm9rZT0iIzUyNTI1MiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=);
+		background-repeat: no-repeat;
+		background-size: 14px 14px;
+		background-position: 8px center;
+		padding-left: 28px !important;
+	}
+
+	.components-input-control__suffix {
+		display: none;
+	}
+}
+
+.search-results-popover {
+	width: calc(280px - 2 * 1.25rem);
+	color: #1C1C1C;
+
+	.components-popover__content {
+		width: 100%;
+
+		.search-results-popover-content {
+			max-height: 600px;
+			overflow-x: hidden;
+			scrollbar-width: thin;
+
+			&::-webkit-scrollbar {
+			  width: 6px;
+			}
+
+			.search-results-list {
+
+				ul {
+					margin: 0.5rem 0;
+				}
+
+				li {
+					margin: 0;
+					padding: 0 1rem;
+
+					&:hover {
+						background: #F5F5F5;
+					}
+
+					button {
+						width: 100%;
+						padding: 0;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						display: inline;
+						text-align: start;
+
+						&:hover {
+							color: #1C1C1C;
+						}
+					}
+				}
+
+				.search-load-more {
+
+					.components-button {
+						border: none;
+						color: #AB3A6C;
+						width: 100%;
+						padding: 0.75rem 1rem;
+
+						&:not(:focus) {
+							box-shadow: none;
+						}
+					}
+				}
+			}
+
+			.search-no-results, .search-loading, .search-error {
+				margin: 1rem;
+			}
+		}
+	}
+}

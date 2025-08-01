@@ -320,13 +320,20 @@ class Assets {
 		$brand_image = $godam_settings['video_player']['brand_image'] ?? '';
 		$brand_color = $godam_settings['video_player']['brand_color'] ?? '';
 
+		$godam_settings_obj = array(
+			'brandImage' => $brand_image,
+			'brandColor' => $brand_color,
+		);
+
+		if ( ! rtgodam_is_api_key_valid() ) {
+			$godam_settings_obj['showOfferBanner']      = get_option( 'rtgodam-offer-banner', '1' );
+			$godam_settings_obj['showOfferBannerNonce'] = wp_create_nonce( 'godam-dismiss-offer-banner-nonce' );
+		}
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamSettings',
-			array(
-				'brandImage' => $brand_image,
-				'brandColor' => $brand_color,
-			)
+			$godam_settings_obj,
 		);
 	}
 }
