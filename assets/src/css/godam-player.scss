@@ -720,7 +720,7 @@ body.godam-share-modal-open {
 				box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.09) !important;
 				font-style: normal;
 				font-weight: 400;
-				line-height: 24px;
+				line-height: 1.5;
 				font-family: Roboto, sans-serif !important;
 
 				&:focus {
@@ -917,7 +917,7 @@ body.godam-share-modal-open {
 	border-radius: 2px;
 }
 
-/* stylelint-disable-next-line no-descending-specificity */
+/* stylelint-disable-next-line no-descending-specificity -- as styles are grouped  */
 .hotspot-tooltip a {
 	overflow-wrap: break-word;
 	word-break: break-word;
