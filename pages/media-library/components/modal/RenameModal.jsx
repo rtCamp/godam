@@ -25,7 +25,7 @@ const RenameModal = () => {
 	const dispatch = useDispatch();
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.rename );
-	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const selectedFolder = useSelector( ( state ) => state.FolderReducer.currentContextMenuFolder );
 
 	const [ updateFolder ] = useUpdateFolderMutation();
 

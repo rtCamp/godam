@@ -15,7 +15,7 @@ const GodamHeader = () => {
 	const [ isMobileMenuOpen, setIsMobileMenuOpen ] = useState( false );
 	const helpLink = window.godamRestRoute?.apiBase + '/helpdesk';
 	const upgradePlanLink = window.godamRestRoute?.apiBase + '/subscription/plans';
-	const pricingLink = 'https://godam.io/pricing';
+	const pricingLink = `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=header`;
 	const godamMediaLink = window.godamRestRoute?.apiBase + '/web/media-library';
 
 	const manageMediaButton = (
@@ -101,7 +101,7 @@ const GodamHeader = () => {
 						<Button
 							onClick={ () => setIsMobileMenuOpen( ! isMobileMenuOpen ) }
 							icon={ isMobileMenuOpen ? close : menu }
-							label={ isMobileMenuOpen ? __( 'Close menu', 'godam' ) : __( 'Open menu', 'godam' ) }
+							label={ isMobileMenu-Open ? __( 'Close menu', 'godam' ) : __( 'Open menu', 'godam' ) }
 						/>
 					</div>
 				</div>

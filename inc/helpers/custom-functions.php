@@ -270,19 +270,20 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = 300 
 			$localized_array_data['storageBandwidthError'] = $rtgodam_user_data['storageBandwidthError'];
 		}
 
-		if ( isset( $rtgodam_user_data['storage_used'] ) && ! empty( $rtgodam_user_data['storage_used'] ) ) {
+		// Use isset() instead of !empty() to allow 0 values.
+		if ( isset( $rtgodam_user_data['storage_used'] ) ) {
 			$localized_array_data['storageUsed'] = $rtgodam_user_data['storage_used'];
 		}
 
-		if ( isset( $rtgodam_user_data['total_storage'] ) && ! empty( $rtgodam_user_data['total_storage'] ) ) {
+		if ( isset( $rtgodam_user_data['total_storage'] ) ) {
 			$localized_array_data['totalStorage'] = $rtgodam_user_data['total_storage'];
 		}
 
-		if ( isset( $rtgodam_user_data['bandwidth_used'] ) && ! empty( $rtgodam_user_data['bandwidth_used'] ) ) {
+		if ( isset( $rtgodam_user_data['bandwidth_used'] ) ) {
 			$localized_array_data['bandwidthUsed'] = $rtgodam_user_data['bandwidth_used'];
 		}
 
-		if ( isset( $rtgodam_user_data['total_bandwidth'] ) && ! empty( $rtgodam_user_data['total_bandwidth'] ) ) {
+		if ( isset( $rtgodam_user_data['total_bandwidth'] ) ) {
 			$localized_array_data['totalBandwidth'] = $rtgodam_user_data['total_bandwidth'];
 		}
 

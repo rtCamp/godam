@@ -617,6 +617,37 @@ function rtgodam_get_transcoded_url_from_attachment( $attachment ) {
 }
 
 /**
+ * Return hls transcoded url from attachment.
+ *
+ * @since 1.3.1
+ *
+ * @param int|\WP_Post $attachment Attachment.
+ *
+ * @return string|false
+ */
+function rtgodam_get_hls_transcoded_url_from_attachment( $attachment ) {
+	$attachment_id = 0;
+
+	if ( $attachment instanceof \WP_Post ) {
+		$attachment_id = $attachment->ID;
+	} elseif ( is_numeric( $attachment ) ) {
+		$attachment_id = $attachment;
+	}
+
+	if ( $attachment_id <= 0 ) {
+		return '';
+	}
+
+	$attachment_obj = get_post( $attachment_id );
+
+	if ( 'attachment' !== $attachment_obj->post_type ) {
+		return '';
+	}
+
+	return get_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', true );
+}
+
+/**
  * Return transcoded status from attachment.
  *
  * @since 1.3.0
