@@ -43,7 +43,6 @@ import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
-import { secondsToISO8601 } from './utils';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -146,12 +145,8 @@ function VideoEdit( {
 						video.addEventListener( 'loadedmetadata', () => {
 							setAttributes( { videoWidth: `${ video.videoWidth }` } );
 							setAttributes( { videoHeight: `${ video.videoHeight }` } );
-							let _duration = player.duration();
+							const _duration = player.duration();
 							setDuration( _duration );
-							if ( _duration ) {
-								_duration = secondsToISO8601( Math.round( _duration ) );
-								setAttributes( { seo: { ...attributes.seo, duration: _duration } } );
-							}
 						} );
 					}
 				} }
@@ -178,31 +173,34 @@ function VideoEdit( {
 						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
 					}
 
-					if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
-						const transcodedUrl = response.meta.rtgodam_transcoded_url;
+					if ( response ) {
+						const newSources = [
+							{
+								src: response.source_url,
+								type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
+							},
+						];
 
-						setAttributes( {
-							sources: [
-								{
-									src: transcodedUrl,
-									type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : response.mime_type,
-								},
-								{
-									src: response.source_url,
-									type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
-								},
-							],
-						} );
-					} else {
-						// If meta not present, use media url.
-						setAttributes( {
-							sources: [
-								{
-									src: response.source_url,
-									type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
-								},
-							],
-						} );
+						if ( response?.meta && response?.meta?.rtgodam_hls_transcoded_url ) {
+							const hlsTranscodedUrl = response.meta.rtgodam_hls_transcoded_url;
+
+							newSources.push( {
+								src: hlsTranscodedUrl,
+								type: hlsTranscodedUrl.endsWith( '.m3u8' ) ? 'application/x-mpegURL' : response.mime_type,
+							} );
+						}
+
+						if ( response?.meta && response?.meta?.rtgodam_transcoded_url ) {
+							const transcodedUrl = response.meta.rtgodam_transcoded_url;
+
+							newSources.push( {
+								src: transcodedUrl,
+								type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : response.mime_type,
+							} );
+						}
+
+						// Reverse the sources to ensure the preferred format is first. MPD -> HLS -> Origin
+						setAttributes( { sources: newSources.reverse() } );
 					}
 				} catch ( error ) {
 					// Show error notice if fetching media fails.
@@ -437,14 +435,22 @@ function VideoEdit( {
 
 					<BaseControl
 						id={ `video-block__hover-${ instanceId }` }
-						label={ __( 'Hover Options', 'godam' ) }
 						__nextHasNoMarginBottom
 					>
-						<ToggleControl
+						<SelectControl
 							__nextHasNoMarginBottom
-							label={ __( 'Hover Overlay', 'godam' ) }
-							onChange={ ( value ) => setAttributes( { hoverOverlay: value } ) }
-							checked={ !! attributes.hoverOverlay }
+							label={ __( 'Hover Option', 'godam' ) }
+							help={ __( 'Choose the action to perform on video hover.', 'godam' ) }
+							value={ attributes.hoverSelect || 'none' }
+							onChange={ ( value ) => setAttributes( { hoverSelect: value } ) }
+							options={
+								[
+									{ label: __( 'None', 'godam' ), value: 'none' },
+									{ label: __( 'Show Player Controls', 'godam' ), value: 'show-player-controls' },
+									{ label: __( 'Start Preview', 'godam' ), value: 'start-preview' },
+									{ label: __( 'Shadow Overlay', 'godam' ), value: 'shadow-overlay' },
+								]
+							}
 						/>
 					</BaseControl>
 
@@ -601,7 +607,6 @@ function VideoEdit( {
 				attachmentData={ videoResponse }
 				attributes={ attributes }
 				setAttributes={ setAttributes }
-				duration={ attributes?.seo?.duration || '' }
 			/>
 
 			<figure { ...blockProps }>

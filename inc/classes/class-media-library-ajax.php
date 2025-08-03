@@ -42,6 +42,9 @@ class Media_Library_Ajax {
 
 		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
 		add_action( 'delete_attachment', array( $this, 'handle_media_deletion' ), 10, 1 );
+
+		add_action( 'admin_notices', array( $this, 'media_library_offer_banner' ) );
+		add_action( 'wp_ajax_godam_dismiss_offer_banner', array( $this, 'dismiss_offer_banner' ) );
 	}
 
 	/**
@@ -599,5 +602,70 @@ class Media_Library_Ajax {
 				'headers' => array( 'Content-Type' => 'application/json' ),
 			)
 		);
+	}
+
+	/**
+	 * Dismiss the offer banner by updating the option in the database.
+	 *
+	 * @return void
+	 */
+	public function dismiss_offer_banner() {
+		check_ajax_referer( 'godam-dismiss-offer-banner-nonce', 'nonce' );
+
+		if ( get_option( 'rtgodam-offer-banner' ) === false ) {
+			add_option( 'rtgodam-offer-banner', 0 );
+		} else {
+			update_option( 'rtgodam-offer-banner', 0 );
+		}
+
+		wp_send_json_success( array( 'message' => __( 'Offer banner dismissed successfully.', 'godam' ) ) );
+	}
+
+	/**
+	 * Renders an offer banner on the media library page for non-premium users.
+	 *
+	 * @return void
+	 */
+	public function media_library_offer_banner() {
+		$screen = get_current_screen();
+
+		$show_offer_banner = get_option( 'rtgodam-offer-banner', 1 );
+
+		// Only show on the Media Library page.
+		if ( $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
+			$host = wp_parse_url( home_url(), PHP_URL_HOST );
+
+			$banner_html = sprintf(
+				'<div class="notice annual-plan-offer-banner">
+					<a href="%1$s">
+						<img src="%2$s" class="annual-plan-offer-banner__img" alt="Annual Plan Offer Banner">
+					</a>
+					<button type="button" class="annual-plan-offer-banner__dismiss">&times;</button>
+				</div>',
+				esc_url( 'https://godam.io/pricing?utm_campaign=annual-plan&utm_source=' . $host . '&utm_medium=plugin&utm_content=banner' ),
+				esc_url( RTGODAM_URL . '/assets/src/images/annual-plan-offer-banner.png' )
+			);
+
+			echo wp_kses(
+				$banner_html,
+				array(
+					'div'    => array( 'class' => array() ),
+					'a'      => array(
+						'href'  => array(),
+						'class' => array(),
+					),
+					'img'    => array(
+						'src'   => array(),
+						'class' => array(),
+						'alt'   => array(),
+					),
+					'button' => array(
+						'type'  => array(),
+						'class' => array(),
+					),
+				)
+			);
+
+		}
 	}
 }
