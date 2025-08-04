@@ -260,6 +260,10 @@ document.addEventListener( 'click', async function( e ) {
 						const engagementId = engagementContainer.getAttribute( 'data-engagement-id' ) || 0;
 						const siteUrl = engagementContainer.getAttribute( 'data-engagement-site-url' ) || 0;
 
+						if ( ! galleryEngagements ) {
+							engagementContainer.remove();
+						}
+
 						// Reinitialize the player with the new content
 						if ( typeof GODAMPlayer === 'function' ) {
 							const godamPlayer = GODAMPlayer( modal );
@@ -279,11 +283,11 @@ document.addEventListener( 'click', async function( e ) {
 											videoPlayer.player.play();
 										} );
 									}
+									engagementContainer.remove();
 								} else {
 									dispatch( 'godam-video-engagement' ).initiateCommentModal( newVideoId, siteUrl, engagementId, true );
 									videoPlayer.player.play();
 								}
-								engagementContainer.remove();
 							}
 						}
 					}
