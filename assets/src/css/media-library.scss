@@ -408,3 +408,11 @@
 .elementor-editor-active .attachments-browser #media-date-range-filter {
 	background-color: unset;
 }
+
+.compat-attachment-fields .compat-field-ab_testing_duration {
+	display: none;
+}
+
+.compat-attachment-fields:has(#ab-toggle:checked) .compat-field-ab_testing_duration {
+	display: table-row;
+}
