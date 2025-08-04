@@ -73,7 +73,7 @@ const VideoPlayer = () => {
 		}
 
 		const videoElement = document.createElement( 'video-js' );
-		videoElement.classList.add( 'video-js', 'vjs-big-play-centered', 'video-player-settings-preview' );
+		videoElement.classList.add( 'video-js', 'vjs-big-play-centered' );
 
 		wrapperRef.current.appendChild( videoElement );
 
@@ -288,6 +288,11 @@ const VideoPlayer = () => {
 				'godam-pills-skin',
 				'godam-bubble-skin',
 				'godam-classic-skin',
+				'video-player-settings-preview',
+			);
+
+			parent.classList.add(
+				'video-player-settings-preview',
 			);
 
 			// Then add the selected skin class

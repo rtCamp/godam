@@ -97,9 +97,7 @@ const getQuery = ( props ) => {
  * @return {Promise<Object | undefined>} A promise that resolves with the JSON response from the API, or undefined if the request fails.
  */
 async function getGodamSettings() {
-	const restURL = window.godamRestRoute?.url || '';
-	const baseUrl = `${ restURL }godam/v1/settings`;
-	const url = `${ baseUrl }/godam-settings`;
+	const url = 'godam/v1/settings/godam-settings';
 
 	try {
 		const response = await wp.apiFetch( {

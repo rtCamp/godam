@@ -71,6 +71,9 @@ MediaDateRangeFilter = MediaDateRangeFilter?.extend( {
 		// Call the parent render method
 		wp.media.View.prototype.render.apply( this, arguments );
 
+		// Make input readonly to prevent manual typing
+		this.$el.attr( 'readonly', true );
+
 		this.$el.daterangepicker(
 			{
 				locale: {
