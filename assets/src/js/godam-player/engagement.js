@@ -127,22 +127,21 @@ const engagementStore = {
 
 	actions: {
 		/**
-		 * Dispatches an action to update the like status for a video.
+		 * Dispatches an action to like or unlike a video.
 		 *
-		 * @async
-		 * @param {string}      videoAttachmentId - The ID of the video attachment.
-		 * @param {string}      siteUrl           - The URL of the site where the video is hosted.
-		 * @param {Object}      storeObj          - The store object that handles video engagement data.
-		 * @param {HTMLElement} likeLink          - The HTML element for the like button/link.
-		 * @return {Object|null} An action object containing the type and like data.
+		 * @param {string} videoAttachmentId - The ID of the video attachment.
+		 * @param {string} siteUrl           - The URL of the site where the video is hosted.
+		 * @param {Object} storeObj          - The store object that handles video engagement data.
+		 * @return {Object} An action object containing the type and like data.
 		 */
-		userHitiLke: async ( videoAttachmentId, siteUrl, storeObj ) => {
+		userHitiLke: ( videoAttachmentId, siteUrl, storeObj ) => {
 			const likeStatus = storeObj.select.getIsUserLiked()[ videoAttachmentId ];
-			const likeData = await storeObj.sendLikeData( videoAttachmentId, siteUrl, ! likeStatus );
-			if ( 'error' === likeData.status ) {
-				storeObj.dispatch.errorHappened( likeData.message );
-				return;
-			}
+			storeObj.sendLikeData( videoAttachmentId, siteUrl, ! likeStatus );
+			const likeData = {
+				videoAttachmentId,
+				value: likeStatus ? -1 : 1,
+				isUserLiked: ! likeStatus,
+			};
 			return {
 				type: ACTIONS.USER_HIT_LIKE,
 				likeData,
