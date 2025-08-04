@@ -27,7 +27,6 @@
 .custom-thumbnail-container {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
 
 	.controls {
 		position: absolute;
@@ -64,6 +63,23 @@
 				background: #fff;
 			}
 		}
+	}
+}
+
+.ab-testing-feature {
+	margin-top: 6px;
+}
+
+.ab-test-action {
+	background: #007BFF;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+
+	&:hover {
+		transform: scale(1.05);
 	}
 }
 
@@ -336,7 +352,6 @@
 			position: relative;
 			border-radius: 8px;
 			overflow: hidden;
-			height: 72px;
 
 			img {
 				display: block;
@@ -344,11 +359,15 @@
 				object-fit: fill;
 				transition: opacity, transform 0.2s ease;
 				width: 8rem;
-				height: 100%;
+				height: 72px;
 			}
 			
 			&.selected {
-				border: 4px solid #007bff;
+				
+				img {
+					border: 4px solid #007bff;
+					height: 64px;
+				}
 
 				&::after {
 					content: "\2714";

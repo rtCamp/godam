@@ -276,6 +276,16 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		li.appendChild( img );
 		li.appendChild( controls );
 
+		const abTestingCheckboxHTML = `
+  <div class="ab-testing-feature">
+    <button type="button" class="ab-test-action">
+      Use in A/B Testing
+    </button>
+  </div>
+`;
+
+		li.insertAdjacentHTML( 'beforeend', abTestingCheckboxHTML );
+
 		return li;
 	},
 
@@ -297,6 +307,17 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		img.src = DOMPurify.sanitize( thumbnailURL );
 		img.alt = __( 'Video Thumbnail', 'godam' );
 		li.appendChild( img );
+
+		const abTestingCheckboxHTML = `
+  <div class="ab-testing-feature">
+    <button type="button" class="ab-test-action">
+      Use in A/B Testing
+    </button>
+  </div>
+`;
+
+		li.insertAdjacentHTML( 'beforeend', abTestingCheckboxHTML );
+
 		return li;
 	},
 
