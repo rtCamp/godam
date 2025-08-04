@@ -52,6 +52,7 @@ import {
 	updateActiveChapter,
 	loadChapters,
 } from './chapters.js'; // Adjust path as needed
+import { getForms, createFormElement } from './hubspot-forms.js';
 
 /**
  * Global variables
@@ -903,6 +904,37 @@ function GODAMPlayer( videoRef = null ) {
 		const layers = videoSetupOptions?.layers || [];
 		const formLayers = [];
 		const hotspotLayers = [];
+
+		getForms( video.dataset.id ).then( ( godamCentralLayers ) => {
+			godamCentralLayers.forEach( ( layer ) => {
+				const existingLayerElement = document.querySelector( `#layer-${ video.dataset.instanceId }-${ layer.id }` );
+				if ( ! existingLayerElement ) {
+					createLayerElement( layer, video.dataset.instanceId, videoContainerWrapper.querySelector( '.easydam-video-container' ) );
+				}
+			} );
+
+			layers.push( ...godamCentralLayers );
+			godamCentralLayers.forEach( ( layer ) => {
+				handleLayerDisplay( layer );
+			} );
+		} )
+			.catch( () => {} );
+
+		const createLayerElement = ( layer, instanceId, videoContainer ) => {
+			const layerId = `layer-${ instanceId }-${ layer.id }`;
+			const layerElement = document.createElement( 'div' );
+			layerElement.id = layerId;
+			layerElement.classList.add( 'godam-layer', `godam-layer-${ layer.type }`, 'hidden' );
+
+			createFormElement( layerElement, layer );
+
+			if ( layer.html_content ) {
+				layerElement.innerHTML = layer.html_content;
+			}
+
+			videoContainer.appendChild( layerElement );
+			return layerElement;
+		};
 
 		// Function to handle `isPreview` state changes
 		function handlePreviewStateChange( newValue ) {
