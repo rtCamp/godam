@@ -541,6 +541,7 @@ function CommentForm( props ) {
 					name="comment"
 					value={ commentText }
 					onChange={ ( e ) => setCommentText( e.target.value ) }
+					onKeyDown={ ( e ) => 'Enter' === e.key && handleSubmit() }
 				/>
 				<button
 					className={ 'rtgodam-video-engagement--comment-button' +
