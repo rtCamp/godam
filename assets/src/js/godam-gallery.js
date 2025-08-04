@@ -5,7 +5,7 @@
 /**
  * Internal dependencies
  */
-const { dispatch } = wp.data;
+const { select, dispatch } = wp.data;
 import DOMPurify from 'isomorphic-dompurify';
 
 // Common function to load more videos
@@ -268,10 +268,17 @@ document.addEventListener( 'click', async function( e ) {
 							if ( videoPlayer && videoPlayer.player ) {
 								if ( galleryEngagements ) {
 									// If engagements are enabled, initiate the comment modal with Data
-									godamPlayer.then( () => {
+
+									const newVideoEngagementsData = select( 'godam-video-engagement' ).getTitles()[ newVideoId ];
+									if ( newVideoEngagementsData ) {
 										dispatch( 'godam-video-engagement' ).initiateCommentModal( newVideoId, siteUrl, engagementId );
 										videoPlayer.player.play();
-									} );
+									} else {
+										godamPlayer.then( () => {
+											dispatch( 'godam-video-engagement' ).initiateCommentModal( newVideoId, siteUrl, engagementId );
+											videoPlayer.player.play();
+										} );
+									}
 								} else {
 									dispatch( 'godam-video-engagement' ).initiateCommentModal( newVideoId, siteUrl, engagementId, true );
 									videoPlayer.player.play();
