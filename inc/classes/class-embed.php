@@ -58,24 +58,35 @@ class Embed {
 	 * @return false|mixed
 	 */
 	public function pre_oembed_result( $data, string $url ) {
-		if ( strpos( $url, 'app-godam.rt.gw' ) !== false ) {
+		// Only intercept GoDAM specific URLs.
+		if ( strpos( $url, 'app-godam.rt.gw' ) === false ) {
+			return null;
+		}
 
-			$response = wp_remote_get( 'https://app-godam.rt.gw/api/method/godam_core.api.oembed.get_oembed?url=' . urlencode( $url ) );
+		$response = wp_remote_get( 'https://app-godam.rt.gw/api/method/godam_core.api.oembed.get_oembed?url=' . urlencode( $url ) );
 
-			if ( is_wp_error( $response ) ) {
-				return false;
-			}
+		if ( is_wp_error( $response ) ) {
+			return false;
+		}
 
-			$body = wp_remote_retrieve_body( $response );
-			$data = json_decode( $body, true );
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
 
-			if ( isset( $data['type'] ) && 'rich' === $data['type'] ) {
+		// Check if valid oEmbed data is returned.
+		if ( isset( $data['type'] ) && isset( $data['html'] ) ) {
+			// Override type.
+			if ( 'json' === $data['type'] ) {
 				$data['type'] = 'video';
 			}
 
-			return $data['html'] ?? false;
+			if ( 'yes' === get_option( 'llms_av_prog_auto_play', 'no' ) ) {
+
+				$data['html'] = str_replace( '<iframe', '<iframe class="rtgodam-llms-autoplay" allow="autoplay;encrypted-media;"', $data['html'] );
+			}
+
+			return '<div class="llms-av-embed fitvidsignore">' . $data['html'] . '</div>';
 		}
 
-		return false;
+		return null;
 	}
 }
