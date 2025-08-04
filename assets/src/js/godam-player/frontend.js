@@ -1404,6 +1404,13 @@ function GODAMPlayer( videoRef = null ) {
 					return;
 				}
 
+				// Controls to fetch from active player.
+				const videoControls = activeVideo.dataset.controls || '{}';
+				const parseVideoControls = JSON.parse( videoControls );
+
+				// Get skip button time.
+				const skipButtonTime = parseVideoControls?.controlBar?.skipButtons?.forward ?? 5;
+
 				const key = event.key.toLowerCase();
 				switch ( key ) {
 					case 'f':
@@ -1419,19 +1426,19 @@ function GODAMPlayer( videoRef = null ) {
 					case 'arrowleft':
 						// Seek backward 5 seconds
 						event.preventDefault();
-						activePlayer.currentTime( Math.max( 0, activePlayer.currentTime() - 5 ) );
+						activePlayer.currentTime( Math.max( 0, activePlayer.currentTime() - skipButtonTime ) );
 
 						// Show a visual indicator for seeking backward
-						showIndicator( activePlayer.el(), 'backward', '<i class="fa-solid fa-backward"></i> 5s' );
+						showIndicator( activePlayer.el(), 'backward', `<i class="fa-solid fa-backward"></i> ${ skipButtonTime }s` );
 						break;
 
 					case 'arrowright':
 						// Seek forward 5 seconds
 						event.preventDefault();
-						activePlayer.currentTime( activePlayer.currentTime() + 5 );
+						activePlayer.currentTime( activePlayer.currentTime() + skipButtonTime );
 
 						// Show a visual indicator for seeking forward
-						showIndicator( activePlayer.el(), 'forward', '5s <i class="fa-solid fa-forward"></i>' );
+						showIndicator( activePlayer.el(), 'forward', `${ skipButtonTime }s <i class="fa-solid fa-forward"></i>` );
 						break;
 
 					case ' ':
