@@ -390,10 +390,11 @@ const engagementStore = {
 					event.preventDefault();
 					likeLink.classList.add( 'is-progressing' );
 					likeLink.disabled = true;
-					self.dispatch.userHitiLke( videoAttachmentId, siteUrl, self ).then( () => {
+					self.dispatch.userHitiLke( videoAttachmentId, siteUrl, self );
+					setTimeout( () => {
 						likeLink.classList.remove( 'is-progressing' );
 						likeLink.disabled = false;
-					} );
+					}, 1000 );
 				} );
 			}
 
@@ -729,13 +730,10 @@ function CommentBox( props ) {
 
 	function handleLike() {
 		setIsSending( true );
-		memoizedStoreObj.dispatch.userHitiLke( videoAttachmentId, siteUrl, memoizedStoreObj )
-			.then( ( result ) => {
-				if ( ACTIONS.USER_HIT_LIKE === result.type ) {
-					setIsSending( false );
-				}
-			} )
-			.catch( () => {} );
+		memoizedStoreObj.dispatch.userHitiLke( videoAttachmentId, siteUrl, memoizedStoreObj );
+		setTimeout( () => {
+			setIsSending( false );
+		}, 1000 );
 	}
 
 	return (
