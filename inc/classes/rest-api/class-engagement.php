@@ -299,8 +299,8 @@ class Engagement extends Base {
 
 		$current_user_id    = get_current_user_id();
 		$current_user       = get_user_by( 'id', $current_user_id );
-		$current_user_email = $current_user->user_email;
-		$current_user_name  = $current_user->display_name;
+		$current_user_email = $current_user ? $current_user->user_email : 'bot@rtcamp.com';
+		$current_user_name  = $current_user ? $current_user->display_name : 'Anonymous';
 		$transcoder_job_id  = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
 
 		$query_params = array(
@@ -372,8 +372,8 @@ class Engagement extends Base {
 
 		$current_user_id    = get_current_user_id();
 		$current_user       = get_user_by( 'id', $current_user_id );
-		$current_user_email = $current_user->user_email;
-		$current_user_name  = $current_user->display_name;
+		$current_user_email = $current_user ? $current_user->user_email : 'bot@rtcamp.com';
+		$current_user_name  = $current_user ? $current_user->display_name : 'Anonymous';
 		$transcoder_job_id  = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
 
 		$query_params = array(
@@ -527,7 +527,7 @@ class Engagement extends Base {
 	public function get_likes( $transcoder_job_id, $account_creadentials, $current_user_id ) {
 
 		$current_user       = get_user_by( 'id', $current_user_id );
-		$current_user_email = $current_user->user_email;
+		$current_user_email = $current_user ? $current_user->user_email : 'bot@rtcamp.com';
 
 		$query_params = array(
 			'name'          => $transcoder_job_id,
