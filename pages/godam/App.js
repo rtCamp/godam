@@ -90,7 +90,7 @@ const App = () => {
 
 			<div className="godam-settings__hamburger-container">
 				<button
-					className="godam-settings__hamburger lg:hidden"
+					className="godam-settings__hamburger"
 					onClick={ () => setIsSidebarOpen( ! isSidebarOpen ) }
 					title="Open Menu"
 					aria-label="Open Menu"

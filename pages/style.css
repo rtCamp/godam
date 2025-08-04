@@ -608,10 +608,6 @@ input, textarea, select {
 		position: relative;
 	}
 
-	#root-video-editor {
-		padding-left: 0;
-	}
-
 	.video-editor-container::before {
 		content: "Please use a desktop to access this feature";
 		position: absolute;
