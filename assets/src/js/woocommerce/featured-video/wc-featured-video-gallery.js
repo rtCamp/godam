@@ -11,6 +11,18 @@ jQuery( document ).ready( function( $ ) {
 	 * Process and identify empty thumbnails and trigger AJAX for video thumbnails.
 	 */
 	function handleGalleryImages() {
+		// Open Photoswipe gallery.
+		const $galleryWrapper = $( 'body' ).find( '.woocommerce-product-gallery__wrapper' );
+
+		const emptyDivs = $galleryWrapper.find( '.woocommerce-product-gallery__image' ).filter( function() {
+			return $( this ).find( 'img' ).length === 0;
+		} );
+
+		if ( ! emptyDivs.length ) {
+			return;
+		}
+
+		// Thumbnail gallery.
 		const $imgs = $( '.woocommerce-product-gallery' ).find( 'ol.flex-control-thumbs li img' );
 
 		if ( $imgs.length === 0 ) {
@@ -32,6 +44,7 @@ jQuery( document ).ready( function( $ ) {
 			return;
 		}
 
+		// Get Product Id.
 		const productId = $( 'button[name="add-to-cart"]' ).val();
 		if ( ! productId || ! myGalleryAjaxData?.ajax_url || ! myGalleryAjaxData?.nonce ) {
 			return;
@@ -54,18 +67,52 @@ jQuery( document ).ready( function( $ ) {
 				response.data.videoThumbs.forEach( function( thumbUrl, index ) {
 					const videoId = response.data.videoIds[ index ];
 					const imgEl = emptyImgs[ index ];
+					const divEl = emptyDivs[ index ];
 
-					if ( ! thumbUrl || ! videoId || ! imgEl ) {
+					if ( ! thumbUrl || ! videoId || ( ! imgEl && ! divEl ) ) {
 						return;
 					}
 
+					// Open Photoswipe gallery Image video.
+					const $div = $( divEl );
+					const fullImage = thumbUrl.replace( '-100x100', '' );
+					const thumbSrcSet = `${ thumbUrl } 100w, ${ thumbUrl.replace( '-100x100', '-150x150' ) } 150w, ${ thumbUrl.replace( '-100x100', '-300x300' ) } 300w`;
+					const thumbSizes = '(max-width: 100px) 100vw, 100px';
+					const mainImgSrc = thumbUrl.replace( '-100x100', '-600x744' );
+					const mainSrcSet = `${ mainImgSrc } 600w, ${ mainImgSrc.replace( '-600x744', '-242x300' ) } 242w, ${ mainImgSrc.replace( '-600x744', '-825x1024' ) } 825w, ${ mainImgSrc.replace( '-600x744', '-768x953' ) } 768w, ${ fullImage } 1080w`;
+					const mainSizes = '(max-width: 600px) 100vw, 600px';
+					$div.attr( {
+						'data-thumb': thumbUrl,
+						'data-thumb-alt': $div.data( 'thumb-alt' ) || '',
+						'data-thumb-srcset': thumbSrcSet,
+						'data-thumb-sizes': thumbSizes,
+					} );
+					const $divImg = $( '<img>', {
+						width: 600,
+						height: 744,
+						src: mainImgSrc,
+						alt: $div.data( 'thumb-alt' ) || '',
+						'data-caption': '',
+						'data-src': fullImage,
+						'data-large_image': fullImage,
+						'data-large_image_width': 1080,
+						'data-large_image_height': 1340,
+						decoding: 'async',
+						srcset: mainSrcSet,
+						sizes: mainSizes,
+						draggable: false,
+						class: '',
+					} );
+					$div.html( '' ).append( $( '<a>', { href: fullImage } ).append( $divImg ) );
+
+					// Thumbnail gallery Image video.
 					const $img = $( imgEl );
 					$img.attr( 'src', thumbUrl )
 						.attr( 'data-video-id', videoId )
 						.addClass( 'godam-video-thumbnail' )
 						.off( 'click touchstart' )
 						.on( 'click touchstart', function( e ) {
-							// Prevent double firing on some devices
+							// Prevent double firing on some devices.
 							if ( e.type === 'touchstart' ) {
 								e.preventDefault();
 							}
@@ -233,4 +280,8 @@ jQuery( document ).ready( function( $ ) {
 			handleGalleryImages();
 		}
 	}
+
+	$( 'body' ).on( 'wc-product-gallery-before-init', function() {
+		handleGalleryImages();
+	} );
 } );

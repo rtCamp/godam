@@ -23,21 +23,34 @@
         position: relative;
         border-radius: 10px;
 
+        &::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 38px;
+            height: 38px;
+            background-color: var(--wp--preset--color--primary, #000); /* Background color */
+            border-radius: 50%;
+            z-index: 1;
+        }
+
         &::after {
             content: "";
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 45px;
-            height: 45px;
+            width: 20px;
+            height: 20px;
+            background-color: var(--wp--preset--color--base, var(--wp--preset--color--secondary, #fff));; /* Icon color */
+            
+            -webkit-mask: url(data:image/svg+xml;base64,PHN2ZwoJdmlld0JveD0iMCAwIDI0IDI0IgoJZmlsbD0iI2ZmZiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgo+Cgk8cGF0aCBkPSJNOCA1djE0bDExLTd6IiAvPgo8L3N2Zz4=) no-repeat center;
+            -webkit-mask-size: contain;
+            mask: url(data:image/svg+xml;base64,PHN2ZwoJdmlld0JveD0iMCAwIDI0IDI0IgoJZmlsbD0iI2ZmZiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgo+Cgk8cGF0aCBkPSJNOCA1djE0bDExLTd6IiAvPgo8L3N2Zz4=) no-repeat center;
+            mask-size: contain;
             z-index: 1;
-            background-image: url(data:image/svg+xml;base64,PHN2ZwoJdmlld0JveD0iMCAwIDI0IDI0IgoJZmlsbD0iY3VycmVudENvbG9yIgoJeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIgo+Cgk8cGF0aCBkPSJNOCA1djE0bDExLTd6IiAvPgo8L3N2Zz4=);
-		    background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            background-color: white;
-            border-radius: 10px;
         }
     }
 
@@ -89,22 +102,22 @@
             top: 2%;
             right: 5px;
             display: flex;
-            background-color: var(--wp--preset--color--black);
-            border-radius: 10px;
+            background-color: var(--wp--preset--color--primary, #000);
+            border-radius: 50%;
             text-decoration: none;
             width: 40px;
             height: 40px;
             border: none;
-            font-size: 40px;
+            font-size: 30px;
             line-height: 40px;
             cursor: pointer;
-            color: var(--wp--preset--color--white);
+            color: var(--wp--preset--color--base, var(--wp--preset--color--secondary, #fff));
             transition: color 0.2s ease;
             flex-wrap: nowrap;
             justify-content: center;
             align-items: center;
             z-index: 100;
-            padding: 0 0 7px 0;
+            padding: 0 2px 4px 2px;
         }
 
         &-content {
@@ -112,6 +125,7 @@
 
             &-left {
                 min-width: 405px;
+                max-width: 405px;
 
                 figure {
                     margin: 0;

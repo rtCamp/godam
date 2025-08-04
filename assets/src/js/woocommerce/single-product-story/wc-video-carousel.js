@@ -119,7 +119,7 @@ const wcVideoCarousel = {
 		const self = this;
 		const videoElmModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal' );
 		const videoElmModalClose = document.querySelector( '.rtgodam-product-video-gallery-slider-modal-close' );
-		videoElmModalClose.addEventListener( 'click', ( event ) => {
+		videoElmModalClose?.addEventListener( 'click', ( event ) => {
 			event.preventDefault();
 			videoElmModal.classList.remove( 'open' );
 			self.swiperModal.destroy();

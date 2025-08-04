@@ -329,7 +329,7 @@ class WC_Featured_Video_Gallery {
 
 		foreach ( $alts as $alt ) {
 			// Extract numeric index from alt.
-			if ( preg_match( '/\d+/', $alt, $matches ) ) {
+			if ( preg_match( '/\d+$/', $alt, $matches ) ) {
 				$index = intval( $matches[0] );
 
 				// Subtract 2 to match array index.
