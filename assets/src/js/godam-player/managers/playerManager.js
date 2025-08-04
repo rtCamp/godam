@@ -18,6 +18,7 @@ import videojs from 'video.js';
  */
 import VideoPlayer from '../videoPlayer.js';
 import { KEYBOARD_CONTROLS } from '../utils/constants.js';
+import { parseDataAttribute } from '../utils/dataHelpers.js';
 
 /**
  * Main GoDAM Player Manager Class
@@ -105,7 +106,7 @@ export default class PlayerManager {
 			return;
 		}
 
-		this.handleKeyboardAction( event, activePlayer );
+		this.handleKeyboardAction( event, activePlayer, activeVideo );
 	}
 
 	/**
@@ -160,17 +161,18 @@ export default class PlayerManager {
 	}
 
 	/**
-	 * Handle keyboard actions
+	 * Handle keyboard actions for video controls
 	 *
 	 * @param {KeyboardEvent} event        - Keyboard event object
 	 * @param {Object}        activePlayer - VideoJS player instance
+	 * @param {HTMLElement}   activeVideo  - Active video element
 	 */
-	handleKeyboardAction( event, activePlayer ) {
+	handleKeyboardAction( event, activePlayer, activeVideo ) {
 		const key = event.key.toLowerCase();
 		const actions = {
 			[ KEYBOARD_CONTROLS.FULLSCREEN ]: () => this.toggleFullscreen( activePlayer ),
-			[ KEYBOARD_CONTROLS.SEEK_BACKWARD ]: () => this.seekBackward( activePlayer ),
-			[ KEYBOARD_CONTROLS.SEEK_FORWARD ]: () => this.seekForward( activePlayer ),
+			[ KEYBOARD_CONTROLS.SEEK_BACKWARD ]: () => this.seekBackward( activePlayer, activeVideo ),
+			[ KEYBOARD_CONTROLS.SEEK_FORWARD ]: () => this.seekForward( activePlayer, activeVideo ),
 			[ KEYBOARD_CONTROLS.PLAY_PAUSE ]: () => this.togglePlayPause( activePlayer ),
 			[ KEYBOARD_CONTROLS.PLAY_PAUSE_ALT ]: () => this.togglePlayPause( activePlayer ),
 		};
@@ -198,23 +200,31 @@ export default class PlayerManager {
 	/**
 	 * Seek backward
 	 *
-	 * @param {Object} player - VideoJS player instance
+	 * @param {Object}      player       - VideoJS player instance
+	 * @param {HTMLElement} videoElement - Video element with configuration
 	 */
-	seekBackward( player ) {
-		player.currentTime( Math.max( 0, player.currentTime() - 5 ) );
+	seekBackward( player, videoElement ) {
+		const skipSettings = this.getSkipButtonSettings( videoElement );
+		const skipSeconds = skipSettings.backward;
+
+		player.currentTime( Math.max( 0, player.currentTime() - skipSeconds ) );
 		/* translators: %d: number of seconds to seek backward */
-		this.showIndicator( player.el(), 'backward', sprintf( '<i class="fa-solid fa-backward"></i> %s', __( '5s', 'godam' ) ) );
+		this.showIndicator( player.el(), 'backward', sprintf( '<i class="fa-solid fa-backward"></i> %s', sprintf( __( '%ds', 'godam' ), skipSeconds ) ) );
 	}
 
 	/**
 	 * Seek forward
 	 *
-	 * @param {Object} player - VideoJS player instance
+	 * @param {Object}      player       - VideoJS player instance
+	 * @param {HTMLElement} videoElement - Video element with configuration
 	 */
-	seekForward( player ) {
-		player.currentTime( player.currentTime() + 5 );
+	seekForward( player, videoElement ) {
+		const skipSettings = this.getSkipButtonSettings( videoElement );
+		const skipSeconds = skipSettings.forward;
+
+		player.currentTime( player.currentTime() + skipSeconds );
 		/* translators: %s: number of seconds to seek forward */
-		this.showIndicator( player.el(), 'forward', sprintf( '%s <i class="fa-solid fa-forward"></i>', __( '5s', 'godam' ) ) );
+		this.showIndicator( player.el(), 'forward', sprintf( '%s <i class="fa-solid fa-forward"></i>', sprintf( __( '%ds', 'godam' ), skipSeconds ) ) );
 	}
 
 	/**
@@ -256,5 +266,24 @@ export default class PlayerManager {
 		indicator.innerHTML = sanitizedHtml;
 		playerEl.appendChild( indicator );
 		setTimeout( () => indicator.remove(), 500 );
+	}
+
+	/**
+	 * Get skip button settings from video element
+	 *
+	 * @param {HTMLElement} videoElement - Video element with data attributes
+	 * @return {Object} Skip button configuration
+	 */
+	getSkipButtonSettings( videoElement ) {
+		const controls = parseDataAttribute( videoElement, 'controls', {} );
+
+		// Default skip button settings.
+		const defaultSkipButtons = {
+			forward: 10,
+			backward: 10,
+		};
+
+		// Return skip button settings or defaults.
+		return controls?.controlBar?.skipButtons || defaultSkipButtons;
 	}
 }
