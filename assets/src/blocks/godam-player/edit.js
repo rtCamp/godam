@@ -43,7 +43,6 @@ import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
-import { secondsToISO8601 } from './utils';
 import './editor.scss';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
@@ -170,7 +169,7 @@ function VideoEdit( {
 				} }
 			/>
 		</Disabled>
-	), [ isSingleSelected, videoOptions, setAttributes, attributes.seo ] );
+	), [ isSingleSelected, videoOptions, setAttributes ] );
 
 	useEffect( () => {
 		// Placeholder may be rendered.
@@ -457,22 +456,22 @@ function VideoEdit( {
 							<>
 								<BaseControl
 									id={ `video-block__hover-${ instanceId }` }
-												__nextHasNoMarginBottom
+									__nextHasNoMarginBottom
 								>
 									<SelectControl
 										__nextHasNoMarginBottom
 										label={ __( 'Hover Option', 'godam' ) }
-							help={ __( 'Choose the action to perform on video hover.', 'godam' ) }
-							value={ attributes.hoverSelect || 'none' }
+										help={ __( 'Choose the action to perform on video hover.', 'godam' ) }
+										value={ attributes.hoverSelect || 'none' }
 										onChange={ ( value ) => setAttributes( { hoverSelect: value } ) }
 										options={
-								[
-									{ label: __( 'None', 'godam' ), value: 'none' },
-									{ label: __( 'Show Player Controls', 'godam' ), value: 'show-player-controls' },
-									{ label: __( 'Start Preview', 'godam' ), value: 'start-preview' },
-									{ label: __( 'Shadow Overlay', 'godam' ), value: 'shadow-overlay' },
-								]
-							}
+											[
+												{ label: __( 'None', 'godam' ), value: 'none' },
+												{ label: __( 'Show Player Controls', 'godam' ), value: 'show-player-controls' },
+												{ label: __( 'Start Preview', 'godam' ), value: 'start-preview' },
+												{ label: __( 'Shadow Overlay', 'godam' ), value: 'shadow-overlay' },
+											]
+										}
 									/>
 								</BaseControl>
 
