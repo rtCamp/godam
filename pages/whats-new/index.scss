@@ -82,6 +82,82 @@ $grey-text: #5f6368;
   }
 }
 
+// Loading State
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+  text-align: center;
+
+  p {
+    margin-top: 1rem;
+    color: $grey-text;
+    font-size: 1.1rem;
+  }
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid $primary-red;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+// Error state
+.no-data-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+  text-align: center;
+
+  .no-data-icon {
+    color: $grey-text;
+    margin-bottom: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: $dark-text;
+    font-weight: 500;
+  }
+
+  p {
+    color: $grey-text;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+}
+
+.retry-button {
+  background-color: $primary-red;
+  color: $light-red;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #842d53;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba($primary-red, 0.3);
+  }
+}
+
 // Feature Section Styles
 .feature {
   padding: 4rem 0;
@@ -129,12 +205,14 @@ $grey-text: #5f6368;
     padding-left: 1.5rem;
   }
 
-  li {
-    margin-bottom: 1rem;
-  }
-
   strong {
     font-weight: 500;
+  }
+
+  &-description li {
+    list-style: disc;
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
   }
 }
 
@@ -326,6 +404,13 @@ $grey-text: #5f6368;
   from { transform: translateY(-50px); opacity: 0; }
 
   to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes spin {
+
+  from { transform: rotate(0deg); }
+
+  to { transform: rotate(360deg); }
 }
 
 // Responsive Styles
