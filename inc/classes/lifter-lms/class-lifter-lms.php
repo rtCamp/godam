@@ -31,6 +31,10 @@ class Lifter_LMS {
 		add_action( 'wp_enqueue_scripts', array( $this, 'load_lifterlms_integration_script' ) );
 
 		add_filter( 'godam_player_block_attributes', array( $this, 'modify_godam_player_block_attributes' ) );
+
+		add_filter( 'llms_av_get_available_providers', array( $this, 'add_godam_provider' ) );
+
+		add_filter( 'lifterlms_available_integrations', array( $this, 'add_godam_integration' ) );
 	}
 
 	/**
@@ -78,7 +82,7 @@ class Lifter_LMS {
 	 *
 	 * @return bool
 	 */
-	public function is_lifterlms_autoplay_on() {
+	public function is_lifterlms_autoplay_on(): bool {
 		return 'no' !== get_option( 'llms_av_prog_auto_play', 'no' );
 	}
 
@@ -111,7 +115,12 @@ class Lifter_LMS {
 	public function load_lifterlms_integration_script() {
 		// Load LifterLMS integration script only if LifterLMS is active, the content is LifterLMS, and the Godam video block is present.
 		if ( $this->is_lifterlms_active() && $this->is_lifterlms_content() && $this->has_godam_video_block() ) {
-			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/src/js/lifterlms/index.js', array( 'jquery' ), filemtime( RTGODAM_PATH . 'assets/src/js/lifterlms/index.js' ), true );
+			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/src/js/lifterlms/block-integration.js', array( 'jquery' ), filemtime( RTGODAM_PATH . 'assets/src/js/lifterlms/index.js' ), true );
+		}
+
+		if ( $this->is_lifterlms_active() && $this->is_lifterlms_content() ) {
+			wp_enqueue_script( 'rtgodam-player-sdk', RTGODAM_URL . 'assets/src/js/godam-player/godam-player-sdk.js', array(), filemtime( RTGODAM_PATH . 'assets/src/js/godam-player/godam-player-sdk.js' ), true );
+			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/src/js/lifterlms/embed-integration.js', array( 'jquery' ), filemtime( RTGODAM_PATH . 'assets/src/js/lifterlms/embed-integration.js' ), true );
 		}
 	}
 
@@ -129,5 +138,33 @@ class Lifter_LMS {
 		}
 
 		return $attributes;
+	}
+
+	/**
+	 * Add GoDAM provider to LifterLMS available providers.
+	 *
+	 * @param array $providers Array of available providers.
+	 *
+	 * @return mixed
+	 */
+	public function add_godam_provider( array $providers ) {
+		$godam_ob           = new LLMS_AV_Integration_GoDAM();
+		$providers['godam'] = $godam_ob;
+
+		return $providers;
+	}
+
+	/**
+	 * Add GoDAM integration to LifterLMS available integrations.
+	 *
+	 * @param array $integrations Array of available integrations.
+	 *
+	 * @return mixed
+	 */
+	public function add_godam_integration( array $integrations ) {
+
+		$integrations['av_godam'] = new LLMS_AV_Integration_GoDAM();
+
+		return $integrations;
 	}
 }
