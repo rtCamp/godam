@@ -226,7 +226,7 @@ const Dashboard = () => {
 									'godam',
 								) }
 
-								<a href="https://godam.io/pricing/" className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
+								<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
 							</p>
 
 							<p className="api-key-overlay-banner-footer">

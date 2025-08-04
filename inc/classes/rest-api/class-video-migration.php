@@ -1,7 +1,7 @@
 <?php
 /**
  * Register REST API endpoints for Video Migration.
- * 
+ *
  * This class handles the migration of Vimeo videos in Gutenberg blocks.
  *
  * @since n.e.x.t
@@ -66,16 +66,16 @@ class Video_Migration extends Base {
 
 	/**
 	 * Get Vimeo migration status from GoDAM Central.
-	 * 
+	 *
 	 * This function fetches the current Vimeo migration status from GoDAM Central API.
 	 * It requires a valid API key stored in WordPress options.
-	 * 
+	 *
 	 * @since n.e.x.t
-	 * 
+	 *
 	 * @return array|\WP_Error Migration status or error object on failure.
 	 */
 	public function get_vimeo_migration_status_from_godam_central() {
-		
+
 		$api_key = get_option( 'rtgodam-api-key', '' );
 
 		if ( empty( $api_key ) ) {
@@ -101,9 +101,9 @@ class Video_Migration extends Base {
 
 	/**
 	 * Permission callback for video migration endpoints.
-	 * 
+	 *
 	 * @since n.e.x.t
-	 * 
+	 *
 	 * @return bool True if the user has permission, false otherwise.
 	 */
 	public function check_video_migration_permission() {
@@ -113,14 +113,14 @@ class Video_Migration extends Base {
 
 	/**
 	 * Migrate Vimeo videos in Gutenberg blocks.
-	 * 
+	 *
 	 * This endpoint initiates the migration process for Vimeo videos in Gutenberg blocks.
 	 * It queues a background action to process all posts that need migration.
-	 * 
+	 *
 	 * @since n.e.x.t
-	 * 
+	 *
 	 * @param \WP_REST_Request $request The REST request object.
-	 * 
+	 *
 	 * @return \WP_REST_Response Migration status including total posts, done count, and current status.
 	 */
 	public function migrate_videos( $request ) {
@@ -167,13 +167,13 @@ class Video_Migration extends Base {
 			'status'    => 'processing', // pending | processing | completed | error.
 			'message'   => __( 'Migration queued for processing', 'godam' ),
 		);
-		
+
 		update_option( $wp_option_key, $initial_status );
 
 		// Schedule a single background action to handle everything.
-		as_enqueue_async_action( 
-			'godam_process_full_video_migration', 
-			array( 'migration_type' => $migration_type ) 
+		as_enqueue_async_action(
+			'godam_process_full_video_migration',
+			array( 'migration_type' => $migration_type )
 		);
 
 		return rest_ensure_response( $initial_status );
@@ -182,21 +182,21 @@ class Video_Migration extends Base {
 	/**
 	 * Process the full migration in background.
 	 * This runs as a scheduled action and handles finding + migrating all posts.
-	 * 
+	 *
 	 * @since n.e.x.t
-	 * 
+	 *
 	 * @param string $migration_type The type of migration to process (e.g., 'core', 'vimeo').
-	 * 
+	 *
 	 * @return void
 	 */
 	public function process_full_video_migration( $migration_type ) {
-		
+
 		if ( ! in_array( $migration_type, array( 'core', 'vimeo' ), true ) ) {
 			return;
 		}
-		
+
 		$wp_option_key = 'godam_' . $migration_type . '_video_migration_status';
-		
+
 		// Update status to processing.
 		$status            = get_option( $wp_option_key, array() );
 		$status['status']  = 'processing';
@@ -205,7 +205,7 @@ class Video_Migration extends Base {
 
 		// Get all post types that support Gutenberg editor.
 		$post_types = $this->get_gutenberg_enabled_post_types();
-		
+
 		if ( empty( $post_types ) ) {
 			$this->update_migration_status_error( $wp_option_key, __( 'No post types with Gutenberg support found', 'godam' ) );
 			return;
@@ -214,7 +214,7 @@ class Video_Migration extends Base {
 		// Find all posts that need migration.
 		$all_post_ids = $this->find_all_posts_for_migration( $post_types );
 		$total_posts  = count( $all_post_ids );
-		
+
 		if ( 0 === $total_posts ) {
 			$this->complete_migration_with_no_posts( $wp_option_key );
 			return;
@@ -231,22 +231,22 @@ class Video_Migration extends Base {
 
 	/**
 	 * Find all posts that need migration across all post types
-	 * 
+	 *
 	 * @since n.e.x.t
-	 * 
+	 *
 	 * @param array $post_types Array of post type names to search for.
-	 * 
+	 *
 	 * @return array Array of post IDs that need migration.
 	 */
 	private function find_all_posts_for_migration( $post_types ) {
 		$all_post_ids   = array();
 		$posts_per_page = 1000; // Process 1000 posts at a time to prevent memory issues.
-		
+
 		foreach ( $post_types as $post_type ) {
-			
+
 			$offset          = 0;
 			$post_type_total = 0;
-			
+
 			do {
 				$posts = get_posts(  // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
 					array(
@@ -260,19 +260,19 @@ class Video_Migration extends Base {
 						'no_found_rows'          => true, // Skip SQL_CALC_FOUND_ROWS for better performance.
 						'update_post_meta_cache' => false, // Skip post meta caching.
 						'update_post_term_cache' => false, // Skip term caching.
-					) 
+					)
 				);
-				
+
 				if ( ! empty( $posts ) ) {
 					$all_post_ids     = array_merge( $all_post_ids, $posts );
 					$post_type_total += count( $posts );
 
 					$post_count = count( $posts );
-					
+
 					// Add a small delay to prevent overwhelming the database.
 					sleep( 1 ); // 1 second delay.
 				}
-				
+
 				$offset += $posts_per_page;
 
 
@@ -285,25 +285,25 @@ class Video_Migration extends Base {
 
 	/**
 	 * Process all posts in manageable batches.
-	 * 
+	 *
 	 * @since n.e.x.t
-	 * 
+	 *
 	 * @param string $migration_type The type of migration being processed (e.g., 'core', 'vimeo').
 	 * @param array  $all_post_ids Array of all post IDs to process.
-	 * 
+	 *
 	 * @return void
 	 */
 	private function process_posts_in_batches( $migration_type, $all_post_ids ) {
 		$batch_size    = 20;
 		$total_batches = ceil( count( $all_post_ids ) / $batch_size );
 		$batch_number  = 0;
-		
+
 		// Split posts into batches and schedule each batch.
 		$length = count( $all_post_ids );
 		for ( $i = 0; $i < $length; $i += $batch_size ) {
 			$batch_post_ids = array_slice( $all_post_ids, $i, $batch_size );
 			++$batch_number;
-			
+
 			// Schedule each batch with a slight delay to prevent overwhelming.
 			as_schedule_single_action(
 				time() + ( $batch_number * 2 ), // 2 second delay between batches.
@@ -315,7 +315,7 @@ class Video_Migration extends Base {
 				)
 			);
 		}
-		
+
 		// Update status.
 		$status            = get_option( 'godam_vimeo_video_migration_status', array() );
 		$status['message'] = sprintf(
@@ -328,11 +328,11 @@ class Video_Migration extends Base {
 
 	/**
 	 * Handle migration completion when no posts found.
-	 * 
+	 *
 	 * @since n.e.x.t
-	 * 
+	 *
 	 * @param string $wp_option_key The WordPress option key to update with the completion status.
-	 * 
+	 *
 	 * @return void
 	 */
 	private function complete_migration_with_no_posts( $wp_option_key ) {
@@ -344,18 +344,18 @@ class Video_Migration extends Base {
 			'status'    => 'completed',
 			'message'   => __( 'No posts found that need migration', 'godam' ),
 		);
-		
+
 		update_option( $wp_option_key, $status );
 	}
 
 	/**
 	 * Update status with error message
-	 * 
+	 *
 	 * @since n.e.x.t
-	 * 
+	 *
 	 * @param string $wp_option_key The WordPress option key to update with the error status.
 	 * @param string $error_message The error message to log and update in the migration status.
-	 * 
+	 *
 	 * @return void
 	 */
 	private function update_migration_status_error( $wp_option_key, $error_message ) {
@@ -368,13 +368,13 @@ class Video_Migration extends Base {
 
 	/**
 	 * Enhanced batch processing with better error handling.
-	 * 
+	 *
 	 * @since n.e.x.t
-	 * 
+	 *
 	 * @param string $migration_type The type of migration being processed (e.g., 'core', 'vimeo').
 	 * @param array  $post_ids Array of post IDs to process in this batch.
 	 * @param int    $batch_number The current batch number.
-	 * 
+	 *
 	 * @return int Number of posts processed in this batch.
 	 */
 	public function migrate_post_batch_video_blocks( $migration_type, $post_ids, $batch_number = 0 ) {
@@ -393,7 +393,7 @@ class Video_Migration extends Base {
 		$migration_status = get_option( $wp_option_key, array() );
 
 		$processed_count = 0;
-		
+
 		foreach ( $post_ids as $post_id ) {
 			try {
 				// Migrate individual post.
@@ -402,57 +402,57 @@ class Video_Migration extends Base {
 				} elseif ( 'vimeo' === $migration_type ) {
 					$post_changed = $this->migrate_single_post_vimeo_blocks( $post_id );
 				}
-				
+
 				if ( $post_changed ) {
 					++$processed_count;
 				}
-				
+
 				// Small delay to prevent server overload.
 				usleep( 50000 ); // 0.05 second delay.
-				
+
 			} catch ( Exception $e ) {
 				error_log( "Error processing post {$post_id} in batch #{$batch_number}: " . $e->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			}
 		}
-		
+
 		// Update the migration status.
 		if ( ! empty( $migration_status ) ) {
 			$migration_status['done'] = ( $migration_status['done'] ?? 0 ) + count( $post_ids );
-			
+
 			// Calculate progress percentage.
 			$progress = 0;
 			if ( $migration_status['total'] > 0 ) {
 				$progress = round( ( $migration_status['done'] / $migration_status['total'] ) * 100, 2 );
 			}
-			
+
 			$migration_status['message'] = sprintf(
-				/* translators: %1$d is the number of posts processed, %2$d is the total number of posts, %3$f is the progress percentage */
+			/* translators: %1$d is the number of posts processed, %2$d is the total number of posts, %3$f is the progress percentage */
 				__( 'Processed %1$d/%2$d posts (%3$f%% complete)', 'godam' ),
 				$migration_status['done'],
 				$migration_status['total'],
 				$progress
 			);
-			
+
 			// Check if migration is complete.
 			if ( $migration_status['done'] >= $migration_status['total'] ) {
 				$migration_status['status']    = 'completed';
 				$migration_status['completed'] = current_time( 'mysql' );
 				$migration_status['message']   = sprintf(
-					/* translators: %d is the total number of posts processed */
+				/* translators: %d is the total number of posts processed */
 					__( 'Migration completed! Processed %d posts.', 'godam' ),
 					$migration_status['total'],
 				);
 			}
-			
+
 			update_option( $wp_option_key, $migration_status );
 		}
-		
+
 		return $processed_count;
 	}
 
 	/**
 	 * Migrate video blocks for a single post.
-	 * 
+	 *
 	 * @since n.e.x.t
 	 *
 	 * @param int $post_id The ID of the post to migrate.
@@ -461,11 +461,11 @@ class Video_Migration extends Base {
 	 */
 	private function migrate_single_post_video_blocks( $post_id ) {
 		$post = get_post( $post_id );
-		
+
 		if ( ! $post || ! has_blocks( $post->post_content ) ) {
 			return false;
 		}
-		
+
 		$blocks  = parse_blocks( $post->post_content );
 		$changed = false;
 
@@ -477,6 +477,8 @@ class Video_Migration extends Base {
 					$attrs['src'] = wp_get_attachment_url( $attrs['id'] );
 				}
 
+				$sources = $this->build_video_sources_array( $attrs['id'] ?? 0 );
+
 				// Transform to custom block with attributes.
 				$block = array(
 					'blockName'    => 'godam/video',
@@ -487,7 +489,7 @@ class Video_Migration extends Base {
 						'muted'    => $attrs['muted'] ?? false,
 						'poster'   => $attrs['poster'] ?? '',
 						'src'      => $attrs['src'] ?? '',
-						'sources'  => array(),
+						'sources'  => $sources,
 						'seo'      => array(),
 					),
 					'innerContent' => array( '<div class="wp-block-godam-video"></div>' ),
@@ -507,13 +509,13 @@ class Video_Migration extends Base {
 				)
 			);
 		}
-		
+
 		return $changed;
 	}
 
 	/**
 	 * Migrate Vimeo video blocks for a single post.
-	 * 
+	 *
 	 * @since n.e.x.t
 	 *
 	 * @param int $post_id The ID of the post to migrate.
@@ -527,7 +529,7 @@ class Video_Migration extends Base {
 		if ( ! $post || ! has_blocks( $post->post_content ) ) {
 			return false;
 		}
-		
+
 		$blocks  = parse_blocks( $post->post_content );
 		$changed = false;
 
@@ -549,7 +551,7 @@ class Video_Migration extends Base {
 				$attachment_id = $this->create_attachment_from_vimeo_video( $vimeo_url );
 
 				if ( is_wp_error( $attachment_id ) ) {
-					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+                    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 					error_log(
 						sprintf(
 							'Error creating attachment for Vimeo video in post %d: %s',
@@ -566,6 +568,8 @@ class Video_Migration extends Base {
 					continue;
 				}
 
+				$sources = $this->build_video_sources_array( $attachment_id );
+
 				// Transform to custom block with attributes.
 				$block = array(
 					'blockName'    => 'godam/video',
@@ -576,7 +580,7 @@ class Video_Migration extends Base {
 						'muted'    => $attrs['muted'] ?? false,
 						'poster'   => $attrs['poster'] ?? '',
 						'src'      => $video_url,
-						'sources'  => array(),
+						'sources'  => $sources,
 						'seo'      => array(),
 					),
 					'innerContent' => array( '<div class="wp-block-godam-video"></div>' ),
@@ -596,16 +600,63 @@ class Video_Migration extends Base {
 				)
 			);
 		}
-		
+
 		return $changed;
 	}
 
 	/**
+	 * Build sources array for a video attachment.
+	 *
+	 * This function creates the sources array that matches the format expected by the block editor.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $attachment_id The attachment ID.
+	 *
+	 * @return array Array of video sources with src and type properties.
+	 */
+	private function build_video_sources_array( int $attachment_id ): array {
+		$sources = array();
+
+		// Get the original source URL.
+		$source_url = wp_get_attachment_url( $attachment_id );
+		$mime_type  = get_post_mime_type( $attachment_id );
+
+		if ( ! empty( $source_url ) ) {
+			$sources[] = array(
+				'src'  => $source_url,
+				'type' => str_contains( $source_url, '.mov' ) ? 'video/mp4' : $mime_type,
+			);
+		}
+
+		// Get HLS transcoded URL.
+		$hls_transcoded_url = get_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', true );
+		if ( ! empty( $hls_transcoded_url ) ) {
+			$sources[] = array(
+				'src'  => $hls_transcoded_url,
+				'type' => str_contains( $hls_transcoded_url, '.m3u8' ) ? 'application/x-mpegURL' : $mime_type,
+			);
+		}
+
+		// Get transcoded URL (MPD).
+		$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+		if ( ! empty( $transcoded_url ) ) {
+			$sources[] = array(
+				'src'  => $transcoded_url,
+				'type' => str_contains( $transcoded_url, '.mpd' ) ? 'application/dash+xml' : $mime_type,
+			);
+		}
+
+		// Reverse the sources to ensure the preferred format is first. MPD -> HLS -> Origin.
+		return array_reverse( $sources );
+	}
+
+	/**
 	 * Create an attachment from a Vimeo video URL.
-	 * 
+	 *
 	 * Fetches video information from GoDAM Central and creates a WordPress attachment
 	 * with the transcoded video file path.
-	 * 
+	 *
 	 * @since n.e.x.t
 	 *
 	 * @param string $vimeo_url The Vimeo video URL to create an attachment from.
@@ -625,7 +676,7 @@ class Video_Migration extends Base {
 
 		// Build request URL for GoDAM Central.
 		$request_url = RTGODAM_API_BASE . '/api/method/godam_core.api.vimeo.get_vimeo_video_details';
-		$request_url = add_query_arg( 
+		$request_url = add_query_arg(
 			array(
 				'api_key'   => $api_key,
 				'vimeo_url' => $vimeo_url,
@@ -636,10 +687,10 @@ class Video_Migration extends Base {
 		// Fetch video info from GoDAM Central.
 		$response = wp_remote_get( $request_url );
 		if ( is_wp_error( $response ) ) {
-			return new \WP_Error( 
+			return new \WP_Error(
 				'api_error',
 				sprintf(
-					/* translators: %s: error message */
+				/* translators: %s: error message */
 					__( 'Error fetching video info: %s', 'godam' ),
 					$response->get_error_message()
 				)
@@ -650,7 +701,7 @@ class Video_Migration extends Base {
 		$data = json_decode( $body, true );
 
 		if ( empty( $data['message'] ) || empty( $data['message']['transcoded_file_path'] ) ) {
-			return new \WP_Error( 
+			return new \WP_Error(
 				'invalid_response',
 				__( 'Invalid response from GoDAM Central.', 'godam' )
 			);
@@ -710,7 +761,7 @@ class Video_Migration extends Base {
 
 		// Change the guid of the attachment to the transcoded file path.
 		global $wpdb;
-		//phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+        //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->update(
 			$wpdb->posts,
 			array(
@@ -729,11 +780,11 @@ class Video_Migration extends Base {
 
 	/**
 	 * Get the current migration status.
-	 * 
+	 *
 	 * @since n.e.x.t
-	 * 
+	 *
 	 * @param \WP_REST_Request $request The REST request object.
-	 * 
+	 *
 	 * @return \WP_REST_Response Migration status including total posts, done count, and current status.
 	 */
 	public function get_migration_status( $request ) {
@@ -764,9 +815,9 @@ class Video_Migration extends Base {
 
 	/**
 	 * Get all post types that have Gutenberg editor enabled.
-	 * 
+	 *
 	 * @since n.e.x.t
-	 * 
+	 *
 	 * @return array List of post type names that support Gutenberg editor.
 	 */
 	private function get_gutenberg_enabled_post_types() {
