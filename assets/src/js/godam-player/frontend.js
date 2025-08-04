@@ -302,6 +302,7 @@ function GODAMPlayer( videoRef = null ) {
 				if ( player.isFullscreen() ) {
 					controlBarEl.style.setProperty( 'position', 'absolute' );
 					controlBarEl.style.setProperty( 'margin', '0 auto' );
+					controlBarEl.style.setProperty( 'bottom', '0', 'important' );
 				} else {
 					controlBarEl.style.removeProperty( 'position' );
 					controlBarEl.style.removeProperty( 'margin' );
