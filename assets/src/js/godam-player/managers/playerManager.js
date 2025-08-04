@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * WordPress dependencies
@@ -232,11 +233,11 @@ export default class PlayerManager {
 	}
 
 	/**
-	 * Show visual indicator
+	 * Show visual indicator with sanitized HTML
 	 *
 	 * @param {HTMLElement} playerEl  - Player element
 	 * @param {string}      className - CSS class name for indicator
-	 * @param {string}      html      - HTML content for indicator
+	 * @param {string}      html      - HTML content for indicator (will be sanitized)
 	 */
 	showIndicator( playerEl, className, html ) {
 		// Remove any existing indicators first
@@ -244,7 +245,15 @@ export default class PlayerManager {
 
 		const indicator = document.createElement( 'div' );
 		indicator.className = `vjs-seek-indicator ${ className }`;
-		indicator.innerHTML = html;
+
+		// Sanitize HTML content with DOMPurify before setting innerHTML
+		const sanitizedHtml = DOMPurify.sanitize( html, {
+			ALLOWED_TAGS: [ 'i', 'span', 'strong', 'em' ],
+			ALLOWED_ATTR: [ 'class' ],
+			KEEP_CONTENT: true,
+		} );
+
+		indicator.innerHTML = sanitizedHtml;
 		playerEl.appendChild( indicator );
 		setTimeout( () => indicator.remove(), 500 );
 	}
