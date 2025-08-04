@@ -26,9 +26,13 @@ const GoDAMLifterLMSEmbedIntegration = {
 	 * Initialize the video completion handler
 	 */
 	init() {
+		const godamIframe = document.querySelector( '.llms-av-embed iframe[src*="app-godam.rt.gw"]' );
+		if ( ! godamIframe ) {
+			return;
+		}
 		this.loadConfiguration();
 		this.setupInitialState();
-		this.bindVideoEvents();
+		this.bindVideoEvents( godamIframe );
 	},
 
 	/**
@@ -54,10 +58,11 @@ const GoDAMLifterLMSEmbedIntegration = {
 
 	/**
 	 * Bind video player events
+	 *
+	 * @param {Element} godamIframe
 	 */
-	bindVideoEvents() {
+	bindVideoEvents( godamIframe ) {
 		const videoContainer = document.querySelector( '.llms-av-embed' );
-		const godamIframe = document.querySelector( '.llms-av-embed iframe[src*="app-godam.rt.gw"]' );
 
 		// Check if iframe contains class 'rtgodam-llms-autoplay'.
 		if ( godamIframe && godamIframe.classList.contains( 'rtgodam-llms-autoplay' ) ) {
@@ -72,6 +77,10 @@ const GoDAMLifterLMSEmbedIntegration = {
 
 			if ( godamPlayer ) {
 				this.player = godamPlayer;
+
+				godamPlayer.on( 'timeupdate', ( event ) => {
+					this.handleVideoProgress( event, this.config );
+				} );
 
 				godamPlayer.on( 'ended', ( event ) => {
 					this.handleVideoComplete( event, videoContainer, this.config );
@@ -254,14 +263,13 @@ const GoDAMLifterLMSEmbedIntegration = {
 	 * @param {Object} configuration
 	 */
 	handleVideoProgress( event, configuration ) {
-		const video = event.target;
-		const currentTime = video.currentTime;
+		const currentTime = event.currentTime;
 
 		// Only store progress if video has been playing for at least 1 second.
 		// and hasn't reached the end.
-		if ( currentTime > 1 && currentTime < video.duration - 1 ) {
-			// Throttle storage updates to every 2 seconds to avoid excessive writes.
-			if ( ! this.lastProgressUpdate || Date.now() - this.lastProgressUpdate > 2000 ) {
+		if ( currentTime > 1 && currentTime < event.duration - 1 ) {
+			// Throttle storage updates to every 1 seconds to avoid excessive writes.
+			if ( ! this.lastProgressUpdate || Date.now() - this.lastProgressUpdate > 1000 ) {
 				this.storeVideoProgress( currentTime, configuration );
 				this.lastProgressUpdate = Date.now();
 			}
@@ -303,7 +311,7 @@ const GoDAMLifterLMSEmbedIntegration = {
 					}
 					if ( response?.html ) {
 						container.insertAdjacentHTML( 'beforeend', response.html );
-						self.initializeCountdown( container );
+						self.manageCountdown( self.initializeCountdown( container ) );
 					}
 				},
 			} );
@@ -322,10 +330,25 @@ const GoDAMLifterLMSEmbedIntegration = {
 				.then( ( data ) => {
 					if ( data?.html ) {
 						container.insertAdjacentHTML( 'beforeend', data.html );
-						self.initializeCountdown( container );
+						self.manageCountdown( self.initializeCountdown( container ) );
 					}
 				} );
 		}
+	},
+
+	/**
+	 * Manage countdown timer for video completion
+	 *
+	 * @param {any} countdown
+	 */
+	manageCountdown( countdown ) {
+		const stopCountdownBtn = document.querySelector( '.llms-av-pv--btn-stop-countdown' );
+		stopCountdownBtn.addEventListener( 'click', () => {
+			if ( countdown ) {
+				clearInterval( countdown );
+			}
+			document.querySelector( '.llms-av-pv' ).remove();
+		} );
 	},
 
 	/**
