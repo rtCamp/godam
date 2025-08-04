@@ -1406,7 +1406,13 @@ function GODAMPlayer( videoRef = null ) {
 
 				// Controls to fetch from active player.
 				const videoControls = activeVideo.dataset.controls || '{}';
-				const parseVideoControls = JSON.parse( videoControls );
+				let parseVideoControls = {};
+
+				try {
+					parseVideoControls = JSON.parse( videoControls );
+				} catch ( e ) {
+					parseVideoControls = {};
+				}
 
 				// Get skip button time.
 				const skipButtonTime = parseVideoControls?.controlBar?.skipButtons?.forward ?? 5;
