@@ -2,6 +2,10 @@
 /**
  * External dependencies
  */
+/**
+ * Internal dependencies
+ */
+const { dispatch } = wp.data;
 import DOMPurify from 'isomorphic-dompurify';
 
 // Common function to load more videos
@@ -175,6 +179,9 @@ document.addEventListener( 'click', async function( e ) {
 		const galleryOrder = currentGallery.getAttribute( 'data-order' ) || 'DESC';
 		const galleryTotal = parseInt( currentGallery.getAttribute( 'data-total' ) || 0, 10 );
 
+		// Check if engagements are enabled for the gallery
+		const galleryEngagements = currentGallery.getAttribute( 'data-engagements' ) === '1';
+
 		// Show modal immediately with the player
 		modal.innerHTML = `
 			<div class="godam-modal-overlay"></div>
@@ -249,17 +256,27 @@ document.addEventListener( 'click', async function( e ) {
 							videoDate.textContent = data.date || '';
 						}
 
+						const engagementContainer = videoContainer.querySelector( '.rtgodam-video-engagement' );
+						const engagementId = engagementContainer.getAttribute( 'data-engagement-id' ) || 0;
+						const siteUrl = engagementContainer.getAttribute( 'data-engagement-site-url' ) || 0;
+
 						// Reinitialize the player with the new content
 						if ( typeof GODAMPlayer === 'function' ) {
-							GODAMPlayer( modal );
+							const godamPlayer = GODAMPlayer( modal );
 							// Find the video player and start playing
 							const videoPlayer = modal.querySelector( '.video-js' );
 							if ( videoPlayer && videoPlayer.player ) {
-								videoPlayer.player.play();
-								const engagementComment = modal.querySelector( '.rtgodam-video-engagement .rtgodam-video-engagement--comment-link' );
-								if ( engagementComment ) {
-									engagementComment.click();
+								if ( galleryEngagements ) {
+									// If engagements are enabled, initiate the comment modal with Data
+									godamPlayer.then( () => {
+										dispatch( 'godam-video-engagement' ).initiateCommentModal( newVideoId, siteUrl, engagementId );
+										videoPlayer.player.play();
+									} );
+								} else {
+									dispatch( 'godam-video-engagement' ).initiateCommentModal( newVideoId, siteUrl, engagementId, true );
+									videoPlayer.player.play();
 								}
+								engagementContainer.remove();
 							}
 						}
 					}

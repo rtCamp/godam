@@ -1639,7 +1639,7 @@ function GODAMPlayer( videoRef = null ) {
 		}
 	} );
 
-	engagement();
+	return engagement();
 }
 
 window.GODAMPlayer = GODAMPlayer;

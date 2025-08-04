@@ -155,6 +155,15 @@
             height: calc(100% - clamp(72px, 24vw, 254px) );
             max-height: 906px;
             position: relative;
+
+            &.is-skip-engagements {
+
+                .rtgodam-video-engagement--comment-modal--video-figure {
+                    flex: 1;
+                    flex-basis: 100%;
+                    width: 100%;
+                }
+            }
         }
 
         &--video {

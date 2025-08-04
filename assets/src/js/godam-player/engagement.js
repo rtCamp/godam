@@ -32,10 +32,9 @@ const engagementStore = {
 	 */
 	init() {
 		if ( select( storeName ) ) {
-			dispatch( storeName ).loadDefaultData( this );
-		} else {
-			this.initStore();
+			return dispatch( storeName ).loadDefaultData( this );
 		}
+		return this.initStore();
 	},
 
 	/**
@@ -52,11 +51,11 @@ const engagementStore = {
 		this.dispatch = dispatch( storeName );
 		this.select = select( storeName );
 
-		this.dispatch.loadDefaultData( this );
-
 		// For testing purposes
 		window.gdm_dispatch = this.dispatch;
 		window.gdm_select = this.select;
+
+		return this.dispatch.loadDefaultData( this );
 	},
 
 	/**
@@ -184,13 +183,14 @@ const engagementStore = {
 		/**
 		 * Dispatches an action to generate a comment modal.
 		 *
-		 * @param {string} videoAttachmentId - The ID of the video attachment.
-		 * @param {string} siteUrl           - The URL of the site where the video is hosted.
-		 * @param {string} videoId           - The ID of the video.
+		 * @param {string}  videoAttachmentId - The ID of the video attachment.
+		 * @param {string}  siteUrl           - The URL of the site where the video is hosted.
+		 * @param {string}  videoId           - The ID of the video.
+		 * @param {boolean} skipEngagements   - Whether to skip engagements.
 		 * @return {Object} An action object containing the type.
 		 */
-		initiateCommentModal: ( videoAttachmentId, siteUrl, videoId ) => {
-			engagementStore.generateCommentModal( videoAttachmentId, siteUrl, videoId );
+		initiateCommentModal: ( videoAttachmentId, siteUrl, videoId, skipEngagements = false ) => {
+			engagementStore.generateCommentModal( videoAttachmentId, siteUrl, videoId, skipEngagements );
 			return {
 				type: ACTIONS.GENERATE_COMMENT_MODAL,
 			};
@@ -247,11 +247,6 @@ const engagementStore = {
 	watch() {
 		const state = this.select.getState();
 		this.distributeData( state );
-
-		if ( this.root && this.modalData && 0 !== Object.keys( this.modalData ).length ) {
-			const { videoAttachmentId, siteUrl, videoId } = this.modalData;
-			this.root.render( <CommentBox videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } storeObj={ this } videoId={ videoId } /> );
-		}
 	},
 
 	/**
@@ -422,11 +417,12 @@ const engagementStore = {
 	/**
 	 * Generates a modal for posting a comment on a video.
 	 *
-	 * @param {number} videoAttachmentId The video attachment ID.
-	 * @param {string} siteUrl           The site URL.
-	 * @param {string} videoId           The video attachment ID.
+	 * @param {number}  videoAttachmentId The video attachment ID.
+	 * @param {string}  siteUrl           The site URL.
+	 * @param {string}  videoId           The video attachment ID.
+	 * @param {boolean} skipEngagements   - Whether to skip engagements.
 	 */
-	generateCommentModal( videoAttachmentId, siteUrl, videoId ) {
+	generateCommentModal( videoAttachmentId, siteUrl, videoId, skipEngagements = false ) {
 		this.modalData = { videoAttachmentId, siteUrl, videoId };
 		const modalId = 'rtgodam-video-engagement--comment-modal';
 		let commentModal = document.getElementById( modalId );
@@ -438,7 +434,7 @@ const engagementStore = {
 		commentModal.setAttribute( 'id', modalId );
 		document.body.appendChild( commentModal );
 		this.root = createRoot( commentModal );
-		this.root.render( <CommentBox videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } storeObj={ this } videoId={ videoId } /> );
+		this.root.render( <CommentBox videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } storeObj={ this } videoId={ videoId } skipEngagements={ skipEngagements } /> );
 	},
 };
 
@@ -686,7 +682,7 @@ function CommentList( props ) {
  * @return {JSX.Element} A React element representing the comment box modal.
  */
 function CommentBox( props ) {
-	const { videoAttachmentId, storeObj, siteUrl, videoId } = props;
+	const { videoAttachmentId, storeObj, siteUrl, videoId, skipEngagements } = props;
 	const baseClass = 'rtgodam-video-engagement--comment-modal';
 	const memoizedStoreObj = useMemo( () => storeObj, [ storeObj ] );
 	const commentsCount = memoizedStoreObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
@@ -745,7 +741,7 @@ function CommentBox( props ) {
 
 	return (
 		<div className={ baseClass }>
-			<div className={ baseClass + '-content' }>
+			<div className={ baseClass + '-content' + ( skipEngagements ? ' is-skip-engagements' : '' ) }>
 				<div className={ baseClass + '-header' }>
 					<h3 className={ baseClass + '-title' }>{ titles }</h3>
 					<button className={ `${ baseClass }--close-button` } onClick={ () => memoizedStoreObj.root.unmount() }>&times;</button>
@@ -754,33 +750,35 @@ function CommentBox( props ) {
 					<div className={ `${ baseClass }--video-figure` }>
 						<figure ref={ videoContainerRef }></figure>
 					</div>
-					<div
-						className={ baseClass + '--video-info' + ( expendComment ? ' is-comment-expanded' : '' ) }
-					>
-						<h3 className={ baseClass + '--video-info-title' }>
-							{
-								commentsCount > 5 && (
+					{ ! skipEngagements && (
+						<div
+							className={ baseClass + '--video-info' + ( expendComment ? ' is-comment-expanded' : '' ) }
+						>
+							<h3 className={ baseClass + '--video-info-title' }>
+								{
+									commentsCount > 5 && (
+										<button
+											className={ baseClass + '--video-info-expend' }
+											onClick={ () => setExpendComment( ! expendComment ) }>
+											{ expendComment ? '-' : '+' }
+										</button>
+									)
+								}
+								{ __( 'Comments', 'godam' ) } ({ commentsCount })
+							</h3>
+							<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } />
+							<div className={ baseClass + '-leave-comment' }>
+								<div className={ baseClass + '-leave-comment-impressions' }>
 									<button
-										className={ baseClass + '--video-info-expend' }
-										onClick={ () => setExpendComment( ! expendComment ) }>
-										{ expendComment ? '-' : '+' }
-									</button>
-								)
-							}
-							{ __( 'Comments', 'godam' ) } ({ commentsCount })
-						</h3>
-						<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } />
-						<div className={ baseClass + '-leave-comment' }>
-							<div className={ baseClass + '-leave-comment-impressions' }>
-								<button
-									onClick={ handleLike }
-									className={ baseClass + '-leave-comment-impressions-likes' + ( isUserLIked ? ' is-liked' : '' ) + ( isSending ? ' is-progressing' : '' ) }
-								>{ likesCount }</button>
-								<span className={ baseClass + '-leave-comment-impressions-views' }>{ viewsCount }</span>
+										onClick={ handleLike }
+										className={ baseClass + '-leave-comment-impressions-likes' + ( isUserLIked ? ' is-liked' : '' ) + ( isSending ? ' is-progressing' : '' ) }
+									>{ likesCount }</button>
+									<span className={ baseClass + '-leave-comment-impressions-views' }>{ viewsCount }</span>
+								</div>
+								<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" />
 							</div>
-							<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" />
 						</div>
-					</div>
+					) }
 				</div>
 			</div>
 		</div>
@@ -794,5 +792,5 @@ function CommentBox( props ) {
  * It is called automatically on page load by the Godam plugin.
  */
 export function engagement() {
-	engagementStore.init();
+	return engagementStore.init();
 }

@@ -12,7 +12,7 @@ const options = [
 ];
 
 const VideoSettings = ( { setAttributes, attributes } ) => {
-	const { autoplay, controls, loop, muted, preload } =
+	const { autoplay, controls, loop, muted, preload, engagements } =
 		attributes;
 
 	// Show a specific help for autoplay setting.
@@ -45,6 +45,7 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 			loop: toggleAttribute( 'loop' ),
 			muted: toggleAttribute( 'muted' ),
 			controls: toggleAttribute( 'controls' ),
+			engagements: toggleAttribute( 'engagements' ),
 		};
 	}, [] );
 
@@ -87,6 +88,12 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 				label={ __( 'Playback controls', 'godam' ) }
 				onChange={ toggleFactory.controls }
 				checked={ !! controls }
+			/>
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Display engagements', 'godam' ) }
+				onChange={ toggleFactory.engagements }
+				checked={ !! engagements }
 			/>
 			<SelectControl
 				__next40pxDefaultSize

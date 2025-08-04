@@ -82,11 +82,11 @@ class Dynamic_Shortcode extends Base {
 		$video_date  = apply_filters( 'rtgodam_shortcode_video_date', $video_date, $id );
 
 		ob_start();
-		$shortcode = '[godam_video id="' . $id . '"]';
-		
+		$shortcode = '[godam_video engagements=show id="' . $id . '"]';
+
 		// Add filter for shortcode.
 		$shortcode = apply_filters( 'rtgodam_shortcode_output', $shortcode, $id );
-		
+
 		echo do_shortcode( $shortcode );
 		$html = ob_get_clean();
 

@@ -35,7 +35,7 @@ class GoDAM_Video_Gallery {
 					wp_enqueue_style( 'godam-player-frontend-style' );
 					wp_enqueue_style( 'godam-player-style' );
 				}
-			} 
+			}
 		);
 	}
 
@@ -87,11 +87,12 @@ class GoDAM_Video_Gallery {
 				'custom_date_end'   => '',
 				'show_title'        => true,
 				'align'             => '',
+				'engagements'       => true,
 			)
 		);
 
 		$atts = shortcode_atts( $default_atts, $atts, 'godam_video_gallery' );
-		
+
 		// Add filter for processed attributes.
 		$atts = apply_filters( 'rtgodam_gallery_attributes', $atts );
 
@@ -156,18 +157,18 @@ class GoDAM_Video_Gallery {
 						// Convert UTC dates to local timezone.
 						$start_date = new \DateTime( $atts['custom_date_start'] );
 						$end_date   = new \DateTime( $atts['custom_date_end'] );
-						
+
 						// Set timezone to WordPress timezone.
 						$wp_timezone = new \DateTimeZone( wp_timezone_string() );
 						$start_date->setTimezone( $wp_timezone );
 						$end_date->setTimezone( $wp_timezone );
-						
+
 						// Set start date to beginning of day (00:00:00).
 						$start_date->setTime( 0, 0, 0 );
-						
+
 						// Set end date to end of day (23:59:59).
 						$end_date->setTime( 23, 59, 59 );
-						
+
 						$date_query = array(
 							'after'     => $start_date->format( 'Y-m-d H:i:s' ),
 							'before'    => $end_date->format( 'Y-m-d H:i:s' ),
@@ -213,8 +214,8 @@ class GoDAM_Video_Gallery {
 			$shown_videos = count( $query->posts );
 
 			$alignment_class = ! empty( $atts['align'] ) ? ' align' . $atts['align'] : '';
-			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) . 
-				( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) . 
+			echo '<div class="godam-video-gallery layout-' . esc_attr( $atts['layout'] ) .
+				( 'grid' === $atts['layout'] ? ' columns-' . intval( $atts['columns'] ) : '' ) .
 				esc_attr( $alignment_class ) . '" 
 				data-infinite-scroll="' . esc_attr( $atts['infinite_scroll'] ) . '"
 				data-offset="' . esc_attr( $shown_videos ) . '"
@@ -232,6 +233,7 @@ class GoDAM_Video_Gallery {
 				data-date-range="' . esc_attr( $atts['date_range'] ) . '"
 				data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ) . '"
 				data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ) . '"
+				data-engagements="' . esc_attr( $atts['engagements'] ) . '"
 			>';
 			foreach ( $query->posts as $video ) {
 				// Add action before each video item.
@@ -240,33 +242,33 @@ class GoDAM_Video_Gallery {
 				$video_id    = intval( $video->ID );
 				$video_title = get_the_title( $video_id );
 				$video_date  = get_the_date( 'F j, Y', $video_id );
-				
+
 				// Add filter for video title.
 				$video_title = apply_filters( 'rtgodam_gallery_video_title', $video_title, $video_id );
-				
+
 				// Add filter for video date format.
 				$video_date = apply_filters( 'rtgodam_gallery_video_date', $video_date, $video_id );
-			
+
 				$custom_thumbnail = get_post_meta( $video_id, 'rtgodam_media_video_thumbnail', true );
 				$fallback_thumb   = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
-			
+
 				$thumbnail = $custom_thumbnail ?: $fallback_thumb;
-			
+
 				// Get video duration using file path.
 				$file_path = get_attached_file( $video_id );
 				$duration  = null;
-			
+
 				if ( file_exists( $file_path ) ) {
 					if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 						require_once ABSPATH . 'wp-admin/includes/media.php';
 					}
-			
+
 					$metadata = wp_read_video_metadata( $file_path );
 					if ( ! empty( $metadata['length_formatted'] ) ) {
 						$duration = $metadata['length_formatted'];
 					}
 				}
-			
+
 				echo '<div class="godam-video-item">';
 				echo '<div class="godam-video-thumbnail" data-video-id="' . esc_attr( $video_id ) . '">';
 				echo '<img src="' . esc_url( $thumbnail ) . '" alt="' . esc_attr( $video_title ) . '" />';
@@ -286,7 +288,6 @@ class GoDAM_Video_Gallery {
 				do_action( 'rtgodam_gallery_after_video_item', $video, $atts );
 			}
 			echo '</div>';
-
 
 			if ( $shown_videos < $total_videos ) {
 				if ( ! $atts['infinite_scroll'] ) {
