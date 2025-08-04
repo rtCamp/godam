@@ -152,8 +152,8 @@
             padding: clamp(16px, 3.5vw, 40px);
             width: calc(100% - clamp(72px, 16vw, 244px));
             max-width: 1756px;
-            height: calc(100% - clamp(72px, 24vw, 254px) );
-            max-height: 906px;
+            height: calc(100% - clamp(72px, 24vw, 170px) );
+            max-height: 826px;
             position: relative;
 
             &.is-skip-engagements {
@@ -184,6 +184,10 @@
                     height: 100% !important;
                     border-radius: 8px;
                     padding-top: 0 !important;
+                }
+
+                .vjs-control-bar {
+                    border-radius: 0 0 8px 8px;
                 }
 
                 @media screen and (max-width: 993px) {
@@ -649,6 +653,18 @@
                         .easydam-video-container,
                         .video-js {
                             max-height: 350px;
+                        }
+                    }
+                }
+
+                &-content.is-skip-engagements {
+
+                    .rtgodam-video-engagement--comment-modal--video-figure {
+                        figure,
+                        .godam-video-wrapper,
+                        .easydam-video-container,
+                        .video-js {
+                            max-height: 100%;
                         }
                     }
                 }
