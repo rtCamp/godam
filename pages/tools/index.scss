@@ -207,8 +207,9 @@ $tools-page-breakpoint: 782px;
 		@apply w-full h-2 bg-gray-200 rounded-full overflow-hidden;
 
 		&--fill {
+			background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
 
-			@apply h-full bg-[#9a2b5c] transition-all duration-300 ease-in-out;
+			@apply h-full transition-all duration-300 ease-in-out;
 		}
 	}
 
@@ -234,6 +235,10 @@ $tools-page-breakpoint: 782px;
 
 		@apply bg-red-100 text-red-800 border border-red-200 p-4 rounded-md shadow-md w-full cursor-text;
 		margin-bottom: 1rem;
+	}
+
+	.status-notices-container:not(:empty) {
+		margin-bottom: 2rem;
 	}
 
 }
