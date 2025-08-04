@@ -3,6 +3,14 @@
 
 	.godam-video-list {
 
+		&-wrapper {
+			margin-left: -20px;
+	
+			@media screen and (max-width: 782px) {
+				margin-left: 0;
+			}
+		}
+
 		&-header {
 			display: flex;
 			justify-content: space-between;
