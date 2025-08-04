@@ -157,10 +157,8 @@ class GoDAM_Player {
 
 		// Decode custom placeholders back to square brackets if sources contain them.
 		if ( ! empty( $attributes['sources'] ) && is_string( $attributes['sources'] ) ) {
-			$sources_with_placeholders = $attributes['sources'];
 			// Convert custom placeholders back to square brackets.
-			$sources_with_squares  = str_replace( array( '__rtgob__', '__rtgcb__' ), array( '[', ']' ), $sources_with_placeholders );
-			$attributes['sources'] = $sources_with_squares;
+			$attributes['sources'] = str_replace( array( '__rtgob__', '__rtgcb__' ), array( '[', ']' ), $attributes['sources'] );
 		}
 
 		$is_shortcode = true;
