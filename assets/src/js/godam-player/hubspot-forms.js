@@ -112,9 +112,12 @@ const loadHubspotForm = async ( container, formId ) => {
 			formId,
 			target: `#${ containerId } .hubspot-form`,
 		} );
-		if ( spinnerElement ) {
-			spinnerElement.style.display = 'none';
-		}
+
+		const handleFormReady = () => {
+			if ( spinnerElement ) {
+				spinnerElement.style.display = 'none';
+			}
+		};
 
 		const handleFormSubmission = ( event ) => {
 			const { formId: eventFormId } = event.detail;
@@ -128,6 +131,11 @@ const loadHubspotForm = async ( container, formId ) => {
 				continueButton.innerText = __( 'Continue', 'godam' );
 			}
 		};
+
+		window.addEventListener(
+			'hs-form-event:on-ready',
+			handleFormReady,
+		);
 
 		window.addEventListener(
 			'hs-form-event:on-submission:success',

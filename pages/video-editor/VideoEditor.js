@@ -29,6 +29,7 @@ import {
 	setFluentForms,
 	setEverestForms,
 	setNinjaForms,
+	setTranscodingJobId,
 	addGodamCentralLayers,
 } from './redux/slice/videoSlice';
 
@@ -126,6 +127,10 @@ const VideoEditor = ( { attachmentID } ) => {
 		// Initialize the store if meta exists
 		if ( rtGodamMeta ) {
 			dispatch( initializeStore( rtGodamMeta ) );
+		}
+
+		if ( meta?.rtgodam_transcoding_job_id ) {
+			dispatch( setTranscodingJobId( meta.rtgodam_transcoding_job_id ) );
 		}
 
 		// Initialize video sources with the original source

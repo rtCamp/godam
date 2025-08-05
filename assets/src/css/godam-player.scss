@@ -280,6 +280,10 @@
 	padding: 32px 10%;
 }
 
+.easydam-layer .hubspot-form {
+	pointer-events: none;
+}
+
 .godam-form-type-hubspot {
 	position: absolute;
 	top: 0;
@@ -292,6 +296,7 @@
 	.hubspot-form {
 		overflow: auto;
 		height: 100%;
+		width: 100%;
 		display: flex;
 		justify-content: center;
 		align-items: center;

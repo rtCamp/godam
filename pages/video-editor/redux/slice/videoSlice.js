@@ -40,6 +40,7 @@ const slice = createSlice( {
 				customPlayBtnImg: '',
 			},
 		},
+		transcodingJobId: '',
 		layers: [],
 		godamCentralLayers: [],
 		chapters: [],
@@ -77,6 +78,9 @@ const slice = createSlice( {
 		},
 		saveVideoMeta: ( state ) => {
 			state.isChanged = false;
+		},
+		setTranscodingJobId: ( state, action ) => {
+			state.transcodingJobId = action.payload;
 		},
 		addLayer: ( state, action ) => {
 			const newLayer = action.payload;
@@ -188,6 +192,7 @@ const slice = createSlice( {
 
 export const {
 	initializeStore, saveVideoMeta,
+	setTranscodingJobId,
 	addLayer,
 	removeLayer,
 	updateLayerField,
