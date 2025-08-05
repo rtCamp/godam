@@ -518,6 +518,11 @@
 		font-weight: 700 !important;
 		margin: 0;
 		margin-bottom: 0.5rem !important;
+		display: -webkit-box;
+		-webkit-line-clamp: 1;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	button.godam-product-sidebar-add-to-cart-button,
@@ -937,6 +942,14 @@
 		z-index: 9999 !important;
 		font-size: 14px !important;
 		padding: 12px !important;
+	}
+
+	.godam-product-modal-close.godam-video-transcoded {
+		top: 53px !important;
+        right: 9px !important;
+
+		// top: 10px !important;
+        // right: 53px !important;
 	}
 
 	.godam-product-sidebar.single-product-sidebar{
