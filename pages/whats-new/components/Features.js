@@ -13,7 +13,7 @@ const Features = ( { majorReleaseData } ) => {
 	const otherUpdates = majorReleaseData.features ? majorReleaseData.features.slice( 3 ) : [];
 
 	return (
-		<div className="godam-help-container">
+		<div className="godam-whats-new-container">
 			<Header />
 
 			{ primaryUpdates.map( ( feature, index ) => (

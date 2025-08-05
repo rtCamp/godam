@@ -414,12 +414,20 @@ $grey-text: #5f6368;
 }
 
 // Responsive Styles
+@media only screen and (max-width: 960px) {
+
+  .modal {
+    left: 36px;
+  }
+}
+
 @media (max-width: 900px) {
 
   .feature {
 
     &-content {
       flex-direction: column;
+      gap: 2rem;
 
       &.reverse {
         flex-direction: column;
@@ -441,11 +449,22 @@ $grey-text: #5f6368;
   }
 }
 
+@media ( max-width: 782px ) {
+
+  .auto-fold #wpcontent {
+    padding-left: 0;
+  }
+
+  .modal {
+    left: 0;
+  }
+}
+
 @media (max-width: 768px) {
 
   .modal-content {
-    width: 95%;
-    padding: 1.5rem;
+    width: 70%;
+    padding: 70px 30px 30px;
     margin: 10% auto;
   }
 
@@ -470,12 +489,5 @@ $grey-text: #5f6368;
       font-size: 1.5rem;
       line-height: 1.4;
     }
-  }
-}
-
-@media only screen and (max-width: 960px) {
-
-  .modal {
-    left: 36px;  
   }
 }
