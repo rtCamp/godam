@@ -28,7 +28,7 @@ const FolderCreationModal = () => {
 	const dispatch = useDispatch();
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.folderCreation );
-	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const selectedFolder = useSelector( ( state ) => state.FolderReducer.currentContextMenuFolder );
 
 	useEffect( () => {
 		if ( isOpen ) {
@@ -49,9 +49,9 @@ const FolderCreationModal = () => {
 		setIsLoading( true );
 
 		try {
-			let parent = selectedFolder.id;
+			let parent = selectedFolder?.id;
 
-			if ( selectedFolder.id === -1 || ! selectedFolder.id ) {
+			if ( selectedFolder?.id === -1 || ! selectedFolder?.id ) {
 				parent = 0;
 			}
 
@@ -96,7 +96,7 @@ const FolderCreationModal = () => {
 	};
 
 	return (
-		( isOpen && selectedFolder ) && (
+		isOpen && (
 			<Modal
 				title={ __( 'Create a new folder', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'folderCreation' ) ) }

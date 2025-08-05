@@ -21,7 +21,7 @@
 			"role": "content"
 		},
 		"cmmId": {
-			"type": "number",
+			"type": "string",
 			"default": ""
 		},
 		"loop": {
@@ -30,9 +30,9 @@
 		"muted": {
 			"type": "boolean"
 		},
-		"hoverOverlay": {
-			"type": "boolean",
-			"default": false
+		"hoverSelect": {
+			"type": "string",
+			"default": "none"
 		},
 		"poster": {
 			"type": "string"
