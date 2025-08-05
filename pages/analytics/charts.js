@@ -96,7 +96,11 @@ class AnalyticsDashboard {
 
 		// Generate heatmap
 		this.charts.heatmap = new HeatmapChart( heatmapData, '#heatmap', this.videoPlayer );
-		this.charts.videoLineChart = new VideoLineChart( heatmapData, '#line-chart', this.videoPlayer );
+		this.charts.videoLineChart = new VideoLineChart( heatmapData, '#line-chart', this.videoPlayer, {
+			width: 830,
+			height: 300,
+			margin: { top: 0, right: 0, bottom: 0, left: 0 },
+		} );
 		this.charts.countryHeatmap = new CountryHeatmapChart( countryViews, '#map-container', '#table-container' );
 
 		// Generate post views chart

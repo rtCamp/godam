@@ -19,20 +19,18 @@ import {
  */
 class VideoLineChart {
 	/**
-	 * @param {Array}  data        - Array of numerical data points
-	 * @param {string} selector    - Container selector for the chart
-	 * @param {Object} videoPlayer - Video.js player instance
+	 * @param {Array}  data            - Array of numerical data points
+	 * @param {string} selector        - Container selector for the chart
+	 * @param {Object} videoPlayer     - Video.js player instance
+	 * @param {Object} config          - Configuration object for the chart
+	 * @param {string} tooltipSelector - Selector for the tooltip element
 	 */
-	constructor( data, selector, videoPlayer ) {
+	constructor( data, selector, videoPlayer, config = {}, tooltipSelector = '.line-chart-tooltip' ) {
 		this.data = data;
 		this.selector = selector;
 		this.videoPlayer = videoPlayer;
-
-		this.config = {
-			width: 830,
-			height: 300,
-			margin: { top: 0, right: 0, bottom: 0, left: 0 },
-		};
+		this.config = config;
+		this.tooltipSelector = tooltipSelector;
 
 		this.initializeChart();
 	}
