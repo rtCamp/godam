@@ -32,8 +32,6 @@ class Lifter_LMS {
 
 		add_filter( 'godam_player_block_attributes', array( $this, 'modify_godam_player_block_attributes' ) );
 
-		add_filter( 'llms_av_get_available_providers', array( $this, 'add_godam_provider' ) );
-
 		add_filter( 'lifterlms_available_integrations', array( $this, 'add_godam_integration' ) );
 	}
 
@@ -138,20 +136,6 @@ class Lifter_LMS {
 		}
 
 		return $attributes;
-	}
-
-	/**
-	 * Add GoDAM provider to LifterLMS available providers.
-	 *
-	 * @param array $providers Array of available providers.
-	 *
-	 * @return mixed
-	 */
-	public function add_godam_provider( array $providers ) {
-		$godam_ob           = new LLMS_AV_Integration_GoDAM();
-		$providers['godam'] = $godam_ob;
-
-		return $providers;
 	}
 
 	/**
