@@ -10,46 +10,48 @@ import { Button, Notice, Panel, PanelBody } from '@wordpress/components';
  */
 import { formatSize, getMediaMigrationInfo } from '../../../utils';
 
-const MediaMigration = () => {
-	const [ migrationStarted, setMigrationStarted ] = useState( null );
-	const [ migrationStopped, setMigrationStopped ] = useState( null );
-	const [ requestingInfo, setRequestingInfo ] = useState( false );
-	const [ mediaMigrationInfo, setMediaMigrationInfo ] = useState( getMediaMigrationInfo );
+const LoadingDots = () => {
+	const dotStyle = ( delay ) => ( {
+		animation: `blink 1.4s infinite both`,
+		animationDelay: `${ delay }s`,
+	} );
 
-	const LoadingDots = () => {
-		const dotStyle = ( delay ) => ( {
-			animation: `blink 1.4s infinite both`,
-			animationDelay: `${ delay }s`,
-		} );
-
-		return (
-			<span style={ { display: 'inline-block' } }>
-				<span style={ dotStyle( 0.2 ) }>.</span>
-				<span style={ dotStyle( 0.4 ) }>.</span>
-				<span style={ dotStyle( 0.6 ) }>.</span>
-				<style>
-					{ `
+	return (
+		<span style={ { display: 'inline-block' } }>
+			<span style={ dotStyle( 0.2 ) }>.</span>
+			<span style={ dotStyle( 0.4 ) }>.</span>
+			<span style={ dotStyle( 0.6 ) }>.</span>
+			<style>
+				{ `
 				  @keyframes blink {
 					0%, 80%, 100% { opacity: 0; }
 					40% { opacity: 1; }
 				  }
 				` }
-				</style>
-			</span>
-		);
-	};
+			</style>
+		</span>
+	);
+};
 
-	const calculatePercentage = ( used, total ) => {
-		if ( total === 0 ) {
-			return 0;
-		}
-		try {
-			const result = ( used / total ) * 100;
-			return result.toFixed( 2 );
-		} catch ( error ) {
-			return 0;
-		}
-	};
+const calculatePercentage = ( used, total ) => {
+	if ( total === 0 ) {
+		return 0;
+	}
+	try {
+		const result = ( used / total ) * 100;
+		return result.toFixed( 2 );
+	} catch ( error ) {
+		return 0;
+	}
+};
+
+let noticeInfo = false;
+
+const MediaMigration = () => {
+	const [ migrationStarted, setMigrationStarted ] = useState( null );
+	const [ migrationStopped, setMigrationStopped ] = useState( null );
+	const [ requestingInfo, setRequestingInfo ] = useState( false );
+	const [ mediaMigrationInfo, setMediaMigrationInfo ] = useState( getMediaMigrationInfo() );
 
 	/**
 	 * Function to set the migration state based on the action.
@@ -101,9 +103,25 @@ const MediaMigration = () => {
 				setMediaMigrationInfo( result.data );
 			}
 
+			// If the action is 'start', then log the output.
+			if ( 'start' === subAction ) {
+				noticeInfo = {
+					success: true,
+					message: __( 'Migration started successfully.', 'godam' ),
+				};
+			}
+
 			// Update requesting state.
 			setMigrationState( subAction, false );
 		} else {
+			// If the action is 'start', then log the output.
+			if ( 'start' === subAction ) {
+				noticeInfo = {
+					success: false,
+					message: result.data?.message || __( 'Failed to start migration.', 'godam' ),
+				};
+			}
+
 			// Update requesting state.
 			setMigrationState( subAction, false );
 		}
@@ -119,7 +137,7 @@ const MediaMigration = () => {
 			return;
 		}
 
-		const isDisabled = ! window?.goDAMUploadsData?.can_migrate || mediaMigrationInfo.remaining <= 0;
+		const isDisabled = mediaMigrationInfo.remaining <= 0;
 
 		return (
 			<Button
@@ -156,6 +174,88 @@ const MediaMigration = () => {
 		);
 	};
 
+	const MigrationStatus = () => {
+		switch ( mediaMigrationInfo.status ) {
+			case 'idle':
+				if ( mediaMigrationInfo.remaining > 0 ) {
+					return (
+						<i className="text-gray-500">{ __( 'idle', 'godam' ) }</i>
+					);
+				}
+				return (
+					<i className="text-green-500">{ __( 'completed', 'godam' ) }</i>
+				);
+			case 'running':
+				return (
+					<i className="text-blue-500">{ __( 'running', 'godam' ) }</i>
+				);
+			case 'scheduled':
+				return (
+					<i className="text-orange-500">{ __( 'scheduled', 'godam' ) }</i>
+				);
+			case 'paused':
+				return (
+					<i className="text-blue-500">{ __( 'running', 'godam' ) }</i>
+				);
+			case 'error':
+				return (
+					<i className="text-red-500">{ __( 'error', 'godam' ) }</i>
+				);
+			default:
+				return (
+					<i className="text-gray-500">{ __( 'idle', 'godam' ) }</i>
+				);
+		}
+	};
+
+	const ShowNotice = () => {
+		switch ( mediaMigrationInfo.status ) {
+			case 'idle':
+				if ( noticeInfo && ! noticeInfo.success ) {
+					return (
+						<Notice
+							className="mb-4"
+							status="error"
+							isDismissible={ false }
+						>
+							{ noticeInfo.message }
+						</Notice>
+					);
+				}
+				break;
+			case 'running':
+			case 'paused':
+			case 'scheduled':
+				return (
+					<Notice
+						className="mb-4"
+						status={ 'success' }
+						isDismissible={ false }
+					>
+						{ __( 'We\'re migrating your data. You can safely close this tab!', 'godam' ) }
+					</Notice>
+				);
+		}
+	};
+
+	const SearchReplaceCommand = () => {
+		if ( ! window?.goDAMUploadsData?.search_replace_command || ! window?.goDAMUploadsData?.search_replace_command.length ) {
+			return null;
+		}
+
+		if ( mediaMigrationInfo.remaining > 0 || ( mediaMigrationInfo.completed + mediaMigrationInfo.failed ) < mediaMigrationInfo.total ) {
+			return null;
+		}
+
+		return (
+			<div className="mt-8 font-mono bg-gray-100 border-1 p-3 rounded">
+				<strong className="text-gray-500">{ __( '# Search and replace command for media URLs:', 'godam' ) }</strong>
+				<br />
+				<span>{ window?.goDAMUploadsData.search_replace_command }</span>
+			</div>
+		);
+	};
+
 	// Set an interval to fetch the media migration info every 5 seconds.
 	useEffect( () => {
 		const interval = setInterval( () => {
@@ -177,15 +277,7 @@ const MediaMigration = () => {
 			<Panel header={ __( 'Migrate Media', 'godam' ) } className="godam-panel">
 				<PanelBody opened>
 					<div className="godam-form-group">
-						{ ( 'running' === mediaMigrationInfo.status || 'paused' === mediaMigrationInfo.status || 'scheduled' === mediaMigrationInfo.status ) && (
-							<Notice
-								className="mb-4"
-								status={ 'success' }
-								isDismissible={ false }
-							>
-								{ __( 'We\'re migrating your data. You can safely close this tab!', 'godam' ) }
-							</Notice>
-						) }
+						<ShowNotice />
 						<p className="text-sm mt-0">{ __( 'You can migrate your media files to GoDAM storage. This will allow you to use the GoDAM CDN for faster delivery and better performance.', 'godam' ) }</p>
 						<div className="flex gap-3 items-center mt-8">
 							<div className="circle-container mr-6">
@@ -196,16 +288,16 @@ const MediaMigration = () => {
 								></div>
 							</div>
 							<div className="leading-6 mr-6">
-								<div className="easydam-settings-label text-base"><b>{ __( 'STORAGE ', 'godam' ) }{ formatSize( parseInt( window?.userData.total_storage - window?.userData.storage_used ) * 1024 * 1024 * 1024 ) }</b></div>
+								<div className="easydam-settings-label text-base"><b>{ __( 'GoDAM STORAGE', 'godam' ) }</b></div>
 								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ formatSize( parseInt( window?.userData.storage_used ) * 1024 * 1024 * 1024 ) }
 								<br />
-								<strong>{ __( 'Files Size: ', 'godam' ) }</strong>{ formatSize( mediaMigrationInfo.total_size ) }
+								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ formatSize( parseInt( window?.userData.total_storage - window?.userData.storage_used ) * 1024 * 1024 * 1024 ) }
 							</div>
 							<div className="leading-6 mr-6">
-								<div className="easydam-settings-label text-base">&nbsp;</div>
+								<div className="easydam-settings-label text-base"><b>{ __( 'STATS', 'godam' ) }</b></div>
 								<strong>{ __( 'Total Files: ', 'godam' ) }</strong>{ mediaMigrationInfo.total } { _x( 'Files', 'files', 'godam' ) }
 								<br />
-								<strong>{ __( 'Migrated Files: ', 'godam' ) }</strong>{ mediaMigrationInfo.completed } { _x( 'Files', 'files', 'godam' ) }
+								<strong>{ __( 'Files Size: ', 'godam' ) }</strong>{ formatSize( mediaMigrationInfo.total_size ) }
 							</div>
 							<div className="leading-6 mr-6">
 								<div className="easydam-settings-label text-base">&nbsp;</div>
@@ -215,7 +307,7 @@ const MediaMigration = () => {
 							</div>
 							<div className="leading-6 mr-6">
 								<div className="easydam-settings-label text-base">&nbsp;</div>
-								<strong>{ __( 'Status: ', 'godam' ) }</strong><i className="text-green-500">{ mediaMigrationInfo.status }</i>
+								<strong>{ __( 'Status: ', 'godam' ) }</strong><MigrationStatus />
 								<br />
 								{ 'running' === mediaMigrationInfo.status && (
 									<>
@@ -236,6 +328,7 @@ const MediaMigration = () => {
 							</div>
 						</div>
 					</div>
+					<SearchReplaceCommand />
 					<RunMigrationButton />
 					<StopMigrationButton />
 				</PanelBody>

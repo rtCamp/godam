@@ -86,9 +86,33 @@ class Files_Migration {
 	 * starting the migration, and handling AJAX requests related to the migration.
 	 */
 	public static function setup_hooks() {
+		add_action( 'init', array( __CLASS__, 'init' ) );
 		add_action( self::CRON_HOOK, array( __CLASS__, 'process_batch' ) );
 		add_action( 'trigger_files_cdn_migration', array( __CLASS__, 'start_migration' ) );
 		add_action( 'wp_ajax_godam_handle_files_migration', array( __CLASS__, 'ajax_handle_migration' ) );
+	}
+
+	/**
+	 * Initialize the files migration to CDN.
+	 *
+	 * This function checks if the cron job is already scheduled but not running.
+	 * If the status is 'scheduled', it schedules the cron job to start processing files.
+	 */
+	public static function init() {
+		$status = get_option( self::STATUS_OPTION, 'idle' );
+
+		// If status is not 'scheduled', we do not need to schedule the cron job.
+		if ( 'scheduled' !== $status ) {
+			return;
+		}
+
+		// If the cron job is not scheduled, with the status 'scheduled', we schedule it.
+		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
+			$status = self::schedule_cron();
+			if ( is_wp_error( $status ) ) {
+				self::debug( 'Error scheduling files migration cron job: ' . $status->get_error_message() );
+			}
+		}
 	}
 
 	/**
@@ -103,7 +127,18 @@ class Files_Migration {
 		$sub_action = isset( $_POST['subAction'] ) ? sanitize_text_field( $_POST['subAction'] ) : '';
 
 		if ( 'start' === $sub_action ) {
-			self::start_migration();
+			$status = self::start_migration();
+
+			if ( is_wp_error( $status ) ) {
+				self::debug( 'Error starting files migration: ' . $status->get_error_message() );
+				wp_send_json_error(
+					array(
+						'message' => $status->get_error_message(),
+					),
+					400
+				);
+			}
+
 			wp_send_json_success(
 				array(
 					'message' => 'Files migration started.',
@@ -120,7 +155,12 @@ class Files_Migration {
 			$status = self::get_info();
 			wp_send_json_success( $status );
 		} else {
-			wp_send_json_error( 'Invalid action.', 400 );
+			wp_send_json_error(
+				array(
+					'message' => 'Invalid sub-action specified.',
+				),
+				400
+			);
 		}
 		exit;
 	}
@@ -136,8 +176,7 @@ class Files_Migration {
 
 		// If the status is 'running', we do not start a new migration.
 		if ( 'running' === $status ) {
-			self::debug( 'Files migration is already running.' );
-			return;
+			return new \WP_Error( 'files_migration_running', 'Files migration is already running.' );
 		}
 
 		// If the status is 'stopped', we clear the status option to allow a fresh start.
@@ -146,19 +185,17 @@ class Files_Migration {
 		}
 
 		// If the status is 'scheduled', we do not start a new migration.
-		if ( 'scheduled' === $status ) {
-			self::debug( 'Files migration is already scheduled.' );
-			return;
+		if ( 'scheduled' === $status && wp_next_scheduled( self::CRON_HOOK ) ) {
+			return new \WP_Error( 'files_migration_scheduled', 'Files migration is already scheduled.' );
 		}
 
-		if ( ! self::can_migrate() ) {
-			self::debug( 'Not enough storage space to migrate files.' );
-			return false;
+		$can_migrate = self::can_migrate( true );
+
+		if ( is_wp_error( $can_migrate ) ) {
+			return $can_migrate;
 		}
 
-
-
-		self::schedule_cron();
+		return self::schedule_cron();
 	}
 
 	/**
@@ -170,12 +207,12 @@ class Files_Migration {
 	public static function schedule_cron() {
 		// If the cron job is already scheduled, we do not schedule it again.
 		if ( wp_next_scheduled( self::CRON_HOOK ) ) {
-			return false;
+			return new \WP_Error( 'files_migration_already_scheduled', 'Files migration cron job is already scheduled.' );
 		}
 
 		// If the status is 'stopped', we do not schedule a new cron job.
 		if ( 'stopped' === get_option( self::STATUS_OPTION, 'idle' ) ) {
-			return false;
+			return new \WP_Error( 'files_migration_stopped', 'Files migration was stopped manually.' );
 		}
 
 		// Schedule the cron job to run after 5 seconds.
@@ -184,9 +221,9 @@ class Files_Migration {
 		// Update the status to running if cron job is scheduled.
 		if ( wp_next_scheduled( self::CRON_HOOK ) ) {
 			update_option( self::STATUS_OPTION, 'scheduled' );
-			self::debug( 'Files migration cron job scheduled.' );
+			return true;
 		} else {
-			self::debug( 'Failed to schedule files migration cron job.' );
+			return new \WP_Error( 'files_migration_failed_to_schedule', 'Failed to schedule files migration cron job.' );
 		}
 	}
 
@@ -199,7 +236,6 @@ class Files_Migration {
 	public static function process_batch() {
 		// If the status is 'stopped', we do not process the files.
 		if ( 'stopped' === get_option( self::STATUS_OPTION, 'idle' ) ) {
-			self::debug( 'Files migration was stopped manually.' );
 			return;
 		}
 
@@ -213,7 +249,7 @@ class Files_Migration {
 
 		if ( empty( $batch ) ) {
 			delete_option( self::STATUS_OPTION );
-			self::debug( '✅ Files migration completed.' );
+			self::debug( 'Files migration completed.' );
 			return;
 		}
 
@@ -255,6 +291,12 @@ class Files_Migration {
 				continue;
 			}
 
+			// Transcode the file if necessary.
+			if ( class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
+				$transcoder_handler = new \RTGODAM_Transcoder_Handler();
+				$transcoder_handler->wp_media_transcoding( $file_path, $file_path, true );
+			}
+
 			$migrated_files[] = $file_path;
 		}
 
@@ -263,13 +305,19 @@ class Files_Migration {
 
 		if ( count( $remaining_files ) > self::BATCH_SIZE ) {
 			// schedule next batch.
-			self::schedule_cron();
+			$status = self::schedule_cron();
+			if ( is_wp_error( $status ) ) {
+				self::debug( 'Error scheduling next batch: ' . $status->get_error_message() );
+				return;
+			}
+
+			// Update the status to 'paused' if the migration is not finished.
 			if ( 'stopped' !== get_option( self::STATUS_OPTION, 'idle' ) ) {
 				update_option( self::STATUS_OPTION, 'paused' );
 			}
 		} else {
 			delete_option( self::STATUS_OPTION );
-			self::debug( 'Files migration fully processed.' );
+			self::debug( 'Files migration completed.' );
 		}
 	}
 
@@ -306,7 +354,6 @@ class Files_Migration {
 	 */
 	public static function stop_migration() {
 		update_option( self::STATUS_OPTION, 'stopped' );
-		self::debug( 'Files migration was manually stopped.' );
 	}
 
 	/**
@@ -330,7 +377,8 @@ class Files_Migration {
 		$failed_files    = get_option( self::FAILED_FILES_OPTION, array() );
 		$total_size      = array_sum( array_values( $all_files ) );
 		$current_file    = get_option( self::CURRENT_FILE_OPTION, '' );
-		$remaining_size  = 0;
+
+		$remaining_size = 0;
 		foreach ( $all_files as $file_path => $size ) {
 			if ( ! in_array( $file_path, $completed_files, true ) && ! in_array( $file_path, $failed_files, true ) ) {
 				$remaining_size += $size;
@@ -359,9 +407,11 @@ class Files_Migration {
 	 * This function checks the storage usage and the size of remaining files to determine
 	 * if there is enough space available for migration.
 	 *
-	 * @return bool True if files can be migrated, false otherwise.
+	 * @param bool $return_error Whether to return an error if migration cannot proceed.
+	 *
+	 * @return bool|\WP_Error True if files can be migrated, false otherwise.
 	 */
-	public static function can_migrate() {
+	public static function can_migrate( $return_error = false ) {
 		$storage_usage   = rtgodam_get_usage_data();
 		$all_files       = array_column( self::get_all_upload_files(), 'size', 'path' );
 		$completed_files = get_option( self::MIGRATED_FILES_OPTION, array() );
@@ -374,13 +424,15 @@ class Files_Migration {
 			}
 		}
 
-		$can_migrate = false;
 		if ( ! is_wp_error( $storage_usage ) ) {
 			$available_storage = ( $storage_usage['total_storage'] * GB_IN_BYTES ) - ( $storage_usage['storage_used'] * GB_IN_BYTES );
-			$can_migrate       = $remaining_size < $available_storage;
+			return $remaining_size < $available_storage;
+		} elseif ( $return_error ) {
+				return $storage_usage; // Return the error if requested.
+
 		}
 
-		return $can_migrate;
+		return false;
 	}
 
 	/**
@@ -389,13 +441,14 @@ class Files_Migration {
 	 * @return array List of file paths relative to the uploads directory.
 	 */
 	public static function get_all_upload_files() {
-		$plugin = Plugin::get_instance();
+		$plugin              = Plugin::get_instance();
+		$original_upload_dir = $plugin->get_original_upload_dir();
 
-		if ( ! $plugin->original_upload_dir || ! is_array( $plugin->original_upload_dir ) ) {
+		if ( ! $original_upload_dir ) {
 			return array();
 		}
 
-		$upload_dir = $plugin->original_upload_dir['basedir'];
+		$upload_dir = $original_upload_dir['basedir'];
 		$files      = array();
 		$iterator   = new \RecursiveIteratorIterator(
 			new \RecursiveDirectoryIterator( $upload_dir, \RecursiveDirectoryIterator::SKIP_DOTS ),
@@ -483,5 +536,29 @@ class Files_Migration {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debugging messages are logged to error log.
 			error_log( '[GoDAM CronJob FilesMigration] ' . $message );
 		}
+	}
+
+	/**
+	 * Get the command to search and replace URLs in the database.
+	 *
+	 * This function generates a WP-CLI command to search and replace the original upload URL
+	 * with the CDN URL in the database, excluding the 'guid' column.
+	 *
+	 * @return string The WP-CLI command for search-replace.
+	 */
+	public static function get_search_replace_command() {
+		$plugin              = Plugin::get_instance();
+		$original_upload_dir = $plugin->get_original_upload_dir();
+
+		if ( ! $original_upload_dir ) {
+			return '';
+		}
+
+		$cdn_upload_url = $plugin->get_godam_cdn_url();
+		return sprintf(
+			'wp search-replace "%s" "%s" --skip-columns=guid --skip-plugins --skip-themes --dry-run',
+			esc_url( $original_upload_dir['baseurl'] ),
+			esc_url( $cdn_upload_url )
+		);
 	}
 }

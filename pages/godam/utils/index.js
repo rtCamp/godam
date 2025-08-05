@@ -99,3 +99,12 @@ export function getMediaMigrationInfo() {
 		},
 	};
 }
+
+/**
+ * Utility function to check if the user has a valid API key.
+ *
+ * @return {boolean} True if the user has a valid API Key, false otherwise.
+ */
+export function isPremiumUser() {
+	return !! window?.userData?.valid_api_key;
+}

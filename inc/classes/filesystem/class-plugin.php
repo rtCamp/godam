@@ -92,8 +92,6 @@ class Plugin {
 
 		// Update the upload directory to use GoDAM.
 		add_filter( 'upload_dir', array( $this, 'filter_upload_dir' ) );
-		$this->get_original_upload_dir();
-
 		add_filter( 'wp_image_editors', array( $this, 'filter_editors' ), 9 );
 		add_action( 'add_attachment', array( $this, 'add_extra_metadata' ) );
 		add_action( 'delete_attachment', array( $this, 'delete_attachment_files' ) );
@@ -147,6 +145,12 @@ class Plugin {
 		 * @var array{path: string, basedir: string, baseurl: string, url: string}
 		 */
 		$upload_dir = $this->original_upload_dir;
+
+		if ( empty( $upload_dir ) ) {
+			// Fallback to the default upload directory if not set.
+			$upload_dir = wp_upload_dir();
+		}
+
 		return $upload_dir;
 	}
 

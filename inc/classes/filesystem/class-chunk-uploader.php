@@ -35,7 +35,7 @@ class Chunk_Uploader {
 	 *
 	 * @var int
 	 */
-	public const DEFAULT_MAX_UPLOAD_SIZE = 4 * 1024 * 1024 * 1024;
+	public const DEFAULT_MAX_UPLOAD_SIZE = 4 * GB_IN_BYTES;
 
 	/**
 	 * The maximum upload size in bytes.

@@ -25,8 +25,7 @@ import UploadsSettings from './components/tabs/UploadsSettings/UploadsSettings.j
 import { useGetMediaSettingsQuery } from './redux/api/media-settings.js';
 import { setMediaSettings } from './redux/slice/media-settings.js';
 import VideoPlayer from './components/tabs/VideoPlayer/VideoPlayer.jsx';
-
-import { isAPIKeyValid } from '../../assets/src/js/media-library/utility';
+import { isPremiumUser } from './utils';
 
 const TABS = [
 	{
@@ -59,7 +58,7 @@ const addTab = ( isPremium, id, label, component, icon, weight ) => {
 	}
 
 	if ( isPremium ) {
-		if ( isAPIKeyValid() ) {
+		if ( isPremiumUser() ) {
 			TABS.push( {
 				id,
 				label,
@@ -80,6 +79,9 @@ const addTab = ( isPremium, id, label, component, icon, weight ) => {
 		weight,
 	} );
 };
+
+// Add tabs dynamically based on the API key validity
+addTab( true, 'uploads-settings', __( 'Uploads Settings', 'godam' ), UploadsSettings, upload, 15 );
 
 const App = () => {
 	const [ activeTab, setActiveTab ] = useState( TABS[ 0 ].id );
@@ -102,9 +104,6 @@ const App = () => {
 	if ( isLoading ) {
 		return <Skeleton />;
 	}
-
-	// Add tabs dynamically based on the API key validity
-	addTab( true, 'uploads-settings', __( 'Uploads Settings', 'godam' ), UploadsSettings, upload, 15 );
 
 	// Sort tabs by weight
 	TABS.sort( ( a, b ) => a.weight - b.weight );
