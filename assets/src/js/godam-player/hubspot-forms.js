@@ -2,6 +2,7 @@
  * WordPress dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
+import { __ } from '@wordpress/i18n';
 
 const HUBSPOT_SCRIPT = 'https://js.hsforms.net/forms/v2.js';
 
@@ -33,7 +34,14 @@ export const createFormElement = ( layerElement, layer ) => {
 		layerElement.style.backgroundColor = rgba;
 	}
 
-	loadHubspotForm( layerElement.id, layer.hubspot_id );
+	if ( ! layerElement.querySelector( '.hubspot-form' ) ) {
+		const formElement = document.createElement( 'div' );
+		formElement.classList.add( 'hubspot-form' );
+
+		layerElement.appendChild( formElement );
+	}
+
+	loadHubspotForm( layerElement, layer.hubspot_id );
 };
 
 const getPortalId = async () => {
@@ -72,7 +80,7 @@ const loadHubspotScript = () => {
 	return hubspotScriptLoaded;
 };
 
-const loadHubspotForm = async ( containerId, formId ) => {
+const loadHubspotForm = async ( container, formId ) => {
 	try {
 		await loadHubspotScript();
 
@@ -80,12 +88,34 @@ const loadHubspotForm = async ( containerId, formId ) => {
 			return;
 		}
 
+		const containerId = container?.id;
+		if ( ! containerId ) {
+			return;
+		}
 		const { hubspotPortalId } = await getPortalId();
 
 		window.hbspt.forms.create( {
 			portalId: hubspotPortalId,
 			formId,
-			target: `#${ containerId }`,
+			target: `#${ containerId } .hubspot-form`,
 		} );
+
+		const handleFormSubmission = ( event ) => {
+			const { formId: eventFormId } = event.detail;
+			if ( formId !== eventFormId ) {
+				return;
+			}
+
+			const continueButton = container.querySelector( 'button' );
+			if ( continueButton ) {
+				continueButton.classList.remove( 'hidden' );
+				continueButton.innerText = __( 'Continue', 'godam' );
+			}
+		};
+
+		window.addEventListener(
+			'hs-form-event:on-submission:success',
+			handleFormSubmission,
+		);
 	} catch ( error ) {}
 };

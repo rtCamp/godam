@@ -286,6 +286,20 @@
     left: 0;
     width: 100%;
     height: 100%;
+    padding: 1.5rem;
+    box-sizing: border-box;
+
+    .hubspot-form {
+        overflow: auto;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .hs-form-frame {
+            width: 100%;
+        }
+    }
 }
 
 .poll-container,
