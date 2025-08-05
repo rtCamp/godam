@@ -301,9 +301,11 @@ const MediaMigration = () => {
 							</div>
 							<div className="leading-6 mr-6">
 								<div className="easydam-settings-label text-base">&nbsp;</div>
-								<strong>{ __( 'Remaining Files: ', 'godam' ) }</strong>{ mediaMigrationInfo.remaining } { _x( 'Files', 'files', 'godam' ) }
+								<strong>{ __( 'Remaining Files: ', 'godam' ) }</strong>
+								{ mediaMigrationInfo.remaining || 0 } { _x( 'Files', 'files', 'godam' ) }
 								<br />
-								<strong>{ __( 'Remaining Size: ', 'godam' ) }</strong>{ formatSize( parseInt( mediaMigrationInfo?.remaining_size ) ) }
+								<strong>{ __( 'Remaining Size: ', 'godam' ) }</strong>
+								{ formatSize( parseInt( mediaMigrationInfo?.remaining_size || 0 ) ) }
 							</div>
 							<div className="leading-6 mr-6">
 								<div className="easydam-settings-label text-base">&nbsp;</div>

@@ -226,9 +226,12 @@ class Plugin {
 			return $this->client;
 		}
 
+		// Use the current blog ID for multisite support.
+		$site_id = function_exists( 'get_current_blog_id' ) ? (string) get_current_blog_id() : '1';
+
 		$this->client = new API_Client(
 			$this->host,
-			'1',
+			$site_id,
 			$this->key,
 			API_Cache::get_instance()
 		);

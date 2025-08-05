@@ -267,6 +267,10 @@ class Files_Migration {
 
 			update_option( self::CURRENT_FILE_OPTION, $file_path );
 
+			self::debug( 'Processing file: ' . $file_path );
+			self::debug( 'Source path: ' . $source_path );
+			self::debug( 'Destination: ' . $destination );
+
 			if ( file_exists( $destination ) ) {
 				self::debug( 'File with same name exists on CDN!' );
 				$migrated_files[] = $file_path;
@@ -285,23 +289,19 @@ class Files_Migration {
 
 			if ( is_wp_error( $status ) ) {
 				self::debug( 'Error uploading file to CDN: ' . $status->get_error_message() );
-				if ( ! in_array( $failed_files, $file_path, true ) ) {
+
+				if ( ! in_array( $file_path, $failed_files, true ) ) {
 					$failed_files[] = $file_path;
 				}
 				continue;
 			}
 
-			// Transcode the file if necessary.
-			if ( class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
-				$transcoder_handler = new \RTGODAM_Transcoder_Handler();
-				$transcoder_handler->wp_media_transcoding( $file_path, $file_path, true );
-			}
-
+			self::debug( 'Successfully uploaded: ' . $file_path );
 			$migrated_files[] = $file_path;
 		}
 
-		update_option( self::MIGRATED_FILES_OPTION, $migrated_files );
-		update_option( self::FAILED_FILES_OPTION, $failed_files );
+		update_option( self::MIGRATED_FILES_OPTION, array_unique( $migrated_files ) );
+		update_option( self::FAILED_FILES_OPTION, array_unique( $failed_files ) );
 
 		if ( count( $remaining_files ) > self::BATCH_SIZE ) {
 			// schedule next batch.
@@ -334,7 +334,11 @@ class Files_Migration {
 		if ( ! is_dir( $upload_dir ) ) {
 			return false;
 		}
-		return trailingslashit( $upload_dir ) . str_replace( 'godam://wp-content/uploads/', '', $relative_path );
+
+		// Clean the relative path - remove any godam:// prefix.
+		$clean_path = str_replace( 'godam://wp-content/uploads/', '', $relative_path );
+
+		return trailingslashit( $upload_dir ) . $clean_path;
 	}
 
 	/**
@@ -344,7 +348,15 @@ class Files_Migration {
 	 * @return string The full destination path for the file on the CDN.
 	 */
 	public static function get_destination_path( $relative_path ) {
-		return 'godam://wp-content/uploads/' . $relative_path;
+		// Ensure the path is properly formatted.
+		$clean_path = ltrim( $relative_path, '/' );
+
+		// Add the godam:// prefix if not already present.
+		if ( strpos( $clean_path, 'godam://' ) !== 0 ) {
+			return 'godam://wp-content/uploads/' . $clean_path;
+		}
+
+		return $clean_path;
 	}
 
 	/**
