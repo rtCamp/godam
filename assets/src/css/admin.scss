@@ -304,10 +304,15 @@ $media-frame-width: calc(300px + 2 * 24px);
 	}
 }
 
-#menu-item-library, #menu-item-featured-image {
-	display: none;
-}
-
+/**
+ * This currently hides the default media library menu items that are not used.
+ * If we want to show these items then we can move the #rt-transcoder-media-library-root to the media-frame-menu
+ * and then use the media-menu-item.active class to style the active menu item.
+ *
+ * Currently this is kept as it is because it looks cleaner in the media popup.
+ */
+.media-menu-item.active,
+.separator,
 .media-frame-menu-heading {
 	display: none;
 }
