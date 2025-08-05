@@ -226,8 +226,8 @@ class Pages {
 
 		add_submenu_page(
 			$this->menu_slug,
-			__( 'What\'s new', 'godam' ),
-			__( 'What\'s new', 'godam' ),
+			__( 'What\'s New', 'godam' ),
+			__( 'What\'s New', 'godam' ),
 			'read',
 			$this->whats_new_slug,
 			array( $this, 'render_whats_new_page' ),

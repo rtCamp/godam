@@ -10,9 +10,9 @@ namespace RTGODAM\Inc\REST_API;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class Release_Posts
+ * Class Release_Post
  */
-class Release_Posts extends Base {
+class Release_Post extends Base {
 
 	/**
 	 * Get REST routes.
