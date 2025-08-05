@@ -495,7 +495,7 @@ class ShareManager {
 
 		buttonElement.addEventListener( 'click', shareButtonInstance.handleClick.bind( shareButtonInstance ) );
 
-		if ( this.shouldAddToControlBar( container ) ) {
+		if ( this.shouldAddBubbleToControlBar( container ) ) {
 			this.player.controlBar.addChild( 'GodamShareButton', {} );
 		} else {
 			container.appendChild( buttonElement );
@@ -503,12 +503,12 @@ class ShareManager {
 	}
 
 	/**
-	 * Determines whether the share button should be added to the control bar.
+	 * Determines whether the share button should be added to the control bar for the "Bubble" skin.
 	 *
 	 * @param {HTMLElement} container - The video container element.
-	 * @return {boolean} True if button should be added to control bar.
+	 * @return {boolean} True if button should be added to control bar for "Bubble" skin.
 	 */
-	shouldAddToControlBar( container ) {
+	shouldAddBubbleToControlBar( container ) {
 		return this.videoSetupOptions?.playerSkin === 'Bubble' &&
 				container.offsetWidth > this.MIN_BUBBLE_WIDTH;
 	}

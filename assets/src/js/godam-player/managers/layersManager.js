@@ -147,8 +147,6 @@ export default class LayersManager {
 			displayTime: layerObj.displayTime,
 			allow_skip: layerObj.allowSkip,
 			custom_css: layerObj.custom_css,
-			// Map the layerElement back to what handleLayerDisplay expects
-			element: layerObj.layerElement,
 		};
 	}
 }

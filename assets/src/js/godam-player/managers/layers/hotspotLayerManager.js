@@ -8,6 +8,9 @@ import { __, sprintf } from '@wordpress/i18n';
  * Handles hotspot layer functionality including creation, positioning, and interaction
  */
 export default class HotspotLayerManager {
+	static BASE_WIDTH = 800;
+	static BASE_HEIGHT = 600;
+
 	constructor( player ) {
 		this.player = player;
 		this.hotspotLayers = [];
@@ -87,8 +90,8 @@ export default class HotspotLayerManager {
 		const containerWidth = videoContainer?.offsetWidth;
 		const containerHeight = videoContainer?.offsetHeight;
 
-		const baseWidth = 800;
-		const baseHeight = 600;
+		const baseWidth = HotspotLayerManager.BASE_WIDTH;
+		const baseHeight = HotspotLayerManager.BASE_HEIGHT;
 
 		layerObj.hotspots.forEach( ( hotspot, index ) => {
 			const hotspotDiv = this.createHotspotElement( hotspot, index, containerWidth, containerHeight, baseWidth, baseHeight );
@@ -304,8 +307,8 @@ export default class HotspotLayerManager {
 		const containerWidth = videoContainer?.offsetWidth;
 		const containerHeight = videoContainer?.offsetHeight;
 
-		const baseWidth = 800;
-		const baseHeight = 600;
+		const baseWidth = HotspotLayerManager.BASE_WIDTH;
+		const baseHeight = HotspotLayerManager.BASE_HEIGHT;
 
 		this.hotspotLayers.forEach( ( layerObj ) => {
 			const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
