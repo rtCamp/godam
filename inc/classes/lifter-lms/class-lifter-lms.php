@@ -113,7 +113,7 @@ class Lifter_LMS {
 	public function load_lifterlms_integration_script() {
 		// Load LifterLMS integration script only if LifterLMS is active, the content is LifterLMS, and the Godam video block is present.
 		if ( $this->is_lifterlms_active() && $this->is_lifterlms_content() && $this->has_godam_video_block() ) {
-			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/src/js/lifterlms/block-integration.js', array( 'jquery' ), filemtime( RTGODAM_PATH . 'assets/src/js/lifterlms/index.js' ), true );
+			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/src/js/lifterlms/block-integration.js', array( 'jquery' ), filemtime( RTGODAM_PATH . 'assets/src/js/lifterlms/block-integration.js' ), true );
 		}
 
 		if ( $this->is_lifterlms_active() && $this->is_lifterlms_content() ) {
