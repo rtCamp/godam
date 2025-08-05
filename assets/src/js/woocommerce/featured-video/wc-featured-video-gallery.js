@@ -88,8 +88,6 @@ jQuery( document ).ready( function( $ ) {
 						'data-thumb-sizes': thumbSizes,
 					} );
 					const $divImg = $( '<img>', {
-						width: 600,
-						height: 744,
 						src: mainImgSrc,
 						alt: $div.data( 'thumb-alt' ) || '',
 						'data-caption': '',
@@ -102,6 +100,9 @@ jQuery( document ).ready( function( $ ) {
 						sizes: mainSizes,
 						draggable: false,
 						class: '',
+					} ).attr( {
+						width: 600,
+						height: 744,
 					} );
 					$div.html( '' ).append( $( '<a>', { href: fullImage } ).append( $divImg ) );
 
