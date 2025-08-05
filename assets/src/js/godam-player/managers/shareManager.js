@@ -24,12 +24,32 @@ import Complete from '../../../../../assets/src/images/check.svg';
 
 import videojs from 'video.js';
 
-// Keyboard event keys
-const KEYBOARD_KEYS = {
-	ENTER: 'Enter',
-	SPACE: ' ',
-	ESCAPE: 'Escape',
+import { KEYBOARD_CONTROLS } from '../utils/constants';
+
+// CSS class names
+const MODAL_CONTAINER_CLASS = 'share-modal-container';
+const MODAL_POPUP_CLASS = 'share-modal-popup';
+const BODY_MODAL_OPEN_CLASS = 'godam-share-modal-open';
+const CLOSING_CLASS_SUFFIX = '--closing';
+
+// Timing constants
+const MODAL_CLOSE_DELAY = 300;
+const COPY_FEEDBACK_DELAY = 2000;
+
+// Layout constants
+const MIN_BUBBLE_WIDTH = 480;
+
+// Success styles for copy feedback
+const COPY_SUCCESS_STYLES = {
+	backgroundColor: '#4CAF50',
 };
+
+const COPY_DEFAULT_STYLES = {
+	backgroundColor: '#F7FAFB',
+};
+
+// Skins that use variation icon
+const VARIATION_ICON_SKINS = [ 'Minimal', 'Pills', 'Bubble' ];
 
 /**
  * ShareManager
@@ -70,27 +90,6 @@ class ShareManager {
 		this.videoSetupOptions = videoSetupOptions;
 		this.Button = videojs.getComponent( 'Button' );
 
-		// Class constants
-		this.MODAL_CONTAINER_CLASS = 'share-modal-container';
-		this.MODAL_POPUP_CLASS = 'share-modal-popup';
-		this.BODY_MODAL_OPEN_CLASS = 'godam-share-modal-open';
-		this.CLOSING_CLASS_SUFFIX = '--closing';
-		this.MODAL_CLOSE_DELAY = 300;
-		this.COPY_FEEDBACK_DELAY = 2000;
-		this.MIN_BUBBLE_WIDTH = 480;
-
-		// Success styles for copy feedback
-		this.COPY_SUCCESS_STYLES = {
-			backgroundColor: '#4CAF50',
-		};
-
-		this.COPY_DEFAULT_STYLES = {
-			backgroundColor: '#F7FAFB',
-		};
-
-		// Skins that use variation icon
-		this.VARIATION_ICON_SKINS = [ 'Minimal', 'Pills', 'Bubble' ];
-
 		this.init();
 	}
 
@@ -109,7 +108,7 @@ class ShareManager {
 	 */
 	getShareButtonIcon() {
 		const skin = this.videoSetupOptions?.playerSkin;
-		return this.VARIATION_ICON_SKINS.includes( skin ) ? ShareVariationOne : Share;
+		return VARIATION_ICON_SKINS.includes( skin ) ? ShareVariationOne : Share;
 	}
 
 	/**
@@ -188,18 +187,18 @@ class ShareManager {
 		const input = button.previousElementSibling;
 
 		const showSuccessState = () => {
-			Object.assign( button.style, this.COPY_SUCCESS_STYLES );
+			Object.assign( button.style, COPY_SUCCESS_STYLES );
 			icon.src = Complete;
 		};
 
 		const resetToDefaultState = () => {
-			Object.assign( button.style, this.COPY_DEFAULT_STYLES );
+			Object.assign( button.style, COPY_DEFAULT_STYLES );
 			icon.src = CopyIcon;
 		};
 
 		const provideFeedback = () => {
 			showSuccessState();
-			setTimeout( resetToDefaultState, this.COPY_FEEDBACK_DELAY );
+			setTimeout( resetToDefaultState, COPY_FEEDBACK_DELAY );
 		};
 
 		if ( navigator.clipboard?.writeText ) {
@@ -234,7 +233,7 @@ class ShareManager {
 	 * @param {string} jobId - The ID of the video job to construct URLs.
 	 */
 	createShareModal( jobId ) {
-		if ( document.querySelector( `.${ this.MODAL_CONTAINER_CLASS }` ) ) {
+		if ( document.querySelector( `.${ MODAL_CONTAINER_CLASS }` ) ) {
 			return;
 		}
 
@@ -290,17 +289,17 @@ class ShareManager {
 		).join( '' );
 
 		return `
-			<div class="${ this.MODAL_POPUP_CLASS }">
-				<div class="${ this.MODAL_POPUP_CLASS }__header">
-					<span class="${ this.MODAL_POPUP_CLASS }__title">${ __( 'Share Media', 'godam' ) }</span>
-					<div id="cancel-button" class="${ this.MODAL_POPUP_CLASS }__close-button" tabindex="0">&times;</div>
+			<div class="${ MODAL_POPUP_CLASS }">
+				<div class="${ MODAL_POPUP_CLASS }__header">
+					<span class="${ MODAL_POPUP_CLASS }__title">${ __( 'Share Media', 'godam' ) }</span>
+					<div id="cancel-button" class="${ MODAL_POPUP_CLASS }__close-button" tabindex="0">&times;</div>
 				</div>
-				<div class="${ this.MODAL_POPUP_CLASS }__content">
-					<div class="${ this.MODAL_POPUP_CLASS }__social-links">
+				<div class="${ MODAL_POPUP_CLASS }__content">
+					<div class="${ MODAL_POPUP_CLASS }__social-links">
 						${ socialLinksHtml }
 					</div>
 				</div>
-				<div class="${ this.MODAL_POPUP_CLASS }__footer">
+				<div class="${ MODAL_POPUP_CLASS }__footer">
 					${ this.renderCopySection( 'page-link', videoLink, __( 'Page Link', 'godam' ) ) }
 					${ this.renderCopySection( 'embed-code', embedCode, __( 'Embed', 'godam' ) ) }
 				</div>
@@ -316,11 +315,11 @@ class ShareManager {
 	 */
 	injectModalIntoDOM( modalHtml, socialLinks ) {
 		const container = document.createElement( 'div' );
-		container.className = this.MODAL_CONTAINER_CLASS;
+		container.className = MODAL_CONTAINER_CLASS;
 		container.innerHTML = DOMPurify.sanitize( modalHtml, { ADD_ATTR: [ 'target', 'rel' ] } );
 
 		document.body.appendChild( container );
-		document.body.classList.add( this.BODY_MODAL_OPEN_CLASS );
+		document.body.classList.add( BODY_MODAL_OPEN_CLASS );
 
 		this.setupModalEventListeners( container, socialLinks );
 	}
@@ -364,18 +363,18 @@ class ShareManager {
 	 */
 	setupModalCloseHandlers( container, cancelButton ) {
 		const closeModal = () => {
-			container.classList.add( `${ this.MODAL_CONTAINER_CLASS }${ this.CLOSING_CLASS_SUFFIX }` );
-			container.querySelector( `.${ this.MODAL_POPUP_CLASS }` )
-				.classList.add( `${ this.MODAL_POPUP_CLASS }${ this.CLOSING_CLASS_SUFFIX }` );
+			container.classList.add( `${ MODAL_CONTAINER_CLASS }${ CLOSING_CLASS_SUFFIX }` );
+			container.querySelector( `.${ MODAL_POPUP_CLASS }` )
+				.classList.add( `${ MODAL_POPUP_CLASS }${ CLOSING_CLASS_SUFFIX }` );
 
 			setTimeout( () => {
 				container.remove();
-				document.body.classList.remove( this.BODY_MODAL_OPEN_CLASS );
-			}, this.MODAL_CLOSE_DELAY );
+				document.body.classList.remove( BODY_MODAL_OPEN_CLASS );
+			}, MODAL_CLOSE_DELAY );
 		};
 
 		const handleKeyboardClose = ( event ) => {
-			if ( event.key === KEYBOARD_KEYS.ESCAPE ) {
+			if ( event.key === KEYBOARD_CONTROLS.ESCAPE ) {
 				closeModal();
 			}
 		};
@@ -393,7 +392,7 @@ class ShareManager {
 		// Close button handlers
 		cancelButton.addEventListener( 'click', closeModal );
 		cancelButton.addEventListener( 'keydown', ( event ) => {
-			if ( [ KEYBOARD_KEYS.ENTER, KEYBOARD_KEYS.SPACE ].includes( event.key ) ) {
+			if ( [ KEYBOARD_CONTROLS.ENTER, KEYBOARD_CONTROLS.SPACE ].includes( event.key ) ) {
 				event.preventDefault();
 				closeModal();
 			}
@@ -415,7 +414,7 @@ class ShareManager {
 		copyButtons.forEach( ( { button, inputId } ) => {
 			button.addEventListener( 'click', () => this.copyToClipboard( inputId ) );
 			button.addEventListener( 'keydown', ( event ) => {
-				if ( [ KEYBOARD_KEYS.ENTER, KEYBOARD_KEYS.SPACE ].includes( event.key ) ) {
+				if ( [ KEYBOARD_CONTROLS.ENTER, KEYBOARD_CONTROLS.SPACE ].includes( event.key ) ) {
 					event.preventDefault();
 					this.copyToClipboard( inputId );
 				}
@@ -433,7 +432,7 @@ class ShareManager {
 	 */
 	renderCopySection( id, value, label ) {
 		return `
-			<div class='${ this.MODAL_POPUP_CLASS }__input-container'>
+			<div class='${ MODAL_POPUP_CLASS }__input-container'>
 				<p class='share-modal-input-text'>${ label }</p>
 				<div class="share-modal-input-group">
 					<input id="${ id }" type="text" value='${ value }' readonly tabindex="0" />
@@ -510,7 +509,7 @@ class ShareManager {
 	 */
 	shouldAddBubbleToControlBar( container ) {
 		return this.videoSetupOptions?.playerSkin === 'Bubble' &&
-				container.offsetWidth > this.MIN_BUBBLE_WIDTH;
+				container.offsetWidth > MIN_BUBBLE_WIDTH;
 	}
 }
 

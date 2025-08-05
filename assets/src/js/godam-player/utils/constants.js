@@ -44,4 +44,7 @@ export const KEYBOARD_CONTROLS = {
 	SEEK_FORWARD: 'arrowright',
 	PLAY_PAUSE: ' ',
 	PLAY_PAUSE_ALT: 'spacebar',
+	ENTER: 'Enter',
+	SPACE: ' ',
+	ESCAPE: 'Escape',
 };
