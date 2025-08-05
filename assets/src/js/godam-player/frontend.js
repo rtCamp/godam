@@ -920,6 +920,14 @@ function GODAMPlayer( videoRef = null ) {
 		} )
 			.catch( () => {} );
 
+		/**
+		 * Creates a DOM element for a given layer.
+		 *
+		 * @param {Object}      layer          - The layer object containing details like id, type, and content.
+		 * @param {string}      instanceId     - The unique identifier for the player instance.
+		 * @param {HTMLElement} videoContainer - The DOM element representing the video container.
+		 * @return {HTMLElement} The created layer element.
+		 */
 		const createLayerElement = ( layer, instanceId, videoContainer ) => {
 			const layerId = `layer-${ instanceId }-${ layer.id }`;
 			const layerElement = document.createElement( 'div' );

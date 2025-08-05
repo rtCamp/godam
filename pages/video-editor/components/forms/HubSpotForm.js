@@ -18,6 +18,13 @@ import LayerControl from '../LayerControls';
 
 const HUBSPOT_SCRIPT = 'https://js.hsforms.net/forms/v2.js';
 
+/**
+ * Renders a HubSpot form within a video editor layer.
+ *
+ * @param {Object} props         Component properties.
+ * @param {string} props.layerID The ID of the layer associated with this HubSpot form.
+ * @return {JSX.Element} The HubSpotForm component.
+ */
 const HubSpotForm = ( { layerID } ) => {
 	const layer = useSelector( ( state ) => state.videoReducer.godamCentralLayers.find( ( _layer ) => _layer.id === layerID ) );
 	const transcodingJobId = useSelector( ( state ) => state.videoReducer.transcodingJobId );
@@ -29,10 +36,17 @@ const HubSpotForm = ( { layerID } ) => {
 	const formId = layer?.hubspot_id;
 	const containerId = `hubspot-form-${ formId }`;
 
+	/**
+	 * Fetches the HubSpot portal ID from the WordPress API.
+	 * Sets the portalId state with the fetched value.
+	 */
 	useEffect( () => {
 		apiFetch( { path: `${ window.wpApiSettings.root }godam/v1/hubspot-portal-id` } ).then( ( { hubspotPortalId } ) => setPortalId( hubspotPortalId ) );
 	}, [] );
 
+	/**
+	 * Sets up an event listener for the HubSpot form's 'on-ready' event.
+	 */
 	useEffect( () => {
 		const handleFormReady = ( event ) => {
 			const { formId: eventFormId } = event.detail;
@@ -55,6 +69,11 @@ const HubSpotForm = ( { layerID } ) => {
 		};
 	}, [ formId ] );
 
+	/**
+	 * Loads the HubSpot form.
+	 *
+	 * Dynamically load the HubSpot form script if it hasn't been loaded already.
+	 */
 	useEffect( () => {
 		const loadForm = () => {
 			if ( ! window.hbspt || ! containerRef.current || ! portalId ) {

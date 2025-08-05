@@ -76,6 +76,11 @@ const VideoEditor = ( { attachmentID } ) => {
 	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, isFetching } = useFetchForms();
 	const { data: hubspotForms, isLoading: isHubspotFormsLoading } = useGetHubSpotFormsQuery( attachmentID );
 
+	/**
+	 * Effects hook to process HubSpot forms and add them as layers.
+	 * It maps HubSpot form data to the internal layer structure and dispatches
+	 * an action to add these layers to the Redux store.
+	 */
 	useEffect( () => {
 		if ( ! isHubspotFormsLoading && hubspotForms ) {
 			const hubspotLayers = hubspotForms?.layers?.map( ( form ) => {

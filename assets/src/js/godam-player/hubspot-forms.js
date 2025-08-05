@@ -8,6 +8,12 @@ const HUBSPOT_SCRIPT = 'https://js.hsforms.net/forms/v2.js';
 
 let hubspotScriptLoaded = null;
 
+/**
+ * Fetches Hubspot forms be media id from the backend.
+ *
+ * @param {string} id The ID to filter the forms by.
+ * @return {Promise<Array<object>>} A promise that resolves to an array of Hubspot form objects.
+ */
 export const getForms = async ( id ) => {
 	return apiFetch( { path: `/godam/v1/hubspot-forms?id=${ id }` } ).then( ( hubspotForms ) => {
 		const hubspotLayers = hubspotForms?.layers?.map( ( form ) => {
@@ -26,6 +32,15 @@ export const getForms = async ( id ) => {
 	} );
 };
 
+/**
+ * Creates and configures the HTML element for a Hubspot form.
+ *
+ * @param {HTMLElement} layerElement              The DOM element representing the layer.
+ * @param {Object}      layer                     The layer data, containing Hubspot form information.
+ * @param {string}      layer.hubspot_id          The ID of the Hubspot form.
+ * @param {string}      [layer.backgroundColor]   The background color for the form container.
+ * @param {number}      [layer.backgroundOpacity] The background opacity for the form container.
+ */
 export const createFormElement = ( layerElement, layer ) => {
 	layerElement.classList.add( `godam-form-type-hubspot` );
 
@@ -52,10 +67,26 @@ export const createFormElement = ( layerElement, layer ) => {
 	loadHubspotForm( layerElement, layer.hubspot_id );
 };
 
+/**
+ * Fetches the Hubspot portal ID from the API.
+ *
+ * @return {Promise<object>} A promise that resolves to an object containing the hubspot portal ID.
+ */
 const getPortalId = async () => {
 	return apiFetch( { path: `/godam/v1/hubspot-portal-id` } );
 };
 
+/**
+ * Loads the Hubspot script if it hasn't been loaded already.
+ *
+ * This function ensures that the Hubspot script is only loaded once.
+ * It checks if the script is already loaded by looking for `window.hbspt`.
+ * If not loaded, it creates a script element, appends it to the body,
+ * and resolves the promise when the script is loaded or when `window.hbspt`
+ * becomes available.
+ *
+ * @return {Promise<void>} A promise that resolves when the Hubspot script is loaded and ready.
+ */
 const loadHubspotScript = () => {
 	if ( ! hubspotScriptLoaded ) {
 		hubspotScriptLoaded = new Promise( ( resolve ) => {
@@ -88,6 +119,16 @@ const loadHubspotScript = () => {
 	return hubspotScriptLoaded;
 };
 
+/**
+ * Loads and renders a Hubspot form within a given container.
+ *
+ * This function first ensures the Hubspot script is loaded. It then fetches
+ * the Hubspot portal ID and uses `window.hbspt.forms.create` to render the form.
+ * It also sets up event listener for form submission.
+ *
+ * @param {HTMLElement} container The DOM element where the Hubspot form will be rendered.
+ * @param {string}      formId    The ID of the Hubspot form to load.
+ */
 const loadHubspotForm = async ( container, formId ) => {
 	const spinnerElement = container.querySelector( '.hubspot-form-spinner' );
 
@@ -113,12 +154,21 @@ const loadHubspotForm = async ( container, formId ) => {
 			target: `#${ containerId } .hubspot-form`,
 		} );
 
+		/**
+		 * Hides the spinner element when the form is ready.
+		 */
 		const handleFormReady = () => {
 			if ( spinnerElement ) {
 				spinnerElement.style.display = 'none';
 			}
 		};
 
+		/**
+		 * Handles the form submission success event.
+		 * If the submitted form matches the target form, it makes the "Continue" button visible and updates its text.
+		 *
+		 * @param {CustomEvent} event The submission event details.
+		 */
 		const handleFormSubmission = ( event ) => {
 			const { formId: eventFormId } = event.detail;
 			if ( formId !== eventFormId ) {
