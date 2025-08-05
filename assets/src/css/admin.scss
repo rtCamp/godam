@@ -311,10 +311,12 @@ $media-frame-width: calc(300px + 2 * 24px);
  *
  * Currently this is kept as it is because it looks cleaner in the media popup.
  */
-.media-menu-item.active,
-.separator,
-.media-frame-menu-heading {
-	display: none;
+.media-frame {
+	.media-menu-item.active,
+	.separator,
+	.media-frame-menu-heading {
+		display: none;
+	}
 }
 
 .search-form {
