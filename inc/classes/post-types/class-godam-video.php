@@ -109,7 +109,7 @@ class GoDAM_Video extends Base {
 	/**
 	 * Get allow_archive setting from plugin options.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.3.1
 	 *
 	 * @return bool
 	 */
@@ -121,7 +121,7 @@ class GoDAM_Video extends Base {
 	/**
 	 * Get allow_single setting from plugin options.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.3.1
 	 *
 	 * @return bool
 	 */
@@ -438,7 +438,7 @@ class GoDAM_Video extends Base {
 	 * Handle URL access for both single and archive pages based on user settings.
 	 * This ensures videos appear in Query Loop but respect visibility settings for direct URLs.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.3.1
 	 *
 	 * @return void
 	 */

@@ -619,7 +619,7 @@ function rtgodam_get_transcoded_url_from_attachment( $attachment ) {
 /**
  * Return hls transcoded url from attachment.
  *
- * @since n.e.x.t
+ * @since 1.3.1
  *
  * @param int|\WP_Post $attachment Attachment.
  *
