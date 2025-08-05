@@ -115,6 +115,25 @@ class Transcoding extends Base {
 					},
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/media/details/(?P<id>\d+)',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_media_details' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_others_posts' );
+					},
+					'args'                => array(
+						'id' => array(
+							'required'          => true,
+							'type'              => 'integer',
+							'description'       => __( 'The attachment ID.', 'godam' ),
+							'sanitize_callback' => 'absint',
+						),
+					),
+				),
+			),
 		);
 	}
 
@@ -423,5 +442,57 @@ class Transcoding extends Base {
 			array( 'message' => $message ),
 			200
 		);
+	}
+
+	/**
+	 * Get media details.
+	 *
+	 * @param \WP_REST_Request $request REST request object.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_media_details( \WP_REST_Request $request ) {
+		$attachment_id = $request->get_param( 'id' );
+
+		if ( empty( $attachment_id ) ) {
+			return new \WP_REST_Response(
+				array(
+					'message' => __( 'Attachment ID not provided', 'godam' ),
+				),
+				400
+			);
+		}
+
+		$attachment = get_post( $attachment_id );
+
+		if ( ! $attachment ) {
+			return new \WP_REST_Response(
+				array(
+					'message' => __( 'Attachment not found.', 'godam' ),
+				),
+				404
+			);
+		}
+
+		// Get file path and size.
+		$file_path = get_attached_file( $attachment_id );
+		$file_size = 0;
+
+		if ( file_exists( $file_path ) ) {
+			$file_size = filesize( $file_path );
+		}
+
+		if ( 0 === $file_size ) {
+			// get file size from meta.
+			$file_size = get_post_meta( $attachment_id, '_video_file_size', true );
+		}
+
+		$response = array(
+			'id'   => $attachment_id,
+			'name' => get_the_title( $attachment_id ),
+			'size' => $file_size,
+		);
+
+		return new \WP_REST_Response( $response, 200 );
 	}
 }

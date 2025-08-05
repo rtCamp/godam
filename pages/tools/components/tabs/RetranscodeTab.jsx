@@ -11,6 +11,7 @@ import {
 	Panel,
 	PanelBody,
 	Snackbar,
+	Modal,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useRef, useEffect } from '@wordpress/element';
@@ -33,6 +34,10 @@ const RetranscodeTab = () => {
 	const [ successCount, setSuccessCount ] = useState( 0 );
 	const [ failureCount, setFailureCount ] = useState( 0 );
 	const [ totalMediaCount, setTotalMediaCount ] = useState( 0 );
+	const [ attachmentDetails, setAttachmentDetails ] = useState( [] ); // [{id, name, size}]
+	const [ showBandwidthModal, setShowBandwidthModal ] = useState( false );
+	const [ modalSelection, setModalSelection ] = useState( [] ); // array of selected IDs
+	const [ bandwidthError, setBandwidthError ] = useState( null );
 
 	// On mount, check for 'media_ids' in the URL
 	useEffect( () => {
@@ -228,6 +233,71 @@ const RetranscodeTab = () => {
 		};
 	}, [] );
 
+	// Fetch attachment details (name, size) after attachments are set
+	useEffect( () => {
+		if ( attachments.length > 0 && attachments[ 0 ] !== 0 ) {
+			// Fetch media details using the same approach as PHP code
+			Promise.all(
+				attachments.map( ( id ) =>
+					fetch( `${ window.godamRestRoute?.url }godam/v1/transcoding/media/details/${ id }`, {
+						headers: {
+							'X-WP-Nonce': window.godamRestRoute?.nonce,
+						},
+					} )
+						.then( ( res ) => res.json() )
+						.then( ( data ) => ( {
+							id,
+							name: data.name || `ID ${ id }`,
+							size: data.size || 0,
+						} ) )
+						.catch( () => ( {
+							id,
+							name: `ID ${ id }`,
+							size: 0,
+						} ) ),
+				),
+			).then( setAttachmentDetails );
+		} else if ( attachments.length === 0 ) {
+			setAttachmentDetails( [] );
+		} else {
+			setAttachmentDetails( attachments ); // already detailed
+		}
+	}, [ attachments ] );
+
+	// Bandwidth calculation
+	const availableBandwidthGB = ( window.userData?.totalBandwidth || 0 ) - ( window.userData?.bandwidthUsed || 0 );
+	const totalRequiredGB = attachmentDetails.reduce( ( sum, att ) => sum + ( ( att.size || 0 ) / 1024 / 1024 / 1024 ), 0 );
+
+	// Modal logic: show modal if not all fit, or error if none fit
+	useEffect( () => {
+		if ( attachmentDetails.length > 0 ) {
+			if ( totalRequiredGB > availableBandwidthGB ) {
+				// Find which files can fit
+				const sorted = [ ...attachmentDetails ].sort( ( a, b ) => a.size - b.size );
+				let runningTotal = 0;
+				const canFit = [];
+				for ( const att of sorted ) {
+					const attGB = ( att.size || 0 ) / 1024 / 1024 / 1024;
+					if ( runningTotal + attGB <= availableBandwidthGB ) {
+						runningTotal += attGB;
+						canFit.push( att.id );
+					}
+				}
+				if ( canFit.length > 0 ) {
+					setModalSelection( canFit );
+					setShowBandwidthModal( true );
+					setBandwidthError( null );
+				} else {
+					setBandwidthError( __( 'Not enough bandwidth left to retranscode any selected media.', 'godam' ) );
+					setShowBandwidthModal( false );
+				}
+			} else {
+				setShowBandwidthModal( false );
+				setBandwidthError( null );
+			}
+		}
+	}, [ attachmentDetails, totalRequiredGB, availableBandwidthGB ] );
+
 	const resetState = () => {
 		setAttachments( [] );
 		setMediaCount( 0 );
@@ -240,6 +310,10 @@ const RetranscodeTab = () => {
 		setDone( false );
 		setForceRetranscode( false );
 		setSelectedIds( null );
+		setAttachmentDetails( [] );
+		setShowBandwidthModal( false );
+		setModalSelection( [] );
+		setBandwidthError( null );
 		// Stop any active polling.
 		if ( pollIntervalRef.current ) {
 			clearInterval( pollIntervalRef.current );
@@ -265,6 +339,73 @@ const RetranscodeTab = () => {
 		<>
 			<Panel header={ __( 'Retranscode Media', 'godam' ) } className="godam-panel">
 				<PanelBody opened>
+					{ /* Bandwidth/Quota Display */ }
+					<div className="flex gap-4 flex-wrap mb-4">
+						<div>
+							<strong>{ __( 'Bandwidth Available:', 'godam' ) }</strong> { parseFloat( availableBandwidthGB ).toFixed( 2 ) } GB
+						</div>
+						<div>
+							<strong>{ __( 'Bandwidth Used:', 'godam' ) }</strong> { parseFloat( window.userData?.bandwidthUsed || 0 ).toFixed( 2 ) } GB
+						</div>
+					</div>
+					{ /* Error if none fit */ }
+					{ bandwidthError && (
+						<Snackbar className="snackbar-error">{ bandwidthError }</Snackbar>
+					) }
+					{ /* Bandwidth Modal */ }
+					{ showBandwidthModal && (
+						<Modal
+							title={ __( 'Select Media to Retranscode', 'godam' ) }
+							onRequestClose={ () => setShowBandwidthModal( false ) }
+							isOpen={ showBandwidthModal }
+						>
+							<div style={ { maxHeight: 400, overflowY: 'auto' } }>
+								{ attachmentDetails.map( ( att ) => {
+									const attGB = ( att.size || 0 ) / 1024 / 1024 / 1024;
+									const checked = modalSelection.includes( att.id );
+									// Calculate running total if this is checked
+									const newTotal = modalSelection
+										.filter( ( id ) => id !== att.id )
+										.reduce( ( sum, id ) => {
+											const found = attachmentDetails.find( ( a ) => a.id === id );
+											return sum + ( ( found?.size || 0 ) / 1024 / 1024 / 1024 );
+										}, checked ? 0 : attGB );
+									const disabled = ! checked && ( newTotal + attGB > availableBandwidthGB );
+									return (
+										<div key={ att.id } style={ { marginBottom: 8 } }>
+											<input
+												type="checkbox"
+												checked={ checked }
+												disabled={ disabled }
+												onChange={ () => {
+													setModalSelection( ( sel ) =>
+														checked ? sel.filter( ( id ) => id !== att.id ) : [ ...sel, att.id ],
+													);
+												} }
+											/>
+											{ att.name } ({ ( att.size / 1024 / 1024 ).toFixed( 2 ) } MB)
+										</div>
+									);
+								} ) }
+								<div style={ { marginTop: 16 } }>
+									<strong>{ __( 'Required Bandwidth:', 'godam' ) }</strong> { modalSelection.reduce( ( sum, id ) => {
+										const att = attachmentDetails.find( ( a ) => a.id === id );
+										return sum + ( ( att?.size || 0 ) / 1024 / 1024 / 1024 );
+									}, 0 ).toFixed( 2 ) } GB / { availableBandwidthGB.toFixed( 2 ) } GB { __( 'available', 'godam' ) }
+								</div>
+								<Button
+									variant="primary"
+									style={ { marginTop: 16 } }
+									onClick={ () => {
+										setAttachments( modalSelection );
+										setShowBandwidthModal( false );
+									} }
+								>
+									{ __( 'Proceed', 'godam' ) }
+								</Button>
+							</div>
+						</Modal>
+					) }
 					{ selectedIds && selectedIds.length > 0 && (
 						<Snackbar className="snackbar-warning">
 							{ sprintf(
