@@ -182,7 +182,7 @@ composer run pot
 /**
 * Example function with proper documentation.
 *
-* @since n.e.x.t
+* @since 1.3.1
 * @param string $param1 Description of parameter.
 * @param int    $param2 Description of parameter.
 * @return bool Description of return value.
