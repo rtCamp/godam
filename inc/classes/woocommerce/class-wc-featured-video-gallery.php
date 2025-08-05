@@ -19,7 +19,7 @@ class WC_Featured_Video_Gallery {
 
 	use Singleton;
 
-	const FALLBACK_THUMBNAIL = RTGODAM_URL . 'assets/src/images/video-thumbnail-default.png';
+	const FALLBACK_THUMBNAIL = RTGODAM_URL . 'assets/src/images/cropped-video-thumbnail-default.png';
 
 	/**
 	 * Constructor.
