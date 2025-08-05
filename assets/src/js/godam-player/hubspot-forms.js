@@ -41,6 +41,14 @@ export const createFormElement = ( layerElement, layer ) => {
 		layerElement.appendChild( formElement );
 	}
 
+	let spinnerElement = layerElement.querySelector( '.hubspot-form-spinner' );
+	if ( ! spinnerElement ) {
+		spinnerElement = document.createElement( 'div' );
+		spinnerElement.classList.add( 'hubspot-form-spinner' );
+		layerElement.appendChild( spinnerElement );
+	}
+	spinnerElement.style.display = 'flex';
+
 	loadHubspotForm( layerElement, layer.hubspot_id );
 };
 
@@ -81,7 +89,12 @@ const loadHubspotScript = () => {
 };
 
 const loadHubspotForm = async ( container, formId ) => {
+	const spinnerElement = container.querySelector( '.hubspot-form-spinner' );
+
 	try {
+		if ( spinnerElement ) {
+			spinnerElement.style.display = 'flex';
+		}
 		await loadHubspotScript();
 
 		if ( ! window.hbspt || ! window.hbspt.forms ) {
@@ -99,6 +112,9 @@ const loadHubspotForm = async ( container, formId ) => {
 			formId,
 			target: `#${ containerId } .hubspot-form`,
 		} );
+		if ( spinnerElement ) {
+			spinnerElement.style.display = 'none';
+		}
 
 		const handleFormSubmission = ( event ) => {
 			const { formId: eventFormId } = event.detail;

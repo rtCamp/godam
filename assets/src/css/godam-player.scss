@@ -281,25 +281,60 @@
 }
 
 .godam-form-type-hubspot {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    padding: 1.5rem;
-    box-sizing: border-box;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	padding: 1.5rem;
+	box-sizing: border-box;
 
-    .hubspot-form {
-        overflow: auto;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+	.hubspot-form {
+		overflow: auto;
+		height: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 
-        .hs-form-frame {
-            width: 100%;
-        }
-    }
+		.hs-form-frame {
+			width: 100%;
+		}
+	}
+
+	.hubspot-form-spinner {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 10;
+		box-sizing: border-box;
+	}
+
+	.hubspot-form-spinner::after {
+		content: '';
+		display: block;
+		width: 40px;
+		height: 40px;
+		border: 4px solid #f3f3f3;
+		border-top: 4px solid var(--wp-admin-theme-color, #3858e9);
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+	}
 }
 
 .poll-container,
