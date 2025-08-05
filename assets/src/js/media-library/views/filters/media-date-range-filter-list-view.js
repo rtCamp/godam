@@ -99,6 +99,8 @@ class MediaDateRangeListViewFilter {
 	}
 
 	initializeDatePicker() {
+		this.inputElement.setAttribute( 'readonly', 'readonly' );
+
 		$( this.inputElement ).daterangepicker( {
 			locale: { cancelLabel: 'Clear' },
 			ranges: {

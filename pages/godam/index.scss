@@ -53,8 +53,8 @@ $settings-page-breakpoint: 782px;
 			}
 
 			@media (max-width: $settings-page-breakpoint) {
-				border-radius: 0.75rem 0 0 0.75rem;
 				padding: 0 12px;
+				outline: none;
 				border-right: $settings-page-border;
 				font-size: 42px;
 				background: none;

@@ -7,10 +7,9 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, ButtonGroup, SelectControl, Icon } from '@wordpress/components';
+import { Button, SelectControl, Icon } from '@wordpress/components';
 import { close } from '@wordpress/icons';
-import { __ } from '@wordpress/i18n';
-
+const { __ } = wp.i18n;
 /**
  * Internal dependencies
  */
@@ -24,6 +23,7 @@ import {
 	toggleMultiSelectMode,
 	clearMultiSelectedFolders,
 	setSortOrder,
+	setCurrentContextMenuFolder,
 } from './redux/slice/folders';
 import { FolderCreationModal, RenameModal, DeleteModal } from './components/modal/index.jsx';
 import { triggerFilterChange } from './data/media-grid.js';
@@ -78,18 +78,8 @@ const App = () => {
 		}
 	};
 
-	const handleContextMenu = ( e, folderId, folderItem ) => {
+	const handleContextMenu = ( e, folderId, folder ) => {
 		e.preventDefault(); // Prevent default browser context menu
-
-		if ( folderId === -1 ) {
-			triggerFilterChange( 'all' );
-		} else if ( folderId === 0 ) {
-			triggerFilterChange( 'uncategorized' );
-		} else {
-			triggerFilterChange( folderId );
-		}
-
-		dispatch( changeSelectedFolder( { item: folderItem } ) );
 
 		setContextMenu( {
 			visible: true,
@@ -97,6 +87,8 @@ const App = () => {
 			y: e.clientY,
 			folderId,
 		} );
+
+		dispatch( setCurrentContextMenuFolder( folder ) );
 	};
 
 	const handleCloseContextMenu = () => {
@@ -114,7 +106,7 @@ const App = () => {
 				>
 					<Icon icon={ close } />
 				</Button>
-				<ButtonGroup className="button-group mb-spacing">
+				<div className="button-group mb-spacing">
 					<SearchBar />
 					<Button
 						icon="plus-alt2"
@@ -136,8 +128,8 @@ const App = () => {
 						className="button--full close-folder-menu-mobile"
 						onClick={ () => closeFolderMenu() }
 					/>
-				</ButtonGroup>
-				<ButtonGroup className="button-group mb-spacing">
+				</div>
+				<div className="button-group mb-spacing">
 					<Button
 						__next40pxDefaultSize
 						className="multiselect-button"
@@ -154,7 +146,7 @@ const App = () => {
 						] }
 						onChange={ ( newOrder ) => dispatch( setSortOrder( newOrder ) ) }
 					/>
-				</ButtonGroup>
+				</div>
 			</div>
 
 			<div className="folder-list">
@@ -192,6 +184,7 @@ const App = () => {
 				<BookmarkTab handleContextMenu={ handleContextMenu } />
 				<LockedTab handleContextMenu={ handleContextMenu } />
 			</div>
+
 			<FolderTree handleContextMenu={ handleContextMenu } />
 
 			{ contextMenu.visible && (

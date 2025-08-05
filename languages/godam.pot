@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 1.3.0\n"
+"Project-Id-Version: GoDAM 1.3.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-07-18T14:47:14+00:00\n"
+"POT-Creation-Date: 2025-08-01T11:45:15+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -17,8 +17,8 @@ msgstr ""
 #. Plugin Name of the plugin
 #: godam.php
 #: inc/classes/class-elementor-widgets.php:134
-#: inc/classes/class-pages.php:124
-#: inc/classes/class-pages.php:125
+#: inc/classes/class-pages.php:126
+#: inc/classes/class-pages.php:127
 #: pages/video-editor/components/forms/CF7.js:24
 msgid "GoDAM"
 msgstr ""
@@ -317,47 +317,55 @@ msgstr ""
 msgid "Thumbnail created successfully."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:246
+#: admin/class-rtgodam-transcoder-rest-routes.php:251
 msgid "Media transcoded successfully."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:355
+#: admin/class-rtgodam-transcoder-rest-routes.php:360
 #: inc/classes/rest-api/class-transcoding.php:268
 msgid "API key is required."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:359
+#: admin/class-rtgodam-transcoder-rest-routes.php:364
 msgid "API key not configured on the site."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:363
+#: admin/class-rtgodam-transcoder-rest-routes.php:368
 #: inc/classes/rest-api/class-transcoding.php:274
 msgid "Invalid API key."
 msgstr ""
 
-#: admin/godam-transcoder-actions.php:48
-msgid "Transcoded CDN URL"
+#: admin/godam-transcoder-actions.php:49
+msgid "Transcoded CDN URL (MPD)"
 msgstr ""
 
-#: admin/godam-transcoder-actions.php:57
+#: admin/godam-transcoder-actions.php:58
 msgid "The URL of the transcoded file is generated automatically and cannot be edited."
 msgstr ""
 
 #: admin/godam-transcoder-actions.php:62
+msgid "Transcoded CDN URL (HLS)"
+msgstr ""
+
+#: admin/godam-transcoder-actions.php:71
+msgid "The HLS URL of the transcoded file is generated automatically and cannot be edited."
+msgstr ""
+
+#: admin/godam-transcoder-actions.php:76
 msgid "Transcoded CDN URL "
 msgstr ""
 
-#: admin/godam-transcoder-actions.php:70
+#: admin/godam-transcoder-actions.php:84
 msgid "Available in Premium version"
 msgstr ""
 
 #. translators: %1$s URL to the settings page, %2$s API key label.
-#: admin/godam-transcoder-actions.php:75
+#: admin/godam-transcoder-actions.php:89
 #, php-format
 msgid "Activate the <a href=\"%1$s\" target=\"_blank\" rel=\"noopener noreferrer\">%2$s</a> to enable transcoding and adaptive bitrate streaming."
 msgstr ""
 
-#: admin/godam-transcoder-actions.php:77
+#: admin/godam-transcoder-actions.php:91
 msgid "API key"
 msgstr ""
 
@@ -373,11 +381,14 @@ msgstr ""
 msgid "File is transcoded."
 msgstr ""
 
+#: assets/build/blocks/godam-audio/render.php:41
 #: assets/src/blocks/godam-audio/render.php:41
 #: inc/classes/elementor-widgets/class-godam-audio.php:150
 msgid "Your browser does not support the audio element."
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/render.php:20
+#: assets/build/blocks/sureforms/blocks/recorder/render.php:24
 #: assets/src/blocks/sureforms/blocks/recorder/render.php:20
 #: assets/src/blocks/sureforms/blocks/recorder/render.php:24
 #: inc/classes/fluentforms/fields/class-recorder-field.php:84
@@ -388,44 +399,48 @@ msgstr ""
 msgid "Record Video"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/render.php:29
 #: assets/src/blocks/sureforms/blocks/recorder/render.php:29
 #: inc/classes/sureforms/class-form-submit.php:80
 msgid "The field is required"
 msgstr ""
 
 #. Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
+#: assets/build/blocks/sureforms/blocks/recorder/render.php:113
 #: assets/src/blocks/sureforms/blocks/recorder/render.php:113
 #, php-format
 msgid "Maximum allowed on this server: %d MB"
 msgstr ""
 
 #: godam.php:104
-#: inc/classes/class-pages.php:165
-#: inc/classes/class-pages.php:166
+#: inc/classes/class-pages.php:171
+#: inc/classes/class-pages.php:172
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-player/index.js:3
 #: assets/src/blocks/godam-audio/edit.js:136
-#: assets/src/blocks/godam-player/edit.js:432
+#: assets/src/blocks/godam-player/edit.js:430
 msgid "Settings"
 msgstr ""
 
-#: inc/classes/class-assets.php:153
+#: inc/classes/class-assets.php:151
 msgid "Submitting..."
 msgstr ""
 
-#: inc/classes/class-assets.php:154
+#: inc/classes/class-assets.php:152
 #: inc/classes/rest-api/class-jetpack.php:665
 msgid "Success!"
 msgstr ""
 
-#: inc/classes/class-assets.php:155
+#: inc/classes/class-assets.php:153
 #: inc/classes/rest-api/class-jetpack.php:666
 msgid "Your message has been sent successfully."
 msgstr ""
 
-#: inc/classes/class-assets.php:156
+#: inc/classes/class-assets.php:154
 msgid "An error occurred. Please try again."
 msgstr ""
 
-#: inc/classes/class-assets.php:157
+#: inc/classes/class-assets.php:155
 msgid "Network error. Please try again."
 msgstr ""
 
@@ -437,13 +452,17 @@ msgstr ""
 msgid "Invalid data."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:496
-#: pages/media-library/App.js:162
+#: inc/classes/class-media-library-ajax.php:499
+#: pages/media-library/App.js:158
 msgid "Uncategorized"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:500
+#: inc/classes/class-media-library-ajax.php:503
 msgid "All collections"
+msgstr ""
+
+#: inc/classes/class-media-library-ajax.php:621
+msgid "Offer banner dismissed successfully."
 msgstr ""
 
 #: inc/classes/class-media-tracker.php:158
@@ -460,59 +479,75 @@ msgstr ""
 msgid "Please deactivate the <strong>%1$s</strong> plugin to ensure the <strong>%2$s</strong> plugin functions correctly."
 msgstr ""
 
-#: inc/classes/class-pages.php:135
-#: inc/classes/class-pages.php:136
+#: inc/classes/class-pages.php:141
+#: inc/classes/class-pages.php:142
 msgid "Dashboard"
 msgstr ""
 
-#: inc/classes/class-pages.php:145
-#: inc/classes/class-pages.php:146
+#: inc/classes/class-pages.php:151
+#: inc/classes/class-pages.php:152
 msgid "Video Editor"
 msgstr ""
 
-#: inc/classes/class-pages.php:155
-#: inc/classes/class-pages.php:156
+#: inc/classes/class-pages.php:161
+#: inc/classes/class-pages.php:162
 msgid "Analytics"
 msgstr ""
 
-#: inc/classes/class-pages.php:175
-#: inc/classes/class-pages.php:176
+#: inc/classes/class-pages.php:181
+#: inc/classes/class-pages.php:182
 msgid "Help"
 msgstr ""
 
-#: inc/classes/class-pages.php:435
-#: inc/classes/class-pages.php:460
+#: inc/classes/class-pages.php:441
+#: inc/classes/class-pages.php:466
 msgid "Your last request is still being processed. Please wait a while ..."
 msgstr ""
 
-#: inc/classes/class-pages.php:436
-#: inc/classes/class-pages.php:461
+#: inc/classes/class-pages.php:442
+#: inc/classes/class-pages.php:467
 msgid "Please choose a valid poll answer."
 msgstr ""
 
-#: inc/classes/class-pages.php:437
-#: inc/classes/class-pages.php:462
+#: inc/classes/class-pages.php:443
+#: inc/classes/class-pages.php:468
 msgid "Maximum number of choices allowed: "
 msgstr ""
 
-#: inc/classes/class-video-permalinks.php:57
-msgid "GoDAM Video slug"
+#: inc/classes/class-video-permalinks.php:74
+msgid "GoDAM Video post settings"
 msgstr ""
 
-#: inc/classes/class-video-permalinks.php:72
+#: inc/classes/class-video-permalinks.php:93
 msgid "GoDAM Video Permalinks"
 msgstr ""
 
-#: inc/classes/class-video-permalinks.php:79
+#: inc/classes/class-video-permalinks.php:100
 msgid "Video archive URL slug"
 msgstr ""
 
-#: inc/classes/class-video-permalinks.php:92
+#: inc/classes/class-video-permalinks.php:109
+msgid "Video archive page visibility"
+msgstr ""
+
+#: inc/classes/class-video-permalinks.php:117
+msgid "Video single page visibility"
+msgstr ""
+
+#: inc/classes/class-video-permalinks.php:130
 msgid "These settings control the permalinks used for GoDAM video archives and pages."
 msgstr ""
 
-#: inc/classes/class-video-permalinks.php:111
+#: inc/classes/class-video-permalinks.php:157
 msgid "This slug will be used in the URL for video archive and single video pages (e.g., yoursite.com/videos/). Only lowercase letters, numbers, hyphens, and underscores are allowed."
+msgstr ""
+
+#: inc/classes/class-video-permalinks.php:181
+msgid "Enable this to allow public access to the video archive page. When disabled, the video archive page will return 404."
+msgstr ""
+
+#: inc/classes/class-video-permalinks.php:205
+msgid "Enable this to allow public access to individual video pages. When disabled, single video pages will return 404 but videos will still be available in Query Loop blocks."
 msgstr ""
 
 #: inc/classes/cron-jobs/class-retranscode-failed-media.php:53
@@ -528,7 +563,7 @@ msgid "Choose Image"
 msgstr ""
 
 #: inc/classes/elementor-controls/class-godam-media.php:140
-#: pages/analytics/Analytics.js:552
+#: pages/analytics/Analytics.js:563
 msgid "Choose Video"
 msgstr ""
 
@@ -545,9 +580,10 @@ msgstr ""
 #: inc/classes/elementor-controls/class-godam-media.php:211
 #: inc/classes/elementor-controls/class-godam-media.php:213
 #: inc/classes/wpforms/wpforms-field-godam-record-entry-edit.php:53
-#: assets/src/blocks/godam-player/edit.js:489
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:495
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:108
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:368
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:394
 #: pages/video-editor/components/appearance/Appearance.js:451
 #: pages/video-editor/components/appearance/Appearance.js:529
 #: pages/video-editor/components/appearance/Appearance.js:618
@@ -596,6 +632,8 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:60
 #: inc/classes/elementor-widgets/class-godam-video.php:216
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-player/index.js:1
 #: assets/src/blocks/godam-audio/edit.js:139
 #: assets/src/blocks/godam-player/edit-common-settings.js:59
 msgid "Autoplay"
@@ -603,6 +641,8 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:72
 #: inc/classes/elementor-widgets/class-godam-video.php:228
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-player/index.js:1
 #: assets/src/blocks/godam-audio/edit.js:146
 #: assets/src/blocks/godam-player/edit-common-settings.js:73
 msgid "Loop"
@@ -614,17 +654,21 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:96
 #: inc/classes/elementor-widgets/class-godam-video.php:264
+#: assets/build/blocks/godam-player/index.js:1
 #: assets/src/blocks/godam-player/edit-common-settings.js:94
 msgid "Preload"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:100
+#: assets/build/blocks/godam-audio/index.js:1
 #: assets/src/blocks/godam-audio/edit.js:162
 msgid "Browser default"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:101
 #: inc/classes/elementor-widgets/class-godam-video.php:268
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-player/index.js:1
 #: assets/src/blocks/godam-audio/edit.js:163
 #: assets/src/blocks/godam-player/edit-common-settings.js:9
 msgid "Auto"
@@ -633,6 +677,8 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-audio.php:102
 #: inc/classes/elementor-widgets/class-godam-video.php:111
 #: inc/classes/elementor-widgets/class-godam-video.php:269
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-player/index.js:1
 #: assets/src/blocks/godam-audio/edit.js:164
 #: assets/src/blocks/godam-player/edit-common-settings.js:10
 #: assets/src/blocks/godam-player/track-uploader.js:36
@@ -641,6 +687,8 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:103
 #: inc/classes/elementor-widgets/class-godam-video.php:270
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-player/index.js:1
 #: assets/src/blocks/godam-audio/edit.js:167
 #: assets/src/blocks/godam-player/edit-common-settings.js:11
 msgctxt "Preload value"
@@ -653,41 +701,49 @@ msgid "GoDAM Gallery"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:44
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:193
 msgid "Gallery Settings"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:51
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:195
 msgid "Enable Infinite Scroll"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:60
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:202
 msgid "Show Video Titles and Dates"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:72
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:209
 msgid "Layout"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:76
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:212
 msgid "Grid"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:77
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:213
 msgid "List"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:85
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:233
 msgid "Number of videos"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:104
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:225
 msgid "Number of columns"
 msgstr ""
@@ -697,11 +753,13 @@ msgid "Order By"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:130
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:243
 msgid "Date"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:131
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:95
 #: assets/src/blocks/godam-gallery/edit.js:244
 msgid "Title"
@@ -709,44 +767,52 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:132
 #: inc/classes/elementor-widgets/class-godam-video.php:182
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:245
 #: pages/analytics/charts.js:98
-#: pages/analytics/helper.js:705
+#: pages/analytics/helper.js:709
 msgid "Duration"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:133
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:246
 #: pages/dashboard/Dashboard.js:344
 msgid "Size"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:141
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:251
 msgid "Order"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:145
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:254
 msgid "Descending"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:146
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:255
 msgid "Ascending"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:154
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:263
 msgid "All Categories"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:164
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:260
 msgid "Category"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:174
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:275
 msgid "All Tags"
 msgstr ""
@@ -760,56 +826,67 @@ msgid "All Users"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:204
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:284
 msgid "Author"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:214
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:296
 msgid "Date Range"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:218
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:299
 msgid "All Time"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:219
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:300
 msgid "Last 7 Days"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:220
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:301
 msgid "Last 30 Days"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:221
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:302
 msgid "Last 90 Days"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:222
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:303
 msgid "Custom Range"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:230
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:319
 msgid "Start Date"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:244
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:346
 msgid "End Date"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:258
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:374
 msgid "Include Video IDs"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:260
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:375
 msgid "Comma-separated list of video IDs to include"
 msgstr ""
@@ -823,11 +900,13 @@ msgid "0"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:279
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:380
 msgid "Search"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:282
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:381
 msgid "Search in video titles and descriptions"
 msgstr ""
@@ -851,6 +930,7 @@ msgid "Select video file"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:62
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:65
 #: assets/src/blocks/godam-player/track-uploader.js:212
 #: assets/src/blocks/godam-player/track-uploader.js:243
@@ -877,12 +957,15 @@ msgid "Text track file"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:90
+#: assets/build/blocks/godam-player/index.js:2
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 #: assets/src/blocks/godam-player/track-uploader.js:97
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:167
 msgid "Label"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:91
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:99
 msgid "Title of track"
 msgstr ""
@@ -892,39 +975,46 @@ msgid "Source Language"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:98
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:112
 msgid "Language tag (en, fr, etc.)"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:104
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:122
 msgid "Kind"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:107
+#: assets/build/blocks/godam-player/index.js:1
 #: assets/src/blocks/godam-player/track-uploader.js:32
 msgid "Subtitles"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:108
+#: assets/build/blocks/godam-player/index.js:1
 #: assets/src/blocks/godam-player/track-uploader.js:33
 msgid "Captions"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:109
+#: assets/build/blocks/godam-player/index.js:1
 #: assets/src/blocks/godam-player/track-uploader.js:34
 msgid "Descriptions"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:110
+#: assets/build/blocks/godam-player/index.js:1
 #: assets/src/blocks/godam-player/track-uploader.js:35
 #: pages/video-editor/VideoEditor.js:280
 msgid "Chapters"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:124
-#: assets/src/blocks/godam-player/edit.js:516
-#: assets/src/blocks/godam-player/edit.js:526
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:522
+#: assets/src/blocks/godam-player/edit.js:532
 msgid "SEO Settings"
 msgstr ""
 
@@ -933,7 +1023,8 @@ msgid "Content URL"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:144
-#: assets/src/blocks/godam-player/components/VideoSEOModal.js:87
+#: assets/build/blocks/godam-player/index.js:2
+#: assets/src/blocks/godam-player/components/VideoSEOModal.js:80
 msgid "URL of the video content can be MOV, MP4, MPD. Example: https://www.example.com/video.mp4"
 msgstr ""
 
@@ -942,18 +1033,21 @@ msgid "Headline"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:154
-#: assets/src/blocks/godam-player/components/VideoSEOModal.js:94
+#: assets/build/blocks/godam-player/index.js:2
+#: assets/src/blocks/godam-player/components/VideoSEOModal.js:87
 msgid "Title of the video"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:161
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:182
 #: pages/video-editor/components/cta/ImageCTA.js:234
 msgid "Description"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:164
-#: assets/src/blocks/godam-player/components/VideoSEOModal.js:101
+#: assets/build/blocks/godam-player/index.js:2
+#: assets/src/blocks/godam-player/components/VideoSEOModal.js:94
 msgid "Description of the video"
 msgstr ""
 
@@ -974,22 +1068,26 @@ msgid "Is Family Friendly"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:206
-#: assets/src/blocks/godam-player/components/VideoSEOModal.js:130
+#: assets/build/blocks/godam-player/index.js:2
+#: assets/src/blocks/godam-player/components/VideoSEOModal.js:123
 msgid "Is the video suitable for all audiences?"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:240
+#: assets/build/blocks/godam-player/index.js:1
 #: assets/src/blocks/godam-player/edit-common-settings.js:79
 msgid "Muted"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:252
+#: assets/build/blocks/godam-player/index.js:1
 #: assets/src/blocks/godam-player/edit-common-settings.js:87
 msgid "Playback controls"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:281
-#: assets/src/blocks/godam-player/edit.js:453
+#: assets/build/blocks/godam-player/index.js:3
+#: assets/src/blocks/godam-player/edit.js:459
 msgid "Video Thumbnail"
 msgstr ""
 
@@ -1024,12 +1122,14 @@ msgstr ""
 #: inc/classes/fluentforms/fields/class-recorder-field.php:274
 #: inc/classes/gravity-forms/class-init.php:173
 #: inc/classes/wpforms/class-wpforms-field-godam-video.php:186
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:196
 msgid "Choose file selector"
 msgstr ""
 
 #: inc/classes/fluentforms/fields/class-recorder-field.php:278
 #: inc/classes/gravity-forms/class-init.php:182
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:212
 msgid "Local files"
 msgstr ""
@@ -1037,6 +1137,7 @@ msgstr ""
 #: inc/classes/fluentforms/fields/class-recorder-field.php:282
 #: inc/classes/gravity-forms/class-init.php:189
 #: inc/classes/wpforms/class-wpforms-field-godam-video.php:194
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:218
 msgid "Webcam"
 msgstr ""
@@ -1044,12 +1145,14 @@ msgstr ""
 #: inc/classes/fluentforms/fields/class-recorder-field.php:286
 #: inc/classes/gravity-forms/class-init.php:196
 #: inc/classes/wpforms/class-wpforms-field-godam-video.php:195
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:224
 msgid "Screencast"
 msgstr ""
 
 #. Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
 #: inc/classes/fluentforms/fields/class-recorder-field.php:447
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:4
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:241
 #, php-format,js-format
 msgid "Maximum allowed on this server: %s MB"
@@ -1151,7 +1254,7 @@ msgid "You need a GoDAM paid plan to use this feature"
 msgstr ""
 
 #: inc/classes/gravity-forms/class-init.php:289
-#: inc/helpers/custom-functions.php:444
+#: inc/helpers/custom-functions.php:445
 msgid "Gravity forms"
 msgstr ""
 
@@ -1192,32 +1295,33 @@ msgstr ""
 msgid "Media folder not found."
 msgstr ""
 
-#: inc/classes/post-types/class-godam-video.php:48
+#: inc/classes/post-types/class-godam-video.php:52
 msgctxt "Post Type General Name"
 msgid "GoDAM Videos"
 msgstr ""
 
-#: inc/classes/post-types/class-godam-video.php:49
+#: inc/classes/post-types/class-godam-video.php:53
 msgctxt "Post Type Singular Name"
 msgid "GoDAM Video"
 msgstr ""
 
-#: inc/classes/post-types/class-godam-video.php:50
+#: inc/classes/post-types/class-godam-video.php:54
 msgid "Video Archives"
 msgstr ""
 
-#: inc/classes/post-types/class-godam-video.php:62
+#: inc/classes/post-types/class-godam-video.php:77
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:90
 #: assets/src/blocks/godam-gallery/edit.js:110
 msgid "GoDAM Video"
 msgstr ""
 
-#: inc/classes/post-types/class-godam-video.php:63
+#: inc/classes/post-types/class-godam-video.php:78
 msgid "GoDAM Video posts for theme template support"
 msgstr ""
 
-#: inc/classes/post-types/class-godam-video.php:132
-#: inc/classes/post-types/class-godam-video.php:264
+#: inc/classes/post-types/class-godam-video.php:177
+#: inc/classes/post-types/class-godam-video.php:309
 msgid "Untitled Video"
 msgstr ""
 
@@ -1412,247 +1516,247 @@ msgstr ""
 msgid "Please make sure all fields are valid. You need to fix %1$d %2$s:<br>%3$s"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:48
+#: inc/classes/rest-api/class-media-library.php:50
 msgid "Array of attachment IDs to associate."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:53
+#: inc/classes/rest-api/class-media-library.php:55
 msgid "ID of the folder term to associate with the attachments."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:71
+#: inc/classes/rest-api/class-media-library.php:73
 msgid "Attachment ID to get EXIF data for."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:89
+#: inc/classes/rest-api/class-media-library.php:91
 msgid "Attachment ID to set video thumbnail for."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:94
+#: inc/classes/rest-api/class-media-library.php:96
 msgid "Attachment URL to set as the thumbnail."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:112
+#: inc/classes/rest-api/class-media-library.php:114
 msgid "Attachment ID to get video thumbnail for."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:130
+#: inc/classes/rest-api/class-media-library.php:132
 msgid "ID of the folder to create a ZIP file for."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:149
+#: inc/classes/rest-api/class-media-library.php:151
 msgid "Array of folder IDs to delete."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:168
+#: inc/classes/rest-api/class-media-library.php:170
 msgid "Array of folder IDs to update lock status for."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:173
+#: inc/classes/rest-api/class-media-library.php:175
 msgid "The desired lock status (true for locked, false for unlocked)."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:192
+#: inc/classes/rest-api/class-media-library.php:194
 msgid "Array of folder IDs to update bookmark status for."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:197
+#: inc/classes/rest-api/class-media-library.php:199
 msgid "The desired bookmark status (true for bookmarked, false for unbookmarked)."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:267
+#: inc/classes/rest-api/class-media-library.php:280
 msgid "Failed to remove folder from the attachments."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:274
+#: inc/classes/rest-api/class-media-library.php:287
 msgid "Attachments successfully removed from the folder."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:282
-#: inc/classes/rest-api/class-media-library.php:533
+#: inc/classes/rest-api/class-media-library.php:295
+#: inc/classes/rest-api/class-media-library.php:546
 msgid "Invalid folder term ID."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:287
+#: inc/classes/rest-api/class-media-library.php:300
 msgid "Invalid attachment ID."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:293
+#: inc/classes/rest-api/class-media-library.php:306
 msgid "Failed to associate attachments with the folder."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:300
+#: inc/classes/rest-api/class-media-library.php:313
 msgid "Attachments successfully associated with the folder."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:315
+#: inc/classes/rest-api/class-media-library.php:328
 msgid "Invalid taxonomy."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:343
+#: inc/classes/rest-api/class-media-library.php:356
 msgid "Image file not found."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:350
+#: inc/classes/rest-api/class-media-library.php:363
 msgid "No EXIF data found."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:416
-#: inc/classes/rest-api/class-media-library.php:493
+#: inc/classes/rest-api/class-media-library.php:429
+#: inc/classes/rest-api/class-media-library.php:506
 msgid "Attachment is not a video."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:422
+#: inc/classes/rest-api/class-media-library.php:435
 msgid "No thumbnails found."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:498
+#: inc/classes/rest-api/class-media-library.php:511
 msgid "Invalid thumbnail URL."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:507
+#: inc/classes/rest-api/class-media-library.php:520
 msgid "Video thumbnail successfully set."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:526
+#: inc/classes/rest-api/class-media-library.php:539
 msgid "Invalid folder ID."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:545
+#: inc/classes/rest-api/class-media-library.php:558
 msgid "ZIP file created successfully."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:563
-#: inc/classes/rest-api/class-media-library.php:682
-#: inc/classes/rest-api/class-media-library.php:740
+#: inc/classes/rest-api/class-media-library.php:576
+#: inc/classes/rest-api/class-media-library.php:695
+#: inc/classes/rest-api/class-media-library.php:753
 msgid "No folder IDs provided or invalid format."
 msgstr ""
 
 #. translators: %s is the invalid folder ID.
-#: inc/classes/rest-api/class-media-library.php:572
-#: inc/classes/rest-api/class-media-library.php:641
+#: inc/classes/rest-api/class-media-library.php:585
+#: inc/classes/rest-api/class-media-library.php:654
 #, php-format
 msgid "Invalid folder ID: %s"
 msgstr ""
 
 #. translators: %s is the invalid folder ID.
-#: inc/classes/rest-api/class-media-library.php:580
-#: inc/classes/rest-api/class-media-library.php:649
+#: inc/classes/rest-api/class-media-library.php:593
+#: inc/classes/rest-api/class-media-library.php:662
 #, php-format
 msgid "Folder ID %s not found or invalid."
 msgstr ""
 
 #. translators: %s is the invalid folder ID where delete failed.
-#: inc/classes/rest-api/class-media-library.php:588
+#: inc/classes/rest-api/class-media-library.php:601
 #, php-format
 msgid "Failed to delete folder %s"
 msgstr ""
 
 #. translators: %s is the ID of folder not found.
-#: inc/classes/rest-api/class-media-library.php:591
+#: inc/classes/rest-api/class-media-library.php:604
 #, php-format
 msgid "Folder ID %s not found during deletion attempt."
 msgstr ""
 
 #. translators: %s is the invalid folder ID.
-#: inc/classes/rest-api/class-media-library.php:594
+#: inc/classes/rest-api/class-media-library.php:607
 #, php-format
 msgid "Folder ID %s cannot be deleted (possibly uncategorized or default term)."
 msgstr ""
 
 #. translators: %d is the number of folders deleted.
-#: inc/classes/rest-api/class-media-library.php:605
+#: inc/classes/rest-api/class-media-library.php:618
 #, php-format
 msgid "%d folder(s) deleted successfully."
 msgstr ""
 
 #. translators: %1$d is the number of folders deleted, %2$s are the errors.
-#: inc/classes/rest-api/class-media-library.php:613
+#: inc/classes/rest-api/class-media-library.php:626
 #, php-format
 msgid "Error deleting some folders. Deleted: %1$d. Errors: %2$s"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:620
+#: inc/classes/rest-api/class-media-library.php:633
 msgid "No folders were deleted."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:694
+#: inc/classes/rest-api/class-media-library.php:707
 #, php-format
 msgid "%d folder(s) locked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:696
+#: inc/classes/rest-api/class-media-library.php:709
 #, php-format
 msgid "%d folder(s) unlocked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:710
+#: inc/classes/rest-api/class-media-library.php:723
 #, php-format
 msgid "Some folders locked, but issues occurred with others. Locked: %d."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:712
+#: inc/classes/rest-api/class-media-library.php:725
 #, php-format
 msgid "Some folders unlocked, but issues occurred with others. Unlocked: %d."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:723
+#: inc/classes/rest-api/class-media-library.php:736
 msgid "No folders were updated for lock status."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:752
+#: inc/classes/rest-api/class-media-library.php:765
 #, php-format
 msgid "%d folder(s) bookmarked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:754
+#: inc/classes/rest-api/class-media-library.php:767
 #, php-format
 msgid "%d folder(s) unbookmarked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:768
+#: inc/classes/rest-api/class-media-library.php:781
 #, php-format
 msgid "Some folders bookmarked, but issues occurred with others. Bookmarked: %d."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:770
+#: inc/classes/rest-api/class-media-library.php:783
 #, php-format
 msgid "Some folders unbookmarked, but issues occurred with others. Unbookmarked: %d."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:781
+#: inc/classes/rest-api/class-media-library.php:794
 msgid "No folders were updated for bookmark status."
 msgstr ""
 
 #. translators: %s is the error message from the GoDAM API request.
-#: inc/classes/rest-api/class-media-library.php:862
+#: inc/classes/rest-api/class-media-library.php:875
 #, php-format
 msgid "GoDAM API request failed: %s"
 msgstr ""
 
 #. translators: %s is the HTTP status code from the GoDAM API response.
-#: inc/classes/rest-api/class-media-library.php:877
+#: inc/classes/rest-api/class-media-library.php:890
 #, php-format
 msgid "GoDAM API returned HTTP status: %s"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:890
+#: inc/classes/rest-api/class-media-library.php:903
 msgid "Unexpected API response format or no files found."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:919
+#: inc/classes/rest-api/class-media-library.php:932
 msgid "Filtered GoDAM files by MIME type."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1079
+#: inc/classes/rest-api/class-media-library.php:1092
 msgid "A Folder ID is required"
 msgstr ""
 
@@ -1784,6 +1888,8 @@ msgid "WPForms plugin is not active."
 msgstr ""
 
 #: inc/classes/shortcodes/class-godam-video-gallery.php:297
+#: pages/media-library/components/folder-tree/FolderTree.jsx:421
+#: pages/media-library/components/search-bar/SearchBar.jsx:213
 msgid "Load More"
 msgstr ""
 
@@ -1929,16 +2035,16 @@ msgstr ""
 msgid "Oops! It looks like your API key is incorrect or has expired. Please update it and try again."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:305
+#: inc/helpers/custom-functions.php:306
 msgid "API key not found ( try refreshing the page )"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:329
+#: inc/helpers/custom-functions.php:330
 msgid "Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )"
 msgstr ""
 
 #. translators: %s: Entry ID for which transcoding failed
-#: inc/helpers/custom-functions.php:475
+#: inc/helpers/custom-functions.php:476
 #, php-format
 msgid "Transcoding failed | entry Id: %s"
 msgstr ""
@@ -1961,6 +2067,8 @@ msgstr ""
 msgid "Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles."
 msgstr ""
 
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-audio/caption.js:24
 #: assets/src/blocks/godam-audio/caption.js:30
 #: assets/src/blocks/godam-player/caption.js:24
@@ -1968,307 +2076,402 @@ msgstr ""
 msgid "Add caption"
 msgstr ""
 
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-audio/caption.js:25
 #: assets/src/blocks/godam-player/caption.js:25
 msgid "Caption text"
 msgstr ""
 
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-audio/caption.js:31
 #: assets/src/blocks/godam-player/caption.js:31
 msgid "Remove caption"
 msgstr ""
 
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-player/index.js:1
 #: assets/src/blocks/godam-audio/edit.js:62
 #: assets/src/blocks/godam-player/edit-common-settings.js:21
 msgid "Autoplay may cause usability issues for some users."
 msgstr ""
 
-#: assets/src/blocks/godam-audio/edit.js:114
-msgid "GoDAM Audio"
-msgstr ""
-
+#: assets/build/blocks/godam-audio/index.js:1
 #: assets/src/blocks/godam-audio/edit.js:153
 msgctxt "noun; Audio block parameter"
 msgid "Preload"
 msgstr ""
 
+#: assets/build/blocks/godam-audio/index.js:1
 #: assets/src/blocks/godam-audio/edit.js:188
 msgid "Audio caption text"
 msgstr ""
 
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/src/blocks/godam-audio/edit.js:114
+msgid "GoDAM Audio"
+msgstr ""
+
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:175
 msgid "Start date cannot be later than end date"
 msgstr ""
 
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:179
 msgid "End date cannot be earlier than start date"
 msgstr ""
 
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:240
 msgid "Order by"
 msgstr ""
 
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:272
 msgid "Tag"
 msgstr ""
 
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:287
 msgid "All Authors"
 msgstr ""
 
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:326
 msgid "Select Start Date"
 msgstr ""
 
+#: assets/build/blocks/godam-gallery/index.js:1
 #: assets/src/blocks/godam-gallery/edit.js:353
 msgid "Select End Date"
 msgstr ""
 
-#: assets/src/blocks/godam-player/components/VideoSEOModal.js:123
-msgid "URL of the video thumbnail. Example: https://www.example.com/thumbnail.jpg"
-msgstr ""
-
-#: assets/src/blocks/godam-player/components/VideoSEOModal.js:135
-#: assets/src/js/deactivation-feedback.js:36
-#: assets/src/js/godam-player/frontend.js:562
-#: pages/media-library/App.js:128
-#: pages/media-library/components/modal/DeleteModal.jsx:121
-#: pages/media-library/components/modal/FolderCreationModal.jsx:122
-#: pages/media-library/components/modal/RenameModal.jsx:104
-#: pages/video-editor/components/layers/LayersHeader.js:151
-#: pages/video-editor/components/layers/WoocommerceLayer.js:151
-#: pages/video-editor/components/LayerSelector.jsx:392
-msgid "Cancel"
-msgstr ""
-
-#: assets/src/blocks/godam-player/components/VideoSEOModal.js:138
-#: pages/video-editor/VideoEditor.js:351
-msgid "Save"
-msgstr ""
-
+#: assets/build/blocks/godam-player/index.js:1
 #: assets/src/blocks/godam-player/edit-common-settings.js:30
 msgid "Muted because of Autoplay."
 msgstr ""
 
-#: assets/src/blocks/godam-player/edit.js:76
-msgid "Add a heading…"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:342
-msgid "GoDAM video"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:343
-msgid "Drag and drop a video, upload, or choose from your library."
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:440
-msgid "Hover Options"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:445
-msgid "Hover Overlay"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:459
-msgid "Select Video Thumbnail"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:470
-msgid "Select"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:470
-#: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:98
-#: pages/video-editor/components/appearance/Appearance.js:442
-#: pages/video-editor/components/appearance/Appearance.js:520
-msgid "Replace"
-msgstr ""
-
-#. translators: %s: poster image URL.
-#: assets/src/blocks/godam-player/edit.js:478
-#, js-format
-msgid "The current poster image url is %s"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:481
-msgid "There is no poster image currently selected"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:498
-msgid "Customise Video"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:510
-msgid "Customise"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:532
-msgid "Aspect Ratio"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:538
-msgid "16:9 (Standard)"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:539
-msgid "Responsive"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:542
-msgid "Choose the aspect ratio for the video player."
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:548
-msgid "Overlay Blocks"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:550
-msgid "Show overlay blocks"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:553
-msgid "Display blocks on top of the video player."
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:559
-msgid "Vertical alignment"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:562
-msgid "Top"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:563
-msgid "Center"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:564
-msgid "Bottom"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:567
-msgid "Choose where to position the overlay blocks vertically."
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:571
-msgid "Time range"
-msgstr ""
-
-#. translators: %s: formatted time
-#: assets/src/blocks/godam-player/edit.js:579
-#, js-format
-msgid "Overlay will be visible for %s from the start of the video."
-msgstr ""
-
-#. translators: %s: formatted time
-#: assets/src/blocks/godam-player/edit.js:588
-#, js-format
-msgid "Video duration: %s"
-msgstr ""
-
-#: assets/src/blocks/godam-player/edit.js:633
-msgid "Video caption text"
-msgstr ""
-
 #. translators: %s: Label of the video text track e.g: "French subtitles".
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:53
 #, js-format
 msgctxt "text tracks"
 msgid "Edit %s"
 msgstr ""
 
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:57
 msgid "Edit"
 msgstr ""
 
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:82
 msgid "Edit track"
 msgstr ""
 
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:85
 msgid "File"
 msgstr ""
 
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:110
 msgid "Source language"
 msgstr ""
 
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:137
 msgid "Remove track"
 msgstr ""
 
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:146
 msgid "English"
 msgstr ""
 
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:166
 msgid "Apply"
 msgstr ""
 
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:246
 msgid "Tracks can be subtitles, captions, chapters, or descriptions. They help make your content more accessible to a wider range of users."
 msgstr ""
 
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:257
 msgid "Add tracks"
 msgstr ""
 
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:268
 msgid "Open Media Library"
 msgstr ""
 
+#: assets/build/blocks/godam-player/index.js:2
 #: assets/src/blocks/godam-player/track-uploader.js:303
 msgctxt "verb"
 msgid "Upload"
 msgstr ""
 
+#: assets/build/blocks/godam-player/index.js:2
+#: assets/src/blocks/godam-player/components/VideoSEOModal.js:116
+msgid "URL of the video thumbnail. Example: https://www.example.com/thumbnail.jpg"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:2
+#: assets/src/blocks/godam-player/components/VideoSEOModal.js:128
+#: assets/src/js/deactivation-feedback.js:36
+#: pages/media-library/App.js:124
+#: pages/media-library/components/modal/DeleteModal.jsx:121
+#: pages/media-library/components/modal/FolderCreationModal.jsx:122
+#: pages/media-library/components/modal/RenameModal.jsx:104
+#: pages/video-editor/components/layers/LayersHeader.js:151
+#: pages/video-editor/components/LayerSelector.jsx:379
+msgid "Cancel"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:2
+#: assets/src/blocks/godam-player/components/VideoSEOModal.js:131
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:129
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:114
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:442
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:140
+#: pages/video-editor/VideoEditor.js:352
+msgid "Save"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:2
+#: assets/src/blocks/godam-player/edit.js:75
+msgid "Add a heading…"
+msgstr ""
+
+#. translators: %s: Label of the video text track e.g: "French subtitles".
+#: assets/build/blocks/godam-player/index.js:3
+#: assets/src/blocks/godam-player/edit.js:340
+msgid "GoDAM video"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:3
+#: assets/src/blocks/godam-player/edit.js:341
+msgid "Drag and drop a video, upload, or choose from your library."
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:3
+#: assets/src/blocks/godam-player/edit.js:442
+msgid "Hover Option"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:3
+#: assets/src/blocks/godam-player/edit.js:443
+msgid "Choose the action to perform on video hover."
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:3
+#: assets/src/blocks/godam-player/edit.js:448
+msgid "None"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:3
+#: assets/src/blocks/godam-player/edit.js:449
+msgid "Show Player Controls"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:3
+#: assets/src/blocks/godam-player/edit.js:450
+msgid "Start Preview"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:3
+#: assets/src/blocks/godam-player/edit.js:451
+msgid "Shadow Overlay"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:3
+#: assets/src/blocks/godam-player/edit.js:465
+msgid "Select Video Thumbnail"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:3
+#: assets/src/blocks/godam-player/edit.js:476
+#: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:98
+#: pages/video-editor/components/appearance/Appearance.js:442
+#: pages/video-editor/components/appearance/Appearance.js:520
+msgid "Replace"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:3
+#: assets/src/blocks/godam-player/edit.js:476
+msgid "Select"
+msgstr ""
+
+#. translators: %s: poster image URL.
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:484
+#, js-format
+msgid "The current poster image url is %s"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:487
+msgid "There is no poster image currently selected"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:504
+msgid "Customise Video"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:516
+msgid "Customise"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:538
+msgid "Aspect Ratio"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:544
+msgid "16:9 (Standard)"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:545
+msgid "Responsive"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:548
+msgid "Choose the aspect ratio for the video player."
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:554
+msgid "Overlay Blocks"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:556
+msgid "Show overlay blocks"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:559
+msgid "Display blocks on top of the video player."
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:565
+msgid "Vertical alignment"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:568
+msgid "Top"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:569
+msgid "Center"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:570
+msgid "Bottom"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:573
+msgid "Choose where to position the overlay blocks vertically."
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:4
+#: assets/src/blocks/godam-player/edit.js:577
+msgid "Time range"
+msgstr ""
+
+#. translators: %s: formatted time
+#: assets/build/blocks/godam-player/index.js:5
+#: assets/src/blocks/godam-player/edit.js:585
+#, js-format
+msgid "Overlay will be visible for %s from the start of the video."
+msgstr ""
+
+#. translators: %s: formatted time
+#: assets/build/blocks/godam-player/index.js:6
+#: assets/src/blocks/godam-player/edit.js:594
+#, js-format
+msgid "Video duration: %s"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:6
+#: assets/src/blocks/godam-player/edit.js:638
+msgid "Video caption text"
+msgstr ""
+
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:165
 msgid "Enter label"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:168
 msgid "Enter label for the field"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:180
 msgid "Enter description"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:183
 msgid "Enter description for the field"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:237
 msgid "100 MB"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:238
 msgid "Maximum file size (in MB)"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:4
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:259
 msgid "Is recorder field required?"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:4
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:268
 msgid "Enter error message"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:4
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:272
 msgid "Enter the required error message"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:4
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:287
 msgid "Field settings"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:4
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:294
 #: pages/analytics/charts.js:261
 msgid "Untitled"
 msgstr ""
 
 #. Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:7
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:336
 #, js-format
 msgid "Maximum allowed size: %s MB"
@@ -2310,50 +2513,60 @@ msgstr ""
 msgid "File upload in progress…"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:190
+#: assets/src/js/godam-player/frontend.js:187
 msgid "Chapter"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:528
+#: assets/src/js/godam-player/frontend.js:540
+msgid "Check out this video!"
+msgstr ""
+
+#: assets/src/js/godam-player/frontend.js:547
+msgid "Facebook icon"
+msgstr ""
+
+#: assets/src/js/godam-player/frontend.js:553
+msgid "Twitter icon"
+msgstr ""
+
+#: assets/src/js/godam-player/frontend.js:559
+msgid "LinkedIn icon"
+msgstr ""
+
+#: assets/src/js/godam-player/frontend.js:565
+msgid "Reddit icon"
+msgstr ""
+
+#: assets/src/js/godam-player/frontend.js:571
+msgid "WhatsApp icon"
+msgstr ""
+
+#: assets/src/js/godam-player/frontend.js:577
+msgid "Telegram icon"
+msgstr ""
+
+#: assets/src/js/godam-player/frontend.js:584
 msgid "Share Media"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:529
-msgid "Copy the links below to share the selected media files."
-msgstr ""
-
-#: assets/src/js/godam-player/frontend.js:542
+#: assets/src/js/godam-player/frontend.js:596
 msgid "Page Link"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:546
-#: assets/src/js/godam-player/frontend.js:556
+#: assets/src/js/godam-player/frontend.js:600
+#: assets/src/js/godam-player/frontend.js:610
 msgid "copy icon"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:552
+#: assets/src/js/godam-player/frontend.js:606
 msgid "Embed"
-msgstr ""
-
-#: assets/src/js/godam-player/frontend.js:1313
-#: pages/video-editor/components/layers/WoocommerceLayer.js:288
-#: pages/video-editor/components/layers/WoocommerceLayer.js:533
-msgid "View Product"
-msgstr ""
-
-#: assets/src/js/godam-player/frontend.js:1313
-#: pages/video-editor/components/cta/ImageCTA.js:251
-#: pages/video-editor/components/layers/CTALayer.js:133
-#: pages/video-editor/components/layers/WoocommerceLayer.js:289
-#: pages/video-editor/components/layers/WoocommerceLayer.js:534
-msgid "Buy Now"
 msgstr ""
 
 #: assets/src/js/godam-player/masterSettings.js:183
 msgid "Invalid item"
 msgstr ""
 
-#: assets/src/js/media-library/index.js:47
+#: assets/src/js/media-library/index.js:48
 msgid "Search Media"
 msgstr ""
 
@@ -2363,7 +2576,6 @@ msgstr ""
 
 #: assets/src/js/media-library/utility.js:77
 #: pages/godam/components/GoDAMHeader.jsx:50
-#: pages/godam/components/GoDAMHeader.jsx:63
 msgid "Manage Media"
 msgstr ""
 
@@ -2375,88 +2587,88 @@ msgstr ""
 msgid "Use this video"
 msgstr ""
 
-#: pages/analytics/Analytics.js:219
+#: pages/analytics/Analytics.js:230
 msgid "Select Video to Perform Performance Comparison Testing"
 msgstr ""
 
-#: pages/analytics/Analytics.js:221
+#: pages/analytics/Analytics.js:232
 msgid "Use this Video"
 msgstr ""
 
-#: pages/analytics/Analytics.js:324
+#: pages/analytics/Analytics.js:335
 msgid "This media doesn't exist. "
 msgstr ""
 
-#: pages/analytics/Analytics.js:326
+#: pages/analytics/Analytics.js:337
 msgid "Go to Dashboard"
 msgstr ""
 
-#: pages/analytics/Analytics.js:350
+#: pages/analytics/Analytics.js:361
 #: pages/dashboard/Dashboard.js:224
 msgid "Upgrade to unlock the media performance report."
 msgstr ""
 
-#: pages/analytics/Analytics.js:355
+#: pages/analytics/Analytics.js:366
 #: pages/dashboard/Dashboard.js:229
 msgid "Buy Plan"
 msgstr ""
 
-#: pages/analytics/Analytics.js:361
+#: pages/analytics/Analytics.js:372
 #: pages/dashboard/Dashboard.js:235
 msgid "API in the settings"
 msgstr ""
 
-#: pages/analytics/Analytics.js:367
+#: pages/analytics/Analytics.js:378
 #: pages/dashboard/Dashboard.js:241
 msgid "An unknown error occurred. Please check your plugin settings."
 msgstr ""
 
-#: pages/analytics/Analytics.js:373
+#: pages/analytics/Analytics.js:384
 #: pages/dashboard/Dashboard.js:247
 msgid "Go to plugin settings"
 msgstr ""
 
-#: pages/analytics/Analytics.js:382
+#: pages/analytics/Analytics.js:393
 #: pages/dashboard/Dashboard.js:256
 msgid "You need to use desktop to access this feature. "
 msgstr ""
 
-#: pages/analytics/Analytics.js:391
+#: pages/analytics/Analytics.js:402
 msgid "Analytics report of "
 msgstr ""
 
-#: pages/analytics/Analytics.js:394
+#: pages/analytics/Analytics.js:405
 msgid "Analytics report"
 msgstr ""
 
-#: pages/analytics/Analytics.js:396
+#: pages/analytics/Analytics.js:407
 msgid "Back to Video Editor"
 msgstr ""
 
-#: pages/analytics/Analytics.js:410
-#: pages/analytics/Analytics.js:657
+#: pages/analytics/Analytics.js:421
+#: pages/analytics/Analytics.js:668
 #: pages/dashboard/Dashboard.js:348
 msgid "Average Engagement"
 msgstr ""
 
-#: pages/analytics/Analytics.js:411
+#: pages/analytics/Analytics.js:422
 msgid "Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)"
 msgstr ""
 
-#: pages/analytics/Analytics.js:421
-#: pages/analytics/Analytics.js:662
+#: pages/analytics/Analytics.js:432
+#: pages/analytics/Analytics.js:673
 #: pages/dashboard/Dashboard.js:281
 #: pages/dashboard/Dashboard.js:346
 msgid "Total Plays"
 msgstr ""
 
-#: pages/analytics/Analytics.js:422
+#: pages/analytics/Analytics.js:433
 #: pages/dashboard/Dashboard.js:282
 msgid "Plays represent the total number of times the video has been viewed"
 msgstr ""
 
-#: pages/analytics/Analytics.js:432
-#: pages/analytics/Analytics.js:669
+#: pages/analytics/Analytics.js:443
+#: pages/analytics/Analytics.js:680
 #: pages/analytics/helper.js:104
 #: pages/analytics/PlaybackPerformance.js:403
 #: pages/analytics/PlaybackPerformance.js:523
@@ -2465,77 +2677,77 @@ msgstr ""
 msgid "Play Rate"
 msgstr ""
 
-#: pages/analytics/Analytics.js:433
+#: pages/analytics/Analytics.js:444
 #: pages/dashboard/Dashboard.js:294
 msgid "Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads"
 msgstr ""
 
-#: pages/analytics/Analytics.js:443
+#: pages/analytics/Analytics.js:454
 #: pages/analytics/helper.js:110
 #: pages/dashboard/Dashboard.js:305
 msgid "Watch Time"
 msgstr ""
 
-#: pages/analytics/Analytics.js:444
+#: pages/analytics/Analytics.js:455
 #: pages/dashboard/Dashboard.js:306
 msgid "Total time the video has been watched, aggregated across all plays"
 msgstr ""
 
-#: pages/analytics/Analytics.js:489
+#: pages/analytics/Analytics.js:500
 msgid "Views by Post Source"
 msgstr ""
 
-#: pages/analytics/Analytics.js:500
+#: pages/analytics/Analytics.js:511
 msgid "Performance Comparison"
 msgstr ""
 
-#: pages/analytics/Analytics.js:511
+#: pages/analytics/Analytics.js:522
 msgid "In Progress"
 msgstr ""
 
-#: pages/analytics/Analytics.js:516
+#: pages/analytics/Analytics.js:527
 msgid "Initiate the test comparison to generate analytical insights."
 msgstr ""
 
-#: pages/analytics/Analytics.js:521
+#: pages/analytics/Analytics.js:532
 msgid "The test is complete! Review results to identify the best-performing video."
 msgstr ""
 
-#: pages/analytics/Analytics.js:533
+#: pages/analytics/Analytics.js:544
 msgid "Start Test "
 msgstr ""
 
-#: pages/analytics/Analytics.js:564
+#: pages/analytics/Analytics.js:575
 msgid "Test this video against others to see which performs better."
 msgstr ""
 
-#: pages/analytics/Analytics.js:573
+#: pages/analytics/Analytics.js:584
 #: pages/video-editor/components/cta/ImageCTA.js:170
 msgid "Upload or Replace CTA Image"
 msgstr ""
 
-#: pages/analytics/Analytics.js:578
+#: pages/analytics/Analytics.js:589
 msgid "Choose"
 msgstr ""
 
-#: pages/analytics/Analytics.js:647
+#: pages/analytics/Analytics.js:658
 msgid "Views"
 msgstr ""
 
-#: pages/analytics/Analytics.js:679
+#: pages/analytics/Analytics.js:690
 msgid "Page Loads"
 msgstr ""
 
-#: pages/analytics/Analytics.js:689
+#: pages/analytics/Analytics.js:700
 msgid "Play Time"
 msgstr ""
 
-#: pages/analytics/Analytics.js:697
+#: pages/analytics/Analytics.js:708
 msgid "Video Length"
 msgstr ""
 
 #: pages/analytics/charts.js:94
-#: pages/analytics/helper.js:701
+#: pages/analytics/helper.js:705
 msgid "View"
 msgstr ""
 
@@ -2666,22 +2878,22 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-#: pages/godam/App.js:33
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:72
+#: pages/godam/App.js:32
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:92
 #: pages/help/App.js:23
 msgid "General Settings"
 msgstr ""
 
-#: pages/godam/App.js:39
+#: pages/godam/App.js:38
 #: pages/help/App.js:27
 msgid "Video Settings"
 msgstr ""
 
-#: pages/godam/App.js:45
+#: pages/godam/App.js:44
 msgid "Video Player"
 msgstr ""
 
-#: pages/godam/App.js:55
+#: pages/godam/App.js:53
 msgid "Video Ads"
 msgstr ""
 
@@ -2741,63 +2953,73 @@ msgstr ""
 msgid "GoDAM Central"
 msgstr ""
 
-#: pages/godam/components/GoDAMHeader.jsx:75
+#: pages/godam/components/GoDAMHeader.jsx:74
 msgid "Upgrade plan"
 msgstr ""
 
-#: pages/godam/components/GoDAMHeader.jsx:86
+#: pages/godam/components/GoDAMHeader.jsx:85
 msgid "Get GoDAM"
 msgstr ""
 
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:51
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:51
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:52
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:54
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:59
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:58
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:60
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:66
 msgid "Settings saved successfully."
 msgstr ""
 
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:53
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:56
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:53
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:56
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:54
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:57
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:56
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:59
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:62
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:65
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:61
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:64
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:63
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:66
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:69
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:72
 msgid "Failed to save settings."
 msgstr ""
 
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:72
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:74
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:73
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:316
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:81
+#: pages/video-editor/VideoEditor.js:66
+msgid "You have unsaved changes. Are you sure you want to leave?"
+msgstr ""
+
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:93
 msgid "Video Ads Settings"
 msgstr ""
 
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:76
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:97
 msgid "Enable Global Video Ads"
 msgstr ""
 
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:77
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:98
 msgid "Enable or disable video ads on all videos across the site"
 msgstr ""
 
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:86
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:107
 msgid "Ad Tag URL"
 msgstr ""
 
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:89
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:110
 #: pages/video-editor/components/appearance/Appearance.js:671
 msgid "A VAST ad tag URL is used by a player to retrieve video and audio ads "
 msgstr ""
 
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:90
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:111
 #: pages/video-editor/components/appearance/Appearance.js:672
 msgid "Learn more."
 msgstr ""
 
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:107
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:93
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:415
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:114
-msgid "Save Settings"
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:129
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:114
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:442
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:99
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:140
+#: pages/video-editor/VideoEditor.js:352
+msgid "Saving…"
 msgstr ""
 
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:36
@@ -2835,88 +3057,96 @@ msgstr ""
 msgid "Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos"
 msgstr ""
 
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:77
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:97
 msgid "Enable folder organization in media library."
 msgstr ""
 
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:78
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:98
 msgid "Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization."
 msgstr ""
 
 #: pages/godam/components/tabs/VideoPlayer/CustomVideoPlayerCSS.jsx:42
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:401
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:427
 #: pages/video-editor/components/layers/FormLayer.js:168
 #: pages/video-editor/components/layers/PollLayer.js:84
 msgid "Custom CSS"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:317
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:343
 msgid "Player Skin"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:353
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:357
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:379
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:383
 msgid "Brand color"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:380
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:406
 msgid "The brand color will not be applied to the player skin."
 msgstr ""
 
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:386
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:412
 msgid "Select a brand color to apply to the video block. This can be overridden for individual videos by the video editor"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:404
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:430
 msgid "Any custom CSS you add will be applied to all player skins. It’s global and not tied to a specific skin style."
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:30
-msgid "Your API key is required to access the features. You can get your active API key from your "
-msgstr ""
-
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:32
-msgid "Account"
-msgstr ""
-
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:43
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:29
 msgid "Please enter a valid API key"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:54
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:40
 msgid "API key verified successfully!"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:62
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:48
 msgid "Failed to verify API key"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:76
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:63
 msgid "API key deactivated successfully!"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:84
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:71
 msgid "Failed to deactivate API key"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:94
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:81
 msgid "API Settings"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:98
-msgid "API Key"
-msgstr ""
-
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:102
-msgid "Enter your API key here"
-msgstr ""
-
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:114
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:99
 msgid "Save API Key"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:124
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:109
 msgid "Remove API Key"
+msgstr ""
+
+#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:37
+msgid "Your API key is required to access the features. You can get your active API key from your "
+msgstr ""
+
+#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:39
+msgid "Account"
+msgstr ""
+
+#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:55
+msgid "API Key"
+msgstr ""
+
+#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:59
+msgid "Enter your API key here"
+msgstr ""
+
+#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:79
+msgid "Hide password"
+msgstr ""
+
+#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:79
+msgid "Show password"
 msgstr ""
 
 #: pages/godam/components/tabs/VideoSettings/UsageData.jsx:54
@@ -2978,15 +3208,15 @@ msgstr ""
 msgid "Select the video compression quality."
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:78
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:103
 msgid "Ensure Smooth Video Playback"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:80
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:105
 msgid "Set up your video transcoding settings to optimize playback across all devices and network conditions. 🚀"
 msgstr ""
 
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:89
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:114
 msgid "Choose GoDAM plan"
 msgstr ""
 
@@ -3087,7 +3317,7 @@ msgid "Hotspots"
 msgstr ""
 
 #: pages/help/App.js:53
-#: pages/video-editor/components/SidebarLayers.js:44
+#: pages/video-editor/components/SidebarLayers.js:43
 msgid "Forms"
 msgstr ""
 
@@ -3120,23 +3350,23 @@ msgstr ""
 msgid "Search using keywords"
 msgstr ""
 
-#: pages/media-library/App.js:109
+#: pages/media-library/App.js:105
 msgid "New Folder"
 msgstr ""
 
-#: pages/media-library/App.js:128
+#: pages/media-library/App.js:124
 msgid "Bulk Select"
 msgstr ""
 
-#: pages/media-library/App.js:135
+#: pages/media-library/App.js:131
 msgid "By Name (A-Z)"
 msgstr ""
 
-#: pages/media-library/App.js:136
+#: pages/media-library/App.js:132
 msgid "By Name (Z-A)"
 msgstr ""
 
-#: pages/media-library/App.js:150
+#: pages/media-library/App.js:146
 msgid "All Media"
 msgstr ""
 
@@ -3164,126 +3394,127 @@ msgstr ""
 msgid "Invalid folder for bookmark."
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:244
+#: pages/media-library/components/context-menu/ContextMenu.jsx:245
 msgid "Bookmark removed successfully"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:245
+#: pages/media-library/components/context-menu/ContextMenu.jsx:246
 msgid "Bookmark added successfully"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:255
+#: pages/media-library/components/context-menu/ContextMenu.jsx:256
 msgid "Bookmarks added successfully"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:261
+#: pages/media-library/components/context-menu/ContextMenu.jsx:262
 msgid "Failed to update bookmark status"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:277
+#: pages/media-library/components/context-menu/ContextMenu.jsx:278
 msgid "Invalid folder to lock."
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:300
+#: pages/media-library/components/context-menu/ContextMenu.jsx:302
 msgid "Folder unlocked successfully"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:301
+#: pages/media-library/components/context-menu/ContextMenu.jsx:303
 msgid "Folder locked successfully"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:312
+#: pages/media-library/components/context-menu/ContextMenu.jsx:314
 msgid "Folders locked successfully"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:319
+#: pages/media-library/components/context-menu/ContextMenu.jsx:321
 msgid "Failed to update folder lock status"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:369
+#: pages/media-library/components/context-menu/ContextMenu.jsx:371
 msgid "New Sub-folder"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:377
+#: pages/media-library/components/context-menu/ContextMenu.jsx:379
 #: pages/media-library/components/modal/RenameModal.jsx:98
 msgid "Rename"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:385
+#: pages/media-library/components/context-menu/ContextMenu.jsx:387
 msgid "Lock Folder"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:385
+#: pages/media-library/components/context-menu/ContextMenu.jsx:387
 msgid "Unlock Folder"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:393
+#: pages/media-library/components/context-menu/ContextMenu.jsx:395
 msgid "Add Bookmark"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:393
+#: pages/media-library/components/context-menu/ContextMenu.jsx:395
 msgid "Remove Bookmark"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:401
+#: pages/media-library/components/context-menu/ContextMenu.jsx:403
 msgid "Download Zip"
 msgstr ""
 
-#: pages/media-library/components/context-menu/ContextMenu.jsx:409
+#: pages/media-library/components/context-menu/ContextMenu.jsx:411
 #: pages/media-library/components/modal/DeleteModal.jsx:114
 msgid "Delete"
 msgstr ""
 
-#: pages/media-library/components/folder-tree/BookmarkTab.jsx:37
-#: pages/media-library/components/folder-tree/BookmarkTab.jsx:57
+#: pages/media-library/components/folder-tree/BookmarkTab.jsx:43
+#: pages/media-library/components/folder-tree/BookmarkTab.jsx:63
 msgid "Bookmarks"
 msgstr ""
 
-#: pages/media-library/components/folder-tree/BookmarkTab.jsx:45
+#: pages/media-library/components/folder-tree/BookmarkTab.jsx:51
 msgid "No bookmarks yet"
 msgstr ""
 
-#: pages/media-library/components/folder-tree/FolderTree.jsx:100
+#: pages/media-library/components/folder-tree/FolderTree.jsx:119
 msgid "The parent folder is locked, so this folder cannot be moved."
 msgstr ""
 
-#: pages/media-library/components/folder-tree/FolderTree.jsx:130
+#: pages/media-library/components/folder-tree/FolderTree.jsx:149
 msgid "The destination folder is locked and cannot be modified"
 msgstr ""
 
-#: pages/media-library/components/folder-tree/FolderTree.jsx:229
+#: pages/media-library/components/folder-tree/FolderTree.jsx:252
 msgid "Currently opened folder is locked and cannot be modified"
 msgstr ""
 
-#: pages/media-library/components/folder-tree/FolderTree.jsx:240
+#: pages/media-library/components/folder-tree/FolderTree.jsx:263
 msgid "This folder is locked and cannot be modified"
 msgstr ""
 
-#: pages/media-library/components/folder-tree/FolderTree.jsx:254
+#: pages/media-library/components/folder-tree/FolderTree.jsx:277
 msgid "Items assigned successfully"
 msgstr ""
 
-#: pages/media-library/components/folder-tree/FolderTree.jsx:274
+#: pages/media-library/components/folder-tree/FolderTree.jsx:297
 msgid "Failed to assign items"
 msgstr ""
 
-#: pages/media-library/components/folder-tree/FolderTree.jsx:356
+#: pages/media-library/components/folder-tree/FolderTree.jsx:379
+#: pages/media-library/components/folder-tree/FolderTree.jsx:421
 #: pages/video-editor/components/media-grid/MediaGrid.jsx:139
 msgid "Loading…"
 msgstr ""
 
 #. translators: %s is the error message
-#: pages/media-library/components/folder-tree/FolderTree.jsx:361
+#: pages/media-library/components/folder-tree/FolderTree.jsx:384
 #, js-format
 msgid "Error: %s"
 msgstr ""
 
-#: pages/media-library/components/folder-tree/LockedTab.jsx:45
-#: pages/media-library/components/folder-tree/LockedTab.jsx:65
+#: pages/media-library/components/folder-tree/LockedTab.jsx:52
+#: pages/media-library/components/folder-tree/LockedTab.jsx:72
 msgid "Locked"
 msgstr ""
 
-#: pages/media-library/components/folder-tree/LockedTab.jsx:53
+#: pages/media-library/components/folder-tree/LockedTab.jsx:60
 msgid "No locked folders yet"
 msgstr ""
 
@@ -3384,11 +3615,31 @@ msgstr ""
 msgid "Rename folder"
 msgstr ""
 
-#: pages/video-editor/AttachmentPicker.jsx:26
+#: pages/media-library/components/search-bar/SearchBar.jsx:173
+msgid "Search folders…"
+msgstr ""
+
+#: pages/media-library/components/search-bar/SearchBar.jsx:190
+msgid "No folders found."
+msgstr ""
+
+#: pages/media-library/components/search-bar/SearchBar.jsx:220
+msgid "Searching…"
+msgstr ""
+
+#: pages/media-library/components/search-bar/SearchBar.jsx:220
+msgid "Loading more results…"
+msgstr ""
+
+#: pages/media-library/components/search-bar/SearchBar.jsx:221
+msgid "Error fetching results."
+msgstr ""
+
+#: pages/video-editor/AttachmentPicker.jsx:61
 msgid "Videos"
 msgstr ""
 
-#: pages/video-editor/AttachmentPicker.jsx:34
+#: pages/video-editor/AttachmentPicker.jsx:69
 msgid "Search videos"
 msgstr ""
 
@@ -3401,7 +3652,7 @@ msgid "Add video"
 msgstr ""
 
 #: pages/video-editor/components/ads/CustomAdSettings.js:93
-#: pages/video-editor/components/SidebarLayers.js:111
+#: pages/video-editor/components/SidebarLayers.js:110
 msgid "This ad will be overriden by Ad server's ads"
 msgstr ""
 
@@ -3413,7 +3664,6 @@ msgstr ""
 #: pages/video-editor/components/forms/WPForm.js:85
 #: pages/video-editor/components/layers/FormLayer.js:131
 #: pages/video-editor/components/layers/HotspotLayer.js:130
-#: pages/video-editor/components/layers/WoocommerceLayer.js:175
 msgid "This features is available in premium version"
 msgstr ""
 
@@ -3471,7 +3721,7 @@ msgstr ""
 
 #: pages/video-editor/components/appearance/Appearance.js:216
 #: pages/video-editor/components/appearance/Appearance.js:513
-#: pages/video-editor/VideoJSPlayer.js:289
+#: pages/video-editor/VideoJSPlayer.js:284
 msgid "Custom Play Button"
 msgstr ""
 
@@ -3624,6 +3874,11 @@ msgstr ""
 msgid "CTA Button Text"
 msgstr ""
 
+#: pages/video-editor/components/cta/ImageCTA.js:251
+#: pages/video-editor/components/layers/CTALayer.js:133
+msgid "Buy Now"
+msgstr ""
+
 #: pages/video-editor/components/cta/ImageCTA.js:257
 msgid "CTA Button Background Color"
 msgstr ""
@@ -3765,17 +4020,14 @@ msgid "HOTSPOT ICON"
 msgstr ""
 
 #: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:76
-#: pages/video-editor/components/woocommerce/FontAwesomeIconPicker.js:75
 msgid "Select Icon"
 msgstr ""
 
 #: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:92
-#: pages/video-editor/components/woocommerce/FontAwesomeIconPicker.js:91
 msgid "Search icons…"
 msgstr ""
 
 #: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:154
-#: pages/video-editor/components/woocommerce/FontAwesomeIconPicker.js:153
 msgid "Reset"
 msgstr ""
 
@@ -3835,17 +4087,14 @@ msgid "New Hotspot"
 msgstr ""
 
 #: pages/video-editor/components/layers/HotspotLayer.js:137
-#: pages/video-editor/components/layers/WoocommerceLayer.js:182
 msgid "Layer Duration (seconds)"
 msgstr ""
 
 #: pages/video-editor/components/layers/HotspotLayer.js:146
-#: pages/video-editor/components/layers/WoocommerceLayer.js:190
 msgid "Duration (in seconds) this layer will stay visible"
 msgstr ""
 
 #: pages/video-editor/components/layers/HotspotLayer.js:155
-#: pages/video-editor/components/layers/WoocommerceLayer.js:198
 msgid "Pause video on hover"
 msgstr ""
 
@@ -3866,12 +4115,10 @@ msgid "Options for Hotspot %d"
 msgstr ""
 
 #: pages/video-editor/components/layers/HotspotLayer.js:210
-#: pages/video-editor/components/layers/WoocommerceLayer.js:250
 msgid "Show Style"
 msgstr ""
 
 #: pages/video-editor/components/layers/HotspotLayer.js:229
-#: pages/video-editor/components/layers/WoocommerceLayer.js:269
 msgid "Show Icon"
 msgstr ""
 
@@ -3896,7 +4143,6 @@ msgid "Invalid origin: must use either http or https as the scheme."
 msgstr ""
 
 #: pages/video-editor/components/layers/HotspotLayer.js:295
-#: pages/video-editor/components/layers/WoocommerceLayer.js:372
 msgid "BACKGROUND COLOR"
 msgstr ""
 
@@ -3925,247 +4171,174 @@ msgstr ""
 msgid "Select poll"
 msgstr ""
 
-#: pages/video-editor/components/layers/WoocommerceLayer.js:75
-#: pages/video-editor/components/SidebarLayers.js:272
-msgid "Shop Me"
-msgstr ""
-
-#: pages/video-editor/components/layers/WoocommerceLayer.js:133
-msgid "WooCommerce Layer at"
-msgstr ""
-
-#: pages/video-editor/components/layers/WoocommerceLayer.js:142
-msgid "Delete WooCommerce Layer"
-msgstr ""
-
-#: pages/video-editor/components/layers/WoocommerceLayer.js:161
-msgid "Delete Layer"
-msgstr ""
-
-#: pages/video-editor/components/layers/WoocommerceLayer.js:204
-msgid "Player will pause the video while the layer is displayed and users hover over the product hotspots."
-msgstr ""
-
-#: pages/video-editor/components/layers/WoocommerceLayer.js:276
-msgid "Delete Product Hotspot"
-msgstr ""
-
-#: pages/video-editor/components/layers/WoocommerceLayer.js:286
-msgid "Shop Button"
-msgstr ""
-
-#: pages/video-editor/components/layers/WoocommerceLayer.js:320
-msgid "Grouped products cannot be added to the cart directly."
-msgstr ""
-
-#: pages/video-editor/components/layers/WoocommerceLayer.js:322
-msgid "External/Affiliate products cannot be added to the cart directly."
-msgstr ""
-
-#: pages/video-editor/components/layers/WoocommerceLayer.js:324
-msgid "Users will be redirected to the product page."
-msgstr ""
-
-#: pages/video-editor/components/layers/WoocommerceLayer.js:326
-msgid "By default, this adds the product to the cart. Turn ON to go to the product page instead."
-msgstr ""
-
-#: pages/video-editor/components/layers/WoocommerceLayer.js:331
-msgid "Link to Product Page"
-msgstr ""
-
-#: pages/video-editor/components/layers/WoocommerceLayer.js:408
-msgid "Add Product Hotspot"
-msgstr ""
-
-#: pages/video-editor/components/layers/WoocommerceLayer.js:544
-msgid "No product selected"
-msgstr ""
-
-#: pages/video-editor/components/LayerSelector.jsx:37
-#: pages/video-editor/components/LayerSelector.jsx:45
-#: pages/video-editor/components/SidebarLayers.js:50
+#: pages/video-editor/components/LayerSelector.jsx:36
+#: pages/video-editor/components/LayerSelector.jsx:44
+#: pages/video-editor/components/SidebarLayers.js:49
 #: pages/video-editor/VideoJSPlayer.js:31
 msgid "Gravity Forms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:38
+#: pages/video-editor/components/LayerSelector.jsx:37
 msgid "Collect user input using Gravity Forms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:45
-#: pages/video-editor/components/LayerSelector.jsx:57
-#: pages/video-editor/components/LayerSelector.jsx:69
-#: pages/video-editor/components/LayerSelector.jsx:82
-#: pages/video-editor/components/LayerSelector.jsx:95
-#: pages/video-editor/components/LayerSelector.jsx:108
-#: pages/video-editor/components/LayerSelector.jsx:121
-#: pages/video-editor/components/LayerSelector.jsx:134
+#: pages/video-editor/components/LayerSelector.jsx:44
+#: pages/video-editor/components/LayerSelector.jsx:56
+#: pages/video-editor/components/LayerSelector.jsx:68
+#: pages/video-editor/components/LayerSelector.jsx:81
+#: pages/video-editor/components/LayerSelector.jsx:94
+#: pages/video-editor/components/LayerSelector.jsx:107
+#: pages/video-editor/components/LayerSelector.jsx:120
+#: pages/video-editor/components/LayerSelector.jsx:133
 msgid "plugin is required to use Form layer"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:49
-#: pages/video-editor/components/SidebarLayers.js:56
+#: pages/video-editor/components/LayerSelector.jsx:48
+#: pages/video-editor/components/SidebarLayers.js:55
 msgid "WPForms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:50
+#: pages/video-editor/components/LayerSelector.jsx:49
 msgid "Collect user input using WPForms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:57
+#: pages/video-editor/components/LayerSelector.jsx:56
 msgid "WP Forms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:61
-#: pages/video-editor/components/LayerSelector.jsx:69
-#: pages/video-editor/components/SidebarLayers.js:62
+#: pages/video-editor/components/LayerSelector.jsx:60
+#: pages/video-editor/components/LayerSelector.jsx:68
+#: pages/video-editor/components/SidebarLayers.js:61
 msgid "Contact Form 7"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:62
+#: pages/video-editor/components/LayerSelector.jsx:61
 msgid "Collect user input using Contact Form 7"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:73
-#: pages/video-editor/components/SidebarLayers.js:68
+#: pages/video-editor/components/LayerSelector.jsx:72
+#: pages/video-editor/components/SidebarLayers.js:67
 msgid "Jetpack Forms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:74
+#: pages/video-editor/components/LayerSelector.jsx:73
 msgid "Collect user input using Jetpack Forms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:82
+#: pages/video-editor/components/LayerSelector.jsx:81
 msgid "Jetpack"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:86
-#: pages/video-editor/components/LayerSelector.jsx:95
-#: pages/video-editor/components/SidebarLayers.js:74
+#: pages/video-editor/components/LayerSelector.jsx:85
+#: pages/video-editor/components/LayerSelector.jsx:94
+#: pages/video-editor/components/SidebarLayers.js:73
 msgid "SureForms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:87
+#: pages/video-editor/components/LayerSelector.jsx:86
 msgid "Collect user input using SureForms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:99
-#: pages/video-editor/components/LayerSelector.jsx:108
-#: pages/video-editor/components/SidebarLayers.js:80
+#: pages/video-editor/components/LayerSelector.jsx:98
+#: pages/video-editor/components/LayerSelector.jsx:107
+#: pages/video-editor/components/SidebarLayers.js:79
 msgid "Forminator Forms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:100
+#: pages/video-editor/components/LayerSelector.jsx:99
 msgid "Collect user input using Forminator Forms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:112
-#: pages/video-editor/components/LayerSelector.jsx:121
-#: pages/video-editor/components/SidebarLayers.js:86
+#: pages/video-editor/components/LayerSelector.jsx:111
+#: pages/video-editor/components/LayerSelector.jsx:120
+#: pages/video-editor/components/SidebarLayers.js:85
 msgid "Fluent Forms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:113
+#: pages/video-editor/components/LayerSelector.jsx:112
 msgid "Collect user input using Fluent Forms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:125
-#: pages/video-editor/components/LayerSelector.jsx:134
-#: pages/video-editor/components/SidebarLayers.js:92
+#: pages/video-editor/components/LayerSelector.jsx:124
+#: pages/video-editor/components/LayerSelector.jsx:133
+#: pages/video-editor/components/SidebarLayers.js:91
 msgid "Everest Forms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:126
+#: pages/video-editor/components/LayerSelector.jsx:125
 msgid "Collect user input using Everest Forms"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:138
-#: pages/video-editor/components/SidebarLayers.js:37
-#: pages/video-editor/components/SidebarLayers.js:40
+#: pages/video-editor/components/LayerSelector.jsx:137
+#: pages/video-editor/components/SidebarLayers.js:36
+#: pages/video-editor/components/SidebarLayers.js:39
 #: pages/video-editor/VideoJSPlayer.js:36
 msgid "CTA"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:139
+#: pages/video-editor/components/LayerSelector.jsx:138
 msgid "Guide users toward a specific action"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:145
-#: pages/video-editor/components/SidebarLayers.js:100
-#: pages/video-editor/components/SidebarLayers.js:103
+#: pages/video-editor/components/LayerSelector.jsx:144
+#: pages/video-editor/components/SidebarLayers.js:99
+#: pages/video-editor/components/SidebarLayers.js:102
 #: pages/video-editor/VideoJSPlayer.js:41
 msgid "Hotspot"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:146
+#: pages/video-editor/components/LayerSelector.jsx:145
 msgid "Highlighting key areas with focus"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:152
-#: pages/video-editor/components/SidebarLayers.js:107
-#: pages/video-editor/components/SidebarLayers.js:110
+#: pages/video-editor/components/LayerSelector.jsx:151
+#: pages/video-editor/components/SidebarLayers.js:106
+#: pages/video-editor/components/SidebarLayers.js:109
 #: pages/video-editor/VideoJSPlayer.js:46
 msgid "Ad"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:153
+#: pages/video-editor/components/LayerSelector.jsx:152
 msgid "Redirect user to custom advertisement"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:159
-#: pages/video-editor/components/SidebarLayers.js:115
-#: pages/video-editor/components/SidebarLayers.js:118
+#: pages/video-editor/components/LayerSelector.jsx:158
+#: pages/video-editor/components/SidebarLayers.js:114
+#: pages/video-editor/components/SidebarLayers.js:117
 #: pages/video-editor/VideoJSPlayer.js:51
 msgid "Poll"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:160
+#: pages/video-editor/components/LayerSelector.jsx:159
 msgid "Gather opinions through interactive voting"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:165
+#: pages/video-editor/components/LayerSelector.jsx:164
 msgid "WP-Polls"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:165
+#: pages/video-editor/components/LayerSelector.jsx:164
 msgid "plugin is required to use Poll layer"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:169
-#: pages/video-editor/components/LayerSelector.jsx:177
-#: pages/video-editor/components/SidebarLayers.js:124
-#: pages/video-editor/components/SidebarLayers.js:127
-#: pages/video-editor/VideoJSPlayer.js:56
-msgid "WooCommerce"
-msgstr ""
-
-#: pages/video-editor/components/LayerSelector.jsx:170
-msgid "Display products using hotspots"
-msgstr ""
-
-#: pages/video-editor/components/LayerSelector.jsx:177
-msgid "plugin is required to use Buy Now layer"
-msgstr ""
-
-#: pages/video-editor/components/LayerSelector.jsx:219
+#: pages/video-editor/components/LayerSelector.jsx:206
 msgid "All"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:298
+#: pages/video-editor/components/LayerSelector.jsx:285
 #: pages/video-editor/VideoEditor.js:261
 msgid "Layers"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:327
+#: pages/video-editor/components/LayerSelector.jsx:314
 msgid "search layers…"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:371
+#: pages/video-editor/components/LayerSelector.jsx:358
 msgid "Layer"
 msgstr ""
 
-#: pages/video-editor/components/LayerSelector.jsx:400
+#: pages/video-editor/components/LayerSelector.jsx:387
 msgid "Customise Layer"
 msgstr ""
 
@@ -4215,88 +4388,64 @@ msgstr ""
 msgid "Quick actions."
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:53
+#: pages/video-editor/components/SidebarLayers.js:52
 msgid "Gravity Forms plugin is not active"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:59
+#: pages/video-editor/components/SidebarLayers.js:58
 msgid "WPForms plugin is not active"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:65
+#: pages/video-editor/components/SidebarLayers.js:64
 msgid "Contact Form 7 plugin is not active"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:71
+#: pages/video-editor/components/SidebarLayers.js:70
 msgid "Jetpack plugin is not active"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:77
+#: pages/video-editor/components/SidebarLayers.js:76
 msgid "SureForms plugin is not active"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:83
+#: pages/video-editor/components/SidebarLayers.js:82
 msgid "Forminator Forms plugin is not active"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:89
+#: pages/video-editor/components/SidebarLayers.js:88
 msgid "Fluent Forms plugin is not active"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:95
+#: pages/video-editor/components/SidebarLayers.js:94
 msgid "Everest Forms plugin is not active"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:120
+#: pages/video-editor/components/SidebarLayers.js:119
 msgid "Poll plugin is not active"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:129
-msgid "WooCommerce is not active"
-msgstr ""
-
-#: pages/video-editor/components/SidebarLayers.js:137
+#: pages/video-editor/components/SidebarLayers.js:127
 msgid "This feature is available in the premium version"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:222
+#: pages/video-editor/components/SidebarLayers.js:212
 msgid "Click me!"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:368
+#: pages/video-editor/components/SidebarLayers.js:330
 msgid "No layers added"
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:399
+#: pages/video-editor/components/SidebarLayers.js:361
 msgid "Add layer at "
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:403
+#: pages/video-editor/components/SidebarLayers.js:365
 msgid "There is already a layer at this timestamp. Please choose a different timestamp."
 msgstr ""
 
-#: pages/video-editor/components/SidebarLayers.js:409
+#: pages/video-editor/components/SidebarLayers.js:371
 msgid "Play video to add layer."
-msgstr ""
-
-#: pages/video-editor/components/woocommerce/FontAwesomeIconPicker.js:53
-msgid "PRODUCT HOTSPOT ICON"
-msgstr ""
-
-#: pages/video-editor/components/woocommerce/ProductSelector.js:110
-msgid "Select Product"
-msgstr ""
-
-#: pages/video-editor/components/woocommerce/ProductSelector.js:111
-msgid "Type in to find products…"
-msgstr ""
-
-#: pages/video-editor/components/woocommerce/ProductSelector.js:113
-msgid "Start typing at least two characters to search products by product name, category, tag, brand or ID."
-msgstr ""
-
-#: pages/video-editor/VideoEditor.js:66
-msgid "You have unsaved changes. Are you sure you want to leave?"
 msgstr ""
 
 #: pages/video-editor/VideoEditor.js:200
@@ -4305,110 +4454,127 @@ msgid_plural "Please select a form for the layers at timestamps: "
 msgstr[0] ""
 msgstr[1] ""
 
-#: pages/video-editor/VideoEditor.js:361
+#: pages/video-editor/VideoEditor.js:362
 msgid "Video changes saved successfully"
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:378
+#: pages/video-editor/VideoEditor.js:379
 msgid "You can copy the block into one of the two options:"
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:380
+#: pages/video-editor/VideoEditor.js:381
 msgid "1. Insert as a block in the Block editor."
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:382
+#: pages/video-editor/VideoEditor.js:383
 msgid "2. Insert as HTML content in the Block editor."
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:393
+#: pages/video-editor/VideoEditor.js:394
 msgid "Copy Block"
 msgstr ""
 
-#: pages/video-editor/VideoEditor.js:403
+#: pages/video-editor/VideoEditor.js:404
 msgid "Preview"
 msgstr ""
 
+#: assets/build/blocks/godam-audio/block.json
 #: assets/src/blocks/godam-audio/block.json
 msgctxt "block title"
 msgid "GoDAM Audio"
 msgstr ""
 
+#: assets/build/blocks/godam-audio/block.json
 #: assets/src/blocks/godam-audio/block.json
 msgctxt "block description"
 msgid "Embed a GoDAM audio player."
 msgstr ""
 
+#: assets/build/blocks/godam-audio/block.json
 #: assets/src/blocks/godam-audio/block.json
 msgctxt "block keyword"
 msgid "music"
 msgstr ""
 
+#: assets/build/blocks/godam-audio/block.json
 #: assets/src/blocks/godam-audio/block.json
 msgctxt "block keyword"
 msgid "sound"
 msgstr ""
 
+#: assets/build/blocks/godam-audio/block.json
 #: assets/src/blocks/godam-audio/block.json
 msgctxt "block keyword"
 msgid "podcast"
 msgstr ""
 
+#: assets/build/blocks/godam-audio/block.json
 #: assets/src/blocks/godam-audio/block.json
 msgctxt "block keyword"
 msgid "recording"
 msgstr ""
 
+#: assets/build/blocks/godam-gallery/block.json
 #: assets/src/blocks/godam-gallery/block.json
 msgctxt "block title"
 msgid "GoDAM Video Gallery"
 msgstr ""
 
+#: assets/build/blocks/godam-gallery/block.json
 #: assets/src/blocks/godam-gallery/block.json
 msgctxt "block description"
 msgid "Display a grid of GoDAM videos."
 msgstr ""
 
+#: assets/build/blocks/godam-gallery/block.json
 #: assets/src/blocks/godam-gallery/block.json
 msgctxt "block keyword"
 msgid "video"
 msgstr ""
 
+#: assets/build/blocks/godam-gallery/block.json
 #: assets/src/blocks/godam-gallery/block.json
 msgctxt "block keyword"
 msgid "gallery"
 msgstr ""
 
+#: assets/build/blocks/godam-gallery/block.json
 #: assets/src/blocks/godam-gallery/block.json
 msgctxt "block keyword"
 msgid "grid"
 msgstr ""
 
+#: assets/build/blocks/godam-gallery/block.json
 #: assets/src/blocks/godam-gallery/block.json
 msgctxt "block keyword"
 msgid "videos"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/block.json
 #: assets/src/blocks/sureforms/blocks/recorder/block.json
 msgctxt "block title"
 msgid "Godam Recorder"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/block.json
 #: assets/src/blocks/sureforms/blocks/recorder/block.json
 msgctxt "block description"
 msgid "Recorder field for sureforms"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/block.json
 #: assets/src/blocks/sureforms/blocks/recorder/block.json
 msgctxt "block keyword"
 msgid "sureforms"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/block.json
 #: assets/src/blocks/sureforms/blocks/recorder/block.json
 msgctxt "block keyword"
 msgid "godam"
 msgstr ""
 
+#: assets/build/blocks/sureforms/blocks/recorder/block.json
 #: assets/src/blocks/sureforms/blocks/recorder/block.json
 msgctxt "block keyword"
 msgid "recorder"

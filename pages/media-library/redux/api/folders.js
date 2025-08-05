@@ -33,13 +33,25 @@ export const folderApi = createApi( {
 			} ),
 		} ),
 		getFolders: builder.query( {
-			query: () => ( {
-				url: 'wp/v2/media-folder',
-				params: {
+			query: ( options = {} ) => {
+				const isSpecial = options.bookmark || options.locked;
+
+				const params = {
 					_fields: 'id,name,parent,attachmentCount,meta',
-					per_page: 100, // Note: 100 is the max per page. Implement pagination if total folders > 100
-				},
-			} ),
+					per_page: isSpecial ? 100 : 10,
+					...( options.bookmark ? { bookmark: true } : {} ),
+					...( options.locked ? { locked: true } : {} ),
+					...( options.page ? { page: options.page } : {} ),
+				};
+
+				return {
+					url: 'godam/v1/media-library/media-folders',
+					params,
+					headers: {
+						'X-WP-Nonce': window.MediaLibrary.nonce,
+					},
+				};
+			},
 		} ),
 		createFolder: builder.mutation( {
 			query: ( data ) => ( {

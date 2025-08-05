@@ -21,7 +21,7 @@ class Video_Permalinks {
 	/**
 	 * Option slug for video post settings.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.1
 	 * @var string
 	 */
 	const OPTION_SLUG = 'rtgodam_video_post_settings';
@@ -29,7 +29,7 @@ class Video_Permalinks {
 	/**
 	 * Default video slug.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.1
 	 * @var string
 	 */
 	const DEFAULT_VIDEO_SLUG = 'videos';
@@ -162,7 +162,7 @@ class Video_Permalinks {
 	/**
 	 * Video archive visibility field.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.1
 	 * 
 	 * @return void
 	 */
@@ -186,7 +186,7 @@ class Video_Permalinks {
 	/**
 	 * Video single page visibility field.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.3.1
 	 *
 	 * @return void
 	 */
@@ -251,7 +251,8 @@ class Video_Permalinks {
 			
 			// Handle video slug.
 			if ( isset( $_POST[ self::OPTION_SLUG ]['video_slug'] ) ) {
-				$new_settings['video_slug'] = sanitize_title( wp_unslash( $_POST[ self::OPTION_SLUG ]['video_slug'] ) );
+				$sanitized_slug             = sanitize_title( wp_unslash( $_POST[ self::OPTION_SLUG ]['video_slug'] ) );
+				$new_settings['video_slug'] = empty( $sanitized_slug ) ? self::DEFAULT_VIDEO_SLUG : $sanitized_slug;
 			} else {
 				$new_settings['video_slug'] = isset( $current_settings['video_slug'] ) ? $current_settings['video_slug'] : self::DEFAULT_VIDEO_SLUG;
 			}
@@ -278,7 +279,7 @@ class Video_Permalinks {
 	/**
 	 * Sanitize video post settings.
 	 * 
-	 * @since n.e.x.t
+	 * @since 1.3.1
 	 *
 	 * @param array $input The input array to sanitize.
 	 * 
@@ -289,7 +290,8 @@ class Video_Permalinks {
 		
 		// Sanitize video slug.
 		if ( isset( $input['video_slug'] ) ) {
-			$sanitized['video_slug'] = sanitize_title( $input['video_slug'] );
+			$sanitized_slug          = sanitize_title( $input['video_slug'] );
+			$sanitized['video_slug'] = empty( $sanitized_slug ) ? self::DEFAULT_VIDEO_SLUG : $sanitized_slug;
 		} else {
 			$sanitized['video_slug'] = self::DEFAULT_VIDEO_SLUG;
 		}

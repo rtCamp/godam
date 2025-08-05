@@ -53,6 +53,8 @@ import {
 	loadChapters,
 } from './chapters.js'; // Adjust path as needed
 
+import HoverManager from './managers/hoverManager.js';
+
 library.add( fas );
 dom.watch();
 
@@ -141,6 +143,8 @@ function GODAMPlayer( videoRef = null ) {
 					player.aspectRatio( '16:9' );
 				}
 			}
+			const hoverManager = new HoverManager( player, video );
+			player.hoverManager = hoverManager;
 
 			const captionsButton = player.el().querySelector( '.vjs-subs-caps-button' );
 			const durationElement = player.el().querySelector( '.vjs-duration' );
@@ -298,6 +302,7 @@ function GODAMPlayer( videoRef = null ) {
 				if ( player.isFullscreen() ) {
 					controlBarEl.style.setProperty( 'position', 'absolute' );
 					controlBarEl.style.setProperty( 'margin', '0 auto' );
+					controlBarEl.style.setProperty( 'bottom', '0', 'important' );
 				} else {
 					controlBarEl.style.removeProperty( 'position' );
 					controlBarEl.style.removeProperty( 'margin' );
@@ -1400,6 +1405,19 @@ function GODAMPlayer( videoRef = null ) {
 					return;
 				}
 
+				// Controls to fetch from active player.
+				const videoControls = activeVideo.dataset.controls || '{}';
+				let parseVideoControls = {};
+
+				try {
+					parseVideoControls = JSON.parse( videoControls );
+				} catch ( e ) {
+					parseVideoControls = {};
+				}
+
+				// Get skip button time.
+				const skipButtonTime = parseVideoControls?.controlBar?.skipButtons?.forward ?? 5;
+
 				const key = event.key.toLowerCase();
 				switch ( key ) {
 					case 'f':
@@ -1415,19 +1433,19 @@ function GODAMPlayer( videoRef = null ) {
 					case 'arrowleft':
 						// Seek backward 5 seconds
 						event.preventDefault();
-						activePlayer.currentTime( Math.max( 0, activePlayer.currentTime() - 5 ) );
+						activePlayer.currentTime( Math.max( 0, activePlayer.currentTime() - skipButtonTime ) );
 
 						// Show a visual indicator for seeking backward
-						showIndicator( activePlayer.el(), 'backward', '<i class="fa-solid fa-backward"></i> 5s' );
+						showIndicator( activePlayer.el(), 'backward', `<i class="fa-solid fa-backward"></i> ${ skipButtonTime }s` );
 						break;
 
 					case 'arrowright':
 						// Seek forward 5 seconds
 						event.preventDefault();
-						activePlayer.currentTime( activePlayer.currentTime() + 5 );
+						activePlayer.currentTime( activePlayer.currentTime() + skipButtonTime );
 
 						// Show a visual indicator for seeking forward
-						showIndicator( activePlayer.el(), 'forward', '5s <i class="fa-solid fa-forward"></i>' );
+						showIndicator( activePlayer.el(), 'forward', `${ skipButtonTime }s <i class="fa-solid fa-forward"></i>` );
 						break;
 
 					case ' ':

@@ -33,7 +33,7 @@ $loop          = ! empty( $attributes['loop'] );
 $muted         = ! empty( $attributes['muted'] );
 $poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
 $preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$hover_overlay = isset( $attributes['hoverOverlay'] ) ? $attributes['hoverOverlay'] : false;
+$hover_select  = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
 $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
@@ -93,11 +93,14 @@ $poster_image = ! empty( $poster_image ) ? $poster_image : '';
 $job_id = '';
 
 $sources = array();
+
+if ( empty( $attachment_id ) ) {
+	$job_id = ! empty( $attributes['cmmId'] ) ? sanitize_text_field( $attributes['cmmId'] ) : '';
+}
+
 if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$sources = $attributes['sources'];
-} elseif ( empty( $attachment_id ) &&
-	( ! empty( $src || ! empty( $transcoded_url ) ) )
-) {
+} elseif ( empty( $attachment_id ) && ! ( empty( $src ) && empty( $transcoded_url ) ) ) {
 	$sources = array();
 	if ( ! empty( $transcoded_url ) ) {
 		$sources[] = array(
@@ -134,11 +137,41 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 		);
 	}
 
+	// Only add video source if it's not empty.
+	if ( ! empty( $video_src ) ) {
+		$sources[] = array(
+			'src'  => $video_src,
+			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
+		);
+	}
+
+	if ( ! empty( $hls_transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $hls_transcoded_url,
+			'type' => 'application/x-mpegURL',
+		);
+	}
+
 	$sources[] = array(
 		'src'  => $video_src,
 		'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
 	);
 }
+
+// Check if no media is selected - return early to prevent broken output.
+// Also check if sources array contains only empty sources.
+$has_valid_sources = false;
+foreach ( $sources as $source ) {
+	if ( ! empty( $source['src'] ) ) {
+		$has_valid_sources = true;
+		break;
+	}
+}
+
+if ( empty( $attachment_id ) && empty( $src ) && empty( $transcoded_url ) && ! $has_valid_sources ) {
+	return;
+}
+
 $easydam_control_bar_color = 'initial'; // Default color.
 
 $godam_settings         = get_option( 'rtgodam-settings', array() );
@@ -283,7 +316,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 			<?php endif; ?>
 
 			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin" >
-				<?php if ( isset( $hover_overlay ) && $hover_overlay ) : ?>
+				<?php if ( isset( $hover_select ) && 'shadow-overlay' === $hover_select ) : ?>
 					<div class="godam-player-overlay"></div>
 				<?php endif; ?>
 				<div class="animate-play-btn">
@@ -300,6 +333,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 					data-controls="<?php echo esc_attr( $video_setup ); ?>"
 					data-job_id="<?php echo esc_attr( $job_id ); ?>"
 					data-global_ads_settings="<?php echo esc_attr( $ads_settings ); ?>"
+					data-hover-select="<?php echo esc_attr( $hover_select ); ?>"
 				>
 					<?php
 					foreach ( $sources as $source ) :

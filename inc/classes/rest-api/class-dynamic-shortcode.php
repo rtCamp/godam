@@ -97,7 +97,9 @@ class Dynamic_Shortcode extends Base {
 			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
 		);
 
-		$sources_json = wp_json_encode( $sources );
+		// Convert JSON to use custom placeholders instead of square brackets.
+		$sources_json              = wp_json_encode( $sources );
+		$sources_with_placeholders = str_replace( array( '[', ']' ), array( '__rtgob__', '__rtgcb__' ), $sources_json );
 
 		// Add action before shortcode rendering.
 		do_action( 'rtgodam_shortcode_before_render', $id );
@@ -111,7 +113,7 @@ class Dynamic_Shortcode extends Base {
 		$video_date  = apply_filters( 'rtgodam_shortcode_video_date', $video_date, $id );
 
 		ob_start();
-		$shortcode = "[godam_video id='{$id}' sources='{$sources_json}']";
+		$shortcode = "[godam_video id='{$id}' sources='{$sources_with_placeholders}']";
 
 		// Add filter for shortcode.
 		$shortcode = apply_filters( 'rtgodam_shortcode_output', $shortcode, $id );

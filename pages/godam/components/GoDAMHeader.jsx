@@ -13,7 +13,7 @@ import godamLogo from '../../../assets/src/images/godam-logo.png';
 const GodamHeader = () => {
 	const helpLink = window.godamRestRoute?.apiBase + '/helpdesk';
 	const upgradePlanLink = window.godamRestRoute?.apiBase + '/subscription/plans';
-	const pricingLink = 'https://godam.io/pricing';
+	const pricingLink = `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=header`;
 	const godamMediaLink = window.godamRestRoute?.apiBase + '/web/media-library';
 
 	return (
