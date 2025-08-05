@@ -1,4 +1,4 @@
-export const d3CountryToIso = {
+const d3CountryToIso = {
 	Afghanistan: 'af',
 	Albania: 'al',
 	Algeria: 'dz',
@@ -156,4 +156,8 @@ export const d3CountryToIso = {
 	Yemen: 'ye',
 	Zambia: 'zm',
 	Zimbabwe: 'zw',
+};
+
+export {
+	d3CountryToIso,
 };
