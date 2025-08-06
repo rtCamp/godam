@@ -122,6 +122,25 @@ class Engagement extends Base {
 					),
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/guest-user-login',
+				'args'      => array(
+					array(
+						'methods'             => WP_REST_Server::CREATABLE,
+						'callback'            => array( $this, 'guest_user_login' ),
+						'permission_callback' => '__return_true',
+						'args'                => array(
+							'guest_user_email' => array(
+								'required'          => true,
+								'type'              => 'string',
+								'description'       => __( 'The guest user email', 'godam' ),
+								'sanitize_callback' => 'sanitize_email',
+							),
+						),
+					),
+				),
+			),
 		);
 	}
 
@@ -579,6 +598,75 @@ class Engagement extends Base {
 		return array(
 			'date' => $date_str,
 			'time' => $time,
+		);
+	}
+
+	/**
+	 * Logs in a guest user.
+	 *
+	 * The function takes a guest user email as input and logs them in by setting a cookie.
+	 * The cookie is set for an hour and contains the guest user's email and name. If the
+	 * guest user name is empty, it defaults to 'Guest'.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response
+	 */
+	public function guest_user_login( $request ) {
+		$guest_user_email = $request->get_param( 'guest_user_email' );
+
+		if ( empty( $guest_user_email ) || ! is_email( $guest_user_email ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Invalid guest user email.', 'godam' ),
+					'errorType' => 'invalid_guest_email',
+				),
+				200
+			);
+		}
+
+		setcookie( 'guest_user', sanitize_email( $guest_user_email ), time() + 3600, COOKIEPATH, COOKIE_DOMAIN );
+
+		return new WP_REST_Response(
+			array(
+				'status'  => 'success',
+				'message' => __( 'Guest user email saved successfully.', 'godam' ),
+			),
+			200
+		);
+	}
+
+	/**
+	 * Retrieves user data for the current session.
+	 *
+	 * This function checks if a user is logged in and returns their email and display name.
+	 * If no user is logged in, it checks for a guest user cookie and returns the guest user's
+	 * email and constructed name. If neither is available, it defaults to a bot email and
+	 * guest name.
+	 *
+	 * @return array An associative array containing 'email' and 'name' of the user or guest.
+	 */
+	public static function get_user_data() {
+		if ( is_user_logged_in() ) {
+			$current_user = wp_get_current_user();
+			return array(
+				'email' => $current_user->user_email,
+				'name'  => $current_user->display_name,
+			);
+		}
+
+		if ( isset( $_COOKIE['guest_user'] ) ) {
+			$guest_user_email = sanitize_email( wp_unslash( $_COOKIE['guest_user'] ) );
+			$guest_user_name  = explode( '@', $guest_user_email )[0];
+			return array(
+				'email' => $guest_user_email,
+				'name'  => ! empty( $guest_user_name ) ? $guest_user_name : __( 'Guest', 'godam' ),
+			);
+		}
+
+		return array(
+			'email' => 'bot@example.com',
+			'name'  => __( 'Guest', 'godam' ),
 		);
 	}
 }

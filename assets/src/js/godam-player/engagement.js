@@ -700,6 +700,7 @@ function CommentBox( props ) {
 	const [ expendComment, setExpendComment ] = useState( false );
 	const { isUserLoggedIn } = window.godamData;
 	const [ showGuestForm, setShowGuestForm ] = useState( false );
+	const [ guestEmail, setGuestEmail ] = useState( '' );
 
 	useEffect( () => {
 		setCommentsData( comments );
@@ -742,9 +743,22 @@ function CommentBox( props ) {
 		}, 1000 );
 	}
 
-	function handleGuestLogin() {
+	async function handleGuestLogin() {
 		if ( showGuestForm ) {
-			console.log( 'Guest email saved.' );
+			const queryParams = {
+				guest_user_email: guestEmail,
+			};
+			apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
+			const result = await apiFetch( {
+				path: addQueryArgs( '/godam/v1/engagement/guest-user-login' ),
+				method: 'POST',
+				data: queryParams,
+			} );
+
+			if ( 'error' === result.status ) {
+				memoizedStoreObj.dispatch.errorHappened( result.message );
+				return null;
+			}
 		} else {
 			setShowGuestForm( true );
 		}
@@ -801,7 +815,12 @@ function CommentBox( props ) {
 											showGuestForm && (
 												<div className={ baseClass + '-leave-comment-login-guest-form' }>
 													<label htmlFor={ baseClass + '-leave-comment-login-guest-email' }>{ __( 'Email', 'godam' ) }</label>
-													<input type="email" id={ baseClass + '-leave-comment-login-guest-email' } placeholder={ __( 'Enter your email', 'godam' ) } />
+													<input
+														type="email"
+														id={ baseClass + '-leave-comment-login-guest-email' }
+														placeholder={ __( 'Enter your email', 'godam' ) }
+														value={ guestEmail }
+														onChange={ ( e ) => setGuestEmail( e.target.value ) } />
 												</div>
 											)
 										}
