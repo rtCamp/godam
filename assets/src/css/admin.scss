@@ -1,4 +1,6 @@
 
+@use './variables';
+
 @import url(https://vjs.zencdn.net/8.3.0/video-js.css);
 @import "_common"; // stylelint-disable-line scss/load-no-partial-leading-underscore
 
@@ -11,6 +13,9 @@ $LIGHT_BLUE: #2196F3;
 	--wp-components-color-accent: #ab3a6c;
 }
 
+#wpbody-content {
+	container: wpBodyContent / inline-size;
+}
 
 /*
 Write your Sass code here for admin.
@@ -593,12 +598,17 @@ $media-frame-width: calc(300px + 2 * 24px);
 	}
 }
 
-// Video Editor and Media Library's offer banner styles
+/*
+Video Editor and Media Library's Annual plan offer banner styles
+
+@todo: Remove container queries when the media-library static sidebar is converted to an overlay sidebar
+to ensure proper responsiveness and avoid layout issues.
+*/
 .annual-plan-offer-banner {
 	border: none;
 	margin: 0;
 	margin-left: -2rem;
-	background: linear-gradient(90deg, #AB3A6C, #E6533A);
+	background: variables.$godam-primary-gradient;
 	display: flex;
 	justify-content: center;
 	position: relative;
@@ -619,19 +629,27 @@ $media-frame-width: calc(300px + 2 * 24px);
 		z-index: 1;
 		padding: 24px;
 		width: 100%;
-		max-width: 950px;
+		max-width: 1024px;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		gap: 2rem;
 		margin-right: 30px;
 
-		@media (max-width: 840px) {
+		@media (max-width: 782px) {
 			flex-direction: column;
 			align-items: flex-start;
-			gap: 1.5rem;
+			gap: 1rem;
+			padding: 18px;
 			padding-left: 0;
-			padding-right: 24px;
+		}
+
+		@container wpBodyContent (max-width: 640px) {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 1rem;
+			padding: 18px;
+			padding-left: 0;
 		}
 	}
 
@@ -641,21 +659,40 @@ $media-frame-width: calc(300px + 2 * 24px);
 		color: #fff;
 		font-weight: 700;
 		line-height: 1.2;
+		letter-spacing: 0.5px;
+
+		@media (max-width: 782px) {
+			font-size: 1.25rem;
+		}
+
+		@container wpBodyContent (max-width: 640px) {
+			font-size: 1.25rem;
+		}
 	}
 
 	&__description {
-		margin: 0;
-		padding: 0;
-		font-size: 0.875rem;
-		color: #fff;
+		margin: 10px 0 0 !important;
+		padding: 0 !important;
+		font-size: 1rem;
+		color: #e3e3e3;
 		line-height: 1.2;
-		margin-top: 10px;
+		font-weight: 200;
+		letter-spacing: 0.3px;
+
+		@media (max-width: 782px) {
+			font-size: 0.875rem;
+			margin-top: 8px !important;
+		}
+
+		@container wpBodyContent (max-width: 640px) {
+			font-size: 0.875rem;
+			margin-top: 8px !important;
+		}
 	}
 
 	&__cta-container {
 		display: flex;
 		align-items: center;
-		margin-top: 0;
 	}
 
 	&__cta {
@@ -666,6 +703,18 @@ $media-frame-width: calc(300px + 2 * 24px);
 		font-weight: 600;
 		text-decoration: none;
 		white-space: nowrap;
+
+		@media (max-width: 782px) {
+			padding: 6px 12px;
+		}
+
+		@container wpBodyContent (max-width: 640px) {
+			padding: 6px 12px;
+		}
+
+		&:hover {
+			color: #AB3A6C;
+		}
 	}
 
 	&__dismiss {
