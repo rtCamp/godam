@@ -119,8 +119,15 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$hls_transcoded_url = $attachment_id ? rtgodam_get_hls_transcoded_url_from_attachment( $attachment_id ) : '';
 	$video_src          = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
 	$video_src_type     = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
-	$job_id             = $attachment_id && ! empty( $transcoded_url ) ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
+	$job_id             = '';
 
+	if ( $attachment_id && ! empty( $transcoded_url ) ) {
+		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		if ( empty( $job_id ) ) {
+			$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		}
+	}
 	$sources = array();
 
 	if ( ! empty( $transcoded_url ) ) {
