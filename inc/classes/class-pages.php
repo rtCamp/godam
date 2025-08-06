@@ -248,7 +248,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->settings_page_id, $this->tools_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->settings_page_id ), true ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
