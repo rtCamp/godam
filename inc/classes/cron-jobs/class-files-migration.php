@@ -610,7 +610,7 @@ class Files_Migration {
 			return '';
 		}
 
-		$cdn_upload_url = $plugin->get_godam_cdn_url();
+		$cdn_upload_url = $plugin->get_remote_url();
 		return sprintf(
 			'wp search-replace "%s" "%s" --skip-columns=guid --skip-plugins --skip-themes --dry-run',
 			esc_url( $original_upload_dir['baseurl'] ),

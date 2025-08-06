@@ -159,7 +159,7 @@ class Plugin {
 	 *
 	 * @return string
 	 */
-	public function get_godam_cdn_url() {
+	public function get_remote_url() {
 		if ( ! empty( $this->cdn_host ) ) {
 			return $this->cdn_host;
 		}
@@ -183,8 +183,8 @@ class Plugin {
 		$godam_path      = 'godam://wp-content/uploads';
 		$dirs['path']    = str_replace( path_join( WP_CONTENT_DIR, 'uploads' ), $godam_path, $dirs['path'] );
 		$dirs['basedir'] = str_replace( path_join( WP_CONTENT_DIR, 'uploads' ), $godam_path, $dirs['basedir'] );
-		$dirs['url']     = str_replace( $godam_path, $this->get_godam_cdn_url(), $dirs['path'] );
-		$dirs['baseurl'] = str_replace( $godam_path, $this->get_godam_cdn_url(), $dirs['basedir'] );
+		$dirs['url']     = str_replace( $godam_path, $this->get_remote_url(), $dirs['path'] );
+		$dirs['baseurl'] = str_replace( $godam_path, $this->get_remote_url(), $dirs['basedir'] );
 
 		return $dirs;
 	}
@@ -349,7 +349,7 @@ class Plugin {
 	 */
 	public function wp_filter_resource_hints( $hints, $relation_type ) {
 		if ( 'dns-prefetch' === $relation_type ) {
-			$hints[] = $this->get_godam_cdn_url();
+			$hints[] = $this->get_remote_url();
 		}
 
 		return $hints;
