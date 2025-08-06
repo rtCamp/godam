@@ -38,15 +38,19 @@ function initTogglePostboxes() {
  * Initialize particle effect background
  */
 function initParticleEffect() {
-	const canvas = document.getElementById( 'particle-canvas' );
+	const canvas = document.getElementById( 'godam-particle-canvas' );
+
+	// Bail out if the canvas is not found
 	if ( ! canvas ) {
 		return;
 	}
 
+	// Initialize canvas and context
 	const ctx = canvas.getContext( '2d' );
 	let width, height;
 	let particles = [];
 
+	// Particle class
 	class Particle {
 		constructor() {
 			this.x = Math.random() * width;
@@ -56,6 +60,7 @@ function initParticleEffect() {
 			this.vy = ( Math.random() * 0.5 ) - 0.25;
 		}
 
+		// Draw the particle
 		draw() {
 			ctx.beginPath();
 			ctx.arc( this.x, this.y, this.radius, 0, Math.PI * 2 );
@@ -63,6 +68,7 @@ function initParticleEffect() {
 			ctx.fill();
 		}
 
+		// Update the particle position
 		update() {
 			this.x += this.vx;
 			this.y += this.vy;
@@ -76,15 +82,18 @@ function initParticleEffect() {
 		}
 	}
 
+	// Resize canvas to fit the window
 	function resizeCanvas() {
 		width = canvas.width = window.innerWidth;
 		height = canvas.height = document.querySelector( '.annual-plan-offer-banner' )?.offsetHeight || 300;
 	}
 
+	// Initialize particles
 	function initParticles( count ) {
 		particles = Array.from( { length: count }, () => new Particle() );
 	}
 
+	// Animate particles
 	function animateParticles() {
 		ctx.clearRect( 0, 0, width, height );
 		particles.forEach( ( p ) => {

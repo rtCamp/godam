@@ -35,7 +35,7 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 		<>
 			{ showOfferBanner && ! window?.userData?.validApiKey && (
 				<div className="notice annual-plan-offer-banner px-10">
-					<canvas id="particle-canvas"></canvas>
+					<canvas id="godam-particle-canvas"></canvas>
 					<div className="annual-plan-offer-banner__content">
 						<div className="annual-plan-offer-banner__message">
 							<h3 className="annual-plan-offer-banner__title">

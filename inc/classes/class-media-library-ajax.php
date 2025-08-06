@@ -542,7 +542,7 @@ class Media_Library_Ajax {
 
 			$banner_html = sprintf(
 				'<div class="notice annual-plan-offer-banner px-10">
-					<canvas id="particle-canvas"></canvas>
+					<canvas id="godam-particle-canvas"></canvas>
 					<div class="annual-plan-offer-banner__content">
 						<div class="annual-plan-offer-banner__message">
 							<h3 class="annual-plan-offer-banner__title">%1$s</h3>
@@ -594,7 +594,6 @@ class Media_Library_Ajax {
 					),
 				)
 			);
-
 		}
 	}
 }
