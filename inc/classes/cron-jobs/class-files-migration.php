@@ -13,7 +13,6 @@ namespace RTGODAM\Inc\Cron_Jobs;
 use RTGODAM\Inc\Filesystem\Plugin;
 use RTGODAM\Inc\Traits\Singleton;
 
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -273,6 +272,7 @@ class Files_Migration {
 
 			if ( file_exists( $destination ) ) {
 				self::debug( 'File with same name exists on CDN!' );
+				self::maybe_transcode( $file_path );
 				$migrated_files[] = $file_path;
 				continue;
 			}
@@ -295,6 +295,9 @@ class Files_Migration {
 				}
 				continue;
 			}
+
+			// Transcode the file if necessary.
+			self::maybe_transcode( $file_path );
 
 			self::debug( 'Successfully uploaded: ' . $file_path );
 			$migrated_files[] = $file_path;
@@ -411,6 +414,47 @@ class Files_Migration {
 			),
 			'cron_scheduled' => self::varify_cron(),
 		);
+	}
+
+	/**
+	 * Maybe transcode the file if necessary.
+	 *
+	 * This function checks if the file needs to be transcoded and performs the transcoding
+	 * if the RTGODAM_Transcoder_Handler class is available and the metadata is present.
+	 *
+	 * @param string $file_path The path of the file to be transcoded.
+	 */
+	public static function maybe_transcode( $file_path ) {
+		// Get the attachment ID from the file path.
+		if ( function_exists( 'wpcom_vip_attachment_url_to_postid' ) ) {
+			$attachment_id = wpcom_vip_attachment_url_to_postid( $file_path );
+		} else {
+			// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.attachment_url_to_postid_attachment_url_to_postid -- Using WordPress core function as fallback.
+			$attachment_id = attachment_url_to_postid( $file_path );
+		}
+
+		// If no attachment ID is found, exit the function.
+		if ( ! $attachment_id ) {
+			self::debug( 'No attachment found for file: ' . $file_path );
+			return;
+		}
+
+		// Get the attachment post object.
+		$attachment = get_post( $attachment_id );
+
+		if ( ! $attachment ) {
+			self::debug( 'No attachment post found for ID: ' . $attachment_id );
+			return;
+		}
+
+		// Get the metadata for the attachment.
+		$metadata = wp_get_attachment_metadata( $attachment_id );
+
+		// Transcode the file if necessary.
+		if ( class_exists( '\RTGODAM_Transcoder_Handler' ) && ! empty( $metadata ) ) {
+			$transcoder_handler = new \RTGODAM_Transcoder_Handler();
+			$transcoder_handler->wp_media_transcoding( $metadata, $attachment_id );
+		}
 	}
 
 	/**
