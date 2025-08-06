@@ -1,5 +1,9 @@
 # Changelog #
 
+## v1.3.2 (August 6, 2025) ##
+
+- Fix: Resolved PHP Warning on admin pages
+
 ## v1.3.1 (August 4, 2025) ##
 
 - Tweak: Added settings for CPT visibility in permalinks
