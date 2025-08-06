@@ -45,7 +45,6 @@
 			border-radius: 50%;
 			color: #fff;
 			font-size: 16px;
-			line-height: 24px;
 			text-align: center;
 			transition: transform 0.2s ease;
 			z-index: 10;
@@ -71,7 +70,7 @@
 }
 
 .ab-test-action {
-	background: #007BFF;
+	background: linear-gradient(83.85deg,#ab3a6c -9.3%,#e6533a 120.31%);
     border: none;
     padding: 8px;
     border-radius: 8px;
@@ -96,13 +95,13 @@
 
 	.start-ab-test-button, .reports-ab-test-button {
 		background: transparent;
-		border: 2px solid #007BFF;
+		border: 2px solid #ab3a6c;
 		padding: 5px 10px;
 		border-radius: 8px;
 		cursor: pointer;
 
 		&:hover {
-			background-color: #007bff;
+			background: linear-gradient(83.85deg,#ab3a6c -9.3%,#e6533a 120.31%);
 			color: #fff;
 		}
 
@@ -126,34 +125,42 @@
 		width: 48px;
 		height: 24px;
 	  }
+
 	  .switch input {
 		opacity: 0;
 		width: 0;
 		height: 0;
 	  }
+
 	  .slider {
 		position: absolute;
 		cursor: pointer;
-		top: 0; left: 0; right: 0; bottom: 0;
+		top: 0; 
+		left: 0; 
+		right: 0; 
+		bottom: 0;
 		background-color: #ccc;
 		transition: .4s;
 		border-radius: 24px;
 	  }
-	  .slider:before {
+
+	  .slider::before {
 		position: absolute;
 		content: "";
 		height: 18px;
 		width: 18px;
 		left: 3px;
 		bottom: 3px;
-		background-color: white;
+		background-color: #fff;
 		transition: .4s;
 		border-radius: 50%;
 	  }
+
 	  input:checked + .slider {
-		background-color: #2196f3;
+		background: linear-gradient(83.85deg,#ab3a6c -9.3%,#e6533a 120.31%);
 	  }
-	  input:checked + .slider:before {
+
+	  input:checked + .slider::before {
 		transform: translateX(24px);
 	  }
 	  
@@ -189,7 +196,7 @@
 
 	label {
 		display: block;
-		font-weight: bold;
+		font-weight: 700;
 		margin-bottom: 4px;
 	}
 

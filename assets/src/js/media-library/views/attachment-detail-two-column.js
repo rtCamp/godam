@@ -297,10 +297,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const abTestingButton = document.createElement( 'button' );
 		abTestingButton.type = 'button';
 		abTestingButton.className = 'ab-test-action';
-		console.log( thumbnailURL, this.abTestingSelection.includes( thumbnailURL ) );
+
 		abTestingButton.textContent = this.abTestingSelection.includes( thumbnailURL )
-			? 'Unmark for A/B Testing'
-			: 'Use in A/B Testing';
+			? 'Unselect for A/B Testing'
+			: 'Select for A/B Testing';
 		abTestingButton.dataset.thumbnail = thumbnailURL;
 
 		abTestingFeatureDiv.appendChild( abTestingButton );
@@ -340,10 +340,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const abTestingButton = document.createElement( 'button' );
 		abTestingButton.type = 'button';
 		abTestingButton.className = 'ab-test-action';
-		// abTestingButton.textContent = 'Use in A/B Testing';
+		// abTestingButton.textContent = 'Select for A/B Testing';
 		abTestingButton.textContent = this.abTestingSelection.includes( thumbnailURL )
-			? 'Unmark for A/B Testing'
-			: 'Use in A/B Testing';
+			? 'Unselect for A/B Testing'
+			: 'Select for A/B Testing';
 		abTestingButton.dataset.thumbnail = thumbnailURL;
 		abTestingButton.style.display = '1' === this.abTestingEnabled ? 'block' : 'none'; // Hide if A/B testing is disabled
 
@@ -362,14 +362,14 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		event.preventDefault();
 		event.stopPropagation();
 		const button = event.currentTarget;
-		button.textContent = 'Unmark for A/B Testing';
+		button.textContent = 'Unselect for A/B Testing';
 
 		if ( this.abTestingSelection.includes( button.dataset.thumbnail ) ) {
 			// If already selected, remove it from the selection
 			this.abTestingSelection = this.abTestingSelection.filter(
 				( thumbnail ) => thumbnail !== button.dataset.thumbnail,
 			);
-			button.textContent = 'Use in A/B Testing';
+			button.textContent = 'Select for A/B Testing';
 			this.updateAbTestingButtonsState();
 			return;
 		}
@@ -384,8 +384,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const abActionButtons = document.querySelectorAll( '.ab-test-action' );
 		const abTestStartButton = document.querySelector( '.start-ab-test-button' );
 
-		console.log( 'updateAbTestingButtonsState', this.abTestingSelection, this.abTestingSelection.length );
-
 		if ( '0' === this.abTestingEnabled ) {
 			abActionButtons?.forEach( ( btn ) => {
 				btn.style.display = 'none';
@@ -395,12 +393,9 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				abTestStartButton.style.display = 'none';
 			}
 		} else {
-			console.log( 'else executed' );
 			abActionButtons?.forEach( ( btn ) => {
-				console.log( 'abActionButtons', btn.dataset.thumbnail, this.abTestingSelection.includes( btn.dataset.thumbnail ) );
 				if ( ! this.abTestingSelection.includes( btn.dataset.thumbnail ) ) {
 					btn.disabled = this.abTestingSelection.length >= 2;
-					console.log( btn.dataset.thumbnail, 'found matching url' );
 				}
 				btn.style.display = 'block';
 			} );
@@ -598,7 +593,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		// // Dropdown
 		// durationSelect.value = this.abTestDuration;
 
-		durationSelect.addEventListener( 'change', ( event ) => {
+		durationSelect.addEventListener( 'change', () => {
 			this.abTestDuration = durationSelect.value;
 		} );
 
