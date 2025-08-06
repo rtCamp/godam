@@ -262,12 +262,27 @@ export function generateLineChart( data, selector, videoPlayer, tooltipSelector,
 			if ( index >= 0 && index < data.length ) {
 				const value = data[ index ];
 				const videoDuration = videoPlayer.duration();
-				const videoTime = ( index / (data.length -1) ) * videoDuration; // Corrected calculation
+				
+                // Use the more accurate calculation and the safety check.
+				const videoTime = ( index / (data.length - 1) ) * videoDuration;
+                if ( isNaN( videoTime ) || ! isFinite( videoTime ) ) {
+					return;
+				}
 
-				focus.style( 'opacity', 1 ).attr( 'cx', xScale( index ) ).attr( 'cy', yScale( value ) );
-				hoverLine.style( 'opacity', 1 ).attr( 'x1', xScale( index ) ).attr( 'x2', xScale( index ) );
+				focus
+					.style( 'opacity', 1 )
+					.attr( 'cx', xScale( index ) )
+					.attr( 'cy', yScale( value ) );
 
-				tooltip.style( 'opacity', 1 ).style( 'left', `${ xScale( index ) - 30 }px` ).style( 'top', 0 )
+				hoverLine
+					.style( 'opacity', 1 )
+					.attr( 'x1', xScale( index ) )
+					.attr( 'x2', xScale( index ) );
+
+				tooltip
+					.style( 'opacity', 1 )
+					.style( 'left', `${ xScale( index ) - 30 }px` )
+					.style( 'top', 0 )
 					.html(
 						`<div class="heatmap-tooltip-html">
 							<div class="flex gap-2 items-center text-black">

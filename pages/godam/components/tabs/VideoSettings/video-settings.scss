@@ -123,21 +123,64 @@
 	margin-right: 15px;
 }
 
+.video-player-settings-preview .vjs-big-play-button {
+	background-color: var(--rtgodam-control-bar-color, #000) !important;
+	border: none;
+	cursor: pointer;
+	border-radius: 50%;
+	padding: 0;
+	z-index: 10;
+	width: 50px;
+	height: 50px;
+	left: 53%;
+	transition: transform 0.3s ease;
+	min-height: unset;
+
+	span::before {
+		font-size: 28px;
+		line-height: 1.8;
+	}
+
+	&:hover, &:focus {
+		transform: scale(1.1);
+	}
+}
+
 .vjs-button.godam-share-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 10;
-    padding: 10px;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: #fff;
-    border: none;
-    font-size: 15px !important;
+	position: absolute;
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	top: 10px;
+	right: 10px;
+	z-index: 10;
+	padding: 10px;
+	background-color: rgba(0, 0, 0, 0.7);
+	color: #fff;
+	border: none;
+	cursor: pointer !important;
+	font-size: 15px !important;
 	border-radius: 50%;
 	display: flex;
-	height: 40px;
-	width: 40px;
-	cursor: not-allowed;
+	transition: all 0.3s ease;
+	min-height: unset;
+	margin: 0;
+
+	@media screen and (max-width: 768px) {
+
+		&  {
+			opacity: 1;
+			visibility: visible;
+		}
+	}
+}
+
+.video-player-settings-preview:hover .godam-share-button {
+	opacity: 1;
+	visibility: visible;
 	pointer-events: auto;
-	transition: opacity 0.1s ease;
+
+	&:hover{
+		background-color: #AB3A6C;
+	}
 }

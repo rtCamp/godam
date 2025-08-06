@@ -3,7 +3,6 @@
 /**
  * WordPress dependencies
  */
-// FIX START: Import internationalization functions.
 const { __, sprintf } = wp.i18n;
 
 /**
@@ -14,7 +13,8 @@ import MediaDateRangeFilter from './filters/media-date-range-filter';
 import MediaRetranscode from './filters/media-retranscode';
 import ToggleFoldersButton from './filters/toggle-folders-button';
 
-import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled } from '../utility';
+// This function was added in the main branch and is needed.
+import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled, getGodamSettings } from '../utility';
 
 const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
 
@@ -22,9 +22,6 @@ const $ = jQuery;
 
 /**
  * Attachment Browser with Custom Filters
- *
- * Note: Exporting the `extend` object directly works as expected.
- * However, reassigning it to a variable before exporting causes an infinite loop.
  */
 export default AttachmentsBrowser?.extend( {
 
@@ -36,10 +33,9 @@ export default AttachmentsBrowser?.extend( {
 		this.bindEvents();
 		this.addUploadParam();
 
-		// FIX START: Call the count update method on initialization and when items are added.
+		// Your fix: Call the count update method on initialization and when items are added.
 		this.collection.on( 'add remove reset', this.updateCount, this );
 		this.updateCount();
-		// FIX END
 	},
 
 	bindEvents() {
@@ -47,12 +43,8 @@ export default AttachmentsBrowser?.extend( {
 		this.collection.props.on( 'change', this.addUploadParam, this );
 	},
 
-	// FIX START: Add the method to correctly update the media count display.
 	/**
-	 * Updates the attachment count in the toolbar.
-	 *
-	 * This function correctly distinguishes between the number of loaded items
-	 * and the total number of items available in the library from the server.
+	 * Your fix: This is the new method to correctly update the media count display.
 	 */
 	updateCount() {
 		// Ensure the toolbar and count element exist before proceeding.
@@ -64,8 +56,6 @@ export default AttachmentsBrowser?.extend( {
 		const loadedCount = this.collection.length;
 
 		// Get the absolute total number of attachments from the collection's properties.
-		// This value comes from the server's AJAX response (`found_posts`).
-		// The `|| 0` is a fallback in case it's not set.
 		const totalCount = this.collection.props.get( 'total' ) || 0;
 
 		const $countContainer = this.toolbar.$( '.count' );
@@ -82,14 +72,25 @@ export default AttachmentsBrowser?.extend( {
 			$countContainer.text( __( 'No media items found.', 'godam' ) );
 		}
 	},
-	// FIX END
 
-	createToolbar() {
+	/**
+	 * This is the updated async function from the main branch.
+	 */
+	async createToolbar() {
 		// Make sure to load the original toolbar
 		AttachmentsBrowser.prototype.createToolbar.call( this );
 
-		// ... (the rest of your createToolbar function remains unchanged) ...
-		if ( ToggleFoldersButton && ! isUploadPage() ) {
+		let showFoldersInMediaLibrary = false;
+		if ( ! isUploadPage() ) {
+			try {
+				const settings = await getGodamSettings();
+				showFoldersInMediaLibrary = settings?.general?.enable_folder_organization === true;
+			} catch ( error ) {
+				// Handle error if needed
+			}
+		}
+
+		if ( ToggleFoldersButton && ! isUploadPage() && showFoldersInMediaLibrary ) {
 			this.toolbar.set(
 				'ToggleFoldersButton',
 				new ToggleFoldersButton( {
@@ -136,9 +137,6 @@ export default AttachmentsBrowser?.extend( {
 		}
 
 		if ( ! isUploadPage() && ! isFolderOrgDisabled() ) {
-			/**
-			 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.
-			 */
 			setTimeout( () => {
 				$( '.media-frame' ).removeClass( 'hide-menu' );
 
@@ -147,7 +145,7 @@ export default AttachmentsBrowser?.extend( {
 						( container ) => getComputedStyle( container ).display !== 'none',
 					);
 
-					const activeContainer = visibleContainers.at( -1 ); // most recently opened visible one
+					const activeContainer = visibleContainers.at( -1 );
 
 					if ( activeContainer ) {
 						const menu = activeContainer.querySelector( '.media-frame-menu' );
@@ -180,7 +178,6 @@ export default AttachmentsBrowser?.extend( {
 	 * Enable/disable observation of uploading queue.
 	 */
 	updateCollectionObserve() {
-		// ... (this function remains unchanged) ...
 		if ( ! wp.Uploader ) {
 			return;
 		}
@@ -212,7 +209,6 @@ export default AttachmentsBrowser?.extend( {
 	 * Add the media folder to the upload params.
 	 */
 	addUploadParam() {
-		// ... (this function remains unchanged) ...
 		if ( 'undefined' === typeof this.controller.uploader.uploader ) {
 			return;
 		}
