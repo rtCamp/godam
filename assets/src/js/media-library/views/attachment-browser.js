@@ -1,6 +1,12 @@
 /* global jQuery, _ */
 
 /**
+ * WordPress dependencies
+ */
+// FIX START: Import internationalization functions.
+const { __, sprintf } = wp.i18n;
+
+/**
  * Internal dependencies
  */
 import MediaLibraryTaxonomyFilter from './filters/media-library-taxonomy-filter';
@@ -29,6 +35,11 @@ export default AttachmentsBrowser?.extend( {
 		this.updateCollectionObserve();
 		this.bindEvents();
 		this.addUploadParam();
+
+		// FIX START: Call the count update method on initialization and when items are added.
+		this.collection.on( 'add remove reset', this.updateCount, this );
+		this.updateCount();
+		// FIX END
 	},
 
 	bindEvents() {
@@ -36,10 +47,48 @@ export default AttachmentsBrowser?.extend( {
 		this.collection.props.on( 'change', this.addUploadParam, this );
 	},
 
+	// FIX START: Add the method to correctly update the media count display.
+	/**
+	 * Updates the attachment count in the toolbar.
+	 *
+	 * This function correctly distinguishes between the number of loaded items
+	 * and the total number of items available in the library from the server.
+	 */
+	updateCount() {
+		// Ensure the toolbar and count element exist before proceeding.
+		if ( ! this.toolbar || ! this.toolbar.$el ) {
+			return;
+		}
+
+		// Get the number of attachments currently loaded in the browser.
+		const loadedCount = this.collection.length;
+
+		// Get the absolute total number of attachments from the collection's properties.
+		// This value comes from the server's AJAX response (`found_posts`).
+		// The `|| 0` is a fallback in case it's not set.
+		const totalCount = this.collection.props.get( 'total' ) || 0;
+
+		const $countContainer = this.toolbar.$( '.count' );
+
+		if ( totalCount > 0 && $countContainer.length ) {
+			const text = sprintf(
+				/* translators: 1: number of media items shown, 2: total number of media items */
+				__( 'Showing %1$d of %2$d media items', 'godam' ),
+				loadedCount,
+				totalCount
+			);
+			$countContainer.text( text );
+		} else if ( $countContainer.length ) {
+			$countContainer.text( __( 'No media items found.', 'godam' ) );
+		}
+	},
+	// FIX END
+
 	createToolbar() {
 		// Make sure to load the original toolbar
 		AttachmentsBrowser.prototype.createToolbar.call( this );
 
+		// ... (the rest of your createToolbar function remains unchanged) ...
 		if ( ToggleFoldersButton && ! isUploadPage() ) {
 			this.toolbar.set(
 				'ToggleFoldersButton',
@@ -131,18 +180,13 @@ export default AttachmentsBrowser?.extend( {
 	 * Enable/disable observation of uploading queue.
 	 */
 	updateCollectionObserve() {
+		// ... (this function remains unchanged) ...
 		if ( ! wp.Uploader ) {
 			return;
 		}
 
 		const currentQuery = this.collection.props.toJSON();
 
-		// Observe the central `wp.Uploader.queue` collection to watch for
-		// new matches for the query.
-		//
-		// Only observe when a limited number of query args are set. There
-		// are no filters for other properties, so observing will result in
-		// false positives in those queries.
 		const allowed = [
 			's',
 			'search',
@@ -168,6 +212,7 @@ export default AttachmentsBrowser?.extend( {
 	 * Add the media folder to the upload params.
 	 */
 	addUploadParam() {
+		// ... (this function remains unchanged) ...
 		if ( 'undefined' === typeof this.controller.uploader.uploader ) {
 			return;
 		}
@@ -185,7 +230,6 @@ export default AttachmentsBrowser?.extend( {
 
 		uploader.setOption( 'multipart_params', multipartParams );
 
-		// Fire a event notifying that the collection param has been changed.
 		const event = new CustomEvent( 'godam-attachment-browser:changed' );
 		document.dispatchEvent( event );
 	},
