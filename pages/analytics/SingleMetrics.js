@@ -127,8 +127,9 @@ const SingleMetrics = ( {
 	}, [ processedAnalyticsHistory, analyticsDataFetched, metricType, mode ] );
 
 	return (
-		<div className="analytics-info flex justify-between max-lg:flex-col border border-zinc-200 w-[350px]">
-			<div className="analytics-single-info">
+		// The container is now full-width on mobile and has a fixed width on larger screens.
+		<div className="analytics-info flex justify-between border border-zinc-200 w-full lg:w-[350px] p-4">
+			<div className="analytics-single-info w-full">
 				<div className="flex justify-between items-center flex-row w-full">
 					<div className="analytics-info-heading">
 						<p className="text-xs text-[#525252]">{ label }</p>
@@ -136,7 +137,7 @@ const SingleMetrics = ( {
 					</div>
 					<p id={ `${ metricType }-change` } className="metric-change">+0%</p>
 				</div>
-				<div className="flex flex-row justify-between gap-2 items-end">
+				<div className="flex flex-row justify-between gap-2 items-end mt-2">
 					<div className="flex flex-col gap-3">
 						<p
 							id={ `${ metricType }` }
@@ -146,7 +147,8 @@ const SingleMetrics = ( {
 						</p>
 						<p className="text-zinc-500 text-xs">{ __( 'Last 7 days', 'godam' ) }</p>
 					</div>
-					<div id={ `single-${ metricType }-chart` } className="metrics-chart"></div>
+					{ /* This container will be targeted by the responsive D3 chart */ }
+					<div id={ `single-${ metricType }-chart` } className="metrics-chart flex-grow h-[40px]"></div>
 				</div>
 			</div>
 		</div>
