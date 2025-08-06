@@ -698,6 +698,8 @@ function CommentBox( props ) {
 	const videoFigureId = `godam-player-container-${ videoKey }`;
 	const [ isSending, setIsSending ] = useState( false );
 	const [ expendComment, setExpendComment ] = useState( false );
+	const { isUserLoggedIn } = window.godamData;
+	const [ showGuestForm, setShowGuestForm ] = useState( false );
 
 	useEffect( () => {
 		setCommentsData( comments );
@@ -730,11 +732,22 @@ function CommentBox( props ) {
 	}, [ videoFigureId, memoizedStoreObj ] );
 
 	function handleLike() {
+		if ( 'true' !== isUserLoggedIn ) {
+			return;
+		}
 		setIsSending( true );
 		memoizedStoreObj.dispatch.userHitiLke( videoAttachmentId, siteUrl, memoizedStoreObj );
 		setTimeout( () => {
 			setIsSending( false );
 		}, 1000 );
+	}
+
+	function handleGuestLogin() {
+		if ( showGuestForm ) {
+			console.log( 'Guest email saved.' );
+		} else {
+			setShowGuestForm( true );
+		}
 	}
 
 	return (
@@ -773,7 +786,42 @@ function CommentBox( props ) {
 									>{ likesCount }</button>
 									<span className={ baseClass + '-leave-comment-impressions-views' }>{ viewsCount }</span>
 								</div>
-								<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" />
+								{ 'true' === isUserLoggedIn ? (
+									<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" />
+								) : (
+									<div className={ baseClass + '-leave-comment-login-wrapper' }>
+										{
+											! showGuestForm && (
+												<div className={ baseClass + '-leave-comment-login' }>
+													<a href={ siteUrl + '/wp-login.php' }>{ __( 'Register', 'godam' ) }</a> / <a href={ siteUrl + '/wp-login.php' }>{ __( 'Login', 'godam' ) }</a> { __( ' to comment', 'godam' ) }
+												</div>
+											)
+										}
+										{
+											showGuestForm && (
+												<div className={ baseClass + '-leave-comment-login-guest-form' }>
+													<label htmlFor={ baseClass + '-leave-comment-login-guest-email' }>{ __( 'Email', 'godam' ) }</label>
+													<input type="email" id={ baseClass + '-leave-comment-login-guest-email' } placeholder={ __( 'Enter your email', 'godam' ) } />
+												</div>
+											)
+										}
+										<div className={ baseClass + '-leave-comment-login-guest-button' }>
+											{
+												showGuestForm && (
+													<button onClick={ () => setShowGuestForm( ! showGuestForm ) }>
+														{ __( 'Back', 'godam' ) }
+													</button>
+												)
+											}
+
+											<button onClick={ handleGuestLogin }>
+												{
+													showGuestForm ? __( 'Save', 'godam' ) : __( 'Continue as Guest', 'godam' )
+												}
+											</button>
+										</div>
+									</div>
+								) }
 							</div>
 						</div>
 					) }

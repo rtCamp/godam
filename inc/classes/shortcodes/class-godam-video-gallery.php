@@ -53,7 +53,7 @@ class GoDAM_Video_Gallery {
 		wp_register_script(
 			'godam-gallery-script',
 			RTGODAM_URL . 'assets/build/js/godam-gallery.min.js',
-			array(),
+			array( 'wp-data' ),
 			filemtime( RTGODAM_PATH . 'assets/build/js/godam-gallery.min.js' ),
 			true
 		);

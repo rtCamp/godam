@@ -320,7 +320,7 @@ class Engagement extends Base {
 				'headers' => array(
 					'Content-Type' => 'application/json',
 				),
-				'body'    => json_encode( $query_params ),
+				'body'    => wp_json_encode( $query_params ),
 			)
 		);
 

@@ -51,7 +51,7 @@ class GoDAM_Player {
 		wp_register_script(
 			'godam-player-frontend-script',
 			RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
-			array( 'wp-data' ),
+			array( 'wp-data', 'wp-url', 'wp-element', 'wp-i18n', 'wp-api-fetch' ),
 			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
 			true
 		);
@@ -103,7 +103,8 @@ class GoDAM_Player {
 			'godam-player-frontend-script',
 			'godamData',
 			array(
-				'apiBase' => RTGODAM_API_BASE,
+				'apiBase'        => RTGODAM_API_BASE,
+				'isUserLoggedIn' => is_user_logged_in() ? 'true' : 'false',
 			)
 		);
 	}

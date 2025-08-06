@@ -208,6 +208,8 @@
                 border: 1px solid var(--godam-video-engagement-brand-neutral-shades-25);
                 border-radius: 8px;
                 box-shadow: var(--godam-video-engagement-modal-close-button-shadow);
+                display: flex;
+                flex-direction: column;
 
                 &::-webkit-scrollbar {
                     width: 3px;
@@ -330,6 +332,7 @@
             z-index: 10;
             padding: 1.5rem;
             box-shadow: -7.94px -2.65px 15.87px 6.61px #0000000D;
+            margin-top: auto;
 
             &-impressions {
                     display: flex;
@@ -384,6 +387,100 @@
 
                     &::before {
                         background-image: url('../images/views-count.svg');
+                    }
+                }
+            }
+
+            &-login {
+                font-size: 1rem;
+                line-height: 3rem;
+                color: var(--wp--preset--color--black, #000);
+                height: 3rem;
+                border: 1px solid var(--Brand-Neutral-Shades-50, #CCCCCC);
+                backdrop-filter: blur(4px);
+                border-radius: 8px;
+                text-align: center;
+                position: relative;
+                padding: 5px;
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    right: 10px;
+                    width: 50px;
+                    height: 100%;
+                    background-image: url('../images/login-to-comment-bg.png');
+                    z-index: -1;
+                    background-repeat: no-repeat;
+                    background-position: right;
+                    background-size: contain;
+                    filter: blur(4px);
+                }
+
+                a {
+                    color: #E6533A;
+                    background: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
+                    background-clip: text;
+                    -webkit-text-fill-color: transparent;
+
+                    &:hover {
+                        text-decoration: underline;
+                    }
+                }
+
+                &-guest {
+
+                    &-form {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        padding-top: 5px;
+
+                        input[type="text"],
+                        input[type="email"],
+                        input[type="password"] {
+                            font-size: 12px;
+                            line-height: 1;
+                            color: var(--wp--preset--color--black, #000);
+                            border-radius: 8px;
+                            border: 1px solid var(--godam-video-engagement-brand-neutral-shades-100);
+                            padding: 10px;
+                        }
+
+                        label {
+                            font-size: 14px;
+                            line-height: 1.2;
+                            color: var(--wp--preset--color--black, #000);
+                            border: none;
+                        }
+                    }
+                    
+                    &-button {
+                        display: flex;
+                        gap: 5px;
+                        
+                        button {
+                            flex: 1;
+                            display: block;
+                            margin-top: 10px;
+                            background-color: transparent;
+                            border: none;
+                            color: var(--godam-video-engagement-icon-color);
+                            font-size: 0.9rem;
+                            line-height: 1;
+                            cursor: pointer;
+                            padding: 10px 5px;
+                            border: 1px solid var(--godam-video-engagement-brand-neutral-shades-100);
+                            color: #E6533A;
+                            width: 100%;
+                            border-radius: 8px;
+                            transition: all 0.3s ease;
+
+                            &:hover {
+                                color: var(--wp--preset--color--black, #000);
+                            }
+                        }
                     }
                 }
             }
@@ -523,7 +620,7 @@
                 border-radius: 8px;
                 min-height: 48px;
                 align-items: center;
-                justify-content: space-between;
+                justify-content: flex-end;
                 padding-right: 12px;
 
                 textarea {
@@ -625,6 +722,7 @@
     }
 
     &--title {
+        color: var(--godam-video-engagement-icon-color);
         margin-right: auto;
         margin-left: 10px;
         overflow: hidden;
