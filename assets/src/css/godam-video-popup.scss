@@ -465,13 +465,6 @@
 			margin: 0;
 		}
 
-		.godam-sidebar-close{
-			cursor: pointer;
-			font-size: 1.5rem;
-			font-weight: 600;
-			margin: 0;
-		}
-
 		button{
 			padding: 0;
 			margin: 0;
@@ -1007,16 +1000,9 @@
 	.godam-product-modal-close.godam-video-transcoded {
 		top: 53px !important;
         right: 9px !important;
-
-		// top: 10px !important;
-        // right: 53px !important;
 	}
 
 	.godam-product-sidebar.single-product-sidebar{
-
-		.godam-sidebar-close{
-			top: 20px !important;
-		}
 
 		.godam-thumbnail-carousel{
 			display: none !important;
@@ -1172,14 +1158,6 @@
 				h3,.godam-product-video-gallery--cart-basket{
 					display: none !important;
 				}
-
-				.godam-sidebar-close{
-					top: 0 !important;
-					right: 0 !important;
-					z-index: 999 !important;
-					position: relative;
-				}
-
 			}
 
 			.godam-product-sidebar-grid{

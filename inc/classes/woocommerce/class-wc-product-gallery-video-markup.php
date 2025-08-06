@@ -125,9 +125,6 @@ class WC_Product_Gallery_Video_Markup {
 										echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore
 									?>
 								</div>
-								<button class="godam-sidebar-close" aria-label="<?php __( 'Close sidebar', 'godam' ); ?>">
-									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
-								</button>
 							</div>
 						</div>
 						<div class="godam-sidebar-product">
@@ -205,9 +202,6 @@ class WC_Product_Gallery_Video_Markup {
 										echo do_blocks( '<!-- wp:woocommerce/mini-cart /-->' ); // phpcs:ignore
 									?>
 								</div>
-								<button class="godam-sidebar-close" aria-label="<?php __( 'Close sidebar', 'godam' ); ?>">
-									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="fill: rgba(255, 255, 255, 1);"><path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z"></path></svg>
-								</button>
 							</div>
 						</div>
 						<div class="godam-sidebar-product">
