@@ -15,6 +15,7 @@ import ChaptersManager from './managers/chaptersManager.js';
 import AdsManager from './managers/adsManager.js';
 import HoverManager from './managers/hoverManager.js';
 import ShareManager from './managers/shareManager.js';
+import { ABTestManager } from './managers/abTestManager.js';
 
 /**
  * Refactored Video Player Class
@@ -146,6 +147,13 @@ export default class GodamVideoPlayer {
 		// Attach managers to player for external access
 		this.player.hoverManager = this.hoverManager;
 		this.player.shareManager = this.shareManager;
+
+		const abTestManager = new ABTestManager(this.player);
+
+		abTestManager.initializeTest(
+			this.video,
+			this.configManager.videoSetupOptions,
+		);
 	}
 
 	/**
