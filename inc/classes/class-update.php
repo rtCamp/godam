@@ -58,7 +58,7 @@ class Update {
 	 * @param string $old_version Previous plugin version.
 	 * @param string $new_version Current plugin version.
 	 *
-	 * @return boolean True if it's a mjor version bump, false otherwise.
+	 * @return boolean True if it's a major version bump, false otherwise.
 	 */
 	private function rtgodam_is_major_release( $old_version, $new_version ) {
 		$old_version_parts = explode( '.', $old_version );

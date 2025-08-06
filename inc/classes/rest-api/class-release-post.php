@@ -164,6 +164,7 @@ class Release_Post extends Base {
 
 			// Create feature object.
 			$feature = array(
+				// Trim the heading ID suffix added from original post.
 				'id'          => trim( $heading->getAttribute( 'id' ), '-h' ),
 				'title'       => sanitize_text_field( $title ),
 				'description' => wp_kses_post( $description ),
@@ -173,6 +174,8 @@ class Release_Post extends Base {
 			$features[] = $feature;
 		}
 
+		// Remove the last feature from the array,
+		// as it's a summary or non-feature section.
 		if ( ! empty( $features ) ) {
 			array_pop( $features );
 		}
