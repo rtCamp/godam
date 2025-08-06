@@ -103,8 +103,8 @@ class GoDAM_Player {
 			'godam-player-frontend-script',
 			'godamData',
 			array(
-				'apiBase'        => RTGODAM_API_BASE,
-				'isUserLoggedIn' => is_user_logged_in() ? 'true' : 'false',
+				'apiBase'                 => RTGODAM_API_BASE,
+				'currentLoggedInUserData' => rtgodam_get_current_logged_in_user_data(),
 			)
 		);
 	}

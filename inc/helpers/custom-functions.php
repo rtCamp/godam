@@ -478,3 +478,40 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 
 	return json_decode( $response['body'] );
 }
+
+/**
+ * Retrieves user data for the current session.
+ *
+ * This function checks if a user is logged in and returns their email and display name.
+ * If no user is logged in, it checks for a guest user cookie and returns the guest user's
+ * email and constructed name. If neither is available, it defaults to a bot email and
+ * guest name.
+ *
+ * @return array An associative array containing 'email' and 'name' of the user or guest.
+ */
+function rtgodam_get_current_logged_in_user_data() {
+	if ( is_user_logged_in() ) {
+		$current_user = wp_get_current_user();
+		return array(
+			'email' => $current_user->user_email,
+			'name'  => $current_user->display_name,
+			'type'  => 'user',
+		);
+	}
+
+	if ( isset( $_COOKIE['guest_user'] ) ) {
+		$guest_user_email = sanitize_email( wp_unslash( $_COOKIE['guest_user'] ) );
+		$guest_user_name  = explode( '@', $guest_user_email )[0];
+		return array(
+			'email' => $guest_user_email,
+			'name'  => ! empty( $guest_user_name ) ? $guest_user_name : __( 'Guest', 'godam' ),
+			'type'  => 'guest',
+		);
+	}
+
+	return array(
+		'email' => 'bot@example.com',
+		'name'  => __( 'Guest', 'godam' ),
+		'type'  => 'non-user',
+	);
+}

@@ -698,9 +698,11 @@ function CommentBox( props ) {
 	const videoFigureId = `godam-player-container-${ videoKey }`;
 	const [ isSending, setIsSending ] = useState( false );
 	const [ expendComment, setExpendComment ] = useState( false );
-	const { isUserLoggedIn } = window.godamData;
 	const [ showGuestForm, setShowGuestForm ] = useState( false );
 	const [ guestEmail, setGuestEmail ] = useState( '' );
+	const { currentLoggedInUserData } = window.godamData;
+	const loginStatus = 'guest' === currentLoggedInUserData?.type || 'user' === currentLoggedInUserData?.type;
+	const [ isUserLoggedIn, setIsUserLoggedIn ] = useState( loginStatus );
 
 	useEffect( () => {
 		setCommentsData( comments );
@@ -733,7 +735,7 @@ function CommentBox( props ) {
 	}, [ videoFigureId, memoizedStoreObj ] );
 
 	function handleLike() {
-		if ( 'true' !== isUserLoggedIn ) {
+		if ( ! isUserLoggedIn ) {
 			return;
 		}
 		setIsSending( true );
@@ -755,9 +757,11 @@ function CommentBox( props ) {
 				data: queryParams,
 			} );
 
-			if ( 'error' === result.status ) {
-				memoizedStoreObj.dispatch.errorHappened( result.message );
-				return null;
+			if ( 'success' === result.status ) {
+				setShowGuestForm( false );
+				setIsUserLoggedIn( true );
+				setGuestEmail( '' );
+				window.godamData.currentLoggedInUserData = result.data;
 			}
 		} else {
 			setShowGuestForm( true );
@@ -800,7 +804,7 @@ function CommentBox( props ) {
 									>{ likesCount }</button>
 									<span className={ baseClass + '-leave-comment-impressions-views' }>{ viewsCount }</span>
 								</div>
-								{ 'true' === isUserLoggedIn ? (
+								{ isUserLoggedIn ? (
 									<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" />
 								) : (
 									<div className={ baseClass + '-leave-comment-login-wrapper' }>

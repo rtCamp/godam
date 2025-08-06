@@ -182,8 +182,7 @@ class Engagement extends Base {
 
 		$transcoder_job_id = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
 
-		$current_user                 = get_current_user_id();
-		$likes                        = $this->get_likes( $transcoder_job_id, $account_creadentials, $current_user );
+		$likes                        = $this->get_likes( $transcoder_job_id, $account_creadentials );
 		$response_data['is_liked']    = $likes['has_liked_by_user'];
 		$response_data['likes_count'] = $likes['likes'];
 
@@ -540,13 +539,12 @@ class Engagement extends Base {
 	 *
 	 * @param string $transcoder_job_id   The ID of the transcoder job associated with the video.
 	 * @param array  $account_creadentials The API credentials for accessing Godam services.
-	 * @param int    $current_user_id     The ID of the current user.
 	 * @return array                      An array containing 'has_liked_by_user' and 'likes' count.
 	 */
-	public function get_likes( $transcoder_job_id, $account_creadentials, $current_user_id ) {
+	public function get_likes( $transcoder_job_id, $account_creadentials ) {
 
-		$current_user       = get_user_by( 'id', $current_user_id );
-		$current_user_email = $current_user ? $current_user->user_email : 'bot@rtcamp.com';
+		$current_user       = rtgodam_get_current_logged_in_user_data();
+		$current_user_email = $current_user['email'];
 
 		$query_params = array(
 			'name'          => $transcoder_job_id,
@@ -631,42 +629,9 @@ class Engagement extends Base {
 			array(
 				'status'  => 'success',
 				'message' => __( 'Guest user email saved successfully.', 'godam' ),
+				'data'    => rtgodam_get_current_logged_in_user_data(),
 			),
 			200
-		);
-	}
-
-	/**
-	 * Retrieves user data for the current session.
-	 *
-	 * This function checks if a user is logged in and returns their email and display name.
-	 * If no user is logged in, it checks for a guest user cookie and returns the guest user's
-	 * email and constructed name. If neither is available, it defaults to a bot email and
-	 * guest name.
-	 *
-	 * @return array An associative array containing 'email' and 'name' of the user or guest.
-	 */
-	public static function get_user_data() {
-		if ( is_user_logged_in() ) {
-			$current_user = wp_get_current_user();
-			return array(
-				'email' => $current_user->user_email,
-				'name'  => $current_user->display_name,
-			);
-		}
-
-		if ( isset( $_COOKIE['guest_user'] ) ) {
-			$guest_user_email = sanitize_email( wp_unslash( $_COOKIE['guest_user'] ) );
-			$guest_user_name  = explode( '@', $guest_user_email )[0];
-			return array(
-				'email' => $guest_user_email,
-				'name'  => ! empty( $guest_user_name ) ? $guest_user_name : __( 'Guest', 'godam' ),
-			);
-		}
-
-		return array(
-			'email' => 'bot@example.com',
-			'name'  => __( 'Guest', 'godam' ),
 		);
 	}
 }
