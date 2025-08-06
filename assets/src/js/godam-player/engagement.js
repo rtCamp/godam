@@ -703,6 +703,7 @@ function CommentBox( props ) {
 	const { currentLoggedInUserData } = window.godamData;
 	const loginStatus = 'guest' === currentLoggedInUserData?.type || 'user' === currentLoggedInUserData?.type;
 	const [ isUserLoggedIn, setIsUserLoggedIn ] = useState( loginStatus );
+	const [ loginProgress, setLoginProgress ] = useState( false );
 
 	useEffect( () => {
 		setCommentsData( comments );
@@ -747,6 +748,7 @@ function CommentBox( props ) {
 
 	async function handleGuestLogin() {
 		if ( showGuestForm ) {
+			setLoginProgress( true );
 			const queryParams = {
 				guest_user_email: guestEmail,
 			};
@@ -761,6 +763,7 @@ function CommentBox( props ) {
 				setShowGuestForm( false );
 				setIsUserLoggedIn( true );
 				setGuestEmail( '' );
+				setLoginProgress( false );
 				window.godamData.currentLoggedInUserData = result.data;
 			}
 		} else {
@@ -823,6 +826,7 @@ function CommentBox( props ) {
 														type="email"
 														id={ baseClass + '-leave-comment-login-guest-email' }
 														placeholder={ __( 'Enter your email', 'godam' ) }
+														className={ loginProgress ? ' is-progressing' : '' }
 														value={ guestEmail }
 														onChange={ ( e ) => setGuestEmail( e.target.value ) } />
 												</div>
@@ -837,7 +841,10 @@ function CommentBox( props ) {
 												)
 											}
 
-											<button onClick={ handleGuestLogin }>
+											<button
+												className={ loginProgress ? ' is-progressing' : '' }
+												onClick={ handleGuestLogin }
+											>
 												{
 													showGuestForm ? __( 'Save', 'godam' ) : __( 'Continue as Guest', 'godam' )
 												}

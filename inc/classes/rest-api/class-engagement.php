@@ -431,7 +431,6 @@ class Engagement extends Base {
 			$response_data = array(
 				'id'              => $comment['name'],
 				'parent_id'       => isset( $comment['custom_reply_to'] ) ? $comment['custom_reply_to'] : null,
-				'user_id'         => $current_user_id,
 				'text'            => $comment['content'],
 				'author_name'     => $comment['comment_by'],
 				'created_at_date' => $created_date['date'],
@@ -501,7 +500,6 @@ class Engagement extends Base {
 				'id'              => $comment['name'],
 				'parent_id'       => $comment['custom_reply_to'],
 				'text'            => $text,
-				'user_id'         => $comment['name'],
 				'author_name'     => $comment['comment_by'],
 				'created_at_date' => $created_date['date'],
 				'created_at_time' => $created_date['time'],

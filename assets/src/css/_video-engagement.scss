@@ -15,6 +15,27 @@
     --godam-video-engagement-modal-close-button-shadow: 0px 2.09px 4.18px 2.09px #00000012;
 }
 
+%progressing {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    background: none;
+
+    &::before {
+        content: '';
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border: 2px solid var(--wp--preset--color--white, #fff);
+        border-top: 2px solid var(--wp--preset--color--black, #000);
+        border-radius: 50%;
+        animation: comment-loading 1s linear infinite;
+    }
+}
+
 .no-scroll {
     overflow: hidden;
     height: 100vh;
@@ -446,6 +467,12 @@
                             border-radius: 8px;
                             border: 1px solid var(--godam-video-engagement-brand-neutral-shades-100);
                             padding: 10px;
+
+                            &.is-progressing {
+                                cursor: not-allowed;
+                                pointer-events: none;
+                                opacity: 0.6;
+                            }
                         }
 
                         label {
@@ -476,6 +503,14 @@
 
                             &:hover {
                                 color: var(--wp--preset--color--black, #000);
+                            }
+
+                            &.is-progressing {
+                                @extend %progressing;
+                                color: transparent;
+                                cursor: not-allowed;
+                                pointer-events: none;
+                                opacity: 0.6;
                             }
                         }
                     }
@@ -648,24 +683,7 @@
                     }
 
                     &.is-comment-progressing {
-                        position: relative;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        align-content: center;
-                        flex-wrap: wrap;
-                        background: none;
-
-                        &::before {
-                            content: '';
-                            position: absolute;
-                            width: 10px;
-                            height: 10px;
-                            border: 2px solid var(--wp--preset--color--white, #fff);
-                            border-top: 2px solid var(--wp--preset--color--black, #000);
-                            border-radius: 50%;
-                            animation: comment-loading 1s linear infinite;
-                        }
+                        @extend %progressing;
                     }
                 }
             }
