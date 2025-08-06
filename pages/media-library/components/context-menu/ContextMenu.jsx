@@ -317,7 +317,18 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 					);
 				} else {
 					const areLocked = ! areAllTargetFoldersLocked;
-					const response = await bulkLockFoldersMutation( { folderIds: multiSelectedFolderIds, lockedStatus: areLocked } ).unwrap();
+					const selectedFolderIds = [];
+
+					multiSelectedFolderIds.forEach( ( folder ) => {
+						const descendants = getAllDescendantFolderIds( folder, allFolders );
+						descendants.forEach( ( descendant ) => {
+							if ( ! selectedFolderIds.includes( descendant ) ) {
+								selectedFolderIds.push( descendant );
+							}
+						} );
+					} );
+
+					const response = await bulkLockFoldersMutation( { folderIds: selectedFolderIds, lockedStatus: areLocked } ).unwrap();
 
 					dispatch( lockFolder( { ids: response.updated_ids, status: areLocked } ) );
 
