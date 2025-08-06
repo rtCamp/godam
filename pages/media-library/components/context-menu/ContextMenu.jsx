@@ -433,40 +433,42 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			ref={ menuRef }
 			style={ { top: position.top, left: position.left } }
 		>
-			<Button
-				icon={ NewFolderIcon }
-				onClick={ () => handleMenuItemClick( 'newSubFolder' ) }
-				className="folder-context-menu__item"
-				disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder || currentFolder?.meta?.locked }
-			>
-				{ __( 'New Sub-folder', 'godam' ) }
-			</Button>
-			<Button
-				icon={ RenameFolderIcon }
-				onClick={ () => handleMenuItemClick( 'rename' ) }
-				className="folder-context-menu__item"
-				disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder || currentFolder?.meta?.locked }
-			>
-				{ __( 'Rename', 'godam' ) }
-			</Button>
 			{ hasRole( [ 'administrator', 'editor' ] ) && (
-				<Button
-					icon={ LockFolderIcon }
-					onClick={ () => handleMenuItemClick( 'lockFolder' ) }
-					className="folder-context-menu__item"
-					disabled={ isSpecialFolder || isAnySelectedParentLocked }
-				>
-					{ ! currentFolder?.meta?.locked || ( isMultiSelecting && ! areAllTargetFoldersLocked ) ? __( 'Lock Folder', 'godam' ) : __( 'Unlock Folder', 'godam' ) }
-				</Button>
+				<>
+					<Button
+						icon={ NewFolderIcon }
+						onClick={ () => handleMenuItemClick( 'newSubFolder' ) }
+						className="folder-context-menu__item folder-context-menu-new-folder"
+						disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder || currentFolder?.meta?.locked }
+					>
+						{ __( 'New Sub-folder', 'godam' ) }
+					</Button>
+					<Button
+						icon={ RenameFolderIcon }
+						onClick={ () => handleMenuItemClick( 'rename' ) }
+						className="folder-context-menu__item"
+						disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder || currentFolder?.meta?.locked }
+					>
+						{ __( 'Rename', 'godam' ) }
+					</Button>
+					<Button
+						icon={ LockFolderIcon }
+						onClick={ () => handleMenuItemClick( 'lockFolder' ) }
+						className="folder-context-menu__item"
+						disabled={ isSpecialFolder || isAnySelectedParentLocked }
+					>
+						{ ! currentFolder?.meta?.locked || ( isMultiSelecting && ! areAllTargetFoldersLocked ) ? __( 'Lock Folder', 'godam' ) : __( 'Unlock Folder', 'godam' ) }
+					</Button>
+					<Button
+						icon={ BookmarkStarIcon }
+						onClick={ () => handleMenuItemClick( 'addBookmark' ) }
+						className="folder-context-menu__item"
+						disabled={ isSpecialFolder }
+					>
+						{ ! currentFolder?.meta?.bookmark || ( isMultiSelecting && ! areAllTargetFoldersBookmarked ) ? __( 'Add Bookmark', 'godam' ) : __( 'Remove Bookmark', 'godam' ) }
+					</Button>
+				</>
 			) }
-			<Button
-				icon={ BookmarkStarIcon }
-				onClick={ () => handleMenuItemClick( 'addBookmark' ) }
-				className="folder-context-menu__item"
-				disabled={ isSpecialFolder }
-			>
-				{ ! currentFolder?.meta?.bookmark || ( isMultiSelecting && ! areAllTargetFoldersBookmarked ) ? __( 'Add Bookmark', 'godam' ) : __( 'Remove Bookmark', 'godam' ) }
-			</Button>
 			<Button
 				icon={ DownloadZipIcon }
 				onClick={ () => handleMenuItemClick( 'downloadZip' ) }
