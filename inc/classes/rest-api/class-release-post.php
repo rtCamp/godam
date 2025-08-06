@@ -193,7 +193,7 @@ class Release_Post extends Base {
 		}
 
 		$tag_name = strtolower( $node->tagName );
-		return in_array( $tag_name, array( 'h2', 'h3', 'h4' ) );
+		return in_array( $tag_name, array( 'h2', 'h3', 'h4' ), true );
 		// phpcs:enable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 	}
 }
