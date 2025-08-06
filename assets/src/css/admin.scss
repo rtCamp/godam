@@ -592,3 +592,101 @@ $media-frame-width: calc(300px + 2 * 24px);
 		color: #ab3a6c;
 	}
 }
+
+// Video Editor and Media Library's offer banner styles
+.annual-plan-offer-banner {
+	border: none;
+	margin: 0;
+	margin-left: -2rem;
+	background: linear-gradient(90deg, #AB3A6C, #E6533A);
+	display: flex;
+	justify-content: center;
+	position: relative;
+	margin-bottom: 0 !important;
+
+	#particle-canvas {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	&__content {
+		position: relative;
+		z-index: 1;
+		padding: 24px;
+		width: 100%;
+		max-width: 950px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 2rem;
+		margin-right: 30px;
+
+		@media (max-width: 840px) {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 1.5rem;
+			padding-left: 0;
+			padding-right: 24px;
+		}
+	}
+
+	&__title {
+		margin: 0;
+		font-size: 1.5rem;
+		color: #fff;
+		font-weight: 700;
+		line-height: 1.2;
+	}
+
+	&__description {
+		margin: 0;
+		padding: 0;
+		font-size: 0.875rem;
+		color: #fff;
+		line-height: 1.2;
+		margin-top: 10px;
+	}
+
+	&__cta-container {
+		display: flex;
+		align-items: center;
+		margin-top: 0;
+	}
+
+	&__cta {
+		background-color: #fff;
+		color: #AB3A6C;
+		padding: 10px 16px;
+		border-radius: 8px;
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+
+	&__dismiss {
+		position: absolute;
+		top: 8px;
+		right: 10px;
+		background: none;
+		border: none;
+		color: #fff;
+		font-size: 1.5rem;
+		cursor: pointer;
+		padding: 0.1rem .5rem 0.3rem .5rem;
+		line-height: 1;
+		z-index: 10;
+		transition: all 0.3s ease;
+		margin-left: 16px;
+
+		&:hover {
+			background-color: #fff;
+			color: #AB3A6C;
+			border-radius: 4px;
+		}
+	}
+}
