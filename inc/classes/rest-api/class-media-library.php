@@ -1012,6 +1012,7 @@ class Media_Library extends Base {
 
 		// Set custom metadata to track GoDAM-related properties.
 		update_post_meta( $attach_id, '_godam_original_id', $godam_id );
+		update_post_meta( $attach_id, 'rtgodam_transcoding_job_id', $godam_id ?? '' );
 		update_post_meta( $attach_id, '_godam_icon', esc_url_raw( $data['icon'] ?? '' ) );
 		update_post_meta( $attach_id, '_filesize_human', sanitize_text_field( $data['filesizeHumanReadable'] ?? '' ) );
 		update_post_meta( $attach_id, '_godam_label', sanitize_text_field( $data['label'] ?? '' ) );
