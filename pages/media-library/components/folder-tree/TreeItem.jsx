@@ -32,6 +32,29 @@ const TreeItem = ( { item, index, depth, onContextMenu, isMultiSelecting } ) => 
 	const multiSelectedFolderIds = useSelector( ( state ) => state.FolderReducer.multiSelectedFolderIds );
 	const isChecked = multiSelectedFolderIds.includes( item.id );
 
+	const allFolders = useSelector( ( state ) => state.FolderReducer.folders );
+
+	/**
+	 * Checks if any parent of the given folder is locked.
+	 *
+	 * @param {number} folderId    - The ID of the folder to check.
+	 * @param {Array}  allFolders_ - The array of all folder objects.
+	 * @return {boolean} True if any parent folder is locked, false otherwise.
+	 */
+	const isAnyParentLocked = ( folderId, allFolders_ ) => {
+		let current = allFolders_.find( ( f ) => f.id === folderId );
+		while ( current && current.parent !== 0 && current.parent !== -1 ) {
+			const parent = allFolders_.find( ( f ) => f.id === current.parent );
+			if ( parent?.meta?.locked ) {
+				return true;
+			}
+			current = parent;
+		}
+		return false;
+	};
+
+	const isLockedOrParentLocked = isAnyParentLocked( item.id, allFolders );
+
 	/**
 	 * Handle click on the tree item to change the selected folder
 	 * and trigger the filter change in the media grid.
@@ -101,6 +124,7 @@ const TreeItem = ( { item, index, depth, onContextMenu, isMultiSelecting } ) => 
 							onChange={ handleCheckboxChange }
 							onClick={ ( e ) => e.stopPropagation() }
 							__nextHasNoMarginBottom
+							disabled={ isLockedOrParentLocked }
 						/>
 					) }
 					<div className="tree-item__content">
