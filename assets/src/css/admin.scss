@@ -10,7 +10,7 @@ $LIGHT_BLUE: #2196F3;
 
 #root-easydam,
 #root-video-editor {
-	--wp-components-color-accent: #ab3a6c;
+	--wp-components-color-accent: variables.$godam-primary-text-color;
 }
 
 #wpbody-content {
@@ -697,7 +697,7 @@ to ensure proper responsiveness and avoid layout issues.
 
 	&__cta {
 		background-color: #fff;
-		color: #AB3A6C;
+		color: variables.$godam-primary-text-color;
 		padding: 10px 16px;
 		border-radius: 8px;
 		font-weight: 600;
@@ -713,7 +713,7 @@ to ensure proper responsiveness and avoid layout issues.
 		}
 
 		&:hover {
-			color: #AB3A6C;
+			color: variables.$godam-primary-text-color;
 		}
 	}
 
@@ -734,7 +734,7 @@ to ensure proper responsiveness and avoid layout issues.
 
 		&:hover {
 			background-color: #fff;
-			color: #AB3A6C;
+			color: variables.$godam-primary-text-color;;
 			border-radius: 4px;
 		}
 	}
