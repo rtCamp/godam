@@ -1,15 +1,18 @@
 /**
  * WordPress dependencies
  */
-import { Button, Notice } from '@wordpress/components';
+import { Button, Notice, Icon } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { error } from '@wordpress/icons';
 
 const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 	/**
 	 * State to manage the notice message and visibility.
 	 */
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
+
+	const isBubbleOrClassic = 'Bubble' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin;
 
 	/**
 	 * To show a notice message.
@@ -78,7 +81,7 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 	};
 
 	return (
-		<div className="godam-form-group godam-margin-bottom">
+		<div className="godam-form-group">
 			<label
 				className="label-text"
 				htmlFor="custom-brand-logo"
@@ -86,27 +89,30 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 				{ __( 'Custom brand logo', 'godam' ) }
 			</label>
 
-			<Button
-				onClick={ openBrandMediaPicker }
-				variant="primary"
-				disabled={ 'Bubble' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin }
-				className="godam-button godam-margin-right mt-[0.3rem] mb-[0.7rem]"
-			>
-				{ mediaSettings?.video_player?.brand_image ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
-			</Button>
-			{ mediaSettings?.video_player?.brand_image && (
+			<div className="flex items-center flex-wrap gap-2">
 				<Button
-					onClick={ removeBrandImage }
-					variant="secondary"
-					isDestructive
-					className="godam-button ml-3"
-					disabled={ 'Bubble' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin }
+					onClick={ openBrandMediaPicker }
+					variant="primary"
+					disabled={ isBubbleOrClassic }
+					className="godam-button"
 				>
-					{ __( 'Remove', 'godam' ) }
+					{ mediaSettings?.video_player?.brand_image ? __( 'Replace', 'godam' ) : __( 'Upload', 'godam' ) }
 				</Button>
-			) }
-			{ mediaSettings?.video_player?.brand_image && (
-				<div className="mt-2 border-2 border-blue-700 rounded-lg p-2 block bg-gray-200 w-fit">
+				{ mediaSettings?.video_player?.brand_image && (
+					<Button
+						onClick={ removeBrandImage }
+						variant="secondary"
+						isDestructive
+						className="godam-button"
+						disabled={ isBubbleOrClassic }
+					>
+						{ __( 'Remove', 'godam' ) }
+					</Button>
+				) }
+			</div>
+
+			{ mediaSettings?.video_player?.brand_image && 'Bubble' !== mediaSettings?.video_player?.player_skin && 'Classic' !== mediaSettings?.video_player?.player_skin && (
+				<div className="mt-3 border-2 border-indigo-200 rounded-lg p-2 block bg-gray-200 w-fit">
 					<img
 						src={ mediaSettings?.video_player?.brand_image }
 						alt={ __( 'Selected custom brand', 'godam' ) }
@@ -124,15 +130,18 @@ const BrandImageSelector = ( { mediaSettings, handleSettingChange } ) => {
 				</Notice>
 			) }
 
-			<p className="text-[0.75rem] leading-[1.2] text-[#777] mt-2">
+			<p className="text-[0.75rem] leading-[1.2] text-[#777]">
 				{
-					( 'Bubble' === mediaSettings?.video_player?.player_skin || 'Classic' === mediaSettings?.video_player?.player_skin ) ? __(
-						'The brand logo will not be applied to the player skin.',
-						'godam',
-					) : __(
-						'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos',
-						'godam',
-					)
+					isBubbleOrClassic
+						? ( <div className="flex items-center gap-2">
+							<Icon icon={ error } style={ { fill: '#EAB308' } } size={ 28 } />
+							<p className="text-[#AB3A6C] text-[0.75rem] leading-[1.2]">{ __(
+								'The brand logo will not be applied to the player skin.',
+								'godam',
+							) }
+							</p>
+						</div>
+						) : __( 'Upload a custom brand logo to display beside the player controls when selected. This can be overridden for individual videos', 'godam' )
 				}
 			</p>
 		</div>

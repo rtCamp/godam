@@ -54,6 +54,13 @@ class Pages {
 	private $settings_slug = 'rtgodam_settings';
 
 	/**
+	 * Slug for tools page
+	 *
+	 * @var string
+	 */
+	private $tools_slug = 'rtgodam_tools';
+
+	/**
 	 * Menu pag ID.
 	 *
 	 * @var string
@@ -89,6 +96,13 @@ class Pages {
 	private $settings_page_id = 'godam_page_rtgodam_settings';
 
 	/**
+	 * Tools page ID.
+	 * 
+	 * @var string
+	 */
+	private $tools_page_id = 'godam_page_rtgodam_tools';
+
+	/**
 	 * Construct method.
 	 */
 	protected function __construct() {
@@ -120,6 +134,8 @@ class Pages {
 	 * @return void
 	 */
 	public function add_admin_pages() {
+		global $admin_page_hooks;
+
 		add_menu_page(
 			__( 'GoDAM', 'godam' ),
 			__( 'GoDAM', 'godam' ),
@@ -129,6 +145,10 @@ class Pages {
 			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1LjU1NzggMjAuMDkxMUw4LjA1NTg3IDM3LjU5M0wzLjQ2Mzk3IDMzLjAwMTFDMC44MTg1MjEgMzAuMzU1NiAyLjA4MjEgMjUuODMzNiA1LjcyMjI4IDI0Ljk0NjRMMjUuNTYzMiAyMC4wOTY0TDI1LjU1NzggMjAuMDkxMVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00Ny4zNzczIDIxLjg4NjdMNDUuNTQzOCAyOS4zODc1TDIyLjY5NzIgNTIuMjM0MUwxMS4yNjA1IDQwLjc5NzRMMzQuMTY2MiAxNy44OTE2TDQxLjU3MDMgMTYuMDc5NkM0NS4wNzA2IDE1LjIyNDcgNDguMjMyMyAxOC4zODYzIDQ3LjM3MiAyMS44ODEzTDQ3LjM3NzMgMjEuODg2N1oiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00My41MDU5IDM4LjEwMzZMMzguNjY2NyA1Ny44OTA3QzM3Ljc3NDEgNjEuNTI1NSAzMy4yNTIxIDYyLjc4OTEgMzAuNjA2NiA2MC4xNDM2TDI2LjAzNjMgNTUuNTczMkw0My41MDU5IDM4LjEwMzZaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K',
 			30
 		);
+
+		// FIX: Force the admin page hook to use the untranslated slug.
+		// This prevents screen ID changes when menu title is translated.
+		$admin_page_hooks[ $this->menu_slug ] = 'godam'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		add_submenu_page(
 			$this->menu_slug,
@@ -160,6 +180,19 @@ class Pages {
 			2
 		);
 
+		// Only add Tools submenu if a valid API key is set.
+		if ( rtgodam_is_api_key_valid() ) {
+			add_submenu_page(
+				$this->menu_slug,
+				__( 'Tools', 'godam' ),
+				__( 'Tools', 'godam' ),
+				'manage_options',
+				$this->tools_slug,
+				array( $this, 'render_tools_page' ),
+				5
+			);
+		}
+
 		add_submenu_page(
 			$this->menu_slug,
 			__( 'Settings', 'godam' ),
@@ -179,6 +212,19 @@ class Pages {
 			array( $this, 'render_help_page' ),
 			7
 		);
+	}
+
+	/**
+	 * To render the tools page.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function render_tools_page() {
+		?>
+			<div id="root-godam-tools"></div>
+		<?php
 	}
 
 	/**
@@ -202,7 +248,7 @@ class Pages {
 		$screen = get_current_screen();
 
 		// Check if this is your custom admin page.
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->settings_page_id ) ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->help_page_id, $this->settings_page_id, $this->tools_page_id ), true ) ) {
 			// Remove admin notices.
 			remove_all_actions( 'admin_notices' );
 			remove_all_actions( 'all_admin_notices' );
@@ -222,7 +268,7 @@ class Pages {
 	 */
 	public function render_godam_page() {
 		?>
-		<div id="root-easydam">
+		<div id="root-godam-settings">
 			<div class="wrap flex min-h-[80vh] gap-4 my-4">
 				<!-- Sidebar Skeleton -->
 				<div class="max-w-[220px] w-full rounded-lg bg-white shadow-md border border-gray-200">
@@ -316,7 +362,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id ), true ) ) {
 
 			wp_register_script(
 				'rtgodam-page-style',
@@ -350,6 +396,9 @@ class Pages {
 			// TODO Handle Everest Forms pro versions as well in future.
 			$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' );
 
+			$is_ninja_forms_active = is_plugin_active( 'ninja-forms/ninja-forms.php' );
+
+
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
@@ -368,6 +417,7 @@ class Pages {
 					'forminatorActive'   => $is_forminator_active,
 					'fluentformsActive'  => $is_fluent_forms_active,
 					'everestFormsActive' => $is_everest_forms_active,
+					'ninjaFormsActive'   => $is_ninja_forms_active,
 				)
 			);
 
@@ -604,6 +654,27 @@ class Pages {
 
 			wp_set_script_translations( 'transcoder-page-script-godam', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-godam' );
+		} elseif ( $screen && $this->tools_page_id === $screen->id ) {
+
+			wp_register_script(
+				'godam-page-script-tools',
+				RTGODAM_URL . 'assets/build/pages/tools.min.js',
+				array( 'wp-element', 'wp-i18n' ),
+				filemtime( RTGODAM_PATH . 'assets/build/pages/tools.min.js' ),
+				true
+			);
+
+			wp_set_script_translations( 'godam-page-script-tools', 'godam', RTGODAM_PATH . 'languages' );
+
+			$rtgodam_user_data = rtgodam_get_user_data( true );
+
+			wp_localize_script(
+				'godam-page-script-tools',
+				'userData',
+				$rtgodam_user_data
+			);
+
+			wp_enqueue_script( 'godam-page-script-tools' );
 		}
 
 		wp_enqueue_style( 'wp-components' );
@@ -741,7 +812,7 @@ class Pages {
 	/**
 	 * Enqueue Everest Forms styles.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @return void
 	 */

@@ -9,14 +9,49 @@ export const folderApi = createApi( {
 	reducerPath: 'folderApi',
 	baseQuery: fetchBaseQuery( { baseUrl: restURL } ),
 	endpoints: ( builder ) => ( {
-		getFolders: builder.query( {
-			query: () => ( {
-				url: 'wp/v2/media-folder',
-				params: {
-					_fields: 'id,name,parent,attachmentCount,meta',
-					per_page: 100, // Note: 100 is the max per page. Implement pagination if total folders > 100
+		getAllMediaCount: builder.query( {
+			async queryFn( arg, api, extraOptions, baseQuery ) {
+				const result = await baseQuery( {
+					url: 'wp/v2/media',
+					params: { _fields: 'id', per_page: 1 },
+				} );
+				if ( result.error ) {
+					return { error: result.error };
+				}
+
+				const totalMediaCount = parseInt( result.meta?.response?.headers.get( 'X-WP-Total' ) || '0', 10 );
+
+				return { data: totalMediaCount };
+			},
+		} ),
+		getCategoryMediaCount: builder.query( {
+			query: ( { folderId } ) => ( {
+				url: `godam/v1/media-library/category-count/${ folderId }`,
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
 				},
 			} ),
+		} ),
+		getFolders: builder.query( {
+			query: ( options = {} ) => {
+				const isSpecial = options.bookmark || options.locked;
+
+				const params = {
+					_fields: 'id,name,parent,attachmentCount,meta',
+					per_page: isSpecial ? 100 : 10,
+					...( options.bookmark ? { bookmark: true } : {} ),
+					...( options.locked ? { locked: true } : {} ),
+					...( options.page ? { page: options.page } : {} ),
+				};
+
+				return {
+					url: 'godam/v1/media-library/media-folders',
+					params,
+					headers: {
+						'X-WP-Nonce': window.MediaLibrary.nonce,
+					},
+				};
+			},
 		} ),
 		createFolder: builder.mutation( {
 			query: ( data ) => ( {
@@ -111,10 +146,45 @@ export const folderApi = createApi( {
 				},
 			} ),
 		} ),
+		searchFolders: builder.query( {
+			async queryFn( { searchTerm, page = 1, perPage = 10 }, api, extraOptions, baseQuery ) {
+				const result = await baseQuery( {
+					url: `wp/v2/media-folder`,
+					params: {
+						search: searchTerm,
+						page,
+						per_page: perPage,
+						_fields: 'id,name',
+					},
+					headers: {
+						'X-WP-Nonce': window.MediaLibrary.nonce,
+					},
+				} );
+
+				if ( result.error ) {
+					return { error: result.error };
+				}
+
+				const totalPages = parseInt(
+					result.meta?.response?.headers.get( 'X-WP-Totalpages' ) || '0',
+					10,
+				);
+
+				return {
+					data: {
+						items: result.data,
+						totalPages,
+						currentPage: page,
+					},
+				};
+			},
+		} ),
 	} ),
 } );
 
 export const {
+	useGetAllMediaCountQuery,
+	useGetCategoryMediaCountQuery,
 	useGetFoldersQuery,
 	useCreateFolderMutation,
 	useUpdateFolderMutation,
@@ -124,4 +194,5 @@ export const {
 	useBulkBookmarkFoldersMutation,
 	useAssignFolderMutation,
 	useDownloadZipMutation,
+	useSearchFoldersQuery,
 } = folderApi;

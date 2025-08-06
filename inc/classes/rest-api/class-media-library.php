@@ -9,6 +9,8 @@ namespace RTGODAM\Inc\REST_API;
 
 use RTGODAM\Inc\Media_Library\Media_Folder_Create_Zip;
 use RTGODAM\Inc\Media_Library_Ajax;
+use RTGODAM\Inc\Taxonomies\Media_Folders;
+use RTGODAM\Inc\Media_Library\Media_Folder_Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -228,6 +230,28 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_attachment_by_id' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/category-count/(?P<folder_id>\d+)',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_count_by_category' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/media-folders',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_media_folders' ),
 					'permission_callback' => function () {
 						return current_user_can( 'upload_files' );
 					},
@@ -503,7 +527,7 @@ class Media_Library extends Base {
 	 *
 	 * Create a ZIP file of the folder with the given ID.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response|\WP_Error
@@ -890,7 +914,7 @@ class Media_Library extends Base {
 				$all_items[ $key ] = Media_Library_Ajax::get_instance()->prepare_godam_media_item( $item );
 				/**
 				 * For audio type, ensure that meta keys for artist and album exist.
-				 * 
+				 *
 				 * Note - This is a temporary fix till API starts sending the meta fields as well.
 				 */
 				if ( 'audio' === $type ) {
@@ -912,7 +936,7 @@ class Media_Library extends Base {
 				'page'        => $page,
 				'per_page'    => $per_page,
 				'has_more'    => $body->message->has_more,
-			) 
+			)
 		);
 	}
 
@@ -947,7 +971,7 @@ class Media_Library extends Base {
 				'post_status'    => 'any',
 				'fields'         => 'ids',
 				'posts_per_page' => 1,
-			) 
+			)
 		);
 
 		// If found, return existing attachment instead of duplicating.
@@ -959,7 +983,7 @@ class Media_Library extends Base {
 					'attachment' => wp_prepare_attachment_for_js( $existing_id ),
 					'message'    => 'Attachment already exists',
 				),
-				200 
+				200
 			);
 		}
 
@@ -982,7 +1006,7 @@ class Media_Library extends Base {
 					'success' => false,
 					'error'   => $attach_id->get_error_message(),
 				),
-				500 
+				500
 			);
 		}
 
@@ -1003,7 +1027,7 @@ class Media_Library extends Base {
 				'attachment' => wp_prepare_attachment_for_js( $attach_id ),
 				'message'    => 'Attachment created',
 			),
-			201 
+			201
 		);
 	}
 
@@ -1035,7 +1059,7 @@ class Media_Library extends Base {
 				'post_status'    => 'inherit',
 				'posts_per_page' => 1,
 				'fields'         => 'ids',
-			) 
+			)
 		);
 
 		// If a match is found, use that attachment ID.
@@ -1053,5 +1077,188 @@ class Media_Library extends Base {
 
 		// Return the full media object (or WP_Error if not found).
 		return $response;
+	}
+
+	/**
+	 * Get the number of items in a media folder by id.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_count_by_category( $request ) {
+		if ( ! isset( $request['folder_id'] ) ) {
+			return rest_ensure_response(
+				array(
+					'message' => __( 'A Folder ID is required', 'godam' ),
+				)
+			);
+		}
+
+		$folder_id = absint( sanitize_text_field( $request['folder_id'] ) );
+		$tax_query = array(
+			array(
+				'taxonomy' => 'media-folder',
+				'field'    => 'term_id',
+				'operator' => ( 0 === $folder_id ) ? 'NOT EXISTS' : 'IN',
+			),
+		);
+
+		if ( 0 !== $folder_id ) {
+			$tax_query[0]['terms'] = $folder_id;
+		}
+
+		$args = array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'fields'         => 'ids',
+			'posts_per_page' => 1,
+			'no_found_rows'  => false,
+			'tax_query'      => $tax_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+		);
+
+		$query = new \WP_Query( $args );
+
+		return rest_ensure_response(
+			array(
+				'folder_id' => $folder_id,
+				'count'     => $query->found_posts,
+			)
+		);
+	}
+
+	/**
+	 * Get media-folders terms by various parameters.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 *
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_media_folders( $request ) {
+		$taxonomy = Media_Folders::SLUG;
+		$bookmark = (bool) $request->get_param( 'bookmark' );
+		$locked   = (bool) $request->get_param( 'locked' );
+
+		$args = array(
+			'taxonomy'   => $taxonomy,
+			'hide_empty' => false,
+			'orderby'    => 'name',
+			'order'      => 'ASC',
+			'per_page'   => 100, // Default to 100 items per page.
+		);
+
+		// Initialize meta_query as empty array.
+		$meta_queries = array();
+
+		if ( ! empty( $bookmark ) ) {
+			$meta_queries[] = array(
+				'key'   => 'bookmark',
+				'value' => $bookmark,
+			);
+		}
+
+		if ( ! empty( $locked ) ) {
+			$meta_queries[] = array(
+				'key'   => 'locked',
+				'value' => $locked,
+			);
+		}
+
+		if ( ! empty( $meta_queries ) ) {
+			$args['meta_query'] = $meta_queries; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Meta query is needed to filter by bookmark and locked.
+		}
+
+		if ( ! $locked && ! $bookmark ) {
+			$page = (int) $request->get_param( 'page' );
+
+			if ( $page < 1 ) {
+				$page = 1; // Default to page 1 if not set or invalid.
+			}
+
+			$per_page = (int) $request->get_param( 'per_page' );
+
+			if ( $per_page < 1 ) {
+				$per_page = 10; // Default to 10 items per page if not set or invalid.
+			}
+
+			$args['number'] = $per_page;
+			$args['offset'] = ( $page - 1 ) * $per_page;
+
+			$args['parent'] = (int) ( $request->get_param( 'parent' ) ?? 0 );
+		}
+
+		$terms = get_terms( $args );
+
+		if ( ! $locked && ! $bookmark ) {
+			$terms = $this->get_all_children_terms( $terms, $taxonomy );
+		}
+
+		return rest_ensure_response( $this->prepare_term_responses( $terms ) );
+	}
+
+	/**
+	 * Get all child terms recursively for a given set of terms.
+	 *
+	 * This method retrieves all child terms for the provided terms in the specified taxonomy.
+	 *
+	 * @param array|\WP_Error $terms    The terms to get children for.
+	 * @param string          $taxonomy The taxonomy to query.
+	 *
+	 * @return array An array of all child terms.
+	 */
+	private function get_all_children_terms( $terms, $taxonomy ) {
+		if ( empty( $terms ) || is_wp_error( $terms ) ) {
+			return array();
+		}
+
+		$all_terms = array();
+
+		foreach ( $terms as $term ) {
+			$all_terms[] = $term;
+
+			// Get child terms recursively.
+			$children = get_term_children( $term->term_id, $taxonomy );
+			if ( ! empty( $children ) && ! is_wp_error( $children ) ) {
+				foreach ( $children as $child_id ) {
+					$child_term = get_term( $child_id, $taxonomy );
+					if ( ! is_wp_error( $child_term ) && $child_term ) {
+						$all_terms[] = $child_term;
+					}
+				}
+			}
+		}
+
+		return $all_terms;
+	}
+
+	/**
+	 * Prepare term responses for media folders.
+	 *
+	 * This method formats the term data for the REST API response.
+	 *
+	 * @param array|\WP_Error $terms The terms to prepare.
+	 *
+	 * @return array Prepared term data.
+	 */
+	private function prepare_term_responses( $terms ) {
+		if ( empty( $terms ) || is_wp_error( $terms ) ) {
+			return array();
+		}
+
+		$prepared = array();
+
+		foreach ( $terms as $term ) {
+			$prepared[] = array(
+				'id'              => $term->term_id,
+				'name'            => $term->name,
+				'parent'          => $term->parent,
+				'meta'            => array(
+					'locked'   => get_term_meta( $term->term_id, 'locked', true ),
+					'bookmark' => get_term_meta( $term->term_id, 'bookmark', true ),
+				),
+				'attachmentCount' => (int) Media_Folder_Utils::get_instance()->get_attachment_count( $term->term_id ),
+			);
+		}
+
+		return $prepared;
 	}
 }

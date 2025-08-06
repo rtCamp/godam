@@ -5,6 +5,7 @@ import React from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import 'videojs-contrib-quality-menu';
+import 'videojs-flvjs-es6';
 
 /**
  * WordPress dependencies
@@ -26,8 +27,10 @@ export const VideoJS = ( props ) => {
 			videoElement.classList.add( 'vjs-styles-dimensions' );
 			videoRef.current.appendChild( videoElement );
 
-			const player = ( playerRef.current = videojs( videoElement, options ), () => {
-				onReady && onReady( playerRef.current );
+			playerRef.current = videojs( videoElement, options, () => {
+				if ( onReady ) {
+					onReady( playerRef.current );
+				}
 			} );
 
 			// Add quality menu

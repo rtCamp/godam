@@ -1,8 +1,8 @@
 /**
  * External dependencies
  */
-import { useSelector } from 'react-redux';
-import { useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useRef } from 'react';
 
 /**
  * WordPress dependencies
@@ -16,16 +16,31 @@ import { lock } from '@wordpress/icons';
  */
 import './css/foldertabs.scss';
 import TabItem from './TabItem.jsx';
+import { useGetFoldersQuery } from '../../redux/api/folders.js';
+import { initializeLockedFolders } from '../../redux/slice/folders.js';
 
 const LockedTab = ( { handleContextMenu } ) => {
-	const folders = useSelector( ( state ) => state.FolderReducer?.folders || [] );
+	const { data: lockedData, isLoading: isLockedLoading } = useGetFoldersQuery( { locked: true } );
+	const dispatch = useDispatch();
+	const initializedRef = useRef( false );
 
-	// Get all the locked folders where `meta.locked` is true
-	// and sort them based on the currentSortOrder
-	const locked = useMemo( () => {
-		return folders
-			?.filter( ( folder ) => folder?.meta?.locked ) || [];
-	}, [ folders ] );
+	useEffect( () => {
+		if ( ! initializedRef.current && lockedData && ! isLockedLoading ) {
+			// Dispatch an action to set the locked folders in the Redux store
+			dispatch( initializeLockedFolders( lockedData ) );
+			initializedRef.current = true;
+		}
+	}, [ lockedData, dispatch, isLockedLoading ] );
+
+	const locked = useSelector( ( state ) => state.FolderReducer?.lockedFolders || [] );
+
+	useEffect( () => {
+		const event = new CustomEvent( 'godam:lockedFolderLoaded', {
+			detail: { ids: locked.map( ( folder ) => folder.id ) },
+		} );
+
+		window.dispatchEvent( event );
+	}, [ locked ] );
 
 	const lockedCount = locked?.length || 0;
 

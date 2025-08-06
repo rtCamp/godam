@@ -7,6 +7,7 @@
 
  // CF7 Form style.
 @use "./cf7-godam-theme";
+@use './variables';
 
 .rtgodam-video-caption {
 	margin-bottom: 1em;
@@ -25,7 +26,6 @@
 
 .easydam-video-block {
 
-
 	video {
 		width: 100%;
 		height: auto;
@@ -33,7 +33,6 @@
 }
 
 .wp-block-easydam-video {
-
 
 	video {
 		width: 100%;
@@ -80,6 +79,7 @@
 	&:hover {
 		color: var(--rtgodam-control-hover-color, #fff);
 	}
+
 	&.hidden {
 		display: none;
 	}
@@ -87,7 +87,7 @@
 
 .easydam-video-container {
 	position: relative;
-	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16/9);
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 	background-color: rgba(149, 149, 149, 0.2);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
@@ -132,7 +132,7 @@
 
 
 .easydam-player.video-js {
-	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16/9);
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 }
 
 .form-container {
@@ -207,7 +207,7 @@
 	padding: 32px 10%;
 }
 
-.fullscreen-layer .poll-container, .poll-container{
+.poll-container, .fullscreen-layer .poll-container {
 	color: #000;
 	padding: 32px 20%;
 	font-size: 1.375rem; 
@@ -262,7 +262,9 @@
     border: none;
     font-size: 16px;
     text-transform: uppercase;
-
+	text-align: center;
+	font-weight: 500;
+	
 	a {
 		color: #fff;
 	}
@@ -306,22 +308,6 @@
 
 	h2 {
 		color: #000;
-	}
-}
-
-.image-cta-btn {
-    padding: 10px 15px;
-    border-radius: 4px;
-    color: #fff;
-    background-color: #eeab95;
-    border: none;
-    font-size: 16px;
-    text-transform: uppercase;
-	text-align: center;
-	font-weight: 500;
-	
-	a {
-		color: #fff;
 	}
 }
 
@@ -471,7 +457,7 @@
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	line-height: 1.3em;
+	line-height: 1.3rem;
 	max-height: 2.6em;
 }
 
@@ -510,6 +496,7 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+
 	.product-hotspot-box {
 		width: 11em;
 		font-size: 13px;
@@ -580,12 +567,21 @@
 
   .share-modal-message {
 	background: #fff;
-    padding: 10px 40px;
-    border-radius: 5px;
+    padding: 24px;
+    border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
     text-align: center;
     font-size: 16px;
     font-weight: 700;
+
+	.share-modal-header {
+		color: #000 !important;
+
+		/* stylelint-disable-next-line no-descending-specificity */
+		p {
+			font-weight: 400;
+		}
+	}
 
 	h2 {
 		text-align: left;
@@ -593,10 +589,12 @@
 		font-weight: 600;
 	}
 
+	/* stylelint-disable-next-line no-descending-specificity */
 	p {
 		font-size: 12px;
 	}
 
+	/* stylelint-disable-next-line no-descending-specificity -- as styles are grouped */
 	a {
 		text-underline-offset: 0 !important;
 		text-decoration: none !important;
@@ -605,7 +603,7 @@
 
 	.share-buttons {
 		display: flex;
-		gap: 15px;
+		gap: 18px;
 		justify-content: center;
 	}
 
@@ -621,12 +619,11 @@
 	.share-input-container {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
 		justify-content: left;
 		margin-top: 20px;
 
 		label {
-			color: var(--wp--preset--color--accent-4);
+			color: variables.$godam-share-modal-gray;
 			font-size: 12px;
 			text-align: left;
 
@@ -635,19 +632,21 @@
 		.share-modal-input-group {
 			display: flex;
 			justify-content: space-between;
-			gap: 10px;
+			gap: 12px;
 		}
 
 		input {
-			width: 80%;
 			padding: 10px;
+			font-size: 14px;
+			color: #000;
 		}
 
 		button {
+			width: 12%;
 			padding: 4px;
 			cursor: pointer;
 			background: transparent;
-			border: 1px solid var(--wp--preset--color--accent-4);
+			border: 1px solid variables.$godam-share-modal-light-gray;
 			border-radius: 5px;
 
 			img {
@@ -663,8 +662,9 @@
 			button {
 				padding: 8px;
 				background-color: #fff;
+				color: #000;
 				cursor: pointer;
-				border: 1px solid var(--wp--preset--color--accent-4);
+				border: 1px solid variables.$godam-share-modal-light-gray;
 				border-radius: 5px;
 			}
 		}
@@ -693,16 +693,13 @@
 	word-wrap: break-word;
 }
 
-.fullscreen-layer .hotspot-tooltip,
-.fullscreen-layer .product-hotspot-box {
+.fullscreen-layer .hotspot-tooltip {
 	font-size: 16px;
 }
 
   /* Show tooltip on hover */
   .hotspot-tooltip:hover,
-  .hotspot:hover .hotspot-tooltip,
-  .product-hotspot-box:hover,
-  .hotspot:hover .product-hotspot-box {
+  .hotspot:hover .hotspot-tooltip {
 	visibility: visible;
 	opacity: 1;
 	transition: opacity 0.6s ease;
@@ -750,6 +747,7 @@
 	border-radius: 2px;
   }
 
+/* stylelint-disable-next-line no-descending-specificity -- as styles are grouped  */
 .hotspot-tooltip a {
 	overflow-wrap: break-word;
 	word-break: break-word;
@@ -783,18 +781,6 @@
 	border-width: 5px;
 	border-style: solid;
 	border-color: transparent transparent rgba(0, 0, 0, 0.8) transparent;
-}
-
-.product-bottom::after {
-	content: "";
-	position: absolute;
-	bottom: 100%;
-	top: auto;
-	left: 50%;
-	transform: translateX(-50%);
-	border-width: 5px;
-	border-style: solid;
-	border-color: transparent transparent rgba(255, 255, 255) transparent;
 }
 
 .fullscreen-layer .hotspot {

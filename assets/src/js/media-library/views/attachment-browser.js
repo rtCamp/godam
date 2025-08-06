@@ -8,7 +8,7 @@ import MediaDateRangeFilter from './filters/media-date-range-filter';
 import MediaRetranscode from './filters/media-retranscode';
 import ToggleFoldersButton from './filters/toggle-folders-button';
 
-import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled } from '../utility';
+import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled, getGodamSettings } from '../utility';
 
 const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
 
@@ -36,11 +36,20 @@ export default AttachmentsBrowser?.extend( {
 		this.collection.props.on( 'change', this.addUploadParam, this );
 	},
 
-	createToolbar() {
+	async createToolbar() {
 		// Make sure to load the original toolbar
 		AttachmentsBrowser.prototype.createToolbar.call( this );
 
-		if ( ToggleFoldersButton ) {
+		let showFoldersInMediaLibrary = false;
+		if ( ! isUploadPage() ) {
+			try {
+				const settings = await getGodamSettings();
+				showFoldersInMediaLibrary = settings?.general?.enable_folder_organization === true;
+			} catch ( error ) {
+			}
+		}
+
+		if ( ToggleFoldersButton && ! isUploadPage() && showFoldersInMediaLibrary ) {
 			this.toolbar.set(
 				'ToggleFoldersButton',
 				new ToggleFoldersButton( {
