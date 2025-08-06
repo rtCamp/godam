@@ -374,7 +374,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				icon={ RenameFolderIcon }
 				onClick={ () => handleMenuItemClick( 'rename' ) }
 				className="folder-context-menu__item"
-				disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder }
+				disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder || currentFolder?.meta?.locked }
 			>
 				{ __( 'Rename', 'godam' ) }
 			</Button>
@@ -406,7 +406,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				icon={ DeleteIcon }
 				onClick={ () => handleMenuItemClick( 'delete' ) }
 				className="folder-context-menu__item"
-				disabled={ isSpecialFolder }
+				disabled={ isSpecialFolder || currentFolder?.meta?.locked }
 			>
 				{ __( 'Delete', 'godam' ) }
 			</Button>
