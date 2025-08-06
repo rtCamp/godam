@@ -571,7 +571,7 @@ class Media_Library extends Base {
 	 */
 	public function bulk_delete_folders( $request ) {
 		$user = wp_get_current_user();
-		if ( ! in_array( 'administrator', $user->roles ) ) {
+		if ( ! in_array( 'administrator', $user->roles, true ) ) {
 			return new \WP_Error( 'rest_forbidden', __( 'You do not have permission to delete folders.', 'godam' ), array( 'status' => 403 ) );
 		}
 
