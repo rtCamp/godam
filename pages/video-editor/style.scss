@@ -14,14 +14,6 @@
 	}
 }
 
-.folded .media-modal.wp-core-ui {
-	margin-left: 36px;
-}
-
-.folded .media-modal-backdrop {
-	margin-left: 36px;
-}
-
 .media-modal.wp-core-ui {
 	margin-left: 160px;
 	margin-top: var(--wp-admin--admin-bar--height, 32px);
@@ -40,6 +32,14 @@
 	margin-top: var(--wp-admin--admin-bar--height, 32px);
 	background-color: #fff;
 	z-index: 90 !important;
+}
+
+.folded .media-modal.wp-core-ui {
+	margin-left: 36px;
+}
+
+.folded .media-modal-backdrop {
+	margin-left: 36px;
 }
 
 #easydam-video-player {
@@ -145,33 +145,6 @@
 			}
 		}
 
-		&:hover {
-			background-color: rgb(255, 177, 31);
-			box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-			z-index: 99;
-
-			.layer-indicator--container {
-				display: block;
-			}
-
-			width: var(--hover-width, 8px);
-
-			.layer-indicator--container {
-
-				.icon {
-					border-radius: 0.5rem;
-
-					div {
-						display: flex;
-					}
-				}
-
-				.info {
-					display: flex;
-				}
-			}
-		}
-
 		&--container {
 			position: relative;
 			// display: none;
@@ -244,6 +217,29 @@
 				display: none;
 			}
 		}
+
+		&:hover {
+			background-color: rgb(255, 177, 31);
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+			z-index: 99;
+			width: var(--hover-width, 8px);
+
+			.layer-indicator--container {
+				display: block;
+
+				.icon {
+					border-radius: 0.5rem;
+
+					div {
+						display: flex;
+					}
+				}
+
+				.info {
+					display: flex;
+				}
+			}
+		}
 	}
 
 	.chapter-indicator {
@@ -251,6 +247,7 @@
 		&--duration {
 			display: none;
 		}
+
 		&--text {
 			position: absolute;
 			left: 50%;
@@ -258,6 +255,7 @@
 			font-size: 11px;
 			white-space: nowrap;
 		}
+
 		&:hover {
 
 			.chapter-indicator--duration {
@@ -279,15 +277,30 @@
 	}
 }
 
-.godam-video-list-wrapper {
-	margin-left: -20px;
+#root-video-editor {
 
-	@media screen and (max-width: 782px) {
-		margin-left: 0;
+	.godam-settings-header-content {
+
+		@media (max-width: 420px) {
+			padding-left: 4px;
+			padding-right: 14px;
+		}
+	}
+
+	.components-button.has-icon.has-text {
+
+		@media (max-width: 640px) {
+			padding: .75rem 0.75rem;
+		}
 	}
 }
 
+.godam-video-list-wrapper {
+	margin-left: -20px !important;
+}
+
 .godam-video-list__video__thumbnail__overlay__menu {
+
 	.components-button.has-icon.has-text {
 		justify-content: flex-start !important;
 	}

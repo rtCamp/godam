@@ -96,7 +96,7 @@ class WPForms_Integration {
 	 */
 	public function enqueue_admin_assets() {
 		// GoDAM Video Editor page.
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['page'] ) && 'rtgodam_video_editor' === $_GET['page'] ) {
 			// Enqueue the WPForms styles.
 			$frontend = wpforms()->obj( 'frontend' );
@@ -106,7 +106,7 @@ class WPForms_Integration {
 		}
 
 		// Form builder page.
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['page'], $_GET['view'] ) && 'wpforms-builder' === $_GET['page'] && 'fields' === $_GET['view'] ) {
 			wp_enqueue_style( 'wpforms-uppy-video-style' );
 		}

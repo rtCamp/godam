@@ -98,7 +98,7 @@
 	pointer-events: none; /* Prevent interaction with the overlay */
 }
 
-.video-js .vjs-big-play-button {
+.easydam-video-container .video-js .vjs-big-play-button {
 	background-color: var(--rtgodam-control-bar-color, #000) !important;
 	border: none;
 	cursor: pointer;
@@ -109,10 +109,11 @@
 	height: 50px;
 	left: 53%;
 	transition: transform 0.3s ease;
+	min-height: unset;
 
 	span::before {
-		font-size: 1.7rem;
-		line-height: 1.9;
+		font-size: 28px;
+		line-height: 1.8;
 	}
 
 	&:hover, &:focus {
@@ -125,6 +126,8 @@
 	background-color: rgba(149, 149, 149, 0.2);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+	container-type: inline-size;
+	container-name: godam-player-default-skin;
 
 	&:has(.vjs-has-started) {
 
@@ -162,13 +165,13 @@
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 
 	.animate-play-btn {
-		width: 100px;
-		height: 60px;
+		width: 50px;
+		height: 50px;
 		position: absolute;
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
-		border-radius: 0.75rem;
+		border-radius: 50%;
 		background-color: #aaa;
 		display: flex;
 		justify-content: center;
@@ -179,7 +182,7 @@
 			height: 28px;
 		}
 
-		@media screen and (max-width: 768px) {
+		@container godam-player-default-skin (max-width: 480px) {
 			width: 50px;
 			height: 30px;
 
@@ -448,160 +451,6 @@
 	background: transparent;
 }
 
-/* Product Hotspot */
-.product-hotspot-box {
-	position: absolute;
-	bottom: 100%;
-	left: 50%;
-	transform: translateX(-50%);
-	visibility: hidden;
-	background-color: rgba(255, 255, 255);
-	color: #000;
-	text-align: center;
-	border-radius: 3px;
-	z-index: 200;
-	pointer-events: auto;
-	font-size: 14px;
-	line-height: 1.2;
-	opacity: 0;
-	transition: opacity 0.2s ease, visibility 0.2s ease;
-	word-wrap: break-word;
-	width: 20em;
-
-	&::after {
-		content: "";
-		position: absolute;
-		top: 100%;
-		left: 50%;
-		transform: translateX(-50%);
-		border-width: 5px;
-		border-style: solid;
-		border-color: rgba(255, 255, 255) transparent transparent transparent;
-	}
-
-	a {
-		overflow-wrap: break-word;
-		word-break: break-word;
-
-		&:hover {
-			color: #fff;
-			text-decoration: underline;
-		}
-	}
-
-	@media (max-width: 768px) {
-		width: 11em;
-		font-size: 13px;
-	}
-}
-
-.product-hotspot-woo-display {
-	display: flex;
-	flex-direction: row;
-	width: 100%;
-	max-width: 600px;
-	border-radius: 6px;
-	overflow: hidden;
-	align-items: stretch;
-
-	.product-hotspot-woo-image-wrapper,
-	.product-hotspot-woo-details {
-		width: 50%;
-		flex: 0 0 50%;
-		box-sizing: border-box;
-	}
-
-	.product-hotspot-woo-image-wrapper {
-		display: flex;
-
-		.product-hotspot-woo-image {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
-			display: block;
-
-			@media (max-width: 768px) {
-				height: auto;
-				max-height: 100px;
-			}
-		}
-
-		@media (max-width: 768px) {
-			width: 100%;
-			height: auto;
-		}
-	}
-
-	.product-hotspot-woo-details {
-		padding: 1rem;
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-		box-sizing: border-box;
-		align-items: flex-start;
-		text-align: left;
-
-		.product-hotspot-woo-name {
-			font-weight: 300;
-			font-size: 16px;
-			margin-bottom: 1rem;
-			color: #8f8b8b;
-			display: -webkit-box;
-			-webkit-line-clamp: 2;
-			-webkit-box-orient: vertical;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			line-height: 1.3;
-			max-height: 2.6em;
-
-			@media (max-width: 768px) {
-				font-size: 15px;
-			}
-		}
-
-		.product-hotspot-woo-price {
-			color: #000;
-			margin-bottom: 1rem;
-			font-size: 14px;
-
-			@media (max-width: 768px) {
-				font-size: 13px;
-			}
-		}
-
-		.product-hotspot-woo-link {
-			display: inline-block;
-			width: 100%;
-			text-align: center;
-			padding: 10px 0;
-			color: #fff;
-			border-radius: 3px;
-			text-decoration: none;
-			font-size: 14px;
-			box-sizing: border-box;
-
-			&:hover {
-				cursor: pointer;
-				pointer-events: auto;
-			}
-
-			@media (max-width: 768px) {
-				font-size: 13px;
-			}
-		}
-
-		@media (max-width: 768px) {
-			width: 100%;
-			padding: 0.75rem;
-		}
-	}
-
-	@media (max-width: 768px) {
-		flex-direction: column;
-		max-width: 100%;
-	}
-}
-
 .godam-menu-item-container {
 	align-items: center;
 	width: 100%;
@@ -637,6 +486,11 @@
 	align-items: center;
 	gap: 7px;
 	text-transform: capitalize;
+}
+
+.vjs-control:not(.godam-share-button),
+.vjs-menu-button {
+    background-color: unset !important;
 }
 
 .vjs-menu-item:hover,
@@ -676,7 +530,6 @@
 	border-radius: 50%;
 }
 
-
 .hotspot:hover {
 	border: 2px solid rgb(35, 136, 251);
 	box-shadow: 0 0 1px 1px rgba(35, 136, 251, 0.5);
@@ -693,9 +546,16 @@
 	}
 }
 
-.vjs-poster img {
-	object-fit: cover;
+.vjs-poster {
+	pointer-events: none;
 	background-color: #000;
+}
+
+.vjs-has-started.godam-hover-started {
+
+	.vjs-poster {
+		display: block;
+	}
 }
 
 // CSS to override the elementor image CSS in editor.
@@ -703,113 +563,302 @@
 	height: 100% !important;
 }
 
-.share-modal-message {
+// Share Modal
+body.godam-share-modal-open {
+	overflow: hidden;
+}
+
+.share-modal-container {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: variables.$godam-share-modal-overlay-background;
+	backdrop-filter: blur(5px);
+	z-index: 9999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	padding: 16px;
+	box-sizing: border-box;
+
+	opacity: 0;
+	animation: fadeOverlayIn 0.3s ease forwards;
+
+	&--closing {
+		animation: fadeOverlayOut 0.3s ease forwards;
+	}
+}
+
+.share-modal-popup {
 	background: #fff;
+	color: variables.$godam-share-modal-text-color;
 	padding: 24px;
 	border-radius: 8px;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
-	text-align: center;
 	font-size: 16px;
-	font-weight: 700;
+	width: 100%;
+	max-width: 500px;
+	display: flex;
+	flex-direction: column;
+	font-family: Roboto, sans-serif !important;
+	opacity: 0;
+	transform: scale(0.95);
+	animation: fadeInScale 0.3s ease forwards;
+	box-sizing: border-box;
 
-	.share-modal-header {
-		color: #000 !important;
-
-		/* stylelint-disable-next-line no-descending-specificity */
-		p {
-			font-weight: 400;
-		}
+	&--closing {
+		animation: fadeOutScale 0.3s ease forwards;
 	}
 
-	h2 {
-		text-align: left;
-		font-size: 16px;
+	@media screen and (max-width: 600px) {
+		padding: 16px;
+		font-size: 14px;
+	}
+
+	> *:not(:first-child) {
+		margin-top: 24px;
+	}
+
+	&__header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding-bottom: 16px;
+		border-bottom: 1px solid variables.$godam-share-modal-divider-color;
+	}
+
+	&__title {
+		font-size: 20px;
 		font-weight: 600;
+
+		@media screen and (max-width: 600px) {
+			font-size: 18px;
+		}
 	}
 
-	/* stylelint-disable-next-line no-descending-specificity */
-	p {
-		font-size: 12px;
-	}
-
-	/* stylelint-disable-next-line no-descending-specificity */
-	a {
-		text-underline-offset: 0 !important;
-		text-decoration: none !important;
-		text-decoration-thickness: 0 !important;
-	}
-
-	.share-buttons {
+	&__close-button {
+		font-size: 22px;
+		color: variables.$godam-share-modal-close-btn-color;
+		background: variables.$godam-share-modal-gray-accent-1;
+		height: 33px;
+		width: 35px;
+		cursor: pointer;
+		border: none;
+		border-radius: 50%;
 		display: flex;
-		gap: 18px;
+		align-items: center;
 		justify-content: center;
+		line-height: 1;
+		padding-bottom: 2px;
 
-		.social-icon img{
-				width: 20px;
-				height: 20px;
+		&:hover {
+			background: variables.$godam-share-modal-gray-accent-2;
 		}
 	}
 
-	.vjs-volume-panel-vertical {
-		flex-direction: column;
-
-		button {
-			height: 50% !important;
-			left: 10px !important;
-		}
-	}
-
-	.share-input-container {
-		display: flex;
-		flex-direction: column;
-		justify-content: left;
+	&__content {
 		margin-top: 20px;
+	}
 
-		label {
-			color: variables.$godam-share-modal-gray;
-			font-size: 12px;
-			text-align: left;
-		}
+	&__social-links {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 18px;
 
-		.share-modal-input-group {
-			display: flex;
-			justify-content: space-between;
+		@media screen and (max-width: 600px) {
 			gap: 12px;
 		}
 
-		input {
-			padding: 10px;
-			font-size: 14px;
-			color: #000;
-		}
+		a.social-icon {
+			height: 60px;
+			width: 60px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			background: variables.$godam-share-modal-gray-accent-1;
+			border-radius: 50%;
+			transition: all 0.2s ease;
 
-		button {
-			width: 12%;
-			padding: 4px;
-			cursor: pointer;
-			background: transparent;
-			border: 1px solid variables.$godam-share-modal-light-gray;
-			border-radius: 5px;
+			@media screen and (max-width: 600px) {
+				height: 50px;
+				width: 50px;
+			}
 
-			/* stylelint-disable-next-line no-descending-specificity */
 			img {
-				height: 15px;
+				height: 20px;
+				width: 20px;
+
+				@media screen and (max-width: 600px) {
+					height: 18px;
+					width: 18px;
+				}
+			}
+
+			&:hover {
+				background: variables.$godam-share-modal-gray-accent-2;
 			}
 		}
 	}
 
-	.share-modal-footer {
-		text-align: right;
+	&__footer {
 		margin-top: 20px;
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
 
-		button {
-			padding: 8px;
-			background-color: #fff;
-			color: #000;
-			cursor: pointer;
-			border: 1px solid variables.$godam-share-modal-light-gray;
-			border-radius: 5px;
+	&__input-container {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+
+		.share-modal-input-text {
+			font-size: 14px;
+			margin: 0;
 		}
+
+		.share-modal-input-group {
+			display: flex;
+			position: relative;
+
+			input {
+				width: 100%;
+				height: 25px;
+				padding: 24px 16px;
+				font-size: 14px;
+				color: rgb(120, 120, 120) !important;
+				background: variables.$godam-share-modal-gray-accent-1 !important;
+				border: none !important;
+				border-radius: 8px;
+				box-sizing: border-box;
+				outline: none;
+				letter-spacing: 0.5px;
+				box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.09) !important;
+				font-style: normal;
+				font-weight: 400;
+				line-height: 1.5;
+				font-family: Roboto, sans-serif !important;
+				margin-bottom: unset;
+
+				&:focus {
+					background: variables.$godam-share-modal-gray-accent-1 !important;
+					color: rgb(120, 120, 120) !important;
+					border: none !important;
+				}
+			}
+
+			.copy-button {
+				display: flex;
+				position: absolute;
+				top: 50%;
+				right: 0;
+				transform: translateY(-50%);
+				background: variables.$godam-share-modal-gray-accent-1;
+				border: none;
+				cursor: pointer;
+				padding: 15px;
+				border-radius: 0 8px 8px 0;
+
+				&:hover {
+					background: variables.$godam-share-modal-gray-accent-2;
+				}
+
+				img {
+					height: 18px;
+					width: 18px;
+				}
+			}
+		}
+	}
+}
+
+@keyframes fadeInScale {
+
+	from {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+@keyframes fadeOutScale {
+
+	from {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	to {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+}
+
+@keyframes fadeOverlayIn {
+
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes fadeOverlayOut {
+
+	from {
+		opacity: 1;
+	}
+
+	to {
+		opacity: 0;
+	}
+}
+
+.easydam-video-container .vjs-button.godam-share-button {
+	position: absolute;
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	top: 10px;
+	right: 10px;
+	z-index: 10;
+	padding: 10px;
+	background-color: rgba(0, 0, 0, 0.7);
+	color: #fff;
+	border: none;
+	cursor: pointer !important;
+	font-size: 15px !important;
+	border-radius: 50%;
+	display: flex;
+	transition: all 0.3s ease;
+	min-height: unset;
+	margin: 0;
+
+	@media screen and (max-width: 768px) {
+
+		&  {
+			opacity: 1;
+			visibility: visible;
+		}
+	}
+}
+
+.easydam-video-container:hover .vjs-button.godam-share-button {
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
+
+	&:hover{
+		background-color: #AB3A6C;
 	}
 }
 
@@ -836,16 +885,13 @@
 	word-wrap: break-word;
 }
 
-.fullscreen-layer .hotspot-tooltip,
-.fullscreen-layer .product-hotspot-box {
+.fullscreen-layer .hotspot-tooltip {
 	font-size: 16px;
 }
 
 /* Show tooltip on hover */
 .hotspot-tooltip:hover,
-.hotspot:hover .hotspot-tooltip,
-.product-hotspot-box:hover,
-.hotspot:hover .product-hotspot-box {
+.hotspot:hover .hotspot-tooltip {
 	visibility: visible;
 	opacity: 1;
 	transition: opacity 0.6s ease;
@@ -879,35 +925,6 @@
 	border-radius: 50%;
 }
 
-.godam-share-button {
-	position: absolute;
-	opacity: 0;
-	visibility: hidden;
-	pointer-events: none;
-	top: 10px;
-	right: 10px;
-	z-index: 10;
-	padding: 10px;
-	background-color: rgba(0, 0, 0, 0.7);
-	color: #fff;
-	border: none;
-	cursor: pointer !important;
-	font-size: 15px !important;
-	border-radius: 50%;
-	display: flex;
-	transition: all 0.3s ease
-}
-
-.easydam-video-container:hover .godam-share-button {
-	opacity: 1;
-	visibility: visible;
-	pointer-events: auto;
-
-	&:hover{
-		background-color: #AB3A6C;
-	}
-}
-
 /* Index in the top-left corner */
 .hotspot-content .index {
 	position: absolute;
@@ -922,7 +939,7 @@
 	border-radius: 2px;
 }
 
-/* stylelint-disable-next-line no-descending-specificity */
+/* stylelint-disable-next-line no-descending-specificity -- as styles are grouped  */
 .hotspot-tooltip a {
 	overflow-wrap: break-word;
 	word-break: break-word;
@@ -956,18 +973,6 @@
 	border-width: 5px;
 	border-style: solid;
 	border-color: transparent transparent rgba(0, 0, 0, 0.8) transparent;
-}
-
-.product-bottom::after {
-	content: "";
-	position: absolute;
-	bottom: 100%;
-	top: auto;
-	left: 50%;
-	transform: translateX(-50%);
-	border-width: 5px;
-	border-style: solid;
-	border-color: transparent transparent rgba(255, 255, 255) transparent;
 }
 
 .fullscreen-layer .hotspot {
@@ -1004,6 +1009,10 @@
 
 .vjs-menu-content {
 	background-color: rgba(43, 51, 63, 0.9);
+}
+
+.vjs-menu .vjs-menu-content li {
+	margin-left: 0;
 }
 
 .vjs-menu ul.vjs-menu-content {
@@ -1138,15 +1147,18 @@
 	 width: auto !important;
 	 order: 8;
 
-	 @media screen and (max-width: 768px) {
-		 display: none;
-	 }
-
 	 #branding-icon {
 		 height: 100%;
 		 width: auto;
 		 object-fit: fill;
 	 }
+
+	 @container godam-player-default-skin (max-width: 480px) {
+
+		& {
+			display: none;
+		}
+	}
  }
 
 .vjs-big-play-button.custom-play-image {
@@ -1158,30 +1170,9 @@
 	left: 50%;
 }
 
-.share-icon {
-	height: 18px;
-	cursor: pointer;
-}
-
 .blurred {
 	filter: blur(5px);
 	pointer-events: none;
-}
-
-.share-modal-container {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: rgba(0, 0, 0, .4);
-	-webkit-backdrop-filter: blur(5px);
-	backdrop-filter: blur(5px);
-	z-index: 9999;
-	max-width: unset !important;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 }
 
 .vjs-seek-indicator {
@@ -1219,22 +1210,22 @@
 .vjs-modal-dialog.vjs-text-track-settings {
 
 	color: #111;
-    z-index: 999;
-    background-color: #fff;
-    border-radius: 8px;
-    outline: 0;
-    width: 90%;
-    max-width: 400px;
-    height: 90%;
-    max-height: 260px;
-    margin: 0 auto;
-    font-size: 12px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+	z-index: 999;
+	background-color: #fff;
+	border-radius: 8px;
+	outline: 0;
+	width: 90%;
+	max-width: 400px;
+	height: 90%;
+	max-height: 260px;
+	margin: 0 auto;
+	font-size: 12px;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 	-webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: #e5e5e5 #fff;
+	scrollbar-width: thin;
+	scrollbar-color: #e5e5e5 #fff;
 
 	.vjs-close-button {
 		display: none;
@@ -1272,9 +1263,9 @@
 
 				label {
 					height: 20px;
-    				width: fit-content;
+					width: fit-content;
 					padding: 0 0 0 15px;
-    				font-size: 12px;
+					font-size: 12px;
 				}
 
 				select {
@@ -1364,7 +1355,7 @@
 	}
 
 
-	@media screen and (max-width: 768px) {
+	@container godam-player-default-skin (max-width: 480px) {
 
 		.vjs-modal-dialog-content {
 			padding: 15px 15px 0 15px;
@@ -1403,7 +1394,7 @@
 			.vjs-skip-backward-30 {
 				position: absolute;
 				bottom: 120px;
-				background: var(--rtgodam-control-bar-color, #00000085);
+				background: var(--rtgodam-control-bar-color, #00000085) !important;
 				height: 40px !important;
 				width: 40px;
 				border-radius: 999px;
@@ -1413,7 +1404,7 @@
 					line-height: 2;
 				}
 
-				@media screen and (max-width: 420px) {
+				@container godam-player-default-skin (max-width: 420px) {
 					left: 60px;
 				}
 			}
@@ -1425,7 +1416,7 @@
 			.vjs-skip-forward-30 {
 				position: absolute;
 				bottom: 120px;
-				background: var(--rtgodam-control-bar-color, #00000085);
+				background: var(--rtgodam-control-bar-color, #00000085) !important;
 				height: 40px !important;
 				width: 40px;
 				border-radius: 999px;
@@ -1435,7 +1426,7 @@
 					line-height: 2;
 				}
 
-				@media screen and (max-width: 420px) {
+				@container godam-player-default-skin (max-width: 420px) {
 					right: 60px;
 				}
 			}
@@ -1516,7 +1507,7 @@
 					display: none;
 				}
 
-				@media screen and (max-width: 420px) {
+				@container godam-player-default-skin (max-width: 420px) {
 					display: none !important;
 				}
 			}
@@ -1531,8 +1522,8 @@
 		}
 	}
 
-	// Screen size greater than 768px
-	@media screen and (min-width: 768px) {
+	// Screen size greater than 480px
+	@container godam-player-default-skin (min-width: 480px) {
 
 		.vjs-control-bar {
 
@@ -1555,9 +1546,27 @@
 	}
 }
 
+.video-js .vjs-time-tooltip,
+.video-js .vjs-volume-tooltip,
+.vjs-duration-display,
+.vjs-current-time-display {
+	white-space: nowrap;
+}
+
 /* GoDAM Video Heading Overlay Styles */
 .godam-video-wrapper {
 	position: relative;
+}
+
+.gf-godam-video-preview {
+
+	.easydam-video-container {
+		height: 100%;
+
+		.easydam-player.video-js {
+			margin-top: -2.125rem;
+		}
+	}
 }
 
 .godam-video-overlay-container {
@@ -1765,7 +1774,7 @@
 			align-items: flex-end;
 		}
 
-		@media (max-width: 781px) {
+		@container godam-player-default-skin (max-width: 480px) {
 
 			&:not(.is-not-stacked-on-mobile) {
 

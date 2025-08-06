@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, TabPanel, Snackbar, Tooltip } from '@wordpress/components';
+import { Button, TabPanel, Snackbar, Tooltip, Spinner } from '@wordpress/components';
 import { __, _n } from '@wordpress/i18n';
 import { copy, seen } from '@wordpress/icons';
 
@@ -39,17 +39,6 @@ import { copyGoDAMVideoBlock } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
 
 const VideoEditor = ( { attachmentID } ) => {
-	const formIDMap = {
-		cf7: 'cf7_id',
-		gravity: 'gf_id',
-		wpforms: 'wpform_id',
-		forminator: 'forminator_id',
-		sureforms: 'sureform_id',
-		fluentforms: 'fluent_form_id',
-		jetpack: 'jp_id',
-		everestforms: 'everest_form_id',
-		ninjaforms: 'ninja_form_id',
-	};
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
@@ -360,11 +349,12 @@ const VideoEditor = ( { attachmentID } ) => {
 					<Button
 						className="godam-button absolute right-4 bottom-8"
 						variant="primary"
-						disabled={ ! isChanged }
+						icon={ isSavingMeta && <Spinner /> }
 						onClick={ handleSaveAttachmentMeta }
 						isBusy={ isSavingMeta }
+						disabled={ ! isChanged }
 					>
-						{ __( 'Save', 'godam' ) }
+						{ isSavingMeta ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 					</Button>
 				</div>
 

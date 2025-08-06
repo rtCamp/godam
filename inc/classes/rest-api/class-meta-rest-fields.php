@@ -83,5 +83,21 @@ class Meta_Rest_Fields {
 				},
 			)
 		);
+
+		register_post_meta(
+			'attachment',
+			'rtgodam_hls_transcoded_url',
+			array(
+				'type'          => 'string',
+				'single'        => true,
+				'show_in_rest'  => true,
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+				'get_callback'  => function ( $post ) {
+					return rtgodam_get_hls_transcoded_url_from_attachment( $post->ID );
+				},
+			)
+		);
 	}
 }
