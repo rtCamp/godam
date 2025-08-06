@@ -637,7 +637,7 @@ class WC_Product_Video_Gallery {
 			return;
 		}
 
-		$attachment_ids = $product->get_gallery_image_ids();
+		$attachment_ids    = $product->get_gallery_image_ids();
 		$post_thumbnail_id = $product->get_image_id();
 
 		if ( $post_thumbnail_id ) {
@@ -648,8 +648,8 @@ class WC_Product_Video_Gallery {
 				?>
 				<div class="rtgodam-product-video-gallery-slider-modal-content--main-image">
 					<img src="<?php echo esc_url( $image_url ); ?>" 
-						 alt="<?php echo esc_attr( $image_alt ); ?>" 
-						 class="rtgodam-product-video-gallery-slider-modal-content--main-image-img" />
+						alt="<?php echo esc_attr( $image_alt ); ?>" 
+						class="rtgodam-product-video-gallery-slider-modal-content--main-image-img" />
 				</div>
 				<?php
 			}
