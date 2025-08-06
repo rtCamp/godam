@@ -155,6 +155,12 @@ class GoDAM_Player {
 			'godam_video'
 		);
 
+		// Decode custom placeholders back to square brackets if sources contain them.
+		if ( ! empty( $attributes['sources'] ) && is_string( $attributes['sources'] ) ) {
+			// Convert custom placeholders back to square brackets.
+			$attributes['sources'] = str_replace( array( '__rtgob__', '__rtgcb__' ), array( '[', ']' ), $attributes['sources'] );
+		}
+
 		$is_shortcode = true;
 
 		wp_enqueue_script( 'godam-player-frontend-script' );

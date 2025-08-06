@@ -103,7 +103,8 @@ class GridViewTranscodingStatus {
 	}
 
 	updateInProgressStatus( progress, status ) {
-		this.transcodingStatusLoader.style.setProperty( '--status-text', `"${ status }"` );
+		const titleStatus = status.charAt( 0 ).toUpperCase() + status.slice( 1 );
+		this.transcodingStatusLoader.style.setProperty( '--status-text', `"${ titleStatus }"` );
 
 		const progressCircle = this.transcodingStatusSVG.querySelector( '.progress' );
 
