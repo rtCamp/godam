@@ -21,7 +21,7 @@ class GoDAM_Video extends Base {
 	 */
 	public function set_default_config() {
 		return array(
-			'name'            => 'godam_record',
+			'name'            => 'godam-video',
 			'title'           => _x( 'GoDAM Video', 'Widget Title', 'godam' ),
 			'icon'            => 'eicon-video',
 			'categories'      => array( 'godam' ),
@@ -371,7 +371,6 @@ class GoDAM_Video extends Base {
 
 		$is_elementor_widget = true;
 
-		ob_start();
 		require RTGODAM_PATH . 'inc/templates/godam-player.php';
 	}
 }
