@@ -269,6 +269,8 @@ const Analytics = ( { attachmentID } ) => {
 
 	const comparisonPlays = abTestComparisonAnalyticsData?.plays;
 
+	const thumbnailsURL = window.abThumbnailsData;
+
 	const highlightClass = ( a, b ) => {
 		if ( a > b ) {
 			return 'left-greater';
@@ -305,6 +307,23 @@ const Analytics = ( { attachmentID } ) => {
 		// Cleanup
 		return () => window.removeEventListener( 'resize', handleResize );
 	}, [] );
+
+	useEffect( () => {
+		if ( ! analyticsDataFetched ) {
+			return;
+		}
+		const scrollTo = window.location.hash;
+
+		if ( scrollTo ) {
+			setTimeout( () => {
+				const section = document.querySelector( scrollTo );
+				if ( section ) {
+					// Delay scrolling in case layout is not ready
+					section.scrollIntoView( { behavior: 'smooth' } );
+				}
+			}, 500 );
+		}
+	}, [ analyticsDataFetched ] );
 
 	return (
 		<div className="godam-analytics-container">
@@ -703,6 +722,64 @@ const Analytics = ( { attachmentID } ) => {
 							</div>
 						</div>
 					</div>
+
+					{ thumbnailsURL &&
+						<div className="px-10 py-6" id="ab-reports-container">
+							<div>
+								<h3 className="text-base font-semibold">
+									{ __( 'AB Test Reports', 'godam' ) }
+								</h3>
+							</div>
+							<div className="flex w-full flex-col border border-gray-200 bg-white rounded-xl p-6">
+								{ thumbnailsURL && (
+									<div className="w-full flex">
+										<div className="m-auto basis-1/2">
+											<img src={ thumbnailsURL[ 0 ] } alt="AB Test Thumbnail" className="w-full h-full object-fill comparison-video-container" />
+										</div>
+
+										<div className="w-px bg-gray-200 mx-4 divide-dashed"></div>
+
+										<div className="m-auto basis-1/2">
+											<img src={ thumbnailsURL[ 1 ] } alt="AB Test Thumbnail" className="w-full h-full object-fill comparison-video-container" />
+										</div>
+									</div>
+								) }
+								<table className="w-full ab-testing-table rounded-xl">
+									<tbody>
+										<tr
+											className={ highlightClass(
+												0,
+												10,
+											) }
+										>
+											<td>{ 0 }</td>
+											<td>{ __( 'Plays', 'godam' ) }</td>
+											<td>{ 10 }</td>
+										</tr>
+										<tr
+											className={ highlightClass(
+												10,
+												11,
+											) }
+										>
+											<td>{ 10 }</td>
+											<td>{ __( 'Play Rate', 'godam' ) }</td>
+											<td>{ 11 }</td>
+										</tr>
+									</tbody>
+								</table>
+
+								<Button
+									variant="primary"
+									onClick={ () => {
+									} }
+									className="godam-button w-fit mt-7"
+								>
+									{ __( 'Set Winner as thumbnail', 'godam' ) }
+								</Button>
+							</div>
+						</div>
+					}
 				</div>
 			) }
 		</div>
