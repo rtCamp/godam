@@ -153,6 +153,10 @@
 
 		100% { opacity: 0; transform: translateY(0) rotate(45deg); }
 	}
+
+	.vjs-poster img {
+		object-fit: cover !important;
+	}
 }
 
 .godam-product-modal-container.hidden, .godam-woocommerce-featured-video-modal-container.hidden{
@@ -462,8 +466,6 @@
 		}
 
 		.godam-sidebar-close{
-			// temporary hide close button
-			display: none;
 			cursor: pointer;
 			font-size: 1.5rem;
 			font-weight: 600;
@@ -548,14 +550,11 @@
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 		text-overflow: ellipsis;
+
 		@media (max-width: 768px) {
 			font-size: 1rem !important;
 			line-height: 1.1rem !important;
-		}
-
-		@media (min-width: 1080x) {
-			font-size: 0.9rem !important;
-			line-height: 1rem !important;
+			display: block;
 		}
 	}
 
