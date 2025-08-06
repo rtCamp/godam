@@ -3,6 +3,19 @@
 @import "@uppy/webcam/dist/style.min.css";
 @import "@uppy/screen-capture/dist/style.min.css";
 
+/** Style the field in the field preview **/
+.wpforms_page_wpforms-builder {
+	
+    .wpforms-field-godam_record {
+		
+        .uppy-video-upload-button {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+        }
+    }
+}
+
 /* Frontend styles for the video upload field. */
 .wpforms-container {
 
@@ -33,23 +46,10 @@
             font-family: inherit;
             font-weight: 500;
             font-size: var(--wpforms-button-size-font-size);
-            line-height: 100%;
+            line-height: 1rem;
             cursor: pointer;
             position: relative;
             text-decoration: none;
-        }
-    }
-}
-
-/** Style the field in the field preview **/
-.wpforms_page_wpforms-builder {
-
-    .wpforms-field-godam_record {
-
-        .uppy-video-upload-button {
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
         }
     }
 }
@@ -86,19 +86,15 @@
             }
         }
     }
-}
 
-/** Style the field in the entry edit page **/
-.wpforms_page_wpforms-entries {
-
-    .wpforms-edit-entry-container.wpforms-container {
-
+	.wpforms-edit-entry-container.wpforms-container {
+		
         .wpforms-field-godam_record {
             display: flex;
             flex-direction: column;
 
             .godam-video-preview {
-
+				
                 figure {
                     margin: 0;
                 }
@@ -124,3 +120,4 @@
         }
     }
 }
+

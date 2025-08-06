@@ -46,7 +46,7 @@
 }
 
 .vjs-volume-vertical {
-    left: 0px !important;
+    left: 0 !important;
 }
 
 .components-custom-select-control__item-icon {
@@ -55,7 +55,7 @@
 
 .image-overlay-text {
     font-size: 15px;
-    background: white;
+    background: #fff;
     padding: 10px;
     border-radius: 12px;
 }
