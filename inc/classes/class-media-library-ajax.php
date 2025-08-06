@@ -543,12 +543,13 @@ class Media_Library_Ajax {
 			$banner_html = sprintf(
 				'<div class="notice annual-plan-offer-banner">
 					<a href="%1$s">
-						<img src="%2$s" class="annual-plan-offer-banner__img" alt="Annual Plan Offer Banner">
+						<img src="%2$s" class="annual-plan-offer-banner__img" alt="%3$s">
 					</a>
 					<button type="button" class="annual-plan-offer-banner__dismiss">&times;</button>
 				</div>',
 				esc_url( 'https://godam.io/pricing?utm_campaign=annual-plan&utm_source=' . $host . '&utm_medium=plugin&utm_content=banner' ),
-				esc_url( RTGODAM_URL . '/assets/src/images/annual-plan-offer-banner.png' )
+				esc_url( RTGODAM_URL . '/assets/src/images/annual-plan-offer-banner.png' ),
+				esc_attr( __( 'Annual Plan Offer Banner', 'godam' ) )
 			);
 
 			echo wp_kses(
