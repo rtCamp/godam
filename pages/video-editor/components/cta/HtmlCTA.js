@@ -1,8 +1,8 @@
 /**
  * WordPress dependencies
  */
-import { TextareaControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+
 /**
  * External dependencies
  */

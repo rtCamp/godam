@@ -49,7 +49,7 @@ class Retranscode_Failed_Media {
 	public function add_re_transcoding_schedule( $schedules ) {
 		if ( ! isset( $schedules['retranscode_failed_media'] ) ) {
 			$schedules['retranscode_failed_media'] = array(
-				'interval' => 10, // 10 minutes
+				'interval' => 10 * MINUTE_IN_SECONDS,
 				'display'  => __( 'Retranscode Failed Media', 'godam' ),
 			);
 		}

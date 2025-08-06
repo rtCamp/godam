@@ -97,7 +97,6 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 				page,
 				per_page: perPage,
 				...( this.props?.get( 'search' ) && { search: this.props.get( 'search' ) } ),
-				...( this.props?.get( 'date_query' ) && { date_query: this.props.get( 'date_query' ) } ),
 				...( this.props?.get( 'type' ) && { type: this.props.get( 'type' ) } ),
 			};
 
