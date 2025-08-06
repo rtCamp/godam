@@ -16,70 +16,95 @@ use WPCF7_ContactForm;
  * Class Form_Layer
  */
 class Form_Layer {
+
 	use Singleton;
 
 	/**
-	 * Add a hidden input field to the form with the GoDAM identifier.
+	 * Static array to hold form identifiers.
 	 *
-	 * @param int    $video_id   The ID of the video.
-	 * @param string $form_type  The type of form (e.g., 'cf7', 'gravity').
-	 * @param int    $form_id    The ID of the form.
+	 * @var array
+	 */
+	protected static $form_identifiers = array();
+
+	/**
+	 * Adds the godam identifier to the appropriate form type.
+	 *
+	 * @param int    $video_id Video ID.
+	 * @param string $form_type Form type (e.g., 'cf7', 'gravity').
+	 * @param int    $form_id Form ID.
+	 *
 	 * @return void
 	 */
 	public static function add_form_godam_identifier( $video_id, $form_type, $form_id ) {
-
 		$godam_identifier = array(
 			'video_id' => $video_id,
 		);
 
-		switch ( $form_type ) {
+		switch ( strtolower( $form_type ) ) {
 			case 'cf7':
-				// Contact Form 7.
-				add_filter(
-					'wpcf7_form_elements',
-					function ( $content ) use ( $godam_identifier, $form_id ) {
-						$current_form = WPCF7_ContactForm::get_current();
-
-						// Check if the current form is set and matches the provided form ID.
-						if ( ! $current_form || $current_form->id() !== $form_id ) {
-							return $content;
-						}
-
-						$html_class = $current_form->shortcode_attr( 'html_class' );
-
-						// Check if the HTML class contains 'godam-video'.
-						if ( ! isset( $html_class ) || ! str_contains( $html_class, 'godam-video' ) ) {
-							return $content;
-						}
-
-						$content .= '<input type="hidden" name="godam_source" value="' . esc_attr( wp_json_encode( $godam_identifier ) ) . '">';
-						return $content;
-					}
-				);
+				// Add the identifier to Contact Form 7.
+				self::$form_identifiers['cf7'][ $form_id ] = $godam_identifier;
+				add_filter( 'wpcf7_form_elements', array( __CLASS__, 'handle_cf7_form' ) );
 				break;
-			case 'gravity':
-				// Gravity Forms.
-				add_filter(
-					'gform_get_form_filter_' . $form_id,
-					function ( $content ) use ( $godam_identifier ) {
-						global $godam_rending_form;
 
-						// Check if we are rendering the a form layer.
-						if ( ! $godam_rending_form ) {
-							return $content;
-						}
-						// Append the hidden input field to the form content.
-						$content = str_replace(
-							'</form>',
-							'<input type="hidden" name="godam_source" value="' . esc_attr( wp_json_encode( $godam_identifier ) ) . '"></form>',
-							$content
-						);
-						return $content;
-					},
-					10,
-					2
-				);
+			case 'gravity':
+				// Add the identifier to Gravity Forms.
+				self::$form_identifiers['gravity'][ $form_id ] = $godam_identifier;
+				add_filter( 'gform_field_value_godam_source', array( __CLASS__, 'handle_gravity_form' ), 10, 2 );
 				break;
 		}
+	}
+
+	/**
+	 * Handle Contact Form 7 integration.
+	 *
+	 * @param string $content The form content.
+	 *
+	 * @return string Modified form content.
+	 */
+	public static function handle_cf7_form( $content ) {
+		// Get the current Contact Form 7 instance.
+		$current_form = WPCF7_ContactForm::get_current();
+
+		if ( ! $current_form || ! (int) $current_form->id() ) {
+			return $content;
+		}
+		// Get the current form ID.
+		$current_form_id = (int) $current_form->id();
+
+		// Check if the current form ID is present on the $form_identifiers cf7.
+		if ( ! isset( self::$form_identifiers['cf7'][ $current_form_id ] ) ) {
+			return $content;
+		}
+
+		$hidden_input = sprintf(
+			'<input type="hidden" name="godam_source" value="%s">',
+			esc_attr( wp_json_encode( self::$form_identifiers['cf7'][ $current_form_id ], JSON_UNESCAPED_SLASHES ) )
+		);
+
+		return $content . $hidden_input;
+	}
+
+	/**
+	 * Handle Gravity Forms integration.
+	 *
+	 * @param array  $value The value of the field.
+	 * @param object $field The field object.
+	 *
+	 * @return mixed Modified value for the field.
+	 */
+	public static function handle_gravity_form( $value, $field ) {
+		if ( $field && $field->formId ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			$form_id = $field->formId; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+
+			// Check if the form ID is present in the identifiers.
+			if ( ! isset( self::$form_identifiers['gravity'][ $form_id ] ) ) {
+				return $value;
+			}
+			$godam_identifier = self::$form_identifiers['gravity'][ $form_id ];
+
+			return wp_json_encode( $godam_identifier, JSON_UNESCAPED_SLASHES );
+		}
+		return $value;
 	}
 }
