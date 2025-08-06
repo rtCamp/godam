@@ -111,7 +111,7 @@ class Release_Post extends Base {
 
 		foreach ( $headings as $heading ) {
 			// Naming convention used by DOMDocument internally.
-            // phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$title   = trim( $heading->textContent );
 			$classes = $heading->getAttribute( 'class' );
 			
@@ -194,6 +194,6 @@ class Release_Post extends Base {
 
 		$tag_name = strtolower( $node->tagName );
 		return in_array( $tag_name, array( 'h2', 'h3', 'h4' ) );
-        // phpcs:enable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase 
+		// phpcs:enable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 	}
 }
