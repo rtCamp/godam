@@ -62,6 +62,25 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	const [ bulkLockFoldersMutation ] = useBulkLockFoldersMutation();
 	const [ bulkBookmarkFoldersMutation ] = useBulkBookmarkFoldersMutation();
 
+	/**
+	 * Utility to get all descendant folder IDs for a given folder ID.
+	 *
+	 * @param {number} parentId
+	 * @param {Array}  folders
+	 * @return {Array} descendant IDs (including parentId itself)
+	 */
+	const getAllDescendantFolderIds = ( parentId, folders ) => {
+		const result = [];
+		const stack = [ parentId ];
+		while ( stack.length > 0 ) {
+			const currentId = stack.pop();
+			result.push( currentId );
+			const children = folders.filter( ( f ) => f.parent === currentId );
+			children.forEach( ( child ) => stack.push( child.id ) );
+		}
+		return result;
+	};
+
 	// Close menu if clicked outside.
 	useEffect( () => {
 		const handleClickOutside = ( event ) => {
@@ -279,22 +298,14 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				type: 'fail',
 			} ) );
 		} else {
-			const folder = currentFolder;
-			const isCurrentlyLocked = folder?.meta?.locked;
-			const updatedFolder = {
-				...folder,
-				meta: {
-					...folder?.meta,
-					locked: ! isCurrentlyLocked,
-					bookmark: Boolean( folder?.meta?.bookmark ?? false ), // Ensure bookmark status remains unchanged
-				},
-			};
-
 			try {
 				if ( multiSelectedFolderIds.length <= 0 ) {
-					await updateFolderMutation( updatedFolder ).unwrap();
+					const isCurrentlyLocked = currentFolder?.meta?.locked;
+					const descendants = getAllDescendantFolderIds( currentFolder.id, allFolders );
 
-					dispatch( lockFolder( updatedFolder.id ) );
+					const response = await bulkLockFoldersMutation( { folderIds: descendants, lockedStatus: ! isCurrentlyLocked } ).unwrap();
+
+					dispatch( lockFolder( { ids: response.updated_ids, status: ! isCurrentlyLocked } ) );
 
 					dispatch(
 						updateSnackbar( {
@@ -324,7 +335,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				);
 			}
 		}
-	}, [ dispatch, updateFolderMutation, bulkLockFoldersMutation, currentFolder, multiSelectedFolderIds, areAllTargetFoldersLocked ] );
+	}, [ dispatch, bulkLockFoldersMutation, currentFolder, allFolders, multiSelectedFolderIds, areAllTargetFoldersLocked ] );
 
 	const handleMenuItemClick = ( actionType ) => {
 		switch ( actionType ) {
