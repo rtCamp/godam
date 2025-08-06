@@ -591,12 +591,23 @@ class WC_Product_Video_Gallery {
 	 */
 	public function rtgodam_single_product_modal_summary() {
 		ob_start();
-		woocommerce_show_product_images();
+		?>
+		<div class="rtgodam-product-video-gallery-slider-modal-content--images">
+			<div class="rtgodam-product-video-gallery-slider-modal-content--images-desktop">
+				<?php woocommerce_show_product_images(); ?>
+			</div>
+			<div class="rtgodam-product-video-gallery-slider-modal-content--images-mobile">
+				<?php $this->display_main_product_image_only(); ?>
+			</div>
+		</div>
+		<div class="rtgodam-mobile-content">
+		<?php
 		woocommerce_template_single_title();
 		woocommerce_template_single_rating();
 		woocommerce_template_single_price();
 		woocommerce_template_single_excerpt();
 		?>
+		</div>
 		<div class="rtgodam-product-video-gallery-slider-modal-content--cart">
 			<div class="rtgodam-product-video-gallery-slider-modal-content--cart-form">
 				<?php woocommerce_template_single_add_to_cart(); ?>
@@ -607,9 +618,41 @@ class WC_Product_Video_Gallery {
 				?>
 			</div>
 		</div>
+	
 		<?php
 		woocommerce_template_single_meta();
 		woocommerce_template_single_sharing();
 		return ob_get_clean();
+	}
+
+	/**
+	 * Display only the main product image for mobile view.
+	 *
+	 * @return void
+	 */
+	public function display_main_product_image_only() {
+		global $product;
+		
+		if ( ! $product ) {
+			return;
+		}
+
+		$attachment_ids = $product->get_gallery_image_ids();
+		$post_thumbnail_id = $product->get_image_id();
+
+		if ( $post_thumbnail_id ) {
+			$image_url = wp_get_attachment_image_url( $post_thumbnail_id, 'woocommerce_single' );
+			$image_alt = get_post_meta( $post_thumbnail_id, '_wp_attachment_image_alt', true );
+			
+			if ( $image_url ) {
+				?>
+				<div class="rtgodam-product-video-gallery-slider-modal-content--main-image">
+					<img src="<?php echo esc_url( $image_url ); ?>" 
+						 alt="<?php echo esc_attr( $image_alt ); ?>" 
+						 class="rtgodam-product-video-gallery-slider-modal-content--main-image-img" />
+				</div>
+				<?php
+			}
+		}
 	}
 }
