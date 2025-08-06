@@ -44,13 +44,23 @@ class Form_Layer {
 			case 'cf7':
 				// Add the identifier to Contact Form 7.
 				self::$form_identifiers['cf7'][ $form_id ] = $godam_identifier;
-				add_filter( 'wpcf7_form_elements', array( __CLASS__, 'handle_cf7_form' ) );
+
+				// Add the filter only if it hasn't been added yet.
+				if ( ! has_filter( 'wpcf7_form_elements', array( __CLASS__, 'handle_cf7_form' ) ) ) {
+					// Add the filter to handle Contact Form 7 submissions.
+					add_filter( 'wpcf7_form_elements', array( __CLASS__, 'handle_cf7_form' ) );
+				}
 				break;
 
 			case 'gravity':
 				// Add the identifier to Gravity Forms.
 				self::$form_identifiers['gravity'][ $form_id ] = $godam_identifier;
-				add_filter( 'gform_field_value_godam_source', array( __CLASS__, 'handle_gravity_form' ), 10, 2 );
+
+				// Add the filter if it hasn't been added yet.
+				if ( ! has_filter( 'gform_field_value_godam_source', array( __CLASS__, 'handle_gravity_form' ) ) ) {
+					// Add the filter to handle Gravity Forms submissions.
+					add_filter( 'gform_field_value_godam_source', array( __CLASS__, 'handle_gravity_form' ), 10, 2 );
+				}
 				break;
 		}
 	}
