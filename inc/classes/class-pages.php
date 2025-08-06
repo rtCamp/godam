@@ -566,6 +566,15 @@ class Pages {
 				)
 			);
 
+			$id                 = isset( $_GET['id'] ) ? sanitize_text_field( $_GET['id'] ) : null;
+			$ab_thumbnails_data = get_post_meta( $id, 'godam_ab_test_thumbs', true );
+
+			wp_localize_script(
+				'transcoder-page-script-analytics',
+				'abThumbnailsData',
+				$ab_thumbnails_data
+			);
+
 			wp_enqueue_script( 'transcoder-page-script-analytics' );
 			wp_enqueue_script( 'd3-js' );
 		} elseif ( $screen && $this->help_page_id === $screen->id ) {

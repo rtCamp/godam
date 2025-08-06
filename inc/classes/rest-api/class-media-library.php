@@ -281,6 +281,58 @@ class Media_Library extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/get-ab-testing-settings',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_ab_testing_settings' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+					'args'                => array(
+						'attachment_id' => array(
+							'required'    => true,
+							'type'        => 'integer',
+							'description' => __( 'Attachment ID to get video thumbnail for.', 'godam' ),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/set-ab-testing-settings',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'set_ab_testing_settings' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+					'args'                => array(
+						'attachment_id'         => array(
+							'required'    => true,
+							'type'        => 'integer',
+							'description' => __( 'Attachment ID to get video thumbnail for.', 'godam' ),
+						),
+						'ab_testing_enabled'    => array(
+							'required'    => true,
+							'type'        => 'integer',
+							'description' => __( 'Is AB testing enabled for Attachment ID', 'godam' ),
+						),
+						'ab_testing_duration'   => array(
+							'required'    => true,
+							'type'        => 'string',
+							'description' => __( 'AB Testing Duration for Attachment ID', 'godam' ),
+						),
+						'ab_testing_thumbnails' => array(
+							'required'    => true,
+							'type'        => 'array',
+							'items'       => array( 'type' => 'string' ),
+							'description' => __( 'Thumbnails selected for AB Testing (max 2)', 'godam' ),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/category-count/(?P<folder_id>\d+)',
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
@@ -290,6 +342,95 @@ class Media_Library extends Base {
 					},
 				),
 			),
+		);
+	}
+
+	/**
+	 * Fetch AB Testing parameters
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function get_ab_testing_settings( $request ) {
+		$attachment_id = $request->get_param( 'attachment_id' );
+
+		// Check if attachment is of type video.
+		$mime_type = get_post_mime_type( $attachment_id );
+
+		if ( ! preg_match( '/^video\//', $mime_type ) ) {
+			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		// Fetch AB testing settings.
+		$ab_testing_enabled    = get_post_meta( $attachment_id, 'godam_ab_test_enabled', true );
+		$ab_testing_duration   = get_post_meta( $attachment_id, 'godam_ab_test_duration', true );
+		$ab_testing_thumbnails = get_post_meta( $attachment_id, 'godam_ab_test_thumbs', true );
+		$ab_test_end_time      = get_post_meta( $attachment_id, 'godam_ab_test_end_time', true );
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'data'    => array(
+					'ab_testing_enabled'    => $ab_testing_enabled,
+					'ab_testing_duration'   => $ab_testing_duration,
+					'ab_testing_thumbnails' => $ab_testing_thumbnails,
+					'ab_end_time'           => $ab_test_end_time,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Store AB Testing parameters
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function set_ab_testing_settings( $request ) {
+		$attachment_id = $request->get_param( 'attachment_id' );
+
+		// Check if attachment is of type video.
+		$mime_type = get_post_mime_type( $attachment_id );
+
+		if ( ! preg_match( '/^video\//', $mime_type ) ) {
+			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		$ab_testing_enabled    = $request->get_param( 'ab_testing_enabled' );
+		$ab_testing_duration   = $request->get_param( 'ab_testing_duration' );
+		$ab_testing_thumbnails = $request->get_param( 'ab_testing_thumbnails' );
+
+		if ( $ab_testing_enabled ) {
+			// Validate that exactly two thumbnails are selected.
+			if ( count( $ab_testing_thumbnails ) !== 2 ) {
+				return new \WP_Error( 'invalid_thumbnails', __( 'Exactly two thumbnails must be selected for A/B testing.', 'godam' ), array( 'status' => 400 ) );
+			}
+
+			// Update AB testing settings.
+			update_post_meta( $attachment_id, 'godam_ab_test_enabled', $ab_testing_enabled );
+
+			update_post_meta( $attachment_id, 'godam_ab_test_duration', $ab_testing_duration );
+
+			update_post_meta( $attachment_id, 'godam_ab_test_thumbs', $ab_testing_thumbnails );
+
+			$days_to_add = intval( $ab_testing_duration );
+			$expiry_date = gmdate( 'Y-m-d H:i:sa', strtotime( "+$days_to_add days" ) );
+
+			update_post_meta( $attachment_id, 'godam_ab_test_end_time', $expiry_date );
+			
+		} else {
+			// Disable A/B testing by removing the meta.
+			delete_post_meta( $attachment_id, 'godam_ab_test_enabled' );
+			delete_post_meta( $attachment_id, 'godam_ab_test_duration' );
+			delete_post_meta( $attachment_id, 'godam_ab_test_thumbs' );
+			delete_post_meta( $attachment_id, 'godam_ab_test_start_time' );
+		}
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => __( 'A/B testing settings updated successfully.', 'godam' ),
+			)
 		);
 	}
 

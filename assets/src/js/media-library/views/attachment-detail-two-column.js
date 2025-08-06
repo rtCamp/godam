@@ -25,7 +25,21 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Initializes the AttachmentDetailsTwoColumn.
 	 */
 	initialize() {
+		this.abTestingEnabled = '0';
+		this.abTestDuration = '60';
+		this.abTestingSelection = [];
 		AttachmentDetailsTwoColumn.prototype.initialize.apply( this, arguments );
+		this.initializeValues().then( () => {
+			this.render();
+		} );
+	},
+
+	async initializeValues() {
+		const settings = await this.getABTestingSettings( this.model.get( 'id' ) );
+
+		this.abTestingEnabled = settings?.data?.ab_testing_enabled === '1' ? '1' : '0';
+		this.abTestDuration = settings?.data?.ab_testing_duration; // default to 60 days
+		this.abTestingSelection = settings?.data?.ab_testing_thumbnails || [];
 	},
 
 	/**
@@ -276,15 +290,26 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		li.appendChild( img );
 		li.appendChild( controls );
 
-		const abTestingCheckboxHTML = `
-  <div class="ab-testing-feature">
-    <button type="button" class="ab-test-action">
-      Use in A/B Testing
-    </button>
-  </div>
-`;
+		const abTestingFeatureDiv = document.createElement( 'div' );
+		abTestingFeatureDiv.className = 'ab-testing-feature';
 
-		li.insertAdjacentHTML( 'beforeend', abTestingCheckboxHTML );
+		// Create the button
+		const abTestingButton = document.createElement( 'button' );
+		abTestingButton.type = 'button';
+		abTestingButton.className = 'ab-test-action';
+		console.log( thumbnailURL, this.abTestingSelection.includes( thumbnailURL ) );
+		abTestingButton.textContent = this.abTestingSelection.includes( thumbnailURL )
+			? 'Unmark for A/B Testing'
+			: 'Use in A/B Testing';
+		abTestingButton.dataset.thumbnail = thumbnailURL;
+
+		abTestingFeatureDiv.appendChild( abTestingButton );
+
+		abTestingButton.addEventListener( 'click', ( event ) => {
+			this.handleAbTestButtonClick( event, thumbnailURL );
+		} );
+
+		li.appendChild( abTestingFeatureDiv );
 
 		return li;
 	},
@@ -308,17 +333,291 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		img.alt = __( 'Video Thumbnail', 'godam' );
 		li.appendChild( img );
 
-		const abTestingCheckboxHTML = `
-  <div class="ab-testing-feature">
-    <button type="button" class="ab-test-action">
-      Use in A/B Testing
-    </button>
-  </div>
-`;
+		const abTestingFeatureDiv = document.createElement( 'div' );
+		abTestingFeatureDiv.className = 'ab-testing-feature';
 
-		li.insertAdjacentHTML( 'beforeend', abTestingCheckboxHTML );
+		// Create the button
+		const abTestingButton = document.createElement( 'button' );
+		abTestingButton.type = 'button';
+		abTestingButton.className = 'ab-test-action';
+		// abTestingButton.textContent = 'Use in A/B Testing';
+		abTestingButton.textContent = this.abTestingSelection.includes( thumbnailURL )
+			? 'Unmark for A/B Testing'
+			: 'Use in A/B Testing';
+		abTestingButton.dataset.thumbnail = thumbnailURL;
+		abTestingButton.style.display = '1' === this.abTestingEnabled ? 'block' : 'none'; // Hide if A/B testing is disabled
+
+		abTestingFeatureDiv.appendChild( abTestingButton );
+
+		abTestingButton.addEventListener( 'click', ( event ) => {
+			this.handleAbTestButtonClick( event );
+		} );
+
+		li.appendChild( abTestingFeatureDiv );
 
 		return li;
+	},
+
+	handleAbTestButtonClick( event ) {
+		event.preventDefault();
+		event.stopPropagation();
+		const button = event.currentTarget;
+		button.textContent = 'Unmark for A/B Testing';
+
+		if ( this.abTestingSelection.includes( button.dataset.thumbnail ) ) {
+			// If already selected, remove it from the selection
+			this.abTestingSelection = this.abTestingSelection.filter(
+				( thumbnail ) => thumbnail !== button.dataset.thumbnail,
+			);
+			button.textContent = 'Use in A/B Testing';
+			this.updateAbTestingButtonsState();
+			return;
+		}
+
+		if ( this.abTestingSelection.length < 2 ) {
+			this.abTestingSelection.push( button.dataset.thumbnail );
+			this.updateAbTestingButtonsState();
+		}
+	},
+
+	updateAbTestingButtonsState() {
+		const abActionButtons = document.querySelectorAll( '.ab-test-action' );
+		const abTestStartButton = document.querySelector( '.start-ab-test-button' );
+
+		console.log( 'updateAbTestingButtonsState', this.abTestingSelection, this.abTestingSelection.length );
+
+		if ( '0' === this.abTestingEnabled ) {
+			abActionButtons?.forEach( ( btn ) => {
+				btn.style.display = 'none';
+			} );
+
+			if ( abTestStartButton ) {
+				abTestStartButton.style.display = 'none';
+			}
+		} else {
+			console.log( 'else executed' );
+			abActionButtons?.forEach( ( btn ) => {
+				console.log( 'abActionButtons', btn.dataset.thumbnail, this.abTestingSelection.includes( btn.dataset.thumbnail ) );
+				if ( ! this.abTestingSelection.includes( btn.dataset.thumbnail ) ) {
+					btn.disabled = this.abTestingSelection.length >= 2;
+					console.log( btn.dataset.thumbnail, 'found matching url' );
+				}
+				btn.style.display = 'block';
+			} );
+
+			if ( abTestStartButton ) {
+				abTestStartButton.disabled = 2 !== this.abTestingSelection.length;
+				abTestStartButton.style.display = 'block';
+			}
+		}
+	},
+
+	renderABTestButton() {
+		// Create a container div for styling if needed
+		const container = document.createElement( 'div' );
+		container.className = 'start-ab-test-button-container';
+
+		// Create the Start A/B Test button
+		const startButton = document.createElement( 'button' );
+		startButton.type = 'button';
+		startButton.className = 'start-ab-test-button';
+		startButton.textContent = 'Start A/B Test';
+		startButton.disabled = true; // Initially disabled until 2 thumbnails are selected
+		startButton.style.display = '1' === this.abTestingEnabled ? 'block' : 'none'; // Hide if A/B testing is disabled
+
+		// Add an event listener for the button
+		startButton.addEventListener( 'click', () => {
+			const formData = new FormData();
+			formData.append( 'attachment_id', this.model.get( 'id' ) );
+
+			formData.append( 'ab_testing_enabled', this.abTestingEnabled );
+			formData.append( 'ab_testing_duration', this.abTestDuration );
+			formData.append( 'ab_testing_thumbnails', this.abTestingSelection );
+
+			fetch( window.pathJoin( [ restURL, '/godam/v1/media-library/set-ab-testing-settings' ] ), {
+				method: 'POST',
+				body: formData,
+				headers: {
+					'X-WP-Nonce': window.wpApiSettings?.nonce || '',
+				},
+			} )
+				.then( ( response ) => response.json() )
+				.then( ( data ) => {
+					if ( data.success ) {
+						//logic
+						const abTestStartButton = document.querySelector(
+							'.start-ab-test-button',
+						);
+						abTestStartButton.textContent = 'In Progress';
+						abTestStartButton.disabled = true;
+					}
+				} )
+				.catch( () => {
+					// silent fail
+					// ADD AN ERROR SNACKBAR HERE.
+				} );
+		} );
+
+		const reportsButton = document.createElement( 'button' );
+		reportsButton.type = 'button';
+		reportsButton.className = 'reports-ab-test-button';
+		reportsButton.textContent = 'Check reports';
+
+		reportsButton.addEventListener( 'click', () => {
+			//open link in new tab
+			window.open(
+				`admin.php?page=rtgodam_analytics&id=${ this.model.get( 'id' ) }#ab-reports-container`,
+				'_blank',
+			);
+		} );
+
+		container.appendChild( startButton );
+		container.appendChild( reportsButton );
+
+		return container;
+	},
+
+	async renderABTestOptions() {
+		// Container for the settings
+		const container = document.createElement( 'div' );
+		container.className = 'ab-testing-controls';
+
+		// toggleWrapper.appendChild(toggleLabel);
+
+		const toggleWrapper = document.createElement( 'div' );
+		toggleWrapper.className = 'ab-test-toggle-row';
+		toggleWrapper.style.marginBottom = '16px';
+
+		// Add a title/label for accessibility and clarity
+		const titleLabel = document.createElement( 'label' );
+		titleLabel.textContent = 'A/B Testing';
+		titleLabel.setAttribute( 'for', 'ab-toggle' );
+
+		// Label with "switch" class for styling (the actual toggle)
+		const switchLabel = document.createElement( 'label' );
+		switchLabel.className = 'switch';
+
+		// The checkbox input
+		const toggleInput = document.createElement( 'input' );
+		toggleInput.type = 'checkbox';
+		toggleInput.name = 'ab_testing'; // Adjust as needed
+		toggleInput.value = this.abTestingEnabled;
+		toggleInput.id = 'ab-toggle';
+		toggleInput.className = 'ab-test-toggle';
+		toggleInput.checked = this.abTestingEnabled === '1'; // Set initial state
+
+		// The slider span
+		const toggleSlider = document.createElement( 'span' );
+		toggleSlider.className = 'slider round';
+
+		// Build the toggle markup
+		switchLabel.appendChild( toggleInput );
+		switchLabel.appendChild( toggleSlider );
+
+		// Optional: Associate visible toggle and label for a11y
+		toggleInput.setAttribute( 'aria-labelledby', 'ab-testing-label' );
+
+		// Helper text below toggle
+		const helperText = document.createElement( 'div' );
+		helperText.className = 'ab-test-helper-text';
+		helperText.textContent = 'Starts A/B testing for thumbnails';
+
+		const toggleInputContainer = document.createElement( 'div' );
+		toggleInputContainer.className = 'ab-test-toggle-input-container';
+
+		// Put it all together
+		toggleWrapper.appendChild( titleLabel );
+		toggleInputContainer.appendChild( switchLabel );
+		toggleInputContainer.appendChild( helperText );
+		toggleWrapper.appendChild( toggleInputContainer );
+
+		toggleInput.addEventListener( 'change', () => {
+			this.abTestingEnabled = toggleInput.checked ? '1' : '0';
+			this.updateAbTestingButtonsState();
+
+			if ( '0' === this.abTestingEnabled ) {
+				const formData = new FormData();
+				formData.append( 'attachment_id', this.model.get( 'id' ) );
+				formData.append( 'ab_testing_enabled', '0' );
+				formData.append( 'ab_testing_duration', '5' ); //dummy values
+				formData.append( 'ab_testing_thumbnails', [] );
+
+				fetch(
+					window.pathJoin( [
+						restURL,
+						'/godam/v1/media-library/set-ab-testing-settings',
+					] ),
+					{
+						method: 'POST',
+						body: formData,
+						headers: {
+							'X-WP-Nonce': window.wpApiSettings?.nonce || '',
+						},
+					},
+				)
+					.then( ( response ) => response.json() );
+			}
+		} );
+
+		// --- A/B Testing Duration ---
+		const durationWrapper = document.createElement( 'div' );
+		durationWrapper.className = 'ab-test-duration-row';
+
+		const durationLabel = document.createElement( 'label' );
+		durationLabel.textContent = 'A/B Testing Duration';
+		durationLabel.style.display = 'inline-block';
+		titleLabel.style.fontWeight = 'bold';
+		titleLabel.style.marginBottom = '4px';
+
+		const durationSelect = document.createElement( 'select' );
+		durationSelect.className = 'ab-test-duration';
+		durationSelect.id = 'abTestDuration';
+		durationSelect.value = this.abTestDuration; // Set initial value
+
+		const durationInputWrapper = document.createElement( 'div' );
+		durationInputWrapper.className = 'ab-test-duration-input';
+
+		[
+			'5 days',
+			'7 days',
+			'15 days',
+			'30 days',
+			'60 days',
+			'90 days',
+		].forEach( ( text ) => {
+			const option = document.createElement( 'option' );
+			option.value = text.split( ' ' )[ 0 ];
+			option.textContent = text;
+			option.selected = text.split( ' ' )[ 0 ] === this.abTestDuration;
+			durationSelect.appendChild( option );
+		} );
+
+		// // Toggle switch
+		// toggleInput.checked = this.abTestingEnabled;
+
+		// // Dropdown
+		// durationSelect.value = this.abTestDuration;
+
+		durationSelect.addEventListener( 'change', ( event ) => {
+			this.abTestDuration = durationSelect.value;
+		} );
+
+		const durationHelper = document.createElement( 'span' );
+		durationHelper.textContent = 'Starts A/B testing for thumbnails';
+		durationHelper.style.marginLeft = '8px';
+		durationHelper.style.fontSize = '14px';
+
+		durationWrapper.appendChild( durationLabel );
+		durationInputWrapper.appendChild( durationSelect );
+		durationInputWrapper.appendChild( durationHelper );
+		durationWrapper.appendChild( durationInputWrapper );
+
+		// Attach all to main container
+		container.appendChild( toggleWrapper );
+		container.appendChild( durationWrapper );
+
+		// Append the settings to a place in your UI (example: after .attachment-video-thumbnails)
+		this.$el.find( '.attachment-actions' ).append( container );
 	},
 
 	/**
@@ -366,6 +665,8 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		div.appendChild( ul );
 
+		div.appendChild( this.renderABTestButton() );
+
 		// Remove old and append new
 		const actionsEl = this.$el.find( '.attachment-actions' );
 		actionsEl.find( '.attachment-video-thumbnails' ).remove(); // Remove old thumbnails if any
@@ -373,6 +674,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		this.setupThumbnailClickHandler( attachmentID );
 		this.setupThumbnailActions();
+		this.updateAbTestingButtonsState();
 
 		// Set upload click after DOM added
 		setTimeout( () => {
@@ -428,6 +730,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				// Skip the upload tile
 				return;
 			}
+
 			li.addEventListener( 'click', function() {
 				// Remove the selected class from all thumbnails
 				document.querySelectorAll( '.attachment-video-thumbnails li' ).forEach( ( item ) => item.classList.remove( 'selected' ) );
@@ -487,6 +790,13 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>
 		<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>
 		`;
+	},
+
+	getABTestingSettings( attachmentId ) {
+		return this.fetchData(
+			window.pathJoin( [ restURL, '/godam/v1/media-library/get-ab-testing-settings' ] ),
+			attachmentId,
+		);
 	},
 
 	/**
@@ -556,6 +866,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			}
 
 			this.renderVideoActions();
+			this.renderABTestOptions();
 			const attachmentId = this.model.get( 'id' );
 			this.fetchAndRender(
 				this.getVideoThumbnails( attachmentId ),
