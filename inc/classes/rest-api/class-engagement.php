@@ -315,10 +315,9 @@ class Engagement extends Base {
 			return $account_creadentials;
 		}
 
-		$current_user_id    = get_current_user_id();
-		$current_user       = get_user_by( 'id', $current_user_id );
-		$current_user_email = $current_user ? $current_user->user_email : 'bot@rtcamp.com';
-		$current_user_name  = $current_user ? $current_user->display_name : 'Anonymous';
+		$current_user       = rtgodam_get_current_logged_in_user_data();
+		$current_user_email = $current_user['email'];
+		$current_user_name  = $current_user['name'];
 		$transcoder_job_id  = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
 
 		$query_params = array(
@@ -388,10 +387,9 @@ class Engagement extends Base {
 			return $account_creadentials;
 		}
 
-		$current_user_id    = get_current_user_id();
-		$current_user       = get_user_by( 'id', $current_user_id );
-		$current_user_email = $current_user ? $current_user->user_email : 'bot@rtcamp.com';
-		$current_user_name  = $current_user ? $current_user->display_name : 'Anonymous';
+		$current_user       = rtgodam_get_current_logged_in_user_data();
+		$current_user_email = $current_user['email'];
+		$current_user_name  = $current_user['name'];
 		$transcoder_job_id  = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
 
 		$query_params = array(

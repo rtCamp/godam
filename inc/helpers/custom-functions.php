@@ -511,7 +511,7 @@ function rtgodam_get_current_logged_in_user_data() {
 
 	return array(
 		'email' => 'bot@example.com',
-		'name'  => __( 'Guest', 'godam' ),
+		'name'  => __( 'Anonymous', 'godam' ),
 		'type'  => 'non-user',
 	);
 }
