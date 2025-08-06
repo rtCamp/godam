@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 1.3.1\n"
+"Project-Id-Version: GoDAM 1.3.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-08-01T11:45:15+00:00\n"
+"POT-Creation-Date: 2025-08-06T10:05:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -2517,48 +2517,48 @@ msgstr ""
 msgid "Chapter"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:540
+#: assets/src/js/godam-player/frontend.js:541
 msgid "Check out this video!"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:547
+#: assets/src/js/godam-player/frontend.js:548
 msgid "Facebook icon"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:553
+#: assets/src/js/godam-player/frontend.js:554
 msgid "Twitter icon"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:559
+#: assets/src/js/godam-player/frontend.js:560
 msgid "LinkedIn icon"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:565
+#: assets/src/js/godam-player/frontend.js:566
 msgid "Reddit icon"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:571
+#: assets/src/js/godam-player/frontend.js:572
 msgid "WhatsApp icon"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:577
+#: assets/src/js/godam-player/frontend.js:578
 msgid "Telegram icon"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:584
+#: assets/src/js/godam-player/frontend.js:585
 msgid "Share Media"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:596
+#: assets/src/js/godam-player/frontend.js:597
 msgid "Page Link"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:600
-#: assets/src/js/godam-player/frontend.js:610
+#: assets/src/js/godam-player/frontend.js:601
+#: assets/src/js/godam-player/frontend.js:611
 msgid "copy icon"
 msgstr ""
 
-#: assets/src/js/godam-player/frontend.js:606
+#: assets/src/js/godam-player/frontend.js:607
 msgid "Embed"
 msgstr ""
 
