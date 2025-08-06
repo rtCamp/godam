@@ -26,6 +26,21 @@ import {
 
 import './css/context-menu.scss';
 
+/**
+ * User roles from global MediaLibrary object.
+ */
+const userRoles = window.MediaLibrary?.roles || [];
+
+/**
+ * Checks if the user has at least one of the allowed roles.
+ *
+ * @param {string[]} allowedRoles - Array of allowed role strings.
+ * @return {boolean} True if user has at least one allowed role.
+ */
+const hasRole = ( allowedRoles ) => {
+	return userRoles.some( ( role ) => allowedRoles.includes( role ) );
+};
+
 const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	const dispatch = useDispatch();
 	const menuRef = useRef( null );
@@ -434,14 +449,16 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			>
 				{ __( 'Rename', 'godam' ) }
 			</Button>
-			<Button
-				icon={ LockFolderIcon }
-				onClick={ () => handleMenuItemClick( 'lockFolder' ) }
-				className="folder-context-menu__item"
-				disabled={ isSpecialFolder || isAnySelectedParentLocked }
-			>
-				{ ! currentFolder?.meta?.locked || ( isMultiSelecting && ! areAllTargetFoldersLocked ) ? __( 'Lock Folder', 'godam' ) : __( 'Unlock Folder', 'godam' ) }
-			</Button>
+			{ hasRole( [ 'administrator', 'editor' ] ) && (
+				<Button
+					icon={ LockFolderIcon }
+					onClick={ () => handleMenuItemClick( 'lockFolder' ) }
+					className="folder-context-menu__item"
+					disabled={ isSpecialFolder || isAnySelectedParentLocked }
+				>
+					{ ! currentFolder?.meta?.locked || ( isMultiSelecting && ! areAllTargetFoldersLocked ) ? __( 'Lock Folder', 'godam' ) : __( 'Unlock Folder', 'godam' ) }
+				</Button>
+			) }
 			<Button
 				icon={ BookmarkStarIcon }
 				onClick={ () => handleMenuItemClick( 'addBookmark' ) }
@@ -458,14 +475,16 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			>
 				{ __( 'Download Zip', 'godam' ) }
 			</Button>
-			<Button
-				icon={ DeleteIcon }
-				onClick={ () => handleMenuItemClick( 'delete' ) }
-				className="folder-context-menu__item"
-				disabled={ isSpecialFolder || currentFolder?.meta?.locked }
-			>
-				{ __( 'Delete', 'godam' ) }
-			</Button>
+			{ hasRole( [ 'administrator' ] ) && (
+				<Button
+					icon={ DeleteIcon }
+					onClick={ () => handleMenuItemClick( 'delete' ) }
+					className="folder-context-menu__item"
+					disabled={ isSpecialFolder || currentFolder?.meta?.locked }
+				>
+					{ __( 'Delete', 'godam' ) }
+				</Button>
+			) }
 		</div>
 	);
 };
