@@ -469,9 +469,19 @@
         margin-bottom: 0px !important;
     }
 
-    .rtgodam-product-video-gallery-slider-modal-content .godam-share-button, .rtgodam-product-video-gallery-slider-modal-close {
-        right: 6vw !important;
+     .rtgodam-product-video-gallery-slider-modal-close {
+        right: 7vw !important;
         top: 10% !important;
         position: fixed !important;
     }
+    .rtgodam-product-video-gallery-slider-modal-content .godam-share-button{
+        top: 2% !important;
+        right: 2vw !important;
+    }
+
+    .rtgodam-product-video-gallery-slider-modal-content .share-modal-container{
+        margin: 0 auto !important;
+        width: 90vw !important;
+    }
+    
 }
