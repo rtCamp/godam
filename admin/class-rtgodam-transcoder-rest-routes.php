@@ -349,9 +349,9 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 				global $wpdb;
 
 				$entry_metadata = array(
-					'entry_id' => $entry_id,
-					'meta_key' => 'rtgodam_transcoded_url_everestforms_' . $form_id . '_' . $entry_id,
-					'value'    => $post_array['download_url'],
+					'entry_id'   => $entry_id,
+					'meta_key'   => 'rtgodam_transcoded_url_everestforms_' . $form_id . '_' . $entry_id,
+					'meta_value' => $post_array['download_url'], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				);
 
 				// Insert entry meta.

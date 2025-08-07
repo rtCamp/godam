@@ -188,6 +188,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 			}
 
 			$entry_id = absint( $_GET['view-entry'] );
+			$form_id  = ! empty( $_GET['form_id'] ) ? absint( $_GET['form_id'] ) : 0;
 
 			// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
@@ -197,9 +198,25 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 				return $meta_value;
 			}
 
-			$entry_data = $entry_id ? evf_get_entry( $entry_id, true ) : false;
+			$entry_data = $entry_id ? evf_get_entry( $entry_id, false ) : false;
 
-			$transcoded_url_output = '';
+			/**
+			 * Fetch the transcoding URL from meta.
+			 */
+			$transcoded_url_meta_key = 'rtgodam_transcoded_url_everestforms_' . $form_id . '_' . $entry_id;
+			$transcoded_url_output   = '';
+
+			if ( ! empty( $entry_data ) ) {
+				$transcoded_url = esc_url( $entry_data->meta[ $transcoded_url_meta_key ] ?? '' );
+
+				if ( ! empty( $transcoded_url ) ) {
+					$transcoded_url        = "transcoded_url={$transcoded_url}";
+					$transcoded_url_output = sprintf(
+						"<div style='margin: 8px 0;' class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></div>",
+						esc_html__( 'Video saved and transcoded successfully on GoDAM', 'godam' )
+					);
+				}
+			}
 
 			// Add override style for everest forms.
 			$style = '<style>#everest-forms-entry-fields:not(.postbox) table tbody tr td span {margin: 0 !important;}</style>';
@@ -210,7 +227,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 			/**
 			 * Generate video output.
 			 */
-			$video_output = do_shortcode( "[godam_video src='{$value}' ]" );
+			$video_output = do_shortcode( "[godam_video src='{$value}' {$transcoded_url} ]" );
 
 			/**
 			 * Workaround, replace all line breaks and new lines with empty string.
