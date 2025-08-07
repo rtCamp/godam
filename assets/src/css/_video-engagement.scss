@@ -601,6 +601,10 @@
 
         &-content {
             margin-bottom: 1rem;
+
+            &-wrapper {
+                flex: 1;
+            }
         }
 
         &-author {
@@ -689,8 +693,9 @@
             }
         }
 
-        &-reply {
+        &-action {
             margin-bottom: 10px;
+            display: flex;
 
             button {
                 display: flex;
@@ -716,6 +721,24 @@
 
                 &:hover {
                     color: var(--wp--preset--color--black, #000);
+                }
+
+                &.comment-button-reply {
+                    &::before {
+                        background-image: url('../images/charm_reply.svg');
+                    }
+                }
+
+                &.comment-button-edit {
+                    &::before {
+                        background-image: url('../images/charm_edit.svg');
+                    }
+                }
+
+                &.comment-button-delete {
+                    &::before {
+                        background-image: url('../images/charm_delete.svg');
+                    }
                 }
             }
         }

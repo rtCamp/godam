@@ -118,6 +118,12 @@ class Engagement extends Base {
 								'description'       => __( 'The comment text', 'godam' ),
 								'sanitize_callback' => 'sanitize_text_field',
 							),
+							'comment_type'      => array(
+								'required'          => true,
+								'type'              => 'string',
+								'description'       => __( 'The comment type if it is new OR edit', 'godam' ),
+								'sanitize_callback' => 'sanitize_text_field',
+							),
 						),
 					),
 				),
@@ -380,6 +386,7 @@ class Engagement extends Base {
 		$video_id          = $request->get_param( 'video_id' );
 		$comment_parent_id = $request->get_param( 'comment_parent_id' );
 		$comment_text      = $request->get_param( 'comment_text' );
+		$comment_type      = $request->get_param( 'comment_type' );
 
 		$account_creadentials = $this->access_creadentials_check();
 
@@ -405,6 +412,12 @@ class Engagement extends Base {
 		}
 
 		$comments_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.wp_comment';
+
+		if ( 'edit' === $comment_type ) {
+			$comments_endpoint    = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.wp_update_comment';
+			$query_params['name'] = $comment_parent_id;
+		}
+
 		$comments_response = wp_remote_post(
 			$comments_endpoint,
 			array(
@@ -413,7 +426,7 @@ class Engagement extends Base {
 				'headers' => array(
 					'Content-Type' => 'application/json',
 				),
-				'body'    => json_encode( $query_params ),
+				'body'    => wp_json_encode( $query_params ),
 			)
 		);
 

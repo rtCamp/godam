@@ -448,19 +448,20 @@ const engagementStore = {
 /**
  * Updates a comment tree with new data.
  *
- * @param {Array}  comments The comment tree.
- * @param {Object} comment  The comment object.
- * @param {Object} data     The new data to add to the comment tree.
+ * @param {Array}  comments    The comment tree.
+ * @param {Object} comment     The comment object.
+ * @param {Object} data        The new data to add to the comment tree.
  *
+ * @param          commentType
  * @return {Array} The updated comment tree.
  */
-function updateCommentTree( comments, comment, data ) {
-	if ( ! data.parent_id ) {
+function updateCommentTree( comments, comment, data, commentType ) {
+	if ( ! data.parent_id && 'new' === commentType ) {
 		return [ data, ...comments ];
 	}
 
 	return comments.map( ( item ) => {
-		if ( item.id === comment.id ) {
+		if ( item.id === comment.id && 'new' === commentType ) {
 			return {
 				...item,
 				children: [
@@ -470,10 +471,17 @@ function updateCommentTree( comments, comment, data ) {
 			};
 		}
 
+		if ( item.id === comment.id && 'edit' === commentType ) {
+			return {
+				...item,
+				text: data.text,
+			};
+		}
+
 		if ( item.children.length > 0 ) {
 			return {
 				...item,
-				children: updateCommentTree( item.children, comment, data ),
+				children: updateCommentTree( item.children, comment, data, commentType ),
 			};
 		}
 
@@ -503,8 +511,10 @@ function updateCommentTree( comments, comment, data ) {
  */
 
 function CommentForm( props ) {
-	const { comment, setCommentsData, storeObj, videoAttachmentId, setIsExpanded, type, siteUrl } = props;
-	const [ commentText, setCommentText ] = useState( '' );
+	const { comment, setCommentsData, storeObj, videoAttachmentId, setIsExpanded, type, siteUrl, commentType } = props;
+	const [ commentText, setCommentText ] = useState( () => {
+		return 'edit' === commentType ? comment.text : '';
+	} );
 	const [ isSending, setIsSending ] = useState( false );
 
 	async function handleSubmit() {
@@ -515,6 +525,7 @@ function CommentForm( props ) {
 			video_id: videoAttachmentId,
 			comment_parent_id: parentId,
 			comment_text: commentText,
+			comment_type: commentType,
 		};
 		apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
 		const result = await apiFetch( {
@@ -535,7 +546,7 @@ function CommentForm( props ) {
 			setIsExpanded( false );
 		}
 		setCommentsData( ( prevComments ) => {
-			const newCommentTree = updateCommentTree( prevComments, comment, result.data );
+			const newCommentTree = updateCommentTree( prevComments, comment, result.data, commentType );
 			storeObj.dispatch.userCommented( videoAttachmentId, newCommentTree );
 			return [ ...newCommentTree ];
 		} );
@@ -591,6 +602,7 @@ function Comment( props ) {
 		children,
 	} = comment;
 	const [ isExpanded, setIsExpanded ] = useState( false );
+	const [ commentType, setCommentType ] = useState( 'new' );
 	const [ showChildComments, setShowChildComments ] = useState( false );
 
 	return (
@@ -613,15 +625,31 @@ function Comment( props ) {
 						</div>
 					</div>
 					{ ( ! isExpanded && isUserLoggedIn ) && (
-						<div className="rtgodam-video-engagement--comment-reply">
-							<button className="rtgodam-video-engagement--comment-button" onClick={ () => setIsExpanded( true ) }>
+						<div className="rtgodam-video-engagement--comment-action">
+							<button
+								className="rtgodam-video-engagement--comment-button comment-button-reply" onClick={ () => {
+									setIsExpanded( true );
+									setCommentType( 'new' );
+								} }
+							>
 								{ __( 'Reply', 'godam' ) }
+							</button>
+							<button className="rtgodam-video-engagement--comment-button comment-button-delete" onClick={ () => setIsExpanded( true ) }>
+								{ __( 'Delete', 'godam' ) }
+							</button>
+							<button
+								className="rtgodam-video-engagement--comment-button comment-button-edit" onClick={ () => {
+									setIsExpanded( true );
+									setCommentType( 'edit' );
+								} }
+							>
+								{ __( 'Edit', 'godam' ) }
 							</button>
 						</div>
 					) }
 					{ isExpanded && (
 						<div className="rtgodam-video-engagement--comment-form">
-							<CommentForm { ...props } setIsExpanded={ setIsExpanded } type="thread-reply" siteUrl={ siteUrl } />
+							<CommentForm { ...props } setIsExpanded={ setIsExpanded } type="thread-reply" siteUrl={ siteUrl } commentType={ commentType } />
 						</div>
 					) }
 				</div>
@@ -640,7 +668,15 @@ function Comment( props ) {
 			{ children && children.length > 0 && showChildComments && (
 				<div className="rtgodam-video-engagement--comment-child">
 					{ children.map( ( child ) => (
-						<Comment key={ child.id } comment={ child } setCommentsData={ setCommentsData } storeObj={ storeObj } videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } />
+						<Comment
+							key={ child.id }
+							comment={ child }
+							setCommentsData={ setCommentsData }
+							storeObj={ storeObj }
+							videoAttachmentId={ videoAttachmentId }
+							siteUrl={ siteUrl }
+							isUserLoggedIn={ isUserLoggedIn }
+						/>
 					) ) }
 				</div>
 			) }
@@ -882,7 +918,7 @@ function CommentBox( props ) {
 									<span className={ baseClass + '-leave-comment-impressions-views' }>{ viewsCount }</span>
 								</div>
 								{ isUserLoggedIn ? (
-									<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" />
+									<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" commentType="new" />
 								) : (
 									<GuestLoginForm setIsUserLoggedIn={ setIsUserLoggedIn } siteUrl={ siteUrl } baseClass={ baseClass } />
 								) }
