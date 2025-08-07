@@ -22,7 +22,8 @@
         align-items: center;
         height: 350px;
         position: relative;
-        border-radius: 10px;
+        border-radius: 8px;
+
 
         &::before {
             content: "";
@@ -134,15 +135,15 @@
 
                 @media screen and (max-width: 768px) {
                     .video-js .vjs-tech{
-                        min-width: 90vw !important;
-                        min-height: 90vh;
+                        min-width: 95vw !important;
+                        min-height: 100vh !important;
                     }
                     min-width: 100vw;
                 }
 
                 @media screen and (max-width: 540px) {
                     .video-js .vjs-tech{
-                        min-width: 98vw !important;
+                        min-width: 95vw !important;
                         min-height: 100vh;
                     }
                     min-width: 100vw;
@@ -151,7 +152,7 @@
 
             &-items {
                 background-color: var(--wp--preset--color--white);
-                border-radius: 20px;
+                border-radius: 8px;
                 .swiper-button-next,
                 .swiper-button-prev {
                     opacity: 1;
@@ -353,8 +354,8 @@
                 min-width: 90vw !important;
 
                 .video-js {
-                    max-width: 90vw !important;
-                    min-width: 90vw !important;    
+                    min-width: 95vw !important;
+                    min-height: 100vh !important;
                 }
 
                 .vjs-control-bar {
@@ -466,5 +467,12 @@
     .rtgodam-product-video-gallery-slider-modal-content--cart{
         grid-column: 1 / -1 !important;
         margin-bottom: 0px !important;
+    }
+
+    .rtgodam-product-video-gallery-slider-modal-content.godam-share-button,
+    .rtgodam-product-video-gallery-slider-modal-close {
+        right: 6vw !important;
+        top: 10% !important;
+        position: fixed !important;
     }
 }
