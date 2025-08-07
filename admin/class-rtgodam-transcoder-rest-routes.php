@@ -344,18 +344,23 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			 * If we have data in options, proceed.
 			 */
 			if ( ! empty( $data ) && 'everestforms_godam_recorder' === $data['source'] ) {
-				$entry_id = $data['entry_id'];
+				$entry_id   = $data['entry_id'];
+				$entry_data = evf_get_entry( $entry_id, false );
 
-				global $wpdb;
+				if ( ! empty( $entry_data ) ) {
+					$form_id = $entry_data->form_id;
 
-				$entry_metadata = array(
-					'entry_id'   => $entry_id,
-					'meta_key'   => 'rtgodam_transcoded_url_everestforms_' . $form_id . '_' . $entry_id,
-					'meta_value' => $post_array['download_url'], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-				);
+					global $wpdb;
 
-				// Insert entry meta.
-				$wpdb->insert( $wpdb->prefix . 'evf_entrymeta', $entry_metadata ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+					$entry_metadata = array(
+						'entry_id'   => $entry_id,
+						'meta_key'   => 'rtgodam_transcoded_url_everestforms_' . $form_id . '_' . $entry_id,
+						'meta_value' => $post_array['download_url'], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+					);
+
+					// Insert entry meta.
+					$wpdb->insert( $wpdb->prefix . 'evf_entrymeta', $entry_metadata ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				}
 			}
 		}
 

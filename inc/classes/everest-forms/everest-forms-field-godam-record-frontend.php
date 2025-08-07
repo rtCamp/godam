@@ -47,9 +47,6 @@ $uppy_preview_id   = sprintf( 'uppy_preview_%s_%s', $input_id, $form_id );
 	style="display: none;"
 	class="rtgodam-hidden <?php echo esc_attr( $class ); ?>"
 />
-<label class="evf-field-label" for="<?php echo esc_attr( $video_upload_button_id ); ?>">
-	<span class="evf-label"><?php echo esc_html( $label ); ?></span>
-</label>
 <div
 	style="margin: 4px 0;"
 	data-max-size="<?php echo esc_attr( $max_file_size * 1024 * 1024 ); ?>"
@@ -67,11 +64,6 @@ $uppy_preview_id   = sprintf( 'uppy_preview_%s_%s', $input_id, $form_id );
 		<span style="vertical-align: text-top;" class="dashicons dashicons-video-alt"></span>
 		<?php echo esc_html( $button_text ); ?>
 	</button>
-	<?php
-	if ( ! empty( trim( $description ) ) ) {
-		echo '<div class="evf-field-description" style="margin-bottom: 0px">' . esc_html( $description ) . '</div>';
-	}
-	?>
 	<div class="evf-field-description" style="margin-bottom: 0px;">
 		<?php
 		echo esc_html(

@@ -24,7 +24,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		 *
 		 * @since n.e.x.t
 		 *
-		 * @var sting
+		 * @var string
 		 */
 		public $field_id;
 

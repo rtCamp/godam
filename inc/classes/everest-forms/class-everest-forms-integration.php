@@ -216,7 +216,7 @@ class Everest_Forms_Integration {
 		if ( is_wp_error( $response_from_transcoding ) ) {
 			return wp_send_json_error(
 				$response_from_transcoding->get_error_message(),
-				$response_from_transcoding->get_error_code(),
+				$response_from_transcoding->get_error_code()
 			);
 		}
 
