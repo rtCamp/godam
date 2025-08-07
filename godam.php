@@ -67,6 +67,9 @@ require_once RTGODAM_PATH . 'inc/helpers/custom-functions.php'; // phpcs:ignore 
 require_once RTGODAM_PATH . 'admin/godam-transcoder-functions.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 require_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-admin.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 
+require_once plugin_dir_path( __FILE__ ) . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
+
+
 global $rtgodam_transcoder_admin;
 
 /**

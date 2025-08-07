@@ -144,6 +144,18 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
 		);
 	}
+
+	if ( ! empty( $hls_transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $hls_transcoded_url,
+			'type' => 'application/x-mpegURL',
+		);
+	}
+
+	$sources[] = array(
+		'src'  => $video_src,
+		'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
+	);
 }
 
 // Check if no media is selected - return early to prevent broken output.
@@ -490,6 +502,21 @@ if ( $is_shortcode || $is_elementor_widget ) {
 												sprintf(
 													"[everest_form id='%d' title='false' description='false']",
 													intval( $layer['everest_form_id'] )
+												)
+											);
+										?>
+									</div>
+								</div>
+								<?php
+							elseif ( 'ninjaforms' === $form_type && ! empty( $layer['ninja_form_id'] ) ) :
+								?>
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $form_type ); ?>" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div class="form-container">
+										<?php
+											echo do_shortcode(
+												sprintf(
+													"[ninja_form id='%d']",
+													intval( $layer['ninja_form_id'] )
 												)
 											);
 										?>

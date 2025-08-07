@@ -9,6 +9,7 @@ import { useGetSureformsQuery } from '../../redux/api/sureforms';
 import { useGetForminatorFormsQuery } from '../../redux/api/forminator-forms';
 import { useGetFluentFormsQuery } from '../../redux/api/fluent-forms';
 import { useGetEverestFormsQuery } from '../../redux/api/everest-forms';
+import { useGetNinjaFormsQuery } from '../../redux/api/ninja-forms';
 import { FormLayerComponentType } from '../layers/FormLayer';
 
 export const useFetchForms = () => {
@@ -37,6 +38,10 @@ export const useFetchForms = () => {
 		skip: ! FormLayerComponentType?.everestforms.isActive,
 	} );
 
+	const { data: ninjaForms = [], isFetching: isFetchingNinjaForms = false } = useGetNinjaFormsQuery( undefined, {
+		skip: ! FormLayerComponentType?.ninjaforms.isActive,
+	} );
+
 	const isFetching =
 		isFetchingCF7 ||
 		isFetchingGravity ||
@@ -45,7 +50,8 @@ export const useFetchForms = () => {
 		isFetchingSureforms ||
 		isFetchingForminator ||
 		isFetchingFluentForms ||
-		isFetchingEverestForms;
+		isFetchingEverestForms ||
+		isFetchingNinjaForms;
 
 	return {
 		cf7Forms,
@@ -56,6 +62,7 @@ export const useFetchForms = () => {
 		forminatorForms,
 		fluentForms,
 		everestForms,
+		ninjaForms,
 		isFetching,
 	};
 };

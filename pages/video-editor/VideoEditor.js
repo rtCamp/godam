@@ -28,6 +28,7 @@ import {
 	setForminatorForms,
 	setFluentForms,
 	setEverestForms,
+	setNinjaForms,
 } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
@@ -57,7 +58,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
-	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, isFetching } = useFetchForms();
+	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, isFetching } = useFetchForms();
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -157,8 +158,12 @@ const VideoEditor = ( { attachmentID } ) => {
 			if ( fluentForms && fluentForms.length > 0 ) {
 				dispatch( setFluentForms( fluentForms ) );
 			}
+
+			if ( ninjaForms && ninjaForms.length > 0 ) {
+				dispatch( setNinjaForms( ninjaForms ) );
+			}
 		}
-	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms ] );
+	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {

@@ -57,7 +57,7 @@ const PasswordFieldWithToggle = ( { hasValidAPIKey, maskedAPIKey, apiKey, setAPI
 			onChange={ setAPIKey }
 			help={ renderHelpText() }
 			placeholder={ __( 'Enter your API key here', 'godam' ) }
-			className={ `godam-input ${ ! hasValidAPIKey && maskedAPIKey ? 'invalid-api-key' : '' }` }
+			className={ `godam-input godam-input__api-key ${ ! hasValidAPIKey && maskedAPIKey ? 'invalid-api-key' : '' }` }
 			disabled={ hasValidAPIKey }
 			type={ inputType }
 		/>

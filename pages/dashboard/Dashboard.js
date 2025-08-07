@@ -164,33 +164,6 @@ const Dashboard = () => {
 		return () => clearInterval( checkExist );
 	}, [] );
 
-	useEffect( () => {
-		const handleResize = () => {
-			const smallSize = window.innerWidth <= 1024;
-			const responsiveOverlay = document.getElementById( 'screen-size-overlay' );
-			const dashboardContainer = document.getElementById( 'root-video-dashboard' );
-
-			if ( responsiveOverlay && dashboardContainer ) {
-				if ( smallSize ) {
-					responsiveOverlay.classList.remove( 'hidden' );
-					dashboardContainer.style.overflow = 'hidden';
-				} else {
-					responsiveOverlay.classList.add( 'hidden' );
-					dashboardContainer.style.overflow = 'auto';
-				}
-			}
-		};
-
-		// Initial check
-		handleResize();
-
-		// Add listener
-		window.addEventListener( 'resize', handleResize );
-
-		// Cleanup
-		return () => window.removeEventListener( 'resize', handleResize );
-	}, [] );
-
 	return (
 		<div className="godam-dashboard-container">
 			<GodamHeader />
@@ -251,15 +224,9 @@ const Dashboard = () => {
 				</div>
 			</div>
 
-			<div id="screen-size-overlay" className="screen-size-overlay hidden">
-				<div className="screen-size-message">
-					<p>{ __( 'You need to use desktop to access this feature. ', 'godam' ) }</p>
-				</div>
-			</div>
-
 			<div id="dashboard-container" className="dashboard-container">
 				<div className="flex-grow">
-					<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch">
+					<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
 
 						<SingleMetrics
 							mode="dashboard"
@@ -315,13 +282,13 @@ const Dashboard = () => {
 
 				<div className="mx-auto py-4">
 					<div className="playback-country-container flex flex-wrap">
-						<div className="playback-performance flex-1 min-w-[600px]" id="global-analytics-container">
+						<div className="playback-performance min-w-full lg:min-w-[600px]" id="global-analytics-container">
 							<PlaybackPerformanceDashboard
 								initialData={ dashboardMetricsHistory }
 								mode="dashboard"
 							/>
 						</div>
-						<div className="country-views flex-1 min-w-[300px]">
+						<div className="country-views min-w-full md:min-w-[300px]">
 							<div className="country-views-map" id="map-container"></div>
 							<div className="country-views-table" id="table-container"></div>
 						</div>
@@ -336,7 +303,7 @@ const Dashboard = () => {
 							{ __( 'Export', 'godam' ) }
 						</button>
 					</div>
-					<div className="table-container">
+					<div className="table-container overflow-x-auto">
 						<table className="w-full">
 							<tbody>
 								<tr>

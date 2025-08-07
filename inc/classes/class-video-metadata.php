@@ -50,6 +50,7 @@ class Video_Metadata {
 		add_action( 'add_attachment', array( $this, 'save_video_metadata' ) );
 
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'set_media_library_thumbnail' ), 10, 3 );
+		add_action( 'init', array( $this, 'filter_vimeo_migrated_urls' ) );
 	}
 
 	/**
@@ -198,5 +199,31 @@ class Video_Metadata {
 			}
 		}
 		return $response;
+	}
+
+	/**
+	 * Filter to return the remote URL for Vimeo migrated videos.
+	 *
+	 * This filter modifies the attachment URL to return the remote URL
+	 * if the video has been migrated from Vimeo.
+	 *
+	 * @since n.e.x.t
+	 */
+	public function filter_vimeo_migrated_urls(): void {
+		add_filter(
+			'wp_get_attachment_url',
+			function ( $url, $post_id ) {
+				$is_vimeo_migrated = get_post_meta( $post_id, 'rtgodam_is_migrated_vimeo_video', true );
+				if ( $is_vimeo_migrated ) {
+					$remote_url = get_post_meta( $post_id, '_wp_attached_file', true );
+					if ( ! empty( $remote_url ) ) {
+						return $remote_url;
+					}
+				}
+				return $url;
+			},
+			10,
+			2 
+		);
 	}
 }

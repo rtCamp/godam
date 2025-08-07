@@ -56,7 +56,7 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 					</button>
 				</div>
 			) }
-			<div className="h-full overflow-auto is-dismissable godam-video-list-wrapper px-10 bg-white">
+			<div className="h-full overflow-auto is-dismissable godam-video-list-wrapper px-8 md:px-10 bg-white">
 				<div className="godam-video-list-header py-10">
 					<h1 className="godam-video-list__title">{ __( 'Videos', 'godam' ) }</h1>
 

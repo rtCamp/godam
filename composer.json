@@ -21,5 +21,8 @@
 		"npm run lint:staged"
 		],
 		"pot": "WP_CLI_PHP_ARGS='-d memory_limit=1024M' ./vendor/bin/wp i18n make-pot . --exclude=\"assets/src,assets/node_modules,tests,vendor\" ./languages/godam.pot"
+	},
+	"require": {
+		"woocommerce/action-scheduler": "^3.9"
 	}
 }

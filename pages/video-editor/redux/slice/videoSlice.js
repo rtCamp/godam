@@ -173,6 +173,12 @@ const slice = createSlice( {
 		setForminatorPluginActive: ( state, action ) => {
 			state.forminatorPluginActive = action.payload;
 		},
+		setNinjaForms: ( state, action ) => {
+			state.ninjaForms = action.payload;
+		},
+		setNinjaPluginActive: ( state, action ) => {
+			state.ninjaPluginActive = action.payload;
+		},
 	},
 } );
 
@@ -203,5 +209,7 @@ export const {
 	setSureformsPluginActive,
 	setForminatorForms,
 	setForminatorPluginActive,
+	setNinjaForms,
+	setNinjaPluginActive,
 } = slice.actions;
 export default slice.reducer;

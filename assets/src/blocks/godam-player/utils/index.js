@@ -63,6 +63,8 @@ function isObjectEmpty( obj ) {
  * @return {string} An ISO 8601 duration string in the format 'PTnHnMnS'.
  */
 function secondsToISO8601( seconds ) {
+	seconds = Math.floor( seconds ); // ensure whole seconds
+
 	const duration = {
 		hours: Math.floor( seconds / 3600 ),
 		minutes: Math.floor( ( seconds % 3600 ) / 60 ),
