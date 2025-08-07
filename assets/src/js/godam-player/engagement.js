@@ -388,6 +388,13 @@ const engagementStore = {
 			if ( likeLink ) {
 				likeLink.addEventListener( 'click', ( event ) => {
 					event.preventDefault();
+					const { currentLoggedInUserData } = window.godamData;
+					const loginStatus = 'guest' === currentLoggedInUserData?.type || 'user' === currentLoggedInUserData?.type;
+					if ( ! loginStatus ) {
+						self.generateCommentModal( videoAttachmentId, siteUrl, videoId );
+						return;
+					}
+
 					likeLink.classList.add( 'is-progressing' );
 					likeLink.disabled = true;
 					self.dispatch.userHitiLke( videoAttachmentId, siteUrl, self );
@@ -661,7 +668,6 @@ function CommentList( props ) {
 		setCommentsData,
 		siteUrl,
 		isUserLoggedIn,
-		setIsUserLoggedIn,
 	} = props;
 
 	return (
