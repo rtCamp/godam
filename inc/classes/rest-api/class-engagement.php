@@ -634,11 +634,18 @@ class Engagement extends Base {
 
 		setcookie( 'guest_user', sanitize_email( $guest_user_email ), time() + 3600, COOKIEPATH, COOKIE_DOMAIN );
 
+		$guest_user_name = explode( '@', $guest_user_email )[0];
+		$user_data       = array(
+			'email' => $guest_user_email,
+			'name'  => ! empty( $guest_user_name ) ? $guest_user_name : __( 'Guest', 'godam' ),
+			'type'  => 'guest',
+		);
+
 		return new WP_REST_Response(
 			array(
 				'status'  => 'success',
 				'message' => __( 'Guest user email saved successfully.', 'godam' ),
-				'data'    => rtgodam_get_current_logged_in_user_data(),
+				'data'    => $user_data,
 			),
 			200
 		);

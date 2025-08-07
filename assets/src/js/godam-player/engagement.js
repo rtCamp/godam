@@ -16,6 +16,7 @@ const DEFAULT_STATE = {
 	IsUserLiked: {},
 	comments: {},
 	commentsCount: {},
+	userData: window.godamData.currentLoggedInUserData,
 };
 
 const ACTIONS = {
@@ -23,6 +24,7 @@ const ACTIONS = {
 	USER_HIT_LIKE: 'USER_HIT_LIKE',
 	USER_COMMENTED: 'USER_COMMENTED',
 	GENERATE_COMMENT_MODAL: 'GENERATE_COMMENT_MODAL',
+	UPDATE_USER_DATA: 'UPDATE_USER_DATA',
 	ERROR: 'ERROR',
 };
 
@@ -120,6 +122,13 @@ const engagementStore = {
 						[ action.videoAttachmentId ]: state.commentsCount[ action.videoAttachmentId ] + 1,
 					},
 				};
+			case ACTIONS.UPDATE_USER_DATA:
+				return {
+					...state,
+					userData: {
+						...action.userData,
+					},
+				};
 			default:
 				return state;
 		}
@@ -195,6 +204,13 @@ const engagementStore = {
 			};
 		},
 
+		updateUserData: ( userData ) => {
+			return {
+				type: ACTIONS.UPDATE_USER_DATA,
+				userData,
+			};
+		},
+
 		/**
 		 * Dispatches an action to handle an error that occurred while performing an
 		 * engagement action (e.g. liking a video).
@@ -220,6 +236,7 @@ const engagementStore = {
 		getLikes: ( state ) => state.likes,
 		getViews: ( state ) => state.views,
 		getTitles: ( state ) => state.titles,
+		getUserData: ( state ) => state.userData,
 	},
 
 	resolvers: {},
@@ -388,9 +405,8 @@ const engagementStore = {
 			if ( likeLink ) {
 				likeLink.addEventListener( 'click', ( event ) => {
 					event.preventDefault();
-					const { currentLoggedInUserData } = window.godamData;
-					const loginStatus = 'guest' === currentLoggedInUserData?.type || 'user' === currentLoggedInUserData?.type;
-					if ( ! loginStatus ) {
+					const { type: userType } = self.select.getUserData();
+					if ( 'non-user' === userType ) {
 						self.generateCommentModal( videoAttachmentId, siteUrl, videoId );
 						return;
 					}
@@ -735,6 +751,7 @@ function GuestLoginForm( props ) {
 		baseClass,
 		setIsUserLoggedIn,
 		siteUrl,
+		storeObj,
 	} = props;
 	const [ showGuestForm, setShowGuestForm ] = useState( false );
 	const [ guestEmail, setGuestEmail ] = useState( '' );
@@ -758,7 +775,7 @@ function GuestLoginForm( props ) {
 				setIsUserLoggedIn( true );
 				setGuestEmail( '' );
 				setLoginProgress( false );
-				window.godamData.currentLoggedInUserData = result.data;
+				storeObj.dispatch.updateUserData( result.data );
 			}
 		} else {
 			setShowGuestForm( true );
@@ -836,8 +853,8 @@ function CommentBox( props ) {
 	const videoFigureId = `godam-player-container-${ videoKey }`;
 	const [ isSending, setIsSending ] = useState( false );
 	const [ expendComment, setExpendComment ] = useState( false );
-	const { currentLoggedInUserData } = window.godamData;
-	const loginStatus = 'guest' === currentLoggedInUserData?.type || 'user' === currentLoggedInUserData?.type;
+	const { type: userType } = storeObj.select.getUserData();
+	const loginStatus = 'guest' === userType || 'user' === userType;
 	const [ isUserLoggedIn, setIsUserLoggedIn ] = useState( loginStatus );
 
 	useEffect( () => {
@@ -920,7 +937,7 @@ function CommentBox( props ) {
 								{ isUserLoggedIn ? (
 									<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" commentType="new" />
 								) : (
-									<GuestLoginForm setIsUserLoggedIn={ setIsUserLoggedIn } siteUrl={ siteUrl } baseClass={ baseClass } />
+									<GuestLoginForm setIsUserLoggedIn={ setIsUserLoggedIn } siteUrl={ siteUrl } baseClass={ baseClass } storeObj={ memoizedStoreObj } />
 								) }
 							</div>
 						</div>
