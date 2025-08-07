@@ -73,54 +73,6 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 
 			// Add parent ajax events.
 			parent::add_ajax_events();
-
-			// Filter to change the field to file_upload for better handling.
-			add_filter( 'everest_forms_process_before_form_data', array( $this, 'update_field_type_to_file_upload' ), 10, 1 );
-
-			// Revert the filed type to godam_record for the field properties.
-			add_filter( 'everest_forms_process_filter', array( $this, 'update_field_type_to_godam_record' ), 10, 1 );
-		}
-
-		/**
-		 * Update field type to file_upload for better handling.
-		 *
-		 * @param array $form_data Form data.
-		 *
-		 * @since n.e.x.t
-		 *
-		 * @return array
-		 */
-		public function update_field_type_to_file_upload( $form_data ) {
-			if ( ! empty( $form_data['form_fields'] ) ) {
-				foreach ( $form_data['form_fields'] as $field_id => $field ) {
-					if ( 'godam_record' === $field['type'] ) {
-						// This is deliberately done to handle the field as a file upload.
-						$form_data['form_fields'][ $field_id ]['type'] = 'file-upload';
-					}
-				}
-			}
-
-			return $form_data;
-		}
-
-		/**
-		 * Revert the field type to godam_record for the field properties.
-		 *
-		 * @param array $fields Fields data.
-		 *
-		 * @since n.e.x.t
-		 *
-		 * @return array
-		 */
-		public function update_field_type_to_godam_record( $fields ) {
-			foreach ( $fields as $field ) {
-				if ( strpos( $field['meta_key'], 'godam_record' ) !== false ) {
-					// Revert the field type to godam_record.
-					$fields[ $field['id'] ]['type'] = 'godam_record';
-				}
-			}
-
-			return $fields;
 		}
 
 		/**
