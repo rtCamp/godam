@@ -42,6 +42,8 @@ use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\REST_API\Video_Migration;
 use RTGODAM\Inc\Gravity_Forms;
+use RTGODAM\Inc\REST_API\MetForm;
+
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
@@ -54,6 +56,8 @@ use RTGODAM\Inc\WPForms\WPForms_Integration;
 use RTGODAM\Inc\Media_Library\Media_Edit_Enhancements;
 use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Rest_Api;
 use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Integration;
+use RTGODAM\Inc\Metform\Metform_Integration;
+use RTGODAM\Inc\Metform\Metform_Rest_Api;
 
 /**
  * Class Plugin.
@@ -92,6 +96,7 @@ class Plugin {
 
 		WPForms_Integration::get_instance()->init();
 		Ninja_Forms_Integration::get_instance()->init();
+		Metform_Integration::get_instance()->init();
 
 		// Load cron jobs.
 		Retranscode_Failed_Media::get_instance();
@@ -144,6 +149,7 @@ class Plugin {
 		Fluent_Forms::get_instance();
 		Everest_Forms::get_instance();
 		Ninja_Forms_Rest_Api::get_instance();
+		Metform_Rest_Api::get_instance();
 		Settings::get_instance();
 		Meta_Rest_Fields::get_instance();
 		Media_Library::get_instance();

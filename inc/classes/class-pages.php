@@ -392,6 +392,7 @@ class Pages {
 			$is_sure_form_active    = is_plugin_active( 'sureforms/sureforms.php' );
 			$is_forminator_active   = is_plugin_active( 'forminator/forminator.php' );
 			$is_fluent_forms_active = is_plugin_active( 'fluentform/fluentform.php' );
+			$is_met_form_active     = is_plugin_active( 'metform/metform.php' );
 
 			// TODO Handle Everest Forms pro versions as well in future.
 			$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' );
@@ -418,6 +419,7 @@ class Pages {
 					'fluentformsActive'  => $is_fluent_forms_active,
 					'everestFormsActive' => $is_everest_forms_active,
 					'ninjaFormsActive'   => $is_ninja_forms_active,
+					'metformActive'      => $is_met_form_active,
 				)
 			);
 
