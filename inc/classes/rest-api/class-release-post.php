@@ -34,19 +34,19 @@ class Release_Post extends Base {
 	}
 
 	/**
-	 * Get the major release post.
+	 * Get the latest release post.
 	 * 
 	 * @return \WP_REST_Response
 	 */
 	public function get_release_post() {
-		$transient_key = 'rtgodam_major_release_data';
+		$transient_key = 'rtgodam_release_data';
 		$cached        = get_transient( $transient_key );
 
 		if ( false !== $cached ) {
 			return new \WP_REST_Response( $cached, 200 );
 		}
 
-		// Fetch the latest post from remote (major release post).
+		// Fetch the latest post from remote (release post).
 		$response      = wp_remote_get( RTGODAM_IO_API_BASE . '/wp-json/wp/v2/posts?categories=8&per_page=1&orderby=date&order=desc&_embed' );
 		$response_code = wp_remote_retrieve_response_code( $response );
 

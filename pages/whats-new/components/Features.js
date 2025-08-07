@@ -8,9 +8,9 @@ import { __ } from '@wordpress/i18n';
  */
 import Header from './Header';
 
-const Features = ( { majorReleaseData } ) => {
-	const primaryUpdates = majorReleaseData.features ? majorReleaseData.features.slice( 0, 3 ) : [];
-	const otherUpdates = majorReleaseData.features ? majorReleaseData.features.slice( 3 ) : [];
+const Features = ( { releaseData } ) => {
+	const primaryUpdates = releaseData.features ? releaseData.features.slice( 0, 3 ) : [];
+	const otherUpdates = releaseData.features ? releaseData.features.slice( 3 ) : [];
 
 	return (
 		<div className="godam-whats-new-container">

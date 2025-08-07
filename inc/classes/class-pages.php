@@ -136,13 +136,14 @@ class Pages {
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
 
+		// "What's New" page related actions.
+		add_action( 'current_screen', array( $this, 'redirect_to_whats_new' ) );
+		add_action( 'admin_menu', array( $this, 'remove_whats_new_page' ) );
+
 		// Remove anti-spam field during shortcode render for WPForms in Video Editor Page.
 		// @see https://github.com/rtCamp/godam/issues/597 issue link.
 		add_filter( 'rest_pre_dispatch', array( $this, 'save_current_rest_api_request' ), 10, 3 );
 		add_filter( 'wpforms_frontend_form_data', array( $this, 'remove_antispam_setting_from_wpforms' ), 10 );
-
-		// Redirect to "What's New" page once after a major plugin release.
-		add_action( 'admin_init', array( $this, 'redirect_to_whats_new' ) );
 	}
 
 	/**
@@ -224,15 +225,19 @@ class Pages {
 			7
 		);
 
-		add_submenu_page(
-			$this->menu_slug,
-			__( 'What\'s New', 'godam' ),
-			__( 'What\'s New', 'godam' ),
-			'read',
-			$this->whats_new_slug,
-			array( $this, 'render_whats_new_page' ),
-			6
-		);
+		// Only add "What's New" submenu page if we are on a GoDAM menu.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['page'] ) && false !== strpos( sanitize_key( $_GET['page'] ), $this->menu_slug ) ) {
+			add_submenu_page(
+				$this->menu_slug,
+				__( 'What\'s New', 'godam' ),
+				__( 'What\'s New', 'godam' ),
+				'edit_posts',
+				$this->whats_new_slug,
+				array( $this, 'render_whats_new_page' ),
+				8
+			);
+		}
 	}
 
 	/**
@@ -940,21 +945,38 @@ class Pages {
 	}
 
 	/**
-	 * Redirects to "What's New" admin page after a major plugin update.
+	 * Redirects to "What's New" submenu page after a plugin update.
+	 *
+	 * @param object $screen The current screen object.
 	 */
-	public function redirect_to_whats_new() {
-		if ( ! is_admin() ) {
+	public function redirect_to_whats_new( $screen ) {
+		// Only redirect if on a valid GoDAM admin page.
+		if (
+			! is_admin() ||
+			! $screen ||
+			false === strpos( $screen->id, $this->menu_slug )
+		) {
 			return;
 		}
 
 		if ( get_transient( 'rtgodam_show_whats_new' ) ) {
 			// Redirect only once, then clean up any related transient data.
 			delete_transient( 'rtgodam_show_whats_new' );
-			delete_transient( 'rtgodam_major_release_data' );
+			delete_transient( 'rtgodam_release_data' );
 
 			// Redirect to "What's New" admin page.
 			wp_safe_redirect( admin_url( 'admin.php?page=' . $this->whats_new_slug ) );
 			exit;
+		}
+	}
+
+	/**
+	 * Remove the "What's New" submenu page once the user navigates away.
+	 */
+	public function remove_whats_new_page() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ( isset( $_GET['page'] ) && sanitize_key( $_GET['page'] ) !== $this->whats_new_slug ) ) {
+			remove_submenu_page( $this->menu_slug, $this->whats_new_slug );
 		}
 	}
 }

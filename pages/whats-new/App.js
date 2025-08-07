@@ -11,7 +11,7 @@ import Error from './components/Error';
 import Features from './components/Features';
 
 const App = () => {
-	const [ majorReleaseData, setFeatures ] = useState( {} );
+	const [ releaseData, setFeatures ] = useState( {} );
 	const [ isLoading, setIsLoading ] = useState( true );
 	const [ hasError, setHasError ] = useState( false );
 
@@ -27,11 +27,11 @@ const App = () => {
 					throw new Error( 'Failed to fetch data' );
 				}
 
-				const resData = await response.json();
+				const data = await response.json();
 
 				// Set state on valid response data.
-				if ( resData && resData.features && resData.features.length > 0 ) {
-					setFeatures( resData );
+				if ( data && data.features && data.features.length > 0 ) {
+					setFeatures( data );
 				}
 			} catch ( error ) {
 				setHasError( true );
@@ -46,21 +46,21 @@ const App = () => {
 	useEffect( () => {
 		// Dispatch event on successful data fetch,
 		// mainly used for modal interactivity.
-		if ( majorReleaseData.features && majorReleaseData.features.length > 0 ) {
+		if ( releaseData.features && releaseData.features.length > 0 ) {
 			document.dispatchEvent( new CustomEvent( 'whatsNewContentReady' ) );
 		}
-	}, [ majorReleaseData ] );
+	}, [ releaseData ] );
 
 	if ( isLoading ) {
 		// Loading state
 		return <Loading />;
-	} else if ( hasError || ! majorReleaseData.features || majorReleaseData.features.length === 0 ) {
+	} else if ( hasError || ! releaseData.features || releaseData.features.length === 0 ) {
 		// Error state or no data
 		return <Error hasError={ hasError } />;
 	}
 
 	// New plugin features
-	return <Features majorReleaseData={ majorReleaseData } />;
+	return <Features releaseData={ releaseData } />;
 };
 
 export default App;
