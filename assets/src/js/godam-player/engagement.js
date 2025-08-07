@@ -574,7 +574,7 @@ function CommentForm( props ) {
  * @return {JSX.Element} A single comment component.
  */
 function Comment( props ) {
-	const { comment, setCommentsData, storeObj, videoAttachmentId, siteUrl } = props;
+	const { comment, setCommentsData, storeObj, videoAttachmentId, siteUrl, isUserLoggedIn } = props;
 	const {
 		text,
 		author_name: authorName,
@@ -605,7 +605,7 @@ function Comment( props ) {
 							{ text }
 						</div>
 					</div>
-					{ ! isExpanded && (
+					{ ( ! isExpanded && isUserLoggedIn ) && (
 						<div className="rtgodam-video-engagement--comment-reply">
 							<button className="rtgodam-video-engagement--comment-button" onClick={ () => setIsExpanded( true ) }>
 								{ __( 'Reply', 'godam' ) }
@@ -654,7 +654,15 @@ function Comment( props ) {
  * @return {JSX.Element} A React element representing the comment list.
  */
 function CommentList( props ) {
-	const { videoAttachmentId, storeObj, commentsData, setCommentsData, siteUrl } = props;
+	const {
+		videoAttachmentId,
+		storeObj,
+		commentsData,
+		setCommentsData,
+		siteUrl,
+		isUserLoggedIn,
+		setIsUserLoggedIn,
+	} = props;
 
 	return (
 		<div className="rtgodam-video-engagement--comment-list">
@@ -666,8 +674,96 @@ function CommentList( props ) {
 				)
 			}
 			{ commentsData.map( ( comment ) => (
-				<Comment key={ comment.id } comment={ comment } setCommentsData={ setCommentsData } storeObj={ storeObj } videoAttachmentId={ videoAttachmentId } siteUrl={ siteUrl } />
+				<Comment
+					key={ comment.id }
+					comment={ comment }
+					setCommentsData={ setCommentsData }
+					storeObj={ storeObj }
+					videoAttachmentId={ videoAttachmentId }
+					siteUrl={ siteUrl }
+					isUserLoggedIn={ isUserLoggedIn }
+				/>
 			) ) }
+		</div>
+	);
+}
+
+function GuestLoginForm( props ) {
+	const {
+		baseClass,
+		setIsUserLoggedIn,
+		siteUrl,
+	} = props;
+	const [ showGuestForm, setShowGuestForm ] = useState( false );
+	const [ guestEmail, setGuestEmail ] = useState( '' );
+	const [ loginProgress, setLoginProgress ] = useState( false );
+
+	async function handleGuestLogin() {
+		if ( showGuestForm ) {
+			setLoginProgress( true );
+			const queryParams = {
+				guest_user_email: guestEmail,
+			};
+			apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
+			const result = await apiFetch( {
+				path: addQueryArgs( '/godam/v1/engagement/guest-user-login' ),
+				method: 'POST',
+				data: queryParams,
+			} );
+
+			if ( 'success' === result.status ) {
+				setShowGuestForm( false );
+				setIsUserLoggedIn( true );
+				setGuestEmail( '' );
+				setLoginProgress( false );
+				window.godamData.currentLoggedInUserData = result.data;
+			}
+		} else {
+			setShowGuestForm( true );
+		}
+	}
+
+	return (
+		<div className={ baseClass + '-leave-comment-login-wrapper' }>
+			{
+				! showGuestForm && (
+					<div className={ baseClass + '-leave-comment-login' }>
+						<a href={ siteUrl + '/wp-login.php' }>{ __( 'Register', 'godam' ) }</a> / <a href={ siteUrl + '/wp-login.php' }>{ __( 'Login', 'godam' ) }</a> { __( ' to comment', 'godam' ) }
+					</div>
+				)
+			}
+			{
+				showGuestForm && (
+					<div className={ baseClass + '-leave-comment-login-guest-form' }>
+						<label htmlFor={ baseClass + '-leave-comment-login-guest-email' }>{ __( 'Email', 'godam' ) }</label>
+						<input
+							type="email"
+							id={ baseClass + '-leave-comment-login-guest-email' }
+							placeholder={ __( 'Enter your email', 'godam' ) }
+							className={ loginProgress ? ' is-progressing' : '' }
+							value={ guestEmail }
+							onChange={ ( e ) => setGuestEmail( e.target.value ) } />
+					</div>
+				)
+			}
+			<div className={ baseClass + '-leave-comment-login-guest-button' }>
+				{
+					showGuestForm && (
+						<button onClick={ () => setShowGuestForm( ! showGuestForm ) }>
+							{ __( 'Back', 'godam' ) }
+						</button>
+					)
+				}
+
+				<button
+					className={ loginProgress ? ' is-progressing' : '' }
+					onClick={ handleGuestLogin }
+				>
+					{
+						showGuestForm ? __( 'Save', 'godam' ) : __( 'Continue as Guest', 'godam' )
+					}
+				</button>
+			</div>
 		</div>
 	);
 }
@@ -698,12 +794,9 @@ function CommentBox( props ) {
 	const videoFigureId = `godam-player-container-${ videoKey }`;
 	const [ isSending, setIsSending ] = useState( false );
 	const [ expendComment, setExpendComment ] = useState( false );
-	const [ showGuestForm, setShowGuestForm ] = useState( false );
-	const [ guestEmail, setGuestEmail ] = useState( '' );
 	const { currentLoggedInUserData } = window.godamData;
 	const loginStatus = 'guest' === currentLoggedInUserData?.type || 'user' === currentLoggedInUserData?.type;
 	const [ isUserLoggedIn, setIsUserLoggedIn ] = useState( loginStatus );
-	const [ loginProgress, setLoginProgress ] = useState( false );
 
 	useEffect( () => {
 		setCommentsData( comments );
@@ -746,31 +839,6 @@ function CommentBox( props ) {
 		}, 1000 );
 	}
 
-	async function handleGuestLogin() {
-		if ( showGuestForm ) {
-			setLoginProgress( true );
-			const queryParams = {
-				guest_user_email: guestEmail,
-			};
-			apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
-			const result = await apiFetch( {
-				path: addQueryArgs( '/godam/v1/engagement/guest-user-login' ),
-				method: 'POST',
-				data: queryParams,
-			} );
-
-			if ( 'success' === result.status ) {
-				setShowGuestForm( false );
-				setIsUserLoggedIn( true );
-				setGuestEmail( '' );
-				setLoginProgress( false );
-				window.godamData.currentLoggedInUserData = result.data;
-			}
-		} else {
-			setShowGuestForm( true );
-		}
-	}
-
 	return (
 		<div className={ baseClass }>
 			<div className={ baseClass + '-content' + ( skipEngagements ? ' is-skip-engagements' : '' ) }>
@@ -798,7 +866,7 @@ function CommentBox( props ) {
 								}
 								{ __( 'Comments', 'godam' ) } ({ commentsCount })
 							</h3>
-							<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } />
+							<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } isUserLoggedIn={ isUserLoggedIn } />
 							<div className={ baseClass + '-leave-comment' }>
 								<div className={ baseClass + '-leave-comment-impressions' }>
 									<button
@@ -810,47 +878,7 @@ function CommentBox( props ) {
 								{ isUserLoggedIn ? (
 									<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" />
 								) : (
-									<div className={ baseClass + '-leave-comment-login-wrapper' }>
-										{
-											! showGuestForm && (
-												<div className={ baseClass + '-leave-comment-login' }>
-													<a href={ siteUrl + '/wp-login.php' }>{ __( 'Register', 'godam' ) }</a> / <a href={ siteUrl + '/wp-login.php' }>{ __( 'Login', 'godam' ) }</a> { __( ' to comment', 'godam' ) }
-												</div>
-											)
-										}
-										{
-											showGuestForm && (
-												<div className={ baseClass + '-leave-comment-login-guest-form' }>
-													<label htmlFor={ baseClass + '-leave-comment-login-guest-email' }>{ __( 'Email', 'godam' ) }</label>
-													<input
-														type="email"
-														id={ baseClass + '-leave-comment-login-guest-email' }
-														placeholder={ __( 'Enter your email', 'godam' ) }
-														className={ loginProgress ? ' is-progressing' : '' }
-														value={ guestEmail }
-														onChange={ ( e ) => setGuestEmail( e.target.value ) } />
-												</div>
-											)
-										}
-										<div className={ baseClass + '-leave-comment-login-guest-button' }>
-											{
-												showGuestForm && (
-													<button onClick={ () => setShowGuestForm( ! showGuestForm ) }>
-														{ __( 'Back', 'godam' ) }
-													</button>
-												)
-											}
-
-											<button
-												className={ loginProgress ? ' is-progressing' : '' }
-												onClick={ handleGuestLogin }
-											>
-												{
-													showGuestForm ? __( 'Save', 'godam' ) : __( 'Continue as Guest', 'godam' )
-												}
-											</button>
-										</div>
-									</div>
+									<GuestLoginForm setIsUserLoggedIn={ setIsUserLoggedIn } siteUrl={ siteUrl } baseClass={ baseClass } />
 								) }
 							</div>
 						</div>
