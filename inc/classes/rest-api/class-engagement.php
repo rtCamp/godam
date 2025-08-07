@@ -514,6 +514,7 @@ class Engagement extends Base {
 				'parent_id'       => $comment['custom_reply_to'],
 				'text'            => $text,
 				'author_name'     => $comment['comment_by'],
+				'author_email'    => $comment['comment_email'],
 				'created_at_date' => $created_date['date'],
 				'created_at_time' => $created_date['time'],
 				'author_image'    => get_avatar_url( $comment['comment_email'] ),

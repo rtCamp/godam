@@ -446,7 +446,6 @@ const engagementStore = {
 	 * @param {boolean} skipEngagements   - Whether to skip engagements.
 	 */
 	generateCommentModal( videoAttachmentId, siteUrl, videoId, skipEngagements = false ) {
-		this.modalData = { videoAttachmentId, siteUrl, videoId };
 		const modalId = 'rtgodam-video-engagement--comment-modal';
 		let commentModal = document.getElementById( modalId );
 
@@ -613,6 +612,7 @@ function Comment( props ) {
 		text,
 		author_name: authorName,
 		author_image: authorImg,
+		author_email: authorEmail,
 		created_at_date: createdAtDate,
 		created_at_time: createdAtTime,
 		children,
@@ -620,6 +620,11 @@ function Comment( props ) {
 	const [ isExpanded, setIsExpanded ] = useState( false );
 	const [ commentType, setCommentType ] = useState( 'new' );
 	const [ showChildComments, setShowChildComments ] = useState( false );
+	const {
+		email: userEmail,
+		name: userName,
+		type: userType,
+	} = storeObj.select.getUserData();
 
 	return (
 		<div className={ 'rtgodam-video-engagement--comment-parent ' + ( children && children.length > 0 ? 'has-children' : '' ) }>
@@ -650,17 +655,24 @@ function Comment( props ) {
 							>
 								{ __( 'Reply', 'godam' ) }
 							</button>
-							<button className="rtgodam-video-engagement--comment-button comment-button-delete" onClick={ () => setIsExpanded( true ) }>
-								{ __( 'Delete', 'godam' ) }
-							</button>
-							<button
-								className="rtgodam-video-engagement--comment-button comment-button-edit" onClick={ () => {
-									setIsExpanded( true );
-									setCommentType( 'edit' );
-								} }
-							>
-								{ __( 'Edit', 'godam' ) }
-							</button>
+							{
+								userType === 'user' && userEmail === authorEmail && (
+									<>
+										<button className="rtgodam-video-engagement--comment-button comment-button-delete" onClick={ () => setIsExpanded( true ) }>
+											{ __( 'Delete', 'godam' ) }
+										</button>
+										<button
+											className="rtgodam-video-engagement--comment-button comment-button-edit" onClick={ () => {
+												setIsExpanded( true );
+												setCommentType( 'edit' );
+											} }
+										>
+											{ __( 'Edit', 'godam' ) }
+										</button>
+									</>
+								)
+							}
+
 						</div>
 					) }
 					{ isExpanded && (
@@ -853,8 +865,8 @@ function CommentBox( props ) {
 	const videoFigureId = `godam-player-container-${ videoKey }`;
 	const [ isSending, setIsSending ] = useState( false );
 	const [ expendComment, setExpendComment ] = useState( false );
-	const { type: userType } = storeObj.select.getUserData();
-	const loginStatus = 'guest' === userType || 'user' === userType;
+	const getUserData = memoizedStoreObj.select.getUserData();
+	const loginStatus = 'guest' === getUserData?.type || 'user' === getUserData?.type;
 	const [ isUserLoggedIn, setIsUserLoggedIn ] = useState( loginStatus );
 
 	useEffect( () => {
@@ -877,7 +889,6 @@ function CommentBox( props ) {
 		return () => {
 			currentVideoParent.insertBefore( currentVideo, currentVideoParent.firstChild );
 			document.body.classList.remove( 'no-scroll' );
-			memoizedStoreObj.modalData = {};
 
 			// Godam gallery cleanup if needed
 			const godamGalleryModalCloseer = document.querySelector( '.godam-modal.is-gallery .godam-modal-close' );
@@ -925,7 +936,7 @@ function CommentBox( props ) {
 								}
 								{ __( 'Comments', 'godam' ) } ({ commentsCount })
 							</h3>
-							<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } isUserLoggedIn={ isUserLoggedIn } />
+							<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } isUserLoggedIn={ isUserLoggedIn } storeObj={ memoizedStoreObj } />
 							<div className={ baseClass + '-leave-comment' }>
 								<div className={ baseClass + '-leave-comment-impressions' }>
 									<button
