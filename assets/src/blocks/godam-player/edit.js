@@ -561,7 +561,6 @@ function VideoEdit( {
 										href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
 										target="_blank"
 										variant="primary"
-										className=""
 										icon={ external }
 										iconPosition="right"
 									>

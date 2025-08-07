@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 global $post;
 
-if ( $post && is_object( $post ) ) {
+if ( $post && $post instanceof WP_Post ) {
 	/**
 	 * Inside a query loop or single post context.
 	 * Get attachment ID from postmeta.
