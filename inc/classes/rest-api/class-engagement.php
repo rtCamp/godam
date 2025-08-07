@@ -130,6 +130,31 @@ class Engagement extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/user-delete-comment',
+				'args'      => array(
+					array(
+						'methods'             => WP_REST_Server::CREATABLE,
+						'callback'            => array( $this, 'user_delete_comment' ),
+						'permission_callback' => '__return_true',
+						'args'                => array(
+							'video_id'   => array(
+								'description'       => __( 'The ID of the video.', 'godam' ),
+								'type'              => 'integer',
+								'required'          => true,
+								'sanitize_callback' => 'absint',
+							),
+							'comment_id' => array(
+								'description'       => __( 'The ID of the parent comment.', 'godam' ),
+								'type'              => 'string',
+								'required'          => true,
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/guest-user-login',
 				'args'      => array(
 					array(
@@ -446,6 +471,7 @@ class Engagement extends Base {
 				'parent_id'       => isset( $comment['custom_reply_to'] ) ? $comment['custom_reply_to'] : null,
 				'text'            => $comment['content'],
 				'author_name'     => $comment['comment_by'],
+				'author_email'    => $comment['comment_email'],
 				'created_at_date' => $created_date['date'],
 				'created_at_time' => $created_date['time'],
 				'author_image'    => get_avatar_url( $comment['comment_email'] ),
@@ -457,6 +483,72 @@ class Engagement extends Base {
 					'status' => 'success',
 					'data'   => $response_data,
 				),
+				200
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'status'    => 'error',
+				'message'   => __( 'Failed to update comment.', 'godam' ),
+				'errorType' => 'failed_to_update_comment',
+			),
+			200
+		);
+	}
+
+	/**
+	 * Update like status for a video.
+	 *
+	 * @param WP_REST_Request $request REST request object.
+	 * @return WP_REST_Response REST response object.
+	 */
+	public function user_delete_comment( $request ) {
+
+		$video_id   = $request->get_param( 'video_id' );
+		$comment_id = $request->get_param( 'comment_id' );
+
+		$account_creadentials = $this->access_creadentials_check();
+
+		if ( $account_creadentials instanceof WP_REST_Response ) {
+			return $account_creadentials;
+		}
+
+		$current_user       = rtgodam_get_current_logged_in_user_data();
+		$current_user_email = $current_user['email'];
+		$transcoder_job_id  = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
+
+		$query_params = array(
+			'api_key'        => $account_creadentials['api_key'],
+			'reference_name' => $transcoder_job_id,
+			'comment_email'  => $current_user_email,
+			'name'           => $comment_id,
+		);
+
+		$comment_delete_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.delete_comment';
+
+		$comments_response = wp_remote_post(
+			$comment_delete_endpoint,
+			array(
+				'method'  => 'POST',
+				'timeout' => 30,
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
+				'body'    => wp_json_encode( $query_params ),
+			)
+		);
+
+		$process_response = $this->process_response( $comments_response );
+
+		if ( $process_response instanceof WP_REST_Response ) {
+			return $process_response;
+		}
+
+		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
+
+			return new WP_REST_Response(
+				$process_response['message'],
 				200
 			);
 		}

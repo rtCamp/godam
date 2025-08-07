@@ -111,6 +111,13 @@ const engagementStore = {
 					},
 				};
 			case ACTIONS.USER_COMMENTED:
+				let counter = 1;
+				if ( 'edit' === action.activity ) {
+					counter = 0;
+				}
+				if ( 'delete' === action.activity ) {
+					counter = -1;
+				}
 				return {
 					...state,
 					comments: {
@@ -119,7 +126,7 @@ const engagementStore = {
 					},
 					commentsCount: {
 						...state.commentsCount,
-						[ action.videoAttachmentId ]: state.commentsCount[ action.videoAttachmentId ] + 1,
+						[ action.videoAttachmentId ]: state.commentsCount[ action.videoAttachmentId ] + counter,
 					},
 				};
 			case ACTIONS.UPDATE_USER_DATA:
@@ -162,13 +169,15 @@ const engagementStore = {
 		 *
 		 * @param {string} videoAttachmentId - The ID of the video attachment.
 		 * @param {Array}  commentData       - The comment data returned by the API. This should be an array of comment objects.
+		 * @param {string} activity          - The activity type (e.g., "new" or "edit").
 		 * @return {Object} An action object containing the type, comment data, and video attachment ID.
 		 */
-		userCommented: ( videoAttachmentId, commentData ) => {
+		userCommented: ( videoAttachmentId, commentData, activity = 'new' ) => {
 			return {
 				type: ACTIONS.USER_COMMENTED,
 				commentData,
 				videoAttachmentId,
+				activity,
 			};
 		},
 
@@ -475,7 +484,7 @@ function updateCommentTree( comments, comment, data, commentType ) {
 		return [ data, ...comments ];
 	}
 
-	return comments.map( ( item ) => {
+	const commentTree = comments.map( ( item ) => {
 		if ( item.id === comment.id && 'new' === commentType ) {
 			return {
 				...item,
@@ -493,6 +502,10 @@ function updateCommentTree( comments, comment, data, commentType ) {
 			};
 		}
 
+		if ( item.id === comment.id && 'delete' === commentType ) {
+			return null;
+		}
+
 		if ( item.children.length > 0 ) {
 			return {
 				...item,
@@ -502,6 +515,11 @@ function updateCommentTree( comments, comment, data, commentType ) {
 
 		return item;
 	} );
+
+	if ( 'delete' === commentType ) {
+		return commentTree.filter( ( item ) => item !== null );
+	}
+	return commentTree;
 }
 
 /**
@@ -562,7 +580,7 @@ function CommentForm( props ) {
 		}
 		setCommentsData( ( prevComments ) => {
 			const newCommentTree = updateCommentTree( prevComments, comment, result.data, commentType );
-			storeObj.dispatch.userCommented( videoAttachmentId, newCommentTree );
+			storeObj.dispatch.userCommented( videoAttachmentId, newCommentTree, commentType );
 			return [ ...newCommentTree ];
 		} );
 	}
@@ -622,9 +640,33 @@ function Comment( props ) {
 	const [ showChildComments, setShowChildComments ] = useState( false );
 	const {
 		email: userEmail,
-		name: userName,
 		type: userType,
 	} = storeObj.select.getUserData();
+
+	async function handleDelete() {
+		const commentId = comment.id ? comment.id : '';
+		const queryParams = {
+			video_id: videoAttachmentId,
+			comment_id: commentId,
+		};
+		apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
+		const result = await apiFetch( {
+			path: addQueryArgs( '/godam/v1/engagement/user-delete-comment' ),
+			method: 'POST',
+			data: queryParams,
+		} );
+
+		setCommentsData( ( prevComments ) => {
+			const newCommentTree = updateCommentTree(
+				prevComments,
+				comment,
+				{ parent_id: commentId },
+				'delete',
+			);
+			storeObj.dispatch.userCommented( videoAttachmentId, newCommentTree, 'delete' );
+			return [ ...newCommentTree ];
+		} );
+	}
 
 	return (
 		<div className={ 'rtgodam-video-engagement--comment-parent ' + ( children && children.length > 0 ? 'has-children' : '' ) }>
@@ -658,7 +700,7 @@ function Comment( props ) {
 							{
 								userType === 'user' && userEmail === authorEmail && (
 									<>
-										<button className="rtgodam-video-engagement--comment-button comment-button-delete" onClick={ () => setIsExpanded( true ) }>
+										<button className="rtgodam-video-engagement--comment-button comment-button-delete" onClick={ handleDelete }>
 											{ __( 'Delete', 'godam' ) }
 										</button>
 										<button
