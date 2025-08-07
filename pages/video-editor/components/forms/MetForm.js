@@ -19,21 +19,21 @@ import FormSelector from './FormSelector';
 import { useState } from 'react';
 import clsx from 'clsx';
 
-const NinjaForm = ( { layerID } ) => {
+const MetForm = ( { layerID } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
-	const ninjaForms = useSelector( ( state ) => state.videoReducer.ninjaForms ) || [];
+	const metforms = useSelector( ( state ) => state.videoReducer.metforms ) || [];
 
 	const [ isFetching, setIsFetching ] = useState( true );
 
-	const forms = ninjaForms?.map( ( form ) => ( {
+	const forms = metforms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
 	} ) );
 
 	const changeFormID = ( formID ) => {
 		setIsFetching( true );
-		dispatch( updateLayerField( { id: layer.id, field: 'ninja_form_id', value: formID } ) );
+		dispatch( updateLayerField( { id: layer.id, field: 'metform_id', value: formID } ) );
 	};
 
 	// If we want to disable the premium layers the we can use this code
@@ -41,26 +41,26 @@ const NinjaForm = ( { layerID } ) => {
 	// For now we are enabling all the features
 	const isValidAPIKey = true;
 
-	const isNinjaFormsPluginActive = Boolean( window?.videoData?.ninjaFormsActive );
+	const isMetFormPluginActive = Boolean( window?.videoData?.metformActive );
 
 	return (
 		<>
 			{
-				! isNinjaFormsPluginActive &&
+				! isMetFormPluginActive &&
 				<Notice
 					className="mb-4"
 					status="warning"
 					isDismissible={ false }
 				>
-					{ __( 'Please activate the Ninja Forms plugin to use this feature.', 'godam' ) }
+					{ __( 'Please activate the MetForm plugin to use this feature.', 'godam' ) }
 				</Notice>
 			}
 
 			{
 				<FormSelector
-					disabled={ ! isValidAPIKey || ! isNinjaFormsPluginActive }
-					className="ninja-form-selector mb-4"
-					formID={ layer.ninja_form_id }
+					disabled={ ! isValidAPIKey || ! isMetFormPluginActive }
+					className="met-form-selector mb-4"
+					formID={ layer.metform_id }
 					forms={ forms }
 					handleChange={ changeFormID }
 				/>
@@ -75,11 +75,11 @@ const NinjaForm = ( { layerID } ) => {
 						className="easydam-layer"
 					>
 
-						{ layer?.ninja_form_id &&
-							<div className={ clsx( 'form-container', 'ninja-form', { loading: isFetching } ) }>
+						{
+							<div className={ clsx( 'form-container', 'metform', { loading: isFetching } ) }>
 								{ <iframe
-									src={ window.godamRestRoute.homeUrl + '?rtgodam-render-layer=ninja-forms&rtgodam-layer-id=' + layer?.ninja_form_id }
-									title="Ninja Form"
+									src={ window.godamRestRoute.homeUrl + '?rtgodam-render-layer=metform&rtgodam-layer-id=' + layer?.metform_id }
+									title="Met Form"
 									scrolling="auto"
 									width="100%"
 									className={ isFetching ? 'hidden' : '' }
@@ -101,7 +101,7 @@ const NinjaForm = ( { layerID } ) => {
 						{
 							! isFetching &&
 							<Button
-								href={ `${ window?.videoData?.adminUrl }admin.php?page=ninja-forms&form_id=${ layer.ninja_form_id }` }
+								href={ `${ window?.videoData?.adminUrl }?post=${ layer.metform_id }&action=elementor` }
 								target="_blank"
 								variant="secondary"
 								icon={ pencil }
@@ -126,4 +126,4 @@ const NinjaForm = ( { layerID } ) => {
 	);
 };
 
-export default NinjaForm;
+export default MetForm;

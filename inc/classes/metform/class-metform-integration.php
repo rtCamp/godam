@@ -1,24 +1,24 @@
 <?php
 /**
- * Handles Ninja Forms integration class.
+ * Handles Metform integration class.
  *
  * @since n.e.x.t
  *
  * @package GoDAM
  */
 
-namespace RTGODAM\Inc\Ninja_Forms;
+namespace RTGODAM\Inc\Metform;
 
 use RTGODAM\Inc\Traits\Singleton;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class Ninja_Forms_Integration
+ * Class Metform_Integration
  *
  * @since n.e.x.t
  */
-class Ninja_Forms_Integration {
+class Metform_Integration {
 
 	use Singleton;
 
@@ -30,7 +30,7 @@ class Ninja_Forms_Integration {
 	 * @return void
 	 */
 	public function init() {
-		if ( ! is_plugin_active( 'ninja-forms/ninja-forms.php' ) ) {
+		if ( ! is_plugin_active( 'metform/metform.php' ) ) {
 			return;
 		}
 
@@ -60,19 +60,18 @@ class Ninja_Forms_Integration {
 	 * @return void
 	 */
 	public function add_additional_css_for_video_editor() {
-		$custom_css = '
-			.form-container.ninja-form {
+		$custom_css = <<<'CSS'
+			.form-container.metform {
 				margin: unset;
 				height: 100%;
 				overflow: unset !important;
 				align-content: center;
 				text-align: center;
 			}
-
-			.form-container.ninja-form iframe {
+			.form-container.metform iframe {
 				height: 100%;
 			}
-		';
+		CSS;
 
 
 		wp_add_inline_style( 'rtgodam-style', $custom_css );
@@ -86,12 +85,11 @@ class Ninja_Forms_Integration {
 	 * @return void
 	 */
 	public function add_additional_css_for_godam_player() {
-		$custom_css = '
-			.easydam-layer.ninjaforms .form-container {
+		$custom_css = <<<'CSS'
+			.easydam-layer.metform .form-container {
 				position: static;
 			}
-		';
-
+		CSS;
 
 		wp_add_inline_style( 'godam-player-style', $custom_css );
 	}
@@ -107,26 +105,25 @@ class Ninja_Forms_Integration {
 	 * @return void
 	 */
 	public function add_css_for_the_layer_inside_iframe( $layer, $layer_id ) {
-		if ( 'ninja-forms' === $layer && ! empty( $layer_id ) ) {
-			$custom_css = '
+		if ( 'metform' === $layer && ! empty( $layer_id ) ) {
+			$custom_css = <<<'CSS'
 				html {
 					margin: 0 !important;
 					padding: 0 !important;
 				}
-
 				body {
 					background: unset;
 					height: 100vh;
 					align-content: center;
 				}
-			';
+			CSS;
 
 			echo '<style>' . $custom_css . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 	}
 
 	/**
-	 * Render ninja form for video editor.
+	 * Render metform for video editor.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -136,8 +133,8 @@ class Ninja_Forms_Integration {
 	 * @return void
 	 */
 	public function render_layer_form_for_video_editor( $layer, $layer_id ) {
-		if ( 'ninja-forms' === $layer && ! empty( $layer_id ) ) {
-			echo do_shortcode( "[ninja_form id='{$layer_id}']" ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		if ( 'metform' === $layer && ! empty( $layer_id ) ) {
+			echo do_shortcode( "[metform form_id='{$layer_id}']" ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 	}
 }

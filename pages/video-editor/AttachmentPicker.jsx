@@ -43,7 +43,7 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 					>
 						<img
 							src={ AnnualPlanOfferBanner }
-							alt="Annual Plan Offer Banner"
+							alt={ __( 'Annual Plan Offer Banner', 'godam' ) }
 							className="annual-plan-offer-banner__img"
 						/>
 					</a>

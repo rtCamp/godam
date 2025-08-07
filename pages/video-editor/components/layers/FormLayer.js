@@ -25,6 +25,7 @@ import CF7 from '../forms/CF7';
 import JetpackForm from '../forms/JetpackForm';
 import SureForm from '../forms/Sureform.js';
 import FluentForm from '../forms/FluentForm.js';
+import MetForm from '../forms/MetForm.js';
 import ForminatorForm from '../forms/forminatorForms.js';
 import NinjaForm from '../forms/NinjaForm.js';
 import HubSpotForm from '../forms/HubSpotForm.js';
@@ -100,6 +101,12 @@ export const FormLayerComponentType = {
 		component: HubSpotForm,
 		idField: 'hubspot_id',
 		settingsUrl: '',
+	},
+	metform: {
+		isActive: Boolean( window?.videoData?.metformActive ) ?? false,
+		component: MetForm,
+		idField: 'metform_id',
+		settingsUrl: '?post={formId}&action=elementor',
 	},
 };
 

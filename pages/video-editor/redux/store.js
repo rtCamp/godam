@@ -20,6 +20,7 @@ import { fluentFormsApi } from './api/fluent-forms';
 import { everestFormsApi } from './api/everest-forms';
 import { ninjaFormsApi } from './api/ninja-forms';
 import { hubSpotFormsApi } from './api/hubspot-forms';
+import { metformApi } from './api/metform';
 
 export default configureStore( {
 	reducer: {
@@ -37,7 +38,7 @@ export default configureStore( {
 		[ everestFormsApi.reducerPath ]: everestFormsApi.reducer,
 		[ ninjaFormsApi.reducerPath ]: ninjaFormsApi.reducer,
 		[ hubSpotFormsApi.reducerPath ]: hubSpotFormsApi.reducer,
-
+		[ metformApi.reducerPath ]: metformApi.reducer,
 	},
 	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat(
 		videosAPI.middleware,
@@ -53,5 +54,6 @@ export default configureStore( {
 		everestFormsApi.middleware,
 		ninjaFormsApi.middleware,
 		hubSpotFormsApi.middleware,
+		metformApi.middleware,
 	),
 } );

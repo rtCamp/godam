@@ -18,6 +18,7 @@ import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import HubSpotIcon from '../assets/layers/HubSpotIcon.svg';
+import MetformIcon from '../assets/layers/MetFormIcon.png';
 
 /**
  * WordPress dependencies
@@ -106,6 +107,12 @@ export const layerTypes = [
 				icon: HubSpotIcon,
 				isActive: false,
 				tooltipMessage: __( 'HubSpot Forms cannot be edited.', 'godam' ),
+			},
+			metform: {
+				layerText: __( 'MetForm', 'godam' ),
+				icon: MetformIcon,
+				isActive: window?.videoData?.metformActive ?? false,
+				tooltipMessage: __( 'MetForm plugin is not active', 'godam' ),
 			},
 		},
 	},

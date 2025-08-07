@@ -98,29 +98,6 @@
 	pointer-events: none; /* Prevent interaction with the overlay */
 }
 
-.easydam-video-container .video-js .vjs-big-play-button {
-	background-color: var(--rtgodam-control-bar-color, #000) !important;
-	border: none;
-	cursor: pointer;
-	border-radius: 50%;
-	padding: 0;
-	z-index: 10;
-	width: 50px;
-	height: 50px;
-	left: 53%;
-	transition: transform 0.3s ease;
-	min-height: unset;
-
-	span::before {
-		font-size: 28px;
-		line-height: 1.8;
-	}
-
-	&:hover, &:focus {
-		transform: scale(1.1);
-	}
-}
-
 .easydam-video-container {
 	position: relative;
 	background-color: rgba(149, 149, 149, 0.2);
@@ -152,6 +129,29 @@
 			);
 			opacity: 0.7;
 		}
+	}
+}
+
+.easydam-video-container .video-js .vjs-big-play-button {
+	background-color: var(--rtgodam-control-bar-color, #000) !important;
+	border: none;
+	cursor: pointer;
+	border-radius: 50%;
+	padding: 0;
+	z-index: 10;
+	width: 50px;
+	height: 50px;
+	left: 53%;
+	transition: transform 0.3s ease;
+	min-height: unset;
+
+	span::before {
+		font-size: 28px;
+		line-height: 1.8;
+	}
+
+	&:hover, &:focus {
+		transform: scale(1.1);
 	}
 }
 
@@ -609,7 +609,13 @@
 }
 
 .vjs-poster {
+	
 	pointer-events: none;
+
+	img {
+		object-fit: contain;
+		background-color: #000;
+	}
 }
 
 .vjs-has-started.godam-hover-started {
