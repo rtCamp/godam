@@ -40,7 +40,9 @@ const slice = createSlice( {
 				customPlayBtnImg: '',
 			},
 		},
+		transcodingJobId: '',
 		layers: [],
+		godamCentralLayers: [],
 		chapters: [],
 		isChanged: false,
 		currentLayer: null,
@@ -79,6 +81,9 @@ const slice = createSlice( {
 		saveVideoMeta: ( state ) => {
 			state.isChanged = false;
 		},
+		setTranscodingJobId: ( state, action ) => {
+			state.transcodingJobId = action.payload;
+		},
 		addLayer: ( state, action ) => {
 			const newLayer = action.payload;
 			state.layers.push( newLayer );
@@ -95,6 +100,9 @@ const slice = createSlice( {
 			const ind = state.layers.findIndex( ( l ) => l.id === id );
 			state.layers[ ind ][ field ] = value;
 			state.isChanged = true;
+		},
+		addGodamCentralLayers: ( state, action ) => {
+			state.godamCentralLayers = [ ...state.godamCentralLayers, ...action.payload ];
 		},
 		addChapter: ( state, action ) => {
 			const newChapter = action.payload;
@@ -192,6 +200,7 @@ const slice = createSlice( {
 
 export const {
 	initializeStore, saveVideoMeta,
+	setTranscodingJobId,
 	addLayer,
 	removeLayer,
 	updateLayerField,
@@ -219,6 +228,7 @@ export const {
 	setForminatorPluginActive,
 	setNinjaForms,
 	setNinjaPluginActive,
+	addGodamCentralLayers,
 	setMetforms,
 	setMetformPluginActive,
 } = slice.actions;

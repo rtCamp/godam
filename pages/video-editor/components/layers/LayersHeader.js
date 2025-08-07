@@ -52,6 +52,7 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 	 */
 	const layerTypeData = layerTypes.find( ( l ) => l.type === layer.type );
 	const layerName = 'form' === layer.type ? layerTypeData?.formType[ layer?.form_type ?? 'gravity' ]?.layerText : layerTypeData?.layerText;
+	const isGodamCentralLayer = useSelector( ( state ) => state.videoReducer.godamCentralLayers.some( ( _layer ) => _layer.id === layer.id ) );
 
 	const handleDeleteLayer = () => {
 		dispatch( removeLayer( { id: layer.id } ) );
@@ -64,7 +65,7 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 				<Button icon={ arrowLeft } onClick={ goBack } />
 				<p className="text-base flex items-center gap-1">
 					{ layerName }
-					{ __( ' layer at', 'godam' ) }{ isEditing ? (
+					{ __( ' layer at', 'godam' ) }{ isEditing && ! isGodamCentralLayer ? (
 						<TextControl
 							__nextHasNoMarginBottom={ true }
 							__next40pxDefaultSize={ false }
@@ -136,7 +137,9 @@ const LayersHeader = ( { layer, goBack, duration } ) => {
 						</button>
 					) }
 				</p>
+				{ ! isGodamCentralLayer &&
 				<Button icon={ trash } isDestructive onClick={ () => setOpen( true ) } />
+				}
 				{ isOpen && (
 					<Modal
 						title={ __( 'Delete layer', 'godam' ) }

@@ -68,7 +68,7 @@ export const VideoJS = ( props ) => {
 
 	const videoMeta = useSelector( ( state ) => state.videoReducer );
 	const videoConfig = videoMeta.videoConfig;
-	const layers = videoMeta.layers;
+	const layers = [ ...videoMeta.layers, ...videoMeta.godamCentralLayers ];
 	const chapters = videoMeta.chapters;
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const currentTab = useSelector( ( state ) => state.videoReducer.currentTab );
@@ -132,7 +132,7 @@ export const VideoJS = ( props ) => {
 				} );
 			}
 		}
-	}, [ videoRef, videoConfig ] );
+	}, [ videoRef, videoConfig, onReady, onTimeupdate, options ] );
 
 	useEffect( () => {
 		const captionsButton = document.querySelector( '.vjs-subs-caps-button' );
@@ -324,7 +324,7 @@ export const VideoJS = ( props ) => {
 				} );
 			}
 		}
-	}, [ layers, chapters ] );
+	}, [ layers, chapters, onTimeupdate ] );
 
 	useEffect( () => {
 		if ( ! playerRef.current ) {

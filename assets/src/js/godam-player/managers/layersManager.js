@@ -6,6 +6,8 @@ import LayerValidator from './layers/layerValidator.js';
 import FormLayerManager from './layers/formLayerManager.js';
 import HotspotLayerManager from './layers/hotspotLayerManager.js';
 
+import { getForms as getHubSpotForms, createFormElement as createHubSpotFormElement } from '../hubspot-forms.js';
+
 /**
  * Layers Manager
  * Orchestrates form and hotspot layers functionality
@@ -26,8 +28,20 @@ export default class LayersManager {
 	/**
 	 * Setup layers
 	 */
-	setupLayers() {
+	async setupLayers() {
 		const layers = this.config.videoSetupOptions?.layers || [];
+
+		await getHubSpotForms( this.video.dataset.id ).then( ( godamCentralLayers ) => {
+			godamCentralLayers.forEach( ( layer ) => {
+				const existingLayerElement = document.querySelector( `#layer-${ this.video.dataset.instanceId }-${ layer.id }` );
+				const formElementContainer = this.video.closest( '.godam-video-wrapper' )?.querySelector( '.easydam-video-container' );
+				if ( ! existingLayerElement && formElementContainer ) {
+					this.createEnternalLayerElement( layer, this.video.dataset.instanceId, formElementContainer );
+				}
+			} );
+
+			layers.push( ...godamCentralLayers );
+		} ).catch( () => {} );
 
 		if ( ! this.config.isPreviewEnabled ) {
 			layers.forEach( ( layer ) => this.processLayer( layer ) );
@@ -73,6 +87,30 @@ export default class LayersManager {
 			this.hotspotLayerManager.setupHotspotLayer( layer, layerElement );
 		}
 	}
+
+	/**
+	 * Creates a DOM element for a given layer.
+	 *
+	 * @param {Object}      layer          - The layer object containing details like id, type, and content.
+	 * @param {string}      instanceId     - The unique identifier for the player instance.
+	 * @param {HTMLElement} videoContainer - The DOM element representing the video container.
+	 * @return {HTMLElement} The created layer element.
+	 */
+	createEnternalLayerElement = ( layer, instanceId, videoContainer ) => {
+		const layerId = `layer-${ instanceId }-${ layer.id }`;
+		const layerElement = document.createElement( 'div' );
+		layerElement.id = layerId;
+		layerElement.classList.add( 'godam-layer', `godam-layer-${ layer.type }`, 'hidden' );
+
+		createHubSpotFormElement( layerElement, layer );
+
+		if ( layer.html_content ) {
+			layerElement.innerHTML = layer.html_content;
+		}
+
+		videoContainer.appendChild( layerElement );
+		return layerElement;
+	};
 
 	/**
 	 * Setup layer environment
