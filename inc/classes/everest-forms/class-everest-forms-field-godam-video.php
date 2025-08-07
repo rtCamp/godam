@@ -73,6 +73,163 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 
 			// Add parent ajax events.
 			parent::add_ajax_events();
+
+			add_action( 'admin_enqueue_scripts', array( $this, 'render_frontend_player_script' ) );
+
+			// To display field HTML in the entry meta.
+			add_filter( 'everest_forms_html_field_value', array( $this, 'update_entry_meta_display_godam_recorder' ), 10, 4 );
+		}
+
+		/**
+		 * Register the script to enqueue on entries.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @return void
+		 */
+		public function render_frontend_player_script() {
+
+			/**
+			 * Get entry details page.
+			 */
+			$evf_route = empty( $_GET['page'] ) ? '' : sanitize_text_field( $_GET['page'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$entry_id  = empty( $_GET['view-entry'] ) ? 0 : absint( $_GET['view-entry'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+			if ( 0 === $entry_id || 'evf-entries' !== $evf_route ) {
+				return;
+			}
+
+			wp_enqueue_script(
+				'godam-player-frontend',
+				RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
+				array( 'godam-fluentforms-editor' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
+				true
+			);
+
+			wp_enqueue_script(
+				'godam-player-analytics',
+				RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
+				array( 'godam-player-frontend' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js' ),
+				true
+			);
+
+			wp_enqueue_style(
+				'godam-player-frontend-style',
+				RTGODAM_URL . 'assets/build/css/godam-player-frontend.css',
+				array(),
+				filemtime( RTGODAM_PATH . 'assets/build/css/godam-player-frontend.css' )
+			);
+
+			wp_enqueue_style(
+				'godam-player-style',
+				RTGODAM_URL . 'assets/build/css/godam-player.css',
+				array(),
+				filemtime( RTGODAM_PATH . 'assets/build/css/godam-player.css' )
+			);
+
+			wp_enqueue_style(
+				'godam-player-minimal-skin',
+				RTGODAM_URL . 'assets/build/css/minimal-skin.css',
+				array(),
+				filemtime( RTGODAM_PATH . 'assets/build/css/minimal-skin.css' )
+			);
+
+			wp_enqueue_style(
+				'godam-player-pills-skin',
+				RTGODAM_URL . 'assets/build/css/pills-skin.css',
+				array(),
+				filemtime( RTGODAM_PATH . 'assets/build/css/pills-skin.css' )
+			);
+
+			wp_enqueue_style(
+				'godam-player-bubble-skin',
+				RTGODAM_URL . 'assets/build/css/bubble-skin.css',
+				array(),
+				filemtime( RTGODAM_PATH . 'assets/build/css/bubble-skin.css' )
+			);
+
+			/**
+			 * Localize the script.
+			 */
+			wp_localize_script(
+				'godam-player-frontend',
+				'godamData',
+				array(
+					'apiBase' => RTGODAM_API_BASE,
+				)
+			);
+		}
+
+		/**
+		 * Update entry meta display for GoDAM recorder field.
+		 *
+		 * @param string $meta_value Value to be displayed.
+		 * @param array  $value      Value stored.
+		 * @param array  $entry_meta Entry meta data.
+		 * @param string $context    Context in which the meta is being displayed.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @return string
+		 */
+		public function update_entry_meta_display_godam_recorder( $meta_value, $value, $entry_meta, $context ) {
+
+			// Bail early.
+			if ( 'entry-single' !== $context ) {
+				return $meta_value;
+			}
+
+			// phpcs:disable WordPress.Security.NonceVerification.Recommended
+
+			if ( ! isset( $_GET['view-entry'] ) || empty( $_GET['view-entry'] ) ) {
+				return $meta_value;
+			}
+
+			$entry_id = absint( $_GET['view-entry'] );
+
+			// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+			$meta_key = array_search( $value, $entry_meta, true );
+
+			if ( strpos( $meta_key, 'godam_record' ) === false ) {
+				return $meta_value;
+			}
+
+			$entry_data = $entry_id ? evf_get_entry( $entry_id, true ) : false;
+
+			$transcoded_url_output = '';
+
+			// Add override style for everest forms.
+			$style = '<style>#everest-forms-entry-fields:not(.postbox) table tbody tr td span {margin: 0 !important;}</style>';
+
+			// Override style for video preview.
+			$style .= '<style>.evf-godam-video-preview .easydam-video-container{height:100%;}.evf-godam-video-preview .easydam-video-container .easydam-player.video-js{margin-top:0;}</style>';
+
+			/**
+			 * Generate video output.
+			 */
+			$video_output = do_shortcode( "[godam_video src='{$value}' ]" );
+
+			/**
+			 * Workaround, replace all line breaks and new lines with empty string.
+			 */
+			$video_output = str_replace( array( "\r", "\n" ), '', $video_output );
+			$video_output = '<div class="gf-godam-video-preview evf-godam-video-preview">' . $video_output . '</div>';
+
+			/**
+			 * Download URL.
+			 */
+			$download_url = sprintf(
+				'<div style="margin: 12px 0;"><a type="button" class="button" target="_blank" href="%s">%s</a></div>',
+				esc_url( $value ),
+				__( 'Click to view', 'godam' )
+			);
+
+			$video_output = $style . $download_url . $transcoded_url_output . $video_output;
+
+			return $video_output;
 		}
 
 		/**
