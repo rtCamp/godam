@@ -332,6 +332,33 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			}
 		}
 
+		if ( ! empty( $job_for ) && 'everestforms-godam-recorder' === $job_for && ! empty( $job_id ) && class_exists( 'EverestForms' ) ) {
+			$post_array = $request->get_params();
+
+			/**
+			 * Get data stored in options based on job id.
+			 */
+			$data = get_option( $job_id );
+
+			/**
+			 * If we have data in options, proceed.
+			 */
+			if ( ! empty( $data ) && 'everestforms_godam_recorder' === $data['source'] ) {
+				$entry_id = $data['entry_id'];
+
+				global $wpdb;
+
+				$entry_metadata = array(
+					'entry_id' => $entry_id,
+					'meta_key' => 'rtgodam_transcoded_url_everestforms_' . $form_id . '_' . $entry_id,
+					'value'    => $post_array['download_url'],
+				);
+
+				// Insert entry meta.
+				$wpdb->insert( $wpdb->prefix . 'evf_entrymeta', $entry_metadata ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			}
+		}
+
 		/**
 		 * Allow users/plugins to perform action after response received from the transcoder is
 		 * processed

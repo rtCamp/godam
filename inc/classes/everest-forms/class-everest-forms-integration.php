@@ -208,7 +208,7 @@ class Everest_Forms_Integration {
 		/**
 		 * Send for transcoding.
 		 */
-		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'everest_forms', $form_title, $file_url, $entry_id );
+		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'everestforms', $form_title, $file_url, $entry_id );
 
 		/**
 		 * Error handling.
