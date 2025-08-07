@@ -570,7 +570,7 @@ class Media_Library_Ajax {
 				</div>',
 				esc_html__( 'Pay for 10 months and get 2 months free with our annual plan.', 'godam' ),
 				esc_html__( 'Elevate your media management, transcoding, storage, delivery and more.', 'godam' ),
-				esc_url( 'https://godam.io/pricing?utm_campaign=annual-plan&utm_source=' . $host . '&utm_medium=plugin&utm_content=banner' ),
+				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=annual-plan&utm_source=' . $host . '&utm_medium=plugin&utm_content=banner' ),
 				esc_html__( 'Buy Now', 'godam' )
 			);
 

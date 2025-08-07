@@ -47,7 +47,7 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 						</div>
 						<div className="annual-plan-offer-banner__cta-container">
 							<a
-								href={ `https://godam.io/pricing?utm_campaign=annual-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=banner` }
+								href={ `${ videoData.godamBaseUrl }/pricing?utm_campaign=annual-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=banner` }
 								className="annual-plan-offer-banner__cta"
 								target="_blank"
 								rel="noopener noreferrer"
@@ -62,7 +62,7 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 						type="button"
 						className="annual-plan-offer-banner__dismiss"
 						onClick={ handleDismissBanner }
-						aria-label="Dismiss banner"
+						aria-label={ __( 'Dismiss banner', 'godam' ) }
 					>
 						&times;
 					</button>
