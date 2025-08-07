@@ -189,12 +189,9 @@ class GoDAM_Video extends Base {
 		$this->add_control(
 			'seo_content_video_thumbnail_url',
 			array(
-				'label'          => esc_html__( 'Video Thumbnail URL', 'godam' ),
-				'type'           => Controls_Manager::TEXT,
-				'label_block'    => true,
-				'picker_options' => array(
-					'enableTime' => false,
-				),
+				'label'       => esc_html__( 'Video Thumbnail URL', 'godam' ),
+				'type'        => Controls_Manager::TEXT,
+				'label_block' => true,
 			)
 		);
 
