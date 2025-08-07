@@ -38,10 +38,12 @@ function initTogglePostboxes() {
  * Initialize particle effect background
  */
 function initParticleEffect() {
+	// Select the banner element and the canvas
 	const canvas = document.getElementById( 'godam-particle-canvas' );
+	const banner = document.querySelector( '.annual-plan-offer-banner' );
 
 	// Bail out if the canvas is not found
-	if ( ! canvas ) {
+	if ( ! canvas || ! banner ) {
 		return;
 	}
 
@@ -84,13 +86,14 @@ function initParticleEffect() {
 
 	// Resize canvas to fit the window
 	function resizeCanvas() {
-		width = canvas.width = window.innerWidth;
-		height = canvas.height = document.querySelector( '.annual-plan-offer-banner' )?.offsetHeight || 300;
+		width = canvas.width = banner.offsetWidth || window.innerWidth;
+		height = canvas.height = banner.offsetHeight || 300;
 	}
 
 	// Initialize particles
 	function initParticles( count ) {
-		particles = Array.from( { length: count }, () => new Particle() );
+		const maxParticles = Math.min( count, Math.floor( width / 20 ) );
+		particles = Array.from( { length: maxParticles }, () => new Particle() );
 	}
 
 	// Animate particles
@@ -103,8 +106,17 @@ function initParticleEffect() {
 		requestAnimationFrame( animateParticles );
 	}
 
+	// Debounced resize
+	function debounce( fn, delay ) {
+		let timer;
+		return function() {
+			clearTimeout( timer );
+			timer = setTimeout( fn, delay );
+		};
+	}
+
 	// Setup
-	window.addEventListener( 'resize', resizeCanvas );
+	window.addEventListener( 'resize', debounce( resizeCanvas, 100 ) );
 	resizeCanvas();
 	initParticles( 40 );
 	animateParticles();
