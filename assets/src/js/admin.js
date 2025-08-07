@@ -2,6 +2,7 @@
  * Write your JS code here for admin.
  */
 
+// Utility function to join URL paths
 window.pathJoin = function( parts, sep = '/' ) {
 	return parts
 		.map( ( part, index ) => {
@@ -72,50 +73,33 @@ class Particle {
 }
 
 /**
- * Initialize particle effect background
+ * Manages the particle effect background
  */
-function initParticleEffect() {
-	// Select the banner element and the canvas
-	const canvas = document.getElementById( 'godam-particle-canvas' );
-	const banner = document.querySelector( '.annual-plan-offer-banner' );
+class ParticleEffect {
+	constructor() {
+		// Initialize canvas and context
+		this.canvas = document.getElementById( 'godam-particle-canvas' );
+		this.banner = document.querySelector( '.annual-plan-offer-banner' );
 
-	// Bail out if the canvas is not found
-	if ( ! canvas || ! banner ) {
-		return;
+		// Bail if canvas and banner do not exist
+		if ( ! this.canvas || ! this.banner ) {
+			return;
+		}
+
+		this.ctx = this.canvas.getContext( '2d' );
+		this.particles = [];
+		this.setupEventListeners();
+		this.resizeCanvas();
+		this.animate();
 	}
 
-	// Initialize canvas and context
-	const ctx = canvas.getContext( '2d' );
-	let width, height;
-	let particles = [];
-
-	// Resize canvas to fit the window
-	function resizeCanvas() {
-		width = canvas.width = banner.offsetWidth || window.innerWidth;
-		height = canvas.height = banner.offsetHeight || 300;
-
-		// ReInitialize particles
-		initParticles( 40 );
+	// Set up event listeners for resizing the canvas
+	setupEventListeners() {
+		window.addEventListener( 'resize', this.debounce( () => this.resizeCanvas(), 100 ) );
 	}
 
-	// Initialize particles
-	function initParticles( count ) {
-		const maxParticles = Math.min( count, Math.floor( width / 20 ) );
-		particles = Array.from( { length: maxParticles }, () => new Particle( ctx, width, height ) );
-	}
-
-	// Animate particles
-	function animateParticles() {
-		ctx.clearRect( 0, 0, width, height );
-		particles.forEach( ( p ) => {
-			p.update();
-			p.draw();
-		} );
-		requestAnimationFrame( animateParticles );
-	}
-
-	// Debounced resize
-	function debounce( fn, delay ) {
+	// Debounce function to limit the rate of function execution
+	debounce( fn, delay ) {
 		let timer;
 		return function() {
 			clearTimeout( timer );
@@ -123,15 +107,38 @@ function initParticleEffect() {
 		};
 	}
 
-	// Setup
-	window.addEventListener( 'resize', debounce( resizeCanvas, 100 ) );
-	resizeCanvas();
-	animateParticles();
+	// Resize the canvas to fit the banner
+	resizeCanvas() {
+		this.width = this.canvas.width = this.banner.offsetWidth || window.innerWidth;
+		this.height = this.canvas.height = this.banner.offsetHeight || 300;
+		this.initParticles( 40 );
+	}
+
+	// Initialize particles based on the canvas size
+	initParticles( count ) {
+		const maxParticles = Math.min( count, Math.floor( this.width / 20 ) );
+		this.particles = Array.from( { length: maxParticles }, () => new Particle( this.ctx, this.width, this.height ) );
+	}
+
+	// Start the animation loop
+	animate() {
+		// Bail if canvas and context do not exist
+		if ( ! this.canvas || ! this.ctx ) {
+			return;
+		}
+
+		this.ctx.clearRect( 0, 0, this.width, this.height );
+		this.particles.forEach( ( p ) => {
+			p.update();
+			p.draw();
+		} );
+		requestAnimationFrame( () => this.animate() );
+	}
 }
 
 function initAdminUI() {
 	initTogglePostboxes();
-	initParticleEffect();
+	new ParticleEffect();
 }
 
 document.addEventListener( 'DOMContentLoaded', initAdminUI );
