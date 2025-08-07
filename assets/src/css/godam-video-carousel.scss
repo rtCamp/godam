@@ -134,8 +134,8 @@
 
                 @media screen and (max-width: 768px) {
                     .video-js .vjs-tech{
-                        min-width: 98vw !important;
-                        min-height: 100vh;
+                        min-width: 90vw !important;
+                        min-height: 90vh;
                     }
                     min-width: 100vw;
                 }
@@ -283,7 +283,7 @@
 
                 .rtgodam-product-video-gallery-slider-modal-content-right {
                     position: absolute;
-                    bottom: 0;
+                    bottom: 80px;
                     display: grid;
                     grid-template-columns: 4fr 8fr;
                     row-gap: 10px;
@@ -295,8 +295,9 @@
                 }
 
                 .video-js {
-                    max-width: 360px;
-                    min-height: 640px;
+                    max-width: 90vw !important;
+                    min-width: 90vw !important;
+                    min-height: 90vh;
                     padding-top: 0 !important;
                 }
 
@@ -315,8 +316,8 @@
                 }
 
                 .vjs-control-bar {
-                    max-width: 360px;
-                    top: 0;
+                    max-width: 100% !important;
+                    bottom: 0 !important;
                     flex-wrap: wrap;
                     justify-content: space-between;
                 }
@@ -347,11 +348,13 @@
             }
 
             @media screen and (max-width: 540px) {
-                max-width: 300px;
+                // max-width: 300px;
+                max-width: 90vw !important;
+                min-width: 90vw !important;
 
                 .video-js {
-                    max-width: 300px;
-                    min-height: 533px;
+                    max-width: 90vw !important;
+                    min-width: 90vw !important;    
                 }
 
                 .vjs-control-bar {
