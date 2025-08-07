@@ -10,6 +10,7 @@ import { CSS } from '@dnd-kit/utilities';
  */
 import { Icon, file, lock, starFilled } from '@wordpress/icons';
 import { CheckboxControl } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -18,7 +19,7 @@ import { toggleOpenClose, changeSelectedFolder, toggleMultiSelectedFolder } from
 import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
 import { FolderTreeChevron } from '../icons';
-import { __ } from '@wordpress/i18n';
+import { utilities } from '../../data/utilities';
 
 const indentPerLevel = 12;
 
@@ -34,26 +35,7 @@ const TreeItem = ( { item, index, depth, onContextMenu, isMultiSelecting } ) => 
 
 	const allFolders = useSelector( ( state ) => state.FolderReducer.folders );
 
-	/**
-	 * Checks if any parent of the given folder is locked.
-	 *
-	 * @param {number} folderId    - The ID of the folder to check.
-	 * @param {Array}  allFolders_ - The array of all folder objects.
-	 * @return {boolean} True if any parent folder is locked, false otherwise.
-	 */
-	const isAnyParentLocked = ( folderId, allFolders_ ) => {
-		let current = allFolders_.find( ( f ) => f.id === folderId );
-		while ( current && current.parent !== 0 && current.parent !== -1 ) {
-			const parent = allFolders_.find( ( f ) => f.id === current.parent );
-			if ( parent?.meta?.locked ) {
-				return true;
-			}
-			current = parent;
-		}
-		return false;
-	};
-
-	const isLockedOrParentLocked = isAnyParentLocked( item.id, allFolders );
+	const isLockedOrParentLocked = utilities.isAnyParentLocked( item.id, allFolders );
 
 	/**
 	 * Handle click on the tree item to change the selected folder

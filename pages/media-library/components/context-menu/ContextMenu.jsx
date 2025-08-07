@@ -23,7 +23,7 @@ import {
 	NewFolderIcon,
 	RenameFolderIcon,
 } from '../icons';
-
+import { utilities } from '../../data/utilities';
 import './css/context-menu.scss';
 
 /**
@@ -73,28 +73,6 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	}, [ allFolders, targetFolderIds ] );
 
 	/**
-	 * Checks if any parent of the given folder is locked.
-	 *
-	 * @function
-	 * @param {number} folderId_ - The ID of the folder to check.
-	 * @return {boolean} True if any parent is locked, false otherwise.
-	 */
-	const isAnyParentLocked = useCallback(
-		( folderId_ ) => {
-			let current = allFolders.find( ( f ) => f.id === folderId_ );
-			while ( current && current.parent !== 0 && current.parent !== -1 ) {
-				const parent = allFolders.find( ( f ) => f.id === current.parent );
-				if ( parent?.meta?.locked ) {
-					return true;
-				}
-				current = parent;
-			}
-			return false;
-		},
-		[ allFolders ],
-	);
-
-	/**
 	 * Checks if any parent of the selected folder(s) is locked.
 	 *
 	 * For multi-select, checks all selected folders.
@@ -103,8 +81,8 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	 */
 	const isAnySelectedParentLocked = useMemo( () => {
 		const ids = isMultiSelecting && multiSelectedFolderIds.length > 0 ? multiSelectedFolderIds : [ folderId ];
-		return ids.some( ( id ) => isAnyParentLocked( id ) );
-	}, [ isMultiSelecting, multiSelectedFolderIds, folderId, isAnyParentLocked ] );
+		return ids.some( ( id ) => utilities.isAnyParentLocked( id, allFolders ) );
+	}, [ isMultiSelecting, multiSelectedFolderIds, folderId, allFolders ] );
 
 	const [ updateFolderMutation ] = useUpdateFolderMutation();
 	const [ downloadZipMutation ] = useDownloadZipMutation();
