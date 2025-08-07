@@ -52,9 +52,22 @@ class Everest_Forms_Integration {
 	 * @return void
 	 */
 	public function setup_hooks() {
+
+		/**
+		 * Filter to register Everest Forms fields.
+		 */
 		add_filter( 'everest_forms_fields', array( $this, 'register_fields' ) );
 	}
 
+	/**
+	 * Register Everest Forms fields.
+	 *
+	 * @param array $fields Array of Everest Forms fields.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return array
+	 */
 	public function register_fields( $fields ) {
 		$fields[] = Everest_Forms_Field_GoDAM_Video::class;
 
@@ -69,6 +82,13 @@ class Everest_Forms_Integration {
 	 * @return boolean
 	 */
 	public function is_evf_active() {
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			/**
+			 * Required to check for the `is_plugin_active` function.
+			 */
+			require_once ABSPATH . '/wp-admin/includes/plugin.php';
+		}
+
 		return is_plugin_active( 'everest-forms/everest-forms.php' ) || is_plugin_active( 'everest-forms-pro/everest-forms-pro.php' );
 	}
 }

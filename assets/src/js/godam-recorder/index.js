@@ -223,6 +223,18 @@ class UppyVideoUploader {
 				},
 			),
 		);
+
+		this.fileInput.dispatchEvent(
+			new CustomEvent(
+				'godamEVFchange',
+				{
+					bubbles: true,
+					detail: {
+						action,
+					},
+				},
+			),
+		);
 	}
 
 	/**
@@ -249,6 +261,18 @@ class UppyVideoUploader {
 		this.fileInput.dispatchEvent(
 			new CustomEvent(
 				'godamffchange',
+				{
+					bubbles: true,
+					detail: {
+						action: 'clear',
+					},
+				},
+			),
+		);
+
+		this.fileInput.dispatchEvent(
+			new CustomEvent(
+				'godamEVFchange',
 				{
 					bubbles: true,
 					detail: {

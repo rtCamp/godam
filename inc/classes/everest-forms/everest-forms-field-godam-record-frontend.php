@@ -7,56 +7,85 @@
  * @since n.e.x.t
  */
 
+// Get the primary field data.
+$primary = $field['properties']['inputs']['primary'] ?? array();
+
+// Get the required data.
+$max_file_size          = $field['max_size'] ?? (int) ( wp_max_upload_size() / ( 1024 * 1024 ) );
+$name                   = $primary['attr']['name'] ?? 'godam-recorder';
+$input_id               = $primary['id'] ?? 'godam-recorder';
+$field_id               = $field['id'] ?? 0;
+$class                  = ! empty( $primary['class'] ) ? join( ' ', $primary['class'] ) : 'godam-recorder';
 $video_upload_button_id = wp_unique_id( 'uppy-video-upload-' );
+$description            = $field['description'] ?? '';
+$button_text            = $field['button_text'] ?? __( 'Record Video', 'godam' );
+$file_selectors         = $file_selectors ?? array( 'screen_capture', 'webcam' );
+$form_id                = $form_data['id'] ?? 0;
+$required               = 'required' === $primary['required'] ?? false;
 
-// Define data.
-$primary = $field['properties']['inputs']['primary'];
-
-$form_id       = isset( $form_data['id'] ) ? absint( $form_data['id'] ) : 0;
-$field_id      = isset( $field['id'] ) ? absint( $field['id'] ) : 0;
-$file_input_id = "everest_forms_file_input_{$form_id}_{$field_id}";
-
-// Attributes - Max Upload Size.
-$max_upload_size = isset( $field['max_size'] ) ? absint( $field['max_size'] ) : 0;
-$max_upload_size = $max_upload_size > 0 ? $max_upload_size * 1024 * 1024 : wp_max_upload_size(); // Convert MB to bytes.
-
-// Attributes - File Selectors.
-$file_selectors = join( ',', $file_selectors );
-
-// Uppy container.
-$uppy_container_id = "uppy_container_{$form_id}_{$field_id}";
-$uppy_file_name_id = "uppy_filename_{$form_id}_{$field_id}";
-$uppy_preview_id   = "uppy_preview_{$form_id}_{$field_id}";
+/**
+ * Uppy container.
+ */
+$uppy_container_id = sprintf( 'uppy_container_%s_%s', $input_id, $form_id );
+$uppy_file_name_id = sprintf( 'uppy_filename_%s_%s', $input_id, $form_id );
+$uppy_preview_id   = sprintf( 'uppy_preview_%s_%s', $input_id, $form_id );
 
 ?>
-<?php if ( $max_upload_size <= 2047 * 1048576 ) : // Hidden file input that will be populated by Uppy. ?>
-	<input type="hidden" name="MAX_FILE_SIZE" value="<?php echo esc_attr( $max_upload_size ); ?>" />
-<?php endif; ?>
 <input
-	type="file"
-	id="<?php echo esc_attr( $file_input_id ); ?>"
-	style="display: none;"
-	<?php echo evf_html_attributes( $primary['id'], $primary['class'], $primary['data'], $primary['attr'] ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-	<?php echo $primary['required']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+	type="hidden"
+	name="max-file-size"
+	value="<?php echo esc_attr( $max_file_size ); ?>"
 />
-<div
-	data-max-size="<?php echo esc_attr( $max_upload_size ); ?>"
-	id="<?php echo esc_attr( $uppy_container_id ); ?>"
-	class="uppy-video-upload <?php echo esc_attr( join( ' ', $primary['class'] ) ); ?>"
-	data-input-id="<?php echo esc_attr( $file_input_id ); ?>"
-	data-video-upload-button-id="<?php echo esc_attr( $video_upload_button_id ); ?>"
-	data-file-selectors="<?php echo esc_attr( $file_selectors ); ?>"
-	data-xhr-url="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>"
+<input
+	name="<?php echo esc_attr( $name . '_file' ); ?>"
+	id="<?php echo esc_attr( $input_id ); ?>"
 	data-form-id="<?php echo esc_attr( $form_id ); ?>"
 	data-field-id="<?php echo esc_attr( $field_id ); ?>"
+	data-max-size="<?php echo esc_attr( $max_file_size ); ?>"
+	type="file"
+	aria-required="<?php echo esc_attr( $required ? 'true' : '' ); ?>"
+	style="display: none;"
+	class="rtgodam-hidden <?php echo esc_attr( $class ); ?>"
+/>
+<label class="evf-field-label" for="<?php echo esc_attr( $video_upload_button_id ); ?>">
+	<span class="evf-label"><?php echo esc_html( $label ); ?></span>
+</label>
+<div
+	style="margin: 4px 0;"
+	data-max-size="<?php echo esc_attr( $max_file_size * 1024 * 1024 ); ?>"
+	id="<?php echo esc_attr( $uppy_container_id ); ?>"
+	class="uppy-video-upload"
+	data-input-id="<?php echo esc_attr( $input_id ); ?>"
+	data-video-upload-button-id="<?php echo esc_attr( $video_upload_button_id ); ?>"
+	data-file-selectors="<?php echo esc_attr( implode( ',', $file_selectors ) ); ?>"
 >
 	<button
 		type="button"
 		id="<?php echo esc_attr( $video_upload_button_id ); ?>"
-		class="uppy-video-upload-button"
+		class="uppy-video-upload-button button"
 	>
-		<span class="dashicons dashicons-video-alt"></span><?php esc_html_e( 'Record Video', 'godam' ); ?>
+		<span style="vertical-align: text-top;" class="dashicons dashicons-video-alt"></span>
+		<?php echo esc_html( $button_text ); ?>
 	</button>
+	<?php
+	if ( ! empty( trim( $description ) ) ) {
+		echo '<div class="evf-field-description" style="margin-bottom: 0px">' . esc_html( $description ) . '</div>';
+	}
+	?>
+	<div class="evf-field-description" style="margin-bottom: 0px;">
+		<?php
+		echo esc_html(
+			sprintf(
+				// Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
+				__( 'Maximum allowed on this server: %s MB', 'godam' ),
+				(int) $max_file_size
+			)
+		);
+		?>
+	</div>
 	<div id="<?php echo esc_attr( $uppy_preview_id ); ?>" class="uppy-video-upload-preview"></div>
-	<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="upp-video-upload-filename"></div>
+	<div id="<?php echo esc_attr( $uppy_file_name_id ); ?>" class="uppy-video-upload-filename"></div>
+</div>
+<div style="display: none;" class="evf-uploaded-list godam-recorder">
+	<input type="text" class="rtgodam-hidden" name="<?php echo esc_attr( $name ); ?>" />
 </div>

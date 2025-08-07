@@ -53,6 +53,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 						'label',
 						'description',
 						'file_selector',
+						'button_text',
 						'max_size',
 						'required',
 					),
@@ -68,11 +69,8 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 
 			parent::__construct();
 
-			// Register assets.
-			add_action( 'admin_enqueue_scripts', array( $this, 'register_assets' ) );
-			add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
-
-			add_filter( 'everest_forms_process_before_filter', array( $this, 'save_video_file' ), 10, 2 );
+			// Add parent ajax events.
+			parent::add_ajax_events();
 		}
 
 		/**
@@ -93,7 +91,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 			$this->field_data = $this->form_data['form_fields'][ $this->field_id ];
 
 			// Input Primary: adjust name.
-			$properties['inputs']['primary']['attr']['name'] = "evf_{$this->form_id}_{$this->field_id}";
+			$properties['inputs']['primary']['attr']['name'] = "everest_forms_{$this->form_id}_{$this->field_id}";
 
 			// Input Primary: max file size.
 			$properties['inputs']['primary']['data']['rule-maxsize'] = $this->max_file_size();
@@ -104,10 +102,13 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		/**
 		 * Field preview inside the builder.
 		 *
+		 * @since n.e.x.t
+		 *
 		 * @param array $field Field data.
 		 */
 		public function field_preview( $field ) {
-			wp_enqueue_style( 'everest-forms-uppy-video-style' );
+
+			$this->render_evf_editor_scripts();
 
 			// Label.
 			$this->field_preview_option( 'label', $field );
@@ -124,13 +125,25 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 			);
 
 			// Render upload button.
-			printf( '<button type="button" class="wpforms-btn uppy-video-upload-button">' );
+			printf( '<button type="button" class="button evf-submit uppy-video-upload-button">' );
 			printf( '<span class="dashicons dashicons-video-alt"></span>' );
-			printf( esc_html__( 'Record Video', 'godam' ) );
+			printf( esc_html( $field['button_text'] ?? __( 'Record Video', 'godam' ) ) );
 			printf( '</button>' );
 
 			// Description.
 			$this->field_preview_option( 'description', $field );
+
+			// Add Max file size info.
+			printf(
+				'<div class="description">%s</div>',
+				esc_html(
+					sprintf(
+						/* translators: %s is the max file size in MB */
+						__( 'Max file size: %s MB', 'godam' ),
+						$field['max_size'] ? (int) $field['max_size'] : (int) wp_max_upload_size() / ( 1024 * 1024 )
+					)
+				)
+			);
 		}
 
 		/**
@@ -144,46 +157,13 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		 */
 		public function field_display( $field, $field_atts, $form_data ) {
 			$file_selectors = $this->extract_file_selectors_from_field( $field );
+
+			/**
+			 * Render the frontend scripts for the recorder.
+			 */
+			$this->render_evf_recorder_scripts();
+
 			require untrailingslashit( RTGODAM_PATH ) . '/inc/classes/everest-forms/everest-forms-field-godam-record-frontend.php';
-		}
-
-		/**
-		 * Register assets.
-		 *
-		 * @since n.e.x.t
-		 *
-		 * @param array $atts Shortcode attributes.
-		 */
-		public function register_assets( $atts ) {
-			wp_register_style(
-				'everest-forms-uppy-video-style',
-				RTGODAM_URL . 'assets/build/css/everest-forms-uppy-video.css',
-				array(),
-				filemtime( RTGODAM_PATH . 'assets/build/css/everest-forms-uppy-video.css' )
-			);
-
-			// Common godam recorder script.
-			wp_register_script(
-				'godam-recorder-script',
-				RTGODAM_URL . 'assets/build/js/godam-recorder.min.js',
-				array( 'jquery' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
-				true
-			);
-		}
-
-		/**
-		 * Register/queue frontend scripts.
-		 *
-		 * @since n.e.x.t
-		 *
-		 * @param array $atts Shortcode attributes.
-		 */
-		public function load_assets( $atts ) {
-			wp_enqueue_style( 'everest-forms-uppy-video-style' );
-
-			// Common godam recorder script.
-			wp_enqueue_script( 'godam-recorder-script' );
 		}
 
 		/**
@@ -227,7 +207,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		/**
 		 * Type field option.
 		 *
-		 * @param array $field Field data.
+		 * @param array $video_field Field data.
 		 */
 		public function file_selector( $video_field ) {
 			$file_selectors_from_field = $this->extract_file_selectors_from_field( $video_field );
@@ -277,6 +257,59 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		}
 
 		/**
+		 * Type field option for button text.
+		 *
+		 * @param array $video_field Field data.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @return void
+		 */
+		public function button_text( $video_field ) {
+
+			/**
+			 * Get the label for the button text.
+			 */
+			$label = $this->field_element(
+				'label',
+				$video_field,
+				array(
+					'slug'    => 'button-text-label',
+					'value'   => esc_html__( 'Record Button Text', 'godam' ),
+					'tooltip' => esc_html__( 'Text for the record video button', 'godam' ),
+				),
+				false
+			);
+
+			/**
+			 * Get the button.
+			 */
+			$button = $this->field_element(
+				'text',
+				$video_field,
+				array(
+					'slug'    => 'button_text',
+					'value'   => ! empty( $video_field['button_text'] ) ? $video_field['button_text'] : esc_html__( 'Record Video', 'godam' ),
+					'label'   => esc_html__( 'Button Text', 'godam' ),
+					'tooltip' => esc_html__( 'Text for the record video button', 'godam' ),
+				),
+				false
+			);
+
+			/**
+			 * Render the row for the button text.
+			 */
+			$this->field_element(
+				'row',
+				$video_field,
+				array(
+					'slug'    => 'button-text-row',
+					'content' => $label . $button . '</br>',
+				)
+			);
+		}
+
+		/**
 		 * Format global files array in more manageable structure.
 		 *
 		 * @since n.e.x.t
@@ -309,66 +342,84 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 		}
 
 		/**
-		 * Save godam video file.
+		 * Render Everest Forms recorder scripts.
 		 *
 		 * @since n.e.x.t
 		 *
-		 * @param array $entry Entry submitted data.
-		 * @param array $form_data Form data and settings.
-		 *
-		 * @return array
+		 * @return void
 		 */
-		public function save_video_file( $entry, $form_data ) {
-			global $wp_filesystem;
-
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-
-			WP_Filesystem();
-
-			if ( null === $wp_filesystem ) {
-				return $entry;
+		private function render_evf_recorder_scripts() {
+			if ( ! wp_script_is( 'godam-uppy-video-style' ) ) {
+				/**
+				 * Enqueue style for the uppy video.
+				 */
+				wp_enqueue_style(
+					'godam-uppy-video-style',
+					RTGODAM_URL . 'assets/build/css/gf-uppy-video.css',
+					array(),
+					filemtime( RTGODAM_PATH . 'assets/build/css/gf-uppy-video.css' )
+				);
 			}
 
-			$upload_dir        = wp_get_upload_dir();
-			$everest_forms_dir = untrailingslashit( $upload_dir['basedir'] ) . '/godam/everest-forms';
-
-			if ( false === wp_mkdir_p( $everest_forms_dir ) ) {
-				return $entry;
+			if ( ! wp_script_is( 'godam-recorder-script' ) ) {
+				/**
+				 * Enqueue script if not already enqueued.
+				 */
+				wp_enqueue_script(
+					'godam-recorder-script',
+					RTGODAM_URL . 'assets/build/js/godam-recorder.min.js',
+					array( 'jquery' ),
+					filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
+					true
+				);
 			}
 
-			// No need to perform nonce verification as this is already done by the Everest Forms forms processor.
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$files = $this->format_global_files_array( $_FILES );
+			if ( ! wp_script_is( 'everestforms-godam' ) ) {
+				/**
+				 * Enqueue script if not already enqueued.
+				 */
+				wp_enqueue_script(
+					'everestforms-godam',
+					RTGODAM_URL . 'assets/build/js/everestforms.min.js',
+					array( 'jquery', 'wp-i18n' ),
+					filemtime( RTGODAM_PATH . 'assets/build/js/everestforms.min.js' ),
+					true
+				);
 
-			// Loop through each file, and creates attachments for video files.
-			foreach ( $files as $field_id => $file ) {
-				// Bail if there is not error set.
-				if ( ! isset( $file['error'] ) ) {
-					continue;
-				}
-
-				// Check for upload errors.
-				if ( UPLOAD_ERR_OK !== $file['error'] ) {
-					$entry['fields'][ $field_id ] = '';
-					continue;
-				}
-
-				// Check if the file is a video.
-				if ( ! isset( $file['type'] ) || ! str_starts_with( $file['type'], 'video/' ) ) {
-					continue;
-				}
-
-				$filename = wp_unique_filename( $everest_forms_dir, $file['name'] );
-
-				$moved_file = $wp_filesystem->move( $file['tmp_name'], "{$everest_forms_dir}/{$filename}" );
-
-				if ( $moved_file ) {
-					$saved_file_url               = untrailingslashit( $upload_dir['baseurl'] ) . "/godam/everest-forms/{$filename}";
-					$entry['fields'][ $field_id ] = $saved_file_url;
-				}
+				/**
+				 * Localize the script for everest forms.
+				 */
+				wp_localize_script(
+					'everestforms-godam',
+					'RecorderEverestForms',
+					array(
+						'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+						'uploadAction' => 'everest_forms_upload_file',
+					)
+				);
 			}
+		}
 
-			return $entry;
+		/**
+		 * Function to render Everest Forms editor scripts.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @return void
+		 */
+		private function render_evf_editor_scripts() {
+
+			/**
+			 * Add the style for the Everest Forms recorder.
+			 */
+			if ( ! wp_style_is( 'everest-forms-recorder-style' ) ) {
+				wp_enqueue_style(
+					'everest-forms-recorder-style',
+					RTGODAM_URL . 'assets/build/css/everest-forms-uppy-video.css',
+					array(),
+					filemtime( RTGODAM_PATH . 'assets/build/css/everest-forms-uppy-video.css' )
+				);
+			}
 		}
 	}
 }
