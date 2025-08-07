@@ -57,9 +57,12 @@ $wrapper_attributes = get_block_wrapper_attributes(
 	}
 
 	// Content to display (thumbnail or fallback).
-	$content = ! empty( $thumbnail_url )
-		? '<img src="' . esc_url( $thumbnail_url ) . '" alt="' . esc_attr( $alt_text ) . '" class="godam-video-thumbnail" />'
-		: '<div class="godam-video-thumbnail__fallback"></div>';
+	$content = '';
+	if ( ! empty( $thumbnail_url ) ) {
+		$content = '<img src="' . esc_url( $thumbnail_url ) . '" alt="' . esc_attr( $alt_text ) . '" class="godam-video-thumbnail" />';
+	} else {
+		$content = '<div class="godam-video-thumbnail__fallback"></div>';
+	}
 	?>
 
 	<!-- Opening link tag -->
