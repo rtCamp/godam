@@ -50,6 +50,20 @@ class Lifter_LMS {
 	}
 
 	/**
+	 * Check if LifterLMS Advanced Video plugin is active.
+	 *
+	 * @return bool
+	 */
+	public function is_lifterlms_advanced_video_active(): bool {
+		// Check if LifterLMS Advanced Video plugin is active.
+		if ( ! is_plugin_active( 'lifterlms-advanced-videos/lifterlms-advanced-videos.php' ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Check if the current content is LifterLMS content (lesson, quiz, course).
 	 *
 	 * @return bool
@@ -112,11 +126,11 @@ class Lifter_LMS {
 	 */
 	public function load_lifterlms_integration_script() {
 		// Load LifterLMS integration script only if LifterLMS is active, the content is LifterLMS, and the Godam video block is present.
-		if ( $this->is_lifterlms_active() && $this->is_lifterlms_content() && $this->has_godam_video_block() ) {
+		if ( $this->is_lifterlms_active() && $this->is_lifterlms_advanced_video_active() && $this->is_lifterlms_content() && $this->has_godam_video_block() ) {
 			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/src/js/lifterlms/block-integration.js', array( 'jquery' ), filemtime( RTGODAM_PATH . 'assets/src/js/lifterlms/block-integration.js' ), true );
 		}
 
-		if ( $this->is_lifterlms_active() && $this->is_lifterlms_content() ) {
+		if ( $this->is_lifterlms_active() && $this->is_lifterlms_advanced_video_active() && $this->is_lifterlms_content() ) {
 			wp_enqueue_script( 'rtgodam-player-sdk', RTGODAM_URL . 'assets/src/js/godam-player/godam-player-sdk.js', array(), filemtime( RTGODAM_PATH . 'assets/src/js/godam-player/godam-player-sdk.js' ), true );
 			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/src/js/lifterlms/embed-integration.js', array( 'jquery' ), filemtime( RTGODAM_PATH . 'assets/src/js/lifterlms/embed-integration.js' ), true );
 		}
@@ -131,7 +145,7 @@ class Lifter_LMS {
 	 * @return mixed
 	 */
 	public function modify_godam_player_block_attributes( $attributes ) {
-		if ( $this->is_lifterlms_active() && $this->is_lifterlms_lesson() && $this->is_lifterlms_autoplay_on() ) {
+		if ( $this->is_lifterlms_active() && $this->is_lifterlms_advanced_video_active() && $this->is_lifterlms_lesson() && $this->is_lifterlms_autoplay_on() ) {
 			$attributes['autoplay'] = true;
 		}
 
@@ -146,8 +160,9 @@ class Lifter_LMS {
 	 * @return mixed
 	 */
 	public function add_godam_integration( array $integrations ) {
-
-		$integrations['av_godam'] = new LLMS_AV_Integration_GoDAM();
+		if ( $this->is_lifterlms_active() && $this->is_lifterlms_advanced_video_active() ) {
+			$integrations['av_godam'] = new LLMS_AV_Integration_GoDAM();
+		}
 
 		return $integrations;
 	}
