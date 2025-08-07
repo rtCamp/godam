@@ -26,17 +26,54 @@ if ( isset( $is_elementor_widget ) && $is_elementor_widget ) {
 // prevent default behavior of Gravity Forms autoscroll on submission.
 add_filter( 'gform_confirmation_anchor', '__return_false' );
 
+// Helper function to convert string boolean to numeric.
+if ( ! function_exists( 'rtgodam_convert_boolean_to_numeric' ) ) {
+
+	/**
+	 * Convert boolean or string representation of boolean to numeric.
+	 *
+	 * @param mixed $value The value to convert.
+	 * @return int Returns 1 for true-like values, 0 for false-like values.
+	 */
+	function rtgodam_convert_boolean_to_numeric( $value ): int {
+		if ( is_bool( $value ) ) {
+			return $value ? 1 : 0;
+		}
+		if ( is_string( $value ) ) {
+			$value = strtolower( trim( $value ) );
+			return in_array( $value, array( 'true', '1', 'yes', 'on' ), true ) ? 1 : 0;
+		}
+		if ( is_numeric( $value ) ) {
+			return $value ? 1 : 0;
+		}
+		return 0;
+	}
+}
+
 // attributes.
-$autoplay      = ! empty( $attributes['autoplay'] );
-$controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
-$loop          = ! empty( $attributes['loop'] );
-$muted         = ! empty( $attributes['muted'] );
+$autoplay      = isset( $attributes['autoplay'] ) ? rtgodam_convert_boolean_to_numeric( $attributes['autoplay'] ) : 0;
+$controls      = isset( $attributes['controls'] ) ? rtgodam_convert_boolean_to_numeric( $attributes['controls'] ) : 1;
+$loop          = isset( $attributes['loop'] ) ? rtgodam_convert_boolean_to_numeric( $attributes['loop'] ) : 0;
+$muted         = isset( $attributes['muted'] ) ? rtgodam_convert_boolean_to_numeric( $attributes['muted'] ) : 0;
 $poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
 $preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
 $hover_select  = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
 $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$width         = ! empty( $attributes['width'] ) ? esc_attr( $attributes['width'] ) : '';
+$height        = ! empty( $attributes['height'] ) ? esc_attr( $attributes['height'] ) : '';
+$playsinline   = isset( $attributes['playsinline'] ) ? rtgodam_convert_boolean_to_numeric( $attributes['playsinline'] ) : 1;
+$start_time    = ! empty( $attributes['start_time'] ) ? floatval( $attributes['start_time'] ) : null;
+$end_time      = ! empty( $attributes['end_time'] ) ? floatval( $attributes['end_time'] ) : null;
+$playback_rate = ! empty( $attributes['playback_rate'] ) ? floatval( $attributes['playback_rate'] ) : null;
+$volume        = ! empty( $attributes['volume'] ) ? floatval( $attributes['volume'] ) : null;
+$schema_type   = ! empty( $attributes['schema_type'] ) ? esc_attr( $attributes['schema_type'] ) : 'VideoObject';
+$upload_date   = ! empty( $attributes['upload_date'] ) ? esc_attr( $attributes['upload_date'] ) : '';
+$duration      = ! empty( $attributes['duration'] ) ? esc_attr( $attributes['duration'] ) : '';
+$thumbnail_url = ! empty( $attributes['thumbnail_url'] ) ? esc_url( $attributes['thumbnail_url'] ) : '';
+$description   = ! empty( $attributes['description'] ) ? esc_html( $attributes['description'] ) : '';
+$keywords      = ! empty( $attributes['keywords'] ) ? esc_attr( $attributes['keywords'] ) : '';
 
 // Determine whether the attachment ID refers to a virtual (GoDAM) media item.
 // If it's not numeric, we assume it's a virtual reference (e.g., a GoDAM ID).
@@ -63,9 +100,9 @@ if ( $is_virtual ) {
 	}
 }
 
-$video_preview      = isset( $attributes['preview'] ) ? $attributes['preview'] : false;
+$video_preview      = isset( $attributes['preview'] ) ? rtgodam_convert_boolean_to_numeric( $attributes['preview'] ) : 0;
 $overlay_time_range = ! empty( $attributes['overlayTimeRange'] ) ? floatval( $attributes['overlayTimeRange'] ) : 0;
-$show_overlay       = isset( $attributes['showOverlay'] ) ? $attributes['showOverlay'] : false;
+$show_overlay       = isset( $attributes['showOverlay'] ) ? rtgodam_convert_boolean_to_numeric( $attributes['showOverlay'] ) : 0;
 $vertical_alignment = ! empty( $attributes['verticalAlignment'] ) ? esc_attr( $attributes['verticalAlignment'] ) : 'center';
 $aspect_ratio       = ! empty( $attributes['aspectRatio'] ) && 'responsive' === $attributes['aspectRatio']
 	? ( ! empty( $attributes['videoWidth'] ) && ! empty( $attributes['videoHeight'] )
@@ -185,13 +222,13 @@ $ads_settings           = wp_json_encode( $ads_settings );
 
 // Build the video setup options for data-setup.
 $video_setup = array(
-	'controls'    => $controls,
-	'autoplay'    => $autoplay,
-	'loop'        => $loop,
-	'muted'       => $muted,
+	'controls'    => (bool) $controls,
+	'autoplay'    => (bool) $autoplay,
+	'loop'        => (bool) $loop,
+	'muted'       => (bool) $muted,
 	'preload'     => $preload,
 	'poster'      => empty( $poster ) ? $poster_image : $poster,
-	'fluid'       => true,
+	'fluid'       => empty( $width ) && empty( $height ), // Only fluid if no specific dimensions.
 	'flvjs'       => array(
 		'mediaDataSource' => array(
 			'isLive'          => true,
@@ -200,7 +237,7 @@ $video_setup = array(
 		),
 	),
 	'sources'     => $sources,
-	'playsinline' => true,
+	'playsinline' => (bool) $playsinline,
 	'controlBar'  => array(
 		'volumePanel' => array(
 			'inline' => ! in_array( $player_skin, array( 'Minimal', 'Pills' ), true ),
@@ -211,6 +248,24 @@ $video_setup = array(
 		),
 	),
 );
+
+// Add custom dimensions if specified.
+if ( ! empty( $width ) ) {
+	$video_setup['width'] = $width;
+}
+if ( ! empty( $height ) ) {
+	$video_setup['height'] = $height;
+}
+
+// Add playback rates if specified.
+if ( ! empty( $playback_rate ) ) {
+	$video_setup['playbackRates'] = array( $playback_rate );
+}
+
+// Add volume if specified.
+if ( ! empty( $volume ) ) {
+	$video_setup['volume'] = $volume;
+}
 if ( ! empty( $control_bar_settings ) ) {
 	$video_setup['controlBar'] = $control_bar_settings; // contains settings specific to control bar.
 
@@ -226,12 +281,22 @@ $video_setup = wp_json_encode( $video_setup );
 
 $video_config = wp_json_encode(
 	array(
-		'preview'          => $video_preview,
+		'preview'          => (bool) $video_preview,
 		'layers'           => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
 		'chapters'         => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(), // contains list of chapters.
 		'overlayTimeRange' => $overlay_time_range, // Add overlay time range to video config.
 		'playerSkin'       => $player_skin, // Add player skin to video config. Add brand image to video config.
 		'aspectRatio'      => $aspect_ratio,
+		'startTime'        => $start_time,
+		'endTime'          => $end_time,
+		'playbackRate'     => $playback_rate,
+		'volume'           => $volume,
+		'schemaType'       => $schema_type,
+		'uploadDate'       => $upload_date,
+		'duration'         => $duration,
+		'thumbnailUrl'     => $thumbnail_url,
+		'description'      => $description,
+		'keywords'         => $keywords,
 	)
 );
 
@@ -275,6 +340,14 @@ $custom_css_properties = array(
 
 if ( ! empty( $aspect_ratio ) ) {
 	$custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $aspect_ratio );
+}
+
+// Add custom dimensions if specified.
+if ( ! empty( $width ) ) {
+	$custom_css_properties['--rtgodam-video-width'] = $width;
+}
+if ( ! empty( $height ) ) {
+	$custom_css_properties['--rtgodam-video-height'] = $height;
 }
 
 // Build the inline style string, escaping each value.
@@ -334,6 +407,48 @@ if ( $is_shortcode || $is_elementor_widget ) {
 					data-job_id="<?php echo esc_attr( $job_id ); ?>"
 					data-global_ads_settings="<?php echo esc_attr( $ads_settings ); ?>"
 					data-hover-select="<?php echo esc_attr( $hover_select ); ?>"
+					<?php
+					if ( ! empty( $start_time ) ) :
+						?>
+						data-start-time="<?php echo esc_attr( $start_time ); ?>"<?php endif; ?>
+					<?php
+					if ( ! empty( $end_time ) ) :
+						?>
+						data-end-time="<?php echo esc_attr( $end_time ); ?>"<?php endif; ?>
+					<?php
+					if ( ! empty( $playback_rate ) ) :
+						?>
+						data-playback-rate="<?php echo esc_attr( $playback_rate ); ?>"<?php endif; ?>
+					<?php
+					if ( ! empty( $volume ) ) :
+						?>
+						data-volume="<?php echo esc_attr( $volume ); ?>"<?php endif; ?>
+					<?php
+					if ( ! empty( $schema_type ) ) :
+						?>
+						data-schema-type="<?php echo esc_attr( $schema_type ); ?>"<?php endif; ?>
+					<?php
+					if ( ! empty( $upload_date ) ) :
+						?>
+						data-upload-date="<?php echo esc_attr( $upload_date ); ?>"<?php endif; ?>
+					<?php
+					if ( ! empty( $duration ) ) :
+						?>
+						data-duration="<?php echo esc_attr( $duration ); ?>"<?php endif; ?>
+					<?php
+					if ( ! empty( $thumbnail_url ) ) :
+						?>
+						data-thumbnail-url="<?php echo esc_url( $thumbnail_url ); ?>"<?php endif; ?>
+					<?php
+					if ( ! empty( $description ) ) :
+						?>
+						data-description="<?php echo esc_attr( $description ); ?>"<?php endif; ?>
+					<?php
+					if ( ! empty( $keywords ) ) :
+						?>
+						data-keywords="<?php echo esc_attr( $keywords ); ?>"<?php endif; ?>
+					<?php if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) : ?>
+					<?php endif; ?>
 				>
 					<?php
 					foreach ( $sources as $source ) :
