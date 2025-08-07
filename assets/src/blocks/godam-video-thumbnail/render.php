@@ -50,7 +50,7 @@ $wrapper_attributes = get_block_wrapper_attributes(
 	// Link attributes.
 	$link_attrs = '';
 	if ( $link_to_video ) {
-		$link_attrs = ' href="' . esc_url( get_permalink( $video_post_id ) ) . '" class="godam-video-thumbnail__link"';
+		$link_attrs .= ' href="' . esc_url( get_permalink( $video_post_id ) ) . '" class="godam-video-thumbnail__link"';
 		if ( $open_in_new_tab ) {
 			$link_attrs .= ' target="_blank" rel="noopener noreferrer"';
 		}
