@@ -60,11 +60,12 @@ class UppyVideoUploader {
 			const sureForms = document.querySelector( 'div.srfm-success-box' );
 			const fluentForms = document.querySelector( 'div.ff-message-success' );
 			const wpForms = document.querySelector( 'div.wpforms-confirmation-container-full, div.wpforms-confirmation-container' );
+			const everestForms = document.querySelector( 'div.everest-forms-notice.everest-forms-notice--success' );
 
 			/**
 			 * If any of the forms have confirmation, remove uppy state.
 			 */
-			const removeUppyState = gravityForms || sureForms || fluentForms || wpForms;
+			const removeUppyState = gravityForms || sureForms || fluentForms || wpForms || everestForms;
 
 			if ( removeUppyState ) {
 				Object.keys( localStorage )
@@ -379,5 +380,15 @@ jQuery( document ).ready( function() {
 	 */
 	jQuery( document ).on( 'wpformsAjaxSubmitSuccess', function() {
 		UppyVideoUploader.clearUppyStateIfConfirmed();
+	} );
+
+	/**
+	 * Everest Forms confirmation.
+	 */
+	jQuery( document ).on( 'everest_forms_ajax_submission_success', function() {
+		UppyVideoUploader.clearUppyStateIfConfirmed();
+
+		// Clear the local storage data for Everest Forms.
+		localStorage.removeItem( 'godam-evf-recorder-data' );
 	} );
 } );
