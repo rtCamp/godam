@@ -60,7 +60,7 @@ class Ninja_Forms_Integration {
 	 * @return void
 	 */
 	public function add_additional_css_for_video_editor() {
-		$custom_css = <<<CSS
+		$custom_css = '
 			.form-container.ninja-form {
 				margin: unset;
 				height: 100%;
@@ -72,7 +72,7 @@ class Ninja_Forms_Integration {
 			.form-container.ninja-form iframe {
 				height: 100%;
 			}
-		CSS;
+		';
 
 
 		wp_add_inline_style( 'rtgodam-style', $custom_css );
@@ -86,11 +86,11 @@ class Ninja_Forms_Integration {
 	 * @return void
 	 */
 	public function add_additional_css_for_godam_player() {
-		$custom_css = <<<CSS
+		$custom_css = '
 			.easydam-layer.ninjaforms .form-container {
 				position: static;
 			}
-		CSS;
+		';
 
 
 		wp_add_inline_style( 'godam-player-style', $custom_css );
@@ -108,7 +108,7 @@ class Ninja_Forms_Integration {
 	 */
 	public function add_css_for_the_layer_inside_iframe( $layer, $layer_id ) {
 		if ( 'ninja-forms' === $layer && ! empty( $layer_id ) ) {
-			$custom_css = <<<CSS
+			$custom_css = '
 				html {
 					margin: 0 !important;
 					padding: 0 !important;
@@ -119,7 +119,7 @@ class Ninja_Forms_Integration {
 					height: 100vh;
 					align-content: center;
 				}
-			CSS;
+			';
 
 			echo '<style>' . $custom_css . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
