@@ -68,6 +68,9 @@ function autoloader( $file_resource = '' ) {
 			case 'elementor-widgets': // phpcs:ignore
 			case 'elementor-controls': // phpcs:ignore
 			case 'wpforms': // phpcs:ignore
+			case 'ninja-forms': // phpcs:ignore
+			case 'metform': // phpcs:ignore
+
 				/**
 				 * If there is class name provided for specific directory then load that.
 				 * otherwise find in inc/ directory.

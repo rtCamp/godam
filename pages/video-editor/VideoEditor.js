@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, TabPanel, Snackbar, Tooltip } from '@wordpress/components';
+import { Button, TabPanel, Snackbar, Tooltip, Spinner } from '@wordpress/components';
 import { __, _n } from '@wordpress/i18n';
 import { copy, seen } from '@wordpress/icons';
 
@@ -28,6 +28,8 @@ import {
 	setForminatorForms,
 	setFluentForms,
 	setEverestForms,
+	setNinjaForms,
+	setMetforms,
 } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
@@ -57,7 +59,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
-	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, isFetching } = useFetchForms();
+	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, metforms, isFetching } = useFetchForms();
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -157,8 +159,16 @@ const VideoEditor = ( { attachmentID } ) => {
 			if ( fluentForms && fluentForms.length > 0 ) {
 				dispatch( setFluentForms( fluentForms ) );
 			}
+
+			if ( ninjaForms && ninjaForms.length > 0 ) {
+				dispatch( setNinjaForms( ninjaForms ) );
+			}
+
+			if ( metforms && metforms.length > 0 ) {
+				dispatch( setMetforms( metforms ) );
+			}
 		}
-	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms ] );
+	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms, metforms ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {
@@ -344,11 +354,12 @@ const VideoEditor = ( { attachmentID } ) => {
 					<Button
 						className="godam-button absolute right-4 bottom-8"
 						variant="primary"
-						disabled={ ! isChanged }
+						icon={ isSavingMeta && <Spinner /> }
 						onClick={ handleSaveAttachmentMeta }
 						isBusy={ isSavingMeta }
+						disabled={ ! isChanged }
 					>
-						{ __( 'Save', 'godam' ) }
+						{ isSavingMeta ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 					</Button>
 				</div>
 

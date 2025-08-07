@@ -1,0 +1,38 @@
+.godam-password-field-wrapper {
+	position: relative;
+}
+
+.godam-password-field-wrapper .components-text-control__input {
+	padding-right: 40px;
+}
+
+.godam-password-toggle {
+	position: absolute;
+	right: 8px;
+	top: 32px;
+	background: none !important;
+	border: none !important;
+	padding: 4px !important;
+	min-width: auto !important;
+	height: auto !important;
+	color: #757575;
+	cursor: pointer;
+	z-index: 1;
+}
+
+.godam-password-toggle:hover {
+	color: #1e1e1e;
+}
+
+.godam-password-toggle:focus {
+	box-shadow: 0 0 0 1.5px #007cba;
+	outline: none;
+}
+
+.godam-password-field-wrapper .components-base-control__label {
+	margin-bottom: 8px;
+}
+
+.godam-password-field-wrapper.no-label .godam-password-toggle {
+	top: 8px;
+}
