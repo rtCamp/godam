@@ -35,6 +35,43 @@ function initTogglePostboxes() {
 }
 
 /**
+ * Particle class for canvas-based particle effect
+ */
+class Particle {
+	constructor( ctx, width, height ) {
+		this.ctx = ctx;
+		this.width = width;
+		this.height = height;
+		this.x = Math.random() * width;
+		this.y = Math.random() * height;
+		this.radius = ( Math.random() * 1.5 ) + 1;
+		this.vx = ( Math.random() * 0.5 ) - 0.25;
+		this.vy = ( Math.random() * 0.5 ) - 0.25;
+	}
+
+	// Draw the particle
+	draw() {
+		this.ctx.beginPath();
+		this.ctx.arc( this.x, this.y, this.radius, 0, Math.PI * 2 );
+		this.ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+		this.ctx.fill();
+	}
+
+	// Update the particle position
+	update() {
+		this.x += this.vx;
+		this.y += this.vy;
+
+		if ( this.x < 0 || this.x > this.width ) {
+			this.vx *= -1;
+		}
+		if ( this.y < 0 || this.y > this.height ) {
+			this.vy *= -1;
+		}
+	}
+}
+
+/**
  * Initialize particle effect background
  */
 function initParticleEffect() {
@@ -52,48 +89,19 @@ function initParticleEffect() {
 	let width, height;
 	let particles = [];
 
-	// Particle class
-	class Particle {
-		constructor() {
-			this.x = Math.random() * width;
-			this.y = Math.random() * height;
-			this.radius = ( Math.random() * 1.5 ) + 1;
-			this.vx = ( Math.random() * 0.5 ) - 0.25;
-			this.vy = ( Math.random() * 0.5 ) - 0.25;
-		}
-
-		// Draw the particle
-		draw() {
-			ctx.beginPath();
-			ctx.arc( this.x, this.y, this.radius, 0, Math.PI * 2 );
-			ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-			ctx.fill();
-		}
-
-		// Update the particle position
-		update() {
-			this.x += this.vx;
-			this.y += this.vy;
-
-			if ( this.x < 0 || this.x > width ) {
-				this.vx *= -1;
-			}
-			if ( this.y < 0 || this.y > height ) {
-				this.vy *= -1;
-			}
-		}
-	}
-
 	// Resize canvas to fit the window
 	function resizeCanvas() {
 		width = canvas.width = banner.offsetWidth || window.innerWidth;
 		height = canvas.height = banner.offsetHeight || 300;
+
+		// ReInitialize particles
+		initParticles( 40 );
 	}
 
 	// Initialize particles
 	function initParticles( count ) {
 		const maxParticles = Math.min( count, Math.floor( width / 20 ) );
-		particles = Array.from( { length: maxParticles }, () => new Particle() );
+		particles = Array.from( { length: maxParticles }, () => new Particle( ctx, width, height ) );
 	}
 
 	// Animate particles
@@ -118,7 +126,6 @@ function initParticleEffect() {
 	// Setup
 	window.addEventListener( 'resize', debounce( resizeCanvas, 100 ) );
 	resizeCanvas();
-	initParticles( 40 );
 	animateParticles();
 }
 
