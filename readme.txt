@@ -1,10 +1,10 @@
 === GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more ===
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -217,6 +217,10 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.3.2 (August 6, 2025) =
+
+- Fix: Resolved PHP Warning on admin pages
+
 = v1.3.1 (August 4, 2025) =
 
 - Tweak: Added settings for CPT visibility in permalinks
@@ -251,10 +255,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Eliminated display of "0" value after removing images in Image CTA Layer
 - Fix: Updated Share Button and Share Modal visibility on GoDAM Video block
 - Fix: Added validation for empty form selection in form layers
-
-= v1.2.1 (July 11, 2025) =
-
-- Fix: Resolved thumbnail issue with rtMedia for transcoded videos
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

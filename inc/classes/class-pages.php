@@ -392,6 +392,7 @@ class Pages {
 			$is_sure_form_active    = is_plugin_active( 'sureforms/sureforms.php' );
 			$is_forminator_active   = is_plugin_active( 'forminator/forminator.php' );
 			$is_fluent_forms_active = is_plugin_active( 'fluentform/fluentform.php' );
+			$is_met_form_active     = is_plugin_active( 'metform/metform.php' );
 
 			// TODO Handle Everest Forms pro versions as well in future.
 			$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' );
@@ -409,6 +410,7 @@ class Pages {
 					'currentUserRoles'   => wp_get_current_user()->roles,   // Current user roles.
 					'validApiKey'        => rtgodam_is_api_key_valid(),
 					'adminUrl'           => admin_url(),
+					'godamBaseUrl'       => RTGODAM_IO_API_BASE,
 					'gfActive'           => $is_gf_active,
 					'cf7Active'          => $is_cf7_active,
 					'wpformsActive'      => $is_wpforms_active,
@@ -418,6 +420,7 @@ class Pages {
 					'fluentformsActive'  => $is_fluent_forms_active,
 					'everestFormsActive' => $is_everest_forms_active,
 					'ninjaFormsActive'   => $is_ninja_forms_active,
+					'metformActive'      => $is_met_form_active,
 				)
 			);
 

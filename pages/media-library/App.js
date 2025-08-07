@@ -95,6 +95,13 @@ const App = () => {
 
 	return (
 		<>
+			<Button
+				icon="plus-alt2"
+				__next40pxDefaultSize
+				variant="secondary"
+				className="button--full close-folder-menu-mobile"
+				onClick={ () => closeFolderMenu() }
+			/>
 			<div className="control-buttons">
 				<div className="button-group mb-spacing">
 					<SearchBar />
@@ -106,14 +113,6 @@ const App = () => {
 						className="button--full mb-spacing new-folder-button"
 						onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
 						disabled={ selectedFolder?.meta?.locked }
-					/>
-
-					<Button
-						icon="plus-alt2"
-						__next40pxDefaultSize
-						variant="secondary"
-						className="button--full close-folder-menu-mobile"
-						onClick={ () => closeFolderMenu() }
 					/>
 				</div>
 				<div className="button-group mb-spacing">

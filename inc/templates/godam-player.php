@@ -119,8 +119,15 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$hls_transcoded_url = $attachment_id ? rtgodam_get_hls_transcoded_url_from_attachment( $attachment_id ) : '';
 	$video_src          = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
 	$video_src_type     = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
-	$job_id             = $attachment_id && ! empty( $transcoded_url ) ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
+	$job_id             = '';
 
+	if ( $attachment_id && ! empty( $transcoded_url ) ) {
+		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		if ( empty( $job_id ) ) {
+			$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		}
+	}
 	$sources = array();
 
 	if ( ! empty( $transcoded_url ) ) {
@@ -214,10 +221,14 @@ $video_setup = array(
 if ( ! empty( $control_bar_settings ) ) {
 	$video_setup['controlBar'] = $control_bar_settings; // contains settings specific to control bar.
 
-	// Define your default volumePanel setting.
-	$volume_panel_setting = array(
-		'inline' => ! in_array( $player_skin, array( 'Minimal', 'Pills' ), true ),
-	);
+	if ( isset( $control_bar_settings['volumePanel'] ) && empty( $control_bar_settings['volumePanel'] ) ) {
+		$volume_panel_setting = $control_bar_settings['volumePanel'];
+	} else {
+		// Define your default volumePanel setting.
+		$volume_panel_setting = array(
+			'inline' => ! in_array( $player_skin, array( 'Minimal', 'Pills' ), true ),
+		);
+	}
 
 	$video_setup['controlBar']['volumePanel'] = $volume_panel_setting;
 }
@@ -448,6 +459,21 @@ if ( $is_shortcode || $is_elementor_widget ) {
 												sprintf(
 													"[forminator_form id='%d']",
 													intval( $layer['forminator_id'] )
+												)
+											);
+										?>
+									</div>
+								</div>
+								<?php
+							elseif ( 'metform' === $form_type && ! empty( $layer['metform_id'] ) ) :
+								?>
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $form_type ); ?>" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div class="form-container">
+										<?php
+											echo do_shortcode(
+												sprintf(
+													"[metform form_id='%d']",
+													intval( $layer['metform_id'] )
 												)
 											);
 										?>

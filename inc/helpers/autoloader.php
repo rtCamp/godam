@@ -70,6 +70,7 @@ function autoloader( $file_resource = '' ) {
 			case 'wpforms': // phpcs:ignore
 			case 'ninja-forms': // phpcs:ignore
 			case 'everest-forms': // phpcs:ignore
+			case 'metform': // phpcs:ignore
 
 				/**
 				 * If there is class name provided for specific directory then load that.

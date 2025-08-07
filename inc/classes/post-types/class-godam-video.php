@@ -39,6 +39,107 @@ class GoDAM_Video extends Base {
 		
 		// Handle direct URL access based on user settings.
 		add_action( 'template_redirect', array( $this, 'handle_url_access' ) );
+		add_filter( 'attachment_fields_to_edit', array( $this, 'add_custom_attachment_fields' ), 10, 2 );
+		add_filter( 'attachment_fields_to_save', array( $this, 'save_custom_attachment_fields' ) );
+	}
+
+	/**
+	 * Add custom fields to the attachment edit screen.
+	 *
+	 * @param array   $form_fields Existing form fields.
+	 * @param WP_Post $post        The attachment post object.
+	 *
+	 * @return array Modified form fields.
+	 */
+	public function add_custom_attachment_fields( $form_fields, $post ) {
+		if ( ! $this->is_video_attachment( $post->ID ) ) {
+			return $form_fields;
+		}
+
+		$godam_video_id = $this->get_godam_video_from_attachment( $post->ID );
+
+		// If no video post exists, create one.
+		if ( ! $godam_video_id ) {
+			$godam_video_id = $this->create_video_post_from_attachment( $post->ID );
+
+			// If creation failed, return original fields.
+			if ( ! $godam_video_id ) {
+				return $form_fields;
+			}
+		}
+
+		/**
+		 * Filters an array of metaboxes display on the godam video edit screen.
+		 *
+		 * Each metabox should have an 'id', 'title', and 'render_callback'.
+		 *  - The 'id' is used as the field name.
+		 *  - The 'title' is displayed as the label.
+		 *  - The 'render_callback' should be a callable that outputs the HTML for the field. The parameter `$godam_video_id` the current video post ID is passed to the callback.
+		 *
+		 * @param array $metaboxes An array of metaboxes.
+		 * @param int   $post_id   The video post ID.
+		 */
+		$metaboxes = apply_filters( 'godam_register_video_meta_boxes', array(), $godam_video_id );
+
+		foreach ( $metaboxes as $metabox ) {
+			// Check if the id, title, and render_callback are set.
+			if ( ! isset( $metabox['id'], $metabox['title'], $metabox['render_callback'] ) ) {
+				continue;
+			}
+
+			ob_start();
+
+			if ( is_callable( $metabox['render_callback'] ) ) {
+				call_user_func( $metabox['render_callback'], $godam_video_id );
+			}
+
+			$field_html = ob_get_clean();
+
+			$form_fields[ $metabox['id'] ] = array(
+				'label' => $metabox['title'],
+				'input' => 'html',
+				'html'  => $field_html,
+			);
+		}
+
+		return $form_fields;
+	}
+
+	/**
+	 * Save custom fields from the attachment edit screen.
+	 *
+	 * @param array $attachment_data The attachment data.
+	 *
+	 * @return array Modified attachment data.
+	 */
+	public function save_custom_attachment_fields( $attachment_data ) {
+		if ( ! $this->is_video_attachment( $attachment_data['ID'] ) ) {
+			return $attachment_data;
+		}
+
+		$godam_video_id = $this->get_godam_video_from_attachment( $attachment_data['ID'] );
+
+		// If no video post exists, create one.
+		if ( ! $godam_video_id ) {
+			$godam_video_id = $this->create_video_post_from_attachment( $attachment_data['ID'] );
+			
+			// If creation failed, return original attachment data.
+			if ( ! $godam_video_id ) {
+				return $attachment_data;
+			}
+		}
+
+		/**
+		 * Fires saving the godam video.
+		 *  - This action allows other plugins or themes to save additional metadata registered via `godam_register_video_meta_boxes`.
+		 *  - Also allows to perform additional actions when a GoDAM video post is saved.
+		 *  - The updated video meta can be accessed from the global $_POST variable.
+		 *
+		 * @param int $godam_video_id The ID of the GoDAM video post being saved.
+		 */
+		do_action( 'godam_save_video_meta', $godam_video_id );
+
+		return $attachment_data;
 	}
 	
 	/**
@@ -144,26 +245,11 @@ class GoDAM_Video extends Base {
 			return false;
 		}
 
-		// Check if video post already exists for this attachment.
-		$query = new WP_Query(
-			array(
-				'post_type'              => self::SLUG,
-				'posts_per_page'         => 1,
-				'post_status'            => 'any',
-				'no_found_rows'          => true,
-				'fields'                 => 'ids',
-				'update_post_term_cache' => false,
-				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check existing video post.
-					array(
-						'key'   => '_godam_attachment_id',
-						'value' => $attachment_id,
-					),
-				),
-			) 
-		);
+		$godam_video_id = $this->get_godam_video_from_attachment( $attachment_id );
 
-		if ( $query->have_posts() ) {
-			return $query->posts[0];
+		// Check if video post already exists for this attachment.
+		if ( $godam_video_id ) {
+			return $godam_video_id;
 		}
 
 		// Get attachment data.
@@ -281,32 +367,15 @@ class GoDAM_Video extends Base {
 		}
 
 		// Find the corresponding video post.
-		$query = new WP_Query(
-			array(
-				'post_type'              => self::SLUG,
-				'posts_per_page'         => 1,
-				'post_status'            => 'any',
-				'fields'                 => 'ids',
-				'no_found_rows'          => true,
-				'update_post_term_cache' => false,
-				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
-					array(
-						'key'   => '_godam_attachment_id',
-						'value' => $attachment_id,
-					),
-				),
-			) 
-		);
-
-		if ( ! $query->have_posts() ) {
-			// Create new video post if it doesn't exist.
+		$video_post_id = $this->get_godam_video_from_attachment( $attachment_id );
+		if ( ! $video_post_id ) {
+			// If no video post exists, create one.
 			$this->create_video_post_from_attachment( $attachment_id );
 			return;
 		}
-
-		$video_post_id = $query->posts[0];
-		$attachment    = get_post( $attachment_id );
-		$new_title     = $attachment->post_title ?: __( 'Untitled Video', 'godam' );
+		
+		$attachment = get_post( $attachment_id );
+		$new_title  = $attachment->post_title ?: __( 'Untitled Video', 'godam' );
 
 		// Get current title from the post we already have.
 		$current_title = get_the_title( $video_post_id );
@@ -460,5 +529,38 @@ class GoDAM_Video extends Base {
 			require get_query_template( '404' );
 			exit;
 		}
+	}
+
+	/**
+	 * Get the GoDAM video post ID from an attachment ID.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 *
+	 * @return int|false Video post ID or false if not found.
+	 */
+	public function get_godam_video_from_attachment( $attachment_id ) {
+		$query = new WP_Query(
+			array(
+				'post_type'              => self::SLUG,
+				'posts_per_page'         => 1,
+				'post_status'            => 'any',
+				'fields'                 => 'ids',
+				'no_found_rows'          => true,
+				'update_post_term_cache' => false,
+				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- needed to check linked video post.
+					array(
+						'key'   => '_godam_attachment_id',
+						'value' => $attachment_id,
+					),
+				),
+			)
+		);
+		
+		// Check if the query returned post.
+		if ( count( $query->posts ) > 0 ) {
+			return $query->posts[0];
+		}
+
+		return false;
 	}
 }
