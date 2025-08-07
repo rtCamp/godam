@@ -530,18 +530,18 @@ export default function Edit( { attributes, setAttributes } ) {
 							onChange={ ( value ) => setAttributes( { ctaDisplayPosition: value } ) }
 						/>
 
+						<p><strong>{ __( 'CTA Background Color', 'godam' ) }</strong></p>
+						<ColorPalette
+							value={ ctaBgColor }
+							onChange={ ( color ) => setAttributes( { ctaBgColor: color } ) }
+						/>
+
 						<RangeControl
 							label={ __( 'Product Name Font Size (px)', 'godam' ) }
 							value={ ctaProductNameFontSize }
 							onChange={ ( value ) => setAttributes( { ctaProductNameFontSize: value } ) }
 							min={ 10 }
 							max={ 30 }
-						/>
-
-						<p><strong>{ __( 'CTA Background Color', 'godam' ) }</strong></p>
-						<ColorPalette
-							value={ ctaBgColor }
-							onChange={ ( color ) => setAttributes( { ctaBgColor: color } ) }
 						/>
 
 						<p><strong>{ __( 'Product Name Color', 'godam' ) }</strong></p>
