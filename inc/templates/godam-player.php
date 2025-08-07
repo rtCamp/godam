@@ -221,10 +221,14 @@ $video_setup = array(
 if ( ! empty( $control_bar_settings ) ) {
 	$video_setup['controlBar'] = $control_bar_settings; // contains settings specific to control bar.
 
-	// Define your default volumePanel setting.
-	$volume_panel_setting = array(
-		'inline' => ! in_array( $player_skin, array( 'Minimal', 'Pills' ), true ),
-	);
+	if ( isset( $control_bar_settings['volumePanel'] ) && empty( $control_bar_settings['volumePanel'] ) ) {
+		$volume_panel_setting = $control_bar_settings['volumePanel'];
+	} else {
+		// Define your default volumePanel setting.
+		$volume_panel_setting = array(
+			'inline' => ! in_array( $player_skin, array( 'Minimal', 'Pills' ), true ),
+		);
+	}
 
 	$video_setup['controlBar']['volumePanel'] = $volume_panel_setting;
 }
