@@ -571,7 +571,7 @@ class Media_Library extends Base {
 	 */
 	public function bulk_delete_folders( $request ) {
 		$user = wp_get_current_user();
-		if ( empty( $user ) || ! is_object( $user ) || ! isset( $user->roles ) || ! is_array( $user->roles ) || ! in_array( 'administrator', $user->roles, true ) ) {
+		if ( ! ( $user instanceof \WP_User ) || ! in_array( 'administrator', $user->roles, true ) ) {
 			return new \WP_Error( 'rest_forbidden', __( 'You do not have permission to delete folders.', 'godam' ), array( 'status' => 403 ) );
 		}
 
@@ -694,13 +694,7 @@ class Media_Library extends Base {
 	 */
 	public function bulk_update_folder_lock( $request ) {
 		$user = wp_get_current_user();
-		if (
-		empty( $user ) ||
-		! is_object( $user ) ||
-		! isset( $user->roles ) ||
-		! is_array( $user->roles ) ||
-		! array_intersect( array( 'administrator', 'editor' ), $user->roles )
-		) {
+		if ( ! ( $user instanceof \WP_User ) || ! array_intersect( array( 'administrator', 'editor' ), $user->roles ) ) {
 			return new \WP_Error( 'rest_forbidden', __( 'You do not have permission to lock or unlock folders.', 'godam' ), array( 'status' => 403 ) );
 		}
 
