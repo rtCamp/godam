@@ -408,33 +408,3 @@
 .elementor-editor-active .attachments-browser #media-date-range-filter {
 	background-color: unset;
 }
-
-.annual-plan-offer-banner {
-	border: none;
-	margin: 0;
-	margin-left: -2rem;
-	background: linear-gradient(90deg, #AB3A6C, #E6533A);
-	display: flex;
-	justify-content: center;
-	position: relative;
-
-	&__img {
-		width: 100%;
-		height: auto;
-		max-width: 1000px;
-	}
-
-	&__dismiss {
-		position: absolute;
-		top: 0;
-		right: 0;
-		background: none;
-		border: none;
-		color: #fff;
-		font-size: 1.5rem;
-		cursor: pointer;
-		padding: 0.25rem 0.5rem;
-		line-height: 1;
-		z-index: 10;
-	}
-}
