@@ -58,8 +58,10 @@ const App = () => {
 
 		if ( id === -1 ) {
 			triggerFilterChange( 'all' );
+			dispatch( setCurrentContextMenuFolder( null ) );
 		} else if ( id === 0 ) {
 			triggerFilterChange( 'uncategorized' );
+			dispatch( setCurrentContextMenuFolder( null ) );
 		} else {
 			triggerFilterChange( id );
 		}
