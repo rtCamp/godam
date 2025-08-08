@@ -724,55 +724,6 @@ class RTGODAM_Transcoder_Handler {
 	}
 
 	/**
-	 * Send's the email. It's the wrapper function for wp_mail
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param  array   $email_ids       Email id's to send an email.
-	 * @param  string  $subject         Email subject.
-	 * @param  string  $message         Email message.
-	 * @param  boolean $include_admin   If true then send an email to admin also else not.
-	 */
-	public function send_notification( $email_ids, $subject, $message, $include_admin = true ) {
-		if ( defined( 'RTGODAM_NO_MAIL' ) ) {
-			return;
-		}
-
-		if ( ! is_array( $email_ids ) ) {
-			$email_ids = array();
-		}
-
-		if ( empty( $subject ) || empty( $message ) ) {
-			return true;
-		}
-
-		/**
-		 * Filter to disable the notification sent to the admins/users
-		 *
-		 * @param boolean       By default it is true. If false is passed the email wont
-		 *                      get sent to the any user
-		 */
-		$send_notification = apply_filters( 'rtgodam_send_notification', true );
-
-		if ( false === $send_notification ) {
-			return true;
-		}
-
-		if ( $include_admin ) {
-			$users = get_users( array( 'role' => 'administrator' ) );
-			if ( $users ) {
-				foreach ( $users as $user ) {
-					$email_ids[] = $user->user_email;
-				}
-			}
-		}
-
-		add_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-		wp_mail( $email_ids, $subject, $message ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_mail_wp_mail
-		remove_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-	}
-
-	/**
 	 * Sets the content type of mail to text/html
 	 *
 	 * @since  1.0.0
