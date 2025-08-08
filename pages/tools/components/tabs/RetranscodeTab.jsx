@@ -10,7 +10,7 @@ import {
 	Button,
 	Panel,
 	PanelBody,
-	Snackbar,
+	Notice,
 	Modal,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
@@ -19,9 +19,9 @@ import { useState, useRef, useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import ProgressBar from '../ProgressBar.jsx';
+import { scrollToTop } from '../../../godam/utils';
 
 const RetranscodeTab = () => {
-	const [ error, setError ] = useState( null );
 	const [ fetchingMedia, setFetchingMedia ] = useState( false );
 	const [ retranscoding, setRetranscoding ] = useState( false );
 	const [ attachments, setAttachments ] = useState( [] );
@@ -37,7 +37,7 @@ const RetranscodeTab = () => {
 	const [ attachmentDetails, setAttachmentDetails ] = useState( [] ); // [{id, name, size}]
 	const [ showBandwidthModal, setShowBandwidthModal ] = useState( false );
 	const [ modalSelection, setModalSelection ] = useState( [] ); // array of selected IDs
-	const [ bandwidthError, setBandwidthError ] = useState( null );
+	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
 	// On mount, check for 'media_ids' in the URL
 	useEffect( () => {
@@ -55,18 +55,24 @@ const RetranscodeTab = () => {
 					setSelectedIds( idsArr );
 				}
 			} else {
-				setError( {
-					message: __( 'The requested operation is not allowed.', 'godam' ),
-					details: __( 'The nonce provided in the URL is invalid or expired.', 'godam' ),
-				} );
+				showNotice( __( 'The requested operation is not allowed. The nonce provided in the URL is invalid or expired.', 'godam' ), 'error' );
 			}
 		}
 	}, [] );
 
-	// Whenever selectedIds are provided, set forceRetranscode to false
 	useEffect( () => {
 		if ( selectedIds && selectedIds.length > 0 ) {
+			// Whenever selectedIds are provided, set forceRetranscode to false
 			setForceRetranscode( false );
+			// show notice about selected media
+			showNotice(
+				sprintf(
+					// translators: %d is the number of selected media files.
+					__( 'You are retranscoding %d selected media file(s) from the Media Library.', 'godam' ),
+					selectedIds.length,
+				),
+				'warning',
+			);
 		}
 	}, [ selectedIds ] );
 
@@ -174,10 +180,14 @@ const RetranscodeTab = () => {
 				fetchQueueStatus();
 				beginPolling();
 			} catch ( err ) {
-				setError( {
-					message: __( 'An error occurred while starting retranscoding.', 'godam' ),
-					details: err.response ? err.response.data.message : err.message,
-				} );
+				showNotice(
+					sprintf(
+						// translators: %s is the error message.
+						__( 'Failed to start retranscoding: %s', 'godam' ),
+						err.response ? err.response.data.message : err.message,
+					),
+					'error',
+				);
 				setRetranscoding( false );
 			}
 		}
@@ -186,7 +196,6 @@ const RetranscodeTab = () => {
 	// Function to fetch media that require retranscoding (kept from original implementation)
 	const fetchRetranscodeMedia = () => {
 		setFetchingMedia( true );
-		setError( null );
 
 		// Add force param if checkbox is checked
 		const url = `${ window.godamRestRoute?.url }godam/v1/transcoding/not-transcoded${ forceRetranscode ? '?force=1' : '' }`;
@@ -204,17 +213,18 @@ const RetranscodeTab = () => {
 						setTotalMediaCount( response.data.total_media_count );
 					}
 				} else {
-					setError( {
-						message: __( 'No media files found for retranscoding.', 'godam' ),
-						details: __( 'Please ensure you have media files that require retranscoding.', 'godam' ),
-					} );
+					showNotice( __( 'No media files found for retranscoding. Please ensure you have media files that require retranscoding.', 'godam' ), 'info' );
 				}
 			} )
 			.catch( ( err ) => {
-				setError( {
-					message: __( 'An error occurred while fetching media for retranscoding.', 'godam' ),
-					details: err.response ? err.response.data.message : err.message,
-				} );
+				showNotice(
+					sprintf(
+						// translators: %s is the error message.
+						__( 'Failed to fetch media for retranscoding: %s', 'godam' ),
+						err.response ? err.response.data.message : err.message,
+					),
+					'error',
+				);
 			} )
 			.finally( () => {
 				setFetchingMedia( false );
@@ -265,7 +275,7 @@ const RetranscodeTab = () => {
 	}, [ attachments ] );
 
 	// Bandwidth calculation
-	const availableBandwidthGB = ( window.userData?.totalBandwidth || 0 ) - ( window.userData?.bandwidthUsed || 0 );
+	const availableBandwidthGB = 0.05;//( window.userData?.totalBandwidth || 0 ) - ( window.userData?.bandwidthUsed || 0 );
 	const totalRequiredGB = attachmentDetails.reduce( ( sum, att ) => sum + ( ( att.size || 0 ) / 1024 / 1024 / 1024 ), 0 );
 
 	// Modal logic: show modal if not all fit, or error if none fit
@@ -286,14 +296,12 @@ const RetranscodeTab = () => {
 				if ( canFit.length > 0 ) {
 					setModalSelection( canFit );
 					setShowBandwidthModal( true );
-					setBandwidthError( null );
 				} else {
-					setBandwidthError( __( 'Not enough bandwidth left to retranscode any selected media.', 'godam' ) );
+					showNotice( __( 'Not enough bandwidth left to retranscode any selected media.', 'godam' ), 'error' );
 					setShowBandwidthModal( false );
 				}
 			} else {
 				setShowBandwidthModal( false );
-				setBandwidthError( null );
 			}
 		}
 	}, [ attachmentDetails, totalRequiredGB, availableBandwidthGB ] );
@@ -302,7 +310,7 @@ const RetranscodeTab = () => {
 		setAttachments( [] );
 		setMediaCount( 0 );
 		setAborted( false );
-		setError( null );
+		setNotice( { ...notice, isVisible: false } );
 		setRetranscoding( false );
 		setLogs( [] );
 		setSuccessCount( 0 );
@@ -313,7 +321,6 @@ const RetranscodeTab = () => {
 		setAttachmentDetails( [] );
 		setShowBandwidthModal( false );
 		setModalSelection( [] );
-		setBandwidthError( null );
 		// Stop any active polling.
 		if ( pollIntervalRef.current ) {
 			clearInterval( pollIntervalRef.current );
@@ -335,8 +342,59 @@ const RetranscodeTab = () => {
 		window.history.replaceState( {}, '', url.toString() );
 	};
 
+	const showNotice = ( message, status = 'success' ) => {
+		setNotice( { message, status, isVisible: true } );
+		if ( window.scrollY > 0 ) {
+			scrollToTop();
+		}
+	};
+
+	useEffect( () => {
+		// Show notice if retranscoding is done or aborted with counts
+		if ( done || aborted ) {
+			let message = '';
+			if ( successCount > 0 ) {
+				message += sprintf(
+					// translators: %d is the number of media files retranscoded.
+					__( 'Successfully sent %d media file(s) for retranscoding.', 'godam' ),
+					successCount,
+				);
+			}
+			if ( failureCount > 0 ) {
+				if ( message ) {
+					message += ' ';
+				}
+				message += sprintf(
+					// translators: %d is the number of media files that failed to retranscode.
+					__( 'Failed to send %d media file(s) for retranscoding.', 'godam' ),
+					failureCount,
+				);
+			}
+
+			if ( ! message ) {
+				message = __( 'Operation completed without any media files to retranscode.', 'godam' );
+			}
+
+			const noticeType = successCount > 0 && failureCount === 0 ? 'success' : 'error';
+
+			showNotice( message, noticeType );
+		}
+	}, [ done, aborted, successCount, failureCount ] );
+
 	return (
 		<>
+			<div className="status-notices-container">
+				{ notice.isVisible && (
+					<Notice
+						status={ notice.status }
+						className="my-2"
+						onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+					>
+						{ notice.message }
+					</Notice>
+				) }
+			</div>
+
 			<Panel header={ __( 'Retranscode Media', 'godam' ) } className="godam-panel">
 				<PanelBody opened>
 					{ /* Bandwidth/Quota Display */ }
@@ -348,10 +406,6 @@ const RetranscodeTab = () => {
 							<strong>{ __( 'Bandwidth Used:', 'godam' ) }</strong> { parseFloat( window.userData?.bandwidthUsed || 0 ).toFixed( 2 ) } GB
 						</div>
 					</div>
-					{ /* Error if none fit */ }
-					{ bandwidthError && (
-						<Snackbar className="snackbar-error">{ bandwidthError }</Snackbar>
-					) }
 					{ /* Bandwidth Modal */ }
 					{ showBandwidthModal && (
 						<Modal
@@ -406,15 +460,7 @@ const RetranscodeTab = () => {
 							</div>
 						</Modal>
 					) }
-					{ selectedIds && selectedIds.length > 0 && (
-						<Snackbar className="snackbar-warning">
-							{ sprintf(
-								// translators: %d is the number of selected media files.
-								__( 'You are retranscoding %d selected media file(s) from the Media Library.', 'godam' ),
-								selectedIds.length,
-							) }
-						</Snackbar>
-					) }
+
 					<p>
 						{ __(
 							'This tool allows you to retranscode your media files. You can either retranscode specific files selected from the Media Library, or only those that are not yet transcoded.',
@@ -454,15 +500,6 @@ const RetranscodeTab = () => {
 					}
 
 					{
-						error &&
-						<Snackbar className="snackbar-error">
-							{ error?.message }
-							<br />
-							{ error?.details }
-						</Snackbar>
-					}
-
-					{
 						fetchingMedia &&
 						<div className="flex items-center gap-4 my-5 text-lg text-gray-500">
 							<div className="flex" role="status">
@@ -499,30 +536,6 @@ const RetranscodeTab = () => {
 								totalMediaCount,
 							) }
 						</div>
-					}
-
-					{
-						( ( done || aborted ) &&
-						successCount > 0 ) &&
-						<Snackbar className="snackbar-success">
-							{ sprintf(
-								// translators: %d is the number of media files retranscoded.
-								__( 'Successfully sent %d media file(s) for retranscoding.', 'godam' ),
-								successCount,
-							) }
-						</Snackbar>
-					}
-
-					{
-						( ( done || aborted ) &&
-						failureCount > 0 ) &&
-						<Snackbar className="snackbar-error">
-							{ sprintf(
-								// translators: %d is the number of media files that failed to retranscode.
-								__( 'Failed to send %d media file(s) for retranscoding.', 'godam' ),
-								failureCount,
-							) }
-						</Snackbar>
 					}
 
 					{
