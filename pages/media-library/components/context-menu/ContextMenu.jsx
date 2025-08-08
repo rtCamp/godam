@@ -411,7 +411,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			ref={ menuRef }
 			style={ { top: position.top, left: position.left } }
 		>
-			{ hasRole( [ 'administrator', 'editor' ] ) && (
+			{ hasRole( [ 'superadmin', 'administrator', 'editor' ] ) && (
 				<>
 					<Button
 						icon={ NewFolderIcon }
@@ -455,7 +455,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			>
 				{ __( 'Download Zip', 'godam' ) }
 			</Button>
-			{ hasRole( [ 'administrator' ] ) && (
+			{ hasRole( [ 'superadmin', 'administrator' ] ) && (
 				<Button
 					icon={ DeleteIcon }
 					onClick={ () => handleMenuItemClick( 'delete' ) }
