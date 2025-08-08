@@ -69,9 +69,9 @@ class Assets {
 				 */
 				wp_enqueue_script(
 					'godam-recorder-script',
-					RTGODAM_URL . 'assets/build/js/godam-recorder.min.js',
+					RTGODAM_URL . 'assets/build/js/godam-recorder.js',
 					array( 'jquery' ),
-					filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
+					filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.js' ),
 					true
 				);
 			}
