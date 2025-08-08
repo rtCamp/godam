@@ -463,16 +463,14 @@ const RetranscodeTab = () => {
 
 					<p>
 						{ __(
-							'This tool allows you to retranscode your media files. You can either retranscode specific files selected from the Media Library, or only those that are not yet transcoded.',
+							'This tool allows you to retranscode media files. You can either retranscode specific files selected from the Media Library or only those that have not yet been transcoded.',
 							'godam',
 						) }
 					</p>
 
 					<p>
 						{ __( 'Checking the "Force retranscode" option will retranscode all media files regardless of their current state.', 'godam' ) }
-					</p>
-
-					<p>
+						<br />
 						<i>
 							{ __(
 								'Note: Retranscoding will use your bandwidth allowance. Use the force retranscode option carefully.',
