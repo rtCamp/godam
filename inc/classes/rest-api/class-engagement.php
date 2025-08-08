@@ -137,14 +137,20 @@ class Engagement extends Base {
 						'callback'            => array( $this, 'user_delete_comment' ),
 						'permission_callback' => '__return_true',
 						'args'                => array(
-							'video_id'   => array(
+							'video_id'    => array(
 								'description'       => __( 'The ID of the video.', 'godam' ),
 								'type'              => 'integer',
 								'required'          => true,
 								'sanitize_callback' => 'absint',
 							),
-							'comment_id' => array(
+							'comment_id'  => array(
 								'description'       => __( 'The ID of the parent comment.', 'godam' ),
+								'type'              => 'string',
+								'required'          => true,
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+							'delete_type' => array(
+								'description'       => __( 'The type of deletion (soft or hard).', 'godam' ),
 								'type'              => 'string',
 								'required'          => true,
 								'sanitize_callback' => 'sanitize_text_field',
@@ -505,8 +511,9 @@ class Engagement extends Base {
 	 */
 	public function user_delete_comment( $request ) {
 
-		$video_id   = $request->get_param( 'video_id' );
-		$comment_id = $request->get_param( 'comment_id' );
+		$video_id    = $request->get_param( 'video_id' );
+		$comment_id  = $request->get_param( 'comment_id' );
+		$delete_type = $request->get_param( 'delete_type' );
 
 		$account_creadentials = $this->access_creadentials_check();
 
@@ -525,7 +532,18 @@ class Engagement extends Base {
 			'name'           => $comment_id,
 		);
 
-		$comment_delete_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.delete_comment';
+		$comment_email = 'bot@godam.com';
+		$comment_by    = __( 'Annonymous', 'godam' );
+		$content       = __( 'This comment has been deleted', 'godam' );
+
+		if ( 'hard-delete' === $delete_type ) {
+			$comment_delete_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.delete_comment';
+		} else {
+			$comment_delete_endpoint       = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.wp_comment';
+			$query_params['comment_email'] = $comment_email;
+			$query_params['comment_by']    = $comment_by;
+			$query_params['content']       = $content;
+		}
 
 		$comments_response = wp_remote_post(
 			$comment_delete_endpoint,
@@ -547,8 +565,19 @@ class Engagement extends Base {
 
 		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
 
+			$response_data = array(
+				'text'         => $content,
+				'author_name'  => $comment_by,
+				'author_email' => $comment_email,
+				'author_image' => get_avatar_url( $comment_email ),
+				'children'     => array(),
+			);
+
 			return new WP_REST_Response(
-				$process_response['message'],
+				array(
+					'status' => 'success',
+					'data'   => $response_data,
+				),
 				200
 			);
 		}

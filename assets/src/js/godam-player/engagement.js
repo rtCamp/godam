@@ -111,11 +111,12 @@ const engagementStore = {
 					},
 				};
 			case ACTIONS.USER_COMMENTED:
+				console.log( action );
 				let counter = 1;
-				if ( 'edit' === action.activity ) {
+				if ( 'edit' === action.activity || 'soft-delete' === action.activity ) {
 					counter = 0;
 				}
-				if ( 'delete' === action.activity ) {
+				if ( 'hard-delete' === action.activity ) {
 					counter = -1;
 				}
 				return {
@@ -502,7 +503,17 @@ function updateCommentTree( comments, comment, data, commentType ) {
 			};
 		}
 
-		if ( item.id === comment.id && 'delete' === commentType ) {
+		if ( item.id === comment.id && 'soft-delete' === commentType ) {
+			return {
+				...item,
+				text: data.text,
+				author_name: data.author_name,
+				author_email: data.author_email,
+				author_image: data.author_image,
+			};
+		}
+
+		if ( item.id === comment.id && 'hard-delete' === commentType ) {
 			return null;
 		}
 
@@ -516,7 +527,7 @@ function updateCommentTree( comments, comment, data, commentType ) {
 		return item;
 	} );
 
-	if ( 'delete' === commentType ) {
+	if ( 'hard-delete' === commentType ) {
 		return commentTree.filter( ( item ) => item !== null );
 	}
 	return commentTree;
@@ -645,9 +656,11 @@ function Comment( props ) {
 
 	async function handleDelete() {
 		const commentId = comment.id ? comment.id : '';
+		const deleteType = comment.children && comment.children.length > 0 ? 'soft-delete' : 'hard-delete';
 		const queryParams = {
 			video_id: videoAttachmentId,
 			comment_id: commentId,
+			delete_type: deleteType,
 		};
 		apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
 		const result = await apiFetch( {
@@ -656,14 +669,19 @@ function Comment( props ) {
 			data: queryParams,
 		} );
 
+		if ( 'error' === result.status ) {
+			storeObj.dispatch.errorHappened( result.message );
+			return;
+		}
+
 		setCommentsData( ( prevComments ) => {
 			const newCommentTree = updateCommentTree(
 				prevComments,
 				comment,
-				{ parent_id: commentId },
-				'delete',
+				result.data,
+				deleteType,
 			);
-			storeObj.dispatch.userCommented( videoAttachmentId, newCommentTree, 'delete' );
+			storeObj.dispatch.userCommented( videoAttachmentId, newCommentTree, deleteType );
 			return [ ...newCommentTree ];
 		} );
 	}
