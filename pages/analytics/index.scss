@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* Video Editor Set up */
 @media screen and (max-width: 782px) {
 
@@ -48,7 +50,7 @@
 
 	// Video JS styles
 	.video-analytics-container {
-
+		
 		@apply flex bg-white justify-between py-6 overflow-auto md:px-10 pt-8;
 	}
 
