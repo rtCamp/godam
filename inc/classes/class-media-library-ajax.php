@@ -541,29 +541,52 @@ class Media_Library_Ajax {
 			$host = wp_parse_url( home_url(), PHP_URL_HOST );
 
 			$banner_html = sprintf(
-				'<div class="notice annual-plan-offer-banner">
-					<a href="%1$s">
-						<img src="%2$s" class="annual-plan-offer-banner__img" alt="%3$s">
-					</a>
-					<button type="button" class="annual-plan-offer-banner__dismiss">&times;</button>
+				'<div class="notice annual-plan-offer-banner px-10">
+					<canvas id="godam-particle-canvas"></canvas>
+					<div class="annual-plan-offer-banner__content">
+						<div class="annual-plan-offer-banner__message">
+							<h3 class="annual-plan-offer-banner__title">%1$s</h3>
+							<p class="annual-plan-offer-banner__description">%2$s</p>
+						</div>
+						<div class="annual-plan-offer-banner__cta-container">
+							<a 
+								href="%3$s" 
+								class="annual-plan-offer-banner__cta" 
+								target="_blank" 
+								rel="noopener noreferrer"
+								title="%4$s"
+							>
+								%4$s
+							</a>
+						</div>
+					</div>
+					<button 
+						type="button" 
+						class="annual-plan-offer-banner__dismiss" 
+						aria-label="Dismiss banner"
+					>
+						&times;
+					</button>
 				</div>',
-				esc_url( 'https://godam.io/pricing?utm_campaign=annual-plan&utm_source=' . $host . '&utm_medium=plugin&utm_content=banner' ),
-				esc_url( RTGODAM_URL . '/assets/src/images/annual-plan-offer-banner.png' ),
-				esc_attr( __( 'Annual Plan Offer Banner', 'godam' ) )
+				esc_html__( 'Pay for 10 months and get 2 months free with our annual plan.', 'godam' ),
+				esc_html__( 'Elevate your media management, transcoding, storage, delivery and more.', 'godam' ),
+				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=annual-plan&utm_source=' . $host . '&utm_medium=plugin&utm_content=banner' ),
+				esc_html__( 'Buy Now', 'godam' )
 			);
 
 			echo wp_kses(
 				$banner_html,
 				array(
 					'div'    => array( 'class' => array() ),
+					'canvas' => array( 'id' => array() ),
+					'h3'     => array( 'class' => array() ),
+					'p'      => array( 'class' => array() ),
 					'a'      => array(
-						'href'  => array(),
-						'class' => array(),
-					),
-					'img'    => array(
-						'src'   => array(),
-						'class' => array(),
-						'alt'   => array(),
+						'href'   => array(),
+						'class'  => array(),
+						'target' => array(),
+						'rel'    => array(),
+						'title'  => array(),
 					),
 					'button' => array(
 						'type'  => array(),
@@ -571,7 +594,6 @@ class Media_Library_Ajax {
 					),
 				)
 			);
-
 		}
 	}
 }
