@@ -563,6 +563,13 @@ const RetranscodeTab = () => {
 						</div>
 					}
 
+					{
+						retranscoding &&
+						<span className="block text-gray-600 mb-4">
+							{ __( 'You can safely close this tab! Retranscoding will continue in the background.', 'godam' ) }
+						</span>
+					}
+
 					<div className="flex gap-2">
 						{
 							// Show main action button.
