@@ -782,44 +782,4 @@ class RTGODAM_Transcoder_Handler {
 	public function wp_mail_content_type() {
 		return 'text/html';
 	}
-
-	/**
-	 * Send notification about failed transcoding job
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param  string $job_id       Transcoding job id.
-	 * @param  string $error_msg    Error message for why transcoding of media failed.
-	 */
-	public function nofity_transcoding_failed( $job_id, $error_msg ) {
-		if ( empty( $job_id ) ) {
-			return false;
-		}
-		$subject       = esc_html__( 'Transcoding: Something went wrong.', 'godam' );
-		$attachment_id = $this->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
-		if ( ! empty( $error_msg ) ) {
-			$message  = '<p>' . esc_html__( ' There was unexpected error occurred while transcoding this following media.', 'godam' ) . '</p>';
-			$message .= '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a></p>';
-			$message .= '<p>Error message: ' . esc_html( $error_msg ) . '</p>';
-		} else {
-			$message = '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' .
-				esc_html__( ' there was unexpected error occurred while transcoding this media.', 'godam' ) . '</p>';
-		}
-
-		$email_ids = array();
-		if ( ! empty( $attachment_id ) ) {
-			$author_id   = get_post_field( 'post_author', $attachment_id );
-			$email_ids[] = get_the_author_meta( 'user_email', $author_id );
-		}
-
-		/**
-		 * Allows users/plugins to alter the email id of a user
-		 *
-		 * @param array $email_ids  Email id of the user who owns the media
-		 * @param string $job_id    Job ID sent by the transcoder
-		 */
-		$email_ids = apply_filters( 'rtgodam_nofity_transcoding_failed', $email_ids, $job_id );
-
-		$this->send_notification( $email_ids, $subject, $message, true );
-	}
 }
