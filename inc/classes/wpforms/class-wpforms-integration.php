@@ -62,14 +62,6 @@ class WPForms_Integration {
 		);
 
 		wp_register_script(
-			'wpforms-godam-recorder',
-			RTGODAM_URL . 'assets/build/js/wpforms-godam-recorder.js',
-			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder.js' ),
-			true
-		);
-
-		wp_register_script(
 			'wpforms-godam-recorder-editor',
 			RTGODAM_URL . 'assets/build/js/wpforms-godam-recorder-editor.js',
 			array( 'godam-player-frontend-script' ),
