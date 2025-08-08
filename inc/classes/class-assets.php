@@ -47,9 +47,9 @@ class Assets {
 
 		wp_register_script(
 			'rtgodam-script',
-			RTGODAM_URL . 'assets/build/js/main.min.js',
+			RTGODAM_URL . 'assets/build/js/main.js',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/main.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/main.js' ),
 			true
 		);
 
@@ -142,9 +142,9 @@ class Assets {
 		// Add Jetpack form script.
 		wp_register_script(
 			'rtgodam-jetpack-form',
-			RTGODAM_URL . 'assets/build/js/jetpack-form.min.js',
+			RTGODAM_URL . 'assets/build/js/jetpack-form.js',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/jetpack-form.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/jetpack-form.js' ),
 			true
 		);
 
@@ -191,9 +191,9 @@ class Assets {
 
 		wp_register_script(
 			'rtgodam-script',
-			RTGODAM_URL . 'assets/build/js/admin.min.js',
+			RTGODAM_URL . 'assets/build/js/admin.js',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/admin.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/admin.js' ),
 			true
 		);
 
@@ -233,9 +233,9 @@ class Assets {
 
 		wp_register_script(
 			'easydam-media-library',
-			RTGODAM_URL . 'assets/build/js/media-library.min.js',
+			RTGODAM_URL . 'assets/build/js/media-library.js',
 			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/js/media-library.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/media-library.js' ),
 			true
 		);
 

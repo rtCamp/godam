@@ -105,9 +105,9 @@ class Init {
 			 */
 			wp_enqueue_script(
 				'godam-recorder-script',
-				RTGODAM_URL . 'assets/build/js/godam-recorder.min.js',
+				RTGODAM_URL . 'assets/build/js/godam-recorder.js',
 				array( 'jquery' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.js' ),
 				true
 			);
 		}
@@ -119,9 +119,9 @@ class Init {
 	public function enqueue_entry_detail_scripts() {
 		wp_enqueue_script(
 			'gf-entry-detail-script',
-			RTGODAM_URL . 'assets/build/js/gf-entry-detail.min.js',
+			RTGODAM_URL . 'assets/build/js/gf-entry-detail.js',
 			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/gf-entry-detail.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/gf-entry-detail.js' ),
 			true
 		);
 	}
@@ -209,9 +209,9 @@ class Init {
 
 		wp_enqueue_script(
 			'gf-godam-recorder-editor-script',
-			RTGODAM_URL . 'assets/build/js/gf-godam-recorder-editor.min.js',
+			RTGODAM_URL . 'assets/build/js/gf-godam-recorder-editor.js',
 			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/gf-godam-recorder-editor.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/gf-godam-recorder-editor.js' ),
 			true
 		);
 	}

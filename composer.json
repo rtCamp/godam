@@ -12,6 +12,7 @@
 		"squizlabs/php_codesniffer": "^3.13"
 	},
 	"config": {
+		"process-timeout": 900,
 		"allow-plugins": {
 			"dealerdirect/phpcodesniffer-composer-installer": true
 		}
@@ -20,7 +21,7 @@
 		"pre-commit": [
 		"npm run lint:staged"
 		],
-		"pot": "WP_CLI_PHP_ARGS='-d memory_limit=1024M' ./vendor/bin/wp i18n make-pot . --exclude=\"assets/src,assets/node_modules,tests,vendor\" ./languages/godam.pot"
+		"pot": "./vendor/bin/wp i18n make-pot . --include=\"admin,assets/build,inc\" --exclude=\".husky,admin/css,admin/images,assets/src,bin,wp-assets,pages\" ./languages/godam.pot"
 	},
 	"require": {
 		"woocommerce/action-scheduler": "^3.9"

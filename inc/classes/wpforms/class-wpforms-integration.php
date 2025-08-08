@@ -63,18 +63,18 @@ class WPForms_Integration {
 
 		wp_register_script(
 			'wpforms-godam-recorder-editor',
-			RTGODAM_URL . 'assets/build/js/wpforms-godam-recorder-editor.min.js',
+			RTGODAM_URL . 'assets/build/js/wpforms-godam-recorder-editor.js',
 			array( 'godam-player-frontend-script' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder-editor.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder-editor.js' ),
 			true
 		);
 
 		// Common godam recorder script.
 		wp_register_script(
 			'godam-recorder-script',
-			RTGODAM_URL . 'assets/build/js/godam-recorder.min.js',
+			RTGODAM_URL . 'assets/build/js/godam-recorder.js',
 			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.js' ),
 			true
 		);
 	}

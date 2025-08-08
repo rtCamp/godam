@@ -109,26 +109,26 @@ class Recorder_Field extends BaseFieldManager {
 		if ( ! wp_script_is( 'godam-fluentforms-editor' ) ) {
 			wp_enqueue_script(
 				'godam-fluentforms-editor',
-				RTGODAM_URL . 'assets/build/js/godam-fluentforms-editor.min.js',
+				RTGODAM_URL . 'assets/build/js/godam-fluentforms-editor.js',
 				array(),
-				filemtime( RTGODAM_PATH . 'assets/build/js/godam-fluentforms-editor.min.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/godam-fluentforms-editor.js' ),
 				true
 			);
 		}
 
 		wp_enqueue_script(
 			'godam-player-frontend',
-			RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
+			RTGODAM_URL . 'assets/build/js/godam-player-frontend.js',
 			array( 'godam-fluentforms-editor' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.js' ),
 			true
 		);
 
 		wp_enqueue_script(
 			'godam-player-analytics',
-			RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
+			RTGODAM_URL . 'assets/build/js/godam-player-analytics.js',
 			array( 'godam-player-frontend' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-analytics.js' ),
 			true
 		);
 
@@ -315,9 +315,9 @@ class Recorder_Field extends BaseFieldManager {
 			 */
 			wp_enqueue_script(
 				'godam-recorder-script',
-				RTGODAM_URL . 'assets/build/js/godam-recorder.min.js',
+				RTGODAM_URL . 'assets/build/js/godam-recorder.js',
 				array( 'jquery' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.js' ),
 				true
 			);
 		}
@@ -328,9 +328,9 @@ class Recorder_Field extends BaseFieldManager {
 			 */
 			wp_enqueue_script(
 				'fluentforms-godam',
-				RTGODAM_URL . 'assets/build/js/fluentforms.min.js',
+				RTGODAM_URL . 'assets/build/js/fluentforms.js',
 				array( 'jquery', 'wp-i18n' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/fluentforms.min.js' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/fluentforms.js' ),
 				true
 			);
 
