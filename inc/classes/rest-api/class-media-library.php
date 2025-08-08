@@ -1133,6 +1133,17 @@ class Media_Library extends Base {
 		// Sanitize the GoDAM ID.
 		$godam_id = sanitize_text_field( $data['id'] );
 
+		if ( is_numeric( $godam_id ) ) {
+			return new \WP_REST_Response(
+				array(
+					'success'    => true,
+					'attachment' => wp_prepare_attachment_for_js( $godam_id ),
+					'message'    => 'Attachment already exists',
+				),
+				200
+			);
+		}
+
 		// Check if a media entry already exists for this GoDAM ID.
 		$existing = new \WP_Query(
 			array(
