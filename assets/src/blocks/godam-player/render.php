@@ -11,6 +11,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+global $post;
+
+if ( $post && $post instanceof WP_Post ) {
+	/**
+	 * Inside a query loop or single post context.
+	 * Get attachment ID from postmeta.
+	 */
+	$query_loop_attachment_id = get_post_meta( $post->ID, '_godam_attachment_id', true );
+	
+	/**
+	 * Set ID attribute if not already set.
+	 */
+	if ( ! empty( $query_loop_attachment_id ) ) {
+		$attributes['id'] = $query_loop_attachment_id;
+	}
+}
+
 // Get the inner blocks content.
 $inner_blocks_content = '';
 if ( ! empty( $block->inner_blocks ) ) {
