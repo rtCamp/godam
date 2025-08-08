@@ -1127,7 +1127,7 @@ class Media_Library extends Base {
 
 		// Validate required fields.
 		if ( empty( $data['id'] ) || empty( $data['title'] ) || empty( $data['url'] ) || empty( $data['mime'] ) ) {
-			return new \WP_Error( 'missing_params', 'Required fields are missing.', array( 'status' => 400 ) );
+			return new \WP_Error( 'missing_params', __( 'Required fields are missing.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Sanitize the GoDAM ID.
@@ -1141,7 +1141,7 @@ class Media_Library extends Base {
 					array(
 						'success'    => true,
 						'attachment' => wp_prepare_attachment_for_js( $godam_id ),
-						'message'    => 'Attachment already exists',
+						'message'    => __( 'Attachment already exists', 'godam' ),
 					),
 					200
 				);
@@ -1167,7 +1167,7 @@ class Media_Library extends Base {
 				array(
 					'success'    => true,
 					'attachment' => wp_prepare_attachment_for_js( $existing_id ),
-					'message'    => 'Attachment already exists',
+					'message'    => __( 'Attachment already exists', 'godam' ),
 				),
 				200
 			);
@@ -1211,7 +1211,7 @@ class Media_Library extends Base {
 			array(
 				'success'    => true,
 				'attachment' => wp_prepare_attachment_for_js( $attach_id ),
-				'message'    => 'Attachment created',
+				'message'    => __( 'Attachment created', 'godam' ),
 			),
 			201
 		);
