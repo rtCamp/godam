@@ -450,6 +450,7 @@ const RetranscodeTab = () => {
 								<Button
 									variant="primary"
 									style={ { marginTop: 16 } }
+									className="godam-button"
 									onClick={ () => {
 										setAttachments( modalSelection );
 										setShowBandwidthModal( false );
