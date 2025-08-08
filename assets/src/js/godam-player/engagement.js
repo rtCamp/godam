@@ -111,12 +111,12 @@ const engagementStore = {
 					},
 				};
 			case ACTIONS.USER_COMMENTED:
-				let counter = 1;
-				if ( 'edit' === action.activity || 'soft-delete' === action.activity ) {
-					counter = 0;
+				let commentCounter = state.commentsCount[ action.videoAttachmentId ];
+				if ( 'new' === action.activity ) {
+					commentCounter = commentCounter + 1;
 				}
 				if ( 'hard-delete' === action.activity ) {
-					counter = -1;
+					commentCounter = commentCounter - 1;
 				}
 				return {
 					...state,
@@ -126,7 +126,7 @@ const engagementStore = {
 					},
 					commentsCount: {
 						...state.commentsCount,
-						[ action.videoAttachmentId ]: state.commentsCount[ action.videoAttachmentId ] + counter,
+						[ action.videoAttachmentId ]: commentCounter,
 					},
 				};
 			case ACTIONS.UPDATE_USER_DATA:
@@ -652,6 +652,7 @@ function Comment( props ) {
 			comment_id: commentId,
 			delete_type: deleteType,
 		};
+
 		apiFetch.use( apiFetch.createNonceMiddleware( nonceData.nonce ) );
 		const result = await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-delete-comment' ),
@@ -918,6 +919,7 @@ function CommentBox( props ) {
 	const getUserData = memoizedStoreObj.select.getUserData();
 	const loginStatus = 'guest' === getUserData?.type || 'user' === getUserData?.type;
 	const [ isUserLoggedIn, setIsUserLoggedIn ] = useState( loginStatus );
+	const rawCommentsCount = storeObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
 
 	useEffect( () => {
 		setCommentsData( comments );
@@ -976,7 +978,7 @@ function CommentBox( props ) {
 						>
 							<h3 className={ baseClass + '--video-info-title' }>
 								{
-									commentsCount > 5 && (
+									rawCommentsCount > 5 && (
 										<button
 											className={ baseClass + '--video-info-expend' }
 											onClick={ () => setExpendComment( ! expendComment ) }>
@@ -984,7 +986,7 @@ function CommentBox( props ) {
 										</button>
 									)
 								}
-								{ __( 'Comments', 'godam' ) } ({ commentsCount })
+								{ __( 'Comments', 'godam' ) } ({ rawCommentsCount })
 							</h3>
 							<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } isUserLoggedIn={ isUserLoggedIn } storeObj={ memoizedStoreObj } />
 							<div className={ baseClass + '-leave-comment' }>
