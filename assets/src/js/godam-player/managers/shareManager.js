@@ -464,25 +464,30 @@ class ShareManager {
 		input.readOnly = ! checkbox.checked;
 
 		// Function to update share links every time the timestamp changes
+		let debounceTimeout;
+
 		const updateLinks = () => {
-			const timestamp = checkbox.checked && validateTimeString( input.value )
-				? parseTime( input.value )
-				: null;
+			clearTimeout( debounceTimeout );
+			debounceTimeout = setTimeout( () => {
+				const timestamp = checkbox.checked && validateTimeString( input.value )
+					? parseTime( input.value )
+					: null;
 
-			const fullPage = timestamp ? `${ urls.videoLink }?t=${ timestamp }` : urls.videoLink;
-			const fullEmbed = timestamp ? `<iframe src="${ urls.embedUrl }?t=${ timestamp }"></iframe>` : urls.embedCode;
-			const encodedHref = encodeURI( fullPage );
+				const fullPage = timestamp ? `${ urls.videoLink }?t=${ timestamp }` : urls.videoLink;
+				const fullEmbed = timestamp ? `<iframe src="${ urls.embedUrl }?t=${ timestamp }"></iframe>` : urls.embedCode;
+				const encodedHref = encodeURI( fullPage );
 
-			pageLinkInput.value = fullPage;
-			embedInput.value = fullEmbed;
+				pageLinkInput.value = fullPage;
+				embedInput.value = fullEmbed;
 
-			// Update social share URLs
-			socialLinks.forEach( ( { className, href } ) => {
-				const el = container.querySelector( `.${ className }` );
-				if ( el ) {
-					el.href = href + encodedHref;
-				}
-			} );
+				// Update social share URLs
+				socialLinks.forEach( ( { className, href } ) => {
+					const el = container.querySelector( `.${ className }` );
+					if ( el ) {
+						el.href = href + encodedHref;
+					}
+				} );
+			}, 300 );
 		};
 
 		// Auto-fill input with current time when checked
@@ -495,20 +500,13 @@ class ShareManager {
 		} );
 
 		// Live auto-format mm:ss
-		let debounceTimeout;
-
 		input.addEventListener( 'input', ( e ) => {
-			clearTimeout( debounceTimeout );
-
 			// Sanitize input to allow only digits and colons
 			const cleaned = e.target.value.replace( /[^0-9:]/g, '' );
 			if ( cleaned !== e.target.value ) {
 				e.target.value = cleaned;
 			}
-
-			debounceTimeout = setTimeout( () => {
-				updateLinks();
-			}, 300 );
+			updateLinks();
 		} );
 	}
 
