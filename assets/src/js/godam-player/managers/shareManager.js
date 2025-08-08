@@ -444,59 +444,57 @@ class ShareManager {
 	}
 
 	/**
-	 * Sets up timestamp input event handlers.
+	 * Updates share links based on the timestamp input.
 	 *
-	 * @param {HTMLElement} container   - The modal container.
-	 * @param {HTMLElement} socialLinks - Array of social media link configurations.
-	 * @param {HTMLElement} urls        - Array of generated social media links.
+	 * @param {HTMLElement} container           - The modal container.
+	 * @param {Array}       socialLinks         - Array of social media link configurations.
+	 * @param {Object}      urls                - Object containing generated URLs.
+	 * @param {boolean}     useTimestamp        - Whether to use the timestamp.
+	 * @param {string}      timestampInputValue - The value of the timestamp input.
 	 */
-	setupTimestampControls( container, socialLinks, urls ) {
-		// Initialize timestamp checkbox and input
-		const checkbox = container.querySelector( '.use-timestamp' );
-		const input = container.querySelector( '.timestamp-input' );
+	updateShareLinks( container, socialLinks, urls, useTimestamp, timestampInputValue ) {
+		const timestamp = useTimestamp && validateTimeString( timestampInputValue )
+			? parseTime( timestampInputValue )
+			: null;
+
+		const fullPage = timestamp ? `${ urls.videoLink }?t=${ timestamp }` : urls.videoLink;
+		const fullEmbed = timestamp ? `<iframe src="${ urls.embedUrl }?t=${ timestamp }"></iframe>` : urls.embedCode;
+		const encodedHref = encodeURI( fullPage );
+
 		const pageLinkInput = container.querySelector( '.page-link' );
 		const embedInput = container.querySelector( '.embed-code' );
 
-		if ( ! checkbox || ! input || ! pageLinkInput || ! embedInput ) {
-			return;
+		if ( pageLinkInput ) {
+			pageLinkInput.value = fullPage;
+		}
+		if ( embedInput ) {
+			embedInput.value = fullEmbed;
 		}
 
-		input.readOnly = ! checkbox.checked;
+		// Update social share URLs
+		socialLinks.forEach( ( { className, href } ) => {
+			const el = container.querySelector( `.${ className }` );
+			if ( el ) {
+				el.href = href + encodedHref;
+			}
+		} );
+	}
 
-		// Function to update share links every time the timestamp changes
-		let debounceTimeout;
-
-		const updateLinks = () => {
-			clearTimeout( debounceTimeout );
-			debounceTimeout = setTimeout( () => {
-				const timestamp = checkbox.checked && validateTimeString( input.value )
-					? parseTime( input.value )
-					: null;
-
-				const fullPage = timestamp ? `${ urls.videoLink }?t=${ timestamp }` : urls.videoLink;
-				const fullEmbed = timestamp ? `<iframe src="${ urls.embedUrl }?t=${ timestamp }"></iframe>` : urls.embedCode;
-				const encodedHref = encodeURI( fullPage );
-
-				pageLinkInput.value = fullPage;
-				embedInput.value = fullEmbed;
-
-				// Update social share URLs
-				socialLinks.forEach( ( { className, href } ) => {
-					const el = container.querySelector( `.${ className }` );
-					if ( el ) {
-						el.href = href + encodedHref;
-					}
-				} );
-			}, 300 );
-		};
-
+	/**
+	 * Handles timestamp-related events for checkbox and input.
+	 *
+	 * @param {HTMLElement} checkbox                 - The timestamp checkbox element.
+	 * @param {HTMLElement} input                    - The timestamp input element.
+	 * @param {Function}    debounceUpdateShareLinks - Debounced function to update links.
+	 */
+	handleTimestampEvents( checkbox, input, debounceUpdateShareLinks ) {
 		// Auto-fill input with current time when checked
 		checkbox.addEventListener( 'change', () => {
 			if ( checkbox.checked && this.video ) {
 				input.value = formatTime( this.video.currentTime || 0 );
 			}
 			input.readOnly = ! checkbox.checked;
-			updateLinks();
+			debounceUpdateShareLinks();
 		} );
 
 		// Live auto-format mm:ss
@@ -506,8 +504,40 @@ class ShareManager {
 			if ( cleaned !== e.target.value ) {
 				e.target.value = cleaned;
 			}
-			updateLinks();
+			debounceUpdateShareLinks();
 		} );
+	}
+
+	/**
+	 * Sets up timestamp input event handlers.
+	 *
+	 * @param {HTMLElement} container   - The modal container.
+	 * @param {Array}       socialLinks - Array of social media link configurations.
+	 * @param {Object}      urls        - Object containing generated URLs.
+	 */
+	setupTimestampControls( container, socialLinks, urls ) {
+		// Initialize timestamp checkbox and input
+		const checkbox = container.querySelector( '.use-timestamp' );
+		const input = container.querySelector( '.timestamp-input' );
+
+		if ( ! checkbox || ! input ) {
+			return;
+		}
+
+		input.readOnly = ! checkbox.checked;
+
+		// Debounce timeout for updating links
+		let debounceTimeout;
+
+		const debounceUpdateShareLinks = () => {
+			clearTimeout( debounceTimeout );
+			debounceTimeout = setTimeout( () => {
+				this.updateShareLinks( container, socialLinks, urls, checkbox.checked, input.value );
+			}, 300 );
+		};
+
+		// Delegate event handling to a dedicated method
+		this.handleTimestampEvents( checkbox, input, debounceUpdateShareLinks );
 	}
 
 	/**
