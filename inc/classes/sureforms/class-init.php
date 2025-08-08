@@ -42,7 +42,17 @@ class Init {
 		 */
 		if ( $this->is_sureforms_active ) {
 			$this->load_sureforms_classes();
+
+			$this->setup_hooks();
 		}
+	}
+
+	/**
+	 * Setup hooks.
+	 */
+	private function setup_hooks() {
+
+		add_action( 'save_post_sureforms_form', array( $this, 'add_godam_identifier_field' ), 10, 3 );
 	}
 
 	/**
@@ -75,5 +85,71 @@ class Init {
 		Register::get_instance();
 		Assets::get_instance();
 		Form_Submit::get_instance();
+	}
+
+	/**
+	 * Add GoDAM identifier field to SureForms post content if missing.
+	 *
+	 * @param int     $post_id The post ID.
+	 * @param WP_Post $post    The post object.
+	 */
+	public function add_godam_identifier_field( $post_id, $post ) {
+		// Bail early if autosave, revision, or invalid post object.
+		if (
+			( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
+			|| wp_is_post_revision( $post_id )
+			|| ! ( $post instanceof \WP_Post )
+		) {
+			return;
+		}
+
+		$content = $post->post_content;
+
+		// Define block details for checking.
+		$block_name  = 'srfm/input';
+		$target_slug = 'godam_source';
+		$label       = 'GoDAM Source';
+
+		// Parse blocks once.
+		$blocks = parse_blocks( $content );
+
+		// Check if block with the target slug exists.
+		$block_present = false;
+		foreach ( $blocks as $block ) {
+			if (
+				isset( $block['blockName'], $block['attrs']['slug'] )
+				&& $block['blockName'] === $block_name
+				&& $block['attrs']['slug'] === $target_slug
+			) {
+				$block_present = true;
+				break;
+			}
+		}
+
+		// If the block is already present, no need to add it again.
+		if ( $block_present ) {
+			return;
+		}
+
+		// Build the new block comment string with a unique block_id and current post ID.
+		$new_block_comment = sprintf(
+			'<!-- wp:%s {"block_id":"%s","label":"%s","slug":"%s","formId":%d,"defaultValue":""} /-->',
+			$block_name,
+			wp_generate_uuid4(),
+			$label,
+			$target_slug,
+			$post_id
+		);
+
+		// Append the new block comment to the existing content.
+		$new_content = $content . "\n" . $new_block_comment;
+
+		// Update the post content with the new block added.
+		wp_update_post(
+			array(
+				'ID'           => $post_id,
+				'post_content' => $new_content,
+			)
+		);
 	}
 }
