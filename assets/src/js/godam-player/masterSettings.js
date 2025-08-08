@@ -38,8 +38,8 @@ class SettingsButton extends videojs.getComponent( 'MenuButton' ) {
 	constructor( player, options ) {
 		super( player, options );
 		this.player_ = player;
-		this.player_.selectedSpeed = this.player_.selectedSpeed || '1x';
-		this.player_.selectedQuality = this.player_.selectedQuality || 'Auto';
+		this.player_.selectedSpeed ??= '1x';
+		this.player_.selectedQuality ??= 'Auto';
 		this.addClass( 'vjs-settings-button' );
 		this.controlText( 'Settings' );
 		this.hasQualityItem = false;
