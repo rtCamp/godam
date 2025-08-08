@@ -1133,15 +1133,19 @@ class Media_Library extends Base {
 		// Sanitize the GoDAM ID.
 		$godam_id = sanitize_text_field( $data['id'] );
 
+		// Check if godam_id is numeric; if yes, check if an attachment with this ID exists before returning.
 		if ( is_numeric( $godam_id ) ) {
-			return new \WP_REST_Response(
-				array(
-					'success'    => true,
-					'attachment' => wp_prepare_attachment_for_js( $godam_id ),
-					'message'    => 'Attachment already exists',
-				),
-				200
-			);
+			$attachment_post = get_post( $godam_id );
+			if ( $attachment_post && 'attachment' === $attachment_post->post_type ) {
+				return new \WP_REST_Response(
+					array(
+						'success'    => true,
+						'attachment' => wp_prepare_attachment_for_js( $godam_id ),
+						'message'    => 'Attachment already exists',
+					),
+					200
+				);
+			}
 		}
 
 		// Check if a media entry already exists for this GoDAM ID.
