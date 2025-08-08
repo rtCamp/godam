@@ -510,7 +510,7 @@ class Media_Library extends Base {
 		} else {
 			$custom_thumbnails = array();
 		}
-		
+
 
 		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
@@ -555,13 +555,13 @@ class Media_Library extends Base {
 	public function upload_custom_video_thumbnail( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
-	
+
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
 			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
 		}
-	
+
 		// Get current thumbnails.
 		$existing_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
 
@@ -578,18 +578,18 @@ class Media_Library extends Base {
 			);
 		}
 
-	
+
 		// Add new custom thumbnail at beginning and remove duplicates.
 		if ( ! in_array( $thumbnail_url, $existing_thumbnails, true ) ) {
 			array_unshift( $existing_thumbnails, $thumbnail_url );
 		}
-	
+
 		// Save updated thumbnails.
 		update_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', $existing_thumbnails );
-	
+
 		// Also set as selected thumbnail.
 		update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $thumbnail_url );
-	
+
 		return new \WP_REST_Response(
 			array(
 				'success' => true,
@@ -1137,7 +1137,7 @@ class Media_Library extends Base {
 		$existing = new \WP_Query(
 			array(
 				'post_type'      => 'attachment',
-				'meta_key'       => '_godam_original_id',
+				'meta_key'       => 'rtgodam_transcoding_job_id',
 				'meta_value'     => $godam_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'post_status'    => 'any',
 				'fields'         => 'ids',
