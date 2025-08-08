@@ -128,6 +128,13 @@ const deactivationJS = {
 	},
 };
 
+const whatsNewJS = {
+	...sharedConfig,
+	entry: {
+		'whats-new': path.resolve( process.cwd(), 'assets', 'src', 'js', 'whats-new.js' ),
+	},
+};
+
 const godamGallery = {
 	...sharedConfig,
 	entry: {
@@ -232,7 +239,7 @@ const pages = {
 				use: [ 'style-loader', 'css-loader', 'postcss-loader', 'sass-loader' ],
 			},
 			{
-				test: /\.(png|jpg|jpeg|gif|svg)$/, // Handle image files
+				test: /\.(png|jpg|jpeg|gif|svg|webp)$/, // Handle image files
 				use: [
 					{
 						loader: 'file-loader',
@@ -265,6 +272,7 @@ module.exports = [
 	godamPlayerFrontend,
 	godamPlayerAnalytics,
 	deactivationJS,
+	whatsNewJS,
 	godamGallery,
 	gfGodamRecorderEditorJS,
 	gfEntryDetailJS,
