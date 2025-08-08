@@ -36,7 +36,7 @@ class EverestForms {
 				'.evf-uploaded-list.godam-recorder',
 			);
 
-			fileInput.addEventListener( 'godamEVFchange', ( e ) =>
+			fileInput.addEventListener( 'godamFormInputchange', ( e ) =>
 				this.handleFileUpload( e, uploadedInput ),
 			);
 		} );

@@ -215,19 +215,7 @@ class UppyVideoUploader {
 		this.fileInput.files = dataTransfer.files;
 		this.fileInput.dispatchEvent(
 			new CustomEvent(
-				'godamffchange',
-				{
-					bubbles: true,
-					detail: {
-						action,
-					},
-				},
-			),
-		);
-
-		this.fileInput.dispatchEvent(
-			new CustomEvent(
-				'godamEVFchange',
+				'godamFormInputchange',
 				{
 					bubbles: true,
 					detail: {
@@ -261,19 +249,7 @@ class UppyVideoUploader {
 
 		this.fileInput.dispatchEvent(
 			new CustomEvent(
-				'godamffchange',
-				{
-					bubbles: true,
-					detail: {
-						action: 'clear',
-					},
-				},
-			),
-		);
-
-		this.fileInput.dispatchEvent(
-			new CustomEvent(
-				'godamEVFchange',
+				'godamFormInputchange',
 				{
 					bubbles: true,
 					detail: {

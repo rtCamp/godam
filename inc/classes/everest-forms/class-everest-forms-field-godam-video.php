@@ -200,9 +200,6 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 
 			$entry_data = $entry_id ? evf_get_entry( $entry_id, false ) : false;
 
-			/**
-			 * Fetch the transcoding URL from meta.
-			 */
 			$transcoded_url_meta_key = 'rtgodam_transcoded_url_everestforms_' . $form_id . '_' . $entry_id;
 			$transcoded_url_output   = '';
 
@@ -219,25 +216,16 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 			}
 
 			// Add override style for everest forms.
-			$style = '<style>#everest-forms-entry-fields:not(.postbox) table tbody tr td span {margin: 0 !important;}</style>';
-
-			// Override style for video preview.
+			$style  = '<style>#everest-forms-entry-fields:not(.postbox) table tbody tr td span {margin: 0 !important;}</style>';
 			$style .= '<style>.evf-godam-video-preview .easydam-video-container{height:100%;}.evf-godam-video-preview .easydam-video-container .easydam-player.video-js{margin-top:0;}</style>';
 
-			/**
-			 * Generate video output.
-			 */
 			$video_output = do_shortcode( "[godam_video src='{$value}' {$transcoded_url} ]" );
 
-			/**
-			 * Workaround, replace all line breaks and new lines with empty string.
-			 */
+			// Workaround, replace all line breaks and new lines with empty string.
 			$video_output = str_replace( array( "\r", "\n" ), '', $video_output );
 			$video_output = '<div class="gf-godam-video-preview evf-godam-video-preview">' . $video_output . '</div>';
 
-			/**
-			 * Download URL.
-			 */
+			// Download URL.
 			$download_url = sprintf(
 				'<div style="margin: 12px 0;"><a type="button" class="button" target="_blank" href="%s">%s</a></div>',
 				esc_url( $value ),

@@ -58,14 +58,58 @@ class Everest_Forms_Integration {
 		 */
 		add_filter( 'everest_forms_fields', array( $this, 'register_fields' ) );
 
-		// Filter to change the field to file_upload for better handling.
+		// Filter to change the field to file-upload for better handling.
 		add_filter( 'everest_forms_process_before_form_data', array( $this, 'update_field_type_to_file_upload' ), 10, 1 );
 
-		// Revert the filed type to godam_record for the field properties.
+		// Revert the field type to godam_record for the field properties.
 		add_filter( 'everest_forms_process_filter', array( $this, 'update_field_type_to_godam_record' ), 10, 1 );
 
 		// Action once forms is submitted to send file to GoDAM for transcoding.
 		add_action( 'everest_forms_process_complete', array( $this, 'handle_godam_recorder_submission' ), 10, 4 );
+
+		// Transcoding callback.
+		add_action( 'rtgodam_handle_callback_finished', array( $this, 'handle_transcoding_callback' ), 10, 4 );
+	}
+
+	/**
+	 * Transcoding callback handler.
+	 *
+	 * @param int             $attachment_id Attachment ID.
+	 * @param string          $job_id        Job ID.
+	 * @param string          $job_for       Job for.
+	 * @param WP_REST_Request $request       Request object.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function handle_transcoding_callback( $attachment_id, $job_id, $job_for, $request ) {
+		if ( ! empty( $job_for ) && 'everestforms-godam-recorder' === $job_for && ! empty( $job_id ) && class_exists( 'EverestForms' ) ) {
+			$post_array = $request->get_params();
+
+			// Get data stored in options based on job id.
+			$data = get_option( $job_id );
+
+			if ( ! empty( $data ) && 'everestforms_godam_recorder' === $data['source'] ) {
+				$entry_id   = $data['entry_id'];
+				$entry_data = evf_get_entry( $entry_id, false );
+
+				if ( ! empty( $entry_data ) ) {
+					$form_id = $entry_data->form_id;
+
+					global $wpdb;
+
+					$entry_metadata = array(
+						'entry_id'   => $entry_id,
+						'meta_key'   => 'rtgodam_transcoded_url_everestforms_' . $form_id . '_' . $entry_id,
+						'meta_value' => $post_array['download_url'], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+					);
+
+					// Insert entry meta.
+					$wpdb->insert( $wpdb->prefix . 'evf_entrymeta', $entry_metadata ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				}
+			}
+		}
 	}
 
 	/**
@@ -151,9 +195,7 @@ class Everest_Forms_Integration {
 		$form_name = $form_data['settings']['form_title'] ?? __( 'Everest Forms', 'godam' );
 		$form_id   = $form_data['id'] ?? 0;
 
-		/**
-		 * Loop through each record and check for recorder data.
-		 */
+		// Loop through each record and check for recorder data.
 		foreach ( $form_fields as $field ) {
 			if ( false !== strpos( $field['type'], 'godam_record' ) ) {
 				$this->send_data_to_godam( $form_name, $form_id, $entry_id, is_array( $field['value'] ) ? $field['value'][0] : $field['value'] );
@@ -193,26 +235,14 @@ class Everest_Forms_Integration {
 	 */
 	private function send_data_to_godam( $form_title, $form_id, $entry_id, $file_url ) {
 
-		/**
-		 * Bail early if no file to send.
-		 */
+		// Bail early.
 		if ( empty( $file_url ) ) {
 			return;
 		}
 
-		/**
-		 * Form Title.
-		 */
-		$form_title = ! empty( $form_title ) ? $form_title : __( 'Everest Forms', 'godam' );
-
-		/**
-		 * Send for transcoding.
-		 */
+		$form_title                = ! empty( $form_title ) ? $form_title : __( 'Everest Forms', 'godam' );
 		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'everestforms', $form_title, $file_url, $entry_id );
 
-		/**
-		 * Error handling.
-		 */
 		if ( is_wp_error( $response_from_transcoding ) ) {
 			return wp_send_json_error(
 				$response_from_transcoding->get_error_message(),
@@ -220,9 +250,7 @@ class Everest_Forms_Integration {
 			);
 		}
 
-		/**
-		 * If empty data or name send error.
-		 */
+		// If empty data or name send error.
 		if ( empty( $response_from_transcoding->data ) || empty( $response_from_transcoding->data->name ) ) {
 			return wp_send_json_error(
 				__( 'Transcoding data not set', 'godam' ),
@@ -230,9 +258,6 @@ class Everest_Forms_Integration {
 			);
 		}
 
-		/**
-		 * Get job id.
-		 */
 		$job_id = $response_from_transcoding->data->name;
 
 		/**

@@ -11,17 +11,17 @@
 $primary = $field['properties']['inputs']['primary'] ?? array();
 
 // Get the required data.
-$max_file_size          = $field['max_size'] ?? (int) ( wp_max_upload_size() / ( 1024 * 1024 ) );
+$max_file_size          = empty( $field['max_size'] ) ? (int) ( wp_max_upload_size() / ( 1024 * 1024 ) ) : absint( $field['max_size'] );
 $name                   = $primary['attr']['name'] ?? 'godam-recorder';
 $input_id               = $primary['id'] ?? 'godam-recorder';
 $field_id               = $field['id'] ?? 0;
 $class                  = ! empty( $primary['class'] ) ? join( ' ', $primary['class'] ) : 'godam-recorder';
 $video_upload_button_id = wp_unique_id( 'uppy-video-upload-' );
 $description            = $field['description'] ?? '';
-$button_text            = $field['button_text'] ?? __( 'Record Video', 'godam' );
-$file_selectors         = $file_selectors ?? array( 'screen_capture', 'webcam' );
+$button_text            = empty( $field['button_text'] ) ? __( 'Record Video', 'godam' ) : $field['button_text'];
+$file_selectors         = empty( $file_selectors ) ? array( 'screen_capture', 'webcam' ) : $file_selectors;
 $form_id                = $form_data['id'] ?? 0;
-$required               = 'required' === $primary['required'] ?? false;
+$required               = 'required' === $primary['required'] ? true : false;
 
 /**
  * Uppy container.
