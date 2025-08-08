@@ -263,7 +263,7 @@ class Seo {
 				$_seo_data = array();
 				if (
 					isset( $element['widgetType'] ) &&
-					'godam-player' === $element['widgetType']
+					'godam-video' === $element['widgetType']
 				) {
 					if (
 						isset( $element['settings']['seo_content_headline'] ) &&
@@ -274,7 +274,7 @@ class Seo {
 						$_seo_data['uploadDate']       = isset( $element['settings']['seo_content_upload_date'] ) ? $element['settings']['seo_content_upload_date'] : '';
 						$_seo_data['thumbnailUrl']     = isset( $element['settings']['seo_content_video_thumbnail_url'] ) ? $element['settings']['seo_content_video_thumbnail_url'] : '';
 						$_seo_data['isFamilyFriendly'] = isset( $element['settings']['seo_content_family_friendly'] ) ? 'yes' === $element['settings']['seo_content_family_friendly'] : true;
-						$_seo_data['duration']         = isset( $element['settings']['seo_content_duration'] ) ? 'yes' === $element['settings']['seo_content_duration'] : '';
+						$_seo_data['duration']         = isset( $element['settings']['seo_content_duration'] ) ? $element['settings']['seo_content_duration'] : '';
 
 						array_push( $seo_data, $_seo_data );
 					}

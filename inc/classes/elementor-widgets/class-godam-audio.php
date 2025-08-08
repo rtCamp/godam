@@ -117,9 +117,9 @@ class Godam_Audio extends Base {
 	 * @access protected
 	 */
 	protected function render() {
-		$attachement   = $this->get_settings_for_display( 'audio-file' );
-		$attachment_id = $attachement['id'];
-		$show_caption  = 'yes' === $this->get_settings_for_display( 'caption' ) ? true : false;
+		$attachment    = $this->get_settings_for_display( 'audio-file' );
+		$attachment_id = $attachment['id'];
+		$show_caption  = 'yes' === $this->get_settings_for_display( 'caption' );
 		$caption       = wp_get_attachment_caption( $attachment_id ) ?? '';
 		$autoplay      = 'yes' === $this->get_settings_for_display( 'autoplay' ) ? 'autoplay' : '';
 		$loop          = 'yes' === $this->get_settings_for_display( 'loop' ) ? 'loop' : '';
@@ -129,25 +129,60 @@ class Godam_Audio extends Base {
 			return;
 		}
 
-		$primary_audio = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
-		$backup_audio  = wp_get_attachment_url( $attachment_id );
+		$sources = array();
 
-		if ( empty( $primary_audio ) && empty( $backup_audio ) ) {
-			return;
+		if ( is_numeric( $attachment_id ) ) {
+			$attachment_id = intval( $attachment_id );
+
+			$primary_url  = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+			$fallback_url = wp_get_attachment_url( $attachment_id );
+
+			if ( ! empty( $primary_url ) ) {
+				$sources[] = array(
+					'src'  => $primary_url,
+					'type' => 'audio/mpeg',
+				);
+			}
+
+			if ( ! empty( $fallback_url ) ) {
+				$sources[] = array(
+					'src'  => $fallback_url,
+					'type' => 'audio/mpeg',
+				);
+			}
+		} else {
+			// Handle non-numeric (external or remote) attachments.
+			if ( ! empty( $attachment['url'] ) ) {
+				$sources[] = array(
+					'src'  => $attachment['url'],
+					'type' => 'audio/mpeg',
+				);
+			}
+
+			if ( ! empty( $attachment['sources'] ) && is_array( $attachment['sources'] ) ) {
+				foreach ( $attachment['sources'] as $source ) {
+					if ( ! empty( $source['src'] ) ) {
+						$sources[] = array(
+							'src'  => $source['src'],
+							'type' => $source['type'] ?? 'audio/mpeg',
+						);
+					}
+				}
+			}
 		}
 
+		if ( empty( $sources ) ) {
+			return;
+		}
 		?>
+
 		<figure class="elementor-godam-audio">
 			<audio controls <?php echo esc_attr( $autoplay ); ?> <?php echo esc_attr( $loop ); ?> preload="<?php echo esc_attr( $preload ); ?>">
-				<?php if ( ! empty( $primary_audio ) ) : ?>
-					<source src="<?php echo esc_url( $primary_audio ); ?>" type="audio/mpeg" />
-				<?php endif; ?>
+				<?php foreach ( $sources as $source ) : ?>
+					<source src="<?php echo esc_url( $source['src'] ); ?>" type="<?php echo esc_attr( $source['type'] ); ?>" />
+				<?php endforeach; ?>
 
-				<?php if ( ! empty( $backup_audio ) ) : ?>
-					<source src="<?php echo esc_url( $backup_audio ); ?>" type="audio/mpeg" />
-				<?php endif; ?>
-
-				<?php __( 'Your browser does not support the audio element.', 'godam' ); ?>
+				<?php esc_html_e( 'Your browser does not support the audio element.', 'godam' ); ?>
 			</audio>
 
 			<?php if ( $show_caption && ! empty( $caption ) ) : ?>
@@ -156,6 +191,7 @@ class Godam_Audio extends Base {
 				</figcaption>
 			<?php endif; ?>
 		</figure>
+
 		<?php
 	}
 }
