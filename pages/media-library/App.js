@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -33,10 +33,16 @@ import SearchBar from './components/search-bar/SearchBar.jsx';
 const App = () => {
 	const dispatch = useDispatch();
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const contextSelectedFolder = useSelector( ( state ) => state.FolderReducer.currentContextMenuFolder );
 	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
 	const currentSortOrder = useSelector( ( state ) => state.FolderReducer.sortOrder );
 	const { data: allMediaCount } = useGetAllMediaCountQuery();
 	const { data: uncategorizedCount } = useGetCategoryMediaCountQuery( { folderId: 0 } );
+
+	const allFolders = useSelector( ( state ) => state.FolderReducer.folders );
+	const currentFolder = useMemo( () => {
+		return allFolders.find( ( folder ) => folder.id === selectedFolder?.id );
+	}, [ allFolders, selectedFolder ] );
 
 	const [ contextMenu, setContextMenu ] = useState( {
 		visible: false,
@@ -105,7 +111,7 @@ const App = () => {
 						text={ __( 'New Folder', 'godam' ) }
 						className="button--full mb-spacing new-folder-button"
 						onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
-						disabled={ selectedFolder?.meta?.locked }
+						disabled={ selectedFolder?.meta?.locked || currentFolder?.meta?.locked || contextSelectedFolder?.meta?.locked }
 					/>
 
 					<Button
