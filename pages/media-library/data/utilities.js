@@ -191,6 +191,24 @@ const utilities = {
 		} );
 	},
 
+	/**
+	 * Checks if any parent of the given folder is locked.
+	 *
+	 * @param {number} folderId   - The ID of the folder to check.
+	 * @param {Array}  allFolders - The array of all folder objects.
+	 * @return {boolean} True if any parent folder is locked, false otherwise.
+	 */
+	isAnyParentLocked: ( folderId, allFolders ) => {
+		let current = allFolders.find( ( f ) => f.id === folderId );
+		while ( current && current.parent !== 0 && current.parent !== -1 ) {
+			const parent = allFolders.find( ( f ) => f.id === current.parent );
+			if ( parent?.meta?.locked ) {
+				return true;
+			}
+			current = parent;
+		}
+		return false;
+	},
 };
 
 export { utilities };
