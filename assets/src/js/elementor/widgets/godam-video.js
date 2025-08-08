@@ -205,7 +205,15 @@ function createVideoElementForDash( videoUrl ) {
  * @return {number} - The duration in seconds.
  */
 function parsePT( duration ) {
-	const matches = duration.match( /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/ );
+	/**
+	 * Regex to match ISO 8601 duration strings in the format PT#H#M#S.
+	 * Captures hours, minutes, and seconds as optional groups.
+	 * Example matches: PT1H2M3S, PT2M, PT45S, PT1H, etc.
+	 * Group 1: hours, Group 2: minutes, Group 3: seconds (may be decimal)
+	 */
+	const ISO8601_DURATION_REGEX = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/;
+
+	const matches = duration.match( ISO8601_DURATION_REGEX );
 	if ( ! matches ) {
 		return 0;
 	}
