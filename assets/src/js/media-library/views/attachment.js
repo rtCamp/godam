@@ -1,6 +1,11 @@
 /* global jQuery */
 
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { isAPIKeyValid, isFolderOrgDisabled } from '../utility';
@@ -106,7 +111,7 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 			if ( undefined !== virtual && virtual ) {
 				this.$el.append( `
 					<div class="transcoding-status__loader" data-percent="100">
-						<img src="${ GodamLogo }" alt="GoDAM Logo" width="24" height="24" />
+						<img src="${ GodamLogo }" alt="${ __( 'GoDAM Logo', 'godam' ) }" width="24" height="24" />
 					</div>
 				` );
 				this.$el.addClass( 'transcoding-status--completed' );
