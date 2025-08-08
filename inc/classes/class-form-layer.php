@@ -47,7 +47,6 @@ class Form_Layer {
 
 				// Add the filter only if it hasn't been added yet.
 				if ( ! has_filter( 'wpcf7_form_elements', array( __CLASS__, 'handle_cf7_form' ) ) ) {
-					// Add the filter to handle Contact Form 7 submissions.
 					add_filter( 'wpcf7_form_elements', array( __CLASS__, 'handle_cf7_form' ) );
 				}
 				break;
@@ -58,8 +57,18 @@ class Form_Layer {
 
 				// Add the filter if it hasn't been added yet.
 				if ( ! has_filter( 'gform_field_value_godam_source', array( __CLASS__, 'handle_gravity_form' ) ) ) {
-					// Add the filter to handle Gravity Forms submissions.
 					add_filter( 'gform_field_value_godam_source', array( __CLASS__, 'handle_gravity_form' ), 10, 2 );
+				}
+				break;
+
+			case 'sureforms':
+				// Add the identifier to SureForms.
+				self::$form_identifiers['sureforms'][ $form_id ] = $godam_identifier;
+
+				// Add the filter if it hasn't been added yet.
+				// TODO: update the filter name to `render_block_srfm/hidden` after testing with SureForms Premium.
+				if ( ! has_filter( 'render_block_srfm/input', array( __CLASS__, 'handle_sureforms' ) ) ) {
+					add_filter( 'render_block_srfm/input', array( __CLASS__, 'handle_sureforms' ), 10, 2 );
 				}
 				break;
 		}
@@ -116,5 +125,49 @@ class Form_Layer {
 			return wp_json_encode( $godam_identifier, JSON_UNESCAPED_SLASHES );
 		}
 		return $value;
+	}
+
+	/**
+	 * Handle SureForms block rendering and update input value for a specific slug.
+	 *
+	 * @param string $block_content The block's rendered HTML content.
+	 * @param array  $block         The block data array including attributes.
+	 * @return string Modified block content with updated input value.
+	 */
+	public static function handle_sureforms( $block_content, $block ) {
+		$target_slug = 'godam_source';
+
+		// Check if the block has attributes and if the slug matches the target slug.
+		if (
+			empty( $block['attrs'] ) || ! is_array( $block['attrs'] ) ||
+			( $block['attrs']['slug'] ?? '' ) !== $target_slug
+		) {
+			return $block_content;
+		}
+
+		$form_id   = $block['attrs']['formId'] ?? 0;
+		$sureforms = self::$form_identifiers['sureforms'] ?? array();
+
+		// Check if the form ID exists in the identifiers.
+		if ( ! $form_id || ! isset( $sureforms[ $form_id ] ) ) {
+			return $block_content;
+		}
+
+		// Prepare the new value.
+		$new_value = wp_json_encode( $sureforms[ $form_id ], JSON_UNESCAPED_SLASHES );
+
+		if ( empty( $new_value ) ) {
+			return $block_content;
+		}
+
+		// Replace the first occurrence of the value attribute in input tag.
+		$block_content = preg_replace(
+			'/(<input[^>]*\svalue=)"[^"]*"/i',
+			'${1}"' . esc_attr( $new_value ) . '"',
+			$block_content,
+			1
+		);
+
+		return $block_content;
 	}
 }

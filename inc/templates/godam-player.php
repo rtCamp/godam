@@ -429,6 +429,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 								</div>
 								<?php
 							elseif ( 'sureforms' === $form_type && ! empty( $layer['sureform_id'] ) ) :
+								Form_Layer::add_form_godam_identifier( $attachment_id, $form_type, $layer['sureform_id'] );
 								?>
 								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
