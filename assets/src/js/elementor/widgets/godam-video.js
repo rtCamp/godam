@@ -115,6 +115,7 @@ window.addEventListener( 'elementor/frontend/init', () => {
  * Fetches the duration of a video file.
  *
  * @param {string} videoUrl - The URL of the video file.
+ *
  * @return {Promise<number>} - A promise that resolves to the duration of the video in seconds.
  */
 function getVideoDuration( videoUrl ) {
@@ -169,6 +170,7 @@ function getVideoDuration( videoUrl ) {
  * Helper function to create video element for DASH streams
  *
  * @param {string} videoUrl - The URL of the DASH video file.
+ *
  * @return {Promise<number>} - A promise that resolves to the duration of the video in seconds.
  */
 function createVideoElementForDash( videoUrl ) {
@@ -202,6 +204,7 @@ function createVideoElementForDash( videoUrl ) {
  * Parse ISO 8601 duration format (PT1H2M3S) to seconds
  *
  * @param {string} duration - The ISO 8601 duration string.
+ *
  * @return {number} - The duration in seconds.
  */
 function parsePT( duration ) {
@@ -229,6 +232,7 @@ function parsePT( duration ) {
  * Formats a duration in seconds to ISO 8601 format.
  *
  * @param {number} seconds - The duration in seconds.
+ *
  * @return {string} - The formatted duration in ISO 8601 format (e.g., PT5M30S).
  */
 function formatDurationISO( seconds ) {
