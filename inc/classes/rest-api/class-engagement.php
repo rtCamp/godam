@@ -532,17 +532,13 @@ class Engagement extends Base {
 			'name'           => $comment_id,
 		);
 
-		$comment_email = 'bot@godam.com';
-		$comment_by    = __( 'Annonymous', 'godam' );
-		$content       = __( 'This comment has been deleted', 'godam' );
+		$content = __( 'This comment has been deleted', 'godam' );
 
 		if ( 'hard-delete' === $delete_type ) {
 			$comment_delete_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.delete_comment';
 		} else {
-			$comment_delete_endpoint       = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.wp_comment';
-			$query_params['comment_email'] = $comment_email;
-			$query_params['comment_by']    = $comment_by;
-			$query_params['content']       = $content;
+			$comment_delete_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.wp_update_comment';
+			$query_params['content'] = $content;
 		}
 
 		$comments_response = wp_remote_post(
@@ -566,11 +562,7 @@ class Engagement extends Base {
 		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
 
 			$response_data = array(
-				'text'         => $content,
-				'author_name'  => $comment_by,
-				'author_email' => $comment_email,
-				'author_image' => get_avatar_url( $comment_email ),
-				'children'     => array(),
+				'text' => $content,
 			);
 
 			return new WP_REST_Response(

@@ -111,7 +111,6 @@ const engagementStore = {
 					},
 				};
 			case ACTIONS.USER_COMMENTED:
-				console.log( action );
 				let counter = 1;
 				if ( 'edit' === action.activity || 'soft-delete' === action.activity ) {
 					counter = 0;
@@ -477,7 +476,7 @@ const engagementStore = {
  * @param {Object} comment     The comment object.
  * @param {Object} data        The new data to add to the comment tree.
  *
- * @param          commentType
+ * @param {string} commentType
  * @return {Array} The updated comment tree.
  */
 function updateCommentTree( comments, comment, data, commentType ) {
@@ -496,20 +495,10 @@ function updateCommentTree( comments, comment, data, commentType ) {
 			};
 		}
 
-		if ( item.id === comment.id && 'edit' === commentType ) {
+		if ( item.id === comment.id && ( 'edit' === commentType || 'soft-delete' === commentType ) ) {
 			return {
 				...item,
 				text: data.text,
-			};
-		}
-
-		if ( item.id === comment.id && 'soft-delete' === commentType ) {
-			return {
-				...item,
-				text: data.text,
-				author_name: data.author_name,
-				author_email: data.author_email,
-				author_image: data.author_image,
 			};
 		}
 
@@ -653,6 +642,7 @@ function Comment( props ) {
 		email: userEmail,
 		type: userType,
 	} = storeObj.select.getUserData();
+	const isDeletedComment = __( 'This comment has been deleted', 'godam' ) === text.trim();
 
 	async function handleDelete() {
 		const commentId = comment.id ? comment.id : '';
@@ -716,7 +706,7 @@ function Comment( props ) {
 								{ __( 'Reply', 'godam' ) }
 							</button>
 							{
-								userType === 'user' && userEmail === authorEmail && (
+								userType === 'user' && userEmail === authorEmail && ! isDeletedComment && (
 									<>
 										<button className="rtgodam-video-engagement--comment-button comment-button-delete" onClick={ handleDelete }>
 											{ __( 'Delete', 'godam' ) }
