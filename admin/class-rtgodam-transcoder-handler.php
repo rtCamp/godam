@@ -647,8 +647,6 @@ class RTGODAM_Transcoder_Handler {
 										);
 									}
 								}
-							} else {
-								esc_html_e( 'Could not read file.', 'godam' );
 							}
 						}
 					}
