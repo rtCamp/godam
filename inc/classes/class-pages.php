@@ -366,6 +366,7 @@ class Pages {
 					'currentUserRoles'   => wp_get_current_user()->roles,   // Current user roles.
 					'validApiKey'        => rtgodam_is_api_key_valid(),
 					'adminUrl'           => admin_url(),
+					'godamBaseUrl'       => RTGODAM_IO_API_BASE,
 					'gfActive'           => $is_gf_active,
 					'cf7Active'          => $is_cf7_active,
 					'wpformsActive'      => $is_wpforms_active,

@@ -956,17 +956,32 @@ class Media_Library extends Base {
 
 		// Validate required fields.
 		if ( empty( $data['id'] ) || empty( $data['title'] ) || empty( $data['url'] ) || empty( $data['mime'] ) ) {
-			return new \WP_Error( 'missing_params', 'Required fields are missing.', array( 'status' => 400 ) );
+			return new \WP_Error( 'missing_params', __( 'Required fields are missing.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Sanitize the GoDAM ID.
 		$godam_id = sanitize_text_field( $data['id'] );
 
+		// Check if godam_id is numeric; if yes, check if an attachment with this ID exists before returning.
+		if ( is_numeric( $godam_id ) ) {
+			$attachment_post = get_post( $godam_id );
+			if ( $attachment_post && 'attachment' === $attachment_post->post_type ) {
+				return new \WP_REST_Response(
+					array(
+						'success'    => true,
+						'attachment' => wp_prepare_attachment_for_js( $godam_id ),
+						'message'    => __( 'Attachment already exists', 'godam' ),
+					),
+					200
+				);
+			}
+		}
+
 		// Check if a media entry already exists for this GoDAM ID.
 		$existing = new \WP_Query(
 			array(
 				'post_type'      => 'attachment',
-				'meta_key'       => '_godam_original_id',
+				'meta_key'       => 'rtgodam_transcoding_job_id',
 				'meta_value'     => $godam_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'post_status'    => 'any',
 				'fields'         => 'ids',
@@ -981,7 +996,7 @@ class Media_Library extends Base {
 				array(
 					'success'    => true,
 					'attachment' => wp_prepare_attachment_for_js( $existing_id ),
-					'message'    => 'Attachment already exists',
+					'message'    => __( 'Attachment already exists', 'godam' ),
 				),
 				200
 			);
@@ -1025,7 +1040,7 @@ class Media_Library extends Base {
 			array(
 				'success'    => true,
 				'attachment' => wp_prepare_attachment_for_js( $attach_id ),
-				'message'    => 'Attachment created',
+				'message'    => __( 'Attachment created', 'godam' ),
 			),
 			201
 		);
