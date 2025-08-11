@@ -207,24 +207,7 @@ class Engagement extends Base {
 			$account_creadentials,
 		);
 
-		$cache_key   = 'rtgodam_engagements_' . md5( 'video-id-' . $video_id );
-		$cached_data = rtgodam_cache_get( $cache_key );
-
-		if ( $cached_data ) {
-			return new WP_REST_Response(
-				array(
-					'status' => 'success',
-					'data'   => $cached_data,
-				),
-				200
-			);
-		}
-
 		$analytics_data = $this->get_views( $query_params );
-
-		if ( $analytics_data instanceof WP_REST_Response ) {
-			return $analytics_data;
-		}
 
 		if ( ! empty( $analytics_data['processed_analytics'] ) ) {
 			$response_data['views_count'] = array_sum( $analytics_data['processed_analytics']['post_views'] ?? array() );
@@ -240,9 +223,6 @@ class Engagement extends Base {
 		$response_data['comments']       = $comments['comments'];
 		$response_data['comments_count'] = $comments['total'];
 		$response_data['title']          = get_the_title( $video_id );
-
-		// Cache the response data for future requests.
-		rtgodam_cache_set( $cache_key, $response_data );
 
 		return new WP_REST_Response(
 			array(
@@ -339,6 +319,13 @@ class Engagement extends Base {
 	 * @return array|WP_REST_Response Analytics data or error response.
 	 */
 	public function get_views( $query_params ) {
+		$cache_key   = 'rtgodam-engagements-views-' . md5( 'video-id-' . $query_params['video_id'] );
+		$cached_data = rtgodam_cache_get( $cache_key );
+
+		if ( $cached_data ) {
+			return $cached_data;
+		}
+
 		// Define API URL for fetching analytics.
 		$analytics_endpoint = RTGODAM_ANALYTICS_BASE . '/processed-analytics/fetch/';
 		$analytics_url      = add_query_arg( $query_params, $analytics_endpoint );
@@ -346,7 +333,14 @@ class Engagement extends Base {
 		// Send request to analytics microservice.
 		$analytics_response = wp_remote_get( $analytics_url );
 
-		return $this->process_response( $analytics_response );
+		$analytics_data = $this->process_response( $analytics_response );
+
+		if ( ! $analytics_data instanceof WP_REST_Response ) {
+			// Cache the response data for future requests.
+			rtgodam_cache_set( $cache_key, $analytics_data );
+			return $analytics_data;
+		}
+		return array();
 	}
 
 	/**
@@ -402,7 +396,7 @@ class Engagement extends Base {
 
 		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
 
-			$cache_key = 'rtgodam_engagements_' . md5( 'video-id-' . $video_id );
+			$cache_key = 'rtgodam-engagements-likes-' . md5( 'transcoder-job-id-' . $transcoder_job_id . '-user-email-' . $current_user_email );
 			rtgodam_cache_delete( $cache_key );
 
 			return new WP_REST_Response(
@@ -488,7 +482,7 @@ class Engagement extends Base {
 
 		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
 
-			$cache_key = 'rtgodam_engagements_' . md5( 'video-id-' . $video_id );
+			$cache_key = 'rtgodam-engagements-comments-' . md5( 'transcoder-job-id-' . $transcoder_job_id );
 			rtgodam_cache_delete( $cache_key );
 
 			$comment      = $process_response['message']['data'];
@@ -583,7 +577,7 @@ class Engagement extends Base {
 
 		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
 
-			$cache_key = 'rtgodam_engagements_' . md5( 'video-id-' . $video_id );
+			$cache_key = 'rtgodam-engagements-comments-' . md5( 'transcoder-job-id-' . $transcoder_job_id );
 			rtgodam_cache_delete( $cache_key );
 
 			$response_data = array(
@@ -626,6 +620,12 @@ class Engagement extends Base {
 			'name'    => $transcoder_job_id,
 			'api_key' => $account_creadentials['api_key'],
 		);
+
+		$cache_key   = 'rtgodam-engagements-comments-' . md5( 'transcoder-job-id-' . $transcoder_job_id );
+		$cached_data = rtgodam_cache_get( $cache_key );
+		if ( $cached_data ) {
+			return $cached_data;
+		}
 
 		$comments_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.get_wp_comments';
 		$comments_url      = add_query_arg( $query_params, $comments_endpoint );
@@ -672,10 +672,15 @@ class Engagement extends Base {
 			}
 		}
 
-		return array(
+		$result = array(
 			'comments' => $comment_tree,
 			'total'    => $count,
 		);
+
+		// Cache the response data for future requests.
+		rtgodam_cache_set( $cache_key, $result );
+
+		return $result;
 	}
 
 	/**
@@ -690,7 +695,6 @@ class Engagement extends Base {
 	 * @return array                      An array containing 'has_liked_by_user' and 'likes' count.
 	 */
 	public function get_likes( $transcoder_job_id, $account_creadentials ) {
-
 		$current_user       = rtgodam_get_current_logged_in_user_data();
 		$current_user_email = $current_user['email'];
 
@@ -700,18 +704,26 @@ class Engagement extends Base {
 			'comment_email' => $current_user_email,
 		);
 
+		$cache_key   = 'rtgodam-engagements-likes-' . md5( 'transcoder-job-id-' . $transcoder_job_id . '-user-email-' . $current_user_email );
+		$cached_data = rtgodam_cache_get( $cache_key );
+
+		if ( $cached_data ) {
+			return $cached_data;
+		}
+
 		$likes_endpoint   = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.get_wp_likes';
 		$likes_url        = add_query_arg( $query_params, $likes_endpoint );
 		$likes_response   = wp_remote_get( $likes_url );
 		$process_response = $this->process_response( $likes_response );
 
 		if ( $process_response instanceof WP_REST_Response || empty( $process_response['message']['status'] ) || 'success' !== $process_response['message']['status'] ) {
-
 			return array(
 				'has_liked_by_user' => false,
 				'likes'             => 0,
 			);
 		}
+		// Cache the response data for future requests.
+		rtgodam_cache_set( $cache_key, $process_response['message'] );
 
 		return $process_response['message'];
 	}
