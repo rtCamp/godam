@@ -668,6 +668,15 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			// Footer URL data for internal redirection.
+			wp_localize_script(
+				'godam-page-script-help',
+				'footerData',
+				array(
+					'adminUrl' => admin_url( 'admin.php' ),
+				)
+			);
+
 			wp_set_script_translations( 'godam-page-script-help', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'godam-page-script-help' );
 		} elseif ( $screen && $this->settings_page_id === $screen->id ) {
@@ -688,6 +697,15 @@ class Pages {
 					$rtgodam_user_data
 				);
 			}
+
+			// Footer URL data for internal redirection.
+			wp_localize_script(
+				'transcoder-page-script-godam',
+				'footerData',
+				array(
+					'adminUrl' => admin_url( 'admin.php' ),
+				)
+			);
 
 			wp_set_script_translations( 'transcoder-page-script-godam', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-godam' );
@@ -711,6 +729,15 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			// Footer URL data for internal redirection.
+			wp_localize_script(
+				'godam-page-script-tools',
+				'footerData',
+				array(
+					'adminUrl' => admin_url( 'admin.php' ),
+				)
+			);
+
 			wp_enqueue_script( 'godam-page-script-tools' );
 		} elseif ( $screen && $this->whats_new_page_id === $screen->id ) {
 
@@ -722,6 +749,12 @@ class Pages {
 				true
 			);
 			wp_set_script_translations( 'godam-page-script-whats-new', 'godam', RTGODAM_PATH . 'languages' );
+
+			wp_localize_script(
+				'godam-page-script-whats-new',
+				'version',
+				RTGODAM_VERSION
+			);
 
 			wp_register_script(
 				'godam-script-whats-new',
