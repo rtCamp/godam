@@ -23,6 +23,10 @@
     align-content: center;
     flex-wrap: wrap;
     background: none;
+    color: transparent;
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 0.6;
 
     &::before {
         content: '';
@@ -738,6 +742,15 @@
                 &.comment-button-delete {
                     &::before {
                         background-image: url('../images/charm_delete.svg');
+                    }
+
+                    &.is-deleting {
+
+                        &::before{
+                            background-image: none;
+                        }
+
+                        @extend %progressing;
                     }
                 }
             }

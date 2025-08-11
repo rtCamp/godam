@@ -638,6 +638,7 @@ function Comment( props ) {
 	const [ isExpanded, setIsExpanded ] = useState( false );
 	const [ commentType, setCommentType ] = useState( 'new' );
 	const [ showChildComments, setShowChildComments ] = useState( false );
+	const [ isDeleting, setIsDeleting ] = useState( false );
 	const {
 		email: userEmail,
 		type: userType,
@@ -645,6 +646,7 @@ function Comment( props ) {
 	const isDeletedComment = __( 'This comment has been deleted', 'godam' ) === text.trim();
 
 	async function handleDelete() {
+		setIsDeleting( true );
 		const commentId = comment.id ? comment.id : '';
 		const deleteType = comment.children && comment.children.length > 0 ? 'soft-delete' : 'hard-delete';
 		const queryParams = {
@@ -675,6 +677,7 @@ function Comment( props ) {
 			storeObj.dispatch.userCommented( videoAttachmentId, newCommentTree, deleteType );
 			return [ ...newCommentTree ];
 		} );
+		setIsDeleting( false );
 	}
 
 	return (
@@ -709,7 +712,11 @@ function Comment( props ) {
 							{
 								userType === 'user' && userEmail === authorEmail && ! isDeletedComment && (
 									<>
-										<button className="rtgodam-video-engagement--comment-button comment-button-delete" onClick={ handleDelete }>
+										<button
+											className={ 'rtgodam-video-engagement--comment-button comment-button-delete' + ( isDeleting ? ' is-deleting' : '' ) }
+											onClick={ handleDelete }
+											disabled={ isDeleting }
+										>
 											{ __( 'Delete', 'godam' ) }
 										</button>
 										<button
