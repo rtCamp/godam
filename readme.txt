@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 6.8.1
 Requires PHP: 7.4
-Stable tag: 1.3.3
+Stable tag: 1.3.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -217,6 +217,10 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v1.3.4 (August 11, 2025) =
+
+- Fix: Video Editor UI issues
+
 = v1.3.3 (August 11, 2025) =
 
 - Tweak: Improved video player controls and HLS URL handling
@@ -227,19 +231,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 = v1.3.2 (August 6, 2025) =
 
 - Fix: Resolved PHP Warning on admin pages
-
-= v1.3.1 (August 4, 2025) =
-
-- Tweak: Added settings for CPT visibility in permalinks
-- Tweak: Improved Media Library interface with search and pagination
-- Tweak: Improved UI for buttons and modals
-- Tweak: Enhanced hover actions for GoDAM Video blocks
-- Tweak: Improved mobile responsiveness for settings sidebar navigation
-- Fix: iPhone compatibility - HLS URL for Transcoded videos
-- Fix: Video SEO data visibility
-- Fix: Virtual Media errors in Analytics requests
-- Fix: GoDAM Video Player style compatibility with themes
-- Fix: Aspect ratio of video container in Form's GoDAM Record submissions
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

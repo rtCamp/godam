@@ -1,5 +1,9 @@
 # Changelog #
 
+## v1.3.4 (August 11, 2025) ##
+
+- Fix: Video Editor UI issues
+
 ## v1.3.3 (August 11, 2025) ##
 
 - Tweak: Improved video player controls and HLS URL handling
