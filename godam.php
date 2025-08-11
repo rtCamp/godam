@@ -46,10 +46,6 @@ if ( ! defined( 'RTGODAM_VERSION' ) ) {
 	define( 'RTGODAM_VERSION', '1.3.2' );
 }
 
-if ( ! defined( 'RTGODAM_NO_MAIL' ) && defined( 'VIP_GO_APP_ENVIRONMENT' ) ) {
-	define( 'RTGODAM_NO_MAIL', true );
-}
-
 if ( ! defined( 'RTGODAM_API_BASE' ) ) {
 	define( 'RTGODAM_API_BASE', 'https://app.godam.io' );
 }

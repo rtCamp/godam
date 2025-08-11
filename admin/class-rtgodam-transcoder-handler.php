@@ -563,10 +563,6 @@ class RTGODAM_Transcoder_Handler {
 	 */
 	public function add_transcoded_files( $file_post_array, $attachment_id, $job_for = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		$transcoded_files = false;
-		$mail             = true;
-		if ( defined( 'RTGODAM_NO_MAIL' ) ) {
-			$mail = false;
-		}
 		global $wpdb;
 
 		do_action( 'rtgodam_before_transcoded_media_store', $attachment_id, $file_post_array );
@@ -652,13 +648,7 @@ class RTGODAM_Transcoder_Handler {
 									}
 								}
 							} else {
-								$flag = esc_html__( 'Could not read file.', 'godam' );
-
-								if ( $flag && $mail ) {
-									echo esc_html( $flag );
-								} else {
-									esc_html_e( 'Done', 'godam' );
-								}
+								esc_html_e( 'Could not read file.', 'godam' );
 							}
 						}
 					}
