@@ -74,6 +74,12 @@ const App = () => {
 		if ( mediaToggleButton ) {
 			mediaToggleButton.innerHTML = mediaToggleButton.innerHTML.replace( /Hide/g, 'Show' );
 		}
+
+		const sidebarToggle = document.querySelector( '#media-folder-toggle-button' );
+		const externalToggle = document.querySelector( '.media-frame-menu-toggle' );
+
+		externalToggle?.setAttribute( 'aria-expanded', 'false' );
+		sidebarToggle?.setAttribute( 'aria-expanded', 'false' );
 	};
 
 	const handleContextMenu = ( e, folderId, folder ) => {

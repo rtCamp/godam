@@ -19,6 +19,7 @@ ToggleFoldersButton = ToggleFoldersButton?.extend( {
 			const externalToggle = document.querySelector( '.media-frame-menu-toggle' );
 			if ( externalToggle ) {
 				externalToggle.addEventListener( 'click', this._boundToggleFolders );
+				externalToggle.setAttribute( 'aria-expanded', 'false' );
 			}
 		};
 
@@ -47,10 +48,14 @@ ToggleFoldersButton = ToggleFoldersButton?.extend( {
 
 	updateButtonText() {
 		const sidebar = document.getElementById( 'rt-transcoder-media-library-root' );
-		if ( sidebar && sidebar.classList.contains( 'hide-sidebar' ) ) {
-			this.el.innerHTML = `${ folderIconSvg } Show Folders`;
-		} else {
-			this.el.innerHTML = `${ folderIconSvg } Hide Folders`;
+		const isHidden = !! ( sidebar && sidebar.classList.contains( 'hide-sidebar' ) );
+
+		this.el.innerHTML = `${ folderIconSvg } ${ isHidden ? 'Show Folders' : 'Hide Folders' }`;
+		this.el.setAttribute( 'aria-expanded', String( ! isHidden ) );
+
+		const externalToggle = document.querySelector( '.media-frame-menu-toggle' );
+		if ( externalToggle ) {
+			externalToggle.setAttribute( 'aria-expanded', String( ! isHidden ) );
 		}
 	},
 
