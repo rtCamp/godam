@@ -8,15 +8,19 @@
 	"keywords": [
 		"rtcamp",
 		"wp-plugin",
-		"feature-plugin"
+		"godam",
+		"videos",
+		"assets",
+		"dam",
+		"media"
 	],
-	"homepage": "https://github.com/rtCamp/features-plugin-skeleton#readme",
+	"homepage": "https://godam.io",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/rtCamp/features-plugin-skeleton.git"
+		"url": "https://github.com/rtCamp/godam"
 	},
 	"bugs": {
-		"url": "https://github.com/rtCamp/features-plugin-skeleton/issues"
+		"url": "https://github.com/rtCamp/godam/issues"
 	},
 	"dependencies": {
 		"@dnd-kit/core": "6.3.1",
