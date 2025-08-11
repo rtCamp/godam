@@ -17,6 +17,8 @@ class Transcoding_Queue extends Base {
 	/**
 	 * Register the REST routes handled by this controller.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return array
 	 */
 	public function get_rest_routes() {
@@ -72,6 +74,8 @@ class Transcoding_Queue extends Base {
 
 	/**
 	 * Permission check. Reuse the same capability used elsewhere in the plugin.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function can_manage_media() {
 		return current_user_can( 'edit_others_posts' );
@@ -79,6 +83,10 @@ class Transcoding_Queue extends Base {
 
 	/**
 	 * Start a new retranscoding queue.
+	 *
+	 * This endpoint accepts an array of attachment IDs to be retranscoded.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param \WP_REST_Request $request The REST request.
 	 * @return \WP_REST_Response
@@ -115,6 +123,8 @@ class Transcoding_Queue extends Base {
 	/**
 	 * Return the current queue progress.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return \WP_REST_Response
 	 */
 	public function get_status() {
@@ -124,6 +134,8 @@ class Transcoding_Queue extends Base {
 
 	/**
 	 * Abort the retranscoding queue.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return \WP_REST_Response
 	 */
@@ -139,6 +151,8 @@ class Transcoding_Queue extends Base {
 
 	/**
 	 * Completely reset the retranscoding queue and progress to a pristine state.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return \WP_REST_Response
 	 */

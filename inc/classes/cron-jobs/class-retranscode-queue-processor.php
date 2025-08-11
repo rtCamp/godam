@@ -35,6 +35,8 @@ class Retranscode_Queue_Processor {
 
 	/**
 	 * Register hooks.
+	 *
+	 * @since n.e.x.t
 	 */
 	protected function setup_hooks() {
 		add_action( 'cron_schedules', array( $this, 'add_schedule' ) );
@@ -44,6 +46,8 @@ class Retranscode_Queue_Processor {
 
 	/**
 	 * Add a 30-second interval for faster queue processing.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array $schedules Existing cron schedules.
 	 * @return array           Modified schedules.
@@ -60,6 +64,8 @@ class Retranscode_Queue_Processor {
 
 	/**
 	 * Ensure the queue processor event is scheduled.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function schedule_event() {
 		if ( ! wp_next_scheduled( 'godam_process_retranscode_queue' ) ) {
@@ -69,6 +75,8 @@ class Retranscode_Queue_Processor {
 
 	/**
 	 * Process (a small batch of) the queue each run.
+	 *
+	 * @since n.e.x.t
 	 */
 	public function process_queue() {
 

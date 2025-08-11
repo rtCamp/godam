@@ -447,6 +447,12 @@ class Transcoding extends Base {
 	/**
 	 * Get media details.
 	 *
+	 * This function retrieves the details of a media attachment, including its ID, name, and size.
+	 * It checks if the attachment ID is provided, if the attachment exists, and retrieves its
+	 * file size from the filesystem or post meta if the file does not exist.
+	 *
+	 * @since n.e.x.t
+	 *
 	 * @param \WP_REST_Request $request REST request object.
 	 *
 	 * @return WP_REST_Response|WP_Error
