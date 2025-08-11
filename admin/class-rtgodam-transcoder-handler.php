@@ -561,7 +561,7 @@ class RTGODAM_Transcoder_Handler {
 	 * @param int    $attachment_id     ID of attachment.
 	 * @param string $job_for           Whether media uploaded through rtmedia plugin or WordPress media.
 	 */
-	public function add_transcoded_files( $file_post_array, $attachment_id, $job_for = '' ) {
+	public function add_transcoded_files( $file_post_array, $attachment_id, $job_for = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		$transcoded_files = false;
 		$mail             = true;
 		if ( defined( 'RTGODAM_NO_MAIL' ) ) {
@@ -655,28 +655,6 @@ class RTGODAM_Transcoder_Handler {
 								$flag = esc_html__( 'Could not read file.', 'godam' );
 
 								if ( $flag && $mail ) {
-									$download_link = esc_url(
-										add_query_arg(
-											array(
-												'job_id'  => rtgodam_get_job_id_by_attachment_id( $attachment_id ),
-												'job_for' => $job_for,
-												'files[' . $key . '][0]' => esc_url( $download_url ),
-											),
-											home_url()
-										)
-									);
-									$subject       = esc_html__( 'Transcoding: Download Failed', 'godam' );
-									$message       = '<p><a href="' . esc_url( rtgodam_get_edit_post_link( $attachment_id ) ) . '">' . esc_html__( 'Media', 'godam' ) . '</a> ' . esc_html__( ' was successfully encoded but there was an error while downloading:', 'godam' ) . '</p><p><code>' . esc_html( $flag ) . '</code></p><p>' . esc_html__( 'You can ', 'godam' ) . '<a href="' . esc_url( $download_link ) . '">' . esc_html__( 'retry the download', 'godam' ) . '</a>.</p>';
-									$users         = get_users( array( 'role' => 'administrator' ) );
-									if ( $users ) {
-										$admin_email_ids = array();
-										foreach ( $users as $user ) {
-											$admin_email_ids[] = $user->user_email;
-										}
-										add_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-										wp_mail( $admin_email_ids, $subject, $message ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_mail_wp_mail
-										remove_filter( 'wp_mail_content_type', array( $this, 'wp_mail_content_type' ) );
-									}
 									echo esc_html( $flag );
 								} else {
 									esc_html_e( 'Done', 'godam' );
@@ -721,16 +699,5 @@ class RTGODAM_Transcoder_Handler {
 		} else {
 			return false;
 		}
-	}
-
-	/**
-	 * Sets the content type of mail to text/html
-	 *
-	 * @since  1.0.0
-	 *
-	 * @return string
-	 */
-	public function wp_mail_content_type() {
-		return 'text/html';
 	}
 }
