@@ -9,20 +9,23 @@ import { __ } from '@wordpress/i18n';
 import GoDAMIcon from '../images/godam-icon.png';
 import BannerImage from '../images/banner.webp';
 
-const Header = () => {
+const Header = ( { version } ) => {
 	return (
 		<>
 			<header className="banner" style={ { backgroundImage: `url(${ BannerImage })` } }>
 				<div className="banner-content">
-					<h1>{ __( "What's New in GoDAM" ) }</h1>
+					<div className="banner-content-meta">
+						<div className="godam-logo">
+							<img src={ GoDAMIcon } alt={ __( 'GoDAM Logo' ) } />
+						</div>
+						{ version && <span className="godam-version">v{ version }</span> }
+					</div>
+
+					<div className="banner-content-title">
+						<h1>{ __( "What's New in GoDAM" ) }</h1>
+					</div>
 				</div>
 			</header>
-
-			<div className="godam-logo-container">
-				<div className="godam-logo">
-					<img src={ GoDAMIcon } alt={ __( 'GoDAM Logo' ) } />
-				</div>
-			</div>
 		</>
 	);
 };

@@ -9,12 +9,13 @@ import { __ } from '@wordpress/i18n';
 import Header from './Header';
 
 const Features = ( { releaseData } ) => {
+	const version = releaseData.version ? releaseData.version : window.version;
 	const primaryUpdates = releaseData.features ? releaseData.features.slice( 0, 3 ) : [];
 	const otherUpdates = releaseData.features ? releaseData.features.slice( 3 ) : [];
 
 	return (
 		<div className="godam-whats-new-container">
-			<Header />
+			<Header version={ version } />
 
 			{ primaryUpdates.map( ( feature, index ) => (
 				<section className="feature" key={ index }>
@@ -60,7 +61,7 @@ const Features = ( { releaseData } ) => {
 
 					{ otherUpdates.map( ( feature ) => (
 						<div id={ feature.id } className="modal-body" key={ feature.id }>
-							<div className="feature-content reverse">
+							<div className="feature-content-modal">
 								<div className="feature-image">
 									<img src={ feature.image } alt={ feature.title } />
 								</div>

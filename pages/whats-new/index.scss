@@ -27,58 +27,57 @@ $grey-text: #5f6368;
   overflow: hidden;
   margin: 1.5rem;
   border-radius: 1rem;
-  height: 320px;
+  height: 120px;
   box-sizing: border-box;
   background-position: center;
 
   &-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1.5rem;
-    position: relative;
     z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: 100%;
-  }
 
-  h1 {
-    font-size: 42px;
-    font-weight: 500;
-    color: #fff;
-    text-align: center;
-    background-clip: text;
-    background-color: #E6533A;
-    background-image: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
-    -webkit-text-fill-color: transparent;
-    line-height: 1.5;
+    &-meta {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+
+      span {
+        color: $primary-red;
+        font-size: 1.5rem;
+        font-weight: 500;
+      }
+    }
+
+    &-title h1 {
+      font-size: 42px;
+      font-weight: 500;
+      color: #fff;
+      text-align: center;
+      background-clip: text;
+      background-color: #E6533A;
+      background-image: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
+      -webkit-text-fill-color: transparent;
+      line-height: 1.5;
+      margin: 0;
+    }
   }
 }
 
 .godam-logo {
-
-  &-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  width: 5rem;
-  height: 5rem;
-  margin-top: -60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: $light-red;
-  border-radius: 1000px;
-  z-index: 999;
+  width: fit-content;
+  margin: 0;
 
   img {
     width: 3rem;
     height: 3rem;
-    position: relative;
-    bottom: 4px;
   }
 }
 
@@ -169,6 +168,12 @@ $grey-text: #5f6368;
 
     &.reverse {
       flex-direction: row-reverse;
+    }
+
+    // Modal content feature card
+    &-modal {
+      flex-direction: column;
+      gap: 2rem;
     }
   }
 
