@@ -126,7 +126,7 @@ export default AttachmentsBrowser?.extend( {
 					const menu = $( '.media-frame' ).find( '.media-frame-menu' );
 
 					if ( menu.length ) {
-						menu.append( '<div id="rt-transcoder-media-library-root"></div>' );
+						menu.append( '<div id="rt-transcoder-media-library-root" class="media-menu"></div>' );
 					}
 				}
 
