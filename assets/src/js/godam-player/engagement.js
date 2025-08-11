@@ -926,7 +926,6 @@ function CommentBox( props ) {
 	const getUserData = memoizedStoreObj.select.getUserData();
 	const loginStatus = 'guest' === getUserData?.type || 'user' === getUserData?.type;
 	const [ isUserLoggedIn, setIsUserLoggedIn ] = useState( loginStatus );
-	const rawCommentsCount = storeObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
 
 	useEffect( () => {
 		setCommentsData( comments );
@@ -985,7 +984,7 @@ function CommentBox( props ) {
 						>
 							<h3 className={ baseClass + '--video-info-title' }>
 								{
-									rawCommentsCount > 5 && (
+									commentsCount > 3 && (
 										<button
 											className={ baseClass + '--video-info-expend' }
 											onClick={ () => setExpendComment( ! expendComment ) }>
@@ -993,7 +992,7 @@ function CommentBox( props ) {
 										</button>
 									)
 								}
-								{ __( 'Comments', 'godam' ) } ({ rawCommentsCount })
+								{ __( 'Comments', 'godam' ) } ({ commentsCount })
 							</h3>
 							<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } isUserLoggedIn={ isUserLoggedIn } storeObj={ memoizedStoreObj } />
 							<div className={ baseClass + '-leave-comment' }>
