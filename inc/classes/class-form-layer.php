@@ -9,6 +9,8 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
+use Forminator_API;
+use Forminator_Hidden;
 use RTGODAM\Inc\Traits\Singleton;
 use WPCF7_ContactForm;
 
@@ -18,6 +20,26 @@ use WPCF7_ContactForm;
 class Form_Layer {
 
 	use Singleton;
+
+	/**
+	 * Construct method.
+	 */
+	protected function __construct() {
+
+		$this->setup_hooks();
+	}
+
+	/**
+	 * Setup hooks for the Form Layer.
+	 */
+	protected function setup_hooks() {
+		/**
+		 * Add filter to handle Forminator hidden field value.
+		 * on GET request, inject the video_id into the hidden field.
+		 * on POST request, retrieve submitted value for this hidden field.
+		 */
+		add_filter( 'forminator_field_hidden_field_value', array( __CLASS__, 'update_forminator_hidden_field_value' ), 10, 3 );
+	}
 
 	/**
 	 * Static array to hold form identifiers.
@@ -71,7 +93,83 @@ class Form_Layer {
 					add_filter( 'render_block_srfm/input', array( __CLASS__, 'handle_sureforms' ), 10, 2 );
 				}
 				break;
+
+			case 'forminator':
+				// Add the identifier to Forminator.
+				self::$form_identifiers['forminator'][ $form_id ] = $godam_identifier;
+				
+				// Add the hidden field to the Forminator form.
+				self::may_be_add_forminator_form_field( $form_id );
+				// NOTE: filter for Forminator is already added in the constructor.
+				break;
+		
 		}
+	}
+
+	/**
+	 * Update Forminator hidden field value based on request method.
+	 * This method handles GET and POST requests differently. because Forminator take the default value not the actual value for the hidden field.
+	 * 
+	 * @param mixed $value      The current value of the field.
+	 * @param mixed $save_value The value to be saved.
+	 * @param array $field      The field data.
+	 * 
+	 * @return mixed Updated value for the field.
+	 */
+	public static function update_forminator_hidden_field_value( $value, $save_value, $field ) {
+		// Safely get the form ID from the default value.
+		$form_id = $field['default_value'];
+
+		// Bail early if form ID is not set.
+		if ( empty( $form_id ) ) {
+			return $value;
+		}
+
+		// Normalize request method just in case.
+		$request_method = strtoupper( sanitize_text_field( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) );
+
+		if ( 'GET' === $request_method && ! empty( self::$form_identifiers['forminator'][ $form_id ] ) ) {
+			// On GET, inject the video_id into the hidden field.
+			$value = wp_json_encode( 
+				self::$form_identifiers['forminator'][ $form_id ],
+				JSON_UNESCAPED_SLASHES
+			);
+
+		} elseif ( 'POST' === $request_method && 'godam_source' === $field['name'] ) {
+			// On POST, retrieve submitted value for this hidden field.
+			$value = Forminator_Hidden::get_post_data( $field['element_id'] );
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Add a hidden field to the Forminator form if it doesn't exist.
+	 * This method checks if the 'godam_source' field exists in the form.
+	 *
+	 * @param int $form_id The ID of the Forminator form.
+	 *
+	 * @return void
+	 */
+	public static function may_be_add_forminator_form_field( $form_id ) {
+		// Get the current form fields.
+		$form   = Forminator_API::get_form( $form_id );
+		$fields = $form->get_fields_as_array();
+
+		foreach ( $fields as $field ) {
+			if ( isset( $field['name'] ) && 'godam_source' === $field['name'] ) {
+				return; // Exit early if the field already exists.
+			}
+		}
+
+		$field_data = array(
+			'field_label'   => 'GoDAM Source',
+			'name'          => 'godam_source',
+			'required'      => false,
+			'cols'          => 12,
+			'default_value' => $form_id, // Store the form ID as the default value to identify the form while injecting dynamic value.
+		);
+		Forminator_API::add_form_field( $form_id, 'hidden', $field_data );
 	}
 
 	/**
