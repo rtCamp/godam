@@ -11,19 +11,38 @@ ToggleFoldersButton = ToggleFoldersButton?.extend( {
 	initialize() {
 		wp.media.View.prototype.initialize.apply( this, arguments );
 		this.updateButtonText();
+
+		this._boundToggleFolders = this.toggleFolders.bind( this );
+
+		// Attach listener to the `.media-frame-menu-toggle` button
+		const onReady = () => {
+			const externalToggle = document.querySelector( '.media-frame-menu-toggle' );
+			if ( externalToggle ) {
+				externalToggle.addEventListener( 'click', this._boundToggleFolders );
+			}
+		};
+
+		if ( document.readyState === 'loading' ) {
+			document.addEventListener( 'DOMContentLoaded', onReady, { once: true } );
+		} else {
+			onReady();
+		}
 	},
 
 	onButtonClick() {
+		this.toggleFolders();
+	},
+
+	toggleFolders() {
 		const sidebar = document.getElementById( 'rt-transcoder-media-library-root' );
 		if ( sidebar ) {
 			sidebar.classList.toggle( 'hide-sidebar' );
-			this.updateButtonText();
 		}
 		const mediaModal = document.querySelector( '.media-modal-content' );
 		if ( mediaModal ) {
 			mediaModal.classList.toggle( 'hide-sidebar' );
-			this.updateButtonText();
 		}
+		this.updateButtonText();
 	},
 
 	updateButtonText() {
