@@ -612,13 +612,14 @@ class Pages {
 				)
 			);
 
-			$id                 = isset( $_GET['id'] ) ? sanitize_text_field( $_GET['id'] ) : null;
-			$ab_thumbnails_data = get_post_meta( $id, 'godam_ab_test_thumbs', true );
+			$id                    = isset( $_GET['id'] ) ? sanitize_text_field( $_GET['id'] ) : null;
+			$ab_testing_settings   = get_post_meta( $id, 'godam_ab_test_settings', true );
+			$ab_testing_thumbnails = isset( $ab_testing_settings['thumbnails'] ) ? $ab_testing_settings['thumbnails'] : array();
 
 			wp_localize_script(
 				'transcoder-page-script-analytics',
 				'abThumbnailsData',
-				$ab_thumbnails_data
+				$ab_testing_thumbnails
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-analytics' );

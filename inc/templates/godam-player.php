@@ -90,15 +90,16 @@ $control_bar_settings = $easydam_meta_data['videoConfig']['controlBar'] ?? array
 $poster_image = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 $poster_image = ! empty( $poster_image ) ? $poster_image : '';
 
-// AB Testing related variables.
-$ab_testing_enabled     = get_post_meta( $attachment_id, 'godam_ab_test_enabled', true );
-$ab_testing_thumbnails  = get_post_meta( $attachment_id, 'godam_ab_test_thumbs', true );
-$godam_ab_test_end_time = get_post_meta( $attachment_id, 'godam_ab_test_end_time', true );
+$ab_testing_settings = get_post_meta( $attachment_id, 'godam_ab_test_settings', true );
+
+$ab_testing_enabled    = isset( $ab_testing_settings['enabled'] ) && 1 === $ab_testing_settings['enabled'] ? '1' : '0';
+$ab_testing_thumbnails = isset( $ab_testing_settings['thumbnails'] ) ? $ab_testing_settings['thumbnails'] : array();
+$ab_test_end_time      = isset( $ab_testing_settings['end_time'] ) ? $ab_testing_settings['end_time'] : '';
 
 $ab_test_values = array(
 	'isEnabled'          => $ab_testing_enabled,
 	'thumbnailsSelected' => $ab_testing_thumbnails,
-	'endTime'            => $godam_ab_test_end_time,
+	'endTime'            => $ab_test_end_time,
 );
 
 

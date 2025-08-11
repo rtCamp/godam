@@ -26,7 +26,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 */
 	initialize() {
 		this.abTestingEnabled = '0';
-		this.abTestDuration = '60';
+		this.abTestDuration = '5';
 		this.abTestingSelection = [];
 		AttachmentDetailsTwoColumn.prototype.initialize.apply( this, arguments );
 		this.initializeValues().then( () => {
@@ -37,8 +37,8 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	async initializeValues() {
 		const settings = await this.getABTestingSettings( this.model.get( 'id' ) );
 
-		this.abTestingEnabled = settings?.data?.ab_testing_enabled === '1' ? '1' : '0';
-		this.abTestDuration = settings?.data?.ab_testing_duration; // default to 60 days
+		this.abTestingEnabled = 1 === settings?.data?.ab_testing_enabled ? '1' : '0';
+		this.abTestDuration = settings?.data?.ab_testing_duration;
 		this.abTestingSelection = settings?.data?.ab_testing_thumbnails || [];
 	},
 

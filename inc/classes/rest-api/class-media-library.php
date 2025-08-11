@@ -375,10 +375,12 @@ class Media_Library extends Base {
 		}
 
 		// Fetch AB testing settings.
-		$ab_testing_enabled    = get_post_meta( $attachment_id, 'godam_ab_test_enabled', true );
-		$ab_testing_duration   = get_post_meta( $attachment_id, 'godam_ab_test_duration', true );
-		$ab_testing_thumbnails = get_post_meta( $attachment_id, 'godam_ab_test_thumbs', true );
-		$ab_test_end_time      = get_post_meta( $attachment_id, 'godam_ab_test_end_time', true );
+		$ab_testing_settings = get_post_meta( $attachment_id, 'godam_ab_test_settings', true );
+
+		$ab_testing_enabled    = isset( $ab_testing_settings['enabled'] ) ? $ab_testing_settings['enabled'] : 0;
+		$ab_testing_duration   = isset( $ab_testing_settings['duration'] ) ? $ab_testing_settings['duration'] : '5';
+		$ab_testing_thumbnails = isset( $ab_testing_settings['thumbnails'] ) ? $ab_testing_settings['thumbnails'] : array();
+		$ab_test_end_time      = isset( $ab_testing_settings['end_time'] ) ? $ab_testing_settings['end_time'] : '';
 
 		return rest_ensure_response(
 			array(
@@ -420,23 +422,27 @@ class Media_Library extends Base {
 			}
 
 			// Update AB testing settings.
-			update_post_meta( $attachment_id, 'godam_ab_test_enabled', $ab_testing_enabled );
+			// update_post_meta( $attachment_id, 'godam_ab_test_enabled', $ab_testing_enabled );
 
-			update_post_meta( $attachment_id, 'godam_ab_test_duration', $ab_testing_duration );
+			// update_post_meta( $attachment_id, 'godam_ab_test_duration', $ab_testing_duration );
 
-			update_post_meta( $attachment_id, 'godam_ab_test_thumbs', $ab_testing_thumbnails );
+			// update_post_meta( $attachment_id, 'godam_ab_test_thumbs', $ab_testing_thumbnails );
 
 			$days_to_add = intval( $ab_testing_duration );
-			$expiry_date = gmdate( 'Y-m-d H:i:sa', strtotime( "+$days_to_add days" ) );
+			$expiry_date = wp_date( 'Y-m-d H:i:sa', strtotime( "+$days_to_add days" ) );
 
-			update_post_meta( $attachment_id, 'godam_ab_test_end_time', $expiry_date );
+			$ab_testing_settings = array(
+				'enabled'    => $ab_testing_enabled,
+				'duration'   => $ab_testing_duration,
+				'thumbnails' => $ab_testing_thumbnails,
+				'end_time'   => $expiry_date,
+			);
+			
+			update_post_meta( $attachment_id, 'godam_ab_test_settings', $ab_testing_settings );
 			
 		} else {
 			// Disable A/B testing by removing the meta.
-			delete_post_meta( $attachment_id, 'godam_ab_test_enabled' );
-			delete_post_meta( $attachment_id, 'godam_ab_test_duration' );
-			delete_post_meta( $attachment_id, 'godam_ab_test_thumbs' );
-			delete_post_meta( $attachment_id, 'godam_ab_test_start_time' );
+			delete_post_meta( $attachment_id, 'godam_ab_test_settings' );
 		}
 
 		return rest_ensure_response(
