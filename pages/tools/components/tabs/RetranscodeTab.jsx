@@ -38,6 +38,7 @@ const RetranscodeTab = () => {
 	const [ showBandwidthModal, setShowBandwidthModal ] = useState( false );
 	const [ modalSelection, setModalSelection ] = useState( [] ); // array of selected IDs
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
+	const [ initialStatusFetching, setInitialStatusFetching ] = useState( true );
 
 	// On mount, check for 'media_ids' in the URL
 	useEffect( () => {
@@ -95,6 +96,8 @@ const RetranscodeTab = () => {
 			if ( data?.total ) {
 				// Mirror the total in attachments so existing UI remains unchanged.
 				setAttachments( new Array( data.total ).fill( 0 ) );
+				// Ensure totalMediaCount reflects total even after refresh during an ongoing queue.
+				setTotalMediaCount( data.total || 0 );
 			}
 			setMediaCount( data?.processed || 0 );
 			setSuccessCount( data?.success || 0 );
@@ -114,6 +117,7 @@ const RetranscodeTab = () => {
 				setMediaCount( 0 );
 				setSuccessCount( 0 );
 				setFailureCount( 0 );
+				setTotalMediaCount( 0 );
 				setAborted( false );
 				setDone( false );
 				setRetranscoding( false );
@@ -235,7 +239,8 @@ const RetranscodeTab = () => {
 
 	// On mount, check if a queue is already running so we can resume progress.
 	useEffect( () => {
-		fetchQueueStatus();
+		fetchQueueStatus()
+			.finally( () => setInitialStatusFetching( false ) );
 		return () => {
 			if ( pollIntervalRef.current ) {
 				clearInterval( pollIntervalRef.current );
@@ -246,7 +251,6 @@ const RetranscodeTab = () => {
 	// Fetch attachment details (name, size) after attachments are set
 	useEffect( () => {
 		if ( attachments.length > 0 && attachments[ 0 ] !== 0 ) {
-			// Fetch media details using the same approach as PHP code
 			Promise.all(
 				attachments.map( ( id ) =>
 					fetch( `${ window.godamRestRoute?.url }godam/v1/transcoding/media/details/${ id }`, {
@@ -275,7 +279,7 @@ const RetranscodeTab = () => {
 	}, [ attachments ] );
 
 	// Bandwidth calculation
-	const availableBandwidthGB = 0.05;//( window.userData?.totalBandwidth || 0 ) - ( window.userData?.bandwidthUsed || 0 );
+	const availableBandwidthGB = ( window.userData?.totalBandwidth || 0 ) - ( window.userData?.bandwidthUsed || 0 );
 	const totalRequiredGB = attachmentDetails.reduce( ( sum, att ) => sum + ( ( att.size || 0 ) / 1024 / 1024 / 1024 ), 0 );
 
 	// Modal logic: show modal if not all fit, or error if none fit
@@ -309,6 +313,7 @@ const RetranscodeTab = () => {
 	const resetState = () => {
 		setAttachments( [] );
 		setMediaCount( 0 );
+		setTotalMediaCount( 0 );
 		setAborted( false );
 		setNotice( { ...notice, isVisible: false } );
 		setRetranscoding( false );
@@ -410,7 +415,7 @@ const RetranscodeTab = () => {
 					{ showBandwidthModal && (
 						<Modal
 							title={ __( 'Select Media to Retranscode', 'godam' ) }
-							onRequestClose={ () => setShowBandwidthModal( false ) }
+							onRequestClose={ () => resetState() }
 							isOpen={ showBandwidthModal }
 						>
 							<div style={ { maxHeight: 400, overflowY: 'auto' } }>
@@ -585,12 +590,15 @@ const RetranscodeTab = () => {
 										fetchRetranscodeMedia();
 									}
 								} }
-								disabled={ fetchingMedia }
+								disabled={ initialStatusFetching || fetchingMedia || ( ( attachments.length > 0 ) && attachmentDetails.length === 0 ) || ( attachmentDetails.length > 0 && totalRequiredGB > availableBandwidthGB ) }
 							>
 								{ ( () => {
 									if ( attachments.length === 0 ) {
 										return __( 'Fetch Media', 'godam' );
 									} else if ( ! done && ! aborted ) {
+										if ( attachmentDetails.length === 0 ) {
+											return __( 'Please wait', 'godam' );
+										}
 										return __( 'Start Retranscoding', 'godam' );
 									}
 									return __( 'Restart Retranscoding', 'godam' );
@@ -606,6 +614,7 @@ const RetranscodeTab = () => {
 								className="godam-button"
 								onClick={ abortRetranscoding }
 								style={ { backgroundColor: '#dc3545', color: 'white' } }
+								disabled={ initialStatusFetching }
 							>
 								{ __( 'Abort Operation', 'godam' ) }
 							</Button>
@@ -618,6 +627,7 @@ const RetranscodeTab = () => {
 								variant="tertiary"
 								className="godam-button"
 								onClick={ resetState }
+								disabled={ initialStatusFetching }
 							>
 								{ __( 'Reset', 'godam' ) }
 							</Button>
