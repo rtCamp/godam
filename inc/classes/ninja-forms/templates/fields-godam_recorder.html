@@ -1,0 +1,8 @@
+<script id="tmpl-nf-field-godam_recorder" type="text/template">
+	<button class="btn ninja-forms-field nf-element btn-success nf-fu-fileinput-button" type="button">
+		<span>{{{ data.record_button_text }}}</span>
+	</button>
+	<div class="nf-realistic-field--description">
+		<p>Max file Size: {{{ data.max_file_size || <?php echo (int) ( wp_max_upload_size() / ( 1024 * 1024 ) ); ?> }}} MB</p>
+	</div>
+</script>

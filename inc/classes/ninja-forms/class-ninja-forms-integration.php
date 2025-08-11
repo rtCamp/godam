@@ -9,6 +9,7 @@
 
 namespace RTGODAM\Inc\Ninja_Forms;
 
+use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Field_Godam_Recorder;
 use RTGODAM\Inc\Traits\Singleton;
 
 defined( 'ABSPATH' ) || exit;
@@ -35,6 +36,12 @@ class Ninja_Forms_Integration {
 		}
 
 		$this->setup_hooks();
+
+		// Register the custom field for GoDAM Recorder.
+		add_filter( 'ninja_forms_register_fields', array( $this, 'register_field' ) );
+
+		// Register the template path for GoDAM Recorder.
+		add_filter( 'ninja_forms_field_template_file_paths', array( $this, 'register_template_path' ) );
 	}
 
 	/**
@@ -139,5 +146,36 @@ class Ninja_Forms_Integration {
 		if ( 'ninja-forms' === $layer && ! empty( $layer_id ) ) {
 			echo do_shortcode( "[ninja_form id='{$layer_id}']" ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
+	}
+
+	/**
+	 * Register field
+	 *
+	 * @param array $fields Fields to register.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return array
+	 */
+	public function register_field( $fields ) {
+
+		$fields[ Ninja_Forms_Field_Godam_Recorder::$field_type ] = new Ninja_Forms_Field_Godam_Recorder();
+
+		return $fields;
+	}
+
+	/**
+	 * Provides the template path for GoDAM Recorder.
+	 *
+	 * @param array $paths Paths to template files.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return array
+	 */
+	public function register_template_path( $paths ) {
+		$paths[] = RTGODAM_PATH . 'inc/classes/ninja-forms/templates/';
+
+		return $paths;
 	}
 }
