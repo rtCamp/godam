@@ -169,6 +169,11 @@ export default class FormLayerManager {
 			return true;
 		}
 
+		const mfResponse = element.querySelector( '.mf-response-msg>p' );
+		if ( mfResponse && mfResponse.textContent !== '' ) {
+			return true;
+		}
+
 		return false;
 	}
 
