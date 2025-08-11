@@ -6,7 +6,7 @@ const { apiFetch } = wp;
 const { addQueryArgs } = wp.url;
 const { createRoot, useState, useMemo, useEffect, useRef } = wp.element;
 const { __ } = wp.i18n;
-const { nonceData, DOMPurify } = window;
+const { nonceData, DOMPurify, godamData } = window;
 const storeName = 'godam-video-engagement';
 
 const DEFAULT_STATE = {
@@ -16,7 +16,7 @@ const DEFAULT_STATE = {
 	IsUserLiked: {},
 	comments: {},
 	commentsCount: {},
-	userData: window.godamData.currentLoggedInUserData,
+	userData: godamData.currentLoggedInUserData,
 };
 
 const ACTIONS = {
@@ -544,7 +544,7 @@ function updateCommentTree( comments, comment, data, commentType ) {
  */
 
 function CommentForm( props ) {
-	const { comment, setCommentsData, storeObj, videoAttachmentId, setIsExpanded, type, siteUrl, commentType } = props;
+	const { comment, setCommentsData, storeObj, videoAttachmentId, setIsExpanded, type, siteUrl, commentType, videoContainerRef } = props;
 	const [ commentText, setCommentText ] = useState( () => {
 		return 'edit' === commentType ? comment.text : '';
 	} );
@@ -585,6 +585,19 @@ function CommentForm( props ) {
 		} );
 	}
 
+	function handleTimestamp() {
+		const videoPlayer = videoContainerRef.current.querySelector( 'video' );
+		if ( videoPlayer ) {
+			const currentTime = videoPlayer.currentTime;
+			const hrs = String( Math.floor( currentTime / 3600 ) ).padStart( 2, '0' );
+			const mins = String( Math.floor( ( currentTime % 3600 ) / 60 ) ).padStart( 2, '0' );
+			const secs = String( Math.floor( currentTime % 60 ) ).padStart( 2, '0' );
+			setCommentText( ( prev ) => {
+				return `@${ hrs }:${ mins }:${ secs } ${ prev }`;
+			} );
+		}
+	}
+
 	return (
 		<div className="rtgodam-video-engagement--comment-form">
 			<div className="rtgodam-video-engagement--comment-form-textarea">
@@ -600,6 +613,12 @@ function CommentForm( props ) {
 					} }
 					disabled={ isSending }
 				/>
+				<button
+					className="rtgodam-video-engagement--comment-button-timestamp"
+					onClick={ handleTimestamp }
+				>
+					{ __( 'Add timestamp', 'godam' ) }
+				</button>
 				<button
 					className={ 'rtgodam-video-engagement--comment-button' +
 					( isSending ? ' is-comment-progressing' : '' ) }
@@ -618,6 +637,54 @@ function CommentForm( props ) {
 	);
 }
 
+function timeToSeconds( h, m, s ) {
+	const hh = Number( h ?? 0 );
+	const mm = Number( m ?? 0 );
+	const ss = Number( s ?? 0 );
+	return ( hh * 3600 ) + ( mm * 60 ) + ss;
+}
+
+function TimeLinkedText( { text, onJump } ) {
+	// Matches @HH:MM:SS or @MM:SS
+	const re = /@(?:(\d{1,2}):)?(\d{2}):(\d{2})/g;
+
+	const nodes = [];
+	let lastIndex = 0;
+	let match;
+
+	while ( ( match = re.exec( text ) ) !== null ) {
+		const [ raw, h, m, s ] = match;
+		const start = match.index;
+
+		// Push preceding plain text
+		if ( start > lastIndex ) {
+			nodes.push( text.slice( lastIndex, start ) );
+		}
+
+		const secs = timeToSeconds( h, m, s );
+
+		nodes.push(
+			<button
+				key={ `${ start }-${ raw }` }
+				type="button"
+				onClick={ () => onJump?.( secs, raw ) }
+				className="rtgodam-video-engagement--comment-go-to-timestamp"
+			>
+				{ raw }
+			</button>,
+		);
+
+		lastIndex = start + raw.length;
+	}
+
+	// Push any trailing text
+	if ( lastIndex < text.length ) {
+		nodes.push( text.slice( lastIndex ) );
+	}
+
+	return <>{ nodes }</>;
+}
+
 /**
  * A single comment component.
  *
@@ -631,7 +698,7 @@ function CommentForm( props ) {
  * @return {JSX.Element} A single comment component.
  */
 function Comment( props ) {
-	const { comment, setCommentsData, storeObj, videoAttachmentId, siteUrl, isUserLoggedIn } = props;
+	const { comment, setCommentsData, storeObj, videoAttachmentId, siteUrl, isUserLoggedIn, videoContainerRef } = props;
 	const {
 		text,
 		author_name: authorName,
@@ -686,6 +753,14 @@ function Comment( props ) {
 		setIsDeleting( false );
 	}
 
+	const handleJump = ( seconds ) => {
+		const videoPlayer = videoContainerRef.current.querySelector( 'video' );
+		if ( ! videoPlayer ) {
+			return;
+		}
+		videoPlayer.currentTime = seconds;
+	};
+
 	return (
 		<div className={ 'rtgodam-video-engagement--comment-parent ' + ( children && children.length > 0 ? 'has-children' : '' ) }>
 			<div className="rtgodam-video-engagement--comment-details">
@@ -704,7 +779,10 @@ function Comment( props ) {
 						<div
 							className={ 'rtgodam-video-engagement--comment-text' + ( isDeletedComment ? ' deleted-text' : '' ) }
 						>
-							{ text }
+							<TimeLinkedText
+								text={ text }
+								onJump={ handleJump }
+							/>
 						</div>
 					</div>
 					{ ( ! isExpanded && isUserLoggedIn ) && (
@@ -743,7 +821,7 @@ function Comment( props ) {
 					) }
 					{ isExpanded && (
 						<div className="rtgodam-video-engagement--comment-form">
-							<CommentForm { ...props } setIsExpanded={ setIsExpanded } type="thread-reply" siteUrl={ siteUrl } commentType={ commentType } />
+							<CommentForm { ...props } setIsExpanded={ setIsExpanded } type="thread-reply" siteUrl={ siteUrl } commentType={ commentType } videoContainerRef={ videoContainerRef } />
 						</div>
 					) }
 				</div>
@@ -770,6 +848,7 @@ function Comment( props ) {
 							videoAttachmentId={ videoAttachmentId }
 							siteUrl={ siteUrl }
 							isUserLoggedIn={ isUserLoggedIn }
+							videoContainerRef={ videoContainerRef }
 						/>
 					) ) }
 				</div>
@@ -798,6 +877,7 @@ function CommentList( props ) {
 		setCommentsData,
 		siteUrl,
 		isUserLoggedIn,
+		videoContainerRef,
 	} = props;
 
 	return (
@@ -818,6 +898,7 @@ function CommentList( props ) {
 					videoAttachmentId={ videoAttachmentId }
 					siteUrl={ siteUrl }
 					isUserLoggedIn={ isUserLoggedIn }
+					videoContainerRef={ videoContainerRef }
 				/>
 			) ) }
 		</div>
@@ -1007,7 +1088,7 @@ function CommentBox( props ) {
 								}
 								{ __( 'Comments', 'godam' ) } ({ commentsCount })
 							</h3>
-							<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } isUserLoggedIn={ isUserLoggedIn } storeObj={ memoizedStoreObj } />
+							<CommentList { ...props } commentsData={ commentsData } setCommentsData={ setCommentsData } isUserLoggedIn={ isUserLoggedIn } storeObj={ memoizedStoreObj } videoContainerRef={ videoContainerRef } />
 							<div className={ baseClass + '-leave-comment' }>
 								<div className={ baseClass + '-leave-comment-impressions' }>
 									<button
@@ -1017,7 +1098,7 @@ function CommentBox( props ) {
 									<span className={ baseClass + '-leave-comment-impressions-views' }>{ viewsCount }</span>
 								</div>
 								{ isUserLoggedIn ? (
-									<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" commentType="new" />
+									<CommentForm setCommentsData={ setCommentsData } storeObj={ memoizedStoreObj } videoContainerRef={ videoContainerRef } videoAttachmentId={ videoAttachmentId } comment={ {} } siteUrl={ siteUrl } type="reply" commentType="new" />
 								) : (
 									<GuestLoginForm setIsUserLoggedIn={ setIsUserLoggedIn } siteUrl={ siteUrl } baseClass={ baseClass } storeObj={ memoizedStoreObj } />
 								) }

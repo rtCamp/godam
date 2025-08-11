@@ -662,6 +662,7 @@
         &-form {
             &-textarea {
                 display: flex;
+                gap: 5px;
                 border: 1px solid var(--godam-video-engagement-brand-neutral-shades-100);
                 border-radius: 8px;
                 min-height: 48px;
@@ -775,6 +776,20 @@
                 background-color: var(--wp--preset--color--black, #000);
                 color: var(--wp--preset--color--white, #fff);
             }
+
+            &-timestamp {
+                background-image: url('../images/timestamp.svg') !important;
+                cursor: pointer;
+            }
+        }
+
+        &-go-to-timestamp {
+            cursor: pointer;
+            text-decoration: underline;
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--godam-video-engagement-icon-color--like);
         }
     }
 
