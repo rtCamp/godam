@@ -515,3 +515,61 @@ function rtgodam_get_current_logged_in_user_data() {
 		'type'  => 'non-user',
 	);
 }
+
+/**
+ * Retrieves a cached value by key.
+ *
+ * This function checks if the external object cache is being used.
+ * If so, it retrieves the cached value using the WordPress cache API.
+ * Otherwise, it retrieves the value from the transient API.
+ *
+ * @param string $key The cache key to retrieve the value for.
+ * @return mixed The cached value, or false if the value does not exist.
+ */
+function rtgodam_cache_get( $key ) {
+	if ( wp_using_ext_object_cache() ) {
+		return wp_cache_get( $key );
+	} else {
+		return get_transient( $key );
+	}
+}
+
+/**
+ * Sets a value in the cache for a given key.
+ *
+ * This function checks if the external object cache is being used.
+ * If so, it sets the value using the WordPress cache API.
+ * Otherwise, it sets the value using the transient API.
+ *
+ * @param string $key     The cache key to set the value for.
+ * @param mixed  $value   The value to set.
+ * @param int    $expiration Optional. The time until the value expires in seconds.
+ *                            Default 300 (5 minutes).
+ *
+ * @return bool True on success, false on failure.
+ */
+function rtgodam_cache_set( $key, $value, $expiration = 3600 ) {
+	if ( wp_using_ext_object_cache() ) {
+		return wp_cache_set( $key, $value, '', $expiration );
+	} else {
+		return set_transient( $key, $value, $expiration );
+	}
+}
+
+/**
+ * Deletes a cached value by key.
+ *
+ * This function checks if the external object cache is being used.
+ * If so, it deletes the cached value using the WordPress cache API.
+ * Otherwise, it deletes the value using the transient API.
+ *
+ * @param string $key The cache key to delete the value for.
+ * @return bool True on success, false on failure.
+ */
+function rtgodam_cache_delete( $key ) {
+	if ( wp_using_ext_object_cache() ) {
+		return wp_cache_delete( $key );
+	} else {
+		return delete_transient( $key );
+	}
+}

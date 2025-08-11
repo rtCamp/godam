@@ -207,6 +207,19 @@ class Engagement extends Base {
 			$account_creadentials,
 		);
 
+		$cache_key   = 'rtgodam_engagements_' . md5( 'video-id-' . $video_id );
+		$cached_data = rtgodam_cache_get( $cache_key );
+
+		if ( $cached_data ) {
+			return new WP_REST_Response(
+				array(
+					'status' => 'success',
+					'data'   => $cached_data,
+				),
+				200
+			);
+		}
+
 		$analytics_data = $this->get_views( $query_params );
 
 		if ( $analytics_data instanceof WP_REST_Response ) {
@@ -227,6 +240,9 @@ class Engagement extends Base {
 		$response_data['comments']       = $comments['comments'];
 		$response_data['comments_count'] = $comments['total'];
 		$response_data['title']          = get_the_title( $video_id );
+
+		// Cache the response data for future requests.
+		rtgodam_cache_set( $cache_key, $response_data );
 
 		return new WP_REST_Response(
 			array(
@@ -386,6 +402,9 @@ class Engagement extends Base {
 
 		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
 
+			$cache_key = 'rtgodam_engagements_' . md5( 'video-id-' . $video_id );
+			rtgodam_cache_delete( $cache_key );
+
 			return new WP_REST_Response(
 				array(
 					'status'      => 'success',
@@ -468,6 +487,9 @@ class Engagement extends Base {
 		}
 
 		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
+
+			$cache_key = 'rtgodam_engagements_' . md5( 'video-id-' . $video_id );
+			rtgodam_cache_delete( $cache_key );
 
 			$comment      = $process_response['message']['data'];
 			$created_date = $this->calculate_days( $comment['creation'] );
@@ -560,6 +582,9 @@ class Engagement extends Base {
 		}
 
 		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
+
+			$cache_key = 'rtgodam_engagements_' . md5( 'video-id-' . $video_id );
+			rtgodam_cache_delete( $cache_key );
 
 			$response_data = array(
 				'text' => $content,
