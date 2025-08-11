@@ -592,7 +592,13 @@ function CommentForm( props ) {
 					name="comment"
 					value={ commentText }
 					onChange={ ( e ) => setCommentText( e.target.value ) }
-					onKeyDown={ ( e ) => 'Enter' === e.key && handleSubmit() }
+					onKeyDown={ ( e ) => {
+						if ( 'Enter' === e.key && ! e.shiftKey ) {
+							e.preventDefault();
+							handleSubmit();
+						}
+					} }
+					disabled={ isSending }
 				/>
 				<button
 					className={ 'rtgodam-video-engagement--comment-button' +
@@ -690,12 +696,14 @@ function Comment( props ) {
 					<div className="rtgodam-video-engagement--comment-content">
 						<div className="rtgodam-video-engagement--comment-author">
 							<div className="rtgodam-video-engagement--comment-author-name">
-								{ authorName || __( 'Anonymous', 'godam' ) }
+								{ isDeletedComment ? __( 'Anonymous', 'godam' ) : authorName || __( 'Anonymous', 'godam' ) }
 							</div>
 							<span className="rtgodam-video-engagement--comment-time">{ createdAtTime }</span>
 							<span className="rtgodam-video-engagement--comment-date">{ createdAtDate }</span>
 						</div>
-						<div className="rtgodam-video-engagement--comment-text">
+						<div
+							className={ 'rtgodam-video-engagement--comment-text' + ( isDeletedComment ? ' deleted-text' : '' ) }
+						>
 							{ text }
 						</div>
 					</div>
@@ -823,6 +831,7 @@ function GuestLoginForm( props ) {
 		siteUrl,
 		storeObj,
 	} = props;
+	const enableGuestLogin = false; // Enable guest login as a feature we may introduce in future.
 	const [ showGuestForm, setShowGuestForm ] = useState( false );
 	const [ guestEmail, setGuestEmail ] = useState( '' );
 	const [ loginProgress, setLoginProgress ] = useState( false );
@@ -875,24 +884,28 @@ function GuestLoginForm( props ) {
 					</div>
 				)
 			}
-			<div className={ baseClass + '-leave-comment-login-guest-button' }>
-				{
-					showGuestForm && (
-						<button onClick={ () => setShowGuestForm( ! showGuestForm ) }>
-							{ __( 'Back', 'godam' ) }
-						</button>
-					)
-				}
+			{
+				enableGuestLogin && (
+					<div className={ baseClass + '-leave-comment-login-guest-button' }>
+						{
+							showGuestForm && (
+								<button onClick={ () => setShowGuestForm( ! showGuestForm ) }>
+									{ __( 'Back', 'godam' ) }
+								</button>
+							)
+						}
 
-				<button
-					className={ loginProgress ? ' is-progressing' : '' }
-					onClick={ handleGuestLogin }
-				>
-					{
-						showGuestForm ? __( 'Save', 'godam' ) : __( 'Continue as Guest', 'godam' )
-					}
-				</button>
-			</div>
+						<button
+							className={ loginProgress ? ' is-progressing' : '' }
+							onClick={ handleGuestLogin }
+						>
+							{
+								showGuestForm ? __( 'Save', 'godam' ) : __( 'Continue as Guest', 'godam' )
+							}
+						</button>
+					</div>
+				)
+			}
 		</div>
 	);
 }
