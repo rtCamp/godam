@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import './retranscode-media';
+@use "tailwindcss";
+@use './retranscode-media';
 
 // Initialize the variables for the tools page
 $tools-page-color-white: #fff;
