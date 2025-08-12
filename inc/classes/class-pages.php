@@ -327,15 +327,15 @@ class Pages {
 	public function render_video_editor_page() {
 		?>
 		<div class="godam-admin-root">
-		<div id="root-video-editor">
-			<div class="progress-bar-wrapper">
-				<div class="progress-bar-container">
-					<div class="progress-bar">
-						<div class="progress-bar-inner"></div>
+			<div id="root-video-editor">
+				<div class="progress-bar-wrapper">
+					<div class="progress-bar-container">
+						<div class="progress-bar">
+							<div class="progress-bar-inner"></div>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
 		</div>
 		<?php
 	}
