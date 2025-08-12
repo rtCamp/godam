@@ -116,11 +116,10 @@ class ShareManager {
 	/**
 	 * Creates social media sharing links configuration.
 	 *
-	 * @param {string} encodedLink - URL encoded video link.
-	 * @param {string} message     - Encoded share message.
+	 * @param {string} message - Encoded share message.
 	 * @return {Array} Array of social link objects.
 	 */
-	createSocialLinksConfig( encodedLink, message ) {
+	createSocialLinksConfig( message ) {
 		return [
 			{
 				className: 'facebook',
@@ -244,7 +243,7 @@ class ShareManager {
 			return;
 		}
 
-		const socialLinks = this.createSocialLinksConfig( urls.encodedLink, urls.message );
+		const socialLinks = this.createSocialLinksConfig( urls.message );
 		const modalHtml = this.buildModalHtml( socialLinks, urls.videoLink, urls.embedCode );
 
 		this.injectModalIntoDOM( modalHtml, socialLinks, urls );
@@ -500,6 +499,7 @@ class ShareManager {
 		}
 
 		input.readOnly = ! checkbox.checked;
+		input.value = formatTime( this.video.currentTime || 0 );
 
 		// Set up event listeners
 		checkbox.addEventListener( 'change', this.handleTimestampCheckboxChange.bind( this, checkbox, input, socialLinks, urls, container ) );
@@ -516,9 +516,6 @@ class ShareManager {
 	 * @param {HTMLElement} container   - The modal container element.
 	 */
 	handleTimestampCheckboxChange( checkbox, input, socialLinks, urls, container ) {
-		if ( checkbox.checked && this.video ) {
-			input.value = formatTime( this.video.currentTime || 0 );
-		}
 		input.readOnly = ! checkbox.checked;
 		this.updateTimestampLinks( checkbox, input, socialLinks, urls, container );
 	}
