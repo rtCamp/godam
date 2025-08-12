@@ -93,6 +93,11 @@ class Init {
 		 * Form Submission handler.
 		 */
 		Form_Submit::get_instance();
+
+		/**
+		 * Identifier for GoDAM.
+		 */
+		Identifier::get_instance();
 	}
 
 	/**
