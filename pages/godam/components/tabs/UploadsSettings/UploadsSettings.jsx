@@ -84,17 +84,33 @@ const UploadsSettings = () => {
 			<Panel header={ __( 'Uploads Settings', 'godam' ) } className="godam-panel">
 				<PanelBody opened>
 
-					<Notice
-						className="mb-4"
-						status={ 'warning' }
-						isDismissible={ false }
-					>
-						{ sprintf(
-							// translators: %s: Maximum file upload size (e.g. "500 MB")
-							__( 'Enabling the Offload Media option allows you to upload files up to %s in size.', 'godam' ),
-							getFileUploadSize(),
-						) }
-					</Notice>
+					{ ( () => {
+						const offloadEnabled = !! mediaSettings?.uploads?.offload_media;
+						const currentLimit = getFileUploadSize();
+						const godamLimit = formatSize( getGodamMaxUploadSize() );
+						const message = offloadEnabled
+							? sprintf(
+								// translators: %1$s is the Offload/Godam maximum upload size (e.g. "4.00 GB").
+								__( 'Offload Media is enabled. You can upload files up to %1$s in size.', 'godam' ),
+								currentLimit,
+							)
+							: sprintf(
+								// translators: %1$s is the current WordPress max upload size (e.g. "100.00 MB"), %2$s is the Offload/Godam limit (e.g. "4.00 GB").
+								__( 'Your current upload limit is %1$s. Enable Offload Media to upload files up to %2$s.', 'godam' ),
+								currentLimit,
+								godamLimit,
+							);
+
+						return (
+							<Notice
+								className="mb-4"
+								status={ 'warning' }
+								isDismissible={ false }
+							>
+								{ message }
+							</Notice>
+						);
+					} )() }
 
 					<ToggleControl
 						__nextHasNoMarginBottom
