@@ -55,6 +55,27 @@ class Plugin {
 	private $cdn_host = null;
 
 	/**
+	 * Local to GoDAM filter instance.
+	 *
+	 * @var ?Local_To_GoDAM
+	 */
+	private $filter_local_to_godam = null;
+
+	/**
+	 * GoDAM to Local filter instance.
+	 *
+	 * @var ?GoDAM_To_Local
+	 */
+	private $filter_godam_to_local = null;
+
+	/**
+	 * Media Library filter instance.
+	 *
+	 * @var ?Media_Library
+	 */
+	private $media_library_filters = null;
+
+	/**
 	 *
 	 * @return static
 	 */
@@ -103,6 +124,9 @@ class Plugin {
 
 		add_filter( 'wp_handle_upload_prefilter', array( $this, 'filter_validate_file' ) );
 		add_filter( 'wp_handle_sideload_prefilter', array( $this, 'filter_validate_file' ) );
+
+		// Initialize URL filters.
+		$this->setup_url_filters();
 	}
 
 	/**
@@ -183,9 +207,7 @@ class Plugin {
 		$godam_path      = 'godam://wp-content/uploads';
 		$dirs['path']    = str_replace( path_join( WP_CONTENT_DIR, 'uploads' ), $godam_path, $dirs['path'] );
 		$dirs['basedir'] = str_replace( path_join( WP_CONTENT_DIR, 'uploads' ), $godam_path, $dirs['basedir'] );
-		$dirs['url']     = str_replace( $godam_path, $this->get_remote_url(), $dirs['path'] );
-		$dirs['baseurl'] = str_replace( $godam_path, $this->get_remote_url(), $dirs['basedir'] );
-
+		// Keep original URLs - let the URL filters handle URL replacement.
 		return $dirs;
 	}
 
@@ -438,5 +460,61 @@ class Plugin {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Set up URL filtering system.
+	 */
+	private function setup_url_filters() {
+		// Only setup if GoDAM filesystem is enabled.
+		if ( ! $this->is_enabled() ) {
+			return;
+		}
+
+		// Initialize filter classes.
+		$this->filter_local_to_godam = new Local_To_GoDAM( $this );
+		$this->filter_godam_to_local = new GoDAM_To_Local( $this );
+		$this->media_library_filters = new Media_Library( $this );
+
+		// Trigger setup action.
+		do_action( 'rtgodam_filters_setup' );
+	}
+
+	/**
+	 * Check if GoDAM filesystem is enabled.
+	 *
+	 * @return bool True if enabled.
+	 */
+	public function is_enabled() {
+		// For now, always return true if the plugin is active.
+		// You can add settings logic here later.
+		return true;
+	}
+
+	/**
+	 * Get the local to GoDAM filter instance.
+	 *
+	 * @return ?Local_To_GoDAM
+	 */
+	public function get_local_to_godam_filter() {
+		return $this->filter_local_to_godam;
+	}
+
+	/**
+	 * Get the GoDAM to local filter instance.
+	 *
+	 * @return ?GoDAM_To_Local
+	 */
+	public function get_godam_to_local_filter() {
+		return $this->filter_godam_to_local;
+	}
+
+	/**
+	 * Get the media library filter instance.
+	 *
+	 * @return ?Media_Library
+	 */
+	public function get_media_library_filters() {
+		return $this->media_library_filters;
 	}
 }

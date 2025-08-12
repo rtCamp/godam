@@ -299,6 +299,17 @@ class Files_Migration {
 			// Transcode the file if necessary.
 			self::maybe_transcode( $file_path );
 
+			// Get attachment ID from file path.
+			$attachment_id = self::get_attachment_id_from_file_path( $file_path );
+			if ( $attachment_id ) {
+				// Mark attachment as migrated.
+				update_post_meta( $attachment_id, '_media_migrated_to_godam_cdn', true );
+				update_post_meta( $attachment_id, '_godam_cdn_url', $destination );
+				update_post_meta( $attachment_id, '_godam_migration_date', current_time( 'mysql' ) );
+
+				self::debug( 'Marked attachment ' . $attachment_id . ' as migrated to GoDAM CDN' );
+			}
+
 			self::debug( 'Successfully uploaded: ' . $file_path );
 			$migrated_files[] = $file_path;
 		}
@@ -615,6 +626,52 @@ class Files_Migration {
 			'wp search-replace "%s" "%s" --skip-columns=guid --skip-plugins --skip-themes --dry-run',
 			esc_url( $original_upload_dir['baseurl'] ),
 			esc_url( $cdn_upload_url )
+		);
+	}
+
+	/**
+	 * Get attachment ID from file path.
+	 *
+	 * @param string $file_path The file path.
+	 * @return int|false The attachment ID or false if not found.
+	 */
+	public static function get_attachment_id_from_file_path( $file_path ) {
+		global $wpdb;
+
+		// Clean the file path.
+		$clean_path = str_replace( 'godam://wp-content/uploads/', '', $file_path );
+		$filename   = basename( $clean_path );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Try to find attachment by filename.
+		$attachment_id = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT post_id FROM {$wpdb->postmeta} 
+			WHERE meta_key = '_wp_attached_file' 
+			AND meta_value LIKE %s 
+			LIMIT 1",
+				'%' . $filename
+			) 
+		);
+
+		return $attachment_id ? (int) $attachment_id : false;
+	}
+
+	/**
+	 * Get list of migrated attachments.
+	 *
+	 * @return array Array of attachment IDs.
+	 */
+	public static function get_migrated_attachments() {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		return $wpdb->get_col(
+			"
+			SELECT post_id 
+			FROM {$wpdb->postmeta} 
+			WHERE meta_key = '_media_migrated_to_godam_cdn' 
+			AND meta_value = '1'
+		" 
 		);
 	}
 }
