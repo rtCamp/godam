@@ -536,6 +536,9 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 			this.renderVideoActions();
 			const attachmentId = this.model.get( 'id' );
+
+			this.showLoading();
+
 			this.fetchAndRender(
 				this.getVideoThumbnails( attachmentId ),
 				this.renderThumbnail,
@@ -548,5 +551,33 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		// Return this view.
 		return this;
+	},
+
+	showLoading() {
+		const actionsEl = this.$el.find( '.attachment-actions' );
+		const ul = document.createElement( 'ul' );
+
+		const li = document.createElement( 'li' );
+		li.className = 'thumbnail-spinner-container';
+		const spinner = document.createElement( 'div' );
+		spinner.className = 'thumbnail-spinner';
+		li.appendChild( spinner );
+		ul.appendChild( li );
+
+		const div = document.createElement( 'div' );
+		div.className = 'attachment-video-thumbnails';
+
+		const containerDiv = document.createElement( 'div' );
+		containerDiv.className = 'attachment-video-title';
+
+		const heading = document.createElement( 'h4' );
+		heading.textContent = __( 'Video Thumbnails', 'godam' );
+
+		containerDiv.appendChild( heading );
+		div.appendChild( containerDiv );
+
+		div.appendChild( ul );
+
+		actionsEl.append( div );
 	},
 } );
