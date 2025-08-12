@@ -7,6 +7,7 @@ const { addQueryArgs } = wp.url;
 const { createRoot, useState, useMemo, useEffect, useRef } = wp.element;
 const { __ } = wp.i18n;
 const { nonceData, DOMPurify, godamData } = window;
+const { currentLoggedInUserData, loginUrl, registrationUrl } = godamData;
 const storeName = 'godam-video-engagement';
 
 const DEFAULT_STATE = {
@@ -16,7 +17,7 @@ const DEFAULT_STATE = {
 	IsUserLiked: {},
 	comments: {},
 	commentsCount: {},
-	userData: godamData.currentLoggedInUserData,
+	userData: currentLoggedInUserData,
 };
 
 const ACTIONS = {
@@ -947,7 +948,7 @@ function GuestLoginForm( props ) {
 			{
 				! showGuestForm && (
 					<div className={ baseClass + '-leave-comment-login' }>
-						<a href={ siteUrl + '/wp-login.php' }>{ __( 'Register', 'godam' ) }</a> / <a href={ siteUrl + '/wp-login.php' }>{ __( 'Login', 'godam' ) }</a> { __( ' to comment', 'godam' ) }
+						<a href={ registrationUrl }>{ __( 'Register', 'godam' ) }</a> / <a href={ loginUrl }>{ __( 'Login', 'godam' ) }</a> { __( ' to comment', 'godam' ) }
 					</div>
 				)
 			}
