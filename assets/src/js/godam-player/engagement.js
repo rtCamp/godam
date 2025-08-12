@@ -17,6 +17,7 @@ const DEFAULT_STATE = {
 	IsUserLiked: {},
 	comments: {},
 	commentsCount: {},
+	videoMarkUp: {},
 	userData: currentLoggedInUserData,
 };
 
@@ -27,6 +28,7 @@ const ACTIONS = {
 	GENERATE_COMMENT_MODAL: 'GENERATE_COMMENT_MODAL',
 	UPDATE_USER_DATA: 'UPDATE_USER_DATA',
 	ERROR: 'ERROR',
+	ADD_VIDEO_MARKUP: 'ADD_VIDEO_MARKUP',
 };
 
 const engagementStore = {
@@ -137,6 +139,14 @@ const engagementStore = {
 						...action.userData,
 					},
 				};
+			case ACTIONS.ADD_VIDEO_MARKUP:
+				return {
+					...state,
+					videoMarkUp: {
+						...state.videoMarkUp,
+						[ action.videoId ]: action.markUp,
+					},
+				};
 			default:
 				return state;
 		}
@@ -214,6 +224,12 @@ const engagementStore = {
 			};
 		},
 
+		/**
+		 * Dispatches an action to update the user data.
+		 *
+		 * @param {Object} userData - The new user data.
+		 * @return {Object} An action object containing the type and new user data.
+		 */
 		updateUserData: ( userData ) => {
 			return {
 				type: ACTIONS.UPDATE_USER_DATA,
@@ -236,6 +252,14 @@ const engagementStore = {
 				message,
 			};
 		},
+
+		addVideoMarkUp: ( videoId, markUp ) => {
+			return {
+				type: ACTIONS.ADD_VIDEO_MARKUP,
+				videoId,
+				markUp,
+			};
+		},
 	},
 
 	selectors: {
@@ -247,6 +271,7 @@ const engagementStore = {
 		getViews: ( state ) => state.views,
 		getTitles: ( state ) => state.titles,
 		getUserData: ( state ) => state.userData,
+		getVideoMarkUp: ( state ) => state.videoMarkUp,
 	},
 
 	resolvers: {},
@@ -543,7 +568,6 @@ function updateCommentTree( comments, comment, data, commentType ) {
  *
  * @return {JSX.Element} A single comment component.
  */
-
 function CommentForm( props ) {
 	const { comment, setCommentsData, storeObj, videoAttachmentId, setIsExpanded, type, siteUrl, commentType, videoContainerRef } = props;
 	const [ commentText, setCommentText ] = useState( () => {
@@ -638,6 +662,15 @@ function CommentForm( props ) {
 	);
 }
 
+/**
+ * Converts time in HH:MM:SS format to seconds.
+ *
+ * @param {string|number} [h] - Hours.
+ * @param {string|number} [m] - Minutes.
+ * @param {string|number} [s] - Seconds.
+ *
+ * @return {number} Time in seconds.
+ */
 function timeToSeconds( h, m, s ) {
 	const hh = Number( h ?? 0 );
 	const mm = Number( m ?? 0 );
@@ -645,6 +678,14 @@ function timeToSeconds( h, m, s ) {
 	return ( hh * 3600 ) + ( mm * 60 ) + ss;
 }
 
+/**
+ * Component to render a text with @HH:MM:SS or @MM:SS timestamps linked to video positions.
+ *
+ * @param {Object}                   props          - Component props.
+ * @param {string}                   props.text     - Text to render.
+ * @param {function(number, string)} [props.onJump] - Callback to handle clicking a timestamp.
+ *
+ */
 function TimeLinkedText( { text, onJump } ) {
 	// Matches @HH:MM:SS or @MM:SS
 	const re = /@(?:(\d{1,2}):)?(\d{2}):(\d{2})/g;
@@ -910,7 +951,6 @@ function GuestLoginForm( props ) {
 	const {
 		baseClass,
 		setIsUserLoggedIn,
-		siteUrl,
 		storeObj,
 	} = props;
 	const enableGuestLogin = false; // Enable guest login as a feature we may introduce in future.
