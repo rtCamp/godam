@@ -14,7 +14,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { closeModal, deleteFolder, updateSnackbar } from '../../redux/slice/folders';
-import { useDeleteFolderMutation } from '../../redux/api/folders';
+import { useDeleteFolderMutation, useBulkDeleteFoldersMutation } from '../../redux/api/folders';
 import './scss/modal.scss';
 import { triggerFilterChange } from '../../data/media-grid';
 
@@ -24,9 +24,12 @@ const DeleteModal = () => {
 	const dispatch = useDispatch();
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.delete );
-	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const selectedFolder = useSelector( ( state ) => state.FolderReducer.currentContextMenuFolder );
+	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
+	const multiSelectedFolderIds = useSelector( ( state ) => state.FolderReducer.multiSelectedFolderIds );
 
 	const [ deleteFolderMutation ] = useDeleteFolderMutation();
+	const [ bulkDeleteFoldersMutation ] = useBulkDeleteFoldersMutation();
 	const ref = useRef( null );
 
 	useEffect( () => {
@@ -47,13 +50,17 @@ const DeleteModal = () => {
 		setIsLoading( true );
 
 		try {
-			await deleteFolderMutation( selectedFolder.id );
+			if ( ! isMultiSelecting ) {
+				await deleteFolderMutation( selectedFolder.id );
+			} else if ( multiSelectedFolderIds && multiSelectedFolderIds.length ) {
+				await bulkDeleteFoldersMutation( multiSelectedFolderIds );
+			}
 
 			dispatch( deleteFolder() );
 
 			dispatch( updateSnackbar(
 				{
-					message: __( 'Folder deleted successfully', 'godam' ),
+					message: isMultiSelecting ? __( 'Folders deleted successfully', 'godam' ) : __( 'Folder deleted successfully', 'godam' ),
 					type: 'success',
 				},
 			) );
@@ -63,7 +70,7 @@ const DeleteModal = () => {
 			dispatch( updateSnackbar(
 				{
 					message: __( 'Failed to delete folder', 'godam' ),
-					type: 'error',
+					type: 'fail',
 				},
 			) );
 		} finally {
@@ -79,14 +86,22 @@ const DeleteModal = () => {
 	};
 
 	return (
-		isOpen && (
+		( isOpen && selectedFolder ) && (
 			<Modal
 				title={ __( 'Confirm Delete', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'delete' ) ) }
 				className="modal__container"
 			>
 				<p className="modal__description">
-					Deleting the folder <span className="modal__highlight">{ selectedFolder.name }</span> will remove it and all its subfolders, but <span className="modal__highlight">media associated with it will not be deleted</span>.
+					{ isMultiSelecting ? (
+						<>
+							{ __( 'Deleting', 'godam' ) } <span className="modal__highlight">{ __( 'these', 'godam' ) } { multiSelectedFolderIds && multiSelectedFolderIds.length } { __( 'folders', 'godam' ) }</span> { __( 'will remove them and all its subfolders, but', 'godam' ) } <span className="modal__highlight">{ __( 'media associated with them will not be deleted', 'godam' ) }</span>.
+						</>
+					) : (
+						<>
+							{ __( 'Deleting the folder', 'godam' ) } <span className="modal__highlight">{ selectedFolder.name }</span> { __( 'will remove it and all its subfolders, but', 'godam' ) } <span className="modal__highlight">{ __( 'media associated with it will not be deleted', 'godam' ) }</span>.
+						</>
+					) }
 				</p>
 				<p className="modal__warning">
 					{ __( 'Are you sure you want to proceed? This action cannot be undone.', 'godam' ) }
@@ -96,14 +111,14 @@ const DeleteModal = () => {
 					<Button
 						isBusy={ isLoading }
 						ref={ ref }
-						text="Delete"
+						text={ __( 'Delete', 'godam' ) }
 						variant="primary"
 						onClick={ () => handleSubmit() }
 						isDestructive
 						onKeyDown={ handleKeyDown }
 					/>
 					<Button
-						text="Cancel"
+						text={ __( 'Cancel', 'godam' ) }
 						onClick={ () => dispatch( closeModal( 'delete' ) ) }
 						isDestructive
 					/>

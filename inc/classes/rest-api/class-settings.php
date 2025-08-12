@@ -11,6 +11,8 @@ use RTGODAM\Inc\Filesystem\Chunk_Uploader;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Post_Types\GoDAM_Video;
+
 /**
  * Class Settings
  */
@@ -41,18 +43,25 @@ class Settings extends Base {
 				'watermark'              => false,
 				'watermark_text'         => '',
 				'watermark_url'          => '',
+				'watermark_image_id'     => null,
 				'use_watermark_image'    => false,
 			),
 			'general'      => array(
 				'enable_folder_organization' => true,
-				'brand_image'                => '',
-				'brand_color'                => '#000000',
 			),
 			'uploads'      => array(
 				'offload_media' => false,
 			),
 			'video_player' => array(
-				'custom_css' => '',
+				'brand_image'    => '',
+				'brand_color'    => '#2B333FB3',
+				'brand_image_id' => null,
+				'custom_css'     => '',
+				'player_skin'    => 'Default',
+			),
+			'ads_settings' => array(
+				'enable_global_video_ads' => false,
+				'adTagUrl'                => '',
 			),
 		);
 	}
@@ -196,7 +205,7 @@ class Settings extends Base {
 			return new \WP_REST_Response(
 				array(
 					'status'  => 'success',
-					'message' => 'API key deactivated successfully.',
+					'message' => __( 'API key deactivated successfully.', 'godam' ),
 				),
 				200
 			);
@@ -205,7 +214,7 @@ class Settings extends Base {
 		return new \WP_REST_Response(
 			array(
 				'status'  => 'error',
-				'message' => 'Failed to deactivate the API key. It might not exist.',
+				'message' => __( 'Failed to deactivate the API key. It might not exist.', 'godam' ),
 			),
 			400
 		);
@@ -235,7 +244,7 @@ class Settings extends Base {
 	public function get_easydam_settings() {
 		// Retrieve settings from the database.
 		$easydam_settings = get_option( 'rtgodam-settings', $this->get_default_settings() );
-
+		
 		return new \WP_REST_Response( $easydam_settings, 200 );
 	}
 
@@ -265,7 +274,7 @@ class Settings extends Base {
 		return new \WP_REST_Response(
 			array(
 				'status'  => 'success',
-				'message' => 'EasyDAM settings updated successfully!',
+				'message' => __( 'EasyDAM settings updated successfully!', 'godam' ),
 			),
 			200
 		);
@@ -292,19 +301,57 @@ class Settings extends Base {
 				'watermark'              => rest_sanitize_boolean( $settings['video']['watermark'] ?? $default['video']['watermark'] ),
 				'watermark_text'         => sanitize_text_field( $settings['video']['watermark_text'] ?? $default['video']['watermark_text'] ),
 				'watermark_url'          => esc_url_raw( $settings['video']['watermark_url'] ?? $default['video']['watermark_url'] ),
+				'watermark_image_id'     => absint( $settings['video']['watermark_image_id'] ?? $default['video']['watermark_image_id'] ),
 				'use_watermark_image'    => rest_sanitize_boolean( $settings['video']['use_watermark_image'] ?? $default['video']['use_watermark_image'] ),
+				'video_slug'             => sanitize_title( $settings['video']['video_slug'] ?? $default['video']['video_slug'] ),
 			),
 			'general'      => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
-				'brand_image'                => sanitize_text_field( $settings['general']['brand_image'] ?? $default['general']['brand_image'] ),
-				'brand_color'                => sanitize_hex_color( $settings['general']['brand_color'] ?? $default['general']['brand_color'] ),
 			),
 			'uploads'      => array(
 				'offload_media' => rest_sanitize_boolean( $settings['uploads']['offload_media'] ?? $default['uploads']['offload_media'] ),
 			),
 			'video_player' => array(
-				'custom_css' => sanitize_textarea_field( $settings['video_player']['custom_css'] ) ?? $default['video_player']['custom_css'],
+				'brand_image'    => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),
+				'brand_color'    => $this->sanitize_color_value( $settings['video_player']['brand_color'] ?? $default['video_player']['brand_color'] ),
+				'brand_image_id' => absint( $settings['video_player']['brand_image_id'] ?? $default['video_player']['brand_image_id'] ),
+				'custom_css'     => sanitize_textarea_field( $settings['video_player']['custom_css'] ?? $default['video_player']['custom_css'] ),
+				'player_skin'    => sanitize_text_field( $settings['video_player']['player_skin'] ?? $default['video_player']['player_skin'] ),
+			),
+			'ads_settings' => array(
+				'enable_global_video_ads' => rest_sanitize_boolean( $settings['ads_settings']['enable_global_video_ads'] ?? $default['ads_settings']['enable_global_video_ads'] ),
+				'adTagUrl'                => esc_url_raw( $settings['ads_settings']['adTagUrl'] ?? $default['ads_settings']['adTagUrl'] ),
 			),
 		);
+	}
+
+	/**
+	 * Sanitize color value to handle both hex and rgba colors.
+	 *
+	 * @param string $color The color value to sanitize.
+	 * @return string
+	 */
+	private function sanitize_color_value( $color ) {
+		if ( empty( $color ) ) {
+			return '';
+		}
+		
+		// Handle hex colors (3, 6, or 8 characters with alpha).
+		if ( preg_match( '/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/', $color ) ) {
+			return $color;
+		}
+
+		// Handle rgba colors.
+		if ( preg_match( '/^rgba?\([^)]+\)$/', $color ) ) {
+			return $color;
+		}
+
+		// Handle named colors or other formats.
+		if ( preg_match( '/^[a-zA-Z]+$/', $color ) ) {
+			return $color;
+		}
+
+		// If none of the above, return empty string.
+		return '';
 	}
 }

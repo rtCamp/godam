@@ -32,7 +32,6 @@ class Media_Library_Ajax {
 	 */
 	public function setup_hooks() {
 		add_filter( 'ajax_query_attachments_args', array( $this, 'filter_media_library_by_taxonomy' ) );
-		add_filter( 'ajax_query_attachments_args', array( $this, 'godam_media_library_ajax' ) );
 		add_action( 'pre_get_posts', array( $this, 'pre_get_post_filter' ) );
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
@@ -42,99 +41,9 @@ class Media_Library_Ajax {
 
 		add_action( 'pre_delete_term', array( $this, 'delete_child_media_folder' ), 10, 2 );
 		add_action( 'delete_attachment', array( $this, 'handle_media_deletion' ), 10, 1 );
-	}
 
-	/**
-	 * Short-circuit the media library AJAX request if the mime type is 'godam'.
-	 *
-	 * @param array $query_args Query arguments.
-	 * @return array
-	 */
-	public function godam_media_library_ajax( $query_args ) {
-
-		$api_key = get_option( 'rtgodam-api-key', '' );
-
-		if ( empty( $api_key ) ) {
-			return $query_args;
-		}
-
-		if ( isset( $query_args['post_mime_type'] ) && is_array( $query_args['post_mime_type'] ) ) {
-
-			$post_mime_type = $query_args['post_mime_type'][0];
-			$mime_type      = '';
-			if ( false === strpos( $post_mime_type, 'godam/' ) ) {
-				return $query_args;
-			} else {
-				// mime_type is godam/{mime_type}.
-				$mime_type = str_replace( 'godam/', '', $post_mime_type );
-				$mime_type = explode( '-', $mime_type );
-				$mime_type = $mime_type[0];
-				if ( 'all' === $mime_type ) {
-					$mime_type = '';
-				}
-			}
-
-			$api_url = RTGODAM_API_BASE . '/api/method/godam_core.api.file.get_list_of_files_with_api_key';
-
-
-			$order_by = 'creation asc';
-			if ( isset( $query_args['order'] ) && 'DESC' === $query_args['order'] ) {
-				$order_by = 'creation desc';
-			}
-
-			$request_args = array(
-				'api_key'  => $api_key,
-				'order_by' => $order_by,
-			);
-
-			if ( ! empty( $mime_type ) ) {
-				if ( 'video' === $mime_type ) {
-					$request_args['job_type'] = 'stream';
-				} else {
-					$request_args['job_type'] = $mime_type;
-				}
-			}
-
-			if ( isset( $query_args['s'] ) && ! empty( $query_args['s'] ) ) {
-				$request_args['search'] = $query_args['s'];
-			}
-
-			if ( isset( $query_args['posts_per_page'] ) && ! empty( $query_args['paged'] ) ) {
-				$request_args['page_size'] = intval( $query_args['posts_per_page'] );
-				$request_args['page']      = intval( $query_args['paged'] );
-			}
-
-			$api_url = add_query_arg(
-				$request_args,
-				$api_url
-			);
-
-			$response = wp_remote_get(
-				$api_url,
-				array(
-					'headers' => array(
-						'Content-Type' => 'application/json',
-					),
-				)
-			);
-
-			if ( is_wp_error( $response ) ) {
-				return $query_args;
-			}
-
-			$body = json_decode( wp_remote_retrieve_body( $response ) );
-
-			$response = $body->message;
-
-			foreach ( $response as $key => $item ) {
-				$response[ $key ] = $this->prepare_godam_media_item( $item );
-			}
-
-			wp_send_json_success( $response );
-
-		} else {
-			return $query_args;
-		}
+		add_action( 'admin_notices', array( $this, 'media_library_offer_banner' ) );
+		add_action( 'wp_ajax_godam_dismiss_offer_banner', array( $this, 'dismiss_offer_banner' ) );
 	}
 
 	/**
@@ -153,19 +62,22 @@ class Media_Library_Ajax {
 
 		$result = array(
 			'id'                    => $item['name'],
-			'title'                 => pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) ?? $item['name'],
+			'title'                 => isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'],
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
-			'url'                   => 'image' === $item['job_type'] ? $item['file_origin'] : ( $item['transcoded_file_path'] ?? $item['file_origin'] ),
-			'mime'                  => 'application/dash+xml' ?? '',
+			'url'                   => ( $item['job_type'] ?? '' ) === 'image' ? ( $item['file_origin'] ?? '' ) : ( $item['transcoded_file_path'] ?? $item['file_origin'] ?? '' ),
+			'mime'                  => 'application/dash+xml',
 			'type'                  => $item['job_type'] ?? '',
-			'subtype'               => explode( '/', $item['mime_type'] )[1] ?? 'jpg',
-			'status'                => $item['status'],
-			'date'                  => strtotime( $item['creation'] ) * 1000,
-			'modified'              => strtotime( $item['modified'] ) * 1000,
-			'filesizeInBytes'       => $item['file_size'],
-			'filesizeHumanReadable' => size_format( $item['file_size'] ),
+			'subtype'               => ( isset( $item['mime_type'] ) && strpos( $item['mime_type'], '/' ) !== false ) ? explode( '/', $item['mime_type'] )[1] : 'jpg',
+			'status'                => $item['status'] ?? '',
+			'date'                  => isset( $item['creation'] ) ? strtotime( $item['creation'] ) * 1000 : 0,
+			'modified'              => isset( $item['modified'] ) ? strtotime( $item['modified'] ) * 1000 : 0,
+			'filesizeInBytes'       => $item['file_size'] ?? 0,
+			'filesizeHumanReadable' => isset( $item['file_size'] ) ? size_format( $item['file_size'] ) : '',
 			'owner'                 => $item['owner'] ?? '',
 			'label'                 => $item['file_label'] ?? '',
+			'origin'                => 'godam',
+			'thumbnail_url'         => $item['thumbnail_url'] ?? '',
+			'duration'              => $item['playtime'] ?? '',
 		);
 
 		if ( 'stream' === $item['job_type'] ) {
@@ -298,7 +210,7 @@ class Media_Library_Ajax {
 	}
 
 	/**
-	 * Add transcoding URL to the media JS Object.
+	 * Add transcoding URL, virtual status to the media JS Object.
 	 *
 	 * @param array   $response Attachment response.
 	 * @param WP_Post $attachment Attachment object.
@@ -321,6 +233,19 @@ class Media_Library_Ajax {
 
 		// Add transcoding status to response.
 		$response['transcoding_status'] = $transcoding_status ? strtolower( $transcoding_status ) : 'not_started';
+
+		$godam_original_id = get_post_meta( $attachment->ID, '_godam_original_id', true );
+
+		// If a GoDAM original ID exists, mark this attachment as virtual.
+		if ( ! empty( $godam_original_id ) ) {
+			// Indicate that this is a virtual attachment.
+			$response['virtual'] = true;
+			// Set the icon to be used for the virtual media preview.
+			$response['icon'] = get_post_meta( $attachment->ID, 'icon', true );
+			// Populate the image field used by the media library to show previews.
+			$response['image']        = array();
+			$response['image']['src'] = $response['icon'];
+		}
 
 		return $response;
 	}
@@ -582,5 +507,93 @@ class Media_Library_Ajax {
 				'headers' => array( 'Content-Type' => 'application/json' ),
 			)
 		);
+	}
+
+	/**
+	 * Dismiss the offer banner by updating the option in the database.
+	 *
+	 * @return void
+	 */
+	public function dismiss_offer_banner() {
+		check_ajax_referer( 'godam-dismiss-offer-banner-nonce', 'nonce' );
+
+		if ( get_option( 'rtgodam-offer-banner' ) === false ) {
+			add_option( 'rtgodam-offer-banner', 0 );
+		} else {
+			update_option( 'rtgodam-offer-banner', 0 );
+		}
+
+		wp_send_json_success( array( 'message' => __( 'Offer banner dismissed successfully.', 'godam' ) ) );
+	}
+
+	/**
+	 * Renders an offer banner on the media library page for non-premium users.
+	 *
+	 * @return void
+	 */
+	public function media_library_offer_banner() {
+		$screen = get_current_screen();
+
+		$show_offer_banner = get_option( 'rtgodam-offer-banner', 1 );
+
+		// Only show on the Media Library page.
+		if ( $screen && 'upload' === $screen->base && ! rtgodam_is_api_key_valid() && $show_offer_banner ) {
+			$host = wp_parse_url( home_url(), PHP_URL_HOST );
+
+			$banner_html = sprintf(
+				'<div class="notice annual-plan-offer-banner px-10">
+					<canvas id="godam-particle-canvas"></canvas>
+					<div class="annual-plan-offer-banner__content">
+						<div class="annual-plan-offer-banner__message">
+							<h3 class="annual-plan-offer-banner__title">%1$s</h3>
+							<p class="annual-plan-offer-banner__description">%2$s</p>
+						</div>
+						<div class="annual-plan-offer-banner__cta-container">
+							<a 
+								href="%3$s" 
+								class="annual-plan-offer-banner__cta" 
+								target="_blank" 
+								rel="noopener noreferrer"
+								title="%4$s"
+							>
+								%4$s
+							</a>
+						</div>
+					</div>
+					<button 
+						type="button" 
+						class="annual-plan-offer-banner__dismiss" 
+						aria-label="Dismiss banner"
+					>
+						&times;
+					</button>
+				</div>',
+				esc_html__( 'Pay for 10 months and get 2 months free with our annual plan.', 'godam' ),
+				esc_html__( 'Elevate your media management, transcoding, storage, delivery and more.', 'godam' ),
+				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=annual-plan&utm_source=' . $host . '&utm_medium=plugin&utm_content=banner' ),
+				esc_html__( 'Buy Now', 'godam' )
+			);
+
+			echo wp_kses(
+				$banner_html,
+				array(
+					'div'    => array( 'class' => array() ),
+					'canvas' => array( 'id' => array() ),
+					'h3'     => array( 'class' => array() ),
+					'p'      => array( 'class' => array() ),
+					'a'      => array(
+						'href'   => array(),
+						'class'  => array(),
+						'target' => array(),
+						'rel'    => array(),
+						'title'  => array(),
+					),
+					'button' => array(
+						'type'  => array(),
+						'class' => array(),
+					),
+				)
+			);
+		}
 	}
 }

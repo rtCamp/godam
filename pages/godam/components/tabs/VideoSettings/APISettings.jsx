@@ -6,37 +6,23 @@ import { useState } from 'react';
 /**
  * WordPress dependencies
  */
-import { Button, Panel, PanelBody, TextControl } from '@wordpress/components';
+import { Button, Panel, PanelBody, Spinner } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { useDeactivateAPIKeyMutation, useVerifyAPIKeyMutation } from '../../../redux/api/media-settings.js';
-
 import { hasValidAPIKey, maskedAPIKey, scrollToTop } from '../../../utils/index.js';
 import UsageData from './UsageData.jsx';
+import PasswordFieldWithToggle from './components/PasswordFieldWIthToggle/index.jsx';
 
 const APISettings = ( { setNotice } ) => {
 	const [ apiKey, setAPIKey ] = useState( hasValidAPIKey ? maskedAPIKey : '' );
-
 	const [ verifyAPIKey, { isLoading: isAPIKeyLoading } ] = useVerifyAPIKeyMutation();
 	const [ deactivateAPIKey, { isLoading: isDeactivateLoading } ] = useDeactivateAPIKeyMutation();
 
-	const renderHelpText = () => {
-		if ( ! hasValidAPIKey ) {
-			return (
-				<>
-					{ __( 'Your API key is required to access the features. You can get your active API key from your ', 'godam' ) }
-					<a href={ ( window.godamRestRoute?.api_base ?? 'https://app.godam.io' ) + '/web/my-account?accTab=API' } target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-						{ __( 'Account', 'godam' ) }
-					</a>.
-				</>
-			);
-		}
-		return null;
-	};
-
+	// Function to handle saving the API key
 	const handleSaveAPIKey = async () => {
 		if ( ! apiKey.trim() ) {
 			setNotice( {
@@ -68,6 +54,7 @@ const APISettings = ( { setNotice } ) => {
 		scrollToTop();
 	};
 
+	// Function to handle deactivating the API key
 	const handleDeactivateAPIKey = async () => {
 		try {
 			const response = await deactivateAPIKey().unwrap();
@@ -92,26 +79,24 @@ const APISettings = ( { setNotice } ) => {
 
 	return (
 		<Panel header={ __( 'API Settings', 'godam' ) } className="godam-panel">
-			<PanelBody initialOpen className="flex gap-8">
+			<PanelBody initialOpen className="flex gap-8 flex-col sm:flex-row">
 				<div className="flex flex-col gap-2 b-4m">
-					<TextControl
-						label={ __( 'API Key', 'godam' ) }
-						value={ apiKey }
-						onChange={ setAPIKey }
-						help={ renderHelpText() }
-						placeholder={ __( 'Enter your API key here', 'godam' ) }
-						className={ `godam-input ${ ! hasValidAPIKey && maskedAPIKey ? 'invalid-api-key' : '' }` }
-						disabled={ hasValidAPIKey }
+					<PasswordFieldWithToggle
+						hasValidAPIKey={ hasValidAPIKey }
+						maskedAPIKey={ maskedAPIKey }
+						apiKey={ apiKey }
+						setAPIKey={ setAPIKey }
 					/>
 					<div className="flex gap-2">
 						<Button
 							className="godam-button godam-margin-right"
 							onClick={ handleSaveAPIKey }
-							disabled={ isAPIKeyLoading || hasValidAPIKey }
+							icon={ isAPIKeyLoading && <Spinner /> }
+							disabled={ isAPIKeyLoading || hasValidAPIKey || ! apiKey.trim() }
 							variant="primary"
 							isBusy={ isAPIKeyLoading }
 						>
-							{ __( 'Save API Key', 'godam' ) }
+							{ isAPIKeyLoading ? __( 'Saving…', 'godam' ) : __( 'Save API Key', 'godam' ) }
 						</Button>
 						<Button
 							className="godam-button"

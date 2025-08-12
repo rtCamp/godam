@@ -1,9 +1,15 @@
 /* global jQuery */
 
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { isAPIKeyValid, isFolderOrgDisabled } from '../utility';
+import GodamLogo from '../../../images/godam-logo-gradient.svg';
 
 const $ = jQuery;
 
@@ -22,57 +28,66 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 	initialize() {
 		wp.media.view.Attachment.prototype.initialize.call( this );
 
-		if ( ! isFolderOrgDisabled() ) {
-			/**
-			 * Attach drag event to the attachment element, this will allow the user to drag the attachment.
-			 * It's more useful to do this here, because on re-render, the draggable event will be lost.
-			 */
-			this.$el.draggable( {
-				cursor: 'move',
-
-				/**
-				 * Using arrow function here is necessary to bind the context of `this` to the parent view.
-				 * Otherwise, `this` will refer to the draggable instance.
-				 *
-				 * not using it here would result in you having to use timeout function to wait for the initialization of the view.
-				 */
-				helper: () => {
-					// Get the current selection from Backbone's state
-					const selection = wp.media.frame.state().get( 'selection' );
-
-					// Map through the selection to extract IDs
-					let draggedItemIds = selection?.map( ( model ) => model.get( 'id' ) );
-
-					// If no items are selected, use the current item's ID
-					if ( ! draggedItemIds || draggedItemIds.length === 0 ) {
-						const currentItemId = this.model.get( 'id' ); // Get the ID of the current attachment
-						draggedItemIds = [ currentItemId ];
-					}
-
-					this.$el.data( 'draggedItems', draggedItemIds );
-
-					return $( '<div>', {
-						text: `Moving ${ draggedItemIds.length } item${ draggedItemIds.length > 1 ? 's' : '' }`,
-						css: {
-							background: '#333',
-							color: '#fff',
-							padding: '8px 12px',
-							borderRadius: '4px',
-							fontSize: '14px',
-							fontWeight: 'bold',
-							boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
-							zIndex: 160001, // Ensure that the helper is above media library popup
-							PointerEvent: 'none',
-							position: 'relative',
-						},
-					} );
-				},
-				opacity: 0.7,
-				appendTo: 'body',
-				cursorAt: { top: 5, left: 5 },
-
-			} );
+		const currentSelectedFolder = window.godam?.selectedFolder;
+		if ( isFolderOrgDisabled() || currentSelectedFolder?.meta?.locked ) {
+			return;
 		}
+		/**
+		 * Attach drag event to the attachment element, this will allow the user to drag the attachment.
+		 * It's more useful to do this here, because on re-render, the draggable event will be lost.
+		 */
+		this.$el.draggable( {
+			cursor: 'move',
+
+			/**
+			 * Using arrow function here is necessary to bind the context of `this` to the parent view.
+			 * Otherwise, `this` will refer to the draggable instance.
+			 *
+			 * not using it here would result in you having to use timeout function to wait for the initialization of the view.
+			 */
+			helper: () => {
+				// Get the current selection from Backbone's state
+				const selection = wp.media.frame.state().get( 'selection' );
+
+				// Map through the selection to extract IDs
+				let draggedItemIds = selection?.map( ( model ) => model.get( 'id' ) );
+
+				// If no items are selected, use the current item's ID
+				if ( ! draggedItemIds || draggedItemIds.length === 0 ) {
+					const currentItemId = this.model.get( 'id' ); // Get the ID of the current attachment
+					draggedItemIds = [ currentItemId ];
+				}
+
+				this.$el.data( 'draggedItems', draggedItemIds );
+
+				return $( '<div>', {
+					text: `Moving ${ draggedItemIds.length } item${ draggedItemIds.length > 1 ? 's' : '' }`,
+					css: {
+						background: '#333',
+						color: '#fff',
+						padding: '8px 12px',
+						borderRadius: '4px',
+						fontSize: '14px',
+						fontWeight: 'bold',
+						boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
+						zIndex: 160001, // Ensure that the helper is above media library popup
+						PointerEvent: 'none',
+						position: 'relative',
+					},
+				} );
+			},
+			opacity: 0.7,
+			appendTo: 'body',
+			cursorAt: { top: 5, left: 5 },
+			// eslint-disable-next-line no-unused-vars
+			start: ( event, ui ) => {
+				// Cancel drag if folder is locked
+				if ( window.godam?.selectedFolder?.meta?.locked ) {
+					event.preventDefault();
+					$( event.target ).draggable( 'cancel' );
+				}
+			},
+		} );
 	},
 
 	render() {
@@ -91,9 +106,17 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 		if ( isAPIKeyValid() && ( this.model.get( 'type' ) === 'video' || this.model.get( 'type' ) === 'audio' ) ) {
 			// Get the transcoding status from the model
 			const transcodingStatus = this.model.get( 'transcoding_status' );
+			const virtual = this.model.get( 'virtual' );
 
-			// Check if the status is 'transcoded' or if we have a transcoded URL
-			if ( transcodingStatus === 'transcoded' ) {
+			if ( undefined !== virtual && virtual ) {
+				this.$el.append( `
+					<div class="transcoding-status__loader" data-percent="100">
+						<img src="${ GodamLogo }" alt="${ __( 'GoDAM Logo', 'godam' ) }" width="24" height="24" />
+					</div>
+				` );
+				this.$el.addClass( 'transcoding-status--completed' );
+			} else if ( transcodingStatus === 'transcoded' ) {
+				// Check if the status is 'transcoded' or if we have a transcoded URL
 				this.$el.append( `
 					<div class="transcoding-status__loader" data-percent="100">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">

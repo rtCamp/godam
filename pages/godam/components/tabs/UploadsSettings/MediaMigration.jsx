@@ -289,9 +289,9 @@ const MediaMigration = () => {
 							</div>
 							<div className="leading-6 mr-6">
 								<div className="easydam-settings-label text-base"><b>{ __( 'GoDAM STORAGE', 'godam' ) }</b></div>
-								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ formatSize( parseInt( window?.userData.storage_used ) * 1024 * 1024 * 1024 ) }
+								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ formatSize( parseInt( window?.userData.storageUsed ) * 1024 * 1024 * 1024 ) }
 								<br />
-								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ formatSize( parseInt( window?.userData.total_storage - window?.userData.storage_used ) * 1024 * 1024 * 1024 ) }
+								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ formatSize( parseInt( window?.userData.totalStorage - window?.userData.storageUsed ) * 1024 * 1024 * 1024 ) }
 							</div>
 							<div className="leading-6 mr-6">
 								<div className="easydam-settings-label text-base"><b>{ __( 'STATS', 'godam' ) }</b></div>

@@ -20,6 +20,7 @@ import SingleMetrics from '../analytics/SingleMetrics';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import chevronLeft from '../../assets/src/images/chevron-left.svg';
 import chevronRight from '../../assets/src/images/chevron-right.svg';
+import upgradePlanBackground from '../../assets/src/images/upgrade-plan-dashboard-bg.png';
 
 const Dashboard = () => {
 	const [ topVideosPage, setTopVideosPage ] = useState( 1 );
@@ -163,33 +164,6 @@ const Dashboard = () => {
 		return () => clearInterval( checkExist );
 	}, [] );
 
-	useEffect( () => {
-		const handleResize = () => {
-			const smallSize = window.innerWidth <= 1024;
-			const responsiveOverlay = document.getElementById( 'screen-size-overlay' );
-			const dashboardContainer = document.getElementById( 'root-video-dashboard' );
-
-			if ( responsiveOverlay && dashboardContainer ) {
-				if ( smallSize ) {
-					responsiveOverlay.classList.remove( 'hidden' );
-					dashboardContainer.style.overflow = 'hidden';
-				} else {
-					responsiveOverlay.classList.add( 'hidden' );
-					dashboardContainer.style.overflow = 'auto';
-				}
-			}
-		};
-
-		// Initial check
-		handleResize();
-
-		// Add listener
-		window.addEventListener( 'resize', handleResize );
-
-		// Cleanup
-		return () => window.removeEventListener( 'resize', handleResize );
-	}, [] );
-
 	return (
 		<div className="godam-dashboard-container">
 			<GodamHeader />
@@ -202,29 +176,57 @@ const Dashboard = () => {
 				</div>
 			</div>
 
-			<div id="api-key-overlay" className="api-key-overlay hidden">
+			<div
+				id="api-key-overlay"
+				className="api-key-overlay hidden"
+				style={
+					dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key'
+						? {
+							backgroundImage: `url(${ upgradePlanBackground })`,
+							backgroundSize: '100% calc(100% - 32px)',
+							backgroundRepeat: 'no-repeat',
+							backgroundPosition: 'center 32px',
+						}
+						: {}
+				}
+			>
 				<div className="api-key-message">
-					<p>
-						{ dashboardMetrics?.message + ' ' || __(
-							'Your API key is missing or invalid. Please check your plugin settings.',
-							'godam',
-						) }
-						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( 'Go to plugin settings', 'godam' ) }
-						</a>
-					</p>
-				</div>
-			</div>
+					{ dashboardMetrics?.errorType === 'invalid_key' || dashboardMetrics?.errorType === 'missing_key'
+						? <div className="api-key-overlay-banner">
+							<p className="api-key-overlay-banner-header">
+								{ __(
+									'Upgrade to unlock the media performance report.',
+									'godam',
+								) }
 
-			<div id="screen-size-overlay" className="screen-size-overlay hidden">
-				<div className="screen-size-message">
-					<p>{ __( 'You need to use desktop to access this feature. ', 'godam' ) }</p>
+								<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
+							</p>
+
+							<p className="api-key-overlay-banner-footer">
+								{ __( 'If you already have a premium plan, connect your ' ) }
+								<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+									{ __( 'API in the settings', 'godam' ) }
+								</a>
+							</p>
+						</div>
+						:	<div className="api-key-overlay-banner">
+							<p>
+								{ dashboardMetrics?.message + ' ' || __(
+									'An unknown error occurred. Please check your plugin settings.',
+									'godam',
+								) }
+							</p>
+							<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
+								{ __( 'Go to plugin settings', 'godam' ) }
+							</a>
+						</div>
+					}
 				</div>
 			</div>
 
 			<div id="dashboard-container" className="dashboard-container">
 				<div className="flex-grow">
-					<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch">
+					<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
 
 						<SingleMetrics
 							mode="dashboard"
@@ -280,13 +282,13 @@ const Dashboard = () => {
 
 				<div className="mx-auto py-4">
 					<div className="playback-country-container flex flex-wrap">
-						<div className="playback-performance flex-1 min-w-[600px]" id="global-analytics-container">
+						<div className="playback-performance min-w-full lg:min-w-[600px]" id="global-analytics-container">
 							<PlaybackPerformanceDashboard
 								initialData={ dashboardMetricsHistory }
 								mode="dashboard"
 							/>
 						</div>
-						<div className="country-views flex-1 min-w-[300px]">
+						<div className="country-views min-w-full md:min-w-[300px]">
 							<div className="country-views-map" id="map-container"></div>
 							<div className="country-views-table" id="table-container"></div>
 						</div>
@@ -301,7 +303,7 @@ const Dashboard = () => {
 							{ __( 'Export', 'godam' ) }
 						</button>
 					</div>
-					<div className="table-container">
+					<div className="table-container overflow-x-auto">
 						<table className="w-full">
 							<tbody>
 								<tr>

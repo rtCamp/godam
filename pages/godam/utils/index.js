@@ -10,17 +10,17 @@ export const scrollToTop = () => {
 /**
  * Check if the API key is valid
  */
-export const hasValidAPIKey = window?.userData?.valid_api_key || false;
+export const hasValidAPIKey = window?.userData?.validApiKey || false;
 
 /**
  * Masked API key
  */
-export const maskedAPIKey = window?.userData?.user_data?.masked_api_key || '';
+export const maskedAPIKey = window?.userData?.userApiData?.masked_api_key || '';
 
 /**
  * Check if the user is on the Starter plan
  */
-export const isOnStarterPlan = window?.userData?.user_data?.active_plan === 'Starter';
+export const isOnStarterPlan = window?.userData?.userApiData?.active_plan === 'Starter';
 
 /**
  * GODAM API base URL
@@ -106,5 +106,5 @@ export function getMediaMigrationInfo() {
  * @return {boolean} True if the user has a valid API Key, false otherwise.
  */
 export function isPremiumUser() {
-	return !! window?.userData?.valid_api_key;
+	return !! window?.userData?.validApiKey;
 }

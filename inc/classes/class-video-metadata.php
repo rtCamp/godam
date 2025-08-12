@@ -24,6 +24,16 @@ class Video_Metadata {
 	const BATCH_SIZE = 50;
 
 	/**
+	 * Default width for video thumbnails in pixels.
+	 */
+	const DEFAULT_THUMBNAIL_WIDTH = 640;
+
+	/**
+	 * Default height for video thumbnails in pixels.
+	 */
+	const DEFAULT_THUMBNAIL_HEIGHT = 480;
+
+	/**
 	 * Constructor.
 	 */
 	final protected function __construct() {
@@ -40,6 +50,9 @@ class Video_Metadata {
 		add_action( 'add_attachment', array( $this, 'save_video_metadata' ) );
 
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'set_media_library_thumbnail' ), 10, 3 );
+		add_action( 'init', array( $this, 'filter_vimeo_migrated_urls' ) );
+
+		add_filter( 'wp_get_attachment_image', array( $this, 'set_media_library_list_thumbnail' ), 10, 4 );
 	}
 
 	/**
@@ -181,12 +194,67 @@ class Video_Metadata {
 			$thumbnail_url   = get_post_meta( $response['id'], 'rtgodam_media_video_thumbnail', true );
 			$attachment_meta = get_post_meta( $response['id'], '_wp_attachment_metadata', true );
 
-			if ( ! empty( $thumbnail_url ) && isset( $attachment_meta['width'] ) && isset( $attachment_meta['height'] ) ) {
+			if ( ! empty( $thumbnail_url ) ) {
 				$response['image']['src']    = esc_url( $thumbnail_url );
-				$response['image']['height'] = $attachment_meta['width'];
-				$response['image']['width']  = $attachment_meta['height'];
+				$response['image']['width']  = $attachment_meta['width'] ?? self::DEFAULT_THUMBNAIL_WIDTH;
+				$response['image']['height'] = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
 			}
 		}
 		return $response;
+	}
+
+	/**
+	 * Filter to return the remote URL for Vimeo migrated videos.
+	 *
+	 * This filter modifies the attachment URL to return the remote URL
+	 * if the video has been migrated from Vimeo.
+	 *
+	 * @since n.e.x.t
+	 */
+	public function filter_vimeo_migrated_urls(): void {
+		add_filter(
+			'wp_get_attachment_url',
+			function ( $url, $post_id ) {
+				$is_vimeo_migrated = get_post_meta( $post_id, 'rtgodam_is_migrated_vimeo_video', true );
+				if ( $is_vimeo_migrated ) {
+					$remote_url = get_post_meta( $post_id, '_wp_attached_file', true );
+					if ( ! empty( $remote_url ) ) {
+						return $remote_url;
+					}
+				}
+				return $url;
+			},
+			10,
+			2
+		);
+	}
+
+	/**
+	 * Set custom thumbnail for video attachments in the media library list view.
+	 *
+	 * This filter targets the media library list view (upload screen) and
+	 * replaces the default icon/thumbnail with a custom video thumbnail
+	 * from post meta, if available.
+	 *
+	 * @param string     $html          The HTML output for the attachment.
+	 * @param int        $attachment_id The ID of the attachment.
+	 * @param array|bool $size          The size of the image (e.g., array(60, 60)).
+	 * @param bool       $icon          Whether the attachment is displayed as an icon.
+	 * @return string The modified HTML output for the thumbnail.
+	 */
+	public function set_media_library_list_thumbnail( $html, $attachment_id, $size, $icon ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- We dont use icon param.
+		if ( is_admin() && 'upload' === get_current_screen()->id && array( 60, 60 ) === $size ) {
+
+			$thumbnail_url   = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+			$attachment_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
+
+			if ( ! empty( $thumbnail_url ) ) {
+				$width  = $attachment_meta['width'] ?? self::DEFAULT_THUMBNAIL_WIDTH;
+				$height = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
+				$html   = sprintf( '<img width="%s" height="%s" src="%s" style="object-fit: cover; height: 60px;" decoding="async" loading="lazy" />', esc_attr( $width ), esc_attr( $height ), esc_url( $thumbnail_url ) );
+			}
+		}
+
+		return $html;
 	}
 }

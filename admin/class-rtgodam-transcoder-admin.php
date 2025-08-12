@@ -113,8 +113,8 @@ class RTGODAM_Transcoder_Admin {
 			if ( $days_until_trial_end > 0 ) {
 				$this->render_admin_notice(
 					sprintf(
-						'Your product is under trial. You will be charged after <strong>%d days</strong>. 
-						If you wish to cancel, please visit <a href="https://app.godam.io/subscription/my-account" target="_blank">your subscription settings</a>.',
+						/* translators: %d: Number of days until trial ends */
+						__( 'Your product is under trial. You will be charged after <strong>%d days</strong>. If you wish to cancel, please visit <a href="https://app.godam.io/subscription/my-account" target="_blank">your subscription settings</a>.', 'godam' ),
 						$days_until_trial_end
 					),
 					'warning',
@@ -137,10 +137,8 @@ class RTGODAM_Transcoder_Admin {
 			if ( $days_until_deletion > 0 ) {
 				$this->render_admin_notice(
 					sprintf(
-						'Your subscription has ended. No further transcoding can be done. 
-						Transcoded videos will be removed after <strong>%d days</strong>, and advanced video layers will not be accessible. 
-						After the 30-day grace period, already transcoded videos will no longer be served from the CDN. 
-						Renew your subscription to keep it up and running.',
+						/* translators: %d: Number of days until transcoded videos are deleted after subscription ends */
+						__( 'Your subscription has ended. No further transcoding can be done. Transcoded videos will be removed after <strong>%d days</strong>, and advanced video layers will not be accessible. After the 30-day grace period, already transcoded videos will no longer be served from the CDN. Renew your subscription to keep it up and running.', 'godam' ),
 						$days_until_deletion
 					),
 					'error',

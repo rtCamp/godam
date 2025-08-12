@@ -83,19 +83,19 @@ const UploadsSettings = () => {
 
 			<Panel header={ __( 'Uploads Settings', 'godam' ) } className="godam-panel">
 				<PanelBody opened>
-					{ mediaSettings?.uploads?.offload_media && (
-						<Notice
-							className="mb-4"
-							status={ 'warning' }
-							isDismissible={ false }
-						>
-							{ sprintf(
-								// translators: %s: Maximum file upload size (e.g. "500 MB")
-								__( 'Enabling the Offload Media option allows you to upload files up to %s in size.', 'godam' ),
-								getFileUploadSize(),
-							) }
-						</Notice>
-					) }
+
+					<Notice
+						className="mb-4"
+						status={ 'warning' }
+						isDismissible={ false }
+					>
+						{ sprintf(
+							// translators: %s: Maximum file upload size (e.g. "500 MB")
+							__( 'Enabling the Offload Media option allows you to upload files up to %s in size.', 'godam' ),
+							getFileUploadSize(),
+						) }
+					</Notice>
+
 					<ToggleControl
 						__nextHasNoMarginBottom
 						className="godam-toggle godam-margin-bottom"

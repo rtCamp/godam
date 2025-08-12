@@ -91,11 +91,11 @@ function generateHeatmap( data, selector, videoPlayer ) {
 					.html(
 						`<div class="heatmap-tooltip-html">
 							<div class="flex gap-2 items-center text-black">
-								<img src=${ ViewIcon } alt="View" height=${ 16 } width=${ 16 }/>
+								<img src=${ ViewIcon } alt="${ __( 'View', 'godam' ) }" height=${ 16 } width=${ 16 }/>
 								${ value }
 							</div>
 							<div class="flex gap-2 items-center text-black">
-								<img src=${ DurationIcon } alt="Duration" height=${ 15 } width=${ 15 }/>
+								<img src=${ DurationIcon } alt="${ __( 'Duration', 'godam' ) }" height=${ 15 } width=${ 15 }/>
 								${ formatTime( index ) }
 							</div>
 						</div>`,

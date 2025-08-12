@@ -1,3 +1,7 @@
+/**
+ * WordPress dependencies
+ */
+const { __ } = wp.i18n;
 
 /**
  * Internal dependencies
@@ -32,6 +36,39 @@ class MediaLibrary {
 		this.setupMediaLibraryRoot();
 		this.initializeDateRangeFilter();
 		addManageMediaButton();
+		this.addInputPlaceholder();
+		this.handleBannerClose();
+	}
+
+	addInputPlaceholder() {
+		if ( wp?.media?.view?.Search ) {
+			wp.media.view.Search = wp?.media?.view?.Search?.extend( {
+				initialize() {
+					wp.media.view.Search.__super__.initialize.apply( this, arguments );
+					this.$el.attr( 'placeholder', __( 'Search Media', 'godam' ) );
+				},
+			} );
+		}
+	}
+
+	/**
+	 * Handles the closing of the offer banner.
+	 * Hides the banner and sends an AJAX request to dismiss the offer.
+	 */
+	handleBannerClose() {
+		const banner = document.querySelector( '.annual-plan-offer-banner' );
+		if ( banner ) {
+			const closeButton = banner.querySelector( '.annual-plan-offer-banner__dismiss' );
+			if ( closeButton ) {
+				closeButton.addEventListener( 'click', () => {
+					banner.style.display = 'none';
+
+					window.wp.ajax.post( 'godam_dismiss_offer_banner', {
+						nonce: window?.godamSettings?.showOfferBannerNonce || '',
+					} );
+				} );
+			}
+		}
 	}
 
 	setupAttachmentBrowser() {

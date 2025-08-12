@@ -48,10 +48,17 @@ const slice = createSlice( {
 		loading: false,
 		gforms: [],
 		cf7Forms: [],
+		fluentForms: [],
 		wpforms: [],
 		gformPluginActive: true,
 		jetpackForms: [],
 		jetpackPluginActive: false,
+		sureforms: [],
+		sureformsPlugnActive: false,
+		forminatorForms: [],
+		forminatorPluginActive: false,
+		metforms: [],
+		metformPlugnActive: false,
 	},
 	reducers: {
 		initializeStore: ( state, action ) => {
@@ -141,14 +148,44 @@ const slice = createSlice( {
 		setWPForms: ( state, action ) => {
 			state.wpforms = action.payload;
 		},
+		setEverestForms: ( state, action ) => {
+			state.everestForms = action.payload;
+		},
 		setWPFormPluginActive: ( state, action ) => {
 			state.wpFormPluginActive = action.payload;
 		},
 		setJetpackForms: ( state, action ) => {
 			state.jetpackForms = action.payload;
 		},
+		setFluentForms: ( state, action ) => {
+			state.fluentForms = action.payload;
+		},
 		setJetpackPluginActive: ( state, action ) => {
 			state.jetpackPluginActive = action.payload;
+		},
+		setSureforms: ( state, action ) => {
+			state.sureforms = action.payload;
+		},
+		setSureformsPluginActive: ( state, action ) => {
+			state.sureformsPlugnActive = action.payload;
+		},
+		setForminatorForms: ( state, action ) => {
+			state.forminatorForms = action.payload;
+		},
+		setForminatorPluginActive: ( state, action ) => {
+			state.forminatorPluginActive = action.payload;
+		},
+		setNinjaForms: ( state, action ) => {
+			state.ninjaForms = action.payload;
+		},
+		setNinjaPluginActive: ( state, action ) => {
+			state.ninjaPluginActive = action.payload;
+		},
+		setMetforms: ( state, action ) => {
+			state.metforms = action.payload;
+		},
+		setMetformPluginActive: ( state, action ) => {
+			state.metformPlugnActive = action.payload;
 		},
 	},
 } );
@@ -171,8 +208,18 @@ export const {
 	setCF7Forms,
 	SetCF7PluginActive,
 	setWPForms,
+	setEverestForms,
 	setWPFormPluginActive,
 	setJetpackForms,
+	setFluentForms,
 	setJetpackPluginActive,
+	setSureforms,
+	setSureformsPluginActive,
+	setForminatorForms,
+	setForminatorPluginActive,
+	setNinjaForms,
+	setNinjaPluginActive,
+	setMetforms,
+	setMetformPluginActive,
 } = slice.actions;
 export default slice.reducer;

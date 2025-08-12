@@ -1,0 +1,52 @@
+.folder-context-menu {
+	position: fixed;
+	background-color: #fff;
+	border: 1px solid #ddd;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	border-radius: 0.25rem;
+	z-index: 1000;
+	min-width: 200px;
+	padding: 6px 0 !important;
+
+	.folder-context-menu__item.has-icon {
+		display: flex;
+		align-items: center;
+		width: 100%;
+		text-align: left;
+		padding: 0.75rem;
+		color: #333;
+		font-size: 14px;
+		line-height: 1.25rem;
+		border: none;
+		background: none;
+		cursor: pointer;
+
+		&:hover {
+		    color: #1c1c1c;
+			background-color: #F5F5F5;
+		}
+
+		&:focus {
+			outline: none;
+		}
+
+		&:disabled {
+			opacity: 0.6;
+			cursor: not-allowed;
+			background-color: transparent;
+		}
+
+		&:first-child {
+        border-bottom: 1px solid #E0E0E0;
+		}
+
+		&:nth-last-child(2) {
+        border-top: 1px solid #E0E0E0;
+		}
+	}
+
+	svg {
+        fill: none;
+        margin-right: 0.5rem;
+	}
+}

@@ -43,7 +43,7 @@ import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
-import { secondsToISO8601 } from './utils';
+import { appendTimezoneOffsetToUTC, secondsToISO8601 } from './utils/index.js';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -90,6 +90,7 @@ function VideoEdit( {
 	const posterImageButton = useRef();
 	const {
 		id,
+		cmmId,
 		controls,
 		autoplay,
 		poster,
@@ -106,7 +107,6 @@ function VideoEdit( {
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
-	const [ videoResponse, setVideoResponse ] = useState( {} );
 	const [ duration, setDuration ] = useState( 0 );
 
 	const dispatch = useDispatch();
@@ -118,6 +118,13 @@ function VideoEdit( {
 		preload,
 		fluid: true,
 		playsinline: true,
+		flvjs: {
+			mediaDataSource: {
+				isLive: true,
+				cors: false,
+				withCredentials: false,
+			},
+		},
 		loop,
 		muted,
 		poster: poster || defaultPoster,
@@ -136,13 +143,10 @@ function VideoEdit( {
 						const video = playerEl.querySelector( 'video' );
 
 						video.addEventListener( 'loadedmetadata', () => {
-							setAttributes( { aspectRatio: `${ video.videoWidth } / ${ video.videoHeight }` } );
-							let _duration = player.duration();
+							setAttributes( { videoWidth: `${ video.videoWidth }` } );
+							setAttributes( { videoHeight: `${ video.videoHeight }` } );
+							const _duration = player.duration();
 							setDuration( _duration );
-							if ( _duration ) {
-								_duration = secondsToISO8601( Math.round( _duration ) );
-								setAttributes( { seo: { ...attributes.seo, duration: _duration } } );
-							}
 						} );
 					}
 				} }
@@ -163,37 +167,38 @@ function VideoEdit( {
 				try {
 					const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
 
-					setVideoResponse( response );
-
 					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
 						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
 					}
 
-					if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
-						const transcodedUrl = response.meta.rtgodam_transcoded_url;
+					if ( response ) {
+						const newSources = [
+							{
+								src: response.source_url,
+								type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
+							},
+						];
 
-						setAttributes( {
-							sources: [
-								{
-									src: transcodedUrl,
-									type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : response.mime_type,
-								},
-								{
-									src: response.source_url,
-									type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
-								},
-							],
-						} );
-					} else {
-						// If meta not present, use media url.
-						setAttributes( {
-							sources: [
-								{
-									src: response.source_url,
-									type: response.source_url.endsWith( '.mov' ) ? 'video/mp4' : response.mime_type,
-								},
-							],
-						} );
+						if ( response?.meta && response?.meta?.rtgodam_hls_transcoded_url ) {
+							const hlsTranscodedUrl = response.meta.rtgodam_hls_transcoded_url;
+
+							newSources.push( {
+								src: hlsTranscodedUrl,
+								type: hlsTranscodedUrl.endsWith( '.m3u8' ) ? 'application/x-mpegURL' : response.mime_type,
+							} );
+						}
+
+						if ( response?.meta && response?.meta?.rtgodam_transcoded_url ) {
+							const transcodedUrl = response.meta.rtgodam_transcoded_url;
+
+							newSources.push( {
+								src: transcodedUrl,
+								type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : response.mime_type,
+							} );
+						}
+
+						// Reverse the sources to ensure the preferred format is first. MPD -> HLS -> Origin
+						setAttributes( { sources: newSources.reverse() } );
 					}
 				} catch ( error ) {
 					// Show error notice if fetching media fails.
@@ -236,6 +241,7 @@ function VideoEdit( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
+			cmmId: media.id,
 			poster: undefined,
 			caption: media.caption,
 		} );
@@ -244,54 +250,87 @@ function VideoEdit( {
 			setDefaultPoster( media.image?.src );
 		}
 
+		if ( media?.origin === 'godam' ) {
+			setAttributes( {
+				seo: {
+					contentUrl: media?.url,
+					headline: media?.title || '',
+					description: media?.description || '',
+					uploadDate: appendTimezoneOffsetToUTC( media?.date || '' ),
+					duration: secondsToISO8601( media?.duration || '' ),
+					thumbnailUrl: media?.thumbnail_url || '',
+					isFamilyFriendly: true, // Default value
+				},
+			} );
+
+			setAttributes( {
+				sources: [
+					{
+						src: media.url,
+						type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
+					},
+				],
+			} );
+		} else {
 		// Fetch transcoded URL from media meta.
-		( async () => {
-			try {
-				const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
-
-				setVideoResponse( response );
-
-				if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
-					const transcodedUrl = response.meta.rtgodam_transcoded_url;
-
-					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
-						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
-					}
+			( async () => {
+				try {
+					const response = await apiFetch( { path: `/wp/v2/media/${ media.id }` } );
 
 					setAttributes( {
-						sources: [
-							{
-								src: transcodedUrl,
-								type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : media.mime,
-							},
-							{
-								src: media.url,
-								type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
-							},
-						],
+						seo: {
+							contentUrl: response.meta?.rtgodam_transcoded_url || response.source_url,
+							headline: response.title?.rendered || '',
+							description: response.description?.rendered || '',
+							uploadDate: appendTimezoneOffsetToUTC( response.date_gmt ),
+							duration: response.video_duration_iso8601 || '',
+							thumbnailUrl: response.meta?.rtgodam_media_video_thumbnail || '',
+							isFamilyFriendly: true, // Default value
+						},
 					} );
-				} else {
+
+					if ( response && response.meta && response.meta.rtgodam_transcoded_url ) {
+						const transcodedUrl = response.meta.rtgodam_transcoded_url;
+
+						if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
+							setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
+						}
+
+						setAttributes( {
+							sources: [
+								{
+									src: transcodedUrl,
+									type: transcodedUrl.endsWith( '.mpd' ) ? 'application/dash+xml' : media.mime,
+								},
+								{
+									src: media.url,
+									type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
+								},
+							],
+						} );
+					} else {
 					// If meta not present, use media url.
+						setAttributes( {
+							sources: [
+								{
+									src: media.url,
+									type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
+								},
+							],
+						} );
+					}
+				} catch ( error ) {
 					setAttributes( {
 						sources: [
 							{
 								src: media.url,
-								type: media.url.endsWith( '.mov' ) ? 'video/mp4' : media.mime,
+								type: media.mime,
 							},
 						],
 					} );
 				}
-			} catch ( error ) {
-				setAttributes( {
-					sources: [
-						{
-							src: media.url,
-							type: media.mime,
-						},
-					],
-				} );
-			}
-		} )();
+			} )();
+		}
 
 		setTemporaryURL();
 	}
@@ -424,6 +463,28 @@ function VideoEdit( {
 						setAttributes={ setAttributes }
 						attributes={ attributes }
 					/>
+
+					<BaseControl
+						id={ `video-block__hover-${ instanceId }` }
+						__nextHasNoMarginBottom
+					>
+						<SelectControl
+							__nextHasNoMarginBottom
+							label={ __( 'Hover Option', 'godam' ) }
+							help={ __( 'Choose the action to perform on video hover.', 'godam' ) }
+							value={ attributes.hoverSelect || 'none' }
+							onChange={ ( value ) => setAttributes( { hoverSelect: value } ) }
+							options={
+								[
+									{ label: __( 'None', 'godam' ), value: 'none' },
+									{ label: __( 'Show Player Controls', 'godam' ), value: 'show-player-controls' },
+									{ label: __( 'Start Preview', 'godam' ), value: 'start-preview' },
+									{ label: __( 'Shadow Overlay', 'godam' ), value: 'shadow-overlay' },
+								]
+							}
+						/>
+					</BaseControl>
+
 					<BaseControl
 						id={ `video-block__poster-image-${ instanceId }` }
 						label={ __( 'Video Thumbnail', 'godam' ) }
@@ -476,7 +537,7 @@ function VideoEdit( {
 					>
 						<Button
 							__next40pxDefaultSize
-							href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ id }` }
+							href={ `${ window?.pluginInfo?.adminUrl }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
 							target="_blank"
 							variant="primary"
 							className=""
@@ -501,6 +562,22 @@ function VideoEdit( {
 						>
 							{ __( 'SEO Settings', 'godam' ) }
 						</Button>
+					</BaseControl>
+
+					<BaseControl
+						id={ `video-block__video--selected-aspect-ratio-${ instanceId }` }
+						label={ __( 'Aspect Ratio', 'godam' ) }
+						__nextHasNoMarginBottom
+					>
+						<SelectControl
+							value={ attributes.aspectRatio || '16:9' }
+							options={ [
+								{ label: __( '16:9 (Standard)', 'godam' ), value: '16:9' },
+								{ label: __( 'Responsive', 'godam' ), value: 'responsive' },
+							] }
+							onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
+							help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
+						/>
 					</BaseControl>
 
 				</PanelBody>
@@ -558,10 +635,8 @@ function VideoEdit( {
 			<VideoSEOModal
 				isOpen={ isSEOModalOpen }
 				setIsOpen={ setIsSEOModelOpen }
-				attachmentData={ videoResponse }
 				attributes={ attributes }
 				setAttributes={ setAttributes }
-				duration={ attributes?.seo?.duration || '' }
 			/>
 
 			<figure { ...blockProps }>
