@@ -56,7 +56,7 @@ const WPForm = ( { layerID } ) => {
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isWPFormsPluginActive } className="mb-4" formID={ layer.wpform_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isValidAPIKey || ! isWPFormsPluginActive } className="wpforms-form-selector mb-4" formID={ layer.wpform_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<LayerControl>

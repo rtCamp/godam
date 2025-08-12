@@ -69,7 +69,7 @@ const GravityForm = ( { layerID } ) => {
 			}
 
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isGFPluginActive } className="mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isValidAPIKey || ! isGFPluginActive } className="gravity-form-selector mb-4" formID={ layer.gf_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<SelectControl

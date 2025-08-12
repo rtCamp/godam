@@ -70,7 +70,7 @@ const CF7 = ( { layerID } ) => {
 				</Notice>
 			}
 			{
-				<FormSelector disabled={ ! isValidAPIKey || ! isCF7PluginActive } className="mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
+				<FormSelector disabled={ ! isValidAPIKey || ! isCF7PluginActive } className="contactform7-form-selector mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
 			}
 
 			<SelectControl
