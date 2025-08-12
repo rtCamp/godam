@@ -571,7 +571,6 @@ class RTGODAM_Transcoder_Handler {
 			foreach ( $file_post_array as $key => $format ) {
 				if ( is_array( $format ) && ( count( $format ) > 0 ) ) {
 					foreach ( $format as $file ) {
-						$flag = false;
 						if ( isset( $file ) ) {
 
 							$download_url                  = urldecode( urldecode( $file ) );
@@ -588,7 +587,7 @@ class RTGODAM_Transcoder_Handler {
 							try {
 								$response = function_exists( 'vip_safe_wp_remote_get' ) ? vip_safe_wp_remote_get( $download_url, '', 3, 3 ) : wp_remote_get( $download_url, array( 'timeout' => $timeout ) ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
 							} catch ( Exception $e ) {
-								$flag = $e->getMessage();
+								return;
 							}
 
 							$file_content = wp_remote_retrieve_body( $response );
