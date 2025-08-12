@@ -58,15 +58,20 @@ class Form_Layer {
 	 * @return void
 	 */
 	public static function add_form_godam_identifier( $video_id, $form_type, $form_id ) {
+		// Bail early if any of the parameters are empty.
+		if ( empty( $video_id ) || empty( $form_type ) || empty( $form_id ) ) {
+			return;
+		}
+
 		$godam_identifier = array(
 			'video_id' => $video_id,
 		);
 
+		// Register the identifier for the specific form type and ID.
+		self::$form_identifiers[ $form_type ][ $form_id ] = $godam_identifier;
+
 		switch ( strtolower( $form_type ) ) {
 			case 'cf7':
-				// Add the identifier to Contact Form 7.
-				self::$form_identifiers['cf7'][ $form_id ] = $godam_identifier;
-
 				// Add the filter only if it hasn't been added yet.
 				if ( ! has_filter( 'wpcf7_form_elements', array( __CLASS__, 'handle_cf7_form' ) ) ) {
 					add_filter( 'wpcf7_form_elements', array( __CLASS__, 'handle_cf7_form' ) );
@@ -74,9 +79,6 @@ class Form_Layer {
 				break;
 
 			case 'gravity':
-				// Add the identifier to Gravity Forms.
-				self::$form_identifiers['gravity'][ $form_id ] = $godam_identifier;
-
 				// Add the filter if it hasn't been added yet.
 				if ( ! has_filter( 'gform_field_value_godam_source', array( __CLASS__, 'handle_gravity_form' ) ) ) {
 					add_filter( 'gform_field_value_godam_source', array( __CLASS__, 'handle_gravity_form' ), 10, 2 );
@@ -84,9 +86,6 @@ class Form_Layer {
 				break;
 
 			case 'sureforms':
-				// Add the identifier to SureForms.
-				self::$form_identifiers['sureforms'][ $form_id ] = $godam_identifier;
-
 				// Add the filter if it hasn't been added yet.
 				// TODO: update the filter name to `render_block_srfm/hidden` after testing with SureForms Premium.
 				if ( ! has_filter( 'render_block_srfm/input', array( __CLASS__, 'handle_sureforms' ) ) ) {
@@ -95,9 +94,6 @@ class Form_Layer {
 				break;
 
 			case 'forminator':
-				// Add the identifier to Forminator.
-				self::$form_identifiers['forminator'][ $form_id ] = $godam_identifier;
-				
 				// Add the hidden field to the Forminator form.
 				self::may_be_add_forminator_form_field( $form_id );
 				// NOTE: filter for Forminator is already added in the constructor.
