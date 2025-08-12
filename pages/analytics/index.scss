@@ -12,9 +12,21 @@
 	transition: opacity 0.2s ease-in-out;
 }
 
+#root-video-analytics {
+	.godam-settings-header-content {
+		padding: 0 2.5rem;
+	}
+}
+
 #root-video-analytics, #root-video-dashboard {
 
 	background-color: #fff;
+
+	#analytics-content {
+		max-width: 1440px;
+		margin: 0 auto;
+		width: 100%;
+	}
 
 	// Video JS styles
 	.video-analytics-container {
@@ -36,7 +48,6 @@
 	.analytics-info-container {
 		display: flex;
 		gap: 12px;
-		width: 350px;
 
 		.analytics-info {
 			display: flex;
