@@ -18,6 +18,8 @@ import { sureformsApi } from './api/sureforms';
 import { forminatorFormsApi } from './api/forminator-forms';
 import { fluentFormsApi } from './api/fluent-forms';
 import { everestFormsApi } from './api/everest-forms';
+import { ninjaFormsApi } from './api/ninja-forms';
+import { metformApi } from './api/metform';
 
 export default configureStore( {
 	reducer: {
@@ -33,7 +35,8 @@ export default configureStore( {
 		[ forminatorFormsApi.reducerPath ]: forminatorFormsApi.reducer,
 		[ fluentFormsApi.reducerPath ]: fluentFormsApi.reducer,
 		[ everestFormsApi.reducerPath ]: everestFormsApi.reducer,
-
+		[ ninjaFormsApi.reducerPath ]: ninjaFormsApi.reducer,
+		[ metformApi.reducerPath ]: metformApi.reducer,
 	},
 	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat(
 		videosAPI.middleware,
@@ -47,5 +50,7 @@ export default configureStore( {
 		forminatorFormsApi.middleware,
 		fluentFormsApi.middleware,
 		everestFormsApi.middleware,
+		ninjaFormsApi.middleware,
+		metformApi.middleware,
 	),
 } );

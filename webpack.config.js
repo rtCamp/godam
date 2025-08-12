@@ -16,6 +16,7 @@ const mode = isProduction ? 'production' : 'development';
 
 // Extend the default config.
 const sharedConfig = {
+	mode,
 	...defaultConfig,
 	output: {
 		path: path.resolve( process.cwd(), 'assets', 'build', 'js' ),
@@ -48,11 +49,14 @@ const sharedConfig = {
 		},
 		minimizer: defaultConfig.optimization.minimizer.concat( [ new CssMinimizerPlugin() ] ),
 	},
+	// Only generate source maps in development mode
+	devtool: isProduction ? false : 'source-map',
 };
 
 // Generate a webpack config which includes setup for CSS extraction.
 // Look for css/scss files and extract them into a build/css directory.
 const styles = {
+	mode,
 	...sharedConfig,
 	entry: () => {
 		const entries = {};
@@ -77,6 +81,8 @@ const styles = {
 			( plugin ) => plugin.constructor.name !== 'DependencyExtractionWebpackPlugin',
 		),
 	],
+	// Only generate source maps in development mode
+	devtool: isProduction ? false : 'source-map',
 };
 
 // Example of how to add a new entry point for JS file.
@@ -143,6 +149,13 @@ const gfEntryDetailJS = {
 	},
 };
 
+const wpFormsGodamRecorderEditorJS = {
+	...sharedConfig,
+	entry: {
+		'wpforms-godam-recorder-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpforms-godam-recorder-editor.js' ),
+	},
+};
+
 const jetpackFormJS = {
 	...sharedConfig,
 	entry: {
@@ -167,7 +180,15 @@ const elementorEditorJS = {
 const godamRecorder = {
 	...sharedConfig,
 	entry: {
-		'godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-recorder', 'index.js' )
+		'godam-recorder': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-recorder', 'index.js' ),
+	},
+};
+
+const fluentForms = {
+	...sharedConfig,
+	entry: {
+		fluentforms: path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'index.js' ),
+		'godam-fluentforms-editor': path.resolve( process.cwd(), 'assets', 'src', 'js', 'fluentforms', 'editor.js' ),
 	},
 };
 
@@ -233,7 +254,8 @@ const pages = {
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
 	},
-	devtool: "source-map",
+	// Only generate source maps in development mode
+	devtool: isProduction ? false : 'source-map',
 };
 
 module.exports = [
@@ -246,10 +268,12 @@ module.exports = [
 	godamGallery,
 	gfGodamRecorderEditorJS,
 	gfEntryDetailJS,
+	wpFormsGodamRecorderEditorJS,
 	jetpackFormJS,
 	styles, // Do not remove this.
 	pages,
 	elementorWidgetJS,
 	elementorEditorJS,
 	godamRecorder,
+	fluentForms,
 ];

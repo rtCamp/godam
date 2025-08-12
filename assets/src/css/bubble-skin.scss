@@ -1,9 +1,22 @@
 .godam-bubble-skin {
 	container-type: inline-size;
-    container-name: godam-player-bubble-skin;
+	container-name: godam-player-bubble-skin;
+
+	.video-js .vjs-big-play-button {
+		border-radius: 17px;
+		border: 2px solid #fff;
+
+		span::before {
+			font-size: 24px;
+		}
+	}
+
+	.video-js .vjs-control .vjs-button {
+		margin: 0;
+	}
+
 	  // control bar styles
-  
-	  .vjs-control-bar {
+	  .video-js .vjs-control-bar {
 			background-color: transparent !important;
 			flex-direction: row-reverse;
 			margin: 0 auto;
@@ -15,6 +28,9 @@
 			span::before {
 				font-size: 1.7em;
 				line-height: 2.3;
+				display: flex;
+				align-items: center;
+				justify-content: center;
 			}
 		}
   
@@ -73,7 +89,7 @@
 
 			.vjs-menu {
 				bottom: -25px;
-    			left: -11em;
+				left: -11em;
 			}
 		}
   
@@ -171,7 +187,7 @@
 	
 			span::before {
 				font-size: 1.2em !important;
-    			line-height: 2 !important;
+				line-height: 2 !important;
 			}
 	
 			.godam-back-item-container::after{
@@ -195,6 +211,8 @@
 			cursor: not-allowed;
 			pointer-events: auto;
 			background-color: var(--rtgodam-control-bar-color, #000000AD) !important;
+			opacity: 1;
+			visibility: visible;
 	
 			&:hover {
 				background: #1C1C1C;
@@ -202,6 +220,7 @@
 	
 			img {
 				height: 12px;
+				max-width: unset;
 			}
 		}
 
@@ -221,39 +240,55 @@
 		}
 	}
 
-	@media screen and (max-width: 768px) {
+	@container godam-player-bubble-skin (max-width: 600px) {
 
-        .vjs-control-bar {
-            margin: -55px auto 0;
-            height: 5em !important;
+		.video-js .vjs-control-bar {
 
-            .vjs-fullscreen-control {
-                right: 10px
-            }
-            
-            .vjs-settings-button{
-                right: 55px;
-            }
+			.vjs-progress-control {
+				max-width: 72%;
+			}
+		}
+	}
 
-            div.vjs-subs-caps-button {
-                right: 100px !important;
+	@container godam-player-bubble-skin (max-width: 480px) {
+
+		.video-js .vjs-control-bar {
+			margin: -55px auto 0;
+			height: 5em !important;
+
+			.vjs-control {
+				height: 3em !important;
+			}
+
+			.vjs-fullscreen-control {
+				right: 10px
+			}
+			
+			.vjs-settings-button{
+				right: 55px;
+				z-index: 99;
+			}
+
+			div.vjs-subs-caps-button {
+				right: 100px !important;
 				left: unset;
 				bottom: 3px !important;
-            }
+				z-index: 99;
+			}
 
-            .vjs-control.vjs-custom-play-button {
-                display: block;
-                position: absolute;
-                bottom: 0;
-                left: 20px;
-            }
+			.vjs-control.vjs-custom-play-button {
+				display: block;
+				position: absolute;
+				bottom: 0;
+				left: 20px;
+			}
 
 			.vjs-control, .vjs-settings-button {
 				border-radius: 12px !important;
 			}
 
-            [class^="vjs-skip-backward-"], [class^="vjs-skip-forward-"] {
-                display: block !important;
+			[class^="vjs-skip-backward-"], [class^="vjs-skip-forward-"] {
+				display: block !important;
 				background-color: var(--rtgodam-control-bar-color, #000000AD) !important;
 				padding: 2px 6px;
 				height: 32px !important;
@@ -262,16 +297,25 @@
 				span::before {
 					line-height: 1.8 !important;
 				}
+			}
 
-				@media screen and (max-width: 481px) {
-					display: none !important;
-				}
-            }
+			[class^="vjs-skip-backward-"] {
+				left: 100px;
+			}
 
-            .vjs-progress-control {
+			[class^="vjs-skip-forward-"] {
+				right: 100px;
+			}
+
+			.vjs-progress-control {
 				max-width: 94%;
 				transform: translateY(-56%);
-            }
+				left: 0;
+				position: absolute;
+				right: 0;
+				top: 0;
+				width: 100%;
+			}
 			
 			.vjs-control, .vjs-settings-button, div.vjs-subs-caps-button {
 				padding: unset !important;	
@@ -281,7 +325,7 @@
 				
 				span::before {
 					font-size: 1.8em;
-    				line-height: 1.67;
+					line-height: 1.67;
 				}
 			}
 
@@ -321,40 +365,53 @@
 		}
 
 
-        .vjs-button.godam-share-button {
-            background-color: var(--rtgodam-control-bar-color, #000000AD);
-            border: 0.26px solid #FFF3;
-            height: 32px;
-            padding: 12px;
-            border-radius: 12px;
+		.vjs-button.godam-share-button {
+			bottom: 136px !important;
+			height: 24px !important;
+			border-radius: 12px !important;
 			display: flex;
 			align-items: center;
-        }
+		}
 
 		.share-icon {
-            height: 12px;
-        }
+			height: 12px;
+		}
 
-        .vjs-menu {
-            width: 8em;
+		.vjs-menu {
+			width: 8em;
 			bottom: 0 !important;
 			left: 0 !important;
 
-            .vjs-menu-content {
+			.vjs-menu-content {
 
-                li {
-                    font-size: 12px;
-                    padding: 4px;
-                }
+				li {
+					font-size: 12px;
+					padding: 4px;
+				}
 
-                .vjs-menu-item-text span {
-                    display: flex;
-                }
-            }
-        }
-    }
+				.vjs-menu-item-text span {
+					display: flex;
+				}
+			}
+		}
 
-	@media screen and (max-width: 481px) {
+		div.vjs-subs-caps-button .vjs-menu::before {
+			display: none;
+		}
+	}
+
+	@container godam-player-bubble-skin (max-width: 420px) {
+
+		.video-js .vjs-control-bar {
+
+			[class^="vjs-skip-backward-"], [class^="vjs-skip-forward-"] { 
+				display: none !important;
+			}
+
+			.vjs-progress-holder {
+				margin: 0 35px !important;
+			}
+		}
 		
 		.vjs-menu {
 			
@@ -377,16 +434,16 @@
 			}
 		}
 	}
-}
 
-@container godam-player-bubble-skin (min-width: 768px) {
-
-	.vjs-current-time {
-		left: 65px !important;
+	@container godam-player-bubble-skin (min-width: 768px) {
+	
+		.vjs-current-time {
+			left: 65px !important;
+		}
+	  
+		.vjs-duration-display {
+			right: 100px !important;
+		}
+	  
 	}
-  
-	.vjs-duration-display {
-		right: 100px !important;
-	}
-  
 }

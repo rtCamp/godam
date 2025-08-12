@@ -224,7 +224,14 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 						if ( ! empty( $post_array['files']['mpd'] ) ) {
 							update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $post_array['download_url'] );
 
+							delete_post_meta( $attachment_id, 'rtgodam_retranscoding_sent' );
+
 							$latest_attachment = get_option( 'rtgodam_new_attachment', false );
+
+							// Save hls url as well.
+							if ( isset( $post_array['hls_path'] ) && ! empty( trim( $post_array['hls_path'] ) ) ) {
+								update_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', sanitize_url( $post_array['hls_path'] ) );
+							}
 
 							if ( ! empty( $latest_attachment ) && $latest_attachment['attachment_id'] === $attachment_id ) {
 								$latest_attachment['transcoding_status'] = 'success';
@@ -290,16 +297,54 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			}
 		}
 
+		if ( ! empty( $job_for ) && 'fluentforms-godam-recorder' === $job_for && ! empty( $job_id ) ) {
+			$post_array = $request->get_params();
+
+			/**
+			 * Get data stored in options based on job id.
+			 */
+			$data = get_option( $job_id );
+
+			/**
+			 * If we have data in options, proceed.
+			 */
+			if ( ! empty( $data ) && 'fluentforms_godam_recorder' === $data['source'] && function_exists( 'wpFluent' ) ) {
+				$entry_id   = $data['entry_id'];
+				$entry_data = wpFluent()->table( 'fluentform_submissions' )->find( $entry_id );
+
+				if ( ! empty( $entry_data ) && ! empty( $entry_data->form_id ) ) {
+					$form_id = $entry_data->form_id;
+
+					/**
+					 * Add to entry meta.
+					 */
+					wpFluent()->table( 'fluentform_submission_meta' )->insert(
+						array(
+							'response_id' => $entry_id,
+							'form_id'     => $form_id,
+							'meta_key'    => 'rtgodam_transcoded_url_fluentforms_' . $form_id . '_' . $entry_id,
+							'value'       => $post_array['download_url'],
+							'status'      => 'success',
+							'name'        => 'rtgodam_transcoded_url_fluentforms_' . $form_id . '_' . $entry_id,
+						)
+					);
+				}
+			}
+		}
+
 		/**
 		 * Allow users/plugins to perform action after response received from the transcoder is
 		 * processed
 		 *
+		 * @since 1.3.0 Added $job_for and $request parameter.
 		 * @since 1.0.9
 		 *
-		 * @param number    $attachment_id  Attachment ID for which the callback has sent from the transcoder
-		 * @param number    $job_id         The transcoding job ID
+		 * @param number    $attachment_id  Attachment ID for which the callback has sent from the transcoder.
+		 * @param number    $job_id         The transcoding job ID.
+		 * @param string    $job_for        Job for.
+		 * @param \WP_Request $request      WP_Request instance.
 		 */
-		do_action( 'rtgodam_handle_callback_finished', $attachment_id, $job_id );
+		do_action( 'rtgodam_handle_callback_finished', $attachment_id, $job_id, $job_for, $request );
 	}
 
 	/**

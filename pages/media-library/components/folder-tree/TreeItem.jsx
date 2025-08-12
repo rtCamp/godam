@@ -8,7 +8,7 @@ import { CSS } from '@dnd-kit/utilities';
 /**
  * WordPress dependencies
  */
-import { Icon, file, lock } from '@wordpress/icons';
+import { Icon, file, lock, starFilled } from '@wordpress/icons';
 import { CheckboxControl } from '@wordpress/components';
 
 /**
@@ -18,6 +18,7 @@ import { toggleOpenClose, changeSelectedFolder, toggleMultiSelectedFolder } from
 import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
 import { FolderTreeChevron } from '../icons';
+import { __ } from '@wordpress/i18n';
 
 const indentPerLevel = 12;
 
@@ -88,7 +89,7 @@ const TreeItem = ( { item, index, depth, onContextMenu, isMultiSelecting } ) => 
 							if ( e.key === 'Enter' || e.key === ' ' ) {
 								e.preventDefault(); handleChevronClick( e );
 							}
-						} } role="button" tabIndex={ 0 } aria-label={ item.isOpen ? 'Collapse folder' : 'Expand folder' } >
+						} } role="button" tabIndex={ 0 } aria-label={ item.isOpen ? __( 'Collapse folder', 'godam' ) : __( 'Expand folder', 'godam' ) } >
 							<FolderTreeChevron className={ item.isOpen ? 'tree-item__chevron_open' : '' } />
 						</span>
 						: <span className="tree-item__spacer" />
@@ -103,11 +104,14 @@ const TreeItem = ( { item, index, depth, onContextMenu, isMultiSelecting } ) => 
 						/>
 					) }
 					<div className="tree-item__content">
-						<Icon icon={ item.meta?.locked ? lock : file } />
+						<Icon icon={ file } />
 						<span className="tree-item__text">{ item.name }</span>
-
-						<span className="tree-item__count">
-							{ item.attachmentCount ?? 0 }
+						<span className="tree-item__status">
+							{ item.meta?.locked && <Icon icon={ lock } /> }
+							{ item.meta?.bookmark && <Icon icon={ starFilled } className="bookmark-star" /> }
+							<span className="tree-item__count">
+								{ item.attachmentCount ?? 0 }
+							</span>
 						</span>
 					</div>
 				</button>

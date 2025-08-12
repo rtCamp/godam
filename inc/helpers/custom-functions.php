@@ -163,6 +163,7 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
  *     - 'imageDescription' (string): Description text for the CTA.
  *     - 'imageLink' (string): URL for the CTA link.
  *     - 'imageCtaButtonText' (string): Text for the CTA button.
+ *     - 'imageCtaButtonColor' (string): Background color for the CTA button.
  *
  * @return string The generated HTML string for the image CTA overlay.
  */
@@ -173,11 +174,12 @@ function rtgodam_image_cta_html( $layer ) {
 		? 'vertical-image-cta-container'
 		: 'image-cta-container';
 
-	$image_opacity     = isset( $layer['imageOpacity'] ) ? $layer['imageOpacity'] : 1;
-	$image_text        = isset( $layer['imageText'] ) ? $layer['imageText'] : '';
-	$image_description = isset( $layer['imageDescription'] ) ? $layer['imageDescription'] : '';
-	$image_link        = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '/';
-	$cta_button_text   = ! empty( $layer['imageCtaButtonText'] ) ? $layer['imageCtaButtonText'] : 'Buy Now'; // Null coalescing with empty check.
+	$image_opacity        = isset( $layer['imageOpacity'] ) ? $layer['imageOpacity'] : 1;
+	$image_text           = isset( $layer['imageText'] ) ? $layer['imageText'] : '';
+	$image_description    = isset( $layer['imageDescription'] ) ? $layer['imageDescription'] : '';
+	$image_link           = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '/';
+	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? $layer['imageCtaButtonColor'] : '#eeab95';
+	$cta_button_text      = ! empty( $layer['imageCtaButtonText'] ) ? $layer['imageCtaButtonText'] : 'Buy Now'; // Null coalescing with empty check.
 
 	return "
 	<div class= \"image-cta-overlay-container\">
@@ -193,7 +195,7 @@ function rtgodam_image_cta_html( $layer ) {
 				<div class=\"image-cta-description\">
 					" . ( ! empty( $image_text ) ? "<h2>{$image_text}</h2>" : '' ) . '
 					' . ( ! empty( $image_description ) ? "<p>{$image_description}</p>" : '' ) . "
-					<a class=\"image-cta-btn\" href=\"{$image_link}\" target=\"_blank\">
+					<a class=\"image-cta-btn\" href=\"{$image_link}\" target=\"_blank\" style=\"background-color: {$cta_background_color};\">
 						{$cta_button_text}
 					</a>
 				</div>
@@ -268,19 +270,20 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = 300 
 			$localized_array_data['storageBandwidthError'] = $rtgodam_user_data['storageBandwidthError'];
 		}
 
-		if ( isset( $rtgodam_user_data['storage_used'] ) && ! empty( $rtgodam_user_data['storage_used'] ) ) {
+		// Use isset() instead of !empty() to allow 0 values.
+		if ( isset( $rtgodam_user_data['storage_used'] ) ) {
 			$localized_array_data['storageUsed'] = $rtgodam_user_data['storage_used'];
 		}
 
-		if ( isset( $rtgodam_user_data['total_storage'] ) && ! empty( $rtgodam_user_data['total_storage'] ) ) {
+		if ( isset( $rtgodam_user_data['total_storage'] ) ) {
 			$localized_array_data['totalStorage'] = $rtgodam_user_data['total_storage'];
 		}
 
-		if ( isset( $rtgodam_user_data['bandwidth_used'] ) && ! empty( $rtgodam_user_data['bandwidth_used'] ) ) {
+		if ( isset( $rtgodam_user_data['bandwidth_used'] ) ) {
 			$localized_array_data['bandwidthUsed'] = $rtgodam_user_data['bandwidth_used'];
 		}
 
-		if ( isset( $rtgodam_user_data['total_bandwidth'] ) && ! empty( $rtgodam_user_data['total_bandwidth'] ) ) {
+		if ( isset( $rtgodam_user_data['total_bandwidth'] ) ) {
 			$localized_array_data['totalBandwidth'] = $rtgodam_user_data['total_bandwidth'];
 		}
 
@@ -300,7 +303,7 @@ function rtgodam_get_usage_data() {
 	$api_key = get_option( 'rtgodam-api-key', '' );
 
 	if ( empty( $api_key ) ) {
-		return new \WP_Error( 'rtgodam_api_error', 'API key not found ( try refreshing the page )' );
+		return new \WP_Error( 'rtgodam_api_error', __( 'API key not found ( try refreshing the page )', 'godam' ) );
 	}
 
 	$endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.stats.get_bandwidth_and_storage';
@@ -324,7 +327,7 @@ function rtgodam_get_usage_data() {
 
 	// Validate response structure.
 	if ( ! isset( $data['message'] ) || ! isset( $data['message']['storage_used'] ) || ! isset( $data['message']['bandwidth_used'] ) ) {
-		return new \WP_Error( 'rtgodam_api_error', 'Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )' );
+		return new \WP_Error( 'rtgodam_api_error', __( 'Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )', 'godam' ) );
 	}
 
 	return array(

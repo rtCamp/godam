@@ -117,7 +117,7 @@ class GoDAM_Video extends Base {
 		);
 
 		$this->end_popover();
-		
+
 		$this->add_control(
 			'seo_settings_popover_toggle',
 			array(
@@ -189,12 +189,9 @@ class GoDAM_Video extends Base {
 		$this->add_control(
 			'seo_content_video_thumbnail_url',
 			array(
-				'label'          => esc_html__( 'Video Thumbnail URL', 'godam' ),
-				'type'           => Controls_Manager::TEXT,
-				'label_block'    => true,
-				'picker_options' => array(
-					'enableTime' => false,
-				),
+				'label'       => esc_html__( 'Video Thumbnail URL', 'godam' ),
+				'type'        => Controls_Manager::TEXT,
+				'label_block' => true,
 			)
 		);
 
@@ -371,7 +368,6 @@ class GoDAM_Video extends Base {
 
 		$is_elementor_widget = true;
 
-		ob_start();
 		require RTGODAM_PATH . 'inc/templates/godam-player.php';
 	}
 }

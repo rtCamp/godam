@@ -109,7 +109,7 @@ const Appearance = () => {
 		const brandingLogo = document.querySelector( '#branding-icon' );
 		const controlBar = document.querySelector( '.vjs-control-bar' );
 
-		setCustomBrandNotice( { ...setCustomBrandNotice, isVisible: false } );
+		setCustomBrandNotice( { ...customBrandNotice, isVisible: false } );
 
 		dispatch(
 			updateVideoConfig( {
@@ -171,6 +171,16 @@ const Appearance = () => {
 			multiple: false, // Disable multiple selection
 		} );
 
+		fileFrame.on( 'open', function() {
+			const selection = fileFrame.state().get( 'selection' );
+
+			if ( videoConfig.controlBar.customPlayBtnImgId ) {
+				const attachment = wp.media.attachment( videoConfig.controlBar.customPlayBtnImgId );
+				attachment.fetch();
+				selection.add( attachment );
+			}
+		} );
+
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 
@@ -187,6 +197,7 @@ const Appearance = () => {
 					controlBar: {
 						...videoConfig.controlBar,
 						customPlayBtnImg: attachment.url,
+						customPlayBtnImgId: attachment.id,
 					},
 				} ),
 			);
@@ -232,6 +243,16 @@ const Appearance = () => {
 			multiple: false, // Disable multiple selection
 		} );
 
+		fileFrame.on( 'open', function() {
+			const selection = fileFrame.state().get( 'selection' );
+
+			if ( videoConfig.controlBar.customBrandImgId ) {
+				const attachment = wp.media.attachment( videoConfig.controlBar.customBrandImgId );
+				attachment.fetch();
+				selection.add( attachment );
+			}
+		} );
+
 		fileFrame.on( 'select', function() {
 			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
 
@@ -248,6 +269,7 @@ const Appearance = () => {
 					controlBar: {
 						...videoConfig.controlBar,
 						customBrandImg: attachment.url,
+						customBrandImgId: attachment.id,
 					},
 				} ),
 			);
@@ -268,6 +290,7 @@ const Appearance = () => {
 				controlBar: {
 					...videoConfig.controlBar,
 					customBrandImg: '',
+					customBrandImgId: null,
 				},
 			} ),
 		);
@@ -283,6 +306,7 @@ const Appearance = () => {
 				controlBar: {
 					...videoConfig.controlBar,
 					customPlayBtnImg: '',
+					customPlayBtnImgId: null,
 				},
 			} ),
 		);
@@ -373,7 +397,7 @@ const Appearance = () => {
 						htmlFor="custom-brand-logo"
 						className="label-text"
 					>
-						{ __( 'Display settings', 'godam' ) }
+						{ __( 'Display Settings', 'godam' ) }
 					</label>
 
 					<div className="flex flex-col gap-3">
@@ -543,7 +567,7 @@ const Appearance = () => {
 								name: '30',
 							},
 						] }
-						label={ __( 'Adjust skip duration', 'godam' ) }
+						label={ __( 'Adjust Skip Duration', 'godam' ) }
 						value={ {
 							key: videoConfig.controlBar.skipButtons.forward.toString(),
 							name: videoConfig.controlBar.skipButtons.forward.toString(),
@@ -622,7 +646,7 @@ const Appearance = () => {
 						htmlFor="custom-hover-color"
 						className="label-text"
 					>
-						{ __( 'Select Ad server', 'godam' ) }
+						{ __( 'Select Ad Server', 'godam' ) }
 					</label>
 					<ToggleControl
 						className="godam-toggle"

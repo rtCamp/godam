@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * WordPress dependencies
  */
-import { Button, Icon, Modal } from '@wordpress/components';
+import { Button, Icon, Modal, TextControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { cautionFilled } from '@wordpress/icons';
 
@@ -24,12 +24,13 @@ import Poll from '../assets/layers/Poll.png';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
-import Woo from '../assets/layers/woo.svg';
 import JetpackIcon from '../assets/layers/JetpackIcon.svg';
 import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
 import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
+import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
+import MetFormIcon from '../assets/layers/MetFormIcon.png';
 
 const Layers = [
 	{
@@ -84,7 +85,7 @@ const Layers = [
 	{
 		id: 5,
 		title: __( 'SureForms', 'godam' ),
-		description: __( 'Collect user input using Sureforms', 'godam' ),
+		description: __( 'Collect user input using SureForms', 'godam' ),
 		image: Form,
 		type: 'form',
 		formType: 'sureforms',
@@ -135,27 +136,52 @@ const Layers = [
 	},
 	{
 		id: 9,
+		title: __( 'Ninja Forms', 'godam' ),
+		description: __( 'Collect user input using Ninja Forms', 'godam' ),
+		image: Form,
+		type: 'form',
+		formType: 'ninjaforms',
+		requiresNinjaForms: true,
+		formIcon: NinjaFormsIcon,
+		isRequired: true,
+		isActive: Boolean( window?.videoData?.ninjaFormsActive ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/ninja-forms/">${ __( 'Ninja Forms', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
+	},
+	{
+		id: 10,
+		title: __( 'MetForm', 'godam' ),
+		description: __( 'Collect user input using MetForm', 'godam' ),
+		image: Form,
+		type: 'form',
+		formType: 'metform',
+		formIcon: MetFormIcon,
+		isRequired: true,
+		isActive: Boolean( window?.videoData?.metformActive ) ?? false,
+		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/metform/">${ __( 'MetForm', 'godam' ) }</a> ${ __( 'plugin is required to use Form layer', 'godam' ) }`,
+	},
+	{
+		id: 11,
 		title: __( 'CTA', 'godam' ),
 		description: __( 'Guide users toward a specific action', 'godam' ),
 		image: CTA,
 		type: 'cta',
 	},
 	{
-		id: 10,
+		id: 12,
 		title: __( 'Hotspot', 'godam' ),
 		description: __( 'Highlighting key areas with focus', 'godam' ),
 		image: Hotspot,
 		type: 'hotspot',
 	},
 	{
-		id: 11,
+		id: 13,
 		title: __( 'Ad', 'godam' ),
 		description: __( 'Redirect user to custom advertisement', 'godam' ),
 		image: Ad,
 		type: 'ad',
 	},
 	{
-		id: 12,
+		id: 14,
 		title: __( 'Poll', 'godam' ),
 		description: __( 'Gather opinions through interactive voting', 'godam' ),
 		image: Poll,
@@ -163,18 +189,6 @@ const Layers = [
 		isRequired: true,
 		isActive: Boolean( window.easydamMediaLibrary.isPollPluginActive ),
 		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/wp-polls/">${ __( 'WP-Polls', 'godam' ) }</a> ${ __( 'plugin is required to use Poll layer', 'godam' ) }`,
-	},
-	{
-		id: 13,
-		title: __( 'WooCommerce', 'godam' ),
-		description: __( 'Display products using hotspots', 'godam' ),
-		image: Hotspot,
-		type: 'woo',
-		requiresWoo: true,
-		formIcon: Woo,
-		isRequired: true,
-		isActive: Boolean( window.easydamMediaLibrary.isWooActive ) ?? false,
-		requireMessage: `<a class="godam-link" target="_blank" href="https://wordpress.org/plugins/woocommerce/">${ __( 'WooCommerce', 'godam' ) }</a> ${ __( 'plugin is required to use Buy Now layer', 'godam' ) }`,
 	},
 ];
 
@@ -189,11 +203,54 @@ const Layers = [
  */
 const LayerSelector = ( { closeModal, addNewLayer } ) => {
 	const [ selectedLayer, setSelectedLayer ] = useState( null );
+	const [ searchQuery, setSearchQuery ] = useState( '' );
+	const [ filteredLayers, setFilteredLayers ] = useState( Layers );
+	const [ activeTab, setActiveTab ] = useState( 'all' );
 
+	const uniqueLayerTypes = useMemo( () => {
+		return Layers.reduce( ( acc, layer ) => {
+			if ( ! acc.includes( layer.type ) ) {
+				acc.push( layer.type );
+			}
+			return acc;
+		}, [] );
+	}, [] );
+
+	// Create tabs array with "all" as the first item
+	const allTabs = useMemo( () => {
+		return [ 'all', ...uniqueLayerTypes ];
+	}, [ uniqueLayerTypes ] );
+
+	/**
+	 * Gets the display text for a tab type.
+	 *
+	 * @param {string} type - The tab type.
+	 * @return {string} The display text for the tab.
+	 */
+	const getTabDisplayText = ( type ) => {
+		switch ( type ) {
+			case 'all':
+				return __( 'All', 'godam' );
+			case 'cta':
+				return type.toUpperCase();
+			default:
+				return type.charAt( 0 ).toUpperCase() + type.slice( 1 );
+		}
+	};
+
+	/**
+	 * Selects a layer when clicked.
+	 *
+	 * @param {Object} layer - The layer object selected by the user.
+	 */
 	const handleLayerSelect = ( layer ) => {
 		setSelectedLayer( layer );
 	};
 
+	/**
+	 * Customises and adds the selected layer.
+	 * If the layer is a form, also pass the formType.
+	 */
 	const handleCustomiseLayer = () => {
 		if ( selectedLayer.type === 'form' ) {
 			addNewLayer( selectedLayer.type, selectedLayer.formType || 'gravity' );
@@ -203,55 +260,140 @@ const LayerSelector = ( { closeModal, addNewLayer } ) => {
 		closeModal();
 	};
 
+	/**
+	 * Filters layers based on the user input in the search bar.
+	 *
+	 * @param {string} value - The search query string.
+	 */
+	const handleSearchChange = ( value ) => {
+		const lowerCaseQuery = value.toLowerCase();
+		setSearchQuery( value );
+
+		// Set activeTab to 'all' when user searches
+		if ( activeTab !== 'all' ) {
+			setActiveTab( 'all' );
+		}
+
+		const filtered = Layers.filter( ( layer ) =>
+			layer.title.toLowerCase().includes( lowerCaseQuery ) ||
+		layer.description.toLowerCase().includes( lowerCaseQuery ),
+		);
+		setFilteredLayers( filtered );
+	};
+
+	/**
+	 * Handles tab click and filters layers by type.
+	 * Toggles back to "all" if the same tab is clicked again.
+	 *
+	 * @param {string} type - The type of the layer to filter by.
+	 */
+	const handleTabClick = ( type ) => {
+		if ( activeTab === type ) {
+			setActiveTab( 'all' );
+			setFilteredLayers( Layers );
+			return;
+		}
+
+		// Disable search when tab is used
+		setSearchQuery( '' );
+
+		setActiveTab( type );
+		if ( type === 'all' ) {
+			setFilteredLayers( Layers );
+		} else {
+			const filtered = Layers.filter( ( layer ) => layer.type === type );
+			setFilteredLayers( filtered );
+		}
+	};
+
 	return (
 		<Modal
 			className="godam-layer-selector"
 			title={ __( 'Layers', 'godam' ) }
 			onRequestClose={ closeModal }
 		>
+			<div className="godam-layer-selector__header">
+				<div className="layer-tabs">
+					{ allTabs.map( ( type ) => (
+						<button
+							key={ type }
+							className={ `layer-tab ${ activeTab === type ? 'active' : '' } ${ searchQuery ? 'disabled' : '' }` }
+							onClick={ () => {
+								if ( ! searchQuery ) {
+									handleTabClick( type );
+								}
+							} }
+							disabled={ !! searchQuery }
+						>
+							{ getTabDisplayText( type ) }
+						</button>
+					) ) }
+				</div>
+
+				<div className="search-container">
+					<TextControl
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						value={ searchQuery }
+						onChange={ ( value ) => {
+							handleSearchChange( value );
+						} }
+						placeholder={ __( 'search layers…', 'godam' ) }
+						className="godam-input"
+					/>
+
+				</div>
+			</div>
 
 			<div className="godam-layer-selector__list">
-				{ Layers.map( ( layer ) => {
+				{ filteredLayers.map( ( layer ) => {
 					const isDisabled = true === layer?.isRequired && false === layer?.isActive;
 					const isRequiredMessage = layer?.requireMessage ?? '';
 
-					return ( <div key={ layer.id }>
-						<button
-							key={ layer.id }
-							className={ `godam-layer-selector__item ${ selectedLayer?.id === layer.id ? 'selected' : '' }` }
-							onClick={ () => handleLayerSelect( layer ) }
-							disabled={ isDisabled }
-						>
-							<div className="godam-layer-selector__item__image-container">
-								<img
-									className="godam-layer-selector__item__image-container__image"
-									src={ layer.image }
-									alt={ layer.title }
-								/>
-								{
-									( layer.type === 'form' || layer.type === 'woo' ) && layer.formIcon && (
+					return (
+						<div key={ layer.id }>
+							<button
+								key={ layer.id }
+								className={ `godam-layer-selector__item ${ selectedLayer?.id === layer.id ? 'selected' : '' }` }
+								onClick={ () => handleLayerSelect( layer ) }
+								disabled={ isDisabled }
+							>
+								<span className="godam-layer-selector__item__inner">
+									<div className="godam-layer-selector__item__image-container">
 										<img
-											className="godam-layer-selector__item__image-container__form-icon"
-											src={ layer.formIcon }
+											className="godam-layer-selector__item__image-container__image"
+											src={ layer.image }
 											alt={ layer.title }
 										/>
-									)
-								}
-							</div>
+										{
+											( layer.type === 'form' ) && layer.formIcon && (
+												<img
+													className="godam-layer-selector__item__image-container__form-icon"
+													src={ layer.formIcon }
+													alt={ layer.title }
+												/>
+											)
+										}
+									</div>
 
-							<div className="godam-layer-selector__item__content">
-								<h3>{ layer.title }</h3>
-								<p>{ layer.description }</p>
-							</div>
-						</button>
-						{
-							isDisabled &&
+									<div className="godam-layer-selector__item__content">
+										<h3>{ layer.title }</h3>
+										<p>{ layer.description }</p>
+									</div>
+
+									<span className={ `godam-layer-selector__item__type type-${ layer.type ?? 'layer' }` }>
+										{ ( layer.type ?? __( 'Layer', 'godam' ) ).toUpperCase() }
+									</span>
+								</span>
+							</button>
+							{
+								isDisabled &&
 								<p className="godam-layer-selector__item__message">
 									<Icon icon={ cautionFilled } />
 									<div dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( isRequiredMessage ) } } />
 								</p>
-						}
-					</div> );
+							}
+						</div> );
 				} ) }
 			</div>
 

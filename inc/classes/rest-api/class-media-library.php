@@ -9,6 +9,8 @@ namespace RTGODAM\Inc\REST_API;
 
 use RTGODAM\Inc\Media_Library\Media_Folder_Create_Zip;
 use RTGODAM\Inc\Media_Library_Ajax;
+use RTGODAM\Inc\Taxonomies\Media_Folders;
+use RTGODAM\Inc\Media_Library\Media_Folder_Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -110,6 +112,52 @@ class Media_Library extends Base {
 							'required'    => true,
 							'type'        => 'integer',
 							'description' => __( 'Attachment ID to get video thumbnail for.', 'godam' ),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/upload-custom-video-thumbnail',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'upload_custom_video_thumbnail' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+					'args'                => array(
+						'attachment_id' => array(
+							'required'    => true,
+							'type'        => 'integer',
+							'description' => __( 'Attachment ID to get video thumbnail for.', 'godam' ),
+						),
+						'thumbnail_url' => array(
+							'required'    => true,
+							'type'        => 'string',
+							'description' => __( 'URL of custom thumbnail.', 'godam' ),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/delete-custom-video-thumbnail',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'remove_custom_video_thumbnail' ),
+					'permission_callback' => function () {
+						return current_user_can( 'edit_posts' );
+					},
+					'args'                => array(
+						'attachment_id' => array(
+							'required'    => true,
+							'type'        => 'integer',
+							'description' => __( 'Attachment ID to get video thumbnail for.', 'godam' ),
+						),
+						'thumbnail_url' => array(
+							'required'    => true,
+							'type'        => 'string',
+							'description' => __( 'Attachment URL of custom thumbnail.', 'godam' ),
 						),
 					),
 				),
@@ -233,6 +281,28 @@ class Media_Library extends Base {
 					},
 				),
 			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/category-count/(?P<folder_id>\d+)',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_count_by_category' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/media-folders',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_media_folders' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+				),
+			),
 		);
 	}
 
@@ -253,14 +323,14 @@ class Media_Library extends Base {
 				$return = $this->remove_all_terms_from_id( $attachment_id, 'media-folder' );
 
 				if ( is_wp_error( $return ) ) {
-					return new \WP_Error( 'term_assignment_failed', 'Failed to remove folder from the attachments.', array( 'status' => 500 ) );
+					return new \WP_Error( 'term_assignment_failed', __( 'Failed to remove folder from the attachments.', 'godam' ), array( 'status' => 500 ) );
 				}
 			}
 
 			return rest_ensure_response(
 				array(
 					'success' => true,
-					'message' => 'Attachments successfully removed from the folder.',
+					'message' => __( 'Attachments successfully removed from the folder.', 'godam' ),
 				)
 			);
 		}
@@ -268,25 +338,25 @@ class Media_Library extends Base {
 		$term = get_term( $folder_term_id, 'media-folder' );
 
 		if ( ! $term || is_wp_error( $term ) ) {
-			return new \WP_Error( 'invalid_term', 'Invalid folder term ID.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_term', __( 'Invalid folder term ID.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		foreach ( $attachment_ids as $attachment_id ) {
 			if ( get_post_type( $attachment_id ) !== 'attachment' ) {
-				return new \WP_Error( 'invalid_attachment', 'Invalid attachment ID.', array( 'status' => 400 ) );
+				return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ), array( 'status' => 400 ) );
 			}
 
 			$return = wp_set_object_terms( $attachment_id, $folder_term_id, 'media-folder' );
 
 			if ( is_wp_error( $return ) ) {
-				return new \WP_Error( 'term_assignment_failed', 'Failed to associate attachments with the folder.', array( 'status' => 500 ) );
+				return new \WP_Error( 'term_assignment_failed', __( 'Failed to associate attachments with the folder.', 'godam' ), array( 'status' => 500 ) );
 			}
 		}
 
 		return rest_ensure_response(
 			array(
 				'success' => true,
-				'message' => 'Attachments successfully associated with the folder.',
+				'message' => __( 'Attachments successfully associated with the folder.', 'godam' ),
 			)
 		);
 	}
@@ -301,7 +371,7 @@ class Media_Library extends Base {
 	 */
 	private function remove_all_terms_from_id( $post_id, $taxonomy ) {
 		if ( ! taxonomy_exists( $taxonomy ) ) {
-			return new \WP_Error( 'invalid_taxonomy', 'Invalid taxonomy.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_taxonomy', __( 'Invalid taxonomy.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Get all terms associated with the post ID for the taxonomy.
@@ -329,14 +399,14 @@ class Media_Library extends Base {
 		$file_path = get_attached_file( $attachment_id );
 
 		if ( ! file_exists( $file_path ) ) {
-			return new \WP_Error( 'image_not_found', 'Image file not found.', array( 'status' => 404 ) );
+			return new \WP_Error( 'image_not_found', __( 'Image file not found.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		// Read EXIF data from the image.
 		$exif_data = exif_read_data( $file_path, 0, true );
 
 		if ( false === $exif_data ) {
-			return new \WP_Error( 'exif_data_not_found', 'No EXIF data found.', array( 'status' => 204 ) );
+			return new \WP_Error( 'exif_data_not_found', __( 'No EXIF data found.', 'godam' ), array( 'status' => 204 ) );
 		}
 
 		// Extract and filter the desired EXIF data fields.
@@ -402,13 +472,15 @@ class Media_Library extends Base {
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
-			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 404 ) );
+			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		$thumbnail_array = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
 
+		$custom_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
+
 		if ( ! is_array( $thumbnail_array ) ) {
-			return new \WP_Error( 'thumbnails_not_found', 'No thumbnails found.', array( 'status' => 204 ) );
+			return new \WP_Error( 'thumbnails_not_found', __( 'No thumbnails found.', 'godam' ), array( 'status' => 204 ) );
 		}
 
 		if ( function_exists( 'wp_get_upload_dir' ) ) {
@@ -433,6 +505,13 @@ class Media_Library extends Base {
 		// only filter for the unique values.
 		$thumbnail_array = array_unique( $thumbnail_array );
 
+		if ( is_array( $custom_thumbnails ) ) {
+			$custom_thumbnails = array_unique( $custom_thumbnails );
+		} else {
+			$custom_thumbnails = array();
+		}
+
+
 		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 		if ( ! empty( $selected_thumbnail ) ) {
@@ -455,10 +534,126 @@ class Media_Library extends Base {
 
 		$data['thumbnails'] = $thumbnail_array;
 
+		$data['customThumbnails'] = $custom_thumbnails;
+
 		return rest_ensure_response(
 			array(
 				'success' => true,
 				'data'    => $data,
+			)
+		);
+	}
+
+	/**
+	 * Upload custom video thumbnail.
+	 *
+	 * Upload the custom video thumbnail for the thumbnail ID.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function upload_custom_video_thumbnail( $request ) {
+		$attachment_id = $request->get_param( 'attachment_id' );
+		$thumbnail_url = $request->get_param( 'thumbnail_url' );
+
+		$mime_type = get_post_mime_type( $attachment_id );
+
+		if ( ! preg_match( '/^video\//', $mime_type ) ) {
+			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		// Get current thumbnails.
+		$existing_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
+
+		if ( ! is_array( $existing_thumbnails ) ) {
+			$existing_thumbnails = array();
+		}
+
+		// Prevent more than 3 thumbnails.
+		if ( count( $existing_thumbnails ) >= 3 && ! in_array( $thumbnail_url, $existing_thumbnails, true ) ) {
+			return new \WP_Error(
+				'thumbnail_limit_reached',
+				__( 'Only 3 custom thumbnails are allowed per video.', 'godam' ),
+				array( 'status' => 400 )
+			);
+		}
+
+
+		// Add new custom thumbnail at beginning and remove duplicates.
+		if ( ! in_array( $thumbnail_url, $existing_thumbnails, true ) ) {
+			array_unshift( $existing_thumbnails, $thumbnail_url );
+		}
+
+		// Save updated thumbnails.
+		update_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', $existing_thumbnails );
+
+		// Also set as selected thumbnail.
+		update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $thumbnail_url );
+
+		return new \WP_REST_Response(
+			array(
+				'success' => true,
+				'data'    => array(
+					'selected'         => $thumbnail_url,
+					'customThumbnails' => $existing_thumbnails,
+				),
+			),
+			200
+		);
+	}
+
+	/**
+	 * Remove video thumbnail.
+	 *
+	 * Remove the video thumbnail for the thumbnail URL.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function remove_custom_video_thumbnail( $request ) {
+		$attachment_id = $request->get_param( 'attachment_id' );
+		$thumbnail_url = $request->get_param( 'thumbnail_url' );
+
+		$mime_type = get_post_mime_type( $attachment_id );
+
+		if ( ! preg_match( '/^video\//', $mime_type ) ) {
+			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		// Get current custom thumbnails.
+		$custom_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
+
+		if ( ! is_array( $custom_thumbnails ) || ! in_array( $thumbnail_url, $custom_thumbnails, true ) ) {
+			return new \WP_Error( 'thumbnail_not_found', __( 'Custom thumbnail not found.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		// Remove the specified thumbnail.
+		$custom_thumbnails = array_diff( $custom_thumbnails, array( $thumbnail_url ) );
+
+		if ( empty( $custom_thumbnails ) ) {
+			delete_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails' );
+
+			return rest_ensure_response(
+				array(
+					'success' => true,
+					'message' => __( 'Custom video thumbnail removed successfully.', 'godam' ),
+				)
+			);
+		}
+
+		update_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', $custom_thumbnails );
+
+		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+
+		if ( $selected_thumbnail === $thumbnail_url ) {
+			// If the removed thumbnail was the selected one, unset it.
+			delete_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail' );
+		}
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => __( 'Custom video thumbnail removed successfully.', 'godam' ),
 			)
 		);
 	}
@@ -479,12 +674,12 @@ class Media_Library extends Base {
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
-			return new \WP_Error( 'invalid_attachment', 'Attachment is not a video.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Check if the thumbnail URL is valid.
 		if ( ! filter_var( $thumbnail_url, FILTER_VALIDATE_URL ) ) {
-			return new \WP_Error( 'invalid_thumbnail_url', 'Invalid thumbnail URL.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_thumbnail_url', __( 'Invalid thumbnail URL.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Update the video thumbnail.
@@ -493,7 +688,7 @@ class Media_Library extends Base {
 		return rest_ensure_response(
 			array(
 				'success' => true,
-				'message' => 'Video thumbnail successfully set.',
+				'message' => __( 'Video thumbnail successfully set.', 'godam' ),
 			)
 		);
 	}
@@ -503,7 +698,7 @@ class Media_Library extends Base {
 	 *
 	 * Create a ZIP file of the folder with the given ID.
 	 *
-	 * @since n.e.x.t
+	 * @since 1.3.0
 	 *
 	 * @param \WP_REST_Request $request REST API request.
 	 * @return \WP_REST_Response|\WP_Error
@@ -512,14 +707,14 @@ class Media_Library extends Base {
 		$folder_id = $request->get_param( 'folder_id' );
 
 		if ( ! $folder_id || ! is_numeric( $folder_id ) ) {
-			return new \WP_Error( 'invalid_folder_id', 'Invalid folder ID.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_folder_id', __( 'Invalid folder ID.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Check if the term of the folder exists.
 		$term = get_term( $folder_id, 'media-folder' );
 
 		if ( ! $term || is_wp_error( $term ) ) {
-			return new \WP_Error( 'invalid_folder', 'Invalid folder term ID.', array( 'status' => 404 ) );
+			return new \WP_Error( 'invalid_folder', __( 'Invalid folder term ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
 		$result = Media_Folder_Create_Zip::get_instance()->create_zip( $folder_id, 'media-folder-' . $term->slug . '.zip' );
@@ -531,7 +726,7 @@ class Media_Library extends Base {
 		return rest_ensure_response(
 			array(
 				'success' => true,
-				'message' => 'ZIP file created successfully.',
+				'message' => __( 'ZIP file created successfully.', 'godam' ),
 				'data'    => $result,
 			)
 		);
@@ -549,7 +744,7 @@ class Media_Library extends Base {
 		$folder_ids = $request->get_param( 'folder_ids' );
 
 		if ( empty( $folder_ids ) || ! is_array( $folder_ids ) ) {
-			return new \WP_Error( 'invalid_ids', 'No folder IDs provided or invalid format.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_ids', __( 'No folder IDs provided or invalid format.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		$deleted_count = 0;
@@ -668,7 +863,7 @@ class Media_Library extends Base {
 		$locked_status = (bool) $request->get_param( 'locked_status' );
 
 		if ( empty( $folder_ids ) || ! is_array( $folder_ids ) ) {
-			return new \WP_Error( 'invalid_ids', 'No folder IDs provided or invalid format.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_ids', __( 'No folder IDs provided or invalid format.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		$result = $this->update_folder_meta_status( $folder_ids, 'locked', $locked_status );
@@ -726,7 +921,7 @@ class Media_Library extends Base {
 		$bookmark_status = (bool) $request->get_param( 'bookmark_status' );
 
 		if ( empty( $folder_ids ) || ! is_array( $folder_ids ) ) {
-			return new \WP_Error( 'invalid_ids', 'No folder IDs provided or invalid format.', array( 'status' => 400 ) );
+			return new \WP_Error( 'invalid_ids', __( 'No folder IDs provided or invalid format.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		$result = $this->update_folder_meta_status( $folder_ids, 'bookmark', $bookmark_status );
@@ -846,7 +1041,11 @@ class Media_Library extends Base {
 				return rest_ensure_response(
 					array(
 						'success' => false,
-						'message' => 'Failed to fetch media from GoDAM: ' . $response->get_error_message(),
+						'message' => sprintf(
+							// translators: %s is the error message from the GoDAM API request.
+							__( 'GoDAM API request failed: %s', 'godam' ),
+							$response->get_error_message()
+						),
 					)
 				);
 			}
@@ -857,7 +1056,11 @@ class Media_Library extends Base {
 				return rest_ensure_response(
 					array(
 						'success' => false,
-						'message' => "GoDAM API returned HTTP status {$response_code}.",
+						'message' => sprintf(
+							// translators: %s is the HTTP status code from the GoDAM API response.
+							__( 'GoDAM API returned HTTP status: %s', 'godam' ),
+							$response_code
+						),
 					)
 				);
 			}
@@ -868,7 +1071,7 @@ class Media_Library extends Base {
 				return rest_ensure_response(
 					array(
 						'success' => false,
-						'message' => 'Unexpected API response format or no files found.',
+						'message' => __( 'Unexpected API response format or no files found.', 'godam' ),
 					)
 				);
 			}
@@ -882,7 +1085,7 @@ class Media_Library extends Base {
 				$all_items[ $key ] = Media_Library_Ajax::get_instance()->prepare_godam_media_item( $item );
 				/**
 				 * For audio type, ensure that meta keys for artist and album exist.
-				 * 
+				 *
 				 * Note - This is a temporary fix till API starts sending the meta fields as well.
 				 */
 				if ( 'audio' === $type ) {
@@ -897,14 +1100,14 @@ class Media_Library extends Base {
 		return rest_ensure_response(
 			array(
 				'success'     => true,
-				'message'     => 'Filtered GoDAM files by MIME type.',
+				'message'     => __( 'Filtered GoDAM files by MIME type.', 'godam' ),
 				'data'        => array_values( $all_items ),
 				'total_items' => $total,
 				'mime_type'   => $type,
 				'page'        => $page,
 				'per_page'    => $per_page,
 				'has_more'    => $body->message->has_more,
-			) 
+			)
 		);
 	}
 
@@ -924,22 +1127,37 @@ class Media_Library extends Base {
 
 		// Validate required fields.
 		if ( empty( $data['id'] ) || empty( $data['title'] ) || empty( $data['url'] ) || empty( $data['mime'] ) ) {
-			return new \WP_Error( 'missing_params', 'Required fields are missing.', array( 'status' => 400 ) );
+			return new \WP_Error( 'missing_params', __( 'Required fields are missing.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Sanitize the GoDAM ID.
 		$godam_id = sanitize_text_field( $data['id'] );
 
+		// Check if godam_id is numeric; if yes, check if an attachment with this ID exists before returning.
+		if ( is_numeric( $godam_id ) ) {
+			$attachment_post = get_post( $godam_id );
+			if ( $attachment_post && 'attachment' === $attachment_post->post_type ) {
+				return new \WP_REST_Response(
+					array(
+						'success'    => true,
+						'attachment' => wp_prepare_attachment_for_js( $godam_id ),
+						'message'    => __( 'Attachment already exists', 'godam' ),
+					),
+					200
+				);
+			}
+		}
+
 		// Check if a media entry already exists for this GoDAM ID.
 		$existing = new \WP_Query(
 			array(
 				'post_type'      => 'attachment',
-				'meta_key'       => '_godam_original_id',
+				'meta_key'       => 'rtgodam_transcoding_job_id',
 				'meta_value'     => $godam_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'post_status'    => 'any',
 				'fields'         => 'ids',
 				'posts_per_page' => 1,
-			) 
+			)
 		);
 
 		// If found, return existing attachment instead of duplicating.
@@ -949,9 +1167,9 @@ class Media_Library extends Base {
 				array(
 					'success'    => true,
 					'attachment' => wp_prepare_attachment_for_js( $existing_id ),
-					'message'    => 'Attachment already exists',
+					'message'    => __( 'Attachment already exists', 'godam' ),
 				),
-				200 
+				200
 			);
 		}
 
@@ -974,7 +1192,7 @@ class Media_Library extends Base {
 					'success' => false,
 					'error'   => $attach_id->get_error_message(),
 				),
-				500 
+				500
 			);
 		}
 
@@ -993,9 +1211,9 @@ class Media_Library extends Base {
 			array(
 				'success'    => true,
 				'attachment' => wp_prepare_attachment_for_js( $attach_id ),
-				'message'    => 'Attachment created',
+				'message'    => __( 'Attachment created', 'godam' ),
 			),
-			201 
+			201
 		);
 	}
 
@@ -1027,7 +1245,7 @@ class Media_Library extends Base {
 				'post_status'    => 'inherit',
 				'posts_per_page' => 1,
 				'fields'         => 'ids',
-			) 
+			)
 		);
 
 		// If a match is found, use that attachment ID.
@@ -1045,5 +1263,188 @@ class Media_Library extends Base {
 
 		// Return the full media object (or WP_Error if not found).
 		return $response;
+	}
+
+	/**
+	 * Get the number of items in a media folder by id.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_count_by_category( $request ) {
+		if ( ! isset( $request['folder_id'] ) ) {
+			return rest_ensure_response(
+				array(
+					'message' => __( 'A Folder ID is required', 'godam' ),
+				)
+			);
+		}
+
+		$folder_id = absint( sanitize_text_field( $request['folder_id'] ) );
+		$tax_query = array(
+			array(
+				'taxonomy' => 'media-folder',
+				'field'    => 'term_id',
+				'operator' => ( 0 === $folder_id ) ? 'NOT EXISTS' : 'IN',
+			),
+		);
+
+		if ( 0 !== $folder_id ) {
+			$tax_query[0]['terms'] = $folder_id;
+		}
+
+		$args = array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'fields'         => 'ids',
+			'posts_per_page' => 1,
+			'no_found_rows'  => false,
+			'tax_query'      => $tax_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+		);
+
+		$query = new \WP_Query( $args );
+
+		return rest_ensure_response(
+			array(
+				'folder_id' => $folder_id,
+				'count'     => $query->found_posts,
+			)
+		);
+	}
+
+	/**
+	 * Get media-folders terms by various parameters.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 *
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_media_folders( $request ) {
+		$taxonomy = Media_Folders::SLUG;
+		$bookmark = (bool) $request->get_param( 'bookmark' );
+		$locked   = (bool) $request->get_param( 'locked' );
+
+		$args = array(
+			'taxonomy'   => $taxonomy,
+			'hide_empty' => false,
+			'orderby'    => 'name',
+			'order'      => 'ASC',
+			'per_page'   => 100, // Default to 100 items per page.
+		);
+
+		// Initialize meta_query as empty array.
+		$meta_queries = array();
+
+		if ( ! empty( $bookmark ) ) {
+			$meta_queries[] = array(
+				'key'   => 'bookmark',
+				'value' => $bookmark,
+			);
+		}
+
+		if ( ! empty( $locked ) ) {
+			$meta_queries[] = array(
+				'key'   => 'locked',
+				'value' => $locked,
+			);
+		}
+
+		if ( ! empty( $meta_queries ) ) {
+			$args['meta_query'] = $meta_queries; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Meta query is needed to filter by bookmark and locked.
+		}
+
+		if ( ! $locked && ! $bookmark ) {
+			$page = (int) $request->get_param( 'page' );
+
+			if ( $page < 1 ) {
+				$page = 1; // Default to page 1 if not set or invalid.
+			}
+
+			$per_page = (int) $request->get_param( 'per_page' );
+
+			if ( $per_page < 1 ) {
+				$per_page = 10; // Default to 10 items per page if not set or invalid.
+			}
+
+			$args['number'] = $per_page;
+			$args['offset'] = ( $page - 1 ) * $per_page;
+
+			$args['parent'] = (int) ( $request->get_param( 'parent' ) ?? 0 );
+		}
+
+		$terms = get_terms( $args );
+
+		if ( ! $locked && ! $bookmark ) {
+			$terms = $this->get_all_children_terms( $terms, $taxonomy );
+		}
+
+		return rest_ensure_response( $this->prepare_term_responses( $terms ) );
+	}
+
+	/**
+	 * Get all child terms recursively for a given set of terms.
+	 *
+	 * This method retrieves all child terms for the provided terms in the specified taxonomy.
+	 *
+	 * @param array|\WP_Error $terms    The terms to get children for.
+	 * @param string          $taxonomy The taxonomy to query.
+	 *
+	 * @return array An array of all child terms.
+	 */
+	private function get_all_children_terms( $terms, $taxonomy ) {
+		if ( empty( $terms ) || is_wp_error( $terms ) ) {
+			return array();
+		}
+
+		$all_terms = array();
+
+		foreach ( $terms as $term ) {
+			$all_terms[] = $term;
+
+			// Get child terms recursively.
+			$children = get_term_children( $term->term_id, $taxonomy );
+			if ( ! empty( $children ) && ! is_wp_error( $children ) ) {
+				foreach ( $children as $child_id ) {
+					$child_term = get_term( $child_id, $taxonomy );
+					if ( ! is_wp_error( $child_term ) && $child_term ) {
+						$all_terms[] = $child_term;
+					}
+				}
+			}
+		}
+
+		return $all_terms;
+	}
+
+	/**
+	 * Prepare term responses for media folders.
+	 *
+	 * This method formats the term data for the REST API response.
+	 *
+	 * @param array|\WP_Error $terms The terms to prepare.
+	 *
+	 * @return array Prepared term data.
+	 */
+	private function prepare_term_responses( $terms ) {
+		if ( empty( $terms ) || is_wp_error( $terms ) ) {
+			return array();
+		}
+
+		$prepared = array();
+
+		foreach ( $terms as $term ) {
+			$prepared[] = array(
+				'id'              => $term->term_id,
+				'name'            => $term->name,
+				'parent'          => $term->parent,
+				'meta'            => array(
+					'locked'   => get_term_meta( $term->term_id, 'locked', true ),
+					'bookmark' => get_term_meta( $term->term_id, 'bookmark', true ),
+				),
+				'attachmentCount' => (int) Media_Folder_Utils::get_instance()->get_attachment_count( $term->term_id ),
+			);
+		}
+
+		return $prepared;
 	}
 }

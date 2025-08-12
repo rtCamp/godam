@@ -60,7 +60,9 @@ class Dynamic_Shortcode extends Base {
 	public function render_shortcode( WP_REST_Request $request ) {
 		$id = $request->get_param( 'id' );
 
-		if ( ! get_post( $id ) ) {
+		$attachment = get_post( $id );
+
+		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
 			return new WP_REST_Response(
 				array(
 					'status'  => 'error',
@@ -69,6 +71,35 @@ class Dynamic_Shortcode extends Base {
 				404
 			);
 		}
+
+		$transcoded_url     = strval( rtgodam_get_transcoded_url_from_attachment( $id ) );
+		$hls_transcoded_url = strval( rtgodam_get_hls_transcoded_url_from_attachment( $id ) );
+		$video_src          = strval( wp_get_attachment_url( $id ) );
+		$video_src_type     = strval( get_post_mime_type( $id ) );
+		$sources            = array();
+
+		if ( ! empty( $transcoded_url ) ) {
+			$sources[] = array(
+				'src'  => $transcoded_url,
+				'type' => 'application/dash+xml',
+			);
+		}
+
+		if ( ! empty( $hls_transcoded_url ) ) {
+			$sources[] = array(
+				'src'  => $hls_transcoded_url,
+				'type' => 'application/x-mpegURL',
+			);
+		}
+
+		$sources[] = array(
+			'src'  => $video_src,
+			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
+		);
+
+		// Convert JSON to use custom placeholders instead of square brackets.
+		$sources_json              = wp_json_encode( $sources );
+		$sources_with_placeholders = str_replace( array( '[', ']' ), array( '__rtgob__', '__rtgcb__' ), $sources_json );
 
 		// Add action before shortcode rendering.
 		do_action( 'rtgodam_shortcode_before_render', $id );
@@ -82,7 +113,7 @@ class Dynamic_Shortcode extends Base {
 		$video_date  = apply_filters( 'rtgodam_shortcode_video_date', $video_date, $id );
 
 		ob_start();
-		$shortcode = '[godam_video engagements=show id="' . $id . '"]';
+		$shortcode = "[godam_video id='{$id}' engagements=show sources='{$sources_with_placeholders}']";
 
 		// Add filter for shortcode.
 		$shortcode = apply_filters( 'rtgodam_shortcode_output', $shortcode, $id );

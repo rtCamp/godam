@@ -24,7 +24,7 @@ const DeleteModal = () => {
 	const dispatch = useDispatch();
 
 	const isOpen = useSelector( ( state ) => state.FolderReducer.modals.delete );
-	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const selectedFolder = useSelector( ( state ) => state.FolderReducer.currentContextMenuFolder );
 	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
 	const multiSelectedFolderIds = useSelector( ( state ) => state.FolderReducer.multiSelectedFolderIds );
 
@@ -95,11 +95,11 @@ const DeleteModal = () => {
 				<p className="modal__description">
 					{ isMultiSelecting ? (
 						<>
-							Deleting <span className="modal__highlight">these { multiSelectedFolderIds && multiSelectedFolderIds.length } folders</span> will remove them and all its subfolders, but <span className="modal__highlight">media associated with them will not be deleted</span>.
+							{ __( 'Deleting', 'godam' ) } <span className="modal__highlight">{ __( 'these', 'godam' ) } { multiSelectedFolderIds && multiSelectedFolderIds.length } { __( 'folders', 'godam' ) }</span> { __( 'will remove them and all its subfolders, but', 'godam' ) } <span className="modal__highlight">{ __( 'media associated with them will not be deleted', 'godam' ) }</span>.
 						</>
 					) : (
 						<>
-							Deleting the folder <span className="modal__highlight">{ selectedFolder.name }</span> will remove it and all its subfolders, but <span className="modal__highlight">media associated with it will not be deleted</span>.
+							{ __( 'Deleting the folder', 'godam' ) } <span className="modal__highlight">{ selectedFolder.name }</span> { __( 'will remove it and all its subfolders, but', 'godam' ) } <span className="modal__highlight">{ __( 'media associated with it will not be deleted', 'godam' ) }</span>.
 						</>
 					) }
 				</p>
@@ -111,14 +111,14 @@ const DeleteModal = () => {
 					<Button
 						isBusy={ isLoading }
 						ref={ ref }
-						text="Delete"
+						text={ __( 'Delete', 'godam' ) }
 						variant="primary"
 						onClick={ () => handleSubmit() }
 						isDestructive
 						onKeyDown={ handleKeyDown }
 					/>
 					<Button
-						text="Cancel"
+						text={ __( 'Cancel', 'godam' ) }
 						onClick={ () => dispatch( closeModal( 'delete' ) ) }
 						isDestructive
 					/>

@@ -33,6 +33,7 @@ $loop          = ! empty( $attributes['loop'] );
 $muted         = ! empty( $attributes['muted'] );
 $poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
 $preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
+$hover_select  = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
 $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
@@ -92,11 +93,14 @@ $poster_image = ! empty( $poster_image ) ? $poster_image : '';
 $job_id = '';
 
 $sources = array();
+
+if ( empty( $attachment_id ) ) {
+	$job_id = ! empty( $attributes['cmmId'] ) ? sanitize_text_field( $attributes['cmmId'] ) : '';
+}
+
 if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$sources = $attributes['sources'];
-} elseif ( empty( $attachment_id ) &&
-	( ! empty( $src || ! empty( $transcoded_url ) ) )
-) {
+} elseif ( empty( $attachment_id ) && ! ( empty( $src ) && empty( $transcoded_url ) ) ) {
 	$sources = array();
 	if ( ! empty( $transcoded_url ) ) {
 		$sources[] = array(
@@ -111,31 +115,70 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 		);
 	}
 } else {
-	$transcoded_url = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true ) : '';
-	$video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
-	$video_src_type = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
-	$job_id         = $attachment_id && ! empty( $transcoded_url ) ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
+	$transcoded_url     = $attachment_id ? rtgodam_get_transcoded_url_from_attachment( $attachment_id ) : '';
+	$hls_transcoded_url = $attachment_id ? rtgodam_get_hls_transcoded_url_from_attachment( $attachment_id ) : '';
+	$video_src          = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
+	$video_src_type     = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
+	$job_id             = '';
+
+	if ( $attachment_id && ! empty( $transcoded_url ) ) {
+		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		if ( empty( $job_id ) ) {
+			$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		}
+	}
+	$sources = array();
 
 	if ( ! empty( $transcoded_url ) ) {
-		$sources = array(
-			array(
-				'src'  => $transcoded_url,
-				'type' => 'application/dash+xml',
-			),
-			array(
-				'src'  => $video_src,
-				'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
-			),
-		);
-	} else {
-		$sources = array(
-			array(
-				'src'  => $video_src,
-				'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
-			),
+		$sources[] = array(
+			'src'  => $transcoded_url,
+			'type' => 'application/dash+xml',
 		);
 	}
+
+	if ( ! empty( $hls_transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $hls_transcoded_url,
+			'type' => 'application/x-mpegURL',
+		);
+	}
+
+	// Only add video source if it's not empty.
+	if ( ! empty( $video_src ) ) {
+		$sources[] = array(
+			'src'  => $video_src,
+			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
+		);
+	}
+
+	if ( ! empty( $hls_transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $hls_transcoded_url,
+			'type' => 'application/x-mpegURL',
+		);
+	}
+
+	$sources[] = array(
+		'src'  => $video_src,
+		'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
+	);
 }
+
+// Check if no media is selected - return early to prevent broken output.
+// Also check if sources array contains only empty sources.
+$has_valid_sources = false;
+foreach ( $sources as $source ) {
+	if ( ! empty( $source['src'] ) ) {
+		$has_valid_sources = true;
+		break;
+	}
+}
+
+if ( empty( $attachment_id ) && empty( $src ) && empty( $transcoded_url ) && ! $has_valid_sources ) {
+	return;
+}
+
 $easydam_control_bar_color = 'initial'; // Default color.
 
 $godam_settings         = get_option( 'rtgodam-settings', array() );
@@ -156,6 +199,13 @@ $video_setup = array(
 	'preload'     => $preload,
 	'poster'      => empty( $poster ) ? $poster_image : $poster,
 	'fluid'       => true,
+	'flvjs'       => array(
+		'mediaDataSource' => array(
+			'isLive'          => true,
+			'cors'            => false,
+			'withCredentials' => false,
+		),
+	),
 	'sources'     => $sources,
 	'playsinline' => true,
 	'controlBar'  => array(
@@ -170,7 +220,19 @@ $video_setup = array(
 );
 if ( ! empty( $control_bar_settings ) ) {
 	$video_setup['controlBar'] = $control_bar_settings; // contains settings specific to control bar.
+
+	if ( isset( $control_bar_settings['volumePanel'] ) && empty( $control_bar_settings['volumePanel'] ) ) {
+		$volume_panel_setting = $control_bar_settings['volumePanel'];
+	} else {
+		// Define your default volumePanel setting.
+		$volume_panel_setting = array(
+			'inline' => ! in_array( $player_skin, array( 'Minimal', 'Pills' ), true ),
+		);
+	}
+
+	$video_setup['controlBar']['volumePanel'] = $volume_panel_setting;
 }
+
 $video_setup = wp_json_encode( $video_setup );
 
 $video_config = wp_json_encode(
@@ -222,7 +284,7 @@ $custom_css_properties = array(
 	'--rtgodam-custom-play-button-url' => $easydam_custom_btn_img ? 'url(' . esc_url( $easydam_custom_btn_img ) . ')' : '',
 );
 
-if ( ! empty( $attributes['aspectRatio'] ) ) {
+if ( ! empty( $aspect_ratio ) ) {
 	$custom_css_properties['--rtgodam-video-aspect-ratio'] = str_replace( ':', '/', $aspect_ratio );
 }
 
@@ -249,16 +311,9 @@ if ( $is_shortcode || $is_elementor_widget ) {
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
-	<figure
-	id="godam-player-container-<?php echo esc_attr( $instance_id ); ?>"
-	<?php echo $is_shortcode || $is_elementor_widget ? '' : wp_kses_data( get_block_wrapper_attributes() ); ?>
-	style="
-	--rtgodam-control-bar-color: <?php echo esc_attr( $easydam_control_bar_color ); ?>;
-	--rtgodam-control-hover-color: <?php echo esc_attr( $easydam_hover_color ); ?>;
-	--rtgodam-control-hover-zoom: <?php echo esc_attr( 1 + $easydam_hover_zoom ); ?>;
-	--rtgodam-custom-play-button-url: url(<?php echo esc_url( $easydam_custom_btn_img ); ?>);
-	<?php echo $aspect_ratio ? '--rtgodam-video-aspect-ratio: ' . esc_attr( str_replace( ':', '/', $aspect_ratio ) ) : ''; ?>
-	">
+	<figure 
+		id="godam-player-container-<?php echo esc_attr( $instance_id ); ?>"
+		<?php echo wp_kses_data( $figure_attributes ); ?>>
 		<div class="godam-video-wrapper">
 			<?php if ( $show_overlay && ! empty( $inner_blocks_content ) ) : ?>
 				<div
@@ -273,34 +328,11 @@ if ( $is_shortcode || $is_elementor_widget ) {
 				</div>
 			<?php endif; ?>
 
-			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin" style="position: relative;">
-			<?php if ( ! empty( $heading ) ) : ?>
-					<div
-						class="godam-video-heading-overlay"
-						data-heading-overlay
-						style="
-							position: absolute;
-							top: 50%;
-							left: 20px;
-							right: 20px;
-							transform: translateY(-50%);
-							z-index: 10;
-							color: <?php echo esc_attr( $heading_color ); ?>;
-							background-color: <?php echo esc_attr( $heading_bg_color ); ?>;
-							font-size: 24px;
-							font-weight: bold;
-							text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-							padding: 8px;
-							border-radius: 4px;
-							opacity: 1;
-							transition: opacity 0.3s ease;
-						"
-					>
-						<?php echo wp_kses_post( $heading ); ?>
-					</div>
+			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin" >
+				<?php if ( isset( $hover_select ) && 'shadow-overlay' === $hover_select ) : ?>
+					<div class="godam-player-overlay"></div>
 				<?php endif; ?>
-					
-			<div class="animate-play-btn">
+				<div class="animate-play-btn">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
 						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 					</svg>
@@ -314,6 +346,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 					data-controls="<?php echo esc_attr( $video_setup ); ?>"
 					data-job_id="<?php echo esc_attr( $job_id ); ?>"
 					data-global_ads_settings="<?php echo esc_attr( $ads_settings ); ?>"
+					data-hover-select="<?php echo esc_attr( $hover_select ); ?>"
 				>
 					<?php
 					foreach ( $sources as $source ) :
@@ -434,6 +467,21 @@ if ( $is_shortcode || $is_elementor_widget ) {
 									</div>
 								</div>
 								<?php
+							elseif ( 'metform' === $form_type && ! empty( $layer['metform_id'] ) ) :
+								?>
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $form_type ); ?>" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div class="form-container">
+										<?php
+											echo do_shortcode(
+												sprintf(
+													"[metform form_id='%d']",
+													intval( $layer['metform_id'] )
+												)
+											);
+										?>
+									</div>
+								</div>
+								<?php
 							elseif ( 'jetpack' === $form_type && ! empty( $layer['jp_id'] ) ) :
 								// Get the origin post ID from the layer data.
 								$origin_post_id = isset( $layer['origin_post_id'] ) ? $layer['origin_post_id'] : '';
@@ -488,6 +536,21 @@ if ( $is_shortcode || $is_elementor_widget ) {
 									</div>
 								</div>
 								<?php
+							elseif ( 'ninjaforms' === $form_type && ! empty( $layer['ninja_form_id'] ) ) :
+								?>
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $form_type ); ?>" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div class="form-container">
+										<?php
+											echo do_shortcode(
+												sprintf(
+													"[ninja_form id='%d']",
+													intval( $layer['ninja_form_id'] )
+												)
+											);
+										?>
+									</div>
+								</div>
+								<?php
 							endif;
 								// Poll layer.
 						elseif ( isset( $layer['type'] ) && 'poll' === $layer['type'] ) :
@@ -531,18 +594,6 @@ if ( $is_shortcode || $is_elementor_widget ) {
 							>
 							</div>
 							<?php
-							// WooCommerce layer.
-						elseif ( isset( $layer['type'] ) && 'woo' === $layer['type'] ) :
-							?>
-							<div
-								id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
-								class="easydam-layer hidden hotspot-layer"
-								<?php if ( ! empty( $layer['bg_color'] ) ) : ?>
-									style="background-color: <?php echo esc_attr( $layer['bg_color'] ); ?>"
-								<?php endif; ?>
-							>
-							</div>
-							<?php
 						endif;
 					endforeach;
 					?>
@@ -553,8 +604,8 @@ if ( $is_shortcode || $is_elementor_widget ) {
 		<?php if ( $caption && ! empty( $caption ) ) : ?>
 			<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $caption ); ?></figcaption>
 			<?php
-		endif;
-			do_action( 'rtgodam_after_video_html', $attributes, $instance_id, $easydam_meta_data );
+			endif;
+				do_action( 'rtgodam_after_video_html', $attributes, $instance_id, $easydam_meta_data );
 		?>
 	</figure>
 <?php endif; ?>
