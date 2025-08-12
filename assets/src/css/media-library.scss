@@ -22,7 +22,9 @@
 	}
  }
 
-
+.button.godam-button {
+	margin: 0 0.5rem;
+}
 
 .custom-thumbnail-container {
 	display: flex;
@@ -346,7 +348,7 @@
 				background-color: #000;
 				height: 100%;
 			}
-			
+
 			&.selected {
 				border: 4px solid #007bff;
 
