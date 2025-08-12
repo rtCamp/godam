@@ -155,7 +155,15 @@ input, textarea, select {
 }
 
 
-.gravity-form-selector ul li {
+
+/* Apply dropdown styles to all integrated form selectors */
+.form-selector ul li,
+.gravity-form-selector ul li,
+.wpforms-form-selector ul li,
+.jetpack-form-selector ul li,
+.contactform7-form-selector ul li,
+.ninja-form-selector ul li,
+.metform-form-selector ul li {
 	padding: 1rem 1.5rem;
 	font-size: 0.875rem;
 	font-weight: 500;
@@ -165,13 +173,31 @@ input, textarea, select {
 	transition: background 0.2s, color 0.2s;
 }
 
+.form-selector ul li:hover,
 .gravity-form-selector ul li:hover,
-.gravity-form-selector ul li:focus {
+.wpforms-form-selector ul li:hover,
+.jetpack-form-selector ul li:hover,
+.contactform7-form-selector ul li:hover,
+.ninja-form-selector ul li:hover,
+.metform-form-selector ul li:hover,
+.form-selector ul li:focus,
+.gravity-form-selector ul li:focus,
+.wpforms-form-selector ul li:focus,
+.jetpack-form-selector ul li:focus,
+.contactform7-form-selector ul li:focus,
+.ninja-form-selector ul li:focus,
+.metform-form-selector ul li:focus {
 	background: #f5f5f5;
 	color: #222;
 }
 
-.gravity-form-selector ul li.is-selected {
+.form-selector ul li.is-selected,
+.gravity-form-selector ul li.is-selected,
+.wpforms-form-selector ul li.is-selected,
+.jetpack-form-selector ul li.is-selected,
+.contactform7-form-selector ul li.is-selected,
+.ninja-form-selector ul li.is-selected,
+.metform-form-selector ul li.is-selected {
 	color: rgb(172, 58, 107);
 	background: #f5f5f5;
 }
