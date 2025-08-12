@@ -113,6 +113,11 @@ class Form_Layer {
 	 * @return mixed Updated value for the field.
 	 */
 	public static function update_forminator_hidden_field_value( $value, $save_value, $field ) {
+		// Check if Forminator classes exist.
+		if ( ! class_exists( 'Forminator_Hidden' ) ) {
+			return $value;
+		}
+
 		// Safely get the form ID from the default value.
 		$form_id = $field['default_value'];
 
@@ -148,6 +153,11 @@ class Form_Layer {
 	 * @return void
 	 */
 	public static function may_be_add_forminator_form_field( $form_id ) {
+		// Check if Forminator classes exist.
+		if ( ! class_exists( 'Forminator_API' ) ) {
+			return;
+		}
+
 		// Get the current form fields.
 		$form   = Forminator_API::get_form( $form_id );
 		$fields = $form->get_fields_as_array();
@@ -176,6 +186,11 @@ class Form_Layer {
 	 * @return string Modified form content.
 	 */
 	public static function handle_cf7_form( $content ) {
+		// Check if Contact Form 7 is active and the class exists.
+		if ( ! class_exists( 'WPCF7_ContactForm' ) ) {
+			return $content;
+		}
+
 		// Get the current Contact Form 7 instance.
 		$current_form = WPCF7_ContactForm::get_current();
 
