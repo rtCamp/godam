@@ -33,13 +33,13 @@ const LoadingDots = () => {
 	);
 };
 
-const calculatePercentage = ( used, total ) => {
-	if ( total === 0 ) {
+const calculateStoragePercentage = ( used, total ) => {
+	if ( total === 0 || ! total || ! used ) {
 		return 0;
 	}
 	try {
 		const result = ( used / total ) * 100;
-		return result.toFixed( 2 );
+		return Math.min( result.toFixed( 2 ), 100 );
 	} catch ( error ) {
 		return 0;
 	}
@@ -281,23 +281,33 @@ const MediaMigration = () => {
 						<p className="text-sm mt-0">{ __( 'You can migrate your media files to GoDAM storage. This will allow you to use the GoDAM CDN for faster delivery and better performance.', 'godam' ) }</p>
 						<div className="flex gap-3 items-center mt-8">
 							<div className="circle-container mr-6">
-								<div className="data text-xs">{ calculatePercentage( mediaMigrationInfo.total - mediaMigrationInfo.remaining, mediaMigrationInfo.total ) }%</div>
+								<div className="data text-xs">
+									{ calculateStoragePercentage(
+										parseFloat( window?.userData?.storageUsed || 0 ),
+										parseFloat( window?.userData?.totalStorage || 0 ),
+									) }%
+								</div>
 								<div
-									className={ `circle` }
-									style={ { '--percentage': calculatePercentage( mediaMigrationInfo.total - mediaMigrationInfo.remaining, mediaMigrationInfo.total ) + '%' } }
+									className="circle"
+									style={ {
+										'--percentage': calculateStoragePercentage(
+											parseFloat( window?.userData?.storageUsed || 0 ),
+											parseFloat( window?.userData?.totalStorage || 0 ),
+										) + '%',
+									} }
 								></div>
 							</div>
 							<div className="leading-6 mr-6">
 								<div className="easydam-settings-label text-base"><b>{ __( 'GoDAM STORAGE', 'godam' ) }</b></div>
-								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ formatSize( parseInt( window?.userData.storageUsed ) * 1024 * 1024 * 1024 ) }
+								<strong>{ __( 'Used: ', 'godam' ) }</strong>{ formatSize( parseFloat( window?.userData?.storageUsed || 0 ) * 1024 * 1024 * 1024 ) }
 								<br />
-								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ formatSize( parseInt( window?.userData.totalStorage - window?.userData.storageUsed ) * 1024 * 1024 * 1024 ) }
+								<strong>{ __( 'Available: ', 'godam' ) }</strong>{ formatSize( parseFloat( ( window?.userData?.totalStorage || 0 ) - ( window?.userData?.storageUsed || 0 ) ) * 1024 * 1024 * 1024 ) }
 							</div>
 							<div className="leading-6 mr-6">
 								<div className="easydam-settings-label text-base"><b>{ __( 'STATS', 'godam' ) }</b></div>
-								<strong>{ __( 'Total Files: ', 'godam' ) }</strong>{ mediaMigrationInfo.total } { _x( 'Files', 'files', 'godam' ) }
+								<strong>{ __( 'Total Files: ', 'godam' ) }</strong>{ mediaMigrationInfo.total || 0 } { _x( 'Files', 'files', 'godam' ) }
 								<br />
-								<strong>{ __( 'Files Size: ', 'godam' ) }</strong>{ formatSize( mediaMigrationInfo.total_size ) }
+								<strong>{ __( 'Files Size: ', 'godam' ) }</strong>{ formatSize( mediaMigrationInfo.total_size || 0 ) }
 							</div>
 							<div className="leading-6 mr-6">
 								<div className="easydam-settings-label text-base">&nbsp;</div>
@@ -323,7 +333,7 @@ const MediaMigration = () => {
 											<><strong>{ __( 'Processing batch', 'godam' ) }</strong><LoadingDots /></>
 										) }
 										{ 'paused' !== mediaMigrationInfo.status && (
-											<><strong>{ __( 'Failed: ', 'godam' ) }</strong>{ mediaMigrationInfo.failed } { _x( 'Files', 'files', 'godam' ) }</>
+											<><strong>{ __( 'Failed: ', 'godam' ) }</strong>{ mediaMigrationInfo.failed || 0 } { _x( 'Files', 'files', 'godam' ) }</>
 										) }
 									</>
 								) }
