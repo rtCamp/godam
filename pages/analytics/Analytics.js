@@ -182,7 +182,7 @@ const Analytics = ( { attachmentID } ) => {
 			} );
 
 			new VideoLineChart(
-				JSON.parse( analyticsData?.all_time_heatmap ),
+				JSON.parse( analyticsData?.all_time_heatmap ?? [] ),
 				'#performance-line-chart',
 				originalVideo,
 				{
@@ -204,7 +204,7 @@ const Analytics = ( { attachmentID } ) => {
 			} );
 
 			new VideoLineChart(
-				JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ),
+				JSON.parse( abTestComparisonAnalyticsData?.all_time_heatmap ?? [] ),
 				'#comparison-line-chart',
 				comparisonVideo,
 				{

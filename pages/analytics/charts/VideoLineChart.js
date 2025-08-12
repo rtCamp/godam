@@ -118,7 +118,7 @@ class VideoLineChart {
 			.attr( 'class', 'area' )
 			.style( 'opacity', 0 );
 
-		this.tooltip = d3.select( '.line-chart-tooltip' );
+		this.tooltip = d3.select( this.tooltipSelector );
 	}
 
 	addHoverListener() {
