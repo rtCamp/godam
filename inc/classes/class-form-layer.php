@@ -98,7 +98,13 @@ class Form_Layer {
 				self::may_be_add_forminator_form_field( $form_id );
 				// NOTE: filter for Forminator is already added in the constructor.
 				break;
-		
+			
+			case 'fluentforms':
+				// Add the filter if it hasn't been added yet.
+				if ( ! has_filter( 'fluentform/rendering_form', array( __CLASS__, 'handle_fluentforms' ) ) ) {
+					add_filter( 'fluentform/rendering_form', array( __CLASS__, 'handle_fluentforms' ), 10, 1 );
+				}
+				break;
 		}
 	}
 
@@ -278,5 +284,39 @@ class Form_Layer {
 		);
 
 		return $block_content;
+	}
+
+	/**
+	 * Updates the godam_source hidden field value for FluentForms.
+	 *
+	 * @param object $form The form object.
+	 *
+	 * @return object Modified form object.
+	 */
+	public static function handle_fluentforms( $form ) {
+		// Get the current FluentForms instance.
+		$current_form_id = $form->id ?? 0;
+
+		// Check if the current form ID is present on the $form_identifiers fluentforms.
+		if ( ! isset( self::$form_identifiers['fluentforms'][ $current_form_id ] ) ) {
+			return $form;
+		}
+
+		// Check if godam_source field already exists in the form fields.
+		if ( isset( $form->fields['fields'] ) && is_array( $form->fields['fields'] ) ) {
+			foreach ( $form->fields['fields'] as &$field ) {
+				if ( isset( $field['name'] ) && 'godam_source' === $field['name'] ) {
+					// Get the video ID based on the current form ID.
+					$field['attributes']['value'] = wp_json_encode(
+						self::$form_identifiers['fluentforms'][ $current_form_id ],
+						JSON_UNESCAPED_SLASHES
+					);
+
+					break;
+				}
+			}
+		}
+
+		return $form;
 	}
 }
