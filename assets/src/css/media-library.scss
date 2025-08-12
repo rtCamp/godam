@@ -401,8 +401,10 @@
 
 .plus-icon {
 	font-size: 24px;
-	display: block;
-	margin-bottom: 4px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin: 0;
 	cursor: pointer;
 }
 
