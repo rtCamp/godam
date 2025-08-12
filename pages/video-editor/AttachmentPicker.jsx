@@ -47,7 +47,7 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 						</div>
 						<div className="annual-plan-offer-banner__cta-container">
 							<a
-								href={ `${ videoData.godamBaseUrl }/pricing?utm_campaign=annual-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=banner` }
+								href={ `${ window?.videoData?.godamBaseUrl }/pricing?utm_campaign=annual-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=banner` }
 								className="annual-plan-offer-banner__cta"
 								target="_blank"
 								rel="noopener noreferrer"
