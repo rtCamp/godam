@@ -31,6 +31,7 @@ export default class PlayerManager {
 		this.keyboardHandlerInitialized = false;
 
 		this.init();
+		return engagement();
 	}
 
 	/**
@@ -52,7 +53,6 @@ export default class PlayerManager {
 		this.initializeDisplayLayers();
 		this.videos.forEach( ( video ) => this.initializeVideo( video ) );
 		this.initializeGlobalKeyboardHandler();
-		return engagement();
 	}
 
 	/**

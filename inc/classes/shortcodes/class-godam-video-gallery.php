@@ -34,14 +34,14 @@ class GoDAM_Video_Gallery {
 		wp_register_style(
 			'godam-gallery-style',
 			RTGODAM_URL . 'assets/build/css/godam-gallery.css',
-			array( 'wp-data' ),
+			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-gallery.css' )
 		);
 
 		wp_register_script(
 			'godam-gallery-script',
 			RTGODAM_URL . 'assets/build/js/godam-gallery.min.js',
-			array(),
+			array( 'wp-data' ),
 			filemtime( RTGODAM_PATH . 'assets/build/js/godam-gallery.min.js' ),
 			true
 		);
@@ -229,6 +229,7 @@ class GoDAM_Video_Gallery {
 				data-date-range="' . esc_attr( $atts['date_range'] ) . '"
 				data-custom-date-start="' . esc_attr( $atts['custom_date_start'] ) . '"
 				data-custom-date-end="' . esc_attr( $atts['custom_date_end'] ) . '"
+				data-engagements="' . esc_attr( $atts['engagements'] ) . '"
 			>';
 			foreach ( $query->posts as $video ) {
 				// Add action before each video item.

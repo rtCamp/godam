@@ -153,6 +153,7 @@ class GoDAM_Player {
 				'transcoded_url' => '',
 				'poster'         => '',
 				'aspectRatio'    => '',
+				'engagements'    => '',
 			),
 			$atts,
 			'godam_video'
