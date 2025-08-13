@@ -87,9 +87,39 @@ const wcVideoCarousel = {
 					},
 					freeMode: true,
 					autoplay: false,
+					on: {
+						init() {
+							const activeSlide = this.slides[ this.activeIndex ];
+							if ( activeSlide ) {
+								const isTranscoded = activeSlide.getAttribute( 'data-is-transcoded' ) === 'true';
+								const closeBtn = document.querySelector( '.rtgodam-product-video-gallery-slider-modal-close' );
+								if ( closeBtn ) {
+									closeBtn.classList.toggle( 'godam-transcoded', isTranscoded );
+								}
+							}
+						},
+						slideChange() {
+							const activeSlide = this.slides[ this.activeIndex ];
+							if ( activeSlide ) {
+								const isTranscoded = activeSlide.getAttribute( 'data-is-transcoded' ) === 'true';
+								const closeBtn = document.querySelector( '.rtgodam-product-video-gallery-slider-modal-close' );
+								if ( closeBtn ) {
+									closeBtn.classList.toggle( 'godam-transcoded', isTranscoded );
+								}
+							}
+						},
+					},
 				} );
 				const itemIndex = parseInt( event.target.getAttribute( 'data-swiper-slide-index' ) );
 				self.swiperModal.slideTo( itemIndex );
+
+				// Run the check immediately for the first slide.
+				const firstSlide = self.swiperModal.slides[ self.swiperModal.activeIndex ];
+				const isTranscoded = firstSlide.getAttribute( 'data-is-transcoded' ) === 'true';
+				const closeBtn = document.querySelector( '.rtgodam-product-video-gallery-slider-modal-close' );
+				if ( closeBtn ) {
+					closeBtn.classList.toggle( 'godam-transcoded', isTranscoded );
+				}
 
 				const videoElmModal = document.querySelector( '.rtgodam-product-video-gallery-slider-modal' );
 				videoElmModal.classList.add( 'open' );

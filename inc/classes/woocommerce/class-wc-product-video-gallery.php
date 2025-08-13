@@ -467,9 +467,12 @@ class WC_Product_Video_Gallery {
 
 		$srcsets = array_map(
 			function ( $attachment_id ) {
+				$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+
 				return array(
 					'id'  => $attachment_id,
 					'src' => wp_get_attachment_url( $attachment_id ),
+					'is_transcoded' => (bool) random_int(0,1),
 				);
 			},
 			$rtgodam_product_video_gallery_ids
@@ -506,9 +509,11 @@ class WC_Product_Video_Gallery {
 		$modal_carousel_html = array_map(
 			function ( $item ) use ( $srcsets, $single_product_modal_summary ) {
 				$src_id = $srcsets[ $item ]['id'];
+				$is_transcoded  = $srcsets[ $item ]['is_transcoded'] ? 'true' : 'false';
+
 				return sprintf(
 					'
-					<div class="swiper-slide">
+					<div class="swiper-slide" data-is-transcoded="%3$s">
 						<div class="rtgodam-product-video-gallery-slider-modal-content-left">
 							%1$s
 						</div>
@@ -518,6 +523,7 @@ class WC_Product_Video_Gallery {
 					</div>',
 					do_shortcode( "[godam_video id='{$src_id}']" ),
 					$single_product_modal_summary,
+					esc_attr( $is_transcoded )
 				);
 			},
 			$srcsets_keys
