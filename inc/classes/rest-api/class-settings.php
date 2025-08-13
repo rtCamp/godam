@@ -58,6 +58,56 @@ class Settings extends Base {
 				'enable_global_video_ads' => false,
 				'adTagUrl'                => '',
 			),
+			'global_layers' => array(
+				'video_ads' => array(
+					'enabled'   => false,
+					'adTagUrl'  => '',
+					'placement' => 'start',
+					'position'  => 30,
+					'duration'  => 30,
+				),
+				'forms' => array(
+					'enabled'   => false,
+					'plugin'    => '',
+					'form_id'   => '',
+					'placement' => 'end',
+					'position'  => 30,
+					'duration'  => 0,
+				),
+				'cta' => array(
+					'enabled'          => false,
+					'text'             => '',
+					'url'              => '',
+					'new_tab'          => true,
+					'placement'        => 'end',
+					'position'         => 30,
+					'screen_position'  => 'bottom-center',
+					'duration'         => 10,
+					'background_color' => '#0073aa',
+					'text_color'       => '#ffffff',
+					'font_size'        => 16,
+					'border_radius'    => 4,
+					'css_classes'      => '',
+				),
+				'hotspots' => array(
+					'enabled'           => false,
+					'default_shape'     => 'circle',
+					'default_animation' => 'pulse',
+					'default_color'     => '#ff0000',
+					'placement'         => 'throughout',
+					'hotspots'          => array(),
+				),
+				'polls' => array(
+					'enabled'             => false,
+					'placement'           => 'middle',
+					'screen_position'     => 'center',
+					'default_duration'    => 15,
+					'show_results_default'=> true,
+					'background_color'    => '#ffffff',
+					'text_color'          => '#000000',
+					'polls'               => array(),
+				),
+			),
 		);
 	}
 
@@ -137,6 +187,17 @@ class Settings extends Base {
 							'sanitize_callback' => array( $this, 'sanitize_settings' ),
 						),
 					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/detect-form-plugins',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'detect_form_plugins' ),
+					'permission_callback' => function () {
+						return current_user_can( 'manage_options' );
+					},
 				),
 			),
 		);
@@ -314,6 +375,56 @@ class Settings extends Base {
 				'enable_global_video_ads' => rest_sanitize_boolean( $settings['ads_settings']['enable_global_video_ads'] ?? $default['ads_settings']['enable_global_video_ads'] ),
 				'adTagUrl'                => esc_url_raw( $settings['ads_settings']['adTagUrl'] ?? $default['ads_settings']['adTagUrl'] ),
 			),
+			'global_layers' => array(
+				'video_ads' => array(
+					'enabled'   => rest_sanitize_boolean( $settings['global_layers']['video_ads']['enabled'] ?? $default['global_layers']['video_ads']['enabled'] ),
+					'adTagUrl'  => esc_url_raw( $settings['global_layers']['video_ads']['adTagUrl'] ?? $default['global_layers']['video_ads']['adTagUrl'] ),
+					'placement' => sanitize_text_field( $settings['global_layers']['video_ads']['placement'] ?? $default['global_layers']['video_ads']['placement'] ),
+					'position'  => absint( $settings['global_layers']['video_ads']['position'] ?? $default['global_layers']['video_ads']['position'] ),
+					'duration'  => absint( $settings['global_layers']['video_ads']['duration'] ?? $default['global_layers']['video_ads']['duration'] ),
+				),
+				'forms' => array(
+					'enabled'   => rest_sanitize_boolean( $settings['global_layers']['forms']['enabled'] ?? $default['global_layers']['forms']['enabled'] ),
+					'plugin'    => sanitize_text_field( $settings['global_layers']['forms']['plugin'] ?? $default['global_layers']['forms']['plugin'] ),
+					'form_id'   => sanitize_text_field( $settings['global_layers']['forms']['form_id'] ?? $default['global_layers']['forms']['form_id'] ),
+					'placement' => sanitize_text_field( $settings['global_layers']['forms']['placement'] ?? $default['global_layers']['forms']['placement'] ),
+					'position'  => absint( $settings['global_layers']['forms']['position'] ?? $default['global_layers']['forms']['position'] ),
+					'duration'  => absint( $settings['global_layers']['forms']['duration'] ?? $default['global_layers']['forms']['duration'] ),
+				),
+				'cta' => array(
+					'enabled'          => rest_sanitize_boolean( $settings['global_layers']['cta']['enabled'] ?? $default['global_layers']['cta']['enabled'] ),
+					'text'             => sanitize_text_field( $settings['global_layers']['cta']['text'] ?? $default['global_layers']['cta']['text'] ),
+					'url'              => esc_url_raw( $settings['global_layers']['cta']['url'] ?? $default['global_layers']['cta']['url'] ),
+					'new_tab'          => rest_sanitize_boolean( $settings['global_layers']['cta']['new_tab'] ?? $default['global_layers']['cta']['new_tab'] ),
+					'placement'        => sanitize_text_field( $settings['global_layers']['cta']['placement'] ?? $default['global_layers']['cta']['placement'] ),
+					'position'         => absint( $settings['global_layers']['cta']['position'] ?? $default['global_layers']['cta']['position'] ),
+					'screen_position'  => sanitize_text_field( $settings['global_layers']['cta']['screen_position'] ?? $default['global_layers']['cta']['screen_position'] ),
+					'duration'         => absint( $settings['global_layers']['cta']['duration'] ?? $default['global_layers']['cta']['duration'] ),
+					'background_color' => $this->sanitize_color_value( $settings['global_layers']['cta']['background_color'] ?? $default['global_layers']['cta']['background_color'] ),
+					'text_color'       => $this->sanitize_color_value( $settings['global_layers']['cta']['text_color'] ?? $default['global_layers']['cta']['text_color'] ),
+					'font_size'        => absint( $settings['global_layers']['cta']['font_size'] ?? $default['global_layers']['cta']['font_size'] ),
+					'border_radius'    => absint( $settings['global_layers']['cta']['border_radius'] ?? $default['global_layers']['cta']['border_radius'] ),
+					'css_classes'      => sanitize_text_field( $settings['global_layers']['cta']['css_classes'] ?? $default['global_layers']['cta']['css_classes'] ),
+				),
+				'hotspots' => array(
+					'enabled'           => rest_sanitize_boolean( $settings['global_layers']['hotspots']['enabled'] ?? $default['global_layers']['hotspots']['enabled'] ),
+					'default_shape'     => sanitize_text_field( $settings['global_layers']['hotspots']['default_shape'] ?? $default['global_layers']['hotspots']['default_shape'] ),
+					'default_animation' => sanitize_text_field( $settings['global_layers']['hotspots']['default_animation'] ?? $default['global_layers']['hotspots']['default_animation'] ),
+					'default_color'     => $this->sanitize_color_value( $settings['global_layers']['hotspots']['default_color'] ?? $default['global_layers']['hotspots']['default_color'] ),
+					'placement'         => sanitize_text_field( $settings['global_layers']['hotspots']['placement'] ?? $default['global_layers']['hotspots']['placement'] ),
+					'hotspots'          => $this->sanitize_hotspots_array( $settings['global_layers']['hotspots']['hotspots'] ?? $default['global_layers']['hotspots']['hotspots'] ),
+				),
+				'polls' => array(
+					'enabled'              => rest_sanitize_boolean( $settings['global_layers']['polls']['enabled'] ?? $default['global_layers']['polls']['enabled'] ),
+					'placement'            => sanitize_text_field( $settings['global_layers']['polls']['placement'] ?? $default['global_layers']['polls']['placement'] ),
+					'screen_position'      => sanitize_text_field( $settings['global_layers']['polls']['screen_position'] ?? $default['global_layers']['polls']['screen_position'] ),
+					'default_duration'     => absint( $settings['global_layers']['polls']['default_duration'] ?? $default['global_layers']['polls']['default_duration'] ),
+					'show_results_default' => rest_sanitize_boolean( $settings['global_layers']['polls']['show_results_default'] ?? $default['global_layers']['polls']['show_results_default'] ),
+					'background_color'     => $this->sanitize_color_value( $settings['global_layers']['polls']['background_color'] ?? $default['global_layers']['polls']['background_color'] ),
+					'text_color'           => $this->sanitize_color_value( $settings['global_layers']['polls']['text_color'] ?? $default['global_layers']['polls']['text_color'] ),
+					'polls'                => $this->sanitize_polls_array( $settings['global_layers']['polls']['polls'] ?? $default['global_layers']['polls']['polls'] ),
+				),
+			),
 		);
 	}
 
@@ -345,5 +456,213 @@ class Settings extends Base {
 
 		// If none of the above, return empty string.
 		return '';
+	}
+
+	/**
+	 * Detect available form plugins and their forms.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response
+	 */
+	public function detect_form_plugins( $request ) {
+		$available_plugins = array();
+
+		// Check for WPForms
+		if ( class_exists( 'WPForms' ) ) {
+			$forms = get_posts( array(
+				'post_type'      => 'wpforms',
+				'posts_per_page' => -1,
+				'post_status'    => 'publish',
+			) );
+
+			$wpforms_list = array();
+			foreach ( $forms as $form ) {
+				$wpforms_list[] = array(
+					'id'    => $form->ID,
+					'title' => $form->post_title,
+				);
+			}
+
+			$available_plugins['wpforms'] = array(
+				'name'  => 'WPForms',
+				'forms' => $wpforms_list,
+			);
+		}
+
+		// Check for Gravity Forms
+		if ( class_exists( 'GFForms' ) ) {
+			$forms = \GFAPI::get_forms();
+			$gf_list = array();
+			foreach ( $forms as $form ) {
+				$gf_list[] = array(
+					'id'    => $form['id'],
+					'title' => $form['title'],
+				);
+			}
+
+			$available_plugins['gravity_forms'] = array(
+				'name'  => 'Gravity Forms',
+				'forms' => $gf_list,
+			);
+		}
+
+		// Check for Contact Form 7
+		if ( class_exists( 'WPCF7' ) ) {
+			$forms = get_posts( array(
+				'post_type'      => 'wpcf7_contact_form',
+				'posts_per_page' => -1,
+				'post_status'    => 'publish',
+			) );
+
+			$cf7_list = array();
+			foreach ( $forms as $form ) {
+				$cf7_list[] = array(
+					'id'    => $form->ID,
+					'title' => $form->post_title,
+				);
+			}
+
+			$available_plugins['contact_form_7'] = array(
+				'name'  => 'Contact Form 7',
+				'forms' => $cf7_list,
+			);
+		}
+
+		// Check for Forminator
+		if ( class_exists( 'Forminator' ) ) {
+			$forms = \Forminator_API::get_forms( null, 1, 999 );
+			$forminator_list = array();
+			if ( is_array( $forms ) ) {
+				foreach ( $forms as $form ) {
+					$forminator_list[] = array(
+						'id'    => $form->id,
+						'title' => $form->name,
+					);
+				}
+			}
+
+			$available_plugins['forminator'] = array(
+				'name'  => 'Forminator',
+				'forms' => $forminator_list,
+			);
+		}
+
+		// Check for Fluent Forms
+		if ( function_exists( 'wpFluentForm' ) ) {
+			$forms = wpFluent()->table( 'fluentform_forms' )
+						->select( array( 'id', 'title' ) )
+						->where( 'status', 'published' )
+						->get();
+
+			$ff_list = array();
+			foreach ( $forms as $form ) {
+				$ff_list[] = array(
+					'id'    => $form->id,
+					'title' => $form->title,
+				);
+			}
+
+			$available_plugins['fluent_forms'] = array(
+				'name'  => 'Fluent Forms',
+				'forms' => $ff_list,
+			);
+		}
+
+		// Check for Ninja Forms
+		if ( class_exists( 'Ninja_Forms' ) ) {
+			$forms = \Ninja_Forms()->form()->get_forms();
+			$nf_list = array();
+			foreach ( $forms as $form ) {
+				$nf_list[] = array(
+					'id'    => $form->get_id(),
+					'title' => $form->get_setting( 'title' ),
+				);
+			}
+
+			$available_plugins['ninja_forms'] = array(
+				'name'  => 'Ninja Forms',
+				'forms' => $nf_list,
+			);
+		}
+
+		return rest_ensure_response( array(
+			'success' => true,
+			'data'    => $available_plugins,
+		) );
+	}
+
+	/**
+	 * Sanitize hotspots array.
+	 *
+	 * @param array $hotspots Hotspots array to sanitize.
+	 * @return array Sanitized hotspots array.
+	 */
+	private function sanitize_hotspots_array( $hotspots ) {
+		if ( ! is_array( $hotspots ) ) {
+			return array();
+		}
+
+		$sanitized = array();
+		foreach ( $hotspots as $hotspot ) {
+			if ( ! is_array( $hotspot ) ) {
+				continue;
+			}
+
+			$sanitized[] = array(
+				'id'        => sanitize_text_field( $hotspot['id'] ?? '' ),
+				'x'         => floatval( $hotspot['x'] ?? 0 ),
+				'y'         => floatval( $hotspot['y'] ?? 0 ),
+				'time'      => absint( $hotspot['time'] ?? 0 ),
+				'text'      => sanitize_text_field( $hotspot['text'] ?? '' ),
+				'url'       => esc_url_raw( $hotspot['url'] ?? '' ),
+				'new_tab'   => rest_sanitize_boolean( $hotspot['new_tab'] ?? false ),
+				'shape'     => sanitize_text_field( $hotspot['shape'] ?? 'circle' ),
+				'animation' => sanitize_text_field( $hotspot['animation'] ?? 'pulse' ),
+				'color'     => $this->sanitize_color_value( $hotspot['color'] ?? '#ff0000' ),
+			);
+		}
+
+		return $sanitized;
+	}
+
+	/**
+	 * Sanitize polls array.
+	 *
+	 * @param array $polls Polls array to sanitize.
+	 * @return array Sanitized polls array.
+	 */
+	private function sanitize_polls_array( $polls ) {
+		if ( ! is_array( $polls ) ) {
+			return array();
+		}
+
+		$sanitized = array();
+		foreach ( $polls as $poll ) {
+			if ( ! is_array( $poll ) ) {
+				continue;
+			}
+
+			$options = array();
+			if ( isset( $poll['options'] ) && is_array( $poll['options'] ) ) {
+				foreach ( $poll['options'] as $option ) {
+					$options[] = array(
+						'id'    => sanitize_text_field( $option['id'] ?? '' ),
+						'text'  => sanitize_text_field( $option['text'] ?? '' ),
+						'votes' => absint( $option['votes'] ?? 0 ),
+					);
+				}
+			}
+
+			$sanitized[] = array(
+				'id'           => sanitize_text_field( $poll['id'] ?? '' ),
+				'question'     => sanitize_text_field( $poll['question'] ?? '' ),
+				'time'         => absint( $poll['time'] ?? 0 ),
+				'duration'     => absint( $poll['duration'] ?? 15 ),
+				'show_results' => rest_sanitize_boolean( $poll['show_results'] ?? true ),
+				'options'      => $options,
+			);
+		}
+
+		return $sanitized;
 	}
 }

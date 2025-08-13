@@ -39,6 +39,56 @@ const initialState = {
 		enable_global_video_ads: false,
 		adTagUrl: '',
 	},
+	global_layers: {
+		video_ads: {
+			enabled: false,
+			adTagUrl: '',
+			placement: 'start',
+			position: 30,
+			duration: 30,
+		},
+		forms: {
+			enabled: false,
+			plugin: '',
+			form_id: '',
+			placement: 'end',
+			position: 30,
+			duration: 0,
+		},
+		cta: {
+			enabled: false,
+			text: '',
+			url: '',
+			new_tab: true,
+			placement: 'end',
+			position: 30,
+			screen_position: 'bottom-center',
+			duration: 10,
+			background_color: '#0073aa',
+			text_color: '#ffffff',
+			font_size: 16,
+			border_radius: 4,
+			css_classes: '',
+		},
+		hotspots: {
+			enabled: false,
+			default_shape: 'circle',
+			default_animation: 'pulse',
+			default_color: '#ff0000',
+			placement: 'throughout',
+			hotspots: [],
+		},
+		polls: {
+			enabled: false,
+			placement: 'middle',
+			screen_position: 'center',
+			default_duration: 15,
+			show_results_default: true,
+			background_color: '#ffffff',
+			text_color: '#000000',
+			polls: [],
+		},
+	},
 	isChanged: false,
 };
 
@@ -50,24 +100,50 @@ const mediaSettingsSlice = createSlice( {
 		setMediaSettings: ( state, action ) => {
 			Object.keys( action.payload ).forEach( ( category ) => {
 				if ( state[ category ] ) {
-					Object.keys( action.payload[ category ] ).forEach( ( key ) => {
-						if ( key in state[ category ] ) {
-							// Check if the value is actually different
-							if ( state[ category ][ key ] !== action.payload[ category ][ key ] ) {
-								state[ category ][ key ] = action.payload[ category ][ key ];
-								state.isChanged = true; // Mark as changed
+					// Handle nested structures like global_layers
+					if ( typeof state[ category ] === 'object' && !Array.isArray( state[ category ] ) ) {
+						Object.keys( action.payload[ category ] ).forEach( ( key ) => {
+							if ( key in state[ category ] ) {
+								// Handle nested subcategories
+								if ( typeof state[ category ][ key ] === 'object' && !Array.isArray( state[ category ][ key ] ) ) {
+									Object.keys( action.payload[ category ][ key ] ).forEach( ( subKey ) => {
+										if ( subKey in state[ category ][ key ] ) {
+											if ( state[ category ][ key ][ subKey ] !== action.payload[ category ][ key ][ subKey ] ) {
+												state[ category ][ key ][ subKey ] = action.payload[ category ][ key ][ subKey ];
+												state.isChanged = true;
+											}
+										}
+									} );
+								} else {
+									// Handle regular properties
+									if ( state[ category ][ key ] !== action.payload[ category ][ key ] ) {
+										state[ category ][ key ] = action.payload[ category ][ key ];
+										state.isChanged = true;
+									}
+								}
 							}
-						}
-					} );
+						} );
+					}
 				}
 			} );
 		},
 
 		// Updates a specific setting dynamically
 		updateMediaSetting: ( state, action ) => {
-			const { category, key, value } = action.payload; // e.g., { category: 'video', key: 'video_format', value: 'mp4' }
+			const { category, subcategory, key, value } = action.payload;
 
-			if ( state[ category ] && key in state[ category ] ) {
+			// Handle nested structure for global_layers
+			if ( subcategory && state[ category ] && state[ category ][ subcategory ] ) {
+				if ( key in state[ category ][ subcategory ] ) {
+					// Only update isChanged if the value is different
+					if ( state[ category ][ subcategory ][ key ] !== value ) {
+						state[ category ][ subcategory ][ key ] = value;
+						state.isChanged = true; // Mark as changed
+					}
+				}
+			}
+			// Handle regular flat structure
+			else if ( state[ category ] && key in state[ category ] ) {
 				// Only update isChanged if the value is different
 				if ( state[ category ][ key ] !== value ) {
 					state[ category ][ key ] = value;
