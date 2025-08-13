@@ -2,7 +2,7 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 1.3.2\n"
+"Project-Id-Version: GoDAM 1.3.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1260,7 +1260,7 @@ msgstr ""
 #: inc/classes/fluentforms/class-form-submit.php:116
 #: inc/classes/gravity-forms/class-init.php:311
 #: inc/classes/sureforms/class-form-submit.php:254
-#: inc/classes/wpforms/class-wpforms-integration.php:183
+#: inc/classes/wpforms/class-wpforms-integration.php:175
 msgid "Transcoding data not set"
 msgstr ""
 
@@ -2315,8 +2315,8 @@ msgstr ""
 msgid "A PHP extension stopped the file upload."
 msgstr ""
 
-#: inc/classes/wpforms/class-wpforms-integration.php:164
-#: inc/classes/wpforms/class-wpforms-integration.php:165
+#: inc/classes/wpforms/class-wpforms-integration.php:156
+#: inc/classes/wpforms/class-wpforms-integration.php:157
 msgid "Untitled Form"
 msgstr ""
 
