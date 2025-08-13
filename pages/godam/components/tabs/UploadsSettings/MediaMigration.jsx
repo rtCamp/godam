@@ -238,24 +238,6 @@ const MediaMigration = () => {
 		}
 	};
 
-	const SearchReplaceCommand = () => {
-		if ( ! window?.goDAMUploadsData?.search_replace_command || ! window?.goDAMUploadsData?.search_replace_command.length ) {
-			return null;
-		}
-
-		if ( mediaMigrationInfo.remaining > 0 || ( mediaMigrationInfo.completed + mediaMigrationInfo.failed ) < mediaMigrationInfo.total ) {
-			return null;
-		}
-
-		return (
-			<div className="mt-8 font-mono bg-gray-100 border-1 p-3 rounded">
-				<strong className="text-gray-500">{ __( '# Search and replace command for media URLs:', 'godam' ) }</strong>
-				<br />
-				<span>{ window?.goDAMUploadsData.search_replace_command }</span>
-			</div>
-		);
-	};
-
 	// Set an interval to fetch the media migration info every 5 seconds.
 	useEffect( () => {
 		const interval = setInterval( () => {
@@ -340,7 +322,6 @@ const MediaMigration = () => {
 							</div>
 						</div>
 					</div>
-					<SearchReplaceCommand />
 					<RunMigrationButton />
 					<StopMigrationButton />
 				</PanelBody>

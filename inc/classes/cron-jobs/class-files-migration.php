@@ -606,30 +606,6 @@ class Files_Migration {
 	}
 
 	/**
-	 * Get the command to search and replace URLs in the database.
-	 *
-	 * This function generates a WP-CLI command to search and replace the original upload URL
-	 * with the CDN URL in the database, excluding the 'guid' column.
-	 *
-	 * @return string The WP-CLI command for search-replace.
-	 */
-	public static function get_search_replace_command() {
-		$plugin              = Plugin::get_instance();
-		$original_upload_dir = $plugin->get_original_upload_dir();
-
-		if ( ! $original_upload_dir ) {
-			return '';
-		}
-
-		$cdn_upload_url = $plugin->get_remote_url();
-		return sprintf(
-			'wp search-replace "%s" "%s" --skip-columns=guid --skip-plugins --skip-themes --dry-run',
-			esc_url( $original_upload_dir['baseurl'] ),
-			esc_url( $cdn_upload_url )
-		);
-	}
-
-	/**
 	 * Get attachment ID from file path.
 	 *
 	 * @param string $file_path The file path.
