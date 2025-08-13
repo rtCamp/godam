@@ -319,7 +319,7 @@ function VideoEdit( {
 						if ( hlsTranscodedUrl ) {
 							mediaSources.push( {
 								src: hlsTranscodedUrl,
-								type: hlsTranscodedUrl.endsWith( '.m3u8' ) ? 'application/x-mpegURL' : media.mime_type,
+								type: hlsTranscodedUrl.endsWith( '.m3u8' ) ? 'application/x-mpegURL' : media.mime,
 							} );
 						}
 
