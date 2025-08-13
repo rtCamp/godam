@@ -47,7 +47,7 @@ const GodamHeader = () => {
 								target="_blank"
 								className="rounded-full godam-button-icon sm:h-10 sm:w-10 [&>svg]:sm:w-6 [&>svg]:sm:h-6"
 								label={ __( 'Install GoDAM Screen Recorder', 'godam' ) }
-								icon={ <ChromeExtensionSvg /> }
+								icon={ ChromeExtensionSvg }
 							/>
 						</div>
 						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3">
