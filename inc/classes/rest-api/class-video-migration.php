@@ -426,8 +426,8 @@ class Video_Migration extends Base {
 			}
 
 			$migration_status['message'] = sprintf(
-			/* translators: %1$d is the number of posts processed, %2$d is the total number of posts, %3$f is the progress percentage */
-				__( 'Processed %1$d/%2$d posts (%3$f%% complete)', 'godam' ),
+			/* translators: %1$d is the number of posts processed, %2$d is the total number of posts, %3$d is the progress percentage */
+				__( 'Processed %1$d/%2$d posts (%3$d%% complete)', 'godam' ),
 				$migration_status['done'],
 				$migration_status['total'],
 				$progress
