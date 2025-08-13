@@ -41,8 +41,8 @@ class Lifter_LMS {
 	 * @return bool
 	 */
 	public function is_lifterlms_active(): bool {
-		// Check if LifterLMS plugin is active.
-		if ( ! is_plugin_active( 'lifterlms/lifterlms.php' ) ) {
+
+		if ( function_exists( 'is_plugin_active' ) && ! is_plugin_active( 'lifterlms/lifterlms.php' ) ) {
 			return false;
 		}
 
@@ -56,7 +56,7 @@ class Lifter_LMS {
 	 */
 	public function is_lifterlms_advanced_video_active(): bool {
 		// Check if LifterLMS Advanced Video plugin is active.
-		if ( ! is_plugin_active( 'lifterlms-advanced-videos/lifterlms-advanced-videos.php' ) ) {
+		if ( function_exists( 'is_plugin_active' ) && ! is_plugin_active( 'lifterlms-advanced-videos/lifterlms-advanced-videos.php' ) ) {
 			return false;
 		}
 
