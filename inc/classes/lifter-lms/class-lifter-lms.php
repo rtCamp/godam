@@ -18,6 +18,13 @@ class Lifter_LMS {
 	use Singleton;
 
 	/**
+	 * Constant LifterLMS Advanced Video autoplay option.
+	 *
+	 * @var string
+	 */
+	const LLMS_AV_PROG_AUTO_PLAY_OPTION = 'llms_av_prog_auto_play';
+
+	/**
 	 * Constructor.
 	 */
 	protected function __construct() {
@@ -95,7 +102,7 @@ class Lifter_LMS {
 	 * @return bool
 	 */
 	public function is_lifterlms_autoplay_on(): bool {
-		return 'no' !== get_option( 'llms_av_prog_auto_play', 'no' );
+		return 'no' !== get_option( self::LLMS_AV_PROG_AUTO_PLAY_OPTION, 'no' );
 	}
 
 	/**

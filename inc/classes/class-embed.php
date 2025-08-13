@@ -19,6 +19,13 @@ class Embed {
 	use Singleton;
 
 	/**
+	 * Constant LifterLMS Advanced Video autoplay option.
+	 *
+	 * @var string
+	 */
+	const LLMS_AV_PROG_AUTO_PLAY_OPTION = 'llms_av_prog_auto_play';
+
+	/**
 	 * Construct method.
 	 */
 	protected function __construct() {
@@ -79,7 +86,7 @@ class Embed {
 				$data['type'] = 'video';
 			}
 
-			if ( 'yes' === get_option( 'llms_av_prog_auto_play', 'no' ) ) {
+			if ( 'yes' === get_option( self::LLMS_AV_PROG_AUTO_PLAY_OPTION, 'no' ) ) {
 
 				$data['html'] = str_replace( '<iframe', '<iframe class="rtgodam-llms-autoplay" allow="autoplay;encrypted-media;"', $data['html'] );
 			}
