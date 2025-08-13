@@ -128,13 +128,6 @@ const deactivationJS = {
 	},
 };
 
-const whatsNewJS = {
-	...sharedConfig,
-	entry: {
-		'whats-new': path.resolve( process.cwd(), 'assets', 'src', 'js', 'whats-new.js' ),
-	},
-};
-
 const godamGallery = {
 	...sharedConfig,
 	entry: {
@@ -272,7 +265,6 @@ module.exports = [
 	godamPlayerFrontend,
 	godamPlayerAnalytics,
 	deactivationJS,
-	whatsNewJS,
 	godamGallery,
 	gfGodamRecorderEditorJS,
 	gfEntryDetailJS,
