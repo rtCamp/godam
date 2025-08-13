@@ -1091,6 +1091,14 @@ function CommentBox( props ) {
 		};
 	}, [ videoFigureId, memoizedStoreObj ] );
 
+	/**
+	 * Handles the like button click event.
+	 *
+	 * If the user is not logged in, the function returns immediately.
+	 * Otherwise, it sets the isSending state to true, dispatches an
+	 * action to like the video, and sets the isSending state to false
+	 * after a 1-second delay.
+	 */
 	function handleLike() {
 		if ( ! isUserLoggedIn ) {
 			return;
