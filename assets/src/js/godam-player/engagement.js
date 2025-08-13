@@ -1124,6 +1124,7 @@ function CommentBox( props ) {
 					{ ! skipEngagements && (
 						<div
 							className={ baseClass + '--video-info' + ( expendComment ? ' is-comment-expanded' : '' ) }
+							onWheel={ ( e ) => e.stopPropagation() }
 						>
 							<h3 className={ baseClass + '--video-info-title' }>
 								{

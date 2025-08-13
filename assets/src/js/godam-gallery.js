@@ -341,6 +341,8 @@ document.addEventListener( 'click', async function( e ) {
 			modal.classList.add( 'hidden' );
 			// Re-enable background scrolling
 			document.body.style.overflow = '';
+			document.body.removeEventListener( 'wheel', handleScroll );
+			document.body.removeEventListener( 'touchend', handleTouchend );
 		};
 
 		modal.querySelector( '.godam-modal-close' )?.addEventListener( 'click', close );
@@ -403,7 +405,7 @@ document.addEventListener( 'click', async function( e ) {
 		let lastScrollTime = 0;
 		let scrollTimeout;
 
-		modal.addEventListener( 'wheel', async ( event ) => {
+		const handleScroll = async ( event ) => {
 			event.preventDefault(); // Prevent background scroll
 			event.stopPropagation(); // Prevent event bubbling
 
@@ -467,22 +469,9 @@ document.addEventListener( 'click', async function( e ) {
 					}
 				}
 			}, 150 ); // Debounce delay
-		}, { passive: false } );
+		};
 
-		// Touch functionality for mobile
-		let touchStartY = 0;
-		let touchEndY = 0;
-
-		modal.addEventListener( 'touchstart', ( err ) => {
-			touchStartY = err.touches[ 0 ].clientY;
-		}, { passive: false } );
-
-		modal.addEventListener( 'touchmove', ( err ) => {
-			err.preventDefault(); // Prevent background scroll
-			err.stopPropagation(); // Prevent event bubbling
-		}, { passive: false } );
-
-		modal.addEventListener( 'touchend', async ( err ) => {
+		const handleTouchend = async ( err ) => {
 			touchEndY = err.changedTouches[ 0 ].clientY;
 			const touchDiff = touchStartY - touchEndY;
 
@@ -551,6 +540,23 @@ document.addEventListener( 'click', async function( e ) {
 					}
 				}
 			}, 150 ); // Debounce delay
+		};
+
+		document.body.addEventListener( 'wheel', handleScroll, { passive: false } );
+
+		// Touch functionality for mobile
+		let touchStartY = 0;
+		let touchEndY = 0;
+
+		modal.addEventListener( 'touchstart', ( err ) => {
+			touchStartY = err.touches[ 0 ].clientY;
 		}, { passive: false } );
+
+		modal.addEventListener( 'touchmove', ( err ) => {
+			err.preventDefault(); // Prevent background scroll
+			err.stopPropagation(); // Prevent event bubbling
+		}, { passive: false } );
+
+		document.body.addEventListener( 'touchend', handleTouchend, { passive: false } );
 	}
 } );
