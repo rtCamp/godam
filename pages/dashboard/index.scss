@@ -273,22 +273,6 @@
 	display: none;
 }
 
-#root-video-dashboard {
-	position: fixed;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	min-height: calc( 100vh - var(--wp-admin--admin-bar--height, 0) );
-	padding-top: var(--wp-admin--admin-bar--height, 0);
-	overflow: auto;
-	color: #000;
-}
-
-.folded #root-video-dashboard {
-	margin-left: 36px;
-}
-
 .playback-country-container {
 	display: flex;
 	gap: 12px;
@@ -366,21 +350,6 @@
 .animate-slide-in {
 	animation: slide-in 0.5s ease forwards;
 }
-
-@media screen and (max-width: 960px) {
-
-	.auto-fold #root-video-dashboard {
-		margin-left: 36px;
-	}
-}
-
-@media screen and (max-width: 782px) {
-
-	.auto-fold #root-video-dashboard {
-		margin-left: 0;
-	}
-}
-
 
 .marketing-carousel-read-more {
 	display: inline-block;
