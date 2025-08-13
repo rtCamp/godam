@@ -1,6 +1,6 @@
 <?php
 /**
- * Class to handle GoDAM as oEmbed provide.
+ * Class to handle GoDAM as oEmbed provider.
  *
  * @package GoDAM
  */
