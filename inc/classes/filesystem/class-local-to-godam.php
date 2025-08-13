@@ -166,17 +166,30 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter customizer image.
 	 *
-	 * @param string $value Image URL.
+	 * @param string|object $value Image URL or header image object.
 	 *
-	 * @return string Filtered URL.
+	 * @return string|object Filtered value.
 	 */
 	public function filter_customizer_image( $value ) {
-		if ( empty( $value ) || ! $this->url_needs_replacing( $value ) ) {
+		// Handle header image objects (stdClass with url property).
+		if ( is_object( $value ) && isset( $value->url ) ) {
+			$url = $value->url;
+			if ( ! empty( $url ) && $this->url_needs_replacing( $url ) ) {
+				$new_url = $this->get_replacement_url( $url );
+				if ( $new_url ) {
+					$value->url = $new_url;
+				}
+			}
 			return $value;
 		}
 
-		$new_url = $this->get_replacement_url( $value );
-		return $new_url ? $new_url : $value;
+		// Handle string URLs.
+		if ( is_string( $value ) && ! empty( $value ) && $this->url_needs_replacing( $value ) ) {
+			$new_url = $this->get_replacement_url( $value );
+			return $new_url ? $new_url : $value;
+		}
+
+		return $value;
 	}
 
 	/**
