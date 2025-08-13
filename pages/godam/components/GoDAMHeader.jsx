@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import ChromeSvg from '../assets/svgs';
+import { ChromeExtensionSvg } from '../assets/svgs';
 import godamLogo from '../../../assets/src/images/godam-logo.png';
 
 const GodamHeader = () => {
@@ -46,8 +46,8 @@ const GodamHeader = () => {
 								href="https://chromewebstore.google.com/detail/godam-screen-recorder-ann/ojmbobnoagdgblhpbemfamfkcfjdfejl"
 								target="_blank"
 								className="rounded-full godam-button-icon sm:h-10 sm:w-10 [&>svg]:sm:w-6 [&>svg]:sm:h-6"
-								label={ __( 'Install Chrome Extension', 'godam' ) }
-								icon={ <ChromeSvg /> }
+								label={ __( 'Install GoDAM Screen Recorder', 'godam' ) }
+								icon={ <ChromeExtensionSvg /> }
 							/>
 						</div>
 						<div className="flex flex-col sm:flex-row md:items-center gap-1 sm:gap-2 md:gap-3">
