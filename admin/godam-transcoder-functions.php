@@ -626,6 +626,10 @@ function rtgodam_get_transcoded_url_from_attachment( $attachment ) {
 
 	$attachment_obj = get_post( $attachment_id );
 
+	if ( empty( $attachment_obj ) || ! is_a( $attachment_obj, 'WP_Post' ) ) {
+		return '';
+	}
+
 	if ( 'attachment' !== $attachment_obj->post_type ) {
 		return '';
 	}
@@ -656,6 +660,10 @@ function rtgodam_get_hls_transcoded_url_from_attachment( $attachment ) {
 	}
 
 	$attachment_obj = get_post( $attachment_id );
+
+	if ( empty( $attachment_obj ) || ! is_a( $attachment_obj, 'WP_Post' ) ) {
+		return '';
+	}
 
 	if ( 'attachment' !== $attachment_obj->post_type ) {
 		return '';
