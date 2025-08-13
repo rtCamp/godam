@@ -8,11 +8,6 @@ $GREEN: #4CAF50;
 $RED: #F44336;
 $LIGHT_BLUE: #2196F3;
 
-#root-easydam,
-#root-video-editor {
-	--wp-components-color-accent: variables.$godam-primary-text-color;
-}
-
 #wpbody-content {
 	container: wpBodyContent / inline-size;
 }
