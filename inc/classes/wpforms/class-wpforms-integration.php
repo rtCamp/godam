@@ -38,7 +38,7 @@ class WPForms_Integration {
 
 			add_action( 'wpforms_frontend_confirmation_message_before', array( $this, 'load_godam_recorder_script_on_success' ), 10, 4 );
 
-			add_action( 'wpforms_loaded', array( $this, 'init_godam_video_field' ) );
+			add_action( 'init', array( $this, 'init_godam_video_field' ) );
 
 			add_action( 'wpforms_process_entry_saved', array( $this, 'send_saved_files_for_transcoding' ), 10, 4 );
 
