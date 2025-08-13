@@ -296,16 +296,50 @@ abstract class Base_Filter {
 	protected function get_attachment_id_from_url( $url ) {
 		global $wpdb;
 
-		// Remove query strings and fragments.
+		// Normalize URL (strip query/fragments).
 		$url = strtok( $url, '?' );
 
+		// 1) Prefer core resolver (works for images, videos, docs).
+		if ( function_exists( 'wpcom_vip_attachment_url_to_postid' ) ) {
+			// Use VIP-compatible function if available.
+			$pid = wpcom_vip_attachment_url_to_postid( $url );
+		} elseif ( function_exists( 'attachment_url_to_postid' ) ) {
+			// Fallback to core function.
+			$pid = attachment_url_to_postid( $url ); //phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.attachment_url_to_postid_attachment_url_to_postid
+		} else {
+			$pid = false;
+		}
+
+		if ( $pid ) {
+			return (int) $pid;
+		}
+
+		// 2) Try exact match against _wp_attached_file (stores path relative to uploads).
+		$uploads = wp_get_upload_dir();
+		if ( ! empty( $uploads['baseurl'] ) && strpos( $url, $uploads['baseurl'] ) !== false ) {
+			$relative = ltrim( str_replace( trailingslashit( $uploads['baseurl'] ), '', $url ), '/' );
+			// Try to find attachment by URL.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$pid = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_wp_attached_file' AND meta_value = %s LIMIT 1",
+					$relative
+				)
+			);
+			if ( $pid ) {
+				return (int) $pid;
+			}
+		}
+
+		// 3) Fallback: LIKE search on metadata by basename (works mostly for images).
+		$basename = basename( $url );
 		// Try to find attachment by URL.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$attachment_id = $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_wp_attachment_metadata' AND meta_value LIKE %s LIMIT 1",
-				'%' . basename( $url ) . '%'
-			) 
+				'%' . $basename . '%'
+			)
 		);
 
 		return $attachment_id ? (int) $attachment_id : false;
