@@ -43,14 +43,6 @@ const App = () => {
 		fetchData();
 	}, [] );
 
-	useEffect( () => {
-		// Dispatch event on successful data fetch,
-		// mainly used for modal interactivity.
-		if ( releaseData.features && releaseData.features.length > 0 ) {
-			document.dispatchEvent( new CustomEvent( 'whatsNewContentReady' ) );
-		}
-	}, [ releaseData ] );
-
 	if ( isLoading ) {
 		// Loading state
 		return <Loading />;

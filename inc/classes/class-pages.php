@@ -748,6 +748,7 @@ class Pages {
 				filemtime( RTGODAM_PATH . 'assets/build/pages/whats-new.min.js' ),
 				true
 			);
+
 			wp_set_script_translations( 'godam-page-script-whats-new', 'godam', RTGODAM_PATH . 'languages' );
 
 			wp_localize_script(
@@ -756,16 +757,7 @@ class Pages {
 				RTGODAM_VERSION
 			);
 
-			wp_register_script(
-				'godam-script-whats-new',
-				RTGODAM_URL . 'assets/build/js/whats-new.min.js',
-				array( 'godam-page-script-whats-new' ),
-				filemtime( RTGODAM_PATH . 'assets/build/js/whats-new.min.js' ),
-				true
-			);
-			wp_set_script_translations( 'godam-page-script-whats-new', 'godam', RTGODAM_PATH . 'languages' );
-
-			wp_enqueue_script( 'godam-script-whats-new' );
+			wp_enqueue_script( 'godam-page-script-whats-new' );
 		}
 
 		wp_enqueue_style( 'wp-components' );

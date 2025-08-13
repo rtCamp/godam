@@ -262,6 +262,10 @@ $grey-text: #5f6368;
 	border: transparent 1px solid;
 	cursor: pointer;
 
+	&:focus {
+		border: 1px solid $primary-red;
+	}
+
 	&:hover {
 		transform: translateY(-4px);
 		border: 1px solid $primary-red;
@@ -294,7 +298,6 @@ $grey-text: #5f6368;
 
 // Modal Styles
 .modal {
-	display: none;
 	position: fixed;
 	z-index: 1000;
 	left: 160px;
@@ -319,6 +322,10 @@ $grey-text: #5f6368;
 
 	&-body {
 		display: none;
+
+		&.active {
+			display: block;
+		}
 
 		h2 {
 			font-size: 2rem;
