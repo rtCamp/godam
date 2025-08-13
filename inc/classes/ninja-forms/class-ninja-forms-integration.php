@@ -36,12 +36,6 @@ class Ninja_Forms_Integration {
 		}
 
 		$this->setup_hooks();
-
-		// Register the custom field for GoDAM Recorder.
-		add_filter( 'ninja_forms_register_fields', array( $this, 'register_field' ) );
-
-		// Register the template path for GoDAM Recorder.
-		add_filter( 'ninja_forms_field_template_file_paths', array( $this, 'register_template_path' ) );
 	}
 
 	/**
@@ -57,6 +51,9 @@ class Ninja_Forms_Integration {
 
 		add_action( 'rtgodam_render_layer_for_video_editor_before', array( $this, 'add_css_for_the_layer_inside_iframe' ), 10, 2 );
 		add_action( 'rtgodam_render_layer_for_video_editor', array( $this, 'render_layer_form_for_video_editor' ), 10, 2 );
+
+		add_filter( 'ninja_forms_register_fields', array( $this, 'register_field' ) );
+		add_filter( 'ninja_forms_field_template_file_paths', array( $this, 'register_template_path' ) );
 	}
 
 	/**

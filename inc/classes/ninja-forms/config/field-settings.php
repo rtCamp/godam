@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 return array(
-	'record_button_text' => array(
+	'record_button_text'           => array(
 		'name'  => 'record_button_text',
 		'type'  => 'textbox',
 		'value' => __( 'Record Video', 'godam' ),
@@ -21,7 +21,7 @@ return array(
 		'width' => 'one-half',
 		'help'  => __( 'Button text for recording video.', 'godam' ),
 	),
-	'max_file_size'      => array(
+	'max_file_size'                => array(
 		'name'  => 'max_file_size',
 		'type'  => 'number',
 		'label' => __( 'Maximum File Size (MB)', 'godam' ),
@@ -30,42 +30,28 @@ return array(
 		'group' => 'primary',
 		'help'  => __( 'Maximum size of a file that can be uploaded.', 'godam' ),
 	),
-	'file_selector'      => array(
-		'name'    => 'file_selector',
-		'type'    => 'option-repeater',
-		'label'   => __( 'File Selectors', 'godam' ),
-		'width'   => 'full',
-		'group'   => 'primary',
-		'value'   => array(
-			array(
-				'label'    => 'Option 1',
-				'value'    => 'option_1',
-				'selected' => 1,
-			),
-			array(
-				'label'    => 'Option 2',
-				'value'    => 'option_2',
-				'selected' => 1,
-			),
-			array(
-				'label'    => 'Option 3',
-				'value'    => 'option_3',
-				'selected' => 0,
-			),
-		),
-		'columns' => array(
-			'label'    => array(
-				'header'  => __( 'Label', 'godam' ),
-				'default' => '',
-			),
-			'value'    => array(
-				'header'  => __( 'Value', 'godam' ),
-				'default' => '',
-			),
-			'selected' => array(
-				'header'  => '<span class="dashicons dashicons-yes"></span>',
-				'default' => 0,
-			),
-		),
+	'file_selector-local'          => array(
+		'name'  => 'file_selector-local',
+		'type'  => 'toggle',
+		'label' => __( 'Local Files', 'godam' ),
+		'width' => 'one-half',
+		'group' => 'primary',
+		'value' => '',
+	),
+	'file_selector-screen_capture' => array(
+		'name'  => 'file_selector-screen_capture',
+		'type'  => 'toggle',
+		'label' => __( 'Screen Capture', 'godam' ),
+		'width' => 'one-half',
+		'group' => 'primary',
+		'value' => '1',
+	),
+	'file_selector-webcam'         => array(
+		'name'  => 'file_selector-webcam',
+		'type'  => 'toggle',
+		'label' => __( 'Webcam', 'godam' ),
+		'width' => 'one-half',
+		'group' => 'primary',
+		'value' => '1',
 	),
 );

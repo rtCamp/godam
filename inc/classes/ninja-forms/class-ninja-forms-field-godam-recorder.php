@@ -134,7 +134,11 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	 */
 	public function setup_hooks() {
 		// Add backend template for the field.
-		add_action( 'nf_admin_enqueue_scripts', array( $this, 'add_template' ) );
+		add_action( 'nf_admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+
+		// Enqueue frontend scripts.
+		add_filter( 'ninja_forms_localize_fields', array( $this, 'frontend_enqueue_scripts' ) );
+		add_filter( 'ninja_forms_localize_fields_preview', array( $this, 'frontend_enqueue_scripts' ) );
 	}
 
 	/**
@@ -170,7 +174,137 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	 *
 	 * @return void
 	 */
-	public function add_template() {
+	public function admin_enqueue_scripts() {
 		$this->template( 'fields-godam_recorder.html' );
+	}
+
+	/**
+	 * Update the localization settings.
+	 *
+	 * @param array  $settings Field settings.
+	 * @param object $form     Form object.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return array
+	 */
+	public function localize_settings( $settings, $form ) {
+
+		$form_id = is_array( $form ) ? $form['id'] : $form->get_id();
+
+		$max_file_size_mb = wp_max_upload_size() / ( 1024 * 1024 );
+		if ( isset( $settings['max_file_size'] ) && ! empty( $settings['max_file_size'] ) ) {
+			$max_file_size_mb = $settings['max_file_size'];
+		}
+
+		$settings['max_file_size_mb'] = $max_file_size_mb;
+		$settings['max_file_size']    = $settings['max_file_size_mb'] * 1024 * 1024;
+
+		$nonce_data                        = $this->create_nonce_field( $settings['id'] );
+		$settings['recorder_nonce']        = $nonce_data['nonce'];
+		$settings['recorder_nonce_expiry'] = $nonce_data['nonce_expiry'];
+
+		$settings['record_button_text'] = ! empty( $settings['record_button_text'] ) ? $settings['record_button_text'] : __( 'Record Video', 'godam' );
+
+		$file_selector_arr = array();
+
+		if ( ! empty( $settings['file_selector-local'] ) ) {
+			$file_selector_arr[] = 'file_input';
+		}
+		if ( ! empty( $settings['file_selector-webcam'] ) ) {
+			$file_selector_arr[] = 'webcam';
+		}
+		if ( ! empty( $settings['file_selector-screen_capture'] ) ) {
+			$file_selector_arr[] = 'screen_capture';
+		}
+
+		// If none are set, default to webcam and screen_capture.
+		if ( empty( $file_selector_arr ) ) {
+			$file_selector_arr = array( 'webcam', 'screen_capture' );
+		}
+
+		$settings['file_selectors'] = trim( implode( ',', $file_selector_arr ), ',' );
+		$settings['form_id']        = $form_id;
+
+		// Add uppy containers data.
+		$uppy_container_id      = sprintf( 'uppy_container_%s_%s', strval( $settings['id'] ), $form_id );
+		$uppy_file_name_id      = sprintf( 'uppy_filename_%s_%s', strval( $settings['id'] ), $form_id );
+		$uppy_preview_id        = sprintf( 'uppy_preview_%s_%s', strval( $settings['id'] ), $form_id );
+		$video_upload_button_id = wp_unique_id( 'uppy-video-upload-' );
+
+		$settings['uppy_container_id']      = $uppy_container_id;
+		$settings['uppy_file_name_id']      = $uppy_file_name_id;
+		$settings['uppy_preview_id']        = $uppy_preview_id;
+		$settings['video_upload_button_id'] = $video_upload_button_id;
+
+		$settings['max_allowed_file_size_info'] = sprintf(
+			// Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
+			__( 'Maximum allowed on this server: %s MB', 'godam' ),
+			(int) $max_file_size_mb
+		);
+
+		return $settings;
+	}
+
+	/**
+	 * Enqueue scripts for the frontend.
+	 *
+	 * @param array|object $field Field settings or object.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return array|object $field
+	 */
+	public function frontend_enqueue_scripts( $field ) {
+		if ( is_array( $field ) && ! isset( $field['settings']['type'] ) ) {
+			return $field;
+		}
+
+		if ( self::$field_type !== $field['settings']['type'] ) {
+			return $field;
+		}
+
+		if ( ! wp_script_is( 'godam-uppy-video-style' ) ) {
+			/**
+			 * Enqueue style for the uppy video.
+			 */
+			wp_enqueue_style(
+				'godam-uppy-video-style',
+				RTGODAM_URL . 'assets/build/css/gf-uppy-video.css',
+				array(),
+				filemtime( RTGODAM_PATH . 'assets/build/css/gf-uppy-video.css' )
+			);
+		}
+
+		if ( ! wp_script_is( 'godam-recorder-script' ) ) {
+			/**
+			 * Enqueue script if not already enqueued.
+			 */
+			wp_enqueue_script(
+				'godam-recorder-script',
+				RTGODAM_URL . 'assets/build/js/godam-recorder.min.js',
+				array( 'jquery' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/godam-recorder.min.js' ),
+				true
+			);
+		}
+
+		return $field;
+	}
+
+	/**
+	 * Create nonce.
+	 *
+	 * @param int $field_id Field ID.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return array
+	 */
+	private function create_nonce_field( $field_id ) {
+		return array(
+			'nonce'        => wp_create_nonce( 'godam_recorder_' . $field_id ),
+			'nonce_expiry' => time() + wp_nonce_tick(),
+		);
 	}
 }
