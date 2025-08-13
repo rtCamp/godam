@@ -62,14 +62,6 @@ class WPForms_Integration {
 		);
 
 		wp_register_script(
-			'wpforms-godam-recorder',
-			RTGODAM_URL . 'assets/build/js/wpforms-godam-recorder.min.js',
-			array( 'jquery' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/wpforms-godam-recorder.min.js' ),
-			true
-		);
-
-		wp_register_script(
 			'wpforms-godam-recorder-editor',
 			RTGODAM_URL . 'assets/build/js/wpforms-godam-recorder-editor.min.js',
 			array( 'godam-player-frontend-script' ),
@@ -96,7 +88,7 @@ class WPForms_Integration {
 	 */
 	public function enqueue_admin_assets() {
 		// GoDAM Video Editor page.
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['page'] ) && 'rtgodam_video_editor' === $_GET['page'] ) {
 			// Enqueue the WPForms styles.
 			$frontend = wpforms()->obj( 'frontend' );
@@ -106,7 +98,7 @@ class WPForms_Integration {
 		}
 
 		// Form builder page.
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['page'], $_GET['view'] ) && 'wpforms-builder' === $_GET['page'] && 'fields' === $_GET['view'] ) {
 			wp_enqueue_style( 'wpforms-uppy-video-style' );
 		}

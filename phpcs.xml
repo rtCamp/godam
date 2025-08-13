@@ -7,6 +7,7 @@
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax" />
 		<exclude name="Generic.Commenting.DocComment.MissingShort" />
 		<exclude name="Universal.Operators.DisallowShortTernary" />
+		<exclude name="Generic.Functions.CallTimePassByReference" />
 	</rule>
 
 	<rule ref="WordPress-Docs">

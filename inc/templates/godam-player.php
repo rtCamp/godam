@@ -44,7 +44,7 @@ $loop          = ! empty( $attributes['loop'] );
 $muted         = ! empty( $attributes['muted'] );
 $poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
 $preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$hover_overlay = isset( $attributes['hoverOverlay'] ) ? $attributes['hoverOverlay'] : false;
+$hover_select  = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
 $caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
 $tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 $attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
@@ -104,11 +104,14 @@ $poster_image = ! empty( $poster_image ) ? $poster_image : '';
 $job_id = '';
 
 $sources = array();
+
+if ( empty( $attachment_id ) ) {
+	$job_id = ! empty( $attributes['cmmId'] ) ? sanitize_text_field( $attributes['cmmId'] ) : '';
+}
+
 if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 	$sources = $attributes['sources'];
-} elseif ( empty( $attachment_id ) &&
-			( ! empty( $src || ! empty( $transcoded_url ) ) )
-) {
+} elseif ( empty( $attachment_id ) && ! ( empty( $src ) && empty( $transcoded_url ) ) ) {
 	$sources = array();
 	if ( ! empty( $transcoded_url ) ) {
 		$sources[] = array(
@@ -123,31 +126,70 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 		);
 	}
 } else {
-	$transcoded_url = $attachment_id ? get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true ) : '';
-	$video_src      = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
-	$video_src_type = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
-	$job_id         = $attachment_id && ! empty( $transcoded_url ) ? get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) : '';
+	$transcoded_url     = $attachment_id ? rtgodam_get_transcoded_url_from_attachment( $attachment_id ) : '';
+	$hls_transcoded_url = $attachment_id ? rtgodam_get_hls_transcoded_url_from_attachment( $attachment_id ) : '';
+	$video_src          = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
+	$video_src_type     = $attachment_id ? get_post_mime_type( $attachment_id ) : '';
+	$job_id             = '';
+
+	if ( $attachment_id && ! empty( $transcoded_url ) ) {
+		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		if ( empty( $job_id ) ) {
+			$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		}
+	}
+	$sources = array();
 
 	if ( ! empty( $transcoded_url ) ) {
-		$sources = array(
-			array(
-				'src'  => $transcoded_url,
-				'type' => 'application/dash+xml',
-			),
-			array(
-				'src'  => $video_src,
-				'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
-			),
-		);
-	} else {
-		$sources = array(
-			array(
-				'src'  => $video_src,
-				'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
-			),
+		$sources[] = array(
+			'src'  => $transcoded_url,
+			'type' => 'application/dash+xml',
 		);
 	}
+
+	if ( ! empty( $hls_transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $hls_transcoded_url,
+			'type' => 'application/x-mpegURL',
+		);
+	}
+
+	// Only add video source if it's not empty.
+	if ( ! empty( $video_src ) ) {
+		$sources[] = array(
+			'src'  => $video_src,
+			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
+		);
+	}
+
+	if ( ! empty( $hls_transcoded_url ) ) {
+		$sources[] = array(
+			'src'  => $hls_transcoded_url,
+			'type' => 'application/x-mpegURL',
+		);
+	}
+
+	$sources[] = array(
+		'src'  => $video_src,
+		'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
+	);
 }
+
+// Check if no media is selected - return early to prevent broken output.
+// Also check if sources array contains only empty sources.
+$has_valid_sources = false;
+foreach ( $sources as $source ) {
+	if ( ! empty( $source['src'] ) ) {
+		$has_valid_sources = true;
+		break;
+	}
+}
+
+if ( empty( $attachment_id ) && empty( $src ) && empty( $transcoded_url ) && ! $has_valid_sources ) {
+	return;
+}
+
 $easydam_control_bar_color = 'initial'; // Default color.
 
 $godam_settings         = get_option( 'rtgodam-settings', array() );
@@ -189,20 +231,28 @@ $video_setup = array(
 );
 if ( ! empty( $control_bar_settings ) ) {
 	$video_setup['controlBar'] = $control_bar_settings; // contains settings specific to control bar.
+
+	if ( isset( $control_bar_settings['volumePanel'] ) && empty( $control_bar_settings['volumePanel'] ) ) {
+		$volume_panel_setting = $control_bar_settings['volumePanel'];
+	} else {
+		// Define your default volumePanel setting.
+		$volume_panel_setting = array(
+			'inline' => ! in_array( $player_skin, array( 'Minimal', 'Pills' ), true ),
+		);
+	}
+
+	$video_setup['controlBar']['volumePanel'] = $volume_panel_setting;
 }
+
 $video_setup = wp_json_encode( $video_setup );
 
 $video_config = wp_json_encode(
 	array(
 		'preview'          => $video_preview,
-		'layers'           => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(),
-		// contains list of layers.
-		'chapters'         => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(),
-		// contains list of chapters.
-		'overlayTimeRange' => $overlay_time_range,
-		// Add overlay time range to video config.
-		'playerSkin'       => $player_skin,
-		// Add player skin to video config. Add brand image to video config.
+		'layers'           => ! empty( $easydam_meta_data['layers'] ) ? $easydam_meta_data['layers'] : array(), // contains list of layers.
+		'chapters'         => ! empty( $easydam_meta_data['chapters'] ) ? $easydam_meta_data['chapters'] : array(), // contains list of chapters.
+		'overlayTimeRange' => $overlay_time_range, // Add overlay time range to video config.
+		'playerSkin'       => $player_skin, // Add player skin to video config. Add brand image to video config.
 		'aspectRatio'      => $aspect_ratio,
 	)
 );
@@ -287,16 +337,13 @@ if ( $is_shortcode || $is_elementor_widget ) {
 				</div>
 			<?php endif; ?>
 
-			<div
-				class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin">
-				<?php if ( isset( $hover_overlay ) && $hover_overlay ) : ?>
+			<div class="easydam-video-container animate-video-loading godam-<?php echo esc_attr( strtolower( $player_skin ) ); ?>-skin" >
+				<?php if ( isset( $hover_select ) && 'shadow-overlay' === $hover_select ) : ?>
 					<div class="godam-player-overlay"></div>
 				<?php endif; ?>
 				<div class="animate-play-btn">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-						class="bi bi-play-fill" viewBox="0 0 16 16">
-						<path
-							d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+						<path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
 					</svg>
 				</div>
 				<video
@@ -308,6 +355,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 					data-controls="<?php echo esc_attr( $video_setup ); ?>"
 					data-job_id="<?php echo esc_attr( $job_id ); ?>"
 					data-global_ads_settings="<?php echo esc_attr( $ads_settings ); ?>"
+					data-hover-select="<?php echo esc_attr( $hover_select ); ?>"
 				>
 					<?php
 					foreach ( $sources as $source ) :
@@ -322,7 +370,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 					endforeach;
 
 					$display_caption = ( ! isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
-										( isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] );
+						( isset( $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $easydam_meta_data['videoConfig']['controlBar']['subsCapsButton'] );
 
 					if ( $display_caption ) {
 						foreach ( $tracks as $track ) :
@@ -352,11 +400,9 @@ if ( $is_shortcode || $is_elementor_widget ) {
 						if ( isset( $layer['type'] ) && 'form' === $layer['type'] ) :
 							if ( 'gravity' === $form_type && ! empty( $layer['gf_id'] ) ) :
 								?>
-								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
-									class="easydam-layer hidden"
-									style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-									<div class="form-container">
-										<?php
+							<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+								<div class="form-container">
+									<?php
 										$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
 										echo do_shortcode(
 											sprintf(
@@ -365,76 +411,82 @@ if ( $is_shortcode || $is_elementor_widget ) {
 												$theme ? " theme='$theme'" : ''
 											)
 										);
-										?>
-									</div>
+									?>
 								</div>
+							</div>
 								<?php
 							elseif ( 'cf7' === $form_type && ! empty( $layer['cf7_id'] ) ) :
 								$form_theme = ! empty( $layer['theme'] ) ? $layer['theme'] : 'godam';
 								?>
-								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
-									class="easydam-layer hidden"
-									style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-									<div
-										class="form-container <?php echo esc_attr( 'godam' === $form_theme ? 'rtgodam-wpcf7-form' : '' ); ?>">
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div class="form-container <?php echo esc_attr( 'godam' === $form_theme ? 'rtgodam-wpcf7-form' : '' ); ?>">
 										<?php
-										echo do_shortcode(
-											sprintf(
-												"[contact-form-7 id='%d' title='false' ajax='true']",
-												intval( $layer['cf7_id'] )
-											)
-										);
+											echo do_shortcode(
+												sprintf(
+													"[contact-form-7 id='%d' title='false' ajax='true']",
+													intval( $layer['cf7_id'] )
+												)
+											);
 										?>
 									</div>
 								</div>
 								<?php
 							elseif ( 'wpforms' === $form_type && ! empty( $layer['wpform_id'] ) ) :
 								?>
-								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
-									class="easydam-layer hidden"
-									style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
 										<?php
-										echo do_shortcode(
-											sprintf(
-												"[wpforms id='%d' title='false' description='false' ajax='true']",
-												intval( $layer['wpform_id'] )
-											)
-										);
+											echo do_shortcode(
+												sprintf(
+													"[wpforms id='%d' title='false' description='false' ajax='true']",
+													intval( $layer['wpform_id'] )
+												)
+											);
 										?>
 									</div>
 								</div>
 								<?php
 							elseif ( 'sureforms' === $form_type && ! empty( $layer['sureform_id'] ) ) :
 								?>
-								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
-									class="easydam-layer hidden"
-									style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
 										<?php
-										echo do_shortcode(
-											sprintf(
-												"[sureforms id='%d']",
-												intval( $layer['sureform_id'] )
-											)
-										);
+											echo do_shortcode(
+												sprintf(
+													"[sureforms id='%d']",
+													intval( $layer['sureform_id'] )
+												)
+											);
 										?>
 									</div>
 								</div>
 								<?php
 							elseif ( 'forminator' === $form_type && ! empty( $layer['forminator_id'] ) ) :
 								?>
-								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
-									class="easydam-layer hidden"
-									style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
 										<?php
-										echo do_shortcode(
-											sprintf(
-												"[forminator_form id='%d']",
-												intval( $layer['forminator_id'] )
-											)
-										);
+											echo do_shortcode(
+												sprintf(
+													"[forminator_form id='%d']",
+													intval( $layer['forminator_id'] )
+												)
+											);
+										?>
+									</div>
+								</div>
+								<?php
+							elseif ( 'metform' === $form_type && ! empty( $layer['metform_id'] ) ) :
+								?>
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $form_type ); ?>" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div class="form-container">
+										<?php
+											echo do_shortcode(
+												sprintf(
+													"[metform form_id='%d']",
+													intval( $layer['metform_id'] )
+												)
+											);
 										?>
 									</div>
 								</div>
@@ -448,15 +500,12 @@ if ( $is_shortcode || $is_elementor_widget ) {
 
 								if ( $form_html && ! is_wp_error( $form_html ) ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
-										class="easydam-layer hidden"
-										style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-										<div
-											class="form-container jetpack-form-container" <?php echo ! empty( $origin_post_id ) ? 'data-origin-post-id="' . esc_attr( $origin_post_id ) . '"' : ''; ?>>
+									<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+										<div class="form-container jetpack-form-container" <?php echo ! empty( $origin_post_id ) ? 'data-origin-post-id="' . esc_attr( $origin_post_id ) . '"' : ''; ?>>
 											<?php
-											// HTML generated dynamically using Block content.
-											// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-											echo $form_html;
+												// HTML generated dynamically using Block content.
+												// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+												echo $form_html;
 											?>
 										</div>
 									</div>
@@ -464,21 +513,19 @@ if ( $is_shortcode || $is_elementor_widget ) {
 								endif;
 							elseif ( 'fluentforms' === $form_type && ! empty( $layer['fluent_form_id'] ) ) :
 								?>
-								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
-									class="easydam-layer hidden"
-									style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 									<div class="form-container">
 										<?php
-										echo do_shortcode(
-											sprintf(
-												"[fluentform id='%d']",
-												intval( $layer['fluent_form_id'] )
-											)
-										);
+											echo do_shortcode(
+												sprintf(
+													"[fluentform id='%d']",
+													intval( $layer['fluent_form_id'] )
+												)
+											);
 										?>
 									</div>
 								</div>
-								<?php
+									<?php
 							elseif ( 'everestforms' === $form_type && ! empty( $layer['everest_form_id'] ) ) :
 								?>
 								<div
@@ -488,23 +535,36 @@ if ( $is_shortcode || $is_elementor_widget ) {
 								>
 									<div class="form-container everest-form">
 										<?php
-										echo do_shortcode(
-											sprintf(
-												"[everest_form id='%d' title='false' description='false']",
-												intval( $layer['everest_form_id'] )
-											)
-										);
+											echo do_shortcode(
+												sprintf(
+													"[everest_form id='%d' title='false' description='false']",
+													intval( $layer['everest_form_id'] )
+												)
+											);
+										?>
+									</div>
+								</div>
+								<?php
+							elseif ( 'ninjaforms' === $form_type && ! empty( $layer['ninja_form_id'] ) ) :
+								?>
+								<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $form_type ); ?>" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div class="form-container">
+										<?php
+											echo do_shortcode(
+												sprintf(
+													"[ninja_form id='%d']",
+													intval( $layer['ninja_form_id'] )
+												)
+											);
 										?>
 									</div>
 								</div>
 								<?php
 							endif;
-							// Poll layer.
+								// Poll layer.
 						elseif ( isset( $layer['type'] ) && 'poll' === $layer['type'] ) :
 							?>
-							<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
-								class="easydam-layer hidden"
-								style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+							<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 								<div class="form-container poll-container">
 									<?php
 									$poll_id = ! empty( $layer['poll_id'] ) ? intval( $layer['poll_id'] ) : 0;
@@ -516,9 +576,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 							// CTA layer.
 						elseif ( isset( $layer['type'] ) && 'cta' === $layer['type'] ) :
 							?>
-							<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>"
-								class="easydam-layer hidden"
-								style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+							<div id="layer-<?php echo esc_attr( $instance_id . '-' . $layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $layer['bg_color'] ) ? esc_attr( $layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 								<?php if ( 'text' === $layer['cta_type'] ) : ?>
 									<div class="ql-editor easydam-layer--cta-text">
 										<?php echo wp_kses_post( $layer['text'] ); ?>
@@ -553,8 +611,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 		</div>
 
 		<?php if ( $caption && ! empty( $caption ) ) : ?>
-			<figcaption
-				class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $caption ); ?></figcaption>
+			<figcaption class="wp-element-caption rtgodam-video-caption"><?php echo esc_html( $caption ); ?></figcaption>
 		<?php endif; ?>
 	</figure>
 <?php endif; ?>

@@ -40,7 +40,10 @@ use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
+use RTGODAM\Inc\REST_API\Video_Migration;
 use RTGODAM\Inc\Gravity_Forms;
+use RTGODAM\Inc\REST_API\MetForm;
+
 
 use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
@@ -51,6 +54,10 @@ use RTGODAM\Inc\Video_Metadata;
 use RTGODAM\Inc\Media_Library\Media_Folders_REST_API;
 use RTGODAM\Inc\WPForms\WPForms_Integration;
 use RTGODAM\Inc\Media_Library\Media_Edit_Enhancements;
+use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Rest_Api;
+use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Integration;
+use RTGODAM\Inc\Metform\Metform_Integration;
+use RTGODAM\Inc\Metform\Metform_Rest_Api;
 use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
 
 /**
@@ -81,6 +88,8 @@ class Plugin {
 		GoDAM_Player::get_instance();
 		GoDAM_Video_Gallery::get_instance();
 
+		Video_Editor_Form_Layer_Handler::get_instance()->init();
+
 		$this->load_post_types();
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
@@ -90,6 +99,8 @@ class Plugin {
 		$this->load_fluentforms();
 
 		WPForms_Integration::get_instance()->init();
+		Ninja_Forms_Integration::get_instance()->init();
+		Metform_Integration::get_instance()->init();
 
 		// Load cron jobs.
 		Retranscode_Failed_Media::get_instance();
@@ -139,6 +150,8 @@ class Plugin {
 		SureForms::get_instance();
 		Fluent_Forms::get_instance();
 		Everest_Forms::get_instance();
+		Ninja_Forms_Rest_Api::get_instance();
+		Metform_Rest_Api::get_instance();
 		Settings::get_instance();
 		Meta_Rest_Fields::get_instance();
 		Media_Library::get_instance();
@@ -149,13 +162,15 @@ class Plugin {
 		Polls::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
+		Video_Migration::get_instance();
 	}
 
 	/**
 	 * Load all the classes related to the media library.
 	 *
-	 * @return void
 	 * @since 1.3.0
+	 *
+	 * @return void
 	 */
 	private function load_media_library() {
 		Media_Folders_REST_API::get_instance();

@@ -1,12 +1,40 @@
 # Changelog #
 
+## v1.3.4 (August 11, 2025) ##
+
+- Fix: Video Editor UI issues
+
+## v1.3.3 (August 11, 2025) ##
+
+- Tweak: Improved video player controls and HLS URL handling
+- Tweak: Added Video SEO support and duplicate prevention for GoDAM Tab videos
+- Tweak: Player-specific video speed and quality settings
+- Fix: Resolved share button and JavaScript registration issues
+
+## v1.3.2 (August 6, 2025) ##
+
+- Fix: Resolved PHP Warning on admin pages
+
+## v1.3.1 (August 4, 2025) ##
+
+- Tweak: Added settings for CPT visibility in permalinks
+- Tweak: Improved Media Library interface with search and pagination
+- Tweak: Improved UI for buttons and modals
+- Tweak: Enhanced hover actions for GoDAM Video blocks
+- Tweak: Improved mobile responsiveness for settings sidebar navigation
+- Fix: iPhone compatibility - HLS URL for Transcoded videos
+- Fix: Video SEO data visibility
+- Fix: Virtual Media errors in Analytics requests
+- Fix: GoDAM Video Player style compatibility with themes
+- Fix: Aspect ratio of video container in Form's GoDAM Record submissions
+
 ## v1.3.0 (July 22, 2025) ##
 
-- New: Integrated [Everest Forms](https://godam.io/features/everest-forms/)
-- New: Integrated [Forminator Forms](https://godam.io/features/forminator-forms/)
-- New: Integrated [Fluent Forms](https://godam.io/features/fluent-forms/) and added GoDAM Recorder Field integration
-- New: Integrated [SureForms](https://godam.io/features/sure-forms/) and added GoDAM Recorder Field integration
-- New: Added GoDAM Recorder Field integration for [WPForms](https://godam.io/features/wp-forms/) to capture video submissions
+- New: Integrated [Everest Forms](https://godam.io/integrations/everest-forms/)
+- New: Integrated [Forminator Forms](https://godam.io/integrations/forminator-forms/)
+- New: Integrated [Fluent Forms](https://godam.io/integrations/fluent-forms/) and added GoDAM Recorder Field integration
+- New: Integrated [SureForms](https://godam.io/integrations/sureforms/) and added GoDAM Recorder Field integration
+- New: Added GoDAM Recorder Field integration for [WPForms](https://godam.io/integrations/wp-forms/) to capture video submissions
 - New: Implemented theme support for customizable video player appearance
 - New: Added Global Ads settings for centralized advertisement management
 - New: Implemented automatic autoplay disable when video audio is unmuted for better user experience
