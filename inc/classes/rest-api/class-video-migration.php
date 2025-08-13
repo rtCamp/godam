@@ -422,7 +422,7 @@ class Video_Migration extends Base {
 			// Calculate progress percentage.
 			$progress = 0;
 			if ( $migration_status['total'] > 0 ) {
-				$progress = round( ( $migration_status['done'] / $migration_status['total'] ) * 100, 2 );
+				$progress = round( ( $migration_status['done'] / $migration_status['total'] ) * 100 );
 			}
 
 			$migration_status['message'] = sprintf(
