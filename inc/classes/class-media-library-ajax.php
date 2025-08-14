@@ -33,6 +33,7 @@ class Media_Library_Ajax {
 	public function setup_hooks() {
 		add_filter( 'ajax_query_attachments_args', array( $this, 'filter_media_library_by_taxonomy' ) );
 		add_action( 'pre_get_posts', array( $this, 'pre_get_post_filter' ) );
+		add_action( 'pre-upload-ui', array( $this, 'action_pre_upload_ui' ) );
 
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
 		add_action( 'add_attachment', array( $this, 'add_media_library_taxonomy_on_media_upload' ), 10, 1 );
@@ -147,6 +148,56 @@ class Media_Library_Ajax {
 
 		// Note: For now media is only uploaded to the GoDAM and we are storing the transcoding job ID in the attachment meta.
 		// Todo: In future we can add more logic to handle the transcoded image URLs to provide image CDN feature.
+	}
+
+	/**
+	 * Output the media folder selection UI.
+	 *
+	 * @return void
+	 */
+	public function action_pre_upload_ui() {
+		?>
+		<div class="godam-upload-select" style="margin-bottom: 12px;">
+			<label for="media-folder"><?php esc_html_e( 'Select Media Folder', 'godam' ); ?></label>
+			<select name="media-folder" id="media-folder">
+				<option value=""><?php esc_html_e( 'Select Folder', 'godam' ); ?></option>
+				<?php
+				$this->godam_render_folder_options();
+				?>
+			</select>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Recursively output folder <option> elements with indentation.
+	 *
+	 * @param int $folder_parent Parent folder ID.
+	 * @param int $depth  Current depth level (used for indentation).
+	 *
+	 * @return void
+	 */
+	private function godam_render_folder_options( $folder_parent = 0, $depth = 0 ) {
+		$folders = get_terms(
+			array(
+				'taxonomy'   => 'media-folder',
+				'hide_empty' => false,
+				'parent'     => $folder_parent,
+				'orderby'    => 'name',
+				'order'      => 'ASC',
+			)
+		);
+
+		foreach ( $folders as $folder ) {
+			printf(
+				'<option value="%s">%s%s</option>',
+				esc_attr( $folder->term_id ),
+				esc_html( str_repeat( '- ', $depth ) ),
+				esc_html( $folder->name )
+			);
+			// Recursively display children.
+			$this->godam_render_folder_options( $folder->term_id, $depth + 1 );
+		}
 	}
 
 	/**
@@ -549,10 +600,10 @@ class Media_Library_Ajax {
 							<p class="annual-plan-offer-banner__description">%2$s</p>
 						</div>
 						<div class="annual-plan-offer-banner__cta-container">
-							<a 
-								href="%3$s" 
-								class="annual-plan-offer-banner__cta" 
-								target="_blank" 
+							<a
+								href="%3$s"
+								class="annual-plan-offer-banner__cta"
+								target="_blank"
 								rel="noopener noreferrer"
 								title="%4$s"
 							>
@@ -560,9 +611,9 @@ class Media_Library_Ajax {
 							</a>
 						</div>
 					</div>
-					<button 
-						type="button" 
-						class="annual-plan-offer-banner__dismiss" 
+					<button
+						type="button"
+						class="annual-plan-offer-banner__dismiss"
 						aria-label="Dismiss banner"
 					>
 						&times;
