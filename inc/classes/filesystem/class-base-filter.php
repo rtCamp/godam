@@ -165,13 +165,16 @@ abstract class Base_Filter {
 		}
 
 		// Simple URL pattern matching.
-		preg_match_all( '/https?:\/\/[^\s<>"\']+/i', $content, $matches );
+		preg_match_all( '/https?:\/\/[^\s<>"\'\)]+/i', $content, $matches );
 
 		if ( empty( $matches[0] ) ) {
 			return $url_pairs;
 		}
 
 		foreach ( $matches[0] as $url ) {
+			// Strip trailing chars common in CSS url(...) and HTML attrs.
+			$url = rtrim( $url, ')"\'' );
+
 			if ( ! $this->url_needs_replacing( $url ) ) {
 				continue;
 			}
