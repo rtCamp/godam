@@ -470,8 +470,8 @@ class WC_Product_Video_Gallery {
 				$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
 
 				return array(
-					'id'  => $attachment_id,
-					'src' => wp_get_attachment_url( $attachment_id ),
+					'id'            => $attachment_id,
+					'src'           => wp_get_attachment_url( $attachment_id ),
 					'is_transcoded' => (bool) random_int(0,1),
 				);
 			},
@@ -505,8 +505,7 @@ class WC_Product_Video_Gallery {
 		}
 
 		$single_product_modal_summary = apply_filters( 'rtgodam_single_product_modal_summary', $this->rtgodam_single_product_modal_summary() );
-
-		$modal_carousel_html = array_map(
+		$modal_carousel_html          = array_map(
 			function ( $item ) use ( $srcsets, $single_product_modal_summary ) {
 				$src_id = $srcsets[ $item ]['id'];
 				$is_transcoded  = $srcsets[ $item ]['is_transcoded'] ? 'true' : 'false';
