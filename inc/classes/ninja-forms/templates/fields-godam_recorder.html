@@ -8,7 +8,7 @@
 		data-field-id="{{{ data.id }}}"
 		data-max-size="{{{ data.max_file_size }}}"
 		style="display: none;"
-		class="rtgodam-hidden"
+		class="rtgodam-hidden nf-element"
 	/>
 	<input type="hidden" class="nf-godam-recorder-nonce" value="{{{ data.recorder_nonce }}}">
 	<div
@@ -19,7 +19,7 @@
 		data-video-upload-button-id="{{{ data.video_upload_button_id }}}"
 		data-file-selectors="{{{ data.file_selectors }}}"
 	>
-		<button id="{{{ data.video_upload_button_id }}}" class="uppy-video-upload-button btn ninja-forms-field nf-element btn-success nf-fu-fileinput-button" type="button">
+		<button id="{{{ data.video_upload_button_id }}}" class="uppy-video-upload-button btn ninja-forms-field btn-success nf-fu-fileinput-button" type="button">
 			<span class="dashicons dashicons-video-alt"></span>
 			{{{ data.record_button_text }}}
 		</button>

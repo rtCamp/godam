@@ -139,6 +139,10 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 		// Enqueue frontend scripts.
 		add_filter( 'ninja_forms_localize_fields', array( $this, 'frontend_enqueue_scripts' ) );
 		add_filter( 'ninja_forms_localize_fields_preview', array( $this, 'frontend_enqueue_scripts' ) );
+
+		// Ajax action for upload.
+		add_action( 'wp_ajax_nf_godam_upload', array( $this, 'ajax_upload' ) );
+		add_action( 'wp_ajax_nopriv_nf_godam_upload', array( $this, 'ajax_upload' ) );
 	}
 
 	/**
@@ -289,6 +293,27 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 			);
 		}
 
+		if ( ! wp_script_is( 'nf-godam-recorder-upload' ) ) {
+			/**
+			 * Enqueue script if not already enqueued.
+			 */
+			wp_enqueue_script(
+				'nf-godam-recorder-upload',
+				RTGODAM_URL . 'assets/build/js/ninja-forms.min.js',
+				array( 'backbone', 'jquery' ),
+				filemtime( RTGODAM_PATH . 'assets/build/js/ninja-forms.min.js' ),
+				true
+			);
+
+			wp_localize_script(
+				'nf-godam-recorder-upload',
+				'nfGodamRecorderUpload',
+				array(
+					'ajaxURL' => admin_url( 'admin-ajax.php' ),
+				)
+			);
+		}
+
 		return $field;
 	}
 
@@ -305,6 +330,21 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 		return array(
 			'nonce'        => wp_create_nonce( 'godam_recorder_' . $field_id ),
 			'nonce_expiry' => time() + wp_nonce_tick(),
+		);
+	}
+
+	/**
+	 * Ajax upload handler.
+	 *
+	 * @return void
+	 */
+	public function ajax_upload() {
+
+		wp_send_json_success(
+			array(
+				'name' => 'hit-bhalodia.jpg',
+				'path' => 'hit',
+			)
 		);
 	}
 }

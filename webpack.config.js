@@ -192,6 +192,13 @@ const fluentForms = {
 	},
 };
 
+const ninjaForms = {
+	...sharedConfig,
+	entry: {
+		'ninja-forms': path.resolve( process.cwd(), 'assets', 'src', 'js', 'ninja-forms', 'index.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -276,4 +283,5 @@ module.exports = [
 	elementorEditorJS,
 	godamRecorder,
 	fluentForms,
+	ninjaForms,
 ];
