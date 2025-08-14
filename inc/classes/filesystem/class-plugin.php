@@ -465,9 +465,14 @@ class Plugin {
 	/**
 	 * Set up URL filtering system.
 	 */
-	private function setup_url_filters() {
+	public function setup_url_filters() {
 		// Only setup if GoDAM filesystem is enabled.
 		if ( ! $this->is_enabled() ) {
+			return;
+		}
+
+		// Avoid double initialization.
+		if ( $this->filter_local_to_godam || $this->filter_godam_to_local || $this->media_library_filters ) {
 			return;
 		}
 

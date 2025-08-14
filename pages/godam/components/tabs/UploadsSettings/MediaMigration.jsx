@@ -141,7 +141,7 @@ const MediaMigration = () => {
 
 		return (
 			<Button
-				variant="secondary"
+				variant="primary"
 				className="godam-button godam-migrate-media-button mt-8"
 				onClick={ () => mediaMigration( 'start' ) }
 				isBusy={ migrationStarted }
@@ -260,7 +260,7 @@ const MediaMigration = () => {
 				<PanelBody opened>
 					<div className="godam-form-group">
 						<ShowNotice />
-						<p className="text-sm mt-0">{ __( 'You can migrate your media files to GoDAM storage. This will allow you to use the GoDAM CDN for faster delivery and better performance.', 'godam' ) }</p>
+						<p className="text-sm mt-0">{ __( 'Copy your existing media to GoDAM storage and use the CDN for better performance.', 'godam' ) }</p>
 						<div className="flex gap-3 items-center mt-8">
 							<div className="circle-container mr-6">
 								<div className="data text-xs">

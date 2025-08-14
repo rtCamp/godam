@@ -116,7 +116,7 @@ const UploadsSettings = () => {
 						__nextHasNoMarginBottom
 						className="godam-toggle godam-margin-bottom"
 						label={ __( 'Offload Media?', 'godam' ) }
-						help={ __( 'Offload media to the storage provider and distribute it using the GoDAM CDN.', 'godam' ) }
+						help={ __( 'Bypass your WordPress upload, directly send new files to the GoDAM CDN.', 'godam' ) }
 						checked={ mediaSettings?.uploads?.offload_media }
 						onChange={ ( value ) => handleSettingChange( 'offload_media', value ) }
 					/>
