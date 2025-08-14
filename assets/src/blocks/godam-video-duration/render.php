@@ -20,8 +20,8 @@ if ( $video_post_id ) {
 	// Get attachment ID from post meta.
 	$attachment_id = get_post_meta( $video_post_id, '_godam_attachment_id', true );
 
-	// Get thumbnail URL directly from attachment's meta.
-	$video_duration = get_post_meta( $attachment_id, '_video_duration', true );
+	// Get video duration directly from attachment's meta.
+	$video_duration = absint( get_post_meta( $attachment_id, '_video_duration', true ) );
 }
 
 // Format the duration using the formatting function.
@@ -33,6 +33,6 @@ if ( ! empty( $video_duration ) ) {
 
 <?php if ( ! empty( $formatted_duration ) ) : ?>
 	<div <?php echo wp_kses_data( $wrapper_attributes ); ?>>
-		<p><?php echo esc_html( $formatted_duration ); ?></p>
+		<time datetime="PT<?php echo esc_attr( $video_duration ); ?>S"><?php echo esc_html( $formatted_duration ); ?></time>
 	</div>
 <?php endif; ?>
