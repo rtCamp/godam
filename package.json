@@ -1,6 +1,6 @@
 {
 	"name": "godam",
-	"version": "1.3.0",
+	"version": "1.3.4",
 	"description": "A WordPress plugin to manage digital assets",
 	"private": true,
 	"author": "rtCamp",
@@ -102,7 +102,7 @@
 		"lint:js:report": "npm run lint:js -- --output-file lint-js-report.json --format json .",
 		"lint:php": "vendor/bin/phpcs",
 		"lint:php:fix": "vendor/bin/phpcbf",
-		"lint:package-json": "wp-scripts lint-pkg-json --ignorePath .gitignore",
+		"lint:package-json": "wp-scripts lint-pkg-json --ignorePath .packagejsonignore",
 		"lint:staged": "lint-staged",
 		"install:husky": "./bin/husky.sh --install",
 		"remove:husky": "./bin/husky.sh --remove",

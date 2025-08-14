@@ -78,7 +78,6 @@ const Analytics = ( { attachmentID } ) => {
 	const siteUrl = window.location.origin;
 	const {
 		data: analyticsDataFetched,
-		refetch,
 	} = useFetchAnalyticsDataQuery(
 		{ videoId: attachmentID, siteUrl },
 		{ skip: ! attachmentID },
@@ -98,7 +97,6 @@ const Analytics = ( { attachmentID } ) => {
 
 	const {
 		data: abTestComparisonAnalyticsDataFetched,
-		refetch: refetchAB,
 	} = useFetchAnalyticsDataQuery(
 		{
 			videoId: abTestComparisonAttachmentData?.id,
@@ -168,11 +166,7 @@ const Analytics = ( { attachmentID } ) => {
 	async function startABTesting() {
 		setIsABResultsLoading( true );
 		setIsABTestCompleted( false );
-		await refetch();
 		setAbTestComparisonAttachmentData( mediaLibraryAttachment );
-		if ( mediaLibraryAttachment ) {
-			await refetchAB();
-		}
 	}
 
 	useEffect( () => {
@@ -213,6 +207,23 @@ const Analytics = ( { attachmentID } ) => {
 			);
 		}
 	}, [ analyticsData, abTestComparisonAnalyticsData ] );
+
+	useEffect( () => {
+		const analyticsVideoEl = document.getElementById( 'analytics-video' );
+
+		if ( ! analyticsVideoEl ) {
+			return;
+		}
+
+		const existingPlayer = videojs.getPlayer( 'analytics-video' );
+		if ( existingPlayer ) {
+			existingPlayer.dispose();
+		}
+
+		videojs( 'analytics-video', {
+			aspectRatio: '16:9',
+		} );
+	}, [ analyticsData ] );
 
 	const openVideoUploader = () => {
 		const fileFrame = wp.media( {
@@ -352,7 +363,7 @@ const Analytics = ( { attachmentID } ) => {
 									'godam',
 								) }
 
-								<a href="https://godam.io/pricing/" className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
+								<a href={ `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=analytics` } className="components-button godam-button is-primary" target="_blank" rel="noopener noreferrer">{ __( 'Buy Plan', 'godam' ) }</a>
 							</p>
 
 							<p className="api-key-overlay-banner-footer">
@@ -404,7 +415,7 @@ const Analytics = ( { attachmentID } ) => {
 						<div>
 							<div className="flex gap-10 items-center max-lg:flex-col">
 								<div className="flex-grow">
-									<div className="analytics-info-container max-lg:flex-row flex-col items-center">
+									<div className="w-[350px] analytics-info-container max-lg:flex-row flex-col items-center">
 										<SingleMetrics
 											metricType={ 'engagement-rate' }
 											label={ __( 'Average Engagement', 'godam' ) }

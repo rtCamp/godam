@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, TabPanel, Snackbar, Tooltip } from '@wordpress/components';
+import { Button, TabPanel, Snackbar, Tooltip, Spinner } from '@wordpress/components';
 import { __, _n } from '@wordpress/i18n';
 import { copy, seen } from '@wordpress/icons';
 
@@ -29,6 +29,7 @@ import {
 	setFluentForms,
 	setEverestForms,
 	setNinjaForms,
+	setMetforms,
 } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
@@ -39,17 +40,6 @@ import { copyGoDAMVideoBlock } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
 
 const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
-	const formIDMap = {
-		cf7: 'cf7_id',
-		gravity: 'gf_id',
-		wpforms: 'wpform_id',
-		forminator: 'forminator_id',
-		sureforms: 'sureform_id',
-		fluentforms: 'fluent_form_id',
-		jetpack: 'jp_id',
-		everestforms: 'everest_form_id',
-		ninjaforms: 'ninja_form_id',
-	};
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
@@ -69,7 +59,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
-	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, isFetching } = useFetchForms();
+	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, metforms, isFetching } = useFetchForms();
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -177,8 +167,12 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			if ( ninjaForms && ninjaForms.length > 0 ) {
 				dispatch( setNinjaForms( ninjaForms ) );
 			}
+
+			if ( metforms && metforms.length > 0 ) {
+				dispatch( setMetforms( metforms ) );
+			}
 		}
-	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms ] );
+	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms, metforms ] );
 
 	const canManageAttachment = ( attachment ) => {
 		const currentUserId = Number( window?.easydamMediaLibrary?.userId );
@@ -358,7 +352,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	return (
 		<>
 			<div className="video-editor-container">
-				<div className="py-3 aside relative">
+				<div className="py-3 aside relative pl-4">
 					<div id="sidebar-content" className="godam-video-editor">
 						<TabPanel
 							className="godam-video-editor-tabs"
@@ -372,11 +366,12 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 					<Button
 						className="godam-button absolute right-4 bottom-8"
 						variant="primary"
-						disabled={ ! isChanged }
+						icon={ isSavingMeta && <Spinner /> }
 						onClick={ handleSaveAttachmentMeta }
 						isBusy={ isSavingMeta }
+						disabled={ ! isChanged }
 					>
-						{ __( 'Save', 'godam' ) }
+						{ isSavingMeta ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 					</Button>
 				</div>
 

@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, ButtonGroup, SelectControl } from '@wordpress/components';
+import { Button, SelectControl } from '@wordpress/components';
 const { __ } = wp.i18n;
 /**
  * Internal dependencies
@@ -21,12 +21,14 @@ import {
 	toggleMultiSelectMode,
 	clearMultiSelectedFolders,
 	setSortOrder,
+	setCurrentContextMenuFolder,
 } from './redux/slice/folders';
 import { FolderCreationModal, RenameModal, DeleteModal } from './components/modal/index.jsx';
 import { triggerFilterChange } from './data/media-grid.js';
 import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
 import LockedTab from './components/folder-tree/LockedTab.jsx';
 import { useGetAllMediaCountQuery, useGetCategoryMediaCountQuery } from './redux/api/folders.js';
+import SearchBar from './components/search-bar/SearchBar.jsx';
 
 const App = () => {
 	const dispatch = useDispatch();
@@ -74,18 +76,8 @@ const App = () => {
 		}
 	};
 
-	const handleContextMenu = ( e, folderId, folderItem ) => {
+	const handleContextMenu = ( e, folderId, folder ) => {
 		e.preventDefault(); // Prevent default browser context menu
-
-		if ( folderId === -1 ) {
-			triggerFilterChange( 'all' );
-		} else if ( folderId === 0 ) {
-			triggerFilterChange( 'uncategorized' );
-		} else {
-			triggerFilterChange( folderId );
-		}
-
-		dispatch( changeSelectedFolder( { item: folderItem } ) );
 
 		setContextMenu( {
 			visible: true,
@@ -93,6 +85,8 @@ const App = () => {
 			y: e.clientY,
 			folderId,
 		} );
+
+		dispatch( setCurrentContextMenuFolder( folder ) );
 	};
 
 	const handleCloseContextMenu = () => {
@@ -101,26 +95,27 @@ const App = () => {
 
 	return (
 		<>
+			<Button
+				icon="plus-alt2"
+				__next40pxDefaultSize
+				variant="secondary"
+				className="button--full close-folder-menu-mobile"
+				onClick={ () => closeFolderMenu() }
+			/>
 			<div className="control-buttons">
-				<Button
-					icon="plus-alt2"
-					__next40pxDefaultSize
-					variant="primary"
-					text={ __( 'New Folder', 'godam' ) }
-					className="button--full mb-spacing new-folder-button"
-					onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
-					disabled={ selectedFolder?.meta?.locked }
-				/>
-
-				<Button
-					icon="plus-alt2"
-					__next40pxDefaultSize
-					variant="secondary"
-					className="button--full close-folder-menu-mobile"
-					onClick={ () => closeFolderMenu() }
-				/>
-
-				<ButtonGroup className="button-group mb-spacing">
+				<div className="button-group mb-spacing">
+					<SearchBar />
+					<Button
+						icon="plus-alt2"
+						__next40pxDefaultSize
+						variant="primary"
+						text={ __( 'New Folder', 'godam' ) }
+						className="button--full mb-spacing new-folder-button"
+						onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
+						disabled={ selectedFolder?.meta?.locked }
+					/>
+				</div>
+				<div className="button-group mb-spacing">
 					<Button
 						__next40pxDefaultSize
 						className="multiselect-button"
@@ -137,7 +132,7 @@ const App = () => {
 						] }
 						onChange={ ( newOrder ) => dispatch( setSortOrder( newOrder ) ) }
 					/>
-				</ButtonGroup>
+				</div>
 			</div>
 
 			<div className="folder-list">
@@ -169,6 +164,7 @@ const App = () => {
 				<BookmarkTab handleContextMenu={ handleContextMenu } />
 				<LockedTab handleContextMenu={ handleContextMenu } />
 			</div>
+
 			<FolderTree handleContextMenu={ handleContextMenu } />
 
 			{ contextMenu.visible && (

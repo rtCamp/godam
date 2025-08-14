@@ -3,8 +3,6 @@
 }
 
 #wpbody-content {
-	background-image: url(../../assets/src/images/hero-bg.webp);
-	background-size: cover;
 	height: 100%;
 }
 
@@ -12,6 +10,29 @@
 
 	&-header {
 		background: #fff;
+	}
+}
+
+#root-video-help {
+	background-image: url(../../assets/src/images/hero-bg.webp);
+	background-size: cover;
+}
+
+.godam-help-container {
+
+	.godam-settings-header-content {
+
+		@media (max-width: 420px) {
+			padding-left: 10px;
+			padding-right: 14px;
+		}
+	}
+
+	.components-button.has-icon.has-text {
+
+		@media (max-width: 640px) {
+			padding: .75rem 0.75rem;
+		}
 	}
 }
 
@@ -80,6 +101,8 @@
 .hero-content {
 	padding: 10px 0;
 	text-align: center;
+	max-width: 600px;
+	margin: 0 auto;
 }
 
 .single-container {

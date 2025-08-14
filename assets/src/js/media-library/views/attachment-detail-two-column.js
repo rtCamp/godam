@@ -5,6 +5,15 @@
  */
 import DOMPurify from 'isomorphic-dompurify';
 import videojs from 'video.js';
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
+ */
+import { addIcon, trashIcon } from '../media-library-icons';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -17,19 +26,13 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 */
 	initialize() {
 		AttachmentDetailsTwoColumn.prototype.initialize.apply( this, arguments );
-		const attachmentId = this.model.get( 'id' );
-
-		if ( this.model.get( 'type' ) === 'video' ) {
-			this.fetchAndRender( this.getVideoThumbnails( attachmentId ), this.renderThumbnail );
-		}
-
-		this.fetchAndRender( this.getExifDetails( attachmentId ), this.renderExifDetails );
 	},
 
 	/**
 	 * Fetches data from an API and renders it using the provided render method.
 	 *
 	 * @param {Promise}  fetchPromise - The promise that resolves to the fetched data.
+	 *
 	 * @param {Function} renderMethod - The method to render the fetched data.
 	 */
 	async fetchAndRender( fetchPromise, renderMethod ) {
@@ -43,7 +46,9 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Fetches data from a given URL with the provided attachment ID.
 	 *
 	 * @param {string} url          - The API endpoint URL.
+	 *
 	 * @param {number} attachmentId - The ID of the attachment.
+	 *
 	 * @return {Promise<Object|null>} - The fetched data or null on failure.
 	 */
 	async fetchData( url, attachmentId ) {
@@ -74,6 +79,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Retrieves video thumbnails for the given attachment ID.
 	 *
 	 * @param {number} attachmentId - The ID of the attachment.
+	 *
 	 * @return {Promise<Object|null>} - The fetched thumbnails data or null.
 	 */
 	getVideoThumbnails( attachmentId ) {
@@ -88,6 +94,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Retrieves EXIF details for the given attachment ID.
 	 *
 	 * @param {number} attachmentId - The ID of the attachment.
+	 *
 	 * @return {Promise<Object|null>} - The fetched EXIF data or null.
 	 */
 	getExifDetails( attachmentId ) {
@@ -109,6 +116,191 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	},
 
 	/**
+	 * Sets up click handlers for removing custom video thumbnails.
+	 */
+	setupThumbnailActions() {
+		// Remove handler
+		document.querySelectorAll( '.remove-thumbnail' ).forEach( ( btn ) => {
+			btn.addEventListener( 'click', ( event ) => {
+				event.preventDefault();
+				event.stopPropagation();
+				const thumbnail = btn.dataset.thumbnail;
+				this.removeThumbnailImage( thumbnail );
+			} );
+		} );
+	},
+
+	/**
+	 * Removes a custom video thumbnail image.
+	 *
+	 * @param {string} thumbnailURL - The URL of the thumbnail to remove.
+	 */
+	removeThumbnailImage( thumbnailURL ) {
+		const formData = new FormData();
+		formData.append( 'attachment_id', this.model.get( 'id' ) );
+		formData.append( 'thumbnail_url', thumbnailURL );
+
+		fetch(
+			window.pathJoin( [
+				restURL,
+				'/godam/v1/media-library/delete-custom-video-thumbnail',
+			] ),
+			{
+				method: 'POST',
+				body: formData,
+				headers: {
+					'X-WP-Nonce': window.wpApiSettings?.nonce || '',
+				},
+			},
+		)
+			.then( ( response ) => response.json() )
+			.then( ( data ) => {
+				if ( data.success ) {
+					document.querySelector( '.attachment-video-thumbnails' ).remove();
+					this.render(); // full re-render
+				}
+			} )
+			.catch( () => {
+				// silent fail
+			} );
+	},
+
+	/**
+	 * Opens the media uploader to select a custom thumbnail.
+	 *
+	 * @param {Function} onSelect - Callback function to handle the selected attachment.
+	 */
+	openMediaUploader( onSelect ) {
+		if ( ! window.wp || ! window.wp.media ) {
+			return;
+		}
+
+		const uploader = wp.media( {
+			title: __( 'Select Custom Thumbnail', 'godam' ),
+			button: { text: __( 'Use this image', 'godam' ) },
+			multiple: false,
+			library: { type: [ 'image' ] },
+		} );
+
+		uploader.on( 'select', () => {
+			const attachment = uploader.state().get( 'selection' ).first().toJSON();
+			if ( attachment && attachment.url && attachment.id ) {
+				onSelect( attachment ); // Use callback for custom behavior
+			}
+		} );
+
+		uploader.open();
+	},
+
+	/**
+	 * Creates a tile for uploading custom thumbnails.
+	 *
+	 * @param {boolean} uploadDisabled - Whether the upload button should be disabled.
+	 *
+	 * @return {HTMLElement} - The created upload tile element.
+	 */
+	createUploadTile( uploadDisabled ) {
+		const sanitizedIcon = DOMPurify.sanitize( addIcon );
+
+		const li = document.createElement( 'li' );
+		li.className = 'upload-thumbnail-tile';
+		li.title = uploadDisabled
+			? __( 'Only 3 custom thumbnails allowed', 'godam' )
+			: __( 'Upload Custom Thumbnail', 'godam' );
+
+		const button = document.createElement( 'button' );
+		button.type = 'button';
+		button.className = 'custom-thumbnail-media-upload';
+
+		if ( uploadDisabled ) {
+			button.disabled = true;
+			button.style.opacity = '0.5';
+			button.style.cursor = 'not-allowed';
+		}
+
+		const span = document.createElement( 'span' );
+		span.className = 'plus-icon';
+
+		if ( uploadDisabled ) {
+			span.style.cursor = 'not-allowed';
+		}
+
+		span.innerHTML = sanitizedIcon;
+
+		button.appendChild( span );
+		li.appendChild( button );
+
+		return li;
+	},
+
+	/**
+	 * Creates a custom thumbnail tile with controls.
+	 *
+	 * @param {string} thumbnailURL  - The URL of the thumbnail image.
+	 *
+	 * @param {string} selectedURL   - The URL of the currently selected thumbnail.
+	 *
+	 * @param {string} trashIconHTML - The HTML for the trash icon.
+	 *
+	 * @return {HTMLElement} - The created custom thumbnail tile element.
+	 */
+	createCustomThumbnailTile( thumbnailURL, selectedURL, trashIconHTML ) {
+		const li = document.createElement( 'li' );
+		li.className = 'custom-thumbnail-container';
+		if ( thumbnailURL === selectedURL ) {
+			li.classList.add( 'selected' );
+		}
+
+		const img = document.createElement( 'img' );
+		img.src = DOMPurify.sanitize( thumbnailURL );
+		img.alt = __( 'Custom Video Thumbnail', 'godam' );
+
+		const controls = document.createElement( 'div' );
+		controls.className = 'controls';
+
+		const tooltip = document.createElement( 'div' );
+		tooltip.className = 'tooltip mt-1';
+		tooltip.title = __( 'Remove Image', 'godam' );
+
+		const button = document.createElement( 'button' );
+		button.className = 'custom-thumbnail-control remove-thumbnail';
+		button.setAttribute( 'aria-label', __( 'Remove Image', 'godam' ) );
+		button.dataset.thumbnail = thumbnailURL;
+
+		const sanitizedTrashIcon = DOMPurify.sanitize( trashIconHTML );
+		button.innerHTML = sanitizedTrashIcon;
+
+		tooltip.appendChild( button );
+		controls.appendChild( tooltip );
+
+		li.appendChild( img );
+		li.appendChild( controls );
+
+		return li;
+	},
+
+	/**
+	 * Creates a default thumbnail tile.
+	 *
+	 * @param {string} thumbnailURL - The URL of the thumbnail image.
+	 *
+	 * @param {string} selectedURL  - The URL of the currently selected thumbnail.
+	 *
+	 * @return {HTMLElement} - The created default thumbnail tile element.
+	 */
+	createDefaultThumbnailTile( thumbnailURL, selectedURL ) {
+		const li = document.createElement( 'li' );
+		if ( thumbnailURL === selectedURL ) {
+			li.classList.add( 'selected' );
+		}
+		const img = document.createElement( 'img' );
+		img.src = DOMPurify.sanitize( thumbnailURL );
+		img.alt = __( 'Video Thumbnail', 'godam' );
+		li.appendChild( img );
+		return li;
+	},
+
+	/**
 	 * Renders video thumbnails in the attachment details view.
 	 *
 	 * @param {Object} data - The video thumbnail data to render.
@@ -118,22 +310,94 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			return;
 		}
 
-		const { thumbnails, selected } = data;
+		const { thumbnails, selected, customThumbnails } = data;
 		const attachmentID = this.model.get( 'id' );
 
-		const thumbnailsHTML = thumbnails.map( ( thumbnail ) =>
-			`<li class="${ thumbnail === selected ? 'selected' : '' }">
-				<img src="${ thumbnail }" alt="Video Thumbnail" />
-			</li>` ).join( '' );
+		const customThumbnailsArray = Array.isArray( customThumbnails )
+			? customThumbnails
+			: Object.values( customThumbnails || {} );
 
-		const thumbnailDiv = `
-			<div class="attachment-video-thumbnails">
-				<div class="attachment-video-title"><h4>Video Thumbnails</h4></div>
-				<ul>${ thumbnailsHTML }</ul>
-			</div>`;
+		// Disable upload button if limit is reached
+		const uploadDisabled = customThumbnailsArray.length >= 3;
 
-		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( thumbnailDiv ) );
+		const ul = document.createElement( 'ul' );
+		ul.appendChild( this.createUploadTile( uploadDisabled ) );
+
+		customThumbnailsArray.forEach( ( thumbnail ) =>
+			ul.appendChild(
+				this.createCustomThumbnailTile( thumbnail, selected, trashIcon ),
+			),
+		);
+
+		const thumbnailArray = Array.isArray( thumbnails ) ? thumbnails : Object.values( thumbnails || {} );
+		thumbnailArray.forEach( ( thumbnail ) =>
+			ul.appendChild( this.createDefaultThumbnailTile( thumbnail, selected ) ),
+		);
+
+		// Compose full container
+		const div = document.createElement( 'div' );
+		div.className = 'attachment-video-thumbnails';
+
+		const containerDiv = document.createElement( 'div' );
+		containerDiv.className = 'attachment-video-title';
+
+		const heading = document.createElement( 'h4' );
+		heading.textContent = __( 'Video Thumbnails', 'godam' );
+
+		containerDiv.appendChild( heading );
+		div.appendChild( containerDiv );
+
+		div.appendChild( ul );
+
+		// Remove old and append new
+		const actionsEl = this.$el.find( '.attachment-actions' );
+		actionsEl.find( '.attachment-video-thumbnails' ).remove(); // Remove old thumbnails if any
+		actionsEl.append( div );
+
 		this.setupThumbnailClickHandler( attachmentID );
+		this.setupThumbnailActions();
+
+		// Set upload click after DOM added
+		setTimeout( () => {
+			const $btn = this.$el.find( '.custom-thumbnail-media-upload' );
+			if ( $btn.length ) {
+				$btn.off( 'click' ).on( 'click', () => {
+					this.openMediaUploader( ( attachment ) => {
+						this.handleThumbnailUploadFromUrl( attachment.url );
+					} );
+				} );
+			}
+		}, 0 );
+	},
+
+	/**
+	 * Handles the upload of a custom video thumbnail from a URL.
+	 *
+	 * @param {string} url - The URL of the thumbnail to upload.
+	 */
+	handleThumbnailUploadFromUrl( url ) {
+		const formData = new FormData();
+		formData.append( 'attachment_id', this.model.get( 'id' ) );
+
+		formData.append( 'thumbnail_url', url );
+
+		fetch( window.pathJoin( [ restURL, '/godam/v1/media-library/upload-custom-video-thumbnail' ] ), {
+			method: 'POST',
+			body: formData,
+			headers: {
+				'X-WP-Nonce': window.wpApiSettings?.nonce || '',
+			},
+		} )
+			.then( ( response ) => response.json() )
+			.then( ( data ) => {
+				if ( data.success ) {
+					document.querySelector( '.attachment-video-thumbnails' ).remove();
+					this.render(); // full re-render
+				}
+			} )
+			.catch( () => {
+				// silent fail
+			} );
 	},
 
 	/**
@@ -143,12 +407,20 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 */
 	setupThumbnailClickHandler( attachmentID ) {
 		document.querySelectorAll( '.attachment-video-thumbnails li' ).forEach( ( li ) => {
+			if ( li.classList.contains( 'upload-thumbnail-tile' ) ) {
+				// Skip the upload tile
+				return;
+			}
 			li.addEventListener( 'click', function() {
-				// Remove the selected class from all thumbnails and add it to the clicked thumbnail.
+				// Remove the selected class from all thumbnails
 				document.querySelectorAll( '.attachment-video-thumbnails li' ).forEach( ( item ) => item.classList.remove( 'selected' ) );
+
+				// Add selected class to the clicked thumbnail image
 				this.classList.add( 'selected' );
 
-				const thumbnailURL = this.querySelector( 'img' ).src;
+				const img = this.querySelector( 'img' );
+
+				const thumbnailURL = img?.src;
 
 				/**
 				 * Send a POST request to the server to set the selected thumbnail for the video.
@@ -235,8 +507,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		// Check if the attachment is a video and render the edit buttons.
 		if ( this.model.get( 'type' ) === 'video' ) {
-			this.renderVideoActions();
-
 			const virtual = this.model.get( 'virtual' );
 
 			// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
@@ -284,6 +554,17 @@ export default AttachmentDetailsTwoColumn?.extend( {
 					}
 				}, 100 ); // Slight delay to ensure DOM update.
 			}
+
+			this.renderVideoActions();
+			const attachmentId = this.model.get( 'id' );
+			this.fetchAndRender(
+				this.getVideoThumbnails( attachmentId ),
+				this.renderThumbnail,
+			);
+			this.fetchAndRender(
+				this.getExifDetails( attachmentId ),
+				this.renderExifDetails,
+			);
 		}
 
 		// Return this view.
