@@ -338,7 +338,7 @@ document.addEventListener( 'click', async function( e ) {
 					player.player.dispose();
 				}
 			} );
-			modal.classList.add( 'hidden' );
+			modal.remove();
 			// Re-enable background scrolling
 			document.body.style.overflow = '';
 			document.body.removeEventListener( 'wheel', handleScroll );
@@ -401,13 +401,18 @@ document.addEventListener( 'click', async function( e ) {
 		};
 
 		// Scroll functionality for desktop (wheel events)
-		const SCROLL_COOLDOWN = 800; // milliseconds
+		const SCROLL_COOLDOWN = 1000; // milliseconds
 		let lastScrollTime = 0;
 		let scrollTimeout;
 
 		const handleScroll = async ( event ) => {
 			event.preventDefault(); // Prevent background scroll
 			event.stopPropagation(); // Prevent event bubbling
+
+			const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
+			if ( ! currentPopUp ) {
+				return;
+			}
 
 			// Clear any existing timeout
 			clearTimeout( scrollTimeout );
@@ -465,6 +470,10 @@ document.addEventListener( 'click', async function( e ) {
 					const newVideoId = newThumbnail.getAttribute( 'data-video-id' );
 					if ( newVideoId && newVideoId !== currentId ) {
 						lastScrollTime = currentTime;
+						const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
+						if ( currentPopUp ) {
+							currentPopUp.style.display = 'none';
+						}
 						loadNewVideo( newVideoId );
 					}
 				}
@@ -474,6 +483,11 @@ document.addEventListener( 'click', async function( e ) {
 		const handleTouchend = async ( err ) => {
 			touchEndY = err.changedTouches[ 0 ].clientY;
 			const touchDiff = touchStartY - touchEndY;
+
+			const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
+			if ( ! currentPopUp ) {
+				return;
+			}
 
 			// Minimum swipe distance
 			if ( Math.abs( touchDiff ) < 50 ) {
@@ -536,6 +550,10 @@ document.addEventListener( 'click', async function( e ) {
 					const newVideoId = newThumbnail.getAttribute( 'data-video-id' );
 					if ( newVideoId && newVideoId !== currentId ) {
 						lastScrollTime = currentTime;
+						const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
+						if ( currentPopUp ) {
+							currentPopUp.style.display = 'none';
+						}
 						loadNewVideo( newVideoId );
 					}
 				}
