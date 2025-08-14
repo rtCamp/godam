@@ -13,7 +13,7 @@ export default Attachments?.extend( {
 		Attachments.prototype.initialize.apply( this, arguments );
 
 		// Increase the column width for media attachments.
-		this.options.idealColumnWidth = window.innerWidth < 640 ? 135 : 250;
+		this.options.idealColumnWidth = window.innerWidth < 640 ? 135 : 200;
 
 		if ( Attachment ) {
 			/**
