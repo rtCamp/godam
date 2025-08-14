@@ -12,6 +12,9 @@ export default Attachments?.extend( {
 		// Call the parent initialize method
 		Attachments.prototype.initialize.apply( this, arguments );
 
+		// Increase the column width for media attachments.
+		this.options.idealColumnWidth = window.innerWidth < 640 ? 135 : 250;
+
 		if ( Attachment ) {
 			/**
 			 * Override the default AttachmentView with our custom view.
