@@ -1,4 +1,9 @@
 /**
+ * WordPress dependencies
+ */
+import { decodeEntities } from '@wordpress/html-entities';
+
+/**
  * Returns the first non-empty value from the provided arguments.
  *
  * A value is considered non-empty if it is not `undefined`, `null`, or an empty string (`''`).
@@ -85,4 +90,16 @@ function secondsToISO8601( seconds ) {
 	return isoString;
 }
 
-export { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty, secondsToISO8601 };
+/**
+ * Converts HTML to plain text by removing all HTML tags.
+ *
+ * This function decodes HTML entities and strips out anything between angle brackets,
+ *
+ * @param {string} html
+ * @return {string} The plain text version of the HTML input.
+ */
+const removeTags = ( html = '' ) => decodeEntities(
+	( String( html ) ).replace( /<[^>]+>/g, '' ).trim(),
+);
+
+export { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty, secondsToISO8601, removeTags };

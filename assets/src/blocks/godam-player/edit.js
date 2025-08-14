@@ -43,7 +43,7 @@ import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
-import { appendTimezoneOffsetToUTC, secondsToISO8601 } from './utils/index.js';
+import { appendTimezoneOffsetToUTC, removeTags, secondsToISO8601 } from './utils/index.js';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -103,6 +103,8 @@ function VideoEdit( {
 		verticalAlignment,
 		overlayTimeRange,
 		showOverlay,
+		videoTitle,
+		videoDescription,
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
@@ -148,11 +150,25 @@ function VideoEdit( {
 							const _duration = player.duration();
 							setDuration( _duration );
 						} );
+
+						// Remove HTML tags as description surrouned with p tags
+						const title = removeTags( videoTitle );
+						const description = removeTags( videoDescription );
+						if ( title || description ) {
+							const titleBar = player.getChild( 'TitleBar' );
+							if ( titleBar ) {
+								titleBar.addClass( 'vjs-hidden' );
+								player.one( 'play', () => {
+									titleBar.update( { title, description } );
+									titleBar.removeClass( 'vjs-hidden' );
+								} );
+							}
+						}
 					}
 				} }
 			/>
 		</Disabled>
-	), [ isSingleSelected, videoOptions, setAttributes ] );
+	), [ isSingleSelected, videoOptions, setAttributes, videoDescription, videoTitle ] );
 
 	useEffect( () => {
 		// Placeholder may be rendered.
@@ -199,6 +215,11 @@ function VideoEdit( {
 
 						// Reverse the sources to ensure the preferred format is first. MPD -> HLS -> Origin
 						setAttributes( { sources: newSources.reverse() } );
+
+						setAttributes( {
+							videoTitle: response.title?.rendered || '',
+							videoDescription: response.description?.rendered || '',
+						} );
 					}
 				} catch ( error ) {
 					// Show error notice if fetching media fails.
@@ -244,6 +265,8 @@ function VideoEdit( {
 			cmmId: media.id,
 			poster: undefined,
 			caption: media.caption,
+			videoTitle: media.title || '',
+			videoDescription: media.description || '',
 		} );
 
 		if ( media.image?.src !== media.icon ) {
