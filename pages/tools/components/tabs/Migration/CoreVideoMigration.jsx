@@ -43,6 +43,37 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 			} );
 	};
 
+	const handleAbortClick = async () => {
+		// stop polling immediately
+		if ( intervalRef.current ) {
+			clearInterval( intervalRef.current );
+			intervalRef.current = null;
+		}
+
+		const url = window.godamRestRoute?.url + 'godam/v1/video-migrate/abort';
+		try {
+			const response = await axios.post( url,
+				{ type: 'core' },
+				{
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': window.godamRestRoute?.nonce,
+					},
+				},
+			);
+
+			// Show tooltip/notice with processed counts
+			const data = response?.data || {};
+			showNotice( `${ data?.message || '' }`, 'warning' );
+
+			// Reset UI to initial state
+			setMigrationStatus( { total: 0, done: 0, started: null, completed: null, status: 'pending', message: '' } );
+		} catch ( e ) {
+			// Reset anyway so UI is not stuck
+			setMigrationStatus( { total: 0, done: 0, started: null, completed: null, status: 'pending', message: '' } );
+		}
+	};
+
 	const fetchMigrationStatus = useCallback( async () => {
 		const url = window.godamRestRoute?.url + 'godam/v1/video-migration/status?type=core';
 
@@ -90,7 +121,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 				clearInterval( intervalRef.current );
 			}
 		};
-	}, [ migrationStatus?.status, fetchMigrationStatus ] );
+	}, [ migrationStatus?.status, fetchMigrationStatus, showNotice ] );
 
 	if ( ! migrationStatus ) {
 		return (
@@ -127,15 +158,25 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 						</div>
 					) }
 
-					{ /* Migration button */ }
-					<Button
-						variant="primary"
-						onClick={ handleMigrationClick }
-						className="godam-button mt-2"
-						disabled={ ! migrationStatus || migrationStatus?.status === 'processing' }
-					>
-						{ migrationStatus?.status === 'processing' ? __( 'Migration in progress' ) : __( 'Start Migration', 'godam' ) }
-					</Button>
+					{ /* Migration actions */ }
+					{ migrationStatus?.status === 'processing' ? (
+						<Button
+							variant="secondary"
+							onClick={ handleAbortClick }
+							className="godam-button mt-2"
+						>
+							{ __( 'Abort', 'godam' ) }
+						</Button>
+					) : (
+						<Button
+							variant="primary"
+							onClick={ handleMigrationClick }
+							className="godam-button mt-2"
+							disabled={ ! migrationStatus }
+						>
+							{ __( 'Start Migration', 'godam' ) }
+						</Button>
+					) }
 				</PanelBody>
 			</Panel>
 		</>
