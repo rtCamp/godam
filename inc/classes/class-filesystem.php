@@ -24,16 +24,15 @@ class FileSystem {
 	protected function __construct() {
 		$this->init_filesystem();
 
-		if ( rtgodam_is_api_key_valid() ) {
-			$instance = \RTGODAM\Inc\Filesystem\Plugin::get_instance();
-			// Always enable URL replacement for migrated files when plugin is active.
-			$instance->setup_url_filters();
+		$instance = \RTGODAM\Inc\Filesystem\Plugin::get_instance();
+		// Always enable URL replacement when the plugin is active.
+		$instance->setup_url_filters();
 
-			$rtgodam_settings = get_option( 'rtgodam-settings', array() );
+		$rtgodam_settings = get_option( 'rtgodam-settings', array() );
+		$offload_enabled  = ! empty( $rtgodam_settings['uploads'] ) && ! empty( $rtgodam_settings['uploads']['offload_media'] );
 
-			if ( $rtgodam_settings['uploads']['offload_media'] ) {
-				$instance->setup();
-			}
+		if ( rtgodam_is_api_key_valid() && $offload_enabled ) {
+			$instance->setup();
 		}
 	}
 

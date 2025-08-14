@@ -347,41 +347,24 @@ function rtgodam_get_usage_data() {
  */
 function rtgodam_get_cdn_host( $base_path = '' ) {
 
-	$api_key = get_option( 'rtgodam-api-key', '' );
+	// Use current token; fall back to stored token for grace period.
+	$account_token        = get_option( 'rtgodam-account-token', '' );
+	$stored_account_token = get_option( 'rtgodam-account-token-stored', '' );
+	$token                = ! empty( $account_token ) ? $account_token : $stored_account_token;
 
-	if ( empty( $api_key ) ) {
-		return get_home_url(); // Return home URL if API key is not set.
+	if ( ! empty( $token ) ) {
+		if ( ! empty( $base_path ) ) {
+			return sprintf( 'https://%s.gdcdn.us/%s', $token, ltrim( $base_path, '/' ) );
+		}
+
+		return sprintf( 'https://%s.gdcdn.us', $token );
 	}
 
-	$data = rtgodam_verify_api_key( $api_key );
+	// Fallback: use local uploads base URL (avoid breaking paths).
+	$uploads       = wp_get_upload_dir();
+	$fallback_base = is_array( $uploads ) && ! empty( $uploads['baseurl'] ) ? $uploads['baseurl'] : get_home_url();
 
-	// Return the error if verification fails.
-	if ( is_wp_error( $data ) ) {
-		return get_home_url();
-	}
-
-	// Return home URL if the API key verification is not successful.
-	if ( ! isset( $data['status'] ) || 'success' !== $data['status'] ) {
-		return get_home_url();
-	}
-
-	// Return home URL if the account status is not active.
-	if ( ! isset( $data['data']['status'] ) || 'active' !== strtolower( $data['data']['status'] ) ) {
-		return get_home_url();
-	}
-
-	// Return home URL if account token is not set.
-	if ( ! isset( $data['data']['account_token'] ) ) {
-		return get_home_url();
-	}
-
-	// If a base path is provided, append it to the CDN URL.
-	if ( ! empty( $base_path ) ) {
-		return sprintf( 'https://%s.gdcdn.us/%s', $data['data']['account_token'], ltrim( $base_path, '/' ) );
-	}
-
-	// Return the CDN URL with the account token.
-	return sprintf( 'https://%s.gdcdn.us', $data['data']['account_token'] );
+	return $fallback_base;
 }
 
 /**

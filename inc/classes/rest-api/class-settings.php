@@ -194,7 +194,13 @@ class Settings extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function deactivate_api_key() {
-		// Delete the API key from the database.
+		// Persist latest token for CDN grace period.
+		$current_token = get_option( 'rtgodam-account-token', '' );
+		if ( ! empty( $current_token ) ) {
+			update_option( 'rtgodam-account-token-stored', $current_token );
+		}
+
+		// Delete current credentials.
 		$deleted_key   = delete_option( 'rtgodam-api-key' );
 		$deleted_token = delete_option( 'rtgodam-account-token' );
 
