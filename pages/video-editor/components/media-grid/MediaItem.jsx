@@ -16,18 +16,11 @@ import { createPortal } from '@wordpress/element';
  */
 import NoThumbnailImage from '../../assets/no-thumbnail.jpg';
 import { copyGoDAMVideoBlock } from '../../utils';
+import { canManageAttachment } from '../../../../assets/src/js/media-library/utility.js';
 
 const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
 	const [ showSnackbar, setShowSnackbar ] = useState( false );
-
-	const canManageAttachment = () => {
-		const currentUserId = Number( window?.easydamMediaLibrary?.userId );
-		const canEditOthersMedia = window?.easydamMediaLibrary?.canEditOthersMedia;
-		const attachmentAuthorId = Number( item?.author );
-
-		return canEditOthersMedia || currentUserId === attachmentAuthorId;
-	};
 
 	const handleItemClick = ( e ) => {
 		if ( e.target.closest( '.godam-video-list__video__thumbnail__overlay' ) ) {
@@ -54,7 +47,7 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 
 	return (
 		<div
-			className={ `godam-video-list__video ${ ! canManageAttachment() ? 'disabled' : '' }` }
+			className={ `godam-video-list__video ${ ! canManageAttachment( item?.author ) ? 'disabled' : '' }` }
 			onClick={ handleItemClick }
 			role="button"
 			ref={ ref }

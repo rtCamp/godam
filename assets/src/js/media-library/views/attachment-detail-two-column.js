@@ -14,6 +14,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { addIcon, trashIcon } from '../media-library-icons';
+import { canManageAttachment } from '../utility';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -306,7 +307,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @param {Object} data - The video thumbnail data to render.
 	 */
 	renderThumbnail( data ) {
-		if ( ! this.canManageAttachment() ) {
+		if ( ! canManageAttachment( this.model.get( 'author' ) ) ) {
 			return;
 		}
 
@@ -441,7 +442,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Renders the Edit Video and Analytics buttons in the attachment details view.
 	 */
 	renderVideoActions() {
-		if ( ! this.canManageAttachment() ) {
+		if ( ! canManageAttachment( this.model.get( 'author' ) ) ) {
 			return;
 		}
 
@@ -474,19 +475,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		<a href="${ editVideoURL }" class="button button-primary" target="_blank">Edit Video</a>
 		<a href="${ analyticsURL }" class="button button-secondary" target="_blank">Analytics</a>
 		`;
-	},
-
-	/**
-	 * Checks if the current user is allowed to manage this attachment.
-	 *
-	 * @return {boolean} Returns true if the user can manage the attachment, false otherwise.
-	 */
-	canManageAttachment() {
-		const currentUserId = window?.easydamMediaLibrary?.userId;
-		const canEditOthersMedia = window?.easydamMediaLibrary?.canEditOthersMedia;
-		const attachmentAuthorId = this.model.get( 'author' );
-
-		return canEditOthersMedia || currentUserId === attachmentAuthorId;
 	},
 
 	/**

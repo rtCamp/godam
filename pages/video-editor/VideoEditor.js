@@ -38,6 +38,7 @@ import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
+import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
 
 const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
@@ -88,7 +89,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			return;
 		}
 
-		if ( ! canManageAttachment( attachmentConfig ) ) {
+		if ( ! canManageAttachment( attachmentConfig.author ) ) {
 			onBackToAttachmentPicker();
 		}
 
@@ -123,7 +124,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		}
 
 		setSources( videoSources );
-	}, [ attachmentConfig, dispatch ] );
+	}, [ attachmentConfig, dispatch, onBackToAttachmentPicker ] );
 
 	/**
 	 * Update the store with the fetched forms.
@@ -174,13 +175,13 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		}
 	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms, metforms ] );
 
-	const canManageAttachment = ( attachment ) => {
-		const currentUserId = Number( window?.easydamMediaLibrary?.userId );
-		const canEditOthersMedia = window?.easydamMediaLibrary?.canEditOthersMedia;
-		const attachmentAuthorId = attachment.author;
-
-		return canEditOthersMedia || currentUserId === attachmentAuthorId;
-	};
+	//	const canManageAttachment = ( attachment ) => {
+	//		const currentUserId = Number( window?.easydamMediaLibrary?.userId );
+	//		const canEditOthersMedia = window?.easydamMediaLibrary?.canEditOthersMedia;
+	//		const attachmentAuthorId = attachment.author;
+	//
+	//		return canEditOthersMedia || currentUserId === attachmentAuthorId;
+	//	};
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {
