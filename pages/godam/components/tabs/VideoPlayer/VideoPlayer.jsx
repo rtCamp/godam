@@ -49,6 +49,29 @@ const VideoPlayer = () => {
 	// Function to handle setting changes
 	const handleSettingChange = ( key, value ) => {
 		dispatch( updateMediaSetting( { category: 'video_player', key, value } ) );
+
+		if ( key === 'custom_css' ) {
+			if ( value ) {
+				let styleElement = document.querySelector( '#godam-custom-css-inline-style' );
+
+				// Update CSS selectors so styles meant for the frontend video (.easydam-video-container)
+				// are applied to the actual video player preview container (.video-player-settings-preview)
+				const scopedValue = value.replaceAll(
+					'.easydam-video-container',
+					'.video-player-settings-preview',
+				);
+
+				// Create it only if it doesn't exist
+				if ( ! styleElement ) {
+					styleElement = document.createElement( 'style' );
+					styleElement.id = 'godam-custom-css-inline-style';
+					document.head.appendChild( styleElement ); // or your container
+				}
+
+				// Update the style content
+				styleElement.textContent = scopedValue;
+			}
+		}
 	};
 
 	// Function to handle saving settings
@@ -88,6 +111,30 @@ const VideoPlayer = () => {
 		};
 
 		const playerSkin = mediaSettings?.video_player?.player_skin || 'Default';
+
+		// apply styles on initial render if user has added css before
+		if ( mediaSettings?.video_player?.custom_css ) {
+			let styleElement = document.querySelector(
+				'#godam-custom-css-inline-style',
+			);
+
+			// Update CSS selectors so styles meant for the frontend video (.easydam-video-container)
+			// are applied to the actual video player preview container (.video-player-settings-preview)
+			const scopedValue = mediaSettings?.video_player?.custom_css.replaceAll(
+				'.easydam-video-container',
+				'.video-player-settings-preview',
+			);
+
+			// Create it only if it doesn't exist
+			if ( ! styleElement ) {
+				styleElement = document.createElement( 'style' );
+				styleElement.id = 'godam-custom-css-inline-style';
+				document.head.appendChild( styleElement ); // or your container
+			}
+
+			// Update the style content
+			styleElement.textContent = scopedValue;
+		}
 
 		// Initialize Video.js player
 		const player = videojs( videoElement, {
