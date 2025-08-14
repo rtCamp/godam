@@ -86,6 +86,22 @@ export default class EventsManager {
 		}
 	}
 
+	initTitleBar() {
+		const meta = this.config.videoSetupOptions?.meta || {};
+		const titleText = ( meta.title || '' ).trim();
+		const descText = ( meta.description || '' ).trim();
+
+		if ( ! titleText && ! descText ) {
+			return;
+		}
+
+		// Ensure TitleBar component exists
+		const titleBar = this.player.getChild( 'TitleBar' );
+		if ( titleBar && typeof titleBar.update === 'function' ) {
+			titleBar.update( { title: titleText, description: descText } );
+		}
+	}
+
 	/**
 	 * Handle play events
 	 */
@@ -93,6 +109,7 @@ export default class EventsManager {
 		if ( this.onPlay ) {
 			this.onPlay();
 		}
+		this.initTitleBar();
 	}
 
 	/**

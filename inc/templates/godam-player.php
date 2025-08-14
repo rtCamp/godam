@@ -233,6 +233,21 @@ if ( ! empty( $control_bar_settings ) ) {
 	$video_setup['controlBar']['volumePanel'] = $volume_panel_setting;
 }
 
+// Pick the attachment to read meta from (handles “virtual” case too).
+$attachment_for_meta_id = $original_id ?: $attachment_id;
+
+$video_title       = '';
+$video_description = '';
+
+if ( $attachment_for_meta_id ) {
+	$attachment_post = get_post( $attachment_for_meta_id );
+	if ( $attachment_post ) {
+		$video_title       = get_the_title( $attachment_post );
+		$video_description = $attachment_post->post_content;
+		$video_description = wp_strip_all_tags( $video_description );
+	}
+}
+
 $video_setup = wp_json_encode( $video_setup );
 
 $video_config = wp_json_encode(
@@ -243,6 +258,10 @@ $video_config = wp_json_encode(
 		'overlayTimeRange' => $overlay_time_range, // Add overlay time range to video config.
 		'playerSkin'       => $player_skin, // Add player skin to video config. Add brand image to video config.
 		'aspectRatio'      => $aspect_ratio,
+		'meta'             => array(
+			'title'       => $video_title,
+			'description' => $video_description,
+		),
 	)
 );
 
