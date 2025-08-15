@@ -612,4 +612,3 @@ function rtgodam_cache_delete( $key ) {
 		return delete_transient( $key );
 	}
 }
-
