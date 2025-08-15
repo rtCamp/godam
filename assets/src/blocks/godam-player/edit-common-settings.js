@@ -11,7 +11,19 @@ const options = [
 	{ value: 'none', label: _x( 'None', 'Preload value', 'godam' ) },
 ];
 
-const VideoSettings = ( { setAttributes, attributes } ) => {
+/**
+ * Video settings component.
+ *
+ * This component is used to render common settings like autoplay, loop for a video block.
+ *
+ * @param {Object}   props                           Component props.
+ * @param {Function} props.setAttributes             Function to set block attributes.
+ * @param {Object}   props.attributes                Block attributes.
+ * @param {boolean}  [props.isInsideQueryLoop=false] Whether the video is inside a query loop.
+ *
+ * @return {WPElement} The video settings component.
+ */
+const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
 	const { autoplay, controls, loop, muted, preload, engagements } =
 		attributes;
 
@@ -47,11 +59,11 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 			controls: toggleAttribute( 'controls' ),
 			engagements: toggleAttribute( 'engagements' ),
 		};
-	}, [] );
+	}, [ setAttributes ] );
 
 	const onChangePreload = useCallback( ( value ) => {
 		setAttributes( { preload: value } );
-	}, [] );
+	}, [ setAttributes ] );
 
 	return (
 		<>
@@ -89,20 +101,22 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 				onChange={ toggleFactory.controls }
 				checked={ !! controls }
 			/>
+			{ ! isInsideQueryLoop && (
+				<SelectControl
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
+					label={ __( 'Preload', 'godam' ) }
+					value={ preload }
+					onChange={ onChangePreload }
+					options={ options }
+					hideCancelButton
+				/>
+			) }
 			<ToggleControl
 				__nextHasNoMarginBottom
-				label={ __( 'Display engagements', 'godam' ) }
+				label={ __( 'Engagements visibility', 'godam' ) }
 				onChange={ toggleFactory.engagements }
 				checked={ !! engagements }
-			/>
-			<SelectControl
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-				label={ __( 'Preload', 'godam' ) }
-				value={ preload }
-				onChange={ onChangePreload }
-				options={ options }
-				hideCancelButton
 			/>
 		</>
 	);
