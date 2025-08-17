@@ -58,7 +58,7 @@ class Local_To_GoDAM extends Base_Filter {
 		add_filter( 'wp_get_attachment_image_attributes', array( $this, 'filter_attachment_image_attributes' ), 100, 3 );
 		add_filter( 'wp_get_attachment_image', array( $this, 'filter_attachment_image' ), 100 );
 		add_filter( 'post_thumbnail_html', array( $this, 'filter_post_thumbnail_html' ), 100 );
-		add_filter( 'wp_calculate_image_srcset', array( $this, 'filter_image_srcset' ), 100 );
+		add_filter( 'wp_calculate_image_srcset', array( $this, 'filter_image_srcset' ), 100, 5 );
 		add_filter( 'wp_calculate_image_sizes', array( $this, 'filter_image_sizes' ), 100 );
 		add_filter( 'wp_get_attachment_image_srcset', array( $this, 'filter_attachment_image_srcset' ), 100 );
 		add_filter( 'wp_get_attachment_image_sizes', array( $this, 'filter_attachment_image_sizes' ), 100 );
@@ -387,14 +387,59 @@ class Local_To_GoDAM extends Base_Filter {
 	}
 
 	/**
-	 * Filter image srcset.
+	 * Filter image srcset sources.
 	 *
-	 * @param string $srcset Image srcset.
+	 * @param array  $sources       {
+	 *     One or more arrays of source data to include in the 'srcset'.
 	 *
-	 * @return string Filtered srcset.
+	 *     @type array $width {
+	 *         @type string $url        The URL of an image source.
+	 *         @type string $descriptor The descriptor type used in the image candidate string,
+	 *                                  either 'w' or 'x'.
+	 *         @type int    $value      The source width if paired with a 'w' descriptor, or a
+	 *                                  pixel density value if paired with an 'x' descriptor.
+	 *     }
+	 * }
+	 * @param array  $size_array    Array of width and height values.
+	 * @param string $image_src     The 'src' of the image.
+	 * @param array  $image_meta    The image meta data as returned by 'wp_get_attachment_metadata()'.
+	 * @param int    $attachment_id Image attachment ID or 0.
+	 *
+	 * @return array Filtered sources array.
 	 */
-	public function filter_image_srcset( $srcset ) {
-		return $this->filter_post( $srcset );
+	public function filter_image_srcset( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
+		// Validate parameters.
+		if ( empty( $sources ) || ! is_array( $sources ) ) {
+			return $sources;
+		}
+
+		if ( ! is_numeric( $attachment_id ) || $attachment_id <= 0 ) {
+			return $sources;
+		}
+
+		// Check if attachment is migrated to GoDAM.
+		$is_migrated = get_post_meta( $attachment_id, '_media_migrated_to_godam_cdn', true );
+		if ( ! $is_migrated ) {
+			return $sources;
+		}
+
+		// Get upload directories for URL replacement.
+		$upload_dirs = $this->plugin->get_original_upload_dir();
+		if ( ! is_array( $upload_dirs ) || empty( $upload_dirs['baseurl'] ) ) {
+			return $sources;
+		}
+
+		$cdn_base   = rtrim( $this->plugin->get_remote_url(), '/' );
+		$local_base = rtrim( $upload_dirs['baseurl'], '/' );
+
+		// Replace local URLs with CDN URLs in each source.
+		foreach ( $sources as $width => $source ) {
+			if ( isset( $source['url'] ) && $this->url_needs_replacing( $source['url'] ) ) {
+				$sources[ $width ]['url'] = str_replace( $local_base, $cdn_base, $source['url'] );
+			}
+		}
+
+		return $sources;
 	}
 
 	/**
