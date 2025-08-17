@@ -38,6 +38,10 @@ class RTGODAM_Transcoder_Admin {
 			}
 			add_action( 'admin_notices', array( $this, 'api_activation_admin_notice' ) );
 			add_action( 'admin_notices', array( $this, 'upload_limits_admin_notice' ) );
+			
+			// Add AJAX handler for dismissing upload limits notice.
+			add_action( 'wp_ajax_godam_dismiss_upload_limits_notice', array( $this, 'dismiss_upload_limits_notice' ) );
+
 		}
 	}
 
@@ -314,11 +318,39 @@ class RTGODAM_Transcoder_Admin {
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_settings#uploads-settings' ) ); ?>" class="button button-primary">
 							<?php esc_html_e( 'Go to GoDAM Settings', 'godam' ); ?>
 						</a>
+						<button type="button" class="button button-secondary godam-dismiss-btn" aria-label="<?php esc_attr_e( 'Dismiss', 'godam' ); ?>">
+							<?php esc_html_e( 'Dismiss', 'godam' ); ?>
+						</button>
 					</p>
 				</div>
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * AJAX handler to dismiss the upload limits notice.
+	 *
+	 * @since 1.3.4
+	 */
+	public function dismiss_upload_limits_notice() {
+		// Verify nonce for security.
+		check_ajax_referer( 'godam-dismiss-upload-limits-notice-nonce', 'nonce' );
+		
+		// Check if user has permission.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to dismiss this notice.', 'godam' ) ) );
+		}
+		
+		// Update user meta to mark notice as dismissed.
+		$user_id = get_current_user_id();
+		$result  = update_user_meta( $user_id, 'godam_upload_limits_notice_dismissed', true );
+		
+		if ( $result ) {
+			wp_send_json_success( array( 'message' => __( 'Notice dismissed successfully.', 'godam' ) ) );
+		} else {
+			wp_send_json_error( array( 'message' => __( 'Failed to dismiss notice.', 'godam' ) ) );
+		}
 	}
 
 	/**
