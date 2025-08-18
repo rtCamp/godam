@@ -4,6 +4,10 @@
  *
  * @package
  */
+/**
+ * Internal dependencies
+ */
+import { GODAM_APP_BASE } from '../../../../pages/godam/utils';
 
 /**
  * Video Completion Handler Object
@@ -26,7 +30,10 @@ const GoDAMLifterLMSEmbedIntegration = {
 	 * Initialize the video completion handler
 	 */
 	init() {
-		const godamIframe = document.querySelector( '.llms-av-embed iframe[src*="app-godam.rt.gw"]' );
+		const host = new URL( GODAM_APP_BASE ).host;
+
+		const godamIframe = document.querySelector( `.llms-av-embed iframe[src*="${ host }"]` );
+
 		if ( ! godamIframe ) {
 			return;
 		}
