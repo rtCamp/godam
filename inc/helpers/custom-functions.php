@@ -562,3 +562,53 @@ function godam_get_transcript_path( $job_id ) {
 
 	return ! empty( $transcript_path ) ? $transcript_path : false;
 }
+
+/**
+ * Get video duration with fallback methods when WordPress metadata fails.
+ * This function provides a public interface to access video duration.
+ *
+ * @since n.e.x.t
+ *
+ * @param int $attachment_id The attachment ID.
+ * @return int Video duration in seconds, or 0 if unavailable.
+ */
+function rtgodam_get_video_duration( $attachment_id ) {
+	if ( ! $attachment_id ) {
+		return 0;
+	}
+
+	// First try to get from existing meta.
+	$duration = absint( get_post_meta( $attachment_id, '_video_duration', true ) );
+	
+	if ( $duration > 0 ) {
+		return $duration;
+	}
+
+	// If not available, try to process the video again.
+	$video_metadata = \RTGODAM\Inc\Video_Metadata::get_instance();
+	if ( method_exists( $video_metadata, 'save_video_metadata' ) ) {
+		$video_metadata->save_video_metadata( $attachment_id );
+		
+		// Try to get duration again after processing.
+		$duration = absint( get_post_meta( $attachment_id, '_video_duration', true ) );
+	}
+
+	return $duration;
+}
+
+/**
+ * Check if a video attachment has duration metadata.
+ *
+ * @since n.e.x.t
+ *
+ * @param int $attachment_id The attachment ID.
+ * @return bool True if duration is available, false otherwise.
+ */
+function rtgodam_has_video_duration( $attachment_id ) {
+	if ( ! $attachment_id ) {
+		return false;
+	}
+
+	$duration = absint( get_post_meta( $attachment_id, '_video_duration', true ) );
+	return $duration > 0;
+}
