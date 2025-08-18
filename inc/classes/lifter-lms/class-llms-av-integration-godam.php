@@ -83,7 +83,7 @@ if ( class_exists( 'LLMS_AV_Abstract_Integration' ) ) {
 		 *
 		 * @var string
 		 */
-		protected $regex = '#src="(https?://app-godam\.rt\.gw/web/embed/[^"]+)"#i';
+		protected $regex = '#src="(' . RTGODAM_API_BASE . '/web/embed/[^"]+)"#i';
 
 		/**
 		 * Regex to identify a URL that's parseable oEmbed URL for the provider.
