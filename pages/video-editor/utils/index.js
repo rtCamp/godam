@@ -2,6 +2,7 @@
  * WordPress dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
+import { decodeEntities } from '@wordpress/html-entities';
 
 const MEDIA_ENDPOINT = '/wp-json/wp/v2/media';
 
@@ -82,3 +83,15 @@ export const copyGoDAMVideoBlock = async ( attachmentId ) => {
 		return false;
 	}
 };
+
+/**
+ * Converts HTML to plain text by removing all HTML tags.
+ *
+ * This function decodes HTML entities and strips out anything between angle brackets,
+ *
+ * @param {string} html
+ * @return {string} The plain text version of the HTML input.
+ */
+export const removeTags = ( html = '' ) => decodeEntities(
+	( String( html ) ).replace( /<[^>]+>/g, '' ).trim(),
+);

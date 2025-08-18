@@ -30,6 +30,7 @@ import {
 	setEverestForms,
 	setNinjaForms,
 	setMetforms,
+	setMeta,
 } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
@@ -88,12 +89,17 @@ const VideoEditor = ( { attachmentID } ) => {
 			return;
 		}
 
-		const { rtgodam_meta: rtGodamMeta, source_url: sourceURL, mime_type: mimeType, meta } = attachmentConfig;
+		const { rtgodam_meta: rtGodamMeta, source_url: sourceURL, mime_type: mimeType, meta, title, description } = attachmentConfig;
 
 		// Initialize the store if meta exists
 		if ( rtGodamMeta ) {
 			dispatch( initializeStore( rtGodamMeta ) );
 		}
+
+		dispatch( setMeta( {
+			title: title?.rendered || '',
+			description: description?.rendered || '',
+		} ) );
 
 		// Initialize video sources with the original source
 		const videoSources = [];
