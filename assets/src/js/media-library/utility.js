@@ -117,9 +117,9 @@ async function getGodamSettings() {
  * @return {boolean} Returns true if the user can manage the attachment, false otherwise.
  */
 function canManageAttachment( attachmentAuthorId ) {
-	const currentUserId = window?.easydamMediaLibrary?.userId;
+	const currentUserId = Number( window?.easydamMediaLibrary?.userId );
 	const canEditOthersMedia = window?.easydamMediaLibrary?.canEditOthersMedia;
-	const __attachmentAuthorId = attachmentAuthorId || 0;
+	const __attachmentAuthorId = Number( attachmentAuthorId ) || 0;
 
 	return canEditOthersMedia || currentUserId === __attachmentAuthorId;
 }
