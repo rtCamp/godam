@@ -4,6 +4,12 @@
  *
  * @package
  */
+
+/**
+ * External dependencies
+ */
+import DOMPurify from 'isomorphic-dompurify';
+
 /**
  * Internal dependencies
  */
@@ -317,7 +323,8 @@ const GoDAMLifterLMSEmbedIntegration = {
 						llms.Spinner.stop( container );
 					}
 					if ( response?.html ) {
-						container.insertAdjacentHTML( 'beforeend', response.html );
+						const cleanHtml = DOMPurify.sanitize( response.html );
+						container.insertAdjacentHTML( 'beforeend', cleanHtml );
 						self.manageCountdown( self.initializeCountdown( container ) );
 					}
 				},
@@ -336,7 +343,8 @@ const GoDAMLifterLMSEmbedIntegration = {
 				.then( ( response ) => response.json() )
 				.then( ( data ) => {
 					if ( data?.html ) {
-						container.insertAdjacentHTML( 'beforeend', data.html );
+						const cleanHtml = DOMPurify.sanitize( data.html );
+						container.insertAdjacentHTML( 'beforeend', cleanHtml );
 						self.manageCountdown( self.initializeCountdown( container ) );
 					}
 				} );
