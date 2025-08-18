@@ -134,12 +134,12 @@ class Lifter_LMS {
 	public function load_lifterlms_integration_script() {
 		// Load LifterLMS integration script only if LifterLMS is active, the content is LifterLMS, and the Godam video block is present.
 		if ( $this->is_lifterlms_active() && $this->is_lifterlms_advanced_video_active() && $this->is_lifterlms_content() && $this->has_godam_video_block() ) {
-			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/src/js/lifterlms/block-integration.js', array( 'jquery' ), filemtime( RTGODAM_PATH . 'assets/src/js/lifterlms/block-integration.js' ), true );
+			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/build/js/godam-lifterlms-block.min.js', array( 'jquery' ), filemtime( RTGODAM_PATH . 'assets/build/js/lifterlms/block-integration.min.js' ), true );
 		}
 
 		if ( $this->is_lifterlms_active() && $this->is_lifterlms_advanced_video_active() && $this->is_lifterlms_content() ) {
-			wp_enqueue_script( 'rtgodam-player-sdk', RTGODAM_URL . 'assets/src/js/godam-player/godam-player-sdk.js', array(), filemtime( RTGODAM_PATH . 'assets/src/js/godam-player/godam-player-sdk.js' ), true );
-			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/src/js/lifterlms/embed-integration.js', array( 'jquery' ), filemtime( RTGODAM_PATH . 'assets/src/js/lifterlms/embed-integration.js' ), true );
+			wp_enqueue_script( 'rtgodam-player-sdk', RTGODAM_URL . 'assets/build/js/godam-player-sdk.min.js', array(), filemtime( RTGODAM_PATH . 'assets/build/js/godam-player/godam-player-sdk.min.js' ), true );
+			wp_enqueue_script( 'rtgodam-lifterlms-integration', RTGODAM_URL . 'assets/build/js/godam-lifterlms-embed.min.js', array( 'jquery' ), filemtime( RTGODAM_PATH . 'assets/build/js/lifterlms/embed-integration.min.js' ), true );
 		}
 	}
 
