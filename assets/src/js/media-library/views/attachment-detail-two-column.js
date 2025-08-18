@@ -14,6 +14,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { addIcon, trashIcon } from '../media-library-icons';
+import { canManageAttachment } from '../utility';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -306,6 +307,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @param {Object} data - The video thumbnail data to render.
 	 */
 	renderThumbnail( data ) {
+		if ( ! canManageAttachment( this.model.get( 'author' ) ) ) {
+			return;
+		}
+
 		const { thumbnails, selected, customThumbnails } = data;
 		const attachmentID = this.model.get( 'id' );
 
@@ -437,6 +442,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Renders the Edit Video and Analytics buttons in the attachment details view.
 	 */
 	renderVideoActions() {
+		if ( ! canManageAttachment( this.model.get( 'author' ) ) ) {
+			return;
+		}
+
 		const buttonsHTML = this.getButtonsHTML();
 		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-video-actions">${ buttonsHTML }</div>` ) );
 	},
