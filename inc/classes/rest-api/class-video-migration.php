@@ -501,36 +501,7 @@ class Video_Migration extends Base {
 		$blocks  = parse_blocks( $post->post_content );
 		$changed = false;
 
-		foreach ( $blocks as &$block ) {
-			if ( 'core/video' === $block['blockName'] ) {
-				$attrs = $block['attrs'] ?? array();
-
-				if ( $attrs['id'] ) {
-					$attrs['src'] = wp_get_attachment_url( $attrs['id'] );
-				}
-
-				$sources = $this->build_video_sources_array( $attrs['id'] ?? 0 );
-
-				// Transform to custom block with attributes.
-				$block = array(
-					'blockName'    => 'godam/video',
-					'attrs'        => array(
-						'autoplay' => $attrs['autoplay'] ?? false,
-						'id'       => $attrs['id'] ?? '',
-						'loop'     => $attrs['loop'] ?? false,
-						'muted'    => $attrs['muted'] ?? false,
-						'poster'   => $attrs['poster'] ?? '',
-						'src'      => $attrs['src'] ?? '',
-						'sources'  => $sources,
-						'seo'      => array(),
-					),
-					'innerContent' => array( '<div class="wp-block-godam-video"></div>' ),
-					'innerBlocks'  => array(),
-				);
-
-				$changed = true;
-			}
-		}
+		$this->traverse_and_migrate_core_video_blocks_recursive( $blocks, $changed );
 
 		if ( $changed ) {
 			$new_content = serialize_blocks( $blocks );
@@ -543,6 +514,55 @@ class Video_Migration extends Base {
 		}
 
 		return $changed;
+	}
+
+	/**
+	 * Recursively traverse blocks and migrate core/video blocks to godam/video.
+	 *
+	 * Handles nested structures like columns, groups, grids, etc.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $blocks  Parsed blocks array (passed by reference).
+	 * @param bool  $changed Whether content changed (by reference).
+	 */
+	private function traverse_and_migrate_core_video_blocks_recursive( array &$blocks, bool &$changed ) {
+		foreach ( $blocks as &$block ) {
+			$block_name = $block['blockName'] ?? '';
+
+			if ( 'core/video' === $block_name ) {
+				$attrs         = $block['attrs'] ?? array();
+				$attachment_id = isset( $attrs['id'] ) ? (int) $attrs['id'] : 0;
+				if ( $attachment_id ) {
+					$attrs['src'] = wp_get_attachment_url( $attachment_id );
+				}
+
+				$sources = $this->build_video_sources_array( $attachment_id );
+
+				$block = array(
+					'blockName'    => 'godam/video',
+					'attrs'        => array(
+						'autoplay' => $attrs['autoplay'] ?? false,
+						'id'       => $attachment_id ?: '',
+						'loop'     => $attrs['loop'] ?? false,
+						'muted'    => $attrs['muted'] ?? false,
+						'poster'   => $attrs['poster'] ?? '',
+						'src'      => $attrs['src'] ?? '',
+						'sources'  => $sources,
+						'seo'      => array(),
+					),
+					'innerContent' => array( '<div class="wp-block-godam-video"></div>' ),
+					'innerBlocks'  => array(),
+				);
+
+				$changed = true;
+				continue; // Replacement done for this block.
+			}
+
+			if ( ! empty( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {
+				$this->traverse_and_migrate_core_video_blocks_recursive( $block['innerBlocks'], $changed );
+			}
+		}
 	}
 
 	/**
@@ -567,66 +587,7 @@ class Video_Migration extends Base {
 		$found    = 0;
 		$migrated = 0;
 
-		foreach ( $blocks as &$block ) {
-			if ( 'core/embed' === $block['blockName'] ) {
-				$attrs = $block['attrs'] ?? array();
-
-				if ( 'vimeo' !== $attrs['providerNameSlug'] ) {
-					// Skip if not a Vimeo video block.
-					continue;
-				}
-
-				++$found;
-
-				$vimeo_url = $attrs['url'] ?? '';
-				if ( empty( $vimeo_url ) ) {
-					continue;
-				}
-
-				// Create attachment from Vimeo URL.
-				$attachment_id = $this->create_attachment_from_vimeo_video( $vimeo_url );
-
-				if ( is_wp_error( $attachment_id ) ) {
-                    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-					error_log(
-						sprintf(
-							'Error creating attachment for Vimeo video in post %d: %s',
-							$post_id,
-							$attachment_id->get_error_message()
-						)
-					);
-					continue;
-				}
-
-				// Get video source URL from attachment.
-				$video_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
-				if ( empty( $video_url ) ) {
-					continue;
-				}
-
-				$sources = $this->build_video_sources_array( $attachment_id );
-
-				// Transform to custom block with attributes.
-				$block = array(
-					'blockName'    => 'godam/video',
-					'attrs'        => array(
-						'autoplay' => $attrs['autoplay'] ?? false,
-						'id'       => $attachment_id,
-						'loop'     => $attrs['loop'] ?? false,
-						'muted'    => $attrs['muted'] ?? false,
-						'poster'   => $attrs['poster'] ?? '',
-						'src'      => $video_url,
-						'sources'  => $sources,
-						'seo'      => array(),
-					),
-					'innerContent' => array( '<div class="wp-block-godam-video"></div>' ),
-					'innerBlocks'  => array(),
-				);
-
-				$changed = true;
-				++$migrated;
-			}
-		}
+		$this->traverse_and_migrate_vimeo_blocks_recursive( $blocks, (int) $post_id, $found, $migrated, $changed );
 
 		if ( $changed ) {
 			$new_content = serialize_blocks( $blocks );
@@ -643,6 +604,71 @@ class Video_Migration extends Base {
 			'found'    => $found,
 			'migrated' => $migrated,
 		);
+	}
+
+	/**
+	 * Recursively traverse blocks to find and migrate Vimeo embeds inside nested structures.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $blocks   Parsed Gutenberg blocks (passed by reference).
+	 * @param int   $post_id  Post ID for logging context.
+	 * @param int   $found    Counter for number of Vimeo embeds found (by reference).
+	 * @param int   $migrated Counter for number of Vimeo embeds migrated (by reference).
+	 * @param bool  $changed  Whether content changed (by reference).
+	 */
+	private function traverse_and_migrate_vimeo_blocks_recursive( array &$blocks, int $post_id, int &$found, int &$migrated, bool &$changed ) {
+		foreach ( $blocks as &$block ) {
+			$block_name = $block['blockName'] ?? '';
+
+			if ( 'core/embed' === $block_name || 'core-embed/vimeo' === $block_name ) {
+				$attrs     = $block['attrs'] ?? array();
+				$provider  = $attrs['providerNameSlug'] ?? '';
+				$vimeo_url = $attrs['url'] ?? '';
+				$is_vimeo  = ( 'vimeo' === $provider ) || ( ! empty( $vimeo_url ) && false !== strpos( $vimeo_url, 'vimeo.com' ) );
+
+				if ( $is_vimeo ) {
+					++$found;
+
+					if ( ! empty( $vimeo_url ) ) {
+						$attachment_id = $this->create_attachment_from_vimeo_video( $vimeo_url );
+
+						if ( is_wp_error( $attachment_id ) ) {
+							// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+							error_log( sprintf( 'Error creating attachment for Vimeo video in post %d: %s', $post_id, $attachment_id->get_error_message() ) );
+						} else {
+							$video_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+							if ( ! empty( $video_url ) ) {
+								$sources = $this->build_video_sources_array( $attachment_id );
+
+								$block = array(
+									'blockName'    => 'godam/video',
+									'attrs'        => array(
+										'autoplay' => $attrs['autoplay'] ?? false,
+										'id'       => $attachment_id,
+										'loop'     => $attrs['loop'] ?? false,
+										'muted'    => $attrs['muted'] ?? false,
+										'poster'   => $attrs['poster'] ?? '',
+										'src'      => $video_url,
+										'sources'  => $sources,
+										'seo'      => array(),
+									),
+									'innerContent' => array( '<div class="wp-block-godam-video"></div>' ),
+									'innerBlocks'  => array(),
+								);
+
+								$changed = true;
+								++$migrated;
+							}
+						}
+					}
+				}
+			}
+
+			if ( ! empty( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {
+				$this->traverse_and_migrate_vimeo_blocks_recursive( $block['innerBlocks'], $post_id, $found, $migrated, $changed );
+			}
+		}
 	}
 
 	/**
