@@ -322,7 +322,7 @@ const GoDAMLifterLMSEmbedIntegration = {
 			formData.append( 'id', configuration.post_id );
 			formData.append( 'nonce', configuration.nonce );
 
-			fetch( window.ajaxurl || '/wp-admin/admin-ajax.php', {
+			fetch( window.ajaxurl ?? '', {
 				method: 'POST',
 				body: formData,
 			} )
