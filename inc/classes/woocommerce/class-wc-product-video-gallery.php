@@ -472,7 +472,7 @@ class WC_Product_Video_Gallery {
 				return array(
 					'id'            => $attachment_id,
 					'src'           => wp_get_attachment_url( $attachment_id ),
-					'is_transcoded' => (bool) random_int( 0, 1 ),
+					'is_transcoded' => ! empty( $transcoded_url ),
 				);
 			},
 			$rtgodam_product_video_gallery_ids
