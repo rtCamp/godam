@@ -145,21 +145,6 @@ if ( empty( $attachment_id ) && ! empty( $attributes['sources'] ) ) {
 		);
 	}
 
-	// Only add video source if it's not empty.
-	if ( ! empty( $video_src ) ) {
-		$sources[] = array(
-			'src'  => $video_src,
-			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
-		);
-	}
-
-	if ( ! empty( $hls_transcoded_url ) ) {
-		$sources[] = array(
-			'src'  => $hls_transcoded_url,
-			'type' => 'application/x-mpegURL',
-		);
-	}
-
 	$sources[] = array(
 		'src'  => $video_src,
 		'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,

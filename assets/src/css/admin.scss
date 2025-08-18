@@ -8,11 +8,6 @@ $GREEN: #4CAF50;
 $RED: #F44336;
 $LIGHT_BLUE: #2196F3;
 
-#root-easydam,
-#root-video-editor {
-	--wp-components-color-accent: variables.$godam-primary-text-color;
-}
-
 #wpbody-content {
 	container: wpBodyContent / inline-size;
 }
@@ -79,7 +74,8 @@ $media-frame-width: calc(300px + 2 * 24px);
 .godam_page_rtgodam_video_editor,
 .godam_page_rtgodam_help,
 .godam-analytics-container
-.godam-dashboard-container {
+.godam-dashboard-container,
+.godam-admin-root {
 	--wp-admin-theme-color: #ab3a6c;
 
 	button,
