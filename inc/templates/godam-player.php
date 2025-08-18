@@ -312,36 +312,7 @@ if ( $is_shortcode || $is_elementor_widget ) {
 /**
  * Fetch AI Generated video tracks from REST endpoint
  */
-$cache_key       = 'transcript_path_' . md5( $job_id );
-$transcript_path = get_transient( $cache_key );
-
-if ( false === $transcript_path ) {
-	$api_key  = get_option( 'rtgodam-api-key', '' );
-	$rest_url = add_query_arg(
-		array(
-			'job_name' => rawurlencode( $job_id ),
-			'api_key'  => rawurlencode( $api_key ),
-		),
-		RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_transcription'
-	);
-
-	$response = wp_remote_get( $rest_url, array( 'timeout' => 3 ) );
-
-	if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
-		$body = wp_remote_retrieve_body( $response );
-		$data = json_decode( $body, true );
-
-		if (
-			is_array( $data ) &&
-			isset( $data['message']['transcript_path'], $data['message']['transcription_status'] ) &&
-			'Transcribed' === $data['message']['transcription_status']
-		) {
-			$transcript_path = $data['message']['transcript_path'];
-			// Cache for 12 hours.
-			set_transient( $cache_key, $transcript_path, 12 * HOUR_IN_SECONDS );
-		}
-	}
-}
+$transcript_path = godam_get_transcript_path( $job_id );
 
 if ( ! empty( $transcript_path ) ) {
 	$tracks[] = array(
