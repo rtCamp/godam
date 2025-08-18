@@ -1205,6 +1205,7 @@ class Media_Library extends Base {
 		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['url'] ?? '' ) );
 		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' );
 		update_post_meta( $attach_id, 'icon', $data['icon'] );
+		update_post_meta( $attach_id, 'rtgodam_hls_transcoded_url', esc_url_raw( $data['hls_url'] ?? '' ) );
 
 		// Return the newly created media object.
 		return new \WP_REST_Response(
