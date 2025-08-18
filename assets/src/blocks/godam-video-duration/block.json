@@ -1,0 +1,38 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "godam/video-duration",
+	"title": "GoDAM Video Duration",
+	"category": "media",
+	"icon": "clock",
+	"description": "Display GoDAM video's duration",
+	"keywords": [ "video", "gallery", "grid", "videos" ],
+	"textdomain": "godam",
+	"attributes": {
+		"durationFormat": {
+			"type": "string",
+			"default": "default"
+		}
+	},
+	"supports": {
+		"align": true,
+		"ariaLabel": true,
+		"color": {
+			"background": true,
+			"text": true
+		},
+		"customClassName": true,
+		"shadow": true,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		},
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true,
+			"textAlign": true
+		}
+	},
+	"editorScript": [ "file:./index.js" ],
+	"render": "file:./render.php"
+}
