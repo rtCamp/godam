@@ -70,7 +70,6 @@ class Lifter_LMS {
 	 * @return bool
 	 */
 	public function is_lifterlms_advanced_video_active(): bool {
-		// Check if LifterLMS Advanced Video plugin is active.
 		if ( function_exists( 'is_plugin_active' ) && ! is_plugin_active( 'lifterlms-advanced-videos/lifterlms-advanced-videos.php' ) ) {
 			return false;
 		}
