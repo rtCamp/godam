@@ -108,12 +108,13 @@ class Plugin {
 		// Load video metadata.
 		Video_Metadata::get_instance();
 
+		// Load LifterLMS integration.
+		Lifter_LMS::get_instance();
+
 		// Load Elementor widgets.
 		$this->load_elementor_widgets();
 
 		$this->load_media_library();
-
-		$this->load_lifter_lms();
 	}
 
 	/**
@@ -213,14 +214,5 @@ class Plugin {
 	 */
 	public function load_fluentforms() {
 		\RTGODAM\Inc\FluentForms\Init::get_instance();
-	}
-
-	/**
-	 * Load LifterLMS integration.
-	 *
-	 * @return void
-	 */
-	public function load_lifter_lms() {
-		Lifter_LMS::get_instance();
 	}
 }
