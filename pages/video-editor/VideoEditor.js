@@ -38,8 +38,9 @@ import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
+import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
 
-const VideoEditor = ( { attachmentID } ) => {
+const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
@@ -88,6 +89,10 @@ const VideoEditor = ( { attachmentID } ) => {
 			return;
 		}
 
+		if ( ! canManageAttachment( attachmentConfig.author ) ) {
+			onBackToAttachmentPicker();
+		}
+
 		const { rtgodam_meta: rtGodamMeta, source_url: sourceURL, mime_type: mimeType, meta } = attachmentConfig;
 
 		// Initialize the store if meta exists
@@ -119,7 +124,7 @@ const VideoEditor = ( { attachmentID } ) => {
 		}
 
 		setSources( videoSources );
-	}, [ attachmentConfig, dispatch ] );
+	}, [ attachmentConfig, dispatch, onBackToAttachmentPicker ] );
 
 	/**
 	 * Update the store with the fetched forms.

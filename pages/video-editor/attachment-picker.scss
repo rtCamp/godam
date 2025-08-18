@@ -5,7 +5,7 @@
 
 		&-wrapper {
 			margin-left: -20px;
-	
+
 			@media screen and (max-width: 782px) {
 				margin-left: 0;
 			}
@@ -90,7 +90,7 @@
 		}
 
 		&__video {
-
+			position: relative;
 			border: 1px solid rgba(246, 246, 246, 1);
 			border-radius: 12px;
 			overflow: hidden;
@@ -125,6 +125,8 @@
 				}
 
 				&__overlay {
+					z-index: 11;
+					pointer-events: auto;
 					height: 2rem;
 					width: 2rem;
 					border-radius: 50%;
@@ -159,6 +161,27 @@
 
 				p {
 					margin-top: 0.75rem;
+				}
+			}
+
+			&.disabled {
+				cursor: not-allowed;
+
+				&:hover, &:focus {
+					border: 1px solid rgba(246, 246, 246, 1);
+					scale: 1;
+				}
+
+				&::after {
+					content: '';
+					position: absolute;
+					top: 0;
+					left: 0;
+					right: 0;
+					bottom: 0;
+					background: rgba(255, 255, 255, 0.5);
+					z-index: 10;
+					border-radius: 12px;
 				}
 			}
 		}
