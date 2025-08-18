@@ -98,6 +98,10 @@
 			"type": "boolean",
 			"default": false
 		},
+		"showShareButton": {
+			"type": "boolean",
+			"default": true
+		},
 		"layout": {
 			"type": "object",
 			"default": {
