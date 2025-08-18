@@ -340,7 +340,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	return (
 		<>
 			<div className="video-editor-container">
-				<div className="py-3 aside relative">
+				<div className="py-3 aside relative pl-4">
 					<div id="sidebar-content" className="godam-video-editor">
 						<TabPanel
 							className="godam-video-editor-tabs"

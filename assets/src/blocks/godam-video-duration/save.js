@@ -1,5 +1,5 @@
 /**
- * The save function for the GoDAM Audio block.
+ * The save function for the GoDAM Video Duration block.
  * This block is dynamic, so it does not save any content.
  *
  * @return {void}
