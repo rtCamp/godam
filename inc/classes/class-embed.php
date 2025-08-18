@@ -78,7 +78,7 @@ class Embed {
 			return null;
 		}
 
-		$response = wp_remote_get( 'https://app-godam.rt.gw/api/method/godam_core.api.oembed.get_oembed?url=' . urlencode( $url ) );
+		$response = wp_remote_get( 'https://app-godam.rt.gw/api/method/godam_core.api.oembed.get_oembed?url=' . rawurlencode( $url ) );
 
 		if ( is_wp_error( $response ) ) {
 			return false;
