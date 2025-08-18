@@ -27,6 +27,11 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 			return;
 		}
 
+		// If user cannot manage the attachment, prevent default action.
+		if ( ! canManageAttachment( item?.author ) ) {
+			return e.preventDefault();
+		}
+
 		handleAttachmentClick( item.id );
 	};
 
@@ -48,6 +53,8 @@ const MediaItem = forwardRef( ( { item, handleAttachmentClick }, ref ) => {
 	return (
 		<div
 			className={ `godam-video-list__video ${ ! canManageAttachment( item?.author ) ? 'disabled' : '' }` }
+			aria-disabled={ ! canManageAttachment( item?.author ) }
+			disabled={ ! canManageAttachment( item?.author ) }
 			onClick={ handleItemClick }
 			role="button"
 			ref={ ref }
