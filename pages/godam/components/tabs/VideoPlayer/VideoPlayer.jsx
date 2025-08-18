@@ -50,28 +50,35 @@ const VideoPlayer = () => {
 	const handleSettingChange = ( key, value ) => {
 		dispatch( updateMediaSetting( { category: 'video_player', key, value } ) );
 
-		if ( key === 'custom_css' ) {
-			if ( value ) {
-				let styleElement = document.querySelector( '#godam-custom-css-inline-style' );
-
-				// Update CSS selectors so styles meant for the frontend video (.easydam-video-container)
-				// are applied to the actual video player preview container (.video-player-settings-preview)
-				const scopedValue = value.replaceAll(
-					'.easydam-video-container',
-					'.video-player-settings-preview',
-				);
-
-				// Create it only if it doesn't exist
-				if ( ! styleElement ) {
-					styleElement = document.createElement( 'style' );
-					styleElement.id = 'godam-custom-css-inline-style';
-					document.head.appendChild( styleElement ); // or your container
-				}
-
-				// Update the style content
-				styleElement.textContent = scopedValue;
-			}
+		if ( key !== 'custom_css' ) {
+			return; // Only handle custom_css
 		}
+
+		let styleElement = document.querySelector( '#godam-custom-css-inline-style' );
+
+		// If value is empty, clean up any existing style element
+		if ( ! value ) {
+			if ( styleElement ) {
+				styleElement.remove(); // or: styleElement.textContent = '';
+			}
+			return;
+		}
+
+		// Replace .easydam-video-container → .video-player-settings-preview
+		const scopedValue = value.replaceAll(
+			'.easydam-video-container',
+			'.video-player-settings-preview',
+		);
+
+		// Create it only if it doesn't exist
+		if ( ! styleElement ) {
+			styleElement = document.createElement( 'style' );
+			styleElement.id = 'godam-custom-css-inline-style';
+			document.head.appendChild( styleElement );
+		}
+
+		// Update the style content
+		styleElement.textContent = scopedValue;
 	};
 
 	// Function to handle saving settings

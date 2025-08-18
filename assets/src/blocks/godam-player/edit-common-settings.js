@@ -13,7 +13,7 @@ const options = [
 
 const VideoSettings = ( { setAttributes, attributes } ) => {
 	const { autoplay, controls, loop, muted, preload, showShareButton } =
-    attributes;
+	attributes;
 
 	// Show a specific help for autoplay setting.
 	const getAutoplayHelp = useMemo( () => {
