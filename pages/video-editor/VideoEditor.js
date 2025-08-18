@@ -175,14 +175,6 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		}
 	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms, metforms ] );
 
-	//	const canManageAttachment = ( attachment ) => {
-	//		const currentUserId = Number( window?.easydamMediaLibrary?.userId );
-	//		const canEditOthersMedia = window?.easydamMediaLibrary?.canEditOthersMedia;
-	//		const attachmentAuthorId = attachment.author;
-	//
-	//		return canEditOthersMedia || currentUserId === attachmentAuthorId;
-	//	};
-
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {
 		if ( player ) {
