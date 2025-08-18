@@ -36,7 +36,7 @@ export default class LayersManager {
 				const existingLayerElement = document.querySelector( `#layer-${ this.video.dataset.instanceId }-${ layer.id }` );
 				const formElementContainer = this.video.closest( '.godam-video-wrapper' )?.querySelector( '.easydam-video-container' );
 				if ( ! existingLayerElement && formElementContainer ) {
-					this.createEnternalLayerElement( layer, this.video.dataset.instanceId, formElementContainer );
+					this.createExternalLayerElement( layer, this.video.dataset.instanceId, formElementContainer );
 				}
 			} );
 
@@ -96,7 +96,7 @@ export default class LayersManager {
 	 * @param {HTMLElement} videoContainer - The DOM element representing the video container.
 	 * @return {HTMLElement} The created layer element.
 	 */
-	createEnternalLayerElement = ( layer, instanceId, videoContainer ) => {
+	createExternalLayerElement = ( layer, instanceId, videoContainer ) => {
 		const layerId = `layer-${ instanceId }-${ layer.id }`;
 		const layerElement = document.createElement( 'div' );
 		layerElement.id = layerId;

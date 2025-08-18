@@ -29,7 +29,7 @@ class HubSpot_Forms extends Base {
 						'permission_callback' => '__return_true',
 						'args'                => array(
 							'id' => array(
-								'description'       => __( 'The job ID of the Video.', 'godam' ),
+								'description'       => __( 'The job ID of the video.', 'godam' ),
 								'type'              => 'integer',
 								'required'          => true,
 								'sanitize_callback' => 'absint',

@@ -9,7 +9,7 @@ const HUBSPOT_SCRIPT = 'https://js.hsforms.net/forms/v2.js';
 let hubspotScriptLoaded = null;
 
 /**
- * Fetches Hubspot forms be media id from the backend.
+ * Fetches Hubspot forms by media id from the backend.
  *
  * @param {string} id The ID to filter the forms by.
  * @return {Promise<Array<object>>} A promise that resolves to an array of Hubspot form objects.
