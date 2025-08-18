@@ -189,7 +189,7 @@ class Assets {
 	public function admin_enqueue_scripts() {
 		$screen            = get_current_screen();
 		$is_upload_screen  = ( $screen && 'upload' === $screen->id );
-		$is_godam_settings = ( isset( $_GET['page'] ) && 'rtgodam_settings' === $_GET['page'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Not using user-submitted data, only checking query param for page context.
+		$is_godam_settings = ( isset( $_GET['page'] ) && 'rtgodam_settings' === sanitize_text_field( $_GET['page'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Not using user-submitted data, only checking query param for page context.
 
 		// Ensure WordPress media modal assets are available on admin pages where we open wp.media.
 		if ( ( $is_upload_screen || $is_godam_settings ) && function_exists( 'wp_enqueue_media' ) ) {
