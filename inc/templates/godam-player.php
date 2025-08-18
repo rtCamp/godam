@@ -27,16 +27,17 @@ if ( isset( $is_elementor_widget ) && $is_elementor_widget ) {
 add_filter( 'gform_confirmation_anchor', '__return_false' );
 
 // attributes.
-$autoplay      = ! empty( $attributes['autoplay'] );
-$controls      = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
-$loop          = ! empty( $attributes['loop'] );
-$muted         = ! empty( $attributes['muted'] );
-$poster        = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
-$preload       = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
-$hover_select  = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
-$caption       = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
-$tracks        = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
-$attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$autoplay       = ! empty( $attributes['autoplay'] );
+$controls       = isset( $attributes['controls'] ) ? $attributes['controls'] : true;
+$loop           = ! empty( $attributes['loop'] );
+$muted          = ! empty( $attributes['muted'] );
+$poster         = ! empty( $attributes['poster'] ) ? esc_url( $attributes['poster'] ) : '';
+$preload        = ! empty( $attributes['preload'] ) ? esc_attr( $attributes['preload'] ) : 'auto';
+$hover_select   = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSelect'] : 'none';
+$caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
+$tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
+$attachment_id  = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+$show_share_btn = ! empty( $attributes['showShareButton'] );
 
 // Determine whether the attachment ID refers to a virtual (GoDAM) media item.
 // If it's not numeric, we assume it's a virtual reference (e.g., a GoDAM ID).
@@ -228,6 +229,7 @@ $video_config = wp_json_encode(
 		'overlayTimeRange' => $overlay_time_range, // Add overlay time range to video config.
 		'playerSkin'       => $player_skin, // Add player skin to video config. Add brand image to video config.
 		'aspectRatio'      => $aspect_ratio,
+		'showShareBtn'     => $show_share_btn,
 	)
 );
 
