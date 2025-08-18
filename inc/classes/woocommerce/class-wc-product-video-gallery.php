@@ -266,17 +266,17 @@ class WC_Product_Video_Gallery {
 
 			printf(
 				'<li>
-                    <input type="hidden" name="rtgodam_product_video_gallery_ids[]" value="%d" data-vid-id="%d" />
-                    <input type="hidden" name="rtgodam_product_video_gallery_urls[]" value="%s" />
+					<input type="hidden" name="rtgodam_product_video_gallery_ids[]" value="%d" data-vid-id="%d" />
+					<input type="hidden" name="rtgodam_product_video_gallery_urls[]" value="%s" />
 					<div class="video-thumb-wrapper">
-        				<img src="%s" alt="%s" style="display:block; max-width: 200px; margin-bottom: 10px;" />
+						<img src="%s" alt="%s" style="display:block; max-width: 200px; margin-bottom: 10px;" />
 						<button type="button" class="godam-remove-video-button components-button godam-button is-compact is-secondary has-icon wc-godam-product-admin" aria-label="%s">
 							%s
 						</button>
 					</div>
 					<div class="godam-product-video-title" title="%s">%s</div>
-                    <button type="button" data-linked-products="%s" class="godam-add-product-button components-button godam-button is-compact is-tertiary wc-godam-product-admin" aria-label="%s">%s</button>
-                </li>',
+					<button type="button" data-linked-products="%s" class="godam-add-product-button components-button godam-button is-compact is-tertiary wc-godam-product-admin" aria-label="%s">%s</button>
+				</li>',
 				esc_attr( $id ),
 				esc_attr( $id ),
 				esc_attr( $sanitised_url ),
@@ -443,7 +443,7 @@ class WC_Product_Video_Gallery {
 		// Clean up parent reference from attachment.
 		delete_post_meta( $attachment_id, $parent_meta_key );
 	}
-
+	
 	/**
 	 * Renders a video slider in a single product page.
 	 *
@@ -467,9 +467,12 @@ class WC_Product_Video_Gallery {
 
 		$srcsets = array_map(
 			function ( $attachment_id ) {
+				$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+
 				return array(
-					'id'  => $attachment_id,
-					'src' => wp_get_attachment_url( $attachment_id ),
+					'id'            => $attachment_id,
+					'src'           => wp_get_attachment_url( $attachment_id ),
+					'is_transcoded' => (bool) random_int( 0, 1 ),
 				);
 			},
 			$rtgodam_product_video_gallery_ids
@@ -502,13 +505,14 @@ class WC_Product_Video_Gallery {
 		}
 
 		$single_product_modal_summary = apply_filters( 'rtgodam_single_product_modal_summary', $this->rtgodam_single_product_modal_summary() );
-
-		$modal_carousel_html = array_map(
+		$modal_carousel_html          = array_map(
 			function ( $item ) use ( $srcsets, $single_product_modal_summary ) {
-				$src_id = $srcsets[ $item ]['id'];
+				$src_id        = $srcsets[ $item ]['id'];
+				$is_transcoded = $srcsets[ $item ]['is_transcoded'] ? 'true' : 'false';
+
 				return sprintf(
 					'
-					<div class="swiper-slide">
+					<div class="swiper-slide" data-is-transcoded="%3$s">
 						<div class="rtgodam-product-video-gallery-slider-modal-content-left">
 							%1$s
 						</div>
@@ -518,6 +522,7 @@ class WC_Product_Video_Gallery {
 					</div>',
 					do_shortcode( "[godam_video id='{$src_id}']" ),
 					$single_product_modal_summary,
+					esc_attr( $is_transcoded )
 				);
 			},
 			$srcsets_keys
@@ -591,15 +596,42 @@ class WC_Product_Video_Gallery {
 	 */
 	public function rtgodam_single_product_modal_summary() {
 		ob_start();
-		woocommerce_show_product_images();
-		woocommerce_template_single_title();
-		woocommerce_template_single_rating();
-		woocommerce_template_single_price();
-		woocommerce_template_single_excerpt();
 		?>
+		<div class="rtgodam-product-video-gallery-slider-modal-content--images">
+			<div class="rtgodam-product-video-gallery-slider-modal-content--images-desktop">
+				<?php 
+				if ( function_exists( 'woocommerce_show_product_images' ) ) {
+					woocommerce_show_product_images();
+				}
+				?>
+			</div>
+			<div class="rtgodam-product-video-gallery-slider-modal-content--images-mobile">
+				<?php $this->display_main_product_image_only(); ?>
+			</div>
+		</div>
+		<div class="rtgodam-mobile-content">
+		<?php
+		if ( function_exists( 'woocommerce_template_single_title' ) ) {
+			woocommerce_template_single_title();
+		}
+		if ( function_exists( 'woocommerce_template_single_rating' ) ) {
+			woocommerce_template_single_rating();
+		}
+		if ( function_exists( 'woocommerce_template_single_price' ) ) {
+			woocommerce_template_single_price();
+		}
+		if ( function_exists( 'woocommerce_template_single_excerpt' ) ) {
+			woocommerce_template_single_excerpt();
+		}
+		?>
+		</div>
 		<div class="rtgodam-product-video-gallery-slider-modal-content--cart">
 			<div class="rtgodam-product-video-gallery-slider-modal-content--cart-form">
-				<?php woocommerce_template_single_add_to_cart(); ?>
+				<?php 
+				if ( function_exists( 'woocommerce_template_single_add_to_cart' ) ) {
+					woocommerce_template_single_add_to_cart();
+				}
+				?>
 			</div>
 			<div class="rtgodam-product-video-gallery-slider-modal-content--cart-basket">
 				<?php
@@ -607,9 +639,61 @@ class WC_Product_Video_Gallery {
 				?>
 			</div>
 		</div>
+	
 		<?php
-		woocommerce_template_single_meta();
-		woocommerce_template_single_sharing();
+		if ( function_exists( 'woocommerce_template_single_meta' ) ) {
+			woocommerce_template_single_meta();
+		}
+		if ( function_exists( 'woocommerce_template_single_sharing' ) ) {
+			woocommerce_template_single_sharing();
+		}
 		return ob_get_clean();
+	}
+
+	/**
+	 * Display only the main product image for mobile view.
+	 *
+	 * @return void
+	 */
+	public function display_main_product_image_only() {
+		global $product;
+		
+		if ( ! $product ) {
+			return;
+		}
+
+		$attachment_ids    = $product->get_gallery_image_ids();
+		$post_thumbnail_id = $product->get_image_id();
+
+		if ( $post_thumbnail_id ) {
+			$image_url = wp_get_attachment_image_url( $post_thumbnail_id, 'woocommerce_single' );
+			$image_alt = get_post_meta( $post_thumbnail_id, '_wp_attachment_image_alt', true );
+			
+			// Get image dimensions.
+			$image_data   = wp_get_attachment_image_src( $post_thumbnail_id, 'woocommerce_single' );
+			$image_width  = $image_data ? $image_data[1] : '';
+			$image_height = $image_data ? $image_data[2] : '';
+			
+			// Fallback alt text to product title if alt is empty.
+			if ( empty( $image_alt ) ) {
+				$image_alt = $product->get_name();
+			}
+			
+			if ( $image_url ) {
+				?>
+				<div class="rtgodam-product-video-gallery-slider-modal-content--main-image">
+					<img src="<?php echo esc_url( $image_url ); ?>" 
+						alt="<?php echo esc_attr( $image_alt ); ?>" 
+						<?php if ( $image_width ) : ?>
+							width="<?php echo esc_attr( $image_width ); ?>"
+						<?php endif; ?>
+						<?php if ( $image_height ) : ?>
+							height="<?php echo esc_attr( $image_height ); ?>"
+						<?php endif; ?>
+						class="rtgodam-product-video-gallery-slider-modal-content--main-image-img" />
+				</div>
+				<?php
+			}
+		}
 	}
 }
