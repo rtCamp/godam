@@ -131,7 +131,8 @@ const GoDAMLifterLMSEmbedIntegration = {
 			};
 			localStorage.setItem( storageKey, JSON.stringify( progressData ) );
 		} catch ( error ) {
-
+			// We are not throwing an error here currently.
+			return null;
 		}
 	},
 
@@ -146,6 +147,7 @@ const GoDAMLifterLMSEmbedIntegration = {
 			const stored = localStorage.getItem( storageKey );
 			return stored ? JSON.parse( stored ) : null;
 		} catch ( error ) {
+			// We are not throwing an error here currently.
 			return null;
 		}
 	},
@@ -160,7 +162,8 @@ const GoDAMLifterLMSEmbedIntegration = {
 			const storageKey = this.getStorageKey( configuration );
 			localStorage.removeItem( storageKey );
 		} catch ( error ) {
-			// localStorage might be unavailable.
+			// We are not throwing an error here currently.
+			return null;
 		}
 	},
 
