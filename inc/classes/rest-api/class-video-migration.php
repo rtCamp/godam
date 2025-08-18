@@ -625,7 +625,7 @@ class Video_Migration extends Base {
 				$attrs     = $block['attrs'] ?? array();
 				$provider  = $attrs['providerNameSlug'] ?? '';
 				$vimeo_url = $attrs['url'] ?? '';
-				$is_vimeo  = ( 'vimeo' === $provider ) || ( ! empty( $vimeo_url ) && false !== strpos( $vimeo_url, 'vimeo.com' ) );
+				$is_vimeo  = ( 'vimeo' === $provider ) || ( ! empty( $vimeo_url ) && str_contains( $vimeo_url, 'vimeo.com' ) );
 
 				if ( $is_vimeo ) {
 					++$found;
