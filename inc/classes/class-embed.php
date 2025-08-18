@@ -2,6 +2,8 @@
 /**
  * Class to handle GoDAM as oEmbed provider.
  *
+ * @since n.e.x.t
+ *
  * @package GoDAM
  */
 
@@ -20,6 +22,8 @@ class Embed {
 
 	/**
 	 * Constant LifterLMS Advanced Video autoplay option.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @var string
 	 */
@@ -45,6 +49,8 @@ class Embed {
 	/**
 	 * Register the oEmbed provider for GoDAM videos.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return void
 	 */
 	public function register_oembed_provider() {
@@ -58,6 +64,8 @@ class Embed {
 
 	/**
 	 * Pre-process the oEmbed result for GoDAM videos.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param mixed  $data data to be filled with oEmbed data.
 	 * @param string $url URL to be processed.

@@ -3,6 +3,8 @@
  * LifterLMS integration class for GoDAM plugin.
  * Loads required integration script.
  *
+ * @since n.e.x.t
+ *
  * @package GoDAM
  */
 
@@ -19,6 +21,8 @@ class Lifter_LMS {
 
 	/**
 	 * Constant LifterLMS Advanced Video autoplay option.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @var string
 	 */
@@ -45,6 +49,8 @@ class Lifter_LMS {
 	/**
 	 * Check if LifterLMS plugin is active.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return bool
 	 */
 	public function is_lifterlms_active(): bool {
@@ -58,6 +64,8 @@ class Lifter_LMS {
 
 	/**
 	 * Check if LifterLMS Advanced Video plugin is active.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return bool
 	 */
@@ -73,6 +81,8 @@ class Lifter_LMS {
 	/**
 	 * Check if the current content is LifterLMS content (lesson, quiz, course).
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return bool
 	 */
 	public function is_lifterlms_content(): bool {
@@ -85,6 +95,8 @@ class Lifter_LMS {
 
 	/**
 	 * Check if the current post is a LifterLMS lesson.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return bool
 	 */
@@ -99,6 +111,8 @@ class Lifter_LMS {
 	/**
 	 * Check if the autoplay is enabled.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return bool
 	 */
 	public function is_lifterlms_autoplay_on(): bool {
@@ -107,6 +121,8 @@ class Lifter_LMS {
 
 	/**
 	 * Check if the current post has a Godam video block.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return bool
 	 */
@@ -129,6 +145,8 @@ class Lifter_LMS {
 	/**
 	 * Load LifterLMS integration script.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return void
 	 */
 	public function load_lifterlms_integration_script() {
@@ -147,6 +165,8 @@ class Lifter_LMS {
 	 * Add autoplay attribute to Godam Player Block attributes,
 	 * if LifterLMS is active and on a lesson page with autoplay enabled.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param mixed $attributes Block attributes.
 	 *
 	 * @return mixed
@@ -161,6 +181,8 @@ class Lifter_LMS {
 
 	/**
 	 * Add GoDAM integration to LifterLMS available integrations.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param array $integrations Array of available integrations.
 	 *

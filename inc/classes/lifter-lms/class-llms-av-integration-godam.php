@@ -2,6 +2,8 @@
 /**
  * LifterLMS Advanced Videos Integration Class for GoDAM
  *
+ * @since n.e.x.t
+ *
  * @package GoDAM
  */
 
@@ -23,12 +25,16 @@ if ( class_exists( 'LLMS_AV_Abstract_Integration' ) ) {
 		/**
 		 * Integration ID.
 		 *
+		 * @since n.e.x.t
+		 *
 		 * @var string
 		 */
 		public $id = 'av_godam';
 
 		/**
 		 * Integration title.
+		 *
+		 * @since n.e.x.t
 		 *
 		 * @var string
 		 */
@@ -37,12 +43,16 @@ if ( class_exists( 'LLMS_AV_Abstract_Integration' ) ) {
 		/**
 		 * Integration Description.
 		 *
+		 * @since n.e.x.t
+		 *
 		 * @var string
 		 */
 		public $description = '';
 
 		/**
 		 * Whether or not to load wpColorPicker assets on the settings screen.
+		 *
+		 * @since n.e.x.t
 		 *
 		 * @var bool
 		 */
@@ -51,12 +61,16 @@ if ( class_exists( 'LLMS_AV_Abstract_Integration' ) ) {
 		/**
 		 * Player SDK source.
 		 *
+		 * @since n.e.x.t
+		 *
 		 * @var string
 		 */
 		protected $player_sdk_src = false;
 
 		/**
 		 * Integration Priority.
+		 *
+		 * @since n.e.x.t
 		 *
 		 * @var int
 		 */
@@ -65,12 +79,16 @@ if ( class_exists( 'LLMS_AV_Abstract_Integration' ) ) {
 		/**
 		 * Regex to identify videos from the provider.
 		 *
+		 * @since n.e.x.t
+		 *
 		 * @var string
 		 */
 		protected $regex = '#src="(https?://app-godam\.rt\.gw/web/embed/[^"]+)"#i';
 
 		/**
 		 * Regex to identify a URL that's parseable oEmbed URL for the provider.
+		 *
+		 * @since n.e.x.t
 		 *
 		 * @var string
 		 */
@@ -88,6 +106,8 @@ if ( class_exists( 'LLMS_AV_Abstract_Integration' ) ) {
 
 		/**
 		 * Set the integration title and description.
+		 *
+		 * @since n.e.x.t
 		 */
 		public function set_title_and_description() {
 			$this->title       = __( 'Videos: GoDAM', 'godam' );
@@ -98,6 +118,8 @@ if ( class_exists( 'LLMS_AV_Abstract_Integration' ) ) {
 		 * Determines if player controls are hidden for the given lesson video.
 		 *
 		 * @param int $lesson_id WP_Post ID of a lesson.
+		 *
+		 * @since n.e.x.t
 		 *
 		 * @return bool
 		 */
@@ -113,6 +135,8 @@ if ( class_exists( 'LLMS_AV_Abstract_Integration' ) ) {
 		 * This should return an array of settings that will be converted to query string variables
 		 * which can be interpreted by the player's JS API when added to the player's iframe embed src.
 		 *
+		 * @since n.e.x.t
+		 *
 		 * @param int $object_id WP_Post ID.
 		 *
 		 * @return array
@@ -124,6 +148,8 @@ if ( class_exists( 'LLMS_AV_Abstract_Integration' ) ) {
 		/**
 		 * Retrieves the player theme color for the given lesson video.
 		 * Parent class had abstract method, so this is required.
+		 *
+		 * @since n.e.x.t
 		 *
 		 * @param int $lesson_id WP_Post ID of a lesson.
 		 *
