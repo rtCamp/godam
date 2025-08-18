@@ -103,6 +103,7 @@ function VideoEdit( {
 	const instanceId = useInstanceId( VideoEdit );
 	const videoPlayer = useRef();
 	const posterImageButton = useRef();
+	const playerRef = useRef( null );
 
 	const {
 		id,
@@ -158,6 +159,8 @@ function VideoEdit( {
 				options={ videoOptions }
 				onPlayerReady={ ( player ) => {
 					if ( player ) {
+						playerRef.current = player;
+
 						const playerEl = player.el_;
 						const video = playerEl.querySelector( 'video' );
 
@@ -175,8 +178,8 @@ function VideoEdit( {
 							const titleBar = player.getChild( 'TitleBar' );
 							if ( titleBar ) {
 								titleBar.addClass( 'vjs-hidden' );
+								titleBar.update( { title, description } );
 								player.one( 'play', () => {
-									titleBar.update( { title, description } );
 									titleBar.removeClass( 'vjs-hidden' );
 								} );
 							}
@@ -186,6 +189,26 @@ function VideoEdit( {
 			/>
 		</Disabled>
 	), [ isSingleSelected, videoOptions, setAttributes, videoDescription, videoTitle ] );
+
+	useEffect( () => {
+		const player = playerRef.current;
+		if ( ! player ) {
+			return;
+		}
+
+		const title = removeTags( videoTitle || '' );
+		const description = removeTags( videoDescription || '' );
+		if ( ! ( title || description ) ) {
+			return;
+		}
+
+		const titleBar = player.getChild( 'TitleBar' );
+		if ( titleBar ) {
+			titleBar.update( { title, description } );
+			titleBar.addClass( 'vjs-hidden' );
+			player.one( 'play', () => titleBar.removeClass( 'vjs-hidden' ) );
+		}
+	}, [ videoTitle, videoDescription, id ] );
 
 	useEffect( () => {
 		// Placeholder may be rendered.
