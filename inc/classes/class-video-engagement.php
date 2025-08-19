@@ -61,7 +61,7 @@ class Video_Engagement {
 			?>
 			</div>
 			<div class="rtgodam-video-engagement--like">
-				<a href="#" class="rtgodam-video-engagement--like-link">
+				<button type="button" class="rtgodam-video-engagement--like-link">
 					<span class="rtgodam-video-engagement--like-icon">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -82,10 +82,10 @@ class Video_Engagement {
 
 					</span>
 					<span class="rtgodam-video-engagement--like-count">-</span>
-				</a>
+				</button>
 			</div>
 			<div class="rtgodam-video-engagement--comment">
-				<a href="#" class="rtgodam-video-engagement--comment-link">
+				<button type="button" class="rtgodam-video-engagement--comment-link">
 					<span class="rtgodam-video-engagement--comment-icon">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -102,10 +102,10 @@ class Video_Engagement {
 						</svg>
 					</span>
 					<span class="rtgodam-video-engagement--comment-count">-</span>
-				</a>
+				</button>
 			</div>
 			<div class="rtgodam-video-engagement--view">
-				<a href="#" class="rtgodam-video-engagement--view-link" onclick="return false;">
+				<div class="rtgodam-video-engagement--view-link">
 					<span class="rtgodam-video-engagement--view-icon">
 						<svg 
 							xmlns="http://www.w3.org/2000/svg" 
@@ -120,7 +120,7 @@ class Video_Engagement {
 
 					</span>
 					<span class="rtgodam-video-engagement--view-count">-</span>
-				</a>
+				</div>
 			</div>
 		</div>
 		<?php

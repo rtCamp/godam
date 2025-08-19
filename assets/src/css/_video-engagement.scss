@@ -56,11 +56,86 @@
     background-color: var( --godam-video-engagement-background-color );
     border-radius: 0 0 8px 8px;
 
+    &--like,
+    &--comment,
+    &--view {
+
+        &-icon {
+            display: flex;
+            padding: 10px;
+            justify-content: center;
+            align-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            border-radius: 50%;
+        }
+
+        &-link {
+            color: var( --godam-video-engagement-icon-color );
+            text-decoration: none;
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: flex-start;
+            transition: all 0.2s ease;
+            font-size: 1.2rem;
+            line-height: 1;
+            font-family: var( --godam-video-engagement-font-family );
+            font-weight: 400;
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+
+            &.is-progressing,
+            &:hover {
+
+                & .rtgodam-video-engagement--like-icon {
+                    color: var( --godam-video-engagement-icon-color--like );
+                    background-color: var( --godam-video-engagement-icon-color--like-background );
+                }
+
+                & .rtgodam-video-engagement--comment-icon {
+                    color: var( --godam-video-engagement-icon-color--comment );
+                    background-color: var( --godam-video-engagement-icon-color--comment-background );
+                }
+
+                & .rtgodam-video-engagement--view-icon {
+                    color: var( --godam-video-engagement-icon-color--view );
+                    background-color: var( --godam-video-engagement-icon-color--view-background );
+                }
+            }
+
+            &.is-progressing {
+                cursor: not-allowed;
+                pointer-events: none;
+                opacity: 0.6;
+                animation: pop 0.4s ease;
+                animation-iteration-count: infinite;
+            }
+
+            &.is-liked {
+
+                svg {
+                    fill: var( --godam-video-engagement-icon-color--like );
+                    stroke: var( --godam-video-engagement-icon-color--like );
+                }
+            }
+        }
+
+        &-count {
+            position: relative;
+            top: 10px;
+            left: -8px;
+        }
+    }
+
     &--link-disabled {
         cursor: not-allowed;
         pointer-events: none;
 
-        a {
+        .rtgodam-video-engagement--like-link,
+        .rtgodam-video-engagement--comment-link,
+        .rtgodam-video-engagement--view-link {
             position: relative;
 
             span {
@@ -82,75 +157,6 @@
         }
     }
 
-    a {
-        color: var( --godam-video-engagement-icon-color );
-        text-decoration: none;
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: flex-start;
-        transition: all 0.2s ease;
-        font-size: 1.2rem;
-        line-height: 1;
-        font-family: var( --godam-video-engagement-font-family );
-        font-weight: 400;
-
-        &.is-progressing,
-        &:hover {
-
-            & .rtgodam-video-engagement--like-icon {
-                color: var( --godam-video-engagement-icon-color--like );
-                background-color: var( --godam-video-engagement-icon-color--like-background );
-            }
-
-            & .rtgodam-video-engagement--comment-icon {
-                color: var( --godam-video-engagement-icon-color--comment );
-                background-color: var( --godam-video-engagement-icon-color--comment-background );
-            }
-
-            & .rtgodam-video-engagement--view-icon {
-                color: var( --godam-video-engagement-icon-color--view );
-                background-color: var( --godam-video-engagement-icon-color--view-background );
-            }
-        }
-
-        &.is-progressing {
-            cursor: not-allowed;
-            pointer-events: none;
-            opacity: 0.6;
-            animation: pop 0.4s ease;
-            animation-iteration-count: infinite;
-        }
-
-        &.is-liked {
-
-            svg {
-                fill: var( --godam-video-engagement-icon-color--like );
-                stroke: var( --godam-video-engagement-icon-color--like );
-            }
-        }
-    }
-
-    &--like,
-    &--comment,
-    &--view {
-
-        &-icon {
-            display: flex;
-            padding: 10px;
-            justify-content: center;
-            align-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            border-radius: 50%;
-        }
-
-        &-count {
-            position: relative;
-            top: 10px;
-            left: -8px;
-        }
-    }
-
     &--comment-modal {
         position: fixed;
         top: 0;
@@ -167,32 +173,12 @@
         backdrop-filter: blur( 40px );
         -webkit-backdrop-filter: blur( 40px );
 
-            &-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                padding-bottom: 24px;
-                gap: 1.5rem;
-            }
-
-        &-content {
-            background-color: var( --wp--preset--color--white, #fff );
-            border-radius: 10px;
-            padding: clamp( 16px, 3.5vw, 40px );
-            width: calc( 100% - clamp( 72px, 16vw, 244px ) );
-            max-width: 1756px;
-            height: calc( 100% - clamp( 72px, 24vw, 170px ) );
-            max-height: 826px;
-            position: relative;
-
-            &.is-skip-engagements {
-
-                .rtgodam-video-engagement--comment-modal--video-figure {
-                    flex: 1;
-                    flex-basis: 100%;
-                    width: 100%;
-                }
-            }
+        &-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 24px;
+            gap: 1.5rem;
         }
 
         &--video {
@@ -315,6 +301,7 @@
                         right: 0;
                         background-color: var( --wp--preset--color--white, #fff );
                         max-height: 90%;
+                        z-index: 20;
 
                         .rtgodam-video-engagement--comment-modal--video-info-expend {
                             transform: rotate( 0deg );
@@ -521,6 +508,26 @@
                             }
                         }
                     }
+                }
+            }
+        }
+
+        &-content {
+            background-color: var( --wp--preset--color--white, #fff );
+            border-radius: 10px;
+            padding: clamp( 16px, 3.5vw, 40px );
+            width: calc( 100% - clamp( 72px, 16vw, 244px ) );
+            max-width: 1756px;
+            height: calc( 100% - clamp( 72px, 24vw, 170px ) );
+            max-height: 826px;
+            position: relative;
+
+            &.is-skip-engagements {
+
+                .rtgodam-video-engagement--comment-modal--video-figure {
+                    flex: 1;
+                    flex-basis: 100%;
+                    width: 100%;
                 }
             }
         }
