@@ -314,6 +314,16 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const { thumbnails, selected, customThumbnails } = data;
 		const attachmentID = this.model.get( 'id' );
 
+		setTimeout( () => {
+			// Sometimes helps if .mejs-poster is rendered asynchronously
+			const posterDiv = document.querySelector( '.mejs-poster' );
+			if ( posterDiv && selected ) {
+				posterDiv.style.backgroundImage = `url('${ selected }')`;
+				posterDiv.querySelector( 'img' ).setAttribute( 'src', selected );
+				posterDiv.querySelector( 'img' ).style.opacity = '1';
+			}
+		}, 0 );
+
 		const customThumbnailsArray = Array.isArray( customThumbnails )
 			? customThumbnails
 			: Object.values( customThumbnails || {} );
@@ -401,6 +411,33 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			} );
 	},
 
+	updateThumbnailInTranscodingStatus( selectedThumbnailURL ) {
+		// Build a direct selector for the matching .transcoding-status element
+		const selector = `.transcoding-status[data-id="${ this.model.get( 'id' ) }"]`;
+		const status = document.querySelector( selector );
+
+		if ( status ) {
+			const img = status.querySelector( 'img' );
+
+			if ( img && img.src !== selectedThumbnailURL ) {
+				img.src = selectedThumbnailURL;
+
+				// Smooth fade-in effect
+				img.style.opacity = '0';
+				img.style.transition = 'opacity 0.3s ease';
+
+				img.addEventListener( 'load', () => {
+					img.style.opacity = '1';
+				}, { once: true } );
+
+				// Handle cached images (already loaded)
+				if ( img.complete && img.naturalHeight !== 0 ) {
+					img.style.opacity = '1';
+				}
+			}
+		}
+	},
+
 	/**
 	 * Sets up click event handlers for selecting video thumbnails.
 	 *
@@ -423,6 +460,23 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 				const thumbnailURL = img?.src;
 
+				const posterDiv = document.querySelector( '.mejs-poster' );
+				if ( posterDiv ) {
+					posterDiv.style.backgroundImage = `url('${ thumbnailURL }')`;
+					posterDiv.querySelector( 'img' ).setAttribute( 'src', thumbnailURL );
+					posterDiv.querySelector( 'img' ).style.opacity = '1';
+				}
+
+				const selector = `.transcoding-status[data-id="${ attachmentID }"]`;
+				const status = document.querySelector( selector );
+
+				if ( status ) {
+					const statusImg = status.querySelector( 'img' );
+
+					if ( statusImg && statusImg.src !== thumbnailURL ) {
+						statusImg.src = thumbnailURL;
+					}
+				}
 				/**
 				 * Send a POST request to the server to set the selected thumbnail for the video.
 				 */
