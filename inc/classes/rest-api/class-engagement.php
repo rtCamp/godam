@@ -325,7 +325,7 @@ class Engagement extends Base {
 	 * @return array|WP_REST_Response Analytics data or error response.
 	 */
 	public function get_views( $query_params ) {
-		$cache_key   = 'rtgodam-engagements-views-' . md5( 'video-id-' . $query_params['video_id'] );
+		$cache_key   = 'rtgodam-engagements-views-video-id-' . $query_params['video_id'];
 		$cached_data = rtgodam_cache_get( $cache_key );
 
 		if ( $cached_data ) {
@@ -403,7 +403,7 @@ class Engagement extends Base {
 
 		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
 
-			$cache_key = 'rtgodam-engagements-likes-' . md5( 'transcoder-job-id-' . $transcoder_job_id . '-user-email-' . $current_user_email );
+			$cache_key = 'rtgodam-engagements-likes-transcoder-job-id-' . $transcoder_job_id . '-user-email-' . $current_user_email;
 			rtgodam_cache_delete( $cache_key );
 
 			return new WP_REST_Response(
@@ -489,7 +489,7 @@ class Engagement extends Base {
 
 		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
 
-			$cache_key = 'rtgodam-engagements-comments-' . md5( 'transcoder-job-id-' . $transcoder_job_id );
+			$cache_key = 'rtgodam-engagements-comments-transcoder-job-id-' . $transcoder_job_id;
 			rtgodam_cache_delete( $cache_key );
 
 			$comment      = $process_response['message']['data'];
@@ -584,7 +584,7 @@ class Engagement extends Base {
 
 		if ( isset( $process_response['message']['status'] ) && 'success' === $process_response['message']['status'] ) {
 
-			$cache_key = 'rtgodam-engagements-comments-' . md5( 'transcoder-job-id-' . $transcoder_job_id );
+			$cache_key = 'rtgodam-engagements-comments-transcoder-job-id-' . $transcoder_job_id;
 			rtgodam_cache_delete( $cache_key );
 
 			$response_data = array(
@@ -628,7 +628,7 @@ class Engagement extends Base {
 			'api_key' => $account_creadentials['api_key'],
 		);
 
-		$cache_key   = 'rtgodam-engagements-comments-' . md5( 'transcoder-job-id-' . $transcoder_job_id );
+		$cache_key   = 'rtgodam-engagements-comments-transcoder-job-id-' . $transcoder_job_id;
 		$cached_data = rtgodam_cache_get( $cache_key );
 		if ( $cached_data ) {
 			return $cached_data;
@@ -711,7 +711,7 @@ class Engagement extends Base {
 			'comment_email' => $current_user_email,
 		);
 
-		$cache_key   = 'rtgodam-engagements-likes-' . md5( 'transcoder-job-id-' . $transcoder_job_id . '-user-email-' . $current_user_email );
+		$cache_key   = 'rtgodam-engagements-likes-transcoder-job-id-' . $transcoder_job_id . '-user-email-' . $current_user_email;
 		$cached_data = rtgodam_cache_get( $cache_key );
 
 		if ( $cached_data ) {
