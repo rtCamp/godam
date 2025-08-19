@@ -538,15 +538,7 @@ function rtgodam_get_current_logged_in_user_data() {
 		);
 	}
 
-	if ( isset( $_COOKIE['guest_user'] ) ) {
-		$guest_user_email = sanitize_email( wp_unslash( $_COOKIE['guest_user'] ) );
-		$guest_user_name  = explode( '@', $guest_user_email )[0];
-		return array(
-			'email' => $guest_user_email,
-			'name'  => ! empty( $guest_user_name ) ? $guest_user_name : __( 'Guest', 'godam' ),
-			'type'  => 'guest',
-		);
-	}
+	// @To-do: Check for guest user cookie when we introduce this feature.
 
 	return array(
 		'email' => 'bot@example.com',

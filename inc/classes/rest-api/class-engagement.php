@@ -16,7 +16,7 @@ use WP_REST_Request;
 use WP_REST_Response;
 
 /**
- * Class GF
+ * Class Engagement
  */
 class Engagement extends Base {
 
@@ -67,7 +67,7 @@ class Engagement extends Base {
 					array(
 						'methods'             => WP_REST_Server::CREATABLE,
 						'callback'            => array( $this, 'user_hit_like' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'engagement_permission_check' ),
 						'args'                => array(
 							'video_id' => array(
 								'description'       => __( 'The ID of the video.', 'godam' ),
@@ -92,7 +92,7 @@ class Engagement extends Base {
 					array(
 						'methods'             => WP_REST_Server::CREATABLE,
 						'callback'            => array( $this, 'user_comment' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'engagement_permission_check' ),
 						'args'                => array(
 							'video_id'          => array(
 								'description'       => __( 'The ID of the video.', 'godam' ),
@@ -135,7 +135,7 @@ class Engagement extends Base {
 					array(
 						'methods'             => WP_REST_Server::CREATABLE,
 						'callback'            => array( $this, 'user_delete_comment' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'engagement_permission_check' ),
 						'args'                => array(
 							'video_id'    => array(
 								'description'       => __( 'The ID of the video.', 'godam' ),
@@ -800,5 +800,23 @@ class Engagement extends Base {
 			),
 			200
 		);
+	}
+
+	/**
+	 * Checks if the current user has permission to interact with engagement endpoints.
+	 *
+	 * Guests are not allowed to interact with engagement endpoints.
+	 *
+	 * @return bool True if the user is not a guest, false otherwise.
+	 */
+	public function engagement_permission_check() {
+		$current_user      = rtgodam_get_current_logged_in_user_data();
+		$current_user_type = $current_user['type'];
+
+		if ( 'user' !== $current_user_type ) {
+			return false;
+		}
+
+		return true;
 	}
 }
