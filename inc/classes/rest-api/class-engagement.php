@@ -45,9 +45,9 @@ class Engagement extends Base {
 							array(
 								'video_id' => array(
 									'description'       => __( 'The ID of the video.', 'godam' ),
-									'type'              => 'integer',
+									'type'              => 'string',
 									'required'          => true,
-									'sanitize_callback' => 'absint',
+									'sanitize_callback' => 'sanitize_text_field',
 								),
 								'site_url' => array(
 									'required'          => true,
@@ -69,17 +69,23 @@ class Engagement extends Base {
 						'callback'            => array( $this, 'user_hit_like' ),
 						'permission_callback' => array( $this, 'engagement_permission_check' ),
 						'args'                => array(
-							'video_id' => array(
+							'video_id'    => array(
 								'description'       => __( 'The ID of the video.', 'godam' ),
 								'type'              => 'integer',
 								'required'          => true,
-								'sanitize_callback' => 'absint',
+								'sanitize_callback' => 'sanitize_text_field',
 							),
-							'site_url' => array(
+							'site_url'    => array(
 								'required'          => true,
 								'type'              => 'string',
 								'description'       => __( 'The Site URL associated with the video.', 'godam' ),
 								'sanitize_callback' => 'esc_url_raw',
+							),
+							'like_status' => array(
+								'required'          => true,
+								'type'              => 'boolean',
+								'description'       => __( 'The like status (like or unlike).', 'godam' ),
+								'sanitize_callback' => 'rest_sanitize_boolean',
 							),
 						),
 					),
@@ -98,7 +104,7 @@ class Engagement extends Base {
 								'description'       => __( 'The ID of the video.', 'godam' ),
 								'type'              => 'integer',
 								'required'          => true,
-								'sanitize_callback' => 'absint',
+								'sanitize_callback' => 'sanitize_text_field',
 							),
 							'site_url'          => array(
 								'required'          => true,
@@ -139,9 +145,9 @@ class Engagement extends Base {
 						'args'                => array(
 							'video_id'    => array(
 								'description'       => __( 'The ID of the video.', 'godam' ),
-								'type'              => 'integer',
+								'type'              => 'string',
 								'required'          => true,
-								'sanitize_callback' => 'absint',
+								'sanitize_callback' => 'sanitize_text_field',
 							),
 							'comment_id'  => array(
 								'description'       => __( 'The ID of the parent comment.', 'godam' ),
@@ -213,7 +219,7 @@ class Engagement extends Base {
 			$response_data['views_count'] = array_sum( $analytics_data['processed_analytics']['post_views'] ?? array() );
 		}
 
-		$transcoder_job_id = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
+		$transcoder_job_id = $this->get_transcoder_job_id( $video_id );
 
 		$likes                        = $this->get_likes( $transcoder_job_id, $account_creadentials );
 		$response_data['is_liked']    = $likes['has_liked_by_user'];
@@ -365,7 +371,7 @@ class Engagement extends Base {
 		$current_user       = rtgodam_get_current_logged_in_user_data();
 		$current_user_email = $current_user['email'];
 		$current_user_name  = $current_user['name'];
-		$transcoder_job_id  = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
+		$transcoder_job_id  = $this->get_transcoder_job_id( $video_id );
 
 		$query_params = array(
 			'api_key'        => $account_creadentials['api_key'],
@@ -376,6 +382,7 @@ class Engagement extends Base {
 		);
 
 		$likes_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.wp_like';
+
 		$likes_response = wp_remote_post(
 			$likes_endpoint,
 			array(
@@ -441,7 +448,7 @@ class Engagement extends Base {
 		$current_user       = rtgodam_get_current_logged_in_user_data();
 		$current_user_email = $current_user['email'];
 		$current_user_name  = $current_user['name'];
-		$transcoder_job_id  = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
+		$transcoder_job_id  = $this->get_transcoder_job_id( $video_id );
 
 		$query_params = array(
 			'api_key'        => $account_creadentials['api_key'],
@@ -539,7 +546,7 @@ class Engagement extends Base {
 
 		$current_user       = rtgodam_get_current_logged_in_user_data();
 		$current_user_email = $current_user['email'];
-		$transcoder_job_id  = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
+		$transcoder_job_id  = $this->get_transcoder_job_id( $video_id );
 
 		$query_params = array(
 			'api_key'        => $account_creadentials['api_key'],
@@ -818,5 +825,19 @@ class Engagement extends Base {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Returns the transcoding job ID for a given video ID.
+	 *
+	 * @param int|string $video_id The video ID. If it starts with 'cmmid_', the rest is the transcoding job ID.
+	 * @return string|null The transcoding job ID, or null if not found.
+	 */
+	public function get_transcoder_job_id( $video_id ) {
+		if ( 0 === strpos( $video_id, 'cmmid_' ) ) {
+			return preg_replace( '/^cmmid_/', '', $video_id );
+		}
+		$transcoder_job_id = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
+		return ! empty( $transcoder_job_id ) ? $transcoder_job_id : null;
 	}
 }

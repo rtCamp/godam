@@ -34,7 +34,12 @@ class Video_Engagement {
 	 * @return string|void
 	 */
 	public function add_engagement_to_video( $attributes, $instance_id ) {
-		$attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : null;
+		$attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : '';
+
+		if ( empty( $attachment_id ) && isset( $attributes['cmmId'] ) ) {
+			$attachment_id = 'cmmid_' . $attributes['cmmId'];
+		}
+
 		if ( empty( $attachment_id ) || ! isset( $attributes['engagements'] ) ) {
 			return '';
 		}
