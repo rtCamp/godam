@@ -190,12 +190,8 @@ class Assets {
 		$screen           = get_current_screen();
 		$is_upload_screen = ( $screen && 'upload' === $screen->id );
 
-		$pages                 = Pages::get_instance();
-		$is_godam_settings     = ( $screen && $pages->settings_page_id === $screen->id ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Not using user-submitted data, only checking query param for page context.
-		$is_godam_video_editor = ( $screen && $pages->video_editor_page_id === $screen->id ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Not using user-submitted data, only checking query param for page context.
-
 		// Ensure WordPress media modal assets are available on admin pages where we open wp.media.
-		if ( ( $is_upload_screen || $is_godam_settings || $is_godam_video_editor ) && function_exists( 'wp_enqueue_media' ) ) {
+		if ( function_exists( 'wp_enqueue_media' ) ) {
 			wp_enqueue_media();
 		}
 
@@ -307,7 +303,7 @@ class Assets {
 			)
 		);
 
-		if ( $is_upload_screen || $is_godam_settings || $is_godam_video_editor ) {
+		if ( $is_upload_screen ) {
 			wp_enqueue_style( 'easydam-media-library' );
 		}
 
