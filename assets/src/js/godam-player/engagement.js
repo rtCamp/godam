@@ -46,6 +46,8 @@ const engagementStore = {
 	 * Initializes the Redux store for video engagement, registers the store,
 	 * sets up dispatch and select functions, subscribes to state changes, and
 	 * exposes dispatch and select functions for testing purposes.
+	 *
+	 * @return {Promise} A promise that resolves when the default engagement data is loaded.
 	 */
 	initStore() {
 		register( this.store() );
@@ -157,7 +159,7 @@ const engagementStore = {
 		 * @param {Object} storeObj          - The store object that handles video engagement data.
 		 * @return {Object} An action object containing the type and like data.
 		 */
-		userHitLke: ( videoAttachmentId, siteUrl, storeObj ) => {
+		userHitLike: ( videoAttachmentId, siteUrl, storeObj ) => {
 			const likeStatus = storeObj.select.getIsUserLiked()[ videoAttachmentId ];
 			storeObj.sendLikeData( videoAttachmentId, siteUrl, ! likeStatus );
 			const likeData = {
@@ -442,7 +444,7 @@ const engagementStore = {
 
 					likeLink.classList.add( 'is-progressing' );
 					likeLink.disabled = true;
-					self.dispatch.userHitLke( videoAttachmentId, siteUrl, self );
+					self.dispatch.userHitLike( videoAttachmentId, siteUrl, self );
 					setTimeout( () => {
 						likeLink.classList.remove( 'is-progressing' );
 						likeLink.disabled = false;
@@ -1098,7 +1100,7 @@ function CommentBox( props ) {
 			return;
 		}
 		setIsSending( true );
-		memoizedStoreObj.dispatch.userHitLke( videoAttachmentId, siteUrl, memoizedStoreObj );
+		memoizedStoreObj.dispatch.userHitLike( videoAttachmentId, siteUrl, memoizedStoreObj );
 		setTimeout( () => {
 			setIsSending( false );
 		}, 1000 );
