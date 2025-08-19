@@ -56,10 +56,6 @@ const engagementStore = {
 		this.dispatch = dispatch( storeName );
 		this.select = select( storeName );
 
-		// For testing purposes
-		window.gdm_dispatch = this.dispatch;
-		window.gdm_select = this.select;
-
 		return this.dispatch.loadDefaultData( this );
 	},
 
