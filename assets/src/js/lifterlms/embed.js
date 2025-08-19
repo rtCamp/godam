@@ -15,7 +15,7 @@ import DOMPurify from 'isomorphic-dompurify';
 /**
  * Internal dependencies
  */
-import { GODAM_APP_BASE } from '../../../../pages/godam/utils';
+import { GODAM_API_BASE } from '../../../../pages/godam/utils';
 
 /**
  * Video Completion Handler Object
@@ -44,7 +44,7 @@ const GoDAMLifterLMSEmbedIntegration = {
 	 * @since n.e.x.t
 	 */
 	init() {
-		const host = new URL( GODAM_APP_BASE ).host;
+		const host = new URL( GODAM_API_BASE ).host;
 
 		const godamIframe = document.querySelector( `.llms-av-embed iframe[src*="${ host }"]` );
 
