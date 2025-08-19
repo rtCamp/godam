@@ -72,7 +72,6 @@ class Video_Migration extends Base {
 					),
 				),
 			),
-
 		);
 	}
 
@@ -226,6 +225,12 @@ class Video_Migration extends Base {
 			'status'    => 'processing', // pending | processing | completed | error.
 			'message'   => __( 'Migration queued for processing', 'godam' ),
 		);
+
+		// For Vimeo migration, also track embed block counts.
+		if ( 'vimeo' === $migration_type ) {
+			$initial_status['vimeo_blocks_found']    = 0;
+			$initial_status['vimeo_blocks_migrated'] = 0;
+		}
 
 		update_option( $wp_option_key, $initial_status );
 
@@ -457,6 +462,9 @@ class Video_Migration extends Base {
 		$migration_status = get_option( $wp_option_key, array() );
 
 		$processed_count = 0;
+		// Track Vimeo embed block counts for this batch.
+		$vimeo_found_in_batch    = 0;
+		$vimeo_migrated_in_batch = 0;
 
 		foreach ( $post_ids as $post_id ) {
 			try {
@@ -464,7 +472,14 @@ class Video_Migration extends Base {
 				if ( 'core' === $migration_type ) {
 					$post_changed = $this->migrate_single_post_video_blocks( $post_id );
 				} elseif ( 'vimeo' === $migration_type ) {
-					$post_changed = $this->migrate_single_post_vimeo_blocks( $post_id );
+					$result = $this->migrate_single_post_vimeo_blocks( $post_id );
+					if ( is_array( $result ) ) {
+						$post_changed             = (bool) ( $result['changed'] ?? false );
+						$vimeo_found_in_batch    += (int) ( $result['found'] ?? 0 );
+						$vimeo_migrated_in_batch += (int) ( $result['migrated'] ?? 0 );
+					} else {
+						$post_changed = (bool) $result;
+					}
 				}
 
 				if ( $post_changed ) {
@@ -487,6 +502,12 @@ class Video_Migration extends Base {
 				$migration_status         = get_option( $wp_option_key, array() );
 				$migration_status['done'] = ( $migration_status['done'] ?? 0 ) + count( $post_ids );
 
+				// Accumulate Vimeo embed block counts if applicable.
+				if ( 'vimeo' === $migration_type ) {
+					$migration_status['vimeo_blocks_found']    = ( $migration_status['vimeo_blocks_found'] ?? 0 ) + $vimeo_found_in_batch;
+					$migration_status['vimeo_blocks_migrated'] = ( $migration_status['vimeo_blocks_migrated'] ?? 0 ) + $vimeo_migrated_in_batch;
+				}
+
 				// Calculate progress percentage.
 				$progress = 0;
 				if ( ! empty( $migration_status['total'] ) && $migration_status['total'] > 0 ) {
@@ -505,11 +526,21 @@ class Video_Migration extends Base {
 				if ( $migration_status['done'] >= ( $migration_status['total'] ?? 0 ) ) {
 					$migration_status['status']    = 'completed';
 					$migration_status['completed'] = current_time( 'mysql' );
-					$migration_status['message']   = sprintf(
-					/* translators: %d is the total number of posts processed */
-						__( 'Migration completed! Processed %d posts.', 'godam' ),
-						$migration_status['total'],
-					);
+					if ( 'vimeo' === $migration_type ) {
+						$migration_status['message'] = sprintf(
+						/* translators: 1: total posts processed, 2: migrated Vimeo embeds, 3: total Vimeo embeds found */
+							__( 'Migration completed! Processed %1$d posts. Migrated %2$d out of %3$d Vimeo Embed Blocks found.', 'godam' ),
+							(int) ( $migration_status['total'] ?? 0 ),
+							(int) ( $migration_status['vimeo_blocks_migrated'] ?? 0 ),
+							(int) ( $migration_status['vimeo_blocks_found'] ?? 0 )
+						);
+					} else {
+						$migration_status['message'] = sprintf(
+						/* translators: %d is the total number of posts processed */
+							__( 'Migration completed! Processed %d posts.', 'godam' ),
+							$migration_status['total'],
+						);
+					}
 				}
 
 				update_option( $wp_option_key, $migration_status );
@@ -643,7 +674,7 @@ class Video_Migration extends Base {
 	 *
 	 * @param int $post_id The ID of the post to migrate.
 	 *
-	 * @return bool True if post content was changed, false otherwise.
+	 * @return bool|array True if post content was changed, or an array with keys 'changed', 'found', 'migrated' when counting embeds.
 	 */
 	private function migrate_single_post_vimeo_blocks( $post_id ) {
 
@@ -653,8 +684,10 @@ class Video_Migration extends Base {
 			return false;
 		}
 
-		$blocks  = parse_blocks( $post->post_content );
-		$changed = false;
+		$blocks   = parse_blocks( $post->post_content );
+		$changed  = false;
+		$found    = 0;
+		$migrated = 0;
 
 		foreach ( $blocks as &$block ) {
 			if ( 'core/embed' === $block['blockName'] ) {
@@ -664,6 +697,8 @@ class Video_Migration extends Base {
 					// Skip if not a Vimeo video block.
 					continue;
 				}
+
+				++$found;
 
 				$vimeo_url = $attrs['url'] ?? '';
 				if ( empty( $vimeo_url ) ) {
@@ -711,6 +746,7 @@ class Video_Migration extends Base {
 				);
 
 				$changed = true;
+				++$migrated;
 			}
 		}
 
@@ -724,7 +760,11 @@ class Video_Migration extends Base {
 			);
 		}
 
-		return $changed;
+		return array(
+			'changed'  => $changed,
+			'found'    => $found,
+			'migrated' => $migrated,
+		);
 	}
 
 	/**
