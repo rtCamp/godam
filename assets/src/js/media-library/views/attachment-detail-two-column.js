@@ -319,6 +319,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			const posterDiv = document.querySelector( '.mejs-poster' );
 			if ( posterDiv && selected ) {
 				posterDiv.style.backgroundImage = `url('${ selected }')`;
+				posterDiv.style.backgroundSize = 'contain';
 				posterDiv.querySelector( 'img' ).setAttribute( 'src', selected );
 				posterDiv.querySelector( 'img' ).style.opacity = '1';
 			}
