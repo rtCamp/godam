@@ -5,13 +5,19 @@
  */
 
 #rt-transcoder-media-library-root {
-	min-width: 280px;
+	$sidebar-width: 280px;
+	$toggle-width: 25px;
+	$toggle-offset: 12px;
+
+	position: relative;
+	overflow: visible;
+
+	min-width: $sidebar-width;
 	padding: 0;
 	border: 1px solid #E0E0E0;
 	display: flex;
 	flex-direction: column;
 	min-height: calc(100vh - 34px);
-	overflow: auto;
 	height: 100%;
 
 	* {
@@ -160,8 +166,42 @@
 		background:#F5F5F5;
 	}
 
+	#media-folder-toggle-button {
+		position: absolute;
+		top: 50px;
+		min-width: $toggle-width;
+		width: $toggle-width;
+		height: $toggle-width;
+		right: calc(-1 * $toggle-width);
+		visibility: visible;
+		z-index: 10;
+		transition: right 0.18s ease, transform 0.18s ease;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		pointer-events: auto;
+		padding: 0;
+		margin: 0;
+	}
+
 	&.hide-sidebar {
-		display: none;
+		width: 0;
+		min-width: 0;
+		pointer-events: none;
+		overflow: visible;
+
+		> *:not(#media-folder-toggle-button) {
+			display: none;
+		}
+
+		#media-folder-toggle-button {
+			position: absolute;
+			top: 50px;
+			left: 0;
+			right: $toggle-offset;
+			visibility: visible;
+			pointer-events: auto;
+		}
 	}
 
 	.folder-context-menu__item {

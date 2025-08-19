@@ -50,6 +50,7 @@ const App = () => {
 		y: 0,
 		folderId: null,
 	} );
+	const [ isSidebarHidden, setIsSidebarHidden ] = useState( false );
 
 	const handleClick = useCallback( ( id ) => {
 		if ( isMultiSelecting ) {
@@ -78,10 +79,22 @@ const App = () => {
 		if ( mediaModal ) {
 			mediaModal.classList.add( 'hide-sidebar' );
 		}
-		const mediaToggleButton = document.getElementById( 'media-folder-toggle-button' );
-		if ( mediaToggleButton ) {
-			mediaToggleButton.innerHTML = mediaToggleButton.innerHTML.replace( /Hide/g, 'Show' );
+		setIsSidebarHidden( true );
+	};
+
+	const toggleSidebar = () => {
+		const sidebar = document.getElementById( 'rt-transcoder-media-library-root' );
+		const mediaModal = document.querySelector( '.media-modal-content' );
+		const newHidden = ! isSidebarHidden;
+
+		if ( sidebar ) {
+			sidebar.classList.toggle( 'hide-sidebar', newHidden );
 		}
+		if ( mediaModal ) {
+			mediaModal.classList.toggle( 'hide-sidebar', newHidden );
+		}
+
+		setIsSidebarHidden( newHidden );
 	};
 
 	const handleContextMenu = ( e, folderId, folder ) => {
@@ -109,6 +122,14 @@ const App = () => {
 				variant="secondary"
 				className="button--full close-folder-menu-mobile"
 				onClick={ () => closeFolderMenu() }
+			/>
+			<Button
+				id="media-folder-toggle-button"
+				__next40pxDefaultSize
+				variant="secondary"
+				className="button--full toggle-folder-button"
+				onClick={ () => toggleSidebar() }
+				icon={ isSidebarHidden ? 'arrow-right-alt2' : 'arrow-left-alt2' }
 			/>
 			<div className="control-buttons">
 				<div className="button-group mb-spacing">
