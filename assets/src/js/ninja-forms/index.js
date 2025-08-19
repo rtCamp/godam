@@ -52,7 +52,6 @@
 			const nonce = view.model.get( 'recorder_nonce' );
 			const $file = $( view.el ).find( '.nf-element' );
 			let files = view.model.get( 'files' );
-			console.log( files );
 			/*
 			 * Make sure that our files array isn't undefined.
 			 * If it is, set it to an empty array.
@@ -72,7 +71,10 @@
 				field_id: fieldID,
 				nonce,
 			};
-			console.log( formData );
+
+			$file[ 0 ].addEventListener( 'godamffchange', ( event ) => {
+				// @todo - File Upload Procedure with error and progress handling.
+			} );
 		},
 
 		getSubmitData( fieldData, field ) {
@@ -84,9 +86,10 @@
 		/**
 		 * Check files have been submitted successfully for required field check
 		 *
-		 * @param  el
-		 * @param  model
-		 * @return {boolean}
+		 * @param {*} el
+		 * @param {*} model
+		 *
+		 * @return {boolean} Boolean indicating if the field is valid
 		 */
 		validateRequired( el, model ) {
 			if ( ! model.get( 'firstTouch' ) ) {
