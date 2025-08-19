@@ -24,8 +24,8 @@ const options = [
  * @return {WPElement} The video settings component.
  */
 const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false } ) => {
-	const { autoplay, controls, loop, muted, preload, engagements } =
-		attributes;
+	const { autoplay, controls, loop, muted, preload, showShareButton, engagements } =
+	attributes;
 
 	// Show a specific help for autoplay setting.
 	const getAutoplayHelp = useMemo( () => {
@@ -45,6 +45,14 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 		return null;
 	}, [ autoplay, muted ] );
 
+	const getShowShareButtonHelp = useMemo( () => {
+		if ( ! showShareButton ) {
+			return __( 'Removes the share button from the video player.', 'godam' );
+		}
+
+		return null;
+	}, [ showShareButton ] );
+
 	const toggleFactory = useMemo( () => {
 		const toggleAttribute = ( attribute ) => {
 			return ( newValue ) => {
@@ -58,6 +66,7 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 			muted: toggleAttribute( 'muted' ),
 			controls: toggleAttribute( 'controls' ),
 			engagements: toggleAttribute( 'engagements' ),
+			showShareButton: toggleAttribute( 'showShareButton' ),
 		};
 	}, [ setAttributes ] );
 
@@ -100,6 +109,13 @@ const VideoSettings = ( { setAttributes, attributes, isInsideQueryLoop = false }
 				label={ __( 'Playback controls', 'godam' ) }
 				onChange={ toggleFactory.controls }
 				checked={ !! controls }
+			/>
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Share Button', 'godam' ) }
+				onChange={ toggleFactory.showShareButton }
+				checked={ !! showShareButton }
+				help={ getShowShareButtonHelp }
 			/>
 			{ ! isInsideQueryLoop && (
 				<SelectControl

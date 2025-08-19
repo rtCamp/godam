@@ -484,7 +484,8 @@ class ShareManager {
 		this.player.jobId = jobId;
 
 		const container = this.player.el().closest( '.easydam-video-container' );
-		if ( ! container || jobId === '' ) {
+
+		if ( ! container || jobId === '' || ! this.videoSetupOptions.showShareBtn ) {
 			return;
 		}
 
