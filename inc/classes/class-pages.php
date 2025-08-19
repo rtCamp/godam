@@ -72,7 +72,7 @@ class Pages {
 	 *
 	 * @var string
 	 */
-	private $video_editor_page_id = 'godam_page_rtgodam_video_editor';
+	public $video_editor_page_id = 'godam_page_rtgodam_video_editor';
 
 	/**
 	 * Analytics page ID.
@@ -93,11 +93,11 @@ class Pages {
 	 *
 	 * @var string
 	 */
-	private $settings_page_id = 'godam_page_rtgodam_settings';
+	public $settings_page_id = 'godam_page_rtgodam_settings';
 
 	/**
 	 * Tools page ID.
-	 * 
+	 *
 	 * @var string
 	 */
 	private $tools_page_id = 'godam_page_rtgodam_tools';
