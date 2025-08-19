@@ -25,11 +25,4 @@ export const isOnStarterPlan = window?.userData?.userApiData?.active_plan === 'S
 /**
  * GODAM API base URL
  */
-export const GODAM_API_BASE = 'https://godam.io';
-
-/**
- * GODAM App base URL
- *
- * @since n.e.x.t
- */
-export const GODAM_APP_BASE = 'https://app.godam.io';
+export const GODAM_API_BASE = window?.godamSettings?.apiBase || '';
