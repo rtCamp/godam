@@ -241,8 +241,6 @@ const engagementStore = {
 		 * @return {Object} An action object containing the type and error message.
 		 */
 		errorHappened: ( message ) => {
-			// eslint-disable-next-line no-alert
-			alert( message );
 			return {
 				type: ACTIONS.ERROR,
 				message,
@@ -448,7 +446,7 @@ const engagementStore = {
 					setTimeout( () => {
 						likeLink.classList.remove( 'is-progressing' );
 						likeLink.disabled = false;
-					}, 1000 );
+					}, 500 );
 				} );
 			}
 
@@ -1080,9 +1078,9 @@ function CommentBox( props ) {
 			document.body.classList.remove( 'no-scroll' );
 
 			// Godam gallery cleanup if needed
-			const godamGalleryModalCloseer = document.querySelector( '.godam-modal.is-gallery .godam-modal-close' );
-			if ( godamGalleryModalCloseer ) {
-				godamGalleryModalCloseer.click();
+			const godamGalleryModalCloser = document.querySelector( '.godam-modal.is-gallery .godam-modal-close' );
+			if ( godamGalleryModalCloser ) {
+				godamGalleryModalCloser.click();
 			}
 		};
 	}, [ videoFigureId, memoizedStoreObj ] );

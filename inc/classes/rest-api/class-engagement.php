@@ -199,10 +199,10 @@ class Engagement extends Base {
 		$video_id      = $request->get_param( 'video_id' );
 		$site_url      = $request->get_param( 'site_url' );
 
-		$account_creadentials = $this->access_creadentials_check();
+		$account_credentials = $this->access_creadentials_check();
 
-		if ( $account_creadentials instanceof WP_REST_Response ) {
-			return $account_creadentials;
+		if ( $account_credentials instanceof WP_REST_Response ) {
+			return $account_credentials;
 		}
 
 		$query_params = wp_parse_args(
@@ -210,7 +210,7 @@ class Engagement extends Base {
 				'video_id' => $video_id,
 				'site_url' => $site_url,
 			),
-			$account_creadentials,
+			$account_credentials,
 		);
 
 		$analytics_data = $this->get_views( $query_params );
@@ -221,11 +221,11 @@ class Engagement extends Base {
 
 		$transcoder_job_id = $this->get_transcoder_job_id( $video_id );
 
-		$likes                        = $this->get_likes( $transcoder_job_id, $account_creadentials );
+		$likes                        = $this->get_likes( $transcoder_job_id, $account_credentials );
 		$response_data['is_liked']    = $likes['has_liked_by_user'];
 		$response_data['likes_count'] = $likes['likes'];
 
-		$comments                        = $this->get_comments( $transcoder_job_id, $account_creadentials );
+		$comments                        = $this->get_comments( $transcoder_job_id, $account_credentials );
 		$response_data['comments']       = $comments['comments'];
 		$response_data['comments_count'] = $comments['total'];
 		$response_data['title']          = get_the_title( $video_id );
@@ -362,10 +362,10 @@ class Engagement extends Base {
 		$site_url      = $request->get_param( 'site_url' );
 		$like_status   = $request->get_param( 'like_status' );
 
-		$account_creadentials = $this->access_creadentials_check();
+		$account_credentials = $this->access_creadentials_check();
 
-		if ( $account_creadentials instanceof WP_REST_Response ) {
-			return $account_creadentials;
+		if ( $account_credentials instanceof WP_REST_Response ) {
+			return $account_credentials;
 		}
 
 		$current_user       = rtgodam_get_current_logged_in_user_data();
@@ -374,7 +374,7 @@ class Engagement extends Base {
 		$transcoder_job_id  = $this->get_transcoder_job_id( $video_id );
 
 		$query_params = array(
-			'api_key'        => $account_creadentials['api_key'],
+			'api_key'        => $account_credentials['api_key'],
 			'is_like'        => $like_status,
 			'reference_name' => $transcoder_job_id,
 			'comment_email'  => $current_user_email,
@@ -439,10 +439,10 @@ class Engagement extends Base {
 		$comment_text      = $request->get_param( 'comment_text' );
 		$comment_type      = $request->get_param( 'comment_type' );
 
-		$account_creadentials = $this->access_creadentials_check();
+		$account_credentials = $this->access_creadentials_check();
 
-		if ( $account_creadentials instanceof WP_REST_Response ) {
-			return $account_creadentials;
+		if ( $account_credentials instanceof WP_REST_Response ) {
+			return $account_credentials;
 		}
 
 		$current_user       = rtgodam_get_current_logged_in_user_data();
@@ -451,7 +451,7 @@ class Engagement extends Base {
 		$transcoder_job_id  = $this->get_transcoder_job_id( $video_id );
 
 		$query_params = array(
-			'api_key'        => $account_creadentials['api_key'],
+			'api_key'        => $account_credentials['api_key'],
 			'reference_name' => $transcoder_job_id,
 			'content'        => $comment_text,
 			'comment_email'  => $current_user_email,
@@ -538,10 +538,10 @@ class Engagement extends Base {
 		$comment_id  = $request->get_param( 'comment_id' );
 		$delete_type = $request->get_param( 'delete_type' );
 
-		$account_creadentials = $this->access_creadentials_check();
+		$account_credentials = $this->access_creadentials_check();
 
-		if ( $account_creadentials instanceof WP_REST_Response ) {
-			return $account_creadentials;
+		if ( $account_credentials instanceof WP_REST_Response ) {
+			return $account_credentials;
 		}
 
 		$current_user       = rtgodam_get_current_logged_in_user_data();
@@ -549,7 +549,7 @@ class Engagement extends Base {
 		$transcoder_job_id  = $this->get_transcoder_job_id( $video_id );
 
 		$query_params = array(
-			'api_key'        => $account_creadentials['api_key'],
+			'api_key'        => $account_credentials['api_key'],
 			'reference_name' => $transcoder_job_id,
 			'comment_email'  => $current_user_email,
 			'name'           => $comment_id,
@@ -615,17 +615,17 @@ class Engagement extends Base {
 	 * Gets comments for a transcoder job ID.
 	 *
 	 * @param string $transcoder_job_id Transcoder job ID.
-	 * @param array  $account_creadentials Account credentials.
+	 * @param array  $account_credentials Account credentials.
 	 *
 	 * @return array
 	 */
-	public function get_comments( $transcoder_job_id, $account_creadentials ) {
+	public function get_comments( $transcoder_job_id, $account_credentials ) {
 
 		$comment_tree  = array();
 		$comment_index = array();
 		$query_params  = array(
 			'name'    => $transcoder_job_id,
-			'api_key' => $account_creadentials['api_key'],
+			'api_key' => $account_credentials['api_key'],
 		);
 
 		$cache_key   = 'rtgodam-engagements-comments-transcoder-job-id-' . $transcoder_job_id;
@@ -698,16 +698,16 @@ class Engagement extends Base {
 	 * has liked the video and returns the like data.
 	 *
 	 * @param string $transcoder_job_id   The ID of the transcoder job associated with the video.
-	 * @param array  $account_creadentials The API credentials for accessing Godam services.
+	 * @param array  $account_credentials The API credentials for accessing Godam services.
 	 * @return array                      An array containing 'has_liked_by_user' and 'likes' count.
 	 */
-	public function get_likes( $transcoder_job_id, $account_creadentials ) {
+	public function get_likes( $transcoder_job_id, $account_credentials ) {
 		$current_user       = rtgodam_get_current_logged_in_user_data();
 		$current_user_email = $current_user['email'];
 
 		$query_params = array(
 			'name'          => $transcoder_job_id,
-			'api_key'       => $account_creadentials['api_key'],
+			'api_key'       => $account_credentials['api_key'],
 			'comment_email' => $current_user_email,
 		);
 
