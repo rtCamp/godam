@@ -12,7 +12,7 @@
     --godam-video-engagement-font-family: sans-serif;
     --godam-video-engagement-brand-neutral-shades-25: #E0E0E0;
     --godam-video-engagement-brand-neutral-shades-100: #B8B8B8;
-    --godam-video-engagement-modal-close-button-shadow: 0px 2.09px 4.18px 2.09px #00000012;
+    --godam-video-engagement-modal-close-button-shadow: 0 2.09px 4.18px 2.09px #00000012;
 }
 
 %progressing {
@@ -122,6 +122,7 @@
         }
 
         &.is-liked {
+
             svg {
                 fill: var(--godam-video-engagement-icon-color--like);
                 stroke: var(--godam-video-engagement-icon-color--like);
@@ -132,6 +133,7 @@
     &--like,
     &--comment,
     &--view {
+
         &-icon {
             display: flex;
             padding: 10px;
@@ -141,6 +143,7 @@
             flex-wrap: wrap;
             border-radius: 50%;
         }
+
         &-count {
             position: relative;
             top: 10px;
@@ -278,7 +281,7 @@
                     border: none;
                     font-size: 1.5rem;
                     cursor: pointer;
-                    background-image: url('../images/expend-comment.svg');
+                    background-image: url(../images/expend-comment.svg);
                     background-position: center;
                     background-size: 100% 100%;
                     background-repeat: no-repeat;
@@ -325,7 +328,7 @@
         &--close-button {
             color:transparent;
             background-color: transparent;
-            background-image: url('../images/close-comment-modal.svg');
+            background-image: url(../images/close-comment-modal.svg);
             background-position: center;
             background-size: 100% 100%;
             background-repeat: no-repeat;
@@ -353,7 +356,7 @@
 
         &-leave-comment {
             position: sticky;
-            bottom: 0px;
+            bottom: 0;
             background-color: var(--wp--preset--color--white, #fff);
             z-index: 10;
             padding: 1.5rem;
@@ -388,13 +391,13 @@
                     background: none;
 
                     &::before {
-                        background-image: url('../images/likes-count.svg');
+                        background-image: url(../images/likes-count.svg);
                     }
 
                     &.is-liked {
 
                         &::before {
-                            mask-image: url('../images/likes-count.svg');
+                            mask-image: url(../images/likes-count.svg);
                             mask-repeat: no-repeat;
                             background-color: var(--godam-video-engagement-icon-color--like);
                         }
@@ -412,7 +415,7 @@
                 &-views {
 
                     &::before {
-                        background-image: url('../images/views-count.svg');
+                        background-image: url(../images/views-count.svg);
                     }
                 }
             }
@@ -422,7 +425,7 @@
                 line-height: 3rem;
                 color: var(--wp--preset--color--black, #000);
                 height: 3rem;
-                border: 1px solid var(--Brand-Neutral-Shades-50, #CCCCCC);
+                border: 1px solid var(--Brand-Neutral-Shades-50, #CCC);
                 backdrop-filter: blur(4px);
                 border-radius: 8px;
                 text-align: center;
@@ -436,7 +439,7 @@
                     right: 10px;
                     width: 50px;
                     height: 100%;
-                    background-image: url('../images/login-to-comment-bg.png');
+                    background-image: url(../images/login-to-comment-bg.png);
                     z-index: -1;
                     background-repeat: no-repeat;
                     background-position: right;
@@ -494,8 +497,6 @@
                             display: block;
                             margin-top: 10px;
                             background-color: transparent;
-                            border: none;
-                            color: var(--godam-video-engagement-icon-color);
                             font-size: 0.9rem;
                             line-height: 1;
                             cursor: pointer;
@@ -511,6 +512,7 @@
                             }
 
                             &.is-progressing {
+
                                 @extend %progressing;
                                 color: transparent;
                                 cursor: not-allowed;
@@ -567,6 +569,7 @@
                 }
 
                 &:last-child:not(.has-children) {
+
                     &::after {
                         // content: "";
                         position: absolute;
@@ -660,6 +663,7 @@
         }
 
         &-form {
+
             &-textarea {
                 display: flex;
                 gap: 5px;
@@ -686,7 +690,7 @@
                     width: 24px;
                     height: 24px;
                     color: transparent;
-                    background-image: url('../images/comment-send.svg');
+                    background-image: url(../images/comment-send.svg);
                     background-size: 100% 100%;
                     background-position: center;
                     background-repeat: no-repeat;
@@ -698,6 +702,7 @@
                     }
 
                     &.is-comment-progressing {
+
                         @extend %progressing;
                     }
                 }
@@ -715,7 +720,7 @@
                 border: none;
                 padding: 0;
                 font-size: 12px;
-                line-height: 18px;
+                line-height: 1.5;
                 font-weight: 500;
                 color: #666;
 
@@ -724,7 +729,7 @@
                     display: block;
                     width: 16px;
                     height: 16px;
-                    background-image: url('../images/charm_reply.svg');
+                    background-image: url(../images/charm_reply.svg);
                     background-size: 100% 100%;
                     background-position: center;
                     background-repeat: no-repeat;
@@ -735,20 +740,23 @@
                 }
 
                 &.comment-button-reply {
+
                     &::before {
-                        background-image: url('../images/charm_reply.svg');
+                        background-image: url(../images/charm_reply.svg);
                     }
                 }
 
                 &.comment-button-edit {
+
                     &::before {
-                        background-image: url('../images/charm_edit.svg');
+                        background-image: url(../images/charm_edit.svg);
                     }
                 }
 
                 &.comment-button-delete {
+
                     &::before {
-                        background-image: url('../images/charm_delete.svg');
+                        background-image: url(../images/charm_delete.svg);
                     }
 
                     &.is-deleting {
@@ -778,7 +786,7 @@
             }
 
             &-timestamp {
-                background-image: url('../images/timestamp.svg') !important;
+                background-image: url(../images/timestamp.svg) !important;
                 cursor: pointer;
             }
         }
@@ -830,6 +838,7 @@
                 &-content.is-skip-engagements {
 
                     .rtgodam-video-engagement--comment-modal--video-figure {
+
                         figure,
                         .godam-video-wrapper,
                         .easydam-video-container,
@@ -844,15 +853,20 @@
 }
 
 @keyframes pop {
+
   0%   { transform: scale(1); }
+
   50%  { transform: scale(1.2); }
+
   100% { transform: scale(1); }
 }
 
 @keyframes comment-loading {
+
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
