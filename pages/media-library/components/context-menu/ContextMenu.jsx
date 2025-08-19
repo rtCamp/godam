@@ -23,8 +23,23 @@ import {
 	NewFolderIcon,
 	RenameFolderIcon,
 } from '../icons';
-
+import { utilities } from '../../data/utilities';
 import './css/context-menu.scss';
+
+/**
+ * User roles from global MediaLibrary object.
+ */
+const userRoles = window.MediaLibrary?.roles || [];
+
+/**
+ * Checks if the user has at least one of the allowed roles.
+ *
+ * @param {string[]} allowedRoles - Array of allowed role strings.
+ * @return {boolean} True if user has at least one allowed role.
+ */
+const hasRole = ( allowedRoles ) => {
+	return userRoles.some( ( role ) => allowedRoles.includes( role ) );
+};
 
 const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	const dispatch = useDispatch();
@@ -57,10 +72,41 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 		return targets.length > 0 && targets.every( ( folder ) => folder?.meta?.bookmark );
 	}, [ allFolders, targetFolderIds ] );
 
+	/**
+	 * Checks if any parent of the selected folder(s) is locked.
+	 *
+	 * For multi-select, checks all selected folders.
+	 *
+	 * @type {boolean}
+	 */
+	const isAnySelectedParentLocked = useMemo( () => {
+		const ids = isMultiSelecting && multiSelectedFolderIds.length > 0 ? multiSelectedFolderIds : [ folderId ];
+		return ids.some( ( id ) => utilities.isAnyParentLocked( id, allFolders ) );
+	}, [ isMultiSelecting, multiSelectedFolderIds, folderId, allFolders ] );
+
 	const [ updateFolderMutation ] = useUpdateFolderMutation();
 	const [ downloadZipMutation ] = useDownloadZipMutation();
 	const [ bulkLockFoldersMutation ] = useBulkLockFoldersMutation();
 	const [ bulkBookmarkFoldersMutation ] = useBulkBookmarkFoldersMutation();
+
+	/**
+	 * Utility to get all descendant folder IDs for a given folder ID.
+	 *
+	 * @param {number} parentId
+	 * @param {Array}  folders
+	 * @return {Array} descendant IDs (including parentId itself)
+	 */
+	const getAllDescendantFolderIds = ( parentId, folders ) => {
+		const result = [];
+		const stack = [ parentId ];
+		while ( stack.length > 0 ) {
+			const currentId = stack.pop();
+			result.push( currentId );
+			const children = folders.filter( ( f ) => f.parent === currentId );
+			children.forEach( ( child ) => stack.push( child.id ) );
+		}
+		return result;
+	};
 
 	// Close menu if clicked outside.
 	useEffect( () => {
@@ -279,22 +325,14 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				type: 'fail',
 			} ) );
 		} else {
-			const folder = currentFolder;
-			const isCurrentlyLocked = folder?.meta?.locked;
-			const updatedFolder = {
-				...folder,
-				meta: {
-					...folder?.meta,
-					locked: ! isCurrentlyLocked,
-					bookmark: Boolean( folder?.meta?.bookmark ?? false ), // Ensure bookmark status remains unchanged
-				},
-			};
-
 			try {
 				if ( multiSelectedFolderIds.length <= 0 ) {
-					await updateFolderMutation( updatedFolder ).unwrap();
+					const isCurrentlyLocked = currentFolder?.meta?.locked;
+					const descendants = getAllDescendantFolderIds( currentFolder.id, allFolders );
 
-					dispatch( lockFolder( updatedFolder.id ) );
+					const response = await bulkLockFoldersMutation( { folderIds: descendants, lockedStatus: ! isCurrentlyLocked } ).unwrap();
+
+					dispatch( lockFolder( { ids: response.updated_ids, status: ! isCurrentlyLocked } ) );
 
 					dispatch(
 						updateSnackbar( {
@@ -306,7 +344,18 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 					);
 				} else {
 					const areLocked = ! areAllTargetFoldersLocked;
-					const response = await bulkLockFoldersMutation( { folderIds: multiSelectedFolderIds, lockedStatus: areLocked } ).unwrap();
+					const selectedFolderIds = [];
+
+					multiSelectedFolderIds.forEach( ( folder ) => {
+						const descendants = getAllDescendantFolderIds( folder, allFolders );
+						descendants.forEach( ( descendant ) => {
+							if ( ! selectedFolderIds.includes( descendant ) ) {
+								selectedFolderIds.push( descendant );
+							}
+						} );
+					} );
+
+					const response = await bulkLockFoldersMutation( { folderIds: selectedFolderIds, lockedStatus: areLocked } ).unwrap();
 
 					dispatch( lockFolder( { ids: response.updated_ids, status: areLocked } ) );
 
@@ -324,7 +373,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				);
 			}
 		}
-	}, [ dispatch, updateFolderMutation, bulkLockFoldersMutation, currentFolder, multiSelectedFolderIds, areAllTargetFoldersLocked ] );
+	}, [ dispatch, bulkLockFoldersMutation, currentFolder, allFolders, multiSelectedFolderIds, areAllTargetFoldersLocked ] );
 
 	const handleMenuItemClick = ( actionType ) => {
 		switch ( actionType ) {
@@ -362,38 +411,42 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			ref={ menuRef }
 			style={ { top: position.top, left: position.left } }
 		>
-			<Button
-				icon={ NewFolderIcon }
-				onClick={ () => handleMenuItemClick( 'newSubFolder' ) }
-				className="folder-context-menu__item"
-				disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder || currentFolder?.meta?.locked }
-			>
-				{ __( 'New Sub-folder', 'godam' ) }
-			</Button>
-			<Button
-				icon={ RenameFolderIcon }
-				onClick={ () => handleMenuItemClick( 'rename' ) }
-				className="folder-context-menu__item"
-				disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder }
-			>
-				{ __( 'Rename', 'godam' ) }
-			</Button>
-			<Button
-				icon={ LockFolderIcon }
-				onClick={ () => handleMenuItemClick( 'lockFolder' ) }
-				className="folder-context-menu__item"
-				disabled={ isSpecialFolder }
-			>
-				{ ! currentFolder?.meta?.locked || ( isMultiSelecting && ! areAllTargetFoldersLocked ) ? __( 'Lock Folder', 'godam' ) : __( 'Unlock Folder', 'godam' ) }
-			</Button>
-			<Button
-				icon={ BookmarkStarIcon }
-				onClick={ () => handleMenuItemClick( 'addBookmark' ) }
-				className="folder-context-menu__item"
-				disabled={ isSpecialFolder }
-			>
-				{ ! currentFolder?.meta?.bookmark || ( isMultiSelecting && ! areAllTargetFoldersBookmarked ) ? __( 'Add Bookmark', 'godam' ) : __( 'Remove Bookmark', 'godam' ) }
-			</Button>
+			{ hasRole( [ 'superadmin', 'administrator', 'editor' ] ) && (
+				<>
+					<Button
+						icon={ NewFolderIcon }
+						onClick={ () => handleMenuItemClick( 'newSubFolder' ) }
+						className="folder-context-menu__item folder-context-menu-new-folder"
+						disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder || currentFolder?.meta?.locked }
+					>
+						{ __( 'New Sub-folder', 'godam' ) }
+					</Button>
+					<Button
+						icon={ RenameFolderIcon }
+						onClick={ () => handleMenuItemClick( 'rename' ) }
+						className="folder-context-menu__item"
+						disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder || currentFolder?.meta?.locked }
+					>
+						{ __( 'Rename', 'godam' ) }
+					</Button>
+					<Button
+						icon={ LockFolderIcon }
+						onClick={ () => handleMenuItemClick( 'lockFolder' ) }
+						className="folder-context-menu__item"
+						disabled={ isSpecialFolder || isAnySelectedParentLocked }
+					>
+						{ ! currentFolder?.meta?.locked || ( isMultiSelecting && ! areAllTargetFoldersLocked ) ? __( 'Lock Folder', 'godam' ) : __( 'Unlock Folder', 'godam' ) }
+					</Button>
+					<Button
+						icon={ BookmarkStarIcon }
+						onClick={ () => handleMenuItemClick( 'addBookmark' ) }
+						className="folder-context-menu__item"
+						disabled={ isSpecialFolder }
+					>
+						{ ! currentFolder?.meta?.bookmark || ( isMultiSelecting && ! areAllTargetFoldersBookmarked ) ? __( 'Add Bookmark', 'godam' ) : __( 'Remove Bookmark', 'godam' ) }
+					</Button>
+				</>
+			) }
 			<Button
 				icon={ DownloadZipIcon }
 				onClick={ () => handleMenuItemClick( 'downloadZip' ) }
@@ -402,14 +455,16 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			>
 				{ __( 'Download Zip', 'godam' ) }
 			</Button>
-			<Button
-				icon={ DeleteIcon }
-				onClick={ () => handleMenuItemClick( 'delete' ) }
-				className="folder-context-menu__item"
-				disabled={ isSpecialFolder }
-			>
-				{ __( 'Delete', 'godam' ) }
-			</Button>
+			{ hasRole( [ 'superadmin', 'administrator' ] ) && (
+				<Button
+					icon={ DeleteIcon }
+					onClick={ () => handleMenuItemClick( 'delete' ) }
+					className="folder-context-menu__item"
+					disabled={ isSpecialFolder || currentFolder?.meta?.locked }
+				>
+					{ __( 'Delete', 'godam' ) }
+				</Button>
+			) }
 		</div>
 	);
 };
