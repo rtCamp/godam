@@ -1,14 +1,14 @@
 :root {
-    --godam-video-engagement-background-color: rgb(0, 0, 0);
-    --godam-video-engagement-modal-background-color: rgba(0, 0, 0, 0.5);
-    --godam-video-engagement-icon-color: rgb(113, 118, 123);
-    --godam-video-engagement-icon-color--like: rgb(249, 24, 128);
-    --godam-video-engagement-icon-color--like-background: rgba(249, 24, 128, 0.1);
-    --godam-video-engagement-icon-color--comment: rgb(29, 155, 240);
-    --godam-video-engagement-icon-color--comment-background: rgba(29, 155, 240, 0.1);
-    --godam-video-engagement-icon-color--view: rgb(0, 186, 124);
-    --godam-video-engagement-icon-color--view-background: rgba(0, 186, 124, 0.1);
-    --godam-video-engagement-comment--border-color: rgb(136, 136, 136, 0.5);
+    --godam-video-engagement-background-color: rgb( 0, 0, 0 );
+    --godam-video-engagement-modal-background-color: rgba( 0, 0, 0, 0.5 );
+    --godam-video-engagement-icon-color: rgb( 113, 118, 123 );
+    --godam-video-engagement-icon-color--like: rgb( 249, 24, 128 );
+    --godam-video-engagement-icon-color--like-background: rgba( 249, 24, 128, 0.1 );
+    --godam-video-engagement-icon-color--comment: rgb( 29, 155, 240 );
+    --godam-video-engagement-icon-color--comment-background: rgba( 29, 155, 240, 0.1 );
+    --godam-video-engagement-icon-color--view: rgb( 0, 186, 124 );
+    --godam-video-engagement-icon-color--view-background: rgba( 0, 186, 124, 0.1 );
+    --godam-video-engagement-comment--border-color: rgb( 136, 136, 136, 0.5 );
     --godam-video-engagement-font-family: sans-serif;
     --godam-video-engagement-brand-neutral-shades-25: #E0E0E0;
     --godam-video-engagement-brand-neutral-shades-100: #B8B8B8;
@@ -33,8 +33,8 @@
         position: absolute;
         width: 10px;
         height: 10px;
-        border: 2px solid var(--wp--preset--color--white, #fff);
-        border-top: 2px solid var(--wp--preset--color--black, #000);
+        border: 2px solid var( --wp--preset--color--white, #fff );
+        border-top: 2px solid var( --wp--preset--color--black, #000 );
         border-radius: 50%;
         animation: comment-loading 1s linear infinite;
     }
@@ -46,14 +46,14 @@
 }
 
 .rtgodam-video-engagement {
-    font-family: var(--godam-video-engagement-font-family);
+    font-family: var( --godam-video-engagement-font-family );
     display: flex;
     align-items: center;
     gap: 10px;
     justify-content: flex-end;
     margin-top: 0 !important;
-    border: 1px solid var(--godam-video-engagement-background-color);
-    background-color: var(--godam-video-engagement-background-color);
+    border: 1px solid var( --godam-video-engagement-background-color );
+    background-color: var( --godam-video-engagement-background-color );
     border-radius: 0 0 8px 8px;
 
     &--link-disabled {
@@ -74,8 +74,8 @@
                 left: 22px;
                 width: 10px;
                 height: 10px;
-                border: 2px solid var(--wp--preset--color--white, #fff);
-                border-top: 2px solid var(--wp--preset--color--black, #000);
+                border: 2px solid var( --wp--preset--color--white, #fff );
+                border-top: 2px solid var( --wp--preset--color--black, #000 );
                 border-radius: 50%;
                 animation: comment-loading 1s linear infinite;
             }
@@ -83,7 +83,7 @@
     }
 
     a {
-        color: var(--godam-video-engagement-icon-color);
+        color: var( --godam-video-engagement-icon-color );
         text-decoration: none;
         display: flex;
         flex-wrap: nowrap;
@@ -91,25 +91,25 @@
         transition: all 0.2s ease;
         font-size: 1.2rem;
         line-height: 1;
-        font-family: var(--godam-video-engagement-font-family);
+        font-family: var( --godam-video-engagement-font-family );
         font-weight: 400;
 
         &.is-progressing,
         &:hover {
 
             & .rtgodam-video-engagement--like-icon {
-                color: var(--godam-video-engagement-icon-color--like);
-                background-color: var(--godam-video-engagement-icon-color--like-background);
+                color: var( --godam-video-engagement-icon-color--like );
+                background-color: var( --godam-video-engagement-icon-color--like-background );
             }
 
             & .rtgodam-video-engagement--comment-icon {
-                color: var(--godam-video-engagement-icon-color--comment);
-                background-color: var(--godam-video-engagement-icon-color--comment-background);
+                color: var( --godam-video-engagement-icon-color--comment );
+                background-color: var( --godam-video-engagement-icon-color--comment-background );
             }
 
             & .rtgodam-video-engagement--view-icon {
-                color: var(--godam-video-engagement-icon-color--view);
-                background-color: var(--godam-video-engagement-icon-color--view-background);
+                color: var( --godam-video-engagement-icon-color--view );
+                background-color: var( --godam-video-engagement-icon-color--view-background );
             }
         }
 
@@ -124,8 +124,8 @@
         &.is-liked {
 
             svg {
-                fill: var(--godam-video-engagement-icon-color--like);
-                stroke: var(--godam-video-engagement-icon-color--like);
+                fill: var( --godam-video-engagement-icon-color--like );
+                stroke: var( --godam-video-engagement-icon-color--like );
             }
         }
     }
@@ -157,15 +157,15 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: var(--godam-video-engagement-modal-background-color);
+        background-color: var( --godam-video-engagement-modal-background-color );
         display: flex;
         justify-content: center;
         align-items: center;
         flex-wrap: wrap;
         align-content: center;
         z-index: 30;
-        backdrop-filter: blur(40px);
-        -webkit-backdrop-filter: blur(40px);
+        backdrop-filter: blur( 40px );
+        -webkit-backdrop-filter: blur( 40px );
 
             &-header {
                 display: flex;
@@ -176,12 +176,12 @@
             }
 
         &-content {
-            background-color: var(--wp--preset--color--white, #fff);
+            background-color: var( --wp--preset--color--white, #fff );
             border-radius: 10px;
-            padding: clamp(16px, 3.5vw, 40px);
-            width: calc(100% - clamp(72px, 16vw, 244px));
+            padding: clamp( 16px, 3.5vw, 40px );
+            width: calc( 100% - clamp( 72px, 16vw, 244px ) );
             max-width: 1756px;
-            height: calc(100% - clamp(72px, 24vw, 170px) );
+            height: calc( 100% - clamp( 72px, 24vw, 170px ) );
             max-height: 826px;
             position: relative;
 
@@ -219,13 +219,13 @@
                     border-radius: 0 0 8px 8px;
                 }
 
-                @media screen and (max-width: 993px) {
+                @media screen and ( max-width: 993px ) {
                     flex-basis: 60%;
                     width: 60%;                
                 }
             }
 
-            @media screen and (max-width: 768px) {
+            @media screen and ( max-width: 768px ) {
                 flex-direction: column;
                 position: relative;
             }
@@ -234,9 +234,9 @@
                 flex-basis: 30%;
                 overflow-y: scroll;
                 overflow-x: hidden;
-                border: 1px solid var(--godam-video-engagement-brand-neutral-shades-25);
+                border: 1px solid var( --godam-video-engagement-brand-neutral-shades-25 );
                 border-radius: 8px;
-                box-shadow: var(--godam-video-engagement-modal-close-button-shadow);
+                box-shadow: var( --godam-video-engagement-modal-close-button-shadow );
                 display: flex;
                 flex-direction: column;
 
@@ -250,16 +250,16 @@
                 }
 
                 &::-webkit-scrollbar-thumb {
-                    background: var(--godam-video-engagement-brand-neutral-shades-25);
+                    background: var( --godam-video-engagement-brand-neutral-shades-25 );
                     border-radius: 20px;
                 }
 
                 &::-webkit-scrollbar-thumb:hover {
-                    background: var(--wp--preset--color--black, #000);
+                    background: var( --wp--preset--color--black, #000 );
                 }
 
                 &-title {
-                    font-size: clamp(0.875rem, 3vw, 1rem);
+                    font-size: clamp( 0.875rem, 3vw, 1rem );
                     font-weight: 600;
                     line-height: 1.1;
                     margin-bottom: 10px;
@@ -267,9 +267,9 @@
                     position: sticky;
                     top: 0;
                     z-index: 10;
-                    background-color: var(--wp--preset--color--white, #fff);
+                    background-color: var( --wp--preset--color--white, #fff );
                     padding: 1.5rem;
-                    border-bottom: 1px solid var(--godam-video-engagement-brand-neutral-shades-25);
+                    border-bottom: 1px solid var( --godam-video-engagement-brand-neutral-shades-25 );
                     display: flex;
                     align-items: center;
                     gap: 5px;
@@ -281,7 +281,7 @@
                     border: none;
                     font-size: 1.5rem;
                     cursor: pointer;
-                    background-image: url(../images/expend-comment.svg);
+                    background-image: url( ../images/expend-comment.svg );
                     background-position: center;
                     background-size: 100% 100%;
                     background-repeat: no-repeat;
@@ -289,19 +289,19 @@
                     height: 20px;
                     color: transparent;
 
-                    @media screen and (max-width: 768px) {
+                    @media screen and ( max-width: 768px ) {
                         display: block;
-                        transform: rotate(180deg);
+                        transform: rotate( 180deg );
                         position: relative;
                         top: -2px;
                     }
                 }
 
-                @media screen and (max-width: 993px) {
+                @media screen and ( max-width: 993px ) {
                     flex-basis: 40%;
                 }
 
-                @media screen and (max-width: 768px) {
+                @media screen and ( max-width: 768px ) {
 
                     flex-basis: 100%;
                     overflow: auto;
@@ -313,11 +313,11 @@
                         bottom: 0;
                         left: 0;
                         right: 0;
-                        background-color: var(--wp--preset--color--white, #fff);
+                        background-color: var( --wp--preset--color--white, #fff );
                         max-height: 90%;
 
                         .rtgodam-video-engagement--comment-modal--video-info-expend {
-                            transform: rotate(0deg);
+                            transform: rotate( 0deg );
                             top: 0;
                         }
                     }
@@ -328,23 +328,23 @@
         &--close-button {
             color:transparent;
             background-color: transparent;
-            background-image: url(../images/close-comment-modal.svg);
+            background-image: url( ../images/close-comment-modal.svg );
             background-position: center;
             background-size: 100% 100%;
             background-repeat: no-repeat;
             cursor: pointer;
             border: none;
-            width: clamp(1.5rem, 50vw, 2rem);
-            height: clamp(1.5rem, 50vw, 2rem);
+            width: clamp( 1.5rem, 50vw, 2rem );
+            height: clamp( 1.5rem, 50vw, 2rem );
             border-radius: 50%;
 
             &:hover {
-                box-shadow: var(--godam-video-engagement-modal-close-button-shadow);
+                box-shadow: var( --godam-video-engagement-modal-close-button-shadow );
             }
         }
 
         &-title {
-            font-size: clamp(0.9rem, 4vw, 1.5rem);
+            font-size: clamp( 0.9rem, 4vw, 1.5rem );
             line-height: 1.5;
             font-weight: 700;
             margin: 0;
@@ -357,7 +357,7 @@
         &-leave-comment {
             position: sticky;
             bottom: 0;
-            background-color: var(--wp--preset--color--white, #fff);
+            background-color: var( --wp--preset--color--white, #fff );
             z-index: 10;
             padding: 1.5rem;
             box-shadow: -7.94px -2.65px 15.87px 6.61px #0000000D;
@@ -391,15 +391,15 @@
                     background: none;
 
                     &::before {
-                        background-image: url(../images/likes-count.svg);
+                        background-image: url( ../images/likes-count.svg );
                     }
 
                     &.is-liked {
 
                         &::before {
-                            mask-image: url(../images/likes-count.svg);
+                            mask-image: url( ../images/likes-count.svg );
                             mask-repeat: no-repeat;
-                            background-color: var(--godam-video-engagement-icon-color--like);
+                            background-color: var( --godam-video-engagement-icon-color--like );
                         }
                     }
 
@@ -415,7 +415,7 @@
                 &-views {
 
                     &::before {
-                        background-image: url(../images/views-count.svg);
+                        background-image: url( ../images/views-count.svg );
                     }
                 }
             }
@@ -423,10 +423,10 @@
             &-login {
                 font-size: 1rem;
                 line-height: 3rem;
-                color: var(--wp--preset--color--black, #000);
+                color: var( --wp--preset--color--black, #000 );
                 height: 3rem;
-                border: 1px solid var(--Brand-Neutral-Shades-50, #CCC);
-                backdrop-filter: blur(4px);
+                border: 1px solid var( --Brand-Neutral-Shades-50, #CCC );
+                backdrop-filter: blur( 4px );
                 border-radius: 8px;
                 text-align: center;
                 position: relative;
@@ -439,17 +439,17 @@
                     right: 10px;
                     width: 50px;
                     height: 100%;
-                    background-image: url(../images/login-to-comment-bg.png);
+                    background-image: url( ../images/login-to-comment-bg.png );
                     z-index: -1;
                     background-repeat: no-repeat;
                     background-position: right;
                     background-size: contain;
-                    filter: blur(4px);
+                    filter: blur( 4px );
                 }
 
                 a {
                     color: #E6533A;
-                    background: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
+                    background: linear-gradient( 90deg, #AB3A6C 0%, #E6533A 100% );
                     background-clip: text;
                     -webkit-text-fill-color: transparent;
 
@@ -471,9 +471,9 @@
                         input[type="password"] {
                             font-size: 12px;
                             line-height: 1;
-                            color: var(--wp--preset--color--black, #000);
+                            color: var( --wp--preset--color--black, #000 );
                             border-radius: 8px;
-                            border: 1px solid var(--godam-video-engagement-brand-neutral-shades-100);
+                            border: 1px solid var( --godam-video-engagement-brand-neutral-shades-100 );
                             padding: 10px;
 
                             &.is-progressing {
@@ -501,14 +501,14 @@
                             line-height: 1;
                             cursor: pointer;
                             padding: 10px 5px;
-                            border: 1px solid var(--godam-video-engagement-brand-neutral-shades-100);
+                            border: 1px solid var( --godam-video-engagement-brand-neutral-shades-100 );
                             color: #E6533A;
                             width: 100%;
                             border-radius: 8px;
                             transition: all 0.3s ease;
 
                             &:hover {
-                                color: var(--wp--preset--color--black, #000);
+                                color: var( --wp--preset--color--black, #000 );
                             }
 
                             &.is-progressing {
@@ -542,7 +542,7 @@
                 left: 20px;
                 width: 1px;
                 height: 100%;
-                background-color: var(--godam-video-engagement-comment--border-color);
+                background-color: var( --godam-video-engagement-comment--border-color );
             }
         }
 
@@ -564,11 +564,11 @@
                     width: 15px;
                     height: 7px;
                     border-radius: 0 0 0 10px;
-                    border-bottom: 1px solid var(--godam-video-engagement-comment--border-color);
-                    border-left: 1px solid var(--godam-video-engagement-comment--border-color);
+                    border-bottom: 1px solid var( --godam-video-engagement-comment--border-color );
+                    border-left: 1px solid var( --godam-video-engagement-comment--border-color );
                 }
 
-                &:last-child:not(.has-children) {
+                &:last-child:not( .has-children ) {
 
                     &::after {
                         // content: "";
@@ -577,7 +577,7 @@
                         left: -14px;
                         width: 6px;
                         height: 91%;
-                        background-color: var(--wp--preset--color--white, #fff);
+                        background-color: var( --wp--preset--color--white, #fff );
                         z-index: 5;
                         border-radius: 0 10px 0 0;
                     }
@@ -595,7 +595,7 @@
                 margin-bottom: 15px;
                 position: relative;
                 top: -10px;
-                border-left: 3px solid var(--godam-video-engagement-brand-neutral-shades-100);
+                border-left: 3px solid var( --godam-video-engagement-brand-neutral-shades-100 );
             }
         }
 
@@ -620,11 +620,11 @@
             flex-wrap: wrap;
             gap: 8px;
             align-items: center;
-            background-color: var(--wp--preset--color--white, #fff);
+            background-color: var( --wp--preset--color--white, #fff );
             margin-bottom: 8px;
 
             &-name {
-                font-size: clamp(0.75rem, 2vw, 0.875rem);
+                font-size: clamp( 0.75rem, 2vw, 0.875rem );
                 line-height: 1.3;
                 font-weight: 600;
             }
@@ -647,17 +647,17 @@
 
         &-time {
             color: #E6533A;
-            background: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
+            background: linear-gradient( 90deg, #AB3A6C 0%, #E6533A 100% );
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         &-text {
-            font-size: clamp(0.75rem, 2vw, 0.875rem);
+            font-size: clamp( 0.75rem, 2vw, 0.875rem );
             line-height: 1.3;
 
             &.deleted-text {
-                color: var(--godam-video-engagement-brand-neutral-shades-100);
+                color: var( --godam-video-engagement-brand-neutral-shades-100 );
                 font-style: italic;
             }
         }
@@ -667,7 +667,7 @@
             &-textarea {
                 display: flex;
                 gap: 5px;
-                border: 1px solid var(--godam-video-engagement-brand-neutral-shades-100);
+                border: 1px solid var( --godam-video-engagement-brand-neutral-shades-100 );
                 border-radius: 8px;
                 min-height: 48px;
                 align-items: center;
@@ -675,7 +675,7 @@
                 padding-right: 12px;
 
                 textarea {
-                    font-family: var(--godam-video-engagement-font-family);
+                    font-family: var( --godam-video-engagement-font-family );
                     width: 100%;
                     border: none;
                     border-radius: 8px;
@@ -690,12 +690,12 @@
                     width: 24px;
                     height: 24px;
                     color: transparent;
-                    background-image: url(../images/comment-send.svg);
+                    background-image: url( ../images/comment-send.svg );
                     background-size: 100% 100%;
                     background-position: center;
                     background-repeat: no-repeat;
 
-                    &:is(:disabled) {
+                    &:is( :disabled ) {
                         opacity: 0.5;
                         pointer-events: none;
                         cursor: not-allowed;
@@ -729,34 +729,34 @@
                     display: block;
                     width: 16px;
                     height: 16px;
-                    background-image: url(../images/charm_reply.svg);
+                    background-image: url( ../images/charm_reply.svg );
                     background-size: 100% 100%;
                     background-position: center;
                     background-repeat: no-repeat;
                 }
 
                 &:hover {
-                    color: var(--wp--preset--color--black, #000);
+                    color: var( --wp--preset--color--black, #000 );
                 }
 
                 &.comment-button-reply {
 
                     &::before {
-                        background-image: url(../images/charm_reply.svg);
+                        background-image: url( ../images/charm_reply.svg );
                     }
                 }
 
                 &.comment-button-edit {
 
                     &::before {
-                        background-image: url(../images/charm_edit.svg);
+                        background-image: url( ../images/charm_edit.svg );
                     }
                 }
 
                 &.comment-button-delete {
 
                     &::before {
-                        background-image: url(../images/charm_delete.svg);
+                        background-image: url( ../images/charm_delete.svg );
                     }
 
                     &.is-deleting {
@@ -772,7 +772,7 @@
         }
 
         &-button {
-            border: 1px solid var(--godam-video-engagement-comment--border-color);
+            border: 1px solid var( --godam-video-engagement-comment--border-color );
             padding: 7px 10px;
             border-radius: 5px;
             background-color: transparent;
@@ -781,12 +781,12 @@
             margin-right: 10px;
 
             &.button-general:hover {
-                background-color: var(--wp--preset--color--black, #000);
-                color: var(--wp--preset--color--white, #fff);
+                background-color: var( --wp--preset--color--black, #000 );
+                color: var( --wp--preset--color--white, #fff );
             }
 
             &-timestamp {
-                background-image: url(../images/timestamp.svg) !important;
+                background-image: url( ../images/timestamp.svg ) !important;
                 cursor: pointer;
             }
         }
@@ -797,12 +797,12 @@
             background: none;
             border: none;
             outline: none;
-            color: var(--godam-video-engagement-icon-color--like);
+            color: var( --godam-video-engagement-icon-color--like );
         }
     }
 
     &--title {
-        color: var(--godam-video-engagement-icon-color);
+        color: var( --godam-video-engagement-icon-color );
         margin-right: auto;
         margin-left: 10px;
         overflow: hidden;
@@ -812,7 +812,7 @@
     }
 }
 
-@media screen and (max-width: 768px) {
+@media screen and ( max-width: 768px ) {
 
     .rtgodam-video-engagement {
 
@@ -854,20 +854,20 @@
 
 @keyframes pop {
 
-  0%   { transform: scale(1); }
+  0%   { transform: scale( 1 ); }
 
-  50%  { transform: scale(1.2); }
+  50%  { transform: scale( 1.2 ); }
 
-  100% { transform: scale(1); }
+  100% { transform: scale( 1 ); }
 }
 
 @keyframes comment-loading {
 
   0% {
-    transform: rotate(0deg);
+    transform: rotate( 0deg );
   }
 
   100% {
-    transform: rotate(360deg);
+    transform: rotate( 360deg );
   }
 }
