@@ -18,7 +18,7 @@ import 'videojs-flvjs-es6';
  */
 import GoDAM from '../../assets/src/images/GoDAM.png';
 import { setCurrentLayer } from './redux/slice/videoSlice';
-import { removeTags } from './utils';
+import { removeTags } from '../../assets/src/js/godam-player/utils/dataHelpers';
 
 /**
  * WordPress dependencies

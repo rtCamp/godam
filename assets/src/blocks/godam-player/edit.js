@@ -43,8 +43,9 @@ import Video from './VideoJS';
 import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
-import { appendTimezoneOffsetToUTC, removeTags, secondsToISO8601 } from './utils/index.js';
+import { appendTimezoneOffsetToUTC, secondsToISO8601 } from './utils/index.js';
 import './editor.scss';
+import { removeTags } from '../../js/godam-player/utils/dataHelpers.js';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
