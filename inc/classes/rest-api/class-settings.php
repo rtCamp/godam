@@ -195,9 +195,6 @@ class Settings extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'detect_form_plugins' ),
-					'permission_callback' => function () {
-						return current_user_can( 'manage_options' );
-					},
 				),
 			),
 		);

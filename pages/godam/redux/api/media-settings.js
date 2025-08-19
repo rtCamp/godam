@@ -19,15 +19,19 @@ export const generalAPI = createApi( {
 			} ),
 		} ),
 		saveMediaSettings: builder.mutation( {
-			query: ( data ) => ( {
-				url: 'godam-settings',
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-WP-Nonce': window.wpApiSettings.nonce,
-				},
-				body: data,
-			} ),
+			query: ( data ) => {
+				// Remove isChanged flag and wrap in settings object as expected by backend
+				const { isChanged, ...settingsData } = data;
+				return {
+					url: 'godam-settings',
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': window.wpApiSettings.nonce,
+					},
+					body: { settings: settingsData },
+				};
+			},
 		} ),
 		verifyAPIKey: builder.mutation( {
 			query: ( apiKey ) => ( {

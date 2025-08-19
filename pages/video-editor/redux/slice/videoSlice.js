@@ -187,6 +187,10 @@ const slice = createSlice( {
 		setMetformPluginActive: ( state, action ) => {
 			state.metformPlugnActive = action.payload;
 		},
+		setLayers: ( state, action ) => {
+			state.layers = action.payload;
+			state.isChanged = true;
+		},
 	},
 } );
 
@@ -195,6 +199,7 @@ export const {
 	addLayer,
 	removeLayer,
 	updateLayerField,
+	setLayers,
 	addChapter,
 	removeChapter,
 	updateChapterField,
