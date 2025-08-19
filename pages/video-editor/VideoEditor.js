@@ -41,8 +41,9 @@ import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
 import { useGetHubSpotFormsQuery } from './redux/api/hubspot-forms';
+import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
 
-const VideoEditor = ( { attachmentID } ) => {
+const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
@@ -116,6 +117,10 @@ const VideoEditor = ( { attachmentID } ) => {
 			return;
 		}
 
+		if ( ! canManageAttachment( attachmentConfig.author ) ) {
+			onBackToAttachmentPicker();
+		}
+
 		const { rtgodam_meta: rtGodamMeta, source_url: sourceURL, mime_type: mimeType, meta } = attachmentConfig;
 
 		// Initialize the store if meta exists
@@ -151,7 +156,7 @@ const VideoEditor = ( { attachmentID } ) => {
 		}
 
 		setSources( videoSources );
-	}, [ attachmentConfig, dispatch ] );
+	}, [ attachmentConfig, dispatch, onBackToAttachmentPicker ] );
 
 	/**
 	 * Update the store with the fetched forms.
@@ -372,7 +377,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	return (
 		<>
 			<div className="video-editor-container">
-				<div className="py-3 aside relative">
+				<div className="py-3 aside relative pl-4">
 					<div id="sidebar-content" className="godam-video-editor">
 						<TabPanel
 							className="godam-video-editor-tabs"

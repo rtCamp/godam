@@ -37,7 +37,8 @@ class GoDAM_Player {
 		$godam_settings = get_option( 'rtgodam-settings', array() );
 		$custom_css     = $godam_settings['video_player']['custom_css'] ?? '';
 		if ( ! empty( $custom_css ) ) {
-			echo '<style id="godam-player-inline-css">' . esc_html( $custom_css ) . '</style>';
+			$safe_css = str_replace( "'", "\\'", $custom_css );
+			echo '<style id="godam-player-inline-css">' . wp_kses( $safe_css, array() ) . '</style>';
 		}
 	}
 
