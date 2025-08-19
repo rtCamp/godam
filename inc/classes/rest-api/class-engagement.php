@@ -190,9 +190,9 @@ class Engagement extends Base {
 	/**
 	 * Get all activities for a video.
 	 *
-	 * @param \WP_REST_Request $request Request Object.
-	 * 
-	 * @return \WP_REST_Response
+	 * @param WP_REST_Request $request Request Object.
+	 *
+	 * @return WP_REST_Response
 	 */
 	public function get_activities( $request ) {
 
@@ -356,7 +356,7 @@ class Engagement extends Base {
 	 * Handles the REST request to like or dislike a video.
 	 *
 	 * @param WP_REST_Request $request Request object.
-	 * 
+	 *
 	 * @return WP_REST_Response Response object.
 	 */
 	public function user_hit_like( $request ) {
@@ -443,7 +443,7 @@ class Engagement extends Base {
 	 * data   - An array containing the comment data.
 	 *
 	 * @param WP_REST_Request $request The request object.
-	 * 
+	 *
 	 * @return WP_REST_Response The response object.
 	 */
 	public function user_comment( $request ) {
@@ -552,7 +552,7 @@ class Engagement extends Base {
 	 * data   - An array containing the comment data.
 	 *
 	 * @param WP_REST_Request $request The request object.
-	 * 
+	 *
 	 * @return WP_REST_Response The response object.
 	 */
 	public function user_delete_comment( $request ) {
@@ -720,7 +720,7 @@ class Engagement extends Base {
 	 *
 	 * @param string $transcoder_job_id   The ID of the transcoder job associated with the video.
 	 * @param array  $account_credentials The API credentials for accessing Godam services.
-	 * 
+	 *
 	 * @return array                      An array containing 'has_liked_by_user' and 'likes' count.
 	 */
 	public function get_likes( $transcoder_job_id, $account_credentials ) {
@@ -765,7 +765,7 @@ class Engagement extends Base {
 	 * 12-hour format.
 	 *
 	 * @param string $given_date The date to compare with the current date.
-	 * 
+	 *
 	 * @return array             Array containing 'date_str' and 'time' keys.
 	 */
 	public function calculate_days( $given_date ) {
@@ -797,7 +797,7 @@ class Engagement extends Base {
 	 * guest user name is empty, it defaults to 'Guest'.
 	 *
 	 * @param WP_REST_Request $request Request object.
-	 * 
+	 *
 	 * @return WP_REST_Response
 	 */
 	public function guest_user_login( $request ) {
@@ -855,7 +855,7 @@ class Engagement extends Base {
 	 * Returns the transcoding job ID for a given video ID.
 	 *
 	 * @param int|string $video_id The video ID. If it starts with 'cmmid_', the rest is the transcoding job ID.
-	 * 
+	 *
 	 * @return string|null The transcoding job ID, or null if not found.
 	 */
 	public function get_transcoder_job_id( $video_id ) {
