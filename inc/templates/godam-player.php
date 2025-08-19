@@ -314,6 +314,22 @@ if ( $is_shortcode || $is_elementor_widget ) {
 	}
 	$figure_attributes = get_block_wrapper_attributes( $additional_attributes );
 }
+
+/**
+ * Fetch AI Generated video tracks from REST endpoint
+ */
+$transcript_path = godam_get_transcript_path( $job_id );
+
+if ( ! empty( $transcript_path ) ) {
+	$tracks[] = array(
+		'src'     => esc_url( $transcript_path ),
+		'kind'    => 'subtitles',
+		'label'   => 'English',
+		'srclang' => 'en',
+	);
+}
+
+
 ?>
 
 <?php if ( ! empty( $sources ) ) : ?>
