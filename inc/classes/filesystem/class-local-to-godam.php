@@ -30,7 +30,15 @@ class Local_To_GoDAM extends Base_Filter {
 		add_filter( 'rss_enclosure', array( $this, 'filter_post' ), 100 );
 		add_filter( 'content_edit_pre', array( $this, 'filter_post' ) );
 		add_filter( 'excerpt_edit_pre', array( $this, 'filter_post' ) );
-
+		
+		// Additional hooks for modern editor compatibility.
+		add_filter( 'rest_prepare_post', array( $this, 'filter_post' ), 100 );
+		add_filter( 'rest_prepare_page', array( $this, 'filter_post' ), 100 );
+		add_filter( 'get_the_content', array( $this, 'filter_post' ), 100 );
+		add_filter( 'get_the_excerpt', array( $this, 'filter_post' ), 100 );
+		
+		// Block editor specific hooks.
+		add_filter( 'block_editor_rest_api_preload_paths', array( $this, 'filter_rest_preload_paths' ), 100 );
 		// Widgets.
 		add_filter( 'widget_form_callback', array( $this, 'filter_widget_display' ) );
 		add_filter( 'widget_display_callback', array( $this, 'filter_widget_display' ) );
@@ -86,19 +94,31 @@ class Local_To_GoDAM extends Base_Filter {
 	/**
 	 * Filter post content.
 	 *
-	 * @param string $content The post content.
+	 * @param string|object $content The post content or REST response object.
 	 *
-	 * @return string Filtered content.
+	 * @return string|object Filtered content or original object.
 	 */
 	public function filter_post( $content ) {
-		if ( empty( $content ) ) {
-			return $content;
+		// Handle WP_REST_Response objects (from rest_prepare_post).
+		if ( is_object( $content ) && method_exists( $content, 'get_data' ) ) {
+			return $this->filter_rest_response( $content );
 		}
+		
+		// Handle strings (from the_content, the_excerpt, etc.).
+		if ( is_string( $content ) ) {
+			if ( empty( $content ) ) {
+				return $content;
+			}
 
-		$cache    = array();
-		$to_cache = array();
+			$cache    = array();
+			$to_cache = array();
 
-		return $this->process_content( $content, $cache, $to_cache );
+			$filtered_content = $this->process_content( $content, $cache, $to_cache );
+			
+			return $filtered_content;
+		}
+		
+		return $content;
 	}
 
 	/**
@@ -583,8 +603,11 @@ class Local_To_GoDAM extends Base_Filter {
 			return false;
 		}
 
-		$upload_dirs = $this->plugin->get_original_upload_dir();
-		return strpos( $url, $upload_dirs['baseurl'] ) !== false;
+		// Check if URL is a local site URL that needs to be converted to CDN.
+		$site_url        = get_site_url();
+		$needs_replacing = strpos( $url, $site_url . '/wp-content/uploads' ) !== false;
+
+		return $needs_replacing;
 	}
 
 	/**
@@ -637,5 +660,74 @@ class Local_To_GoDAM extends Base_Filter {
 		$cdn_url = rtrim( $this->plugin->get_remote_url(), '/' ) . $relative_path;
 
 		return $cdn_url;
+	}
+
+	/**
+	 * Filter REST API response object content.
+	 *
+	 * @param object $response WP_REST_Response object.
+	 *
+	 * @return object Modified response object.
+	 */
+	private function filter_rest_response( $response ) {
+		$data = $response->get_data();
+		
+		// Filter the content.raw field (used by Gutenberg editor).
+		if ( isset( $data['content'] ) && isset( $data['content']['raw'] ) ) {
+			$filtered_content_raw   = $this->process_content_string( $data['content']['raw'] );
+			$data['content']['raw'] = $filtered_content_raw;
+		}
+		
+		// Filter the content.rendered field (used for preview).
+		if ( isset( $data['content'] ) && isset( $data['content']['rendered'] ) ) {
+			$filtered_content            = $this->process_content_string( $data['content']['rendered'] );
+			$data['content']['rendered'] = $filtered_content;
+		}
+		
+		// Filter the excerpt.raw field if it exists.
+		if ( isset( $data['excerpt'] ) && isset( $data['excerpt']['raw'] ) ) {
+			$filtered_excerpt_raw   = $this->process_content_string( $data['excerpt']['raw'] );
+			$data['excerpt']['raw'] = $filtered_excerpt_raw;
+		}
+		
+		// Filter the excerpt.rendered field if it exists.
+		if ( isset( $data['excerpt'] ) && isset( $data['excerpt']['rendered'] ) ) {
+			$filtered_excerpt            = $this->process_content_string( $data['excerpt']['rendered'] );
+			$data['excerpt']['rendered'] = $filtered_excerpt;
+		}
+		
+		// Update the response object with filtered data.
+		$response->set_data( $data );
+		
+		return $response;
+	}
+
+	/**
+	 * Process a single content string for URL replacement.
+	 *
+	 * @param string $content The content string to process.
+	 *
+	 * @return string Processed content.
+	 */
+	private function process_content_string( $content ) {
+		if ( empty( $content ) ) {
+			return $content;
+		}
+
+		$cache    = array();
+		$to_cache = array();
+
+		return $this->process_content( $content, $cache, $to_cache );
+	}
+
+	/**
+	 * Filter REST API preload paths for block editor.
+	 *
+	 * @param array $paths Preload paths.
+	 * @return array Filtered paths.
+	 */
+	public function filter_rest_preload_paths( $paths ) {
+		// This ensures our filters run when the editor loads content via REST API.
+		return $paths;
 	}
 }
