@@ -633,10 +633,7 @@ class Video_Migration extends Base {
 					if ( ! empty( $vimeo_url ) ) {
 						$attachment_id = $this->create_attachment_from_vimeo_video( $vimeo_url );
 
-						if ( is_wp_error( $attachment_id ) ) {
-							// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-							error_log( sprintf( 'Error creating attachment for Vimeo video in post %d: %s', $post_id, $attachment_id->get_error_message() ) );
-						} else {
+						if ( ! is_wp_error( $attachment_id ) ) {
 							$video_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
 							if ( ! empty( $video_url ) ) {
 								$sources = $this->build_video_sources_array( $attachment_id );
