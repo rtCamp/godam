@@ -300,7 +300,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 			wp_enqueue_script(
 				'nf-godam-recorder-upload',
 				RTGODAM_URL . 'assets/build/js/ninja-forms.min.js',
-				array( 'backbone', 'jquery' ),
+				array( 'backbone', 'jquery', 'wp-i18n' ),
 				filemtime( RTGODAM_PATH . 'assets/build/js/ninja-forms.min.js' ),
 				true
 			);
@@ -309,7 +309,8 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 				'nf-godam-recorder-upload',
 				'nfGodamRecorderUpload',
 				array(
-					'ajaxURL' => admin_url( 'admin-ajax.php' ),
+					'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
+					'maxFileSizeError' => __( 'File exceeds maximum file size. File must be under %nMB.', 'godam' ),
 				)
 			);
 		}
@@ -340,10 +341,11 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	 */
 	public function ajax_upload() {
 
+		// @todo Do file operation.
 		wp_send_json_success(
 			array(
-				'name' => 'hit-bhalodia.jpg',
-				'path' => 'hit',
+				'file_name' => 'hit-bhalodia.jpg',
+				'file_path' => 'https://hit.com/localsite/hit-bhalodia.jpg',
 			)
 		);
 	}
