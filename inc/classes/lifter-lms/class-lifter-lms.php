@@ -14,6 +14,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Lifter_LMS
+ *
+ * @since n.e.x.t
  */
 class Lifter_LMS {
 

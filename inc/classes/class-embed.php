@@ -15,6 +15,8 @@ use RTGODAM\Inc\Traits\Singleton;
 
 /**
  * Class Embed
+ *
+ * @since n.e.x.t
  */
 class Embed {
 

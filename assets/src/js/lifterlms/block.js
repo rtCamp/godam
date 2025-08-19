@@ -1,6 +1,8 @@
 /**
  * Video Completion Handler for WordPress LMS
  * Manages video completion tracking and lesson progression controls
+ *
+ * @since n.e.x.t
  */
 
 /**
@@ -10,16 +12,22 @@ const GoDAMLifterLMSIntegration = {
 
 	/**
 	 * Configuration settings
+	 *
+	 * @since n.e.x.t
 	 */
 	config: {},
 
 	/**
 	 * Storage key prefix for localStorage
+	 *
+	 * @since n.e.x.t
 	 */
 	storagePrefix: 'godam_llms_video_progress_',
 
 	/**
 	 * Initialize the video completion handler
+	 *
+	 * @since n.e.x.t
 	 */
 	init() {
 		this.loadConfiguration();
@@ -29,6 +37,8 @@ const GoDAMLifterLMSIntegration = {
 
 	/**
 	 * Load configuration from tracking settings
+	 *
+	 * @since n.e.x.t
 	 */
 	loadConfiguration() {
 		this.config = {};
@@ -41,6 +51,8 @@ const GoDAMLifterLMSIntegration = {
 
 	/**
 	 * Set up initial state based on video completion requirements
+	 *
+	 * @since n.e.x.t
 	 */
 	setupInitialState() {
 		if ( this.config.require_video_completion && ! this.config.video_completed ) {
@@ -50,6 +62,8 @@ const GoDAMLifterLMSIntegration = {
 
 	/**
 	 * Bind video player events
+	 *
+	 * @since n.e.x.t
 	 */
 	bindVideoEvents() {
 		const videoContainer = document.querySelector( '.godam-video-wrapper' );
@@ -76,6 +90,8 @@ const GoDAMLifterLMSIntegration = {
 	/**
 	 * Get storage key for current post
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param {Object} configuration
 	 */
 	getStorageKey( configuration ) {
@@ -84,6 +100,8 @@ const GoDAMLifterLMSIntegration = {
 
 	/**
 	 * Store video progress in localStorage
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param {number} currentTime
 	 * @param {Object} configuration
@@ -106,6 +124,8 @@ const GoDAMLifterLMSIntegration = {
 	/**
 	 * Get stored video progress from localStorage
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param {Object} configuration
 	 */
 	getStoredProgress( configuration ) {
@@ -122,6 +142,8 @@ const GoDAMLifterLMSIntegration = {
 	/**
 	 * Remove stored video progress from localStorage
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param {Object} configuration
 	 */
 	removeStoredProgress( configuration ) {
@@ -136,6 +158,8 @@ const GoDAMLifterLMSIntegration = {
 
 	/**
 	 * Handle video loaded event to restore progress
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param {Event}  event
 	 * @param {Object} configuration
@@ -152,6 +176,8 @@ const GoDAMLifterLMSIntegration = {
 	/**
 	 * Prevent default event behavior
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param {Event} event
 	 */
 	preventDefaultAction( event ) {
@@ -160,6 +186,8 @@ const GoDAMLifterLMSIntegration = {
 
 	/**
 	 * Toggle lesson completion controls and navigation elements
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param {boolean} isEnabled
 	 */
@@ -206,6 +234,8 @@ const GoDAMLifterLMSIntegration = {
 	/**
 	 * Initialize and run countdown timer
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param {Element} container
 	 */
 	initializeCountdown( container ) {
@@ -237,6 +267,8 @@ const GoDAMLifterLMSIntegration = {
 	/**
 	 * Handle video progress updates
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param {Event}  event
 	 * @param {Object} configuration
 	 */
@@ -257,6 +289,8 @@ const GoDAMLifterLMSIntegration = {
 
 	/**
 	 * Handle AJAX request for video completion
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param {Element} container
 	 * @param {Object}  configuration
@@ -317,6 +351,8 @@ const GoDAMLifterLMSIntegration = {
 
 	/**
 	 * Handle video completion event
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param {Event}   event
 	 * @param {Element} container

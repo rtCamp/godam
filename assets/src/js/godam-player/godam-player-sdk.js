@@ -2,6 +2,8 @@
  * GoDAM Player SDK
  * This is JavaScript SDK for interacting with the GoDAM Player embedded in an iframe.
  * It allows you to control playback, listen for events, and manage player state.
+ *
+ * @since n.e.x.t
  */
 class GodamPlayer {
 	constructor( iframe, options = {} ) {

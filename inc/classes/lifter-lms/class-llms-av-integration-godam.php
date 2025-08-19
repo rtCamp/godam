@@ -18,6 +18,8 @@ if ( class_exists( 'LLMS_AV_Abstract_Integration' ) ) {
 	/**
 	 * Class LLMS_AV_Integration_GoDAM
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @package GoDAM
 	 */
 	class LLMS_AV_Integration_GoDAM extends \LLMS_AV_Abstract_Integration {
@@ -96,6 +98,8 @@ if ( class_exists( 'LLMS_AV_Abstract_Integration' ) ) {
 
 		/**
 		 * Integration Constructor.
+		 *
+		 * @since n.e.x.t
 		 */
 		protected function configure() {
 
