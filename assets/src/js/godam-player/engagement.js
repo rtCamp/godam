@@ -614,7 +614,11 @@ function CommentForm( props ) {
 			const mins = String( Math.floor( ( currentTime % 3600 ) / 60 ) ).padStart( 2, '0' );
 			const secs = String( Math.floor( currentTime % 60 ) ).padStart( 2, '0' );
 			setCommentText( ( prev ) => {
-				return `@${ hrs }:${ mins }:${ secs } ${ prev }`;
+				const timestamp = `@${ hrs }:${ mins }:${ secs }`;
+				if ( prev.trim() ) {
+					return `${ prev } ${ timestamp }`;
+				}
+				return timestamp;
 			} );
 		}
 	}

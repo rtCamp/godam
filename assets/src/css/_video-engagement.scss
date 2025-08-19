@@ -541,16 +541,6 @@
 
         &-parent {
             position: relative;
-
-            &::after {
-                // content: '';
-                position: absolute;
-                top: 0;
-                left: 20px;
-                width: 1px;
-                height: 100%;
-                background-color: var( --godam-video-engagement-comment--border-color );
-            }
         }
 
         &-child {
@@ -558,37 +548,6 @@
             
             &:last-child {
                 padding-bottom: 0;
-            }
-
-            > .rtgodam-video-engagement--comment-parent {
-
-                &::before {
-                    display: block;
-                    // content: "";
-                    position: absolute;
-                    top: 15px;
-                    left: -10px;
-                    width: 15px;
-                    height: 7px;
-                    border-radius: 0 0 0 10px;
-                    border-bottom: 1px solid var( --godam-video-engagement-comment--border-color );
-                    border-left: 1px solid var( --godam-video-engagement-comment--border-color );
-                }
-
-                &:last-child:not( .has-children ) {
-
-                    &::after {
-                        // content: "";
-                        position: absolute;
-                        top: 16px;
-                        left: -14px;
-                        width: 6px;
-                        height: 91%;
-                        background-color: var( --wp--preset--color--white, #fff );
-                        z-index: 5;
-                        border-radius: 0 10px 0 0;
-                    }
-                }
             }
 
             &-number {
@@ -805,6 +764,7 @@
             border: none;
             outline: none;
             color: var( --godam-video-engagement-icon-color--like );
+            padding-left: 0;
         }
     }
 
