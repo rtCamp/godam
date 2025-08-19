@@ -599,10 +599,7 @@ class Video_Migration extends Base {
 				}
 
 				// Get video source URL from attachment.
-				$video_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
-				if ( empty( $video_url ) ) {
-					continue;
-				}
+				$video_url = wp_get_attachment_url( $attachment_id );
 
 				$sources = $this->build_video_sources_array( $attachment_id );
 
@@ -615,7 +612,7 @@ class Video_Migration extends Base {
 						'loop'     => $attrs['loop'] ?? false,
 						'muted'    => $attrs['muted'] ?? false,
 						'poster'   => $attrs['poster'] ?? '',
-						'src'      => $video_url,
+						'src'      => $video_url ? $video_url : '',
 						'sources'  => $sources,
 						'seo'      => array(),
 					),
@@ -625,6 +622,27 @@ class Video_Migration extends Base {
 
 				$changed = true;
 				++$migrated;
+			}
+
+			// Run action hook to allow other plugins to handle the block migration.
+			$block_migration_result = apply_filters(
+				'rtgodam_migrate_vimeo_block',
+				array(
+					'block'    => $block,
+					'post_id'  => $post_id,
+					'changed'  => false,
+					'found'    => 0,
+					'migrated' => 0,
+				),
+				$this 
+			);
+			
+			// If a plugin handled this block via the filter, update our variables.
+			if ( isset( $block_migration_result['block'] ) && $block_migration_result['block'] !== $block ) {
+				$block     = $block_migration_result['block'];
+				$changed   = $changed || $block_migration_result['changed'];
+				$found    += $block_migration_result['found'];
+				$migrated += $block_migration_result['migrated'];
 			}
 		}
 
@@ -656,7 +674,7 @@ class Video_Migration extends Base {
 	 *
 	 * @return array Array of video sources with src and type properties.
 	 */
-	private function build_video_sources_array( int $attachment_id ): array {
+	public function build_video_sources_array( int $attachment_id ): array {
 		$sources = array();
 
 		// Get the original source URL.
@@ -704,7 +722,7 @@ class Video_Migration extends Base {
 	 *
 	 * @return int|WP_Error Attachment ID on success, WP_Error object on failure.
 	 */
-	private function create_attachment_from_vimeo_video( $vimeo_url ) {
+	public function create_attachment_from_vimeo_video( $vimeo_url ) {
 		if ( empty( $vimeo_url ) ) {
 			return new \WP_Error( 'missing_url', __( 'Vimeo URL is required.', 'godam' ) );
 		}
@@ -806,7 +824,7 @@ class Video_Migration extends Base {
 		$wpdb->update(
 			$wpdb->posts,
 			array(
-				'guid' => $video_info['transcoded_file_path'],
+				'guid' => ! empty( $video_info['transcoded_mp4_url'] ) ? $video_info['transcoded_mp4_url'] : $video_info['transcoded_file_path'],
 			),
 			array(
 				'ID' => $attachment_id,
@@ -815,6 +833,7 @@ class Video_Migration extends Base {
 
 		// Update attachment metadata.
 		update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $video_info['transcoded_file_path'] );
+		update_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', $video_info['transcoded_hls_path'] );
 
 		return $attachment_id;
 	}
