@@ -255,7 +255,7 @@ class Engagement extends Base {
 					'message'   => __( 'Unable to reach server.', 'godam' ),
 					'errorType' => 'microservice_error',
 				),
-				200
+				500
 			);
 		}
 
@@ -271,7 +271,7 @@ class Engagement extends Base {
 					'message'   => $detail,
 					'errorType' => 'invalid_key',
 				),
-				200
+				$http_code
 			);
 		}
 
@@ -282,7 +282,7 @@ class Engagement extends Base {
 					'message'   => $detail,
 					'errorType' => 'microservice_error',
 				),
-				200
+				$http_code
 			);
 		}
 
@@ -308,7 +308,7 @@ class Engagement extends Base {
 					'message'   => __( 'Missing API key.', 'godam' ),
 					'errorType' => 'missing_key',
 				),
-				200
+				404
 			);
 		}
 
@@ -422,7 +422,7 @@ class Engagement extends Base {
 				'message'   => __( 'Failed to update likes.', 'godam' ),
 				'errorType' => 'failed_to_update_likes',
 			),
-			200
+			500
 		);
 	}
 
@@ -522,7 +522,7 @@ class Engagement extends Base {
 				'message'   => __( 'Failed to update comment.', 'godam' ),
 				'errorType' => 'failed_to_update_comment',
 			),
-			200
+			500
 		);
 	}
 
@@ -606,7 +606,7 @@ class Engagement extends Base {
 				'message'   => __( 'Failed to update comment.', 'godam' ),
 				'errorType' => 'failed_to_update_comment',
 			),
-			200
+			500
 		);
 	}
 
@@ -786,7 +786,7 @@ class Engagement extends Base {
 					'message'   => __( 'Invalid guest user email.', 'godam' ),
 					'errorType' => 'invalid_guest_email',
 				),
-				200
+				500
 			);
 		}
 
