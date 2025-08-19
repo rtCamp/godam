@@ -56,8 +56,8 @@ class Embed {
 	public function register_oembed_provider() {
 		// Register the oEmbed provider for GoDAM videos.
 		wp_oembed_add_provider(
-			'#https?://app-godam\.rt\.gw/web/video/.*#i',
-			'https://app-godam.rt.gw/api/method/godam_core.api.oembed.get_oembed',
+			'#https?://' . preg_quote( wp_parse_url( RTGODAM_API_BASE, PHP_URL_HOST ), '#' ) . '/web/video/.*#i',
+			RTGODAM_API_BASE . '/api/method/godam_core.api.oembed.get_oembed',
 			true
 		);
 	}
@@ -74,11 +74,13 @@ class Embed {
 	 */
 	public function pre_oembed_result( $data, string $url ) {
 		// Only intercept GoDAM specific URLs.
-		if ( strpos( $url, 'app-godam.rt.gw' ) === false ) {
+		if ( strpos( $url, RTGODAM_API_BASE ) === false ) {
 			return null;
 		}
 
-		$response = wp_remote_get( 'https://app-godam.rt.gw/api/method/godam_core.api.oembed.get_oembed?url=' . rawurlencode( $url ) );
+		$embed_url = RTGODAM_API_BASE . '/api/method/godam_core.api.oembed.get_oembed?url=' . rawurlencode( $url );
+
+		$response = wp_remote_get( $embed_url );
 
 		if ( is_wp_error( $response ) ) {
 			return false;
