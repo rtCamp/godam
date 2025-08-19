@@ -540,8 +540,9 @@ function rtgodam_get_current_logged_in_user_data() {
 
 	// @To-do: Check for guest user cookie when we introduce this feature.
 
+	$domain = preg_replace( '/^www\./', '', wp_parse_url( home_url(), PHP_URL_HOST ) );
 	return array(
-		'email' => 'bot@example.com',
+		'email' => 'anonymous@' . $domain,
 		'name'  => __( 'Anonymous', 'godam' ),
 		'type'  => 'non-user',
 	);

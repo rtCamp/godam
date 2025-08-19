@@ -157,7 +157,7 @@ const engagementStore = {
 		 * @param {Object} storeObj          - The store object that handles video engagement data.
 		 * @return {Object} An action object containing the type and like data.
 		 */
-		userHitiLke: ( videoAttachmentId, siteUrl, storeObj ) => {
+		userHitLke: ( videoAttachmentId, siteUrl, storeObj ) => {
 			const likeStatus = storeObj.select.getIsUserLiked()[ videoAttachmentId ];
 			storeObj.sendLikeData( videoAttachmentId, siteUrl, ! likeStatus );
 			const likeData = {
@@ -442,7 +442,7 @@ const engagementStore = {
 
 					likeLink.classList.add( 'is-progressing' );
 					likeLink.disabled = true;
-					self.dispatch.userHitiLke( videoAttachmentId, siteUrl, self );
+					self.dispatch.userHitLke( videoAttachmentId, siteUrl, self );
 					setTimeout( () => {
 						likeLink.classList.remove( 'is-progressing' );
 						likeLink.disabled = false;
@@ -1098,7 +1098,7 @@ function CommentBox( props ) {
 			return;
 		}
 		setIsSending( true );
-		memoizedStoreObj.dispatch.userHitiLke( videoAttachmentId, siteUrl, memoizedStoreObj );
+		memoizedStoreObj.dispatch.userHitLke( videoAttachmentId, siteUrl, memoizedStoreObj );
 		setTimeout( () => {
 			setIsSending( false );
 		}, 1000 );
