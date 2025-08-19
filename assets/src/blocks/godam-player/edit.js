@@ -27,7 +27,7 @@ import {
 	useBlockProps,
 	InnerBlocks,
 } from '@wordpress/block-editor';
-import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
+import { useRef, useEffect, useState, useMemo, useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useInstanceId } from '@wordpress/compose';
@@ -153,6 +153,22 @@ function VideoEdit( {
 		aspectRatio: '16:9',
 	} ), [ controls, autoplay, preload, loop, muted, poster, defaultPoster, sources ] );
 
+	const updateTitleBar = useCallback( ( player ) => {
+		// Remove HTML tags as description surrouned with p tags
+		const title = removeTags( videoTitle || '' );
+		const description = removeTags( videoDescription || '' );
+		if ( ! ( title || description ) ) {
+			return;
+		}
+
+		const titleBar = player.getChild( 'TitleBar' );
+		if ( titleBar ) {
+			titleBar.update( { title, description } );
+			titleBar.addClass( 'vjs-hidden' );
+			player.one( 'play', () => titleBar.removeClass( 'vjs-hidden' ) );
+		}
+	}, [ videoTitle, videoDescription ] );
+
 	// Memoize the video component to prevent rerenders.
 	const videoComponent = useMemo( () => (
 		<Disabled isDisabled={ ! isSingleSelected }>
@@ -172,44 +188,22 @@ function VideoEdit( {
 							setDuration( _duration );
 						} );
 
-						// Remove HTML tags as description surrouned with p tags
-						const title = removeTags( videoTitle );
-						const description = removeTags( videoDescription );
-						if ( title || description ) {
-							const titleBar = player.getChild( 'TitleBar' );
-							if ( titleBar ) {
-								titleBar.addClass( 'vjs-hidden' );
-								titleBar.update( { title, description } );
-								player.one( 'play', () => {
-									titleBar.removeClass( 'vjs-hidden' );
-								} );
-							}
-						}
+						updateTitleBar( player );
 					}
 				} }
 			/>
 		</Disabled>
-	), [ isSingleSelected, videoOptions, setAttributes, videoDescription, videoTitle ] );
+	), [ isSingleSelected, videoOptions, setAttributes, updateTitleBar ] );
 
+	// Updates the TitleBar when the video is replaced or when the video’s title or description is updated.
 	useEffect( () => {
 		const player = playerRef.current;
 		if ( ! player ) {
 			return;
 		}
 
-		const title = removeTags( videoTitle || '' );
-		const description = removeTags( videoDescription || '' );
-		if ( ! ( title || description ) ) {
-			return;
-		}
-
-		const titleBar = player.getChild( 'TitleBar' );
-		if ( titleBar ) {
-			titleBar.update( { title, description } );
-			titleBar.addClass( 'vjs-hidden' );
-			player.one( 'play', () => titleBar.removeClass( 'vjs-hidden' ) );
-		}
-	}, [ videoTitle, videoDescription, id ] );
+		updateTitleBar( player );
+	}, [ updateTitleBar, id ] );
 
 	useEffect( () => {
 		// Placeholder may be rendered.
