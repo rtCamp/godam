@@ -23,6 +23,7 @@ import { error } from '@wordpress/icons';
 
 const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice } ) => {
 	const intervalRef = useRef( null );
+	const noticeShownRef = useRef( { completed: false, failed: false } );
 	const [ godamMigrationCompleted, setGodamMigrationCompleted ] = useState( true );
 
 	const handleMigrationClick = async () => {
@@ -101,6 +102,9 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 
 			// Start polling every 5 seconds
 			intervalRef.current = setInterval( fetchMigrationStatus, 5000 );
+
+			// Reset notice flags for a new run
+			noticeShownRef.current = { completed: false, failed: false };
 		}
 
 		// Stop polling when migration is not processing
@@ -109,10 +113,12 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 			intervalRef.current = null;
 		}
 
-		// Set notice based on migration status
-		if ( migrationStatus?.status === 'completed' ) {
+		// Set notice based on migration status (only once per run)
+		if ( migrationStatus?.status === 'completed' && ! noticeShownRef.current.completed ) {
+			noticeShownRef.current.completed = true;
 			showNotice( __( 'Vimeo Video Migration has been successfully completed for all posts and pages 🎉', 'godam' ), 'success' );
-		} else if ( migrationStatus?.status === 'failed' ) {
+		} else if ( migrationStatus?.status === 'failed' && ! noticeShownRef.current.failed ) {
+			noticeShownRef.current.failed = true;
 			showNotice( __( 'Vimeo Video Migration failed. Please try again.', 'godam' ), 'error' );
 		}
 
