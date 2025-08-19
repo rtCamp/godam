@@ -14,6 +14,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { addIcon, trashIcon } from '../media-library-icons';
+import { canManageAttachment } from '../utility';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -306,6 +307,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @param {Object} data - The video thumbnail data to render.
 	 */
 	renderThumbnail( data ) {
+		if ( ! canManageAttachment( this.model.get( 'author' ) ) ) {
+			return;
+		}
+
 		const { thumbnails, selected, customThumbnails } = data;
 		const attachmentID = this.model.get( 'id' );
 
@@ -437,6 +442,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Renders the Edit Video and Analytics buttons in the attachment details view.
 	 */
 	renderVideoActions() {
+		if ( ! canManageAttachment( this.model.get( 'author' ) ) ) {
+			return;
+		}
+
 		const buttonsHTML = this.getButtonsHTML();
 		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-video-actions">${ buttonsHTML }</div>` ) );
 	},
@@ -536,6 +545,9 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 			this.renderVideoActions();
 			const attachmentId = this.model.get( 'id' );
+
+			this.showLoading();
+
 			this.fetchAndRender(
 				this.getVideoThumbnails( attachmentId ),
 				this.renderThumbnail,
@@ -548,5 +560,33 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		// Return this view.
 		return this;
+	},
+
+	showLoading() {
+		const actionsEl = this.$el.find( '.attachment-actions' );
+		const ul = document.createElement( 'ul' );
+
+		const li = document.createElement( 'li' );
+		li.className = 'thumbnail-spinner-container';
+		const spinner = document.createElement( 'div' );
+		spinner.className = 'thumbnail-spinner';
+		li.appendChild( spinner );
+		ul.appendChild( li );
+
+		const div = document.createElement( 'div' );
+		div.className = 'attachment-video-thumbnails';
+
+		const containerDiv = document.createElement( 'div' );
+		containerDiv.className = 'attachment-video-title';
+
+		const heading = document.createElement( 'h4' );
+		heading.textContent = __( 'Video Thumbnails', 'godam' );
+
+		containerDiv.appendChild( heading );
+		div.appendChild( containerDiv );
+
+		div.appendChild( ul );
+
+		actionsEl.append( div );
 	},
 } );

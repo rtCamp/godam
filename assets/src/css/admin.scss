@@ -6,11 +6,6 @@ $GREEN: #4CAF50;
 $RED: #F44336;
 $LIGHT_BLUE: #2196F3;
 
-#root-easydam,
-#root-video-editor {
-	--wp-components-color-accent: variables.$godam-primary-text-color;
-}
-
 #wpbody-content {
 	container: wpBodyContent / inline-size; // stylelint-disable-line value-keyword-case
 }
@@ -77,7 +72,8 @@ $media-frame-width: calc(300px + 2 * 24px);
 .godam_page_rtgodam_video_editor,
 .godam_page_rtgodam_help,
 .godam-analytics-container
-.godam-dashboard-container {
+.godam-dashboard-container,
+.godam-admin-root {
 	--wp-admin-theme-color: #ab3a6c;
 
 	button,
@@ -161,11 +157,6 @@ $media-frame-width: calc(300px + 2 * 24px);
 		}
 	}
 
-	.media-frame-title {
-		height: 78px;
-		padding: 24px 24px 0 24px;
-	}
-
 	.media-frame-router {
 		top: 104px;
 		padding: 0 24px;
@@ -189,7 +180,6 @@ $media-frame-width: calc(300px + 2 * 24px);
 			display: flex;
 			flex-wrap: wrap;
 			position: relative;
-			height: auto;
 			width: calc(100% - 300px - 2 * 16px);
 
 			#media-search-input {
@@ -310,31 +300,30 @@ $media-frame-width: calc(300px + 2 * 24px);
 		&.media-frame-menu-toggle {
 			left: 50px !important;
 			top: 20px !important;
-	}
-	}
-
-	.attachment-actions {
-
-		.button {
-			background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
-				border-radius: 0.25rem;
-				border: none;
-				color: #FFF;
-				padding: 6px 8px;
 		}
 	}
 
-	.media-menu-item.active {
-		border: none !important;
-		border-bottom: 2px solid #AB3A6C !important;
+	.media-frame-tab-panel {
+		.attachment-actions {
+
+			.button {
+				background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+					border-radius: 0.25rem;
+					border: none;
+					color: #FFF;
+					padding: 6px 8px;
+			}
+		}
+
+		.media-menu-item.active {
+			border: none !important;
+			border-bottom: 2px solid #AB3A6C !important;
+		}
 	}
+
 }
 
 #menu-item-library, #menu-item-featured-image {
-	display: none;
-}
-
-.media-frame-menu-heading {
 	display: none;
 }
 
@@ -343,6 +332,29 @@ $media-frame-width: calc(300px + 2 * 24px);
 	label {
 		white-space: nowrap;
 	}
+}
+
+/**
+* CSS for custom filtering options for the media library.
+*/
+#media-date-range-filter {
+	display: inline-block;
+	margin: 0 10px 0 0;
+	margin-right: 0.5rem;
+	font-size: 14px;
+	line-height: 2;
+	color: #2c3338;
+	box-shadow: none;
+	padding: 0 24px 0 8px;
+	min-height: 30px;
+	max-width: 8rem;
+	border: 1px solid #A3A3A3;
+	vertical-align: middle;
+}
+
+.media-modal-content #media-date-range-filter {
+	vertical-align: bottom;
+	margin: 12px 0;
 }
 
 #media-attachment-date-filters,

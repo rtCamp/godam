@@ -38,6 +38,8 @@ class SettingsButton extends videojs.getComponent( 'MenuButton' ) {
 	constructor( player, options ) {
 		super( player, options );
 		this.player_ = player;
+		this.player_.selectedSpeed ??= '1x';
+		this.player_.selectedQuality ??= 'Auto';
 		this.addClass( 'vjs-settings-button' );
 		this.controlText( 'Settings' );
 		this.hasQualityItem = false;
@@ -134,9 +136,6 @@ class SettingsButton extends videojs.getComponent( 'MenuButton' ) {
 	}
 }
 
-let selectedSpeed = '1x';
-let selectedQuality = 'Auto'; // initiated globally so it can be share between multiple instances of the function.
-
 // Utility function to close menu and reset to default menu
 function closeAndResetMenu( menuButton ) {
 	menuButton.menu.hide();
@@ -204,9 +203,11 @@ function openSubmenu( menuButton, items, title = '' ) {
 
 				let isSelected = false;
 				if ( title === 'Speed' ) {
-					isSelected = selectedSpeed === itemData.label;
+					const currentSpeed = this.player().selectedSpeed || '1x';
+					isSelected = currentSpeed === itemData.label;
 				} else if ( title === 'Quality' ) {
-					isSelected = selectedQuality === itemData.label;
+					const currentQuality = this.player().selectedQuality || 'Auto';
+					isSelected = currentQuality === itemData.label;
 				}
 
 				let html = '';
@@ -254,7 +255,7 @@ function openSubmenu( menuButton, items, title = '' ) {
 					for ( let i = 0; i < qualityLevels.length; i++ ) {
 						qualityLevels[ i ].enabled = true;
 					}
-					selectedQuality = 'Auto';
+					this.player().selectedQuality = 'Auto';
 				} else {
 					// Parse height from label like '720p'
 					const selectedHeight = parseInt( qualityLabel.replace( 'p', '' ), 10 );
@@ -263,7 +264,7 @@ function openSubmenu( menuButton, items, title = '' ) {
 						const level = qualityLevels[ i ];
 						level.enabled = level.height === selectedHeight;
 					}
-					selectedQuality = selectedHeight + 'p';
+					this.player().selectedQuality = selectedHeight + 'p';
 				}
 
 				closeAndResetMenu( menuButton );
@@ -273,20 +274,7 @@ function openSubmenu( menuButton, items, title = '' ) {
 				// Implement playback speed change
 				const rate = parseFloat( speed.replace( 'x', '' ) );
 				this.player().playbackRate( rate );
-				selectedSpeed = speed;
-
-				document
-					.querySelectorAll( '.easydam-player.video-js' )
-					.forEach( ( videoElement ) => {
-						try {
-							const player = videojs.getPlayer( videoElement );
-							if ( player ) {
-								player.playbackRate( rate );
-							}
-						} catch ( error ) {
-							// silently fail.
-						}
-					} );
+				this.player().selectedSpeed = speed;
 
 				closeAndResetMenu( menuButton );
 			}
