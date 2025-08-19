@@ -216,6 +216,8 @@ document.addEventListener( 'click', async function( e ) {
 				return;
 			}
 
+			window.galleryScroll = false;
+
 			// Set loading state
 			modal.dataset.isLoading = 'true';
 			modal.dataset.currentVideoId = newVideoId;
@@ -279,6 +281,7 @@ document.addEventListener( 'click', async function( e ) {
 						// Reinitialize the player with the new content
 						if ( typeof GODAMPlayer === 'function' ) {
 							const godamPlayer = GODAMPlayer( modal );
+							const initEngagement = godamPlayer.initEngagement;
 							// Find the video player and start playing
 							const videoPlayer = modal.querySelector( '.video-js' );
 							if ( videoPlayer && videoPlayer.player ) {
@@ -287,17 +290,23 @@ document.addEventListener( 'click', async function( e ) {
 
 									const newVideoEngagementsData = select( engagementStore ).getTitles()[ newVideoId ];
 									if ( newVideoEngagementsData ) {
-										dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId );
+										dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId ).then( () => {
+											window.galleryScroll = true;
+										} );
 										videoPlayer.player.play();
 									} else {
-										godamPlayer.then( () => {
-											dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId );
+										initEngagement.then( () => {
+											dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId ).then( () => {
+												window.galleryScroll = true;
+											} );
 											videoPlayer.player.play();
 										} );
 									}
 									engagementContainer.remove();
 								} else {
-									dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, true );
+									dispatch( engagementStore ).initiateCommentModal( newVideoId, siteUrl, engagementId, true ).then( () => {
+										window.galleryScroll = true;
+									} );
 									videoPlayer.player.play();
 								}
 							}
@@ -409,6 +418,10 @@ document.addEventListener( 'click', async function( e ) {
 			event.preventDefault(); // Prevent background scroll
 			event.stopPropagation(); // Prevent event bubbling
 
+			if ( ! window.galleryScroll ) {
+				return;
+			}
+
 			const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
 			if ( ! currentPopUp ) {
 				return;
@@ -483,6 +496,10 @@ document.addEventListener( 'click', async function( e ) {
 		const handleTouchend = async ( err ) => {
 			touchEndY = err.changedTouches[ 0 ].clientY;
 			const touchDiff = touchStartY - touchEndY;
+
+			if ( ! window.galleryScroll ) {
+				return;
+			}
 
 			const currentPopUp = document.querySelector( '#rtgodam-video-engagement--comment-modal' );
 			if ( ! currentPopUp ) {
@@ -566,11 +583,11 @@ document.addEventListener( 'click', async function( e ) {
 		let touchStartY = 0;
 		let touchEndY = 0;
 
-		modal.addEventListener( 'touchstart', ( err ) => {
+		document.body.addEventListener( 'touchstart', ( err ) => {
 			touchStartY = err.touches[ 0 ].clientY;
 		}, { passive: false } );
 
-		modal.addEventListener( 'touchmove', ( err ) => {
+		document.body.addEventListener( 'touchmove', ( err ) => {
 			err.preventDefault(); // Prevent background scroll
 			err.stopPropagation(); // Prevent event bubbling
 		}, { passive: false } );
