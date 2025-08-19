@@ -52,6 +52,17 @@ class Video_Migration extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/video-migrate/abort',
+				'args'      => array(
+					array(
+						'methods'             => \WP_REST_Server::CREATABLE,
+						'callback'            => array( $this, 'abort_video_migration' ),
+						'permission_callback' => array( $this, 'check_video_migration_permission' ),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/video-migration/status',
 				'args'      => array(
 					array(
@@ -62,6 +73,53 @@ class Video_Migration extends Base {
 				),
 			),
 		);
+	}
+
+	/**
+	 * Abort a running migration.
+	 *
+	 * Stops future scheduled actions and resets the stored status to initial state.
+	 * Returns a small summary to display in UI.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_REST_Request $request Request containing migration type.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function abort_video_migration( $request ) {
+		$migration_type = $request->get_param( 'type' );
+
+		if ( ! in_array( $migration_type, array( 'core', 'vimeo' ), true ) ) {
+			return new \WP_Error( 'invalid_migration_type', __( 'Invalid migration type specified.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		$wp_option_key   = 'godam_' . $migration_type . '_video_migration_status';
+		$current_status  = get_option( $wp_option_key, array() );
+		$processed_count = isset( $current_status['done'] ) ? (int) $current_status['done'] : 0;
+		$total_count     = isset( $current_status['total'] ) ? (int) $current_status['total'] : 0;
+
+		// Best-effort: unschedule pending actions for this migration. This may cancel both types if they run simultaneously.
+		if ( function_exists( 'as_unschedule_all_actions' ) ) {
+			// Root discovery job (find posts) and all batch jobs.
+			as_unschedule_all_actions( 'godam_process_full_video_migration' );
+			as_unschedule_all_actions( 'godam_migrate_post_batch_video_blocks' );
+		}
+
+		// Reset the status to initial state (pending) by deleting the option.
+		delete_option( $wp_option_key );
+
+		$migration_name = ( 'core' === $migration_type ) ? __( 'Core Video Migration', 'godam' ) : __( 'Vimeo Video Migration', 'godam' );
+
+		$response = array(
+			'status'  => 'aborted',
+			'done'    => $processed_count,
+			'total'   => $total_count,
+			/* translators: %1$d is the number of posts processed, %2$d is the total number of posts to process and %3$d is the migration name */
+			'message' => sprintf( __( 'Processed %1$d of %2$d posts. %3$s aborted.', 'godam' ), $processed_count, $total_count, $migration_name ),
+		);
+
+		return rest_ensure_response( $response );
 	}
 
 	/**
@@ -269,18 +327,17 @@ class Video_Migration extends Base {
 					)
 				);
 
-				if ( ! empty( $posts ) ) {
-					$all_post_ids     = array_merge( $all_post_ids, $posts );
-					$post_type_total += count( $posts );
+				$post_count = is_array( $posts ) ? count( $posts ) : 0;
 
-					$post_count = count( $posts );
+				if ( $post_count > 0 ) {
+					$all_post_ids     = array_merge( $all_post_ids, $posts );
+					$post_type_total += $post_count;
 
 					// Add a small delay to prevent overwhelming the database.
 					sleep( 1 ); // 1 second delay.
 				}
 
 				$offset += $posts_per_page;
-
 
 			} while ( $post_count === $posts_per_page );
 
@@ -310,26 +367,32 @@ class Video_Migration extends Base {
 			$batch_post_ids = array_slice( $all_post_ids, $i, $batch_size );
 			++$batch_number;
 
-			// Schedule each batch with a slight delay to prevent overwhelming.
-			as_schedule_single_action(
-				time() + ( $batch_number * 2 ), // 2 second delay between batches.
-				'godam_migrate_post_batch_video_blocks',
-				array(
-					'migration_type' => $migration_type,
-					'post_ids'       => $batch_post_ids,
-					'batch_number'   => $batch_number,
-				)
-			);
+
+			// Queue each batch for immediate async processing. Using async actions avoids reliance on wp-cron.
+			if ( function_exists( 'as_enqueue_async_action' ) ) {
+				// NOTE: When a hook expects N args, async enqueue should pass a flat array of N values, not an associative array.
+				as_enqueue_async_action(
+					'godam_migrate_post_batch_video_blocks',
+					array( $migration_type, $batch_post_ids, $batch_number )
+				);
+			} elseif ( function_exists( 'as_schedule_single_action' ) ) {
+				// Fallback to scheduled actions with a slight delay if async enqueue is unavailable.
+				as_schedule_single_action(
+					time() + ( $batch_number * 2 ),
+					'godam_migrate_post_batch_video_blocks',
+					array( $migration_type, $batch_post_ids, $batch_number )
+				);
+			}
 		}
 
 		// Update status.
-		$status            = get_option( 'godam_vimeo_video_migration_status', array() );
+		$status            = get_option( 'godam_' . $migration_type . '_video_migration_status', array() );
 		$status['message'] = sprintf(
 		/* translators: %d is the number of batches scheduled for processing */
 			__( 'Scheduled %d batches for processing', 'godam' ),
 			$batch_number,
 		);
-		update_option( 'godam_vimeo_video_migration_status', $status );
+		update_option( 'godam_' . $migration_type . '_video_migration_status', $status );
 	}
 
 	/**
@@ -426,60 +489,119 @@ class Video_Migration extends Base {
 				// Small delay to prevent server overload.
 				usleep( 50000 ); // 0.05 second delay.
 
-			} catch ( Exception $e ) {
+			} catch ( \Exception $e ) {
 				error_log( "Error processing post {$post_id} in batch #{$batch_number}: " . $e->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			}
 		}
 
-		// Update the migration status.
+		// Update the migration status atomically to avoid race conditions across parallel batches.
 		if ( ! empty( $migration_status ) ) {
-			$migration_status['done'] = ( $migration_status['done'] ?? 0 ) + count( $post_ids );
+			$lock_key = 'godam_' . $migration_type . '_video_migration_lock';
+			if ( $this->acquire_migration_lock( $lock_key ) ) {
+				// Re-read inside the lock to ensure we have the latest value before increment.
+				$migration_status         = get_option( $wp_option_key, array() );
+				$migration_status['done'] = ( $migration_status['done'] ?? 0 ) + count( $post_ids );
 
-			// Accumulate Vimeo embed block counts if applicable.
-			if ( 'vimeo' === $migration_type ) {
-				$migration_status['vimeo_blocks_found']    = ( $migration_status['vimeo_blocks_found'] ?? 0 ) + $vimeo_found_in_batch;
-				$migration_status['vimeo_blocks_migrated'] = ( $migration_status['vimeo_blocks_migrated'] ?? 0 ) + $vimeo_migrated_in_batch;
-			}
-
-			// Calculate progress percentage.
-			$progress = 0;
-			if ( $migration_status['total'] > 0 ) {
-				$progress = round( ( $migration_status['done'] / $migration_status['total'] ) * 100 );
-			}
-
-			$migration_status['message'] = sprintf(
-			/* translators: %1$d is the number of posts processed, %2$d is the total number of posts, %3$d is the progress percentage */
-				__( 'Processed %1$d/%2$d posts (%3$d%% complete)', 'godam' ),
-				$migration_status['done'],
-				$migration_status['total'],
-				$progress
-			);
-
-			// Check if migration is complete.
-			if ( $migration_status['done'] >= $migration_status['total'] ) {
-				$migration_status['status']    = 'completed';
-				$migration_status['completed'] = current_time( 'mysql' );
+				// Accumulate Vimeo embed block counts if applicable.
 				if ( 'vimeo' === $migration_type ) {
-					$migration_status['message'] = sprintf(
-						/* translators: 1: total posts processed, 2: migrated Vimeo embeds, 3: total Vimeo embeds found */
-						__( 'Migration completed! Processed %1$d posts. Migrated %2$d out of %3$d Vimeo Embed Blocks found.', 'godam' ),
-						(int) ( $migration_status['total'] ?? 0 ),
-						(int) ( $migration_status['vimeo_blocks_migrated'] ?? 0 ),
-						(int) ( $migration_status['vimeo_blocks_found'] ?? 0 )
-					);
-				} else {
-					$migration_status['message'] = sprintf(
-						/* translators: %d is the total number of posts processed */
-						__( 'Migration completed! Processed %d posts.', 'godam' ),
-						$migration_status['total'],
-					);
+					$migration_status['vimeo_blocks_found']    = ( $migration_status['vimeo_blocks_found'] ?? 0 ) + $vimeo_found_in_batch;
+					$migration_status['vimeo_blocks_migrated'] = ( $migration_status['vimeo_blocks_migrated'] ?? 0 ) + $vimeo_migrated_in_batch;
 				}
-			}
 
-			update_option( $wp_option_key, $migration_status );
+				// Calculate progress percentage.
+				$progress = 0;
+				if ( ! empty( $migration_status['total'] ) && $migration_status['total'] > 0 ) {
+					$progress = round( ( $migration_status['done'] / $migration_status['total'] ) * 100 );
+				}
+
+				$migration_status['message'] = sprintf(
+				/* translators: %1$d is the number of posts processed, %2$d is the total number of posts, %3$d is the progress percentage */
+					__( 'Processed %1$d/%2$d posts (%3$d%% complete)', 'godam' ),
+					$migration_status['done'],
+					$migration_status['total'],
+					$progress
+				);
+
+				// Check if migration is complete.
+				if ( $migration_status['done'] >= ( $migration_status['total'] ?? 0 ) ) {
+					$migration_status['status']    = 'completed';
+					$migration_status['completed'] = current_time( 'mysql' );
+					if ( 'vimeo' === $migration_type ) {
+						$migration_status['message'] = sprintf(
+						/* translators: 1: total posts processed, 2: migrated Vimeo embeds, 3: total Vimeo embeds found */
+							__( 'Migration completed! Processed %1$d posts. Migrated %2$d out of %3$d Vimeo Embed Blocks found.', 'godam' ),
+							(int) ( $migration_status['total'] ?? 0 ),
+							(int) ( $migration_status['vimeo_blocks_migrated'] ?? 0 ),
+							(int) ( $migration_status['vimeo_blocks_found'] ?? 0 )
+						);
+					} else {
+						$migration_status['message'] = sprintf(
+						/* translators: %d is the total number of posts processed */
+							__( 'Migration completed! Processed %d posts.', 'godam' ),
+							$migration_status['total'],
+						);
+					}
+				}
+
+				update_option( $wp_option_key, $migration_status );
+				$this->release_migration_lock( $lock_key );
+			} else {
+				// As a fallback if we fail to acquire the lock after retries, attempt a best-effort update.
+				$migration_status['done'] = ( $migration_status['done'] ?? 0 ) + count( $post_ids );
+				update_option( $wp_option_key, $migration_status );
+			}
 		}
 
 		return $processed_count;
+	}
+
+	/**
+	 * Acquire a short-lived lock for migration status updates.
+	 *
+	 * Uses add_option as a mutex. If an existing lock is expired, it will be taken over.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $lock_key   Unique option key for the lock.
+	 * @param int    $timeout_s  Lock expiry seconds.
+	 * @param int    $retry_ms   Milliseconds to wait between retries.
+	 * @param int    $max_wait_s Maximum total seconds to wait for the lock.
+	 *
+	 * @return bool True if the lock was acquired, false otherwise.
+	 */
+	private function acquire_migration_lock( string $lock_key, int $timeout_s = 5, int $retry_ms = 100, int $max_wait_s = 5 ): bool {
+		$lock_expires_at = time() + $timeout_s;
+		$deadline        = microtime( true ) + $max_wait_s;
+
+		// First attempt: create the option if it doesn't exist.
+		if ( add_option( $lock_key, $lock_expires_at, '', 'no' ) ) {
+			return true;
+		}
+
+		while ( microtime( true ) < $deadline ) {
+			$current = (int) get_option( $lock_key, 0 );
+			if ( $current < time() ) {
+				// Lock expired; take ownership.
+				update_option( $lock_key, $lock_expires_at );
+				return true;
+			}
+			usleep( $retry_ms * 1000 );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Release a previously acquired migration lock.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $lock_key Lock option key.
+	 *
+	 * @return void
+	 */
+	private function release_migration_lock( string $lock_key ) {
+		delete_option( $lock_key );
 	}
 
 	/**
@@ -509,7 +631,7 @@ class Video_Migration extends Base {
 					$attrs['src'] = wp_get_attachment_url( $attrs['id'] );
 				}
 
-				$sources = $this->build_video_sources_array( $attrs['id'] ?? 0 );
+				$sources = $this->build_video_sources_array( (int) ( $attrs['id'] ?? 0 ) );
 
 				// Transform to custom block with attributes.
 				$block = array(
@@ -604,7 +726,7 @@ class Video_Migration extends Base {
 					continue;
 				}
 
-				$sources = $this->build_video_sources_array( $attachment_id );
+				$sources = $this->build_video_sources_array( (int) $attachment_id );
 
 				// Transform to custom block with attributes.
 				$block = array(
