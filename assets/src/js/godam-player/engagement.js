@@ -570,6 +570,7 @@ function CommentForm( props ) {
 		return 'edit' === commentType ? comment.text : '';
 	} );
 	const [ isSending, setIsSending ] = useState( false );
+	const textareaRef = useRef( null );
 
 	async function handleSubmit() {
 		setIsSending( true );
@@ -613,13 +614,13 @@ function CommentForm( props ) {
 			const hrs = String( Math.floor( currentTime / 3600 ) ).padStart( 2, '0' );
 			const mins = String( Math.floor( ( currentTime % 3600 ) / 60 ) ).padStart( 2, '0' );
 			const secs = String( Math.floor( currentTime % 60 ) ).padStart( 2, '0' );
-			setCommentText( ( prev ) => {
-				const timestamp = `@${ hrs }:${ mins }:${ secs }`;
-				if ( prev.trim() ) {
-					return `${ prev } ${ timestamp }`;
-				}
-				return timestamp;
-			} );
+			const timestamp = `@${ hrs }:${ mins }:${ secs }`;
+			const ta = textareaRef.current;
+			const start = ta.selectionStart;
+			const end = ta.selectionEnd;
+			const value = ta.value;
+			const newValue = value.substring( 0, start ) + timestamp + value.substring( end );
+			setCommentText( newValue );
 		}
 	}
 
@@ -637,6 +638,7 @@ function CommentForm( props ) {
 						}
 					} }
 					disabled={ isSending }
+					ref={ textareaRef }
 				/>
 				<button
 					className="rtgodam-video-engagement--comment-button-timestamp"

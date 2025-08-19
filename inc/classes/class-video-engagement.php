@@ -24,7 +24,6 @@ class Video_Engagement {
 		add_action( 'rtgodam_after_video_html', array( $this, 'add_engagement_to_video' ), 10, 2 );
 	}
 
-
 	/**
 	 * Adds engagement elements to the video.
 	 *
