@@ -575,13 +575,15 @@ function rtgodam_cache_get( $key ) {
  * @param string $key     The cache key to set the value for.
  * @param mixed  $value   The value to set.
  * @param int    $expiration Optional. The time until the value expires in seconds.
- *                            Default 300 (5 minutes).
  *
  * @return bool True on success, false on failure.
  */
-function rtgodam_cache_set( $key, $value, $expiration = 3600 ) {
+function rtgodam_cache_set( $key, $value, $expiration = HOUR_IN_SECONDS ) {
+	if ( is_string( $expiration ) || $expiration < 300 ) {
+		$expiration = 300;
+	}
 	if ( wp_using_ext_object_cache() ) {
-		return wp_cache_set( $key, $value, '', $expiration );
+		return wp_cache_set( $key, $value, '', $expiration ); // phpcs:ignore
 	} else {
 		return set_transient( $key, $value, $expiration );
 	}

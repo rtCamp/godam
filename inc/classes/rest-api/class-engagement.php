@@ -387,7 +387,6 @@ class Engagement extends Base {
 			$likes_endpoint,
 			array(
 				'method'  => 'POST',
-				'timeout' => 30,
 				'headers' => array(
 					'Content-Type' => 'application/json',
 				),
@@ -473,7 +472,6 @@ class Engagement extends Base {
 			$comments_endpoint,
 			array(
 				'method'  => 'POST',
-				'timeout' => 30,
 				'headers' => array(
 					'Content-Type' => 'application/json',
 				),
@@ -568,7 +566,6 @@ class Engagement extends Base {
 			$comment_delete_endpoint,
 			array(
 				'method'  => 'POST',
-				'timeout' => 30,
 				'headers' => array(
 					'Content-Type' => 'application/json',
 				),
@@ -609,7 +606,6 @@ class Engagement extends Base {
 			500
 		);
 	}
-
 
 	/**
 	 * Gets comments for a transcoder job ID.
@@ -790,7 +786,7 @@ class Engagement extends Base {
 			);
 		}
 
-		setcookie( 'guest_user', sanitize_email( $guest_user_email ), time() + 3600, COOKIEPATH, COOKIE_DOMAIN );
+		// @To-Do: Implement guest user login logic here. Will be done in future.
 
 		$guest_user_name = explode( '@', $guest_user_email )[0];
 		$user_data       = array(
