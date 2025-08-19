@@ -612,7 +612,7 @@ class Video_Migration extends Base {
 						'loop'     => $attrs['loop'] ?? false,
 						'muted'    => $attrs['muted'] ?? false,
 						'poster'   => $attrs['poster'] ?? '',
-						'src'      => $video_url ? $video_url : '',
+						'src'      => $video_url ?? '',
 						'sources'  => $sources,
 						'seo'      => array(),
 					),
@@ -634,7 +634,7 @@ class Video_Migration extends Base {
 					'found'    => 0,
 					'migrated' => 0,
 				),
-				$this 
+				$this
 			);
 			
 			// If a plugin handled this block via the filter, update our variables.
