@@ -200,7 +200,7 @@ class Engagement extends Base {
 		$video_id      = $request->get_param( 'video_id' );
 		$site_url      = $request->get_param( 'site_url' );
 
-		$account_credentials = $this->access_creadentials_check();
+		$account_credentials = $this->access_credentials_check();
 
 		if ( $account_credentials instanceof WP_REST_Response ) {
 			return $account_credentials;
@@ -296,7 +296,7 @@ class Engagement extends Base {
 	 * @return WP_REST_Response|array Returns an error response if credentials are invalid,
 	 *                                otherwise an array with account token and API key.
 	 */
-	public function access_creadentials_check() {
+	public function access_credentials_check() {
 
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
@@ -366,7 +366,7 @@ class Engagement extends Base {
 		$site_url      = $request->get_param( 'site_url' );
 		$like_status   = $request->get_param( 'like_status' );
 
-		$account_credentials = $this->access_creadentials_check();
+		$account_credentials = $this->access_credentials_check();
 
 		if ( $account_credentials instanceof WP_REST_Response ) {
 			return $account_credentials;
@@ -453,7 +453,7 @@ class Engagement extends Base {
 		$comment_text      = $request->get_param( 'comment_text' );
 		$comment_type      = $request->get_param( 'comment_type' );
 
-		$account_credentials = $this->access_creadentials_check();
+		$account_credentials = $this->access_credentials_check();
 
 		if ( $account_credentials instanceof WP_REST_Response ) {
 			return $account_credentials;
@@ -561,7 +561,7 @@ class Engagement extends Base {
 		$comment_id  = $request->get_param( 'comment_id' );
 		$delete_type = $request->get_param( 'delete_type' );
 
-		$account_credentials = $this->access_creadentials_check();
+		$account_credentials = $this->access_credentials_check();
 
 		if ( $account_credentials instanceof WP_REST_Response ) {
 			return $account_credentials;
