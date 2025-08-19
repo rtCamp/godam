@@ -110,12 +110,14 @@ class Video_Migration extends Base {
 		// Reset the status to initial state (pending) by deleting the option.
 		delete_option( $wp_option_key );
 
+		$migration_name = ( 'core' === $migration_type ) ? __( 'Core Video Migration', 'godam' ) : __( 'Vimeo Video Migration', 'godam' );
+
 		$response = array(
 			'status'  => 'aborted',
 			'done'    => $processed_count,
 			'total'   => $total_count,
-			/* translators: %1$d is the number of posts processed, %2$d is the total number of posts to process */
-			'message' => sprintf( __( 'Processed %1$d of %2$d posts. Migration aborted.', 'godam' ), $processed_count, $total_count ),
+			/* translators: %1$d is the number of posts processed, %2$d is the total number of posts to process and %3$d is the migration name */
+			'message' => sprintf( __( 'Processed %1$d of %2$d posts. %3$s aborted.', 'godam' ), $processed_count, $total_count, $migration_name ),
 		);
 
 		return rest_ensure_response( $response );
