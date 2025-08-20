@@ -14,6 +14,7 @@ import { __ } from '@wordpress/i18n';
 import GoDAM from '../../../../../assets/src/images/GoDAM.png';
 import SettingsButton from '../masterSettings.js';
 import { PLAYER_SKINS } from '../utils/constants.js';
+import MenuButtonHoverManager from './menuButtonHover.js';
 
 /**
  * Controls Manager
@@ -32,6 +33,7 @@ export default class ControlsManager {
 	setupPlayerConfiguration() {
 		this.setupControlBarConfiguration();
 		this.setupCustomButtons();
+		new MenuButtonHoverManager( this.player );
 	}
 
 	/**
