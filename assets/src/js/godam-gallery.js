@@ -271,8 +271,8 @@ document.addEventListener( 'click', async function( e ) {
 						}
 
 						const engagementContainer = videoContainer.querySelector( '.rtgodam-video-engagement' );
-						const engagementId = engagementContainer.getAttribute( 'data-engagement-id' ) || 0;
-						const siteUrl = engagementContainer.getAttribute( 'data-engagement-site-url' ) || 0;
+						const engagementId = engagementContainer?.getAttribute( 'data-engagement-id' ) || 0;
+						const siteUrl = engagementContainer?.getAttribute( 'data-engagement-site-url' ) || '';
 
 						if ( ! galleryEngagements ) {
 							engagementContainer.remove();
