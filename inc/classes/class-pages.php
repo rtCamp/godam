@@ -97,7 +97,7 @@ class Pages {
 
 	/**
 	 * Tools page ID.
-	 * 
+	 *
 	 * @var string
 	 */
 	private $tools_page_id = 'godam_page_rtgodam_tools';
@@ -706,6 +706,11 @@ class Pages {
 
 		wp_enqueue_script( 'media-library-react' );
 
+		$roles = wp_get_current_user()->roles;
+		if ( current_user_can( 'manage_network' ) ) {
+			$roles[] = 'superadmin';
+		}
+
 		// Add a localized script for the rest nonce.
 		wp_localize_script(
 			'media-library-react',
@@ -713,6 +718,7 @@ class Pages {
 			array(
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
 				'userData' => rtgodam_get_user_data( true ),
+				'roles'    => $roles,
 			)
 		);
 	}
