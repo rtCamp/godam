@@ -1065,11 +1065,6 @@ function CommentBox( props ) {
 	const [ isUserLoggedIn, setIsUserLoggedIn ] = useState( loginStatus );
 
 	useEffect( () => {
-		setCommentsData( comments );
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ commentsCount ] );
-
-	useEffect( () => {
 		const currentVideoParent = document.getElementById( videoFigureId );
 		const currentVideo = currentVideoParent.querySelector( '.godam-video-wrapper' );
 		const currentVideoClass = currentVideoParent.className;
