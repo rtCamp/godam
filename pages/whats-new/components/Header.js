@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import GoDAMIcon from '../images/godam-icon.png';
+import GoDAMIcon from '../../../assets/src/images/godam-icon-colored.png';
 import BannerImage from '../images/banner.webp';
 
 const Header = ( { version } ) => {
