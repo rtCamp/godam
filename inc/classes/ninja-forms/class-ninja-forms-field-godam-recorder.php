@@ -20,6 +20,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 
+	use Singleton;
+
 	/**
 	 * Field type.
 	 *
@@ -130,6 +132,8 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Setup hooks.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return void
 	 */
 	public function setup_hooks() {
@@ -144,8 +148,11 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 		add_action( 'wp_ajax_nf_godam_upload', array( $this, 'ajax_upload' ) );
 		add_action( 'wp_ajax_nopriv_nf_godam_upload', array( $this, 'ajax_upload' ) );
 
-		// Submission table row value.
-		add_filter( 'ninja_forms_custom_columns', array( $this, 'submission_table_row_value' ), 10, 2 );
+		// After submission.
+		add_action( 'ninja_forms_after_submission', array( $this, 'handle_recorder_submission' ) );
+
+		// Handle transcoding callback.
+		add_action( 'rtgodam_handle_callback_finished', array( $this, 'handle_transcoding_callback' ), 10, 4 );
 	}
 
 	/**
@@ -255,6 +262,8 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 
 	/**
 	 * Process the field value.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param object $field Current field object.
 	 * @param array  $data  Submitted form data.
@@ -374,6 +383,8 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Ajax upload handler.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return void
 	 */
 	public function ajax_upload() {
@@ -457,6 +468,8 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Update the filename to be unique.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param string $filename Current filename.
 	 *
 	 * @return string
@@ -474,6 +487,8 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	/**
 	 * Change upload dir to godam directory in uploads.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array<mixed> $dirs upload directory.
 	 *
 	 * @return array<mixed>
@@ -485,5 +500,152 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 		$dirs['url']    = $dirs['baseurl'] . $dirs['subdir'];
 
 		return $dirs;
+	}
+
+	/**
+	 * Handle recorder submission.
+	 *
+	 * @param array<mixed> $form_data Form data.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function handle_recorder_submission( $form_data ) {
+
+		if ( ! rtgodam_is_api_key_valid() ) {
+			return;
+		}
+
+		// Bail early.
+		if ( empty( $form_data ) || empty( $form_data['fields'] ) ) {
+			return;
+		}
+
+		$form_name = $form_data['settings']['title'] ?? __( 'Ninja Forms', 'godam' );
+		$form_id   = $form_data['form_id'] ?? 0;
+		$insert_id = $form_data['actions']['save']['sub_id'] ?? 0;
+
+		if ( 0 === $insert_id ) {
+			return;
+		}
+
+		// Send each recorder type for transcoding.
+		foreach ( $form_data['fields'] as $field ) {
+			if ( self::$field_type !== $field['type'] ) {
+				continue;
+			}
+
+			// Send to godam for transcoding.
+			$this->send_data_to_godam( $form_name, $form_id, $insert_id, $field['value'] );
+		}
+	}
+
+	/**
+	 * Send files to GoDam for transcoding.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $form_title Form Name.
+	 * @param int    $form_id    Form Id.
+	 * @param int    $entry_id   Entry Id.
+	 * @param string $file_url   File URL.
+	 */
+	private function send_data_to_godam( $form_title, $form_id, $entry_id, $file_url ) {
+
+		/**
+		 * Bail early if no file to send.
+		 */
+		if ( empty( $file_url ) ) {
+			return;
+		}
+
+		/**
+		 * Form Title.
+		 */
+		$form_title = ! empty( $form_title ) ? $form_title : __( 'Ninja Forms', 'godam' );
+
+		/**
+		 * Send for transcoding.
+		 */
+		$response_from_transcoding = rtgodam_send_video_to_godam_for_transcoding( 'ninja-forms', $form_title, $file_url, $entry_id );
+
+		/**
+		 * Error handling.
+		 */
+		if ( is_wp_error( $response_from_transcoding ) ) {
+			return wp_send_json_error(
+				$response_from_transcoding->get_error_message(),
+				$response_from_transcoding->get_error_code(),
+			);
+		}
+
+		/**
+		 * If empty data or name send error.
+		 */
+		if ( empty( $response_from_transcoding->data ) || empty( $response_from_transcoding->data->name ) ) {
+			return wp_send_json_error(
+				__( 'Transcoding data not set', 'godam' ),
+				404
+			);
+		}
+
+		/**
+		 * Get job id.
+		 */
+		$job_id = $response_from_transcoding->data->name;
+
+		/**
+		 * Add the job to options table.
+		 */
+		add_option(
+			$job_id,
+			array(
+				'source'   => 'ninja-forms_godam_recorder',
+				'entry_id' => $entry_id,
+				'form_id'  => $form_id,
+			)
+		);
+	}
+
+	/**
+	 * Transcoding callback handler.
+	 *
+	 * @param int             $attachment_id Attachment ID.
+	 * @param string          $job_id        Job ID.
+	 * @param string          $job_for       Job for.
+	 * @param WP_REST_Request $request       Request object.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function handle_transcoding_callback( $attachment_id, $job_id, $job_for, $request ) {
+		if ( ! empty( $job_for ) && 'ninja-forms-godam-recorder' === $job_for && ! empty( $job_id ) && function_exists( 'Ninja_Forms' ) ) {
+			$post_array = $request->get_params();
+
+			// Get data stored in options based on job id.
+			$data = get_option( $job_id );
+
+			if ( ! empty( $data ) && 'ninja-forms_godam_recorder' === $data['source'] ) {
+				$entry_id = $data['entry_id'];
+				$form_id  = '';
+
+				if ( empty( $entry_id ) ) {
+					return;
+				}
+
+				$form_id = get_post_meta( $entry_id, '_form_id', true );
+
+				if ( empty( $form_id ) ) {
+					return;
+				}
+
+				$meta_key   = 'rtgodam_transcoded_url_ninja-forms_' . $form_id . '_' . $entry_id;
+				$meta_value = $post_array['download_url'] ?? '';
+
+				update_post_meta( $entry_id, $meta_key, $meta_value );
+			}
+		}
 	}
 }
