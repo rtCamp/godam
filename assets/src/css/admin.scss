@@ -1,6 +1,5 @@
 
 @use './variables';
-
 @import url(https://vjs.zencdn.net/8.3.0/video-js.css);
 @import "_common"; // stylelint-disable-line scss/load-no-partial-leading-underscore
 
@@ -9,6 +8,7 @@ $RED: #F44336;
 $LIGHT_BLUE: #2196F3;
 
 #wpbody-content {
+	/* stylelint-disable-next-line value-keyword-case */
 	container: wpBodyContent / inline-size;
 }
 
@@ -40,7 +40,17 @@ $media-frame-width: calc(300px + 2 * 24px);
 		position: absolute !important;
 		width: 100% !important;
 		z-index: 1000;
-		background-color: #fff;
+		background: none;
+		overflow-y: scroll;
+
+		.media-menu {
+			display: block !important;
+			background: none !important;
+
+			&:not(&:has(.hide-sidebar)) {
+				background: #fff !important;
+			}
+		}
 	}
 
 	.media-frame-menu.hide-menu {
@@ -77,7 +87,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 .toplevel_page_rtgodam,
 .godam_page_rtgodam_video_editor,
 .godam_page_rtgodam_help,
-.godam-analytics-container
+.godam-analytics-container,
 .godam-dashboard-container,
 .godam-admin-root {
 	--wp-admin-theme-color: #ab3a6c;
@@ -106,6 +116,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 		pointer-events: none;
 		overflow: visible;
 
+		/* display: none; */
 	}
 
 	.media-frame-title {
@@ -119,6 +130,29 @@ $media-frame-width: calc(300px + 2 * 24px);
 	.media-frame-content {
 		left: 0;
 	}
+}
+
+/**
+* CSS for custom filtering options for the media library.
+*/
+#media-date-range-filter {
+	display: inline-block;
+	margin: 0 10px 0 0;
+	margin-right: 0.5rem;
+	font-size: 14px;
+	line-height: 2;
+	color: #2c3338;
+	box-shadow: none;
+	padding: 0 24px 0 8px;
+	min-height: 30px;
+	max-width: 8rem;
+	border: 1px solid #A3A3A3;
+	vertical-align: middle;
+}
+
+.media-modal-content #media-date-range-filter {
+	vertical-align: bottom;
+	margin: 12px 0;
 }
 
 /**
@@ -260,6 +294,17 @@ $media-frame-width: calc(300px + 2 * 24px);
 				top: 140px;
 			}
 		}
+
+		@media (max-width: 640px) {
+
+			.media-toolbar {
+				width: calc(100% - 64px);
+			}
+
+			.attachments-wrapper {
+				width: calc(100% - 48px);
+			}
+		}
 	}
 
 	.edit-attachment-frame {
@@ -285,12 +330,12 @@ $media-frame-width: calc(300px + 2 * 24px);
 		}
 
 		&.media-frame-menu-toggle {
-			left: 50px !important;
-			top: 20px !important;
+			display: none !important;
 		}
 	}
 
 	.media-frame-tab-panel {
+
 		.attachment-actions {
 
 			.button {
@@ -319,29 +364,6 @@ $media-frame-width: calc(300px + 2 * 24px);
 	label {
 		white-space: nowrap;
 	}
-}
-
-/**
-* CSS for custom filtering options for the media library.
-*/
-#media-date-range-filter {
-	display: inline-block;
-	margin: 0 10px 0 0;
-	margin-right: 0.5rem;
-	font-size: 14px;
-	line-height: 2;
-	color: #2c3338;
-	box-shadow: none;
-	padding: 0 24px 0 8px;
-	min-height: 30px;
-	max-width: 8rem;
-	border: 1px solid #A3A3A3;
-	vertical-align: middle;
-}
-
-.media-modal-content #media-date-range-filter {
-	vertical-align: bottom;
-	margin: 12px 0;
 }
 
 #media-attachment-date-filters,

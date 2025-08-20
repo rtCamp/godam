@@ -217,6 +217,10 @@
 			visibility: visible;
 			pointer-events: auto;
 			transition: left 0.18s ease, transform 0.18s ease;
+
+			@media (max-width: 900px) {
+				top: 40px;
+			}
 		}
 	}
 
@@ -265,5 +269,8 @@
 		background: #FFF;
 		z-index: -1;
 		padding: 0;
+		top: 0;
+		max-width: 100%;
+		width: 100%;
 	}
 }

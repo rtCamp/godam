@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useState, useMemo } from 'react';
+import React, { useCallback, useState, useMemo, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -81,6 +81,14 @@ const App = () => {
 		}
 		setIsSidebarHidden( true );
 	};
+
+	// Call closeFolderMenu on mount when window width is less than 900px so that folder sidebar remains closed by default.
+	useEffect( () => {
+		if ( typeof window !== 'undefined' && window.innerWidth < 900 ) {
+			closeFolderMenu();
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [] );
 
 	const toggleSidebar = () => {
 		const sidebar = document.getElementById( 'rt-transcoder-media-library-root' );
