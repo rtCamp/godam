@@ -57,6 +57,10 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 .media-frame-title {
 	left: $media-frame-width;
+
+	h1 {
+		padding: 8px 32px;
+	}
 }
 
 .media-frame-router {
@@ -97,7 +101,11 @@ $media-frame-width: calc(300px + 2 * 24px);
 .hide-sidebar {
 
 	.media-frame-menu {
-		display: none;
+		width: 0;
+		min-width: 0;
+		pointer-events: none;
+		overflow: visible;
+
 	}
 
 	.media-frame-title {
@@ -134,6 +142,10 @@ $media-frame-width: calc(300px + 2 * 24px);
 			opacity: 0.3;
 			pointer-events: none;
 		}
+	}
+
+	.media-frame-menu-heading {
+		display: none;
 	}
 
 	.media-frame-router {

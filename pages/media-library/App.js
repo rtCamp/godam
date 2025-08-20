@@ -164,37 +164,39 @@ const App = () => {
 				</div>
 			</div>
 
-			<div className="folder-list">
-				<button
-					className={ `folder-list__item all-media ${
-						selectedFolder.id === -1 ? 'folder-list__item--active' : ''
-					}` }
-					onClick={ () => handleClick( -1 ) }
-				>
-					<p className="folder-list__text">{ __( 'All Media', 'godam' ) }
-						<span className="folder-list__count">{ allMediaCount ?? 0 }</span>
-					</p>
-				</button>
+			<div className="folder-container">
+				<div className="folder-list">
+					<button
+						className={ `folder-list__item all-media ${
+							selectedFolder.id === -1 ? 'folder-list__item--active' : ''
+						}` }
+						onClick={ () => handleClick( -1 ) }
+					>
+						<p className="folder-list__text">{ __( 'All Media', 'godam' ) }
+							<span className="folder-list__count">{ allMediaCount ?? 0 }</span>
+						</p>
+					</button>
 
-				<button
-					className={ `folder-list__item tree-item ${
-						selectedFolder.id === 0 ? 'folder-list__item--active' : ''
-					}` }
-					onClick={ () => handleClick( 0 ) }
-					data-id={ 0 }
-				>
-					<p className="folder-list__text">{ __( 'Uncategorized', 'godam' ) }
-						<span className="folder-list__count">{ uncategorizedCount?.count ?? 0 }</span>
-					</p>
-				</button>
+					<button
+						className={ `folder-list__item tree-item ${
+							selectedFolder.id === 0 ? 'folder-list__item--active' : ''
+						}` }
+						onClick={ () => handleClick( 0 ) }
+						data-id={ 0 }
+					>
+						<p className="folder-list__text">{ __( 'Uncategorized', 'godam' ) }
+							<span className="folder-list__count">{ uncategorizedCount?.count ?? 0 }</span>
+						</p>
+					</button>
+				</div>
+
+				<div className="folder-tabs">
+					<BookmarkTab handleContextMenu={ handleContextMenu } />
+					<LockedTab handleContextMenu={ handleContextMenu } />
+				</div>
+
+				<FolderTree handleContextMenu={ handleContextMenu } />
 			</div>
-
-			<div className="folder-tabs">
-				<BookmarkTab handleContextMenu={ handleContextMenu } />
-				<LockedTab handleContextMenu={ handleContextMenu } />
-			</div>
-
-			<FolderTree handleContextMenu={ handleContextMenu } />
 
 			{ contextMenu.visible && (
 				<ContextMenu

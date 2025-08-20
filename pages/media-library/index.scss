@@ -26,7 +26,17 @@
 
 	> * {
 		padding: 1.25rem;
-		border-bottom: 1px solid #E0E0E0;
+		border-bottom: 2px solid #E0E0E0;
+	}
+
+	.folder-container  {
+		padding: 0;
+		overflow: scroll;
+
+		> * {
+			padding: 1.25rem;
+			border-bottom: 1px solid #E0E0E0;
+		}
 	}
 
 	.tree-container {
@@ -169,7 +179,7 @@
 	#media-folder-toggle-button {
 		background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
 		color: #fff;
-		box-shadow: none;
+		box-shadow: 2px 2px 3px rgba(128, 128, 128, 0.2);
 		position: absolute;
 		top: 60px;
 		min-width: $toggle-width;
@@ -254,5 +264,6 @@
 	.media-menu {
 		background: #FFF;
 		z-index: -1;
+		padding: 0;
 	}
 }
