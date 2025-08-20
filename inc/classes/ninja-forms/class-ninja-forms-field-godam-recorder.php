@@ -143,6 +143,9 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 		// Ajax action for upload.
 		add_action( 'wp_ajax_nf_godam_upload', array( $this, 'ajax_upload' ) );
 		add_action( 'wp_ajax_nopriv_nf_godam_upload', array( $this, 'ajax_upload' ) );
+
+		// Submission table row value.
+		add_filter( 'ninja_forms_custom_columns', array( $this, 'submission_table_row_value' ), 10, 2 );
 	}
 
 	/**
@@ -251,6 +254,40 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	}
 
 	/**
+	 * Process the field value.
+	 *
+	 * @param object $field Current field object.
+	 * @param array  $data  Submitted form data.
+	 *
+	 * @return void
+	 */
+	public function process( $field, $data ) {
+
+		// Bail early.
+		if ( empty( $field['files'] ) ) {
+			return;
+		}
+
+		$submission_url = '';
+
+		// Get the submission URL from the uploaded files.
+		foreach ( $field['files'] as $file ) {
+			$submission_url = $file['path'];
+		}
+
+		// Update the value of submission URL.
+		foreach ( $data['fields'] as $key => $data_field ) {
+			if ( $data_field['id'] === $field['id'] ) {
+				// Update the field value with the submission URL.
+				$data['fields'][ $key ]['value'] = $submission_url;
+				break;
+			}
+		}
+
+		return $data;
+	}
+
+	/**
 	 * Enqueue scripts for the frontend.
 	 *
 	 * @param array|object $field Field settings or object.
@@ -341,12 +378,112 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	 */
 	public function ajax_upload() {
 
-		// @todo Do file operation.
+		$field_id = ! empty( $_POST['field_id'] ) ? intval( $_POST['field_id'] ) : 0;
+
+		if ( ! check_ajax_referer( 'godam_recorder_' . $field_id, 'nonce' ) ) {
+			wp_send_json_error( __( 'Nonce is not valid', 'godam' ), 400 );
+		}
+
+		$form_id = ! empty( $_POST['form_id'] ) ? intval( $_POST['form_id'] ) : 0;
+
+		if ( ! function_exists( 'Ninja_Forms' ) ) {
+			wp_send_json_error( __( 'Ninja Forms is not active', 'godam' ), 400 );
+		}
+
+		$field = Ninja_Forms()->form( $form_id )->field( $field_id )->get();
+
+		if ( ! $field ) {
+			wp_send_json_error( __( 'Field not found', 'godam' ), 404 );
+		}
+
+		$file_key = 'files-' . $field_id;
+
+		if ( empty( $_FILES[ $file_key ] ) || ! is_array( $_FILES[ $file_key ] ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			wp_send_json_error( __( 'No files uploaded', 'godam' ), 400 );
+		}
+
+		$file_data = $_FILES[ $file_key ]; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		// Validate file size.
+		$max_file_size_mb   = intval( $field->get_setting( 'max_file_size' ) );
+		$max_file_size      = $max_file_size_mb * 1024 * 1024;
+		$uploaded_file_size = $file_data['size'];
+
+		if ( $max_file_size && $uploaded_file_size > $max_file_size ) {
+			wp_send_json_error(
+				sprintf(
+					// Translators: %s: Maximum allowed file size in MB.
+					__( 'File exceeds maximum file size. File must be under %sMB.', 'godam' ),
+					$max_file_size_mb
+				),
+				400
+			);
+		}
+
+		// Filter to change the upload dir to a custom location.
+		add_filter( 'upload_dir', array( $this, 'change_upload_dir' ) );
+
+		$temp_path  = $file_data['tmp_name'];
+		$file_name  = $file_data['name'];
+		$file_size  = $file_data['size'];
+		$file_type  = $file_data['type'];
+		$file_error = $file_data['error'];
+
+		$file_name = $this->update_filename( $file_name );
+
+		$upload_file       = array(
+			'name'     => $file_name,
+			'type'     => $file_type,
+			'tmp_name' => $temp_path,
+			'error'    => $file_error,
+			'size'     => $file_size,
+		);
+		$upload_overrides  = array(
+			'test_form' => false,
+		);
+		$move_file         = wp_handle_upload( $upload_file, $upload_overrides );
+		$move_file['file'] = wp_basename( $move_file['file'] );
+
+		remove_filter( 'upload_dir', array( $this, 'change_upload_dir' ) );
+
 		wp_send_json_success(
 			array(
-				'file_name' => 'hit-bhalodia.jpg',
-				'file_path' => 'https://hit.com/localsite/hit-bhalodia.jpg',
+				'file_name' => $move_file['file'],
+				'file_path' => $move_file['url'],
 			)
 		);
+	}
+
+	/**
+	 * Update the filename to be unique.
+	 *
+	 * @param string $filename Current filename.
+	 *
+	 * @return string
+	 */
+	private function update_filename( $filename ) {
+
+		/**
+		 * Create a unique prefix.
+		 */
+		$prefix = 'godam-nf-' . md5( uniqid( wp_rand() ) ) . '-godam-nf-';
+
+		return $prefix . sanitize_file_name( $filename );
+	}
+
+	/**
+	 * Change upload dir to godam directory in uploads.
+	 *
+	 * @param array<mixed> $dirs upload directory.
+	 *
+	 * @return array<mixed>
+	 */
+	public function change_upload_dir( $dirs ) {
+
+		$dirs['subdir'] = '/godam/ninja-forms/temp';
+		$dirs['path']   = $dirs['basedir'] . $dirs['subdir'];
+		$dirs['url']    = $dirs['baseurl'] . $dirs['subdir'];
+
+		return $dirs;
 	}
 }
