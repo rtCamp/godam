@@ -578,7 +578,7 @@ class Engagement extends Base {
 			'name'           => $comment_id,
 		);
 
-		$content = __( 'This comment has been deleted', 'godam' );
+		$content = '--soft-deleted-content--';
 
 		if ( 'hard-delete' === $delete_type ) {
 			$comment_delete_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.delete_comment';

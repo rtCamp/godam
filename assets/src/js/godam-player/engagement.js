@@ -760,7 +760,7 @@ function Comment( props ) {
 		email: userEmail,
 		type: userType,
 	} = storeObj.select.getUserData();
-	const isDeletedComment = __( 'This comment has been deleted', 'godam' ) === text.trim();
+	const isDeletedComment = '--soft-deleted-content--' === text.trim();
 
 	async function handleDelete() {
 		setIsDeleting( true );
@@ -824,7 +824,7 @@ function Comment( props ) {
 							className={ 'rtgodam-video-engagement--comment-text' + ( isDeletedComment ? ' deleted-text' : '' ) }
 						>
 							<TimeLinkedText
-								text={ text }
+								text={ isDeletedComment ? __( 'This comment has been deleted', 'godam' ) : text }
 								onJump={ handleJump }
 							/>
 						</div>
