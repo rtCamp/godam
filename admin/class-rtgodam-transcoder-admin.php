@@ -37,6 +37,11 @@ class RTGODAM_Transcoder_Admin {
 				add_action( 'network_admin_notices', array( $this, 'api_activation_admin_notice' ) );
 			}
 			add_action( 'admin_notices', array( $this, 'api_activation_admin_notice' ) );
+			add_action( 'admin_notices', array( $this, 'upload_limits_admin_notice' ) );
+			
+			// Add AJAX handler for dismissing upload limits notice.
+			add_action( 'wp_ajax_godam_dismiss_upload_limits_notice', array( $this, 'dismiss_upload_limits_notice' ) );
+
 		}
 	}
 
@@ -259,6 +264,93 @@ class RTGODAM_Transcoder_Admin {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Display admin notice for upload limits on the dashboard.
+	 *
+	 * @since 1.3.4
+	 */
+	public function upload_limits_admin_notice() {
+		// Only show on dashboard.
+		if ( ! $this->is_dashboard_screen() ) {
+			return;
+		}
+
+		// Check if user has dismissed this notice.
+		$notice_dismissed = get_user_meta( get_current_user_id(), 'godam_upload_limits_notice_dismissed', true );
+		if ( $notice_dismissed ) {
+			return;
+		}
+
+		// Get current upload settings and API key.
+		$settings      = get_option( 'rtgodam-settings', array() );
+		$offload_media = isset( $settings['uploads']['offload_media'] ) ? (bool) $settings['uploads']['offload_media'] : false;
+		$valid_api     = rtgodam_is_api_key_valid();
+
+		// Only show notice when Offload is OFF and API key is activated.
+		if ( $offload_media || ! $valid_api ) {
+			return;
+		}
+		
+		// Get upload limits.
+		$current_limit = wp_max_upload_size();
+		$godam_limit   = defined( 'GODAM_MAX_UPLOAD_SIZE' ) ? GODAM_MAX_UPLOAD_SIZE : ( 4 * 1024 * 1024 * 1024 ); // 4GB default
+		
+		// Format sizes for display.
+		$current_limit_formatted = size_format( $current_limit );
+		$godam_limit_formatted   = size_format( $godam_limit );
+
+		$message = sprintf(
+			/* translators: %1$s: Current WordPress upload limit, %2$s: GoDAM upload limit */
+			__( 'Your current upload limit is <strong>%1$s</strong>. Enable GoDAM Media Offload to upload files up to <strong>%2$s</strong> and use our CDN for faster delivery.', 'godam' ),
+			$current_limit_formatted,
+			$godam_limit_formatted
+		);
+
+		?>
+		<div class="notice notice-info is-dismissible godam-upload-limits-notice" id="godam-upload-limits-notice">
+			<div class="godam-notice-header">
+				<img src="<?php echo esc_url( plugins_url( 'assets/src/images/godam-logo.png', __DIR__ ) ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" class="godam-logo" />
+				<div>
+					<p><?php echo wp_kses( $message, array( 'strong' => array() ) ); ?></p>
+					<p>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_settings#uploads-settings' ) ); ?>" class="button button-primary">
+							<?php esc_html_e( 'Go to GoDAM Settings', 'godam' ); ?>
+						</a>
+						<button type="button" class="button button-secondary godam-dismiss-btn" aria-label="<?php esc_attr_e( 'Dismiss', 'godam' ); ?>">
+							<?php esc_html_e( 'Dismiss', 'godam' ); ?>
+						</button>
+					</p>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * AJAX handler to dismiss the upload limits notice.
+	 *
+	 * @since 1.3.4
+	 */
+	public function dismiss_upload_limits_notice() {
+		// Verify nonce for security.
+		check_ajax_referer( 'godam-dismiss-upload-limits-notice-nonce', 'nonce' );
+		
+		// Check if user has permission.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to dismiss this notice.', 'godam' ) ) );
+		}
+		
+		// Update user meta to mark notice as dismissed.
+		$user_id = get_current_user_id();
+		$result  = update_user_meta( $user_id, 'godam_upload_limits_notice_dismissed', true );
+		
+		if ( $result ) {
+			wp_send_json_success( array( 'message' => __( 'Notice dismissed successfully.', 'godam' ) ) );
+		} else {
+			wp_send_json_error( array( 'message' => __( 'Failed to dismiss notice.', 'godam' ) ) );
+		}
 	}
 
 	/**
