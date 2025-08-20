@@ -622,27 +622,38 @@ class Video_Migration extends Base {
 
 				$changed = true;
 				++$migrated;
-			}
+			} else {
 
-			// Run action hook to allow other plugins to handle the block migration.
-			$block_migration_result = apply_filters(
-				'rtgodam_migrate_vimeo_block',
-				array(
+				/**
+				 * Prepare arguments for custom vimeo block migration.
+				 *
+				 * This includes the block data, post ID, and a flag indicating if the block has changed, as well as the found and migrated counts.
+				 */
+				$args = array(
 					'block'    => $block,
 					'post_id'  => $post_id,
 					'changed'  => false,
-					'found'    => 0,
-					'migrated' => 0,
-				),
-				$this
-			);
-			
-			// If a plugin handled this block via the filter, update our variables.
-			if ( isset( $block_migration_result['block'] ) && $block_migration_result['block'] !== $block ) {
-				$block     = $block_migration_result['block'];
-				$changed   = $changed || $block_migration_result['changed'];
-				$found    += $block_migration_result['found'];
-				$migrated += $block_migration_result['migrated'];
+					'found'    => $found,
+					'migrated' => $migrated,
+				);
+
+				/**
+				 * Filter the migration of custom Vimeo blocks.
+				 *
+				 * @since n.e.x.t
+				 *
+				 * @param array    $args migration arguments.
+				 * @param Video_Migration  $instance The current instance of the class.
+				 */
+				$block_migration_result = apply_filters( 'rtgodam_migrate_single_vimeo_block_result', $args, $this );
+				
+				// If a plugin handled this block via the filter, update our variables.
+				if ( isset( $block_migration_result['block'] ) && $block_migration_result['block'] !== $block ) {
+					$block    = $block_migration_result['block'];
+					$changed  = $changed || $block_migration_result['changed'];
+					$found    = $block_migration_result['found'];
+					$migrated = $block_migration_result['migrated'];
+				}
 			}
 		}
 
