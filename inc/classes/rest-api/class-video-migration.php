@@ -661,6 +661,9 @@ class Video_Migration extends Base {
 
 				$sources = $this->build_video_sources_array( $attachment_id );
 
+				// Build default SEO data so the migrated block has SEO populated.
+				$seo_data = $this->build_default_seo_data( $attachment_id, $attrs, $sources );
+
 				// Transform to custom block with attributes.
 				$block = array(
 					'blockName'    => 'godam/video',
@@ -672,7 +675,7 @@ class Video_Migration extends Base {
 						'poster'   => $attrs['poster'] ?? '',
 						'src'      => $attrs['src'] ?? '',
 						'sources'  => $sources,
-						'seo'      => array(),
+						'seo'      => $seo_data,
 					),
 					'innerContent' => array( '<div class="wp-block-godam-video"></div>' ),
 					'innerBlocks'  => array(),
@@ -761,6 +764,9 @@ class Video_Migration extends Base {
 							if ( ! empty( $video_url ) ) {
 								$sources = $this->build_video_sources_array( $attachment_id );
 
+								// Build default SEO data so the migrated block has SEO populated.
+								$seo_data = $this->build_default_seo_data( $attachment_id, $attrs, $sources );
+
 								$block = array(
 									'blockName'    => 'godam/video',
 									'attrs'        => array(
@@ -771,7 +777,7 @@ class Video_Migration extends Base {
 										'poster'   => $attrs['poster'] ?? '',
 										'src'      => $video_url,
 										'sources'  => $sources,
-										'seo'      => array(),
+										'seo'      => $seo_data,
 									),
 									'innerContent' => array( '<div class="wp-block-godam-video"></div>' ),
 									'innerBlocks'  => array(),
@@ -836,6 +842,79 @@ class Video_Migration extends Base {
 
 		// Reverse the sources to ensure the preferred format is first. MPD -> HLS -> Origin.
 		return array_reverse( $sources );
+	}
+
+	/**
+	 * Build default SEO data for a video attachment to populate block attrs during migration.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int   $attachment_id Attachment ID.
+	 * @param array $attrs         Source block attributes (optional).
+	 * @param array $sources       Computed sources array (optional).
+	 *
+	 * @return array SEO data array compatible with block attribute `seo`.
+	 */
+	private function build_default_seo_data( int $attachment_id, array $attrs = array(), array $sources = array() ): array {
+		if ( $attachment_id <= 0 ) {
+			return array();
+		}
+
+		$attachment     = get_post( $attachment_id );
+		$thumbnail_url  = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+		$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+		$hls_url        = get_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', true );
+		$origin_url     = wp_get_attachment_url( $attachment_id );
+
+		// Prefer MPD -> HLS -> Origin as contentUrl.
+		$content_url = '';
+		if ( ! empty( $transcoded_url ) ) {
+			$content_url = $transcoded_url;
+		} elseif ( ! empty( $hls_url ) ) {
+			$content_url = $hls_url;
+		} elseif ( ! empty( $origin_url ) ) {
+			$content_url = $origin_url;
+		}
+
+		// Upload date in ISO 8601.
+		$upload_date = '';
+		if ( $attachment instanceof \WP_Post ) {
+			$upload_date = get_post_time( 'c', true, $attachment ); // ISO 8601 UTC (Z).
+		}
+
+		// Duration from attachment meta to ISO 8601.
+		$duration_iso = '';
+		$meta         = wp_get_attachment_metadata( $attachment_id );
+		if ( isset( $meta['length'] ) && is_numeric( $meta['length'] ) ) {
+			$seconds      = (int) $meta['length'];
+			$hours        = (int) floor( $seconds / 3600 );
+			$minutes      = (int) floor( ( $seconds % 3600 ) / 60 );
+			$secs         = (int) ( $seconds % 60 );
+			$duration_iso = 'PT';
+			if ( $hours > 0 ) {
+				$duration_iso .= $hours . 'H';
+			}
+			if ( $minutes > 0 ) {
+				$duration_iso .= $minutes . 'M';
+			}
+			if ( $secs > 0 || 'PT' === $duration_iso ) {
+				$duration_iso .= $secs . 'S';
+			}
+		}
+
+		$headline    = $attachment instanceof \WP_Post ? get_the_title( $attachment_id ) : '';
+		$desc_field  = $attachment instanceof \WP_Post ? get_post_field( 'post_excerpt', $attachment_id ) : '';
+		$description = ! empty( $desc_field ) ? $desc_field : ( $attachment instanceof \WP_Post ? get_post_field( 'post_content', $attachment_id ) : '' );
+
+		return array(
+			'contentUrl'       => $content_url,
+			'headline'         => $headline,
+			'description'      => is_string( $description ) ? wp_strip_all_tags( $description ) : '',
+			'uploadDate'       => $upload_date,
+			'duration'         => $duration_iso,
+			'thumbnailUrl'     => ! empty( $thumbnail_url ) ? $thumbnail_url : '',
+			'isFamilyFriendly' => true,
+		);
 	}
 
 	/**
