@@ -6,7 +6,7 @@ const { apiFetch } = wp;
 const { addQueryArgs } = wp.url;
 const { createRoot, useState, useMemo, useEffect, useRef } = wp.element;
 const { __ } = wp.i18n;
-const { nonceData, DOMPurify, godamData } = window;
+const { nonceData, godamData } = window;
 const { currentLoggedInUserData, loginUrl, registrationUrl } = godamData;
 const storeName = 'godam-video-engagement';
 
@@ -350,9 +350,9 @@ const engagementStore = {
 			const viewCount = item.querySelector( '.rtgodam-video-engagement--view-count' );
 			const commentsCount = item.querySelector( '.rtgodam-video-engagement--comment-count' );
 			likeLink.classList.toggle( 'is-liked', state.IsUserLiked[ videoAttachmentId ] );
-			likeCount.innerHTML = DOMPurify.sanitize( likes[ videoAttachmentId ] ) || 0;
-			viewCount.innerHTML = DOMPurify.sanitize( views[ videoAttachmentId ] ) || 0;
-			commentsCount.innerHTML = DOMPurify.sanitize( comments[ videoAttachmentId ] ) || 0;
+			likeCount.textContent = parseInt( likes[ videoAttachmentId ] ) || 0;
+			viewCount.textContent = parseInt( views[ videoAttachmentId ] ) || 0;
+			commentsCount.textContent = parseInt( comments[ videoAttachmentId ] ) || 0;
 		} );
 	},
 
