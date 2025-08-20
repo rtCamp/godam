@@ -238,11 +238,13 @@ document.addEventListener( 'click', async function( e ) {
 			}
 
 			try {
-				let data = {};
+				let data;
 				const videoMarkUp = select( engagementStore ).getVideoMarkUp()[ newVideoId ];
 				if ( videoMarkUp ) {
-					data.html = videoMarkUp;
-					data.status = 'success';
+					data = {
+						html: videoMarkUp,
+						status: 'success',
+					};
 				} else {
 					const response = await fetch( `/wp-json/godam/v1/video-shortcode?id=${ newVideoId }` );
 					data = await response.json();
