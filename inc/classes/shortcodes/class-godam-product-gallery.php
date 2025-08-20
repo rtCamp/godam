@@ -289,7 +289,7 @@ class GoDAM_Product_Gallery {
 				echo '<div class="godam-grid-wrapper">';
 
 				printf(
-					'<div class="grid-container" style="display: grid;grid-template-columns: repeat(%1$d, 1fr); row-gap: %2$dpx; column-gap: %3$dpx; justify-items: %4$s;">',
+					'<div class="grid-container" data-grid-columns="%1$d" data-grid-row-gap="%2$d" data-grid-column-gap="%3$d" data-grid-card-alignment="%4$s">',
 					intval( $atts['grid_columns'] ),
 					intval( $atts['grid_row_gap'] ),
 					intval( $atts['grid_column_gap'] ),

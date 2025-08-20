@@ -124,8 +124,50 @@
 }
 
 /* Grid Wrapper */
-.godam-grid-wrapper .grid-container {
+.godam-grid-wrapper {
 	width: 100%;
+	
+	.grid-container {
+		width: 100%;
+		display: grid;
+		
+		// CSS Variables for grid properties
+		--grid-columns: 1;
+		--grid-row-gap: 16px;
+		--grid-column-gap: 16px;
+		--grid-card-alignment: start;
+		
+		// Apply CSS variables
+		grid-template-columns: repeat(var(--grid-columns), 1fr);
+		row-gap: var(--grid-row-gap);
+		column-gap: var(--grid-column-gap);
+		justify-items: var(--grid-card-alignment);
+		
+		// Responsive breakpoints
+		@media (max-width: 767px) {
+			align-items: center;
+			justify-content: center;
+			--grid-columns: 1 !important; // Force 1 column on mobile
+			--grid-row-gap: 12px;
+			--grid-column-gap: 12px;
+			.godam-product-video-item {
+				align-items: center;
+				justify-content: center;
+				margin: 0 auto;
+			}
+		}
+		
+		@media (min-width: 768px) and (max-width: 1023px) {
+			grid-template-columns: repeat(2, 1fr) !important;
+			row-gap: 14px;
+			column-gap: 14px;
+			justify-items: center;
+		}
+		
+		@media (min-width: 1024px) {
+			// Desktop uses the user-defined columns (stored in CSS variable)
+		}
+	}
 }
 
 /* Carousel Wrapper */
