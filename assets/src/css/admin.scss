@@ -130,10 +130,6 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 	&:has(#menu-item-godam[aria-selected="true"]) {
 
-		#media-folder-toggle-button {
-			display: none;
-		}
-
 		#media-date-range-filter {
 			display: none;
 		}
@@ -239,8 +235,8 @@ $media-frame-width: calc(300px + 2 * 24px);
 			.media-toolbar {
 				flex-direction: column;
 				align-items: stretch;
-				gap: 1rem;
 				width: calc(100% - 267px - 64px);
+				height: auto;
 
 				.media-toolbar-secondary {
 					max-width: 100%;
@@ -261,7 +257,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 			}
 
 			.attachments-wrapper {
-				top: 240px;
+				top: 140px;
 			}
 		}
 	}
