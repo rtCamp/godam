@@ -328,6 +328,28 @@ import { __ } from '@wordpress/i18n';
 			localStorage.setItem( key, JSON.stringify( dataToStore ) );
 		},
 	} );
-
 	new uploadController();
+
+	/**
+	 * Submission Controller.
+	 */
+	const SubmissionController = Marionette.Object.extend( {
+		initialize() {
+			this.listenTo(
+				Backbone.Radio.channel( 'forms' ),
+				'submit:response',
+				this.actionSubmit,
+			);
+		},
+
+		// Remove the uppy storage on successful submission.
+		actionSubmit() {
+			Object.keys( localStorage )
+				.filter( ( key ) => key.startsWith( 'uppyState:' ) )
+				.forEach( ( key ) => localStorage.removeItem( key ) );
+
+			localStorage.removeItem( 'godam-nf-recorder-data' );
+		},
+	} );
+	new SubmissionController();
 }( jQuery ) );
