@@ -8,7 +8,7 @@ const { addQueryArgs } = wp.url;
 const { createRoot, useState, useMemo, useEffect, useRef } = wp.element;
 const { __ } = wp.i18n;
 const { nonceData, godamData } = window;
-const { currentLoggedInUserData, loginUrl, registrationUrl } = godamData;
+const { currentLoggedInUserData, loginUrl, registrationUrl, defaultAvatar } = godamData;
 const storeName = 'godam-video-engagement';
 
 const DEFAULT_STATE = {
@@ -809,8 +809,8 @@ function Comment( props ) {
 						width={ 28 }
 						height={ 28 }
 						className="rtgodam-video-engagement--comment-author-image"
-						src={ authorImg }
-						alt={ authorName }
+						src={ isDeletedComment ? defaultAvatar : authorImg }
+						alt={ isDeletedComment ? __( 'Anonymous', 'godam' ) : authorName }
 					/>
 				</div>
 				<div className="rtgodam-video-engagement--comment-content-wrapper">
