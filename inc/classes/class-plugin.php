@@ -18,6 +18,7 @@ use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Permalinks;
+use RTGODAM\Inc\Update;
 
 use RTGODAM\Inc\Post_Types\GoDAM_Video;
 
@@ -41,6 +42,7 @@ use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\REST_API\Video_Migration;
+use RTGODAM\Inc\REST_API\Release_Post;
 use RTGODAM\Inc\Gravity_Forms;
 use RTGODAM\Inc\REST_API\MetForm;
 
@@ -74,6 +76,7 @@ class Plugin {
 	protected function __construct() {
 
 		// Load plugin classes.
+		Update::get_instance();
 		Assets::get_instance();
 		Blocks::get_instance();
 		Pages::get_instance();
@@ -163,6 +166,7 @@ class Plugin {
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
 		Video_Migration::get_instance();
+		Release_Post::get_instance();
 	}
 
 	/**
