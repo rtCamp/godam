@@ -1,10 +1,42 @@
+/**
+ * WordPress dependencies
+ */
 const { __ } = wp.i18n;
 
+/**
+ * Reference to the WordPress media Attachment Details view.
+ *
+ * @type {Object}
+ */
 const AttachmentDetails = wp?.media?.view?.Attachment?.Details;
 
+/**
+ * Checks if a given URL is an MPD (MPEG-DASH) file.
+ *
+ * @param {string} url - The URL to check.
+ * @return {boolean} True if the URL ends with '.mpd', false otherwise.
+ */
 const isMpd = ( url ) => typeof url === 'string' && url.trim().toLowerCase().endsWith( '.mpd' );
+
+/**
+ * Checks if a given URL is an M3U8 (HLS) file.
+ *
+ * @param {string} url - The URL to check.
+ * @return {boolean} True if the URL ends with '.m3u8', false otherwise.
+ */
 const isM3U8 = ( url ) => typeof url === 'string' && url.trim().toLowerCase().endsWith( '.m3u8' );
 
+/**
+ * Creates a table row element representing an attachment field.
+ *
+ * @param {Object}        params            - The parameters for the field.
+ * @param {number|string} params.id         - The attachment ID.
+ * @param {string}        params.fieldName  - The name of the field.
+ * @param {string}        params.fieldLabel - The label for the field.
+ * @param {string}        params.url        - The URL value for the field.
+ * @param {string}        params.helpText   - The help text to display under the field.
+ * @return {HTMLElement} The constructed table row element.
+ */
 const createAttachmentField = ( { id, fieldName, fieldLabel, url, helpText } ) => {
 	const tr = document.createElement( 'tr' );
 	tr.className = `compat-field-${ fieldName }`;
@@ -49,10 +81,15 @@ const createAttachmentField = ( { id, fieldName, fieldLabel, url, helpText } ) =
 	return tr;
 };
 
+/**
+ * Creates a table for displaying attachment fields inside a given container.
+ *
+ * @param {HTMLElement} container - The container element to append the table to.
+ * @return {HTMLElement} The table body element (<tbody>).
+ */
 const createTable = ( container ) => {
-	const tableSelector = '.compat-attachment-fields';
 	const table = document.createElement( 'table' );
-	table.className = `${ tableSelector } compat-item`;
+	table.className = `compat-attachment-fields compat-item`;
 	container.appendChild( table );
 
 	let tableBody = table.querySelector( 'tbody' );
@@ -64,6 +101,10 @@ const createTable = ( container ) => {
 	return tableBody;
 };
 
+/**
+ * AttachmentDetails extension used to add links to attachments selected from the GoDAM tab.
+ * This component displays transcoded CDN URLs (MPD/HLS) for GoDAM attachments in the media modal.
+ */
 export default AttachmentDetails?.extend( {
 	initialize() {
 		AttachmentDetails.prototype.initialize.apply( this, arguments );
@@ -81,6 +122,8 @@ export default AttachmentDetails?.extend( {
 		}
 
 		const attachmentId = this.model.get( 'id' );
+
+		// No need to check if table exists, as if it did we would have returned early on link checks.
 		const tableBody = createTable( this.el );
 
 		if ( attachmentUrl && isMpd( attachmentUrl ) ) {
