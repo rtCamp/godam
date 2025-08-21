@@ -148,6 +148,7 @@ const engagementStore = {
 		 * @param {string} videoAttachmentId - The ID of the video attachment.
 		 * @param {string} siteUrl           - The URL of the site where the video is hosted.
 		 * @param {Object} storeObj          - The store object that handles video engagement data.
+		 *
 		 * @return {Object} An action object containing the type and like data.
 		 */
 		userHitLike: ( videoAttachmentId, siteUrl, storeObj ) => {
@@ -170,6 +171,7 @@ const engagementStore = {
 		 * @param {string} videoAttachmentId - The ID of the video attachment.
 		 * @param {Array}  commentData       - The comment data returned by the API. This should be an array of comment objects.
 		 * @param {string} activity          - The activity type (e.g., "new" or "edit").
+		 *
 		 * @return {Object} An action object containing the type, comment data, and video attachment ID.
 		 */
 		userCommented: ( videoAttachmentId, commentData, activity = 'new' ) => {
@@ -204,6 +206,7 @@ const engagementStore = {
 		 * @param {string}  siteUrl           - The URL of the site where the video is hosted.
 		 * @param {string}  videoId           - The ID of the video.
 		 * @param {boolean} skipEngagements   - Whether to skip engagements.
+		 *
 		 * @return {Object} An action object containing the type.
 		 */
 		initiateCommentModal: ( videoAttachmentId, siteUrl, videoId, skipEngagements = false ) => {
@@ -217,6 +220,7 @@ const engagementStore = {
 		 * Dispatches an action to update the user data.
 		 *
 		 * @param {Object} userData - The new user data.
+		 *
 		 * @return {Object} An action object containing the type and new user data.
 		 */
 		updateUserData: ( userData ) => {
@@ -231,6 +235,7 @@ const engagementStore = {
 		 * engagement action (e.g. liking a video).
 		 *
 		 * @param {string} message - The error message.
+		 *
 		 * @return {Object} An action object containing the type and error message.
 		 */
 		errorHappened: ( message ) => {
@@ -1048,7 +1053,7 @@ function CommentBox( props ) {
 	const commentsCount = memoizedStoreObj.select.getCommentsCount()[ videoAttachmentId ] || 0;
 	const likesCount = memoizedStoreObj.select.getLikes()[ videoAttachmentId ] || 0;
 	const viewsCount = memoizedStoreObj.select.getViews()[ videoAttachmentId ] || 0;
-	const isUserLIked = memoizedStoreObj.select.getIsUserLiked()[ videoAttachmentId ] || false;
+	const isUserLiked = memoizedStoreObj.select.getIsUserLiked()[ videoAttachmentId ] || false;
 	const titles = memoizedStoreObj.select.getTitles()[ videoAttachmentId ] || __( 'GoDAM Video', 'godam' );
 	const comments = memoizedStoreObj.select.getComments()[ videoAttachmentId ] || [];
 	const [ commentsData, setCommentsData ] = useState( comments );
@@ -1101,7 +1106,7 @@ function CommentBox( props ) {
 		memoizedStoreObj.dispatch.userHitLike( videoAttachmentId, siteUrl, memoizedStoreObj );
 		setTimeout( () => {
 			setIsSending( false );
-		}, 1000 );
+		}, 500 );
 	}
 
 	return (
@@ -1137,7 +1142,7 @@ function CommentBox( props ) {
 								<div className={ baseClass + '-leave-comment-impressions' }>
 									<button
 										onClick={ handleLike }
-										className={ baseClass + '-leave-comment-impressions-likes' + ( isUserLIked ? ' is-liked' : '' ) + ( isSending ? ' is-progressing' : '' ) }
+										className={ baseClass + '-leave-comment-impressions-likes' + ( isUserLiked ? ' is-liked' : '' ) + ( isSending ? ' is-progressing' : '' ) }
 									>{ likesCount }</button>
 									<span className={ baseClass + '-leave-comment-impressions-views' }>{ viewsCount }</span>
 								</div>
