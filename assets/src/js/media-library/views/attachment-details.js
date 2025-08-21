@@ -1,7 +1,68 @@
 const AttachmentDetails = wp?.media?.view?.Attachment?.Details;
 
-export default AttachmentDetails?.extend( {
+const isMpd = ( url ) => typeof url === 'string' && url.trim().toLowerCase().endsWith( '.mpd' );
+const isM3U8 = ( url ) => typeof url === 'string' && url.trim().toLowerCase().endsWith( '.m3u8' );
 
+const createAttachmentField = ( { id, fieldName, fieldLabel, url, helpText } ) => {
+	const tr = document.createElement( 'tr' );
+	tr.className = `compat-field-${ fieldName }`;
+
+	const th = document.createElement( 'th' );
+	th.scope = 'row';
+	th.className = 'label';
+
+	const label = document.createElement( 'label' );
+	label.htmlFor = `attachments-${ id }-${ fieldName }`;
+
+	const span = document.createElement( 'span' );
+	span.className = 'alignleft';
+	span.textContent = fieldLabel;
+	label.appendChild( span );
+
+	label.appendChild( document.createElement( 'br' ) );
+	label.querySelector( 'br' ).className = 'clear';
+
+	th.appendChild( label );
+	tr.appendChild( th );
+
+	const td = document.createElement( 'td' );
+	td.className = 'field';
+
+	const input = document.createElement( 'input' );
+	input.type = 'text';
+	input.className = 'widefat';
+	input.name = `attachments[${ id }][${ fieldName }]`;
+	input.id = `attachments-${ id }-${ fieldName }`;
+	input.value = url;
+	input.readOnly = true;
+	td.appendChild( input );
+
+	const p = document.createElement( 'p' );
+	p.className = 'help';
+	p.textContent = helpText;
+	td.appendChild( p );
+
+	tr.appendChild( td );
+
+	return tr;
+};
+
+const createTable = ( container ) => {
+	const tableSelector = '.compat-attachment-fields';
+	const table = document.createElement( 'table' );
+	table.className = `${ tableSelector } compat-item`;
+	container.appendChild( table );
+
+	let tableBody = table.querySelector( 'tbody' );
+	if ( ! tableBody ) {
+		tableBody = document.createElement( 'tbody' );
+		table.appendChild( tableBody );
+	}
+
+	return tableBody;
+};
+
+export default AttachmentDetails?.extend( {
 	initialize() {
 		AttachmentDetails.prototype.initialize.apply( this, arguments );
 	},
@@ -10,54 +71,38 @@ export default AttachmentDetails?.extend( {
 		AttachmentDetails.prototype.render.apply( this, arguments );
 
 		const hlsUrl = this.model.get( 'hls_url' );
-		const mpdUrl = this.model.get( 'url' );
+		const attachmentUrl = this.model.get( 'url' );
 
-		const isMpd = ( url ) => typeof url === 'string' && url.trim().toLowerCase().endsWith( '.mpd' );
-		const isM3U8 = ( url ) => typeof url === 'string' && url.trim().toLowerCase().endsWith( '.m3u8' );
+		// Skip the local Media Library attachments.
+		if ( ( ! attachmentUrl || ! isMpd( attachmentUrl ) ) && ( ! hlsUrl || ! isM3U8( hlsUrl ) ) ) {
+			return this;
+		}
 
-		if ( ( mpdUrl && isMpd( mpdUrl ) ) || ( hlsUrl && isM3U8( hlsUrl ) ) ) {
-			// Prefer the raw DOM element; fall back to jQuery wrapped element if necessary
-			const container = this.el || ( this.$el && this.$el[ 0 ] );
+		const attachmentId = this.model.get( 'id' );
+		const tableBody = createTable( this.el );
 
-			if ( mpdUrl && isMpd( mpdUrl ) && container ) {
-				const wrapper = document.createElement( 'div' );
-				wrapper.className = 'godam-transcoded-url';
+		if ( attachmentUrl && isMpd( attachmentUrl ) ) {
+			tableBody.appendChild(
+				createAttachmentField( {
+					id: attachmentId,
+					fieldName: 'transcoded_url',
+					fieldLabel: 'Transcoded CDN URL (MPD)',
+					url: attachmentUrl,
+					helpText: 'The URL of the transcoded file is generated automatically and cannot be edited.',
+				} ),
+			);
+		}
 
-				const label = document.createElement( 'strong' );
-				label.textContent = 'MPD:';
-				wrapper.appendChild( label );
-
-				wrapper.appendChild( document.createTextNode( ' ' ) );
-
-				const link = document.createElement( 'a' );
-				link.href = mpdUrl;
-				link.target = '_blank';
-				link.rel = 'noopener noreferrer';
-				link.textContent = mpdUrl;
-				wrapper.appendChild( link );
-
-				container.appendChild( wrapper );
-			}
-
-			if ( hlsUrl && isM3U8( hlsUrl ) && container ) {
-				const wrapper = document.createElement( 'div' );
-				wrapper.className = 'godam-transcoded-url';
-
-				const label = document.createElement( 'strong' );
-				label.textContent = 'HLS:';
-				wrapper.appendChild( label );
-
-				wrapper.appendChild( document.createTextNode( ' ' ) );
-
-				const link = document.createElement( 'a' );
-				link.href = hlsUrl;
-				link.target = '_blank';
-				link.rel = 'noopener noreferrer';
-				link.textContent = hlsUrl;
-				wrapper.appendChild( link );
-
-				container.appendChild( wrapper );
-			}
+		if ( hlsUrl && isM3U8( hlsUrl ) ) {
+			tableBody.appendChild(
+				createAttachmentField( {
+					id: attachmentId,
+					fieldName: 'hls_transcoded_url',
+					fieldLabel: 'Transcoded CDN URL (HLS)',
+					url: hlsUrl,
+					helpText: 'The HLS URL of the transcoded file is generated automatically and cannot be edited.',
+				} ),
+			);
 		}
 
 		return this;
