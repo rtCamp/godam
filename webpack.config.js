@@ -239,7 +239,7 @@ const pages = {
 				use: [ 'style-loader', 'css-loader', 'postcss-loader', 'sass-loader' ],
 			},
 			{
-				test: /\.(png|jpg|jpeg|gif|svg)$/, // Handle image files
+				test: /\.(png|jpg|jpeg|gif|svg|webp)$/, // Handle image files
 				use: [
 					{
 						loader: 'file-loader',

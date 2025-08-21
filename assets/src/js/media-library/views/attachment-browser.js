@@ -95,7 +95,9 @@ export default AttachmentsBrowser?.extend( {
 			}
 		}
 
-		if ( ! isUploadPage() && ! isFolderOrgDisabled() ) {
+		const hasActiveSortable = this.$el.find( 'ul.ui-sortable:not(.ui-sortable-disabled)' ).length > 0;
+
+		if ( ! isUploadPage() && ! isFolderOrgDisabled() && ! hasActiveSortable ) {
 			/**
 			 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.
 			 */
@@ -123,7 +125,7 @@ export default AttachmentsBrowser?.extend( {
 						}
 					}
 				} else {
-					const menu = $( '.media-frame' ).find( '.media-frame-menu' );
+					const menu = $( '.media-frame' ).find( '.media-frame-menu .media-menu' );
 
 					if ( menu.length ) {
 						menu.append( '<div id="rt-transcoder-media-library-root"></div>' );
