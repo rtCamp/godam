@@ -341,7 +341,7 @@ class Transcoding extends Base {
 				'posts_per_page' => $per_page,
 				'paged'          => $paged,
 				'fields'         => 'ids',
-				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- This is a necessary query to find posts that need retranscoding.
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Needed to find posts needing retranscoding.
 					array(
 						'key'     => 'rtgodam_transcoded_url',
 						'compare' => 'NOT EXISTS',
@@ -349,10 +349,10 @@ class Transcoding extends Base {
 				),
 			);
 
-			// If force is set, fetch all video regardless of transcoded_url.
+			// If force is set, fetch all videos regardless of transcoded_url.
 			if ( $force ) {
-				// remove the meta query condition.
-				$args['meta_query'] = null; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- False positive check for meta query.
+				// Remove the meta query condition.
+				$args['meta_query'] = null; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Intentional removal.
 			}
 
 			$query = new \WP_Query( $args );
@@ -365,9 +365,33 @@ class Transcoding extends Base {
 			}
 		} while ( true );
 
+		// Build detailed media objects.
+		$media_data = array();
+		foreach ( $all_posts as $attachment_id ) {
+			$attachment_id = absint( $attachment_id );
+			$title         = get_the_title( $attachment_id );
+			$file_path     = get_attached_file( $attachment_id );
+			$file_size     = 0;
+
+			if ( $file_path && file_exists( $file_path ) ) {
+				$file_size = @filesize( $file_path ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			}
+			if ( empty( $file_size ) ) {
+				// Fallback to stored meta (may be set elsewhere during upload/indexing).
+				$file_size = get_post_meta( $attachment_id, '_video_file_size', true );
+			}
+
+			$media_data[] = array(
+				'id'   => $attachment_id,
+				// translators: %d Attachment ID used as fallback title.
+				'name' => $title ? $title : sprintf( __( 'ID %d', 'godam' ), $attachment_id ),
+				'size' => intval( $file_size ),
+			);
+		}
+
 		return new \WP_REST_Response(
 			array(
-				'data'              => $all_posts,
+				'data'              => $media_data,
 				'total_media_count' => array_sum( (array) wp_count_attachments( 'video' ) ),
 			),
 			200
