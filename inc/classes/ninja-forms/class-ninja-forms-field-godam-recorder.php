@@ -391,7 +391,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 
 		$field_id = ! empty( $_POST['field_id'] ) ? intval( $_POST['field_id'] ) : 0;
 
-		if ( ! check_ajax_referer( 'godam_recorder_' . $field_id, 'nonce' ) ) {
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'godam_recorder_' . $field_id ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			wp_send_json_error( __( 'Nonce is not valid', 'godam' ), 400 );
 		}
 
@@ -574,7 +574,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 		 * Error handling.
 		 */
 		if ( is_wp_error( $response_from_transcoding ) ) {
-			return wp_send_json_error(
+			wp_send_json_error(
 				$response_from_transcoding->get_error_message(),
 				$response_from_transcoding->get_error_code(),
 			);
@@ -584,7 +584,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 		 * If empty data or name send error.
 		 */
 		if ( empty( $response_from_transcoding->data ) || empty( $response_from_transcoding->data->name ) ) {
-			return wp_send_json_error(
+			wp_send_json_error(
 				__( 'Transcoding data not set', 'godam' ),
 				404
 			);
