@@ -41,7 +41,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 		width: 100% !important;
 		z-index: 1000;
 		background: none;
-		overflow-y: scroll;
+		overflow-y: auto;
 
 		.media-menu {
 			display: block !important;
