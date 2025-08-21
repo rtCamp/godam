@@ -11,6 +11,7 @@
     --godam-video-engagement-comment--border-color: rgb( 136, 136, 136, 0.5 );
     --godam-video-engagement-font-family: sans-serif;
     --godam-video-engagement-brand-neutral-shades-25: #E0E0E0;
+    --godam-video-engagement-brand-neutral-shades-50: #CCC;
     --godam-video-engagement-brand-neutral-shades-100: #B8B8B8;
     --godam-video-engagement-modal-close-button-shadow: 0 2.09px 4.18px 2.09px #00000012;
 }
@@ -412,7 +413,7 @@
                 line-height: 3rem;
                 color: var( --wp--preset--color--black, #000 );
                 height: 3rem;
-                border: 1px solid var( --Brand-Neutral-Shades-50, #CCC );
+                border: 1px solid var( --godam-video-engagement-brand-neutral-shades-50 );
                 backdrop-filter: blur( 4px );
                 border-radius: 8px;
                 text-align: center;

@@ -1,6 +1,7 @@
 /**
  * Internal dependencies
  */
+import { ACTIONS } from './utils/constants';
 const { createReduxStore, register, select, dispatch, subscribe } = wp.data;
 const { apiFetch } = wp;
 const { addQueryArgs } = wp.url;
@@ -19,16 +20,6 @@ const DEFAULT_STATE = {
 	commentsCount: {},
 	videoMarkUp: {},
 	userData: currentLoggedInUserData,
-};
-
-const ACTIONS = {
-	LOAD_VIDEO_ENGAGEMENT_DATA: 'LOAD_VIDEO_ENGAGEMENT_DATA',
-	USER_HIT_LIKE: 'USER_HIT_LIKE',
-	USER_COMMENTED: 'USER_COMMENTED',
-	GENERATE_COMMENT_MODAL: 'GENERATE_COMMENT_MODAL',
-	UPDATE_USER_DATA: 'UPDATE_USER_DATA',
-	ERROR: 'ERROR',
-	ADD_VIDEO_MARKUP: 'ADD_VIDEO_MARKUP',
 };
 
 const engagementStore = {
@@ -361,8 +352,8 @@ const engagementStore = {
 	 *
 	 * @param {number}  videoAttachmentId The ID of the video attachment.
 	 * @param {string}  siteUrl           The URL of the site.
-	 *
 	 * @param {boolean} likeStatus        The current like status.
+	 *
 	 * @return {Promise} A promise that resolves to an object containing the video attachment ID and the response from the server.
 	 */
 	async sendLikeData( videoAttachmentId, siteUrl, likeStatus ) {
@@ -474,7 +465,7 @@ const engagementStore = {
 	 * @param {number}  videoAttachmentId The video attachment ID.
 	 * @param {string}  siteUrl           The site URL.
 	 * @param {string}  videoId           The video attachment ID.
-	 * @param {boolean} skipEngagements   - Whether to skip engagements.
+	 * @param {boolean} skipEngagements   Whether to skip engagements.
 	 */
 	generateCommentModal( videoAttachmentId, siteUrl, videoId, skipEngagements = false ) {
 		const modalId = 'rtgodam-video-engagement--comment-modal';
@@ -497,8 +488,8 @@ const engagementStore = {
  * @param {Array}  comments    The comment tree.
  * @param {Object} comment     The comment object.
  * @param {Object} data        The new data to add to the comment tree.
+ * @param {string} commentType The type of comment action (new, edit, soft-delete, hard-delete).
  *
- * @param {string} commentType
  * @return {Array} The updated comment tree.
  */
 function updateCommentTree( comments, comment, data, commentType ) {
@@ -809,7 +800,13 @@ function Comment( props ) {
 		<div className={ 'rtgodam-video-engagement--comment-parent ' + ( children && children.length > 0 ? 'has-children' : '' ) }>
 			<div className="rtgodam-video-engagement--comment-details">
 				<div className="rtgodam-video-engagement--comment-author">
-					<img className="rtgodam-video-engagement--comment-author-image" src={ authorImg } alt={ authorName } />
+					<img
+						width={ 28 }
+						height={ 28 }
+						className="rtgodam-video-engagement--comment-author-image"
+						src={ authorImg }
+						alt={ authorName }
+					/>
 				</div>
 				<div className="rtgodam-video-engagement--comment-content-wrapper">
 					<div className="rtgodam-video-engagement--comment-content">

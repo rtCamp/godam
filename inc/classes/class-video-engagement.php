@@ -27,7 +27,7 @@ class Video_Engagement {
 	/**
 	 * Adds engagement elements to the video.
 	 *
-	 * @param array $attributes Video block attributes.
+	 * @param array $attributes  Video block attributes.
 	 * @param int   $instance_id The instance ID.
 	 *
 	 * @return string|void
