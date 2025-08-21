@@ -95,10 +95,13 @@ export const useBandwidthModal = (
 	showNotice,
 ) => {
 	useEffect( () => {
+		// Don't show modal if no attachment details
 		if ( attachmentDetails.length === 0 ) {
+			setShowBandwidthModal( false );
 			return;
 		}
 
+		// Only show modal if total required exceeds available bandwidth
 		if ( totalRequiredGB > availableBandwidthGB ) {
 			// Determine which subset can fit
 			const sorted = [ ...attachmentDetails ].sort( ( a, b ) => a.size - b.size );
@@ -119,6 +122,7 @@ export const useBandwidthModal = (
 				setShowBandwidthModal( false );
 			}
 		} else {
+			// Enough bandwidth available, no need for modal
 			setShowBandwidthModal( false );
 		}
 	}, [ attachmentDetails, availableBandwidthGB, totalRequiredGB, setModalSelection, setShowBandwidthModal, showNotice ] );

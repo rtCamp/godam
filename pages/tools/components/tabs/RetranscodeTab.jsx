@@ -80,6 +80,14 @@ const RetranscodeTab = () => {
             ! initialStatusFetching;
 	};
 
+	const handleModalClose = () => {
+		setShowBandwidthModal( false );
+		setModalSelection( [] );
+		// Clear attachments and details to prevent modal from reopening
+		setAttachments( [] );
+		setAttachmentDetails( [] );
+	};
+
 	// Derived values
 	const availableBandwidthGB = getAvailableBandwidthGB();
 	const totalRequiredGB = getTotalRequiredGB();
@@ -111,7 +119,7 @@ const RetranscodeTab = () => {
 						modalSelection={ modalSelection }
 						setModalSelection={ setModalSelection }
 						availableBandwidthGB={ availableBandwidthGB }
-						onClose={ resetState }
+						onClose={ handleModalClose }
 						onProceed={ () => {
 							setAttachments( modalSelection );
 							setShowBandwidthModal( false );
