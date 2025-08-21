@@ -393,6 +393,7 @@ const RetranscodeTab = () => {
 					<Notice
 						status={ notice.status }
 						className="my-2"
+						isDismissible
 						onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
 					>
 						{ notice.message }
