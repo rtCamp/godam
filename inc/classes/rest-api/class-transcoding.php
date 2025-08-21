@@ -374,7 +374,7 @@ class Transcoding extends Base {
 			$file_size     = 0;
 
 			if ( $file_path && file_exists( $file_path ) ) {
-				$file_size = @filesize( $file_path ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				$file_size = filesize( $file_path );
 			}
 			if ( empty( $file_size ) ) {
 				// Fallback to stored meta (may be set elsewhere during upload/indexing).
