@@ -443,6 +443,7 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 			'watermark'       => boolval( $rtgodam_watermark ),
 			'resolutions'     => array( 'auto' ),
 			'folder_name'     => ! empty( $form_title ) ? $form_title : __( 'Gravity forms', 'godam' ),
+			'public'          => 1,
 		),
 		$watermark_to_use
 	);
