@@ -14,6 +14,7 @@ defined( 'ABSPATH' ) || exit;
 use WP_REST_Server;
 use WP_REST_Request;
 use WP_REST_Response;
+use WP_Error;
 
 /**
  * Class Engagement
@@ -48,12 +49,20 @@ class Engagement extends Base {
 									'type'              => 'string',
 									'required'          => true,
 									'sanitize_callback' => 'sanitize_text_field',
+									'validate_callback' => array(
+										$this,
+										'validate_request_args',
+									),
 								),
 								'site_url' => array(
 									'required'          => true,
 									'type'              => 'string',
 									'description'       => __( 'The Site URL associated with the video.', 'godam' ),
 									'sanitize_callback' => 'esc_url_raw',
+									'validate_callback' => array(
+										$this,
+										'validate_request_args',
+									),
 								),
 							)
 						),
@@ -71,21 +80,33 @@ class Engagement extends Base {
 						'args'                => array(
 							'video_id'    => array(
 								'description'       => __( 'The ID of the video.', 'godam' ),
-								'type'              => 'integer',
+								'type'              => 'string',
 								'required'          => true,
 								'sanitize_callback' => 'sanitize_text_field',
+								'validate_callback' => array(
+									$this,
+									'validate_request_args',
+								),
 							),
 							'site_url'    => array(
 								'required'          => true,
 								'type'              => 'string',
 								'description'       => __( 'The Site URL associated with the video.', 'godam' ),
 								'sanitize_callback' => 'esc_url_raw',
+								'validate_callback' => array(
+									$this,
+									'validate_request_args',
+								),
 							),
 							'like_status' => array(
 								'required'          => true,
 								'type'              => 'boolean',
 								'description'       => __( 'The like status (like or unlike).', 'godam' ),
 								'sanitize_callback' => 'rest_sanitize_boolean',
+								'validate_callback' => array(
+									$this,
+									'validate_request_args',
+								),
 							),
 						),
 					),
@@ -102,33 +123,53 @@ class Engagement extends Base {
 						'args'                => array(
 							'video_id'          => array(
 								'description'       => __( 'The ID of the video.', 'godam' ),
-								'type'              => 'integer',
+								'type'              => 'string',
 								'required'          => true,
 								'sanitize_callback' => 'sanitize_text_field',
+								'validate_callback' => array(
+									$this,
+									'validate_request_args',
+								),
 							),
 							'site_url'          => array(
 								'required'          => true,
 								'type'              => 'string',
 								'description'       => __( 'The Site URL associated with the video.', 'godam' ),
 								'sanitize_callback' => 'esc_url_raw',
+								'validate_callback' => array(
+									$this,
+									'validate_request_args',
+								),
 							),
 							'comment_parent_id' => array(
 								'description'       => __( 'The ID of the parent comment.', 'godam' ),
 								'type'              => 'string',
 								'required'          => true,
 								'sanitize_callback' => 'sanitize_text_field',
+								'validate_callback' => array(
+									$this,
+									'validate_request_args',
+								),
 							),
 							'comment_text'      => array(
 								'required'          => true,
 								'type'              => 'string',
 								'description'       => __( 'The comment text', 'godam' ),
 								'sanitize_callback' => 'sanitize_text_field',
+								'validate_callback' => array(
+									$this,
+									'validate_request_args',
+								),
 							),
 							'comment_type'      => array(
 								'required'          => true,
 								'type'              => 'string',
 								'description'       => __( 'The comment type if it is new OR edit', 'godam' ),
 								'sanitize_callback' => 'sanitize_text_field',
+								'validate_callback' => array(
+									$this,
+									'validate_request_args',
+								),
 							),
 						),
 					),
@@ -148,18 +189,30 @@ class Engagement extends Base {
 								'type'              => 'string',
 								'required'          => true,
 								'sanitize_callback' => 'sanitize_text_field',
+								'validate_callback' => array(
+									$this,
+									'validate_request_args',
+								),
 							),
 							'comment_id'  => array(
 								'description'       => __( 'The ID of the parent comment.', 'godam' ),
 								'type'              => 'string',
 								'required'          => true,
 								'sanitize_callback' => 'sanitize_text_field',
+								'validate_callback' => array(
+									$this,
+									'validate_request_args',
+								),
 							),
 							'delete_type' => array(
 								'description'       => __( 'The type of deletion (soft or hard).', 'godam' ),
 								'type'              => 'string',
 								'required'          => true,
 								'sanitize_callback' => 'sanitize_text_field',
+								'validate_callback' => array(
+									$this,
+									'validate_request_args',
+								),
 							),
 						),
 					),
@@ -179,6 +232,10 @@ class Engagement extends Base {
 								'type'              => 'string',
 								'description'       => __( 'The guest user email', 'godam' ),
 								'sanitize_callback' => 'sanitize_email',
+								'validate_callback' => array(
+									$this,
+									'validate_request_args',
+								),
 							),
 						),
 					),
@@ -864,5 +921,39 @@ class Engagement extends Base {
 		}
 		$transcoder_job_id = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
 		return ! empty( $transcoder_job_id ) ? $transcoder_job_id : null;
+	}
+
+	/**
+	 * Validates a request argument.
+	 *
+	 * Checks if the value is not empty and, if not, delegates to rest_validate_request_arg().
+	 *
+	 * @param mixed           $value   Value to validate.
+	 * @param WP_REST_Request $request Request instance.
+	 * @param string          $param   Parameter name.
+	 *
+	 * @return WP_Error|true WP_Error if invalid, true otherwise.
+	 */
+	public function validate_request_args( $value, $request, $param ) {
+		$attributes = $request->get_attributes();
+		if ( ! isset( $attributes['args'][ $param ] ) || ! is_array( $attributes['args'][ $param ] ) ) {
+			return new WP_Error(
+				'rest_invalid_param',
+				/* translators: 1: Parameter. */
+				sprintf( __( '%1$s is invalid.', 'godam' ), $param )
+			);
+		}
+		$args      = $attributes['args'][ $param ];
+		$exception = array( 'comment_parent_id' );
+
+		if ( 'string' === $args['type'] && empty( $value ) && ! in_array( $param, $exception, true ) ) {
+			return new WP_Error(
+				'rest_invalid_param',
+				/* translators: 1: Parameter. */
+				sprintf( __( '%1$s is empty.', 'godam' ), $param )
+			);
+		}
+
+		return rest_validate_request_arg( $value, $request, $param );
 	}
 }
