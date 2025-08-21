@@ -638,6 +638,7 @@ class Engagement extends Base {
 
 		if ( 'hard-delete' === $delete_type ) {
 			$comment_delete_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.delete_comment';
+			$content                 = '--hard-deleted-content--';
 		} else {
 			$comment_delete_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.wp_update_comment';
 			$query_params['content'] = $content;
