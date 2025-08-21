@@ -275,6 +275,7 @@ class RTGODAM_Transcoder_Handler {
 						'watermark'       => boolval( $rtgodam_watermark ),
 						'resolutions'     => array( 'auto' ),
 						'video_quality'   => $rtgodam_video_compress_quality,
+						'public'          => 1,
 					),
 					$watermark_to_use
 				),
