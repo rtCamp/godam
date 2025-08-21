@@ -1,3 +1,5 @@
+const { __ } = wp.i18n;
+
 const AttachmentDetails = wp?.media?.view?.Attachment?.Details;
 
 const isMpd = ( url ) => typeof url === 'string' && url.trim().toLowerCase().endsWith( '.mpd' );
@@ -86,9 +88,9 @@ export default AttachmentDetails?.extend( {
 				createAttachmentField( {
 					id: attachmentId,
 					fieldName: 'transcoded_url',
-					fieldLabel: 'Transcoded CDN URL (MPD)',
+					fieldLabel: __( 'Transcoded CDN URL (MPD)', 'godam' ),
 					url: attachmentUrl,
-					helpText: 'The URL of the transcoded file is generated automatically and cannot be edited.',
+					helpText: __( 'The URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
 				} ),
 			);
 		}
@@ -98,9 +100,9 @@ export default AttachmentDetails?.extend( {
 				createAttachmentField( {
 					id: attachmentId,
 					fieldName: 'hls_transcoded_url',
-					fieldLabel: 'Transcoded CDN URL (HLS)',
+					fieldLabel: __( 'Transcoded CDN URL (HLS)', 'godam' ),
 					url: hlsUrl,
-					helpText: 'The HLS URL of the transcoded file is generated automatically and cannot be edited.',
+					helpText: __( 'The HLS URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
 				} ),
 			);
 		}
