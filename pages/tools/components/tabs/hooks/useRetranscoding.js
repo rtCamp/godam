@@ -15,6 +15,7 @@ import { useState, useRef, useEffect } from '@wordpress/element';
  */
 import { scrollToTop } from '../../../../godam/utils';
 
+// eslint-disable-next-line no-unused-vars
 const useRetranscoding = ( callback, deps ) => {
 	const [ fetchingMedia, setFetchingMedia ] = useState( false );
 	const [ retranscoding, setRetranscoding ] = useState( false );
@@ -39,8 +40,19 @@ const useRetranscoding = ( callback, deps ) => {
 	// Ref to hold polling interval so we can clear it when finished
 	const pollIntervalRef = useRef( null );
 
+	// Track if the component has been reset by user
+	const hasBeenManuallyReset = useRef( false );
+	// Track if we're currently polling to prevent multiple intervals
+	const isPolling = useRef( false );
+
 	// Fetch the current queue status, used both for polling and initial mount
 	const fetchQueueStatus = useCallback( async () => {
+		// If we've manually reset, don't fetch queue status automatically
+		// This prevents reverting back to the error state
+		if ( hasBeenManuallyReset.current ) {
+			return;
+		}
+
 		try {
 			const url = `${ window.godamRestRoute?.url }godam/v1/transcoding/retranscode-queue/status`;
 			const res = await axios.get( url, {
@@ -61,7 +73,7 @@ const useRetranscoding = ( callback, deps ) => {
 
 			if ( data?.status === 'running' ) {
 				setRetranscoding( true );
-				if ( ! pollIntervalRef.current ) {
+				if ( ! pollIntervalRef.current && ! isPolling.current ) {
 					beginPolling();
 				}
 			} else if ( data?.status === 'idle' || ! data?.status ) {
@@ -73,32 +85,51 @@ const useRetranscoding = ( callback, deps ) => {
 				setAborted( false );
 				setDone( false );
 				setRetranscoding( false );
-				clearInterval( pollIntervalRef.current );
-				pollIntervalRef.current = null;
+				if ( pollIntervalRef.current ) {
+					clearInterval( pollIntervalRef.current );
+					pollIntervalRef.current = null;
+					isPolling.current = false;
+				}
 			} else {
 				setRetranscoding( false );
-				clearInterval( pollIntervalRef.current );
-				pollIntervalRef.current = null;
+				if ( pollIntervalRef.current ) {
+					clearInterval( pollIntervalRef.current );
+					pollIntervalRef.current = null;
+					isPolling.current = false;
+				}
 			}
 
 			if ( data?.status === 'done' ) {
 				setDone( true );
-				clearInterval( pollIntervalRef.current );
+				if ( pollIntervalRef.current ) {
+					clearInterval( pollIntervalRef.current );
+					pollIntervalRef.current = null;
+					isPolling.current = false;
+				}
 			} else if ( data?.status === 'aborted' ) {
 				setAborted( true );
-				clearInterval( pollIntervalRef.current );
+				if ( pollIntervalRef.current ) {
+					clearInterval( pollIntervalRef.current );
+					pollIntervalRef.current = null;
+					isPolling.current = false;
+				}
 			}
 		} catch ( e ) {
-			// Silent.
+			// Silent error handling, but stop excessive polling on persistent errors
+			if ( pollIntervalRef.current ) {
+				clearInterval( pollIntervalRef.current );
+				pollIntervalRef.current = null;
+				isPolling.current = false;
+			}
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, deps );
+	} );
 
 	// Kick off polling helper
 	const beginPolling = () => {
 		if ( pollIntervalRef.current ) {
 			clearInterval( pollIntervalRef.current );
 		}
+		isPolling.current = true;
 		pollIntervalRef.current = setInterval( fetchQueueStatus, 5000 );
 	};
 
@@ -111,7 +142,11 @@ const useRetranscoding = ( callback, deps ) => {
 		} );
 		setAborted( true );
 		setRetranscoding( false );
-		clearInterval( pollIntervalRef.current );
+		if ( pollIntervalRef.current ) {
+			clearInterval( pollIntervalRef.current );
+			pollIntervalRef.current = null;
+			isPolling.current = false;
+		}
 		setLogs( ( prevLogs ) => [ ...prevLogs, __( 'Aborting operation to send media for retranscoding.', 'godam' ) ] );
 	};
 
@@ -155,7 +190,7 @@ const useRetranscoding = ( callback, deps ) => {
 		}
 	};
 
-	// Function to fetch media that require retranscoding (kept from original implementation)
+	// Function to fetch media that require retranscoding
 	const fetchRetranscodeMedia = () => {
 		setFetchingMedia( true );
 		const url = `${ window.godamRestRoute?.url }godam/v1/transcoding/not-transcoded${ forceRetranscode ? '?force=1' : '' }`;
@@ -200,40 +235,73 @@ const useRetranscoding = ( callback, deps ) => {
 	};
 
 	const resetState = () => {
-		setAttachments( [] );
-		setMediaCount( 0 );
-		setTotalMediaCount( 0 );
-		setAborted( false );
-		setNotice( { ...notice, isVisible: false } );
-		setRetranscoding( false );
-		setLogs( [] );
-		setSuccessCount( 0 );
-		setFailureCount( 0 );
-		setDone( false );
-		setForceRetranscode( false );
-		setSelectedIds( null );
-		setAttachmentDetails( [] );
-		setShowBandwidthModal( false );
-		setModalSelection( [] );
-		// Stop any active polling.
+		// First, stop any active polling to prevent state updates during reset
 		if ( pollIntervalRef.current ) {
 			clearInterval( pollIntervalRef.current );
 			pollIntervalRef.current = null;
+			isPolling.current = false;
 		}
-		// Inform backend to reset queue and progress so subsequent visits start fresh.
+
+		// Mark that we've manually reset so we don't automatically revert state
+		hasBeenManuallyReset.current = true;
+
+		// Inform backend to reset queue and progress
 		axios.post( `${ window.godamRestRoute?.url }godam/v1/transcoding/retranscode-queue/reset`, {}, {
 			headers: {
 				'X-WP-Nonce': window.godamRestRoute?.nonce,
 			},
-		} ).catch( () => {} );
-		abortRef.current = false;
+		} )
+			.then( () => {
+			// Only reset local state after backend confirms reset
+				setAttachments( [] );
+				setMediaCount( 0 );
+				setTotalMediaCount( 0 );
+				setAborted( false );
+				setNotice( { ...notice, isVisible: false } );
+				setRetranscoding( false );
+				setLogs( [] );
+				setSuccessCount( 0 );
+				setFailureCount( 0 );
+				setDone( false );
+				setForceRetranscode( false );
+				setSelectedIds( null );
+				setAttachmentDetails( [] );
+				setShowBandwidthModal( false );
+				setModalSelection( [] );
+				abortRef.current = false;
 
-		// Reset the URL to remove media_ids, goback and nonce
-		const url = new URL( window.location.href );
-		url.searchParams.delete( 'media_ids' );
-		url.searchParams.delete( '_wpnonce' );
-		url.searchParams.delete( 'goback' );
-		window.history.replaceState( {}, '', url.toString() );
+				// Reset the URL to remove media_ids, goback and nonce
+				const url = new URL( window.location.href );
+				url.searchParams.delete( 'media_ids' );
+				url.searchParams.delete( '_wpnonce' );
+				url.searchParams.delete( 'goback' );
+				window.history.replaceState( {}, '', url.toString() );
+			} )
+			.catch( () => {
+			// Handle the case where backend reset fails
+			// Still reset UI state even if backend call fails
+				setAttachments( [] );
+				setMediaCount( 0 );
+				setTotalMediaCount( 0 );
+				setAborted( false );
+				setRetranscoding( false );
+				setLogs( [] );
+				setSuccessCount( 0 );
+				setFailureCount( 0 );
+				setDone( false );
+				setForceRetranscode( false );
+				setSelectedIds( null );
+				setAttachmentDetails( [] );
+				setShowBandwidthModal( false );
+				setModalSelection( [] );
+
+				// Show a notice that full reset may need a page refresh
+				setNotice( {
+					message: __( 'Reset completed. If you still see previous data, please refresh the page.', 'godam' ),
+					status: 'info',
+					isVisible: true,
+				} );
+			} );
 	};
 
 	const showNotice = ( message, status = 'success' ) => {
@@ -244,6 +312,9 @@ const useRetranscoding = ( callback, deps ) => {
 	};
 
 	const handleFetchOrStart = () => {
+		// Reset the manual reset flag since we're starting a new operation
+		hasBeenManuallyReset.current = false;
+
 		if ( attachments.length > 0 ) {
 			startRetranscoding();
 		} else {
@@ -258,9 +329,11 @@ const useRetranscoding = ( callback, deps ) => {
 		return () => {
 			if ( pollIntervalRef.current ) {
 				clearInterval( pollIntervalRef.current );
+				pollIntervalRef.current = null;
+				isPolling.current = false;
 			}
 		};
-	}, [ fetchQueueStatus ] );
+	}, [] ); // Empty dependency array to run only once on mount
 
 	// Show notice if retranscoding is done or aborted with counts
 	useEffect( () => {

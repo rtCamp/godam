@@ -62,9 +62,27 @@ const RetranscodeTab = () => {
 		handleFetchOrStart,
 	} = useRetranscoding();
 
+	// Helper functions for better readability
+	const getAvailableBandwidthGB = () => {
+		return ( window.userData?.totalBandwidth || 0 ) - ( window.userData?.bandwidthUsed || 0 );
+	};
+
+	const getTotalRequiredGB = () => {
+		return attachmentDetails.reduce( ( sum, att ) => sum + ( ( att.size || 0 ) / 1024 / 1024 / 1024 ), 0 );
+	};
+
+	const shouldShowForceRetranscodeCheckbox = () => {
+		return ! ( selectedIds && selectedIds.length > 0 ) &&
+            ( attachments.length === 0 ) &&
+            ! retranscoding &&
+            ! done &&
+            ! aborted &&
+            ! initialStatusFetching;
+	};
+
 	// Derived values
-	const availableBandwidthGB = ( window.userData?.totalBandwidth || 0 ) - ( window.userData?.bandwidthUsed || 0 );
-	const totalRequiredGB = attachmentDetails.reduce( ( sum, att ) => sum + ( ( att.size || 0 ) / 1024 / 1024 / 1024 ), 0 );
+	const availableBandwidthGB = getAvailableBandwidthGB();
+	const totalRequiredGB = getTotalRequiredGB();
 
 	// Side‑effects moved into dedicated hooks for clarity
 	useUrlMediaIds( setAttachments, setSelectedIds, showNotice );
@@ -119,7 +137,7 @@ const RetranscodeTab = () => {
 					</p>
 
 					{ /* Force retranscode checkbox */ }
-					{ ! ( selectedIds && selectedIds.length > 0 ) && ( attachments.length === 0 ) && (
+					{ shouldShowForceRetranscodeCheckbox() && (
 						<ForceRetranscodeCheckbox
 							forceRetranscode={ forceRetranscode }
 							setForceRetranscode={ setForceRetranscode }

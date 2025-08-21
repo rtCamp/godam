@@ -21,8 +21,8 @@ const ActionButtons = ( {
 	return (
 		<div className="flex gap-2">
 			{
-				// Show main action button.
-				! retranscoding &&
+				// Show main action button only when not retranscoding and not completed/aborted
+				! retranscoding && ! done && ! aborted &&
 				<Button
 					variant="primary"
 					className="godam-button"
@@ -37,13 +37,10 @@ const ActionButtons = ( {
 					{ ( () => {
 						if ( attachments.length === 0 ) {
 							return __( 'Fetch Media', 'godam' );
-						} else if ( ! done && ! aborted ) {
-							if ( attachmentDetails.length === 0 ) {
-								return __( 'Please wait', 'godam' );
-							}
-							return __( 'Start Retranscoding', 'godam' );
+						} else if ( attachmentDetails.length === 0 ) {
+							return __( 'Please wait', 'godam' );
 						}
-						return __( 'Restart Retranscoding', 'godam' );
+						return __( 'Start Retranscoding', 'godam' );
 					} )() }
 				</Button>
 			}
@@ -63,10 +60,10 @@ const ActionButtons = ( {
 			}
 
 			{
-				// Show reset button after completion or abort or after fetching media.
-				( aborted || ( ! retranscoding && attachments.length > 0 ) ) &&
+				// Show reset button after completion, failure, abort or after fetching media.
+				( done || aborted || ( ! retranscoding && attachments.length > 0 ) ) &&
 				<Button
-					variant="tertiary"
+					variant="secondary"
 					className="godam-button"
 					onClick={ onReset }
 					disabled={ initialStatusFetching }
