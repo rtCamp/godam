@@ -204,6 +204,10 @@
 		margin: 0;
 		border: none;
 		border-radius: 0 0.25rem 0.25rem 0;
+
+		@media (max-width: 900px) {
+			display: none;
+		}
 	}
 
 	&.hide-sidebar {
@@ -227,6 +231,7 @@
 
 			@media (max-width: 900px) {
 				top: 40px;
+				display: flex;
 			}
 		}
 	}

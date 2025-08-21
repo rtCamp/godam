@@ -145,7 +145,8 @@ $media-frame-width: calc(300px + 2 * 24px);
 	box-shadow: none;
 	padding: 0 24px 0 8px;
 	min-height: 30px;
-	max-width: 8rem;
+	min-width: 8rem;
+	width: 100%;
 	border: 1px solid #A3A3A3;
 	vertical-align: middle;
 }
@@ -292,6 +293,17 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 			.attachments-wrapper {
 				top: 140px;
+			}
+		}
+
+		@media (max-width: 1024px) {
+
+			.media-toolbar {
+				width: calc(100% - 200px - 64px);
+			}
+
+			.attachments-wrapper {
+				width: calc(100% - 240px - 48px);
 			}
 		}
 
