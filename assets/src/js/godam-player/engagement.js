@@ -303,7 +303,7 @@ const engagementStore = {
 		const engagementData = collections.reduce( ( acc, item ) => {
 			const id = item.videoAttachmentId;
 			const data = item.data;
-			acc.titles[ id ] = data.title;
+			acc.titles[ id ] = item.videoTitle;
 			acc.likes[ id ] = data.likes_count;
 			acc.views[ id ] = data.views_count;
 			acc.IsUserLiked[ id ] = data.is_liked;
@@ -386,10 +386,11 @@ const engagementStore = {
 	 * @param {number} videoId           The ID of the video.
 	 * @param {number} videoAttachmentId The ID of the video attachment.
 	 * @param {string} siteUrl           The URL of the site.
+	 * @param {string} videoTitle        The title of the video.
 	 *
 	 * @return {Promise} A promise that resolves to an object containing the video attachment ID and the response from the server.
 	 */
-	async fetchVideoData( videoId, videoAttachmentId, siteUrl ) {
+	async fetchVideoData( videoId, videoAttachmentId, siteUrl, videoTitle ) {
 		const queryParams = {
 			site_url: siteUrl,
 			video_id: videoAttachmentId,
@@ -397,6 +398,7 @@ const engagementStore = {
 		return await apiFetch( { path: addQueryArgs( '/godam/v1/engagement/activities', queryParams ) } ).then( ( response ) => {
 			return {
 				videoAttachmentId,
+				videoTitle,
 				...response,
 			};
 		} );
@@ -426,6 +428,7 @@ const engagementStore = {
 			const videoId = item.getAttribute( 'data-engagement-id' );
 			const videoAttachmentId = item.getAttribute( 'data-engagement-video-id' );
 			const siteUrl = item.getAttribute( 'data-engagement-site-url' );
+			const videoTitle = item.getAttribute( 'data-engagement-video-title' );
 			const likeLink = item.querySelector( '.rtgodam-video-engagement--like-link' );
 			const commentLink = item.querySelector( '.rtgodam-video-engagement--comment-link' );
 
@@ -455,7 +458,7 @@ const engagementStore = {
 				} );
 			}
 
-			promises.push( self.fetchVideoData( videoId, videoAttachmentId, siteUrl ) );
+			promises.push( self.fetchVideoData( videoId, videoAttachmentId, siteUrl, videoTitle ) );
 			item.setAttribute( 'data-engagement-bind', 'true' );
 		} );
 

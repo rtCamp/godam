@@ -48,16 +48,14 @@ class Video_Engagement {
 		if ( is_string( $attributes['engagements'] ) && 'show' !== $attributes['engagements'] ) {
 			return '';
 		}
+		if ( empty( $attributes['title'] ) && ! empty( $attributes['seo']['headline'] ) ) {
+			$attributes['title'] = $attributes['seo']['headline'];
+		}
+		$title = ! empty( $attributes['title'] ) ? $attributes['title'] : get_the_title( $attachment_id );
 		?>
-		<div class="rtgodam-video-engagement rtgodam-video-engagement--link-disabled" data-engagement-id="engagement-<?php echo esc_attr( $instance_id ); ?>" data-engagement-video-id="<?php echo esc_attr( $attachment_id ); ?>" data-engagement-site-url="<?php echo esc_url( get_site_url() ); ?>">
+		<div class="rtgodam-video-engagement rtgodam-video-engagement--link-disabled" data-engagement-id="engagement-<?php echo esc_attr( $instance_id ); ?>" data-engagement-video-id="<?php echo esc_attr( $attachment_id ); ?>" data-engagement-site-url="<?php echo esc_url( get_site_url() ); ?>" data-engagement-video-title="<?php echo esc_attr( $title ); ?>">
 			<div class="rtgodam-video-engagement--title">
-			<?php
-			if ( ! empty( $attributes['title'] ) ) {
-				echo esc_html( $attributes['title'] );
-			} else {
-				echo esc_html( get_the_title( $attachment_id ) );
-			}
-			?>
+				<?php echo esc_html( $title ); ?>
 			</div>
 			<div class="rtgodam-video-engagement--like">
 				<button type="button" class="rtgodam-video-engagement--like-link">

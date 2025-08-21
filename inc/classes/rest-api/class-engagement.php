@@ -286,7 +286,6 @@ class Engagement extends Base {
 		$comments                        = $this->get_comments( $transcoder_job_id, $account_credentials );
 		$response_data['comments']       = $comments['comments'];
 		$response_data['comments_count'] = $comments['total'];
-		$response_data['title']          = get_the_title( $video_id );
 
 		return new WP_REST_Response(
 			array(
