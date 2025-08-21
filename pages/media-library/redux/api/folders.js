@@ -38,7 +38,7 @@ export const folderApi = createApi( {
 
 				const params = {
 					_fields: 'id,name,parent,attachmentCount,meta',
-					per_page: isSpecial ? 100 : 10,
+					per_page: isSpecial ? 100 : 20,
 					...( options.bookmark ? { bookmark: true } : {} ),
 					...( options.locked ? { locked: true } : {} ),
 					...( options.page ? { page: options.page } : {} ),
