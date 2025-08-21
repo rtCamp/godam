@@ -10,7 +10,6 @@
 	border: 1px solid #E0E0E0;
 	display: flex;
 	flex-direction: column;
-	min-height: calc(100vh - 34px);
 	overflow: auto;
 	height: 100%;
 
@@ -24,7 +23,7 @@
 	}
 
 	.tree-container {
-		padding-bottom: 2.5rem;
+		padding-bottom: 5rem;
 	}
 
 	.folder-tabs {
