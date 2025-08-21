@@ -7,6 +7,9 @@
 
 namespace RTGODAM\Inc\Gravity_Forms;
 
+use GF_Fields;
+use GFAPI;
+use GFFormsModel;
 use RTGODAM\Inc\Traits\Singleton;
 use RTGODAM\Inc\Gravity_Forms\GF_Field_GoDAM_Video;
 
@@ -49,6 +52,7 @@ class Init {
 		add_action( 'gform_editor_js', array( $this, 'add_editor_script' ) );
 		add_action( 'gform_after_submission', array( $this, 'process_file_upload_to_godam' ), 10, 2 );
 		add_action( 'gform_entry_detail', array( $this, 'enqueue_entry_detail_scripts' ) );
+		add_action( 'gform_after_save_form', array( $this, 'add_godam_source_field' ) );
 	}
 
 	/**
@@ -339,5 +343,36 @@ class Init {
 				'index'    => $index,
 			)
 		);
+	}
+
+	/**
+	 * Add GoDAM source field to the form.
+	 *
+	 * @param array $form The form object.
+	 */
+	public function add_godam_source_field( $form ) {
+		// Check if 'godam_source' field already exists.
+		foreach ( $form['fields'] as $field ) {
+			if ( isset( $field->inputName ) && 'godam_source' === $field->inputName ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				return;
+			}
+		}
+
+		// Use Gravity Forms API method to get the next available field ID.
+		$new_field_id = GFFormsModel::get_next_field_id( $form['fields'] );
+
+		// Create hidden field.
+		$properties       = array(
+			'type'              => 'hidden',
+			'id'                => $new_field_id,
+			'label'             => 'godam_source',
+			'allowsPrepopulate' => true,
+			'inputName'         => 'godam_source',
+		);
+		$field            = GF_Fields::create( $properties );
+		$form['fields'][] = $field;
+
+		// Save the modified form.
+		GFAPI::update_form( $form );
 	}
 }
