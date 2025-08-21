@@ -187,6 +187,10 @@ $media-frame-width: calc(300px + 2 * 24px);
 	.media-frame-content {
 		top: 138px;
 
+		.attachments-browser {
+			container-type: inline-size;
+		}
+
 		.attachments-wrapper {
 			margin: 24px;
 			width: calc(100% - 300px - 2 * 24px);
@@ -265,13 +269,11 @@ $media-frame-width: calc(300px + 2 * 24px);
 			}
 		}
 
-		@media (max-width: 1200px) {
+		@container (max-width: 800px) {
 
 			.media-toolbar {
 				flex-direction: column;
 				align-items: stretch;
-				width: calc(100% - 267px - 64px);
-				height: auto;
 
 				.media-toolbar-secondary {
 					max-width: 100%;
@@ -285,14 +287,22 @@ $media-frame-width: calc(300px + 2 * 24px);
 					flex-wrap: wrap;
 					margin: 0;
 				}
-
-				.attachment-filters {
-					margin: 0.75rem 0;
-				}
 			}
 
 			.attachments-wrapper {
 				top: 140px;
+			}
+		}
+
+		@media (max-width: 1200px) {
+
+			.media-toolbar {
+				width: calc(100% - 267px - 64px);
+				height: auto;
+
+				.attachment-filters {
+					margin: 0.75rem 0;
+				}
 			}
 		}
 
