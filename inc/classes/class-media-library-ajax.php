@@ -192,7 +192,7 @@ class Media_Library_Ajax {
 			printf(
 				'<option value="%s">%s%s</option>',
 				esc_attr( $folder->term_id ),
-				esc_html( str_repeat( '- ', $depth ) ),
+				esc_html( str_repeat( '&nbsp;&nbsp;&nbsp;&nbsp;', $depth ) ),
 				esc_html( $folder->name )
 			);
 			// Recursively display children.
