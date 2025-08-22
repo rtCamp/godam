@@ -256,25 +256,49 @@ class RTGODAM_Transcoder_Handler {
 			 */
 			$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
 
+			// Get attachment author information.
+			$attachment_author_id = get_post_field( 'post_author', $attachment_id );
+			$attachment_author    = get_user_by( 'id', $attachment_author_id );
+			$site_url             = get_site_url();
+
+			// Get author name with fallback to username.
+			$author_first_name = '';
+			$author_last_name  = '';
+			
+			if ( $attachment_author ) {
+				$author_first_name = $attachment_author->first_name;
+				$author_last_name  = $attachment_author->last_name;
+				
+				// If first and last names are empty, use username as fallback.
+				if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
+					$author_first_name = $attachment_author->user_login;
+				}
+			}
+
 			$args = array(
 				'method'    => 'POST',
 				'sslverify' => false,
 				'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 				'body'      => array_merge(
 					array(
-						'api_token'       => $this->api_key,
-						'job_type'        => $job_type,
-						'job_for'         => $job_for,
-						'file_origin'     => rawurlencode( $url ),
-						'callback_url'    => rawurlencode( $callback_url ),
-						'status_callback' => rawurlencode( $status_callback_url ),
-						'force'           => 0,
-						'formats'         => ( true === $autoformat ) ? ( ( ( isset( $type_array[0] ) ) && 'video' === $type_array[0] ) ? 'mp4' : 'mp3' ) : $autoformat,
-						'thumbnail_count' => $options_video_thumb,
-						'stream'          => true,
-						'watermark'       => boolval( $rtgodam_watermark ),
-						'resolutions'     => array( 'auto' ),
-						'video_quality'   => $rtgodam_video_compress_quality,
+						'api_token'            => $this->api_key,
+						'job_type'             => $job_type,
+						'job_for'              => $job_for,
+						'file_origin'          => rawurlencode( $url ),
+						'callback_url'         => rawurlencode( $callback_url ),
+						'status_callback'      => rawurlencode( $status_callback_url ),
+						'force'                => 0,
+						'formats'              => ( true === $autoformat ) ? ( ( ( isset( $type_array[0] ) ) && 'video' === $type_array[0] ) ? 'mp4' : 'mp3' ) : $autoformat,
+						'thumbnail_count'      => $options_video_thumb,
+						'stream'               => true,
+						'watermark'            => boolval( $rtgodam_watermark ),
+						'resolutions'          => array( 'auto' ),
+						'video_quality'        => $rtgodam_video_compress_quality,
+						'wp_author_email'      => $attachment_author ? $attachment_author->user_email : '',
+						'wp_site'              => $site_url,
+						'wp_author_first_name' => $author_first_name,
+						'wp_author_last_name'  => $author_last_name,
+						'public'               => 1,
 					),
 					$watermark_to_use
 				),

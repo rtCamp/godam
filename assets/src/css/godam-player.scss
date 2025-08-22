@@ -449,6 +449,10 @@
 .easydam-layer.hotspot-layer {
 	pointer-events: none;
 	background: transparent;
+
+	&.overlapped {
+		z-index: 0;
+	}
 }
 
 .godam-menu-item-container {

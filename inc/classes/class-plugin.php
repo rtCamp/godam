@@ -18,6 +18,7 @@ use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Permalinks;
+use RTGODAM\Inc\Update;
 
 use RTGODAM\Inc\Post_Types\GoDAM_Video;
 
@@ -41,6 +42,7 @@ use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
 use RTGODAM\Inc\REST_API\Video_Migration;
+use RTGODAM\Inc\REST_API\Release_Post;
 use RTGODAM\Inc\Gravity_Forms;
 use RTGODAM\Inc\REST_API\MetForm;
 
@@ -58,6 +60,7 @@ use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Rest_Api;
 use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Integration;
 use RTGODAM\Inc\Metform\Metform_Integration;
 use RTGODAM\Inc\Metform\Metform_Rest_Api;
+use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
 
 /**
  * Class Plugin.
@@ -72,6 +75,7 @@ class Plugin {
 	protected function __construct() {
 
 		// Load plugin classes.
+		Update::get_instance();
 		Assets::get_instance();
 		Blocks::get_instance();
 		Pages::get_instance();
@@ -81,6 +85,7 @@ class Plugin {
 		Rewrite::get_instance();
 		Video_Preview::get_instance();
 		Video_Permalinks::get_instance();
+		Embed::get_instance();
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
@@ -105,6 +110,9 @@ class Plugin {
 
 		// Load video metadata.
 		Video_Metadata::get_instance();
+
+		// Load LifterLMS integration.
+		Lifter_LMS::get_instance();
 
 		// Load Elementor widgets.
 		$this->load_elementor_widgets();
@@ -159,6 +167,7 @@ class Plugin {
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();
 		Video_Migration::get_instance();
+		Release_Post::get_instance();
 	}
 
 	/**
