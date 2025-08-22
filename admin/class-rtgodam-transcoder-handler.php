@@ -261,6 +261,20 @@ class RTGODAM_Transcoder_Handler {
 			$attachment_author    = get_user_by( 'id', $attachment_author_id );
 			$site_url             = get_site_url();
 
+			// Get author name with fallback to username.
+			$author_first_name = '';
+			$author_last_name  = '';
+			
+			if ( $attachment_author ) {
+				$author_first_name = $attachment_author->first_name;
+				$author_last_name  = $attachment_author->last_name;
+				
+				// If first and last names are empty, use username as fallback.
+				if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
+					$author_first_name = $attachment_author->user_login;
+				}
+			}
+
 			$args = array(
 				'method'    => 'POST',
 				'sslverify' => false,
@@ -282,8 +296,8 @@ class RTGODAM_Transcoder_Handler {
 						'video_quality'        => $rtgodam_video_compress_quality,
 						'wp_author_email'      => $attachment_author ? $attachment_author->user_email : '',
 						'wp_site'              => $site_url,
-						'wp_author_first_name' => $attachment_author ? $attachment_author->first_name : '',
-						'wp_author_last_name'  => $attachment_author ? $attachment_author->last_name : '',
+						'wp_author_first_name' => $author_first_name,
+						'wp_author_last_name'  => $author_last_name,
 						'public'               => 1,
 					),
 					$watermark_to_use
