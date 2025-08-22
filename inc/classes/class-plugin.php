@@ -60,6 +60,7 @@ use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Rest_Api;
 use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Integration;
 use RTGODAM\Inc\Metform\Metform_Integration;
 use RTGODAM\Inc\Metform\Metform_Rest_Api;
+use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
 
 /**
  * Class Plugin.
@@ -84,6 +85,7 @@ class Plugin {
 		Rewrite::get_instance();
 		Video_Preview::get_instance();
 		Video_Permalinks::get_instance();
+		Embed::get_instance();
 
 		// Load shortcodes.
 		GoDAM_Player::get_instance();
@@ -108,6 +110,9 @@ class Plugin {
 
 		// Load video metadata.
 		Video_Metadata::get_instance();
+
+		// Load LifterLMS integration.
+		Lifter_LMS::get_instance();
 
 		// Load Elementor widgets.
 		$this->load_elementor_widgets();

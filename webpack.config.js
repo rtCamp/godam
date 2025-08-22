@@ -192,6 +192,30 @@ const fluentForms = {
 	},
 };
 
+const godamPlayerSDK = {
+	...sharedConfig,
+	entry: {
+		godamPlayerSDK: path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'godam-player-sdk.js' ),
+		'godam-player-sdk': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'godam-player-sdk.js' ),
+	},
+};
+
+const lifterLMSBlock = {
+	...sharedConfig,
+	entry: {
+		lifterLMSBlock: path.resolve( process.cwd(), 'assets', 'src', 'js', 'lifterlms', 'block.js' ),
+		'godam-lifterlms-block': path.resolve( process.cwd(), 'assets', 'src', 'js', 'lifterlms', 'block.js' ),
+	},
+};
+
+const lifterLMSEmbed = {
+	...sharedConfig,
+	entry: {
+		lifterLMSEmbed: path.resolve( process.cwd(), 'assets', 'src', 'js', 'lifterlms', 'embed.js' ),
+		'godam-lifterlms-embed': path.resolve( process.cwd(), 'assets', 'src', 'js', 'lifterlms', 'embed.js' ),
+	},
+};
+
 // Define the `pages` directory
 const pagesDir = path.resolve( __dirname, './pages' );
 
@@ -276,4 +300,7 @@ module.exports = [
 	elementorEditorJS,
 	godamRecorder,
 	fluentForms,
+	godamPlayerSDK,
+	lifterLMSBlock,
+	lifterLMSEmbed,
 ];
