@@ -92,14 +92,6 @@ class Assets {
 			)
 		);
 
-		wp_localize_script(
-			'rtgodam-script',
-			'godamAPIKeyData',
-			array(
-				'validApiKey' => rtgodam_is_api_key_valid(),
-			)
-		);
-
 		include_once ABSPATH . 'wp-admin/includes/plugin.php';
 		$is_gf_active       = is_plugin_active( 'gravityforms/gravityforms.php' );
 		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
