@@ -27,30 +27,30 @@ import { useAssignFolderMutation, useGetFoldersQuery, useUpdateFolderMutation } 
 
 import './css/tree.scss';
 
-const openLocalStorageItem = ( folders ) => {
-	const localStorageOpenItem = JSON.parse( localStorage.getItem( 'easyDam' ) ) || {};
+const openLocalStorageItem = (folders) => {
+	const localStorageOpenItem = JSON.parse(localStorage.getItem('easyDam')) || {};
 
-	if ( localStorageOpenItem.openItems ) {
+	if (localStorageOpenItem.openItems) {
 		const openItems = localStorageOpenItem.openItems;
 
-		folders = folders.map( ( folder ) => {
+		folders = folders.map((folder) => {
 			const folderCopy = { ...folder };
 
-			if ( openItems.includes( folderCopy.id ) ) {
+			if (openItems.includes(folderCopy.id)) {
 				folderCopy.isOpen = true;
 			} else {
 				folderCopy.isOpen = false;
 			}
 
 			return folderCopy;
-		} );
+		});
 	}
 
 	return folders;
 };
 
-const FolderTree = ( { handleContextMenu } ) => {
-	const page = useSelector( ( state ) => state.FolderReducer.page );
+const FolderTree = ({ handleContextMenu }) => {
+	const page = useSelector((state) => state.FolderReducer.page);
 	const currentPage = page.current;
 
 	const { data: folders, error, isLoading, refetch: refetchFolders, isFetching } = useGetFoldersQuery(
@@ -59,135 +59,150 @@ const FolderTree = ( { handleContextMenu } ) => {
 		},
 	);
 
-	useEffect( () => {
+	useEffect(() => {
 		// Refetch folders when the current page changes
-		if ( page.current > 1 ) {
+		if (page.current > 1) {
 			refetchFolders();
 		}
-	}, [ refetchFolders, page ] );
+	}, [refetchFolders, page]);
 
 	const dispatch = useDispatch();
-	const data = useSelector( ( state ) => state.FolderReducer.folders );
-	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
-	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
+	const data = useSelector((state) => state.FolderReducer.folders);
+	const selectedFolder = useSelector((state) => state.FolderReducer.selectedFolder);
+	const isMultiSelecting = useSelector((state) => state.FolderReducer.isMultiSelecting);
 
-	const [ updateFolderMutation ] = useUpdateFolderMutation();
+	const [updateFolderMutation] = useUpdateFolderMutation();
 
-	useEffect( () => {
-		if ( folders ) {
-			dispatch( setTree( openLocalStorageItem( folders ) ) );
+	useEffect(() => {
+		if (folders) {
+			dispatch(setTree(openLocalStorageItem(folders)));
 
-			if ( Array.isArray( folders ) && ( folders.length === 0 || folders.length < page.perPage ) && ! isFetching ) {
+			if (Array.isArray(folders) && (folders.length === 0 || folders.length < page.perPage) && !isFetching) {
 				// If no folders are returned, reset to the first page
-				dispatch( updatePage( { hasNext: false } ) );
+				dispatch(updatePage({ hasNext: false }));
 			}
 		}
-	}, [ dispatch, folders, currentPage, isFetching, page.perPage ] );
+	}, [dispatch, folders, currentPage, isFetching, page.perPage]);
 
-	const [ activeId, setActiveId ] = useState( null );
-	const [ overId, setOverId ] = useState( null );
-	const [ offsetLeft, setOffsetLeft ] = useState( 0 );
+	const [activeId, setActiveId] = useState(null);
+	const [overId, setOverId] = useState(null);
+	const [offsetLeft, setOffsetLeft] = useState(0);
 
-	const [ assignFolderMutation ] = useAssignFolderMutation();
+	const [assignFolderMutation] = useAssignFolderMutation();
 
-	const flattenData = useMemo( () => utilities.flattenTree( utilities.buildTree( data ) ), [ data ] );
+	const flattenData = useMemo(() => utilities.flattenTree(utilities.buildTree(data)), [data]);
 
-	const filteredData = useMemo( () => {
-		const collapsedItems = flattenData.reduce( ( acc, item ) => {
+	const filteredData = useMemo(() => {
+		const collapsedItems = flattenData.reduce((acc, item) => {
 			const { children, isOpen, id } = item;
-			if ( ! isOpen && children.length ) {
-				acc.push( id );
+			if (!isOpen && children.length) {
+				acc.push(id);
 			}
 			return acc;
-		}, [] );
+		}, []);
 
-		return utilities.removeChildrenOf( flattenData, [ activeId, ...collapsedItems ] );
-	}, [ activeId, flattenData ] );
+		return utilities.removeChildrenOf(flattenData, [activeId, ...collapsedItems]);
+	}, [activeId, flattenData]);
 
-	const sortedIds = useMemo( () => filteredData.map( ( { id } ) => id ), [ filteredData ] );
+	const sortedIds = useMemo(() => filteredData.map(({ id }) => id), [filteredData]);
 
-	const projected = activeId && overId ? utilities.getProjection( filteredData, activeId, overId, offsetLeft ) : null;
+	const projected = activeId && overId ? utilities.getProjection(filteredData, activeId, overId, offsetLeft) : null;
 
-	function handleDragStart( { active: { id: draggedItemId } } ) {
-		const draggedFolder = data.find( ( folder ) => folder.id === draggedItemId );
+	function handleDragStart({ active: { id: draggedItemId } }) {
+		const draggedFolder = data.find((folder) => folder.id === draggedItemId);
 
 		// If the dragged folder has a parent and that parent is locked, prevent dragging.
-		if ( draggedFolder?.parent && draggedFolder.parent !== 0 ) {
-			const parentFolder = data.find( ( folder ) => folder.id === draggedFolder.parent );
-			if ( parentFolder?.meta?.locked ) {
-				dispatch( updateSnackbar( {
-					message: __( 'The parent folder is locked, so this folder cannot be moved.', 'godam' ),
+		if (draggedFolder?.parent && draggedFolder.parent !== 0) {
+			const parentFolder = data.find((folder) => folder.id === draggedFolder.parent);
+			if (parentFolder?.meta?.locked) {
+				dispatch(updateSnackbar({
+					message: __('The parent folder is locked, so this folder cannot be moved.', 'godam'),
 					type: 'fail',
-				} ) );
+				}));
 				return;
 			}
 		}
 
-		setActiveId( draggedItemId );
-		setOverId( draggedItemId );
+		setActiveId(draggedItemId);
+		setOverId(draggedItemId);
 	}
 
-	function handleDragOver( { over } ) {
-		setOverId( over?.id ?? null );
+	function handleDragOver({ over }) {
+		setOverId(over?.id ?? null);
 	}
 
-	async function handleDragEnd( { active, over } ) {
+	async function handleDragEnd({ active, over }) {
 		resetState();
 
-		if ( projected && over ) {
+		if (projected && over) {
 			let { depth, parent } = projected;
 
-			if ( ! parent ) {
+			if (!parent) {
 				parent = 0;
 			}
 
 			// Do not allow reordering/move if the destination folder (new parent) is locked.
-			if ( parent !== 0 ) {
-				const destinationFolder = data.find( ( folder ) => folder.id === parent );
-				if ( destinationFolder?.meta?.locked ) {
-					dispatch( updateSnackbar( {
-						message: __( 'The destination folder is locked and cannot be modified', 'godam' ),
+			if (parent !== 0) {
+				const destinationFolder = data.find((folder) => folder.id === parent);
+				if (destinationFolder?.meta?.locked) {
+					dispatch(updateSnackbar({
+						message: __('The destination folder is locked and cannot be modified', 'godam'),
 						type: 'fail',
-					} ) );
+					}));
 					return;
 				}
 			}
 
 			const clonedItems = JSON.parse(
-				JSON.stringify( utilities.flattenTree( utilities.buildTree( data ) ) ),
+				JSON.stringify(utilities.flattenTree(utilities.buildTree(data))),
 			);
 
-			const overIndex = clonedItems.findIndex( ( { id } ) => id === over.id );
-			const activeIndex = clonedItems.findIndex( ( { id } ) => id === active.id );
-			const activeTreeItem = clonedItems[ activeIndex ];
+			const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
+			const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
+			const activeTreeItem = clonedItems[activeIndex];
 
-			await updateFolderMutation( { ...activeTreeItem, parent } );
+			// ✅ Normalize booleans before API call
+			const payload = {
+				...activeTreeItem,
+				parent,
+				depth,
+				isOpen: Boolean(activeTreeItem?.isOpen),
+				locked: Boolean(activeTreeItem?.meta?.locked),
+			};
 
-			clonedItems[ activeIndex ] = { ...activeTreeItem, depth, parent };
+			try {
+				await updateFolderMutation(payload);
 
-			const sortedItems = arrayMove( clonedItems, activeIndex, overIndex );
+				clonedItems[activeIndex] = { ...activeTreeItem, depth, parent };
+				const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
 
-			dispatch( setTree( sortedItems ) );
+				dispatch(setTree(sortedItems));
+			} catch (err) {
+				dispatch(updateSnackbar({
+					message: __('Failed to update folder', 'godam'),
+					type: 'fail',
+				}));
+			}
 		}
 	}
 
 	function resetState() {
-		setActiveId( null );
-		setOverId( null );
+		setActiveId(null);
+		setOverId(null);
 	}
 
-	function handleDragMove( { delta: { x } } ) {
-		setOffsetLeft( x );
+	function handleDragMove({ delta: { x } }) {
+		setOffsetLeft(x);
 	}
 
-	const pointerSensor = useSensor( PointerSensor, {
+	const pointerSensor = useSensor(PointerSensor, {
 		activationConstraint: {
 			// Allow items to be clicked instead of activated by dragging
 			distance: 10,
 		},
-	} );
+	});
 
-	const mouseSensor = useSensor( MouseSensor );
+	const mouseSensor = useSensor(MouseSensor);
 
 	const sensors = useSensors(
 		mouseSensor,
@@ -195,7 +210,7 @@ const FolderTree = ( { handleContextMenu } ) => {
 	);
 
 	function handleLoadMore() {
-		dispatch( updatePage( { current: page.current + 1 } ) );
+		dispatch(updatePage({ current: page.current + 1 }));
 	}
 
 	/**
@@ -205,23 +220,23 @@ const FolderTree = ( { handleContextMenu } ) => {
 	 * @param {number} destinationFolderId - The ID of the folder to which items are being moved.
 	 * @param {number} count               - The number of items being moved.
 	 */
-	const updateAttachmentCountOfFolders = useCallback( ( selectedFolderId, destinationFolderId, count ) => {
-		const updatedFolders = data.map( ( folder ) => {
-			if ( folder.id === selectedFolderId ) {
-				const currentCount = Number( folder.attachmentCount ) || 0;
+	const updateAttachmentCountOfFolders = useCallback((selectedFolderId, destinationFolderId, count) => {
+		const updatedFolders = data.map((folder) => {
+			if (folder.id === selectedFolderId) {
+				const currentCount = Number(folder.attachmentCount) || 0;
 				return { ...folder, attachmentCount: currentCount - count };
 			}
-			if ( folder.id === destinationFolderId ) {
-				const currentCount = Number( folder.attachmentCount ) || 0;
+			if (folder.id === destinationFolderId) {
+				const currentCount = Number(folder.attachmentCount) || 0;
 				return { ...folder, attachmentCount: currentCount + count };
 			}
 			return folder;
-		} );
+		});
 
-		dispatch( setTree( updatedFolders ) );
-	}, [ data, dispatch ] );
+		dispatch(setTree(updatedFolders));
+	}, [data, dispatch]);
 
-	useEffect( () => {
+	useEffect(() => {
 		/**
 		 * Initialize and manage droppable functionality for tree items.
 		 *
@@ -229,209 +244,209 @@ const FolderTree = ( { handleContextMenu } ) => {
 		 * It includes error handling and safe cleanup.
 		 */
 		const setupDroppable = () => {
-			jQuery( '.tree-item' ).droppable( {
+			jQuery('.tree-item').droppable({
 				accept: 'li.attachment, tr',
 				hoverClass: 'droppable-hover',
 				tolerance: 'pointer',
-				drop: async ( event, ui ) => {
-					const draggedItems = ui.draggable.data( 'draggedItems' );
+				drop: async (event, ui) => {
+					const draggedItems = ui.draggable.data('draggedItems');
 
-					if ( draggedItems ) {
-						const targetFolderId = jQuery( event.target ).data( 'id' );
+					if (draggedItems) {
+						const targetFolderId = jQuery(event.target).data('id');
 
 						/**
 						 * Prevent assigning items to the same folder they are already in.
 						 */
-						if ( selectedFolder?.id === targetFolderId ) {
+						if (selectedFolder?.id === targetFolderId) {
 							return;
 						}
 
 						// do not allow assigning item to other folder from the locked folder.
-						if ( selectedFolder?.meta?.locked ) {
-							dispatch( updateSnackbar( {
-								message: __( 'Currently opened folder is locked and cannot be modified', 'godam' ),
+						if (selectedFolder?.meta?.locked) {
+							dispatch(updateSnackbar({
+								message: __('Currently opened folder is locked and cannot be modified', 'godam'),
 								type: 'fail',
-							} ) );
+							}));
 							return;
 						}
 
-						const targetFolder = data.find( ( folder ) => folder.id === targetFolderId );
+						const targetFolder = data.find((folder) => folder.id === targetFolderId);
 
 						// do not allow assigning items to a locked folder.
-						if ( targetFolder?.meta?.locked ) {
-							dispatch( updateSnackbar( {
-								message: __( 'This folder is locked and cannot be modified', 'godam' ),
+						if (targetFolder?.meta?.locked) {
+							dispatch(updateSnackbar({
+								message: __('This folder is locked and cannot be modified', 'godam'),
 								type: 'fail',
-							} ) );
+							}));
 							return;
 						}
 
 						try {
-							const response = await assignFolderMutation( {
+							const response = await assignFolderMutation({
 								attachmentIds: draggedItems,
 								folderTermId: targetFolderId,
-							} ).unwrap();
+							}).unwrap();
 
-							if ( response ) {
-								dispatch( updateSnackbar( {
-									message: __( 'Items assigned successfully', 'godam' ),
+							if (response) {
+								dispatch(updateSnackbar({
+									message: __('Items assigned successfully', 'godam'),
 									type: 'success',
 								},
-								) );
+								));
 							}
 
 							// Update the folder tree count that reflects the new state.
-							updateAttachmentCountOfFolders( selectedFolder?.id, targetFolderId, draggedItems.length );
+							updateAttachmentCountOfFolders(selectedFolder?.id, targetFolderId, draggedItems.length);
 
 							/**
 							 * Remove the dragged items from the attachment view if they are meant to be removed.
 							 */
-							if ( selectedFolder?.id !== -1 ) {
-								draggedItems.forEach( ( attachmentId ) => {
-									jQuery( `li.attachment[data-id="${ attachmentId }"]` ).remove(); // for attachment grid view.
-									jQuery( `tr#post-${ attachmentId }` ).remove(); // for attachment list view.
-								} );
+							if (selectedFolder?.id !== -1) {
+								draggedItems.forEach((attachmentId) => {
+									jQuery(`li.attachment[data-id="${attachmentId}"]`).remove(); // for attachment grid view.
+									jQuery(`tr#post-${attachmentId}`).remove(); // for attachment list view.
+								});
 							}
 						} catch {
-							dispatch( updateSnackbar( {
-								message: __( 'Failed to assign items', 'godam' ),
+							dispatch(updateSnackbar({
+								message: __('Failed to assign items', 'godam'),
 								type: 'fail',
 							},
-							) );
+							));
 						}
 					}
 				},
-			} );
+			});
 		};
 
 		setupDroppable();
 
 		// Disable the Add Media Button and the Upload button for locked folders
-		if ( selectedFolder?.meta?.locked ) {
-		// Media Library Add media button
-			jQuery( '#wp-media-grid .page-title-action' ).prop( 'disabled', true )
-				.css( {
+		if (selectedFolder?.meta?.locked) {
+			// Media Library Add media button
+			jQuery('#wp-media-grid .page-title-action').prop('disabled', true)
+				.css({
 					'pointer-events': 'none',
 					opacity: '0.5',
-				} );
+				});
 
 			// Edit Post add media button
-			jQuery( '#__wp-uploader-id-1' ).prop( 'disabled', true )
-				.css( 'pointer-events', 'none' );
+			jQuery('#__wp-uploader-id-1').prop('disabled', true)
+				.css('pointer-events', 'none');
 
 			// Media Library Drag and Drop
-			jQuery( '#wpwrap' ).on( 'dragover.lock drop.lock', function( e ) {
+			jQuery('#wpwrap').on('dragover.lock drop.lock', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
-			} );
+			});
 
 			// Edit post Drag and Drop
-			jQuery( '.media-modal-content' ).on( 'dragover.lock drop.lock', function( e ) {
+			jQuery('.media-modal-content').on('dragover.lock drop.lock', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
-			} );
+			});
 
 			// Tell WordPress uploader to ignore drop
-			if ( wp?.media?.frames?.frame?.uploader?.dropzone ) {
-				wp.media.frames.frame.uploader.dropzone.off( 'drop' );
+			if (wp?.media?.frames?.frame?.uploader?.dropzone) {
+				wp.media.frames.frame.uploader.dropzone.off('drop');
 			}
 		} else {
 			// Media Library Add media button
-			jQuery( '#wp-media-grid .page-title-action' ).prop( 'disabled', false )
-				.css( {
+			jQuery('#wp-media-grid .page-title-action').prop('disabled', false)
+				.css({
 					'pointer-events': 'auto',
 					opacity: '1',
-				} );
+				});
 
 			// Edit Post add media button
-			jQuery( '#__wp-uploader-id-1' ).prop( 'disabled', false )
-				.css( 'pointer-events', 'auto' );
+			jQuery('#__wp-uploader-id-1').prop('disabled', false)
+				.css('pointer-events', 'auto');
 
 			// Media Library Drag and Drop
-			jQuery( '#wpwrap' ).off( 'dragover.lock drop.lock' );
+			jQuery('#wpwrap').off('dragover.lock drop.lock');
 
 			// Edit post Drag and Drop
-			jQuery( '.media-modal-content' ).off( 'dragover.lock drop.lock' );
+			jQuery('.media-modal-content').off('dragover.lock drop.lock');
 
 			// Restore default dropzone
-			if ( wp?.media?.frames?.frame?.uploader?.dropzone ) {
+			if (wp?.media?.frames?.frame?.uploader?.dropzone) {
 				// eslint-disable-next-line no-unused-vars
-				wp.media.frames.frame.uploader.dropzone.on( 'drop', function( e ) {
+				wp.media.frames.frame.uploader.dropzone.on('drop', function (e) {
 					// Normally handled by WP
-				} );
+				});
 			}
 		}
 
 		// Cleanup to avoid multiple event bindings
 		return () => {
-			if ( jQuery.fn.droppable ) {
-				jQuery( '.tree-item' ).each( function() {
-					const $this = jQuery( this );
-					if ( $this.data( 'ui-droppable' ) ) {
-						$this.droppable( 'destroy' );
+			if (jQuery.fn.droppable) {
+				jQuery('.tree-item').each(function () {
+					const $this = jQuery(this);
+					if ($this.data('ui-droppable')) {
+						$this.droppable('destroy');
 					}
-				} );
+				});
 			}
 		};
-	}, [ data, assignFolderMutation, dispatch, selectedFolder, updateAttachmentCountOfFolders ] );
+	}, [data, assignFolderMutation, dispatch, selectedFolder, updateAttachmentCountOfFolders]);
 
-	if ( isLoading ) {
-		return <div>{ __( 'Loading…', 'godam' ) }</div>;
+	if (isLoading) {
+		return <div>{__('Loading…', 'godam')}</div>;
 	}
 
-	if ( error ) {
+	if (error) {
 		/* translators: %s is the error message */
-		return <div>{ sprintf( __( 'Error: %s', 'godam' ), error.message ) }</div>;
+		return <div>{sprintf(__('Error: %s', 'godam'), error.message)}</div>;
 	}
 
 	return (
 		<DndContext
-			collisionDetection={ closestCenter }
-			onDragStart={ handleDragStart }
-			onDragEnd={ handleDragEnd }
-			onDragOver={ handleDragOver }
-			onDragMove={ handleDragMove }
-			sensors={ sensors }
+			collisionDetection={closestCenter}
+			onDragStart={handleDragStart}
+			onDragEnd={handleDragEnd}
+			onDragOver={handleDragOver}
+			onDragMove={handleDragMove}
+			sensors={sensors}
 		>
 			<div className="tree-container">
 				<div className="tree" id="tree">
 					<SortableContext
-						items={ sortedIds }
-						strategy={ verticalListSortingStrategy }
+						items={sortedIds}
+						strategy={verticalListSortingStrategy}
 					>
-						{ filteredData.map( ( item ) => {
+						{filteredData.map((item) => {
 							return (
 								<TreeItem
-									item={ item }
-									key={ item.id }
-									depth={ item.id === activeId && projected ? projected.depth : item.depth }
-									onContextMenu={ ( e, id ) => handleContextMenu( e, id, item ) }
-									isMultiSelecting={ isMultiSelecting }
+									item={item}
+									key={item.id}
+									depth={item.id === activeId && projected ? projected.depth : item.depth}
+									onContextMenu={(e, id) => handleContextMenu(e, id, item)}
+									isMultiSelecting={isMultiSelecting}
 								/>
 							);
-						} ) }
+						})}
 					</SortableContext>
 				</div>
-				{ page.hasNext && ( <button
+				{page.hasNext && (<button
 					className="tree-load-more"
-					onClick={ () => {
+					onClick={() => {
 						handleLoadMore();
-					} }
+					}}
 				>
-					{ isFetching ? __( 'Loading…', 'godam' ) : __( 'Load More', 'godam' ) }
-				</button> ) }
+					{isFetching ? __('Loading…', 'godam') : __('Load More', 'godam')}
+				</button>)}
 			</div>
 
 			<DragOverlay>
-				{ activeId ? (
+				{activeId ? (
 					<div>
-						{ filteredData.map( ( item ) =>
+						{filteredData.map((item) =>
 							item.id === activeId ? (
-								<TreeItemPreview item={ item } key={ item.id } />
+								<TreeItemPreview item={item} key={item.id} />
 							) : null,
-						) }
+						)}
 					</div>
-				) : null }
+				) : null}
 			</DragOverlay>
 
 			<SnackbarComp />
