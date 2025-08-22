@@ -53,7 +53,7 @@ const FolderTree = ( { handleContextMenu } ) => {
 	const page = useSelector( ( state ) => state.FolderReducer.page );
 	const currentPage = page.current;
 
-	const { data: folders, error, isLoading, refetch: refetchFolders, isFetching } = useGetFoldersQuery(
+	const { data: folders, error, isLoading, isFetching } = useGetFoldersQuery(
 		{
 			page: currentPage,
 		},
@@ -189,7 +189,6 @@ const FolderTree = ( { handleContextMenu } ) => {
 
 	function handleLoadMore() {
 		dispatch( updatePage( { current: page.current + 1 } ) );
-		refetchFolders();
 	}
 
 	/**

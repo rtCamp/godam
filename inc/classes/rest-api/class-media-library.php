@@ -1498,13 +1498,19 @@ class Media_Library extends Base {
 		$prepared = array();
 
 		foreach ( $terms as $term ) {
+			$locked_raw   = get_term_meta( $term->term_id, 'locked', true );
+			$bookmark_raw = get_term_meta( $term->term_id, 'bookmark', true );
+
+			$locked   = ( '1' === $locked_raw || 1 === $locked_raw || true === $locked_raw || 'true' === $locked_raw ) ? true : false;
+			$bookmark = ( '1' === $bookmark_raw || 1 === $bookmark_raw || true === $bookmark_raw || 'true' === $bookmark_raw ) ? true : false;
+
 			$prepared[] = array(
 				'id'              => $term->term_id,
 				'name'            => $term->name,
 				'parent'          => $term->parent,
 				'meta'            => array(
-					'locked'   => get_term_meta( $term->term_id, 'locked', true ),
-					'bookmark' => get_term_meta( $term->term_id, 'bookmark', true ),
+					'locked'   => $locked,
+					'bookmark' => $bookmark,
 				),
 				'attachmentCount' => (int) Media_Folder_Utils::get_instance()->get_attachment_count( $term->term_id ),
 			);
