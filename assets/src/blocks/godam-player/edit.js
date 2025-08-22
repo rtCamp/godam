@@ -179,7 +179,7 @@ function VideoEdit( {
 	}, [ poster ] );
 
 	useEffect( () => {
-		if ( id ) {
+		if ( id && ! isNaN( Number( id ) ) ) {
 			( async () => {
 				try {
 					const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
