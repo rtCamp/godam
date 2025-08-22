@@ -1,5 +1,9 @@
 # Changelog #
 
+## v1.3.5 (August 22, 2025) ##
+
+- Tweak: Set transcoded videos as public by default and add Org support parameters
+
 ## v1.3.4 (August 11, 2025) ##
 
 - Fix: Video Editor UI issues
