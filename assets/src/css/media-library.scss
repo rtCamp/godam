@@ -293,6 +293,48 @@
 	}
 }
 
+#wpbody {
+
+	> #rt-transcoder-media-library-root {
+		position: fixed !important;
+		z-index: 1000;
+		width: 100%;
+		height: 100vh;
+
+		&.hide-sidebar {
+			width: 0;
+			border: none;
+		}
+	}
+}
+
+@media (min-width: 900px) {
+
+#wpbody {
+
+		> #rt-transcoder-media-library-root {
+		height: calc(100vh - 34px);
+		width: 280px;
+
+		&.hide-sidebar {
+			border: none;
+		}
+	}
+
+   #wpbody-content {
+	   margin-left: 280px;
+   }
+
+	&:has(#rt-transcoder-media-library-root.hide-sidebar) #wpbody-content {
+		margin-left: 0;
+	}
+}
+
+#wpfooter {
+	margin-left: calc(280px + 160px);
+}
+	}
+
 /**
  * EXIF data styles.
  */

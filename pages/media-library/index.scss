@@ -40,6 +40,26 @@
 		padding: 0;
 		overflow: auto;
 
+		/* WebKit browsers (Chrome, Safari, Edge) */
+		&::-webkit-scrollbar {
+			width: 3px;
+		}
+
+		&::-webkit-scrollbar-thumb {
+			background-color: rgba(128, 128, 128, 0.2);
+			border-radius: 3px;
+		}
+
+		&::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		/* Firefox */
+		@supports (scrollbar-width: thin) {
+			scrollbar-width: thin;
+			scrollbar-color: rgba(128, 128, 128, 0.2) transparent;
+		}
+
 		> * {
 			padding: 1.25rem;
 			border-bottom: 1px solid #E0E0E0;
