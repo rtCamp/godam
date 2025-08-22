@@ -314,16 +314,31 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const { thumbnails, selected, customThumbnails } = data;
 		const attachmentID = this.model.get( 'id' );
 
+		const selector = `.transcoding-status[data-id="${ attachmentID }"]`;
+		const status = document.querySelector( selector );
+
+		if ( status ) {
+			const statusImg = status.querySelector( 'img' );
+
+			if ( statusImg && statusImg.src !== selected ) {
+				statusImg.src = selected;
+			}
+		}
+
 		setTimeout( () => {
 			// Sometimes helps if .mejs-poster is rendered asynchronously
 			const posterDiv = document.querySelector( '.mejs-poster' );
 			if ( posterDiv && selected ) {
 				posterDiv.style.backgroundImage = `url('${ selected }')`;
 				posterDiv.style.backgroundSize = 'contain';
-				posterDiv.querySelector( 'img' ).setAttribute( 'src', selected );
-				posterDiv.querySelector( 'img' ).style.opacity = '1';
+
+				const posterImg = posterDiv.querySelector( 'img' );
+				if ( posterImg ) {
+					posterImg.setAttribute( 'src', selected );
+					posterImg.style.opacity = '1';
+				}
 			}
-		}, 0 );
+		}, 20 );
 
 		const customThumbnailsArray = Array.isArray( customThumbnails )
 			? customThumbnails
@@ -464,8 +479,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				const posterDiv = document.querySelector( '.mejs-poster' );
 				if ( posterDiv ) {
 					posterDiv.style.backgroundImage = `url('${ thumbnailURL }')`;
-					posterDiv.querySelector( 'img' ).setAttribute( 'src', thumbnailURL );
-					posterDiv.querySelector( 'img' ).style.opacity = '1';
+
+					const posterImg = posterDiv.querySelector( 'img' );
+					if ( posterImg ) {
+						posterImg.setAttribute( 'src', thumbnailURL );
+						posterImg.style.opacity = '1';
+					}
 				}
 
 				const selector = `.transcoding-status[data-id="${ attachmentID }"]`;
