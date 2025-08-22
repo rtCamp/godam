@@ -304,6 +304,413 @@ export function calculatePlayRate( pageLoad, plays ) {
 	return playRate.toFixed( 2 );
 }
 
+// export function layerAnalyticsBarChart( data, containerId, duration ) {
+// 	console.log(data);
+// 	// -- SETUP --
+// 	const margin = { top: 40, right: 30, bottom: 80, left: 60 }; // More bottom for legend
+// 	const width = 500 - margin.left - margin.right;
+// 	const height = 300 - margin.top - margin.bottom;
+
+// 	// REMOVE previous chart
+// 	d3.select( containerId ).select( 'svg' ).remove();
+
+// 	// SVG SETUP
+// 	const svg = d3
+// 		.select( containerId )
+// 		.append( 'svg' )
+// 		.attr( 'width', width + margin.left + margin.right )
+// 		.attr( 'height', height + margin.top + margin.bottom )
+// 		.append( 'g' )
+// 		.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
+
+// 	// X-Axis ticks
+// 	let xLabels = data.map( ( d ) => d.label );
+
+// 	// special cases for 60d and 1y: filter down but keep raw YYYY-MM-DD
+// 	if ( duration === '60d' ) {
+// 		xLabels = data.filter( ( d ) => d.label.endsWith( '-01' ) ).map( ( d ) => d.label );
+// 	} else if ( duration === '1y' ) {
+// 		xLabels = data.filter( ( d ) => d.label.endsWith( '-01' ) ).map( ( d ) => d.label );
+// 	}
+
+// 	// SCALE (domain stays raw labels)
+// 	const x0 = d3.scaleBand().domain( xLabels ).range( [ 0, width ] ).padding( 0.2 );
+
+// 	const subgroups = [ 'clicks', 'hovers' ];
+// 	const x1 = d3
+// 		.scaleBand()
+// 		.domain( subgroups )
+// 		.range( [ 0, x0.bandwidth() ] )
+// 		.padding( 0.05 );
+
+// 	const y = d3
+// 		.scaleLinear()
+// 		.domain( [ 0, d3.max( data, ( d ) => Math.max( d.clicks, d.hovers ) ) * 1.1 ] )
+// 		.range( [ height, 0 ] );
+
+// 	const color = d3
+// 		.scaleOrdinal()
+// 		.domain( subgroups )
+// 		.range( [ '#3775d1', '#62c2b3' ] );
+
+// 	// X AXIS
+// 	svg
+// 		.append( 'g' )
+// 		.attr( 'transform', `translate(0,${ height })` )
+// 		.call(
+// 			d3
+// 				.axisBottom( x0 )
+// 				.tickValues( xLabels )
+// 				.tickFormat( ( d ) => formatLabel( d ) ),
+// 		)
+// 		.selectAll( 'text' )
+// 		.attr( 'transform', 'rotate(0)' )
+// 		.style( 'text-anchor', 'middle' );
+
+// 	// Y AXIS
+// 	svg.append( 'g' ).call( d3.axisLeft( y ) );
+
+// 	// TOOLTIP DIV (only create once)
+// 	let tooltip = d3.select( '.bar-tooltip' );
+// 	if ( tooltip.empty() ) {
+// 		tooltip = d3.select( 'body' ).append( 'div' ).attr( 'class', 'bar-tooltip' );
+// 	}
+
+// 	function formatLabel( label ) {
+// 		if ( /^\d{4}-\d{2}-\d{2}$/.test( label ) ) {
+// 			const dt = d3.timeParse( '%Y-%m-%d' )( label );
+// 			if ( dt ) {
+// 				return d3.timeFormat( '%d %b %Y' )( dt );
+// 			}
+// 		}
+// 		return label; // For days names (Mon, Tue etc)
+// 	}
+
+// 	// BARS (with tooltip)
+// 	svg
+// 		.append( 'g' )
+// 		.selectAll( 'g' )
+// 		.data( data )
+// 		.join( 'g' )
+// 		.attr( 'transform', ( d ) => `translate(${ x0( d.label ) },0)` )
+// 		.selectAll( 'rect' )
+// 		.data( ( d ) => subgroups.map( ( key ) => ( { key, value: d[ key ], parent: d } ) ) )
+// 		.join( 'rect' )
+// 		.attr( 'x', ( d ) => x1( d.key ) )
+// 		.attr( 'y', ( d ) => y( d.value ) )
+// 		.attr( 'width', x1.bandwidth() )
+// 		.attr( 'height', ( d ) => height - y( d.value ) )
+// 		.attr( 'fill', ( d ) => color( d.key ) )
+// 		.on( 'mousemove', function( event, d ) {
+// 			const parent = d.parent;
+// 			const displayDate = formatLabel( parent.label );
+
+// 			const metrics = [
+// 				{ key: 'clicks', label: 'Clicks', color: '#3775d1' },
+// 				{ key: 'hovers', label: 'Hovers', color: '#62c2b3' },
+// 			];
+
+// 			// Tooltip HTML with classes
+// 			let html = `
+// 				<div class="tooltip-header">${ displayDate }</div>
+// 			`;
+
+// 			metrics.forEach( ( metric ) => {
+// 				if ( parent[ metric.key ] !== undefined ) {
+// 					html += `
+// 						<div class="tooltip-row">
+// 							<div class="tooltip-label">
+// 								<span class="tooltip-dot" style="background:${ metric.color };"></span>
+// 								<span>${ metric.label }</span>
+// 							</div>
+// 							<div class="tooltip-value">${ parent[ metric.key ] }</div>
+// 						</div>
+// 					`;
+// 				}
+// 			} );
+
+// 			tooltip
+// 				.html( html )
+// 				.style( 'opacity', 1 )
+// 				.style( 'left', event.pageX + 18 + 'px' )
+// 				.style( 'top', event.pageY - 48 + 'px' );
+// 		} )
+// 		.on( 'mouseleave', function() {
+// 			tooltip.style( 'opacity', 0 );
+// 		} );
+
+// 	// LEGEND AT THE BOTTOM, CENTERED
+// 	const legend = svg
+// 		.append( 'g' )
+// 		.attr( 'class', 'legend' )
+// 		.attr( 'transform', `translate(${ width / 2 - 90 }, ${ height + 40 })` );
+
+// 	legend
+// 		.selectAll( 'rect' )
+// 		.data( subgroups )
+// 		.enter()
+// 		.append( 'rect' )
+// 		.attr( 'x', ( d, i ) => i * 120 )
+// 		.attr( 'width', 18 )
+// 		.attr( 'height', 18 )
+// 		.attr( 'fill', ( d ) => color( d ) );
+
+// 	legend
+// 		.selectAll( 'text' )
+// 		.data( subgroups )
+// 		.enter()
+// 		.append( 'text' )
+// 		.attr( 'x', ( d, i ) => i * 120 + 28 )
+// 		.attr( 'y', 13 )
+// 		.text( ( d ) => d.charAt( 0 ).toUpperCase() + d.slice( 1 ) )
+// 		.style( 'font-size', '18px' );
+// }
+
+export function layerAnalyticsBarChart( data, containerId, duration ) {
+	console.log( data );
+	// -- SETUP --
+	const margin = { top: 40, right: 30, bottom: 80, left: 60 }; // More bottom for legend
+	const width = 500;
+	const height = 350 - margin.top - margin.bottom;
+
+	// REMOVE previous chart
+	d3.select( containerId ).select( 'svg' ).remove();
+
+	// SVG SETUP
+	const svg = d3
+		.select( containerId )
+		.append( 'svg' )
+		.attr( 'width', width + margin.left + margin.right )
+		.attr( 'height', height + margin.top + margin.bottom )
+		.append( 'g' )
+		.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
+
+	// X-Axis ticks
+	// let xLabels = data.map( ( d ) => d.label );
+
+	// special cases for 60d and 1y: filter down but keep raw YYYY-MM-DD
+	// if ( duration === '60d' ) {
+	// 	xLabels = data.filter( ( d ) => d.label.endsWith( '-01' ) ).map( ( d ) => d.label );
+	// } else if ( duration === '1y' ) {
+	// 	xLabels = data.filter( ( d ) => d.label.endsWith( '-01' ) ).map( ( d ) => d.label );
+	// }
+
+	// If yearly, aggregate by month
+	let chartData = data;
+
+	if ( duration === '1y' ) {
+		const monthMap = d3.rollup(
+			data,
+			( v ) => ( {
+				clicks: d3.sum( v, ( d ) => d.clicks ),
+				hovers: d3.sum( v, ( d ) => d.hovers ),
+			} ),
+			( d ) => d.label.slice( 0, 7 ), // "YYYY-MM"
+		);
+
+		chartData = Array.from( monthMap, ( [ label, vals ] ) => ( {
+			label,
+			...vals,
+		} ) );
+	}
+
+	// SCALE (domain stays raw labels)
+	const x0 = d3
+		.scaleBand()
+		.domain( chartData.map( ( d ) => d.label ) ) // use aggregated data if 1y
+		.range( [ 0, width ] )
+		.padding( 0.2 );
+
+	// SCALE (domain stays raw labels)
+	//   const x0 = d3
+	//     .scaleBand()
+	//     .domain(data.map((d) => d.label)) // all labels!
+	//     .range([0, width])
+	//     .padding(0.2);
+
+	const subgroups = [ 'clicks', 'hovers' ];
+	const x1 = d3
+		.scaleBand()
+		.domain( subgroups )
+		.range( [ 0, x0.bandwidth() ] )
+		.padding( 0.05 );
+
+	const y = d3
+		.scaleLinear()
+		.domain( [ 0, d3.max( chartData, ( d ) => Math.max( d.clicks, d.hovers ) ) * 1.1 ] )
+		.range( [ height, 0 ] );
+
+	const color = d3
+		.scaleOrdinal()
+		.domain( subgroups )
+		.range( [ '#3775d1', '#62c2b3' ] );
+
+	// Pick fewer ticks for long durations
+	let tickValues = chartData.map( ( d ) => d.label );
+
+	if ( duration === '30d' ) {
+		tickValues = tickValues.filter( ( d, i ) => i % 5 === 0 );
+	} else if ( duration === '60d' ) {
+		tickValues = tickValues.filter( ( d, i ) => i % 10 === 0 );
+	}
+
+	// X AXIS
+	svg
+		.append( 'g' )
+		.attr( 'transform', `translate(0,${ height })` )
+		.call(
+			d3
+				.axisBottom( x0 )
+				.tickValues( tickValues )
+				.tickFormat( ( d ) => formatLabel( d, duration ) ),
+		)
+		.selectAll( 'text' )
+		.attr( 'transform', 'rotate(0)' )
+		.style( 'text-anchor', 'middle' );
+
+	// Y AXIS
+	svg.append( 'g' ).call( d3.axisLeft( y ) );
+
+	// TOOLTIP DIV (only create once)
+	let tooltip = d3.select( '.bar-tooltip' );
+	if ( tooltip.empty() ) {
+		tooltip = d3.select( 'body' ).append( 'div' ).attr( 'class', 'bar-tooltip' );
+	}
+
+	// function formatLabel( label ) {
+	// 	const dt = d3.timeParse('%Y-%m-%d')(label);
+	// 	console.log(dt);
+	// 	if (dt) {
+	// 		console.log(duration);
+	// 		if ( duration === '7d' ) {
+	// 			return d3.timeFormat( '%d %b %Y' )( dt ); // "18 Aug 2025"
+	// 		} else if ( duration === '30d' ) {
+	// 			return d3.timeFormat( '%d %b %Y' )( dt ); // daily full date
+	// 		} else if ( duration === '60d' ) {
+	// 			return d3.timeFormat( '%d %b %Y' )( dt ); // still daily full date
+	// 		} else if (duration === '1y') {
+	// 			console.log('Year');
+	// 			// show only month if you want to condense, OR full date if daily
+	// 			// return d3.timeFormat( '%b %Y' )( dt );
+	// 			const month = d3.timeFormat( '%b' )( dt ); // "Jan", "Feb", etc.
+	// 			const year = dt.getFullYear();
+
+	// 			// If it's January, append the year
+	// 			// if ( month === 'Jan' ) {
+	// 			// }
+	// 			return `${ month } '${ String( year ).slice( -2 ) }`;
+	// 		}
+	// 		return d3.timeFormat( '%d %b %Y' )( dt ); // fallback
+	// 	}
+	// 	return label;
+	// }
+
+	function formatLabel( label ) {
+		if ( duration === '1y' ) {
+			const dt = d3.timeParse( '%Y-%m' )( label );
+			return d3.timeFormat( '%b\'%y' )( dt ); // "Jan 2025"
+		}
+		if ( /^\d{4}-\d{2}-\d{2}$/.test( label ) ) {
+			const dt = d3.timeParse( '%Y-%m-%d' )( label );
+			return d3.timeFormat( '%d %b %Y' )( dt );
+		}
+		return label;
+	}
+
+	// BARS (with tooltip)
+	svg
+		.append( 'g' )
+		.selectAll( 'g' )
+		.data( chartData )
+		.join( 'g' )
+		.attr( 'transform', ( d ) => `translate(${ x0( d.label ) },0)` )
+		.selectAll( 'rect' )
+		.data( ( d ) => subgroups.map( ( key ) => ( { key, value: d[ key ], parent: d } ) ) )
+		.join( 'rect' )
+		.attr( 'x', ( d ) => x1( d.key ) )
+		.attr( 'y', ( d ) => y( d.value ) )
+		.attr( 'width', x1.bandwidth() )
+		.attr( 'height', ( d ) => height - y( d.value ) )
+		.attr( 'fill', ( d ) => color( d.key ) )
+		.on( 'mousemove', function( event, d ) {
+			const parent = d.parent;
+			const displayDate = formatLabel( parent.label );
+
+			const metrics = [
+				{ key: 'clicks', label: 'Clicks', color: '#3775d1' },
+				{ key: 'hovers', label: 'Hovers', color: '#62c2b3' },
+			];
+
+			// Tooltip HTML with classes
+			let html = `
+				<div class="tooltip-header">${ displayDate }</div>
+			`;
+
+			metrics.forEach( ( metric ) => {
+				if ( parent[ metric.key ] !== undefined ) {
+					html += `
+						<div class="tooltip-row">
+							<div class="tooltip-label">
+								<span class="tooltip-dot" style="background:${ metric.color };"></span>
+								<span>${ metric.label }</span>
+							</div>
+							<div class="tooltip-value">${ parent[ metric.key ] }</div>
+						</div>
+					`;
+				}
+			} );
+
+			tooltip
+				.html( html )
+				.style( 'opacity', 1 )
+				.style( 'left', event.pageX + 18 + 'px' )
+				.style( 'top', event.pageY - 48 + 'px' );
+		} )
+		.on( 'mouseleave', function() {
+			tooltip.style( 'opacity', 0 );
+		} );
+
+	// LEGEND AT THE BOTTOM, CENTERED
+	const legend = svg
+		.append( 'g' )
+		.attr( 'class', 'legend' )
+		.attr( 'transform', `translate(${ ( width / 2 ) - 90 }, ${ height + 40 })` );
+
+	const legendItem = legend
+		.selectAll( '.legend-item' )
+		.data( subgroups )
+		.enter()
+		.append( 'g' )
+		.attr( 'class', 'legend-item' )
+		.attr( 'transform', ( d, i ) => `translate(${ i * 80 }, 0)` );
+
+	// background box (behind rect + text)
+	legendItem
+		.append( 'rect' )
+		.attr( 'class', 'legend-bg' )
+		.attr( 'width', 73 ) // adjust as needed
+		.attr( 'height', 22 ) // enough to cover icon + text
+		.attr( 'rx', 4 ) // rounded corners optional
+		.attr( 'fill', '#F2F2F7' );
+
+	// color square
+	legendItem
+		.append( 'rect' )
+		.attr( 'x', 8 )
+		.attr( 'y', 5 )
+		.attr( 'width', 12 )
+		.attr( 'height', 12 )
+		.attr( 'fill', ( d ) => color( d ) );
+
+	// label
+	legendItem
+		.append( 'text' )
+		.attr( 'x', 28 )
+		.attr( 'y', 15 ) // vertically aligned with rect
+		.text( ( d ) => d.charAt( 0 ).toUpperCase() + d.slice( 1 ) )
+		.style( 'font-size', '12px' )
+}
+
 export function generateCountryHeatmap(
 	countryData,
 	mapSelector,
