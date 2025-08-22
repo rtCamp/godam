@@ -81,7 +81,7 @@ class MediaLibrary {
 			wp.media.view.Attachments = Attachments;
 		}
 
-		if ( wp.media.view.Attachment.Details && AttachmentDetails ) {
+		if ( wp?.media?.view?.Attachment?.Details && AttachmentDetails ) {
 			wp.media.view.Attachment.Details = AttachmentDetails;
 		}
 
