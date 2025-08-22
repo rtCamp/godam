@@ -1392,7 +1392,7 @@ class Media_Library extends Base {
 
 			$args['parent'] = (int) ( $request->get_param( 'parent' ) ?? 0 );
 
-			$total_items = $this->get_total_media_folders_count();
+			$total_items = $this->get_total_parent_media_folders_count();
 			$total_pages = ceil( $total_items / $per_page );
 		}
 
@@ -1415,10 +1415,10 @@ class Media_Library extends Base {
 
 		// Add headers only for paginated requests.
 		if ( ! $locked && ! $bookmark ) {
-			$response->header( 'X-WP-Total', $total_items );
-			$response->header( 'X-WP-TotalPages', $total_pages );
-			$response->header( 'X-WP-Current-Page', $page );
-			$response->header( 'X-WP-Per-Page', $per_page );
+			$response->header( 'X-Wp-Total', $total_items );
+			$response->header( 'X-Wp-Totalpages', $total_pages );
+			$response->header( 'X-Wp-Current-Page', $page );
+			$response->header( 'X-Wp-Per-Page', $per_page );
 		}
 
 		return $response;
@@ -1460,11 +1460,11 @@ class Media_Library extends Base {
 	}
 
 	/**
-	 * Get the total count of media folders.
+	 * Get the total count of top-level (parent) media folders only.
 	 *
-	 * @return int Total media folders count.
+	 * @return int Total count of parent media folders.
 	 */
-	private function get_total_media_folders_count() {
+	private function get_total_parent_media_folders_count() {
 		$taxonomy = Media_Folders::SLUG;
 		$args     = array(
 			'taxonomy'   => $taxonomy,
