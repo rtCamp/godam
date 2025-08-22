@@ -100,8 +100,28 @@ class Retranscode_Queue_Processor {
 			)
 		);
 
-		// Work on max 3 items per invocation to keep the task lightweight.
-		$batch = array_splice( $queue, 0, 3 );
+		/**
+		 * Filter the batch size for the retranscode queue processor.
+		 *
+		 * This allows adjusting how many items are processed per cron invocation.
+		 * This can be useful to control the load on the server. Default is 3.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param int   $batch_size The number of items to process in one batch.
+		 * @param array $queue       The current queue of attachment IDs to process.
+		 *
+		 * @return int Adjusted batch size.
+		 */
+		$batch_size = apply_filters( 'rtgodam_retranscode_batch_size', 3, $queue );
+
+		// Ensure batch size is a positive integer.
+		if ( ! is_int( $batch_size ) || $batch_size <= 0 ) {
+			$batch_size = 3; // Fallback to default if invalid.
+		}
+
+		// Work on max $batch_size items per invocation to keep the task lightweight.
+		$batch = array_splice( $queue, 0, $batch_size );
 
 		foreach ( $batch as $attachment_id ) {
 
