@@ -173,7 +173,7 @@ class Media_Library_Ajax {
 	 * Recursively output folder <option> elements with indentation.
 	 *
 	 * @param int $folder_parent Parent folder ID.
-	 * @param int $depth  Current depth level (used for indentation).
+	 * @param int $depth         Current depth level (used for indentation).
 	 *
 	 * @return void
 	 */
@@ -188,15 +188,19 @@ class Media_Library_Ajax {
 			)
 		);
 
-		foreach ( $folders as $folder ) {
-			printf(
-				'<option value="%s">%s%s</option>',
-				esc_attr( $folder->term_id ),
-				esc_html( str_repeat( '&nbsp;&nbsp;&nbsp;&nbsp;', $depth ) ),
-				esc_html( $folder->name )
-			);
-			// Recursively display children.
-			$this->godam_render_folder_options( $folder->term_id, $depth + 1 );
+		if ( is_array( $folders ) && ! empty( $folders ) ) {
+			foreach ( $folders as $folder ) {
+				if ( isset( $folder->term_id ) && isset( $folder->name ) ) {
+					printf(
+						'<option value="%s">%s%s</option>',
+						esc_attr( $folder->term_id ),
+						esc_html( str_repeat( '&nbsp;&nbsp;&nbsp;&nbsp;', $depth ) ),
+						esc_html( $folder->name )
+					);
+					// Recursively display children.
+					$this->godam_render_folder_options( $folder->term_id, $depth + 1 );
+				}
+			}
 		}
 	}
 
