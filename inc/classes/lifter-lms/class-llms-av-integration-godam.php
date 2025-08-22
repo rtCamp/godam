@@ -94,7 +94,7 @@ if ( class_exists( 'LLMS_AV_Abstract_Integration' ) ) {
 		 *
 		 * @var string
 		 */
-		protected $regex_oembed = '#app-godam\.rt\.gw/web/video/[^"\s]+#i';
+		protected $regex_oembed = '#' . RTGODAM_API_BASE . '/web/video/[^"\s]+#i';
 
 		/**
 		 * Integration Constructor.
