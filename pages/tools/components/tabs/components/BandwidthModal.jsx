@@ -32,6 +32,8 @@ const BandwidthModal = ( {
 		}, 0 );
 	}, [ modalSelection, attachmentDetails ] );
 
+	const overLimit = totalRequiredGB > availableBandwidthGB;
+
 	if ( ! showBandwidthModal ) {
 		return null;
 	}
@@ -44,22 +46,9 @@ const BandwidthModal = ( {
 		>
 			<div style={ { maxHeight: 400, overflowY: 'auto' } }>
 				{ attachmentDetails.map( ( att ) => {
-					const attGB = ( att.size || 0 ) / 1024 / 1024 / 1024;
 					const attId = parseInt( att.id, 10 );
 					const normalizedSelection = modalSelection.map( ( id ) => parseInt( id, 10 ) );
 					const isChecked = normalizedSelection.includes( attId );
-
-					// Calculate current total without this item
-					const currentTotal = normalizedSelection
-						.filter( ( id ) => id !== attId )
-						.reduce( ( sum, id ) => {
-							const found = attachmentDetails.find( ( a ) => parseInt( a.id, 10 ) === id );
-							return sum + ( ( found?.size || 0 ) / 1024 / 1024 / 1024 );
-						}, 0 );
-
-					// If not checked, would adding this item exceed the limit?
-					const wouldExceedLimit = ! isChecked && ( currentTotal + attGB > availableBandwidthGB );
-					const isDisabled = wouldExceedLimit;
 
 					return (
 						<div key={ att.id } style={ { marginBottom: 8 } }>
@@ -68,20 +57,13 @@ const BandwidthModal = ( {
 								style={ {
 									display: 'flex',
 									alignItems: 'center',
-									opacity: isDisabled ? 0.6 : 1,
-									cursor: isDisabled ? 'not-allowed' : 'pointer',
+									cursor: 'pointer',
 								} }
 							>
 								<input
 									type="checkbox"
 									checked={ isChecked }
-									disabled={ isDisabled }
-									onChange={ ( e ) => {
-										e.stopPropagation();
-										if ( ! isDisabled ) {
-											handleToggle( attId, isChecked );
-										}
-									} }
+									onChange={ () => handleToggle( attId, isChecked ) }
 									style={ { marginRight: 8 } }
 								/>
 								{ att.name } ({ ( att.size / 1024 / 1024 ).toFixed( 2 ) } MB)
@@ -92,11 +74,17 @@ const BandwidthModal = ( {
 				<div style={ { marginTop: 16 } }>
 					<strong>{ __( 'Required Bandwidth:', 'godam' ) }</strong> { totalRequiredGB.toFixed( 2 ) } GB / { availableBandwidthGB.toFixed( 2 ) } GB { __( 'available', 'godam' ) }
 				</div>
+				{ overLimit && (
+					<div style={ { color: '#b91c1c', marginTop: 8 } }>
+						{ __( 'Your selection exceeds the available bandwidth. Deselect some items to proceed.', 'godam' ) }
+					</div>
+				) }
 				<Button
 					variant="primary"
 					style={ { marginTop: 16 } }
 					className="godam-button"
 					onClick={ onProceed }
+					disabled={ overLimit || modalSelection.length === 0 }
 				>
 					{ __( 'Proceed', 'godam' ) }
 				</Button>

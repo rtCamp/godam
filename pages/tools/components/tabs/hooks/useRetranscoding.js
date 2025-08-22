@@ -29,6 +29,8 @@ const useRetranscoding = ( callback, deps ) => {
 	const [ successCount, setSuccessCount ] = useState( 0 );
 	const [ failureCount, setFailureCount ] = useState( 0 );
 	const [ totalMediaCount, setTotalMediaCount ] = useState( 0 );
+	const [ totalLibraryCount, setTotalLibraryCount ] = useState( 0 );
+	const [ queueTotal, setQueueTotal ] = useState( 0 );
 	const [ attachmentDetails, setAttachmentDetails ] = useState( [] );
 	const [ showBandwidthModal, setShowBandwidthModal ] = useState( false );
 	const [ modalSelection, setModalSelection ] = useState( [] );
@@ -56,16 +58,18 @@ const useRetranscoding = ( callback, deps ) => {
 		try {
 			const url = `${ window.godamRestRoute?.url }godam/v1/transcoding/retranscode-queue/status`;
 			const res = await axios.get( url, {
-				headers: {
-					'X-WP-Nonce': window.godamRestRoute?.nonce,
-				},
+				headers: { 'X-WP-Nonce': window.godamRestRoute?.nonce },
 			} );
 			const data = res.data;
 
-			if ( data?.total ) {
-				// Do not overwrite existing attachment objects with placeholders; just keep total.
-				setTotalMediaCount( data.total || 0 );
+			// Keep track of the current queue size for the running denominator
+			if ( typeof data?.total === 'number' ) {
+				setQueueTotal( data.total );
 			}
+
+			// Do not override eligible totalMediaCount here; it represents total items requiring retranscoding
+			// if ( data?.total ) { setTotalMediaCount( data.total || 0 ); }
+
 			setMediaCount( data?.processed || 0 );
 			setSuccessCount( data?.success || 0 );
 			setFailureCount( data?.failure || 0 );
@@ -81,7 +85,8 @@ const useRetranscoding = ( callback, deps ) => {
 				setMediaCount( 0 );
 				setSuccessCount( 0 );
 				setFailureCount( 0 );
-				setTotalMediaCount( 0 );
+				// Do not clear totalMediaCount here; it should be driven by fetchRetranscodeMedia/reset only
+				// setTotalMediaCount( 0 );
 				setAborted( false );
 				setDone( false );
 				setRetranscoding( false );
@@ -136,9 +141,7 @@ const useRetranscoding = ( callback, deps ) => {
 	const abortRetranscoding = () => {
 		// Tell the backend to abort and stop polling.
 		axios.post( `${ window.godamRestRoute?.url }godam/v1/transcoding/retranscode-queue/abort`, {}, {
-			headers: {
-				'X-WP-Nonce': window.godamRestRoute?.nonce,
-			},
+			headers: { 'X-WP-Nonce': window.godamRestRoute?.nonce },
 		} );
 		setAborted( true );
 		setRetranscoding( false );
@@ -247,12 +250,10 @@ const useRetranscoding = ( callback, deps ) => {
 
 		// Inform backend to reset queue and progress
 		axios.post( `${ window.godamRestRoute?.url }godam/v1/transcoding/retranscode-queue/reset`, {}, {
-			headers: {
-				'X-WP-Nonce': window.godamRestRoute?.nonce,
-			},
+			headers: { 'X-WP-Nonce': window.godamRestRoute?.nonce },
 		} )
 			.then( () => {
-			// Only reset local state after backend confirms reset
+				// Only reset local state after backend confirms reset
 				setAttachments( [] );
 				setMediaCount( 0 );
 				setTotalMediaCount( 0 );
@@ -278,8 +279,8 @@ const useRetranscoding = ( callback, deps ) => {
 				window.history.replaceState( {}, '', url.toString() );
 			} )
 			.catch( () => {
-			// Handle the case where backend reset fails
-			// Still reset UI state even if backend call fails
+				// Handle the case where backend reset fails
+				// Still reset UI state even if backend call fails
 				setAttachments( [] );
 				setMediaCount( 0 );
 				setTotalMediaCount( 0 );
@@ -335,13 +336,28 @@ const useRetranscoding = ( callback, deps ) => {
 		};
 	}, [] ); // Empty dependency array to run only once on mount
 
+	// On mount, fetch total Media Library count once
+	useEffect( () => {
+		axios.get( '/wp-json/wp/v2/media', {
+			params: { per_page: 1 },
+			headers: { 'X-WP-Nonce': window.godamRestRoute?.nonce },
+		} )
+			.then( ( res ) => {
+				const total = parseInt( res.headers?.[ 'x-wp-total' ] || '0', 10 );
+				if ( ! Number.isNaN( total ) ) {
+					setTotalLibraryCount( total );
+				}
+			} )
+			.catch( () => { /* ignore */ } );
+	}, [] );
+
 	// Show notice if retranscoding is done or aborted with counts
 	useEffect( () => {
 		if ( done || aborted ) {
 			let message = '';
 			if ( successCount > 0 ) {
 				message += sprintf(
-					// translators: %d is the number of media files retranscoded.
+					/* translators: %d is the number of successfully retranscoded media files. */
 					__( 'Successfully sent %d media file(s) for retranscoding.', 'godam' ),
 					successCount,
 				);
@@ -351,18 +367,15 @@ const useRetranscoding = ( callback, deps ) => {
 					message += ' ';
 				}
 				message += sprintf(
-					// translators: %d is the number of media files that failed to retranscode.
+					/* translators: %d is the number of media files that failed to be sent for retranscoding. */
 					__( 'Failed to send %d media file(s) for retranscoding.', 'godam' ),
 					failureCount,
 				);
 			}
-
 			if ( ! message ) {
 				message = __( 'Operation completed without any media files to retranscode.', 'godam' );
 			}
-
 			const noticeType = successCount > 0 && failureCount === 0 ? 'success' : 'error';
-
 			showNotice( message, noticeType );
 		}
 	}, [ done, aborted, successCount, failureCount ] );
@@ -381,6 +394,8 @@ const useRetranscoding = ( callback, deps ) => {
 		successCount,
 		failureCount,
 		totalMediaCount,
+		totalLibraryCount,
+		queueTotal,
 		attachmentDetails,
 		showBandwidthModal,
 		modalSelection,

@@ -40,6 +40,7 @@ const RetranscodeTab = () => {
 		successCount,
 		failureCount,
 		totalMediaCount,
+		queueTotal,
 		attachmentDetails,
 		showBandwidthModal,
 		modalSelection,
@@ -96,7 +97,7 @@ const RetranscodeTab = () => {
 	useUrlMediaIds( setAttachments, setSelectedIds, showNotice );
 	useSelectedIdsNotice( selectedIds, setForceRetranscode, showNotice );
 	useAttachmentDetails( attachments, attachmentDetails, setAttachmentDetails );
-	useBandwidthModal( attachmentDetails, availableBandwidthGB, totalRequiredGB, setModalSelection, setShowBandwidthModal, showNotice );
+	useBandwidthModal( attachmentDetails, availableBandwidthGB, totalRequiredGB, setModalSelection, setShowBandwidthModal, showNotice, modalSelection );
 	useCompletionNotice( done, aborted, successCount, failureCount, showNotice );
 
 	return (
@@ -122,6 +123,8 @@ const RetranscodeTab = () => {
 						onClose={ handleModalClose }
 						onProceed={ () => {
 							setAttachments( modalSelection );
+							setSelectedIds( modalSelection );
+							setForceRetranscode( false );
 							setShowBandwidthModal( false );
 						} }
 					/>
@@ -186,7 +189,7 @@ const RetranscodeTab = () => {
 								// translators: %d is the number of media files sent for retranscoding.
 								__( '%1$d/%2$d media files sent for retranscoding…', 'godam' ),
 								mediaCount,
-								attachments.length,
+								queueTotal || attachments.length,
 							) }
 						</span>
 					) }
@@ -198,6 +201,7 @@ const RetranscodeTab = () => {
 						mediaCount={ mediaCount }
 						attachments={ attachments }
 						logs={ logs }
+						queueTotal={ queueTotal }
 					/>
 
 					{ retranscoding && (

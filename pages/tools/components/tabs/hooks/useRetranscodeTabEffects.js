@@ -93,6 +93,7 @@ export const useBandwidthModal = (
 	setModalSelection,
 	setShowBandwidthModal,
 	showNotice,
+	modalSelection,
 ) => {
 	useEffect( () => {
 		// Don't show modal if no attachment details
@@ -101,31 +102,36 @@ export const useBandwidthModal = (
 			return;
 		}
 
-		// Only show modal if total required exceeds available bandwidth
-		if ( totalRequiredGB > availableBandwidthGB ) {
-			// Determine which subset can fit
-			const sorted = [ ...attachmentDetails ].sort( ( a, b ) => a.size - b.size );
-			let runningTotal = 0;
-			const canFit = [];
-			for ( const att of sorted ) {
-				const attGB = ( att.size || 0 ) / 1024 / 1024 / 1024;
-				if ( runningTotal + attGB <= availableBandwidthGB ) {
-					runningTotal += attGB;
-					canFit.push( att.id );
+		const overLimit = totalRequiredGB > availableBandwidthGB;
+		if ( overLimit ) {
+			// Determine which subset can fit (smallest-first) only if user hasn't chosen yet
+			if ( modalSelection.length === 0 ) {
+				const sorted = [ ...attachmentDetails ].sort( ( a, b ) => ( a.size || 0 ) - ( b.size || 0 ) );
+				let runningTotal = 0;
+				const canFit = [];
+				for ( const att of sorted ) {
+					const attGB = ( att.size || 0 ) / 1024 / 1024 / 1024;
+					if ( runningTotal + attGB <= availableBandwidthGB ) {
+						runningTotal += attGB;
+						canFit.push( att.id );
+					}
 				}
-			}
-			if ( canFit.length > 0 ) {
-				setModalSelection( canFit );
-				setShowBandwidthModal( true );
+				if ( canFit.length > 0 ) {
+					setModalSelection( canFit );
+					setShowBandwidthModal( true );
+				} else {
+					showNotice( __( 'Not enough bandwidth left to retranscode any selected media.', 'godam' ), 'error' );
+					setShowBandwidthModal( false );
+				}
 			} else {
-				showNotice( __( 'Not enough bandwidth left to retranscode any selected media.', 'godam' ), 'error' );
-				setShowBandwidthModal( false );
+				// User is adjusting selection, keep modal open but do not override their choice
+				setShowBandwidthModal( true );
 			}
 		} else {
 			// Enough bandwidth available, no need for modal
 			setShowBandwidthModal( false );
 		}
-	}, [ attachmentDetails, availableBandwidthGB, totalRequiredGB, setModalSelection, setShowBandwidthModal, showNotice ] );
+	}, [ attachmentDetails, availableBandwidthGB, totalRequiredGB, modalSelection.length, setModalSelection, setShowBandwidthModal, showNotice ] );
 };
 
 // Show completion / aborted notice with success & failure counts.
