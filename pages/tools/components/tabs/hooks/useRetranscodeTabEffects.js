@@ -27,6 +27,31 @@ export const useUrlMediaIds = ( setAttachments, setSelectedIds, showNotice ) => 
 			if ( idsArr.length > 0 ) {
 				setAttachments( idsArr );
 				setSelectedIds( idsArr );
+
+				// Probe server status so bulk selection behaves gracefully across tabs/devices
+				// and show a clear message without requiring user to click Start.
+				fetch( `${ window.godamRestRoute?.url }godam/v1/transcoding/retranscode-queue/status`, {
+					headers: { 'X-WP-Nonce': window.godamRestRoute?.nonce },
+					credentials: 'same-origin',
+				} )
+					.then( ( r ) => r.json() )
+					.then( ( data ) => {
+						const status = data?.status || 'idle';
+						if ( status === 'running' ) {
+							// Mark that we already informed user to avoid duplicate generic notices
+							window.__godamBulkSelectionGuard = 'running';
+							showNotice( __( 'Retranscoding is already running (possibly from another tab or device). Showing current status. your bulk selection will not start a new job.', 'godam' ), 'warning' );
+						} else if ( status === 'done' || status === 'aborted' ) {
+							window.__godamBulkSelectionGuard = 'blocked';
+							showNotice( __( 'A previous retranscoding session exists. Please click Reset before starting a new session with your selected media.', 'godam' ), 'warning' );
+						} else {
+							// No guard necessary for idle state; allow normal flow
+							window.__godamBulkSelectionGuard = 'idle';
+						}
+					} )
+					.catch( () => {
+						// On failure, do nothing special; default notices will apply
+					} );
 			}
 		} else {
 			showNotice( __( 'The requested operation is not allowed. The nonce provided in the URL is invalid or expired.', 'godam' ), 'error' );
@@ -39,7 +64,11 @@ export const useSelectedIdsNotice = ( selectedIds, setForceRetranscode, showNoti
 	useEffect( () => {
 		if ( selectedIds && selectedIds.length > 0 ) {
 			setForceRetranscode( false );
-			showNotice( sprintf( /* translators: %d is the number of selected media files. */ __( 'You are retranscoding %d selected media file(s) from the Media Library.', 'godam' ), selectedIds.length ), 'warning' );
+			// If a guard notice was already shown for bulk selection (running/blocked), avoid duplicate generic notice
+			const guard = window.__godamBulkSelectionGuard;
+			if ( guard !== 'running' && guard !== 'blocked' ) {
+				showNotice( sprintf( /* translators: %d is the number of selected media files. */ __( 'You are retranscoding %d selected media file(s) from the Media Library.', 'godam' ), selectedIds.length ), 'warning' );
+			}
 		}
 	}, [ selectedIds, setForceRetranscode, showNotice ] );
 };

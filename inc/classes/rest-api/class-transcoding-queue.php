@@ -104,15 +104,38 @@ class Transcoding_Queue extends Base {
 
 		$ids = array_values( array_unique( array_map( 'absint', $ids ) ) );
 
+		// Check existing state to avoid duplicate/chaotic starts from other tabs/devices.
+		$current        = get_option( 'rtgodam_retranscode_progress', array( 'status' => 'idle' ) );
+		$current_status = isset( $current['status'] ) ? $current['status'] : 'idle';
+
+		// If a run is already in progress OR a previous run finished/aborted but not reset, block and instruct client.
+		if ( in_array( $current_status, array( 'running', 'done', 'aborted' ), true ) ) {
+			$message = __( 'A retranscoding session is already in progress or has finished but has not been reset. Please use the Reset action before starting a new session.', 'godam' );
+			if ( 'running' === $current_status ) {
+				$message = __( 'Retranscoding is already running. This request did not start a new session. The UI should display current progress.', 'godam' );
+			}
+			$response = array(
+				'message'   => $message,
+				'status'    => $current_status,
+				'total'     => isset( $current['total'] ) ? (int) $current['total'] : 0,
+				'processed' => isset( $current['processed'] ) ? (int) $current['processed'] : 0,
+				'success'   => isset( $current['success'] ) ? (int) $current['success'] : 0,
+				'failure'   => isset( $current['failure'] ) ? (int) $current['failure'] : 0,
+				'logs'      => isset( $current['logs'] ) && is_array( $current['logs'] ) ? $current['logs'] : array(),
+			);
+			return new \WP_REST_Response( $response, 409 );
+		}
+
 		update_option( 'rtgodam_retranscode_queue', $ids );
 
 		$progress = array(
-			'total'     => count( $ids ),
-			'processed' => 0,
-			'success'   => 0,
-			'failure'   => 0,
-			'logs'      => array(),
-			'status'    => 'running',
+			'total'      => count( $ids ),
+			'processed'  => 0,
+			'success'    => 0,
+			'failure'    => 0,
+			'logs'       => array(),
+			'status'     => 'running',
+			'started_at' => time(),
 		);
 
 		update_option( 'rtgodam_retranscode_progress', $progress );

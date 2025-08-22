@@ -161,14 +161,7 @@ const useRetranscoding = ( callback, deps ) => {
 				showNotice( __( 'No valid media IDs to retranscode.', 'godam' ), 'error' );
 				return;
 			}
-			setRetranscoding( true );
-			setAborted( false );
-			setMediaCount( 0 );
-			setLogs( [] );
-			setDone( false );
-			setSuccessCount( 0 );
-			setFailureCount( 0 );
-
+			// Before we optimistically flip UI state, ask server to start.
 			try {
 				const url = `${ window.godamRestRoute?.url }godam/v1/transcoding/retranscode-queue`;
 				await axios.post( url, { ids }, {
@@ -176,9 +169,41 @@ const useRetranscoding = ( callback, deps ) => {
 						'Content-Type': 'application/json',
 						'X-WP-Nonce': window.godamRestRoute?.nonce,
 					},
+					validateStatus: () => true, // We'll branch on status code
+				} ).then( async ( res ) => {
+					if ( res.status === 200 ) {
+						// Fresh start accepted
+						setRetranscoding( true );
+						setAborted( false );
+						setMediaCount( 0 );
+						setLogs( [] );
+						setDone( false );
+						setSuccessCount( 0 );
+						setFailureCount( 0 );
+						fetchQueueStatus();
+						beginPolling();
+						return;
+					}
+					if ( res.status === 409 ) {
+						const data = res.data || {};
+						// If already running elsewhere, show notice and begin polling status.
+						if ( data.status === 'running' ) {
+							showNotice( __( 'Retranscoding is already running (possibly in another tab or device). Showing current status.', 'godam' ), 'warning' );
+							setRetranscoding( true );
+							fetchQueueStatus();
+							beginPolling();
+							return;
+						}
+						// If done or aborted but not reset, instruct user to reset.
+						if ( data.status === 'done' || data.status === 'aborted' ) {
+							showNotice( __( 'A previous retranscoding session has finished but the state has not been reset. Please click Reset before starting a new session.', 'godam' ), 'warning' );
+							setRetranscoding( false );
+							return;
+						}
+					}
+					// Any other status -> treat as error
+					throw new Error( ( res.data && res.data.message ) || `HTTP ${ res.status }` );
 				} );
-				fetchQueueStatus();
-				beginPolling();
 			} catch ( err ) {
 				showNotice(
 					sprintf(
@@ -270,13 +295,6 @@ const useRetranscoding = ( callback, deps ) => {
 				setShowBandwidthModal( false );
 				setModalSelection( [] );
 				abortRef.current = false;
-
-				// Reset the URL to remove media_ids, goback and nonce
-				const url = new URL( window.location.href );
-				url.searchParams.delete( 'media_ids' );
-				url.searchParams.delete( '_wpnonce' );
-				url.searchParams.delete( 'goback' );
-				window.history.replaceState( {}, '', url.toString() );
 			} )
 			.catch( () => {
 				// Handle the case where backend reset fails
@@ -302,6 +320,20 @@ const useRetranscoding = ( callback, deps ) => {
 					status: 'info',
 					isVisible: true,
 				} );
+			} )
+			.finally( () => {
+				// Always remove Media Library handoff params so selection doesn't persist
+				try {
+					const url = new URL( window.location.href );
+					url.searchParams.delete( 'media_ids' );
+					url.searchParams.delete( '_wpnonce' );
+					url.searchParams.delete( 'goback' );
+					window.history.replaceState( {}, '', url.toString() );
+					// Clear any guard flag used to suppress duplicate notices
+					try {
+						delete window.__godamBulkSelectionGuard;
+					} catch ( _e ) { /* noop */ }
+				} catch ( _e ) { /* noop */ }
 			} );
 	};
 
@@ -312,9 +344,29 @@ const useRetranscoding = ( callback, deps ) => {
 		}
 	};
 
-	const handleFetchOrStart = () => {
+	const handleFetchOrStart = async () => {
 		// Reset the manual reset flag since we're starting a new operation
 		hasBeenManuallyReset.current = false;
+
+		// Always probe server status first to coordinate across tabs/devices
+		try {
+			const statusUrl = `${ window.godamRestRoute?.url }godam/v1/transcoding/retranscode-queue/status`;
+			const res = await axios.get( statusUrl, { headers: { 'X-WP-Nonce': window.godamRestRoute?.nonce } } );
+			const data = res.data || {};
+			if ( data.status === 'running' ) {
+				showNotice( __( 'Retranscoding is already running. Showing current status.', 'godam' ), 'warning' );
+				setRetranscoding( true );
+				fetchQueueStatus();
+				beginPolling();
+				return;
+			}
+			if ( data.status === 'done' || data.status === 'aborted' ) {
+				showNotice( __( 'A previous retranscoding session exists. Please Reset before starting a new one.', 'godam' ), 'warning' );
+				return;
+			}
+		} catch ( e ) {
+			// ignore and proceed
+		}
 
 		if ( attachments.length > 0 ) {
 			startRetranscoding();
@@ -379,6 +431,14 @@ const useRetranscoding = ( callback, deps ) => {
 			showNotice( message, noticeType );
 		}
 	}, [ done, aborted, successCount, failureCount ] );
+
+	// If user navigates here with a selection from Media Library while a prior session exists, ask to reset first
+	useEffect( () => {
+		if ( attachments?.length > 0 && ( done || aborted ) && ! retranscoding ) {
+			showNotice( __( 'A previous retranscoding session exists. Please click Reset before starting a new session with your selected media.', 'godam' ), 'warning' );
+		}
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ attachments?.length, done, aborted, retranscoding ] );
 
 	return {
 		// State
