@@ -1347,7 +1347,7 @@ class Media_Library extends Base {
 			'hide_empty' => false,
 			'orderby'    => 'name',
 			'order'      => 'ASC',
-			'number'     => 100, // Default to 100 items per page.
+			'number'     => 100, // Maximum number of terms to return.
 		);
 
 		// Initialize meta_query as empty array.

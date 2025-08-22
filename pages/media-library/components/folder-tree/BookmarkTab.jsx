@@ -33,7 +33,7 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 
 	const bookmarks = useSelector( ( state ) => state.FolderReducer?.bookmarks || [] );
 
-	const bookmarkCount = bookmarkData?.total || bookmarks?.length;
+	const bookmarkCount = bookmarkData?.total ?? bookmarks?.length;
 
 	if ( bookmarkCount === 0 ) {
 		return (

@@ -35,7 +35,7 @@ const slice = createSlice( {
 		page: {
 			current: 1,
 			perPage: 10,
-			totalPages: 2, // So initially show the loadMore button.
+			totalPages: 1, // Default to 1; update when real data is loaded.
 		},
 
 		modals: {

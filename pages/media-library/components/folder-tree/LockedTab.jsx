@@ -42,7 +42,7 @@ const LockedTab = ( { handleContextMenu } ) => {
 		window.dispatchEvent( event );
 	}, [ locked ] );
 
-	const lockedCount = lockedData?.total || locked?.length;
+	const lockedCount = lockedData?.total ?? locked?.length;
 
 	if ( lockedCount === 0 ) {
 		return (
