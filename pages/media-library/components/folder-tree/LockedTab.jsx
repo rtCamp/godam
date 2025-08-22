@@ -27,7 +27,7 @@ const LockedTab = ( { handleContextMenu } ) => {
 	useEffect( () => {
 		if ( ! initializedRef.current && lockedData && ! isLockedLoading ) {
 			// Dispatch an action to set the locked folders in the Redux store
-			dispatch( initializeLockedFolders( lockedData ) );
+			dispatch( initializeLockedFolders( lockedData?.data || [] ) );
 			initializedRef.current = true;
 		}
 	}, [ lockedData, dispatch, isLockedLoading ] );
@@ -42,7 +42,7 @@ const LockedTab = ( { handleContextMenu } ) => {
 		window.dispatchEvent( event );
 	}, [ locked ] );
 
-	const lockedCount = locked?.length || 0;
+	const lockedCount = lockedData?.total || locked?.length;
 
 	if ( lockedCount === 0 ) {
 		return (

@@ -52,6 +52,18 @@ export const folderApi = createApi( {
 					},
 				};
 			},
+			transformResponse: ( responseData, meta ) => {
+				// Extract headers from meta.response.headers
+				const headers = meta.response.headers;
+				const totalItems = headers.get( 'X-WP-Total' ) || headers.get( 'x-wp-total' );
+				const totalPages = headers.get( 'X-WP-TotalPages' ) || headers.get( 'x-wp-totalpages' );
+
+				return {
+					data: responseData, // Your original response data
+					total: totalItems ? parseInt( totalItems, 10 ) : 0,
+					totalPages: totalPages ? parseInt( totalPages, 10 ) : 0,
+				};
+			},
 		} ),
 		createFolder: builder.mutation( {
 			query: ( data ) => ( {

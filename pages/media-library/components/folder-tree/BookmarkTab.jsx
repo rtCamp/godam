@@ -26,14 +26,14 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 
 	useEffect( () => {
 		if ( ! isBookmarkLoading && bookmarkData && initializedRef.current === false ) {
-			dispatch( initializeBookmarks( bookmarkData || [] ) );
+			dispatch( initializeBookmarks( bookmarkData?.data || [] ) );
 			initializedRef.current = true;
 		}
 	}, [ isBookmarkLoading, bookmarkData, dispatch ] );
 
 	const bookmarks = useSelector( ( state ) => state.FolderReducer?.bookmarks || [] );
 
-	const bookmarkCount = bookmarks?.length || 0;
+	const bookmarkCount = bookmarkData?.total || bookmarks?.length;
 
 	if ( bookmarkCount === 0 ) {
 		return (

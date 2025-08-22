@@ -59,13 +59,6 @@ const FolderTree = ( { handleContextMenu } ) => {
 		},
 	);
 
-	useEffect( () => {
-		// Refetch folders when the current page changes
-		if ( page.current > 1 ) {
-			refetchFolders();
-		}
-	}, [ refetchFolders, page ] );
-
 	const dispatch = useDispatch();
 	const data = useSelector( ( state ) => state.FolderReducer.folders );
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
@@ -75,11 +68,11 @@ const FolderTree = ( { handleContextMenu } ) => {
 
 	useEffect( () => {
 		if ( folders ) {
-			dispatch( setTree( openLocalStorageItem( folders ) ) );
+			dispatch( setTree( openLocalStorageItem( folders?.data ) ) );
 
-			if ( Array.isArray( folders ) && ( folders.length === 0 || folders.length < page.perPage ) && ! isFetching ) {
+			if ( Array.isArray( folders?.data ) && ! isFetching ) {
 				// If no folders are returned, reset to the first page
-				dispatch( updatePage( { hasNext: false } ) );
+				dispatch( updatePage( { totalPages: folders.totalPages } ) );
 			}
 		}
 	}, [ dispatch, folders, currentPage, isFetching, page.perPage ] );
@@ -196,6 +189,7 @@ const FolderTree = ( { handleContextMenu } ) => {
 
 	function handleLoadMore() {
 		dispatch( updatePage( { current: page.current + 1 } ) );
+		refetchFolders();
 	}
 
 	/**
@@ -412,11 +406,12 @@ const FolderTree = ( { handleContextMenu } ) => {
 						} ) }
 					</SortableContext>
 				</div>
-				{ page.hasNext && ( <button
+				{ ( ( currentPage < page.totalPages ) || ( isFetching && currentPage === page.totalPages ) ) && ( <button
 					className="tree-load-more"
 					onClick={ () => {
 						handleLoadMore();
 					} }
+					disabled={ isFetching }
 				>
 					{ isFetching ? __( 'Loading…', 'godam' ) : __( 'Load More', 'godam' ) }
 				</button> ) }
