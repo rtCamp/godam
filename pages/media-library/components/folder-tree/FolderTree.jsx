@@ -5,7 +5,15 @@
  */
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { closestCenter, DndContext, DragOverlay, MouseSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import {
+	closestCenter,
+	DndContext,
+	DragOverlay,
+	MouseSensor,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 /**
@@ -23,7 +31,11 @@ import SnackbarComp from './SnackbarComp.jsx';
 import { setTree, updatePage, updateSnackbar } from '../../redux/slice/folders.js';
 import { utilities } from '../../data/utilities';
 
-import { useAssignFolderMutation, useGetFoldersQuery, useUpdateFolderMutation } from '../../redux/api/folders.js';
+import {
+	useAssignFolderMutation,
+	useGetFoldersQuery,
+	useUpdateFolderMutation,
+} from '../../redux/api/folders.js';
 
 import './css/tree.scss';
 
@@ -53,11 +65,15 @@ const FolderTree = ({ handleContextMenu }) => {
 	const page = useSelector((state) => state.FolderReducer.page);
 	const currentPage = page.current;
 
-	const { data: folders, error, isLoading, refetch: refetchFolders, isFetching } = useGetFoldersQuery(
-		{
-			page: currentPage,
-		},
-	);
+	const {
+		data: folders,
+		error,
+		isLoading,
+		refetch: refetchFolders,
+		isFetching,
+	} = useGetFoldersQuery({
+		page: currentPage,
+	});
 
 	useEffect(() => {
 		// Refetch folders when the current page changes
@@ -77,7 +93,11 @@ const FolderTree = ({ handleContextMenu }) => {
 		if (folders) {
 			dispatch(setTree(openLocalStorageItem(folders)));
 
-			if (Array.isArray(folders) && (folders.length === 0 || folders.length < page.perPage) && !isFetching) {
+			if (
+				Array.isArray(folders) &&
+				(folders.length === 0 || folders.length < page.perPage) &&
+				!isFetching
+			) {
 				// If no folders are returned, reset to the first page
 				dispatch(updatePage({ hasNext: false }));
 			}
@@ -90,7 +110,10 @@ const FolderTree = ({ handleContextMenu }) => {
 
 	const [assignFolderMutation] = useAssignFolderMutation();
 
-	const flattenData = useMemo(() => utilities.flattenTree(utilities.buildTree(data)), [data]);
+	const flattenData = useMemo(
+		() => utilities.flattenTree(utilities.buildTree(data)),
+		[data],
+	);
 
 	const filteredData = useMemo(() => {
 		const collapsedItems = flattenData.reduce((acc, item) => {
@@ -106,7 +129,10 @@ const FolderTree = ({ handleContextMenu }) => {
 
 	const sortedIds = useMemo(() => filteredData.map(({ id }) => id), [filteredData]);
 
-	const projected = activeId && overId ? utilities.getProjection(filteredData, activeId, overId, offsetLeft) : null;
+	const projected =
+		activeId && overId
+			? utilities.getProjection(filteredData, activeId, overId, offsetLeft)
+			: null;
 
 	function handleDragStart({ active: { id: draggedItemId } }) {
 		const draggedFolder = data.find((folder) => folder.id === draggedItemId);
@@ -115,10 +141,15 @@ const FolderTree = ({ handleContextMenu }) => {
 		if (draggedFolder?.parent && draggedFolder.parent !== 0) {
 			const parentFolder = data.find((folder) => folder.id === draggedFolder.parent);
 			if (parentFolder?.meta?.locked) {
-				dispatch(updateSnackbar({
-					message: __('The parent folder is locked, so this folder cannot be moved.', 'godam'),
-					type: 'fail',
-				}));
+				dispatch(
+					updateSnackbar({
+						message: __(
+							'The parent folder is locked, so this folder cannot be moved.',
+							'godam',
+						),
+						type: 'fail',
+					}),
+				);
 				return;
 			}
 		}
@@ -145,10 +176,15 @@ const FolderTree = ({ handleContextMenu }) => {
 			if (parent !== 0) {
 				const destinationFolder = data.find((folder) => folder.id === parent);
 				if (destinationFolder?.meta?.locked) {
-					dispatch(updateSnackbar({
-						message: __('The destination folder is locked and cannot be modified', 'godam'),
-						type: 'fail',
-					}));
+					dispatch(
+						updateSnackbar({
+							message: __(
+								'The destination folder is locked and cannot be modified',
+								'godam',
+							),
+							type: 'fail',
+						}),
+					);
 					return;
 				}
 			}
@@ -161,7 +197,7 @@ const FolderTree = ({ handleContextMenu }) => {
 			const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
 			const activeTreeItem = clonedItems[activeIndex];
 
-			// ✅ Normalize booleans before API call
+			// ✅ Normalize booleans before API call to avoid sending "true"/"false" strings
 			const payload = {
 				...activeTreeItem,
 				parent,
@@ -178,10 +214,12 @@ const FolderTree = ({ handleContextMenu }) => {
 
 				dispatch(setTree(sortedItems));
 			} catch (err) {
-				dispatch(updateSnackbar({
-					message: __('Failed to update folder', 'godam'),
-					type: 'fail',
-				}));
+				dispatch(
+					updateSnackbar({
+						message: __('Failed to update folder', 'godam'),
+						type: 'fail',
+					}),
+				);
 			}
 		}
 	}
@@ -204,10 +242,7 @@ const FolderTree = ({ handleContextMenu }) => {
 
 	const mouseSensor = useSensor(MouseSensor);
 
-	const sensors = useSensors(
-		mouseSensor,
-		pointerSensor,
-	);
+	const sensors = useSensors(mouseSensor, pointerSensor);
 
 	function handleLoadMore() {
 		dispatch(updatePage({ current: page.current + 1 }));
@@ -220,21 +255,24 @@ const FolderTree = ({ handleContextMenu }) => {
 	 * @param {number} destinationFolderId - The ID of the folder to which items are being moved.
 	 * @param {number} count               - The number of items being moved.
 	 */
-	const updateAttachmentCountOfFolders = useCallback((selectedFolderId, destinationFolderId, count) => {
-		const updatedFolders = data.map((folder) => {
-			if (folder.id === selectedFolderId) {
-				const currentCount = Number(folder.attachmentCount) || 0;
-				return { ...folder, attachmentCount: currentCount - count };
-			}
-			if (folder.id === destinationFolderId) {
-				const currentCount = Number(folder.attachmentCount) || 0;
-				return { ...folder, attachmentCount: currentCount + count };
-			}
-			return folder;
-		});
+	const updateAttachmentCountOfFolders = useCallback(
+		(selectedFolderId, destinationFolderId, count) => {
+			const updatedFolders = data.map((folder) => {
+				if (folder.id === selectedFolderId) {
+					const currentCount = Number(folder.attachmentCount) || 0;
+					return { ...folder, attachmentCount: currentCount - count };
+				}
+				if (folder.id === destinationFolderId) {
+					const currentCount = Number(folder.attachmentCount) || 0;
+					return { ...folder, attachmentCount: currentCount + count };
+				}
+				return folder;
+			});
 
-		dispatch(setTree(updatedFolders));
-	}, [data, dispatch]);
+			dispatch(setTree(updatedFolders));
+		},
+		[data, dispatch],
+	);
 
 	useEffect(() => {
 		/**
@@ -261,23 +299,33 @@ const FolderTree = ({ handleContextMenu }) => {
 							return;
 						}
 
-						// do not allow assigning item to other folder from the locked folder.
+						// Do not allow assigning items to another folder if current folder is locked
 						if (selectedFolder?.meta?.locked) {
-							dispatch(updateSnackbar({
-								message: __('Currently opened folder is locked and cannot be modified', 'godam'),
-								type: 'fail',
-							}));
+							dispatch(
+								updateSnackbar({
+									message: __(
+										'Currently opened folder is locked and cannot be modified',
+										'godam',
+									),
+									type: 'fail',
+								}),
+							);
 							return;
 						}
 
 						const targetFolder = data.find((folder) => folder.id === targetFolderId);
 
-						// do not allow assigning items to a locked folder.
+						// Do not allow assigning items to a locked folder
 						if (targetFolder?.meta?.locked) {
-							dispatch(updateSnackbar({
-								message: __('This folder is locked and cannot be modified', 'godam'),
-								type: 'fail',
-							}));
+							dispatch(
+								updateSnackbar({
+									message: __(
+										'This folder is locked and cannot be modified',
+										'godam',
+									),
+									type: 'fail',
+								}),
+							);
 							return;
 						}
 
@@ -288,31 +336,37 @@ const FolderTree = ({ handleContextMenu }) => {
 							}).unwrap();
 
 							if (response) {
-								dispatch(updateSnackbar({
-									message: __('Items assigned successfully', 'godam'),
-									type: 'success',
-								},
-								));
+								dispatch(
+									updateSnackbar({
+										message: __('Items assigned successfully', 'godam'),
+										type: 'success',
+									}),
+								);
 							}
 
-							// Update the folder tree count that reflects the new state.
-							updateAttachmentCountOfFolders(selectedFolder?.id, targetFolderId, draggedItems.length);
+							// Update the folder tree count that reflects the new state
+							updateAttachmentCountOfFolders(
+								selectedFolder?.id,
+								targetFolderId,
+								draggedItems.length,
+							);
 
 							/**
 							 * Remove the dragged items from the attachment view if they are meant to be removed.
 							 */
 							if (selectedFolder?.id !== -1) {
 								draggedItems.forEach((attachmentId) => {
-									jQuery(`li.attachment[data-id="${attachmentId}"]`).remove(); // for attachment grid view.
-									jQuery(`tr#post-${attachmentId}`).remove(); // for attachment list view.
+									jQuery(`li.attachment[data-id="${attachmentId}"]`).remove(); // grid view
+									jQuery(`tr#post-${attachmentId}`).remove(); // list view
 								});
 							}
 						} catch {
-							dispatch(updateSnackbar({
-								message: __('Failed to assign items', 'godam'),
-								type: 'fail',
-							},
-							));
+							dispatch(
+								updateSnackbar({
+									message: __('Failed to assign items', 'godam'),
+									type: 'fail',
+								}),
+							);
 						}
 					}
 				},
@@ -324,15 +378,15 @@ const FolderTree = ({ handleContextMenu }) => {
 		// Disable the Add Media Button and the Upload button for locked folders
 		if (selectedFolder?.meta?.locked) {
 			// Media Library Add media button
-			jQuery('#wp-media-grid .page-title-action').prop('disabled', true)
+			jQuery('#wp-media-grid .page-title-action')
+				.prop('disabled', true)
 				.css({
 					'pointer-events': 'none',
 					opacity: '0.5',
 				});
 
 			// Edit Post add media button
-			jQuery('#__wp-uploader-id-1').prop('disabled', true)
-				.css('pointer-events', 'none');
+			jQuery('#__wp-uploader-id-1').prop('disabled', true).css('pointer-events', 'none');
 
 			// Media Library Drag and Drop
 			jQuery('#wpwrap').on('dragover.lock drop.lock', function (e) {
@@ -352,15 +406,15 @@ const FolderTree = ({ handleContextMenu }) => {
 			}
 		} else {
 			// Media Library Add media button
-			jQuery('#wp-media-grid .page-title-action').prop('disabled', false)
+			jQuery('#wp-media-grid .page-title-action')
+				.prop('disabled', false)
 				.css({
 					'pointer-events': 'auto',
 					opacity: '1',
 				});
 
 			// Edit Post add media button
-			jQuery('#__wp-uploader-id-1').prop('disabled', false)
-				.css('pointer-events', 'auto');
+			jQuery('#__wp-uploader-id-1').prop('disabled', false).css('pointer-events', 'auto');
 
 			// Media Library Drag and Drop
 			jQuery('#wpwrap').off('dragover.lock drop.lock');
@@ -410,10 +464,7 @@ const FolderTree = ({ handleContextMenu }) => {
 		>
 			<div className="tree-container">
 				<div className="tree" id="tree">
-					<SortableContext
-						items={sortedIds}
-						strategy={verticalListSortingStrategy}
-					>
+					<SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
 						{filteredData.map((item) => {
 							return (
 								<TreeItem
@@ -427,14 +478,16 @@ const FolderTree = ({ handleContextMenu }) => {
 						})}
 					</SortableContext>
 				</div>
-				{page.hasNext && (<button
-					className="tree-load-more"
-					onClick={() => {
-						handleLoadMore();
-					}}
-				>
-					{isFetching ? __('Loading…', 'godam') : __('Load More', 'godam')}
-				</button>)}
+				{page.hasNext && (
+					<button
+						className="tree-load-more"
+						onClick={() => {
+							handleLoadMore();
+						}}
+					>
+						{isFetching ? __('Loading…', 'godam') : __('Load More', 'godam')}
+					</button>
+				)}
 			</div>
 
 			<DragOverlay>
@@ -450,7 +503,6 @@ const FolderTree = ({ handleContextMenu }) => {
 			</DragOverlay>
 
 			<SnackbarComp />
-
 		</DndContext>
 	);
 };
