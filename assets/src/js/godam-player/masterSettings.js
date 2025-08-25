@@ -162,8 +162,14 @@ function attachVideoTapListener( player ) {
 		}
 	};
 
-	videoEl.addEventListener( 'click', hideControls );
-	videoEl.addEventListener( 'touchstart', hideControls );
+	// Detect touch capability
+	if ( 'ontouchstart' in window || navigator.maxTouchPoints > 0 ) {
+		// For touch devices
+		videoEl.addEventListener( 'touchstart', hideControls, { passive: true } );
+	} else {
+		// For non-touch devices
+		videoEl.addEventListener( 'click', hideControls );
+	}
 }
 
 // Attach when player is ready
