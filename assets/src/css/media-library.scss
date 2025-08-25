@@ -313,8 +313,9 @@
 #wpbody {
 
 		> #rt-transcoder-media-library-root {
-		height: calc(100vh - 34px);
+		height: 100vh;
 		width: 280px;
+		background-color: #fff;
 
 		&.hide-sidebar {
 			border: none;
