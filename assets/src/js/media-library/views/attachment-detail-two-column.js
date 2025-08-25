@@ -427,33 +427,6 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			} );
 	},
 
-	updateThumbnailInTranscodingStatus( selectedThumbnailURL ) {
-		// Build a direct selector for the matching .transcoding-status element
-		const selector = `.transcoding-status[data-id="${ this.model.get( 'id' ) }"]`;
-		const status = document.querySelector( selector );
-
-		if ( status ) {
-			const img = status.querySelector( 'img' );
-
-			if ( img && img.src !== selectedThumbnailURL ) {
-				img.src = selectedThumbnailURL;
-
-				// Smooth fade-in effect
-				img.style.opacity = '0';
-				img.style.transition = 'opacity 0.3s ease';
-
-				img.addEventListener( 'load', () => {
-					img.style.opacity = '1';
-				}, { once: true } );
-
-				// Handle cached images (already loaded)
-				if ( img.complete && img.naturalHeight !== 0 ) {
-					img.style.opacity = '1';
-				}
-			}
-		}
-	},
-
 	/**
 	 * Sets up click event handlers for selecting video thumbnails.
 	 *

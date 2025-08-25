@@ -516,16 +516,18 @@ class Media_Library extends Base {
 
 		// Ensure selected thumbnail is valid. Fallback if not in either array.
 		if (
-		empty( $selected_thumbnail ) ||
-			( ! in_array( $selected_thumbnail, $thumbnail_array, true )
-			&& ! in_array( $selected_thumbnail, $custom_thumbnails, true ) )
+			empty( $selected_thumbnail )
+			|| (
+				! in_array( $selected_thumbnail, $thumbnail_array, true )
+				&& ! in_array( $selected_thumbnail, $custom_thumbnails, true )
+			)
 		) {
 			if ( ! empty( $custom_thumbnails ) ) {
 				$selected_thumbnail = reset( $custom_thumbnails );
 			} elseif ( ! empty( $thumbnail_array ) ) {
 				$selected_thumbnail = reset( $thumbnail_array );
 			}
-
+		
 			update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $selected_thumbnail );
 		}
 
