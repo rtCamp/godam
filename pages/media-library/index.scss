@@ -4,6 +4,13 @@
  * Used to style and display the custom media library.
  */
 
+$media-library-sidebar-bg: #fff;
+$media-library-sidebar-border: #E0E0E0;
+$media-library-active-folder: #F5F5F5;
+$media-library-button-border: #949494;
+$media-library-scrollbar-color:  rgba(128, 128, 128, 0.2);
+$godam-gradient: linear-gradient(90deg, #AB3A6C 0%, #E6533A 100%);
+
 #rt-transcoder-media-library-root {
 	$sidebar-width: 280px;
 	$toggle-width: 25px;
@@ -14,17 +21,17 @@
 
 	min-width: $sidebar-width;
 	padding: 0;
-	border: 1px solid #E0E0E0;
+	border: 1px solid $media-library-sidebar-border;
 	display: flex;
 	flex-direction: column;
-	min-height: calc(100vh - 34px);
+	min-height: 100vh;
 	height: 100%;
 
 	@media (max-width: 900px) {
 		width: 100%;
 		z-index: 1000;
 		height: 100%;
-		background: #fff;
+		background: $media-library-sidebar-bg;
 	}
 
 	* {
@@ -33,7 +40,7 @@
 
 	> * {
 		padding: 1.25rem;
-		border-bottom: 2px solid #E0E0E0;
+		border-bottom: 2px solid $media-library-sidebar-border;
 	}
 
 	.folder-container  {
@@ -46,7 +53,7 @@
 		}
 
 		&::-webkit-scrollbar-thumb {
-			background-color: rgba(128, 128, 128, 0.2);
+			background-color: $media-library-scrollbar-color;
 			border-radius: 3px;
 		}
 
@@ -57,12 +64,12 @@
 		/* Firefox */
 		@supports (scrollbar-width: thin) {
 			scrollbar-width: thin;
-			scrollbar-color: rgba(128, 128, 128, 0.2) transparent;
+			scrollbar-color: $media-library-scrollbar-color transparent;
 		}
 
 		> * {
 			padding: 1.25rem;
-			border-bottom: 1px solid #E0E0E0;
+			border-bottom: 1px solid $media-library-sidebar-border;
 		}
 	}
 
@@ -103,7 +110,7 @@
 
 	.folder-search-bar-container {
 		border-radius: 0.25rem;
-		border: 1px solid #949494;
+		border: 1px solid $media-library-button-border;
 
 		.components-input-control {
 			background: none;
@@ -115,21 +122,21 @@
 	}
 
 	.new-folder-button {
-		background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%) !important;
+		background: $godam-gradient !important;
 		border-radius: 0.25rem;
 		box-shadow: none;
 	}
 
 	.multiselect-button {
 		color: #1c1c1c;
-		background: #fff;
-		border: 1px solid #949494;
+		background: $media-library-sidebar-bg;
+		border: 1px solid $media-library-button-border;
 		box-shadow: none;
 		width: 100%;
 		justify-content: center;
 
 		&:hover {
-			background: #F5F5F5;
+			background: $media-library-active-folder;
 		}
 	}
 
@@ -163,7 +170,7 @@
 			height: 1.5rem;
 			min-width: 1.5rem;
 			border-radius: 0.5rem;
-			background-color: #F5F5F5;
+			background-color: $media-library-active-folder;
 			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 		}
 	}
@@ -182,11 +189,11 @@
 		z-index: 1;
 
 		&:hover {
-			background-color: #F5F5F5;
+			background-color: $media-library-active-folder;
 		}
 
 		&--active {
-			background-color: #F5F5F5;
+			background-color: $media-library-active-folder;
 		}
 	}
 
@@ -200,13 +207,13 @@
 	}
 
 	.tree-item:hover {
-		background:#F5F5F5;
+		background: $media-library-active-folder;
 	}
 
 	#media-folder-toggle-button {
-		background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
-		color: #fff;
-		box-shadow: 2px 2px 3px rgba(128, 128, 128, 0.2);
+		background: $godam-gradient;
+		color: $media-library-sidebar-bg;
+		box-shadow: 2px 2px 3px $media-library-scrollbar-color;
 		position: absolute;
 		top: 60px;
 		min-width: $toggle-width;
@@ -296,7 +303,7 @@
 .media-frame-menu:has( #rt-transcoder-media-library-root ) {
 
 	.media-menu {
-		background: #FFF;
+		background: $media-library-sidebar-bg;
 		z-index: -1;
 		padding: 0;
 		top: 0;

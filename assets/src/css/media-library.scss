@@ -2,6 +2,12 @@
  * global CSS for the media library.
  */
 
+$sidebar-width: 280px;
+$media-library-sidebar-bg: #fff;
+$media-library-sidebar-fg: #1c1c1c;
+$media-library-sidebar-bg-dark: #a3a3a3;
+$media-library-active-folder: #f5f5f5;
+
  .godam-button {
 	position: relative;
 	top: 9px;
@@ -85,27 +91,33 @@
 }
 
 #wpwrap:has( #rt-transcoder-media-library-root ) {
-	background: #FFF;
+	background: $media-library-sidebar-bg;
 
 	.godam-button {
 		padding: 6px 8px;
 		top: 4px;
 	   	margin-left: 0.75rem;
 		margin-bottom: 20px;
-		border: 1px solid #A3A3A3;
+		border: 1px solid $media-library-sidebar-bg-dark;
 		border-radius: 0.25rem;
-		color: #1c1c1c;
-		background-color: #fff;
+		color: $media-library-sidebar-fg;
+		background-color: $media-library-sidebar-bg;
+
+		@media (max-width: 900px) {
+			padding: 3px 8px;
+			top: 6px;
+		}
 	}
 
 	.media-frame {
-		background: #F5F5F5;
+		background: $media-library-active-folder;
 		height: 100%;
 	}
 
 	#wp-media-grid, .wrap:has(#posts-filter) {
-		margin: 12px 0 0 0;
-		height: calc(100% - 12px);
+		$top-margin: 12px;
+		margin: $top-margin 0 0 0;
+		height: calc(100% - $top-margin);
 	}
 
 	.wp-heading-inline {
@@ -142,7 +154,7 @@
 
 		.button {
 			border-radius: 0.25rem;
-			background-color: #fff;
+			background-color: $media-library-sidebar-bg;
 
 			svg {
 				padding-right: 8px;
@@ -208,10 +220,10 @@
 		}
 
 		.button {
-			border: 1px solid #A3A3A3;
+			border: 1px solid $media-library-sidebar-bg-dark;
 			border-radius: 0.25rem;
-			color: #1c1c1c;
-			background-color: #fff;
+			color: $media-library-sidebar-fg;
+			background-color: $media-library-sidebar-bg;
 
 			svg {
 				padding-right: 8px;
@@ -251,7 +263,7 @@
 			height: 40px;
 			margin: 12px 0;
 			border-radius: 4px;
-			border: 1px solid #A3A3A3;
+			border: 1px solid $media-library-sidebar-bg-dark;
 			display: flex;
 			align-items: center;
 		}
@@ -313,9 +325,9 @@
 	#wpbody {
 
 			> #rt-transcoder-media-library-root {
-			height: 100vh;
-			width: 280px;
-			background-color: #fff;
+				height: 100vh;
+				width: $sidebar-width;
+				background-color: $media-library-sidebar-bg;
 
 			&.hide-sidebar {
 				border: none;
@@ -323,7 +335,7 @@
 		}
 
 	#wpbody-content {
-		margin-left: 280px;
+		margin-left: $sidebar-width;
 	}
 
 		&:has(#rt-transcoder-media-library-root.hide-sidebar) #wpbody-content {
@@ -332,7 +344,9 @@
 	}
 
 	#wpfooter {
-		margin-left: calc(280px + 160px);
+
+		/* 160px is the default WordPress sidebar width */
+		margin-left: calc($sidebar-width + 160px);
 	}
 }
 
