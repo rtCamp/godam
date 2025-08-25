@@ -5,9 +5,9 @@ import { ComboboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 
-function FormSelector( { className, disabled, formID, forms, handleChange } ) {
+function FormSelector( { className, disabled, formID, forms = [], handleChange } ) {
 	const [ form, setForm ] = useState( formID );
-	const [ filteredOptions, setFilteredOptions ] = useState( forms );
+	const [ filteredOptions, setFilteredOptions ] = useState( forms || [] );
 
 	// Sync local state with prop changes
 	useEffect( () => {
@@ -16,7 +16,7 @@ function FormSelector( { className, disabled, formID, forms, handleChange } ) {
 
 	// Sync filtered options when forms change
 	useEffect( () => {
-		setFilteredOptions( forms );
+		setFilteredOptions( forms || [] );
 	}, [ forms ] );
 
 	const setFormData = ( value ) => {
@@ -36,7 +36,7 @@ function FormSelector( { className, disabled, formID, forms, handleChange } ) {
 				options={ filteredOptions }
 				onFilterValueChange={ ( inputValue ) => {
 					setFilteredOptions(
-						forms?.filter( ( _form ) =>
+						( forms || [] )?.filter( ( _form ) =>
 							_form.label
 								.toLowerCase()
 								.startsWith( inputValue.toLowerCase() ),

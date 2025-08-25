@@ -8,13 +8,13 @@ import { v4 as uuidv4 } from 'uuid';
  */
 const FORM_PLUGIN_MAP = {
 	'wpforms': 'wpforms',
-	'gravity': 'gravity',
-	'contact-form-7': 'cf7',
+	'gravity_forms': 'gravity',
+	'contact_form_7': 'cf7',
 	'sureforms': 'sureforms',
 	'forminator': 'forminator',
-	'fluentforms': 'fluentforms',
+	'fluent_forms': 'fluentforms',
 	'everest-forms': 'everest',
-	'ninja-forms': 'ninja',
+	'ninja_forms': 'ninja',
 	'metform': 'metform',
 };
 
@@ -62,8 +62,12 @@ export const createLayerFromGlobalSettings = (globalLayer, layerType, videoDurat
 				duration: globalLayer.forms.duration || 0,
 				submitted: false,
 				allow_skip: true,
-				custom_css: '',
-				theme: '',
+				custom_css: globalLayer.forms.custom_css || '',
+				theme: globalLayer.forms.theme || '',
+				// Additional form properties from global settings
+				screen_position: globalLayer.forms.screen_position || 'center',
+				overlay_color: globalLayer.forms.overlay_color || 'rgba(0,0,0,0.8)',
+				show_close_button: globalLayer.forms.show_close_button !== false,
 			};
 
 		case 'cta':
@@ -80,9 +84,12 @@ export const createLayerFromGlobalSettings = (globalLayer, layerType, videoDurat
 				),
 				cta_type: 'text',
 				text: globalLayer.cta.text,
+				html: '',
 				link: globalLayer.cta.url || '',
-				new_tab: globalLayer.cta.new_tab !== false,
 				allow_skip: true,
+				imageOpacity: 1,
+				// Additional CTA properties from global settings
+				new_tab: globalLayer.cta.new_tab !== false,
 				duration: globalLayer.cta.duration || 10,
 				screen_position: globalLayer.cta.screen_position || 'bottom-center',
 				background_color: globalLayer.cta.background_color || '#0073aa',
@@ -141,7 +148,7 @@ export const createLayerFromGlobalSettings = (globalLayer, layerType, videoDurat
 			};
 
 		case 'poll':
-			if (!globalLayer.polls?.enabled || !globalLayer.polls?.polls?.length) {
+			if (!globalLayer.polls?.enabled || !globalLayer.polls?.poll_id) {
 				return null;
 			}
 
@@ -149,21 +156,18 @@ export const createLayerFromGlobalSettings = (globalLayer, layerType, videoDurat
 				...baseLayer,
 				displayTime: getDisplayTimeFromPlacement(
 					globalLayer.polls.placement,
-					0,
+					globalLayer.polls.position,
 					videoDuration
 				),
-				duration: globalLayer.polls.default_duration || 15,
+				poll_id: globalLayer.polls.poll_id,
+				allow_skip: true,
+				custom_css: globalLayer.polls.custom_css || '',
+				// Additional poll properties from global settings
+				duration: globalLayer.polls.duration || 15,
 				screen_position: globalLayer.polls.screen_position || 'center',
 				show_results_default: globalLayer.polls.show_results_default !== false,
 				background_color: globalLayer.polls.background_color || '#ffffff',
 				text_color: globalLayer.polls.text_color || '#000000',
-				polls: globalLayer.polls.polls.map(poll => ({
-					id: uuidv4(),
-					question: poll.question,
-					options: poll.options || [],
-					correct_answer: poll.correct_answer,
-					type: poll.type || 'multiple_choice',
-				})),
 			};
 
 		default:
@@ -175,8 +179,6 @@ export const createLayerFromGlobalSettings = (globalLayer, layerType, videoDurat
  * Apply global settings to create initial layers for a video
  */
 export const applyGlobalLayersToVideo = (globalSettings, videoDuration = 0) => {
-	console.log('Applying global layers to video:', globalSettings);
-	
 	if (!globalSettings?.global_layers) {
 		return [];
 	}
@@ -187,39 +189,33 @@ export const applyGlobalLayersToVideo = (globalSettings, videoDuration = 0) => {
 	// Add form layer if enabled
 	const formLayer = createLayerFromGlobalSettings(globalLayers, 'form', videoDuration);
 	if (formLayer) {
-		console.log('Adding global form layer:', formLayer);
 		layersToAdd.push(formLayer);
 	}
 
 	// Add CTA layer if enabled
 	const ctaLayer = createLayerFromGlobalSettings(globalLayers, 'cta', videoDuration);
 	if (ctaLayer) {
-		console.log('Adding global CTA layer:', ctaLayer);
 		layersToAdd.push(ctaLayer);
 	}
 
 	// Add video ads layer if enabled
 	const adLayer = createLayerFromGlobalSettings(globalLayers, 'video_ads', videoDuration);
 	if (adLayer) {
-		console.log('Adding global video ads layer:', adLayer);
 		layersToAdd.push(adLayer);
 	}
 
 	// Add hotspots layer if enabled
 	const hotspotsLayer = createLayerFromGlobalSettings(globalLayers, 'hotspot', videoDuration);
 	if (hotspotsLayer) {
-		console.log('Adding global hotspots layer:', hotspotsLayer);
 		layersToAdd.push(hotspotsLayer);
 	}
 
 	// Add polls layer if enabled
 	const pollsLayer = createLayerFromGlobalSettings(globalLayers, 'poll', videoDuration);
 	if (pollsLayer) {
-		console.log('Adding global polls layer:', pollsLayer);
 		layersToAdd.push(pollsLayer);
 	}
 
-	console.log('Total global layers to add:', layersToAdd.length);
 	return layersToAdd;
 };
 

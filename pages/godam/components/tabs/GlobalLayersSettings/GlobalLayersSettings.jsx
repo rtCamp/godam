@@ -52,21 +52,10 @@ const GlobalLayersSettings = () => {
 	// Function to save settings
 	const handleSaveSettings = async () => {
 		try {
-			console.log('Saving media settings:', mediaSettings);
 			const result = await saveMediaSettings( mediaSettings ).unwrap();
-			console.log('Save result:', result);
 			dispatch( resetChangeFlag() );
 			showNotice( __( 'Global layers settings saved successfully!', 'godam' ), 'success' );
 		} catch ( error ) {
-			console.error( 'Failed to save global layers settings:', error );
-			
-			// More detailed error logging
-			if ( error.status ) {
-				console.error( 'Error status:', error.status );
-			}
-			if ( error.data ) {
-				console.error( 'Error data:', error.data );
-			}
 			
 			let errorMessage = __( 'Failed to save global layers settings. Please try again.', 'godam' );
 			if ( error.data && error.data.message ) {

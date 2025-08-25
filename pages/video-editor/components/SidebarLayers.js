@@ -313,7 +313,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 									>
 										<div className="border rounded-lg mb-2">
 											<Button
-												className={ `w-full flex justify-between items-center px-2 py-3 border-1 rounded-lg h-auto hover:bg-gray-50 cursor-pointer border-[#e5e7eb] ${ addWarning ? 'bg-orange-50 hover:bg-orange-50' : '' }` }
+												className={ `w-full flex justify-between items-center px-2 py-3 border-1 rounded-lg h-auto hover:bg-gray-50 cursor-pointer border-[#e5e7eb] ${ addWarning ? 'bg-orange-50 hover:bg-orange-50' : '' } ${ layer.isGlobalLayer ? 'bg-blue-50 border-blue-200' : '' }` }
 												onClick={ () => {
 													dispatch( setCurrentLayer( layer ) );
 													onSelectLayer( layer.displayTime );
@@ -327,7 +327,19 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 															<Icon icon={ icon } />
 														)
 													}
-													<p className="m-0 text-base">{ layerText } layer at <b>{ layer.displayTime }s</b></p>
+													<div className="flex flex-col items-start">
+														<p className="m-0 text-base">
+															{ layer.isGlobalLayer && (
+																<span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded mr-2">
+																	Global
+																</span>
+															) }
+															{ layerText } layer at <b>{ layer.displayTime }s</b>
+														</p>
+														{ layer.isGlobalLayer && (
+															<p className="m-0 text-xs text-blue-600">From global settings</p>
+														) }
+													</div>
 												</div>
 												<div>
 													<Icon icon={ arrowRight } />

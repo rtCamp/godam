@@ -166,7 +166,8 @@ class Settings extends Base {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_easydam_settings' ),
 					'permission_callback' => function () {
-						return current_user_can( 'manage_options' );
+						// Allow users who can edit posts to view global settings (for video editor)
+						return current_user_can( 'edit_posts' ) || current_user_can( 'manage_options' );
 					},
 				),
 			),

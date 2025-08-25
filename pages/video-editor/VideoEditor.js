@@ -21,6 +21,7 @@ import {
 	initializeStore,
 	saveVideoMeta,
 	setCurrentTab,
+	setLayers,
 	setGravityForms,
 	setCF7Forms,
 	setWPForms,
@@ -34,10 +35,12 @@ import {
 
 import './video-editor.scss';
 import { useGetAttachmentMetaQuery, useSaveAttachmentMetaMutation } from './redux/api/attachment';
+import { useGetGlobalSettingsQuery } from './redux/api/global-settings';
 import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
+import { applyGlobalLayersToVideo, mergeGlobalAndVideoLayers } from './utils/globalLayersUtils';
 import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
 
 const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
@@ -47,6 +50,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ duration, setDuration ] = useState( 0 );
 	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
 	const [ showSnackbar, setShowSnackbar ] = useState( false );
+	const [ globalLayersApplied, setGlobalLayersApplied ] = useState( false );
 
 	const playerRef = useRef( null );
 
@@ -58,6 +62,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
 
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
+	const { data: globalSettings, isLoading: isGlobalSettingsLoading, error: globalSettingsError } = useGetGlobalSettingsQuery();
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
 	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, metforms, isFetching } = useFetchForms();
@@ -94,6 +99,9 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		}
 
 		const { rtgodam_meta: rtGodamMeta, source_url: sourceURL, mime_type: mimeType, meta } = attachmentConfig;
+
+		// Reset global layers applied state when a new video is loaded
+		setGlobalLayersApplied( false );
 
 		// Initialize the store if meta exists
 		if ( rtGodamMeta ) {
@@ -175,7 +183,55 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		}
 	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms, metforms ] );
 
-	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
+	/**
+	 * Apply global layers when conditions are met:
+	 * - Video has duration (loaded)
+	 * - Global settings are loaded successfully 
+	 * - Global layers haven't been applied yet
+	 * - Forms are loaded if needed for form layers
+	 */
+	useEffect( () => {
+		// Only proceed if we have duration, global settings are loaded, and global layers haven't been applied yet
+		if ( 
+			duration > 0 && 
+			globalSettings && 
+			! isGlobalSettingsLoading && 
+			! globalSettingsError &&
+			! globalLayersApplied
+		) {
+			// Check if global settings include forms and if they need to be loaded
+			const hasFormLayer = globalSettings?.global_layers?.forms?.enabled;
+			const formsNeeded = hasFormLayer && isFetching;
+			
+			// Don't apply if forms are needed but still loading
+			if ( formsNeeded ) {
+				return;
+			}
+			
+			try {
+				// Create global layers from settings
+				const globalLayers = applyGlobalLayersToVideo( 
+					globalSettings, 
+					duration 
+				);
+				
+				if ( globalLayers.length > 0 ) {
+					// Merge global layers with existing video layers (get current layers at time of execution)
+					const currentLayers = layers;
+					const updatedLayers = mergeGlobalAndVideoLayers( currentLayers, globalLayers );
+					
+					// Update layers in Redux store
+					dispatch( setLayers( updatedLayers ) );
+				}
+				
+				// Mark global layers as applied (success or no layers)
+				setGlobalLayersApplied( true );
+			} catch ( error ) {
+				console.error( 'Error applying global layers:', error );
+				setGlobalLayersApplied( true );
+			}
+		}
+	}, [ duration, globalSettings, isGlobalSettingsLoading, globalSettingsError, isFetching, globalLayersApplied, dispatch ] );	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {
 		if ( player ) {
 			playerRef.current = player;

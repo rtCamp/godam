@@ -29,7 +29,7 @@ const SureForm = ( { layerID } ) => {
 	const forms = sureforms?.map( ( form ) => ( {
 		value: form.id,
 		label: form.title,
-	} ) );
+	} ) ) || [];
 
 	const changeFormID = ( formID ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'sureform_id', value: formID } ) );
