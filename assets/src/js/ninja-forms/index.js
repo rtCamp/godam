@@ -94,7 +94,7 @@ import { __ } from '@wordpress/i18n';
 				view.model.set( 'files', files );
 			}
 
-			$file[ 0 ].addEventListener( 'godamffchange', ( event ) => {
+			$file[ 0 ].addEventListener( 'godamFormInputchange', ( event ) => {
 				this.resetError( view, fieldID );
 				this.handleFileUpload( event, view, fieldID, formID, nonce );
 			} );
