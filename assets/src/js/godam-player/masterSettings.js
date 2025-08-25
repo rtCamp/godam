@@ -97,6 +97,7 @@ class SettingsButton extends videojs.getComponent( 'MenuButton' ) {
 		// Attach a new outside click listener and store its reference
 		this._outsideClickListener = this.outsideClickListener.bind( this );
 		document.addEventListener( 'click', this._outsideClickListener, { once: true } );
+		document.addEventListener( 'touchstart', this._outsideClickListener, { once: true } );
 	}
 
 	// Method to detach the outside click listener
@@ -141,7 +142,34 @@ function closeAndResetMenu( menuButton ) {
 	menuButton.menu.hide();
 	menuButton.menu.unlockShowing();
 	menuButton.resetToDefaultMenu(); // reset to default menu
+
+	// On mobile, hide controls as well
+	if ( menuButton.player_ ) {
+		menuButton.player_.userActive( false );
+	}
 }
+
+// Add listener on video element to hide controls on mobile tap
+function attachVideoTapListener( player ) {
+	const videoEl = player.el();
+	if ( ! videoEl ) {
+		return;
+	}
+
+	const hideControls = ( e ) => {
+		if ( ! e.target.closest( '.vjs-control' ) ) {
+			player.userActive( false );
+		}
+	};
+
+	videoEl.addEventListener( 'click', hideControls );
+	videoEl.addEventListener( 'touchstart', hideControls );
+}
+
+// Attach when player is ready
+videojs.hook( 'ready', ( player ) => {
+	attachVideoTapListener( player );
+} );
 
 function openSubmenu( menuButton, items, title = '' ) {
 	// Ensure the menu is created
