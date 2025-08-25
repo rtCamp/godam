@@ -96,7 +96,8 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 .hide-sidebar {
 
-	.media-frame-menu {
+	.media-frame-menu,
+	.media-frame-menu-heading {
 		display: none;
 	}
 

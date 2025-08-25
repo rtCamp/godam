@@ -26,6 +26,17 @@ if ( isset( $is_elementor_widget ) && $is_elementor_widget ) {
 // prevent default behavior of Gravity Forms autoscroll on submission.
 add_filter( 'gform_confirmation_anchor', '__return_false' );
 
+// Check if the block attributes are set and is an array.
+if ( ! isset( $attributes ) || ! is_array( $attributes ) ) {
+	$attributes = array();
+}
+
+// Create filter for the block attributes.
+$attributes = apply_filters(
+	'godam_player_block_attributes',
+	$attributes
+);
+
 // attributes.
 $autoplay       = ! empty( $attributes['autoplay'] );
 $controls       = isset( $attributes['controls'] ) ? $attributes['controls'] : true;

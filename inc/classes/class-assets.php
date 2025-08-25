@@ -326,6 +326,7 @@ class Assets {
 		$godam_settings_obj = array(
 			'brandImage' => $brand_image,
 			'brandColor' => $brand_color,
+			'apiBase'    => RTGODAM_API_BASE,
 		);
 
 		if ( ! rtgodam_is_api_key_valid() ) {

@@ -142,3 +142,15 @@ function rtgodam_plugin_deactivate() {
 }
 
 register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
+
+/**
+ * Runs when the plugin is deleted.
+ */
+function rtgodam_plugin_delete() {
+	// Delete options related to What's New page.
+	// This is to ensure redirection on a fresh install.
+	delete_option( 'rtgodam_plugin_version' );
+	delete_option( '_transient_rtgodam_release_data' );
+}
+
+register_uninstall_hook( __FILE__, 'rtgodam_plugin_delete' );

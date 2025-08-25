@@ -165,9 +165,13 @@ export default class EventsManager {
 	 * Setup overlay handler
 	 */
 	setupOverlayHandler() {
-		const videoContainerWrapper = this.video.closest( '.godam-video-wrapper' );
-		const overlay = videoContainerWrapper?.querySelector( '[data-overlay-content]' );
+		const videoContainerWrapper = ( this.player && this.player.el && this.player.el() ) || this.video;
+		const wrapper = videoContainerWrapper && videoContainerWrapper.closest ? videoContainerWrapper.closest( '.godam-video-wrapper' ) : null;
+		if ( ! wrapper ) {
+			return;
+		}
 
+		const overlay = wrapper.querySelector( '[data-overlay-content]' );
 		if ( ! overlay ) {
 			return;
 		}
