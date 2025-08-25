@@ -449,6 +449,10 @@
 .easydam-layer.hotspot-layer {
 	pointer-events: none;
 	background: transparent;
+
+	&.overlapped {
+		z-index: 0;
+	}
 }
 
 .godam-menu-item-container {
@@ -774,6 +778,38 @@ body.godam-share-modal-open {
 				img {
 					height: 18px;
 					width: 18px;
+				}
+			}
+		}
+	}
+
+	&__timestamp-container {
+
+		label {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+			font-size: 14px;
+			width: fit-content;
+			font-weight: 400;
+			line-height: normal;
+
+			.use-timestamp {
+				height: 20px;
+				width: 20px;
+				margin: 0;
+			}
+
+			.timestamp-input {
+				font-size: inherit;
+				width: 60px;
+				border: none;
+				border-bottom: 1px solid variables.$godam-share-modal-divider-color;
+				margin: 0;
+
+				&:read-only {
+					cursor: not-allowed;
+					opacity: 0.5;
 				}
 			}
 		}
