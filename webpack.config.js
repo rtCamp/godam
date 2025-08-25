@@ -192,6 +192,13 @@ const fluentForms = {
 	},
 };
 
+const everestForms = {
+	...sharedConfig,
+	entry: {
+		everestforms: path.resolve( process.cwd(), 'assets', 'src', 'js', 'everestforms', 'index.js' ),
+	},
+};
+
 const godamPlayerSDK = {
 	...sharedConfig,
 	entry: {
@@ -307,6 +314,7 @@ module.exports = [
 	elementorEditorJS,
 	godamRecorder,
 	fluentForms,
+	everestForms,
 	godamPlayerSDK,
 	lifterLMSBlock,
 	lifterLMSEmbed,
