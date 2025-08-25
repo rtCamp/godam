@@ -156,7 +156,7 @@ class Ninja_Forms_Integration {
 	 */
 	public function register_field( $fields ) {
 
-		$fields[ Ninja_Forms_Field_Godam_Recorder::$field_type ] = new Ninja_Forms_Field_Godam_Recorder();
+		$fields[ Ninja_Forms_Field_Godam_Recorder::$field_type ] = Ninja_Forms_Field_Godam_Recorder::get_instance();
 
 		return $fields;
 	}

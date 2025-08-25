@@ -323,7 +323,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		document.querySelectorAll( '.uppy-video-upload' ).forEach( ( container ) => {
 			new UppyVideoUploader( container );
 		} );
-	}, 10 );
+	}, 100 );
 } );
 
 /**
