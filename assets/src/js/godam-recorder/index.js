@@ -318,9 +318,12 @@ class UppyVideoUploader {
 document.addEventListener( 'DOMContentLoaded', () => {
 	UppyVideoUploader.clearUppyStateIfConfirmed();
 
-	document.querySelectorAll( '.uppy-video-upload' ).forEach( ( container ) => {
-		new UppyVideoUploader( container );
-	} );
+	// Timeout added to allow DOM updates to settle.
+	setTimeout( () => {
+		document.querySelectorAll( '.uppy-video-upload' ).forEach( ( container ) => {
+			new UppyVideoUploader( container );
+		} );
+	}, 100 );
 } );
 
 /**
