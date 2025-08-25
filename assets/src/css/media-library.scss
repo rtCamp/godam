@@ -176,7 +176,7 @@
 
 			.search-box {
 				margin: 0;
-		}
+			}
 		}
 
 		input, select, button {
@@ -310,31 +310,31 @@
 
 @media (min-width: 900px) {
 
-#wpbody {
+	#wpbody {
 
-		> #rt-transcoder-media-library-root {
-		height: 100vh;
-		width: 280px;
-		background-color: #fff;
+			> #rt-transcoder-media-library-root {
+			height: 100vh;
+			width: 280px;
+			background-color: #fff;
 
-		&.hide-sidebar {
-			border: none;
+			&.hide-sidebar {
+				border: none;
+			}
+		}
+
+	#wpbody-content {
+		margin-left: 280px;
+	}
+
+		&:has(#rt-transcoder-media-library-root.hide-sidebar) #wpbody-content {
+			margin-left: 0;
 		}
 	}
 
-   #wpbody-content {
-	   margin-left: 280px;
-   }
-
-	&:has(#rt-transcoder-media-library-root.hide-sidebar) #wpbody-content {
-		margin-left: 0;
+	#wpfooter {
+		margin-left: calc(280px + 160px);
 	}
 }
-
-#wpfooter {
-	margin-left: calc(280px + 160px);
-}
-	}
 
 /**
  * EXIF data styles.
