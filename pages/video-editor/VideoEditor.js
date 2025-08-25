@@ -29,6 +29,8 @@ import {
 	setFluentForms,
 	setEverestForms,
 	setNinjaForms,
+	setTranscodingJobId,
+	addGodamCentralLayers,
 	setMetforms,
 } from './redux/slice/videoSlice';
 
@@ -38,6 +40,7 @@ import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
+import { useGetHubSpotFormsQuery } from './redux/api/hubspot-forms';
 import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
 
 const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
@@ -61,6 +64,31 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
 	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, metforms, isFetching } = useFetchForms();
+	const { data: hubspotForms, isLoading: isHubspotFormsLoading } = useGetHubSpotFormsQuery( attachmentID );
+
+	/**
+	 * Effects hook to process HubSpot forms and add them as layers.
+	 * It maps HubSpot form data to the internal layer structure and dispatches
+	 * an action to add these layers to the Redux store.
+	 */
+	useEffect( () => {
+		if ( ! isHubspotFormsLoading && hubspotForms ) {
+			const hubspotLayers = hubspotForms?.layers?.map( ( form ) => {
+				return {
+					id: form.id,
+					allow_skip: form.allowSkip,
+					hubspot_id: form.formId,
+					form_type: form.formProvider,
+					displayTime: form.timestamp.toFixed( 2 ),
+					backgroundColor: form.backgroundColor,
+					backgroundOpacity: form.backgroundOpacity,
+					type: 'form',
+				};
+			} );
+
+			dispatch( addGodamCentralLayers( hubspotLayers ) );
+		}
+	}, [ hubspotForms, isHubspotFormsLoading, dispatch ] );
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -98,6 +126,10 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		// Initialize the store if meta exists
 		if ( rtGodamMeta ) {
 			dispatch( initializeStore( rtGodamMeta ) );
+		}
+
+		if ( meta?.rtgodam_transcoding_job_id ) {
+			dispatch( setTranscodingJobId( meta.rtgodam_transcoding_job_id ) );
 		}
 
 		// Initialize video sources with the original source
