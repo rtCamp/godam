@@ -34,10 +34,8 @@ export default function Edit( { attributes, setAttributes } )
         isGenerating = false,
         videoTitle = '',
         videoDescription = '',
-        aiModel = 'runway',
-        videoStyle = 'product-showcase',
+        videoStyle = 'kling-1.0-pro',
         videoDuration = 15,
-        apiEndpoint = '',
         apiKey = ''
     } = attributes;
 
@@ -50,21 +48,9 @@ export default function Edit( { attributes, setAttributes } )
     } );
 
     // Configuration options
-    const aiModelOptions = [
-        { label: __( 'Runway ML Gen-3', 'godam-video-generator' ), value: 'runway' },
-        { label: __( 'Stable Video Diffusion', 'godam-video-generator' ), value: 'stable-video' },
-        { label: __( 'Pika Labs', 'godam-video-generator' ), value: 'pika' },
-        { label: __( 'LeiaPix', 'godam-video-generator' ), value: 'leiapix' },
-        { label: __( 'Custom API', 'godam-video-generator' ), value: 'custom' }
-    ];
-
     const videoStyleOptions = [
-        { label: __( 'Product Showcase', 'godam-video-generator' ), value: 'product-showcase' },
-        { label: __( 'Lifestyle Ad', 'godam-video-generator' ), value: 'lifestyle' },
-        { label: __( 'Minimalist', 'godam-video-generator' ), value: 'minimalist' },
-        { label: __( 'Dynamic Motion', 'godam-video-generator' ), value: 'dynamic' },
-        { label: __( 'Brand Story', 'godam-video-generator' ), value: 'brand-story' },
-        { label: __( 'Social Media Ad', 'godam-video-generator' ), value: 'social-media' }
+        { label: __( 'Realistic', 'godam-video-generator' ), value: 'kling-1.0-pro' },
+        { label: __( 'Cinematic', 'godam-video-generator' ), value: 'kling-1.5' }
     ];
 
     // Validation functions
@@ -85,11 +71,6 @@ export default function Edit( { attributes, setAttributes } )
         if ( !videoDescription.trim() )
         {
             errors.description = __( 'Video description is required.', 'godam-video-generator' );
-        }
-
-        if ( !apiEndpoint.trim() )
-        {
-            errors.apiEndpoint = __( 'API endpoint is required.', 'godam-video-generator' );
         }
 
         if ( !apiKey.trim() )
@@ -129,7 +110,7 @@ export default function Edit( { attributes, setAttributes } )
         setAttributes( { productImages: updatedImages } );
     };
 
-    // API call to third-party service
+    // API call to Vyro AI
     const generateVideo = async () =>
     {
         if ( !validateForm() )
@@ -154,28 +135,20 @@ export default function Edit( { attributes, setAttributes } )
                 } );
             }, 2000 );
 
-            // Prepare form data for third-party API
+            // Convert image URL to blob for FormData
+            const imageBlob = await fetch( productImages[0].url ).then( r => r.blob() );
+
+            // Prepare form data for Vyro AI API
             const formData = new FormData();
+            formData.append( 'style', videoStyle );
+            formData.append( 'prompt', `${videoTitle}. ${videoDescription}` );
+            formData.append( 'file', imageBlob, productImages[0].filename || 'image.jpg' );
 
-            // Add images to form data
-            productImages.forEach( ( image, index ) =>
-            {
-                formData.append( `images[${ index }]`, image.url );
-            } );
-
-            // Add other parameters
-            formData.append( 'title', videoTitle );
-            formData.append( 'description', videoDescription );
-            formData.append( 'ai_model', aiModel );
-            formData.append( 'video_style', videoStyle );
-            formData.append( 'duration', videoDuration );
-
-            // Make request to third-party API
-            const response = await fetch( apiEndpoint, {
+            // Make request to Vyro AI API
+            const response = await fetch( 'https://api.vyro.ai/v2/video/image-to-video', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${ apiKey }`,
-                    'Accept': 'application/json',
                 },
                 body: formData
             } );
@@ -188,7 +161,7 @@ export default function Edit( { attributes, setAttributes } )
             if ( response.ok && data.success )
             {
                 setAttributes( {
-                    generatedVideoUrl: data.video_url || data.videoUrl,
+                    generatedVideoUrl: data.video_url || data.videoUrl || data.url,
                     isGenerating: false
                 } );
             } else
@@ -215,28 +188,14 @@ export default function Edit( { attributes, setAttributes } )
     return (
         <>
             <InspectorControls>
-                <PanelBody title={ __( 'API Configuration', 'godam-video-generator' ) } initialOpen={ false }>
+                <PanelBody title={ __( 'Vyro AI Configuration', 'godam-video-generator' ) } initialOpen={ false }>
                     <TextControl
-                        label={ __( 'API Endpoint URL', 'godam-video-generator' ) }
-                        value={ apiEndpoint }
-                        onChange={ ( value ) => setAttributes( { apiEndpoint: value } ) }
-                        placeholder="https://api.example.com/generate-video"
-                        help={ __( 'Enter the third-party API endpoint URL', 'godam-video-generator' ) }
-                        className={ validationErrors.apiEndpoint ? 'has-error' : '' }
-                    />
-                    { validationErrors.apiEndpoint && (
-                        <Notice status="error" isDismissible={ false }>
-                            { validationErrors.apiEndpoint }
-                        </Notice>
-                    ) }
-
-                    <TextControl
-                        label={ __( 'API Key', 'godam-video-generator' ) }
+                        label={ __( 'Vyro AI API Key', 'godam-video-generator' ) }
                         value={ apiKey }
                         onChange={ ( value ) => setAttributes( { apiKey: value } ) }
                         type="password"
-                        placeholder="Enter your API key"
-                        help={ __( 'Your API authentication key', 'godam-video-generator' ) }
+                        placeholder="vk-..."
+                        help={ __( 'Your Vyro AI authentication key', 'godam-video-generator' ) }
                         className={ validationErrors.apiKey ? 'has-error' : '' }
                     />
                     { validationErrors.apiKey && (
@@ -248,34 +207,11 @@ export default function Edit( { attributes, setAttributes } )
 
                 <PanelBody title={ __( 'Video Settings', 'godam-video-generator' ) } initialOpen={ true }>
                     <SelectControl
-                        label={ __( 'AI Model', 'godam-video-generator' ) }
-                        value={ aiModel }
-                        options={ aiModelOptions }
-                        onChange={ ( value ) => setAttributes( { aiModel: value } ) }
-                        help={ __( 'Choose the AI model for video generation', 'godam-video-generator' ) }
-                    />
-
-                    <SelectControl
-                        label={ __( 'Video Style', 'godam-video-generator' ) }
+                        label={ __( 'Vyro AI Style', 'godam-video-generator' ) }
                         value={ videoStyle }
                         options={ videoStyleOptions }
                         onChange={ ( value ) => setAttributes( { videoStyle: value } ) }
-                        help={ __( 'Select the style of advertisement video', 'godam-video-generator' ) }
-                    />
-
-                    <RangeControl
-                        label={ __( 'Video Duration (seconds)', 'godam-video-generator' ) }
-                        value={ videoDuration }
-                        onChange={ ( value ) => setAttributes( { videoDuration: value } ) }
-                        min={ 5 }
-                        max={ 60 }
-                        step={ 5 }
-                        marks={ [
-                            { value: 5, label: '5s' },
-                            { value: 15, label: '15s' },
-                            { value: 30, label: '30s' },
-                            { value: 60, label: '60s' }
-                        ] }
+                        help={ __( 'Choose the Vyro AI style for video generation', 'godam-video-generator' ) }
                     />
                 </PanelBody>
 
@@ -294,11 +230,11 @@ export default function Edit( { attributes, setAttributes } )
                     ) }
 
                     <TextareaControl
-                        label={ __( 'Video Description', 'godam-video-generator' ) }
+                        label={ __( 'Video Description/Prompt', 'godam-video-generator' ) }
                         value={ videoDescription }
                         onChange={ ( value ) => setAttributes( { videoDescription: value } ) }
-                        placeholder={ __( 'Describe the video content...', 'godam-video-generator' ) }
-                        help={ __( 'This helps the AI generate more relevant content', 'godam-video-generator' ) }
+                        placeholder={ __( 'Describe the video content and animation...', 'godam-video-generator' ) }
+                        help={ __( 'This becomes the prompt for Vyro AI video generation', 'godam-video-generator' ) }
                         rows={ 4 }
                         className={ validationErrors.description ? 'has-error' : '' }
                     />
@@ -314,9 +250,9 @@ export default function Edit( { attributes, setAttributes } )
                 <Card className="godam-video-generator-card">
                     <CardBody>
                         <div className="godam-video-generator-header">
-                            <h3>{ __( 'Godam AI Video Generator', 'godam-video-generator' ) }</h3>
+                            <h3>{ __( 'Vyro AI Video Generator', 'godam-video-generator' ) }</h3>
                             <p className="description">
-                                { __( 'Create engaging advertisement videos from your product images using AI', 'godam-video-generator' ) }
+                                { __( 'Create engaging videos from your product images using Vyro AI', 'godam-video-generator' ) }
                             </p>
                         </div>
 
@@ -327,15 +263,18 @@ export default function Edit( { attributes, setAttributes } )
                         ) }
 
                         <div className="godam-image-section">
-                            <h4>{ __( 'Product Images', 'godam-video-generator' ) }</h4>
+                            <h4>{ __( 'Product Image', 'godam-video-generator' ) }</h4>
+                            <p className="description">
+                                { __( 'Note: Vyro AI processes one image at a time. Select your main product image.', 'godam-video-generator' ) }
+                            </p>
 
                             <MediaUploadCheck>
                                 <MediaUpload
-                                    onSelect={ onSelectImages }
+                                    onSelect={ ( media ) => onSelectImages( Array.isArray( media ) ? media : [ media ] ) }
                                     allowedTypes={ ALLOWED_MEDIA_TYPES }
-                                    multiple={ true }
-                                    gallery={ true }
-                                    value={ productImages.map( img => img.id ) }
+                                    multiple={ false }
+                                    gallery={ false }
+                                    value={ productImages.length > 0 ? productImages[0].id : '' }
                                     render={ ( { open } ) => (
                                         <Button
                                             onClick={ open }
@@ -344,8 +283,8 @@ export default function Edit( { attributes, setAttributes } )
                                             icon="camera"
                                         >
                                             { productImages.length === 0
-                                                ? __( 'Select Product Images', 'godam-video-generator' )
-                                                : __( 'Change Images', 'godam-video-generator' )
+                                                ? __( 'Select Product Image', 'godam-video-generator' )
+                                                : __( 'Change Image', 'godam-video-generator' )
                                             }
                                         </Button>
                                     ) }
@@ -360,26 +299,21 @@ export default function Edit( { attributes, setAttributes } )
 
                             { productImages.length > 0 && (
                                 <div className="godam-selected-images">
-                                    <p className="images-count">
-                                        { __( 'Selected Images:', 'godam-video-generator' ) } { productImages.length }
-                                    </p>
                                     <div className="godam-image-grid">
-                                        { productImages.map( ( image, index ) => (
-                                            <div key={ image.id } className="godam-image-item">
-                                                <img src={ image.url } alt={ image.alt } />
-                                                <Button
-                                                    onClick={ () => removeImage( index ) }
-                                                    variant="secondary"
-                                                    isDestructive
-                                                    size="small"
-                                                    className="godam-remove-image"
-                                                    icon="no-alt"
-                                                >
-                                                    { __( 'Remove', 'godam-video-generator' ) }
-                                                </Button>
-                                                <div className="image-name">{ image.filename }</div>
-                                            </div>
-                                        ) ) }
+                                        <div className="godam-image-item">
+                                            <img src={ productImages[0].url } alt={ productImages[0].alt } />
+                                            <Button
+                                                onClick={ () => removeImage( 0 ) }
+                                                variant="secondary"
+                                                isDestructive
+                                                size="small"
+                                                className="godam-remove-image"
+                                                icon="no-alt"
+                                            >
+                                                { __( 'Remove', 'godam-video-generator' ) }
+                                            </Button>
+                                            <div className="image-name">{ productImages[0].filename }</div>
+                                        </div>
                                     </div>
                                 </div>
                             ) }
@@ -395,7 +329,7 @@ export default function Edit( { attributes, setAttributes } )
                             >
                                 { isGenerating
                                     ? __( 'Generating Video...', 'godam-video-generator' )
-                                    : __( 'Generate Advertisement Video', 'godam-video-generator' )
+                                    : __( 'Generate Video with Vyro AI', 'godam-video-generator' )
                                 }
                             </Button>
 
@@ -404,7 +338,7 @@ export default function Edit( { attributes, setAttributes } )
                                     <div className="progress-content">
                                         <Spinner />
                                         <div className="progress-text">
-                                            <p>{ __( 'Processing images and generating video...', 'godam-video-generator' ) }</p>
+                                            <p>{ __( 'Processing image with Vyro AI...', 'godam-video-generator' ) }</p>
                                             <span className="progress-percentage">{ Math.round( progress ) }%</span>
                                         </div>
                                     </div>
@@ -420,7 +354,7 @@ export default function Edit( { attributes, setAttributes } )
 
                         { generatedVideoUrl && (
                             <div className="godam-generated-video-section">
-                                <h4>{ __( 'Generated Advertisement Video', 'godam-video-generator' ) }</h4>
+                                <h4>{ __( 'Generated Video', 'godam-video-generator' ) }</h4>
                                 <div className="godam-video-container">
                                     <video
                                         controls
@@ -453,12 +387,8 @@ export default function Edit( { attributes, setAttributes } )
                         ) }
 
                         <div className="godam-info-section">
-                            <div className="godam-model-info">
-                                <strong>{ __( 'Current AI Model:', 'godam-video-generator' ) }</strong>{ ' ' }
-                                { aiModelOptions.find( opt => opt.value === aiModel )?.label }
-                            </div>
                             <div className="godam-style-info">
-                                <strong>{ __( 'Video Style:', 'godam-video-generator' ) }</strong>{ ' ' }
+                                <strong>{ __( 'Vyro AI Style:', 'godam-video-generator' ) }</strong>{ ' ' }
                                 { videoStyleOptions.find( opt => opt.value === videoStyle )?.label }
                             </div>
                         </div>
