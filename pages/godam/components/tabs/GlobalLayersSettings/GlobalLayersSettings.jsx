@@ -52,16 +52,15 @@ const GlobalLayersSettings = () => {
 	// Function to save settings
 	const handleSaveSettings = async () => {
 		try {
-			const result = await saveMediaSettings( mediaSettings ).unwrap();
+			await saveMediaSettings( mediaSettings ).unwrap();
 			dispatch( resetChangeFlag() );
 			showNotice( __( 'Global layers settings saved successfully!', 'godam' ), 'success' );
 		} catch ( error ) {
-			
 			let errorMessage = __( 'Failed to save global layers settings. Please try again.', 'godam' );
 			if ( error.data && error.data.message ) {
 				errorMessage = error.data.message;
 			}
-			
+
 			showNotice( errorMessage, 'error' );
 		}
 	};
@@ -75,7 +74,7 @@ const GlobalLayersSettings = () => {
 			}, 5000 );
 		}
 		return () => clearTimeout( timer );
-	}, [ notice.isVisible ] );
+	}, [ notice ] );
 
 	const tabs = [
 		{
@@ -102,7 +101,7 @@ const GlobalLayersSettings = () => {
 			name: 'polls',
 			title: __( 'Polls', 'godam' ),
 			component: PollsLayer,
-		}
+		},
 	];
 
 	return (
