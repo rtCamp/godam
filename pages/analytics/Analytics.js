@@ -745,13 +745,13 @@ const Analytics = ( { attachmentID } ) => {
 								{ thumbnailsURL && (
 									<div className="w-full flex">
 										<div className="m-auto basis-1/2">
-											<img src={ thumbnailsURL[ 0 ] } alt="AB Test Thumbnail" className="w-full h-full object-fill comparison-video-container" />
+											<img src={ thumbnailsURL[ 0 ] } alt="AB Test Thumbnail" className="w-full h-full object-contain bg-black comparison-video-container" />
 										</div>
 
 										<div className="w-px bg-gray-200 mx-4 divide-dashed"></div>
 
 										<div className="m-auto basis-1/2">
-											<img src={ thumbnailsURL[ 1 ] } alt="AB Test Thumbnail" className="w-full h-full object-fill comparison-video-container" />
+											<img src={ thumbnailsURL[ 1 ] } alt="AB Test Thumbnail" className="w-full h-full object-contain bg-black comparison-video-container" />
 										</div>
 									</div>
 								) }
