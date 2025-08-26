@@ -1,5 +1,10 @@
 # Changelog #
 
+## v1.3.5 (August 22, 2025) ##
+
+- Tweak: Set transcoded videos as public by default and add Org support parameters
+- Tweak: Provide HLS URL support for GoDAM Virtual Media
+
 ## v1.3.4 (August 11, 2025) ##
 
 - Fix: Video Editor UI issues
