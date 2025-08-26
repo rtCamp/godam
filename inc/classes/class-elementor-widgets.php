@@ -44,7 +44,7 @@ class Elementor_Widgets {
 
 	/**
 	 * Scripts for elementor frontend rendering.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function enqueue_scripts() {
@@ -70,17 +70,17 @@ class Elementor_Widgets {
 			array(),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-audio.css' )
 		);
-		
+
 
 		wp_register_script(
 			'godam-elementor-frontend',
-			RTGODAM_URL . 'assets/build/js/godam-elementor-frontend.min.js',
+			RTGODAM_URL . 'assets/build/js/godam-elementor-frontend.js',
 			array(
 				'jquery',
 				'wp-i18n',
 				'godam-player-frontend-script',
 			),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-elementor-frontend.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-elementor-frontend.js' ),
 			true
 		);
 	}

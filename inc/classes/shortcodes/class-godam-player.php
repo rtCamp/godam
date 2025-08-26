@@ -29,7 +29,7 @@ class GoDAM_Player {
 		add_action( 'wp_head', array( $this, 'godam_output_admin_player_css' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'godam_skin_styles_enqueue' ) );
 	}
-	
+
 	/**
 	 * Outputs custom css from video player settings tab input field.
 	 */
@@ -52,17 +52,17 @@ class GoDAM_Player {
 		// Register your scripts and styles here.
 		wp_register_script(
 			'godam-player-frontend-script',
-			RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
+			RTGODAM_URL . 'assets/build/js/godam-player-frontend.js',
 			array( 'wp-i18n' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-frontend.js' ),
 			true
 		);
 
 		wp_register_script(
 			'godam-player-analytics-script',
-			RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
+			RTGODAM_URL . 'assets/build/js/godam-player-analytics.js',
 			array( 'godam-player-frontend-script', 'wp-i18n' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js' ),
+			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-analytics.js' ),
 			true
 		);
 
@@ -168,7 +168,7 @@ class GoDAM_Player {
 		wp_enqueue_script( 'godam-player-analytics-script' );
 		wp_enqueue_style( 'godam-player-frontend-style' );
 		wp_enqueue_style( 'godam-player-style' );
-		
+
 		$godam_settings = get_option( 'rtgodam-settings', array() );
 		$selected_skin  = $godam_settings['video_player']['player_skin'] ?? '';
 		if ( 'Minimal' === $selected_skin ) {
