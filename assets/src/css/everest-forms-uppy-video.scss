@@ -1,0 +1,31 @@
+/**
+ * Styles for Everest Forms builder page.
+ */
+
+.everest-forms_page_evf-builder {
+
+	.evf-icon-godam-record {
+		font-family: dashicons, sans-serif !important;
+
+		&::before {
+			content: "\f234";
+		}
+	}
+
+	.everest-forms-field-godam_record {
+
+		.dashicons {
+			margin-right: 5px;
+		}
+
+		.evf-description {
+			color: #6c7680;
+		}
+
+		.uppy-video-upload-button {
+			display: flex;
+			align-items: center;
+			padding: 10px 15px;
+		}
+	}
+}

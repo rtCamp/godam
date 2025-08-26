@@ -9,6 +9,7 @@
 
 namespace RTGODAM\Inc\Ninja_Forms;
 
+use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Field_Godam_Recorder;
 use RTGODAM\Inc\Traits\Singleton;
 
 defined( 'ABSPATH' ) || exit;
@@ -50,6 +51,9 @@ class Ninja_Forms_Integration {
 
 		add_action( 'rtgodam_render_layer_for_video_editor_before', array( $this, 'add_css_for_the_layer_inside_iframe' ), 10, 2 );
 		add_action( 'rtgodam_render_layer_for_video_editor', array( $this, 'render_layer_form_for_video_editor' ), 10, 2 );
+
+		add_filter( 'ninja_forms_register_fields', array( $this, 'register_field' ) );
+		add_filter( 'ninja_forms_field_template_file_paths', array( $this, 'register_template_path' ) );
 	}
 
 	/**
@@ -139,5 +143,36 @@ class Ninja_Forms_Integration {
 		if ( 'ninja-forms' === $layer && ! empty( $layer_id ) ) {
 			echo do_shortcode( "[ninja_form id='{$layer_id}']" ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
+	}
+
+	/**
+	 * Register field
+	 *
+	 * @param array $fields Fields to register.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return array
+	 */
+	public function register_field( $fields ) {
+
+		$fields[ Ninja_Forms_Field_Godam_Recorder::$field_type ] = Ninja_Forms_Field_Godam_Recorder::get_instance();
+
+		return $fields;
+	}
+
+	/**
+	 * Provides the template path for GoDAM Recorder.
+	 *
+	 * @param array $paths Paths to template files.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return array
+	 */
+	public function register_template_path( $paths ) {
+		$paths[] = RTGODAM_PATH . 'inc/classes/ninja-forms/templates/';
+
+		return $paths;
 	}
 }

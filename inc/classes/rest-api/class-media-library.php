@@ -514,6 +514,23 @@ class Media_Library extends Base {
 
 		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
+		// Ensure selected thumbnail is valid. Fallback if not in either array.
+		if (
+			empty( $selected_thumbnail )
+			|| (
+				! in_array( $selected_thumbnail, $thumbnail_array, true )
+				&& ! in_array( $selected_thumbnail, $custom_thumbnails, true )
+			)
+		) {
+			if ( ! empty( $custom_thumbnails ) ) {
+				$selected_thumbnail = reset( $custom_thumbnails );
+			} elseif ( ! empty( $thumbnail_array ) ) {
+				$selected_thumbnail = reset( $thumbnail_array );
+			}
+		
+			update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $selected_thumbnail );
+		}
+
 		if ( ! empty( $selected_thumbnail ) ) {
 					$file_url = $selected_thumbnail;
 
@@ -1347,7 +1364,7 @@ class Media_Library extends Base {
 			'hide_empty' => false,
 			'orderby'    => 'name',
 			'order'      => 'ASC',
-			'per_page'   => 100, // Default to 100 items per page.
+			'number'     => 100, // Maximum number of terms to return.
 		);
 
 		// Initialize meta_query as empty array.
@@ -1371,6 +1388,9 @@ class Media_Library extends Base {
 			$args['meta_query'] = $meta_queries; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Meta query is needed to filter by bookmark and locked.
 		}
 
+		$total_pages = 0;
+		$total_items = 0;
+
 		if ( ! $locked && ! $bookmark ) {
 			$page = (int) $request->get_param( 'page' );
 
@@ -1388,6 +1408,9 @@ class Media_Library extends Base {
 			$args['offset'] = ( $page - 1 ) * $per_page;
 
 			$args['parent'] = (int) ( $request->get_param( 'parent' ) ?? 0 );
+
+			$total_items = $this->get_total_parent_media_folders_count();
+			$total_pages = ceil( $total_items / $per_page );
 		}
 
 		$terms = get_terms( $args );
@@ -1396,7 +1419,26 @@ class Media_Library extends Base {
 			$terms = $this->get_all_children_terms( $terms, $taxonomy );
 		}
 
-		return rest_ensure_response( $this->prepare_term_responses( $terms ) );
+		// Prepare the response data.
+		$prepared_terms = $this->prepare_term_responses( $terms );
+
+		// Ensure we always have an array, never null.
+		if ( is_null( $prepared_terms ) || ! is_array( $prepared_terms ) ) {
+			$prepared_terms = array();
+		}
+
+		// Create the response.
+		$response = rest_ensure_response( $prepared_terms );
+
+		// Add headers only for paginated requests.
+		if ( ! $locked && ! $bookmark ) {
+			$response->header( 'X-Wp-Total', $total_items );
+			$response->header( 'X-Wp-Totalpages', $total_pages );
+			$response->header( 'X-Wp-Current-Page', $page );
+			$response->header( 'X-Wp-Per-Page', $per_page );
+		}
+
+		return $response;
 	}
 
 	/**
@@ -1435,6 +1477,28 @@ class Media_Library extends Base {
 	}
 
 	/**
+	 * Get the total count of top-level (parent) media folders only.
+	 *
+	 * @return int Total count of parent media folders.
+	 */
+	private function get_total_parent_media_folders_count() {
+		$taxonomy = Media_Folders::SLUG;
+		$args     = array(
+			'taxonomy'   => $taxonomy,
+			'hide_empty' => false,
+			'fields'     => 'ids',
+			'parent'     => 0,
+		);
+		$term_ids = get_terms( $args );
+
+		if ( is_wp_error( $term_ids ) ) {
+			return 0;
+		}
+
+		return count( $term_ids );
+	}
+
+	/**
 	 * Prepare term responses for media folders.
 	 *
 	 * This method formats the term data for the REST API response.
@@ -1451,13 +1515,19 @@ class Media_Library extends Base {
 		$prepared = array();
 
 		foreach ( $terms as $term ) {
+			$locked_raw   = get_term_meta( $term->term_id, 'locked', true );
+			$bookmark_raw = get_term_meta( $term->term_id, 'bookmark', true );
+
+			$locked   = ( '1' === $locked_raw || 1 === $locked_raw || true === $locked_raw || 'true' === $locked_raw ) ? true : false;
+			$bookmark = ( '1' === $bookmark_raw || 1 === $bookmark_raw || true === $bookmark_raw || 'true' === $bookmark_raw ) ? true : false;
+
 			$prepared[] = array(
 				'id'              => $term->term_id,
 				'name'            => $term->name,
 				'parent'          => $term->parent,
 				'meta'            => array(
-					'locked'   => get_term_meta( $term->term_id, 'locked', true ),
-					'bookmark' => get_term_meta( $term->term_id, 'bookmark', true ),
+					'locked'   => $locked,
+					'bookmark' => $bookmark,
 				),
 				'attachmentCount' => (int) Media_Folder_Utils::get_instance()->get_attachment_count( $term->term_id ),
 			);
