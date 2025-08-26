@@ -285,14 +285,16 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 									value={ hotspot.name ?? '' }
 									/* translators: %d is the hotspot index */
 									placeholder={ sprintf( __( 'Hotspot %d', 'godam' ), index + 1 ) }
-									onChange={ ( val ) =>
+									maxLength={ 40 }
+									onChange={ ( val ) => {
+										const v = ( val || '' ).slice( 0, 40 );
 										updateField(
 											'hotspots',
 											hotspots.map( ( h2, j ) =>
-												j === index ? { ...h2, name: val } : h2,
+												j === index ? { ...h2, name: v } : h2,
 											),
-										)
-									}
+										);
+									} }
 									help={ __( 'Give this hotspot a descriptive title', 'godam' ) }
 									disabled={ ! isValidAPIKey }
 								/>
