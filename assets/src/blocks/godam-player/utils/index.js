@@ -85,4 +85,11 @@ function secondsToISO8601( seconds ) {
 	return isoString;
 }
 
-export { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty, secondsToISO8601 };
+function isSEODataEmpty( seoData ) {
+	return ! seoData ||
+		typeof seoData !== 'object' ||
+		Object.keys( seoData ).length === 0 ||
+		( Object.keys( seoData ).length === 1 && seoData.hasOwnProperty( 'isFamilyFriendly' ) );
+}
+
+export { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty, secondsToISO8601, isSEODataEmpty };
