@@ -23,6 +23,7 @@ export const FORM_TYPES = {
 	FORMINATOR: 'forminator',
 	FLUENT: 'fluentforms',
 	NINJA: 'ninjaforms',
+	METFORM: 'metform',
 };
 
 /**

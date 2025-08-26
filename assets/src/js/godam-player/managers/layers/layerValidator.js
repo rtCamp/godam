@@ -46,6 +46,7 @@ export default class LayerValidator {
 			[ FORM_TYPES.FORMINATOR ]: dependencies?.forminator,
 			[ FORM_TYPES.FLUENT ]: dependencies?.fluentForms,
 			[ FORM_TYPES.NINJA ]: dependencies?.ninjaForms,
+			[ FORM_TYPES.METFORM ]: dependencies?.metform,
 		};
 
 		return formChecks[ formType ] || false;

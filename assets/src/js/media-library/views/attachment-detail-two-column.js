@@ -14,6 +14,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { addIcon, trashIcon } from '../media-library-icons';
+import { canManageAttachment } from '../utility';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -621,8 +622,38 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @param {Object} data - The video thumbnail data to render.
 	 */
 	renderThumbnail( data ) {
+		if ( ! canManageAttachment( this.model.get( 'author' ) ) ) {
+			return;
+		}
+
 		const { thumbnails, selected, customThumbnails } = data;
 		const attachmentID = this.model.get( 'id' );
+
+		const selector = `.transcoding-status[data-id="${ attachmentID }"]`;
+		const status = document.querySelector( selector );
+
+		if ( status ) {
+			const statusImg = status.querySelector( 'img' );
+
+			if ( statusImg && statusImg.src !== selected ) {
+				statusImg.src = selected;
+			}
+		}
+
+		setTimeout( () => {
+			// Sometimes helps if .mejs-poster is rendered asynchronously
+			const posterDiv = document.querySelector( '.mejs-poster' );
+			if ( posterDiv && selected ) {
+				posterDiv.style.backgroundImage = `url('${ selected }')`;
+				posterDiv.style.backgroundSize = 'contain';
+
+				const posterImg = posterDiv.querySelector( 'img' );
+				if ( posterImg ) {
+					posterImg.setAttribute( 'src', selected );
+					posterImg.style.opacity = '1';
+				}
+			}
+		}, 20 );
 
 		const customThumbnailsArray = Array.isArray( customThumbnails )
 			? customThumbnails
@@ -737,6 +768,27 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 				const thumbnailURL = img?.src;
 
+				const posterDiv = document.querySelector( '.mejs-poster' );
+				if ( posterDiv ) {
+					posterDiv.style.backgroundImage = `url('${ thumbnailURL }')`;
+
+					const posterImg = posterDiv.querySelector( 'img' );
+					if ( posterImg ) {
+						posterImg.setAttribute( 'src', thumbnailURL );
+						posterImg.style.opacity = '1';
+					}
+				}
+
+				const selector = `.transcoding-status[data-id="${ attachmentID }"]`;
+				const status = document.querySelector( selector );
+
+				if ( status ) {
+					const statusImg = status.querySelector( 'img' );
+
+					if ( statusImg && statusImg.src !== thumbnailURL ) {
+						statusImg.src = thumbnailURL;
+					}
+				}
 				/**
 				 * Send a POST request to the server to set the selected thumbnail for the video.
 				 */
@@ -756,6 +808,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * Renders the Edit Video and Analytics buttons in the attachment details view.
 	 */
 	renderVideoActions() {
+		if ( ! canManageAttachment( this.model.get( 'author' ) ) ) {
+			return;
+		}
+
 		const buttonsHTML = this.getButtonsHTML();
 		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-video-actions">${ buttonsHTML }</div>` ) );
 	},
@@ -863,6 +919,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			this.renderVideoActions();
 			this.renderABTestOptions();
 			const attachmentId = this.model.get( 'id' );
+			this.showLoading();
 			this.fetchAndRender(
 				this.getVideoThumbnails( attachmentId ),
 				this.renderThumbnail,
@@ -875,5 +932,33 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		// Return this view.
 		return this;
+	},
+
+	showLoading() {
+		const actionsEl = this.$el.find( '.attachment-actions' );
+		const ul = document.createElement( 'ul' );
+
+		const li = document.createElement( 'li' );
+		li.className = 'thumbnail-spinner-container';
+		const spinner = document.createElement( 'div' );
+		spinner.className = 'thumbnail-spinner';
+		li.appendChild( spinner );
+		ul.appendChild( li );
+
+		const div = document.createElement( 'div' );
+		div.className = 'attachment-video-thumbnails';
+
+		const containerDiv = document.createElement( 'div' );
+		containerDiv.className = 'attachment-video-title';
+
+		const heading = document.createElement( 'h4' );
+		heading.textContent = __( 'Video Thumbnails', 'godam' );
+
+		containerDiv.appendChild( heading );
+		div.appendChild( containerDiv );
+
+		div.appendChild( ul );
+
+		actionsEl.append( div );
 	},
 } );

@@ -428,21 +428,39 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	/**
 	 * Prepare data to send as post request to CMM.
 	 */
+	// Get current user information for form submissions (since no specific attachment).
+	$current_user = wp_get_current_user();
+	$site_url     = get_site_url();
+
+	// Get author name with fallback to username.
+	$author_first_name = $current_user->first_name;
+	$author_last_name  = $current_user->last_name;
+	
+	// If first and last names are empty, use username as fallback.
+	if ( empty( $author_first_name ) && empty( $author_last_name ) ) {
+		$author_first_name = $current_user->user_login;
+	}
+
 	$body = array_merge(
 		array(
-			'api_token'       => $api_key,
-			'job_type'        => 'stream',
-			'job_for'         => ! empty( $form_type ) ? $form_type . '-godam-recorder' : 'gf-godam-recorder',
-			'file_origin'     => rawurlencode( $file_url ),
-			'callback_url'    => rawurlencode( $callback_url ),
-			'status_callback' => rawurlencode( $status_callback_url ),
-			'force'           => 0,
-			'formats'         => $file_extension,
-			'thumbnail_count' => 0,
-			'stream'          => true,
-			'watermark'       => boolval( $rtgodam_watermark ),
-			'resolutions'     => array( 'auto' ),
-			'folder_name'     => ! empty( $form_title ) ? $form_title : __( 'Gravity forms', 'godam' ),
+			'api_token'            => $api_key,
+			'job_type'             => 'stream',
+			'job_for'              => ! empty( $form_type ) ? $form_type . '-godam-recorder' : 'gf-godam-recorder',
+			'file_origin'          => rawurlencode( $file_url ),
+			'callback_url'         => rawurlencode( $callback_url ),
+			'status_callback'      => rawurlencode( $status_callback_url ),
+			'force'                => 0,
+			'formats'              => $file_extension,
+			'thumbnail_count'      => 0,
+			'stream'               => true,
+			'watermark'            => boolval( $rtgodam_watermark ),
+			'resolutions'          => array( 'auto' ),
+			'folder_name'          => ! empty( $form_title ) ? $form_title : __( 'Gravity forms', 'godam' ),
+			'wp_author_email'      => $current_user->user_email,
+			'wp_site'              => $site_url,
+			'wp_author_first_name' => $author_first_name,
+			'wp_author_last_name'  => $author_last_name,
+			'public'               => 1,
 		),
 		$watermark_to_use
 	);
@@ -480,4 +498,85 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	}
 
 	return json_decode( $response['body'] );
+}
+
+/**
+ * Format video duration based on the selected format for GoDAM block.
+ *
+ * @param string $duration        The raw duration value in seconds.
+ * @param string $duration_format The format to use (default, minutes, seconds).
+ * 
+ * @return string The formatted duration string.
+ */
+function rtgodam_block_format_video_duration( $duration, $duration_format = 'default' ) {
+	if ( empty( $duration ) ) {
+		return '';
+	}
+
+	// Parse the duration - assuming it's stored in seconds.
+	$total_seconds = intval( $duration );
+	$hours         = floor( $total_seconds / 3600 );
+	$minutes       = floor( ( $total_seconds % 3600 ) / 60 );
+	$seconds       = $total_seconds % 60;
+
+	switch ( $duration_format ) {
+		case 'minutes':
+			// Show as MM:SS.
+			$total_minutes = floor( $total_seconds / 60 );
+			return sprintf( '%02d:%02d', $total_minutes, $seconds );
+
+		case 'seconds':
+			// Show total seconds with 's' suffix.
+			return $total_seconds . __( 's', 'godam' );
+
+		case 'default':
+		default:
+			// Show as HH:MM:SS.
+			return sprintf( '%02d:%02d:%02d', $hours, $minutes, $seconds );
+	}
+}
+
+/**
+ * Fetch AI-generated video transcript path.
+ *
+ * @param string $job_id  The transcription job ID.
+ * @return string|false   Transcript path if available, false otherwise.
+ */
+function godam_get_transcript_path( $job_id ) {
+	if ( empty( $job_id ) ) {
+		return false;
+	}
+
+	$cache_key       = 'transcript_path_' . md5( $job_id );
+	$transcript_path = get_transient( $cache_key );
+
+	if ( false === $transcript_path ) {
+		$api_key  = get_option( 'rtgodam-api-key', '' );
+		$rest_url = add_query_arg(
+			array(
+				'job_name' => rawurlencode( $job_id ),
+				'api_key'  => rawurlencode( $api_key ),
+			),
+			RTGODAM_API_BASE . '/api/method/godam_core.api.process.get_transcription'
+		);
+
+		$response = wp_remote_get( $rest_url, array( 'timeout' => 3 ) );
+
+		if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
+			$body = wp_remote_retrieve_body( $response );
+			$data = json_decode( $body, true );
+
+			if (
+				is_array( $data ) &&
+				isset( $data['message']['transcript_path'], $data['message']['transcription_status'] ) &&
+				'Transcribed' === $data['message']['transcription_status']
+			) {
+				$transcript_path = $data['message']['transcript_path'];
+				// Cache for 12 hours.
+				set_transient( $cache_key, $transcript_path, 12 * HOUR_IN_SECONDS );
+			}
+		}
+	}
+
+	return ! empty( $transcript_path ) ? $transcript_path : false;
 }

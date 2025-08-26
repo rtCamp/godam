@@ -29,6 +29,7 @@ import {
 	setFluentForms,
 	setEverestForms,
 	setNinjaForms,
+	setMetforms,
 } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
@@ -37,8 +38,9 @@ import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
 import { copyGoDAMVideoBlock } from './utils/index';
 import { getFormIdFromLayer } from './utils/formUtils';
+import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
 
-const VideoEditor = ( { attachmentID } ) => {
+const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
 	const [ showSaveMessage, setShowSaveMessage ] = useState( false );
 	const [ sources, setSources ] = useState( [] );
@@ -58,7 +60,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
 
-	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, isFetching } = useFetchForms();
+	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, metforms, isFetching } = useFetchForms();
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -85,6 +87,10 @@ const VideoEditor = ( { attachmentID } ) => {
 	useEffect( () => {
 		if ( ! attachmentConfig ) {
 			return;
+		}
+
+		if ( ! canManageAttachment( attachmentConfig.author ) ) {
+			onBackToAttachmentPicker();
 		}
 
 		const { rtgodam_meta: rtGodamMeta, source_url: sourceURL, mime_type: mimeType, meta } = attachmentConfig;
@@ -118,7 +124,7 @@ const VideoEditor = ( { attachmentID } ) => {
 		}
 
 		setSources( videoSources );
-	}, [ attachmentConfig, dispatch ] );
+	}, [ attachmentConfig, dispatch, onBackToAttachmentPicker ] );
 
 	/**
 	 * Update the store with the fetched forms.
@@ -162,8 +168,12 @@ const VideoEditor = ( { attachmentID } ) => {
 			if ( ninjaForms && ninjaForms.length > 0 ) {
 				dispatch( setNinjaForms( ninjaForms ) );
 			}
+
+			if ( metforms && metforms.length > 0 ) {
+				dispatch( setMetforms( metforms ) );
+			}
 		}
-	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms ] );
+	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms, metforms ] );
 
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {
@@ -335,7 +345,7 @@ const VideoEditor = ( { attachmentID } ) => {
 	return (
 		<>
 			<div className="video-editor-container">
-				<div className="py-3 aside relative">
+				<div className="py-3 aside relative pl-4">
 					<div id="sidebar-content" className="godam-video-editor">
 						<TabPanel
 							className="godam-video-editor-tabs"

@@ -14,7 +14,6 @@ import { Icon, search } from '@wordpress/icons';
  */
 import MediaGrid from './components/media-grid/MediaGrid.jsx';
 import './attachment-picker.scss';
-import AnnualPlanOfferBanner from '../../assets/src/images/annual-plan-offer-banner.png';
 
 const AttachmentPicker = ( { handleAttachmentClick } ) => {
 	const [ searchTerm, setSearchTerm ] = useState( '' );
@@ -36,27 +35,40 @@ const AttachmentPicker = ( { handleAttachmentClick } ) => {
 		<>
 			{ showOfferBanner && ! window?.userData?.validApiKey && (
 				<div className="notice annual-plan-offer-banner px-10">
-					<a
-						href={ `https://godam.io/pricing?utm_campaign=annual-plan&utm_source=${
-							window?.location?.host || ''
-						}&utm_medium=plugin&utm_content=banner` }
-					>
-						<img
-							src={ AnnualPlanOfferBanner }
-							alt="Annual Plan Offer Banner"
-							className="annual-plan-offer-banner__img"
-						/>
-					</a>
+					<canvas id="godam-particle-canvas"></canvas>
+					<div className="annual-plan-offer-banner__content">
+						<div className="annual-plan-offer-banner__message">
+							<h3 className="annual-plan-offer-banner__title">
+								{ __( 'Pay for 10 months and get 2 months free with our annual plan.', 'godam' ) }
+							</h3>
+							<p className="annual-plan-offer-banner__description">
+								{ __( 'Elevate your media management, transcoding, storage, delivery and more.', 'godam' ) }
+							</p>
+						</div>
+						<div className="annual-plan-offer-banner__cta-container">
+							<a
+								href={ `${ window?.videoData?.godamBaseUrl }/pricing?utm_campaign=annual-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=banner` }
+								className="annual-plan-offer-banner__cta"
+								target="_blank"
+								rel="noopener noreferrer"
+								title={ __( 'Buy Now', 'godam' ) }
+							>
+								{ __( 'Buy Now', 'godam' ) }
+							</a>
+						</div>
+					</div>
+
 					<button
 						type="button"
 						className="annual-plan-offer-banner__dismiss"
 						onClick={ handleDismissBanner }
+						aria-label={ __( 'Dismiss banner', 'godam' ) }
 					>
 						&times;
 					</button>
 				</div>
 			) }
-			<div className="h-full overflow-auto is-dismissable godam-video-list-wrapper px-8 md:px-10 bg-white">
+			<div className="h-full overflow-auto is-dismissable px-6 md:px-10 bg-white">
 				<div className="godam-video-list-header py-10">
 					<h1 className="godam-video-list__title">{ __( 'Videos', 'godam' ) }</h1>
 

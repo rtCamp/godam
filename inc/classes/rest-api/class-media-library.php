@@ -657,9 +657,26 @@ class Media_Library extends Base {
 		} else {
 			$custom_thumbnails = array();
 		}
-		
+
 
 		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+
+		// Ensure selected thumbnail is valid. Fallback if not in either array.
+		if (
+			empty( $selected_thumbnail )
+			|| (
+				! in_array( $selected_thumbnail, $thumbnail_array, true )
+				&& ! in_array( $selected_thumbnail, $custom_thumbnails, true )
+			)
+		) {
+			if ( ! empty( $custom_thumbnails ) ) {
+				$selected_thumbnail = reset( $custom_thumbnails );
+			} elseif ( ! empty( $thumbnail_array ) ) {
+				$selected_thumbnail = reset( $thumbnail_array );
+			}
+		
+			update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $selected_thumbnail );
+		}
 
 		if ( ! empty( $selected_thumbnail ) ) {
 					$file_url = $selected_thumbnail;
@@ -702,13 +719,13 @@ class Media_Library extends Base {
 	public function upload_custom_video_thumbnail( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
-	
+
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
 			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
 		}
-	
+
 		// Get current thumbnails.
 		$existing_thumbnails = get_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', true );
 
@@ -725,18 +742,18 @@ class Media_Library extends Base {
 			);
 		}
 
-	
+
 		// Add new custom thumbnail at beginning and remove duplicates.
 		if ( ! in_array( $thumbnail_url, $existing_thumbnails, true ) ) {
 			array_unshift( $existing_thumbnails, $thumbnail_url );
 		}
-	
+
 		// Save updated thumbnails.
 		update_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', $existing_thumbnails );
-	
+
 		// Also set as selected thumbnail.
 		update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $thumbnail_url );
-	
+
 		return new \WP_REST_Response(
 			array(
 				'success' => true,
@@ -888,6 +905,14 @@ class Media_Library extends Base {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function bulk_delete_folders( $request ) {
+		$user            = wp_get_current_user();
+		$is_allowed_role = ( $user instanceof \WP_User ) && in_array( 'administrator', $user->roles, true );
+		$is_superadmin   = is_multisite() && is_super_admin( $user->ID ) && current_user_can( 'manage_network' );
+
+		if ( ! $is_allowed_role && ! $is_superadmin ) {
+			return new \WP_Error( 'rest_forbidden', __( 'You do not have permission to delete folders.', 'godam' ), array( 'status' => 403 ) );
+		}
+
 		$folder_ids = $request->get_param( 'folder_ids' );
 
 		if ( empty( $folder_ids ) || ! is_array( $folder_ids ) ) {
@@ -1006,6 +1031,14 @@ class Media_Library extends Base {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function bulk_update_folder_lock( $request ) {
+		$user            = wp_get_current_user();
+		$is_allowed_role = ( $user instanceof \WP_User ) && array_intersect( array( 'administrator', 'editor' ), $user->roles );
+		$is_superadmin   = is_multisite() && is_super_admin( $user->ID ) && current_user_can( 'manage_network' );
+
+		if ( ! $is_allowed_role && ! $is_superadmin ) {
+			return new \WP_Error( 'rest_forbidden', __( 'You do not have permission to lock or unlock folders.', 'godam' ), array( 'status' => 403 ) );
+		}
+
 		$folder_ids    = $request->get_param( 'folder_ids' );
 		$locked_status = (bool) $request->get_param( 'locked_status' );
 
@@ -1274,17 +1307,32 @@ class Media_Library extends Base {
 
 		// Validate required fields.
 		if ( empty( $data['id'] ) || empty( $data['title'] ) || empty( $data['url'] ) || empty( $data['mime'] ) ) {
-			return new \WP_Error( 'missing_params', 'Required fields are missing.', array( 'status' => 400 ) );
+			return new \WP_Error( 'missing_params', __( 'Required fields are missing.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Sanitize the GoDAM ID.
 		$godam_id = sanitize_text_field( $data['id'] );
 
+		// Check if godam_id is numeric; if yes, check if an attachment with this ID exists before returning.
+		if ( is_numeric( $godam_id ) ) {
+			$attachment_post = get_post( $godam_id );
+			if ( $attachment_post && 'attachment' === $attachment_post->post_type ) {
+				return new \WP_REST_Response(
+					array(
+						'success'    => true,
+						'attachment' => wp_prepare_attachment_for_js( $godam_id ),
+						'message'    => __( 'Attachment already exists', 'godam' ),
+					),
+					200
+				);
+			}
+		}
+
 		// Check if a media entry already exists for this GoDAM ID.
 		$existing = new \WP_Query(
 			array(
 				'post_type'      => 'attachment',
-				'meta_key'       => '_godam_original_id',
+				'meta_key'       => 'rtgodam_transcoding_job_id',
 				'meta_value'     => $godam_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'post_status'    => 'any',
 				'fields'         => 'ids',
@@ -1299,7 +1347,7 @@ class Media_Library extends Base {
 				array(
 					'success'    => true,
 					'attachment' => wp_prepare_attachment_for_js( $existing_id ),
-					'message'    => 'Attachment already exists',
+					'message'    => __( 'Attachment already exists', 'godam' ),
 				),
 				200
 			);
@@ -1337,13 +1385,15 @@ class Media_Library extends Base {
 		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['url'] ?? '' ) );
 		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' );
 		update_post_meta( $attach_id, 'icon', $data['icon'] );
+		update_post_meta( $attach_id, 'rtgodam_hls_transcoded_url', esc_url_raw( $data['hls_url'] ?? '' ) );
+		update_post_meta( $attach_id, 'rtgodam_transcoding_job_id', $godam_id );
 
 		// Return the newly created media object.
 		return new \WP_REST_Response(
 			array(
 				'success'    => true,
 				'attachment' => wp_prepare_attachment_for_js( $attach_id ),
-				'message'    => 'Attachment created',
+				'message'    => __( 'Attachment created', 'godam' ),
 			),
 			201
 		);
@@ -1461,7 +1511,7 @@ class Media_Library extends Base {
 			'hide_empty' => false,
 			'orderby'    => 'name',
 			'order'      => 'ASC',
-			'per_page'   => 100, // Default to 100 items per page.
+			'number'     => 100, // Maximum number of terms to return.
 		);
 
 		// Initialize meta_query as empty array.
@@ -1485,6 +1535,9 @@ class Media_Library extends Base {
 			$args['meta_query'] = $meta_queries; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Meta query is needed to filter by bookmark and locked.
 		}
 
+		$total_pages = 0;
+		$total_items = 0;
+
 		if ( ! $locked && ! $bookmark ) {
 			$page = (int) $request->get_param( 'page' );
 
@@ -1495,13 +1548,16 @@ class Media_Library extends Base {
 			$per_page = (int) $request->get_param( 'per_page' );
 
 			if ( $per_page < 1 ) {
-				$per_page = 10; // Default to 10 items per page if not set or invalid.
+				$per_page = 20; // Default to 20 items per page if not set or invalid.
 			}
 
 			$args['number'] = $per_page;
 			$args['offset'] = ( $page - 1 ) * $per_page;
 
 			$args['parent'] = (int) ( $request->get_param( 'parent' ) ?? 0 );
+
+			$total_items = $this->get_total_parent_media_folders_count();
+			$total_pages = ceil( $total_items / $per_page );
 		}
 
 		$terms = get_terms( $args );
@@ -1510,7 +1566,26 @@ class Media_Library extends Base {
 			$terms = $this->get_all_children_terms( $terms, $taxonomy );
 		}
 
-		return rest_ensure_response( $this->prepare_term_responses( $terms ) );
+		// Prepare the response data.
+		$prepared_terms = $this->prepare_term_responses( $terms );
+
+		// Ensure we always have an array, never null.
+		if ( is_null( $prepared_terms ) || ! is_array( $prepared_terms ) ) {
+			$prepared_terms = array();
+		}
+
+		// Create the response.
+		$response = rest_ensure_response( $prepared_terms );
+
+		// Add headers only for paginated requests.
+		if ( ! $locked && ! $bookmark ) {
+			$response->header( 'X-Wp-Total', $total_items );
+			$response->header( 'X-Wp-Totalpages', $total_pages );
+			$response->header( 'X-Wp-Current-Page', $page );
+			$response->header( 'X-Wp-Per-Page', $per_page );
+		}
+
+		return $response;
 	}
 
 	/**
@@ -1549,6 +1624,28 @@ class Media_Library extends Base {
 	}
 
 	/**
+	 * Get the total count of top-level (parent) media folders only.
+	 *
+	 * @return int Total count of parent media folders.
+	 */
+	private function get_total_parent_media_folders_count() {
+		$taxonomy = Media_Folders::SLUG;
+		$args     = array(
+			'taxonomy'   => $taxonomy,
+			'hide_empty' => false,
+			'fields'     => 'ids',
+			'parent'     => 0,
+		);
+		$term_ids = get_terms( $args );
+
+		if ( is_wp_error( $term_ids ) ) {
+			return 0;
+		}
+
+		return count( $term_ids );
+	}
+
+	/**
 	 * Prepare term responses for media folders.
 	 *
 	 * This method formats the term data for the REST API response.
@@ -1565,13 +1662,19 @@ class Media_Library extends Base {
 		$prepared = array();
 
 		foreach ( $terms as $term ) {
+			$locked_raw   = get_term_meta( $term->term_id, 'locked', true );
+			$bookmark_raw = get_term_meta( $term->term_id, 'bookmark', true );
+
+			$locked   = ( '1' === $locked_raw || 1 === $locked_raw || true === $locked_raw || 'true' === $locked_raw ) ? true : false;
+			$bookmark = ( '1' === $bookmark_raw || 1 === $bookmark_raw || true === $bookmark_raw || 'true' === $bookmark_raw ) ? true : false;
+
 			$prepared[] = array(
 				'id'              => $term->term_id,
 				'name'            => $term->name,
 				'parent'          => $term->parent,
 				'meta'            => array(
-					'locked'   => get_term_meta( $term->term_id, 'locked', true ),
-					'bookmark' => get_term_meta( $term->term_id, 'bookmark', true ),
+					'locked'   => $locked,
+					'bookmark' => $bookmark,
 				),
 				'attachmentCount' => (int) Media_Folder_Utils::get_instance()->get_attachment_count( $term->term_id ),
 			);

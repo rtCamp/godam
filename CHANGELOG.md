@@ -1,5 +1,20 @@
 # Changelog #
 
+## v1.3.4 (August 11, 2025) ##
+
+- Fix: Video Editor UI issues
+
+## v1.3.3 (August 11, 2025) ##
+
+- Tweak: Improved video player controls and HLS URL handling
+- Tweak: Added Video SEO support and duplicate prevention for GoDAM Tab videos
+- Tweak: Player-specific video speed and quality settings
+- Fix: Resolved share button and JavaScript registration issues
+
+## v1.3.2 (August 6, 2025) ##
+
+- Fix: Resolved PHP Warning on admin pages
+
 ## v1.3.1 (August 4, 2025) ##
 
 - Tweak: Added settings for CPT visibility in permalinks

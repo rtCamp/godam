@@ -434,7 +434,7 @@ const Analytics = ( { attachmentID } ) => {
 						<div>
 							<div className="flex gap-10 items-center max-lg:flex-col">
 								<div className="flex-grow">
-									<div className="analytics-info-container max-lg:flex-row flex-col items-center">
+									<div className="w-[350px] analytics-info-container max-lg:flex-row flex-col items-center">
 										<SingleMetrics
 											metricType={ 'engagement-rate' }
 											label={ __( 'Average Engagement', 'godam' ) }

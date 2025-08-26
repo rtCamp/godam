@@ -58,18 +58,21 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 				'helps' => __( 'The URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
 			);
 
-			$form_fields['hls_transcoded_url'] = array(
-				'label' => __( 'Transcoded CDN URL (HLS)', 'godam' ),
-				'input' => 'html',
-				'html'  => sprintf(
-					'<input type="text" class="widefat" name="attachments[%d][hls_transcoded_url]" id="attachments-%d-hls-transcoded_url" value="%s" readonly>',
-					(int) $post->ID,
-					(int) $post->ID,
-					esc_url( $hls_transcoded_url )
-				),
-				'value' => esc_url( $hls_transcoded_url ),
-				'helps' => __( 'The HLS URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
-			);
+			// Show the HLS transcoded URL field only for video files.
+			if ( strpos( $mime_type, 'video/' ) === 0 ) {
+				$form_fields['hls_transcoded_url'] = array(
+					'label' => __( 'Transcoded CDN URL (HLS)', 'godam' ),
+					'input' => 'html',
+					'html'  => sprintf(
+						'<input type="text" class="widefat" name="attachments[%d][hls_transcoded_url]" id="attachments-%d-hls-transcoded_url" value="%s" readonly>',
+						(int) $post->ID,
+						(int) $post->ID,
+						esc_url( $hls_transcoded_url )
+					),
+					'value' => esc_url( $hls_transcoded_url ),
+					'helps' => __( 'The HLS URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
+				);
+			}
 		} else {
 			// Display locked field with upsell message for free users.
 			$form_fields['transcoded_url'] = array(
