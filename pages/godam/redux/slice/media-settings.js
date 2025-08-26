@@ -70,24 +70,6 @@ const initialState = {
 			border_radius: 4,
 			css_classes: '',
 		},
-		hotspots: {
-			enabled: false,
-			default_shape: 'circle',
-			default_animation: 'pulse',
-			default_color: '#ff0000',
-			placement: 'throughout',
-			hotspots: [],
-		},
-		polls: {
-			enabled: false,
-			placement: 'middle',
-			screen_position: 'center',
-			default_duration: 15,
-			show_results_default: true,
-			background_color: '#ffffff',
-			text_color: '#000000',
-			polls: [],
-		},
 	},
 	isChanged: false,
 };
@@ -147,7 +129,7 @@ const mediaSettingsSlice = createSlice( {
 					console.log('Creating missing subcategory:', subcategory);
 					state[ category ][ subcategory ] = {};
 				}
-				
+
 				// Update the specific key
 				console.log('Updating nested setting:', { category, subcategory, key, oldValue: state[ category ][ subcategory ][ key ], newValue: value });
 				state[ category ][ subcategory ][ key ] = value;

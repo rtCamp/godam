@@ -89,24 +89,6 @@ class Settings extends Base {
 					'border_radius'    => 4,
 					'css_classes'      => '',
 				),
-				'hotspots' => array(
-					'enabled'           => false,
-					'default_shape'     => 'circle',
-					'default_animation' => 'pulse',
-					'default_color'     => '#ff0000',
-					'placement'         => 'throughout',
-					'hotspots'          => array(),
-				),
-				'polls' => array(
-					'enabled'             => false,
-					'placement'           => 'middle',
-					'screen_position'     => 'center',
-					'default_duration'    => 15,
-					'show_results_default'=> true,
-					'background_color'    => '#ffffff',
-					'text_color'          => '#000000',
-					'polls'               => array(),
-				),
 			),
 		);
 	}
@@ -298,7 +280,7 @@ class Settings extends Base {
 	public function get_easydam_settings() {
 		// Retrieve settings from the database.
 		$easydam_settings = get_option( 'rtgodam-settings', $this->get_default_settings() );
-		
+
 		return new \WP_REST_Response( $easydam_settings, 200 );
 	}
 
@@ -404,24 +386,6 @@ class Settings extends Base {
 					'border_radius'    => absint( $settings['global_layers']['cta']['border_radius'] ?? $default['global_layers']['cta']['border_radius'] ),
 					'css_classes'      => sanitize_text_field( $settings['global_layers']['cta']['css_classes'] ?? $default['global_layers']['cta']['css_classes'] ),
 				),
-				'hotspots' => array(
-					'enabled'           => rest_sanitize_boolean( $settings['global_layers']['hotspots']['enabled'] ?? $default['global_layers']['hotspots']['enabled'] ),
-					'default_shape'     => sanitize_text_field( $settings['global_layers']['hotspots']['default_shape'] ?? $default['global_layers']['hotspots']['default_shape'] ),
-					'default_animation' => sanitize_text_field( $settings['global_layers']['hotspots']['default_animation'] ?? $default['global_layers']['hotspots']['default_animation'] ),
-					'default_color'     => $this->sanitize_color_value( $settings['global_layers']['hotspots']['default_color'] ?? $default['global_layers']['hotspots']['default_color'] ),
-					'placement'         => sanitize_text_field( $settings['global_layers']['hotspots']['placement'] ?? $default['global_layers']['hotspots']['placement'] ),
-					'hotspots'          => $this->sanitize_hotspots_array( $settings['global_layers']['hotspots']['hotspots'] ?? $default['global_layers']['hotspots']['hotspots'] ),
-				),
-				'polls' => array(
-					'enabled'              => rest_sanitize_boolean( $settings['global_layers']['polls']['enabled'] ?? $default['global_layers']['polls']['enabled'] ),
-					'placement'            => sanitize_text_field( $settings['global_layers']['polls']['placement'] ?? $default['global_layers']['polls']['placement'] ),
-					'screen_position'      => sanitize_text_field( $settings['global_layers']['polls']['screen_position'] ?? $default['global_layers']['polls']['screen_position'] ),
-					'default_duration'     => absint( $settings['global_layers']['polls']['default_duration'] ?? $default['global_layers']['polls']['default_duration'] ),
-					'show_results_default' => rest_sanitize_boolean( $settings['global_layers']['polls']['show_results_default'] ?? $default['global_layers']['polls']['show_results_default'] ),
-					'background_color'     => $this->sanitize_color_value( $settings['global_layers']['polls']['background_color'] ?? $default['global_layers']['polls']['background_color'] ),
-					'text_color'           => $this->sanitize_color_value( $settings['global_layers']['polls']['text_color'] ?? $default['global_layers']['polls']['text_color'] ),
-					'polls'                => $this->sanitize_polls_array( $settings['global_layers']['polls']['polls'] ?? $default['global_layers']['polls']['polls'] ),
-				),
 			),
 		);
 	}
@@ -436,7 +400,7 @@ class Settings extends Base {
 		if ( empty( $color ) ) {
 			return '';
 		}
-		
+
 		// Handle hex colors (3, 6, or 8 characters with alpha).
 		if ( preg_match( '/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/', $color ) ) {
 			return $color;
@@ -587,80 +551,5 @@ class Settings extends Base {
 			'success' => true,
 			'data'    => $available_plugins,
 		) );
-	}
-
-	/**
-	 * Sanitize hotspots array.
-	 *
-	 * @param array $hotspots Hotspots array to sanitize.
-	 * @return array Sanitized hotspots array.
-	 */
-	private function sanitize_hotspots_array( $hotspots ) {
-		if ( ! is_array( $hotspots ) ) {
-			return array();
-		}
-
-		$sanitized = array();
-		foreach ( $hotspots as $hotspot ) {
-			if ( ! is_array( $hotspot ) ) {
-				continue;
-			}
-
-			$sanitized[] = array(
-				'id'        => sanitize_text_field( $hotspot['id'] ?? '' ),
-				'x'         => floatval( $hotspot['x'] ?? 0 ),
-				'y'         => floatval( $hotspot['y'] ?? 0 ),
-				'time'      => absint( $hotspot['time'] ?? 0 ),
-				'text'      => sanitize_text_field( $hotspot['text'] ?? '' ),
-				'url'       => esc_url_raw( $hotspot['url'] ?? '' ),
-				'new_tab'   => rest_sanitize_boolean( $hotspot['new_tab'] ?? false ),
-				'shape'     => sanitize_text_field( $hotspot['shape'] ?? 'circle' ),
-				'animation' => sanitize_text_field( $hotspot['animation'] ?? 'pulse' ),
-				'color'     => $this->sanitize_color_value( $hotspot['color'] ?? '#ff0000' ),
-			);
-		}
-
-		return $sanitized;
-	}
-
-	/**
-	 * Sanitize polls array.
-	 *
-	 * @param array $polls Polls array to sanitize.
-	 * @return array Sanitized polls array.
-	 */
-	private function sanitize_polls_array( $polls ) {
-		if ( ! is_array( $polls ) ) {
-			return array();
-		}
-
-		$sanitized = array();
-		foreach ( $polls as $poll ) {
-			if ( ! is_array( $poll ) ) {
-				continue;
-			}
-
-			$options = array();
-			if ( isset( $poll['options'] ) && is_array( $poll['options'] ) ) {
-				foreach ( $poll['options'] as $option ) {
-					$options[] = array(
-						'id'    => sanitize_text_field( $option['id'] ?? '' ),
-						'text'  => sanitize_text_field( $option['text'] ?? '' ),
-						'votes' => absint( $option['votes'] ?? 0 ),
-					);
-				}
-			}
-
-			$sanitized[] = array(
-				'id'           => sanitize_text_field( $poll['id'] ?? '' ),
-				'question'     => sanitize_text_field( $poll['question'] ?? '' ),
-				'time'         => absint( $poll['time'] ?? 0 ),
-				'duration'     => absint( $poll['duration'] ?? 15 ),
-				'show_results' => rest_sanitize_boolean( $poll['show_results'] ?? true ),
-				'options'      => $options,
-			);
-		}
-
-		return $sanitized;
 	}
 }

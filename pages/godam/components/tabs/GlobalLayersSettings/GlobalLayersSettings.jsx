@@ -26,8 +26,6 @@ import { resetChangeFlag } from '../../../redux/slice/media-settings.js';
 import VideoAdsLayer from './components/VideoAdsLayer.jsx';
 import FormsLayer from './components/FormsLayer.jsx';
 import CTALayer from './components/CTALayer.jsx';
-import HotspotsLayer from './components/HotspotsLayer.jsx';
-import PollsLayer from './components/PollsLayer.jsx';
 
 const GlobalLayersSettings = () => {
 	const dispatch = useDispatch();
@@ -91,16 +89,6 @@ const GlobalLayersSettings = () => {
 			name: 'cta',
 			title: __( 'Call to Action', 'godam' ),
 			component: CTALayer,
-		},
-		{
-			name: 'hotspots',
-			title: __( 'Hotspots', 'godam' ),
-			component: HotspotsLayer,
-		},
-		{
-			name: 'polls',
-			title: __( 'Polls', 'godam' ),
-			component: PollsLayer,
 		},
 	];
 

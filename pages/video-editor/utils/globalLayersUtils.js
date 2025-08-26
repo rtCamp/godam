@@ -118,58 +118,6 @@ export const createLayerFromGlobalSettings = (globalLayer, layerType, videoDurat
 				skip_offset: 5,
 			};
 
-		case 'hotspot':
-			if (!globalLayer.hotspots?.enabled || !globalLayer.hotspots?.hotspots?.length) {
-				return null;
-			}
-
-			return {
-				...baseLayer,
-				displayTime: getDisplayTimeFromPlacement(
-					globalLayer.hotspots.placement,
-					0,
-					videoDuration
-				),
-				duration: 5,
-				pauseOnHover: false,
-				hotspots: globalLayer.hotspots.hotspots.map(hotspot => ({
-					id: uuidv4(),
-					tooltipText: hotspot.text || 'Click me!',
-					position: { x: hotspot.x || 50, y: hotspot.y || 50 },
-					size: { diameter: hotspot.size || 48 },
-					oSize: { diameter: hotspot.size || 48 },
-					oPosition: { x: hotspot.x || 50, y: hotspot.y || 50 },
-					link: hotspot.link || '',
-					backgroundColor: globalLayer.hotspots.default_color || '#ff0000',
-					showStyle: false,
-					showIcon: false,
-					icon: '',
-				})),
-			};
-
-		case 'poll':
-			if (!globalLayer.polls?.enabled || !globalLayer.polls?.poll_id) {
-				return null;
-			}
-
-			return {
-				...baseLayer,
-				displayTime: getDisplayTimeFromPlacement(
-					globalLayer.polls.placement,
-					globalLayer.polls.position,
-					videoDuration
-				),
-				poll_id: globalLayer.polls.poll_id,
-				allow_skip: true,
-				custom_css: globalLayer.polls.custom_css || '',
-				// Additional poll properties from global settings
-				duration: globalLayer.polls.duration || 15,
-				screen_position: globalLayer.polls.screen_position || 'center',
-				show_results_default: globalLayer.polls.show_results_default !== false,
-				background_color: globalLayer.polls.background_color || '#ffffff',
-				text_color: globalLayer.polls.text_color || '#000000',
-			};
-
 		default:
 			return null;
 	}
@@ -204,18 +152,6 @@ export const applyGlobalLayersToVideo = (globalSettings, videoDuration = 0) => {
 		layersToAdd.push(adLayer);
 	}
 
-	// Add hotspots layer if enabled
-	const hotspotsLayer = createLayerFromGlobalSettings(globalLayers, 'hotspot', videoDuration);
-	if (hotspotsLayer) {
-		layersToAdd.push(hotspotsLayer);
-	}
-
-	// Add polls layer if enabled
-	const pollsLayer = createLayerFromGlobalSettings(globalLayers, 'poll', videoDuration);
-	if (pollsLayer) {
-		layersToAdd.push(pollsLayer);
-	}
-
 	return layersToAdd;
 };
 
@@ -239,7 +175,7 @@ export const removeGlobalLayers = (layers) => {
 export const mergeGlobalAndVideoLayers = (existingLayers, globalLayers) => {
 	// Remove any existing global layers first
 	const videoOnlyLayers = removeGlobalLayers(existingLayers);
-	
+
 	// Add new global layers
 	return [...videoOnlyLayers, ...globalLayers];
 };
