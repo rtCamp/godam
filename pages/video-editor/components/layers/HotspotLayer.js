@@ -281,7 +281,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 								{ /* Hotspot Name */ }
 								<TextControl
 									className="godam-input"
-									label={ __( 'Hotspot name', 'godam' ) }
+									label={ __( 'Hotspot Name', 'godam' ) }
 									value={ hotspot.name ?? '' }
 									/* translators: %d is the hotspot index */
 									placeholder={ sprintf( __( 'Hotspot %d', 'godam' ), index + 1 ) }
