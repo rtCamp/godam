@@ -23,6 +23,7 @@ import { error } from '@wordpress/icons';
 
 const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice } ) => {
 	const intervalRef = useRef( null );
+	const noticeShownRef = useRef( { completed: false, failed: false } );
 	const [ godamMigrationCompleted, setGodamMigrationCompleted ] = useState( true );
 
 	const handleMigrationClick = async () => {
@@ -40,12 +41,41 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 			.then( ( response ) => {
 				setMigrationStatus( response.data );
 			} )
-			.catch( ( error ) => {
+			.catch( ( err ) => {
 				// Check if status is 400, set godamMigrationStatus
-				if ( error.response && error.response.status === 400 ) {
+				if ( err.response && err.response.status === 400 ) {
 					setGodamMigrationCompleted( false );
 				}
 			} );
+	};
+
+	const handleAbortClick = async () => {
+		// stop polling immediately
+		if ( intervalRef.current ) {
+			clearInterval( intervalRef.current );
+			intervalRef.current = null;
+		}
+
+		const url = window.godamRestRoute?.url + 'godam/v1/video-migrate/abort';
+		try {
+			const response = await axios.post( url,
+				{ type: 'vimeo' },
+				{
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': window.godamRestRoute?.nonce,
+					},
+				},
+			);
+
+			const data = response?.data || {};
+			showNotice( `${ data?.message || '' }`, 'warning' );
+
+			// Reset UI to initial state
+			setMigrationStatus( { total: 0, done: 0, started: null, completed: null, status: 'pending', message: '' } );
+		} catch ( e ) {
+			setMigrationStatus( { total: 0, done: 0, started: null, completed: null, status: 'pending', message: '' } );
+		}
 	};
 
 	const fetchMigrationStatus = useCallback( async () => {
@@ -59,7 +89,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 				},
 			} );
 			setMigrationStatus( response.data );
-		} catch ( error ) {}
+		} catch ( err ) {}
 	}, [ setMigrationStatus ] );
 
 	// Start polling when migration is processing
@@ -72,6 +102,9 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 
 			// Start polling every 5 seconds
 			intervalRef.current = setInterval( fetchMigrationStatus, 5000 );
+
+			// Reset notice flags for a new run
+			noticeShownRef.current = { completed: false, failed: false };
 		}
 
 		// Stop polling when migration is not processing
@@ -80,10 +113,12 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 			intervalRef.current = null;
 		}
 
-		// Set notice based on migration status
-		if ( migrationStatus?.status === 'completed' ) {
+		// Set notice based on migration status (only once per run)
+		if ( migrationStatus?.status === 'completed' && ! noticeShownRef.current.completed ) {
+			noticeShownRef.current.completed = true;
 			showNotice( __( 'Vimeo Video Migration has been successfully completed for all posts and pages 🎉', 'godam' ), 'success' );
-		} else if ( migrationStatus?.status === 'failed' ) {
+		} else if ( migrationStatus?.status === 'failed' && ! noticeShownRef.current.failed ) {
+			noticeShownRef.current.failed = true;
 			showNotice( __( 'Vimeo Video Migration failed. Please try again.', 'godam' ), 'error' );
 		}
 
@@ -93,7 +128,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 				clearInterval( intervalRef.current );
 			}
 		};
-	}, [ migrationStatus?.status, fetchMigrationStatus ] );
+	}, [ migrationStatus?.status, fetchMigrationStatus, showNotice ] );
 
 	if ( ! migrationStatus ) {
 		return (
@@ -155,15 +190,25 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 					)
 					}
 
-					{ /* Migration button */ }
-					<Button
-						variant="primary"
-						onClick={ handleMigrationClick }
-						className="godam-button mt-2"
-						disabled={ ! migrationStatus || migrationStatus?.status === 'processing' }
-					>
-						{ migrationStatus?.status === 'processing' ? __( 'Migration in progress' ) : __( 'Start Migration', 'godam' ) }
-					</Button>
+					{ /* Migration actions */ }
+					{ migrationStatus?.status === 'processing' ? (
+						<Button
+							variant="secondary"
+							onClick={ handleAbortClick }
+							className="godam-button mt-2"
+						>
+							{ __( 'Abort', 'godam' ) }
+						</Button>
+					) : (
+						<Button
+							variant="primary"
+							onClick={ handleMigrationClick }
+							className="godam-button mt-2"
+							disabled={ ! migrationStatus }
+						>
+							{ __( 'Start Migration', 'godam' ) }
+						</Button>
+					) }
 				</PanelBody>
 			</Panel>
 		</>

@@ -56,7 +56,11 @@ class Blocks {
 		);
 
 		register_block_type(
-			RTGODAM_PATH . '/assets/build/blocks/godam-video-generator/'
+			RTGODAM_PATH . '/assets/build/blocks/godam-video-thumbnail/'
+		);
+
+		register_block_type(
+			RTGODAM_PATH . '/assets/build/blocks/godam-video-duration/'
 		);
 	}
 }

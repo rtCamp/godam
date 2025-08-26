@@ -75,7 +75,7 @@ const NinjaForm = ( { layerID } ) => {
 						className="easydam-layer"
 					>
 
-						{
+						{ layer?.ninja_form_id &&
 							<div className={ clsx( 'form-container', 'ninja-form', { loading: isFetching } ) }>
 								{ <iframe
 									src={ window.godamRestRoute.homeUrl + '?rtgodam-render-layer=ninja-forms&rtgodam-layer-id=' + layer?.ninja_form_id }
