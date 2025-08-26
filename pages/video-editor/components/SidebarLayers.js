@@ -46,7 +46,16 @@ const getBaseLayerText = ( type, formKey ) => {
 // Default fallback name if no custom name set
 const getDefaultLayerName = ( layer ) => {
 	const base = getBaseLayerText( layer.type, layer.form_type );
-	return `${ base }`;
+
+	const tNum = Number( layer?.displayTime ?? 0 );
+	let t;
+	if ( Number.isFinite( tNum ) ) {
+		t = tNum % 1 === 0 ? tNum : tNum.toFixed( 2 );
+	} else {
+		t = layer?.displayTime;
+	}
+
+	return `${ base } ${ __( 'layer at', 'godam' ) } ${ t }s`;
 };
 
 /**
@@ -207,8 +216,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 
 		switch ( type ) {
 			case 'form':
-				const formKey = formType || 'gravity';
-				const formDefaultName = `${ getBaseLayerText( 'form', formKey ) }`;
 				dispatch( addLayer( {
 					id: uuidv4(),
 					displayTime: currentTime,
@@ -218,11 +225,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					allow_skip: true,
 					custom_css: '',
 					theme: '',
-					name: formDefaultName,
 				} ) );
 				break;
 			case 'cta':
-				const ctaDefaultName = `${ getBaseLayerText( 'cta' ) }`;
 				dispatch( addLayer( {
 					id: uuidv4(),
 					displayTime: currentTime,
@@ -233,11 +238,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					link: '',
 					allow_skip: true,
 					imageOpacity: 1,
-					name: ctaDefaultName,
 				} ) );
 				break;
 			case 'hotspot':
-				const hotspotDefaultName = `${ getBaseLayerText( 'hotspot' ) }`;
 				dispatch(
 					addLayer( {
 						id: uuidv4(),
@@ -245,7 +248,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						type,
 						duration: 5,
 						pauseOnHover: false,
-						name: hotspotDefaultName,
 						hotspots: [
 							{
 								id: uuidv4(),
@@ -265,7 +267,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 				);
 				break;
 			case 'ad':
-				const adDefaultName = `${ getBaseLayerText( 'ad' ) }`;
 				dispatch( addLayer( {
 					id: uuidv4(),
 					displayTime: currentTime,
@@ -274,11 +275,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					ad_url: '',
 					skippable: false,
 					skip_offset: 5,
-					name: adDefaultName,
 				} ) );
 				break;
 			case 'poll':
-				const pollDefaultName = `${ getBaseLayerText( 'poll' ) }`;
 				dispatch( addLayer( {
 					id: uuidv4(),
 					displayTime: currentTime,
@@ -286,7 +285,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					poll_id: '',
 					allow_skip: true,
 					custom_css: '',
-					name: pollDefaultName,
 				} ) );
 				break;
 			default:
