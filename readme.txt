@@ -217,7 +217,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v1.3.5 (August 22, 2025) =
+= v1.3.5 (August 26, 2025) =
 
 - Tweak: Set transcoded videos as public by default and add Org support parameters
 - Tweak: Provide HLS URL support for GoDAM Virtual Media
