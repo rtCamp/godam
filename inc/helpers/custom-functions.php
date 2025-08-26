@@ -580,3 +580,135 @@ function godam_get_transcript_path( $job_id ) {
 
 	return ! empty( $transcript_path ) ? $transcript_path : false;
 }
+
+/**
+ * Process HTML content to scope CSS and JavaScript automatically for CTA layers
+ * This prevents global scope pollution while allowing unrestricted HTML/CSS/JS
+ *
+ * @param string $html_content Raw HTML content from user.
+ * @param string $scope_id Unique scope identifier for this layer.
+ * @return string Processed HTML with scoped styles and scripts.
+ */
+function rtgodam_process_cta_html_content( $html_content, $scope_id ) {
+	if ( empty( $html_content ) || empty( $scope_id ) ) {
+		return $html_content;
+	}
+
+	$processed_content = $html_content;
+
+	// Process CSS styles - scope them to the container.
+	$processed_content = preg_replace_callback(
+		'/<style[^>]*>(.*?)<\/style>/is',
+		function ( $matches ) use ( $scope_id ) {
+			$css_content = $matches[1];
+			
+			// Scope all CSS rules to the container.
+			$scoped_css = preg_replace_callback(
+				'/([^{}]+)\{/',
+				function ( $css_matches ) use ( $scope_id ) {
+					$selector = trim( $css_matches[1] );
+					
+					// Skip @rules like @import, @media, @keyframes.
+					if ( strpos( $selector, '@' ) === 0 ) {
+						return $css_matches[0];
+					}
+					
+					// Split multiple selectors and scope each one.
+					$selectors        = explode( ',', $selector );
+					$scoped_selectors = array();
+					
+					foreach ( $selectors as $single_selector ) {
+						$trimmed_selector = trim( $single_selector );
+						// Add scope prefix to each selector.
+						$scoped_selectors[] = '#' . $scope_id . ' ' . $trimmed_selector;
+					}
+					
+					return implode( ', ', $scoped_selectors ) . ' {';
+				},
+				$css_content
+			);
+			
+			return '<style>' . $scoped_css . '</style>';
+		},
+		$processed_content
+	);
+
+	// Process JavaScript - wrap in scope and add event delegation.
+	$processed_content = preg_replace_callback(
+		'/<script[^>]*>(.*?)<\/script>/is',
+		function ( $matches ) use ( $scope_id ) {
+			$js_content = $matches[1];
+			
+			// Create scoped JavaScript that works within the container.
+			$scoped_js = "
+				(function() {
+					const scope = document.getElementById('" . esc_js( $scope_id ) . "');
+					if (!scope) return;
+					
+					// Store original functions
+					const originalGetElementsByTagName = document.getElementsByTagName;
+					const originalQuerySelector = document.querySelector;
+					const originalQuerySelectorAll = document.querySelectorAll;
+					const originalGetElementById = document.getElementById;
+					
+					// Override global DOM functions to work within scope
+					document.getElementsByTagName = function(tagName) {
+						if (tagName.toLowerCase() === 'html') {
+							// Return the video container or the scope itself for 'html' queries
+							const videoContainer = scope.closest('.easydam-video-container') || scope.closest('.easydam-layer');
+							return videoContainer ? [videoContainer] : [scope];
+						}
+						return scope.getElementsByTagName(tagName);
+					};
+					
+					document.querySelector = function(selector) {
+						return scope.querySelector(selector);
+					};
+					
+					document.querySelectorAll = function(selector) {
+						return scope.querySelectorAll(selector);
+					};
+					
+					document.getElementById = function(id) {
+						return scope.querySelector('#' + id);
+					};
+					
+					// Create a scoped API object if it doesn't exist
+					if (typeof window.API === 'undefined') {
+						window.API = {};
+					}
+					
+					// Ensure closeCta function exists
+					if (typeof window.API.closeCta === 'undefined') {
+						window.API.closeCta = function() {
+							const layer = scope.closest('.easydam-layer');
+							if (layer) {
+								layer.classList.add('hidden');
+								// Trigger custom event for video player
+								const event = new CustomEvent('ctaClosed', { detail: { layerId: layer.id } });
+								document.dispatchEvent(event);
+							}
+						};
+					}
+					
+					try {
+						" . $js_content . "
+					} catch(error) {
+						console.error('CTA Layer Script Error:', error);
+					} finally {
+						// Restore original functions.
+						document.getElementsByTagName = originalGetElementsByTagName;
+						document.querySelector = originalQuerySelector;
+						document.querySelectorAll = originalQuerySelectorAll;
+						document.getElementById = originalGetElementById;
+					}
+				})();
+			";
+			
+			return '<script>' . $scoped_js . '</script>';
+		},
+		$processed_content
+	);
+
+	return $processed_content;
+}
